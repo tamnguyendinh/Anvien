@@ -100,6 +100,7 @@ function makeCtx(
   opts: {
     mro?: Record<string, readonly string[]>;
     implsByInterface?: Record<string, readonly string[]>;
+    ownedMembersByOwner?: RegistryContext['ownedMembersByOwner'];
     arity?: (
       callsite: { arity: number },
       def: SymbolDefinition,
@@ -131,6 +132,9 @@ function makeCtx(
     qualifiedNames: qualifiedNameIndex,
     moduleScopes,
     methodDispatch,
+    ...(opts.ownedMembersByOwner !== undefined
+      ? { ownedMembersByOwner: opts.ownedMembersByOwner }
+      : {}),
     providers: opts.arity !== undefined ? { arityCompatibility: opts.arity } : {},
   };
 }
@@ -667,6 +671,36 @@ describe('Step 2: type-binding + MRO walk', () => {
     expect(evidenceOfKind(results[0]!, 'type-binding')?.weight).toBe(
       EvidenceWeights.typeBindingByMroDepth[1],
     );
+  });
+
+  it('uses the precomputed owner-member index when supplied', () => {
+    const userClass = mkDef({ nodeId: 'def:User', type: 'Class', qualifiedName: 'User' });
+    const indexedSave = mkDef({
+      nodeId: 'def:indexed.save',
+      type: 'Method',
+      qualifiedName: 'User.save',
+      ownerId: 'def:User',
+    });
+    const hiddenSave = mkDef({
+      nodeId: 'def:hidden.save',
+      type: 'Method',
+      qualifiedName: 'User.save',
+      ownerId: 'def:User',
+    });
+    const scope = mkScope({
+      id: 'scope:call',
+      parent: null,
+      typeBindings: { user: typeRef('User', 'scope:call') },
+    });
+    const ctx = makeCtx([scope], [userClass, indexedSave, hiddenSave], {
+      ownedMembersByOwner: new Map([['def:User', new Map([['save', [indexedSave] as const]])]]),
+    });
+
+    const results = buildMethodRegistry(ctx).lookup('save', 'scope:call', {
+      explicitReceiver: { name: 'user' },
+    });
+
+    expect(results.map((result) => result.def.nodeId)).toEqual(['def:indexed.save']);
   });
 });
 

@@ -60,6 +60,8 @@ export interface OwnerScopedContributor {
   byName(name: string): readonly SymbolDefinition[];
 }
 
+export type OwnerMemberIndex = ReadonlyMap<DefId, ReadonlyMap<string, readonly SymbolDefinition[]>>;
+
 // ─── Top-level context threaded through every lookup ───────────────────────
 
 export interface RegistryContext {
@@ -72,6 +74,13 @@ export interface RegistryContext {
    * honor `useReceiverTypeBinding`. Omit for class-only lookups.
    */
   readonly methodDispatch?: MethodDispatchIndex;
+  /**
+   * Optional precomputed owner → member-name → definitions index.
+   * Method/field receiver dispatch treats this as the authoritative
+   * owner-member view when supplied. Without it, lookupCore falls back to
+   * scanning defs for compatibility with older callers.
+   */
+  readonly ownedMembersByOwner?: OwnerMemberIndex;
   readonly providers: RegistryProviders;
 }
 

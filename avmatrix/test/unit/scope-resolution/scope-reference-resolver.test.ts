@@ -324,6 +324,67 @@ function run(user: User) {
     });
   });
 
+  it('resolves interface property reads and type-alias RHS type references', () => {
+    const source = `
+class User {}
+
+interface Runnable {
+  current: User;
+}
+
+type MaybeUser = User | null;
+
+function run(runnable: Runnable, maybe: MaybeUser) {
+  runnable.current;
+}
+`;
+    const parsed = extractParsedFileWithStats(
+      typescriptProvider,
+      source,
+      'src/interface-facts.ts',
+      SupportedLanguages.TypeScript,
+      parser.parse(source).rootNode,
+    ).parsedFile;
+    expect(parsed).toBeDefined();
+
+    const indexes = finalizeScopeModel([parsed!]);
+    const result = resolveScopeReferenceSites(indexes);
+
+    const user = parsed!.localDefs.find(
+      (def) => def.type === 'Class' && def.qualifiedName === 'User',
+    );
+    const runnable = parsed!.localDefs.find(
+      (def) => def.type === 'Interface' && def.qualifiedName === 'Runnable',
+    );
+    const maybeUser = parsed!.localDefs.find(
+      (def) => def.type === 'TypeAlias' && def.qualifiedName === 'MaybeUser',
+    );
+    const currentProperty = parsed!.localDefs.find(
+      (def) => def.type === 'Property' && def.qualifiedName === 'Runnable.current',
+    );
+    expect(user).toBeDefined();
+    expect(runnable).toBeDefined();
+    expect(maybeUser).toBeDefined();
+    expect(currentProperty).toBeDefined();
+
+    const refsToCurrent = result.referenceIndex.byTargetDef.get(currentProperty!.nodeId) ?? [];
+    const refsToUser = result.referenceIndex.byTargetDef.get(user!.nodeId) ?? [];
+    const refsToRunnable = result.referenceIndex.byTargetDef.get(runnable!.nodeId) ?? [];
+    const refsToMaybeUser = result.referenceIndex.byTargetDef.get(maybeUser!.nodeId) ?? [];
+
+    expect(refsToCurrent.map((ref) => ref.kind)).toEqual(['read']);
+    expect(refsToUser.map((ref) => ref.kind)).toEqual(['type-reference', 'type-reference']);
+    expect(refsToRunnable.map((ref) => ref.kind)).toEqual(['type-reference']);
+    expect(refsToMaybeUser.map((ref) => ref.kind)).toEqual(['type-reference']);
+    expect(result.stats).toMatchObject({
+      totalReferenceSites: 5,
+      resolvedReferences: 5,
+      unresolvedReferences: 0,
+      resolvedAccesses: 1,
+      resolvedTypeReferences: 4,
+    });
+  });
+
   it('resolves return type annotation facts to class definitions', () => {
     const source = `
 class User {}

@@ -195,6 +195,7 @@ export function createReferenceResolutionContext(
     qualifiedNames: scopes.qualifiedNames,
     moduleScopes: scopes.moduleScopes,
     methodDispatch: scopes.methodDispatch,
+    ownedMembersByOwner: buildOwnedMemberIndex(scopes.defs.byId.values()),
     providers: {},
   };
 
@@ -578,6 +579,44 @@ function methodOptions(site: ReferenceSite) {
     ...(site.arity !== undefined ? { callsite: { arity: site.arity } } : {}),
     ...(site.explicitReceiver !== undefined ? { explicitReceiver: site.explicitReceiver } : {}),
   };
+}
+
+function buildOwnedMemberIndex(
+  defs: Iterable<SymbolDefinition>,
+): ReadonlyMap<DefId, ReadonlyMap<string, readonly SymbolDefinition[]>> {
+  const byOwner = new Map<DefId, Map<string, SymbolDefinition[]>>();
+  for (const def of defs) {
+    if (def.ownerId === undefined) continue;
+    const name = simpleNameOf(def);
+    if (name === undefined) continue;
+
+    let ownerBucket = byOwner.get(def.ownerId);
+    if (ownerBucket === undefined) {
+      ownerBucket = new Map<string, SymbolDefinition[]>();
+      byOwner.set(def.ownerId, ownerBucket);
+    }
+
+    const memberBucket = ownerBucket.get(name) ?? [];
+    memberBucket.push(def);
+    ownerBucket.set(name, memberBucket);
+  }
+
+  const frozenByOwner = new Map<DefId, ReadonlyMap<string, readonly SymbolDefinition[]>>();
+  for (const [owner, members] of byOwner) {
+    const frozenMembers = new Map<string, readonly SymbolDefinition[]>();
+    for (const [name, bucket] of members) {
+      frozenMembers.set(name, Object.freeze(bucket.slice()));
+    }
+    frozenByOwner.set(owner, frozenMembers);
+  }
+  return frozenByOwner;
+}
+
+function simpleNameOf(def: SymbolDefinition): string | undefined {
+  const qualifiedName = def.qualifiedName;
+  if (qualifiedName === undefined || qualifiedName.length === 0) return undefined;
+  const dot = qualifiedName.lastIndexOf('.');
+  return dot === -1 ? qualifiedName : qualifiedName.slice(dot + 1);
 }
 
 function buildReferenceIndex(refs: readonly Reference[]): ReferenceIndex {

@@ -215,6 +215,63 @@ class Service {
     expect(returnTypeRefs).toHaveLength(3);
   });
 
+  it('emits interface property and type-alias RHS facts from the already-parsed AST', () => {
+    const source = `
+class User {}
+class Task {}
+class Result {}
+
+interface Runnable {
+  current: User;
+  run(input: Task): Result;
+}
+
+type MaybeUser = User | null;
+`;
+    const tree = parser.parse(source);
+    const result = extractParsedFileWithStats(
+      typescriptProvider,
+      source,
+      'src/interface-facts.ts',
+      SupportedLanguages.TypeScript,
+      tree.rootNode,
+    );
+
+    expect(result.mode).toBe('ast-reused');
+    const parsed = result.parsedFile;
+    expect(parsed).toBeDefined();
+
+    const runnable = parsed!.localDefs.find(
+      (def) => def.type === 'Interface' && def.qualifiedName === 'Runnable',
+    );
+    const current = parsed!.localDefs.find(
+      (def) => def.type === 'Property' && def.qualifiedName === 'Runnable.current',
+    );
+    const maybeUser = parsed!.localDefs.find(
+      (def) => def.type === 'TypeAlias' && def.qualifiedName === 'MaybeUser',
+    );
+
+    expect(runnable).toBeDefined();
+    expect(current?.ownerId).toBe(runnable!.nodeId);
+    expect(current?.declaredType).toBe('User');
+    expect(maybeUser).toBeDefined();
+
+    const typeBindings = new Map<string, string>();
+    for (const scope of parsed!.scopes) {
+      for (const [name, typeRef] of scope.typeBindings) {
+        typeBindings.set(name, typeRef.rawName);
+      }
+    }
+    expect(typeBindings.get('current')).toBe('User');
+    expect(typeBindings.get('input')).toBe('Task');
+
+    const typeRefs = parsed!.referenceSites
+      .filter((site) => site.kind === 'type-reference')
+      .map((site) => site.name)
+      .sort();
+    expect(typeRefs).toEqual(['Result', 'Task', 'User', 'User']);
+  });
+
   it('infers local variable type bindings from local function return annotations', () => {
     const source = `
 class User {}

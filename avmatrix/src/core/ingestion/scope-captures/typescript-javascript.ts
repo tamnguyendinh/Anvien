@@ -160,6 +160,17 @@ function emitDeclaration(node: SyntaxNode, out: CaptureMatch[], filePath: string
     });
     return;
   }
+  if (node.type === 'property_signature') {
+    const nameNode = node.childForFieldName('name');
+    const ownerName = ownerDeclarationNameFor(node);
+    if (ownerName === undefined) return;
+    const qualifiedName = nameNode !== null ? `${ownerName}.${nameNode.text}` : undefined;
+    emitNamedDeclaration(out, node, 'property', nameNode, ownerDefIdFor(node, filePath), {
+      declaredType: declaredTypeNameForNode(node),
+      qualifiedName,
+    });
+    return;
+  }
   if (node.type === 'variable_declarator') {
     const nameNode = node.childForFieldName('name');
     if (nameNode?.type !== 'identifier') return;
@@ -278,6 +289,16 @@ function emitTypeBinding(
     return;
   }
 
+  if (node.type === 'property_signature') {
+    const nameNode = node.childForFieldName('name');
+    const typeNode = node.childForFieldName('type');
+    if (nameNode !== null && typeNode !== null) {
+      out.push(typeBindingMatch(node, nameNode, typeNode, 'annotation'));
+      emitTypeReferenceMatches(typeNode, out);
+    }
+    return;
+  }
+
   if (node.type === 'variable_declarator') {
     const nameNode = node.childForFieldName('name');
     if (nameNode?.type !== 'identifier') return;
@@ -302,6 +323,12 @@ function emitTypeBinding(
     if (returnTypeName !== undefined) {
       out.push(inferredTypeBindingMatch(node, nameNode, returnTypeName, 'return-annotation'));
     }
+  }
+
+  if (node.type === 'type_alias_declaration') {
+    const valueNode = node.childForFieldName('value');
+    if (valueNode !== null) emitTypeReferenceMatches(valueNode, out);
+    return;
   }
 
   if (isFunctionScopeNode(node)) {

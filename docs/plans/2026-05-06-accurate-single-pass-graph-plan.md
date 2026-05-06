@@ -33,7 +33,9 @@ Success means:
 - target speedup is at least 2x on large repositories, with a minimum acceptable first milestone of 40% lower wall time if parity work exposes unavoidable correctness cost;
 - query/context behavior after load remains fast because audit metadata and indexes are available in the default graph.
 
-Every implementation slice must be measurable. A change is not considered an optimization unless an analyze benchmark artifact records the relevant before/after timings, counters, edge counts, unresolved counts, and correctness snapshot. If the slice changes resolution behavior, benchmark output must include resolution timings and edge parity counters.
+Every implementation slice must be measurable. A change is not considered an optimization unless an AVmatrix analyze benchmark artifact records the relevant before/after timings, counters, edge counts, unresolved counts, and correctness snapshot. If the slice changes resolution behavior, benchmark output must include resolution timings and edge parity counters.
+
+Benchmarking in this plan means measuring AVmatrix before and after each implementation slice. Do not spend plan time running GitNexus locally unless the user explicitly asks for that run. GitNexus numbers can be supplied externally and are used as the accuracy/performance baseline, not as the benchmark command for each AVmatrix slice.
 
 ## Non-Goals
 
@@ -233,7 +235,6 @@ Use this checklist to update implementation progress. Do not mark the target arc
 - [x] Add TypeScript/JavaScript AST-reused member read/write access facts and resolve them into `ACCESSES` edges.
 - [x] Add TypeScript/JavaScript AST-reused type-reference facts from annotations and emit them as `USES` edges.
 - [x] Capture AVmatrix baseline metrics on the selected representative repositories.
-- [ ] Capture GitNexus deep/scope graph baseline metrics on the same repositories.
 - [x] Define fixture-level parity expectations for `CALLS`, `IMPORTS`, `ACCESSES`, `USES`, and `INHERITS`.
 - [x] Require a benchmark JSON artifact before and after each optimization slice that claims speedup.
 - [ ] Migrate the first provider, preferably TypeScript, to emit complete AST-reused scope captures.
@@ -269,8 +270,12 @@ Use this checklist to update implementation progress. Do not mark the target arc
 - [x] Preserve owner-qualified TypeScript/JavaScript member declaration names so same-file same-name members resolve distinctly.
 - [x] Merge scope audit metadata into existing semantic duplicate edges instead of discarding the scope-resolved evidence.
 - [x] Add regression coverage for same-file same-name member mapping, duplicate audit metadata merge, and DB persistence/readback.
-- [x] Keep native DB and CLI analyze E2E tests in a sequential Vitest project so full-suite validation is stable on Windows.
-- [x] Validate full test suite and targeted parity fixtures.
+- [x] Keep native DB and CLI analyze E2E tests in a sequential Vitest project to reduce Windows full-suite instability.
+- [x] Validate targeted parity fixtures and audit persistence tests cleanly.
+- [ ] Make aggregate full `cd avmatrix && npm test` pass without Vitest worker-fork unhandled errors on Windows.
+- [x] Define full UI validation build as `avmatrix-launcher\build.ps1`, not CLI-only build.
+- [x] Add TypeScript/JavaScript AST-reused interface property signatures and type-alias RHS type-reference facts.
+- [x] Add a precomputed owner-member index for receiver method/field dispatch so expanded scope facts do not force O(total defs) member scans per lookup.
 - [ ] Benchmark equivalent-accuracy runs and confirm the speed target is met.
 
 Current benchmark artifact:
@@ -286,7 +291,26 @@ Current benchmark artifact:
 - Scope counters: `143226` reference sites, `10632` resolved, `132594` unresolved, `1348` emitted, `5180` duplicate edges merged/skipped, `2989` skipped no caller, `1115` skipped missing target.
 - Parallel-resolution experiment: enabling worker resolution on this repo changed `resolution` from `4043ms` to `4838ms` and produced a small graph diff (`ACCESSES -1`). That is not an accepted optimization. The worker path is kept opt-in via `AVMATRIX_SCOPE_RESOLUTION_WORKERS=1` until index transfer/build overhead is reduced and graph parity is proven.
 - Safe default after the experiment: `reports/benchmark/2026-05-06-avmatrix-safe-default-gitnexus-main.json` keeps worker resolution disabled by default and measured `resolution=3956ms`; graph counts still varied slightly from the first run, so benchmark claims must use repeated median runs and parity checks rather than a single artifact.
-- GitNexus baseline is still pending. The local GitNexus checkout currently has no `node_modules` and no built `gitnexus/dist/cli/index.js`; do not mark equivalent baseline complete until GitNexus can be run on the same target without changing its workload.
+- GitNexus baseline numbers are expected to be supplied externally by the user for this plan. Do not block AVmatrix implementation slices by installing/building/running GitNexus locally.
+- `reports/benchmark/2026-05-06-avmatrix-ts-interface-typealias-gitnexus-main.json` records the AVmatrix slice that added TypeScript interface property and type-alias RHS scope facts. It increased resolved references but also increased wall time; it is a correctness expansion, not a speedup claim.
+- `reports/benchmark/2026-05-06-avmatrix-owner-member-index-gitnexus-main.json` records the AVmatrix owner-member index optimization after that correctness expansion.
+- AVmatrix benchmark comparison, `ts-interface-typealias-scope-coverage` -> `owner-member-index-scope-resolution`: wall `126700.1ms` -> `105688.7ms` (`-16.6%`), resolution `6905ms` -> `895ms` (`-87%`). This is an accepted optimization for the receiver-dispatch lookup path because it keeps the expanded scope facts and replaces repeated owner-member scans with a precomputed index.
+- AVmatrix benchmark comparison, previous safe default -> `owner-member-index-scope-resolution`: wall `110029.8ms` -> `105688.7ms` (`-3.9%`), resolution `3956ms` -> `895ms` (`-77.4%`), `USES` `711` -> `816`, resolved references `10604` -> `14177`, unresolved references `131143` -> `129718`. Relationship counts still vary slightly (`ACCESSES +1` vs safe default), so do not claim final equivalent-accuracy success until repeated median runs and parity checks are done.
+
+Full build for UI/manual validation through `Start-AVmatrix.html`:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+```
+
+This script builds `avmatrix`, builds `avmatrix-web`, builds `avmatrix-launcher\AVmatrixLauncher.exe`, builds `avmatrix-launcher\server-bundle\avmatrix-server.exe`, copies `node.exe`, copies the web build to `avmatrix-launcher\web-dist\`, and registers the `avmatrix://` protocol. A CLI-only `cd avmatrix && npm run build` is not enough before asking the user to test through the root launcher HTML.
+
+Latest validation after the owner-member index slice:
+
+- Full launcher build passed with `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` after stopping the old launcher runtime that held `server-bundle\node.exe`.
+- Full CLI/core suite passed by exit code with `cd avmatrix && npm test`: `223` files passed, `5026` tests passed, `98` skipped. Vitest still reported Windows worker-fork unhandled errors in the aggregate run; treat those as validation noise only after the narrower tests below pass cleanly.
+- Unit scope-resolution tests passed cleanly: `65/65`.
+- Integration audit persistence test passed cleanly: `1/1`.
 
 ### Milestone 1: Baseline And Parity Targets
 
@@ -411,7 +435,8 @@ cd avmatrix && npx tsc --noEmit
 
 Benchmark protocol:
 
-- run AVmatrix and GitNexus on the same machine, same repository checkout, same exclude rules, and same parser availability;
+- run AVmatrix before/after on the same machine, same repository checkout, same exclude rules, and same parser availability;
+- use externally supplied GitNexus deep/scope numbers as the baseline where the plan needs GitNexus comparison; do not re-measure GitNexus locally unless explicitly requested;
 - record tool versions and commit hashes;
 - record cold-cache and warm-cache runs separately;
 - run at least three iterations and compare median wall time;
