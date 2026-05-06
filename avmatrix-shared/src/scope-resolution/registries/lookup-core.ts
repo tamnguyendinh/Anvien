@@ -311,6 +311,15 @@ function lookupReceiverType(
   receiverName: string,
   ctx: RegistryContext,
 ): DefId | undefined {
+  return lookupReceiverTypeInner(startScope, receiverName, ctx, new Set());
+}
+
+function lookupReceiverTypeInner(
+  startScope: ScopeId,
+  receiverName: string,
+  ctx: RegistryContext,
+  visitedReceivers: Set<string>,
+): DefId | undefined {
   let currentId: ScopeId | null = startScope;
   const visited = new Set<ScopeId>();
   while (currentId !== null) {
@@ -322,6 +331,18 @@ function lookupReceiverType(
 
     const typeRef = scope.typeBindings.get(receiverName);
     if (typeRef !== undefined) {
+      if (typeRef.source === 'receiver-propagated') {
+        const key = `${typeRef.declaredAtScope}\0${receiverName}\0${typeRef.rawName}`;
+        if (visitedReceivers.has(key)) return undefined;
+        visitedReceivers.add(key);
+        return lookupReceiverTypeInner(
+          typeRef.declaredAtScope,
+          typeRef.rawName,
+          ctx,
+          visitedReceivers,
+        );
+      }
+
       if (typeRef.source === 'call-return' || typeRef.source === 'call-return-element') {
         const owner = resolveCallReturnOwner(typeRef, ctx, typeRef.source);
         if (owner !== undefined) return owner;

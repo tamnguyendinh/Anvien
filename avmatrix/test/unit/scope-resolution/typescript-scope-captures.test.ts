@@ -481,4 +481,38 @@ async function run() {
       source: 'call-return',
     });
   });
+
+  it('emits receiver-propagated type binding facts for identifier aliases', () => {
+    const source = `
+class User {
+  save() {}
+}
+
+function run(user: User) {
+  const current = user;
+  current.save();
+}
+`;
+    const tree = parser.parse(source);
+    const result = extractParsedFileWithStats(
+      typescriptProvider,
+      source,
+      'src/alias.ts',
+      SupportedLanguages.TypeScript,
+      tree.rootNode,
+    );
+
+    expect(result.mode).toBe('ast-reused');
+    const parsed = result.parsedFile;
+    expect(parsed).toBeDefined();
+
+    const currentBinding = parsed!.scopes
+      .map((scope) => scope.typeBindings.get('current'))
+      .find((binding) => binding !== undefined);
+
+    expect(currentBinding).toMatchObject({
+      rawName: 'user',
+      source: 'receiver-propagated',
+    });
+  });
 });

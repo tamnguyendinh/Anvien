@@ -86,7 +86,8 @@ export function interpretTsJsTypeBinding(match: CaptureMatch): ParsedTypeBinding
       source === 'assignment-inferred' ||
       source === 'return-annotation' ||
       source === 'call-return' ||
-      source === 'call-return-element'
+      source === 'call-return-element' ||
+      source === 'receiver-propagated'
         ? source
         : source === 'parameter-annotation'
           ? 'parameter-annotation'
@@ -350,6 +351,12 @@ function emitTypeBinding(
     const callName = callNameFromCallValue(node.childForFieldName('value'));
     if (callName !== undefined && context.importedLocalNames.has(callName)) {
       out.push(inferredTypeBindingMatch(node, nameNode, callName, 'call-return'));
+      return;
+    }
+
+    const propagatedReceiver = receiverNameFromCopyValue(node.childForFieldName('value'));
+    if (propagatedReceiver !== undefined && propagatedReceiver !== nameNode.text) {
+      out.push(inferredTypeBindingMatch(node, nameNode, propagatedReceiver, 'receiver-propagated'));
     }
   }
 
@@ -445,6 +452,14 @@ function callNameFromCallValue(value: SyntaxNode | null): string | undefined {
   if (expression.type !== 'call_expression') return undefined;
   const fn = unwrapAwaitExpression(expression.childForFieldName('function') ?? expression);
   return fn.type === 'identifier' ? fn.text : undefined;
+}
+
+function receiverNameFromCopyValue(value: SyntaxNode | null): string | undefined {
+  if (value === null) return undefined;
+  const expression = unwrapExpression(value);
+  return expression.type === 'identifier' || expression.type === 'this'
+    ? expression.text
+    : undefined;
 }
 
 function emitTypeReferenceMatches(typeNode: SyntaxNode, out: CaptureMatch[]): void {

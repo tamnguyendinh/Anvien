@@ -593,6 +593,72 @@ async function run() {
     });
   });
 
+  it('resolves receiver-propagated aliases from imported function returns without source rereads', () => {
+    const modelsSource = `
+export class User {
+  save() {}
+}
+
+export function makeUser(): User {
+  return new User();
+}
+`;
+    const appSource = `
+import { makeUser } from './models';
+
+function run() {
+  const user = makeUser();
+  const current = user;
+  current.save();
+}
+`;
+    const modelsParsed = extractParsedFileWithStats(
+      typescriptProvider,
+      modelsSource,
+      'src/models.ts',
+      SupportedLanguages.TypeScript,
+      parser.parse(modelsSource).rootNode,
+    ).parsedFile;
+    const appParsed = extractParsedFileWithStats(
+      typescriptProvider,
+      appSource,
+      'src/app.ts',
+      SupportedLanguages.TypeScript,
+      parser.parse(appSource).rootNode,
+    ).parsedFile;
+    expect(modelsParsed).toBeDefined();
+    expect(appParsed).toBeDefined();
+
+    const indexes = finalizeScopeModel([appParsed!, modelsParsed!], {
+      hooks: {
+        resolveImportTarget: (targetRaw) => (targetRaw === './models' ? 'src/models.ts' : null),
+      },
+    });
+    const result = resolveScopeReferenceSites(indexes);
+
+    const save = modelsParsed!.localDefs.find(
+      (def) => def.type === 'Method' && def.qualifiedName === 'User.save',
+    );
+    const makeUser = modelsParsed!.localDefs.find(
+      (def) => def.type === 'Function' && def.qualifiedName === 'makeUser',
+    );
+    expect(save).toBeDefined();
+    expect(makeUser).toBeDefined();
+
+    const refsToSave = result.referenceIndex.byTargetDef.get(save!.nodeId) ?? [];
+    const refsToMakeUser = result.referenceIndex.byTargetDef.get(makeUser!.nodeId) ?? [];
+
+    expect(refsToSave.map((ref) => ref.kind)).toEqual(['call']);
+    expect(refsToMakeUser.map((ref) => ref.kind)).toEqual(['call']);
+    expect(result.stats).toMatchObject({
+      totalReferenceSites: 4,
+      resolvedReferences: 4,
+      unresolvedReferences: 0,
+      resolvedCalls: 3,
+      resolvedTypeReferences: 1,
+    });
+  });
+
   it('resolves imported iterable function return element bindings without source rereads', () => {
     const modelsSource = `
 export class User {
