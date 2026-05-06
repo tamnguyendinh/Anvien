@@ -563,4 +563,49 @@ function run(user: User) {
       source: 'method-return',
     });
   });
+
+  it('emits object-pattern field-access bindings from the already-parsed AST', () => {
+    const source = `
+class Profile {
+  save() {}
+}
+
+class User {
+  profile: Profile;
+  displayName: string;
+}
+
+function run(user: User) {
+  const { profile, displayName: name } = user;
+}
+`;
+    const tree = parser.parse(source);
+    const result = extractParsedFileWithStats(
+      typescriptProvider,
+      source,
+      'src/destructure.ts',
+      SupportedLanguages.TypeScript,
+      tree.rootNode,
+    );
+
+    expect(result.mode).toBe('ast-reused');
+    const parsed = result.parsedFile;
+    expect(parsed).toBeDefined();
+
+    const typeBindings = new Map<string, { rawName: string; source: string }>();
+    for (const scope of parsed!.scopes) {
+      for (const [name, typeRef] of scope.typeBindings) {
+        typeBindings.set(name, { rawName: typeRef.rawName, source: typeRef.source });
+      }
+    }
+
+    expect(typeBindings.get('profile')).toEqual({
+      rawName: 'user.profile',
+      source: 'field-access',
+    });
+    expect(typeBindings.get('name')).toEqual({
+      rawName: 'user.displayName',
+      source: 'field-access',
+    });
+  });
 });

@@ -326,6 +326,10 @@ function emitTypeBinding(
 
   if (node.type === 'variable_declarator') {
     const nameNode = node.childForFieldName('name');
+    if (nameNode?.type === 'object_pattern') {
+      emitObjectPatternFieldBindings(node, nameNode, out);
+      return;
+    }
     if (nameNode?.type !== 'identifier') return;
 
     const typeNode = node.childForFieldName('type');
@@ -397,6 +401,33 @@ function emitTypeBinding(
   if (isFunctionScopeNode(node)) {
     const returnTypeNode = node.childForFieldName('return_type');
     if (returnTypeNode !== null) emitTypeReferenceMatches(returnTypeNode, out);
+  }
+}
+
+function emitObjectPatternFieldBindings(
+  node: SyntaxNode,
+  nameNode: SyntaxNode,
+  out: CaptureMatch[],
+): void {
+  const receiver = receiverNameFromCopyValue(node.childForFieldName('value'));
+  if (receiver === undefined) return;
+
+  for (let index = 0; index < nameNode.namedChildCount; index++) {
+    const child = nameNode.namedChild(index);
+    if (child === null) continue;
+
+    if (child.type === 'shorthand_property_identifier_pattern') {
+      out.push(inferredTypeBindingMatch(child, child, `${receiver}.${child.text}`, 'field-access'));
+      continue;
+    }
+
+    if (child.type !== 'pair_pattern') continue;
+    const keyNode = child.childForFieldName('key');
+    const valueNode = child.childForFieldName('value');
+    if (keyNode === null || valueNode?.type !== 'identifier') continue;
+    out.push(
+      inferredTypeBindingMatch(child, valueNode, `${receiver}.${keyNode.text}`, 'field-access'),
+    );
   }
 }
 

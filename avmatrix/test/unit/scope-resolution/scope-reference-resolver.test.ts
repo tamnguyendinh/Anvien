@@ -736,6 +736,64 @@ function run(user: User) {
     });
   });
 
+  it('resolves object-pattern field-access bindings from imported receiver types without source rereads', () => {
+    const modelsSource = `
+export class Profile {
+  save() {}
+}
+
+export class User {
+  profile: Profile;
+}
+`;
+    const appSource = `
+import { User } from './models';
+
+function run(user: User) {
+  const { profile } = user;
+  profile.save();
+}
+`;
+    const modelsParsed = extractParsedFileWithStats(
+      typescriptProvider,
+      modelsSource,
+      'src/models.ts',
+      SupportedLanguages.TypeScript,
+      parser.parse(modelsSource).rootNode,
+    ).parsedFile;
+    const appParsed = extractParsedFileWithStats(
+      typescriptProvider,
+      appSource,
+      'src/app.ts',
+      SupportedLanguages.TypeScript,
+      parser.parse(appSource).rootNode,
+    ).parsedFile;
+    expect(modelsParsed).toBeDefined();
+    expect(appParsed).toBeDefined();
+
+    const indexes = finalizeScopeModel([appParsed!, modelsParsed!], {
+      hooks: {
+        resolveImportTarget: (targetRaw) => (targetRaw === './models' ? 'src/models.ts' : null),
+      },
+    });
+    const result = resolveScopeReferenceSites(indexes);
+
+    const save = modelsParsed!.localDefs.find(
+      (def) => def.type === 'Method' && def.qualifiedName === 'Profile.save',
+    );
+    expect(save).toBeDefined();
+
+    const refsToSave = result.referenceIndex.byTargetDef.get(save!.nodeId) ?? [];
+    expect(refsToSave.map((ref) => ref.kind)).toEqual(['call']);
+    expect(result.stats).toMatchObject({
+      totalReferenceSites: 3,
+      resolvedReferences: 3,
+      unresolvedReferences: 0,
+      resolvedCalls: 1,
+      resolvedTypeReferences: 2,
+    });
+  });
+
   it('resolves imported iterable function return element bindings without source rereads', () => {
     const modelsSource = `
 export class User {
