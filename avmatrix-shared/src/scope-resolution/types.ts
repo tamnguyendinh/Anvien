@@ -300,6 +300,7 @@ export interface TypeRef {
     | 'self'
     | 'assignment-inferred'
     | 'constructor-inferred'
+    | 'call-return'
     | 'receiver-propagated';
   /** Reserved for V2+: generic type arguments (`List<User>` → `[TypeRef('User')]`). V1 ignores. */
   readonly typeArgs?: readonly TypeRef[];

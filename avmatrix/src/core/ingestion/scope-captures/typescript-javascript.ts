@@ -16,6 +16,7 @@ interface CaptureOptions {
 
 interface ScopeCaptureContext {
   readonly returnTypesByCallableName: ReadonlyMap<string, string>;
+  readonly importedLocalNames: ReadonlySet<string>;
 }
 
 export function emitTsJsScopeCapturesFromTree(
@@ -83,7 +84,8 @@ export function interpretTsJsTypeBinding(match: CaptureMatch): ParsedTypeBinding
     source:
       source === 'constructor-inferred' ||
       source === 'assignment-inferred' ||
-      source === 'return-annotation'
+      source === 'return-annotation' ||
+      source === 'call-return'
         ? source
         : source === 'parameter-annotation'
           ? 'parameter-annotation'
@@ -264,6 +266,25 @@ function emitImport(node: SyntaxNode, out: CaptureMatch[]): void {
   }
 }
 
+function importedLocalNamesFromStatement(node: SyntaxNode): readonly string[] {
+  const importClause = firstNamedChildOfType(node, 'import_clause');
+  if (importClause === undefined) return [];
+
+  const out: string[] = [];
+  const defaultName = directNamedChildOfType(importClause, 'identifier')?.text;
+  if (defaultName !== undefined) out.push(defaultName);
+
+  for (const specifier of descendantsOfType(importClause, 'import_specifier')) {
+    const names = namedIdentifierChildren(specifier);
+    const imported = specifier.childForFieldName('name')?.text ?? names[0]?.text;
+    if (imported === undefined) continue;
+    const alias = names.length > 1 ? names[names.length - 1]!.text : undefined;
+    out.push(alias ?? imported);
+  }
+
+  return out;
+}
+
 function emitTypeBinding(
   node: SyntaxNode,
   out: CaptureMatch[],
@@ -322,6 +343,12 @@ function emitTypeBinding(
     );
     if (returnTypeName !== undefined) {
       out.push(inferredTypeBindingMatch(node, nameNode, returnTypeName, 'return-annotation'));
+      return;
+    }
+
+    const callName = callNameFromCallValue(node.childForFieldName('value'));
+    if (callName !== undefined && context.importedLocalNames.has(callName)) {
+      out.push(inferredTypeBindingMatch(node, nameNode, callName, 'call-return'));
     }
   }
 
@@ -339,6 +366,7 @@ function emitTypeBinding(
 
 function buildScopeCaptureContext(rootNode: SyntaxNode): ScopeCaptureContext {
   const returnTypesByCallableName = new Map<string, string>();
+  const importedLocalNames = new Set<string>();
   walk(rootNode, (node) => {
     if (isFunctionScopeNode(node)) {
       const returnType = returnTypeNameForCallable(node);
@@ -355,8 +383,14 @@ function buildScopeCaptureContext(rootNode: SyntaxNode): ScopeCaptureContext {
         returnTypesByCallableName.set(name.text, returnType);
       }
     }
+
+    if (node.type === 'import_statement') {
+      for (const localName of importedLocalNamesFromStatement(node)) {
+        importedLocalNames.add(localName);
+      }
+    }
   });
-  return { returnTypesByCallableName };
+  return { returnTypesByCallableName, importedLocalNames };
 }
 
 function returnTypeNameForCallable(node: SyntaxNode): string | undefined {
@@ -388,6 +422,14 @@ function returnTypeNameFromCallValue(
   const fn = unwrapAwaitExpression(expression.childForFieldName('function') ?? expression);
   if (fn.type === 'identifier') return returnTypesByCallableName.get(fn.text);
   return undefined;
+}
+
+function callNameFromCallValue(value: SyntaxNode | null): string | undefined {
+  if (value === null) return undefined;
+  const expression = unwrapExpression(value);
+  if (expression.type !== 'call_expression') return undefined;
+  const fn = unwrapAwaitExpression(expression.childForFieldName('function') ?? expression);
+  return fn.type === 'identifier' ? fn.text : undefined;
 }
 
 function emitTypeReferenceMatches(typeNode: SyntaxNode, out: CaptureMatch[]): void {

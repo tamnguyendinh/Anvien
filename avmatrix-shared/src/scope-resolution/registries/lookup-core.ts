@@ -75,6 +75,7 @@ import type {
   Resolution,
   Scope,
   ScopeId,
+  TypeRef,
 } from '../types.js';
 import type { OriginForTieBreak } from '../origin-priority.js';
 import { composeEvidence, confidenceFromEvidence, type RawSignals } from './evidence.js';
@@ -296,6 +297,14 @@ function resolveReceiverOwner(
 }
 
 const IMPLICIT_RECEIVERS: readonly string[] = Object.freeze(['self', 'this']);
+const CALLABLE_RETURN_KINDS: ReadonlySet<NodeLabel> = new Set<NodeLabel>([
+  'Function',
+  'Method',
+  'Constructor',
+]);
+const CALL_RETURN_STRICT_ORIGINS: ReadonlySet<BindingRef['origin']> = new Set<BindingRef['origin']>(
+  ['local', 'import', 'namespace', 'reexport'],
+);
 
 function lookupReceiverType(
   startScope: ScopeId,
@@ -313,6 +322,13 @@ function lookupReceiverType(
 
     const typeRef = scope.typeBindings.get(receiverName);
     if (typeRef !== undefined) {
+      if (typeRef.source === 'call-return') {
+        const owner = resolveCallReturnOwner(typeRef, ctx);
+        if (owner !== undefined) return owner;
+        currentId = scope.parent;
+        continue;
+      }
+
       const resolved = resolveTypeRef(typeRef, {
         scopes: ctx.scopes,
         defIndex: ctx.defs,
@@ -327,6 +343,57 @@ function lookupReceiverType(
       // Ambiguous (≥ 2) or missing (0): cannot claim the receiver type.
       return undefined;
     }
+    currentId = scope.parent;
+  }
+  return undefined;
+}
+
+function resolveCallReturnOwner(typeRef: TypeRef, ctx: RegistryContext): DefId | undefined {
+  const callable = resolveCallableBinding(typeRef.rawName, typeRef.declaredAtScope, ctx);
+  if (callable?.returnType === undefined) return undefined;
+
+  const returnTypeName = extractReturnTypeName(callable.returnType);
+  if (returnTypeName === undefined) return undefined;
+
+  const returnScope = ctx.moduleScopes.get(callable.filePath) ?? typeRef.declaredAtScope;
+  const resolved = resolveTypeRef(
+    {
+      rawName: returnTypeName,
+      declaredAtScope: returnScope,
+      source: 'return-annotation',
+    },
+    {
+      scopes: ctx.scopes,
+      defIndex: ctx.defs,
+      qualifiedNameIndex: ctx.qualifiedNames,
+    },
+  );
+  return resolved?.nodeId;
+}
+
+function resolveCallableBinding(
+  name: string,
+  startScope: ScopeId,
+  ctx: RegistryContext,
+): SymbolDefinition | undefined {
+  let currentId: ScopeId | null = startScope;
+  const visited = new Set<ScopeId>();
+  while (currentId !== null) {
+    if (visited.has(currentId)) return undefined;
+    visited.add(currentId);
+
+    const scope = ctx.scopes.getScope(currentId);
+    if (scope === undefined) return undefined;
+
+    const bindings = scope.bindings.get(name);
+    if (bindings !== undefined && bindings.length > 0) {
+      for (const binding of bindings) {
+        if (!CALL_RETURN_STRICT_ORIGINS.has(binding.origin)) continue;
+        if (CALLABLE_RETURN_KINDS.has(binding.def.type)) return binding.def;
+      }
+      return undefined;
+    }
+
     currentId = scope.parent;
   }
   return undefined;
@@ -357,6 +424,55 @@ function simpleNameOf(def: SymbolDefinition): string | undefined {
   if (def.qualifiedName === undefined || def.qualifiedName.length === 0) return undefined;
   const dot = def.qualifiedName.lastIndexOf('.');
   return dot === -1 ? def.qualifiedName : def.qualifiedName.slice(dot + 1);
+}
+
+function extractReturnTypeName(raw: string, depth = 0): string | undefined {
+  if (depth > 10 || raw.length > 2048) return undefined;
+  let text = raw.trim();
+  if (text.length === 0) return undefined;
+
+  text = text.replace(/^[&*]+\s*(mut\s+)?/, '').replace(/\?$/, '');
+
+  if (text.includes('|')) {
+    const parts = text
+      .split('|')
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0 && !NULLABLE_RETURN_KEYWORDS.has(part));
+    if (parts.length !== 1) return undefined;
+    text = parts[0]!;
+  }
+
+  const generic = text.match(/^(\w+)\s*<(.+)>$/);
+  if (generic !== null) {
+    const [, base, args] = generic;
+    if (WRAPPER_RETURN_TYPES.has(base)) {
+      return extractReturnTypeName(firstGenericTypeArg(args), depth + 1);
+    }
+    return PRIMITIVE_RETURN_TYPES.has(base.toLowerCase()) ? undefined : base;
+  }
+
+  if (WRAPPER_RETURN_TYPES.has(text)) return undefined;
+
+  if (text.includes('::') || text.includes('.') || text.includes('\\')) {
+    text = text.split(/::|[.\\]/).pop() ?? '';
+  }
+
+  if (PRIMITIVE_RETURN_TYPES.has(text) || PRIMITIVE_RETURN_TYPES.has(text.toLowerCase())) {
+    return undefined;
+  }
+  if (!/^[A-Z_]\w*$/.test(text) || text.length > 512) return undefined;
+  return text;
+}
+
+function firstGenericTypeArg(args: string): string {
+  let depth = 0;
+  for (let index = 0; index < args.length; index++) {
+    const char = args[index];
+    if (char === '<') depth++;
+    else if (char === '>') depth--;
+    else if (char === ',' && depth === 0) return args.slice(0, index).trim();
+  }
+  return args.trim();
 }
 
 function recordTypeBindingHit(
@@ -467,3 +583,58 @@ function rankCandidates(perCandidate: Map<DefId, CandidateState>): readonly Reso
 
 const EMPTY: readonly Resolution[] = Object.freeze([]);
 const EMPTY_DEFS: readonly SymbolDefinition[] = Object.freeze([]);
+
+const NULLABLE_RETURN_KEYWORDS: ReadonlySet<string> = new Set([
+  'null',
+  'undefined',
+  'void',
+  'None',
+  'nil',
+]);
+
+const PRIMITIVE_RETURN_TYPES: ReadonlySet<string> = new Set([
+  'string',
+  'number',
+  'boolean',
+  'void',
+  'int',
+  'float',
+  'double',
+  'long',
+  'short',
+  'byte',
+  'char',
+  'bool',
+  'str',
+  'i8',
+  'i16',
+  'i32',
+  'i64',
+  'u8',
+  'u16',
+  'u32',
+  'u64',
+  'f32',
+  'f64',
+  'usize',
+  'isize',
+  'undefined',
+  'null',
+  'none',
+  'nil',
+]);
+
+const WRAPPER_RETURN_TYPES: ReadonlySet<string> = new Set([
+  'Promise',
+  'Observable',
+  'Future',
+  'CompletableFuture',
+  'Task',
+  'ValueTask',
+  'Option',
+  'Some',
+  'Optional',
+  'Maybe',
+  'Result',
+  'Either',
+]);

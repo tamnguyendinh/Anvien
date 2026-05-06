@@ -317,4 +317,36 @@ function run() {
     expect(makeUser?.returnType).toBe('User');
     expect(makeOther?.returnType).toBe('User');
   });
+
+  it('emits call-return type binding facts when a variable is assigned from an unresolved call', () => {
+    const source = `
+import { makeUser } from './models';
+
+function run() {
+  const user = makeUser();
+  user.save();
+}
+`;
+    const tree = parser.parse(source);
+    const result = extractParsedFileWithStats(
+      typescriptProvider,
+      source,
+      'src/app.ts',
+      SupportedLanguages.TypeScript,
+      tree.rootNode,
+    );
+
+    expect(result.mode).toBe('ast-reused');
+    const parsed = result.parsedFile;
+    expect(parsed).toBeDefined();
+
+    const userBinding = parsed!.scopes
+      .map((scope) => scope.typeBindings.get('user'))
+      .find((binding) => binding !== undefined);
+
+    expect(userBinding).toMatchObject({
+      rawName: 'makeUser',
+      source: 'call-return',
+    });
+  });
 });

@@ -263,6 +263,7 @@ Use this checklist to update implementation progress. Do not mark the target arc
 - [x] Expose scope-resolution audit metadata in MCP context/impact readers, not only graph read-back.
 - [x] Attach audit metadata to finalized scope `IMPORTS` edges so import parity is inspectable after graph emission.
 - [x] Add legacy relationship-schema fallback so existing indexes without `resolutionSource`, `evidence`, or `fileHash` remain queryable.
+- [x] Move the first imported function return-type receiver propagation slice into AST-reused `call-return` scope facts and scope lookup without source rereads.
 - [ ] Move useful `crossFilePhase` type propagation into `resolutionPhase`.
 - [ ] Retire or narrow `crossFilePhase` only after parity is proven.
 - [x] Add duplicate-edge checks so legacy and scope-aware paths do not emit overlapping edges.
@@ -283,6 +284,7 @@ Current benchmark artifact:
 - `reports/benchmark/2026-05-06-avmatrix-current-gitnexus-main.json`
 - `reports/benchmark/2026-05-06-avmatrix-parallel-resolution-gitnexus-main.json`
 - `reports/benchmark/2026-05-06-avmatrix-safe-default-gitnexus-main.json`
+- `reports/benchmark/2026-05-06-avmatrix-call-return-gitnexus-main.json`
 - Target: `E:\Lap_trinh\GitNexus-main` using `--skip-git` because that local copy has no `.git` directory.
 - Runtime command used built AVmatrix CLI with `--skip-agents-md --no-stats --benchmark-json` and `node --stack-size=4096`; the default stack failed in parse with `Maximum call stack size exceeded`, so the stack-size requirement is part of the recorded run context.
 - Result: `110714.1ms` total wall time, `847` files, `19538` nodes, `31037` persisted relationships.
@@ -291,11 +293,12 @@ Current benchmark artifact:
 - Scope counters: `143226` reference sites, `10632` resolved, `132594` unresolved, `1348` emitted, `5180` duplicate edges merged/skipped, `2989` skipped no caller, `1115` skipped missing target.
 - Parallel-resolution experiment: enabling worker resolution on this repo changed `resolution` from `4043ms` to `4838ms` and produced a small graph diff (`ACCESSES -1`). That is not an accepted optimization. The worker path is kept opt-in via `AVMATRIX_SCOPE_RESOLUTION_WORKERS=1` until index transfer/build overhead is reduced and graph parity is proven.
 - Safe default after the experiment: `reports/benchmark/2026-05-06-avmatrix-safe-default-gitnexus-main.json` keeps worker resolution disabled by default and measured `resolution=3956ms`; graph counts still varied slightly from the first run, so benchmark claims must use repeated median runs and parity checks rather than a single artifact.
-- GitNexus baseline numbers are expected to be supplied externally by the user for this plan. Do not block AVmatrix implementation slices by installing/building/running GitNexus locally.
 - `reports/benchmark/2026-05-06-avmatrix-ts-interface-typealias-gitnexus-main.json` records the AVmatrix slice that added TypeScript interface property and type-alias RHS scope facts. It increased resolved references but also increased wall time; it is a correctness expansion, not a speedup claim.
 - `reports/benchmark/2026-05-06-avmatrix-owner-member-index-gitnexus-main.json` records the AVmatrix owner-member index optimization after that correctness expansion.
 - AVmatrix benchmark comparison, `ts-interface-typealias-scope-coverage` -> `owner-member-index-scope-resolution`: wall `126700.1ms` -> `105688.7ms` (`-16.6%`), resolution `6905ms` -> `895ms` (`-87%`). This is an accepted optimization for the receiver-dispatch lookup path because it keeps the expanded scope facts and replaces repeated owner-member scans with a precomputed index.
 - AVmatrix benchmark comparison, previous safe default -> `owner-member-index-scope-resolution`: wall `110029.8ms` -> `105688.7ms` (`-3.9%`), resolution `3956ms` -> `895ms` (`-77.4%`), `USES` `711` -> `816`, resolved references `10604` -> `14177`, unresolved references `131143` -> `129718`. Relationship counts still vary slightly (`ACCESSES +1` vs safe default), so do not claim final equivalent-accuracy success until repeated median runs and parity checks are done.
+- `reports/benchmark/2026-05-06-avmatrix-call-return-gitnexus-main.json` records the first cross-file return-type migration slice: TypeScript/JavaScript emits AST-reused `call-return` type bindings for variables assigned from imported function calls, and scope lookup resolves the imported callable's `returnType` through finalized bindings. Unresolved `call-return` facts fail open to the previous lookup behavior so they do not suppress existing fallback resolution.
+- AVmatrix benchmark comparison, `owner-member-index-scope-resolution` -> `call-return-type-binding-scope-resolution`: wall `105688.7ms` -> `107954.6ms` (`+2.1%`), resolution `895ms` -> `1041ms` (`+16.3%`), crossFile `19001ms` -> `18808ms` (`-1.0%`), `ACCESSES` `181` -> `185`, resolved references `14177` -> `14236`, unresolved references `129718` -> `129036`, scope reference sites `143895` -> `143272`, scope-emitted edges `1450` -> `1454`, and crossFile reprocessed files `188` -> `187`. This is a correctness/architecture migration slice, not a speedup claim; sample the new `ACCESSES` edges, explain the reference-site count movement, and use repeated median benchmark runs before treating it as equivalent-accuracy progress toward retiring `crossFilePhase`.
 
 Full build for UI/manual validation through `Start-AVmatrix.html`:
 
@@ -305,12 +308,11 @@ powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
 
 This script builds `avmatrix`, builds `avmatrix-web`, builds `avmatrix-launcher\AVmatrixLauncher.exe`, builds `avmatrix-launcher\server-bundle\avmatrix-server.exe`, copies `node.exe`, copies the web build to `avmatrix-launcher\web-dist\`, and registers the `avmatrix://` protocol. A CLI-only `cd avmatrix && npm run build` is not enough before asking the user to test through the root launcher HTML.
 
-Latest validation after the owner-member index slice:
+Latest validation after the imported call-return slice:
 
-- Full launcher build passed with `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` after stopping the old launcher runtime that held `server-bundle\node.exe`.
-- Full CLI/core suite passed by exit code with `cd avmatrix && npm test`: `223` files passed, `5026` tests passed, `98` skipped. Vitest still reported Windows worker-fork unhandled errors in the aggregate run; treat those as validation noise only after the narrower tests below pass cleanly.
-- Unit scope-resolution tests passed cleanly: `65/65`.
-- Integration audit persistence test passed cleanly: `1/1`.
+- Full launcher build passed with `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- Targeted unit scope-resolution tests passed cleanly: `70/70` across `typescript-scope-captures`, `scope-reference-resolver`, `registries`, and `resolve-type-ref`.
+- The last aggregate CLI/core suite status remains the previous run: `cd avmatrix && npm test` exited 0 with `223` files passed, `5026` tests passed, `98` skipped, but Vitest still reported Windows worker-fork unhandled errors. The aggregate suite was not rerun after this slice, so the checklist item for a clean aggregate full suite remains open.
 
 ### Milestone 1: Baseline And Parity Targets
 
