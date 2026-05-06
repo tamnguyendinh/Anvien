@@ -87,6 +87,8 @@ export function interpretTsJsTypeBinding(match: CaptureMatch): ParsedTypeBinding
       source === 'return-annotation' ||
       source === 'call-return' ||
       source === 'call-return-element' ||
+      source === 'field-access' ||
+      source === 'method-return' ||
       source === 'receiver-propagated'
         ? source
         : source === 'parameter-annotation'
@@ -354,6 +356,18 @@ function emitTypeBinding(
       return;
     }
 
+    const methodReturn = memberMethodNameFromCallValue(node.childForFieldName('value'));
+    if (methodReturn !== undefined) {
+      out.push(inferredTypeBindingMatch(node, nameNode, methodReturn, 'method-return'));
+      return;
+    }
+
+    const fieldAccess = memberFieldNameFromValue(node.childForFieldName('value'));
+    if (fieldAccess !== undefined) {
+      out.push(inferredTypeBindingMatch(node, nameNode, fieldAccess, 'field-access'));
+      return;
+    }
+
     const propagatedReceiver = receiverNameFromCopyValue(node.childForFieldName('value'));
     if (propagatedReceiver !== undefined && propagatedReceiver !== nameNode.text) {
       out.push(inferredTypeBindingMatch(node, nameNode, propagatedReceiver, 'receiver-propagated'));
@@ -452,6 +466,32 @@ function callNameFromCallValue(value: SyntaxNode | null): string | undefined {
   if (expression.type !== 'call_expression') return undefined;
   const fn = unwrapAwaitExpression(expression.childForFieldName('function') ?? expression);
   return fn.type === 'identifier' ? fn.text : undefined;
+}
+
+function memberMethodNameFromCallValue(value: SyntaxNode | null): string | undefined {
+  if (value === null) return undefined;
+  const expression = unwrapAwaitExpression(unwrapExpression(value));
+  if (expression.type !== 'call_expression') return undefined;
+  const fn = unwrapAwaitExpression(expression.childForFieldName('function') ?? expression);
+  if (fn.type !== 'member_expression') return undefined;
+  const receiver = fn.childForFieldName('object');
+  const property = fn.childForFieldName('property');
+  if (receiver === null || property === null) return undefined;
+  if (receiver.type !== 'identifier' && receiver.type !== 'this') return undefined;
+  if (property.type !== 'property_identifier') return undefined;
+  return `${receiver.text}.${property.text}`;
+}
+
+function memberFieldNameFromValue(value: SyntaxNode | null): string | undefined {
+  if (value === null) return undefined;
+  const expression = unwrapExpression(value);
+  if (expression.type !== 'member_expression') return undefined;
+  const receiver = expression.childForFieldName('object');
+  const property = expression.childForFieldName('property');
+  if (receiver === null || property === null) return undefined;
+  if (receiver.type !== 'identifier' && receiver.type !== 'this') return undefined;
+  if (property.type !== 'property_identifier') return undefined;
+  return `${receiver.text}.${property.text}`;
 }
 
 function receiverNameFromCopyValue(value: SyntaxNode | null): string | undefined {

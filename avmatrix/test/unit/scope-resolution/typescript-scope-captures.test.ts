@@ -515,4 +515,52 @@ function run(user: User) {
       source: 'receiver-propagated',
     });
   });
+
+  it('emits field-access and method-return binding facts from the already-parsed AST', () => {
+    const source = `
+class Profile {
+  save() {}
+}
+
+class User {
+  profile: Profile;
+  getProfile(): Profile {
+    return this.profile;
+  }
+}
+
+function run(user: User) {
+  const fromField = user.profile;
+  const fromMethod = user.getProfile();
+}
+`;
+    const tree = parser.parse(source);
+    const result = extractParsedFileWithStats(
+      typescriptProvider,
+      source,
+      'src/member-derived.ts',
+      SupportedLanguages.TypeScript,
+      tree.rootNode,
+    );
+
+    expect(result.mode).toBe('ast-reused');
+    const parsed = result.parsedFile;
+    expect(parsed).toBeDefined();
+
+    const typeBindings = new Map<string, { rawName: string; source: string }>();
+    for (const scope of parsed!.scopes) {
+      for (const [name, typeRef] of scope.typeBindings) {
+        typeBindings.set(name, { rawName: typeRef.rawName, source: typeRef.source });
+      }
+    }
+
+    expect(typeBindings.get('fromField')).toEqual({
+      rawName: 'user.profile',
+      source: 'field-access',
+    });
+    expect(typeBindings.get('fromMethod')).toEqual({
+      rawName: 'user.getProfile',
+      source: 'method-return',
+    });
+  });
 });

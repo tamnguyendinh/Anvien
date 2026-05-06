@@ -659,6 +659,83 @@ function run() {
     });
   });
 
+  it('resolves field-access and method-return bindings from imported receiver types without source rereads', () => {
+    const modelsSource = `
+export class Profile {
+  save() {}
+}
+
+export class User {
+  profile: Profile;
+  getProfile(): Profile {
+    return this.profile;
+  }
+}
+`;
+    const appSource = `
+import { User } from './models';
+
+function run(user: User) {
+  const fromField = user.profile;
+  fromField.save();
+  const fromMethod = user.getProfile();
+  fromMethod.save();
+}
+`;
+    const modelsParsed = extractParsedFileWithStats(
+      typescriptProvider,
+      modelsSource,
+      'src/models.ts',
+      SupportedLanguages.TypeScript,
+      parser.parse(modelsSource).rootNode,
+    ).parsedFile;
+    const appParsed = extractParsedFileWithStats(
+      typescriptProvider,
+      appSource,
+      'src/app.ts',
+      SupportedLanguages.TypeScript,
+      parser.parse(appSource).rootNode,
+    ).parsedFile;
+    expect(modelsParsed).toBeDefined();
+    expect(appParsed).toBeDefined();
+
+    const indexes = finalizeScopeModel([appParsed!, modelsParsed!], {
+      hooks: {
+        resolveImportTarget: (targetRaw) => (targetRaw === './models' ? 'src/models.ts' : null),
+      },
+    });
+    const result = resolveScopeReferenceSites(indexes);
+
+    const save = modelsParsed!.localDefs.find(
+      (def) => def.type === 'Method' && def.qualifiedName === 'Profile.save',
+    );
+    const profile = modelsParsed!.localDefs.find(
+      (def) => def.type === 'Property' && def.qualifiedName === 'User.profile',
+    );
+    const getProfile = modelsParsed!.localDefs.find(
+      (def) => def.type === 'Method' && def.qualifiedName === 'User.getProfile',
+    );
+    expect(save).toBeDefined();
+    expect(profile).toBeDefined();
+    expect(getProfile).toBeDefined();
+
+    const refsToSave = result.referenceIndex.byTargetDef.get(save!.nodeId) ?? [];
+    const refsToProfile = result.referenceIndex.byTargetDef.get(profile!.nodeId) ?? [];
+    const refsToGetProfile = result.referenceIndex.byTargetDef.get(getProfile!.nodeId) ?? [];
+
+    expect(refsToSave.map((ref) => ref.kind)).toEqual(['call', 'call']);
+    expect(refsToProfile.map((ref) => ref.kind)).toEqual(['read', 'read']);
+    expect(refsToGetProfile.map((ref) => ref.kind)).toEqual(['call']);
+    expect(result.stats).toMatchObject({
+      totalReferenceSites: 8,
+      resolvedReferences: 8,
+      unresolvedReferences: 0,
+      resolvedCalls: 3,
+      resolvedAccesses: 2,
+      resolvedTypeReferences: 3,
+    });
+  });
+
   it('resolves imported iterable function return element bindings without source rereads', () => {
     const modelsSource = `
 export class User {

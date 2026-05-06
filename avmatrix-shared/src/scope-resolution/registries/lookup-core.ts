@@ -305,6 +305,17 @@ const CALLABLE_RETURN_KINDS: ReadonlySet<NodeLabel> = new Set<NodeLabel>([
 const CALL_RETURN_STRICT_ORIGINS: ReadonlySet<BindingRef['origin']> = new Set<BindingRef['origin']>(
   ['local', 'import', 'namespace', 'reexport'],
 );
+const FIELD_DERIVED_KINDS: ReadonlySet<NodeLabel> = new Set<NodeLabel>([
+  'Variable',
+  'Property',
+  'Const',
+  'Static',
+]);
+const METHOD_DERIVED_KINDS: ReadonlySet<NodeLabel> = new Set<NodeLabel>([
+  'Function',
+  'Method',
+  'Constructor',
+]);
 
 function lookupReceiverType(
   startScope: ScopeId,
@@ -320,6 +331,10 @@ function lookupReceiverTypeInner(
   ctx: RegistryContext,
   visitedReceivers: Set<string>,
 ): DefId | undefined {
+  const receiverVisitKey = `${startScope}\0${receiverName}`;
+  if (visitedReceivers.has(receiverVisitKey)) return undefined;
+  visitedReceivers.add(receiverVisitKey);
+
   let currentId: ScopeId | null = startScope;
   const visited = new Set<ScopeId>();
   while (currentId !== null) {
@@ -341,6 +356,13 @@ function lookupReceiverTypeInner(
           ctx,
           visitedReceivers,
         );
+      }
+
+      if (typeRef.source === 'field-access' || typeRef.source === 'method-return') {
+        const owner = resolveMemberDerivedOwner(typeRef, ctx, visitedReceivers);
+        if (owner !== undefined) return owner;
+        currentId = scope.parent;
+        continue;
       }
 
       if (typeRef.source === 'call-return' || typeRef.source === 'call-return-element') {
@@ -397,6 +419,79 @@ function resolveCallReturnOwner(
     },
   );
   return resolved?.nodeId;
+}
+
+function resolveMemberDerivedOwner(
+  typeRef: TypeRef,
+  ctx: RegistryContext,
+  visitedReceivers: Set<string>,
+): DefId | undefined {
+  const member = splitMemberDerivedRawName(typeRef.rawName);
+  if (member === undefined) return undefined;
+
+  const receiverOwner = lookupReceiverTypeInner(
+    typeRef.declaredAtScope,
+    member.receiverName,
+    ctx,
+    visitedReceivers,
+  );
+  if (receiverOwner === undefined) return undefined;
+
+  const acceptedKinds =
+    typeRef.source === 'field-access' ? FIELD_DERIVED_KINDS : METHOD_DERIVED_KINDS;
+  const valueType = uniqueMemberValueType(receiverOwner, member.memberName, acceptedKinds, ctx);
+  if (valueType === undefined) return undefined;
+
+  const memberScope = ctx.moduleScopes.get(valueType.filePath) ?? typeRef.declaredAtScope;
+  const resolved = resolveTypeRef(
+    {
+      rawName: valueType.typeName,
+      declaredAtScope: memberScope,
+      source: typeRef.source === 'field-access' ? 'annotation' : 'return-annotation',
+    },
+    {
+      scopes: ctx.scopes,
+      defIndex: ctx.defs,
+      qualifiedNameIndex: ctx.qualifiedNames,
+    },
+  );
+  return resolved?.nodeId;
+}
+
+function splitMemberDerivedRawName(
+  rawName: string,
+): { receiverName: string; memberName: string } | undefined {
+  const dot = rawName.lastIndexOf('.');
+  if (dot <= 0 || dot >= rawName.length - 1) return undefined;
+  return { receiverName: rawName.slice(0, dot), memberName: rawName.slice(dot + 1) };
+}
+
+function uniqueMemberValueType(
+  ownerDefId: DefId,
+  memberName: string,
+  acceptedKinds: ReadonlySet<NodeLabel>,
+  ctx: RegistryContext,
+): { typeName: string; filePath: string } | undefined {
+  for (const owner of memberOwnerWalk(ownerDefId, ctx)) {
+    let selected: { typeName: string; filePath: string } | undefined;
+    for (const def of collectOwnedMembers(owner, memberName, ctx)) {
+      if (!acceptedKinds.has(def.type)) continue;
+      const raw = def.returnType ?? def.declaredType;
+      if (raw === undefined) continue;
+      const typeName = extractReturnTypeName(raw);
+      if (typeName === undefined) continue;
+      if (selected !== undefined && selected.typeName !== typeName) return undefined;
+      selected = { typeName, filePath: def.filePath };
+    }
+    if (selected !== undefined) return selected;
+  }
+  return undefined;
+}
+
+function memberOwnerWalk(ownerDefId: DefId, ctx: RegistryContext): readonly DefId[] {
+  return ctx.methodDispatch === undefined
+    ? [ownerDefId]
+    : [ownerDefId, ...ctx.methodDispatch.mroFor(ownerDefId)];
 }
 
 function resolveCallableBinding(

@@ -302,6 +302,8 @@ export interface TypeRef {
     | 'constructor-inferred'
     | 'call-return'
     | 'call-return-element'
+    | 'field-access'
+    | 'method-return'
     | 'receiver-propagated';
   /** Reserved for V2+: generic type arguments (`List<User>` → `[TypeRef('User')]`). V1 ignores. */
   readonly typeArgs?: readonly TypeRef[];
