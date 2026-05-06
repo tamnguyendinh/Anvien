@@ -20,7 +20,8 @@ import { createRequire } from 'module';
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(testDir, '../..');
-const cliEntry = path.join(repoRoot, 'src/cli/index.ts');
+const sourceCliEntry = path.join(repoRoot, 'src/cli/index.ts');
+const distCliEntry = path.join(repoRoot, 'dist/cli/index.js');
 
 // Absolute file:// URL to tsx loader — needed when spawning CLI with cwd
 // outside the project tree (bare 'tsx' specifier won't resolve there).
@@ -37,7 +38,10 @@ const tsxImportUrl = pathToFileURL(path.join(tsxPkgDir, 'dist', 'loader.mjs')).h
  * Uses the absolute tsx loader URL so it works outside the project tree.
  */
 function runSkillsCli(cwd: string, timeoutMs = 45000) {
-  return spawnSync(process.execPath, ['--import', tsxImportUrl, cliEntry, 'analyze', '--skills'], {
+  const cliArgs = fs.existsSync(distCliEntry)
+    ? [distCliEntry, 'analyze', '--skills']
+    : ['--import', tsxImportUrl, sourceCliEntry, 'analyze', '--skills'];
+  return spawnSync(process.execPath, cliArgs, {
     cwd,
     encoding: 'utf8',
     timeout: timeoutMs,

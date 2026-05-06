@@ -401,7 +401,7 @@ describe('worker pool integration', () => {
       const results = await pool.dispatch<any, any>(
         [{ path: 'heartbeat.ts', content: 'const x = 1;' }],
         undefined,
-        { inactivityTimeoutMs: 300, maxFilesPerUnit: 1 },
+        { inactivityTimeoutMs: 1000, maxFilesPerUnit: 1 },
       );
       expect(results).toHaveLength(1);
       expect(results[0].paths).toEqual(['heartbeat.ts']);

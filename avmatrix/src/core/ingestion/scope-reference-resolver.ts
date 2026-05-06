@@ -20,15 +20,23 @@ import {
   type TypeRef,
 } from 'avmatrix-shared';
 import { Buffer } from 'node:buffer';
+import fs from 'node:fs';
+import path from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { ScopeResolutionIndexes } from './model/scope-resolution-indexes.js';
+import { createWorkerPool } from './workers/worker-pool.js';
 
 const DEFAULT_REFERENCE_RESOLUTION_CHUNK_SIZE = 1000;
+const DEFAULT_PARALLEL_REFERENCE_SITE_THRESHOLD = DEFAULT_REFERENCE_RESOLUTION_CHUNK_SIZE * 2;
 
 export interface ScopeReferenceResolutionOptions {
   readonly chunkSize?: number;
   readonly readonlyIndexBytes?: number;
   readonly readonlyIndexInitMs?: number;
+  readonly useWorkers?: boolean;
+  readonly workerCount?: number;
+  readonly minWorkerReferenceSites?: number;
 }
 
 export interface ScopeReferenceResolutionStats {
@@ -134,6 +142,48 @@ export function resolveScopeReferenceSites(
     readonlyIndexInitMs,
     referenceWorkerResolveMs,
   });
+}
+
+export async function resolveScopeReferenceSitesInWorkers(
+  scopes: ScopeResolutionIndexes,
+  options: ScopeReferenceResolutionOptions = {},
+): Promise<ScopeReferenceResolutionResult> {
+  const chunkSize = normalizeChunkSize(options.chunkSize);
+  if (!shouldUseReferenceWorkers(scopes.referenceSites.length, options)) {
+    return resolveScopeReferenceSites(scopes, { ...options, chunkSize });
+  }
+
+  const initStart = performance.now();
+  const serialized = serializeScopeResolutionIndexes(scopes);
+  const readonlyIndexBytes =
+    options.readonlyIndexBytes ?? serializedScopeResolutionIndexBytes(serialized);
+  const workerUrl = resolveReferenceResolutionWorkerUrl();
+  const pool = createWorkerPool(workerUrl, options.workerCount, {
+    workerData: { scopeResolutionIndexes: serialized },
+  });
+  const readonlyIndexInitMs = options.readonlyIndexInitMs ?? performance.now() - initStart;
+
+  try {
+    const chunks = createReferenceResolutionChunks(scopes.referenceSites, chunkSize);
+    const workerStart = performance.now();
+    const chunkResults = await pool.dispatch<
+      ReferenceResolutionChunk,
+      ReferenceResolutionChunkResult
+    >([...chunks], undefined, {
+      maxFilesPerUnit: 1,
+      getItemPath: (chunk) => `reference-chunk:${chunk.chunkId}`,
+      getItemSize: (chunk) => estimateReferenceChunkBytes(chunk),
+    });
+    const referenceWorkerResolveMs = performance.now() - workerStart;
+
+    return mergeReferenceResolutionChunks(scopes.referenceSites.length, chunkSize, chunkResults, {
+      readonlyIndexBytes,
+      readonlyIndexInitMs,
+      referenceWorkerResolveMs,
+    });
+  } finally {
+    await pool.terminate();
+  }
 }
 
 export function createReferenceResolutionContext(
@@ -473,6 +523,54 @@ function normalizeChunkSize(value: number | undefined): number {
   return Number.isFinite(chunkSize) && chunkSize > 0
     ? chunkSize
     : DEFAULT_REFERENCE_RESOLUTION_CHUNK_SIZE;
+}
+
+function shouldUseReferenceWorkers(
+  referenceSiteCount: number,
+  options: ScopeReferenceResolutionOptions,
+): boolean {
+  const enabled = options.useWorkers ?? process.env.AVMATRIX_SCOPE_RESOLUTION_WORKERS === '1';
+  if (!enabled) return false;
+  const threshold = options.minWorkerReferenceSites ?? DEFAULT_PARALLEL_REFERENCE_SITE_THRESHOLD;
+  return referenceSiteCount >= threshold;
+}
+
+function estimateReferenceChunkBytes(chunk: ReferenceResolutionChunk): number {
+  let bytes = 0;
+  for (const site of chunk.referenceSites) {
+    bytes += stringBytes(site.name);
+    bytes += stringBytes(site.inScope);
+    bytes += stringBytes(site.kind);
+    bytes += stringBytes(site.callForm);
+    bytes += stringBytes(site.explicitReceiver?.name);
+    bytes += 32;
+  }
+  return bytes;
+}
+
+function resolveReferenceResolutionWorkerUrl(): URL {
+  const sourceJsWorker = new URL('./workers/resolution-worker.js', import.meta.url);
+  const sourceJsPath = fileURLToPath(sourceJsWorker);
+  if (fs.existsSync(sourceJsPath)) return sourceJsWorker;
+
+  const thisDir = fileURLToPath(new URL('.', import.meta.url));
+  const distWorker = path.resolve(
+    thisDir,
+    '..',
+    '..',
+    '..',
+    'dist',
+    'core',
+    'ingestion',
+    'workers',
+    'resolution-worker.js',
+  );
+  if (fs.existsSync(distWorker)) return pathToFileURL(distWorker);
+
+  throw new Error(
+    `Reference resolution worker script not found. Checked ${sourceJsPath} and ${distWorker}. ` +
+      'Run `npm run build` in avmatrix or disable resolution workers.',
+  );
 }
 
 function methodOptions(site: ReferenceSite) {

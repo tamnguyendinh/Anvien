@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import type Parser from 'tree-sitter';
-import { SupportedLanguages, type ParsedFile } from 'avmatrix-shared';
+import { SupportedLanguages, type ParsedFile, type SymbolDefinition } from 'avmatrix-shared';
 import { createKnowledgeGraph } from '../../../src/core/graph/graph.js';
 import { finalizeScopeModel } from '../../../src/core/ingestion/finalize-orchestrator.js';
 import { emitReferencesToGraph } from '../../../src/core/ingestion/emit-references.js';
@@ -61,6 +61,7 @@ export function run(repo: Repo, user: User) {
     const resolution = resolveScopeReferenceSites(indexes);
 
     const graph = createKnowledgeGraph();
+    addGraphNodesForParsedFiles(graph, parsedFiles);
     emitReferencesToGraph({
       graph,
       scopes: indexes,
@@ -129,6 +130,7 @@ export function run(current: U) {
     });
     const resolution = resolveScopeReferenceSites(indexes);
     const graph = createKnowledgeGraph();
+    addGraphNodesForParsedFiles(graph, parsedFiles);
     emitReferencesToGraph({
       graph,
       scopes: indexes,
@@ -172,4 +174,41 @@ function edgeCounts(relationships: readonly { type: string }[]): Record<string, 
     counts[relationship.type] = (counts[relationship.type] ?? 0) + 1;
   }
   return counts;
+}
+
+function addGraphNodesForParsedFiles(
+  graph: ReturnType<typeof createKnowledgeGraph>,
+  parsedFiles: readonly ParsedFile[],
+): void {
+  for (const parsed of parsedFiles) {
+    graph.addNode({
+      id: `File:${parsed.filePath}`,
+      label: 'File',
+      properties: {
+        name: parsed.filePath.split('/').at(-1) ?? parsed.filePath,
+        filePath: parsed.filePath,
+      },
+    });
+    for (const def of parsed.localDefs) {
+      graph.addNode({
+        id: graphNodeIdForDef(def),
+        label: def.type,
+        properties: {
+          name: simpleName(def.qualifiedName) ?? def.nodeId,
+          filePath: def.filePath,
+          ...(def.qualifiedName !== undefined ? { qualifiedName: def.qualifiedName } : {}),
+        },
+      });
+    }
+  }
+}
+
+function graphNodeIdForDef(def: SymbolDefinition): string {
+  return `${def.type}:${def.filePath}:${def.qualifiedName ?? def.nodeId}`;
+}
+
+function simpleName(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  const dot = value.lastIndexOf('.');
+  return dot === -1 ? value : value.slice(dot + 1);
 }

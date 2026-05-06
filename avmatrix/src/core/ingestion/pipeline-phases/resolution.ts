@@ -15,7 +15,7 @@ import { performance } from 'node:perf_hooks';
 import type { ResolutionMetrics } from '../../analyze/analyze-metrics.js';
 import { roundMs } from '../../analyze/analyze-metrics.js';
 import { emitReferencesToGraph } from '../emit-references.js';
-import { resolveScopeReferenceSites } from '../scope-reference-resolver.js';
+import { resolveScopeReferenceSitesInWorkers } from '../scope-reference-resolver.js';
 import type { PipelineContext, PhaseResult, PipelinePhase } from './types.js';
 import { getPhaseOutput } from './types.js';
 import type { ParseOutput } from './parse.js';
@@ -100,7 +100,7 @@ export const resolutionPhase: PipelinePhase<ResolutionOutput> = {
     }
 
     const start = performance.now();
-    const result = resolveScopeReferenceSites(scopes);
+    const result = await resolveScopeReferenceSitesInWorkers(scopes);
     metrics.timings.referenceResolveMs = roundMs(performance.now() - start);
     metrics.timings.readonlyIndexInitMs = roundMs(result.timings.readonlyIndexInitMs);
     metrics.timings.referenceWorkerResolveMs = roundMs(result.timings.referenceWorkerResolveMs);

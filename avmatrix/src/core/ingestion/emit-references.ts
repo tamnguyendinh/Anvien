@@ -109,7 +109,7 @@ export function emitReferencesToGraph(input: EmitReferencesInput): EmitStats {
   let skippedNoCaller = 0;
   let skippedMissingTarget = 0;
   let skippedDuplicateEdge = 0;
-  const existingEdges = buildExistingEdgeKeySet(graph);
+  const existingEdges = buildExistingEdgeKeyMap(graph);
   const graphNodeResolver = createGraphNodeResolver(graph);
 
   for (const [fromScope, refs] of referenceIndex.bySourceScope) {
@@ -126,15 +126,25 @@ export function emitReferencesToGraph(input: EmitReferencesInput): EmitStats {
       }
       const callerId = graphNodeResolver(callerDef);
       const targetId = graphNodeResolver(targetDef);
-      const relationship = buildRelationship(ref, callerId, targetDef, sourceLabel);
-      const mappedRelationship = { ...relationship, targetId };
+      if (callerId === undefined) {
+        skippedNoCaller++;
+        continue;
+      }
+      if (targetId === undefined) {
+        skippedMissingTarget++;
+        continue;
+      }
+      const mappedRelationship = buildRelationship(ref, callerId, targetId, sourceLabel);
       const edgeKey = semanticEdgeKey(mappedRelationship);
-      if (existingEdges.has(edgeKey)) {
+      const existing = existingEdges.get(edgeKey);
+      if (existing !== undefined) {
+        mergeRelationshipAudit(graph, existing, mappedRelationship);
+        existingEdges.set(edgeKey, mergedRelationship(existing, mappedRelationship));
         skippedDuplicateEdge++;
         continue;
       }
       graph.addRelationship(mappedRelationship);
-      existingEdges.add(edgeKey);
+      existingEdges.set(edgeKey, mappedRelationship);
       edgesEmitted++;
     }
   }
@@ -232,8 +242,8 @@ export function emitScopeGraph(input: {
 function emitFinalizedFileImports(input: {
   readonly graph: KnowledgeGraph;
   readonly scopes: ScopeResolutionIndexes;
-  readonly existingEdges: Set<string>;
-  readonly graphNodeResolver: (def: SymbolDefinition) => string;
+  readonly existingEdges: Map<string, GraphRelationship>;
+  readonly graphNodeResolver: (def: SymbolDefinition) => string | undefined;
 }): {
   readonly finalizedImportEdgesEmitted: number;
   readonly skippedDuplicateImportEdge: number;
@@ -264,11 +274,14 @@ function emitFinalizedFileImports(input: {
         evidence: importEvidence(edge),
       };
       const importEdgeKey = semanticEdgeKey(importRelationship);
-      if (existingEdges.has(importEdgeKey)) {
+      const existingImport = existingEdges.get(importEdgeKey);
+      if (existingImport !== undefined) {
+        mergeRelationshipAudit(graph, existingImport, importRelationship);
+        existingEdges.set(importEdgeKey, mergedRelationship(existingImport, importRelationship));
         skippedDuplicateImportEdge++;
       } else {
         graph.addRelationship(importRelationship);
-        existingEdges.add(importEdgeKey);
+        existingEdges.set(importEdgeKey, importRelationship);
         finalizedImportEdgesEmitted++;
       }
 
@@ -277,13 +290,15 @@ function emitFinalizedFileImports(input: {
       }
       const targetDef = scopes.defs.get(edge.targetDefId);
       if (targetDef === undefined) continue;
+      const mappedTargetId = graphNodeResolver(targetDef);
+      if (mappedTargetId === undefined) continue;
       const importUseRelationship = {
         id: generateId(
           'USES',
           `${sourceScope.filePath}->${edge.targetDefId}:import:${edge.localName}`,
         ),
         sourceId: generateId('File', sourceScope.filePath),
-        targetId: graphNodeResolver(targetDef),
+        targetId: mappedTargetId,
         type: 'USES' as const,
         confidence: 1,
         reason: `scope-finalize import-use ${edge.kind} ${edge.localName}`,
@@ -292,12 +307,18 @@ function emitFinalizedFileImports(input: {
         evidence: importEvidence(edge),
       };
       const importUseEdgeKey = semanticEdgeKey(importUseRelationship);
-      if (existingEdges.has(importUseEdgeKey)) {
+      const existingImportUse = existingEdges.get(importUseEdgeKey);
+      if (existingImportUse !== undefined) {
+        mergeRelationshipAudit(graph, existingImportUse, importUseRelationship);
+        existingEdges.set(
+          importUseEdgeKey,
+          mergedRelationship(existingImportUse, importUseRelationship),
+        );
         skippedDuplicateImportUseEdge++;
         continue;
       }
       graph.addRelationship(importUseRelationship);
-      existingEdges.add(importUseEdgeKey);
+      existingEdges.set(importUseEdgeKey, importUseRelationship);
       finalizedImportUseEdgesEmitted++;
     }
   }
@@ -379,7 +400,9 @@ function isFunctionLike(type: NodeLabel): boolean {
   return type === 'Function' || type === 'Method' || type === 'Constructor';
 }
 
-function createGraphNodeResolver(graph: KnowledgeGraph): (def: SymbolDefinition) => string {
+function createGraphNodeResolver(
+  graph: KnowledgeGraph,
+): (def: SymbolDefinition) => string | undefined {
   const bySemanticKey = new Map<string, string[]>();
   graph.forEachNode((node) => {
     for (const key of graphNodeSemanticKeys(node)) {
@@ -389,13 +412,13 @@ function createGraphNodeResolver(graph: KnowledgeGraph): (def: SymbolDefinition)
     }
   });
 
-  return (def: SymbolDefinition): string => {
+  return (def: SymbolDefinition): string | undefined => {
     if (graph.getNode(def.nodeId) !== undefined) return def.nodeId;
     for (const key of defSemanticKeys(def)) {
       const matches = bySemanticKey.get(key);
       if (matches !== undefined && matches.length === 1) return matches[0]!;
     }
-    return def.nodeId;
+    return undefined;
   };
 }
 
@@ -405,14 +428,37 @@ function graphNodeSemanticKeys(node: GraphNode): readonly string[] {
   const names = uniqueStrings([
     stringProperty(node.properties.name),
     stringProperty(node.properties.qualifiedName),
+    graphNodeIdName(node),
+    stripArityTag(graphNodeIdName(node)),
     simpleName(stringProperty(node.properties.qualifiedName)),
+    simpleName(stripArityTag(graphNodeIdName(node))),
   ]);
   return names.map((name) => semanticNodeKey(node.label, filePath, name));
 }
 
 function defSemanticKeys(def: SymbolDefinition): readonly string[] {
-  const names = uniqueStrings([def.qualifiedName, simpleName(def.qualifiedName)]);
+  const names = uniqueStrings([
+    def.qualifiedName,
+    stripArityTag(def.qualifiedName),
+    simpleName(def.qualifiedName),
+    simpleName(stripArityTag(def.qualifiedName)),
+  ]);
   return names.map((name) => semanticNodeKey(def.type, def.filePath, name));
+}
+
+function graphNodeIdName(node: GraphNode): string | undefined {
+  const filePath = stringProperty(node.properties.filePath);
+  if (filePath === undefined) return undefined;
+  const prefix = `${node.label}:${filePath}:`;
+  if (!node.id.startsWith(prefix)) return undefined;
+  const name = node.id.slice(prefix.length);
+  return name.length > 0 ? name : undefined;
+}
+
+function stripArityTag(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  const hash = value.indexOf('#');
+  return hash === -1 ? value : value.slice(0, hash);
 }
 
 function semanticNodeKey(label: NodeLabel, filePath: string, name: string): string {
@@ -443,7 +489,7 @@ function uniqueStrings(values: readonly (string | undefined)[]): string[] {
 function buildRelationship(
   ref: Reference,
   callerId: string,
-  targetDef: SymbolDefinition,
+  targetId: string,
   sourceLabel: string,
 ): Parameters<KnowledgeGraph['addRelationship']>[0] {
   const type = mapKindToType(ref.kind);
@@ -455,9 +501,9 @@ function buildRelationship(
   // Other kinds omit `step`.
   const step = ref.kind === 'read' ? 1 : ref.kind === 'write' ? 2 : undefined;
   return {
-    id: `rel:${type}:${callerId}->${targetDef.nodeId}:${ref.atRange.startLine}:${ref.atRange.startCol}`,
+    id: `rel:${type}:${callerId}->${targetId}:${ref.atRange.startLine}:${ref.atRange.startCol}`,
     sourceId: callerId,
-    targetId: targetDef.nodeId,
+    targetId,
     type,
     confidence: ref.confidence,
     reason,
@@ -501,12 +547,45 @@ function serializeEvidence(e: ResolutionEvidence): {
   };
 }
 
-function buildExistingEdgeKeySet(graph: KnowledgeGraph): Set<string> {
-  const keys = new Set<string>();
+function buildExistingEdgeKeyMap(graph: KnowledgeGraph): Map<string, GraphRelationship> {
+  const keys = new Map<string, GraphRelationship>();
   graph.forEachRelationship((relationship) => {
-    keys.add(semanticEdgeKey(relationship));
+    keys.set(semanticEdgeKey(relationship), relationship);
   });
   return keys;
+}
+
+function mergeRelationshipAudit(
+  graph: KnowledgeGraph,
+  existing: GraphRelationship,
+  incoming: GraphRelationship,
+): void {
+  const merged = mergedRelationship(existing, incoming);
+  graph.removeRelationship(existing.id);
+  graph.addRelationship(merged);
+}
+
+function mergedRelationship(
+  existing: GraphRelationship,
+  incoming: GraphRelationship,
+): GraphRelationship {
+  const existingConfidence = existing.confidence ?? 0;
+  const incomingConfidence = incoming.confidence ?? 0;
+  const useIncomingReason =
+    existing.resolutionSource === undefined || incomingConfidence >= existingConfidence;
+  return {
+    ...existing,
+    confidence: Math.max(existingConfidence, incomingConfidence),
+    reason: useIncomingReason ? incoming.reason : existing.reason,
+    ...(incoming.step !== undefined && existing.step === undefined ? { step: incoming.step } : {}),
+    ...(incoming.resolutionSource !== undefined
+      ? { resolutionSource: incoming.resolutionSource }
+      : {}),
+    ...(incoming.fileHash !== undefined ? { fileHash: incoming.fileHash } : {}),
+    ...(incoming.evidence !== undefined && incoming.evidence.length > 0
+      ? { evidence: incoming.evidence }
+      : {}),
+  };
 }
 
 function semanticEdgeKey(relationship: GraphRelationship): string {

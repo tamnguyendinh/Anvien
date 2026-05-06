@@ -136,6 +136,39 @@ function buildRefIndex(sourceScope: ScopeId, refs: readonly Reference[]): Refere
   };
 }
 
+function addDefNodes(
+  graph: ReturnType<typeof createKnowledgeGraph>,
+  defs: readonly SymbolDefinition[],
+): void {
+  for (const d of defs) {
+    graph.addNode({
+      id: d.nodeId,
+      label: d.type,
+      properties: {
+        name: d.qualifiedName?.split('.').at(-1) ?? d.nodeId,
+        filePath: d.filePath,
+        ...(d.qualifiedName !== undefined ? { qualifiedName: d.qualifiedName } : {}),
+      },
+    });
+  }
+}
+
+function addFileNodes(
+  graph: ReturnType<typeof createKnowledgeGraph>,
+  filePaths: readonly string[],
+): void {
+  for (const filePath of filePaths) {
+    graph.addNode({
+      id: `File:${filePath}`,
+      label: 'File',
+      properties: {
+        name: filePath.split('/').at(-1) ?? filePath,
+        filePath,
+      },
+    });
+  }
+}
+
 // ─── Kind mapping + basic emission ────────────────────────────────────────
 
 describe('emitReferencesToGraph: kind mapping', () => {
@@ -158,6 +191,7 @@ describe('emitReferencesToGraph: kind mapping', () => {
     };
 
     const graph = createKnowledgeGraph();
+    addDefNodes(graph, [callerFn, targetFn]);
     const stats = emitReferencesToGraph({
       graph,
       scopes: indexes,
@@ -203,6 +237,7 @@ describe('emitReferencesToGraph: kind mapping', () => {
     };
 
     const graph = createKnowledgeGraph();
+    addDefNodes(graph, [fn, field]);
     emitReferencesToGraph({
       graph,
       scopes: indexes,
@@ -254,6 +289,7 @@ describe('emitReferencesToGraph: kind mapping', () => {
     ];
 
     const graph = createKnowledgeGraph();
+    addDefNodes(graph, [hostFn, base, mixin, module]);
     emitReferencesToGraph({
       graph,
       scopes: indexes,
@@ -287,6 +323,7 @@ describe('enclosing-def resolution', () => {
     };
 
     const graph = createKnowledgeGraph();
+    addDefNodes(graph, [method, target]);
     emitReferencesToGraph({
       graph,
       scopes: indexes,
@@ -315,6 +352,7 @@ describe('enclosing-def resolution', () => {
     };
 
     const graph = createKnowledgeGraph();
+    addDefNodes(graph, [classDef, targetFn]);
     emitReferencesToGraph({
       graph,
       scopes: indexes,
@@ -343,6 +381,7 @@ describe('enclosing-def resolution', () => {
     };
 
     const graph = createKnowledgeGraph();
+    addDefNodes(graph, [target]);
     const stats = emitReferencesToGraph({
       graph,
       scopes: indexes,
@@ -372,6 +411,7 @@ describe('missing target', () => {
       evidence: [],
     };
     const graph = createKnowledgeGraph();
+    addDefNodes(graph, [callerFn]);
     const stats = emitReferencesToGraph({
       graph,
       scopes: indexes,
@@ -386,7 +426,7 @@ describe('missing target', () => {
 // ─── Duplicate graph-edge guard ───────────────────────────────────────────
 
 describe('duplicate graph-edge guard', () => {
-  it('skips scope-resolved edges when an equivalent legacy graph edge already exists', () => {
+  it('merges scope audit metadata when an equivalent legacy graph edge already exists', () => {
     const callerFn = def('def:caller', 'Function');
     const targetFn = def('def:target', 'Method');
     const mod = scope('scope:m', null, 'Module', [callerFn, targetFn]);
@@ -395,20 +435,22 @@ describe('duplicate graph-edge guard', () => {
     const ref: Reference = {
       fromScope: 'scope:m',
       toDef: 'def:target',
+      fileHash: 'sha256:scope',
       atRange: range(5, 0, 5, 4),
       kind: 'call',
       confidence: 0.9,
-      evidence: [],
+      evidence: [{ kind: 'type-binding', weight: 0.35, note: 'receiver Target' }],
     };
 
     const graph = createKnowledgeGraph();
+    addDefNodes(graph, [callerFn, targetFn]);
     graph.addRelationship({
       id: 'legacy:def:caller->def:target',
       sourceId: 'def:caller',
       targetId: 'def:target',
       type: 'CALLS',
-      confidence: 0.9,
-      reason: 'direct',
+      confidence: 0.5,
+      reason: 'legacy call',
     });
 
     const stats = emitReferencesToGraph({
@@ -420,6 +462,17 @@ describe('duplicate graph-edge guard', () => {
     expect(stats.edgesEmitted).toBe(0);
     expect(stats.skippedDuplicateEdge).toBe(1);
     expect(graph.relationships).toHaveLength(1);
+    expect(graph.relationships[0]).toMatchObject({
+      id: 'legacy:def:caller->def:target',
+      sourceId: 'def:caller',
+      targetId: 'def:target',
+      type: 'CALLS',
+      confidence: 0.9,
+      reason: 'scope-resolution: call | confidence 0.900',
+      resolutionSource: 'scope-resolution',
+      fileHash: 'sha256:scope',
+      evidence: [{ kind: 'type-binding', weight: 0.35, note: 'receiver Target' }],
+    });
   });
 
   it('maps scope def ids onto existing graph node ids before duplicate checks', () => {
@@ -475,6 +528,100 @@ describe('duplicate graph-edge guard', () => {
     expect(stats.skippedDuplicateEdge).toBe(1);
     expect(graph.relationships).toHaveLength(1);
   });
+
+  it('maps same-file same-name members to distinct owner-qualified graph nodes', () => {
+    const run: SymbolDefinition = {
+      nodeId: 'def:run',
+      filePath: 'src/app.ts',
+      type: 'Function',
+      qualifiedName: 'run',
+    };
+    const classA: SymbolDefinition = {
+      nodeId: 'def:A',
+      filePath: 'src/app.ts',
+      type: 'Class',
+      qualifiedName: 'A',
+    };
+    const classB: SymbolDefinition = {
+      nodeId: 'def:B',
+      filePath: 'src/app.ts',
+      type: 'Class',
+      qualifiedName: 'B',
+    };
+    const saveA: SymbolDefinition = {
+      nodeId: 'def:A.save',
+      filePath: 'src/app.ts',
+      type: 'Method',
+      qualifiedName: 'A.save',
+      ownerId: 'def:A',
+    };
+    const saveB: SymbolDefinition = {
+      nodeId: 'def:B.save',
+      filePath: 'src/app.ts',
+      type: 'Method',
+      qualifiedName: 'B.save',
+      ownerId: 'def:B',
+    };
+    const mod = scope(
+      'scope:m',
+      null,
+      'Module',
+      [run, classA, classB, saveA, saveB],
+      range(),
+      'src/app.ts',
+    );
+    const indexes = makeIndexes([mod], [run, classA, classB, saveA, saveB]);
+    const refs: Reference[] = [
+      {
+        fromScope: 'scope:m',
+        toDef: 'def:A.save',
+        atRange: range(5, 0, 5, 4),
+        kind: 'call',
+        confidence: 0.9,
+        evidence: [],
+      },
+      {
+        fromScope: 'scope:m',
+        toDef: 'def:B.save',
+        atRange: range(6, 0, 6, 4),
+        kind: 'call',
+        confidence: 0.9,
+        evidence: [],
+      },
+    ];
+    const graph = createKnowledgeGraph();
+    graph.addNode({
+      id: 'Function:src/app.ts:run',
+      label: 'Function',
+      properties: { name: 'run', filePath: 'src/app.ts' },
+    });
+    graph.addNode({
+      id: 'Method:src/app.ts:A.save#0',
+      label: 'Method',
+      properties: { name: 'save', filePath: 'src/app.ts' },
+    });
+    graph.addNode({
+      id: 'Method:src/app.ts:B.save#0',
+      label: 'Method',
+      properties: { name: 'save', filePath: 'src/app.ts' },
+    });
+
+    const stats = emitReferencesToGraph({
+      graph,
+      scopes: indexes,
+      referenceIndex: buildRefIndex('scope:m', refs),
+    });
+
+    expect(stats.edgesEmitted).toBe(2);
+    expect(stats.skippedMissingTarget).toBe(0);
+    expect(graph.relationships.map((rel) => rel.targetId).sort()).toEqual([
+      'Method:src/app.ts:A.save#0',
+      'Method:src/app.ts:B.save#0',
+    ]);
+    expect(graph.relationships.every((rel) => graph.getNode(rel.targetId) !== undefined)).toBe(
+      true,
+    );
+  });
 });
 
 // ─── Scope-graph emission (INGESTION_EMIT_SCOPES) ─────────────────────────
@@ -495,6 +642,7 @@ describe('scope-graph emission', () => {
       evidence: [],
     };
     const graph = createKnowledgeGraph();
+    addDefNodes(graph, [callerFn, targetFn]);
     const stats = emitReferencesToGraph({
       graph,
       scopes: indexes,
@@ -514,6 +662,7 @@ describe('scope-graph emission', () => {
     const indexes = makeIndexes([mod, childScope], [fn]);
 
     const graph = createKnowledgeGraph();
+    addFileNodes(graph, ['src/app.ts', 'src/models.ts']);
     const stats = emitReferencesToGraph({
       graph,
       scopes: indexes,
@@ -602,6 +751,7 @@ describe('scope-graph emission', () => {
     );
 
     const graph = createKnowledgeGraph();
+    addFileNodes(graph, ['src/app.ts', 'src/models.ts']);
     const stats = emitReferencesToGraph({
       graph,
       scopes: indexes,
@@ -655,6 +805,8 @@ describe('scope-graph emission', () => {
     );
 
     const graph = createKnowledgeGraph();
+    addFileNodes(graph, ['src/app.ts', 'src/models.ts']);
+    addDefNodes(graph, [user]);
     const stats = emitReferencesToGraph({
       graph,
       scopes: indexes,

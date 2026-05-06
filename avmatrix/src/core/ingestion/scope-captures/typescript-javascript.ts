@@ -135,27 +135,29 @@ function emitDeclaration(node: SyntaxNode, out: CaptureMatch[], filePath: string
   ) {
     const nameNode = node.childForFieldName('name');
     const ownerName = ownerDeclarationNameFor(node);
+    const qualifiedName =
+      ownerName !== undefined && nameNode !== null ? `${ownerName}.${nameNode.text}` : undefined;
     emitNamedDeclaration(
       out,
       node,
       nameNode?.text === 'constructor' ? 'constructor' : 'method',
       nameNode,
       ownerDefIdFor(node, filePath),
-      { returnType: returnTypeNameForCallable(node) },
+      { returnType: returnTypeNameForCallable(node), qualifiedName },
     );
     if (ownerName !== undefined)
       out.push(syntheticTypeBindingMatch(node, 'this', ownerName, 'annotation'));
     return;
   }
   if (node.type === 'public_field_definition') {
-    emitNamedDeclaration(
-      out,
-      node,
-      'property',
-      node.childForFieldName('name'),
-      ownerDefIdFor(node, filePath),
-      { declaredType: declaredTypeNameForNode(node) },
-    );
+    const nameNode = node.childForFieldName('name');
+    const ownerName = ownerDeclarationNameFor(node);
+    const qualifiedName =
+      ownerName !== undefined && nameNode !== null ? `${ownerName}.${nameNode.text}` : undefined;
+    emitNamedDeclaration(out, node, 'property', nameNode, ownerDefIdFor(node, filePath), {
+      declaredType: declaredTypeNameForNode(node),
+      qualifiedName,
+    });
     return;
   }
   if (node.type === 'variable_declarator') {
@@ -439,6 +441,7 @@ function emitNamedDeclaration(
   metadata: {
     readonly returnType?: string;
     readonly declaredType?: string;
+    readonly qualifiedName?: string;
   } = {},
 ): void {
   if (nameNode === null) return;
@@ -447,6 +450,15 @@ function emitNamedDeclaration(
     '@declaration.name': capture('@declaration.name', nameNode),
     ...(ownerId !== undefined
       ? { '@declaration.owner': textCapture('@declaration.owner', node, ownerId) }
+      : {}),
+    ...(metadata.qualifiedName !== undefined
+      ? {
+          '@declaration.qualified_name': textCapture(
+            '@declaration.qualified_name',
+            node,
+            metadata.qualifiedName,
+          ),
+        }
       : {}),
     ...(metadata.returnType !== undefined
       ? {

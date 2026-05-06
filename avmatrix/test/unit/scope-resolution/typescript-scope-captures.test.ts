@@ -61,11 +61,11 @@ export function run(service: Service) {
     expect(defs).toEqual(
       expect.arrayContaining([
         'Class:Service',
-        'Constructor:constructor',
+        'Constructor:Service.constructor',
         'Function:makeService',
         'Function:run',
-        'Method:save',
-        'Property:current',
+        'Method:Service.save',
+        'Property:Service.current',
       ]),
     );
 
@@ -73,10 +73,10 @@ export function run(service: Service) {
       (def) => def.type === 'Class' && def.qualifiedName === 'Service',
     );
     const save = parsed!.localDefs.find(
-      (def) => def.type === 'Method' && def.qualifiedName === 'save',
+      (def) => def.type === 'Method' && def.qualifiedName === 'Service.save',
     );
     const current = parsed!.localDefs.find(
-      (def) => def.type === 'Property' && def.qualifiedName === 'current',
+      (def) => def.type === 'Property' && def.qualifiedName === 'Service.current',
     );
     const makeService = parsed!.localDefs.find(
       (def) => def.type === 'Function' && def.qualifiedName === 'makeService',

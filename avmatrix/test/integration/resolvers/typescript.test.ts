@@ -141,7 +141,8 @@ describe('TypeScript call resolution with arity filtering', () => {
     expect(calls[0].source).toBe('run');
     expect(calls[0].target).toBe('writeAudit');
     expect(calls[0].targetFilePath).toBe('src/one.ts');
-    expect(calls[0].rel.reason).toBe('import-resolved');
+    expect(calls[0].rel.resolutionSource).toBe('scope-resolution');
+    expect(calls[0].rel.reason).toContain('scope-resolution');
   });
 });
 

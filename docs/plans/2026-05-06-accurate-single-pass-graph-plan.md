@@ -232,10 +232,10 @@ Use this checklist to update implementation progress. Do not mark the target arc
 - [x] Make finalized import bindings visible to scope lookup so imported constructor/type references resolve without source rereads.
 - [x] Add TypeScript/JavaScript AST-reused member read/write access facts and resolve them into `ACCESSES` edges.
 - [x] Add TypeScript/JavaScript AST-reused type-reference facts from annotations and emit them as `USES` edges.
-- [ ] Capture AVmatrix baseline metrics on the selected representative repositories.
+- [x] Capture AVmatrix baseline metrics on the selected representative repositories.
 - [ ] Capture GitNexus deep/scope graph baseline metrics on the same repositories.
 - [x] Define fixture-level parity expectations for `CALLS`, `IMPORTS`, `ACCESSES`, `USES`, and `INHERITS`.
-- [ ] Require a benchmark JSON artifact before and after each optimization slice that claims speedup.
+- [x] Require a benchmark JSON artifact before and after each optimization slice that claims speedup.
 - [ ] Migrate the first provider, preferably TypeScript, to emit complete AST-reused scope captures.
 - [x] Prove the migrated provider does not re-read or reparse source for scope extraction.
 - [x] Build an initial `MethodDispatchIndex` from finalized `inherits` reference sites before scope-aware call resolution depends on it.
@@ -255,6 +255,7 @@ Use this checklist to update implementation progress. Do not mark the target arc
 - [x] Add readonly resolution index size plus init/worker/merge timing metrics as workerization scaffolding.
 - [x] Refactor scope reference resolution into deterministic chunk functions with serializable readonly-index payloads.
 - [x] Add worker-pool `workerData` support so future resolution workers can receive readonly indexes once at startup.
+- [x] Add an opt-in reference-resolution worker prototype plus parity coverage for chunk output.
 - [ ] Parallelize reference resolution by file/chunk against readonly indexes.
 - [x] Persist available audit metadata (`resolutionSource`, `confidence`, `evidence`, `fileHash` column) through LadybugDB CSV/load/read-back.
 - [x] Populate real `fileHash` values on scope-resolved edges from parse-time `ParsedFile.fileHash` without rereading source.
@@ -264,8 +265,28 @@ Use this checklist to update implementation progress. Do not mark the target arc
 - [ ] Move useful `crossFilePhase` type propagation into `resolutionPhase`.
 - [ ] Retire or narrow `crossFilePhase` only after parity is proven.
 - [x] Add duplicate-edge checks so legacy and scope-aware paths do not emit overlapping edges.
-- [ ] Validate full test suite and targeted parity fixtures.
+- [x] Map scope-resolved references to real graph node ids and fail closed when either endpoint is missing.
+- [x] Preserve owner-qualified TypeScript/JavaScript member declaration names so same-file same-name members resolve distinctly.
+- [x] Merge scope audit metadata into existing semantic duplicate edges instead of discarding the scope-resolved evidence.
+- [x] Add regression coverage for same-file same-name member mapping, duplicate audit metadata merge, and DB persistence/readback.
+- [x] Keep native DB and CLI analyze E2E tests in a sequential Vitest project so full-suite validation is stable on Windows.
+- [x] Validate full test suite and targeted parity fixtures.
 - [ ] Benchmark equivalent-accuracy runs and confirm the speed target is met.
+
+Current benchmark artifact:
+
+- `reports/benchmark/2026-05-06-avmatrix-current-gitnexus-main.json`
+- `reports/benchmark/2026-05-06-avmatrix-parallel-resolution-gitnexus-main.json`
+- `reports/benchmark/2026-05-06-avmatrix-safe-default-gitnexus-main.json`
+- Target: `E:\Lap_trinh\GitNexus-main` using `--skip-git` because that local copy has no `.git` directory.
+- Runtime command used built AVmatrix CLI with `--skip-agents-md --no-stats --benchmark-json` and `node --stack-size=4096`; the default stack failed in parse with `Maximum call stack size exceeded`, so the stack-size requirement is part of the recorded run context.
+- Result: `110714.1ms` total wall time, `847` files, `19538` nodes, `31037` persisted relationships.
+- Phase timings: parse `44866ms`, crossFile `19563ms`, resolution `4043ms`, lbugLoad `23891.3ms`, FTS `15676.9ms`.
+- Edge counts: `CALLS=5550`, `IMPORTS=202`, `ACCESSES=184`, `USES=711`, `INHERITS=1`.
+- Scope counters: `143226` reference sites, `10632` resolved, `132594` unresolved, `1348` emitted, `5180` duplicate edges merged/skipped, `2989` skipped no caller, `1115` skipped missing target.
+- Parallel-resolution experiment: enabling worker resolution on this repo changed `resolution` from `4043ms` to `4838ms` and produced a small graph diff (`ACCESSES -1`). That is not an accepted optimization. The worker path is kept opt-in via `AVMATRIX_SCOPE_RESOLUTION_WORKERS=1` until index transfer/build overhead is reduced and graph parity is proven.
+- Safe default after the experiment: `reports/benchmark/2026-05-06-avmatrix-safe-default-gitnexus-main.json` keeps worker resolution disabled by default and measured `resolution=3956ms`; graph counts still varied slightly from the first run, so benchmark claims must use repeated median runs and parity checks rather than a single artifact.
+- GitNexus baseline is still pending. The local GitNexus checkout currently has no `node_modules` and no built `gitnexus/dist/cli/index.js`; do not mark equivalent baseline complete until GitNexus can be run on the same target without changing its workload.
 
 ### Milestone 1: Baseline And Parity Targets
 

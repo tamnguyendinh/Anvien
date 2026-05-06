@@ -19,7 +19,8 @@ import { createRequire } from 'module';
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(testDir, '../..');
-const cliEntry = path.join(repoRoot, 'src/cli/index.ts');
+const sourceCliEntry = path.join(repoRoot, 'src/cli/index.ts');
+const distCliEntry = path.join(repoRoot, 'dist/cli/index.js');
 const FIXTURE_SRC = path.resolve(testDir, '..', 'fixtures', 'mini-repo');
 
 // `MINI_REPO` is a *per-run temp copy* of the fixture, not the shared
@@ -78,7 +79,7 @@ afterAll(() => {
 });
 
 function runCli(command: string, cwd: string, timeoutMs = 15000) {
-  return spawnSync(process.execPath, ['--import', tsxImportUrl, cliEntry, command], {
+  return spawnSync(process.execPath, cliArgs([command]), {
     cwd,
     encoding: 'utf8',
     timeout: timeoutMs,
@@ -98,7 +99,7 @@ function runCli(command: string, cwd: string, timeoutMs = 15000) {
  * can pass flags (e.g. --help) or omit a command entirely.
  */
 function runCliRaw(extraArgs: string[], cwd: string, timeoutMs = 15000) {
-  return spawnSync(process.execPath, ['--import', tsxImportUrl, cliEntry, ...extraArgs], {
+  return spawnSync(process.execPath, cliArgs(extraArgs), {
     cwd,
     encoding: 'utf8',
     timeout: timeoutMs,
@@ -121,7 +122,7 @@ function runCliWithEnv(
   extraEnv: Record<string, string>,
   timeoutMs = 15000,
 ) {
-  return spawnSync(process.execPath, ['--import', tsxImportUrl, cliEntry, ...extraArgs], {
+  return spawnSync(process.execPath, cliArgs(extraArgs), {
     cwd,
     encoding: 'utf8',
     timeout: timeoutMs,
@@ -132,6 +133,12 @@ function runCliWithEnv(
       ...extraEnv,
     },
   });
+}
+
+function cliArgs(extraArgs: string[]): string[] {
+  return fs.existsSync(distCliEntry)
+    ? [distCliEntry, ...extraArgs]
+    : ['--import', tsxImportUrl, sourceCliEntry, ...extraArgs];
 }
 
 /**
@@ -388,11 +395,11 @@ describe('CLI end-to-end', () => {
   describe('CLI error handling', () => {
     /**
      * Helper to spawn CLI from a cwd outside the project tree.
-     * Uses the absolute file:// URL to tsx loader so the --import hook
-     * resolves even when cwd has no node_modules.
+     * Uses the built CLI when available, otherwise falls back to an absolute
+     * file:// URL to the tsx loader so cwd does not need node_modules.
      */
     function runCliOutsideProject(args: string[], cwd: string, timeoutMs = 15000) {
-      return spawnSync(process.execPath, ['--import', tsxImportUrl, cliEntry, ...args], {
+      return spawnSync(process.execPath, cliArgs(args), {
         cwd,
         encoding: 'utf8',
         timeout: timeoutMs,
@@ -593,15 +600,7 @@ describe('CLI end-to-end', () => {
       return new Promise<void>((resolve, reject) => {
         const child = spawn(
           process.execPath,
-          [
-            '--import',
-            tsxImportUrl,
-            cliEntry,
-            'cypher',
-            'MATCH (n) RETURN n LIMIT 500',
-            '--repo',
-            'mini-repo',
-          ],
+          cliArgs(['cypher', 'MATCH (n) RETURN n LIMIT 500', '--repo', 'mini-repo']),
           {
             cwd: MINI_REPO,
             stdio: ['ignore', 'pipe', 'pipe'],

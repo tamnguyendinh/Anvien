@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type Parser from 'tree-sitter';
 import { createHash } from 'node:crypto';
-import { SupportedLanguages } from 'avmatrix-shared';
+import { SupportedLanguages, type ParsedFile, type SymbolDefinition } from 'avmatrix-shared';
 import { createKnowledgeGraph } from '../../../src/core/graph/graph.js';
 import { typescriptProvider } from '../../../src/core/ingestion/languages/typescript.js';
 import { createResolutionContext } from '../../../src/core/ingestion/model/resolution-context.js';
@@ -46,6 +46,7 @@ function run(user: User) {
     resolutionContext.model.attachScopeIndexes(finalizeScopeModel([parsed!]));
 
     const graph = createKnowledgeGraph();
+    addGraphNodesForParsedFiles(graph, [parsed!]);
     const output = await resolutionPhase.execute(
       {
         repoPath: '/tmp/repo',
@@ -117,6 +118,7 @@ function run(user: User) {
     resolutionContext.model.attachScopeIndexes(finalizeScopeModel([parsed!]));
 
     const graph = createKnowledgeGraph();
+    addGraphNodesForParsedFiles(graph, [parsed!]);
     const output = await resolutionPhase.execute(
       {
         repoPath: '/tmp/repo',
@@ -198,6 +200,7 @@ function run(user: User) {
     );
 
     const graph = createKnowledgeGraph();
+    addGraphNodesForParsedFiles(graph, [appParsed!, modelParsed!]);
     const output = await resolutionPhase.execute(
       {
         repoPath: '/tmp/repo',
@@ -255,4 +258,41 @@ function run(user: User) {
 
 function sourceHash(source: string): string {
   return `sha256:${createHash('sha256').update(source).digest('hex')}`;
+}
+
+function addGraphNodesForParsedFiles(
+  graph: ReturnType<typeof createKnowledgeGraph>,
+  parsedFiles: readonly ParsedFile[],
+): void {
+  for (const parsed of parsedFiles) {
+    graph.addNode({
+      id: `File:${parsed.filePath}`,
+      label: 'File',
+      properties: {
+        name: parsed.filePath.split('/').at(-1) ?? parsed.filePath,
+        filePath: parsed.filePath,
+      },
+    });
+    for (const def of parsed.localDefs) {
+      graph.addNode({
+        id: graphNodeIdForDef(def),
+        label: def.type,
+        properties: {
+          name: simpleName(def.qualifiedName) ?? def.nodeId,
+          filePath: def.filePath,
+          ...(def.qualifiedName !== undefined ? { qualifiedName: def.qualifiedName } : {}),
+        },
+      });
+    }
+  }
+}
+
+function graphNodeIdForDef(def: SymbolDefinition): string {
+  return `${def.type}:${def.filePath}:${def.qualifiedName ?? def.nodeId}`;
+}
+
+function simpleName(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  const dot = value.lastIndexOf('.');
+  return dot === -1 ? value : value.slice(dot + 1);
 }

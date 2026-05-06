@@ -5,7 +5,10 @@ import { SupportedLanguages } from 'avmatrix-shared';
 import { createParserForLanguage } from '../../../src/core/tree-sitter/parser-loader.js';
 import { typescriptProvider } from '../../../src/core/ingestion/languages/typescript.js';
 import { finalizeScopeModel } from '../../../src/core/ingestion/finalize-orchestrator.js';
-import { resolveScopeReferenceSites } from '../../../src/core/ingestion/scope-reference-resolver.js';
+import {
+  resolveScopeReferenceSites,
+  resolveScopeReferenceSitesInWorkers,
+} from '../../../src/core/ingestion/scope-reference-resolver.js';
 import { extractParsedFileWithStats } from '../../../src/core/ingestion/scope-extractor-bridge.js';
 
 describe('resolveScopeReferenceSites', () => {
@@ -48,7 +51,7 @@ function run(user: User) {
       (def) => def.type === 'Class' && def.qualifiedName === 'Admin',
     );
     const save = parsed!.localDefs.find(
-      (def) => def.type === 'Method' && def.qualifiedName === 'save',
+      (def) => def.type === 'Method' && def.qualifiedName === 'User.save',
     );
     expect(user).toBeDefined();
     expect(admin).toBeDefined();
@@ -106,7 +109,7 @@ function run(child: Child) {
       (def) => def.type === 'Class' && def.qualifiedName === 'Base',
     );
     const greet = parsed!.localDefs.find(
-      (def) => def.type === 'Method' && def.qualifiedName === 'greet',
+      (def) => def.type === 'Method' && def.qualifiedName === 'Base.greet',
     );
 
     expect(base).toBeDefined();
@@ -175,6 +178,53 @@ function run(user: User) {
     expect(chunked.timings.referenceMergeMs).toBeGreaterThanOrEqual(0);
   });
 
+  it('resolves reference-site chunks in workers without changing ReferenceIndex output', async () => {
+    const source = `
+class User {
+  name: string;
+  save() {}
+}
+
+function run(user: User) {
+  user.name;
+  user.save();
+}
+`;
+    const parsed = extractParsedFileWithStats(
+      typescriptProvider,
+      source,
+      'src/app.ts',
+      SupportedLanguages.TypeScript,
+      parser.parse(source).rootNode,
+    ).parsedFile;
+    expect(parsed).toBeDefined();
+
+    const indexes = finalizeScopeModel([parsed!]);
+    const serial = resolveScopeReferenceSites(indexes, { chunkSize: 1 });
+    const worker = await resolveScopeReferenceSitesInWorkers(indexes, {
+      chunkSize: 1,
+      useWorkers: true,
+      minWorkerReferenceSites: 0,
+      workerCount: 2,
+    });
+
+    expect(worker.stats).toMatchObject({
+      totalReferenceSites: serial.stats.totalReferenceSites,
+      chunkSize: 1,
+      chunksResolved: serial.stats.chunksResolved,
+      maxChunkReferenceSites: serial.stats.maxChunkReferenceSites,
+      resolvedReferences: serial.stats.resolvedReferences,
+      unresolvedReferences: serial.stats.unresolvedReferences,
+      referenceIndexSourceScopes: serial.stats.referenceIndexSourceScopes,
+      referenceIndexTargetDefs: serial.stats.referenceIndexTargetDefs,
+    });
+    expect([...worker.referenceIndex.byTargetDef.keys()].sort()).toEqual(
+      [...serial.referenceIndex.byTargetDef.keys()].sort(),
+    );
+    expect(worker.timings.readonlyIndexInitMs).toBeGreaterThanOrEqual(0);
+    expect(worker.timings.referenceWorkerResolveMs).toBeGreaterThanOrEqual(0);
+  });
+
   it('resolves constructor calls through finalized import bindings without source rereads', () => {
     const modelsSource = `
 export class User {
@@ -217,7 +267,7 @@ function run() {
       (def) => def.type === 'Class' && def.qualifiedName === 'User',
     );
     const save = modelsParsed!.localDefs.find(
-      (def) => def.type === 'Method' && def.qualifiedName === 'save',
+      (def) => def.type === 'Method' && def.qualifiedName === 'User.save',
     );
     expect(user).toBeDefined();
     expect(save).toBeDefined();
@@ -259,7 +309,7 @@ function run(user: User) {
     const result = resolveScopeReferenceSites(indexes);
 
     const nameProperty = parsed!.localDefs.find(
-      (def) => def.type === 'Property' && def.qualifiedName === 'name',
+      (def) => def.type === 'Property' && def.qualifiedName === 'User.name',
     );
     expect(nameProperty).toBeDefined();
 
@@ -338,7 +388,7 @@ function run() {
     const result = resolveScopeReferenceSites(indexes);
 
     const save = parsed!.localDefs.find(
-      (def) => def.type === 'Method' && def.qualifiedName === 'save',
+      (def) => def.type === 'Method' && def.qualifiedName === 'User.save',
     );
     expect(save).toBeDefined();
 
