@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-05-06T23:15:27.238Z",
+  "createdAt": "2026-05-06T23:40:17.115Z",
   "label": "semantic-benchmark-metrics-scope-only-crossfile-skip",
   "repoName": "GitNexus-main",
   "repoPath": "E:\\Lap_trinh\\GitNexus-main",
@@ -67,47 +67,47 @@
     "crossFileReprocessedFiles": 0
   },
   "performance": {
-    "totalWallMs": 88926.6,
+    "totalWallMs": 89290.6,
     "buckets": {
-      "scan": 133,
-      "structure": 9,
-      "markdown": 15,
-      "cobol": 2,
-      "parse": 45465,
-      "routes": 32,
-      "tools": 3,
-      "orm": 1,
+      "scan": 132,
+      "structure": 10,
+      "markdown": 16,
+      "cobol": 3,
+      "parse": 45863,
+      "routes": 23,
+      "tools": 2,
+      "orm": 0,
       "crossFile": 0,
-      "resolution": 2086,
-      "mro": 6,
-      "communities": 384,
-      "processes": 311,
-      "lbugLoad": 23340.7,
-      "fts": 15684.2,
-      "metadata": 104.3,
-      "aiContext": 26.7
+      "resolution": 1878,
+      "mro": 9,
+      "communities": 232,
+      "processes": 313,
+      "lbugLoad": 23989.6,
+      "fts": 15378,
+      "metadata": 110.9,
+      "aiContext": 15.5
     },
     "pipelinePhaseMs": {
-      "scan": 133,
-      "structure": 9,
-      "markdown": 15,
-      "cobol": 2,
-      "parse": 45465,
-      "routes": 32,
-      "tools": 3,
-      "orm": 1,
+      "scan": 132,
+      "structure": 10,
+      "markdown": 16,
+      "cobol": 3,
+      "parse": 45863,
+      "routes": 23,
+      "tools": 2,
+      "orm": 0,
       "crossFile": 0,
-      "resolution": 2086,
-      "mro": 6,
-      "communities": 384,
-      "processes": 311
+      "resolution": 1878,
+      "mro": 9,
+      "communities": 232,
+      "processes": 313
     },
     "ftsIndexMs": {
-      "File": 4630.9,
-      "Function": 3489.5,
-      "Class": 2230.9,
-      "Method": 2765,
-      "Interface": 2567.9
+      "File": 4579.7,
+      "Function": 3499.9,
+      "Class": 2120.8,
+      "Method": 2656,
+      "Interface": 2521.6
     },
     "counters": {
       "totalFiles": 847,
@@ -163,98 +163,93 @@
     "bottlenecks": [
       {
         "bucket": "parse",
-        "durationMs": 45465,
-        "percentOfTotal": 51.1
+        "durationMs": 45863,
+        "percentOfTotal": 51.4
       },
       {
         "bucket": "lbugLoad",
-        "durationMs": 23340.7,
-        "percentOfTotal": 26.2
+        "durationMs": 23989.6,
+        "percentOfTotal": 26.9
       },
       {
         "bucket": "fts",
-        "durationMs": 15684.2,
-        "percentOfTotal": 17.6
+        "durationMs": 15378,
+        "percentOfTotal": 17.2
       },
       {
         "bucket": "resolution",
-        "durationMs": 2086,
-        "percentOfTotal": 2.3
-      },
-      {
-        "bucket": "communities",
-        "durationMs": 384,
-        "percentOfTotal": 0.4
+        "durationMs": 1878,
+        "percentOfTotal": 2.1
       },
       {
         "bucket": "processes",
-        "durationMs": 311,
+        "durationMs": 313,
+        "percentOfTotal": 0.4
+      },
+      {
+        "bucket": "communities",
+        "durationMs": 232,
         "percentOfTotal": 0.3
       },
       {
         "bucket": "scan",
-        "durationMs": 133,
+        "durationMs": 132,
         "percentOfTotal": 0.1
       },
       {
         "bucket": "metadata",
-        "durationMs": 104.3,
+        "durationMs": 110.9,
         "percentOfTotal": 0.1
       },
       {
         "bucket": "routes",
-        "durationMs": 32,
-        "percentOfTotal": 0
-      },
-      {
-        "bucket": "aiContext",
-        "durationMs": 26.7,
+        "durationMs": 23,
         "percentOfTotal": 0
       },
       {
         "bucket": "markdown",
-        "durationMs": 15,
+        "durationMs": 16,
+        "percentOfTotal": 0
+      },
+      {
+        "bucket": "aiContext",
+        "durationMs": 15.5,
         "percentOfTotal": 0
       },
       {
         "bucket": "structure",
-        "durationMs": 9,
+        "durationMs": 10,
         "percentOfTotal": 0
       },
       {
         "bucket": "mro",
-        "durationMs": 6,
-        "percentOfTotal": 0
-      },
-      {
-        "bucket": "tools",
-        "durationMs": 3,
+        "durationMs": 9,
         "percentOfTotal": 0
       },
       {
         "bucket": "cobol",
-        "durationMs": 2,
+        "durationMs": 3,
         "percentOfTotal": 0
       },
       {
-        "bucket": "orm",
-        "durationMs": 1,
+        "bucket": "tools",
+        "durationMs": 2,
         "percentOfTotal": 0
       }
     ],
-    "overheadMs": 1323.7,
+    "overheadMs": 1315.6,
     "lbugLoad": {
       "timings": {
-        "csvGenerationMs": 2438.9,
-        "csvContentCacheHitMs": 2.1,
-        "csvContentReadMs": 316.3,
-        "csvContentExtractMs": 1002,
-        "csvRowBuildMs": 34.8,
-        "csvWriterFlushMs": 199.3,
-        "nodeCopyMs": 9108.7,
-        "relationshipSplitMs": 408.1,
-        "relationshipCopyMs": 11368.7,
-        "cleanupMs": 9.3
+        "csvGenerationMs": 2385.3,
+        "csvContentCacheHitMs": 1.1,
+        "csvContentReadMs": 332.2,
+        "csvContentExtractMs": 1003.6,
+        "csvRowBuildMs": 32.8,
+        "csvWriterFlushMs": 181.9,
+        "nodeCopyMs": 9196.4,
+        "relationshipSplitMs": 294.1,
+        "relationshipCopyMs": 12096.6,
+        "cleanupMs": 10
       },
       "counters": {
         "csvNodeRows": 19541,
@@ -302,35 +297,35 @@
         }
       },
       "nodeCopyByTableMs": {
-        "File": 1161.9,
-        "Folder": 569.8,
-        "Function": 865.5,
-        "Class": 448.6,
-        "Interface": 754.4,
-        "Method": 624.8,
-        "CodeElement": 444,
-        "Community": 504.5,
-        "Process": 547.6,
-        "Section": 539.1,
-        "Route": 414.3,
-        "Tool": 409.4,
-        "Const": 879.3,
-        "Variable": 447.3,
-        "Property": 487.6
+        "File": 1111.3,
+        "Folder": 595.2,
+        "Function": 816.7,
+        "Class": 518.9,
+        "Interface": 565.7,
+        "Method": 621.2,
+        "CodeElement": 433.5,
+        "Community": 652.8,
+        "Process": 632.9,
+        "Section": 526.2,
+        "Route": 530.5,
+        "Tool": 384.2,
+        "Const": 940.5,
+        "Variable": 446,
+        "Property": 410.3
       }
     },
     "parse": {
       "timings": {
-        "readContentsMs": 393.1,
-        "workerParseMs": 44249,
-        "importResolveMs": 80.8,
-        "wildcardSynthesisMs": 9.8,
+        "readContentsMs": 379.9,
+        "workerParseMs": 44526.8,
+        "importResolveMs": 126.9,
+        "wildcardSynthesisMs": 9.3,
         "routeResolveMs": 0.3,
-        "heritageResolveMs": 4.5,
-        "callResolveMs": 205.8,
-        "assignmentResolveMs": 39.7,
-        "exportedTypeMapEnrichMs": 4.8,
-        "scopeFinalizeMs": 312.9
+        "heritageResolveMs": 2.5,
+        "callResolveMs": 229.9,
+        "assignmentResolveMs": 35.6,
+        "exportedTypeMapEnrichMs": 5.4,
+        "scopeFinalizeMs": 340.8
       },
       "counters": {
         "workerCount": 7,
@@ -365,12 +360,12 @@
     },
     "resolution": {
       "timings": {
-        "referenceResolveMs": 1829.5,
-        "readonlyIndexInitMs": 89.9,
-        "referenceWorkerResolveMs": 1711.1,
-        "referenceMergeMs": 0.8,
-        "referenceIndexBuildMs": 18,
-        "graphEmitMs": 255.2
+        "referenceResolveMs": 1626.6,
+        "readonlyIndexInitMs": 89.7,
+        "referenceWorkerResolveMs": 1510.1,
+        "referenceMergeMs": 0.6,
+        "referenceIndexBuildMs": 17.5,
+        "graphEmitMs": 250.7
       },
       "counters": {
         "scopeResolutionReferenceSites": 127585,
@@ -399,21 +394,21 @@
     }
   },
   "keyMetrics": {
-    "totalWallMs": 88926.6,
+    "totalWallMs": 89290.6,
     "phaseMs": {
-      "scan": 133,
-      "structure": 9,
-      "markdown": 15,
-      "cobol": 2,
-      "parse": 45465,
-      "routes": 32,
-      "tools": 3,
-      "orm": 1,
+      "scan": 132,
+      "structure": 10,
+      "markdown": 16,
+      "cobol": 3,
+      "parse": 45863,
+      "routes": 23,
+      "tools": 2,
+      "orm": 0,
       "crossFile": 0,
-      "resolution": 2086,
-      "mro": 6,
-      "communities": 384,
-      "processes": 311
+      "resolution": 1878,
+      "mro": 9,
+      "communities": 232,
+      "processes": 313
     },
     "nodeCount": 19541,
     "relationshipCount": 30784,
@@ -457,7 +452,7 @@
     "semanticRelationshipUniqueCountsByType": {
       "CONTAINS": 1648,
       "IMPORTS": 202,
-      "DEFINES": 16899,
+      "DEFINES": 15884,
       "HAS_PROPERTY": 99,
       "HAS_METHOD": 349,
       "EXTENDS": 2,
@@ -477,7 +472,7 @@
     "semanticRelationshipDuplicateCountsByType": {
       "CONTAINS": 0,
       "IMPORTS": 0,
-      "DEFINES": 0,
+      "DEFINES": 1015,
       "HAS_PROPERTY": 0,
       "HAS_METHOD": 0,
       "EXTENDS": 0,
@@ -494,10 +489,10 @@
       "STEP_IN_PROCESS": 89,
       "ENTRY_POINT_OF": 0
     },
-    "parseMs": 45465,
+    "parseMs": 45863,
     "crossFileMs": 0,
-    "resolutionMs": 2086,
-    "lbugLoadMs": 23340.7,
+    "resolutionMs": 1878,
+    "lbugLoadMs": 23989.6,
     "parseableFiles": 750,
     "totalParseableMB": 7.7,
     "workerCount": 7,

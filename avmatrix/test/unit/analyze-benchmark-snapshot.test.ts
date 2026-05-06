@@ -319,6 +319,13 @@ describe('analyze benchmark snapshot', () => {
         startLine: 1,
       },
       {
+        id: 'Const:src/app.ts:run:1',
+        label: 'Const',
+        name: 'run',
+        filePath: 'src/app.ts',
+        startLine: 1,
+      },
+      {
         id: 'Method:src/model.ts:save:5',
         label: 'Method',
         name: 'save',
@@ -351,6 +358,14 @@ describe('analyze benchmark snapshot', () => {
       reason: 'legacy-cross-file',
     });
     graph.addRelationship({
+      id: 'const-run-save-5',
+      sourceId: 'Const:src/app.ts:run:1',
+      targetId: 'Method:src/model.ts:save:5',
+      type: 'CALLS',
+      confidence: 0.9,
+      reason: 'legacy-cross-file',
+    });
+    graph.addRelationship({
       id: 'scope-run-save-20',
       sourceId: 'Function:src/app.ts:run:1',
       targetId: 'Method:src/model.ts:save:20',
@@ -362,7 +377,7 @@ describe('analyze benchmark snapshot', () => {
     const snapshot = createAnalyzeBenchmarkSnapshot({
       repoName: 'demo',
       repoPath: 'F:/demo',
-      stats: { files: 2, nodes: 3, edges: 3 },
+      stats: { files: 2, nodes: 4, edges: 4 },
       pipelineResult: {
         graph,
         repoPath: 'F:/demo',
@@ -372,6 +387,6 @@ describe('analyze benchmark snapshot', () => {
     });
 
     expect(snapshot.keyMetrics.semanticRelationshipUniqueCountsByType).toEqual({ CALLS: 2 });
-    expect(snapshot.keyMetrics.semanticRelationshipDuplicateCountsByType).toEqual({ CALLS: 1 });
+    expect(snapshot.keyMetrics.semanticRelationshipDuplicateCountsByType).toEqual({ CALLS: 2 });
   });
 });

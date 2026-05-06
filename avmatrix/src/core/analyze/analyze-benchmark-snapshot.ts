@@ -354,13 +354,19 @@ function semanticNodeSignature(node: {
   readonly properties: Record<string, unknown>;
 }): string {
   return [
-    node.label,
+    semanticNodeLabel(node.label),
     metricProperty(node.properties.filePath),
     metricProperty(node.properties.qualifiedName),
     metricProperty(node.properties.name),
     metricProperty(node.properties.startLine),
     metricProperty(node.properties.endLine),
   ].join('\0');
+}
+
+function semanticNodeLabel(label: string): string {
+  return label === 'Function' || label === 'Const' || label === 'Variable'
+    ? 'CallableValue'
+    : label;
 }
 
 function metricProperty(value: unknown): string {

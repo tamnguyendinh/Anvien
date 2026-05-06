@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-05-06T23:13:48.941Z",
+  "createdAt": "2026-05-06T23:38:39.827Z",
   "label": "semantic-benchmark-metrics",
   "repoName": "GitNexus-main",
   "repoPath": "E:\\Lap_trinh\\GitNexus-main",
@@ -67,47 +67,47 @@
     "crossFileReprocessedFiles": 187
   },
   "performance": {
-    "totalWallMs": 110108.9,
+    "totalWallMs": 111432.1,
     "buckets": {
       "scan": 135,
-      "structure": 10,
+      "structure": 9,
       "markdown": 15,
       "cobol": 2,
-      "parse": 46832,
-      "routes": 22,
+      "parse": 46743,
+      "routes": 25,
       "tools": 2,
-      "orm": 1,
-      "crossFile": 19241,
-      "resolution": 1868,
-      "mro": 6,
-      "communities": 345,
-      "processes": 463,
-      "lbugLoad": 24207,
-      "fts": 15431.3,
-      "metadata": 115.5,
-      "aiContext": 16.4
+      "orm": 0,
+      "crossFile": 20102,
+      "resolution": 1937,
+      "mro": 7,
+      "communities": 221,
+      "processes": 335,
+      "lbugLoad": 24432.5,
+      "fts": 15977.6,
+      "metadata": 105.6,
+      "aiContext": 16.8
     },
     "pipelinePhaseMs": {
       "scan": 135,
-      "structure": 10,
+      "structure": 9,
       "markdown": 15,
       "cobol": 2,
-      "parse": 46832,
-      "routes": 22,
+      "parse": 46743,
+      "routes": 25,
       "tools": 2,
-      "orm": 1,
-      "crossFile": 19241,
-      "resolution": 1868,
-      "mro": 6,
-      "communities": 345,
-      "processes": 463
+      "orm": 0,
+      "crossFile": 20102,
+      "resolution": 1937,
+      "mro": 7,
+      "communities": 221,
+      "processes": 335
     },
     "ftsIndexMs": {
-      "File": 4534.9,
-      "Function": 3551.7,
-      "Class": 2244.6,
-      "Method": 2437,
-      "Interface": 2663.1
+      "File": 4605,
+      "Function": 3488.4,
+      "Class": 2561.5,
+      "Method": 2522.4,
+      "Interface": 2800.3
     },
     "counters": {
       "totalFiles": 847,
@@ -163,38 +163,38 @@
     "bottlenecks": [
       {
         "bucket": "parse",
-        "durationMs": 46832,
-        "percentOfTotal": 42.5
+        "durationMs": 46743,
+        "percentOfTotal": 41.9
       },
       {
         "bucket": "lbugLoad",
-        "durationMs": 24207,
-        "percentOfTotal": 22
+        "durationMs": 24432.5,
+        "percentOfTotal": 21.9
       },
       {
         "bucket": "crossFile",
-        "durationMs": 19241,
-        "percentOfTotal": 17.5
+        "durationMs": 20102,
+        "percentOfTotal": 18
       },
       {
         "bucket": "fts",
-        "durationMs": 15431.3,
-        "percentOfTotal": 14
+        "durationMs": 15977.6,
+        "percentOfTotal": 14.3
       },
       {
         "bucket": "resolution",
-        "durationMs": 1868,
+        "durationMs": 1937,
         "percentOfTotal": 1.7
       },
       {
         "bucket": "processes",
-        "durationMs": 463,
-        "percentOfTotal": 0.4
+        "durationMs": 335,
+        "percentOfTotal": 0.3
       },
       {
         "bucket": "communities",
-        "durationMs": 345,
-        "percentOfTotal": 0.3
+        "durationMs": 221,
+        "percentOfTotal": 0.2
       },
       {
         "bucket": "scan",
@@ -203,17 +203,17 @@
       },
       {
         "bucket": "metadata",
-        "durationMs": 115.5,
+        "durationMs": 105.6,
         "percentOfTotal": 0.1
       },
       {
         "bucket": "routes",
-        "durationMs": 22,
+        "durationMs": 25,
         "percentOfTotal": 0
       },
       {
         "bucket": "aiContext",
-        "durationMs": 16.4,
+        "durationMs": 16.8,
         "percentOfTotal": 0
       },
       {
@@ -223,12 +223,12 @@
       },
       {
         "bucket": "structure",
-        "durationMs": 10,
+        "durationMs": 9,
         "percentOfTotal": 0
       },
       {
         "bucket": "mro",
-        "durationMs": 6,
+        "durationMs": 7,
         "percentOfTotal": 0
       },
       {
@@ -240,27 +240,22 @@
         "bucket": "tools",
         "durationMs": 2,
         "percentOfTotal": 0
-      },
-      {
-        "bucket": "orm",
-        "durationMs": 1,
-        "percentOfTotal": 0
       }
     ],
-    "overheadMs": 1396.7,
+    "overheadMs": 1366.6,
     "lbugLoad": {
       "timings": {
-        "csvGenerationMs": 2415.7,
-        "csvContentCacheHitMs": 0.9,
-        "csvContentReadMs": 320.6,
-        "csvContentExtractMs": 1024.4,
-        "csvRowBuildMs": 34.9,
-        "csvWriterFlushMs": 189.1,
-        "nodeCopyMs": 9167.3,
-        "relationshipSplitMs": 323.1,
-        "relationshipCopyMs": 11864.5,
-        "fallbackRelationshipInsertMs": 415.8,
-        "cleanupMs": 9.4
+        "csvGenerationMs": 2419,
+        "csvContentCacheHitMs": 2.1,
+        "csvContentReadMs": 321.8,
+        "csvContentExtractMs": 1029.2,
+        "csvRowBuildMs": 33.2,
+        "csvWriterFlushMs": 196.9,
+        "nodeCopyMs": 9599.8,
+        "relationshipSplitMs": 304.6,
+        "relationshipCopyMs": 11676.2,
+        "fallbackRelationshipInsertMs": 412.7,
+        "cleanupMs": 9
       },
       "counters": {
         "csvNodeRows": 19539,
@@ -308,35 +303,35 @@
         }
       },
       "nodeCopyByTableMs": {
-        "File": 1143.7,
-        "Folder": 557.9,
-        "Function": 959.1,
-        "Class": 439,
-        "Interface": 552.3,
-        "Method": 561.6,
-        "CodeElement": 385.7,
-        "Community": 533.5,
-        "Process": 689,
-        "Section": 711.6,
-        "Route": 399.6,
-        "Tool": 409,
-        "Const": 916.5,
-        "Variable": 434.1,
-        "Property": 464.7
+        "File": 1149.2,
+        "Folder": 525,
+        "Function": 953.5,
+        "Class": 543.7,
+        "Interface": 741.5,
+        "Method": 608.8,
+        "CodeElement": 457.3,
+        "Community": 519.1,
+        "Process": 540.7,
+        "Section": 671.2,
+        "Route": 430.9,
+        "Tool": 398.2,
+        "Const": 1070.1,
+        "Variable": 541.5,
+        "Property": 438.5
       }
     },
     "parse": {
       "timings": {
-        "readContentsMs": 348.6,
-        "workerParseMs": 45643.5,
-        "importResolveMs": 83.3,
-        "wildcardSynthesisMs": 12.3,
+        "readContentsMs": 315.8,
+        "workerParseMs": 45604.2,
+        "importResolveMs": 78.5,
+        "wildcardSynthesisMs": 11.9,
         "routeResolveMs": 0.3,
-        "heritageResolveMs": 2.8,
-        "callResolveMs": 208,
-        "assignmentResolveMs": 32,
+        "heritageResolveMs": 2.5,
+        "callResolveMs": 209.7,
+        "assignmentResolveMs": 33.6,
         "exportedTypeMapEnrichMs": 4.7,
-        "scopeFinalizeMs": 313
+        "scopeFinalizeMs": 331.7
       },
       "counters": {
         "workerCount": 7,
@@ -361,27 +356,27 @@
     },
     "crossFile": {
       "timings": {
-        "topologicalSortMs": 0.7,
-        "candidateSelectionMs": 0.2,
-        "importedReturnMapsMs": 0.6,
-        "readContentsMs": 35.4,
-        "processCallsParserParseMs": 788.3,
-        "processCallsQueryCompileMs": 92.8,
-        "processCallsQueryExecuteMs": 883.7,
-        "processCallsQueryMatchesMs": 980.7,
-        "processCallsTypeEnvConstructorBindingScanMs": 63.8,
-        "processCallsTypeEnvWalkMs": 3052.1,
-        "processCallsTypeEnvExtractTypeBindingMs": 596.8,
-        "processCallsTypeEnvPendingAssignmentMs": 45.6,
-        "processCallsTypeEnvPatternBindingMs": 63,
-        "processCallsTypeEnvFixpointMs": 29.9,
-        "processCallsTypeEnvForLoopReplayMs": 77.1,
-        "processCallsBuildTypeEnvMs": 11804.2,
+        "topologicalSortMs": 0.8,
+        "candidateSelectionMs": 0.3,
+        "importedReturnMapsMs": 0.5,
+        "readContentsMs": 36.7,
+        "processCallsParserParseMs": 762.2,
+        "processCallsQueryCompileMs": 93.6,
+        "processCallsQueryExecuteMs": 836.2,
+        "processCallsQueryMatchesMs": 933.5,
+        "processCallsTypeEnvConstructorBindingScanMs": 83.4,
+        "processCallsTypeEnvWalkMs": 3442.3,
+        "processCallsTypeEnvExtractTypeBindingMs": 621.8,
+        "processCallsTypeEnvPendingAssignmentMs": 55.9,
+        "processCallsTypeEnvPatternBindingMs": 85.8,
+        "processCallsTypeEnvFixpointMs": 29.2,
+        "processCallsTypeEnvForLoopReplayMs": 85.5,
+        "processCallsBuildTypeEnvMs": 12528.1,
         "processCallsEdgeEmissionMs": 0.3,
-        "processCallsResolutionTraversalMs": 5408.8,
-        "processCallsMs": 19188.6,
+        "processCallsResolutionTraversalMs": 5636.9,
+        "processCallsMs": 20049.3,
         "processCallsTypeEnvSeedImportedBindingsMs": 0.2,
-        "totalMs": 19239.6
+        "totalMs": 20101.1
       },
       "counters": {
         "importLevels": 8,
@@ -393,12 +388,12 @@
     },
     "resolution": {
       "timings": {
-        "referenceResolveMs": 1616.9,
-        "readonlyIndexInitMs": 93.1,
-        "referenceWorkerResolveMs": 1500.4,
-        "referenceMergeMs": 0.6,
-        "referenceIndexBuildMs": 13.8,
-        "graphEmitMs": 250.8
+        "referenceResolveMs": 1683.5,
+        "readonlyIndexInitMs": 90.9,
+        "referenceWorkerResolveMs": 1569,
+        "referenceMergeMs": 0.5,
+        "referenceIndexBuildMs": 14.3,
+        "graphEmitMs": 253.2
       },
       "counters": {
         "scopeResolutionReferenceSites": 127585,
@@ -427,21 +422,21 @@
     }
   },
   "keyMetrics": {
-    "totalWallMs": 110108.9,
+    "totalWallMs": 111432.1,
     "phaseMs": {
       "scan": 135,
-      "structure": 10,
+      "structure": 9,
       "markdown": 15,
       "cobol": 2,
-      "parse": 46832,
-      "routes": 22,
+      "parse": 46743,
+      "routes": 25,
       "tools": 2,
-      "orm": 1,
-      "crossFile": 19241,
-      "resolution": 1868,
-      "mro": 6,
-      "communities": 345,
-      "processes": 463
+      "orm": 0,
+      "crossFile": 20102,
+      "resolution": 1937,
+      "mro": 7,
+      "communities": 221,
+      "processes": 335
     },
     "nodeCount": 19539,
     "relationshipCount": 31143,
@@ -485,12 +480,12 @@
     "semanticRelationshipUniqueCountsByType": {
       "CONTAINS": 1648,
       "IMPORTS": 202,
-      "DEFINES": 16899,
+      "DEFINES": 15884,
       "HAS_PROPERTY": 99,
       "HAS_METHOD": 349,
       "EXTENDS": 2,
       "IMPLEMENTS": 3,
-      "CALLS": 5553,
+      "CALLS": 5143,
       "ACCESSES": 170,
       "HANDLES_ROUTE": 18,
       "HANDLES_TOOL": 13,
@@ -505,12 +500,12 @@
     "semanticRelationshipDuplicateCountsByType": {
       "CONTAINS": 0,
       "IMPORTS": 0,
-      "DEFINES": 0,
+      "DEFINES": 1015,
       "HAS_PROPERTY": 0,
       "HAS_METHOD": 0,
       "EXTENDS": 0,
       "IMPLEMENTS": 0,
-      "CALLS": 0,
+      "CALLS": 410,
       "ACCESSES": 10,
       "HANDLES_ROUTE": 0,
       "HANDLES_TOOL": 0,
@@ -522,10 +517,10 @@
       "STEP_IN_PROCESS": 98,
       "ENTRY_POINT_OF": 0
     },
-    "parseMs": 46832,
-    "crossFileMs": 19241,
-    "resolutionMs": 1868,
-    "lbugLoadMs": 24207,
+    "parseMs": 46743,
+    "crossFileMs": 20102,
+    "resolutionMs": 1937,
+    "lbugLoadMs": 24432.5,
     "parseableFiles": 750,
     "totalParseableMB": 7.7,
     "workerCount": 7,
@@ -566,8 +561,8 @@
     "scopeResolutionEdgesSkippedNoCaller": 4186,
     "scopeResolutionEdgesSkippedMissingTarget": 4020,
     "crossFileReprocessedFiles": 187,
-    "crossFileReadContentsMs": 35.4,
-    "crossFileProcessCallsParserParseMs": 788.3,
+    "crossFileReadContentsMs": 36.7,
+    "crossFileProcessCallsParserParseMs": 762.2,
     "csvRelationshipRows": 31143,
     "ladybugCopyCount": 61
   }
