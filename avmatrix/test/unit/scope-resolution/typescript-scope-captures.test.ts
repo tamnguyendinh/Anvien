@@ -264,6 +264,57 @@ function run(user: User) {
     ).toHaveLength(2);
   });
 
+  it('emits for-of call-return element bindings from the already-parsed AST', () => {
+    const source = `
+import { listUsers } from './models';
+
+class User {
+  save() {}
+}
+
+function localUsers(): User[] {
+  return [];
+}
+
+function run() {
+  for (const localUser of localUsers()) {
+    localUser.save();
+  }
+  for (const importedUser of listUsers()) {
+    importedUser.save();
+  }
+}
+`;
+    const tree = parser.parse(source);
+    const result = extractParsedFileWithStats(
+      typescriptProvider,
+      source,
+      'src/for-of.ts',
+      SupportedLanguages.TypeScript,
+      tree.rootNode,
+    );
+
+    expect(result.mode).toBe('ast-reused');
+    const parsed = result.parsedFile;
+    expect(parsed).toBeDefined();
+
+    const typeBindings = new Map<string, { rawName: string; source: string }>();
+    for (const scope of parsed!.scopes) {
+      for (const [name, typeRef] of scope.typeBindings) {
+        typeBindings.set(name, { rawName: typeRef.rawName, source: typeRef.source });
+      }
+    }
+
+    expect(typeBindings.get('localUser')).toEqual({
+      rawName: 'localUsers',
+      source: 'call-return-element',
+    });
+    expect(typeBindings.get('importedUser')).toEqual({
+      rawName: 'listUsers',
+      source: 'call-return-element',
+    });
+  });
+
   it('emits interface property and type-alias RHS facts from the already-parsed AST', () => {
     const source = `
 class User {}

@@ -85,7 +85,8 @@ export function interpretTsJsTypeBinding(match: CaptureMatch): ParsedTypeBinding
       source === 'constructor-inferred' ||
       source === 'assignment-inferred' ||
       source === 'return-annotation' ||
-      source === 'call-return'
+      source === 'call-return' ||
+      source === 'call-return-element'
         ? source
         : source === 'parameter-annotation'
           ? 'parameter-annotation'
@@ -350,6 +351,20 @@ function emitTypeBinding(
     if (callName !== undefined && context.importedLocalNames.has(callName)) {
       out.push(inferredTypeBindingMatch(node, nameNode, callName, 'call-return'));
     }
+  }
+
+  if (node.type === 'for_in_statement' && isForOfStatement(node)) {
+    const nameNode = node.childForFieldName('left');
+    if (nameNode?.type !== 'identifier') return;
+    const callName = callNameFromCallValue(node.childForFieldName('right'));
+    if (callName === undefined) return;
+    if (
+      context.returnTypesByCallableName.has(callName) ||
+      context.importedLocalNames.has(callName)
+    ) {
+      out.push(inferredTypeBindingMatch(node, nameNode, callName, 'call-return-element'));
+    }
+    return;
   }
 
   if (node.type === 'type_alias_declaration') {
@@ -680,6 +695,13 @@ function isFunctionScopeNode(node: SyntaxNode): boolean {
 
 function isFunctionExpression(node: SyntaxNode | null): boolean {
   return node?.type === 'arrow_function' || node?.type === 'function_expression';
+}
+
+function isForOfStatement(node: SyntaxNode): boolean {
+  for (let i = 0; i < node.childCount; i++) {
+    if (node.child(i)?.type === 'of') return true;
+  }
+  return false;
 }
 
 function constructorNameFromValue(node: SyntaxNode | null): string | undefined {

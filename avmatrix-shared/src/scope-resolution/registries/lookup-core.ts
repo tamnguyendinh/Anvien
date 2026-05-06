@@ -322,8 +322,8 @@ function lookupReceiverType(
 
     const typeRef = scope.typeBindings.get(receiverName);
     if (typeRef !== undefined) {
-      if (typeRef.source === 'call-return') {
-        const owner = resolveCallReturnOwner(typeRef, ctx);
+      if (typeRef.source === 'call-return' || typeRef.source === 'call-return-element') {
+        const owner = resolveCallReturnOwner(typeRef, ctx, typeRef.source);
         if (owner !== undefined) return owner;
         currentId = scope.parent;
         continue;
@@ -348,11 +348,18 @@ function lookupReceiverType(
   return undefined;
 }
 
-function resolveCallReturnOwner(typeRef: TypeRef, ctx: RegistryContext): DefId | undefined {
+function resolveCallReturnOwner(
+  typeRef: TypeRef,
+  ctx: RegistryContext,
+  source: 'call-return' | 'call-return-element',
+): DefId | undefined {
   const callable = resolveCallableBinding(typeRef.rawName, typeRef.declaredAtScope, ctx);
   if (callable?.returnType === undefined) return undefined;
 
-  const returnTypeName = extractReturnTypeName(callable.returnType);
+  const returnTypeName =
+    source === 'call-return-element'
+      ? extractIterableElementReturnTypeName(callable.returnType)
+      : extractReturnTypeName(callable.returnType);
   if (returnTypeName === undefined) return undefined;
 
   const returnScope = ctx.moduleScopes.get(callable.filePath) ?? typeRef.declaredAtScope;
@@ -462,6 +469,37 @@ function extractReturnTypeName(raw: string, depth = 0): string | undefined {
   }
   if (!/^[A-Z_]\w*$/.test(text) || text.length > 512) return undefined;
   return text;
+}
+
+function extractIterableElementReturnTypeName(raw: string, depth = 0): string | undefined {
+  if (depth > 10 || raw.length > 2048) return undefined;
+  let text = raw.trim();
+  if (text.length === 0) return undefined;
+
+  text = text.replace(/^[&*]+\s*(mut\s+)?/, '').replace(/\?$/, '');
+
+  if (text.includes('|')) {
+    const parts = text
+      .split('|')
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0 && !NULLABLE_RETURN_KEYWORDS.has(part));
+    if (parts.length !== 1) return undefined;
+    text = parts[0]!;
+  }
+
+  if (text.endsWith('[]')) {
+    return extractReturnTypeName(text.slice(0, -2), depth + 1);
+  }
+
+  const generic = text.match(/^(\w+)\s*<(.+)>$/);
+  if (generic !== null) {
+    const [, base, args] = generic;
+    if (ITERABLE_RETURN_TYPES.has(base)) {
+      return extractReturnTypeName(firstGenericTypeArg(args), depth + 1);
+    }
+  }
+
+  return undefined;
 }
 
 function firstGenericTypeArg(args: string): string {
@@ -637,4 +675,15 @@ const WRAPPER_RETURN_TYPES: ReadonlySet<string> = new Set([
   'Maybe',
   'Result',
   'Either',
+]);
+
+const ITERABLE_RETURN_TYPES: ReadonlySet<string> = new Set([
+  'Array',
+  'ReadonlyArray',
+  'Iterable',
+  'AsyncIterable',
+  'Collection',
+  'List',
+  'Set',
+  'Sequence',
 ]);
