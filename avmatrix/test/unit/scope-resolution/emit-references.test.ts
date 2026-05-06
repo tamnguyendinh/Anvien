@@ -99,6 +99,7 @@ function makeIndexes(scopes: Scope[], allDefs: SymbolDefinition[]): ScopeResolut
     }),
     imports: new Map(),
     bindings: new Map(),
+    fileHashes: new Map(),
     referenceSites: [],
     sccs: [],
     stats: {

@@ -43,6 +43,7 @@ const mkScope = (
 
 const mkFile = (filePath: string, overrides: Partial<ParsedFile> = {}): ParsedFile => ({
   filePath,
+  ...(overrides.fileHash !== undefined ? { fileHash: overrides.fileHash } : {}),
   moduleScope: `scope:${filePath}#module`,
   scopes: overrides.scopes ?? [mkScope(`scope:${filePath}#module`, null, filePath)],
   parsedImports: overrides.parsedImports ?? [],
@@ -68,11 +69,19 @@ describe('finalizeScopeModel: empty input', () => {
     expect(out.moduleScopes.size).toBe(0);
     expect(out.methodDispatch.mroByOwnerDefId.size).toBe(0);
     expect(out.imports.size).toBe(0);
+    expect(out.fileHashes.size).toBe(0);
     expect(out.bindings.size).toBe(0);
     expect(out.referenceSites).toEqual([]);
     expect(out.sccs).toEqual([]);
     expect(out.stats.totalFiles).toBe(0);
     expect(out.stats.totalEdges).toBe(0);
+  });
+});
+
+describe('finalizeScopeModel: file hashes', () => {
+  it('preserves ParsedFile source hashes for resolution audit metadata', () => {
+    const out = finalizeScopeModel([mkFile('src/app.ts', { fileHash: 'sha256:abc' })]);
+    expect(out.fileHashes.get('src/app.ts')).toBe('sha256:abc');
   });
 });
 

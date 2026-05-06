@@ -16,7 +16,7 @@ import fs from 'fs/promises';
 import { createWriteStream, WriteStream } from 'fs';
 import path from 'path';
 import { performance } from 'node:perf_hooks';
-import type { GraphNode } from 'avmatrix-shared';
+import type { GraphNode, GraphRelationship } from 'avmatrix-shared';
 import { KnowledgeGraph } from '../graph/types.js';
 import { NodeTableName } from './schema.js';
 
@@ -617,7 +617,7 @@ export const streamAllCSVsToDisk = async (
   const relCsvPath = path.join(csvDir, 'relations.csv');
   const relWriter = new BufferedCSVWriter(
     relCsvPath,
-    'from,to,type,confidence,reason,step',
+    'from,to,type,confidence,reason,step,resolutionSource,evidence,fileHash',
     csvTimings,
   );
   for (const rel of graph.iterRelationships()) {
@@ -629,6 +629,9 @@ export const streamAllCSVsToDisk = async (
         escapeCSVNumber(rel.confidence, 1.0),
         escapeCSVField(rel.reason),
         escapeCSVNumber((rel as any).step, 0),
+        escapeCSVField(rel.resolutionSource),
+        escapeCSVField(serializeRelationshipEvidence(rel)),
+        escapeCSVField(rel.fileHash),
       ].join(','),
     );
   }
@@ -679,3 +682,8 @@ export const streamAllCSVsToDisk = async (
     metrics: { timings: csvTimings, rowsByTable, bytesByTable },
   };
 };
+
+function serializeRelationshipEvidence(rel: GraphRelationship): string | undefined {
+  if (rel.evidence === undefined || rel.evidence.length === 0) return undefined;
+  return JSON.stringify(rel.evidence);
+}

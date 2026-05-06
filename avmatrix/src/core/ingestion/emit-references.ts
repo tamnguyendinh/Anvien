@@ -278,6 +278,8 @@ function buildRelationship(
     type,
     confidence: ref.confidence,
     reason,
+    resolutionSource: sourceLabel,
+    ...(ref.fileHash !== undefined ? { fileHash: ref.fileHash } : {}),
     evidence: ref.evidence.map(serializeEvidence),
     ...(step !== undefined ? { step } : {}),
   };

@@ -110,6 +110,9 @@ function relationshipSnapshotLine(relationship: GraphRelationship): string {
     confidence: relationship.confidence,
     reason: relationship.reason,
     step: relationship.step,
+    resolutionSource: relationship.resolutionSource,
+    fileHash: relationship.fileHash,
+    evidence: stableValue(relationship.evidence),
   });
 }
 

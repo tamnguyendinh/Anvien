@@ -21,6 +21,10 @@ import {
 import { getGitRoot, hasGitDir } from '../storage/git.js';
 import { runFullAnalysis } from '../core/run-analyze.js';
 import type { AnalyzePerformanceReport } from '../core/analyze/analyze-metrics.js';
+import {
+  createAnalyzeBenchmarkSnapshot,
+  writeAnalyzeBenchmarkSnapshot,
+} from '../core/analyze/analyze-benchmark-snapshot.js';
 import fs from 'fs/promises';
 
 const HEAP_MB = 8192;
@@ -64,6 +68,10 @@ export interface AnalyzeOptions {
   noStats?: boolean;
   /** Index the folder even when no .git directory is present. */
   skipGit?: boolean;
+  /** Write a benchmark artifact after a fresh analyze run. */
+  benchmarkJson?: string;
+  /** Optional human label stored in the benchmark artifact. */
+  benchmarkLabel?: string;
   /**
    * Override the default basename-derived registry `name` with a
    * user-supplied alias (#829). Disambiguates repos whose paths share a
@@ -237,6 +245,9 @@ export const analyzeCommand = async (inputPath?: string, options?: AnalyzeOption
       console.error = origError;
       bar.stop();
       console.log('  Already up to date\n');
+      if (options?.benchmarkJson) {
+        console.log('  Benchmark JSON was not written. Re-run with --force to capture timings.\n');
+      }
       // Safe to return without process.exit(0) — the early-return path in
       // runFullAnalysis never opens LadybugDB, so no native handles prevent exit.
       return;
@@ -311,6 +322,19 @@ export const analyzeCommand = async (inputPath?: string, options?: AnalyzeOption
     );
     if (options?.verbose && result.performance) {
       printPerformanceSummary(result.performance);
+    }
+    if (options?.benchmarkJson) {
+      const benchmarkPath = path.resolve(options.benchmarkJson);
+      const benchmark = createAnalyzeBenchmarkSnapshot({
+        repoName: result.repoName,
+        repoPath,
+        stats: result.stats,
+        pipelineResult: result.pipelineResult,
+        performance: result.performance,
+        label: options.benchmarkLabel,
+      });
+      await writeAnalyzeBenchmarkSnapshot(benchmarkPath, benchmark);
+      console.log(`  Benchmark JSON: ${benchmarkPath}`);
     }
     console.log(`  ${repoPath}`);
 
@@ -522,7 +546,7 @@ function printPerformanceSummary(performance: AnalyzePerformanceReport): void {
     const phaseTotalMs =
       performance.pipelinePhaseMs.resolution ?? performance.buckets.resolution ?? 0;
     console.log(
-      `  resolution detail: total ${phaseTotalMs.toFixed(1)}ms | references ${(resolutionTimings.referenceResolveMs ?? 0).toFixed(1)}ms | emit ${(resolutionTimings.graphEmitMs ?? 0).toFixed(1)}ms | sites ${resolutionCounters?.scopeResolutionReferenceSites ?? 0} | resolved ${resolutionCounters?.scopeResolutionResolvedReferences ?? 0} | unresolved ${resolutionCounters?.scopeResolutionUnresolvedReferences ?? 0} | emitted ${resolutionCounters?.scopeResolutionEdgesEmitted ?? 0} | skippedDuplicate ${resolutionCounters?.scopeResolutionDuplicateEdgesSkipped ?? 0}`,
+      `  resolution detail: total ${phaseTotalMs.toFixed(1)}ms | references ${(resolutionTimings.referenceResolveMs ?? 0).toFixed(1)}ms | index ${(resolutionTimings.referenceIndexBuildMs ?? 0).toFixed(1)}ms | emit ${(resolutionTimings.graphEmitMs ?? 0).toFixed(1)}ms | sites ${resolutionCounters?.scopeResolutionReferenceSites ?? 0} | chunks ${resolutionCounters?.scopeResolutionChunks ?? 0} | indexScopes ${resolutionCounters?.scopeResolutionReferenceIndexSourceScopes ?? 0} | indexDefs ${resolutionCounters?.scopeResolutionReferenceIndexTargetDefs ?? 0} | resolved ${resolutionCounters?.scopeResolutionResolvedReferences ?? 0} | unresolved ${resolutionCounters?.scopeResolutionUnresolvedReferences ?? 0} | emitted ${resolutionCounters?.scopeResolutionEdgesEmitted ?? 0} | skippedDuplicate ${resolutionCounters?.scopeResolutionDuplicateEdgesSkipped ?? 0}`,
     );
   }
 }

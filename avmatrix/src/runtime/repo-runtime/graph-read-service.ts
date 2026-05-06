@@ -32,7 +32,8 @@ export const isIgnorableGraphQueryError = (err: unknown): boolean => {
 
 export const GRAPH_RELATIONSHIP_QUERY =
   `MATCH (a)-[r:CodeRelation]->(b) RETURN a.id AS sourceId, b.id AS targetId, ` +
-  `r.type AS type, r.confidence AS confidence, r.reason AS reason, r.step AS step`;
+  `r.type AS type, r.confidence AS confidence, r.reason AS reason, r.step AS step, ` +
+  `r.resolutionSource AS resolutionSource, r.evidence AS evidence, r.fileHash AS fileHash`;
 
 export const quoteNodeTable = (table: string): string => `\`${table.replace(/`/g, '``')}\``;
 
@@ -88,15 +89,45 @@ export const mapGraphNodeRow = (table: string, row: any, includeContent: boolean
   } as GraphNode['properties'],
 });
 
-export const mapGraphRelationshipRow = (row: any): GraphRelationship => ({
-  id: `${row.sourceId}_${row.type}_${row.targetId}`,
-  type: row.type,
-  sourceId: row.sourceId,
-  targetId: row.targetId,
-  confidence: row.confidence,
-  reason: row.reason,
-  step: row.step,
-});
+export const mapGraphRelationshipRow = (row: any): GraphRelationship => {
+  const evidence = parseRelationshipEvidence(row.evidence);
+  return {
+    id: `${row.sourceId}_${row.type}_${row.targetId}`,
+    type: row.type,
+    sourceId: row.sourceId,
+    targetId: row.targetId,
+    confidence: row.confidence,
+    reason: row.reason,
+    step: row.step,
+    ...(row.resolutionSource ? { resolutionSource: row.resolutionSource } : {}),
+    ...(row.fileHash ? { fileHash: row.fileHash } : {}),
+    ...(evidence !== undefined ? { evidence } : {}),
+  };
+};
+
+function parseRelationshipEvidence(value: unknown): GraphRelationship['evidence'] | undefined {
+  if (typeof value !== 'string' || value.trim().length === 0) return undefined;
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) return undefined;
+    return parsed
+      .map((item) => {
+        if (item === null || typeof item !== 'object') return undefined;
+        const record = item as Record<string, unknown>;
+        if (typeof record.kind !== 'string' || typeof record.weight !== 'number') {
+          return undefined;
+        }
+        return {
+          kind: record.kind,
+          weight: record.weight,
+          ...(typeof record.note === 'string' ? { note: record.note } : {}),
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== undefined);
+  } catch {
+    return undefined;
+  }
+}
 
 export const buildGraphFromExecutor = async (
   executeQuery: GraphQueryExecutor,

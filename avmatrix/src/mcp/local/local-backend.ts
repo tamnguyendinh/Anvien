@@ -148,6 +148,34 @@ export const IMPACT_RELATION_CONFIDENCE: Readonly<Record<string, number>> = {
 const confidenceForRelType = (relType: string | undefined): number =>
   IMPACT_RELATION_CONFIDENCE[relType ?? ''] ?? 0.5;
 
+function parseRelationshipEvidence(value: unknown): unknown[] | undefined {
+  if (typeof value !== 'string' || value.trim().length === 0) return undefined;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function relationshipAuditFields(row: any, offset: number): Record<string, unknown> {
+  const confidence = row.confidence ?? row[offset];
+  const reason = row.reason ?? row[offset + 1];
+  const resolutionSource = row.resolutionSource ?? row[offset + 2];
+  const evidence = parseRelationshipEvidence(row.evidence ?? row[offset + 3]);
+  const fileHash = row.fileHash ?? row[offset + 4];
+
+  return {
+    ...(confidence !== undefined && confidence !== null ? { confidence } : {}),
+    ...(reason !== undefined && reason !== null && reason !== '' ? { reason } : {}),
+    ...(resolutionSource !== undefined && resolutionSource !== null && resolutionSource !== ''
+      ? { resolutionSource }
+      : {}),
+    ...(evidence !== undefined ? { evidence } : {}),
+    ...(fileHash !== undefined && fileHash !== null && fileHash !== '' ? { fileHash } : {}),
+  };
+}
+
 /** Structured error logging for query failures — replaces empty catch blocks */
 function logQueryError(context: string, err: unknown): void {
   const msg = err instanceof Error ? err.message : String(err);
@@ -1477,7 +1505,9 @@ export class LocalBackend {
       `
       MATCH (caller)-[r:CodeRelation]->(n {id: $symId})
       WHERE r.type IN ['CALLS', 'IMPORTS', 'EXTENDS', 'IMPLEMENTS', 'HAS_METHOD', 'HAS_PROPERTY', 'METHOD_OVERRIDES', 'OVERRIDES', 'METHOD_IMPLEMENTS', 'ACCESSES']
-      RETURN r.type AS relType, caller.id AS uid, caller.name AS name, caller.filePath AS filePath, labels(caller)[0] AS kind
+      RETURN r.type AS relType, caller.id AS uid, caller.name AS name, caller.filePath AS filePath, labels(caller)[0] AS kind,
+             r.confidence AS confidence, r.reason AS reason, r.resolutionSource AS resolutionSource,
+             r.evidence AS evidence, r.fileHash AS fileHash
       LIMIT 30
     `,
       { symId },
@@ -1524,7 +1554,9 @@ export class LocalBackend {
             WHERE n.id = $symId AND hm.type = 'HAS_METHOD'
             MATCH (caller)-[r:CodeRelation]->(ctor)
             WHERE r.type IN ['CALLS', 'IMPORTS', 'EXTENDS', 'IMPLEMENTS', 'ACCESSES']
-            RETURN r.type AS relType, caller.id AS uid, caller.name AS name, caller.filePath AS filePath, labels(caller)[0] AS kind
+            RETURN r.type AS relType, caller.id AS uid, caller.name AS name, caller.filePath AS filePath, labels(caller)[0] AS kind,
+                   r.confidence AS confidence, r.reason AS reason, r.resolutionSource AS resolutionSource,
+                   r.evidence AS evidence, r.fileHash AS fileHash
             LIMIT 30
           `,
             { symId },
@@ -1536,7 +1568,9 @@ export class LocalBackend {
             WHERE n.id = $symId AND rel.type = 'DEFINES'
             MATCH (caller)-[r:CodeRelation]->(f)
             WHERE r.type IN ['CALLS', 'IMPORTS']
-            RETURN r.type AS relType, caller.id AS uid, caller.name AS name, caller.filePath AS filePath, labels(caller)[0] AS kind
+            RETURN r.type AS relType, caller.id AS uid, caller.name AS name, caller.filePath AS filePath, labels(caller)[0] AS kind,
+                   r.confidence AS confidence, r.reason AS reason, r.resolutionSource AS resolutionSource,
+                   r.evidence AS evidence, r.fileHash AS fileHash
             LIMIT 30
           `,
             { symId },
@@ -1567,7 +1601,9 @@ export class LocalBackend {
       `
       MATCH (n {id: $symId})-[r:CodeRelation]->(target)
       WHERE r.type IN ['CALLS', 'IMPORTS', 'EXTENDS', 'IMPLEMENTS', 'HAS_METHOD', 'HAS_PROPERTY', 'METHOD_OVERRIDES', 'OVERRIDES', 'METHOD_IMPLEMENTS', 'ACCESSES']
-      RETURN r.type AS relType, target.id AS uid, target.name AS name, target.filePath AS filePath, labels(target)[0] AS kind
+      RETURN r.type AS relType, target.id AS uid, target.name AS name, target.filePath AS filePath, labels(target)[0] AS kind,
+             r.confidence AS confidence, r.reason AS reason, r.resolutionSource AS resolutionSource,
+             r.evidence AS evidence, r.fileHash AS fileHash
       LIMIT 30
     `,
       { symId },
@@ -1598,6 +1634,7 @@ export class LocalBackend {
           name: row.name || row[2],
           filePath: row.filePath || row[3],
           kind: row.kind || row[4],
+          ...relationshipAuditFields(row, 5),
         };
         if (!cats[relType]) cats[relType] = [];
         cats[relType].push(entry);
@@ -2365,8 +2402,8 @@ export class LocalBackend {
       const idList = frontier.map((id) => `'${id.replace(/'/g, "''")}'`).join(', ');
       const query =
         direction === 'upstream'
-          ? `MATCH (caller)-[r:CodeRelation]->(n) WHERE n.id IN [${idList}] AND r.type IN [${relTypeFilter}]${confidenceFilter} RETURN n.id AS sourceId, caller.id AS id, caller.name AS name, labels(caller)[0] AS type, caller.filePath AS filePath, r.type AS relType, r.confidence AS confidence`
-          : `MATCH (n)-[r:CodeRelation]->(callee) WHERE n.id IN [${idList}] AND r.type IN [${relTypeFilter}]${confidenceFilter} RETURN n.id AS sourceId, callee.id AS id, callee.name AS name, labels(callee)[0] AS type, callee.filePath AS filePath, r.type AS relType, r.confidence AS confidence`;
+          ? `MATCH (caller)-[r:CodeRelation]->(n) WHERE n.id IN [${idList}] AND r.type IN [${relTypeFilter}]${confidenceFilter} RETURN n.id AS sourceId, caller.id AS id, caller.name AS name, labels(caller)[0] AS type, caller.filePath AS filePath, r.type AS relType, r.confidence AS confidence, r.reason AS reason, r.resolutionSource AS resolutionSource, r.evidence AS evidence, r.fileHash AS fileHash`
+          : `MATCH (n)-[r:CodeRelation]->(callee) WHERE n.id IN [${idList}] AND r.type IN [${relTypeFilter}]${confidenceFilter} RETURN n.id AS sourceId, callee.id AS id, callee.name AS name, labels(callee)[0] AS type, callee.filePath AS filePath, r.type AS relType, r.confidence AS confidence, r.reason AS reason, r.resolutionSource AS resolutionSource, r.evidence AS evidence, r.fileHash AS fileHash`;
 
       try {
         const related = await executeQuery(repo.id, query);
@@ -2396,6 +2433,7 @@ export class LocalBackend {
               filePath,
               relationType,
               confidence: effectiveConfidence,
+              ...relationshipAuditFields(rel, 6),
             });
           }
         }

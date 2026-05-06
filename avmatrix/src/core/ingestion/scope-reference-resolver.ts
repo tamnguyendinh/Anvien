@@ -9,10 +9,20 @@ import {
   type RegistryContext,
   type Resolution,
 } from 'avmatrix-shared';
+import { performance } from 'node:perf_hooks';
 import type { ScopeResolutionIndexes } from './model/scope-resolution-indexes.js';
+
+const DEFAULT_REFERENCE_RESOLUTION_CHUNK_SIZE = 1000;
+
+export interface ScopeReferenceResolutionOptions {
+  readonly chunkSize?: number;
+}
 
 export interface ScopeReferenceResolutionStats {
   readonly totalReferenceSites: number;
+  readonly chunkSize: number;
+  readonly chunksResolved: number;
+  readonly maxChunkReferenceSites: number;
   readonly resolvedReferences: number;
   readonly unresolvedReferences: number;
   readonly resolvedCalls: number;
@@ -20,15 +30,23 @@ export interface ScopeReferenceResolutionStats {
   readonly resolvedTypeReferences: number;
   readonly resolvedInheritance: number;
   readonly resolvedImportUses: number;
+  readonly referenceIndexSourceScopes: number;
+  readonly referenceIndexTargetDefs: number;
+}
+
+export interface ScopeReferenceResolutionTimings {
+  readonly referenceIndexBuildMs: number;
 }
 
 export interface ScopeReferenceResolutionResult {
   readonly referenceIndex: ReferenceIndex;
   readonly stats: ScopeReferenceResolutionStats;
+  readonly timings: ScopeReferenceResolutionTimings;
 }
 
 export function resolveScopeReferenceSites(
   scopes: ScopeResolutionIndexes,
+  options: ScopeReferenceResolutionOptions = {},
 ): ScopeReferenceResolutionResult {
   const ctx: RegistryContext = {
     scopes: scopes.scopeTree,
@@ -51,33 +69,55 @@ export function resolveScopeReferenceSites(
   let resolvedInheritance = 0;
   let resolvedImportUses = 0;
 
-  for (const site of scopes.referenceSites) {
-    const resolution = bestResolutionForSite(site);
-    if (resolution === undefined) {
-      unresolvedReferences++;
-      continue;
+  const chunkSize = normalizeChunkSize(options.chunkSize);
+  let chunksResolved = 0;
+  let maxChunkReferenceSites = 0;
+
+  for (let offset = 0; offset < scopes.referenceSites.length; offset += chunkSize) {
+    const end = Math.min(offset + chunkSize, scopes.referenceSites.length);
+    chunksResolved++;
+    maxChunkReferenceSites = Math.max(maxChunkReferenceSites, end - offset);
+
+    for (let index = offset; index < end; index++) {
+      const site = scopes.referenceSites[index];
+      if (site === undefined) continue;
+
+      const resolution = bestResolutionForSite(site);
+      if (resolution === undefined) {
+        unresolvedReferences++;
+        continue;
+      }
+
+      const fileHash = fileHashForSite(site);
+      refs.push({
+        fromScope: site.inScope,
+        toDef: resolution.def.nodeId,
+        ...(fileHash !== undefined ? { fileHash } : {}),
+        atRange: site.atRange,
+        kind: site.kind,
+        confidence: resolution.confidence,
+        evidence: resolution.evidence,
+      });
+
+      if (site.kind === 'call') resolvedCalls++;
+      else if (site.kind === 'read' || site.kind === 'write') resolvedAccesses++;
+      else if (site.kind === 'type-reference') resolvedTypeReferences++;
+      else if (site.kind === 'inherits') resolvedInheritance++;
+      else if (site.kind === 'import-use') resolvedImportUses++;
     }
-
-    refs.push({
-      fromScope: site.inScope,
-      toDef: resolution.def.nodeId,
-      atRange: site.atRange,
-      kind: site.kind,
-      confidence: resolution.confidence,
-      evidence: resolution.evidence,
-    });
-
-    if (site.kind === 'call') resolvedCalls++;
-    else if (site.kind === 'read' || site.kind === 'write') resolvedAccesses++;
-    else if (site.kind === 'type-reference') resolvedTypeReferences++;
-    else if (site.kind === 'inherits') resolvedInheritance++;
-    else if (site.kind === 'import-use') resolvedImportUses++;
   }
 
+  const indexStart = performance.now();
+  const referenceIndex = buildReferenceIndex(refs);
+  const referenceIndexBuildMs = performance.now() - indexStart;
+
   return {
-    referenceIndex: buildReferenceIndex(refs),
+    referenceIndex,
     stats: {
       totalReferenceSites: scopes.referenceSites.length,
+      chunkSize,
+      chunksResolved,
+      maxChunkReferenceSites,
       resolvedReferences: refs.length,
       unresolvedReferences,
       resolvedCalls,
@@ -85,6 +125,11 @@ export function resolveScopeReferenceSites(
       resolvedTypeReferences,
       resolvedInheritance,
       resolvedImportUses,
+      referenceIndexSourceScopes: referenceIndex.bySourceScope.size,
+      referenceIndexTargetDefs: referenceIndex.byTargetDef.size,
+    },
+    timings: {
+      referenceIndexBuildMs,
     },
   };
 
@@ -117,6 +162,20 @@ export function resolveScopeReferenceSites(
       })[0]
     );
   }
+
+  function fileHashForSite(site: ReferenceSite): string | undefined {
+    const scope = scopes.scopeTree.getScope(site.inScope);
+    if (scope === undefined) return undefined;
+    return scopes.fileHashes.get(scope.filePath);
+  }
+}
+
+function normalizeChunkSize(value: number | undefined): number {
+  if (value === undefined) return DEFAULT_REFERENCE_RESOLUTION_CHUNK_SIZE;
+  const chunkSize = Math.floor(value);
+  return Number.isFinite(chunkSize) && chunkSize > 0
+    ? chunkSize
+    : DEFAULT_REFERENCE_RESOLUTION_CHUNK_SIZE;
 }
 
 function methodOptions(site: ReferenceSite) {

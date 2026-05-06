@@ -33,6 +33,8 @@ Success means:
 - target speedup is at least 2x on large repositories, with a minimum acceptable first milestone of 40% lower wall time if parity work exposes unavoidable correctness cost;
 - query/context behavior after load remains fast because audit metadata and indexes are available in the default graph.
 
+Every implementation slice must be measurable. A change is not considered an optimization unless an analyze benchmark artifact records the relevant before/after timings, counters, edge counts, unresolved counts, and correctness snapshot. If the slice changes resolution behavior, benchmark output must include resolution timings and edge parity counters.
+
 ## Non-Goals
 
 - Do not re-add GitNexus `scopeResolutionPhase` as a second full pass.
@@ -220,12 +222,14 @@ Use this checklist to update implementation progress. Do not mark the target arc
 - [x] Wire a non-duplicating `resolutionPhase` into the default pipeline to populate `ReferenceIndex` metrics before graph edge emission is enabled.
 - [x] Emit currently resolved scope references from `resolutionPhase` through `emitReferencesToGraph` with a semantic duplicate-edge guard.
 - [x] Surface resolution timings and counters in the top-level analyze performance report and CLI summary.
+- [x] Add analyze benchmark JSON output that combines graph correctness snapshot, performance timings, and key optimization counters.
 - [x] Make finalized import bindings visible to scope lookup so imported constructor/type references resolve without source rereads.
 - [x] Add TypeScript/JavaScript AST-reused member read/write access facts and resolve them into `ACCESSES` edges.
 - [x] Add TypeScript/JavaScript AST-reused type-reference facts from annotations and emit them as `USES` edges.
 - [ ] Capture AVmatrix baseline metrics on the selected representative repositories.
 - [ ] Capture GitNexus deep/scope graph baseline metrics on the same repositories.
 - [ ] Define fixture-level parity expectations for `CALLS`, `IMPORTS`, `ACCESSES`, `USES`, and `INHERITS`.
+- [ ] Require a benchmark JSON artifact before and after each optimization slice that claims speedup.
 - [ ] Migrate the first provider, preferably TypeScript, to emit complete AST-reused scope captures.
 - [ ] Prove the migrated provider does not re-read or reparse source for scope extraction.
 - [x] Build an initial `MethodDispatchIndex` from finalized `inherits` reference sites before scope-aware call resolution depends on it.
@@ -236,8 +240,11 @@ Use this checklist to update implementation progress. Do not mark the target arc
 - [x] Resolve TypeScript member read/write access facts to property definitions and emit graph `ACCESSES` edges.
 - [x] Resolve TypeScript type annotation facts to class/interface definitions and emit graph `USES` edges.
 - [ ] Complete scope-resolved `CALLS`, `ACCESSES`, `USES`, `INHERITS`, and import-use edge coverage across migrated providers through one graph emission path.
+- [x] Add deterministic reference-site chunk scheduling plus chunk/index cardinality metrics as the scaffold for workerized resolution.
 - [ ] Parallelize reference resolution by file/chunk against readonly indexes.
-- [ ] Persist audit metadata (`resolutionSource`, `confidence`, `evidence`, `fileHash`) through LadybugDB load.
+- [x] Persist available audit metadata (`resolutionSource`, `confidence`, `evidence`, `fileHash` column) through LadybugDB CSV/load/read-back.
+- [x] Populate real `fileHash` values on scope-resolved edges from parse-time `ParsedFile.fileHash` without rereading source.
+- [x] Expose scope-resolution audit metadata in MCP context/impact readers, not only graph read-back.
 - [ ] Move useful `crossFilePhase` type propagation into `resolutionPhase`.
 - [ ] Retire or narrow `crossFilePhase` only after parity is proven.
 - [x] Add duplicate-edge checks so legacy and scope-aware paths do not emit overlapping edges.
@@ -246,6 +253,9 @@ Use this checklist to update implementation progress. Do not mark the target arc
 
 ### Milestone 1: Baseline And Parity Targets
 
+- Add a machine-readable AVmatrix benchmark artifact, for example `avmatrix analyze --force --benchmark-json <file> --benchmark-label <label>`.
+- The artifact must include graph correctness snapshot, edge counts by type, unresolved counts, phase timings, parse/crossFile/resolution/lbug timings, duplicate-read/parse proxy counters, and resolution chunk/index counters.
+- Do not accept a speedup claim from console wall time alone.
 - Run AVmatrix analyze metrics on representative repos.
 - Run GitNexus deep/scope graph baseline on the same repos where possible. Treat it as the minimum accuracy baseline, not as an acceptable speed target.
 - Record edge counts by type:
@@ -318,6 +328,7 @@ Use this checklist to update implementation progress. Do not mark the target arc
   - select the top candidate by confidence and tie-break rules;
   - emit unresolved diagnostics when no candidate is safe enough.
 - Resolve file/chunk reference-site units in workers.
+- Keep chunk boundaries deterministic and expose chunk/index cardinality metrics before moving execution out to workers.
 - Initialize readonly resolution indexes once per worker.
 - Emit import, call, access, use, and inheritance edges in one place.
 - Merge results deterministically.
@@ -339,6 +350,7 @@ Use this checklist to update implementation progress. Do not mark the target arc
 - Extend relationship CSV split/load paths.
 - Extend fallback relationship insert parsing.
 - Extend query/context readers so audit metadata is visible through tools after DB load.
+- Keep `fileHash` as a nullable persisted field for legacy edges; scope-resolved edges should populate it from parse-time `ParsedFile.fileHash`.
 - Preserve backward compatibility for existing relationship queries.
 - Add tests that prove evidence metadata survives graph load.
 

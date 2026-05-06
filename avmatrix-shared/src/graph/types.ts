@@ -131,6 +131,10 @@ export interface GraphRelationship {
   confidence: number;
   reason: string;
   step?: number;
+  /** Source of the relationship resolver, e.g. `scope-resolution`. */
+  resolutionSource?: string;
+  /** Hash of the source file used for auditability when available. */
+  fileHash?: string;
   /**
    * Per-signal evidence trace for edges emitted by the scope-based
    * resolution pipeline (RFC #909 Ring 2 PKG #925). Populated by

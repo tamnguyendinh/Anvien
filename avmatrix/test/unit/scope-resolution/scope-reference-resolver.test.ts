@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import type Parser from 'tree-sitter';
+import { createHash } from 'node:crypto';
 import { SupportedLanguages } from 'avmatrix-shared';
 import { createParserForLanguage } from '../../../src/core/tree-sitter/parser-loader.js';
 import { typescriptProvider } from '../../../src/core/ingestion/languages/typescript.js';
@@ -56,17 +57,23 @@ function run(user: User) {
     const refsToSave = result.referenceIndex.byTargetDef.get(save!.nodeId) ?? [];
     const refsToAdmin = result.referenceIndex.byTargetDef.get(admin!.nodeId) ?? [];
     const refsToUser = result.referenceIndex.byTargetDef.get(user!.nodeId) ?? [];
+    const fileHash = sourceHash(source);
 
     expect(refsToSave.map((ref) => ref.kind)).toEqual(['call']);
+    expect(refsToSave[0]?.fileHash).toBe(fileHash);
     expect(refsToAdmin.map((ref) => ref.kind)).toEqual(['call']);
     expect(refsToUser.map((ref) => ref.kind).sort()).toEqual(['inherits', 'type-reference']);
     expect(result.stats).toMatchObject({
       totalReferenceSites: 4,
+      chunksResolved: 1,
+      maxChunkReferenceSites: 4,
       resolvedReferences: 4,
       unresolvedReferences: 0,
       resolvedCalls: 2,
       resolvedTypeReferences: 1,
       resolvedInheritance: 1,
+      referenceIndexSourceScopes: 2,
+      referenceIndexTargetDefs: 3,
     });
   });
 
@@ -121,6 +128,46 @@ function run(child: Child) {
       resolvedTypeReferences: 1,
       resolvedInheritance: 1,
     });
+  });
+
+  it('resolves deterministic reference-site chunks without changing ReferenceIndex output', () => {
+    const source = `
+class User {
+  name: string;
+  save() {}
+}
+
+function run(user: User) {
+  user.name;
+  user.save();
+}
+`;
+    const parsed = extractParsedFileWithStats(
+      typescriptProvider,
+      source,
+      'src/app.ts',
+      SupportedLanguages.TypeScript,
+      parser.parse(source).rootNode,
+    ).parsedFile;
+    expect(parsed).toBeDefined();
+
+    const indexes = finalizeScopeModel([parsed!]);
+    const unchunked = resolveScopeReferenceSites(indexes);
+    const chunked = resolveScopeReferenceSites(indexes, { chunkSize: 1 });
+
+    expect(chunked.stats).toMatchObject({
+      totalReferenceSites: unchunked.stats.totalReferenceSites,
+      chunkSize: 1,
+      chunksResolved: unchunked.stats.totalReferenceSites,
+      maxChunkReferenceSites: 1,
+      resolvedReferences: unchunked.stats.resolvedReferences,
+      unresolvedReferences: unchunked.stats.unresolvedReferences,
+      referenceIndexSourceScopes: unchunked.stats.referenceIndexSourceScopes,
+      referenceIndexTargetDefs: unchunked.stats.referenceIndexTargetDefs,
+    });
+    expect([...chunked.referenceIndex.byTargetDef.keys()].sort()).toEqual(
+      [...unchunked.referenceIndex.byTargetDef.keys()].sort(),
+    );
   });
 
   it('resolves constructor calls through finalized import bindings without source rereads', () => {
@@ -222,3 +269,7 @@ function run(user: User) {
     });
   });
 });
+
+function sourceHash(source: string): string {
+  return `sha256:${createHash('sha256').update(source).digest('hex')}`;
+}

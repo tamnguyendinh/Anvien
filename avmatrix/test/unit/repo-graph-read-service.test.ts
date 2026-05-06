@@ -170,4 +170,53 @@ describe('repo-graph-read-service', () => {
     ]);
     expect(flushCount).toBeGreaterThan(0);
   });
+
+  it('reads scope-resolution audit metadata from relationship rows', async () => {
+    readExecutorMocks.executeRepoReadQuery.mockImplementation(
+      async (_target: any, query: string) => {
+        if (query.includes('MATCH (n:`File`)')) return [];
+        if (query.includes('CodeRelation')) {
+          expect(query).toContain('r.resolutionSource AS resolutionSource');
+          expect(query).toContain('r.evidence AS evidence');
+          expect(query).toContain('r.fileHash AS fileHash');
+          return [
+            {
+              sourceId: 'Function:run',
+              targetId: 'Method:save',
+              type: 'CALLS',
+              confidence: 0.95,
+              reason: 'scope-resolution: call | confidence 0.950',
+              step: 0,
+              resolutionSource: 'scope-resolution',
+              evidence: JSON.stringify([
+                { kind: 'type-binding', weight: 0.35, note: 'receiver User' },
+              ]),
+              fileHash: 'sha256:abc',
+            },
+          ];
+        }
+        return [];
+      },
+    );
+
+    const graph = await buildRepoGraph({
+      repoId: 'demo',
+      lbugPath: 'F:/repos/demo/.avmatrix/lbug',
+    });
+
+    expect(graph.relationships).toEqual([
+      {
+        id: 'Function:run_CALLS_Method:save',
+        type: 'CALLS',
+        sourceId: 'Function:run',
+        targetId: 'Method:save',
+        confidence: 0.95,
+        reason: 'scope-resolution: call | confidence 0.950',
+        step: 0,
+        resolutionSource: 'scope-resolution',
+        fileHash: 'sha256:abc',
+        evidence: [{ kind: 'type-binding', weight: 0.35, note: 'receiver User' }],
+      },
+    ]);
+  });
 });

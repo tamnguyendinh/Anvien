@@ -24,6 +24,7 @@
  */
 
 import type { ParsedFile, SupportedLanguages } from 'avmatrix-shared';
+import { createHash } from 'node:crypto';
 import { extract as extractScope } from './scope-extractor.js';
 import type { LanguageProvider } from './language-provider.js';
 import type { SyntaxNode } from './utils/ast-helpers.js';
@@ -78,7 +79,8 @@ export function extractParsedFileWithStats(
           rootNode,
         })
       : provider.emitScopeCaptures!(sourceText, filePath);
-    return { parsedFile: extractScope(captures, filePath, provider), mode };
+    const parsedFile = extractScope(captures, filePath, provider);
+    return { parsedFile: { ...parsedFile, fileHash: hashSourceText(sourceText) }, mode };
   } catch (err) {
     const message = `scope extraction failed for ${filePath}: ${
       err instanceof Error ? err.message : String(err)
@@ -87,4 +89,8 @@ export function extractParsedFileWithStats(
     else console.warn(message);
     return { mode: 'failed' };
   }
+}
+
+function hashSourceText(sourceText: string): string {
+  return `sha256:${createHash('sha256').update(sourceText).digest('hex')}`;
 }

@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type Parser from 'tree-sitter';
+import { createHash } from 'node:crypto';
 import { SupportedLanguages } from 'avmatrix-shared';
 import { createKnowledgeGraph } from '../../../src/core/graph/graph.js';
 import { typescriptProvider } from '../../../src/core/ingestion/languages/typescript.js';
@@ -76,6 +77,10 @@ function run(user: User) {
     );
 
     expect(output.metrics.counters.scopeResolutionReferenceSites).toBe(2);
+    expect(output.metrics.counters.scopeResolutionChunks).toBe(1);
+    expect(output.metrics.counters.scopeResolutionMaxChunkReferenceSites).toBe(2);
+    expect(output.metrics.counters.scopeResolutionReferenceIndexSourceScopes).toBe(1);
+    expect(output.metrics.counters.scopeResolutionReferenceIndexTargetDefs).toBe(2);
     expect(output.metrics.counters.scopeResolutionResolvedReferences).toBe(2);
     expect(output.metrics.counters.scopeResolutionResolvedCalls).toBe(1);
     expect(output.metrics.counters.scopeResolutionResolvedTypeReferences).toBe(1);
@@ -84,6 +89,7 @@ function run(user: User) {
     expect(output.referenceIndex.bySourceScope.size).toBe(1);
     expect(graph.relationshipCount).toBe(2);
     expect(graph.relationships.map((rel) => rel.type).sort()).toEqual(['CALLS', 'USES']);
+    expect(graph.relationships.every((rel) => rel.fileHash === sourceHash(source))).toBe(true);
   });
 
   it('emits scope-resolved access edges from read/write reference facts', async () => {
@@ -159,3 +165,7 @@ function run(user: User) {
     ).toEqual([1, 2]);
   });
 });
+
+function sourceHash(source: string): string {
+  return `sha256:${createHash('sha256').update(source).digest('hex')}`;
+}

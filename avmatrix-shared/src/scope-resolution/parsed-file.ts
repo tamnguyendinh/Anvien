@@ -46,6 +46,8 @@ import type { ReferenceSite } from './reference-site.js';
 
 export interface ParsedFile {
   readonly filePath: string;
+  /** Stable hash of the source text used to produce this artifact, when available. */
+  readonly fileHash?: string;
   /** `Scope.id` of the file's root `Module` scope. */
   readonly moduleScope: ScopeId;
   /**

@@ -388,6 +388,8 @@ export interface Reference {
   /** Innermost lexical scope containing `atRange`. */
   readonly fromScope: ScopeId;
   readonly toDef: DefId;
+  /** Stable hash of the source file that contained the reference, when available. */
+  readonly fileHash?: string;
   /** Location of the reference in source. */
   readonly atRange: Range;
   readonly kind: 'call' | 'read' | 'write' | 'type-reference' | 'inherits' | 'import-use';

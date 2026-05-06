@@ -653,9 +653,19 @@ const fallbackRelationshipInserts = async (
   for (let i = 1; i < validRelLines.length; i++) {
     const line = validRelLines[i];
     try {
-      const match = line.match(/"([^"]*)","([^"]*)","([^"]*)",([0-9.]+),"([^"]*)",([0-9-]+)/);
-      if (!match) continue;
-      const [, fromId, toId, relType, confidenceStr, reason, stepStr] = match;
+      const fields = parseCsvLine(line);
+      if (fields.length < 6) continue;
+      const [
+        fromId = '',
+        toId = '',
+        relType = '',
+        confidenceStr = '',
+        reason = '',
+        stepStr = '',
+        resolutionSource = '',
+        evidence = '',
+        fileHash = '',
+      ] = fields;
       const fromLabel = getNodeLabel(fromId);
       const toLabel = getNodeLabel(toId);
       if (!validTables.has(fromLabel) || !validTables.has(toLabel)) continue;
@@ -668,13 +678,41 @@ const fallbackRelationshipInserts = async (
       await conn.query(`
         MATCH (a:${escapeLabel(fromLabel)} {id: '${esc(fromId)}' }),
               (b:${escapeLabel(toLabel)} {id: '${esc(toId)}' })
-        CREATE (a)-[:${REL_TABLE_NAME} {type: '${esc(relType)}', confidence: ${confidence}, reason: '${esc(reason)}', step: ${step}}]->(b)
+        CREATE (a)-[:${REL_TABLE_NAME} {type: '${esc(relType)}', confidence: ${confidence}, reason: '${esc(reason)}', step: ${step}, resolutionSource: '${esc(resolutionSource)}', evidence: '${esc(evidence)}', fileHash: '${esc(fileHash)}'}]->(b)
       `);
     } catch {
       // skip
     }
   }
 };
+
+function parseCsvLine(line: string): string[] {
+  const fields: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+        continue;
+      }
+      inQuotes = !inQuotes;
+      continue;
+    }
+    if (char === ',' && !inQuotes) {
+      fields.push(current);
+      current = '';
+      continue;
+    }
+    current += char;
+  }
+
+  fields.push(current);
+  return fields;
+}
 
 /** Tables with isExported column (TypeScript/JS-native types) */
 const TABLES_WITH_EXPORTED = new Set<string>([

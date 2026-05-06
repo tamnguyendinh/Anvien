@@ -160,6 +160,14 @@ export const runPipelineFromRepo = async (
     scopeFinalizeLinkedImports: parseOutput.metrics?.counters.scopeFinalizeLinkedImports,
     scopeFinalizeUnresolvedImports: parseOutput.metrics?.counters.scopeFinalizeUnresolvedImports,
     scopeResolutionReferenceSites: resolutionOutput.metrics.counters.scopeResolutionReferenceSites,
+    scopeResolutionChunkSize: resolutionOutput.metrics.counters.scopeResolutionChunkSize,
+    scopeResolutionChunks: resolutionOutput.metrics.counters.scopeResolutionChunks,
+    scopeResolutionMaxChunkReferenceSites:
+      resolutionOutput.metrics.counters.scopeResolutionMaxChunkReferenceSites,
+    scopeResolutionReferenceIndexSourceScopes:
+      resolutionOutput.metrics.counters.scopeResolutionReferenceIndexSourceScopes,
+    scopeResolutionReferenceIndexTargetDefs:
+      resolutionOutput.metrics.counters.scopeResolutionReferenceIndexTargetDefs,
     scopeResolutionResolvedReferences:
       resolutionOutput.metrics.counters.scopeResolutionResolvedReferences,
     scopeResolutionUnresolvedReferences:

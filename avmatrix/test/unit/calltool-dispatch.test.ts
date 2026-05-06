@@ -215,6 +215,56 @@ describe('LocalBackend.callTool', () => {
     expect(result.symbol.name).toBe('main');
   });
 
+  it('context tool surfaces scope-resolution audit metadata on relationships', async () => {
+    (executeParameterized as any).mockImplementation(
+      async (_repoId: string, query: string, _params: Record<string, unknown>) => {
+        if (query.includes('MATCH (n {id: $uid})')) {
+          return [
+            {
+              id: 'func:main',
+              name: 'main',
+              type: 'Function',
+              filePath: 'src/index.ts',
+              startLine: 1,
+              endLine: 10,
+            },
+          ];
+        }
+        if (query.includes('MATCH (caller)-[r:CodeRelation]->(n {id: $symId})')) {
+          expect(query).toContain('r.resolutionSource AS resolutionSource');
+          expect(query).toContain('r.evidence AS evidence');
+          expect(query).toContain('r.fileHash AS fileHash');
+          return [
+            {
+              relType: 'CALLS',
+              uid: 'func:caller',
+              name: 'caller',
+              filePath: 'src/caller.ts',
+              kind: 'Function',
+              confidence: 0.95,
+              reason: 'scope-resolution: call | confidence 0.950',
+              resolutionSource: 'scope-resolution',
+              evidence: JSON.stringify([{ kind: 'type-binding', weight: 0.35 }]),
+              fileHash: 'sha256:abc',
+            },
+          ];
+        }
+        return [];
+      },
+    );
+
+    const result = await backend.callTool('context', { uid: 'func:main' });
+
+    expect(result.incoming.calls[0]).toMatchObject({
+      uid: 'func:caller',
+      confidence: 0.95,
+      reason: 'scope-resolution: call | confidence 0.950',
+      resolutionSource: 'scope-resolution',
+      evidence: [{ kind: 'type-binding', weight: 0.35 }],
+      fileHash: 'sha256:abc',
+    });
+  });
+
   it('context tool returns error when name and uid are both missing', async () => {
     const result = await backend.callTool('context', {});
     expect(result.error).toContain('Either "name" or "uid"');

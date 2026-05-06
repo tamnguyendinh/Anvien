@@ -90,7 +90,7 @@ SCHEMA:
 - Multi-language nodes (use backticks): \`Struct\`, \`Enum\`, \`Trait\`, \`Impl\`, etc.
 - All edges via single CodeRelation table with 'type' property
 - Edge types: CONTAINS, DEFINES, CALLS, IMPORTS, EXTENDS, IMPLEMENTS, HAS_METHOD, HAS_PROPERTY, ACCESSES, METHOD_OVERRIDES, METHOD_IMPLEMENTS, MEMBER_OF, STEP_IN_PROCESS, HANDLES_ROUTE, FETCHES, HANDLES_TOOL, ENTRY_POINT_OF
-- Edge properties: type (STRING), confidence (DOUBLE), reason (STRING), step (INT32)
+- Edge properties: type (STRING), confidence (DOUBLE), reason (STRING), step (INT32), resolutionSource (STRING), evidence (STRING JSON), fileHash (STRING)
 
 EXAMPLES:
 • Find callers of a function:

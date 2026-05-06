@@ -370,7 +370,7 @@ relationships:
   - MEMBER_OF: Symbol belongs to community
   - STEP_IN_PROCESS: Symbol is step N in process
 
-relationship_table: "All relationships use a single CodeRelation table with a 'type' property. Properties: type (STRING), confidence (DOUBLE), reason (STRING), step (INT32)"
+relationship_table: "All relationships use a single CodeRelation table with a 'type' property. Properties: type (STRING), confidence (DOUBLE), reason (STRING), step (INT32), resolutionSource (STRING), evidence (STRING JSON), fileHash (STRING)"
 
 example_queries:
   find_callers: |

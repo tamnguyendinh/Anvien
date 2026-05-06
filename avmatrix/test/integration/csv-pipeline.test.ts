@@ -112,6 +112,49 @@ describe('streamAllCSVsToDisk', () => {
     const relContent = await fs.readFile(result.relCsvPath, 'utf-8');
     const relLines = relContent.trim().split('\n');
     expect(relLines.length).toBe(4); // header + 3 relationships
+    expect(relLines[0]).toBe(
+      'from,to,type,confidence,reason,step,resolutionSource,evidence,fileHash',
+    );
+  });
+
+  it('writes relationship audit metadata for scope-resolved edges', async () => {
+    const graph = buildTestGraph(
+      [
+        {
+          id: 'func:run',
+          label: 'Function',
+          name: 'run',
+          filePath: 'src/index.ts',
+        },
+        {
+          id: 'func:save',
+          label: 'Function',
+          name: 'save',
+          filePath: 'src/utils.ts',
+        },
+      ],
+      [
+        {
+          sourceId: 'func:run',
+          targetId: 'func:save',
+          type: 'CALLS',
+          confidence: 0.95,
+          reason: 'scope-resolution: call | confidence 0.950',
+          resolutionSource: 'scope-resolution',
+          fileHash: 'sha256:abc',
+          evidence: [{ kind: 'type-binding', weight: 0.35, note: 'receiver User' }],
+        },
+      ],
+    );
+
+    const result = await streamAllCSVsToDisk(graph, repoDir, csvDir);
+    const relContent = await fs.readFile(result.relCsvPath, 'utf-8');
+
+    expect(relContent).toContain('scope-resolution');
+    expect(relContent).toContain('sha256:abc');
+    expect(relContent).toContain(
+      '[{""kind"":""type-binding"",""weight"":0.35,""note"":""receiver User""}]',
+    );
   });
 
   it('CSV content is properly escaped', async () => {

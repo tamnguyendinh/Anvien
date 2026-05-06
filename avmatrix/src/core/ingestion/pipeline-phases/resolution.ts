@@ -55,6 +55,11 @@ export const resolutionPhase: PipelinePhase<ResolutionOutput> = {
 
     if (scopes === undefined || scopes.referenceSites.length === 0) {
       metrics.counters.scopeResolutionReferenceSites = scopes?.referenceSites.length ?? 0;
+      metrics.counters.scopeResolutionChunkSize = 0;
+      metrics.counters.scopeResolutionChunks = 0;
+      metrics.counters.scopeResolutionMaxChunkReferenceSites = 0;
+      metrics.counters.scopeResolutionReferenceIndexSourceScopes = 0;
+      metrics.counters.scopeResolutionReferenceIndexTargetDefs = 0;
       metrics.counters.scopeResolutionResolvedReferences = 0;
       metrics.counters.scopeResolutionUnresolvedReferences = 0;
       metrics.counters.scopeResolutionResolvedCalls = 0;
@@ -72,6 +77,7 @@ export const resolutionPhase: PipelinePhase<ResolutionOutput> = {
     const start = performance.now();
     const result = resolveScopeReferenceSites(scopes);
     metrics.timings.referenceResolveMs = roundMs(performance.now() - start);
+    metrics.timings.referenceIndexBuildMs = roundMs(result.timings.referenceIndexBuildMs);
 
     const emitStart = performance.now();
     const emitStats = emitReferencesToGraph({
@@ -82,6 +88,13 @@ export const resolutionPhase: PipelinePhase<ResolutionOutput> = {
     metrics.timings.graphEmitMs = roundMs(performance.now() - emitStart);
 
     metrics.counters.scopeResolutionReferenceSites = result.stats.totalReferenceSites;
+    metrics.counters.scopeResolutionChunkSize = result.stats.chunkSize;
+    metrics.counters.scopeResolutionChunks = result.stats.chunksResolved;
+    metrics.counters.scopeResolutionMaxChunkReferenceSites = result.stats.maxChunkReferenceSites;
+    metrics.counters.scopeResolutionReferenceIndexSourceScopes =
+      result.stats.referenceIndexSourceScopes;
+    metrics.counters.scopeResolutionReferenceIndexTargetDefs =
+      result.stats.referenceIndexTargetDefs;
     metrics.counters.scopeResolutionResolvedReferences = result.stats.resolvedReferences;
     metrics.counters.scopeResolutionUnresolvedReferences = result.stats.unresolvedReferences;
     metrics.counters.scopeResolutionResolvedCalls = result.stats.resolvedCalls;

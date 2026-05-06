@@ -109,9 +109,11 @@ export function finalizeScopeModel(
   const allScopes: Scope[] = [];
   const allDefs: SymbolDefinition[] = [];
   const moduleEntries: { filePath: string; moduleScopeId: ScopeId }[] = [];
+  const fileHashes = new Map<string, string>();
   const allReferenceSites = [] as ReturnType<typeof collectReferenceSites>;
 
   for (const file of parsedFiles) {
+    if (file.fileHash !== undefined) fileHashes.set(file.filePath, file.fileHash);
     for (const s of file.scopes) {
       allScopes.push(withFinalizedImportBindings(s, file.moduleScope, finalizeOut.bindings));
     }
@@ -139,6 +141,7 @@ export function finalizeScopeModel(
     methodDispatch,
     imports: finalizeOut.imports,
     bindings: finalizeOut.bindings,
+    fileHashes,
     referenceSites: Object.freeze([...allReferenceSites]),
     sccs: finalizeOut.sccs,
     stats: finalizeOut.stats,

@@ -25,6 +25,13 @@ export interface TestRelInput {
   confidence?: number;
   reason?: string;
   step?: number;
+  resolutionSource?: string;
+  fileHash?: string;
+  evidence?: readonly {
+    readonly kind: string;
+    readonly weight: number;
+    readonly note?: string;
+  }[];
 }
 
 /**
@@ -60,6 +67,9 @@ export function buildTestGraph(
       confidence: r.confidence ?? 1.0,
       reason: r.reason ?? '',
       step: r.step,
+      resolutionSource: r.resolutionSource,
+      fileHash: r.fileHash,
+      evidence: r.evidence,
     });
   }
 

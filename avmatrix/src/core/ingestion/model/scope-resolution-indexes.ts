@@ -64,6 +64,8 @@ export interface ScopeResolutionIndexes {
   readonly imports: ReadonlyMap<ScopeId, readonly ImportEdge[]>;
   /** Merged bindings (local + imports + wildcards) per module scope. */
   readonly bindings: ReadonlyMap<ScopeId, ReadonlyMap<string, readonly BindingRef[]>>;
+  /** Source text hash by file path, used for relationship audit metadata. */
+  readonly fileHashes: ReadonlyMap<string, string>;
   /** Pre-resolution usage facts; consumed by the resolution phase. */
   readonly referenceSites: readonly ReferenceSite[];
   /** SCC condensation of the file-level import graph — callers that want

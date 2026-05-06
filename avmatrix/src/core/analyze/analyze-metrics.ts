@@ -52,6 +52,11 @@ export interface AnalyzeCounters {
   scopeFinalizeLinkedImports?: number;
   scopeFinalizeUnresolvedImports?: number;
   scopeResolutionReferenceSites?: number;
+  scopeResolutionChunkSize?: number;
+  scopeResolutionChunks?: number;
+  scopeResolutionMaxChunkReferenceSites?: number;
+  scopeResolutionReferenceIndexSourceScopes?: number;
+  scopeResolutionReferenceIndexTargetDefs?: number;
   scopeResolutionResolvedReferences?: number;
   scopeResolutionUnresolvedReferences?: number;
   scopeResolutionResolvedCalls?: number;
@@ -169,6 +174,7 @@ export interface CrossFileMetrics {
 
 export interface ResolutionTimingBreakdown {
   referenceResolveMs?: number;
+  referenceIndexBuildMs?: number;
   graphEmitMs?: number;
 }
 
@@ -177,6 +183,11 @@ export interface ResolutionMetrics {
   counters: Pick<
     AnalyzeCounters,
     | 'scopeResolutionReferenceSites'
+    | 'scopeResolutionChunkSize'
+    | 'scopeResolutionChunks'
+    | 'scopeResolutionMaxChunkReferenceSites'
+    | 'scopeResolutionReferenceIndexSourceScopes'
+    | 'scopeResolutionReferenceIndexTargetDefs'
     | 'scopeResolutionResolvedReferences'
     | 'scopeResolutionUnresolvedReferences'
     | 'scopeResolutionResolvedCalls'
