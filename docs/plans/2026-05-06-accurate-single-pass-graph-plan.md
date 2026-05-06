@@ -226,6 +226,7 @@ Use this checklist to update implementation progress. Do not mark the target arc
 - [x] Surface resolution timings and counters in the top-level analyze performance report and CLI summary.
 - [x] Add analyze benchmark JSON output that combines graph correctness snapshot, performance timings, and key optimization counters.
 - [x] Expose edge-count, scope-finalize, chunk/index, and resolution-kind counters directly in benchmark JSON key metrics.
+- [x] Expose semantic unique/duplicate relationship counts in benchmark JSON and `benchmark-compare` so crossFile retirement decisions do not rely on raw edge counts or ad hoc audit scripts.
 - [x] Record AVmatrix version, Node runtime, platform, and target repo git commit/dirty state in benchmark JSON.
 - [x] Add benchmark snapshot comparison helper for before/after timing, edge-count, unresolved-count, and graph-diff deltas.
 - [x] Expose benchmark before/after comparison through `avmatrix benchmark-compare <before.json> <after.json>` so optimization claims have a usable CLI check.
@@ -317,6 +318,8 @@ Current benchmark artifact:
 - `reports/benchmark/2026-05-07-avmatrix-chained-receiver-scope-only-crossfile-skip-gitnexus-main.json`
 - `reports/benchmark/2026-05-07-avmatrix-callable-property-scope-gitnexus-main.json`
 - `reports/benchmark/2026-05-07-avmatrix-callable-property-scope-only-crossfile-skip-gitnexus-main.json`
+- `reports/benchmark/2026-05-07-avmatrix-semantic-benchmark-metrics-gitnexus-main.json`
+- `reports/benchmark/2026-05-07-avmatrix-semantic-benchmark-metrics-scope-only-crossfile-skip-gitnexus-main.json`
 - Target: `E:\Lap_trinh\GitNexus-main` using `--skip-git` because that local copy has no `.git` directory.
 - Runtime command used built AVmatrix CLI with `--skip-agents-md --no-stats --benchmark-json` and `node --stack-size=4096`; the default stack failed in parse with `Maximum call stack size exceeded`, so the stack-size requirement is part of the recorded run context.
 - Result: `110714.1ms` total wall time, `847` files, `19538` nodes, `31037` persisted relationships.
@@ -347,6 +350,8 @@ Current benchmark artifact:
 - `reports/benchmark/2026-05-07-avmatrix-chained-receiver-scope-only-crossfile-skip-gitnexus-main.json` repeats the diagnostic scope-only run after chained receiver support. It still fails raw parity (`graphDiffs=9`, `CALLS` `5550 -> 5112`) while saving `19085ms` of crossFile work and improving wall time by `17.0%`. This confirms that the next work is not to skip crossFile wholesale; it is to close or classify the remaining non-duplicate semantic gaps, then narrow the legacy phase only where parity is proven.
 - `reports/benchmark/2026-05-07-avmatrix-callable-property-scope-gitnexus-main.json` records the callable-property slice. Scope `CALLS` resolution now falls back to function-valued `Property`/`Variable`/`Const` definitions only when their `declaredType` is callable, so TypeScript interface properties such as `forEachNode: () => Graph` can be call targets without source rereads. The targeted fixture proves `result.graph.forEachNode()` resolves to the callable property and keeps the chained `graph` read resolved. On `E:\Lap_trinh\GitNexus-main`, scope resolution improved by `+282` resolved calls and `-282` unresolved references (`resolvedReferences=14868`, `unresolvedReferences=112717`). The graph gained `+4 CALLS` and one process change, so this is an accuracy-increasing slice rather than a parity-only optimization. Wall time was `109156.7ms`, crossFile was `19111ms`, and resolution was `1978ms`.
 - `reports/benchmark/2026-05-07-avmatrix-callable-property-scope-only-crossfile-skip-gitnexus-main.json` repeats the diagnostic scope-only run after callable-property support. It still fails raw parity (`graphDiffs=9`, `CALLS` `5554 -> 5116`) while saving `19110ms` of crossFile work and improving wall time by `18.9%`. Because scope-only counters are now identical between default and skip runs, the remaining default/skip delta is legacy graph emission, duplicate relationships, process derivation effects, or semantic gaps outside current scope facts.
+- `reports/benchmark/2026-05-07-avmatrix-semantic-benchmark-metrics-gitnexus-main.json` records the benchmark schema slice that adds semantic unique/duplicate relationship counts. Compared with the callable-property artifact, persisted graph counts and resolution counters stayed identical (`graphDiffs=0`, `CALLS=5554`, `resolvedReferences=14868`, `unresolvedReferences=112717`), while the new key metrics show `CALLS` has `5553` semantic-unique edges and `0` semantic duplicates in the default run. Wall time was `110108.9ms`, crossFile was `19241ms`, and resolution was `1868ms`; this slice improves measurement quality, not graph behavior.
+- `reports/benchmark/2026-05-07-avmatrix-semantic-benchmark-metrics-scope-only-crossfile-skip-gitnexus-main.json` repeats the diagnostic scope-only run with the new semantic counters. It saves `19241ms` of crossFile work and improves wall time by `19.2%` (`110108.9ms -> 88926.6ms`), but parity still fails (`graphDiffs=9`). The key result is stricter than the earlier ad hoc audit: `CALLS` drops from `5554` to `5116`, and semantic-unique `CALLS` drops from `5553` to `5115` with `0` duplicate `CALLS` in both runs. Therefore default `crossFilePhase` still cannot be skipped or retired wholesale; the missing call edges must be migrated into `resolutionPhase` or explicitly classified as legacy false positives before narrowing the legacy phase.
 
 Full build for UI/manual validation through `Start-AVmatrix.html`:
 
@@ -356,16 +361,16 @@ powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
 
 This script builds `avmatrix`, builds `avmatrix-web`, builds `avmatrix-launcher\AVmatrixLauncher.exe`, builds `avmatrix-launcher\server-bundle\avmatrix-server.exe`, copies `node.exe`, copies the web build to `avmatrix-launcher\web-dist\`, and registers the `avmatrix://` protocol. A CLI-only `cd avmatrix && npm run build` is not enough before asking the user to test through the root launcher HTML.
 
-Latest validation after the callable-property scope slice:
+Latest validation after the semantic benchmark metrics slice:
 
 - Full launcher build passed with `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
-- Targeted unit scope-reference resolver tests passed cleanly: `21/21`, including imported exported-variable receiver propagation, chained field receiver resolution, and function-valued property calls.
+- Targeted benchmark snapshot tests passed cleanly: `3/3`, including semantic duplicate relationship counting and same-name/different-location node separation.
 - Full `cd avmatrix && npm test` passed for this slice. The accepted captured log contained no `Unhandled Errors`, `Unhandled Error`, `Worker vmForks emitted error`, `Worker exited unexpectedly`, `Test Files .*failed`, `Tests .*failed`, or `FAIL` patterns.
 
 ### Milestone 1: Baseline And Parity Targets
 
 - Add a machine-readable AVmatrix benchmark artifact, for example `avmatrix analyze --force --benchmark-json <file> --benchmark-label <label>`.
-- The artifact must include graph correctness snapshot, edge counts by type, unresolved counts, phase timings, parse/crossFile/resolution/lbug timings, duplicate-read/parse proxy counters, and resolution chunk/index counters.
+- The artifact must include graph correctness snapshot, edge counts by type, semantic unique/duplicate relationship counts by type, unresolved counts, phase timings, parse/crossFile/resolution/lbug timings, duplicate-read/parse proxy counters, and resolution chunk/index counters.
 - Do not accept a speedup claim from console wall time alone.
 - Run AVmatrix analyze metrics on representative repos.
 - Run GitNexus deep/scope graph baseline on the same repos where possible. Treat it as the minimum accuracy baseline, not as an acceptable speed target.
@@ -505,6 +510,7 @@ Benchmark dimensions:
 - memory peak;
 - worker utilization;
 - unresolved references;
+- semantic unique/duplicate relationships by type;
 - edge precision/recall against fixtures;
 - accuracy delta against GitNexus baseline;
 - speedup over GitNexus at equivalent or better accuracy;

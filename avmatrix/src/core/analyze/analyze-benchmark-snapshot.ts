@@ -44,6 +44,8 @@ export interface AnalyzeBenchmarkComparison {
   readonly phaseMs: Record<string, NumericDelta>;
   readonly relationshipCountsByType: Record<string, NumericDelta>;
   readonly nodeCountsByLabel: Record<string, NumericDelta>;
+  readonly semanticRelationshipUniqueCountsByType: Record<string, NumericDelta>;
+  readonly semanticRelationshipDuplicateCountsByType: Record<string, NumericDelta>;
   readonly keyMetrics: Record<string, NumericDelta>;
   readonly graphDiffs: readonly GraphCorrectnessDiff[];
 }
@@ -62,6 +64,8 @@ export interface AnalyzeBenchmarkKeyMetrics {
   readonly relationshipCount?: number;
   readonly nodeCountsByLabel?: Record<string, number>;
   readonly relationshipCountsByType?: Record<string, number>;
+  readonly semanticRelationshipUniqueCountsByType?: Record<string, number>;
+  readonly semanticRelationshipDuplicateCountsByType?: Record<string, number>;
   readonly parseMs?: number;
   readonly crossFileMs?: number;
   readonly resolutionMs?: number;
@@ -136,7 +140,7 @@ export function createAnalyzeBenchmarkSnapshot(input: {
     stats: input.stats,
     ...(graph !== undefined ? { graph } : {}),
     ...(input.performance !== undefined ? { performance: input.performance } : {}),
-    keyMetrics: createKeyMetrics(input.performance, graph),
+    keyMetrics: createKeyMetrics(input.performance, graph, input.pipelineResult),
   };
 }
 
@@ -165,6 +169,14 @@ export function compareAnalyzeBenchmarkSnapshots(
       before.keyMetrics.nodeCountsByLabel,
       after.keyMetrics.nodeCountsByLabel,
     ),
+    semanticRelationshipUniqueCountsByType: compareNumberRecords(
+      before.keyMetrics.semanticRelationshipUniqueCountsByType,
+      after.keyMetrics.semanticRelationshipUniqueCountsByType,
+    ),
+    semanticRelationshipDuplicateCountsByType: compareNumberRecords(
+      before.keyMetrics.semanticRelationshipDuplicateCountsByType,
+      after.keyMetrics.semanticRelationshipDuplicateCountsByType,
+    ),
     keyMetrics: compareNumericKeyMetrics(before.keyMetrics, after.keyMetrics),
     graphDiffs:
       before.graph !== undefined && after.graph !== undefined
@@ -176,9 +188,11 @@ export function compareAnalyzeBenchmarkSnapshots(
 function createKeyMetrics(
   performance: AnalyzePerformanceReport | undefined,
   graph: GraphCorrectnessSnapshot | undefined,
+  pipelineResult: PipelineResult | undefined,
 ): AnalyzeBenchmarkKeyMetrics {
   const counters = performance?.counters ?? {};
   const phaseMs = performance?.pipelinePhaseMs ?? {};
+  const semanticRelationships = createSemanticRelationshipMetrics(pipelineResult);
   return {
     totalWallMs: performance?.totalWallMs,
     phaseMs,
@@ -186,6 +200,8 @@ function createKeyMetrics(
     relationshipCount: graph?.relationshipCount ?? counters.edgeCount,
     nodeCountsByLabel: graph?.byNodeLabel,
     relationshipCountsByType: graph?.byRelationshipType,
+    semanticRelationshipUniqueCountsByType: semanticRelationships?.uniqueCountsByType,
+    semanticRelationshipDuplicateCountsByType: semanticRelationships?.duplicateCountsByType,
     parseMs: phaseMs.parse ?? performance?.buckets.parse,
     crossFileMs: phaseMs.crossFile ?? performance?.buckets.crossFile,
     resolutionMs: phaseMs.resolution ?? performance?.buckets.resolution,
@@ -244,7 +260,13 @@ function compareNumericKeyMetrics(
   const out: Record<string, NumericDelta> = {};
   const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
   for (const key of keys) {
-    if (key === 'phaseMs' || key === 'nodeCountsByLabel' || key === 'relationshipCountsByType') {
+    if (
+      key === 'phaseMs' ||
+      key === 'nodeCountsByLabel' ||
+      key === 'relationshipCountsByType' ||
+      key === 'semanticRelationshipUniqueCountsByType' ||
+      key === 'semanticRelationshipDuplicateCountsByType'
+    ) {
       continue;
     }
     const beforeValue = before[key as keyof AnalyzeBenchmarkKeyMetrics];
@@ -284,4 +306,63 @@ function compareNumbers(before: number | undefined, after: number | undefined): 
 
 function isNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
+}
+
+function createSemanticRelationshipMetrics(pipelineResult: PipelineResult | undefined):
+  | {
+      readonly uniqueCountsByType: Record<string, number>;
+      readonly duplicateCountsByType: Record<string, number>;
+    }
+  | undefined {
+  if (pipelineResult === undefined) return undefined;
+
+  const buckets = new Map<string, Map<string, number>>();
+  for (const rel of pipelineResult.graph.iterRelationships()) {
+    const source = pipelineResult.graph.getNode(rel.sourceId);
+    const target = pipelineResult.graph.getNode(rel.targetId);
+    if (source === undefined || target === undefined) continue;
+
+    const typeBucket = buckets.get(rel.type) ?? new Map<string, number>();
+    const key = semanticRelationshipKey(rel.type, source, target);
+    typeBucket.set(key, (typeBucket.get(key) ?? 0) + 1);
+    buckets.set(rel.type, typeBucket);
+  }
+
+  const uniqueCountsByType: Record<string, number> = {};
+  const duplicateCountsByType: Record<string, number> = {};
+  for (const [type, typeBucket] of buckets) {
+    uniqueCountsByType[type] = typeBucket.size;
+    let duplicates = 0;
+    for (const count of typeBucket.values()) {
+      if (count > 1) duplicates += count - 1;
+    }
+    duplicateCountsByType[type] = duplicates;
+  }
+  return { uniqueCountsByType, duplicateCountsByType };
+}
+
+function semanticRelationshipKey(
+  type: string,
+  source: { readonly label: string; readonly properties: Record<string, unknown> },
+  target: { readonly label: string; readonly properties: Record<string, unknown> },
+): string {
+  return [type, semanticNodeSignature(source), semanticNodeSignature(target)].join('\0');
+}
+
+function semanticNodeSignature(node: {
+  readonly label: string;
+  readonly properties: Record<string, unknown>;
+}): string {
+  return [
+    node.label,
+    metricProperty(node.properties.filePath),
+    metricProperty(node.properties.qualifiedName),
+    metricProperty(node.properties.name),
+    metricProperty(node.properties.startLine),
+    metricProperty(node.properties.endLine),
+  ].join('\0');
+}
+
+function metricProperty(value: unknown): string {
+  return typeof value === 'string' || typeof value === 'number' ? String(value) : '';
 }

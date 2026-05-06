@@ -54,6 +54,20 @@ export function formatBenchmarkComparison(comparison: AnalyzeBenchmarkComparison
   }
 
   lines.push('');
+  lines.push('semanticRelationshipUniqueCountsByType:');
+  for (const key of Object.keys(comparison.semanticRelationshipUniqueCountsByType).sort()) {
+    lines.push(`  ${key}: ${formatDelta(comparison.semanticRelationshipUniqueCountsByType[key])}`);
+  }
+
+  lines.push('');
+  lines.push('semanticRelationshipDuplicateCountsByType:');
+  for (const key of Object.keys(comparison.semanticRelationshipDuplicateCountsByType).sort()) {
+    lines.push(
+      `  ${key}: ${formatDelta(comparison.semanticRelationshipDuplicateCountsByType[key])}`,
+    );
+  }
+
+  lines.push('');
   lines.push('resolutionKeyMetrics:');
   for (const key of RESOLUTION_KEY_METRICS) {
     const delta = comparison.keyMetrics[key];

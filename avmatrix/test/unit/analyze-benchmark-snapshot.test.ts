@@ -127,6 +127,8 @@ describe('analyze benchmark snapshot', () => {
       relationshipCount: 1,
       nodeCountsByLabel: { Function: 1, Method: 1 },
       relationshipCountsByType: { CALLS: 1 },
+      semanticRelationshipUniqueCountsByType: { CALLS: 1 },
+      semanticRelationshipDuplicateCountsByType: { CALLS: 0 },
       parseMs: 10,
       crossFileMs: 20,
       resolutionMs: 5,
@@ -279,6 +281,8 @@ describe('analyze benchmark snapshot', () => {
       percentChange: -30,
     });
     expect(comparison.relationshipCountsByType.CALLS).toEqual({ after: 1 });
+    expect(comparison.semanticRelationshipUniqueCountsByType.CALLS).toEqual({ after: 1 });
+    expect(comparison.semanticRelationshipDuplicateCountsByType.CALLS).toEqual({ after: 0 });
     expect(comparison.keyMetrics.scopeResolutionResolvedReferences).toEqual({
       before: 0,
       after: 1,
@@ -303,5 +307,71 @@ describe('analyze benchmark snapshot', () => {
     expect(comparison.graphDiffs.map((diff) => diff.field)).toEqual(
       expect.arrayContaining(['nodeCount', 'relationshipCount', 'byRelationshipType']),
     );
+  });
+
+  it('counts semantic duplicate relationships without collapsing distinct node locations', () => {
+    const graph = buildTestGraph([
+      {
+        id: 'Function:src/app.ts:run:1',
+        label: 'Function',
+        name: 'run',
+        filePath: 'src/app.ts',
+        startLine: 1,
+      },
+      {
+        id: 'Method:src/model.ts:save:5',
+        label: 'Method',
+        name: 'save',
+        filePath: 'src/model.ts',
+        startLine: 5,
+      },
+      {
+        id: 'Method:src/model.ts:save:20',
+        label: 'Method',
+        name: 'save',
+        filePath: 'src/model.ts',
+        startLine: 20,
+      },
+    ]);
+
+    graph.addRelationship({
+      id: 'scope-run-save-5',
+      sourceId: 'Function:src/app.ts:run:1',
+      targetId: 'Method:src/model.ts:save:5',
+      type: 'CALLS',
+      confidence: 0.95,
+      reason: 'scope-resolution',
+    });
+    graph.addRelationship({
+      id: 'legacy-run-save-5',
+      sourceId: 'Function:src/app.ts:run:1',
+      targetId: 'Method:src/model.ts:save:5',
+      type: 'CALLS',
+      confidence: 0.8,
+      reason: 'legacy-cross-file',
+    });
+    graph.addRelationship({
+      id: 'scope-run-save-20',
+      sourceId: 'Function:src/app.ts:run:1',
+      targetId: 'Method:src/model.ts:save:20',
+      type: 'CALLS',
+      confidence: 0.95,
+      reason: 'scope-resolution',
+    });
+
+    const snapshot = createAnalyzeBenchmarkSnapshot({
+      repoName: 'demo',
+      repoPath: 'F:/demo',
+      stats: { files: 2, nodes: 3, edges: 3 },
+      pipelineResult: {
+        graph,
+        repoPath: 'F:/demo',
+        totalFileCount: 2,
+        usedWorkerPool: false,
+      },
+    });
+
+    expect(snapshot.keyMetrics.semanticRelationshipUniqueCountsByType).toEqual({ CALLS: 2 });
+    expect(snapshot.keyMetrics.semanticRelationshipDuplicateCountsByType).toEqual({ CALLS: 1 });
   });
 });
