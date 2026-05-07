@@ -4,6 +4,34 @@ All notable changes to avmatrix will be documented in this file.
 
 ## [Unreleased]
 
+### 2026-05-07
+
+#### Added
+
+- Added the Accurate Single-Pass Graph path: parse workers now emit AST-reused `ParsedFile` scope facts, finalize scope/import indexes once, and feed `resolutionPhase` in the default analyze run.
+- Added scope-aware graph emission for `CALLS`, `ACCESSES`, `USES`, `INHERITS`, finalized `IMPORTS`, and import-use edges with audit metadata.
+- Added Python AST-reused scope capture coverage for imports, classes, functions/methods, `self` bindings, typed `self.field` properties, member calls/accesses, type references, and inheritance.
+- Added per-language benchmark coverage reporting and explicit benchmark target git-state metadata, including `repoGitUnavailable` when a target repo is not a git checkout.
+
+#### Changed
+
+- Narrowed legacy `crossFilePhase` so it skips source reread/reprocess work when parse metrics prove complete AST-reused scope coverage.
+- Moved useful cross-file receiver/type propagation into scope facts and `resolutionPhase` for TypeScript/JavaScript patterns such as call returns, awaited calls, aliases, field/method-derived receivers, destructuring, for-of elements, JSDoc params, chained fields, and callable properties.
+- Made method dispatch strategy-aware through finalized scope inheritance facts and provider MRO strategy inputs.
+- Updated `ARCHITECTURE.md` to document the new 13-phase pipeline, `resolutionPhase`, scope fact boundary, crossFile narrowing, resolution workers, and benchmark artifact protocol.
+
+#### Fixed
+
+- Made scope graph emission fail closed when graph node endpoints cannot be mapped.
+- Merged scope audit metadata into existing semantic duplicate edges instead of emitting overlapping relationships.
+- Fixed ambiguous same-file method/function graph-node aliasing so file-level functions are not hidden by same-name methods.
+- Fixed Windows full-suite validation by using Vitest v4 `--no-isolate` for selected single-process forked tests and keeping native DB/API impact tests out of unstable hidden worker paths.
+
+#### Performance
+
+- Added auto/force/off reference-resolution worker mode with deterministic chunk parity checks and worker usage/count metrics.
+- Removed avoidable worker-index byte-measurement overhead and added benchmark comparison coverage for resolution timing, graph parity, semantic duplicates, and per-language scope coverage.
+
 ### 2026-04-30
 
 #### Changed
