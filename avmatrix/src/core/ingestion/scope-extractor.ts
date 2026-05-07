@@ -685,11 +685,30 @@ function pass5CollectReferences(
       atRange: anchor.range,
       inScope: inScopeId,
       kind,
+      ...(kind === 'inherits' ? heritageKindForMatch(match) : {}),
       ...(callForm !== undefined ? { callForm } : {}),
       ...(explicitReceiver !== undefined ? { explicitReceiver } : {}),
       ...(arity !== undefined ? { arity } : {}),
     };
     referenceSites.push(site);
+  }
+}
+
+function heritageKindForMatch(
+  match: CaptureMatch,
+): Pick<ReferenceSite, 'heritageKind'> | Record<string, never> {
+  const cap = match['@reference.heritage_kind'];
+  if (cap === undefined) return {};
+  switch (cap.text) {
+    case 'extends':
+    case 'implements':
+    case 'trait-impl':
+    case 'include':
+    case 'extend':
+    case 'prepend':
+      return { heritageKind: cap.text };
+    default:
+      return {};
   }
 }
 

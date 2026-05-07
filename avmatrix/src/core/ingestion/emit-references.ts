@@ -425,25 +425,44 @@ function createGraphNodeResolver(
 function graphNodeSemanticKeys(node: GraphNode): readonly string[] {
   const filePath = stringProperty(node.properties.filePath);
   if (filePath === undefined) return [];
-  const names = uniqueStrings([
+  const qualifiedName = stringProperty(node.properties.qualifiedName);
+  const idName = graphNodeIdName(node);
+  const directNames = uniqueStrings([
     stringProperty(node.properties.name),
-    stringProperty(node.properties.qualifiedName),
-    graphNodeIdName(node),
-    stripArityTag(graphNodeIdName(node)),
-    simpleName(stringProperty(node.properties.qualifiedName)),
-    simpleName(stripArityTag(graphNodeIdName(node))),
+    qualifiedName,
+    idName,
+    stripArityTag(idName),
+    simpleName(qualifiedName),
+    simpleName(stripArityTag(idName)),
   ]);
-  return names.map((name) => semanticNodeKey(node.label, filePath, name));
+  const aliasNames = uniqueStrings([qualifiedName, idName, stripArityTag(idName)]);
+  return [
+    ...directNames.map((name) => semanticNodeKey(node.label, filePath, name)),
+    ...semanticNodeLabels(node.label)
+      .filter((label) => label !== node.label)
+      .flatMap((label) => aliasNames.map((name) => semanticNodeKey(label, filePath, name))),
+  ];
 }
 
 function defSemanticKeys(def: SymbolDefinition): readonly string[] {
-  const names = uniqueStrings([
+  const directNames = uniqueStrings([
     def.qualifiedName,
     stripArityTag(def.qualifiedName),
     simpleName(def.qualifiedName),
-    simpleName(stripArityTag(def.qualifiedName)),
   ]);
-  return names.map((name) => semanticNodeKey(def.type, def.filePath, name));
+  const aliasNames = uniqueStrings([def.qualifiedName, stripArityTag(def.qualifiedName)]);
+  return [
+    ...directNames.map((name) => semanticNodeKey(def.type, def.filePath, name)),
+    ...semanticNodeLabels(def.type)
+      .filter((label) => label !== def.type)
+      .flatMap((label) => aliasNames.map((name) => semanticNodeKey(label, def.filePath, name))),
+  ];
+}
+
+function semanticNodeLabels(label: NodeLabel): readonly NodeLabel[] {
+  if (label === 'Method') return ['Method', 'Function'];
+  if (label === 'Function') return ['Function', 'Method'];
+  return [label];
 }
 
 function graphNodeIdName(node: GraphNode): string | undefined {

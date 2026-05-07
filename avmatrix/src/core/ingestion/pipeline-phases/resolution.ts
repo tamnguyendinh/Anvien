@@ -59,6 +59,8 @@ export const resolutionPhase: PipelinePhase<ResolutionOutput> = {
       metrics.counters.scopeResolutionChunks = 0;
       metrics.counters.scopeResolutionMaxChunkReferenceSites = 0;
       metrics.counters.scopeResolutionReadonlyIndexBytes = 0;
+      metrics.counters.scopeResolutionUsedWorkers = 0;
+      metrics.counters.scopeResolutionWorkerCount = 0;
       metrics.counters.scopeResolutionReferenceIndexSourceScopes = 0;
       metrics.counters.scopeResolutionReferenceIndexTargetDefs = 0;
       metrics.counters.scopeResolutionResolvedReferences = 0;
@@ -120,6 +122,8 @@ export const resolutionPhase: PipelinePhase<ResolutionOutput> = {
     metrics.counters.scopeResolutionChunks = result.stats.chunksResolved;
     metrics.counters.scopeResolutionMaxChunkReferenceSites = result.stats.maxChunkReferenceSites;
     metrics.counters.scopeResolutionReadonlyIndexBytes = result.stats.readonlyIndexBytes;
+    metrics.counters.scopeResolutionUsedWorkers = result.stats.usedWorkers ? 1 : 0;
+    metrics.counters.scopeResolutionWorkerCount = result.stats.workerCount;
     metrics.counters.scopeResolutionReferenceIndexSourceScopes =
       result.stats.referenceIndexSourceScopes;
     metrics.counters.scopeResolutionReferenceIndexTargetDefs =

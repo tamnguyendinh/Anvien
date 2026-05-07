@@ -37,6 +37,7 @@ import type {
   DefId,
   FinalizeFile,
   FinalizeHooks,
+  MroStrategy,
   ParsedFile,
   ReferenceSite,
   Scope,
@@ -54,6 +55,7 @@ import {
   finalize,
 } from 'avmatrix-shared';
 import type { ScopeResolutionIndexes } from './model/scope-resolution-indexes.js';
+import { c3Linearize } from './model/resolve.js';
 
 // ─── Public entry point ─────────────────────────────────────────────────────
 
@@ -75,6 +77,12 @@ export interface FinalizeOrchestratorOptions {
    * per-language resolvers.
    */
   readonly workspaceIndex?: WorkspaceIndex;
+  /**
+   * Return the provider's MRO strategy for a parsed file. The orchestrator
+   * keeps this as an injected callback so shared finalize logic stays
+   * language-neutral while method dispatch can honor per-language rules.
+   */
+  readonly mroStrategyForFile?: (filePath: string) => MroStrategy | undefined;
 }
 
 /**
@@ -131,7 +139,12 @@ export function finalizeScopeModel(
   // ── Step 3: MethodDispatchIndex. Use pre-resolution `inherits`
   // reference sites to materialize a deterministic owner → ancestor view
   // before the resolution phase asks method/field registries to walk MRO.
-  const methodDispatch = buildMethodDispatchFromReferenceSites(allReferenceSites, scopeTree, defs);
+  const methodDispatch = buildMethodDispatchFromReferenceSites(
+    allReferenceSites,
+    scopeTree,
+    defs,
+    options.mroStrategyForFile,
+  );
 
   return {
     scopeTree,
@@ -162,15 +175,18 @@ const IMPLEMENTS_TARGET_TYPES: ReadonlySet<SymbolDefinition['type']> = new Set([
 ]);
 
 const EMPTY_DEF_IDS: readonly DefId[] = Object.freeze([]);
+const DEFAULT_MRO_STRATEGY: MroStrategy = 'first-wins';
 
 function buildMethodDispatchFromReferenceSites(
   referenceSites: readonly ReferenceSite[],
   scopeTree: ScopeTree,
   defs: ReturnType<typeof buildDefIndex>,
+  mroStrategyForFile?: (filePath: string) => MroStrategy | undefined,
 ) {
   const directParentsByOwner = new Map<DefId, DefId[]>();
   const directInterfacesByOwner = new Map<DefId, DefId[]>();
   const owners = new Set<DefId>();
+  const c3Cache = new Map<string, string[] | null>();
 
   for (const def of defs.byId.values()) {
     if (isDispatchOwner(def)) owners.add(def.nodeId);
@@ -186,16 +202,22 @@ function buildMethodDispatchFromReferenceSites(
     if (target === undefined || target.nodeId === owner.nodeId) continue;
 
     owners.add(owner.nodeId);
-    if (IMPLEMENTS_TARGET_TYPES.has(target.type)) {
+    if (site.heritageKind === 'implements' || IMPLEMENTS_TARGET_TYPES.has(target.type)) {
       appendUnique(directInterfacesByOwner, owner.nodeId, target.nodeId);
-    } else if (isDispatchOwner(target)) {
+    } else if (site.heritageKind !== 'extend' && isDispatchOwner(target)) {
       appendUnique(directParentsByOwner, owner.nodeId, target.nodeId);
     }
   }
 
   return buildMethodDispatchIndex({
     owners: Array.from(owners),
-    computeMro: (ownerDefId) => computeMro(ownerDefId, directParentsByOwner),
+    computeMro: (ownerDefId) =>
+      computeMro(
+        ownerDefId,
+        directParentsByOwner,
+        mroStrategyForOwner(ownerDefId, defs, mroStrategyForFile),
+        c3Cache,
+      ),
     implementsOf: (ownerDefId) => directInterfacesByOwner.get(ownerDefId) ?? EMPTY_DEF_IDS,
   });
 }
@@ -270,21 +292,49 @@ function resolveUniqueDispatchOwnerByName(
   return matches.length === 1 ? matches[0] : undefined;
 }
 
-function computeMro(ownerDefId: DefId, directParentsByOwner: ReadonlyMap<DefId, readonly DefId[]>) {
+function mroStrategyForOwner(
+  ownerDefId: DefId,
+  defs: ReturnType<typeof buildDefIndex>,
+  mroStrategyForFile?: (filePath: string) => MroStrategy | undefined,
+): MroStrategy {
+  const owner = defs.byId.get(ownerDefId);
+  if (owner === undefined || mroStrategyForFile === undefined) return DEFAULT_MRO_STRATEGY;
+  return mroStrategyForFile(owner.filePath) ?? DEFAULT_MRO_STRATEGY;
+}
+
+function computeMro(
+  ownerDefId: DefId,
+  directParentsByOwner: Map<DefId, DefId[]>,
+  strategy: MroStrategy,
+  c3Cache: Map<string, string[] | null>,
+): readonly DefId[] {
+  if (strategy === 'qualified-syntax') return EMPTY_DEF_IDS;
+  if (strategy === 'c3') {
+    const c3 = c3Linearize(ownerDefId, directParentsByOwner, c3Cache);
+    if (c3 !== null) return c3;
+  }
+  return computeBfsMro(ownerDefId, directParentsByOwner);
+}
+
+function computeBfsMro(
+  ownerDefId: DefId,
+  directParentsByOwner: ReadonlyMap<DefId, readonly DefId[]>,
+): readonly DefId[] {
   const out: DefId[] = [];
   const visited = new Set<DefId>([ownerDefId]);
+  const queue: DefId[] = [...(directParentsByOwner.get(ownerDefId) ?? EMPTY_DEF_IDS)];
+  let head = 0;
 
-  const visit = (id: DefId): void => {
-    const parents = directParentsByOwner.get(id) ?? EMPTY_DEF_IDS;
-    for (const parent of parents) {
-      if (visited.has(parent)) continue;
-      visited.add(parent);
-      out.push(parent);
-      visit(parent);
+  while (head < queue.length) {
+    const parent = queue[head++]!;
+    if (visited.has(parent)) continue;
+    visited.add(parent);
+    out.push(parent);
+    const grandparents = directParentsByOwner.get(parent) ?? EMPTY_DEF_IDS;
+    for (const grandparent of grandparents) {
+      if (!visited.has(grandparent)) queue.push(grandparent);
     }
-  };
-
-  visit(ownerDefId);
+  }
   return out;
 }
 

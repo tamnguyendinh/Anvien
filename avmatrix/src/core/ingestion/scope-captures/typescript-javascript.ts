@@ -731,13 +731,15 @@ function emitReference(node: SyntaxNode, out: CaptureMatch[]): void {
 
   if (node.type === 'extends_clause') {
     const value = node.childForFieldName('value') ?? firstIdentifierLikeChild(node);
-    if (value !== null && value !== undefined) out.push(referenceMatch('inherits', node, value));
+    if (value !== null && value !== undefined) {
+      out.push(heritageReferenceMatch('extends', node, value));
+    }
     return;
   }
 
   if (node.type === 'implements_clause') {
     for (const ident of namedIdentifierChildren(node)) {
-      out.push(referenceMatch('inherits', ident, ident));
+      out.push(heritageReferenceMatch('implements', ident, ident));
     }
   }
 }
@@ -886,6 +888,17 @@ function referenceMatch(
     ...(arity !== undefined
       ? { '@reference.arity': textCapture('@reference.arity', anchor, String(arity)) }
       : {}),
+  };
+}
+
+function heritageReferenceMatch(
+  heritageKind: 'extends' | 'implements',
+  anchor: SyntaxNode,
+  nameNode: SyntaxNode,
+): CaptureMatch {
+  return {
+    ...referenceMatch('inherits', anchor, nameNode),
+    '@reference.heritage_kind': textCapture('@reference.heritage_kind', anchor, heritageKind),
   };
 }
 

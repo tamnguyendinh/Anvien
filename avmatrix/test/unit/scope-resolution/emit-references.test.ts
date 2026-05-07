@@ -622,6 +622,62 @@ describe('duplicate graph-edge guard', () => {
       true,
     );
   });
+
+  it('maps scope Method defs to legacy Function graph nodes when the semantic key is unique', () => {
+    const serialize: SymbolDefinition = {
+      nodeId: 'def:GitNexusAgent.serialize',
+      filePath: 'eval/agents/gitnexus_agent.py',
+      type: 'Method',
+      qualifiedName: 'GitNexusAgent.serialize',
+    };
+    const toDict: SymbolDefinition = {
+      nodeId: 'def:GitNexusMetrics.to_dict',
+      filePath: 'eval/agents/gitnexus_agent.py',
+      type: 'Method',
+      qualifiedName: 'GitNexusMetrics.to_dict',
+    };
+    const mod = scope('scope:m', null, 'Module', [serialize, toDict], range(), serialize.filePath);
+    const indexes = makeIndexes([mod], [serialize, toDict]);
+    const ref: Reference = {
+      fromScope: 'scope:m',
+      toDef: toDict.nodeId,
+      atRange: range(6, 15, 6, 22),
+      kind: 'call',
+      confidence: 0.95,
+      evidence: [],
+    };
+
+    const graph = createKnowledgeGraph();
+    graph.addNode({
+      id: 'Function:eval/agents/gitnexus_agent.py:GitNexusAgent.serialize',
+      label: 'Function',
+      properties: { name: 'serialize', filePath: serialize.filePath },
+    });
+    graph.addNode({
+      id: 'Function:eval/agents/gitnexus_agent.py:GitNexusMetrics.to_dict',
+      label: 'Function',
+      properties: { name: 'to_dict', filePath: toDict.filePath },
+    });
+
+    const stats = emitReferencesToGraph({
+      graph,
+      scopes: indexes,
+      referenceIndex: buildRefIndex('scope:m', [ref]),
+    });
+
+    expect(stats.edgesEmitted).toBe(1);
+    expect(stats.skippedMissingTarget).toBe(0);
+    expect(stats.skippedNoCaller).toBe(0);
+    expect(graph.relationships).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceId: 'Function:eval/agents/gitnexus_agent.py:GitNexusAgent.serialize',
+          targetId: 'Function:eval/agents/gitnexus_agent.py:GitNexusMetrics.to_dict',
+          type: 'CALLS',
+        }),
+      ]),
+    );
+  });
 });
 
 // ─── Scope-graph emission (INGESTION_EMIT_SCOPES) ─────────────────────────

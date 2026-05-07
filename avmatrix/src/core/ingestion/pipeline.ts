@@ -172,6 +172,8 @@ export const runPipelineFromRepo = async (
       resolutionOutput.metrics.counters.scopeResolutionMaxChunkReferenceSites,
     scopeResolutionReadonlyIndexBytes:
       resolutionOutput.metrics.counters.scopeResolutionReadonlyIndexBytes,
+    scopeResolutionUsedWorkers: resolutionOutput.metrics.counters.scopeResolutionUsedWorkers,
+    scopeResolutionWorkerCount: resolutionOutput.metrics.counters.scopeResolutionWorkerCount,
     scopeResolutionReferenceIndexSourceScopes:
       resolutionOutput.metrics.counters.scopeResolutionReferenceIndexSourceScopes,
     scopeResolutionReferenceIndexTargetDefs:

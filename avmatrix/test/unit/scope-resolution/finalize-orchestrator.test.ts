@@ -51,10 +51,15 @@ const mkFile = (filePath: string, overrides: Partial<ParsedFile> = {}): ParsedFi
   referenceSites: overrides.referenceSites ?? [],
 });
 
-const mkDef = (nodeId: string, filePath: string, qname: string): SymbolDefinition => ({
+const mkDef = (
+  nodeId: string,
+  filePath: string,
+  qname: string,
+  type: SymbolDefinition['type'] = 'Class',
+): SymbolDefinition => ({
   nodeId,
   filePath,
-  type: 'Class',
+  type,
   qualifiedName: qname,
 });
 
@@ -167,6 +172,144 @@ describe('finalizeScopeModel: single file', () => {
 
     const out = finalizeScopeModel([file]);
     expect(out.methodDispatch.mroFor('def:Child')).toEqual(['def:Base']);
+  });
+
+  it('builds first-wins MRO breadth-first instead of repeating parse/cross-file DFS work', () => {
+    const baseClass = mkDef('def:Base', 'models.ts', 'Base');
+    const leftClass = mkDef('def:Left', 'models.ts', 'Left');
+    const rightClass = mkDef('def:Right', 'models.ts', 'Right');
+    const childClass = mkDef('def:Child', 'models.ts', 'Child');
+    const bindings = Object.fromEntries(
+      [baseClass, leftClass, rightClass, childClass].map((def) => [
+        def.qualifiedName!,
+        [{ def, origin: 'local' as const }],
+      ]),
+    );
+    const moduleScope = mkScope('scope:module', null, 'models.ts', bindings);
+    const scopes = [
+      moduleScope,
+      {
+        ...mkScope('scope:base', 'scope:module', 'models.ts'),
+        range: { startLine: 2, startCol: 0, endLine: 3, endCol: 0 },
+        ownedDefs: [baseClass],
+      },
+      {
+        ...mkScope('scope:left', 'scope:module', 'models.ts'),
+        range: { startLine: 4, startCol: 0, endLine: 10, endCol: 0 },
+        ownedDefs: [leftClass],
+      },
+      {
+        ...mkScope('scope:right', 'scope:module', 'models.ts'),
+        range: { startLine: 11, startCol: 0, endLine: 17, endCol: 0 },
+        ownedDefs: [rightClass],
+      },
+      {
+        ...mkScope('scope:child', 'scope:module', 'models.ts'),
+        range: { startLine: 18, startCol: 0, endLine: 30, endCol: 0 },
+        ownedDefs: [childClass],
+      },
+    ];
+    const file = mkFile('models.ts', {
+      moduleScope: 'scope:module',
+      scopes,
+      localDefs: [baseClass, leftClass, rightClass, childClass],
+      referenceSites: [
+        {
+          name: 'Base',
+          atRange: { startLine: 2, startCol: 0, endLine: 2, endCol: 4 },
+          inScope: 'scope:left',
+          kind: 'inherits',
+          heritageKind: 'extends',
+        },
+        {
+          name: 'Base',
+          atRange: { startLine: 3, startCol: 0, endLine: 3, endCol: 4 },
+          inScope: 'scope:right',
+          kind: 'inherits',
+          heritageKind: 'extends',
+        },
+        {
+          name: 'Left',
+          atRange: { startLine: 4, startCol: 0, endLine: 4, endCol: 4 },
+          inScope: 'scope:child',
+          kind: 'inherits',
+          heritageKind: 'extends',
+        },
+        {
+          name: 'Right',
+          atRange: { startLine: 4, startCol: 6, endLine: 4, endCol: 11 },
+          inScope: 'scope:child',
+          kind: 'inherits',
+          heritageKind: 'extends',
+        },
+      ],
+    });
+
+    const out = finalizeScopeModel([file], { mroStrategyForFile: () => 'first-wins' });
+    expect(out.methodDispatch.mroFor('def:Child')).toEqual(['def:Left', 'def:Right', 'def:Base']);
+  });
+
+  it('honors qualified-syntax MRO by not adding implicit ancestor dispatch', () => {
+    const baseClass = mkDef('def:Base', 'models.rs', 'Base');
+    const childClass = mkDef('def:Child', 'models.rs', 'Child');
+    const moduleScope = mkScope('scope:module', null, 'models.rs', {
+      Base: [{ def: baseClass, origin: 'local' }],
+      Child: [{ def: childClass, origin: 'local' }],
+    });
+    const childScope: Scope = {
+      ...mkScope('scope:child', 'scope:module', 'models.rs'),
+      range: { startLine: 2, startCol: 0, endLine: 10, endCol: 0 },
+      ownedDefs: [childClass],
+    };
+    const file = mkFile('models.rs', {
+      moduleScope: 'scope:module',
+      scopes: [moduleScope, childScope],
+      localDefs: [baseClass, childClass],
+      referenceSites: [
+        {
+          name: 'Base',
+          atRange: { startLine: 1, startCol: 0, endLine: 1, endCol: 4 },
+          inScope: 'scope:child',
+          kind: 'inherits',
+          heritageKind: 'extends',
+        },
+      ],
+    });
+
+    const out = finalizeScopeModel([file], { mroStrategyForFile: () => 'qualified-syntax' });
+    expect(out.methodDispatch.mroFor('def:Child')).toEqual([]);
+  });
+
+  it('materializes implementor buckets from inherited interface facts', () => {
+    const iface = mkDef('def:IService', 'models.ts', 'IService', 'Interface');
+    const impl = mkDef('def:Service', 'models.ts', 'Service');
+    const moduleScope = mkScope('scope:module', null, 'models.ts', {
+      IService: [{ def: iface, origin: 'local' }],
+      Service: [{ def: impl, origin: 'local' }],
+    });
+    const serviceScope: Scope = {
+      ...mkScope('scope:service', 'scope:module', 'models.ts'),
+      range: { startLine: 2, startCol: 0, endLine: 10, endCol: 0 },
+      ownedDefs: [impl],
+    };
+    const file = mkFile('models.ts', {
+      moduleScope: 'scope:module',
+      scopes: [moduleScope, serviceScope],
+      localDefs: [iface, impl],
+      referenceSites: [
+        {
+          name: 'IService',
+          atRange: { startLine: 1, startCol: 0, endLine: 1, endCol: 8 },
+          inScope: 'scope:service',
+          kind: 'inherits',
+          heritageKind: 'implements',
+        },
+      ],
+    });
+
+    const out = finalizeScopeModel([file]);
+    expect(out.methodDispatch.mroFor('def:Service')).toEqual([]);
+    expect(out.methodDispatch.implementorsOf('def:IService')).toEqual(['def:Service']);
   });
 });
 

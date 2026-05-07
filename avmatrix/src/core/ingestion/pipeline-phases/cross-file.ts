@@ -52,8 +52,9 @@ export const crossFilePhase: PipelinePhase<CrossFileOutput> = {
     ctx: PipelineContext,
     deps: ReadonlyMap<string, PhaseResult<unknown>>,
   ): Promise<CrossFileOutput> {
+    const parseOutput = getPhaseOutput<ParseOutput>(deps, 'parse');
     const { exportedTypeMap, allPathSet, totalFiles, bindingAccumulator, resolutionContext } =
-      getPhaseOutput<ParseOutput>(deps, 'parse');
+      parseOutput;
 
     try {
       // Telemetry must run BEFORE dispose: totalBindings, fileCount, and
@@ -73,17 +74,11 @@ export const crossFilePhase: PipelinePhase<CrossFileOutput> = {
       }
 
       if (ctx.options?.skipLegacyCrossFile) {
-        return {
-          filesReprocessed: 0,
-          metrics: {
-            timings: { totalMs: 0 },
-            counters: {
-              filesReprocessed: 0,
-              skipped: true,
-              skipReason: 'disabled-by-pipeline-option',
-            },
-          },
-        };
+        return skippedCrossFileOutput('disabled-by-pipeline-option');
+      }
+
+      if (hasCompleteAstReusedScopeCoverage(parseOutput)) {
+        return skippedCrossFileOutput('covered-by-ast-reused-scope-resolution');
       }
 
       const propagationResult = await runCrossFileBindingPropagation(
@@ -109,3 +104,33 @@ export const crossFilePhase: PipelinePhase<CrossFileOutput> = {
     }
   },
 };
+
+function skippedCrossFileOutput(skipReason: string): CrossFileOutput {
+  return {
+    filesReprocessed: 0,
+    metrics: {
+      timings: { totalMs: 0 },
+      counters: {
+        filesReprocessed: 0,
+        skipped: true,
+        skipReason,
+      },
+    },
+  };
+}
+
+function hasCompleteAstReusedScopeCoverage(parseOutput: ParseOutput): boolean {
+  const counters = parseOutput.metrics?.counters;
+  if (counters === undefined) return false;
+
+  const parseableFiles = counters.parseableFiles ?? 0;
+  if (parseableFiles <= 0) return false;
+
+  return (
+    counters.scopeParsedFiles === parseableFiles &&
+    counters.scopeExtractionAstReusedFiles === parseableFiles &&
+    (counters.scopeExtractionCompatibilityFiles ?? 0) === 0 &&
+    (counters.scopeExtractionNoHookFiles ?? 0) === 0 &&
+    (counters.scopeExtractionFailedFiles ?? 0) === 0
+  );
+}

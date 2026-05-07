@@ -30,7 +30,7 @@ function makeCtx(options?: PipelineContext['options']): PipelineContext {
   };
 }
 
-function makeParseOutput(acc: BindingAccumulator): ParseOutput {
+function makeParseOutput(acc: BindingAccumulator, metrics?: ParseOutput['metrics']): ParseOutput {
   return {
     exportedTypeMap: new Map(),
     allFetchCalls: [],
@@ -43,17 +43,24 @@ function makeParseOutput(acc: BindingAccumulator): ParseOutput {
     // never inspects it.
     resolutionContext: {} as ParseOutput['resolutionContext'],
     allPaths: [],
+    allPathSet: new Set(),
     totalFiles: 0,
+    parsedFiles: [],
+    usedWorkerPool: false,
+    ...(metrics !== undefined ? { metrics } : {}),
   };
 }
 
-function makeDeps(acc: BindingAccumulator): ReadonlyMap<string, PhaseResult<unknown>> {
+function makeDeps(
+  acc: BindingAccumulator,
+  metrics?: ParseOutput['metrics'],
+): ReadonlyMap<string, PhaseResult<unknown>> {
   return new Map<string, PhaseResult<unknown>>([
     [
       'parse',
       {
         phaseName: 'parse',
-        output: makeParseOutput(acc),
+        output: makeParseOutput(acc, metrics),
         durationMs: 0,
       },
     ],
@@ -115,6 +122,59 @@ describe('crossFilePhase', () => {
     expect(runCrossFileMock).not.toHaveBeenCalled();
     expect(result.filesReprocessed).toBe(0);
     expect(result.metrics.counters.skipReason).toBe('disabled-by-pipeline-option');
+    expect(acc.disposed).toBe(true);
+  });
+
+  it('auto-skips legacy propagation when every parseable file has AST-reused scope facts', async () => {
+    const acc = new BindingAccumulator();
+    acc.appendFile('src/a.ts', [{ scope: '', varName: 'x', typeName: 'X' }]);
+
+    const result = await crossFilePhase.execute(
+      makeCtx(),
+      makeDeps(acc, {
+        timings: {},
+        counters: {
+          parseableFiles: 3,
+          scopeParsedFiles: 3,
+          scopeExtractionAstReusedFiles: 3,
+          scopeExtractionCompatibilityFiles: 0,
+          scopeExtractionNoHookFiles: 0,
+          scopeExtractionFailedFiles: 0,
+        },
+      }),
+    );
+
+    expect(runCrossFileMock).not.toHaveBeenCalled();
+    expect(result.filesReprocessed).toBe(0);
+    expect(result.metrics.counters.skipReason).toBe('covered-by-ast-reused-scope-resolution');
+    expect(acc.disposed).toBe(true);
+  });
+
+  it('keeps legacy propagation when any parseable file lacks AST-reused scope facts', async () => {
+    runCrossFileMock.mockResolvedValueOnce({
+      filesReprocessed: 2,
+      metrics: { timings: { processCallsMs: 4.5 }, counters: { filesReprocessed: 2 } },
+    });
+    const acc = new BindingAccumulator();
+    acc.appendFile('src/a.ts', [{ scope: '', varName: 'x', typeName: 'X' }]);
+
+    const result = await crossFilePhase.execute(
+      makeCtx(),
+      makeDeps(acc, {
+        timings: {},
+        counters: {
+          parseableFiles: 3,
+          scopeParsedFiles: 2,
+          scopeExtractionAstReusedFiles: 2,
+          scopeExtractionCompatibilityFiles: 0,
+          scopeExtractionNoHookFiles: 1,
+          scopeExtractionFailedFiles: 0,
+        },
+      }),
+    );
+
+    expect(runCrossFileMock).toHaveBeenCalledTimes(1);
+    expect(result.filesReprocessed).toBe(2);
     expect(acc.disposed).toBe(true);
   });
 });

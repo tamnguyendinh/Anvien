@@ -92,6 +92,8 @@ export interface AnalyzeBenchmarkKeyMetrics {
   readonly scopeResolutionChunks?: number;
   readonly scopeResolutionMaxChunkReferenceSites?: number;
   readonly scopeResolutionReadonlyIndexBytes?: number;
+  readonly scopeResolutionUsedWorkers?: number;
+  readonly scopeResolutionWorkerCount?: number;
   readonly scopeResolutionReferenceIndexSourceScopes?: number;
   readonly scopeResolutionReferenceIndexTargetDefs?: number;
   readonly scopeResolutionResolvedReferences?: number;
@@ -228,6 +230,8 @@ function createKeyMetrics(
     scopeResolutionChunks: counters.scopeResolutionChunks,
     scopeResolutionMaxChunkReferenceSites: counters.scopeResolutionMaxChunkReferenceSites,
     scopeResolutionReadonlyIndexBytes: counters.scopeResolutionReadonlyIndexBytes,
+    scopeResolutionUsedWorkers: counters.scopeResolutionUsedWorkers,
+    scopeResolutionWorkerCount: counters.scopeResolutionWorkerCount,
     scopeResolutionReferenceIndexSourceScopes: counters.scopeResolutionReferenceIndexSourceScopes,
     scopeResolutionReferenceIndexTargetDefs: counters.scopeResolutionReferenceIndexTargetDefs,
     scopeResolutionResolvedReferences: counters.scopeResolutionResolvedReferences,

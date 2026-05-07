@@ -56,6 +56,8 @@ export interface AnalyzeCounters {
   scopeResolutionChunks?: number;
   scopeResolutionMaxChunkReferenceSites?: number;
   scopeResolutionReadonlyIndexBytes?: number;
+  scopeResolutionUsedWorkers?: number;
+  scopeResolutionWorkerCount?: number;
   scopeResolutionReferenceIndexSourceScopes?: number;
   scopeResolutionReferenceIndexTargetDefs?: number;
   scopeResolutionResolvedReferences?: number;
@@ -195,6 +197,8 @@ export interface ResolutionMetrics {
     | 'scopeResolutionChunks'
     | 'scopeResolutionMaxChunkReferenceSites'
     | 'scopeResolutionReadonlyIndexBytes'
+    | 'scopeResolutionUsedWorkers'
+    | 'scopeResolutionWorkerCount'
     | 'scopeResolutionReferenceIndexSourceScopes'
     | 'scopeResolutionReferenceIndexTargetDefs'
     | 'scopeResolutionResolvedReferences'

@@ -11,6 +11,7 @@
  */
 
 import { SupportedLanguages } from 'avmatrix-shared';
+import type { CaptureMatch, Scope, ScopeId } from 'avmatrix-shared';
 import { createClassExtractor } from '../class-extractors/generic.js';
 import { pythonClassConfig } from '../class-extractors/configs/python.js';
 import { defineLanguage } from '../language-provider.js';
@@ -29,6 +30,11 @@ import { pythonVariableConfig } from '../variable-extractors/configs/python.js';
 import { createCallExtractor } from '../call-extractors/generic.js';
 import { pythonCallConfig } from '../call-extractors/configs/python.js';
 import { createHeritageExtractor } from '../heritage-extractors/generic.js';
+import {
+  emitPythonScopeCapturesFromTree,
+  interpretPythonImport,
+  interpretPythonTypeBinding,
+} from '../scope-captures/python.js';
 
 const BUILT_INS: ReadonlySet<string> = new Set([
   'print',
@@ -60,6 +66,32 @@ const BUILT_INS: ReadonlySet<string> = new Set([
   'abs',
 ]);
 
+const PYTHON_DECLARATION_SUBTAGS: ReadonlySet<string> = new Set([
+  '@declaration.name',
+  '@declaration.owner',
+  '@declaration.qualified_name',
+  '@declaration.return_type',
+  '@declaration.declared_type',
+]);
+
+const pythonBindingScopeFor = (match: CaptureMatch, innermostScope: Scope): ScopeId | null => {
+  const declarationAnchor = Object.keys(match).find(
+    (name) => name.startsWith('@declaration.') && !PYTHON_DECLARATION_SUBTAGS.has(name),
+  );
+  if (declarationAnchor === undefined) return null;
+
+  const declarationKind = declarationAnchor.slice('@declaration.'.length);
+  if (declarationKind === 'class' || declarationKind === 'function') {
+    return innermostScope.parent ?? null;
+  }
+
+  if (declarationKind === 'method' || declarationKind === 'property') {
+    return innermostScope.kind === 'Function' ? innermostScope.parent : null;
+  }
+
+  return null;
+};
+
 export const pythonProvider = defineLanguage({
   id: SupportedLanguages.Python,
   extensions: ['.py'],
@@ -76,5 +108,9 @@ export const pythonProvider = defineLanguage({
   variableExtractor: createVariableExtractor(pythonVariableConfig),
   classExtractor: createClassExtractor(pythonClassConfig),
   heritageExtractor: createHeritageExtractor(SupportedLanguages.Python),
+  emitScopeCapturesFromTree: emitPythonScopeCapturesFromTree,
+  interpretImport: interpretPythonImport,
+  interpretTypeBinding: interpretPythonTypeBinding,
+  bindingScopeFor: pythonBindingScopeFor,
   builtInNames: BUILT_INS,
 });

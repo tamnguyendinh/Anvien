@@ -482,6 +482,10 @@ export async function runChunkedParseAndResolve(
         resolveImportTarget: resolveImportTargetAcrossLanguages,
       },
       workspaceIndex: buildImportTargetWorkspace(providerMap, resolveCtx),
+      mroStrategyForFile: (filePath) => {
+        const language = getLanguageFromFilename(filePath);
+        return language === null ? undefined : providers[language].mroStrategy;
+      },
     });
   });
   ctx.model.attachScopeIndexes(scopeIndexes);

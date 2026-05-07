@@ -123,6 +123,7 @@ export function run(service: Service) {
     const references = parsed!.referenceSites.map((site) => ({
       name: site.name,
       kind: site.kind,
+      ...(site.heritageKind !== undefined ? { heritageKind: site.heritageKind } : {}),
       callForm: site.callForm,
       receiver: site.explicitReceiver?.name,
       arity: site.arity,
@@ -132,6 +133,7 @@ export function run(service: Service) {
         {
           name: 'Base',
           kind: 'inherits',
+          heritageKind: 'extends',
           callForm: undefined,
           receiver: undefined,
           arity: undefined,
@@ -139,6 +141,7 @@ export function run(service: Service) {
         {
           name: 'Runnable',
           kind: 'inherits',
+          heritageKind: 'implements',
           callForm: undefined,
           receiver: undefined,
           arity: undefined,

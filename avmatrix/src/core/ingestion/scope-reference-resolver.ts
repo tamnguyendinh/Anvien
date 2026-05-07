@@ -28,7 +28,7 @@ import type { ScopeResolutionIndexes } from './model/scope-resolution-indexes.js
 import { createWorkerPool } from './workers/worker-pool.js';
 
 const DEFAULT_REFERENCE_RESOLUTION_CHUNK_SIZE = 1000;
-const DEFAULT_PARALLEL_REFERENCE_SITE_THRESHOLD = DEFAULT_REFERENCE_RESOLUTION_CHUNK_SIZE * 2;
+const DEFAULT_PARALLEL_REFERENCE_SITE_THRESHOLD = 250_000;
 
 export interface ScopeReferenceResolutionOptions {
   readonly chunkSize?: number;
@@ -54,6 +54,8 @@ export interface ScopeReferenceResolutionStats {
   readonly referenceIndexSourceScopes: number;
   readonly referenceIndexTargetDefs: number;
   readonly readonlyIndexBytes: number;
+  readonly usedWorkers: boolean;
+  readonly workerCount: number;
 }
 
 export interface ScopeReferenceResolutionTimings {
@@ -141,6 +143,8 @@ export function resolveScopeReferenceSites(
     readonlyIndexBytes,
     readonlyIndexInitMs,
     referenceWorkerResolveMs,
+    usedWorkers: false,
+    workerCount: 0,
   });
 }
 
@@ -157,7 +161,7 @@ export async function resolveScopeReferenceSitesInWorkers(
   const serialized = serializeScopeResolutionIndexes(scopes);
   const readonlyIndexBytes = options.readonlyIndexBytes ?? estimateReadonlyIndexBytes(scopes);
   const workerUrl = resolveReferenceResolutionWorkerUrl();
-  const pool = createWorkerPool(workerUrl, options.workerCount, {
+  const pool = createWorkerPool(workerUrl, workerCountForOptions(options), {
     workerData: { scopeResolutionIndexes: serialized },
   });
   const readonlyIndexInitMs = options.readonlyIndexInitMs ?? performance.now() - initStart;
@@ -179,6 +183,8 @@ export async function resolveScopeReferenceSitesInWorkers(
       readonlyIndexBytes,
       readonlyIndexInitMs,
       referenceWorkerResolveMs,
+      usedWorkers: true,
+      workerCount: pool.size,
     });
   } finally {
     await pool.terminate();
@@ -286,6 +292,8 @@ export function mergeReferenceResolutionChunks(
     readonly readonlyIndexBytes: number;
     readonly readonlyIndexInitMs: number;
     readonly referenceWorkerResolveMs: number;
+    readonly usedWorkers: boolean;
+    readonly workerCount: number;
   },
 ): ScopeReferenceResolutionResult {
   const mergeStart = performance.now();
@@ -322,6 +330,8 @@ export function mergeReferenceResolutionChunks(
       referenceIndexSourceScopes: referenceIndex.bySourceScope.size,
       referenceIndexTargetDefs: referenceIndex.byTargetDef.size,
       readonlyIndexBytes: timings.readonlyIndexBytes,
+      usedWorkers: timings.usedWorkers,
+      workerCount: timings.workerCount,
     },
     timings: {
       readonlyIndexInitMs: timings.readonlyIndexInitMs,
@@ -539,10 +549,32 @@ function shouldUseReferenceWorkers(
   referenceSiteCount: number,
   options: ScopeReferenceResolutionOptions,
 ): boolean {
-  const enabled = options.useWorkers ?? process.env.AVMATRIX_SCOPE_RESOLUTION_WORKERS === '1';
-  if (!enabled) return false;
-  const threshold = options.minWorkerReferenceSites ?? DEFAULT_PARALLEL_REFERENCE_SITE_THRESHOLD;
+  const mode = referenceWorkerMode(options);
+  if (mode === 'off') return false;
+  const threshold =
+    mode === 'force'
+      ? (options.minWorkerReferenceSites ?? 0)
+      : (options.minWorkerReferenceSites ?? DEFAULT_PARALLEL_REFERENCE_SITE_THRESHOLD);
   return referenceSiteCount >= threshold;
+}
+
+function referenceWorkerMode(options: ScopeReferenceResolutionOptions): 'auto' | 'force' | 'off' {
+  if (options.useWorkers !== undefined) return options.useWorkers ? 'force' : 'off';
+  const raw = process.env.AVMATRIX_SCOPE_RESOLUTION_WORKERS?.trim().toLowerCase();
+  if (raw === undefined || raw === '' || raw === 'auto') return 'auto';
+  if (raw === '1' || raw === 'true' || raw === 'yes' || raw === 'on' || raw === 'force') {
+    return 'force';
+  }
+  if (raw === '0' || raw === 'false' || raw === 'no' || raw === 'off') return 'off';
+  return 'off';
+}
+
+function workerCountForOptions(options: ScopeReferenceResolutionOptions): number | undefined {
+  if (options.workerCount !== undefined) return options.workerCount;
+  const raw = process.env.AVMATRIX_SCOPE_RESOLUTION_WORKER_COUNT;
+  if (raw === undefined) return undefined;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }
 
 function estimateReferenceChunkBytes(chunk: ReferenceResolutionChunk): number {
@@ -551,6 +583,7 @@ function estimateReferenceChunkBytes(chunk: ReferenceResolutionChunk): number {
     bytes += stringBytes(site.name);
     bytes += stringBytes(site.inScope);
     bytes += stringBytes(site.kind);
+    bytes += stringBytes(site.heritageKind);
     bytes += stringBytes(site.callForm);
     bytes += stringBytes(site.explicitReceiver?.name);
     bytes += 32;

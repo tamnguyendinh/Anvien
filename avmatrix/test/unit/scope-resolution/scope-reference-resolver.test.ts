@@ -272,6 +272,39 @@ function run(user: User) {
     );
     expect(worker.timings.readonlyIndexInitMs).toBeGreaterThanOrEqual(0);
     expect(worker.timings.referenceWorkerResolveMs).toBeGreaterThanOrEqual(0);
+    expect(worker.stats.usedWorkers).toBe(true);
+    expect(worker.stats.workerCount).toBe(2);
+  });
+
+  it('falls back to serial resolution below the worker threshold', async () => {
+    const source = `
+class User {
+  save() {}
+}
+
+function run(user: User) {
+  user.save();
+}
+`;
+    const parsed = extractParsedFileWithStats(
+      typescriptProvider,
+      source,
+      'src/app.ts',
+      SupportedLanguages.TypeScript,
+      parser.parse(source).rootNode,
+    ).parsedFile;
+    expect(parsed).toBeDefined();
+
+    const indexes = finalizeScopeModel([parsed!]);
+    const result = await resolveScopeReferenceSitesInWorkers(indexes, {
+      chunkSize: 1,
+      useWorkers: true,
+      minWorkerReferenceSites: Number.MAX_SAFE_INTEGER,
+      workerCount: 2,
+    });
+
+    expect(result.stats.usedWorkers).toBe(false);
+    expect(result.stats.workerCount).toBe(0);
   });
 
   it('resolves constructor calls through finalized import bindings without source rereads', () => {
@@ -835,6 +868,8 @@ export function main() {
       unresolvedReferences: serial.stats.unresolvedReferences,
       resolvedCalls: serial.stats.resolvedCalls,
       resolvedTypeReferences: serial.stats.resolvedTypeReferences,
+      usedWorkers: true,
+      workerCount: 2,
     });
     expect([...worker.referenceIndex.byTargetDef.keys()].sort()).toEqual(
       [...serial.referenceIndex.byTargetDef.keys()].sort(),

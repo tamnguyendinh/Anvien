@@ -39,7 +39,7 @@ const commands = [
   ['vitest', 'run', '--project', 'default', '--pool=vmForks', '--reporter=dot'],
   ...nativeDbTests.map((file) =>
     forkSingleProcessTests.has(file)
-      ? ['vitest', 'run', file, '--pool=forks', '--isolate=false', '--reporter=dot']
+      ? ['vitest', 'run', file, '--pool=forks', '--no-isolate', '--reporter=dot']
       : ['vitest', 'run', file, '--pool=vmForks', '--reporter=dot'],
   ),
 ];

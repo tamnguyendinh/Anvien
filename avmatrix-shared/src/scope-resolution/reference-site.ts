@@ -62,6 +62,17 @@ export interface ReferenceSite {
    */
   readonly inScope: ScopeId;
   readonly kind: ReferenceKind;
+  /**
+   * Language-level inheritance form when `kind === 'inherits'`.
+   * Kept optional so older providers and serialized fixtures remain valid.
+   */
+  readonly heritageKind?:
+    | 'extends'
+    | 'implements'
+    | 'trait-impl'
+    | 'include'
+    | 'extend'
+    | 'prepend';
   /** Set when `kind === 'call'`. */
   readonly callForm?: CallForm;
   /**
