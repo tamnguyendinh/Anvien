@@ -261,6 +261,14 @@ export interface ScopeExtractionWorkerStats {
   compatibilityHookFiles: number;
   noHookFiles: number;
   failedFiles: number;
+  byLanguage: Record<string, ScopeExtractionLanguageStats>;
+}
+
+export interface ScopeExtractionLanguageStats {
+  astReusedFiles: number;
+  compatibilityHookFiles: number;
+  noHookFiles: number;
+  failedFiles: number;
 }
 
 export interface ParseWorkerResult {
@@ -775,6 +783,7 @@ const processBatch = (
       compatibilityHookFiles: 0,
       noHookFiles: 0,
       failedFiles: 0,
+      byLanguage: {},
     },
     skippedLanguages: {},
     fileCount: 0,
@@ -1492,12 +1501,16 @@ const processFileGroup = (
     );
     if (scopeResult.mode === 'ast-reused') {
       result.scopeExtraction.astReusedFiles++;
+      incrementScopeExtractionLanguage(result.scopeExtraction, language, 'astReusedFiles');
     } else if (scopeResult.mode === 'compatibility-source') {
       result.scopeExtraction.compatibilityHookFiles++;
+      incrementScopeExtractionLanguage(result.scopeExtraction, language, 'compatibilityHookFiles');
     } else if (scopeResult.mode === 'no-hook') {
       result.scopeExtraction.noHookFiles++;
+      incrementScopeExtractionLanguage(result.scopeExtraction, language, 'noHookFiles');
     } else {
       result.scopeExtraction.failedFiles++;
+      incrementScopeExtractionLanguage(result.scopeExtraction, language, 'failedFiles');
     }
     if (scopeResult.parsedFile !== undefined) result.parsedFiles.push(scopeResult.parsedFile);
 
@@ -2411,6 +2424,7 @@ let accumulated: ParseWorkerResult = {
     compatibilityHookFiles: 0,
     noHookFiles: 0,
     failedFiles: 0,
+    byLanguage: {},
   },
   skippedLanguages: {},
   fileCount: 0,
@@ -2423,6 +2437,38 @@ let cumulativeProcessed = 0;
 const appendAll = <T>(target: T[], src: T[]) => {
   for (let i = 0; i < src.length; i++) target.push(src[i]);
 };
+
+function incrementScopeExtractionLanguage(
+  stats: ScopeExtractionWorkerStats,
+  language: string,
+  field: keyof ScopeExtractionLanguageStats,
+): void {
+  const bucket = (stats.byLanguage[language] ??= {
+    astReusedFiles: 0,
+    compatibilityHookFiles: 0,
+    noHookFiles: 0,
+    failedFiles: 0,
+  });
+  bucket[field]++;
+}
+
+function mergeScopeExtractionByLanguage(
+  target: ScopeExtractionWorkerStats,
+  src: ScopeExtractionWorkerStats,
+): void {
+  for (const [language, stats] of Object.entries(src.byLanguage ?? {})) {
+    const bucket = (target.byLanguage[language] ??= {
+      astReusedFiles: 0,
+      compatibilityHookFiles: 0,
+      noHookFiles: 0,
+      failedFiles: 0,
+    });
+    bucket.astReusedFiles += stats.astReusedFiles;
+    bucket.compatibilityHookFiles += stats.compatibilityHookFiles;
+    bucket.noHookFiles += stats.noHookFiles;
+    bucket.failedFiles += stats.failedFiles;
+  }
+}
 
 const mergeResult = (target: ParseWorkerResult, src: ParseWorkerResult) => {
   appendAll(target.nodes, src.nodes);
@@ -2444,6 +2490,7 @@ const mergeResult = (target: ParseWorkerResult, src: ParseWorkerResult) => {
   target.scopeExtraction.compatibilityHookFiles += src.scopeExtraction.compatibilityHookFiles;
   target.scopeExtraction.noHookFiles += src.scopeExtraction.noHookFiles;
   target.scopeExtraction.failedFiles += src.scopeExtraction.failedFiles;
+  mergeScopeExtractionByLanguage(target.scopeExtraction, src.scopeExtraction);
   for (const [lang, count] of Object.entries(src.skippedLanguages)) {
     target.skippedLanguages[lang] = (target.skippedLanguages[lang] || 0) + count;
   }
@@ -2517,6 +2564,7 @@ parentPort!.on('message', (msg: WorkerIncomingMessage) => {
           compatibilityHookFiles: 0,
           noHookFiles: 0,
           failedFiles: 0,
+          byLanguage: {},
         },
         skippedLanguages: {},
         fileCount: 0,

@@ -65,7 +65,12 @@ import { isDev } from '../utils/env.js';
 import { synthesizeWildcardImportBindings, needsSynthesis } from './wildcard-synthesis.js';
 import { providers } from '../languages/index.js';
 import { finalizeScopeModel } from '../finalize-orchestrator.js';
-import type { ParseMetrics, ParseTimingBreakdown } from '../../analyze/analyze-metrics.js';
+import type {
+  AnalyzeLanguageCoverage,
+  AnalyzeLanguageCoverageByLanguage,
+  ParseMetrics,
+  ParseTimingBreakdown,
+} from '../../analyze/analyze-metrics.js';
 import { roundMs } from '../../analyze/analyze-metrics.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -137,6 +142,15 @@ export async function runChunkedParseAndResolve(
 
   const totalParseable = parseableScanned.length;
   const totalParseableBytes = parseableScanned.reduce((s, f) => s + f.size, 0);
+  const languageCoverageByLanguage: AnalyzeLanguageCoverageByLanguage = {};
+  for (const file of parseableScanned) {
+    const language = languageForPath(file.path);
+    getLanguageCoverageBucket(languageCoverageByLanguage, language).parseableFiles =
+      (languageCoverageByLanguage[language]?.parseableFiles ?? 0) + 1;
+  }
+  for (const [language, count] of skippedByLang) {
+    getLanguageCoverageBucket(languageCoverageByLanguage, language).parserUnavailableFiles = count;
+  }
 
   if (totalParseable === 0) {
     onProgress({
@@ -379,6 +393,10 @@ export async function runChunkedParseAndResolve(
         metrics.counters.scopeExtractionFailedFiles =
           (metrics.counters.scopeExtractionFailedFiles ?? 0) +
           chunkWorkerData.scopeExtraction.failedFiles;
+        mergeScopeExtractionLanguageCoverage(
+          languageCoverageByLanguage,
+          chunkWorkerData.scopeExtraction.byLanguage,
+        );
       }
 
       filesParsedSoFar += chunkFiles.length;
@@ -526,6 +544,15 @@ export async function runChunkedParseAndResolve(
     (sum, file) => sum + file.referenceSites.length,
     0,
   );
+  for (const file of allParsedFiles) {
+    const language = languageForPath(file.filePath);
+    const bucket = getLanguageCoverageBucket(languageCoverageByLanguage, language);
+    bucket.scopeParsedFiles = (bucket.scopeParsedFiles ?? 0) + 1;
+    bucket.scopeReferenceSites = (bucket.scopeReferenceSites ?? 0) + file.referenceSites.length;
+  }
+  metrics.counters.languageCoverageByLanguage = finalizeLanguageCoverage(
+    languageCoverageByLanguage,
+  );
 
   return {
     exportedTypeMap,
@@ -542,6 +569,64 @@ export async function runChunkedParseAndResolve(
     usedWorkerPool: workerPool !== undefined,
     metrics,
   };
+}
+
+function languageForPath(filePath: string): string {
+  return getLanguageFromFilename(filePath) ?? 'unknown';
+}
+
+function getLanguageCoverageBucket(
+  coverage: AnalyzeLanguageCoverageByLanguage,
+  language: string,
+): AnalyzeLanguageCoverage {
+  return (coverage[language] ??= {});
+}
+
+function mergeScopeExtractionLanguageCoverage(
+  coverage: AnalyzeLanguageCoverageByLanguage,
+  statsByLanguage: Record<
+    string,
+    {
+      astReusedFiles: number;
+      compatibilityHookFiles: number;
+      noHookFiles: number;
+      failedFiles: number;
+    }
+  >,
+): void {
+  for (const [language, stats] of Object.entries(statsByLanguage ?? {})) {
+    const bucket = getLanguageCoverageBucket(coverage, language);
+    bucket.scopeExtractionAstReusedFiles =
+      (bucket.scopeExtractionAstReusedFiles ?? 0) + stats.astReusedFiles;
+    bucket.scopeExtractionCompatibilityFiles =
+      (bucket.scopeExtractionCompatibilityFiles ?? 0) + stats.compatibilityHookFiles;
+    bucket.scopeExtractionNoHookFiles =
+      (bucket.scopeExtractionNoHookFiles ?? 0) + stats.noHookFiles;
+    bucket.scopeExtractionFailedFiles =
+      (bucket.scopeExtractionFailedFiles ?? 0) + stats.failedFiles;
+  }
+}
+
+function finalizeLanguageCoverage(
+  coverage: AnalyzeLanguageCoverageByLanguage,
+): AnalyzeLanguageCoverageByLanguage {
+  const out: AnalyzeLanguageCoverageByLanguage = {};
+  for (const language of Object.keys(coverage).sort()) {
+    const bucket = { ...coverage[language] };
+    const parseable = bucket.parseableFiles ?? 0;
+    const astReused = bucket.scopeExtractionAstReusedFiles ?? 0;
+    const legacyOrUnavailable =
+      (bucket.scopeExtractionCompatibilityFiles ?? 0) +
+      (bucket.scopeExtractionNoHookFiles ?? 0) +
+      (bucket.scopeExtractionFailedFiles ?? 0) +
+      (bucket.parserUnavailableFiles ?? 0);
+    bucket.astReusedScopeCoveragePercent =
+      parseable > 0 ? roundMs((astReused / parseable) * 100) : 0;
+    bucket.legacyOrUnavailableScopePercent =
+      parseable > 0 ? roundMs((legacyOrUnavailable / parseable) * 100) : 0;
+    out[language] = bucket;
+  }
+  return out;
 }
 
 function createCanonicalParseWorkerPool(metrics: ParseMetrics): WorkerPool {

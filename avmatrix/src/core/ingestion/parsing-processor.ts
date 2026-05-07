@@ -59,6 +59,7 @@ const emptyWorkerExtractedData = (): WorkerExtractedData => ({
     compatibilityHookFiles: 0,
     noHookFiles: 0,
     failedFiles: 0,
+    byLanguage: {},
   },
 });
 
@@ -121,6 +122,7 @@ export const processParsing = async (
     compatibilityHookFiles: 0,
     noHookFiles: 0,
     failedFiles: 0,
+    byLanguage: {},
   };
 
   for (const result of chunkResults) {
@@ -169,6 +171,7 @@ export const processParsing = async (
       scopeExtraction.compatibilityHookFiles += result.scopeExtraction.compatibilityHookFiles;
       scopeExtraction.noHookFiles += result.scopeExtraction.noHookFiles;
       scopeExtraction.failedFiles += result.scopeExtraction.failedFiles;
+      mergeScopeExtractionByLanguage(scopeExtraction, result.scopeExtraction);
     }
   }
 
@@ -202,3 +205,21 @@ export const processParsing = async (
     scopeExtraction,
   };
 };
+
+function mergeScopeExtractionByLanguage(
+  target: ScopeExtractionWorkerStats,
+  src: ScopeExtractionWorkerStats,
+): void {
+  for (const [language, stats] of Object.entries(src.byLanguage ?? {})) {
+    const bucket = (target.byLanguage[language] ??= {
+      astReusedFiles: 0,
+      compatibilityHookFiles: 0,
+      noHookFiles: 0,
+      failedFiles: 0,
+    });
+    bucket.astReusedFiles += stats.astReusedFiles;
+    bucket.compatibilityHookFiles += stats.compatibilityHookFiles;
+    bucket.noHookFiles += stats.noHookFiles;
+    bucket.failedFiles += stats.failedFiles;
+  }
+}

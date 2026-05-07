@@ -45,6 +45,7 @@ describe('analyze benchmark snapshot', () => {
         arch: 'x64',
         repoGitCommit: 'abcdef123',
         repoGitDirty: false,
+        repoGitUnavailable: false,
       },
       stats: { files: 2, nodes: 2, edges: 1 },
       pipelineResult: {
@@ -99,6 +100,19 @@ describe('analyze benchmark snapshot', () => {
           crossFileReprocessedFiles: 3,
           csvRelationshipRows: 12,
           ladybugCopyCount: 3,
+          languageCoverageByLanguage: {
+            typescript: {
+              parseableFiles: 2,
+              scopeParsedFiles: 2,
+              scopeExtractionAstReusedFiles: 2,
+              scopeReferenceSites: 4,
+              scopeResolutionReferenceSites: 4,
+              scopeResolutionResolvedReferences: 3,
+              scopeResolutionUnresolvedReferences: 1,
+              astReusedScopeCoveragePercent: 100,
+              legacyOrUnavailableScopePercent: 0,
+            },
+          },
         },
         bottlenecks: [],
         overheadMs: 35,
@@ -120,6 +134,7 @@ describe('analyze benchmark snapshot', () => {
       arch: 'x64',
       repoGitCommit: 'abcdef123',
       repoGitDirty: false,
+      repoGitUnavailable: false,
     });
     expect(snapshot.keyMetrics).toMatchObject({
       totalWallMs: 100,
@@ -170,6 +185,19 @@ describe('analyze benchmark snapshot', () => {
       crossFileProcessCallsParserParseMs: 9,
       csvRelationshipRows: 12,
       ladybugCopyCount: 3,
+      languageCoverageByLanguage: {
+        typescript: {
+          parseableFiles: 2,
+          scopeParsedFiles: 2,
+          scopeExtractionAstReusedFiles: 2,
+          scopeReferenceSites: 4,
+          scopeResolutionReferenceSites: 4,
+          scopeResolutionResolvedReferences: 3,
+          scopeResolutionUnresolvedReferences: 1,
+          astReusedScopeCoveragePercent: 100,
+          legacyOrUnavailableScopePercent: 0,
+        },
+      },
     });
   });
 
@@ -233,6 +261,17 @@ describe('analyze benchmark snapshot', () => {
           scopeResolutionUnresolvedReferences: 2,
           scopeResolutionFinalizedImportsEmitted: 0,
           scopeResolutionFinalizedImportUsesEmitted: 0,
+          languageCoverageByLanguage: {
+            typescript: {
+              parseableFiles: 1,
+              scopeExtractionAstReusedFiles: 1,
+              scopeResolutionReferenceSites: 2,
+              scopeResolutionResolvedReferences: 0,
+              scopeResolutionUnresolvedReferences: 2,
+              astReusedScopeCoveragePercent: 100,
+              legacyOrUnavailableScopePercent: 0,
+            },
+          },
         },
         bottlenecks: [],
         overheadMs: 50,
@@ -260,6 +299,17 @@ describe('analyze benchmark snapshot', () => {
           scopeResolutionUnresolvedReferences: 1,
           scopeResolutionFinalizedImportsEmitted: 1,
           scopeResolutionFinalizedImportUsesEmitted: 1,
+          languageCoverageByLanguage: {
+            typescript: {
+              parseableFiles: 1,
+              scopeExtractionAstReusedFiles: 1,
+              scopeResolutionReferenceSites: 2,
+              scopeResolutionResolvedReferences: 1,
+              scopeResolutionUnresolvedReferences: 1,
+              astReusedScopeCoveragePercent: 100,
+              legacyOrUnavailableScopePercent: 0,
+            },
+          },
         },
         bottlenecks: [],
         overheadMs: 25,
@@ -303,6 +353,21 @@ describe('analyze benchmark snapshot', () => {
       before: 0,
       after: 1,
       delta: 1,
+    });
+    expect(
+      comparison.languageCoverageByLanguage.typescript?.scopeResolutionResolvedReferences,
+    ).toEqual({
+      before: 0,
+      after: 1,
+      delta: 1,
+    });
+    expect(
+      comparison.languageCoverageByLanguage.typescript?.scopeResolutionUnresolvedReferences,
+    ).toEqual({
+      before: 2,
+      after: 1,
+      delta: -1,
+      percentChange: -50,
     });
     expect(comparison.graphDiffs.map((diff) => diff.field)).toEqual(
       expect.arrayContaining(['nodeCount', 'relationshipCount', 'byRelationshipType']),

@@ -206,6 +206,9 @@ export const runPipelineFromRepo = async (
       resolutionOutput.metrics.counters.scopeResolutionEdgesSkippedNoCaller,
     scopeResolutionEdgesSkippedMissingTarget:
       resolutionOutput.metrics.counters.scopeResolutionEdgesSkippedMissingTarget,
+    languageCoverageByLanguage:
+      resolutionOutput.metrics.counters.languageCoverageByLanguage ??
+      parseOutput.metrics?.counters.languageCoverageByLanguage,
     nodeCount: graph.nodeCount,
     edgeCount: graph.relationshipCount,
     usedWorkerPool,

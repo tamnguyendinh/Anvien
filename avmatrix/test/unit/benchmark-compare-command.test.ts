@@ -39,6 +39,9 @@ describe('benchmarkCompareCommand', () => {
     expect(output).toContain('scopeResolutionUnresolvedReferences: 2 -> 1 (-1, -50%)');
     expect(output).toContain('scopeResolutionFinalizedImportsEmitted: 0 -> 1 (+1)');
     expect(output).toContain('scopeResolutionFinalizedImportUsesEmitted: 0 -> 1 (+1)');
+    expect(output).toContain('languageCoverageByLanguage:');
+    expect(output).toContain('  typescript:');
+    expect(output).toContain('scopeResolutionResolvedReferences: 0 -> 1 (+1)');
   });
 
   it('can format the full comparison as JSON-compatible data', () => {
@@ -95,6 +98,17 @@ function makeSnapshot(
         scopeResolutionUnresolvedReferences: unresolvedReferences,
         scopeResolutionFinalizedImportsEmitted: resolvedReferences,
         scopeResolutionFinalizedImportUsesEmitted: resolvedReferences,
+        languageCoverageByLanguage: {
+          typescript: {
+            parseableFiles: 1,
+            scopeExtractionAstReusedFiles: 1,
+            scopeResolutionReferenceSites: 2,
+            scopeResolutionResolvedReferences: resolvedReferences,
+            scopeResolutionUnresolvedReferences: unresolvedReferences,
+            astReusedScopeCoveragePercent: 100,
+            legacyOrUnavailableScopePercent: 0,
+          },
+        },
       },
       bottlenecks: [],
       overheadMs: 50,

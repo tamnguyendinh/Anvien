@@ -22,6 +22,24 @@ export type AnalyzeTimingBucket =
 
 export type TimingMap = Record<string, number>;
 
+export interface AnalyzeLanguageCoverage {
+  parseableFiles?: number;
+  parserUnavailableFiles?: number;
+  scopeParsedFiles?: number;
+  scopeExtractionAstReusedFiles?: number;
+  scopeExtractionCompatibilityFiles?: number;
+  scopeExtractionNoHookFiles?: number;
+  scopeExtractionFailedFiles?: number;
+  scopeReferenceSites?: number;
+  scopeResolutionReferenceSites?: number;
+  scopeResolutionResolvedReferences?: number;
+  scopeResolutionUnresolvedReferences?: number;
+  astReusedScopeCoveragePercent?: number;
+  legacyOrUnavailableScopePercent?: number;
+}
+
+export type AnalyzeLanguageCoverageByLanguage = Record<string, AnalyzeLanguageCoverage>;
+
 export interface AnalyzeCounters {
   totalFiles?: number;
   parseableFiles?: number;
@@ -75,6 +93,7 @@ export interface AnalyzeCounters {
   scopeResolutionDuplicateImportUsesSkipped?: number;
   scopeResolutionEdgesSkippedNoCaller?: number;
   scopeResolutionEdgesSkippedMissingTarget?: number;
+  languageCoverageByLanguage?: AnalyzeLanguageCoverageByLanguage;
 }
 
 export interface LbugLoadTimingBreakdown {
@@ -139,6 +158,7 @@ export interface ParseMetrics {
     | 'scopeFinalizeTotalImports'
     | 'scopeFinalizeLinkedImports'
     | 'scopeFinalizeUnresolvedImports'
+    | 'languageCoverageByLanguage'
   >;
 }
 
@@ -216,6 +236,7 @@ export interface ResolutionMetrics {
     | 'scopeResolutionDuplicateImportUsesSkipped'
     | 'scopeResolutionEdgesSkippedNoCaller'
     | 'scopeResolutionEdgesSkippedMissingTarget'
+    | 'languageCoverageByLanguage'
   >;
 }
 

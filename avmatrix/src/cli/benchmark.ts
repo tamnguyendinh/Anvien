@@ -76,6 +76,23 @@ export function formatBenchmarkComparison(comparison: AnalyzeBenchmarkComparison
   }
 
   lines.push('');
+  lines.push('languageCoverageByLanguage:');
+  const languages = Object.keys(comparison.languageCoverageByLanguage).sort();
+  if (languages.length === 0) {
+    lines.push('  none');
+  } else {
+    for (const language of languages) {
+      const coverage = comparison.languageCoverageByLanguage[language]!;
+      lines.push(`  ${language}:`);
+      for (const key of LANGUAGE_COVERAGE_METRICS) {
+        const delta = coverage[key];
+        if (delta === undefined) continue;
+        lines.push(`    ${key}: ${formatDelta(delta)}`);
+      }
+    }
+  }
+
+  lines.push('');
   lines.push(`graphDiffs: ${comparison.graphDiffs.length}`);
   for (const diff of comparison.graphDiffs.slice(0, 10)) {
     lines.push(`  ${diff.field}`);
@@ -104,6 +121,22 @@ const RESOLUTION_KEY_METRICS = Object.freeze([
   'scopeResolutionFinalizedImportUsesEmitted',
   'scopeResolutionDuplicateImportUsesSkipped',
 ]);
+
+const LANGUAGE_COVERAGE_METRICS = Object.freeze([
+  'parseableFiles',
+  'parserUnavailableFiles',
+  'scopeParsedFiles',
+  'scopeExtractionAstReusedFiles',
+  'scopeExtractionCompatibilityFiles',
+  'scopeExtractionNoHookFiles',
+  'scopeExtractionFailedFiles',
+  'scopeReferenceSites',
+  'scopeResolutionReferenceSites',
+  'scopeResolutionResolvedReferences',
+  'scopeResolutionUnresolvedReferences',
+  'astReusedScopeCoveragePercent',
+  'legacyOrUnavailableScopePercent',
+] as const);
 
 async function readBenchmarkSnapshot(filePath: string): Promise<AnalyzeBenchmarkSnapshot> {
   const absolute = path.resolve(filePath);

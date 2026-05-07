@@ -10,11 +10,16 @@
  * @writes  graph via emitReferencesToGraph
  */
 
-import type { ReferenceIndex } from 'avmatrix-shared';
+import { getLanguageFromFilename, type ReferenceIndex } from 'avmatrix-shared';
 import { performance } from 'node:perf_hooks';
-import type { ResolutionMetrics } from '../../analyze/analyze-metrics.js';
+import type {
+  AnalyzeLanguageCoverage,
+  AnalyzeLanguageCoverageByLanguage,
+  ResolutionMetrics,
+} from '../../analyze/analyze-metrics.js';
 import { roundMs } from '../../analyze/analyze-metrics.js';
 import { emitReferencesToGraph } from '../emit-references.js';
+import type { ScopeResolutionIndexes } from '../model/scope-resolution-indexes.js';
 import { resolveScopeReferenceSitesInWorkers } from '../scope-reference-resolver.js';
 import type { PipelineContext, PhaseResult, PipelinePhase } from './types.js';
 import { getPhaseOutput } from './types.js';
@@ -90,6 +95,11 @@ export const resolutionPhase: PipelinePhase<ResolutionOutput> = {
           emitStats.skippedDuplicateImportUseEdge;
         metrics.counters.scopeResolutionEdgesSkippedNoCaller = emitStats.skippedNoCaller;
         metrics.counters.scopeResolutionEdgesSkippedMissingTarget = emitStats.skippedMissingTarget;
+        metrics.counters.languageCoverageByLanguage = buildResolutionLanguageCoverage(
+          parseOutput.metrics?.counters.languageCoverageByLanguage,
+          scopes,
+          EMPTY_REFERENCE_INDEX,
+        );
       } else {
         metrics.counters.scopeResolutionFinalizedImportsEmitted = 0;
         metrics.counters.scopeResolutionDuplicateImportsSkipped = 0;
@@ -97,6 +107,8 @@ export const resolutionPhase: PipelinePhase<ResolutionOutput> = {
         metrics.counters.scopeResolutionDuplicateImportUsesSkipped = 0;
         metrics.counters.scopeResolutionEdgesSkippedNoCaller = 0;
         metrics.counters.scopeResolutionEdgesSkippedMissingTarget = 0;
+        metrics.counters.languageCoverageByLanguage =
+          parseOutput.metrics?.counters.languageCoverageByLanguage;
       }
       return { referenceIndex: EMPTY_REFERENCE_INDEX, metrics };
     }
@@ -145,7 +157,73 @@ export const resolutionPhase: PipelinePhase<ResolutionOutput> = {
       emitStats.skippedDuplicateImportUseEdge;
     metrics.counters.scopeResolutionEdgesSkippedNoCaller = emitStats.skippedNoCaller;
     metrics.counters.scopeResolutionEdgesSkippedMissingTarget = emitStats.skippedMissingTarget;
+    metrics.counters.languageCoverageByLanguage = buildResolutionLanguageCoverage(
+      parseOutput.metrics?.counters.languageCoverageByLanguage,
+      scopes,
+      result.referenceIndex,
+    );
 
     return { referenceIndex: result.referenceIndex, metrics };
   },
 };
+
+function buildResolutionLanguageCoverage(
+  base: AnalyzeLanguageCoverageByLanguage | undefined,
+  scopes: ScopeResolutionIndexes | undefined,
+  referenceIndex: ReferenceIndex,
+): AnalyzeLanguageCoverageByLanguage | undefined {
+  if (base === undefined && scopes === undefined) return undefined;
+
+  const coverage: AnalyzeLanguageCoverageByLanguage = cloneCoverage(base);
+  if (scopes === undefined) return coverage;
+
+  const referenceSitesByLanguage = new Map<string, number>();
+  for (const site of scopes.referenceSites) {
+    const language = languageForScope(scopes, site.inScope);
+    referenceSitesByLanguage.set(language, (referenceSitesByLanguage.get(language) ?? 0) + 1);
+  }
+
+  const resolvedByLanguage = new Map<string, number>();
+  for (const [scopeId, refs] of referenceIndex.bySourceScope) {
+    const language = languageForScope(scopes, scopeId);
+    resolvedByLanguage.set(language, (resolvedByLanguage.get(language) ?? 0) + refs.length);
+  }
+
+  const languages = new Set([
+    ...Object.keys(coverage),
+    ...referenceSitesByLanguage.keys(),
+    ...resolvedByLanguage.keys(),
+  ]);
+  for (const language of Array.from(languages).sort()) {
+    const bucket = getLanguageCoverageBucket(coverage, language);
+    const referenceSites = referenceSitesByLanguage.get(language) ?? 0;
+    const resolvedReferences = resolvedByLanguage.get(language) ?? 0;
+    bucket.scopeResolutionReferenceSites = referenceSites;
+    bucket.scopeResolutionResolvedReferences = resolvedReferences;
+    bucket.scopeResolutionUnresolvedReferences = Math.max(0, referenceSites - resolvedReferences);
+  }
+
+  return coverage;
+}
+
+function cloneCoverage(
+  source: AnalyzeLanguageCoverageByLanguage | undefined,
+): AnalyzeLanguageCoverageByLanguage {
+  const out: AnalyzeLanguageCoverageByLanguage = {};
+  for (const [language, coverage] of Object.entries(source ?? {})) {
+    out[language] = { ...coverage };
+  }
+  return out;
+}
+
+function getLanguageCoverageBucket(
+  coverage: AnalyzeLanguageCoverageByLanguage,
+  language: string,
+): AnalyzeLanguageCoverage {
+  return (coverage[language] ??= {});
+}
+
+function languageForScope(scopes: ScopeResolutionIndexes, scopeId: string): string {
+  const filePath = scopes.scopeTree.getScope(scopeId)?.filePath;
+  return filePath === undefined ? 'unknown' : (getLanguageFromFilename(filePath) ?? 'unknown');
+}

@@ -1,6 +1,10 @@
 import fs from 'fs/promises';
 import path from 'path';
-import type { AnalyzePerformanceReport } from './analyze-metrics.js';
+import type {
+  AnalyzeLanguageCoverage,
+  AnalyzeLanguageCoverageByLanguage,
+  AnalyzePerformanceReport,
+} from './analyze-metrics.js';
 import {
   compareGraphCorrectnessSnapshots,
   createGraphCorrectnessSnapshot,
@@ -35,6 +39,8 @@ export interface AnalyzeBenchmarkEnvironment {
   readonly arch?: string;
   readonly repoGitCommit?: string;
   readonly repoGitDirty?: boolean;
+  readonly repoGitUnavailable?: boolean;
+  readonly repoGitUnavailableReason?: string;
 }
 
 export interface AnalyzeBenchmarkComparison {
@@ -46,6 +52,7 @@ export interface AnalyzeBenchmarkComparison {
   readonly nodeCountsByLabel: Record<string, NumericDelta>;
   readonly semanticRelationshipUniqueCountsByType: Record<string, NumericDelta>;
   readonly semanticRelationshipDuplicateCountsByType: Record<string, NumericDelta>;
+  readonly languageCoverageByLanguage: Record<string, AnalyzeLanguageCoverageComparison>;
   readonly keyMetrics: Record<string, NumericDelta>;
   readonly graphDiffs: readonly GraphCorrectnessDiff[];
 }
@@ -116,7 +123,12 @@ export interface AnalyzeBenchmarkKeyMetrics {
   readonly crossFileProcessCallsParserParseMs?: number;
   readonly csvRelationshipRows?: number;
   readonly ladybugCopyCount?: number;
+  readonly languageCoverageByLanguage?: AnalyzeLanguageCoverageByLanguage;
 }
+
+export type AnalyzeLanguageCoverageComparison = {
+  readonly [K in keyof AnalyzeLanguageCoverage]?: NumericDelta;
+};
 
 export function createAnalyzeBenchmarkSnapshot(input: {
   readonly repoName: string;
@@ -178,6 +190,10 @@ export function compareAnalyzeBenchmarkSnapshots(
     semanticRelationshipDuplicateCountsByType: compareNumberRecords(
       before.keyMetrics.semanticRelationshipDuplicateCountsByType,
       after.keyMetrics.semanticRelationshipDuplicateCountsByType,
+    ),
+    languageCoverageByLanguage: compareLanguageCoverageByLanguage(
+      before.keyMetrics.languageCoverageByLanguage,
+      after.keyMetrics.languageCoverageByLanguage,
     ),
     keyMetrics: compareNumericKeyMetrics(before.keyMetrics, after.keyMetrics),
     graphDiffs:
@@ -254,6 +270,7 @@ function createKeyMetrics(
     crossFileProcessCallsParserParseMs: performance?.crossFile?.timings.processCallsParserParseMs,
     csvRelationshipRows: counters.csvRelationshipRows,
     ladybugCopyCount: counters.ladybugCopyCount,
+    languageCoverageByLanguage: counters.languageCoverageByLanguage,
   };
 }
 
@@ -269,7 +286,8 @@ function compareNumericKeyMetrics(
       key === 'nodeCountsByLabel' ||
       key === 'relationshipCountsByType' ||
       key === 'semanticRelationshipUniqueCountsByType' ||
-      key === 'semanticRelationshipDuplicateCountsByType'
+      key === 'semanticRelationshipDuplicateCountsByType' ||
+      key === 'languageCoverageByLanguage'
     ) {
       continue;
     }
@@ -280,6 +298,34 @@ function compareNumericKeyMetrics(
       isNumber(beforeValue) ? beforeValue : undefined,
       isNumber(afterValue) ? afterValue : undefined,
     );
+  }
+  return out;
+}
+
+function compareLanguageCoverageByLanguage(
+  before: AnalyzeLanguageCoverageByLanguage | undefined,
+  after: AnalyzeLanguageCoverageByLanguage | undefined,
+): Record<string, AnalyzeLanguageCoverageComparison> {
+  const out: Record<string, AnalyzeLanguageCoverageComparison> = {};
+  const languages = new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})]);
+  for (const language of Array.from(languages).sort()) {
+    const beforeCoverage = before?.[language];
+    const afterCoverage = after?.[language];
+    const keys = new Set([
+      ...Object.keys(beforeCoverage ?? {}),
+      ...Object.keys(afterCoverage ?? {}),
+    ]) as Set<keyof AnalyzeLanguageCoverage>;
+    const languageDelta: Record<string, NumericDelta> = {};
+    for (const key of Array.from(keys).sort()) {
+      const beforeValue = beforeCoverage?.[key];
+      const afterValue = afterCoverage?.[key];
+      if (!isNumber(beforeValue) && !isNumber(afterValue)) continue;
+      languageDelta[key] = compareNumbers(
+        isNumber(beforeValue) ? beforeValue : undefined,
+        isNumber(afterValue) ? afterValue : undefined,
+      );
+    }
+    out[language] = languageDelta;
   }
   return out;
 }

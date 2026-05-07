@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-05-07T02:52:13.353Z",
+  "createdAt": "2026-05-07T04:59:45.484Z",
   "label": "final-equivalent-accuracy-run3",
   "repoName": "GitNexus-main",
   "repoPath": "E:\\Lap_trinh\\GitNexus-main",
@@ -8,7 +8,9 @@
     "avmatrixVersion": "1.2.1",
     "nodeVersion": "v22.17.1",
     "platform": "win32",
-    "arch": "x64"
+    "arch": "x64",
+    "repoGitUnavailable": true,
+    "repoGitUnavailableReason": "git rev-parse HEAD unavailable for target repo; git status --porcelain unavailable for target repo"
   },
   "stats": {
     "files": 847,
@@ -67,47 +69,47 @@
     "crossFileReprocessedFiles": 0
   },
   "performance": {
-    "totalWallMs": 110795.4,
+    "totalWallMs": 91031.5,
     "buckets": {
-      "scan": 187,
-      "structure": 13,
-      "markdown": 23,
+      "scan": 128,
+      "structure": 11,
+      "markdown": 15,
       "cobol": 4,
-      "parse": 65296,
-      "routes": 26,
+      "parse": 47317,
+      "routes": 23,
       "tools": 2,
-      "orm": 1,
-      "crossFile": 0,
-      "resolution": 2507,
+      "orm": 0,
+      "crossFile": 1,
+      "resolution": 2319,
       "mro": 8,
-      "communities": 283,
-      "processes": 354,
-      "lbugLoad": 23834.6,
-      "fts": 16694.1,
-      "metadata": 111.5,
-      "aiContext": 18.8
+      "communities": 225,
+      "processes": 357,
+      "lbugLoad": 23396,
+      "fts": 15556.6,
+      "metadata": 176.9,
+      "aiContext": 17.2
     },
     "pipelinePhaseMs": {
-      "scan": 187,
-      "structure": 13,
-      "markdown": 23,
+      "scan": 128,
+      "structure": 11,
+      "markdown": 15,
       "cobol": 4,
-      "parse": 65296,
-      "routes": 26,
+      "parse": 47317,
+      "routes": 23,
       "tools": 2,
-      "orm": 1,
-      "crossFile": 0,
-      "resolution": 2507,
+      "orm": 0,
+      "crossFile": 1,
+      "resolution": 2319,
       "mro": 8,
-      "communities": 283,
-      "processes": 354
+      "communities": 225,
+      "processes": 357
     },
     "ftsIndexMs": {
-      "File": 5079.4,
-      "Function": 3647.5,
-      "Class": 2509.8,
-      "Method": 2621,
-      "Interface": 2836.4
+      "File": 4601.3,
+      "Function": 3572.8,
+      "Class": 2205.9,
+      "Method": 2703.7,
+      "Interface": 2472.9
     },
     "counters": {
       "totalFiles": 847,
@@ -153,6 +155,50 @@
       "scopeResolutionDuplicateImportUsesSkipped": 0,
       "scopeResolutionEdgesSkippedNoCaller": 4168,
       "scopeResolutionEdgesSkippedMissingTarget": 4131,
+      "languageCoverageByLanguage": {
+        "javascript": {
+          "parseableFiles": 8,
+          "scopeExtractionAstReusedFiles": 8,
+          "scopeExtractionCompatibilityFiles": 0,
+          "scopeExtractionNoHookFiles": 0,
+          "scopeExtractionFailedFiles": 0,
+          "scopeParsedFiles": 8,
+          "scopeReferenceSites": 361,
+          "astReusedScopeCoveragePercent": 100,
+          "legacyOrUnavailableScopePercent": 0,
+          "scopeResolutionReferenceSites": 361,
+          "scopeResolutionResolvedReferences": 36,
+          "scopeResolutionUnresolvedReferences": 325
+        },
+        "python": {
+          "parseableFiles": 20,
+          "scopeExtractionAstReusedFiles": 20,
+          "scopeExtractionCompatibilityFiles": 0,
+          "scopeExtractionNoHookFiles": 0,
+          "scopeExtractionFailedFiles": 0,
+          "scopeParsedFiles": 20,
+          "scopeReferenceSites": 1048,
+          "astReusedScopeCoveragePercent": 100,
+          "legacyOrUnavailableScopePercent": 0,
+          "scopeResolutionReferenceSites": 1048,
+          "scopeResolutionResolvedReferences": 215,
+          "scopeResolutionUnresolvedReferences": 833
+        },
+        "typescript": {
+          "parseableFiles": 722,
+          "scopeExtractionAstReusedFiles": 722,
+          "scopeExtractionCompatibilityFiles": 0,
+          "scopeExtractionNoHookFiles": 0,
+          "scopeExtractionFailedFiles": 0,
+          "scopeParsedFiles": 722,
+          "scopeReferenceSites": 127224,
+          "astReusedScopeCoveragePercent": 100,
+          "legacyOrUnavailableScopePercent": 0,
+          "scopeResolutionReferenceSites": 127224,
+          "scopeResolutionResolvedReferences": 14832,
+          "scopeResolutionUnresolvedReferences": 112392
+        }
+      },
       "nodeCount": 19534,
       "edgeCount": 30602,
       "usedWorkerPool": true,
@@ -165,62 +211,62 @@
     "bottlenecks": [
       {
         "bucket": "parse",
-        "durationMs": 65296,
-        "percentOfTotal": 58.9
+        "durationMs": 47317,
+        "percentOfTotal": 52
       },
       {
         "bucket": "lbugLoad",
-        "durationMs": 23834.6,
-        "percentOfTotal": 21.5
+        "durationMs": 23396,
+        "percentOfTotal": 25.7
       },
       {
         "bucket": "fts",
-        "durationMs": 16694.1,
-        "percentOfTotal": 15.1
+        "durationMs": 15556.6,
+        "percentOfTotal": 17.1
       },
       {
         "bucket": "resolution",
-        "durationMs": 2507,
-        "percentOfTotal": 2.3
+        "durationMs": 2319,
+        "percentOfTotal": 2.5
       },
       {
         "bucket": "processes",
-        "durationMs": 354,
-        "percentOfTotal": 0.3
+        "durationMs": 357,
+        "percentOfTotal": 0.4
       },
       {
         "bucket": "communities",
-        "durationMs": 283,
-        "percentOfTotal": 0.3
-      },
-      {
-        "bucket": "scan",
-        "durationMs": 187,
+        "durationMs": 225,
         "percentOfTotal": 0.2
       },
       {
         "bucket": "metadata",
-        "durationMs": 111.5,
+        "durationMs": 176.9,
+        "percentOfTotal": 0.2
+      },
+      {
+        "bucket": "scan",
+        "durationMs": 128,
         "percentOfTotal": 0.1
       },
       {
         "bucket": "routes",
-        "durationMs": 26,
-        "percentOfTotal": 0
-      },
-      {
-        "bucket": "markdown",
         "durationMs": 23,
         "percentOfTotal": 0
       },
       {
         "bucket": "aiContext",
-        "durationMs": 18.8,
+        "durationMs": 17.2,
+        "percentOfTotal": 0
+      },
+      {
+        "bucket": "markdown",
+        "durationMs": 15,
         "percentOfTotal": 0
       },
       {
         "bucket": "structure",
-        "durationMs": 13,
+        "durationMs": 11,
         "percentOfTotal": 0
       },
       {
@@ -239,24 +285,24 @@
         "percentOfTotal": 0
       },
       {
-        "bucket": "orm",
+        "bucket": "crossFile",
         "durationMs": 1,
         "percentOfTotal": 0
       }
     ],
-    "overheadMs": 1432.4,
+    "overheadMs": 1474.8,
     "lbugLoad": {
       "timings": {
-        "csvGenerationMs": 2583.9,
-        "csvContentCacheHitMs": 3.7,
-        "csvContentReadMs": 332.5,
-        "csvContentExtractMs": 1075.9,
-        "csvRowBuildMs": 50,
-        "csvWriterFlushMs": 195.6,
-        "nodeCopyMs": 9183.3,
-        "relationshipSplitMs": 346.4,
-        "relationshipCopyMs": 11702.9,
-        "cleanupMs": 9.3
+        "csvGenerationMs": 2393.4,
+        "csvContentCacheHitMs": 2,
+        "csvContentReadMs": 321.5,
+        "csvContentExtractMs": 1008.9,
+        "csvRowBuildMs": 35,
+        "csvWriterFlushMs": 182,
+        "nodeCopyMs": 9046.7,
+        "relationshipSplitMs": 298.7,
+        "relationshipCopyMs": 11641.5,
+        "cleanupMs": 9
       },
       "counters": {
         "csvNodeRows": 19534,
@@ -304,35 +350,35 @@
         }
       },
       "nodeCopyByTableMs": {
-        "File": 1109.4,
-        "Folder": 504.6,
-        "Function": 820.2,
-        "Class": 571.1,
-        "Interface": 726,
-        "Method": 667.4,
-        "CodeElement": 440.1,
-        "Community": 508.4,
-        "Process": 542,
-        "Section": 542,
-        "Route": 383,
-        "Tool": 378.7,
-        "Const": 931.2,
-        "Variable": 578.9,
-        "Property": 469
+        "File": 1163.6,
+        "Folder": 552.4,
+        "Function": 826.9,
+        "Class": 477.3,
+        "Interface": 595.9,
+        "Method": 592.6,
+        "CodeElement": 404.7,
+        "Community": 443.1,
+        "Process": 672.6,
+        "Section": 705,
+        "Route": 422.5,
+        "Tool": 393.8,
+        "Const": 931.9,
+        "Variable": 443.6,
+        "Property": 410.8
       }
     },
     "parse": {
       "timings": {
-        "readContentsMs": 503.2,
-        "workerParseMs": 63818.2,
-        "importResolveMs": 88.6,
-        "wildcardSynthesisMs": 11.1,
-        "routeResolveMs": 0.3,
-        "heritageResolveMs": 2.7,
-        "callResolveMs": 277.1,
-        "assignmentResolveMs": 36.8,
-        "exportedTypeMapEnrichMs": 5.4,
-        "scopeFinalizeMs": 370
+        "readContentsMs": 306.6,
+        "workerParseMs": 46143.3,
+        "importResolveMs": 117.3,
+        "wildcardSynthesisMs": 9.3,
+        "routeResolveMs": 0.2,
+        "heritageResolveMs": 2.4,
+        "callResolveMs": 213.6,
+        "assignmentResolveMs": 31.1,
+        "exportedTypeMapEnrichMs": 4.5,
+        "scopeFinalizeMs": 336.2
       },
       "counters": {
         "workerCount": 7,
@@ -352,7 +398,42 @@
         "scopeCount": 19480,
         "scopeLocalDefs": 31169,
         "scopeParsedImports": 6043,
-        "scopeReferenceSites": 128633
+        "scopeReferenceSites": 128633,
+        "languageCoverageByLanguage": {
+          "javascript": {
+            "parseableFiles": 8,
+            "scopeExtractionAstReusedFiles": 8,
+            "scopeExtractionCompatibilityFiles": 0,
+            "scopeExtractionNoHookFiles": 0,
+            "scopeExtractionFailedFiles": 0,
+            "scopeParsedFiles": 8,
+            "scopeReferenceSites": 361,
+            "astReusedScopeCoveragePercent": 100,
+            "legacyOrUnavailableScopePercent": 0
+          },
+          "python": {
+            "parseableFiles": 20,
+            "scopeExtractionAstReusedFiles": 20,
+            "scopeExtractionCompatibilityFiles": 0,
+            "scopeExtractionNoHookFiles": 0,
+            "scopeExtractionFailedFiles": 0,
+            "scopeParsedFiles": 20,
+            "scopeReferenceSites": 1048,
+            "astReusedScopeCoveragePercent": 100,
+            "legacyOrUnavailableScopePercent": 0
+          },
+          "typescript": {
+            "parseableFiles": 722,
+            "scopeExtractionAstReusedFiles": 722,
+            "scopeExtractionCompatibilityFiles": 0,
+            "scopeExtractionNoHookFiles": 0,
+            "scopeExtractionFailedFiles": 0,
+            "scopeParsedFiles": 722,
+            "scopeReferenceSites": 127224,
+            "astReusedScopeCoveragePercent": 100,
+            "legacyOrUnavailableScopePercent": 0
+          }
+        }
       }
     },
     "crossFile": {
@@ -367,12 +448,12 @@
     },
     "resolution": {
       "timings": {
-        "referenceResolveMs": 2111.1,
-        "readonlyIndexInitMs": 98.9,
-        "referenceWorkerResolveMs": 1984.6,
-        "referenceMergeMs": 0.6,
-        "referenceIndexBuildMs": 17.7,
-        "graphEmitMs": 395.3
+        "referenceResolveMs": 1880.5,
+        "readonlyIndexInitMs": 91.6,
+        "referenceWorkerResolveMs": 1760.1,
+        "referenceMergeMs": 0.5,
+        "referenceIndexBuildMs": 19.5,
+        "graphEmitMs": 390.6
       },
       "counters": {
         "scopeResolutionReferenceSites": 128633,
@@ -398,26 +479,70 @@
         "scopeResolutionFinalizedImportUsesEmitted": 198,
         "scopeResolutionDuplicateImportUsesSkipped": 0,
         "scopeResolutionEdgesSkippedNoCaller": 4168,
-        "scopeResolutionEdgesSkippedMissingTarget": 4131
+        "scopeResolutionEdgesSkippedMissingTarget": 4131,
+        "languageCoverageByLanguage": {
+          "javascript": {
+            "parseableFiles": 8,
+            "scopeExtractionAstReusedFiles": 8,
+            "scopeExtractionCompatibilityFiles": 0,
+            "scopeExtractionNoHookFiles": 0,
+            "scopeExtractionFailedFiles": 0,
+            "scopeParsedFiles": 8,
+            "scopeReferenceSites": 361,
+            "astReusedScopeCoveragePercent": 100,
+            "legacyOrUnavailableScopePercent": 0,
+            "scopeResolutionReferenceSites": 361,
+            "scopeResolutionResolvedReferences": 36,
+            "scopeResolutionUnresolvedReferences": 325
+          },
+          "python": {
+            "parseableFiles": 20,
+            "scopeExtractionAstReusedFiles": 20,
+            "scopeExtractionCompatibilityFiles": 0,
+            "scopeExtractionNoHookFiles": 0,
+            "scopeExtractionFailedFiles": 0,
+            "scopeParsedFiles": 20,
+            "scopeReferenceSites": 1048,
+            "astReusedScopeCoveragePercent": 100,
+            "legacyOrUnavailableScopePercent": 0,
+            "scopeResolutionReferenceSites": 1048,
+            "scopeResolutionResolvedReferences": 215,
+            "scopeResolutionUnresolvedReferences": 833
+          },
+          "typescript": {
+            "parseableFiles": 722,
+            "scopeExtractionAstReusedFiles": 722,
+            "scopeExtractionCompatibilityFiles": 0,
+            "scopeExtractionNoHookFiles": 0,
+            "scopeExtractionFailedFiles": 0,
+            "scopeParsedFiles": 722,
+            "scopeReferenceSites": 127224,
+            "astReusedScopeCoveragePercent": 100,
+            "legacyOrUnavailableScopePercent": 0,
+            "scopeResolutionReferenceSites": 127224,
+            "scopeResolutionResolvedReferences": 14832,
+            "scopeResolutionUnresolvedReferences": 112392
+          }
+        }
       }
     }
   },
   "keyMetrics": {
-    "totalWallMs": 110795.4,
+    "totalWallMs": 91031.5,
     "phaseMs": {
-      "scan": 187,
-      "structure": 13,
-      "markdown": 23,
+      "scan": 128,
+      "structure": 11,
+      "markdown": 15,
       "cobol": 4,
-      "parse": 65296,
-      "routes": 26,
+      "parse": 47317,
+      "routes": 23,
       "tools": 2,
-      "orm": 1,
-      "crossFile": 0,
-      "resolution": 2507,
+      "orm": 0,
+      "crossFile": 1,
+      "resolution": 2319,
       "mro": 8,
-      "communities": 283,
-      "processes": 354
+      "communities": 225,
+      "processes": 357
     },
     "nodeCount": 19534,
     "relationshipCount": 30809,
@@ -498,10 +623,10 @@
       "STEP_IN_PROCESS": 89,
       "ENTRY_POINT_OF": 0
     },
-    "parseMs": 65296,
-    "crossFileMs": 0,
-    "resolutionMs": 2507,
-    "lbugLoadMs": 23834.6,
+    "parseMs": 47317,
+    "crossFileMs": 1,
+    "resolutionMs": 2319,
+    "lbugLoadMs": 23396,
     "parseableFiles": 750,
     "totalParseableMB": 7.7,
     "workerCount": 7,
@@ -545,6 +670,50 @@
     "scopeResolutionEdgesSkippedMissingTarget": 4131,
     "crossFileReprocessedFiles": 0,
     "csvRelationshipRows": 30809,
-    "ladybugCopyCount": 56
+    "ladybugCopyCount": 56,
+    "languageCoverageByLanguage": {
+      "javascript": {
+        "parseableFiles": 8,
+        "scopeExtractionAstReusedFiles": 8,
+        "scopeExtractionCompatibilityFiles": 0,
+        "scopeExtractionNoHookFiles": 0,
+        "scopeExtractionFailedFiles": 0,
+        "scopeParsedFiles": 8,
+        "scopeReferenceSites": 361,
+        "astReusedScopeCoveragePercent": 100,
+        "legacyOrUnavailableScopePercent": 0,
+        "scopeResolutionReferenceSites": 361,
+        "scopeResolutionResolvedReferences": 36,
+        "scopeResolutionUnresolvedReferences": 325
+      },
+      "python": {
+        "parseableFiles": 20,
+        "scopeExtractionAstReusedFiles": 20,
+        "scopeExtractionCompatibilityFiles": 0,
+        "scopeExtractionNoHookFiles": 0,
+        "scopeExtractionFailedFiles": 0,
+        "scopeParsedFiles": 20,
+        "scopeReferenceSites": 1048,
+        "astReusedScopeCoveragePercent": 100,
+        "legacyOrUnavailableScopePercent": 0,
+        "scopeResolutionReferenceSites": 1048,
+        "scopeResolutionResolvedReferences": 215,
+        "scopeResolutionUnresolvedReferences": 833
+      },
+      "typescript": {
+        "parseableFiles": 722,
+        "scopeExtractionAstReusedFiles": 722,
+        "scopeExtractionCompatibilityFiles": 0,
+        "scopeExtractionNoHookFiles": 0,
+        "scopeExtractionFailedFiles": 0,
+        "scopeParsedFiles": 722,
+        "scopeReferenceSites": 127224,
+        "astReusedScopeCoveragePercent": 100,
+        "legacyOrUnavailableScopePercent": 0,
+        "scopeResolutionReferenceSites": 127224,
+        "scopeResolutionResolvedReferences": 14832,
+        "scopeResolutionUnresolvedReferences": 112392
+      }
+    }
   }
 }

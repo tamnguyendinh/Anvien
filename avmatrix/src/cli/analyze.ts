@@ -435,24 +435,36 @@ export const analyzeCommand = async (inputPath?: string, options?: AnalyzeOption
 function collectBenchmarkEnvironment(repoPath: string): AnalyzeBenchmarkEnvironment {
   const repoGitCommit = readGitValue(repoPath, ['rev-parse', 'HEAD']);
   const repoGitStatus = readGitValue(repoPath, ['status', '--porcelain']);
+  const repoGitUnavailableReasons: string[] = [];
+  if (repoGitCommit.ok === false) repoGitUnavailableReasons.push(repoGitCommit.reason);
+  if (repoGitStatus.ok === false) repoGitUnavailableReasons.push(repoGitStatus.reason);
+  const repoGitUnavailable = repoGitUnavailableReasons.length > 0;
   return {
     avmatrixVersion: pkg.version,
     nodeVersion: process.version,
     platform: process.platform,
     arch: process.arch,
-    ...(repoGitCommit !== undefined ? { repoGitCommit } : {}),
-    ...(repoGitStatus !== undefined ? { repoGitDirty: repoGitStatus.length > 0 } : {}),
+    repoGitUnavailable,
+    ...(repoGitUnavailable
+      ? { repoGitUnavailableReason: repoGitUnavailableReasons.join('; ') }
+      : {}),
+    ...(repoGitCommit.ok ? { repoGitCommit: repoGitCommit.value } : {}),
+    ...(repoGitStatus.ok ? { repoGitDirty: repoGitStatus.value.length > 0 } : {}),
   };
 }
 
-function readGitValue(repoPath: string, args: readonly string[]): string | undefined {
+function readGitValue(
+  repoPath: string,
+  args: readonly string[],
+): { ok: true; value: string } | { ok: false; reason: string } {
   try {
-    return execFileSync('git', ['-C', repoPath, ...args], {
+    const value = execFileSync('git', ['-C', repoPath, ...args], {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore'],
     }).trim();
+    return { ok: true, value };
   } catch {
-    return undefined;
+    return { ok: false, reason: `git ${args.join(' ')} unavailable for target repo` };
   }
 }
 
