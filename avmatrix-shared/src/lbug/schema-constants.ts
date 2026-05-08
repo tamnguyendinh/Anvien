@@ -51,6 +51,8 @@ export const REL_TYPES = [
   'DEFINES',
   'IMPORTS',
   'CALLS',
+  'USES',
+  'INHERITS',
   'EXTENDS',
   'IMPLEMENTS',
   'HAS_METHOD',

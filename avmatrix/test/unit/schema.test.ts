@@ -80,6 +80,8 @@ describe('LadybugDB Schema', () => {
         'DEFINES',
         'IMPORTS',
         'CALLS',
+        'USES',
+        'INHERITS',
         'EXTENDS',
         'IMPLEMENTS',
         'MEMBER_OF',

@@ -111,6 +111,11 @@ describe('validRelType – REL_TYPES membership', () => {
     // Guard against accidental removal of relation types
     expect(REL_TYPES.length).toBeGreaterThanOrEqual(8);
   });
+
+  it('REL_TYPES includes scope-resolved dependency edges', () => {
+    expect(REL_TYPES).toContain('USES');
+    expect(REL_TYPES).toContain('INHERITS');
+  });
 });
 
 // ===========================================================================
