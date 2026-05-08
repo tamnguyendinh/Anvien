@@ -14,6 +14,8 @@ The user-facing contract is:
 - Analyzing by local path runs a full analyze, then loads the newly generated graph.
 - Re-analyze runs a full analyze, then loads the newly generated graph.
 
+Header repository dropdown selection is a separate "switch/open existing graph" action if it remains fast. It must not be labeled or treated as analyze. It still must route by canonical `repoPath`, not by name-only lookup.
+
 The stronger technical contract is:
 
 ```text
@@ -25,6 +27,18 @@ selected repoPath
 ```
 
 `repoName` is display metadata. It must not be the primary identity for post-analyze graph loading, because name-only routing can drift from the selected repository path or become ambiguous when multiple repos share a basename/name.
+
+Frontend code should pass a repository identity object through analyze/load flows instead of passing bare repository-name strings between layers:
+
+```ts
+type RepoIdentity = {
+  name: string;
+  repoPath: string;
+  repoId?: string;
+};
+```
+
+The canonical `repoPath` is the identity key. `name` is for display and fallback messaging only.
 
 ## Non-Goals
 
@@ -54,6 +68,8 @@ Re-review finding:
 - Some graph-load calls use `awaitAnalysis: true`; the landing post-analyze graph load does not.
 - The existing tests mostly prove call order with mocks. They do not prove that the repo being analyzed and the repo being loaded are the same physical path.
 - Therefore the plan was marked complete too early.
+- Browser/static-asset cache and already-running local servers can hide whether the newly built UI is the code being tested.
+- Even if graph rendering uses the right repo, follow-up reads/search/file-tree/process/chat calls can still drift if active repo state is updated by name instead of path.
 
 ## Correct Contract
 
@@ -82,7 +98,26 @@ It also must not do this:
 4. Web UI loads graph by name only, or by a stale/default/current repo binding.
 5. User sees repo A, stale repo B, or a LadybugDB missing error for the wrong path/timing.
 
+It also must not silently recover from analyze/load failure by showing a cached or previously active graph. Failures must stay attached to the selected repo identity:
+
+- If analyze fails, show an analyze failure for that selected repo and do not load an old graph.
+- If post-analyze graph load fails, show a load failure for that selected repo path and do not fall back to another repo.
+- If repo resolution fails, include the selected `repoPath` in diagnostics/logs so the mismatch is traceable.
+
 All analyze entry points must preserve one repository identity object or canonical path through the whole chain.
+
+Backend routing must be path-first. If a client sends an absolute repository path, `/api/repo`, `/api/graph`, and related repo-scoped endpoints must resolve by canonical path before any basename/name normalization. `path.basename(repoParam)` must not be able to redirect an absolute path request to another registered repository.
+
+Analyze SSE completion must use an explicit payload:
+
+```ts
+{
+  repoName: string;
+  repoPath: string;
+}
+```
+
+Frontend completion handlers must prefer `repoPath` and must not let `repoName` redirect post-analyze loading away from the selected path.
 
 ## Flow Family To Keep In Sync
 
@@ -97,6 +132,9 @@ These flows are one family and must be reviewed together whenever this contract 
 - Backend `/api/analyze` job creation, worker execution, SSE completion.
 - Backend `/api/repo` and `/api/graph` repo resolution.
 - Frontend repo list refresh after analyze.
+- Active frontend repo state after graph load.
+- Registry/meta/storage state after analyze: `meta.json.repoPath`, registry `path`, registry `storagePath`, and the LadybugDB `lbugPath`.
+- Repo-scoped follow-up calls after graph load: search, file tree, read file, clusters, processes, context/chat/session binding.
 - Browser reload/back-to-landing behavior after failures.
 
 ## Implementation Plan
@@ -123,24 +161,40 @@ These flows are one family and must be reviewed together whenever this contract 
 ## Reopened Implementation Plan
 
 - [ ] Treat `repoPath` as the primary identity for post-analyze loading.
+- [ ] Introduce or standardize a frontend `RepoIdentity` shape and use it across landing/header/analyze-complete/load flows instead of bare `repoName` strings.
 - [ ] Change landing repo-card selection to pass the selected repo object or canonical `repoPath`, not only `repo.name`.
 - [ ] Make analyze completion carry the analyzed `repoPath` from backend job to SSE complete payload.
+- [ ] Define the SSE completion payload as `{ repoName, repoPath }` and update client types accordingly.
 - [ ] Update frontend analyze completion handlers to load graph by the selected/completed `repoPath`, not by `data.repoName ?? repo.name`.
+- [ ] Make backend repo resolution path-first when the repo query value is an absolute path, before applying basename/name matching.
 - [ ] Make landing post-analyze `connectToServer` use the same hold-queue behavior as auto-connect/header flows when loading a just-analyzed graph.
 - [ ] Verify `connectToServer`, `fetchRepoInfo`, and `fetchGraph` can route by full path without path basename normalization breaking the lookup.
+- [ ] Ensure active frontend repo state stores and propagates the canonical `repoPath` after graph load, not only the display name.
+- [ ] Verify repo-scoped follow-up APIs after graph load use the same active repo identity: search, file tree, read file, clusters, processes, context/chat/session binding.
 - [ ] Ensure header "Analyze a new repository..." refreshes the repo list and adds/selects the newly analyzed repo by path.
 - [ ] Ensure header re-analyze and landing repo-card share the same path-preserving load-after-analyze helper.
-- [ ] Keep header repo dropdown switch behavior intentionally separate if it remains a fast graph switch, and label/implement it as such.
+- [ ] Keep header repo dropdown switch behavior intentionally separate if it remains a fast graph switch, label/implement it as "switch/open existing graph", and still route it by canonical `repoPath`.
+- [ ] Ensure no analyze/load failure path silently falls back to a cached graph, previous active graph, default repo, or name-matched repo.
+- [ ] Ensure analyze/load failure messages and logs include the selected canonical `repoPath`.
+- [ ] Verify post-analyze storage identity: `meta.json.repoPath`, registry `path`, registry `storagePath`, and graph-load `lbugPath` all point to the selected repo path.
 - [ ] Add regression tests where current/default repo A exists and selected repo B is analyzed; assert all API calls after completion target repo B's path.
 - [ ] Add regression tests for duplicate repo names/basenames so name-only routing cannot pass.
 - [ ] Add tests for landing repo-card, local-path analyze, header re-analyze, and header analyze-new using the same identity contract.
 - [ ] Add tests proving SSE complete includes `repoPath` and UI prefers it over `repoName`.
+- [ ] Add tests proving absolute-path repo requests are resolved by path before basename/name matching.
+- [ ] Add tests proving active repo state and follow-up repo-scoped calls use the same canonical repo path after graph load.
+- [ ] Add tests proving analyze/load failures do not display a stale graph or fall back to another repo.
+- [ ] Add tests or validation proving post-analyze metadata/registry/storage paths belong to the selected repo.
 - [ ] Run full launcher build before browser validation.
+- [ ] Before browser validation, stop stale local servers if needed, start the freshly built launcher/backend/UI, and use a clean browser session or hard reload with cache cleared.
 - [ ] Validate manually in a real browser with a clean session/cache:
+  - prepare repo B with a small canary source change before clicking;
   - click landing repo card for repo B;
   - confirm POST `/api/analyze` body path is repo B;
   - confirm SSE complete includes repo B path;
   - confirm `/api/repo` and `/api/graph` load repo B;
+  - confirm repo B `meta.json.repoPath`, registry `path`, registry `storagePath`, and graph-load `lbugPath` point to repo B;
+  - confirm the canary change appears in graph/search after load;
   - confirm repo B indexed timestamp changes;
   - confirm UI renders repo B graph and no related UI, console, or network error appears.
 - [ ] Repeat browser validation for:
@@ -148,6 +202,8 @@ These flows are one family and must be reviewed together whenever this contract 
   - header re-analyze;
   - header "Analyze a new repository...";
   - header dropdown repo switch if it is intentionally load-only.
+- [ ] For every browser validation flow, confirm no related UI, console, or network error appears.
+- [ ] After each graph load validation, confirm at least one follow-up repo-scoped action still targets the same repo path.
 - [ ] Only mark this plan complete after real browser validation and tests both prove the same repoPath contract.
 
 ## Acceptance Criteria
@@ -165,6 +221,12 @@ Additional reopened acceptance criteria:
 - A repo name returned by analyze completion cannot redirect graph loading away from the selected path.
 - Landing repo-card flow no longer has weaker post-analyze loading semantics than header/auto-connect flows.
 - Real browser validation confirms the complete flow, not just mocked unit tests.
+- Backend repo routing resolves absolute paths by canonical path before basename/name matching.
+- The active frontend repo identity remains path-correct after graph load and for repo-scoped follow-up actions.
+- Browser validation uses fresh built assets and verifies a source canary appears in the newly generated graph.
+- Header dropdown switch is explicitly treated as switch/open-existing-graph if it remains fast, not as analyze.
+- Analyze/load failures never fall back to stale or unrelated graphs.
+- Post-analyze metadata, registry, storage, and LadybugDB paths all belong to the selected repository path.
 
 ## Validation Log
 
