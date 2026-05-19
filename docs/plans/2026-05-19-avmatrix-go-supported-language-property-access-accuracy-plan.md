@@ -191,8 +191,8 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P1-D | Taxonomy | property language/categories | source categories classified | recorded | recorded | `0972c3d` | done |
 | P1-E | Taxonomy | standalone properties | true/false/unknown orphan status classified | recorded | recorded | `0972c3d` | done |
 | P1-F | Taxonomy | missing/absent edges | real missing vs true no-edge classified | recorded | recorded | `0972c3d` | done |
-| P1-G | Taxonomy | unresolved member accesses | miss reasons classified | recorded | recorded | pending current slice | done |
-| P1-H | Targets | measurable follow-up gates | Phase 2/3 targets defined | recorded | recorded | pending current slice | done |
+| P1-G | Taxonomy | unresolved member accesses | miss reasons classified | recorded | recorded | `73b1cf8` | done |
+| P1-H | Targets | measurable follow-up gates | Phase 2/3 targets defined | recorded | recorded | `73b1cf8` | done |
 | P2-A | Ownership | large false-orphan cluster | defensible `HAS_PROPERTY` expansion | pending | pending | pending | open |
 | P2-B | Tests | ownership focused tests | relevant owner cases covered | n/a | pending | pending | open |
 | P2-C | Validation | ownership slice | analyze/test/e2e recorded | pending | pending | pending | open |

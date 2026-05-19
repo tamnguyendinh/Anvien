@@ -24,6 +24,7 @@ Companion benchmark: [2026-05-19-avmatrix-go-supported-language-property-access-
 - The new plan does not reopen the completed 2026-05-16 plan.
 - Plan creation commit: `b90a9de`.
 - Scope correction commit: `0972c3d`.
+- Access candidate audit commit: `73b1cf8`.
 
 ## Baseline Audit Evidence
 
