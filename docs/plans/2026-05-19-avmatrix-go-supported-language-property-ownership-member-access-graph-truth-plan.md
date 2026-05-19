@@ -214,10 +214,10 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P4-B | Consumer | impact | affected-symbol behavior checked | n/a | recorded | `ba2a0da` | done |
 | P4-C | Consumer | graph API/readback | new relationships preserved | n/a | recorded | `ba2a0da` | done |
 | P4-D | Consumer | precision/noise | concerns classified | n/a | recorded | `ba2a0da` | done |
-| P5-A | Final gate | workload matrix | final gate run | recorded | recorded | pending | done |
-| P5-B | Final benchmark | graph facts/performance | final metrics recorded | recorded | recorded | pending | done |
-| P5-C | Final evidence | proof set | final evidence recorded | n/a | recorded | pending | done |
-| P5-D | Final closure | ledger consistency | plan closed | recorded | recorded | pending | done |
+| P5-A | Final gate | workload matrix | final gate run | recorded | recorded | `d45c4ca` | done |
+| P5-B | Final benchmark | graph facts/performance | final metrics recorded | recorded | recorded | `d45c4ca` | done |
+| P5-C | Final evidence | proof set | final evidence recorded | n/a | recorded | `d45c4ca` | done |
+| P5-D | Final closure | ledger consistency | plan closed | recorded | recorded | `d45c4ca` | done |
 
 ## Definition Of Done
 

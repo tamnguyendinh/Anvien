@@ -33,6 +33,7 @@ Companion benchmark: [2026-05-19-avmatrix-go-supported-language-property-ownersh
 - P3-E missing-owner-link closure commit: `a908b2d`.
 - P3-F imported member receiver cluster commit: `9b58dea`.
 - P4 consumer impact traversal commit: `ba2a0da`.
+- P5 final closure commit: `d45c4ca`.
 
 ## Baseline Audit Evidence
 
