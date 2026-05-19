@@ -323,9 +323,35 @@ Representative fixture proof:
 - the same test clicks every graph-present relationship control and verifies `toggleEdgeVisibility(type)` receives the exact relationship type string;
 - unknown/future relationship fallback uses a safe display label and color.
 
+### B2B - Legend Count and Community-Color Coverage
+
+Date: 2026-05-19
+
+Current graph snapshot after re-analyze:
+
+```text
+nodes: 20,548
+relationships: 51,416
+node labels present: 16
+relationship types present: 11
+community membership relationships: 3,860
+community nodes: 912
+```
+
+Legend coverage:
+
+| Coverage target | Result |
+|---|---:|
+| Node type legend entries with counts | `16 / 16` current labels |
+| Edge type legend entries with counts | `11 / 11` current relationship types |
+| Representative fixture node legend entries with counts | `37 / 37` |
+| Representative fixture edge legend entries with counts | `23 / 23` |
+| Community color-set legend shown when `MEMBER_OF` exists | yes |
+| Community color swatches shown | `6` preview swatches |
+
 ## B3 - Graph Adapter Performance and Preservation
 
-Status: completed for parallel-edge preservation slice; layout hierarchy expansion remains tracked under `P5-C`
+Status: completed for parallel-edge preservation and layout hierarchy expansion slices
 
 Date: 2026-05-19
 
@@ -355,6 +381,36 @@ Notes:
 - The graph adapter now uses graphology `MultiDirectedGraph`, so relationship identity is no longer collapsed by source-target pair.
 - Each edge keeps its own `relationType`, preserving edge visibility/filter behavior for parallel relationships.
 - Unit coverage includes both `CALLS + USES` and `HAS_PROPERTY + ACCESSES` parallel relationship pairs.
+
+### B3B - Layout Hierarchy Expansion
+
+Date: 2026-05-19
+
+Current graph relationship inventory relevant to layout hierarchy:
+
+| Relationship type | Count | Layout direction |
+|---|---:|---|
+| CONTAINS | `1,710` | source parent |
+| DEFINES | `17,261` | source parent |
+| IMPORTS | `3,727` | source parent |
+| HAS_METHOD | `337` | source parent |
+| HAS_PROPERTY | `2,829` | source parent |
+| MEMBER_OF | `3,860` | target parent, low priority |
+| STEP_IN_PROCESS | `2,356` | target parent |
+| ENTRY_POINT_OF | `640` | target parent |
+
+Layout parent candidates:
+
+| Candidate set | Count |
+|---|---:|
+| Previously considered hierarchy relationships | `22,698` |
+| Added owner/process/member hierarchy relationships present in current graph | `10,022` |
+| Total current hierarchy candidates after expansion | `32,720` |
+
+Notes:
+
+- `HANDLES_ROUTE`, `HANDLES_TOOL`, and `WRAPS` are supported by the layout policy but have zero count in the current AVmatrix-GO graph snapshot.
+- Process/route/tool grouping uses higher priority than broad file-level `DEFINES`; community membership stays lower priority so it does not override stronger containment/ownership.
 
 ## B4 - Visual Scale and Connection Stability
 

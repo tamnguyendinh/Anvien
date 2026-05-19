@@ -763,6 +763,95 @@ Benchmark ledger updated:
 
 - `B4C - Post-Load Connection Stability`
 
+### E3E - Layout Hierarchy Expansion and Legend Accuracy
+
+Date: 2026-05-19
+
+Scope:
+
+- `avmatrix-web/src/lib/graph-adapter.ts`
+- `avmatrix-web/src/components/FileTreePanel.tsx`
+- `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts`
+- `avmatrix-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-evidence.md`
+
+AVmatrix refresh and impact:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact knowledgeGraphToGraphology --repo AVmatrix --direction upstream --depth 2 --include-tests
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact FileTreePanel --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Results:
+
+```text
+analyze: files scanned=688 parsed=530 unsupported=158 failed=0; graph nodes=20548 relationships=51416
+knowledgeGraphToGraphology upstream risk: LOW, impacted count 6
+FileTreePanel upstream risk: LOW, impacted count 3
+```
+
+Implementation:
+
+- Added a priority-based layout parent policy in `graph-adapter.ts`.
+- Added source-parent hierarchy for `HAS_METHOD`, `HAS_PROPERTY`, and `WRAPS`.
+- Added target-parent grouping for `STEP_IN_PROCESS`, `ENTRY_POINT_OF`, `HANDLES_ROUTE`, `HANDLES_TOOL`, and lower-priority `MEMBER_OF`.
+- Added `Process`, `Community`, `Route`, and `Tool` as root/grouping node types for initial layout placement.
+- Kept community membership lower priority than containment/ownership so community grouping does not override stronger structural ownership.
+- Added graph-adapter tests proving `STEP_IN_PROCESS` can override broad file `DEFINES` for process layout and `HAS_PROPERTY` keeps properties near the owning type.
+- Added loaded-graph counts to node and edge legend entries.
+- Added a separate community color-set legend entry when `MEMBER_OF` relationships are present.
+- Documented the dashboard relationship boundary: Web dashboard controls graph payload `GraphRelationship.type` / generated `GRAPH_RELATIONSHIP_TYPES`; LadybugDB-only constants remain backend storage/query vocabulary unless serialized into graph payloads.
+
+Current graph hierarchy inventory:
+
+```text
+CONTAINS=1,710
+DEFINES=17,261
+IMPORTS=3,727
+HAS_METHOD=337
+HAS_PROPERTY=2,829
+MEMBER_OF=3,860
+STEP_IN_PROCESS=2,356
+ENTRY_POINT_OF=640
+previous hierarchy candidates=22,698
+added owner/process/member candidates=10,022
+total hierarchy candidates=32,720
+```
+
+Build before tests:
+
+```powershell
+go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix
+npm --prefix avmatrix-web run build
+```
+
+Result:
+
+```text
+go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix: passed
+npm --prefix avmatrix-web run build: passed, built in 23.40s
+```
+
+Tests:
+
+```powershell
+npm --prefix avmatrix-web run test -- test/unit/graph-adapter.edge-geometry.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx
+```
+
+Result:
+
+```text
+2 files passed, 8 tests passed
+```
+
+Benchmark ledger updated:
+
+- `B2B - Legend Count and Community-Color Coverage`
+- `B3B - Layout Hierarchy Expansion`
+
 ## E4 - Final Closure Evidence
 
 Status: pending

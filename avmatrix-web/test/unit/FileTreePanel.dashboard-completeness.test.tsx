@@ -96,6 +96,11 @@ describe('FileTreePanel dashboard completeness', () => {
     expect(screen.getByTitle('Future Relationship (1)')).toBeInTheDocument();
     expect(screen.getAllByText('FutureNode').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText('Future Relationship').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByTitle('Legend node FutureNode (1)')).toBeInTheDocument();
+    expect(screen.getByTitle('Legend edge Future Relationship (1)')).toBeInTheDocument();
+    expect(
+      screen.getByTitle('Community color set (1 communities, 1 members)'),
+    ).toBeInTheDocument();
   });
 
   it('routes every graph-present node and relationship control through the visibility toggles', async () => {

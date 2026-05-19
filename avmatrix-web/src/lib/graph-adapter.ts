@@ -111,34 +111,90 @@ export const knowledgeGraphToGraphology = (
   >();
   const nodeCount = knowledgeGraph.nodes.length;
 
-  // Build parent-child map from hierarchy relationships
-  // CONTAINS: Folder -> File
-  // DEFINES: File -> Function/Class/Interface/Method
-  // IMPORTS: File -> Import
+  // Build parent-child map from relationships that materially improve layout.
+  // Higher-priority owner/process relationships can replace broad file-level
+  // grouping; community membership stays lower because cluster coloring already
+  // handles that view.
   // parent -> children
   const parentToChildren = new Map<string, string[]>();
   // child -> parent
   const childToParent = new Map<string, string>();
+  const childParentPriority = new Map<string, number>();
 
-  const hierarchyRelations = new Set(['CONTAINS', 'DEFINES', 'IMPORTS']);
+  const forwardHierarchyRelations: Record<string, number> = {
+    CONTAINS: 100,
+    HAS_METHOD: 95,
+    HAS_PROPERTY: 95,
+    DEFINES: 75,
+    IMPORTS: 60,
+    WRAPS: 55,
+  };
+
+  const reverseHierarchyRelations: Record<string, number> = {
+    STEP_IN_PROCESS: 85,
+    ENTRY_POINT_OF: 85,
+    HANDLES_ROUTE: 85,
+    HANDLES_TOOL: 85,
+    MEMBER_OF: 50,
+  };
+
+  const addHierarchyLink = (
+    parentId: string,
+    childId: string,
+    priority: number,
+  ) => {
+    const existingPriority = childParentPriority.get(childId) ?? -1;
+    if (existingPriority > priority) return;
+
+    const existingParentId = childToParent.get(childId);
+    if (existingParentId && existingParentId !== parentId) {
+      const siblings = parentToChildren.get(existingParentId);
+      if (siblings) {
+        parentToChildren.set(
+          existingParentId,
+          siblings.filter((id) => id !== childId),
+        );
+      }
+    }
+
+    if (!parentToChildren.has(parentId)) {
+      parentToChildren.set(parentId, []);
+    }
+    const children = parentToChildren.get(parentId)!;
+    if (!children.includes(childId)) {
+      children.push(childId);
+    }
+    childToParent.set(childId, parentId);
+    childParentPriority.set(childId, priority);
+  };
 
   knowledgeGraph.relationships.forEach((rel) => {
-    // These relationships represent parent-child hierarchy for positioning
-    if (hierarchyRelations.has(rel.type)) {
-      // source CONTAINS/DEFINES/IMPORTS target, so source is parent
-      if (!parentToChildren.has(rel.sourceId)) {
-        parentToChildren.set(rel.sourceId, []);
-      }
-      parentToChildren.get(rel.sourceId)!.push(rel.targetId);
-      childToParent.set(rel.targetId, rel.sourceId);
+    const forwardPriority = forwardHierarchyRelations[rel.type];
+    if (forwardPriority !== undefined) {
+      addHierarchyLink(rel.sourceId, rel.targetId, forwardPriority);
+      return;
+    }
+
+    const reversePriority = reverseHierarchyRelations[rel.type];
+    if (reversePriority !== undefined) {
+      addHierarchyLink(rel.targetId, rel.sourceId, reversePriority);
     }
   });
 
   // Create node lookup
   const nodeMap = new Map(knowledgeGraph.nodes.map((n) => [n.id, n]));
 
-  // Separate structural nodes (folders, packages) from content nodes
-  const structuralTypes = new Set(['Project', 'Package', 'Module', 'Folder']);
+  // Separate root/grouping nodes from content nodes.
+  const structuralTypes = new Set([
+    'Project',
+    'Package',
+    'Module',
+    'Folder',
+    'Process',
+    'Community',
+    'Route',
+    'Tool',
+  ]);
   const structuralNodes = knowledgeGraph.nodes.filter((n) =>
     structuralTypes.has(n.label),
   );

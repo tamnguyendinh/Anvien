@@ -29,6 +29,7 @@ import {
 import { useAppState } from '../hooks/useAppState.local-runtime';
 import {
   ALL_EDGE_TYPES,
+  COMMUNITY_COLORS,
   FILTERABLE_LABELS,
   getEdgeInfo,
   getFilterableEdgeTypesForGraph,
@@ -397,6 +398,24 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
     }));
   }, [graph]);
 
+  const communityColorLegend = useMemo(() => {
+    if (!graph) return null;
+    const memberRelationships = graph.relationships.filter(
+      (relationship) => relationship.type === 'MEMBER_OF',
+    );
+    if (memberRelationships.length === 0) return null;
+
+    const communityIds = new Set(
+      memberRelationships.map((relationship) => relationship.targetId),
+    );
+
+    return {
+      communityCount: communityIds.size,
+      memberCount: memberRelationships.length,
+      swatches: COMMUNITY_COLORS.slice(0, 6),
+    };
+  }, [graph]);
+
   if (isCollapsed) {
     return (
       <div className="file-tree-panel flex h-full w-12 flex-shrink-0 flex-col items-center gap-2 border-r-[3px] border-border-default bg-surface py-3">
@@ -640,9 +659,16 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
             <h3 className="press-eyebrow mb-3 text-text-secondary">
               Color Legend
             </h3>
+            <h4 className="mb-2 font-mono text-[10px] text-text-muted">
+              Node Types
+            </h4>
             <div className="grid grid-cols-2 gap-2">
-              {nodeTypeItems.map(({ label, color }) => (
-                <div key={label} className="flex items-center gap-1.5">
+              {nodeTypeItems.map(({ label, count, color }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-1.5"
+                  title={`Legend node ${label} (${count})`}
+                >
                   <div
                     className="h-2.5 w-2.5 rounded-full"
                     style={{ backgroundColor: color }}
@@ -650,18 +676,55 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                   <span className="min-w-0 truncate text-[10px] text-text-muted">
                     {label}
                   </span>
+                  <span className="ml-auto font-mono text-[9px] text-text-muted">
+                    {count}
+                  </span>
                 </div>
               ))}
             </div>
-            <div className="mt-4 flex flex-col gap-2">
-              {edgeTypeItems.map(({ type, info }) => (
-                <div key={type} className="flex items-center gap-1.5">
+
+            {communityColorLegend && (
+              <div
+                className="mt-3 flex items-center gap-1.5"
+                title={`Community color set (${communityColorLegend.communityCount} communities, ${communityColorLegend.memberCount} members)`}
+              >
+                <div className="flex -space-x-1">
+                  {communityColorLegend.swatches.map((color) => (
+                    <div
+                      key={color}
+                      className="h-2.5 w-2.5 rounded-full border border-surface"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+                <span className="min-w-0 flex-1 truncate text-[10px] text-text-muted">
+                  Community colors
+                </span>
+                <span className="font-mono text-[9px] text-text-muted">
+                  {communityColorLegend.communityCount}
+                </span>
+              </div>
+            )}
+
+            <h4 className="mt-4 mb-2 font-mono text-[10px] text-text-muted">
+              Edge Types
+            </h4>
+            <div className="flex flex-col gap-2">
+              {edgeTypeItems.map(({ type, count, info }) => (
+                <div
+                  key={type}
+                  className="flex items-center gap-1.5"
+                  title={`Legend edge ${info.label} (${count})`}
+                >
                   <div
                     className="h-1.5 w-6 rounded-full"
                     style={{ backgroundColor: info.color }}
                   />
                   <span className="min-w-0 truncate text-[10px] text-text-muted">
                     {info.label}
+                  </span>
+                  <span className="ml-auto font-mono text-[9px] text-text-muted">
+                    {count}
                   </span>
                 </div>
               ))}

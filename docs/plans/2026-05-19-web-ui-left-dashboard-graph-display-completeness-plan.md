@@ -71,6 +71,12 @@ Graph relationship scope:
 - LadybugDB-only relation constants are not required in the dashboard unless they appear in graph payloads;
 - if a future graph payload contains a relationship type unknown to the current display table, the UI must still show it with a safe fallback label/style instead of dropping it.
 
+Dashboard relationship boundary:
+
+- `GraphRelationship.type` / generated `GRAPH_RELATIONSHIP_TYPES` is the Web UI source for Node/Edge controls, canvas edge rendering, and legend entries.
+- LadybugDB storage/query constants are backend persistence vocabulary; they only enter the Web dashboard when serialized into the graph payload.
+- Tests must cover all generated graph payload relationship types plus unknown/future fallback types. They should not require dashboard controls for LadybugDB-only relations that are never present in Web graph payloads.
+
 ## Baseline
 
 Current graph snapshot after analyze:
@@ -126,12 +132,12 @@ Post-load reconnect root cause chain:
 - [ ] The left dashboard shows node type controls for all node labels present in the loaded graph, with counts.
 - [ ] The left dashboard shows relationship type controls for all relationship types present in the loaded graph, with counts.
 - [ ] Node/edge controls are driven by the loaded graph plus a maintained display policy, not by an incomplete fixed list.
-- [ ] Color legend reflects the labels and edge types currently visible or available in the dashboard.
-- [ ] If community coloring is active, the legend states or shows that symbol colors can be community colors instead of static node-type colors.
+- [x] Color legend reflects the labels and edge types currently visible or available in the dashboard.
+- [x] If community coloring is active, the legend states or shows that symbol colors can be community colors instead of static node-type colors.
 - [ ] The graph adapter preserves or explicitly aggregates parallel relationships between the same source and target without losing relationship type information.
 - [ ] The edge visibility filter works for every relationship type in the loaded graph.
 - [ ] The node visibility filter works for every node label in the loaded graph.
-- [ ] Layout hierarchy uses owner/process/route/member relationships where they materially improve graph readability.
+- [x] Layout hierarchy uses owner/process/route/member relationships where they materially improve graph readability.
 - [ ] Tests fail if a graph label or relationship type appears in fixtures but is not representable in the dashboard.
 - [ ] Unknown future node labels and relationship types render with safe fallback labels, colors, icons, sizes, and edge styles.
 - [ ] Node size scaling is bounded and proportional across structural, metadata, and code nodes; the purple oversized-node screenshot is reproduced or explained, then fixed.
@@ -147,7 +153,7 @@ Post-load reconnect root cause chain:
 - [x] [P1-D] Decide which zero-count labels/relationship types should stay hidden by default and how users can reveal them if needed. Result: loaded graph controls show present labels/types with counts; zero-count known types are covered by fixture/fallback tests and appear when present in a graph payload.
 - [x] [P1-E] Record evidence showing current missing node labels, missing relationship types, and parallel relationship risk.
 - [x] [P1-F] Build or update a representative Web UI graph fixture that includes every known graph node label and graph payload relationship type, plus one unknown/future label and relationship type for fallback behavior. Result: `FileTreePanel.dashboard-completeness.test.tsx` covers every generated label/type plus `FutureNode` and `FUTURE_RELATIONSHIP`.
-- [ ] [P1-G] Document the boundary between graph payload relationship types used by the canvas and LadybugDB-only relationship constants used by query/storage layers.
+- [x] [P1-G] Document the boundary between graph payload relationship types used by the canvas and LadybugDB-only relationship constants used by query/storage layers. Result: plan now defines `GraphRelationship.type` / generated `GRAPH_RELATIONSHIP_TYPES` as the dashboard source, while LadybugDB-only relation constants remain backend storage/query vocabulary unless serialized into graph payloads.
 - [x] [P1-H] Review code paths for the oversized purple-node symptom and record concrete root-cause conclusions/hypotheses.
 - [x] [P1-I] Review code paths for the post-load reconnect symptom and record concrete root-cause conclusions/hypotheses.
 
@@ -184,7 +190,7 @@ Post-load reconnect root cause chain:
 
 - [x] [P5-A] Fix graphology edge creation so multiple relationship types between the same source and target are preserved or explicitly aggregated with all relationship types retained. Result: graph adapter now emits a `MultiDirectedGraph` and adds every renderable relationship with a stable edge key.
 - [x] [P5-B] Ensure edge filtering works correctly after the parallel-edge fix or aggregation model. Result: every parallel edge retains its own `relationType`, so existing edge visibility logic can filter per relationship type.
-- [ ] [P5-C] Expand layout hierarchy/grouping logic beyond `CONTAINS`, `DEFINES`, and `IMPORTS` where appropriate, including owner/member and process/route relationships.
+- [x] [P5-C] Expand layout hierarchy/grouping logic beyond `CONTAINS`, `DEFINES`, and `IMPORTS` where appropriate, including owner/member and process/route relationships. Result: graph adapter now uses priority-based layout parents for owner, process, route/tool, wrapper, and member relations without letting low-priority community membership override stronger containment/ownership.
 - [x] [P5-D] Add graph-adapter tests for parallel relationships such as `CALLS + USES` and `HAS_PROPERTY + ACCESSES` on the same source-target pair. Result: unit coverage proves both pairs are preserved as separate graphology edges.
 - [x] [P5-E] Audit current node size rules, scaled size output, zoom behavior, and community/structural node styling against `reports/problem/screenshot_1779178877.png`. Result: current graph baseline had `Project=10` versus `Property=1.5`, a `6.7x` radius and `44.4x` area ratio before reducer multipliers.
 - [x] [P5-F] Define and implement a proportional node-size cap after base scaling and reducer multipliers so important structural/highlighted nodes remain larger without producing oversized circles that distort graph readability. Result: large-graph base scaling caps structural nodes at `4.5` on the current graph and final reducer size at `9`.
@@ -194,8 +200,8 @@ Post-load reconnect root cause chain:
 ## Phase 6 - Legend Accuracy
 
 - [x] [P6-A] Replace the hard-coded Color Legend list with a legend derived from the labels and relationship types available in the loaded graph.
-- [ ] [P6-B] Show counts or availability state in the legend where useful.
-- [ ] [P6-C] Distinguish node-type coloring from community coloring so the legend does not mislead users.
+- [x] [P6-B] Show counts or availability state in the legend where useful. Result: Node Type and Edge Type legend entries now include loaded-graph counts.
+- [x] [P6-C] Distinguish node-type coloring from community coloring so the legend does not mislead users. Result: community coloring appears as a separate community color set entry when `MEMBER_OF` relationships are present.
 - [x] [P6-D] Add tests covering legend completeness for uncommon labels and relationship types.
 
 ## Phase 7 - Validation
