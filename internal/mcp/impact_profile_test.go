@@ -89,6 +89,61 @@ func TestImpactToolByUIDReturnsUnknownForMissingTarget(t *testing.T) {
 	}
 }
 
+func TestImpactDefaultTraversalIncludesPropertyOwnersAndAccessConsumers(t *testing.T) {
+	g := graph.New()
+	property := graph.Node{ID: "Property:Settings.enabled", Label: scopeir.NodeProperty, Properties: graph.NodeProperties{
+		"name": "enabled", "filePath": "src/settings.ts",
+	}}
+	owner := graph.Node{ID: "Interface:Settings", Label: scopeir.NodeInterface, Properties: graph.NodeProperties{
+		"name": "Settings", "filePath": "src/settings.ts",
+	}}
+	consumer := graph.Node{ID: "Function:updateSettings", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
+		"name": "updateSettings", "filePath": "src/update.ts",
+	}}
+	g.AddNode(property)
+	g.AddNode(owner)
+	g.AddNode(consumer)
+	g.AddRelationship(graph.Relationship{
+		ID:         "rel:owner-property",
+		SourceID:   owner.ID,
+		TargetID:   property.ID,
+		Type:       graph.RelHasProperty,
+		Confidence: 1,
+	})
+	g.AddRelationship(graph.Relationship{
+		ID:               "rel:consumer-property",
+		SourceID:         consumer.ID,
+		TargetID:         property.ID,
+		Type:             graph.RelAccesses,
+		Confidence:       0.9,
+		ResolutionSource: "scope-resolution",
+		Evidence:         []graph.Evidence{{Kind: "import-binding", Weight: 1, Note: "DEFAULT_SETTINGS.enabled"}},
+	})
+
+	payload, _ := runImpactBFSProfiled(g, property, impactOptions{
+		Direction:     "upstream",
+		MaxDepth:      1,
+		RelationTypes: impactDefaultRelationTypes,
+		IncludeTests:  true,
+	}, false)
+	if payload["impactedCount"] != 2 {
+		t.Fatalf("impactedCount = %#v, payload %#v", payload["impactedCount"], payload)
+	}
+	byDepth := payload["byDepth"].(map[string][]map[string]any)
+	if len(byDepth["1"]) != 2 {
+		t.Fatalf("depth 1 = %#v", byDepth["1"])
+	}
+	got := map[string]bool{}
+	for _, item := range byDepth["1"] {
+		got[fmt.Sprint(item["id"])] = true
+	}
+	for _, want := range []string{owner.ID, consumer.ID} {
+		if !got[want] {
+			t.Fatalf("depth 1 missing %s: %#v", want, byDepth["1"])
+		}
+	}
+}
+
 func TestImpactConfidenceUsesStoredValueAndGoFallbacks(t *testing.T) {
 	cases := []struct {
 		name         string

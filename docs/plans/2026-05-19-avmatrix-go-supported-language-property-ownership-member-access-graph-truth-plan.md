@@ -175,10 +175,10 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 
 ## Phase 4 - Consumer Impact Checks
 
-- [ ] [P4-A] Verify `context` output includes representative new `HAS_PROPERTY` and `ACCESSES` facts for selected symbols in multiple language families.
-- [ ] [P4-B] Verify impact analysis behavior on property owners and property consumers. The result must show whether new edges improve affected-symbol discovery without noisy unrelated expansion.
-- [ ] [P4-C] Verify graph API/readback preserves the new relationships, including `reason`, `confidence`, `resolutionSource`, and evidence fields.
-- [ ] [P4-D] Record consumer-impact evidence and any precision concerns. If noisy edges are found, classify them before final cutover.
+- [x] [P4-A] Verify `context` output includes representative new `HAS_PROPERTY` and `ACCESSES` facts for selected symbols in multiple language families. Result: `context parseFiles` shows imported `ACCESSES` to `parser.ErrUnsupportedLanguage`; `context RawSettingsShape` shows TypeScript `TypeAlias -> Property` `HAS_PROPERTY`; `context LLMSettings.intelligentClustering` shows both owner and consumer.
+- [x] [P4-B] Verify impact analysis behavior on property owners and property consumers. Result: impact default traversal now includes `HAS_PROPERTY` and `ACCESSES`; `ErrUnsupportedLanguage` impact reaches `parseFiles`, and `LLMSettings.intelligentClustering` impact reaches both `updateLocalRuntimeProviderSettings` and owner `LLMSettings`.
+- [x] [P4-C] Verify graph API/readback preserves the new relationships, including `reason`, `confidence`, `resolutionSource`, and evidence fields. Result: `cypher` readback for `parseFiles -> ErrUnsupportedLanguage` returns `type=ACCESSES`, `confidence=0.9`, `reason=read`, `resolutionSource=scope-resolution`, and `import-binding` evidence.
+- [x] [P4-D] Record consumer-impact evidence and any precision concerns. Result: initial P4 check found that `ACCESSES`/`HAS_PROPERTY` were allowed but omitted from default impact traversal; fixed in consumer layer and covered by regression test. No noisy unrelated expansion was observed in the sampled checks.
 
 ## Phase 5 - Final Cutover
 
@@ -210,10 +210,10 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P3-D | Validation | access slice | analyze/test/e2e recorded | recorded | recorded | `08649e6` | done |
 | P3-E | Access | post-receiver missing-owner-link bucket | close or reclassify bucket | recorded | recorded | `a908b2d` | done |
 | P3-F | Access | imported member receivers and remaining clusters | fixed or deferred with evidence | recorded | recorded | `9b58dea` | done |
-| P4-A | Consumer | context | new facts visible in context | n/a | pending | pending | open |
-| P4-B | Consumer | impact | affected-symbol behavior checked | n/a | pending | pending | open |
-| P4-C | Consumer | graph API/readback | new relationships preserved | n/a | pending | pending | open |
-| P4-D | Consumer | precision/noise | concerns classified | pending | pending | pending | open |
+| P4-A | Consumer | context | new facts visible in context | n/a | recorded | pending | done |
+| P4-B | Consumer | impact | affected-symbol behavior checked | n/a | recorded | pending | done |
+| P4-C | Consumer | graph API/readback | new relationships preserved | n/a | recorded | pending | done |
+| P4-D | Consumer | precision/noise | concerns classified | n/a | recorded | pending | done |
 | P5-A | Final gate | workload matrix | final gate run | pending | pending | pending | open |
 | P5-B | Final benchmark | graph facts/performance | final metrics recorded | pending | pending | pending | open |
 | P5-C | Final evidence | proof set | final evidence recorded | n/a | pending | pending | open |

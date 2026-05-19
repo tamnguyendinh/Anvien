@@ -41,9 +41,11 @@ var (
 		string(graph.RelInherits),
 		string(graph.RelExtends),
 		string(graph.RelImplements),
+		string(graph.RelHasProperty),
 		string(graph.RelMethodOverrides),
 		"OVERRIDES",
 		string(graph.RelMethodImplements),
+		string(graph.RelAccesses),
 	}
 )
 

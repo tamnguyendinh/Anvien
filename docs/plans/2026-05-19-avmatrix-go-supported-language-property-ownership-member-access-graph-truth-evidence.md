@@ -106,7 +106,7 @@ Initial hypothesis:
 | P3-D access validation | full build, focused tests, analyze/property/access e2e, benchmark update | recorded | done |
 | P3-E missing-owner-link closure | cross-language owner collision guard and access audit reclassification | recorded | done |
 | P3-F imported member receiver cluster | imported workspace member `ACCESSES`, unresolved import receiver classification, schema access pairs, full build/tests/e2e gates | recorded | done |
-| P4 consumer checks | pending | pending | open |
+| P4 consumer checks | context, impact, cypher readback, impact default traversal regression | recorded | done |
 | P5 final evidence | pending | pending | open |
 
 ## P1-A Implementation Evidence
@@ -1392,3 +1392,141 @@ affected process names include:
 ```
 
 Interpretation: high risk is expected because this slice changes production access resolution, audit classification, and graph load schema pairs. The risk is covered by full build, focused resolution/graphaccuracy/lbugschema tests, and analyze/property/access e2e on both measured workloads.
+
+## P4 Consumer Impact Evidence
+
+Changed files:
+
+- `internal/mcp/impact.go`
+- `internal/mcp/impact_profile_test.go`
+
+Implementation summary:
+
+- P4 initially found that `context` could read the new property/member edges, but `impact` default traversal did not include `ACCESSES` or `HAS_PROPERTY`.
+- `impactDefaultRelationTypes` now includes `HAS_PROPERTY` and `ACCESSES`, so property targets can report both owners and consumers without requiring callers to pass custom `relationTypes`.
+- Regression coverage asserts that default impact traversal from a `Property` target returns both a `HAS_PROPERTY` owner and an `ACCESSES` consumer.
+
+Full build before tests:
+
+```powershell
+.\avmatrix-launcher\build.ps1
+```
+
+Result: passed. Vite reported chunk-size and dynamic/static import warnings only.
+
+Focused tests after full build:
+
+```powershell
+go test ./internal/mcp ./internal/resolution ./internal/graphaccuracy ./internal/lbugschema ./cmd/access-candidate-audit
+```
+
+Result:
+
+```text
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/mcp
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/resolution
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/lbugschema
+?   	github.com/tamnguyendinh/avmatrix-go/cmd/access-candidate-audit	[no test files]
+```
+
+Analyze e2e after full build:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json .tmp\p4-impact-default-avmatrix-go-analyze-20260519.json --benchmark-label p4-impact-default-avmatrix-go
+```
+
+Result:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=682 parsed=527 unsupported=155 failed=0
+graph: nodes=20351 relationships=50977 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Context evidence:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe context parseFiles --repo E:\AVmatrix-GO --file internal/analyze/analyze.go
+.\avmatrix-launcher\server-bundle\avmatrix.exe context --uid 'Property:avmatrix-web/src/core/llm/types.local-runtime.ts:LLMSettings.intelligentClustering' --repo E:\AVmatrix-GO
+.\avmatrix-launcher\server-bundle\avmatrix.exe context RawSettingsShape --repo E:\AVmatrix-GO --file avmatrix-web/src/core/llm/settings-service-local-runtime.ts
+```
+
+Observed:
+
+```text
+parseFiles outgoing ACCESSES:
+- parser.ErrUnsupportedLanguage, confidence=0.9, evidence.kind=import-binding
+
+LLMSettings.intelligentClustering incoming:
+- ACCESSES from updateLocalRuntimeProviderSettings
+- HAS_PROPERTY from LLMSettings
+
+RawSettingsShape outgoing:
+- HAS_PROPERTY activeProvider
+- HAS_PROPERTY codex
+```
+
+Impact evidence after fix:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact --uid 'Variable:internal/parser/parse.go:ErrUnsupportedLanguage' --repo E:\AVmatrix-GO --direction upstream --depth 2
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact --uid 'Property:avmatrix-web/src/core/llm/types.local-runtime.ts:LLMSettings.intelligentClustering' --repo E:\AVmatrix-GO --direction upstream --depth 2
+```
+
+Observed:
+
+```text
+ErrUnsupportedLanguage impact:
+- impactedCount=2
+- depth 1: parseFiles via ACCESSES, confidence=0.9, evidence.kind=import-binding
+- depth 2: Run via CALLS
+
+LLMSettings.intelligentClustering impact:
+- impactedCount=5
+- depth 1: updateLocalRuntimeProviderSettings via ACCESSES
+- depth 1: LLMSettings via HAS_PROPERTY
+- risk=LOW
+```
+
+Graph API/readback evidence:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe cypher "MATCH (a)-[r:CodeRelation]->(b) WHERE a.id = 'Function:internal/analyze/analyze.go:parseFiles#4' AND b.id = 'Variable:internal/parser/parse.go:ErrUnsupportedLanguage' RETURN r.type, r.confidence, r.reason, r.resolutionSource, r.evidence LIMIT 5" --repo E:\AVmatrix-GO
+```
+
+Result:
+
+```text
+row_count=1
+r.type=ACCESSES
+r.confidence=0.900000
+r.reason=read
+r.resolutionSource=scope-resolution
+r.evidence=[{"kind":"import-binding","weight":1,"note":"parser.ErrUnsupportedLanguage"}]
+```
+
+Precision/noise conclusion:
+
+- The initial precision concern was not noisy graph expansion; it was a consumer default traversal gap.
+- After adding `ACCESSES` and `HAS_PROPERTY` to default impact traversal, sampled impact results show direct owner/consumer discovery with no unrelated broad expansion in the checked cases.
+
+Staged AVmatrix impact check:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --scope staged --repo E:\AVmatrix-GO
+```
+
+Result summary:
+
+```text
+changed_files=4
+changed_count=14
+affected_count=0
+risk_level=low
+changed symbols include:
+- impactDefaultRelationTypes
+- TestImpactDefaultTraversalIncludesPropertyOwnersAndAccessConsumers
+```
+
+Interpretation: low risk is expected because the production change is limited to the default impact relation set, and the new regression test covers property owner/consumer traversal.
