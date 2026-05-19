@@ -94,6 +94,7 @@ Initial hypothesis:
 | P2 ownership implementation | TS/JS direct type-alias property ownership and `TypeAlias -> Property` schema support | implemented and validated | done |
 | P2 validation | full build, focused tests, analyze e2e, property gate e2e, benchmark update, impact check | recorded | done |
 | P2-D Go ownership classification | Go anonymous struct fields classified as true no-edge | recorded | done |
+| P2-E remaining ownership clusters | nested TS/JS shape ownership and inline type-literal no-edge classification | recorded | done |
 | P3 access implementation | pending | pending | open |
 | P3 validation | pending | pending | open |
 | P4 consumer checks | pending | pending | open |
@@ -647,3 +648,143 @@ affected process names:
 ```
 
 Interpretation: high risk is expected because the slice changes the property/access audit classifier used by `cmd/property-access-audit`. The production analyzer graph is not changed by this slice; validation is covered by full build, focused graphaccuracy tests, and property gate e2e on both `E:\AVmatrix-GO` and `E:\Website`.
+
+## P2-E Remaining Ownership Evidence
+
+Changed files:
+
+- `internal/providers/tsjs/definitions.go`
+- `internal/providers/tsjs/extract_test.go`
+- `internal/graphaccuracy/property_access.go`
+- `internal/graphaccuracy/property_access_test.go`
+
+Implementation summary:
+
+- Nested TS/JS `property_signature` definitions now use their nearest parent `Property` as owner.
+- Direct type-alias object members keep `TypeAlias` as owner.
+- Inline anonymous TS/JS type literals, such as `useRef<{ ... }>` and `useState<{ ... }>`, remain unowned and are classified as `true_no_edge`.
+- This adds defensible `Property -> Property` `HAS_PROPERTY` edges without linking anonymous inline shapes to unrelated interfaces or variables.
+
+Full build before tests:
+
+```powershell
+.\avmatrix-launcher\build.ps1
+```
+
+Result: passed. Vite reported chunk-size and dynamic/static import warnings only.
+
+Focused tests after full build:
+
+```powershell
+go test ./internal/providers/tsjs ./internal/resolution ./internal/graphaccuracy ./cmd/property-access-audit
+```
+
+Result:
+
+```text
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/tsjs
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/resolution
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy
+?   	github.com/tamnguyendinh/avmatrix-go/cmd/property-access-audit	[no test files]
+```
+
+Analyze e2e after full build:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+```
+
+Website result:
+
+```text
+analyzed E:\Website
+files: scanned=1870 parsed=998 unsupported=872 failed=0
+graph: nodes=27956 relationships=55957 path=E:\Website\.avmatrix\graph.json
+ANALYZE_MS=17,093.2
+```
+
+AVmatrix-GO result:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=682 parsed=527 unsupported=155 failed=0
+graph: nodes=20268 relationships=48460 path=E:\AVmatrix-GO\.avmatrix\graph.json
+ANALYZE_MS=14,805.4
+```
+
+Graph snapshots:
+
+```powershell
+Copy-Item -LiteralPath 'E:\Website\.avmatrix\graph.json' -Destination '.tmp\p2e-property-access-website-go-graph-20260519.json' -Force
+Copy-Item -LiteralPath 'E:\AVmatrix-GO\.avmatrix\graph.json' -Destination '.tmp\p2e-property-access-avmatrix-go-graph-20260519.json' -Force
+```
+
+CLI/runtime property gate e2e after full build:
+
+```powershell
+go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\p2e-property-access-website-go-graph-20260519.json -out .tmp\p2e-property-access-website-20260519.json -max-examples 20
+go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\p2e-property-access-avmatrix-go-graph-20260519.json -out .tmp\p2e-property-access-avmatrix-go-20260519.json -max-examples 20
+```
+
+Website result:
+
+```text
+wrote .tmp\p2e-property-access-website-20260519.json
+properties.total=7097 ownerLinked=5922 standalone=1175 hasPropertyEdges=5922 accessesEdges=3 invalidHasPropertyEdges=0
+language.typescript.properties=7097 ownerLinked=5922 standalone=1175
+orphan.false_orphan=0
+orphan.owner_linked=5922
+orphan.true_orphan=1156
+orphan.unknown=19
+graphTruth.edge_present=5922
+graphTruth.real_edge_missing=0
+graphTruth.true_no_edge=1156
+graphTruth.unknown_no_edge=19
+```
+
+AVmatrix-GO result:
+
+```text
+wrote .tmp\p2e-property-access-avmatrix-go-20260519.json
+properties.total=3096 ownerLinked=2769 standalone=327 hasPropertyEdges=2769 accessesEdges=2754 invalidHasPropertyEdges=0
+language.go.properties=2508 ownerLinked=2302 standalone=206
+language.typescript.properties=588 ownerLinked=467 standalone=121
+orphan.false_orphan=0
+orphan.owner_linked=2769
+orphan.true_orphan=324
+orphan.unknown=3
+graphTruth.edge_present=2769
+graphTruth.real_edge_missing=0
+graphTruth.true_no_edge=324
+graphTruth.unknown_no_edge=3
+```
+
+Interpretation:
+
+- Website `real_edge_missing` moved from `392` to `0`.
+- AVmatrix-GO `real_edge_missing` moved from `12` to `0`.
+- Invalid synthetic edge risk remains `0`.
+- The remaining `unknown_no_edge` buckets are small and intentionally not linked without more evidence: Website `19`, AVmatrix-GO `3`.
+
+Staged AVmatrix impact check:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --scope staged --repo E:\AVmatrix-GO
+```
+
+Result summary:
+
+```text
+changed_files=7
+changed_count=34
+affected_count=4
+risk_level=medium
+affected process names:
+- BuildPropertyAccessAudit -> GoFieldLineHasType
+- BuildPropertyAccessAudit -> ContextContainsBlockHeader
+- BuildPropertyAccessAudit -> LooksDestructuringOrBinding
+- BuildPropertyAccessAudit -> LooksInsideTypeAliasObject
+```
+
+Interpretation: medium risk is expected because this slice changes TS/JS provider ownership and the property/access audit classifier. The slice is covered by full build, TS/JS provider tests, graphaccuracy tests, analyze e2e on both workloads, and final property gate outputs showing `real_edge_missing=0` with invalid edges still `0`.

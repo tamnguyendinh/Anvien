@@ -162,7 +162,7 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 - [x] [P2-B] Add focused tests for every language/provider family changed in [P2-A]. Result: TS/JS provider coverage now asserts direct type-alias members are owner-linked and nested shape members remain unowned.
 - [x] [P2-C] Run ownership validation and record it. Result: full build passed before tests, focused tests passed, CLI/runtime e2e passed on `E:\Website` and `E:\AVmatrix-GO`, fresh graph snapshots and benchmark/evidence ledgers were updated, and AVmatrix impact was recorded.
 - [x] [P2-D] Refine Go unknown property ownership before linking. Result: AVmatrix-GO `go_typed_property_without_owner=206` was reclassified as `go_anonymous_struct_field=206`, all `true_orphan`/`true_no_edge`, with no new `HAS_PROPERTY` emitted. Go ownership now has `owner_linked=2,302`, `true_orphan=206`, `unknown=0`.
-- [ ] [P2-E] Repeat large ownership clusters until all false-orphan categories with defensible owners are either fixed or explicitly deferred with evidence. Next known buckets after P2-D: Website `real_edge_missing=392`, Website `unknown_no_edge=915`, AVmatrix-GO `real_edge_missing=12`, AVmatrix-GO `unknown_no_edge=27`.
+- [x] [P2-E] Repeat large ownership clusters until all false-orphan categories with defensible owners are either fixed or explicitly deferred with evidence. Result: nested TS/JS object-shape members now link to their parent `Property`; inline TS/JS anonymous type literals are classified as true no-edge. Website `real_edge_missing=0`; AVmatrix-GO `real_edge_missing=0`; invalid synthetic edges remain `0`.
 
 ## Phase 3 - Cross-Language Member Access Resolution
 
@@ -203,7 +203,7 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P2-B | Tests | TS/JS provider ownership focused tests | direct owner and nested no-owner covered | n/a | recorded | `b91c2cd` | done |
 | P2-C | Validation | ownership slice | analyze/test/e2e recorded | recorded | recorded | `b91c2cd` | done |
 | P2-D | Ownership | Go anonymous struct property ownership | classify before linking | recorded | recorded | `0367bc1` | done |
-| P2-E | Ownership | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
+| P2-E | Ownership | remaining false-orphan ownership clusters | fixed or deferred with evidence | recorded | recorded | pending | done |
 | P3-A | Access | access sample taxonomy | resolvable families classified | pending | pending | pending | open |
 | P3-B | Access | large access-resolution cluster | defensible `ACCESSES` expansion | pending | pending | pending | open |
 | P3-C | Tests | access focused tests | resolved families covered | n/a | pending | pending | open |

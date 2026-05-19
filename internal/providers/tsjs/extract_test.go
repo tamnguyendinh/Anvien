@@ -121,7 +121,7 @@ export function start() {
 	requireCall(t, ir, "run", scopeir.CallMember)
 }
 
-func TestExtractTypeAliasObjectPropertiesHaveDirectOwner(t *testing.T) {
+func TestExtractTypeAliasObjectPropertiesHaveNestedOwners(t *testing.T) {
 	source := []byte(`type Shape = {
   title: string;
   nested: {
@@ -136,9 +136,26 @@ func TestExtractTypeAliasObjectPropertiesHaveDirectOwner(t *testing.T) {
 	if title.OwnerID != shape.ID {
 		t.Fatalf("title owner = %q, want %q; title=%#v shape=%#v", title.OwnerID, shape.ID, title, shape)
 	}
-	count := requireDefinition(t, ir, "count", scopeir.NodeProperty)
-	if count.OwnerID != "" || count.QualifiedName != "count" {
-		t.Fatalf("nested count should stay unowned until nested shape ownership is modeled: %#v", count)
+	nested := requireExtractQualifiedDefinition(t, ir, "Shape.nested", scopeir.NodeProperty)
+	count := requireExtractQualifiedDefinition(t, ir, "Shape.nested.count", scopeir.NodeProperty)
+	if count.OwnerID != nested.ID {
+		t.Fatalf("nested count owner = %q, want %q; count=%#v nested=%#v", count.OwnerID, nested.ID, count, nested)
+	}
+}
+
+func TestExtractInlineTypeLiteralPropertiesStayUnowned(t *testing.T) {
+	source := []byte(`import { useRef } from "react";
+
+export function Panel() {
+  const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
+  return resizeRef.current?.startX;
+}
+`)
+	ir := parseAndExtract(t, "src/panel.tsx", "hash-panel", scanner.TypeScript, source)
+
+	startX := requireDefinition(t, ir, "startX", scopeir.NodeProperty)
+	if startX.OwnerID != "" || startX.QualifiedName != "startX" {
+		t.Fatalf("inline type literal property should stay unowned: %#v", startX)
 	}
 }
 

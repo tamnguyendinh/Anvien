@@ -171,14 +171,25 @@ func (c *collector) ownerDefIDFor(node *sitter.Node) string {
 }
 
 func (c *collector) ownerDeclarationNameFor(node *sitter.Node) string {
-	owner, _, ok := c.ownerDeclarationFor(node)
+	owner, label, ok := c.ownerDeclarationFor(node)
 	if !ok {
 		return ""
+	}
+	if label == scopeir.NodeProperty {
+		return c.propertyQualifiedNameFor(owner)
 	}
 	return c.text(child(owner, "name"))
 }
 
 func (c *collector) ownerDeclarationFor(node *sitter.Node) (*sitter.Node, scopeir.NodeLabel, bool) {
+	if node.Kind() == "property_signature" {
+		if owner := parentPropertySignatureOwner(node); owner != nil {
+			return owner, scopeir.NodeProperty, true
+		}
+		if owner := directTypeAliasObjectOwner(node); owner != nil {
+			return owner, scopeir.NodeTypeAlias, true
+		}
+	}
 	current := node.Parent()
 	for current != nil {
 		if label, ok := ownerDeclarationLabel(current); ok {
@@ -186,12 +197,20 @@ func (c *collector) ownerDeclarationFor(node *sitter.Node) (*sitter.Node, scopei
 		}
 		current = current.Parent()
 	}
-	if node.Kind() == "property_signature" {
-		if owner := directTypeAliasObjectOwner(node); owner != nil {
-			return owner, scopeir.NodeTypeAlias, true
-		}
-	}
 	return nil, "", false
+}
+
+func (c *collector) propertyQualifiedNameFor(node *sitter.Node) string {
+	nameNode := child(node, "name")
+	if nameNode == nil {
+		return ""
+	}
+	name := c.text(nameNode)
+	ownerName := c.ownerDeclarationNameFor(node)
+	if ownerName == "" {
+		return name
+	}
+	return ownerName + "." + name
 }
 
 func ownerDeclarationLabel(node *sitter.Node) (scopeir.NodeLabel, bool) {
@@ -212,6 +231,20 @@ func directTypeAliasObjectOwner(node *sitter.Node) *sitter.Node {
 		case "type_alias_declaration":
 			return current
 		case "property_signature", "class_declaration", "abstract_class_declaration", "interface_declaration":
+			return nil
+		}
+		current = current.Parent()
+	}
+	return nil
+}
+
+func parentPropertySignatureOwner(node *sitter.Node) *sitter.Node {
+	current := node.Parent()
+	for current != nil {
+		switch current.Kind() {
+		case "property_signature":
+			return current
+		case "type_alias_declaration", "class_declaration", "abstract_class_declaration", "interface_declaration":
 			return nil
 		}
 		current = current.Parent()

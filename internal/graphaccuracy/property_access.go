@@ -368,17 +368,20 @@ func classifyTSJSProperty(node GraphNode, owner GraphNode, ownerLinked bool, lin
 	if propertyInExternalPath(node) {
 		return "tsjs_external_library_property"
 	}
+	if looksRuntimeObjectLiteral(context) {
+		return "tsjs_runtime_object_literal_key"
+	}
+	if looksTSJSInlineTypeLiteral(line, context) {
+		return "tsjs_inline_type_literal_property"
+	}
+	if looksDestructuringOrBinding(line, context) {
+		return "tsjs_destructuring_or_binding_pattern"
+	}
 	if looksInsideInterface(context) {
 		return "tsjs_interface_property_signature"
 	}
 	if looksInsideTypeAliasObject(context) {
 		return "tsjs_type_alias_object_literal_member"
-	}
-	if looksRuntimeObjectLiteral(context) {
-		return "tsjs_runtime_object_literal_key"
-	}
-	if looksDestructuringOrBinding(line, context) {
-		return "tsjs_destructuring_or_binding_pattern"
 	}
 	if propString(node.Properties, "declaredType") != "" {
 		return "tsjs_typed_shape_or_binding_property"
@@ -396,7 +399,7 @@ func classifyPropertyOrphanStatus(ownerLinked bool, category string) string {
 	switch category {
 	case "tsjs_interface_property_signature", "tsjs_type_alias_object_literal_member", "tsjs_class_field":
 		return "false_orphan"
-	case "tsjs_runtime_object_literal_key", "tsjs_destructuring_or_binding_pattern", "go_anonymous_struct_field":
+	case "tsjs_runtime_object_literal_key", "tsjs_destructuring_or_binding_pattern", "tsjs_inline_type_literal_property", "go_anonymous_struct_field":
 		return "true_orphan"
 	case "tsjs_typed_shape_or_binding_property":
 		return "unknown"
@@ -501,6 +504,48 @@ func looksDestructuringOrBinding(line string, context []string) bool {
 		}
 	}
 	return false
+}
+
+func looksTSJSInlineTypeLiteral(line string, context []string) bool {
+	if tsjsLineLooksInlineTypeLiteral(line) {
+		return true
+	}
+	for i := len(context) - 1; i >= 0; i-- {
+		trimmed := strings.TrimSpace(context[i])
+		if trimmed == "" {
+			continue
+		}
+		if tsjsLineLooksNamedTypeContainer(trimmed) {
+			return false
+		}
+		if tsjsLineLooksInlineTypeLiteral(trimmed) {
+			return true
+		}
+		if strings.HasPrefix(trimmed, "function ") || strings.HasPrefix(trimmed, "export function ") {
+			return false
+		}
+	}
+	return false
+}
+
+func tsjsLineLooksInlineTypeLiteral(line string) bool {
+	line = strings.TrimSpace(line)
+	if line == "" || tsjsLineLooksNamedTypeContainer(line) {
+		return false
+	}
+	return strings.Contains(line, "<{") ||
+		strings.Contains(line, "Promise<{") ||
+		strings.Contains(line, "?: {") ||
+		strings.Contains(line, ": {") ||
+		strings.HasPrefix(line, "{ ")
+}
+
+func tsjsLineLooksNamedTypeContainer(line string) bool {
+	line = strings.TrimSpace(line)
+	return strings.HasPrefix(line, "interface ") ||
+		strings.HasPrefix(line, "type ") ||
+		strings.HasPrefix(line, "class ") ||
+		strings.HasPrefix(line, "abstract class ")
 }
 
 func looksGoAnonymousStructField(line string, context []string) bool {

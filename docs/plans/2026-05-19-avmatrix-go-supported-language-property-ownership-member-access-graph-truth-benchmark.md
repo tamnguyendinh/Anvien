@@ -83,6 +83,7 @@ Every property/access gate benchmark row must include:
 | P1 access candidate taxonomy | `.tmp\p1-access-candidates-website-20260519.json`, `.tmp\p1-access-candidates-avmatrix-go-20260519.json` | Website `total=24,542 resolved=3`; AVmatrix-GO `total=21,098 resolved=5,112` | recorded |
 | P2 ownership validation | `.tmp\p2-property-access-website-20260519.json`, `.tmp\p2-property-access-avmatrix-go-20260519.json` | Website `HAS_PROPERTY=5,129`, `real_edge_missing=392`, invalid edges `0`; AVmatrix-GO `HAS_PROPERTY=2,762`, `real_edge_missing=12`, invalid edges `0` | recorded |
 | P2-D Go anonymous struct classification | `.tmp\p2d-property-access-avmatrix-go-20260519.json` | Go `go_anonymous_struct_field=206`, Go `true_no_edge=206`, Go `unknown=0`; no new `HAS_PROPERTY` emitted | recorded |
+| P2-E remaining ownership clusters | `.tmp\p2e-property-access-website-20260519.json`, `.tmp\p2e-property-access-avmatrix-go-20260519.json` | Website `HAS_PROPERTY=5,922`, `real_edge_missing=0`; AVmatrix-GO `HAS_PROPERTY=2,769`, `real_edge_missing=0`; invalid edges `0` | recorded |
 | P3 access validation | pending | `ACCESSES` expansion and precision | open |
 | P5 final gate | pending | final workload matrix | open |
 
@@ -306,3 +307,89 @@ P2-D interpretation:
 - The source samples are anonymous struct fields such as table-test rows, local JSON decode shapes, and nested anonymous response structs.
 - Those fields have no stable named graph owner under the current model, so the correct graph truth is `true_no_edge`.
 - No `HAS_PROPERTY` edges were added for this bucket.
+
+## P2-E Remaining Ownership Clusters
+
+Date: 2026-05-19
+
+Artifacts:
+
+- Website graph snapshot: `.tmp\p2e-property-access-website-go-graph-20260519.json`
+- Website gate output: `.tmp\p2e-property-access-website-20260519.json`
+- AVmatrix-GO graph snapshot: `.tmp\p2e-property-access-avmatrix-go-graph-20260519.json`
+- AVmatrix-GO gate output: `.tmp\p2e-property-access-avmatrix-go-20260519.json`
+
+Commands:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
+Copy-Item -LiteralPath 'E:\Website\.avmatrix\graph.json' -Destination '.tmp\p2e-property-access-website-go-graph-20260519.json' -Force
+go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\p2e-property-access-website-go-graph-20260519.json -out .tmp\p2e-property-access-website-20260519.json -max-examples 20
+
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+Copy-Item -LiteralPath 'E:\AVmatrix-GO\.avmatrix\graph.json' -Destination '.tmp\p2e-property-access-avmatrix-go-graph-20260519.json' -Force
+go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\p2e-property-access-avmatrix-go-graph-20260519.json -out .tmp\p2e-property-access-avmatrix-go-20260519.json -max-examples 20
+```
+
+Analyze runtime and graph size:
+
+| Workload | Analyze runtime | Files scanned | Files parsed | Graph nodes | Graph relationships |
+|---|---:|---:|---:|---:|---:|
+| `E:\Website` | 17,093.2 ms | 1,870 | 998 | 27,956 | 55,957 |
+| `E:\AVmatrix-GO` | 14,805.4 ms | 682 | 527 | 20,268 | 48,460 |
+
+Ownership gate delta from P2-D to P2-E:
+
+| Workload | P2-D/P2 `Property` | P2-E `Property` | P2-D/P2 `HAS_PROPERTY` | P2-E `HAS_PROPERTY` | P2-D/P2 `ACCESSES` | P2-E `ACCESSES` | P2-D/P2 real missing | P2-E real missing | Invalid P2-E edges |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 6,905 | 7,097 | 5,129 | 5,922 | 3 | 3 | 392 | 0 | 0 |
+| `E:\AVmatrix-GO` | 3,089 | 3,096 | 2,762 | 2,769 | 2,751 | 2,754 | 12 | 0 | 0 |
+
+Owner labels after P2-E:
+
+| Workload | Owner label | `HAS_PROPERTY` |
+|---|---|---:|
+| `E:\Website` | Class | 3 |
+| `E:\Website` | Property | 793 |
+| `E:\Website` | TypeAlias | 5,126 |
+| `E:\AVmatrix-GO` | Class | 8 |
+| `E:\AVmatrix-GO` | Interface | 419 |
+| `E:\AVmatrix-GO` | Property | 25 |
+| `E:\AVmatrix-GO` | Struct | 2,302 |
+| `E:\AVmatrix-GO` | TypeAlias | 15 |
+
+P2-E category taxonomy:
+
+| Workload | Category | Count |
+|---|---|---:|
+| `E:\Website` | `tsjs_type_alias_object_literal_member` | 5,126 |
+| `E:\Website` | `tsjs_owner_linked_property` | 793 |
+| `E:\Website` | `tsjs_inline_type_literal_property` | 807 |
+| `E:\Website` | `tsjs_runtime_object_literal_key` | 313 |
+| `E:\Website` | `tsjs_destructuring_or_binding_pattern` | 36 |
+| `E:\Website` | `tsjs_typed_shape_or_binding_property` | 17 |
+| `E:\Website` | `tsjs_class_field` | 3 |
+| `E:\Website` | `tsjs_unclassified_property` | 2 |
+| `E:\AVmatrix-GO` | `go_owner_linked_struct` | 2,302 |
+| `E:\AVmatrix-GO` | `go_anonymous_struct_field` | 206 |
+| `E:\AVmatrix-GO` | `tsjs_interface_property_signature` | 419 |
+| `E:\AVmatrix-GO` | `tsjs_inline_type_literal_property` | 92 |
+| `E:\AVmatrix-GO` | `tsjs_owner_linked_property` | 25 |
+| `E:\AVmatrix-GO` | `tsjs_runtime_object_literal_key` | 24 |
+| `E:\AVmatrix-GO` | `tsjs_type_alias_object_literal_member` | 15 |
+| `E:\AVmatrix-GO` | `tsjs_class_field` | 8 |
+| `E:\AVmatrix-GO` | `tsjs_typed_shape_or_binding_property` | 3 |
+| `E:\AVmatrix-GO` | `tsjs_destructuring_or_binding_pattern` | 2 |
+
+Graph-truth after P2-E:
+
+| Workload | `owner_linked` | `false_orphan` | `true_orphan` | `unknown` | `edge_present` | `real_edge_missing` | `true_no_edge` | `unknown_no_edge` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 5,922 | 0 | 1,156 | 19 | 5,922 | 0 | 1,156 | 19 |
+| `E:\AVmatrix-GO` | 2,769 | 0 | 324 | 3 | 2,769 | 0 | 324 | 3 |
+
+P2-E interpretation:
+
+- Nested TS/JS object-shape members now use defensible `Property -> Property` ownership.
+- Inline anonymous TS/JS type literals are classified as true no-edge, not false missing owner.
+- Phase 2 ownership false-orphan denominator is now closed for the measured workloads: both have `real_edge_missing=0`.

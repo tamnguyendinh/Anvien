@@ -112,6 +112,43 @@ func TestParseAction() {
 	assertBucketCount(t, result.GraphTruth, "true_no_edge", 2)
 }
 
+func TestRunPropertyAccessAuditClassifiesTSJSInlineTypeLiteralAsTrueNoEdge(t *testing.T) {
+	repo := t.TempDir()
+	writeAccuracyFixtureFile(t, repo, "src/panel.tsx", `import { useRef, useState } from "react";
+
+interface PanelProps {
+  title: string;
+}
+
+export function Panel() {
+  const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
+  const [error] = useState<{
+    message: string;
+  } | null>(null);
+  return resizeRef.current?.startX ?? error?.message;
+}
+`)
+	graphPath := writeGraphFixture(t, repo, "graph.json", GraphFile{
+		Nodes: []GraphNode{
+			propertyNode("src/panel.tsx", "typescript", "startX", "startX", "number", 8),
+			propertyNode("src/panel.tsx", "typescript", "startWidth", "startWidth", "number", 8),
+			propertyNode("src/panel.tsx", "typescript", "message", "message", "string", 10),
+		},
+	})
+
+	result, err := RunPropertyAccessAudit(PropertyAccessAuditOptions{
+		Repo:        repo,
+		GraphPath:   graphPath,
+		MaxExamples: 3,
+	})
+	if err != nil {
+		t.Fatalf("RunPropertyAccessAudit() error = %v", err)
+	}
+	assertBucketCount(t, result.Categories, "tsjs_inline_type_literal_property", 3)
+	assertBucketCount(t, result.OrphanStatus, "true_orphan", 3)
+	assertBucketCount(t, result.GraphTruth, "true_no_edge", 3)
+}
+
 func propertyNode(rel string, language string, qualifiedName string, name string, declaredType string, startLine int) GraphNode {
 	return GraphNode{
 		ID:    "Property:" + rel + ":" + qualifiedName,
