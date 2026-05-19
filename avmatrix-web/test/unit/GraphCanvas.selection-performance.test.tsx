@@ -18,7 +18,11 @@ const {
     sigmaRefreshSpy: vi.fn(),
     setSigmaSelectedNodeSpy: vi.fn(),
     setSigmaGraphSpy: vi.fn(),
-    sigmaGraph: { order: 1 },
+    sigmaGraph: {
+      order: 1,
+      nodes: () => ['Function:src/foo.ts:loadFoo'],
+      getNodeAttribute: () => 2,
+    },
   };
 });
 
@@ -50,6 +54,7 @@ vi.mock('../../src/hooks/useSigma', () => ({
 }));
 
 vi.mock('../../src/lib/graph-adapter', () => ({
+  MAX_RENDERED_NODE_SIZE: 9,
   knowledgeGraphToGraphology: vi.fn(() => sigmaGraph),
   filterGraphByDepth: filterGraphByDepthSpy,
   filterGraphByLabels: filterGraphByLabelsSpy,

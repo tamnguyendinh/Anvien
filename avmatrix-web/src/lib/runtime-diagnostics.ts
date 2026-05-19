@@ -8,6 +8,14 @@ export interface WebRuntimeDiagnostics {
     lastStartedAt: number;
     lastFinishedAt: number;
   };
+  visualScale: {
+    nodeCount: number;
+    minNodeSize: number;
+    maxNodeSize: number;
+    maxRenderedNodeSizeCap: number;
+    structuralToLeafRatio: number;
+    recordedAt: number;
+  };
   layout: {
     starts: number;
     stops: number;
@@ -54,6 +62,14 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
     lastRelationshipCount: 0,
     lastStartedAt: 0,
     lastFinishedAt: 0,
+  },
+  visualScale: {
+    nodeCount: 0,
+    minNodeSize: 0,
+    maxNodeSize: 0,
+    maxRenderedNodeSizeCap: 0,
+    structuralToLeafRatio: 0,
+    recordedAt: 0,
   },
   layout: {
     starts: 0,
@@ -117,6 +133,21 @@ export const recordGraphConversion = (input: {
   diagnostics.graphConversion.lastRelationshipCount = input.relationshipCount;
   diagnostics.graphConversion.lastStartedAt = input.startedAt;
   diagnostics.graphConversion.lastFinishedAt = finishedAt;
+};
+
+export const recordVisualScale = (input: {
+  nodeCount: number;
+  minNodeSize: number;
+  maxNodeSize: number;
+  maxRenderedNodeSizeCap: number;
+  structuralToLeafRatio: number;
+}): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  diagnostics.visualScale = {
+    ...input,
+    recordedAt: nowMs(),
+  };
 };
 
 export const recordLayoutStart = (input: {

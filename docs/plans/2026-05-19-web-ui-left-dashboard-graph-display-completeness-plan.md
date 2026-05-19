@@ -129,21 +129,21 @@ Post-load reconnect root cause chain:
 
 ## Acceptance Criteria
 
-- [ ] The left dashboard shows node type controls for all node labels present in the loaded graph, with counts.
-- [ ] The left dashboard shows relationship type controls for all relationship types present in the loaded graph, with counts.
-- [ ] Node/edge controls are driven by the loaded graph plus a maintained display policy, not by an incomplete fixed list.
+- [x] The left dashboard shows node type controls for all node labels present in the loaded graph, with counts.
+- [x] The left dashboard shows relationship type controls for all relationship types present in the loaded graph, with counts.
+- [x] Node/edge controls are driven by the loaded graph plus a maintained display policy, not by an incomplete fixed list.
 - [x] Color legend reflects the labels and edge types currently visible or available in the dashboard.
 - [x] If community coloring is active, the legend states or shows that symbol colors can be community colors instead of static node-type colors.
-- [ ] The graph adapter preserves or explicitly aggregates parallel relationships between the same source and target without losing relationship type information.
-- [ ] The edge visibility filter works for every relationship type in the loaded graph.
-- [ ] The node visibility filter works for every node label in the loaded graph.
+- [x] The graph adapter preserves or explicitly aggregates parallel relationships between the same source and target without losing relationship type information.
+- [x] The edge visibility filter works for every relationship type in the loaded graph.
+- [x] The node visibility filter works for every node label in the loaded graph.
 - [x] Layout hierarchy uses owner/process/route/member relationships where they materially improve graph readability.
-- [ ] Tests fail if a graph label or relationship type appears in fixtures but is not representable in the dashboard.
-- [ ] Unknown future node labels and relationship types render with safe fallback labels, colors, icons, sizes, and edge styles.
-- [ ] Node size scaling is bounded and proportional across structural, metadata, and code nodes; the purple oversized-node screenshot is reproduced or explained, then fixed.
-- [ ] The Web UI remains connected after graph load and layout; `Server connection lost - reconnecting...` must not appear during the post-load stability window.
-- [ ] Full build passes before the test suite.
-- [ ] Test suite includes e2e coverage for node type toggles, edge type toggles, legend behavior, visual-scale bounds, and post-load connection stability.
+- [x] Tests fail if a graph label or relationship type appears in fixtures but is not representable in the dashboard.
+- [x] Unknown future node labels and relationship types render with safe fallback labels, colors, icons, sizes, and edge styles.
+- [x] Node size scaling is bounded and proportional across structural, metadata, and code nodes; the purple oversized-node screenshot is reproduced or explained, then fixed.
+- [x] The Web UI remains connected after graph load and layout; `Server connection lost - reconnecting...` must not appear during the post-load stability window.
+- [x] Full build passes before the test suite.
+- [x] Test suite includes e2e coverage for node type toggles, edge type toggles, legend behavior, visual-scale bounds, and post-load connection stability.
 
 ## Phase 1 - Inventory, Root-Cause Review, and Display Policy
 
@@ -206,13 +206,13 @@ Post-load reconnect root cause chain:
 
 ## Phase 7 - Validation
 
-- [ ] [P7-A] Run full build before tests.
-- [ ] [P7-B] Run focused Web UI unit tests for constants, filter panel, graph adapter, edge visibility, legend behavior, node-size scaling, and connection stability helpers.
-- [ ] [P7-C] Add and run an e2e test that loads a graph fixture with uncommon node/edge types, toggles them in the left dashboard, and verifies visible graph behavior.
-- [ ] [P7-D] Add and run an e2e visual-scale check using the oversized-node screenshot scenario or an equivalent deterministic graph fixture.
-- [ ] [P7-E] Add and run an e2e post-load connection stability check.
-- [ ] [P7-F] Run analyze or graph-loading validation as needed to verify the real current graph still loads.
-- [ ] [P7-G] Record validation evidence and any performance benchmark results.
+- [x] [P7-A] Run full build before tests. Result: `go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix` and `npm --prefix avmatrix-web run build` passed before validation tests.
+- [x] [P7-B] Run focused Web UI unit tests for constants, filter panel, graph adapter, edge visibility, legend behavior, node-size scaling, and connection stability helpers. Result: focused tests passed, followed by full Web unit suite `41` files / `315` tests passed.
+- [x] [P7-C] Add and run an e2e test that loads a graph fixture with uncommon node/edge types, toggles them in the left dashboard, and verifies visible graph behavior. Result: e2e toggles uncommon `Property` node and `Accesses` edge controls and verifies `aria-pressed` state plus legend entries.
+- [x] [P7-D] Add and run an e2e visual-scale check using the oversized-node screenshot scenario or an equivalent deterministic graph fixture. Result: e2e asserts loaded graph visual-scale diagnostics stay within max-size and ratio bounds.
+- [x] [P7-E] Add and run an e2e post-load connection stability check. Result: e2e waits through a `30s` active-layout stability window and confirms `0` heartbeat reconnects and `0` reconnect-banner shows.
+- [x] [P7-F] Run analyze or graph-loading validation as needed to verify the real current graph still loads. Result: final analyze produced `20,611` nodes and `51,507` relationships; e2e graph load passed against the running backend/frontend.
+- [x] [P7-G] Record validation evidence and any performance benchmark results. Result: final benchmark/evidence ledgers record build, unit, Go, e2e, analyze, and visual-scale diagnostics.
 
 Minimum validation commands, unless the implementation discovers a repo-specific replacement:
 
@@ -223,8 +223,8 @@ Minimum validation commands, unless the implementation discovers a repo-specific
 
 ## Phase 8 - Closure
 
-- [ ] [P8-A] Update this plan checklist after each completed slice.
-- [ ] [P8-B] Update the benchmark ledger for inventory counts, graph-adapter performance, node-size ratio, and post-load connection stability measurements.
-- [ ] [P8-C] Update the evidence ledger for commands, tests, screenshots or e2e artifacts, and implementation notes.
-- [ ] [P8-D] Commit each completed implementation slice.
-- [ ] [P8-E] Final closure: confirm dashboard node/edge/legend completeness, edge preservation, node visual-scale proportionality, connection stability, full build, unit tests, and e2e tests.
+- [x] [P8-A] Update this plan checklist after each completed slice.
+- [x] [P8-B] Update the benchmark ledger for inventory counts, graph-adapter performance, node-size ratio, and post-load connection stability measurements.
+- [x] [P8-C] Update the evidence ledger for commands, tests, screenshots or e2e artifacts, and implementation notes.
+- [x] [P8-D] Commit each completed implementation slice.
+- [x] [P8-E] Final closure: confirm dashboard node/edge/legend completeness, edge preservation, node visual-scale proportionality, connection stability, full build, unit tests, and e2e tests.

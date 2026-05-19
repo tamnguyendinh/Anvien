@@ -17,10 +17,14 @@ import {
   knowledgeGraphToGraphology,
   filterGraphByDepth,
   filterGraphByLabels,
+  MAX_RENDERED_NODE_SIZE,
   SigmaNodeAttributes,
   SigmaEdgeAttributes,
 } from '../lib/graph-adapter';
-import { recordGraphConversion } from '../lib/runtime-diagnostics';
+import {
+  recordGraphConversion,
+  recordVisualScale,
+} from '../lib/runtime-diagnostics';
 import type { GraphNode } from '@/generated/avmatrix-contracts';
 import { QueryFAB } from './QueryFAB';
 import Graph from 'graphology';
@@ -190,6 +194,28 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       startedAt: conversionStartedAt,
       nodeCount: graph.nodes.length,
       relationshipCount: graph.relationships.length,
+    });
+    const nodeSizes = sigmaGraph
+      .nodes()
+      .map((nodeId) => sigmaGraph.getNodeAttribute(nodeId, 'size'))
+      .filter((size): size is number => typeof size === 'number');
+    const minNodeSize = nodeSizes.reduce(
+      (minimum, size) => Math.min(minimum, size),
+      Number.POSITIVE_INFINITY,
+    );
+    const maxNodeSize = nodeSizes.reduce(
+      (maximum, size) => Math.max(maximum, size),
+      0,
+    );
+    recordVisualScale({
+      nodeCount: sigmaGraph.order,
+      minNodeSize: Number.isFinite(minNodeSize) ? minNodeSize : 0,
+      maxNodeSize,
+      maxRenderedNodeSizeCap: MAX_RENDERED_NODE_SIZE,
+      structuralToLeafRatio:
+        Number.isFinite(minNodeSize) && minNodeSize > 0
+          ? maxNodeSize / minNodeSize
+          : 0,
     });
     setSigmaGraph(sigmaGraph);
   }, [graph, nodeById, setSigmaGraph]);

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 )
 
 type fakeAdapter struct {
+	mu     sync.Mutex
 	status Status
 	runs   []string
 	run    func(ctx context.Context, job *Job, request ChatRequest, chatContext ChatContext) error
@@ -42,13 +44,21 @@ func (a *fakeAdapter) ExecutionMode() ExecutionMode              { return Execut
 func (a *fakeAdapter) RuntimeEnvironment() RuntimeEnvironment    { return RuntimeNative }
 func (a *fakeAdapter) GetStatus(context.Context) (Status, error) { return a.status, nil }
 func (a *fakeAdapter) RunChat(ctx context.Context, job *Job, request ChatRequest, chatContext ChatContext) error {
+	a.mu.Lock()
 	a.runs = append(a.runs, request.Message)
+	a.mu.Unlock()
 	if a.run != nil {
 		return a.run(ctx, job, request, chatContext)
 	}
 	<-ctx.Done()
 	job.Emit(Event{Type: "cancelled", Reason: cancelMessage(ctx)})
 	return nil
+}
+
+func (a *fakeAdapter) runMessages() string {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return strings.Join(a.runs, ",")
 }
 
 func TestControllerReportsRepoBindingStatus(t *testing.T) {
@@ -141,6 +151,15 @@ func TestControllerCancelsPreviousSessionForSameRepo(t *testing.T) {
 	store := repo.NewStore(filepath.Join(t.TempDir(), "home"))
 	repoPath := createSessionRepo(t, store, "demo", true)
 	adapter := newFakeAdapter()
+	firstStarted := make(chan struct{})
+	adapter.run = func(ctx context.Context, job *Job, request ChatRequest, chatContext ChatContext) error {
+		if request.Message == "first" {
+			close(firstStarted)
+		}
+		<-ctx.Done()
+		job.Emit(Event{Type: "cancelled", Reason: cancelMessage(ctx)})
+		return nil
+	}
 	controller := NewController(adapter, store)
 	defer controller.Dispose()
 
@@ -148,16 +167,23 @@ func TestControllerCancelsPreviousSessionForSameRepo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("start first: %v", err)
 	}
+	select {
+	case <-firstStarted:
+	case <-time.After(time.Second):
+		t.Fatal("first chat did not start")
+	}
+
 	second, _, err := controller.StartChat(context.Background(), ChatRequest{RepoPath: repoPath, Message: "second"})
 	if err != nil {
 		t.Fatalf("start second: %v", err)
 	}
 
 	waitFor(t, func() bool { return first.Status == JobCancelled })
+	waitFor(t, func() bool { return adapter.runMessages() == "first,second" })
 	if second.Status != JobRunning {
 		t.Fatalf("second status = %s, want running", second.Status)
 	}
-	if got := strings.Join(adapter.runs, ","); got != "first,second" {
+	if got := adapter.runMessages(); got != "first,second" {
 		t.Fatalf("runs = %s", got)
 	}
 }

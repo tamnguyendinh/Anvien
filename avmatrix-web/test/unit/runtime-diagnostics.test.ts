@@ -5,6 +5,7 @@ import {
   recordLayoutStart,
   recordLayoutStop,
   recordReconnectBannerState,
+  recordVisualScale,
   resetWebRuntimeDiagnostics,
 } from '../../src/lib/runtime-diagnostics';
 
@@ -43,6 +44,22 @@ describe('runtime diagnostics', () => {
     expect(diagnostics?.layout.isRunning).toBe(false);
     expect(diagnostics?.layout.lastReason).toBe('duration-elapsed');
     expect(diagnostics?.layout.lastNoverlapMs).toBe(12);
+  });
+
+  it('records visual-scale bounds for e2e assertions', () => {
+    recordVisualScale({
+      nodeCount: 20_000,
+      minNodeSize: 1.5,
+      maxNodeSize: 4.5,
+      maxRenderedNodeSizeCap: 9,
+      structuralToLeafRatio: 3,
+    });
+
+    const diagnostics = getWebRuntimeDiagnostics();
+    expect(diagnostics?.visualScale.nodeCount).toBe(20_000);
+    expect(diagnostics?.visualScale.maxNodeSize).toBe(4.5);
+    expect(diagnostics?.visualScale.maxRenderedNodeSizeCap).toBe(9);
+    expect(diagnostics?.visualScale.structuralToLeafRatio).toBe(3);
   });
 
   it('counts reconnect banner transitions without double-counting the same state', () => {

@@ -551,15 +551,76 @@ Notes:
 
 ## B5 - Final Benchmark
 
-Status: pending
+Status: completed
 
-Record final measurements after all implementation slices:
+Date: 2026-05-19
 
-- dashboard node type completeness;
-- dashboard edge type completeness;
-- legend completeness;
-- graph adapter conversion performance;
-- parallel relationship preservation;
-- node visual-scale proportionality;
-- post-load connection stability;
-- large-graph load/render capacity if measured.
+Final AVmatrix-GO analyze:
+
+```text
+files: scanned=688 parsed=530 unsupported=158 failed=0
+graph: nodes=20,611 relationships=51,507
+```
+
+Final dashboard and graph-rendering coverage:
+
+| Metric | Result |
+|---|---:|
+| Current graph node labels displayed as controls | `16 / 16` |
+| Current graph relationship types displayed as controls | `11 / 11` |
+| Representative fixture node controls | `37 / 37` |
+| Representative fixture relationship controls | `23 / 23` |
+| Current graph node legend entries with counts | `16 / 16` |
+| Current graph edge legend entries with counts | `11 / 11` |
+| Parallel relationships preserved | `51,176 / 51,176` in measured adapter slice |
+| Relationship loss in adapter slice | `0` |
+| Parallel source-target pairs preserved | `1,412` |
+| Adapter conversion time in measured slice | `478.37ms` |
+
+Final visual-scale and large-graph browser diagnostics:
+
+```json
+{
+  "repo": "Restaurant_manager",
+  "graphConversion": {
+    "count": 2,
+    "lastMs": 1236.6,
+    "maxMs": 2059.9,
+    "lastNodeCount": 78350,
+    "lastRelationshipCount": 130497
+  },
+  "visualScale": {
+    "nodeCount": 78350,
+    "minNodeSize": 1,
+    "maxNodeSize": 4.5,
+    "maxRenderedNodeSizeCap": 9,
+    "structuralToLeafRatio": 4.5
+  }
+}
+```
+
+Final connection-stability result:
+
+| Metric | Result |
+|---|---:|
+| Stability window after active layout start | `30,000ms` |
+| Old launcher heartbeat shutdown threshold | `15,000ms` |
+| Heartbeat reconnects during window | `0` |
+| Reconnect banner shows during window | `0` |
+| Backend PID before/after measured stability run | `524 / 524` |
+
+Final validation summary:
+
+| Command | Result |
+|---|---|
+| `go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix` | passed |
+| `npm --prefix avmatrix-web run build` | passed, built in `23.97s` |
+| `npm --prefix avmatrix-web run test` | passed, `41` files / `315` tests, `40.14s` |
+| `go test ./cmd/... ./internal/... -count=1` | passed |
+| `npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "Graph Dashboard Controls" --workers=1 --timeout=120000` | passed, `2 / 2`, `1.6m` |
+| `npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000` | passed, `1 / 1`, `1.2m` |
+
+Test stability fixes completed during final validation:
+
+- `internal/session/controller_test.go`: waits for the first chat goroutine to start before asserting cancellation order and protects fake adapter run records with a mutex.
+- `internal/embeddings/http_client_test.go`: replaces a 1ms `httptest.Server` timeout race with a deterministic blocking `RoundTripper`, proving timeout errors are not retried.

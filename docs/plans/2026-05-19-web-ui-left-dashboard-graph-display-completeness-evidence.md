@@ -854,17 +854,124 @@ Benchmark ledger updated:
 
 ## E4 - Final Closure Evidence
 
-Status: pending
+Status: completed
 
-Record final validation:
+Date: 2026-05-19
 
-- full build result;
-- unit test result;
-- e2e result;
-- dashboard node type completeness;
-- dashboard edge type completeness;
-- legend completeness;
-- edge preservation or aggregation result;
-- visual-scale proportionality result;
-- post-load connection stability result;
-- final commit hashes.
+Final implementation scope added after `E3E`:
+
+- `avmatrix-web/src/lib/runtime-diagnostics.ts`
+- `avmatrix-web/src/components/GraphCanvas.tsx`
+- `avmatrix-web/src/components/FileTreePanel.tsx`
+- `avmatrix-web/e2e/server-connect.spec.ts`
+- `avmatrix-web/test/unit/GraphCanvas.selection-performance.test.tsx`
+- `avmatrix-web/test/unit/runtime-diagnostics.test.ts`
+- `internal/session/controller_test.go`
+- `internal/embeddings/http_client_test.go`
+- plan, benchmark, and evidence ledgers
+
+Implementation notes:
+
+- Added visual-scale diagnostics to `window.__AVMATRIX_WEB_DIAGNOSTICS__` so e2e can assert loaded graph node scale bounds.
+- Added `aria-pressed` to Node Type and Edge Type controls so e2e can verify toggle state.
+- Added e2e coverage for uncommon `Property` node and `Accesses` edge controls.
+- Added e2e visual-scale coverage using loaded graph diagnostics.
+- Fixed two validation-blocking flaky tests:
+  - `internal/session/controller_test.go` now waits for the first chat to actually start before starting the second chat and protects fake adapter run records with a mutex.
+  - `internal/embeddings/http_client_test.go` now uses a deterministic blocking `RoundTripper` for timeout/no-retry behavior instead of racing a `1ms` timeout against an `httptest.Server` handler.
+
+Final AVmatrix analyze:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+```
+
+Result:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=688 parsed=530 unsupported=158 failed=0
+graph: nodes=20611 relationships=51507 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Build before final tests:
+
+```powershell
+go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix
+npm --prefix avmatrix-web run build
+```
+
+Results:
+
+```text
+go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix: passed
+npm --prefix avmatrix-web run build: passed, built in 23.97s
+```
+
+Focused validation:
+
+```powershell
+npm --prefix avmatrix-web run test -- test/unit/runtime-diagnostics.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx
+npm --prefix avmatrix-web run test -- test/unit/GraphCanvas.selection-performance.test.tsx test/unit/runtime-diagnostics.test.ts
+go test ./internal/session -run TestControllerCancelsPreviousSessionForSameRepo -count=10 -v
+go test ./internal/embeddings -run TestHTTPEmbedderDoesNotRetryTimeout -count=10 -v
+```
+
+Results:
+
+```text
+runtime/FileTreePanel focused Web tests: 2 files passed, 5 tests passed
+GraphCanvas/runtime focused Web tests: 2 files passed, 5 tests passed
+session cancellation targeted Go test: passed 10 / 10
+embedding timeout targeted Go test: passed 10 / 10
+```
+
+Full validation:
+
+```powershell
+npm --prefix avmatrix-web run test
+go test ./cmd/... ./internal/... -count=1
+npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "Graph Dashboard Controls" --workers=1 --timeout=120000
+npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000
+```
+
+Results:
+
+```text
+npm --prefix avmatrix-web run test: passed, 41 files / 315 tests, duration 40.14s
+go test ./cmd/... ./internal/... -count=1: passed
+Graph Dashboard Controls e2e: passed, 2 / 2, duration 1.6m
+post-load connection stability e2e: passed, 1 / 1, duration 1.2m
+```
+
+Final browser visual-scale diagnostics:
+
+```json
+{
+  "repo": "Restaurant_manager",
+  "visualScale": {
+    "nodeCount": 78350,
+    "minNodeSize": 1,
+    "maxNodeSize": 4.5,
+    "maxRenderedNodeSizeCap": 9,
+    "structuralToLeafRatio": 4.5
+  },
+  "graphConversion": {
+    "count": 2,
+    "lastMs": 1236.6,
+    "maxMs": 2059.9,
+    "lastNodeCount": 78350,
+    "lastRelationshipCount": 130497
+  }
+}
+```
+
+Final closure result:
+
+- dashboard node controls: complete;
+- dashboard edge controls: complete;
+- legend counts and community-color distinction: complete;
+- parallel relationship preservation: complete;
+- visual-scale proportionality: complete;
+- post-load connection stability: complete;
+- full build, full Web unit, scoped Go suite, required e2e tests, and final analyze: passed.

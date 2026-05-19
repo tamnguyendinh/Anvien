@@ -546,6 +546,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                   key={label}
                   onClick={() => toggleLabelVisibility(label)}
                   title={`${label} (${count})`}
+                  aria-pressed={isVisible}
                   className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
                     isVisible
                       ? 'bg-base text-text-primary'
@@ -590,6 +591,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                     key={edgeType}
                     onClick={() => toggleEdgeVisibility(edgeType)}
                     title={`${info.label} (${count})`}
+                    aria-pressed={isVisible}
                     className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
                       isVisible
                         ? 'bg-base text-text-primary'

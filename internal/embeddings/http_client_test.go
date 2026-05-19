@@ -11,6 +11,12 @@ import (
 	"time"
 )
 
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
+
 func TestHTTPEmbedderPostsOpenAICompatibleBatches(t *testing.T) {
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -140,18 +146,17 @@ func TestHTTPEmbedderRetriesRetryableStatus(t *testing.T) {
 
 func TestHTTPEmbedderDoesNotRetryTimeout(t *testing.T) {
 	var calls int32
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	client := &http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
 		atomic.AddInt32(&calls, 1)
-		time.Sleep(30 * time.Millisecond)
-		_ = json.NewEncoder(w).Encode(embeddingResponse{Data: []embeddingItem{{Embedding: []float32{1, 2, 3}}}})
-	}))
-	defer server.Close()
+		<-req.Context().Done()
+		return nil, req.Context().Err()
+	})}
 
 	embedder := NewHTTPEmbedder(HTTPConfig{
-		BaseURL:    server.URL,
+		BaseURL:    "http://local-embedder.test",
 		Model:      "local-embedder",
 		Dimensions: 3,
-	}, server.Client())
+	}, client)
 	embedder.Timeout = time.Millisecond
 	embedder.MaxRetries = 3
 	embedder.RetryBackoff = -time.Nanosecond

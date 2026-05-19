@@ -23,6 +23,13 @@ type RuntimeDiagnostics = {
     lastNodeCount: number;
     lastRelationshipCount: number;
   };
+  visualScale: {
+    nodeCount: number;
+    minNodeSize: number;
+    maxNodeSize: number;
+    maxRenderedNodeSizeCap: number;
+    structuralToLeafRatio: number;
+  };
   layout: {
     starts: number;
     stops: number;
@@ -148,6 +155,60 @@ test.describe('Server Connection & Graph Loading', () => {
     expect(diagnostics?.graphConversion.lastRelationshipCount).toBeGreaterThan(0);
     expect(diagnostics?.layout.lastDurationBudgetMs).toBeGreaterThan(0);
     expect(diagnostics?.layout.lastNoverlapMs).toBeGreaterThanOrEqual(0);
+  });
+});
+
+test.describe('Graph Dashboard Controls', () => {
+  test('toggles uncommon node and edge types from the left dashboard', async ({ page }) => {
+    await waitForGraphLoaded(page);
+    await page.getByRole('button', { name: 'Filters' }).click();
+
+    const propertyControl = page.locator('button[title^="Property ("]').first();
+    const accessesControl = page.locator('button[title^="Accesses ("]').first();
+    await expect(propertyControl).toBeVisible({ timeout: 10_000 });
+    await expect(accessesControl).toBeVisible({ timeout: 10_000 });
+
+    const initialPropertyState = await propertyControl.getAttribute('aria-pressed');
+    expect(initialPropertyState).toMatch(/^(true|false)$/);
+    await propertyControl.click();
+    await expect(propertyControl).toHaveAttribute(
+      'aria-pressed',
+      initialPropertyState === 'true' ? 'false' : 'true',
+    );
+    await propertyControl.click();
+    await expect(propertyControl).toHaveAttribute('aria-pressed', initialPropertyState!);
+
+    const initialAccessesState = await accessesControl.getAttribute('aria-pressed');
+    expect(initialAccessesState).toMatch(/^(true|false)$/);
+    await accessesControl.click();
+    await expect(accessesControl).toHaveAttribute(
+      'aria-pressed',
+      initialAccessesState === 'true' ? 'false' : 'true',
+    );
+    await accessesControl.click();
+    await expect(accessesControl).toHaveAttribute('aria-pressed', initialAccessesState!);
+
+    await expect(page.locator('[title^="Legend node Property ("]').first()).toBeVisible();
+    await expect(page.locator('[title^="Legend edge Accesses ("]').first()).toBeVisible();
+  });
+
+  test('keeps loaded graph node visual scale bounded', async ({ page }) => {
+    await waitForGraphLoaded(page);
+
+    await expect
+      .poll(
+        async () => (await getRuntimeDiagnostics(page))?.visualScale.nodeCount ?? 0,
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThan(0);
+
+    const diagnostics = await getRuntimeDiagnostics(page);
+    const visualScale = diagnostics!.visualScale;
+    const expectedMaxSize = visualScale.nodeCount > 20_000 ? 4.5 : 12;
+
+    expect(visualScale.maxNodeSize).toBeLessThanOrEqual(expectedMaxSize);
+    expect(visualScale.maxRenderedNodeSizeCap).toBe(9);
+    expect(visualScale.structuralToLeafRatio).toBeLessThanOrEqual(6);
   });
 });
 
