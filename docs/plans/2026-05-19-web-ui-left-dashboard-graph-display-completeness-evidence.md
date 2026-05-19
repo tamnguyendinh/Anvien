@@ -1172,3 +1172,20 @@ Doc-only update:
 - added the left dashboard resize issue to the problem statement, scope, guardrails, acceptance criteria, benchmark policy, and checklist;
 - separated the work into Phase 10 so it can be implemented independently from the top bar Back navigation work;
 - no AVmatrix analysis was run because this is a doc-only plan update.
+
+## E7 - Plan Review Correction
+
+Date: 2026-05-19
+
+Review finding:
+
+- the plan had been reopened with pending Phase 9 and Phase 10 work, but the global acceptance criteria still showed final build/e2e validation as completed;
+- Phase 8 was also labeled as a generic closure, which could be misread as final closure for the whole reopened plan.
+
+Correction:
+
+- renamed the plan heading to cover both graph dashboard display and Web UI usability;
+- clarified that Phase 8 is historical closure for the already-completed dashboard/display slice;
+- changed final build/e2e acceptance back to pending for the reopened plan;
+- added Phase 11 as the final re-closure gate after top bar Back navigation and left dashboard resize are implemented;
+- no AVmatrix analysis was run because this is a doc-only plan review update.

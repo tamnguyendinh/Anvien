@@ -1,4 +1,4 @@
-# Web UI Left Dashboard Graph Display Completeness Plan
+# Web UI Graph Dashboard Display and Usability Plan
 
 Date: 2026-05-19
 
@@ -21,9 +21,9 @@ Companion files:
 
 ## Problem
 
-The Web UI left dashboard does not yet show or control the graph completely enough for a user to understand what is actually in the loaded graph.
+The Web UI graph dashboard and tool shell do not yet expose enough control and navigation affordances for a user to understand and operate the loaded graph efficiently.
 
-This is not a Go-language problem and not primarily a source-of-truth wording problem. The practical problem is display completeness:
+This is not a Go-language problem and not primarily a source-of-truth wording problem. The practical problem is Web UI graph display completeness plus the immediate usability controls around that graph experience:
 
 - the Node Types section exposes only a small fixed subset of graph node labels;
 - the Edge Types section exposes only a small fixed subset of graph relationship types;
@@ -38,7 +38,7 @@ The UI must remain language-agnostic. AVmatrix supports many languages, and the 
 
 ## Scope Boundary
 
-This plan covers Web UI graph display, filtering, legend, and canvas adapter behavior:
+This plan covers Web UI graph display, filtering, legend, canvas adapter behavior, top bar navigation, and left dashboard layout behavior:
 
 - `avmatrix-web/src/lib/constants.ts`
 - `avmatrix-web/src/components/Header.tsx`
@@ -156,8 +156,8 @@ Post-load reconnect root cause chain:
 - [ ] The Start-screen return behavior has unit or e2e coverage and does not introduce a false reconnect-banner failure during navigation.
 - [ ] The left dashboard can be resized by mouse/pointer drag within bounded min/max widths.
 - [ ] Resizing the left dashboard does not hide controls, overlap the graph canvas, or break node/edge/legend interactions.
-- [x] Full build passes before the test suite.
-- [x] Test suite includes e2e coverage for node type toggles, edge type toggles, legend behavior, visual-scale bounds, and post-load connection stability.
+- [ ] Full build passes before the final test suite after the remaining Phase 9 and Phase 10 implementation slices.
+- [ ] Test suite includes e2e coverage for node type toggles, edge type toggles, legend behavior, visual-scale bounds, post-load connection stability, top bar Back navigation, and left dashboard resize behavior.
 
 ## Phase 1 - Inventory, Root-Cause Review, and Display Policy
 
@@ -236,13 +236,15 @@ Minimum validation commands, unless the implementation discovers a repo-specific
 - `npm --prefix avmatrix-web run test`
 - `npm --prefix avmatrix-web run test:e2e`
 
-## Phase 8 - Closure
+## Phase 8 - Historical Closure for Completed Dashboard Slice
+
+Phase 8 is the historical closure for the already-completed dashboard display, visual-scale, and connection-stability work. It is not the final closure for this reopened plan because Phase 9 and Phase 10 are now pending.
 
 - [x] [P8-A] Update this plan checklist after each completed slice.
 - [x] [P8-B] Update the benchmark ledger for inventory counts, graph-adapter performance, node-size ratio, and post-load connection stability measurements.
 - [x] [P8-C] Update the evidence ledger for commands, tests, screenshots or e2e artifacts, and implementation notes.
 - [x] [P8-D] Commit each completed implementation slice.
-- [x] [P8-E] Final closure: confirm dashboard node/edge/legend completeness, edge preservation, node visual-scale proportionality, connection stability, full build, unit tests, and e2e tests.
+- [x] [P8-E] Historical closure: confirm dashboard node/edge/legend completeness, edge preservation, node visual-scale proportionality, connection stability, full build, unit tests, and e2e tests for the completed dashboard slice.
 
 ## Phase 9 - Top Bar Start-Screen Navigation
 
@@ -262,3 +264,11 @@ Minimum validation commands, unless the implementation discovers a repo-specific
 - [ ] [P10-E] Add unit and/or e2e coverage for drag resizing, width bounds, and continued dashboard interaction after resize.
 - [ ] [P10-F] Run a full build before tests, including the required e2e test, and record evidence. Record benchmark data only if resizing changes render/load performance or layout stability metrics.
 - [ ] [P10-G] Commit the implementation slice after the checklist, benchmark ledger, and evidence ledger are updated.
+
+## Phase 11 - Final Re-Closure
+
+- [ ] [P11-A] Confirm Phase 9 and Phase 10 are complete and their checklist items, evidence, and benchmark policy entries are updated.
+- [ ] [P11-B] Run full build before the final test suite.
+- [ ] [P11-C] Run unit tests and e2e tests covering the existing graph dashboard behavior plus top bar Back navigation and left dashboard resize behavior.
+- [ ] [P11-D] Confirm the Web UI still loads dense graphs, preserves dashboard controls, avoids reconnect-banner regressions, and keeps the graph canvas usable after resizing.
+- [ ] [P11-E] Commit final closure docs after validation evidence is recorded.
