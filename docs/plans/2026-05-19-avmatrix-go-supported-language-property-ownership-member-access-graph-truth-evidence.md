@@ -96,6 +96,7 @@ Initial hypothesis:
 | P2 validation | full build, focused tests, analyze e2e, property gate e2e, benchmark update, impact check | recorded | done |
 | P2-D Go ownership classification | Go anonymous struct fields classified as true no-edge | recorded | done |
 | P2-E remaining ownership clusters | nested TS/JS shape ownership and inline type-literal no-edge classification | recorded | done |
+| P3-A access taxonomy | post-ownership access candidate audit | recorded | done |
 | P3 access implementation | pending | pending | open |
 | P3 validation | pending | pending | open |
 | P4 consumer checks | pending | pending | open |
@@ -789,3 +790,71 @@ affected process names:
 ```
 
 Interpretation: medium risk is expected because this slice changes TS/JS provider ownership and the property/access audit classifier. The slice is covered by full build, TS/JS provider tests, graphaccuracy tests, analyze e2e on both workloads, and final property gate outputs showing `real_edge_missing=0` with invalid edges still `0`.
+
+## P3-A Access Taxonomy Evidence
+
+Artifacts:
+
+- `.tmp\p3a-access-candidates-website-20260519.json`
+- `.tmp\p3a-access-candidates-avmatrix-go-20260519.json`
+
+Commands:
+
+```powershell
+go run ./cmd/access-candidate-audit -repo E:\Website -out .tmp\p3a-access-candidates-website-20260519.json -max-examples 20
+go run ./cmd/access-candidate-audit -repo E:\AVmatrix-GO -out .tmp\p3a-access-candidates-avmatrix-go-20260519.json -max-examples 20
+```
+
+Website result:
+
+```text
+wrote .tmp\p3a-access-candidates-website-20260519.json
+accessCandidates.total=24542 resolved=3 unresolved=24539 analyzeMillis=6839 resolvedAccesses=3 unresolvedReferences=64274
+language.javascript.accessCandidates=231 resolved=0 unresolved=231
+language.typescript.accessCandidates=24311 resolved=3 unresolved=24308
+reason.external_library_type=9660
+reason.missing_owner_link=1
+reason.missing_receiver_type=13512
+reason.resolved=3
+reason.unsupported_syntax=1313
+```
+
+AVmatrix-GO result:
+
+```text
+wrote .tmp\p3a-access-candidates-avmatrix-go-20260519.json
+accessCandidates.total=21132 resolved=5128 unresolved=16004 analyzeMillis=5227 resolvedAccesses=5128 unresolvedReferences=50360
+language.go.accessCandidates=19093 resolved=4991 unresolved=14102
+language.typescript.accessCandidates=2039 resolved=137 unresolved=1902
+reason.external_library_type=3619
+reason.false_positive_candidate=15
+reason.missing_owner_link=10
+reason.missing_receiver_type=11436
+reason.resolved=5128
+reason.unsupported_syntax=910
+```
+
+Representative samples:
+
+```text
+Website missing_receiver_type:
+- app/(account)/dashboard/billing/invoices/[invoiceId]/document/route.ts:123 receiver=result.model name=invoices
+- app/(account)/dashboard/billing/invoices/[invoiceId]/document/route.ts:137 receiver=invoice name=invoiceId
+
+Website missing_owner_link:
+- modules/account-portal/server/profile/account-settings-write-rejection.ts:13 receiver=this name=name
+
+AVmatrix-GO missing_receiver_type:
+- avmatrix-launcher/server-wrapper/main.go:29 receiver=cmd name=Dir
+- avmatrix-launcher/server-wrapper/main.go:54 receiver=os name=O_CREATE
+
+AVmatrix-GO missing_owner_link:
+- avmatrix-web/src/components/FileTreePanel.tsx:291 receiver=treeNode.graphNode name=id
+- avmatrix-web/src/core/llm/session-client.ts:18 receiver=this name=name
+```
+
+Interpretation:
+
+- The next large access blocker is `missing_receiver_type`.
+- `missing_owner_link` is now small enough to handle after the receiver-type slice or as a focused cleanup.
+- `external_library_type` and `unsupported_syntax` remain out of scope for P3-B because they need import/library modeling or richer receiver expression parsing.

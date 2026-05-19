@@ -166,7 +166,7 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 
 ## Phase 3 - Cross-Language Member Access Resolution
 
-- [ ] [P3-A] Classify member access samples that should resolve after Phase 2 ownership is available. Include explicit receiver types, `this`/`self`/receiver access, typed parameter access, typed local variable access, constructor assignment, return-value/initializer-derived receiver type, and imported type access where supported.
+- [x] [P3-A] Classify member access samples that should resolve after Phase 2 ownership is available. Result: post-Phase-2 access audit recorded Website `total=24,542`, `resolved=3`, `missing_receiver_type=13,512`, `missing_owner_link=1`; AVmatrix-GO `total=21,132`, `resolved=5,128`, `missing_receiver_type=11,436`, `missing_owner_link=10`. The next large target remains receiver type binding, not owner-link expansion.
 - [ ] [P3-B] Implement the first large defensible access-resolution cluster around explicit receiver type bindings. Initial measurable target: reduce `missing_receiver_type` for typed local/parameter/receiver cases without converting `external_library_type` or `unsupported_syntax` into noisy edges.
 - [ ] [P3-C] Add focused tests for every access-resolution family closed in [P3-B].
 - [ ] [P3-D] Run access validation and record it. Required evidence: full build before tests, focused tests, CLI/runtime e2e, fresh graph snapshots for affected workloads, benchmark update, evidence update, and AVmatrix impact record.
@@ -204,7 +204,7 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P2-C | Validation | ownership slice | analyze/test/e2e recorded | recorded | recorded | `b91c2cd` | done |
 | P2-D | Ownership | Go anonymous struct property ownership | classify before linking | recorded | recorded | `0367bc1` | done |
 | P2-E | Ownership | remaining false-orphan ownership clusters | fixed or deferred with evidence | recorded | recorded | `de5f4d8` | done |
-| P3-A | Access | access sample taxonomy | resolvable families classified | pending | pending | pending | open |
+| P3-A | Access | post-ownership access sample taxonomy | resolvable families classified | recorded | recorded | pending | done |
 | P3-B | Access | large access-resolution cluster | defensible `ACCESSES` expansion | pending | pending | pending | open |
 | P3-C | Tests | access focused tests | resolved families covered | n/a | pending | pending | open |
 | P3-D | Validation | access slice | analyze/test/e2e recorded | pending | pending | pending | open |

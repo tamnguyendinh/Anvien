@@ -84,6 +84,7 @@ Every property/access gate benchmark row must include:
 | P2 ownership validation | `.tmp\p2-property-access-website-20260519.json`, `.tmp\p2-property-access-avmatrix-go-20260519.json` | Website `HAS_PROPERTY=5,129`, `real_edge_missing=392`, invalid edges `0`; AVmatrix-GO `HAS_PROPERTY=2,762`, `real_edge_missing=12`, invalid edges `0` | recorded |
 | P2-D Go anonymous struct classification | `.tmp\p2d-property-access-avmatrix-go-20260519.json` | Go `go_anonymous_struct_field=206`, Go `true_no_edge=206`, Go `unknown=0`; no new `HAS_PROPERTY` emitted | recorded |
 | P2-E remaining ownership clusters | `.tmp\p2e-property-access-website-20260519.json`, `.tmp\p2e-property-access-avmatrix-go-20260519.json` | Website `HAS_PROPERTY=5,922`, `real_edge_missing=0`; AVmatrix-GO `HAS_PROPERTY=2,769`, `real_edge_missing=0`; invalid edges `0` | recorded |
+| P3-A post-ownership access taxonomy | `.tmp\p3a-access-candidates-website-20260519.json`, `.tmp\p3a-access-candidates-avmatrix-go-20260519.json` | Website `total=24,542 resolved=3`; AVmatrix-GO `total=21,132 resolved=5,128`; biggest bucket remains `missing_receiver_type` | recorded |
 | P3 access validation | pending | `ACCESSES` expansion and precision | open |
 | P5 final gate | pending | final workload matrix | open |
 
@@ -393,3 +394,40 @@ P2-E interpretation:
 - Nested TS/JS object-shape members now use defensible `Property -> Property` ownership.
 - Inline anonymous TS/JS type literals are classified as true no-edge, not false missing owner.
 - Phase 2 ownership false-orphan denominator is now closed for the measured workloads: both have `real_edge_missing=0`.
+
+## P3-A Post-Ownership Access Taxonomy
+
+Date: 2026-05-19
+
+Artifacts:
+
+- Website access candidate output: `.tmp\p3a-access-candidates-website-20260519.json`
+- AVmatrix-GO access candidate output: `.tmp\p3a-access-candidates-avmatrix-go-20260519.json`
+
+Commands:
+
+```powershell
+go run ./cmd/access-candidate-audit -repo E:\Website -out .tmp\p3a-access-candidates-website-20260519.json -max-examples 20
+go run ./cmd/access-candidate-audit -repo E:\AVmatrix-GO -out .tmp\p3a-access-candidates-avmatrix-go-20260519.json -max-examples 20
+```
+
+Totals:
+
+| Workload | Analyze runtime | Access candidates | Resolved | Unresolved | Final graph resolved accesses | Resolution unresolved references |
+|---|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 6,839 ms | 24,542 | 3 | 24,539 | 3 | 64,274 |
+| `E:\AVmatrix-GO` | 5,227 ms | 21,132 | 5,128 | 16,004 | 5,128 | 50,360 |
+
+Reason taxonomy:
+
+| Workload | `resolved` | `missing_receiver_type` | `external_library_type` | `unsupported_syntax` | `missing_caller` | `missing_owner_link` | `false_positive_candidate` | `ambiguous_owner` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 3 | 13,512 | 9,660 | 1,313 | 53 | 1 | 0 | 0 |
+| `E:\AVmatrix-GO` | 5,128 | 11,436 | 3,619 | 910 | 14 | 10 | 15 | 0 |
+
+P3-A interpretation:
+
+- Phase 2 ownership fixes did not materially change Website access resolution; Website remains blocked by receiver type inference.
+- AVmatrix-GO resolved accesses increased from `5,112` to `5,128`, but `missing_receiver_type` remains the largest bucket.
+- `missing_owner_link` is small after Phase 2: Website `1`, AVmatrix-GO `10`.
+- P3-B should focus on explicit receiver type binding and locally inferable receiver types, while leaving `external_library_type` and `unsupported_syntax` out of scope.
