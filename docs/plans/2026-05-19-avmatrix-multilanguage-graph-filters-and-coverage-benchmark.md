@@ -2,7 +2,7 @@
 
 Date: 2026-05-19
 
-Status: active
+Status: reopened - zero-trust follow-up active
 
 Companion files:
 
@@ -452,7 +452,7 @@ The `17` ScopeIR target facts are larger than the `16` source-site count because
 
 ## B5 - Final Benchmark
 
-Status: recorded
+Status: recorded - superseded by zero-trust reopen
 
 Measurement date: 2026-05-19
 
@@ -524,3 +524,31 @@ Measurement date: 2026-05-19
 | `npm --prefix avmatrix-web run build` | passed |
 | `npm --prefix avmatrix-web test -- --run` | passed, `41` files / `325` tests |
 | `npm --prefix avmatrix-web run test:e2e -- shell-interactions.spec.ts -g "back button|resizes the left dashboard|displays graph filters" --workers=1 --timeout=120000` | passed, `3/3` |
+
+## B6 - Zero-Trust Reopen Benchmark Requirements
+
+Status: pending
+
+Measurement date: pending follow-up implementation
+
+The B5 metrics remain useful historical evidence, but they are no longer final closure metrics. The reopened phase must record the measurements below before the plan can close again.
+
+### Required Follow-Up Metrics
+
+| Metric | Required target |
+|---|---|
+| Explicit language/fact matrix entries | one explicit row/status for each supported language and claimed graph fact family |
+| Generic provider-backed fact-family inheritance | `0` unclassified provider-backed languages |
+| Explicit not-applicable/extraction-only/unresolved statuses | recorded for every language/fact combination that is not resolved graph output |
+| Deterministic large-graph e2e target | repo selected by stable name/path or committed fixture; no `repos[0]` dependency |
+| Optional external trace dependency | either removed from closure gates or replaced by committed/default fixture coverage |
+| `Restaurant_manager` TS heritage regression guard | all `17` audited `HeritageFact` target facts covered by deterministic test path or explicitly external-only audit |
+| Provider graph parity proof level | endpoint-level representative assertions recorded, or closure wording narrowed to representative/count-level proof |
+| Stale active/pending closure language | `0` occurrences outside historical baseline tables explicitly labeled as baseline |
+| Follow-up validation inventory | Go build/tests, Web build/tests, deterministic e2e, and optional external trace if still used |
+
+### Status Notes
+
+- Historical `pending` entries in B0 are baseline placeholders and may remain only if clearly treated as baseline history.
+- B5 is superseded because it overclaims final coverage matrix and deterministic e2e closure.
+- Final zero-trust closure must create a new benchmark section after the follow-up implementation and validation pass.

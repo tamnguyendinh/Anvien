@@ -2,7 +2,7 @@
 
 Date: 2026-05-19
 
-Status: active
+Status: reopened - zero-trust follow-up active
 
 Companion files:
 
@@ -844,7 +844,7 @@ Conclusion:
 
 Date: 2026-05-19
 
-Status: recorded
+Status: recorded - scope limited by zero-trust reopen
 
 ### Audit Commands
 
@@ -915,13 +915,13 @@ Conclusion:
 
 - non-TS/Go provider facts are not limited to a small subset; they are represented by provider-specific golden fixtures plus graph parity count tests;
 - script-container providers have graph parity count tests for embedded JS/TS extraction;
-- the remaining final task is closure validation and commit, not a known unclassified provider/fact-family gap.
+- the original audit treated the remaining work as closure validation and commit, but E17 reopens the proof level because some evidence is representative/count-level rather than explicit per-language/per-fact classification.
 
 ## E16 - Final Closure Evidence
 
 Date: 2026-05-19
 
-Status: recorded
+Status: recorded - superseded by zero-trust reopen
 
 ### Final Validation Commands
 
@@ -952,11 +952,61 @@ Result summary:
 - focused Playwright shell e2e passed `3/3`;
 - final graph and UI benchmark inventories are recorded in B5.
 
-Final conclusion:
+Superseded closure conclusion:
 
 - graph-present filters, legends, relationship counts, and display rows are aligned with generated contracts and graph payload reality;
 - raw graph compatibility semantics are preserved for downstream consumers, while Web display groups duplicate same-pair heritage compatibility edges;
 - `Restaurant_manager` TS heritage source sites emit ScopeIR `HeritageFact` data, resolved in-repo targets become graph edges, and external/imported platform targets are classified by unresolved/external policy;
-- supported-language coverage matrix and provider fact-family evidence have no remaining unclassified language entries;
+- supported-language coverage matrix and provider fact-family evidence were previously treated as having no remaining unclassified language entries, but E17 reopens the fact-family detail proof;
 - Back navigation, left dashboard resize, graph filter display, legend display, relationship toggles, and focus-depth behavior have unit/e2e evidence;
 - all completed implementation slices have been committed or are included in the final closure commit.
+
+## E17 - Zero-Trust Reopen Review
+
+Date: 2026-05-19
+
+Status: active
+
+Doc-only note:
+
+- no AVmatrix analysis was run for this review/update, per plan rule 6;
+- this section reopens closure claims using local file inspection and previously recorded evidence.
+
+### Review Finding Summary
+
+High:
+
+- `LANGUAGE_GRAPH_COVERAGE` is too generic for provider-backed languages. `internal/contracts/web_ui.go` uses shared provider-backed `SourceFactFamilies` values such as definitions/imports/calls/accesses/type-references/members/heritage-where-language-supports-it instead of explicit per-language/per-fact statuses. This does not fully satisfy the original P1-J/P3-B/P3-C/P7-E closure criteria.
+
+Medium:
+
+- The `Restaurant_manager` large-graph e2e smoke is not deterministic. `avmatrix-web/e2e/shell-interactions.spec.ts` chooses the first repository returned by `/api/repos`; the previous evidence only proves that `Restaurant_manager` happened to be first in that environment.
+- `TestExtractRestaurantManagerTypeScriptHeritageSites` is useful audit evidence, but it is optional unless `AVMATRIX_RESTAURANT_MANAGER_ROOT` is set. It is not currently a default regression gate.
+- The plan was marked complete while benchmark/evidence statuses and historical text still contained active/pending closure language.
+- Provider graph parity proof is partly count-level and representative. That may be acceptable if stated honestly, but it is not endpoint-level proof for every claimed source fact kind.
+
+### Reopen Decision
+
+The previous final closure is rescinded. The implementation evidence remains valid for the original trigger fixes and representative coverage, but the plan cannot claim full zero-trust multi-language graph coverage until Phase 8 closes these gaps.
+
+Checklist items reopened in the plan:
+
+- P1-J
+- P3-B
+- P3-C
+- P3-D
+- P3-J
+- P4-K
+- P5-E
+- P6-K
+- P7-E
+
+New follow-up requirements are tracked under Phase 8:
+
+- explicit per-language/per-fact graph coverage matrix;
+- contract tests preventing generic provider-backed coverage inheritance;
+- deterministic `Restaurant_manager` or equivalent large-graph e2e;
+- default or committed-fixture regression coverage for the `17` audited TypeScript heritage facts;
+- provider parity proof strengthened or wording narrowed to representative/count-level evidence;
+- benchmark/evidence drift cleanup;
+- final validation and zero-trust closure.
