@@ -210,10 +210,10 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P3-D | Validation | access slice | analyze/test/e2e recorded | recorded | recorded | `08649e6` | done |
 | P3-E | Access | post-receiver missing-owner-link bucket | close or reclassify bucket | recorded | recorded | `a908b2d` | done |
 | P3-F | Access | imported member receivers and remaining clusters | fixed or deferred with evidence | recorded | recorded | `9b58dea` | done |
-| P4-A | Consumer | context | new facts visible in context | n/a | recorded | pending | done |
-| P4-B | Consumer | impact | affected-symbol behavior checked | n/a | recorded | pending | done |
-| P4-C | Consumer | graph API/readback | new relationships preserved | n/a | recorded | pending | done |
-| P4-D | Consumer | precision/noise | concerns classified | n/a | recorded | pending | done |
+| P4-A | Consumer | context | new facts visible in context | n/a | recorded | `ba2a0da` | done |
+| P4-B | Consumer | impact | affected-symbol behavior checked | n/a | recorded | `ba2a0da` | done |
+| P4-C | Consumer | graph API/readback | new relationships preserved | n/a | recorded | `ba2a0da` | done |
+| P4-D | Consumer | precision/noise | concerns classified | n/a | recorded | `ba2a0da` | done |
 | P5-A | Final gate | workload matrix | final gate run | pending | pending | pending | open |
 | P5-B | Final benchmark | graph facts/performance | final metrics recorded | pending | pending | pending | open |
 | P5-C | Final evidence | proof set | final evidence recorded | n/a | pending | pending | open |
