@@ -183,12 +183,12 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 
 | ID | Area | Scope | Target | Benchmark | Evidence | Commit | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| P1-A | Gate | cross-language property/access audit | repeatable graph fact gate exists | n/a | recorded | pending current slice | done |
-| P1-B | Baseline | Website graph snapshot | cross-language baseline gate artifact recorded | recorded | recorded | pending current slice | done |
-| P1-C | Baseline | AVmatrix-GO graph snapshot | cross-language baseline gate artifact recorded | recorded | recorded | pending current slice | done |
-| P1-D | Taxonomy | property language/categories | source categories classified | recorded | recorded | pending current slice | done |
-| P1-E | Taxonomy | standalone properties | true/false/unknown orphan status classified | recorded | recorded | pending current slice | done |
-| P1-F | Taxonomy | missing/absent edges | real missing vs true no-edge classified | recorded | recorded | pending current slice | done |
+| P1-A | Gate | cross-language property/access audit | repeatable graph fact gate exists | n/a | recorded | `0972c3d` | done |
+| P1-B | Baseline | Website graph snapshot | cross-language baseline gate artifact recorded | recorded | recorded | `0972c3d` | done |
+| P1-C | Baseline | AVmatrix-GO graph snapshot | cross-language baseline gate artifact recorded | recorded | recorded | `0972c3d` | done |
+| P1-D | Taxonomy | property language/categories | source categories classified | recorded | recorded | `0972c3d` | done |
+| P1-E | Taxonomy | standalone properties | true/false/unknown orphan status classified | recorded | recorded | `0972c3d` | done |
+| P1-F | Taxonomy | missing/absent edges | real missing vs true no-edge classified | recorded | recorded | `0972c3d` | done |
 | P1-G | Taxonomy | unresolved member accesses | miss reasons classified | pending | pending | pending | open |
 | P1-H | Targets | measurable follow-up gates | Phase 2/3 targets defined | pending | pending | pending | open |
 | P2-A | Ownership | large false-orphan cluster | defensible `HAS_PROPERTY` expansion | pending | pending | pending | open |

@@ -23,7 +23,7 @@ Companion benchmark: [2026-05-19-avmatrix-go-supported-language-property-access-
 - `E:\Website` is retained as the TypeScript-heavy benchmark workload, not as the whole plan.
 - The new plan does not reopen the completed 2026-05-16 plan.
 - Plan creation commit: `b90a9de`.
-- Scope correction commit: pending current slice.
+- Scope correction commit: `0972c3d`.
 
 ## Baseline Audit Evidence
 
