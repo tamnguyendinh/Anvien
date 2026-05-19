@@ -1,4 +1,4 @@
-# AVmatrix Heritage Edge Semantics and Coverage Evidence Ledger
+# AVmatrix Multi-Language Graph Filters and Coverage Evidence Ledger
 
 Date: 2026-05-19
 
@@ -6,8 +6,8 @@ Status: active
 
 Companion files:
 
-- Plan: [2026-05-19-avmatrix-heritage-edge-semantics-and-coverage-plan.md](2026-05-19-avmatrix-heritage-edge-semantics-and-coverage-plan.md)
-- Benchmark ledger: [2026-05-19-avmatrix-heritage-edge-semantics-and-coverage-benchmark.md](2026-05-19-avmatrix-heritage-edge-semantics-and-coverage-benchmark.md)
+- Plan: [2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-plan.md](2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-plan.md)
+- Benchmark ledger: [2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-benchmark.md](2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-benchmark.md)
 
 ## Evidence Rules
 
@@ -21,9 +21,8 @@ Date: 2026-05-19
 
 Created file set:
 
-- `docs/plans/2026-05-19-avmatrix-heritage-edge-semantics-and-coverage-plan.md`
-- `docs/plans/2026-05-19-avmatrix-heritage-edge-semantics-and-coverage-benchmark.md`
-- `docs/plans/2026-05-19-avmatrix-heritage-edge-semantics-and-coverage-evidence.md`
+- original file set: `docs/plans/2026-05-19-avmatrix-heritage-edge-semantics-and-coverage-{plan,benchmark,evidence}.md`
+- current file set after scope correction: `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-{plan,benchmark,evidence}.md`
 
 Reason:
 
@@ -251,16 +250,125 @@ Date: 2026-05-19
 Correction:
 
 - the top bar Back navigation and left dashboard resize requirements were originally attached to the completed Web UI dashboard plan by mistake;
-- those requirements belong in this active heritage/display plan because the current implementation work is already touching Web UI relationship display and graph-inspection workflow;
-- the completed Web UI dashboard plan should remain historical closure for node/edge/legend completeness, visual scale, and reconnect stability.
+- those requirements belong in this active multi-language graph filters/display plan because the current implementation work is already touching Web UI relationship display and graph-inspection workflow;
+- the completed Web UI dashboard plan remains historical closure and is not reopened here.
 
 Requirements now carried by this plan:
 
 - add a Back arrow/button beside the `AVmatrix` top bar title to return to `Start-AVmatrix.html`;
-- avoid showing a false reconnect-banner error during intentional Back navigation;
+- avoid showing a stale connection-loss banner during intentional Back navigation;
 - make the left dashboard resizable by dragging its right boundary;
 - enforce min/max width bounds and verify the graph canvas remains usable after resizing.
 
 Doc-only note:
 
 - no AVmatrix analysis was run for this documentation correction.
+
+## E9 - Supported-Language Contract Scope Correction
+
+Date: 2026-05-19
+
+Correction:
+
+- the graph filter/fact fix cannot be bounded to TypeScript, Go, or heritage relationships because AVmatrix declares a multi-language code surface;
+- TypeScript missing heritage and Go duplicate `EXTENDS` / `INHERITS` are trigger examples, not the full acceptance boundary;
+- the plan now requires a supported-language graph coverage matrix before implementation can be considered complete.
+
+Supported code-language surface identified from scanner/Web contracts:
+
+- `javascript`
+- `typescript`
+- `python`
+- `java`
+- `c`
+- `cpp`
+- `csharp`
+- `go`
+- `ruby`
+- `rust`
+- `php`
+- `kotlin`
+- `swift`
+- `dart`
+- `vue`
+- `svelte`
+- `astro`
+- `cobol`
+
+Required classification for each language:
+
+- provider/extractor status;
+- node labels and relationship types supported by the provider or dedicated analyzer phase;
+- source fact families supported by the language and provider, including definitions, imports, calls, uses/type refs, member/property/method relationships, accesses, heritage-like facts, routes/tools/process facts where applicable;
+- ScopeIR extraction behavior;
+- graph resolution behavior;
+- unresolved/external representation policy;
+- Web filter/display label/grouping policy;
+- fixture/e2e evidence status.
+
+Doc-only note:
+
+- no AVmatrix analysis was run for this documentation correction.
+
+## E10 - AVmatrix-Assisted Codebase Audit For Multi-Language Graph Filters
+
+Date: 2026-05-19
+
+Commands:
+
+```powershell
+avmatrix status
+avmatrix analyze
+avmatrix analyze --force
+```
+
+Result:
+
+- `avmatrix status` reported the index was stale.
+- `avmatrix analyze` first failed during native LadybugDB schema initialization with `File already exists in catalog`.
+- `avmatrix analyze --force` succeeded:
+
+```text
+files: scanned=691 parsed=530 unsupported=161 failed=0
+graph: nodes=19714 relationships=47169 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+AVmatrix context/impact checks:
+
+- `FileTreePanel` is used by `avmatrix-web/src/App.tsx` and `avmatrix-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`.
+- `knowledgeGraphToGraphology` is used by `avmatrix-web/src/components/GraphCanvas.tsx` and `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts`.
+- `getGraphEdgeVisibilityMode` is used by `avmatrix-web/src/hooks/useSigma.ts` and `avmatrix-web/test/unit/graph-edge-visibility-mode.test.ts`.
+- `WebUIContract` feeds generated Web graph/language constants and is covered by contract tests.
+- `parseFiles` routes supported language extraction and is covered by parse routing tests for many provider languages.
+
+Code audit findings:
+
+- `internal/contracts/web_ui.go` is the generated Web contract source for `NODE_LABELS`, `GRAPH_RELATIONSHIP_TYPES`, and `codeLanguages`.
+- `avmatrix-web/src/lib/constants.ts` imports generated graph contracts and defines display behavior: default visible labels, colors, sizes, edge labels/colors, sort order, and unknown fallbacks.
+- `avmatrix-web/src/components/FileTreePanel.tsx` builds loaded-graph node/edge filter rows from graph-present labels/types, not from every contract row; no-graph fallback uses the full generated lists.
+- `avmatrix-web/src/lib/graph-edge-visibility-mode.ts` and `avmatrix-web/src/hooks/useSigma.ts` do apply `visibleEdgeTypes` to rendered edges through the Sigma edge reducer.
+- `avmatrix-web/src/lib/graph-adapter.ts` still contains hand-classified graph behavior: `structuralTypes`, `symbolTypes`, hierarchy relationship priorities, node mass rules, edge size multipliers, node size caps, and community-color symbol handling. Those sets are not proven complete for all generated node labels and relationship types.
+- `internal/analyze/analyze.go` declares `hasExtractor` for every code language except `cobol`; Vue/Svelte/Astro use script-container extraction; Cobol is scanned and processed by a separate analyzer phase rather than ScopeIR provider extraction.
+- `internal/providers/provider_parity_test.go` has broad but uneven provider parity coverage. Some fact families are covered across many languages, while owner/member and heritage-like forms have clear subsets and must be expanded or explicitly classified.
+- Current e2e coverage includes uncommon `Property` / `Accesses` dashboard toggles, but does not prove the full generated node-label/relationship-type contract or per-language provider matrix.
+
+Conclusion:
+
+- The plan must be driven by the concrete chain `contract -> provider/dedicated analyzer -> resolution -> graph payload -> FileTreePanel -> graph adapter/useSigma -> e2e`, not by a generic statement that the tool is multi-language.
+- The central acceptance target is no unclassified language, node label, relationship type, or UI filter behavior.
+
+## E11 - Plan Alignment Correction After Review
+
+Date: 2026-05-19
+
+Correction:
+
+- the plan rules were not changed;
+- scope now includes `avmatrix-web/src/lib/graph-edge-visibility-mode.ts` and `avmatrix-web/src/hooks/useSigma.ts`, because edge visibility is enforced through the graph edge visibility mode and Sigma reducer, not only through dashboard row generation;
+- Phase 3 now starts from the provider/fact-family matrix for every supported language before TS/Go trigger fixes;
+- TS missing heritage and Go duplicate heritage remain concrete trigger cases, but they no longer define the full analyzer coverage boundary;
+- Phase 5 and Phase 6 now require full graph filter inventory and final graph/filter verification for both `E:\AVmatrix-GO` and `E:\Restaurant_manager`.
+
+Doc-only note:
+
+- no AVmatrix analysis was run for this documentation correction; it uses the AVmatrix-assisted audit evidence recorded in E10.

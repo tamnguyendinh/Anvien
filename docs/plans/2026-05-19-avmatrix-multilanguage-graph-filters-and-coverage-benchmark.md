@@ -1,4 +1,4 @@
-# AVmatrix Heritage Edge Semantics and Coverage Benchmark Ledger
+# AVmatrix Multi-Language Graph Filters and Coverage Benchmark Ledger
 
 Date: 2026-05-19
 
@@ -6,8 +6,8 @@ Status: active
 
 Companion files:
 
-- Plan: [2026-05-19-avmatrix-heritage-edge-semantics-and-coverage-plan.md](2026-05-19-avmatrix-heritage-edge-semantics-and-coverage-plan.md)
-- Evidence ledger: [2026-05-19-avmatrix-heritage-edge-semantics-and-coverage-evidence.md](2026-05-19-avmatrix-heritage-edge-semantics-and-coverage-evidence.md)
+- Plan: [2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-plan.md](2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-plan.md)
+- Evidence ledger: [2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-evidence.md](2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-evidence.md)
 
 ## Benchmark Rules
 
@@ -18,16 +18,22 @@ For this plan, benchmarkable measurements include:
 - raw graph relationship counts for `EXTENDS`, `INHERITS`, and `IMPLEMENTS`;
 - unique semantic heritage source-target pair counts;
 - duplicate compatibility edge counts;
+- full node label and relationship type filter inventory counts;
+- supported-language graph coverage matrix counts;
 - TypeScript heritage source-site counts, preferring parser/ScopeIR inventory over regex after implementation starts;
+- per-language source-site/extraction/resolution/display coverage for each supported graph fact family;
 - resolved, unresolved, and missing heritage coverage counts;
 - Go embedded-struct heritage counts and final display labels;
 - Web dashboard displayed edge counts versus raw graph counts;
+- Web dashboard displayed node counts versus raw graph counts;
+- graph adapter label/type classification coverage;
 - graph adapter relationship preservation/collapse counts;
-- top bar Back navigation target and reconnect-banner behavior during intentional navigation;
+- edge visibility and focus-depth filter behavior;
+- top bar Back navigation target and stale connection-loss banner behavior during intentional navigation;
 - left dashboard resize min/max width bounds and graph/canvas usable width after resize;
 - analyze runtime if analyzer behavior is changed.
 
-## B0 - Initial Restaurant_manager Heritage Baseline
+## B0 - Initial Restaurant_manager Graph And Heritage Baseline
 
 Date: 2026-05-19
 
@@ -37,6 +43,21 @@ Graph snapshot:
 - graph path: `E:\Restaurant_manager\.avmatrix\graph.json`
 - nodes: `78,350`
 - relationships: `130,497`
+
+### Graph Filter Contract Baseline
+
+Generated contract counts come from `internal/contracts/web_ui.go` and the generated Web contract consumed by `avmatrix-web/src/lib/constants.ts`.
+
+| Metric | Baseline |
+|---|---:|
+| Generated Web contract node labels | `37` |
+| Generated Web contract relationship types | `22` |
+| Supported code languages | `18` |
+| Loaded graph node label inventory | pending measured |
+| Loaded graph relationship type inventory | pending measured |
+| UI node filter rows vs graph payload labels | pending measured |
+| UI edge filter rows vs graph payload relationship types | pending measured |
+| Graph adapter label/type classification coverage | pending measured |
 
 ### Node Inventory Relevant To The Question
 
@@ -132,6 +153,18 @@ Record after each relevant slice:
 | Raw `INHERITS` count | `6` | measured |
 | Unique semantic heritage pair count | `6` | measured |
 | Duplicate compatibility pair count | `6` | `0` for UI display, or clearly marked if raw graph preserves both |
+| Generated node labels in Web contract | `37` | all classified for filter/display/adapter behavior |
+| Generated graph relationship types in Web contract | `22` | all classified for filter/display/adapter behavior |
+| Supported code languages in scanner/Web contracts | `18` | all classified in graph coverage matrix |
+| Supported languages with extractor/provider status | pending | all classified as provider-backed, script-container backed, scan-only, or not applicable |
+| Supported languages with graph fact coverage | pending | all classified by fact family and graph policy |
+| Languages with provider parity fixtures | current provider parity subset | all provider-backed languages covered by claimed fact families or explicitly documented as not applicable |
+| Per-language source-to-graph contract | pending | no unclassified language entries |
+| UI node filter rows vs graph payload labels | pending | no graph-present label missing from dashboard/legend |
+| UI edge filter rows vs graph payload relationships | pending | no graph-present relationship type missing from dashboard/legend |
+| Graph adapter label/type classification coverage | pending | all labels/types covered or intentional fallback documented |
+| AVmatrix-GO full graph filter inventory | pending | node/edge/filter/adapter counts recorded |
+| Restaurant_manager full graph filter inventory | partial heritage baseline | node/edge/filter/adapter counts recorded |
 | TS heritage source sites | `16` | measured |
 | TS parser/ScopeIR heritage source sites | pending | measured |
 | TS resolved heritage edges | `0` | all resolvable in-repo sites |
@@ -139,9 +172,9 @@ Record after each relevant slice:
 | TS missing heritage source sites | `16` | `0` |
 | Go embedded struct unique semantic pairs | `6` | measured |
 | Go embedded struct user-facing duplicate pairs | `6` through `EXTENDS` + `INHERITS` | `0` misleading duplicates |
-| Top bar Back navigation to `Start-AVmatrix.html` | absent from current scoped plan | visible and tested |
-| Back navigation reconnect-banner behavior | pending | no false reconnect-banner error during intentional navigation |
-| Left dashboard drag resize | absent from current scoped plan | measured min/max width bounds |
+| Top bar Back navigation to `Start-AVmatrix.html` | not implemented in current product | visible and tested |
+| Back navigation stale connection-loss banner behavior | pending | no false connection-loss banner during intentional navigation |
+| Left dashboard drag resize | not implemented in current product | measured min/max width bounds |
 | Canvas usability after dashboard resize | pending | measured/validated |
 
 ## B2 - Final Benchmark
@@ -155,9 +188,15 @@ Record final:
 - raw relationship counts;
 - semantic unique heritage counts;
 - duplicate compatibility counts;
+- full Web graph filter inventory counts;
+- supported-language graph coverage matrix;
+- per-language provider/extractor status;
+- per-language source-site, extraction, resolution, graph relationship/node, and Web display/filter classification;
 - TS parser/ScopeIR heritage source-site coverage;
 - Go embedded struct heritage display behavior;
-- Web dashboard displayed counts;
-- top bar Back navigation target and reconnect-banner behavior;
+- Web dashboard displayed node and edge counts;
+- graph adapter classification coverage;
+- edge visibility and focus-depth behavior;
+- top bar Back navigation target and stale connection-loss banner behavior;
 - left dashboard min/max resize bounds and canvas usable width;
 - e2e observed display behavior.
