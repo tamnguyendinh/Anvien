@@ -1,19 +1,20 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
-import fs from 'fs';
-import path from 'path';
-import { createRequire } from 'module';
+import { defineConfig } from "vite";
+import type { Plugin } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import fs from "fs";
+import path from "path";
+import { createRequire } from "module";
 
 const _require = createRequire(import.meta.url);
 
 function findSiblingPackageDir(packageName: string): string {
-  const monorepoRoot = path.resolve(__dirname, '..');
+  const monorepoRoot = path.resolve(__dirname, "..");
 
   for (const entry of fs.readdirSync(monorepoRoot, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
 
-    const packageJsonPath = path.join(monorepoRoot, entry.name, 'package.json');
+    const packageJsonPath = path.join(monorepoRoot, entry.name, "package.json");
     if (!fs.existsSync(packageJsonPath)) continue;
 
     try {
@@ -26,33 +27,65 @@ function findSiblingPackageDir(packageName: string): string {
     }
   }
 
-  throw new Error(`Could not find sibling package '${packageName}' from ${__dirname}`);
+  throw new Error(
+    `Could not find sibling package '${packageName}' from ${__dirname}`,
+  );
 }
 
-const CLI_ROOT = findSiblingPackageDir('avmatrix');
-const avmatrixCliPkg = _require(path.join(CLI_ROOT, 'package.json'));
+const CLI_ROOT = findSiblingPackageDir("avmatrix");
+const avmatrixCliPkg = _require(path.join(CLI_ROOT, "package.json"));
+const START_SCREEN_PATH = path.resolve(__dirname, "..", "Start-AVmatrix.html");
+
+function startScreenPlugin(): Plugin {
+  return {
+    name: "avmatrix-start-screen",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const pathname = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
+        if (pathname !== "/Start-AVmatrix.html") {
+          next();
+          return;
+        }
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end(fs.readFileSync(START_SCREEN_PATH));
+      });
+    },
+    generateBundle() {
+      this.emitFile({
+        type: "asset",
+        fileName: "Start-AVmatrix.html",
+        source: fs.readFileSync(START_SCREEN_PATH, "utf8"),
+      });
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), startScreenPlugin()],
   define: {
-    __REQUIRED_NODE_VERSION__: JSON.stringify(avmatrixCliPkg.engines.node.replace(/[>=^~\s]/g, '')),
+    __REQUIRED_NODE_VERSION__: JSON.stringify(
+      avmatrixCliPkg.engines.node.replace(/[>=^~\s]/g, ""),
+    ),
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      "@": path.resolve(__dirname, "./src"),
       // Fix for Rollup failing to resolve this deep import from @langchain/anthropic
-      '@anthropic-ai/sdk/lib/transform-json-schema': path.resolve(
+      "@anthropic-ai/sdk/lib/transform-json-schema": path.resolve(
         __dirname,
-        'node_modules/@anthropic-ai/sdk/lib/transform-json-schema.mjs',
+        "node_modules/@anthropic-ai/sdk/lib/transform-json-schema.mjs",
       ),
       // Fix for mermaid d3-color prototype crash on Vercel (known issue with mermaid 10.9.0+ and Vite)
-      mermaid: path.resolve(__dirname, 'node_modules/mermaid/dist/mermaid.esm.min.mjs'),
+      mermaid: path.resolve(
+        __dirname,
+        "node_modules/mermaid/dist/mermaid.esm.min.mjs",
+      ),
     },
   },
   server: {
     // Allow serving files from node_modules
     fs: {
-      allow: ['..'],
+      allow: [".."],
     },
   },
 });

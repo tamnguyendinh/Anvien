@@ -1,16 +1,22 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { AppStateProvider, useAppState } from './hooks/useAppState.local-runtime';
-import { ChatRuntimeProvider, useChatRuntime } from './hooks/chat-runtime/ChatRuntimeContext';
-import { DropZone } from './components/DropZone';
-import { LoadingOverlay } from './components/LoadingOverlay';
-import { Header } from './components/Header';
-import { GraphCanvas, GraphCanvasHandle } from './components/GraphCanvas';
-import { RightPanelResizable } from './components/RightPanel.resizable';
-import { SettingsPanel } from './components/SettingsPanel.local-runtime';
-import { StatusBar } from './components/StatusBar';
-import { FileTreePanel } from './components/FileTreePanel';
-import { CodeReferencesPanel } from './components/CodeReferencesPanel';
-import { createKnowledgeGraph } from './core/graph/graph';
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  AppStateProvider,
+  useAppState,
+} from "./hooks/useAppState.local-runtime";
+import {
+  ChatRuntimeProvider,
+  useChatRuntime,
+} from "./hooks/chat-runtime/ChatRuntimeContext";
+import { DropZone } from "./components/DropZone";
+import { LoadingOverlay } from "./components/LoadingOverlay";
+import { Header } from "./components/Header";
+import { GraphCanvas, GraphCanvasHandle } from "./components/GraphCanvas";
+import { RightPanelResizable } from "./components/RightPanel.resizable";
+import { SettingsPanel } from "./components/SettingsPanel.local-runtime";
+import { StatusBar } from "./components/StatusBar";
+import { FileTreePanel } from "./components/FileTreePanel";
+import { CodeReferencesPanel } from "./components/CodeReferencesPanel";
+import { createKnowledgeGraph } from "./core/graph/graph";
 import {
   connectToServer,
   fetchRepos,
@@ -19,10 +25,13 @@ import {
   BackendError,
   type ConnectResult,
   type BackendRepo,
-} from './services/backend-client';
-import { includeRepoInList } from './services/repo-list';
-import { DEFAULT_BACKEND_URL, ERROR_RESET_DELAY_MS } from './config/ui-constants';
-import { recordReconnectBannerState } from './lib/runtime-diagnostics';
+} from "./services/backend-client";
+import { includeRepoInList } from "./services/repo-list";
+import {
+  DEFAULT_BACKEND_URL,
+  ERROR_RESET_DELAY_MS,
+} from "./config/ui-constants";
+import { recordReconnectBannerState } from "./lib/runtime-diagnostics";
 
 const AppContent = () => {
   const { chatRuntimeBridge } = useAppState();
@@ -64,6 +73,7 @@ const AppContentBody = () => {
 
   const graphCanvasRef = useRef<GraphCanvasHandle>(null);
   const [serverDisconnected, setServerDisconnected] = useState(false);
+  const [isNavigatingToStart, setIsNavigatingToStart] = useState(false);
 
   const handleServerConnect = useCallback(
     async (result: ConnectResult): Promise<void> => {
@@ -73,8 +83,8 @@ const AppContentBody = () => {
       // Normalize both Windows (\) and Unix (/) path separators before splitting
       const projectName =
         result.repoInfo.name ||
-        (repoPath || '').replace(/\\/g, '/').split('/').filter(Boolean).pop() ||
-        'server-project';
+        (repoPath || "").replace(/\\/g, "/").split("/").filter(Boolean).pop() ||
+        "server-project";
       setProjectName(projectName);
       setCurrentRepo(repoPath || projectName);
 
@@ -90,17 +100,23 @@ const AppContentBody = () => {
 
       // Persist the active project in the URL for bookmarkability and F5 refresh resilience
       const urlObj = new URL(window.location.href);
-      urlObj.searchParams.set('project', projectName);
-      window.history.replaceState(null, '', urlObj.toString());
+      urlObj.searchParams.set("project", projectName);
+      window.history.replaceState(null, "", urlObj.toString());
 
       // Transition directly to exploring view
-      setViewMode('exploring');
+      setViewMode("exploring");
 
       // Embeddings can start immediately, but chat runtime stays lazy until the
       // user actually sends a message or explicitly refreshes settings.
       startEmbeddingsWithFallback();
     },
-    [setViewMode, setGraph, setProjectName, setCurrentRepo, startEmbeddingsWithFallback],
+    [
+      setViewMode,
+      setGraph,
+      setProjectName,
+      setCurrentRepo,
+      startEmbeddingsWithFallback,
+    ],
   );
 
   // Auto-connect when ?server or ?project query param is present (bookmarkable shortcut)
@@ -108,8 +124,8 @@ const AppContentBody = () => {
   useEffect(() => {
     if (autoConnectRan.current) return;
     const params = new URLSearchParams(window.location.search);
-    const serverUrlParam = params.get('server');
-    const projectParam = params.get('project');
+    const serverUrlParam = params.get("server");
+    const projectParam = params.get("project");
 
     if (!serverUrlParam && !projectParam) return;
     autoConnectRan.current = true;
@@ -120,54 +136,57 @@ const AppContentBody = () => {
       baseUrl = normalizeServerUrl(serverUrl);
     } catch (err) {
       setProgress({
-        phase: 'error',
+        phase: "error",
         percent: 0,
-        message: 'Failed to connect to server',
-        detail: err instanceof Error ? err.message : 'Invalid local backend URL',
+        message: "Failed to connect to server",
+        detail:
+          err instanceof Error ? err.message : "Invalid local backend URL",
       });
       setTimeout(() => {
-        setViewMode('onboarding');
+        setViewMode("onboarding");
         setProgress(null);
       }, ERROR_RESET_DELAY_MS);
       return;
     }
 
     setProgress({
-      phase: 'extracting',
+      phase: "extracting",
       percent: 0,
-      message: 'Connecting to server...',
-      detail: 'Validating server',
+      message: "Connecting to server...",
+      detail: "Validating server",
     });
-    setViewMode('loading');
+    setViewMode("loading");
 
     const tryConnect = async () => {
       return await connectToServer(
         baseUrl,
         (phase, downloaded, total) => {
-          if (phase === 'validating') {
+          if (phase === "validating") {
             setProgress({
-              phase: 'extracting',
+              phase: "extracting",
               percent: 5,
-              message: 'Connecting to server...',
-              detail: 'Validating server',
+              message: "Connecting to server...",
+              detail: "Validating server",
             });
-          } else if (phase === 'downloading') {
-            const hasTotal = typeof total === 'number' && total > 0;
-            const pct = hasTotal ? Math.round((downloaded / total) * 90) + 5 : 0;
+          } else if (phase === "downloading") {
+            const hasTotal = typeof total === "number" && total > 0;
+            const pct = hasTotal
+              ? Math.round((downloaded / total) * 90) + 5
+              : 0;
             const mb = (downloaded / (1024 * 1024)).toFixed(1);
             setProgress({
-              phase: 'extracting',
+              phase: "extracting",
               percent: pct,
               showPercent: hasTotal,
-              message: 'Loading graph...',
+              message: "Loading graph...",
               detail: `${mb} MB downloaded`,
             });
-          } else if (phase === 'extracting') {
+          } else if (phase === "extracting") {
             setProgress({
-              phase: 'extracting',
+              phase: "extracting",
               percent: 97,
-              message: 'Processing...',
-              detail: 'Extracting file contents',
+              message: "Processing...",
+              detail: "Extracting file contents",
             });
           }
         },
@@ -184,22 +203,28 @@ const AppContentBody = () => {
         setServerBaseUrl(baseUrl);
         fetchRepos()
           .then((repos) => setAvailableRepos(repos))
-          .catch((e) => console.warn('Failed to fetch repo list:', e));
+          .catch((e) => console.warn("Failed to fetch repo list:", e));
       })
       .catch((err) => {
-        console.error('Auto-connect failed:', err);
+        console.error("Auto-connect failed:", err);
         setProgress({
-          phase: 'error',
+          phase: "error",
           percent: 0,
-          message: 'Failed to connect to server',
-          detail: err instanceof Error ? err.message : 'Unknown error',
+          message: "Failed to connect to server",
+          detail: err instanceof Error ? err.message : "Unknown error",
         });
         setTimeout(() => {
-          setViewMode('onboarding');
+          setViewMode("onboarding");
           setProgress(null);
         }, ERROR_RESET_DELAY_MS);
       });
-  }, [handleServerConnect, setProgress, setViewMode, setServerBaseUrl, setAvailableRepos]);
+  }, [
+    handleServerConnect,
+    setProgress,
+    setViewMode,
+    setServerBaseUrl,
+    setAvailableRepos,
+  ]);
 
   const handleFocusNode = useCallback((nodeId: string) => {
     graphCanvasRef.current?.focusNode(nodeId);
@@ -216,7 +241,7 @@ const AppContentBody = () => {
   // On disconnect: show a reconnecting banner instead of resetting to onboarding.
   // The heartbeat retries indefinitely with capped backoff and recovers automatically.
   useEffect(() => {
-    if (viewMode !== 'exploring') return;
+    if (viewMode !== "exploring") return;
 
     const cleanup = connectHeartbeat(
       () => setServerDisconnected(false),
@@ -231,7 +256,7 @@ const AppContentBody = () => {
   }, [serverDisconnected]);
 
   // Render based on view mode
-  if (viewMode === 'onboarding') {
+  if (viewMode === "onboarding") {
     return (
       <DropZone
         onServerConnect={async (result, serverUrl) => {
@@ -245,15 +270,15 @@ const AppContentBody = () => {
             setServerBaseUrl(base);
             // Add ?server= so F5 reconnects to this server
             const url = new URL(window.location.href);
-            url.searchParams.set('server', base);
-            window.history.replaceState(null, '', url.toString());
+            url.searchParams.set("server", base);
+            window.history.replaceState(null, "", url.toString());
           }
         }}
       />
     );
   }
 
-  if (viewMode === 'loading' && progress) {
+  if (viewMode === "loading" && progress) {
     return <LoadingOverlay progress={progress} />;
   }
 
@@ -266,32 +291,53 @@ const AppContentBody = () => {
         openRepoAnalyzerRequestId={repoAnalyzerRequestId}
         onSwitchRepo={switchRepo}
         onReposChanged={(repos) => setAvailableRepos(repos)}
+        onNavigateToStart={(targetHref) => {
+          setIsNavigatingToStart(true);
+          window.location.assign(targetHref);
+        }}
         onAnalyzeComplete={async (repoName) => {
           // A repo was just fully indexed via the header dropdown. Connect to
           // the fresh graph, then make the dropdown list reflect that repo even
           // if the backend repo registry refresh lands a little late.
-          const url = serverBaseUrl ?? 'http://127.0.0.1:4848';
+          const url = serverBaseUrl ?? "http://127.0.0.1:4848";
           for (let attempt = 0; attempt < 2; attempt++) {
             try {
               const repos = await fetchRepos().catch(() => [] as BackendRepo[]);
-              const result = await connectToServer(url, undefined, undefined, repoName, {
-                awaitAnalysis: true,
-              });
-              const reposWithAnalyzedRepo = includeRepoInList(repos, result.repoInfo);
+              const result = await connectToServer(
+                url,
+                undefined,
+                undefined,
+                repoName,
+                {
+                  awaitAnalysis: true,
+                },
+              );
+              const reposWithAnalyzedRepo = includeRepoInList(
+                repos,
+                result.repoInfo,
+              );
               setAvailableRepos(reposWithAnalyzedRepo);
               await handleServerConnect(result);
-              const refreshedRepos = await fetchRepos().catch(() => reposWithAnalyzedRepo);
-              setAvailableRepos(includeRepoInList(refreshedRepos, result.repoInfo));
+              const refreshedRepos = await fetchRepos().catch(
+                () => reposWithAnalyzedRepo,
+              );
+              setAvailableRepos(
+                includeRepoInList(refreshedRepos, result.repoInfo),
+              );
               setServerBaseUrl(normalizeServerUrl(url));
               setProgress(null);
               return;
             } catch (err: unknown) {
-              if (attempt === 0 && err instanceof BackendError && err.status === 404) {
+              if (
+                attempt === 0 &&
+                err instanceof BackendError &&
+                err.status === 404
+              ) {
                 // Server may still be reinitializing — wait and retry
                 await new Promise((r) => setTimeout(r, 1500));
                 continue;
               }
-              console.error('Failed to connect after analyze:', err);
+              console.error("Failed to connect after analyze:", err);
               fetchRepos()
                 .then((repos) => setAvailableRepos(repos))
                 .catch(() => {});
@@ -329,7 +375,7 @@ const AppContentBody = () => {
 
       <StatusBar />
 
-      {serverDisconnected && (
+      {serverDisconnected && !isNavigatingToStart && (
         <div
           className="fixed bottom-12 left-1/2 z-50 -translate-x-1/2 rounded-lg border-[3px] border-workspace-border-strong bg-workspace-surface px-4 py-2 text-sm text-workspace-text-primary"
           data-testid="server-reconnect-banner"

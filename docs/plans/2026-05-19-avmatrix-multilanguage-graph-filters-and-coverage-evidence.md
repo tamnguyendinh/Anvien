@@ -208,18 +208,171 @@ Conclusion:
 - TS provider has code to emit heritage facts, but `E:\Restaurant_manager` graph does not show TS heritage relationships for the audited TS sites.
 - The implementation plan must determine whether the loss is in extraction, owner-scope resolution, import/name resolution, external target handling, or graph payload/UI filtering.
 
-## E6 - Implementation Evidence
+## E6 - Implementation Slice Evidence
 
-Status: pending
+Date: 2026-05-19
 
-Record each implementation slice here:
+Status: recorded
 
-- files changed;
-- AVmatrix context/impact results;
-- build/test/e2e commands;
-- Restaurant_manager analyze results;
-- AVmatrix-GO analyze results;
-- final graph and Web UI behavior.
+### AVmatrix-Assisted Checks
+
+Commands:
+
+```powershell
+avmatrix analyze --force
+avmatrix context FileTreePanel --repo AVmatrix
+avmatrix impact FileTreePanel --repo AVmatrix --direction upstream --depth 2 --include-tests
+avmatrix context knowledgeGraphToGraphology --repo AVmatrix
+avmatrix impact knowledgeGraphToGraphology --repo AVmatrix --direction upstream --depth 2 --include-tests
+avmatrix context Header --repo AVmatrix
+avmatrix impact Header --repo AVmatrix --direction upstream --depth 2 --include-tests
+avmatrix context resolveHeritage --repo AVmatrix
+avmatrix impact resolveHeritage --repo AVmatrix --direction upstream --depth 2 --include-tests
+avmatrix context emitReferenceKind --repo AVmatrix
+avmatrix impact emitReferenceKind --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Observed impact summary:
+
+- `FileTreePanel` changes affect `App.tsx` and dashboard completeness tests.
+- `knowledgeGraphToGraphology` changes affect `GraphCanvas.tsx` and graph-adapter geometry tests.
+- `Header` changes are local to app shell wiring and branding tests.
+- `resolveHeritage` is high-impact because it feeds relationship emission and downstream graph consumers.
+- `emitReferenceKind` is the TS/JS extraction entry point for heritage target collection.
+
+### Implementation Files
+
+Backend and contract files:
+
+- `internal/providers/tsjs/references.go`
+- `internal/providers/tsjs/extract_test.go`
+- `internal/resolution/indexes.go`
+- `internal/resolution/resolve.go`
+- `internal/resolution/types.go`
+- `internal/resolution/resolution_test.go`
+- `internal/contracts/web_ui.go`
+- `internal/contracts/web_ui_test.go`
+- `contracts/web-ui/avmatrix-web-contract.schema.json`
+
+Web files:
+
+- `avmatrix-web/src/generated/avmatrix-contracts.ts`
+- `avmatrix-web/src/lib/constants.ts`
+- `avmatrix-web/src/lib/graph-adapter.ts`
+- `avmatrix-web/src/lib/lucide-icons.tsx`
+- `avmatrix-web/src/components/FileTreePanel.tsx`
+- `avmatrix-web/src/components/Header.tsx`
+- `avmatrix-web/src/App.tsx`
+- `avmatrix-web/vite.config.ts`
+
+Tests:
+
+- `avmatrix-web/test/unit/constants.test.ts`
+- `avmatrix-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`
+- `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts`
+- `avmatrix-web/test/unit/Branding.local-only.test.tsx`
+- `avmatrix-web/e2e/shell-interactions.spec.ts`
+
+### Analyzer Changes
+
+Implementation summary:
+
+- TS/JS extraction now handles `extends_type_clause` and collects multiple heritage targets from interface `extends` clauses.
+- Resolution now records `HeritageFactsIndexed` and `UnresolvedInheritance`.
+- Resolution now uses `baseTypeName` for heritage target lookup.
+- Resolution now falls back to a same-file target search when global heritage lookup is ambiguous. This fixes real TS files where names such as `Area` or `Table` are defined in multiple files but the local `interface ... extends ...` target is in the same file.
+- Raw graph compatibility behavior is preserved: resolved heritage still emits both the specific edge (`EXTENDS` or `IMPLEMENTS`) and `INHERITS` when compatibility mode is enabled.
+
+Focused tests added:
+
+- TS provider extraction for interface extends, multiple extends, and generic extends.
+- TS resolution for same-file interface extends plus unresolved external generic heritage.
+- TS resolution for same-file target preference when another file defines the same interface name.
+
+### Web Display Changes
+
+Implementation summary:
+
+- Generated Web contract now includes:
+  - `RELATIONSHIP_DISPLAY_POLICY`
+  - `LANGUAGE_GRAPH_COVERAGE`
+- Web constants now include full generated relationship size policy coverage and explicit structural/community node label classifications.
+- `INHERITS` is labelled `Normalized Heritage`.
+- Dashboard counts and legend titles group duplicate compatibility `INHERITS` edges when the same source-target pair also has `EXTENDS` or `IMPLEMENTS`.
+- Graph adapter conversion uses the display relationship set so duplicate compatibility `INHERITS` does not draw as a second unrelated edge.
+
+Shell implementation summary:
+
+- Header has an icon-first Back button labelled `Back to Start screen`.
+- Back target resolves to `/Start-AVmatrix.html` on the current origin.
+- Vite dev/build serves or emits `Start-AVmatrix.html`.
+- App suppresses the reconnect banner during intentional navigation to the Start screen.
+- Left dashboard has a drag handle, persists width in `localStorage`, and clamps width to `192px` through `480px`.
+
+### Graph Measurements
+
+Commands:
+
+```powershell
+go run ./cmd/avmatrix analyze --force --skip-agents-md --no-stats
+go run ./cmd/avmatrix analyze E:\Restaurant_manager --force --skip-agents-md --no-stats
+```
+
+Results:
+
+```text
+AVmatrix-GO analyze runtime: 17.89s
+AVmatrix-GO graph: nodes=20,771 relationships=51,854
+AVmatrix-GO graph-present labels=16 relationship types=11
+AVmatrix-GO heritage: raw=0 uniquePairs=0 duplicateCompatibilityPairs=0
+
+Restaurant_manager analyze runtime: 28.93s
+Restaurant_manager graph: nodes=78,358 relationships=130,588
+Restaurant_manager raw heritage: EXTENDS=19 INHERITS=19 IMPLEMENTS=0
+Restaurant_manager unique semantic heritage pairs=19
+Restaurant_manager duplicate compatibility pairs=19 raw, 0 misleading UI display duplicates
+Restaurant_manager TS heritage: raw=16 relationships, 8 unique resolved source-target pairs
+Restaurant_manager display relationships after grouping=130,569
+```
+
+Restaurant_manager TS trigger conclusion:
+
+- Resolved in-repo TS source-target pairs now appear in the graph:
+  - `AssignmentWithUser -> ShiftAssignment`
+  - `ShiftWithCounts -> Shift`
+  - `ShiftWithCountsDTO -> ShiftDTO`
+  - both `TableWithUser -> Table` declarations
+  - `AreaWithTableCount -> Area`
+  - `DateTimeOptions -> DateOptions`
+  - `DateTimeOptions -> TimeOptions`
+- External TS targets such as `Error`, `React.*HTMLAttributes`, DOM `Performance*`, and React `Component<Props, State>` remain unresolved/external by policy.
+
+### Validation Commands
+
+Passed:
+
+```powershell
+go run .\cmd\generate-web-contracts
+go test ./internal/providers/tsjs ./internal/resolution ./internal/contracts
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+npm --prefix avmatrix-web run build
+npm --prefix avmatrix-web test -- --run
+npm --prefix avmatrix-web run test:e2e -- shell-interactions.spec.ts -g "back button|resizes the left dashboard" --workers=1 --timeout=120000
+```
+
+Result summary:
+
+- Focused Go tests passed.
+- Full applicable Go build passed.
+- Full applicable Go tests for `cmd` and `internal` passed.
+- Web production build passed and emitted `dist/Start-AVmatrix.html`.
+- Full Vitest suite passed: `41` files, `322` tests.
+- Focused Playwright e2e passed: `2/2`.
+
+Additional note:
+
+- `go test ./...` was also attempted. It fails on pre-existing non-buildable fixture packages under `avmatrix/test/fixtures` such as fixture imports from `models`/`animal`, C source files without cgo, and intentionally invalid Go examples. The applicable Go validation scope for this slice is `./cmd/... ./internal/...`.
 
 ## E7 - Plan Review Evidence
 

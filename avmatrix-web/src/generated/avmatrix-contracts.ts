@@ -134,6 +134,143 @@ export const REL_TYPES = [
 
 export type RelType = (typeof REL_TYPES)[number];
 
+export const RELATIONSHIP_DISPLAY_POLICY = [
+  {
+    "type": "CONTAINS",
+    "displayLabel": "Contains",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "CALLS",
+    "displayLabel": "Calls",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "INHERITS",
+    "displayLabel": "Normalized Heritage",
+    "semanticGroup": "normalized-heritage",
+    "displayPolicy": "group with matching EXTENDS or IMPLEMENTS source-target pairs; count and draw only standalone INHERITS edges as independent relationships"
+  },
+  {
+    "type": "METHOD_OVERRIDES",
+    "displayLabel": "Method Overrides",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "METHOD_IMPLEMENTS",
+    "displayLabel": "Method Implements",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "IMPORTS",
+    "displayLabel": "Imports",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "USES",
+    "displayLabel": "Uses",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "DEFINES",
+    "displayLabel": "Defines",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "DECORATES",
+    "displayLabel": "Decorates",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "IMPLEMENTS",
+    "displayLabel": "Implements",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "EXTENDS",
+    "displayLabel": "Extends",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "HAS_METHOD",
+    "displayLabel": "Has Method",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "HAS_PROPERTY",
+    "displayLabel": "Has Property",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "ACCESSES",
+    "displayLabel": "Accesses",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "MEMBER_OF",
+    "displayLabel": "Member Of",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "STEP_IN_PROCESS",
+    "displayLabel": "Step In Process",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "HANDLES_ROUTE",
+    "displayLabel": "Handles Route",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "FETCHES",
+    "displayLabel": "Fetches",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "HANDLES_TOOL",
+    "displayLabel": "Handles Tool",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "ENTRY_POINT_OF",
+    "displayLabel": "Entry Point Of",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "WRAPS",
+    "displayLabel": "Wraps",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "QUERIES",
+    "displayLabel": "Queries",
+    "semanticGroup": "first-class",
+    "displayPolicy": "count and draw as an independent graph relationship"
+  }
+] as const;
+
+export type RelationshipDisplayPolicy = (typeof RELATIONSHIP_DISPLAY_POLICY)[number];
+
 export const REL_TABLE_NAME = "CodeRelation" as const;
 export const EMBEDDING_TABLE_NAME = "CodeEmbedding" as const;
 
@@ -263,6 +400,295 @@ const SYNTAX_MAP = {
   "typescript": "typescript",
   "vue": "typescript"
 } as const satisfies Record<SupportedLanguages, string>;
+
+export const LANGUAGE_GRAPH_COVERAGE = [
+  {
+    "language": "javascript",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "typescript",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "python",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "java",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "c",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "cpp",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "csharp",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "go",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "ruby",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "rust",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "php",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "kotlin",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "swift",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "dart",
+    "extractorStatus": "scopeir-provider-backed",
+    "sourceFactFamilies": [
+      "definitions",
+      "imports",
+      "calls",
+      "accesses",
+      "type-references",
+      "members",
+      "heritage-where-language-supports-it"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "vue",
+    "extractorStatus": "script-container-backed",
+    "sourceFactFamilies": [
+      "embedded-script-definitions",
+      "embedded-script-imports",
+      "embedded-script-calls",
+      "embedded-script-accesses",
+      "embedded-script-type-references",
+      "embedded-script-members",
+      "embedded-script-heritage"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "svelte",
+    "extractorStatus": "script-container-backed",
+    "sourceFactFamilies": [
+      "embedded-script-definitions",
+      "embedded-script-imports",
+      "embedded-script-calls",
+      "embedded-script-accesses",
+      "embedded-script-type-references",
+      "embedded-script-members",
+      "embedded-script-heritage"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "astro",
+    "extractorStatus": "script-container-backed",
+    "sourceFactFamilies": [
+      "embedded-script-definitions",
+      "embedded-script-imports",
+      "embedded-script-calls",
+      "embedded-script-accesses",
+      "embedded-script-type-references",
+      "embedded-script-members",
+      "embedded-script-heritage"
+    ],
+    "resolutionStatus": "scopeir-resolved-in-repo-targets",
+    "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+  },
+  {
+    "language": "cobol",
+    "extractorStatus": "dedicated-analyzer-phase",
+    "sourceFactFamilies": [
+      "cobol-structure",
+      "copybooks",
+      "jcl"
+    ],
+    "resolutionStatus": "not-scopeir-resolved",
+    "unresolvedPolicy": "recorded in dedicated analyzer metrics/evidence",
+    "webDisplayPolicy": "graph-present labels and relationships are filterable; ScopeIR parity is not implied"
+  }
+] as const;
+
+export type LanguageGraphCoverage = (typeof LANGUAGE_GRAPH_COVERAGE)[number];
 
 export const RUBY_EXTENSIONLESS_FILES = [
   "Rakefile",

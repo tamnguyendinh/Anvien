@@ -84,6 +84,22 @@ func TestExtractTypeScriptScopeIR(t *testing.T) {
 	requireReturnType(t, ir, save.ID, "Promise<void>")
 }
 
+func TestExtractTypeScriptInterfaceHeritage(t *testing.T) {
+	source := []byte(`interface Area { id: string; }
+interface CountedArea extends Area { count: number; }
+interface RankedArea extends Area, CountedArea { rank: number; }
+interface GenericArea extends Pick<Area, "id"> { label: string; }
+`)
+	ir := parseAndExtract(t, "src/area.ts", "hash-area", scanner.TypeScript, source)
+
+	requireDefinition(t, ir, "Area", scopeir.NodeInterface)
+	requireDefinition(t, ir, "CountedArea", scopeir.NodeInterface)
+	requireDefinition(t, ir, "RankedArea", scopeir.NodeInterface)
+	requireHeritage(t, ir, "Area", scopeir.HeritageExtends)
+	requireHeritage(t, ir, "CountedArea", scopeir.HeritageExtends)
+	requireHeritage(t, ir, `Pick<Area, "id">`, scopeir.HeritageExtends)
+}
+
 func TestExtractTypeScriptScopeIRParityFixture(t *testing.T) {
 	ir := parseAndExtract(t, "src/service.ts", "hash-ts", scanner.TypeScript, []byte(typescriptParityFixture))
 	signature := buildParitySignature(ir)

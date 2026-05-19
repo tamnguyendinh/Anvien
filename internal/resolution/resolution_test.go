@@ -70,6 +70,61 @@ func TestResolveTypeScriptGraphFixture(t *testing.T) {
 	}
 }
 
+func TestResolveTypeScriptInterfaceHeritageFromSource(t *testing.T) {
+	source := []byte(`export interface Area { id: string; }
+export interface AreaWithTableCount extends Area { count: number; }
+export interface Shift { id: string; }
+export interface ShiftWithCounts extends Shift { assignmentCount: number; }
+export interface ExternalBacked extends React.ComponentProps<"button"> { label: string; }
+`)
+	ir := parseTypeScriptSource(t, "src/types.ts", source)
+	result, err := Resolve([]scopeir.ScopeIR{ir}, Options{})
+	if err != nil {
+		t.Fatalf("resolve failed: %v", err)
+	}
+
+	area := requireNode(t, result.Graph, "Interface", "src/types.ts", "Area")
+	areaWithCount := requireNode(t, result.Graph, "Interface", "src/types.ts", "AreaWithTableCount")
+	shift := requireNode(t, result.Graph, "Interface", "src/types.ts", "Shift")
+	shiftWithCounts := requireNode(t, result.Graph, "Interface", "src/types.ts", "ShiftWithCounts")
+
+	requireRelationship(t, result.Graph, graph.RelExtends, areaWithCount.ID, area.ID)
+	requireRelationship(t, result.Graph, graph.RelExtends, shiftWithCounts.ID, shift.ID)
+	requireRelationship(t, result.Graph, graph.RelInherits, areaWithCount.ID, area.ID)
+	requireRelationship(t, result.Graph, graph.RelInherits, shiftWithCounts.ID, shift.ID)
+	if result.Metrics.HeritageFactsIndexed != 3 ||
+		result.Metrics.ResolvedInheritance != 2 ||
+		result.Metrics.UnresolvedInheritance != 1 {
+		t.Fatalf("unexpected heritage metrics: %#v", result.Metrics)
+	}
+}
+
+func TestResolveTypeScriptHeritagePrefersSameFileTargetWhenGlobalNameAmbiguous(t *testing.T) {
+	local := parseTypeScriptSource(t, "src/types/area.ts", []byte(`export interface Area { id: string; }
+export interface AreaWithTableCount extends Area { tableCount: number; }
+`))
+	other := parseTypeScriptSource(t, "src/features/tables/types.ts", []byte(`export interface Area { id: string; }
+`))
+
+	result, err := Resolve([]scopeir.ScopeIR{local, other}, Options{})
+	if err != nil {
+		t.Fatalf("resolve failed: %v", err)
+	}
+
+	localArea := requireNode(t, result.Graph, "Interface", "src/types/area.ts", "Area")
+	otherArea := requireNode(t, result.Graph, "Interface", "src/features/tables/types.ts", "Area")
+	areaWithCount := requireNode(t, result.Graph, "Interface", "src/types/area.ts", "AreaWithTableCount")
+
+	requireRelationship(t, result.Graph, graph.RelExtends, areaWithCount.ID, localArea.ID)
+	requireRelationship(t, result.Graph, graph.RelInherits, areaWithCount.ID, localArea.ID)
+	requireNoRelationship(t, result.Graph, graph.RelExtends, areaWithCount.ID, otherArea.ID)
+	if result.Metrics.HeritageFactsIndexed != 1 ||
+		result.Metrics.ResolvedInheritance != 1 ||
+		result.Metrics.UnresolvedInheritance != 0 {
+		t.Fatalf("unexpected heritage metrics: %#v", result.Metrics)
+	}
+}
+
 func TestResolveAwaitedPromiseReturnMemberAccess(t *testing.T) {
 	source := []byte(`type Invoice = {
   invoiceId: string;

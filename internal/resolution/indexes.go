@@ -56,12 +56,14 @@ type workspace struct {
 	defsByFile map[string][]defRef
 	defsByName map[string][]defRef
 
-	scopeBindings     map[string]map[string][]bindingRef
-	typeBindings      map[string]map[string][]scopeir.TypeRef
-	ownerMembers      map[string]map[string][]defRef
-	imports           []resolvedImport
-	importsByReceiver map[importReceiverKey][]int
-	heritage          []heritageResolution
+	scopeBindings      map[string]map[string][]bindingRef
+	typeBindings       map[string]map[string][]scopeir.TypeRef
+	ownerMembers       map[string]map[string][]defRef
+	imports            []resolvedImport
+	importsByReceiver  map[importReceiverKey][]int
+	heritage           []heritageResolution
+	heritageFacts      int
+	unresolvedHeritage int
 
 	bindingAccumulator *bindingAccumulator
 }
@@ -313,16 +315,29 @@ func (w *workspace) resolveImports() {
 func (w *workspace) resolveHeritage() {
 	for _, ir := range w.files {
 		for _, item := range ir.Heritage {
+			w.heritageFacts++
 			owner, ok := w.ownerForScope(item.InScope, dispatchOwnerLabels())
 			if !ok {
+				w.unresolvedHeritage++
 				continue
 			}
 			targetLabels := dispatchOwnerLabels()
 			if item.Kind == scopeir.HeritageImplements {
 				targetLabels = []scopeir.NodeLabel{scopeir.NodeInterface, scopeir.NodeTrait}
 			}
-			target, ok := w.resolveName(item.Name, item.InScope, targetLabels)
+			targetName := baseTypeName(item.Name)
+			if targetName == "" {
+				w.unresolvedHeritage++
+				continue
+			}
+			target, ok := w.resolveName(targetName, item.InScope, targetLabels)
+			if !ok {
+				target, ok = w.resolveSameFileName(item.FilePath, targetName, targetLabels)
+			}
 			if !ok || target.Fact.ID == owner.Fact.ID {
+				if !ok {
+					w.unresolvedHeritage++
+				}
 				continue
 			}
 			w.heritage = append(w.heritage, heritageResolution{

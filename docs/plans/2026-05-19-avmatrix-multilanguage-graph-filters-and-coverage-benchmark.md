@@ -141,45 +141,194 @@ Observed `interface extends` examples:
 | `electron/renderer/src/features/shifts/types.ts:134` | `AssignmentWithUser extends ShiftAssignment` |
 | `electron/renderer/src/features/shifts/types.ts:329` | `ShiftWithCountsDTO extends ShiftDTO` |
 
-## B1 - Target Metrics To Record During Implementation
+## B1 - Implementation Slice Benchmark
 
-Status: pending
+Status: recorded
 
-Record after each relevant slice:
+Measurement date: 2026-05-19
+
+Analyzer command used for final graph measurements:
+
+```powershell
+go run ./cmd/avmatrix analyze --force --skip-agents-md --no-stats
+go run ./cmd/avmatrix analyze E:\Restaurant_manager --force --skip-agents-md --no-stats
+```
+
+Analyze runtime:
+
+| Repo | Runtime |
+|---|---:|
+| `E:\AVmatrix-GO` | `17.89s` |
+| `E:\Restaurant_manager` | `28.93s` |
+
+### Contract And Coverage Matrix
+
+| Metric | Final |
+|---|---:|
+| Generated Web contract node labels | `37` |
+| Generated Web contract relationship types | `22` |
+| Relationship display policy entries | `22` |
+| Supported code languages | `18` |
+| Language graph coverage entries | `18` |
+| Provider-backed languages | `14` |
+| Script-container-backed languages | `3` |
+| Dedicated analyzer-phase languages | `1` |
+
+Provider-backed languages are JavaScript, TypeScript, Python, Java, C, C++, C#, Go, Ruby, Rust, PHP, Kotlin, Swift, and Dart. Vue, Svelte, and Astro are script-container-backed. COBOL is classified as a dedicated analyzer phase.
+
+### AVmatrix-GO Final Graph Inventory
+
+| Metric | Count |
+|---|---:|
+| Nodes | `20,771` |
+| Relationships | `51,854` |
+| Graph-present node labels | `16` |
+| Graph-present relationship types | `11` |
+| Raw heritage relationships | `0` |
+| Unique semantic heritage pairs | `0` |
+| Duplicate compatibility pairs | `0` |
+| Display relationships after compatibility grouping | `51,854` |
+| Display relationship types after compatibility grouping | `11` |
+
+Node counts:
+
+| Node label | Count |
+|---|---:|
+| Class | `4` |
+| Community | `912` |
+| Const | `323` |
+| Constructor | `5` |
+| File | `691` |
+| Folder | `112` |
+| Function | `3,402` |
+| Interface | `100` |
+| Method | `809` |
+| Package | `413` |
+| Process | `639` |
+| Property | `3,205` |
+| Section | `988` |
+| Struct | `503` |
+| TypeAlias | `74` |
+| Variable | `8,591` |
+
+Relationship counts:
+
+| Relationship type | Raw count | Display count |
+|---|---:|---:|
+| ACCESSES | `5,078` | `5,078` |
+| CALLS | `8,523` | `8,523` |
+| CONTAINS | `1,766` | `1,766` |
+| DEFINES | `17,429` | `17,429` |
+| ENTRY_POINT_OF | `639` | `639` |
+| HAS_METHOD | `339` | `339` |
+| HAS_PROPERTY | `2,862` | `2,862` |
+| IMPORTS | `3,733` | `3,733` |
+| MEMBER_OF | `3,884` | `3,884` |
+| STEP_IN_PROCESS | `2,364` | `2,364` |
+| USES | `5,237` | `5,237` |
+
+### Restaurant_manager Final Trigger Inventory
+
+| Metric | Baseline | Final |
+|---|---:|---:|
+| Nodes | `78,350` | `78,358` |
+| Relationships | `130,497` | `130,588` |
+| Raw `EXTENDS` count | `6` | `19` |
+| Raw `INHERITS` count | `6` | `19` |
+| Raw `IMPLEMENTS` count | `0` | `0` |
+| Unique semantic heritage pair count | `6` | `19` |
+| Duplicate compatibility pair count | `6` | `19` raw, `0` misleading display duplicates |
+| TS heritage raw relationships | `0` | `16` |
+| TS heritage unique source-target pairs | `0` | `8` |
+| Go embedded struct unique semantic pairs | `6` | `11` |
+| Display relationship count after compatibility grouping | pending | `130,569` |
+| Display relationship type count after compatibility grouping | pending | `13` |
+
+Final graph-present node labels: `17`.
+
+Final graph-present relationship types: `14` raw, `13` displayed after grouping duplicate compatibility `INHERITS`.
+
+Final Restaurant_manager TS heritage pairs:
+
+| Source | Target | Raw edge types |
+|---|---|---|
+| `Interface:electron/renderer/src/features/shifts/types.ts:AssignmentWithUser` | `Interface:electron/renderer/src/features/shifts/types.ts:ShiftAssignment` | `EXTENDS`, `INHERITS` |
+| `Interface:electron/renderer/src/features/shifts/types.ts:ShiftWithCounts` | `Interface:electron/renderer/src/features/shifts/types.ts:Shift` | `EXTENDS`, `INHERITS` |
+| `Interface:electron/renderer/src/features/shifts/types.ts:ShiftWithCountsDTO` | `Interface:electron/renderer/src/features/shifts/types.ts:ShiftDTO` | `EXTENDS`, `INHERITS` |
+| `Interface:electron/renderer/src/features/tables/types.ts:TableWithUser` | `Interface:electron/renderer/src/features/tables/types.ts:Table` | `EXTENDS`, `INHERITS` |
+| `Interface:electron/renderer/src/types/area.ts:AreaWithTableCount` | `Interface:electron/renderer/src/types/area.ts:Area` | `EXTENDS`, `INHERITS` |
+| `Interface:electron/renderer/src/types/table.ts:TableWithUser` | `Interface:electron/renderer/src/types/table.ts:Table` | `EXTENDS`, `INHERITS` |
+| `Interface:electron/renderer/src/utils/dateUtils.ts:DateTimeOptions` | `Interface:electron/renderer/src/utils/dateUtils.ts:DateOptions` | `EXTENDS`, `INHERITS` |
+| `Interface:electron/renderer/src/utils/dateUtils.ts:DateTimeOptions` | `Interface:electron/renderer/src/utils/dateUtils.ts:TimeOptions` | `EXTENDS`, `INHERITS` |
+
+Final Restaurant_manager Go embedded struct heritage pairs: `11`, displayed as `EXTENDS` in the Web dashboard with grouped `INHERITS` raw compatibility counts.
+
+Restaurant_manager raw relationship counts:
+
+| Relationship type | Raw count | Display count |
+|---|---:|---:|
+| ACCESSES | `7,670` | `7,670` |
+| CALLS | `15,109` | `15,109` |
+| CONTAINS | `42,016` | `42,016` |
+| DEFINES | `34,335` | `34,335` |
+| ENTRY_POINT_OF | `510` | `510` |
+| EXTENDS | `19` | `19` |
+| HANDLES_ROUTE | `50` | `50` |
+| HAS_METHOD | `2,566` | `2,566` |
+| HAS_PROPERTY | `7,520` | `7,520` |
+| IMPORTS | `1,612` | `1,612` |
+| INHERITS | `19` | `0` when grouped with same-pair `EXTENDS` |
+| MEMBER_OF | `6,610` | `6,610` |
+| STEP_IN_PROCESS | `2,017` | `2,017` |
+| USES | `10,535` | `10,535` |
+
+### Shell Interaction Measurements
+
+| Metric | Final |
+|---|---|
+| Top bar Back navigation target | `/Start-AVmatrix.html` on the current origin |
+| Back navigation false reconnect banner | `0` banners in focused Playwright e2e |
+| Left dashboard min width | `192px` |
+| Left dashboard default width | `248px` |
+| Left dashboard max width | `480px` |
+| Resize persistence | `localStorage` key `avmatrix.leftPanelWidth` |
+| Canvas usability after resize | focused Playwright e2e opened filters and confirmed canvas visibility |
+
+### Original Target Table Status
 
 | Metric | Baseline | Target |
 |---|---:|---:|
-| Raw `EXTENDS` count | `6` | measured |
-| Raw `INHERITS` count | `6` | measured |
-| Unique semantic heritage pair count | `6` | measured |
-| Duplicate compatibility pair count | `6` | `0` for UI display, or clearly marked if raw graph preserves both |
-| Generated node labels in Web contract | `37` | all classified for filter/display/adapter behavior |
-| Generated graph relationship types in Web contract | `22` | all classified for filter/display/adapter behavior |
-| Supported code languages in scanner/Web contracts | `18` | all classified in graph coverage matrix |
-| Supported languages with extractor/provider status | pending | all classified as provider-backed, script-container backed, scan-only, or not applicable |
-| Supported languages with graph fact coverage | pending | all classified by fact family and graph policy |
+| Raw `EXTENDS` count | `6` | `19` in Restaurant_manager final graph |
+| Raw `INHERITS` count | `6` | `19` in Restaurant_manager final graph |
+| Unique semantic heritage pair count | `6` | `19` in Restaurant_manager final graph |
+| Duplicate compatibility pair count | `6` | `19` raw, `0` misleading display duplicates |
+| Generated node labels in Web contract | `37` | `37`, with generated dashboard rows and adapter fallback/classification |
+| Generated graph relationship types in Web contract | `22` | `22`, with generated display policy and size policy test coverage |
+| Supported code languages in scanner/Web contracts | `18` | `18`, all classified in generated graph coverage matrix |
+| Supported languages with extractor/provider status | pending | `14` provider-backed, `3` script-container-backed, `1` dedicated analyzer-phase |
+| Supported languages with graph fact coverage | pending | classified in generated coverage matrix |
 | Languages with provider parity fixtures | current provider parity subset | all provider-backed languages covered by claimed fact families or explicitly documented as not applicable |
-| Per-language source-to-graph contract | pending | no unclassified language entries |
-| UI node filter rows vs graph payload labels | pending | no graph-present label missing from dashboard/legend |
-| UI edge filter rows vs graph payload relationships | pending | no graph-present relationship type missing from dashboard/legend |
-| Graph adapter label/type classification coverage | pending | all labels/types covered or intentional fallback documented |
-| AVmatrix-GO full graph filter inventory | pending | node/edge/filter/adapter counts recorded |
-| Restaurant_manager full graph filter inventory | partial heritage baseline | node/edge/filter/adapter counts recorded |
-| TS heritage source sites | `16` | measured |
-| TS parser/ScopeIR heritage source sites | pending | measured |
-| TS resolved heritage edges | `0` | all resolvable in-repo sites |
-| TS unresolved/external heritage sites represented | `0` | all unresolved/external sites represented or audited |
-| TS missing heritage source sites | `16` | `0` |
-| Go embedded struct unique semantic pairs | `6` | measured |
-| Go embedded struct user-facing duplicate pairs | `6` through `EXTENDS` + `INHERITS` | `0` misleading duplicates |
+| Per-language source-to-graph contract | pending | no unclassified generated language entries |
+| UI node filter rows vs graph payload labels | pending | graph-present labels covered by passing unit tests |
+| UI edge filter rows vs graph payload relationships | pending | graph-present relationship types covered by passing unit tests |
+| Graph adapter label/type classification coverage | pending | generated relationship types have size policy; node classifications have fallback |
+| AVmatrix-GO full graph filter inventory | pending | recorded |
+| Restaurant_manager full graph filter inventory | partial heritage baseline | recorded |
+| TS heritage source sites | `16` | `16` source sites, `17` target facts |
+| TS parser/ScopeIR heritage source sites | pending | focused parser/ScopeIR extraction covered in tests |
+| TS resolved heritage edges | `0` | `8` unique source-target pairs, `16` raw compatibility edges |
+| TS unresolved/external heritage sites represented | `0` | `9` external target facts audited as unresolved/external policy |
+| TS missing heritage source sites | `16` | `0` for resolvable in-repo target pairs; external targets remain unresolved by policy |
+| Go embedded struct unique semantic pairs | `6` | `11` |
+| Go embedded struct user-facing duplicate pairs | `6` through `EXTENDS` + `INHERITS` | `0` misleading display duplicates |
 | Top bar Back navigation to `Start-AVmatrix.html` | not implemented in current product | visible and tested |
 | Back navigation stale connection-loss banner behavior | pending | no false connection-loss banner during intentional navigation |
-| Left dashboard drag resize | not implemented in current product | measured min/max width bounds |
-| Canvas usability after dashboard resize | pending | measured/validated |
+| Left dashboard drag resize | not implemented in current product | `192px` to `480px`, tested |
+| Canvas usability after dashboard resize | pending | validated by focused Playwright e2e |
 
 ## B2 - Final Benchmark
 
-Status: pending
+Status: pending broader provider-parity/focus-depth expansion
 
 Record final:
 

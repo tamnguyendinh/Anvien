@@ -19,7 +19,9 @@ type Metrics struct {
 	ResolvedCalls               int
 	ResolvedAccesses            int
 	ResolvedTypeReferences      int
+	HeritageFactsIndexed        int
 	ResolvedInheritance         int
+	UnresolvedInheritance       int
 	DuplicateEdgesMerged        int
 	MethodOverridesEmitted      int
 	MethodImplementsEmitted     int

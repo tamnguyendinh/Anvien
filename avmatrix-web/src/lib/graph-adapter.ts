@@ -1,11 +1,15 @@
-import Graph, { MultiDirectedGraph } from 'graphology';
-import type { KnowledgeGraph } from '../core/graph/types';
+import Graph, { MultiDirectedGraph } from "graphology";
+import type { KnowledgeGraph } from "../core/graph/types";
 import {
+  COMMUNITY_COLORED_NODE_LABELS,
+  EDGE_SIZE_MULTIPLIERS,
+  STRUCTURAL_NODE_LABELS,
+  getDisplayGraphRelationships,
   getCommunityColor,
   getEdgeInfo,
   getNodeColor,
   getNodeSize,
-} from './constants';
+} from "./constants";
 
 export interface SigmaNodeAttributes {
   x: number;
@@ -48,12 +52,12 @@ const getLabelScaledNodeSizeCap = (
   label: string | undefined,
   nodeCount: number,
 ): number => {
-  if (label === 'Package') {
+  if (label === "Package") {
     if (nodeCount > 20000) return 1.5;
     if (nodeCount > 5000) return 2;
     return 3;
   }
-  if (label === 'Section') {
+  if (label === "Section") {
     if (nodeCount > 20000) return 1;
     if (nodeCount > 5000) return 1.5;
     return 2;
@@ -71,6 +75,10 @@ export const capRenderedNodeSize = (
   size: number,
   nodeCount: number = 0,
 ): number => Math.min(size, getMaxRenderedNodeSize(nodeCount));
+
+const communityColoredNodeLabelSet = new Set<string>(
+  COMMUNITY_COLORED_NODE_LABELS,
+);
 
 export const getScaledNodeSize = (
   baseSize: number,
@@ -96,26 +104,27 @@ const getNodeMass = (nodeType: string, nodeCount: number): number => {
   // Scale mass based on graph size
   const baseMassMultiplier = nodeCount > 5000 ? 2 : nodeCount > 1000 ? 1.5 : 1;
 
-  switch (nodeType) {
-    case 'Project':
-      return 50 * baseMassMultiplier; // Heaviest - anchors everything
-    case 'Package':
-      return 30 * baseMassMultiplier; // Very heavy
-    case 'Module':
-      return 20 * baseMassMultiplier; // Heavy
-    case 'Folder':
-      return 15 * baseMassMultiplier; // Heavy - blasts folders apart!
-    case 'File':
-      return 3 * baseMassMultiplier; // Medium - follows folders
-    case 'Class':
-    case 'Interface':
-      return 5 * baseMassMultiplier; // Medium-heavy
-    case 'Function':
-    case 'Method':
-      return 2 * baseMassMultiplier; // Light
-    default:
-      return 1; // Default mass
+  const structuralRank: Record<string, number> = {
+    Project: 50,
+    Package: 30,
+    Module: 20,
+    Namespace: 20,
+    Folder: 15,
+    File: 3,
+    Section: 2,
+    Community: 2,
+    Process: 4,
+    Route: 4,
+    Tool: 4,
+  };
+  const structuralMass = structuralRank[nodeType];
+  if (structuralMass !== undefined) {
+    return structuralMass * baseMassMultiplier;
   }
+  if (communityColoredNodeLabelSet.has(nodeType)) {
+    return 3 * baseMassMultiplier;
+  }
+  return Math.max(1, Math.min(2, getNodeSize(nodeType))) * baseMassMultiplier;
 };
 
 /**
@@ -134,6 +143,9 @@ export const knowledgeGraphToGraphology = (
     SigmaEdgeAttributes
   >();
   const nodeCount = knowledgeGraph.nodes.length;
+  const displayRelationships = getDisplayGraphRelationships(
+    knowledgeGraph.relationships,
+  );
 
   // Build parent-child map from relationships that materially improve layout.
   // Higher-priority owner/process relationships can replace broad file-level
@@ -192,7 +204,7 @@ export const knowledgeGraphToGraphology = (
     childParentPriority.set(childId, priority);
   };
 
-  knowledgeGraph.relationships.forEach((rel) => {
+  displayRelationships.forEach((rel) => {
     const forwardPriority = forwardHierarchyRelations[rel.type];
     if (forwardPriority !== undefined) {
       addHierarchyLink(rel.sourceId, rel.targetId, forwardPriority);
@@ -209,16 +221,7 @@ export const knowledgeGraphToGraphology = (
   const nodeMap = new Map(knowledgeGraph.nodes.map((n) => [n.id, n]));
 
   // Separate root/grouping nodes from content nodes.
-  const structuralTypes = new Set([
-    'Project',
-    'Package',
-    'Module',
-    'Folder',
-    'Process',
-    'Community',
-    'Route',
-    'Tool',
-  ]);
+  const structuralTypes = new Set<string>(STRUCTURAL_NODE_LABELS);
   const structuralNodes = knowledgeGraph.nodes.filter((n) =>
     structuralTypes.has(n.label),
   );
@@ -303,7 +306,7 @@ export const knowledgeGraphToGraphology = (
 
     // Check if this is a symbol node with a community assignment
     const communityIndex = communityMemberships?.get(nodeId);
-    const symbolTypes = new Set(['Function', 'Class', 'Method', 'Interface']);
+    const symbolTypes = new Set<string>(COMMUNITY_COLORED_NODE_LABELS);
     const clusterCenter =
       communityIndex !== undefined ? clusterCenters.get(communityIndex) : null;
 
@@ -387,22 +390,7 @@ export const knowledgeGraphToGraphology = (
   // Add edges with distinct colors per relationship type
   const edgeBaseSize = nodeCount > 20000 ? 0.4 : nodeCount > 5000 ? 0.6 : 1.0;
 
-  const EDGE_SIZE_MULTIPLIERS: Record<string, number> = {
-    CONTAINS: 0.4,
-    DEFINES: 0.5,
-    IMPORTS: 0.6,
-    CALLS: 0.8,
-    EXTENDS: 1.0,
-    IMPLEMENTS: 0.9,
-    HAS_METHOD: 0.6,
-    HAS_PROPERTY: 0.6,
-    ACCESSES: 0.5,
-    USES: 0.5,
-    MEMBER_OF: 0.3,
-    STEP_IN_PROCESS: 0.7,
-  };
-
-  knowledgeGraph.relationships.forEach((rel, index) => {
+  displayRelationships.forEach((rel, index) => {
     if (graph.hasNode(rel.sourceId) && graph.hasNode(rel.targetId)) {
       const edgeInfo = getEdgeInfo(rel.type);
       const sizeMultiplier = EDGE_SIZE_MULTIPLIERS[rel.type] ?? 0.5;
@@ -435,7 +423,7 @@ export const filterGraphByLabels = (
 ): void => {
   graph.forEachNode((nodeId, attributes) => {
     const isVisible = visibleLabels.includes(attributes.nodeType);
-    graph.setNodeAttribute(nodeId, 'hidden', !isVisible);
+    graph.setNodeAttribute(nodeId, "hidden", !isVisible);
   });
 };
 
@@ -494,6 +482,6 @@ export const filterGraphByDepth = (
   graph.forEachNode((nodeId, attributes) => {
     const isLabelVisible = visibleLabels.includes(attributes.nodeType);
     const isInRange = nodesInRange.has(nodeId);
-    graph.setNodeAttribute(nodeId, 'hidden', !isLabelVisible || !isInRange);
+    graph.setNodeAttribute(nodeId, "hidden", !isLabelVisible || !isInRange);
   });
 };

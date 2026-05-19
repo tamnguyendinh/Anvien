@@ -10,6 +10,7 @@ export {
   AlertCircle,
   AlertTriangle,
   ArrowDown,
+  ArrowLeft,
   ArrowRight,
   AtSign,
   Brain,
@@ -72,4 +73,4 @@ export {
   Zap,
   ZoomIn,
   ZoomOut,
-} from 'lucide-react';
+} from "lucide-react";

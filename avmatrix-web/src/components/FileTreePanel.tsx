@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import {
   ChevronRight,
   ChevronDown,
@@ -25,26 +26,28 @@ import {
   Square,
   Table,
   Zap,
-} from '@/lib/lucide-icons';
-import { useAppState } from '../hooks/useAppState.local-runtime';
+} from "@/lib/lucide-icons";
+import { useAppState } from "../hooks/useAppState.local-runtime";
 import {
   ALL_EDGE_TYPES,
   COMMUNITY_COLORS,
   FILTERABLE_LABELS,
+  getDisplayRelationshipTypeCounts,
   getEdgeInfo,
   getFilterableEdgeTypesForGraph,
   getFilterableNodeLabelsForGraph,
+  getGroupedHeritageCompatibilityCount,
   getNodeColor,
   getNodeLabelCounts,
   getRelationshipTypeCounts,
-} from '../lib/constants';
-import type { GraphNode } from '@/generated/avmatrix-contracts';
+} from "../lib/constants";
+import type { GraphNode } from "@/generated/avmatrix-contracts";
 
 // Tree node structure
 interface TreeNode {
   id: string;
   name: string;
-  type: 'folder' | 'file';
+  type: "folder" | "file";
   path: string;
   children: TreeNode[];
   graphNode?: GraphNode;
@@ -57,7 +60,7 @@ const buildFileTree = (nodes: GraphNode[]): TreeNode[] => {
 
   // Filter to only folders and files
   const fileNodes = nodes.filter(
-    (n) => n.label === 'Folder' || n.label === 'File',
+    (n) => n.label === "Folder" || n.label === "File",
   );
 
   // Sort by path to ensure parents come before children
@@ -66,8 +69,8 @@ const buildFileTree = (nodes: GraphNode[]): TreeNode[] => {
   );
 
   fileNodes.forEach((node) => {
-    const parts = node.properties.filePath.split('/').filter(Boolean);
-    let currentPath = '';
+    const parts = node.properties.filePath.split("/").filter(Boolean);
+    let currentPath = "";
     let currentLevel = root;
 
     parts.forEach((part: string, index: number) => {
@@ -77,12 +80,12 @@ const buildFileTree = (nodes: GraphNode[]): TreeNode[] => {
 
       if (!existing) {
         const isLastPart = index === parts.length - 1;
-        const isFile = isLastPart && node.label === 'File';
+        const isFile = isLastPart && node.label === "File";
 
         existing = {
           id: isLastPart ? node.id : currentPath,
           name: part,
-          type: isFile ? 'file' : 'folder',
+          type: isFile ? "file" : "folder",
           path: currentPath,
           children: [],
           graphNode: isLastPart ? node : undefined,
@@ -151,7 +154,7 @@ const TreeItem = ({
     <div>
       <button
         onClick={handleClick}
-        className={`relative flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left text-sm transition-colors hover:bg-base ${isSelected ? 'border-l-[3px] border-border-strong bg-base text-text-primary' : 'border-l-[3px] border-transparent text-text-primary hover:text-text-primary'} ${matchesSearch ? 'bg-base' : ''} `}
+        className={`relative flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left text-sm transition-colors hover:bg-base ${isSelected ? "border-l-[3px] border-border-strong bg-base text-text-primary" : "border-l-[3px] border-transparent text-text-primary hover:text-text-primary"} ${matchesSearch ? "bg-base" : ""} `}
         style={{ paddingLeft: `${depth * 12 + 8}px` }}
       >
         {/* Expand/collapse icon */}
@@ -166,28 +169,28 @@ const TreeItem = ({
         )}
 
         {/* Node icon */}
-        {node.type === 'folder' ? (
+        {node.type === "folder" ? (
           isExpanded ? (
             <FolderOpen
               className="h-4 w-4 shrink-0"
-              style={{ color: getNodeColor('Folder') }}
+              style={{ color: getNodeColor("Folder") }}
             />
           ) : (
             <Folder
               className="h-4 w-4 shrink-0"
-              style={{ color: getNodeColor('Folder') }}
+              style={{ color: getNodeColor("Folder") }}
             />
           )
         ) : (
           <FileCode
             className="h-4 w-4 shrink-0"
-            style={{ color: getNodeColor('File') }}
+            style={{ color: getNodeColor("File") }}
           />
         )}
 
         {/* Name */}
         <span
-          className={`truncate font-mono text-xs ${isSelected ? 'font-semibold' : 'font-medium'}`}
+          className={`truncate font-mono text-xs ${isSelected ? "font-semibold" : "font-medium"}`}
         >
           {node.name}
         </span>
@@ -217,58 +220,58 @@ const TreeItem = ({
 // Icon for node types
 const getNodeTypeIcon = (label: string) => {
   switch (label) {
-    case 'Project':
-    case 'Tool':
+    case "Project":
+    case "Tool":
       return Zap;
-    case 'Package':
-    case 'Module':
-    case 'Namespace':
+    case "Package":
+    case "Module":
+    case "Namespace":
       return Layers;
-    case 'Folder':
+    case "Folder":
       return Folder;
-    case 'File':
+    case "File":
       return FileCode;
-    case 'Class':
-    case 'Struct':
-    case 'Record':
+    case "Class":
+    case "Struct":
+    case "Record":
       return Box;
-    case 'Function':
-    case 'Method':
-    case 'Constructor':
-    case 'Delegate':
-    case 'Impl':
+    case "Function":
+    case "Method":
+    case "Constructor":
+    case "Delegate":
+    case "Impl":
       return Braces;
-    case 'Interface':
-    case 'Trait':
+    case "Interface":
+    case "Trait":
       return Hash;
-    case 'Enum':
-    case 'Union':
+    case "Enum":
+    case "Union":
       return List;
-    case 'Type':
-    case 'TypeAlias':
-    case 'Typedef':
-    case 'Template':
+    case "Type":
+    case "TypeAlias":
+    case "Typedef":
+    case "Template":
       return Type;
-    case 'Decorator':
-    case 'Annotation':
-    case 'Macro':
+    case "Decorator":
+    case "Annotation":
+    case "Macro":
       return AtSign;
-    case 'Import':
+    case "Import":
       return FileCode;
-    case 'Variable':
-    case 'Const':
-    case 'Static':
-    case 'Property':
+    case "Variable":
+    case "Const":
+    case "Static":
+    case "Property":
       return Variable;
-    case 'CodeElement':
+    case "CodeElement":
       return Code;
-    case 'Community':
+    case "Community":
       return Globe;
-    case 'Process':
+    case "Process":
       return GitBranch;
-    case 'Section':
+    case "Section":
       return Table;
-    case 'Route':
+    case "Route":
       return Server;
     default:
       return Square;
@@ -278,6 +281,23 @@ const getNodeTypeIcon = (label: string) => {
 interface FileTreePanelProps {
   onFocusNode: (nodeId: string) => void;
 }
+
+const LEFT_PANEL_STORAGE_KEY = "avmatrix.leftPanelWidth";
+const LEFT_PANEL_MIN_WIDTH = 192;
+const LEFT_PANEL_DEFAULT_WIDTH = 248;
+const LEFT_PANEL_MAX_WIDTH = 480;
+
+const clampLeftPanelWidth = (width: number): number =>
+  Math.min(LEFT_PANEL_MAX_WIDTH, Math.max(LEFT_PANEL_MIN_WIDTH, width));
+
+const loadStoredLeftPanelWidth = (): number => {
+  if (typeof window === "undefined") return LEFT_PANEL_DEFAULT_WIDTH;
+  const raw = window.localStorage.getItem(LEFT_PANEL_STORAGE_KEY);
+  const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
+  return Number.isFinite(parsed)
+    ? clampLeftPanelWidth(parsed)
+    : LEFT_PANEL_DEFAULT_WIDTH;
+};
 
 export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
   const {
@@ -294,9 +314,11 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
   } = useAppState();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'files' | 'filters'>('files');
+  const [activeTab, setActiveTab] = useState<"files" | "filters">("files");
+  const [panelWidth, setPanelWidth] = useState(loadStoredLeftPanelWidth);
+  const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
 
   // Build file tree from graph
   const fileTree = useMemo(() => {
@@ -318,9 +340,9 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
     if (!path) return;
 
     // Expand all parent folders leading to this file
-    const parts = path.split('/').filter(Boolean);
+    const parts = path.split("/").filter(Boolean);
     const pathsToExpand: string[] = [];
-    let currentPath = '';
+    let currentPath = "";
 
     // Build all parent paths (exclude the last part if it's a file)
     for (let i = 0; i < parts.length - 1; i++) {
@@ -336,6 +358,19 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
       });
     }
   }, [selectedNode?.id]); // Trigger when selected node changes
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(LEFT_PANEL_STORAGE_KEY, String(panelWidth));
+  }, [panelWidth]);
+
+  useEffect(() => {
+    const handleWindowResize = () => {
+      setPanelWidth((width) => clampLeftPanelWidth(width));
+    };
+    window.addEventListener("resize", handleWindowResize);
+    return () => window.removeEventListener("resize", handleWindowResize);
+  }, []);
 
   const toggleExpanded = useCallback((path: string) => {
     setExpandedPaths((prev) => {
@@ -364,6 +399,37 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
     [setSelectedNode, openCodePanel, onFocusNode, selectedNode],
   );
 
+  const handleResizePointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      resizeRef.current = { startX: event.clientX, startWidth: panelWidth };
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+
+      const handlePointerMove = (moveEvent: PointerEvent) => {
+        const state = resizeRef.current;
+        if (!state) return;
+        setPanelWidth(
+          clampLeftPanelWidth(
+            state.startWidth + moveEvent.clientX - state.startX,
+          ),
+        );
+      };
+
+      const handlePointerUp = () => {
+        resizeRef.current = null;
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+        window.removeEventListener("pointermove", handlePointerMove);
+        window.removeEventListener("pointerup", handlePointerUp);
+      };
+
+      window.addEventListener("pointermove", handlePointerMove);
+      window.addEventListener("pointerup", handlePointerUp);
+    },
+    [panelWidth],
+  );
+
   const selectedPath = selectedNode?.properties.filePath || null;
 
   const nodeTypeItems = useMemo(() => {
@@ -387,13 +453,21 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
       return ALL_EDGE_TYPES.map((type) => ({
         type,
         count: 0,
+        rawCount: 0,
+        groupedCompatibilityCount: 0,
         info: getEdgeInfo(type),
       }));
     }
     const counts = getRelationshipTypeCounts(graph.relationships);
+    const displayCounts = getDisplayRelationshipTypeCounts(graph.relationships);
     return getFilterableEdgeTypesForGraph(graph.relationships).map((type) => ({
       type,
-      count: counts.get(type) ?? 0,
+      count: displayCounts.get(type) ?? 0,
+      rawCount: counts.get(type) ?? 0,
+      groupedCompatibilityCount: getGroupedHeritageCompatibilityCount(
+        graph.relationships,
+        type,
+      ),
       info: getEdgeInfo(type),
     }));
   }, [graph]);
@@ -401,7 +475,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
   const communityColorLegend = useMemo(() => {
     if (!graph) return null;
     const memberRelationships = graph.relationships.filter(
-      (relationship) => relationship.type === 'MEMBER_OF',
+      (relationship) => relationship.type === "MEMBER_OF",
     );
     if (memberRelationships.length === 0) return null;
 
@@ -430,9 +504,9 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
         <button
           onClick={() => {
             setIsCollapsed(false);
-            setActiveTab('files');
+            setActiveTab("files");
           }}
-          className={`rounded p-2 transition-colors ${activeTab === 'files' ? 'bg-base text-text-primary' : 'text-text-secondary hover:bg-base hover:text-text-primary'}`}
+          className={`rounded p-2 transition-colors ${activeTab === "files" ? "bg-base text-text-primary" : "text-text-secondary hover:bg-base hover:text-text-primary"}`}
           title="File Explorer"
         >
           <Folder className="h-5 w-5" />
@@ -440,9 +514,9 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
         <button
           onClick={() => {
             setIsCollapsed(false);
-            setActiveTab('filters');
+            setActiveTab("filters");
           }}
-          className={`rounded p-2 transition-colors ${activeTab === 'filters' ? 'bg-base text-text-primary' : 'text-text-secondary hover:bg-base hover:text-text-primary'}`}
+          className={`rounded p-2 transition-colors ${activeTab === "filters" ? "bg-base text-text-primary" : "text-text-secondary hover:bg-base hover:text-text-primary"}`}
           title="Filters"
         >
           <Filter className="h-5 w-5" />
@@ -452,25 +526,36 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
   }
 
   return (
-    <div className="file-tree-panel flex h-full w-[13rem] min-w-[12rem] flex-shrink-0 animate-slide-in flex-col border-r-[3px] border-border-default bg-surface">
+    <div
+      className="file-tree-panel relative flex h-full flex-shrink-0 animate-slide-in flex-col border-r-[3px] border-border-default bg-surface"
+      style={{ width: panelWidth }}
+    >
+      <button
+        type="button"
+        aria-label="Resize left dashboard"
+        title="Drag to resize dashboard"
+        data-testid="left-dashboard-resize-handle"
+        onPointerDown={handleResizePointerDown}
+        className="absolute top-0 right-[-5px] z-20 h-full w-2 cursor-col-resize bg-transparent transition-colors hover:bg-border-strong/25"
+      />
       <div className="flex items-center justify-between border-b-[3px] border-border-default px-3 py-3">
         <div className="flex items-center gap-1">
           <button
-            onClick={() => setActiveTab('files')}
+            onClick={() => setActiveTab("files")}
             className={`rounded px-2 py-1 font-mono text-xs transition-colors ${
-              activeTab === 'files'
-                ? 'bg-base text-text-primary'
-                : 'text-text-secondary hover:bg-base hover:text-text-primary'
+              activeTab === "files"
+                ? "bg-base text-text-primary"
+                : "text-text-secondary hover:bg-base hover:text-text-primary"
             }`}
           >
             Explorer
           </button>
           <button
-            onClick={() => setActiveTab('filters')}
+            onClick={() => setActiveTab("filters")}
             className={`rounded px-2 py-1 font-mono text-xs transition-colors ${
-              activeTab === 'filters'
-                ? 'bg-base text-text-primary'
-                : 'text-text-secondary hover:bg-base hover:text-text-primary'
+              activeTab === "filters"
+                ? "bg-base text-text-primary"
+                : "text-text-secondary hover:bg-base hover:text-text-primary"
             }`}
           >
             Filters
@@ -485,7 +570,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
         </button>
       </div>
 
-      {activeTab === 'files' && (
+      {activeTab === "files" && (
         <>
           {/* Search */}
           <div className="border-b border-border-subtle px-3 py-3">
@@ -525,7 +610,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
         </>
       )}
 
-      {activeTab === 'filters' && (
+      {activeTab === "filters" && (
         <div className="scrollbar-thin flex-1 overflow-y-auto p-3">
           <div className="mb-3">
             <h3 className="press-eyebrow mb-2 text-text-secondary">
@@ -549,12 +634,12 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                   aria-pressed={isVisible}
                   className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
                     isVisible
-                      ? 'bg-base text-text-primary'
-                      : 'text-text-muted hover:bg-base hover:text-text-secondary'
+                      ? "bg-base text-text-primary"
+                      : "text-text-muted hover:bg-base hover:text-text-secondary"
                   } `}
                 >
                   <div
-                    className={`flex h-5 w-5 items-center justify-center rounded ${isVisible ? '' : 'opacity-40'}`}
+                    className={`flex h-5 w-5 items-center justify-center rounded ${isVisible ? "" : "opacity-40"}`}
                     style={{ backgroundColor: `${color}20` }}
                   >
                     <Icon className="h-3 w-3" style={{ color }} />
@@ -566,7 +651,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                     {count}
                   </span>
                   <div
-                    className={`h-2 w-2 rounded-full transition-colors ${isVisible ? 'bg-border-strong' : 'bg-border-subtle'}`}
+                    className={`h-2 w-2 rounded-full transition-colors ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
                   />
                 </button>
               );
@@ -583,37 +668,49 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
             </p>
 
             <div className="flex flex-col gap-1">
-              {edgeTypeItems.map(({ type: edgeType, count, info }) => {
-                const isVisible = visibleEdgeTypes.includes(edgeType);
+              {edgeTypeItems.map(
+                ({
+                  type: edgeType,
+                  count,
+                  rawCount,
+                  groupedCompatibilityCount,
+                  info,
+                }) => {
+                  const isVisible = visibleEdgeTypes.includes(edgeType);
+                  const title =
+                    groupedCompatibilityCount > 0
+                      ? `${info.label} (${count}; ${groupedCompatibilityCount} grouped compatibility edges, ${rawCount} raw)`
+                      : `${info.label} (${count})`;
 
-                return (
-                  <button
-                    key={edgeType}
-                    onClick={() => toggleEdgeVisibility(edgeType)}
-                    title={`${info.label} (${count})`}
-                    aria-pressed={isVisible}
-                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
-                      isVisible
-                        ? 'bg-base text-text-primary'
-                        : 'text-text-muted hover:bg-base hover:text-text-secondary'
-                    } `}
-                  >
-                    <div
-                      className={`h-1.5 w-6 rounded-full ${isVisible ? '' : 'opacity-40'}`}
-                      style={{ backgroundColor: info.color }}
-                    />
-                    <span className="min-w-0 flex-1 truncate text-xs">
-                      {info.label}
-                    </span>
-                    <span className="font-mono text-[10px] text-text-muted">
-                      {count}
-                    </span>
-                    <div
-                      className={`h-2 w-2 rounded-full transition-colors ${isVisible ? 'bg-border-strong' : 'bg-border-subtle'}`}
-                    />
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={edgeType}
+                      onClick={() => toggleEdgeVisibility(edgeType)}
+                      title={title}
+                      aria-pressed={isVisible}
+                      className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                        isVisible
+                          ? "bg-base text-text-primary"
+                          : "text-text-muted hover:bg-base hover:text-text-secondary"
+                      } `}
+                    >
+                      <div
+                        className={`h-1.5 w-6 rounded-full ${isVisible ? "" : "opacity-40"}`}
+                        style={{ backgroundColor: info.color }}
+                      />
+                      <span className="min-w-0 flex-1 truncate text-xs">
+                        {info.label}
+                      </span>
+                      <span className="font-mono text-[10px] text-text-muted">
+                        {count}
+                      </span>
+                      <div
+                        className={`h-2 w-2 rounded-full transition-colors ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                      />
+                    </button>
+                  );
+                },
+              )}
             </div>
           </div>
 
@@ -629,19 +726,19 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
 
             <div className="flex flex-wrap gap-1.5">
               {[
-                { value: null, label: 'All' },
-                { value: 1, label: '1 hop' },
-                { value: 2, label: '2 hops' },
-                { value: 3, label: '3 hops' },
-                { value: 5, label: '5 hops' },
+                { value: null, label: "All" },
+                { value: 1, label: "1 hop" },
+                { value: 2, label: "2 hops" },
+                { value: 3, label: "3 hops" },
+                { value: 5, label: "5 hops" },
               ].map(({ value, label }) => (
                 <button
                   key={label}
                   onClick={() => setDepthFilter(value)}
                   className={`rounded px-2 py-1 font-mono text-xs transition-colors ${
                     depthFilter === value
-                      ? 'bg-accent text-text-inverse'
-                      : 'bg-base text-text-secondary hover:bg-surface hover:text-text-primary'
+                      ? "bg-accent text-text-inverse"
+                      : "bg-base text-text-secondary hover:bg-surface hover:text-text-primary"
                   } `}
                 >
                   {label}
@@ -712,24 +809,39 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
               Edge Types
             </h4>
             <div className="flex flex-col gap-2">
-              {edgeTypeItems.map(({ type, count, info }) => (
-                <div
-                  key={type}
-                  className="flex items-center gap-1.5"
-                  title={`Legend edge ${info.label} (${count})`}
-                >
-                  <div
-                    className="h-1.5 w-6 rounded-full"
-                    style={{ backgroundColor: info.color }}
-                  />
-                  <span className="min-w-0 truncate text-[10px] text-text-muted">
-                    {info.label}
-                  </span>
-                  <span className="ml-auto font-mono text-[9px] text-text-muted">
-                    {count}
-                  </span>
-                </div>
-              ))}
+              {edgeTypeItems.map(
+                ({
+                  type,
+                  count,
+                  rawCount,
+                  groupedCompatibilityCount,
+                  info,
+                }) => {
+                  const title =
+                    groupedCompatibilityCount > 0
+                      ? `Legend edge ${info.label} (${count}; ${groupedCompatibilityCount} grouped compatibility edges, ${rawCount} raw)`
+                      : `Legend edge ${info.label} (${count})`;
+
+                  return (
+                    <div
+                      key={type}
+                      className="flex items-center gap-1.5"
+                      title={title}
+                    >
+                      <div
+                        className="h-1.5 w-6 rounded-full"
+                        style={{ backgroundColor: info.color }}
+                      />
+                      <span className="min-w-0 truncate text-[10px] text-text-muted">
+                        {info.label}
+                      </span>
+                      <span className="ml-auto font-mono text-[9px] text-text-muted">
+                        {count}
+                      </span>
+                    </div>
+                  );
+                },
+              )}
             </div>
           </div>
         </div>

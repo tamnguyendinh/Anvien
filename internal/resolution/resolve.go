@@ -29,7 +29,13 @@ func BuildCrossFileBinding(files []scopeir.ScopeIR, options Options) (result Bin
 			w.bindingAccumulator.dispose()
 		}
 	}()
-	metrics := Metrics{DefinitionsIndexed: len(w.defsByID), ImportsResolved: countResolvedImports(w.imports)}
+	metrics := Metrics{
+		DefinitionsIndexed:    len(w.defsByID),
+		ImportsResolved:       countResolvedImports(w.imports),
+		HeritageFactsIndexed:  w.heritageFacts,
+		UnresolvedInheritance: w.unresolvedHeritage,
+		UnresolvedReferences:  w.unresolvedHeritage,
+	}
 	applyCrossFileCompatibilityMetrics(options, &metrics)
 	metrics.BindingAccumulatorFiles = w.bindingAccumulator.fileCount()
 	metrics.BindingAccumulatorEntries = w.bindingAccumulator.total()

@@ -24,6 +24,22 @@ type LanguageContract struct {
 	Syntax     string   `json:"syntax"`
 }
 
+type RelationshipDisplayPolicy struct {
+	Type          string `json:"type"`
+	DisplayLabel  string `json:"displayLabel"`
+	SemanticGroup string `json:"semanticGroup"`
+	DisplayPolicy string `json:"displayPolicy"`
+}
+
+type LanguageGraphCoverage struct {
+	Language           string   `json:"language"`
+	ExtractorStatus    string   `json:"extractorStatus"`
+	SourceFactFamilies []string `json:"sourceFactFamilies"`
+	ResolutionStatus   string   `json:"resolutionStatus"`
+	UnresolvedPolicy   string   `json:"unresolvedPolicy"`
+	WebDisplayPolicy   string   `json:"webDisplayPolicy"`
+}
+
 type WebUIContractManifest struct {
 	Status        string `json:"status"`
 	GeneratedFrom string `json:"generatedFrom"`
@@ -32,18 +48,20 @@ type WebUIContractManifest struct {
 		TypeScriptAdapter string `json:"typescriptAdapter"`
 	} `json:"artifacts"`
 	Graph struct {
-		NodeLabels                 []string `json:"nodeLabels"`
-		GraphRelationshipTypes     []string `json:"graphRelationshipTypes"`
-		LadybugDBNodeTables        []string `json:"ladybugdbNodeTables"`
-		LadybugDBRelationshipTypes []string `json:"ladybugdbRelationshipTypes"`
-		RelationshipTableName      string   `json:"relationshipTableName"`
-		EmbeddingTableName         string   `json:"embeddingTableName"`
+		NodeLabels                 []string                    `json:"nodeLabels"`
+		GraphRelationshipTypes     []string                    `json:"graphRelationshipTypes"`
+		LadybugDBNodeTables        []string                    `json:"ladybugdbNodeTables"`
+		LadybugDBRelationshipTypes []string                    `json:"ladybugdbRelationshipTypes"`
+		RelationshipDisplayPolicy  []RelationshipDisplayPolicy `json:"relationshipDisplayPolicy"`
+		RelationshipTableName      string                      `json:"relationshipTableName"`
+		EmbeddingTableName         string                      `json:"embeddingTableName"`
 	} `json:"graph"`
 	Languages struct {
-		CodeLanguages          []LanguageContract `json:"codeLanguages"`
-		RubyExtensionlessFiles []string           `json:"rubyExtensionlessFiles"`
-		AuxiliarySyntax        map[string]string  `json:"auxiliarySyntax"`
-		AuxiliaryBasenames     map[string]string  `json:"auxiliaryBasenames"`
+		CodeLanguages          []LanguageContract      `json:"codeLanguages"`
+		GraphCoverage          []LanguageGraphCoverage `json:"graphCoverage"`
+		RubyExtensionlessFiles []string                `json:"rubyExtensionlessFiles"`
+		AuxiliarySyntax        map[string]string       `json:"auxiliarySyntax"`
+		AuxiliaryBasenames     map[string]string       `json:"auxiliaryBasenames"`
 	} `json:"languages"`
 	Pipeline struct {
 		Phases []string `json:"phases"`
@@ -143,6 +161,34 @@ var codeLanguages = []LanguageContract{
 	{Name: "Cobol", Value: string(scanner.Cobol), Extensions: []string{".cbl", ".cob", ".cpy", ".cobol", ".copybook", ".jcl", ".job", ".proc"}, Syntax: "cobol"},
 }
 
+var languageGraphCoverage = []LanguageGraphCoverage{
+	providerCoverage(scanner.JavaScript),
+	providerCoverage(scanner.TypeScript),
+	providerCoverage(scanner.Python),
+	providerCoverage(scanner.Java),
+	providerCoverage(scanner.C),
+	providerCoverage(scanner.CPlusPlus),
+	providerCoverage(scanner.CSharp),
+	providerCoverage(scanner.Go),
+	providerCoverage(scanner.Ruby),
+	providerCoverage(scanner.Rust),
+	providerCoverage(scanner.PHP),
+	providerCoverage(scanner.Kotlin),
+	providerCoverage(scanner.Swift),
+	providerCoverage(scanner.Dart),
+	scriptContainerCoverage(scanner.Vue),
+	scriptContainerCoverage(scanner.Svelte),
+	scriptContainerCoverage(scanner.Astro),
+	{
+		Language:           string(scanner.Cobol),
+		ExtractorStatus:    "dedicated-analyzer-phase",
+		SourceFactFamilies: []string{"cobol-structure", "copybooks", "jcl"},
+		ResolutionStatus:   "not-scopeir-resolved",
+		UnresolvedPolicy:   "recorded in dedicated analyzer metrics/evidence",
+		WebDisplayPolicy:   "graph-present labels and relationships are filterable; ScopeIR parity is not implied",
+	},
+}
+
 var rubyExtensionlessFiles = []string{
 	"Rakefile",
 	"Gemfile",
@@ -230,9 +276,11 @@ func WebUIContract() WebUIContractManifest {
 	manifest.Graph.GraphRelationshipTypes = relationshipStrings(graphRelationshipTypes)
 	manifest.Graph.LadybugDBNodeTables = append([]string(nil), lbugschema.NodeTables...)
 	manifest.Graph.LadybugDBRelationshipTypes = append([]string(nil), lbugschema.RelationshipTypes...)
+	manifest.Graph.RelationshipDisplayPolicy = relationshipDisplayPolicies(graphRelationshipTypes)
 	manifest.Graph.RelationshipTableName = lbugschema.RelTableName
 	manifest.Graph.EmbeddingTableName = lbugschema.EmbeddingTableName
 	manifest.Languages.CodeLanguages = append([]LanguageContract(nil), codeLanguages...)
+	manifest.Languages.GraphCoverage = append([]LanguageGraphCoverage(nil), languageGraphCoverage...)
 	manifest.Languages.RubyExtensionlessFiles = append([]string(nil), rubyExtensionlessFiles...)
 	manifest.Languages.AuxiliarySyntax = copyStringMap(auxiliarySyntax)
 	manifest.Languages.AuxiliaryBasenames = copyStringMap(auxiliaryBasenames)
@@ -268,12 +316,16 @@ func WebUIContractTypeScript() (string, error) {
 	b.WriteString("export type NodeTableName = (typeof NODE_TABLES)[number];\n\n")
 	writeConstArray(&b, "REL_TYPES", manifest.Graph.LadybugDBRelationshipTypes)
 	b.WriteString("export type RelType = (typeof REL_TYPES)[number];\n\n")
+	writeConstObjectArray(&b, "RELATIONSHIP_DISPLAY_POLICY", manifest.Graph.RelationshipDisplayPolicy)
+	b.WriteString("export type RelationshipDisplayPolicy = (typeof RELATIONSHIP_DISPLAY_POLICY)[number];\n\n")
 	writeConstString(&b, "REL_TABLE_NAME", manifest.Graph.RelationshipTableName)
 	writeConstString(&b, "EMBEDDING_TABLE_NAME", manifest.Graph.EmbeddingTableName)
 	b.WriteString("\n")
 	if err := writeLanguageSection(&b, manifest.Languages.CodeLanguages); err != nil {
 		return "", err
 	}
+	writeConstObjectArray(&b, "LANGUAGE_GRAPH_COVERAGE", manifest.Languages.GraphCoverage)
+	b.WriteString("export type LanguageGraphCoverage = (typeof LANGUAGE_GRAPH_COVERAGE)[number];\n\n")
 	writeConstArray(&b, "RUBY_EXTENSIONLESS_FILES", manifest.Languages.RubyExtensionlessFiles)
 	writeConstObject(&b, "AUXILIARY_SYNTAX_MAP", manifest.Languages.AuxiliarySyntax)
 	writeConstObject(&b, "AUXILIARY_BASENAME_MAP", manifest.Languages.AuxiliaryBasenames)
@@ -314,6 +366,80 @@ func relationshipStrings(types []graph.RelationshipType) []string {
 	return out
 }
 
+func relationshipDisplayPolicies(types []graph.RelationshipType) []RelationshipDisplayPolicy {
+	out := make([]RelationshipDisplayPolicy, 0, len(types))
+	for _, relType := range types {
+		policy := RelationshipDisplayPolicy{
+			Type:          string(relType),
+			DisplayLabel:  displayLabelForRelationship(relType),
+			SemanticGroup: "first-class",
+			DisplayPolicy: "count and draw as an independent graph relationship",
+		}
+		if relType == graph.RelInherits {
+			policy.SemanticGroup = "normalized-heritage"
+			policy.DisplayPolicy = "group with matching EXTENDS or IMPLEMENTS source-target pairs; count and draw only standalone INHERITS edges as independent relationships"
+		}
+		out = append(out, policy)
+	}
+	return out
+}
+
+func displayLabelForRelationship(relType graph.RelationshipType) string {
+	switch relType {
+	case graph.RelInherits:
+		return "Normalized Heritage"
+	case graph.RelMethodOverrides:
+		return "Method Overrides"
+	case graph.RelMethodImplements:
+		return "Method Implements"
+	case graph.RelHasMethod:
+		return "Has Method"
+	case graph.RelHasProperty:
+		return "Has Property"
+	case graph.RelMemberOf:
+		return "Member Of"
+	case graph.RelStepInProcess:
+		return "Step In Process"
+	case graph.RelHandlesRoute:
+		return "Handles Route"
+	case graph.RelHandlesTool:
+		return "Handles Tool"
+	case graph.RelEntryPointOf:
+		return "Entry Point Of"
+	default:
+		return titleWords(string(relType))
+	}
+}
+
+func titleWords(value string) string {
+	parts := strings.Fields(strings.ToLower(strings.ReplaceAll(value, "_", " ")))
+	for index, part := range parts {
+		if part == "" {
+			continue
+		}
+		parts[index] = strings.ToUpper(part[:1]) + part[1:]
+	}
+	return strings.Join(parts, " ")
+}
+
+func providerCoverage(language scanner.Language) LanguageGraphCoverage {
+	return LanguageGraphCoverage{
+		Language:           string(language),
+		ExtractorStatus:    "scopeir-provider-backed",
+		SourceFactFamilies: []string{"definitions", "imports", "calls", "accesses", "type-references", "members", "heritage-where-language-supports-it"},
+		ResolutionStatus:   "scopeir-resolved-in-repo-targets",
+		UnresolvedPolicy:   "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
+		WebDisplayPolicy:   "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+	}
+}
+
+func scriptContainerCoverage(language scanner.Language) LanguageGraphCoverage {
+	coverage := providerCoverage(language)
+	coverage.ExtractorStatus = "script-container-backed"
+	coverage.SourceFactFamilies = []string{"embedded-script-definitions", "embedded-script-imports", "embedded-script-calls", "embedded-script-accesses", "embedded-script-type-references", "embedded-script-members", "embedded-script-heritage"}
+	return coverage
+}
+
 func copyStringMap(in map[string]string) map[string]string {
 	out := make(map[string]string, len(in))
 	for key, value := range in {
@@ -330,6 +456,11 @@ func writeConstString(b *strings.Builder, name string, value string) {
 func writeConstArray(b *strings.Builder, name string, values []string) {
 	raw, _ := json.MarshalIndent(values, "", "  ")
 	fmt.Fprintf(b, "export const %s = %s as const;\n\n", name, string(raw))
+}
+
+func writeConstObjectArray[T any](b *strings.Builder, name string, values []T) {
+	raw, _ := marshalStable(values)
+	fmt.Fprintf(b, "export const %s = %s as const;\n\n", name, raw)
 }
 
 func writeConstObject(b *strings.Builder, name string, values map[string]string) {

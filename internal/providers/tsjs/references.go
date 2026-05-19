@@ -44,17 +44,13 @@ func (c *collector) emitReferenceKind(node *sitter.Node, kind string) {
 		if ctor != nil {
 			c.addCall(node, ctor, nil, scopeir.CallConstructor, countArguments(child(node, "arguments")))
 		}
-	case "extends_clause":
-		value := child(node, "value")
-		if value == nil {
-			value = firstIdentifierLikeChild(node)
-		}
-		if value != nil {
-			c.addHeritage(node, value, scopeir.HeritageExtends)
+	case "extends_clause", "extends_type_clause":
+		for _, target := range heritageTargetNodes(node) {
+			c.addHeritage(node, target, scopeir.HeritageExtends)
 		}
 	case "implements_clause":
-		for _, ident := range namedIdentifierChildren(node) {
-			c.addHeritage(ident, ident, scopeir.HeritageImplements)
+		for _, target := range heritageTargetNodes(node) {
+			c.addHeritage(target, target, scopeir.HeritageImplements)
 		}
 	}
 }
@@ -131,4 +127,32 @@ func memberAccessKind(node *sitter.Node) scopeir.AccessKind {
 		return scopeir.AccessWrite
 	}
 	return scopeir.AccessRead
+}
+
+func heritageTargetNodes(node *sitter.Node) []*sitter.Node {
+	if node == nil {
+		return nil
+	}
+	if value := child(node, "value"); value != nil {
+		return []*sitter.Node{value}
+	}
+
+	out := make([]*sitter.Node, 0, node.NamedChildCount())
+	for index := uint(0); index < node.NamedChildCount(); index++ {
+		candidate := node.NamedChild(index)
+		if candidate == nil {
+			continue
+		}
+		switch candidate.Kind() {
+		case "comment", "type_arguments":
+			continue
+		}
+		out = append(out, candidate)
+	}
+	if len(out) == 0 {
+		if value := firstIdentifierLikeChild(node); value != nil {
+			out = append(out, value)
+		}
+	}
+	return out
 }
