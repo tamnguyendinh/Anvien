@@ -315,6 +315,9 @@ func classifyProperty(node GraphNode, owner GraphNode, ownerLinked bool, languag
 	if isTSJSLanguage(language) {
 		return classifyTSJSProperty(node, owner, ownerLinked, line, context)
 	}
+	if language == "go" {
+		return classifyGoProperty(node, owner, ownerLinked, line, context)
+	}
 	if ownerLinked {
 		return language + "_owner_linked_" + strings.ToLower(owner.Label)
 	}
@@ -328,6 +331,25 @@ func classifyProperty(node GraphNode, owner GraphNode, ownerLinked bool, languag
 		return language + "_typed_property_without_owner"
 	}
 	return language + "_unclassified_property"
+}
+
+func classifyGoProperty(node GraphNode, owner GraphNode, ownerLinked bool, line string, context []string) string {
+	if ownerLinked {
+		return "go_owner_linked_" + strings.ToLower(owner.Label)
+	}
+	if propertyInExternalPath(node) {
+		return "go_external_library_property"
+	}
+	if qualifiedNameHasOwner(propString(node.Properties, "qualifiedName"), propString(node.Properties, "name")) {
+		return "go_qualified_member_without_owner"
+	}
+	if looksGoAnonymousStructField(line, context) {
+		return "go_anonymous_struct_field"
+	}
+	if propString(node.Properties, "declaredType") != "" {
+		return "go_typed_property_without_owner"
+	}
+	return "go_unclassified_property"
 }
 
 func classifyTSJSProperty(node GraphNode, owner GraphNode, ownerLinked bool, line string, context []string) string {
@@ -374,7 +396,7 @@ func classifyPropertyOrphanStatus(ownerLinked bool, category string) string {
 	switch category {
 	case "tsjs_interface_property_signature", "tsjs_type_alias_object_literal_member", "tsjs_class_field":
 		return "false_orphan"
-	case "tsjs_runtime_object_literal_key", "tsjs_destructuring_or_binding_pattern":
+	case "tsjs_runtime_object_literal_key", "tsjs_destructuring_or_binding_pattern", "go_anonymous_struct_field":
 		return "true_orphan"
 	case "tsjs_typed_shape_or_binding_property":
 		return "unknown"
@@ -479,6 +501,35 @@ func looksDestructuringOrBinding(line string, context []string) bool {
 		}
 	}
 	return false
+}
+
+func looksGoAnonymousStructField(line string, context []string) bool {
+	if !goFieldLineHasType(line) {
+		return false
+	}
+	for i := len(context) - 1; i >= 0; i-- {
+		trimmed := strings.TrimSpace(context[i])
+		if trimmed == "" {
+			continue
+		}
+		if strings.Contains(trimmed, "struct {") {
+			return !strings.HasPrefix(trimmed, "type ")
+		}
+		if strings.HasPrefix(trimmed, "type ") || strings.HasPrefix(trimmed, "func ") {
+			return false
+		}
+	}
+	return false
+}
+
+func goFieldLineHasType(line string) bool {
+	line = strings.TrimSpace(line)
+	if line == "" || strings.HasPrefix(line, "}") || strings.HasPrefix(line, "//") {
+		return false
+	}
+	line = strings.TrimSpace(strings.Split(line, "`")[0])
+	fields := strings.Fields(line)
+	return len(fields) >= 2
 }
 
 func contextContainsBlockHeader(context []string, needle string) bool {

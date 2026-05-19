@@ -92,6 +92,7 @@ Initial hypothesis:
 | P1-H Phase 2/3 targets | plan checklist update | measurable follow-up targets defined from P1 taxonomy | done |
 | P2 ownership implementation | TS/JS direct type-alias property ownership and `TypeAlias -> Property` schema support | implemented and validated | done |
 | P2 validation | full build, focused tests, analyze e2e, property gate e2e, benchmark update, impact check | recorded | done |
+| P2-D Go ownership classification | Go anonymous struct fields classified as true no-edge | recorded | done |
 | P3 access implementation | pending | pending | open |
 | P3 validation | pending | pending | open |
 | P4 consumer checks | pending | pending | open |
@@ -488,7 +489,7 @@ Interpretation:
 
 - P2-A reduced Website `real_edge_missing` from `3,627` to `392` and increased Website `HAS_PROPERTY` from `3` to `5,129`.
 - P2-A did not fabricate links for true-no-edge classes: invalid synthetic edge risk remains `0`.
-- AVmatrix-GO `go_typed_property_without_owner=206` is intentionally unchanged and remains the P2-D work item.
+- AVmatrix-GO `go_typed_property_without_owner=206` was intentionally unchanged by P2-A and is classified by P2-D below.
 - Website `ACCESSES` is unchanged at `3`; access resolution remains Phase 3.
 
 Staged AVmatrix impact check:
@@ -518,3 +519,130 @@ changed symbols include:
 ```
 
 Interpretation: AVmatrix reports low impact and no affected process traces for the staged slice. The risk is covered by full build, schema/load tests, TS/JS provider tests, analyze e2e on both workloads, and the property/access graph gate outputs recorded above.
+
+## P2-D Go Anonymous Struct Evidence
+
+Changed files:
+
+- `internal/graphaccuracy/property_access.go`
+- `internal/graphaccuracy/property_access_test.go`
+
+Implementation summary:
+
+- The property/access gate now classifies unowned Go fields inside anonymous `struct { ... }` blocks as `go_anonymous_struct_field`.
+- `go_anonymous_struct_field` maps to `true_orphan` and `true_no_edge`.
+- This does not emit or change final graph `HAS_PROPERTY` edges; it corrects the audit denominator so true orphan facts are not treated as missing graph links.
+
+Representative source samples from `.tmp\p2d-property-access-avmatrix-go-20260519.json`:
+
+```text
+avmatrix-launcher/src/main_test.go:16 args :: args []string
+avmatrix-launcher/src/main_test.go:17 want :: want string
+internal/cli/hook_command.go:134 LastCommit :: LastCommit string `json:"lastCommit"`
+internal/cli/hook_command.go:135 Stats :: Stats      struct {
+internal/cli/hook_command.go:136 Embeddings :: Embeddings int `json:"embeddings"`
+internal/cli/hook_command_test.go:83 name :: name      string
+internal/cli/hook_command_test.go:84 toolName :: toolName  string
+internal/cli/package_command_test.go:161 Bin :: Bin     map[string]string `json:"bin"`
+internal/cli/tool_command.go:236 Content :: Content []struct {
+```
+
+Interpretation:
+
+- These are table-test row fields, local anonymous JSON shapes, or nested anonymous response shapes.
+- They expose useful field facts, but they do not have a stable named owner that should receive `HAS_PROPERTY`.
+- Leaving them unowned is correct graph truth; the gate now counts them as true no-edge instead of unknown.
+
+Full build before tests:
+
+```powershell
+.\avmatrix-launcher\build.ps1
+```
+
+Result: passed. Vite reported chunk-size and dynamic/static import warnings only.
+
+Focused tests after full build:
+
+```powershell
+go test ./internal/graphaccuracy ./cmd/property-access-audit
+```
+
+Result:
+
+```text
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy	0.609s
+?   	github.com/tamnguyendinh/avmatrix-go/cmd/property-access-audit	[no test files]
+```
+
+CLI/runtime property gate e2e after full build:
+
+```powershell
+go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\p2-property-access-avmatrix-go-graph-20260519.json -out .tmp\p2d-property-access-avmatrix-go-20260519.json -max-examples 20
+go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\p2-property-access-website-go-graph-20260519.json -out .tmp\p2d-property-access-website-20260519.json -max-examples 20
+```
+
+AVmatrix-GO result:
+
+```text
+wrote .tmp\p2d-property-access-avmatrix-go-20260519.json
+properties.total=3089 ownerLinked=2762 standalone=327 hasPropertyEdges=2762 accessesEdges=2751 invalidHasPropertyEdges=0
+language.go.properties=2508 ownerLinked=2302 standalone=206
+language.typescript.properties=581 ownerLinked=460 standalone=121
+orphan.false_orphan=12
+orphan.owner_linked=2762
+orphan.true_orphan=288
+orphan.unknown=27
+graphTruth.edge_present=2762
+graphTruth.real_edge_missing=12
+graphTruth.true_no_edge=288
+graphTruth.unknown_no_edge=27
+```
+
+Go-only P2-D result:
+
+```text
+go_owner_linked_struct=2302
+go_anonymous_struct_field=206
+go.owner_linked=2302
+go.true_orphan=206
+go.edge_present=2302
+go.true_no_edge=206
+```
+
+Website guard result:
+
+```text
+wrote .tmp\p2d-property-access-website-20260519.json
+properties.total=6905 ownerLinked=5129 standalone=1776 hasPropertyEdges=5129 accessesEdges=3 invalidHasPropertyEdges=0
+orphan.false_orphan=392
+orphan.owner_linked=5129
+orphan.true_orphan=469
+orphan.unknown=915
+graphTruth.real_edge_missing=392
+graphTruth.true_no_edge=469
+graphTruth.unknown_no_edge=915
+```
+
+Staged AVmatrix impact check:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --scope staged --repo E:\AVmatrix-GO
+```
+
+Result summary:
+
+```text
+changed_files=5
+changed_count=10
+affected_count=6
+risk_level=high
+affected process names:
+- Main -> LooksDestructuringOrBinding
+- Main -> IsTSJSLanguage
+- BuildPropertyAccessAudit -> ContextContainsBlockHeader
+- BuildPropertyAccessAudit -> LooksInsideTypeAliasObject
+- BuildPropertyAccessAudit -> PropString
+- Main -> PropString
+```
+
+Interpretation: high risk is expected because the slice changes the property/access audit classifier used by `cmd/property-access-audit`. The production analyzer graph is not changed by this slice; validation is covered by full build, focused graphaccuracy tests, and property gate e2e on both `E:\AVmatrix-GO` and `E:\Website`.

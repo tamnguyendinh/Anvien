@@ -82,6 +82,7 @@ Every property/access gate benchmark row must include:
 | P1 language taxonomy | baseline gate artifacts | Website `false_orphan=3,627`; AVmatrix-GO `false_orphan=21`; no invalid synthetic edges | recorded |
 | P1 access candidate taxonomy | `.tmp\p1-access-candidates-website-20260519.json`, `.tmp\p1-access-candidates-avmatrix-go-20260519.json` | Website `total=24,542 resolved=3`; AVmatrix-GO `total=21,098 resolved=5,112` | recorded |
 | P2 ownership validation | `.tmp\p2-property-access-website-20260519.json`, `.tmp\p2-property-access-avmatrix-go-20260519.json` | Website `HAS_PROPERTY=5,129`, `real_edge_missing=392`, invalid edges `0`; AVmatrix-GO `HAS_PROPERTY=2,762`, `real_edge_missing=12`, invalid edges `0` | recorded |
+| P2-D Go anonymous struct classification | `.tmp\p2d-property-access-avmatrix-go-20260519.json` | Go `go_anonymous_struct_field=206`, Go `true_no_edge=206`, Go `unknown=0`; no new `HAS_PROPERTY` emitted | recorded |
 | P3 access validation | pending | `ACCESSES` expansion and precision | open |
 | P5 final gate | pending | final workload matrix | open |
 
@@ -269,3 +270,39 @@ P2 interpretation:
 - The schema now permits the corresponding `TypeAlias -> Property` relationship, so the graph loads through LadybugDB instead of failing at `db_load`.
 - Runtime object keys, destructuring/binding pattern properties, and nested shape properties remain unlinked unless a stable owner model exists.
 - `ACCESSES` was not the main P2 target. Website stayed at `3`; AVmatrix-GO increased from `2,724` to `2,751` as a downstream effect of improved owner-member indexing.
+
+## P2-D Go Anonymous Struct Classification
+
+Date: 2026-05-19
+
+Artifacts:
+
+- AVmatrix-GO gate output: `.tmp\p2d-property-access-avmatrix-go-20260519.json`
+- Website guard output: `.tmp\p2d-property-access-website-20260519.json`
+
+Commands:
+
+```powershell
+go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\p2-property-access-avmatrix-go-graph-20260519.json -out .tmp\p2d-property-access-avmatrix-go-20260519.json -max-examples 20
+go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\p2-property-access-website-go-graph-20260519.json -out .tmp\p2d-property-access-website-20260519.json -max-examples 20
+```
+
+AVmatrix-GO Go-language taxonomy after P2-D:
+
+| Language | `Property` | Owner-linked | Standalone | `go_owner_linked_struct` | `go_anonymous_struct_field` | Go `true_no_edge` | Go `unknown_no_edge` |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Go | 2,508 | 2,302 | 206 | 2,302 | 206 | 206 | 0 |
+
+Whole-workload graph-truth after P2-D:
+
+| Workload | `Property` | `HAS_PROPERTY` | `ACCESSES` | `edge_present` | `real_edge_missing` | `true_no_edge` | `unknown_no_edge` | Invalid edges |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `E:\AVmatrix-GO` | 3,089 | 2,762 | 2,751 | 2,762 | 12 | 288 | 27 | 0 |
+| `E:\Website` | 6,905 | 5,129 | 3 | 5,129 | 392 | 469 | 915 | 0 |
+
+P2-D interpretation:
+
+- The previous AVmatrix-GO `go_typed_property_without_owner=206` bucket is not a missing owner bucket.
+- The source samples are anonymous struct fields such as table-test rows, local JSON decode shapes, and nested anonymous response structs.
+- Those fields have no stable named graph owner under the current model, so the correct graph truth is `true_no_edge`.
+- No `HAS_PROPERTY` edges were added for this bucket.

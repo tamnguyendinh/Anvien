@@ -161,8 +161,8 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 - [x] [P2-A] Implement owner-link semantics for the first large false-orphan cluster: TS/JS/SFC static shape properties. Result: direct TypeScript type-alias object members now emit defensible `TypeAlias -> Property` ownership, while nested shape properties remain unowned until nested ownership is modeled. Website `HAS_PROPERTY` increased from `3` to `5,129`; Website `real_edge_missing` decreased from `3,627` to `392`; invalid synthetic edges remain `0`.
 - [x] [P2-B] Add focused tests for every language/provider family changed in [P2-A]. Result: TS/JS provider coverage now asserts direct type-alias members are owner-linked and nested shape members remain unowned.
 - [x] [P2-C] Run ownership validation and record it. Result: full build passed before tests, focused tests passed, CLI/runtime e2e passed on `E:\Website` and `E:\AVmatrix-GO`, fresh graph snapshots and benchmark/evidence ledgers were updated, and AVmatrix impact was recorded.
-- [ ] [P2-D] Refine Go unknown property ownership before linking. Initial measurable target: classify AVmatrix-GO `go_typed_property_without_owner=206` into false-orphan vs true/unknown buckets using source evidence; do not emit `HAS_PROPERTY` edges for this bucket until the denominator is defensible.
-- [ ] [P2-E] Repeat large ownership clusters until all false-orphan categories with defensible owners are either fixed or explicitly deferred with evidence.
+- [x] [P2-D] Refine Go unknown property ownership before linking. Result: AVmatrix-GO `go_typed_property_without_owner=206` was reclassified as `go_anonymous_struct_field=206`, all `true_orphan`/`true_no_edge`, with no new `HAS_PROPERTY` emitted. Go ownership now has `owner_linked=2,302`, `true_orphan=206`, `unknown=0`.
+- [ ] [P2-E] Repeat large ownership clusters until all false-orphan categories with defensible owners are either fixed or explicitly deferred with evidence. Next known buckets after P2-D: Website `real_edge_missing=392`, Website `unknown_no_edge=915`, AVmatrix-GO `real_edge_missing=12`, AVmatrix-GO `unknown_no_edge=27`.
 
 ## Phase 3 - Cross-Language Member Access Resolution
 
@@ -202,7 +202,7 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P2-A | Ownership | TS/JS/SFC static shape cluster | defensible `TypeAlias -> Property` expansion | recorded | recorded | `b91c2cd` | done |
 | P2-B | Tests | TS/JS provider ownership focused tests | direct owner and nested no-owner covered | n/a | recorded | `b91c2cd` | done |
 | P2-C | Validation | ownership slice | analyze/test/e2e recorded | recorded | recorded | `b91c2cd` | done |
-| P2-D | Ownership | Go unknown property ownership | classify before linking | pending | pending | pending | open |
+| P2-D | Ownership | Go anonymous struct property ownership | classify before linking | recorded | recorded | pending | done |
 | P2-E | Ownership | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
 | P3-A | Access | access sample taxonomy | resolvable families classified | pending | pending | pending | open |
 | P3-B | Access | large access-resolution cluster | defensible `ACCESSES` expansion | pending | pending | pending | open |

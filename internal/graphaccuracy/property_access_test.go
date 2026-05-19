@@ -80,6 +80,38 @@ type Service struct {
 	assertBucketCount(t, result.GraphTruth, "edge_present", 2)
 }
 
+func TestRunPropertyAccessAuditClassifiesGoAnonymousStructFieldsAsTrueNoEdge(t *testing.T) {
+	repo := t.TempDir()
+	writeAccuracyFixtureFile(t, repo, "service/anonymous_test.go", `package service
+
+func TestParseAction() {
+	tests := []struct {
+		args []string
+		want string
+	}{}
+	_ = tests
+}
+`)
+	graphPath := writeGraphFixture(t, repo, "graph.json", GraphFile{
+		Nodes: []GraphNode{
+			propertyNode("service/anonymous_test.go", "go", "args", "args", "[]string", 5),
+			propertyNode("service/anonymous_test.go", "go", "want", "want", "string", 6),
+		},
+	})
+
+	result, err := RunPropertyAccessAudit(PropertyAccessAuditOptions{
+		Repo:        repo,
+		GraphPath:   graphPath,
+		MaxExamples: 2,
+	})
+	if err != nil {
+		t.Fatalf("RunPropertyAccessAudit() error = %v", err)
+	}
+	assertBucketCount(t, result.Categories, "go_anonymous_struct_field", 2)
+	assertBucketCount(t, result.OrphanStatus, "true_orphan", 2)
+	assertBucketCount(t, result.GraphTruth, "true_no_edge", 2)
+}
+
 func propertyNode(rel string, language string, qualifiedName string, name string, declaredType string, startLine int) GraphNode {
 	return GraphNode{
 		ID:    "Property:" + rel + ":" + qualifiedName,
