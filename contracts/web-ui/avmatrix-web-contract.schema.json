@@ -448,11 +448,154 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Class",
+          "Function",
+          "Method",
+          "Constructor",
+          "Variable",
+          "Property"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Class",
+              "Function",
+              "Method",
+              "Constructor",
+              "Variable",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "class extends facts resolve to EXTENDS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "tsjs provider unit fixture",
+          "provider call/import parity",
+          "provider heritage parity"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "typescript",
@@ -464,11 +607,160 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Class",
+          "Function",
+          "Method",
+          "Constructor",
+          "Variable",
+          "Property",
+          "Interface",
+          "TypeAlias",
+          "Enum"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Class",
+              "Function",
+              "Method",
+              "Constructor",
+              "Variable",
+              "Property",
+              "Interface",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "class/interface extends and implements facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "tsjs provider unit fixture",
+          "provider call/import/owner/heritage parity",
+          "Restaurant_manager committed heritage fixture"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity plus Restaurant_manager heritage target fixture",
+        "defaultRegressionGate": "default committed Restaurant_manager heritage fixture",
+        "optionalExternalAudit": "external Restaurant_manager source trace when AVMATRIX_RESTAURANT_MANAGER_ROOT is set"
       },
       {
         "language": "python",
@@ -480,11 +772,151 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Class",
+          "Function",
+          "Method",
+          "Variable",
+          "Property"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Class",
+              "Function",
+              "Method",
+              "Variable",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "class base facts resolve to EXTENDS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "python provider golden fixture",
+          "provider call/import/owner/heritage parity"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "java",
@@ -496,11 +928,160 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Package",
+          "Class",
+          "Interface",
+          "Enum",
+          "Record",
+          "Method",
+          "Constructor",
+          "Property",
+          "Variable"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Package",
+              "Class",
+              "Interface",
+              "Enum",
+              "Record",
+              "Method",
+              "Constructor",
+              "Property",
+              "Variable"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "extends/implements facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "java provider golden fixture",
+          "provider call/import/owner/heritage parity",
+          "endpoint graph parity for methods/properties/calls/accesses/uses"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "c",
@@ -512,11 +1093,138 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Struct",
+          "Function",
+          "Variable",
+          "Property"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Struct",
+              "Function",
+              "Variable",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "C has no inheritance syntax in the current ScopeIR provider; struct fields and type references are tracked through members/USES"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "c provider golden fixture",
+          "provider call/import parity",
+          "endpoint graph parity for structs/properties/calls/accesses/uses"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "cpp",
@@ -528,11 +1236,157 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Package",
+          "Class",
+          "Struct",
+          "Function",
+          "Method",
+          "Constructor",
+          "Variable",
+          "Property"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Package",
+              "Class",
+              "Struct",
+              "Function",
+              "Method",
+              "Constructor",
+              "Variable",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "base-class facts resolve to EXTENDS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "cpp provider golden fixture",
+          "provider call/import/owner/heritage parity"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "csharp",
@@ -544,11 +1398,155 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Package",
+          "Class",
+          "Interface",
+          "Method",
+          "Constructor",
+          "Variable",
+          "Property"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Package",
+              "Class",
+              "Interface",
+              "Method",
+              "Constructor",
+              "Variable",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "base/interface facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "csharp provider golden fixture",
+          "provider call/import/owner/heritage parity"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "go",
@@ -560,11 +1558,157 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Package",
+          "Struct",
+          "Interface",
+          "Function",
+          "Method",
+          "Variable",
+          "Const",
+          "Property"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Package",
+              "Struct",
+              "Interface",
+              "Function",
+              "Method",
+              "Variable",
+              "Const",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "embedded struct/interface facts resolve to EXTENDS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "go provider golden fixture",
+          "provider call/import/owner/heritage parity"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "ruby",
@@ -576,11 +1720,153 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Trait",
+          "Class",
+          "Function",
+          "Method",
+          "Variable",
+          "Property"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Trait",
+              "Class",
+              "Function",
+              "Method",
+              "Variable",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "class inheritance and include/extend/prepend facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "ruby provider golden fixture",
+          "provider call/import/heritage parity"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "rust",
@@ -592,11 +1878,157 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Struct",
+          "Trait",
+          "Impl",
+          "Function",
+          "Method",
+          "Variable",
+          "Const",
+          "Property"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Struct",
+              "Trait",
+              "Impl",
+              "Function",
+              "Method",
+              "Variable",
+              "Const",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "trait impl facts resolve to IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "rust provider golden fixture",
+          "provider call/import/owner/heritage parity"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "php",
@@ -608,11 +2040,159 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Package",
+          "Class",
+          "Interface",
+          "Trait",
+          "Function",
+          "Method",
+          "Constructor",
+          "Variable",
+          "Property"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Package",
+              "Class",
+              "Interface",
+              "Trait",
+              "Function",
+              "Method",
+              "Constructor",
+              "Variable",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "extends/implements/use facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "php provider golden fixture",
+          "provider call/heritage parity"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "kotlin",
@@ -624,11 +2204,157 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Package",
+          "Class",
+          "Interface",
+          "Function",
+          "Method",
+          "Constructor",
+          "Variable",
+          "Property"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Package",
+              "Class",
+              "Interface",
+              "Function",
+              "Method",
+              "Constructor",
+              "Variable",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "base/interface facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "kotlin provider golden fixture",
+          "provider call/import/heritage parity"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "swift",
@@ -640,11 +2366,159 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Class",
+          "Struct",
+          "Interface",
+          "Enum",
+          "Function",
+          "Method",
+          "Constructor",
+          "Variable",
+          "Property"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Class",
+              "Struct",
+              "Interface",
+              "Enum",
+              "Function",
+              "Method",
+              "Constructor",
+              "Variable",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "protocol conformance facts resolve to IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "swift provider golden fixture",
+          "provider import/heritage parity"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "dart",
@@ -656,11 +2530,155 @@
           "accesses",
           "type-references",
           "members",
-          "heritage-where-language-supports-it"
+          "heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Class",
+          "Interface",
+          "Function",
+          "Method",
+          "Constructor",
+          "Variable",
+          "Property"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File",
+              "Class",
+              "Interface",
+              "Function",
+              "Method",
+              "Constructor",
+              "Variable",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "definitions emit graph nodes and file DEFINES edges for provider-backed files"
+          },
+          {
+            "family": "imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"
+          },
+          {
+            "family": "calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"
+          },
+          {
+            "family": "accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable",
+              "Const",
+              "Static"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"
+          },
+          {
+            "family": "type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait",
+              "Record",
+              "TypeAlias",
+              "Enum"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"
+          },
+          {
+            "family": "members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"
+          },
+          {
+            "family": "heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "Struct",
+              "Trait"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "extends/implements facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "dart provider golden fixture",
+          "provider import/heritage parity"
+        ],
+        "providerParityProofLevel": "representative endpoint/count-level provider parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "vue",
@@ -672,11 +2690,148 @@
           "embedded-script-accesses",
           "embedded-script-type-references",
           "embedded-script-members",
-          "embedded-script-heritage"
+          "embedded-script-heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Class",
+          "Function",
+          "Method",
+          "Constructor",
+          "Variable",
+          "Property",
+          "Interface",
+          "TypeAlias"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "embedded-script-definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Function",
+              "Method",
+              "Constructor",
+              "Variable",
+              "Property",
+              "Interface",
+              "TypeAlias"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "embedded JS/TS definitions are extracted from component script blocks"
+          },
+          {
+            "family": "embedded-script-imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "embedded JS/TS imports resolve to in-repo files/definitions when available"
+          },
+          {
+            "family": "embedded-script-calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "embedded JS/TS calls resolve to in-repo callable definitions when available"
+          },
+          {
+            "family": "embedded-script-accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "embedded JS/TS property/variable accesses resolve when receiver or scope bindings are available"
+          },
+          {
+            "family": "embedded-script-type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "TypeAlias"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "embedded JS/TS type references resolve to in-repo type definitions when available"
+          },
+          {
+            "family": "embedded-script-members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "embedded JS/TS owner/member facts emit owner relationships for methods, constructors, and properties"
+          },
+          {
+            "family": "embedded-script-heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "embedded JS/TS heritage facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived rather than script-container provider facts"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "vue script-container tests",
+          "script-container graph parity count tests"
+        ],
+        "providerParityProofLevel": "representative script-container count-level graph parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "svelte",
@@ -688,11 +2843,148 @@
           "embedded-script-accesses",
           "embedded-script-type-references",
           "embedded-script-members",
-          "embedded-script-heritage"
+          "embedded-script-heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Class",
+          "Function",
+          "Method",
+          "Constructor",
+          "Variable",
+          "Property",
+          "Interface",
+          "TypeAlias"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "embedded-script-definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Function",
+              "Method",
+              "Constructor",
+              "Variable",
+              "Property",
+              "Interface",
+              "TypeAlias"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "embedded JS/TS definitions are extracted from component script blocks"
+          },
+          {
+            "family": "embedded-script-imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "embedded JS/TS imports resolve to in-repo files/definitions when available"
+          },
+          {
+            "family": "embedded-script-calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "embedded JS/TS calls resolve to in-repo callable definitions when available"
+          },
+          {
+            "family": "embedded-script-accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "embedded JS/TS property/variable accesses resolve when receiver or scope bindings are available"
+          },
+          {
+            "family": "embedded-script-type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "TypeAlias"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "embedded JS/TS type references resolve to in-repo type definitions when available"
+          },
+          {
+            "family": "embedded-script-members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "embedded JS/TS owner/member facts emit owner relationships for methods, constructors, and properties"
+          },
+          {
+            "family": "embedded-script-heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "embedded JS/TS heritage facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived rather than script-container provider facts"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "svelte script-container tests",
+          "script-container graph parity count tests"
+        ],
+        "providerParityProofLevel": "representative script-container count-level graph parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "astro",
@@ -704,23 +2996,236 @@
           "embedded-script-accesses",
           "embedded-script-type-references",
           "embedded-script-members",
-          "embedded-script-heritage"
+          "embedded-script-heritage",
+          "framework-routes-tools-processes"
+        ],
+        "supportedNodeLabels": [
+          "Class",
+          "Function",
+          "Method",
+          "Constructor",
+          "Variable",
+          "Property",
+          "Interface",
+          "TypeAlias"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "IMPORTS",
+          "USES",
+          "CALLS",
+          "ACCESSES",
+          "HAS_METHOD",
+          "HAS_PROPERTY",
+          "MEMBER_OF",
+          "EXTENDS",
+          "IMPLEMENTS",
+          "INHERITS"
+        ],
+        "factFamilies": [
+          {
+            "family": "embedded-script-definitions",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Function",
+              "Method",
+              "Constructor",
+              "Variable",
+              "Property",
+              "Interface",
+              "TypeAlias"
+            ],
+            "relationshipTypes": [
+              "DEFINES"
+            ],
+            "evidence": "embedded JS/TS definitions are extracted from component script blocks"
+          },
+          {
+            "family": "embedded-script-imports",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "IMPORTS",
+              "USES"
+            ],
+            "evidence": "embedded JS/TS imports resolve to in-repo files/definitions when available"
+          },
+          {
+            "family": "embedded-script-calls",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Function",
+              "Method",
+              "Constructor"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "embedded JS/TS calls resolve to in-repo callable definitions when available"
+          },
+          {
+            "family": "embedded-script-accesses",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Property",
+              "Variable"
+            ],
+            "relationshipTypes": [
+              "ACCESSES"
+            ],
+            "evidence": "embedded JS/TS property/variable accesses resolve when receiver or scope bindings are available"
+          },
+          {
+            "family": "embedded-script-type-references",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface",
+              "TypeAlias"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "embedded JS/TS type references resolve to in-repo type definitions when available"
+          },
+          {
+            "family": "embedded-script-members",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Method",
+              "Constructor",
+              "Property"
+            ],
+            "relationshipTypes": [
+              "HAS_METHOD",
+              "HAS_PROPERTY",
+              "MEMBER_OF"
+            ],
+            "evidence": "embedded JS/TS owner/member facts emit owner relationships for methods, constructors, and properties"
+          },
+          {
+            "family": "embedded-script-heritage",
+            "status": "resolved-graph-output",
+            "nodeLabels": [
+              "Class",
+              "Interface"
+            ],
+            "relationshipTypes": [
+              "EXTENDS",
+              "IMPLEMENTS",
+              "INHERITS"
+            ],
+            "evidence": "embedded JS/TS heritage facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"
+          },
+          {
+            "family": "framework-routes-tools-processes",
+            "status": "not-applicable-by-language-semantics",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "route/tool/process edges are framework/analyzer-derived rather than script-container provider facts"
+          }
         ],
         "resolutionStatus": "scopeir-resolved-in-repo-targets",
         "unresolvedPolicy": "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+        "fixtureCoverage": [
+          "astro script-container tests",
+          "script-container graph parity count tests"
+        ],
+        "providerParityProofLevel": "representative script-container count-level graph parity",
+        "defaultRegressionGate": "default provider and contract tests",
+        "optionalExternalAudit": ""
       },
       {
         "language": "cobol",
         "extractorStatus": "dedicated-analyzer-phase",
         "sourceFactFamilies": [
-          "cobol-structure",
+          "cobol-programs",
+          "cobol-sections-paragraphs",
           "copybooks",
-          "jcl"
+          "jcl",
+          "scopeir-provider-facts"
+        ],
+        "supportedNodeLabels": [
+          "File",
+          "Module",
+          "Section"
+        ],
+        "supportedRelationshipTypes": [
+          "DEFINES",
+          "CONTAINS",
+          "CALLS",
+          "USES"
+        ],
+        "factFamilies": [
+          {
+            "family": "cobol-programs",
+            "status": "dedicated-analyzer-phase",
+            "nodeLabels": [
+              "Module"
+            ],
+            "relationshipTypes": [
+              "DEFINES",
+              "CONTAINS"
+            ],
+            "evidence": "COBOL PROGRAM-ID nodes and nesting relationships are emitted by internal/cobol"
+          },
+          {
+            "family": "cobol-sections-paragraphs",
+            "status": "dedicated-analyzer-phase",
+            "nodeLabels": [
+              "Section"
+            ],
+            "relationshipTypes": [
+              "DEFINES",
+              "CALLS"
+            ],
+            "evidence": "COBOL sections, paragraphs, PERFORM, and CALL metrics are emitted by internal/cobol"
+          },
+          {
+            "family": "copybooks",
+            "status": "dedicated-analyzer-phase",
+            "nodeLabels": [
+              "File"
+            ],
+            "relationshipTypes": [
+              "USES"
+            ],
+            "evidence": "COPY statements are tracked by dedicated COBOL metrics and copybook expansion tests"
+          },
+          {
+            "family": "jcl",
+            "status": "dedicated-analyzer-phase",
+            "nodeLabels": [
+              "File",
+              "Module"
+            ],
+            "relationshipTypes": [
+              "CALLS"
+            ],
+            "evidence": "JCL job/step program links are tracked by dedicated COBOL metrics and JCL tests"
+          },
+          {
+            "family": "scopeir-provider-facts",
+            "status": "scanned-not-extracted",
+            "nodeLabels": [],
+            "relationshipTypes": [],
+            "evidence": "COBOL is scanned and processed by the dedicated analyzer phase; it is not routed through ScopeIR provider extraction"
+          }
         ],
         "resolutionStatus": "not-scopeir-resolved",
         "unresolvedPolicy": "recorded in dedicated analyzer metrics/evidence",
-        "webDisplayPolicy": "graph-present labels and relationships are filterable; ScopeIR parity is not implied"
+        "webDisplayPolicy": "graph-present labels and relationships are filterable; ScopeIR provider parity is not implied",
+        "fixtureCoverage": [
+          "internal/cobol tests",
+          "analyze pipeline COBOL metrics"
+        ],
+        "providerParityProofLevel": "dedicated analyzer metrics, not ScopeIR provider parity",
+        "defaultRegressionGate": "default analyze/cobol tests",
+        "optionalExternalAudit": ""
       }
     ],
     "rubyExtensionlessFiles": [

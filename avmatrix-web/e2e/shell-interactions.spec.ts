@@ -2,17 +2,29 @@ import { test, expect, type Page } from "@playwright/test";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://127.0.0.1:4848";
 const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://127.0.0.1:5228";
+const TARGET_REPO_NAME = process.env.E2E_REPO_NAME ?? "Restaurant_manager";
 const ABSOLUTE_LOCAL_PATH =
   process.platform === "win32" ? "C:\\repos\\shell-check" : "/tmp/shell-check";
 
-let firstRepoName = "";
+type BackendRepo = {
+  name: string;
+  path?: string;
+  repoPath?: string;
+};
+
+let selectedRepoName = "";
 
 test.beforeAll(async () => {
   if (process.env.E2E) {
     const res = await fetch(`${BACKEND_URL}/api/repos`);
     const repos = await res.json();
-    firstRepoName = repos[0]?.name ?? "";
-    if (!firstRepoName) test.skip(true, "No indexed repos");
+    selectedRepoName = selectDeterministicRepoName(repos);
+    if (!selectedRepoName) {
+      test.skip(
+        true,
+        `Target repo ${TARGET_REPO_NAME} is not indexed; deterministic large-graph smoke skipped`,
+      );
+    }
     return;
   }
   try {
@@ -40,16 +52,42 @@ test.beforeAll(async () => {
         test.skip(true, "No indexed repos");
         return;
       }
-      firstRepoName = repos[0].name;
+      selectedRepoName = selectDeterministicRepoName(repos);
+      if (!selectedRepoName) {
+        test.skip(
+          true,
+          `Target repo ${TARGET_REPO_NAME} is not indexed; deterministic large-graph smoke skipped`,
+        );
+        return;
+      }
     }
   } catch {
     test.skip(true, "servers not available");
   }
 });
 
+function selectDeterministicRepoName(repos: BackendRepo[]) {
+  const normalizedTarget = normalizeRepoSelector(TARGET_REPO_NAME);
+  const selected = repos.find((repo) => {
+    const candidates = [repo.name, repo.path, repo.repoPath]
+      .filter(Boolean)
+      .map((value) => normalizeRepoSelector(value ?? ""));
+    return candidates.some(
+      (candidate) =>
+        candidate === normalizedTarget ||
+        candidate.endsWith(`/${normalizedTarget}`),
+    );
+  });
+  return selected?.name ?? "";
+}
+
+function normalizeRepoSelector(value: string) {
+  return value.replace(/\\/g, "/").replace(/\/+$/, "").split("/").pop() ?? "";
+}
+
 async function waitForGraphLoaded(page: Page) {
   await page.goto(
-    `${FRONTEND_URL}/?server=${encodeURIComponent(BACKEND_URL)}&project=${encodeURIComponent(firstRepoName)}`,
+    `${FRONTEND_URL}/?server=${encodeURIComponent(BACKEND_URL)}&project=${encodeURIComponent(selectedRepoName)}`,
   );
 
   await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({

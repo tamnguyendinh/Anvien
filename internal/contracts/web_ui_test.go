@@ -33,8 +33,11 @@ func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {
 	if len(manifest.Languages.GraphCoverage) != len(manifest.Languages.CodeLanguages) {
 		t.Fatalf("language graph coverage count mismatch: %#v", manifest.Languages.GraphCoverage)
 	}
-	if coverage := languageCoverage(manifest, "cobol"); coverage.ExtractorStatus != "dedicated-analyzer-phase" {
+	if coverage := findLanguageCoverage(manifest, "cobol"); coverage.ExtractorStatus != "dedicated-analyzer-phase" {
 		t.Fatalf("COBOL coverage = %#v", coverage)
+	}
+	for _, coverage := range manifest.Languages.GraphCoverage {
+		requireExplicitLanguageCoverage(t, coverage)
 	}
 
 	raw, err := WebUIContractJSON()
@@ -80,13 +83,69 @@ func relationshipPolicy(manifest WebUIContractManifest, relType string) Relation
 	return RelationshipDisplayPolicy{}
 }
 
-func languageCoverage(manifest WebUIContractManifest, language string) LanguageGraphCoverage {
+func findLanguageCoverage(manifest WebUIContractManifest, language string) LanguageGraphCoverage {
 	for _, coverage := range manifest.Languages.GraphCoverage {
 		if coverage.Language == language {
 			return coverage
 		}
 	}
 	return LanguageGraphCoverage{}
+}
+
+func requireExplicitLanguageCoverage(t *testing.T, coverage LanguageGraphCoverage) {
+	t.Helper()
+	if coverage.Language == "" || coverage.ExtractorStatus == "" {
+		t.Fatalf("coverage identity is incomplete: %#v", coverage)
+	}
+	if len(coverage.FactFamilies) == 0 {
+		t.Fatalf("%s coverage has no explicit fact families: %#v", coverage.Language, coverage)
+	}
+	if len(coverage.SourceFactFamilies) != len(coverage.FactFamilies) {
+		t.Fatalf("%s source fact family names are not derived from explicit fact coverage: %#v", coverage.Language, coverage)
+	}
+	byFamily := map[string]LanguageFactCoverage{}
+	for index, fact := range coverage.FactFamilies {
+		if fact.Family == "" || fact.Status == "" || fact.Evidence == "" {
+			t.Fatalf("%s fact family %d is incomplete: %#v", coverage.Language, index, fact)
+		}
+		if !allowedFactStatus(fact.Status) {
+			t.Fatalf("%s/%s has unsupported status %q", coverage.Language, fact.Family, fact.Status)
+		}
+		if coverage.SourceFactFamilies[index] != fact.Family {
+			t.Fatalf("%s source family %d = %q, want %q", coverage.Language, index, coverage.SourceFactFamilies[index], fact.Family)
+		}
+		byFamily[fact.Family] = fact
+	}
+	if coverage.ExtractorStatus == "scopeir-provider-backed" {
+		if contains(coverage.SourceFactFamilies, "heritage-where-language-supports-it") {
+			t.Fatalf("%s still uses generic heritage coverage marker: %#v", coverage.Language, coverage.SourceFactFamilies)
+		}
+		for _, family := range []string{"definitions", "imports", "calls", "accesses", "type-references", "members", "heritage"} {
+			if _, ok := byFamily[family]; !ok {
+				t.Fatalf("%s missing explicit provider fact family %q in %#v", coverage.Language, family, coverage.FactFamilies)
+			}
+		}
+		if len(coverage.SupportedNodeLabels) == 0 || len(coverage.SupportedRelationshipTypes) == 0 {
+			t.Fatalf("%s provider-backed coverage lacks node/relationship inventory: %#v", coverage.Language, coverage)
+		}
+		if coverage.ProviderParityProofLevel == "" || coverage.DefaultRegressionGate == "" {
+			t.Fatalf("%s provider-backed coverage lacks proof/gate metadata: %#v", coverage.Language, coverage)
+		}
+	}
+}
+
+func allowedFactStatus(status string) bool {
+	switch status {
+	case "resolved-graph-output",
+		"extracted-but-unresolved-external",
+		"extraction-only-inventory",
+		"not-applicable-by-language-semantics",
+		"scanned-not-extracted",
+		"dedicated-analyzer-phase":
+		return true
+	default:
+		return false
+	}
 }
 
 func contains(values []string, want string) bool {

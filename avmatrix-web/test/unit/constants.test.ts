@@ -269,8 +269,18 @@ describe("graph display inventory helpers", () => {
       "rust",
     ]) {
       const coverage = coverageByLanguage.get(language);
-      expect(coverage?.sourceFactFamilies).toContain(
+      const heritage = coverage?.factFamilies.find(
+        (entry) => entry.family === "heritage",
+      );
+      expect(coverage?.sourceFactFamilies).toContain("heritage");
+      expect(coverage?.sourceFactFamilies).not.toContain(
         "heritage-where-language-supports-it",
+      );
+      expect(heritage).toMatchObject({
+        status: "resolved-graph-output",
+      });
+      expect(heritage?.relationshipTypes).toEqual(
+        expect.arrayContaining(["EXTENDS", "IMPLEMENTS", "INHERITS"]),
       );
       expect(coverage?.resolutionStatus).toBe(
         "scopeir-resolved-in-repo-targets",
@@ -278,14 +288,29 @@ describe("graph display inventory helpers", () => {
       expect(coverage?.unresolvedPolicy).toContain(
         "unresolved or external targets",
       );
+      expect(coverage?.supportedNodeLabels.length).toBeGreaterThan(0);
+      expect(coverage?.supportedRelationshipTypes).toContain("DEFINES");
+      expect(coverage?.providerParityProofLevel).toContain("representative");
     }
 
-    expect(coverageByLanguage.get("vue")?.sourceFactFamilies).toContain(
+    const vueCoverage = coverageByLanguage.get("vue");
+    expect(vueCoverage?.sourceFactFamilies).toContain(
       "embedded-script-heritage",
     );
+    expect(
+      vueCoverage?.factFamilies.find(
+        (entry) => entry.family === "embedded-script-heritage",
+      )?.status,
+    ).toBe("resolved-graph-output");
     expect(coverageByLanguage.get("cobol")).toMatchObject({
       extractorStatus: "dedicated-analyzer-phase",
       resolutionStatus: "not-scopeir-resolved",
     });
+    expect(
+      coverageByLanguage
+        .get("cobol")
+        ?.factFamilies.find((entry) => entry.family === "scopeir-provider-facts")
+        ?.status,
+    ).toBe("scanned-not-extracted");
   });
 });

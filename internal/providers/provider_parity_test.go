@@ -7,6 +7,7 @@ import (
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
 	"github.com/tamnguyendinh/avmatrix-go/internal/parser"
+	cprovider "github.com/tamnguyendinh/avmatrix-go/internal/providers/c"
 	cppprovider "github.com/tamnguyendinh/avmatrix-go/internal/providers/cpp"
 	csharpprovider "github.com/tamnguyendinh/avmatrix-go/internal/providers/csharp"
 	dartprovider "github.com/tamnguyendinh/avmatrix-go/internal/providers/dart"
@@ -771,6 +772,81 @@ func TestProviderQualifiedNamesCoverNamespacesPackagesModulesAndTopLevelClasses(
 	}
 }
 
+func TestProviderGraphParityEndpointProofCoversRepresentativeNonTSGoFacts(t *testing.T) {
+	tests := []struct {
+		name      string
+		path      string
+		lang      scanner.Language
+		input     string
+		endpoints []relationshipEndpointExpectation
+	}{
+		{
+			name: "c structs properties calls accesses and type uses",
+			path: "src/service.c",
+			lang: scanner.C,
+			input: `typedef struct Service {
+    int total;
+} Service;
+
+int helper(int value) {
+    return value;
+}
+
+int service_save(Service *service) {
+    int result = helper(service->total);
+    return result;
+}
+`,
+			endpoints: []relationshipEndpointExpectation{
+				{relType: graph.RelDefines, source: nodeExpectation{label: scopeir.NodeFile, id: graph.GenerateID("File", "src/service.c")}, target: nodeExpectation{label: scopeir.NodeStruct, name: "Service"}},
+				{relType: graph.RelHasProperty, source: nodeExpectation{label: scopeir.NodeStruct, name: "Service"}, target: nodeExpectation{label: scopeir.NodeProperty, name: "total"}},
+				{relType: graph.RelCalls, source: nodeExpectation{label: scopeir.NodeFunction, name: "service_save"}, target: nodeExpectation{label: scopeir.NodeFunction, name: "helper"}},
+				{relType: graph.RelAccesses, source: nodeExpectation{label: scopeir.NodeFunction, name: "service_save"}, target: nodeExpectation{label: scopeir.NodeProperty, name: "total"}},
+				{relType: graph.RelUses, source: nodeExpectation{label: scopeir.NodeFunction, name: "service_save"}, target: nodeExpectation{label: scopeir.NodeStruct, name: "Service"}},
+			},
+		},
+		{
+			name: "java methods properties calls accesses and type uses",
+			path: "src/App.java",
+			lang: scanner.Java,
+			input: `class User {
+  int id;
+  void save() {}
+}
+class App {
+  void run(User user) {
+    user.save();
+    int current = user.id;
+  }
+}
+`,
+			endpoints: []relationshipEndpointExpectation{
+				{relType: graph.RelDefines, source: nodeExpectation{label: scopeir.NodeFile, id: graph.GenerateID("File", "src/App.java")}, target: nodeExpectation{label: scopeir.NodeClass, name: "User"}},
+				{relType: graph.RelHasMethod, source: nodeExpectation{label: scopeir.NodeClass, name: "User"}, target: nodeExpectation{label: scopeir.NodeMethod, name: "save"}},
+				{relType: graph.RelHasProperty, source: nodeExpectation{label: scopeir.NodeClass, name: "User"}, target: nodeExpectation{label: scopeir.NodeProperty, name: "id"}},
+				{relType: graph.RelCalls, source: nodeExpectation{label: scopeir.NodeMethod, name: "run"}, target: nodeExpectation{label: scopeir.NodeMethod, name: "save"}},
+				{relType: graph.RelAccesses, source: nodeExpectation{label: scopeir.NodeMethod, name: "run"}, target: nodeExpectation{label: scopeir.NodeProperty, name: "id"}},
+				{relType: graph.RelUses, source: nodeExpectation{label: scopeir.NodeMethod, name: "run"}, target: nodeExpectation{label: scopeir.NodeClass, name: "User"}},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ir := extractScopeIR(t, tt.path, "hash-"+tt.name, tt.lang, tt.input)
+			result, err := resolution.Resolve([]scopeir.ScopeIR{ir}, resolution.Options{})
+			if err != nil {
+				t.Fatalf("resolve failed: %v", err)
+			}
+			for _, endpoint := range tt.endpoints {
+				source := requireGraphNode(t, result.Graph, endpoint.source)
+				target := requireGraphNode(t, result.Graph, endpoint.target)
+				requireResolvedRelationship(t, result.Graph, endpoint.relType, source.ID, target.ID)
+			}
+		})
+	}
+}
+
 func TestProviderImportExtractionParityCoversLanguageSpecificForms(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -976,6 +1052,18 @@ type resolvedHeritageExpectation struct {
 	targetName  string
 }
 
+type nodeExpectation struct {
+	id    string
+	label scopeir.NodeLabel
+	name  string
+}
+
+type relationshipEndpointExpectation struct {
+	relType graph.RelationshipType
+	source  nodeExpectation
+	target  nodeExpectation
+}
+
 type importExpectation struct {
 	kind     scopeir.ImportKind
 	local    string
@@ -1000,6 +1088,16 @@ func extractScopeIR(t *testing.T, filePath string, fileHash string, language sca
 	defer parsed.Close()
 
 	switch language {
+	case scanner.C:
+		ir, err := cprovider.Extract(cprovider.Request{
+			FilePath: filePath,
+			FileHash: fileHash,
+			Language: language,
+			Source:   []byte(source),
+			Root:     parsed.Tree.RootNode(),
+		})
+		requireNoExtractError(t, err)
+		return ir
 	case scanner.TypeScript, scanner.JavaScript:
 		ir, err := tsjsprovider.Extract(tsjsprovider.Request{
 			FilePath: filePath,
@@ -1225,6 +1323,30 @@ func requireResolvedRelationship(t *testing.T, g *graph.Graph, relType graph.Rel
 		}
 	}
 	t.Fatalf("missing resolved relationship %s %s -> %s in %#v", relType, sourceID, targetID, g.Relationships)
+}
+
+func requireGraphNode(t *testing.T, g *graph.Graph, want nodeExpectation) graph.Node {
+	t.Helper()
+	if want.id != "" {
+		node, ok := g.GetNode(want.id)
+		if !ok {
+			t.Fatalf("missing graph node id %q in %#v", want.id, g.Nodes)
+		}
+		if want.label != "" && node.Label != want.label {
+			t.Fatalf("node %q label = %s, want %s", want.id, node.Label, want.label)
+		}
+		return node
+	}
+	for _, node := range g.Nodes {
+		if node.Label != want.label {
+			continue
+		}
+		if node.Properties["name"] == want.name {
+			return node
+		}
+	}
+	t.Fatalf("missing graph node %s/%q in %#v", want.label, want.name, g.Nodes)
+	return graph.Node{}
 }
 
 func requireNoExtractError(t *testing.T, err error) {

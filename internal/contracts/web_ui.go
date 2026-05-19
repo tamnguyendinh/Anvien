@@ -31,13 +31,28 @@ type RelationshipDisplayPolicy struct {
 	DisplayPolicy string `json:"displayPolicy"`
 }
 
+type LanguageFactCoverage struct {
+	Family            string   `json:"family"`
+	Status            string   `json:"status"`
+	NodeLabels        []string `json:"nodeLabels"`
+	RelationshipTypes []string `json:"relationshipTypes"`
+	Evidence          string   `json:"evidence"`
+}
+
 type LanguageGraphCoverage struct {
-	Language           string   `json:"language"`
-	ExtractorStatus    string   `json:"extractorStatus"`
-	SourceFactFamilies []string `json:"sourceFactFamilies"`
-	ResolutionStatus   string   `json:"resolutionStatus"`
-	UnresolvedPolicy   string   `json:"unresolvedPolicy"`
-	WebDisplayPolicy   string   `json:"webDisplayPolicy"`
+	Language                   string                 `json:"language"`
+	ExtractorStatus            string                 `json:"extractorStatus"`
+	SourceFactFamilies         []string               `json:"sourceFactFamilies"`
+	SupportedNodeLabels        []string               `json:"supportedNodeLabels"`
+	SupportedRelationshipTypes []string               `json:"supportedRelationshipTypes"`
+	FactFamilies               []LanguageFactCoverage `json:"factFamilies"`
+	ResolutionStatus           string                 `json:"resolutionStatus"`
+	UnresolvedPolicy           string                 `json:"unresolvedPolicy"`
+	WebDisplayPolicy           string                 `json:"webDisplayPolicy"`
+	FixtureCoverage            []string               `json:"fixtureCoverage"`
+	ProviderParityProofLevel   string                 `json:"providerParityProofLevel"`
+	DefaultRegressionGate      string                 `json:"defaultRegressionGate"`
+	OptionalExternalAudit      string                 `json:"optionalExternalAudit"`
 }
 
 type WebUIContractManifest struct {
@@ -162,31 +177,165 @@ var codeLanguages = []LanguageContract{
 }
 
 var languageGraphCoverage = []LanguageGraphCoverage{
-	providerCoverage(scanner.JavaScript),
-	providerCoverage(scanner.TypeScript),
-	providerCoverage(scanner.Python),
-	providerCoverage(scanner.Java),
-	providerCoverage(scanner.C),
-	providerCoverage(scanner.CPlusPlus),
-	providerCoverage(scanner.CSharp),
-	providerCoverage(scanner.Go),
-	providerCoverage(scanner.Ruby),
-	providerCoverage(scanner.Rust),
-	providerCoverage(scanner.PHP),
-	providerCoverage(scanner.Kotlin),
-	providerCoverage(scanner.Swift),
-	providerCoverage(scanner.Dart),
+	languageCoverage(
+		scanner.JavaScript,
+		"scopeir-provider-backed",
+		labels(scopeir.NodeClass, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeVariable, scopeir.NodeProperty),
+		providerFactCoverage("resolved-graph-output", "class extends facts resolve to EXTENDS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"tsjs provider unit fixture", "provider call/import parity", "provider heritage parity"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
+	languageCoverage(
+		scanner.TypeScript,
+		"scopeir-provider-backed",
+		labels(scopeir.NodeClass, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeVariable, scopeir.NodeProperty, scopeir.NodeInterface, scopeir.NodeTypeAlias, scopeir.NodeEnum),
+		providerFactCoverage("resolved-graph-output", "class/interface extends and implements facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"tsjs provider unit fixture", "provider call/import/owner/heritage parity", "Restaurant_manager committed heritage fixture"},
+		"representative endpoint/count-level provider parity plus Restaurant_manager heritage target fixture",
+		"default committed Restaurant_manager heritage fixture",
+		"external Restaurant_manager source trace when AVMATRIX_RESTAURANT_MANAGER_ROOT is set",
+	),
+	languageCoverage(
+		scanner.Python,
+		"scopeir-provider-backed",
+		labels(scopeir.NodeClass, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeVariable, scopeir.NodeProperty),
+		providerFactCoverage("resolved-graph-output", "class base facts resolve to EXTENDS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"python provider golden fixture", "provider call/import/owner/heritage parity"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
+	languageCoverage(
+		scanner.Java,
+		"scopeir-provider-backed",
+		labels(scopeir.NodePackage, scopeir.NodeClass, scopeir.NodeInterface, scopeir.NodeEnum, scopeir.NodeRecord, scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeProperty, scopeir.NodeVariable),
+		providerFactCoverage("resolved-graph-output", "extends/implements facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"java provider golden fixture", "provider call/import/owner/heritage parity", "endpoint graph parity for methods/properties/calls/accesses/uses"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
+	languageCoverage(
+		scanner.C,
+		"scopeir-provider-backed",
+		labels(scopeir.NodeStruct, scopeir.NodeFunction, scopeir.NodeVariable, scopeir.NodeProperty),
+		providerFactCoverage("not-applicable-by-language-semantics", "C has no inheritance syntax in the current ScopeIR provider; struct fields and type references are tracked through members/USES"),
+		[]string{"c provider golden fixture", "provider call/import parity", "endpoint graph parity for structs/properties/calls/accesses/uses"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
+	languageCoverage(
+		scanner.CPlusPlus,
+		"scopeir-provider-backed",
+		labels(scopeir.NodePackage, scopeir.NodeClass, scopeir.NodeStruct, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeVariable, scopeir.NodeProperty),
+		providerFactCoverage("resolved-graph-output", "base-class facts resolve to EXTENDS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"cpp provider golden fixture", "provider call/import/owner/heritage parity"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
+	languageCoverage(
+		scanner.CSharp,
+		"scopeir-provider-backed",
+		labels(scopeir.NodePackage, scopeir.NodeClass, scopeir.NodeInterface, scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeVariable, scopeir.NodeProperty),
+		providerFactCoverage("resolved-graph-output", "base/interface facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"csharp provider golden fixture", "provider call/import/owner/heritage parity"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
+	languageCoverage(
+		scanner.Go,
+		"scopeir-provider-backed",
+		labels(scopeir.NodePackage, scopeir.NodeStruct, scopeir.NodeInterface, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeVariable, scopeir.NodeConst, scopeir.NodeProperty),
+		providerFactCoverage("resolved-graph-output", "embedded struct/interface facts resolve to EXTENDS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"go provider golden fixture", "provider call/import/owner/heritage parity"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
+	languageCoverage(
+		scanner.Ruby,
+		"scopeir-provider-backed",
+		labels(scopeir.NodeTrait, scopeir.NodeClass, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeVariable, scopeir.NodeProperty),
+		providerFactCoverage("resolved-graph-output", "class inheritance and include/extend/prepend facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"ruby provider golden fixture", "provider call/import/heritage parity"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
+	languageCoverage(
+		scanner.Rust,
+		"scopeir-provider-backed",
+		labels(scopeir.NodeStruct, scopeir.NodeTrait, scopeir.NodeImpl, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeVariable, scopeir.NodeConst, scopeir.NodeProperty),
+		providerFactCoverage("resolved-graph-output", "trait impl facts resolve to IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"rust provider golden fixture", "provider call/import/owner/heritage parity"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
+	languageCoverage(
+		scanner.PHP,
+		"scopeir-provider-backed",
+		labels(scopeir.NodePackage, scopeir.NodeClass, scopeir.NodeInterface, scopeir.NodeTrait, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeVariable, scopeir.NodeProperty),
+		providerFactCoverage("resolved-graph-output", "extends/implements/use facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"php provider golden fixture", "provider call/heritage parity"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
+	languageCoverage(
+		scanner.Kotlin,
+		"scopeir-provider-backed",
+		labels(scopeir.NodePackage, scopeir.NodeClass, scopeir.NodeInterface, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeVariable, scopeir.NodeProperty),
+		providerFactCoverage("resolved-graph-output", "base/interface facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"kotlin provider golden fixture", "provider call/import/heritage parity"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
+	languageCoverage(
+		scanner.Swift,
+		"scopeir-provider-backed",
+		labels(scopeir.NodeClass, scopeir.NodeStruct, scopeir.NodeInterface, scopeir.NodeEnum, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeVariable, scopeir.NodeProperty),
+		providerFactCoverage("resolved-graph-output", "protocol conformance facts resolve to IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"swift provider golden fixture", "provider import/heritage parity"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
+	languageCoverage(
+		scanner.Dart,
+		"scopeir-provider-backed",
+		labels(scopeir.NodeClass, scopeir.NodeInterface, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeVariable, scopeir.NodeProperty),
+		providerFactCoverage("resolved-graph-output", "extends/implements facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"),
+		[]string{"dart provider golden fixture", "provider import/heritage parity"},
+		"representative endpoint/count-level provider parity",
+		"default provider and contract tests",
+		"",
+	),
 	scriptContainerCoverage(scanner.Vue),
 	scriptContainerCoverage(scanner.Svelte),
 	scriptContainerCoverage(scanner.Astro),
-	{
-		Language:           string(scanner.Cobol),
-		ExtractorStatus:    "dedicated-analyzer-phase",
-		SourceFactFamilies: []string{"cobol-structure", "copybooks", "jcl"},
-		ResolutionStatus:   "not-scopeir-resolved",
-		UnresolvedPolicy:   "recorded in dedicated analyzer metrics/evidence",
-		WebDisplayPolicy:   "graph-present labels and relationships are filterable; ScopeIR parity is not implied",
-	},
+	languageCoverage(
+		scanner.Cobol,
+		"dedicated-analyzer-phase",
+		labels(scopeir.NodeFile, scopeir.NodeModule, scopeir.NodeSection),
+		[]LanguageFactCoverage{
+			factCoverage("cobol-programs", "dedicated-analyzer-phase", labels(scopeir.NodeModule), rels(graph.RelDefines, graph.RelContains), "COBOL PROGRAM-ID nodes and nesting relationships are emitted by internal/cobol"),
+			factCoverage("cobol-sections-paragraphs", "dedicated-analyzer-phase", labels(scopeir.NodeSection), rels(graph.RelDefines, graph.RelCalls), "COBOL sections, paragraphs, PERFORM, and CALL metrics are emitted by internal/cobol"),
+			factCoverage("copybooks", "dedicated-analyzer-phase", labels(scopeir.NodeFile), rels(graph.RelUses), "COPY statements are tracked by dedicated COBOL metrics and copybook expansion tests"),
+			factCoverage("jcl", "dedicated-analyzer-phase", labels(scopeir.NodeFile, scopeir.NodeModule), rels(graph.RelCalls), "JCL job/step program links are tracked by dedicated COBOL metrics and JCL tests"),
+			factCoverage("scopeir-provider-facts", "scanned-not-extracted", []string{}, []string{}, "COBOL is scanned and processed by the dedicated analyzer phase; it is not routed through ScopeIR provider extraction"),
+		},
+		[]string{"internal/cobol tests", "analyze pipeline COBOL metrics"},
+		"dedicated analyzer metrics, not ScopeIR provider parity",
+		"default analyze/cobol tests",
+		"",
+	),
 }
 
 var rubyExtensionlessFiles = []string{
@@ -422,22 +571,178 @@ func titleWords(value string) string {
 	return strings.Join(parts, " ")
 }
 
-func providerCoverage(language scanner.Language) LanguageGraphCoverage {
+func scriptContainerCoverage(language scanner.Language) LanguageGraphCoverage {
+	return languageCoverage(
+		language,
+		"script-container-backed",
+		labels(scopeir.NodeClass, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeVariable, scopeir.NodeProperty, scopeir.NodeInterface, scopeir.NodeTypeAlias),
+		[]LanguageFactCoverage{
+			factCoverage("embedded-script-definitions", "resolved-graph-output", labels(scopeir.NodeClass, scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeVariable, scopeir.NodeProperty, scopeir.NodeInterface, scopeir.NodeTypeAlias), rels(graph.RelDefines), "embedded JS/TS definitions are extracted from component script blocks"),
+			factCoverage("embedded-script-imports", "resolved-graph-output", labels(scopeir.NodeFile), rels(graph.RelImports, graph.RelUses), "embedded JS/TS imports resolve to in-repo files/definitions when available"),
+			factCoverage("embedded-script-calls", "resolved-graph-output", labels(scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeConstructor), rels(graph.RelCalls), "embedded JS/TS calls resolve to in-repo callable definitions when available"),
+			factCoverage("embedded-script-accesses", "resolved-graph-output", labels(scopeir.NodeProperty, scopeir.NodeVariable), rels(graph.RelAccesses), "embedded JS/TS property/variable accesses resolve when receiver or scope bindings are available"),
+			factCoverage("embedded-script-type-references", "resolved-graph-output", labels(scopeir.NodeClass, scopeir.NodeInterface, scopeir.NodeTypeAlias), rels(graph.RelUses), "embedded JS/TS type references resolve to in-repo type definitions when available"),
+			factCoverage("embedded-script-members", "resolved-graph-output", labels(scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeProperty), rels(graph.RelHasMethod, graph.RelHasProperty, graph.RelMemberOf), "embedded JS/TS owner/member facts emit owner relationships for methods, constructors, and properties"),
+			factCoverage("embedded-script-heritage", "resolved-graph-output", labels(scopeir.NodeClass, scopeir.NodeInterface), rels(graph.RelExtends, graph.RelImplements, graph.RelInherits), "embedded JS/TS heritage facts resolve to EXTENDS/IMPLEMENTS plus compatibility INHERITS when in-repo targets are found"),
+			factCoverage("framework-routes-tools-processes", "not-applicable-by-language-semantics", []string{}, []string{}, "route/tool/process edges are framework/analyzer-derived rather than script-container provider facts"),
+		},
+		[]string{string(language) + " script-container tests", "script-container graph parity count tests"},
+		"representative script-container count-level graph parity",
+		"default provider and contract tests",
+		"",
+	)
+}
+
+func languageCoverage(
+	language scanner.Language,
+	extractorStatus string,
+	supportedNodeLabels []string,
+	facts []LanguageFactCoverage,
+	fixtureCoverage []string,
+	providerParityProofLevel string,
+	defaultRegressionGate string,
+	optionalExternalAudit string,
+) LanguageGraphCoverage {
+	facts = coverageFactsForLanguage(supportedNodeLabels, facts)
 	return LanguageGraphCoverage{
-		Language:           string(language),
-		ExtractorStatus:    "scopeir-provider-backed",
-		SourceFactFamilies: []string{"definitions", "imports", "calls", "accesses", "type-references", "members", "heritage-where-language-supports-it"},
-		ResolutionStatus:   "scopeir-resolved-in-repo-targets",
-		UnresolvedPolicy:   "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges",
-		WebDisplayPolicy:   "graph-present labels and relationships are filterable; unknown future labels/types use fallback display",
+		Language:                   string(language),
+		ExtractorStatus:            extractorStatus,
+		SourceFactFamilies:         factFamilyNames(facts),
+		SupportedNodeLabels:        supportedNodeLabels,
+		SupportedRelationshipTypes: factRelationshipTypes(facts),
+		FactFamilies:               facts,
+		ResolutionStatus:           resolutionStatusForExtractor(extractorStatus),
+		UnresolvedPolicy:           unresolvedPolicyForExtractor(extractorStatus),
+		WebDisplayPolicy:           webDisplayPolicyForExtractor(extractorStatus),
+		FixtureCoverage:            append([]string(nil), fixtureCoverage...),
+		ProviderParityProofLevel:   providerParityProofLevel,
+		DefaultRegressionGate:      defaultRegressionGate,
+		OptionalExternalAudit:      optionalExternalAudit,
 	}
 }
 
-func scriptContainerCoverage(language scanner.Language) LanguageGraphCoverage {
-	coverage := providerCoverage(language)
-	coverage.ExtractorStatus = "script-container-backed"
-	coverage.SourceFactFamilies = []string{"embedded-script-definitions", "embedded-script-imports", "embedded-script-calls", "embedded-script-accesses", "embedded-script-type-references", "embedded-script-members", "embedded-script-heritage"}
-	return coverage
+func providerFactCoverage(heritageStatus string, heritageEvidence string) []LanguageFactCoverage {
+	heritageLabels := []string{}
+	if heritageStatus == "resolved-graph-output" {
+		heritageLabels = labels(scopeir.NodeClass, scopeir.NodeInterface, scopeir.NodeStruct, scopeir.NodeTrait)
+	}
+	return []LanguageFactCoverage{
+		factCoverage("definitions", "resolved-graph-output", labels(scopeir.NodeFile), rels(graph.RelDefines), "definitions emit graph nodes and file DEFINES edges for provider-backed files"),
+		factCoverage("imports", "resolved-graph-output", labels(scopeir.NodeFile), rels(graph.RelImports, graph.RelUses), "in-repo import targets emit IMPORTS and import-use USES edges; external imports remain unresolved evidence"),
+		factCoverage("calls", "resolved-graph-output", labels(scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeConstructor), rels(graph.RelCalls), "resolved callable targets emit CALLS edges; unresolved/external calls remain metrics/evidence"),
+		factCoverage("accesses", "resolved-graph-output", labels(scopeir.NodeProperty, scopeir.NodeVariable, scopeir.NodeConst, scopeir.NodeStatic), rels(graph.RelAccesses), "resolved member/property accesses emit ACCESSES edges; unresolved accesses remain metrics/evidence"),
+		factCoverage("type-references", "resolved-graph-output", labels(scopeir.NodeClass, scopeir.NodeInterface, scopeir.NodeStruct, scopeir.NodeTrait, scopeir.NodeRecord, scopeir.NodeTypeAlias, scopeir.NodeEnum), rels(graph.RelUses), "resolved type annotations and bindings emit USES edges; built-in/external types remain unresolved or intentionally ignored"),
+		factCoverage("members", "resolved-graph-output", labels(scopeir.NodeMethod, scopeir.NodeConstructor, scopeir.NodeProperty), rels(graph.RelHasMethod, graph.RelHasProperty, graph.RelMemberOf), "owner/member definitions emit HAS_METHOD, HAS_PROPERTY, and MEMBER_OF-style graph relationships where supported"),
+		factCoverage("heritage", heritageStatus, heritageLabels, heritageRelationshipTypes(heritageStatus), heritageEvidence),
+		factCoverage("framework-routes-tools-processes", "not-applicable-by-language-semantics", []string{}, []string{}, "route/tool/process edges are framework/analyzer-derived and covered outside provider parity fixtures"),
+	}
+}
+
+func factCoverage(family string, status string, nodeLabels []string, relationshipTypes []string, evidence string) LanguageFactCoverage {
+	return LanguageFactCoverage{
+		Family:            family,
+		Status:            status,
+		NodeLabels:        cloneStrings(nodeLabels),
+		RelationshipTypes: cloneStrings(relationshipTypes),
+		Evidence:          evidence,
+	}
+}
+
+func cloneStrings(values []string) []string {
+	out := make([]string, len(values))
+	copy(out, values)
+	return out
+}
+
+func labels(values ...scopeir.NodeLabel) []string {
+	out := make([]string, 0, len(values))
+	for _, value := range values {
+		out = append(out, string(value))
+	}
+	return out
+}
+
+func rels(values ...graph.RelationshipType) []string {
+	out := make([]string, 0, len(values))
+	for _, value := range values {
+		out = append(out, string(value))
+	}
+	return out
+}
+
+func heritageRelationshipTypes(status string) []string {
+	if status != "resolved-graph-output" {
+		return []string{}
+	}
+	return rels(graph.RelExtends, graph.RelImplements, graph.RelInherits)
+}
+
+func factFamilyNames(facts []LanguageFactCoverage) []string {
+	out := make([]string, 0, len(facts))
+	for _, fact := range facts {
+		out = append(out, fact.Family)
+	}
+	return out
+}
+
+func factRelationshipTypes(facts []LanguageFactCoverage) []string {
+	seen := map[string]bool{}
+	out := make([]string, 0)
+	for _, fact := range facts {
+		for _, relType := range fact.RelationshipTypes {
+			if seen[relType] {
+				continue
+			}
+			seen[relType] = true
+			out = append(out, relType)
+		}
+	}
+	return out
+}
+
+func coverageFactsForLanguage(supportedNodeLabels []string, facts []LanguageFactCoverage) []LanguageFactCoverage {
+	out := make([]LanguageFactCoverage, len(facts))
+	copy(out, facts)
+	for index := range out {
+		if out[index].Family == "definitions" {
+			out[index].NodeLabels = uniqueStrings(append([]string{string(scopeir.NodeFile)}, supportedNodeLabels...))
+		}
+	}
+	return out
+}
+
+func uniqueStrings(values []string) []string {
+	seen := map[string]bool{}
+	out := make([]string, 0, len(values))
+	for _, value := range values {
+		if value == "" || seen[value] {
+			continue
+		}
+		seen[value] = true
+		out = append(out, value)
+	}
+	return out
+}
+
+func resolutionStatusForExtractor(extractorStatus string) string {
+	if extractorStatus == "dedicated-analyzer-phase" {
+		return "not-scopeir-resolved"
+	}
+	return "scopeir-resolved-in-repo-targets"
+}
+
+func unresolvedPolicyForExtractor(extractorStatus string) string {
+	if extractorStatus == "dedicated-analyzer-phase" {
+		return "recorded in dedicated analyzer metrics/evidence"
+	}
+	return "unresolved or external targets are retained in resolution metrics/evidence rather than emitted as resolved graph edges"
+}
+
+func webDisplayPolicyForExtractor(extractorStatus string) string {
+	if extractorStatus == "dedicated-analyzer-phase" {
+		return "graph-present labels and relationships are filterable; ScopeIR provider parity is not implied"
+	}
+	return "graph-present labels and relationships are filterable; unknown future labels/types use fallback display"
 }
 
 func copyStringMap(in map[string]string) map[string]string {

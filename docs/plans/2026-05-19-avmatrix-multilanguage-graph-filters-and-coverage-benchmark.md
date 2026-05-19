@@ -2,7 +2,7 @@
 
 Date: 2026-05-19
 
-Status: reopened - zero-trust follow-up active
+Status: complete - zero-trust follow-up closure recorded
 
 Companion files:
 
@@ -527,28 +527,48 @@ Measurement date: 2026-05-19
 
 ## B6 - Zero-Trust Reopen Benchmark Requirements
 
-Status: pending
+Status: recorded
 
-Measurement date: pending follow-up implementation
+Measurement date: 2026-05-19
 
-The B5 metrics remain useful historical evidence, but they are no longer final closure metrics. The reopened phase must record the measurements below before the plan can close again.
+The B5 metrics remain useful historical evidence, but they are superseded by the zero-trust follow-up metrics below.
 
-### Required Follow-Up Metrics
+### Follow-Up Metrics
 
-| Metric | Required target |
+| Metric | Result |
 |---|---|
-| Explicit language/fact matrix entries | one explicit row/status for each supported language and claimed graph fact family |
-| Generic provider-backed fact-family inheritance | `0` unclassified provider-backed languages |
-| Explicit not-applicable/extraction-only/unresolved statuses | recorded for every language/fact combination that is not resolved graph output |
-| Deterministic large-graph e2e target | repo selected by stable name/path or committed fixture; no `repos[0]` dependency |
-| Optional external trace dependency | either removed from closure gates or replaced by committed/default fixture coverage |
-| `Restaurant_manager` TS heritage regression guard | all `17` audited `HeritageFact` target facts covered by deterministic test path or explicitly external-only audit |
-| Provider graph parity proof level | endpoint-level representative assertions recorded, or closure wording narrowed to representative/count-level proof |
-| Stale active/pending closure language | `0` occurrences outside historical baseline tables explicitly labeled as baseline |
-| Follow-up validation inventory | Go build/tests, Web build/tests, deterministic e2e, and optional external trace if still used |
+| Explicit language coverage entries | `18` |
+| Explicit language/fact matrix rows | `141` |
+| Provider-backed language entries | `14` |
+| Script-container-backed language entries | `3` |
+| Dedicated analyzer-phase language entries | `1` |
+| Generic `heritage-where-language-supports-it` provider markers | `0` in generated contract artifacts |
+| Explicit non-resolved statuses | `not-applicable-by-language-semantics`, `scanned-not-extracted`, and `dedicated-analyzer-phase` recorded where applicable |
+| Deterministic large-graph e2e target | `Restaurant_manager` selected by stable name/path via `E2E_REPO_NAME` or default target |
+| Deterministic large-graph e2e result | focused Playwright shell e2e passed `3/3` |
+| Optional external trace dependency | removed from closure gates by committed/default TS heritage fixture; external trace remains optional audit |
+| `Restaurant_manager` TS heritage regression guard | committed/default fixture covers all `17` audited `HeritageFact` target facts |
+| Optional external `Restaurant_manager` trace | passed in this environment with `17` target facts |
+| Provider graph parity proof level | representative endpoint/count-level proof recorded in generated coverage metadata |
+| Representative endpoint proof added | C and Java definitions, members, calls, accesses, and type-use relationships |
+| Follow-up validation inventory | Go build/tests, Web build/tests, deterministic e2e, and optional external trace passed |
+
+### Validation Inventory
+
+| Command | Result |
+|---|---|
+| `go test ./internal/contracts ./internal/providers/tsjs ./internal/providers -run "TestWebUIContract\|TestExtractRestaurantManagerTypeScriptHeritageFixture\|TestProviderGraphParityEndpointProof" -count=1` | passed |
+| `go run .\cmd\generate-web-contracts` | passed |
+| `npm --prefix avmatrix-web test -- --run test/unit/constants.test.ts` | passed, `26` tests |
+| `go build ./cmd/... ./internal/...` | passed |
+| `go test ./cmd/... ./internal/...` | passed |
+| `npm --prefix avmatrix-web run build` | passed |
+| `npm --prefix avmatrix-web test -- --run` | passed, `41` files / `325` tests |
+| `npm --prefix avmatrix-web run test:e2e -- shell-interactions.spec.ts -g "back button\|resizes the left dashboard\|displays graph filters" --workers=1 --timeout=120000` | passed, `3/3` |
+| `$env:AVMATRIX_RESTAURANT_MANAGER_ROOT='E:\Restaurant_manager'; go test ./internal/providers/tsjs -run TestExtractRestaurantManagerTypeScriptHeritageSites -count=1 -v` | passed |
 
 ### Status Notes
 
 - Historical `pending` entries in B0 are baseline placeholders and may remain only if clearly treated as baseline history.
-- B5 is superseded because it overclaims final coverage matrix and deterministic e2e closure.
-- Final zero-trust closure must create a new benchmark section after the follow-up implementation and validation pass.
+- B5 is superseded because it overclaimed final coverage matrix and deterministic e2e closure.
+- B6 is the final zero-trust follow-up benchmark section for this implementation slice.

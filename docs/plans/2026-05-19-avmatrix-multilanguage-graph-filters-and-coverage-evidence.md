@@ -2,7 +2,7 @@
 
 Date: 2026-05-19
 
-Status: reopened - zero-trust follow-up active
+Status: complete - zero-trust follow-up closure recorded
 
 Companion files:
 
@@ -628,7 +628,7 @@ Conclusion:
 - raw graph compatibility behavior is preserved for MCP/context/impact/MRO consumers;
 - the user-facing duplicate heritage grouping policy is now explicitly documented in MCP schema resources;
 - provider heritage parity is no longer TS/Go-only in representative extraction and graph-resolution fixtures;
-- broader non-heritage provider fact-family parity and full UI e2e filter/focus-depth expansion remain pending in the active plan.
+- broader non-heritage provider fact-family parity and full UI e2e filter/focus-depth expansion were later reopened and closed by E18/P8 with explicit representative proof-level wording.
 
 ## E13 - UI Filter, Legend, Focus-Depth, And Large-Graph Smoke Coverage Slice
 
@@ -965,7 +965,7 @@ Superseded closure conclusion:
 
 Date: 2026-05-19
 
-Status: active
+Status: recorded
 
 Doc-only note:
 
@@ -1010,3 +1010,97 @@ New follow-up requirements are tracked under Phase 8:
 - provider parity proof strengthened or wording narrowed to representative/count-level evidence;
 - benchmark/evidence drift cleanup;
 - final validation and zero-trust closure.
+
+## E18 - Zero-Trust Follow-Up Implementation Slice
+
+Date: 2026-05-19
+
+Status: recorded
+
+### AVmatrix-Assisted Checks
+
+Commands:
+
+```powershell
+go run .\cmd\avmatrix status
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix context providerCoverage --repo AVmatrix
+go run .\cmd\avmatrix impact providerCoverage --repo AVmatrix --direction upstream --depth 3 --include-tests
+go run .\cmd\avmatrix context WebUIContract --repo AVmatrix
+go run .\cmd\avmatrix impact WebUIContract --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Result summary:
+
+- initial AVmatrix status was stale after the doc-only reopen commit;
+- re-analyze succeeded with `files=691`, `parsed=530`, `nodes=20,881`, and `relationships=51,998`;
+- `providerCoverage` impact was `LOW` and limited to the contracts module;
+- `WebUIContract` impact was `CRITICAL` because it feeds generated schema/TypeScript artifacts and contract tests.
+
+### Implementation Files
+
+Backend and contracts:
+
+- `internal/contracts/web_ui.go`
+- `internal/contracts/web_ui_test.go`
+- `contracts/web-ui/avmatrix-web-contract.schema.json`
+- `internal/providers/provider_parity_test.go`
+- `internal/providers/tsjs/extract_test.go`
+
+Web:
+
+- `avmatrix-web/src/generated/avmatrix-contracts.ts`
+- `avmatrix-web/test/unit/constants.test.ts`
+- `avmatrix-web/e2e/shell-interactions.spec.ts`
+
+Plan files:
+
+- `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-plan.md`
+- `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-benchmark.md`
+- `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-evidence.md`
+
+### Coverage Changes
+
+- `LANGUAGE_GRAPH_COVERAGE` now includes explicit `factFamilies`, `supportedNodeLabels`, `supportedRelationshipTypes`, fixture coverage, proof-level metadata, default regression gate, and optional external audit fields.
+- Provider-backed languages no longer use the generic `heritage-where-language-supports-it` source fact marker.
+- Contract tests now require explicit fact-family status for generated graph coverage and fail if provider-backed languages fall back to the old generic heritage marker.
+- The generated contract records `18` language entries and `141` explicit fact-family rows.
+- Provider parity wording is narrowed to representative endpoint/count-level proof where that is the real evidence level.
+- `TestProviderGraphParityEndpointProofCoversRepresentativeNonTSGoFacts` adds endpoint assertions for C and Java definitions, members, calls, accesses, and type-use relationships.
+- `TestExtractRestaurantManagerTypeScriptHeritageFixture` adds a committed/default fixture covering all `17` audited Restaurant_manager TypeScript heritage target facts.
+- The external `AVMATRIX_RESTAURANT_MANAGER_ROOT` trace remains available as audit evidence and passed in this environment.
+- Playwright shell e2e now selects `E2E_REPO_NAME` or default `Restaurant_manager` by stable repo name/path and skips with an explicit reason if that deterministic target is unavailable.
+
+### Validation Commands
+
+Passed:
+
+```powershell
+go test ./internal/contracts ./internal/providers/tsjs ./internal/providers -run "TestWebUIContract|TestExtractRestaurantManagerTypeScriptHeritageFixture|TestProviderGraphParityEndpointProof" -count=1
+go run .\cmd\generate-web-contracts
+npm --prefix avmatrix-web test -- --run test/unit/constants.test.ts
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+npm --prefix avmatrix-web run build
+npm --prefix avmatrix-web test -- --run
+npm --prefix avmatrix-web run test:e2e -- shell-interactions.spec.ts -g "back button|resizes the left dashboard|displays graph filters" --workers=1 --timeout=120000
+$env:AVMATRIX_RESTAURANT_MANAGER_ROOT='E:\Restaurant_manager'; go test ./internal/providers/tsjs -run TestExtractRestaurantManagerTypeScriptHeritageSites -count=1 -v
+```
+
+Result summary:
+
+- focused Go tests passed for contracts, TS heritage fixture, and provider endpoint proof;
+- full applicable Go build passed;
+- full applicable Go tests for `cmd` and `internal` passed;
+- Web production build passed;
+- full Vitest suite passed: `41` files and `325` tests;
+- focused Playwright shell e2e passed `3/3` against deterministic `Restaurant_manager`;
+- optional external Restaurant_manager TS heritage trace passed and verified all `17` target facts.
+
+Final conclusion:
+
+- the zero-trust reopen issues are closed at the stated proof level;
+- language graph coverage is explicit rather than generic;
+- deterministic regression gates now cover the large graph e2e selection and the Restaurant_manager TS heritage target facts;
+- provider parity evidence no longer overclaims every endpoint where only representative/count-level evidence exists;
+- historical baseline `pending` rows remain benchmark history, while active closure status is recorded in B6 and this section.
