@@ -67,6 +67,42 @@ func TestAuditAccessCandidatesClassifiesReasons(t *testing.T) {
 	}
 }
 
+func TestAuditAccessCandidatesResolvesTypeAliasMembers(t *testing.T) {
+	moduleScope := "scope:src/app.ts:module"
+	functionScope := "scope:src/app.ts:start"
+	resultID := "def:ReadResult"
+	modelID := "def:ReadResult.model"
+	ir := scopeir.ScopeIR{
+		FilePath:    "src/app.ts",
+		FileHash:    "hash",
+		Language:    scanner.TypeScript,
+		ModuleScope: moduleScope,
+		Scopes: []scopeir.ScopeFact{
+			{ID: moduleScope, Kind: scopeir.ScopeModule, FilePath: "src/app.ts"},
+			{ID: functionScope, Parent: scopeStringPtr(moduleScope), Kind: scopeir.ScopeFunction, FilePath: "src/app.ts", OwnedDefIDs: []string{"def:start"}, TypeBindings: []scopeir.TypeBindingFact{
+				{Name: "result", Type: scopeir.TypeRef{RawName: "ReadResult", Source: scopeir.TypeSourceReturn}},
+			}},
+		},
+		Definitions: []scopeir.DefinitionFact{
+			{ID: resultID, FilePath: "src/app.ts", FileHash: "hash", Name: "ReadResult", Label: scopeir.NodeTypeAlias, Range: scopeir.Range{StartLine: 1, EndLine: 3}},
+			{ID: modelID, FilePath: "src/app.ts", FileHash: "hash", Name: "model", Label: scopeir.NodeProperty, OwnerID: resultID, DeclaredType: "InvoiceModel", Range: scopeir.Range{StartLine: 2, EndLine: 2}},
+			{ID: "def:start", FilePath: "src/app.ts", FileHash: "hash", Name: "start", Label: scopeir.NodeFunction, Range: scopeir.Range{StartLine: 5, EndLine: 7}},
+		},
+		Accesses: []scopeir.AccessFact{
+			{FilePath: "src/app.ts", FileHash: "hash", Name: "model", Kind: scopeir.AccessRead, ExplicitReceiver: "result", InScope: functionScope, Range: scopeir.Range{StartLine: 6}},
+		},
+	}
+
+	result, err := AuditAccessCandidates([]scopeir.ScopeIR{ir}, AccessCandidateAuditOptions{MaxExamples: 1})
+	if err != nil {
+		t.Fatalf("AuditAccessCandidates() error = %v", err)
+	}
+	if result.Total != 1 || result.Resolved != 1 || result.Unresolved != 0 {
+		t.Fatalf("totals = %#v", result)
+	}
+	assertAccessReason(t, result, "resolved", 1)
+}
+
 func assertAccessReason(t *testing.T, result AccessCandidateAudit, reason string, want int) {
 	t.Helper()
 	if got := result.Reasons[reason].Count; got != want {

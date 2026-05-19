@@ -110,7 +110,7 @@ func classifyAccessCandidate(w *workspace, access scopeir.AccessFact) (string, b
 	if !ok {
 		return "missing_receiver_type", false, "receiver has no resolvable type binding or enclosing owner"
 	}
-	owner, ok := w.resolveName(ownerType, access.InScope, dispatchOwnerLabels())
+	owner, ok := w.resolveName(ownerType, access.InScope, memberOwnerLabels())
 	if !ok {
 		return "external_library_type", false, "receiver type is not defined in the analyzed workspace"
 	}

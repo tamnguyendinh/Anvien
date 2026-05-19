@@ -85,7 +85,7 @@ Every property/access gate benchmark row must include:
 | P2-D Go anonymous struct classification | `.tmp\p2d-property-access-avmatrix-go-20260519.json` | Go `go_anonymous_struct_field=206`, Go `true_no_edge=206`, Go `unknown=0`; no new `HAS_PROPERTY` emitted | recorded |
 | P2-E remaining ownership clusters | `.tmp\p2e-property-access-website-20260519.json`, `.tmp\p2e-property-access-avmatrix-go-20260519.json` | Website `HAS_PROPERTY=5,922`, `real_edge_missing=0`; AVmatrix-GO `HAS_PROPERTY=2,769`, `real_edge_missing=0`; invalid edges `0` | recorded |
 | P3-A post-ownership access taxonomy | `.tmp\p3a-access-candidates-website-20260519.json`, `.tmp\p3a-access-candidates-avmatrix-go-20260519.json` | Website `total=24,542 resolved=3`; AVmatrix-GO `total=21,132 resolved=5,128`; biggest bucket remains `missing_receiver_type` | recorded |
-| P3 access validation | pending | `ACCESSES` expansion and precision | open |
+| P3-B/P3-D access validation | `.tmp\p3b-property-access-website-20260519.json`, `.tmp\p3b-access-candidates-website-20260519.json`, `.tmp\p3b-property-access-avmatrix-go-20260519.json`, `.tmp\p3b-access-candidates-avmatrix-go-20260519.json` | Website final `ACCESSES=2,769`, candidate `resolved=4,978`; AVmatrix-GO final `ACCESSES=2,746`, candidate `resolved=5,110`; invalid owner edges `0` | recorded |
 | P5 final gate | pending | final workload matrix | open |
 
 ## P1 Cross-Language Baseline Gate
@@ -431,3 +431,82 @@ P3-A interpretation:
 - AVmatrix-GO resolved accesses increased from `5,112` to `5,128`, but `missing_receiver_type` remains the largest bucket.
 - `missing_owner_link` is small after Phase 2: Website `1`, AVmatrix-GO `10`.
 - P3-B should focus on explicit receiver type binding and locally inferable receiver types, while leaving `external_library_type` and `unsupported_syntax` out of scope.
+
+## P3-B/P3-D Access Validation
+
+Date: 2026-05-19
+
+Artifacts:
+
+- Website graph snapshot: `.tmp\p3b-property-access-website-go-graph-20260519.json`
+- Website property/access gate output: `.tmp\p3b-property-access-website-20260519.json`
+- Website access candidate output: `.tmp\p3b-access-candidates-website-20260519.json`
+- AVmatrix-GO graph snapshot: `.tmp\p3b-property-access-avmatrix-go-graph-20260519.json`
+- AVmatrix-GO property/access gate output: `.tmp\p3b-property-access-avmatrix-go-20260519.json`
+- AVmatrix-GO access candidate output: `.tmp\p3b-access-candidates-avmatrix-go-20260519.json`
+
+Commands:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
+Copy-Item -LiteralPath 'E:\Website\.avmatrix\graph.json' -Destination '.tmp\p3b-property-access-website-go-graph-20260519.json' -Force
+go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\p3b-property-access-website-go-graph-20260519.json -out .tmp\p3b-property-access-website-20260519.json -max-examples 20
+go run ./cmd/access-candidate-audit -repo E:\Website -out .tmp\p3b-access-candidates-website-20260519.json -max-examples 20
+
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+Copy-Item -LiteralPath 'E:\AVmatrix-GO\.avmatrix\graph.json' -Destination '.tmp\p3b-property-access-avmatrix-go-graph-20260519.json' -Force
+go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\p3b-property-access-avmatrix-go-graph-20260519.json -out .tmp\p3b-property-access-avmatrix-go-20260519.json -max-examples 20
+go run ./cmd/access-candidate-audit -repo E:\AVmatrix-GO -out .tmp\p3b-access-candidates-avmatrix-go-20260519.json -max-examples 20
+```
+
+Analyze runtime and graph size:
+
+| Workload | Analyze runtime | Files scanned | Files parsed | Graph nodes | Graph relationships |
+|---|---:|---:|---:|---:|---:|
+| `E:\Website` | 18,825.7 ms | 1,870 | 998 | 27,956 | 58,731 |
+| `E:\AVmatrix-GO` | 14,784.4 ms | 682 | 527 | 20,282 | 48,550 |
+
+Final graph property/access gate:
+
+| Workload | `Property` | `HAS_PROPERTY` | `ACCESSES` | `real_edge_missing` | `true_no_edge` | `unknown_no_edge` | Invalid edges |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 7,097 | 5,922 | 2,769 | 0 | 1,156 | 19 | 0 |
+| `E:\AVmatrix-GO` | 3,096 | 2,769 | 2,746 | 0 | 324 | 3 | 0 |
+
+Final graph delta from P2-E:
+
+| Workload | P2-E `ACCESSES` | P3-B `ACCESSES` | Delta |
+|---|---:|---:|---:|
+| `E:\Website` | 3 | 2,769 | +2,766 |
+| `E:\AVmatrix-GO` | 2,754 | 2,746 | -8 |
+
+Access candidate taxonomy:
+
+| Workload | Analyze runtime | Access candidates | Resolved | Unresolved | Final graph resolved accesses | Resolution unresolved references |
+|---|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 7,072 ms | 24,542 | 4,978 | 19,564 | 4,978 | 59,289 |
+| `E:\AVmatrix-GO` | 5,279 ms | 21,165 | 5,110 | 16,055 | 5,110 | 50,445 |
+
+Reason taxonomy:
+
+| Workload | `resolved` | `missing_receiver_type` | `external_library_type` | `unsupported_syntax` | `missing_caller` | `missing_owner_link` | `false_positive_candidate` | `ambiguous_owner` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 4,978 | 12,209 | 4,706 | 1,313 | 53 | 768 | 406 | 109 |
+| `E:\AVmatrix-GO` | 5,110 | 11,464 | 3,622 | 910 | 14 | 10 | 35 | 0 |
+
+Language breakdown:
+
+| Workload | Language | Access candidates | Resolved | Unresolved |
+|---|---|---:|---:|---:|
+| `E:\Website` | JavaScript | 231 | 0 | 231 |
+| `E:\Website` | TypeScript | 24,311 | 4,978 | 19,333 |
+| `E:\AVmatrix-GO` | Go | 19,126 | 4,970 | 14,156 |
+| `E:\AVmatrix-GO` | TypeScript | 2,039 | 140 | 1,899 |
+
+P3-B interpretation:
+
+- Website final graph `ACCESSES` increased from `3` to `2,769`, proving the first receiver-type cluster now emits real graph edges.
+- Website candidate-level resolved accesses increased from `3` to `4,978`.
+- `missing_receiver_type` remains the largest bucket, so P3-F still has work.
+- `missing_owner_link`, `false_positive_candidate`, and `ambiguous_owner` increased on Website because many receiver owners are now known; those are newly visible follow-up buckets, not edges to force-link.
+- AVmatrix-GO is not the main beneficiary of this TS/JS-heavy cluster. Its small final `ACCESSES` decrease is recorded for audit and will be watched in P3-E/P3-F instead of hidden.

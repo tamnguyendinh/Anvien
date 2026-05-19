@@ -70,6 +70,42 @@ func TestResolveTypeScriptGraphFixture(t *testing.T) {
 	}
 }
 
+func TestResolveAwaitedPromiseReturnMemberAccess(t *testing.T) {
+	source := []byte(`type Invoice = {
+  invoiceId: string;
+};
+
+type InvoiceModel = {
+  invoices: Invoice[];
+};
+
+type ReadResult = {
+  model: InvoiceModel;
+};
+
+async function readResult(): Promise<ReadResult> {
+  throw new Error("not implemented");
+}
+
+async function run() {
+  const result = await readResult();
+  result.model.invoices;
+}
+`)
+	ir := parseTypeScriptSource(t, "src/awaited-result.ts", source)
+	result, err := Resolve([]scopeir.ScopeIR{ir}, Options{})
+	if err != nil {
+		t.Fatalf("resolve failed: %v", err)
+	}
+
+	run := requireNode(t, result.Graph, "Function", "src/awaited-result.ts", "run")
+	model := requireNode(t, result.Graph, "Property", "src/awaited-result.ts", "ReadResult.model")
+	invoices := requireNode(t, result.Graph, "Property", "src/awaited-result.ts", "InvoiceModel.invoices")
+
+	requireRelationship(t, result.Graph, graph.RelAccesses, run.ID, model.ID)
+	requireRelationship(t, result.Graph, graph.RelAccesses, run.ID, invoices.ID)
+}
+
 func TestResolveIntoPreservesExistingFileNodeMetadata(t *testing.T) {
 	base := graph.New()
 	base.AddNode(graph.Node{
@@ -818,6 +854,32 @@ func parseFixtureWorkspaceForBenchmark(b *testing.B) []scopeir.ScopeIR {
 	pool := parser.NewPool(nil, parser.PoolOptions{ParseTimeout: time.Second})
 	defer pool.Close()
 	return parseFixtureWorkspaceWithPool(b, pool)
+}
+
+func parseTypeScriptSource(t *testing.T, filePath string, source []byte) scopeir.ScopeIR {
+	t.Helper()
+	pool := parser.NewPool(nil, parser.PoolOptions{ParseTimeout: time.Second})
+	defer pool.Close()
+	parsed, err := pool.Parse(context.Background(), parser.Request{
+		FilePath: filePath,
+		Language: scanner.TypeScript,
+		Source:   source,
+	})
+	if err != nil {
+		t.Fatalf("parse %s failed: %v", filePath, err)
+	}
+	defer parsed.Close()
+	ir, err := tsjs.Extract(tsjs.Request{
+		FilePath: filePath,
+		FileHash: "hash-" + filePath,
+		Language: scanner.TypeScript,
+		Source:   source,
+		Root:     parsed.Tree.RootNode(),
+	})
+	if err != nil {
+		t.Fatalf("extract %s failed: %v", filePath, err)
+	}
+	return ir
 }
 
 type testingFataler interface {

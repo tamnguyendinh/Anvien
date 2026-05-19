@@ -60,6 +60,24 @@ function run(user: User) {
 	}
 }
 
+func TestExtractTypeScriptAwaitedPromiseReturnTypeBinding(t *testing.T) {
+	source := []byte(`
+type Result = { id: string };
+
+async function readResult(): Promise<Result> {
+  throw new Error("not implemented");
+}
+
+async function run() {
+  const result = await readResult();
+  result.id;
+}
+`)
+	ir := parseAndExtract(t, "src/awaited-result.ts", "hash-ts", scanner.TypeScript, source)
+
+	requireTypeBindingWithSource(t, ir, "result", "Result", scopeir.TypeSourceReturn)
+}
+
 func TestExtractTypeScriptLegacyInterfacePropertyAndTypeAliasFacts(t *testing.T) {
 	source := []byte(`
 class User {}

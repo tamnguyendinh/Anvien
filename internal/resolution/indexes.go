@@ -214,6 +214,9 @@ func (w *workspace) enrichCallReturnTypeBindings() {
 			if scopeID == "" {
 				continue
 			}
+			if hasTypeBindingSource(w.typeBindings[scopeID][def.Name], scopeir.TypeSourceReturn) {
+				continue
+			}
 			ref := scopeir.TypeRef{
 				RawName:         returnType,
 				DeclaredAtScope: scopeID,
@@ -225,6 +228,15 @@ func (w *workspace) enrichCallReturnTypeBindings() {
 			w.scopes[scopeID] = scope
 		}
 	}
+}
+
+func hasTypeBindingSource(bindings []scopeir.TypeRef, source scopeir.TypeRefSource) bool {
+	for _, binding := range bindings {
+		if binding.Source == source {
+			return true
+		}
+	}
+	return false
 }
 
 func (w *workspace) returnTypeForCall(call scopeir.CallSiteFact) (string, bool) {
@@ -546,7 +558,7 @@ func (w *workspace) resolveMember(name string, receiver string, startScope strin
 	if !ok {
 		return defRef{}, false
 	}
-	owner, ok := w.resolveName(receiverType, startScope, dispatchOwnerLabels())
+	owner, ok := w.resolveName(receiverType, startScope, memberOwnerLabels())
 	if !ok {
 		return defRef{}, false
 	}
@@ -613,7 +625,7 @@ func (w *workspace) resolveReceiverType(receiver string, startScope string) (str
 	}
 	typeName := baseTypeName(currentType.RawName)
 	for _, part := range parts[1:] {
-		owner, ok := w.resolveName(typeName, startScope, dispatchOwnerLabels())
+		owner, ok := w.resolveName(typeName, startScope, memberOwnerLabels())
 		if !ok {
 			return "", false
 		}
@@ -918,6 +930,11 @@ func dispatchOwnerLabels() []scopeir.NodeLabel {
 		scopeir.NodeTrait,
 		scopeir.NodeRecord,
 	}
+}
+
+func memberOwnerLabels() []scopeir.NodeLabel {
+	labels := dispatchOwnerLabels()
+	return append(labels, scopeir.NodeTypeAlias)
 }
 
 func callableLabels() []scopeir.NodeLabel {

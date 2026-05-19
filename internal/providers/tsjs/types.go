@@ -1,6 +1,8 @@
 package tsjs
 
 import (
+	"strings"
+
 	sitter "github.com/tree-sitter/go-tree-sitter"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
@@ -193,6 +195,7 @@ func (c *collector) constructorNameFromValue(node *sitter.Node) string {
 }
 
 func (c *collector) returnTypeNameFromCallValue(value *sitter.Node) string {
+	awaited := expressionIsAwaited(value)
 	expression := callExpressionFromValue(value)
 	if expression == nil {
 		return ""
@@ -202,9 +205,32 @@ func (c *collector) returnTypeNameFromCallValue(value *sitter.Node) string {
 		fn = expression
 	}
 	if fn.Kind() == "identifier" {
-		return c.returnTypesByCallableName[c.text(fn)]
+		returnType := c.returnTypesByCallableName[c.text(fn)]
+		if awaited {
+			return unwrapPromiseType(returnType)
+		}
+		return returnType
 	}
 	return ""
+}
+
+func expressionIsAwaited(value *sitter.Node) bool {
+	expression := unwrapExpression(value)
+	return expression != nil && expression.Kind() == "await_expression"
+}
+
+func unwrapPromiseType(value string) string {
+	trimmed := strings.TrimSpace(value)
+	for _, prefix := range []string{"Promise<", "Readonly<Promise<"} {
+		if strings.HasPrefix(trimmed, prefix) && strings.HasSuffix(trimmed, ">") {
+			inner := strings.TrimSuffix(strings.TrimPrefix(trimmed, prefix), ">")
+			if prefix == "Readonly<Promise<" {
+				inner = strings.TrimSuffix(inner, ">")
+			}
+			return strings.TrimSpace(inner)
+		}
+	}
+	return trimmed
 }
 
 func (c *collector) callNameFromCallValue(value *sitter.Node) string {

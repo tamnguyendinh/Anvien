@@ -167,10 +167,10 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 ## Phase 3 - Cross-Language Member Access Resolution
 
 - [x] [P3-A] Classify member access samples that should resolve after Phase 2 ownership is available. Result: post-Phase-2 access audit recorded Website `total=24,542`, `resolved=3`, `missing_receiver_type=13,512`, `missing_owner_link=1`; AVmatrix-GO `total=21,132`, `resolved=5,128`, `missing_receiver_type=11,436`, `missing_owner_link=10`. The next large target remains receiver type binding, not owner-link expansion.
-- [ ] [P3-B] Implement the first large defensible access-resolution cluster around explicit receiver type bindings. Initial measurable target: reduce `missing_receiver_type` for typed local/parameter/receiver cases without converting `external_library_type` or `unsupported_syntax` into noisy edges.
-- [ ] [P3-C] Add focused tests for every access-resolution family closed in [P3-B].
-- [ ] [P3-D] Run access validation and record it. Required evidence: full build before tests, focused tests, CLI/runtime e2e, fresh graph snapshots for affected workloads, benchmark update, evidence update, and AVmatrix impact record.
-- [ ] [P3-E] Close the small `missing_owner_link` access bucket after Phase 2. Initial measurable target: Website `missing_owner_link=1` and AVmatrix-GO `missing_owner_link=10` should go to `0` if the referenced owners are real; otherwise each case must move to `false_positive_candidate`, `external_library_type`, or `unknown/deferred` with examples.
+- [x] [P3-B] Implement the first large defensible access-resolution cluster around explicit receiver type bindings. Result: awaited TS/JS local call-return bindings now unwrap `Promise<T>` when the source expression is `await`, resolver member owners include `TypeAlias` for property/member lookup, and call-return enrichment no longer overwrites provider-derived return bindings. Website final graph `ACCESSES` increased from `3` to `2,769`; Website access candidates resolved increased from `3` to `4,978`; Website `missing_receiver_type` decreased from `13,512` to `12,209`.
+- [x] [P3-C] Add focused tests for every access-resolution family closed in [P3-B]. Result: provider test covers awaited `Promise<T>` local binding, resolution test covers nested `result.model.invoices` `ACCESSES`, and access audit test covers `TypeAlias` member-owner resolution.
+- [x] [P3-D] Run access validation and record it. Result: full build passed before tests, focused tests passed, analyze/property-gate/access-candidate e2e ran on `E:\Website` and `E:\AVmatrix-GO`, fresh graph snapshots and benchmark/evidence ledgers were updated, and AVmatrix impact was recorded.
+- [ ] [P3-E] Close or reclassify the `missing_owner_link` access bucket after receiver-type expansion. Updated post-P3-B target: Website `missing_owner_link=768` and AVmatrix-GO `missing_owner_link=10` should go to `0` only where the referenced owners are real; otherwise each case must move to `false_positive_candidate`, `external_library_type`, `ambiguous_owner`, or deferred/unknown with examples. Do not create owner links merely to reduce this bucket.
 - [ ] [P3-F] Repeat large access clusters until all target families are fixed or explicitly deferred with evidence.
 
 ## Phase 4 - Consumer Impact Checks
@@ -205,10 +205,10 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P2-D | Ownership | Go anonymous struct property ownership | classify before linking | recorded | recorded | `0367bc1` | done |
 | P2-E | Ownership | remaining false-orphan ownership clusters | fixed or deferred with evidence | recorded | recorded | `de5f4d8` | done |
 | P3-A | Access | post-ownership access sample taxonomy | resolvable families classified | recorded | recorded | `42ba98b` | done |
-| P3-B | Access | large access-resolution cluster | defensible `ACCESSES` expansion | pending | pending | pending | open |
-| P3-C | Tests | access focused tests | resolved families covered | n/a | pending | pending | open |
-| P3-D | Validation | access slice | analyze/test/e2e recorded | pending | pending | pending | open |
-| P3-E | Access | missing-owner-link access bucket | close or reclassify small bucket | pending | pending | pending | open |
+| P3-B | Access | awaited TS/JS call-return and TypeAlias member owners | defensible `ACCESSES` expansion | recorded | recorded | pending | done |
+| P3-C | Tests | access focused tests | resolved families covered | n/a | recorded | pending | done |
+| P3-D | Validation | access slice | analyze/test/e2e recorded | recorded | recorded | pending | done |
+| P3-E | Access | post-receiver missing-owner-link bucket | close or reclassify bucket | pending | pending | pending | open |
 | P3-F | Access | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
 | P4-A | Consumer | context | new facts visible in context | n/a | pending | pending | open |
 | P4-B | Consumer | impact | affected-symbol behavior checked | n/a | pending | pending | open |

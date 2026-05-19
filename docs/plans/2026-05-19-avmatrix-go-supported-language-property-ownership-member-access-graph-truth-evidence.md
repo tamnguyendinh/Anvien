@@ -98,8 +98,9 @@ Initial hypothesis:
 | P2-D Go ownership classification | Go anonymous struct fields classified as true no-edge | recorded | done |
 | P2-E remaining ownership clusters | nested TS/JS shape ownership and inline type-literal no-edge classification | recorded | done |
 | P3-A access taxonomy | post-ownership access candidate audit | recorded | done |
-| P3 access implementation | pending | pending | open |
-| P3 validation | pending | pending | open |
+| P3-B access implementation | awaited TS/JS return binding, `TypeAlias` member owners, call-return enrichment guard | implemented and validated | done |
+| P3-C access tests | provider, resolution, and access-audit focused tests | passed after full build | done |
+| P3-D access validation | full build, focused tests, analyze/property/access e2e, benchmark update | recorded | done |
 | P4 consumer checks | pending | pending | open |
 | P5 final evidence | pending | pending | open |
 
@@ -859,3 +860,188 @@ Interpretation:
 - The next large access blocker is `missing_receiver_type`.
 - `missing_owner_link` is now small enough to handle after the receiver-type slice or as a focused cleanup.
 - `external_library_type` and `unsupported_syntax` remain out of scope for P3-B because they need import/library modeling or richer receiver expression parsing.
+
+## P3-B/P3-C/P3-D Access Resolution Evidence
+
+Changed files:
+
+- `internal/providers/tsjs/types.go`
+- `internal/providers/tsjs/legacy_scope_captures_test.go`
+- `internal/resolution/indexes.go`
+- `internal/resolution/access_audit.go`
+- `internal/resolution/access_audit_test.go`
+- `internal/resolution/resolution_test.go`
+
+Implementation summary:
+
+- `const result = await readResult()` now binds `result` to the unwrapped `ReadResult` when `readResult(): Promise<ReadResult>`.
+- Resolver member owner lookup now includes `TypeAlias` for member/property resolution, matching the Phase 2 `TypeAlias -> Property` ownership graph.
+- Call-return enrichment no longer overwrites provider-derived `return-annotation` type bindings with less precise fallback call-return bindings.
+- Access candidate audit uses the same `TypeAlias` member-owner lookup as production resolution.
+
+Full build before tests:
+
+```powershell
+.\avmatrix-launcher\build.ps1
+```
+
+Result: passed. Vite reported chunk-size and dynamic/static import warnings only.
+
+Focused tests after full build:
+
+```powershell
+go test ./internal/providers/tsjs ./internal/resolution ./internal/graphaccuracy ./cmd/access-candidate-audit
+```
+
+Result:
+
+```text
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/tsjs
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/resolution
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy
+?   	github.com/tamnguyendinh/avmatrix-go/cmd/access-candidate-audit	[no test files]
+```
+
+Focused test coverage added:
+
+```text
+TestExtractTypeScriptAwaitedPromiseReturnTypeBinding
+TestResolveAwaitedPromiseReturnMemberAccess
+TestAuditAccessCandidatesResolvesTypeAliasMembers
+```
+
+Analyze e2e after full build:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+```
+
+Website result:
+
+```text
+analyzed E:\Website
+files: scanned=1870 parsed=998 unsupported=872 failed=0
+graph: nodes=27956 relationships=58731 path=E:\Website\.avmatrix\graph.json
+ANALYZE_MS=18,825.7
+```
+
+AVmatrix-GO result:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=682 parsed=527 unsupported=155 failed=0
+graph: nodes=20282 relationships=48550 path=E:\AVmatrix-GO\.avmatrix\graph.json
+ANALYZE_MS=14,784.4
+```
+
+Graph snapshots:
+
+```powershell
+Copy-Item -LiteralPath 'E:\Website\.avmatrix\graph.json' -Destination '.tmp\p3b-property-access-website-go-graph-20260519.json' -Force
+Copy-Item -LiteralPath 'E:\AVmatrix-GO\.avmatrix\graph.json' -Destination '.tmp\p3b-property-access-avmatrix-go-graph-20260519.json' -Force
+```
+
+CLI/runtime property gate e2e:
+
+```powershell
+go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\p3b-property-access-website-go-graph-20260519.json -out .tmp\p3b-property-access-website-20260519.json -max-examples 20
+go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\p3b-property-access-avmatrix-go-graph-20260519.json -out .tmp\p3b-property-access-avmatrix-go-20260519.json -max-examples 20
+```
+
+Website property/access gate result:
+
+```text
+wrote .tmp\p3b-property-access-website-20260519.json
+properties.total=7097 ownerLinked=5922 standalone=1175 hasPropertyEdges=5922 accessesEdges=2769 invalidHasPropertyEdges=0
+language.typescript.properties=7097 ownerLinked=5922 standalone=1175
+graphTruth.real_edge_missing=0
+graphTruth.true_no_edge=1156
+graphTruth.unknown_no_edge=19
+```
+
+AVmatrix-GO property/access gate result:
+
+```text
+wrote .tmp\p3b-property-access-avmatrix-go-20260519.json
+properties.total=3096 ownerLinked=2769 standalone=327 hasPropertyEdges=2769 accessesEdges=2746 invalidHasPropertyEdges=0
+language.go.properties=2508 ownerLinked=2302 standalone=206
+language.typescript.properties=588 ownerLinked=467 standalone=121
+graphTruth.real_edge_missing=0
+graphTruth.true_no_edge=324
+graphTruth.unknown_no_edge=3
+```
+
+CLI/runtime access candidate e2e:
+
+```powershell
+go run ./cmd/access-candidate-audit -repo E:\Website -out .tmp\p3b-access-candidates-website-20260519.json -max-examples 20
+go run ./cmd/access-candidate-audit -repo E:\AVmatrix-GO -out .tmp\p3b-access-candidates-avmatrix-go-20260519.json -max-examples 20
+```
+
+Website access candidate result:
+
+```text
+wrote .tmp\p3b-access-candidates-website-20260519.json
+accessCandidates.total=24542 resolved=4978 unresolved=19564 analyzeMillis=7072 resolvedAccesses=4978 unresolvedReferences=59289
+language.javascript.accessCandidates=231 resolved=0 unresolved=231
+language.typescript.accessCandidates=24311 resolved=4978 unresolved=19333
+reason.ambiguous_owner=109
+reason.external_library_type=4706
+reason.false_positive_candidate=406
+reason.missing_caller=53
+reason.missing_owner_link=768
+reason.missing_receiver_type=12209
+reason.resolved=4978
+reason.unsupported_syntax=1313
+```
+
+AVmatrix-GO access candidate result:
+
+```text
+wrote .tmp\p3b-access-candidates-avmatrix-go-20260519.json
+accessCandidates.total=21165 resolved=5110 unresolved=16055 analyzeMillis=5279 resolvedAccesses=5110 unresolvedReferences=50445
+language.go.accessCandidates=19126 resolved=4970 unresolved=14156
+language.typescript.accessCandidates=2039 resolved=140 unresolved=1899
+reason.ambiguous_owner=0
+reason.external_library_type=3622
+reason.false_positive_candidate=35
+reason.missing_caller=14
+reason.missing_owner_link=10
+reason.missing_receiver_type=11464
+reason.resolved=5110
+reason.unsupported_syntax=910
+```
+
+Interpretation:
+
+- Website now has a large final graph `ACCESSES` expansion: `3 -> 2,769`.
+- Website access candidate resolved count moved `3 -> 4,978`, and `missing_receiver_type` moved `13,512 -> 12,209`.
+- The Website `missing_owner_link=768`, `false_positive_candidate=406`, and `ambiguous_owner=109` buckets are newly exposed because receivers now resolve to concrete owners. They are P3-E/P3-F work, not a reason to fabricate edges.
+- AVmatrix-GO is recorded with final graph `ACCESSES=2,746` and access candidate `resolved=5,110`; this TS/JS-heavy slice primarily benefits Website.
+
+Staged AVmatrix impact check:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --scope staged --repo E:\AVmatrix-GO
+```
+
+Result summary:
+
+```text
+changed_files=9
+changed_count=39
+affected_count=20
+risk_level=critical
+affected process names include:
+- ResolveAccess -> DefRef
+- ResolveAccess -> DispatchOwnerLabels
+- ResolveAccess -> ParentScope
+- ResolveAccess -> IsAnyLabel
+- EnrichCallReturnTypeBindings -> CallableLabels
+- EnrichCallReturnTypeBindings -> DispatchOwnerLabels
+- RunAccessCandidateAudit -> DispatchOwnerLabels
+- Main -> HasStandalonePropertyCandidate
+```
+
+Interpretation: critical risk is expected because this slice changes production member access resolution and call-return type enrichment, plus the audit classifier that reads the same resolver model. The risk is covered by full build, focused provider/resolution/graphaccuracy tests, analyze e2e on both workloads, property gate e2e with invalid edges still `0`, and access-candidate e2e metrics recorded above.
