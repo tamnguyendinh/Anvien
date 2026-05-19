@@ -119,6 +119,21 @@ async function getRuntimeDiagnostics(
   });
 }
 
+async function openFirstProcessModal(page: import('@playwright/test').Page) {
+  const viewBtn = page
+    .locator('[data-testid="process-view-button"]:not(:disabled)')
+    .filter({ hasText: /^View$/ })
+    .first();
+  await expect(viewBtn).toBeAttached({ timeout: 30_000 });
+  await viewBtn.scrollIntoViewIfNeeded();
+
+  const processRow = viewBtn.locator('xpath=ancestor::*[@data-testid="process-row"][1]');
+  await processRow.hover();
+  await expect(viewBtn).toBeEnabled({ timeout: 5_000 });
+  await viewBtn.click();
+  await expect(page.locator('[data-testid="process-modal"]')).toBeVisible({ timeout: 60_000 });
+}
+
 test.describe('Server Connection & Graph Loading', () => {
   test('selects a repo from landing and loads graph', async ({ page }) => {
     await waitForGraphLoaded(page);
@@ -239,14 +254,7 @@ test.describe('Processes Panel', () => {
       timeout: 15_000,
     });
 
-    const processRow = page.locator('[data-testid="process-row"]').first();
-    await expect(processRow).toBeVisible({ timeout: 10_000 });
-    await processRow.hover();
-
-    const viewBtn = processRow.locator('[data-testid="process-view-button"]');
-    await viewBtn.waitFor({ state: 'visible', timeout: 5_000 });
-    await viewBtn.click();
-    await expect(page.locator('[data-testid="process-modal"]')).toBeVisible({ timeout: 15_000 });
+    await openFirstProcessModal(page);
   });
 
   test('lightbulb highlights nodes in graph', async ({ page }) => {

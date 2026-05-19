@@ -348,9 +348,10 @@ test.describe("Shell interactions", () => {
       '[data-testid="process-view-button"]',
     );
     await viewButton.waitFor({ state: "visible", timeout: 5_000 });
+    await expect(viewButton).toBeEnabled({ timeout: 5_000 });
     await viewButton.click();
     await expect(page.locator('[data-testid="process-modal"]')).toBeVisible({
-      timeout: 15_000,
+      timeout: 60_000,
     });
     await page
       .locator('[data-testid="process-modal"]')

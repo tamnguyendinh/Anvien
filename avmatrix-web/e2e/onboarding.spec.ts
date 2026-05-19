@@ -30,6 +30,13 @@ async function enterExploringView(page: import('@playwright/test').Page) {
   await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({ timeout: 45_000 });
 }
 
+async function openActiveRepoDropdown(page: import('@playwright/test').Page) {
+  const projectButton = page.getByRole('button', { name: firstRepoName, exact: true });
+  await expect(projectButton).toBeVisible({ timeout: 5_000 });
+  await projectButton.click();
+  await expect(page.getByText('Repositories')).toBeVisible({ timeout: 5_000 });
+}
+
 // ── Flow 1: Onboarding (no server running) ─────────────────────────────────
 
 test.describe('Flow 1: Onboarding — no server', () => {
@@ -315,15 +322,9 @@ test.describe('Flow 4: Repo dropdown in exploring view', () => {
     await enterExploringView(page);
     await page.screenshot({ path: testInfo.outputPath('exploring-loaded.png') });
 
-    // Click the project badge (has a chevron)
-    const badge = page
-      .locator('header button')
-      .filter({ has: page.locator('svg') })
-      .first();
-    await badge.click();
+    await openActiveRepoDropdown(page);
 
     // Repo dropdown should be visible
-    await expect(page.getByText('Repositories')).toBeVisible({ timeout: 5_000 });
     await expect(page.getByText('Analyze a new repository')).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath('repo-dropdown-open.png') });
   });
@@ -331,12 +332,7 @@ test.describe('Flow 4: Repo dropdown in exploring view', () => {
   test('analyze option opens inline form', async ({ page }, testInfo) => {
     await enterExploringView(page);
 
-    // Open repo dropdown
-    const badge = page
-      .locator('header button')
-      .filter({ has: page.locator('svg') })
-      .first();
-    await badge.click();
+    await openActiveRepoDropdown(page);
 
     // Click "Analyze a new repository..."
     await page.getByText('Analyze a new repository').click();
