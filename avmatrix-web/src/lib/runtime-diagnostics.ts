@@ -14,6 +14,7 @@ export interface WebRuntimeDiagnostics {
     maxNodeSize: number;
     maxRenderedNodeSizeCap: number;
     structuralToLeafRatio: number;
+    maxSizeByLabel: Record<string, number>;
     recordedAt: number;
   };
   layout: {
@@ -69,6 +70,7 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
     maxNodeSize: 0,
     maxRenderedNodeSizeCap: 0,
     structuralToLeafRatio: 0,
+    maxSizeByLabel: {},
     recordedAt: 0,
   },
   layout: {
@@ -141,10 +143,12 @@ export const recordVisualScale = (input: {
   maxNodeSize: number;
   maxRenderedNodeSizeCap: number;
   structuralToLeafRatio: number;
+  maxSizeByLabel?: Record<string, number>;
 }): void => {
   const diagnostics = getWebRuntimeDiagnostics();
   if (!diagnostics) return;
   diagnostics.visualScale = {
+    maxSizeByLabel: {},
     ...input,
     recordedAt: nowMs(),
   };

@@ -50,16 +50,22 @@ describe('runtime diagnostics', () => {
     recordVisualScale({
       nodeCount: 20_000,
       minNodeSize: 1.5,
-      maxNodeSize: 4.5,
+      maxNodeSize: 3,
       maxRenderedNodeSizeCap: 9,
       structuralToLeafRatio: 3,
+      maxSizeByLabel: {
+        Package: 1.5,
+        Section: 1,
+      },
     });
 
     const diagnostics = getWebRuntimeDiagnostics();
     expect(diagnostics?.visualScale.nodeCount).toBe(20_000);
-    expect(diagnostics?.visualScale.maxNodeSize).toBe(4.5);
+    expect(diagnostics?.visualScale.maxNodeSize).toBe(3);
     expect(diagnostics?.visualScale.maxRenderedNodeSizeCap).toBe(9);
     expect(diagnostics?.visualScale.structuralToLeafRatio).toBe(3);
+    expect(diagnostics?.visualScale.maxSizeByLabel.Package).toBe(1.5);
+    expect(diagnostics?.visualScale.maxSizeByLabel.Section).toBe(1);
   });
 
   it('counts reconnect banner transitions without double-counting the same state', () => {

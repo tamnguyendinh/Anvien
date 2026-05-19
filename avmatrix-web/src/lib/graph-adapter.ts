@@ -38,10 +38,27 @@ export interface SigmaEdgeAttributes {
  * Uses lower minimums to maintain hierarchy visibility even in huge graphs
  */
 const getMaxScaledNodeSize = (nodeCount: number): number => {
-  if (nodeCount > 20000) return 4.5;
-  if (nodeCount > 5000) return 6;
-  if (nodeCount > 1000) return 8;
-  return 12;
+  if (nodeCount > 20000) return 3;
+  if (nodeCount > 5000) return 4.5;
+  if (nodeCount > 1000) return 6;
+  return 4.5;
+};
+
+const getLabelScaledNodeSizeCap = (
+  label: string | undefined,
+  nodeCount: number,
+): number => {
+  if (label === 'Package') {
+    if (nodeCount > 20000) return 1.5;
+    if (nodeCount > 5000) return 2;
+    return 3;
+  }
+  if (label === 'Section') {
+    if (nodeCount > 20000) return 1;
+    if (nodeCount > 5000) return 1.5;
+    return 2;
+  }
+  return getMaxScaledNodeSize(nodeCount);
 };
 
 export const MAX_RENDERED_NODE_SIZE = 9;
@@ -52,6 +69,7 @@ export const capRenderedNodeSize = (size: number): number =>
 export const getScaledNodeSize = (
   baseSize: number,
   nodeCount: number,
+  label?: string,
 ): number => {
   // Scale factor decreases as graph gets larger
   // But a minimum is used that preserves relative differences
@@ -61,7 +79,7 @@ export const getScaledNodeSize = (
   else if (nodeCount > 5000) scaledSize = Math.max(2, baseSize * 0.65);
   else if (nodeCount > 1000) scaledSize = Math.max(2.5, baseSize * 0.8);
 
-  return Math.min(scaledSize, getMaxScaledNodeSize(nodeCount));
+  return Math.min(scaledSize, getLabelScaledNodeSizeCap(label, nodeCount));
 };
 
 /**
@@ -249,7 +267,7 @@ export const knowledgeGraphToGraphology = (
     nodePositions.set(node.id, { x, y });
 
     const baseSize = getNodeSize(node.label);
-    const scaledSize = getScaledNodeSize(baseSize, nodeCount);
+    const scaledSize = getScaledNodeSize(baseSize, nodeCount, node.label);
 
     // Structural nodes keep their type-based color
     graph.addNode(node.id, {
@@ -305,7 +323,7 @@ export const knowledgeGraphToGraphology = (
     nodePositions.set(nodeId, { x, y });
 
     const baseSize = getNodeSize(node.label);
-    const scaledSize = getScaledNodeSize(baseSize, nodeCount);
+    const scaledSize = getScaledNodeSize(baseSize, nodeCount, node.label);
 
     // Check if this node has a community assignment (reuse communityIndex from above)
     const hasCommunity = communityIndex !== undefined;

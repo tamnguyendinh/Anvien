@@ -199,6 +199,17 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       .nodes()
       .map((nodeId) => sigmaGraph.getNodeAttribute(nodeId, 'size'))
       .filter((size): size is number => typeof size === 'number');
+    const maxSizeByLabel = sigmaGraph.nodes().reduce<Record<string, number>>(
+      (sizes, nodeId) => {
+        const label = sigmaGraph.getNodeAttribute(nodeId, 'nodeType');
+        const size = sigmaGraph.getNodeAttribute(nodeId, 'size');
+        if (typeof label === 'string' && typeof size === 'number') {
+          sizes[label] = Math.max(sizes[label] ?? 0, size);
+        }
+        return sizes;
+      },
+      {},
+    );
     const minNodeSize = nodeSizes.reduce(
       (minimum, size) => Math.min(minimum, size),
       Number.POSITIVE_INFINITY,
@@ -216,6 +227,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
         Number.isFinite(minNodeSize) && minNodeSize > 0
           ? maxNodeSize / minNodeSize
           : 0,
+      maxSizeByLabel,
     });
     setSigmaGraph(sigmaGraph);
   }, [graph, nodeById, setSigmaGraph]);

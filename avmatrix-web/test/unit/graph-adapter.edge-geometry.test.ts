@@ -105,10 +105,18 @@ describe('knowledgeGraphToGraphology edge geometry', () => {
     const projectSize = getScaledNodeSize(20, largeGraphNodeCount);
     const propertySize = getScaledNodeSize(2, largeGraphNodeCount);
 
-    expect(projectSize).toBeLessThanOrEqual(4.5);
+    expect(projectSize).toBeLessThanOrEqual(3);
     expect(propertySize).toBeGreaterThanOrEqual(1.5);
     expect(projectSize / propertySize).toBeLessThanOrEqual(3);
     expect(capRenderedNodeSize(100)).toBe(MAX_RENDERED_NODE_SIZE);
+  });
+
+  it('keeps package and section nodes below the generic structural cap on large graphs', () => {
+    const veryLargeGraphNodeCount = 78_350;
+
+    expect(getScaledNodeSize(16, veryLargeGraphNodeCount, 'Package')).toBeLessThanOrEqual(1.5);
+    expect(getScaledNodeSize(8, veryLargeGraphNodeCount, 'Section')).toBeLessThanOrEqual(1);
+    expect(getScaledNodeSize(20, veryLargeGraphNodeCount, 'Project')).toBe(3);
   });
 
   it('keeps structural-to-leaf node size ratios bounded across graph sizes', () => {
@@ -117,7 +125,7 @@ describe('knowledgeGraphToGraphology edge geometry', () => {
       const leafSize = getScaledNodeSize(2, nodeCount);
 
       expect(structuralSize).toBeGreaterThan(leafSize);
-      expect(structuralSize / leafSize).toBeLessThanOrEqual(6);
+      expect(structuralSize / leafSize).toBeLessThanOrEqual(3);
     }
   });
 

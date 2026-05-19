@@ -29,6 +29,7 @@ type RuntimeDiagnostics = {
     maxNodeSize: number;
     maxRenderedNodeSizeCap: number;
     structuralToLeafRatio: number;
+    maxSizeByLabel: Record<string, number>;
   };
   layout: {
     starts: number;
@@ -204,11 +205,13 @@ test.describe('Graph Dashboard Controls', () => {
 
     const diagnostics = await getRuntimeDiagnostics(page);
     const visualScale = diagnostics!.visualScale;
-    const expectedMaxSize = visualScale.nodeCount > 20_000 ? 4.5 : 12;
+    const expectedMaxSize = visualScale.nodeCount > 20_000 ? 3 : 4.5;
 
     expect(visualScale.maxNodeSize).toBeLessThanOrEqual(expectedMaxSize);
     expect(visualScale.maxRenderedNodeSizeCap).toBe(9);
-    expect(visualScale.structuralToLeafRatio).toBeLessThanOrEqual(6);
+    expect(visualScale.structuralToLeafRatio).toBeLessThanOrEqual(3);
+    expect(visualScale.maxSizeByLabel.Package ?? 0).toBeLessThanOrEqual(1.5);
+    expect(visualScale.maxSizeByLabel.Section ?? 0).toBeLessThanOrEqual(1);
   });
 });
 

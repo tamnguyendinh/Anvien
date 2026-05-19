@@ -571,8 +571,8 @@ Benchmark measurement:
   "relationshipLoss": 0,
   "parallelSourceTargetPairs": 1412,
   "conversionMs": 478.37,
-  "currentLargeGraphProjectSize": 4.5,
-  "currentLargeGraphPropertySize": 1.5,
+  "currentLargeGraphProjectSize": 3,
+  "currentLargeGraphPropertySize": 1,
   "currentLargeGraphRadiusRatio": 3,
   "renderedSizeCap": 9
 }
@@ -852,6 +852,149 @@ Benchmark ledger updated:
 - `B2B - Legend Count and Community-Color Coverage`
 - `B3B - Layout Hierarchy Expansion`
 
+### E3F - Dense Graph Node-Size Ratio Correction
+
+Date: 2026-05-19
+
+Scope:
+
+- `avmatrix-web/src/lib/graph-adapter.ts`
+- `avmatrix-web/src/lib/runtime-diagnostics.ts`
+- `avmatrix-web/src/components/GraphCanvas.tsx`
+- `avmatrix-web/e2e/server-connect.spec.ts`
+- `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts`
+- `avmatrix-web/test/unit/runtime-diagnostics.test.ts`
+- `avmatrix-web/test/unit/GraphCanvas.selection-performance.test.tsx`
+- plan, benchmark, and evidence ledgers
+
+AVmatrix context and impact:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe context getScaledNodeSize --repo AVmatrix
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact getScaledNodeSize --repo AVmatrix --direction upstream --depth 2 --include-tests
+.\avmatrix-launcher\server-bundle\avmatrix.exe context getNodeSize --repo AVmatrix
+```
+
+Result summary:
+
+- `getScaledNodeSize` directly affects `graph-adapter.ts` graph conversion and `graph-adapter.edge-geometry.test.ts`.
+- `getNodeSize` remains the source of base label sizes; the dense-graph cap now corrects disproportionate labels during graph conversion.
+- High-risk surface is Web graph rendering, so this slice used focused Web unit tests, Web build, and an e2e visual-scale check.
+
+Implementation:
+
+- Dense graphs over `20,000` nodes now use a generic base-size cap of `3.0`.
+- `Package` has an explicit dense cap of `1.5`.
+- `Section` has an explicit dense cap of `1.0`.
+- Runtime diagnostics now record `visualScale.maxSizeByLabel` so e2e and later audits can inspect every loaded label's rendered base size.
+- E2E visual-scale checks now assert `maxNodeSize <= 3`, `structuralToLeafRatio <= 3`, `Package <= 1.5`, and `Section <= 1.0`.
+
+Focused unit tests:
+
+```powershell
+npm --prefix avmatrix-web run test -- test/unit/graph-adapter.edge-geometry.test.ts test/unit/runtime-diagnostics.test.ts test/unit/GraphCanvas.selection-performance.test.tsx
+```
+
+Result:
+
+```text
+passed, 3 files / 12 tests
+```
+
+Full Web unit suite:
+
+```powershell
+npm --prefix avmatrix-web run test
+```
+
+Result:
+
+```text
+passed, 41 files / 316 tests, duration 33.34s
+```
+
+Build before e2e:
+
+```powershell
+npm --prefix avmatrix-web run build
+```
+
+Result:
+
+```text
+passed, built in 45.62s
+```
+
+E2E:
+
+```powershell
+npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps loaded graph node visual scale bounded" --workers=1 --timeout=120000
+```
+
+Result:
+
+```text
+passed, 1 / 1
+test duration: 38.0s
+total duration: 46.0s
+```
+
+Large-graph browser diagnostics:
+
+```json
+{
+  "repo": "Restaurant_manager",
+  "visualScale": {
+    "maxSizeByLabel": {
+      "Folder": 3,
+      "Route": 2,
+      "Package": 1.5,
+      "Community": 1,
+      "Process": 1.6,
+      "File": 2.4,
+      "Function": 1.6,
+      "Struct": 3,
+      "Class": 3,
+      "Method": 1.2,
+      "Section": 1,
+      "Const": 1,
+      "Variable": 1,
+      "Interface": 2.8,
+      "Property": 1,
+      "TypeAlias": 1.2,
+      "Constructor": 1.6
+    },
+    "nodeCount": 78350,
+    "minNodeSize": 1,
+    "maxNodeSize": 3,
+    "maxRenderedNodeSizeCap": 9,
+    "structuralToLeafRatio": 3
+  },
+  "graphConversion": {
+    "count": 2,
+    "lastMs": 2692.6,
+    "maxMs": 2692.6,
+    "lastNodeCount": 78350,
+    "lastRelationshipCount": 130497
+  }
+}
+```
+
+All known node-label dense-size check at `78,350` nodes:
+
+```text
+max known-label size: 3.0
+min known-label size: 1.0
+max/min ratio: 3x
+Package: 1.5
+Section: 1.0
+```
+
+Benchmark ledger updated:
+
+- `B4D - Dense Graph 3x Node-Size Ratio Correction`
+- `B5 - Final Benchmark`
+
 ## E4 - Final Closure Evidence
 
 Status: completed
@@ -938,7 +1081,7 @@ npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps conne
 Results:
 
 ```text
-npm --prefix avmatrix-web run test: passed, 41 files / 315 tests, duration 40.14s
+npm --prefix avmatrix-web run test: passed, 41 files / 316 tests, duration 33.34s
 go test ./cmd/... ./internal/... -count=1: passed
 Graph Dashboard Controls e2e: passed, 2 / 2, duration 1.6m
 post-load connection stability e2e: passed, 1 / 1, duration 1.2m
@@ -950,16 +1093,35 @@ Final browser visual-scale diagnostics:
 {
   "repo": "Restaurant_manager",
   "visualScale": {
+    "maxSizeByLabel": {
+      "Folder": 3,
+      "Route": 2,
+      "Package": 1.5,
+      "Community": 1,
+      "Process": 1.6,
+      "File": 2.4,
+      "Function": 1.6,
+      "Struct": 3,
+      "Class": 3,
+      "Method": 1.2,
+      "Section": 1,
+      "Const": 1,
+      "Variable": 1,
+      "Interface": 2.8,
+      "Property": 1,
+      "TypeAlias": 1.2,
+      "Constructor": 1.6
+    },
     "nodeCount": 78350,
     "minNodeSize": 1,
-    "maxNodeSize": 4.5,
+    "maxNodeSize": 3,
     "maxRenderedNodeSizeCap": 9,
-    "structuralToLeafRatio": 4.5
+    "structuralToLeafRatio": 3
   },
   "graphConversion": {
     "count": 2,
-    "lastMs": 1236.6,
-    "maxMs": 2059.9,
+    "lastMs": 2692.6,
+    "maxMs": 2692.6,
     "lastNodeCount": 78350,
     "lastRelationshipCount": 130497
   }

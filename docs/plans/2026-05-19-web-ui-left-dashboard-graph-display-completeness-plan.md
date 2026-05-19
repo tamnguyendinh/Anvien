@@ -193,9 +193,10 @@ Post-load reconnect root cause chain:
 - [x] [P5-C] Expand layout hierarchy/grouping logic beyond `CONTAINS`, `DEFINES`, and `IMPORTS` where appropriate, including owner/member and process/route relationships. Result: graph adapter now uses priority-based layout parents for owner, process, route/tool, wrapper, and member relations without letting low-priority community membership override stronger containment/ownership.
 - [x] [P5-D] Add graph-adapter tests for parallel relationships such as `CALLS + USES` and `HAS_PROPERTY + ACCESSES` on the same source-target pair. Result: unit coverage proves both pairs are preserved as separate graphology edges.
 - [x] [P5-E] Audit current node size rules, scaled size output, zoom behavior, and community/structural node styling against `reports/problem/screenshot_1779178877.png`. Result: current graph baseline had `Project=10` versus `Property=1.5`, a `6.7x` radius and `44.4x` area ratio before reducer multipliers.
-- [x] [P5-F] Define and implement a proportional node-size cap after base scaling and reducer multipliers so important structural/highlighted nodes remain larger without producing oversized circles that distort graph readability. Result: large-graph base scaling caps structural nodes at `4.5` on the current graph and final reducer size at `9`.
+- [x] [P5-F] Define and implement a proportional node-size cap after base scaling and reducer multipliers so important structural/highlighted nodes remain larger without producing oversized circles that distort graph readability. Result: dense-graph base scaling caps generic structural nodes at `3.0`, caps `Package` at `1.5`, caps `Section` at `1.0`, and keeps final reducer size at `9`.
 - [x] [P5-G] Add unit tests for node-size scaling boundaries on small, medium, large, and very large graph sizes. Result: tests cover `100`, `1,500`, `6,000`, `20,421`, and `60,000` node graph sizes.
 - [x] [P5-H] Measure graph adapter conversion time, edge preservation counts, and node-size ratio bounds on the current AVmatrix-GO graph. Result: `51,176 / 51,176` relationships preserved, `1,412` parallel source-target pairs preserved, conversion `478.37ms`, current graph structural/property radius ratio `3x`.
+- [x] [P5-I] Re-check dense-graph size output for every known node label after reducing `Package` and `Section`. Result: all known node labels stay within `1.0-3.0` at `78,350` nodes; `Package=1.5`, `Section=1.0`, and the largest labels are capped at `3.0`.
 
 ## Phase 6 - Legend Accuracy
 
@@ -207,7 +208,7 @@ Post-load reconnect root cause chain:
 ## Phase 7 - Validation
 
 - [x] [P7-A] Run full build before tests. Result: `go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix` and `npm --prefix avmatrix-web run build` passed before validation tests.
-- [x] [P7-B] Run focused Web UI unit tests for constants, filter panel, graph adapter, edge visibility, legend behavior, node-size scaling, and connection stability helpers. Result: focused tests passed, followed by full Web unit suite `41` files / `315` tests passed.
+- [x] [P7-B] Run focused Web UI unit tests for constants, filter panel, graph adapter, edge visibility, legend behavior, node-size scaling, and connection stability helpers. Result: focused tests passed, followed by full Web unit suite `41` files / `316` tests passed.
 - [x] [P7-C] Add and run an e2e test that loads a graph fixture with uncommon node/edge types, toggles them in the left dashboard, and verifies visible graph behavior. Result: e2e toggles uncommon `Property` node and `Accesses` edge controls and verifies `aria-pressed` state plus legend entries.
 - [x] [P7-D] Add and run an e2e visual-scale check using the oversized-node screenshot scenario or an equivalent deterministic graph fixture. Result: e2e asserts loaded graph visual-scale diagnostics stay within max-size and ratio bounds.
 - [x] [P7-E] Add and run an e2e post-load connection stability check. Result: e2e waits through a `30s` active-layout stability window and confirms `0` heartbeat reconnects and `0` reconnect-banner shows.

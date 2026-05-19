@@ -469,8 +469,8 @@ After visual-scale fix:
 
 | Metric | After |
 |---|---:|
-| Current graph Project size | `4.5` |
-| Current graph Property size | `1.5` |
+| Current graph Project size | `3` |
+| Current graph Property size | `1` |
 | Project/Property radius ratio | `3x` |
 | Rendered node size cap after reducer multipliers | `9` |
 
@@ -479,8 +479,8 @@ Measured with the current AVmatrix-GO graph:
 ```json
 {
   "inputNodes": 20436,
-  "currentLargeGraphProjectSize": 4.5,
-  "currentLargeGraphPropertySize": 1.5,
+  "currentLargeGraphProjectSize": 3,
+  "currentLargeGraphPropertySize": 1,
   "currentLargeGraphRadiusRatio": 3,
   "renderedSizeCap": 9
 }
@@ -549,6 +549,106 @@ Notes:
 - The test does not require ForceAtlas2 to finish on very large graphs; it verifies the actual regression boundary: no backend disconnect and no reconnect banner during heavy post-load/layout work.
 - Launcher heartbeat age as a shutdown condition is absent after `B4A`; launcher unit coverage proves stale heartbeat gaps of `3h` and `24h` do not expire the session.
 
+### B4D - Dense Graph 3x Node-Size Ratio Correction
+
+Date: 2026-05-19
+
+Requirement:
+
+- dense graph base node size must satisfy `maxNodeSize / minNodeSize <= 3`;
+- `Package` and `Section` must not share the generic structural cap because they visually dominated the canvas in dense graphs;
+- all other known node labels must be checked, not only the labels visible in the screenshot.
+
+Measured large-graph browser diagnostics after correction:
+
+```json
+{
+  "repo": "Restaurant_manager",
+  "visualScale": {
+    "maxSizeByLabel": {
+      "Folder": 3,
+      "Route": 2,
+      "Package": 1.5,
+      "Community": 1,
+      "Process": 1.6,
+      "File": 2.4,
+      "Function": 1.6,
+      "Struct": 3,
+      "Class": 3,
+      "Method": 1.2,
+      "Section": 1,
+      "Const": 1,
+      "Variable": 1,
+      "Interface": 2.8,
+      "Property": 1,
+      "TypeAlias": 1.2,
+      "Constructor": 1.6
+    },
+    "nodeCount": 78350,
+    "minNodeSize": 1,
+    "maxNodeSize": 3,
+    "maxRenderedNodeSizeCap": 9,
+    "structuralToLeafRatio": 3
+  },
+  "graphConversion": {
+    "count": 2,
+    "lastMs": 2692.6,
+    "maxMs": 2692.6,
+    "lastNodeCount": 78350,
+    "lastRelationshipCount": 130497
+  }
+}
+```
+
+All known node-label dense-size check at `78,350` nodes:
+
+| Label | Base size | Dense scaled size |
+|---|---:|---:|
+| Class | `8.0` | `3.0` |
+| Folder | `10.0` | `3.0` |
+| Module | `13.0` | `3.0` |
+| Namespace | `13.0` | `3.0` |
+| Project | `20.0` | `3.0` |
+| Record | `8.0` | `3.0` |
+| Struct | `8.0` | `3.0` |
+| Interface | `7.0` | `2.8` |
+| Trait | `7.0` | `2.8` |
+| File | `6.0` | `2.4` |
+| Enum | `5.0` | `2.0` |
+| Route | `5.0` | `2.0` |
+| Tool | `5.0` | `2.0` |
+| Union | `5.0` | `2.0` |
+| Constructor | `4.0` | `1.6` |
+| Function | `4.0` | `1.6` |
+| Process | `4.0` | `1.6` |
+| Package | `16.0` | `1.5` |
+| Delegate | `3.0` | `1.2` |
+| Impl | `3.0` | `1.2` |
+| Method | `3.0` | `1.2` |
+| Template | `3.0` | `1.2` |
+| Type | `3.0` | `1.2` |
+| TypeAlias | `3.0` | `1.2` |
+| Typedef | `3.0` | `1.2` |
+| Annotation | `2.0` | `1.0` |
+| CodeElement | `2.0` | `1.0` |
+| Community | `2.0` | `1.0` |
+| Const | `2.0` | `1.0` |
+| Decorator | `2.0` | `1.0` |
+| Import | `1.5` | `1.0` |
+| Macro | `2.0` | `1.0` |
+| Property | `2.0` | `1.0` |
+| Section | `8.0` | `1.0` |
+| Static | `2.0` | `1.0` |
+| Variable | `2.0` | `1.0` |
+
+Result:
+
+- measured loaded graph size range: `1.0-3.0`;
+- measured loaded graph structural-to-leaf ratio: `3x`;
+- all known node labels stay within the dense graph `3x` cap;
+- `Package` is deliberately smaller than generic structural nodes at `1.5`;
+- `Section` is deliberately leaf-sized at `1.0` because large section clouds were visually disproportionate.
+
 ## B5 - Final Benchmark
 
 Status: completed
@@ -584,17 +684,36 @@ Final visual-scale and large-graph browser diagnostics:
   "repo": "Restaurant_manager",
   "graphConversion": {
     "count": 2,
-    "lastMs": 1236.6,
-    "maxMs": 2059.9,
+    "lastMs": 2692.6,
+    "maxMs": 2692.6,
     "lastNodeCount": 78350,
     "lastRelationshipCount": 130497
   },
   "visualScale": {
+    "maxSizeByLabel": {
+      "Folder": 3,
+      "Route": 2,
+      "Package": 1.5,
+      "Community": 1,
+      "Process": 1.6,
+      "File": 2.4,
+      "Function": 1.6,
+      "Struct": 3,
+      "Class": 3,
+      "Method": 1.2,
+      "Section": 1,
+      "Const": 1,
+      "Variable": 1,
+      "Interface": 2.8,
+      "Property": 1,
+      "TypeAlias": 1.2,
+      "Constructor": 1.6
+    },
     "nodeCount": 78350,
     "minNodeSize": 1,
-    "maxNodeSize": 4.5,
+    "maxNodeSize": 3,
     "maxRenderedNodeSizeCap": 9,
-    "structuralToLeafRatio": 4.5
+    "structuralToLeafRatio": 3
   }
 }
 ```
@@ -615,7 +734,7 @@ Final validation summary:
 |---|---|
 | `go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix` | passed |
 | `npm --prefix avmatrix-web run build` | passed, built in `23.97s` |
-| `npm --prefix avmatrix-web run test` | passed, `41` files / `315` tests, `40.14s` |
+| `npm --prefix avmatrix-web run test` | passed, `41` files / `316` tests, `33.34s` |
 | `go test ./cmd/... ./internal/... -count=1` | passed |
 | `npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "Graph Dashboard Controls" --workers=1 --timeout=120000` | passed, `2 / 2`, `1.6m` |
 | `npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000` | passed, `1 / 1`, `1.2m` |

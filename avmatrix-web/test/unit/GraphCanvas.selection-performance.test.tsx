@@ -21,7 +21,8 @@ const {
     sigmaGraph: {
       order: 1,
       nodes: () => ['Function:src/foo.ts:loadFoo'],
-      getNodeAttribute: () => 2,
+      getNodeAttribute: (_nodeId: string, attribute: string) =>
+        attribute === 'nodeType' ? 'Function' : 2,
     },
   };
 });
