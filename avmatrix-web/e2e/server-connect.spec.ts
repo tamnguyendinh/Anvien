@@ -13,8 +13,34 @@ import { test, expect } from '@playwright/test';
 
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://127.0.0.1:4848';
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://127.0.0.1:5228';
+const POST_LOAD_STABILITY_WINDOW_MS = 30_000;
 
 let firstRepoName = '';
+
+type RuntimeDiagnostics = {
+  graphConversion: {
+    count: number;
+    lastNodeCount: number;
+    lastRelationshipCount: number;
+  };
+  layout: {
+    starts: number;
+    stops: number;
+    isRunning: boolean;
+    lastDurationBudgetMs: number;
+    lastRunMs: number;
+    lastNoverlapMs: number;
+    lastReason: string;
+  };
+  heartbeat: {
+    connects: number;
+    reconnects: number;
+  };
+  reconnectBanner: {
+    shows: number;
+    visible: boolean;
+  };
+};
 
 test.beforeAll(async () => {
   if (process.env.E2E) {
@@ -74,9 +100,54 @@ async function waitForGraphLoaded(page: import('@playwright/test').Page) {
   });
 }
 
+async function getRuntimeDiagnostics(
+  page: import('@playwright/test').Page,
+): Promise<RuntimeDiagnostics | null> {
+  return page.evaluate(() => {
+    const win = window as typeof window & {
+      __AVMATRIX_WEB_DIAGNOSTICS__?: RuntimeDiagnostics;
+    };
+    return win.__AVMATRIX_WEB_DIAGNOSTICS__ ?? null;
+  });
+}
+
 test.describe('Server Connection & Graph Loading', () => {
   test('selects a repo from landing and loads graph', async ({ page }) => {
     await waitForGraphLoaded(page);
+  });
+
+  test('keeps connection stable after large graph load and layout window', async ({ page }) => {
+    await waitForGraphLoaded(page);
+
+    await expect(page.locator('[data-testid="server-reconnect-banner"]')).toHaveCount(0);
+    await expect
+      .poll(
+        async () =>
+          (await getRuntimeDiagnostics(page))?.graphConversion.count ?? 0,
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThan(0);
+    await expect
+      .poll(
+        async () => {
+          const diagnostics = await getRuntimeDiagnostics(page);
+          if (!diagnostics) return 0;
+          return diagnostics.layout.starts - diagnostics.layout.stops;
+        },
+        { timeout: 10_000, intervals: [500] },
+      )
+      .toBeGreaterThan(0);
+    await page.waitForTimeout(POST_LOAD_STABILITY_WINDOW_MS);
+
+    const diagnostics = await getRuntimeDiagnostics(page);
+    expect(diagnostics?.heartbeat.connects).toBeGreaterThan(0);
+    expect(diagnostics?.heartbeat.reconnects).toBe(0);
+    expect(diagnostics?.reconnectBanner.shows).toBe(0);
+    expect(diagnostics?.reconnectBanner.visible).toBe(false);
+    expect(diagnostics?.graphConversion.lastNodeCount).toBeGreaterThan(0);
+    expect(diagnostics?.graphConversion.lastRelationshipCount).toBeGreaterThan(0);
+    expect(diagnostics?.layout.lastDurationBudgetMs).toBeGreaterThan(0);
+    expect(diagnostics?.layout.lastNoverlapMs).toBeGreaterThanOrEqual(0);
   });
 });
 

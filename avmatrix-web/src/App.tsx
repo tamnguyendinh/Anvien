@@ -22,6 +22,7 @@ import {
 } from './services/backend-client';
 import { includeRepoInList } from './services/repo-list';
 import { DEFAULT_BACKEND_URL, ERROR_RESET_DELAY_MS } from './config/ui-constants';
+import { recordReconnectBannerState } from './lib/runtime-diagnostics';
 
 const AppContent = () => {
   const { chatRuntimeBridge } = useAppState();
@@ -225,6 +226,10 @@ const AppContentBody = () => {
     return cleanup;
   }, [viewMode]);
 
+  useEffect(() => {
+    recordReconnectBannerState(serverDisconnected);
+  }, [serverDisconnected]);
+
   // Render based on view mode
   if (viewMode === 'onboarding') {
     return (
@@ -325,7 +330,10 @@ const AppContentBody = () => {
       <StatusBar />
 
       {serverDisconnected && (
-        <div className="fixed bottom-12 left-1/2 z-50 -translate-x-1/2 rounded-lg border-[3px] border-workspace-border-strong bg-workspace-surface px-4 py-2 text-sm text-workspace-text-primary">
+        <div
+          className="fixed bottom-12 left-1/2 z-50 -translate-x-1/2 rounded-lg border-[3px] border-workspace-border-strong bg-workspace-surface px-4 py-2 text-sm text-workspace-text-primary"
+          data-testid="server-reconnect-banner"
+        >
           Server connection lost — reconnecting&hellip;
         </div>
       )}

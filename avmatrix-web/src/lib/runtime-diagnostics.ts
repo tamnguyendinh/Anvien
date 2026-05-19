@@ -1,0 +1,185 @@
+export interface WebRuntimeDiagnostics {
+  graphConversion: {
+    count: number;
+    lastMs: number;
+    maxMs: number;
+    lastNodeCount: number;
+    lastRelationshipCount: number;
+    lastStartedAt: number;
+    lastFinishedAt: number;
+  };
+  layout: {
+    starts: number;
+    stops: number;
+    isRunning: boolean;
+    lastNodeCount: number;
+    lastDurationBudgetMs: number;
+    lastRunMs: number;
+    lastNoverlapMs: number;
+    lastReason: string;
+    lastStartedAt: number;
+    lastStoppedAt: number;
+  };
+  heartbeat: {
+    connects: number;
+    reconnects: number;
+    lastConnectAt: number;
+    lastReconnectAt: number;
+    lastRetryAttempt: number;
+  };
+  reconnectBanner: {
+    visible: boolean;
+    shows: number;
+    hides: number;
+    lastChangedAt: number;
+  };
+}
+
+declare global {
+  interface Window {
+    __AVMATRIX_WEB_DIAGNOSTICS__?: WebRuntimeDiagnostics;
+    __AVMATRIX_RESET_WEB_DIAGNOSTICS__?: () => WebRuntimeDiagnostics;
+  }
+}
+
+const nowMs = (): number =>
+  typeof performance !== 'undefined' ? performance.now() : Date.now();
+
+const createDiagnostics = (): WebRuntimeDiagnostics => ({
+  graphConversion: {
+    count: 0,
+    lastMs: 0,
+    maxMs: 0,
+    lastNodeCount: 0,
+    lastRelationshipCount: 0,
+    lastStartedAt: 0,
+    lastFinishedAt: 0,
+  },
+  layout: {
+    starts: 0,
+    stops: 0,
+    isRunning: false,
+    lastNodeCount: 0,
+    lastDurationBudgetMs: 0,
+    lastRunMs: 0,
+    lastNoverlapMs: 0,
+    lastReason: '',
+    lastStartedAt: 0,
+    lastStoppedAt: 0,
+  },
+  heartbeat: {
+    connects: 0,
+    reconnects: 0,
+    lastConnectAt: 0,
+    lastReconnectAt: 0,
+    lastRetryAttempt: 0,
+  },
+  reconnectBanner: {
+    visible: false,
+    shows: 0,
+    hides: 0,
+    lastChangedAt: 0,
+  },
+});
+
+export const getWebRuntimeDiagnostics = (): WebRuntimeDiagnostics | null => {
+  if (typeof window === 'undefined') return null;
+  window.__AVMATRIX_WEB_DIAGNOSTICS__ ??= createDiagnostics();
+  return window.__AVMATRIX_WEB_DIAGNOSTICS__;
+};
+
+export const resetWebRuntimeDiagnostics = (): WebRuntimeDiagnostics => {
+  const diagnostics = createDiagnostics();
+  if (typeof window !== 'undefined') {
+    window.__AVMATRIX_WEB_DIAGNOSTICS__ = diagnostics;
+    window.__AVMATRIX_RESET_WEB_DIAGNOSTICS__ = resetWebRuntimeDiagnostics;
+  }
+  return diagnostics;
+};
+
+export const recordGraphConversion = (input: {
+  startedAt: number;
+  finishedAt?: number;
+  nodeCount: number;
+  relationshipCount: number;
+}): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  const finishedAt = input.finishedAt ?? nowMs();
+  const elapsedMs = Math.max(0, finishedAt - input.startedAt);
+  diagnostics.graphConversion.count++;
+  diagnostics.graphConversion.lastMs = elapsedMs;
+  diagnostics.graphConversion.maxMs = Math.max(
+    diagnostics.graphConversion.maxMs,
+    elapsedMs,
+  );
+  diagnostics.graphConversion.lastNodeCount = input.nodeCount;
+  diagnostics.graphConversion.lastRelationshipCount = input.relationshipCount;
+  diagnostics.graphConversion.lastStartedAt = input.startedAt;
+  diagnostics.graphConversion.lastFinishedAt = finishedAt;
+};
+
+export const recordLayoutStart = (input: {
+  nodeCount: number;
+  durationBudgetMs: number;
+  startedAt?: number;
+}): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  const startedAt = input.startedAt ?? nowMs();
+  diagnostics.layout.starts++;
+  diagnostics.layout.isRunning = true;
+  diagnostics.layout.lastNodeCount = input.nodeCount;
+  diagnostics.layout.lastDurationBudgetMs = input.durationBudgetMs;
+  diagnostics.layout.lastStartedAt = startedAt;
+};
+
+export const recordLayoutStop = (input: {
+  nodeCount: number;
+  reason: string;
+  runMs: number;
+  noverlapMs?: number;
+  stoppedAt?: number;
+}): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  diagnostics.layout.stops++;
+  diagnostics.layout.isRunning = false;
+  diagnostics.layout.lastNodeCount = input.nodeCount;
+  diagnostics.layout.lastRunMs = Math.max(0, input.runMs);
+  diagnostics.layout.lastNoverlapMs = Math.max(0, input.noverlapMs ?? 0);
+  diagnostics.layout.lastReason = input.reason;
+  diagnostics.layout.lastStoppedAt = input.stoppedAt ?? nowMs();
+};
+
+export const recordHeartbeatConnect = (): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  diagnostics.heartbeat.connects++;
+  diagnostics.heartbeat.lastConnectAt = nowMs();
+};
+
+export const recordHeartbeatReconnect = (attempt: number): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  diagnostics.heartbeat.reconnects++;
+  diagnostics.heartbeat.lastReconnectAt = nowMs();
+  diagnostics.heartbeat.lastRetryAttempt = attempt;
+};
+
+export const recordReconnectBannerState = (visible: boolean): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics || diagnostics.reconnectBanner.visible === visible) return;
+  diagnostics.reconnectBanner.visible = visible;
+  diagnostics.reconnectBanner.lastChangedAt = nowMs();
+  if (visible) {
+    diagnostics.reconnectBanner.shows++;
+  } else {
+    diagnostics.reconnectBanner.hides++;
+  }
+};
+
+if (typeof window !== 'undefined') {
+  window.__AVMATRIX_RESET_WEB_DIAGNOSTICS__ = resetWebRuntimeDiagnostics;
+  window.__AVMATRIX_WEB_DIAGNOSTICS__ ??= createDiagnostics();
+}

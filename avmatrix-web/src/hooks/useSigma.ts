@@ -14,6 +14,10 @@ import type { EdgeType } from '../lib/constants';
 import { getGraphEdgeVisibilityMode } from '../lib/graph-edge-visibility-mode';
 import { getSelectedContextEdgeSize } from '../lib/graph-edge-render-style';
 import { buildSelectedGraphContext } from '../lib/selected-graph-context';
+import {
+  recordLayoutStart,
+  recordLayoutStop,
+} from '../lib/runtime-diagnostics';
 // Helper: Parse hex color to RGB
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -145,6 +149,14 @@ const capNodeReducerSize = (
   return attributes;
 };
 
+const measureNoverlap = (
+  graph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>,
+): number => {
+  const startedAt = performance.now();
+  noverlap.assign(graph, NOVERLAP_SETTINGS);
+  return performance.now() - startedAt;
+};
+
 export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sigmaRef = useRef<Sigma | null>(null);
@@ -153,6 +165,8 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
     SigmaEdgeAttributes
   > | null>(null);
   const layoutRef = useRef<FA2Layout | null>(null);
+  const layoutStartedAtRef = useRef<number | null>(null);
+  const layoutNodeCountRef = useRef<number>(0);
   const selectedNodeRef = useRef<string | null>(null);
   const selectedNeighborNodeIdsRef = useRef<Set<string>>(new Set());
   const selectedDirectEdgeIdsRef = useRef<Set<string>>(new Set());
@@ -520,7 +534,18 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       if (layoutTimeoutRef.current) {
         clearTimeout(layoutTimeoutRef.current);
       }
-      layoutRef.current?.kill();
+      if (layoutRef.current) {
+        const stoppedAt = performance.now();
+        layoutRef.current.kill();
+        recordLayoutStop({
+          nodeCount: layoutNodeCountRef.current,
+          reason: 'unmount',
+          runMs: stoppedAt - (layoutStartedAtRef.current ?? stoppedAt),
+          stoppedAt,
+        });
+        layoutRef.current = null;
+        layoutStartedAtRef.current = null;
+      }
       sigma.kill();
       sigmaRef.current = null;
       graphRef.current = null;
@@ -535,8 +560,16 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
 
       // Kill existing
       if (layoutRef.current) {
+        const stoppedAt = performance.now();
         layoutRef.current.kill();
         layoutRef.current = null;
+        recordLayoutStop({
+          nodeCount: layoutNodeCountRef.current,
+          reason: 'replaced',
+          runMs: stoppedAt - (layoutStartedAtRef.current ?? stoppedAt),
+          stoppedAt,
+        });
+        layoutStartedAtRef.current = null;
       }
       if (layoutTimeoutRef.current) {
         clearTimeout(layoutTimeoutRef.current);
@@ -552,19 +585,36 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
 
       layoutRef.current = layout;
       layout.start();
+      const layoutStartedAt = performance.now();
+      layoutStartedAtRef.current = layoutStartedAt;
+      layoutNodeCountRef.current = nodeCount;
       setIsLayoutRunning(true);
 
       const duration = getLayoutDuration(nodeCount);
+      recordLayoutStart({
+        nodeCount,
+        durationBudgetMs: duration,
+        startedAt: layoutStartedAt,
+      });
 
       layoutTimeoutRef.current = setTimeout(() => {
         if (layoutRef.current) {
+          const stoppedAt = performance.now();
           layoutRef.current.stop();
           layoutRef.current = null;
 
           // Light noverlap cleanup
-          noverlap.assign(graph, NOVERLAP_SETTINGS);
+          const noverlapMs = measureNoverlap(graph);
           sigmaRef.current?.refresh();
 
+          recordLayoutStop({
+            nodeCount,
+            reason: 'duration-elapsed',
+            runMs: stoppedAt - (layoutStartedAtRef.current ?? stoppedAt),
+            noverlapMs,
+            stoppedAt,
+          });
+          layoutStartedAtRef.current = null;
           setIsLayoutRunning(false);
         }
       }, duration);
@@ -578,8 +628,16 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       if (!sigma) return;
 
       if (layoutRef.current) {
+        const stoppedAt = performance.now();
         layoutRef.current.kill();
         layoutRef.current = null;
+        recordLayoutStop({
+          nodeCount: layoutNodeCountRef.current,
+          reason: 'graph-replaced',
+          runMs: stoppedAt - (layoutStartedAtRef.current ?? stoppedAt),
+          stoppedAt,
+        });
+        layoutStartedAtRef.current = null;
       }
       if (layoutTimeoutRef.current) {
         clearTimeout(layoutTimeoutRef.current);
@@ -651,15 +709,25 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       layoutTimeoutRef.current = null;
     }
     if (layoutRef.current) {
+      const stoppedAt = performance.now();
       layoutRef.current.stop();
       layoutRef.current = null;
 
       const graph = graphRef.current;
+      let noverlapMs = 0;
       if (graph) {
-        noverlap.assign(graph, NOVERLAP_SETTINGS);
+        noverlapMs = measureNoverlap(graph);
         sigmaRef.current?.refresh();
       }
 
+      recordLayoutStop({
+        nodeCount: layoutNodeCountRef.current || graph?.order || 0,
+        reason: 'manual-stop',
+        runMs: stoppedAt - (layoutStartedAtRef.current ?? stoppedAt),
+        noverlapMs,
+        stoppedAt,
+      });
+      layoutStartedAtRef.current = null;
       setIsLayoutRunning(false);
     }
   }, []);

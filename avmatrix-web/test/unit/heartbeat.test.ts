@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { connectHeartbeat } from '../../src/services/backend-client';
+import {
+  getWebRuntimeDiagnostics,
+  resetWebRuntimeDiagnostics,
+} from '../../src/lib/runtime-diagnostics';
 
 // Mock EventSource to simulate SSE behavior
 class MockEventSource {
@@ -24,6 +28,7 @@ beforeEach(() => {
     }),
   );
   vi.useFakeTimers();
+  resetWebRuntimeDiagnostics();
 });
 
 afterEach(() => {
@@ -143,5 +148,19 @@ describe('connectHeartbeat', () => {
     // Advance time — no new EventSource should be created
     vi.advanceTimersByTime(30_000);
     expect(EventSource).toHaveBeenCalledTimes(1);
+  });
+
+  it('records heartbeat connect and reconnect diagnostics', () => {
+    const onConnect = vi.fn();
+    const onReconnecting = vi.fn();
+    connectHeartbeat(onConnect, onReconnecting);
+
+    lastEventSource!.onopen!();
+    lastEventSource!.onerror!();
+
+    const diagnostics = getWebRuntimeDiagnostics();
+    expect(diagnostics?.heartbeat.connects).toBe(1);
+    expect(diagnostics?.heartbeat.reconnects).toBe(1);
+    expect(diagnostics?.heartbeat.lastRetryAttempt).toBe(1);
   });
 });

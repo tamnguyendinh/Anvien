@@ -631,6 +631,138 @@ Benchmark ledger updated:
 - `B3 - Graph Adapter Performance and Preservation`
 - `B4B - Node Visual Scale Bound`
 
+### E3D - Web Runtime Diagnostics and Post-Load Connection Stability
+
+Date: 2026-05-19
+
+Scope:
+
+- `avmatrix-web/src/lib/runtime-diagnostics.ts`
+- `avmatrix-web/src/services/backend-client.ts`
+- `avmatrix-web/src/App.tsx`
+- `avmatrix-web/src/components/GraphCanvas.tsx`
+- `avmatrix-web/src/hooks/useSigma.ts`
+- `avmatrix-web/test/unit/heartbeat.test.ts`
+- `avmatrix-web/test/unit/runtime-diagnostics.test.ts`
+- `avmatrix-web/e2e/server-connect.spec.ts`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-evidence.md`
+
+AVmatrix refresh and impact:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe context connectHeartbeat --repo AVmatrix
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact connectHeartbeat --repo AVmatrix --direction upstream --depth 2 --include-tests
+.\avmatrix-launcher\server-bundle\avmatrix.exe context useSigma --repo AVmatrix
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact useSigma --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Results:
+
+```text
+analyze: files scanned=686 parsed=528 unsupported=158 failed=0; graph nodes=20476 relationships=51211
+connectHeartbeat direct callers: App.tsx and heartbeat.test.ts
+connectHeartbeat upstream risk: LOW, impacted count 5
+useSigma direct caller: GraphCanvas.tsx
+useSigma upstream risk: LOW, impacted count 4
+```
+
+Implementation:
+
+- Added `runtime-diagnostics.ts` with `window.__AVMATRIX_WEB_DIAGNOSTICS__` and `window.__AVMATRIX_RESET_WEB_DIAGNOSTICS__` test hooks.
+- Recorded graph conversion count/timing and graph node/relationship counts in `GraphCanvas`.
+- Recorded layout start/stop, duration budget, active state, and noverlap duration in `useSigma`.
+- Recorded heartbeat connect/reconnect counters in `connectHeartbeat`.
+- Recorded reconnect-banner transitions in `App` and added `data-testid="server-reconnect-banner"`.
+- Added unit tests for heartbeat diagnostics and runtime diagnostic counters.
+- Added e2e coverage that loads a large graph, waits for active layout, holds a `30s` post-load stability window, and asserts no heartbeat reconnect or reconnect banner.
+
+Build before tests:
+
+```powershell
+go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix
+npm --prefix avmatrix-web run build
+```
+
+Results:
+
+```text
+go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix: passed
+npm --prefix avmatrix-web run build: passed, built in 29.09s
+```
+
+Tests:
+
+```powershell
+npm --prefix avmatrix-web run test -- test/unit/heartbeat.test.ts test/unit/runtime-diagnostics.test.ts test/unit/GraphCanvas.selection-performance.test.tsx
+npm --prefix avmatrix-web run test
+```
+
+Results:
+
+```text
+focused runtime diagnostics tests: 3 files passed, 12 tests passed
+full Web unit suite: 41 files passed, 312 tests passed, duration 33.69s
+```
+
+E2E:
+
+```powershell
+npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000
+```
+
+Result:
+
+```text
+1 passed
+test duration: 1.1m
+total duration: 1.3m
+```
+
+Measured post-load stability diagnostics:
+
+```json
+{
+  "repo": "Restaurant_manager",
+  "elapsedMs": 62104,
+  "graphConversion": {
+    "count": 2,
+    "lastMs": 1231.4,
+    "maxMs": 2446.1,
+    "lastNodeCount": 78350,
+    "lastRelationshipCount": 130497
+  },
+  "layout": {
+    "starts": 2,
+    "stops": 1,
+    "isRunning": true,
+    "lastDurationBudgetMs": 45000,
+    "lastNoverlapMs": 0
+  },
+  "heartbeat": {
+    "connects": 1,
+    "reconnects": 0
+  },
+  "reconnectBanner": {
+    "shows": 0,
+    "visible": false
+  },
+  "backendPidBeforeAfter": "524 / 524"
+}
+```
+
+Notes:
+
+- An initial e2e variant that required complete layout stop was rejected as the wrong assertion for very large graphs because ForceAtlas2 can legitimately keep running beyond an `80s` poll window in dev mode.
+- The final e2e assertion targets the actual regression: while heavy graph layout is active and the page is alive, the backend connection must remain stable and the reconnect banner must not appear.
+- Launcher heartbeat age is not an active shutdown budget anymore. Launcher-side stale heartbeat gaps are covered by the `B4A` tests with `3h` and `24h` gaps.
+
+Benchmark ledger updated:
+
+- `B4C - Post-Load Connection Stability`
+
 ## E4 - Final Closure Evidence
 
 Status: pending

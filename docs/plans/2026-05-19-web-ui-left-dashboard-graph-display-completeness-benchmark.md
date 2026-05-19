@@ -358,7 +358,7 @@ Notes:
 
 ## B4 - Visual Scale and Connection Stability
 
-Status: partial; launcher lifecycle auto-shutdown and visual-scale slices recorded, post-load reconnect-count validation still pending
+Status: partial; launcher lifecycle auto-shutdown, visual-scale, and post-load connection-stability slices recorded
 
 Record:
 
@@ -434,6 +434,64 @@ Notes:
 
 - Structural nodes remain larger than leaf/property nodes, but they no longer dominate the graph at the disproportionate scale shown in `reports/problem/screenshot_1779178877.png`.
 - Size-boundary unit tests cover graph sizes `100`, `1,500`, `6,000`, `20,421`, and `60,000`.
+
+### B4C - Post-Load Connection Stability
+
+Date: 2026-05-19
+
+Scenario:
+
+```text
+frontend: http://127.0.0.1:5228
+backend: http://127.0.0.1:4848
+backend PID before/after: 524 / 524
+repo selected by e2e backend repo list: Restaurant_manager
+stability window: 30,000ms after graph conversion and active layout start
+old launcher heartbeat shutdown threshold: 15,000ms
+```
+
+Focused e2e result:
+
+| Command | Result | Duration |
+|---|---|---:|
+| `npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000` | passed, `1 / 1` | `1.1m` test time, `1.3m` total |
+
+Runtime diagnostics captured from the same server/frontend setup:
+
+```json
+{
+  "repo": "Restaurant_manager",
+  "elapsedMs": 62104,
+  "graphConversion": {
+    "count": 2,
+    "lastMs": 1231.4,
+    "maxMs": 2446.1,
+    "lastNodeCount": 78350,
+    "lastRelationshipCount": 130497
+  },
+  "layout": {
+    "starts": 2,
+    "stops": 1,
+    "isRunning": true,
+    "lastDurationBudgetMs": 45000,
+    "lastNoverlapMs": 0
+  },
+  "heartbeat": {
+    "connects": 1,
+    "reconnects": 0
+  },
+  "reconnectBanner": {
+    "shows": 0,
+    "visible": false
+  }
+}
+```
+
+Notes:
+
+- The e2e assertion deliberately waits beyond the old `15s` heartbeat shutdown threshold while the graph layout is active.
+- The test does not require ForceAtlas2 to finish on very large graphs; it verifies the actual regression boundary: no backend disconnect and no reconnect banner during heavy post-load/layout work.
+- Launcher heartbeat age as a shutdown condition is absent after `B4A`; launcher unit coverage proves stale heartbeat gaps of `3h` and `24h` do not expire the session.
 
 ## B5 - Final Benchmark
 

@@ -7,6 +7,10 @@
  */
 
 import type { GraphNode, GraphRelationship } from '@/generated/avmatrix-contracts';
+import {
+  recordHeartbeatConnect,
+  recordHeartbeatReconnect,
+} from '../lib/runtime-diagnostics';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -357,6 +361,7 @@ export const connectHeartbeat = (
   const markConnected = () => {
     attempt = 0;
     notifiedReconnecting = false;
+    recordHeartbeatConnect();
     onConnect();
   };
 
@@ -408,6 +413,7 @@ export const connectHeartbeat = (
 
       if (!notifiedReconnecting) {
         notifiedReconnecting = true;
+        recordHeartbeatReconnect(attempt + 1);
         onReconnecting();
       }
 

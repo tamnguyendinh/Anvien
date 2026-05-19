@@ -20,6 +20,7 @@ import {
   SigmaNodeAttributes,
   SigmaEdgeAttributes,
 } from '../lib/graph-adapter';
+import { recordGraphConversion } from '../lib/runtime-diagnostics';
 import type { GraphNode } from '@/generated/avmatrix-contracts';
 import { QueryFAB } from './QueryFAB';
 import Graph from 'graphology';
@@ -183,7 +184,13 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       }
     });
 
+    const conversionStartedAt = performance.now();
     const sigmaGraph = knowledgeGraphToGraphology(graph, communityMemberships);
+    recordGraphConversion({
+      startedAt: conversionStartedAt,
+      nodeCount: graph.nodes.length,
+      relationshipCount: graph.relationships.length,
+    });
     setSigmaGraph(sigmaGraph);
   }, [graph, nodeById, setSigmaGraph]);
 
