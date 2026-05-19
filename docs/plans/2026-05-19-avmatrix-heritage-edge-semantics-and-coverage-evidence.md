@@ -243,3 +243,24 @@ Additional corrections added:
 - MCP/context/impact/MRO compatibility must be tested if `INHERITS` raw graph or graph payload semantics change;
 - generated contracts/schema docs must be updated if the selected policy adds relationship metadata, external target facts, or display-group fields;
 - UI tests must cover both duplicate `EXTENDS` + `INHERITS` pairs and TS resolved/unresolved heritage display.
+
+## E8 - Web UI Usability Requirements Moved Into Active Plan
+
+Date: 2026-05-19
+
+Correction:
+
+- the top bar Back navigation and left dashboard resize requirements were originally attached to the completed Web UI dashboard plan by mistake;
+- those requirements belong in this active heritage/display plan because the current implementation work is already touching Web UI relationship display and graph-inspection workflow;
+- the completed Web UI dashboard plan should remain historical closure for node/edge/legend completeness, visual scale, and reconnect stability.
+
+Requirements now carried by this plan:
+
+- add a Back arrow/button beside the `AVmatrix` top bar title to return to `Start-AVmatrix.html`;
+- avoid showing a false reconnect-banner error during intentional Back navigation;
+- make the left dashboard resizable by dragging its right boundary;
+- enforce min/max width bounds and verify the graph canvas remains usable after resizing.
+
+Doc-only note:
+
+- no AVmatrix analysis was run for this documentation correction.

@@ -28,11 +28,13 @@ The concrete trigger is `E:\Restaurant_manager`:
 - `Class=3` and `Constructor=3` look suspicious at first, but source verification shows they match the real TypeScript class declarations and constructors in the repo.
 - `EXTENDS=6` and `INHERITS=6` do not mean `12` independent relationships. They are the same `6` source-target heritage pairs emitted as two relationship types.
 - TypeScript source contains at least `14` `interface ... extends ...` sites and `2` `class ... extends ...` sites, but the current graph has no `EXTENDS` / `INHERITS` / `IMPLEMENTS` relationships involving those TypeScript class/interface heritage sites.
+- While fixing the Web UI display for these heritage facts, the tool shell must also keep the graph workflow usable: the top bar needs a Back arrow/button beside `AVmatrix` to return to `Start-AVmatrix.html`, and the left dashboard needs drag resizing so dense node/edge/legend controls can be inspected comfortably.
 
 This is not just a Web UI display issue and not just an analyzer issue. It has two related parts:
 
 - relationship semantics/display: `EXTENDS` and `INHERITS` can represent the same underlying heritage fact, so the UI must not present duplicate compatibility edges as independent codebase facts;
 - extraction/resolution coverage: TypeScript heritage sites that exist in the repo must either be connected to resolved graph targets or represented as unresolved/external heritage, not silently disappear.
+- Web UI shell ergonomics: users need a clear route back to the Start screen and a resizable left dashboard while inspecting the corrected heritage graph display.
 
 ## Scope
 
@@ -43,9 +45,12 @@ Implementation may touch:
 - `internal/graph/*`
 - `internal/contracts/*`
 - `internal/mcp/*`
+- `avmatrix-web/src/components/Header.tsx`
 - `avmatrix-web/src/lib/constants.ts`
 - `avmatrix-web/src/lib/graph-adapter.ts`
 - `avmatrix-web/src/components/FileTreePanel.tsx`
+- `avmatrix-web/src/App.tsx`
+- `Start-AVmatrix.html`
 - Web and Go tests for relationship inventory, graph conversion, dashboard controls, and e2e display
 
 This plan does not change the verified `Class=3` and `Constructor=3` count for `E:\Restaurant_manager` unless a later source audit proves new class declarations were missed.
@@ -60,6 +65,8 @@ This plan does not change the verified `Class=3` and `Constructor=3` count for `
   - source sites must not disappear without an audit trail.
 - Analyzer and UI behavior must remain language-agnostic. Go embedded structs, TS class/interface heritage, Java/C#/Python heritage, and future provider heritage should follow one documented graph contract.
 - Benchmark/evidence must report raw edge counts, unique semantic heritage pair counts, duplicate compatibility pair counts, and missing/unresolved source-site counts.
+- The Web UI must provide a clear Back arrow/button beside the `AVmatrix` title that returns to `Start-AVmatrix.html`, with accessible naming and keyboard/click support.
+- The left dashboard must be resizable by dragging its boundary, with bounded min/max widths, no layout overlap, and no breakage of node type, edge type, legend, or graph canvas interactions.
 
 ## Baseline Findings
 
@@ -124,6 +131,12 @@ Regex source-site counts are useful baseline evidence only. Final accuracy check
 - [ ] [P4-E] Add unit tests for resolved TS class/interface heritage and unresolved/external TS heritage display.
 - [ ] [P4-F] Add e2e coverage proving the Web UI displays heritage counts and relationship toggles according to the selected policy.
 - [ ] [P4-G] Add deterministic fixture coverage and, where feasible, a `Restaurant_manager` large-graph smoke check so the real regression is covered.
+- [ ] [P4-H] Inspect `avmatrix-web/src/components/Header.tsx`, `avmatrix-web/src/App.tsx`, launcher path handling, and `Start-AVmatrix.html` to confirm the correct Start-screen return target in both dev and packaged launcher modes.
+- [ ] [P4-I] Add an icon-first Back arrow/button beside the `AVmatrix` top bar title with an accessible label and keyboard/click activation.
+- [ ] [P4-J] Implement the return flow to `Start-AVmatrix.html` without showing an internal reconnect-banner error during the intentional navigation transition.
+- [ ] [P4-K] Inspect the app shell layout, `FileTreePanel` container, graph canvas sizing, and responsive CSS to identify where the left dashboard width is currently fixed.
+- [ ] [P4-L] Add a visible drag handle on the right edge of the left dashboard and support mouse/pointer dragging to resize the panel within bounded min/max widths.
+- [ ] [P4-M] Add unit and/or e2e coverage proving Back navigation, left dashboard resize bounds, and continued dashboard/canvas interaction after resize.
 
 ## Phase 5 - Benchmarks and Accuracy Measurement
 
@@ -132,7 +145,8 @@ Regex source-site counts are useful baseline evidence only. Final accuracy check
 - [ ] [P5-C] Record TypeScript heritage source-site coverage for `E:\Restaurant_manager`: parser/ScopeIR source sites, resolved graph relationships, unresolved/external sites, and missing sites.
 - [ ] [P5-D] Record Go embedded struct heritage coverage and final user-facing display label/counts.
 - [ ] [P5-E] Record UI display inventory: visible dashboard edge rows, raw edge counts, displayed semantic counts, and graph canvas duplicate-pair rendering behavior.
-- [ ] [P5-F] Update benchmark and evidence ledgers immediately after each measured slice.
+- [ ] [P5-F] Record Web UI shell interaction inventory for Back navigation and left dashboard resize: navigation target, reconnect-banner behavior, min/max width bounds, and canvas usable width after resize.
+- [ ] [P5-G] Update benchmark and evidence ledgers immediately after each measured slice.
 
 ## Phase 6 - Validation
 
@@ -143,8 +157,9 @@ Regex source-site counts are useful baseline evidence only. Final accuracy check
 - [ ] [P6-E] Run Web build before Web tests.
 - [ ] [P6-F] Run focused Web unit tests for edge type dashboard, legend, and graph adapter behavior.
 - [ ] [P6-G] Run full Web unit suite.
-- [ ] [P6-H] Run e2e test covering heritage edge display and duplicate-pair behavior.
-- [ ] [P6-I] Re-run analyze on `E:\Restaurant_manager` and verify final graph metrics match the accepted contract.
+- [ ] [P6-H] Run focused Web unit/e2e tests covering top bar Back navigation and left dashboard resize behavior.
+- [ ] [P6-I] Run e2e test covering heritage edge display, duplicate-pair behavior, Back navigation, and left dashboard resize behavior.
+- [ ] [P6-J] Re-run analyze on `E:\Restaurant_manager` and verify final graph metrics match the accepted contract.
 
 ## Phase 7 - Closure
 
@@ -152,4 +167,4 @@ Regex source-site counts are useful baseline evidence only. Final accuracy check
 - [ ] [P7-B] Update benchmark ledger with initial, intermediate, and final counts.
 - [ ] [P7-C] Update evidence ledger with commands, files changed, tests, and conclusions.
 - [ ] [P7-D] Commit each completed implementation slice.
-- [ ] [P7-E] Final closure: confirm heritage graph semantics, TS coverage, UI display, benchmark, evidence, full build, unit tests, and e2e tests are complete.
+- [ ] [P7-E] Final closure: confirm heritage graph semantics, TS coverage, UI relationship display, Back navigation, left dashboard resize, benchmark, evidence, full build, unit tests, and e2e tests are complete.

@@ -1,4 +1,4 @@
-# Web UI Graph Dashboard Display and Usability Plan
+# Web UI Left Dashboard Graph Display Completeness Plan
 
 Date: 2026-05-19
 
@@ -21,34 +21,28 @@ Companion files:
 
 ## Problem
 
-The Web UI graph dashboard and tool shell do not yet expose enough control and navigation affordances for a user to understand and operate the loaded graph efficiently.
+The Web UI left dashboard does not yet show or control the graph completely enough for a user to understand what is actually in the loaded graph.
 
-This is not a Go-language problem and not primarily a source-of-truth wording problem. The practical problem is Web UI graph display completeness plus the immediate usability controls around that graph experience:
+This is not a Go-language problem and not primarily a source-of-truth wording problem. The practical problem is display completeness:
 
 - the Node Types section exposes only a small fixed subset of graph node labels;
 - the Edge Types section exposes only a small fixed subset of graph relationship types;
 - the Color Legend is hard-coded and can be incomplete or misleading;
 - the graph canvas adapter has places where relationship types can be ignored, underused for layout, or collapsed when multiple relationships exist between the same node pair;
 - rendered node scale can become visually disproportionate, as shown by `reports/problem/screenshot_1779178877.png`, where many purple structural/folder-like nodes are far too large compared with surrounding nodes;
-- after the graph appears to finish loading in the Web UI, the launcher lifecycle can expire and close the session/backend, causing the UI to show `Server connection lost - reconnecting...`;
-- after entering the Web UI tool, the top bar has no direct Back arrow/button next to the `AVmatrix` title to return to `Start-AVmatrix.html`, making the runtime flow inconvenient;
-- the left dashboard width is fixed, so users cannot drag the panel boundary to expand or shrink it when node/edge lists, legends, repo paths, or graph controls need more or less room.
+- after the graph appears to finish loading in the Web UI, the launcher lifecycle can expire and close the session/backend, causing the UI to show `Server connection lost - reconnecting...`.
 
 The UI must remain language-agnostic. AVmatrix supports many languages, and the dashboard must represent graph components produced from all supported language families.
 
 ## Scope Boundary
 
-This plan covers Web UI graph display, filtering, legend, canvas adapter behavior, top bar navigation, and left dashboard layout behavior:
+This plan covers Web UI graph display, filtering, legend, and canvas adapter behavior:
 
 - `avmatrix-web/src/lib/constants.ts`
-- `avmatrix-web/src/components/Header.tsx`
 - `avmatrix-web/src/components/FileTreePanel.tsx`
 - `avmatrix-web/src/lib/graph-adapter.ts`
 - `avmatrix-web/src/hooks/useSigma.ts`
-- `Start-AVmatrix.html`
 - graph state and tests that control node/edge visibility
-- top bar navigation from the Web UI tool back to the Start AVmatrix entry screen
-- left dashboard layout width and pointer-drag resizing behavior
 - node size scaling and canvas readability after graph load
 - heartbeat/server connection behavior during and after graph load
 - e2e coverage for the visible dashboard behavior
@@ -69,9 +63,7 @@ Required behavior:
 - visual grouping is allowed only as sectioning around individual options, not as a replacement that hides the real node or relationship type;
 - metadata/system graph types may default off, but they must not be invisible by accident;
 - structural nodes may be larger than leaf/code nodes, but no node type may render at a scale that visually dominates the graph out of proportion with the rest of the node set;
-- loading and laying out a large graph must not make the app report a server connection loss after the graph is already visible;
-- the top bar must provide a clear Back arrow/button beside the `AVmatrix` title that returns to `Start-AVmatrix.html`, with accessible naming and keyboard/click support;
-- the left dashboard must be resizable by dragging its boundary, with bounded min/max widths, no layout overlap, and usable behavior on dense graph-control content.
+- loading and laying out a large graph must not make the app report a server connection loss after the graph is already visible.
 
 Graph relationship scope:
 
@@ -110,9 +102,7 @@ The current graph is useful evidence, but it is not enough by itself because it 
 Known visual/runtime problems to include in validation:
 
 - `reports/problem/screenshot_1779178877.png`: many purple circular structural/folder-like nodes are too large relative to other nodes and the overall rendered graph scale;
-- after graph rendering finishes, `Server connection lost - reconnecting...` can appear, which must be diagnosed instead of dismissed as a transient UI message;
-- the top bar lacks a Start-screen return affordance next to `AVmatrix`, so users cannot conveniently navigate back to `Start-AVmatrix.html` from inside the tool;
-- the left dashboard cannot be expanded or narrowed by dragging, which makes long graph-control lists and labels harder to inspect on different screen sizes.
+- after graph rendering finishes, `Server connection lost - reconnecting...` can appear, which must be diagnosed instead of dismissed as a transient UI message.
 
 ## Codebase Findings Before Implementation
 
@@ -152,12 +142,8 @@ Post-load reconnect root cause chain:
 - [x] Unknown future node labels and relationship types render with safe fallback labels, colors, icons, sizes, and edge styles.
 - [x] Node size scaling is bounded and proportional across structural, metadata, and code nodes; the purple oversized-node screenshot is reproduced or explained, then fixed.
 - [x] The Web UI remains connected after graph load and layout; `Server connection lost - reconnecting...` must not appear during the post-load stability window.
-- [ ] The top bar shows a Back arrow/button next to the `AVmatrix` title and returns to `Start-AVmatrix.html` from the running Web UI.
-- [ ] The Start-screen return behavior has unit or e2e coverage and does not introduce a false reconnect-banner failure during navigation.
-- [ ] The left dashboard can be resized by mouse/pointer drag within bounded min/max widths.
-- [ ] Resizing the left dashboard does not hide controls, overlap the graph canvas, or break node/edge/legend interactions.
-- [ ] Full build passes before the final test suite after the remaining Phase 9 and Phase 10 implementation slices.
-- [ ] Test suite includes e2e coverage for node type toggles, edge type toggles, legend behavior, visual-scale bounds, post-load connection stability, top bar Back navigation, and left dashboard resize behavior.
+- [x] Full build passes before the test suite.
+- [x] Test suite includes e2e coverage for node type toggles, edge type toggles, legend behavior, visual-scale bounds, and post-load connection stability.
 
 ## Phase 1 - Inventory, Root-Cause Review, and Display Policy
 
@@ -236,39 +222,10 @@ Minimum validation commands, unless the implementation discovers a repo-specific
 - `npm --prefix avmatrix-web run test`
 - `npm --prefix avmatrix-web run test:e2e`
 
-## Phase 8 - Historical Closure for Completed Dashboard Slice
-
-Phase 8 is the historical closure for the already-completed dashboard display, visual-scale, and connection-stability work. It is not the final closure for this reopened plan because Phase 9 and Phase 10 are now pending.
+## Phase 8 - Closure
 
 - [x] [P8-A] Update this plan checklist after each completed slice.
 - [x] [P8-B] Update the benchmark ledger for inventory counts, graph-adapter performance, node-size ratio, and post-load connection stability measurements.
 - [x] [P8-C] Update the evidence ledger for commands, tests, screenshots or e2e artifacts, and implementation notes.
 - [x] [P8-D] Commit each completed implementation slice.
-- [x] [P8-E] Historical closure: confirm dashboard node/edge/legend completeness, edge preservation, node visual-scale proportionality, connection stability, full build, unit tests, and e2e tests for the completed dashboard slice.
-
-## Phase 9 - Top Bar Start-Screen Navigation
-
-- [ ] [P9-A] Inspect `avmatrix-web/src/components/Header.tsx`, `avmatrix-web/src/App.tsx`, launcher path handling, and `Start-AVmatrix.html` to confirm the correct navigation target in both dev and packaged launcher modes.
-- [ ] [P9-B] Add an icon-first Back arrow/button beside the `AVmatrix` top bar title with an accessible label and keyboard/click activation.
-- [ ] [P9-C] Implement the return flow to `Start-AVmatrix.html` without showing an internal reconnect-banner error during the intentional navigation transition.
-- [ ] [P9-D] Add unit and/or e2e coverage proving the Back control is visible, activatable, and reaches the Start AVmatrix screen.
-- [ ] [P9-E] Run a full build before tests, including the required e2e test, and record evidence. Record benchmark data only if this slice changes startup/runtime timing, package size, or lifecycle behavior.
-- [ ] [P9-F] Commit the implementation slice after the checklist, benchmark ledger, and evidence ledger are updated.
-
-## Phase 10 - Left Dashboard Resizable Width
-
-- [ ] [P10-A] Inspect the app shell layout, `FileTreePanel` container, graph canvas sizing, and responsive CSS to identify where the left dashboard width is currently fixed.
-- [ ] [P10-B] Add a visible drag handle on the right edge of the left dashboard and support mouse/pointer dragging to resize the panel.
-- [ ] [P10-C] Define and enforce min/max dashboard widths so the panel can expand for dense controls and shrink without breaking the graph canvas or hiding essential controls.
-- [ ] [P10-D] Ensure resize behavior does not interfere with node type toggles, edge type toggles, legend scrolling, graph canvas pointer interactions, or post-load layout stability.
-- [ ] [P10-E] Add unit and/or e2e coverage for drag resizing, width bounds, and continued dashboard interaction after resize.
-- [ ] [P10-F] Run a full build before tests, including the required e2e test, and record evidence. Record benchmark data only if resizing changes render/load performance or layout stability metrics.
-- [ ] [P10-G] Commit the implementation slice after the checklist, benchmark ledger, and evidence ledger are updated.
-
-## Phase 11 - Final Re-Closure
-
-- [ ] [P11-A] Confirm Phase 9 and Phase 10 are complete and their checklist items, evidence, and benchmark policy entries are updated.
-- [ ] [P11-B] Run full build before the final test suite.
-- [ ] [P11-C] Run unit tests and e2e tests covering the existing graph dashboard behavior plus top bar Back navigation and left dashboard resize behavior.
-- [ ] [P11-D] Confirm the Web UI still loads dense graphs, preserves dashboard controls, avoids reconnect-banner regressions, and keeps the graph canvas usable after resizing.
-- [ ] [P11-E] Commit final closure docs after validation evidence is recorded.
+- [x] [P8-E] Final closure: confirm dashboard node/edge/legend completeness, edge preservation, node visual-scale proportionality, connection stability, full build, unit tests, and e2e tests.

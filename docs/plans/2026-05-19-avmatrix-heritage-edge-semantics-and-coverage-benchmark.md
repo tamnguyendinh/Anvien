@@ -23,6 +23,8 @@ For this plan, benchmarkable measurements include:
 - Go embedded-struct heritage counts and final display labels;
 - Web dashboard displayed edge counts versus raw graph counts;
 - graph adapter relationship preservation/collapse counts;
+- top bar Back navigation target and reconnect-banner behavior during intentional navigation;
+- left dashboard resize min/max width bounds and graph/canvas usable width after resize;
 - analyze runtime if analyzer behavior is changed.
 
 ## B0 - Initial Restaurant_manager Heritage Baseline
@@ -137,6 +139,10 @@ Record after each relevant slice:
 | TS missing heritage source sites | `16` | `0` |
 | Go embedded struct unique semantic pairs | `6` | measured |
 | Go embedded struct user-facing duplicate pairs | `6` through `EXTENDS` + `INHERITS` | `0` misleading duplicates |
+| Top bar Back navigation to `Start-AVmatrix.html` | absent from current scoped plan | visible and tested |
+| Back navigation reconnect-banner behavior | pending | no false reconnect-banner error during intentional navigation |
+| Left dashboard drag resize | absent from current scoped plan | measured min/max width bounds |
+| Canvas usability after dashboard resize | pending | measured/validated |
 
 ## B2 - Final Benchmark
 
@@ -152,4 +158,6 @@ Record final:
 - TS parser/ScopeIR heritage source-site coverage;
 - Go embedded struct heritage display behavior;
 - Web dashboard displayed counts;
+- top bar Back navigation target and reconnect-banner behavior;
+- left dashboard min/max resize bounds and canvas usable width;
 - e2e observed display behavior.
