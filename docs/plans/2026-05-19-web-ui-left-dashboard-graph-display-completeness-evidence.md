@@ -574,7 +574,7 @@ Benchmark measurement:
   "currentLargeGraphProjectSize": 3,
   "currentLargeGraphPropertySize": 1,
   "currentLargeGraphRadiusRatio": 3,
-  "renderedSizeCap": 9
+  "renderedSizeCap": 3
 }
 ```
 
@@ -873,12 +873,15 @@ AVmatrix context and impact:
 .\avmatrix-launcher\server-bundle\avmatrix.exe context getScaledNodeSize --repo AVmatrix
 .\avmatrix-launcher\server-bundle\avmatrix.exe impact getScaledNodeSize --repo AVmatrix --direction upstream --depth 2 --include-tests
 .\avmatrix-launcher\server-bundle\avmatrix.exe context getNodeSize --repo AVmatrix
+.\avmatrix-launcher\server-bundle\avmatrix.exe context capRenderedNodeSize --repo AVmatrix
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact capRenderedNodeSize --repo AVmatrix --direction upstream --depth 2 --include-tests
 ```
 
 Result summary:
 
 - `getScaledNodeSize` directly affects `graph-adapter.ts` graph conversion and `graph-adapter.edge-geometry.test.ts`.
 - `getNodeSize` remains the source of base label sizes; the dense-graph cap now corrects disproportionate labels during graph conversion.
+- `capRenderedNodeSize` directly affects `useSigma.ts` reducer output and depth-2 canvas rendering through `GraphCanvas.tsx`; impact risk was `LOW`, with `5` impacted items.
 - High-risk surface is Web graph rendering, so this slice used focused Web unit tests, Web build, and an e2e visual-scale check.
 
 Implementation:
@@ -886,8 +889,9 @@ Implementation:
 - Dense graphs over `20,000` nodes now use a generic base-size cap of `3.0`.
 - `Package` has an explicit dense cap of `1.5`.
 - `Section` has an explicit dense cap of `1.0`.
+- Dense graphs over `20,000` nodes now use a post-reducer display cap of `3.0`, so selected/highlighted/animated nodes cannot exceed the same dense visual limit.
 - Runtime diagnostics now record `visualScale.maxSizeByLabel` so e2e and later audits can inspect every loaded label's rendered base size.
-- E2E visual-scale checks now assert `maxNodeSize <= 3`, `structuralToLeafRatio <= 3`, `Package <= 1.5`, and `Section <= 1.0`.
+- E2E visual-scale checks now assert `maxNodeSize <= 3`, `maxRenderedNodeSizeCap <= 3` on dense graphs, `structuralToLeafRatio <= 3`, `Package <= 1.5`, and `Section <= 1.0`.
 
 Focused unit tests:
 
@@ -910,7 +914,7 @@ npm --prefix avmatrix-web run test
 Result:
 
 ```text
-passed, 41 files / 316 tests, duration 33.34s
+passed, 41 files / 316 tests, duration 33.29s
 ```
 
 Build before e2e:
@@ -922,7 +926,7 @@ npm --prefix avmatrix-web run build
 Result:
 
 ```text
-passed, built in 45.62s
+passed, built in 24.02s
 ```
 
 E2E:
@@ -935,8 +939,8 @@ Result:
 
 ```text
 passed, 1 / 1
-test duration: 38.0s
-total duration: 46.0s
+test duration: 32.2s
+total duration: 37.2s
 ```
 
 Large-graph browser diagnostics:
@@ -967,7 +971,7 @@ Large-graph browser diagnostics:
     "nodeCount": 78350,
     "minNodeSize": 1,
     "maxNodeSize": 3,
-    "maxRenderedNodeSizeCap": 9,
+    "maxRenderedNodeSizeCap": 3,
     "structuralToLeafRatio": 3
   },
   "graphConversion": {
@@ -986,6 +990,7 @@ All known node-label dense-size check at `78,350` nodes:
 max known-label size: 3.0
 min known-label size: 1.0
 max/min ratio: 3x
+dense post-reducer display cap: 3.0
 Package: 1.5
 Section: 1.0
 ```
@@ -1081,7 +1086,7 @@ npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps conne
 Results:
 
 ```text
-npm --prefix avmatrix-web run test: passed, 41 files / 316 tests, duration 33.34s
+npm --prefix avmatrix-web run test: passed, 41 files / 316 tests, duration 33.29s
 go test ./cmd/... ./internal/... -count=1: passed
 Graph Dashboard Controls e2e: passed, 2 / 2, duration 1.6m
 post-load connection stability e2e: passed, 1 / 1, duration 1.2m
@@ -1115,7 +1120,7 @@ Final browser visual-scale diagnostics:
     "nodeCount": 78350,
     "minNodeSize": 1,
     "maxNodeSize": 3,
-    "maxRenderedNodeSizeCap": 9,
+    "maxRenderedNodeSizeCap": 3,
     "structuralToLeafRatio": 3
   },
   "graphConversion": {

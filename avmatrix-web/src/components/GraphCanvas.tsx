@@ -17,7 +17,7 @@ import {
   knowledgeGraphToGraphology,
   filterGraphByDepth,
   filterGraphByLabels,
-  MAX_RENDERED_NODE_SIZE,
+  getMaxRenderedNodeSize,
   SigmaNodeAttributes,
   SigmaEdgeAttributes,
 } from '../lib/graph-adapter';
@@ -222,7 +222,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       nodeCount: sigmaGraph.order,
       minNodeSize: Number.isFinite(minNodeSize) ? minNodeSize : 0,
       maxNodeSize,
-      maxRenderedNodeSizeCap: MAX_RENDERED_NODE_SIZE,
+      maxRenderedNodeSizeCap: getMaxRenderedNodeSize(sigmaGraph.order),
       structuralToLeafRatio:
         Number.isFinite(minNodeSize) && minNodeSize > 0
           ? maxNodeSize / minNodeSize

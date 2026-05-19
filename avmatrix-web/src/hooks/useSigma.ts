@@ -142,9 +142,10 @@ const getLayoutDuration = (nodeCount: number): number => {
 
 const capNodeReducerSize = (
   attributes: Partial<SigmaNodeAttributes>,
+  nodeCount: number,
 ): Partial<SigmaNodeAttributes> => {
   if (typeof attributes.size === 'number') {
-    attributes.size = capRenderedNodeSize(attributes.size);
+    attributes.size = capRenderedNodeSize(attributes.size, nodeCount);
   }
   return attributes;
 };
@@ -361,7 +362,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
             res.highlighted = true;
           }
 
-          return capNodeReducerSize(res);
+          return capNodeReducerSize(res, graph.order);
         }
 
         // Blast radius takes priority (red highlighting)
@@ -382,7 +383,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
             res.size = (data.size || 8) * 0.4;
             res.zIndex = 0;
           }
-          return capNodeReducerSize(res);
+          return capNodeReducerSize(res, graph.order);
         }
 
         if (hasHighlights && !currentSelected) {
@@ -396,7 +397,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
             res.size = (data.size || 8) * 0.5;
             res.zIndex = 0;
           }
-          return capNodeReducerSize(res);
+          return capNodeReducerSize(res, graph.order);
         }
 
         if (currentSelected) {
@@ -419,7 +420,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
           }
         }
 
-        return capNodeReducerSize(res);
+        return capNodeReducerSize(res, graph.order);
       },
 
       edgeReducer: (edge, data) => {

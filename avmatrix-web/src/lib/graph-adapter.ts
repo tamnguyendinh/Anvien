@@ -62,9 +62,15 @@ const getLabelScaledNodeSizeCap = (
 };
 
 export const MAX_RENDERED_NODE_SIZE = 9;
+export const MAX_DENSE_RENDERED_NODE_SIZE = 3;
 
-export const capRenderedNodeSize = (size: number): number =>
-  Math.min(size, MAX_RENDERED_NODE_SIZE);
+export const getMaxRenderedNodeSize = (nodeCount: number): number =>
+  nodeCount > 20000 ? MAX_DENSE_RENDERED_NODE_SIZE : MAX_RENDERED_NODE_SIZE;
+
+export const capRenderedNodeSize = (
+  size: number,
+  nodeCount: number = 0,
+): number => Math.min(size, getMaxRenderedNodeSize(nodeCount));
 
 export const getScaledNodeSize = (
   baseSize: number,

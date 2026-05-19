@@ -472,7 +472,7 @@ After visual-scale fix:
 | Current graph Project size | `3` |
 | Current graph Property size | `1` |
 | Project/Property radius ratio | `3x` |
-| Rendered node size cap after reducer multipliers | `9` |
+| Dense rendered node size cap after reducer multipliers | `3` |
 
 Measured with the current AVmatrix-GO graph:
 
@@ -482,7 +482,7 @@ Measured with the current AVmatrix-GO graph:
   "currentLargeGraphProjectSize": 3,
   "currentLargeGraphPropertySize": 1,
   "currentLargeGraphRadiusRatio": 3,
-  "renderedSizeCap": 9
+  "renderedSizeCap": 3
 }
 ```
 
@@ -587,7 +587,7 @@ Measured large-graph browser diagnostics after correction:
     "nodeCount": 78350,
     "minNodeSize": 1,
     "maxNodeSize": 3,
-    "maxRenderedNodeSizeCap": 9,
+    "maxRenderedNodeSizeCap": 3,
     "structuralToLeafRatio": 3
   },
   "graphConversion": {
@@ -644,6 +644,7 @@ All known node-label dense-size check at `78,350` nodes:
 Result:
 
 - measured loaded graph size range: `1.0-3.0`;
+- measured dense post-reducer display cap: `3.0`;
 - measured loaded graph structural-to-leaf ratio: `3x`;
 - all known node labels stay within the dense graph `3x` cap;
 - `Package` is deliberately smaller than generic structural nodes at `1.5`;
@@ -712,7 +713,7 @@ Final visual-scale and large-graph browser diagnostics:
     "nodeCount": 78350,
     "minNodeSize": 1,
     "maxNodeSize": 3,
-    "maxRenderedNodeSizeCap": 9,
+    "maxRenderedNodeSizeCap": 3,
     "structuralToLeafRatio": 3
   }
 }
@@ -733,8 +734,8 @@ Final validation summary:
 | Command | Result |
 |---|---|
 | `go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix` | passed |
-| `npm --prefix avmatrix-web run build` | passed, built in `23.97s` |
-| `npm --prefix avmatrix-web run test` | passed, `41` files / `316` tests, `33.34s` |
+| `npm --prefix avmatrix-web run build` | passed, built in `24.02s` |
+| `npm --prefix avmatrix-web run test` | passed, `41` files / `316` tests, `33.29s` |
 | `go test ./cmd/... ./internal/... -count=1` | passed |
 | `npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "Graph Dashboard Controls" --workers=1 --timeout=120000` | passed, `2 / 2`, `1.6m` |
 | `npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000` | passed, `1 / 1`, `1.2m` |

@@ -56,6 +56,7 @@ vi.mock('../../src/hooks/useSigma', () => ({
 
 vi.mock('../../src/lib/graph-adapter', () => ({
   MAX_RENDERED_NODE_SIZE: 9,
+  getMaxRenderedNodeSize: vi.fn(() => 9),
   knowledgeGraphToGraphology: vi.fn(() => sigmaGraph),
   filterGraphByDepth: filterGraphByDepthSpy,
   filterGraphByLabels: filterGraphByLabelsSpy,

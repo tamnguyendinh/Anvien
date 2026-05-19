@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createKnowledgeGraph } from '../../src/core/graph/graph';
 import {
+  MAX_DENSE_RENDERED_NODE_SIZE,
   MAX_RENDERED_NODE_SIZE,
   capRenderedNodeSize,
+  getMaxRenderedNodeSize,
   getScaledNodeSize,
   knowledgeGraphToGraphology,
 } from '../../src/lib/graph-adapter';
@@ -106,16 +108,26 @@ describe('knowledgeGraphToGraphology edge geometry', () => {
     const propertySize = getScaledNodeSize(2, largeGraphNodeCount);
 
     expect(projectSize).toBeLessThanOrEqual(3);
-    expect(propertySize).toBeGreaterThanOrEqual(1.5);
+    expect(propertySize).toBeGreaterThanOrEqual(1);
     expect(projectSize / propertySize).toBeLessThanOrEqual(3);
     expect(capRenderedNodeSize(100)).toBe(MAX_RENDERED_NODE_SIZE);
+    expect(getMaxRenderedNodeSize(largeGraphNodeCount)).toBe(
+      MAX_DENSE_RENDERED_NODE_SIZE,
+    );
+    expect(capRenderedNodeSize(100, largeGraphNodeCount)).toBe(
+      MAX_DENSE_RENDERED_NODE_SIZE,
+    );
   });
 
   it('keeps package and section nodes below the generic structural cap on large graphs', () => {
     const veryLargeGraphNodeCount = 78_350;
 
-    expect(getScaledNodeSize(16, veryLargeGraphNodeCount, 'Package')).toBeLessThanOrEqual(1.5);
-    expect(getScaledNodeSize(8, veryLargeGraphNodeCount, 'Section')).toBeLessThanOrEqual(1);
+    expect(
+      getScaledNodeSize(16, veryLargeGraphNodeCount, 'Package'),
+    ).toBeLessThanOrEqual(1.5);
+    expect(
+      getScaledNodeSize(8, veryLargeGraphNodeCount, 'Section'),
+    ).toBeLessThanOrEqual(1);
     expect(getScaledNodeSize(20, veryLargeGraphNodeCount, 'Project')).toBe(3);
   });
 

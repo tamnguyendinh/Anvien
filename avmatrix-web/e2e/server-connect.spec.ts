@@ -206,9 +206,10 @@ test.describe('Graph Dashboard Controls', () => {
     const diagnostics = await getRuntimeDiagnostics(page);
     const visualScale = diagnostics!.visualScale;
     const expectedMaxSize = visualScale.nodeCount > 20_000 ? 3 : 4.5;
+    const expectedRenderedMaxSize = visualScale.nodeCount > 20_000 ? 3 : 9;
 
     expect(visualScale.maxNodeSize).toBeLessThanOrEqual(expectedMaxSize);
-    expect(visualScale.maxRenderedNodeSizeCap).toBe(9);
+    expect(visualScale.maxRenderedNodeSizeCap).toBe(expectedRenderedMaxSize);
     expect(visualScale.structuralToLeafRatio).toBeLessThanOrEqual(3);
     expect(visualScale.maxSizeByLabel.Package ?? 0).toBeLessThanOrEqual(1.5);
     expect(visualScale.maxSizeByLabel.Section ?? 0).toBeLessThanOrEqual(1);
