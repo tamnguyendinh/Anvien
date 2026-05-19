@@ -1,0 +1,223 @@
+# AVmatrix Go Supported-Language Property Access Accuracy Plan
+
+Date: 2026-05-19
+
+Status: in progress
+
+Companion files:
+
+- Benchmark ledger: [2026-05-19-avmatrix-go-supported-language-property-access-accuracy-benchmark.md](2026-05-19-avmatrix-go-supported-language-property-access-accuracy-benchmark.md)
+- Evidence ledger: [2026-05-19-avmatrix-go-supported-language-property-access-accuracy-evidence.md](2026-05-19-avmatrix-go-supported-language-property-access-accuracy-evidence.md)
+
+## Rules
+
+1. Use AVmatrix for codebase analysis and impact checks while working on implementation slices in this plan.
+2. As each task is completed, update the corresponding checklist item immediately.
+3. Run a full build before testing; the test suite must include an e2e test.
+4. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, or conversion-inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.
+5. Record evidence as each evidenced task is completed.
+6. For doc-only commits, do not use AVmatrix.
+7. After each completed implementation slice, commit the work, then continue until the full plan is complete.
+
+## Scope Boundary
+
+This is a new follow-up plan. It does not reopen [2026-05-16-avmatrix-go-graph-accuracy-100-plan.md](2026-05-16-avmatrix-go-graph-accuracy-100-plan.md).
+
+The 2026-05-16 plan completed its intended scope: Go-local measured gates on `E:\AVmatrix-GO`.
+
+This plan covers a broader product contract:
+
+- repos/workloads: `E:\AVmatrix-GO`, `E:\Website`, and provider fixture graphs for every supported language family;
+- graph facts: `Property`, `HAS_PROPERTY`, and `ACCESSES`;
+- language scope: every language that AVmatrix-Go can scan/parse/extract and every language that appears in graph `Property` nodes;
+- problem area: property ownership and member access semantics across the supported-language graph, not TypeScript only.
+
+`E:\Website` remains important because it is a TypeScript-heavy benchmark workload. It is not the whole problem.
+
+## Goal
+
+Make property graph facts useful and auditable across all AVmatrix-Go supported languages by distinguishing true orphan properties from false orphan properties, connecting only the properties that have real owners, and resolving member accesses only where semantics are defensible.
+
+The outcome must be measured with final graph facts, not with non-equivalent internal counters from another engine.
+
+## Graph Truth Rule
+
+The graph must reflect the real repository state. Do not create artificial owner links just to increase `HAS_PROPERTY` or `ACCESSES` counts.
+
+If a property, file, object shape, binding, or language construct is truly orphaned in the repo, it must remain visibly orphaned in the graph or in the audit output. That orphan status is useful signal: a reader should be able to see that the source has no stable owner/consumer relation instead of seeing a fabricated edge.
+
+Graph meaning for this plan:
+
+- an edge means AVmatrix has evidence that a real relationship exists in the repo;
+- no edge means AVmatrix has no defensible relationship for that pair under the current source model;
+- a node with no owner/consumer edges is still meaningful because it exposes the actual disconnected state;
+- a missing real edge is a false negative and should be fixed;
+- a fabricated edge is worse than a missing edge because it hides the real repository state.
+
+For example, if file or symbol `A` really refers to `B`, `C`, and `D`, the graph should show those edges. If `A` does not really refer to `E`, the graph must not create `A -> E` to improve counts. If `A` has no real links, the graph must leave `A` disconnected so readers can see that condition.
+
+This plan fixes only false orphans:
+
+- a false orphan is a property that has a real static owner in source code, but AVmatrix-Go failed to connect it;
+- a true orphan is a property-like fact with no defensible owner in the source model, and it must not be force-linked;
+- unknown cases must stay classified as unknown until evidence proves they are safe to connect.
+
+## Baseline
+
+Existing benchmark source: `reports\benchmark\2026-05-16-120908-avmatrix-go-self-analyze.json`.
+
+Known workload-level result:
+
+| Scenario | avmatrix-go | avmatrix-main | Go speedup | Note |
+|---|---:|---:|---:|---|
+| `E:\AVmatrix-GO` Go-heavy | 13,588.1 ms | 63,215.2 ms | 4.65x | useful Go-heavy workload |
+| `E:\Website` TypeScript-heavy | 20,763.6 ms | 70,428.1 ms | 3.39x | useful TypeScript-heavy workload |
+
+Known `E:\Website` graph symptom from the existing benchmark and current Go graph:
+
+| Metric | avmatrix-go | avmatrix-main | Note |
+|---|---:|---:|---|
+| Files scanned | 1,870 | 1,870 | same workload |
+| Files parsed | 998 | 998 | same workload |
+| Graph nodes | 26,081 | 18,607 | Go emits larger graph |
+| Graph relationships | 48,163 | 34,055 | Go emits larger graph |
+| Graph `Property` nodes | 5,222 | 3 | Go emits many standalone property facts |
+| Graph `HAS_PROPERTY` edges | 3 | 3 | current owner-link coverage is minimal |
+| Graph `ACCESSES` edges | 3 | 3 | final graph edge count is equal |
+| Access resolution counter | 3 | 755 | not graph-equivalent; do not use as quality delta |
+
+Current diagnosis:
+
+- `resolvedAccessesDeltaGoMinusMain=-752` is not a valid final graph quality conclusion.
+- The real issue is property ownership/access usefulness in the final graph.
+- `resolveAccess` can only emit `ACCESSES` when the property can be found through owner-linked members.
+- Some standalone properties may be true orphans and must remain unlinked.
+- Owner semantics must be audited by language, because each provider has different property constructs.
+
+## Accuracy Method
+
+The measured gate for this plan must be repo-owned and repeatable. It must report at least:
+
+- count of `Property` nodes across the full graph;
+- count of `Property` nodes by language;
+- count of `Property` nodes by source category;
+- count of `Property` nodes with incoming `HAS_PROPERTY`;
+- count of true orphan properties that must remain unlinked;
+- count of false orphan properties that should be fixed;
+- count of unknown properties that need more evidence before any link is emitted;
+- count of invalid/synthetic links rejected or removed;
+- count of final graph `ACCESSES` edges;
+- sampled precision for newly emitted `HAS_PROPERTY` and `ACCESSES`;
+- examples of unresolved member accesses grouped by reason.
+
+Candidate language families:
+
+- TS/JS/SFC: JavaScript, TypeScript, Vue, Svelte, Astro;
+- static OO/member languages: Java, Kotlin, C#, PHP, Swift, Dart;
+- systems/member languages: Go, C, C++, Rust;
+- dynamic languages: Python, Ruby;
+- enterprise/legacy: COBOL and JCL-related graph facts where emitted.
+
+Candidate property categories:
+
+- class/struct/interface fields;
+- interface property signatures;
+- type-alias object literal members;
+- nested object literal/type literal members;
+- destructuring/binding pattern properties;
+- runtime object literal keys;
+- imported type/member access patterns;
+- qualified member properties without owner links;
+- language-specific unknown properties.
+
+Do not set a numeric `100%` target until Phase 1 defines a defensible denominator per language family. The first hard target is a trustworthy cross-language gate and taxonomy.
+
+The eventual target is not `HAS_PROPERTY = Property`. The target is:
+
+- `100%` owner-link coverage for properties classified as false orphans with a defensible owner;
+- `0` artificial links for properties classified as true orphans;
+- `0` synthetic edges introduced only to improve graph counts;
+- a shrinking unknown bucket with examples and reasons recorded by language.
+
+## Phase 1 - Cross-Language Baseline Gate and Taxonomy
+
+- [x] [P1-A] Build a tracked cross-language property/access audit gate. Owner: `internal/graphaccuracy` with command wrapper `cmd/property-access-audit`. The gate consumes a graph snapshot, includes every graph `Property` node, and emits JSON with language, ownership, access, category, orphan, and graph-truth metrics.
+- [x] [P1-B] Run the baseline gate on `E:\Website` using explicit graph snapshot artifact `.tmp\p1-property-access-website-go-graph-20260519.json`; baseline output `.tmp\p1-property-access-website-baseline-20260519.json` is recorded in the benchmark and evidence ledgers.
+- [x] [P1-C] Run the baseline gate on `E:\AVmatrix-GO` using explicit graph snapshot artifact `.tmp\p1-property-access-avmatrix-go-graph-20260519.json`; baseline output `.tmp\p1-property-access-avmatrix-go-baseline-20260519.json` is recorded in the benchmark and evidence ledgers.
+- [x] [P1-D] Classify `Property` nodes by language and source category. Website baseline: `typescript=5,222`. AVmatrix-GO baseline: `go=2,469`, `typescript=577`. Required category families are represented in the gate output.
+- [x] [P1-E] Classify standalone properties by orphan status. Website: `false_orphan=3,627`, `true_orphan=430`, `unknown=1,162`, `owner_linked=3`, `external_library_owned=0`, `intentionally_unmodeled=0`. AVmatrix-GO: `false_orphan=21`, `true_orphan=82`, `unknown=235`, `owner_linked=2,708`, `external_library_owned=0`, `intentionally_unmodeled=0`.
+- [x] [P1-F] Classify missing and absent edges by graph truth status. Website: `real_edge_missing=3,627`, `true_no_edge=430`, `unknown_no_edge=1,162`, `edge_present=3`, `invalid_synthetic_edge_risk=0`. AVmatrix-GO: `real_edge_missing=21`, `true_no_edge=82`, `unknown_no_edge=235`, `edge_present=2,708`, `invalid_synthetic_edge_risk=0`.
+- [ ] [P1-G] Classify unresolved member access candidates by reason. Required reasons: missing receiver type, missing owner link, ambiguous owner, external/library type, unsupported syntax, and false-positive candidate.
+- [ ] [P1-H] Define the Phase 2 and Phase 3 measurable targets after the taxonomy is known. The targets must be written as checklist updates, not loose notes.
+
+## Phase 2 - Cross-Language Property Ownership
+
+- [ ] [P2-A] Implement owner-link semantics for the first large cluster of false-orphan properties. The cluster must cover multiple providers or a high-volume language family; do not use one tiny language/file slice unless the taxonomy proves it is the only safe unit.
+- [ ] [P2-B] Add focused tests for every language/provider family changed in [P2-A]. Tests must include positive owner links and cases that must remain unowned.
+- [ ] [P2-C] Run ownership validation and record it. Required evidence: full build before tests, focused tests, CLI/runtime e2e, fresh graph snapshots for affected workloads, benchmark update, evidence update, and AVmatrix impact record.
+- [ ] [P2-D] Repeat large ownership clusters until all false-orphan categories with defensible owners are either fixed or explicitly deferred with evidence.
+
+## Phase 3 - Cross-Language Member Access Resolution
+
+- [ ] [P3-A] Classify member access samples that should resolve after Phase 2 ownership is available. Include explicit receiver types, `this`/`self`/receiver access, typed parameter access, typed local variable access, constructor assignment, return-value/initializer-derived receiver type, and imported type access where supported.
+- [ ] [P3-B] Implement the first large defensible access-resolution cluster. Prefer cases with explicit receiver type bindings before inferred or heuristic cases.
+- [ ] [P3-C] Add focused tests for every access-resolution family closed in [P3-B].
+- [ ] [P3-D] Run access validation and record it. Required evidence: full build before tests, focused tests, CLI/runtime e2e, fresh graph snapshots for affected workloads, benchmark update, evidence update, and AVmatrix impact record.
+- [ ] [P3-E] Repeat large access clusters until all target families are fixed or explicitly deferred with evidence.
+
+## Phase 4 - Consumer Impact Checks
+
+- [ ] [P4-A] Verify `context` output includes representative new `HAS_PROPERTY` and `ACCESSES` facts for selected symbols in multiple language families.
+- [ ] [P4-B] Verify impact analysis behavior on property owners and property consumers. The result must show whether new edges improve affected-symbol discovery without noisy unrelated expansion.
+- [ ] [P4-C] Verify graph API/readback preserves the new relationships, including `reason`, `confidence`, `resolutionSource`, and evidence fields.
+- [ ] [P4-D] Record consumer-impact evidence and any precision concerns. If noisy edges are found, classify them before final cutover.
+
+## Phase 5 - Final Cutover
+
+- [ ] [P5-A] Run the final property/access gate on `E:\AVmatrix-GO`, `E:\Website`, and the supported-language fixture matrix.
+- [ ] [P5-B] Record final graph size, analyze performance, `Property`, `HAS_PROPERTY`, and `ACCESSES` metrics in the benchmark ledger.
+- [ ] [P5-C] Record final evidence: commands, artifacts, focused tests, full build, e2e proof, graph snapshots, gate outputs, and impact evidence.
+- [ ] [P5-D] Close the plan only after benchmark and evidence ledgers agree with the final tracked artifacts and all completed targets are satisfied.
+
+## Ledger
+
+| ID | Area | Scope | Target | Benchmark | Evidence | Commit | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| P1-A | Gate | cross-language property/access audit | repeatable graph fact gate exists | n/a | recorded | pending current slice | done |
+| P1-B | Baseline | Website graph snapshot | cross-language baseline gate artifact recorded | recorded | recorded | pending current slice | done |
+| P1-C | Baseline | AVmatrix-GO graph snapshot | cross-language baseline gate artifact recorded | recorded | recorded | pending current slice | done |
+| P1-D | Taxonomy | property language/categories | source categories classified | recorded | recorded | pending current slice | done |
+| P1-E | Taxonomy | standalone properties | true/false/unknown orphan status classified | recorded | recorded | pending current slice | done |
+| P1-F | Taxonomy | missing/absent edges | real missing vs true no-edge classified | recorded | recorded | pending current slice | done |
+| P1-G | Taxonomy | unresolved member accesses | miss reasons classified | pending | pending | pending | open |
+| P1-H | Targets | measurable follow-up gates | Phase 2/3 targets defined | pending | pending | pending | open |
+| P2-A | Ownership | large false-orphan cluster | defensible `HAS_PROPERTY` expansion | pending | pending | pending | open |
+| P2-B | Tests | ownership focused tests | relevant owner cases covered | n/a | pending | pending | open |
+| P2-C | Validation | ownership slice | analyze/test/e2e recorded | pending | pending | pending | open |
+| P2-D | Ownership | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
+| P3-A | Access | access sample taxonomy | resolvable families classified | pending | pending | pending | open |
+| P3-B | Access | large access-resolution cluster | defensible `ACCESSES` expansion | pending | pending | pending | open |
+| P3-C | Tests | access focused tests | resolved families covered | n/a | pending | pending | open |
+| P3-D | Validation | access slice | analyze/test/e2e recorded | pending | pending | pending | open |
+| P3-E | Access | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
+| P4-A | Consumer | context | new facts visible in context | n/a | pending | pending | open |
+| P4-B | Consumer | impact | affected-symbol behavior checked | n/a | pending | pending | open |
+| P4-C | Consumer | graph API/readback | new relationships preserved | n/a | pending | pending | open |
+| P4-D | Consumer | precision/noise | concerns classified | pending | pending | pending | open |
+| P5-A | Final gate | workload matrix | final gate run | pending | pending | pending | open |
+| P5-B | Final benchmark | graph facts/performance | final metrics recorded | pending | pending | pending | open |
+| P5-C | Final evidence | proof set | final evidence recorded | n/a | pending | pending | open |
+| P5-D | Final closure | ledger consistency | plan closed | pending | pending | pending | open |
+
+## Definition Of Done
+
+- The tracked property/access gate exists outside `.tmp` and is documented.
+- The gate includes every graph `Property` node, not only TypeScript.
+- Baseline and final metrics are recorded in the benchmark ledger.
+- Evidence contains commands, artifacts, focused tests, full build, e2e proof, graph snapshots, and impact checks.
+- Final report uses final graph `ACCESSES`/`HAS_PROPERTY` facts as the quality metric, not non-equivalent internal counters.
+- All completed graph expansions have sampled precision evidence.
+- True orphans remain visible and are not force-linked.
+- True no-edge cases remain without edges and are counted as correct graph truth, not failures.
+- Any synthetic edge added only for count inflation is a failure.
+- The plan is closed only when the ledger, benchmark, and evidence files agree.
