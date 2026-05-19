@@ -241,7 +241,7 @@ Result:
 
 ## E3 - Implementation Evidence
 
-Status: pending
+Status: active
 
 Record each implementation slice here:
 
@@ -250,6 +250,154 @@ Record each implementation slice here:
 - build/test/e2e commands;
 - important screenshots or textual e2e assertions;
 - benchmark ledger entries updated.
+
+### E3A - Launcher Lifecycle Heartbeat Budget Removal
+
+Date: 2026-05-19
+
+Scope:
+
+- `avmatrix-launcher/src/main.go`
+- `avmatrix-launcher/src/main_test.go`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-evidence.md`
+
+AVmatrix context/impact used before implementation:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe context newWebLifecycleMonitor --repo AVmatrix
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact newWebLifecycleMonitor --repo AVmatrix --direction upstream --depth 2 --include-tests
+.\avmatrix-launcher\server-bundle\avmatrix.exe context connectHeartbeat --repo AVmatrix
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact connectHeartbeat --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Result summary:
+
+- `newWebLifecycleMonitor` direct callers: `startRuntime` and launcher lifecycle tests.
+- `connectHeartbeat` direct use remains `AppContent` and heartbeat unit tests; Web heartbeat displays the banner after backend/session loss but is not the root shutdown decision.
+- Implementation risk was centered in launcher lifecycle and covered by launcher tests plus Web graph-load e2e.
+
+Implementation:
+
+- Removed launcher heartbeat-missing auto-shutdown. The injected heartbeat still pings every `5s`, but stale heartbeat age is diagnostic only.
+- Kept explicit `pagehide` close handling with short close grace so real browser close/reload can still stop the launcher-owned runtime.
+- Added `webLifecycleSnapshot` with heartbeat age, close age, close-grace, close reason, and backend ownership logging.
+- Added launcher tests proving stale heartbeat and large heartbeat gaps do not expire lifecycle, while explicit close still expires after grace.
+
+Build before tests:
+
+```powershell
+go build ./...
+```
+
+Result:
+
+```text
+failed in intentionally non-standalone fixture packages under avmatrix/test/fixtures:
+- package models is not in std
+- package animal is not in std; mixed packages animal/main
+- C source files not allowed when not using cgo or SWIG
+```
+
+Repo-specific build commands used after confirming the known fixture boundary:
+
+```powershell
+npm --prefix avmatrix-web run build
+go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix
+go build .
+```
+
+Results:
+
+```text
+npm --prefix avmatrix-web run build: passed, built in 21.74s
+go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix: passed
+go build . in avmatrix-launcher/src: passed
+```
+
+Focused tests:
+
+```powershell
+go test .
+```
+
+Run from:
+
+```text
+E:\AVmatrix-GO\avmatrix-launcher\src
+```
+
+Result:
+
+```text
+ok avmatrix-launcher 3.871s
+```
+
+Broader Go validation:
+
+```powershell
+go test ./cmd/... ./internal/... -count=1
+```
+
+Result:
+
+```text
+all reported packages passed except internal/session TestControllerCancelsPreviousSessionForSameRepo.
+The failing assertion was runs = second,first.
+```
+
+Follow-up classification:
+
+```powershell
+go test ./internal/session -run TestControllerCancelsPreviousSessionForSameRepo -count=1 -v
+go test ./internal/session -run TestControllerCancelsPreviousSessionForSameRepo -count=3 -v
+```
+
+Result:
+
+```text
+-count=1 passed.
+-count=3 passed twice and failed once with runs = first.
+```
+
+Interpretation: the `internal/session` failure is pre-existing/flaky ordering behavior outside this launcher slice; it is not caused by the launcher lifecycle change.
+
+Web unit tests:
+
+```powershell
+npm --prefix avmatrix-web run test
+```
+
+Result:
+
+```text
+39 test files passed
+296 tests passed
+```
+
+E2E:
+
+```powershell
+npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "selects a repo from landing and loads graph" --workers=1 --timeout=120000
+```
+
+Result:
+
+```text
+1 passed
+test duration: 25.8s
+total duration: 31.4s
+```
+
+Known validation note:
+
+- Full `server-connect.spec.ts` run was attempted with a `180s` command timeout and did not complete before the shell timeout. The focused graph-load e2e above completed successfully.
+- An initial `npm --prefix avmatrix-web run test -- --runInBand` attempt failed because Vitest does not support the Jest `--runInBand` option; the normal Vitest command passed.
+
+Benchmark ledger updated:
+
+- `B4A - Launcher Lifecycle Budget Removal`
 
 ## E4 - Final Closure Evidence
 

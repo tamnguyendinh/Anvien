@@ -54,7 +54,7 @@ func TestStaticHandlerInjectsLauncherLifecycleAndRecordsHeartbeat(t *testing.T) 
 	if err := os.WriteFile(filepath.Join(webDist, "index.html"), []byte("<html><body>app</body></html>"), 0o644); err != nil {
 		t.Fatalf("write index: %v", err)
 	}
-	lifecycle := newWebLifecycleMonitor(time.Second, 100*time.Millisecond)
+	lifecycle := newWebLifecycleMonitor(100 * time.Millisecond)
 	server := httptest.NewServer(staticHandlerWithLifecycle(webDist, lifecycle))
 	defer server.Close()
 
@@ -89,29 +89,89 @@ func TestStaticHandlerInjectsLauncherLifecycleAndRecordsHeartbeat(t *testing.T) 
 	}
 }
 
-func TestWebLifecycleMonitorExpiresAfterHeartbeatStops(t *testing.T) {
-	lifecycle := newWebLifecycleMonitor(120*time.Millisecond, 40*time.Millisecond)
+func TestWebLifecycleMonitorDoesNotExpireAfterHeartbeatStops(t *testing.T) {
+	lifecycle := newWebLifecycleMonitor(40 * time.Millisecond)
 	lifecycle.start()
 	defer lifecycle.stop()
 
 	lifecycle.recordHeartbeat(time.Now().Add(-500 * time.Millisecond))
 	select {
 	case <-lifecycle.Done():
-	case <-time.After(time.Second):
-		t.Fatalf("lifecycle did not expire after heartbeat timeout")
+		t.Fatalf("stale heartbeat alone must not expire lifecycle")
+	case <-time.After(180 * time.Millisecond):
+	}
+}
+
+func TestWebLifecycleMonitorAllowsUnboundedHeavyGraphLoadHeartbeatGap(t *testing.T) {
+	lifecycle := newWebLifecycleMonitor(launcherUICloseGrace)
+	now := time.Date(2026, 5, 19, 15, 0, 0, 0, time.UTC)
+	lifecycle.recordHeartbeat(now)
+
+	gap := 24 * time.Hour
+	if snapshot := lifecycle.snapshot(now.Add(gap)); snapshot.Expired {
+		t.Fatalf("heartbeat gap %s should not expire lifecycle: %#v", gap, snapshot)
+	} else if snapshot.HeartbeatAge != gap {
+		t.Fatalf("snapshot heartbeat age = %s, want %s", snapshot.HeartbeatAge, gap)
+	}
+}
+
+func TestWebLifecycleSnapshotReportsStaleHeartbeatWithoutTimeout(t *testing.T) {
+	lifecycle := newWebLifecycleMonitor(launcherUICloseGrace)
+	now := time.Date(2026, 5, 19, 15, 0, 0, 0, time.UTC)
+	lifecycle.recordHeartbeat(now)
+
+	gap := 3 * time.Hour
+	snapshot := lifecycle.snapshot(now.Add(gap))
+	if snapshot.Expired {
+		t.Fatalf("stale heartbeat should remain non-expiring: %#v", snapshot)
+	}
+	if snapshot.HeartbeatAge != gap {
+		t.Fatalf("snapshot heartbeat age = %s, want %s", snapshot.HeartbeatAge, gap)
 	}
 }
 
 func TestWebLifecycleClosedSignalUsesGraceBeforeShutdown(t *testing.T) {
-	lifecycle := newWebLifecycleMonitor(time.Second, 100*time.Millisecond)
-	lifecycle.recordHeartbeat(time.Now())
-	lifecycle.recordClosed(time.Now())
+	lifecycle := newWebLifecycleMonitor(100 * time.Millisecond)
+	now := time.Now()
+	lifecycle.recordHeartbeat(now)
+	lifecycle.recordClosed(now)
 
-	if lifecycle.expired(time.Now().Add(50 * time.Millisecond)) {
+	if lifecycle.expired(now.Add(50 * time.Millisecond)) {
 		t.Fatalf("close signal should keep a short reload grace window")
 	}
-	if !lifecycle.expired(time.Now().Add(150 * time.Millisecond)) {
+	if !lifecycle.expired(now.Add(150 * time.Millisecond)) {
 		t.Fatalf("close signal should expire after grace window")
+	}
+}
+
+func TestWebLifecycleClosedSignalWithoutHeartbeatUsesGrace(t *testing.T) {
+	lifecycle := newWebLifecycleMonitor(100 * time.Millisecond)
+	now := time.Date(2026, 5, 19, 15, 0, 0, 0, time.UTC)
+	lifecycle.recordClosed(now)
+
+	if lifecycle.expired(now.Add(50 * time.Millisecond)) {
+		t.Fatalf("close signal should keep grace even without prior heartbeat")
+	}
+	if !lifecycle.expired(now.Add(150 * time.Millisecond)) {
+		t.Fatalf("close signal should expire after grace even without prior heartbeat")
+	}
+}
+
+func TestWebLifecycleSnapshotReportsClosedGraceExpiry(t *testing.T) {
+	lifecycle := newWebLifecycleMonitor(100 * time.Millisecond)
+	now := time.Date(2026, 5, 19, 15, 0, 0, 0, time.UTC)
+	lifecycle.recordHeartbeat(now)
+	lifecycle.recordClosed(now)
+
+	snapshot := lifecycle.snapshot(now.Add(150 * time.Millisecond))
+	if !snapshot.Expired {
+		t.Fatalf("snapshot should be expired after close grace: %#v", snapshot)
+	}
+	if snapshot.Reason != "closed_grace_expired" {
+		t.Fatalf("snapshot reason = %q, want closed_grace_expired", snapshot.Reason)
+	}
+	if !snapshot.ClosedSeen || !snapshot.LastClosed.Equal(now) {
+		t.Fatalf("snapshot did not record close signal: %#v", snapshot)
 	}
 }
 

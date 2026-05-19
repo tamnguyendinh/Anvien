@@ -153,12 +153,12 @@ Post-load reconnect root cause chain:
 
 ## Phase 2 - Heavy Graph Runtime Stability
 
-- [ ] [P2-A] Add launcher lifecycle instrumentation that records heartbeat age, timeout expiry reason, and whether the backend was stopped because UI heartbeat expired.
+- [x] [P2-A] Add launcher lifecycle instrumentation that records heartbeat age, close-grace expiry reason, and whether the backend was stopped because UI lifecycle exit occurred. Result: `webLifecycleSnapshot` now records heartbeat age, close age, close-grace, exit reason, and backend ownership in launcher logs.
 - [ ] [P2-B] Add Web-side instrumentation or test hooks for graph conversion time, layout start/stop time, noverlap duration, heartbeat reconnects, and reconnect-banner state.
 - [ ] [P2-C] Reproduce the post-load `Server connection lost - reconnecting...` behavior under controlled conditions with the current large graph and recorded launcher/Web timings.
-- [ ] [P2-D] Fix the lifecycle design so heavy graph load cannot close the runtime while the page is alive. Candidate fixes must be evaluated with evidence: longer timeout, grace while graph load/layout is active, explicit active-session pings outside main-thread-sensitive paths where possible, or removing auto-shutdown dependency from short UI heartbeat gaps.
-- [ ] [P2-E] Ensure a lifecycle timeout does not stop the backend during a known active graph load/layout window.
-- [ ] [P2-F] Add launcher/backend/Web tests covering heartbeat gaps longer than the old `15s` threshold during active graph load and confirming no forced shutdown.
+- [x] [P2-D] Fix the lifecycle design so heavy graph load cannot close the runtime while the page is alive. Result: removed heartbeat-budget auto-shutdown entirely; heartbeat is now instrumentation/liveness evidence only, while explicit page-close signals still close after a short reload grace.
+- [x] [P2-E] Ensure a lifecycle timeout does not stop the backend during a known active graph load/layout window. Result: there is no heartbeat timeout path left to stop the backend during graph load/layout.
+- [x] [P2-F] Add launcher/backend/Web tests covering heartbeat gaps longer than the old `15s` threshold during active graph load and confirming no forced shutdown. Result: launcher tests cover stale heartbeat, `3h` and `24h` heartbeat gaps, close-grace expiry, and close without prior heartbeat.
 - [ ] [P2-G] Add an e2e stability test that loads a large graph, waits through the post-load/layout window, and asserts that the reconnect banner does not appear.
 - [ ] [P2-H] Record post-load stability timing, launcher heartbeat age, backend process continuity, and connection-loss count in the benchmark and evidence ledgers.
 

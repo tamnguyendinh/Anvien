@@ -261,7 +261,7 @@ Record:
 
 ## B4 - Visual Scale and Connection Stability
 
-Status: pending
+Status: partial; launcher lifecycle auto-shutdown slice recorded, visual scale and post-load reconnect-count validation still pending
 
 Record:
 
@@ -271,6 +271,32 @@ Record:
 - reconnect banner count;
 - heartbeat continuity result;
 - backend/launcher process continuity result.
+
+### B4A - Launcher Lifecycle Budget Removal
+
+Date: 2026-05-19
+
+Measured/validated behavior:
+
+| Metric | Before | After |
+|---|---:|---:|
+| Launcher heartbeat interval | `5s` | `5s` |
+| Heartbeat-missing auto-shutdown budget | `15s` | none |
+| Tested stale-heartbeat gap without lifecycle expiry | not supported | `3h` and `24h` |
+| Explicit close signal grace | `2s` | `2s` |
+| Backend stop caused by heartbeat age alone | possible | removed |
+
+Focused e2e graph-load evidence:
+
+| Command | Result | Duration |
+|---|---|---:|
+| `npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "selects a repo from landing and loads graph" --workers=1 --timeout=120000` | passed, `1 / 1` | `25.8s` test time, `31.4s` total |
+
+Notes:
+
+- This slice intentionally does not set a larger heartbeat budget. It removes the heartbeat budget as a shutdown mechanism because any finite budget can fail on a sufficiently large repo/load.
+- Heartbeat age is still logged for diagnosis, but it is no longer allowed to close the Web UI runtime.
+- Full post-load reconnect-banner count remains pending for `P2-G/P2-H`; this slice only proves the launcher can no longer stop the backend because the page missed heartbeat pings during heavy graph work.
 
 ## B5 - Final Benchmark
 

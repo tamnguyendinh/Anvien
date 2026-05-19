@@ -27,7 +27,6 @@ const (
 
 	launcherHeartbeatPath = "/__avmatrix_launcher/heartbeat"
 	launcherClosedPath    = "/__avmatrix_launcher/closed"
-	launcherUITimeout     = 15 * time.Second
 	launcherUICloseGrace  = 2 * time.Second
 )
 
@@ -159,7 +158,7 @@ func startRuntime(paths launcherPaths) error {
 	}
 	defer stopPID(backend.pid)
 
-	lifecycle := newWebLifecycleMonitor(launcherUITimeout, launcherUICloseGrace)
+	lifecycle := newWebLifecycleMonitor(launcherUICloseGrace)
 	webServer := &http.Server{
 		Addr:              "127.0.0.1:5228",
 		Handler:           staticHandlerWithLifecycle(paths.webDist, lifecycle),
@@ -200,7 +199,10 @@ func startRuntime(paths launcherPaths) error {
 		return err
 	}
 
-	waitForExit(paths, backend, lifecycleDone(webStarted, lifecycle))
+	exitReason := waitForExit(paths, backend, lifecycleDone(webStarted, lifecycle), lifecycle)
+	if exitReason == runtimeExitUILifecycle && backend.pid > 0 {
+		log.Printf("owned backend pid=%d will be stopped after web ui lifecycle exit", backend.pid)
+	}
 	return nil
 }
 
@@ -310,28 +312,37 @@ const launcherLifecycleScript = `<script data-avmatrix-launcher-lifecycle>
 
 type webLifecycleMonitor struct {
 	mu            sync.Mutex
-	timeout       time.Duration
 	closeGrace    time.Duration
 	checkInterval time.Duration
 	seen          bool
 	lastSeen      time.Time
+	closedSeen    bool
+	lastClosed    time.Time
 	done          chan struct{}
 	stopCh        chan struct{}
 	doneOnce      sync.Once
 	stopOnce      sync.Once
 }
 
-func newWebLifecycleMonitor(timeout time.Duration, closeGrace time.Duration) *webLifecycleMonitor {
-	if timeout <= 0 {
-		timeout = launcherUITimeout
-	}
-	if closeGrace <= 0 || closeGrace >= timeout {
-		closeGrace = timeout / 3
+type webLifecycleSnapshot struct {
+	Seen         bool
+	ClosedSeen   bool
+	LastSeen     time.Time
+	LastClosed   time.Time
+	HeartbeatAge time.Duration
+	CloseAge     time.Duration
+	CloseGrace   time.Duration
+	Expired      bool
+	Reason       string
+}
+
+func newWebLifecycleMonitor(closeGrace time.Duration) *webLifecycleMonitor {
+	if closeGrace <= 0 {
+		closeGrace = launcherUICloseGrace
 	}
 	return &webLifecycleMonitor{
-		timeout:       timeout,
 		closeGrace:    closeGrace,
-		checkInterval: lifecycleCheckInterval(timeout),
+		checkInterval: lifecycleCheckInterval(closeGrace),
 		done:          make(chan struct{}),
 		stopCh:        make(chan struct{}),
 	}
@@ -358,7 +369,17 @@ func (m *webLifecycleMonitor) start() {
 		for {
 			select {
 			case <-ticker.C:
-				if m.expired(time.Now()) {
+				snapshot := m.snapshot(time.Now())
+				if snapshot.Expired {
+					log.Printf(
+						"web ui lifecycle expired reason=%s closeAge=%s closeGrace=%s heartbeatAge=%s lastSeen=%s lastClosed=%s",
+						snapshot.Reason,
+						snapshot.CloseAge.Round(time.Millisecond),
+						snapshot.CloseGrace,
+						snapshot.HeartbeatAge.Round(time.Millisecond),
+						formatLifecycleTime(snapshot.LastSeen),
+						formatLifecycleTime(snapshot.LastClosed),
+					)
 					m.finish()
 					return
 				}
@@ -415,21 +436,50 @@ func (m *webLifecycleMonitor) recordHeartbeat(now time.Time) {
 	defer m.mu.Unlock()
 	m.seen = true
 	m.lastSeen = now
+	m.closedSeen = false
+	m.lastClosed = time.Time{}
 }
 
 func (m *webLifecycleMonitor) recordClosed(now time.Time) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if !m.seen {
-		return
-	}
-	m.lastSeen = now.Add(-(m.timeout - m.closeGrace))
+	m.closedSeen = true
+	m.lastClosed = now
 }
 
 func (m *webLifecycleMonitor) expired(now time.Time) bool {
+	return m.snapshot(now).Expired
+}
+
+func (m *webLifecycleMonitor) snapshot(now time.Time) webLifecycleSnapshot {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	return m.seen && now.Sub(m.lastSeen) > m.timeout
+
+	snapshot := webLifecycleSnapshot{
+		Seen:       m.seen,
+		ClosedSeen: m.closedSeen,
+		LastSeen:   m.lastSeen,
+		LastClosed: m.lastClosed,
+		CloseGrace: m.closeGrace,
+	}
+	if m.seen {
+		snapshot.HeartbeatAge = now.Sub(m.lastSeen)
+	}
+	if m.closedSeen {
+		snapshot.CloseAge = now.Sub(m.lastClosed)
+		snapshot.Expired = snapshot.CloseAge > m.closeGrace
+	}
+	if snapshot.Expired {
+		snapshot.Reason = "closed_grace_expired"
+	}
+	return snapshot
+}
+
+func formatLifecycleTime(value time.Time) string {
+	if value.IsZero() {
+		return ""
+	}
+	return value.Format(time.RFC3339Nano)
 }
 
 func (m *webLifecycleMonitor) finish() {
@@ -445,7 +495,15 @@ func lifecycleDone(webStarted bool, lifecycle *webLifecycleMonitor) <-chan struc
 	return lifecycle.Done()
 }
 
-func waitForExit(paths launcherPaths, backend backendProcess, uiDone <-chan struct{}) {
+type runtimeExitReason string
+
+const (
+	runtimeExitBackend     runtimeExitReason = "backend_exit"
+	runtimeExitUILifecycle runtimeExitReason = "ui_lifecycle_exit"
+	runtimeExitSignal      runtimeExitReason = "signal"
+)
+
+func waitForExit(paths launcherPaths, backend backendProcess, uiDone <-chan struct{}, lifecycle *webLifecycleMonitor) runtimeExitReason {
 	sig := make(chan os.Signal, 2)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	defer signal.Stop(sig)
@@ -453,23 +511,46 @@ func waitForExit(paths launcherPaths, backend backendProcess, uiDone <-chan stru
 	if backend.done == nil {
 		select {
 		case <-uiDone:
+			logLifecycleExit(lifecycle, backend)
 			log.Printf("web ui session closed")
 		case <-sig:
+			_ = os.Remove(paths.stateFile)
+			return runtimeExitSignal
 		}
 		_ = os.Remove(paths.stateFile)
-		return
+		return runtimeExitUILifecycle
 	}
 
 	select {
 	case err := <-backend.done:
 		_ = os.Remove(paths.stateFile)
 		log.Printf("backend exited: %v", err)
+		return runtimeExitBackend
 	case <-uiDone:
 		_ = os.Remove(paths.stateFile)
+		logLifecycleExit(lifecycle, backend)
 		log.Printf("web ui session closed")
+		return runtimeExitUILifecycle
 	case <-sig:
 		_ = os.Remove(paths.stateFile)
+		return runtimeExitSignal
 	}
+}
+
+func logLifecycleExit(lifecycle *webLifecycleMonitor, backend backendProcess) {
+	if lifecycle == nil {
+		return
+	}
+	snapshot := lifecycle.snapshot(time.Now())
+	log.Printf(
+		"web ui lifecycle exit reason=%s closeAge=%s closeGrace=%s heartbeatAge=%s backendPid=%d backendOwned=%t",
+		snapshot.Reason,
+		snapshot.CloseAge.Round(time.Millisecond),
+		snapshot.CloseGrace,
+		snapshot.HeartbeatAge.Round(time.Millisecond),
+		backend.pid,
+		backend.pid > 0,
+	)
 }
 
 func shutdownWeb(server *http.Server) {
