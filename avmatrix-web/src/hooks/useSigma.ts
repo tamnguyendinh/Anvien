@@ -4,7 +4,11 @@ import Graph from 'graphology';
 import FA2Layout from 'graphology-layout-forceatlas2/worker';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import noverlap from 'graphology-layout-noverlap';
-import { SigmaNodeAttributes, SigmaEdgeAttributes } from '../lib/graph-adapter';
+import {
+  SigmaNodeAttributes,
+  SigmaEdgeAttributes,
+  capRenderedNodeSize,
+} from '../lib/graph-adapter';
 import type { NodeAnimation } from './useAppState.local-runtime';
 import type { EdgeType } from '../lib/constants';
 import { getGraphEdgeVisibilityMode } from '../lib/graph-edge-visibility-mode';
@@ -132,10 +136,22 @@ const getLayoutDuration = (nodeCount: number): number => {
   return 20000; // 20s for small graphs
 };
 
+const capNodeReducerSize = (
+  attributes: Partial<SigmaNodeAttributes>,
+): Partial<SigmaNodeAttributes> => {
+  if (typeof attributes.size === 'number') {
+    attributes.size = capRenderedNodeSize(attributes.size);
+  }
+  return attributes;
+};
+
 export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sigmaRef = useRef<Sigma | null>(null);
-  const graphRef = useRef<Graph<SigmaNodeAttributes, SigmaEdgeAttributes> | null>(null);
+  const graphRef = useRef<Graph<
+    SigmaNodeAttributes,
+    SigmaEdgeAttributes
+  > | null>(null);
   const layoutRef = useRef<FA2Layout | null>(null);
   const selectedNodeRef = useRef<string | null>(null);
   const selectedNeighborNodeIdsRef = useRef<Set<string>>(new Set());
@@ -331,7 +347,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
             res.highlighted = true;
           }
 
-          return res;
+          return capNodeReducerSize(res);
         }
 
         // Blast radius takes priority (red highlighting)
@@ -352,7 +368,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
             res.size = (data.size || 8) * 0.4;
             res.zIndex = 0;
           }
-          return res;
+          return capNodeReducerSize(res);
         }
 
         if (hasHighlights && !currentSelected) {
@@ -366,7 +382,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
             res.size = (data.size || 8) * 0.5;
             res.zIndex = 0;
           }
-          return res;
+          return capNodeReducerSize(res);
         }
 
         if (currentSelected) {
@@ -389,7 +405,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
           }
         }
 
-        return res;
+        return capNodeReducerSize(res);
       },
 
       edgeReducer: (edge, data) => {
@@ -422,8 +438,10 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
 
         if (hasHighlights && !currentSelected) {
           // Check if nodes are in EITHER set
-          const isSourceActive = highlighted.has(source) || blastRadius.has(source);
-          const isTargetActive = highlighted.has(target) || blastRadius.has(target);
+          const isSourceActive =
+            highlighted.has(source) || blastRadius.has(source);
+          const isTargetActive =
+            highlighted.has(target) || blastRadius.has(target);
 
           const bothHighlighted = isSourceActive && isTargetActive;
           const oneHighlighted = isSourceActive || isTargetActive;
@@ -451,7 +469,8 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
 
         if (currentSelected) {
           const isConnected =
-            visibilityMode === 'selected-context' && selectedDirectEdgeIdsRef.current.has(edge);
+            visibilityMode === 'selected-context' &&
+            selectedDirectEdgeIdsRef.current.has(edge);
 
           if (isConnected) {
             res.color = brightenColor(data.color, 1.5);
@@ -509,46 +528,49 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
   }, []);
 
   // Run ForceAtlas2 layout
-  const runLayout = useCallback((graph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>) => {
-    const nodeCount = graph.order;
-    if (nodeCount === 0) return;
+  const runLayout = useCallback(
+    (graph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>) => {
+      const nodeCount = graph.order;
+      if (nodeCount === 0) return;
 
-    // Kill existing
-    if (layoutRef.current) {
-      layoutRef.current.kill();
-      layoutRef.current = null;
-    }
-    if (layoutTimeoutRef.current) {
-      clearTimeout(layoutTimeoutRef.current);
-      layoutTimeoutRef.current = null;
-    }
-
-    // Get settings
-    const inferredSettings = forceAtlas2.inferSettings(graph);
-    const customSettings = getFA2Settings(nodeCount);
-    const settings = { ...inferredSettings, ...customSettings };
-
-    const layout = new FA2Layout(graph, { settings });
-
-    layoutRef.current = layout;
-    layout.start();
-    setIsLayoutRunning(true);
-
-    const duration = getLayoutDuration(nodeCount);
-
-    layoutTimeoutRef.current = setTimeout(() => {
+      // Kill existing
       if (layoutRef.current) {
-        layoutRef.current.stop();
+        layoutRef.current.kill();
         layoutRef.current = null;
-
-        // Light noverlap cleanup
-        noverlap.assign(graph, NOVERLAP_SETTINGS);
-        sigmaRef.current?.refresh();
-
-        setIsLayoutRunning(false);
       }
-    }, duration);
-  }, []);
+      if (layoutTimeoutRef.current) {
+        clearTimeout(layoutTimeoutRef.current);
+        layoutTimeoutRef.current = null;
+      }
+
+      // Get settings
+      const inferredSettings = forceAtlas2.inferSettings(graph);
+      const customSettings = getFA2Settings(nodeCount);
+      const settings = { ...inferredSettings, ...customSettings };
+
+      const layout = new FA2Layout(graph, { settings });
+
+      layoutRef.current = layout;
+      layout.start();
+      setIsLayoutRunning(true);
+
+      const duration = getLayoutDuration(nodeCount);
+
+      layoutTimeoutRef.current = setTimeout(() => {
+        if (layoutRef.current) {
+          layoutRef.current.stop();
+          layoutRef.current = null;
+
+          // Light noverlap cleanup
+          noverlap.assign(graph, NOVERLAP_SETTINGS);
+          sigmaRef.current?.refresh();
+
+          setIsLayoutRunning(false);
+        }
+      }, duration);
+    },
+    [],
+  );
 
   const setGraph = useCallback(
     (newGraph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>) => {
@@ -593,7 +615,10 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
         const nodeAttrs = graph.getNodeAttributes(nodeId);
         sigma
           .getCamera()
-          .animate({ x: nodeAttrs.x, y: nodeAttrs.y, ratio: 0.15 }, { duration: 400 });
+          .animate(
+            { x: nodeAttrs.x, y: nodeAttrs.y, ratio: 0.15 },
+            { duration: 400 },
+          );
       }
 
       sigma.refresh();

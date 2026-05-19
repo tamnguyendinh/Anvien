@@ -1,4 +1,4 @@
-import Graph from 'graphology';
+import Graph, { MultiDirectedGraph } from 'graphology';
 import type { KnowledgeGraph } from '../core/graph/types';
 import {
   getCommunityColor,
@@ -37,14 +37,31 @@ export interface SigmaEdgeAttributes {
  * Get node size scaled for graph density
  * Uses lower minimums to maintain hierarchy visibility even in huge graphs
  */
-const getScaledNodeSize = (baseSize: number, nodeCount: number): number => {
+const getMaxScaledNodeSize = (nodeCount: number): number => {
+  if (nodeCount > 20000) return 4.5;
+  if (nodeCount > 5000) return 6;
+  if (nodeCount > 1000) return 8;
+  return 12;
+};
+
+export const MAX_RENDERED_NODE_SIZE = 9;
+
+export const capRenderedNodeSize = (size: number): number =>
+  Math.min(size, MAX_RENDERED_NODE_SIZE);
+
+export const getScaledNodeSize = (
+  baseSize: number,
+  nodeCount: number,
+): number => {
   // Scale factor decreases as graph gets larger
   // But a minimum is used that preserves relative differences
-  if (nodeCount > 50000) return Math.max(1, baseSize * 0.4);
-  if (nodeCount > 20000) return Math.max(1.5, baseSize * 0.5);
-  if (nodeCount > 5000) return Math.max(2, baseSize * 0.65);
-  if (nodeCount > 1000) return Math.max(2.5, baseSize * 0.8);
-  return baseSize;
+  let scaledSize = baseSize;
+  if (nodeCount > 50000) scaledSize = Math.max(1, baseSize * 0.4);
+  else if (nodeCount > 20000) scaledSize = Math.max(1.5, baseSize * 0.5);
+  else if (nodeCount > 5000) scaledSize = Math.max(2, baseSize * 0.65);
+  else if (nodeCount > 1000) scaledSize = Math.max(2.5, baseSize * 0.8);
+
+  return Math.min(scaledSize, getMaxScaledNodeSize(nodeCount));
 };
 
 /**
@@ -88,7 +105,10 @@ export const knowledgeGraphToGraphology = (
   knowledgeGraph: KnowledgeGraph,
   communityMemberships?: Map<string, number>,
 ): Graph<SigmaNodeAttributes, SigmaEdgeAttributes> => {
-  const graph = new Graph<SigmaNodeAttributes, SigmaEdgeAttributes>();
+  const graph = new MultiDirectedGraph<
+    SigmaNodeAttributes,
+    SigmaEdgeAttributes
+  >();
   const nodeCount = knowledgeGraph.nodes.length;
 
   // Build parent-child map from hierarchy relationships
@@ -302,18 +322,24 @@ export const knowledgeGraphToGraphology = (
     STEP_IN_PROCESS: 0.7,
   };
 
-  knowledgeGraph.relationships.forEach((rel) => {
+  knowledgeGraph.relationships.forEach((rel, index) => {
     if (graph.hasNode(rel.sourceId) && graph.hasNode(rel.targetId)) {
-      if (!graph.hasEdge(rel.sourceId, rel.targetId)) {
-        const edgeInfo = getEdgeInfo(rel.type);
-        const sizeMultiplier = EDGE_SIZE_MULTIPLIERS[rel.type] ?? 0.5;
-
-        graph.addEdge(rel.sourceId, rel.targetId, {
-          size: edgeBaseSize * sizeMultiplier,
-          color: edgeInfo.color,
-          relationType: rel.type,
-        });
+      const edgeInfo = getEdgeInfo(rel.type);
+      const sizeMultiplier = EDGE_SIZE_MULTIPLIERS[rel.type] ?? 0.5;
+      const edgeKeyBase =
+        rel.id || `${rel.sourceId}->${rel.targetId}:${rel.type}:${index}`;
+      let edgeKey = edgeKeyBase;
+      let duplicateIndex = 1;
+      while (graph.hasEdge(edgeKey)) {
+        edgeKey = `${edgeKeyBase}:${duplicateIndex}`;
+        duplicateIndex++;
       }
+
+      graph.addDirectedEdgeWithKey(edgeKey, rel.sourceId, rel.targetId, {
+        size: edgeBaseSize * sizeMultiplier,
+        color: edgeInfo.color,
+        relationType: rel.type,
+      });
     }
   });
 

@@ -505,6 +505,132 @@ Benchmark ledger updated:
 - `B1 - Dashboard Completeness After Node Type Slice`
 - `B2 - Dashboard Completeness After Edge Type Slice`
 
+### E3C - Canvas Relationship Preservation and Visual Scale Bound
+
+Date: 2026-05-19
+
+Scope:
+
+- `avmatrix-web/src/lib/graph-adapter.ts`
+- `avmatrix-web/src/hooks/useSigma.ts`
+- `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-evidence.md`
+
+AVmatrix context and impact:
+
+```powershell
+avmatrix status
+avmatrix context knowledgeGraphToGraphology --repo AVmatrix
+avmatrix impact knowledgeGraphToGraphology --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Result:
+
+```text
+status: stale before refresh, index at 9728cd0 while worktree was at adbf58d
+direct callers: GraphCanvas.tsx, graph-adapter.edge-geometry.test.ts
+depth-2 affected: App.tsx, GraphCanvas.selection-performance.test.tsx
+risk: low, adapter contract and UI canvas behavior require focused Web tests plus e2e graph-load validation
+```
+
+AVmatrix refresh:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+```
+
+Result:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=686 parsed=528 unsupported=158 failed=0
+graph: nodes=20436 relationships=51176 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Implementation:
+
+- `knowledgeGraphToGraphology` now creates a graphology `MultiDirectedGraph` so multiple relationships between the same source and target are preserved.
+- Every renderable relationship is added with a stable edge key using the relationship id when available, with a deterministic fallback key and duplicate suffix.
+- Each edge keeps its own `relationType`, so existing edge visibility logic filters parallel edges by relationship type instead of losing them.
+- Large-graph node scaling now caps the base scaled size by graph density.
+- `useSigma` caps final rendered node size after selection, highlight, ripple, and animation reducer multipliers.
+- Graph-adapter tests now cover `CALLS + USES` and `HAS_PROPERTY + ACCESSES` parallel relationship pairs.
+- Graph-adapter tests also cover bounded node-size behavior across small, medium, large, and very large graph sizes.
+
+Benchmark measurement:
+
+```json
+{
+  "inputNodes": 20436,
+  "inputRelationships": 51176,
+  "renderableRelationships": 51176,
+  "graphologyNodes": 20436,
+  "graphologyEdges": 51176,
+  "relationshipLoss": 0,
+  "parallelSourceTargetPairs": 1412,
+  "conversionMs": 478.37,
+  "currentLargeGraphProjectSize": 4.5,
+  "currentLargeGraphPropertySize": 1.5,
+  "currentLargeGraphRadiusRatio": 3,
+  "renderedSizeCap": 9
+}
+```
+
+Build before tests:
+
+```powershell
+go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix
+npm --prefix avmatrix-web run build
+```
+
+Results:
+
+```text
+go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix: passed
+npm --prefix avmatrix-web run build: passed, built in 24.55s
+```
+
+Tests:
+
+```powershell
+npm --prefix avmatrix-web run test -- test/unit/graph-adapter.edge-geometry.test.ts test/unit/selected-graph-context.test.ts test/unit/graph-edge-visibility-mode.test.ts
+npm --prefix avmatrix-web run test -- test/unit/graph-adapter.edge-geometry.test.ts
+npm --prefix avmatrix-web run test
+go test ./cmd/... ./internal/... -count=1
+go test ./internal/embeddings -run TestHTTPEmbedderDoesNotRetryTimeout -count=3 -v
+```
+
+Results:
+
+```text
+focused graph adapter/context/edge tests: 3 files passed, 10 tests passed
+focused graph-adapter edge geometry rerun after HAS_PROPERTY/ACCESSES fixture: 1 file passed, 4 tests passed
+full Web unit suite: 40 files passed, 309 tests passed
+go test ./cmd/... ./internal/... -count=1: failed once in unrelated internal/embeddings TestHTTPEmbedderDoesNotRetryTimeout with calls = 0, want 1
+targeted embeddings rerun: passed 3 / 3
+```
+
+E2E:
+
+```powershell
+npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "selects a repo from landing and loads graph" --workers=1 --timeout=120000
+```
+
+Result:
+
+```text
+1 passed
+test duration: 29.2s
+total duration: 34.5s
+```
+
+Benchmark ledger updated:
+
+- `B3 - Graph Adapter Performance and Preservation`
+- `B4B - Node Visual Scale Bound`
+
 ## E4 - Final Closure Evidence
 
 Status: pending

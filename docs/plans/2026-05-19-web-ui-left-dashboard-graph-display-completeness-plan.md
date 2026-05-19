@@ -118,8 +118,8 @@ Post-load reconnect root cause chain:
 - In `avmatrix-launcher/src/main.go`, `web ui session closed` is emitted only when `lifecycleDone(...)` fires. That means the launcher lifecycle monitor expired; this is not merely a cosmetic Web banner.
 - The lifecycle script pings `/__avmatrix_launcher/heartbeat` every `5s`, but `launcherUITimeout` is only `15s`. A heavy graph load/render/layout path can exceed that budget and make the launcher close the session while the user is still looking at the graph.
 - `waitForExit` then returns, and `startRuntime` has `defer stopPID(backend.pid)`, so when the launcher owns the backend process, lifecycle expiry can stop the backend. The Web heartbeat SSE `/api/heartbeat` then errors and `App.tsx` shows `Server connection lost - reconnecting...`.
-- The exact subcause for the missing launcher heartbeat still needs instrumentation: likely browser main-thread starvation from synchronous graph conversion/layout/noverlap, but the primary runtime design defect is already clear: a 5s ping / 15s timeout lifecycle is not robust enough for heavy graph loads.
-- The fix must treat heavy repo load as a supported workload, not an exceptional case.
+- The exact subcause for the missing launcher heartbeat still needs instrumentation: likely browser main-thread starvation from synchronous graph conversion/layout/noverlap, but the primary runtime design defect is already clear: using heartbeat age as an auto-shutdown budget is invalid for heavy graph loads.
+- The fix must treat heavy repo load as a supported workload, not an exceptional case. It must not merely raise the heartbeat budget; it must remove heartbeat age as a runtime shutdown condition and reserve shutdown for explicit close/user lifecycle signals.
 
 ## Acceptance Criteria
 
@@ -182,14 +182,14 @@ Post-load reconnect root cause chain:
 
 ## Phase 5 - Canvas Relationship Preservation, Layout, and Visual Scale
 
-- [ ] [P5-A] Fix graphology edge creation so multiple relationship types between the same source and target are preserved or explicitly aggregated with all relationship types retained.
-- [ ] [P5-B] Ensure edge filtering works correctly after the parallel-edge fix or aggregation model.
+- [x] [P5-A] Fix graphology edge creation so multiple relationship types between the same source and target are preserved or explicitly aggregated with all relationship types retained. Result: graph adapter now emits a `MultiDirectedGraph` and adds every renderable relationship with a stable edge key.
+- [x] [P5-B] Ensure edge filtering works correctly after the parallel-edge fix or aggregation model. Result: every parallel edge retains its own `relationType`, so existing edge visibility logic can filter per relationship type.
 - [ ] [P5-C] Expand layout hierarchy/grouping logic beyond `CONTAINS`, `DEFINES`, and `IMPORTS` where appropriate, including owner/member and process/route relationships.
-- [ ] [P5-D] Add graph-adapter tests for parallel relationships such as `CALLS + USES` and `HAS_PROPERTY + ACCESSES` on the same source-target pair.
-- [ ] [P5-E] Audit current node size rules, scaled size output, zoom behavior, and community/structural node styling against `reports/problem/screenshot_1779178877.png`.
-- [ ] [P5-F] Define and implement a proportional node-size cap after base scaling and reducer multipliers so important structural/highlighted nodes remain larger without producing oversized circles that distort graph readability.
-- [ ] [P5-G] Add unit tests for node-size scaling boundaries on small, medium, large, and very large graph sizes.
-- [ ] [P5-H] Measure graph adapter conversion time, edge preservation counts, and node-size ratio bounds on the current AVmatrix-GO graph.
+- [x] [P5-D] Add graph-adapter tests for parallel relationships such as `CALLS + USES` and `HAS_PROPERTY + ACCESSES` on the same source-target pair. Result: unit coverage proves both pairs are preserved as separate graphology edges.
+- [x] [P5-E] Audit current node size rules, scaled size output, zoom behavior, and community/structural node styling against `reports/problem/screenshot_1779178877.png`. Result: current graph baseline had `Project=10` versus `Property=1.5`, a `6.7x` radius and `44.4x` area ratio before reducer multipliers.
+- [x] [P5-F] Define and implement a proportional node-size cap after base scaling and reducer multipliers so important structural/highlighted nodes remain larger without producing oversized circles that distort graph readability. Result: large-graph base scaling caps structural nodes at `4.5` on the current graph and final reducer size at `9`.
+- [x] [P5-G] Add unit tests for node-size scaling boundaries on small, medium, large, and very large graph sizes. Result: tests cover `100`, `1,500`, `6,000`, `20,421`, and `60,000` node graph sizes.
+- [x] [P5-H] Measure graph adapter conversion time, edge preservation counts, and node-size ratio bounds on the current AVmatrix-GO graph. Result: `51,176 / 51,176` relationships preserved, `1,412` parallel source-target pairs preserved, conversion `478.37ms`, current graph structural/property radius ratio `3x`.
 
 ## Phase 6 - Legend Accuracy
 

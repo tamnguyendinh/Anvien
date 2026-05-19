@@ -325,19 +325,40 @@ Representative fixture proof:
 
 ## B3 - Graph Adapter Performance and Preservation
 
-Status: pending
+Status: completed for parallel-edge preservation slice; layout hierarchy expansion remains tracked under `P5-C`
 
-Record:
+Date: 2026-05-19
 
-- graphology conversion time before/after;
-- input relationship count;
-- rendered or aggregated relationship count;
-- parallel relationship pairs preserved;
-- relationship type loss count.
+Current graph input:
+
+```text
+repo: E:\AVmatrix-GO
+nodes: 20,436
+relationships: 51,176
+```
+
+Measured graph-adapter result:
+
+| Metric | Result |
+|---|---:|
+| Input nodes | `20,436` |
+| Input relationships | `51,176` |
+| Renderable relationships | `51,176` |
+| Graphology nodes | `20,436` |
+| Graphology edges | `51,176` |
+| Relationship loss | `0` |
+| Parallel source-target pairs preserved | `1,412` |
+| Conversion time | `478.37ms` |
+
+Notes:
+
+- The graph adapter now uses graphology `MultiDirectedGraph`, so relationship identity is no longer collapsed by source-target pair.
+- Each edge keeps its own `relationType`, preserving edge visibility/filter behavior for parallel relationships.
+- Unit coverage includes both `CALLS + USES` and `HAS_PROPERTY + ACCESSES` parallel relationship pairs.
 
 ## B4 - Visual Scale and Connection Stability
 
-Status: partial; launcher lifecycle auto-shutdown slice recorded, visual scale and post-load reconnect-count validation still pending
+Status: partial; launcher lifecycle auto-shutdown and visual-scale slices recorded, post-load reconnect-count validation still pending
 
 Record:
 
@@ -373,6 +394,46 @@ Notes:
 - This slice intentionally does not set a larger heartbeat budget. It removes the heartbeat budget as a shutdown mechanism because any finite budget can fail on a sufficiently large repo/load.
 - Heartbeat age is still logged for diagnosis, but it is no longer allowed to close the Web UI runtime.
 - Full post-load reconnect-banner count remains pending for `P2-G/P2-H`; this slice only proves the launcher can no longer stop the backend because the page missed heartbeat pings during heavy graph work.
+
+### B4B - Node Visual Scale Bound
+
+Date: 2026-05-19
+
+Baseline issue:
+
+| Metric | Before |
+|---|---:|
+| Current graph Project size | `10` |
+| Current graph Property size | `1.5` |
+| Project/Property radius ratio | `6.7x` |
+| Project/Property area ratio | `44.4x` |
+| Reducer highlight/selection cap | none |
+
+After visual-scale fix:
+
+| Metric | After |
+|---|---:|
+| Current graph Project size | `4.5` |
+| Current graph Property size | `1.5` |
+| Project/Property radius ratio | `3x` |
+| Rendered node size cap after reducer multipliers | `9` |
+
+Measured with the current AVmatrix-GO graph:
+
+```json
+{
+  "inputNodes": 20436,
+  "currentLargeGraphProjectSize": 4.5,
+  "currentLargeGraphPropertySize": 1.5,
+  "currentLargeGraphRadiusRatio": 3,
+  "renderedSizeCap": 9
+}
+```
+
+Notes:
+
+- Structural nodes remain larger than leaf/property nodes, but they no longer dominate the graph at the disproportionate scale shown in `reports/problem/screenshot_1779178877.png`.
+- Size-boundary unit tests cover graph sizes `100`, `1,500`, `6,000`, `20,421`, and `60,000`.
 
 ## B5 - Final Benchmark
 
