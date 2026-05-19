@@ -1,0 +1,269 @@
+# Web UI Left Dashboard Graph Display Completeness Evidence Ledger
+
+Date: 2026-05-19
+
+Status: active
+
+Companion files:
+
+- Plan: [2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md](2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md)
+- Benchmark ledger: [2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md](2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md)
+
+## Evidence Rules
+
+Record evidence as each evidenced task is completed. Evidence should include commands, impacted files, test results, e2e artifacts, and concise observations needed to audit the plan later.
+
+For doc-only commits, do not use AVmatrix.
+
+## E0 - Plan Creation Evidence
+
+Date: 2026-05-19
+
+Created file set:
+
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-evidence.md`
+
+Reason:
+
+The Web UI left dashboard currently does not show or control all graph components that users need to understand the loaded graph. This plan covers Node Types, Edge Types, Color Legend, and canvas relationship rendering/completeness.
+
+Plan review update:
+
+- tightened the requirement so every node label and relationship type present in the loaded graph must appear as an individual dashboard option;
+- clarified that visual grouping is allowed only for sectioning, not for hiding real graph types;
+- added representative fixture coverage because the current AVmatrix-GO graph does not contain every known graph label or relationship type;
+- added fallback requirements for unknown/future node labels and relationship types;
+- documented that dashboard edge controls target graph payload relationship types, not storage-only LadybugDB constants unless those appear in graph payloads;
+- added the oversized purple structural-node visual-scale issue from `reports/problem/screenshot_1779178877.png`;
+- added the post-load launcher lifecycle timeout / `Server connection lost - reconnecting...` runtime stability issue.
+
+## E1 - Initial Source Inspection
+
+Date: 2026-05-19
+
+Observed files:
+
+- `avmatrix-web/src/lib/constants.ts`
+- `avmatrix-web/src/components/FileTreePanel.tsx`
+- `avmatrix-web/src/lib/graph-adapter.ts`
+- `avmatrix-web/src/hooks/useSigma.ts`
+- `avmatrix-web/src/generated/avmatrix-contracts.ts`
+- `internal/graph/types.go`
+- `internal/httpapi/graph.go`
+- `internal/httpapi/heartbeat.go`
+- `avmatrix-web/src/services/backend-client.ts`
+- `avmatrix-web/src/App.tsx`
+- `avmatrix-launcher/src/main.go`
+
+Observed implementation facts:
+
+- `FILTERABLE_LABELS` is a hard-coded list of 11 labels in `avmatrix-web/src/lib/constants.ts`.
+- `EdgeType` is a hard-coded union of 6 relationship types in `avmatrix-web/src/lib/constants.ts`.
+- `Color Legend` in `FileTreePanel.tsx` is a hard-coded list of 10 labels.
+- `graph-adapter.ts` only treats `CONTAINS`, `DEFINES`, and `IMPORTS` as hierarchy relationships for positioning.
+- `graph-adapter.ts` checks whether an edge already exists between a source and target before adding a relationship, which can lose information when multiple relationship types share the same endpoints.
+- The HTTP graph API returns nodes and relationships from the graph payload, including relationship audit metadata.
+- The Web client NDJSON graph loader pushes every relationship record into the in-memory graph before the canvas adapter runs.
+- The current real graph is a necessary baseline but not sufficient as the only UI completeness fixture because it contains `16 / 36` known node labels and `11 / 22` graph payload relationship types.
+
+Checklist updates from this review:
+
+- `P1-A` completed: source lists, size maps, edge style maps, layout groups, and heartbeat paths were inspected.
+- `P1-B` completed: `.avmatrix/graph.json` inventory was recorded in the benchmark ledger.
+- `P1-E` completed: missing labels/types and parallel relationship risk were recorded.
+- `P1-H` completed: oversized purple-node code path was reviewed and conclusions/hypotheses were recorded.
+- `P1-I` completed: post-load reconnect code path was reviewed and conclusions/hypotheses were recorded.
+
+## E1B - User-Reported Visual and Runtime Problems
+
+Date: 2026-05-19
+
+Screenshot artifact:
+
+```text
+reports/problem/screenshot_1779178877.png
+```
+
+File check:
+
+```text
+FullName: E:\AVmatrix-GO\reports\problem\screenshot_1779178877.png
+Length: 1,144,772 bytes
+LastWriteTime: 2026-05-19 15:21:30 local time
+```
+
+Problem 1:
+
+- Many purple circular structural/folder-like nodes are much too large compared with surrounding nodes.
+- Different node sizes are expected, but this observed scale is disproportionate and harms graph readability.
+- The plan must audit node-size constants, graph-size scaling, community/structural styling, zoom behavior, and final rendered size ratios.
+- Code review found no final rendered-size cap after `useSigma` reducer multipliers.
+- Root cause: `NODE_SIZES` intentionally gives structural/purple families large base sizes. In the current graph size band, `getScaledNodeSize` leaves `Folder=5`, `Project=10`, `Package=8`, and `Module=6.5`, while many code/member nodes are `1.5-2`. Because node size is rendered as circle radius, `Folder=5` has about `11x` the area of a `Property=1.5` node. Selected/highlight/glow/ripple states can multiply those values further by `1.6x-2.5x`.
+
+Problem 2:
+
+- After the Web UI finishes loading/rendering the graph and runs for a short while, the UI can show `Server connection lost - reconnecting...`.
+- This is a real stability problem, not just a transient banner.
+- Confirmed root cause chain from log/code: `avmatrix-launcher/src/main.go` injects a script that pings every `5s`, while launcher expiry is `15s`. The launcher log shows `web ui session closed` at `2026-05-19 15:21:45`, 15 seconds after the screenshot timestamp window, while the graph was visible. That line is emitted only when the lifecycle monitor fires. Because this launcher owned backend pid `13752`, lifecycle expiry can stop the backend, which makes the Web heartbeat SSE fail and show the reconnect banner.
+- The remaining subcause to measure is why launcher heartbeat was not delivered in time. The leading candidate is browser main-thread starvation from synchronous graph conversion/layout/noverlap during heavy graph load.
+
+## E1C - Root-Cause Code Review Details
+
+Date: 2026-05-19
+
+Oversized node code paths reviewed:
+
+- `avmatrix-web/src/lib/constants.ts`
+  - `NODE_SIZES` sets `Project=20`, `Package=16`, `Module=13`, `Folder=10`, and leaf/member nodes often `1.5-2`.
+- `avmatrix-web/src/lib/graph-adapter.ts`
+  - `getScaledNodeSize` uses `baseSize * 0.5` when node count is greater than `20,000`.
+  - current graph size is `20,354`, so Project scales to `10`, Package to `8`, Module to `6.5`, while member/leaf nodes floor at `1.5`.
+- `avmatrix-web/src/hooks/useSigma.ts`
+  - selected node multiplier is `1.8x`;
+  - query highlight multiplier is `1.6x`;
+  - glow animation multiplier reaches `2.0x`;
+  - ripple animation multiplier reaches `2.5x`;
+  - there is no cap after these multipliers.
+
+Post-load reconnect code paths reviewed:
+
+- `avmatrix-web/src/App.tsx`
+  - heartbeat is created only when `viewMode === 'exploring'`;
+  - the banner text is shown when `serverDisconnected` is true.
+- `avmatrix-web/src/services/backend-client.ts`
+  - `connectHeartbeat` opens `EventSource('/api/heartbeat')`;
+  - on any EventSource error it immediately calls `onReconnecting`, which shows the banner;
+  - it retries indefinitely.
+- `internal/httpapi/heartbeat.go`
+  - `/api/heartbeat` writes an SSE comment immediately, then every `15s`.
+- `avmatrix-launcher/src/main.go`
+  - lifecycle script sends launcher heartbeat every `5s`;
+  - launcher UI timeout is `15s`;
+  - when lifecycle expires, `waitForExit` treats the UI session as closed and removes state.
+
+Root-cause conclusions and remaining hypotheses:
+
+- visual scale confirmed root: structural/purple node base sizes and radius-based rendering create excessive area ratios; highlight/animation multipliers can make it worse;
+- reconnect confirmed root chain: launcher lifecycle timeout closes the UI session/backend while graph is visible;
+- reconnect remaining hypothesis: heavy graph conversion/layout/noverlap blocks or delays launcher heartbeat delivery long enough to trigger the `15s` timeout.
+
+Launcher log excerpt:
+
+```text
+2026/05/19 15:20:03.638886 start root=E:\AVmatrix-GO
+2026/05/19 15:20:03.646305 backend pid=13752
+2026/05/19 15:21:45.648312 web ui session closed
+```
+
+## E2 - Initial Graph Inventory Evidence
+
+Date: 2026-05-19
+
+Command:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+```
+
+Result:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=682 parsed=527 unsupported=155 failed=0
+graph: nodes=20354 relationships=50980 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Node label inventory command:
+
+```powershell
+$g = Get-Content -Raw -LiteralPath '.avmatrix\graph.json' | ConvertFrom-Json
+$g.nodes | Group-Object label | Sort-Object Name
+```
+
+Result summary:
+
+```text
+Class 4
+Community 934
+Const 321
+Constructor 5
+File 682
+Folder 112
+Function 3339
+Interface 98
+Method 804
+Package 413
+Process 644
+Property 3096
+Section 889
+Struct 500
+TypeAlias 69
+Variable 8444
+```
+
+Relationship type inventory command:
+
+```powershell
+$g.relationships | Group-Object type | Sort-Object Name
+```
+
+Result summary:
+
+```text
+ACCESSES 5024
+CALLS 8396
+CONTAINS 1658
+DEFINES 17093
+ENTRY_POINT_OF 644
+HAS_METHOD 336
+HAS_PROPERTY 2769
+IMPORTS 3713
+MEMBER_OF 3826
+STEP_IN_PROCESS 2373
+USES 5148
+```
+
+Parallel relationship risk command:
+
+```powershell
+$pairs = $g.relationships | Group-Object { "$($_.sourceId)->$($_.targetId)" }
+$parallel = $pairs | Where-Object { ($_.Group | Group-Object type).Count -gt 1 }
+$parallel.Count
+```
+
+Result:
+
+```text
+1421
+```
+
+## E3 - Implementation Evidence
+
+Status: pending
+
+Record each implementation slice here:
+
+- files changed;
+- AVmatrix impact/check results where applicable;
+- build/test/e2e commands;
+- important screenshots or textual e2e assertions;
+- benchmark ledger entries updated.
+
+## E4 - Final Closure Evidence
+
+Status: pending
+
+Record final validation:
+
+- full build result;
+- unit test result;
+- e2e result;
+- dashboard node type completeness;
+- dashboard edge type completeness;
+- legend completeness;
+- edge preservation or aggregation result;
+- visual-scale proportionality result;
+- post-load connection stability result;
+- final commit hashes.
