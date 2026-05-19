@@ -1104,7 +1104,31 @@
           "resolvedCallsDeltaGoMinusMain": 5266,
           "resolvedReferencesDeltaGoMinusMain": 10617,
           "resolvedAccessesDeltaGoMinusMain": -752,
-          "resolvedTypeReferencesDeltaGoMinusMain": 6103
+          "resolvedTypeReferencesDeltaGoMinusMain": 6103,
+          "resolvedAccessesDeltaGoMinusMainComparable": false,
+          "graphAccessesEdgesDeltaGoMinusMain": 0
+        },
+        "graphFacts": {
+          "avmatrixGo": {
+            "accessesEdges": 3,
+            "hasPropertyEdges": 3,
+            "propertyNodes": 5222,
+            "source": "E:\\Website\\.avmatrix\\graph.json after avmatrix-go analyze; repo content unchanged from benchmark scenario"
+          },
+          "avmatrixMain": {
+            "accessesEdges": 3,
+            "hasPropertyEdges": 3,
+            "propertyNodes": 3,
+            "source": "Embedded benchmark payload scenarios.websiteTypescriptHeavy.runs.avmatrixMain.graph",
+            "scopeResolutionResolvedAccessesCounter": 755,
+            "scopeResolutionEdgesEmittedCounter": 8,
+            "scopeResolutionDuplicateEdgesSkippedCounter": 3604
+          },
+          "deltas": {
+            "graphAccessesEdgesDeltaGoMinusMain": 0,
+            "graphHasPropertyEdgesDeltaGoMinusMain": 0,
+            "propertyNodesDeltaGoMinusMain": 5219
+          }
         }
       },
       "runs": {
@@ -1905,6 +1929,40 @@
             }
           }
         }
+      },
+      "accessesAudit": {
+        "auditedAt": "2026-05-19T12:17:35.7389599+07:00",
+        "input": "External report flagged Website resolvedAccesses 3 vs 755. Audit used existing embedded avmatrix-main benchmark payload and current avmatrix-go Website graph; avmatrix-main was not rerun.",
+        "conclusion": "The 3 vs 755 number is not a final graph ACCESSES edge delta. Final Website graph ACCESSES edges are 3 for avmatrix-go and 3 for avmatrix-main. The avmatrix-main value 755 is an internal scopeResolutionResolvedAccesses counter and is not directly comparable to final graph edge count.",
+        "graphFacts": {
+          "avmatrixGo": {
+            "accessesEdges": 3,
+            "hasPropertyEdges": 3,
+            "propertyNodes": 5222,
+            "source": "E:\\Website\\.avmatrix\\graph.json after avmatrix-go analyze; repo content unchanged from benchmark scenario"
+          },
+          "avmatrixMain": {
+            "accessesEdges": 3,
+            "hasPropertyEdges": 3,
+            "propertyNodes": 3,
+            "source": "Embedded benchmark payload scenarios.websiteTypescriptHeavy.runs.avmatrixMain.graph",
+            "scopeResolutionResolvedAccessesCounter": 755,
+            "scopeResolutionEdgesEmittedCounter": 8,
+            "scopeResolutionDuplicateEdgesSkippedCounter": 3604
+          },
+          "deltas": {
+            "graphAccessesEdgesDeltaGoMinusMain": 0,
+            "graphHasPropertyEdgesDeltaGoMinusMain": 0,
+            "propertyNodesDeltaGoMinusMain": 5219
+          }
+        },
+        "remainingIssue": "TS-heavy Website still exposes a property/member semantics gap: avmatrix-go emits many standalone Property nodes but only three owner-linked HAS_PROPERTY edges and three ACCESSES edges. Access resolution only targets ownerMembers indexed from definitions with OwnerID, so type-literal/object-shape properties are not connected as member-owned properties.",
+        "codePointers": [
+          "internal/providers/tsjs/definitions.go:48 emits property_signature/public_field_definition as Property; ownerDefIDFor only gives an owner for class/interface ancestors.",
+          "internal/resolution/indexes.go:147 indexes ownerMembers only when DefinitionFact.OwnerID is non-empty.",
+          "internal/resolution/resolve.go:200 resolves AccessFact via resolveMember(... propertyLabels())."
+        ],
+        "nextAction": "Do not compare Go resolvedAccesses directly to main scopeResolutionResolvedAccesses. Track graph ACCESSES/HAS_PROPERTY edge counts separately and create a focused TS property ownership/access semantics task if higher ACCESSES coverage is required."
       }
     }
   },
@@ -3001,54 +3059,5 @@
     "Top-level runs are kept for backward compatibility and refer to the AVmatrix-GO self-analyze scenario.",
     "Full raw payloads for every scenario are embedded under scenarios.<name>.runs.",
     "Temporary raw benchmark files for E:\\Website were merged into this JSON and can be regenerated from the commands in each scenario."
-  ],
-  "independentReview": {
-    "source": "independent_external_review_report_provided_2026-05-19",
-    "conclusion": "AVmatrix-Go demonstrates performance advantage on both Go-heavy and TypeScript-heavy workloads; the TypeScript-heavy Website benchmark weakens the objection that the result is only due to testing on AVmatrix-Go as a Go-heavy home repo.",
-    "headline": {
-      "avmatrixGoSelfSpeedup": "4.65x",
-      "websiteTypescriptHeavySpeedup": "3.39x",
-      "websiteWhyImportant": "E:\\Website has 100% AST-reused ScopeIR coverage for JavaScript/TypeScript in avmatrix-main, so it is a fairer TypeScript-heavy comparison than the Go-heavy self repo."
-    },
-    "auditFindings": [
-      {
-        "priority": "P0",
-        "topic": "Website ACCESSES delta",
-        "detail": "Resolved accesses differs sharply: avmatrix-go=3, avmatrix-main=755, delta=-752.",
-        "possibleCauses": [
-          "AVmatrix-Go classifies accesses as USES or type references instead of ACCESSES",
-          "Go extractor is missing member read/write accesses on TypeScript-heavy repos",
-          "avmatrix-main over-emits ACCESSES",
-          "Relationship contract semantics are not aligned between engines"
-        ],
-        "risk": "ACCESSES affects context, impact, shape_check, and API consumer analysis."
-      }
-    ],
-    "bottlenecks": {
-      "avmatrixGoWebsite": {
-        "scanMs": 6074,
-        "parseMs": 6316.1,
-        "routesMs": 1327,
-        "dbLoadMs": 4057.5,
-        "recommendation": "Split scan timing into walk/stat/hash/ignore/classification and split parse timing into parser/provider extraction/ScopeIR build."
-      },
-      "avmatrixMainWebsite": {
-        "parseMs": 27611.0,
-        "lbugLoadMs": 14604.8,
-        "ftsMs": 13644,
-        "markdownMs": 5490,
-        "scanMs": 3154,
-        "resolutionMs": 2149,
-        "note": "Main bottlenecks are parse and DB/Ladybug load."
-      }
-    },
-    "nextPriorities": [
-      "P0: Audit ACCESSES delta on E:\\Website",
-      "P0: Sample precision of increased graph facts: CALLS, USES, DEFINES, HAS_PROPERTY, type refs",
-      "P1: Profile scan phase on E:\\Website",
-      "P1: Split parse timing into raw parser vs provider extraction vs ScopeIR build",
-      "P1: Continue DB load throughput optimization",
-      "P2: Add a mixed-language benchmark repo"
-    ]
-  }
+  ]
 }

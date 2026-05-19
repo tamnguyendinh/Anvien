@@ -85,8 +85,11 @@ So this scenario is useful for wall-clock and graph-size comparison, but it is b
 | DB / Ladybug load | 4,057.5 ms | 14,604.8 ms | main is 3.60x slower |
 | Resolved calls | 11,303 | 6,037 | Go +5266 |
 | Resolved references | 20,849 | 10,232 | Go +10617 |
-| Resolved accesses | 3 | 755 | Go -752 |
+| Resolved accesses counter | 3 | 755 | not graph-equivalent; see audit below |
 | Resolved type references | 9,543 | 3,440 | Go +6103 |
+| Graph `ACCESSES` edges | 3 | 3 | same final graph edge count |
+| Graph `HAS_PROPERTY` edges | 3 | 3 | same final graph edge count |
+| Graph `Property` nodes | 5,222 | 3 | Go emits many standalone TS property nodes |
 
 ### Website Coverage Note
 
@@ -99,43 +102,27 @@ So this scenario is useful for wall-clock and graph-size comparison, but it is b
 
 This makes the Website scenario a better cross-runtime comparison for a TypeScript-heavy repo. On this repo, `avmatrix-go` is still 3.39x faster and emits a larger graph.
 
-## Independent Review Summary
+### Website ACCESSES Audit
 
-An external review report provided on 2026-05-19 treats the `E:\Website` benchmark as the key second workload because it is TypeScript-heavy and `avmatrix-main` reports full ScopeIR AST reuse for JavaScript/TypeScript there. This weakens the objection that `avmatrix-go` only wins because `E:\AVmatrix-GO` is a Go-heavy home repo.
+The `Resolved accesses` row was audited because the `3` vs `755` number is not a final graph-edge delta.
 
-Review conclusion:
+| Check | avmatrix-go | avmatrix-main | Interpretation |
+|---|---:|---:|---|
+| Final graph `ACCESSES` edges | 3 | 3 | No Go-vs-main deficit in emitted `ACCESSES` edges for this benchmark. |
+| Final graph `HAS_PROPERTY` edges | 3 | 3 | Both final graphs only owner-link three properties. |
+| Final graph `Property` nodes | 5,222 | 3 | Go emits many standalone TS property nodes, mostly from object/type shapes. |
+| Access resolution counter | 3 | 755 | Not directly comparable; main's value is `scopeResolutionResolvedAccesses`, not final `ACCESSES` edge count. |
 
-> AVmatrix-Go has demonstrated a practical performance advantage on both Go-heavy and TypeScript-heavy repos. It is not only faster than AVmatrix-main; it also emits a larger graph and resolves more calls, references, and type references on the same parsed-file count.
+Audit input: existing embedded `avmatrix-main` benchmark payload under `scenarios.websiteTypescriptHeavy.runs.avmatrixMain`, plus the current `E:\Website\.avmatrix\graph.json` after `avmatrix-go` analyze. `avmatrix-main` was not rerun.
 
-Key external-review points:
+Root cause classification:
 
-| Point | Finding |
-|---|---|
-| Go-heavy workload | `avmatrix-go` is `4.65x` faster on `E:\AVmatrix-GO`. |
-| TypeScript-heavy workload | `avmatrix-go` is `3.39x` faster on `E:\Website`. |
-| Website fairness | `avmatrix-main` has `100%` AST-reused ScopeIR coverage for JS/TS in `E:\Website`. |
-| Graph size | `avmatrix-go` emits more nodes and relationships in both scenarios. |
-| Same parsed files on Website | Both engines scan `1,870` files and parse `998` files. |
+- The benchmark report should not use `resolvedAccessesDeltaGoMinusMain=-752` as a graph-quality conclusion.
+- The real follow-up is TS property/member semantics: `avmatrix-go` emits standalone `Property` nodes for many TypeScript object/type shapes, but only definitions with `OwnerID` enter the `ownerMembers` index.
+- `resolveAccess` resolves through `resolveMember(... propertyLabels())`, so unowned object/type-literal properties cannot become `ACCESSES` edges.
+- Code pointers: `internal/providers/tsjs/definitions.go:48`, `internal/resolution/indexes.go:147`, and `internal/resolution/resolve.go:200`.
 
-## Follow-up Audit Queue
-
-The external review flags one P0 quality issue that should not be ignored:
-
-| Priority | Task | Reason |
-|---|---|---|
-| P0 | Audit `ACCESSES` delta on `E:\Website` | `avmatrix-go=3`, `avmatrix-main=755`, delta `-752`; this can affect `context`, `impact`, `shape_check`, and API consumer analysis. |
-| P0 | Sample precision of increased graph facts | Validate added `CALLS`, `USES`, `DEFINES`, `HAS_PROPERTY`, and type refs rather than assuming larger graph means better graph. |
-| P1 | Profile Website scan phase | `scan` is high in `avmatrix-go`; split into walk/stat/hash/ignore/classification. |
-| P1 | Split parse timing | Separate raw parser, provider extraction, and ScopeIR build timing. |
-| P1 | Continue DB load throughput work | `db_load` remains one of the larger Go phases. |
-| P2 | Add mixed-language benchmark | Completes the benchmark picture beyond Go-heavy and TypeScript-heavy workloads. |
-
-Possible explanations for the `ACCESSES` delta to classify during the P0 audit:
-
-- `avmatrix-go` may classify accesses as `USES` or type references rather than `ACCESSES`.
-- The Go extractor may be missing member read/write accesses on TypeScript-heavy repos.
-- `avmatrix-main` may over-emit `ACCESSES`.
-- The relationship contract semantics may not be aligned between the two engines.
+Next action: create a focused TS property ownership/access semantics task if higher `ACCESSES` coverage is required. Measure it against final graph `ACCESSES`/`HAS_PROPERTY` facts, not against the `avmatrix-main` internal access counter.
 
 ## Worktree Note
 
