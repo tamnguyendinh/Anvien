@@ -203,7 +203,7 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P2-B | Tests | TS/JS provider ownership focused tests | direct owner and nested no-owner covered | n/a | recorded | `b91c2cd` | done |
 | P2-C | Validation | ownership slice | analyze/test/e2e recorded | recorded | recorded | `b91c2cd` | done |
 | P2-D | Ownership | Go anonymous struct property ownership | classify before linking | recorded | recorded | `0367bc1` | done |
-| P2-E | Ownership | remaining false-orphan ownership clusters | fixed or deferred with evidence | recorded | recorded | pending | done |
+| P2-E | Ownership | remaining false-orphan ownership clusters | fixed or deferred with evidence | recorded | recorded | `de5f4d8` | done |
 | P3-A | Access | access sample taxonomy | resolvable families classified | pending | pending | pending | open |
 | P3-B | Access | large access-resolution cluster | defensible `ACCESSES` expansion | pending | pending | pending | open |
 | P3-C | Tests | access focused tests | resolved families covered | n/a | pending | pending | open |

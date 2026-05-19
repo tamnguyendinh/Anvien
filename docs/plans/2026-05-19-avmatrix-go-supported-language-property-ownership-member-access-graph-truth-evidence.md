@@ -27,6 +27,7 @@ Companion benchmark: [2026-05-19-avmatrix-go-supported-language-property-ownersh
 - Access candidate audit commit: `73b1cf8`.
 - P2 ownership graph truth commit: `b91c2cd`.
 - P2-D Go anonymous struct truth commit: `0367bc1`.
+- P2-E property ownership false-orphan closure commit: `de5f4d8`.
 
 ## Baseline Audit Evidence
 
