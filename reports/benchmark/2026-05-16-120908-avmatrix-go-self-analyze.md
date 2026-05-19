@@ -99,6 +99,44 @@ So this scenario is useful for wall-clock and graph-size comparison, but it is b
 
 This makes the Website scenario a better cross-runtime comparison for a TypeScript-heavy repo. On this repo, `avmatrix-go` is still 3.39x faster and emits a larger graph.
 
+## Independent Review Summary
+
+An external review report provided on 2026-05-19 treats the `E:\Website` benchmark as the key second workload because it is TypeScript-heavy and `avmatrix-main` reports full ScopeIR AST reuse for JavaScript/TypeScript there. This weakens the objection that `avmatrix-go` only wins because `E:\AVmatrix-GO` is a Go-heavy home repo.
+
+Review conclusion:
+
+> AVmatrix-Go has demonstrated a practical performance advantage on both Go-heavy and TypeScript-heavy repos. It is not only faster than AVmatrix-main; it also emits a larger graph and resolves more calls, references, and type references on the same parsed-file count.
+
+Key external-review points:
+
+| Point | Finding |
+|---|---|
+| Go-heavy workload | `avmatrix-go` is `4.65x` faster on `E:\AVmatrix-GO`. |
+| TypeScript-heavy workload | `avmatrix-go` is `3.39x` faster on `E:\Website`. |
+| Website fairness | `avmatrix-main` has `100%` AST-reused ScopeIR coverage for JS/TS in `E:\Website`. |
+| Graph size | `avmatrix-go` emits more nodes and relationships in both scenarios. |
+| Same parsed files on Website | Both engines scan `1,870` files and parse `998` files. |
+
+## Follow-up Audit Queue
+
+The external review flags one P0 quality issue that should not be ignored:
+
+| Priority | Task | Reason |
+|---|---|---|
+| P0 | Audit `ACCESSES` delta on `E:\Website` | `avmatrix-go=3`, `avmatrix-main=755`, delta `-752`; this can affect `context`, `impact`, `shape_check`, and API consumer analysis. |
+| P0 | Sample precision of increased graph facts | Validate added `CALLS`, `USES`, `DEFINES`, `HAS_PROPERTY`, and type refs rather than assuming larger graph means better graph. |
+| P1 | Profile Website scan phase | `scan` is high in `avmatrix-go`; split into walk/stat/hash/ignore/classification. |
+| P1 | Split parse timing | Separate raw parser, provider extraction, and ScopeIR build timing. |
+| P1 | Continue DB load throughput work | `db_load` remains one of the larger Go phases. |
+| P2 | Add mixed-language benchmark | Completes the benchmark picture beyond Go-heavy and TypeScript-heavy workloads. |
+
+Possible explanations for the `ACCESSES` delta to classify during the P0 audit:
+
+- `avmatrix-go` may classify accesses as `USES` or type references rather than `ACCESSES`.
+- The Go extractor may be missing member read/write accesses on TypeScript-heavy repos.
+- `avmatrix-main` may over-emit `ACCESSES`.
+- The relationship contract semantics may not be aligned between the two engines.
+
 ## Worktree Note
 
 `coder.md` was already untracked before this benchmark work and was not modified.
