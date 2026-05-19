@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Start AVmatrix</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        background: #11161b;
+        color: #f3f7f8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        background: #11161b;
+      }
+
+      main {
+        width: min(560px, calc(100vw - 32px));
+        display: grid;
+        gap: 18px;
+        justify-items: stretch;
+      }
+
+      h1 {
+        margin: 0 0 6px;
+        text-align: center;
+        font-size: 34px;
+        line-height: 1.1;
+        font-weight: 760;
+        letter-spacing: 0;
+      }
+
+      button {
+        min-height: 56px;
+        width: 100%;
+        border: 1px solid #75d7bf;
+        border-radius: 8px;
+        background: #75d7bf;
+        color: #071310;
+        font-size: 17px;
+        font-weight: 740;
+        letter-spacing: 0;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #92e5d2;
+      }
+
+      button.secondary {
+        min-height: 46px;
+        border-color: #53616a;
+        background: #1d272f;
+        color: #f3f7f8;
+        font-size: 15px;
+      }
+
+      button.secondary:hover {
+        background: #27343e;
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      p {
+        min-height: 22px;
+        margin: 0;
+        text-align: center;
+        color: #aeb8bd;
+        font-size: 14px;
+      }
+
+      .guide-panel {
+        max-height: min(50vh, 420px);
+        overflow: auto;
+        border: 1px solid #33424c;
+        border-radius: 8px;
+        background: #151d24;
+        padding: 18px;
+      }
+
+      .guide-panel[hidden] {
+        display: none;
+      }
+
+      .guide-title {
+        margin: 0 0 12px;
+        color: #f3f7f8;
+        font-size: 16px;
+        font-weight: 740;
+        text-align: left;
+      }
+
+      .guide-content {
+        margin: 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        color: #d7e0e4;
+        font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, ui-monospace, monospace;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .guide-frame {
+        width: 100%;
+        min-height: 280px;
+        border: 0;
+        background: #f3f7f8;
+        color-scheme: light;
+      }
+
+      .guide-frame[hidden],
+      .guide-content[hidden] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>AVmatrix</h1>
+      <button id="start" type="button">Start AVmatrix</button>
+      <button id="reset-runtime" class="secondary" type="button">RESET RUNTIME</button>
+      <button id="user-guide" class="secondary" type="button" aria-expanded="false">
+        User Guide
+      </button>
+      <section id="guide-panel" class="guide-panel" hidden>
+        <h2 class="guide-title">User Guide</h2>
+        <pre id="guide-content" class="guide-content">Loading user_guide.md...</pre>
+        <iframe
+          id="guide-frame"
+          class="guide-frame"
+          title="User guide content"
+          src="about:blank"
+          hidden
+        ></iframe>
+      </section>
+      <p id="status" aria-live="polite"></p>
+    </main>
+
+    <script>
+      const statusText = document.getElementById('status');
+      const guideButton = document.getElementById('user-guide');
+      const guidePanel = document.getElementById('guide-panel');
+      const guideContent = document.getElementById('guide-content');
+      const guideFrame = document.getElementById('guide-frame');
+      let guideLoaded = false;
+
+      document.getElementById('start').addEventListener('click', () => {
+        statusText.textContent = 'Starting AVmatrix...';
+        window.location.href = 'avmatrix://start';
+      });
+
+      document.getElementById('reset-runtime').addEventListener('click', () => {
+        statusText.textContent = 'Resetting AVmatrix runtime...';
+        window.location.href = 'avmatrix://reset';
+      });
+
+      const showGuideFallbackFrame = () => {
+        guideContent.hidden = true;
+        guideFrame.hidden = false;
+        guideFrame.src = 'user_guide.md';
+      };
+
+      const loadUserGuide = async () => {
+        if (guideLoaded) return;
+        guideLoaded = true;
+
+        try {
+          const response = await fetch('user_guide.md', { cache: 'no-store' });
+          if (!response.ok) {
+            throw new Error(`Unable to load user_guide.md (${response.status})`);
+          }
+
+          const markdown = await response.text();
+          guideContent.textContent = markdown.trim() || 'User guide content is not available yet.';
+        } catch {
+          showGuideFallbackFrame();
+        }
+      };
+
+      guideButton.addEventListener('click', () => {
+        const willOpen = guidePanel.hidden;
+        guidePanel.hidden = !willOpen;
+        guideButton.setAttribute('aria-expanded', String(willOpen));
+
+        if (willOpen) {
+          loadUserGuide();
+        }
+      });
+    </script>
+  </body>
+</html>

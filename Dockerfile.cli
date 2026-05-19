@@ -1,0 +1,57 @@
+ARG GO_VERSION=1.26.3
+ARG DEBIAN_VERSION=bookworm
+ARG LADYBUGDB_VERSION=auto
+
+FROM --platform=$BUILDPLATFORM golang:${GO_VERSION}-${DEBIAN_VERSION} AS builder
+WORKDIR /src
+
+ARG LADYBUGDB_VERSION
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl git build-essential tar \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY scripts ./scripts
+RUN native_dir="$(bash ./scripts/ensure-ladybug-native.sh "${LADYBUGDB_VERSION}" /opt/ladybug-native)" \
+    && mkdir -p /opt/ladybug-current \
+    && cp -a "${native_dir}/." /opt/ladybug-current/
+
+COPY cmd ./cmd
+COPY internal ./internal
+
+ARG TARGETOS
+ARG TARGETARCH
+RUN test "${TARGETOS:-linux}" = "linux" \
+    && test "${TARGETARCH:-amd64}" = "amd64" \
+    && LADYBUG_NATIVE_DIR="/opt/ladybug-current" \
+    && CGO_CFLAGS="-I${LADYBUG_NATIVE_DIR}" \
+       CGO_LDFLAGS="-L${LADYBUG_NATIVE_DIR} -llbug" \
+       GOOS=linux GOARCH=amd64 CGO_ENABLED=1 \
+       go build -tags ladybugdb -trimpath -ldflags="-s -w" -o /out/avmatrix ./cmd/avmatrix
+
+FROM debian:${DEBIAN_VERSION}-slim AS runtime
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl git libstdc++6 \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /data/avmatrix /workspace \
+    && groupadd --system avmatrix \
+    && useradd --system --gid avmatrix --home-dir /data/avmatrix avmatrix \
+    && chown -R avmatrix:avmatrix /data/avmatrix /workspace
+
+USER avmatrix
+WORKDIR /workspace
+
+ENV AVMATRIX_HOME=/data/avmatrix \
+    LD_LIBRARY_PATH=/usr/local/lib \
+    PORT=4848
+
+COPY --from=builder /out/avmatrix /usr/local/bin/avmatrix
+COPY --from=builder /opt/ladybug-current/liblbug.so* /usr/local/lib/
+
+EXPOSE 4848
+
+CMD ["avmatrix", "serve", "--host", "0.0.0.0", "--port", "4848"]

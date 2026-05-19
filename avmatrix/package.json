@@ -1,0 +1,51 @@
+{
+  "name": "avmatrix",
+  "version": "1.2.1",
+  "description": "AVmatrix graph-powered code intelligence for AI agents. Index any codebase, query via MCP or CLI.",
+  "author": "Abhigyan Patwari",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "homepage": "https://github.com/tamnguyendinh/AVmatrix#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tamnguyendinh/AVmatrix.git",
+    "directory": "avmatrix"
+  },
+  "bugs": {
+    "url": "https://github.com/tamnguyendinh/AVmatrix/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "code-intelligence",
+    "knowledge-graph",
+    "cursor",
+    "claude",
+    "codex",
+    "ai-agent",
+    "avmatrix",
+    "static-analysis",
+    "codebase-indexing"
+  ],
+  "type": "module",
+  "bin": {
+    "avmatrix": "bin/avmatrix.exe"
+  },
+  "files": [
+    "bin",
+    "go-src",
+    "skills"
+  ],
+  "scripts": {
+    "build": "go run ../cmd/avmatrix package build-runtime",
+    "serve": "go run ../cmd/avmatrix serve",
+    "dev": "go run ../cmd/avmatrix",
+    "test": "node -e \"console.log('No AVmatrix TypeScript test files remain; use go test ./cmd/... ./internal/... and avmatrix-web tests.')\"",
+    "postinstall": "go run ../cmd/avmatrix package build-runtime || go run ./go-src/cmd/avmatrix package build-runtime || cmd /c .\\bin\\avmatrix.exe package ensure-runtime || ./bin/avmatrix.exe package ensure-runtime",
+    "prepare": "npm run build",
+    "prepack": "npm run build && go run ../cmd/avmatrix package prepare-go-source",
+    "postpack": "go run ../cmd/avmatrix package clean-go-source || cmd /c .\\bin\\avmatrix.exe package clean-go-source || ./bin/avmatrix.exe package clean-go-source"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

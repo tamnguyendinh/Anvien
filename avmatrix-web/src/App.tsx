@@ -1,0 +1,352 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppStateProvider, useAppState } from './hooks/useAppState.local-runtime';
+import { ChatRuntimeProvider, useChatRuntime } from './hooks/chat-runtime/ChatRuntimeContext';
+import { DropZone } from './components/DropZone';
+import { LoadingOverlay } from './components/LoadingOverlay';
+import { Header } from './components/Header';
+import { GraphCanvas, GraphCanvasHandle } from './components/GraphCanvas';
+import { RightPanelResizable } from './components/RightPanel.resizable';
+import { SettingsPanel } from './components/SettingsPanel.local-runtime';
+import { StatusBar } from './components/StatusBar';
+import { FileTreePanel } from './components/FileTreePanel';
+import { CodeReferencesPanel } from './components/CodeReferencesPanel';
+import { createKnowledgeGraph } from './core/graph/graph';
+import {
+  connectToServer,
+  fetchRepos,
+  normalizeServerUrl,
+  connectHeartbeat,
+  BackendError,
+  type ConnectResult,
+  type BackendRepo,
+} from './services/backend-client';
+import { includeRepoInList } from './services/repo-list';
+import { DEFAULT_BACKEND_URL, ERROR_RESET_DELAY_MS } from './config/ui-constants';
+
+const AppContent = () => {
+  const { chatRuntimeBridge } = useAppState();
+
+  return (
+    <ChatRuntimeProvider bridge={chatRuntimeBridge}>
+      <AppContentBody />
+    </ChatRuntimeProvider>
+  );
+};
+
+const AppContentBody = () => {
+  const {
+    viewMode,
+    setViewMode,
+    setGraph,
+    setProgress,
+    projectName,
+    setProjectName,
+    progress,
+    isRightPanelOpen,
+    setRightPanelOpen,
+    isSettingsPanelOpen,
+    setSettingsPanelOpen,
+    startEmbeddingsWithFallback,
+    codeReferences,
+    selectedNode,
+    isCodePanelOpen,
+    serverBaseUrl,
+    setServerBaseUrl,
+    availableRepos,
+    setAvailableRepos,
+    repoAnalyzerRequestId,
+    switchRepo,
+    setCurrentRepo,
+    requestRepoAnalyzeDialog,
+  } = useAppState();
+  const { refreshLLMSettings } = useChatRuntime();
+
+  const graphCanvasRef = useRef<GraphCanvasHandle>(null);
+  const [serverDisconnected, setServerDisconnected] = useState(false);
+
+  const handleServerConnect = useCallback(
+    async (result: ConnectResult): Promise<void> => {
+      // Use the canonical repo name from the server response so all subsequent
+      // backend calls (queries, search, grep, readFile) scope to this repo.
+      const repoPath = result.repoInfo.repoPath ?? result.repoInfo.path;
+      // Normalize both Windows (\) and Unix (/) path separators before splitting
+      const projectName =
+        result.repoInfo.name ||
+        (repoPath || '').replace(/\\/g, '/').split('/').filter(Boolean).pop() ||
+        'server-project';
+      setProjectName(projectName);
+      setCurrentRepo(repoPath || projectName);
+
+      // Build KnowledgeGraph from server data for visualization
+      const graph = createKnowledgeGraph();
+      for (const node of result.nodes) {
+        graph.addNode(node);
+      }
+      for (const rel of result.relationships) {
+        graph.addRelationship(rel);
+      }
+      setGraph(graph);
+
+      // Persist the active project in the URL for bookmarkability and F5 refresh resilience
+      const urlObj = new URL(window.location.href);
+      urlObj.searchParams.set('project', projectName);
+      window.history.replaceState(null, '', urlObj.toString());
+
+      // Transition directly to exploring view
+      setViewMode('exploring');
+
+      // Embeddings can start immediately, but chat runtime stays lazy until the
+      // user actually sends a message or explicitly refreshes settings.
+      startEmbeddingsWithFallback();
+    },
+    [setViewMode, setGraph, setProjectName, setCurrentRepo, startEmbeddingsWithFallback],
+  );
+
+  // Auto-connect when ?server or ?project query param is present (bookmarkable shortcut)
+  const autoConnectRan = useRef(false);
+  useEffect(() => {
+    if (autoConnectRan.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const serverUrlParam = params.get('server');
+    const projectParam = params.get('project');
+
+    if (!serverUrlParam && !projectParam) return;
+    autoConnectRan.current = true;
+
+    const serverUrl = serverUrlParam || DEFAULT_BACKEND_URL;
+    let baseUrl: string;
+    try {
+      baseUrl = normalizeServerUrl(serverUrl);
+    } catch (err) {
+      setProgress({
+        phase: 'error',
+        percent: 0,
+        message: 'Failed to connect to server',
+        detail: err instanceof Error ? err.message : 'Invalid local backend URL',
+      });
+      setTimeout(() => {
+        setViewMode('onboarding');
+        setProgress(null);
+      }, ERROR_RESET_DELAY_MS);
+      return;
+    }
+
+    setProgress({
+      phase: 'extracting',
+      percent: 0,
+      message: 'Connecting to server...',
+      detail: 'Validating server',
+    });
+    setViewMode('loading');
+
+    const tryConnect = async () => {
+      return await connectToServer(
+        baseUrl,
+        (phase, downloaded, total) => {
+          if (phase === 'validating') {
+            setProgress({
+              phase: 'extracting',
+              percent: 5,
+              message: 'Connecting to server...',
+              detail: 'Validating server',
+            });
+          } else if (phase === 'downloading') {
+            const hasTotal = typeof total === 'number' && total > 0;
+            const pct = hasTotal ? Math.round((downloaded / total) * 90) + 5 : 0;
+            const mb = (downloaded / (1024 * 1024)).toFixed(1);
+            setProgress({
+              phase: 'extracting',
+              percent: pct,
+              showPercent: hasTotal,
+              message: 'Loading graph...',
+              detail: `${mb} MB downloaded`,
+            });
+          } else if (phase === 'extracting') {
+            setProgress({
+              phase: 'extracting',
+              percent: 97,
+              message: 'Processing...',
+              detail: 'Extracting file contents',
+            });
+          }
+        },
+        undefined,
+        projectParam || undefined,
+        { awaitAnalysis: true }, // enable backend hold-queue for repos still being analyzed
+      );
+    };
+
+    tryConnect()
+      .then(async (result) => {
+        await handleServerConnect(result);
+        setProgress(null);
+        setServerBaseUrl(baseUrl);
+        fetchRepos()
+          .then((repos) => setAvailableRepos(repos))
+          .catch((e) => console.warn('Failed to fetch repo list:', e));
+      })
+      .catch((err) => {
+        console.error('Auto-connect failed:', err);
+        setProgress({
+          phase: 'error',
+          percent: 0,
+          message: 'Failed to connect to server',
+          detail: err instanceof Error ? err.message : 'Unknown error',
+        });
+        setTimeout(() => {
+          setViewMode('onboarding');
+          setProgress(null);
+        }, ERROR_RESET_DELAY_MS);
+      });
+  }, [handleServerConnect, setProgress, setViewMode, setServerBaseUrl, setAvailableRepos]);
+
+  const handleFocusNode = useCallback((nodeId: string) => {
+    graphCanvasRef.current?.focusNode(nodeId);
+  }, []);
+
+  // Handle settings saved - refresh and reinitialize agent
+  // NOTE: Must be defined BEFORE any conditional returns (React hooks rule)
+  const handleSettingsSaved = useCallback(() => {
+    refreshLLMSettings();
+  }, [refreshLLMSettings]);
+
+  // ── Server heartbeat: detect when server goes down while exploring ────────
+  // Uses SSE (EventSource) for instant detection — no polling delay.
+  // On disconnect: show a reconnecting banner instead of resetting to onboarding.
+  // The heartbeat retries indefinitely with capped backoff and recovers automatically.
+  useEffect(() => {
+    if (viewMode !== 'exploring') return;
+
+    const cleanup = connectHeartbeat(
+      () => setServerDisconnected(false),
+      () => setServerDisconnected(true),
+    );
+
+    return cleanup;
+  }, [viewMode]);
+
+  // Render based on view mode
+  if (viewMode === 'onboarding') {
+    return (
+      <DropZone
+        onServerConnect={async (result, serverUrl) => {
+          // Refresh repo list before transitioning so it's ready in the header
+          const repos = await fetchRepos().catch(() => [] as BackendRepo[]);
+          setAvailableRepos(repos);
+          await handleServerConnect(result);
+          setProgress(null);
+          if (serverUrl) {
+            const base = normalizeServerUrl(serverUrl);
+            setServerBaseUrl(base);
+            // Add ?server= so F5 reconnects to this server
+            const url = new URL(window.location.href);
+            url.searchParams.set('server', base);
+            window.history.replaceState(null, '', url.toString());
+          }
+        }}
+      />
+    );
+  }
+
+  if (viewMode === 'loading' && progress) {
+    return <LoadingOverlay progress={progress} />;
+  }
+
+  // Exploring view
+  return (
+    <div className="press-shell flex h-[100dvh] min-h-[100dvh] min-w-0 flex-col overflow-hidden">
+      <Header
+        onFocusNode={handleFocusNode}
+        availableRepos={availableRepos}
+        openRepoAnalyzerRequestId={repoAnalyzerRequestId}
+        onSwitchRepo={switchRepo}
+        onReposChanged={(repos) => setAvailableRepos(repos)}
+        onAnalyzeComplete={async (repoName) => {
+          // A repo was just fully indexed via the header dropdown. Connect to
+          // the fresh graph, then make the dropdown list reflect that repo even
+          // if the backend repo registry refresh lands a little late.
+          const url = serverBaseUrl ?? 'http://127.0.0.1:4848';
+          for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+              const repos = await fetchRepos().catch(() => [] as BackendRepo[]);
+              const result = await connectToServer(url, undefined, undefined, repoName, {
+                awaitAnalysis: true,
+              });
+              const reposWithAnalyzedRepo = includeRepoInList(repos, result.repoInfo);
+              setAvailableRepos(reposWithAnalyzedRepo);
+              await handleServerConnect(result);
+              const refreshedRepos = await fetchRepos().catch(() => reposWithAnalyzedRepo);
+              setAvailableRepos(includeRepoInList(refreshedRepos, result.repoInfo));
+              setServerBaseUrl(normalizeServerUrl(url));
+              setProgress(null);
+              return;
+            } catch (err: unknown) {
+              if (attempt === 0 && err instanceof BackendError && err.status === 404) {
+                // Server may still be reinitializing — wait and retry
+                await new Promise((r) => setTimeout(r, 1500));
+                continue;
+              }
+              console.error('Failed to connect after analyze:', err);
+              fetchRepos()
+                .then((repos) => setAvailableRepos(repos))
+                .catch(() => {});
+              return;
+            }
+          }
+        }}
+      />
+
+      <main className="flex min-h-0 min-w-0 flex-1 overflow-hidden bg-base">
+        {/* Left Panel - File Tree */}
+        <FileTreePanel onFocusNode={handleFocusNode} />
+
+        {/* Graph area - takes remaining space */}
+        <div className="relative min-w-0 flex-1 overflow-hidden bg-workspace-base">
+          <GraphCanvas ref={graphCanvasRef} />
+
+          {/* Code References Panel (overlay) - does NOT resize the graph, it overlaps on top */}
+          {isCodePanelOpen && (codeReferences.length > 0 || !!selectedNode) && (
+            <div className="pointer-events-auto absolute inset-y-0 left-0 z-30">
+              <CodeReferencesPanel onFocusNode={handleFocusNode} />
+            </div>
+          )}
+        </div>
+
+        {/* Right Panel - Code & Chat (tabbed) */}
+        {isRightPanelOpen && (
+          <RightPanelResizable
+            isOpen={isRightPanelOpen}
+            onClose={() => setRightPanelOpen(false)}
+            onRequestAnalyze={requestRepoAnalyzeDialog}
+          />
+        )}
+      </main>
+
+      <StatusBar />
+
+      {serverDisconnected && (
+        <div className="fixed bottom-12 left-1/2 z-50 -translate-x-1/2 rounded-lg border-[3px] border-workspace-border-strong bg-workspace-surface px-4 py-2 text-sm text-workspace-text-primary">
+          Server connection lost — reconnecting&hellip;
+        </div>
+      )}
+
+      {/* Settings Panel (modal) */}
+      <SettingsPanel
+        isOpen={isSettingsPanelOpen}
+        onClose={() => setSettingsPanelOpen(false)}
+        onSettingsSaved={handleSettingsSaved}
+        repoName={projectName || undefined}
+      />
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <AppStateProvider>
+      <AppContent />
+    </AppStateProvider>
+  );
+}
+
+export default App;

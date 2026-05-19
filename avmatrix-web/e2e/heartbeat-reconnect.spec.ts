@@ -1,0 +1,111 @@
+import { test, expect } from '@playwright/test';
+
+/**
+ * E2E tests for heartbeat disconnect/reconnect behavior.
+ *
+ * Verifies the key regression: when the heartbeat fails, the UI shows a
+ * "reconnecting" banner instead of resetting to the onboarding screen.
+ *
+ * Strategy: block /api/heartbeat via route interception BEFORE loading the
+ * graph. The heartbeat EventSource can never connect, so onReconnecting
+ * fires on the first retry attempt. This reliably tests the banner behavior
+ * without depending on setOffline timing (which varies across CI environments).
+ */
+
+const BACKEND_URL = process.env.BACKEND_URL ?? 'http://127.0.0.1:4848';
+const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://127.0.0.1:5228';
+
+let firstRepoName = '';
+
+test.beforeAll(async () => {
+  if (process.env.E2E) {
+    const res = await fetch(`${BACKEND_URL}/api/repos`);
+    const repos = await res.json();
+    firstRepoName = repos[0]?.name ?? '';
+    if (!firstRepoName) test.skip(true, 'No indexed repos');
+    return;
+  }
+  try {
+    const [backendRes, frontendRes] = await Promise.allSettled([
+      fetch(`${BACKEND_URL}/api/repos`),
+      fetch(FRONTEND_URL),
+    ]);
+    if (
+      backendRes.status === 'rejected' ||
+      (backendRes.status === 'fulfilled' && !backendRes.value.ok)
+    ) {
+      test.skip(true, 'avmatrix serve not available');
+      return;
+    }
+    if (
+      frontendRes.status === 'rejected' ||
+      (frontendRes.status === 'fulfilled' && !frontendRes.value.ok)
+    ) {
+      test.skip(true, 'Vite dev server not available');
+      return;
+    }
+    if (backendRes.status === 'fulfilled') {
+      const repos = await backendRes.value.json();
+      if (!repos.length) {
+        test.skip(true, 'No indexed repos');
+        return;
+      }
+      firstRepoName = repos[0].name;
+    }
+  } catch {
+    test.skip(true, 'servers not available');
+  }
+});
+
+function graphUrl() {
+  return `${FRONTEND_URL}/?server=${encodeURIComponent(BACKEND_URL)}&project=${encodeURIComponent(firstRepoName)}`;
+}
+
+test.describe('Heartbeat Reconnect', () => {
+  test('shows reconnecting banner instead of onboarding reset when heartbeat is unavailable', async ({
+    page,
+  }) => {
+    // Block the heartbeat BEFORE navigating — the EventSource will fail
+    // immediately on every connection attempt, triggering onReconnecting.
+    await page.route('**/api/heartbeat', (route) => route.abort('connectionrefused'));
+
+    // Load the app with an explicit repo context (all other endpoints work normally).
+    await page.goto(graphUrl());
+
+    // Wait for graph to load (heartbeat is blocked, but graph loads fine)
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({ timeout: 30_000 });
+
+    // The reconnecting banner should appear (heartbeat is failing)
+    const banner = page.getByText('Server connection lost');
+    await expect(banner).toBeVisible({ timeout: 15_000 });
+
+    // The graph canvas should STILL be visible — NOT reset to onboarding
+    await expect(page.locator('canvas').first()).toBeVisible();
+  });
+
+  test('banner clears when heartbeat becomes available', async ({ page }) => {
+    // Start with heartbeat blocked
+    let blockHeartbeat = true;
+    await page.route('**/api/heartbeat', (route) => {
+      if (blockHeartbeat) return route.abort('connectionrefused');
+      return route.fallback();
+    });
+
+    await page.goto(graphUrl());
+
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({ timeout: 30_000 });
+
+    // Verify banner appears
+    const banner = page.getByText('Server connection lost');
+    await expect(banner).toBeVisible({ timeout: 15_000 });
+
+    // Unblock heartbeat — the real server is running, so reconnect will succeed
+    blockHeartbeat = false;
+
+    // Banner should disappear as heartbeat reconnects
+    await expect(banner).not.toBeVisible({ timeout: 30_000 });
+
+    // Graph should still be there
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible();
+  });
+});

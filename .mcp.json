@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "avmatrix": {
+      "type": "stdio",
+      "command": "avmatrix",
+      "args": ["mcp"]
+    }
+  }
+}
