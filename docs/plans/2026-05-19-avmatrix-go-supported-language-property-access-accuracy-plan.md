@@ -147,23 +147,25 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 - [x] [P1-D] Classify `Property` nodes by language and source category. Website baseline: `typescript=5,222`. AVmatrix-GO baseline: `go=2,469`, `typescript=577`. Required category families are represented in the gate output.
 - [x] [P1-E] Classify standalone properties by orphan status. Website: `false_orphan=3,627`, `true_orphan=430`, `unknown=1,162`, `owner_linked=3`, `external_library_owned=0`, `intentionally_unmodeled=0`. AVmatrix-GO: `false_orphan=21`, `true_orphan=82`, `unknown=235`, `owner_linked=2,708`, `external_library_owned=0`, `intentionally_unmodeled=0`.
 - [x] [P1-F] Classify missing and absent edges by graph truth status. Website: `real_edge_missing=3,627`, `true_no_edge=430`, `unknown_no_edge=1,162`, `edge_present=3`, `invalid_synthetic_edge_risk=0`. AVmatrix-GO: `real_edge_missing=21`, `true_no_edge=82`, `unknown_no_edge=235`, `edge_present=2,708`, `invalid_synthetic_edge_risk=0`.
-- [ ] [P1-G] Classify unresolved member access candidates by reason. Required reasons: missing receiver type, missing owner link, ambiguous owner, external/library type, unsupported syntax, and false-positive candidate.
-- [ ] [P1-H] Define the Phase 2 and Phase 3 measurable targets after the taxonomy is known. The targets must be written as checklist updates, not loose notes.
+- [x] [P1-G] Classify unresolved member access candidates by reason. Website: `total=24,542`, `resolved=3`, `missing_receiver_type=13,512`, `external_library_type=9,660`, `unsupported_syntax=1,313`, `missing_caller=53`, `missing_owner_link=1`, `ambiguous_owner=0`, `false_positive_candidate=0`. AVmatrix-GO: `total=21,098`, `resolved=5,112`, `missing_receiver_type=11,418`, `external_library_type=3,619`, `unsupported_syntax=910`, `missing_caller=14`, `missing_owner_link=10`, `false_positive_candidate=15`, `ambiguous_owner=0`.
+- [x] [P1-H] Define the Phase 2 and Phase 3 measurable targets after the taxonomy is known. Targets are written below and must be updated after each validation gate.
 
 ## Phase 2 - Cross-Language Property Ownership
 
-- [ ] [P2-A] Implement owner-link semantics for the first large cluster of false-orphan properties. The cluster must cover multiple providers or a high-volume language family; do not use one tiny language/file slice unless the taxonomy proves it is the only safe unit.
+- [ ] [P2-A] Implement owner-link semantics for the first large false-orphan cluster: TS/JS/SFC static shape properties. Initial measurable target: reduce Website `tsjs_type_alias_object_literal_member` `real_edge_missing` from `3,627` toward `0` where a stable source owner exists, while keeping `tsjs_runtime_object_literal_key` and `tsjs_destructuring_or_binding_pattern` true-no-edge cases unlinked.
 - [ ] [P2-B] Add focused tests for every language/provider family changed in [P2-A]. Tests must include positive owner links and cases that must remain unowned.
 - [ ] [P2-C] Run ownership validation and record it. Required evidence: full build before tests, focused tests, CLI/runtime e2e, fresh graph snapshots for affected workloads, benchmark update, evidence update, and AVmatrix impact record.
-- [ ] [P2-D] Repeat large ownership clusters until all false-orphan categories with defensible owners are either fixed or explicitly deferred with evidence.
+- [ ] [P2-D] Refine Go unknown property ownership before linking. Initial measurable target: classify AVmatrix-GO `go_typed_property_without_owner=206` into false-orphan vs true/unknown buckets using source evidence; do not emit `HAS_PROPERTY` edges for this bucket until the denominator is defensible.
+- [ ] [P2-E] Repeat large ownership clusters until all false-orphan categories with defensible owners are either fixed or explicitly deferred with evidence.
 
 ## Phase 3 - Cross-Language Member Access Resolution
 
 - [ ] [P3-A] Classify member access samples that should resolve after Phase 2 ownership is available. Include explicit receiver types, `this`/`self`/receiver access, typed parameter access, typed local variable access, constructor assignment, return-value/initializer-derived receiver type, and imported type access where supported.
-- [ ] [P3-B] Implement the first large defensible access-resolution cluster. Prefer cases with explicit receiver type bindings before inferred or heuristic cases.
+- [ ] [P3-B] Implement the first large defensible access-resolution cluster around explicit receiver type bindings. Initial measurable target: reduce `missing_receiver_type` for typed local/parameter/receiver cases without converting `external_library_type` or `unsupported_syntax` into noisy edges.
 - [ ] [P3-C] Add focused tests for every access-resolution family closed in [P3-B].
 - [ ] [P3-D] Run access validation and record it. Required evidence: full build before tests, focused tests, CLI/runtime e2e, fresh graph snapshots for affected workloads, benchmark update, evidence update, and AVmatrix impact record.
-- [ ] [P3-E] Repeat large access clusters until all target families are fixed or explicitly deferred with evidence.
+- [ ] [P3-E] Close the small `missing_owner_link` access bucket after Phase 2. Initial measurable target: Website `missing_owner_link=1` and AVmatrix-GO `missing_owner_link=10` should go to `0` if the referenced owners are real; otherwise each case must move to `false_positive_candidate`, `external_library_type`, or `unknown/deferred` with examples.
+- [ ] [P3-F] Repeat large access clusters until all target families are fixed or explicitly deferred with evidence.
 
 ## Phase 4 - Consumer Impact Checks
 
@@ -189,17 +191,19 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P1-D | Taxonomy | property language/categories | source categories classified | recorded | recorded | `0972c3d` | done |
 | P1-E | Taxonomy | standalone properties | true/false/unknown orphan status classified | recorded | recorded | `0972c3d` | done |
 | P1-F | Taxonomy | missing/absent edges | real missing vs true no-edge classified | recorded | recorded | `0972c3d` | done |
-| P1-G | Taxonomy | unresolved member accesses | miss reasons classified | pending | pending | pending | open |
-| P1-H | Targets | measurable follow-up gates | Phase 2/3 targets defined | pending | pending | pending | open |
+| P1-G | Taxonomy | unresolved member accesses | miss reasons classified | recorded | recorded | pending current slice | done |
+| P1-H | Targets | measurable follow-up gates | Phase 2/3 targets defined | recorded | recorded | pending current slice | done |
 | P2-A | Ownership | large false-orphan cluster | defensible `HAS_PROPERTY` expansion | pending | pending | pending | open |
 | P2-B | Tests | ownership focused tests | relevant owner cases covered | n/a | pending | pending | open |
 | P2-C | Validation | ownership slice | analyze/test/e2e recorded | pending | pending | pending | open |
-| P2-D | Ownership | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
+| P2-D | Ownership | Go unknown property ownership | classify before linking | pending | pending | pending | open |
+| P2-E | Ownership | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
 | P3-A | Access | access sample taxonomy | resolvable families classified | pending | pending | pending | open |
 | P3-B | Access | large access-resolution cluster | defensible `ACCESSES` expansion | pending | pending | pending | open |
 | P3-C | Tests | access focused tests | resolved families covered | n/a | pending | pending | open |
 | P3-D | Validation | access slice | analyze/test/e2e recorded | pending | pending | pending | open |
-| P3-E | Access | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
+| P3-E | Access | missing-owner-link access bucket | close or reclassify small bucket | pending | pending | pending | open |
+| P3-F | Access | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
 | P4-A | Consumer | context | new facts visible in context | n/a | pending | pending | open |
 | P4-B | Consumer | impact | affected-symbol behavior checked | n/a | pending | pending | open |
 | P4-C | Consumer | graph API/readback | new relationships preserved | n/a | pending | pending | open |

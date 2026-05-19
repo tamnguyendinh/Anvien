@@ -80,6 +80,7 @@ Every property/access gate benchmark row must include:
 | P1 Website baseline gate | `.tmp\p1-property-access-website-baseline-20260519.json` | `Property=5,222`, `HAS_PROPERTY=3`, `ACCESSES=3`, `typescript=5,222`, `invalidHasPropertyEdges=0` | recorded |
 | P1 AVmatrix-GO baseline gate | `.tmp\p1-property-access-avmatrix-go-baseline-20260519.json` | `Property=3,046`, `HAS_PROPERTY=2,708`, `ACCESSES=2,724`, `go=2,469`, `typescript=577`, `invalidHasPropertyEdges=0` | recorded |
 | P1 language taxonomy | baseline gate artifacts | Website `false_orphan=3,627`; AVmatrix-GO `false_orphan=21`; no invalid synthetic edges | recorded |
+| P1 access candidate taxonomy | `.tmp\p1-access-candidates-website-20260519.json`, `.tmp\p1-access-candidates-avmatrix-go-20260519.json` | Website `total=24,542 resolved=3`; AVmatrix-GO `total=21,098 resolved=5,112` | recorded |
 | P2 ownership validation | pending | false-orphan reduction and `HAS_PROPERTY` precision | open |
 | P3 access validation | pending | `ACCESSES` expansion and precision | open |
 | P5 final gate | pending | final workload matrix | open |
@@ -150,3 +151,42 @@ Graph truth taxonomy:
 |---|---:|---:|---:|---:|---:|
 | `E:\Website` | 3 | 3,627 | 430 | 1,162 | 0 |
 | `E:\AVmatrix-GO` | 2,708 | 21 | 82 | 235 | 0 |
+
+## P1 Access Candidate Taxonomy
+
+Date: 2026-05-19
+
+Artifacts:
+
+- Website access candidate output: `.tmp\p1-access-candidates-website-20260519.json`
+- AVmatrix-GO access candidate output: `.tmp\p1-access-candidates-avmatrix-go-20260519.json`
+
+Commands:
+
+```powershell
+go run ./cmd/access-candidate-audit -repo E:\Website -out .tmp\p1-access-candidates-website-20260519.json -max-examples 20
+go run ./cmd/access-candidate-audit -repo E:\AVmatrix-GO -out .tmp\p1-access-candidates-avmatrix-go-20260519.json -max-examples 20
+```
+
+Totals:
+
+| Workload | Analyze runtime | Access candidates | Resolved | Unresolved | Final graph resolved accesses | Resolution unresolved references |
+|---|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 7,365 ms | 24,542 | 3 | 24,539 | 3 | 64,274 |
+| `E:\AVmatrix-GO` | 5,862 ms | 21,098 | 5,112 | 15,986 | 5,112 | 50,282 |
+
+Language breakdown:
+
+| Workload | Language | Access candidates | Resolved | Unresolved |
+|---|---|---:|---:|---:|
+| `E:\Website` | JavaScript | 231 | 0 | 231 |
+| `E:\Website` | TypeScript | 24,311 | 3 | 24,308 |
+| `E:\AVmatrix-GO` | Go | 19,059 | 4,975 | 14,084 |
+| `E:\AVmatrix-GO` | TypeScript | 2,039 | 137 | 1,902 |
+
+Reason taxonomy:
+
+| Workload | `resolved` | `missing_receiver_type` | `external_library_type` | `unsupported_syntax` | `missing_caller` | `missing_owner_link` | `false_positive_candidate` | `ambiguous_owner` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 3 | 13,512 | 9,660 | 1,313 | 53 | 1 | 0 | 0 |
+| `E:\AVmatrix-GO` | 5,112 | 11,418 | 3,619 | 910 | 14 | 10 | 15 | 0 |

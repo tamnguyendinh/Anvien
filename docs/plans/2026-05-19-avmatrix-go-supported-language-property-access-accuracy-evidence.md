@@ -86,7 +86,8 @@ Initial hypothesis:
 | P1-D language/category taxonomy | language and category counts in baseline artifacts | source categories classified across current graph languages | done |
 | P1-E orphan truth classification | orphan status counts in baseline artifacts | true/false/unknown/external/intentionally-unmodeled owner status classified | done |
 | P1-F graph truth classification | graph truth counts in baseline artifacts | real missing vs true no-edge classified | done |
-| P1-G unresolved access reasons | pending | pending | open |
+| P1-G unresolved access reasons | `.tmp\p1-access-candidates-website-20260519.json`, `.tmp\p1-access-candidates-avmatrix-go-20260519.json` | unresolved access candidates classified by reason | done |
+| P1-H Phase 2/3 targets | plan checklist update | measurable follow-up targets defined from P1 taxonomy | done |
 | P2 ownership implementation | pending | pending | open |
 | P2 validation | pending | pending | open |
 | P3 access implementation | pending | pending | open |
@@ -234,3 +235,127 @@ affected processes include the new property-access audit command flow:
 ```
 
 Interpretation: the high risk level is expected for this slice because it adds a new command/API and many new graphaccuracy symbols. The changed runtime surface is isolated to the new audit gate and docs; existing product analysis behavior is not modified by this slice.
+
+## P1-G Access Candidate Evidence
+
+Changed files:
+
+- `internal/resolution/access_audit.go`
+- `internal/resolution/access_audit_test.go`
+- `internal/graphaccuracy/access_candidate.go`
+- `cmd/access-candidate-audit/main.go`
+
+The gate runs analyze with ScopeIR retained and classifies access candidates before final graph edges hide unresolved cases.
+
+Full build before validation:
+
+```powershell
+.\avmatrix-launcher\build.ps1
+```
+
+Result: passed. Vite reported chunk-size and dynamic-import warnings only.
+
+Focused tests after full build:
+
+```powershell
+go test ./internal/resolution ./internal/graphaccuracy ./cmd/access-candidate-audit
+```
+
+Result:
+
+```text
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/resolution
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy
+?   	github.com/tamnguyendinh/avmatrix-go/cmd/access-candidate-audit	[no test files]
+```
+
+CLI/runtime e2e after full build:
+
+```powershell
+go run ./cmd/access-candidate-audit -repo E:\Website -out .tmp\p1-access-candidates-website-20260519.json -max-examples 20
+go run ./cmd/access-candidate-audit -repo E:\AVmatrix-GO -out .tmp\p1-access-candidates-avmatrix-go-20260519.json -max-examples 20
+```
+
+Website result:
+
+```text
+wrote .tmp\p1-access-candidates-website-20260519.json
+accessCandidates.total=24542 resolved=3 unresolved=24539 analyzeMillis=7365 resolvedAccesses=3 unresolvedReferences=64274
+language.javascript.accessCandidates=231 resolved=0 unresolved=231
+language.typescript.accessCandidates=24311 resolved=3 unresolved=24308
+reason.ambiguous_owner=0
+reason.external_library_type=9660
+reason.false_positive_candidate=0
+reason.missing_caller=53
+reason.missing_owner_link=1
+reason.missing_receiver_type=13512
+reason.resolved=3
+reason.unsupported_syntax=1313
+```
+
+AVmatrix-GO result:
+
+```text
+wrote .tmp\p1-access-candidates-avmatrix-go-20260519.json
+accessCandidates.total=21098 resolved=5112 unresolved=15986 analyzeMillis=5862 resolvedAccesses=5112 unresolvedReferences=50282
+language.go.accessCandidates=19059 resolved=4975 unresolved=14084
+language.typescript.accessCandidates=2039 resolved=137 unresolved=1902
+reason.ambiguous_owner=0
+reason.external_library_type=3619
+reason.false_positive_candidate=15
+reason.missing_caller=14
+reason.missing_owner_link=10
+reason.missing_receiver_type=11418
+reason.resolved=5112
+reason.unsupported_syntax=910
+```
+
+AVmatrix refresh after the P1-G implementation:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+```
+
+Result:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=682 parsed=527 unsupported=155 failed=0
+graph: nodes=20223 relationships=48368 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+P1-H target update:
+
+```text
+Phase 2 first target: TS/JS/SFC static shape ownership, especially Website tsjs_type_alias_object_literal_member real_edge_missing=3,627.
+Phase 2 guardrail: keep runtime object keys and destructuring true-no-edge cases unlinked.
+Phase 2 second target: classify AVmatrix-GO go_typed_property_without_owner=206 before any Go ownership expansion.
+Phase 3 first target: reduce missing_receiver_type using explicit receiver type bindings.
+Phase 3 guardrail: do not convert external_library_type or unsupported_syntax buckets into noisy edges.
+Phase 3 small bucket: close or reclassify Website missing_owner_link=1 and AVmatrix-GO missing_owner_link=10 after ownership fixes.
+```
+
+Staged AVmatrix impact check:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --scope staged --repo E:\AVmatrix-GO
+```
+
+Result summary:
+
+```text
+changed_files=7
+changed_count=132
+affected_count=21
+risk_level=critical
+affected processes include the new access-candidate audit command flow:
+- Main -> UnsupportedAccessReceiver
+- Main -> AddAccessReason
+- Main -> WriteAccessCandidateAuditResult
+- Main -> SortedAccessLanguageKeys
+- Main -> SortedAccessReasonKeys
+- RunAccessCandidateAudit -> AuditAccessCandidates
+- AuditAccessCandidates -> resolver helper paths
+```
+
+Interpretation: the critical risk level is expected for this slice because the new audit command runs analyze and reuses resolution internals to classify access candidates. It does not change the production resolver output path; it adds an audit/readout path plus focused tests.
