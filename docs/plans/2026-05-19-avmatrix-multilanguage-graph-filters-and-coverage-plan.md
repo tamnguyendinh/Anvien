@@ -2,7 +2,7 @@
 
 Date: 2026-05-19
 
-Status: active - policy and provider-parity slice completed 2026-05-19
+Status: active - UI filter/e2e coverage slice completed 2026-05-19
 
 Companion files:
 
@@ -162,15 +162,15 @@ Regex source-site counts are useful baseline evidence only. Final accuracy check
 
 - [x] [P4-A] Verify and fix `FileTreePanel` node filter inventory so graph-present labels from `getFilterableNodeLabelsForGraph` are listed, counted, toggleable, colored, and mirrored in the legend. Result: existing graph-present node completeness coverage remains passing in full Web unit suite.
 - [x] [P4-B] Verify and fix `FileTreePanel` edge filter inventory so graph-present relationship types from `getFilterableEdgeTypesForGraph` are listed, counted, toggleable, colored, and mirrored in the legend. Result: edge rows now use semantic display counts and full graph-present relationship dashboard coverage remains passing.
-- [ ] [P4-C] Decide whether zero-count contract labels/types should be shown in loaded-graph mode. If hidden, evidence must prove absence is from graph payload; if shown, counts must be `0` and toggles must be harmless.
+- [x] [P4-C] Decide whether zero-count contract labels/types should be shown in loaded-graph mode. If hidden, evidence must prove absence is from graph payload; if shown, counts must be `0` and toggles must be harmless. Result: loaded-graph mode hides zero-count contract labels/types and shows only graph-present labels/types; no-graph fallback still exposes generated contract rows with zero counts.
 - [x] [P4-D] Update dashboard Edge Types counts so compatibility duplicates do not mislead users. Result: `FileTreePanel` uses `getDisplayRelationshipTypeCounts` and surfaces grouped/raw counts in titles.
 - [x] [P4-E] Update graph canvas edge conversion so duplicate compatibility heritage pairs do not draw as two unrelated relationships unless explicitly requested. Result: `knowledgeGraphToGraphology` converts display relationships and collapses duplicate compatibility `INHERITS`.
 - [x] [P4-F] Replace or justify graph-adapter TS/Go-biased hard-coded type sets: structural types, symbol types, mass, hierarchy parent-child relations, edge size multipliers, node size caps, and community coloring must cover all contract labels/types or have documented fallback behavior. Result: generalized constants cover generated relationship types and use explicit structural/community node classifications with fallback behavior.
 - [x] [P4-G] Update color legend labels/tooltips for all node labels and relationship types, including `EXTENDS`, `IMPLEMENTS`, `INHERITS`, and any Go embedding display label, to reflect the selected semantics. Result: `INHERITS` display label is `Normalized Heritage`; grouped/raw title text explains compatibility grouping.
 - [x] [P4-H] Add unit tests for duplicate `EXTENDS` + `INHERITS` source-target pairs. Result: constants, FileTreePanel, and graph-adapter unit tests cover duplicate heritage grouping/collapse.
-- [ ] [P4-I] Add unit tests for resolved and unresolved/external graph fact display across representative language-specific forms, including TS class/interface heritage and non-TS/Go provider facts.
-- [ ] [P4-J] Add e2e coverage proving the Web UI displays node filters, edge filters, counts, legends, focus-depth behavior, and relationship toggles according to the selected policy.
-- [ ] [P4-K] Add deterministic fixture coverage and, where feasible, a `Restaurant_manager` large-graph smoke check so the real regression is covered.
+- [x] [P4-I] Add unit tests for resolved and unresolved/external graph fact display across representative language-specific forms, including TS class/interface heritage and non-TS/Go provider facts. Result: constants/FileTreePanel tests assert generated language graph coverage unresolved/external policy, normalized heritage display policy, graph-present loaded-mode rows, zero-count hiding, and focus-depth warning behavior.
+- [x] [P4-J] Add e2e coverage proving the Web UI displays node filters, edge filters, counts, legends, focus-depth behavior, and relationship toggles according to the selected policy. Result: Playwright shell e2e now opens Filters, verifies node/edge sections, File and Calls counts, legend rows, Calls toggle state, and focus-depth warning/clear behavior.
+- [x] [P4-K] Add deterministic fixture coverage and, where feasible, a `Restaurant_manager` large-graph smoke check so the real regression is covered. Result: deterministic FileTreePanel fixtures cover contract/filter behavior, and focused Playwright e2e ran against the indexed `Restaurant_manager` graph from the local backend.
 - [x] [P4-L] Inspect `avmatrix-web/src/components/Header.tsx`, `avmatrix-web/src/App.tsx`, launcher path handling, and `Start-AVmatrix.html` to confirm the correct Start-screen return target in both dev and packaged launcher modes. Result: Vite dev/build now serves/emits `Start-AVmatrix.html`; Header computes an absolute same-origin start-screen URL.
 - [x] [P4-M] Add an icon-first Back arrow/button beside the `AVmatrix` top bar title with an accessible label and keyboard/click activation. Result: Header renders an `ArrowLeft` icon button labelled `Back to Start screen`.
 - [x] [P4-N] Implement the return flow to `Start-AVmatrix.html` without showing a stale connection-loss banner during the intentional navigation transition. Result: App tracks intentional start navigation and suppresses the reconnect banner during that transition.
@@ -197,9 +197,9 @@ Regex source-site counts are useful baseline evidence only. Final accuracy check
 - [x] [P6-D] Run full applicable Go test suite for `cmd` and `internal`. Result: `go test ./cmd/... ./internal/...` passed. Repository-wide `go test ./...` still includes intentionally non-buildable fixture folders under `avmatrix/test/fixtures`.
 - [x] [P6-E] Run Web build before Web tests. Result: `npm run build` passed.
 - [x] [P6-F] Run focused Web unit tests for node type dashboard, edge type dashboard, legend, filter visibility, and graph adapter behavior. Result: focused constants/FileTreePanel/graph-adapter/Header tests passed.
-- [x] [P6-G] Run full Web unit suite. Result: `npm test -- --run` passed with `41` files and `322` tests.
-- [x] [P6-H] Run focused Web unit/e2e tests covering top bar Back navigation and left dashboard resize behavior. Result: Playwright `shell-interactions.spec.ts` focused grep passed `2/2`.
-- [x] [P6-I] Run e2e test covering node filters, edge filters, legend, focus depth, duplicate-pair behavior, Back navigation, and left dashboard resize behavior. Result: this slice covers duplicate-pair unit behavior plus Back/resize e2e; broader full filter/focus-depth e2e expansion remains pending.
+- [x] [P6-G] Run full Web unit suite. Result: `npm test -- --run` passed with `41` files and `325` tests.
+- [x] [P6-H] Run focused Web unit/e2e tests covering top bar Back navigation and left dashboard resize behavior. Result: Playwright `shell-interactions.spec.ts` focused grep passed `3/3` for Back, resize, and graph filter/legend/focus-depth coverage.
+- [x] [P6-I] Run e2e test covering node filters, edge filters, legend, focus depth, duplicate-pair behavior, Back navigation, and left dashboard resize behavior. Result: duplicate-pair unit behavior is covered, and focused Playwright e2e covers node/edge filter sections, legend rows, focus-depth warning/clear behavior, Calls relationship toggling, Back navigation, and left dashboard resize.
 - [x] [P6-J] Re-run analyze on `E:\AVmatrix-GO` and `E:\Restaurant_manager` and verify final graph/filter metrics match the accepted contract. Result: both repos were analyzed through `go run ./cmd/avmatrix analyze ... --force --skip-agents-md --no-stats`; final counts are in the benchmark ledger.
 - [x] [P6-K] Verify the final supported-language graph coverage matrix has no unclassified language entries and no UI filter row disconnected from graph payload reality. Result: generated coverage matrix has all 18 code languages; graph-present dashboard completeness tests pass.
 

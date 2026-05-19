@@ -148,6 +148,46 @@ test.describe("Shell interactions", () => {
     await expect(page.locator("canvas").first()).toBeVisible();
   });
 
+  test("displays graph filters, legends, focus depth, and relationship toggles", async ({
+    page,
+  }) => {
+    await waitForGraphLoaded(page);
+
+    await page.getByRole("button", { name: "Filters" }).click();
+
+    await expect(page.getByText("Node Types").first()).toBeVisible();
+    await expect(page.getByText("Edge Types").first()).toBeVisible();
+    await expect(page.getByText("Focus Depth")).toBeVisible();
+    await expect(page.getByText("Color Legend")).toBeVisible();
+
+    await expect(page.locator('button[title^="File ("]').first()).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(
+      page.locator('div[title^="Legend node File ("]').first(),
+    ).toBeVisible();
+
+    const callsButton = page.locator('button[title^="Calls ("]').first();
+    await expect(callsButton).toBeVisible({ timeout: 10_000 });
+    await expect(
+      page.locator('div[title^="Legend edge Calls ("]').first(),
+    ).toBeVisible();
+
+    await callsButton.click();
+    await expect(callsButton).toHaveAttribute("aria-pressed", "false");
+    await callsButton.click();
+    await expect(callsButton).toHaveAttribute("aria-pressed", "true");
+
+    await page.getByRole("button", { name: "2 hops" }).click();
+    await expect(
+      page.getByText("Select a node to apply depth filter"),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "All", exact: true }).click();
+    await expect(
+      page.getByText("Select a node to apply depth filter"),
+    ).not.toBeVisible();
+  });
+
   test("opens settings, edits values, saves, then closes", async ({ page }) => {
     await mockReadySessionStatus(page);
     await waitForGraphLoaded(page);

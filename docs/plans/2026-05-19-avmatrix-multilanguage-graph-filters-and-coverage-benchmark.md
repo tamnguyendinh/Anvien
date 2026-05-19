@@ -366,9 +366,57 @@ Languages with representative heritage graph-resolution parity: TypeScript, Go, 
 | `go build ./cmd/... ./internal/...` | passed |
 | `go test ./cmd/... ./internal/...` | passed |
 
-## B3 - Final Benchmark
+## B3 - UI Filter, Legend, Focus-Depth, And Large-Graph Smoke Coverage
 
-Status: pending broader provider-parity/focus-depth expansion
+Status: recorded
+
+Measurement date: 2026-05-19
+
+### Test Coverage Inventory
+
+| Metric | Count |
+|---|---:|
+| Full Vitest files | `41` |
+| Full Vitest tests | `325` |
+| Focused shell e2e tests | `3` |
+| Focused shell e2e passed | `3` |
+| New deterministic FileTreePanel/contract unit tests | `3` |
+| New graph filter/legend/focus-depth e2e tests | `1` |
+
+### Loaded-Graph Display Policy Inventory
+
+| Metric | Result |
+|---|---|
+| Zero-count generated contract rows in loaded-graph mode | hidden |
+| No-graph fallback contract rows | generated rows with `0` counts |
+| Graph-present node rows tested | `File` plus full generated fixture inventory |
+| Graph-present relationship rows tested | `Calls` plus full generated fixture inventory |
+| Legend rows tested | node and relationship legend rows |
+| Relationship toggle tested in e2e | `Calls` off/on |
+| Focus-depth behavior tested in e2e | `2 hops` warning without selected node, then `All` clears it |
+
+### Large-Graph Smoke Inventory
+
+Backend repo list at e2e time:
+
+| Repo | Nodes | Relationships |
+|---|---:|---:|
+| `Restaurant_manager` | `78,358` | `130,588` |
+| `AVmatrix` | `20,771` | `51,854` |
+
+The focused shell e2e uses the first backend repo; in this run that was `Restaurant_manager`.
+
+### Validation Inventory
+
+| Command | Result |
+|---|---|
+| `npm --prefix avmatrix-web run build` | passed |
+| `npm --prefix avmatrix-web test -- --run` | passed, `41` files / `325` tests |
+| `npm --prefix avmatrix-web run test:e2e -- shell-interactions.spec.ts -g "back button|resizes the left dashboard|displays graph filters" --workers=1 --timeout=120000` | passed, `3/3` |
+
+## B4 - Final Benchmark
+
+Status: pending broader provider-parity and final closure
 
 Record final:
 

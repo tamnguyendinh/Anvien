@@ -108,6 +108,36 @@ describe("FileTreePanel dashboard completeness", () => {
     ).toBeInTheDocument();
   });
 
+  it("hides zero-count contract labels and relationships in loaded-graph mode", async () => {
+    const graph: KnowledgeGraph = {
+      nodes: [makeNode("File", 1)],
+      relationships: [makeRelationship("CALLS", 1)],
+      nodeCount: 1,
+      relationshipCount: 1,
+      addNode: vi.fn(),
+      addRelationship: vi.fn(),
+    };
+    mockAppState = {
+      ...mockAppState,
+      graph,
+      visibleLabels: ["File"],
+      visibleEdgeTypes: ["CALLS"],
+    };
+
+    render(<FileTreePanel onFocusNode={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Filters" }));
+
+    expect(screen.getByTitle("File (1)")).toBeInTheDocument();
+    expect(screen.getByTitle("Calls (1)")).toBeInTheDocument();
+    expect(screen.queryByTitle("Class (0)")).not.toBeInTheDocument();
+    expect(screen.queryByTitle("Imports (0)")).not.toBeInTheDocument();
+    expect(screen.queryByTitle("Legend node Class (0)")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTitle("Legend edge Imports (0)"),
+    ).not.toBeInTheDocument();
+  });
+
   it("groups duplicate normalized heritage edges in counts and legend titles", async () => {
     const graph = makeGraph();
     graph.relationships.push(
@@ -168,6 +198,36 @@ describe("FileTreePanel dashboard completeness", () => {
       );
       expect(toggleEdgeVisibility).toHaveBeenLastCalledWith(type);
     }
+  });
+
+  it("routes focus-depth controls through app state and warns without a selected node", async () => {
+    const setDepthFilter = vi.fn();
+    mockAppState = {
+      ...mockAppState,
+      depthFilter: null,
+      selectedNode: null,
+      setDepthFilter,
+    };
+
+    const { rerender } = render(<FileTreePanel onFocusNode={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Filters" }));
+    await userEvent.click(screen.getByRole("button", { name: "2 hops" }));
+    expect(setDepthFilter).toHaveBeenLastCalledWith(2);
+
+    mockAppState = {
+      ...mockAppState,
+      depthFilter: 2,
+      selectedNode: null,
+      setDepthFilter,
+    };
+    rerender(<FileTreePanel onFocusNode={vi.fn()} />);
+
+    expect(
+      screen.getByText("Select a node to apply depth filter"),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "All" }));
+    expect(setDepthFilter).toHaveBeenLastCalledWith(null);
   });
 
   it("resizes the left dashboard from the drag handle within bounds", async () => {

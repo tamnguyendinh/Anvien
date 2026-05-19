@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   GRAPH_RELATIONSHIP_TYPES,
+  LANGUAGE_GRAPH_COVERAGE,
   NODE_LABELS,
+  RELATIONSHIP_DISPLAY_POLICY,
   type GraphNode,
   type GraphRelationship,
 } from "../../src/generated/avmatrix-contracts";
@@ -241,5 +243,49 @@ describe("graph display inventory helpers", () => {
     expect(
       getGroupedHeritageCompatibilityCount(relationships, "INHERITS"),
     ).toBe(1);
+  });
+
+  it("documents resolved, unresolved, and compatibility display policy for language graph facts", () => {
+    const coverageByLanguage = new Map(
+      LANGUAGE_GRAPH_COVERAGE.map((entry) => [entry.language, entry]),
+    );
+    const inheritsPolicy = RELATIONSHIP_DISPLAY_POLICY.find(
+      (entry) => entry.type === "INHERITS",
+    );
+
+    expect(inheritsPolicy).toMatchObject({
+      displayLabel: "Normalized Heritage",
+      semanticGroup: "normalized-heritage",
+    });
+    expect(inheritsPolicy?.displayPolicy).toContain(
+      "group with matching EXTENDS or IMPLEMENTS",
+    );
+
+    for (const language of [
+      "typescript",
+      "go",
+      "python",
+      "ruby",
+      "rust",
+    ]) {
+      const coverage = coverageByLanguage.get(language);
+      expect(coverage?.sourceFactFamilies).toContain(
+        "heritage-where-language-supports-it",
+      );
+      expect(coverage?.resolutionStatus).toBe(
+        "scopeir-resolved-in-repo-targets",
+      );
+      expect(coverage?.unresolvedPolicy).toContain(
+        "unresolved or external targets",
+      );
+    }
+
+    expect(coverageByLanguage.get("vue")?.sourceFactFamilies).toContain(
+      "embedded-script-heritage",
+    );
+    expect(coverageByLanguage.get("cobol")).toMatchObject({
+      extractorStatus: "dedicated-analyzer-phase",
+      resolutionStatus: "not-scopeir-resolved",
+    });
   });
 });

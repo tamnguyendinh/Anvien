@@ -629,3 +629,99 @@ Conclusion:
 - the user-facing duplicate heritage grouping policy is now explicitly documented in MCP schema resources;
 - provider heritage parity is no longer TS/Go-only in representative extraction and graph-resolution fixtures;
 - broader non-heritage provider fact-family parity and full UI e2e filter/focus-depth expansion remain pending in the active plan.
+
+## E13 - UI Filter, Legend, Focus-Depth, And Large-Graph Smoke Coverage Slice
+
+Date: 2026-05-19
+
+Status: recorded
+
+### AVmatrix-Assisted Checks
+
+Commands:
+
+```powershell
+go run ./cmd/avmatrix context FileTreePanel --repo AVmatrix
+go run ./cmd/avmatrix impact FileTreePanel --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Observed impact summary:
+
+- `FileTreePanel` is used by `avmatrix-web/src/App.tsx` and `avmatrix-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`.
+- upstream depth-2 impact also reaches `avmatrix-web/src/main.tsx` through `App.tsx`;
+- risk reported as `LOW`.
+
+### Implementation Files
+
+Web test files:
+
+- `avmatrix-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`
+- `avmatrix-web/test/unit/constants.test.ts`
+- `avmatrix-web/e2e/shell-interactions.spec.ts`
+
+Plan files:
+
+- `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-plan.md`
+- `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-benchmark.md`
+- `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-evidence.md`
+
+### Coverage Added
+
+Unit coverage added:
+
+- loaded-graph mode hides zero-count generated contract labels/types and displays only graph-present rows;
+- graph-present loaded-mode rows still include counts and legend rows;
+- generated `LANGUAGE_GRAPH_COVERAGE` records resolved in-repo and unresolved/external policies for representative provider-backed languages;
+- generated coverage records script-container heritage for Vue and dedicated analyzer-phase behavior for COBOL;
+- `RELATIONSHIP_DISPLAY_POLICY` records `INHERITS` as `Normalized Heritage` with grouped display policy;
+- focus-depth controls call app state and show the no-selection warning.
+
+E2E coverage added:
+
+- opens the Filters tab;
+- verifies Node Types, Edge Types, Focus Depth, and Color Legend sections;
+- verifies graph-present `File` and `Calls` count rows;
+- verifies legend rows for `File` and `Calls`;
+- toggles the `Calls` relationship type off and on;
+- selects `2 hops`, verifies the focus-depth warning with no selected node, then clears it with `All`.
+
+Large-graph smoke context:
+
+```powershell
+Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:4848/api/repos'
+```
+
+Result summary:
+
+```text
+Restaurant_manager: nodes=78,358 edges=130,588
+AVmatrix: nodes=20,771 edges=51,854
+```
+
+The focused Playwright shell e2e selects the first repo returned by the backend. In this environment that repo is `Restaurant_manager`, so the new filter/legend/focus-depth smoke test ran against the large Restaurant_manager graph.
+
+### Validation Commands
+
+Passed:
+
+```powershell
+npm --prefix avmatrix-web test -- --run test/unit/constants.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx
+npm --prefix avmatrix-web run test:e2e -- shell-interactions.spec.ts -g "displays graph filters" --workers=1 --timeout=120000
+npm --prefix avmatrix-web run build
+npm --prefix avmatrix-web test -- --run
+npm --prefix avmatrix-web run test:e2e -- shell-interactions.spec.ts -g "back button|resizes the left dashboard|displays graph filters" --workers=1 --timeout=120000
+```
+
+Result summary:
+
+- focused Vitest passed: `2` files, `32` tests;
+- new focused Playwright e2e passed: `1/1`;
+- Web production build passed and emitted `dist/Start-AVmatrix.html`;
+- full Vitest suite passed: `41` files, `325` tests;
+- focused Playwright shell coverage passed: `3/3`.
+
+Conclusion:
+
+- zero-count contract rows are intentionally hidden in loaded-graph mode because graph-present rows come directly from the loaded graph payload;
+- graph policy and unresolved/external coverage are visible in generated contract tests;
+- filter sections, legend rows, relationship toggles, focus-depth warning/clear behavior, Back navigation, and dashboard resize now have focused e2e coverage on the local large graph.
