@@ -143,6 +143,86 @@ func TestAuditAccessCandidatesRejectsCrossLanguageGlobalOwner(t *testing.T) {
 	assertAccessReason(t, result, "false_positive_candidate", 0)
 }
 
+func TestAuditAccessCandidatesResolvesImportedWorkspaceMember(t *testing.T) {
+	moduleScope := "scope:cmd/app/main.go:module"
+	functionScope := "scope:cmd/app/main.go:main"
+	targetRaw := "github.com/tamnguyendinh/avmatrix-go/internal/pkg"
+	ir := scopeir.ScopeIR{
+		FilePath:    "cmd/app/main.go",
+		FileHash:    "hash-main",
+		Language:    scanner.Go,
+		ModuleScope: moduleScope,
+		Imports: []scopeir.ImportFact{{
+			FilePath:     "cmd/app/main.go",
+			Kind:         scopeir.ImportNamed,
+			LocalName:    "pkg",
+			ImportedName: "pkg",
+			TargetRaw:    &targetRaw,
+		}},
+		Scopes: []scopeir.ScopeFact{
+			{ID: moduleScope, Kind: scopeir.ScopeModule, FilePath: "cmd/app/main.go"},
+			{ID: functionScope, Parent: scopeStringPtr(moduleScope), Kind: scopeir.ScopeFunction, FilePath: "cmd/app/main.go", OwnedDefIDs: []string{"def:main"}},
+		},
+		Definitions: []scopeir.DefinitionFact{
+			{ID: "def:main", FilePath: "cmd/app/main.go", FileHash: "hash-main", Name: "main", Label: scopeir.NodeFunction, Range: scopeir.Range{StartLine: 3, EndLine: 5}},
+		},
+		Accesses: []scopeir.AccessFact{
+			{FilePath: "cmd/app/main.go", FileHash: "hash-main", Name: "Mode", Kind: scopeir.AccessRead, ExplicitReceiver: "pkg", InScope: functionScope, Range: scopeir.Range{StartLine: 4}},
+		},
+	}
+	targetIR := scopeir.ScopeIR{
+		FilePath: "internal/pkg/constants.go",
+		FileHash: "hash-pkg",
+		Language: scanner.Go,
+		Definitions: []scopeir.DefinitionFact{
+			{ID: "def:pkg-mode", FilePath: "internal/pkg/constants.go", FileHash: "hash-pkg", Name: "Mode", Label: scopeir.NodeConst, Range: scopeir.Range{StartLine: 1, EndLine: 1}},
+		},
+	}
+
+	result, err := AuditAccessCandidates([]scopeir.ScopeIR{ir, targetIR}, AccessCandidateAuditOptions{MaxExamples: 1})
+	if err != nil {
+		t.Fatalf("AuditAccessCandidates() error = %v", err)
+	}
+	assertAccessReason(t, result, "resolved", 1)
+	assertAccessReason(t, result, "missing_receiver_type", 0)
+}
+
+func TestAuditAccessCandidatesClassifiesUnresolvedImportReceiverAsExternal(t *testing.T) {
+	moduleScope := "scope:cmd/app/main.go:module"
+	functionScope := "scope:cmd/app/main.go:main"
+	targetRaw := "os"
+	ir := scopeir.ScopeIR{
+		FilePath:    "cmd/app/main.go",
+		FileHash:    "hash-main",
+		Language:    scanner.Go,
+		ModuleScope: moduleScope,
+		Imports: []scopeir.ImportFact{{
+			FilePath:     "cmd/app/main.go",
+			Kind:         scopeir.ImportNamed,
+			LocalName:    "os",
+			ImportedName: "os",
+			TargetRaw:    &targetRaw,
+		}},
+		Scopes: []scopeir.ScopeFact{
+			{ID: moduleScope, Kind: scopeir.ScopeModule, FilePath: "cmd/app/main.go"},
+			{ID: functionScope, Parent: scopeStringPtr(moduleScope), Kind: scopeir.ScopeFunction, FilePath: "cmd/app/main.go", OwnedDefIDs: []string{"def:main"}},
+		},
+		Definitions: []scopeir.DefinitionFact{
+			{ID: "def:main", FilePath: "cmd/app/main.go", FileHash: "hash-main", Name: "main", Label: scopeir.NodeFunction, Range: scopeir.Range{StartLine: 3, EndLine: 5}},
+		},
+		Accesses: []scopeir.AccessFact{
+			{FilePath: "cmd/app/main.go", FileHash: "hash-main", Name: "O_CREATE", Kind: scopeir.AccessRead, ExplicitReceiver: "os", InScope: functionScope, Range: scopeir.Range{StartLine: 4}},
+		},
+	}
+
+	result, err := AuditAccessCandidates([]scopeir.ScopeIR{ir}, AccessCandidateAuditOptions{MaxExamples: 1})
+	if err != nil {
+		t.Fatalf("AuditAccessCandidates() error = %v", err)
+	}
+	assertAccessReason(t, result, "external_library_type", 1)
+	assertAccessReason(t, result, "missing_receiver_type", 0)
+}
+
 func assertAccessReason(t *testing.T, result AccessCandidateAudit, reason string, want int) {
 	t.Helper()
 	if got := result.Reasons[reason].Count; got != want {

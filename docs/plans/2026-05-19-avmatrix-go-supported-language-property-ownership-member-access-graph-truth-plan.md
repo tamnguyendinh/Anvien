@@ -171,7 +171,7 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 - [x] [P3-C] Add focused tests for every access-resolution family closed in [P3-B]. Result: provider test covers awaited `Promise<T>` local binding, resolution test covers nested `result.model.invoices` `ACCESSES`, and access audit test covers `TypeAlias` member-owner resolution.
 - [x] [P3-D] Run access validation and record it. Result: full build passed before tests, focused tests passed, analyze/property-gate/access-candidate e2e ran on `E:\Website` and `E:\AVmatrix-GO`, fresh graph snapshots and benchmark/evidence ledgers were updated, and AVmatrix impact was recorded.
 - [x] [P3-E] Close or reclassify the `missing_owner_link` access bucket after receiver-type expansion. Result: Website `missing_owner_link=768 -> 0`; AVmatrix-GO `missing_owner_link=10 -> 0`. The slice does not add owner links; it rejects cross-language global owner collisions and reclassifies same-name standalone-property guesses as false positives unless a real owner-member relation exists.
-- [ ] [P3-F] Repeat large access clusters until all target families are fixed or explicitly deferred with evidence. Current post-P3-E largest buckets: Website `missing_receiver_type=12,209`, `external_library_type=4,706`, `unsupported_syntax=1,313`; AVmatrix-GO `missing_receiver_type=11,485`, `external_library_type=3,638`, `unsupported_syntax=910`.
+- [x] [P3-F] Repeat large access clusters until all target families are fixed or explicitly deferred with evidence. Result: imported workspace member accesses now resolve to real `ACCESSES` edges, unresolved imported receivers are classified as external/no-workspace-model instead of missing receiver type, and LadybugDB schema accepts the real access source/target pairs revealed by the self-repo graph. Website final `ACCESSES=2,770`; AVmatrix-GO final `ACCESSES=5,018`; `missing_owner_link=0` and invalid owner edges remain `0`. Remaining buckets are explicitly deferred with evidence: untyped receiver/dataflow inference, external library or unresolved import target modeling, and unsupported computed/call/index receiver syntax.
 
 ## Phase 4 - Consumer Impact Checks
 
@@ -209,7 +209,7 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P3-C | Tests | access focused tests | resolved families covered | n/a | recorded | `08649e6` | done |
 | P3-D | Validation | access slice | analyze/test/e2e recorded | recorded | recorded | `08649e6` | done |
 | P3-E | Access | post-receiver missing-owner-link bucket | close or reclassify bucket | recorded | recorded | `a908b2d` | done |
-| P3-F | Access | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
+| P3-F | Access | imported member receivers and remaining clusters | fixed or deferred with evidence | recorded | recorded | pending | done |
 | P4-A | Consumer | context | new facts visible in context | n/a | pending | pending | open |
 | P4-B | Consumer | impact | affected-symbol behavior checked | n/a | pending | pending | open |
 | P4-C | Consumer | graph API/readback | new relationships preserved | n/a | pending | pending | open |

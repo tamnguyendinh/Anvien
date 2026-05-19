@@ -146,6 +146,54 @@ func TestResolveMemberAccessRejectsCrossLanguageGlobalOwner(t *testing.T) {
 	}
 }
 
+func TestResolveImportedWorkspaceMemberAccess(t *testing.T) {
+	moduleScope := "scope:cmd/app/main.go:module"
+	functionScope := "scope:cmd/app/main.go:main"
+	targetRaw := "github.com/tamnguyendinh/avmatrix-go/internal/pkg"
+	source := scopeir.ScopeIR{
+		FilePath:    "cmd/app/main.go",
+		FileHash:    "hash-main",
+		Language:    scanner.Go,
+		ModuleScope: moduleScope,
+		Imports: []scopeir.ImportFact{{
+			FilePath:     "cmd/app/main.go",
+			Kind:         scopeir.ImportNamed,
+			LocalName:    "pkg",
+			ImportedName: "pkg",
+			TargetRaw:    &targetRaw,
+		}},
+		Scopes: []scopeir.ScopeFact{
+			{ID: moduleScope, Kind: scopeir.ScopeModule, FilePath: "cmd/app/main.go"},
+			{ID: functionScope, Parent: &[]string{moduleScope}[0], Kind: scopeir.ScopeFunction, FilePath: "cmd/app/main.go", OwnedDefIDs: []string{"def:main"}},
+		},
+		Definitions: []scopeir.DefinitionFact{
+			{ID: "def:main", FilePath: "cmd/app/main.go", FileHash: "hash-main", Name: "main", QualifiedName: "main", Label: scopeir.NodeFunction, Range: scopeir.Range{StartLine: 3, EndLine: 5}},
+		},
+		Accesses: []scopeir.AccessFact{
+			{FilePath: "cmd/app/main.go", FileHash: "hash-main", Name: "Mode", Kind: scopeir.AccessRead, ExplicitReceiver: "pkg", InScope: functionScope, Range: scopeir.Range{StartLine: 4}},
+		},
+	}
+	target := scopeir.ScopeIR{
+		FilePath: "internal/pkg/constants.go",
+		FileHash: "hash-pkg",
+		Language: scanner.Go,
+		Definitions: []scopeir.DefinitionFact{
+			{ID: "def:pkg-mode", FilePath: "internal/pkg/constants.go", FileHash: "hash-pkg", Name: "Mode", QualifiedName: "Mode", Label: scopeir.NodeConst, Range: scopeir.Range{StartLine: 1, EndLine: 1}},
+		},
+	}
+
+	result, err := Resolve([]scopeir.ScopeIR{source, target}, Options{})
+	if err != nil {
+		t.Fatalf("resolve failed: %v", err)
+	}
+	mainFn := requireNode(t, result.Graph, "Function", "cmd/app/main.go", "main")
+	mode := requireNode(t, result.Graph, "Const", "internal/pkg/constants.go", "Mode")
+	requireRelationship(t, result.Graph, graph.RelAccesses, mainFn.ID, mode.ID)
+	if result.Metrics.ResolvedAccesses != 1 || result.Metrics.UnresolvedReferences != 0 {
+		t.Fatalf("unexpected metrics: %#v", result.Metrics)
+	}
+}
+
 func TestResolveIntoPreservesExistingFileNodeMetadata(t *testing.T) {
 	base := graph.New()
 	base.AddNode(graph.Node{

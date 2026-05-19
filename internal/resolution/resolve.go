@@ -198,6 +198,15 @@ func resolveAccess(w *workspace, e *emitter, access scopeir.AccessFact) {
 		return
 	}
 	target, ok := w.resolveMember(access.Name, access.ExplicitReceiver, access.InScope, propertyLabels())
+	confidence := 1.0
+	evidenceKind := "type-binding"
+	if !ok {
+		target, ok = w.resolveImportedMember(access.ExplicitReceiver, access.Name, access.InScope, propertyLabels())
+		if ok {
+			confidence = 0.9
+			evidenceKind = "import-binding"
+		}
+	}
 	if !ok {
 		e.metrics.UnresolvedReferences++
 		return
@@ -212,9 +221,9 @@ func resolveAccess(w *workspace, e *emitter, access scopeir.AccessFact) {
 		FileHash:   access.FileHash,
 		Range:      access.Range,
 		Kind:       kind,
-		Confidence: 1,
+		Confidence: confidence,
 		Evidence: []graph.Evidence{{
-			Kind:   "type-binding",
+			Kind:   evidenceKind,
 			Weight: 1,
 			Note:   access.ExplicitReceiver + "." + access.Name,
 		}},

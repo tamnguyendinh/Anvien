@@ -106,6 +106,12 @@ func classifyAccessCandidate(w *workspace, access scopeir.AccessFact) (string, b
 	if _, ok := w.callerForScope(access.InScope); !ok {
 		return "missing_caller", false, "no caller scope found for access"
 	}
+	if _, ok := w.resolveImportedMember(access.ExplicitReceiver, access.Name, access.InScope, propertyLabels()); ok {
+		return "resolved", true, "imported receiver and property member are unique"
+	}
+	if w.receiverIsUnresolvedImport(access.ExplicitReceiver, access.InScope) {
+		return "external_library_type", false, "receiver is imported but target is not resolved in the analyzed workspace"
+	}
 	ownerType, ok := w.resolveReceiverType(access.ExplicitReceiver, access.InScope)
 	if !ok {
 		return "missing_receiver_type", false, "receiver has no resolvable type binding or enclosing owner"
@@ -128,6 +134,40 @@ func classifyAccessCandidate(w *workspace, access scopeir.AccessFact) (string, b
 func unsupportedAccessReceiver(receiver string) bool {
 	receiver = strings.TrimSpace(receiver)
 	return strings.ContainsAny(receiver, "[](){}")
+}
+
+func (w *workspace) receiverIsUnresolvedImport(receiver string, startScope string) bool {
+	root := accessReceiverRoot(receiver)
+	if root == "" {
+		return false
+	}
+	if _, ok := w.lookupTypeBinding(root, startScope); ok {
+		return false
+	}
+	sourceFile := w.scopeFilePath(startScope)
+	if sourceFile == "" {
+		return false
+	}
+	for _, item := range w.imports {
+		if item.LinkStatus != "unresolved" {
+			continue
+		}
+		if cleanPath(item.Fact.FilePath) == sourceFile && item.Fact.LocalName == root {
+			return true
+		}
+	}
+	return false
+}
+
+func accessReceiverRoot(receiver string) string {
+	receiver = strings.TrimSpace(receiver)
+	if receiver == "" {
+		return ""
+	}
+	if index := strings.Index(receiver, "."); index >= 0 {
+		receiver = receiver[:index]
+	}
+	return strings.TrimSpace(receiver)
 }
 
 func filterDefRefsByLabel(refs []defRef, labels []scopeir.NodeLabel) []defRef {

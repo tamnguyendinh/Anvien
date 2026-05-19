@@ -39,8 +39,8 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 	if len(queries) != len(NodeTables)+2 {
 		t.Fatalf("SchemaQueries() len = %d, want %d", len(queries), len(NodeTables)+2)
 	}
-	if len(RelationPairs) != 239 {
-		t.Fatalf("RelationPairs len = %d, want 239", len(RelationPairs))
+	if len(RelationPairs) != 254 {
+		t.Fatalf("RelationPairs len = %d, want 254", len(RelationPairs))
 	}
 
 	fileSchema := NodeSchema("File")
@@ -65,7 +65,22 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 		"FROM File TO File",
 		"FROM File TO Package",
 		"FROM File TO `Struct`",
+		"FROM Function TO `Variable`",
+		"FROM Method TO `Const`",
+		"FROM Method TO `Static`",
+		"FROM Method TO `Variable`",
+		"FROM Package TO `Const`",
+		"FROM Package TO `Property`",
+		"FROM Package TO `Static`",
+		"FROM Package TO `Variable`",
+		"FROM `Const` TO `Property`",
+		"FROM `Const` TO `Static`",
+		"FROM `Const` TO `Variable`",
+		"FROM `Variable` TO `Const`",
 		"FROM `Variable` TO Function",
+		"FROM `Variable` TO `Static`",
+		"FROM `Variable` TO `Variable`",
+		"FROM `Const` TO `Const`",
 		"FROM `Const` TO Function",
 		"FROM `Constructor` TO `Property`",
 		"FROM CodeElement TO CodeElement",

@@ -87,6 +87,7 @@ Every property/access gate benchmark row must include:
 | P3-A post-ownership access taxonomy | `.tmp\p3a-access-candidates-website-20260519.json`, `.tmp\p3a-access-candidates-avmatrix-go-20260519.json` | Website `total=24,542 resolved=3`; AVmatrix-GO `total=21,132 resolved=5,128`; biggest bucket remains `missing_receiver_type` | recorded |
 | P3-B/P3-D access validation | `.tmp\p3b-property-access-website-20260519.json`, `.tmp\p3b-access-candidates-website-20260519.json`, `.tmp\p3b-property-access-avmatrix-go-20260519.json`, `.tmp\p3b-access-candidates-avmatrix-go-20260519.json` | Website final `ACCESSES=2,769`, candidate `resolved=4,978`; AVmatrix-GO final `ACCESSES=2,746`, candidate `resolved=5,110`; invalid owner edges `0` | recorded |
 | P3-E missing-owner-link closure | `.tmp\p3e-access-candidates-website-20260519.json`, `.tmp\p3e-access-candidates-avmatrix-go-20260519.json` | Website `missing_owner_link=0`; AVmatrix-GO `missing_owner_link=0`; invalid owner edges `0` | recorded |
+| P3-F imported member receiver cluster | `.tmp\p3f-property-access-website-20260519.json`, `.tmp\p3f-access-candidates-website-20260519.json`, `.tmp\p3f-property-access-avmatrix-go-20260519.json`, `.tmp\p3f-access-candidates-avmatrix-go-20260519.json` | Website final `ACCESSES=2,770`, candidate `resolved=4,979`; AVmatrix-GO final `ACCESSES=5,018`, candidate `resolved=8,431`; invalid owner edges `0`; remaining buckets explicitly deferred | recorded |
 | P5 final gate | pending | final workload matrix | open |
 
 ## P1 Cross-Language Baseline Gate
@@ -559,3 +560,63 @@ P3-E interpretation:
 - Cross-language global owner collisions are treated as external/unresolved instead of resolving a TypeScript receiver to an unrelated Go owner with the same type name.
 - Same-name standalone properties are no longer enough evidence for `missing_owner_link`; if the receiver owner has no matching member, the candidate is a false positive unless a separate ownership gate proves a real missing edge.
 - The remaining large buckets are now explicit P3-F work: receiver type inference, external/import alias modeling, and unsupported receiver syntax.
+
+## P3-F Imported Member Receiver Cluster And Deferrals
+
+Date: 2026-05-19
+
+Artifacts:
+
+- Website analyze benchmark: `.tmp\p3f-website-analyze-20260519.json`
+- Website graph snapshot: `.tmp\p3f-property-access-website-go-graph-20260519.json`
+- Website property/access gate output: `.tmp\p3f-property-access-website-20260519.json`
+- Website access candidate output: `.tmp\p3f-access-candidates-website-20260519.json`
+- AVmatrix-GO analyze benchmark: `.tmp\p3f-avmatrix-go-analyze-20260519.json`
+- AVmatrix-GO graph snapshot: `.tmp\p3f-property-access-avmatrix-go-graph-20260519.json`
+- AVmatrix-GO property/access gate output: `.tmp\p3f-property-access-avmatrix-go-20260519.json`
+- AVmatrix-GO access candidate output: `.tmp\p3f-access-candidates-avmatrix-go-20260519.json`
+
+Analyze runtime and graph size:
+
+| Workload | Analyze runtime | Files scanned | Files parsed | Graph nodes | Graph relationships |
+|---|---:|---:|---:|---:|---:|
+| `E:\Website` | 16,744.5 ms | 1,870 | 998 | 27,956 | 58,732 |
+| `E:\AVmatrix-GO` | 14,882.9 ms | 682 | 527 | 20,324 | 50,953 |
+
+Final graph property/access gate:
+
+| Workload | `Property` | `HAS_PROPERTY` | `ACCESSES` | `real_edge_missing` | `true_no_edge` | `unknown_no_edge` | Invalid edges |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 7,097 | 5,922 | 2,770 | 0 | 1,156 | 19 | 0 |
+| `E:\AVmatrix-GO` | 3,096 | 2,769 | 5,018 | 0 | 324 | 3 | 0 |
+
+Final graph delta from P3-E:
+
+| Workload | P3-E `ACCESSES` | P3-F `ACCESSES` | Delta |
+|---|---:|---:|---:|
+| `E:\Website` | 2,769 | 2,770 | +1 |
+| `E:\AVmatrix-GO` | 2,747 | 5,018 | +2,271 |
+
+Access candidate taxonomy:
+
+| Workload | Analyze runtime | Access candidates | Resolved | Unresolved | Final graph resolved accesses | Resolution unresolved references |
+|---|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 8,037 ms | 24,542 | 4,979 | 19,563 | 4,979 | 59,288 |
+| `E:\AVmatrix-GO` | 6,327 ms | 21,242 | 8,431 | 12,811 | 8,431 | 47,234 |
+
+Reason taxonomy:
+
+| Workload | `resolved` | `missing_receiver_type` | `external_library_type` | `unsupported_syntax` | `missing_caller` | `missing_owner_link` | `false_positive_candidate` | `ambiguous_owner` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 4,979 | 10,619 | 6,295 | 1,313 | 53 | 0 | 1,174 | 109 |
+| `E:\AVmatrix-GO` | 8,431 | 7,499 | 4,354 | 910 | 14 | 0 | 34 | 0 |
+
+P3-F interpretation:
+
+- Imported workspace member accesses are now real graph edges where the imported target is resolved inside the analyzed repo.
+- Imported receivers whose target is not resolved in the workspace are classified as `external_library_type`, not `missing_receiver_type`.
+- The self repo benefits most because Go package/member references are common: candidate `resolved` increased from `5,114` to `8,431`, and final graph `ACCESSES` increased from `2,747` to `5,018`.
+- Website gets a small graph increase because most remaining unresolved receivers are not imported workspace members.
+- Remaining `missing_receiver_type` is deferred because it requires broader type/dataflow inference: untyped locals, callback and array element bindings, framework request/result values, and chained receiver propagation.
+- Remaining `external_library_type` is deferred because it represents stdlib/npm/framework/package targets not modeled as local graph nodes or unresolved aliases outside the current workspace model.
+- Remaining `unsupported_syntax` is deferred because computed/index/call/new/optional-chain receiver expressions need an expression evaluator rather than owner-link expansion.
