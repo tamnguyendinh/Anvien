@@ -725,3 +725,238 @@ Conclusion:
 - zero-count contract rows are intentionally hidden in loaded-graph mode because graph-present rows come directly from the loaded graph payload;
 - graph policy and unresolved/external coverage are visible in generated contract tests;
 - filter sections, legend rows, relationship toggles, focus-depth warning/clear behavior, Back navigation, and dashboard resize now have focused e2e coverage on the local large graph.
+
+## E14 - Restaurant_manager TypeScript Heritage ScopeIR Trace Slice
+
+Date: 2026-05-19
+
+Status: recorded
+
+### Implementation Files
+
+Backend test files:
+
+- `internal/providers/tsjs/extract_test.go`
+
+Plan files:
+
+- `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-plan.md`
+- `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-benchmark.md`
+- `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-evidence.md`
+
+### Trace Commands
+
+Source-site inventory:
+
+```powershell
+rg -n --glob '*.ts' --glob '*.tsx' --glob '!node_modules/**' --glob '!.git/**' --glob '!.avmatrix/**' --glob '!reports/**' --glob '!Docs/**' --glob '!dist/**' --glob '!build/**' "^\s*(export\s+)?interface\s+\w+\s+extends\s+|^\s*(export\s+)?class\s+\w+\s+extends\s+" E:\Restaurant_manager
+```
+
+ScopeIR trace validation:
+
+```powershell
+$env:AVMATRIX_RESTAURANT_MANAGER_ROOT='E:\Restaurant_manager'
+go test ./internal/providers/tsjs -run TestExtractRestaurantManagerTypeScriptHeritageSites -count=1 -v
+```
+
+Default-suite safety check:
+
+```powershell
+Remove-Item Env:\AVMATRIX_RESTAURANT_MANAGER_ROOT -ErrorAction SilentlyContinue
+go test ./internal/providers/tsjs -run TestExtractRestaurantManagerTypeScriptHeritageSites -count=1 -v
+go test ./internal/providers/tsjs ./internal/resolution
+```
+
+Graph output trace:
+
+```powershell
+$g = Get-Content -Raw -LiteralPath 'E:\Restaurant_manager\.avmatrix\graph.json' | ConvertFrom-Json
+$g.relationships |
+  Where-Object { $_.type -in @('EXTENDS','INHERITS','IMPLEMENTS') -and $_.sourceId -like 'Interface:electron/renderer/src/*' } |
+  Sort-Object sourceId,targetId,type |
+  ForEach-Object { "$($_.type)`t$($_.sourceId)`t$($_.targetId)" }
+```
+
+Import/source context trace:
+
+```powershell
+rg -n "^\s*import\s+|extends\s+" <each audited Restaurant_manager TS/TSX file>
+```
+
+### ScopeIR Findings
+
+The optional TS provider trace test reads the audited Restaurant_manager source files and verifies `17` raw `HeritageFact` target facts across `13` files:
+
+| File | Heritage targets |
+|---|---|
+| `electron/renderer/src/utils/performance.ts` | `PerformanceEntry`, `Performance` |
+| `electron/renderer/src/utils/dateUtils.ts` | `DateOptions`, `TimeOptions` |
+| `electron/renderer/src/types/table.ts` | `Table` |
+| `electron/renderer/src/types/area.ts` | `Area` |
+| `electron/renderer/src/features/tables/types.ts` | `Table` |
+| `electron/renderer/src/components/shared/Form/FormTextarea.tsx` | `React.TextareaHTMLAttributes<HTMLTextAreaElement>` |
+| `electron/renderer/src/components/shared/Form/FormSelect.tsx` | `React.SelectHTMLAttributes<HTMLSelectElement>` |
+| `electron/renderer/src/components/shared/Form/FormInput.tsx` | `React.InputHTMLAttributes<HTMLInputElement>` |
+| `electron/renderer/src/components/shared/Form/FormCheckbox.tsx` | `React.InputHTMLAttributes<HTMLInputElement>` |
+| `electron/renderer/src/components/shared/ErrorState/ErrorBoundary.tsx` | `Component` |
+| `electron/renderer/src/components/shared/Button/Button.tsx` | `React.ButtonHTMLAttributes<HTMLButtonElement>` |
+| `electron/renderer/src/api/client.ts` | `Error` |
+| `electron/renderer/src/features/shifts/types.ts` | `Shift`, `ShiftAssignment`, `ShiftDTO` |
+
+### Graph Findings
+
+Resolved TS heritage pairs in the final Restaurant_manager graph:
+
+```text
+AssignmentWithUser -> ShiftAssignment
+ShiftWithCounts -> Shift
+ShiftWithCountsDTO -> ShiftDTO
+TableWithUser -> Table
+AreaWithTableCount -> Area
+TableWithUser -> Table
+DateTimeOptions -> DateOptions
+DateTimeOptions -> TimeOptions
+```
+
+Each resolved pair appears as raw `EXTENDS` plus compatibility `INHERITS`.
+
+### Cross-File / Imported Target Classification
+
+Result:
+
+- no audited TS heritage source site has an in-repo cross-file/imported target that failed import binding;
+- resolved in-repo targets are same-file interface targets;
+- imported or global heritage targets are external/built-in symbols from React, DOM, JavaScript, or browser performance APIs:
+  - `React.*HTMLAttributes<...>`
+  - `Component<Props, State>`
+  - `Error`
+  - `PerformanceEntry`
+  - `Performance`
+- these targets follow the unresolved/external policy: do not synthesize graph nodes or resolved graph edges to external packages or platform APIs.
+
+Conclusion:
+
+- the original missing TS graph edges were not extraction losses after the fix: every audited source site now emits ScopeIR `HeritageFact` data;
+- graph relationships are emitted for resolved in-repo targets;
+- unresolved imported/global targets are policy-classified external targets, not silent missing graph facts.
+
+## E15 - Provider Non-Heritage Fact-Family Coverage Audit
+
+Date: 2026-05-19
+
+Status: recorded
+
+### Audit Commands
+
+```powershell
+rg "func Test.*ScopeIRParityFixture|func TestResolve.*GraphParity|func Test.*GraphParity|func Test.*Provider.*Parity" internal\providers -g "*_test.go" -n
+rg --files internal\providers | Select-String -Pattern "scopeir_signature\.golden\.json$"
+rg "func TestResolve.*GraphParity|func Test.*GraphParity" internal\providers -g "*_test.go" -n
+```
+
+### Findings
+
+Provider-specific ScopeIR golden fixtures exist for:
+
+- C
+- C++
+- C#
+- Dart
+- Go
+- Java
+- Kotlin
+- PHP
+- Python
+- Ruby
+- Rust
+- Swift
+- TypeScript/JavaScript
+- Vue
+
+Provider/script-container graph parity count tests exist for:
+
+- C
+- C++
+- C#
+- Dart
+- Go
+- Java
+- Kotlin
+- PHP
+- Python
+- Ruby
+- Rust
+- Swift
+- Vue
+- Svelte
+- Astro
+
+Centralized provider parity tests cover:
+
+- calls/forms/receivers/arity across representative provider-backed languages;
+- imports across TS/JS, C#, Go, Java, Kotlin, Python, Ruby, Rust, C++, Dart, and Swift;
+- owner/member extraction across TS, Python, Java, C#, Go, Rust, and C++;
+- heritage extraction and graph resolution across TS, Go, Python, Java, C#, Kotlin, C++, PHP, Ruby, Rust, Dart, and Swift.
+
+Source fact families covered by these suites:
+
+- definitions;
+- imports;
+- calls;
+- accesses;
+- type refs/type bindings/type annotations;
+- member/property/method ownership;
+- heritage relationships;
+- graph resolution counts and representative relationship emission.
+
+Route/tool/process relationships are intentionally not provider parity fixtures. They are covered by route, process, tool, MCP, framework, and graph-resolution tests because those facts are framework/analyzer-derived rather than direct language-provider extraction.
+
+Conclusion:
+
+- non-TS/Go provider facts are not limited to a small subset; they are represented by provider-specific golden fixtures plus graph parity count tests;
+- script-container providers have graph parity count tests for embedded JS/TS extraction;
+- the remaining final task is closure validation and commit, not a known unclassified provider/fact-family gap.
+
+## E16 - Final Closure Evidence
+
+Date: 2026-05-19
+
+Status: recorded
+
+### Final Validation Commands
+
+Passed:
+
+```powershell
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+```
+
+Previously passed in the active implementation slices and included in final benchmark:
+
+```powershell
+$env:AVMATRIX_RESTAURANT_MANAGER_ROOT='E:\Restaurant_manager'
+go test ./internal/providers/tsjs -run TestExtractRestaurantManagerTypeScriptHeritageSites -count=1 -v
+npm --prefix avmatrix-web run build
+npm --prefix avmatrix-web test -- --run
+npm --prefix avmatrix-web run test:e2e -- shell-interactions.spec.ts -g "back button|resizes the left dashboard|displays graph filters" --workers=1 --timeout=120000
+```
+
+Result summary:
+
+- Go build passed for `./cmd/... ./internal/...`;
+- Go tests passed for `./cmd/... ./internal/...`;
+- optional Restaurant_manager TS ScopeIR trace passed when `AVMATRIX_RESTAURANT_MANAGER_ROOT` was set;
+- Web production build passed;
+- full Vitest suite passed with `41` files and `325` tests;
+- focused Playwright shell e2e passed `3/3`;
+- final graph and UI benchmark inventories are recorded in B5.
+
+Final conclusion:
+
+- graph-present filters, legends, relationship counts, and display rows are aligned with generated contracts and graph payload reality;
+- raw graph compatibility semantics are preserved for downstream consumers, while Web display groups duplicate same-pair heritage compatibility edges;
+- `Restaurant_manager` TS heritage source sites emit ScopeIR `HeritageFact` data, resolved in-repo targets become graph edges, and external/imported platform targets are classified by unresolved/external policy;
+- supported-language coverage matrix and provider fact-family evidence have no remaining unclassified language entries;
+- Back navigation, left dashboard resize, graph filter display, legend display, relationship toggles, and focus-depth behavior have unit/e2e evidence;
+- all completed implementation slices have been committed or are included in the final closure commit.

@@ -414,26 +414,113 @@ The focused shell e2e uses the first backend repo; in this run that was `Restaur
 | `npm --prefix avmatrix-web test -- --run` | passed, `41` files / `325` tests |
 | `npm --prefix avmatrix-web run test:e2e -- shell-interactions.spec.ts -g "back button|resizes the left dashboard|displays graph filters" --workers=1 --timeout=120000` | passed, `3/3` |
 
-## B4 - Final Benchmark
+## B4 - Restaurant_manager TypeScript Heritage ScopeIR Trace
 
-Status: pending broader provider-parity and final closure
+Status: recorded
 
-Record final:
+Measurement date: 2026-05-19
 
-- AVmatrix-GO analyze counts and runtime;
-- Restaurant_manager analyze counts and runtime;
-- raw relationship counts;
-- semantic unique heritage counts;
-- duplicate compatibility counts;
-- full Web graph filter inventory counts;
-- supported-language graph coverage matrix;
-- per-language provider/extractor status;
-- per-language source-site, extraction, resolution, graph relationship/node, and Web display/filter classification;
-- TS parser/ScopeIR heritage source-site coverage;
-- Go embedded struct heritage display behavior;
-- Web dashboard displayed node and edge counts;
-- graph adapter classification coverage;
-- edge visibility and focus-depth behavior;
-- top bar Back navigation target and stale connection-loss banner behavior;
-- left dashboard min/max resize bounds and canvas usable width;
-- e2e observed display behavior.
+### Source And ScopeIR Inventory
+
+| Metric | Count |
+|---|---:|
+| Audited TS/TSX files with heritage sites | `13` |
+| Audited TS heritage source sites | `16` |
+| ScopeIR `HeritageFact` target facts verified from source files | `17` |
+| Resolved in-repo TS heritage source-target pairs in graph | `8` |
+| Raw resolved TS heritage graph relationships | `16` |
+| Unresolved/external TS heritage target facts | `9` |
+| In-repo cross-file/imported TS heritage target failures | `0` |
+
+The `17` ScopeIR target facts are larger than the `16` source-site count because `DateTimeOptions extends DateOptions, TimeOptions` produces two target facts from one source site.
+
+### Target Classification
+
+| Classification | Count | Targets |
+|---|---:|---|
+| Resolved same-file in-repo targets | `8` | `ShiftAssignment`, `Shift`, `ShiftDTO`, `Table`, `Area`, `Table`, `DateOptions`, `TimeOptions` |
+| External/imported/global targets | `9` | `PerformanceEntry`, `Performance`, `React.TextareaHTMLAttributes<HTMLTextAreaElement>`, `React.SelectHTMLAttributes<HTMLSelectElement>`, `React.InputHTMLAttributes<HTMLInputElement>` x2, `Component`, `React.ButtonHTMLAttributes<HTMLButtonElement>`, `Error` |
+| In-repo imported cross-file targets | `0` | none found in audited source sites |
+
+### Validation Inventory
+
+| Command | Result |
+|---|---|
+| `$env:AVMATRIX_RESTAURANT_MANAGER_ROOT='E:\Restaurant_manager'; go test ./internal/providers/tsjs -run TestExtractRestaurantManagerTypeScriptHeritageSites -count=1 -v` | passed |
+| `Remove-Item Env:\AVMATRIX_RESTAURANT_MANAGER_ROOT -ErrorAction SilentlyContinue; go test ./internal/providers/tsjs -run TestExtractRestaurantManagerTypeScriptHeritageSites -count=1 -v` | skipped by design |
+| `go test ./internal/providers/tsjs ./internal/resolution` | passed |
+
+## B5 - Final Benchmark
+
+Status: recorded
+
+Measurement date: 2026-05-19
+
+### Final Graph Inventory
+
+| Repo | Analyze runtime | Nodes | Relationships | Graph-present labels | Raw relationship types | Display relationship types |
+|---|---:|---:|---:|---:|---:|---:|
+| `E:\AVmatrix-GO` | `17.89s` | `20,771` | `51,854` | `16` | `11` | `11` |
+| `E:\Restaurant_manager` | `28.93s` | `78,358` | `130,588` | `17` | `14` | `13` |
+
+### Final Heritage Inventory
+
+| Metric | `E:\AVmatrix-GO` | `E:\Restaurant_manager` |
+|---|---:|---:|
+| Raw `EXTENDS` | `0` | `19` |
+| Raw `INHERITS` | `0` | `19` |
+| Raw `IMPLEMENTS` | `0` | `0` |
+| Unique semantic heritage pairs | `0` | `19` |
+| Duplicate compatibility pairs | `0` | `19` raw, `0` misleading display duplicates |
+| Display relationships after compatibility grouping | `51,854` | `130,569` |
+
+### Final TypeScript Heritage Inventory
+
+| Metric | Count |
+|---|---:|
+| Audited Restaurant_manager TS heritage source sites | `16` |
+| ScopeIR `HeritageFact` target facts from source files | `17` |
+| Resolved in-repo TS heritage pairs | `8` |
+| Raw resolved TS heritage relationships | `16` |
+| Unresolved/external TS heritage target facts | `9` |
+| In-repo imported cross-file target failures | `0` |
+
+### Final Contract And Provider Coverage
+
+| Metric | Count |
+|---|---:|
+| Generated Web contract node labels | `37` |
+| Generated Web contract relationship types | `22` |
+| Relationship display policy entries | `22` |
+| Supported code languages | `18` |
+| Language graph coverage entries | `18` |
+| Provider-backed languages | `14` |
+| Script-container-backed languages | `3` |
+| Dedicated analyzer-phase languages | `1` |
+| Provider-specific ScopeIR golden fixture languages | `14` |
+| Provider/script-container graph parity count suites | `15` |
+
+### Final UI And Shell Inventory
+
+| Metric | Final |
+|---|---|
+| Loaded-graph zero-count contract rows | hidden by graph-present payload inventory |
+| No-graph fallback rows | generated contract rows with `0` counts |
+| `INHERITS` display label | `Normalized Heritage` |
+| Duplicate same-pair `INHERITS` display behavior | grouped with matching `EXTENDS` / `IMPLEMENTS` |
+| Top bar Back navigation target | `/Start-AVmatrix.html` on current origin |
+| Back navigation false reconnect banner | `0` banners in focused e2e |
+| Left dashboard resize bounds | `192px` to `480px` |
+| Left dashboard persisted width key | `avmatrix.leftPanelWidth` |
+| E2E graph filter coverage | node/edge sections, File/Calls rows, legends, Calls toggle, focus-depth warning/clear |
+
+### Final Validation Inventory
+
+| Command | Result |
+|---|---|
+| `go build ./cmd/... ./internal/...` | passed |
+| `go test ./cmd/... ./internal/...` | passed |
+| `$env:AVMATRIX_RESTAURANT_MANAGER_ROOT='E:\Restaurant_manager'; go test ./internal/providers/tsjs -run TestExtractRestaurantManagerTypeScriptHeritageSites -count=1 -v` | passed |
+| `npm --prefix avmatrix-web run build` | passed |
+| `npm --prefix avmatrix-web test -- --run` | passed, `41` files / `325` tests |
+| `npm --prefix avmatrix-web run test:e2e -- shell-interactions.spec.ts -g "back button|resizes the left dashboard|displays graph filters" --workers=1 --timeout=120000` | passed, `3/3` |

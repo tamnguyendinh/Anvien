@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"testing"
@@ -98,6 +99,93 @@ interface GenericArea extends Pick<Area, "id"> { label: string; }
 	requireHeritage(t, ir, "Area", scopeir.HeritageExtends)
 	requireHeritage(t, ir, "CountedArea", scopeir.HeritageExtends)
 	requireHeritage(t, ir, `Pick<Area, "id">`, scopeir.HeritageExtends)
+}
+
+func TestExtractRestaurantManagerTypeScriptHeritageSites(t *testing.T) {
+	root := os.Getenv("AVMATRIX_RESTAURANT_MANAGER_ROOT")
+	if root == "" {
+		t.Skip("set AVMATRIX_RESTAURANT_MANAGER_ROOT to trace Restaurant_manager TS heritage sites")
+	}
+
+	tests := []struct {
+		path string
+		want []string
+	}{
+		{
+			path: "electron/renderer/src/utils/performance.ts",
+			want: []string{"PerformanceEntry", "Performance"},
+		},
+		{
+			path: "electron/renderer/src/utils/dateUtils.ts",
+			want: []string{"DateOptions", "TimeOptions"},
+		},
+		{
+			path: "electron/renderer/src/types/table.ts",
+			want: []string{"Table"},
+		},
+		{
+			path: "electron/renderer/src/types/area.ts",
+			want: []string{"Area"},
+		},
+		{
+			path: "electron/renderer/src/features/tables/types.ts",
+			want: []string{"Table"},
+		},
+		{
+			path: "electron/renderer/src/components/shared/Form/FormTextarea.tsx",
+			want: []string{"React.TextareaHTMLAttributes<HTMLTextAreaElement>"},
+		},
+		{
+			path: "electron/renderer/src/components/shared/Form/FormSelect.tsx",
+			want: []string{"React.SelectHTMLAttributes<HTMLSelectElement>"},
+		},
+		{
+			path: "electron/renderer/src/components/shared/Form/FormInput.tsx",
+			want: []string{"React.InputHTMLAttributes<HTMLInputElement>"},
+		},
+		{
+			path: "electron/renderer/src/components/shared/Form/FormCheckbox.tsx",
+			want: []string{"React.InputHTMLAttributes<HTMLInputElement>"},
+		},
+		{
+			path: "electron/renderer/src/components/shared/ErrorState/ErrorBoundary.tsx",
+			want: []string{"Component"},
+		},
+		{
+			path: "electron/renderer/src/components/shared/Button/Button.tsx",
+			want: []string{"React.ButtonHTMLAttributes<HTMLButtonElement>"},
+		},
+		{
+			path: "electron/renderer/src/api/client.ts",
+			want: []string{"Error"},
+		},
+		{
+			path: "electron/renderer/src/features/shifts/types.ts",
+			want: []string{"Shift", "ShiftAssignment", "ShiftDTO"},
+		},
+	}
+
+	total := 0
+	for _, tt := range tests {
+		t.Run(tt.path, func(t *testing.T) {
+			fullPath := filepath.Join(root, filepath.FromSlash(tt.path))
+			source, err := os.ReadFile(fullPath)
+			if err != nil {
+				t.Fatalf("read %s: %v", fullPath, err)
+			}
+			ir := parseAndExtract(t, tt.path, "hash-restaurant-manager", scanner.TypeScript, source)
+			for _, target := range tt.want {
+				requireHeritage(t, ir, target, scopeir.HeritageExtends)
+			}
+			if len(ir.Heritage) != len(tt.want) {
+				t.Fatalf("heritage fact count for %s = %d, want %d: %#v", tt.path, len(ir.Heritage), len(tt.want), ir.Heritage)
+			}
+			total += len(ir.Heritage)
+		})
+	}
+	if total != 17 {
+		t.Fatalf("Restaurant_manager TS heritage target facts = %d, want 17", total)
+	}
 }
 
 func TestExtractTypeScriptScopeIRParityFixture(t *testing.T) {
