@@ -221,3 +221,25 @@ Record each implementation slice here:
 - Restaurant_manager analyze results;
 - AVmatrix-GO analyze results;
 - final graph and Web UI behavior.
+
+## E7 - Plan Review Evidence
+
+Date: 2026-05-19
+
+Review result:
+
+- The original plan pointed at the correct high-level problem: duplicated heritage semantics plus missing TS heritage coverage.
+- The original plan needed sharper ordering before implementation. It could jump from baseline to "fix provider/resolution" without first forcing a source-to-graph trace for each missing TS heritage class.
+- The plan now requires tracing every missing TS site through:
+
+```text
+source AST -> ScopeIR HeritageFact -> workspace heritage resolution -> graph relationship -> Web payload -> dashboard/canvas display
+```
+
+Additional corrections added:
+
+- final source-site accuracy must prefer parser/ScopeIR inventory over regex counts;
+- Go embedded structs must be classified explicitly, because showing Go embedding as `EXTENDS` may be misleading even if the underlying heritage edge is useful;
+- MCP/context/impact/MRO compatibility must be tested if `INHERITS` raw graph or graph payload semantics change;
+- generated contracts/schema docs must be updated if the selected policy adds relationship metadata, external target facts, or display-group fields;
+- UI tests must cover both duplicate `EXTENDS` + `INHERITS` pairs and TS resolved/unresolved heritage display.

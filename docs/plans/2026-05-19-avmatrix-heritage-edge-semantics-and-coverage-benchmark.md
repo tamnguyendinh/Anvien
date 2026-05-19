@@ -18,8 +18,9 @@ For this plan, benchmarkable measurements include:
 - raw graph relationship counts for `EXTENDS`, `INHERITS`, and `IMPLEMENTS`;
 - unique semantic heritage source-target pair counts;
 - duplicate compatibility edge counts;
-- TypeScript heritage source-site counts;
+- TypeScript heritage source-site counts, preferring parser/ScopeIR inventory over regex after implementation starts;
 - resolved, unresolved, and missing heritage coverage counts;
+- Go embedded-struct heritage counts and final display labels;
 - Web dashboard displayed edge counts versus raw graph counts;
 - graph adapter relationship preservation/collapse counts;
 - analyze runtime if analyzer behavior is changed.
@@ -130,9 +131,12 @@ Record after each relevant slice:
 | Unique semantic heritage pair count | `6` | measured |
 | Duplicate compatibility pair count | `6` | `0` for UI display, or clearly marked if raw graph preserves both |
 | TS heritage source sites | `16` | measured |
+| TS parser/ScopeIR heritage source sites | pending | measured |
 | TS resolved heritage edges | `0` | all resolvable in-repo sites |
 | TS unresolved/external heritage sites represented | `0` | all unresolved/external sites represented or audited |
 | TS missing heritage source sites | `16` | `0` |
+| Go embedded struct unique semantic pairs | `6` | measured |
+| Go embedded struct user-facing duplicate pairs | `6` through `EXTENDS` + `INHERITS` | `0` misleading duplicates |
 
 ## B2 - Final Benchmark
 
@@ -145,6 +149,7 @@ Record final:
 - raw relationship counts;
 - semantic unique heritage counts;
 - duplicate compatibility counts;
-- TS heritage source-site coverage;
+- TS parser/ScopeIR heritage source-site coverage;
+- Go embedded struct heritage display behavior;
 - Web dashboard displayed counts;
 - e2e observed display behavior.
