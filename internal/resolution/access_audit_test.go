@@ -57,9 +57,9 @@ func TestAuditAccessCandidatesClassifiesReasons(t *testing.T) {
 	assertAccessReason(t, result, "resolved", 1)
 	assertAccessReason(t, result, "missing_receiver_type", 1)
 	assertAccessReason(t, result, "external_library_type", 1)
-	assertAccessReason(t, result, "missing_owner_link", 1)
+	assertAccessReason(t, result, "missing_owner_link", 0)
 	assertAccessReason(t, result, "ambiguous_owner", 1)
-	assertAccessReason(t, result, "false_positive_candidate", 1)
+	assertAccessReason(t, result, "false_positive_candidate", 2)
 	assertAccessReason(t, result, "unsupported_syntax", 1)
 	assertAccessReason(t, result, "missing_caller", 1)
 	if result.Languages["typescript"].Total != 8 || result.Languages["typescript"].Resolved != 1 {
@@ -101,6 +101,46 @@ func TestAuditAccessCandidatesResolvesTypeAliasMembers(t *testing.T) {
 		t.Fatalf("totals = %#v", result)
 	}
 	assertAccessReason(t, result, "resolved", 1)
+}
+
+func TestAuditAccessCandidatesRejectsCrossLanguageGlobalOwner(t *testing.T) {
+	moduleScope := "scope:src/app.ts:module"
+	functionScope := "scope:src/app.ts:start"
+	ir := scopeir.ScopeIR{
+		FilePath:    "src/app.ts",
+		FileHash:    "hash-ts",
+		Language:    scanner.TypeScript,
+		ModuleScope: moduleScope,
+		Scopes: []scopeir.ScopeFact{
+			{ID: moduleScope, Kind: scopeir.ScopeModule, FilePath: "src/app.ts"},
+			{ID: functionScope, Parent: scopeStringPtr(moduleScope), Kind: scopeir.ScopeFunction, FilePath: "src/app.ts", OwnedDefIDs: []string{"def:start"}, TypeBindings: []scopeir.TypeBindingFact{
+				{Name: "node", Type: scopeir.TypeRef{RawName: "GraphNode", Source: scopeir.TypeSourceParameter}},
+			}},
+		},
+		Definitions: []scopeir.DefinitionFact{
+			{ID: "def:start", FilePath: "src/app.ts", FileHash: "hash-ts", Name: "start", Label: scopeir.NodeFunction, Range: scopeir.Range{StartLine: 2, EndLine: 4}},
+			{ID: "def:standalone-id", FilePath: "src/app.ts", FileHash: "hash-ts", Name: "id", Label: scopeir.NodeProperty, Range: scopeir.Range{StartLine: 10, EndLine: 10}},
+		},
+		Accesses: []scopeir.AccessFact{
+			{FilePath: "src/app.ts", FileHash: "hash-ts", Name: "id", Kind: scopeir.AccessRead, ExplicitReceiver: "node", InScope: functionScope, Range: scopeir.Range{StartLine: 3}},
+		},
+	}
+	goIR := scopeir.ScopeIR{
+		FilePath: "internal/graphaccuracy/graphaccuracy.go",
+		Language: scanner.Go,
+		Definitions: []scopeir.DefinitionFact{
+			{ID: "def:go-graph-node", FilePath: "internal/graphaccuracy/graphaccuracy.go", Name: "GraphNode", Label: scopeir.NodeStruct, Range: scopeir.Range{StartLine: 1, EndLine: 4}},
+			{ID: "def:go-graph-node-id", FilePath: "internal/graphaccuracy/graphaccuracy.go", Name: "ID", Label: scopeir.NodeProperty, OwnerID: "def:go-graph-node", Range: scopeir.Range{StartLine: 2, EndLine: 2}},
+		},
+	}
+
+	result, err := AuditAccessCandidates([]scopeir.ScopeIR{ir, goIR}, AccessCandidateAuditOptions{MaxExamples: 1})
+	if err != nil {
+		t.Fatalf("AuditAccessCandidates() error = %v", err)
+	}
+	assertAccessReason(t, result, "external_library_type", 1)
+	assertAccessReason(t, result, "missing_owner_link", 0)
+	assertAccessReason(t, result, "false_positive_candidate", 0)
 }
 
 func assertAccessReason(t *testing.T, result AccessCandidateAudit, reason string, want int) {

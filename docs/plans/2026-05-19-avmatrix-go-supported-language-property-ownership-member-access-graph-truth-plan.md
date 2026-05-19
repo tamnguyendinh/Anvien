@@ -170,8 +170,8 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 - [x] [P3-B] Implement the first large defensible access-resolution cluster around explicit receiver type bindings. Result: awaited TS/JS local call-return bindings now unwrap `Promise<T>` when the source expression is `await`, resolver member owners include `TypeAlias` for property/member lookup, and call-return enrichment no longer overwrites provider-derived return bindings. Website final graph `ACCESSES` increased from `3` to `2,769`; Website access candidates resolved increased from `3` to `4,978`; Website `missing_receiver_type` decreased from `13,512` to `12,209`.
 - [x] [P3-C] Add focused tests for every access-resolution family closed in [P3-B]. Result: provider test covers awaited `Promise<T>` local binding, resolution test covers nested `result.model.invoices` `ACCESSES`, and access audit test covers `TypeAlias` member-owner resolution.
 - [x] [P3-D] Run access validation and record it. Result: full build passed before tests, focused tests passed, analyze/property-gate/access-candidate e2e ran on `E:\Website` and `E:\AVmatrix-GO`, fresh graph snapshots and benchmark/evidence ledgers were updated, and AVmatrix impact was recorded.
-- [ ] [P3-E] Close or reclassify the `missing_owner_link` access bucket after receiver-type expansion. Updated post-P3-B target: Website `missing_owner_link=768` and AVmatrix-GO `missing_owner_link=10` should go to `0` only where the referenced owners are real; otherwise each case must move to `false_positive_candidate`, `external_library_type`, `ambiguous_owner`, or deferred/unknown with examples. Do not create owner links merely to reduce this bucket.
-- [ ] [P3-F] Repeat large access clusters until all target families are fixed or explicitly deferred with evidence.
+- [x] [P3-E] Close or reclassify the `missing_owner_link` access bucket after receiver-type expansion. Result: Website `missing_owner_link=768 -> 0`; AVmatrix-GO `missing_owner_link=10 -> 0`. The slice does not add owner links; it rejects cross-language global owner collisions and reclassifies same-name standalone-property guesses as false positives unless a real owner-member relation exists.
+- [ ] [P3-F] Repeat large access clusters until all target families are fixed or explicitly deferred with evidence. Current post-P3-E largest buckets: Website `missing_receiver_type=12,209`, `external_library_type=4,706`, `unsupported_syntax=1,313`; AVmatrix-GO `missing_receiver_type=11,485`, `external_library_type=3,638`, `unsupported_syntax=910`.
 
 ## Phase 4 - Consumer Impact Checks
 
@@ -208,7 +208,7 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P3-B | Access | awaited TS/JS call-return and TypeAlias member owners | defensible `ACCESSES` expansion | recorded | recorded | `08649e6` | done |
 | P3-C | Tests | access focused tests | resolved families covered | n/a | recorded | `08649e6` | done |
 | P3-D | Validation | access slice | analyze/test/e2e recorded | recorded | recorded | `08649e6` | done |
-| P3-E | Access | post-receiver missing-owner-link bucket | close or reclassify bucket | pending | pending | pending | open |
+| P3-E | Access | post-receiver missing-owner-link bucket | close or reclassify bucket | recorded | recorded | pending | done |
 | P3-F | Access | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
 | P4-A | Consumer | context | new facts visible in context | n/a | pending | pending | open |
 | P4-B | Consumer | impact | affected-symbol behavior checked | n/a | pending | pending | open |

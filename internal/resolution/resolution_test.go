@@ -106,6 +106,46 @@ async function run() {
 	requireRelationship(t, result.Graph, graph.RelAccesses, run.ID, invoices.ID)
 }
 
+func TestResolveMemberAccessRejectsCrossLanguageGlobalOwner(t *testing.T) {
+	moduleScope := "scope:src/app.ts:module"
+	functionScope := "scope:src/app.ts:start"
+	tsIR := scopeir.ScopeIR{
+		FilePath:    "src/app.ts",
+		FileHash:    "hash-ts",
+		Language:    scanner.TypeScript,
+		ModuleScope: moduleScope,
+		Scopes: []scopeir.ScopeFact{
+			{ID: moduleScope, Kind: scopeir.ScopeModule, FilePath: "src/app.ts"},
+			{ID: functionScope, Parent: &[]string{moduleScope}[0], Kind: scopeir.ScopeFunction, FilePath: "src/app.ts", OwnedDefIDs: []string{"def:start"}, TypeBindings: []scopeir.TypeBindingFact{
+				{Name: "node", Type: scopeir.TypeRef{RawName: "GraphNode", Source: scopeir.TypeSourceParameter}},
+			}},
+		},
+		Definitions: []scopeir.DefinitionFact{
+			{ID: "def:start", FilePath: "src/app.ts", FileHash: "hash-ts", Name: "start", Label: scopeir.NodeFunction, Range: scopeir.Range{StartLine: 1, EndLine: 3}},
+		},
+		Accesses: []scopeir.AccessFact{
+			{FilePath: "src/app.ts", FileHash: "hash-ts", Name: "ID", Kind: scopeir.AccessRead, ExplicitReceiver: "node", InScope: functionScope, Range: scopeir.Range{StartLine: 2}},
+		},
+	}
+	goIR := scopeir.ScopeIR{
+		FilePath: "internal/graphaccuracy/graphaccuracy.go",
+		Language: scanner.Go,
+		Definitions: []scopeir.DefinitionFact{
+			{ID: "def:go-graph-node", FilePath: "internal/graphaccuracy/graphaccuracy.go", Name: "GraphNode", Label: scopeir.NodeStruct, Range: scopeir.Range{StartLine: 1, EndLine: 4}},
+			{ID: "def:go-graph-node-id", FilePath: "internal/graphaccuracy/graphaccuracy.go", Name: "ID", Label: scopeir.NodeProperty, OwnerID: "def:go-graph-node", Range: scopeir.Range{StartLine: 2, EndLine: 2}},
+		},
+	}
+
+	result, err := Resolve([]scopeir.ScopeIR{tsIR, goIR}, Options{})
+	if err != nil {
+		t.Fatalf("resolve failed: %v", err)
+	}
+	requireNoRelationship(t, result.Graph, graph.RelAccesses, "Function:src/app.ts:start", "Property:internal/graphaccuracy/graphaccuracy.go:GraphNode.ID")
+	if result.Metrics.ResolvedAccesses != 0 || result.Metrics.UnresolvedReferences != 1 {
+		t.Fatalf("unexpected metrics: %#v", result.Metrics)
+	}
+}
+
 func TestResolveIntoPreservesExistingFileNodeMetadata(t *testing.T) {
 	base := graph.New()
 	base.AddNode(graph.Node{

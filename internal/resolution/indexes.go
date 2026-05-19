@@ -558,7 +558,7 @@ func (w *workspace) resolveMember(name string, receiver string, startScope strin
 	if !ok {
 		return defRef{}, false
 	}
-	owner, ok := w.resolveName(receiverType, startScope, memberOwnerLabels())
+	owner, ok := w.resolveMemberOwner(receiverType, startScope)
 	if !ok {
 		return defRef{}, false
 	}
@@ -625,7 +625,7 @@ func (w *workspace) resolveReceiverType(receiver string, startScope string) (str
 	}
 	typeName := baseTypeName(currentType.RawName)
 	for _, part := range parts[1:] {
-		owner, ok := w.resolveName(typeName, startScope, memberOwnerLabels())
+		owner, ok := w.resolveMemberOwner(typeName, startScope)
 		if !ok {
 			return "", false
 		}
@@ -636,6 +636,36 @@ func (w *workspace) resolveReceiverType(receiver string, startScope string) (str
 		typeName = baseTypeName(member.Fact.DeclaredType)
 	}
 	return typeName, true
+}
+
+func (w *workspace) resolveMemberOwner(typeName string, startScope string) (defRef, bool) {
+	owner, ok := w.resolveName(typeName, startScope, memberOwnerLabels())
+	if !ok || !w.memberOwnerLanguageCompatible(owner, startScope) {
+		return defRef{}, false
+	}
+	return owner, true
+}
+
+func (w *workspace) memberOwnerLanguageCompatible(owner defRef, startScope string) bool {
+	sourceFile := w.scopeFilePath(startScope)
+	if sourceFile == "" || owner.Fact.FilePath == "" {
+		return true
+	}
+	sourceLanguage := w.fileLanguages[cleanPath(sourceFile)]
+	ownerLanguage := w.fileLanguages[cleanPath(owner.Fact.FilePath)]
+	if sourceLanguage == "" || ownerLanguage == "" || sourceLanguage == ownerLanguage {
+		return true
+	}
+	return isScriptLikeLanguage(sourceLanguage) && isScriptLikeLanguage(ownerLanguage)
+}
+
+func isScriptLikeLanguage(language scanner.Language) bool {
+	switch language {
+	case scanner.JavaScript, scanner.TypeScript, scanner.Vue, scanner.Svelte, scanner.Astro:
+		return true
+	default:
+		return false
+	}
 }
 
 func (w *workspace) lookupTypeBinding(name string, startScope string) (scopeir.TypeRef, bool) {

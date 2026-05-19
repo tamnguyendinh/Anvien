@@ -102,6 +102,7 @@ Initial hypothesis:
 | P3-B access implementation | awaited TS/JS return binding, `TypeAlias` member owners, call-return enrichment guard | implemented and validated | done |
 | P3-C access tests | provider, resolution, and access-audit focused tests | passed after full build | done |
 | P3-D access validation | full build, focused tests, analyze/property/access e2e, benchmark update | recorded | done |
+| P3-E missing-owner-link closure | cross-language owner collision guard and access audit reclassification | recorded | done |
 | P4 consumer checks | pending | pending | open |
 | P5 final evidence | pending | pending | open |
 
@@ -1046,3 +1047,164 @@ affected process names include:
 ```
 
 Interpretation: critical risk is expected because this slice changes production member access resolution and call-return type enrichment, plus the audit classifier that reads the same resolver model. The risk is covered by full build, focused provider/resolution/graphaccuracy tests, analyze e2e on both workloads, property gate e2e with invalid edges still `0`, and access-candidate e2e metrics recorded above.
+
+## P3-E Missing-Owner-Link Closure Evidence
+
+Changed files:
+
+- `internal/resolution/indexes.go`
+- `internal/resolution/access_audit.go`
+- `internal/resolution/access_audit_test.go`
+- `internal/resolution/resolution_test.go`
+
+Implementation summary:
+
+- Member owner resolution now rejects incompatible cross-language global owner matches. Script-like languages remain compatible with each other; unrelated language collisions such as TypeScript `GraphNode` resolving to a Go `GraphNode` are rejected.
+- Access candidate audit no longer treats any same-name standalone property anywhere in the repo as proof of a missing owner link.
+- If a receiver owner is known but has no matching member, the candidate is classified as `false_positive_candidate` unless a real ownership gate separately proves a missing edge.
+
+Full build before tests:
+
+```powershell
+.\avmatrix-launcher\build.ps1
+```
+
+Result: passed. Vite reported chunk-size and dynamic/static import warnings only.
+
+Focused tests after full build:
+
+```powershell
+go test ./internal/resolution ./internal/graphaccuracy ./cmd/access-candidate-audit
+```
+
+Result:
+
+```text
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/resolution
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy
+?   	github.com/tamnguyendinh/avmatrix-go/cmd/access-candidate-audit	[no test files]
+```
+
+Focused test coverage added or updated:
+
+```text
+TestResolveMemberAccessRejectsCrossLanguageGlobalOwner
+TestAuditAccessCandidatesRejectsCrossLanguageGlobalOwner
+TestAuditAccessCandidatesClassifiesReasons
+```
+
+Analyze e2e after full build:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+```
+
+Website result:
+
+```text
+analyzed E:\Website
+files: scanned=1870 parsed=998 unsupported=872 failed=0
+graph: nodes=27956 relationships=58731 path=E:\Website\.avmatrix\graph.json
+ANALYZE_MS=18,290.8
+```
+
+AVmatrix-GO result:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=682 parsed=527 unsupported=155 failed=0
+graph: nodes=20318 relationships=48597 path=E:\AVmatrix-GO\.avmatrix\graph.json
+ANALYZE_MS=15,928.0
+```
+
+CLI/runtime property gate e2e:
+
+```powershell
+go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\p3e-property-access-website-go-graph-20260519.json -out .tmp\p3e-property-access-website-20260519.json -max-examples 20
+go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\p3e-property-access-avmatrix-go-graph-20260519.json -out .tmp\p3e-property-access-avmatrix-go-20260519.json -max-examples 20
+```
+
+Website property/access gate result:
+
+```text
+properties.total=7097 ownerLinked=5922 standalone=1175 hasPropertyEdges=5922 accessesEdges=2769 invalidHasPropertyEdges=0
+graphTruth.real_edge_missing=0
+graphTruth.true_no_edge=1156
+graphTruth.unknown_no_edge=19
+```
+
+AVmatrix-GO property/access gate result:
+
+```text
+properties.total=3096 ownerLinked=2769 standalone=327 hasPropertyEdges=2769 accessesEdges=2747 invalidHasPropertyEdges=0
+graphTruth.real_edge_missing=0
+graphTruth.true_no_edge=324
+graphTruth.unknown_no_edge=3
+```
+
+CLI/runtime access candidate e2e:
+
+```powershell
+go run ./cmd/access-candidate-audit -repo E:\Website -out .tmp\p3e-access-candidates-website-20260519.json -max-examples 20
+go run ./cmd/access-candidate-audit -repo E:\AVmatrix-GO -out .tmp\p3e-access-candidates-avmatrix-go-20260519.json -max-examples 20
+```
+
+Website access candidate result:
+
+```text
+accessCandidates.total=24542 resolved=4978 unresolved=19564 analyzeMillis=6942 resolvedAccesses=4978 unresolvedReferences=59289
+reason.ambiguous_owner=109
+reason.external_library_type=4706
+reason.false_positive_candidate=1174
+reason.missing_caller=53
+reason.missing_owner_link=0
+reason.missing_receiver_type=12209
+reason.resolved=4978
+reason.unsupported_syntax=1313
+```
+
+AVmatrix-GO access candidate result:
+
+```text
+accessCandidates.total=21195 resolved=5114 unresolved=16081 analyzeMillis=5303 resolvedAccesses=5114 unresolvedReferences=50483
+reason.ambiguous_owner=0
+reason.external_library_type=3638
+reason.false_positive_candidate=34
+reason.missing_caller=14
+reason.missing_owner_link=0
+reason.missing_receiver_type=11485
+reason.resolved=5114
+reason.unsupported_syntax=910
+```
+
+Interpretation:
+
+- P3-E closes `missing_owner_link` on both workloads: Website `768 -> 0`; AVmatrix-GO `10 -> 0`.
+- The close is a reclassification and false-owner guard, not an edge expansion. Invalid owner edges remain `0`.
+- Website `false_positive_candidate` increases to `1,174` because previous same-name standalone-property guesses were not real owner-member evidence.
+- AVmatrix-GO TypeScript accesses no longer resolve through unrelated Go owners with the same type name.
+
+Staged AVmatrix impact check:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --scope staged --repo E:\AVmatrix-GO
+```
+
+Result summary:
+
+```text
+changed_files=7
+changed_count=25
+affected_count=16
+risk_level=critical
+affected process names include:
+- ResolveAccess -> DefRef
+- ResolveAccess -> DispatchOwnerLabels
+- ResolveCallTargetForTypeBinding -> DispatchOwnerLabels
+- EnrichCallReturnTypeBindings -> DispatchOwnerLabels
+- RunAccessCandidateAudit -> ParentScope
+- AuditAccessCandidates -> DefRef
+```
+
+Interpretation: critical risk is expected because this slice changes production member owner selection and the audit reason classifier. The validation above covers the changed resolver path with focused cross-language collision tests and e2e analyze/property/access gates on both measured workloads.

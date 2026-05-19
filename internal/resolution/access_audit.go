@@ -110,7 +110,7 @@ func classifyAccessCandidate(w *workspace, access scopeir.AccessFact) (string, b
 	if !ok {
 		return "missing_receiver_type", false, "receiver has no resolvable type binding or enclosing owner"
 	}
-	owner, ok := w.resolveName(ownerType, access.InScope, memberOwnerLabels())
+	owner, ok := w.resolveMemberOwner(ownerType, access.InScope)
 	if !ok {
 		return "external_library_type", false, "receiver type is not defined in the analyzed workspace"
 	}
@@ -119,9 +119,6 @@ func classifyAccessCandidate(w *workspace, access scopeir.AccessFact) (string, b
 	case 1:
 		return "resolved", true, "receiver owner and property member are unique"
 	case 0:
-		if hasStandalonePropertyCandidate(w, access) {
-			return "missing_owner_link", false, "matching property exists but is not linked to the receiver owner"
-		}
 		return "false_positive_candidate", false, "receiver owner exists but matching property does not"
 	default:
 		return "ambiguous_owner", false, "receiver owner has multiple matching property members"
@@ -131,18 +128,6 @@ func classifyAccessCandidate(w *workspace, access scopeir.AccessFact) (string, b
 func unsupportedAccessReceiver(receiver string) bool {
 	receiver = strings.TrimSpace(receiver)
 	return strings.ContainsAny(receiver, "[](){}")
-}
-
-func hasStandalonePropertyCandidate(w *workspace, access scopeir.AccessFact) bool {
-	for _, candidate := range w.defsByName[access.Name] {
-		if candidate.Fact.Label != scopeir.NodeProperty {
-			continue
-		}
-		if candidate.Fact.OwnerID == "" {
-			return true
-		}
-	}
-	return false
 }
 
 func filterDefRefsByLabel(refs []defRef, labels []scopeir.NodeLabel) []defRef {
