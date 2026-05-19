@@ -39,8 +39,8 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 	if len(queries) != len(NodeTables)+2 {
 		t.Fatalf("SchemaQueries() len = %d, want %d", len(queries), len(NodeTables)+2)
 	}
-	if len(RelationPairs) != 238 {
-		t.Fatalf("RelationPairs len = %d, want 238", len(RelationPairs))
+	if len(RelationPairs) != 239 {
+		t.Fatalf("RelationPairs len = %d, want 239", len(RelationPairs))
 	}
 
 	fileSchema := NodeSchema("File")
@@ -73,6 +73,7 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 		"FROM `Module` TO `Namespace`",
 		"FROM `Namespace` TO Function",
 		"FROM `TypeAlias` TO Method",
+		"FROM `TypeAlias` TO `Property`",
 		"type STRING",
 		"confidence DOUBLE",
 		"resolutionSource STRING",
@@ -136,6 +137,7 @@ func TestSchemaSurfaceCoversLegacyCoreAndModernNodeTypes(t *testing.T) {
 		"FROM `Impl` TO `Property`",
 		"FROM `Record` TO `Property`",
 		"FROM `Property` TO Method",
+		"FROM `TypeAlias` TO `Property`",
 	} {
 		if !strings.Contains(relationSchema, want) {
 			t.Fatalf("relation schema missing %q", want)

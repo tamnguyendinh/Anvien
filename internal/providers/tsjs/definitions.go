@@ -159,29 +159,39 @@ func declaredTypeNameForNode(c *collector, node *sitter.Node) string {
 }
 
 func (c *collector) ownerDefIDFor(node *sitter.Node) string {
-	current := node.Parent()
-	for current != nil {
-		if label, ok := ownerDeclarationLabel(current); ok {
-			nameNode := child(current, "name")
-			if nameNode == nil {
-				return ""
-			}
-			return defID(c.filePath, nodeRange(current), label, c.text(nameNode))
-		}
-		current = current.Parent()
+	owner, label, ok := c.ownerDeclarationFor(node)
+	if !ok {
+		return ""
 	}
-	return ""
+	nameNode := child(owner, "name")
+	if nameNode == nil {
+		return ""
+	}
+	return defID(c.filePath, nodeRange(owner), label, c.text(nameNode))
 }
 
 func (c *collector) ownerDeclarationNameFor(node *sitter.Node) string {
+	owner, _, ok := c.ownerDeclarationFor(node)
+	if !ok {
+		return ""
+	}
+	return c.text(child(owner, "name"))
+}
+
+func (c *collector) ownerDeclarationFor(node *sitter.Node) (*sitter.Node, scopeir.NodeLabel, bool) {
 	current := node.Parent()
 	for current != nil {
-		if _, ok := ownerDeclarationLabel(current); ok {
-			return c.text(child(current, "name"))
+		if label, ok := ownerDeclarationLabel(current); ok {
+			return current, label, true
 		}
 		current = current.Parent()
 	}
-	return ""
+	if node.Kind() == "property_signature" {
+		if owner := directTypeAliasObjectOwner(node); owner != nil {
+			return owner, scopeir.NodeTypeAlias, true
+		}
+	}
+	return nil, "", false
 }
 
 func ownerDeclarationLabel(node *sitter.Node) (scopeir.NodeLabel, bool) {
@@ -193,4 +203,18 @@ func ownerDeclarationLabel(node *sitter.Node) (scopeir.NodeLabel, bool) {
 	default:
 		return "", false
 	}
+}
+
+func directTypeAliasObjectOwner(node *sitter.Node) *sitter.Node {
+	current := node.Parent()
+	for current != nil {
+		switch current.Kind() {
+		case "type_alias_declaration":
+			return current
+		case "property_signature", "class_declaration", "abstract_class_declaration", "interface_declaration":
+			return nil
+		}
+		current = current.Parent()
+	}
+	return nil
 }

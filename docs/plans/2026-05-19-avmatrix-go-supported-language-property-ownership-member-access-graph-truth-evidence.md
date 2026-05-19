@@ -1,12 +1,12 @@
-# AVmatrix Go Supported-Language Property Access Accuracy Evidence
+# AVmatrix Go Supported-Language Property Ownership And Member Access Graph Truth Evidence
 
 Date: 2026-05-19
 
 Status: open
 
-Companion plan: [2026-05-19-avmatrix-go-supported-language-property-access-accuracy-plan.md](2026-05-19-avmatrix-go-supported-language-property-access-accuracy-plan.md)
+Companion plan: [2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-plan.md](2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-plan.md)
 
-Companion benchmark: [2026-05-19-avmatrix-go-supported-language-property-access-accuracy-benchmark.md](2026-05-19-avmatrix-go-supported-language-property-access-accuracy-benchmark.md)
+Companion benchmark: [2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-benchmark.md](2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-benchmark.md)
 
 ## Evidence Rules
 
@@ -89,8 +89,8 @@ Initial hypothesis:
 | P1-F graph truth classification | graph truth counts in baseline artifacts | real missing vs true no-edge classified | done |
 | P1-G unresolved access reasons | `.tmp\p1-access-candidates-website-20260519.json`, `.tmp\p1-access-candidates-avmatrix-go-20260519.json` | unresolved access candidates classified by reason | done |
 | P1-H Phase 2/3 targets | plan checklist update | measurable follow-up targets defined from P1 taxonomy | done |
-| P2 ownership implementation | pending | pending | open |
-| P2 validation | pending | pending | open |
+| P2 ownership implementation | TS/JS direct type-alias property ownership and `TypeAlias -> Property` schema support | implemented and validated | done |
+| P2 validation | full build, focused tests, analyze e2e, property gate e2e, benchmark update, impact check | recorded | done |
 | P3 access implementation | pending | pending | open |
 | P3 validation | pending | pending | open |
 | P4 consumer checks | pending | pending | open |
@@ -360,3 +360,160 @@ affected processes include the new access-candidate audit command flow:
 ```
 
 Interpretation: the critical risk level is expected for this slice because the new audit command runs analyze and reuses resolution internals to classify access candidates. It does not change the production resolver output path; it adds an audit/readout path plus focused tests.
+
+## P2-A/P2-C Ownership Evidence
+
+Changed files:
+
+- `internal/providers/tsjs/definitions.go`
+- `internal/providers/tsjs/extract_test.go`
+- `internal/lbugschema/schema.go`
+- `internal/lbugschema/schema_test.go`
+- `internal/mcp/resources.go`
+
+Implementation summary:
+
+- Direct `property_signature` members inside a TypeScript `type_alias_declaration` now resolve their owner to the containing `TypeAlias`.
+- Nested property signatures remain unowned until nested shape ownership has a defensible model.
+- LadybugDB relation schema now includes `TypeAlias -> Property`, which is required for the new final graph `HAS_PROPERTY` edges to load.
+- MCP schema text now describes `HAS_PROPERTY` as supported by `Class`, `Struct`, `Interface`, `TypeAlias`, and other supported owners.
+
+Initial validation blocker found and fixed:
+
+```text
+db_load phase: copy relationships TypeAlias->Property: schema pair unsupported
+```
+
+Root cause: the extractor correctly emitted `TypeAlias -> Property`, but `internal/lbugschema.RelationPairs` did not allow that source/target pair. The schema pair was added and covered by `internal/lbugschema/schema_test.go`.
+
+Full build before tests:
+
+```powershell
+.\avmatrix-launcher\build.ps1
+```
+
+Result: passed. Vite reported chunk-size and dynamic/static import warnings only.
+
+Focused tests after full build:
+
+```powershell
+go test ./internal/lbugschema ./internal/lbugload ./internal/providers/tsjs ./internal/resolution ./internal/graphaccuracy ./cmd/property-access-audit
+```
+
+Result:
+
+```text
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/lbugschema	0.938s
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/lbugload	1.155s
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/tsjs	(cached)
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/resolution	(cached)
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy	0.528s
+?   	github.com/tamnguyendinh/avmatrix-go/cmd/property-access-audit	[no test files]
+```
+
+Analyze e2e after full build:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+```
+
+Website result:
+
+```text
+analyzed E:\Website
+files: scanned=1870 parsed=998 unsupported=872 failed=0
+graph: nodes=27764 relationships=54972 path=E:\Website\.avmatrix\graph.json
+ANALYZE_MS=18,684.0
+```
+
+AVmatrix-GO result:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=682 parsed=527 unsupported=155 failed=0
+graph: nodes=20241 relationships=48415 path=E:\AVmatrix-GO\.avmatrix\graph.json
+ANALYZE_MS=15,755.6
+```
+
+Graph snapshots:
+
+```powershell
+Copy-Item -LiteralPath 'E:\Website\.avmatrix\graph.json' -Destination '.tmp\p2-property-access-website-go-graph-20260519.json' -Force
+Copy-Item -LiteralPath 'E:\AVmatrix-GO\.avmatrix\graph.json' -Destination '.tmp\p2-property-access-avmatrix-go-graph-20260519.json' -Force
+```
+
+CLI/runtime property gate e2e after full build:
+
+```powershell
+go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\p2-property-access-website-go-graph-20260519.json -out .tmp\p2-property-access-website-20260519.json -max-examples 20
+go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\p2-property-access-avmatrix-go-graph-20260519.json -out .tmp\p2-property-access-avmatrix-go-20260519.json -max-examples 20
+```
+
+Website result:
+
+```text
+wrote .tmp\p2-property-access-website-20260519.json
+properties.total=6905 ownerLinked=5129 standalone=1776 hasPropertyEdges=5129 accessesEdges=3 invalidHasPropertyEdges=0
+language.typescript.properties=6905 ownerLinked=5129 standalone=1776
+orphan.false_orphan=392
+orphan.owner_linked=5129
+orphan.true_orphan=469
+orphan.unknown=915
+graphTruth.edge_present=5129
+graphTruth.real_edge_missing=392
+graphTruth.true_no_edge=469
+graphTruth.unknown_no_edge=915
+```
+
+AVmatrix-GO result:
+
+```text
+wrote .tmp\p2-property-access-avmatrix-go-20260519.json
+properties.total=3089 ownerLinked=2762 standalone=327 hasPropertyEdges=2762 accessesEdges=2751 invalidHasPropertyEdges=0
+language.go.properties=2508 ownerLinked=2302 standalone=206
+language.typescript.properties=581 ownerLinked=460 standalone=121
+orphan.false_orphan=12
+orphan.owner_linked=2762
+orphan.true_orphan=82
+orphan.unknown=233
+graphTruth.edge_present=2762
+graphTruth.real_edge_missing=12
+graphTruth.true_no_edge=82
+graphTruth.unknown_no_edge=233
+```
+
+Interpretation:
+
+- P2-A reduced Website `real_edge_missing` from `3,627` to `392` and increased Website `HAS_PROPERTY` from `3` to `5,129`.
+- P2-A did not fabricate links for true-no-edge classes: invalid synthetic edge risk remains `0`.
+- AVmatrix-GO `go_typed_property_without_owner=206` is intentionally unchanged and remains the P2-D work item.
+- Website `ACCESSES` is unchanged at `3`; access resolution remains Phase 3.
+
+Staged AVmatrix impact check:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --scope staged --repo E:\AVmatrix-GO
+```
+
+Result summary:
+
+```text
+changed_files=8
+changed_count=17
+affected_count=0
+risk_level=low
+affected_processes=[]
+changed symbols include:
+- RelationPairs
+- TestSchemaQueriesPreserveDDLShape
+- TestSchemaSurfaceCoversLegacyCoreAndModernNodeTypes
+- schemaResource
+- directTypeAliasObjectOwner
+- collector.ownerDeclarationFor
+- collector.ownerDeclarationNameFor
+- collector.ownerDefIDFor
+- TestExtractTypeAliasObjectPropertiesHaveDirectOwner
+```
+
+Interpretation: AVmatrix reports low impact and no affected process traces for the staged slice. The risk is covered by full build, schema/load tests, TS/JS provider tests, analyze e2e on both workloads, and the property/access graph gate outputs recorded above.

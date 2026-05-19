@@ -1,12 +1,12 @@
-# AVmatrix Go Supported-Language Property Access Accuracy Benchmark
+# AVmatrix Go Supported-Language Property Ownership And Member Access Graph Truth Benchmark
 
 Date: 2026-05-19
 
 Status: open
 
-Companion plan: [2026-05-19-avmatrix-go-supported-language-property-access-accuracy-plan.md](2026-05-19-avmatrix-go-supported-language-property-access-accuracy-plan.md)
+Companion plan: [2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-plan.md](2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-plan.md)
 
-Companion evidence: [2026-05-19-avmatrix-go-supported-language-property-access-accuracy-evidence.md](2026-05-19-avmatrix-go-supported-language-property-access-accuracy-evidence.md)
+Companion evidence: [2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-evidence.md](2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-evidence.md)
 
 ## Benchmark Rules
 
@@ -81,7 +81,7 @@ Every property/access gate benchmark row must include:
 | P1 AVmatrix-GO baseline gate | `.tmp\p1-property-access-avmatrix-go-baseline-20260519.json` | `Property=3,046`, `HAS_PROPERTY=2,708`, `ACCESSES=2,724`, `go=2,469`, `typescript=577`, `invalidHasPropertyEdges=0` | recorded |
 | P1 language taxonomy | baseline gate artifacts | Website `false_orphan=3,627`; AVmatrix-GO `false_orphan=21`; no invalid synthetic edges | recorded |
 | P1 access candidate taxonomy | `.tmp\p1-access-candidates-website-20260519.json`, `.tmp\p1-access-candidates-avmatrix-go-20260519.json` | Website `total=24,542 resolved=3`; AVmatrix-GO `total=21,098 resolved=5,112` | recorded |
-| P2 ownership validation | pending | false-orphan reduction and `HAS_PROPERTY` precision | open |
+| P2 ownership validation | `.tmp\p2-property-access-website-20260519.json`, `.tmp\p2-property-access-avmatrix-go-20260519.json` | Website `HAS_PROPERTY=5,129`, `real_edge_missing=392`, invalid edges `0`; AVmatrix-GO `HAS_PROPERTY=2,762`, `real_edge_missing=12`, invalid edges `0` | recorded |
 | P3 access validation | pending | `ACCESSES` expansion and precision | open |
 | P5 final gate | pending | final workload matrix | open |
 
@@ -190,3 +190,82 @@ Reason taxonomy:
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | `E:\Website` | 3 | 13,512 | 9,660 | 1,313 | 53 | 1 | 0 | 0 |
 | `E:\AVmatrix-GO` | 5,112 | 11,418 | 3,619 | 910 | 14 | 10 | 15 | 0 |
+
+## P2 Ownership Validation
+
+Date: 2026-05-19
+
+Artifacts:
+
+- Website graph snapshot: `.tmp\p2-property-access-website-go-graph-20260519.json`
+- Website gate output: `.tmp\p2-property-access-website-20260519.json`
+- AVmatrix-GO graph snapshot: `.tmp\p2-property-access-avmatrix-go-graph-20260519.json`
+- AVmatrix-GO gate output: `.tmp\p2-property-access-avmatrix-go-20260519.json`
+
+Commands:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
+Copy-Item -LiteralPath 'E:\Website\.avmatrix\graph.json' -Destination '.tmp\p2-property-access-website-go-graph-20260519.json' -Force
+go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\p2-property-access-website-go-graph-20260519.json -out .tmp\p2-property-access-website-20260519.json -max-examples 20
+
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+Copy-Item -LiteralPath 'E:\AVmatrix-GO\.avmatrix\graph.json' -Destination '.tmp\p2-property-access-avmatrix-go-graph-20260519.json' -Force
+go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\p2-property-access-avmatrix-go-graph-20260519.json -out .tmp\p2-property-access-avmatrix-go-20260519.json -max-examples 20
+```
+
+Analyze runtime and graph size:
+
+| Workload | Analyze runtime | Files scanned | Files parsed | Graph nodes | Graph relationships |
+|---|---:|---:|---:|---:|---:|
+| `E:\Website` | 18,684.0 ms | 1,870 | 998 | 27,764 | 54,972 |
+| `E:\AVmatrix-GO` | 15,755.6 ms | 682 | 527 | 20,241 | 48,415 |
+
+Ownership gate delta:
+
+| Workload | Baseline `Property` | P2 `Property` | Baseline owner-linked | P2 owner-linked | Baseline `HAS_PROPERTY` | P2 `HAS_PROPERTY` | Baseline `ACCESSES` | P2 `ACCESSES` | Baseline real missing | P2 real missing | Invalid P2 edges |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 5,222 | 6,905 | 3 | 5,129 | 3 | 5,129 | 3 | 3 | 3,627 | 392 | 0 |
+| `E:\AVmatrix-GO` | 3,046 | 3,089 | 2,708 | 2,762 | 2,708 | 2,762 | 2,724 | 2,751 | 21 | 12 | 0 |
+
+Language breakdown after P2:
+
+| Workload | Language | `Property` | Owner-linked | Standalone |
+|---|---|---:|---:|---:|
+| `E:\Website` | TypeScript | 6,905 | 5,129 | 1,776 |
+| `E:\AVmatrix-GO` | Go | 2,508 | 2,302 | 206 |
+| `E:\AVmatrix-GO` | TypeScript | 581 | 460 | 121 |
+
+P2 category taxonomy:
+
+| Workload | Category | Count |
+|---|---|---:|
+| `E:\Website` | `tsjs_type_alias_object_literal_member` | 5,518 |
+| `E:\Website` | `tsjs_typed_shape_or_binding_property` | 891 |
+| `E:\Website` | `tsjs_runtime_object_literal_key` | 320 |
+| `E:\Website` | `tsjs_destructuring_or_binding_pattern` | 149 |
+| `E:\Website` | `tsjs_unclassified_property` | 24 |
+| `E:\Website` | `tsjs_class_field` | 3 |
+| `E:\AVmatrix-GO` | `go_owner_linked_struct` | 2,302 |
+| `E:\AVmatrix-GO` | `go_typed_property_without_owner` | 206 |
+| `E:\AVmatrix-GO` | `tsjs_interface_property_signature` | 449 |
+| `E:\AVmatrix-GO` | `tsjs_destructuring_or_binding_pattern` | 58 |
+| `E:\AVmatrix-GO` | `tsjs_typed_shape_or_binding_property` | 24 |
+| `E:\AVmatrix-GO` | `tsjs_runtime_object_literal_key` | 24 |
+| `E:\AVmatrix-GO` | `tsjs_type_alias_object_literal_member` | 15 |
+| `E:\AVmatrix-GO` | `tsjs_class_field` | 8 |
+| `E:\AVmatrix-GO` | `tsjs_unclassified_property` | 3 |
+
+Orphan and graph-truth after P2:
+
+| Workload | `owner_linked` | `false_orphan` | `true_orphan` | `unknown` | `edge_present` | `real_edge_missing` | `true_no_edge` | `unknown_no_edge` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 5,129 | 392 | 469 | 915 | 5,129 | 392 | 469 | 915 |
+| `E:\AVmatrix-GO` | 2,762 | 12 | 82 | 233 | 2,762 | 12 | 82 | 233 |
+
+P2 interpretation:
+
+- The slice fixed the first large supported-language cluster by linking direct TypeScript type-alias object members to their `TypeAlias` owner.
+- The schema now permits the corresponding `TypeAlias -> Property` relationship, so the graph loads through LadybugDB instead of failing at `db_load`.
+- Runtime object keys, destructuring/binding pattern properties, and nested shape properties remain unlinked unless a stable owner model exists.
+- `ACCESSES` was not the main P2 target. Website stayed at `3`; AVmatrix-GO increased from `2,724` to `2,751` as a downstream effect of improved owner-member indexing.

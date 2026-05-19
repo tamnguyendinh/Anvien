@@ -1,4 +1,4 @@
-# AVmatrix Go Supported-Language Property Access Accuracy Plan
+# AVmatrix Go Supported-Language Property Ownership And Member Access Graph Truth Plan
 
 Date: 2026-05-19
 
@@ -6,8 +6,8 @@ Status: in progress
 
 Companion files:
 
-- Benchmark ledger: [2026-05-19-avmatrix-go-supported-language-property-access-accuracy-benchmark.md](2026-05-19-avmatrix-go-supported-language-property-access-accuracy-benchmark.md)
-- Evidence ledger: [2026-05-19-avmatrix-go-supported-language-property-access-accuracy-evidence.md](2026-05-19-avmatrix-go-supported-language-property-access-accuracy-evidence.md)
+- Benchmark ledger: [2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-benchmark.md](2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-benchmark.md)
+- Evidence ledger: [2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-evidence.md](2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-evidence.md)
 
 ## Rules
 
@@ -24,6 +24,12 @@ Companion files:
 This is a new follow-up plan. It does not reopen [2026-05-16-avmatrix-go-graph-accuracy-100-plan.md](2026-05-16-avmatrix-go-graph-accuracy-100-plan.md).
 
 The 2026-05-16 plan completed its intended scope: Go-local measured gates on `E:\AVmatrix-GO`.
+
+Canonical file set for this plan:
+
+- plan: `docs\plans\2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-plan.md`
+- benchmark: `docs\plans\2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-benchmark.md`
+- evidence: `docs\plans\2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-evidence.md`
 
 This plan covers a broader product contract:
 
@@ -152,9 +158,9 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 
 ## Phase 2 - Cross-Language Property Ownership
 
-- [ ] [P2-A] Implement owner-link semantics for the first large false-orphan cluster: TS/JS/SFC static shape properties. Initial measurable target: reduce Website `tsjs_type_alias_object_literal_member` `real_edge_missing` from `3,627` toward `0` where a stable source owner exists, while keeping `tsjs_runtime_object_literal_key` and `tsjs_destructuring_or_binding_pattern` true-no-edge cases unlinked.
-- [ ] [P2-B] Add focused tests for every language/provider family changed in [P2-A]. Tests must include positive owner links and cases that must remain unowned.
-- [ ] [P2-C] Run ownership validation and record it. Required evidence: full build before tests, focused tests, CLI/runtime e2e, fresh graph snapshots for affected workloads, benchmark update, evidence update, and AVmatrix impact record.
+- [x] [P2-A] Implement owner-link semantics for the first large false-orphan cluster: TS/JS/SFC static shape properties. Result: direct TypeScript type-alias object members now emit defensible `TypeAlias -> Property` ownership, while nested shape properties remain unowned until nested ownership is modeled. Website `HAS_PROPERTY` increased from `3` to `5,129`; Website `real_edge_missing` decreased from `3,627` to `392`; invalid synthetic edges remain `0`.
+- [x] [P2-B] Add focused tests for every language/provider family changed in [P2-A]. Result: TS/JS provider coverage now asserts direct type-alias members are owner-linked and nested shape members remain unowned.
+- [x] [P2-C] Run ownership validation and record it. Result: full build passed before tests, focused tests passed, CLI/runtime e2e passed on `E:\Website` and `E:\AVmatrix-GO`, fresh graph snapshots and benchmark/evidence ledgers were updated, and AVmatrix impact was recorded.
 - [ ] [P2-D] Refine Go unknown property ownership before linking. Initial measurable target: classify AVmatrix-GO `go_typed_property_without_owner=206` into false-orphan vs true/unknown buckets using source evidence; do not emit `HAS_PROPERTY` edges for this bucket until the denominator is defensible.
 - [ ] [P2-E] Repeat large ownership clusters until all false-orphan categories with defensible owners are either fixed or explicitly deferred with evidence.
 
@@ -193,9 +199,9 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P1-F | Taxonomy | missing/absent edges | real missing vs true no-edge classified | recorded | recorded | `0972c3d` | done |
 | P1-G | Taxonomy | unresolved member accesses | miss reasons classified | recorded | recorded | `73b1cf8` | done |
 | P1-H | Targets | measurable follow-up gates | Phase 2/3 targets defined | recorded | recorded | `73b1cf8` | done |
-| P2-A | Ownership | large false-orphan cluster | defensible `HAS_PROPERTY` expansion | pending | pending | pending | open |
-| P2-B | Tests | ownership focused tests | relevant owner cases covered | n/a | pending | pending | open |
-| P2-C | Validation | ownership slice | analyze/test/e2e recorded | pending | pending | pending | open |
+| P2-A | Ownership | TS/JS/SFC static shape cluster | defensible `TypeAlias -> Property` expansion | recorded | recorded | pending | done |
+| P2-B | Tests | TS/JS provider ownership focused tests | direct owner and nested no-owner covered | n/a | recorded | pending | done |
+| P2-C | Validation | ownership slice | analyze/test/e2e recorded | recorded | recorded | pending | done |
 | P2-D | Ownership | Go unknown property ownership | classify before linking | pending | pending | pending | open |
 | P2-E | Ownership | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
 | P3-A | Access | access sample taxonomy | resolvable families classified | pending | pending | pending | open |

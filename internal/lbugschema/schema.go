@@ -241,6 +241,7 @@ var RelationPairs = []RelationPair{
 	{From: "TypeAlias", To: "Function"},
 	{From: "TypeAlias", To: "Interface"},
 	{From: "TypeAlias", To: "Method"},
+	{From: "TypeAlias", To: "Property"},
 	{From: "TypeAlias", To: "Struct"},
 	{From: "TypeAlias", To: "TypeAlias"},
 	{From: "Const", To: "Community"},

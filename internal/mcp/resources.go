@@ -407,7 +407,7 @@ relationships:
   - EXTENDS: Class inheritance
   - IMPLEMENTS: Interface implementation
   - HAS_METHOD: Class/Struct/Interface owns a Method
-  - HAS_PROPERTY: Class/Struct/Interface owns a Property
+  - HAS_PROPERTY: Class/Struct/Interface/TypeAlias and other supported owners own a Property
   - ACCESSES: Function/Method reads or writes a Property
   - METHOD_OVERRIDES: Method overrides another Method
   - METHOD_IMPLEMENTS: ConcreteMethod implements InterfaceMethod

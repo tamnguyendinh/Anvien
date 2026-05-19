@@ -121,6 +121,27 @@ export function start() {
 	requireCall(t, ir, "run", scopeir.CallMember)
 }
 
+func TestExtractTypeAliasObjectPropertiesHaveDirectOwner(t *testing.T) {
+	source := []byte(`type Shape = {
+  title: string;
+  nested: {
+    count: number;
+  };
+}
+`)
+	ir := parseAndExtract(t, "src/shape.ts", "hash-shape", scanner.TypeScript, source)
+
+	shape := requireDefinition(t, ir, "Shape", scopeir.NodeTypeAlias)
+	title := requireExtractQualifiedDefinition(t, ir, "Shape.title", scopeir.NodeProperty)
+	if title.OwnerID != shape.ID {
+		t.Fatalf("title owner = %q, want %q; title=%#v shape=%#v", title.OwnerID, shape.ID, title, shape)
+	}
+	count := requireDefinition(t, ir, "count", scopeir.NodeProperty)
+	if count.OwnerID != "" || count.QualifiedName != "count" {
+		t.Fatalf("nested count should stay unowned until nested shape ownership is modeled: %#v", count)
+	}
+}
+
 func BenchmarkExtractTypeScriptScopeIR(b *testing.B) {
 	source := []byte(typescriptParityFixture)
 	pool := parser.NewPool(nil, parser.PoolOptions{ParseTimeout: time.Second})
@@ -262,6 +283,17 @@ func requireDefinition(t *testing.T, ir scopeir.ScopeIR, name string, label scop
 		}
 	}
 	t.Fatalf("missing definition %s/%s in %#v", name, label, ir.Definitions)
+	return scopeir.DefinitionFact{}
+}
+
+func requireExtractQualifiedDefinition(t *testing.T, ir scopeir.ScopeIR, qualifiedName string, label scopeir.NodeLabel) scopeir.DefinitionFact {
+	t.Helper()
+	for _, def := range ir.Definitions {
+		if def.QualifiedName == qualifiedName && def.Label == label {
+			return def
+		}
+	}
+	t.Fatalf("missing qualified definition %s/%s in %#v", qualifiedName, label, ir.Definitions)
 	return scopeir.DefinitionFact{}
 }
 
