@@ -25,7 +25,8 @@ Sources:
 
 - Combined benchmark: `reports\benchmark\2026-05-16-120908-avmatrix-go-self-analyze.json`
 - Scenario: `scenarios.websiteTypescriptHeavy`
-- Current Go graph snapshot source: `E:\Website\.avmatrix\graph.json`
+- Current Go graph source used for initial manual audit: `E:\Website\.avmatrix\graph.json`
+- Required Phase 1 baseline gate input: explicit graph snapshot artifact, not live `.avmatrix\graph.json`
 
 No `avmatrix-main` rerun was required because `E:\Website` is treated as unchanged for this benchmark.
 
@@ -65,7 +66,7 @@ Future benchmark rows must include:
 | Slice | Artifact | Key Metrics | Status |
 |---|---|---|---|
 | Baseline | `reports\benchmark\2026-05-16-120908-avmatrix-go-self-analyze.json` | Website: `Property=5,222`, `HAS_PROPERTY=3`, `ACCESSES=3` | recorded |
-| P1 baseline gate | pending | pending | open |
+| P1 baseline gate | pending graph snapshot artifact | pending | open |
 | P1 orphan taxonomy | pending | true/false/unknown orphan counts | open |
 | P2 ownership validation | pending | pending | open |
 | P3 access validation | pending | pending | open |

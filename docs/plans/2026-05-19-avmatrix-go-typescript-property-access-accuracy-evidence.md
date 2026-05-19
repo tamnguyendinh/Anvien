@@ -20,6 +20,7 @@ Companion benchmark: [2026-05-19-avmatrix-go-typescript-property-access-accuracy
 - Created a new plan because the 2026-05-16 graph accuracy plan is scoped to Go-local measured gates on `E:\AVmatrix-GO`.
 - New scope is TypeScript-heavy property/access graph accuracy on `E:\Website`.
 - The new plan does not reopen the completed 2026-05-16 plan.
+- Plan creation commit: `b90a9de`.
 
 ## Baseline Audit Evidence
 
@@ -70,11 +71,17 @@ Initial hypothesis:
 - Some unowned properties may be correct true orphans and should stay unlinked.
 - The first implementation task must distinguish false orphans from true orphans before adding edges.
 
+Baseline reproducibility note:
+
+- The initial manual audit used `E:\Website\.avmatrix\graph.json`.
+- Phase 1 must create an explicit graph snapshot artifact before running the tracked baseline gate.
+- Gate evidence must cite that snapshot path instead of relying on the live `.avmatrix` index.
+
 ## Evidence Ledger
 
 | Slice | Evidence | Result | Status |
 |---|---|---|---|
-| Plan creation | new plan/benchmark/evidence files | pending commit | open |
+| Plan creation | new plan/benchmark/evidence files | committed as `b90a9de` | done |
 | P1 baseline gate | pending | pending | open |
 | P1 taxonomy | pending | pending | open |
 | P1 orphan truth classification | pending | pending | open |

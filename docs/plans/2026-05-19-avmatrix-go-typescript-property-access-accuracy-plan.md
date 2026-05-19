@@ -62,7 +62,9 @@ This plan fixes only false orphans:
 
 ## Baseline
 
-Baseline source: `reports\benchmark\2026-05-16-120908-avmatrix-go-self-analyze.json`, scenario `websiteTypescriptHeavy`, plus current `E:\Website\.avmatrix\graph.json` after `avmatrix-go` analyze.
+Baseline source: `reports\benchmark\2026-05-16-120908-avmatrix-go-self-analyze.json`, scenario `websiteTypescriptHeavy`, plus the current `E:\Website\.avmatrix\graph.json` after `avmatrix-go` analyze.
+
+Phase 1 must write an explicit graph snapshot artifact before using the Website graph as gate input. Do not let the tracked gate depend on whatever happens to be in `E:\Website\.avmatrix\graph.json` at read time.
 
 `avmatrix-main` must not be rerun for this baseline unless `E:\Website` changes or the embedded benchmark payload is proven invalid.
 
@@ -121,7 +123,7 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 ## Phase 1 - Baseline Gate and Taxonomy
 
 - [ ] [P1-A] Build a tracked TypeScript property/access audit gate. Owner: `internal/graphaccuracy` for reusable audit logic and a command wrapper under `cmd/` if needed. The gate must consume a graph snapshot and emit JSON with property ownership/access metrics.
-- [ ] [P1-B] Run the baseline gate on `E:\Website` using the current `avmatrix-go` graph and record the artifact in the benchmark and evidence ledgers.
+- [ ] [P1-B] Run the baseline gate on `E:\Website` using an explicit `avmatrix-go` graph snapshot artifact and record the artifact in the benchmark and evidence ledgers.
 - [ ] [P1-C] Classify `Property` nodes by source category and write sample examples into the evidence ledger. Required categories: class/interface, type-alias object literal, nested shape, destructuring/binding pattern, runtime object literal, and unknown.
 - [ ] [P1-D] Classify standalone properties by orphan status. Required statuses: true orphan, false orphan, unknown, external/library-owned, and intentionally unmodeled.
 - [ ] [P1-E] Classify missing and absent edges by graph truth status. Required statuses: real edge missing, true no-edge, unknown no-edge, and invalid synthetic edge risk.
@@ -160,7 +162,7 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | ID | Area | Scope | Target | Benchmark | Evidence | Commit | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P1-A | Gate | tracked TS property/access audit | repeatable graph fact gate exists | pending | pending | pending | open |
-| P1-B | Baseline | Website Go graph | baseline gate recorded | pending | pending | pending | open |
+| P1-B | Baseline | Website Go graph snapshot | baseline gate artifact recorded | pending | pending | pending | open |
 | P1-C | Taxonomy | Property node categories | source categories classified | pending | pending | pending | open |
 | P1-D | Taxonomy | standalone properties | true/false/unknown orphan status classified | pending | pending | pending | open |
 | P1-E | Taxonomy | missing/absent edges | real missing vs true no-edge classified | pending | pending | pending | open |
