@@ -25,6 +25,7 @@ Companion benchmark: [2026-05-19-avmatrix-go-supported-language-property-ownersh
 - Plan creation commit: `b90a9de`.
 - Scope correction commit: `0972c3d`.
 - Access candidate audit commit: `73b1cf8`.
+- P2 ownership graph truth commit: `b91c2cd`.
 
 ## Baseline Audit Evidence
 

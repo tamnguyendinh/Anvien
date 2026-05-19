@@ -199,9 +199,9 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P1-F | Taxonomy | missing/absent edges | real missing vs true no-edge classified | recorded | recorded | `0972c3d` | done |
 | P1-G | Taxonomy | unresolved member accesses | miss reasons classified | recorded | recorded | `73b1cf8` | done |
 | P1-H | Targets | measurable follow-up gates | Phase 2/3 targets defined | recorded | recorded | `73b1cf8` | done |
-| P2-A | Ownership | TS/JS/SFC static shape cluster | defensible `TypeAlias -> Property` expansion | recorded | recorded | pending | done |
-| P2-B | Tests | TS/JS provider ownership focused tests | direct owner and nested no-owner covered | n/a | recorded | pending | done |
-| P2-C | Validation | ownership slice | analyze/test/e2e recorded | recorded | recorded | pending | done |
+| P2-A | Ownership | TS/JS/SFC static shape cluster | defensible `TypeAlias -> Property` expansion | recorded | recorded | `b91c2cd` | done |
+| P2-B | Tests | TS/JS provider ownership focused tests | direct owner and nested no-owner covered | n/a | recorded | `b91c2cd` | done |
+| P2-C | Validation | ownership slice | analyze/test/e2e recorded | recorded | recorded | `b91c2cd` | done |
 | P2-D | Ownership | Go unknown property ownership | classify before linking | pending | pending | pending | open |
 | P2-E | Ownership | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
 | P3-A | Access | access sample taxonomy | resolvable families classified | pending | pending | pending | open |
