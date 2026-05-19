@@ -2,7 +2,7 @@
 
 Date: 2026-05-19
 
-Status: in progress
+Status: complete
 
 Companion files:
 
@@ -182,10 +182,10 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 
 ## Phase 5 - Final Cutover
 
-- [ ] [P5-A] Run the final property/access gate on `E:\AVmatrix-GO`, `E:\Website`, and the supported-language fixture matrix.
-- [ ] [P5-B] Record final graph size, analyze performance, `Property`, `HAS_PROPERTY`, and `ACCESSES` metrics in the benchmark ledger.
-- [ ] [P5-C] Record final evidence: commands, artifacts, focused tests, full build, e2e proof, graph snapshots, gate outputs, and impact evidence.
-- [ ] [P5-D] Close the plan only after benchmark and evidence ledgers agree with the final tracked artifacts and all completed targets are satisfied.
+- [x] [P5-A] Run the final property/access gate on `E:\AVmatrix-GO`, `E:\Website`, and the supported-language fixture matrix. Result: final gates ran on both workloads; supported-language fixture matrix is covered by `go test ./internal/providers/...`.
+- [x] [P5-B] Record final graph size, analyze performance, `Property`, `HAS_PROPERTY`, and `ACCESSES` metrics in the benchmark ledger. Result: Website `16,436.3 ms`, `Property=7,097`, `HAS_PROPERTY=5,922`, `ACCESSES=2,770`; AVmatrix-GO `15,689.4 ms`, `Property=3,096`, `HAS_PROPERTY=2,769`, `ACCESSES=5,024`.
+- [x] [P5-C] Record final evidence: commands, artifacts, focused tests, full build, e2e proof, graph snapshots, gate outputs, and impact evidence. Result: evidence ledger records full build, provider fixture tests, final analyze, graph snapshots, property/access gate outputs, and access-candidate outputs.
+- [x] [P5-D] Close the plan only after benchmark and evidence ledgers agree with the final tracked artifacts and all completed targets are satisfied. Result: plan closed with `real_edge_missing=0`, `missing_owner_link=0`, invalid owner edges `0`, and remaining no-edge buckets explicitly classified.
 
 ## Ledger
 
@@ -214,10 +214,10 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P4-B | Consumer | impact | affected-symbol behavior checked | n/a | recorded | `ba2a0da` | done |
 | P4-C | Consumer | graph API/readback | new relationships preserved | n/a | recorded | `ba2a0da` | done |
 | P4-D | Consumer | precision/noise | concerns classified | n/a | recorded | `ba2a0da` | done |
-| P5-A | Final gate | workload matrix | final gate run | pending | pending | pending | open |
-| P5-B | Final benchmark | graph facts/performance | final metrics recorded | pending | pending | pending | open |
-| P5-C | Final evidence | proof set | final evidence recorded | n/a | pending | pending | open |
-| P5-D | Final closure | ledger consistency | plan closed | pending | pending | pending | open |
+| P5-A | Final gate | workload matrix | final gate run | recorded | recorded | pending | done |
+| P5-B | Final benchmark | graph facts/performance | final metrics recorded | recorded | recorded | pending | done |
+| P5-C | Final evidence | proof set | final evidence recorded | n/a | recorded | pending | done |
+| P5-D | Final closure | ledger consistency | plan closed | recorded | recorded | pending | done |
 
 ## Definition Of Done
 

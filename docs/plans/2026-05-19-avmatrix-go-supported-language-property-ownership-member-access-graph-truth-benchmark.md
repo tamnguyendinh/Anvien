@@ -2,7 +2,7 @@
 
 Date: 2026-05-19
 
-Status: open
+Status: complete
 
 Companion plan: [2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-plan.md](2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-plan.md)
 
@@ -88,7 +88,7 @@ Every property/access gate benchmark row must include:
 | P3-B/P3-D access validation | `.tmp\p3b-property-access-website-20260519.json`, `.tmp\p3b-access-candidates-website-20260519.json`, `.tmp\p3b-property-access-avmatrix-go-20260519.json`, `.tmp\p3b-access-candidates-avmatrix-go-20260519.json` | Website final `ACCESSES=2,769`, candidate `resolved=4,978`; AVmatrix-GO final `ACCESSES=2,746`, candidate `resolved=5,110`; invalid owner edges `0` | recorded |
 | P3-E missing-owner-link closure | `.tmp\p3e-access-candidates-website-20260519.json`, `.tmp\p3e-access-candidates-avmatrix-go-20260519.json` | Website `missing_owner_link=0`; AVmatrix-GO `missing_owner_link=0`; invalid owner edges `0` | recorded |
 | P3-F imported member receiver cluster | `.tmp\p3f-property-access-website-20260519.json`, `.tmp\p3f-access-candidates-website-20260519.json`, `.tmp\p3f-property-access-avmatrix-go-20260519.json`, `.tmp\p3f-access-candidates-avmatrix-go-20260519.json` | Website final `ACCESSES=2,770`, candidate `resolved=4,979`; AVmatrix-GO final `ACCESSES=5,018`, candidate `resolved=8,431`; invalid owner edges `0`; remaining buckets explicitly deferred | recorded |
-| P5 final gate | pending | final workload matrix | open |
+| P5 final gate | `.tmp\final-property-access-website-20260519.json`, `.tmp\final-access-candidates-website-20260519.json`, `.tmp\final-property-access-avmatrix-go-20260519.json`, `.tmp\final-access-candidates-avmatrix-go-20260519.json` | Website `ACCESSES=2,770`, `real_edge_missing=0`; AVmatrix-GO `ACCESSES=5,024`, `real_edge_missing=0`; invalid edges `0`; provider fixture matrix passed | recorded |
 
 ## P1 Cross-Language Baseline Gate
 
@@ -620,3 +620,54 @@ P3-F interpretation:
 - Remaining `missing_receiver_type` is deferred because it requires broader type/dataflow inference: untyped locals, callback and array element bindings, framework request/result values, and chained receiver propagation.
 - Remaining `external_library_type` is deferred because it represents stdlib/npm/framework/package targets not modeled as local graph nodes or unresolved aliases outside the current workspace model.
 - Remaining `unsupported_syntax` is deferred because computed/index/call/new/optional-chain receiver expressions need an expression evaluator rather than owner-link expansion.
+
+## P5 Final Gate
+
+Date: 2026-05-19
+
+Artifacts:
+
+- Website analyze benchmark: `.tmp\final-website-analyze-20260519.json`
+- Website graph snapshot: `.tmp\final-property-access-website-go-graph-20260519.json`
+- Website property/access gate output: `.tmp\final-property-access-website-20260519.json`
+- Website access candidate output: `.tmp\final-access-candidates-website-20260519.json`
+- AVmatrix-GO analyze benchmark: `.tmp\final-avmatrix-go-analyze-20260519.json`
+- AVmatrix-GO graph snapshot: `.tmp\final-property-access-avmatrix-go-graph-20260519.json`
+- AVmatrix-GO property/access gate output: `.tmp\final-property-access-avmatrix-go-20260519.json`
+- AVmatrix-GO access candidate output: `.tmp\final-access-candidates-avmatrix-go-20260519.json`
+
+Final analyze runtime and graph size:
+
+| Workload | Analyze runtime | Files scanned | Files parsed | Graph nodes | Graph relationships |
+|---|---:|---:|---:|---:|---:|
+| `E:\Website` | 16,436.3 ms | 1,870 | 998 | 27,956 | 58,732 |
+| `E:\AVmatrix-GO` | 15,689.4 ms | 682 | 527 | 20,352 | 50,978 |
+
+Final graph property/access gate:
+
+| Workload | `Property` | `HAS_PROPERTY` | `ACCESSES` | `real_edge_missing` | `true_no_edge` | `unknown_no_edge` | Invalid edges |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 7,097 | 5,922 | 2,770 | 0 | 1,156 | 19 | 0 |
+| `E:\AVmatrix-GO` | 3,096 | 2,769 | 5,024 | 0 | 324 | 3 | 0 |
+
+Final access candidate taxonomy:
+
+| Workload | Analyze runtime | Access candidates | Resolved | Unresolved | Final graph resolved accesses | Resolution unresolved references |
+|---|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 7,855 ms | 24,542 | 4,979 | 19,563 | 4,979 | 59,288 |
+| `E:\AVmatrix-GO` | 6,289 ms | 21,255 | 8,444 | 12,811 | 8,444 | 47,249 |
+
+Final reason taxonomy:
+
+| Workload | `resolved` | `missing_receiver_type` | `external_library_type` | `unsupported_syntax` | `missing_caller` | `missing_owner_link` | `false_positive_candidate` | `ambiguous_owner` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `E:\Website` | 4,979 | 10,619 | 6,295 | 1,313 | 53 | 0 | 1,174 | 109 |
+| `E:\AVmatrix-GO` | 8,444 | 7,499 | 4,354 | 910 | 14 | 0 | 34 | 0 |
+
+Final interpretation:
+
+- All measured false-orphan ownership buckets are closed: `real_edge_missing=0` on both workloads.
+- `missing_owner_link=0` on both access audits.
+- Invalid/synthetic owner edges remain `0`.
+- The final target is not `HAS_PROPERTY = Property`; true no-edge and unknown no-edge buckets remain visible instead of force-linked.
+- Remaining access gaps are explicitly classified as future modeling work: receiver type/dataflow inference, external library/package modeling, and unsupported expression receiver syntax.

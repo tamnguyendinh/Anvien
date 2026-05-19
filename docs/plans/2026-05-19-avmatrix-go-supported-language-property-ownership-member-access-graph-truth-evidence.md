@@ -2,7 +2,7 @@
 
 Date: 2026-05-19
 
-Status: open
+Status: complete
 
 Companion plan: [2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-plan.md](2026-05-19-avmatrix-go-supported-language-property-ownership-member-access-graph-truth-plan.md)
 
@@ -108,7 +108,7 @@ Initial hypothesis:
 | P3-E missing-owner-link closure | cross-language owner collision guard and access audit reclassification | recorded | done |
 | P3-F imported member receiver cluster | imported workspace member `ACCESSES`, unresolved import receiver classification, schema access pairs, full build/tests/e2e gates | recorded | done |
 | P4 consumer checks | context, impact, cypher readback, impact default traversal regression | recorded | done |
-| P5 final evidence | pending | pending | open |
+| P5 final evidence | full build, supported-language provider fixture tests, final analyze/property/access e2e gates | recorded | done |
 
 ## P1-A Implementation Evidence
 
@@ -1531,3 +1531,124 @@ changed symbols include:
 ```
 
 Interpretation: low risk is expected because the production change is limited to the default impact relation set, and the new regression test covers property owner/consumer traversal.
+
+## P5 Final Cutover Evidence
+
+Full build before final tests:
+
+```powershell
+.\avmatrix-launcher\build.ps1
+```
+
+Result: passed. Vite reported chunk-size and dynamic/static import warnings only.
+
+Supported-language fixture matrix and focused tests:
+
+```powershell
+go test ./internal/providers/... ./internal/mcp ./internal/resolution ./internal/graphaccuracy ./internal/lbugschema ./cmd/property-access-audit ./cmd/access-candidate-audit
+```
+
+Result:
+
+```text
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/astro
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/c
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/cpp
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/csharp
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/dart
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/golang
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/java
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/kotlin
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/php
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/python
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/ruby
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/rust
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/sfc
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/svelte
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/swift
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/tsjs
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/providers/vue
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/mcp
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/resolution
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy
+ok  	github.com/tamnguyendinh/avmatrix-go/internal/lbugschema
+?   	github.com/tamnguyendinh/avmatrix-go/cmd/property-access-audit	[no test files]
+?   	github.com/tamnguyendinh/avmatrix-go/cmd/access-candidate-audit	[no test files]
+```
+
+Final analyze e2e:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats --benchmark-json .tmp\final-website-analyze-20260519.json --benchmark-label final-website
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json .tmp\final-avmatrix-go-analyze-20260519.json --benchmark-label final-avmatrix-go
+```
+
+Results:
+
+```text
+E:\Website:
+files: scanned=1870 parsed=998 unsupported=872 failed=0
+graph: nodes=27956 relationships=58732
+
+E:\AVmatrix-GO:
+files: scanned=682 parsed=527 unsupported=155 failed=0
+graph: nodes=20352 relationships=50978
+```
+
+Final property/access gate e2e:
+
+```powershell
+go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\final-property-access-website-go-graph-20260519.json -out .tmp\final-property-access-website-20260519.json -max-examples 20
+go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\final-property-access-avmatrix-go-graph-20260519.json -out .tmp\final-property-access-avmatrix-go-20260519.json -max-examples 20
+```
+
+Results:
+
+```text
+E:\Website:
+properties.total=7097 ownerLinked=5922 standalone=1175 hasPropertyEdges=5922 accessesEdges=2770 invalidHasPropertyEdges=0
+graphTruth.real_edge_missing=0
+graphTruth.true_no_edge=1156
+graphTruth.unknown_no_edge=19
+
+E:\AVmatrix-GO:
+properties.total=3096 ownerLinked=2769 standalone=327 hasPropertyEdges=2769 accessesEdges=5024 invalidHasPropertyEdges=0
+graphTruth.real_edge_missing=0
+graphTruth.true_no_edge=324
+graphTruth.unknown_no_edge=3
+```
+
+Final access candidate e2e:
+
+```powershell
+go run ./cmd/access-candidate-audit -repo E:\Website -out .tmp\final-access-candidates-website-20260519.json -max-examples 20
+go run ./cmd/access-candidate-audit -repo E:\AVmatrix-GO -out .tmp\final-access-candidates-avmatrix-go-20260519.json -max-examples 20
+```
+
+Results:
+
+```text
+E:\Website:
+accessCandidates.total=24542 resolved=4979 unresolved=19563 analyzeMillis=7855 resolvedAccesses=4979 unresolvedReferences=59288
+reason.missing_owner_link=0
+reason.missing_receiver_type=10619
+reason.external_library_type=6295
+reason.unsupported_syntax=1313
+
+E:\AVmatrix-GO:
+accessCandidates.total=21255 resolved=8444 unresolved=12811 analyzeMillis=6289 resolvedAccesses=8444 unresolvedReferences=47249
+reason.missing_owner_link=0
+reason.missing_receiver_type=7499
+reason.external_library_type=4354
+reason.unsupported_syntax=910
+```
+
+Closure check:
+
+- Plan, benchmark, and evidence ledgers reference the final artifacts.
+- Final graph metrics use `ACCESSES` and `HAS_PROPERTY`, not non-equivalent external counters.
+- True no-edge cases remain visible.
+- Unknown no-edge cases remain visible.
+- Invalid/synthetic owner edges remain `0`.
+- Remaining unresolved access buckets are classified and deferred with explicit reasons.
