@@ -326,7 +326,47 @@ Restaurant_manager raw relationship counts:
 | Left dashboard drag resize | not implemented in current product | `192px` to `480px`, tested |
 | Canvas usability after dashboard resize | pending | validated by focused Playwright e2e |
 
-## B2 - Final Benchmark
+## B2 - MCP Policy And Provider Heritage Parity Coverage
+
+Status: recorded
+
+Measurement date: 2026-05-19
+
+This slice did not change analyzer output counts or Web runtime behavior. Benchmarkable inventory is coverage count expansion for policy and provider heritage parity.
+
+### Policy Coverage Inventory
+
+| Metric | Count |
+|---|---:|
+| MCP schema raw/display heritage policy sections | `3` |
+| MCP schema unresolved/external policy sections | `2` |
+| MCP schema language heritage terminology groups | `5` |
+| Relationship compatibility consumers explicitly preserved | `4` |
+
+Compatibility consumers explicitly preserved: Cypher, MCP context, MCP impact, and MRO.
+
+### Provider Heritage Parity Inventory
+
+| Metric | Count |
+|---|---:|
+| Languages with representative heritage extraction parity | `12` |
+| Languages with representative heritage graph-resolution parity | `12` |
+| Resolution cases asserting specific `EXTENDS`/`IMPLEMENTS` relationship | `16` |
+| Resolution cases asserting compatibility `INHERITS` relationship | `16` |
+
+Languages with representative heritage extraction parity: TypeScript, Go, Python, C++, Ruby, Java, C#, Kotlin, Rust, PHP, Dart, and Swift.
+
+Languages with representative heritage graph-resolution parity: TypeScript, Go, Python, Java, C#, Kotlin, C++, PHP, Ruby, Rust, Dart, and Swift.
+
+### Validation Inventory
+
+| Command | Result |
+|---|---|
+| `go test ./internal/providers ./internal/mcp ./internal/mro ./internal/resolution` | passed |
+| `go build ./cmd/... ./internal/...` | passed |
+| `go test ./cmd/... ./internal/...` | passed |
+
+## B3 - Final Benchmark
 
 Status: pending broader provider-parity/focus-depth expansion
 

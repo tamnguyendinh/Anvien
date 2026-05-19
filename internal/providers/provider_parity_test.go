@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
 	"github.com/tamnguyendinh/avmatrix-go/internal/parser"
 	cppprovider "github.com/tamnguyendinh/avmatrix-go/internal/providers/cpp"
 	csharpprovider "github.com/tamnguyendinh/avmatrix-go/internal/providers/csharp"
@@ -18,6 +19,7 @@ import (
 	rustprovider "github.com/tamnguyendinh/avmatrix-go/internal/providers/rust"
 	swiftprovider "github.com/tamnguyendinh/avmatrix-go/internal/providers/swift"
 	tsjsprovider "github.com/tamnguyendinh/avmatrix-go/internal/providers/tsjs"
+	"github.com/tamnguyendinh/avmatrix-go/internal/resolution"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
 )
@@ -506,6 +508,20 @@ type Dog struct {
 	requireNoHeritage(t, goIR, heritageExpectation{name: "string", kind: scopeir.HeritageExtends})
 	requireNoHeritage(t, goIR, heritageExpectation{name: "Breed", kind: scopeir.HeritageExtends})
 
+	pythonIR := extractScopeIR(t, "src/app.py", "hash-python-heritage", scanner.Python, `class Base:
+    pass
+class User(Base):
+    pass
+`)
+	requireHeritage(t, pythonIR, heritageExpectation{name: "Base", kind: scopeir.HeritageExtends})
+
+	cppIR := extractScopeIR(t, "src/User.cpp", "hash-cpp-heritage", scanner.CPlusPlus, `class Base {};
+class Named {};
+class User : public Base, public Named {};
+`)
+	requireHeritage(t, cppIR, heritageExpectation{name: "Base", kind: scopeir.HeritageExtends})
+	requireHeritage(t, cppIR, heritageExpectation{name: "Named", kind: scopeir.HeritageExtends})
+
 	rubyIR := extractScopeIR(t, "src/app.rb", "hash-ruby-heritage", scanner.Ruby, `module Serializable
 end
 module ClassMethods
@@ -536,6 +552,13 @@ class User : Base, INamed {}
 	requireHeritage(t, csharpIR, heritageExpectation{name: "Base", kind: scopeir.HeritageExtends})
 	requireHeritage(t, csharpIR, heritageExpectation{name: "INamed", kind: scopeir.HeritageImplements})
 
+	kotlinIR := extractScopeIR(t, "src/User.kt", "hash-kotlin-heritage", scanner.Kotlin, `interface Named
+open class Base
+class User : Base(), Named
+`)
+	requireHeritage(t, kotlinIR, heritageExpectation{name: "Base", kind: scopeir.HeritageExtends})
+	requireHeritage(t, kotlinIR, heritageExpectation{name: "Named", kind: scopeir.HeritageImplements})
+
 	rustIR := extractScopeIR(t, "src/user.rs", "hash-rust-heritage", scanner.Rust, `trait Named {}
 struct User;
 impl Named for User {}
@@ -554,6 +577,152 @@ class User extends Base implements Named {}
 class User extends Base {}
 `)
 	requireHeritage(t, dartIR, heritageExpectation{name: "Base", kind: scopeir.HeritageExtends})
+
+	swiftIR := extractScopeIR(t, "Sources/User.swift", "hash-swift-heritage", scanner.Swift, `protocol Named {}
+class User: Named {}
+`)
+	requireHeritage(t, swiftIR, heritageExpectation{name: "Named", kind: scopeir.HeritageImplements})
+}
+
+func TestProviderHeritageGraphResolutionParityCoversRepresentativeLanguages(t *testing.T) {
+	tests := []struct {
+		name  string
+		path  string
+		lang  scanner.Language
+		input string
+		want  []resolvedHeritageExpectation
+	}{
+		{
+			name:  "typescript extends implements",
+			path:  "src/app.ts",
+			lang:  scanner.TypeScript,
+			input: "interface Named {}\nclass Base {}\nclass User extends Base implements Named {}\n",
+			want: []resolvedHeritageExpectation{
+				{relType: graph.RelExtends, sourceLabel: "Class", sourceName: "User", targetLabel: "Class", targetName: "Base"},
+				{relType: graph.RelImplements, sourceLabel: "Class", sourceName: "User", targetLabel: "Interface", targetName: "Named"},
+			},
+		},
+		{
+			name:  "go embedded struct",
+			path:  "src/app.go",
+			lang:  scanner.Go,
+			input: "package app\ntype Animal struct{}\ntype Dog struct { Animal }\n",
+			want: []resolvedHeritageExpectation{
+				{relType: graph.RelExtends, sourceLabel: "Struct", sourceName: "Dog", targetLabel: "Struct", targetName: "Animal"},
+			},
+		},
+		{
+			name:  "python base class",
+			path:  "src/app.py",
+			lang:  scanner.Python,
+			input: "class Base:\n    pass\nclass User(Base):\n    pass\n",
+			want: []resolvedHeritageExpectation{
+				{relType: graph.RelExtends, sourceLabel: "Class", sourceName: "User", targetLabel: "Class", targetName: "Base"},
+			},
+		},
+		{
+			name:  "java extends implements",
+			path:  "src/User.java",
+			lang:  scanner.Java,
+			input: "interface Named {}\nclass Base {}\nclass User extends Base implements Named {}\n",
+			want: []resolvedHeritageExpectation{
+				{relType: graph.RelExtends, sourceLabel: "Class", sourceName: "User", targetLabel: "Class", targetName: "Base"},
+				{relType: graph.RelImplements, sourceLabel: "Class", sourceName: "User", targetLabel: "Interface", targetName: "Named"},
+			},
+		},
+		{
+			name:  "csharp extends implements",
+			path:  "src/User.cs",
+			lang:  scanner.CSharp,
+			input: "interface INamed {}\nclass Base {}\nclass User : Base, INamed {}\n",
+			want: []resolvedHeritageExpectation{
+				{relType: graph.RelExtends, sourceLabel: "Class", sourceName: "User", targetLabel: "Class", targetName: "Base"},
+				{relType: graph.RelImplements, sourceLabel: "Class", sourceName: "User", targetLabel: "Interface", targetName: "INamed"},
+			},
+		},
+		{
+			name:  "kotlin extends implements",
+			path:  "src/User.kt",
+			lang:  scanner.Kotlin,
+			input: "interface Named\nopen class Base\nclass User : Base(), Named\n",
+			want: []resolvedHeritageExpectation{
+				{relType: graph.RelExtends, sourceLabel: "Class", sourceName: "User", targetLabel: "Class", targetName: "Base"},
+				{relType: graph.RelImplements, sourceLabel: "Class", sourceName: "User", targetLabel: "Interface", targetName: "Named"},
+			},
+		},
+		{
+			name:  "cpp base classes",
+			path:  "src/User.cpp",
+			lang:  scanner.CPlusPlus,
+			input: "class Base {};\nclass Named {};\nclass User : public Base, public Named {};\n",
+			want: []resolvedHeritageExpectation{
+				{relType: graph.RelExtends, sourceLabel: "Class", sourceName: "User", targetLabel: "Class", targetName: "Base"},
+				{relType: graph.RelExtends, sourceLabel: "Class", sourceName: "User", targetLabel: "Class", targetName: "Named"},
+			},
+		},
+		{
+			name:  "php extends implements",
+			path:  "src/User.php",
+			lang:  scanner.PHP,
+			input: "<?php\ninterface Named {}\nclass Base {}\nclass User extends Base implements Named {}\n",
+			want: []resolvedHeritageExpectation{
+				{relType: graph.RelExtends, sourceLabel: "Class", sourceName: "User", targetLabel: "Class", targetName: "Base"},
+				{relType: graph.RelImplements, sourceLabel: "Class", sourceName: "User", targetLabel: "Interface", targetName: "Named"},
+			},
+		},
+		{
+			name:  "ruby mixin",
+			path:  "src/app.rb",
+			lang:  scanner.Ruby,
+			input: "module Serializable\nend\nclass User\n  include Serializable\nend\n",
+			want: []resolvedHeritageExpectation{
+				{relType: graph.RelImplements, sourceLabel: "Class", sourceName: "User", targetLabel: "Trait", targetName: "Serializable"},
+			},
+		},
+		{
+			name:  "rust trait impl",
+			path:  "src/user.rs",
+			lang:  scanner.Rust,
+			input: "trait Named {}\nstruct User;\nimpl Named for User {}\n",
+			want: []resolvedHeritageExpectation{
+				{relType: graph.RelImplements, sourceLabel: "Struct", sourceName: "User", targetLabel: "Trait", targetName: "Named"},
+			},
+		},
+		{
+			name:  "dart extends",
+			path:  "lib/user.dart",
+			lang:  scanner.Dart,
+			input: "class Base {}\nclass User extends Base {}\n",
+			want: []resolvedHeritageExpectation{
+				{relType: graph.RelExtends, sourceLabel: "Class", sourceName: "User", targetLabel: "Class", targetName: "Base"},
+			},
+		},
+		{
+			name:  "swift protocol",
+			path:  "Sources/User.swift",
+			lang:  scanner.Swift,
+			input: "protocol Named {}\nclass User: Named {}\n",
+			want: []resolvedHeritageExpectation{
+				{relType: graph.RelImplements, sourceLabel: "Class", sourceName: "User", targetLabel: "Interface", targetName: "Named"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ir := extractScopeIR(t, tt.path, "hash-"+tt.name, tt.lang, tt.input)
+			result, err := resolution.Resolve([]scopeir.ScopeIR{ir}, resolution.Options{})
+			if err != nil {
+				t.Fatalf("resolve failed: %v", err)
+			}
+			for _, want := range tt.want {
+				sourceID := graph.GenerateID(want.sourceLabel, tt.path+":"+want.sourceName)
+				targetID := graph.GenerateID(want.targetLabel, tt.path+":"+want.targetName)
+				requireResolvedRelationship(t, result.Graph, want.relType, sourceID, targetID)
+				requireResolvedRelationship(t, result.Graph, graph.RelInherits, sourceID, targetID)
+			}
+		})
+	}
 }
 
 func TestProviderQualifiedNamesCoverNamespacesPackagesModulesAndTopLevelClasses(t *testing.T) {
@@ -799,6 +968,14 @@ type heritageExpectation struct {
 	kind scopeir.HeritageKind
 }
 
+type resolvedHeritageExpectation struct {
+	relType     graph.RelationshipType
+	sourceLabel string
+	sourceName  string
+	targetLabel string
+	targetName  string
+}
+
 type importExpectation struct {
 	kind     scopeir.ImportKind
 	local    string
@@ -1038,6 +1215,16 @@ func requireNoHeritage(t *testing.T, ir scopeir.ScopeIR, want heritageExpectatio
 			t.Fatalf("unexpected heritage name=%s kind=%s in %#v", want.name, want.kind, ir.Heritage)
 		}
 	}
+}
+
+func requireResolvedRelationship(t *testing.T, g *graph.Graph, relType graph.RelationshipType, sourceID string, targetID string) {
+	t.Helper()
+	for _, relationship := range g.Relationships {
+		if relationship.Type == relType && relationship.SourceID == sourceID && relationship.TargetID == targetID {
+			return
+		}
+	}
+	t.Fatalf("missing resolved relationship %s %s -> %s in %#v", relType, sourceID, targetID, g.Relationships)
 }
 
 func requireNoExtractError(t *testing.T, err error) {

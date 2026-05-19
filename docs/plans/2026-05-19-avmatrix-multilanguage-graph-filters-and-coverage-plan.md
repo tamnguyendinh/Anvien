@@ -2,7 +2,7 @@
 
 Date: 2026-05-19
 
-Status: active - implementation slice completed 2026-05-19
+Status: active - policy and provider-parity slice completed 2026-05-19
 
 Companion files:
 
@@ -121,26 +121,26 @@ Regex source-site counts are useful baseline evidence only. Final accuracy check
 - [x] [P1-C] Define whether `INHERITS` is a compatibility/normalized edge, a first-class display edge, or both. Result: raw graph keeps `INHERITS` as normalized/compatibility heritage; Web display labels it `Normalized Heritage` and groups it with same source-target `EXTENDS`/`IMPLEMENTS`.
 - [x] [P1-D] Define canonical Web display behavior for pairs that have both `EXTENDS` and `INHERITS`. Result: dashboard counts and graph adapter rendering collapse duplicate compatibility `INHERITS` for the same source-target pair when `EXTENDS` or `IMPLEMENTS` is also present, while preserving raw counts in titles/tooltips.
 - [x] [P1-E] Define raw graph export behavior: keep both edge types, collapse at graph payload generation, or preserve raw edges and add semantic grouping metadata. Result: raw graph payload preserves both edge types for compatibility; Web contracts now expose relationship display policy metadata.
-- [ ] [P1-F] Define unresolved/external source fact policy for targets such as `Error`, `Component`, DOM/React interfaces, external package types, missing imports, framework symbols, and scan-only language surfaces.
-- [ ] [P1-G] Define user-facing terminology for language-specific graph forms: class extends, interface extends, implements, Go embedding, trait/include/extend/prepend, namespace/module/package/struct/record/delegate/annotation, and normalized inheritance.
-- [ ] [P1-H] Define compatibility behavior for MCP/context/impact/MRO consumers that may currently depend on raw relationship types such as `INHERITS`.
+- [x] [P1-F] Define unresolved/external source fact policy for targets such as `Error`, `Component`, DOM/React interfaces, external package types, missing imports, framework symbols, and scan-only language surfaces. Result: MCP schema now documents that resolved in-repo targets emit graph relationships while unresolved/external targets are not synthesized as graph nodes and remain audit/metrics evidence.
+- [x] [P1-G] Define user-facing terminology for language-specific graph forms: class extends, interface extends, implements, Go embedding, trait/include/extend/prepend, namespace/module/package/struct/record/delegate/annotation, and normalized inheritance. Result: MCP schema now records language heritage terminology for TS, Go, Java/C#/Kotlin/Dart/PHP, and Python/C++/Swift/Ruby/Rust provider-specific forms.
+- [x] [P1-H] Define compatibility behavior for MCP/context/impact/MRO consumers that may currently depend on raw relationship types such as `INHERITS`. Result: raw graph keeps `INHERITS` beside resolved `EXTENDS`/`IMPLEMENTS`; user display groups duplicate same-pair compatibility edges, while MCP/context/impact/MRO continue to see raw compatibility relationships.
 - [x] [P1-I] Define the supported-language graph coverage matrix for `javascript`, `typescript`, `python`, `java`, `c`, `cpp`, `csharp`, `go`, `ruby`, `rust`, `php`, `kotlin`, `swift`, `dart`, `vue`, `svelte`, `astro`, and `cobol`. Result: generated Web contract includes `LANGUAGE_GRAPH_COVERAGE` for all 18 code languages.
-- [ ] [P1-J] For each supported language, classify every graph fact family as one of: resolved graph node/relationship, extracted but unresolved/external, extraction-only inventory, not applicable by language semantics, or scanned but not extracted.
+- [x] [P1-J] For each supported language, classify every graph fact family as one of: resolved graph node/relationship, extracted but unresolved/external, extraction-only inventory, not applicable by language semantics, or scanned but not extracted. Result: generated language coverage matrix plus MCP schema now classify provider-backed, script-container-backed, dedicated analyzer-phase, resolved heritage, unresolved/external, and compatibility display behavior; detailed non-heritage fixture expansion remains tracked separately.
 - [x] [P1-K] Define the COBOL policy explicitly: it is scanned and has a dedicated analyzer phase/metrics, but it is not currently routed through ScopeIR provider extraction by `hasExtractor`; graph filter behavior must reflect that instead of implying full ScopeIR parity. Result: generated coverage matrix marks COBOL as `dedicated-analyzer-phase`, not provider-backed ScopeIR parity.
-- [ ] [P1-L] Record the selected policy in plan, benchmark, evidence, MCP graph schema docs, generated Web contracts, and Web dashboard wording.
+- [x] [P1-L] Record the selected policy in plan, benchmark, evidence, MCP graph schema docs, generated Web contracts, and Web dashboard wording. Result: policy is recorded in this plan, benchmark/evidence ledgers, MCP schema resource, generated Web contracts, and Web dashboard relationship display wording.
 
 ## Phase 2 - Root-Cause Trace Before Fixing
 
 - [ ] [P2-A] For representative `E:\Restaurant_manager` TS files, capture parser/ScopeIR output and verify whether `HeritageFact` is emitted for every audited `extends` / `implements` site.
 - [x] [P2-B] Trace same-file TS interface inheritance such as `AreaWithTableCount extends Area` and `ShiftWithCounts extends Shift` through workspace binding and relationship emission. Result: loss point was workspace name resolution ambiguity for same-file interface targets; fixed with same-file heritage fallback.
 - [ ] [P2-C] Trace cross-file/imported TS heritage targets and record whether import binding or name resolution is the failure point.
-- [ ] [P2-D] Trace external TS heritage targets such as `Error`, `Component`, and React/DOM interfaces and classify them as external/unresolved by policy.
-- [ ] [P2-E] Trace Go embedded struct relationships and classify whether their user-facing label should be `EXTENDS`, `EMBEDS`, `INHERITS`, or a grouped heritage display.
+- [x] [P2-D] Trace external TS heritage targets such as `Error`, `Component`, and React/DOM interfaces and classify them as external/unresolved by policy. Result: external TS heritage targets are classified as unresolved/external and are not synthesized as graph nodes in this slice.
+- [x] [P2-E] Trace Go embedded struct relationships and classify whether their user-facing label should be `EXTENDS`, `EMBEDS`, `INHERITS`, or a grouped heritage display. Result: Go embedded struct/interface forms remain raw `EXTENDS` plus compatibility `INHERITS`, and Web display groups same-pair compatibility `INHERITS` as normalized heritage rather than an additional independent edge.
 - [x] [P2-F] Record the exact loss point for each missing heritage source-site class: extraction loss, owner-scope loss, import/name-resolution loss, graph emission loss, payload loss, or UI display loss. Result: resolved in-repo TS sites were name-resolution losses; external React/DOM/Error/Performance sites remain unresolved by policy.
-- [ ] [P2-G] Trace representative heritage facts for every heritage-capable provider from parser/ScopeIR through resolution and graph emission, not only TS and Go.
+- [x] [P2-G] Trace representative heritage facts for every heritage-capable provider from parser/ScopeIR through resolution and graph emission, not only TS and Go. Result: provider parity tests now cover heritage extraction for TS, Go, Python, C++, Ruby, Java, C#, Kotlin, Rust, PHP, Dart, and Swift, and graph-resolution parity for TS, Go, Python, Java, C#, Kotlin, C++, PHP, Ruby, Rust, Dart, and Swift.
 - [ ] [P2-H] Trace representative non-heritage facts for every provider that supports them: definitions, imports, calls, uses/type refs, member/property/method relationships, accesses, routes/tools/process edges where applicable.
 - [x] [P2-I] Audit `internal/analyze/analyze.go` `hasExtractor`, `extractScopeIR`, and `extractScriptContainerScopeIR` against `internal/contracts/web_ui.go` code languages so every declared language is categorized as provider-backed, script-container-backed, dedicated-phase-backed, scan-only, or unsupported. Result: 14 provider-backed languages, 3 script-container-backed languages, and COBOL dedicated analyzer phase are recorded in generated contract metadata.
-- [ ] [P2-J] Audit `internal/providers/provider_parity_test.go` and provider-specific tests to identify which graph fact families have real parity coverage and which are only covered for TS/Go or a small subset.
+- [x] [P2-J] Audit `internal/providers/provider_parity_test.go` and provider-specific tests to identify which graph fact families have real parity coverage and which are only covered for TS/Go or a small subset. Result: heritage parity gaps were expanded in `provider_parity_test.go`; remaining broader non-heritage fact-family expansion stays tracked in P2-H/P3-C/P3-J.
 - [x] [P2-K] Compare actual graph node labels and relationship types from `E:\Restaurant_manager` and `E:\AVmatrix-GO` against Web filter rows, legend rows, color/size mappings, and adapter support. Result: benchmark ledger records final graph-present label/type inventories for both repos and Web unit tests assert graph-present dashboard completeness.
 - [x] [P2-L] Audit `graph-adapter.ts` hard-coded classifications: `structuralTypes`, `symbolTypes`, `forwardHierarchyRelations`, `reverseHierarchyRelations`, `getNodeMass`, `EDGE_SIZE_MULTIPLIERS`, node size caps, and community coloring. Result: constants now expose explicit structural/community/edge-size classifications and unit tests assert every generated relationship type has a size policy.
 
@@ -154,7 +154,7 @@ Regex source-site counts are useful baseline evidence only. Final accuracy check
 - [x] [P3-F] Add parser/ScopeIR source-site inventory assertions so every TS trigger heritage site is counted even if unresolved. Result: `HeritageFactsIndexed` and `UnresolvedInheritance` metrics now account for resolved and unresolved heritage facts.
 - [x] [P3-G] Fix TS provider/resolution behavior so resolved in-repo class/interface heritage emits the selected graph relationship contract. Result: `extends_type_clause` is extracted and same-file ambiguous targets resolve; Restaurant_manager now emits 8 resolved TS interface heritage pairs.
 - [x] [P3-H] Fix or document unresolved/external heritage handling so those source sites are visible in graph audit data. Result: unresolved heritage is counted in binding metrics; external target graph nodes are not synthesized in this slice.
-- [ ] [P3-I] Verify Go embedded struct behavior still emits the expected heritage facts after any contract changes.
+- [x] [P3-I] Verify Go embedded struct behavior still emits the expected heritage facts after any contract changes. Result: provider graph-resolution parity asserts Go embedded struct `Dog -> Animal` emits both `EXTENDS` and compatibility `INHERITS`.
 - [ ] [P3-J] Add coverage for missing or weak non-TS/Go provider facts before claiming a filter is multi-language complete, including script-container providers where facts come from embedded JS/TS.
 - [x] [P3-K] Update generated contracts or schema docs if the selected policy adds relationship metadata, external target facts, display-group fields, or per-language graph coverage metadata. Result: Web contract schema/generated TS now include relationship display policy and language graph coverage metadata.
 
@@ -193,7 +193,7 @@ Regex source-site counts are useful baseline evidence only. Final accuracy check
 
 - [x] [P6-A] Run full Go build before tests. Result: `go build ./cmd/... ./internal/...` passed.
 - [x] [P6-B] Run focused Go tests for extraction/resolution and graph contract behavior across every covered language/provider. Result: focused provider/resolution/contracts tests passed.
-- [ ] [P6-C] Run focused tests for MCP/context/impact/MRO behavior if `INHERITS` compatibility or graph payload semantics change.
+- [x] [P6-C] Run focused tests for MCP/context/impact/MRO behavior if `INHERITS` compatibility or graph payload semantics change. Result: `go test ./internal/providers ./internal/mcp ./internal/mro ./internal/resolution` passed after documenting MCP raw/display policy and expanding provider heritage parity.
 - [x] [P6-D] Run full applicable Go test suite for `cmd` and `internal`. Result: `go test ./cmd/... ./internal/...` passed. Repository-wide `go test ./...` still includes intentionally non-buildable fixture folders under `avmatrix/test/fixtures`.
 - [x] [P6-E] Run Web build before Web tests. Result: `npm run build` passed.
 - [x] [P6-F] Run focused Web unit tests for node type dashboard, edge type dashboard, legend, filter visibility, and graph adapter behavior. Result: focused constants/FileTreePanel/graph-adapter/Header tests passed.
@@ -208,5 +208,5 @@ Regex source-site counts are useful baseline evidence only. Final accuracy check
 - [x] [P7-A] Update this plan checklist after each completed slice.
 - [x] [P7-B] Update benchmark ledger with initial, intermediate, and final counts.
 - [x] [P7-C] Update evidence ledger with commands, files changed, tests, and conclusions.
-- [ ] [P7-D] Commit each completed implementation slice.
+- [x] [P7-D] Commit each completed implementation slice. Result: completed implementation slices are committed as they close, including the graph heritage display slice and the current MCP policy/provider parity slice.
 - [ ] [P7-E] Final closure: confirm graph filter completeness, graph semantics, full supported-language coverage matrix, UI relationship display, Back navigation, left dashboard resize, benchmark, evidence, full build, unit tests, and e2e tests are complete.

@@ -1854,6 +1854,17 @@ func TestServeReadsSchemaDetailResourcesAndPrompts(t *testing.T) {
 			t.Fatalf("response %d missing %q:\n%s", index, want, text)
 		}
 	}
+	schemaText := resourceTextFromResponse(t, responses[4])
+	for _, want := range []string{
+		"heritage_display_policy:",
+		"group it as normalized compatibility heritage",
+		"unresolved_external_policy:",
+		"Do not synthesize resolved graph edges",
+	} {
+		if !strings.Contains(schemaText, want) {
+			t.Fatalf("schema resource missing %q:\n%s", want, schemaText)
+		}
+	}
 
 	prompts := responses[7]["result"].(map[string]any)["prompts"].([]any)
 	if !promptExists(prompts, "detect_impact") || !promptExists(prompts, "generate_map") {

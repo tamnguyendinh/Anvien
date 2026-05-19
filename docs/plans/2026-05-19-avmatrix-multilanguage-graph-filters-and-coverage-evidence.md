@@ -525,3 +525,107 @@ Correction:
 Doc-only note:
 
 - no AVmatrix analysis was run for this documentation correction; it uses the AVmatrix-assisted audit evidence recorded in E10.
+
+## E12 - MCP Policy And Provider Heritage Parity Slice
+
+Date: 2026-05-19
+
+Status: recorded
+
+### AVmatrix-Assisted Checks
+
+Commands:
+
+```powershell
+go run ./cmd/avmatrix context schemaResource --repo AVmatrix
+go run ./cmd/avmatrix impact schemaResource --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Observed impact summary:
+
+- `schemaResource` is consumed by `Server.readResourceText`.
+- upstream impact is limited to the MCP module with risk reported as `LOW`.
+- a context/impact lookup for the newly added provider parity test name was attempted before reindexing and returned `Target not found`; this is expected because the test symbol was not in the existing graph snapshot yet.
+
+### Implementation Files
+
+Backend files:
+
+- `internal/mcp/resources.go`
+- `internal/mcp/server_test.go`
+- `internal/providers/provider_parity_test.go`
+
+Plan files:
+
+- `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-plan.md`
+- `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-benchmark.md`
+- `docs/plans/2026-05-19-avmatrix-multilanguage-graph-filters-and-coverage-evidence.md`
+
+### Policy Changes
+
+MCP schema resource now records:
+
+- raw graph compatibility policy: preserve `EXTENDS`/`IMPLEMENTS` and `INHERITS` for Cypher, MCP context/impact, and MRO consumers;
+- user display policy: group same-pair compatibility `INHERITS` with `EXTENDS` or `IMPLEMENTS`;
+- standalone `INHERITS` policy: draw/count only when no matching `EXTENDS` or `IMPLEMENTS` exists for the same source-target pair;
+- language heritage terminology for TypeScript, Go, Java/C#/Kotlin/Dart/PHP, and Python/C++/Swift/Ruby/Rust forms;
+- unresolved/external policy: do not synthesize graph nodes/edges for missing package, DOM, React, standard-library, or otherwise external targets.
+
+### Provider Parity Changes
+
+`internal/providers/provider_parity_test.go` now covers heritage extraction for:
+
+- TypeScript
+- Go
+- Python
+- C++
+- Ruby
+- Java
+- C#
+- Kotlin
+- Rust
+- PHP
+- Dart
+- Swift
+
+It also covers parser/ScopeIR-to-resolution graph heritage emission for:
+
+- TypeScript
+- Go
+- Python
+- Java
+- C#
+- Kotlin
+- C++
+- PHP
+- Ruby
+- Rust
+- Dart
+- Swift
+
+Each graph-resolution case asserts both the language-specific relationship (`EXTENDS` or `IMPLEMENTS`) and the compatibility `INHERITS` relationship.
+
+### Validation Commands
+
+Passed:
+
+```powershell
+gofmt -w internal\providers\provider_parity_test.go internal\mcp\resources.go internal\mcp\server_test.go
+go test ./internal/providers ./internal/mcp ./internal/mro ./internal/resolution
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+```
+
+Result summary:
+
+- focused provider/MCP/MRO/resolution tests passed;
+- full applicable Go build passed;
+- full applicable Go tests for `cmd` and `internal` passed;
+- no Web files changed in this slice, so Web build/e2e were not rerun for this policy/provider-parity-only change.
+
+Conclusion:
+
+- raw graph compatibility behavior is preserved for MCP/context/impact/MRO consumers;
+- the user-facing duplicate heritage grouping policy is now explicitly documented in MCP schema resources;
+- provider heritage parity is no longer TS/Go-only in representative extraction and graph-resolution fixtures;
+- broader non-heritage provider fact-family parity and full UI e2e filter/focus-depth expansion remain pending in the active plan.

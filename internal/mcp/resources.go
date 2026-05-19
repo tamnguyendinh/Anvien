@@ -403,9 +403,9 @@ relationships:
   - CALLS: Function/method invocation
   - IMPORTS: Module imports
   - USES: Symbol uses a type/imported symbol dependency
-  - INHERITS: Normalized scope-resolved inheritance or heritage dependency
-  - EXTENDS: Class inheritance
-  - IMPLEMENTS: Interface implementation
+  - INHERITS: Normalized compatibility heritage edge emitted with resolved EXTENDS or IMPLEMENTS unless compatibility output is disabled
+  - EXTENDS: Language heritage such as class inheritance, interface extension, Go embedding, and provider-specific extension forms
+  - IMPLEMENTS: Interface/protocol/trait implementation when the provider can classify it separately
   - HAS_METHOD: Class/Struct/Interface owns a Method
   - HAS_PROPERTY: Class/Struct/Interface/TypeAlias and other supported owners own a Property
   - ACCESSES: Function/Method reads or writes a Property
@@ -415,6 +415,21 @@ relationships:
   - STEP_IN_PROCESS: Symbol is step N in process
 
 relationship_table: "All relationships use a single CodeRelation table with a 'type' property. Properties: type, confidence, reason, step, resolutionSource, evidence, fileHash"
+
+heritage_display_policy:
+  raw_graph: "Preserve EXTENDS/IMPLEMENTS and INHERITS for compatibility with Cypher, MCP context/impact, and MRO consumers."
+  user_display: "When INHERITS has the same source and target as EXTENDS or IMPLEMENTS, group it as normalized compatibility heritage instead of counting or drawing it as a second independent source-code fact."
+  standalone_inherits: "Count and draw standalone INHERITS only when there is no matching EXTENDS or IMPLEMENTS edge for the same source-target pair."
+
+language_heritage_terms:
+  typescript: "class extends, interface extends, class implements"
+  go: "embedded struct/interface field represented as EXTENDS plus compatibility INHERITS"
+  java_csharp_kotlin_dart_php: "extends/implements-like class and interface forms"
+  python_cpp_swift_ruby_rust: "provider-specific base class, protocol, mixin, trait, or inheritance forms"
+
+unresolved_external_policy:
+  resolved_in_repo: "Emit graph relationships to resolved in-repo targets."
+  unresolved_or_external: "Do not synthesize resolved graph edges to missing package, DOM, React, standard-library, or otherwise external targets; keep them in resolution metrics/evidence for audit."
 
 example_queries:
   find_callers: |
