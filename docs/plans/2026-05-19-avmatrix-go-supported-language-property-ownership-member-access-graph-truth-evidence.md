@@ -29,6 +29,7 @@ Companion benchmark: [2026-05-19-avmatrix-go-supported-language-property-ownersh
 - P2-D Go anonymous struct truth commit: `0367bc1`.
 - P2-E property ownership false-orphan closure commit: `de5f4d8`.
 - P3-A post-ownership access taxonomy commit: `42ba98b`.
+- P3-B/P3-C/P3-D awaited TypeScript property access commit: `08649e6`.
 
 ## Baseline Audit Evidence
 

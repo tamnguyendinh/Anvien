@@ -205,9 +205,9 @@ The eventual target is not `HAS_PROPERTY = Property`. The target is:
 | P2-D | Ownership | Go anonymous struct property ownership | classify before linking | recorded | recorded | `0367bc1` | done |
 | P2-E | Ownership | remaining false-orphan ownership clusters | fixed or deferred with evidence | recorded | recorded | `de5f4d8` | done |
 | P3-A | Access | post-ownership access sample taxonomy | resolvable families classified | recorded | recorded | `42ba98b` | done |
-| P3-B | Access | awaited TS/JS call-return and TypeAlias member owners | defensible `ACCESSES` expansion | recorded | recorded | pending | done |
-| P3-C | Tests | access focused tests | resolved families covered | n/a | recorded | pending | done |
-| P3-D | Validation | access slice | analyze/test/e2e recorded | recorded | recorded | pending | done |
+| P3-B | Access | awaited TS/JS call-return and TypeAlias member owners | defensible `ACCESSES` expansion | recorded | recorded | `08649e6` | done |
+| P3-C | Tests | access focused tests | resolved families covered | n/a | recorded | `08649e6` | done |
+| P3-D | Validation | access slice | analyze/test/e2e recorded | recorded | recorded | `08649e6` | done |
 | P3-E | Access | post-receiver missing-owner-link bucket | close or reclassify bucket | pending | pending | pending | open |
 | P3-F | Access | remaining clusters | fixed or deferred with evidence | pending | pending | pending | open |
 | P4-A | Consumer | context | new facts visible in context | n/a | pending | pending | open |
