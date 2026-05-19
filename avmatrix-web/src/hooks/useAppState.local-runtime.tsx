@@ -9,7 +9,7 @@ import {
   ReactNode,
   startTransition,
 } from 'react';
-import type { GraphNode, NodeLabel, PipelineProgress } from '@/generated/avmatrix-contracts';
+import type { GraphNode, PipelineProgress } from '@/generated/avmatrix-contracts';
 import type { KnowledgeGraph } from '../core/graph/types';
 import { createKnowledgeGraph } from '../core/graph/graph';
 import { type EdgeType } from '../lib/constants';
@@ -92,8 +92,8 @@ interface AppState {
   setHelpDialogBoxOpen: (open: boolean) => void;
 
   // Filters
-  visibleLabels: NodeLabel[];
-  toggleLabelVisibility: (label: NodeLabel) => void;
+  visibleLabels: string[];
+  toggleLabelVisibility: (label: string) => void;
   visibleEdgeTypes: EdgeType[];
   toggleEdgeVisibility: (edgeType: EdgeType) => void;
   areGraphLinksVisible: boolean;

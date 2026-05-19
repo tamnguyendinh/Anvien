@@ -17,10 +17,27 @@ import {
   List,
   AtSign,
   Type,
+  Code,
+  GitBranch,
+  Globe,
+  Layers,
+  Server,
+  Square,
+  Table,
+  Zap,
 } from '@/lib/lucide-icons';
 import { useAppState } from '../hooks/useAppState.local-runtime';
-import { FILTERABLE_LABELS, NODE_COLORS, ALL_EDGE_TYPES, EDGE_INFO } from '../lib/constants';
-import type { GraphNode, NodeLabel } from '@/generated/avmatrix-contracts';
+import {
+  ALL_EDGE_TYPES,
+  FILTERABLE_LABELS,
+  getEdgeInfo,
+  getFilterableEdgeTypesForGraph,
+  getFilterableNodeLabelsForGraph,
+  getNodeColor,
+  getNodeLabelCounts,
+  getRelationshipTypeCounts,
+} from '../lib/constants';
+import type { GraphNode } from '@/generated/avmatrix-contracts';
 
 // Tree node structure
 interface TreeNode {
@@ -38,10 +55,14 @@ const buildFileTree = (nodes: GraphNode[]): TreeNode[] => {
   const pathMap = new Map<string, TreeNode>();
 
   // Filter to only folders and files
-  const fileNodes = nodes.filter((n) => n.label === 'Folder' || n.label === 'File');
+  const fileNodes = nodes.filter(
+    (n) => n.label === 'Folder' || n.label === 'File',
+  );
 
   // Sort by path to ensure parents come before children
-  fileNodes.sort((a, b) => a.properties.filePath.localeCompare(b.properties.filePath));
+  fileNodes.sort((a, b) =>
+    a.properties.filePath.localeCompare(b.properties.filePath),
+  );
 
   fileNodes.forEach((node) => {
     const parts = node.properties.filePath.split('/').filter(Boolean);
@@ -107,13 +128,16 @@ const TreeItem = ({
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch = (node: TreeNode, query: string): boolean => {
       if (node.name.toLowerCase().includes(query)) return true;
-      return node.children?.some((child) => matchesSearch(child, query)) ?? false;
+      return (
+        node.children?.some((child) => matchesSearch(child, query)) ?? false
+      );
     };
     return node.children.filter((child) => matchesSearch(child, searchLower));
   }, [node.children, searchQuery]);
 
   // Check if this node matches search
-  const matchesSearch = searchQuery && node.name.toLowerCase().includes(searchQuery.toLowerCase());
+  const matchesSearch =
+    searchQuery && node.name.toLowerCase().includes(searchQuery.toLowerCase());
 
   const handleClick = () => {
     if (hasChildren) {
@@ -143,12 +167,21 @@ const TreeItem = ({
         {/* Node icon */}
         {node.type === 'folder' ? (
           isExpanded ? (
-            <FolderOpen className="h-4 w-4 shrink-0" style={{ color: NODE_COLORS.Folder }} />
+            <FolderOpen
+              className="h-4 w-4 shrink-0"
+              style={{ color: getNodeColor('Folder') }}
+            />
           ) : (
-            <Folder className="h-4 w-4 shrink-0" style={{ color: NODE_COLORS.Folder }} />
+            <Folder
+              className="h-4 w-4 shrink-0"
+              style={{ color: getNodeColor('Folder') }}
+            />
           )
         ) : (
-          <FileCode className="h-4 w-4 shrink-0" style={{ color: NODE_COLORS.File }} />
+          <FileCode
+            className="h-4 w-4 shrink-0"
+            style={{ color: getNodeColor('File') }}
+          />
         )}
 
         {/* Name */}
@@ -181,32 +214,63 @@ const TreeItem = ({
 };
 
 // Icon for node types
-const getNodeTypeIcon = (label: NodeLabel) => {
+const getNodeTypeIcon = (label: string) => {
   switch (label) {
+    case 'Project':
+    case 'Tool':
+      return Zap;
+    case 'Package':
+    case 'Module':
+    case 'Namespace':
+      return Layers;
     case 'Folder':
       return Folder;
     case 'File':
       return FileCode;
     case 'Class':
+    case 'Struct':
+    case 'Record':
       return Box;
     case 'Function':
-      return Braces;
     case 'Method':
+    case 'Constructor':
+    case 'Delegate':
+    case 'Impl':
       return Braces;
     case 'Interface':
+    case 'Trait':
       return Hash;
     case 'Enum':
+    case 'Union':
       return List;
     case 'Type':
+    case 'TypeAlias':
+    case 'Typedef':
+    case 'Template':
       return Type;
     case 'Decorator':
+    case 'Annotation':
+    case 'Macro':
       return AtSign;
     case 'Import':
       return FileCode;
     case 'Variable':
+    case 'Const':
+    case 'Static':
+    case 'Property':
       return Variable;
+    case 'CodeElement':
+      return Code;
+    case 'Community':
+      return Globe;
+    case 'Process':
+      return GitBranch;
+    case 'Section':
+      return Table;
+    case 'Route':
+      return Server;
     default:
-      return Variable;
+      return Square;
   }
 };
 
@@ -301,6 +365,38 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
 
   const selectedPath = selectedNode?.properties.filePath || null;
 
+  const nodeTypeItems = useMemo(() => {
+    if (!graph) {
+      return FILTERABLE_LABELS.map((label) => ({
+        label,
+        count: 0,
+        color: getNodeColor(label),
+      }));
+    }
+    const counts = getNodeLabelCounts(graph.nodes);
+    return getFilterableNodeLabelsForGraph(graph.nodes).map((label) => ({
+      label,
+      count: counts.get(label) ?? 0,
+      color: getNodeColor(label),
+    }));
+  }, [graph]);
+
+  const edgeTypeItems = useMemo(() => {
+    if (!graph) {
+      return ALL_EDGE_TYPES.map((type) => ({
+        type,
+        count: 0,
+        info: getEdgeInfo(type),
+      }));
+    }
+    const counts = getRelationshipTypeCounts(graph.relationships);
+    return getFilterableEdgeTypesForGraph(graph.relationships).map((type) => ({
+      type,
+      count: counts.get(type) ?? 0,
+      info: getEdgeInfo(type),
+    }));
+  }, [graph]);
+
   if (isCollapsed) {
     return (
       <div className="file-tree-panel flex h-full w-12 flex-shrink-0 flex-col items-center gap-2 border-r-[3px] border-border-default bg-surface py-3">
@@ -389,7 +485,9 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
           {/* File tree */}
           <div className="scrollbar-thin flex-1 overflow-y-auto py-2">
             {fileTree.length === 0 ? (
-              <div className="px-3 py-4 text-center text-xs text-text-muted">No files loaded</div>
+              <div className="px-3 py-4 text-center text-xs text-text-muted">
+                No files loaded
+              </div>
             ) : (
               fileTree.map((node) => (
                 <TreeItem
@@ -411,14 +509,16 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
       {activeTab === 'filters' && (
         <div className="scrollbar-thin flex-1 overflow-y-auto p-3">
           <div className="mb-3">
-            <h3 className="press-eyebrow mb-2 text-text-secondary">Node Types</h3>
+            <h3 className="press-eyebrow mb-2 text-text-secondary">
+              Node Types
+            </h3>
             <p className="mb-3 text-[11px] text-text-muted">
               Toggle visibility of node types in the graph
             </p>
           </div>
 
           <div className="flex flex-col gap-1">
-            {FILTERABLE_LABELS.map((label) => {
+            {nodeTypeItems.map(({ label, count, color }) => {
               const Icon = getNodeTypeIcon(label);
               const isVisible = visibleLabels.includes(label);
 
@@ -426,6 +526,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                 <button
                   key={label}
                   onClick={() => toggleLabelVisibility(label)}
+                  title={`${label} (${count})`}
                   className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
                     isVisible
                       ? 'bg-base text-text-primary'
@@ -434,11 +535,16 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                 >
                   <div
                     className={`flex h-5 w-5 items-center justify-center rounded ${isVisible ? '' : 'opacity-40'}`}
-                    style={{ backgroundColor: `${NODE_COLORS[label]}20` }}
+                    style={{ backgroundColor: `${color}20` }}
                   >
-                    <Icon className="h-3 w-3" style={{ color: NODE_COLORS[label] }} />
+                    <Icon className="h-3 w-3" style={{ color }} />
                   </div>
-                  <span className="flex-1 text-xs">{label}</span>
+                  <span className="min-w-0 flex-1 truncate text-xs">
+                    {label}
+                  </span>
+                  <span className="font-mono text-[10px] text-text-muted">
+                    {count}
+                  </span>
                   <div
                     className={`h-2 w-2 rounded-full transition-colors ${isVisible ? 'bg-border-strong' : 'bg-border-subtle'}`}
                   />
@@ -449,20 +555,22 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
 
           {/* Edge Type Toggles */}
           <div className="mt-6 border-t border-border-subtle pt-4">
-            <h3 className="press-eyebrow mb-2 text-text-secondary">Edge Types</h3>
+            <h3 className="press-eyebrow mb-2 text-text-secondary">
+              Edge Types
+            </h3>
             <p className="mb-3 text-[11px] text-text-muted">
               Toggle visibility of relationship types
             </p>
 
             <div className="flex flex-col gap-1">
-              {ALL_EDGE_TYPES.map((edgeType) => {
-                const info = EDGE_INFO[edgeType];
+              {edgeTypeItems.map(({ type: edgeType, count, info }) => {
                 const isVisible = visibleEdgeTypes.includes(edgeType);
 
                 return (
                   <button
                     key={edgeType}
                     onClick={() => toggleEdgeVisibility(edgeType)}
+                    title={`${info.label} (${count})`}
                     className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
                       isVisible
                         ? 'bg-base text-text-primary'
@@ -473,7 +581,12 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                       className={`h-1.5 w-6 rounded-full ${isVisible ? '' : 'opacity-40'}`}
                       style={{ backgroundColor: info.color }}
                     />
-                    <span className="flex-1 text-xs">{info.label}</span>
+                    <span className="min-w-0 flex-1 truncate text-xs">
+                      {info.label}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
                     <div
                       className={`h-2 w-2 rounded-full transition-colors ${isVisible ? 'bg-border-strong' : 'bg-border-subtle'}`}
                     />
@@ -516,34 +629,40 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
             </div>
 
             {depthFilter !== null && !selectedNode && (
-              <p className="mt-2 text-[10px] text-warning">Select a node to apply depth filter</p>
+              <p className="mt-2 text-[10px] text-warning">
+                Select a node to apply depth filter
+              </p>
             )}
           </div>
 
           {/* Legend */}
           <div className="mt-6 border-t border-border-subtle pt-4">
-            <h3 className="press-eyebrow mb-3 text-text-secondary">Color Legend</h3>
+            <h3 className="press-eyebrow mb-3 text-text-secondary">
+              Color Legend
+            </h3>
             <div className="grid grid-cols-2 gap-2">
-              {(
-                [
-                  'Folder',
-                  'File',
-                  'Class',
-                  'Interface',
-                  'Enum',
-                  'Type',
-                  'Function',
-                  'Method',
-                  'Variable',
-                  'Decorator',
-                ] as NodeLabel[]
-              ).map((label) => (
+              {nodeTypeItems.map(({ label, color }) => (
                 <div key={label} className="flex items-center gap-1.5">
                   <div
                     className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: NODE_COLORS[label] }}
+                    style={{ backgroundColor: color }}
                   />
-                  <span className="text-[10px] text-text-muted">{label}</span>
+                  <span className="min-w-0 truncate text-[10px] text-text-muted">
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-col gap-2">
+              {edgeTypeItems.map(({ type, info }) => (
+                <div key={type} className="flex items-center gap-1.5">
+                  <div
+                    className="h-1.5 w-6 rounded-full"
+                    style={{ backgroundColor: info.color }}
+                  />
+                  <span className="min-w-0 truncate text-[10px] text-text-muted">
+                    {info.label}
+                  </span>
                 </div>
               ))}
             </div>

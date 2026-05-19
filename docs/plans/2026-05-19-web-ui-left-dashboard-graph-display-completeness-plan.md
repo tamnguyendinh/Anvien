@@ -143,10 +143,10 @@ Post-load reconnect root cause chain:
 
 - [x] [P1-A] Inventory current Web UI graph display lists: node filters, edge filters, color legend, icon map, node sizes, edge styles, and layout relationship groups.
 - [x] [P1-B] Inventory loaded graph labels and relationship types from `.avmatrix/graph.json` and record counts in the benchmark ledger.
-- [ ] [P1-C] Define a display policy for graph categories: structure, code symbols, member/property facts, references/calls/imports, process/community metadata, route/tool/API facts, and unknown/future graph types.
-- [ ] [P1-D] Decide which zero-count labels/relationship types should stay hidden by default and how users can reveal them if needed.
+- [x] [P1-C] Define a display policy for graph categories: structure, code symbols, member/property facts, references/calls/imports, process/community metadata, route/tool/API facts, and unknown/future graph types. Result: generated contract order is the stable known-type order, loaded-graph inventory drives controls, and unknown/future labels/types use safe fallback color/size/label/icon.
+- [x] [P1-D] Decide which zero-count labels/relationship types should stay hidden by default and how users can reveal them if needed. Result: loaded graph controls show present labels/types with counts; zero-count known types are covered by fixture/fallback tests and appear when present in a graph payload.
 - [x] [P1-E] Record evidence showing current missing node labels, missing relationship types, and parallel relationship risk.
-- [ ] [P1-F] Build or update a representative Web UI graph fixture that includes every known graph node label and graph payload relationship type, plus one unknown/future label and relationship type for fallback behavior.
+- [x] [P1-F] Build or update a representative Web UI graph fixture that includes every known graph node label and graph payload relationship type, plus one unknown/future label and relationship type for fallback behavior. Result: `FileTreePanel.dashboard-completeness.test.tsx` covers every generated label/type plus `FutureNode` and `FUTURE_RELATIONSHIP`.
 - [ ] [P1-G] Document the boundary between graph payload relationship types used by the canvas and LadybugDB-only relationship constants used by query/storage layers.
 - [x] [P1-H] Review code paths for the oversized purple-node symptom and record concrete root-cause conclusions/hypotheses.
 - [x] [P1-I] Review code paths for the post-load reconnect symptom and record concrete root-cause conclusions/hypotheses.
@@ -164,21 +164,21 @@ Post-load reconnect root cause chain:
 
 ## Phase 3 - Node Type Dashboard Completeness
 
-- [ ] [P3-A] Replace the hard-coded `FILTERABLE_LABELS` behavior with a graph-aware node type list that includes every node label present in the loaded graph.
-- [ ] [P3-B] Add node counts to the Node Types controls so the user can see whether a type exists in the current graph.
-- [ ] [P3-C] Add or centralize icon fallback policy for all node labels, including `Property`, `Struct`, `Const`, `Constructor`, `Package`, `Section`, `Process`, `Community`, `Route`, and `Tool`.
-- [ ] [P3-D] Keep default visibility useful without hiding types permanently; noisy types may default off but must remain toggleable.
-- [ ] [P3-E] Add unit tests proving every node label in a representative graph fixture appears in the dashboard controls.
-- [ ] [P3-F] Add fallback tests for unknown/future node labels.
+- [x] [P3-A] Replace the hard-coded `FILTERABLE_LABELS` behavior with a graph-aware node type list that includes every node label present in the loaded graph.
+- [x] [P3-B] Add node counts to the Node Types controls so the user can see whether a type exists in the current graph.
+- [x] [P3-C] Add or centralize icon fallback policy for all node labels, including `Property`, `Struct`, `Const`, `Constructor`, `Package`, `Section`, `Process`, `Community`, `Route`, and `Tool`.
+- [x] [P3-D] Keep default visibility useful without hiding types permanently; noisy types may default off but must remain toggleable.
+- [x] [P3-E] Add unit tests proving every node label in a representative graph fixture appears in the dashboard controls.
+- [x] [P3-F] Add fallback tests for unknown/future node labels.
 
 ## Phase 4 - Edge Type Dashboard Completeness
 
-- [ ] [P4-A] Replace the narrow `EdgeType` union with relationship visibility support for every relationship type that can appear in the graph payload.
-- [ ] [P4-B] Add relationship counts to the Edge Types controls.
-- [ ] [P4-C] Add labels, colors, and styles for all existing relationship types, including `USES`, `ACCESSES`, `HAS_PROPERTY`, `HAS_METHOD`, `MEMBER_OF`, `STEP_IN_PROCESS`, `HANDLES_ROUTE`, `FETCHES`, `HANDLES_TOOL`, `ENTRY_POINT_OF`, `WRAPS`, and `QUERIES`.
-- [ ] [P4-D] Preserve a clear grouping/order so users can scan relationship types instead of seeing an arbitrary alphabetized list.
-- [ ] [P4-E] Add unit tests proving every relationship type in a representative graph fixture appears in the dashboard controls and can be toggled.
-- [ ] [P4-F] Add fallback tests for unknown/future relationship types.
+- [x] [P4-A] Replace the narrow `EdgeType` union with relationship visibility support for every relationship type that can appear in the graph payload.
+- [x] [P4-B] Add relationship counts to the Edge Types controls.
+- [x] [P4-C] Add labels, colors, and styles for all existing relationship types, including `USES`, `ACCESSES`, `HAS_PROPERTY`, `HAS_METHOD`, `MEMBER_OF`, `STEP_IN_PROCESS`, `HANDLES_ROUTE`, `FETCHES`, `HANDLES_TOOL`, `ENTRY_POINT_OF`, `WRAPS`, and `QUERIES`.
+- [x] [P4-D] Preserve a clear grouping/order so users can scan relationship types instead of seeing an arbitrary alphabetized list.
+- [x] [P4-E] Add unit tests proving every relationship type in a representative graph fixture appears in the dashboard controls and can be toggled.
+- [x] [P4-F] Add fallback tests for unknown/future relationship types.
 
 ## Phase 5 - Canvas Relationship Preservation, Layout, and Visual Scale
 
@@ -193,10 +193,10 @@ Post-load reconnect root cause chain:
 
 ## Phase 6 - Legend Accuracy
 
-- [ ] [P6-A] Replace the hard-coded Color Legend list with a legend derived from the labels and relationship types available in the loaded graph.
+- [x] [P6-A] Replace the hard-coded Color Legend list with a legend derived from the labels and relationship types available in the loaded graph.
 - [ ] [P6-B] Show counts or availability state in the legend where useful.
 - [ ] [P6-C] Distinguish node-type coloring from community coloring so the legend does not mislead users.
-- [ ] [P6-D] Add tests covering legend completeness for uncommon labels and relationship types.
+- [x] [P6-D] Add tests covering legend completeness for uncommon labels and relationship types.
 
 ## Phase 7 - Validation
 

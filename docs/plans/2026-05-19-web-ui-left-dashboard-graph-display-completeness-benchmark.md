@@ -221,7 +221,7 @@ Confirmed chain to validate/fix:
 
 ## B1 - Dashboard Completeness After Node Type Slice
 
-Status: pending
+Status: completed for loaded-graph controls and representative fixture coverage
 
 Record:
 
@@ -233,9 +233,53 @@ Record:
 - visual groups used for sectioning;
 - missing labels count.
 
+Date: 2026-05-19
+
+Current graph snapshot after re-analyze:
+
+- path: `.avmatrix/graph.json`
+- repo: `E:\AVmatrix-GO`
+- nodes: `20,421`
+- relationships: `51,111`
+- unique node labels present: `16`
+- unique relationship types present: `11`
+
+Node dashboard coverage:
+
+| Coverage target | Result |
+|---|---:|
+| Current graph labels present | `16` |
+| Current graph labels displayed as controls | `16` |
+| Current graph missing node controls | `0` |
+| Generated contract labels in representative fixture | `36` |
+| Unknown/future labels in representative fixture | `1` |
+| Representative fixture node controls rendered | `37 / 37` |
+| Node labels with colors | `36 / 36` generated labels plus fallback |
+| Node labels with non-zero sizes | `36 / 36` generated labels plus fallback |
+
+Previously missing current graph labels now displayed with counts:
+
+| Node label | Count |
+|---|---:|
+| Community | 930 |
+| Const | 323 |
+| Constructor | 5 |
+| Package | 413 |
+| Process | 645 |
+| Property | 3,106 |
+| Section | 930 |
+| Struct | 501 |
+| TypeAlias | 70 |
+
+Representative fixture proof:
+
+- `FileTreePanel.dashboard-completeness.test.tsx` renders every generated node label plus `FutureNode`;
+- the same test clicks every graph-present node type control and verifies `toggleLabelVisibility(label)` receives the exact label string;
+- unknown/future label fallback uses safe icon, color, and size.
+
 ## B2 - Dashboard Completeness After Edge Type Slice
 
-Status: pending
+Status: completed for loaded-graph controls and representative fixture coverage
 
 Record:
 
@@ -246,6 +290,38 @@ Record:
 - relationship types with unknown/future fallback coverage;
 - visual groups used for sectioning;
 - missing relationship types count.
+
+Date: 2026-05-19
+
+Relationship dashboard coverage:
+
+| Coverage target | Result |
+|---|---:|
+| Current graph relationship types present | `11` |
+| Current graph relationship types displayed as controls | `11` |
+| Current graph missing relationship controls | `0` |
+| Generated graph payload relationship types in representative fixture | `22` |
+| Unknown/future relationship types in representative fixture | `1` |
+| Representative fixture relationship controls rendered | `23 / 23` |
+| Relationship types with labels/colors/styles | `22 / 22` generated types plus fallback |
+
+Previously missing current graph relationship types now displayed with counts:
+
+| Relationship type | Count |
+|---|---:|
+| ACCESSES | 5,031 |
+| ENTRY_POINT_OF | 645 |
+| HAS_METHOD | 337 |
+| HAS_PROPERTY | 2,779 |
+| MEMBER_OF | 3,833 |
+| STEP_IN_PROCESS | 2,376 |
+| USES | 5,156 |
+
+Representative fixture proof:
+
+- `FileTreePanel.dashboard-completeness.test.tsx` renders every generated graph relationship type plus `FUTURE_RELATIONSHIP`;
+- the same test clicks every graph-present relationship control and verifies `toggleEdgeVisibility(type)` receives the exact relationship type string;
+- unknown/future relationship fallback uses a safe display label and color.
 
 ## B3 - Graph Adapter Performance and Preservation
 

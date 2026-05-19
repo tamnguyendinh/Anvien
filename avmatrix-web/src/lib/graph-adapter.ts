@@ -1,7 +1,11 @@
 import Graph from 'graphology';
-import type { NodeLabel } from '@/generated/avmatrix-contracts';
 import type { KnowledgeGraph } from '../core/graph/types';
-import { NODE_COLORS, NODE_SIZES, getCommunityColor } from './constants';
+import {
+  getCommunityColor,
+  getEdgeInfo,
+  getNodeColor,
+  getNodeSize,
+} from './constants';
 
 export interface SigmaNodeAttributes {
   x: number;
@@ -9,7 +13,7 @@ export interface SigmaNodeAttributes {
   size: number;
   color: string;
   label: string;
-  nodeType: NodeLabel;
+  nodeType: string;
   filePath: string;
   startLine?: number;
   endLine?: number;
@@ -47,7 +51,7 @@ const getScaledNodeSize = (baseSize: number, nodeCount: number): number => {
  * Get mass for node type - higher mass = more repulsion in ForceAtlas2
  * Folders get MUCH higher mass so they spread out and pull their files with them
  */
-const getNodeMass = (nodeType: NodeLabel, nodeCount: number): number => {
+const getNodeMass = (nodeType: string, nodeCount: number): number => {
   // Scale mass based on graph size
   const baseMassMultiplier = nodeCount > 5000 ? 2 : nodeCount > 1000 ? 1.5 : 1;
 
@@ -115,7 +119,9 @@ export const knowledgeGraphToGraphology = (
 
   // Separate structural nodes (folders, packages) from content nodes
   const structuralTypes = new Set(['Project', 'Package', 'Module', 'Folder']);
-  const structuralNodes = knowledgeGraph.nodes.filter((n) => structuralTypes.has(n.label));
+  const structuralNodes = knowledgeGraph.nodes.filter((n) =>
+    structuralTypes.has(n.label),
+  );
 
   // Much wider spread for structural nodes - this is the key!
   const structuralSpread = Math.sqrt(nodeCount) * 40;
@@ -155,7 +161,9 @@ export const knowledgeGraphToGraphology = (
     // Use golden angle for even distribution
     const goldenAngle = Math.PI * (3 - Math.sqrt(5));
     const angle = index * goldenAngle;
-    const radius = structuralSpread * Math.sqrt((index + 1) / Math.max(structuralNodes.length, 1));
+    const radius =
+      structuralSpread *
+      Math.sqrt((index + 1) / Math.max(structuralNodes.length, 1));
 
     // Add some randomness to prevent perfect patterns
     const jitter = structuralSpread * 0.15;
@@ -164,7 +172,7 @@ export const knowledgeGraphToGraphology = (
 
     nodePositions.set(node.id, { x, y });
 
-    const baseSize = NODE_SIZES[node.label] || 8;
+    const baseSize = getNodeSize(node.label);
     const scaledSize = getScaledNodeSize(baseSize, nodeCount);
 
     // Structural nodes keep their type-based color
@@ -172,7 +180,7 @@ export const knowledgeGraphToGraphology = (
       x,
       y,
       size: scaledSize,
-      color: NODE_COLORS[node.label] || '#9ca3af',
+      color: getNodeColor(node.label),
       label: node.properties.name,
       nodeType: node.label,
       filePath: node.properties.filePath,
@@ -196,7 +204,8 @@ export const knowledgeGraphToGraphology = (
     // Check if this is a symbol node with a community assignment
     const communityIndex = communityMemberships?.get(nodeId);
     const symbolTypes = new Set(['Function', 'Class', 'Method', 'Interface']);
-    const clusterCenter = communityIndex !== undefined ? clusterCenters.get(communityIndex) : null;
+    const clusterCenter =
+      communityIndex !== undefined ? clusterCenters.get(communityIndex) : null;
 
     if (clusterCenter && symbolTypes.has(node.label)) {
       // CLUSTER-BASED POSITIONING: Position near cluster center with tight jitter
@@ -219,7 +228,7 @@ export const knowledgeGraphToGraphology = (
 
     nodePositions.set(nodeId, { x, y });
 
-    const baseSize = NODE_SIZES[node.label] || 8;
+    const baseSize = getNodeSize(node.label);
     const scaledSize = getScaledNodeSize(baseSize, nodeCount);
 
     // Check if this node has a community assignment (reuse communityIndex from above)
@@ -229,7 +238,7 @@ export const knowledgeGraphToGraphology = (
     const usesCommunityColor = hasCommunity && symbolTypes.has(node.label);
     const nodeColor = usesCommunityColor
       ? getCommunityColor(communityIndex!)
-      : NODE_COLORS[node.label] || '#9ca3af';
+      : getNodeColor(node.label);
 
     graph.addNode(nodeId, {
       x,
@@ -244,7 +253,9 @@ export const knowledgeGraphToGraphology = (
       hidden: false,
       mass: getNodeMass(node.label, nodeCount),
       community: communityIndex,
-      communityColor: hasCommunity ? getCommunityColor(communityIndex!) : undefined,
+      communityColor: hasCommunity
+        ? getCommunityColor(communityIndex!)
+        : undefined,
     });
   };
 
@@ -276,34 +287,30 @@ export const knowledgeGraphToGraphology = (
   // Add edges with distinct colors per relationship type
   const edgeBaseSize = nodeCount > 20000 ? 0.4 : nodeCount > 5000 ? 0.6 : 1.0;
 
-  // Edge styles - each relationship type has a DISTINCT color for clarity
-  // Using varied hues so relationships are easily distinguishable
-  const EDGE_STYLES: Record<string, { color: string; sizeMultiplier: number }> = {
-    // STRUCTURAL - Greens (folder/file hierarchy)
-    CONTAINS: { color: '#2d5a3d', sizeMultiplier: 0.4 }, // Forest green - folder contains
-
-    // DEFINITIONS - Cyan/Teal (code definitions)
-    DEFINES: { color: '#0e7490', sizeMultiplier: 0.5 }, // Cyan - file defines function/class
-
-    // DEPENDENCIES - Blue (imports between files)
-    IMPORTS: { color: '#1d4ed8', sizeMultiplier: 0.6 }, // Blue - file imports file
-
-    // FUNCTION FLOW - Purple (call graph)
-    CALLS: { color: '#7c3aed', sizeMultiplier: 0.8 }, // Violet - function calls
-
-    // TYPE RELATIONSHIPS - Warm colors (OOP)
-    EXTENDS: { color: '#c2410c', sizeMultiplier: 1.0 }, // Orange - extension
-    IMPLEMENTS: { color: '#be185d', sizeMultiplier: 0.9 }, // Pink - interface implementation
+  const EDGE_SIZE_MULTIPLIERS: Record<string, number> = {
+    CONTAINS: 0.4,
+    DEFINES: 0.5,
+    IMPORTS: 0.6,
+    CALLS: 0.8,
+    EXTENDS: 1.0,
+    IMPLEMENTS: 0.9,
+    HAS_METHOD: 0.6,
+    HAS_PROPERTY: 0.6,
+    ACCESSES: 0.5,
+    USES: 0.5,
+    MEMBER_OF: 0.3,
+    STEP_IN_PROCESS: 0.7,
   };
 
   knowledgeGraph.relationships.forEach((rel) => {
     if (graph.hasNode(rel.sourceId) && graph.hasNode(rel.targetId)) {
       if (!graph.hasEdge(rel.sourceId, rel.targetId)) {
-        const style = EDGE_STYLES[rel.type] || { color: '#4a4a5a', sizeMultiplier: 0.5 };
+        const edgeInfo = getEdgeInfo(rel.type);
+        const sizeMultiplier = EDGE_SIZE_MULTIPLIERS[rel.type] ?? 0.5;
 
         graph.addEdge(rel.sourceId, rel.targetId, {
-          size: edgeBaseSize * style.sizeMultiplier,
-          color: style.color,
+          size: edgeBaseSize * sizeMultiplier,
+          color: edgeInfo.color,
           relationType: rel.type,
         });
       }
@@ -318,7 +325,7 @@ export const knowledgeGraphToGraphology = (
  */
 export const filterGraphByLabels = (
   graph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>,
-  visibleLabels: NodeLabel[],
+  visibleLabels: string[],
 ): void => {
   graph.forEachNode((nodeId, attributes) => {
     const isVisible = visibleLabels.includes(attributes.nodeType);
@@ -335,7 +342,9 @@ export const getNodesWithinHops = (
   maxHops: number,
 ): Set<string> => {
   const visited = new Set<string>();
-  const queue: { nodeId: string; depth: number }[] = [{ nodeId: startNodeId, depth: 0 }];
+  const queue: { nodeId: string; depth: number }[] = [
+    { nodeId: startNodeId, depth: 0 },
+  ];
 
   while (queue.length > 0) {
     const { nodeId, depth } = queue.shift()!;
@@ -362,7 +371,7 @@ export const filterGraphByDepth = (
   graph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>,
   selectedNodeId: string | null,
   maxHops: number | null,
-  visibleLabels: NodeLabel[],
+  visibleLabels: string[],
 ): void => {
   if (maxHops === null) {
     filterGraphByLabels(graph, visibleLabels);

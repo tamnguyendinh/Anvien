@@ -1,5 +1,5 @@
 import { createContext, useContext, useCallback, useMemo, useState, ReactNode } from 'react';
-import type { GraphNode, NodeLabel } from '@/generated/avmatrix-contracts';
+import type { GraphNode } from '@/generated/avmatrix-contracts';
 import type { KnowledgeGraph } from '../../core/graph/types';
 import { DEFAULT_VISIBLE_LABELS, DEFAULT_VISIBLE_EDGES, type EdgeType } from '../../lib/constants';
 import {
@@ -12,8 +12,8 @@ interface GraphStateContextValue {
   setGraph: (graph: KnowledgeGraph | null) => void;
   selectedNode: GraphNode | null;
   setSelectedNode: (node: GraphNode | null) => void;
-  visibleLabels: NodeLabel[];
-  toggleLabelVisibility: (label: NodeLabel) => void;
+  visibleLabels: string[];
+  toggleLabelVisibility: (label: string) => void;
   visibleEdgeTypes: EdgeType[];
   toggleEdgeVisibility: (edgeType: EdgeType) => void;
   areGraphLinksVisible: boolean;
@@ -30,7 +30,7 @@ const GraphStateContext = createContext<GraphStateContextValue | null>(null);
 export const GraphStateProvider = ({ children }: { children: ReactNode }) => {
   const [graph, setGraph] = useState<KnowledgeGraph | null>(null);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
-  const [visibleLabels, setVisibleLabels] = useState<NodeLabel[]>(DEFAULT_VISIBLE_LABELS);
+  const [visibleLabels, setVisibleLabels] = useState<string[]>(DEFAULT_VISIBLE_LABELS);
   const [visibleEdgeTypes, setVisibleEdgeTypes] = useState<EdgeType[]>(DEFAULT_VISIBLE_EDGES);
   const [areGraphLinksVisible, setGraphLinksVisibleState] = useState<boolean>(() =>
     readGraphLinksVisibilityPreference(),
@@ -38,7 +38,7 @@ export const GraphStateProvider = ({ children }: { children: ReactNode }) => {
   const [depthFilter, setDepthFilter] = useState<number | null>(null);
   const [highlightedNodeIds, setHighlightedNodeIds] = useState<Set<string>>(new Set());
 
-  const toggleLabelVisibility = useCallback((label: NodeLabel) => {
+  const toggleLabelVisibility = useCallback((label: string) => {
     setVisibleLabels((prev) =>
       prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
     );

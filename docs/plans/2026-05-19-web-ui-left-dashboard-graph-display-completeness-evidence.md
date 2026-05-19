@@ -399,6 +399,112 @@ Benchmark ledger updated:
 
 - `B4A - Launcher Lifecycle Budget Removal`
 
+### E3B - Dashboard Node/Edge/Legend Completeness
+
+Date: 2026-05-19
+
+Scope:
+
+- `avmatrix-web/src/lib/constants.ts`
+- `avmatrix-web/src/components/FileTreePanel.tsx`
+- `avmatrix-web/src/hooks/app-state/graph.tsx`
+- `avmatrix-web/src/hooks/useAppState.local-runtime.tsx`
+- `avmatrix-web/src/lib/graph-adapter.ts`
+- `avmatrix-web/test/unit/constants.test.ts`
+- `avmatrix-web/test/unit/filter-panel.test.ts`
+- `avmatrix-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md`
+- `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-evidence.md`
+
+AVmatrix refresh:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+```
+
+Result:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=685 parsed=527 unsupported=158 failed=0
+graph: nodes=20421 relationships=51111 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Implementation:
+
+- Node Types controls are now derived from labels present in the loaded graph and show counts.
+- Edge Types controls are now derived from relationship types present in the loaded graph and show counts.
+- `EdgeType` visibility state now supports generated graph relationship types and unknown/future strings.
+- `EDGE_INFO` covers all `22` generated graph payload relationship types and has fallback display info for future types.
+- `FILTERABLE_LABELS` now follows the generated `NODE_LABELS` contract order.
+- `Community` and `Process` now have non-zero sizes so metadata nodes are inspectable when toggled on.
+- Color Legend is derived from loaded node and relationship inventory instead of a hard-coded 10-label list.
+- Graph adapter node color/size and edge color now use the same fallback policy.
+
+Build before tests:
+
+```powershell
+go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix
+npm --prefix avmatrix-web run build
+```
+
+Results:
+
+```text
+go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix: passed
+npm --prefix avmatrix-web run build: passed, built in 25.01s
+```
+
+Tests:
+
+```powershell
+npm --prefix avmatrix-web run test -- test/unit/constants.test.ts test/unit/filter-panel.test.ts test/unit/graph-links-visibility.test.ts test/unit/graph-edge-visibility-mode.test.ts
+npm --prefix avmatrix-web run test -- test/unit/FileTreePanel.dashboard-completeness.test.tsx
+npm --prefix avmatrix-web run test
+go test ./cmd/... ./internal/... -count=1
+```
+
+Results:
+
+```text
+focused constants/filter/edge tests: 4 files passed, 39 tests passed
+FileTreePanel dashboard completeness: 1 file passed, 2 tests passed
+full Web unit suite: 40 files passed, 305 tests passed
+go test ./cmd/... ./internal/... -count=1: passed
+```
+
+E2E:
+
+```powershell
+npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "selects a repo from landing and loads graph" --workers=1 --timeout=120000
+```
+
+Result:
+
+```text
+1 passed
+test duration: 29.7s
+total duration: 35.3s
+```
+
+Runtime UI inspection with Playwright:
+
+```text
+repo: AVmatrix
+Community (930): 1
+Property (3106): 1
+TypeAlias (70): 1
+Accesses (5031): 1
+Has Property (2779): 1
+Step In Process (2376): 1
+```
+
+Benchmark ledger updated:
+
+- `B1 - Dashboard Completeness After Node Type Slice`
+- `B2 - Dashboard Completeness After Edge Type Slice`
+
 ## E4 - Final Closure Evidence
 
 Status: pending

@@ -1,33 +1,50 @@
 import { describe, expect, it } from 'vitest';
 import { FILTERABLE_LABELS, NODE_COLORS } from '../../src/lib/constants';
-import type { NodeLabel } from '../../src/core/graph/types';
+import {
+  NODE_LABELS,
+  type NodeLabel,
+} from '../../src/generated/avmatrix-contracts';
 import * as lucideIcons from '../../src/lib/lucide-icons';
 
-const LEGEND_LABELS: NodeLabel[] = [
-  'Folder',
-  'File',
-  'Class',
-  'Interface',
-  'Enum',
-  'Type',
-  'Function',
-  'Method',
-  'Variable',
-  'Decorator',
-];
+const LEGEND_LABELS: NodeLabel[] = [...NODE_LABELS];
 
 const ICON_MAP: Record<string, string> = {
+  Project: 'Zap',
+  Package: 'Layers',
+  Module: 'Layers',
   Folder: 'Folder',
   File: 'FileCode',
   Class: 'Box',
   Function: 'Braces',
   Method: 'Braces',
+  Variable: 'Variable',
   Interface: 'Hash',
   Enum: 'List',
-  Type: 'Type',
   Decorator: 'AtSign',
   Import: 'FileCode',
-  Variable: 'Variable',
+  Type: 'Type',
+  CodeElement: 'Code',
+  Community: 'Globe',
+  Process: 'GitBranch',
+  Struct: 'Box',
+  Macro: 'AtSign',
+  Typedef: 'Type',
+  Union: 'List',
+  Namespace: 'Layers',
+  Trait: 'Hash',
+  Impl: 'Braces',
+  TypeAlias: 'Type',
+  Const: 'Variable',
+  Static: 'Variable',
+  Property: 'Variable',
+  Record: 'Box',
+  Delegate: 'Braces',
+  Annotation: 'AtSign',
+  Constructor: 'Braces',
+  Template: 'Type',
+  Section: 'Table',
+  Route: 'Server',
+  Tool: 'Zap',
 };
 
 describe('filter panel icon mappings', () => {
@@ -41,25 +58,21 @@ describe('filter panel icon mappings', () => {
     const exportedNames = new Set(Object.keys(lucideIcons));
     const requiredIcons = new Set(Object.values(ICON_MAP));
     for (const iconName of requiredIcons) {
-      expect(exportedNames.has(iconName), `${iconName} should be exported from lucide-icons`).toBe(
-        true,
-      );
+      expect(
+        exportedNames.has(iconName),
+        `${iconName} should be exported from lucide-icons`,
+      ).toBe(true);
     }
   });
 
-  it('newly added node types have distinct icons', () => {
-    expect(ICON_MAP.Enum).toBe('List');
-    expect(ICON_MAP.Type).toBe('Type');
-    expect(ICON_MAP.Decorator).toBe('AtSign');
+  it('covers every generated node label', () => {
+    expect(Object.keys(ICON_MAP).sort()).toEqual([...NODE_LABELS].sort());
   });
 });
 
 describe('color legend', () => {
-  it('includes all newly added node types', () => {
-    expect(LEGEND_LABELS).toContain('Enum');
-    expect(LEGEND_LABELS).toContain('Type');
-    expect(LEGEND_LABELS).toContain('Decorator');
-    expect(LEGEND_LABELS).toContain('Variable');
+  it('includes every generated node label', () => {
+    expect(LEGEND_LABELS).toEqual([...NODE_LABELS]);
   });
 
   it('every legend label has a color defined', () => {
@@ -69,26 +82,17 @@ describe('color legend', () => {
     }
   });
 
-  it('legend labels match the order used in FileTreePanel', () => {
-    const expected: NodeLabel[] = [
-      'Folder',
-      'File',
-      'Class',
-      'Interface',
-      'Enum',
-      'Type',
-      'Function',
-      'Method',
-      'Variable',
-      'Decorator',
-    ];
-    expect(LEGEND_LABELS).toEqual(expected);
+  it('legend labels match the generated graph contract order', () => {
+    expect(LEGEND_LABELS).toEqual([...NODE_LABELS]);
   });
 
-  it('legend labels are a subset of filterable labels plus Import', () => {
+  it('legend labels are a subset of filterable labels', () => {
     const filterableSet = new Set(FILTERABLE_LABELS);
     for (const label of LEGEND_LABELS) {
-      expect(filterableSet.has(label), `${label} should be in FILTERABLE_LABELS`).toBe(true);
+      expect(
+        filterableSet.has(label),
+        `${label} should be in FILTERABLE_LABELS`,
+      ).toBe(true);
     }
   });
 
