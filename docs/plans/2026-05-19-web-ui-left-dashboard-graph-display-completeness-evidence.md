@@ -1142,3 +1142,33 @@ Final closure result:
 - visual-scale proportionality: complete;
 - post-load connection stability: complete;
 - full build, full Web unit, scoped Go suite, required e2e tests, and final analyze: passed.
+
+## E5 - Top Bar Start-Screen Navigation Plan Addendum
+
+Date: 2026-05-19
+
+User-reported usability issue:
+
+- after entering the Web UI tool, there should be a Back arrow/button beside the `AVmatrix` title in the top bar;
+- the Back control should return users to `Start-AVmatrix.html` so the runtime flow is easier to use.
+
+Doc-only update:
+
+- added the top bar Start-screen return issue to the problem statement, scope, guardrails, acceptance criteria, benchmark policy, and checklist;
+- separated the work into Phase 9 so the already-completed dashboard, visual-scale, and reconnect work remains historically accurate;
+- no AVmatrix analysis was run because this is a doc-only plan update.
+
+## E6 - Left Dashboard Resizable Width Plan Addendum
+
+Date: 2026-05-19
+
+User-reported usability issue:
+
+- the left dashboard should be resizable by dragging with the mouse;
+- users should be able to expand or narrow the left dashboard width when graph controls, legends, labels, or screen size require different space.
+
+Doc-only update:
+
+- added the left dashboard resize issue to the problem statement, scope, guardrails, acceptance criteria, benchmark policy, and checklist;
+- separated the work into Phase 10 so it can be implemented independently from the top bar Back navigation work;
+- no AVmatrix analysis was run because this is a doc-only plan update.
