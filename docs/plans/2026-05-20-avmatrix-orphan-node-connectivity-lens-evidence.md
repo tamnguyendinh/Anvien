@@ -658,3 +658,79 @@ Results:
 Conclusion:
 
 P2-F is complete. Phase 2 backend Graph Health derivation is closed; P3-C/P3-D explain/report endpoints and Web UI filter phases remain open.
+
+## E10 - Phase 3 Graph Health Explain Endpoint Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Implement P3-C explain output for a single Graph Health node or component.
+- Add HTTP API route `GET /api/graph/explain`.
+- Add generated Web contract types for the explain response.
+- Keep `/api/graph` JSON and NDJSON shapes unchanged.
+
+AVmatrix refresh and impact commands:
+
+```powershell
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix query "HTTP graph API routes and handlers for graph node detail endpoint" --repo AVmatrix
+go run .\cmd\avmatrix impact NewHandler --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact handleGraph --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact WebUIContractTypeScript --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `NewHandler` reported HIGH risk because route registration affects HTTP API tests.
+- `WebUIContractTypeScript` reported CRITICAL risk because generated Web contracts depend on it.
+- `handleGraph` reported LOW risk.
+- Mitigation: added a new route instead of changing `/api/graph`; added HTTP tests for node explain, component explain, and missing-target validation; regenerated and checked contracts.
+
+Changed files:
+
+- `internal/httpapi/server.go`
+- `internal/httpapi/graph.go`
+- `internal/httpapi/handlers_test.go`
+- `internal/contracts/web_ui.go`
+- `avmatrix-web/src/generated/avmatrix-contracts.ts`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- `GET /api/graph/explain` requires exactly one query parameter: `nodeId` or `componentId`.
+- Node explain returns the public node record, `GraphHealthNodeMetadata`, counted incoming/outgoing relationships, and excluded relationships.
+- Component explain returns component counts, root node IDs, topology/reason/confidence/diagnostic count maps, and bounded node/relationship samples.
+- Component sample limit is `20` to avoid returning a whole large component in one explain response.
+- Internal raw `graphHealthDiagnostics` remains stripped by the existing `graphNodeForResponse` boundary.
+- Generated TypeScript now includes `GraphHealthComponentExplanation` and `GraphHealthExplainResponse`.
+
+Validation commands and results:
+
+```powershell
+go test ./internal/httpapi ./internal/contracts
+go run .\cmd\generate-web-contracts --check
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+npm --prefix avmatrix-web run build
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
+```
+
+Results:
+
+- Focused HTTP API and contract tests passed.
+- Generated Web contract check passed.
+- Applicable Go build passed for `./cmd/... ./internal/...`.
+- Applicable Go test suite passed for `./cmd/... ./internal/...`.
+- Web production build passed; Vite reported existing chunk-size/dynamic-import warnings only.
+- Final pre-commit AVmatrix refresh passed with `files: scanned=707 parsed=534 unsupported=173 failed=0`, `graph: nodes=21485 relationships=53561`.
+- `detect-changes` passed and reported `risk_level=high`, `changed_files=9`, `changed_count=80`, `affected_count=8`. The affected flows were expected HTTP routing, Graph Health explain helpers, and generated contract flow changes.
+
+Conclusion:
+
+P3-C is complete for HTTP/API and generated contract surfaces. P3-D report/export remains the only open Phase 3 item.

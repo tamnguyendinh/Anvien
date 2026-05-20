@@ -274,6 +274,10 @@ Notes:
 
 P2-F is a test-only coverage slice. It changes no production graph-health derivation logic, graph inventory counts, payload shape, runtime path, or Web rendering behavior, so it has no new benchmarkable product/runtime metric. Validation evidence is recorded in E9.
 
+### P3-C Explain Endpoint Slice
+
+P3-C adds a bounded explain API surface and generated response contracts. It does not change existing `/api/graph` inventory counts, graph summary counts, or Web render behavior. Component explain responses are bounded by `sampleLimit=20`; endpoint validation evidence is recorded in E10. Dedicated explain-endpoint runtime benchmarking remains a follow-up if this endpoint becomes part of a high-frequency Web interaction.
+
 ## B2 - Final Benchmark
 
 Status: pending

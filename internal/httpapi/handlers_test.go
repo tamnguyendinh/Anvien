@@ -365,6 +365,83 @@ func TestGraphNodeForResponseStripsInternalDiagnostics(t *testing.T) {
 	}
 }
 
+func TestGraphHealthExplainNode(t *testing.T) {
+	server, fixtures := newRepoServer(t, []repoFixture{{name: "alpha"}})
+	defer server.Close()
+
+	var payload graphHealthExplainResponse
+	getJSON(t, server.URL+"/api/graph/explain?repo="+url.QueryEscape(fixtures[0].path)+"&nodeId="+url.QueryEscape("Function:main"), http.StatusOK, &payload)
+
+	if payload.Kind != "node" || payload.NodeID != "Function:main" || payload.Node == nil || payload.Node.ID != "Function:main" {
+		t.Fatalf("unexpected node explain identity: %#v", payload)
+	}
+	if payload.Health == nil || payload.Health.TopologyStatus != graphhealth.TopologyConnected {
+		t.Fatalf("unexpected node health explain: %#v", payload.Health)
+	}
+	if payload.Health.CountedIncoming != 1 || payload.Health.CountedOutgoing != 1 {
+		t.Fatalf("unexpected counted degree: %#v", payload.Health)
+	}
+	if len(payload.CountedIncomingRelationships) != 1 || payload.CountedIncomingRelationships[0].ID != "rel:helper-calls-main" {
+		t.Fatalf("unexpected incoming evidence: %#v", payload.CountedIncomingRelationships)
+	}
+	if len(payload.CountedOutgoingRelationships) != 1 || payload.CountedOutgoingRelationships[0].ID != "rel:main-process" {
+		t.Fatalf("unexpected outgoing evidence: %#v", payload.CountedOutgoingRelationships)
+	}
+	if len(payload.ExcludedRelationships) != 1 || payload.ExcludedRelationships[0].ID != "rel:main-member" {
+		t.Fatalf("unexpected excluded evidence: %#v", payload.ExcludedRelationships)
+	}
+	if _, ok := payload.Node.Properties["content"]; ok {
+		t.Fatalf("node explain should strip content by default: %#v", payload.Node.Properties)
+	}
+}
+
+func TestGraphHealthExplainComponent(t *testing.T) {
+	server, fixtures := newRepoServer(t, []repoFixture{{name: "alpha"}})
+	defer server.Close()
+
+	var nodePayload graphHealthExplainResponse
+	getJSON(t, server.URL+"/api/graph/explain?repo="+url.QueryEscape(fixtures[0].path)+"&nodeId="+url.QueryEscape("Function:main"), http.StatusOK, &nodePayload)
+	if nodePayload.ComponentID == "" {
+		t.Fatalf("node explain missing component id: %#v", nodePayload)
+	}
+
+	var payload graphHealthExplainResponse
+	getJSON(t, server.URL+"/api/graph/explain?repo="+url.QueryEscape(fixtures[0].path)+"&componentId="+url.QueryEscape(nodePayload.ComponentID), http.StatusOK, &payload)
+
+	if payload.Kind != "component" || payload.ComponentID != nodePayload.ComponentID || payload.Component == nil {
+		t.Fatalf("unexpected component explain identity: %#v", payload)
+	}
+	if payload.Component.NodeCount != 3 || payload.Component.CountedEdgeCount != 3 || !payload.Component.ReachableFromRoot || payload.Component.Detached {
+		t.Fatalf("unexpected component summary: %#v", payload.Component)
+	}
+	if len(payload.Component.RootNodeIDs) != 1 || payload.Component.RootNodeIDs[0] != "Process:main" {
+		t.Fatalf("unexpected component roots: %#v", payload.Component.RootNodeIDs)
+	}
+	if got := payload.Component.TopologyStatusCounts[string(graphhealth.TopologyConnected)]; got != 1 {
+		t.Fatalf("component connected count=%d want 1", got)
+	}
+	if len(payload.SampleNodes) != 3 {
+		t.Fatalf("component sample nodes=%d want 3: %#v", len(payload.SampleNodes), payload.SampleNodes)
+	}
+	if len(payload.CountedRelationshipSamples) != 3 {
+		t.Fatalf("component counted relationship samples=%d want 3: %#v", len(payload.CountedRelationshipSamples), payload.CountedRelationshipSamples)
+	}
+	if len(payload.ExcludedRelationshipSamples) != 2 {
+		t.Fatalf("component excluded relationship samples=%d want 2: %#v", len(payload.ExcludedRelationshipSamples), payload.ExcludedRelationshipSamples)
+	}
+}
+
+func TestGraphHealthExplainRequiresOneTarget(t *testing.T) {
+	server, fixtures := newRepoServer(t, []repoFixture{{name: "alpha"}})
+	defer server.Close()
+
+	var payload map[string]string
+	getJSON(t, server.URL+"/api/graph/explain?repo="+url.QueryEscape(fixtures[0].path), http.StatusBadRequest, &payload)
+	if !strings.Contains(payload["error"], "exactly one") {
+		t.Fatalf("unexpected missing target error: %#v", payload)
+	}
+}
+
 func TestGraphStreamingKeepsRouteAndToolMetadata(t *testing.T) {
 	g := graph.New()
 	g.AddNode(graph.Node{ID: "Route:/api/graph:GET", Label: scopeir.NodeRoute, Properties: graph.NodeProperties{

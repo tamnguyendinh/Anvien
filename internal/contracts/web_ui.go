@@ -1006,6 +1006,36 @@ export interface GraphResponse {
   graphHealth?: GraphHealthSummary;
 }
 
+export interface GraphHealthComponentExplanation {
+  id: string;
+  nodeCount: number;
+  countedEdgeCount: number;
+  detached: boolean;
+  reachableFromRoot: boolean;
+  rootNodeIds?: string[];
+  sampleNodeIds?: string[];
+  topologyStatusCounts: Partial<Record<GraphHealthTopologyStatus, number>>;
+  expectedIsolationReasonCounts: Partial<Record<GraphHealthExpectedIsolationReason, number>>;
+  confidenceCounts: Partial<Record<GraphHealthConfidence, number>>;
+  diagnosticCounts: Record<string, number>;
+}
+
+export interface GraphHealthExplainResponse {
+  kind: 'node' | 'component';
+  nodeId?: string;
+  componentId?: string;
+  node?: GraphNode;
+  health?: GraphHealthNodeMetadata;
+  component?: GraphHealthComponentExplanation;
+  countedIncomingRelationships?: GraphRelationship[];
+  countedOutgoingRelationships?: GraphRelationship[];
+  excludedRelationships?: GraphRelationship[];
+  sampleNodes?: GraphNode[];
+  countedRelationshipSamples?: GraphRelationship[];
+  excludedRelationshipSamples?: GraphRelationship[];
+  sampleLimit?: number;
+}
+
 `
 
 const pipelineTypes = `export interface PipelineProgress {
