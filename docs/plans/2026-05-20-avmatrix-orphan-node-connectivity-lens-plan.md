@@ -217,20 +217,22 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 
 ## Phase 2 - Backend Graph-Health Derivation
 
-- [ ] [P2-A] Identify the graph data boundary that should own derived graph-health metadata: graph package, analyzer output, HTTP graph payload, contract layer, or Web-only derived state.
-- [ ] [P2-B] Implement deterministic connectivity summary generation using the Phase 1 edge policy.
-- [ ] [P2-C] Add per-node derived metadata for topology status, counted incoming/outgoing counts, excluded edge counts by category, expected-isolated reasons, diagnostics, and confidence.
+**Slice 2026-05-20:** backend/API/contract derivation implemented for counted-edge topology, expected-isolated overlays, confidence, excluded structural counts, JSON summary, NDJSON node metadata, and generated Web contract types. Detached components and source-backed unresolved diagnostics remain intentionally pending.
+
+- [x] [P2-A] Identify the graph data boundary that should own derived graph-health metadata: graph package, analyzer output, HTTP graph payload, contract layer, or Web-only derived state. Decision implemented as `internal/graphhealth` core derivation consumed by HTTP/API and contracts.
+- [x] [P2-B] Implement deterministic connectivity summary generation using the Phase 1 edge policy.
+- [x] [P2-C] Add per-node derived metadata for topology status, counted incoming/outgoing counts, excluded edge counts by category, expected-isolated reasons, diagnostics, and confidence.
 - [ ] [P2-D] Add detached-component grouping and component-level explanations using explicit root/path traversal rules from Phase 1.
 - [ ] [P2-E] Add unresolved-reference diagnostics only where source/resolution evidence exists; otherwise preserve unresolved counts in summaries and classify affected topology as `unknown_connectivity`.
 - [ ] [P2-F] Add unit tests for every topology status, expected-isolated overlay reason, diagnostics rule, confidence rule, and exclusion rule.
 
 ## Phase 3 - Contract, API, and Reporting Surface
 
-- [ ] [P3-A] Decide whether graph-health metadata is emitted in Web graph payloads, generated Web contracts, MCP resources, or a dedicated endpoint.
-- [ ] [P3-B] Add graph-health summary output with counts by topology status, expected-isolated reason, diagnostics type, and confidence.
+- [x] [P3-A] Decide whether graph-health metadata is emitted in Web graph payloads, generated Web contracts, MCP resources, or a dedicated endpoint. Decision for this slice: HTTP graph JSON response includes `graphHealth` summary; JSON and NDJSON node records include per-node `properties.graphHealth`; generated Web contracts define the stable types. MCP/report-specific explain surfaces remain later work.
+- [x] [P3-B] Add graph-health summary output with counts by topology status, expected-isolated reason, diagnostics type, and confidence.
 - [ ] [P3-C] Add explain output for a single node or component.
 - [ ] [P3-D] Add report/export path if needed for dead-code or unwired-candidate review.
-- [ ] [P3-E] Add contract tests proving status fields are stable, explicit, and not confused with semantic labels.
+- [x] [P3-E] Add contract tests proving status fields are stable, explicit, and not confused with semantic labels.
 
 ## Phase 4 - Web UI Graph Health Filters
 
@@ -253,16 +255,16 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 
 ## Phase 6 - Validation
 
-- [ ] [P6-A] Run full Go build before tests.
-- [ ] [P6-B] Run focused Go tests for graph-health derivation, taxonomy, expected-isolated policy, and contract/API behavior.
-- [ ] [P6-C] Run full applicable Go test suite for `cmd` and `internal`.
-- [ ] [P6-D] Run Web build before Web tests if Web UI changes.
+- [ ] [P6-A] Run full Go build before tests. Attempted `go build ./...`; blocked by existing non-buildable fixture packages under `avmatrix/test/fixtures/...`. `go build ./cmd/... ./internal/...` passed for applicable Go packages.
+- [x] [P6-B] Run focused Go tests for graph-health derivation, taxonomy, expected-isolated policy, and contract/API behavior.
+- [x] [P6-C] Run full applicable Go test suite for `cmd` and `internal`.
+- [x] [P6-D] Run Web build before Web tests if Web UI changes. No Web UI behavior changed, but generated TypeScript contracts changed; `npm run build` passed.
 - [ ] [P6-E] Run focused Web unit tests for Graph Health filters, node detail explanations, counts, legends, and filter interactions.
 - [ ] [P6-F] Run full Web unit suite if Web UI changes.
 - [ ] [P6-G] Run e2e covering Graph Health filter visibility, node explanation, detached-component focus, and interaction with existing node/edge filters if Web UI changes.
-- [ ] [P6-H] Re-run baseline graph-health inventory after implementation and record before/after counts.
-- [ ] [P6-I] Validate performance impact of graph-health derivation (if done server-side) and Web filter rendering latency under realistic graph sizes.
-- [ ] [P6-J] Validate that Graph Health status, expected-isolated reasons, diagnostics, and confidence can coexist on the same node without one overwriting the others.
+- [x] [P6-H] Re-run baseline graph-health inventory after implementation and record before/after counts.
+- [x] [P6-I] Validate performance impact of graph-health derivation (if done server-side) and Web filter rendering latency under realistic graph sizes. Server-side derivation and payload size measured in B1; Web render latency remains pending Web filter phase.
+- [x] [P6-J] Validate that Graph Health status, expected-isolated reasons, diagnostics, and confidence can coexist on the same node without one overwriting the others.
 
 ## Phase 7 - Closure
 
@@ -277,11 +279,11 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 | ID | Area | Scope | Target | Benchmark | Evidence | Commit | Status |
 |---|---|---|---|---|---|---|---|
 | P1-A1..P1-I | Policy | edge policy, expected-isolated policy, root rules, metadata ownership, taxonomy, baseline, cross-repo criteria | no ambiguous orphan claims; all major decisions recorded | 2026-05-20 (E5 + B0) | 2026-05-20 python + source + MCP queries | 2026-05-20 (doc-only) | closed |
-| P2-A..P2-F | Backend | derived graph-health metadata | deterministic status and reasons | pending | pending | pending | open |
-| P3-A..P3-E | Contract/API | consumer surface | stable explicit status fields | pending | pending | pending | open |
+| P2-A..P2-F | Backend | derived graph-health metadata | deterministic status and reasons | B1 implementation counts | E6 implementation validation | current implementation slice | partially closed; P2-D/E/F remain open |
+| P3-A..P3-E | Contract/API | consumer surface | stable explicit status fields | B1 payload size | E6 implementation validation | current implementation slice | partially closed; P3-C/D remain open |
 | P4-A..P4-I | Web UI | graph-health filters + composition | separate filters, explanations, and safe composition with existing filters | pending | pending | pending | open |
 | P5-A..P5-D | Workflow | triage/reporting | candidate-vs-confirmed workflow | pending | pending | pending | open |
-| P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | pending | pending | pending | open |
+| P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | B1 | E6 | current implementation slice | partially closed; Web filter e2e remains open |
 | P7-A..P7-E | Closure | ledgers and commits | complete closure package | pending | pending | pending | open |
 
 ## Definition Of Done

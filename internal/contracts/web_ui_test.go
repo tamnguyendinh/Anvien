@@ -62,6 +62,9 @@ func TestWebUIContractTypeScriptIsBrowserGeneratedGlue(t *testing.T) {
 		"export const RELATIONSHIP_DISPLAY_POLICY",
 		"export const LANGUAGE_GRAPH_COVERAGE",
 		"export interface GraphNode",
+		"export const GRAPH_HEALTH_TOPOLOGY_STATUSES",
+		"export interface GraphHealthSummary",
+		"graphHealth?: GraphHealthNodeMetadata",
 		"export interface SessionStatusResponse",
 		"export const getSyntaxLanguageFromFilename",
 	} {

@@ -8,29 +8,40 @@ import (
 )
 
 // Compute annotates the provided graph in-place with graph-health metadata
-// under each node's Properties["graphHealth"] using the Phase 1 accepted policies.
-// This is the deterministic derivation entry point (P2-B, P2-C).
+// under each node's Properties["graphHealth"] using the accepted policies.
 //
 // Ownership: core layer (see P1-H). Callers (httpapi, mcp, reports) invoke this
 // after loading a full graph and before emitting to consumers.
 func Compute(g *graph.Graph) {
+	_ = ComputeSummary(g)
+}
+
+// ComputeSummary annotates the graph and returns graph-level inventory counts.
+func ComputeSummary(g *graph.Graph) Summary {
+	summary := newSummary()
 	if g == nil {
-		return
+		return summary
 	}
+	summary.NodeCount = len(g.Nodes)
 
 	// 1. Build counted degree maps using only IsCounted relationships.
 	countedIn := make(map[string]int, len(g.Nodes))
 	countedOut := make(map[string]int, len(g.Nodes))
+	excludedByNode := make(map[string]map[string]int, len(g.Nodes))
 	for _, rel := range g.Relationships {
-		if !IsCounted(rel.Type) {
+		if IsCounted(rel.Type) {
+			countedIn[rel.TargetID]++
+			countedOut[rel.SourceID]++
+			summary.CountedRelationshipCount++
 			continue
 		}
-		countedIn[rel.TargetID]++
-		countedOut[rel.SourceID]++
+		category := excludedEdgeCategory(rel.Type)
+		summary.ExcludedEdgeCounts[category]++
+		incrementNestedCount(excludedByNode, rel.SourceID, category)
+		incrementNestedCount(excludedByNode, rel.TargetID, category)
 	}
 
-	// 2. Simple expected-isolation heuristic (Phase 1 policy, bridges processes.isTestFile + ignore).
-	// Full implementation will share helpers; here is a self-contained starter.
+	// 2. Expected-isolation heuristic bridged from existing path/process policies.
 	isExpected := func(n graph.Node) []string {
 		reasons := []string{}
 		fp := stringProperty(n, "filePath")
@@ -91,12 +102,8 @@ func Compute(g *graph.Graph) {
 		}
 
 		conf := ConfidenceCandidate
-		if len(reasons) > 0 {
+		if hasAutomaticExpectedReason(reasons) {
 			conf = ConfidenceExpected
-			// If only exported or framework, still show but expected overlay
-			if len(reasons) == 1 && (reasons[0] == ReasonExportedAPI || reasons[0] == ReasonFrameworkEntry) {
-				// keep as candidate for triage priority, but mark expected overlay
-			}
 		}
 		if status == TopologyUnknown {
 			conf = ConfidenceUnknown
@@ -106,6 +113,7 @@ func Compute(g *graph.Graph) {
 			TopologyStatus:           status,
 			CountedIncoming:          in,
 			CountedOutgoing:          out,
+			ExcludedEdgeCounts:       cloneCounts(excludedByNode[n.ID]),
 			ExpectedIsolationReasons: reasons,
 			Confidence:               conf,
 		}
@@ -116,17 +124,93 @@ func Compute(g *graph.Graph) {
 		n.Properties["topologyStatus"] = string(health.TopologyStatus)
 		n.Properties["countedIncoming"] = health.CountedIncoming
 		n.Properties["countedOutgoing"] = health.CountedOutgoing
+		if len(health.ExcludedEdgeCounts) > 0 {
+			n.Properties["excludedEdgeCounts"] = health.ExcludedEdgeCounts
+		} else {
+			delete(n.Properties, "excludedEdgeCounts")
+		}
 		n.Properties["expectedIsolationReasons"] = health.ExpectedIsolationReasons
 		n.Properties["confidence"] = health.Confidence
 		// Also embed full for typed consumers
 		n.Properties["graphHealth"] = health
+		addNodeHealthToSummary(&summary, health)
 	}
 
 	// P2-D detached_component and P2-E unresolved diagnostics are stubs here.
 	// Full version will compute components and attach "detached" + root explanations.
+	return summary
 }
 
 // --- local helpers (duplicated from processes/ignore for Phase 2 starter; later factor) ---
+
+func newSummary() Summary {
+	summary := Summary{
+		PolicyVersion:                 PolicyVersion,
+		TopologyStatusCounts:          map[string]int{},
+		ExpectedIsolationReasonCounts: map[string]int{},
+		ConfidenceCounts:              map[string]int{},
+		DiagnosticCounts:              map[string]int{},
+		ExcludedEdgeCounts:            map[string]int{},
+	}
+	for _, status := range TopologyStatuses {
+		summary.TopologyStatusCounts[string(status)] = 0
+	}
+	for _, confidence := range ConfidenceLevels {
+		summary.ConfidenceCounts[confidence] = 0
+	}
+	return summary
+}
+
+func addNodeHealthToSummary(summary *Summary, health NodeHealth) {
+	summary.TopologyStatusCounts[string(health.TopologyStatus)]++
+	summary.ConfidenceCounts[health.Confidence]++
+	for _, reason := range health.ExpectedIsolationReasons {
+		summary.ExpectedIsolationReasonCounts[reason]++
+	}
+	for _, diagnostic := range health.Diagnostics {
+		if diagnostic.Kind == "" {
+			continue
+		}
+		summary.DiagnosticCounts[diagnostic.Kind]++
+	}
+}
+
+func incrementNestedCount(counts map[string]map[string]int, nodeID string, category string) {
+	if nodeID == "" {
+		return
+	}
+	if counts[nodeID] == nil {
+		counts[nodeID] = map[string]int{}
+	}
+	counts[nodeID][category]++
+}
+
+func cloneCounts(counts map[string]int) map[string]int {
+	if len(counts) == 0 {
+		return nil
+	}
+	out := make(map[string]int, len(counts))
+	for key, value := range counts {
+		out[key] = value
+	}
+	return out
+}
+
+func excludedEdgeCategory(t graph.RelationshipType) string {
+	if StructuralEdgeTypes[t] {
+		return ExcludedEdgeStructural
+	}
+	return ExcludedEdgeOther
+}
+
+func hasAutomaticExpectedReason(reasons []string) bool {
+	for _, reason := range reasons {
+		if reason != ReasonExportedAPI {
+			return true
+		}
+	}
+	return false
+}
 
 func stringProperty(n graph.Node, key string) string {
 	if n.Properties == nil {

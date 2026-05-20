@@ -313,3 +313,96 @@ Interpretation:
 - Raw all-relationship counts are not suitable as the orphan/dead-code denominator because `DEFINES` and container/ownership edges give code nodes incoming edges.
 - The provisional policy is not final product behavior. It is recorded only to prove why Phase 1 must define a counted-edge policy before implementation.
 - Representative cross-repo baseline remains pending until Phase 1 records selection criteria.
+
+## E6 - Phase 2/3 Backend Graph-Health Derivation Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Implement backend-owned graph-health derivation in `internal/graphhealth`.
+- Emit per-node graph-health metadata in HTTP graph JSON and NDJSON node records.
+- Emit graph-health summary in non-stream `/api/graph` JSON response.
+- Generate explicit Web contract types for Graph Health metadata without adding Web UI filters yet.
+- Leave detached-component traversal, source-backed unresolved diagnostics, node/component explain endpoint, and Web filter UI for later phases.
+
+AVmatrix refresh and impact commands:
+
+```powershell
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix impact Compute --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact graphPayload --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact streamGraphNDJSON --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact graphNodeForResponse --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact WebUIContractTypeScript --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact WebUIContract --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `Compute`: LOW risk; direct test impact in `internal/graphhealth`.
+- HTTP graph functions: CRITICAL risk because they feed `Server.handleGraph` and graph API consumers. Mitigation: no stream record shape change; focused JSON/NDJSON tests added.
+- `WebUIContract` / `WebUIContractTypeScript`: CRITICAL risk because generated contract glue and contract tests depend on it. Mitigation: generated contracts refreshed and `--check` passed.
+
+Changed files:
+
+- `internal/graphhealth/policy.go`
+- `internal/graphhealth/compute.go`
+- `internal/graphhealth/compute_test.go`
+- `internal/httpapi/graph.go`
+- `internal/httpapi/handlers_test.go`
+- `internal/contracts/web_ui.go`
+- `internal/contracts/web_ui_test.go`
+- `avmatrix-web/src/generated/avmatrix-contracts.ts`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- `graphhealth.ComputeSummary` annotates graph nodes in-place and returns summary counts.
+- Per-node `properties.graphHealth` includes topology status, counted incoming/outgoing counts, excluded structural counts, expected-isolated reasons, diagnostics field, and confidence.
+- Flat properties (`topologyStatus`, `countedIncoming`, `countedOutgoing`, `expectedIsolationReasons`, `confidence`) remain for simple consumers.
+- `exported_api` alone remains `candidate`; automatic expected reasons and `framework_entry` produce `expected`.
+- HTTP NDJSON keeps the existing record types (`node`, `relationship`, `error`) and only adds metadata inside node properties.
+- Non-stream HTTP JSON adds top-level `graphHealth` summary.
+- Generated Web contracts now include `GRAPH_HEALTH_TOPOLOGY_STATUSES`, `GRAPH_HEALTH_CONFIDENCE_LEVELS`, `GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS`, `GraphHealthNodeMetadata`, `GraphHealthSummary`, and `GraphResponse`.
+
+Validation commands and results:
+
+```powershell
+go test ./internal/graphhealth
+go test ./internal/httpapi -run "TestGraph"
+go test ./internal/contracts
+go run .\cmd\generate-web-contracts
+go build ./...
+go build ./cmd/... ./internal/...
+go test ./internal/graphhealth ./internal/httpapi ./internal/contracts
+go run .\cmd\generate-web-contracts --check
+cd avmatrix-web; npm run build
+go test ./cmd/... ./internal/...
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
+```
+
+Results:
+
+- Focused graphhealth/httpapi/contracts tests passed.
+- `go run .\cmd\generate-web-contracts` refreshed `avmatrix-web/src/generated/avmatrix-contracts.ts`.
+- `go run .\cmd\generate-web-contracts --check` passed.
+- `go build ./...` failed on existing fixture packages under `avmatrix/test/fixtures/...` (`models`, `animal`, and C fixture source). This is outside the implementation slice and is why P6-A remains not fully complete.
+- `go build ./cmd/... ./internal/...` passed.
+- `go test ./cmd/... ./internal/...` passed.
+- `npm run build` in `avmatrix-web` passed; Vite reported existing chunk-size/dynamic-import warnings only.
+- Post-change AVmatrix refresh passed with `nodes=21233 relationships=52777`.
+- `detect-changes` passed and reported `risk_level=high`, `changed_files=12`, `changed_count=79`, `affected_count=14`. The affected processes were expected graph API and contract generation flows, including `HandleGraph -> GraphResponse`, `HandleGraph -> AddNodeHealthToSummary`, and `WebUIContractTypeScript -> ...`.
+
+Current unrelated worktree note:
+
+- `.gitignore` has an existing local change adding `.grok/`. This slice did not depend on it and must not stage it unless separately requested.
+
+Conclusion:
+
+Backend/API/contract Graph Health derivation is implemented for counted-edge topology and expected-isolated overlays. The slice does not complete detached-component traversal, unresolved-reference diagnostics, report/explain endpoints, or Web UI filters.

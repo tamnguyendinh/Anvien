@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
 )
@@ -272,8 +273,20 @@ func TestGraphReturnsJSONForRegisteredRepo(t *testing.T) {
 	if len(payload.Nodes) != 5 || len(payload.Relationships) != 5 {
 		t.Fatalf("unexpected graph payload: %#v", payload)
 	}
+	if payload.GraphHealth.PolicyVersion != graphhealth.PolicyVersion {
+		t.Fatalf("graph JSON missing graph health summary: %#v", payload.GraphHealth)
+	}
+	if payload.GraphHealth.NodeCount != 5 || payload.GraphHealth.CountedRelationshipCount != 3 {
+		t.Fatalf("unexpected graph health summary counts: %#v", payload.GraphHealth)
+	}
+	if got := payload.GraphHealth.TopologyStatusCounts[string(graphhealth.TopologyNoIncoming)]; got != 1 {
+		t.Fatalf("graph health no_incoming count = %d, want 1", got)
+	}
 	if _, ok := payload.Nodes[0].Properties["content"]; ok {
 		t.Fatalf("graph JSON should strip content by default: %#v", payload.Nodes[0].Properties)
+	}
+	if _, ok := payload.Nodes[0].Properties["graphHealth"].(map[string]any); !ok {
+		t.Fatalf("graph JSON should include per-node graph health metadata: %#v", payload.Nodes[0].Properties)
 	}
 	call := payload.Relationships[2]
 	if call.ResolutionSource != "scope-resolution" || call.FileHash != "hash-graph" || len(call.Evidence) != 1 {
@@ -304,6 +317,9 @@ func TestGraphStreamingReturnsNDJSON(t *testing.T) {
 	text := string(body)
 	if !strings.Contains(text, `"type":"node"`) || !strings.Contains(text, `"type":"relationship"`) {
 		t.Fatalf("stream body = %q", string(body))
+	}
+	if !strings.Contains(text, `"graphHealth"`) {
+		t.Fatalf("stream body missing per-node graph health metadata: %q", string(body))
 	}
 }
 

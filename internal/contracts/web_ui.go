@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/lbugschema"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
@@ -479,6 +480,12 @@ func WebUIContractTypeScript() (string, error) {
 	writeConstObject(&b, "AUXILIARY_SYNTAX_MAP", manifest.Languages.AuxiliarySyntax)
 	writeConstObject(&b, "AUXILIARY_BASENAME_MAP", manifest.Languages.AuxiliaryBasenames)
 	b.WriteString(languageFunctions)
+	writeConstArray(&b, "GRAPH_HEALTH_TOPOLOGY_STATUSES", graphHealthTopologyStatusStrings())
+	b.WriteString("export type GraphHealthTopologyStatus = (typeof GRAPH_HEALTH_TOPOLOGY_STATUSES)[number];\n\n")
+	writeConstArray(&b, "GRAPH_HEALTH_CONFIDENCE_LEVELS", graphhealth.ConfidenceLevels)
+	b.WriteString("export type GraphHealthConfidence = (typeof GRAPH_HEALTH_CONFIDENCE_LEVELS)[number];\n\n")
+	writeConstArray(&b, "GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS", graphhealth.ExpectedIsolationReasons)
+	b.WriteString("export type GraphHealthExpectedIsolationReason = (typeof GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS)[number];\n\n")
 	b.WriteString(graphTypes)
 	writeConstArray(&b, "PIPELINE_PHASES", manifest.Pipeline.Phases)
 	b.WriteString("export type PipelinePhase = (typeof PIPELINE_PHASES)[number];\n\n")
@@ -511,6 +518,14 @@ func relationshipStrings(types []graph.RelationshipType) []string {
 	out := make([]string, 0, len(types))
 	for _, relType := range types {
 		out = append(out, string(relType))
+	}
+	return out
+}
+
+func graphHealthTopologyStatusStrings() []string {
+	out := make([]string, 0, len(graphhealth.TopologyStatuses))
+	for _, status := range graphhealth.TopologyStatuses {
+		out = append(out, string(status))
 	}
 	return out
 }
@@ -852,7 +867,34 @@ export const getSyntaxLanguageFromFilename = (filePath: string): string => {
 
 `
 
-const graphTypes = `export type NodeProperties = {
+const graphTypes = `export interface GraphHealthDiagnostic {
+  kind: string;
+  note?: string;
+  source?: string;
+}
+
+export interface GraphHealthNodeMetadata {
+  topologyStatus: GraphHealthTopologyStatus;
+  countedIncoming: number;
+  countedOutgoing: number;
+  excludedEdgeCounts?: Record<string, number>;
+  expectedIsolationReasons?: GraphHealthExpectedIsolationReason[];
+  diagnostics?: GraphHealthDiagnostic[];
+  confidence: GraphHealthConfidence;
+}
+
+export interface GraphHealthSummary {
+  policyVersion: string;
+  nodeCount: number;
+  countedRelationshipCount: number;
+  topologyStatusCounts: Partial<Record<GraphHealthTopologyStatus, number>>;
+  expectedIsolationReasonCounts: Partial<Record<GraphHealthExpectedIsolationReason, number>>;
+  confidenceCounts: Partial<Record<GraphHealthConfidence, number>>;
+  diagnosticCounts: Record<string, number>;
+  excludedEdgeCounts: Record<string, number>;
+}
+
+export type NodeProperties = {
   name: string;
   filePath: string;
   startLine?: number;
@@ -891,6 +933,14 @@ const graphTypes = `export type NodeProperties = {
   responseKeys?: string[];
   errorKeys?: string[];
   middleware?: string[];
+  topologyStatus?: GraphHealthTopologyStatus;
+  countedIncoming?: number;
+  countedOutgoing?: number;
+  excludedEdgeCounts?: Record<string, number>;
+  expectedIsolationReasons?: GraphHealthExpectedIsolationReason[];
+  diagnostics?: GraphHealthDiagnostic[];
+  confidence?: GraphHealthConfidence;
+  graphHealth?: GraphHealthNodeMetadata;
   [key: string]: unknown;
 };
 
@@ -915,6 +965,12 @@ export interface GraphRelationship {
     readonly weight: number;
     readonly note?: string;
   }[];
+}
+
+export interface GraphResponse {
+  nodes: GraphNode[];
+  relationships: GraphRelationship[];
+  graphHealth?: GraphHealthSummary;
 }
 
 `

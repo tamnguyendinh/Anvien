@@ -8,11 +8,13 @@ import (
 	"path/filepath"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 )
 
 type graphResponse struct {
 	Nodes         []graph.Node         `json:"nodes"`
 	Relationships []graph.Relationship `json:"relationships"`
+	GraphHealth   graphhealth.Summary  `json:"graphHealth"`
 }
 
 const graphNDJSONFlushInterval = 512
@@ -56,14 +58,16 @@ func (s Server) handleGraph(w http.ResponseWriter, r *http.Request) {
 }
 
 func graphPayload(g *graph.Graph, includeContent bool) graphResponse {
+	summary := graphhealth.ComputeSummary(g)
 	nodes := make([]graph.Node, 0, len(g.Nodes))
 	for _, node := range g.Nodes {
 		nodes = append(nodes, graphNodeForResponse(node, includeContent))
 	}
-	return graphResponse{Nodes: nodes, Relationships: g.Relationships}
+	return graphResponse{Nodes: nodes, Relationships: g.Relationships, GraphHealth: summary}
 }
 
 func streamGraphNDJSON(w http.ResponseWriter, g *graph.Graph, includeContent bool) {
+	graphhealth.Compute(g)
 	encoder := json.NewEncoder(w)
 	flusher, _ := w.(http.Flusher)
 	written := 0

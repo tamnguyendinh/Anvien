@@ -3268,6 +3268,67 @@ export const getSyntaxLanguageFromFilename = (filePath: string): string => {
   return 'text';
 };
 
+export const GRAPH_HEALTH_TOPOLOGY_STATUSES = [
+  "connected",
+  "true_isolated",
+  "no_incoming",
+  "no_outgoing",
+  "detached_component",
+  "unknown_connectivity"
+] as const;
+
+export type GraphHealthTopologyStatus = (typeof GRAPH_HEALTH_TOPOLOGY_STATUSES)[number];
+
+export const GRAPH_HEALTH_CONFIDENCE_LEVELS = [
+  "candidate",
+  "expected",
+  "unknown",
+  "confirmed"
+] as const;
+
+export type GraphHealthConfidence = (typeof GRAPH_HEALTH_CONFIDENCE_LEVELS)[number];
+
+export const GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS = [
+  "test",
+  "fixture",
+  "generated",
+  "vendor",
+  "documentation",
+  "migration",
+  "exported_api",
+  "framework_entry",
+  "cli_mcp"
+] as const;
+
+export type GraphHealthExpectedIsolationReason = (typeof GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS)[number];
+
+export interface GraphHealthDiagnostic {
+  kind: string;
+  note?: string;
+  source?: string;
+}
+
+export interface GraphHealthNodeMetadata {
+  topologyStatus: GraphHealthTopologyStatus;
+  countedIncoming: number;
+  countedOutgoing: number;
+  excludedEdgeCounts?: Record<string, number>;
+  expectedIsolationReasons?: GraphHealthExpectedIsolationReason[];
+  diagnostics?: GraphHealthDiagnostic[];
+  confidence: GraphHealthConfidence;
+}
+
+export interface GraphHealthSummary {
+  policyVersion: string;
+  nodeCount: number;
+  countedRelationshipCount: number;
+  topologyStatusCounts: Partial<Record<GraphHealthTopologyStatus, number>>;
+  expectedIsolationReasonCounts: Partial<Record<GraphHealthExpectedIsolationReason, number>>;
+  confidenceCounts: Partial<Record<GraphHealthConfidence, number>>;
+  diagnosticCounts: Record<string, number>;
+  excludedEdgeCounts: Record<string, number>;
+}
+
 export type NodeProperties = {
   name: string;
   filePath: string;
@@ -3307,6 +3368,14 @@ export type NodeProperties = {
   responseKeys?: string[];
   errorKeys?: string[];
   middleware?: string[];
+  topologyStatus?: GraphHealthTopologyStatus;
+  countedIncoming?: number;
+  countedOutgoing?: number;
+  excludedEdgeCounts?: Record<string, number>;
+  expectedIsolationReasons?: GraphHealthExpectedIsolationReason[];
+  diagnostics?: GraphHealthDiagnostic[];
+  confidence?: GraphHealthConfidence;
+  graphHealth?: GraphHealthNodeMetadata;
   [key: string]: unknown;
 };
 
@@ -3331,6 +3400,12 @@ export interface GraphRelationship {
     readonly weight: number;
     readonly note?: string;
   }[];
+}
+
+export interface GraphResponse {
+  nodes: GraphNode[];
+  relationships: GraphRelationship[];
+  graphHealth?: GraphHealthSummary;
 }
 
 export const PIPELINE_PHASES = [
