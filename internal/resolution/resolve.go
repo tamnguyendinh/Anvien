@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
 )
 
@@ -63,6 +64,7 @@ func ResolveBoundInto(baseGraph *graph.Graph, binding BindingResult, options Opt
 	e := newEmitter(g, &metrics)
 
 	emitDefinitionNodes(w, e)
+	emitUnresolvedHeritageDiagnostics(w, e)
 	emitImportEdges(w, e)
 
 	emitInherits := !options.DisableScopeInheritsCompatibility
@@ -86,6 +88,7 @@ func ResolveBoundInto(baseGraph *graph.Graph, binding BindingResult, options Opt
 
 	metrics.GraphNodesEmitted = len(g.Nodes)
 	metrics.GraphRelationshipsEmitted = len(g.Relationships)
+	graphhealth.SetResolutionMetadata(g, metrics.UnresolvedReferences, metrics.UnresolvedReferenceDiagnostics, metrics.UnattributedUnresolvedReferences)
 	return Result{Graph: g, ReferenceIndex: e.referenceIndex, Metrics: metrics}, nil
 }
 
@@ -99,14 +102,37 @@ func applyCrossFileCompatibilityMetrics(options Options, metrics *Metrics) {
 	metrics.CrossFileSkipReason = "covered-by-scopeir-single-pass-resolution"
 }
 
-func resolveCall(w *workspace, e *emitter, call scopeir.CallSiteFact) {
-	source, ok := w.callerForScope(call.InScope)
-	if !ok {
-		source, ok = callerFileRef(call.FilePath)
+func sourceForScopeOrFile(w *workspace, scopeID string, filePath string) (defRef, bool) {
+	if source, ok := w.callerForScope(scopeID); ok {
+		return source, true
+	}
+	return callerFileRef(filePath)
+}
+
+func emitUnresolvedHeritageDiagnostics(w *workspace, e *emitter) {
+	for _, item := range w.unresolvedHeritageFacts {
+		source, ok := w.ownerForScope(item.InScope, dispatchOwnerLabels())
+		note := "heritage target not resolved"
 		if !ok {
-			e.metrics.UnresolvedReferences++
-			return
+			source, ok = callerFileRef(item.FilePath)
+			note = "heritage owner not resolved"
 		}
+		if baseTypeName(item.Name) == "" {
+			note = "heritage target text not modeled"
+		}
+		if !ok {
+			e.emitUnresolvedReference(defRef{}, "heritage", item.Name, item.FilePath, item.FileHash, item.Range, note, false)
+			continue
+		}
+		e.emitUnresolvedReference(source, "heritage", item.Name, item.FilePath, item.FileHash, item.Range, note, false)
+	}
+}
+
+func resolveCall(w *workspace, e *emitter, call scopeir.CallSiteFact) {
+	source, ok := sourceForScopeOrFile(w, call.InScope, call.FilePath)
+	if !ok {
+		e.emitUnresolvedReference(defRef{}, "call", callTargetText(call), call.FilePath, call.FileHash, call.Range, "source scope not resolved", true)
+		return
 	}
 	var target defRef
 	confidence := 1.0
@@ -161,7 +187,7 @@ func resolveCall(w *workspace, e *emitter, call scopeir.CallSiteFact) {
 		}
 	}
 	if !ok {
-		e.metrics.UnresolvedReferences++
+		e.emitUnresolvedReference(source, "call", callTargetText(call), call.FilePath, call.FileHash, call.Range, "call target not resolved", true)
 		return
 	}
 	e.emitReference(source, target, Reference{
@@ -197,10 +223,17 @@ func callerFileRef(filePath string) (defRef, bool) {
 	}, true
 }
 
+func callTargetText(call scopeir.CallSiteFact) string {
+	if call.ExplicitReceiver != "" {
+		return call.ExplicitReceiver + "." + call.Name
+	}
+	return call.Name
+}
+
 func resolveAccess(w *workspace, e *emitter, access scopeir.AccessFact) {
-	source, ok := w.callerForScope(access.InScope)
+	source, ok := sourceForScopeOrFile(w, access.InScope, access.FilePath)
 	if !ok {
-		e.metrics.UnresolvedReferences++
+		e.emitUnresolvedReference(defRef{}, "access", accessTargetText(access), access.FilePath, access.FileHash, access.Range, "source scope not resolved", true)
 		return
 	}
 	target, ok := w.resolveMember(access.Name, access.ExplicitReceiver, access.InScope, propertyLabels())
@@ -214,7 +247,7 @@ func resolveAccess(w *workspace, e *emitter, access scopeir.AccessFact) {
 		}
 	}
 	if !ok {
-		e.metrics.UnresolvedReferences++
+		e.emitUnresolvedReference(source, "access", accessTargetText(access), access.FilePath, access.FileHash, access.Range, "access target not resolved", true)
 		return
 	}
 	kind := ReferenceRead
@@ -238,19 +271,26 @@ func resolveAccess(w *workspace, e *emitter, access scopeir.AccessFact) {
 	e.metrics.ResolvedAccesses++
 }
 
+func accessTargetText(access scopeir.AccessFact) string {
+	if access.ExplicitReceiver != "" {
+		return access.ExplicitReceiver + "." + access.Name
+	}
+	return access.Name
+}
+
 func resolveTypeAnnotation(w *workspace, e *emitter, annotation scopeir.TypeAnnotationFact) {
 	targetName := baseTypeName(annotation.Type.RawName)
 	if targetName == "" || isBuiltinType(targetName) {
 		return
 	}
-	source, ok := w.callerForScope(annotation.InScope)
+	source, ok := sourceForScopeOrFile(w, annotation.InScope, annotation.FilePath)
 	if !ok {
-		e.metrics.UnresolvedReferences++
+		e.emitUnresolvedReference(defRef{}, "type-reference", annotation.Type.RawName, annotation.FilePath, annotation.FileHash, annotation.Range, "source scope not resolved", true)
 		return
 	}
 	target, ok := w.resolveName(targetName, annotation.InScope, typeLabels())
 	if !ok {
-		e.metrics.UnresolvedReferences++
+		e.emitUnresolvedReference(source, "type-reference", annotation.Type.RawName, annotation.FilePath, annotation.FileHash, annotation.Range, "type target not resolved", true)
 		return
 	}
 	e.emitReference(source, target, Reference{

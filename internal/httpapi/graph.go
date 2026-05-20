@@ -99,17 +99,31 @@ func streamGraphNDJSON(w http.ResponseWriter, g *graph.Graph, includeContent boo
 }
 
 func graphNodeForResponse(node graph.Node, includeContent bool) graph.Node {
-	if includeContent {
+	if len(node.Properties) == 0 {
 		return node
 	}
-	if _, ok := node.Properties["content"]; !ok {
-		return node
+	stripKeys := map[string]bool{
+		graphhealth.DiagnosticPropertyKey: true,
 	}
-	properties := make(graph.NodeProperties, len(node.Properties)-1)
-	for key, value := range node.Properties {
-		if key != "content" {
-			properties[key] = value
+	if !includeContent {
+		stripKeys["content"] = true
+	}
+	needsStrip := false
+	for key := range stripKeys {
+		if _, ok := node.Properties[key]; ok {
+			needsStrip = true
+			break
 		}
+	}
+	if !needsStrip {
+		return node
+	}
+	properties := make(graph.NodeProperties, len(node.Properties))
+	for key, value := range node.Properties {
+		if stripKeys[key] {
+			continue
+		}
+		properties[key] = value
 	}
 	node.Properties = properties
 	return node

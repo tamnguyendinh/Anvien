@@ -1,6 +1,7 @@
 package graphhealth
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
@@ -166,6 +167,120 @@ func TestCompute_ExpectedReasonConfidenceAndSummary(t *testing.T) {
 	}
 	if got := summary.ConfidenceCounts[ConfidenceCandidate]; got != 1 {
 		t.Errorf("candidate confidence count=%d want 1", got)
+	}
+}
+
+func TestCompute_UnresolvedDiagnosticMarksUnknownConnectivity(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{ID: "Function:source", Label: scopeir.NodeFunction, Properties: map[string]any{"name": "source", "filePath": "src/app.ts"}})
+	g.AddNode(graph.Node{ID: "Function:target", Label: scopeir.NodeFunction, Properties: map[string]any{"name": "target", "filePath": "src/app.ts"}})
+	g.AddRelationship(graph.Relationship{ID: "r-call", SourceID: "Function:source", TargetID: "Function:target", Type: graph.RelCalls})
+	if !AppendDiagnosticToNode(g, "Function:source", Diagnostic{
+		Kind:             DiagnosticUnresolvedReference,
+		FactFamily:       "call",
+		TargetText:       "missing",
+		ResolutionSource: "scope-resolution",
+		FilePath:         "src/app.ts",
+		StartLine:        3,
+	}) {
+		t.Fatal("failed to attach unresolved diagnostic to source")
+	}
+	if !AppendDiagnosticToNode(g, "Function:source", Diagnostic{
+		Kind:             DiagnosticUnresolvedReference,
+		FactFamily:       "call",
+		TargetText:       "otherMissing",
+		ResolutionSource: "scope-resolution",
+		FilePath:         "src/app.ts",
+		StartLine:        4,
+	}) {
+		t.Fatal("failed to attach second unresolved diagnostic to source")
+	}
+	SetResolutionMetadata(g, 2, 1, 1)
+
+	summary := ComputeSummary(g)
+
+	source := findNode(g, "Function:source")
+	if source == nil {
+		t.Fatal("source node not found")
+	}
+	if ts, _ := source.Properties["topologyStatus"].(string); ts != string(TopologyUnknown) {
+		t.Fatalf("source topologyStatus=%s want unknown_connectivity", ts)
+	}
+	if conf, _ := source.Properties["confidence"].(string); conf != ConfidenceUnknown {
+		t.Fatalf("source confidence=%s want unknown", conf)
+	}
+	health, ok := source.Properties["graphHealth"].(NodeHealth)
+	if !ok || len(health.Diagnostics) != 1 {
+		t.Fatalf("source graphHealth diagnostics = %#v", source.Properties["graphHealth"])
+	}
+	if health.Diagnostics[0].Count != 2 || health.Diagnostics[0].TargetText != "missing" {
+		t.Fatalf("source diagnostic aggregation = %#v", health.Diagnostics[0])
+	}
+	if got := summary.TopologyStatusCounts[string(TopologyUnknown)]; got != 1 {
+		t.Fatalf("unknown topology count=%d want 1", got)
+	}
+	if got := summary.DiagnosticCounts[DiagnosticUnresolvedReference]; got != 2 {
+		t.Fatalf("unresolved diagnostic count=%d want 2", got)
+	}
+	if summary.UnresolvedReferenceCount != 2 ||
+		summary.SourceBackedUnresolvedReferenceCount != 2 ||
+		summary.UnattributedUnresolvedReferenceCount != 0 {
+		t.Fatalf("unresolved summary counts = %#v", summary)
+	}
+}
+
+func TestCompute_NormalizesDecodedDiagnostics(t *testing.T) {
+	raw := []byte(`{
+  "nodes": [
+    {
+      "id": "Function:source",
+      "label": "Function",
+      "properties": {
+        "name": "source",
+        "filePath": "src/app.ts",
+        "graphHealthDiagnostics": [
+          {
+            "kind": "unresolved_reference",
+            "factFamily": "type-reference",
+            "sourceNodeId": "Function:source",
+            "targetText": "MissingType",
+            "resolutionSource": "scope-resolution",
+            "filePath": "src/app.ts",
+            "startLine": 7
+          }
+        ]
+      }
+    }
+  ],
+  "relationships": [],
+  "metadata": {
+    "resolution": {
+      "unresolvedReferences": 1,
+      "sourceBackedUnresolvedReferences": 1,
+      "unattributedUnresolvedReferences": 0
+    }
+  }
+}`)
+	var g graph.Graph
+	if err := json.Unmarshal(raw, &g); err != nil {
+		t.Fatalf("unmarshal graph: %v", err)
+	}
+
+	summary := ComputeSummary(&g)
+
+	source := findNode(&g, "Function:source")
+	if source == nil {
+		t.Fatal("source node missing")
+	}
+	health, ok := source.Properties["graphHealth"].(NodeHealth)
+	if !ok || len(health.Diagnostics) != 1 {
+		t.Fatalf("decoded graphHealth diagnostics = %#v", source.Properties["graphHealth"])
+	}
+	if health.Diagnostics[0].FactFamily != "type-reference" || health.Diagnostics[0].StartLine != 7 {
+		t.Fatalf("decoded diagnostic not normalized: %#v", health.Diagnostics[0])
+	}
+	if summary.UnresolvedReferenceCount != 1 || summary.DiagnosticCounts[DiagnosticUnresolvedReference] != 1 {
+		t.Fatalf("decoded summary = %#v", summary)
 	}
 }
 

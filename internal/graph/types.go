@@ -63,6 +63,7 @@ type Relationship struct {
 type Graph struct {
 	Nodes         []Node         `json:"nodes"`
 	Relationships []Relationship `json:"relationships"`
+	Metadata      map[string]any `json:"metadata,omitempty"`
 
 	nodeIndex map[string]int
 	relIndex  map[string]int

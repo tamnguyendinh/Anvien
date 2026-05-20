@@ -106,11 +106,24 @@ var ConfidenceLevels = []string{
 	ConfidenceConfirmed,
 }
 
+const (
+	DiagnosticUnresolvedReference = "unresolved_reference"
+	DiagnosticPropertyKey         = "graphHealthDiagnostics"
+)
+
 // Diagnostic captures analyzer/resolution evidence attached to a node for health.
 type Diagnostic struct {
-	Kind   string `json:"kind"`
-	Note   string `json:"note,omitempty"`
-	Source string `json:"source,omitempty"`
+	Kind             string `json:"kind"`
+	FactFamily       string `json:"factFamily,omitempty"`
+	SourceNodeID     string `json:"sourceNodeId,omitempty"`
+	TargetText       string `json:"targetText,omitempty"`
+	ResolutionSource string `json:"resolutionSource,omitempty"`
+	FilePath         string `json:"filePath,omitempty"`
+	FileHash         string `json:"fileHash,omitempty"`
+	StartLine        int    `json:"startLine,omitempty"`
+	Count            int    `json:"count,omitempty"`
+	Note             string `json:"note,omitempty"`
+	Source           string `json:"source,omitempty"`
 }
 
 // NodeHealth is the derived graph-health metadata attached to each node
@@ -142,16 +155,19 @@ type ComponentSummary struct {
 
 // Summary captures graph-level inventory for consumer surfaces.
 type Summary struct {
-	PolicyVersion                 string             `json:"policyVersion"`
-	NodeCount                     int                `json:"nodeCount"`
-	CountedRelationshipCount      int                `json:"countedRelationshipCount"`
-	ComponentCount                int                `json:"componentCount"`
-	DetachedComponentCount        int                `json:"detachedComponentCount"`
-	RootNodeCount                 int                `json:"rootNodeCount"`
-	TopologyStatusCounts          map[string]int     `json:"topologyStatusCounts"`
-	ExpectedIsolationReasonCounts map[string]int     `json:"expectedIsolationReasonCounts"`
-	ConfidenceCounts              map[string]int     `json:"confidenceCounts"`
-	DiagnosticCounts              map[string]int     `json:"diagnosticCounts"`
-	ExcludedEdgeCounts            map[string]int     `json:"excludedEdgeCounts"`
-	LargestDetachedComponents     []ComponentSummary `json:"largestDetachedComponents,omitempty"`
+	PolicyVersion                        string             `json:"policyVersion"`
+	NodeCount                            int                `json:"nodeCount"`
+	CountedRelationshipCount             int                `json:"countedRelationshipCount"`
+	ComponentCount                       int                `json:"componentCount"`
+	DetachedComponentCount               int                `json:"detachedComponentCount"`
+	RootNodeCount                        int                `json:"rootNodeCount"`
+	UnresolvedReferenceCount             int                `json:"unresolvedReferenceCount"`
+	SourceBackedUnresolvedReferenceCount int                `json:"sourceBackedUnresolvedReferenceCount"`
+	UnattributedUnresolvedReferenceCount int                `json:"unattributedUnresolvedReferenceCount"`
+	TopologyStatusCounts                 map[string]int     `json:"topologyStatusCounts"`
+	ExpectedIsolationReasonCounts        map[string]int     `json:"expectedIsolationReasonCounts"`
+	ConfidenceCounts                     map[string]int     `json:"confidenceCounts"`
+	DiagnosticCounts                     map[string]int     `json:"diagnosticCounts"`
+	ExcludedEdgeCounts                   map[string]int     `json:"excludedEdgeCounts"`
+	LargestDetachedComponents            []ComponentSummary `json:"largestDetachedComponents,omitempty"`
 }

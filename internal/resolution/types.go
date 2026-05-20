@@ -11,30 +11,32 @@ type Options struct {
 }
 
 type Metrics struct {
-	DefinitionsIndexed          int
-	ImportsResolved             int
-	ImportUsesEmitted           int
-	ResolvedReferences          int
-	UnresolvedReferences        int
-	ResolvedCalls               int
-	ResolvedAccesses            int
-	ResolvedTypeReferences      int
-	HeritageFactsIndexed        int
-	ResolvedInheritance         int
-	UnresolvedInheritance       int
-	DuplicateEdgesMerged        int
-	MethodOverridesEmitted      int
-	MethodImplementsEmitted     int
-	FinalizedImportsEmitted     int
-	CrossFileFilesReprocessed   int
-	CrossFileSkipped            bool
-	CrossFileSkipReason         string
-	BindingAccumulatorFiles     int
-	BindingAccumulatorEntries   int
-	BindingAccumulatorFinalized bool
-	BindingAccumulatorDisposed  bool
-	GraphNodesEmitted           int
-	GraphRelationshipsEmitted   int
+	DefinitionsIndexed               int
+	ImportsResolved                  int
+	ImportUsesEmitted                int
+	ResolvedReferences               int
+	UnresolvedReferences             int
+	UnresolvedReferenceDiagnostics   int
+	UnattributedUnresolvedReferences int
+	ResolvedCalls                    int
+	ResolvedAccesses                 int
+	ResolvedTypeReferences           int
+	HeritageFactsIndexed             int
+	ResolvedInheritance              int
+	UnresolvedInheritance            int
+	DuplicateEdgesMerged             int
+	MethodOverridesEmitted           int
+	MethodImplementsEmitted          int
+	FinalizedImportsEmitted          int
+	CrossFileFilesReprocessed        int
+	CrossFileSkipped                 bool
+	CrossFileSkipReason              string
+	BindingAccumulatorFiles          int
+	BindingAccumulatorEntries        int
+	BindingAccumulatorFinalized      bool
+	BindingAccumulatorDisposed       bool
+	GraphNodesEmitted                int
+	GraphRelationshipsEmitted        int
 }
 
 type Result struct {

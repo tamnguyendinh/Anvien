@@ -3304,6 +3304,14 @@ export type GraphHealthExpectedIsolationReason = (typeof GRAPH_HEALTH_EXPECTED_I
 
 export interface GraphHealthDiagnostic {
   kind: string;
+  factFamily?: string;
+  sourceNodeId?: string;
+  targetText?: string;
+  resolutionSource?: string;
+  filePath?: string;
+  fileHash?: string;
+  startLine?: number;
+  count?: number;
   note?: string;
   source?: string;
 }
@@ -3339,6 +3347,9 @@ export interface GraphHealthSummary {
   componentCount: number;
   detachedComponentCount: number;
   rootNodeCount: number;
+  unresolvedReferenceCount: number;
+  sourceBackedUnresolvedReferenceCount: number;
+  unattributedUnresolvedReferenceCount: number;
   topologyStatusCounts: Partial<Record<GraphHealthTopologyStatus, number>>;
   expectedIsolationReasonCounts: Partial<Record<GraphHealthExpectedIsolationReason, number>>;
   confidenceCounts: Partial<Record<GraphHealthConfidence, number>>;

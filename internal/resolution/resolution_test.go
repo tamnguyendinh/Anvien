@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/parser"
 	"github.com/tamnguyendinh/avmatrix-go/internal/providers/tsjs"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
@@ -498,6 +499,68 @@ func TestResolveMergesDuplicateSemanticEdgesAndCountsUnresolved(t *testing.T) {
 	}
 	if result.Metrics.DuplicateEdgesMerged != 1 || result.Metrics.UnresolvedReferences != 1 {
 		t.Fatalf("unexpected duplicate/unresolved metrics: %#v", result.Metrics)
+	}
+}
+
+func TestResolveAttachesSourceBackedUnresolvedDiagnostics(t *testing.T) {
+	moduleScope := "scope:src/app.ts#1:0-4:1:Module"
+	functionScope := "scope:src/app.ts#1:0-4:1:Function"
+	functionDef := scopeir.DefinitionFact{
+		ID:            "def:src/app.ts#1:0:Function:start",
+		FilePath:      "src/app.ts",
+		Name:          "start",
+		Label:         scopeir.NodeFunction,
+		QualifiedName: "start",
+		Range:         scopeir.Range{StartLine: 1, EndLine: 4},
+	}
+	ir := scopeir.ScopeIR{
+		FilePath:    "src/app.ts",
+		FileHash:    "hash-app",
+		Language:    scanner.TypeScript,
+		ModuleScope: moduleScope,
+		Scopes: []scopeir.ScopeFact{
+			{ID: moduleScope, Kind: scopeir.ScopeModule, FilePath: "src/app.ts", Range: scopeir.Range{StartLine: 1, EndLine: 4}},
+			{ID: functionScope, Parent: &[]string{moduleScope}[0], Kind: scopeir.ScopeFunction, FilePath: "src/app.ts", Range: scopeir.Range{StartLine: 1, EndLine: 4}, OwnedDefIDs: []string{functionDef.ID}, Bindings: []scopeir.BindingFact{{Name: "start", DefID: functionDef.ID, Origin: scopeir.BindingLocal}}},
+		},
+		Definitions: []scopeir.DefinitionFact{functionDef},
+		Calls: []scopeir.CallSiteFact{
+			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "missing", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 3, StartCol: 2}},
+		},
+	}
+
+	result, err := Resolve([]scopeir.ScopeIR{ir}, Options{})
+	if err != nil {
+		t.Fatalf("resolve failed: %v", err)
+	}
+	source := requireNode(t, result.Graph, "Function", "src/app.ts", "start")
+	diagnostics, ok := source.Properties[graphhealth.DiagnosticPropertyKey].([]graphhealth.Diagnostic)
+	if !ok || len(diagnostics) != 1 {
+		t.Fatalf("source diagnostics = %#v", source.Properties[graphhealth.DiagnosticPropertyKey])
+	}
+	diagnostic := diagnostics[0]
+	if diagnostic.Kind != graphhealth.DiagnosticUnresolvedReference ||
+		diagnostic.FactFamily != "call" ||
+		diagnostic.SourceNodeID != source.ID ||
+		diagnostic.TargetText != "missing" ||
+		diagnostic.ResolutionSource != "scope-resolution" ||
+		diagnostic.FilePath != "src/app.ts" ||
+		diagnostic.StartLine != 3 ||
+		diagnostic.Count != 1 {
+		t.Fatalf("unexpected diagnostic: %#v", diagnostic)
+	}
+	if result.Metrics.UnresolvedReferences != 1 ||
+		result.Metrics.UnresolvedReferenceDiagnostics != 1 ||
+		result.Metrics.UnattributedUnresolvedReferences != 0 {
+		t.Fatalf("unexpected unresolved metrics: %#v", result.Metrics)
+	}
+	resolutionMetadata, ok := result.Graph.Metadata["resolution"].(map[string]any)
+	if !ok {
+		t.Fatalf("missing resolution metadata: %#v", result.Graph.Metadata)
+	}
+	if resolutionMetadata["unresolvedReferences"] != 1 ||
+		resolutionMetadata["sourceBackedUnresolvedReferences"] != 1 ||
+		resolutionMetadata["unattributedUnresolvedReferences"] != 0 {
+		t.Fatalf("unexpected resolution metadata: %#v", resolutionMetadata)
 	}
 }
 

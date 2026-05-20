@@ -281,6 +281,47 @@ func BenchmarkWriteGraphSnapshot(b *testing.B) {
 	}
 }
 
+func TestWriteGraphSnapshotPersistsMetadata(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{
+		ID:    "Function:src/app.ts:main",
+		Label: scopeir.NodeFunction,
+		Properties: graph.NodeProperties{
+			"name":     "main",
+			"filePath": "src/app.ts",
+		},
+	})
+	g.Metadata = map[string]any{
+		"resolution": map[string]any{
+			"unresolvedReferences":             2,
+			"sourceBackedUnresolvedReferences": 1,
+			"unattributedUnresolvedReferences": 1,
+		},
+	}
+
+	path := filepath.Join(t.TempDir(), "graph.json")
+	if err := writeGraphSnapshot(path, g); err != nil {
+		t.Fatalf("writeGraphSnapshot() error = %v", err)
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile() error = %v", err)
+	}
+	var got graph.Graph
+	if err := json.Unmarshal(raw, &got); err != nil {
+		t.Fatalf("Unmarshal() error = %v", err)
+	}
+	resolutionMetadata, ok := got.Metadata["resolution"].(map[string]any)
+	if !ok {
+		t.Fatalf("missing resolution metadata: %#v", got.Metadata)
+	}
+	if resolutionMetadata["unresolvedReferences"] != float64(2) ||
+		resolutionMetadata["sourceBackedUnresolvedReferences"] != float64(1) ||
+		resolutionMetadata["unattributedUnresolvedReferences"] != float64(1) {
+		t.Fatalf("unexpected resolution metadata: %#v", resolutionMetadata)
+	}
+}
+
 func TestParseFilesRoutesGoFilesToGoProvider(t *testing.T) {
 	dir := t.TempDir()
 	writeFile(t, dir, "service/service.go", `package service

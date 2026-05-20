@@ -340,6 +340,31 @@ func TestGraphStreamingBatchesFlushes(t *testing.T) {
 	}
 }
 
+func TestGraphNodeForResponseStripsInternalDiagnostics(t *testing.T) {
+	node := graph.Node{
+		ID:    "Function:source",
+		Label: scopeir.NodeFunction,
+		Properties: graph.NodeProperties{
+			"name":                            "source",
+			"content":                         "export function source() {}",
+			graphhealth.DiagnosticPropertyKey: []graphhealth.Diagnostic{{Kind: graphhealth.DiagnosticUnresolvedReference}},
+			"diagnostics":                     []graphhealth.Diagnostic{{Kind: graphhealth.DiagnosticUnresolvedReference}},
+		},
+	}
+
+	stripped := graphNodeForResponse(node, true)
+
+	if _, ok := stripped.Properties["content"]; !ok {
+		t.Fatalf("includeContent=true should keep content: %#v", stripped.Properties)
+	}
+	if _, ok := stripped.Properties[graphhealth.DiagnosticPropertyKey]; ok {
+		t.Fatalf("response should strip internal diagnostics: %#v", stripped.Properties)
+	}
+	if _, ok := stripped.Properties["diagnostics"]; !ok {
+		t.Fatalf("response should keep public diagnostics: %#v", stripped.Properties)
+	}
+}
+
 func TestGraphStreamingKeepsRouteAndToolMetadata(t *testing.T) {
 	g := graph.New()
 	g.AddNode(graph.Node{ID: "Route:/api/graph:GET", Label: scopeir.NodeRoute, Properties: graph.NodeProperties{

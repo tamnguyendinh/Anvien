@@ -312,7 +312,7 @@ Interpretation:
 
 - Raw all-relationship counts are not suitable as the orphan/dead-code denominator because `DEFINES` and container/ownership edges give code nodes incoming edges.
 - The provisional policy is not final product behavior. It is recorded only to prove why Phase 1 must define a counted-edge policy before implementation.
-- Representative cross-repo baseline remains pending until Phase 1 records selection criteria.
+- Representative cross-repo baseline was pending at this initial baseline stage; E5/B0 later records the selection criteria and `Restaurant_manager` measurement.
 
 ## E6 - Phase 2/3 Backend Graph-Health Derivation Slice
 
@@ -326,7 +326,7 @@ Scope:
 - Emit per-node graph-health metadata in HTTP graph JSON and NDJSON node records.
 - Emit graph-health summary in non-stream `/api/graph` JSON response.
 - Generate explicit Web contract types for Graph Health metadata without adding Web UI filters yet.
-- Leave detached-component traversal, source-backed unresolved diagnostics, node/component explain endpoint, and Web filter UI for later phases.
+- At the time of this slice, detached-component traversal, source-backed unresolved diagnostics, node/component explain endpoint, and Web filter UI were left for later phases.
 
 AVmatrix refresh and impact commands:
 
@@ -418,7 +418,7 @@ Scope:
 - Implement P2-D detached-component grouping in `internal/graphhealth`.
 - Preserve existing graph API and NDJSON record shapes.
 - Expose component fields through generated Web contract types.
-- Keep P2-E unresolved-reference diagnostics and P3-C/P3-D explain/report endpoints pending.
+- At the time of this slice, keep P2-E unresolved-reference diagnostics and P3-C/P3-D explain/report endpoints pending.
 
 AVmatrix refresh and impact commands:
 
@@ -491,4 +491,108 @@ Benchmark note:
 
 Conclusion:
 
-P2-D is complete for backend derivation and generated contract shape. P2-E diagnostics remain the next backend gap before explain/report or Web filter phases should be treated as complete.
+P2-D is complete for backend derivation and generated contract shape. At this point P2-E diagnostics remained the next backend gap; E8 later closes that diagnostics gap.
+
+## E8 - Phase 2 Source-Backed Unresolved Diagnostics Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Implement P2-E source-backed `unresolved_reference` diagnostics.
+- Preserve unresolved-reference counts in Graph Health summaries even when diagnostics are not attached to a node.
+- Classify nodes with source-backed unresolved diagnostics as `unknown_connectivity` with `unknown` confidence.
+- Aggregate repeated diagnostics to keep HTTP graph payload growth bounded.
+- Strip the internal raw diagnostic storage property from public graph JSON and NDJSON responses.
+
+AVmatrix refresh and impact commands:
+
+```powershell
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix impact Graph --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact Metrics --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact ResolveBoundInto --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact resolveCall --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact resolveAccess --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact resolveTypeAnnotation --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact workspace --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact resolveHeritage --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact ComputeSummary --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact Summary --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact Diagnostic --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact writeGraphSnapshotJSON --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact graphNodeForResponse --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- Multiple targets reported CRITICAL blast radius because the slice touches graph serialization, resolution metrics, API graph responses, and generated Web contracts.
+- User was warned before editing affected implementation symbols.
+- Mitigation: diagnostics are source-backed only, the internal raw diagnostic property is stripped from HTTP responses, public diagnostics are aggregated, focused tests were added at each touched boundary, and generated contracts were checked.
+
+Changed files:
+
+- `internal/graph/types.go`
+- `internal/analyze/analyze.go`
+- `internal/analyze/analyze_test.go`
+- `internal/graphhealth/diagnostics.go`
+- `internal/graphhealth/compute.go`
+- `internal/graphhealth/compute_test.go`
+- `internal/graphhealth/policy.go`
+- `internal/resolution/types.go`
+- `internal/resolution/indexes.go`
+- `internal/resolution/resolve.go`
+- `internal/resolution/emit.go`
+- `internal/resolution/resolution_test.go`
+- `internal/httpapi/graph.go`
+- `internal/httpapi/handlers_test.go`
+- `internal/contracts/web_ui.go`
+- `avmatrix-web/src/generated/avmatrix-contracts.ts`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- `graph.Graph` now supports optional snapshot metadata so analyzer output can persist unresolved-reference counters.
+- `writeGraphSnapshotJSON` preserves graph metadata, with a regression test for snapshot persistence.
+- `graphhealth.Diagnostic` now carries source node, fact family, target text, resolution source, file/path evidence, line, count, note, and source metadata.
+- Raw source diagnostics are stored under internal node property `graphHealthDiagnostics`; public `diagnostics` are aggregated by kind, fact family, source node, resolution source, file, and note.
+- `Summary` now exposes `unresolvedReferenceCount`, `sourceBackedUnresolvedReferenceCount`, and `unattributedUnresolvedReferenceCount`.
+- Resolution emits diagnostics for unresolved calls, accesses, type annotations, and heritage facts when a source node or file node is available.
+- Existing unresolved counters are not double-counted for heritage facts already counted during cross-file binding.
+- Nodes with unresolved diagnostics become `unknown_connectivity` and `unknown` confidence; diagnostic occurrence counts use the aggregated `count` value.
+- HTTP graph responses strip `graphHealthDiagnostics` from public JSON/NDJSON node properties while preserving public `diagnostics`.
+- Initial non-aggregated output produced 49,561 public diagnostic records and an excessive payload; aggregation reduced public diagnostic records to 8,756 while preserving 49,576 diagnostic occurrences.
+
+Validation commands and results:
+
+```powershell
+go test ./internal/graphhealth
+go test ./internal/resolution ./internal/analyze ./internal/httpapi ./internal/contracts
+go run .\cmd\generate-web-contracts --check
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+npm --prefix avmatrix-web run build
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p2e-unresolved-diagnostics-benchmark.json --benchmark-label p2e-unresolved-diagnostics
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
+```
+
+Results:
+
+- Focused graphhealth/resolution/analyze/httpapi/contracts tests passed.
+- Applicable Go build passed for `./cmd/... ./internal/...`.
+- Applicable Go test suite passed for `./cmd/... ./internal/...`.
+- Generated Web contract check passed.
+- Web production build passed; Vite reported the existing chunk-size/dynamic-import warnings only.
+- Benchmark analyze passed with `files: scanned=707 parsed=534 unsupported=173 failed=0`, `graph: nodes=21388 relationships=53228`.
+- P2-E graph-health summary measured `unresolvedReferenceCount=49576`, `sourceBackedUnresolvedReferenceCount=49576`, `unattributedUnresolvedReferenceCount=0`, `unknown_connectivity=4301`, `diagnosticCounts.unresolved_reference=49576`, and `diagnosticRecords=8756`.
+- Final pre-commit AVmatrix refresh passed with `files: scanned=707 parsed=534 unsupported=173 failed=0`, `graph: nodes=21390 relationships=53246`.
+- `detect-changes` passed and reported `risk_level=critical`, `changed_files=19`, `changed_count=138`, `affected_count=54`. The affected processes were expected resolution, graph-health, and graph API flows, including `ResolveAccess`, `ResolveTypeAnnotation`, `ResolveBoundInto`, `ResolveHeritage`, `EmitUnresolvedHeritageDiagnostics`, `HandleGraph -> ComputeSummary`, `HandleGraph -> GraphNodeForResponse`, and `RunAccessCandidateAudit`.
+
+Conclusion:
+
+P2-E is complete for source-backed unresolved diagnostics and summary counts. Remaining backend gap in P2 is P2-F exhaustive matrix coverage across every topology/status/reason combination; P3-C/P3-D explain/report endpoints and Web UI filter work remain open.

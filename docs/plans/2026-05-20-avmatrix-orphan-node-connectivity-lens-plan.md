@@ -158,7 +158,7 @@ The following baseline must be measured before implementation claims:
 - compatibility impact on existing property-access `orphanStatus` output.
 - graph source timestamp or hash and exact count commands/scripts sufficient to reproduce every baseline row.
 
-Initial `E:\AVmatrix-GO` codebase-reviewed baseline measurements are recorded in the benchmark ledger. They are not yet the final accepted orphan definition because Phase 1 still has to close the counted-edge and expected-isolated policies, and representative cross-repo baselines remain pending selection criteria.
+Initial `E:\AVmatrix-GO` codebase-reviewed baseline measurements are recorded in the benchmark ledger. Phase 1 later locked the counted-edge and expected-isolated policies, selected `Restaurant_manager` as the representative cross-repo baseline, and recorded accepted-policy counts before implementation.
 
 ## Codebase Findings Before Implementation
 
@@ -219,14 +219,16 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 
 **Slice 2026-05-20:** backend/API/contract derivation implemented for counted-edge topology, expected-isolated overlays, confidence, excluded structural counts, JSON summary, NDJSON node metadata, and generated Web contract types.
 
-**Detached-component slice 2026-05-20:** backend derivation now computes weak counted-edge components, accepted root surfaces, directed root reachability, per-node component metadata, and largest detached component summaries. Source-backed unresolved diagnostics remain intentionally pending.
+**Detached-component slice 2026-05-20:** backend derivation now computes weak counted-edge components, accepted root surfaces, directed root reachability, per-node component metadata, and largest detached component summaries.
+
+**Unresolved-diagnostics slice 2026-05-20:** resolution now emits source-backed `unresolved_reference` diagnostics only when a source node can be identified, preserves unresolved counts in graph metadata, classifies diagnostic-backed nodes as `unknown_connectivity`, aggregates repeated diagnostics for payload control, and strips the internal raw diagnostic property from HTTP graph payloads.
 
 - [x] [P2-A] Identify the graph data boundary that should own derived graph-health metadata: graph package, analyzer output, HTTP graph payload, contract layer, or Web-only derived state. Decision implemented as `internal/graphhealth` core derivation consumed by HTTP/API and contracts.
 - [x] [P2-B] Implement deterministic connectivity summary generation using the Phase 1 edge policy.
 - [x] [P2-C] Add per-node derived metadata for topology status, counted incoming/outgoing counts, excluded edge counts by category, expected-isolated reasons, diagnostics, and confidence.
 - [x] [P2-D] Add detached-component grouping and component-level explanations using explicit root/path traversal rules from Phase 1.
-- [ ] [P2-E] Add unresolved-reference diagnostics only where source/resolution evidence exists; otherwise preserve unresolved counts in summaries and classify affected topology as `unknown_connectivity`.
-- [ ] [P2-F] Add unit tests for every topology status, expected-isolated overlay reason, diagnostics rule, confidence rule, and exclusion rule. Current slices cover counted connectivity, confidence modifiers, structural exclusions, and detached components; source-backed diagnostics tests remain pending with P2-E.
+- [x] [P2-E] Add unresolved-reference diagnostics only where source/resolution evidence exists; otherwise preserve unresolved counts in summaries and classify affected topology as `unknown_connectivity`.
+- [ ] [P2-F] Add unit tests for every topology status, expected-isolated overlay reason, diagnostics rule, confidence rule, and exclusion rule. Current slices cover counted connectivity, confidence modifiers, structural exclusions, detached components, source-backed unresolved diagnostics, diagnostic aggregation, and decoded persisted diagnostic normalization; remaining gap is exhaustive coverage across every overlay reason/status combination.
 
 ## Phase 3 - Contract, API, and Reporting Surface
 
@@ -281,11 +283,11 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 | ID | Area | Scope | Target | Benchmark | Evidence | Commit | Status |
 |---|---|---|---|---|---|---|---|
 | P1-A1..P1-I | Policy | edge policy, expected-isolated policy, root rules, metadata ownership, taxonomy, baseline, cross-repo criteria | no ambiguous orphan claims; all major decisions recorded | 2026-05-20 (E5 + B0) | 2026-05-20 python + source + MCP queries | 2026-05-20 (doc-only) | closed |
-| P2-A..P2-F | Backend | derived graph-health metadata | deterministic status and reasons | B1 implementation counts | E6/E7 implementation validation | current implementation slices | partially closed; P2-E/F remain open |
+| P2-A..P2-F | Backend | derived graph-health metadata | deterministic status and reasons | B1 implementation counts | E6/E7/E8 implementation validation | current implementation slices | partially closed; P2-A..P2-E closed, P2-F remains open |
 | P3-A..P3-E | Contract/API | consumer surface | stable explicit status fields | B1 payload size | E6 implementation validation | current implementation slice | partially closed; P3-C/D remain open |
 | P4-A..P4-I | Web UI | graph-health filters + composition | separate filters, explanations, and safe composition with existing filters | pending | pending | pending | open |
 | P5-A..P5-D | Workflow | triage/reporting | candidate-vs-confirmed workflow | pending | pending | pending | open |
-| P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | B1 | E6 | current implementation slice | partially closed; Web filter e2e remains open |
+| P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | B1 | E6/E7/E8 | current implementation slices | partially closed; applicable backend/Web-contract validation passed, Web filter e2e remains open |
 | P7-A..P7-E | Closure | ledgers and commits | complete closure package | pending | pending | pending | open |
 
 ## Definition Of Done

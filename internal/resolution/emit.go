@@ -6,6 +6,7 @@ import (
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/frameworks"
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
 )
 
@@ -74,6 +75,29 @@ func (e *emitter) emitReference(source defRef, target defRef, reference Referenc
 		relationship.Step = &step
 	}
 	e.emitRelationship(relationship)
+}
+
+func (e *emitter) emitUnresolvedReference(source defRef, factFamily string, targetText string, filePath string, fileHash string, factRange scopeir.Range, note string, incrementMetric bool) {
+	if incrementMetric {
+		e.metrics.UnresolvedReferences++
+	}
+	diagnostic := graphhealth.Diagnostic{
+		Kind:             graphhealth.DiagnosticUnresolvedReference,
+		FactFamily:       factFamily,
+		SourceNodeID:     source.GraphID,
+		TargetText:       targetText,
+		ResolutionSource: e.sourceLabel,
+		FilePath:         cleanPath(filePath),
+		FileHash:         fileHash,
+		StartLine:        factRange.StartLine,
+		Note:             note,
+		Source:           e.sourceLabel,
+	}
+	if graphhealth.AppendDiagnosticToNode(e.graph, source.GraphID, diagnostic) {
+		e.metrics.UnresolvedReferenceDiagnostics++
+		return
+	}
+	e.metrics.UnattributedUnresolvedReferences++
 }
 
 func emitDefinitionNodes(w *workspace, e *emitter) {

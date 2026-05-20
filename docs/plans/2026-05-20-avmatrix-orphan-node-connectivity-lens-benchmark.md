@@ -78,7 +78,7 @@ Required repos:
 | Repo | Required | Status |
 |---|---|---|
 | `E:\AVmatrix-GO` | yes | initial measured |
-| Representative indexed repo set | yes, when criteria are recorded and repos are available | pending |
+| Representative indexed repo set | yes, when criteria are recorded and repos are available | criteria recorded; `Restaurant_manager` selected and measured |
 
 Required baseline inventory:
 
@@ -88,7 +88,7 @@ Required baseline inventory:
 | Raw relationship count | `52,302` | measured from graph payload |
 | Semantic node labels | recorded below | count by label |
 | Relationship types | recorded below | count by type |
-| Counted edge policy version | raw-all and provisional non-structural | final accepted policy remains Phase 1 |
+| Counted edge policy version | raw-all, provisional non-structural, and accepted non-structural policy | accepted policy recorded above |
 | Nodes with zero raw incoming edges | `20` | all relationship types counted |
 | Nodes with zero raw outgoing edges | `15,216` | all relationship types counted |
 | Nodes with zero raw incoming and outgoing edges | `8` | all relationship types counted |
@@ -102,18 +102,18 @@ Required baseline inventory:
 | Callable-flow zero incoming | `1,587 / 4,242` | counted types: `CALLS`, `HANDLES_ROUTE`, `HANDLES_TOOL`, `ENTRY_POINT_OF`, `STEP_IN_PROCESS` |
 | Callable-flow zero outgoing | `1,323 / 4,242` | counted types: `CALLS`, `HANDLES_ROUTE`, `HANDLES_TOOL`, `ENTRY_POINT_OF`, `STEP_IN_PROCESS` |
 | Callable-flow zero-both | `264 / 4,242` | counted types: `CALLS`, `HANDLES_ROUTE`, `HANDLES_TOOL`, `ENTRY_POINT_OF`, `STEP_IN_PROCESS` |
-| Detached components | pending | requires accepted root/entry policy |
-| Unresolved references | pending | only if source/resolution evidence exists |
-| Unknown connectivity | pending | insufficient evidence |
+| Detached components | measured in B1 | requires accepted root/entry policy |
+| Unresolved references | measured in B1/P2-E | only source-backed diagnostics become node diagnostics |
+| Unknown connectivity | measured in B1/P2-E | source-backed unresolved diagnostics move affected nodes to unknown |
 
 Representative indexed repo baseline:
 
 | Requirement | Status |
 |---|---|
-| Selection criteria | pending in Phase 1 |
-| Selected repo list | pending |
-| Raw/provisional counts | pending |
-| Accepted-policy counts | pending |
+| Selection criteria | recorded in Phase 1 |
+| Selected repo list | `Restaurant_manager` selected |
+| Raw/provisional counts | recorded above |
+| Accepted-policy counts | recorded above |
 
 Top node labels:
 
@@ -132,22 +132,26 @@ Initial benchmark interpretation:
 - Raw all-relationship connectivity is not sufficient for orphan/dead-code triage because structural edges such as `DEFINES`, `CONTAINS`, `HAS_METHOD`, `HAS_PROPERTY`, and `MEMBER_OF` dominate incoming connectivity.
 - The large difference between raw-all and provisional non-structural counts is the concrete reason Phase 1 cannot be skipped.
 - The provisional policy numbers are evidence for planning only; they are not accepted product behavior.
-- Cross-repo measurements remain pending until Phase 1 defines representative selection criteria.
+- Representative `Restaurant_manager` measurements are recorded; re-run on future index updates is recommended.
 
 ## B1 - Implementation Benchmark
 
-Status: Phase 2/3 backend/API/contract slice recorded 2026-05-20
+Status: Phase 2/3 backend/API/contract slices recorded through P2-E on 2026-05-20
 
 Source:
 
 - Repo: `E:\AVmatrix-GO`
 - Graph: `.avmatrix/graph.json`
-- Refresh command: `go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats`
-- Refresh result: `nodes=21323 relationships=52940`
-- Measurement code: temporary Go runner inside repo root importing `internal/graph` and `internal/graphhealth`, loading `.avmatrix/graph.json`, calling `graphhealth.ComputeSummary(&g)`, then removing the temporary runner.
 - Policy version: `graph-health-non-structural-v1`
+- P2-D refresh command: `go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats`
+- P2-D refresh result: `nodes=21323 relationships=52940`
+- P2-E refresh command: `go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p2e-unresolved-diagnostics-benchmark.json --benchmark-label p2e-unresolved-diagnostics`
+- P2-E refresh result: `files: scanned=707 parsed=534 unsupported=173 failed=0`; `graph: nodes=21388 relationships=53228`
+- Measurement code: temporary Go runner inside repo root importing `internal/graph` and `internal/graphhealth`, loading `.avmatrix/graph.json`, calling `graphhealth.ComputeSummary(&g)`, measuring content-stripped graph payload size before/after public Graph Health metadata, then removing the temporary runner.
 
-Implementation summary output:
+### P2-D Detached-Component Output
+
+This historical slice output is kept to show the before-diagnostics component traversal measurement.
 
 ```text
 runtime_ms=181.027
@@ -183,33 +187,88 @@ excludedEdgeCounts.structural=26909
 diagnosticCounts={}
 ```
 
+### P2-E Source-Backed Unresolved Diagnostics Output
+
+```text
+runtime_ms=182.586
+graph_snapshot_bytes=41745701
+base_payload_bytes=37175228
+annotated_payload_bytes=46975939
+delta_bytes=9800711
+delta_percent=26.36
+
+nodeCount=21388
+relationshipCount=53228
+countedRelationshipCount=26201
+componentCount=14031
+detachedComponentCount=48
+rootNodeCount=797
+
+unresolvedReferenceCount=49576
+sourceBackedUnresolvedReferenceCount=49576
+unattributedUnresolvedReferenceCount=0
+
+topologyStatusCounts:
+  connected=602
+  true_isolated=13812
+  no_incoming=163
+  no_outgoing=2451
+  detached_component=59
+  unknown_connectivity=4301
+
+expectedIsolationReasonCounts:
+  documentation=1258
+  framework_entry=797
+  test=5793
+
+confidenceCounts:
+  candidate=10997
+  expected=6090
+  unknown=4301
+  confirmed=0
+
+diagnosticCounts:
+  unresolved_reference=49576
+
+excludedEdgeCounts:
+  structural=27027
+
+diagnosticRecords=8756
+```
+
 Notes:
 
-- `detached_component` now represents nodes inside weak counted-edge components that have internal counted edges but no accepted root reachability.
-- `diagnosticCounts={}` is expected because P2-E source-backed unresolved diagnostics remain pending.
-- Payload size compares a content-stripped graph JSON payload before and after adding per-node Graph Health metadata plus top-level summary. NDJSON stream did not add a new summary record, so stream shape remains `node`/`relationship`.
+- `detached_component` represents nodes inside weak counted-edge components that have internal counted edges but no accepted root reachability.
+- P2-E changes many candidate statuses to `unknown_connectivity` only when source-backed unresolved diagnostics exist on the node.
+- `diagnosticCounts.unresolved_reference=49576` counts diagnostic occurrences after aggregation, not the number of serialized diagnostic records.
+- Public diagnostics are aggregated into 8,756 records; the first non-aggregated attempt produced 49,561 records and an excessive payload, so aggregation is the accepted implementation.
+- Payload size compares a content-stripped API-like graph JSON payload before and after adding public per-node Graph Health metadata plus top-level summary. The internal raw `graphHealthDiagnostics` node property is stripped from HTTP JSON/NDJSON responses.
 - Component root IDs are not repeated per node; they are reserved for component summaries to avoid excessive payload growth.
 
-| Metric | Baseline | After implementation | Delta | Interpretation |
+| Metric | Baseline | After P2-E | Delta | Interpretation |
 |---|---:|---:|---:|---|
-| Graph-health summary runtime | n/a | `181.027ms` | n/a | measured server-side derivation on current `E:\AVmatrix-GO` graph with component traversal |
-| Graph payload size | `28,415,767 bytes` | `39,167,950 bytes` | `+10,752,183 bytes` (`+37.84%`) | content-stripped JSON payload with metadata embedded |
+| Graph-health summary runtime | n/a | `182.586ms` | n/a | measured server-side derivation on current `E:\AVmatrix-GO` graph with component traversal and diagnostic aggregation |
+| Graph payload size | `37,175,228 bytes` | `46,975,939 bytes` | `+9,800,711 bytes` (`+26.36%`) | content-stripped JSON payload with public metadata embedded and internal raw diagnostics stripped |
 | Web graph filter render latency | pending | pending | pending | only if Web filter implementation changes rendering |
-| `true_isolated` count | pending | `13,956` | pending | measured by `ComputeSummary`; includes expected/candidate overlay separation |
-| `no_incoming` count | pending | `1,671` | pending | measured by `ComputeSummary` |
-| `no_outgoing` count | pending | `2,958` | pending | measured by `ComputeSummary`; low-priority triage by policy |
-| `connected` count | pending | `2,581` | pending | measured by `ComputeSummary` |
-| `detached_component` node count | pending | `157` | pending | measured by component traversal |
+| `true_isolated` count | pending | `13,812` | pending | measured by `ComputeSummary`; includes expected/candidate overlay separation |
+| `no_incoming` count | pending | `163` | pending | measured by `ComputeSummary` after source-backed unresolved nodes move to unknown |
+| `no_outgoing` count | pending | `2,451` | pending | measured by `ComputeSummary`; low-priority triage by policy |
+| `connected` count | pending | `602` | pending | measured by `ComputeSummary` |
+| `detached_component` node count | pending | `59` | pending | measured by component traversal after source-backed unresolved nodes move to unknown |
 | Detached component count | pending | `48` | pending | measured by component traversal |
-| Component count | pending | `14,006` | pending | measured by component traversal |
-| Root node count | pending | `798` | pending | accepted roots used for directed reachability |
-| `unknown_connectivity` count | pending | `0` | pending | placeholder until P2-E unresolved diagnostics is implemented |
-| Expected-isolated reason count: `test` | pending | `5,780` | pending | measured by `ComputeSummary` |
+| Component count | pending | `14,031` | pending | measured by component traversal |
+| Root node count | pending | `797` | pending | accepted roots used for directed reachability |
+| `unknown_connectivity` count | pending | `4,301` | pending | nodes with source-backed unresolved diagnostics |
+| Expected-isolated reason count: `test` | pending | `5,793` | pending | measured by `ComputeSummary` |
 | Expected-isolated reason count: `documentation` | pending | `1,258` | pending | measured by `ComputeSummary` |
-| Expected-isolated reason count: `framework_entry` | pending | `798` | pending | measured by accepted root policy |
-| Confidence count: `candidate` | pending | `13,487` | pending | measured by `ComputeSummary`; not a bug/deletion verdict |
-| Confidence count: `expected` | pending | `7,836` | pending | measured by `ComputeSummary` |
-| Diagnostic count | pending | `{}` | pending | source-backed unresolved diagnostics not implemented in this slice |
+| Expected-isolated reason count: `framework_entry` | pending | `797` | pending | measured by accepted root policy |
+| Confidence count: `candidate` | pending | `10,997` | pending | measured by `ComputeSummary`; not a bug/deletion verdict |
+| Confidence count: `expected` | pending | `6,090` | pending | measured by `ComputeSummary` |
+| Confidence count: `unknown` | pending | `4,301` | pending | source-backed unresolved diagnostics |
+| Diagnostic occurrence count: `unresolved_reference` | pending | `49,576` | pending | source-backed unresolved diagnostics emitted by resolution and counted via aggregated `count` |
+| Diagnostic record count | pending | `8,756` | pending | serialized aggregated records, not occurrences |
+| Source-backed unresolved references | pending | `49,576` | pending | all unresolved references in this snapshot had source-node or file-node evidence |
+| Unattributed unresolved references | pending | `0` | pending | no unresolved references lacked attachable source evidence in this snapshot |
 
 ## B2 - Final Benchmark
 

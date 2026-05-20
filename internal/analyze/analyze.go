@@ -646,8 +646,44 @@ func writeGraphSnapshotJSON(writer *bufio.Writer, graph *graph.Graph) error {
 	if err := writeGraphSnapshotArray(writer, graph.Relationships, "    ", "  "); err != nil {
 		return err
 	}
+	if len(graph.Metadata) > 0 {
+		if _, err := writer.WriteString(",\n  \"metadata\": "); err != nil {
+			return err
+		}
+		if err := writeIndentedJSONFieldValue(writer, graph.Metadata, "  "); err != nil {
+			return err
+		}
+	}
 	_, err := writer.WriteString("\n}\n")
 	return err
+}
+
+func writeIndentedJSONFieldValue(writer *bufio.Writer, value any, continuationPrefix string) error {
+	raw, err := json.MarshalIndent(value, "", "  ")
+	if err != nil {
+		return err
+	}
+	start := 0
+	for index, char := range raw {
+		if char != '\n' {
+			continue
+		}
+		if _, err := writer.Write(raw[start : index+1]); err != nil {
+			return err
+		}
+		start = index + 1
+		if start < len(raw) {
+			if _, err := writer.WriteString(continuationPrefix); err != nil {
+				return err
+			}
+		}
+	}
+	if start < len(raw) {
+		if _, err := writer.Write(raw[start:]); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func writeGraphSnapshotArray[T any](writer *bufio.Writer, values []T, itemPrefix string, closingPrefix string) error {

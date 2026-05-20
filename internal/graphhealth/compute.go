@@ -26,6 +26,12 @@ func ComputeSummary(g *graph.Graph) Summary {
 		return summary
 	}
 	summary.NodeCount = len(g.Nodes)
+	metadataUnresolved, metadataSourceBacked, metadataUnattributed, hasResolutionMetadata := resolutionMetadata(g)
+	if hasResolutionMetadata {
+		summary.UnresolvedReferenceCount = metadataUnresolved
+		summary.SourceBackedUnresolvedReferenceCount = metadataSourceBacked
+		summary.UnattributedUnresolvedReferenceCount = metadataUnattributed
+	}
 
 	// 1. Build counted degree maps using only IsCounted relationships.
 	nodeIDs := make([]string, 0, len(g.Nodes))
@@ -135,9 +141,13 @@ func ComputeSummary(g *graph.Graph) Summary {
 			reasons = appendReason(reasons, ReasonFrameworkEntry)
 		}
 		component := components[componentByNode[n.ID]]
+		diagnostics := diagnosticsFromProperties(n.Properties)
+		hasUnresolvedDiagnostic := hasDiagnosticKind(diagnostics, DiagnosticUnresolvedReference)
 
 		var status TopologyStatus
 		switch {
+		case hasUnresolvedDiagnostic:
+			status = TopologyUnknown
 		case component.Detached:
 			status = TopologyDetached
 		case in > 0 && out > 0:
@@ -169,6 +179,7 @@ func ComputeSummary(g *graph.Graph) Summary {
 			ComponentSize:              component.NodeCount,
 			ComponentReachableFromRoot: component.ReachableFromRoot,
 			ExpectedIsolationReasons:   reasons,
+			Diagnostics:                diagnostics,
 			Confidence:                 conf,
 		}
 		// Attach for consumers (flat + structured for easy access)
@@ -188,13 +199,27 @@ func ComputeSummary(g *graph.Graph) Summary {
 		n.Properties["componentReachableFromRoot"] = health.ComponentReachableFromRoot
 		delete(n.Properties, "componentRootNodeIds")
 		n.Properties["expectedIsolationReasons"] = health.ExpectedIsolationReasons
+		if len(health.Diagnostics) > 0 {
+			n.Properties["diagnostics"] = health.Diagnostics
+		} else {
+			delete(n.Properties, "diagnostics")
+		}
 		n.Properties["confidence"] = health.Confidence
 		// Also embed full for typed consumers
 		n.Properties["graphHealth"] = health
 		addNodeHealthToSummary(&summary, health)
 	}
 
-	// P2-E unresolved diagnostics are deferred until source/resolution evidence is available.
+	sourceBackedFromDiagnostics := summary.DiagnosticCounts[DiagnosticUnresolvedReference]
+	if sourceBackedFromDiagnostics > summary.SourceBackedUnresolvedReferenceCount {
+		summary.SourceBackedUnresolvedReferenceCount = sourceBackedFromDiagnostics
+	}
+	if summary.UnresolvedReferenceCount < summary.SourceBackedUnresolvedReferenceCount {
+		summary.UnresolvedReferenceCount = summary.SourceBackedUnresolvedReferenceCount
+	}
+	if summary.UnresolvedReferenceCount >= summary.SourceBackedUnresolvedReferenceCount {
+		summary.UnattributedUnresolvedReferenceCount = summary.UnresolvedReferenceCount - summary.SourceBackedUnresolvedReferenceCount
+	}
 	return summary
 }
 
@@ -228,8 +253,17 @@ func addNodeHealthToSummary(summary *Summary, health NodeHealth) {
 		if diagnostic.Kind == "" {
 			continue
 		}
-		summary.DiagnosticCounts[diagnostic.Kind]++
+		summary.DiagnosticCounts[diagnostic.Kind] += diagnosticCount(diagnostic)
 	}
+}
+
+func hasDiagnosticKind(diagnostics []Diagnostic, kind string) bool {
+	for _, diagnostic := range diagnostics {
+		if diagnostic.Kind == kind {
+			return true
+		}
+	}
+	return false
 }
 
 type componentInfo struct {

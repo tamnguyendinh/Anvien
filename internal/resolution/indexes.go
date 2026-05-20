@@ -56,14 +56,15 @@ type workspace struct {
 	defsByFile map[string][]defRef
 	defsByName map[string][]defRef
 
-	scopeBindings      map[string]map[string][]bindingRef
-	typeBindings       map[string]map[string][]scopeir.TypeRef
-	ownerMembers       map[string]map[string][]defRef
-	imports            []resolvedImport
-	importsByReceiver  map[importReceiverKey][]int
-	heritage           []heritageResolution
-	heritageFacts      int
-	unresolvedHeritage int
+	scopeBindings           map[string]map[string][]bindingRef
+	typeBindings            map[string]map[string][]scopeir.TypeRef
+	ownerMembers            map[string]map[string][]defRef
+	imports                 []resolvedImport
+	importsByReceiver       map[importReceiverKey][]int
+	heritage                []heritageResolution
+	heritageFacts           int
+	unresolvedHeritage      int
+	unresolvedHeritageFacts []scopeir.HeritageFact
 
 	bindingAccumulator *bindingAccumulator
 }
@@ -71,23 +72,24 @@ type workspace struct {
 func buildWorkspace(files []scopeir.ScopeIR) (*workspace, error) {
 	size := measureWorkspace(files)
 	w := &workspace{
-		files:              make([]scopeir.ScopeIR, 0, size.files),
-		fileSet:            make(map[string]struct{}, size.files),
-		fileHashes:         make(map[string]string, size.files),
-		fileLanguages:      make(map[string]scanner.Language, size.files),
-		moduleScopeByFile:  make(map[string]string, size.files),
-		scopes:             make(map[string]scopeir.ScopeFact, size.scopes),
-		defsByID:           make(map[string]defRef, size.definitions),
-		scopeByDef:         make(map[string]string, size.ownedDefs),
-		defsByFile:         make(map[string][]defRef, size.files),
-		defsByName:         make(map[string][]defRef, size.definitions*2),
-		scopeBindings:      make(map[string]map[string][]bindingRef, size.scopes),
-		typeBindings:       make(map[string]map[string][]scopeir.TypeRef, size.scopes),
-		ownerMembers:       make(map[string]map[string][]defRef, size.definitions),
-		imports:            make([]resolvedImport, 0, size.imports),
-		importsByReceiver:  make(map[importReceiverKey][]int, size.imports),
-		heritage:           make([]heritageResolution, 0, size.heritage),
-		bindingAccumulator: newBindingAccumulator(),
+		files:                   make([]scopeir.ScopeIR, 0, size.files),
+		fileSet:                 make(map[string]struct{}, size.files),
+		fileHashes:              make(map[string]string, size.files),
+		fileLanguages:           make(map[string]scanner.Language, size.files),
+		moduleScopeByFile:       make(map[string]string, size.files),
+		scopes:                  make(map[string]scopeir.ScopeFact, size.scopes),
+		defsByID:                make(map[string]defRef, size.definitions),
+		scopeByDef:              make(map[string]string, size.ownedDefs),
+		defsByFile:              make(map[string][]defRef, size.files),
+		defsByName:              make(map[string][]defRef, size.definitions*2),
+		scopeBindings:           make(map[string]map[string][]bindingRef, size.scopes),
+		typeBindings:            make(map[string]map[string][]scopeir.TypeRef, size.scopes),
+		ownerMembers:            make(map[string]map[string][]defRef, size.definitions),
+		imports:                 make([]resolvedImport, 0, size.imports),
+		importsByReceiver:       make(map[importReceiverKey][]int, size.imports),
+		heritage:                make([]heritageResolution, 0, size.heritage),
+		unresolvedHeritageFacts: make([]scopeir.HeritageFact, 0, size.heritage),
+		bindingAccumulator:      newBindingAccumulator(),
 	}
 
 	for _, input := range files {
@@ -318,7 +320,7 @@ func (w *workspace) resolveHeritage() {
 			w.heritageFacts++
 			owner, ok := w.ownerForScope(item.InScope, dispatchOwnerLabels())
 			if !ok {
-				w.unresolvedHeritage++
+				w.recordUnresolvedHeritage(item)
 				continue
 			}
 			targetLabels := dispatchOwnerLabels()
@@ -327,7 +329,7 @@ func (w *workspace) resolveHeritage() {
 			}
 			targetName := baseTypeName(item.Name)
 			if targetName == "" {
-				w.unresolvedHeritage++
+				w.recordUnresolvedHeritage(item)
 				continue
 			}
 			target, ok := w.resolveName(targetName, item.InScope, targetLabels)
@@ -336,7 +338,7 @@ func (w *workspace) resolveHeritage() {
 			}
 			if !ok || target.Fact.ID == owner.Fact.ID {
 				if !ok {
-					w.unresolvedHeritage++
+					w.recordUnresolvedHeritage(item)
 				}
 				continue
 			}
@@ -347,6 +349,11 @@ func (w *workspace) resolveHeritage() {
 			})
 		}
 	}
+}
+
+func (w *workspace) recordUnresolvedHeritage(item scopeir.HeritageFact) {
+	w.unresolvedHeritage++
+	w.unresolvedHeritageFacts = append(w.unresolvedHeritageFacts, item)
 }
 
 func (w *workspace) resolveImportFiles(language scanner.Language, sourceFile string, targetRaw string) []string {
