@@ -478,6 +478,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       const sigma = sigmaRef.current;
       if (!sigma) return;
 
+      setIsLayoutRunning(false);
       graphRef.current = newGraph;
       const selectedContext = buildSelectedGraphContext(newGraph, null);
       selectedNeighborNodeIdsRef.current = selectedContext.neighborNodeIds;
@@ -534,7 +535,6 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
     const graph = graphRef.current;
     if (!graph || graph.order === 0) return;
     const startedAt = performance.now();
-    setIsLayoutRunning(true);
     applyFilterBasedClusteredLayout(graph);
     sigmaRef.current?.refresh();
     const finishedAt = performance.now();
@@ -543,7 +543,6 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       startedAt,
       finishedAt,
     });
-    setIsLayoutRunning(false);
   }, []);
 
   const stopLayout = useCallback(() => {

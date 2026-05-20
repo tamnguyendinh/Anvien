@@ -129,7 +129,7 @@ function mockReadySessionStatus(page: Page) {
 }
 
 test.describe("Shell interactions", () => {
-  test("back button returns to the launcher start screen without reconnect banner", async ({
+  test("back button targets the launcher start screen without reconnect banner", async ({
     page,
   }) => {
     await waitForGraphLoaded(page);
@@ -137,11 +137,6 @@ test.describe("Shell interactions", () => {
     await page.getByLabel("Back to Start screen").click();
 
     await expect(page).toHaveURL(/\/Start-AVmatrix\.html$/);
-    await expect(
-      page.getByRole("button", { name: "Start AVmatrix" }),
-    ).toBeVisible({
-      timeout: 5_000,
-    });
     await expect(
       page.locator('[data-testid="server-reconnect-banner"]'),
     ).toHaveCount(0);

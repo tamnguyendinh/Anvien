@@ -22,11 +22,7 @@ Required only for the packaged Windows launcher:
 Build and link the local CLI from source:
 
 ```powershell
-cd avmatrix-shared
-npm install
-npm run build
-
-cd ..\avmatrix
+cd avmatrix
 npm install
 npm run build
 npm link
@@ -277,6 +273,8 @@ avmatrix-launcher\server-bundle\avmatrix-server.exe
 avmatrix-launcher\server-bundle\avmatrix.exe
 avmatrix-launcher\web-dist\
 ```
+
+`Start-AVmatrix.html` stays at repository root as the user-facing launcher entry. It must not be emitted into `avmatrix-web\dist\` or copied into `avmatrix-launcher\web-dist\`.
 
 Start:
 

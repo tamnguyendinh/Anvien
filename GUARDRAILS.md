@@ -101,7 +101,7 @@ Format: **Trigger → Instruction → Reason**. Append new Signs when the same m
 ## Validation Guardrails
 
 - Docs-only changes: `git diff --check` is usually enough.
-- Shared contract changes: build `avmatrix-shared/`, then build affected CLI/Web packages.
+- Generated contract changes: run the Go contract generator/tests, then build affected CLI/Web packages.
 - CLI/MCP/backend/LadybugDB changes: build, typecheck, and run relevant `avmatrix/` tests.
 - Web graph/repo switching changes: run Web build/tests and manually verify repo A -> B -> A through `avmatrix serve`.
 - Launcher changes: run `avmatrix-launcher\build.ps1` and smoke-test packaged start/reset/stop.

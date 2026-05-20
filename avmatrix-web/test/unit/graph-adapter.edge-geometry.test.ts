@@ -17,6 +17,68 @@ import {
   createFunctionNode,
 } from "../fixtures/graph";
 
+const createTypedNode = (
+  label: string,
+  index: number,
+  filePath = `src/${label.toLowerCase()}/${index}.ts`,
+) =>
+  ({
+    id: `${label}:${filePath}:${index}`,
+    label,
+    properties: {
+      name: `${label}${index}`,
+      filePath,
+      startLine: index + 1,
+      endLine: index + 2,
+    },
+  }) as const;
+
+const getBoundsByType = (sigmaGraph: ReturnType<typeof knowledgeGraphToGraphology>) => {
+  const boundsByType = new Map<
+    string,
+    { minX: number; maxX: number; minY: number; maxY: number }
+  >();
+
+  for (const nodeId of sigmaGraph.nodes()) {
+    const attributes = sigmaGraph.getNodeAttributes(nodeId);
+    const current =
+      boundsByType.get(attributes.nodeType) ??
+      {
+        minX: Number.POSITIVE_INFINITY,
+        maxX: Number.NEGATIVE_INFINITY,
+        minY: Number.POSITIVE_INFINITY,
+        maxY: Number.NEGATIVE_INFINITY,
+      };
+    current.minX = Math.min(current.minX, attributes.x);
+    current.maxX = Math.max(current.maxX, attributes.x);
+    current.minY = Math.min(current.minY, attributes.y);
+    current.maxY = Math.max(current.maxY, attributes.y);
+    boundsByType.set(attributes.nodeType, current);
+  }
+
+  return boundsByType;
+};
+
+const getBoundsGap = (
+  left: { minX: number; maxX: number; minY: number; maxY: number },
+  right: { minX: number; maxX: number; minY: number; maxY: number },
+): number => {
+  const horizontalGap =
+    left.maxX < right.minX
+      ? right.minX - left.maxX
+      : right.maxX < left.minX
+        ? left.minX - right.maxX
+        : 0;
+  const verticalGap =
+    left.maxY < right.minY
+      ? right.minY - left.maxY
+      : right.maxY < left.minY
+        ? left.minY - right.maxY
+        : 0;
+
+  return Math.max(horizontalGap, verticalGap);
+};
+
 describe("knowledgeGraphToGraphology edge geometry", () => {
   it("creates straight edges without curved-edge metadata", () => {
     const graph = createKnowledgeGraph();
@@ -208,27 +270,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     for (const node of nodes) graph.addNode(node);
 
     const sigmaGraph = knowledgeGraphToGraphology(graph);
-    const boundsByType = new Map<
-      string,
-      { minX: number; maxX: number; minY: number; maxY: number }
-    >();
-
-    for (const nodeId of sigmaGraph.nodes()) {
-      const attributes = sigmaGraph.getNodeAttributes(nodeId);
-      const current =
-        boundsByType.get(attributes.nodeType) ??
-        {
-          minX: Number.POSITIVE_INFINITY,
-          maxX: Number.NEGATIVE_INFINITY,
-          minY: Number.POSITIVE_INFINITY,
-          maxY: Number.NEGATIVE_INFINITY,
-        };
-      current.minX = Math.min(current.minX, attributes.x);
-      current.maxX = Math.max(current.maxX, attributes.x);
-      current.minY = Math.min(current.minY, attributes.y);
-      current.maxY = Math.max(current.maxY, attributes.y);
-      boundsByType.set(attributes.nodeType, current);
-    }
+    const boundsByType = getBoundsByType(sigmaGraph);
 
     const bounds = [...boundsByType.values()];
     for (let leftIndex = 0; leftIndex < bounds.length; leftIndex++) {
@@ -242,6 +284,39 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
           right.maxY < left.minY;
 
         expect(separated).toBe(true);
+      }
+    }
+  });
+
+  it("keeps imbalanced node type clusters visually separated with a large gutter", () => {
+    const graph = createKnowledgeGraph();
+    const countsByLabel = new Map([
+      ["Function", 900],
+      ["File", 400],
+      ["Class", 100],
+      ["Interface", 36],
+      ["Enum", 16],
+    ]);
+
+    for (const [label, count] of countsByLabel) {
+      for (let index = 0; index < count; index++) {
+        graph.addNode(createTypedNode(label, index));
+      }
+    }
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const bounds = [...getBoundsByType(sigmaGraph).entries()];
+
+    for (let leftIndex = 0; leftIndex < bounds.length; leftIndex++) {
+      for (let rightIndex = leftIndex + 1; rightIndex < bounds.length; rightIndex++) {
+        const [leftLabel, left] = bounds[leftIndex];
+        const [rightLabel, right] = bounds[rightIndex];
+        const gap = getBoundsGap(left, right);
+
+        expect(
+          gap,
+          `${leftLabel} and ${rightLabel} should be separated enough to read as different color regions`,
+        ).toBeGreaterThanOrEqual(500);
       }
     }
   });

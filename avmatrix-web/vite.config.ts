@@ -34,11 +34,10 @@ function findSiblingPackageDir(packageName: string): string {
 
 const CLI_ROOT = findSiblingPackageDir("avmatrix");
 const avmatrixCliPkg = _require(path.join(CLI_ROOT, "package.json"));
-const START_SCREEN_PATH = path.resolve(__dirname, "..", "Start-AVmatrix.html");
 
-function startScreenPlugin(): Plugin {
+function launcherOnlyStartScreenGuard(): Plugin {
   return {
-    name: "avmatrix-start-screen",
+    name: "avmatrix-launcher-start-screen-guard",
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const pathname = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
@@ -46,22 +45,18 @@ function startScreenPlugin(): Plugin {
           next();
           return;
         }
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.end(fs.readFileSync(START_SCREEN_PATH));
-      });
-    },
-    generateBundle() {
-      this.emitFile({
-        type: "asset",
-        fileName: "Start-AVmatrix.html",
-        source: fs.readFileSync(START_SCREEN_PATH, "utf8"),
+        res.statusCode = 404;
+        res.setHeader("Content-Type", "text/plain; charset=utf-8");
+        res.end(
+          "Start-AVmatrix.html is a launcher entry at the repository root, not a Vite dev asset.",
+        );
       });
     },
   };
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), startScreenPlugin()],
+  plugins: [launcherOnlyStartScreenGuard(), react(), tailwindcss()],
   define: {
     __REQUIRED_NODE_VERSION__: JSON.stringify(
       avmatrixCliPkg.engines.node.replace(/[>=^~\s]/g, ""),

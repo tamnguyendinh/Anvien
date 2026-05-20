@@ -48,11 +48,8 @@ export interface SigmaEdgeAttributes {
  * Get node size scaled for graph density
  * Uses lower minimums to maintain hierarchy visibility even in huge graphs
  */
-const getMaxScaledNodeSize = (nodeCount: number): number => {
-  if (nodeCount > 20000) return 3;
-  if (nodeCount > 5000) return 4.5;
-  if (nodeCount > 1000) return 6;
-  return 4.5;
+const getMaxScaledNodeSize = (_nodeCount: number): number => {
+  return 3;
 };
 
 const getLabelScaledNodeSizeCap = (
@@ -72,11 +69,11 @@ const getLabelScaledNodeSizeCap = (
   return getMaxScaledNodeSize(nodeCount);
 };
 
-export const MAX_RENDERED_NODE_SIZE = 9;
+export const MAX_RENDERED_NODE_SIZE = 3;
 export const MAX_DENSE_RENDERED_NODE_SIZE = 3;
 
-export const getMaxRenderedNodeSize = (nodeCount: number): number =>
-  nodeCount > 20000 ? MAX_DENSE_RENDERED_NODE_SIZE : MAX_RENDERED_NODE_SIZE;
+export const getMaxRenderedNodeSize = (_nodeCount: number): number =>
+  MAX_DENSE_RENDERED_NODE_SIZE;
 
 export const capRenderedNodeSize = (
   size: number,
@@ -147,9 +144,8 @@ export const applyFilterBasedClusteredLayout = (
     nodeIdsByLabel.set(label, nodeIds);
   });
 
-  const clusterLabels = [...nodeIdsByLabel.keys()].sort(compareClusterLabels);
   const nodeSpacing = getClusterNodeSpacing(totalNodeCount);
-  const clusterGap = nodeSpacing * 8;
+  const clusterLabels = [...nodeIdsByLabel.keys()].sort(compareClusterLabels);
 
   const clusters = clusterLabels.map((label) => {
     const nodeIds = [...(nodeIdsByLabel.get(label) ?? [])].sort((left, right) =>
@@ -180,6 +176,15 @@ export const applyFilterBasedClusteredLayout = (
   const maxClusterHeight = clusters.reduce(
     (maximum, cluster) => Math.max(maximum, cluster.height),
     0,
+  );
+  const largestClusterDimension = Math.max(
+    nodeSpacing * 4,
+    maxClusterWidth,
+    maxClusterHeight,
+  );
+  const clusterGap = Math.max(
+    nodeSpacing * 80,
+    largestClusterDimension * 0.8,
   );
   const cellWidth = Math.max(nodeSpacing * 4, maxClusterWidth) + clusterGap;
   const cellHeight = Math.max(nodeSpacing * 4, maxClusterHeight) + clusterGap;

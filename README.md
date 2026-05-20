@@ -194,7 +194,7 @@ avmatrix-launcher\web-dist\
 
 Runtime behavior:
 
-- `Start-AVmatrix.html` launches `avmatrix://start`.
+- Root `Start-AVmatrix.html` is the user-facing launcher entry and launches `avmatrix://start`; it is not a Vite `dist` or `web-dist` artifact.
 - `AVmatrixLauncher.exe` serves the packaged Web UI on `127.0.0.1:5228`.
 - `avmatrix-server.exe` starts the packaged Go backend and runs `avmatrix serve`.
 - backend health is checked at `http://127.0.0.1:4848/api/info`.

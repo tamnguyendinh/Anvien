@@ -161,7 +161,7 @@ func startRuntime(paths launcherPaths) error {
 	lifecycle := newWebLifecycleMonitor(launcherUICloseGrace)
 	webServer := &http.Server{
 		Addr:              "127.0.0.1:5228",
-		Handler:           staticHandlerWithLifecycle(paths.webDist, lifecycle),
+		Handler:           staticHandlerWithLauncherStart(paths, lifecycle),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
@@ -245,6 +245,18 @@ func staticHandler(webDist string) http.Handler {
 }
 
 func staticHandlerWithLifecycle(webDist string, lifecycle *webLifecycleMonitor) http.Handler {
+	return staticHandlerWithStartScreen(webDist, "", lifecycle)
+}
+
+func staticHandlerWithLauncherStart(paths launcherPaths, lifecycle *webLifecycleMonitor) http.Handler {
+	return staticHandlerWithStartScreen(
+		paths.webDist,
+		filepath.Join(paths.rootDir, "Start-AVmatrix.html"),
+		lifecycle,
+	)
+}
+
+func staticHandlerWithStartScreen(webDist string, startScreenPath string, lifecycle *webLifecycleMonitor) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if lifecycle != nil && lifecycle.handle(w, r) {
 			return
@@ -252,6 +264,12 @@ func staticHandlerWithLifecycle(webDist string, lifecycle *webLifecycleMonitor) 
 		rel := filepath.Clean(strings.TrimPrefix(r.URL.Path, "/"))
 		if rel == "." || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
 			rel = "index.html"
+		}
+		if strings.EqualFold(rel, "Start-AVmatrix.html") && startScreenPath != "" {
+			if stat, err := os.Stat(startScreenPath); err == nil && !stat.IsDir() {
+				http.ServeFile(w, r, startScreenPath)
+				return
+			}
 		}
 		target := filepath.Join(webDist, rel)
 		if stat, err := os.Stat(target); err == nil && !stat.IsDir() {

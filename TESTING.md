@@ -7,8 +7,7 @@ How we structure tests and which commands to run locally and in CI.
 | Package | Path | Runner | Notes |
 | ------- | ---- | ------ | ----- |
 | Root tooling | `/` | Prettier / ESLint / Husky | Formatting, lint-staged, repository automation checks. |
-| Shared contracts | `avmatrix-shared/` | TypeScript | Shared backend/Web types. Build before CLI/Web when contract files change. |
-| CLI + MCP + HTTP backend | `avmatrix/` | Vitest | Primary core/runtime test surface. Includes ingestion, MCP, LadybugDB, repo runtime, embeddings, and server helpers. |
+| CLI + MCP + HTTP backend | `cmd/`, `internal/`, `avmatrix/` | Go test + package build | Primary core/runtime test surface. Includes ingestion, MCP, LadybugDB, repo runtime, embeddings, and server helpers. |
 | Web UI unit/component | `avmatrix-web/` | Vitest + jsdom | Graph UI, repo picker/analyze flows, local runtime settings, chat UI/client behavior. |
 | Web UI E2E | `avmatrix-web/` | Playwright | Browser flows against real `avmatrix serve` and Vite dev server. |
 | Windows launcher | `avmatrix-launcher/` | Build/manual smoke | Build script produces launcher exe, backend wrapper, bundled web dist, and protocol registration. |
@@ -25,28 +24,16 @@ npm run format:check
 npm run lint
 ```
 
-**`avmatrix-shared`**
-
-```bash
-cd avmatrix-shared
-npm install
-npm run build
-```
-
 **`avmatrix` (CLI / library)**
 
 ```bash
+go test ./cmd/... ./internal/... -count=1
+
 cd avmatrix
 npm install
-npm run build
-npm test                    # full suite: vitest run
-npm run test:unit           # unit only: vitest run test/unit
-npm run test:integration    # integration suite
-npm run test:coverage
-npx tsc --noEmit            # typecheck (matches CI)
+npm run build               # package runtime build
+npm test                    # reminder: Go tests own the runtime now
 ```
-
-`avmatrix/vitest.config.ts` runs LadybugDB-heavy integration files in a dedicated sequential project to avoid native file-lock conflicts. Keep that grouping when adding new tests that open LadybugDB stores.
 
 **`avmatrix-web`**
 
@@ -97,7 +84,6 @@ Run the smallest useful validation for the change.
 | Change area | Minimum useful validation |
 | ----------- | ------------------------- |
 | Docs only | `git diff --check` |
-| Shared contracts | `cd avmatrix-shared && npm run build`, then build affected CLI/Web package. |
 | CLI command, MCP tool, graph query, ingestion, LadybugDB | Full launcher build first, then `go test ./cmd/... ./internal/... -count=1` |
 | Narrow core logic | `cd avmatrix && npm run test:unit` plus targeted integration tests if storage/MCP is involved. |
 | Web UI component/state only | `cd avmatrix-web && npm run build && npx tsc -b --noEmit && npm test` |
@@ -115,13 +101,13 @@ The intended behavior for the current package layout is:
 
 1. **Formatting** — `lint-staged` runs prettier on staged files
 2. **`avmatrix-web/` files staged** → `tsc -b --noEmit`
-3. **`avmatrix/` files staged** → `tsc --noEmit`
+3. **Go runtime files staged** → run targeted Go validation before commit
 
 Tests do **not** run in the pre-commit hook — they run in CI (`ci-tests.yml`) only.
 
 Skip with `git commit --no-verify` (use sparingly).
 
-Maintenance note: if `.husky/pre-commit` is edited, keep it aligned with the current package paths: `avmatrix/`, `avmatrix-web/`, and `avmatrix-shared/`.
+Maintenance note: if `.husky/pre-commit` is edited, keep it aligned with the current package paths: `avmatrix/`, `avmatrix-web/`, and Go runtime paths under `cmd/` and `internal/`.
 
 ## Test categories
 
@@ -177,8 +163,8 @@ GitHub Actions (`.github/workflows/ci.yml`) orchestrate:
 Local checks before pushing:
 
 ```bash
-cd avmatrix-shared && npm run build
-cd ../avmatrix && npx tsc --noEmit && npm test
+go test ./cmd/... ./internal/... -count=1
+cd avmatrix && npm run build && npm test
 cd ../avmatrix-web && npx tsc -b --noEmit && npm test
 ```
 
@@ -190,6 +176,7 @@ For staged releases or UI betas, use the packaged local runtime rather than a re
 
 1. Build with `avmatrix-launcher\build.ps1`.
 2. Open `Start-AVmatrix.html`.
-3. Verify backend health at `http://127.0.0.1:4848/api/info`.
-4. Verify repo picking, repo switching, graph selection, analyze, reset runtime, and chat status on the target Windows machine.
-5. Collect runtime logs from `avmatrix-launcher/logs/` when diagnosing failures.
+3. Confirm `Start-AVmatrix.html` remains at repository root and is absent from `avmatrix-web\dist\` and `avmatrix-launcher\web-dist\`.
+4. Verify backend health at `http://127.0.0.1:4848/api/info`.
+5. Verify repo picking, repo switching, graph selection, analyze, reset runtime, and chat status on the target Windows machine.
+6. Collect runtime logs from `avmatrix-launcher/logs/` when diagnosing failures.

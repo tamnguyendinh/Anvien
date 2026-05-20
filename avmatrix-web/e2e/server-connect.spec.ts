@@ -165,6 +165,7 @@ test.describe('Server Connection & Graph Loading', () => {
     expect(diagnostics?.layout.starts).toBe(0);
     expect(diagnostics?.layout.stops).toBe(0);
     expect(diagnostics?.layout.manualOptimizerInvocations).toBe(0);
+    await expect(page.getByText('Layout optimizing...')).toHaveCount(0);
   });
 
   test('invokes manual layout optimizer only after user action', async ({ page }) => {
@@ -186,6 +187,7 @@ test.describe('Server Connection & Graph Loading', () => {
     diagnostics = await getRuntimeDiagnostics(page);
     expect(diagnostics?.layout.starts).toBe(0);
     expect(diagnostics?.layout.stops).toBe(0);
+    await expect(page.getByText('Layout optimizing...')).toHaveCount(0);
   });
 });
 
