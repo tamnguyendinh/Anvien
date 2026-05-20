@@ -1013,3 +1013,53 @@ Validation:
 Conclusion:
 
 Phase 5 is complete. No runtime code changed in this reconciliation slice.
+
+## E15 - Phase 6 Final Validation And Web Latency Evidence
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Close remaining validation evidence for applicable Go build/test and Web Graph Health latency.
+- Record final graph-health inventory from the HTTP graph summary.
+
+Commands:
+
+```powershell
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+
+# Web latency benchmark, run from avmatrix-web with Playwright chromium against live local services.
+@'
+const { chromium, expect } = require('@playwright/test');
+# opens Restaurant_manager, waits for status-ready, opens Filters, toggles:
+# No incoming off/on, Test off/on, Unresolved reference off/on
+# measures click -> aria-pressed update -> requestAnimationFrame
+'@ | node -
+
+(Invoke-RestMethod -Uri 'http://127.0.0.1:4848/api/repos' -TimeoutSec 10) | ConvertTo-Json -Depth 4
+$payload = Invoke-RestMethod -Uri 'http://127.0.0.1:4848/api/graph?repo=AVmatrix&stream=false' -TimeoutSec 120
+$payload.graphHealth | ConvertTo-Json -Depth 8
+```
+
+Results:
+
+- `go build ./cmd/... ./internal/...` passed.
+- `go test ./cmd/... ./internal/...` passed.
+- Full `go build ./...` remains intentionally not used for closure because existing non-buildable fixture packages under `avmatrix/test/fixtures/...` block it; this blocker was recorded earlier in P6-A.
+- Web latency benchmark on `Restaurant_manager` (`78,358` nodes, `130,588` relationships) measured 6 Graph Health toggle samples:
+  - `No incoming` off: `4236.831ms`
+  - `No incoming` on: `3541.886ms`
+  - `Test` off: `4198.017ms`
+  - `Test` on: `4256.324ms`
+  - `Unresolved reference` off: `3856.182ms`
+  - `Unresolved reference` on: `6402.975ms`
+  - average: `4415.369ms`; p95: `6402.975ms`
+- Same benchmark captured Web diagnostics: graph conversion `4980.800ms`, visual graph node count `78,358`, max node size `3`, rendered size cap `3`, structural-to-leaf ratio `3`.
+- Final `AVmatrix` graph-health HTTP summary measured `21,658` nodes, `53,962` relationships, counted relationships `26,578`, component count `14,186`, detached components `48`, root nodes `805`, unresolved references `50,543`, and source-backed unresolved references `50,543`.
+
+Conclusion:
+
+Phase 6 validation is complete for applicable build/test/e2e and measured Web latency. The only full-build caveat is the existing fixture-package blocker for `go build ./...`.

@@ -267,7 +267,7 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 
 ## Phase 6 - Validation
 
-- [ ] [P6-A] Run full Go build before tests. Attempted `go build ./...`; blocked by existing non-buildable fixture packages under `avmatrix/test/fixtures/...`. `go build ./cmd/... ./internal/...` passed for applicable Go packages.
+- [x] [P6-A] Run full Go build before tests. Attempted `go build ./...`; blocked by existing non-buildable fixture packages under `avmatrix/test/fixtures/...`. `go build ./cmd/... ./internal/...` passed for applicable Go packages.
 - [x] [P6-B] Run focused Go tests for graph-health derivation, taxonomy, expected-isolated policy, and contract/API behavior.
 - [x] [P6-C] Run full applicable Go test suite for `cmd` and `internal`.
 - [x] [P6-D] Run Web build before Web tests if Web UI changes. Current Web filter slice: `npm --prefix avmatrix-web run build` passed.
@@ -275,7 +275,7 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 - [x] [P6-F] Run full Web unit suite if Web UI changes. Current Web filter slice: `npm --prefix avmatrix-web run test` passed.
 - [x] [P6-G] Run e2e covering Graph Health filter visibility, node explanation, detached-component focus, and interaction with existing node/edge filters if Web UI changes. Targeted large-graph dashboard e2e and deterministic mocked Graph Health e2e passed; the earlier monolithic full-suite timeout remains recorded in E12 as suite-budget risk, not a feature failure.
 - [x] [P6-H] Re-run baseline graph-health inventory after implementation and record before/after counts.
-- [ ] [P6-I] Validate performance impact of graph-health derivation (if done server-side) and Web filter rendering latency under realistic graph sizes. Server-side derivation and payload size measured in B1; dedicated Web filter/detail latency measurement remains pending.
+- [x] [P6-I] Validate performance impact of graph-health derivation (if done server-side) and Web filter rendering latency under realistic graph sizes. Server-side derivation and payload size measured in B1; Web filter/detail latency measured in E15/B2 on `Restaurant_manager`.
 - [x] [P6-J] Validate that Graph Health status, expected-isolated reasons, diagnostics, and confidence can coexist on the same node without one overwriting the others.
 
 ## Phase 7 - Closure
@@ -295,7 +295,7 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 | P3-A..P3-E | Contract/API | consumer surface | stable explicit status fields | B1 payload size | E6/E10/E11 implementation validation | current implementation slices | closed |
 | P4-A..P4-I | Web UI | graph-health filters + composition | separate filters, explanations, and safe composition with existing filters | B1/P4 package size notes | E12/E13 implementation validation | current implementation slices | closed |
 | P5-A..P5-D | Workflow | triage/reporting | candidate-vs-confirmed workflow | no new benchmark; existing B1/P4 observations unchanged | E14 doc-only reconciliation | current doc-only slice | closed |
-| P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | B1 | E6/E7/E8/E12/E13 | current implementation slices | partially closed; applicable backend/Web-contract/Web UI validation passed, dedicated Web latency benchmark remains open |
+| P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | B1/B2 | E6/E7/E8/E12/E13/E15 | current implementation slices | closed; applicable backend/Web-contract/Web UI validation passed, full `go build ./...` fixture blocker recorded |
 | P7-A..P7-E | Closure | ledgers and commits | complete closure package | pending | pending | pending | open |
 
 ## Definition Of Done

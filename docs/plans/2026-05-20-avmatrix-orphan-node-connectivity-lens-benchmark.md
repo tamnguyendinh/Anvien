@@ -318,12 +318,90 @@ P5 is a doc-only reconciliation of behavior already implemented in P3-D and P4. 
 
 ## B2 - Final Benchmark
 
-Status: pending
+Status: recorded 2026-05-20
 
-Final closure must record:
+Source:
 
-- final graph-health counts for `E:\AVmatrix-GO` and any representative indexed repos selected during Phase 1;
-- final expected-isolated exclusion counts by reason;
-- final actionable candidate counts;
-- final validation inventory;
-- final interpretation explaining what remains candidate/unknown versus confirmed.
+- Repo: `E:\AVmatrix-GO`
+- HTTP graph summary command: `$payload = Invoke-RestMethod -Uri 'http://127.0.0.1:4848/api/graph?repo=AVmatrix&stream=false' -TimeoutSec 120; $payload.graphHealth | ConvertTo-Json -Depth 8`
+- Repo registry observation: `AVmatrix` indexed at `2026-05-20T08:23:34Z`, graph `21,658` nodes / `53,962` relationships.
+- Representative Web latency repo: `Restaurant_manager`, graph `78,358` nodes / `130,588` relationships.
+
+Final `AVmatrix` graph-health counts:
+
+| Metric | Final count |
+|---|---:|
+| Node count | `21,658` |
+| Relationship count | `53,962` |
+| Counted relationship count | `26,578` |
+| Component count | `14,186` |
+| Detached component count | `48` |
+| Root node count | `805` |
+| Unresolved references | `50,543` |
+| Source-backed unresolved references | `50,543` |
+| Unattributed unresolved references | `0` |
+| Excluded structural edges | `27,384` |
+
+Final topology status counts:
+
+| Topology status | Count |
+|---|---:|
+| `connected` | `605` |
+| `true_isolated` | `13,964` |
+| `no_incoming` | `166` |
+| `no_outgoing` | `2,528` |
+| `detached_component` | `59` |
+| `unknown_connectivity` | `4,336` |
+
+Final expected-isolated reason counts:
+
+| Reason | Count |
+|---|---:|
+| `test` | `5,857` |
+| `documentation` | `1,271` |
+| `framework_entry` | `805` |
+
+Final confidence counts:
+
+| Confidence | Count |
+|---|---:|
+| `candidate` | `11,164` |
+| `expected` | `6,158` |
+| `unknown` | `4,336` |
+| `confirmed` | `0` |
+
+Final diagnostic counts:
+
+| Diagnostic | Count |
+|---|---:|
+| `unresolved_reference` | `50,543` |
+
+Web Graph Health filter/detail latency on `Restaurant_manager`:
+
+| Interaction | Measured latency |
+|---|---:|
+| `No incoming` off | `4,236.831ms` |
+| `No incoming` on | `3,541.886ms` |
+| `Test` off | `4,198.017ms` |
+| `Test` on | `4,256.324ms` |
+| `Unresolved reference` off | `3,856.182ms` |
+| `Unresolved reference` on | `6,402.975ms` |
+| Average | `4,415.369ms` |
+| p95 | `6,402.975ms` |
+
+Web runtime diagnostics captured during the latency benchmark:
+
+| Metric | Value |
+|---|---:|
+| Graph conversion time | `4,980.800ms` |
+| Visual graph node count | `78,358` |
+| Max node size | `3` |
+| Max rendered node size cap | `3` |
+| Structural-to-leaf ratio | `3` |
+
+Interpretation:
+
+- `candidate` remains a triage signal, not a bug or deletion verdict.
+- `unknown_connectivity` is driven by source-backed unresolved diagnostics and should be inspected before topology is treated as meaningful.
+- `confirmed` remains `0` because Graph Health derivation does not auto-confirm dead code or defects.
+- The measured large-graph Web toggle latency is noticeable on `Restaurant_manager`; future optimization can target incremental Sigma visibility updates if this workflow becomes high-frequency.
