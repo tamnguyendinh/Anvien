@@ -34,6 +34,8 @@ The term "orphan node" is currently ambiguous. A node with no visible edges can 
 
 The plan must turn this ambiguous topology symptom into a precise graph-health workflow without changing semantic node labels such as `Function`, `File`, `Class`, `Interface`, `Struct`, `Method`, or `Section`.
 
+This lens identifies graph-health candidates and explanations. It is not a bug detector by itself, and it must not label code as confirmed dead, buggy, or removable without follow-up evidence from source, runtime/route/export context, tests, or user review.
+
 ## Scope Boundary
 
 Implementation may touch:
@@ -54,13 +56,14 @@ Out of scope unless a later phase explicitly reopens it:
 - changing primary semantic node labels to `OrphanNode`;
 - treating zero outgoing edges as a defect by default;
 - synthesizing fake external target nodes only to reduce orphan counts;
-- claiming dead-code accuracy without source, route/export, test/generated/vendor, and analyzer evidence.
+- claiming dead-code accuracy without source, route/export, test/generated/vendor, and analyzer evidence;
+- calling a connectivity candidate a confirmed bug, confirmed dead code, or safe deletion target without separate supporting evidence.
 
 ## Design Decision
 
 Do not map "orphan node" into a primary node type.
 
-Use derived graph-health metadata and a separate Web filter group:
+Use derived graph-health metadata as the source of truth, then expose it through consumer surfaces such as API/reporting and Web UI filters. The Web `Graph Health` filter group is a consumer of backend-derived metadata, not the place where graph-health truth is invented.
 
 ```text
 Node semantic label: Function, File, Class, Interface, Struct, Method, Section, ...
@@ -69,10 +72,10 @@ Graph Health metadata:
   expectedIsolationReasons: []
   diagnostics: []
   confidence: candidate | expected | unknown | confirmed
-UI group: Graph Health
+Primary UI group: Graph Health
 ```
 
-The first accepted topology taxonomy is:
+The proposed initial topology taxonomy is:
 
 | Status | Definition | Default interpretation |
 |---|---|---|
@@ -82,6 +85,8 @@ The first accepted topology taxonomy is:
 | `no_outgoing` | one or more counted incoming edges and zero counted outgoing edges | often normal leaf behavior; inspect only, do not flag as bug by default |
 | `detached_component` | a connected component has internal edges but no counted path to accepted entry/process/root surfaces | strong candidate for unwired feature or missing root edge |
 | `unknown_connectivity` | graph does not contain enough evidence to classify safely | do not count as bug |
+
+Phase 1 must either accept this taxonomy as final or revise it with recorded rationale, tests, evidence-ledger notes, and benchmark implications before any user-facing status is implemented.
 
 Expected-isolated classification is not a topology status. It is an overlay reason list that can apply to any topology status, for example a test helper can be `no_incoming` with `expectedIsolationReasons: ["test"]`. Public/exported status alone is a prioritization modifier, not sufficient evidence to auto-hide a node.
 
@@ -124,9 +129,12 @@ The expected-isolated policy must classify at least:
 ## Acceptance Criteria
 
 - "Orphan" is not introduced as a primary node label.
-- Web UI exposes graph-health/connectivity filters separately from node-type filters.
+- Backend graph-health derivation is the source of truth for topology status, expected-isolated overlays, diagnostics, and confidence.
+- At least one non-Web consumer surface exposes graph-health/connectivity summaries and explanations before Web UI filters are treated as complete.
+- Web UI exposes graph-health/connectivity filters separately from node-type filters when the Web phase is implemented.
 - Every flagged node has an explanation: topology status, counted incoming edges, counted outgoing edges, excluded edge categories, source path policy, expected-isolated reasons, diagnostics, and confidence.
 - `no_incoming` and `detached_component` are prioritized as actionable candidates; `no_outgoing` is not presented as a bug by default.
+- Graph Health statuses are candidate/explanation signals, not confirmed bug or deletion verdicts.
 - Expected-isolated nodes can be hidden or de-emphasized without deleting their semantic labels or overwriting their topology status.
 - A user can distinguish a real candidate from analyzer/resolution uncertainty.
 - A node can simultaneously retain topology status, expected-isolated reasons, and diagnostics without those fields overwriting each other.
