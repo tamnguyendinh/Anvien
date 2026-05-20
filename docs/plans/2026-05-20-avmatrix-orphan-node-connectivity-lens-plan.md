@@ -20,6 +20,7 @@ Companion files:
 7. After each completed implementation slice, commit the work, then continue until the full plan is complete.
 8. Do not mark orphan/connectivity findings as bugs without evidence. Connectivity status is a graph-derived candidate classification until source, analyzer, route, export, generated, test, or fixture evidence confirms the interpretation.
 9. Do not create fake baseline counts. Any graph count, orphan count, detached-component count, or unresolved-reference count must come from a recorded command or test artifact.
+10. Creating or materially updating this plan requires AVmatrix/codebase inspection. The doc-only AVmatrix exemption applies only to the commit mechanics for purely documentation changes; it does not exempt plan authors from reading indexed code and source files before writing implementation work.
 
 ## Problem
 
@@ -137,15 +138,37 @@ The following baseline must be measured before implementation claims:
 - unresolved reference count by source fact family if available;
 - comparison between raw graph connectivity and Web-visible connectivity after filters.
 
-Baseline counts are currently `pending measurement`.
+Initial codebase-reviewed baseline measurements are recorded in the benchmark ledger. They are not yet the final accepted orphan definition because Phase 1 still has to close the counted-edge and expected-isolated policies.
+
+## Codebase Findings Before Implementation
+
+AVmatrix index and source inspection on 2026-05-20 identified these existing implementation facts:
+
+- Graph storage currently has no connectivity metadata. `internal/graph/types.go` defines `Node`, `Relationship`, and `Graph`; relationships have `sourceId`, `targetId`, `type`, confidence, reason, step, resolution source, file hash, and evidence, but no `connectivityStatus` or per-node incoming/outgoing summary.
+- The HTTP graph endpoint currently streams only raw graph nodes and relationships. `internal/httpapi/graph.go` exposes `graphPayload` and `streamGraphNDJSON`; `graphNodeForResponse` only strips `content` unless requested.
+- Generated Web contracts currently expose semantic node labels and relationship types, not Graph Health statuses. `internal/contracts/web_ui.go` defines `nodeLabels`, `graphRelationshipTypes`, relationship display policy, and language coverage metadata.
+- The Web graph model currently mirrors generated `GraphNode` and `GraphRelationship` arrays. `avmatrix-web/src/core/graph/types.ts` defines `KnowledgeGraph` as nodes plus relationships with no derived connectivity field.
+- Web filter UI currently has `Node Types`, `Edge Types`, `Focus Depth`, and `Color Legend` inside `FileTreePanel`. There is no `Graph Health` filter group.
+- Web graph conversion already has an "orphan nodes" placement step in `knowledgeGraphToGraphology`, but that phrase only means nodes not reached by the layout hierarchy BFS. It is not a product taxonomy and does not mean dead or unwired code.
+- Existing layout hierarchy logic in `knowledgeGraphToGraphology` treats `CONTAINS`, `HAS_METHOD`, `HAS_PROPERTY`, `DEFINES`, `IMPORTS`, `WRAPS`, `STEP_IN_PROCESS`, `ENTRY_POINT_OF`, `HANDLES_ROUTE`, `HANDLES_TOOL`, and `MEMBER_OF` as parent/child layout signals with priorities.
+- Existing filter counts in `FileTreePanel` use graph-present semantic labels and relationship types; relationship display counts collapse grouped `INHERITS` compatibility edges through `getDisplayRelationshipTypeCounts`.
+- Existing process detection already uses a narrower connectivity idea than raw graph connectivity. `internal/processes/processes.go` builds process traces from `CALLS`, ignores low-confidence calls, excludes test files for process entrypoints, links `Route`/`Tool` nodes to processes with `ENTRY_POINT_OF`, and scores exported/framework-like functions.
+- Existing ignore policy already recognizes many expected-isolated path classes. `internal/ignore/constants.go` ignores directories such as `node_modules`, `vendor`, `dist`, `build`, generated directories, fixtures, snapshots, caches, and test fixture directories. `internal/processes/processes.go` also has `isTestFile` logic for `.test.`, `.spec.`, `/test/`, `/tests/`, `__tests__`, `_test.go`, and `_test.py`.
+
+Initial measurements also prove why a raw "zero incoming" filter would be wrong:
+
+- With all relationship types counted, `AVmatrix-GO` has `0` code nodes with zero raw incoming edges, because structural/ownership relationships such as `DEFINES` connect symbols from files.
+- With all relationship types counted, `Restaurant_manager` also has `0` code nodes with zero raw incoming edges.
+- With a provisional non-structural policy that excludes structural/ownership/display grouping edges, `AVmatrix-GO` has `1,616` code nodes with zero counted incoming edges and `Restaurant_manager` has `4,190`.
+- Therefore Phase 1 must close the counted-edge policy before any Graph Health status is user-facing.
 
 ## Phase 1 - Taxonomy, Policy, and Baseline
 
 - [ ] [P1-A] Define counted edge types, excluded edge types, and compatibility/display edge handling for connectivity status.
 - [ ] [P1-B] Define expected-isolated policy for test, fixture, generated, vendor, docs, migrations, scripts, exported API, route, tool, command, session, framework, and reflection/config surfaces.
 - [ ] [P1-C] Define confidence levels: `candidate`, `expected`, `unknown`, and `confirmed`, with evidence requirements for each.
-- [ ] [P1-D] Measure baseline graph connectivity for `E:\AVmatrix-GO` and record commands/results in benchmark and evidence ledgers.
-- [ ] [P1-E] Measure baseline graph connectivity for one large indexed repo when available and record commands/results in benchmark and evidence ledgers.
+- [ ] [P1-D] Measure baseline graph connectivity for `E:\AVmatrix-GO` and record commands/results in benchmark and evidence ledgers. Initial raw/provisional-policy measurements are recorded; remains open until counted-edge and expected-isolated policies are accepted.
+- [ ] [P1-E] Measure baseline graph connectivity for one large indexed repo when available and record commands/results in benchmark and evidence ledgers. Initial `E:\Restaurant_manager` raw/provisional-policy measurements are recorded; remains open until counted-edge and expected-isolated policies are accepted.
 - [ ] [P1-F] Record the selected taxonomy in this plan, generated contracts if needed, and user-facing Web wording.
 
 ## Phase 2 - Backend Graph-Health Derivation
