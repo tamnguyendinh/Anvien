@@ -269,25 +269,97 @@ Focused tests and analyze smoke can pass after preliminary uncommitted local cha
 
 ## E8 - Final Validation Evidence
 
-Status: pending
+Date: 2026-05-20
 
-Required final commands:
+Status: recorded; implementation commit pending
+
+Impact and graph refresh commands:
+
+```powershell
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix impact renderAVmatrixBlock --repo AVmatrix --direction upstream --depth 2
+go run .\cmd\avmatrix impact installBaseSkills --repo AVmatrix --direction upstream --depth 2
+go run .\cmd\avmatrix impact GenerateAIContextFiles --repo AVmatrix --direction upstream --depth 2
+go run .\cmd\avmatrix impact generateAnalyzeAIContext --repo AVmatrix --direction upstream --depth 2
+```
+
+Impact result summary:
+
+- `renderAVmatrixBlock`: HIGH risk, 3 impacted symbols, affected modules `Aicontext` and `Cli`.
+- `installBaseSkills`: HIGH risk, 3 impacted symbols, affected modules `Aicontext` and `Cli`.
+- `GenerateAIContextFiles`: CRITICAL risk, 3 impacted symbols, affected modules `Aicontext` and `Cli`.
+- `generateAnalyzeAIContext`: CRITICAL risk, 2 impacted symbols, affected module `Cli`.
+
+Implementation files changed:
+
+- `internal/aicontext/aicontext.go`
+- `internal/aicontext/aicontext_test.go`
+- `internal/aicontext/skills/avmatrix-cli.md`
+- `internal/aicontext/skills/avmatrix-debugging.md`
+- `internal/aicontext/skills/avmatrix-exploring.md`
+- `internal/aicontext/skills/avmatrix-guide.md`
+- `internal/aicontext/skills/avmatrix-impact-analysis.md`
+- `internal/aicontext/skills/avmatrix-refactoring.md`
+- `internal/cli/analyze_postrun.go`
+- `internal/cli/command.go`
+- `internal/cli/command_test.go`
+
+Implementation observations:
+
+- Default analyze now calls AI context generation after graph registration.
+- `--skills` now only gates generated community skills and generated rows.
+- Empty root agent files are replaced cleanly.
+- Legacy managed Code Intelligence blocks are replaced in place.
+- Generated root context now has distinct `MCP Tools`, `Resources`, `Skills`, and `CLI` sections.
+- Resource references include `avmatrix://repos`, `avmatrix://setup`, `context`, `clusters`, `processes`, `schema`, `cluster/{name}`, and `process/{name}`.
+- Base skills are embedded package assets under `internal/aicontext/skills/*.md` and installed from `embed.FS`.
+
+Focused validation commands:
 
 ```powershell
 go test ./internal/aicontext ./internal/cli
 go test ./internal/mcp
-go test ./...
-go run .\cmd\avmatrix analyze --force --no-stats
-git status --short
-git check-ignore -v AGENTS.md CLAUDE.md .avmatrix\graph.json .claude\skills\avmatrix\avmatrix-cli\SKILL.md
+go test ./internal/... ./cmd/...
 ```
 
-Required final observations:
+Focused validation result:
 
-- default analyze root file behavior;
-- `--skills` behavior;
-- `--skip-agents-md` behavior;
-- generated root content headings/resources/tools;
-- base skill file richness;
-- ignored generated artifact status;
-- exact files included in the final commit.
+- `go test ./internal/aicontext ./internal/cli`: passed.
+- `go test ./internal/mcp`: passed.
+- `go test ./internal/... ./cmd/...`: passed.
+
+Full suite command:
+
+```powershell
+go test ./...
+```
+
+Full suite result:
+
+- Failed in fixture packages under `avmatrix/test/fixtures/...` that are intentionally not buildable as Go packages.
+- Examples: missing local packages `models` and `animal`, C source in `sample-code`, and invalid Go fixture examples for `go-make-builtin` and `go-type-assertion`.
+- All `internal/*` and `cmd/*` packages passed in the same output.
+
+Smoke validation commands:
+
+```powershell
+go run .\cmd\avmatrix analyze --force --no-stats
+go run .\cmd\avmatrix analyze --force --skills --no-stats
+# Temp repo smoke:
+go run .\cmd\avmatrix analyze <temp-repo> --force --skip-git --skip-agents-md --no-stats --name skip-agents-smoke
+git status --short
+git check-ignore -v AGENTS.md CLAUDE.md .avmatrix\graph.json .claude\skills\avmatrix\avmatrix-cli\SKILL.md .claude\skills\generated\graph\SKILL.md
+go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
+```
+
+Smoke observations:
+
+- Default analyze completed on `E:\AVmatrix-GO` with `files: scanned=703 parsed=530 unsupported=173 failed=0` and `graph: nodes=21090 relationships=52444`.
+- Default analyze produced `AGENTS.md` and `CLAUDE.md` at `3676` bytes each before `--skills` was run.
+- Default analyze installed six base skills with sizes between `1934` and `2669` bytes.
+- Default analyze did not create `.claude/skills/generated` when the generated directory was absent before the run.
+- `--skills` analyze completed with the same graph counts and printed `skills: generated=20 base=6 files=3`.
+- `--skills` created `20` generated community skill files totaling `59690` bytes and expanded `AGENTS.md` / `CLAUDE.md` to `5376` bytes each.
+- `--skip-agents-md` temp repo smoke preserved manual `AGENTS.md` and `CLAUDE.md` content exactly while installing the base skill path.
+- `git check-ignore -v` confirmed `AGENTS.md`, `CLAUDE.md`, `.avmatrix/graph.json`, `.claude/skills/avmatrix/avmatrix-cli/SKILL.md`, and `.claude/skills/generated/graph/SKILL.md` are ignored.
+- Final `detect-changes --scope all` reported `changed_count=53`, `changed_files=8`, `affected_count=13`, and `risk_level=high`; affected flows are concentrated around `NewAnalyzeCommand`, `generateAnalyzeAIContext`, `renderAVmatrixBlock`, and `upsertSection`.

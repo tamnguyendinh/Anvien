@@ -69,8 +69,25 @@ func statsFromAnalyzeResult(result analyze.Result) *repo.Stats {
 	return &stats
 }
 
-func generateAnalyzeAIContext(result analyze.Result, projectName string, skipAgentsMD bool, noStats bool) (analyzeAIContextResult, error) {
-	generated, err := aicontext.Generate(result.RepoPath, projectName, result, aicontext.Options{
+func generateAnalyzeAIContext(result analyze.Result, projectName string, skipAgentsMD bool, noStats bool, generateSkills bool) (analyzeAIContextResult, error) {
+	var skills []aicontext.GeneratedSkillInfo
+	if generateSkills {
+		var err error
+		skills, _, err = aicontext.GenerateSkillFiles(result.RepoPath, projectName, result.Graph)
+		if err != nil {
+			return analyzeAIContextResult{}, err
+		}
+	}
+	stats := aicontext.Stats{
+		Files:       result.Metrics.Files.Scanned,
+		Communities: result.Metrics.Communities.CommunitiesEmitted,
+		Processes:   result.Metrics.Processes.ProcessesEmitted,
+	}
+	if result.Graph != nil {
+		stats.Nodes = len(result.Graph.Nodes)
+		stats.Edges = len(result.Graph.Relationships)
+	}
+	files, baseSkills, err := aicontext.GenerateAIContextFiles(result.RepoPath, projectName, stats, skills, aicontext.Options{
 		SkipAgentsMD: skipAgentsMD,
 		NoStats:      noStats,
 	})
@@ -78,8 +95,8 @@ func generateAnalyzeAIContext(result analyze.Result, projectName string, skipAge
 		return analyzeAIContextResult{}, err
 	}
 	return analyzeAIContextResult{
-		Files:           generated.Files,
-		GeneratedSkills: generated.Skills,
-		BaseSkillCount:  len(generated.BaseSkillIDs),
+		Files:           files,
+		GeneratedSkills: skills,
+		BaseSkillCount:  len(baseSkills),
 	}, nil
 }

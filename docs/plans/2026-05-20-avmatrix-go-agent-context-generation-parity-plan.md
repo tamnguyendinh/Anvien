@@ -139,62 +139,62 @@ Initial source inspection identified these facts:
 
 ## Phase 1 - Parity Discovery
 
-- [ ] [P1-A] Record the original TypeScript analyze-to-agent-context flow with source paths and command evidence.
-- [ ] [P1-B] Record the current Go analyze-to-agent-context flow with source paths and command evidence.
-- [ ] [P1-C] Identify every flag that affects AI context generation: `--skills`, `--skip-agents-md`, and `--no-stats`.
-- [ ] [P1-D] Compare original packaged skill sources against Go generated skill output.
-- [ ] [P1-E] Compare generated root resource/tool references against `internal/mcp` definitions and tests.
-- [ ] [P1-F] Record all findings in the evidence ledger before editing implementation.
+- [x] [P1-A] Record the original TypeScript analyze-to-agent-context flow with source paths and command evidence.
+- [x] [P1-B] Record the current Go analyze-to-agent-context flow with source paths and command evidence.
+- [x] [P1-C] Identify every flag that affects AI context generation: `--skills`, `--skip-agents-md`, and `--no-stats`.
+- [x] [P1-D] Compare original packaged skill sources against Go generated skill output.
+- [x] [P1-E] Compare generated root resource/tool references against `internal/mcp` definitions and tests.
+- [x] [P1-F] Record all findings in the evidence ledger before editing implementation.
 
 ## Phase 2 - Analyze Invocation Contract
 
-- [ ] [P2-A] Ensure successful default analyze calls AI context generation unconditionally after graph registration.
-- [ ] [P2-B] Ensure `--skills` only controls generated community skills and generated rows.
-- [ ] [P2-C] Ensure `--skip-agents-md` skips only the accepted root-file write behavior and preserves manual content exactly.
-- [ ] [P2-D] Ensure `--no-stats` continues to omit volatile stats in root context.
-- [ ] [P2-E] Add focused CLI tests for default analyze, `--skills`, `--skip-agents-md`, and `--no-stats`.
+- [x] [P2-A] Ensure successful default analyze calls AI context generation unconditionally after graph registration.
+- [x] [P2-B] Ensure `--skills` only controls generated community skills and generated rows.
+- [x] [P2-C] Ensure `--skip-agents-md` skips only the accepted root-file write behavior and preserves manual content exactly.
+- [x] [P2-D] Ensure `--no-stats` continues to omit volatile stats in root context.
+- [x] [P2-E] Add focused CLI tests for default analyze, `--skills`, `--skip-agents-md`, and `--no-stats`.
 
 ## Phase 3 - Managed Block Upsert Correctness
 
-- [ ] [P3-A] Replace empty `AGENTS.md` and `CLAUDE.md` cleanly.
-- [ ] [P3-B] Replace existing AVmatrix managed blocks in place.
-- [ ] [P3-C] Replace legacy managed Code Intelligence blocks in place.
-- [ ] [P3-D] Append to manual root files that do not contain a managed block.
-- [ ] [P3-E] Add tests for all four upsert modes.
+- [x] [P3-A] Replace empty `AGENTS.md` and `CLAUDE.md` cleanly.
+- [x] [P3-B] Replace existing AVmatrix managed blocks in place.
+- [x] [P3-C] Replace legacy managed Code Intelligence blocks in place.
+- [x] [P3-D] Append to manual root files that do not contain a managed block.
+- [x] [P3-E] Add tests for all four upsert modes.
 
 ## Phase 4 - Generated Root Content Accuracy
 
-- [ ] [P4-A] Rename or split the mislabeled `## CLI` section so skill-file guidance and CLI commands are not conflated.
-- [ ] [P4-B] Add or confirm resource references for all agent-relevant Go MCP resources.
-- [ ] [P4-C] Confirm tool references against MCP surface tests.
-- [ ] [P4-D] Rewrite staleness and refresh wording so it is consistent and enforceable.
-- [ ] [P4-E] Add a CLI fallback section with real `avmatrix` commands if generated content references terminal fallback behavior.
-- [ ] [P4-F] Add tests that assert the generated block contains the accepted headings, resources, tools, and skill paths.
+- [x] [P4-A] Rename or split the mislabeled `## CLI` section so skill-file guidance and CLI commands are not conflated.
+- [x] [P4-B] Add or confirm resource references for all agent-relevant Go MCP resources.
+- [x] [P4-C] Confirm tool references against MCP surface tests.
+- [x] [P4-D] Rewrite staleness and refresh wording so it is consistent and enforceable.
+- [x] [P4-E] Add a CLI fallback section with real `avmatrix` commands if generated content references terminal fallback behavior.
+- [x] [P4-F] Add tests that assert the generated block contains the accepted headings, resources, tools, and skill paths.
 
 ## Phase 5 - Base Skill Content Parity
 
-- [ ] [P5-A] Decide where rich base skill Markdown should live in AVmatrix-GO: tracked `skills/`, embedded assets, or another package-local source.
-- [ ] [P5-B] Port the six accepted base skills from the original package or document intentional differences.
-- [ ] [P5-C] Install rich skill content during AI context generation.
-- [ ] [P5-D] Keep fallback placeholder generation only as an explicit fallback path with evidence.
-- [ ] [P5-E] Add tests that fail when installed base skills collapse to one-paragraph placeholders.
+- [x] [P5-A] Decide where rich base skill Markdown should live in AVmatrix-GO: tracked `skills/`, embedded assets, or another package-local source.
+- [x] [P5-B] Port the six accepted base skills from the original package or document intentional differences.
+- [x] [P5-C] Install rich skill content during AI context generation.
+- [x] [P5-D] Keep fallback placeholder generation only as an explicit fallback path with evidence.
+- [x] [P5-E] Add tests that fail when installed base skills collapse to one-paragraph placeholders.
 
 ## Phase 6 - Validation
 
-- [ ] [P6-A] Run focused Go tests for `internal/aicontext` and `internal/cli`.
-- [ ] [P6-B] Run MCP surface tests if generated resource or tool references change.
-- [ ] [P6-C] Run full applicable Go tests before closure.
-- [ ] [P6-D] Run default analyze smoke on `E:\AVmatrix-GO`.
-- [ ] [P6-E] Run analyze smoke with `--skills` when generated community skill behavior is touched.
-- [ ] [P6-F] Run analyze smoke with `--skip-agents-md` against a temp repo or controlled fixture.
-- [ ] [P6-G] Verify generated artifacts are ignored by git and no unintended tracked files are staged.
-- [ ] [P6-H] Update evidence and benchmark ledgers with all validation results.
+- [x] [P6-A] Run focused Go tests for `internal/aicontext` and `internal/cli`.
+- [x] [P6-B] Run MCP surface tests if generated resource or tool references change.
+- [x] [P6-C] Run full applicable Go tests before closure. `go test ./internal/... ./cmd/...` passed; `go test ./...` still fails on intentionally non-buildable fixture packages.
+- [x] [P6-D] Run default analyze smoke on `E:\AVmatrix-GO`.
+- [x] [P6-E] Run analyze smoke with `--skills` when generated community skill behavior is touched.
+- [x] [P6-F] Run analyze smoke with `--skip-agents-md` against a temp repo or controlled fixture.
+- [x] [P6-G] Verify generated artifacts are ignored by git and no unintended tracked files are staged.
+- [x] [P6-H] Update evidence and benchmark ledgers with all validation results.
 
 ## Phase 7 - Closure
 
-- [ ] [P7-A] Update this plan checklist after each completed implementation slice.
-- [ ] [P7-B] Update benchmark ledger with root file sizes, skill sizes, and smoke graph counts.
-- [ ] [P7-C] Update evidence ledger with commands, files changed, tests, and conclusions.
+- [x] [P7-A] Update this plan checklist after each completed implementation slice.
+- [x] [P7-B] Update benchmark ledger with root file sizes, skill sizes, and smoke graph counts.
+- [x] [P7-C] Update evidence ledger with commands, files changed, tests, and conclusions.
 - [ ] [P7-D] Commit implementation and plan updates together only after validation is recorded.
 - [ ] [P7-E] Confirm no unrelated dirty files are included in the commit.
 

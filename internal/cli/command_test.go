@@ -1063,6 +1063,58 @@ export function gamma() {
 	}
 }
 
+func TestAnalyzeCommandGeneratesAIContextByDefault(t *testing.T) {
+	dir := initGitRepo(t)
+	home := t.TempDir()
+	t.Setenv(repo.HomeEnvName, home)
+	writeCLITestFile(t, dir, "src/main.ts", `
+export function alpha() {
+  return beta();
+}
+export function beta() {
+  return 1;
+}
+`)
+
+	out, errOut, err := executeForTest(t, "analyze", dir, "--force")
+	if err != nil {
+		t.Fatalf("analyze returned error: %v", err)
+	}
+	if errOut != "" {
+		t.Fatalf("analyze wrote stderr: %q", errOut)
+	}
+	if !strings.Contains(out, "analyzed ") {
+		t.Fatalf("analyze output missing success:\n%s", out)
+	}
+	if strings.Contains(out, "skills: generated=") {
+		t.Fatalf("default analyze should not report generated skills:\n%s", out)
+	}
+	for _, rel := range []string{
+		"AGENTS.md",
+		"CLAUDE.md",
+		filepath.Join(".claude", "skills", "avmatrix", "avmatrix-cli", "SKILL.md"),
+		filepath.Join(".avmatrix", "meta.json"),
+	} {
+		if _, err := os.Stat(filepath.Join(dir, rel)); err != nil {
+			t.Fatalf("%s missing: %v", rel, err)
+		}
+	}
+	agents, err := os.ReadFile(filepath.Join(dir, "AGENTS.md"))
+	if err != nil {
+		t.Fatalf("read AGENTS.md: %v", err)
+	}
+	if !strings.Contains(string(agents), "<!-- avmatrix:start -->") ||
+		!strings.Contains(string(agents), ".claude/skills/avmatrix/avmatrix-cli/SKILL.md") {
+		t.Fatalf("AGENTS.md missing AVmatrix context:\n%s", agents)
+	}
+	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "generated")); !os.IsNotExist(err) {
+		t.Fatalf("default analyze should not create generated skills dir: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(home, "registry.json")); err != nil {
+		t.Fatalf("registry missing: %v", err)
+	}
+}
+
 func TestAnalyzeCommandRequiresGitUnlessSkipped(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv(repo.HomeEnvName, t.TempDir())

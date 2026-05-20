@@ -226,12 +226,9 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			var aiResult analyzeAIContextResult
-			if generateSkills {
-				aiResult, err = generateAnalyzeAIContext(result, registration.Name, skipAgentsMD, noStats)
-				if err != nil {
-					return err
-				}
+			aiResult, err := generateAnalyzeAIContext(result, registration.Name, skipAgentsMD, noStats, generateSkills)
+			if err != nil {
+				return err
 			}
 			_, err = fmt.Fprintf(
 				cmd.OutOrStdout(),

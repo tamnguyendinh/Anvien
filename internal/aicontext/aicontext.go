@@ -1,9 +1,11 @@
 package aicontext
 
 import (
+	"embed"
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -17,6 +19,11 @@ const (
 	startMarker = "<!-- avmatrix:start -->"
 	endMarker   = "<!-- avmatrix:end -->"
 )
+
+var managedSectionPattern = regexp.MustCompile(`(?is)<!--\s*[a-z0-9-]+:start\s*-->.*?#\s+[^\n]*Code Intelligence.*?<!--\s*[a-z0-9-]+:end\s*-->`)
+
+//go:embed skills/*.md
+var baseSkillFiles embed.FS
 
 type Options struct {
 	SkipAgentsMD bool
@@ -123,7 +130,7 @@ func renderAVmatrixBlock(projectName string, stats Stats, skills []GeneratedSkil
 	builder.WriteString(startMarker + "\n")
 	builder.WriteString("# AVmatrix - Code Intelligence\n\n")
 	fmt.Fprintf(&builder, "This project is indexed by AVmatrix as **%s**%s. Use the AVmatrix MCP tools to understand code, assess impact, and navigate safely.\n\n", projectName, statsText)
-	builder.WriteString("> If any AVmatrix tool warns the index is stale, run `avmatrix analyze` in terminal first.\n\n")
+	builder.WriteString("> If an AVmatrix tool warns the index is stale, run `avmatrix analyze --force` in terminal first.\n\n")
 	builder.WriteString("## Always Do\n\n")
 	builder.WriteString("- **MUST refresh the graph before graph-based work.** Run `avmatrix analyze --force` before using `impact`, `query`, `context`, `detect_changes`, `rename`, or `cypher`.\n")
 	builder.WriteString("- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `impact({target: \"symbolName\", direction: \"upstream\"})` and report the blast radius.\n")
@@ -136,14 +143,27 @@ func renderAVmatrixBlock(projectName string, stats Stats, skills []GeneratedSkil
 	builder.WriteString("- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.\n")
 	builder.WriteString("- NEVER rename symbols with find-and-replace; use `rename`.\n")
 	builder.WriteString("- NEVER commit changes without running `detect_changes()` to check affected scope.\n\n")
+	builder.WriteString("## MCP Tools\n\n")
+	builder.WriteString("| Tool | Use for |\n")
+	builder.WriteString("|------|---------|\n")
+	builder.WriteString("| `query` | Find execution flows related to a concept |\n")
+	builder.WriteString("| `context` | 360-degree symbol view with callers, callees, and process participation |\n")
+	builder.WriteString("| `impact` | Symbol blast radius before edits |\n")
+	builder.WriteString("| `detect_changes` | Git-diff impact before committing |\n")
+	builder.WriteString("| `rename` | Graph-guided symbol rename |\n")
+	builder.WriteString("| `cypher` | Read-only graph queries |\n\n")
 	builder.WriteString("## Resources\n\n")
 	builder.WriteString("| Resource | Use for |\n")
 	builder.WriteString("|----------|---------|\n")
+	builder.WriteString("| `avmatrix://repos` | All indexed repositories |\n")
+	builder.WriteString("| `avmatrix://setup` | MCP setup and tool reference |\n")
 	fmt.Fprintf(&builder, "| `avmatrix://repo/%s/context` | Codebase overview, check index freshness |\n", projectName)
 	fmt.Fprintf(&builder, "| `avmatrix://repo/%s/clusters` | All functional areas |\n", projectName)
 	fmt.Fprintf(&builder, "| `avmatrix://repo/%s/processes` | All execution flows |\n", projectName)
+	fmt.Fprintf(&builder, "| `avmatrix://repo/%s/schema` | Graph schema for Cypher |\n", projectName)
+	fmt.Fprintf(&builder, "| `avmatrix://repo/%s/cluster/{name}` | Functional area details |\n", projectName)
 	fmt.Fprintf(&builder, "| `avmatrix://repo/%s/process/{name}` | Step-by-step execution trace |\n\n", projectName)
-	builder.WriteString("## CLI\n\n")
+	builder.WriteString("## Skills\n\n")
 	builder.WriteString("| Task | Read this skill file |\n")
 	builder.WriteString("|------|---------------------|\n")
 	builder.WriteString("| Understand architecture / \"How does X work?\" | `.claude/skills/avmatrix/avmatrix-exploring/SKILL.md` |\n")
@@ -153,6 +173,15 @@ func renderAVmatrixBlock(projectName string, stats Stats, skills []GeneratedSkil
 	builder.WriteString("| Tools, resources, schema reference | `.claude/skills/avmatrix/avmatrix-guide/SKILL.md` |\n")
 	builder.WriteString("| Index, status, clean, and wiki capability CLI commands | `.claude/skills/avmatrix/avmatrix-cli/SKILL.md` |")
 	builder.WriteString(generatedRows.String())
+	builder.WriteString("\n\n## CLI\n\n")
+	builder.WriteString("| Command | Use for |\n")
+	builder.WriteString("|---------|---------|\n")
+	builder.WriteString("| `avmatrix analyze --force` | Refresh the graph before graph-based work |\n")
+	builder.WriteString("| `avmatrix status` | Check index freshness for the current repo |\n")
+	fmt.Fprintf(&builder, "| `avmatrix query \"concept\" --repo %s` | Find execution flows from terminal |\n", projectName)
+	fmt.Fprintf(&builder, "| `avmatrix context \"symbol\" --repo %s` | Inspect callers, callees, and process membership |\n", projectName)
+	fmt.Fprintf(&builder, "| `avmatrix impact \"symbol\" --repo %s --direction upstream` | Check blast radius before editing |\n", projectName)
+	fmt.Fprintf(&builder, "| `avmatrix detect-changes --repo %s --scope all` | Check changed symbols and affected flows before committing |\n", projectName)
 	builder.WriteString("\n" + endMarker)
 	return builder.String()
 }
@@ -189,11 +218,24 @@ func upsertSection(path string, content string) (string, error) {
 		return "", err
 	}
 	text := string(raw)
+	if strings.TrimSpace(text) == "" {
+		if err := os.WriteFile(path, []byte(content+"\n"), 0o644); err != nil {
+			return "", err
+		}
+		return "created", nil
+	}
 	start := strings.Index(text, startMarker)
 	end := strings.Index(text, endMarker)
 	if start >= 0 && end >= start {
 		end += len(endMarker)
 		next := strings.TrimSpace(text[:start]) + "\n\n" + content + "\n\n" + strings.TrimSpace(text[end:])
+		if err := os.WriteFile(path, []byte(strings.TrimSpace(next)+"\n"), 0o644); err != nil {
+			return "", err
+		}
+		return "updated", nil
+	}
+	if legacy := managedSectionPattern.FindStringIndex(text); legacy != nil {
+		next := strings.TrimSpace(text[:legacy[0]]) + "\n\n" + content + "\n\n" + strings.TrimSpace(text[legacy[1]:])
 		if err := os.WriteFile(path, []byte(strings.TrimSpace(next)+"\n"), 0o644); err != nil {
 			return "", err
 		}
@@ -231,13 +273,31 @@ func installBaseSkills(repoPath string) ([]string, error) {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return nil, err
 		}
-		content := fmt.Sprintf("---\nname: %s\ndescription: \"%s\"\n---\n\n# %s\n\n%s\n\nUse AVmatrix tools to accomplish this task.\n", skill.Name, skill.Description, skill.Name, skill.Description)
+		content, err := baseSkillContent(skill)
+		if err != nil {
+			return nil, err
+		}
 		if err := os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte(content), 0o644); err != nil {
 			return nil, err
 		}
 		installed = append(installed, skill.Name)
 	}
 	return installed, nil
+}
+
+func baseSkillContent(skill baseSkill) (string, error) {
+	content, err := baseSkillFiles.ReadFile("skills/" + skill.Name + ".md")
+	if err != nil {
+		return "", err
+	}
+	if strings.TrimSpace(string(content)) == "" {
+		return fallbackBaseSkillContent(skill), nil
+	}
+	return string(content), nil
+}
+
+func fallbackBaseSkillContent(skill baseSkill) string {
+	return fmt.Sprintf("---\nname: %s\ndescription: \"%s\"\n---\n\n# %s\n\n%s\n\nUse AVmatrix tools to accomplish this task.\n", skill.Name, skill.Description, skill.Name, skill.Description)
 }
 
 type communityInfo struct {
