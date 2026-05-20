@@ -270,6 +270,10 @@ Notes:
 | Source-backed unresolved references | pending | `49,576` | pending | all unresolved references in this snapshot had source-node or file-node evidence |
 | Unattributed unresolved references | pending | `0` | pending | no unresolved references lacked attachable source evidence in this snapshot |
 
+### P2-F Coverage Slice
+
+P2-F is a test-only coverage slice. It changes no production graph-health derivation logic, graph inventory counts, payload shape, runtime path, or Web rendering behavior, so it has no new benchmarkable product/runtime metric. Validation evidence is recorded in E9.
+
 ## B2 - Final Benchmark
 
 Status: pending

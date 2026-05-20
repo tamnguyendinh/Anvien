@@ -284,6 +284,254 @@ func TestCompute_NormalizesDecodedDiagnostics(t *testing.T) {
 	}
 }
 
+func TestCompute_ExpectedIsolationReasonMatrix(t *testing.T) {
+	g := graph.New()
+	cases := []struct {
+		id               string
+		label            scopeir.NodeLabel
+		properties       graph.NodeProperties
+		reason           string
+		wantConfidence   string
+		wantTopology     TopologyStatus
+		wantSummaryCount int
+	}{
+		{
+			id:               "Function:testHelper",
+			label:            scopeir.NodeFunction,
+			properties:       graph.NodeProperties{"name": "testHelper", "filePath": "pkg/service_test.go"},
+			reason:           ReasonTest,
+			wantConfidence:   ConfidenceExpected,
+			wantTopology:     TopologyTrueIsolated,
+			wantSummaryCount: 1,
+		},
+		{
+			id:               "Function:fixtureHelper",
+			label:            scopeir.NodeFunction,
+			properties:       graph.NodeProperties{"name": "fixtureHelper", "filePath": "pkg/fixtures/sample.go"},
+			reason:           ReasonFixture,
+			wantConfidence:   ConfidenceExpected,
+			wantTopology:     TopologyTrueIsolated,
+			wantSummaryCount: 1,
+		},
+		{
+			id:               "Function:generatedHelper",
+			label:            scopeir.NodeFunction,
+			properties:       graph.NodeProperties{"name": "generatedHelper", "filePath": "pkg/generated/client.go"},
+			reason:           ReasonGenerated,
+			wantConfidence:   ConfidenceExpected,
+			wantTopology:     TopologyTrueIsolated,
+			wantSummaryCount: 1,
+		},
+		{
+			id:               "Function:vendorHelper",
+			label:            scopeir.NodeFunction,
+			properties:       graph.NodeProperties{"name": "vendorHelper", "filePath": "third_party/vendor/module/file.go"},
+			reason:           ReasonVendor,
+			wantConfidence:   ConfidenceExpected,
+			wantTopology:     TopologyTrueIsolated,
+			wantSummaryCount: 1,
+		},
+		{
+			id:               "Section:docs-guide",
+			label:            scopeir.NodeSection,
+			properties:       graph.NodeProperties{"name": "Guide", "filePath": "docs/guide.md"},
+			reason:           ReasonDocumentation,
+			wantConfidence:   ConfidenceExpected,
+			wantTopology:     TopologyTrueIsolated,
+			wantSummaryCount: 1,
+		},
+		{
+			id:               "Function:migrationHelper",
+			label:            scopeir.NodeFunction,
+			properties:       graph.NodeProperties{"name": "migrationHelper", "filePath": "db/migrations/001_migrate.sql"},
+			reason:           ReasonMigration,
+			wantConfidence:   ConfidenceExpected,
+			wantTopology:     TopologyTrueIsolated,
+			wantSummaryCount: 1,
+		},
+		{
+			id:               "Function:publicAPI",
+			label:            scopeir.NodeFunction,
+			properties:       graph.NodeProperties{"name": "PublicAPI", "filePath": "pkg/api.go", "isExported": true},
+			reason:           ReasonExportedAPI,
+			wantConfidence:   ConfidenceCandidate,
+			wantTopology:     TopologyTrueIsolated,
+			wantSummaryCount: 1,
+		},
+		{
+			id:               "Route:/api/users",
+			label:            scopeir.NodeRoute,
+			properties:       graph.NodeProperties{"name": "GET /api/users", "filePath": "internal/httpapi/users.go"},
+			reason:           ReasonFrameworkEntry,
+			wantConfidence:   ConfidenceExpected,
+			wantTopology:     TopologyTrueIsolated,
+			wantSummaryCount: 1,
+		},
+		{
+			id:               "Function:cliCommand",
+			label:            scopeir.NodeFunction,
+			properties:       graph.NodeProperties{"name": "cliCommand", "filePath": "pkg/internal/cli/run.go"},
+			reason:           ReasonCLIMCP,
+			wantConfidence:   ConfidenceExpected,
+			wantTopology:     TopologyTrueIsolated,
+			wantSummaryCount: 1,
+		},
+	}
+	for _, item := range cases {
+		g.AddNode(graph.Node{ID: item.id, Label: item.label, Properties: item.properties})
+	}
+
+	summary := ComputeSummary(g)
+
+	for _, item := range cases {
+		node := findNode(g, item.id)
+		if node == nil {
+			t.Fatalf("%s node not found", item.id)
+		}
+		health, ok := node.Properties["graphHealth"].(NodeHealth)
+		if !ok {
+			t.Fatalf("%s graphHealth missing: %#v", item.id, node.Properties["graphHealth"])
+		}
+		if health.TopologyStatus != item.wantTopology {
+			t.Fatalf("%s topologyStatus=%s want %s", item.id, health.TopologyStatus, item.wantTopology)
+		}
+		if health.Confidence != item.wantConfidence {
+			t.Fatalf("%s confidence=%s want %s", item.id, health.Confidence, item.wantConfidence)
+		}
+		if !containsString(health.ExpectedIsolationReasons, item.reason) {
+			t.Fatalf("%s reasons=%v want %s", item.id, health.ExpectedIsolationReasons, item.reason)
+		}
+		if got := summary.ExpectedIsolationReasonCounts[item.reason]; got != item.wantSummaryCount {
+			t.Fatalf("summary reason %s count=%d want %d", item.reason, got, item.wantSummaryCount)
+		}
+	}
+}
+
+func TestCompute_ConnectedTopologyAndOtherExclusion(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{ID: "Function:main", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "main", "filePath": "cmd/app/main.go", "isExported": true}})
+	g.AddNode(graph.Node{ID: "Function:middle", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "middle", "filePath": "pkg/middle.go"}})
+	g.AddNode(graph.Node{ID: "Function:leaf", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "leaf", "filePath": "pkg/leaf.go"}})
+	g.AddRelationship(graph.Relationship{ID: "call-main-middle", SourceID: "Function:main", TargetID: "Function:middle", Type: graph.RelCalls})
+	g.AddRelationship(graph.Relationship{ID: "call-middle-leaf", SourceID: "Function:middle", TargetID: "Function:leaf", Type: graph.RelCalls})
+	g.AddRelationship(graph.Relationship{ID: "display-middle-leaf", SourceID: "Function:middle", TargetID: "Function:leaf", Type: graph.RelationshipType("DISPLAY_ONLY")})
+
+	summary := ComputeSummary(g)
+
+	middle := findNode(g, "Function:middle")
+	if middle == nil {
+		t.Fatal("middle node not found")
+	}
+	health, ok := middle.Properties["graphHealth"].(NodeHealth)
+	if !ok {
+		t.Fatalf("middle graphHealth missing: %#v", middle.Properties["graphHealth"])
+	}
+	if health.TopologyStatus != TopologyConnected {
+		t.Fatalf("middle topologyStatus=%s want connected", health.TopologyStatus)
+	}
+	if health.CountedIncoming != 1 || health.CountedOutgoing != 1 {
+		t.Fatalf("middle counted degree = %d/%d want 1/1", health.CountedIncoming, health.CountedOutgoing)
+	}
+	if health.ExcludedEdgeCounts[ExcludedEdgeOther] != 1 {
+		t.Fatalf("middle other exclusions=%d want 1", health.ExcludedEdgeCounts[ExcludedEdgeOther])
+	}
+	if got := summary.TopologyStatusCounts[string(TopologyConnected)]; got != 1 {
+		t.Fatalf("connected count=%d want 1", got)
+	}
+	if got := summary.ExcludedEdgeCounts[ExcludedEdgeOther]; got != 1 {
+		t.Fatalf("summary other exclusions=%d want 1", got)
+	}
+}
+
+func TestCompute_UnattributedResolutionMetadataDoesNotMarkUnknown(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{ID: "Function:source", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "source", "filePath": "src/app.ts"}})
+	SetResolutionMetadata(g, 5, 0, 5)
+
+	summary := ComputeSummary(g)
+
+	source := findNode(g, "Function:source")
+	if source == nil {
+		t.Fatal("source node not found")
+	}
+	health, ok := source.Properties["graphHealth"].(NodeHealth)
+	if !ok {
+		t.Fatalf("source graphHealth missing: %#v", source.Properties["graphHealth"])
+	}
+	if health.TopologyStatus != TopologyTrueIsolated {
+		t.Fatalf("source topologyStatus=%s want true_isolated", health.TopologyStatus)
+	}
+	if health.Confidence != ConfidenceCandidate {
+		t.Fatalf("source confidence=%s want candidate", health.Confidence)
+	}
+	if len(health.Diagnostics) != 0 {
+		t.Fatalf("source diagnostics=%#v want none", health.Diagnostics)
+	}
+	if summary.UnresolvedReferenceCount != 5 ||
+		summary.SourceBackedUnresolvedReferenceCount != 0 ||
+		summary.UnattributedUnresolvedReferenceCount != 5 {
+		t.Fatalf("unresolved summary counts = %#v", summary)
+	}
+	if got := summary.TopologyStatusCounts[string(TopologyUnknown)]; got != 0 {
+		t.Fatalf("unknown topology count=%d want 0", got)
+	}
+	if got := summary.DiagnosticCounts[DiagnosticUnresolvedReference]; got != 0 {
+		t.Fatalf("diagnostic count=%d want 0", got)
+	}
+}
+
+func TestEdgePolicyCountedAndStructuralSets(t *testing.T) {
+	counted := []graph.RelationshipType{
+		graph.RelCalls,
+		graph.RelAccesses,
+		graph.RelInherits,
+		graph.RelImplements,
+		graph.RelExtends,
+		graph.RelMethodOverrides,
+		graph.RelMethodImplements,
+		graph.RelImports,
+		graph.RelUses,
+		graph.RelDecorates,
+		graph.RelWraps,
+		graph.RelQueries,
+		graph.RelFetches,
+		graph.RelStepInProcess,
+		graph.RelHandlesRoute,
+		graph.RelHandlesTool,
+		graph.RelEntryPointOf,
+	}
+	if len(CountedEdgeTypes) != len(counted) {
+		t.Fatalf("counted policy size=%d want %d", len(CountedEdgeTypes), len(counted))
+	}
+	for _, relType := range counted {
+		if !IsCounted(relType) {
+			t.Fatalf("%s should be counted", relType)
+		}
+	}
+
+	structural := []graph.RelationshipType{
+		graph.RelContains,
+		graph.RelDefines,
+		graph.RelHasMethod,
+		graph.RelHasProperty,
+		graph.RelMemberOf,
+	}
+	if len(StructuralEdgeTypes) != len(structural) {
+		t.Fatalf("structural policy size=%d want %d", len(StructuralEdgeTypes), len(structural))
+	}
+	for _, relType := range structural {
+		if IsCounted(relType) {
+			t.Fatalf("%s should not be counted", relType)
+		}
+		if excludedEdgeCategory(relType) != ExcludedEdgeStructural {
+			t.Fatalf("%s exclusion category=%s want structural", relType, excludedEdgeCategory(relType))
+		}
+	}
+	if excludedEdgeCategory(graph.RelationshipType("DISPLAY_ONLY")) != ExcludedEdgeOther {
+		t.Fatalf("custom display edge should be categorized as other exclusion")
+	}
+}
+
 func findNode(g *graph.Graph, id string) *graph.Node {
 	for i := range g.Nodes {
 		if g.Nodes[i].ID == id {
@@ -291,4 +539,13 @@ func findNode(g *graph.Graph, id string) *graph.Node {
 		}
 	}
 	return nil
+}
+
+func containsString(values []string, target string) bool {
+	for _, value := range values {
+		if value == target {
+			return true
+		}
+	}
+	return false
 }

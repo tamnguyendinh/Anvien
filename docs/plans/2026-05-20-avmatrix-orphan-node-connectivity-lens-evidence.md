@@ -596,3 +596,65 @@ Results:
 Conclusion:
 
 P2-E is complete for source-backed unresolved diagnostics and summary counts. Remaining backend gap in P2 is P2-F exhaustive matrix coverage across every topology/status/reason combination; P3-C/P3-D explain/report endpoints and Web UI filter work remain open.
+
+## E9 - Phase 2 Graph-Health Coverage Matrix Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Complete P2-F unit coverage for the backend Graph Health derivation rules.
+- Cover every topology status, every expected-isolated overlay reason, diagnostics aggregation/source attribution rules, confidence transitions, and counted/excluded edge policy.
+- Keep this slice test-only for production code; no runtime graph-health logic changed.
+
+AVmatrix refresh and impact commands:
+
+```powershell
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix impact ComputeSummary --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `ComputeSummary` reported CRITICAL impact because it feeds graph API and generated contract flows.
+- User was warned before editing tests that cover this high-impact symbol.
+- Mitigation: production code was not changed in this slice; only focused unit coverage and ledgers were updated.
+
+Changed files:
+
+- `internal/graphhealth/compute_test.go`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- Added expected-isolated reason matrix coverage for `test`, `fixture`, `generated`, `vendor`, `documentation`, `migration`, `exported_api`, `framework_entry`, and `cli_mcp`.
+- Added explicit `connected` topology coverage with counted incoming/outgoing degree `1/1`.
+- Added non-structural/non-counted `other` exclusion coverage with a custom display-only relationship type.
+- Added unattributed unresolved metadata coverage proving unresolved counts stay in summaries without changing any node to `unknown_connectivity` when no source-backed diagnostic exists.
+- Added exact counted-edge and structural-edge policy set coverage.
+
+Validation commands and results:
+
+```powershell
+go test ./internal/graphhealth
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
+```
+
+Results:
+
+- Focused graphhealth tests passed.
+- Applicable Go build passed for `./cmd/... ./internal/...`.
+- Applicable Go test suite passed for `./cmd/... ./internal/...`.
+- Final pre-commit AVmatrix refresh passed with `files: scanned=707 parsed=534 unsupported=173 failed=0`, `graph: nodes=21413 relationships=53339`.
+- `detect-changes` passed and reported `risk_level=low`, `changed_files=5`, `changed_count=29`, `affected_count=0`, as expected for a test/ledger-only slice.
+
+Conclusion:
+
+P2-F is complete. Phase 2 backend Graph Health derivation is closed; P3-C/P3-D explain/report endpoints and Web UI filter phases remain open.

@@ -223,12 +223,14 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 
 **Unresolved-diagnostics slice 2026-05-20:** resolution now emits source-backed `unresolved_reference` diagnostics only when a source node can be identified, preserves unresolved counts in graph metadata, classifies diagnostic-backed nodes as `unknown_connectivity`, aggregates repeated diagnostics for payload control, and strips the internal raw diagnostic property from HTTP graph payloads.
 
+**Coverage slice 2026-05-20:** P2-F adds graph-health test coverage across all topology statuses, all expected-isolated reasons, diagnostics aggregation/source attribution behavior, confidence transitions, and counted/excluded edge policy.
+
 - [x] [P2-A] Identify the graph data boundary that should own derived graph-health metadata: graph package, analyzer output, HTTP graph payload, contract layer, or Web-only derived state. Decision implemented as `internal/graphhealth` core derivation consumed by HTTP/API and contracts.
 - [x] [P2-B] Implement deterministic connectivity summary generation using the Phase 1 edge policy.
 - [x] [P2-C] Add per-node derived metadata for topology status, counted incoming/outgoing counts, excluded edge counts by category, expected-isolated reasons, diagnostics, and confidence.
 - [x] [P2-D] Add detached-component grouping and component-level explanations using explicit root/path traversal rules from Phase 1.
 - [x] [P2-E] Add unresolved-reference diagnostics only where source/resolution evidence exists; otherwise preserve unresolved counts in summaries and classify affected topology as `unknown_connectivity`.
-- [ ] [P2-F] Add unit tests for every topology status, expected-isolated overlay reason, diagnostics rule, confidence rule, and exclusion rule. Current slices cover counted connectivity, confidence modifiers, structural exclusions, detached components, source-backed unresolved diagnostics, diagnostic aggregation, and decoded persisted diagnostic normalization; remaining gap is exhaustive coverage across every overlay reason/status combination.
+- [x] [P2-F] Add unit tests for every topology status, expected-isolated overlay reason, diagnostics rule, confidence rule, and exclusion rule.
 
 ## Phase 3 - Contract, API, and Reporting Surface
 
@@ -283,7 +285,7 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 | ID | Area | Scope | Target | Benchmark | Evidence | Commit | Status |
 |---|---|---|---|---|---|---|---|
 | P1-A1..P1-I | Policy | edge policy, expected-isolated policy, root rules, metadata ownership, taxonomy, baseline, cross-repo criteria | no ambiguous orphan claims; all major decisions recorded | 2026-05-20 (E5 + B0) | 2026-05-20 python + source + MCP queries | 2026-05-20 (doc-only) | closed |
-| P2-A..P2-F | Backend | derived graph-health metadata | deterministic status and reasons | B1 implementation counts | E6/E7/E8 implementation validation | current implementation slices | partially closed; P2-A..P2-E closed, P2-F remains open |
+| P2-A..P2-F | Backend | derived graph-health metadata | deterministic status and reasons | B1 implementation counts | E6/E7/E8/E9 implementation validation | current implementation slices | closed |
 | P3-A..P3-E | Contract/API | consumer surface | stable explicit status fields | B1 payload size | E6 implementation validation | current implementation slice | partially closed; P3-C/D remain open |
 | P4-A..P4-I | Web UI | graph-health filters + composition | separate filters, explanations, and safe composition with existing filters | pending | pending | pending | open |
 | P5-A..P5-D | Workflow | triage/reporting | candidate-vs-confirmed workflow | pending | pending | pending | open |
