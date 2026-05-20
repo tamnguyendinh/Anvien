@@ -406,3 +406,89 @@ Current unrelated worktree note:
 Conclusion:
 
 Backend/API/contract Graph Health derivation is implemented for counted-edge topology and expected-isolated overlays. The slice does not complete detached-component traversal, unresolved-reference diagnostics, report/explain endpoints, or Web UI filters.
+
+## E7 - Phase 2 Detached-Component Derivation Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Implement P2-D detached-component grouping in `internal/graphhealth`.
+- Preserve existing graph API and NDJSON record shapes.
+- Expose component fields through generated Web contract types.
+- Keep P2-E unresolved-reference diagnostics and P3-C/P3-D explain/report endpoints pending.
+
+AVmatrix refresh and impact commands:
+
+```powershell
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix impact ComputeSummary --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact NodeHealth --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact WebUIContractTypeScript --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `ComputeSummary` / `NodeHealth`: CRITICAL risk because graph-health metadata feeds `graphPayload`, `streamGraphNDJSON`, and `/api/graph`.
+- `WebUIContractTypeScript`: CRITICAL risk because generated Web glue and contract tests depend on it.
+- Mitigation: no primary node labels changed, no NDJSON record type changed, focused graphhealth/API/contract tests plus Web build passed.
+
+Changed files:
+
+- `internal/graphhealth/policy.go`
+- `internal/graphhealth/compute.go`
+- `internal/graphhealth/compute_test.go`
+- `internal/contracts/web_ui.go`
+- `internal/contracts/web_ui_test.go`
+- `avmatrix-web/src/generated/avmatrix-contracts.ts`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- Counted edges build both directed adjacency and weak adjacency.
+- Accepted roots are:
+  - `Process`, `Route`, and `Tool` nodes;
+  - sources of `ENTRY_POINT_OF`, `HANDLES_ROUTE`, and `HANDLES_TOOL`;
+  - main-like `Function`/`Method` nodes named `main`, `init`, `run`, `start`, or `bootstrap` when exported or framework-weighted.
+- Directed traversal from roots marks reachable nodes.
+- Weak counted-edge components with internal counted edges and no root reachability become `detached_component`.
+- Isolated nodes with no counted edge remain `true_isolated`, not detached.
+- Per-node metadata now includes `componentId`, `componentSize`, and `componentReachableFromRoot`.
+- Component root IDs stay in component summaries, not duplicated on every node. An initial measurement that repeated root IDs on each node caused excessive payload growth; the final implementation avoids that.
+- `Summary` now includes `componentCount`, `detachedComponentCount`, `rootNodeCount`, and `largestDetachedComponents`.
+
+Validation commands and results:
+
+```powershell
+go test ./internal/graphhealth
+go test ./internal/graphhealth ./internal/httpapi ./internal/contracts
+go run .\cmd\generate-web-contracts
+go run .\cmd\generate-web-contracts --check
+cd avmatrix-web; npm run build
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
+```
+
+Results:
+
+- Focused graphhealth/httpapi/contracts tests passed.
+- `go run .\cmd\generate-web-contracts --check` passed.
+- `npm run build` in `avmatrix-web` passed; Vite reported the existing chunk-size/dynamic-import warnings only.
+- `go build ./cmd/... ./internal/...` passed.
+- `go test ./cmd/... ./internal/...` passed.
+- AVmatrix refresh before benchmark passed with `nodes=21323 relationships=52940`.
+- Final `detect-changes` passed and reported `risk_level=medium`, `changed_files=10`, `changed_count=98`, `affected_count=4`. The affected processes are expected `HandleGraph -> ...` flows through `ComputeSummary` and `appendReason`.
+
+Benchmark note:
+
+- B1 records the post-detached summary: `detachedComponentCount=48`, `detached_component` node count `157`, derivation runtime `181.027ms`, JSON payload delta `+10,752,183 bytes` (`+37.84%`).
+
+Conclusion:
+
+P2-D is complete for backend derivation and generated contract shape. P2-E diagnostics remain the next backend gap before explain/report or Web filter phases should be treated as complete.

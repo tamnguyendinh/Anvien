@@ -3313,20 +3313,38 @@ export interface GraphHealthNodeMetadata {
   countedIncoming: number;
   countedOutgoing: number;
   excludedEdgeCounts?: Record<string, number>;
+  componentId?: string;
+  componentSize?: number;
+  componentRootNodeIds?: string[];
+  componentReachableFromRoot: boolean;
   expectedIsolationReasons?: GraphHealthExpectedIsolationReason[];
   diagnostics?: GraphHealthDiagnostic[];
   confidence: GraphHealthConfidence;
+}
+
+export interface GraphHealthComponentSummary {
+  id: string;
+  nodeCount: number;
+  countedEdgeCount: number;
+  detached: boolean;
+  reachableFromRoot: boolean;
+  rootNodeIds?: string[];
+  sampleNodeIds?: string[];
 }
 
 export interface GraphHealthSummary {
   policyVersion: string;
   nodeCount: number;
   countedRelationshipCount: number;
+  componentCount: number;
+  detachedComponentCount: number;
+  rootNodeCount: number;
   topologyStatusCounts: Partial<Record<GraphHealthTopologyStatus, number>>;
   expectedIsolationReasonCounts: Partial<Record<GraphHealthExpectedIsolationReason, number>>;
   confidenceCounts: Partial<Record<GraphHealthConfidence, number>>;
   diagnosticCounts: Record<string, number>;
   excludedEdgeCounts: Record<string, number>;
+  largestDetachedComponents?: GraphHealthComponentSummary[];
 }
 
 export type NodeProperties = {
@@ -3372,6 +3390,10 @@ export type NodeProperties = {
   countedIncoming?: number;
   countedOutgoing?: number;
   excludedEdgeCounts?: Record<string, number>;
+  componentId?: string;
+  componentSize?: number;
+  componentRootNodeIds?: string[];
+  componentReachableFromRoot?: boolean;
   expectedIsolationReasons?: GraphHealthExpectedIsolationReason[];
   diagnostics?: GraphHealthDiagnostic[];
   confidence?: GraphHealthConfidence;

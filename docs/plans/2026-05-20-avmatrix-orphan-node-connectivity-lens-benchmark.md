@@ -143,65 +143,72 @@ Source:
 - Repo: `E:\AVmatrix-GO`
 - Graph: `.avmatrix/graph.json`
 - Refresh command: `go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats`
-- Refresh result: `nodes=21233 relationships=52777`
+- Refresh result: `nodes=21323 relationships=52940`
 - Measurement code: temporary Go runner inside repo root importing `internal/graph` and `internal/graphhealth`, loading `.avmatrix/graph.json`, calling `graphhealth.ComputeSummary(&g)`, then removing the temporary runner.
 - Policy version: `graph-health-non-structural-v1`
 
 Implementation summary output:
 
 ```text
-runtime_ms=70.127
-base_payload_bytes=28325398
-annotated_payload_bytes=35297955
-delta_bytes=6972557
-delta_percent=24.62
+runtime_ms=181.027
+base_payload_bytes=28415767
+annotated_payload_bytes=39167950
+delta_bytes=10752183
+delta_percent=37.84
 
 topologyStatusCounts:
-  connected=2617
-  true_isolated=13894
-  no_incoming=1725
-  no_outgoing=2997
-  detached_component=0
+  connected=2581
+  true_isolated=13956
+  no_incoming=1671
+  no_outgoing=2958
+  detached_component=157
   unknown_connectivity=0
 
 expectedIsolationReasonCounts:
-  documentation=1257
-  framework_entry=36
-  test=5775
+  documentation=1258
+  framework_entry=798
+  test=5780
 
 confidenceCounts:
-  candidate=14178
-  expected=7055
+  candidate=13487
+  expected=7836
   unknown=0
   confirmed=0
 
-countedRelationshipCount=25965
-excludedEdgeCounts.structural=26812
+countedRelationshipCount=26033
+componentCount=14006
+detachedComponentCount=48
+rootNodeCount=798
+excludedEdgeCounts.structural=26909
 diagnosticCounts={}
 ```
 
 Notes:
 
-- `detached_component=0` is a placeholder result from this slice because P2-D traversal is not implemented yet; it must not be interpreted as "no detached components exist."
+- `detached_component` now represents nodes inside weak counted-edge components that have internal counted edges but no accepted root reachability.
 - `diagnosticCounts={}` is expected because P2-E source-backed unresolved diagnostics remain pending.
 - Payload size compares a content-stripped graph JSON payload before and after adding per-node Graph Health metadata plus top-level summary. NDJSON stream did not add a new summary record, so stream shape remains `node`/`relationship`.
+- Component root IDs are not repeated per node; they are reserved for component summaries to avoid excessive payload growth.
 
 | Metric | Baseline | After implementation | Delta | Interpretation |
 |---|---:|---:|---:|---|
-| Graph-health summary runtime | n/a | `70.127ms` | n/a | measured server-side derivation on current `E:\AVmatrix-GO` graph |
-| Graph payload size | `28,325,398 bytes` | `35,297,955 bytes` | `+6,972,557 bytes` (`+24.62%`) | content-stripped JSON payload with metadata embedded |
+| Graph-health summary runtime | n/a | `181.027ms` | n/a | measured server-side derivation on current `E:\AVmatrix-GO` graph with component traversal |
+| Graph payload size | `28,415,767 bytes` | `39,167,950 bytes` | `+10,752,183 bytes` (`+37.84%`) | content-stripped JSON payload with metadata embedded |
 | Web graph filter render latency | pending | pending | pending | only if Web filter implementation changes rendering |
-| `true_isolated` count | pending | `13,894` | pending | measured by `ComputeSummary`; includes expected/candidate overlay separation |
-| `no_incoming` count | pending | `1,725` | pending | measured by `ComputeSummary` |
-| `no_outgoing` count | pending | `2,997` | pending | measured by `ComputeSummary`; low-priority triage by policy |
-| `connected` count | pending | `2,617` | pending | measured by `ComputeSummary` |
-| `detached_component` count | pending | `0` | pending | placeholder until P2-D component traversal is implemented |
+| `true_isolated` count | pending | `13,956` | pending | measured by `ComputeSummary`; includes expected/candidate overlay separation |
+| `no_incoming` count | pending | `1,671` | pending | measured by `ComputeSummary` |
+| `no_outgoing` count | pending | `2,958` | pending | measured by `ComputeSummary`; low-priority triage by policy |
+| `connected` count | pending | `2,581` | pending | measured by `ComputeSummary` |
+| `detached_component` node count | pending | `157` | pending | measured by component traversal |
+| Detached component count | pending | `48` | pending | measured by component traversal |
+| Component count | pending | `14,006` | pending | measured by component traversal |
+| Root node count | pending | `798` | pending | accepted roots used for directed reachability |
 | `unknown_connectivity` count | pending | `0` | pending | placeholder until P2-E unresolved diagnostics is implemented |
-| Expected-isolated reason count: `test` | pending | `5,775` | pending | measured by `ComputeSummary` |
-| Expected-isolated reason count: `documentation` | pending | `1,257` | pending | measured by `ComputeSummary` |
-| Expected-isolated reason count: `framework_entry` | pending | `36` | pending | measured by `ComputeSummary` |
-| Confidence count: `candidate` | pending | `14,178` | pending | measured by `ComputeSummary`; not a bug/deletion verdict |
-| Confidence count: `expected` | pending | `7,055` | pending | measured by `ComputeSummary` |
+| Expected-isolated reason count: `test` | pending | `5,780` | pending | measured by `ComputeSummary` |
+| Expected-isolated reason count: `documentation` | pending | `1,258` | pending | measured by `ComputeSummary` |
+| Expected-isolated reason count: `framework_entry` | pending | `798` | pending | measured by accepted root policy |
+| Confidence count: `candidate` | pending | `13,487` | pending | measured by `ComputeSummary`; not a bug/deletion verdict |
+| Confidence count: `expected` | pending | `7,836` | pending | measured by `ComputeSummary` |
 | Diagnostic count | pending | `{}` | pending | source-backed unresolved diagnostics not implemented in this slice |
 
 ## B2 - Final Benchmark

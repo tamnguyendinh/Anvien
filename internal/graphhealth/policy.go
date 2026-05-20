@@ -116,23 +116,42 @@ type Diagnostic struct {
 // NodeHealth is the derived graph-health metadata attached to each node
 // (populated into Node.Properties under "graphHealth" or flat keys for consumers).
 type NodeHealth struct {
-	TopologyStatus           TopologyStatus `json:"topologyStatus"`
-	CountedIncoming          int            `json:"countedIncoming"`
-	CountedOutgoing          int            `json:"countedOutgoing"`
-	ExcludedEdgeCounts       map[string]int `json:"excludedEdgeCounts,omitempty"`
-	ExpectedIsolationReasons []string       `json:"expectedIsolationReasons,omitempty"`
-	Diagnostics              []Diagnostic   `json:"diagnostics,omitempty"`
-	Confidence               string         `json:"confidence"`
+	TopologyStatus             TopologyStatus `json:"topologyStatus"`
+	CountedIncoming            int            `json:"countedIncoming"`
+	CountedOutgoing            int            `json:"countedOutgoing"`
+	ExcludedEdgeCounts         map[string]int `json:"excludedEdgeCounts,omitempty"`
+	ComponentID                string         `json:"componentId,omitempty"`
+	ComponentSize              int            `json:"componentSize,omitempty"`
+	ComponentRootNodeIDs       []string       `json:"componentRootNodeIds,omitempty"`
+	ComponentReachableFromRoot bool           `json:"componentReachableFromRoot"`
+	ExpectedIsolationReasons   []string       `json:"expectedIsolationReasons,omitempty"`
+	Diagnostics                []Diagnostic   `json:"diagnostics,omitempty"`
+	Confidence                 string         `json:"confidence"`
+}
+
+// ComponentSummary captures component-level graph-health explanation data.
+type ComponentSummary struct {
+	ID                string   `json:"id"`
+	NodeCount         int      `json:"nodeCount"`
+	CountedEdgeCount  int      `json:"countedEdgeCount"`
+	Detached          bool     `json:"detached"`
+	ReachableFromRoot bool     `json:"reachableFromRoot"`
+	RootNodeIDs       []string `json:"rootNodeIds,omitempty"`
+	SampleNodeIDs     []string `json:"sampleNodeIds,omitempty"`
 }
 
 // Summary captures graph-level inventory for consumer surfaces.
 type Summary struct {
-	PolicyVersion                 string         `json:"policyVersion"`
-	NodeCount                     int            `json:"nodeCount"`
-	CountedRelationshipCount      int            `json:"countedRelationshipCount"`
-	TopologyStatusCounts          map[string]int `json:"topologyStatusCounts"`
-	ExpectedIsolationReasonCounts map[string]int `json:"expectedIsolationReasonCounts"`
-	ConfidenceCounts              map[string]int `json:"confidenceCounts"`
-	DiagnosticCounts              map[string]int `json:"diagnosticCounts"`
-	ExcludedEdgeCounts            map[string]int `json:"excludedEdgeCounts"`
+	PolicyVersion                 string             `json:"policyVersion"`
+	NodeCount                     int                `json:"nodeCount"`
+	CountedRelationshipCount      int                `json:"countedRelationshipCount"`
+	ComponentCount                int                `json:"componentCount"`
+	DetachedComponentCount        int                `json:"detachedComponentCount"`
+	RootNodeCount                 int                `json:"rootNodeCount"`
+	TopologyStatusCounts          map[string]int     `json:"topologyStatusCounts"`
+	ExpectedIsolationReasonCounts map[string]int     `json:"expectedIsolationReasonCounts"`
+	ConfidenceCounts              map[string]int     `json:"confidenceCounts"`
+	DiagnosticCounts              map[string]int     `json:"diagnosticCounts"`
+	ExcludedEdgeCounts            map[string]int     `json:"excludedEdgeCounts"`
+	LargestDetachedComponents     []ComponentSummary `json:"largestDetachedComponents,omitempty"`
 }

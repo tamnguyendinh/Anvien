@@ -1,6 +1,9 @@
 package graphhealth
 
 import (
+	"encoding/json"
+	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
@@ -25,20 +28,49 @@ func ComputeSummary(g *graph.Graph) Summary {
 	summary.NodeCount = len(g.Nodes)
 
 	// 1. Build counted degree maps using only IsCounted relationships.
+	nodeIDs := make([]string, 0, len(g.Nodes))
+	nodeByID := make(map[string]graph.Node, len(g.Nodes))
+	for _, node := range g.Nodes {
+		nodeIDs = append(nodeIDs, node.ID)
+		nodeByID[node.ID] = node
+	}
+	sort.Strings(nodeIDs)
+
 	countedIn := make(map[string]int, len(g.Nodes))
 	countedOut := make(map[string]int, len(g.Nodes))
 	excludedByNode := make(map[string]map[string]int, len(g.Nodes))
+	directedOut := make(map[string][]string, len(g.Nodes))
+	weakAdjacency := make(map[string][]string, len(g.Nodes))
+	rootNodeIDs := make(map[string]bool, len(g.Nodes))
 	for _, rel := range g.Relationships {
 		if IsCounted(rel.Type) {
 			countedIn[rel.TargetID]++
 			countedOut[rel.SourceID]++
 			summary.CountedRelationshipCount++
+			if _, ok := nodeByID[rel.SourceID]; ok {
+				if _, ok := nodeByID[rel.TargetID]; ok {
+					directedOut[rel.SourceID] = append(directedOut[rel.SourceID], rel.TargetID)
+					weakAdjacency[rel.SourceID] = append(weakAdjacency[rel.SourceID], rel.TargetID)
+					weakAdjacency[rel.TargetID] = append(weakAdjacency[rel.TargetID], rel.SourceID)
+				}
+			}
+			if rel.Type == graph.RelEntryPointOf || rel.Type == graph.RelHandlesRoute || rel.Type == graph.RelHandlesTool {
+				if _, ok := nodeByID[rel.SourceID]; ok {
+					rootNodeIDs[rel.SourceID] = true
+				}
+			}
 			continue
 		}
 		category := excludedEdgeCategory(rel.Type)
 		summary.ExcludedEdgeCounts[category]++
 		incrementNestedCount(excludedByNode, rel.SourceID, category)
 		incrementNestedCount(excludedByNode, rel.TargetID, category)
+	}
+	for _, targets := range directedOut {
+		sort.Strings(targets)
+	}
+	for _, neighbors := range weakAdjacency {
+		sort.Strings(neighbors)
 	}
 
 	// 2. Expected-isolation heuristic bridged from existing path/process policies.
@@ -70,9 +102,6 @@ func ComputeSummary(g *graph.Graph) Summary {
 		if boolProperty(n, "isExported") {
 			reasons = append(reasons, ReasonExportedAPI) // modifier, not auto-hide
 		}
-		if label == scopeir.NodeRoute || label == scopeir.NodeTool || strings.HasPrefix(strings.ToLower(name), "main") {
-			reasons = append(reasons, ReasonFrameworkEntry)
-		}
 		// CLI/MCP rough: path based for stub
 		if strings.Contains(lower, "/cmd/") || strings.Contains(lower, "/internal/cli/") || strings.Contains(lower, "/internal/mcp/") {
 			reasons = append(reasons, ReasonCLIMCP)
@@ -80,15 +109,37 @@ func ComputeSummary(g *graph.Graph) Summary {
 		return reasons
 	}
 
-	// 3. Assign topology + confidence per node (simple version; detached deferred to P2-D).
+	for _, node := range g.Nodes {
+		if isAcceptedRoot(node) {
+			rootNodeIDs[node.ID] = true
+		}
+	}
+	reachableFromRoot := reachableNodes(rootNodeIDs, directedOut)
+	componentByNode, components := computeComponents(nodeIDs, weakAdjacency, rootNodeIDs, reachableFromRoot)
+	summary.ComponentCount = len(components)
+	summary.RootNodeCount = len(rootNodeIDs)
+	for _, component := range components {
+		if component.Detached {
+			summary.DetachedComponentCount++
+		}
+	}
+	summary.LargestDetachedComponents = largestDetachedComponents(components, 10)
+
+	// 3. Assign topology + confidence per node.
 	for i := range g.Nodes {
 		n := &g.Nodes[i]
 		in := countedIn[n.ID]
 		out := countedOut[n.ID]
 		reasons := isExpected(*n)
+		if rootNodeIDs[n.ID] {
+			reasons = appendReason(reasons, ReasonFrameworkEntry)
+		}
+		component := components[componentByNode[n.ID]]
 
 		var status TopologyStatus
 		switch {
+		case component.Detached:
+			status = TopologyDetached
 		case in > 0 && out > 0:
 			status = TopologyConnected
 		case in == 0 && out == 0:
@@ -110,12 +161,15 @@ func ComputeSummary(g *graph.Graph) Summary {
 		}
 
 		health := NodeHealth{
-			TopologyStatus:           status,
-			CountedIncoming:          in,
-			CountedOutgoing:          out,
-			ExcludedEdgeCounts:       cloneCounts(excludedByNode[n.ID]),
-			ExpectedIsolationReasons: reasons,
-			Confidence:               conf,
+			TopologyStatus:             status,
+			CountedIncoming:            in,
+			CountedOutgoing:            out,
+			ExcludedEdgeCounts:         cloneCounts(excludedByNode[n.ID]),
+			ComponentID:                component.ID,
+			ComponentSize:              component.NodeCount,
+			ComponentReachableFromRoot: component.ReachableFromRoot,
+			ExpectedIsolationReasons:   reasons,
+			Confidence:                 conf,
 		}
 		// Attach for consumers (flat + structured for easy access)
 		if n.Properties == nil {
@@ -129,6 +183,10 @@ func ComputeSummary(g *graph.Graph) Summary {
 		} else {
 			delete(n.Properties, "excludedEdgeCounts")
 		}
+		n.Properties["componentId"] = health.ComponentID
+		n.Properties["componentSize"] = health.ComponentSize
+		n.Properties["componentReachableFromRoot"] = health.ComponentReachableFromRoot
+		delete(n.Properties, "componentRootNodeIds")
 		n.Properties["expectedIsolationReasons"] = health.ExpectedIsolationReasons
 		n.Properties["confidence"] = health.Confidence
 		// Also embed full for typed consumers
@@ -136,8 +194,7 @@ func ComputeSummary(g *graph.Graph) Summary {
 		addNodeHealthToSummary(&summary, health)
 	}
 
-	// P2-D detached_component and P2-E unresolved diagnostics are stubs here.
-	// Full version will compute components and attach "detached" + root explanations.
+	// P2-E unresolved diagnostics are deferred until source/resolution evidence is available.
 	return summary
 }
 
@@ -175,6 +232,136 @@ func addNodeHealthToSummary(summary *Summary, health NodeHealth) {
 	}
 }
 
+type componentInfo struct {
+	ID                string
+	NodeIDs           []string
+	NodeCount         int
+	CountedEdgeCount  int
+	RootNodeIDs       []string
+	ReachableFromRoot bool
+	Detached          bool
+}
+
+func computeComponents(nodeIDs []string, weakAdjacency map[string][]string, rootNodeIDs map[string]bool, reachableFromRoot map[string]bool) (map[string]int, []componentInfo) {
+	seen := make(map[string]bool, len(nodeIDs))
+	componentByNode := make(map[string]int, len(nodeIDs))
+	components := make([]componentInfo, 0)
+	for _, nodeID := range nodeIDs {
+		if seen[nodeID] {
+			continue
+		}
+		queue := []string{nodeID}
+		seen[nodeID] = true
+		nodes := make([]string, 0)
+		for len(queue) > 0 {
+			current := queue[0]
+			queue = queue[1:]
+			nodes = append(nodes, current)
+			for _, next := range weakAdjacency[current] {
+				if seen[next] {
+					continue
+				}
+				seen[next] = true
+				queue = append(queue, next)
+			}
+		}
+		sort.Strings(nodes)
+		component := componentInfo{
+			ID:        fmt.Sprintf("component_%06d", len(components)+1),
+			NodeIDs:   nodes,
+			NodeCount: len(nodes),
+		}
+		for _, id := range nodes {
+			componentByNode[id] = len(components)
+			component.CountedEdgeCount += countedNeighborEdges(id, weakAdjacency)
+			if rootNodeIDs[id] {
+				component.RootNodeIDs = append(component.RootNodeIDs, id)
+			}
+			if reachableFromRoot[id] {
+				component.ReachableFromRoot = true
+			}
+		}
+		component.CountedEdgeCount /= 2
+		sort.Strings(component.RootNodeIDs)
+		if len(component.RootNodeIDs) > 0 {
+			component.ReachableFromRoot = true
+		}
+		component.Detached = component.CountedEdgeCount > 0 && !component.ReachableFromRoot
+		components = append(components, component)
+	}
+	return componentByNode, components
+}
+
+func countedNeighborEdges(nodeID string, weakAdjacency map[string][]string) int {
+	return len(weakAdjacency[nodeID])
+}
+
+func reachableNodes(rootNodeIDs map[string]bool, directedOut map[string][]string) map[string]bool {
+	reachable := make(map[string]bool, len(rootNodeIDs))
+	queue := make([]string, 0, len(rootNodeIDs))
+	for rootID := range rootNodeIDs {
+		reachable[rootID] = true
+		queue = append(queue, rootID)
+	}
+	sort.Strings(queue)
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+		for _, next := range directedOut[current] {
+			if reachable[next] {
+				continue
+			}
+			reachable[next] = true
+			queue = append(queue, next)
+		}
+	}
+	return reachable
+}
+
+func largestDetachedComponents(components []componentInfo, limit int) []ComponentSummary {
+	out := make([]ComponentSummary, 0)
+	for _, component := range components {
+		if !component.Detached {
+			continue
+		}
+		out = append(out, componentSummary(component))
+	}
+	sort.Slice(out, func(i int, j int) bool {
+		if out[i].NodeCount != out[j].NodeCount {
+			return out[i].NodeCount > out[j].NodeCount
+		}
+		return out[i].ID < out[j].ID
+	})
+	if len(out) > limit {
+		out = out[:limit]
+	}
+	return out
+}
+
+func componentSummary(component componentInfo) ComponentSummary {
+	return ComponentSummary{
+		ID:                component.ID,
+		NodeCount:         component.NodeCount,
+		CountedEdgeCount:  component.CountedEdgeCount,
+		Detached:          component.Detached,
+		ReachableFromRoot: component.ReachableFromRoot,
+		RootNodeIDs:       cloneStrings(component.RootNodeIDs),
+		SampleNodeIDs:     firstStrings(component.NodeIDs, 5),
+	}
+}
+
+func firstStrings(values []string, limit int) []string {
+	if len(values) == 0 {
+		return nil
+	}
+	if len(values) < limit {
+		limit = len(values)
+	}
+	out := make([]string, limit)
+	copy(out, values[:limit])
+	return out
+}
+
 func incrementNestedCount(counts map[string]map[string]int, nodeID string, category string) {
 	if nodeID == "" {
 		return
@@ -196,6 +383,15 @@ func cloneCounts(counts map[string]int) map[string]int {
 	return out
 }
 
+func cloneStrings(values []string) []string {
+	if len(values) == 0 {
+		return nil
+	}
+	out := make([]string, len(values))
+	copy(out, values)
+	return out
+}
+
 func excludedEdgeCategory(t graph.RelationshipType) string {
 	if StructuralEdgeTypes[t] {
 		return ExcludedEdgeStructural
@@ -210,6 +406,39 @@ func hasAutomaticExpectedReason(reasons []string) bool {
 		}
 	}
 	return false
+}
+
+func appendReason(reasons []string, reason string) []string {
+	for _, existing := range reasons {
+		if existing == reason {
+			return reasons
+		}
+	}
+	return append(reasons, reason)
+}
+
+func isAcceptedRoot(n graph.Node) bool {
+	switch n.Label {
+	case scopeir.NodeProcess, scopeir.NodeRoute, scopeir.NodeTool:
+		return true
+	case scopeir.NodeFunction, scopeir.NodeMethod:
+		name := strings.ToLower(strings.TrimSpace(stringProperty(n, "name")))
+		if !isMainLikeName(name) {
+			return false
+		}
+		return boolProperty(n, "isExported") || floatProperty(n, "astFrameworkMultiplier") > 1
+	default:
+		return false
+	}
+}
+
+func isMainLikeName(name string) bool {
+	switch name {
+	case "main", "init", "run", "start", "bootstrap":
+		return true
+	default:
+		return false
+	}
 }
 
 func stringProperty(n graph.Node, key string) string {
@@ -234,6 +463,28 @@ func boolProperty(n graph.Node, key string) bool {
 		}
 	}
 	return false
+}
+
+func floatProperty(n graph.Node, key string) float64 {
+	if n.Properties == nil {
+		return 0
+	}
+	if v, ok := n.Properties[key]; ok {
+		switch value := v.(type) {
+		case float64:
+			return value
+		case float32:
+			return float64(value)
+		case int:
+			return float64(value)
+		case int64:
+			return float64(value)
+		case json.Number:
+			out, _ := value.Float64()
+			return out
+		}
+	}
+	return 0
 }
 
 func isTestPath(lowerPath, name string) bool {
