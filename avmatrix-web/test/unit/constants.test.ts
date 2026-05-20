@@ -11,6 +11,7 @@ import {
   NODE_COLORS,
   NODE_SIZES,
   COMMUNITY_COLORS,
+  DOCUMENTATION_NODE_LABEL,
   getCommunityColor,
   DEFAULT_VISIBLE_LABELS,
   FILTERABLE_LABELS,
@@ -28,6 +29,7 @@ import {
   getNodeSize,
   getRelationshipTypeCounts,
   getNodeLabelCounts,
+  getNodeDisplayLabel,
 } from "../../src/lib/constants";
 
 describe("NODE_COLORS", () => {
@@ -49,6 +51,10 @@ describe("NODE_COLORS", () => {
 
   it("returns a safe fallback color for unknown future labels", () => {
     expect(getNodeColor("FutureNode")).toMatch(/^#[0-9a-f]{6}$/i);
+  });
+
+  it("has a dedicated color for the Documentation display filter", () => {
+    expect(getNodeColor(DOCUMENTATION_NODE_LABEL)).toBe("#84cc16");
   });
 });
 
@@ -93,6 +99,7 @@ describe("getCommunityColor", () => {
 describe("DEFAULT_VISIBLE_LABELS", () => {
   it("includes common structural and code labels", () => {
     expect(DEFAULT_VISIBLE_LABELS).toContain("File");
+    expect(DEFAULT_VISIBLE_LABELS).toContain(DOCUMENTATION_NODE_LABEL);
     expect(DEFAULT_VISIBLE_LABELS).toContain("Function");
     expect(DEFAULT_VISIBLE_LABELS).toContain("Class");
   });
@@ -105,7 +112,16 @@ describe("DEFAULT_VISIBLE_LABELS", () => {
 
 describe("FILTERABLE_LABELS", () => {
   it("includes every generated graph node label", () => {
-    expect(FILTERABLE_LABELS).toEqual([...NODE_LABELS]);
+    for (const label of NODE_LABELS) {
+      expect(FILTERABLE_LABELS).toContain(label);
+    }
+  });
+
+  it("adds Documentation as the explicit display-only filter after File", () => {
+    expect(FILTERABLE_LABELS).toContain(DOCUMENTATION_NODE_LABEL);
+    expect(FILTERABLE_LABELS.indexOf(DOCUMENTATION_NODE_LABEL)).toBe(
+      FILTERABLE_LABELS.indexOf("File") + 1,
+    );
   });
 
   it("every filterable label has a defined color in NODE_COLORS", () => {
@@ -188,6 +204,42 @@ describe("graph display inventory helpers", () => {
     }
     expect(labels.at(-1)).toBe("FutureNode");
     expect(getNodeLabelCounts(nodes).get("FutureNode")).toBe(1);
+  });
+
+  it("groups documentation files under the Documentation display filter", () => {
+    const nodes = [
+      {
+        id: "readme",
+        label: "File",
+        properties: { name: "README.md", filePath: "README.md" },
+      },
+      {
+        id: "guide",
+        label: "File",
+        properties: { name: "guide.md", filePath: "docs/guide.md" },
+      },
+      {
+        id: "section",
+        label: "Section",
+        properties: { name: "Overview", filePath: "docs/guide.md" },
+      },
+      {
+        id: "source",
+        label: "File",
+        properties: { name: "index.ts", filePath: "src/index.ts" },
+      },
+    ] as Array<Pick<GraphNode, "id" | "label" | "properties">>;
+
+    const labels = getFilterableNodeLabelsForGraph(nodes);
+    const counts = getNodeLabelCounts(nodes);
+
+    expect(getNodeDisplayLabel(nodes[0])).toBe(DOCUMENTATION_NODE_LABEL);
+    expect(labels).toContain(DOCUMENTATION_NODE_LABEL);
+    expect(labels.indexOf(DOCUMENTATION_NODE_LABEL)).toBe(
+      labels.indexOf("File") + 1,
+    );
+    expect(counts.get(DOCUMENTATION_NODE_LABEL)).toBe(3);
+    expect(counts.get("File")).toBe(1);
   });
 
   it("returns every relationship type present in a graph, including unknown future types", () => {

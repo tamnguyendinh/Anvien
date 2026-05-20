@@ -2,7 +2,7 @@
 
 Date: 2026-05-20
 
-Status: reopened - visual island and documentation center evidence required
+Status: recorded - visual island and documentation center validation passing
 
 Companion files:
 
@@ -501,7 +501,7 @@ Final status:
 
 Date: 2026-05-20
 
-Status: recorded for plan update; implementation pending
+Status: recorded for plan update and implementation
 
 User-provided artifacts:
 
@@ -521,7 +521,7 @@ Clarification recorded:
 - The implementation must not copy the sample by reducing, hiding, filtering, pruning, thinning, or reweighting graph edges.
 - Relationship data, edge count, cross-cluster links, and existing edge visibility behavior must be preserved unless the user creates a separate edge-display plan.
 
-Evidence required before future closure:
+Evidence recorded in E14:
 
 - Code diff review proving only node placement/cluster geometry changed, not graph relationship data.
 - Browser screenshot after graph ready on the representative large repo showing separated two-dimensional color islands.
@@ -533,7 +533,7 @@ Evidence required before future closure:
 
 Date: 2026-05-20
 
-Status: recorded for plan update; implementation pending
+Status: recorded for plan update and implementation
 
 User clarification:
 
@@ -548,7 +548,7 @@ Plan impact:
 - Raw graph labels, relationship data, edge counts, edge visibility rules, and analyzer behavior remain preserved unless implementation evidence proves a narrow payload change is required.
 - Outer filter/color islands remain arranged as colored archipelagos around the Documentation center.
 
-Evidence required before future closure:
+Evidence recorded in E14:
 
 - Code diff showing the Documentation filter/color/classification path.
 - Unit or browser diagnostic proving documentation nodes are grouped into one `Documentation` display filter.
@@ -556,3 +556,68 @@ Evidence required before future closure:
 - Screenshot evidence showing the Documentation center island and surrounding outer color islands.
 - Edge preservation evidence showing relationship count and existing edge visibility behavior remain intact.
 - Re-run focused layout tests, full Web build, full Web unit tests, full Web e2e tests, root product Go build, and launcher Go builds.
+
+## E14 - Documentation Center Implementation And Validation Evidence
+
+Date: 2026-05-20
+
+Status: recorded
+
+AVmatrix impact and risk evidence:
+
+- `avmatrix analyze --force` refreshed the index before implementation.
+- `avmatrix impact applyFilterBasedClusteredLayout --repo "E:\AVmatrix-GO" --direction upstream --depth 2 --include-tests` returned HIGH risk; blast radius included `useSigma` and `GraphCanvas`.
+- `avmatrix impact knowledgeGraphToGraphology --repo "E:\AVmatrix-GO" --direction upstream --depth 2 --include-tests` returned MEDIUM risk; blast radius included `GraphCanvas` and unit tests.
+- `avmatrix impact getNodeColor`, `getNodeLabelCounts`, `getFilterableNodeLabelsForGraph`, and `getNodeTypeIcon` returned CRITICAL risk because they affect filter UI and graph display inventory.
+
+Implementation files:
+
+- `avmatrix-web/src/lib/constants.ts`
+- `avmatrix-web/src/lib/graph-adapter.ts`
+- `avmatrix-web/src/components/FileTreePanel.tsx`
+- `avmatrix-web/test/unit/constants.test.ts`
+- `avmatrix-web/test/unit/filter-panel.test.ts`
+- `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts`
+
+Implementation summary:
+
+- Added display-only `Documentation` filter label with dedicated color `#84cc16`.
+- Added documentation classification from existing facts: file path, directory segment, extension, file name, and node metadata.
+- Added `getNodeDisplayLabel` so documentation nodes become `Documentation` for Web filtering and layout while preserving raw graph label in `rawNodeType`.
+- Updated clustered layout so `Documentation` is placed at the graph layout origin and all other display-filter islands are distributed around it.
+- Re-centered per-cluster organic offsets so the intended island center is the actual island bounding center.
+- Kept relationship conversion unchanged; no edge pruning, hiding, thinning, or backend schema change was introduced.
+
+Validation commands:
+
+- `npm --prefix avmatrix-web run test -- test/unit/constants.test.ts test/unit/filter-panel.test.ts test/unit/graph-adapter.edge-geometry.test.ts`
+  - Passed: 3 files, 53 tests.
+- `npm --prefix avmatrix-web run build`
+  - Passed; Vite reported existing chunk-size/dynamic-import warnings only.
+- `npm --prefix avmatrix-web run test`
+  - Passed: 43 files, 344 tests.
+- `npm --prefix avmatrix-web run test:e2e -- --workers=1`
+  - Passed: 42 tests in 25.6 minutes.
+- `go build ./cmd/... ./internal/...`
+  - Passed.
+- `go build ./...` in `avmatrix-launcher/src`
+  - Passed.
+- `go build ./...` in `avmatrix-launcher/server-wrapper`
+  - Passed.
+
+Pre-commit AVmatrix change detection:
+
+- `avmatrix analyze --force`
+  - Passed before the final change-scope check.
+- `avmatrix detect-changes --repo "E:\AVmatrix-GO" --scope all`
+  - Passed with expected Web-only/doc scope: changed files `9`, changed symbols `156`, affected process count `6`, risk level `high`.
+  - Affected processes: `PlaceCluster -> CompareKnownOrder`, `PlaceCluster -> GetDisplayGraphRelationships`, `PlaceCluster -> GetFileExtension`, `PlaceCluster -> GetFileStem`, `PlaceCluster -> GetCommunityColor`, and `PlaceCluster -> GetEdgeInfo`.
+  - Scope review: expected Web constants/filter classification, graph adapter layout, FileTreePanel icon, unit tests, and plan evidence files. No backend graph schema, analyzer, relationship extraction, or edge data contract change was included.
+
+Browser evidence:
+
+- Screenshot: `reports/problem/screenshot_20260520_documentation_center_after.png`.
+- Diagnostics: `reports/problem/screenshot_20260520_documentation_center_after-diagnostics.json`.
+- Project: `AVmatrix`.
+- UI filter evidence: `Documentation (1335)`.
+- Runtime diagnostics: `nodeCount=21761`, `lastRelationshipCount=54298`, `layout.starts=0`, `layout.stops=0`, `manualOptimizerInvocations=0`, `heartbeat.reconnects=0`, `reconnectBanner.shows=0`.

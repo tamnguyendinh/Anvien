@@ -2,7 +2,7 @@
 
 Date: 2026-05-20
 
-Status: reopened - visual island and documentation center benchmark required
+Status: recorded - visual island and documentation center validation passing
 
 Companion files:
 
@@ -188,7 +188,7 @@ Final benchmark interpretation, historical before visual reopen:
 
 Date: 2026-05-20
 
-Status: pending implementation and validation
+Status: recorded
 
 User-provided benchmark evidence:
 
@@ -223,17 +223,17 @@ Required final benchmark table after implementation:
 
 | Graph source | Node count | Relationship count | Cluster count | Visual result | Optimizer result |
 |---|---:|---:|---:|---|---|
-| `Restaurant_manager` local index | pending | pending | pending | pending screenshot and metrics | pending diagnostics |
+| `AVmatrix` local index | 21,761 | 54,298 | 16 display labels in visual-scale diagnostics | `reports/problem/screenshot_20260520_documentation_center_after.png`; Documentation filter visible as `Documentation (1335)`; node size cap remained `3` | e2e graph-load diagnostics: `layout.starts=0`, `layout.stops=0`, `manualOptimizerInvocations=0`; manual optimizer e2e increments only after button click |
 
 Closure requirement:
 
-- B6 must be filled with actual post-implementation measurements before this plan can be closed again.
+- B6 is filled with post-implementation measurements and screenshot-backed diagnostics.
 
 ## B7 - Documentation Center Benchmark Requirement
 
 Date: 2026-05-20
 
-Status: pending implementation and validation
+Status: recorded
 
 Benchmark interpretation:
 
@@ -252,6 +252,17 @@ Required measurements:
 | Outer island separation from Documentation | screenshot-backed bounds or browser diagnostics | non-documentation clusters remain outside the Documentation center island with visible gutters |
 | Raw graph preservation | edge count diagnostics and metadata assertion | raw labels, relationship count, and edge visibility behavior are preserved |
 
+Recorded measurements:
+
+| Measurement | Evidence | Result |
+|---|---|---|
+| Documentation node count | `reports/problem/screenshot_20260520_documentation_center_after-diagnostics.json` and UI filter title | `Documentation (1335)` on `AVmatrix` |
+| Documentation color | `avmatrix-web/test/unit/constants.test.ts` and `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts` | `getNodeColor("Documentation")` is `#84cc16`; documentation nodes render with that color |
+| Documentation center distance | `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts` | Documentation island center is less than `1` graph coordinate unit from the layout origin |
+| Outer island separation from Documentation | `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts` and screenshot | non-documentation islands remain outside the centered Documentation island with circular gap greater than `200` graph coordinate units in the fixture |
+| Raw graph preservation | `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts`, Web build, full unit, full e2e | raw node label is preserved as `rawNodeType`; relationship count/edge visibility behavior remains covered |
+| No auto optimizer | full e2e `server-connect.spec.ts` | after graph load: `layout.starts=0`, `layout.stops=0`, `manualOptimizerInvocations=0` |
+
 Closure requirement:
 
-- B7 must be filled with actual post-implementation measurements before this plan can be closed again.
+- B7 is filled with post-implementation measurements.

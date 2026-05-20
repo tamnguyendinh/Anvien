@@ -8,7 +8,7 @@ import {
   getScaledNodeSize,
   knowledgeGraphToGraphology,
 } from "../../src/lib/graph-adapter";
-import { getNodeColor } from "../../src/lib/constants";
+import { DOCUMENTATION_NODE_LABEL, getNodeColor } from "../../src/lib/constants";
 import type { GraphRelationship } from "../../src/generated/avmatrix-contracts";
 import {
   createCallsRelationship,
@@ -33,10 +33,26 @@ const createTypedNode = (
     },
   }) as const;
 
+type ClusterBounds = {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+};
+
+type ClusterGeometry = ClusterBounds & {
+  centerX: number;
+  centerY: number;
+  width: number;
+  height: number;
+  radius: number;
+  count: number;
+};
+
 const getBoundsByType = (sigmaGraph: ReturnType<typeof knowledgeGraphToGraphology>) => {
   const boundsByType = new Map<
     string,
-    { minX: number; maxX: number; minY: number; maxY: number }
+    ClusterBounds & { count: number }
   >();
 
   for (const nodeId of sigmaGraph.nodes()) {
@@ -48,35 +64,57 @@ const getBoundsByType = (sigmaGraph: ReturnType<typeof knowledgeGraphToGrapholog
         maxX: Number.NEGATIVE_INFINITY,
         minY: Number.POSITIVE_INFINITY,
         maxY: Number.NEGATIVE_INFINITY,
+        count: 0,
       };
     current.minX = Math.min(current.minX, attributes.x);
     current.maxX = Math.max(current.maxX, attributes.x);
     current.minY = Math.min(current.minY, attributes.y);
     current.maxY = Math.max(current.maxY, attributes.y);
+    current.count++;
     boundsByType.set(attributes.nodeType, current);
   }
 
   return boundsByType;
 };
 
-const getBoundsGap = (
-  left: { minX: number; maxX: number; minY: number; maxY: number },
-  right: { minX: number; maxX: number; minY: number; maxY: number },
-): number => {
-  const horizontalGap =
-    left.maxX < right.minX
-      ? right.minX - left.maxX
-      : right.maxX < left.minX
-        ? left.minX - right.maxX
-        : 0;
-  const verticalGap =
-    left.maxY < right.minY
-      ? right.minY - left.maxY
-      : right.maxY < left.minY
-        ? left.minY - right.maxY
-        : 0;
+const getGeometryByType = (
+  sigmaGraph: ReturnType<typeof knowledgeGraphToGraphology>,
+) => {
+  const geometryByType = new Map<string, ClusterGeometry>();
 
-  return Math.max(horizontalGap, verticalGap);
+  for (const [label, bounds] of getBoundsByType(sigmaGraph)) {
+    const width = bounds.maxX - bounds.minX;
+    const height = bounds.maxY - bounds.minY;
+    const centerX = bounds.minX + width / 2;
+    const centerY = bounds.minY + height / 2;
+    geometryByType.set(label, {
+      ...bounds,
+      centerX,
+      centerY,
+      width,
+      height,
+      radius: Math.hypot(width, height) / 2,
+    });
+  }
+
+  return geometryByType;
+};
+
+const getCircularGap = (
+  left: ClusterGeometry,
+  right: ClusterGeometry,
+): number => {
+  return (
+    Math.hypot(left.centerX - right.centerX, left.centerY - right.centerY) -
+    left.radius -
+    right.radius
+  );
+};
+
+const getAngleProgress = (x: number, y: number): number => {
+  const startAngle = -Math.PI / 2;
+  const fullCircle = Math.PI * 2;
+  return (Math.atan2(y, x) - startAngle + fullCircle) % fullCircle;
 };
 
 describe("knowledgeGraphToGraphology edge geometry", () => {
@@ -256,7 +294,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     }
   });
 
-  it("keeps each node type in its own separated visual region", () => {
+  it("keeps each node type in its own separated visual island", () => {
     const graph = createKnowledgeGraph();
     const nodes = [
       createFileNode("a.ts", "src/a.ts"),
@@ -270,25 +308,25 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     for (const node of nodes) graph.addNode(node);
 
     const sigmaGraph = knowledgeGraphToGraphology(graph);
-    const boundsByType = getBoundsByType(sigmaGraph);
+    const geometryByType = getGeometryByType(sigmaGraph);
 
-    const bounds = [...boundsByType.values()];
-    for (let leftIndex = 0; leftIndex < bounds.length; leftIndex++) {
-      for (let rightIndex = leftIndex + 1; rightIndex < bounds.length; rightIndex++) {
-        const left = bounds[leftIndex];
-        const right = bounds[rightIndex];
-        const separated =
-          left.maxX < right.minX ||
-          right.maxX < left.minX ||
-          left.maxY < right.minY ||
-          right.maxY < left.minY;
+    const geometries = [...geometryByType.values()];
+    for (let leftIndex = 0; leftIndex < geometries.length; leftIndex++) {
+      for (
+        let rightIndex = leftIndex + 1;
+        rightIndex < geometries.length;
+        rightIndex++
+      ) {
+        const left = geometries[leftIndex];
+        const right = geometries[rightIndex];
+        const gap = getCircularGap(left, right);
 
-        expect(separated).toBe(true);
+        expect(gap).toBeGreaterThanOrEqual(100);
       }
     }
   });
 
-  it("keeps imbalanced node type clusters visually separated with a large gutter", () => {
+  it("keeps imbalanced node type islands visually separated with a large gutter", () => {
     const graph = createKnowledgeGraph();
     const countsByLabel = new Map([
       ["Function", 900],
@@ -305,20 +343,89 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     }
 
     const sigmaGraph = knowledgeGraphToGraphology(graph);
-    const bounds = [...getBoundsByType(sigmaGraph).entries()];
+    const geometries = [...getGeometryByType(sigmaGraph).entries()];
 
-    for (let leftIndex = 0; leftIndex < bounds.length; leftIndex++) {
-      for (let rightIndex = leftIndex + 1; rightIndex < bounds.length; rightIndex++) {
-        const [leftLabel, left] = bounds[leftIndex];
-        const [rightLabel, right] = bounds[rightIndex];
-        const gap = getBoundsGap(left, right);
+    for (let leftIndex = 0; leftIndex < geometries.length; leftIndex++) {
+      for (
+        let rightIndex = leftIndex + 1;
+        rightIndex < geometries.length;
+        rightIndex++
+      ) {
+        const [leftLabel, left] = geometries[leftIndex];
+        const [rightLabel, right] = geometries[rightIndex];
+        const gap = getCircularGap(left, right);
 
         expect(
           gap,
-          `${leftLabel} and ${rightLabel} should be separated enough to read as different color regions`,
+          `${leftLabel} and ${rightLabel} should be separated enough to read as different color islands`,
         ).toBeGreaterThanOrEqual(500);
       }
     }
+  });
+
+  it("lays out medium and large clusters as two-dimensional islands instead of rails", () => {
+    const graph = createKnowledgeGraph();
+    const countsByLabel = new Map([
+      ["Function", 196],
+      ["File", 144],
+      ["Class", 81],
+    ]);
+
+    for (const [label, count] of countsByLabel) {
+      for (let index = 0; index < count; index++) {
+        graph.addNode(createTypedNode(label, index));
+      }
+    }
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const geometries = getGeometryByType(sigmaGraph);
+
+    for (const [label, geometry] of geometries) {
+      const aspectRatio =
+        Math.max(geometry.width, geometry.height) /
+        Math.max(1, Math.min(geometry.width, geometry.height));
+
+      expect(
+        geometry.width,
+        `${label} should have meaningful horizontal spread`,
+      ).toBeGreaterThan(250);
+      expect(
+        geometry.height,
+        `${label} should have meaningful vertical spread`,
+      ).toBeGreaterThan(250);
+      expect(
+        aspectRatio,
+        `${label} should not collapse into a rail-like shape`,
+      ).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it("places node type islands on one large circular graph field", () => {
+    const graph = createKnowledgeGraph();
+    const countsByLabel = new Map([
+      ["Project", 4],
+      ["File", 64],
+      ["Function", 100],
+      ["Class", 36],
+      ["Interface", 16],
+      ["Enum", 9],
+    ]);
+
+    for (const [label, count] of countsByLabel) {
+      for (let index = 0; index < count; index++) {
+        graph.addNode(createTypedNode(label, index));
+      }
+    }
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const centerRadii = [...getGeometryByType(sigmaGraph).values()].map(
+      (geometry) => Math.hypot(geometry.centerX, geometry.centerY),
+    );
+    const minimumRadius = Math.min(...centerRadii);
+    const maximumRadius = Math.max(...centerRadii);
+
+    expect(minimumRadius).toBeGreaterThan(0);
+    expect(maximumRadius / minimumRadius).toBeLessThanOrEqual(1.2);
   });
 
   it("uses the node type color for every node even when community metadata exists", () => {
@@ -351,6 +458,88 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     expect(sigmaGraph.getNodeAttribute(functionB.id, "community")).toBe(1);
   });
 
+  it("routes documentation files into the Documentation display filter", () => {
+    const graph = createKnowledgeGraph();
+    const readmeNode = createFileNode("README.md", "README.md");
+    const guideSectionNode = createTypedNode("Section", 1, "docs/guide.md");
+    const sourceFileNode = createFileNode("index.ts", "src/index.ts");
+    const functionNode = createFunctionNode("main", "src/index.ts", 1);
+
+    graph.addNode(readmeNode);
+    graph.addNode(guideSectionNode as any);
+    graph.addNode(sourceFileNode);
+    graph.addNode(functionNode);
+    graph.addRelationship({
+      id: "docs-uses-main",
+      sourceId: readmeNode.id,
+      targetId: functionNode.id,
+      type: "USES",
+      confidence: 1,
+      reason: "documentation-link",
+    } as GraphRelationship);
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+
+    expect(sigmaGraph.getNodeAttribute(readmeNode.id, "nodeType")).toBe(
+      DOCUMENTATION_NODE_LABEL,
+    );
+    expect(sigmaGraph.getNodeAttribute(readmeNode.id, "rawNodeType")).toBe(
+      "File",
+    );
+    expect(sigmaGraph.getNodeAttribute(readmeNode.id, "color")).toBe(
+      getNodeColor(DOCUMENTATION_NODE_LABEL),
+    );
+    expect(sigmaGraph.getNodeAttribute(guideSectionNode.id, "nodeType")).toBe(
+      DOCUMENTATION_NODE_LABEL,
+    );
+    expect(sigmaGraph.getNodeAttribute(sourceFileNode.id, "nodeType")).toBe(
+      "File",
+    );
+    expect(sigmaGraph.size).toBe(1);
+    expect(sigmaGraph.getEdgeAttribute("docs-uses-main", "relationType")).toBe(
+      "USES",
+    );
+  });
+
+  it("places the Documentation island at the center of the outer island circle", () => {
+    const graph = createKnowledgeGraph();
+    const countsByLabel = new Map([
+      ["File", 36],
+      ["Function", 49],
+      ["Class", 25],
+    ]);
+
+    for (let index = 0; index < 36; index++) {
+      graph.addNode(createTypedNode("File", index, `docs/guide-${index}.md`));
+    }
+    for (const [label, count] of countsByLabel) {
+      for (let index = 0; index < count; index++) {
+        graph.addNode(createTypedNode(label, index, `src/${label}/${index}.ts`));
+      }
+    }
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const geometries = getGeometryByType(sigmaGraph);
+    const documentation = geometries.get(DOCUMENTATION_NODE_LABEL);
+
+    expect(documentation).toBeDefined();
+    expect(Math.hypot(documentation!.centerX, documentation!.centerY)).toBeLessThan(
+      1,
+    );
+
+    for (const [label, geometry] of geometries) {
+      if (label === DOCUMENTATION_NODE_LABEL) continue;
+
+      expect(
+        getCircularGap(documentation!, geometry),
+        `${label} should stay outside the centered Documentation island`,
+      ).toBeGreaterThan(200);
+      expect(Math.hypot(geometry.centerX, geometry.centerY)).toBeGreaterThan(
+        documentation!.radius,
+      );
+    }
+  });
+
   it("orders known clusters by filter order and appends unknown labels by label", () => {
     const graph = createKnowledgeGraph();
     const fileNode = createFileNode("index.ts", "src/index.ts");
@@ -374,12 +563,21 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     const aCustomAttributes = sigmaGraph.getNodeAttributes(aCustomNode.id);
     const zCustomAttributes = sigmaGraph.getNodeAttributes(zCustomNode.id);
 
-    expect(fileAttributes.y).toBe(aCustomAttributes.y);
-    expect(fileAttributes.x).toBeLessThan(aCustomAttributes.x);
-    expect(zCustomAttributes.y).toBeGreaterThan(fileAttributes.y);
+    const fileProgress = getAngleProgress(fileAttributes.x, fileAttributes.y);
+    const aCustomProgress = getAngleProgress(
+      aCustomAttributes.x,
+      aCustomAttributes.y,
+    );
+    const zCustomProgress = getAngleProgress(
+      zCustomAttributes.x,
+      zCustomAttributes.y,
+    );
+
+    expect(fileProgress).toBeLessThan(aCustomProgress);
+    expect(aCustomProgress).toBeLessThan(zCustomProgress);
   });
 
-  it("sorts nodes inside a label cluster by file path, name, then id in a local grid", () => {
+  it("sorts nodes inside a label cluster by file path, name, then id in the island spiral", () => {
     const graph = createKnowledgeGraph();
     const bPath = createFunctionNode("alpha", "src/b.ts", 1);
     const aPathBeta = createFunctionNode("beta", "src/a.ts", 1);
@@ -397,11 +595,12 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     const third = sigmaGraph.getNodeAttributes(aPathBeta.id);
     const fourth = sigmaGraph.getNodeAttributes(bPath.id);
 
-    expect(first.y).toBe(second.y);
-    expect(first.x).toBeLessThan(second.x);
-    expect(third.y).toBeGreaterThan(first.y);
-    expect(third.x).toBe(first.x);
-    expect(fourth.y).toBe(third.y);
-    expect(fourth.x).toBe(second.x);
+    const distanceFromFirst = (node: typeof first) =>
+      Math.hypot(node.x - first.x, node.y - first.y);
+
+    expect(distanceFromFirst(first)).toBe(0);
+    expect(distanceFromFirst(second)).toBeGreaterThan(30);
+    expect(distanceFromFirst(third)).toBeGreaterThan(distanceFromFirst(second));
+    expect(distanceFromFirst(fourth)).toBeGreaterThan(distanceFromFirst(third));
   });
 });

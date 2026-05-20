@@ -2,7 +2,7 @@
 
 Date: 2026-05-20
 
-Status: reopened - visual island and documentation center correction required
+Status: completed - visual island and documentation center validation recorded
 
 Companion files:
 
@@ -265,54 +265,54 @@ P0-P5 record the already-completed historical implementation. After the visual r
 - [x] [P6-B] Record `reports/problem/aaaa.jpg` as the target reference for separated 2D color islands.
 - [x] [P6-C] Supersede row-major local grid acceptance for medium and large clusters.
 - [x] [P6-D] Update benchmark and evidence ledgers so previous bounding-box-only validation is treated as insufficient.
-- [ ] [P6-E] Add or update diagnostics/tests so rail-like or line-like cluster compression fails validation.
+- [x] [P6-E] Add or update diagnostics/tests so rail-like or line-like cluster compression fails validation.
 
 ### P7 - Organic Filter-Island Layout Correction
 
-- [ ] [P7-A] Replace medium/large in-cluster row-major placement with deterministic two-dimensional island/cloud placement.
-- [ ] [P7-B] Keep the outer cluster source as existing Node Type filters and existing node type colors, with the P8 Documentation display-filter exception handled separately.
-- [ ] [P7-C] Size each cluster island from visible node count, capped node diameter, and spacing so density is bounded.
-- [ ] [P7-D] Pack cluster islands into separated macro-regions with visible gutters; large clusters receive larger regions and small clusters occupy secondary/peripheral regions.
-- [ ] [P7-E] Prevent medium and large clusters from producing extreme aspect ratios or thin rail-like shapes.
-- [ ] [P7-F] Keep placement free of centrality, degree, hub, semantic importance, or connectivity ranking.
-- [ ] [P7-G] Preserve existing edge data and edge visibility behavior; do not reduce edge count or hide cross-cluster links to imitate the sample image.
+- [x] [P7-A] Replace medium/large in-cluster row-major placement with deterministic two-dimensional island/cloud placement.
+- [x] [P7-B] Keep the outer cluster source as existing Node Type filters and existing node type colors, with the P8 Documentation display-filter exception handled separately.
+- [x] [P7-C] Size each cluster island from visible node count, capped node diameter, and spacing so density is bounded.
+- [x] [P7-D] Pack cluster islands into separated macro-regions with visible gutters; large clusters receive larger regions and small clusters occupy secondary/peripheral regions.
+- [x] [P7-E] Prevent medium and large clusters from producing extreme aspect ratios or thin rail-like shapes.
+- [x] [P7-F] Keep placement free of centrality, degree, hub, semantic importance, or connectivity ranking.
+- [x] [P7-G] Preserve existing edge data and edge visibility behavior; do not reduce edge count or hide cross-cluster links to imitate the sample image.
 
 ### P8 - Documentation Filter And Center Island
 
-- [ ] [P8-A] Define documentation node classification using simple existing node facts such as file path, extension, name, and existing metadata.
-- [ ] [P8-B] Add a `Documentation` Web filter/node type entry with its own dedicated color.
-- [ ] [P8-C] Route documentation-classified nodes into the `Documentation` display cluster while preserving raw graph label and relationship metadata.
-- [ ] [P8-D] Place the `Documentation` island at the center of the large circular graph field.
-- [ ] [P8-E] Place all other filter/color islands around the documentation center with visible gutters.
-- [ ] [P8-F] Preserve relationship data, edge count, and existing edge visibility behavior.
-- [ ] [P8-G] Add tests or diagnostics proving the Documentation cluster has one color, is centered, and does not mix with outer clusters.
+- [x] [P8-A] Define documentation node classification using simple existing node facts such as file path, extension, name, and existing metadata.
+- [x] [P8-B] Add a `Documentation` Web filter/node type entry with its own dedicated color.
+- [x] [P8-C] Route documentation-classified nodes into the `Documentation` display cluster while preserving raw graph label and relationship metadata.
+- [x] [P8-D] Place the `Documentation` island at the center of the large circular graph field.
+- [x] [P8-E] Place all other filter/color islands around the documentation center with visible gutters.
+- [x] [P8-F] Preserve relationship data, edge count, and existing edge visibility behavior.
+- [x] [P8-G] Add tests or diagnostics proving the Documentation cluster has one color, is centered, and does not mix with outer clusters.
 
 ### P9 - Manual Optimizer Recheck
 
-- [ ] [P9-A] Reconfirm graph load renders the island layout immediately without starting any optimizer.
-- [ ] [P9-B] Reconfirm the optimizer starts only from the explicit Web UI button.
-- [ ] [P9-C] Ensure manual optimization preserves display-filter/color island boundaries and does not mix labels into one global layout.
+- [x] [P9-A] Reconfirm graph load renders the island layout immediately without starting any optimizer.
+- [x] [P9-B] Reconfirm the optimizer starts only from the explicit Web UI button.
+- [x] [P9-C] Ensure manual optimization preserves display-filter/color island boundaries and does not mix labels into one global layout.
 
 ### P10 - Visual And Full Validation
 
-- [ ] [P10-A] Capture browser evidence after graph ready on the representative large repo and compare it against the new island-distribution criteria.
-- [ ] [P10-B] Record per-cluster diagnostics for color, node count, width, height, aspect ratio, density, inter-cluster gutters, and Documentation center distance.
-- [ ] [P10-C] Run focused unit/e2e tests for island layout, Documentation center behavior, and manual-only optimizer behavior.
-- [ ] [P10-D] Run full Web build, full Web unit tests, full Web e2e tests, root product Go build, and launcher Go builds before closing again.
+- [x] [P10-A] Capture browser evidence after graph ready on the representative large repo and compare it against the new island-distribution criteria.
+- [x] [P10-B] Record per-cluster diagnostics for color, node count, width, height, aspect ratio, density, inter-cluster gutters, and Documentation center distance.
+- [x] [P10-C] Run focused unit/e2e tests for island layout, Documentation center behavior, and manual-only optimizer behavior.
+- [x] [P10-D] Run full Web build, full Web unit tests, full Web e2e tests, root product Go build, and launcher Go builds before closing again.
 
 ## Acceptance Criteria
 
-- [ ] Initial graph layout is grouped by existing display filters as clear separated two-dimensional color islands.
-- [ ] Documentation files are grouped into one dedicated `Documentation` Web filter/node type with a dedicated color.
-- [ ] The Documentation island is centered in the large circular graph field, with other filter/color islands distributed around it.
+- [x] Initial graph layout is grouped by existing display filters as clear separated two-dimensional color islands.
+- [x] Documentation files are grouped into one dedicated `Documentation` Web filter/node type with a dedicated color.
+- [x] The Documentation island is centered in the large circular graph field, with other filter/color islands distributed around it.
 - [x] There is no new centrality, hub, degree, or importance calculation for placement.
 - [x] Layout is deterministic for the same graph input.
 - [x] Outer cluster order follows `FILTERABLE_LABELS` for known labels, with unknown labels appended by label string.
 - [x] Only display filters present in the graph create rendered clusters; `FILTERABLE_LABELS` is the outer ordering source, not a requirement to render empty clusters.
-- [ ] In-cluster node placement uses deterministic two-dimensional island/cloud placement, not row-major grid placement for medium and large clusters.
-- [ ] Medium and large clusters have bounded aspect ratio and cannot collapse into a long line, rail, or single packed row.
-- [ ] Cluster area scales with visible node count and capped node diameter so nodes are not stacked into dense blocks.
-- [ ] Different display-filter/color islands have visible gutters and do not visually merge into adjacent colored blocks.
+- [x] In-cluster node placement uses deterministic two-dimensional island/cloud placement, not row-major grid placement for medium and large clusters.
+- [x] Medium and large clusters have bounded aspect ratio and cannot collapse into a long line, rail, or single packed row.
+- [x] Cluster area scales with visible node count and capped node diameter so nodes are not stacked into dense blocks.
+- [x] Different display-filter/color islands have visible gutters and do not visually merge into adjacent colored blocks.
 - [x] Each display-filter cluster uses only that filter's own render color.
 - [x] Community color does not override node type/filter color in the main graph canvas.
 - [x] Filter state hides/shows existing clusters and does not create a separate layout policy.
@@ -322,12 +322,12 @@ P0-P5 record the already-completed historical implementation. After the visual r
 - [x] Existing global ForceAtlas2 optimizer is not reused unchanged unless constrained to preserve display-filter clusters.
 - [x] Existing node filters still work and visually map to the same clusters.
 - [x] Existing edge visibility, graph-health filters, depth filters, selection, and focus behavior still work.
-- [ ] Existing relationship data and cross-cluster edge visibility are preserved; the sample image affects node placement only.
-- [ ] Unit tests cover deterministic island placement, shape bounds, Documentation center placement, and spacing for representative cluster sizes.
+- [x] Existing relationship data and cross-cluster edge visibility are preserved; the sample image affects node placement only.
+- [x] Unit tests cover deterministic island placement, shape bounds, Documentation center placement, and spacing for representative cluster sizes.
 - [x] Unit/e2e tests cover one-color-per-filter-cluster behavior.
-- [ ] Web/browser or e2e validation covers no-auto-optimizer after render and manual optimizer trigger after island correction.
-- [ ] Web/browser or e2e validation includes screenshot-backed or diagnostic-backed evidence that `reports/problem/screenshot_1779285599.png` no longer represents the output shape.
-- [ ] Benchmark ledger records before/after load, optimizer behavior, and island geometry after the visual correction.
+- [x] Web/browser or e2e validation covers no-auto-optimizer after render and manual optimizer trigger after island correction.
+- [x] Web/browser or e2e validation includes screenshot-backed or diagnostic-backed evidence that `reports/problem/screenshot_1779285599.png` no longer represents the output shape.
+- [x] Benchmark ledger records before/after load, optimizer behavior, and island geometry after the visual correction.
 - [x] Product build evidence is recorded without treating intentionally non-buildable analysis fixtures as product packages.
 
 ## Closure Definition

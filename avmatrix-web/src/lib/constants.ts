@@ -9,6 +9,8 @@ import {
 
 export type GraphNodeLabel = NodeLabel | (string & {});
 export type EdgeType = RelationshipType | (string & {});
+export const DOCUMENTATION_NODE_LABEL = "Documentation" as const;
+export type DisplayNodeLabel = NodeLabel | typeof DOCUMENTATION_NODE_LABEL;
 
 type RelationshipIdentity = Pick<
   GraphRelationship,
@@ -20,12 +22,13 @@ const UNKNOWN_EDGE_COLOR = "#94a3b8";
 const UNKNOWN_NODE_SIZE = 2;
 
 // Node colors by type - slightly muted for less visual noise
-export const NODE_COLORS: Record<NodeLabel, string> = {
+export const NODE_COLORS: Record<DisplayNodeLabel, string> = {
   Project: "#a855f7", // Purple - prominent
   Package: "#8b5cf6", // Violet
   Module: "#7c3aed", // Violet darker
   Folder: "#6366f1", // Indigo
   File: "#3b82f6", // Blue
+  Documentation: "#84cc16", // Lime - documentation center island
   Class: "#f59e0b", // Amber - stands out
   Function: "#10b981", // Emerald
   Method: "#14b8a6", // Teal
@@ -60,12 +63,13 @@ export const NODE_COLORS: Record<NodeLabel, string> = {
 };
 
 // Node sizes by type - keep hierarchy visible without making metadata impossible to inspect.
-export const NODE_SIZES: Record<NodeLabel, number> = {
+export const NODE_SIZES: Record<DisplayNodeLabel, number> = {
   Project: 20, // Largest - root of everything
   Package: 16, // Major structural element
   Module: 13, // Important container
   Folder: 10, // Structural - clearly bigger than files
   File: 6, // Common element - smaller than folders
+  Documentation: 5, // Documentation files - visible but below structural folders
   Class: 8, // Important code structure
   Function: 4, // Common code element - small
   Method: 3, // Smaller than function
@@ -100,10 +104,10 @@ export const NODE_SIZES: Record<NodeLabel, number> = {
 };
 
 export const getNodeColor = (label: string): string =>
-  NODE_COLORS[label as NodeLabel] ?? UNKNOWN_NODE_COLOR;
+  NODE_COLORS[label as DisplayNodeLabel] ?? UNKNOWN_NODE_COLOR;
 
 export const getNodeSize = (label: string): number =>
-  NODE_SIZES[label as NodeLabel] ?? UNKNOWN_NODE_SIZE;
+  NODE_SIZES[label as DisplayNodeLabel] ?? UNKNOWN_NODE_SIZE;
 
 // Community color palette for cluster-based coloring
 export const COMMUNITY_COLORS = [
@@ -126,12 +130,13 @@ export const getCommunityColor = (communityIndex: number): string => {
 };
 
 // Labels to show by default (hide imports, variables, and metadata by default as they clutter)
-export const DEFAULT_VISIBLE_LABELS: NodeLabel[] = [
+export const DEFAULT_VISIBLE_LABELS: DisplayNodeLabel[] = [
   "Project",
   "Package",
   "Module",
   "Folder",
   "File",
+  DOCUMENTATION_NODE_LABEL,
   "Class",
   "Function",
   "Method",
@@ -140,8 +145,23 @@ export const DEFAULT_VISIBLE_LABELS: NodeLabel[] = [
   "Type",
 ];
 
-// All known filterable labels in generated graph-contract order.
-export const FILTERABLE_LABELS: NodeLabel[] = [...NODE_LABELS];
+const withDocumentationLabel = (
+  labels: readonly NodeLabel[],
+): DisplayNodeLabel[] => {
+  const result: DisplayNodeLabel[] = [...labels];
+  const fileIndex = result.indexOf("File");
+  result.splice(
+    fileIndex >= 0 ? fileIndex + 1 : result.length,
+    0,
+    DOCUMENTATION_NODE_LABEL,
+  );
+  return result;
+};
+
+// All known filterable labels in generated graph-contract order, with the
+// display-only Documentation filter kept next to File.
+export const FILTERABLE_LABELS: DisplayNodeLabel[] =
+  withDocumentationLabel(NODE_LABELS);
 
 // Edge/Relation types in generated graph-contract order.
 export const ALL_EDGE_TYPES: RelationshipType[] = [...GRAPH_RELATIONSHIP_TYPES];
@@ -236,7 +256,7 @@ export const EDGE_INFO: Record<
 };
 
 const nodeLabelOrder = new Map<string, number>(
-  NODE_LABELS.map((label, index) => [label, index]),
+  FILTERABLE_LABELS.map((label, index) => [label, index]),
 );
 const edgeTypeOrder = new Map<string, number>(
   GRAPH_RELATIONSHIP_TYPES.map((type, index) => [type, index]),
@@ -312,12 +332,87 @@ export const getDisplayGraphRelationships = <T extends RelationshipIdentity>(
   );
 };
 
+type DisplayLabelNode = { label: string } &
+  Partial<Pick<GraphNode, "id">> & {
+    properties?: Partial<GraphNode["properties"]>;
+  };
+
+const DOCUMENTATION_FILE_EXTENSIONS = new Set([
+  ".md",
+  ".mdx",
+  ".rst",
+  ".adoc",
+  ".asciidoc",
+]);
+
+const DOCUMENTATION_FILE_NAMES = new Set([
+  "agents",
+  "changelog",
+  "claude",
+  "code_of_conduct",
+  "contributing",
+  "copying",
+  "license",
+  "notice",
+  "readme",
+  "security",
+]);
+
+const DOCUMENTATION_PATH_SEGMENTS = new Set([
+  "doc",
+  "docs",
+  "documentation",
+  "wiki",
+]);
+
+const toLowerPath = (value: unknown): string =>
+  typeof value === "string" ? value.replace(/\\/g, "/").toLowerCase() : "";
+
+const getPathBaseName = (path: string): string =>
+  path.split("/").filter(Boolean).pop() ?? "";
+
+const getFileExtension = (baseName: string): string => {
+  const lastDotIndex = baseName.lastIndexOf(".");
+  return lastDotIndex > 0 ? baseName.slice(lastDotIndex) : "";
+};
+
+const getFileStem = (baseName: string): string => {
+  const lastDotIndex = baseName.lastIndexOf(".");
+  return lastDotIndex > 0 ? baseName.slice(0, lastDotIndex) : baseName;
+};
+
+export const isDocumentationNode = (node: DisplayLabelNode): boolean => {
+  if (node.label === DOCUMENTATION_NODE_LABEL) return true;
+
+  const properties = node.properties ?? {};
+  const path = toLowerPath(properties.filePath) || toLowerPath(properties.path);
+  const name = toLowerPath(properties.name);
+  const id = toLowerPath(node.id);
+  const pathOrName = path || name || id;
+  if (!pathOrName) return false;
+
+  const pathSegments = pathOrName.split("/").filter(Boolean);
+  if (pathSegments.some((segment) => DOCUMENTATION_PATH_SEGMENTS.has(segment))) {
+    return true;
+  }
+
+  const baseName = getPathBaseName(pathOrName);
+  const extension = getFileExtension(baseName);
+  if (DOCUMENTATION_FILE_EXTENSIONS.has(extension)) return true;
+
+  return DOCUMENTATION_FILE_NAMES.has(getFileStem(baseName));
+};
+
+export const getNodeDisplayLabel = (node: DisplayLabelNode): string =>
+  isDocumentationNode(node) ? DOCUMENTATION_NODE_LABEL : node.label;
+
 export const getNodeLabelCounts = (
-  nodes: readonly Pick<GraphNode, "label">[],
+  nodes: readonly DisplayLabelNode[],
 ): Map<string, number> => {
   const counts = new Map<string, number>();
   for (const node of nodes) {
-    counts.set(node.label, (counts.get(node.label) ?? 0) + 1);
+    const label = getNodeDisplayLabel(node);
+    counts.set(label, (counts.get(label) ?? 0) + 1);
   }
   return counts;
 };
@@ -353,7 +448,7 @@ export const getGroupedHeritageCompatibilityCount = (
 };
 
 export const getFilterableNodeLabelsForGraph = (
-  nodes: readonly Pick<GraphNode, "label">[],
+  nodes: readonly DisplayLabelNode[],
 ): string[] =>
   Array.from(getNodeLabelCounts(nodes).keys()).sort(
     compareKnownOrder(nodeLabelOrder),

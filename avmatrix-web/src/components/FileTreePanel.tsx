@@ -32,6 +32,7 @@ import { useAppState } from "../hooks/useAppState.local-runtime";
 import {
   ALL_EDGE_TYPES,
   COMMUNITY_COLORS,
+  DOCUMENTATION_NODE_LABEL,
   FILTERABLE_LABELS,
   getDisplayRelationshipTypeCounts,
   getEdgeInfo,
@@ -295,6 +296,7 @@ const getNodeTypeIcon = (label: string) => {
     case "Process":
       return GitBranch;
     case "Section":
+    case DOCUMENTATION_NODE_LABEL:
       return Table;
     case "Route":
       return Server;

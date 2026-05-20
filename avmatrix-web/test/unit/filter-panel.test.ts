@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { FILTERABLE_LABELS, NODE_COLORS } from '../../src/lib/constants';
+import {
+  DOCUMENTATION_NODE_LABEL,
+  FILTERABLE_LABELS,
+  NODE_COLORS,
+} from '../../src/lib/constants';
 import {
   NODE_LABELS,
   type NodeLabel,
@@ -14,6 +18,7 @@ const ICON_MAP: Record<string, string> = {
   Module: 'Layers',
   Folder: 'Folder',
   File: 'FileCode',
+  Documentation: 'Table',
   Class: 'Box',
   Function: 'Braces',
   Method: 'Braces',
@@ -65,8 +70,10 @@ describe('filter panel icon mappings', () => {
     }
   });
 
-  it('covers every generated node label', () => {
-    expect(Object.keys(ICON_MAP).sort()).toEqual([...NODE_LABELS].sort());
+  it('covers every generated node label and display-only filter', () => {
+    expect(Object.keys(ICON_MAP).sort()).toEqual(
+      [...NODE_LABELS, DOCUMENTATION_NODE_LABEL].sort(),
+    );
   });
 });
 

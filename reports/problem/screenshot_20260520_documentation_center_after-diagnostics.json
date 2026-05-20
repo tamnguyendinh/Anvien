@@ -1,0 +1,65 @@
+{
+  "project": "AVmatrix",
+  "url": "http://127.0.0.1:5228/?server=http%3A%2F%2F127.0.0.1%3A4848&project=AVmatrix",
+  "screenshotPath": "E:\\AVmatrix-GO\\reports\\problem\\screenshot_20260520_documentation_center_after.png",
+  "documentationFilterTitle": "Documentation (1335)",
+  "diagnostics": {
+    "graphConversion": {
+      "count": 2,
+      "lastMs": 392.19999998807907,
+      "maxMs": 450.7000000178814,
+      "lastNodeCount": 21761,
+      "lastRelationshipCount": 54298,
+      "lastStartedAt": 8486.800000011921,
+      "lastFinishedAt": 8879
+    },
+    "visualScale": {
+      "maxSizeByLabel": {
+        "Documentation": 2.5,
+        "File": 3,
+        "Folder": 3,
+        "Function": 2,
+        "Package": 1.5,
+        "Variable": 1.5,
+        "Const": 1.5,
+        "Method": 1.5,
+        "Property": 1.5,
+        "Struct": 3,
+        "TypeAlias": 1.5,
+        "Interface": 3,
+        "Class": 3,
+        "Constructor": 2,
+        "Community": 1.5,
+        "Process": 2
+      },
+      "nodeCount": 21761,
+      "minNodeSize": 1.5,
+      "maxNodeSize": 3,
+      "maxRenderedNodeSizeCap": 3,
+      "structuralToLeafRatio": 2,
+      "recordedAt": 8897.5
+    },
+    "layout": {
+      "starts": 0,
+      "stops": 0,
+      "manualOptimizerInvocations": 0,
+      "isRunning": false,
+      "lastNodeCount": 0,
+      "lastManualOptimizerInvokedAt": 0,
+      "lastManualOptimizerRunMs": 0
+    },
+    "heartbeat": {
+      "connects": 1,
+      "reconnects": 0,
+      "lastConnectAt": 10021.40000000596,
+      "lastReconnectAt": 0,
+      "lastRetryAttempt": 0
+    },
+    "reconnectBanner": {
+      "visible": false,
+      "shows": 0,
+      "hides": 0,
+      "lastChangedAt": 0
+    }
+  }
+}
