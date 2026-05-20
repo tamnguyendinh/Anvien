@@ -29,6 +29,10 @@ Created file set:
 - `docs/plans/2026-05-20-avmatrix-go-agent-context-generation-parity-evidence.md`
 - `docs/plans/2026-05-20-avmatrix-go-agent-context-generation-parity-benchmark.md`
 
+Plan creation commit:
+
+- `c7b427f docs: plan agent context generation parity fix`
+
 Plan creation scope:
 
 - Use the repository's established plan, evidence, and benchmark ledger format.
@@ -69,6 +73,7 @@ Claim boundary:
 - The report is accepted as a blocking conversion parity issue.
 - This ledger still requires command evidence before closure.
 - Generated content being non-empty is not sufficient; it must also be accurate.
+- Direct command output proving the original pre-fix `0` byte root file state was not captured in this ledger before preliminary local generation changed the generated artifacts.
 
 ## E2 - Go Source Inspection Evidence
 
@@ -241,7 +246,7 @@ The current Go generated base skill files are roughly an order of magnitude smal
 
 Date: 2026-05-20
 
-Status: preliminary observation recorded; must be rerun before closure
+Status: preliminary observation recorded from uncommitted prototype changes; must be rerun before closure
 
 Commands:
 
@@ -260,7 +265,7 @@ graph: nodes=20989 relationships=52322 path=E:\AVmatrix-GO\.avmatrix\graph.json
 
 Conclusion:
 
-Focused tests and analyze smoke can pass after preliminary local changes, but this evidence is not final closure. The final implementation still needs generated content accuracy, rich base skill parity, benchmark updates, and final validation after the plan-governed fix is complete.
+Focused tests and analyze smoke can pass after preliminary uncommitted local changes in `internal/*`, but this evidence is not final closure. The final implementation still needs generated content accuracy, rich base skill parity, benchmark updates, and final validation after the plan-governed fix is complete.
 
 ## E8 - Final Validation Evidence
 

@@ -135,7 +135,7 @@ Initial source inspection identified these facts:
 
 - [x] [P0-A] Create the plan, evidence ledger, and benchmark ledger for this issue.
 - [x] [P0-B] Ground the plan in observed conversion parity gaps and generated output risks.
-- [ ] [P0-C] Commit the plan file set when requested.
+- [x] [P0-C] Commit the plan file set when requested. Commit: `c7b427f docs: plan agent context generation parity fix`.
 
 ## Phase 1 - Parity Discovery
 

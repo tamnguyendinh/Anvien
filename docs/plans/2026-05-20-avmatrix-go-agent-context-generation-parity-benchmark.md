@@ -31,7 +31,7 @@ Do not record inferred or estimated sizes. Every benchmark row must name the com
 
 Date: 2026-05-20
 
-Status: initial observation recorded; final accepted baseline pending
+Status: initial observation recorded; pre-fix command evidence unavailable in this ledger; final accepted baseline pending
 
 Command:
 
@@ -48,10 +48,10 @@ Initial observed local file sizes after preliminary smoke:
 
 Required final benchmark:
 
-| Metric | Before fix | After fix | Target |
-|---|---:|---:|---|
-| Default analyze `AGENTS.md` length | `0` reported/observed pre-fix in this repo | pending final validation | greater than `0`, one managed block |
-| Default analyze `CLAUDE.md` length | `0` reported/observed pre-fix in this repo | pending final validation | greater than `0`, one managed block |
+| Metric | Pre-fix evidence | After fix | Target |
+|---|---|---:|---|
+| Default analyze `AGENTS.md` length | reported as `0`; direct command output was not captured in this ledger before preliminary generation | pending final validation | greater than `0`, one managed block |
+| Default analyze `CLAUDE.md` length | reported as `0`; direct command output was not captured in this ledger before preliminary generation | pending final validation | greater than `0`, one managed block |
 | Root block line count | pending | pending | enough to include accurate tools, resources, skills, and CLI fallback without bloating agent context |
 
 Interpretation:
