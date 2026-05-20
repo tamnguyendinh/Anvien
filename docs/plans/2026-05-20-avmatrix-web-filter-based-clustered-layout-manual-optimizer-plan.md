@@ -63,7 +63,7 @@ Use existing Web Node Type filters as the layout clustering source of truth.
 ```text
 Cluster key = node.label
 Cluster order = FILTERABLE_LABELS order
-Unknown label order = sort by label string, then node id, appended after FILTERABLE_LABELS
+Unknown label order = sort unknown labels by label string, appended after FILTERABLE_LABELS
 Node order inside cluster = filePath -> name -> id
 Initial placement = deterministic row-major cluster grid
 In-cluster placement = deterministic local grid; columns = ceil(sqrt(clusterNodeCount))
@@ -76,8 +76,8 @@ No node is moved toward a center because it is "important". No graph connectivit
 
 On graph load:
 
-1. Build one logical visual cluster per filterable node label, using `FILTERABLE_LABELS`.
-2. Append graph labels unknown to `FILTERABLE_LABELS` after known labels in stable order.
+1. Build one logical visual cluster per node label present in the graph.
+2. Order known labels with `FILTERABLE_LABELS`; append graph labels unknown to `FILTERABLE_LABELS` sorted by label string.
 3. Place nodes inside each cluster using deterministic ordering and a row-major local grid.
 4. Render immediately without starting layout optimization.
 5. Keep filters compatible: toggling a node type hides/shows that type's existing cluster without causing unrelated clusters to jump.
@@ -113,7 +113,7 @@ When the user clicks the optimizer button:
 ### P1 - Filter-Based Clustered Initial Layout
 
 - [ ] [P1-A] Replace initial placement with deterministic grouping by `node.label`.
-- [ ] [P1-B] Use `FILTERABLE_LABELS` for cluster ordering, with unknown labels appended in stable order.
+- [ ] [P1-B] Use `FILTERABLE_LABELS` for known cluster ordering, with unknown labels appended by label string.
 - [ ] [P1-C] Sort nodes inside each cluster by `filePath`, then `name`, then `id`.
 - [ ] [P1-D] Place clusters using a deterministic row-major grid that does not require graph connectivity scoring.
 - [ ] [P1-E] Place nodes inside each cluster using a deterministic row-major local grid with `columns = ceil(sqrt(clusterNodeCount))`.
@@ -140,14 +140,14 @@ When the user clicks the optimizer button:
 - [ ] [P4-B] Add unit tests proving each node label/filter forms a separate cluster.
 - [ ] [P4-C] Add unit tests proving nodes inside a cluster use `filePath -> name -> id` ordering.
 - [ ] [P4-D] Add unit or integration coverage proving graph load does not auto-start the optimizer.
-- [ ] [P4-E] Add browser/e2e coverage proving the manual optimizer button starts layout only after user action.
+- [ ] [P4-E] Add browser/e2e coverage proving the manual optimizer is invoked only after user action.
 - [ ] [P4-F] Validate existing graph filters, graph-health filters, depth filter, selection, and focus behavior still compose with clustered layout.
 
 ### P5 - Benchmark And Closure
 
 - [ ] [P5-A] Measure before/after graph load diagnostics on a representative graph.
 - [ ] [P5-B] Measure layout start count after initial graph load; expected final value is `0`.
-- [ ] [P5-C] Measure manual optimizer start count after clicking the optimizer button; expected final value is `1`.
+- [ ] [P5-C] Measure manual optimizer invocation count after clicking the optimizer button; expected final value is `1`.
 - [ ] [P5-D] Record render/conversion latency and interaction observations in the benchmark ledger.
 - [ ] [P5-E] Run focused Web validation and record results in the evidence ledger.
 - [ ] [P5-F] Review the final diff for scope creep against this plan's non-goals.
@@ -157,8 +157,8 @@ When the user clicks the optimizer button:
 - [ ] Initial graph layout is grouped by existing Node Type filters.
 - [ ] There is no new centrality, hub, degree, or importance calculation for placement.
 - [ ] Layout is deterministic for the same graph input.
-- [ ] Cluster order follows `FILTERABLE_LABELS`, with unknown labels appended in stable order.
-- [ ] Unknown labels are ordered by label string, then node id.
+- [ ] Cluster order follows `FILTERABLE_LABELS` for known labels, with unknown labels appended by label string.
+- [ ] Only labels present in the graph create rendered clusters; `FILTERABLE_LABELS` is the ordering source, not a requirement to render empty clusters.
 - [ ] In-cluster node placement uses row-major local grid with `columns = ceil(sqrt(clusterNodeCount))`.
 - [ ] Filter state hides/shows existing clusters and does not create a separate layout policy.
 - [ ] Graph load does not automatically start layout optimization.

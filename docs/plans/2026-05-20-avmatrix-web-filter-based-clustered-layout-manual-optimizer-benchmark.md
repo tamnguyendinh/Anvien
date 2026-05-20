@@ -55,7 +55,7 @@ Record the final cluster inventory after implementation:
 |---|---:|---|
 | existing filterable node labels | pending | should match `FILTERABLE_LABELS` |
 | node labels present in graph payload | pending | should be subset or fallback-compatible |
-| clusters rendered on initial load | pending | should follow `FILTERABLE_LABELS`, with unknown labels appended in stable order |
+| clusters rendered on initial load | pending | only labels present in graph; known labels follow `FILTERABLE_LABELS`, unknown labels append by label string |
 | nodes with deterministic position changes across repeated conversion | pending | expected `0` for same input |
 
 Required command or test:
