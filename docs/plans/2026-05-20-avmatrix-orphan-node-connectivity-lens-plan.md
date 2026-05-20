@@ -176,14 +176,32 @@ Initial measurements also prove why a raw "zero incoming" filter would be wrong:
 - With a provisional non-structural policy that excludes structural/ownership/display grouping edges, `AVmatrix-GO` has `1,616` code nodes with zero counted incoming edges.
 - Therefore Phase 1 must close the counted-edge policy before any Graph Health status is user-facing.
 
+## Key Decisions Required in Phase 1 (Checklist Form)
+
+The following decisions must be explicitly recorded before implementation proceeds. They are expanded into detailed checklist items inside Phase 1 below.
+
+- Counted Edge Policy (which relationship types contribute to connectivity)
+- Expected-Isolated overlay rules and evidence requirements
+- Root surfaces and traversal rules for `detached_component`
+- Ownership of graph-health metadata (core graph layer vs Web layer only)
+- Representative repo selection criteria for cross-repo baseline
+
 ## Phase 1 - Taxonomy, Policy, and Baseline
 
-- [ ] [P1-A] Define counted edge types, excluded edge types, and compatibility/display edge handling for topology status.
-- [ ] [P1-B] Define expected-isolated overlay policy for test, fixture, generated, vendor, docs, migrations, scripts, exported API, route, tool, command, session, framework, and reflection/config surfaces. The policy must state which reasons are automatic, which are evidence-based, and which only reduce priority.
+- [ ] [P1-A1] Draft and document the initial Counted Edge Policy: produce a clear table of relationship types that count toward connectivity vs. those that do not (structural/ownership, display, documentation, etc.).
+- [ ] [P1-A2] Define explicit rules for structural and ownership edges (`CONTAINS`, `DEFINES`, `HAS_METHOD`, `HAS_PROPERTY`, `MEMBER_OF`, etc.) — decide whether they contribute to `connected` / `no_incoming` status.
+- [ ] [P1-A3] Finalize and record the accepted Counted Edge Policy with rationale and examples; update benchmark and evidence ledgers.
+- [ ] [P1-B1] Draft the Expected-Isolated overlay policy covering at minimum: test, fixture, generated, vendor/dependency, documentation, migration/script, exported API/public surface, route/tool/command/session/framework entrypoints, and reflection/config surfaces.
+- [ ] [P1-B2] Define for each expected-isolated reason whether it is automatic, evidence-based, or only a prioritization modifier (exported-only must not auto-hide a node).
+- [ ] [P1-B3] Finalize and record the accepted Expected-Isolated Policy with evidence rules.
 - [ ] [P1-C] Define confidence levels: `candidate`, `expected`, `unknown`, and `confirmed`, with evidence requirements for each and with topology status kept separate from confidence.
 - [ ] [P1-D] Measure baseline graph connectivity for `E:\AVmatrix-GO` and record reproducible commands/results, graph source timestamp or hash, and interpretation in benchmark and evidence ledgers. Initial raw/provisional-policy measurements are recorded; remains open until counted-edge and expected-isolated policies are accepted.
-- [ ] [P1-E] Define representative indexed-repo selection criteria and measure cross-repo baseline only after those criteria are recorded.
+- [ ] [P1-E1] Define representative indexed-repo selection criteria (language mix, size, domain, maturity) and record them.
+- [ ] [P1-E2] Select at least one representative repo and measure cross-repo baseline using the accepted policies from P1-A3 and P1-B3.
 - [ ] [P1-F] Record the selected topology taxonomy, expected-isolated overlay, diagnostics model, generated contracts if needed, existing property-access audit compatibility, and user-facing Web wording.
+- [ ] [P1-G] Define the root surfaces and traversal rules for `detached_component` detection (accepted entry points, processes, routes, tools, CLI commands, MCP surfaces, etc.; directed vs undirected traversal).
+- [ ] [P1-H] Decide the ownership of graph-health metadata: whether it is computed and stored in the core graph layer (recommended for MCP/query consistency) or derived only in the Web layer.
+- [ ] [P1-I] Document all Phase 1 decisions in the plan, evidence ledger, and benchmark ledger with clear rationale.
 
 ## Phase 2 - Backend Graph-Health Derivation
 
@@ -212,6 +230,7 @@ Initial measurements also prove why a raw "zero incoming" filter would be wrong:
 - [ ] [P4-F] Add detached-component interaction that focuses a component and shows why it is detached.
 - [ ] [P4-G] Compose Graph Health filtering through Web state, `GraphCanvas`, `knowledgeGraphToGraphology`, Sigma node attributes, node-type filters, edge-type visibility, and focus-depth filtering.
 - [ ] [P4-H] Ensure existing node-type, edge-type, legend, focus-depth, graph links visibility, and graph canvas behavior still works with Graph Health filters.
+- [ ] [P4-I] Explicitly test and validate Graph Health filter composition with all existing filters (Node Types, Edge Types, Focus Depth) and layout hierarchy; record failure modes and guardrails.
 
 ## Phase 5 - Triage Workflow
 
@@ -230,6 +249,8 @@ Initial measurements also prove why a raw "zero incoming" filter would be wrong:
 - [ ] [P6-F] Run full Web unit suite if Web UI changes.
 - [ ] [P6-G] Run e2e covering Graph Health filter visibility, node explanation, detached-component focus, and interaction with existing node/edge filters if Web UI changes.
 - [ ] [P6-H] Re-run baseline graph-health inventory after implementation and record before/after counts.
+- [ ] [P6-I] Validate performance impact of graph-health derivation (if done server-side) and Web filter rendering latency under realistic graph sizes.
+- [ ] [P6-J] Validate that Graph Health status, expected-isolated reasons, diagnostics, and confidence can coexist on the same node without one overwriting the others.
 
 ## Phase 7 - Closure
 
@@ -243,10 +264,10 @@ Initial measurements also prove why a raw "zero incoming" filter would be wrong:
 
 | ID | Area | Scope | Target | Benchmark | Evidence | Commit | Status |
 |---|---|---|---|---|---|---|---|
-| P1-A..P1-F | Policy | taxonomy and baseline | no ambiguous orphan claims | pending | pending | pending | open |
+| P1-A1..P1-I | Policy | edge policy, expected-isolated policy, root rules, metadata ownership, taxonomy, baseline, cross-repo criteria | no ambiguous orphan claims; all major decisions recorded | pending | pending | pending | open |
 | P2-A..P2-F | Backend | derived graph-health metadata | deterministic status and reasons | pending | pending | pending | open |
 | P3-A..P3-E | Contract/API | consumer surface | stable explicit status fields | pending | pending | pending | open |
-| P4-A..P4-H | Web UI | graph-health filters | separate filters and explanations | pending | pending | pending | open |
+| P4-A..P4-I | Web UI | graph-health filters + composition | separate filters, explanations, and safe composition with existing filters | pending | pending | pending | open |
 | P5-A..P5-D | Workflow | triage/reporting | candidate-vs-confirmed workflow | pending | pending | pending | open |
 | P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | pending | pending | pending | open |
 | P7-A..P7-E | Closure | ledgers and commits | complete closure package | pending | pending | pending | open |
