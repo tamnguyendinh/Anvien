@@ -176,6 +176,7 @@ test.describe('Server Connection & Graph Loading', () => {
 
 test.describe('Graph Dashboard Controls', () => {
   test('toggles uncommon node and edge types from the left dashboard', async ({ page }) => {
+    test.slow();
     await waitForGraphLoaded(page);
     await page.getByRole('button', { name: 'Filters' }).click();
 
@@ -188,6 +189,7 @@ test.describe('Graph Dashboard Controls', () => {
     await expect(graphHealthSection.getByText('Graph Health')).toBeVisible();
     await expect(graphHealthSection.getByText('Expected Isolation')).toBeVisible();
     await expect(graphHealthSection.getByText('Diagnostics')).toBeVisible();
+    await expect(graphHealthSection.getByText('Confidence')).toBeVisible();
 
     const initialPropertyState = await propertyControl.getAttribute('aria-pressed');
     expect(initialPropertyState).toMatch(/^(true|false)$/);
@@ -233,6 +235,14 @@ test.describe('Graph Dashboard Controls', () => {
 
     await expect(page.locator('[title^="Legend node Property ("]').first()).toBeVisible();
     await expect(page.locator('[title^="Legend edge Accesses ("]').first()).toBeVisible();
+
+    await page.getByRole('button', { name: 'Explorer' }).click();
+    const packageJson = page.getByText('package.json').first();
+    await expect(packageJson).toBeVisible({ timeout: 10_000 });
+    await packageJson.click();
+    const graphHealthDetail = page.getByTestId('graph-health-node-detail');
+    await expect(graphHealthDetail).toBeVisible({ timeout: 10_000 });
+    await expect(graphHealthDetail).toContainText('Next:');
   });
 
   test('keeps loaded graph node visual scale bounded', async ({ page }) => {

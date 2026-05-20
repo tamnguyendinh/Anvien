@@ -238,19 +238,20 @@ describe("FileTreePanel dashboard completeness", () => {
     await userEvent.click(screen.getByRole("button", { name: "Filters" }));
 
     expect(screen.getByTestId("graph-health-filter-section")).toBeInTheDocument();
-    expect(screen.getByTitle("No incoming (1)")).toBeInTheDocument();
+    expect(screen.getByTitle(/No incoming \(1\)/)).toBeInTheDocument();
     expect(screen.getByTitle(/Connected \(\d+\)/)).toBeInTheDocument();
-    expect(screen.getByTitle("Test (1)")).toBeInTheDocument();
-    expect(screen.getByTitle("Framework entry (0)")).toBeInTheDocument();
-    expect(screen.getByTitle("Unresolved reference (2)")).toBeInTheDocument();
+    expect(screen.getByTitle(/Test \(1\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/Framework entry \(0\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/Unresolved reference \(2\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/Unknown \(1\)/)).toBeInTheDocument();
 
-    await userEvent.click(screen.getByTitle("No incoming (1)"));
+    await userEvent.click(screen.getByTitle(/No incoming \(1\)/));
     expect(toggleGraphHealthTopologyStatus).toHaveBeenLastCalledWith("no_incoming");
 
-    await userEvent.click(screen.getByTitle("Test (1)"));
+    await userEvent.click(screen.getByTitle(/Test \(1\)/));
     expect(toggleGraphHealthExpectedReason).toHaveBeenLastCalledWith("test");
 
-    await userEvent.click(screen.getByTitle("Unresolved reference (2)"));
+    await userEvent.click(screen.getByTitle(/Unresolved reference \(2\)/));
     expect(toggleGraphHealthDiagnosticKind).toHaveBeenLastCalledWith(
       "unresolved_reference",
     );

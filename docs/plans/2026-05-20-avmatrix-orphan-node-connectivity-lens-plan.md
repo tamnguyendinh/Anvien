@@ -242,14 +242,16 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 
 ## Phase 4 - Web UI Graph Health Filters
 
-**Filter-composition slice 2026-05-20:** Web state, dashboard controls, graph conversion, Sigma attributes, node-type filtering, focus-depth filtering, focused unit tests, full Web unit suite, Web build, and targeted Playwright dashboard e2e are implemented for Graph Health filters. P4-D is only partially covered by count display and safe control labels; explanatory tooltips/confidence summaries remain open with node explanations and detached-component focus.
+**Filter-composition slice 2026-05-20:** Web state, dashboard controls, graph conversion, Sigma attributes, node-type filtering, focus-depth filtering, focused unit tests, full Web unit suite, Web build, and targeted Playwright dashboard e2e are implemented for Graph Health filters.
+
+**Detail/focus slice 2026-05-20:** Dashboard explanatory tooltips, confidence counts, selected-node Graph Health explanations, next triage action, and detached-component focus/highlight interaction are implemented. Phase 4 Web UI scope is closed.
 
 - [x] [P4-A] Add a `Graph Health` filter group separate from `Node Types` and `Edge Types`.
 - [x] [P4-B] Add topology toggles for `true_isolated`, `no_incoming`, `no_outgoing`, `detached_component`, and `unknown_connectivity`; optionally show `connected` as a count-only baseline.
 - [x] [P4-C] Add separate controls to hide/de-emphasize expected-isolated overlay reasons and diagnostics such as `unresolved_reference` when source-node evidence exists.
-- [ ] [P4-D] Add summary counts and tooltips that explain topology status, expected-isolated overlays, diagnostics, and confidence without calling candidates bugs. Current slice added counts/control titles; explanatory tooltips and confidence summary remain pending.
-- [ ] [P4-E] Add node detail panel explanations: topology status, counted incoming/outgoing edges, expected-isolated reasons, diagnostics, confidence, and next triage action.
-- [ ] [P4-F] Add detached-component interaction that focuses a component and shows why it is detached.
+- [x] [P4-D] Add summary counts and tooltips that explain topology status, expected-isolated overlays, diagnostics, and confidence without calling candidates bugs.
+- [x] [P4-E] Add node detail panel explanations: topology status, counted incoming/outgoing edges, expected-isolated reasons, diagnostics, confidence, and next triage action.
+- [x] [P4-F] Add detached-component interaction that focuses a component and shows why it is detached.
 - [x] [P4-G] Compose Graph Health filtering through Web state, `GraphCanvas`, `knowledgeGraphToGraphology`, Sigma node attributes, node-type filters, edge-type visibility, and focus-depth filtering.
 - [x] [P4-H] Ensure existing node-type, edge-type, legend, focus-depth, graph links visibility, and graph canvas behavior still works with Graph Health filters.
 - [x] [P4-I] Explicitly test and validate Graph Health filter composition with all existing filters (Node Types, Edge Types, Focus Depth) and layout hierarchy; record failure modes and guardrails.
@@ -267,11 +269,11 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 - [x] [P6-B] Run focused Go tests for graph-health derivation, taxonomy, expected-isolated policy, and contract/API behavior.
 - [x] [P6-C] Run full applicable Go test suite for `cmd` and `internal`.
 - [x] [P6-D] Run Web build before Web tests if Web UI changes. Current Web filter slice: `npm --prefix avmatrix-web run build` passed.
-- [ ] [P6-E] Run focused Web unit tests for Graph Health filters, node detail explanations, counts, legends, and filter interactions. Current slice covers filters/counts/composition; node detail and detached focus remain pending.
+- [x] [P6-E] Run focused Web unit tests for Graph Health filters, node detail explanations, counts, legends, and filter interactions.
 - [x] [P6-F] Run full Web unit suite if Web UI changes. Current Web filter slice: `npm --prefix avmatrix-web run test` passed.
-- [ ] [P6-G] Run e2e covering Graph Health filter visibility, node explanation, detached-component focus, and interaction with existing node/edge filters if Web UI changes. Current slice has targeted dashboard/filter e2e pass; full e2e timed out and node explanation/detached focus remain pending.
+- [x] [P6-G] Run e2e covering Graph Health filter visibility, node explanation, detached-component focus, and interaction with existing node/edge filters if Web UI changes. Targeted large-graph dashboard e2e and deterministic mocked Graph Health e2e passed; the earlier monolithic full-suite timeout remains recorded in E12 as suite-budget risk, not a feature failure.
 - [x] [P6-H] Re-run baseline graph-health inventory after implementation and record before/after counts.
-- [x] [P6-I] Validate performance impact of graph-health derivation (if done server-side) and Web filter rendering latency under realistic graph sizes. Server-side derivation and payload size measured in B1; Web render latency remains pending Web filter phase.
+- [ ] [P6-I] Validate performance impact of graph-health derivation (if done server-side) and Web filter rendering latency under realistic graph sizes. Server-side derivation and payload size measured in B1; dedicated Web filter/detail latency measurement remains pending.
 - [x] [P6-J] Validate that Graph Health status, expected-isolated reasons, diagnostics, and confidence can coexist on the same node without one overwriting the others.
 
 ## Phase 7 - Closure
@@ -289,9 +291,9 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 | P1-A1..P1-I | Policy | edge policy, expected-isolated policy, root rules, metadata ownership, taxonomy, baseline, cross-repo criteria | no ambiguous orphan claims; all major decisions recorded | 2026-05-20 (E5 + B0) | 2026-05-20 python + source + MCP queries | 2026-05-20 (doc-only) | closed |
 | P2-A..P2-F | Backend | derived graph-health metadata | deterministic status and reasons | B1 implementation counts | E6/E7/E8/E9 implementation validation | current implementation slices | closed |
 | P3-A..P3-E | Contract/API | consumer surface | stable explicit status fields | B1 payload size | E6/E10/E11 implementation validation | current implementation slices | closed |
-| P4-A..P4-I | Web UI | graph-health filters + composition | separate filters, explanations, and safe composition with existing filters | B1/P4 package size note | E12 implementation validation | current implementation slice | partially closed; P4-A/B/C/G/H/I closed, P4-D/E/F open |
+| P4-A..P4-I | Web UI | graph-health filters + composition | separate filters, explanations, and safe composition with existing filters | B1/P4 package size notes | E12/E13 implementation validation | current implementation slices | closed |
 | P5-A..P5-D | Workflow | triage/reporting | candidate-vs-confirmed workflow | pending | pending | pending | open |
-| P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | B1 | E6/E7/E8/E12 | current implementation slices | partially closed; applicable backend/Web-contract/Web-filter validation passed, full Phase 4 e2e remains open |
+| P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | B1 | E6/E7/E8/E12/E13 | current implementation slices | partially closed; applicable backend/Web-contract/Web UI validation passed, dedicated Web latency benchmark remains open |
 | P7-A..P7-E | Closure | ledgers and commits | complete closure package | pending | pending | pending | open |
 
 ## Definition Of Done

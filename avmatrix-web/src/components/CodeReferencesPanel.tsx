@@ -13,8 +13,24 @@ import {
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useAppState } from '../hooks/useAppState.local-runtime';
-import { type GraphNode, getSyntaxLanguageFromFilename } from '@/generated/avmatrix-contracts';
+import {
+  type GraphHealthDiagnostic,
+  type GraphNode,
+  getSyntaxLanguageFromFilename,
+} from '@/generated/avmatrix-contracts';
 import { NODE_COLORS } from '../lib/constants';
+import {
+  GRAPH_HEALTH_CONFIDENCE_DESCRIPTIONS,
+  GRAPH_HEALTH_CONFIDENCE_LABELS,
+  GRAPH_HEALTH_DIAGNOSTIC_DESCRIPTIONS,
+  GRAPH_HEALTH_DIAGNOSTIC_LABELS,
+  GRAPH_HEALTH_REASON_DESCRIPTIONS,
+  GRAPH_HEALTH_REASON_LABELS,
+  GRAPH_HEALTH_TOPOLOGY_DESCRIPTIONS,
+  GRAPH_HEALTH_TOPOLOGY_LABELS,
+  getGraphHealthNextAction,
+  getNodeGraphHealth,
+} from '../lib/graph-health-filters';
 import { readFile, type ReadFileResult } from '../services/backend-client';
 
 const getSyntaxLanguage = (filePath: string | undefined): string => {
@@ -40,6 +56,30 @@ const customTheme = {
   },
 };
 
+const formatGraphHealthKey = (value: string): string =>
+  value
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+
+const formatExcludedEdgeCounts = (
+  counts: Record<string, number> | undefined,
+): string => {
+  const entries = Object.entries(counts ?? {}).filter(([, count]) => count > 0);
+  if (entries.length === 0) return 'None';
+  return entries
+    .map(([category, count]) => `${formatGraphHealthKey(category)} ${count}`)
+    .join(', ');
+};
+
+const formatDiagnosticDetail = (diagnostic: GraphHealthDiagnostic): string => {
+  const count = diagnostic.count && diagnostic.count > 0 ? diagnostic.count : 1;
+  const label = GRAPH_HEALTH_DIAGNOSTIC_LABELS[diagnostic.kind] ?? formatGraphHealthKey(diagnostic.kind);
+  const detail = diagnostic.targetText ? `: ${diagnostic.targetText}` : '';
+  return `${label} x${count}${detail}`;
+};
+
 export interface CodeReferencesPanelProps {
   onFocusNode: (nodeId: string) => void;
 }
@@ -52,6 +92,7 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
     removeCodeReference,
     clearCodeReferences,
     setSelectedNode,
+    setHighlightedNodeIds,
     codeReferenceFocus,
     projectName,
   } = useAppState();
@@ -194,6 +235,24 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
   const selectedIsFile = selectedNode?.label === 'File' && !!selectedFilePath;
   const showSelectedViewer = !!selectedNode && !!selectedFilePath;
   const showCitations = aiReferences.length > 0;
+  const selectedGraphHealth = useMemo(
+    () => (selectedNode ? getNodeGraphHealth(selectedNode) : null),
+    [selectedNode],
+  );
+  const selectedComponentNodeIds = useMemo(() => {
+    if (!graph || !selectedGraphHealth?.componentId) return [];
+    return graph.nodes
+      .filter((node) => getNodeGraphHealth(node)?.componentId === selectedGraphHealth.componentId)
+      .map((node) => node.id);
+  }, [graph, selectedGraphHealth?.componentId]);
+
+  const handleFocusGraphHealthComponent = useCallback(() => {
+    if (!selectedNode) return;
+    const ids =
+      selectedComponentNodeIds.length > 0 ? selectedComponentNodeIds : [selectedNode.id];
+    setHighlightedNodeIds(new Set(ids));
+    onFocusNode(selectedNode.id);
+  }, [onFocusNode, selectedComponentNodeIds, selectedNode, setHighlightedNodeIds]);
 
   // Fetch file content from the server when a node with a filePath is selected.
   // For non-File nodes (functions, classes, etc.), fetch a buffer around the symbol
@@ -375,6 +434,123 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
                 <X className="h-4 w-4" />
               </button>
             </div>
+            {selectedGraphHealth && (
+              <div
+                className="border-b border-workspace-border-default bg-workspace-surface px-3 py-3"
+                data-testid="graph-health-node-detail"
+              >
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span
+                    className="rounded border border-workspace-border-default bg-workspace-inset px-2 py-0.5 text-[10px] font-semibold tracking-wide text-workspace-text-primary uppercase"
+                    title={
+                      GRAPH_HEALTH_TOPOLOGY_DESCRIPTIONS[
+                        selectedGraphHealth.topologyStatus
+                      ]
+                    }
+                  >
+                    {GRAPH_HEALTH_TOPOLOGY_LABELS[
+                      selectedGraphHealth.topologyStatus
+                    ] ?? formatGraphHealthKey(selectedGraphHealth.topologyStatus)}
+                  </span>
+                  <span
+                    className="rounded border border-workspace-border-default bg-workspace-inset px-2 py-0.5 text-[10px] text-workspace-text-secondary"
+                    title={
+                      GRAPH_HEALTH_CONFIDENCE_DESCRIPTIONS[
+                        selectedGraphHealth.confidence
+                      ]
+                    }
+                  >
+                    {GRAPH_HEALTH_CONFIDENCE_LABELS[
+                      selectedGraphHealth.confidence
+                    ] ?? formatGraphHealthKey(selectedGraphHealth.confidence)}
+                  </span>
+                  {selectedGraphHealth.topologyStatus === 'detached_component' &&
+                    selectedGraphHealth.componentId && (
+                      <button
+                        onClick={handleFocusGraphHealthComponent}
+                        className="workspace-outline-button rounded px-2 py-0.5 text-[10px] text-workspace-text-secondary hover:text-workspace-text-primary"
+                        title="Highlight this component and focus the selected node in the graph"
+                      >
+                        Focus component
+                      </button>
+                    )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-[11px] text-workspace-text-secondary">
+                  <div title="Counted incoming relationships under the Graph Health edge policy">
+                    In{' '}
+                    <span className="font-mono text-workspace-text-primary">
+                      {selectedGraphHealth.countedIncoming}
+                    </span>
+                  </div>
+                  <div title="Counted outgoing relationships under the Graph Health edge policy">
+                    Out{' '}
+                    <span className="font-mono text-workspace-text-primary">
+                      {selectedGraphHealth.countedOutgoing}
+                    </span>
+                  </div>
+                  <div title="Counted-edge component size">
+                    Comp{' '}
+                    <span className="font-mono text-workspace-text-primary">
+                      {selectedGraphHealth.componentSize ?? 1}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-2 space-y-1 text-[11px] text-workspace-text-secondary">
+                  <div title="Excluded edge categories are not counted as topology wiring">
+                    Excluded: {formatExcludedEdgeCounts(selectedGraphHealth.excludedEdgeCounts)}
+                  </div>
+                  <div>
+                    Reasons:{' '}
+                    {(selectedGraphHealth.expectedIsolationReasons ?? []).length > 0 ? (
+                      <span className="inline-flex flex-wrap gap-1 align-middle">
+                        {selectedGraphHealth.expectedIsolationReasons?.map((reason) => (
+                          <span
+                            key={reason}
+                            className="rounded bg-workspace-inset px-1.5 py-0.5 text-[10px] text-workspace-text-primary"
+                            title={GRAPH_HEALTH_REASON_DESCRIPTIONS[reason]}
+                          >
+                            {GRAPH_HEALTH_REASON_LABELS[reason] ?? formatGraphHealthKey(reason)}
+                          </span>
+                        ))}
+                      </span>
+                    ) : (
+                      <span>None</span>
+                    )}
+                  </div>
+                  <div>
+                    Diagnostics:{' '}
+                    {(selectedGraphHealth.diagnostics ?? []).length > 0 ? (
+                      <span className="inline-flex flex-wrap gap-1 align-middle">
+                        {selectedGraphHealth.diagnostics?.map((diagnostic, index) => (
+                          <span
+                            key={`${diagnostic.kind}-${index}`}
+                            className="rounded bg-workspace-inset px-1.5 py-0.5 text-[10px] text-workspace-text-primary"
+                            title={
+                              GRAPH_HEALTH_DIAGNOSTIC_DESCRIPTIONS[diagnostic.kind] ??
+                              'Graph Health diagnostic evidence.'
+                            }
+                          >
+                            {formatDiagnosticDetail(diagnostic)}
+                          </span>
+                        ))}
+                      </span>
+                    ) : (
+                      <span>None</span>
+                    )}
+                  </div>
+                  {selectedGraphHealth.topologyStatus === 'detached_component' && (
+                    <div title="Detached components have counted internal wiring but no accepted root reachability">
+                      Detached: no accepted root reaches this counted-edge component.
+                    </div>
+                  )}
+                  <div className="text-workspace-text-primary">
+                    Next: {getGraphHealthNextAction(selectedGraphHealth)}
+                  </div>
+                </div>
+              </div>
+            )}
             <div ref={selectedViewerRef} className="scrollbar-thin min-h-0 flex-1 overflow-auto">
               {isLoadingFile ? (
                 <div className="flex items-center justify-center gap-2 py-8 text-workspace-text-secondary">

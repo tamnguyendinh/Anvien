@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { GraphNode } from '../../src/generated/avmatrix-contracts';
 import {
   DEFAULT_GRAPH_HEALTH_FILTERS,
+  getGraphHealthConfidenceCounts,
+  getGraphHealthNextAction,
   getGraphHealthDiagnosticCounts,
   getGraphHealthExpectedReasonCounts,
   getGraphHealthTopologyCounts,
@@ -47,6 +49,7 @@ describe('graph health filters', () => {
     expect(getGraphHealthExpectedReasonCounts(nodes).get('test')).toBe(1);
     expect(getGraphHealthExpectedReasonCounts(nodes).get('fixture')).toBe(1);
     expect(getGraphHealthDiagnosticCounts(nodes).get('unresolved_reference')).toBe(3);
+    expect(getGraphHealthConfidenceCounts(nodes).get('candidate')).toBe(2);
   });
 
   it('matches topology, expected-reason, and diagnostic visibility filters', () => {
@@ -87,5 +90,21 @@ describe('graph health filters', () => {
         visibleDiagnosticKinds: [],
       }),
     ).toBe(true);
+  });
+
+  it('returns candidate-safe next actions without confirmed bug wording', () => {
+    expect(
+      getGraphHealthNextAction({
+        topologyStatus: 'no_incoming',
+        confidence: 'candidate',
+      }),
+    ).toContain('Check routes');
+    expect(
+      getGraphHealthNextAction({
+        topologyStatus: 'unknown_connectivity',
+        confidence: 'unknown',
+        diagnostics: [{ kind: 'unresolved_reference' }],
+      }),
+    ).toContain('Inspect the diagnostic evidence');
   });
 });

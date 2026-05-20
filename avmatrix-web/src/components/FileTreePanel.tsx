@@ -43,17 +43,25 @@ import {
   getRelationshipTypeCounts,
 } from "../lib/constants";
 import {
+  GRAPH_HEALTH_CONFIDENCE_LEVELS,
   GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS,
   GRAPH_HEALTH_TOPOLOGY_STATUSES,
+  type GraphHealthConfidence,
   type GraphHealthExpectedIsolationReason,
   type GraphHealthTopologyStatus,
   type GraphNode,
 } from "@/generated/avmatrix-contracts";
 import {
+  GRAPH_HEALTH_CONFIDENCE_DESCRIPTIONS,
+  GRAPH_HEALTH_CONFIDENCE_LABELS,
   GRAPH_HEALTH_DIAGNOSTIC_KINDS,
+  GRAPH_HEALTH_DIAGNOSTIC_DESCRIPTIONS,
   GRAPH_HEALTH_DIAGNOSTIC_LABELS,
+  GRAPH_HEALTH_REASON_DESCRIPTIONS,
   GRAPH_HEALTH_REASON_LABELS,
+  GRAPH_HEALTH_TOPOLOGY_DESCRIPTIONS,
   GRAPH_HEALTH_TOPOLOGY_LABELS,
+  getGraphHealthConfidenceCounts,
   getGraphHealthDiagnosticCounts,
   getGraphHealthExpectedReasonCounts,
   getGraphHealthTopologyCounts,
@@ -521,6 +529,15 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
     }));
   }, [graph]);
 
+  const graphHealthConfidenceItems = useMemo(() => {
+    const counts = getGraphHealthConfidenceCounts(graph?.nodes ?? []);
+    return GRAPH_HEALTH_CONFIDENCE_LEVELS.map((confidence) => ({
+      confidence,
+      label: GRAPH_HEALTH_CONFIDENCE_LABELS[confidence],
+      count: counts.get(confidence) ?? 0,
+    }));
+  }, [graph]);
+
   const communityColorLegend = useMemo(() => {
     if (!graph) return null;
     const memberRelationships = graph.relationships.filter(
@@ -733,7 +750,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                   graphHealthFilters.visibleTopologyStatuses.includes(
                     status as GraphHealthTopologyStatus,
                   );
-                const title = `${label} (${count})`;
+                const title = `${label} (${count}) - ${GRAPH_HEALTH_TOPOLOGY_DESCRIPTIONS[status]}`;
 
                 if (isConnectedBaseline) {
                   return (
@@ -790,7 +807,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                   <button
                     key={reason}
                     onClick={() => toggleGraphHealthExpectedReason(reason)}
-                    title={`${label} (${count})`}
+                    title={`${label} (${count}) - ${GRAPH_HEALTH_REASON_DESCRIPTIONS[reason]}`}
                     aria-pressed={isVisible}
                     className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
                       isVisible
@@ -825,7 +842,7 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                   <button
                     key={kind}
                     onClick={() => toggleGraphHealthDiagnosticKind(kind)}
-                    title={`${label} (${count})`}
+                    title={`${label} (${count}) - ${GRAPH_HEALTH_DIAGNOSTIC_DESCRIPTIONS[kind] ?? "Graph Health diagnostic evidence."}`}
                     aria-pressed={isVisible}
                     className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
                       isVisible
@@ -845,6 +862,29 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                   </button>
                 );
               })}
+            </div>
+
+            <h4 className="mt-4 mb-2 font-mono text-[10px] text-text-muted">
+              Confidence
+            </h4>
+            <div className="flex flex-col gap-1">
+              {graphHealthConfidenceItems.map(({ confidence, label, count }) => (
+                <div
+                  key={confidence}
+                  title={`${label} (${count}) - ${
+                    GRAPH_HEALTH_CONFIDENCE_DESCRIPTIONS[
+                      confidence as GraphHealthConfidence
+                    ]
+                  }`}
+                  className="flex items-center gap-2.5 rounded px-2 py-1.5 text-left text-text-muted"
+                >
+                  <div className="h-2 w-2 rounded-full bg-border-subtle" />
+                  <span className="min-w-0 flex-1 truncate text-xs">
+                    {label}
+                  </span>
+                  <span className="font-mono text-[10px]">{count}</span>
+                </div>
+              ))}
             </div>
           </div>
 

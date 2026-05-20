@@ -297,6 +297,21 @@ Build warnings: existing ProcessFlowModal dynamic/static import warning and >500
 
 Web render/filter latency was not measured in this slice. Functional coverage is recorded in E12 through focused unit tests, full Web unit suite, and targeted Playwright dashboard e2e. Dedicated latency measurement remains a follow-up if Graph Health filtering becomes a performance-sensitive interaction on large graphs.
 
+### P4-D/E/F Web Graph Health Detail And Detached Focus Slice
+
+P4 detail/focus changes Web presentation, dashboard tooltips/counts, selected-node detail rendering, and user-driven component highlighting. It does not change backend graph inventory counts, graph-health derivation counts, `/api/graph` payload size, explain/report output, or graph snapshot shape.
+
+Benchmarkable package-size observation from the accepted Web build:
+
+```text
+Command: npm --prefix avmatrix-web run build
+CSS: assets/index-CernHlw7.css 55.27 kB, gzip 10.57 kB
+Main JS: assets/index-DQRhUrAU.js 2,026.11 kB, gzip 604.14 kB
+Build warnings: existing ProcessFlowModal dynamic/static import warning and >500 kB chunk-size warning
+```
+
+Dedicated Web filter/detail latency measurement remains pending. Functional coverage is recorded in E13 through focused unit tests, full Web unit suite, targeted large-graph Playwright dashboard e2e, and deterministic mocked Graph Health e2e.
+
 ## B2 - Final Benchmark
 
 Status: pending

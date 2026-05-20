@@ -894,3 +894,82 @@ Results:
 Conclusion:
 
 P4-A, P4-B, P4-C, P4-G, P4-H, and P4-I are complete for the Web filter-composition slice. P4-D remains partially complete, and P4-E/P4-F remain open for the next Web implementation slice.
+
+## E13 - Phase 4 Web Graph Health Detail And Detached Focus Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Complete P4-D explanatory dashboard tooltips and confidence summaries.
+- Complete P4-E selected-node Graph Health explanations inside the Code Inspector.
+- Complete P4-F detached-component focus/highlight interaction.
+- Add deterministic e2e coverage for selected-node explanation and detached-component focus without relying on a large indexed repo.
+
+AVmatrix refresh and impact commands:
+
+```powershell
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix impact CodeReferencesPanel --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact FileTreePanel --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact getNodeGraphHealth --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `CodeReferencesPanel`: LOW impact; direct consumer is `App.tsx`.
+- `FileTreePanel`: LOW impact; direct consumers are `App.tsx` and dashboard unit tests.
+- `getNodeGraphHealth`: HIGH impact because it feeds graph conversion, filters, tests, and graph display flows. Mitigation: this slice did not edit `getNodeGraphHealth`; it only added separate presentation helpers around the existing extraction behavior.
+
+Changed files:
+
+- `avmatrix-web/src/lib/graph-health-filters.ts`
+- `avmatrix-web/src/components/FileTreePanel.tsx`
+- `avmatrix-web/src/components/CodeReferencesPanel.tsx`
+- `avmatrix-web/test/unit/graph-health-filters.test.ts`
+- `avmatrix-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`
+- `avmatrix-web/test/unit/CodeReferencesPanel.graph-health.test.tsx`
+- `avmatrix-web/e2e/server-connect.spec.ts`
+- `avmatrix-web/e2e/graph-health-ui.spec.ts`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- Added safe label/description maps for topology status, expected-isolated reasons, diagnostics, and confidence.
+- Added confidence counts to the dashboard Graph Health section.
+- Dashboard Graph Health titles now explain status/reason/diagnostic/confidence meaning without calling candidates bugs.
+- Code Inspector now shows selected-node Graph Health detail: topology, confidence, counted incoming/outgoing, component size, excluded edge categories, expected reasons, diagnostics, detached explanation, and next triage action.
+- Detached nodes with a `componentId` expose a `Focus component` action that highlights all nodes with the same component id and focuses the selected node.
+- Next-action wording stays candidate-focused and avoids confirmed bug/deletion language.
+
+Validation commands and results:
+
+```powershell
+npm --prefix avmatrix-web run test -- test/unit/graph-health-filters.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx test/unit/CodeReferencesPanel.graph-health.test.tsx
+npm --prefix avmatrix-web run build
+npm --prefix avmatrix-web run test:e2e -- e2e/server-connect.spec.ts -g "toggles uncommon node and edge types" --workers=1
+npm --prefix avmatrix-web run test:e2e -- e2e/graph-health-ui.spec.ts --workers=1
+npm --prefix avmatrix-web run test
+git diff --check
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
+```
+
+Results:
+
+- Focused Web unit tests passed: `3` files, `12` tests.
+- Web production build passed; Vite reported the existing dynamic-import and chunk-size warnings only.
+- Targeted large-graph dashboard e2e passed: `1` test, `2.3m`; it covers Graph Health filters, Confidence count display, existing node/edge controls, and selected-node Graph Health detail on a real indexed repo.
+- Deterministic mocked Graph Health e2e passed: `1` test, `7.1s`; it covers selected-node explanation and detached-component `Focus component` action.
+- Full Web unit suite passed: `43` files, `332` tests.
+- `git diff --check` passed.
+- Final pre-commit AVmatrix refresh passed with `files: scanned=711 parsed=538 unsupported=173 failed=0`, `graph: nodes=21658 relationships=53962`.
+- `detect-changes` passed and reported `risk_level=low`, `changed_files=10`, `changed_count=34`, `affected_count=0`.
+
+Conclusion:
+
+P4-D, P4-E, and P4-F are complete. Phase 4 Web UI Graph Health filters and explanations are closed.

@@ -1,7 +1,9 @@
 import {
+  GRAPH_HEALTH_CONFIDENCE_LEVELS,
   GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS,
   GRAPH_HEALTH_TOPOLOGY_STATUSES,
   type GraphHealthDiagnostic,
+  type GraphHealthConfidence,
   type GraphHealthExpectedIsolationReason,
   type GraphHealthNodeMetadata,
   type GraphHealthTopologyStatus,
@@ -39,6 +41,15 @@ export const GRAPH_HEALTH_TOPOLOGY_LABELS: Record<GraphHealthTopologyStatus, str
   unknown_connectivity: 'Unknown',
 };
 
+export const GRAPH_HEALTH_TOPOLOGY_DESCRIPTIONS: Record<GraphHealthTopologyStatus, string> = {
+  connected: 'Has counted incoming and outgoing wiring under the Graph Health edge policy.',
+  true_isolated: 'Has no counted incoming or outgoing wiring; this is a triage candidate, not a verdict.',
+  no_incoming: 'Uses other nodes but no counted in-repo wiring reaches it; inspect as an unwired candidate.',
+  no_outgoing: 'Is reached by other nodes but has no counted outgoing wiring; often normal leaf behavior.',
+  detached_component: 'Belongs to a counted-edge component that no accepted root reaches.',
+  unknown_connectivity: 'Has analyzer or resolution uncertainty, so topology should not be treated as a defect.',
+};
+
 export const GRAPH_HEALTH_REASON_LABELS: Record<GraphHealthExpectedIsolationReason, string> = {
   test: 'Test',
   fixture: 'Fixture',
@@ -51,8 +62,68 @@ export const GRAPH_HEALTH_REASON_LABELS: Record<GraphHealthExpectedIsolationReas
   cli_mcp: 'CLI/MCP',
 };
 
+export const GRAPH_HEALTH_REASON_DESCRIPTIONS: Record<GraphHealthExpectedIsolationReason, string> = {
+  test: 'Expected-isolated overlay from test file or test-helper evidence.',
+  fixture: 'Expected-isolated overlay from fixture, snapshot, or testdata path evidence.',
+  generated: 'Expected-isolated overlay from generated-code path or metadata evidence.',
+  vendor: 'Expected-isolated overlay from vendor/dependency/build-output path evidence.',
+  documentation: 'Expected-isolated overlay from documentation or Section-node evidence.',
+  migration: 'Expected-isolated overlay from migration or database-change script evidence.',
+  exported_api: 'Public/exported surface modifier; lower priority, not automatically safe to hide.',
+  framework_entry: 'Accepted root or framework entry surface, not a dead-code verdict.',
+  cli_mcp: 'CLI, MCP, tool, or command surface that may be reached externally.',
+};
+
 export const GRAPH_HEALTH_DIAGNOSTIC_LABELS: Record<string, string> = {
   unresolved_reference: 'Unresolved reference',
+};
+
+export const GRAPH_HEALTH_DIAGNOSTIC_DESCRIPTIONS: Record<string, string> = {
+  unresolved_reference: 'Source-backed unresolved reference; indicates analyzer or dependency uncertainty.',
+};
+
+export const GRAPH_HEALTH_CONFIDENCE_LABELS: Record<GraphHealthConfidence, string> = {
+  candidate: 'Candidate',
+  expected: 'Expected',
+  unknown: 'Unknown',
+  confirmed: 'Confirmed',
+};
+
+export const GRAPH_HEALTH_CONFIDENCE_DESCRIPTIONS: Record<GraphHealthConfidence, string> = {
+  candidate: 'Actionable triage candidate with no expected-isolated overlay.',
+  expected: 'Explained by expected-isolated policy such as test, documentation, fixture, or entry surface.',
+  unknown: 'Resolution or analyzer uncertainty is present; inspect evidence before triage.',
+  confirmed: 'Reserved for external evidence or human review; derivation does not auto-confirm defects.',
+};
+
+export const getGraphHealthNextAction = (
+  health: Pick<
+    GraphHealthNodeMetadata,
+    'topologyStatus' | 'expectedIsolationReasons' | 'diagnostics' | 'confidence'
+  >,
+): string => {
+  if (health.confidence === 'expected' || (health.expectedIsolationReasons?.length ?? 0) > 0) {
+    return 'Review only if this expected-isolated overlay looks wrong for the node.';
+  }
+  if (health.confidence === 'unknown' || (health.diagnostics?.length ?? 0) > 0) {
+    return 'Inspect the diagnostic evidence before deciding whether topology is meaningful.';
+  }
+  switch (health.topologyStatus) {
+    case 'no_incoming':
+      return 'Check routes, exports, runtime entrypoints, and external callers before treating it as unwired.';
+    case 'detached_component':
+      return 'Inspect root reachability and missing registration edges for this component.';
+    case 'true_isolated':
+      return 'Check path policy, generated/test context, and source references before pruning.';
+    case 'no_outgoing':
+      return 'Treat as a low-priority leaf unless it should create calls, accesses, or process edges.';
+    case 'connected':
+      return 'No Graph Health triage action is suggested from topology alone.';
+    case 'unknown_connectivity':
+      return 'Resolve analyzer uncertainty first; do not treat this as a bug verdict.';
+    default:
+      return 'Use source, tests, routes, and runtime evidence before making a code-change decision.';
+  }
 };
 
 export const getNodeGraphHealth = (node: GraphNode): GraphHealthNodeMetadata | null => {
@@ -162,6 +233,21 @@ export const getGraphHealthDiagnosticCounts = (
         diagnostic.kind,
         (counts.get(diagnostic.kind) ?? 0) + (diagnostic.count && diagnostic.count > 0 ? diagnostic.count : 1),
       );
+    }
+  }
+  return counts;
+};
+
+export const getGraphHealthConfidenceCounts = (
+  nodes: GraphNode[],
+): Map<GraphHealthConfidence, number> => {
+  const counts = new Map<GraphHealthConfidence, number>(
+    GRAPH_HEALTH_CONFIDENCE_LEVELS.map((confidence) => [confidence, 0]),
+  );
+  for (const node of nodes) {
+    const confidence = getNodeGraphHealth(node)?.confidence;
+    if (confidence) {
+      counts.set(confidence, (counts.get(confidence) ?? 0) + 1);
     }
   }
   return counts;
