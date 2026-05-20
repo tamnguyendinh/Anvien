@@ -258,10 +258,12 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 
 ## Phase 5 - Triage Workflow
 
-- [ ] [P5-A] Define default triage order: `no_incoming` production symbols without expected-isolated reasons, `detached_component`, diagnostics such as source-backed `unresolved_reference`, `true_isolated`, then optional `no_outgoing`.
-- [ ] [P5-B] Add report wording for "candidate" versus "confirmed" findings.
-- [ ] [P5-C] Add documentation or in-product text for why a status was assigned and what the next action should be.
-- [ ] [P5-D] Add a way to hide or de-emphasize nodes by expected-isolated overlay reason without changing raw graph data or topology status.
+**Status: COMPLETE 2026-05-20.** This phase was closed by prior implementation slices: P3-D report/export added the candidate review order and `candidate_not_confirmed` verdict policy; P4 filters added expected-isolated hiding; P4 detail/focus added in-product status explanations and next actions.
+
+- [x] [P5-A] Define default triage order: `no_incoming` production symbols without expected-isolated reasons, `detached_component`, diagnostics such as source-backed `unresolved_reference`, `true_isolated`, then optional `no_outgoing`.
+- [x] [P5-B] Add report wording for "candidate" versus "confirmed" findings.
+- [x] [P5-C] Add documentation or in-product text for why a status was assigned and what the next action should be.
+- [x] [P5-D] Add a way to hide or de-emphasize nodes by expected-isolated overlay reason without changing raw graph data or topology status.
 
 ## Phase 6 - Validation
 
@@ -292,7 +294,7 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 | P2-A..P2-F | Backend | derived graph-health metadata | deterministic status and reasons | B1 implementation counts | E6/E7/E8/E9 implementation validation | current implementation slices | closed |
 | P3-A..P3-E | Contract/API | consumer surface | stable explicit status fields | B1 payload size | E6/E10/E11 implementation validation | current implementation slices | closed |
 | P4-A..P4-I | Web UI | graph-health filters + composition | separate filters, explanations, and safe composition with existing filters | B1/P4 package size notes | E12/E13 implementation validation | current implementation slices | closed |
-| P5-A..P5-D | Workflow | triage/reporting | candidate-vs-confirmed workflow | pending | pending | pending | open |
+| P5-A..P5-D | Workflow | triage/reporting | candidate-vs-confirmed workflow | no new benchmark; existing B1/P4 observations unchanged | E14 doc-only reconciliation | current doc-only slice | closed |
 | P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | B1 | E6/E7/E8/E12/E13 | current implementation slices | partially closed; applicable backend/Web-contract/Web UI validation passed, dedicated Web latency benchmark remains open |
 | P7-A..P7-E | Closure | ledgers and commits | complete closure package | pending | pending | pending | open |
 

@@ -973,3 +973,43 @@ Results:
 Conclusion:
 
 P4-D, P4-E, and P4-F are complete. Phase 4 Web UI Graph Health filters and explanations are closed.
+
+## E14 - Phase 5 Triage Workflow Reconciliation
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Close Phase 5 checklist items that were implemented by previous code slices.
+- Record this as doc-only reconciliation; per plan rule 6, AVmatrix was not used for this doc-only commit.
+
+Inspection commands:
+
+```powershell
+rg -n "triage|candidate_not_confirmed|no_incoming|detached_component|includeExpected|expectedIsolation|Next:|getGraphHealthNextAction|Focus component|P5-" internal avmatrix-web docs\plans\2026-05-20-avmatrix-orphan-node-connectivity-lens-plan.md
+Get-Content docs\plans\2026-05-20-avmatrix-orphan-node-connectivity-lens-plan.md | Select-Object -Skip 252 -First 70
+git diff --check
+```
+
+Findings:
+
+- P5-A is implemented by `GET /api/graph/report`: report candidates are ordered by `no_incoming`, `detached_component`, `unresolved_reference`, `true_isolated`, optional `no_outgoing`, then `unknown_connectivity`; expected-isolated nodes are hidden unless `includeExpected=true`.
+- P5-B is implemented by report/export contracts and HTTP output using `reportType=graph_health_candidate_review` and `verdictPolicy=candidate_not_confirmed`.
+- P5-C is implemented by Web Graph Health titles and the Code Inspector detail panel, including `getGraphHealthNextAction`.
+- P5-D is implemented by Web Graph Health expected-isolated reason filters using `hiddenExpectedIsolationReasons`, without mutating raw graph data or topology status.
+
+Changed files:
+
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-benchmark.md`
+
+Validation:
+
+- `git diff --check` passed.
+
+Conclusion:
+
+Phase 5 is complete. No runtime code changed in this reconciliation slice.

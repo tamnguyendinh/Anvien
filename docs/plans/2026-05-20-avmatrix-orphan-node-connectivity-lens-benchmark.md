@@ -312,6 +312,10 @@ Build warnings: existing ProcessFlowModal dynamic/static import warning and >500
 
 Dedicated Web filter/detail latency measurement remains pending. Functional coverage is recorded in E13 through focused unit tests, full Web unit suite, targeted large-graph Playwright dashboard e2e, and deterministic mocked Graph Health e2e.
 
+### P5 Triage Workflow Reconciliation
+
+P5 is a doc-only reconciliation of behavior already implemented in P3-D and P4. It changes no runtime code, graph inventory, graph-health derivation counts, payload size, package size, or Web render behavior. No new benchmarkable metric is recorded for this slice; evidence is recorded in E14.
+
 ## B2 - Final Benchmark
 
 Status: pending
