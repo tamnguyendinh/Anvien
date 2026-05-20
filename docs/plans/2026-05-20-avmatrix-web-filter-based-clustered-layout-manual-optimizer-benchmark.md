@@ -2,7 +2,7 @@
 
 Date: 2026-05-20
 
-Status: reopened - visual island distribution benchmark required
+Status: reopened - visual island and documentation center benchmark required
 
 Companion files:
 
@@ -207,7 +207,9 @@ Required new measurements:
 
 | Measurement | Required evidence | Expected result |
 |---|---|---|
-| Cluster color purity | unit or browser diagnostic grouped by `nodeType` and render color | each visible node type/filter has one primary color from `getNodeColor(nodeType)` |
+| Cluster color purity | unit or browser diagnostic grouped by display filter and render color | each visible display filter has one primary color from `getNodeColor(displayFilter)` |
+| Documentation filter purity | unit or browser diagnostic grouped by display filter and render color | documentation-system nodes belong to `Documentation` and use one dedicated Documentation color |
+| Documentation center placement | browser diagnostic or unit geometry metrics | the Documentation island is centered in the large circular graph field |
 | Cluster island aspect ratio | browser diagnostic or unit geometry metrics per visible node type | medium and large clusters have bounded aspect ratio and do not collapse into long thin rails |
 | Cluster island density | browser diagnostic or unit geometry metrics per visible node type | cluster area scales with node count and capped node diameter; nodes are not stacked into dense blocks |
 | Inter-cluster gutters | screenshot-backed bounds or browser diagnostics with node-radius padding | different node type/color islands remain visibly separated |
@@ -226,3 +228,30 @@ Required final benchmark table after implementation:
 Closure requirement:
 
 - B6 must be filled with actual post-implementation measurements before this plan can be closed again.
+
+## B7 - Documentation Center Benchmark Requirement
+
+Date: 2026-05-20
+
+Status: pending implementation and validation
+
+Benchmark interpretation:
+
+- Documentation is a separate display filter/node type, not a backend graph schema rewrite.
+- Documentation must use its own color and must not be visually merged into the outer code-node islands.
+- Documentation is the center island. Other filter/color islands should surround it on the large circular graph field.
+- This benchmark is independent of timeout behavior and manual optimizer behavior.
+
+Required measurements:
+
+| Measurement | Required evidence | Expected result |
+|---|---|---|
+| Documentation node count | browser diagnostic or unit fixture count | documentation-classified nodes are counted under one `Documentation` display filter |
+| Documentation color | unit or browser diagnostic | all Documentation nodes use the dedicated Documentation color |
+| Documentation center distance | unit geometry metrics and browser diagnostic | Documentation island center is at or near the graph field center before any manual optimizer action |
+| Outer island separation from Documentation | screenshot-backed bounds or browser diagnostics | non-documentation clusters remain outside the Documentation center island with visible gutters |
+| Raw graph preservation | edge count diagnostics and metadata assertion | raw labels, relationship count, and edge visibility behavior are preserved |
+
+Closure requirement:
+
+- B7 must be filled with actual post-implementation measurements before this plan can be closed again.

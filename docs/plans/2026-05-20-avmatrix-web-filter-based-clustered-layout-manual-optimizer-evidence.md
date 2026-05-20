@@ -2,7 +2,7 @@
 
 Date: 2026-05-20
 
-Status: reopened - visual island distribution evidence required
+Status: reopened - visual island and documentation center evidence required
 
 Companion files:
 
@@ -526,5 +526,33 @@ Evidence required before future closure:
 - Code diff review proving only node placement/cluster geometry changed, not graph relationship data.
 - Browser screenshot after graph ready on the representative large repo showing separated two-dimensional color islands.
 - Per-cluster diagnostics for node count, color, width, height, aspect ratio, density, and inter-cluster gutter.
+- Edge preservation evidence showing relationship count and existing edge visibility behavior remain intact.
+- Re-run focused layout tests, full Web build, full Web unit tests, full Web e2e tests, root product Go build, and launcher Go builds.
+
+## E13 - Documentation Center Reopen Evidence
+
+Date: 2026-05-20
+
+Status: recorded for plan update; implementation pending
+
+User clarification:
+
+- Documentation-system files must be separated into one dedicated node/filter type.
+- The Documentation filter must have its own color.
+- The Documentation work is its own implementation phase, not an implicit part of the generic outer island layout.
+- The Documentation island must be placed at the center of the large circular graph field.
+
+Plan impact:
+
+- The plan now treats `Documentation` as one explicit display-filter exception to the existing Node Type filter source of truth.
+- Raw graph labels, relationship data, edge counts, edge visibility rules, and analyzer behavior remain preserved unless implementation evidence proves a narrow payload change is required.
+- Outer filter/color islands remain arranged as colored archipelagos around the Documentation center.
+
+Evidence required before future closure:
+
+- Code diff showing the Documentation filter/color/classification path.
+- Unit or browser diagnostic proving documentation nodes are grouped into one `Documentation` display filter.
+- Unit or browser diagnostic proving the Documentation island is centered before manual optimizer action.
+- Screenshot evidence showing the Documentation center island and surrounding outer color islands.
 - Edge preservation evidence showing relationship count and existing edge visibility behavior remain intact.
 - Re-run focused layout tests, full Web build, full Web unit tests, full Web e2e tests, root product Go build, and launcher Go builds.
