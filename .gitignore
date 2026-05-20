@@ -49,7 +49,7 @@ HANDOFF*.md
 .avmatrix/
 .codex/
 .claude/settings.local.json
-
+.grok/
 
 # Claude Code worktrees
 .claude/worktrees/
