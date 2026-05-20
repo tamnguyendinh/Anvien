@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
@@ -49,8 +50,39 @@ type graphHealthComponentExplanation struct {
 	DiagnosticCounts              map[string]int `json:"diagnosticCounts"`
 }
 
+type graphHealthReportResponse struct {
+	ReportType         string                       `json:"reportType"`
+	VerdictPolicy      string                       `json:"verdictPolicy"`
+	Limit              int                          `json:"limit"`
+	IncludeExpected    bool                         `json:"includeExpected"`
+	Summary            graphhealth.Summary          `json:"summary"`
+	TotalCandidates    int                          `json:"totalCandidates"`
+	ReturnedCandidates int                          `json:"returnedCandidates"`
+	Candidates         []graphHealthReportCandidate `json:"candidates"`
+}
+
+type graphHealthReportCandidate struct {
+	NodeID                     string                     `json:"nodeId"`
+	Label                      string                     `json:"label"`
+	Name                       string                     `json:"name,omitempty"`
+	FilePath                   string                     `json:"filePath,omitempty"`
+	TriagePriority             string                     `json:"triagePriority"`
+	TopologyStatus             graphhealth.TopologyStatus `json:"topologyStatus"`
+	Confidence                 string                     `json:"confidence"`
+	CountedIncoming            int                        `json:"countedIncoming"`
+	CountedOutgoing            int                        `json:"countedOutgoing"`
+	ExcludedEdgeCounts         map[string]int             `json:"excludedEdgeCounts,omitempty"`
+	ExpectedIsolationReasons   []string                   `json:"expectedIsolationReasons,omitempty"`
+	Diagnostics                []graphhealth.Diagnostic   `json:"diagnostics,omitempty"`
+	ComponentID                string                     `json:"componentId,omitempty"`
+	ComponentSize              int                        `json:"componentSize,omitempty"`
+	ComponentReachableFromRoot bool                       `json:"componentReachableFromRoot"`
+}
+
 const graphNDJSONFlushInterval = 512
 const graphHealthExplainSampleLimit = 20
+const graphHealthReportDefaultLimit = 100
+const graphHealthReportMaxLimit = 1000
 
 func (s Server) handleGraph(w http.ResponseWriter, r *http.Request) {
 	if !methodAllowed(w, r, http.MethodGet) {
@@ -139,6 +171,50 @@ func (s Server) handleGraphHealthExplain(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	writeJSON(w, http.StatusOK, response)
+}
+
+func (s Server) handleGraphHealthReport(w http.ResponseWriter, r *http.Request) {
+	if !methodAllowed(w, r, http.MethodGet) {
+		return
+	}
+
+	entry, status, message, err := s.resolveRequestedRepo(r)
+	if err != nil {
+		if status == http.StatusNotFound {
+			message = "Repository not found"
+		}
+		writeError(w, status, message)
+		return
+	}
+
+	g, err := loadGraphSnapshot(filepath.Join(storagePathFor(entry), "graph.json"))
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			writeError(w, http.StatusNotFound, "Graph not found. Run: avmatrix analyze")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	limit := graphHealthReportLimit(r)
+	includeExpected := r.URL.Query().Get("includeExpected") == "true"
+	summary := graphhealth.ComputeSummary(g)
+	candidates := graphHealthReportCandidates(g, includeExpected)
+	totalCandidates := len(candidates)
+	if len(candidates) > limit {
+		candidates = candidates[:limit]
+	}
+	writeJSON(w, http.StatusOK, graphHealthReportResponse{
+		ReportType:         "graph_health_candidate_review",
+		VerdictPolicy:      "candidate_not_confirmed",
+		Limit:              limit,
+		IncludeExpected:    includeExpected,
+		Summary:            summary,
+		TotalCandidates:    totalCandidates,
+		ReturnedCandidates: len(candidates),
+		Candidates:         candidates,
+	})
 }
 
 func graphPayload(g *graph.Graph, includeContent bool) graphResponse {
@@ -233,6 +309,94 @@ func graphHealthComponentExplain(g *graph.Graph, componentID string, includeCont
 	}, true
 }
 
+func graphHealthReportCandidates(g *graph.Graph, includeExpected bool) []graphHealthReportCandidate {
+	candidates := make([]graphHealthReportCandidate, 0)
+	for _, node := range g.Nodes {
+		health, ok := nodeHealthFromNode(node)
+		if !ok {
+			continue
+		}
+		priority, rank := graphHealthReportPriority(health)
+		if rank == 0 {
+			continue
+		}
+		if !includeExpected && health.Confidence == graphhealth.ConfidenceExpected {
+			continue
+		}
+		candidates = append(candidates, graphHealthReportCandidate{
+			NodeID:                     node.ID,
+			Label:                      string(node.Label),
+			Name:                       graphNodeStringProperty(node, "name"),
+			FilePath:                   graphNodeStringProperty(node, "filePath"),
+			TriagePriority:             priority,
+			TopologyStatus:             health.TopologyStatus,
+			Confidence:                 health.Confidence,
+			CountedIncoming:            health.CountedIncoming,
+			CountedOutgoing:            health.CountedOutgoing,
+			ExcludedEdgeCounts:         health.ExcludedEdgeCounts,
+			ExpectedIsolationReasons:   health.ExpectedIsolationReasons,
+			Diagnostics:                health.Diagnostics,
+			ComponentID:                health.ComponentID,
+			ComponentSize:              health.ComponentSize,
+			ComponentReachableFromRoot: health.ComponentReachableFromRoot,
+		})
+	}
+	sort.SliceStable(candidates, func(i, j int) bool {
+		leftRank := graphHealthReportPriorityRank(candidates[i].TriagePriority)
+		rightRank := graphHealthReportPriorityRank(candidates[j].TriagePriority)
+		if leftRank != rightRank {
+			return leftRank < rightRank
+		}
+		if candidates[i].Confidence != candidates[j].Confidence {
+			return candidates[i].Confidence < candidates[j].Confidence
+		}
+		if candidates[i].FilePath != candidates[j].FilePath {
+			return candidates[i].FilePath < candidates[j].FilePath
+		}
+		return candidates[i].NodeID < candidates[j].NodeID
+	})
+	return candidates
+}
+
+func graphHealthReportPriority(health graphhealth.NodeHealth) (string, int) {
+	if hasDiagnosticKind(health.Diagnostics, graphhealth.DiagnosticUnresolvedReference) {
+		return "unresolved_reference", 3
+	}
+	switch health.TopologyStatus {
+	case graphhealth.TopologyNoIncoming:
+		return string(graphhealth.TopologyNoIncoming), 1
+	case graphhealth.TopologyDetached:
+		return string(graphhealth.TopologyDetached), 2
+	case graphhealth.TopologyTrueIsolated:
+		return string(graphhealth.TopologyTrueIsolated), 4
+	case graphhealth.TopologyNoOutgoing:
+		return string(graphhealth.TopologyNoOutgoing), 5
+	case graphhealth.TopologyUnknown:
+		return string(graphhealth.TopologyUnknown), 6
+	default:
+		return "", 0
+	}
+}
+
+func graphHealthReportPriorityRank(priority string) int {
+	switch priority {
+	case string(graphhealth.TopologyNoIncoming):
+		return 1
+	case string(graphhealth.TopologyDetached):
+		return 2
+	case "unresolved_reference":
+		return 3
+	case string(graphhealth.TopologyTrueIsolated):
+		return 4
+	case string(graphhealth.TopologyNoOutgoing):
+		return 5
+	case string(graphhealth.TopologyUnknown):
+		return 6
+	default:
+		return 99
+	}
+}
+
 func streamGraphNDJSON(w http.ResponseWriter, g *graph.Graph, includeContent bool) {
 	graphhealth.Compute(g)
 	encoder := json.NewEncoder(w)
@@ -294,6 +458,42 @@ func graphNodeForResponse(node graph.Node, includeContent bool) graph.Node {
 	}
 	node.Properties = properties
 	return node
+}
+
+func graphHealthReportLimit(r *http.Request) int {
+	raw := strings.TrimSpace(r.URL.Query().Get("limit"))
+	if raw == "" {
+		return graphHealthReportDefaultLimit
+	}
+	limit, err := strconv.Atoi(raw)
+	if err != nil || limit < 1 {
+		return graphHealthReportDefaultLimit
+	}
+	if limit > graphHealthReportMaxLimit {
+		return graphHealthReportMaxLimit
+	}
+	return limit
+}
+
+func graphNodeStringProperty(node graph.Node, key string) string {
+	if node.Properties == nil {
+		return ""
+	}
+	value, ok := node.Properties[key]
+	if !ok {
+		return ""
+	}
+	text, _ := value.(string)
+	return text
+}
+
+func hasDiagnosticKind(diagnostics []graphhealth.Diagnostic, kind string) bool {
+	for _, diagnostic := range diagnostics {
+		if diagnostic.Kind == kind {
+			return true
+		}
+	}
+	return false
 }
 
 func nodeHealthFromNode(node graph.Node) (graphhealth.NodeHealth, bool) {

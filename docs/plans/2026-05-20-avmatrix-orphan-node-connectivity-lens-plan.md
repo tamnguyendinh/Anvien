@@ -237,7 +237,7 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 - [x] [P3-A] Decide whether graph-health metadata is emitted in Web graph payloads, generated Web contracts, MCP resources, or a dedicated endpoint. Decision for this slice: HTTP graph JSON response includes `graphHealth` summary; JSON and NDJSON node records include per-node `properties.graphHealth`; generated Web contracts define the stable types. MCP/report-specific explain surfaces remain later work.
 - [x] [P3-B] Add graph-health summary output with counts by topology status, expected-isolated reason, diagnostics type, and confidence.
 - [x] [P3-C] Add explain output for a single node or component. Implemented as GET `/api/graph/explain` with exactly one of `nodeId` or `componentId`; node explain returns health plus counted/excluded relationship evidence, and component explain returns aggregate counts plus bounded samples.
-- [ ] [P3-D] Add report/export path if needed for dead-code or unwired-candidate review.
+- [x] [P3-D] Add report/export path if needed for dead-code or unwired-candidate review. Implemented as GET `/api/graph/report` JSON export with `candidate_not_confirmed` verdict policy, triage priority ordering, `includeExpected=true`, and limit bounds.
 - [x] [P3-E] Add contract tests proving status fields are stable, explicit, and not confused with semantic labels.
 
 ## Phase 4 - Web UI Graph Health Filters
@@ -286,7 +286,7 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 |---|---|---|---|---|---|---|---|
 | P1-A1..P1-I | Policy | edge policy, expected-isolated policy, root rules, metadata ownership, taxonomy, baseline, cross-repo criteria | no ambiguous orphan claims; all major decisions recorded | 2026-05-20 (E5 + B0) | 2026-05-20 python + source + MCP queries | 2026-05-20 (doc-only) | closed |
 | P2-A..P2-F | Backend | derived graph-health metadata | deterministic status and reasons | B1 implementation counts | E6/E7/E8/E9 implementation validation | current implementation slices | closed |
-| P3-A..P3-E | Contract/API | consumer surface | stable explicit status fields | B1 payload size | E6/E10 implementation validation | current implementation slices | partially closed; P3-D remains open |
+| P3-A..P3-E | Contract/API | consumer surface | stable explicit status fields | B1 payload size | E6/E10/E11 implementation validation | current implementation slices | closed |
 | P4-A..P4-I | Web UI | graph-health filters + composition | separate filters, explanations, and safe composition with existing filters | pending | pending | pending | open |
 | P5-A..P5-D | Workflow | triage/reporting | candidate-vs-confirmed workflow | pending | pending | pending | open |
 | P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | B1 | E6/E7/E8 | current implementation slices | partially closed; applicable backend/Web-contract validation passed, Web filter e2e remains open |

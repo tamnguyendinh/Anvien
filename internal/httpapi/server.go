@@ -54,6 +54,7 @@ func NewHandler(config Config) http.Handler {
 	mux.HandleFunc("/api/local/folder-picker", server.handleLocalFolderPicker)
 	mux.HandleFunc("/api/graph", server.handleGraph)
 	mux.HandleFunc("/api/graph/explain", server.handleGraphHealthExplain)
+	mux.HandleFunc("/api/graph/report", server.handleGraphHealthReport)
 	mux.HandleFunc("/api/file", server.handleFile)
 	mux.HandleFunc("/api/grep", server.handleGrep)
 	mux.HandleFunc("/api/query", server.handleQuery)

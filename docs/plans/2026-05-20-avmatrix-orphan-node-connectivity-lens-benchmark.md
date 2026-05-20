@@ -278,6 +278,10 @@ P2-F is a test-only coverage slice. It changes no production graph-health deriva
 
 P3-C adds a bounded explain API surface and generated response contracts. It does not change existing `/api/graph` inventory counts, graph summary counts, or Web render behavior. Component explain responses are bounded by `sampleLimit=20`; endpoint validation evidence is recorded in E10. Dedicated explain-endpoint runtime benchmarking remains a follow-up if this endpoint becomes part of a high-frequency Web interaction.
 
+### P3-D Report Export Slice
+
+P3-D adds JSON report/export contracts and `GET /api/graph/report`. It does not change existing graph inventory counts, `/api/graph` payload size, or Web render behavior. Report responses default to `limit=100`, cap at `1000`, and preserve `candidate_not_confirmed` wording. Dedicated report runtime benchmarking remains a follow-up if the endpoint is used for large automated exports.
+
 ## B2 - Final Benchmark
 
 Status: pending

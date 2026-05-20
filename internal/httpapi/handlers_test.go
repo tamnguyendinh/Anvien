@@ -442,6 +442,60 @@ func TestGraphHealthExplainRequiresOneTarget(t *testing.T) {
 	}
 }
 
+func TestGraphHealthReportReturnsCandidateExport(t *testing.T) {
+	server, fixtures := newRepoServer(t, []repoFixture{{name: "alpha"}})
+	defer server.Close()
+
+	var payload graphHealthReportResponse
+	getJSON(t, server.URL+"/api/graph/report?repo="+url.QueryEscape(fixtures[0].path)+"&limit=1", http.StatusOK, &payload)
+
+	if payload.ReportType != "graph_health_candidate_review" || payload.VerdictPolicy != "candidate_not_confirmed" {
+		t.Fatalf("unexpected report identity: %#v", payload)
+	}
+	if payload.Limit != 1 || payload.ReturnedCandidates != 1 || payload.TotalCandidates < 2 {
+		t.Fatalf("unexpected report candidate counts: %#v", payload)
+	}
+	first := payload.Candidates[0]
+	if first.NodeID != "Function:helper" || first.TriagePriority != string(graphhealth.TopologyNoIncoming) {
+		t.Fatalf("unexpected first report candidate: %#v", first)
+	}
+	if first.TopologyStatus != graphhealth.TopologyNoIncoming || first.Confidence != graphhealth.ConfidenceCandidate {
+		t.Fatalf("unexpected first candidate health: %#v", first)
+	}
+	for _, candidate := range payload.Candidates {
+		if candidate.NodeID == "Process:main" {
+			t.Fatalf("expected framework node should be hidden by default: %#v", payload.Candidates)
+		}
+	}
+	if payload.Summary.PolicyVersion != graphhealth.PolicyVersion {
+		t.Fatalf("report missing graph health summary: %#v", payload.Summary)
+	}
+}
+
+func TestGraphHealthReportCanIncludeExpected(t *testing.T) {
+	server, fixtures := newRepoServer(t, []repoFixture{{name: "alpha"}})
+	defer server.Close()
+
+	var payload graphHealthReportResponse
+	getJSON(t, server.URL+"/api/graph/report?repo="+url.QueryEscape(fixtures[0].path)+"&includeExpected=true", http.StatusOK, &payload)
+
+	if !payload.IncludeExpected {
+		t.Fatalf("includeExpected flag not reflected: %#v", payload)
+	}
+	foundProcess := false
+	for _, candidate := range payload.Candidates {
+		if candidate.NodeID == "Process:main" {
+			foundProcess = true
+			if candidate.Confidence != graphhealth.ConfidenceExpected || candidate.TriagePriority != string(graphhealth.TopologyNoOutgoing) {
+				t.Fatalf("unexpected expected candidate: %#v", candidate)
+			}
+		}
+	}
+	if !foundProcess {
+		t.Fatalf("expected Process:main in includeExpected report: %#v", payload.Candidates)
+	}
+}
+
 func TestGraphStreamingKeepsRouteAndToolMetadata(t *testing.T) {
 	g := graph.New()
 	g.AddNode(graph.Node{ID: "Route:/api/graph:GET", Label: scopeir.NodeRoute, Properties: graph.NodeProperties{

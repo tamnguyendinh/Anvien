@@ -3471,6 +3471,43 @@ export interface GraphHealthExplainResponse {
   sampleLimit?: number;
 }
 
+export type GraphHealthReportPriority =
+  | 'no_incoming'
+  | 'detached_component'
+  | 'unresolved_reference'
+  | 'true_isolated'
+  | 'no_outgoing'
+  | 'unknown_connectivity';
+
+export interface GraphHealthReportCandidate {
+  nodeId: string;
+  label: NodeLabel | string;
+  name?: string;
+  filePath?: string;
+  triagePriority: GraphHealthReportPriority;
+  topologyStatus: GraphHealthTopologyStatus;
+  confidence: GraphHealthConfidence;
+  countedIncoming: number;
+  countedOutgoing: number;
+  excludedEdgeCounts?: Record<string, number>;
+  expectedIsolationReasons?: GraphHealthExpectedIsolationReason[];
+  diagnostics?: GraphHealthDiagnostic[];
+  componentId?: string;
+  componentSize?: number;
+  componentReachableFromRoot: boolean;
+}
+
+export interface GraphHealthReportResponse {
+  reportType: 'graph_health_candidate_review';
+  verdictPolicy: 'candidate_not_confirmed';
+  limit: number;
+  includeExpected: boolean;
+  summary: GraphHealthSummary;
+  totalCandidates: number;
+  returnedCandidates: number;
+  candidates: GraphHealthReportCandidate[];
+}
+
 export const PIPELINE_PHASES = [
   "idle",
   "extracting",

@@ -734,3 +734,76 @@ Results:
 Conclusion:
 
 P3-C is complete for HTTP/API and generated contract surfaces. P3-D report/export remains the only open Phase 3 item.
+
+## E11 - Phase 3 Graph Health Report Export Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Implement P3-D report/export path for Graph Health candidate review.
+- Add HTTP API route `GET /api/graph/report`.
+- Add generated Web contract types for the report response.
+- Keep the report wording candidate-focused and explicitly non-confirming.
+
+AVmatrix refresh and impact commands:
+
+```powershell
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix impact NewHandler --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact WebUIContractTypeScript --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `NewHandler` reported HIGH risk because route registration affects HTTP API tests.
+- `WebUIContractTypeScript` reported CRITICAL risk because generated Web contracts depend on it.
+- Mitigation: added a new independent report route, added focused HTTP tests, regenerated contracts, and kept existing `/api/graph` and `/api/graph/explain` behavior unchanged.
+
+Changed files:
+
+- `internal/httpapi/server.go`
+- `internal/httpapi/graph.go`
+- `internal/httpapi/handlers_test.go`
+- `internal/contracts/web_ui.go`
+- `avmatrix-web/src/generated/avmatrix-contracts.ts`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- `GET /api/graph/report` returns `reportType=graph_health_candidate_review` and `verdictPolicy=candidate_not_confirmed`.
+- Default report hides expected-isolated nodes; `includeExpected=true` includes them for complete export/review.
+- `limit` defaults to `100` and caps at `1000`.
+- Candidates are sorted by triage priority: `no_incoming`, `detached_component`, `unresolved_reference`, `true_isolated`, `no_outgoing`, then `unknown_connectivity`.
+- Candidate rows include node identity, file path, topology status, confidence, counted degrees, expected reasons, diagnostics, excluded edge counts, and component metadata.
+- Generated TypeScript now includes `GraphHealthReportPriority`, `GraphHealthReportCandidate`, and `GraphHealthReportResponse`.
+
+Validation commands and results:
+
+```powershell
+go test ./internal/httpapi ./internal/contracts
+go run .\cmd\generate-web-contracts --check
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+npm --prefix avmatrix-web run build
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
+```
+
+Results:
+
+- Focused HTTP API and contract tests passed.
+- Generated Web contract check passed.
+- Applicable Go build passed for `./cmd/... ./internal/...`.
+- Applicable Go test suite passed for `./cmd/... ./internal/...`.
+- Web production build passed; Vite reported existing chunk-size/dynamic-import warnings only.
+- Final pre-commit AVmatrix refresh passed with `files: scanned=707 parsed=534 unsupported=173 failed=0`, `graph: nodes=21546 relationships=53742`.
+- `detect-changes` passed and reported `risk_level=high`, `changed_files=9`, `changed_count=66`, `affected_count=8`. The affected flows were expected HTTP route/report helpers and generated contract flow changes.
+
+Conclusion:
+
+P3-D is complete. Phase 3 Contract/API/Reporting Surface is closed; Web UI filters and triage workflow refinements remain open.
