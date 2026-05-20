@@ -18,9 +18,6 @@ Companion files:
 5. Record evidence as each evidenced task is completed.
 6. For doc-only commits, do not use AVmatrix.
 7. After each completed implementation slice, commit the work, then continue until the full plan is complete.
-8. Do not mark orphan/connectivity findings as bugs without evidence. Connectivity status is a graph-derived candidate classification until source, analyzer, route, export, generated, test, or fixture evidence confirms the interpretation.
-9. Do not create fake baseline counts. Any graph count, orphan count, detached-component count, or unresolved-reference count must come from a recorded command or test artifact.
-10. Creating or materially updating this plan requires AVmatrix/codebase inspection. The doc-only AVmatrix exemption applies only to the commit mechanics for purely documentation changes; it does not exempt plan authors from reading indexed code and source files before writing implementation work.
 
 ## Problem
 
@@ -44,6 +41,7 @@ Implementation may touch:
 - graph inventory and graph-health analysis code that derives connectivity status from graph payloads;
 - relationship type policy for which edges count as connectivity;
 - analyzer/resolution metrics if source facts need explicit unresolved or missing-edge evidence;
+- graph accuracy audit code if existing property-specific orphan terminology must be namespaced or bridged;
 - internal contracts that expose graph-health metadata to Web consumers;
 - Web generated contracts if graph-health filters become generated metadata;
 - `avmatrix-web` graph filters, dashboard, node detail panel, legends, and e2e coverage;
@@ -62,25 +60,34 @@ Out of scope unless a later phase explicitly reopens it:
 
 Do not map "orphan node" into a primary node type.
 
-Use derived connectivity metadata and a separate Web filter group:
+Use derived graph-health metadata and a separate Web filter group:
 
 ```text
 Node semantic label: Function, File, Class, Interface, Struct, Method, Section, ...
-Derived status: connectivityStatus
+Graph Health metadata:
+  topologyStatus: connected | true_isolated | no_incoming | no_outgoing | detached_component | unknown_connectivity
+  expectedIsolationReasons: []
+  diagnostics: []
+  confidence: candidate | expected | unknown | confirmed
 UI group: Graph Health
 ```
 
-The first accepted taxonomy is:
+The first accepted topology taxonomy is:
 
 | Status | Definition | Default interpretation |
 |---|---|---|
+| `connected` | one or more counted incoming edges and one or more counted outgoing edges, and not detached from accepted roots under the component policy | normal graph-health baseline; usually not shown as a triage filter |
 | `true_isolated` | zero counted incoming edges and zero counted outgoing edges | needs triage; could be real dead artifact, expected fixture/generated/vendor, or analyzer miss |
 | `no_incoming` | zero counted incoming edges and one or more counted outgoing edges | strongest dead-code or unwired candidate after entrypoint/export/test/generated exclusions |
 | `no_outgoing` | one or more counted incoming edges and zero counted outgoing edges | often normal leaf behavior; inspect only, do not flag as bug by default |
 | `detached_component` | a connected component has internal edges but no counted path to accepted entry/process/root surfaces | strong candidate for unwired feature or missing root edge |
-| `unresolved_reference` | source fact or relationship evidence names a target that cannot be resolved to an in-repo graph node | analyzer/resolution/import/external policy issue until classified |
-| `expected_isolated` | node matches explicit expected-isolated policy such as fixture, generated, vendor, public API, test-only, docs, example, migration, or framework entrypoint | hidden or de-emphasized by default |
 | `unknown_connectivity` | graph does not contain enough evidence to classify safely | do not count as bug |
+
+Expected-isolated classification is not a topology status. It is an overlay reason list that can apply to any topology status, for example a test helper can be `no_incoming` with `expectedIsolationReasons: ["test"]`. Public/exported status alone is a prioritization modifier, not sufficient evidence to auto-hide a node.
+
+Unresolved references are diagnostics, not node topology statuses, unless a source fact can be attached to a specific in-repo source node. When source/resolution evidence exists, emit a diagnostic such as `unresolved_reference` with fact family, source node, target text, and resolution source. When no source-node evidence exists, include the count in summaries and classify affected topology as `unknown_connectivity` rather than pretending there is a filterable node status.
+
+Existing property-access accuracy output is a separate diagnostic surface. `cmd/property-access-audit` and `internal/graphaccuracy/property_access.go` already emit a Property-only `orphanStatus` taxonomy such as `owner_linked`, `false_orphan`, `true_orphan`, `unknown`, `external_library_owned`, and `intentionally_unmodeled`. The Graph Health taxonomy must stay namespaced from that audit output unless a phase explicitly defines and tests a compatibility mapping.
 
 ## Connectivity Edge Policy
 
@@ -93,6 +100,7 @@ The policy must separate:
 - documentation/report edges;
 - display-only or compatibility edges;
 - hidden edges suppressed by Web filters.
+- root/path traversal rules for `detached_component`, including directed versus undirected traversal, accepted root labels, accepted entry/process/resource surfaces, and how `ENTRY_POINT_OF`, `STEP_IN_PROCESS`, `HANDLES_ROUTE`, and `HANDLES_TOOL` directions are interpreted.
 
 No count is valid until the edge policy is recorded in this plan, the evidence ledger, and tests.
 
@@ -105,22 +113,24 @@ The expected-isolated policy must classify at least:
 - test files and test helpers;
 - fixtures and sample repositories;
 - generated files;
-- vendor/dependency directories;
+- nodes from vendor/dependency paths if such nodes are present in the graph;
 - documentation/report/section nodes;
 - migrations and scripts;
-- exported APIs and public package surfaces;
-- framework entrypoints and route handlers;
+- exported APIs and public package surfaces, with an explicit evidence rule that exported-only is a prioritization modifier and not automatic expected-isolated status;
+- framework entrypoints and route handlers only when route/tool/process/framework evidence identifies them as entry surfaces;
 - CLI commands, MCP tools, session handlers, background jobs, and reflection/config-discovered surfaces.
+- scanner-ignored paths as out-of-graph inputs, not Graph Health status counts.
 
 ## Acceptance Criteria
 
 - "Orphan" is not introduced as a primary node label.
 - Web UI exposes graph-health/connectivity filters separately from node-type filters.
-- Every flagged node has an explanation: counted incoming edges, counted outgoing edges, excluded edge categories, source path policy, expected-isolated reason, and confidence.
+- Every flagged node has an explanation: topology status, counted incoming edges, counted outgoing edges, excluded edge categories, source path policy, expected-isolated reasons, diagnostics, and confidence.
 - `no_incoming` and `detached_component` are prioritized as actionable candidates; `no_outgoing` is not presented as a bug by default.
-- Expected-isolated nodes can be hidden or de-emphasized without deleting their semantic labels.
+- Expected-isolated nodes can be hidden or de-emphasized without deleting their semantic labels or overwriting their topology status.
 - A user can distinguish a real candidate from analyzer/resolution uncertainty.
-- Benchmark ledger records measured counts for all statuses on at least `E:\AVmatrix-GO` and one large indexed repo when available.
+- A node can simultaneously retain topology status, expected-isolated reasons, and diagnostics without those fields overwriting each other.
+- Benchmark ledger records measured counts for all topology statuses, expected-isolated reasons, diagnostics, and confidence levels on `E:\AVmatrix-GO` and on representative indexed repos selected by documented Phase 1 criteria when available.
 - Evidence ledger records commands, impacted files, tests, e2e artifacts, and conclusions for each implementation slice.
 - Full build, unit tests, and relevant e2e tests pass before closure.
 
@@ -137,53 +147,57 @@ The following baseline must be measured before implementation claims:
 - expected-isolated count by reason;
 - unresolved reference count by source fact family if available;
 - comparison between raw graph connectivity and Web-visible connectivity after filters.
+- compatibility impact on existing property-access `orphanStatus` output.
+- graph source timestamp or hash and exact count commands/scripts sufficient to reproduce every baseline row.
 
-Initial codebase-reviewed baseline measurements are recorded in the benchmark ledger. They are not yet the final accepted orphan definition because Phase 1 still has to close the counted-edge and expected-isolated policies.
+Initial `E:\AVmatrix-GO` codebase-reviewed baseline measurements are recorded in the benchmark ledger. They are not yet the final accepted orphan definition because Phase 1 still has to close the counted-edge and expected-isolated policies, and representative cross-repo baselines remain pending selection criteria.
 
 ## Codebase Findings Before Implementation
 
 AVmatrix index and source inspection on 2026-05-20 identified these existing implementation facts:
 
-- Graph storage currently has no connectivity metadata. `internal/graph/types.go` defines `Node`, `Relationship`, and `Graph`; relationships have `sourceId`, `targetId`, `type`, confidence, reason, step, resolution source, file hash, and evidence, but no `connectivityStatus` or per-node incoming/outgoing summary.
+- Graph storage currently has no graph-health metadata. `internal/graph/types.go` defines `Node`, `Relationship`, and `Graph`; relationships have `sourceId`, `targetId`, `type`, confidence, reason, step, resolution source, file hash, and evidence, but nodes have no `topologyStatus`, expected-isolated reasons, diagnostics, or per-node incoming/outgoing summary.
 - The HTTP graph endpoint currently streams only raw graph nodes and relationships. `internal/httpapi/graph.go` exposes `graphPayload` and `streamGraphNDJSON`; `graphNodeForResponse` only strips `content` unless requested.
-- Generated Web contracts currently expose semantic node labels and relationship types, not Graph Health statuses. `internal/contracts/web_ui.go` defines `nodeLabels`, `graphRelationshipTypes`, relationship display policy, and language coverage metadata.
-- The Web graph model currently mirrors generated `GraphNode` and `GraphRelationship` arrays. `avmatrix-web/src/core/graph/types.ts` defines `KnowledgeGraph` as nodes plus relationships with no derived connectivity field.
+- Generated Web contracts currently expose semantic node labels and relationship types, not Graph Health metadata. `internal/contracts/web_ui.go` defines `nodeLabels`, `graphRelationshipTypes`, relationship display policy, and language coverage metadata.
+- The Web graph model currently mirrors generated `GraphNode` and `GraphRelationship` arrays. `avmatrix-web/src/core/graph/types.ts` defines `KnowledgeGraph` as nodes plus relationships with no derived graph-health field.
 - Web filter UI currently has `Node Types`, `Edge Types`, `Focus Depth`, and `Color Legend` inside `FileTreePanel`. There is no `Graph Health` filter group.
 - Web graph conversion already has an "orphan nodes" placement step in `knowledgeGraphToGraphology`, but that phrase only means nodes not reached by the layout hierarchy BFS. It is not a product taxonomy and does not mean dead or unwired code.
 - Existing layout hierarchy logic in `knowledgeGraphToGraphology` treats `CONTAINS`, `HAS_METHOD`, `HAS_PROPERTY`, `DEFINES`, `IMPORTS`, `WRAPS`, `STEP_IN_PROCESS`, `ENTRY_POINT_OF`, `HANDLES_ROUTE`, `HANDLES_TOOL`, and `MEMBER_OF` as parent/child layout signals with priorities.
 - Existing filter counts in `FileTreePanel` use graph-present semantic labels and relationship types; relationship display counts collapse grouped `INHERITS` compatibility edges through `getDisplayRelationshipTypeCounts`.
+- Existing Web graph filter state is split across `FileTreePanel`, `GraphStateProvider`, `GraphCanvas`, `knowledgeGraphToGraphology`, and Sigma node/edge attributes. Graph Health filters must compose with node-type filters, edge-type visibility, focus-depth filtering, and graph canvas refresh behavior.
 - Existing process detection already uses a narrower connectivity idea than raw graph connectivity. `internal/processes/processes.go` builds process traces from `CALLS`, ignores low-confidence calls, excludes test files for process entrypoints, links `Route`/`Tool` nodes to processes with `ENTRY_POINT_OF`, and scores exported/framework-like functions.
 - Existing ignore policy already recognizes many expected-isolated path classes. `internal/ignore/constants.go` ignores directories such as `node_modules`, `vendor`, `dist`, `build`, generated directories, fixtures, snapshots, caches, and test fixture directories. `internal/processes/processes.go` also has `isTestFile` logic for `.test.`, `.spec.`, `/test/`, `/tests/`, `__tests__`, `_test.go`, and `_test.py`.
+- Existing graph accuracy code already uses orphan terminology for one specialized audit. `internal/graphaccuracy/property_access.go` classifies Property nodes into `owner_linked`, `false_orphan`, `true_orphan`, `unknown`, `external_library_owned`, and `intentionally_unmodeled`; `cmd/property-access-audit` prints those counts as `orphan.*` summary lines. This is not a global graph-health/node-connectivity taxonomy.
+- Existing generated Web contracts already document unresolved/external policy for provider fact coverage, but unresolved/external targets are retained in metrics/evidence rather than emitted as resolved graph edges.
 
 Initial measurements also prove why a raw "zero incoming" filter would be wrong:
 
 - With all relationship types counted, `AVmatrix-GO` has `0` code nodes with zero raw incoming edges, because structural/ownership relationships such as `DEFINES` connect symbols from files.
-- With all relationship types counted, `Restaurant_manager` also has `0` code nodes with zero raw incoming edges.
-- With a provisional non-structural policy that excludes structural/ownership/display grouping edges, `AVmatrix-GO` has `1,616` code nodes with zero counted incoming edges and `Restaurant_manager` has `4,190`.
+- With a provisional non-structural policy that excludes structural/ownership/display grouping edges, `AVmatrix-GO` has `1,616` code nodes with zero counted incoming edges.
 - Therefore Phase 1 must close the counted-edge policy before any Graph Health status is user-facing.
 
 ## Phase 1 - Taxonomy, Policy, and Baseline
 
-- [ ] [P1-A] Define counted edge types, excluded edge types, and compatibility/display edge handling for connectivity status.
-- [ ] [P1-B] Define expected-isolated policy for test, fixture, generated, vendor, docs, migrations, scripts, exported API, route, tool, command, session, framework, and reflection/config surfaces.
-- [ ] [P1-C] Define confidence levels: `candidate`, `expected`, `unknown`, and `confirmed`, with evidence requirements for each.
-- [ ] [P1-D] Measure baseline graph connectivity for `E:\AVmatrix-GO` and record commands/results in benchmark and evidence ledgers. Initial raw/provisional-policy measurements are recorded; remains open until counted-edge and expected-isolated policies are accepted.
-- [ ] [P1-E] Measure baseline graph connectivity for one large indexed repo when available and record commands/results in benchmark and evidence ledgers. Initial `E:\Restaurant_manager` raw/provisional-policy measurements are recorded; remains open until counted-edge and expected-isolated policies are accepted.
-- [ ] [P1-F] Record the selected taxonomy in this plan, generated contracts if needed, and user-facing Web wording.
+- [ ] [P1-A] Define counted edge types, excluded edge types, and compatibility/display edge handling for topology status.
+- [ ] [P1-B] Define expected-isolated overlay policy for test, fixture, generated, vendor, docs, migrations, scripts, exported API, route, tool, command, session, framework, and reflection/config surfaces. The policy must state which reasons are automatic, which are evidence-based, and which only reduce priority.
+- [ ] [P1-C] Define confidence levels: `candidate`, `expected`, `unknown`, and `confirmed`, with evidence requirements for each and with topology status kept separate from confidence.
+- [ ] [P1-D] Measure baseline graph connectivity for `E:\AVmatrix-GO` and record reproducible commands/results, graph source timestamp or hash, and interpretation in benchmark and evidence ledgers. Initial raw/provisional-policy measurements are recorded; remains open until counted-edge and expected-isolated policies are accepted.
+- [ ] [P1-E] Define representative indexed-repo selection criteria and measure cross-repo baseline only after those criteria are recorded.
+- [ ] [P1-F] Record the selected topology taxonomy, expected-isolated overlay, diagnostics model, generated contracts if needed, existing property-access audit compatibility, and user-facing Web wording.
 
 ## Phase 2 - Backend Graph-Health Derivation
 
-- [ ] [P2-A] Identify the graph data boundary that should own derived connectivity status: graph package, analyzer output, HTTP graph payload, contract layer, or Web-only derived state.
+- [ ] [P2-A] Identify the graph data boundary that should own derived graph-health metadata: graph package, analyzer output, HTTP graph payload, contract layer, or Web-only derived state.
 - [ ] [P2-B] Implement deterministic connectivity summary generation using the Phase 1 edge policy.
-- [ ] [P2-C] Add per-node derived metadata for connectivity status, reasons, counted incoming/outgoing counts, expected-isolated reason, and confidence.
-- [ ] [P2-D] Add detached-component grouping and component-level explanations.
-- [ ] [P2-E] Add unresolved-reference classification only where source/resolution evidence exists; otherwise classify as `unknown_connectivity`.
-- [ ] [P2-F] Add unit tests for every taxonomy status and exclusion rule.
+- [ ] [P2-C] Add per-node derived metadata for topology status, counted incoming/outgoing counts, excluded edge counts by category, expected-isolated reasons, diagnostics, and confidence.
+- [ ] [P2-D] Add detached-component grouping and component-level explanations using explicit root/path traversal rules from Phase 1.
+- [ ] [P2-E] Add unresolved-reference diagnostics only where source/resolution evidence exists; otherwise preserve unresolved counts in summaries and classify affected topology as `unknown_connectivity`.
+- [ ] [P2-F] Add unit tests for every topology status, expected-isolated overlay reason, diagnostics rule, confidence rule, and exclusion rule.
 
 ## Phase 3 - Contract, API, and Reporting Surface
 
 - [ ] [P3-A] Decide whether graph-health metadata is emitted in Web graph payloads, generated Web contracts, MCP resources, or a dedicated endpoint.
-- [ ] [P3-B] Add graph-health summary output with counts by status and expected-isolated reason.
+- [ ] [P3-B] Add graph-health summary output with counts by topology status, expected-isolated reason, diagnostics type, and confidence.
 - [ ] [P3-C] Add explain output for a single node or component.
 - [ ] [P3-D] Add report/export path if needed for dead-code or unwired-candidate review.
 - [ ] [P3-E] Add contract tests proving status fields are stable, explicit, and not confused with semantic labels.
@@ -191,18 +205,20 @@ Initial measurements also prove why a raw "zero incoming" filter would be wrong:
 ## Phase 4 - Web UI Graph Health Filters
 
 - [ ] [P4-A] Add a `Graph Health` filter group separate from `Node Types` and `Edge Types`.
-- [ ] [P4-B] Add toggles for `true_isolated`, `no_incoming`, `no_outgoing`, `detached_component`, `unresolved_reference`, `expected_isolated`, and `unknown_connectivity`.
-- [ ] [P4-C] Add summary counts and tooltips that explain status meaning without calling candidates bugs.
-- [ ] [P4-D] Add node detail panel explanations: counted incoming/outgoing edges, expected-isolated reason, confidence, and next triage action.
-- [ ] [P4-E] Add detached-component interaction that focuses a component and shows why it is detached.
-- [ ] [P4-F] Ensure existing node-type, edge-type, legend, focus-depth, and graph canvas behavior still works with Graph Health filters.
+- [ ] [P4-B] Add topology toggles for `true_isolated`, `no_incoming`, `no_outgoing`, `detached_component`, and `unknown_connectivity`; optionally show `connected` as a count-only baseline.
+- [ ] [P4-C] Add separate controls to hide/de-emphasize expected-isolated overlay reasons and diagnostics such as `unresolved_reference` when source-node evidence exists.
+- [ ] [P4-D] Add summary counts and tooltips that explain topology status, expected-isolated overlays, diagnostics, and confidence without calling candidates bugs.
+- [ ] [P4-E] Add node detail panel explanations: topology status, counted incoming/outgoing edges, expected-isolated reasons, diagnostics, confidence, and next triage action.
+- [ ] [P4-F] Add detached-component interaction that focuses a component and shows why it is detached.
+- [ ] [P4-G] Compose Graph Health filtering through Web state, `GraphCanvas`, `knowledgeGraphToGraphology`, Sigma node attributes, node-type filters, edge-type visibility, and focus-depth filtering.
+- [ ] [P4-H] Ensure existing node-type, edge-type, legend, focus-depth, graph links visibility, and graph canvas behavior still works with Graph Health filters.
 
 ## Phase 5 - Triage Workflow
 
-- [ ] [P5-A] Define default triage order: `no_incoming` production symbols, `detached_component`, `unresolved_reference`, `true_isolated`, then optional `no_outgoing`.
+- [ ] [P5-A] Define default triage order: `no_incoming` production symbols without expected-isolated reasons, `detached_component`, diagnostics such as source-backed `unresolved_reference`, `true_isolated`, then optional `no_outgoing`.
 - [ ] [P5-B] Add report wording for "candidate" versus "confirmed" findings.
 - [ ] [P5-C] Add documentation or in-product text for why a status was assigned and what the next action should be.
-- [ ] [P5-D] Add a way to hide or de-emphasize expected-isolated nodes without changing raw graph data.
+- [ ] [P5-D] Add a way to hide or de-emphasize nodes by expected-isolated overlay reason without changing raw graph data or topology status.
 
 ## Phase 6 - Validation
 
@@ -230,7 +246,7 @@ Initial measurements also prove why a raw "zero incoming" filter would be wrong:
 | P1-A..P1-F | Policy | taxonomy and baseline | no ambiguous orphan claims | pending | pending | pending | open |
 | P2-A..P2-F | Backend | derived graph-health metadata | deterministic status and reasons | pending | pending | pending | open |
 | P3-A..P3-E | Contract/API | consumer surface | stable explicit status fields | pending | pending | pending | open |
-| P4-A..P4-F | Web UI | graph-health filters | separate filters and explanations | pending | pending | pending | open |
+| P4-A..P4-H | Web UI | graph-health filters | separate filters and explanations | pending | pending | pending | open |
 | P5-A..P5-D | Workflow | triage/reporting | candidate-vs-confirmed workflow | pending | pending | pending | open |
 | P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | pending | pending | pending | open |
 | P7-A..P7-E | Closure | ledgers and commits | complete closure package | pending | pending | pending | open |
@@ -238,7 +254,7 @@ Initial measurements also prove why a raw "zero incoming" filter would be wrong:
 ## Definition Of Done
 
 - The plan, evidence, and benchmark ledgers are all updated.
-- Connectivity taxonomy has explicit statuses, edge policy, expected-isolated policy, and confidence rules.
+- Graph Health model has explicit topology statuses, edge policy, expected-isolated overlays, diagnostics model, and confidence rules.
 - No UI or API labels "orphan" as a bug without evidence.
 - Graph Health filters are separate from semantic node labels.
 - Node explanations are auditable from recorded graph data.
