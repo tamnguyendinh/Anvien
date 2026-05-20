@@ -22,15 +22,11 @@ import {
   fetchRepos,
   normalizeServerUrl,
   connectHeartbeat,
-  BackendError,
   type ConnectResult,
   type BackendRepo,
 } from "./services/backend-client";
 import { includeRepoInList } from "./services/repo-list";
-import {
-  DEFAULT_BACKEND_URL,
-  ERROR_RESET_DELAY_MS,
-} from "./config/ui-constants";
+import { DEFAULT_BACKEND_URL } from "./config/ui-constants";
 import { recordReconnectBannerState } from "./lib/runtime-diagnostics";
 
 const AppContent = () => {
@@ -142,10 +138,7 @@ const AppContentBody = () => {
         detail:
           err instanceof Error ? err.message : "Invalid local backend URL",
       });
-      setTimeout(() => {
-        setViewMode("onboarding");
-        setProgress(null);
-      }, ERROR_RESET_DELAY_MS);
+      setViewMode("loading");
       return;
     }
 
@@ -213,10 +206,6 @@ const AppContentBody = () => {
           message: "Failed to connect to server",
           detail: err instanceof Error ? err.message : "Unknown error",
         });
-        setTimeout(() => {
-          setViewMode("onboarding");
-          setProgress(null);
-        }, ERROR_RESET_DELAY_MS);
       });
   }, [
     handleServerConnect,
@@ -300,49 +289,36 @@ const AppContentBody = () => {
           // the fresh graph, then make the dropdown list reflect that repo even
           // if the backend repo registry refresh lands a little late.
           const url = serverBaseUrl ?? "http://127.0.0.1:4848";
-          for (let attempt = 0; attempt < 2; attempt++) {
-            try {
-              const repos = await fetchRepos().catch(() => [] as BackendRepo[]);
-              const result = await connectToServer(
-                url,
-                undefined,
-                undefined,
-                repoName,
-                {
-                  awaitAnalysis: true,
-                },
-              );
-              const reposWithAnalyzedRepo = includeRepoInList(
-                repos,
-                result.repoInfo,
-              );
-              setAvailableRepos(reposWithAnalyzedRepo);
-              await handleServerConnect(result);
-              const refreshedRepos = await fetchRepos().catch(
-                () => reposWithAnalyzedRepo,
-              );
-              setAvailableRepos(
-                includeRepoInList(refreshedRepos, result.repoInfo),
-              );
-              setServerBaseUrl(normalizeServerUrl(url));
-              setProgress(null);
-              return;
-            } catch (err: unknown) {
-              if (
-                attempt === 0 &&
-                err instanceof BackendError &&
-                err.status === 404
-              ) {
-                // Server may still be reinitializing — wait and retry
-                await new Promise((r) => setTimeout(r, 1500));
-                continue;
-              }
-              console.error("Failed to connect after analyze:", err);
-              fetchRepos()
-                .then((repos) => setAvailableRepos(repos))
-                .catch(() => {});
-              return;
-            }
+          try {
+            const repos = await fetchRepos().catch(() => [] as BackendRepo[]);
+            const result = await connectToServer(
+              url,
+              undefined,
+              undefined,
+              repoName,
+              {
+                awaitAnalysis: true,
+              },
+            );
+            const reposWithAnalyzedRepo = includeRepoInList(
+              repos,
+              result.repoInfo,
+            );
+            setAvailableRepos(reposWithAnalyzedRepo);
+            await handleServerConnect(result);
+            const refreshedRepos = await fetchRepos().catch(
+              () => reposWithAnalyzedRepo,
+            );
+            setAvailableRepos(
+              includeRepoInList(refreshedRepos, result.repoInfo),
+            );
+            setServerBaseUrl(normalizeServerUrl(url));
+            setProgress(null);
+          } catch (err: unknown) {
+            console.error("Failed to connect after analyze:", err);
+            fetchRepos()
+              .then((repos) => setAvailableRepos(repos))
+              .catch(() => {});
           }
         }}
       />

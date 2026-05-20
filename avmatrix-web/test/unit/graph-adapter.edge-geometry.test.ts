@@ -8,6 +8,7 @@ import {
   getScaledNodeSize,
   knowledgeGraphToGraphology,
 } from "../../src/lib/graph-adapter";
+import { getNodeColor } from "../../src/lib/constants";
 import type { GraphRelationship } from "../../src/generated/avmatrix-contracts";
 import {
   createCallsRelationship,
@@ -191,6 +192,88 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
         second.getNodeAttribute(nodeId, "y"),
       );
     }
+  });
+
+  it("keeps each node type in its own separated visual region", () => {
+    const graph = createKnowledgeGraph();
+    const nodes = [
+      createFileNode("a.ts", "src/a.ts"),
+      createFileNode("b.ts", "src/b.ts"),
+      createClassNode("Alpha", "src/a.ts"),
+      createClassNode("Beta", "src/b.ts"),
+      createFunctionNode("alpha", "src/a.ts", 1),
+      createFunctionNode("beta", "src/b.ts", 1),
+    ];
+
+    for (const node of nodes) graph.addNode(node);
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const boundsByType = new Map<
+      string,
+      { minX: number; maxX: number; minY: number; maxY: number }
+    >();
+
+    for (const nodeId of sigmaGraph.nodes()) {
+      const attributes = sigmaGraph.getNodeAttributes(nodeId);
+      const current =
+        boundsByType.get(attributes.nodeType) ??
+        {
+          minX: Number.POSITIVE_INFINITY,
+          maxX: Number.NEGATIVE_INFINITY,
+          minY: Number.POSITIVE_INFINITY,
+          maxY: Number.NEGATIVE_INFINITY,
+        };
+      current.minX = Math.min(current.minX, attributes.x);
+      current.maxX = Math.max(current.maxX, attributes.x);
+      current.minY = Math.min(current.minY, attributes.y);
+      current.maxY = Math.max(current.maxY, attributes.y);
+      boundsByType.set(attributes.nodeType, current);
+    }
+
+    const bounds = [...boundsByType.values()];
+    for (let leftIndex = 0; leftIndex < bounds.length; leftIndex++) {
+      for (let rightIndex = leftIndex + 1; rightIndex < bounds.length; rightIndex++) {
+        const left = bounds[leftIndex];
+        const right = bounds[rightIndex];
+        const separated =
+          left.maxX < right.minX ||
+          right.maxX < left.minX ||
+          left.maxY < right.minY ||
+          right.maxY < left.minY;
+
+        expect(separated).toBe(true);
+      }
+    }
+  });
+
+  it("uses the node type color for every node even when community metadata exists", () => {
+    const graph = createKnowledgeGraph();
+    const functionA = createFunctionNode("alpha", "src/a.ts", 1);
+    const functionB = createFunctionNode("beta", "src/b.ts", 1);
+    const classNode = createClassNode("Runner", "src/runner.ts");
+
+    graph.addNode(functionA);
+    graph.addNode(functionB);
+    graph.addNode(classNode);
+
+    const communityMemberships = new Map<string, number>([
+      [functionA.id, 0],
+      [functionB.id, 1],
+      [classNode.id, 2],
+    ]);
+    const sigmaGraph = knowledgeGraphToGraphology(graph, communityMemberships);
+
+    expect(sigmaGraph.getNodeAttribute(functionA.id, "color")).toBe(
+      getNodeColor("Function"),
+    );
+    expect(sigmaGraph.getNodeAttribute(functionB.id, "color")).toBe(
+      getNodeColor("Function"),
+    );
+    expect(sigmaGraph.getNodeAttribute(classNode.id, "color")).toBe(
+      getNodeColor("Class"),
+    );
+    expect(sigmaGraph.getNodeAttribute(functionA.id, "community")).toBe(0);
+    expect(sigmaGraph.getNodeAttribute(functionB.id, "community")).toBe(1);
   });
 
   it("orders known clusters by filter order and appends unknown labels by label", () => {

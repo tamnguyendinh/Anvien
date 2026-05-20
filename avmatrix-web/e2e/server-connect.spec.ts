@@ -36,10 +36,6 @@ type RuntimeDiagnostics = {
     stops: number;
     manualOptimizerInvocations: number;
     isRunning: boolean;
-    lastDurationBudgetMs: number;
-    lastRunMs: number;
-    lastNoverlapMs: number;
-    lastReason: string;
   };
   heartbeat: {
     connects: number;
@@ -169,8 +165,6 @@ test.describe('Server Connection & Graph Loading', () => {
     expect(diagnostics?.layout.starts).toBe(0);
     expect(diagnostics?.layout.stops).toBe(0);
     expect(diagnostics?.layout.manualOptimizerInvocations).toBe(0);
-    expect(diagnostics?.layout.lastDurationBudgetMs).toBe(0);
-    expect(diagnostics?.layout.lastNoverlapMs).toBe(0);
   });
 
   test('invokes manual layout optimizer only after user action', async ({ page }) => {

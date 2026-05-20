@@ -19,11 +19,11 @@ export interface UseBackendResult {
   isProbing: boolean;
   /** Current backend URL */
   backendUrl: string;
-  /** Start polling for server availability (setTimeout chain, visibility-aware) */
+  /** Start checking for server availability */
   startPolling: () => void;
-  /** Stop polling */
+  /** Stop checking */
   stopPolling: () => void;
-  /** Whether polling is active */
+  /** Whether background checking is active */
   isPolling: boolean;
 }
 
@@ -78,78 +78,38 @@ export function useBackend(): UseBackendResult {
     }
   }, []);
 
-  // ── Polling for server detection (setTimeout chain, no overlap) ──────────
+  // ── Server detection ─────────────────────────────────────────────────────
 
-  const pollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isPolling, setIsPolling] = useState(false);
 
   const probeRef = useRef(probe);
   probeRef.current = probe;
 
   const stopPolling = useCallback(() => {
-    if (pollingTimerRef.current !== null) {
-      clearTimeout(pollingTimerRef.current);
-      pollingTimerRef.current = null;
-    }
     setIsPolling(false);
   }, []);
 
   const startPolling = useCallback(() => {
-    stopPolling();
     setIsPolling(true);
+    void probeRef.current().then((ok) => {
+      if (ok) setIsPolling(false);
+    });
+  }, []);
 
-    const schedule = () => {
-      pollingTimerRef.current = setTimeout(async () => {
-        if (document.hidden) {
-          // Don't reschedule — visibilitychange handler restarts the chain
-          pollingTimerRef.current = null;
-          return;
-        }
-        const ok = await probeRef.current();
-        if (ok) {
-          setIsPolling(false);
-          pollingTimerRef.current = null;
-        } else {
-          schedule();
-        }
-      }, 3_000);
-    };
-
-    schedule();
-  }, [stopPolling]);
-
-  // On tab return during polling, clear pending timer, probe, and reschedule if needed
+  // On tab return during background checking, probe immediately.
   useEffect(() => {
     if (!isPolling) return;
     const handleVisibility = () => {
       if (!document.hidden) {
-        // Clear any pending timer so we don't double-fire
-        if (pollingTimerRef.current !== null) {
-          clearTimeout(pollingTimerRef.current);
-          pollingTimerRef.current = null;
-        }
-        // Probe immediately, then restart the polling chain if still disconnected
+        // Probe immediately when the user returns to the tab.
         void probeRef.current().then((ok) => {
-          if (!ok && isPolling) {
-            // Restart the setTimeout chain — schedule is captured in startPolling's closure,
-            // so we re-call startPolling which clears+restarts cleanly.
-            startPolling();
-          }
+          if (ok) setIsPolling(false);
         });
       }
     };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, [isPolling, startPolling]);
-
-  // Cleanup polling on unmount
-  useEffect(() => {
-    return () => {
-      if (pollingTimerRef.current !== null) {
-        clearTimeout(pollingTimerRef.current);
-      }
-    };
-  }, []);
+  }, [isPolling]);
 
   // ── Mount: sync service URL + auto-probe ─────────────────────────────────
 

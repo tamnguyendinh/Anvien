@@ -2,7 +2,7 @@
 
 Date: 2026-05-20
 
-Status: complete
+Status: complete - corrective benchmarks recorded
 
 Companion files:
 
@@ -106,11 +106,11 @@ Record final Web interaction observations:
 
 Readability acceptance is qualitative but must be backed by screenshot, browser observation, or e2e assertion. The key product benchmark is not "optimizer is faster"; it is "graph is readable before optimizer runs".
 
-## B4 - Final Benchmark Summary
+## B4 - Initial Implementation Benchmark Summary
 
 Date: 2026-05-20
 
-Status: recorded
+Status: superseded by corrective review
 
 Fill at closure:
 
@@ -125,3 +125,53 @@ Fill at closure:
 - deterministic layout test result: `graph-adapter.edge-geometry.test.ts`, `9` tests passed
 - browser/e2e result: `server-connect.spec.ts` targeted no-auto/manual optimizer tests, `2` passed
 - residual risk: Browser plugin direct in-app verification was unavailable because the required Node REPL control tool was not exposed; Playwright e2e and diagnostic capture covered the behavior.
+
+Corrective note:
+
+- This benchmark set proved that `layout.starts` stayed `0` in the targeted diagnostic run, but it did not prove the visual requirement that each node type/filter cluster is a clear separated region with only that node type's color.
+- This benchmark set also did not cover the user's later report that optimization appears after render or that product/runtime timeout/reset behavior occurs after the graph is already visible.
+- The final benchmark summary must be re-run after corrective implementation.
+
+## B5 - Corrective Benchmark Requirements
+
+Date: 2026-05-20
+
+Status: recorded
+
+The corrective benchmark must record:
+
+| Measurement | Required evidence | Expected result |
+|---|---|---|
+| Node type color purity | unit test or browser diagnostic grouping nodes by `nodeType` and `color` | each `nodeType` has exactly one primary render color, equal to `getNodeColor(nodeType)` |
+| Visual cluster separation | browser/e2e diagnostic or screenshot-backed bounds per node type | each node type/filter occupies a distinct non-overlapping region, allowing intentional spacing only |
+| No auto optimizer after render | browser/e2e diagnostics sampled after graph ready and after a post-render wait | `layout.starts=0`, `layout.stops=0`, `manualOptimizerInvocations=0` until user clicks |
+| Manual optimizer only | browser/e2e click on `Optimize Layout` | manual invocation count increments only after click |
+| Product/runtime timeout ban | code inspection plus browser/e2e evidence where needed | graph load, render, reconnect, and UI state transitions do not rely on product timeout, timer reset, or delayed reset behavior |
+
+The benchmark must not use an elapsed-time budget or timeout as the definition of layout correctness. Test-runner timeouts are allowed only as test guards and must not be cited as product behavior.
+
+Corrective benchmark results:
+
+| Measurement | Evidence | Result |
+|---|---|---|
+| Node type color purity | `graph-adapter.edge-geometry.test.ts` plus code inspection of `knowledgeGraphToGraphology` | each node uses `getNodeColor(node.label)` as primary render color |
+| Visual cluster separation | `graph-adapter.edge-geometry.test.ts` bounding-box coverage | node type visual regions are deterministic and non-overlapping in the tested graph |
+| No auto optimizer after render | full e2e `server-connect.spec.ts` | `keeps connection stable after large graph load without automatic layout optimizer` passed |
+| Manual optimizer only | full e2e `server-connect.spec.ts` | `invokes manual layout optimizer only after user action` passed |
+| Product/runtime timeout ban | `rg -n "setTimeout|clearTimeout|setInterval|clearInterval|timeout|Timeout|TIMEOUT|durationBudget|duration-elapsed|noverlap|lastReason" avmatrix-web\src` | no matches in product/runtime source |
+| Process modal latency on large repo | full e2e `server-connect.spec.ts` and `shell-interactions.spec.ts` | process View/modal and lightbulb tests passed after reading process steps from loaded graph |
+
+Final validation benchmark:
+
+| Command | Result |
+|---|---|
+| `npm --prefix avmatrix-web run build` | passed |
+| `npm --prefix avmatrix-web run test` | `43` files, `336` tests passed |
+| `npm --prefix avmatrix-web run test:e2e -- --workers=1` | `42` tests passed in `20.7m` |
+
+Final benchmark interpretation:
+
+- The runtime layout optimizer is no longer a graph-load mechanism.
+- The manual optimizer remains a user action and reuses the deterministic clustered layout policy.
+- The graph is grouped by existing node type/filter color, not by community color.
+- Product/runtime timeout and delayed-reset mechanisms were removed from `avmatrix-web/src`; timeout remains only in tests/e2e runner guards.

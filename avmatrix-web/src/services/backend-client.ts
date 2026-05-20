@@ -81,7 +81,7 @@ export class BackendError extends Error {
   constructor(
     message: string,
     public readonly status: number,
-    public readonly code: 'network' | 'server' | 'client' | 'not_found' | 'timeout',
+    public readonly code: 'network' | 'server' | 'client' | 'not_found',
   ) {
     super(message);
     this.name = 'BackendError';
@@ -99,16 +99,12 @@ export interface SSEHandlers<T = unknown> {
 /**
  * Generic SSE stream consumer using fetch + ReadableStream.
  * Returns an AbortController to cancel the stream.
- * Automatically reconnects on network drops (up to 3 retries with backoff).
  */
 export function streamSSE<T = unknown>(url: string, handlers: SSEHandlers<T>): AbortController {
   const controller = new AbortController();
-  const MAX_RETRIES = 3;
-  const BASE_DELAY_MS = 1_000;
-
   let lastEventId = '';
 
-  const connect = (retryCount: number) => {
+  const connect = () => {
     if (controller.signal.aborted) return;
 
     (async () => {
@@ -129,9 +125,6 @@ export function streamSSE<T = unknown>(url: string, handlers: SSEHandlers<T>): A
           handlers.onError?.('No response body');
           return;
         }
-
-        // Reset retry count on successful connection
-        retryCount = 0;
 
         const decoder = new TextDecoder();
         let buffer = '';
@@ -177,23 +170,19 @@ export function streamSSE<T = unknown>(url: string, handlers: SSEHandlers<T>): A
           }
         }
 
-        // Stream ended without terminal event — try to reconnect
-        if (!controller.signal.aborted && retryCount < MAX_RETRIES) {
-          setTimeout(() => connect(retryCount + 1), BASE_DELAY_MS * 2 ** retryCount);
+        if (!controller.signal.aborted) {
+          handlers.onError?.('Stream ended before completion');
         }
       } catch (err: unknown) {
         if (err instanceof DOMException && err.name === 'AbortError') return;
-        // Network error — attempt reconnect with backoff
-        if (!controller.signal.aborted && retryCount < MAX_RETRIES) {
-          setTimeout(() => connect(retryCount + 1), BASE_DELAY_MS * 2 ** retryCount);
-        } else {
+        if (!controller.signal.aborted) {
           handlers.onError?.(err instanceof Error ? err.message : 'Stream error');
         }
       }
     })();
   };
 
-  connect(0);
+  connect();
   return controller;
 }
 
@@ -253,31 +242,16 @@ export function normalizeServerUrl(input: string): string {
 
 // ── Internal Helpers ───────────────────────────────────────────────────────
 
-const DEFAULT_TIMEOUT_MS = 30_000;
-const PROBE_TIMEOUT_MS = 2_000;
-
-const fetchWithTimeout = async (
+const fetchFromBackend = async (
   url: string,
   init: RequestInit = {},
-  timeoutMs: number = DEFAULT_TIMEOUT_MS,
 ): Promise<Response> => {
-  const controller = new AbortController();
-  // Merge external signal if provided
-  const externalSignal = init.signal;
-  if (externalSignal) {
-    externalSignal.addEventListener('abort', () => controller.abort());
-  }
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-
   try {
-    const response = await fetch(url, { ...init, signal: controller.signal });
+    const response = await fetch(url, init);
     return response;
   } catch (error: unknown) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      if (externalSignal?.aborted) {
-        throw new BackendError('Request aborted', 0, 'network');
-      }
-      throw new BackendError(`Request to ${url} timed out after ${timeoutMs}ms`, 0, 'timeout');
+      throw new BackendError('Request aborted', 0, 'network');
     }
     if (error instanceof TypeError) {
       throw new BackendError(
@@ -287,8 +261,6 @@ const fetchWithTimeout = async (
       );
     }
     throw error;
-  } finally {
-    clearTimeout(timer);
   }
 };
 
@@ -329,67 +301,34 @@ export interface ServerInfo {
 
 /** Fetch server info (version, launch context). */
 export const fetchServerInfo = async (): Promise<ServerInfo> => {
-  const response = await fetchWithTimeout(`${_backendUrl}/api/info`);
+  const response = await fetchFromBackend(`${_backendUrl}/api/info`);
   await assertOk(response);
   return response.json() as Promise<ServerInfo>;
 };
 
 /**
- * Connect an SSE heartbeat to the backend. Retries indefinitely with capped
- * exponential backoff so transient hiccups don't reset the UI.
+ * Connect an SSE heartbeat to the backend. The browser EventSource owns
+ * reconnect behavior; the app only records/displays state changes.
  *
  * - `onConnect` fires on every successful (re)connection.
- * - `onReconnecting` fires on the first retry after a drop — use it to show
+ * - `onReconnecting` fires on the first observed drop — use it to show
  *   a "reconnecting" banner while keeping the current view intact.
  *
- * Returns a cleanup function that tears down the EventSource and timers.
+ * Returns a cleanup function that tears down the EventSource.
  */
 export const connectHeartbeat = (
   onConnect: () => void,
   onReconnecting: () => void,
 ): (() => void) => {
   let closed = false;
-  let retryTimer: ReturnType<typeof setTimeout> | null = null;
-  let recoveryProbeTimer: ReturnType<typeof setTimeout> | null = null;
-  let recoveryProbeAbort: AbortController | null = null;
   let es: EventSource | null = null;
-  let attempt = 0;
   /** Whether we've already fired onReconnecting for the current drop. */
   let notifiedReconnecting = false;
-  const MAX_BACKOFF_MS = 15_000;
 
   const markConnected = () => {
-    attempt = 0;
     notifiedReconnecting = false;
     recordHeartbeatConnect();
     onConnect();
-  };
-
-  const probeHeartbeatRecovery = () => {
-    if (closed) return;
-    recoveryProbeAbort?.abort();
-    const controller = new AbortController();
-    recoveryProbeAbort = controller;
-
-    fetch(`${_backendUrl}/api/heartbeat`, { signal: controller.signal })
-      .then((response) => {
-        controller.abort();
-        if (closed || !response.ok) return;
-        if (retryTimer) {
-          clearTimeout(retryTimer);
-          retryTimer = null;
-        }
-        markConnected();
-        connect();
-      })
-      .catch(() => {
-        // The SSE endpoint is still unavailable. The EventSource retry loop remains authoritative.
-      })
-      .finally(() => {
-        if (recoveryProbeAbort === controller) {
-          recoveryProbeAbort = null;
-        }
-      });
   };
 
   const connect = () => {
@@ -397,31 +336,17 @@ export const connectHeartbeat = (
     es = new EventSource(`${_backendUrl}/api/heartbeat`);
     es.onopen = () => {
       if (!closed) {
-        if (recoveryProbeTimer) {
-          clearTimeout(recoveryProbeTimer);
-          recoveryProbeTimer = null;
-        }
-        recoveryProbeAbort?.abort();
-        recoveryProbeAbort = null;
         markConnected();
       }
     };
     es.onerror = () => {
-      es?.close();
-      es = null;
       if (closed) return;
 
       if (!notifiedReconnecting) {
         notifiedReconnecting = true;
-        recordHeartbeatReconnect(attempt + 1);
+        recordHeartbeatReconnect(1);
         onReconnecting();
       }
-
-      const delay = Math.min(1_000 * Math.pow(2, attempt), MAX_BACKOFF_MS);
-      attempt++;
-      retryTimer = setTimeout(connect, delay);
-      if (recoveryProbeTimer) clearTimeout(recoveryProbeTimer);
-      recoveryProbeTimer = setTimeout(probeHeartbeatRecovery, Math.min(delay, 1_000));
     };
   };
 
@@ -430,15 +355,12 @@ export const connectHeartbeat = (
   return () => {
     closed = true;
     es?.close();
-    if (retryTimer) clearTimeout(retryTimer);
-    if (recoveryProbeTimer) clearTimeout(recoveryProbeTimer);
-    recoveryProbeAbort?.abort();
   };
 };
 
 /** Delete a repo's index and unregister it. */
 export const deleteRepo = async (repoName: string): Promise<void> => {
-  const response = await fetchWithTimeout(
+  const response = await fetchFromBackend(
     `${_backendUrl}/api/repo?repo=${encodeURIComponent(repoName)}`,
     {
       method: 'DELETE',
@@ -450,7 +372,7 @@ export const deleteRepo = async (repoName: string): Promise<void> => {
 /** Probe the backend. Returns true if reachable. */
 export const probeBackend = async (): Promise<boolean> => {
   try {
-    const response = await fetchWithTimeout(`${_backendUrl}/api/repos`, {}, PROBE_TIMEOUT_MS);
+    const response = await fetchFromBackend(`${_backendUrl}/api/repos`);
     return response.status === 200;
   } catch {
     return false;
@@ -459,19 +381,10 @@ export const probeBackend = async (): Promise<boolean> => {
 
 /** Fetch list of indexed repositories. */
 export const fetchRepos = async (): Promise<BackendRepo[]> => {
-  const response = await fetchWithTimeout(`${_backendUrl}/api/repos`);
+  const response = await fetchFromBackend(`${_backendUrl}/api/repos`);
   await assertOk(response);
   return response.json() as Promise<BackendRepo[]>;
 };
-
-/**
- * Repo hydration can legitimately take much longer than the generic 30s fetch timeout,
- * especially when the backend is still draining an analyze hold-queue for a large repo.
- *
- * Must stay in sync with HOLD_QUEUE_TIMEOUT_SECS in avmatrix/src/server/api.ts.
- */
-export const REPO_INFO_TIMEOUT_MS = 600_000; // 10 minutes
-export const HOLD_QUEUE_TIMEOUT_MS = REPO_INFO_TIMEOUT_MS;
 
 export const fetchRepoInfo = async (
   repo?: string,
@@ -481,8 +394,7 @@ export const fetchRepoInfo = async (
     .filter(Boolean)
     .join('&');
   const url = `${_backendUrl}/api/repo${params ? `?${params}` : ''}`;
-  const timeout = opts?.awaitAnalysis ? HOLD_QUEUE_TIMEOUT_MS : REPO_INFO_TIMEOUT_MS;
-  const response = await fetchWithTimeout(url, {}, timeout);
+  const response = await fetchFromBackend(url);
   await assertOk(response);
   const data = await response.json();
   return { ...data, repoPath: data.repoPath ?? data.path };
@@ -501,8 +413,7 @@ export const fetchGraph = async (
     .filter(Boolean)
     .join('&');
   const url = `${_backendUrl}/api/graph${params ? `?${params}` : ''}`;
-  // Large repos can take a while to serialize the graph — use an elevated timeout
-  const response = await fetchWithTimeout(url, { signal: opts?.signal }, 120_000);
+  const response = await fetchFromBackend(url, { signal: opts?.signal });
   await assertOk(response);
 
   const contentType = response.headers.get('Content-Type') || '';
@@ -603,7 +514,7 @@ export const runQuery = async (
   cypher: string,
   repo?: string,
 ): Promise<Record<string, unknown>[]> => {
-  const response = await fetchWithTimeout(`${_backendUrl}/api/query`, {
+  const response = await fetchFromBackend(`${_backendUrl}/api/query`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ cypher, repo }),
@@ -618,7 +529,7 @@ export const search = async (
   query: string,
   opts?: { limit?: number; mode?: 'hybrid' | 'semantic' | 'bm25'; enrich?: boolean; repo?: string },
 ): Promise<EnrichedSearchResult[]> => {
-  const response = await fetchWithTimeout(`${_backendUrl}/api/search`, {
+  const response = await fetchFromBackend(`${_backendUrl}/api/search`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -647,7 +558,7 @@ export const grep = async (
   ]
     .filter(Boolean)
     .join('&');
-  const response = await fetchWithTimeout(`${_backendUrl}/api/grep?${params}`);
+  const response = await fetchFromBackend(`${_backendUrl}/api/grep?${params}`);
   await assertOk(response);
   const body = await response.json();
   return (body.results ?? []) as GrepResult[];
@@ -674,14 +585,14 @@ export const readFile = async (
   ]
     .filter(Boolean)
     .join('&');
-  const response = await fetchWithTimeout(`${_backendUrl}/api/file?${params}`);
+  const response = await fetchFromBackend(`${_backendUrl}/api/file?${params}`);
   await assertOk(response);
   return response.json() as Promise<ReadFileResult>;
 };
 
 /** Fetch all processes for a repo. */
 export const fetchProcesses = async (repo?: string): Promise<unknown> => {
-  const response = await fetchWithTimeout(
+  const response = await fetchFromBackend(
     `${_backendUrl}/api/processes${repo ? `?${repoParam(repo)}` : ''}`,
   );
   await assertOk(response);
@@ -690,7 +601,7 @@ export const fetchProcesses = async (repo?: string): Promise<unknown> => {
 
 /** Fetch detail for a single process. */
 export const fetchProcessDetail = async (repo: string, name: string): Promise<unknown> => {
-  const response = await fetchWithTimeout(
+  const response = await fetchFromBackend(
     `${_backendUrl}/api/process?${repoParam(repo)}&name=${encodeURIComponent(name)}`,
   );
   await assertOk(response);
@@ -699,7 +610,7 @@ export const fetchProcessDetail = async (repo: string, name: string): Promise<un
 
 /** Fetch all clusters for a repo. */
 export const fetchClusters = async (repo?: string): Promise<unknown> => {
-  const response = await fetchWithTimeout(
+  const response = await fetchFromBackend(
     `${_backendUrl}/api/clusters${repo ? `?${repoParam(repo)}` : ''}`,
   );
   await assertOk(response);
@@ -708,7 +619,7 @@ export const fetchClusters = async (repo?: string): Promise<unknown> => {
 
 /** Fetch detail for a single cluster. */
 export const fetchClusterDetail = async (repo: string, name: string): Promise<unknown> => {
-  const response = await fetchWithTimeout(
+  const response = await fetchFromBackend(
     `${_backendUrl}/api/cluster?${repoParam(repo)}&name=${encodeURIComponent(name)}`,
   );
   await assertOk(response);
@@ -729,11 +640,9 @@ export interface PickLocalFolderResult {
 
 /** Open the local runtime's native folder picker and return an absolute path. */
 export const pickLocalFolder = async (): Promise<PickLocalFolderResult> => {
-  const response = await fetchWithTimeout(
-    `${_backendUrl}/api/local/folder-picker`,
-    { method: 'POST' },
-    600_000,
-  );
+  const response = await fetchFromBackend(`${_backendUrl}/api/local/folder-picker`, {
+    method: 'POST',
+  });
   await assertOk(response);
   return response.json() as Promise<PickLocalFolderResult>;
 };
@@ -742,14 +651,13 @@ export const pickLocalFolder = async (): Promise<PickLocalFolderResult> => {
 export const startAnalyze = async (
   request: AnalyzeRequest,
 ): Promise<{ jobId: string; status: string }> => {
-  const response = await fetchWithTimeout(
+  const response = await fetchFromBackend(
     `${_backendUrl}/api/analyze`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request),
     },
-    30_000,
   );
   await assertOk(response);
   return response.json() as Promise<{ jobId: string; status: string }>;
@@ -757,7 +665,7 @@ export const startAnalyze = async (
 
 /** Poll analysis job status. */
 export const getAnalyzeStatus = async (jobId: string): Promise<JobStatus> => {
-  const response = await fetchWithTimeout(
+  const response = await fetchFromBackend(
     `${_backendUrl}/api/analyze/${encodeURIComponent(jobId)}`,
   );
   await assertOk(response);
@@ -766,7 +674,7 @@ export const getAnalyzeStatus = async (jobId: string): Promise<JobStatus> => {
 
 /** Cancel a running analysis job. */
 export const cancelAnalyze = async (jobId: string): Promise<void> => {
-  const response = await fetchWithTimeout(
+  const response = await fetchFromBackend(
     `${_backendUrl}/api/analyze/${encodeURIComponent(jobId)}`,
     { method: 'DELETE' },
   );
@@ -794,14 +702,13 @@ export const streamAnalyzeProgress = (
 
 /** Start server-side embedding generation. */
 export const startEmbeddings = async (repo: string): Promise<{ jobId: string; status: string }> => {
-  const response = await fetchWithTimeout(
+  const response = await fetchFromBackend(
     `${_backendUrl}/api/embed`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ repo }),
     },
-    30_000,
   );
   await assertOk(response);
   return response.json() as Promise<{ jobId: string; status: string }>;
@@ -809,14 +716,14 @@ export const startEmbeddings = async (repo: string): Promise<{ jobId: string; st
 
 /** Poll embedding job status. */
 export const getEmbedStatus = async (jobId: string): Promise<JobStatus> => {
-  const response = await fetchWithTimeout(`${_backendUrl}/api/embed/${encodeURIComponent(jobId)}`);
+  const response = await fetchFromBackend(`${_backendUrl}/api/embed/${encodeURIComponent(jobId)}`);
   await assertOk(response);
   return response.json() as Promise<JobStatus>;
 };
 
 /** Cancel a running embedding job. */
 export const cancelEmbeddings = async (jobId: string): Promise<void> => {
-  const response = await fetchWithTimeout(`${_backendUrl}/api/embed/${encodeURIComponent(jobId)}`, {
+  const response = await fetchFromBackend(`${_backendUrl}/api/embed/${encodeURIComponent(jobId)}`, {
     method: 'DELETE',
   });
   await assertOk(response);
@@ -848,7 +755,7 @@ export interface ConnectResult {
  * Connect to a server: validate, fetch repo info, download graph.
  * Content is NOT included (use readFile/grep for file access).
  * Pass `awaitAnalysis: true` when the repo may still be queued/analyzing —
- * this enables the backend hold-queue and a 5-minute fetch timeout.
+ * this enables the backend hold-queue while the repo finishes analysis.
  */
 export async function connectToServer(
   url: string,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X } from '@/lib/lucide-icons';
 import type { JobProgress as AnalyzeJobProgress } from '../services/backend-client';
 import { EncouragementLine } from './EncouragementLine';
@@ -30,10 +30,20 @@ const PHASE_LABELS: Record<string, string> = {
 export const AnalyzeProgress = ({ progress, onCancel }: AnalyzeProgressProps) => {
   const [startTime] = useState(() => Date.now());
   const [elapsed, setElapsed] = useState(0);
+  const frameRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => setElapsed(Date.now() - startTime), 1000);
-    return () => clearInterval(timer);
+    const tick = () => {
+      setElapsed(Date.now() - startTime);
+      frameRef.current = requestAnimationFrame(tick);
+    };
+
+    frameRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+      }
+    };
   }, [startTime]);
 
   const formatElapsed = (ms: number) => {

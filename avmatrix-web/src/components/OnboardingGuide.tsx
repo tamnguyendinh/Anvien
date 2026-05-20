@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Check, Copy, Terminal, Server, Zap } from '@/lib/lucide-icons';
 import { REQUIRED_NODE_VERSION } from '../config/ui-constants';
 
@@ -6,20 +6,11 @@ import { REQUIRED_NODE_VERSION } from '../config/ui-constants';
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setCopied(false), 2000);
     } catch {
       // Clipboard API requires a secure loopback context.
     }

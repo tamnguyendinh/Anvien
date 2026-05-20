@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 const ENCOURAGEMENTS = [
   'Today is a good day to build something solid.',
@@ -49,17 +49,8 @@ const randomIndex = (length: number, previous?: number): number => {
 };
 
 export const EncouragementLine = () => {
-  const [messageIndex, setMessageIndex] = useState(() => randomIndex(ENCOURAGEMENTS.length));
-  const [colorIndex, setColorIndex] = useState(() => randomIndex(ENCOURAGEMENT_COLORS.length));
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setMessageIndex((previous) => randomIndex(ENCOURAGEMENTS.length, previous));
-      setColorIndex((previous) => randomIndex(ENCOURAGEMENT_COLORS.length, previous));
-    }, 7_000);
-
-    return () => window.clearInterval(timer);
-  }, []);
+  const messageIndex = useMemo(() => randomIndex(ENCOURAGEMENTS.length), []);
+  const colorIndex = useMemo(() => randomIndex(ENCOURAGEMENT_COLORS.length), []);
 
   return (
     <p

@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
  * E2E tests for the repo-switching and false-404 fixes.
  *
  * Most tests use the live backend (same pattern as multi-repo-scoping.spec.ts).
- * The 503 hold-queue test uses route interception to simulate a slow analysis.
+ * The 503 hold-queue test uses route interception to simulate a backend hold response.
  */
 
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://127.0.0.1:4848';
@@ -96,7 +96,7 @@ test.describe('Repeated dropdown repo switching', () => {
 
 // ── 1. Hold-queue: 503 → descriptive user message ────────────────────────────
 
-test.describe('Hold-queue timeout error', () => {
+test.describe('Hold-queue 503 error', () => {
   test('shows descriptive message when /api/repo returns 503', async ({ page }, testInfo) => {
     // Intercept only /api/repo (singular) — not /api/repos — to return a 503
     // regex: /api/repo followed by end, ?, or # — NOT /api/repos

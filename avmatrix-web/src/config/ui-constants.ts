@@ -1,9 +1,3 @@
-// Centralized UI defaults for the local runtime path plus a few legacy
-// compatibility constants that still exist while older provider-based modules
-// are being retired.
-export const ERROR_RESET_DELAY_MS = 3000;
-export const BACKEND_URL_DEBOUNCE_MS = 500;
-
 export const DEFAULT_BACKEND_URL = 'http://127.0.0.1:4848';
 export const DEFAULT_OLLAMA_BASE_URL = 'http://127.0.0.1:11434';
 export const DEFAULT_OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';

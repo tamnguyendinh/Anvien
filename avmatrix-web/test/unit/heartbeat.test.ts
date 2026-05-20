@@ -27,12 +27,10 @@ beforeEach(() => {
       return lastEventSource;
     }),
   );
-  vi.useFakeTimers();
   resetWebRuntimeDiagnostics();
 });
 
 afterEach(() => {
-  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -47,7 +45,7 @@ describe('connectHeartbeat', () => {
     expect(onReconnecting).not.toHaveBeenCalled();
   });
 
-  it('calls onReconnecting on first error, then retries', () => {
+  it('calls onReconnecting on first error and leaves reconnecting to EventSource', () => {
     const onConnect = vi.fn();
     const onReconnecting = vi.fn();
     connectHeartbeat(onConnect, onReconnecting);
@@ -56,13 +54,8 @@ describe('connectHeartbeat', () => {
     lastEventSource!.onerror!();
 
     expect(onReconnecting).toHaveBeenCalledOnce();
-    expect(lastEventSource!.closed).toBe(true);
-
-    // Advance past first retry delay (1s)
-    vi.advanceTimersByTime(1_000);
-
-    // A new EventSource should have been created
-    expect(EventSource).toHaveBeenCalledTimes(2);
+    expect(lastEventSource!.closed).toBe(false);
+    expect(EventSource).toHaveBeenCalledTimes(1);
   });
 
   it('fires onReconnecting only once per disconnect', () => {
@@ -74,31 +67,24 @@ describe('connectHeartbeat', () => {
     lastEventSource!.onerror!();
     expect(onReconnecting).toHaveBeenCalledOnce();
 
-    // Second retry fires error again
-    vi.advanceTimersByTime(1_000);
     lastEventSource!.onerror!();
     expect(onReconnecting).toHaveBeenCalledOnce(); // still 1
 
-    // Third retry fires error
-    vi.advanceTimersByTime(2_000);
     lastEventSource!.onerror!();
     expect(onReconnecting).toHaveBeenCalledOnce(); // still 1
   });
 
-  it('retries indefinitely instead of giving up after 3 attempts', () => {
+  it('does not create timer-driven EventSource instances on repeated errors', () => {
     const onConnect = vi.fn();
     const onReconnecting = vi.fn();
     connectHeartbeat(onConnect, onReconnecting);
 
-    // Simulate 10 consecutive failures — should never stop retrying
     for (let i = 0; i < 10; i++) {
       lastEventSource!.onerror!();
-      // Advance past the max backoff (15s) to ensure the next retry fires
-      vi.advanceTimersByTime(16_000);
     }
 
-    // Should have created 11 EventSources (1 initial + 10 retries)
-    expect(EventSource).toHaveBeenCalledTimes(11);
+    expect(EventSource).toHaveBeenCalledTimes(1);
+    expect(onReconnecting).toHaveBeenCalledOnce();
   });
 
   it('resets reconnecting state when connection recovers', () => {
@@ -110,8 +96,6 @@ describe('connectHeartbeat', () => {
     lastEventSource!.onerror!();
     expect(onReconnecting).toHaveBeenCalledOnce();
 
-    // Retry succeeds
-    vi.advanceTimersByTime(1_000);
     lastEventSource!.onopen!();
     expect(onConnect).toHaveBeenCalledOnce();
 
@@ -120,24 +104,7 @@ describe('connectHeartbeat', () => {
     expect(onReconnecting).toHaveBeenCalledTimes(2);
   });
 
-  it('caps backoff at 15 seconds', () => {
-    const onConnect = vi.fn();
-    const onReconnecting = vi.fn();
-    connectHeartbeat(onConnect, onReconnecting);
-
-    // Fail many times to push backoff past the cap
-    for (let i = 0; i < 6; i++) {
-      lastEventSource!.onerror!();
-      // The delay for attempt i is min(1000 * 2^i, 15000)
-      // i=0: 1s, i=1: 2s, i=2: 4s, i=3: 8s, i=4: 15s (capped), i=5: 15s (capped)
-      vi.advanceTimersByTime(16_000);
-    }
-
-    // All retries should have fired — 7 EventSources total
-    expect(EventSource).toHaveBeenCalledTimes(7);
-  });
-
-  it('stops retrying when cleanup is called', () => {
+  it('closes the EventSource when cleanup is called', () => {
     const onConnect = vi.fn();
     const onReconnecting = vi.fn();
     const cleanup = connectHeartbeat(onConnect, onReconnecting);
@@ -145,8 +112,7 @@ describe('connectHeartbeat', () => {
     lastEventSource!.onerror!();
     cleanup();
 
-    // Advance time — no new EventSource should be created
-    vi.advanceTimersByTime(30_000);
+    expect(lastEventSource!.closed).toBe(true);
     expect(EventSource).toHaveBeenCalledTimes(1);
   });
 

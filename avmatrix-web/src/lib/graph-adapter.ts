@@ -261,7 +261,7 @@ const getNodeMass = (nodeType: string, nodeCount: number): number => {
  * Nodes are positioned by node-label clusters matching the Web node filters.
  *
  * @param knowledgeGraph - The knowledge graph to convert
- * @param communityMemberships - Optional map of nodeId -> communityIndex for community coloring
+ * @param communityMemberships - Optional map of nodeId -> communityIndex for metadata
  */
 export const knowledgeGraphToGraphology = (
   knowledgeGraph: KnowledgeGraph,
@@ -281,11 +281,7 @@ export const knowledgeGraphToGraphology = (
     const scaledSize = getScaledNodeSize(baseSize, nodeCount, node.label);
     const communityIndex = communityMemberships?.get(node.id);
     const hasCommunity = communityIndex !== undefined;
-    const usesCommunityColor =
-      hasCommunity && communityColoredNodeLabelSet.has(node.label);
-    const nodeColor = usesCommunityColor
-      ? getCommunityColor(communityIndex!)
-      : getNodeColor(node.label);
+    const nodeColor = getNodeColor(node.label);
     const graphHealth = getNodeGraphHealth(node);
 
     graph.addNode(node.id, {

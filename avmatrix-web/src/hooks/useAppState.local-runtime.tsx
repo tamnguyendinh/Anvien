@@ -33,7 +33,6 @@ import {
   type ConnectResult,
   type JobProgress,
 } from '../services/backend-client';
-import { ERROR_RESET_DELAY_MS } from '../config/ui-constants';
 import { normalizePath } from '../lib/path-resolution';
 import { FILE_REF_REGEX, NODE_REF_REGEX } from '../lib/grounding-patterns';
 import { GraphStateProvider, useGraphState } from './app-state/graph';
@@ -273,7 +272,40 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
 
   // Node animations (for MCP tool visual feedback)
   const [animatedNodes, setAnimatedNodes] = useState<Map<string, NodeAnimation>>(new Map());
-  const animationTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+
+  const scheduleAnimationCleanup = useCallback(() => {
+    if (animationFrameRef.current !== null) return;
+
+    const tick = () => {
+      const now = Date.now();
+      let hasActiveAnimations = false;
+
+      setAnimatedNodes((prev) => {
+        let changed = false;
+        const next = new Map<string, NodeAnimation>();
+
+        for (const [id, animation] of prev) {
+          if (now - animation.startTime <= animation.duration) {
+            next.set(id, animation);
+            hasActiveAnimations = true;
+          } else {
+            changed = true;
+          }
+        }
+
+        return changed ? next : prev;
+      });
+
+      if (hasActiveAnimations) {
+        animationFrameRef.current = requestAnimationFrame(tick);
+      } else {
+        animationFrameRef.current = null;
+      }
+    };
+
+    animationFrameRef.current = requestAnimationFrame(tick);
+  }, []);
 
   const triggerNodeAnimation = useCallback((nodeIds: string[], type: AnimationType) => {
     const now = Date.now();
@@ -287,27 +319,23 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
       return next;
     });
 
-    // Auto-cleanup after duration
-    setTimeout(() => {
-      setAnimatedNodes((prev) => {
-        const next = new Map(prev);
-        for (const id of nodeIds) {
-          const anim = next.get(id);
-          if (anim && anim.startTime === now) {
-            next.delete(id);
-          }
-        }
-        return next;
-      });
-    }, duration + 100);
-  }, []);
+    scheduleAnimationCleanup();
+  }, [scheduleAnimationCleanup]);
 
   const clearAnimations = useCallback(() => {
     setAnimatedNodes(new Map());
-    if (animationTimerRef.current) {
-      clearInterval(animationTimerRef.current);
-      animationTimerRef.current = null;
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, []);
 
   // Progress
@@ -835,10 +863,6 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
           detail: err instanceof Error ? err.message : 'Unknown error',
           targetRepoName: repoName,
         });
-        setTimeout(() => {
-          setViewMode('exploring');
-          setProgress(null);
-        }, ERROR_RESET_DELAY_MS);
         return; // Abort the whole switchRepo process
       }
 

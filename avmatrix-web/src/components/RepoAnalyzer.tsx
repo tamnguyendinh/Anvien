@@ -109,12 +109,10 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
 
   const jobIdRef = useRef<string | null>(null);
   const sseControllerRef = useRef<AbortController | null>(null);
-  const completeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
       sseControllerRef.current?.abort();
-      if (completeTimerRef.current) clearTimeout(completeTimerRef.current);
     };
   }, []);
 
@@ -170,10 +168,7 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
           setCompletedRepoName(name);
           setPhase('done');
           sseControllerRef.current = null;
-          completeTimerRef.current = setTimeout(() => {
-            completeTimerRef.current = null;
-            onComplete({ repoName: name, repoPath: data.repoPath ?? localPath.trim() });
-          }, 1200);
+          onComplete({ repoName: name, repoPath: data.repoPath ?? localPath.trim() });
         },
         (errMsg) => {
           setValidationError(errMsg || 'Analysis failed. Check server logs.');

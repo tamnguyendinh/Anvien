@@ -24,40 +24,17 @@ interface DropZoneProps {
 // Captures the outgoing children during fade-out, then swaps to the new children on fade-in.
 
 function Crossfade({ activeKey, children }: { activeKey: string; children: React.ReactNode }) {
-  const [displayedKey, setDisplayedKey] = useState(activeKey);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const snapshotRef = useRef<React.ReactNode>(children);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Keep snapshot up to date when NOT transitioning
-  if (!isTransitioning && activeKey === displayedKey) {
-    snapshotRef.current = children;
-  }
-
-  useEffect(() => {
-    if (activeKey !== displayedKey) {
-      setIsTransitioning(true);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => {
-        snapshotRef.current = null; // clear snapshot — new children will render
-        setDisplayedKey(activeKey);
-        setIsTransitioning(false);
-      }, 300);
-    }
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, [activeKey, displayedKey]);
+  void activeKey;
 
   return (
     <div
       className="transition-[opacity,transform] duration-300 ease-out"
       style={{
-        opacity: isTransitioning ? 0 : 1,
-        transform: isTransitioning ? 'scale(0.97) translateY(8px)' : 'scale(1) translateY(0)',
+        opacity: 1,
+        transform: 'scale(1) translateY(0)',
       }}
     >
-      {isTransitioning ? snapshotRef.current : children}
+      {children}
     </div>
   );
 }
@@ -135,7 +112,6 @@ export const DropZone = ({ onServerConnect }: DropZoneProps) => {
   } = useBackend();
   const [initialProbeComplete, setInitialProbeComplete] = useState(false);
   const autoConnectRan = useRef(false);
-  const autoConnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Connection state
   // 'analyze'  = server up but zero repos indexed — show local-path analyze input
@@ -300,30 +276,19 @@ export const DropZone = ({ onServerConnect }: DropZoneProps) => {
       autoConnectRan.current = true;
       stopPolling();
       setPhase('success');
-      autoConnectTimerRef.current = setTimeout(() => {
-        autoConnectTimerRef.current = null;
-        handleAutoConnectRef.current();
-      }, 1200); // hold success state long enough to register
+      void handleAutoConnectRef.current();
     }
     // Server went away — reset to onboarding (or analyze if we were on analyze)
     if (!isConnected && autoConnectRan.current && !isProbing) {
       autoConnectRan.current = false;
-      if (autoConnectTimerRef.current !== null) {
-        clearTimeout(autoConnectTimerRef.current);
-        autoConnectTimerRef.current = null;
-      }
       setPhase('onboarding');
       setError(null);
     }
-    // NOTE: No cleanup return here. The autoConnectTimerRef must survive effect
-    // re-runs (e.g. isProbing flipping false while the 1200ms window is active).
-    // The unmount cleanup effect below is the sole owner of timer cancellation.
   }, [isConnected, isProbing, stopPolling]);
 
-  // Cleanup timers on unmount
+  // Cleanup active requests on unmount
   useEffect(() => {
     return () => {
-      if (autoConnectTimerRef.current !== null) clearTimeout(autoConnectTimerRef.current);
       analyzeSseRef.current?.abort();
       abortControllerRef.current?.abort();
     };

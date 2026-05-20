@@ -23,12 +23,6 @@ export interface WebRuntimeDiagnostics {
     manualOptimizerInvocations: number;
     isRunning: boolean;
     lastNodeCount: number;
-    lastDurationBudgetMs: number;
-    lastRunMs: number;
-    lastNoverlapMs: number;
-    lastReason: string;
-    lastStartedAt: number;
-    lastStoppedAt: number;
     lastManualOptimizerInvokedAt: number;
     lastManualOptimizerRunMs: number;
   };
@@ -82,12 +76,6 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
     manualOptimizerInvocations: 0,
     isRunning: false,
     lastNodeCount: 0,
-    lastDurationBudgetMs: 0,
-    lastRunMs: 0,
-    lastNoverlapMs: 0,
-    lastReason: '',
-    lastStartedAt: 0,
-    lastStoppedAt: 0,
     lastManualOptimizerInvokedAt: 0,
     lastManualOptimizerRunMs: 0,
   },
@@ -158,39 +146,6 @@ export const recordVisualScale = (input: {
     ...input,
     recordedAt: nowMs(),
   };
-};
-
-export const recordLayoutStart = (input: {
-  nodeCount: number;
-  durationBudgetMs: number;
-  startedAt?: number;
-}): void => {
-  const diagnostics = getWebRuntimeDiagnostics();
-  if (!diagnostics) return;
-  const startedAt = input.startedAt ?? nowMs();
-  diagnostics.layout.starts++;
-  diagnostics.layout.isRunning = true;
-  diagnostics.layout.lastNodeCount = input.nodeCount;
-  diagnostics.layout.lastDurationBudgetMs = input.durationBudgetMs;
-  diagnostics.layout.lastStartedAt = startedAt;
-};
-
-export const recordLayoutStop = (input: {
-  nodeCount: number;
-  reason: string;
-  runMs: number;
-  noverlapMs?: number;
-  stoppedAt?: number;
-}): void => {
-  const diagnostics = getWebRuntimeDiagnostics();
-  if (!diagnostics) return;
-  diagnostics.layout.stops++;
-  diagnostics.layout.isRunning = false;
-  diagnostics.layout.lastNodeCount = input.nodeCount;
-  diagnostics.layout.lastRunMs = Math.max(0, input.runMs);
-  diagnostics.layout.lastNoverlapMs = Math.max(0, input.noverlapMs ?? 0);
-  diagnostics.layout.lastReason = input.reason;
-  diagnostics.layout.lastStoppedAt = input.stoppedAt ?? nowMs();
 };
 
 export const recordManualLayoutOptimizerInvocation = (input: {

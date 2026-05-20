@@ -105,10 +105,10 @@ test.describe('Flow 1: Onboarding — no server', () => {
   });
 });
 
-// ── Flow 2: Server detected → success → auto-connect ──────────────────────
+// ── Flow 2: Server detected → auto-connect ────────────────────────────────
 
 test.describe('Flow 2: Server detected — auto-connect', () => {
-  test('shows success card when server becomes reachable', async ({ page }, testInfo) => {
+  test('auto-connects when server becomes reachable', async ({ page }, testInfo) => {
     // Start with server unreachable
     let blockBackend = true;
     await page.route(`${BACKEND_URL}/**`, (route) => {
@@ -151,9 +151,12 @@ test.describe('Flow 2: Server detected — auto-connect', () => {
     // "Start" the server by unblocking requests
     blockBackend = false;
 
-    // Wait for success card
-    await expect(page.getByText('Server Connected')).toBeVisible({ timeout: 15_000 });
-    await page.screenshot({ path: testInfo.outputPath('success-card.png') });
+    await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+
+    await expect(page.getByTestId('landing-repo-card').filter({ hasText: 'test-repo' })).toBeVisible({
+      timeout: 15_000,
+    });
+    await page.screenshot({ path: testInfo.outputPath('repo-landing.png') });
   });
 
   test('transitions to analyze phase when server has zero repos', async ({ page }, testInfo) => {
@@ -172,7 +175,7 @@ test.describe('Flow 2: Server detected — auto-connect', () => {
 
     await page.goto('/');
 
-    // Should transition: onboarding → success → analyze (zero repos)
+    // Should transition to analyze when no indexed repos exist.
     await expect(page.getByLabel('Repository Folder')).toBeVisible({ timeout: 20_000 });
     await expect(page.getByRole('button', { name: 'Choose Repository' })).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath('analyze-empty-state.png') });

@@ -107,13 +107,13 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
   const panelRef = useRef<HTMLElement | null>(null);
   const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
   const refCardEls = useRef<Map<string, HTMLDivElement | null>>(new Map());
-  const glowTimerRef = useRef<number | null>(null);
+  const glowFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     return () => {
-      if (glowTimerRef.current) {
-        window.clearTimeout(glowTimerRef.current);
-        glowTimerRef.current = null;
+      if (glowFrameRef.current !== null) {
+        cancelAnimationFrame(glowFrameRef.current);
+        glowFrameRef.current = null;
       }
     };
   }, []);
@@ -200,13 +200,19 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         setGlowRefId(target.id);
 
-        if (glowTimerRef.current) {
-          window.clearTimeout(glowTimerRef.current);
+        if (glowFrameRef.current !== null) {
+          cancelAnimationFrame(glowFrameRef.current);
         }
-        glowTimerRef.current = window.setTimeout(() => {
-          setGlowRefId((prev) => (prev === target.id ? null : prev));
-          glowTimerRef.current = null;
-        }, 1200);
+        const startedAt = performance.now();
+        const clearGlow = (now: number) => {
+          if (now - startedAt >= 1200) {
+            setGlowRefId((prev) => (prev === target.id ? null : prev));
+            glowFrameRef.current = null;
+            return;
+          }
+          glowFrameRef.current = requestAnimationFrame(clearGlow);
+        };
+        glowFrameRef.current = requestAnimationFrame(clearGlow);
       });
       rafIds.push(innerRafId);
     });
@@ -214,6 +220,10 @@ export const CodeReferencesPanel = ({ onFocusNode }: CodeReferencesPanelProps) =
 
     return () => {
       rafIds.forEach((id) => cancelAnimationFrame(id));
+      if (glowFrameRef.current !== null) {
+        cancelAnimationFrame(glowFrameRef.current);
+        glowFrameRef.current = null;
+      }
     };
   }, [codeReferenceFocus, aiReferences]);
 

@@ -2,8 +2,6 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   getWebRuntimeDiagnostics,
   recordGraphConversion,
-  recordLayoutStart,
-  recordLayoutStop,
   recordManualLayoutOptimizerInvocation,
   recordReconnectBannerState,
   recordVisualScale,
@@ -15,24 +13,12 @@ describe('runtime diagnostics', () => {
     resetWebRuntimeDiagnostics();
   });
 
-  it('records graph conversion and layout timings', () => {
+  it('records graph conversion without automatic layout timings', () => {
     recordGraphConversion({
       startedAt: 10,
       finishedAt: 35,
       nodeCount: 100,
       relationshipCount: 250,
-    });
-    recordLayoutStart({
-      nodeCount: 100,
-      durationBudgetMs: 20_000,
-      startedAt: 40,
-    });
-    recordLayoutStop({
-      nodeCount: 100,
-      reason: 'duration-elapsed',
-      runMs: 20_000,
-      noverlapMs: 12,
-      stoppedAt: 20_040,
     });
 
     const diagnostics = getWebRuntimeDiagnostics();
@@ -40,12 +26,10 @@ describe('runtime diagnostics', () => {
     expect(diagnostics?.graphConversion.lastMs).toBe(25);
     expect(diagnostics?.graphConversion.lastNodeCount).toBe(100);
     expect(diagnostics?.graphConversion.lastRelationshipCount).toBe(250);
-    expect(diagnostics?.layout.starts).toBe(1);
-    expect(diagnostics?.layout.stops).toBe(1);
+    expect(diagnostics?.layout.starts).toBe(0);
+    expect(diagnostics?.layout.stops).toBe(0);
     expect(diagnostics?.layout.manualOptimizerInvocations).toBe(0);
     expect(diagnostics?.layout.isRunning).toBe(false);
-    expect(diagnostics?.layout.lastReason).toBe('duration-elapsed');
-    expect(diagnostics?.layout.lastNoverlapMs).toBe(12);
   });
 
   it('records manual layout optimizer invocations separately from layout starts', () => {

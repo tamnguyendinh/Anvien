@@ -61,6 +61,8 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
   const [svg, setSvg] = useState<string>('');
 
   useEffect(() => {
+    let cancelled = false;
+
     const renderDiagram = async () => {
       if (!containerRef.current) return;
 
@@ -74,6 +76,7 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
           USE_PROFILES: { svg: true, svgFilters: true },
           ADD_TAGS: ['foreignObject'],
         });
+        if (cancelled) return;
         setSvg(sanitizedSvg);
         setError(null);
       } catch (err) {
@@ -86,12 +89,11 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
       }
     };
 
-    // Debounce rendering to prevent "jerking" during high-speed streaming
-    const timeoutId = setTimeout(() => {
-      renderDiagram();
-    }, 300);
+    void renderDiagram();
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      cancelled = true;
+    };
   }, [code]);
 
   // Create a pseudo ProcessData for the modal (with custom rawMermaid property)

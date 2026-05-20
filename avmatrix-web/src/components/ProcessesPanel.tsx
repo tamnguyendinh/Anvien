@@ -20,18 +20,68 @@ import {
 import { useAppState } from '../hooks/useAppState.local-runtime';
 import { ProcessFlowModal } from './ProcessFlowModal';
 import type { ProcessData, ProcessStep } from '../lib/mermaid-generator';
+import type { KnowledgeGraph } from '../core/graph/types';
 
-/** Validate that an ID contains only expected node identifier characters (no Cypher metacharacters or spaces) */
-const isSafeId = (id: string): boolean => /^[a-zA-Z0-9_:.\-/@]+$/.test(id);
+const stringProp = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim() ? value : undefined;
+
+const stringArrayProp = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+
+const graphNodeLookup = (graph: KnowledgeGraph): Map<string, KnowledgeGraph['nodes'][number]> =>
+  new Map(graph.nodes.map((node) => [node.id, node]));
+
+const processStepsFromGraph = (
+  graph: KnowledgeGraph,
+  processId: string,
+  nodeById: Map<string, KnowledgeGraph['nodes'][number]> = graphNodeLookup(graph),
+): ProcessStep[] =>
+  graph.relationships
+    .filter((rel) => rel.type === 'STEP_IN_PROCESS' && rel.targetId === processId)
+    .map((rel) => {
+      const node = nodeById.get(rel.sourceId);
+      return {
+        id: rel.sourceId,
+        name:
+          stringProp(node?.properties.name) ??
+          stringProp(node?.properties.label) ??
+          stringProp(node?.properties.heuristicLabel) ??
+          rel.sourceId,
+        filePath: stringProp(node?.properties.filePath),
+        stepNumber: typeof rel.step === 'number' ? rel.step : 0,
+      };
+    })
+    .sort((a, b) => {
+      if (a.stepNumber !== b.stepNumber) return a.stepNumber - b.stepNumber;
+      return a.name.localeCompare(b.name);
+    });
+
+const callEdgesFromGraph = (
+  graph: KnowledgeGraph,
+  stepIds: Iterable<string>,
+): Array<{ from: string; to: string; type: string }> => {
+  const stepSet = new Set(stepIds);
+  if (stepSet.size === 0) return [];
+
+  return graph.relationships
+    .filter(
+      (rel) =>
+        rel.type === 'CALLS' &&
+        stepSet.has(rel.sourceId) &&
+        stepSet.has(rel.targetId) &&
+        rel.sourceId !== rel.targetId,
+    )
+    .map((rel) => ({ from: rel.sourceId, to: rel.targetId, type: rel.type }));
+};
 
 export const ProcessesPanel = () => {
-  const { graph, runQuery, setHighlightedNodeIds, highlightedNodeIds } = useAppState();
+  const { graph, setHighlightedNodeIds, highlightedNodeIds } = useAppState();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProcess, setSelectedProcess] = useState<ProcessData | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['cross', 'intra']),
   );
-  const [loadingProcess, setLoadingProcess] = useState<string | null>(null);
+  const [viewLoadingProcess, setViewLoadingProcess] = useState<string | null>(null);
   const [focusedProcessId, setFocusedProcessId] = useState<string | null>(null);
 
   // Extract processes from graph
@@ -90,70 +140,31 @@ export const ProcessesPanel = () => {
   }, []);
 
   // Load ALL processes and combine into one mega-diagram
-  const handleViewAllProcesses = useCallback(async () => {
-    setLoadingProcess('all');
+  const handleViewAllProcesses = useCallback(() => {
+    if (!graph) return;
+    setViewLoadingProcess('all');
 
     try {
-      const allProcessIds = [...processes.cross, ...processes.intra]
-        .map((p) => p.id)
-        .filter(isSafeId);
+      const allProcessIds = [...processes.cross, ...processes.intra].map((p) => p.id);
 
       if (allProcessIds.length === 0) return;
 
       // Collect all steps from all processes
       const allStepsMap = new Map<string, ProcessStep>();
-      const allEdges: Array<{ from: string; to: string; type: string }> = [];
-
-      // Fetch steps for all processes concurrently in batches if needed, but for now sequentially to be safe
-      // Optimization: Fetch all steps in one query if possible
-      const allStepsQuery = `
-                MATCH (s)-[r:CodeRelation {type: 'STEP_IN_PROCESS'}]->(p:Process)
-                WHERE p.id IN [${allProcessIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(',')}]
-                RETURN s.id AS id, s.name AS name, s.filePath AS filePath, r.step AS stepNumber
-            `;
-
-      const stepsResult = await runQuery(allStepsQuery);
-
-      for (const row of stepsResult) {
-        const stepId = row.id || row[0];
-        if (!allStepsMap.has(stepId)) {
-          allStepsMap.set(stepId, {
-            id: stepId,
-            name: row.name || row[1] || 'Unknown',
-            filePath: row.filePath || row[2],
-            stepNumber: row.stepNumber || row.step || row[3] || 0,
-          });
+      const nodeById = graphNodeLookup(graph);
+      for (const processId of allProcessIds) {
+        for (const step of processStepsFromGraph(graph, processId, nodeById)) {
+          if (!allStepsMap.has(step.id)) {
+            allStepsMap.set(step.id, step);
+          }
         }
       }
 
       const allSteps = Array.from(allStepsMap.values());
-      const stepIds = allSteps.map((s) => s.id).filter(isSafeId);
-
-      // Query for all CALLS edges between the combined steps
-      if (stepIds.length > 0) {
-        // Batch query if too many steps
-        const edgesQuery = `
-                    MATCH (from)-[r:CodeRelation {type: 'CALLS'}]->(to)
-                    WHERE from.id IN [${stepIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(',')}]
-                      AND to.id IN [${stepIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(',')}]
-                    RETURN from.id AS fromId, to.id AS toId, r.type AS type
-                `;
-
-        try {
-          const edgesResult = await runQuery(edgesQuery);
-          allEdges.push(
-            ...edgesResult
-              .map((row: any) => ({
-                from: row.fromId || row[0],
-                to: row.toId || row[1],
-                type: row.type || row[2] || 'CALLS',
-              }))
-              .filter((edge) => edge.from !== edge.to),
-          );
-        } catch (err) {
-          console.warn('Could not fetch combined edges:', err);
-        }
-      }
+      const allEdges = callEdgesFromGraph(
+        graph,
+        allSteps.map((step) => step.id),
+      );
 
       const combinedProcessData: ProcessData = {
         id: 'combined-all',
@@ -168,64 +179,26 @@ export const ProcessesPanel = () => {
     } catch (error) {
       console.error('Failed to load combined processes:', error);
     } finally {
-      setLoadingProcess(null);
+      setViewLoadingProcess(null);
     }
-  }, [processes, runQuery]);
+  }, [graph, processes]);
 
   // Load process steps and open modal
   const handleViewProcess = useCallback(
-    async (processId: string, label: string, processType: string) => {
-      if (!isSafeId(processId)) return;
-      setLoadingProcess(processId);
+    (processId: string, label: string, processType: string) => {
+      if (!graph) return;
+      setViewLoadingProcess(processId);
 
       try {
-        // Query for process steps
-        const stepsQuery = `
-        MATCH (s)-[r:CodeRelation {type: 'STEP_IN_PROCESS'}]->(p:Process {id: '${processId.replace(/'/g, "''")}'})
-        RETURN s.id AS id, s.name AS name, s.filePath AS filePath, r.step AS stepNumber
-        ORDER BY r.step
-      `;
-
-        const stepsResult = await runQuery(stepsQuery);
-
-        const steps: ProcessStep[] = stepsResult.map((row: any) => ({
-          id: row.id || row[0],
-          name: row.name || row[1] || 'Unknown',
-          filePath: row.filePath || row[2],
-          stepNumber: row.stepNumber || row.step || row[3] || 0,
-        }));
-
-        // Get step IDs for edge query
-        const stepIds = steps.map((s) => s.id).filter(isSafeId);
-
-        // Query for CALLS edges between the steps in this process
-        let edges: Array<{ from: string; to: string; type: string }> = [];
-        if (stepIds.length > 0) {
-          const edgesQuery = `
-          MATCH (from)-[r:CodeRelation {type: 'CALLS'}]->(to)
-          WHERE from.id IN [${stepIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(',')}]
-            AND to.id IN [${stepIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(',')}]
-          RETURN from.id AS fromId, to.id AS toId, r.type AS type
-        `;
-
-          try {
-            const edgesResult = await runQuery(edgesQuery);
-            edges = edgesResult
-              .map((row: any) => ({
-                from: row.fromId || row[0],
-                to: row.toId || row[1],
-                type: row.type || row[2] || 'CALLS',
-              }))
-              .filter((edge) => edge.from !== edge.to); // Remove self-loops
-          } catch (err) {
-            console.warn('Could not fetch edges:', err);
-            // Continue with empty edges - will fallback to linear
-          }
-        }
+        const steps = processStepsFromGraph(graph, processId);
+        const edges = callEdgesFromGraph(
+          graph,
+          steps.map((step) => step.id),
+        );
 
         // Get clusters for this process
         const processNode = graph?.nodes.find((n) => n.id === processId);
-        const clusters = processNode?.properties.communities || [];
+        const clusters = stringArrayProp(processNode?.properties.communities);
 
         const processData: ProcessData = {
           id: processId,
@@ -240,10 +213,10 @@ export const ProcessesPanel = () => {
       } catch (error) {
         console.error('Failed to load process steps:', error);
       } finally {
-        setLoadingProcess(null);
+        setViewLoadingProcess(null);
       }
     },
-    [runQuery, graph],
+    [graph],
   );
 
   // Cache for process steps (so we don't re-query when toggling focus)
@@ -251,8 +224,7 @@ export const ProcessesPanel = () => {
 
   // Toggle focus for any process - loads steps on demand
   const handleToggleFocusForProcess = useCallback(
-    async (processId: string) => {
-      if (!isSafeId(processId)) return;
+    (processId: string) => {
       // If already focused on this process, turn off
       if (focusedProcessId === processId) {
         setHighlightedNodeIds(new Set());
@@ -268,29 +240,12 @@ export const ProcessesPanel = () => {
         return;
       }
 
-      // Load steps for this process
-      setLoadingProcess(processId);
-      try {
-        const stepsQuery = `
-                MATCH (s)-[r:CodeRelation {type: 'STEP_IN_PROCESS'}]->(p:Process {id: '${processId.replace(/'/g, "''")}'})
-                RETURN s.id AS id
-            `;
-        const stepsResult = await runQuery(stepsQuery);
-        const stepIds = stepsResult.map((row: any) => row.id || row[0]);
-
-        // Cache the result
-        setProcessStepsCache((prev) => new Map(prev).set(processId, stepIds));
-
-        // Set focus
-        setHighlightedNodeIds(new Set(stepIds));
-        setFocusedProcessId(processId);
-      } catch (error) {
-        console.error('Failed to load process steps for focus:', error);
-      } finally {
-        setLoadingProcess(null);
-      }
+      const stepIds = graph ? processStepsFromGraph(graph, processId).map((step) => step.id) : [];
+      setProcessStepsCache((prev) => new Map(prev).set(processId, stepIds));
+      setHighlightedNodeIds(new Set(stepIds));
+      setFocusedProcessId(processId);
     },
-    [focusedProcessId, processStepsCache, runQuery, setHighlightedNodeIds],
+    [focusedProcessId, graph, processStepsCache, setHighlightedNodeIds],
   );
 
   // Focus in graph callback - toggles highlight (used by modal)
@@ -364,7 +319,7 @@ export const ProcessesPanel = () => {
         <div className="px-4 py-3">
           <button
             onClick={handleViewAllProcesses}
-            disabled={loadingProcess !== null}
+            disabled={viewLoadingProcess !== null}
             className="press-panel group flex w-full items-center gap-3 p-4 text-left transition-all hover:border-border-strong"
           >
             <div className="rounded-lg border-[2px] border-border-default bg-base p-2 transition-colors group-hover:border-border-strong">
@@ -376,7 +331,7 @@ export const ProcessesPanel = () => {
                 View combined map of {totalCount} processes
               </p>
             </div>
-            {loadingProcess === 'all' ? (
+            {viewLoadingProcess === 'all' ? (
               <span className="mr-1 font-mono text-[11px] text-border-strong">Loading...</span>
             ) : (
               <Eye className="h-4 w-4 text-text-muted group-hover:text-border-strong" />
@@ -411,7 +366,7 @@ export const ProcessesPanel = () => {
                   <ProcessItem
                     key={process.id}
                     process={process}
-                    isLoading={loadingProcess === process.id}
+                    isLoading={viewLoadingProcess === process.id}
                     isSelected={selectedProcess?.id === process.id}
                     isFocused={focusedProcessId === process.id}
                     onView={() => handleViewProcess(process.id, process.label, 'cross_community')}
@@ -450,7 +405,7 @@ export const ProcessesPanel = () => {
                   <ProcessItem
                     key={process.id}
                     process={process}
-                    isLoading={loadingProcess === process.id}
+                    isLoading={viewLoadingProcess === process.id}
                     isSelected={selectedProcess?.id === process.id}
                     isFocused={focusedProcessId === process.id}
                     onView={() => handleViewProcess(process.id, process.label, 'intra_community')}
