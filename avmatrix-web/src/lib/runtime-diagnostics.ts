@@ -20,6 +20,7 @@ export interface WebRuntimeDiagnostics {
   layout: {
     starts: number;
     stops: number;
+    manualOptimizerInvocations: number;
     isRunning: boolean;
     lastNodeCount: number;
     lastDurationBudgetMs: number;
@@ -28,6 +29,8 @@ export interface WebRuntimeDiagnostics {
     lastReason: string;
     lastStartedAt: number;
     lastStoppedAt: number;
+    lastManualOptimizerInvokedAt: number;
+    lastManualOptimizerRunMs: number;
   };
   heartbeat: {
     connects: number;
@@ -76,6 +79,7 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
   layout: {
     starts: 0,
     stops: 0,
+    manualOptimizerInvocations: 0,
     isRunning: false,
     lastNodeCount: 0,
     lastDurationBudgetMs: 0,
@@ -84,6 +88,8 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
     lastReason: '',
     lastStartedAt: 0,
     lastStoppedAt: 0,
+    lastManualOptimizerInvokedAt: 0,
+    lastManualOptimizerRunMs: 0,
   },
   heartbeat: {
     connects: 0,
@@ -185,6 +191,21 @@ export const recordLayoutStop = (input: {
   diagnostics.layout.lastNoverlapMs = Math.max(0, input.noverlapMs ?? 0);
   diagnostics.layout.lastReason = input.reason;
   diagnostics.layout.lastStoppedAt = input.stoppedAt ?? nowMs();
+};
+
+export const recordManualLayoutOptimizerInvocation = (input: {
+  nodeCount: number;
+  startedAt?: number;
+  finishedAt?: number;
+}): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  const finishedAt = input.finishedAt ?? nowMs();
+  const startedAt = input.startedAt ?? finishedAt;
+  diagnostics.layout.manualOptimizerInvocations++;
+  diagnostics.layout.lastNodeCount = input.nodeCount;
+  diagnostics.layout.lastManualOptimizerInvokedAt = startedAt;
+  diagnostics.layout.lastManualOptimizerRunMs = Math.max(0, finishedAt - startedAt);
 };
 
 export const recordHeartbeatConnect = (): void => {

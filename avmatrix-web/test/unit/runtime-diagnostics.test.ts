@@ -4,6 +4,7 @@ import {
   recordGraphConversion,
   recordLayoutStart,
   recordLayoutStop,
+  recordManualLayoutOptimizerInvocation,
   recordReconnectBannerState,
   recordVisualScale,
   resetWebRuntimeDiagnostics,
@@ -41,9 +42,26 @@ describe('runtime diagnostics', () => {
     expect(diagnostics?.graphConversion.lastRelationshipCount).toBe(250);
     expect(diagnostics?.layout.starts).toBe(1);
     expect(diagnostics?.layout.stops).toBe(1);
+    expect(diagnostics?.layout.manualOptimizerInvocations).toBe(0);
     expect(diagnostics?.layout.isRunning).toBe(false);
     expect(diagnostics?.layout.lastReason).toBe('duration-elapsed');
     expect(diagnostics?.layout.lastNoverlapMs).toBe(12);
+  });
+
+  it('records manual layout optimizer invocations separately from layout starts', () => {
+    recordManualLayoutOptimizerInvocation({
+      nodeCount: 42,
+      startedAt: 100,
+      finishedAt: 108,
+    });
+
+    const diagnostics = getWebRuntimeDiagnostics();
+    expect(diagnostics?.layout.starts).toBe(0);
+    expect(diagnostics?.layout.stops).toBe(0);
+    expect(diagnostics?.layout.manualOptimizerInvocations).toBe(1);
+    expect(diagnostics?.layout.lastNodeCount).toBe(42);
+    expect(diagnostics?.layout.lastManualOptimizerInvokedAt).toBe(100);
+    expect(diagnostics?.layout.lastManualOptimizerRunMs).toBe(8);
   });
 
   it('records visual-scale bounds for e2e assertions', () => {

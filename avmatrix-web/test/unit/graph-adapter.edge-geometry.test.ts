@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createKnowledgeGraph } from "../../src/core/graph/graph";
 import {
   MAX_DENSE_RENDERED_NODE_SIZE,
@@ -12,17 +12,11 @@ import type { GraphRelationship } from "../../src/generated/avmatrix-contracts";
 import {
   createCallsRelationship,
   createClassNode,
-  createContainsRelationship,
   createFileNode,
   createFunctionNode,
-  createProcessNode,
 } from "../fixtures/graph";
 
 describe("knowledgeGraphToGraphology edge geometry", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it("creates straight edges without curved-edge metadata", () => {
     const graph = createKnowledgeGraph();
     const fileNode = createFileNode("index.ts", "src/index.ts");
@@ -174,83 +168,82 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     }
   });
 
-  it("uses process relationships as higher-priority layout parents than file definitions", () => {
-    vi.spyOn(Math, "random").mockReturnValue(0.5);
-
+  it("produces deterministic filter-based clustered positions", () => {
     const graph = createKnowledgeGraph();
-    const fileNode = createFileNode("workflow.ts", "src/workflow.ts");
-    const functionNode = createFunctionNode(
-      "runWorkflow",
-      "src/workflow.ts",
-      1,
-    );
-    const processNode = createProcessNode("proc_0_workflow", "Workflow");
-    const defines: GraphRelationship = {
-      id: `${fileNode.id}_DEFINES_${functionNode.id}`,
-      sourceId: fileNode.id,
-      targetId: functionNode.id,
-      type: "DEFINES",
-      confidence: 1,
-      reason: "test-fixture",
-    };
-    const stepInProcess: GraphRelationship = {
-      id: `${functionNode.id}_STEP_IN_PROCESS_${processNode.id}`,
-      sourceId: functionNode.id,
-      targetId: processNode.id,
-      type: "STEP_IN_PROCESS",
-      confidence: 1,
-      reason: "test-fixture",
-    };
+    const functionA = createFunctionNode("build", "src/b.ts", 1);
+    const functionB = createFunctionNode("analyze", "src/a.ts", 1);
+    const classNode = createClassNode("Runner", "src/runner.ts");
+    const fileNode = createFileNode("index.ts", "src/index.ts");
 
+    graph.addNode(functionA);
+    graph.addNode(classNode);
     graph.addNode(fileNode);
-    graph.addNode(functionNode);
-    graph.addNode(processNode);
-    graph.addRelationship(defines);
-    graph.addRelationship(stepInProcess);
+    graph.addNode(functionB);
 
-    const sigmaGraph = knowledgeGraphToGraphology(graph);
-    const functionAttributes = sigmaGraph.getNodeAttributes(functionNode.id);
-    const processAttributes = sigmaGraph.getNodeAttributes(processNode.id);
-    const fileAttributes = sigmaGraph.getNodeAttributes(fileNode.id);
+    const first = knowledgeGraphToGraphology(graph);
+    const second = knowledgeGraphToGraphology(graph);
 
-    expect(functionAttributes.x).toBe(processAttributes.x);
-    expect(functionAttributes.y).toBe(processAttributes.y);
-    expect(functionAttributes.x).not.toBe(fileAttributes.x);
+    for (const nodeId of first.nodes()) {
+      expect(first.getNodeAttribute(nodeId, "x")).toBe(
+        second.getNodeAttribute(nodeId, "x"),
+      );
+      expect(first.getNodeAttribute(nodeId, "y")).toBe(
+        second.getNodeAttribute(nodeId, "y"),
+      );
+    }
   });
 
-  it("keeps owned properties near their owning type", () => {
-    vi.spyOn(Math, "random").mockReturnValue(0.5);
-
+  it("orders known clusters by filter order and appends unknown labels by label", () => {
     const graph = createKnowledgeGraph();
-    const fileNode = createFileNode("model.ts", "src/model.ts");
-    const classNode = createClassNode("Model", "src/model.ts");
-    const propertyNode = {
-      id: "Property:src/model.ts:Model.value",
-      label: "Property",
-      properties: { name: "value", filePath: "src/model.ts" },
-    } as const;
-    const hasProperty: GraphRelationship = {
-      id: `${classNode.id}_HAS_PROPERTY_${propertyNode.id}`,
-      sourceId: classNode.id,
-      targetId: propertyNode.id,
-      type: "HAS_PROPERTY",
-      confidence: 1,
-      reason: "test-fixture",
-    };
+    const fileNode = createFileNode("index.ts", "src/index.ts");
+    const zCustomNode = {
+      id: "ZCustom:src/z.txt:node",
+      label: "ZCustom",
+      properties: { name: "z", filePath: "src/z.txt" },
+    } as any;
+    const aCustomNode = {
+      id: "ACustom:src/a.txt:node",
+      label: "ACustom",
+      properties: { name: "a", filePath: "src/a.txt" },
+    } as any;
 
+    graph.addNode(zCustomNode);
     graph.addNode(fileNode);
-    graph.addNode(classNode);
-    graph.addNode(propertyNode);
-    graph.addRelationship(
-      createContainsRelationship(fileNode.id, classNode.id),
-    );
-    graph.addRelationship(hasProperty);
+    graph.addNode(aCustomNode);
 
     const sigmaGraph = knowledgeGraphToGraphology(graph);
-    const classAttributes = sigmaGraph.getNodeAttributes(classNode.id);
-    const propertyAttributes = sigmaGraph.getNodeAttributes(propertyNode.id);
+    const fileAttributes = sigmaGraph.getNodeAttributes(fileNode.id);
+    const aCustomAttributes = sigmaGraph.getNodeAttributes(aCustomNode.id);
+    const zCustomAttributes = sigmaGraph.getNodeAttributes(zCustomNode.id);
 
-    expect(propertyAttributes.x).toBe(classAttributes.x);
-    expect(propertyAttributes.y).toBe(classAttributes.y);
+    expect(fileAttributes.y).toBe(aCustomAttributes.y);
+    expect(fileAttributes.x).toBeLessThan(aCustomAttributes.x);
+    expect(zCustomAttributes.y).toBeGreaterThan(fileAttributes.y);
+  });
+
+  it("sorts nodes inside a label cluster by file path, name, then id in a local grid", () => {
+    const graph = createKnowledgeGraph();
+    const bPath = createFunctionNode("alpha", "src/b.ts", 1);
+    const aPathBeta = createFunctionNode("beta", "src/a.ts", 1);
+    const aPathAlphaLine2 = createFunctionNode("alpha", "src/a.ts", 2);
+    const aPathAlphaLine1 = createFunctionNode("alpha", "src/a.ts", 1);
+
+    graph.addNode(bPath);
+    graph.addNode(aPathBeta);
+    graph.addNode(aPathAlphaLine2);
+    graph.addNode(aPathAlphaLine1);
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const first = sigmaGraph.getNodeAttributes(aPathAlphaLine1.id);
+    const second = sigmaGraph.getNodeAttributes(aPathAlphaLine2.id);
+    const third = sigmaGraph.getNodeAttributes(aPathBeta.id);
+    const fourth = sigmaGraph.getNodeAttributes(bPath.id);
+
+    expect(first.y).toBe(second.y);
+    expect(first.x).toBeLessThan(second.x);
+    expect(third.y).toBeGreaterThan(first.y);
+    expect(third.x).toBe(first.x);
+    expect(fourth.y).toBe(third.y);
+    expect(fourth.x).toBe(second.x);
   });
 });

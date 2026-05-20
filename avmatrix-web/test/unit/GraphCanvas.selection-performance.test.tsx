@@ -1,4 +1,4 @@
-import { act, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createKnowledgeGraph } from '../../src/core/graph/graph';
 import type { GraphNode } from '@/generated/avmatrix-contracts';
@@ -10,6 +10,7 @@ const {
   sigmaRefreshSpy,
   setSigmaSelectedNodeSpy,
   setSigmaGraphSpy,
+  startLayoutSpy,
   sigmaGraph,
 } = vi.hoisted(() => {
   return {
@@ -18,6 +19,7 @@ const {
     sigmaRefreshSpy: vi.fn(),
     setSigmaSelectedNodeSpy: vi.fn(),
     setSigmaGraphSpy: vi.fn(),
+    startLayoutSpy: vi.fn(),
     sigmaGraph: {
       order: 1,
       nodes: () => ['Function:src/foo.ts:loadFoo'],
@@ -46,7 +48,7 @@ vi.mock('../../src/hooks/useSigma', () => ({
     resetZoom: vi.fn(),
     focusNode: vi.fn(),
     isLayoutRunning: false,
-    startLayout: vi.fn(),
+    startLayout: startLayoutSpy,
     stopLayout: vi.fn(),
     selectedNode: null,
     setSelectedNode: setSigmaSelectedNodeSpy,
@@ -96,6 +98,7 @@ describe('GraphCanvas selection performance guards', () => {
     sigmaRefreshSpy.mockReset();
     setSigmaSelectedNodeSpy.mockReset();
     setSigmaGraphSpy.mockReset();
+    startLayoutSpy.mockReset();
   });
 
   it('does not re-run full graph filtering when selection changes and depthFilter is null', async () => {
@@ -176,5 +179,37 @@ describe('GraphCanvas selection performance guards', () => {
         visibleTopologyStatuses: expect.any(Array),
       }),
     );
+  });
+
+  it('does not invoke manual layout optimization during graph load', async () => {
+    render(
+      <AppStateProvider>
+        <Harness />
+        <GraphCanvas />
+      </AppStateProvider>,
+    );
+
+    await waitFor(() => expect(appState).not.toBeNull());
+
+    const graph = createKnowledgeGraph();
+    graph.addNode(
+      createFunctionNode(
+        'Function:src/foo.ts:loadFoo',
+        'loadFoo',
+        'src/foo.ts',
+        10,
+        20,
+      ),
+    );
+
+    await act(async () => {
+      appState!.setGraph(graph);
+    });
+
+    expect(startLayoutSpy).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Optimize Layout' }));
+
+    expect(startLayoutSpy).toHaveBeenCalledTimes(1);
   });
 });

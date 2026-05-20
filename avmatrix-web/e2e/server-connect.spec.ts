@@ -34,6 +34,7 @@ type RuntimeDiagnostics = {
   layout: {
     starts: number;
     stops: number;
+    manualOptimizerInvocations: number;
     isRunning: boolean;
     lastDurationBudgetMs: number;
     lastRunMs: number;
@@ -139,7 +140,7 @@ test.describe('Server Connection & Graph Loading', () => {
     await waitForGraphLoaded(page);
   });
 
-  test('keeps connection stable after large graph load and layout window', async ({ page }) => {
+  test('keeps connection stable after large graph load without automatic layout optimizer', async ({ page }) => {
     await waitForGraphLoaded(page);
 
     await expect(page.locator('[data-testid="server-reconnect-banner"]')).toHaveCount(0);
@@ -152,14 +153,10 @@ test.describe('Server Connection & Graph Loading', () => {
       .toBeGreaterThan(0);
     await expect
       .poll(
-        async () => {
-          const diagnostics = await getRuntimeDiagnostics(page);
-          if (!diagnostics) return 0;
-          return diagnostics.layout.starts - diagnostics.layout.stops;
-        },
+        async () => (await getRuntimeDiagnostics(page))?.layout.starts ?? -1,
         { timeout: 10_000, intervals: [500] },
       )
-      .toBeGreaterThan(0);
+      .toBe(0);
     await page.waitForTimeout(POST_LOAD_STABILITY_WINDOW_MS);
 
     const diagnostics = await getRuntimeDiagnostics(page);
@@ -169,8 +166,32 @@ test.describe('Server Connection & Graph Loading', () => {
     expect(diagnostics?.reconnectBanner.visible).toBe(false);
     expect(diagnostics?.graphConversion.lastNodeCount).toBeGreaterThan(0);
     expect(diagnostics?.graphConversion.lastRelationshipCount).toBeGreaterThan(0);
-    expect(diagnostics?.layout.lastDurationBudgetMs).toBeGreaterThan(0);
-    expect(diagnostics?.layout.lastNoverlapMs).toBeGreaterThanOrEqual(0);
+    expect(diagnostics?.layout.starts).toBe(0);
+    expect(diagnostics?.layout.stops).toBe(0);
+    expect(diagnostics?.layout.manualOptimizerInvocations).toBe(0);
+    expect(diagnostics?.layout.lastDurationBudgetMs).toBe(0);
+    expect(diagnostics?.layout.lastNoverlapMs).toBe(0);
+  });
+
+  test('invokes manual layout optimizer only after user action', async ({ page }) => {
+    await waitForGraphLoaded(page);
+
+    let diagnostics = await getRuntimeDiagnostics(page);
+    expect(diagnostics?.layout.starts).toBe(0);
+    expect(diagnostics?.layout.manualOptimizerInvocations).toBe(0);
+
+    await page.getByRole('button', { name: 'Optimize Layout' }).click();
+
+    await expect
+      .poll(
+        async () => (await getRuntimeDiagnostics(page))?.layout.manualOptimizerInvocations ?? 0,
+        { timeout: 10_000, intervals: [250] },
+      )
+      .toBe(1);
+
+    diagnostics = await getRuntimeDiagnostics(page);
+    expect(diagnostics?.layout.starts).toBe(0);
+    expect(diagnostics?.layout.stops).toBe(0);
   });
 });
 

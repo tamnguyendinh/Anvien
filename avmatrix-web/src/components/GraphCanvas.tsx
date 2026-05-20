@@ -395,7 +395,8 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
               ? 'animate-pulse border-workspace-border-strong bg-workspace-surface text-workspace-text-primary'
               : 'border-workspace-border-default bg-workspace-surface text-workspace-text-secondary hover:bg-workspace-inset hover:text-workspace-text-primary'
           } `}
-          title={isLayoutRunning ? 'Stop Layout' : 'Run Layout Again'}
+          title={isLayoutRunning ? 'Stop Layout Optimization' : 'Optimize Layout'}
+          aria-label={isLayoutRunning ? 'Stop Layout Optimization' : 'Optimize Layout'}
         >
           {isLayoutRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </button>

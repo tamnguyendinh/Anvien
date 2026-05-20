@@ -2,7 +2,7 @@
 
 Date: 2026-05-20
 
-Status: active
+Status: complete
 
 Companion files:
 
@@ -104,72 +104,72 @@ When the user clicks the optimizer button:
 
 ### P0 - Discovery And Guardrails
 
-- [ ] [P0-A] Run AVmatrix refresh and impact checks for the implementation symbols before code edits.
-- [ ] [P0-B] Confirm direct callers and tests for `knowledgeGraphToGraphology`, `useSigma`, and `GraphCanvas`.
-- [ ] [P0-C] Record current graph load behavior: whether layout starts automatically after `setGraph`.
-- [ ] [P0-D] Record current initial placement behavior, including any nondeterministic `Math.random()` use.
-- [ ] [P0-E] Define the final cluster order source as `FILTERABLE_LABELS`, not `DEFAULT_VISIBLE_LABELS`.
+- [x] [P0-A] Run AVmatrix refresh and impact checks for the implementation symbols before code edits.
+- [x] [P0-B] Confirm direct callers and tests for `knowledgeGraphToGraphology`, `useSigma`, and `GraphCanvas`.
+- [x] [P0-C] Record current graph load behavior: whether layout starts automatically after `setGraph`.
+- [x] [P0-D] Record current initial placement behavior, including any nondeterministic `Math.random()` use.
+- [x] [P0-E] Define the final cluster order source as `FILTERABLE_LABELS`, not `DEFAULT_VISIBLE_LABELS`.
 
 ### P1 - Filter-Based Clustered Initial Layout
 
-- [ ] [P1-A] Replace initial placement with deterministic grouping by `node.label`.
-- [ ] [P1-B] Use `FILTERABLE_LABELS` for known cluster ordering, with unknown labels appended by label string.
-- [ ] [P1-C] Sort nodes inside each cluster by `filePath`, then `name`, then `id`.
-- [ ] [P1-D] Place clusters using a deterministic row-major grid that does not require graph connectivity scoring.
-- [ ] [P1-E] Place nodes inside each cluster using a deterministic row-major local grid with `columns = ceil(sqrt(clusterNodeCount))`.
-- [ ] [P1-F] Preserve existing node color, size, graph-health metadata, edge conversion, and filter composition.
+- [x] [P1-A] Replace initial placement with deterministic grouping by `node.label`.
+- [x] [P1-B] Use `FILTERABLE_LABELS` for known cluster ordering, with unknown labels appended by label string.
+- [x] [P1-C] Sort nodes inside each cluster by `filePath`, then `name`, then `id`.
+- [x] [P1-D] Place clusters using a deterministic row-major grid that does not require graph connectivity scoring.
+- [x] [P1-E] Place nodes inside each cluster using a deterministic row-major local grid with `columns = ceil(sqrt(clusterNodeCount))`.
+- [x] [P1-F] Preserve existing node color, size, graph-health metadata, edge conversion, and filter composition.
 
 ### P2 - Disable Automatic Optimizer On Load
 
-- [ ] [P2-A] Remove automatic optimizer start from graph load.
-- [ ] [P2-B] Ensure loading or replacing a graph renders clustered positions immediately.
-- [ ] [P2-C] Ensure no layout start diagnostic is recorded during graph load unless the user explicitly starts optimization.
-- [ ] [P2-D] Keep manual stop/cancel behavior correct if an optimizer is already running and the graph is replaced.
+- [x] [P2-A] Remove automatic optimizer start from graph load.
+- [x] [P2-B] Ensure loading or replacing a graph renders clustered positions immediately.
+- [x] [P2-C] Ensure no layout start diagnostic is recorded during graph load unless the user explicitly starts optimization.
+- [x] [P2-D] Keep manual stop/cancel behavior correct if an optimizer is already running and the graph is replaced.
 
 ### P3 - Manual Optimizer Semantics
 
-- [ ] [P3-A] Rename or clarify the current "Run Layout Again" control as manual layout optimization.
-- [ ] [P3-B] Ensure clicking the control is the only normal path that starts optimization.
-- [ ] [P3-C] Keep optimizer output subordinate to cluster readability; it may clean spacing but must not become the primary layout source or mix node-label clusters together.
-- [ ] [P3-D] Avoid introducing elapsed-time budget as the layout correctness mechanism.
-- [ ] [P3-E] Do not reuse the current global ForceAtlas2 optimizer unchanged unless the implementation constrains it to preserve node-label clusters.
+- [x] [P3-A] Rename or clarify the current "Run Layout Again" control as manual layout optimization.
+- [x] [P3-B] Ensure clicking the control is the only normal path that starts optimization.
+- [x] [P3-C] Keep optimizer output subordinate to cluster readability; it may clean spacing but must not become the primary layout source or mix node-label clusters together.
+- [x] [P3-D] Avoid introducing elapsed-time budget as the layout correctness mechanism.
+- [x] [P3-E] Do not reuse the current global ForceAtlas2 optimizer unchanged unless the implementation constrains it to preserve node-label clusters.
 
 ### P4 - Tests And Diagnostics
 
-- [ ] [P4-A] Add unit tests proving same input graph produces stable initial positions.
-- [ ] [P4-B] Add unit tests proving each node label/filter forms a separate cluster.
-- [ ] [P4-C] Add unit tests proving nodes inside a cluster use `filePath -> name -> id` ordering.
-- [ ] [P4-D] Add unit or integration coverage proving graph load does not auto-start the optimizer.
-- [ ] [P4-E] Add browser/e2e coverage proving the manual optimizer is invoked only after user action.
-- [ ] [P4-F] Validate existing graph filters, graph-health filters, depth filter, selection, and focus behavior still compose with clustered layout.
+- [x] [P4-A] Add unit tests proving same input graph produces stable initial positions.
+- [x] [P4-B] Add unit tests proving each node label/filter forms a separate cluster.
+- [x] [P4-C] Add unit tests proving nodes inside a cluster use `filePath -> name -> id` ordering.
+- [x] [P4-D] Add unit or integration coverage proving graph load does not auto-start the optimizer.
+- [x] [P4-E] Add browser/e2e coverage proving the manual optimizer is invoked only after user action.
+- [x] [P4-F] Validate existing graph filters, graph-health filters, depth filter, selection, and focus behavior still compose with clustered layout.
 
 ### P5 - Benchmark And Closure
 
-- [ ] [P5-A] Measure before/after graph load diagnostics on a representative graph.
-- [ ] [P5-B] Measure layout start count after initial graph load; expected final value is `0`.
-- [ ] [P5-C] Measure manual optimizer invocation count after clicking the optimizer button; expected final value is `1`.
-- [ ] [P5-D] Record render/conversion latency and interaction observations in the benchmark ledger.
-- [ ] [P5-E] Run focused Web validation and record results in the evidence ledger.
-- [ ] [P5-F] Review the final diff for scope creep against this plan's non-goals.
+- [x] [P5-A] Measure before/after graph load diagnostics on a representative graph.
+- [x] [P5-B] Measure layout start count after initial graph load; expected final value is `0`.
+- [x] [P5-C] Measure manual optimizer invocation count after clicking the optimizer button; expected final value is `1`.
+- [x] [P5-D] Record render/conversion latency and interaction observations in the benchmark ledger.
+- [x] [P5-E] Run focused Web validation and record results in the evidence ledger.
+- [x] [P5-F] Review the final diff for scope creep against this plan's non-goals.
 
 ## Acceptance Criteria
 
-- [ ] Initial graph layout is grouped by existing Node Type filters.
-- [ ] There is no new centrality, hub, degree, or importance calculation for placement.
-- [ ] Layout is deterministic for the same graph input.
-- [ ] Cluster order follows `FILTERABLE_LABELS` for known labels, with unknown labels appended by label string.
-- [ ] Only labels present in the graph create rendered clusters; `FILTERABLE_LABELS` is the ordering source, not a requirement to render empty clusters.
-- [ ] In-cluster node placement uses row-major local grid with `columns = ceil(sqrt(clusterNodeCount))`.
-- [ ] Filter state hides/shows existing clusters and does not create a separate layout policy.
-- [ ] Graph load does not automatically start layout optimization.
-- [ ] Manual optimizer starts only from explicit user action.
-- [ ] Manual optimizer does not mix different node-label clusters together.
-- [ ] Existing global ForceAtlas2 optimizer is not reused unchanged unless constrained to preserve node-label clusters.
-- [ ] Existing node filters still work and visually map to the same clusters.
-- [ ] Existing edge visibility, graph-health filters, depth filters, selection, and focus behavior still work.
-- [ ] Unit tests cover deterministic clustered placement.
-- [ ] Web/browser or e2e validation covers no-auto-optimizer and manual optimizer trigger.
-- [ ] Benchmark ledger records before/after load and optimizer behavior.
+- [x] Initial graph layout is grouped by existing Node Type filters.
+- [x] There is no new centrality, hub, degree, or importance calculation for placement.
+- [x] Layout is deterministic for the same graph input.
+- [x] Cluster order follows `FILTERABLE_LABELS` for known labels, with unknown labels appended by label string.
+- [x] Only labels present in the graph create rendered clusters; `FILTERABLE_LABELS` is the ordering source, not a requirement to render empty clusters.
+- [x] In-cluster node placement uses row-major local grid with `columns = ceil(sqrt(clusterNodeCount))`.
+- [x] Filter state hides/shows existing clusters and does not create a separate layout policy.
+- [x] Graph load does not automatically start layout optimization.
+- [x] Manual optimizer starts only from explicit user action.
+- [x] Manual optimizer does not mix different node-label clusters together.
+- [x] Existing global ForceAtlas2 optimizer is not reused unchanged unless constrained to preserve node-label clusters.
+- [x] Existing node filters still work and visually map to the same clusters.
+- [x] Existing edge visibility, graph-health filters, depth filters, selection, and focus behavior still work.
+- [x] Unit tests cover deterministic clustered placement.
+- [x] Web/browser or e2e validation covers no-auto-optimizer and manual optimizer trigger.
+- [x] Benchmark ledger records before/after load and optimizer behavior.
 
 ## Closure Definition
 

@@ -1,12 +1,10 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import Sigma from 'sigma';
 import Graph from 'graphology';
-import FA2Layout from 'graphology-layout-forceatlas2/worker';
-import forceAtlas2 from 'graphology-layout-forceatlas2';
-import noverlap from 'graphology-layout-noverlap';
 import {
   SigmaNodeAttributes,
   SigmaEdgeAttributes,
+  applyFilterBasedClusteredLayout,
   capRenderedNodeSize,
 } from '../lib/graph-adapter';
 import type { NodeAnimation } from './useAppState.local-runtime';
@@ -14,10 +12,7 @@ import type { EdgeType } from '../lib/constants';
 import { getGraphEdgeVisibilityMode } from '../lib/graph-edge-visibility-mode';
 import { getSelectedContextEdgeSize } from '../lib/graph-edge-render-style';
 import { buildSelectedGraphContext } from '../lib/selected-graph-context';
-import {
-  recordLayoutStart,
-  recordLayoutStop,
-} from '../lib/runtime-diagnostics';
+import { recordManualLayoutOptimizerInvocation } from '../lib/runtime-diagnostics';
 // Helper: Parse hex color to RGB
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -92,54 +87,6 @@ interface UseSigmaReturn {
   refreshHighlights: () => void;
 }
 
-// Noverlap for final cleanup - minimal since it starts with good positions
-const NOVERLAP_SETTINGS = {
-  maxIterations: 20, // Reduced - less cleanup needed
-  ratio: 1.1,
-  margin: 10,
-  expansion: 1.05,
-};
-
-// ForceAtlas2 settings - FAST convergence since nodes start near their parents
-const getFA2Settings = (nodeCount: number) => {
-  const isSmall = nodeCount < 500;
-  const isMedium = nodeCount >= 500 && nodeCount < 2000;
-  const isLarge = nodeCount >= 2000 && nodeCount < 10000;
-
-  return {
-    // Lower gravity allows folders to stay spread out
-    gravity: isSmall ? 0.8 : isMedium ? 0.5 : isLarge ? 0.3 : 0.15,
-
-    // Higher scaling ratio = more spread out overall
-    scalingRatio: isSmall ? 15 : isMedium ? 30 : isLarge ? 60 : 100,
-
-    // LOW slowDown = FASTER movement (converges quicker)
-    slowDown: isSmall ? 1 : isMedium ? 2 : isLarge ? 3 : 5,
-
-    // Barnes-Hut for performance - use it even on smaller graphs
-    barnesHutOptimize: nodeCount > 200,
-    barnesHutTheta: isLarge ? 0.8 : 0.6, // Higher = faster but less accurate
-
-    // These help with clustering while keeping spread
-    strongGravityMode: false,
-    outboundAttractionDistribution: true,
-    linLogMode: false,
-    adjustSizes: true,
-    edgeWeightInfluence: 1,
-  };
-};
-
-// Layout duration - let it run longer for better results
-// Web Worker + WebGL means minimal system impact
-const getLayoutDuration = (nodeCount: number): number => {
-  if (nodeCount > 10000) return 45000; // 45s for huge graphs
-  if (nodeCount > 5000) return 35000; // 35s
-  if (nodeCount > 2000) return 30000; // 30s
-  if (nodeCount > 1000) return 30000; // 30s
-  if (nodeCount > 500) return 25000; // 25s
-  return 20000; // 20s for small graphs
-};
-
 const capNodeReducerSize = (
   attributes: Partial<SigmaNodeAttributes>,
   nodeCount: number,
@@ -150,14 +97,6 @@ const capNodeReducerSize = (
   return attributes;
 };
 
-const measureNoverlap = (
-  graph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>,
-): number => {
-  const startedAt = performance.now();
-  noverlap.assign(graph, NOVERLAP_SETTINGS);
-  return performance.now() - startedAt;
-};
-
 export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sigmaRef = useRef<Sigma | null>(null);
@@ -165,9 +104,6 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
     SigmaNodeAttributes,
     SigmaEdgeAttributes
   > | null>(null);
-  const layoutRef = useRef<FA2Layout | null>(null);
-  const layoutStartedAtRef = useRef<number | null>(null);
-  const layoutNodeCountRef = useRef<number>(0);
   const selectedNodeRef = useRef<string | null>(null);
   const selectedNeighborNodeIdsRef = useRef<Set<string>>(new Set());
   const selectedDirectEdgeIdsRef = useRef<Set<string>>(new Set());
@@ -176,7 +112,6 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
   const animatedNodesRef = useRef<Map<string, NodeAnimation>>(new Map());
   const visibleEdgeTypesRef = useRef<EdgeType[] | null>(null);
   const areGraphLinksVisibleRef = useRef(true);
-  const layoutTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const [isLayoutRunning, setIsLayoutRunning] = useState(false);
   const [selectedNode, setSelectedNodeState] = useState<string | null>(null);
@@ -532,118 +467,16 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
     });
 
     return () => {
-      if (layoutTimeoutRef.current) {
-        clearTimeout(layoutTimeoutRef.current);
-      }
-      if (layoutRef.current) {
-        const stoppedAt = performance.now();
-        layoutRef.current.kill();
-        recordLayoutStop({
-          nodeCount: layoutNodeCountRef.current,
-          reason: 'unmount',
-          runMs: stoppedAt - (layoutStartedAtRef.current ?? stoppedAt),
-          stoppedAt,
-        });
-        layoutRef.current = null;
-        layoutStartedAtRef.current = null;
-      }
       sigma.kill();
       sigmaRef.current = null;
       graphRef.current = null;
     };
   }, []);
 
-  // Run ForceAtlas2 layout
-  const runLayout = useCallback(
-    (graph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>) => {
-      const nodeCount = graph.order;
-      if (nodeCount === 0) return;
-
-      // Kill existing
-      if (layoutRef.current) {
-        const stoppedAt = performance.now();
-        layoutRef.current.kill();
-        layoutRef.current = null;
-        recordLayoutStop({
-          nodeCount: layoutNodeCountRef.current,
-          reason: 'replaced',
-          runMs: stoppedAt - (layoutStartedAtRef.current ?? stoppedAt),
-          stoppedAt,
-        });
-        layoutStartedAtRef.current = null;
-      }
-      if (layoutTimeoutRef.current) {
-        clearTimeout(layoutTimeoutRef.current);
-        layoutTimeoutRef.current = null;
-      }
-
-      // Get settings
-      const inferredSettings = forceAtlas2.inferSettings(graph);
-      const customSettings = getFA2Settings(nodeCount);
-      const settings = { ...inferredSettings, ...customSettings };
-
-      const layout = new FA2Layout(graph, { settings });
-
-      layoutRef.current = layout;
-      layout.start();
-      const layoutStartedAt = performance.now();
-      layoutStartedAtRef.current = layoutStartedAt;
-      layoutNodeCountRef.current = nodeCount;
-      setIsLayoutRunning(true);
-
-      const duration = getLayoutDuration(nodeCount);
-      recordLayoutStart({
-        nodeCount,
-        durationBudgetMs: duration,
-        startedAt: layoutStartedAt,
-      });
-
-      layoutTimeoutRef.current = setTimeout(() => {
-        if (layoutRef.current) {
-          const stoppedAt = performance.now();
-          layoutRef.current.stop();
-          layoutRef.current = null;
-
-          // Light noverlap cleanup
-          const noverlapMs = measureNoverlap(graph);
-          sigmaRef.current?.refresh();
-
-          recordLayoutStop({
-            nodeCount,
-            reason: 'duration-elapsed',
-            runMs: stoppedAt - (layoutStartedAtRef.current ?? stoppedAt),
-            noverlapMs,
-            stoppedAt,
-          });
-          layoutStartedAtRef.current = null;
-          setIsLayoutRunning(false);
-        }
-      }, duration);
-    },
-    [],
-  );
-
   const setGraph = useCallback(
     (newGraph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>) => {
       const sigma = sigmaRef.current;
       if (!sigma) return;
-
-      if (layoutRef.current) {
-        const stoppedAt = performance.now();
-        layoutRef.current.kill();
-        layoutRef.current = null;
-        recordLayoutStop({
-          nodeCount: layoutNodeCountRef.current,
-          reason: 'graph-replaced',
-          runMs: stoppedAt - (layoutStartedAtRef.current ?? stoppedAt),
-          stoppedAt,
-        });
-        layoutStartedAtRef.current = null;
-      }
-      if (layoutTimeoutRef.current) {
-        clearTimeout(layoutTimeoutRef.current);
-        layoutTimeoutRef.current = null;
-      }
 
       graphRef.current = newGraph;
       const selectedContext = buildSelectedGraphContext(newGraph, null);
@@ -652,10 +485,9 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       sigma.setGraph(newGraph);
       setSelectedNode(null);
 
-      runLayout(newGraph);
       sigma.getCamera().animatedReset({ duration: 500 });
     },
-    [runLayout, setSelectedNode],
+    [setSelectedNode],
   );
 
   const focusNode = useCallback(
@@ -701,36 +533,21 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
   const startLayout = useCallback(() => {
     const graph = graphRef.current;
     if (!graph || graph.order === 0) return;
-    runLayout(graph);
-  }, [runLayout]);
+    const startedAt = performance.now();
+    setIsLayoutRunning(true);
+    applyFilterBasedClusteredLayout(graph);
+    sigmaRef.current?.refresh();
+    const finishedAt = performance.now();
+    recordManualLayoutOptimizerInvocation({
+      nodeCount: graph.order,
+      startedAt,
+      finishedAt,
+    });
+    setIsLayoutRunning(false);
+  }, []);
 
   const stopLayout = useCallback(() => {
-    if (layoutTimeoutRef.current) {
-      clearTimeout(layoutTimeoutRef.current);
-      layoutTimeoutRef.current = null;
-    }
-    if (layoutRef.current) {
-      const stoppedAt = performance.now();
-      layoutRef.current.stop();
-      layoutRef.current = null;
-
-      const graph = graphRef.current;
-      let noverlapMs = 0;
-      if (graph) {
-        noverlapMs = measureNoverlap(graph);
-        sigmaRef.current?.refresh();
-      }
-
-      recordLayoutStop({
-        nodeCount: layoutNodeCountRef.current || graph?.order || 0,
-        reason: 'manual-stop',
-        runMs: stoppedAt - (layoutStartedAtRef.current ?? stoppedAt),
-        noverlapMs,
-        stoppedAt,
-      });
-      layoutStartedAtRef.current = null;
-      setIsLayoutRunning(false);
-    }
+    setIsLayoutRunning(false);
   }, []);
 
   const refreshHighlights = useCallback(() => {
