@@ -10,8 +10,14 @@ import {
   getNodeColor,
   getNodeSize,
 } from "./constants";
+import {
+  graphHealthMatchesFilters,
+  getNodeGraphHealth,
+  type GraphHealthFilterable,
+  type GraphHealthFilterState,
+} from "./graph-health-filters";
 
-export interface SigmaNodeAttributes {
+export interface SigmaNodeAttributes extends GraphHealthFilterable {
   x: number;
   y: number;
   size: number;
@@ -27,6 +33,7 @@ export interface SigmaNodeAttributes {
   mass?: number; // ForceAtlas2 mass - higher = more repulsion
   community?: number; // Community index from Leiden algorithm
   communityColor?: string; // Color assigned by community
+  confidence?: string;
 }
 
 export interface SigmaEdgeAttributes {
@@ -277,6 +284,7 @@ export const knowledgeGraphToGraphology = (
 
     const baseSize = getNodeSize(node.label);
     const scaledSize = getScaledNodeSize(baseSize, nodeCount, node.label);
+    const graphHealth = getNodeGraphHealth(node);
 
     // Structural nodes keep their type-based color
     graph.addNode(node.id, {
@@ -291,6 +299,10 @@ export const knowledgeGraphToGraphology = (
       endLine: node.properties.endLine,
       hidden: false,
       mass: getNodeMass(node.label, nodeCount),
+      topologyStatus: graphHealth?.topologyStatus,
+      expectedIsolationReasons: graphHealth?.expectedIsolationReasons,
+      diagnostics: graphHealth?.diagnostics,
+      confidence: graphHealth?.confidence,
     });
   });
 
@@ -342,6 +354,7 @@ export const knowledgeGraphToGraphology = (
     const nodeColor = usesCommunityColor
       ? getCommunityColor(communityIndex!)
       : getNodeColor(node.label);
+    const graphHealth = getNodeGraphHealth(node);
 
     graph.addNode(nodeId, {
       x,
@@ -359,6 +372,10 @@ export const knowledgeGraphToGraphology = (
       communityColor: hasCommunity
         ? getCommunityColor(communityIndex!)
         : undefined,
+      topologyStatus: graphHealth?.topologyStatus,
+      expectedIsolationReasons: graphHealth?.expectedIsolationReasons,
+      diagnostics: graphHealth?.diagnostics,
+      confidence: graphHealth?.confidence,
     });
   };
 
@@ -420,10 +437,14 @@ export const knowledgeGraphToGraphology = (
 export const filterGraphByLabels = (
   graph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>,
   visibleLabels: string[],
+  graphHealthFilters?: GraphHealthFilterState,
 ): void => {
   graph.forEachNode((nodeId, attributes) => {
     const isVisible = visibleLabels.includes(attributes.nodeType);
-    graph.setNodeAttribute(nodeId, "hidden", !isVisible);
+    const isGraphHealthVisible = graphHealthFilters
+      ? graphHealthMatchesFilters(attributes, graphHealthFilters)
+      : true;
+    graph.setNodeAttribute(nodeId, "hidden", !isVisible || !isGraphHealthVisible);
   });
 };
 
@@ -466,14 +487,15 @@ export const filterGraphByDepth = (
   selectedNodeId: string | null,
   maxHops: number | null,
   visibleLabels: string[],
+  graphHealthFilters?: GraphHealthFilterState,
 ): void => {
   if (maxHops === null) {
-    filterGraphByLabels(graph, visibleLabels);
+    filterGraphByLabels(graph, visibleLabels, graphHealthFilters);
     return;
   }
 
   if (selectedNodeId === null || !graph.hasNode(selectedNodeId)) {
-    filterGraphByLabels(graph, visibleLabels);
+    filterGraphByLabels(graph, visibleLabels, graphHealthFilters);
     return;
   }
 
@@ -482,6 +504,13 @@ export const filterGraphByDepth = (
   graph.forEachNode((nodeId, attributes) => {
     const isLabelVisible = visibleLabels.includes(attributes.nodeType);
     const isInRange = nodesInRange.has(nodeId);
-    graph.setNodeAttribute(nodeId, "hidden", !isLabelVisible || !isInRange);
+    const isGraphHealthVisible = graphHealthFilters
+      ? graphHealthMatchesFilters(attributes, graphHealthFilters)
+      : true;
+    graph.setNodeAttribute(
+      nodeId,
+      "hidden",
+      !isLabelVisible || !isInRange || !isGraphHealthVisible,
+    );
   });
 };

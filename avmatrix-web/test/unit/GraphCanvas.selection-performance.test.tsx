@@ -172,6 +172,9 @@ describe('GraphCanvas selection performance guards', () => {
       selectedNode.id,
       2,
       expect.any(Array),
+      expect.objectContaining({
+        visibleTopologyStatuses: expect.any(Array),
+      }),
     );
   });
 });

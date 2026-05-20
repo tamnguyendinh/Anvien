@@ -9,10 +9,19 @@ import {
   ReactNode,
   startTransition,
 } from 'react';
-import type { GraphNode, PipelineProgress } from '@/generated/avmatrix-contracts';
+import type {
+  GraphHealthExpectedIsolationReason,
+  GraphHealthTopologyStatus,
+  GraphNode,
+  PipelineProgress,
+} from '@/generated/avmatrix-contracts';
 import type { KnowledgeGraph } from '../core/graph/types';
 import { createKnowledgeGraph } from '../core/graph/graph';
 import { type EdgeType } from '../lib/constants';
+import type {
+  GraphHealthDiagnosticKind,
+  GraphHealthFilterState,
+} from '../lib/graph-health-filters';
 import {
   connectToServer,
   runQuery as backendRunQuery,
@@ -99,6 +108,11 @@ interface AppState {
   areGraphLinksVisible: boolean;
   setGraphLinksVisible: (visible: boolean) => void;
   toggleGraphLinksVisible: () => void;
+  graphHealthFilters: GraphHealthFilterState;
+  toggleGraphHealthTopologyStatus: (status: GraphHealthTopologyStatus) => void;
+  toggleGraphHealthExpectedReason: (reason: GraphHealthExpectedIsolationReason) => void;
+  toggleGraphHealthDiagnosticKind: (kind: GraphHealthDiagnosticKind) => void;
+  resetGraphHealthFilters: () => void;
 
   // Depth filter (N hops from selection)
   depthFilter: number | null;
@@ -197,6 +211,11 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
     areGraphLinksVisible,
     setGraphLinksVisible,
     toggleGraphLinksVisible,
+    graphHealthFilters,
+    toggleGraphHealthTopologyStatus,
+    toggleGraphHealthExpectedReason,
+    toggleGraphHealthDiagnosticKind,
+    resetGraphHealthFilters,
     depthFilter,
     setDepthFilter,
     highlightedNodeIds,
@@ -910,6 +929,11 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
     areGraphLinksVisible,
     setGraphLinksVisible,
     toggleGraphLinksVisible,
+    graphHealthFilters,
+    toggleGraphHealthTopologyStatus,
+    toggleGraphHealthExpectedReason,
+    toggleGraphHealthDiagnosticKind,
+    resetGraphHealthFilters,
     depthFilter,
     setDepthFilter,
     highlightedNodeIds,

@@ -807,3 +807,90 @@ Results:
 Conclusion:
 
 P3-D is complete. Phase 3 Contract/API/Reporting Surface is closed; Web UI filters and triage workflow refinements remain open.
+
+## E12 - Phase 4 Web Graph Health Filter Composition Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Implement P4-A/B/C/G/H/I for Web Graph Health filters.
+- Add a dedicated `Graph Health` filter group in the left dashboard without mixing topology with semantic node labels.
+- Add topology controls, expected-isolated reason controls, and source-backed diagnostic controls.
+- Compose Graph Health filters through app state, `GraphCanvas`, `knowledgeGraphToGraphology`, Sigma node attributes, node-type filters, focus-depth filtering, and existing graph refresh behavior.
+- Add focused unit coverage and targeted Playwright dashboard e2e coverage.
+- Leave P4-D explanatory tooltips/confidence summaries, P4-E node detail explanations, and P4-F detached-component focus for the next Web slice.
+
+AVmatrix refresh and impact commands:
+
+```powershell
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix impact FileTreePanel --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact knowledgeGraphToGraphology --repo AVmatrix --direction upstream --depth 2 --include-tests
+go run .\cmd\avmatrix impact GraphStateProvider --repo AVmatrix --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `FileTreePanel`: LOW impact for dashboard/filter rendering and tests.
+- `knowledgeGraphToGraphology`: LOW impact for graph conversion/filter composition tests.
+- `GraphStateProvider`: LOW impact for app-state filter plumbing.
+- No HIGH or CRITICAL Graph Health edit impact was reported for this slice.
+
+Changed files:
+
+- `avmatrix-web/src/lib/graph-health-filters.ts`
+- `avmatrix-web/src/lib/graph-adapter.ts`
+- `avmatrix-web/src/hooks/app-state/graph.tsx`
+- `avmatrix-web/src/hooks/useAppState.local-runtime.tsx`
+- `avmatrix-web/src/components/FileTreePanel.tsx`
+- `avmatrix-web/src/components/GraphCanvas.tsx`
+- `avmatrix-web/test/unit/graph-health-filters.test.ts`
+- `avmatrix-web/test/unit/graph.test.ts`
+- `avmatrix-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`
+- `avmatrix-web/test/unit/GraphCanvas.selection-performance.test.tsx`
+- `avmatrix-web/e2e/server-connect.spec.ts`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-avmatrix-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- `GraphHealthFilterState` tracks visible topology statuses, hidden expected-isolated reasons, and visible diagnostic kinds.
+- The dashboard shows `connected` as a count-only baseline and toggles `true_isolated`, `no_incoming`, `no_outgoing`, `detached_component`, and `unknown_connectivity`.
+- Expected-isolated reasons are independent overlays and can be hidden without changing topology status.
+- `unresolved_reference` diagnostics can be hidden when they are attached to source-backed node metadata.
+- Unknown future diagnostic kinds are not hidden by default when no explicit UI toggle exists for them.
+- Sigma node attributes carry topology, expected-isolated reasons, diagnostics, and confidence from backend-derived `graphHealth` metadata.
+- Label filtering and focus-depth filtering now compose with Graph Health filtering.
+- Existing edge-type visibility and graph-link visibility remain separate from Graph Health node filtering.
+
+Validation commands and results:
+
+```powershell
+npm --prefix avmatrix-web run test -- test/unit/graph-health-filters.test.ts test/unit/graph.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx test/unit/GraphCanvas.selection-performance.test.tsx
+npm --prefix avmatrix-web run build
+npm --prefix avmatrix-web run test
+npm --prefix avmatrix-web run test:e2e -- e2e/server-connect.spec.ts -g "toggles uncommon node and edge types" --workers=1
+npm --prefix avmatrix-web run test:e2e -- --workers=1
+git diff --check
+go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
+```
+
+Results:
+
+- Focused Web unit tests passed: `4` files, `19` tests.
+- Web production build passed; Vite reported the existing dynamic-import and chunk-size warnings only.
+- Full Web unit suite passed: `42` files, `330` tests.
+- Targeted Playwright dashboard e2e passed: `1` test, `1.9m`. The test verifies Graph Health section visibility, Expected Isolation and Diagnostics sections, topology/reason/diagnostic toggles, and existing node/edge filter toggles in the same dashboard flow.
+- Full Playwright e2e command timed out after `15` minutes and produced no useful stdout before timeout. This is recorded as residual validation risk; Phase 4 full e2e remains open until node explanation and detached-component focus are implemented and the suite can be run within a stable budget.
+- `git diff --check` passed.
+- Final pre-commit AVmatrix refresh passed with `files: scanned=709 parsed=536 unsupported=173 failed=0`, `graph: nodes=21634 relationships=53900`.
+- `detect-changes` passed and reported `risk_level=low`, `changed_files=13`, `changed_count=56`, `affected_count=0`.
+
+Conclusion:
+
+P4-A, P4-B, P4-C, P4-G, P4-H, and P4-I are complete for the Web filter-composition slice. P4-D remains partially complete, and P4-E/P4-F remain open for the next Web implementation slice.

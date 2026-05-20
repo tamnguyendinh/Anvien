@@ -41,6 +41,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     visibleLabels,
     visibleEdgeTypes,
     areGraphLinksVisible,
+    graphHealthFilters,
     depthFilter,
     highlightedNodeIds,
     aiCitationHighlightedNodeIds,
@@ -241,13 +242,19 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     if (sigmaGraph.order === 0) return; // Don't filter empty graph
 
     if (depthFilter === null) {
-      filterGraphByLabels(sigmaGraph, visibleLabels);
+      filterGraphByLabels(sigmaGraph, visibleLabels, graphHealthFilters);
     } else {
-      filterGraphByDepth(sigmaGraph, appSelectedNode?.id || null, depthFilter, visibleLabels);
+      filterGraphByDepth(
+        sigmaGraph,
+        appSelectedNode?.id || null,
+        depthFilter,
+        visibleLabels,
+        graphHealthFilters,
+      );
     }
     sigma.refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sigmaRef identity never changes
-  }, [visibleLabels, depthFilter]);
+  }, [visibleLabels, depthFilter, graphHealthFilters]);
 
   // Re-apply depth filtering when selection changes only if the feature is enabled.
   useEffect(() => {
@@ -259,10 +266,16 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     const sigmaGraph = sigma.getGraph() as Graph<SigmaNodeAttributes, SigmaEdgeAttributes>;
     if (sigmaGraph.order === 0) return;
 
-    filterGraphByDepth(sigmaGraph, appSelectedNode?.id || null, depthFilter, visibleLabels);
+    filterGraphByDepth(
+      sigmaGraph,
+      appSelectedNode?.id || null,
+      depthFilter,
+      visibleLabels,
+      graphHealthFilters,
+    );
     sigma.refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sigmaRef identity never changes
-  }, [appSelectedNode?.id]);
+  }, [appSelectedNode?.id, graphHealthFilters]);
 
   // Sync app selected node with sigma
   useEffect(() => {

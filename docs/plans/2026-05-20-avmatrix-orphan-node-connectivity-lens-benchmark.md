@@ -282,6 +282,21 @@ P3-C adds a bounded explain API surface and generated response contracts. It doe
 
 P3-D adds JSON report/export contracts and `GET /api/graph/report`. It does not change existing graph inventory counts, `/api/graph` payload size, or Web render behavior. Report responses default to `limit=100`, cap at `1000`, and preserve `candidate_not_confirmed` wording. Dedicated report runtime benchmarking remains a follow-up if the endpoint is used for large automated exports.
 
+### P4-A/B/C/G/H/I Web Graph Health Filter Composition Slice
+
+P4 filter-composition changes only Web state, dashboard controls, graph conversion attributes, and client-side filtering. It does not change backend graph inventory counts, graph-health derivation counts, `/api/graph` payload size, explain/report output, or graph snapshot shape.
+
+Benchmarkable package-size observation from the accepted Web build:
+
+```text
+Command: npm --prefix avmatrix-web run build
+CSS: assets/index-BMziPvPs.css 55.17 kB, gzip 10.55 kB
+Main JS: assets/index-BmCY7_Nr.js 2,018.26 kB, gzip 601.51 kB
+Build warnings: existing ProcessFlowModal dynamic/static import warning and >500 kB chunk-size warning
+```
+
+Web render/filter latency was not measured in this slice. Functional coverage is recorded in E12 through focused unit tests, full Web unit suite, and targeted Playwright dashboard e2e. Dedicated latency measurement remains a follow-up if Graph Health filtering becomes a performance-sensitive interaction on large graphs.
+
 ## B2 - Final Benchmark
 
 Status: pending

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { createKnowledgeGraph } from '../../src/core/graph/graph';
 import {
+  filterGraphByLabels,
+  knowledgeGraphToGraphology,
+} from '../../src/lib/graph-adapter';
+import { DEFAULT_GRAPH_HEALTH_FILTERS } from '../../src/lib/graph-health-filters';
+import {
   createFileNode,
   createFunctionNode,
   createCallsRelationship,
@@ -69,5 +74,37 @@ describe('createKnowledgeGraph', () => {
 
     expect(graph.nodeCount).toBe(3);
     expect(graph.relationshipCount).toBe(3);
+  });
+
+  it('composes label visibility with graph health filters', () => {
+    const graph = createKnowledgeGraph();
+    const healthy = createFunctionNode('healthy', 'src/app.ts', 1);
+    const unknown = createFunctionNode('unknown', 'src/app.ts', 2);
+    healthy.properties.graphHealth = {
+      topologyStatus: 'connected',
+      countedIncoming: 1,
+      countedOutgoing: 1,
+      componentReachableFromRoot: true,
+      confidence: 'candidate',
+    };
+    unknown.properties.graphHealth = {
+      topologyStatus: 'unknown_connectivity',
+      countedIncoming: 0,
+      countedOutgoing: 0,
+      componentReachableFromRoot: false,
+      diagnostics: [{ kind: 'unresolved_reference' }],
+      confidence: 'unknown',
+    };
+    graph.addNode(healthy);
+    graph.addNode(unknown);
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    filterGraphByLabels(sigmaGraph, ['Function'], {
+      ...DEFAULT_GRAPH_HEALTH_FILTERS,
+      visibleTopologyStatuses: ['connected'],
+    });
+
+    expect(sigmaGraph.getNodeAttribute(healthy.id, 'hidden')).toBe(false);
+    expect(sigmaGraph.getNodeAttribute(unknown.id, 'hidden')).toBe(true);
   });
 });

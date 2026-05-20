@@ -181,8 +181,13 @@ test.describe('Graph Dashboard Controls', () => {
 
     const propertyControl = page.locator('button[title^="Property ("]').first();
     const accessesControl = page.locator('button[title^="Accesses ("]').first();
+    const graphHealthSection = page.locator('[data-testid="graph-health-filter-section"]');
     await expect(propertyControl).toBeVisible({ timeout: 10_000 });
     await expect(accessesControl).toBeVisible({ timeout: 10_000 });
+    await expect(graphHealthSection).toBeVisible({ timeout: 10_000 });
+    await expect(graphHealthSection.getByText('Graph Health')).toBeVisible();
+    await expect(graphHealthSection.getByText('Expected Isolation')).toBeVisible();
+    await expect(graphHealthSection.getByText('Diagnostics')).toBeVisible();
 
     const initialPropertyState = await propertyControl.getAttribute('aria-pressed');
     expect(initialPropertyState).toMatch(/^(true|false)$/);
@@ -203,6 +208,28 @@ test.describe('Graph Dashboard Controls', () => {
     );
     await accessesControl.click();
     await expect(accessesControl).toHaveAttribute('aria-pressed', initialAccessesState!);
+
+    const noIncomingControl = page.locator('button[title^="No incoming ("]').first();
+    const testReasonControl = page.locator('button[title^="Test ("]').first();
+    const unresolvedControl = page.locator('button[title^="Unresolved reference ("]').first();
+    await expect(noIncomingControl).toBeVisible({ timeout: 10_000 });
+    await expect(testReasonControl).toBeVisible({ timeout: 10_000 });
+    await expect(unresolvedControl).toBeVisible({ timeout: 10_000 });
+
+    await noIncomingControl.click();
+    await expect(noIncomingControl).toHaveAttribute('aria-pressed', 'false');
+    await noIncomingControl.click();
+    await expect(noIncomingControl).toHaveAttribute('aria-pressed', 'true');
+
+    await testReasonControl.click();
+    await expect(testReasonControl).toHaveAttribute('aria-pressed', 'false');
+    await testReasonControl.click();
+    await expect(testReasonControl).toHaveAttribute('aria-pressed', 'true');
+
+    await unresolvedControl.click();
+    await expect(unresolvedControl).toHaveAttribute('aria-pressed', 'false');
+    await unresolvedControl.click();
+    await expect(unresolvedControl).toHaveAttribute('aria-pressed', 'true');
 
     await expect(page.locator('[title^="Legend node Property ("]').first()).toBeVisible();
     await expect(page.locator('[title^="Legend edge Accesses ("]').first()).toBeVisible();

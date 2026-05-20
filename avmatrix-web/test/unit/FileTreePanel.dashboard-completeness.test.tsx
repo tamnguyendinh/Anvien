@@ -11,10 +11,15 @@ import {
 } from "../../src/generated/avmatrix-contracts";
 import type { KnowledgeGraph } from "../../src/core/graph/types";
 import { getEdgeInfo } from "../../src/lib/constants";
+import { DEFAULT_GRAPH_HEALTH_FILTERS } from "../../src/lib/graph-health-filters";
 
 let mockAppState: Record<string, unknown>;
 let toggleLabelVisibility: ReturnType<typeof vi.fn>;
 let toggleEdgeVisibility: ReturnType<typeof vi.fn>;
+let toggleGraphHealthTopologyStatus: ReturnType<typeof vi.fn>;
+let toggleGraphHealthExpectedReason: ReturnType<typeof vi.fn>;
+let toggleGraphHealthDiagnosticKind: ReturnType<typeof vi.fn>;
+let resetGraphHealthFilters: ReturnType<typeof vi.fn>;
 
 vi.mock("../../src/hooks/useAppState.local-runtime", () => ({
   useAppState: () => mockAppState,
@@ -29,6 +34,24 @@ const makeNode = (label: string, index: number): GraphNode =>
     properties: {
       name: label,
       filePath: `src/${label.toLowerCase()}-${index}.ts`,
+      graphHealth:
+        index === 1
+          ? {
+              topologyStatus: "no_incoming",
+              countedIncoming: 0,
+              countedOutgoing: 1,
+              componentReachableFromRoot: false,
+              expectedIsolationReasons: ["test"],
+              diagnostics: [{ kind: "unresolved_reference", count: 2 }],
+              confidence: "unknown",
+            }
+          : {
+              topologyStatus: "connected",
+              countedIncoming: 1,
+              countedOutgoing: 1,
+              componentReachableFromRoot: true,
+              confidence: "candidate",
+            },
     },
   }) as GraphNode;
 
@@ -64,6 +87,10 @@ describe("FileTreePanel dashboard completeness", () => {
     const graph = makeGraph();
     toggleLabelVisibility = vi.fn();
     toggleEdgeVisibility = vi.fn();
+    toggleGraphHealthTopologyStatus = vi.fn();
+    toggleGraphHealthExpectedReason = vi.fn();
+    toggleGraphHealthDiagnosticKind = vi.fn();
+    resetGraphHealthFilters = vi.fn();
     mockAppState = {
       graph,
       visibleLabels: graph.nodes.map((node) => node.label),
@@ -72,6 +99,11 @@ describe("FileTreePanel dashboard completeness", () => {
         (relationship) => relationship.type,
       ),
       toggleEdgeVisibility,
+      graphHealthFilters: DEFAULT_GRAPH_HEALTH_FILTERS,
+      toggleGraphHealthTopologyStatus,
+      toggleGraphHealthExpectedReason,
+      toggleGraphHealthDiagnosticKind,
+      resetGraphHealthFilters,
       selectedNode: null,
       setSelectedNode: vi.fn(),
       openCodePanel: vi.fn(),
@@ -198,6 +230,33 @@ describe("FileTreePanel dashboard completeness", () => {
       );
       expect(toggleEdgeVisibility).toHaveBeenLastCalledWith(type);
     }
+  });
+
+  it("renders Graph Health filters and routes controls through app state", async () => {
+    render(<FileTreePanel onFocusNode={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Filters" }));
+
+    expect(screen.getByTestId("graph-health-filter-section")).toBeInTheDocument();
+    expect(screen.getByTitle("No incoming (1)")).toBeInTheDocument();
+    expect(screen.getByTitle(/Connected \(\d+\)/)).toBeInTheDocument();
+    expect(screen.getByTitle("Test (1)")).toBeInTheDocument();
+    expect(screen.getByTitle("Framework entry (0)")).toBeInTheDocument();
+    expect(screen.getByTitle("Unresolved reference (2)")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByTitle("No incoming (1)"));
+    expect(toggleGraphHealthTopologyStatus).toHaveBeenLastCalledWith("no_incoming");
+
+    await userEvent.click(screen.getByTitle("Test (1)"));
+    expect(toggleGraphHealthExpectedReason).toHaveBeenLastCalledWith("test");
+
+    await userEvent.click(screen.getByTitle("Unresolved reference (2)"));
+    expect(toggleGraphHealthDiagnosticKind).toHaveBeenLastCalledWith(
+      "unresolved_reference",
+    );
+
+    await userEvent.click(screen.getByTitle("Reset Graph Health filters"));
+    expect(resetGraphHealthFilters).toHaveBeenCalledTimes(1);
   });
 
   it("routes focus-depth controls through app state and warns without a selected node", async () => {

@@ -3,6 +3,7 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import {
   ChevronRight,
   ChevronDown,
+  AlertTriangle,
   Folder,
   FolderOpen,
   FileCode,
@@ -41,7 +42,23 @@ import {
   getNodeLabelCounts,
   getRelationshipTypeCounts,
 } from "../lib/constants";
-import type { GraphNode } from "@/generated/avmatrix-contracts";
+import {
+  GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS,
+  GRAPH_HEALTH_TOPOLOGY_STATUSES,
+  type GraphHealthExpectedIsolationReason,
+  type GraphHealthTopologyStatus,
+  type GraphNode,
+} from "@/generated/avmatrix-contracts";
+import {
+  GRAPH_HEALTH_DIAGNOSTIC_KINDS,
+  GRAPH_HEALTH_DIAGNOSTIC_LABELS,
+  GRAPH_HEALTH_REASON_LABELS,
+  GRAPH_HEALTH_TOPOLOGY_LABELS,
+  getGraphHealthDiagnosticCounts,
+  getGraphHealthExpectedReasonCounts,
+  getGraphHealthTopologyCounts,
+  type GraphHealthDiagnosticKind,
+} from "../lib/graph-health-filters";
 
 // Tree node structure
 interface TreeNode {
@@ -306,6 +323,11 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
     toggleLabelVisibility,
     visibleEdgeTypes,
     toggleEdgeVisibility,
+    graphHealthFilters,
+    toggleGraphHealthTopologyStatus,
+    toggleGraphHealthExpectedReason,
+    toggleGraphHealthDiagnosticKind,
+    resetGraphHealthFilters,
     selectedNode,
     setSelectedNode,
     openCodePanel,
@@ -469,6 +491,33 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
         type,
       ),
       info: getEdgeInfo(type),
+    }));
+  }, [graph]);
+
+  const graphHealthTopologyItems = useMemo(() => {
+    const counts = getGraphHealthTopologyCounts(graph?.nodes ?? []);
+    return GRAPH_HEALTH_TOPOLOGY_STATUSES.map((status) => ({
+      status,
+      label: GRAPH_HEALTH_TOPOLOGY_LABELS[status],
+      count: counts.get(status) ?? 0,
+    }));
+  }, [graph]);
+
+  const graphHealthReasonItems = useMemo(() => {
+    const counts = getGraphHealthExpectedReasonCounts(graph?.nodes ?? []);
+    return GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS.map((reason) => ({
+      reason,
+      label: GRAPH_HEALTH_REASON_LABELS[reason],
+      count: counts.get(reason) ?? 0,
+    }));
+  }, [graph]);
+
+  const graphHealthDiagnosticItems = useMemo(() => {
+    const counts = getGraphHealthDiagnosticCounts(graph?.nodes ?? []);
+    return GRAPH_HEALTH_DIAGNOSTIC_KINDS.map((kind) => ({
+      kind,
+      label: GRAPH_HEALTH_DIAGNOSTIC_LABELS[kind] ?? kind,
+      count: counts.get(kind) ?? 0,
     }));
   }, [graph]);
 
@@ -656,6 +705,147 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                 </button>
               );
             })}
+          </div>
+
+          {/* Graph Health Toggles */}
+          <div
+            className="mt-6 border-t border-border-subtle pt-4"
+            data-testid="graph-health-filter-section"
+          >
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <h3 className="press-eyebrow text-text-secondary">
+                <AlertTriangle className="mr-1.5 inline h-3 w-3" />
+                Graph Health
+              </h3>
+              <button
+                onClick={resetGraphHealthFilters}
+                className="rounded px-2 py-1 font-mono text-[10px] text-text-muted transition-colors hover:bg-base hover:text-text-primary"
+                title="Reset Graph Health filters"
+              >
+                Reset
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              {graphHealthTopologyItems.map(({ status, label, count }) => {
+                const isConnectedBaseline = status === "connected";
+                const isVisible =
+                  graphHealthFilters.visibleTopologyStatuses.includes(
+                    status as GraphHealthTopologyStatus,
+                  );
+                const title = `${label} (${count})`;
+
+                if (isConnectedBaseline) {
+                  return (
+                    <div
+                      key={status}
+                      title={title}
+                      className="flex items-center gap-2.5 rounded px-2 py-1.5 text-left text-text-muted"
+                    >
+                      <div className="h-2 w-2 rounded-full bg-border-subtle" />
+                      <span className="min-w-0 flex-1 truncate text-xs">
+                        {label}
+                      </span>
+                      <span className="font-mono text-[10px]">{count}</span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <button
+                    key={status}
+                    onClick={() => toggleGraphHealthTopologyStatus(status)}
+                    title={title}
+                    aria-pressed={isVisible}
+                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                      isVisible
+                        ? "bg-base text-text-primary"
+                        : "text-text-muted hover:bg-base hover:text-text-secondary"
+                    } `}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-xs">
+                      {label}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <h4 className="mt-4 mb-2 font-mono text-[10px] text-text-muted">
+              Expected Isolation
+            </h4>
+            <div className="flex flex-col gap-1">
+              {graphHealthReasonItems.map(({ reason, label, count }) => {
+                const isVisible =
+                  !graphHealthFilters.hiddenExpectedIsolationReasons.includes(
+                    reason as GraphHealthExpectedIsolationReason,
+                  );
+                return (
+                  <button
+                    key={reason}
+                    onClick={() => toggleGraphHealthExpectedReason(reason)}
+                    title={`${label} (${count})`}
+                    aria-pressed={isVisible}
+                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                      isVisible
+                        ? "bg-base text-text-primary"
+                        : "text-text-muted hover:bg-base hover:text-text-secondary"
+                    } `}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-xs">
+                      {label}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <h4 className="mt-4 mb-2 font-mono text-[10px] text-text-muted">
+              Diagnostics
+            </h4>
+            <div className="flex flex-col gap-1">
+              {graphHealthDiagnosticItems.map(({ kind, label, count }) => {
+                const isVisible =
+                  graphHealthFilters.visibleDiagnosticKinds.includes(
+                    kind as GraphHealthDiagnosticKind,
+                  );
+                return (
+                  <button
+                    key={kind}
+                    onClick={() => toggleGraphHealthDiagnosticKind(kind)}
+                    title={`${label} (${count})`}
+                    aria-pressed={isVisible}
+                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                      isVisible
+                        ? "bg-base text-text-primary"
+                        : "text-text-muted hover:bg-base hover:text-text-secondary"
+                    } `}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-xs">
+                      {label}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Edge Type Toggles */}
