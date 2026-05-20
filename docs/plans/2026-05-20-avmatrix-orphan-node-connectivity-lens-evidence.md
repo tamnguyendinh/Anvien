@@ -2,7 +2,7 @@
 
 Date: 2026-05-20
 
-Status: active
+Status: complete
 
 Companion files:
 
@@ -1063,3 +1063,50 @@ Results:
 Conclusion:
 
 Phase 6 validation is complete for applicable build/test/e2e and measured Web latency. The only full-build caveat is the existing fixture-package blocker for `go build ./...`.
+
+## E16 - Final Closure
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Close the plan after all phases, ledgers, validation, benchmarks, and commits.
+- This is a doc-only closure slice; per plan rule 6, AVmatrix was not used.
+
+Recent closure commits:
+
+```text
+f8d53fa docs: record graph health validation benchmark
+d62c67d docs: close graph health triage workflow
+1a8dbfd feat: explain graph health in code inspector
+9eef2fb feat: add graph health web filters
+05a3b18 feat: export graph health candidate report
+ce98c8a feat: expose graph health explain endpoint
+b191c34 test: cover graph health connectivity matrix
+d8fe055 feat: classify source-backed unresolved connectivity
+81d434f feat: derive detached graph health components
+cbadef3 feat: expose graph health metadata
+2b31225 feat(graphhealth): Phase 2 starter - core derivation with accepted policies + unit test
+```
+
+Closure state:
+
+- Phase 1 policy/baseline is complete.
+- Phase 2 backend derivation is complete.
+- Phase 3 contract/API/reporting is complete.
+- Phase 4 Web UI filters, explanations, and detached-component focus are complete.
+- Phase 5 triage workflow is complete.
+- Phase 6 applicable validation and final benchmark recording are complete.
+- Phase 7 closure is complete.
+
+Residual caveats:
+
+- `go build ./...` remains blocked by existing non-buildable fixture packages under `avmatrix/test/fixtures/...`; applicable `go build ./cmd/... ./internal/...` and `go test ./cmd/... ./internal/...` passed.
+- The monolithic full Playwright suite previously exceeded the local 15-minute command budget; targeted large-graph and deterministic Graph Health e2e coverage passed and are recorded in E12/E13.
+- Large-graph Web Graph Health toggles are functional but measured at multi-second latency on `Restaurant_manager`; optimization is a future performance improvement, not a closure blocker for this plan.
+
+Conclusion:
+
+The orphan-node connectivity lens plan is complete. Graph Health is implemented as derived metadata and candidate/explanation workflow, not as a semantic `OrphanNode` label or automatic bug/deletion verdict.

@@ -2,7 +2,7 @@
 
 Date: 2026-05-20
 
-Status: active
+Status: complete
 
 Companion files:
 
@@ -280,11 +280,11 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 
 ## Phase 7 - Closure
 
-- [x] [P7-A] Update this plan checklist after each completed slice. (Phase 1 done)
-- [x] [P7-B] Update benchmark ledger with initial + Phase1 accepted-policy baselines for 2 repos.
-- [x] [P7-C] Update evidence ledger with commands, files (docs only), rationale (E5).
-- [x] [P7-D] Commit each completed implementation slice. (Phase 1 doc-only commit 8558a79)
-- [ ] [P7-E] Final closure (after all phases).
+- [x] [P7-A] Update this plan checklist after each completed slice.
+- [x] [P7-B] Update benchmark ledger with initial, implementation, Web package-size, Web latency, and final graph-health inventory measurements.
+- [x] [P7-C] Update evidence ledger with commands, impacted files, tests, e2e artifacts, benchmark commands, and conclusions for all slices.
+- [x] [P7-D] Commit each completed implementation slice.
+- [x] [P7-E] Final closure (after all phases).
 
 ## Ledger
 
@@ -296,7 +296,7 @@ All recorded with commands, rationale, cross-repo numbers. No ambiguity remains 
 | P4-A..P4-I | Web UI | graph-health filters + composition | separate filters, explanations, and safe composition with existing filters | B1/P4 package size notes | E12/E13 implementation validation | current implementation slices | closed |
 | P5-A..P5-D | Workflow | triage/reporting | candidate-vs-confirmed workflow | no new benchmark; existing B1/P4 observations unchanged | E14 doc-only reconciliation | current doc-only slice | closed |
 | P6-A..P6-H | Validation | build/tests/e2e | full validation recorded | B1/B2 | E6/E7/E8/E12/E13/E15 | current implementation slices | closed; applicable backend/Web-contract/Web UI validation passed, full `go build ./...` fixture blocker recorded |
-| P7-A..P7-E | Closure | ledgers and commits | complete closure package | pending | pending | pending | open |
+| P7-A..P7-E | Closure | ledgers and commits | complete closure package | B2 final benchmark | E16 final closure | current doc-only slice | closed |
 
 ## Definition Of Done
 
