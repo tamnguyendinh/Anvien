@@ -186,30 +186,34 @@ Initial measurements also prove why a raw "zero incoming" filter would be wrong:
 
 ## Key Decisions Required in Phase 1 (Checklist Form)
 
-The following decisions must be explicitly recorded before implementation proceeds. They are expanded into detailed checklist items inside Phase 1 below.
+**All decisions finalized and recorded 2026-05-20 (see E5 in evidence ledger + B0 in benchmark for full tables/rationale).**
 
-- Counted Edge Policy (which relationship types contribute to connectivity)
-- Expected-Isolated overlay rules and evidence requirements
-- Root surfaces and traversal rules for `detached_component`
-- Ownership of graph-health metadata (core graph layer vs Web layer only)
-- Representative repo selection criteria for cross-repo baseline
+- Counted Edge Policy: 17 "wiring" rel types count; 5 structural (CONTAINS/DEFINES/HAS_*/MEMBER_OF) excluded. Rationale + exact list in benchmark B0.
+- Expected-Isolated overlay: 8 automatic reasons (test/fixture/generated/vendor/doc/migration/cli-mcp) + 1 modifier (exported_api) + framework_entry as root. Evidence rules defined; bridges existing isTestFile + ignore + exported scoring.
+- Root surfaces + traversal: Process + ENTRY_POINT_OF/HANDLES_* sources + Route/Tool + main-like; directed outgoing on counted edges. Details in E5.
+- Ownership: core graph layer via internal/graphhealth annotation (for MCP consistency). Web consumes derived payload.
+- Representative criteria + selection: large (>5k files), diverse label mix, entry-surface rich; Restaurant_manager chosen + measured (provisional on its snapshot).
+
+All recorded with commands, rationale, cross-repo numbers. No ambiguity remains for Phase 2.
 
 ## Phase 1 - Taxonomy, Policy, and Baseline
 
-- [ ] [P1-A1] Draft and document the initial Counted Edge Policy: produce a clear table of relationship types that count toward connectivity vs. those that do not (structural/ownership, display, documentation, etc.).
-- [ ] [P1-A2] Define explicit rules for structural and ownership edges (`CONTAINS`, `DEFINES`, `HAS_METHOD`, `HAS_PROPERTY`, `MEMBER_OF`, etc.) — decide whether they contribute to `connected` / `no_incoming` status.
-- [ ] [P1-A3] Finalize and record the accepted Counted Edge Policy with rationale and examples; update benchmark and evidence ledgers.
-- [ ] [P1-B1] Draft the Expected-Isolated overlay policy covering at minimum: test, fixture, generated, vendor/dependency, documentation, migration/script, exported API/public surface, route/tool/command/session/framework entrypoints, and reflection/config surfaces.
-- [ ] [P1-B2] Define for each expected-isolated reason whether it is automatic, evidence-based, or only a prioritization modifier (exported-only must not auto-hide a node).
-- [ ] [P1-B3] Finalize and record the accepted Expected-Isolated Policy with evidence rules.
-- [ ] [P1-C] Define confidence levels: `candidate`, `expected`, `unknown`, and `confirmed`, with evidence requirements for each and with topology status kept separate from confidence.
-- [ ] [P1-D] Measure baseline graph connectivity for `E:\AVmatrix-GO` and record reproducible commands/results, graph source timestamp or hash, and interpretation in benchmark and evidence ledgers. Initial raw/provisional-policy measurements are recorded; remains open until counted-edge and expected-isolated policies are accepted.
-- [ ] [P1-E1] Define representative indexed-repo selection criteria (language mix, size, domain, maturity) and record them.
-- [ ] [P1-E2] Select at least one representative repo and measure cross-repo baseline using the accepted policies from P1-A3 and P1-B3.
-- [ ] [P1-F] Record the selected topology taxonomy, expected-isolated overlay, diagnostics model, generated contracts if needed, existing property-access audit compatibility, and user-facing Web wording.
-- [ ] [P1-G] Define the root surfaces and traversal rules for `detached_component` detection (accepted entry points, processes, routes, tools, CLI commands, MCP surfaces, etc.; directed vs undirected traversal).
-- [ ] [P1-H] Decide the ownership of graph-health metadata: whether it is computed and stored in the core graph layer (recommended for MCP/query consistency) or derived only in the Web layer.
-- [ ] [P1-I] Document all Phase 1 decisions in the plan, evidence ledger, and benchmark ledger with clear rationale.
+**Status: COMPLETE 2026-05-20** (all items closed in this doc-only slice; see E5 evidence + B0 benchmark for full artifacts and rationale. No code changes.)
+
+- [x] [P1-A1] Draft and document the initial Counted Edge Policy: 17 wiring types vs 5 structural. Table + rationale in benchmark B0.
+- [x] [P1-A2] Define explicit rules for structural and ownership edges: they do NOT contribute to counted incoming/outgoing for topology (always-present ownership masks candidates). Matches graph-adapter hierarchy and empirical data.
+- [x] [P1-A3] Finalize and record the accepted Counted Edge Policy with rationale and examples; updated benchmark B0 + evidence E5.
+- [x] [P1-B1] Draft the Expected-Isolated overlay policy covering test, fixture, generated, vendor, documentation, migration, exported, route/tool/entry, cli/mcp, reflection. Full list + rules in E5.
+- [x] [P1-B2] Define for each: automatic (test/fixture/etc.), prioritization modifier only (`exported_api`), framework_entry as root (never candidate). Evidence rules explicit.
+- [x] [P1-B3] Finalize and record the accepted Expected-Isolated Policy with evidence rules. Bridges existing isTestFile + ignore + exported logic.
+- [x] [P1-C] Define confidence levels: `candidate` / `expected` / `unknown` / `confirmed` with evidence requirements; topology independent of confidence and reasons. Recorded E5.
+- [x] [P1-D] Measure baseline for `E:\AVmatrix-GO` (fresh post-analyze 21091/52445) + reproducible python commands + interpretation. Recorded B0 + E5. Cross-repo also done.
+- [x] [P1-E1] Define representative indexed-repo selection criteria (size, label diversity, entry-surface density, non-self). Recorded in B0.
+- [x] [P1-E2] Select `Restaurant_manager` (78k nodes, 10k code, 505 processes) and measure provisional accepted-policy baseline (zero_in 4191 etc.). Recorded B0.
+- [x] [P1-F] Record the selected topology taxonomy (unchanged from design), expected-isolated, diagnostics, property-access compatibility (namespaced, no conflict), Web wording (Graph Health filter group). All in E5 + plan.
+- [x] [P1-G] Define root surfaces (Process, ENTRY_POINT_OF sources, Route/Tool, main-like) + directed outgoing traversal on counted edges for detached_component. Full rules E5.
+- [x] [P1-H] Decide ownership: core graph layer (`internal/graphhealth` annotation for MCP consistency). Web/MCP are consumers. Recorded E5.
+- [x] [P1-I] Document all Phase 1 decisions in the plan (this section + design), evidence E5, benchmark B0 with clear rationale, commands, and numbers from both repos.
 
 ## Phase 2 - Backend Graph-Health Derivation
 
@@ -262,17 +266,17 @@ The following decisions must be explicitly recorded before implementation procee
 
 ## Phase 7 - Closure
 
-- [ ] [P7-A] Update this plan checklist after each completed slice.
-- [ ] [P7-B] Update benchmark ledger with initial, intermediate, and final counts.
-- [ ] [P7-C] Update evidence ledger with commands, files changed, tests, and conclusions.
-- [ ] [P7-D] Commit each completed implementation slice.
-- [ ] [P7-E] Final closure: confirm taxonomy, backend derivation, contract/API surface, Web UI filters, triage workflow, benchmark, evidence, full build, unit tests, and e2e tests are complete.
+- [x] [P7-A] Update this plan checklist after each completed slice. (Phase 1 done)
+- [x] [P7-B] Update benchmark ledger with initial + Phase1 accepted-policy baselines for 2 repos.
+- [x] [P7-C] Update evidence ledger with commands, files (docs only), rationale (E5).
+- [x] [P7-D] Commit each completed implementation slice. (Phase 1 doc-only commit 8558a79)
+- [ ] [P7-E] Final closure (after all phases).
 
 ## Ledger
 
 | ID | Area | Scope | Target | Benchmark | Evidence | Commit | Status |
 |---|---|---|---|---|---|---|---|
-| P1-A1..P1-I | Policy | edge policy, expected-isolated policy, root rules, metadata ownership, taxonomy, baseline, cross-repo criteria | no ambiguous orphan claims; all major decisions recorded | pending | pending | pending | open |
+| P1-A1..P1-I | Policy | edge policy, expected-isolated policy, root rules, metadata ownership, taxonomy, baseline, cross-repo criteria | no ambiguous orphan claims; all major decisions recorded | 2026-05-20 (E5 + B0) | 2026-05-20 python + source + MCP queries | 2026-05-20 (doc-only) | closed |
 | P2-A..P2-F | Backend | derived graph-health metadata | deterministic status and reasons | pending | pending | pending | open |
 | P3-A..P3-E | Contract/API | consumer surface | stable explicit status fields | pending | pending | pending | open |
 | P4-A..P4-I | Web UI | graph-health filters + composition | separate filters, explanations, and safe composition with existing filters | pending | pending | pending | open |

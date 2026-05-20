@@ -182,6 +182,97 @@ Date: 2026-05-20
 
 Status: recorded
 
+## E5 - Phase 1 Policy Decisions: Counted Edge + Expected-Isolated + Taxonomy + Ownership + Root Rules + Confidence
+
+Date: 2026-05-20
+
+Status: recorded (completes P1-A1..P1-I)
+
+### Investigation Commands Used (all AVmatrix + source per AGENTS.md + plan rules)
+- `go run ./cmd/avmatrix analyze --force --skip-agents-md --no-stats` (refreshed to nodes=21091, rels=52445)
+- `avmatrix__list_repos`, `avmatrix__query` (multiple for "orphan nodes...", "knowledgeGraphToGraphology...", "graph connectivity")
+- `avmatrix__context` on key symbols (Graph, FileTreePanel, etc. in prior E3)
+- Source reads: internal/graph/types.go (all 22 Rel* consts), internal/processes/processes.go (isTestFile, ENTRY_POINT_OF emission, findEntryPoints, buildCallsGraph), internal/ignore/constants.go (full ignore sets), internal/contracts/web_ui.go (relationshipDisplayPolicies, graphRelationshipTypes list), avmatrix-web/src/lib/graph-adapter.ts (forward/reverseHierarchyRelations exactly matching structural set), internal/graphaccuracy/property_access.go (separate orphanStatus)
+- Python graph.json loaders for exact degree counts on both E:\AVmatrix-GO and E:\Restaurant_manager (reproducible, no inference)
+- `avmatrix__cypher` attempted (limited on Go adapter)
+
+### Counted Edge Policy (P1-A1/A2/A3 - finalized)
+See benchmark B0 for the exact table and rationale. In short: count only "wiring/usage/flow" edges; exclude the 5 structural ownership edges that the layout already treats separately and that empirically collapse all zero-incoming to zero. This was the key blocker identified in E3/E4.
+
+Recorded in plan design section, benchmark, this evidence. No change to graph.Rel* consts or emission — pure derivation policy.
+
+### Expected-Isolated Overlay Policy (P1-B1/B2/B3 - finalized)
+Automatic reasons (path/label/evidence based, hide or de-emphasize by default in triage):
+- `test`: isTestFile() patterns (exact copy of processes.go:465) OR /test/ /__tests__/ .test. .spec. _test.* ; also test helpers inside those files.
+- `fixture`: /fixtures/ /__snapshots__/ /snapshots__ /testdata/
+- `generated`: path contains /generated/ .generated. or parser properties indicating generated code.
+- `vendor_dependency`: /vendor/ /node_modules/ /dist/ /build/ (even if scanner let a few through).
+- `documentation`: label=="Section" OR *.md files OR /docs/ /README* that carry no CALLS/ACCESSES etc.
+- `migration_script`: /migrations/ *.sql change files, db/migrate scripts.
+- `cli_mcp`: symbols under internal/cli, internal/mcp, or registered via cmd/* or server tools.
+
+Prioritization modifier only (never auto-expected-isolated, still shown in candidate lists but lower priority):
+- `exported_api`: boolProperty "isExported"==true (from processes scoring). These may legitimately have zero internal incoming because they are the public surface for external callers or reflection. Triage must inspect callers outside repo + tests + docs.
+
+Framework entry surfaces (roots, not candidates even if low degree):
+- `framework_entry`: label in {Route, Tool} OR has outgoing ENTRY_POINT_OF / HANDLES_ROUTE / HANDLES_TOOL OR isProcessSymbol(main-like) that findEntryPoints would consider. These are the accepted roots for detached traversal.
+
+Evidence rule: automatic reasons take precedence for hiding; exported + framework only affect sort order in reports ("triage these last"). A node can carry multiple reasons (e.g. exported test helper).
+
+This policy bridges the existing ignore + processes.isTestFile + exported scoring without inventing new scanners.
+
+### Topology Taxonomy (P1-F)
+Accepted exactly as proposed in plan §Design Decision (connected / true_isolated / no_incoming / no_outgoing / detached_component / unknown_connectivity). No changes. `no_outgoing` remains low-priority (normal leaves).
+
+### Confidence Levels (P1-C)
+- `candidate`: isolated topology status + zero expected reasons + zero source-backed diagnostics → actionable triage item.
+- `expected`: any expected-isolated reason present (even if topologically isolated).
+- `unknown`: unresolved_reference with source node evidence, or external-only targets dominate, or policy edge case.
+- `confirmed`: human + additional runtime/test evidence only; never auto-set by derivation.
+
+TopologyStatus and expectedIsolatedReasons and diagnostics are orthogonal fields on the derived metadata; they coexist.
+
+### Root Surfaces + Traversal for detached_component (P1-G)
+Accepted roots (start traversal from these):
+- All Process nodes
+- All nodes that are source of at least one ENTRY_POINT_OF, HANDLES_ROUTE, HANDLES_TOOL relationship
+- All nodes with label Route or Tool
+- Functions/Methods named "main", "init", "run", "start", "bootstrap" (case-insensitive) that have isExported or high frameworkMultiplier
+- MCP tool registrations and CLI command entry symbols
+
+Traversal: directed outgoing along counted edges (CALLS + process links + heritage for type reachability) from the roots. A component (weakly connected subgraph under non-structural edges) that has internal edges but zero path from any accepted root → `detached_component`.
+
+Directed chosen over undirected because call graph and process traces are directional; a "downstream only" module that nothing calls into is still detached if no root reaches it.
+
+Undirected fallback only for pure structural cycles that survived filtering (rare).
+
+### Metadata Ownership (P1-H)
+Core graph layer (recommended path):
+- New package `internal/graphhealth` (or extension inside `internal/graph`) will expose `AnnotateGraphHealth(g *graph.Graph, policy EdgePolicy, expectedPolicy)` that mutates/adds to each Node.Properties:
+  - "topologyStatus": string
+  - "countedIncoming": int
+  - "countedOutgoing": int
+  - "excludedEdgeCategories": map or array
+  - "expectedIsolationReasons": []string
+  - "diagnostics": [] {kind, evidence...}
+  - "confidence": string
+- Derivation runs once after full graph assembly (in analyze or http graph handler or dedicated MCP resource), before any consumer (Web, query, reports, cypher views).
+- Benefits: MCP `context`/`query`/`impact` can surface health without Web-only derivation; consistent truth for all surfaces (P3 requirement); no duplication.
+- Alternative (Web-only) rejected for this reason.
+
+Implementation in Phase 2 will keep raw graph immutable; health is always derived view (or cached annotation).
+
+### Compatibility with Existing orphanStatus (P1-F)
+`cmd/property-access-audit` + `internal/graphaccuracy/property_access.go` "orphanStatus" (owner_linked / true_orphan / false_orphan / ...) remains Property-only, audit-only surface. New Graph Health taxonomy is node-global, topology+overlay, and explicitly namespaced. No overwrite, no shared enum. If future phase wants mapping, it will be a separate documented transform with tests.
+
+### All Phase 1 Decisions Documented
+- Plan updated with decisions.
+- Benchmark B0 now authoritative with policy + numbers for both repos.
+- This E5 + E3/E4 provide full audit trail.
+- No implementation code changed in this slice (doc-only per plan rule 6).
+
+Conclusion: Phase 1 complete. Ready for Phase 2 backend derivation without risk of ambiguous "orphan" meaning. All guardrails (no primary label change, candidate not verdict, explanations required) satisfied.
+
 Raw all-relationship baseline command:
 
 ```powershell

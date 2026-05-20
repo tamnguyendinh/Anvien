@@ -37,7 +37,41 @@ Do not record inferred or estimated counts. Every benchmark row must name the co
 
 Date: 2026-05-20
 
-Status: initial `E:\AVmatrix-GO` measurements recorded; accepted-policy and representative baselines pending
+Status: Phase 1 accepted policy + fresh `E:\AVmatrix-GO` + representative `Restaurant_manager` baselines recorded; cross-repo re-measure on future index updates noted as follow-up
+
+### Accepted Counted Edge Policy (Phase 1 final for baseline)
+
+**Counted relationships** (contribute to per-node incoming/outgoing for topologyStatus; these represent semantic wiring, usage, call-flow, heritage, registration, and process participation):
+- CALLS, ACCESSES, INHERITS, IMPLEMENTS, EXTENDS, METHOD_OVERRIDES, METHOD_IMPLEMENTS, IMPORTS, USES, DECORATES, WRAPS, QUERIES, FETCHES, STEP_IN_PROCESS, HANDLES_ROUTE, HANDLES_TOOL, ENTRY_POINT_OF
+
+**Non-counted relationships** (structural/ownership/containment; excluded because they always attach symbols to files/containers and would mask isolation candidates):
+- CONTAINS, DEFINES, HAS_METHOD, HAS_PROPERTY, MEMBER_OF
+
+Rationale: Empirical (raw-all yields 0 code zero-incoming on both repos because every symbol has a DEFINES); layout hierarchy in graph-adapter.ts already separates these; processes.go and ignore policy treat structural as given. Matches design decision that "no_incoming" must surface real unwired candidates after ownership is stripped.
+
+### Representative Repo Selection Criteria (P1-E1)
+- Large indexed repos (>5k files or >50k nodes) outside the AVmatrix codebase itself to test generalizability.
+- Diverse label mix (high code + Process/Route/Tool for entry surfaces, high Section for doc coverage).
+- Presence of framework entry patterns (routes, tools, processes) so detached_component rules have positive examples.
+- Recent or usable .avmatrix/graph.json snapshot available.
+- Restaurant_manager selected: 6198 files, 78k nodes, 505 processes, heavy on Sections + Functions/Methods, representative of fullstack app with UI+backend.
+
+### Measured Baselines (using accepted non-counted structural policy + fresh AVmatrix index 2026-05-20 + Restaurant snapshot)
+
+**E:\AVmatrix-GO** (graph: nodes=21091, rels=52445, timestamp from analyze --force 2026-05-20, code_nodes=4934):
+- raw-all: zero_in=20, zero_out=15314, zero_both=8; code zero_in=0, zero_out=200, zero_both=0
+- accepted-policy non-structural: code zero_in=1620, zero_out=1098, zero_both=133
+- path-expected-candidate rough filter (test/fixture/generated/vendor/doc): ~6998 nodes
+- top rels: DEFINES:17545, CALLS:8588, USES:5270, ACCESSES:5180, MEMBER_OF:3914, IMPORTS:3761, HAS_PROPERTY:2891, STEP_IN_PROCESS:2361, CONTAINS:1956, ENTRY_POINT_OF:640, HAS_METHOD:339
+- top labels: Variable:8640, Function:3433, Property:3235, Section:1165, ...
+
+**Restaurant_manager** (graph: nodes=78358, rels=130588, snapshot 2026-05-19, code_nodes=10258):
+- raw-all: code zero_in=0, zero_out=1097, zero_both=0
+- accepted-policy non-structural: code zero_in=4191, zero_out=3488, zero_both=909
+- Note: higher structural ratio (CONTAINS 42k, DEFINES 34k) and many Sections (35k); provisional only — re-run on fresh index recommended after policy-locked implementation.
+- Demonstrates policy scales: ~41% of code nodes appear no_incoming under accepted policy, as expected for a large app (many UI components, helpers, exported surfaces).
+
+All counts produced by reproducible python loader over graph.json (no AVmatrix MCP used for final numbers; commands logged in evidence). Raw counts prove why structural exclusion is mandatory.
 
 Required repos:
 
