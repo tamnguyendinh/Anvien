@@ -181,7 +181,7 @@ This benchmark is an inventory of generated content shape rather than runtime pe
 
 ## B5 - Final Benchmark
 
-Status: recorded; implementation commit pending
+Status: recorded
 
 Final closure must record:
 

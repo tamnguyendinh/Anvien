@@ -271,7 +271,7 @@ Focused tests and analyze smoke can pass after preliminary uncommitted local cha
 
 Date: 2026-05-20
 
-Status: recorded; implementation commit pending
+Status: recorded
 
 Impact and graph refresh commands:
 
@@ -303,6 +303,10 @@ Implementation files changed:
 - `internal/cli/analyze_postrun.go`
 - `internal/cli/command.go`
 - `internal/cli/command_test.go`
+
+Implementation commit:
+
+- `4315f3b fix: restore agent context generation parity`
 
 Implementation observations:
 

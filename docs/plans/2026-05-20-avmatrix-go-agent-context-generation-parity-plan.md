@@ -195,8 +195,8 @@ Initial source inspection identified these facts:
 - [x] [P7-A] Update this plan checklist after each completed implementation slice.
 - [x] [P7-B] Update benchmark ledger with root file sizes, skill sizes, and smoke graph counts.
 - [x] [P7-C] Update evidence ledger with commands, files changed, tests, and conclusions.
-- [ ] [P7-D] Commit implementation and plan updates together only after validation is recorded.
-- [ ] [P7-E] Confirm no unrelated dirty files are included in the commit.
+- [x] [P7-D] Commit implementation and plan updates together only after validation is recorded. Commit: `4315f3b fix: restore agent context generation parity`.
+- [x] [P7-E] Confirm no unrelated dirty files are included in the commit.
 
 ## Definition Of Done
 
