@@ -166,6 +166,9 @@ Final validation benchmark:
 | Command | Result |
 |---|---|
 | `npm --prefix avmatrix-web run build` | passed |
+| `go build ./cmd/... ./internal/...` | passed |
+| `go build ./...` in `avmatrix-launcher/server-wrapper` | passed |
+| `go build ./...` in `avmatrix-launcher/src` | passed |
 | `npm --prefix avmatrix-web run test` | `43` files, `336` tests passed |
 | `npm --prefix avmatrix-web run test:e2e -- --workers=1` | `42` tests passed in `20.7m` |
 
@@ -175,3 +178,4 @@ Final benchmark interpretation:
 - The manual optimizer remains a user action and reuses the deterministic clustered layout policy.
 - The graph is grouped by existing node type/filter color, not by community color.
 - Product/runtime timeout and delayed-reset mechanisms were removed from `avmatrix-web/src`; timeout remains only in tests/e2e runner guards.
+- Root `go build ./...` is not an acceptance build command for this repository because it includes intentionally non-buildable analysis fixtures under `avmatrix/test/fixtures`; product Go build coverage is `cmd`, `internal`, and the launcher Go modules.

@@ -194,6 +194,7 @@ No other normal path may run optimization after graph render. Camera fit, graph 
 - [x] [P5-D] Record render/conversion latency and interaction observations in the benchmark ledger.
 - [x] [P5-E] Run focused Web validation and record results in the evidence ledger.
 - [x] [P5-F] Review the final diff for scope creep against this plan's non-goals after corrective implementation.
+- [x] [P5-G] Run full product build validation and record the exact product build scope: Web build, root Go `cmd`/`internal`, and launcher Go modules.
 
 ## Acceptance Criteria
 
@@ -216,7 +217,8 @@ No other normal path may run optimization after graph render. Camera fit, graph 
 - [x] Unit/e2e tests cover one-color-per-filter-cluster behavior.
 - [x] Web/browser or e2e validation covers no-auto-optimizer after render and manual optimizer trigger.
 - [x] Benchmark ledger records before/after load and optimizer behavior after corrective implementation.
+- [x] Product build evidence is recorded without treating intentionally non-buildable analysis fixtures as product packages.
 
 ## Closure Definition
 
-The plan can be marked complete when the Web graph renders a deterministic node-label clustered layout immediately on load, no automatic optimizer starts on graph load, the user can manually start layout optimization, validation passes, benchmark evidence is recorded, and the final diff has no backend/schema/ranking-system creep.
+The plan can be marked complete when the Web graph renders a deterministic node-label clustered layout immediately on load, no automatic optimizer starts on graph load, the user can manually start layout optimization, validation passes, product build evidence is recorded, benchmark evidence is recorded, and the final diff has no backend/schema/ranking-system creep.

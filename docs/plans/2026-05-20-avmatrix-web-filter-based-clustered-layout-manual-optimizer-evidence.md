@@ -443,4 +443,56 @@ Interpretation:
 
 - The `critical` risk level is expected for this corrective implementation because the product timeout ban intentionally removed timeout/retry/timer behavior from shared backend client and connect flows.
 - The affected scope matches the implementation tracks in the plan: filter/color clustering, manual-only optimizer, and product/runtime timeout removal.
-- The risk is mitigated by final validation: production build passed, full unit passed (`43` files, `336` tests), and full e2e passed (`42` tests in `20.7m`).
+- The risk is mitigated by final validation: production build passed, product Go build passed, launcher Go module builds passed, full unit passed (`43` files, `336` tests), and full e2e passed (`42` tests in `20.7m`).
+
+## E11 - Full Product Build Evidence
+
+Date: 2026-05-20
+
+Status: recorded
+
+Commands and results:
+
+```powershell
+npm --prefix avmatrix-web run build
+```
+
+- Passed: TypeScript build and Vite production build completed.
+- Vite reported existing chunk-size/dynamic-import warnings; no build failure.
+
+```powershell
+go build ./cmd/... ./internal/...
+```
+
+- Passed: root product CLI and internal Go packages built successfully.
+
+```powershell
+go build ./...
+```
+
+- Failed as an acceptance command because it includes analysis fixtures under `avmatrix/test/fixtures`.
+- The failing fixture errors were expected fixture-shape errors, including unresolved sample imports, mixed fixture packages, and C source fixture input.
+- This command is not a valid full-product build command for this repository because the fixture directories are source samples for AVmatrix analysis, not buildable Go packages.
+
+```powershell
+go build ./...
+```
+
+- Working directory: `avmatrix-launcher/server-wrapper`.
+- Passed.
+- The produced local `.exe` artifact was removed after validation.
+
+```powershell
+go build ./...
+```
+
+- Working directory: `avmatrix-launcher/src`.
+- Passed.
+- The produced local `.exe` artifact was removed after validation.
+
+Final status:
+
+- Web production build: passed.
+- Root product Go build: passed for `cmd` and `internal`.
+- Launcher Go builds: passed.
+- Worktree returned clean after removing build artifacts.
