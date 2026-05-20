@@ -2,7 +2,7 @@
 
 Date: 2026-05-20
 
-Status: complete - corrective implementation validated
+Status: reopened - visual island distribution correction required
 
 Companion files:
 
@@ -51,6 +51,27 @@ The earlier implementation also used a dynamic cluster grid sized from cluster d
 
 The user also reported layout optimization appearing after render and runtime reset behavior after a while. The implementation must verify that no normal graph-load path calls the optimizer.
 
+## Visual Reopen Finding
+
+The corrective implementation is not visually acceptable based on the user-provided screenshot:
+
+- Bad current result: `reports/problem/screenshot_1779285599.png`.
+- Target visual reference: `reports/problem/aaaa.jpg`.
+
+The bad result shows compressed rail/grid-like node blocks. Nodes are packed into long straight bands, edges become thick strips, and the clusters do not read as usable regions. This fails the intended meaning of "cluster" even if the positions are deterministic and even if the cluster bounding boxes do not overlap.
+
+The target reference shows separate color islands. The precise target model is: place the clusters as colored archipelagos on one large circle.
+
+- each node type/filter color occupies its own area;
+- each area has real two-dimensional spread, not a line, rail, or marching row;
+- large clusters receive larger island areas;
+- smaller clusters sit around the larger islands with visible whitespace;
+- the sample is only a reference for node placement style, not a reference for reducing graph connectivity.
+
+The implementation must not copy the sample by reducing, hiding, filtering, pruning, thinning, or reweighting edges. Edge count, edge visibility rules, and graph relationships must remain governed by the existing graph/filter behavior. The lesson from the sample is how to distribute node clusters as readable islands.
+
+The previous row-major local grid acceptance is superseded. It is now explicitly rejected for medium and large clusters because it can create rigid rows, flat bands, and unreadable dense blocks.
+
 ## Separate Work Tracks
 
 These are separate problems and must not be merged into one explanation or workaround:
@@ -94,12 +115,16 @@ Cluster order = FILTERABLE_LABELS order
 Unknown label order = sort unknown labels by label string, appended after FILTERABLE_LABELS
 Node order inside cluster = filePath -> name -> id
 Initial placement = deterministic separated regions by cluster
-In-cluster placement = deterministic local grid; columns = ceil(sqrt(clusterNodeCount))
+In-cluster placement = deterministic two-dimensional island/cloud per cluster
 Optimizer = manual-only cleanup
 Render color = getNodeColor(node.label), not community color
 ```
 
 No node is moved toward a center because it is "important". No graph connectivity metric decides placement. The goal is a stable, readable grouping that matches controls the user already understands.
+
+The in-cluster island placement must use only already-available facts: node label/filter, stable node order, visible node count, node radius, and configured spacing. Do not add centrality, degree, hub, or connectivity scoring. A deterministic spiral/ring/low-discrepancy placement is acceptable because it creates a two-dimensional island without inventing graph importance.
+
+Cluster macro-placement must give each filter/color its own region with visible gutters. Large clusters get proportionally larger island regions; smaller clusters are distributed into separate peripheral regions. The result should resemble colored archipelagos distributed across one large circular graph field, not a row of packed containers.
 
 Community membership may remain as metadata, but it must not override the primary node type color in the main graph canvas while this filter-based clustering mode is active.
 
@@ -109,11 +134,20 @@ On graph load:
 
 1. Build one logical visual cluster per node label present in the graph.
 2. Order known labels with `FILTERABLE_LABELS`; append graph labels unknown to `FILTERABLE_LABELS` sorted by label string.
-3. Place nodes inside each cluster using deterministic ordering and a row-major local grid.
-4. Place each cluster into a clear separated canvas region so different node type colors do not appear interleaved.
+3. Place nodes inside each cluster using deterministic ordering and a two-dimensional island/cloud distribution.
+4. Place each cluster into a clear separated canvas region so different node type colors do not appear interleaved or compressed into adjacent rails.
 5. Render each node with its node type/filter color.
 6. Render immediately without starting layout optimization.
 7. Keep filters compatible: toggling a node type hides/shows that type's existing cluster without causing unrelated clusters to jump.
+
+Cluster geometry requirements:
+
+- the whole graph should read as one large circular field containing multiple colored archipelagos;
+- medium and large clusters must have meaningful width and height;
+- no medium or large cluster may collapse into a line, rail, single row, or extreme rectangle;
+- cluster area must scale with node count and capped node diameter so nodes are not visually stacked into dense blocks;
+- visible gutters must exist between different node type/color islands;
+- cluster layout correctness must be verified by shape/density metrics or screenshot-backed diagnostics, not only by non-overlapping bounding boxes.
 
 When the user clicks the optimizer button:
 
@@ -137,8 +171,12 @@ No other normal path may run optimization after graph render. Camera fit, graph 
 - Do not use request timeout, timer reset, or delayed UI reset as a product/runtime mechanism. This ban is not conditional on repository size.
 - Do not remove test-runner timeouts that exist only to bound tests or e2e execution.
 - Do not override node type color with community color in the main graph canvas.
+- Do not use a row-major grid as the final in-cluster placement for medium or large clusters.
+- Do not arrange clusters as long thin rows, rails, marching lines, or packed rectangular blocks.
 
 ## Implementation Phases
+
+P0-P5 record the already-completed historical implementation. After the visual reopen, they are not sufficient for closure. P6-P9 are the required corrective work to close this plan again.
 
 ### P0 - Discovery And Guardrails
 
@@ -154,7 +192,7 @@ No other normal path may run optimization after graph render. Camera fit, graph 
 - [x] [P1-B] Use `FILTERABLE_LABELS` for known cluster ordering, with unknown labels appended by label string.
 - [x] [P1-C] Sort nodes inside each cluster by `filePath`, then `name`, then `id`.
 - [x] [P1-D] Place clusters using deterministic separated regions that read as one clear region per node type/filter, not as scattered mixed-color blocks.
-- [x] [P1-E] Place nodes inside each cluster using a deterministic row-major local grid with `columns = ceil(sqrt(clusterNodeCount))`.
+- [x] [P1-E] Historical completed behavior: place nodes inside each cluster using a deterministic row-major local grid with `columns = ceil(sqrt(clusterNodeCount))`. This is superseded by P6/P7 and must not be the final medium/large cluster layout.
 - [x] [P1-F] Preserve size, graph-health metadata, edge conversion, and filter composition while forcing primary render color to node type/filter color.
 
 ### P2 - Disable Automatic Optimizer On Load
@@ -196,14 +234,48 @@ No other normal path may run optimization after graph render. Camera fit, graph 
 - [x] [P5-F] Review the final diff for scope creep against this plan's non-goals after corrective implementation.
 - [x] [P5-G] Run full product build validation and record the exact product build scope: Web build, root Go `cmd`/`internal`, and launcher Go modules.
 
+### P6 - Visual Reopen From Screenshot Evidence
+
+- [x] [P6-A] Record `reports/problem/screenshot_1779285599.png` as failing visual evidence for the current clustered layout.
+- [x] [P6-B] Record `reports/problem/aaaa.jpg` as the target reference for separated 2D color islands.
+- [x] [P6-C] Supersede row-major local grid acceptance for medium and large clusters.
+- [x] [P6-D] Update benchmark and evidence ledgers so previous bounding-box-only validation is treated as insufficient.
+- [ ] [P6-E] Add or update diagnostics/tests so rail-like or line-like cluster compression fails validation.
+
+### P7 - Organic Filter-Island Layout Correction
+
+- [ ] [P7-A] Replace medium/large in-cluster row-major placement with deterministic two-dimensional island/cloud placement.
+- [ ] [P7-B] Keep the cluster source exactly as existing Node Type filters and existing node type colors.
+- [ ] [P7-C] Size each cluster island from visible node count, capped node diameter, and spacing so density is bounded.
+- [ ] [P7-D] Pack cluster islands into separated macro-regions with visible gutters; large clusters receive larger regions and small clusters occupy secondary/peripheral regions.
+- [ ] [P7-E] Prevent medium and large clusters from producing extreme aspect ratios or thin rail-like shapes.
+- [ ] [P7-F] Keep placement free of centrality, degree, hub, semantic importance, or connectivity ranking.
+- [ ] [P7-G] Preserve existing edge data and edge visibility behavior; do not reduce edge count or hide cross-cluster links to imitate the sample image.
+
+### P8 - Manual Optimizer Recheck
+
+- [ ] [P8-A] Reconfirm graph load renders the island layout immediately without starting any optimizer.
+- [ ] [P8-B] Reconfirm the optimizer starts only from the explicit Web UI button.
+- [ ] [P8-C] Ensure manual optimization preserves node type/color island boundaries and does not mix labels into one global layout.
+
+### P9 - Visual And Full Validation
+
+- [ ] [P9-A] Capture browser evidence after graph ready on the representative large repo and compare it against the new island-distribution criteria.
+- [ ] [P9-B] Record per-cluster diagnostics for color, node count, width, height, aspect ratio, density, and inter-cluster gutters.
+- [ ] [P9-C] Run focused unit/e2e tests for island layout and manual-only optimizer behavior.
+- [ ] [P9-D] Run full Web build, full Web unit tests, full Web e2e tests, root product Go build, and launcher Go builds before closing again.
+
 ## Acceptance Criteria
 
-- [x] Initial graph layout is grouped by existing Node Type filters as clear separated visual regions.
+- [ ] Initial graph layout is grouped by existing Node Type filters as clear separated two-dimensional color islands.
 - [x] There is no new centrality, hub, degree, or importance calculation for placement.
 - [x] Layout is deterministic for the same graph input.
 - [x] Cluster order follows `FILTERABLE_LABELS` for known labels, with unknown labels appended by label string.
 - [x] Only labels present in the graph create rendered clusters; `FILTERABLE_LABELS` is the ordering source, not a requirement to render empty clusters.
-- [x] In-cluster node placement uses row-major local grid with `columns = ceil(sqrt(clusterNodeCount))`.
+- [ ] In-cluster node placement uses deterministic two-dimensional island/cloud placement, not row-major grid placement for medium and large clusters.
+- [ ] Medium and large clusters have bounded aspect ratio and cannot collapse into a long line, rail, or single packed row.
+- [ ] Cluster area scales with visible node count and capped node diameter so nodes are not stacked into dense blocks.
+- [ ] Different node type/filter islands have visible gutters and do not visually merge into adjacent colored blocks.
 - [x] Each node type/filter cluster uses only that node type's own render color.
 - [x] Community color does not override node type/filter color in the main graph canvas.
 - [x] Filter state hides/shows existing clusters and does not create a separate layout policy.
@@ -213,12 +285,14 @@ No other normal path may run optimization after graph render. Camera fit, graph 
 - [x] Existing global ForceAtlas2 optimizer is not reused unchanged unless constrained to preserve node-label clusters.
 - [x] Existing node filters still work and visually map to the same clusters.
 - [x] Existing edge visibility, graph-health filters, depth filters, selection, and focus behavior still work.
-- [x] Unit tests cover deterministic clustered placement.
+- [ ] Existing relationship data and cross-cluster edge visibility are preserved; the sample image affects node placement only.
+- [ ] Unit tests cover deterministic island placement, shape bounds, and spacing for representative cluster sizes.
 - [x] Unit/e2e tests cover one-color-per-filter-cluster behavior.
-- [x] Web/browser or e2e validation covers no-auto-optimizer after render and manual optimizer trigger.
-- [x] Benchmark ledger records before/after load and optimizer behavior after corrective implementation.
+- [ ] Web/browser or e2e validation covers no-auto-optimizer after render and manual optimizer trigger after island correction.
+- [ ] Web/browser or e2e validation includes screenshot-backed or diagnostic-backed evidence that `reports/problem/screenshot_1779285599.png` no longer represents the output shape.
+- [ ] Benchmark ledger records before/after load, optimizer behavior, and island geometry after the visual correction.
 - [x] Product build evidence is recorded without treating intentionally non-buildable analysis fixtures as product packages.
 
 ## Closure Definition
 
-The plan can be marked complete when the Web graph renders a deterministic node-label clustered layout immediately on load, no automatic optimizer starts on graph load, the user can manually start layout optimization, validation passes, product build evidence is recorded, benchmark evidence is recorded, and the final diff has no backend/schema/ranking-system creep.
+The plan can be marked complete when the Web graph renders deterministic node-label color islands immediately on load, medium and large clusters have two-dimensional readable spread with visible gutters, no automatic optimizer starts on graph load, the user can manually start layout optimization, validation passes, product build evidence is recorded, benchmark evidence is recorded, and the final diff has no backend/schema/ranking-system creep.

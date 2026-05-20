@@ -2,7 +2,7 @@
 
 Date: 2026-05-20
 
-Status: complete - corrective benchmarks recorded
+Status: reopened - visual island distribution benchmark required
 
 Companion files:
 
@@ -92,7 +92,7 @@ Use runtime diagnostics and browser/e2e artifacts. Do not substitute unit test p
 
 Date: 2026-05-20
 
-Status: recorded
+Status: recorded, superseded for visual readability by B6
 
 Record final Web interaction observations:
 
@@ -105,6 +105,10 @@ Record final Web interaction observations:
 | edge visibility toggle still works | existing behavior | unchanged | covered by edge visibility/style tests |
 
 Readability acceptance is qualitative but must be backed by screenshot, browser observation, or e2e assertion. The key product benchmark is not "optimizer is faster"; it is "graph is readable before optimizer runs".
+
+Visual reopen note:
+
+- The later user-provided screenshot `reports/problem/screenshot_1779285599.png` proves this B3 readability record was not sufficient. B6 is now the controlling visual benchmark.
 
 ## B4 - Initial Implementation Benchmark Summary
 
@@ -136,7 +140,7 @@ Corrective note:
 
 Date: 2026-05-20
 
-Status: recorded
+Status: recorded, superseded for visual shape by B6
 
 The corrective benchmark must record:
 
@@ -150,7 +154,7 @@ The corrective benchmark must record:
 
 The benchmark must not use an elapsed-time budget or timeout as the definition of layout correctness. Test-runner timeouts are allowed only as test guards and must not be cited as product behavior.
 
-Corrective benchmark results:
+Corrective benchmark results, historical before visual reopen:
 
 | Measurement | Evidence | Result |
 |---|---|---|
@@ -161,7 +165,7 @@ Corrective benchmark results:
 | Product/runtime timeout ban | `rg -n "setTimeout|clearTimeout|setInterval|clearInterval|timeout|Timeout|TIMEOUT|durationBudget|duration-elapsed|noverlap|lastReason" avmatrix-web\src` | no matches in product/runtime source |
 | Process modal latency on large repo | full e2e `server-connect.spec.ts` and `shell-interactions.spec.ts` | process View/modal and lightbulb tests passed after reading process steps from loaded graph |
 
-Final validation benchmark:
+Final validation benchmark, historical before visual reopen:
 
 | Command | Result |
 |---|---|
@@ -172,10 +176,53 @@ Final validation benchmark:
 | `npm --prefix avmatrix-web run test` | `43` files, `336` tests passed |
 | `npm --prefix avmatrix-web run test:e2e -- --workers=1` | `42` tests passed in `20.7m` |
 
-Final benchmark interpretation:
+Final benchmark interpretation, historical before visual reopen:
 
 - The runtime layout optimizer is no longer a graph-load mechanism.
 - The manual optimizer remains a user action and reuses the deterministic clustered layout policy.
 - The graph is grouped by existing node type/filter color, not by community color.
 - Product/runtime timeout and delayed-reset mechanisms were removed from `avmatrix-web/src`; timeout remains only in tests/e2e runner guards.
 - Root `go build ./...` is not an acceptance build command for this repository because it includes intentionally non-buildable analysis fixtures under `avmatrix/test/fixtures`; product Go build coverage is `cmd`, `internal`, and the launcher Go modules.
+
+## B6 - Visual Island Distribution Reopen Benchmark
+
+Date: 2026-05-20
+
+Status: pending implementation and validation
+
+User-provided benchmark evidence:
+
+- Failing current output: `reports/problem/screenshot_1779285599.png`.
+- Target visual reference: `reports/problem/aaaa.jpg`.
+
+Benchmark interpretation:
+
+- The B5 visual cluster separation benchmark was too weak. It accepted deterministic non-overlapping bounds, but that still allowed compressed rail/grid clusters that are unreadable.
+- "Readable before optimizer" now means separate two-dimensional color islands with visible whitespace, not merely `layout.starts=0` and not merely non-overlapping cluster bounds.
+- The target visual model is colored archipelagos on one large circular graph field.
+- The sample image is a placement reference only. It must not be interpreted as permission to reduce, hide, filter, prune, or thin graph edges.
+- The benchmark must not use an elapsed-time budget or product/runtime timeout as a layout correctness mechanism.
+
+Required new measurements:
+
+| Measurement | Required evidence | Expected result |
+|---|---|---|
+| Cluster color purity | unit or browser diagnostic grouped by `nodeType` and render color | each visible node type/filter has one primary color from `getNodeColor(nodeType)` |
+| Cluster island aspect ratio | browser diagnostic or unit geometry metrics per visible node type | medium and large clusters have bounded aspect ratio and do not collapse into long thin rails |
+| Cluster island density | browser diagnostic or unit geometry metrics per visible node type | cluster area scales with node count and capped node diameter; nodes are not stacked into dense blocks |
+| Inter-cluster gutters | screenshot-backed bounds or browser diagnostics with node-radius padding | different node type/color islands remain visibly separated |
+| Rail/grid regression | screenshot-backed review and automated geometry assertion | output must not resemble `reports/problem/screenshot_1779285599.png` |
+| Target-shape comparison | browser screenshot after graph ready on `Restaurant_manager` | layout should resemble colored archipelagos on one large circle, using `reports/problem/aaaa.jpg` as the placement reference |
+| Edge preservation | edge count diagnostics plus existing edge visibility tests | node placement changes do not reduce relationship count or hide cross-cluster edges |
+| No auto optimizer after visual correction | e2e diagnostics sampled after graph ready | `layout.starts=0`, `layout.stops=0`, `manualOptimizerInvocations=0` until user clicks |
+| Manual optimizer only after visual correction | e2e click on `Optimize Layout` | manual invocation count increments only after explicit user action |
+
+Required final benchmark table after implementation:
+
+| Graph source | Node count | Relationship count | Cluster count | Visual result | Optimizer result |
+|---|---:|---:|---:|---|---|
+| `Restaurant_manager` local index | pending | pending | pending | pending screenshot and metrics | pending diagnostics |
+
+Closure requirement:
+
+- B6 must be filled with actual post-implementation measurements before this plan can be closed again.

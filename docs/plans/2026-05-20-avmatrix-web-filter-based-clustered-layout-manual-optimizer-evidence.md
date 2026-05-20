@@ -2,7 +2,7 @@
 
 Date: 2026-05-20
 
-Status: complete - corrective implementation validated
+Status: reopened - visual island distribution evidence required
 
 Companion files:
 
@@ -496,3 +496,35 @@ Final status:
 - Root product Go build: passed for `cmd` and `internal`.
 - Launcher Go builds: passed.
 - Worktree returned clean after removing build artifacts.
+
+## E12 - Visual Island Distribution Reopen Evidence
+
+Date: 2026-05-20
+
+Status: recorded for plan update; implementation pending
+
+User-provided artifacts:
+
+- Current failing output: `reports/problem/screenshot_1779285599.png`.
+- Target placement reference: `reports/problem/aaaa.jpg`.
+
+Observed problem:
+
+- The current clustered layout still reads as compressed rails or packed blocks, not as readable node type/color islands.
+- Nodes are too close together for the visible graph scale, and medium/large clusters do not have enough two-dimensional spread.
+- Previous validation accepted deterministic non-overlapping cluster bounds, but that was insufficient. It did not detect rail-like cluster shape, excessive density, poor whitespace, or screenshot-level readability failure.
+
+Clarification recorded:
+
+- The intended visual model is colored archipelagos on one large circular graph field.
+- The sample image is only a reference for how to distribute node clusters visually.
+- The implementation must not copy the sample by reducing, hiding, filtering, pruning, thinning, or reweighting graph edges.
+- Relationship data, edge count, cross-cluster links, and existing edge visibility behavior must be preserved unless the user creates a separate edge-display plan.
+
+Evidence required before future closure:
+
+- Code diff review proving only node placement/cluster geometry changed, not graph relationship data.
+- Browser screenshot after graph ready on the representative large repo showing separated two-dimensional color islands.
+- Per-cluster diagnostics for node count, color, width, height, aspect ratio, density, and inter-cluster gutter.
+- Edge preservation evidence showing relationship count and existing edge visibility behavior remain intact.
+- Re-run focused layout tests, full Web build, full Web unit tests, full Web e2e tests, root product Go build, and launcher Go builds.
