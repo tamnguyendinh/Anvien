@@ -104,6 +104,31 @@ command = "avmatrix"
 args = ["mcp"]
 ```
 
+### Grok (xAI)
+
+This repository provides a **Grok-only** MCP configuration at `.grok/config.toml`.
+
+When you open the AVmatrix-GO folder with Grok, the AVmatrix tools are automatically available (this file has higher priority than `.mcp.json` and does not affect Claude, Cursor, Codex, or other agents).
+
+**For contributors working inside this repo:**
+
+- Start Grok (recommended: `grok --model grok-build --effort high` or `xhigh`)
+- The MCP server will be started via `go run ./cmd/avmatrix mcp`
+- Verify with `/mcps` or `grok mcp list`
+
+**For other projects or daily use:**
+
+Build once and register with an explicit path:
+
+```bash
+go build -o avmatrix-stable.exe ./cmd/avmatrix
+grok mcp add avmatrix -- "E:\\path\\to\\avmatrix-stable.exe" mcp
+```
+
+You can also create a `.grok/config.toml` in any of your own repositories to enable AVmatrix tools there.
+
+This approach keeps the public MCP contract (used by all other agents) completely unchanged.
+
 ---
 
 ## Quick Start: Web UI
