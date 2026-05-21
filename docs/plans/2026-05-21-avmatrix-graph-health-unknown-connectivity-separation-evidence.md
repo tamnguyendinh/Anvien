@@ -212,19 +212,34 @@ Corrections made:
 - Clarified that hiding `Unknown` topology must not hide all diagnostic nodes.
 - Clarified `/api/graph/report` semantics: connected diagnostic nodes must not be ranked as dead-code or unwired topology candidates.
 
-## E8 - Implementation Evidence
+## E8 - Second Plan Review Corrections
+
+Status: recorded
+
+Second plan review found remaining implementation ambiguity around contracts, report payload shape, and `unknown_connectivity` benchmarks.
+
+Corrections made:
+
+- Added report payload shape guidance: graph-health report candidates must expose `triageDimension` with values `topology` or `diagnostic`.
+- Clarified that topology priorities use `triageDimension: topology`, while unresolved-reference diagnostic candidates use `triageDimension: diagnostic`.
+- Clarified that connected diagnostic nodes may appear in diagnostic triage, but must not appear as topology candidates.
+- Added explicit contract-generation work for diagnostic classification/actionability and report `triageDimension`.
+- Added explicit test requirement for the reserved malformed/incomplete `unknown_connectivity` path.
+- Tightened benchmark target: valid graph nodes emitted as `unknown_connectivity` should be `0` after P1.
+
+## E9 - Implementation Evidence
 
 Status: pending
 
 Record code changes by slice.
 
-## E9 - Validation Evidence
+## E10 - Validation Evidence
 
 Status: pending
 
 Record full build, backend tests, Web unit tests, Web e2e tests, graph refresh, final counts, and required change detection.
 
-## E10 - Commit Evidence
+## E11 - Commit Evidence
 
 Status: pending
 

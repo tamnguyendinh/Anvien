@@ -101,7 +101,7 @@ After topology and diagnostics are separated, record:
 
 | Metric | Before | Target / expected direction | After |
 | --- | ---: | --- | ---: |
-| `unknown_connectivity` topology count | 4345 effective observed bucket | should drop sharply; only truly unclassifiable topology remains | pending |
+| `unknown_connectivity` topology count for valid graph nodes | 4345 effective observed bucket | `0` after P1; only malformed/incomplete inputs may use this status | pending |
 | Nodes with diagnostics | 4345 | may remain high before P2; diagnostics are not hidden | pending |
 | Connected nodes with diagnostics | 2036 | should be `connected` with `confidence: unknown` | pending |
 | No-incoming nodes with diagnostics | 1581 | should be `no_incoming` with `confidence: unknown` | pending |
@@ -163,6 +163,8 @@ Record after Web UI validation:
 | Graph Health wording does not imply `Unknown` means dead code | yes | pending |
 | Diagnostic classification/actionability is visible where needed for triage | yes | pending |
 | Connected diagnostic nodes are not presented as topology defects | yes | pending |
+| Report candidates expose `triageDimension` | yes; `topology` or `diagnostic` | pending |
+| Connected diagnostic report candidates use diagnostic dimension only | yes | pending |
 
 ## B5 - Validation Benchmarks
 
@@ -177,6 +179,7 @@ Record commands and results:
 | Focused resolution diagnostic tests | pass | pending |
 | Focused HTTP graph/report/explain tests | pass | pending |
 | Generated contract tests if touched | pass | pending |
+| Generated Web contract output is current if contract fields change | pass | pending |
 | Full relevant Go tests | pass | pending |
 | Focused Web unit tests | pass | pending |
 | Full Web unit tests | pass | pending |

@@ -162,11 +162,22 @@ The plan does not require all external references to become graph edges. It requ
 - `/api/graph` must return per-node graph health where topology and diagnostics are independent.
 - `/api/graph/report` must not rank `unresolved_reference` as a replacement topology.
 - Connected nodes with diagnostics must not be ranked as topology defects. They may appear in a separate diagnostic section/report, or as diagnostic evidence attached to their real topology.
+- `/api/graph/report` candidates must expose a triage dimension so consumers can tell topology candidates from diagnostic-only candidates:
+
+```text
+triageDimension:
+  topology | diagnostic
+```
+
+- Existing topology priorities such as `no_incoming`, `detached_component`, `true_isolated`, and `no_outgoing` must use `triageDimension: topology`.
+- Diagnostic-only priorities such as `unresolved_reference` must use `triageDimension: diagnostic`.
+- A connected node with unresolved diagnostics may appear as `triageDimension: diagnostic`, but must not appear as a topology candidate.
 - Summary counts must include:
   - topology status counts;
   - confidence counts;
   - diagnostic counts;
   - diagnostic classification counts when implemented.
+- Generated Web contracts must expose any new diagnostic classification/actionability and report triage-dimension fields before Web UI or e2e work depends on them.
 
 ## Acceptance Criteria
 
@@ -184,6 +195,8 @@ The plan does not require all external references to become graph edges. It requ
   - connected nodes that merely carry diagnostics.
 - `/api/graph/report` does not treat connected diagnostic nodes as dead-code/unwired topology candidates.
 - Backend tests cover topology-plus-diagnostic combinations.
+- Backend tests cover the malformed/incomplete graph-health input path that may still emit `unknown_connectivity`.
+- Contracts and generated Web types expose diagnostic classification/actionability plus report `triageDimension`.
 - Web e2e covers hiding `Unknown` topology without hiding connected diagnostic nodes.
 - Full build passes before tests.
 - Full relevant unit tests and Web e2e tests pass.
@@ -219,8 +232,9 @@ The plan does not require all external references to become graph edges. It requ
 - [ ] [P1-B] Keep `confidence: unknown` for nodes with unresolved diagnostics.
 - [ ] [P1-C] Implement the rule that valid graph nodes do not emit `unknown_connectivity`; reserve it for malformed/incomplete graph-health inputs only.
 - [ ] [P1-D] Update graph-health unit tests for all topology statuses with and without diagnostics.
-- [ ] [P1-E] Update HTTP/API tests that assert graph payload, report, and explain output.
-- [ ] [P1-F] Record after-counts for topology statuses, confidence levels, and diagnostics.
+- [ ] [P1-E] Add explicit coverage that valid graph nodes never emit `unknown_connectivity`, while malformed/incomplete graph-health input may still emit it if such input is representable.
+- [ ] [P1-F] Update HTTP/API tests that assert graph payload, report, and explain output.
+- [ ] [P1-G] Record after-counts for topology statuses, confidence levels, and diagnostics.
 
 ### P2 - Classify Non-Actionable Unresolved References
 
@@ -229,17 +243,19 @@ The plan does not require all external references to become graph edges. It requ
 - [ ] [P2-C] Add diagnostic classification for recognized Go standard-library and test-framework references.
 - [ ] [P2-D] Add diagnostic classification fields for `classification` and `actionability`, or an equivalent typed representation with the same values.
 - [ ] [P2-E] Preserve unresolved in-repo references as actionable analyzer/graph-accuracy diagnostics.
-- [ ] [P2-F] Add tests for the top observed cases: `testing.T`, `make`, `len`, `append`, `string`, `int`, `fmt.Errorf`, `time.Second`, `t.Helper`, and `t.TempDir`.
-- [ ] [P2-G] Record before/after top unresolved target counts and diagnostic classification counts.
+- [ ] [P2-F] Update `internal/contracts/web_ui.go` and generated Web contracts for diagnostic classification/actionability fields.
+- [ ] [P2-G] Add tests for the top observed cases: `testing.T`, `make`, `len`, `append`, `string`, `int`, `fmt.Errorf`, `time.Second`, `t.Helper`, and `t.TempDir`.
+- [ ] [P2-H] Record before/after top unresolved target counts and diagnostic classification counts.
 
 ### P3 - Report and API Semantics
 
 - [ ] [P3-A] Update `/api/graph/report` ranking so `unresolved_reference` is not a topology replacement.
-- [ ] [P3-B] Keep diagnostic candidates visible as diagnostic evidence.
+- [ ] [P3-B] Add report `triageDimension` with values `topology` and `diagnostic`.
 - [ ] [P3-C] Ensure graph-health explain output for a connected diagnostic node shows `connected` plus diagnostic details.
 - [ ] [P3-D] Ensure connected diagnostic nodes are not ranked as dead-code/unwired topology candidates.
-- [ ] [P3-E] Add or update report/explain tests for topology plus diagnostic overlay and diagnostic-only triage.
-- [ ] [P3-F] Record API payload evidence.
+- [ ] [P3-E] Keep diagnostic candidates visible as diagnostic evidence with `triageDimension: diagnostic`.
+- [ ] [P3-F] Add or update report/explain tests for topology plus diagnostic overlay and diagnostic-only triage.
+- [ ] [P3-G] Record API payload evidence.
 
 ### P4 - Web UI Clarity
 
@@ -257,9 +273,10 @@ The plan does not require all external references to become graph edges. It requ
 - [ ] [P5-D] Run focused Web unit tests for graph-health filters/details.
 - [ ] [P5-E] Run full Web unit tests.
 - [ ] [P5-F] Run Web e2e covering Graph Health filters and diagnostic/topology separation.
-- [ ] [P5-G] Re-run `avmatrix analyze --force` and record final inventory counts.
-- [ ] [P5-H] Run required change detection before commit according to active repo instructions.
-- [ ] [P5-I] Commit the completed implementation slice.
+- [ ] [P5-G] Verify generated Web contract output is current and committed if contract fields changed.
+- [ ] [P5-H] Re-run `avmatrix analyze --force` and record final inventory counts.
+- [ ] [P5-I] Run required change detection before commit according to active repo instructions.
+- [ ] [P5-J] Commit the completed implementation slice.
 
 ## Open Questions
 
