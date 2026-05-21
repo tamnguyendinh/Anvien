@@ -3302,12 +3302,33 @@ export const GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS = [
 
 export type GraphHealthExpectedIsolationReason = (typeof GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS)[number];
 
+export const GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATIONS = [
+  "builtin",
+  "standard_library",
+  "test_framework",
+  "external_library",
+  "in_repo_unresolved",
+  "unclassified"
+] as const;
+
+export type GraphHealthDiagnosticClassification = (typeof GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATIONS)[number];
+
+export const GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES = [
+  "non_actionable",
+  "review",
+  "analyzer_gap"
+] as const;
+
+export type GraphHealthDiagnosticActionability = (typeof GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES)[number];
+
 export interface GraphHealthDiagnostic {
   kind: string;
   factFamily?: string;
   sourceNodeId?: string;
   targetText?: string;
   resolutionSource?: string;
+  classification?: GraphHealthDiagnosticClassification;
+  actionability?: GraphHealthDiagnosticActionability;
   filePath?: string;
   fileHash?: string;
   startLine?: number;
@@ -3354,6 +3375,8 @@ export interface GraphHealthSummary {
   expectedIsolationReasonCounts: Partial<Record<GraphHealthExpectedIsolationReason, number>>;
   confidenceCounts: Partial<Record<GraphHealthConfidence, number>>;
   diagnosticCounts: Record<string, number>;
+  diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>;
+  diagnosticActionabilityCounts: Partial<Record<GraphHealthDiagnosticActionability, number>>;
   excludedEdgeCounts: Record<string, number>;
   largestDetachedComponents?: GraphHealthComponentSummary[];
 }
@@ -3453,6 +3476,8 @@ export interface GraphHealthComponentExplanation {
   expectedIsolationReasonCounts: Partial<Record<GraphHealthExpectedIsolationReason, number>>;
   confidenceCounts: Partial<Record<GraphHealthConfidence, number>>;
   diagnosticCounts: Record<string, number>;
+  diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>;
+  diagnosticActionabilityCounts: Partial<Record<GraphHealthDiagnosticActionability, number>>;
 }
 
 export interface GraphHealthExplainResponse {
@@ -3479,12 +3504,16 @@ export type GraphHealthReportPriority =
   | 'no_outgoing'
   | 'unknown_connectivity';
 
+export const GRAPH_HEALTH_REPORT_TRIAGE_DIMENSIONS = ['topology', 'diagnostic'] as const;
+export type GraphHealthReportTriageDimension = (typeof GRAPH_HEALTH_REPORT_TRIAGE_DIMENSIONS)[number];
+
 export interface GraphHealthReportCandidate {
   nodeId: string;
   label: NodeLabel | string;
   name?: string;
   filePath?: string;
   triagePriority: GraphHealthReportPriority;
+  triageDimension: GraphHealthReportTriageDimension;
   topologyStatus: GraphHealthTopologyStatus;
   confidence: GraphHealthConfidence;
   countedIncoming: number;

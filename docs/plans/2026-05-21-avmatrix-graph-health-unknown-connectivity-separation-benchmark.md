@@ -2,7 +2,7 @@
 
 Date: 2026-05-21
 
-Status: draft
+Status: implemented
 
 Plan: [2026-05-21-avmatrix-graph-health-unknown-connectivity-separation-plan.md](2026-05-21-avmatrix-graph-health-unknown-connectivity-separation-plan.md)
 
@@ -95,23 +95,23 @@ Status: recorded
 
 ## B2 - Target Post-P1 Metrics
 
-Status: pending
+Status: recorded
 
 After topology and diagnostics are separated, record:
 
 | Metric | Before | Target / expected direction | After |
 | --- | ---: | --- | ---: |
-| `unknown_connectivity` topology count for valid graph nodes | 4345 effective observed bucket | `0` after P1; only malformed/incomplete inputs may use this status | pending |
-| Nodes with diagnostics | 4345 | may remain high before P2; diagnostics are not hidden | pending |
-| Connected nodes with diagnostics | 2036 | should be `connected` with `confidence: unknown` | pending |
-| No-incoming nodes with diagnostics | 1581 | should be `no_incoming` with `confidence: unknown` | pending |
-| No-outgoing nodes with diagnostics | 559 | should be `no_outgoing` with `confidence: unknown` | pending |
-| True-isolated nodes with diagnostics | 169 | should be `true_isolated` with `confidence: unknown` | pending |
-| Valid graph nodes emitted as `unknown_connectivity` | 4345 effective observed bucket | `0` after P1 unless malformed/incomplete input is intentionally tested | pending |
+| `unknown_connectivity` topology count for valid graph nodes | 4345 effective observed bucket | `0` after P1; only malformed/incomplete inputs may use this status | `0` |
+| Nodes with diagnostics | 4345 diagnostic-bearing raw nodes | diagnostics are not hidden | diagnostics retained and counted as `51232` occurrences |
+| Connected nodes with diagnostics | 2036 | should be `connected` with `confidence: unknown` | `2633` connected diagnostic nodes |
+| No-incoming nodes with diagnostics | 1581 | should be `no_incoming` with `confidence: unknown` | preserved by topology; no longer overwritten by diagnostics |
+| No-outgoing nodes with diagnostics | 559 | should be `no_outgoing` with `confidence: unknown` | preserved by topology; no longer overwritten by diagnostics |
+| True-isolated nodes with diagnostics | 169 | should be `true_isolated` with `confidence: unknown` | preserved by topology; no longer overwritten by diagnostics |
+| Valid graph nodes emitted as `unknown_connectivity` | 4345 effective observed bucket | `0` after P1 unless malformed/incomplete input is intentionally tested | `0` |
 
 ## B3 - Target Post-P2 Diagnostic Classification Metrics
 
-Status: pending
+Status: recorded
 
 Record classification counts after builtin/stdlib/external/test references are classified.
 
@@ -124,65 +124,65 @@ Required diagnostic metadata:
 
 | Diagnostic classification | Before | Expected actionability | After |
 | --- | ---: | --- | ---: |
-| builtin | pending exact classification | `non_actionable` | pending |
-| standard_library | pending exact classification | `non_actionable` | pending |
-| test_framework | pending exact classification | `non_actionable` | pending |
-| external_library | pending exact classification | `review` | pending |
-| in_repo_unresolved | pending exact classification | `analyzer_gap` | pending |
-| unclassified | pending exact classification | `review` | pending |
+| builtin | pending exact classification | `non_actionable` | `8003` |
+| standard_library | pending exact classification | `non_actionable` | `7206` |
+| test_framework | pending exact classification | `non_actionable` | `8400` |
+| external_library | pending exact classification | `review` | recorded in API payload, not top final bucket |
+| in_repo_unresolved | pending exact classification | `analyzer_gap` | `27461` |
+| unclassified | pending exact classification | `review` | recorded in API payload, not top final bucket |
 
 Required before/after target rows:
 
 | Target | Before | After |
 | --- | ---: | ---: |
-| `testing.T` | 1123 | pending |
-| `make` | 293 | pending |
-| `string` | 196 | pending |
-| `t.TempDir` | 191 | pending |
-| `len` | 180 | pending |
-| `append` | 108 | pending |
-| `time.Second` | 104 | pending |
-| `t.Fatalf` | 100 | pending |
-| `strings.TrimSpace` | 89 | pending |
-| `context.Context` | 72 | pending |
-| `map[string]any` | 51 | pending |
-| `filepath.Join` | 47 | pending |
+| `testing.T` | 1123 | classified as `test_framework`, `non_actionable` |
+| `make` | 293 | classified as `builtin`, `non_actionable` |
+| `string` | 196 | classified as `builtin`, `non_actionable` |
+| `t.TempDir` | 191 | classified as `test_framework`, `non_actionable` |
+| `len` | 180 | classified as `builtin`, `non_actionable` |
+| `append` | 108 | classified as `builtin`, `non_actionable` |
+| `time.Second` | 104 | classified as `standard_library`, `non_actionable` |
+| `t.Fatalf` | 100 | classified as `test_framework`, `non_actionable` |
+| `strings.TrimSpace` | 89 | classified as `standard_library`, `non_actionable` |
+| `context.Context` | 72 | classified as `standard_library`, `non_actionable` |
+| `map[string]any` | 51 | classified as `builtin`, `non_actionable` |
+| `filepath.Join` | 47 | classified as `standard_library`, `non_actionable` |
 
 ## B4 - Web UI Benchmarks
 
-Status: pending
+Status: recorded
 
 Record after Web UI validation:
 
 | UX check | Expected | Result |
 | --- | --- | --- |
-| `Unknown` topology count no longer represents all diagnostics | yes | pending |
-| Hiding `Unknown` topology keeps connected diagnostic nodes visible | yes | pending |
-| Diagnostic filter remains separate from topology filter | yes | pending |
-| Node detail shows topology and diagnostics together | yes | pending |
-| Graph Health wording does not imply `Unknown` means dead code | yes | pending |
-| Diagnostic classification/actionability is visible where needed for triage | yes | pending |
-| Connected diagnostic nodes are not presented as topology defects | yes | pending |
-| Report candidates expose `triageDimension` | yes; `topology` or `diagnostic` | pending |
-| Connected diagnostic report candidates use diagnostic dimension only | yes | pending |
+| `Unknown` topology count no longer represents all diagnostics | yes | `0` final valid graph nodes |
+| Hiding `Unknown` topology keeps connected diagnostic nodes visible | yes | e2e `hiding unknown topology keeps connected diagnostic nodes selectable` passed |
+| Diagnostic filter remains separate from topology filter | yes | unit and e2e coverage passed |
+| Node detail shows topology and diagnostics together | yes | unit and e2e coverage passed |
+| Graph Health wording does not imply `Unknown` means dead code | yes | wording updated |
+| Diagnostic classification/actionability is visible where needed for triage | yes | node detail shows classification/actionability |
+| Connected diagnostic nodes are not presented as topology defects | yes | report test passed |
+| Report candidates expose `triageDimension` | yes; `topology` or `diagnostic` | contract/API tests passed |
+| Connected diagnostic report candidates use diagnostic dimension only | yes | `TestGraphHealthReportSeparatesTopologyAndDiagnosticTriage` passed |
 
 ## B5 - Validation Benchmarks
 
-Status: pending
+Status: recorded
 
 Record commands and results:
 
 | Validation | Expected | Result |
 | --- | --- | --- |
-| Full packaged build before tests | pass | pending |
-| Focused graphhealth tests | pass | pending |
-| Focused resolution diagnostic tests | pass | pending |
-| Focused HTTP graph/report/explain tests | pass | pending |
-| Generated contract tests if touched | pass | pending |
-| Generated Web contract output is current if contract fields change | pass | pending |
-| Full relevant Go tests | pass | pending |
-| Focused Web unit tests | pass | pending |
-| Full Web unit tests | pass | pending |
-| Web e2e Graph Health topology/diagnostic separation | pass | pending |
-| Final graph refresh and inventory count | recorded | pending |
-| Required change detection before commit | recorded | pending |
+| Full packaged build before tests | pass | passed |
+| Focused graphhealth tests | pass | passed |
+| Focused resolution diagnostic tests | pass | passed |
+| Focused HTTP graph/report/explain tests | pass | passed |
+| Generated contract tests if touched | pass | passed |
+| Generated Web contract output is current if contract fields change | pass | passed |
+| Full relevant Go tests | pass | `go test ./cmd/... ./internal/...` passed |
+| Focused Web unit tests | pass | passed |
+| Full Web unit tests | pass | `44` files, `357` tests passed |
+| Web e2e Graph Health topology/diagnostic separation | pass | focused spec passed; full e2e `36` passed, `8` skipped |
+| Final graph refresh and inventory count | recorded | `nodes=22010`, `relationships=54679`, `unknown_connectivity=0` |
+| Required change detection before commit | recorded | `risk_level=critical`, `changed_files=17`, `affected_count=35`; affected paths match intended Graph Health/API/contract/Web work |

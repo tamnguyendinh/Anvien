@@ -27,6 +27,11 @@ func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {
 	if len(manifest.Graph.RelationshipDisplayPolicy) != len(manifest.Graph.GraphRelationshipTypes) {
 		t.Fatalf("relationship display policy count mismatch: %#v", manifest.Graph.RelationshipDisplayPolicy)
 	}
+	if !contains(manifest.Graph.GraphHealthDiagnosticClassifications, "builtin") ||
+		!contains(manifest.Graph.GraphHealthDiagnosticActionabilities, "analyzer_gap") ||
+		!contains(manifest.Graph.GraphHealthReportTriageDimensions, "diagnostic") {
+		t.Fatalf("graph health contract metadata missing: %#v", manifest.Graph)
+	}
 	if policy := relationshipPolicy(manifest, "INHERITS"); policy.SemanticGroup != "normalized-heritage" {
 		t.Fatalf("INHERITS policy = %#v", policy)
 	}
@@ -63,8 +68,12 @@ func TestWebUIContractTypeScriptIsBrowserGeneratedGlue(t *testing.T) {
 		"export const LANGUAGE_GRAPH_COVERAGE",
 		"export interface GraphNode",
 		"export const GRAPH_HEALTH_TOPOLOGY_STATUSES",
+		"export const GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATIONS",
+		"export type GraphHealthDiagnosticActionability",
 		"export interface GraphHealthComponentSummary",
 		"export interface GraphHealthSummary",
+		"diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>",
+		"triageDimension: GraphHealthReportTriageDimension",
 		"largestDetachedComponents?: GraphHealthComponentSummary[]",
 		"graphHealth?: GraphHealthNodeMetadata",
 		"export interface SessionStatusResponse",

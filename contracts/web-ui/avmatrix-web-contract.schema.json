@@ -260,6 +260,23 @@
         "displayPolicy": "count and draw as an independent graph relationship"
       }
     ],
+    "graphHealthDiagnosticClassifications": [
+      "builtin",
+      "standard_library",
+      "test_framework",
+      "external_library",
+      "in_repo_unresolved",
+      "unclassified"
+    ],
+    "graphHealthDiagnosticActionabilities": [
+      "non_actionable",
+      "review",
+      "analyzer_gap"
+    ],
+    "graphHealthReportTriageDimensions": [
+      "topology",
+      "diagnostic"
+    ],
     "relationshipTableName": "CodeRelation",
     "embeddingTableName": "CodeEmbedding"
   },

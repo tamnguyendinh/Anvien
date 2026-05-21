@@ -170,11 +170,37 @@ func TestCompute_ExpectedReasonConfidenceAndSummary(t *testing.T) {
 	}
 }
 
-func TestCompute_UnresolvedDiagnosticMarksUnknownConnectivity(t *testing.T) {
+func TestCompute_UnresolvedDiagnosticPreservesTopologyAndMarksUnknownConfidence(t *testing.T) {
 	g := graph.New()
+	g.AddNode(graph.Node{ID: "Function:main", Label: scopeir.NodeFunction, Properties: map[string]any{"name": "main", "filePath": "cmd/app/main.go", "isExported": true}})
 	g.AddNode(graph.Node{ID: "Function:source", Label: scopeir.NodeFunction, Properties: map[string]any{"name": "source", "filePath": "src/app.ts"}})
 	g.AddNode(graph.Node{ID: "Function:target", Label: scopeir.NodeFunction, Properties: map[string]any{"name": "target", "filePath": "src/app.ts"}})
+	g.AddNode(graph.Node{ID: "Function:isolated", Label: scopeir.NodeFunction, Properties: map[string]any{"name": "isolated", "filePath": "src/app.ts"}})
+	g.AddNode(graph.Node{ID: "Function:detachedA", Label: scopeir.NodeFunction, Properties: map[string]any{"name": "detachedA", "filePath": "src/detached.ts"}})
+	g.AddNode(graph.Node{ID: "Function:detachedB", Label: scopeir.NodeFunction, Properties: map[string]any{"name": "detachedB", "filePath": "src/detached.ts"}})
+	g.AddRelationship(graph.Relationship{ID: "r-main-source", SourceID: "Function:main", TargetID: "Function:source", Type: graph.RelCalls})
 	g.AddRelationship(graph.Relationship{ID: "r-call", SourceID: "Function:source", TargetID: "Function:target", Type: graph.RelCalls})
+	g.AddRelationship(graph.Relationship{ID: "r-detached", SourceID: "Function:detachedA", TargetID: "Function:detachedB", Type: graph.RelCalls})
+	for _, item := range []struct {
+		nodeID     string
+		targetText string
+	}{
+		{nodeID: "Function:main", targetText: "make"},
+		{nodeID: "Function:target", targetText: "len"},
+		{nodeID: "Function:isolated", targetText: "node.Kind"},
+		{nodeID: "Function:detachedA", targetText: "time.Second"},
+	} {
+		if !AppendDiagnosticToNode(g, item.nodeID, Diagnostic{
+			Kind:             DiagnosticUnresolvedReference,
+			FactFamily:       "call",
+			TargetText:       item.targetText,
+			ResolutionSource: "scope-resolution",
+			FilePath:         "src/app.ts",
+			StartLine:        2,
+		}) {
+			t.Fatalf("failed to attach unresolved diagnostic to %s", item.nodeID)
+		}
+	}
 	if !AppendDiagnosticToNode(g, "Function:source", Diagnostic{
 		Kind:             DiagnosticUnresolvedReference,
 		FactFamily:       "call",
@@ -195,20 +221,38 @@ func TestCompute_UnresolvedDiagnosticMarksUnknownConnectivity(t *testing.T) {
 	}) {
 		t.Fatal("failed to attach second unresolved diagnostic to source")
 	}
-	SetResolutionMetadata(g, 2, 1, 1)
+	SetResolutionMetadata(g, 6, 5, 1)
 
 	summary := ComputeSummary(g)
 
+	cases := []struct {
+		nodeID       string
+		wantTopology TopologyStatus
+	}{
+		{nodeID: "Function:main", wantTopology: TopologyNoIncoming},
+		{nodeID: "Function:source", wantTopology: TopologyConnected},
+		{nodeID: "Function:target", wantTopology: TopologyNoOutgoing},
+		{nodeID: "Function:isolated", wantTopology: TopologyTrueIsolated},
+		{nodeID: "Function:detachedA", wantTopology: TopologyDetached},
+	}
+	for _, item := range cases {
+		node := findNode(g, item.nodeID)
+		if node == nil {
+			t.Fatalf("%s node not found", item.nodeID)
+		}
+		health, ok := node.Properties["graphHealth"].(NodeHealth)
+		if !ok {
+			t.Fatalf("%s graphHealth missing: %#v", item.nodeID, node.Properties["graphHealth"])
+		}
+		if health.TopologyStatus != item.wantTopology {
+			t.Fatalf("%s topologyStatus=%s want %s", item.nodeID, health.TopologyStatus, item.wantTopology)
+		}
+		if health.Confidence != ConfidenceUnknown {
+			t.Fatalf("%s confidence=%s want unknown", item.nodeID, health.Confidence)
+		}
+	}
+
 	source := findNode(g, "Function:source")
-	if source == nil {
-		t.Fatal("source node not found")
-	}
-	if ts, _ := source.Properties["topologyStatus"].(string); ts != string(TopologyUnknown) {
-		t.Fatalf("source topologyStatus=%s want unknown_connectivity", ts)
-	}
-	if conf, _ := source.Properties["confidence"].(string); conf != ConfidenceUnknown {
-		t.Fatalf("source confidence=%s want unknown", conf)
-	}
 	health, ok := source.Properties["graphHealth"].(NodeHealth)
 	if !ok || len(health.Diagnostics) != 1 {
 		t.Fatalf("source graphHealth diagnostics = %#v", source.Properties["graphHealth"])
@@ -216,14 +260,27 @@ func TestCompute_UnresolvedDiagnosticMarksUnknownConnectivity(t *testing.T) {
 	if health.Diagnostics[0].Count != 2 || health.Diagnostics[0].TargetText != "missing" {
 		t.Fatalf("source diagnostic aggregation = %#v", health.Diagnostics[0])
 	}
-	if got := summary.TopologyStatusCounts[string(TopologyUnknown)]; got != 1 {
-		t.Fatalf("unknown topology count=%d want 1", got)
+	if health.Diagnostics[0].Classification != DiagnosticClassificationInRepoUnresolved ||
+		health.Diagnostics[0].Actionability != DiagnosticActionabilityAnalyzerGap {
+		t.Fatalf("source diagnostic classification = %#v", health.Diagnostics[0])
 	}
-	if got := summary.DiagnosticCounts[DiagnosticUnresolvedReference]; got != 2 {
-		t.Fatalf("unresolved diagnostic count=%d want 2", got)
+	if got := summary.TopologyStatusCounts[string(TopologyUnknown)]; got != 0 {
+		t.Fatalf("unknown topology count=%d want 0 for valid graph nodes", got)
 	}
-	if summary.UnresolvedReferenceCount != 2 ||
-		summary.SourceBackedUnresolvedReferenceCount != 2 ||
+	if got := summary.DiagnosticCounts[DiagnosticUnresolvedReference]; got != 6 {
+		t.Fatalf("unresolved diagnostic count=%d want 6", got)
+	}
+	if summary.DiagnosticClassificationCounts[DiagnosticClassificationBuiltin] != 2 ||
+		summary.DiagnosticClassificationCounts[DiagnosticClassificationStandardLibrary] != 1 ||
+		summary.DiagnosticClassificationCounts[DiagnosticClassificationInRepoUnresolved] != 3 {
+		t.Fatalf("diagnostic classification counts = %#v", summary.DiagnosticClassificationCounts)
+	}
+	if summary.DiagnosticActionabilityCounts[DiagnosticActionabilityNonActionable] != 3 ||
+		summary.DiagnosticActionabilityCounts[DiagnosticActionabilityAnalyzerGap] != 3 {
+		t.Fatalf("diagnostic actionability counts = %#v", summary.DiagnosticActionabilityCounts)
+	}
+	if summary.UnresolvedReferenceCount != 6 ||
+		summary.SourceBackedUnresolvedReferenceCount != 6 ||
 		summary.UnattributedUnresolvedReferenceCount != 0 {
 		t.Fatalf("unresolved summary counts = %#v", summary)
 	}
@@ -279,8 +336,55 @@ func TestCompute_NormalizesDecodedDiagnostics(t *testing.T) {
 	if health.Diagnostics[0].FactFamily != "type-reference" || health.Diagnostics[0].StartLine != 7 {
 		t.Fatalf("decoded diagnostic not normalized: %#v", health.Diagnostics[0])
 	}
+	if health.Diagnostics[0].Classification != DiagnosticClassificationInRepoUnresolved ||
+		health.Diagnostics[0].Actionability != DiagnosticActionabilityAnalyzerGap {
+		t.Fatalf("decoded diagnostic classification = %#v", health.Diagnostics[0])
+	}
 	if summary.UnresolvedReferenceCount != 1 || summary.DiagnosticCounts[DiagnosticUnresolvedReference] != 1 {
 		t.Fatalf("decoded summary = %#v", summary)
+	}
+}
+
+func TestDiagnostics_ClassifiesObservedUnresolvedTargets(t *testing.T) {
+	cases := []struct {
+		target             string
+		wantClassification string
+		wantActionability  string
+	}{
+		{target: "testing.T", wantClassification: DiagnosticClassificationTestFramework, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "testing.B", wantClassification: DiagnosticClassificationTestFramework, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "make", wantClassification: DiagnosticClassificationBuiltin, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "len", wantClassification: DiagnosticClassificationBuiltin, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "append", wantClassification: DiagnosticClassificationBuiltin, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "string", wantClassification: DiagnosticClassificationBuiltin, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "int", wantClassification: DiagnosticClassificationBuiltin, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "map[string]any", wantClassification: DiagnosticClassificationBuiltin, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "fmt.Errorf", wantClassification: DiagnosticClassificationStandardLibrary, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "time.Second", wantClassification: DiagnosticClassificationStandardLibrary, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "strings.TrimSpace", wantClassification: DiagnosticClassificationStandardLibrary, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "context.Context", wantClassification: DiagnosticClassificationStandardLibrary, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "filepath.Join", wantClassification: DiagnosticClassificationStandardLibrary, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "t.Helper", wantClassification: DiagnosticClassificationTestFramework, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "t.TempDir", wantClassification: DiagnosticClassificationTestFramework, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "t.Fatalf", wantClassification: DiagnosticClassificationTestFramework, wantActionability: DiagnosticActionabilityNonActionable},
+		{target: "node.Kind", wantClassification: DiagnosticClassificationInRepoUnresolved, wantActionability: DiagnosticActionabilityAnalyzerGap},
+		{target: "c.text", wantClassification: DiagnosticClassificationInRepoUnresolved, wantActionability: DiagnosticActionabilityAnalyzerGap},
+		{target: "uuid.New", wantClassification: DiagnosticClassificationExternalLibrary, wantActionability: DiagnosticActionabilityReview},
+	}
+	for _, item := range cases {
+		diagnostic := normalizeDiagnosticMetadata(Diagnostic{
+			Kind:       DiagnosticUnresolvedReference,
+			TargetText: item.target,
+		})
+		if diagnostic.Classification != item.wantClassification || diagnostic.Actionability != item.wantActionability {
+			t.Fatalf("%s classification/actionability = %s/%s, want %s/%s",
+				item.target,
+				diagnostic.Classification,
+				diagnostic.Actionability,
+				item.wantClassification,
+				item.wantActionability,
+			)
+		}
 	}
 }
 

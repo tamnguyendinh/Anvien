@@ -2,7 +2,7 @@
 
 Date: 2026-05-21
 
-Status: draft
+Status: implemented
 
 Companion files:
 
@@ -220,68 +220,68 @@ triageDimension:
 
 ### P0 - Baseline and Reproduction
 
-- [ ] [P0-A] Reproduce current `/api/graph` Graph Health summary on a freshly analyzed `E:\AVmatrix-GO` graph.
-- [ ] [P0-B] Record raw `.avmatrix\graph.json` diagnostic-node inventory and counted-edge degree buckets.
-- [ ] [P0-C] Record top unresolved target texts, fact families, files, node labels, and path buckets.
-- [ ] [P0-D] Record the old connected-plus-diagnostic bug in evidence, then add target-behavior coverage that a connected node with unresolved diagnostics remains `connected` with `confidence: unknown`.
-- [ ] [P0-E] Record baseline counts in the benchmark ledger before any semantic change.
+- [x] [P0-A] Reproduce current `/api/graph` Graph Health summary on a freshly analyzed `E:\AVmatrix-GO` graph.
+- [x] [P0-B] Record raw `.avmatrix\graph.json` diagnostic-node inventory and counted-edge degree buckets.
+- [x] [P0-C] Record top unresolved target texts, fact families, files, node labels, and path buckets.
+- [x] [P0-D] Record the old connected-plus-diagnostic bug in evidence, then add target-behavior coverage that a connected node with unresolved diagnostics remains `connected` with `confidence: unknown`.
+- [x] [P0-E] Record baseline counts in the benchmark ledger before any semantic change.
 
 ### P1 - Preserve Topology When Diagnostics Exist
 
-- [ ] [P1-A] Update `internal/graphhealth.ComputeSummary` so unresolved diagnostics do not override topology.
-- [ ] [P1-B] Keep `confidence: unknown` for nodes with unresolved diagnostics.
-- [ ] [P1-C] Implement the rule that valid graph nodes do not emit `unknown_connectivity`; reserve it for malformed/incomplete graph-health inputs only.
-- [ ] [P1-D] Update graph-health unit tests for all topology statuses with and without diagnostics.
-- [ ] [P1-E] Add explicit coverage that valid graph nodes never emit `unknown_connectivity`, while malformed/incomplete graph-health input may still emit it if such input is representable.
-- [ ] [P1-F] Update HTTP/API tests that assert graph payload, report, and explain output.
-- [ ] [P1-G] Record after-counts for topology statuses, confidence levels, and diagnostics.
+- [x] [P1-A] Update `internal/graphhealth.ComputeSummary` so unresolved diagnostics do not override topology.
+- [x] [P1-B] Keep `confidence: unknown` for nodes with unresolved diagnostics.
+- [x] [P1-C] Implement the rule that valid graph nodes do not emit `unknown_connectivity`; reserve it for malformed/incomplete graph-health inputs only.
+- [x] [P1-D] Update graph-health unit tests for all topology statuses with and without diagnostics.
+- [x] [P1-E] Add explicit coverage that valid graph nodes never emit `unknown_connectivity`, while malformed/incomplete graph-health input may still emit it if such input is representable.
+- [x] [P1-F] Update HTTP/API tests that assert graph payload, report, and explain output.
+- [x] [P1-G] Record after-counts for topology statuses, confidence levels, and diagnostics.
 
 ### P2 - Classify Non-Actionable Unresolved References
 
-- [ ] [P2-A] Identify where Go builtin, predeclared type, stdlib, and external-library references can be classified without inventing fake graph edges.
-- [ ] [P2-B] Add diagnostic classification for recognized builtin/predeclared references.
-- [ ] [P2-C] Add diagnostic classification for recognized Go standard-library and test-framework references.
-- [ ] [P2-D] Add diagnostic classification fields for `classification` and `actionability`, or an equivalent typed representation with the same values.
-- [ ] [P2-E] Preserve unresolved in-repo references as actionable analyzer/graph-accuracy diagnostics.
-- [ ] [P2-F] Update `internal/contracts/web_ui.go` and generated Web contracts for diagnostic classification/actionability fields.
-- [ ] [P2-G] Add tests for the top observed cases: `testing.T`, `make`, `len`, `append`, `string`, `int`, `fmt.Errorf`, `time.Second`, `t.Helper`, and `t.TempDir`.
-- [ ] [P2-H] Record before/after top unresolved target counts and diagnostic classification counts.
+- [x] [P2-A] Identify where Go builtin, predeclared type, stdlib, and external-library references can be classified without inventing fake graph edges.
+- [x] [P2-B] Add diagnostic classification for recognized builtin/predeclared references.
+- [x] [P2-C] Add diagnostic classification for recognized Go standard-library and test-framework references.
+- [x] [P2-D] Add diagnostic classification fields for `classification` and `actionability`, or an equivalent typed representation with the same values.
+- [x] [P2-E] Preserve unresolved in-repo references as actionable analyzer/graph-accuracy diagnostics.
+- [x] [P2-F] Update `internal/contracts/web_ui.go` and generated Web contracts for diagnostic classification/actionability fields.
+- [x] [P2-G] Add tests for the top observed cases: `testing.T`, `make`, `len`, `append`, `string`, `int`, `fmt.Errorf`, `time.Second`, `t.Helper`, and `t.TempDir`.
+- [x] [P2-H] Record before/after top unresolved target counts and diagnostic classification counts.
 
 ### P3 - Report and API Semantics
 
-- [ ] [P3-A] Update `/api/graph/report` ranking so `unresolved_reference` is not a topology replacement.
-- [ ] [P3-B] Add report `triageDimension` with values `topology` and `diagnostic`.
-- [ ] [P3-C] Ensure graph-health explain output for a connected diagnostic node shows `connected` plus diagnostic details.
-- [ ] [P3-D] Ensure connected diagnostic nodes are not ranked as dead-code/unwired topology candidates.
-- [ ] [P3-E] Keep diagnostic candidates visible as diagnostic evidence with `triageDimension: diagnostic`.
-- [ ] [P3-F] Add or update report/explain tests for topology plus diagnostic overlay and diagnostic-only triage.
-- [ ] [P3-G] Record API payload evidence.
+- [x] [P3-A] Update `/api/graph/report` ranking so `unresolved_reference` is not a topology replacement.
+- [x] [P3-B] Add report `triageDimension` with values `topology` and `diagnostic`.
+- [x] [P3-C] Ensure graph-health explain output for a connected diagnostic node shows `connected` plus diagnostic details.
+- [x] [P3-D] Ensure connected diagnostic nodes are not ranked as dead-code/unwired topology candidates.
+- [x] [P3-E] Keep diagnostic candidates visible as diagnostic evidence with `triageDimension: diagnostic`.
+- [x] [P3-F] Add or update report/explain tests for topology plus diagnostic overlay and diagnostic-only triage.
+- [x] [P3-G] Record API payload evidence.
 
 ### P4 - Web UI Clarity
 
-- [ ] [P4-A] Review `Graph Health` UI wording so `Unknown` clearly means topology unknown, not "has unresolved reference".
-- [ ] [P4-B] Ensure diagnostic filters remain separate from topology filters.
-- [ ] [P4-C] Add e2e coverage where hiding `Unknown` topology does not hide a connected node with diagnostics.
-- [ ] [P4-D] Add e2e or unit coverage for node detail showing topology and diagnostics together.
-- [ ] [P4-E] Record UI evidence and screenshots/artifacts if generated by Playwright.
+- [x] [P4-A] Review `Graph Health` UI wording so `Unknown` clearly means topology unknown, not "has unresolved reference".
+- [x] [P4-B] Ensure diagnostic filters remain separate from topology filters.
+- [x] [P4-C] Add e2e coverage where hiding `Unknown` topology does not hide a connected node with diagnostics.
+- [x] [P4-D] Add e2e or unit coverage for node detail showing topology and diagnostics together.
+- [x] [P4-E] Record UI evidence and screenshots/artifacts if generated by Playwright.
 
 ### P5 - Full Validation and Closure
 
-- [ ] [P5-A] Run full build first: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
-- [ ] [P5-B] Run focused backend tests for graph health, resolution diagnostics, HTTP graph/report/explain, and contracts as touched.
-- [ ] [P5-C] Run full relevant Go tests for touched packages.
-- [ ] [P5-D] Run focused Web unit tests for graph-health filters/details.
-- [ ] [P5-E] Run full Web unit tests.
-- [ ] [P5-F] Run Web e2e covering Graph Health filters and diagnostic/topology separation.
-- [ ] [P5-G] Verify generated Web contract output is current and committed if contract fields changed.
-- [ ] [P5-H] Re-run `avmatrix analyze --force` and record final inventory counts.
-- [ ] [P5-I] Run required change detection before commit according to active repo instructions.
-- [ ] [P5-J] Commit the completed implementation slice.
+- [x] [P5-A] Run full build first: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- [x] [P5-B] Run focused backend tests for graph health, resolution diagnostics, HTTP graph/report/explain, and contracts as touched.
+- [x] [P5-C] Run full relevant Go tests for touched packages.
+- [x] [P5-D] Run focused Web unit tests for graph-health filters/details.
+- [x] [P5-E] Run full Web unit tests.
+- [x] [P5-F] Run Web e2e covering Graph Health filters and diagnostic/topology separation.
+- [x] [P5-G] Verify generated Web contract output is current and committed if contract fields changed.
+- [x] [P5-H] Re-run `avmatrix analyze --force` and record final inventory counts.
+- [x] [P5-I] Run required change detection before commit according to active repo instructions.
+- [x] [P5-J] Commit the completed implementation slice.
 
 ## Open Questions
 
-- Should recognized builtin/stdlib diagnostics be retained as low-priority per-node diagnostics, or moved only into aggregate summary counts after classification?
-- Should Web UI default-hide diagnostic uncertainty, or keep it visible but separate from topology?
+- Recognized builtin/stdlib/test diagnostics are retained as per-node diagnostics with `actionability: non_actionable`, so the evidence remains inspectable without becoming topology uncertainty.
+- Web UI keeps diagnostic uncertainty visible but separate from topology; `Unknown` topology no longer means "has unresolved reference".
 
 The `unknown_connectivity` meaning is no longer open: it is reserved for malformed/incomplete graph-health inputs, not valid nodes with unresolved diagnostics.
 

@@ -2,7 +2,7 @@
 
 Date: 2026-05-21
 
-Status: draft
+Status: implemented
 
 Plan: [2026-05-21-avmatrix-graph-health-unknown-connectivity-separation-plan.md](2026-05-21-avmatrix-graph-health-unknown-connectivity-separation-plan.md)
 
@@ -229,18 +229,176 @@ Corrections made:
 
 ## E9 - Implementation Evidence
 
-Status: pending
+Status: recorded
 
-Record code changes by slice.
+Implementation changes:
+
+- `internal/graphhealth.ComputeSummary` no longer assigns `unknown_connectivity` merely because unresolved diagnostics exist.
+- Valid graph nodes now keep topology from counted edge/component evidence and use `confidence: unknown` when unresolved diagnostics are present.
+- `internal/graphhealth.Diagnostic` now carries:
+  - `classification`;
+  - `actionability`.
+- Diagnostic classification recognizes Go builtin/predeclared references, Go standard library references, Go test framework references, known external library qualifiers, and in-repo unresolved references.
+- Graph Health summaries now include:
+  - `diagnosticClassificationCounts`;
+  - `diagnosticActionabilityCounts`.
+- `/api/graph/report` now exposes `triageDimension`.
+- Topology candidates use `triageDimension: topology`.
+- Connected diagnostic-only candidates use `triageDimension: diagnostic`.
+- Web contracts and generated TypeScript expose diagnostic classification/actionability plus report triage dimensions.
+- Web node detail displays diagnostic classification/actionability when present.
+- Web Graph Health wording now describes `Unknown` as topology unknown, not analyzer uncertainty.
+
+Implementation files changed:
+
+- `internal/graphhealth/policy.go`
+- `internal/graphhealth/diagnostics.go`
+- `internal/graphhealth/compute.go`
+- `internal/httpapi/graph.go`
+- `internal/contracts/web_ui.go`
+- `contracts/web-ui/avmatrix-web-contract.schema.json`
+- `avmatrix-web/src/generated/avmatrix-contracts.ts`
+- `avmatrix-web/src/lib/graph-health-filters.ts`
+- `avmatrix-web/src/components/CodeReferencesPanel.tsx`
+
+Test files changed:
+
+- `internal/graphhealth/compute_test.go`
+- `internal/httpapi/handlers_test.go`
+- `internal/contracts/web_ui_test.go`
+- `avmatrix-web/test/unit/graph-health-filters.test.ts`
+- `avmatrix-web/e2e/graph-health-ui.spec.ts`
+
+No product/runtime timeout or elapsed-time budget behavior was introduced.
 
 ## E10 - Validation Evidence
 
-Status: pending
+Status: recorded
 
-Record full build, backend tests, Web unit tests, Web e2e tests, graph refresh, final counts, and required change detection.
+Full build gate:
+
+```text
+powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+```
+
+Result: passed after the final formatting pass. The build produced the packaged Web UI and launcher/server bundle. Vite reported existing chunk-size/dynamic-import warnings only.
+
+Focused backend validation:
+
+```text
+go test ./internal/graphhealth ./internal/httpapi ./internal/contracts ./internal/resolution
+```
+
+Result: passed.
+
+Focused Web validation:
+
+```text
+npm run test -- --run graph-health-filters CodeReferencesPanel.graph-health
+```
+
+Result: passed, `2` files and `7` tests.
+
+Generated contract check:
+
+```text
+go run ./cmd/generate-web-contracts --check
+```
+
+Result: passed.
+
+Full Web unit validation:
+
+```text
+npm run test
+```
+
+Result: passed, `44` files and `357` tests.
+
+Full Go validation attempt:
+
+```text
+go test ./...
+```
+
+Result: failed only because intentionally invalid fixture packages under `avmatrix/test/fixtures/...` are included by `./...`. Product/runtime packages in `cmd` and `internal` passed.
+
+Full relevant Go validation:
+
+```text
+go test ./cmd/... ./internal/...
+```
+
+Result: passed.
+
+Focused Graph Health e2e:
+
+```text
+npm run test:e2e -- e2e/graph-health-ui.spec.ts --workers=1
+```
+
+Result: passed, `4` tests.
+
+Full Web e2e:
+
+```text
+npm run test:e2e -- --workers=1
+```
+
+Result: passed, `36` tests passed and `8` skipped.
+
+Final AVmatrix refresh:
+
+```text
+avmatrix analyze --force
+```
+
+Result:
+
+```text
+files: scanned=724 parsed=539 unsupported=185 failed=0
+graph: nodes=22010 relationships=54679
+```
+
+Final API inventory from built backend:
+
+```text
+NodeCount: 22010
+CountedRelationshipCount: 26906
+UnknownConnectivity: 0
+Connected: 2633
+Diagnostics: 51232
+ConnectedDiagnosticNodes: 2633
+UnknownDiagnosticNodes: 0
+BuiltinDiagnostics: 8003
+StandardLibraryDiagnostics: 7206
+TestFrameworkDiagnostics: 8400
+InRepoDiagnostics: 27461
+NonActionableDiagnostics: 23609
+AnalyzerGapDiagnostics: 27461
+```
+
+Interpretation:
+
+- Valid graph nodes no longer use `unknown_connectivity` for unresolved diagnostics.
+- Connected diagnostic nodes are preserved as `connected` with diagnostic evidence.
+- Diagnostic uncertainty remains visible and classified.
 
 ## E11 - Commit Evidence
 
-Status: pending
+Status: recorded
 
-Record implementation commits after each completed slice.
+Required change detection:
+
+```text
+avmatrix detect-changes --repo AVmatrix --scope all
+```
+
+Result: completed. AVmatrix reported `risk_level: critical`, `changed_files: 17`, `changed_count: 185`, and `affected_count: 35`.
+
+Interpretation:
+
+- The reported affected processes match the intended Graph Health, diagnostic emission, HTTP report/explain, and Web contract/display paths.
+- No unexpected unrelated runtime flow was intentionally changed.
+
+Implementation commit: this ledger update is included in the implementation commit for the plan.

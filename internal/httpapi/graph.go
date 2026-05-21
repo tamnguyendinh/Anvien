@@ -37,17 +37,19 @@ type graphHealthExplainResponse struct {
 }
 
 type graphHealthComponentExplanation struct {
-	ID                            string         `json:"id"`
-	NodeCount                     int            `json:"nodeCount"`
-	CountedEdgeCount              int            `json:"countedEdgeCount"`
-	Detached                      bool           `json:"detached"`
-	ReachableFromRoot             bool           `json:"reachableFromRoot"`
-	RootNodeIDs                   []string       `json:"rootNodeIds,omitempty"`
-	SampleNodeIDs                 []string       `json:"sampleNodeIds,omitempty"`
-	TopologyStatusCounts          map[string]int `json:"topologyStatusCounts"`
-	ExpectedIsolationReasonCounts map[string]int `json:"expectedIsolationReasonCounts"`
-	ConfidenceCounts              map[string]int `json:"confidenceCounts"`
-	DiagnosticCounts              map[string]int `json:"diagnosticCounts"`
+	ID                             string         `json:"id"`
+	NodeCount                      int            `json:"nodeCount"`
+	CountedEdgeCount               int            `json:"countedEdgeCount"`
+	Detached                       bool           `json:"detached"`
+	ReachableFromRoot              bool           `json:"reachableFromRoot"`
+	RootNodeIDs                    []string       `json:"rootNodeIds,omitempty"`
+	SampleNodeIDs                  []string       `json:"sampleNodeIds,omitempty"`
+	TopologyStatusCounts           map[string]int `json:"topologyStatusCounts"`
+	ExpectedIsolationReasonCounts  map[string]int `json:"expectedIsolationReasonCounts"`
+	ConfidenceCounts               map[string]int `json:"confidenceCounts"`
+	DiagnosticCounts               map[string]int `json:"diagnosticCounts"`
+	DiagnosticClassificationCounts map[string]int `json:"diagnosticClassificationCounts"`
+	DiagnosticActionabilityCounts  map[string]int `json:"diagnosticActionabilityCounts"`
 }
 
 type graphHealthReportResponse struct {
@@ -67,6 +69,7 @@ type graphHealthReportCandidate struct {
 	Name                       string                     `json:"name,omitempty"`
 	FilePath                   string                     `json:"filePath,omitempty"`
 	TriagePriority             string                     `json:"triagePriority"`
+	TriageDimension            string                     `json:"triageDimension"`
 	TopologyStatus             graphhealth.TopologyStatus `json:"topologyStatus"`
 	Confidence                 string                     `json:"confidence"`
 	CountedIncoming            int                        `json:"countedIncoming"`
@@ -83,6 +86,8 @@ const graphNDJSONFlushInterval = 512
 const graphHealthExplainSampleLimit = 20
 const graphHealthReportDefaultLimit = 100
 const graphHealthReportMaxLimit = 1000
+const graphHealthTriageDimensionTopology = "topology"
+const graphHealthTriageDimensionDiagnostic = "diagnostic"
 
 func (s Server) handleGraph(w http.ResponseWriter, r *http.Request) {
 	if !methodAllowed(w, r, http.MethodGet) {
@@ -251,11 +256,13 @@ func graphHealthNodeExplain(g *graph.Graph, nodeID string, includeContent bool) 
 
 func graphHealthComponentExplain(g *graph.Graph, componentID string, includeContent bool) (graphHealthExplainResponse, bool) {
 	component := graphHealthComponentExplanation{
-		ID:                            componentID,
-		TopologyStatusCounts:          map[string]int{},
-		ExpectedIsolationReasonCounts: map[string]int{},
-		ConfidenceCounts:              map[string]int{},
-		DiagnosticCounts:              map[string]int{},
+		ID:                             componentID,
+		TopologyStatusCounts:           map[string]int{},
+		ExpectedIsolationReasonCounts:  map[string]int{},
+		ConfidenceCounts:               map[string]int{},
+		DiagnosticCounts:               map[string]int{},
+		DiagnosticClassificationCounts: map[string]int{},
+		DiagnosticActionabilityCounts:  map[string]int{},
 	}
 	componentNodeIDs := map[string]bool{}
 	sampleNodes := make([]graph.Node, 0, graphHealthExplainSampleLimit)
@@ -280,6 +287,12 @@ func graphHealthComponentExplain(g *graph.Graph, componentID string, includeCont
 				continue
 			}
 			component.DiagnosticCounts[diagnostic.Kind] += graphHealthDiagnosticCount(diagnostic)
+			if diagnostic.Classification != "" {
+				component.DiagnosticClassificationCounts[diagnostic.Classification] += graphHealthDiagnosticCount(diagnostic)
+			}
+			if diagnostic.Actionability != "" {
+				component.DiagnosticActionabilityCounts[diagnostic.Actionability] += graphHealthDiagnosticCount(diagnostic)
+			}
 		}
 		if len(sampleNodes) < graphHealthExplainSampleLimit {
 			publicNode := graphNodeForResponse(node, includeContent)
@@ -316,7 +329,7 @@ func graphHealthReportCandidates(g *graph.Graph, includeExpected bool) []graphHe
 		if !ok {
 			continue
 		}
-		priority, rank := graphHealthReportPriority(health)
+		priority, dimension, rank := graphHealthReportPriority(health)
 		if rank == 0 {
 			continue
 		}
@@ -329,6 +342,7 @@ func graphHealthReportCandidates(g *graph.Graph, includeExpected bool) []graphHe
 			Name:                       graphNodeStringProperty(node, "name"),
 			FilePath:                   graphNodeStringProperty(node, "filePath"),
 			TriagePriority:             priority,
+			TriageDimension:            dimension,
 			TopologyStatus:             health.TopologyStatus,
 			Confidence:                 health.Confidence,
 			CountedIncoming:            health.CountedIncoming,
@@ -342,8 +356,8 @@ func graphHealthReportCandidates(g *graph.Graph, includeExpected bool) []graphHe
 		})
 	}
 	sort.SliceStable(candidates, func(i, j int) bool {
-		leftRank := graphHealthReportPriorityRank(candidates[i].TriagePriority)
-		rightRank := graphHealthReportPriorityRank(candidates[j].TriagePriority)
+		leftRank := graphHealthReportPriorityRank(candidates[i].TriagePriority, candidates[i].TriageDimension)
+		rightRank := graphHealthReportPriorityRank(candidates[j].TriagePriority, candidates[j].TriageDimension)
 		if leftRank != rightRank {
 			return leftRank < rightRank
 		}
@@ -358,34 +372,39 @@ func graphHealthReportCandidates(g *graph.Graph, includeExpected bool) []graphHe
 	return candidates
 }
 
-func graphHealthReportPriority(health graphhealth.NodeHealth) (string, int) {
-	if hasDiagnosticKind(health.Diagnostics, graphhealth.DiagnosticUnresolvedReference) {
-		return "unresolved_reference", 3
-	}
+func graphHealthReportPriority(health graphhealth.NodeHealth) (string, string, int) {
 	switch health.TopologyStatus {
 	case graphhealth.TopologyNoIncoming:
-		return string(graphhealth.TopologyNoIncoming), 1
+		return string(graphhealth.TopologyNoIncoming), graphHealthTriageDimensionTopology, 1
 	case graphhealth.TopologyDetached:
-		return string(graphhealth.TopologyDetached), 2
+		return string(graphhealth.TopologyDetached), graphHealthTriageDimensionTopology, 2
 	case graphhealth.TopologyTrueIsolated:
-		return string(graphhealth.TopologyTrueIsolated), 4
+		return string(graphhealth.TopologyTrueIsolated), graphHealthTriageDimensionTopology, 4
 	case graphhealth.TopologyNoOutgoing:
-		return string(graphhealth.TopologyNoOutgoing), 5
+		return string(graphhealth.TopologyNoOutgoing), graphHealthTriageDimensionTopology, 5
 	case graphhealth.TopologyUnknown:
-		return string(graphhealth.TopologyUnknown), 6
-	default:
-		return "", 0
+		return string(graphhealth.TopologyUnknown), graphHealthTriageDimensionTopology, 6
 	}
+	if hasDiagnosticKind(health.Diagnostics, graphhealth.DiagnosticUnresolvedReference) {
+		return graphhealth.DiagnosticUnresolvedReference, graphHealthTriageDimensionDiagnostic, 30
+	}
+	return "", "", 0
 }
 
-func graphHealthReportPriorityRank(priority string) int {
+func graphHealthReportPriorityRank(priority string, dimension string) int {
+	if dimension == graphHealthTriageDimensionDiagnostic {
+		switch priority {
+		case graphhealth.DiagnosticUnresolvedReference:
+			return 30
+		default:
+			return 90
+		}
+	}
 	switch priority {
 	case string(graphhealth.TopologyNoIncoming):
 		return 1
 	case string(graphhealth.TopologyDetached):
 		return 2
-	case "unresolved_reference":
-		return 3
 	case string(graphhealth.TopologyTrueIsolated):
 		return 4
 	case string(graphhealth.TopologyNoOutgoing):

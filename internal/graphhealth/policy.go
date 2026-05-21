@@ -111,6 +111,36 @@ const (
 	DiagnosticPropertyKey         = "graphHealthDiagnostics"
 )
 
+const (
+	DiagnosticClassificationBuiltin          = "builtin"
+	DiagnosticClassificationStandardLibrary  = "standard_library"
+	DiagnosticClassificationTestFramework    = "test_framework"
+	DiagnosticClassificationExternalLibrary  = "external_library"
+	DiagnosticClassificationInRepoUnresolved = "in_repo_unresolved"
+	DiagnosticClassificationUnclassified     = "unclassified"
+)
+
+var DiagnosticClassifications = []string{
+	DiagnosticClassificationBuiltin,
+	DiagnosticClassificationStandardLibrary,
+	DiagnosticClassificationTestFramework,
+	DiagnosticClassificationExternalLibrary,
+	DiagnosticClassificationInRepoUnresolved,
+	DiagnosticClassificationUnclassified,
+}
+
+const (
+	DiagnosticActionabilityNonActionable = "non_actionable"
+	DiagnosticActionabilityReview        = "review"
+	DiagnosticActionabilityAnalyzerGap   = "analyzer_gap"
+)
+
+var DiagnosticActionabilities = []string{
+	DiagnosticActionabilityNonActionable,
+	DiagnosticActionabilityReview,
+	DiagnosticActionabilityAnalyzerGap,
+}
+
 // Diagnostic captures analyzer/resolution evidence attached to a node for health.
 type Diagnostic struct {
 	Kind             string `json:"kind"`
@@ -118,6 +148,8 @@ type Diagnostic struct {
 	SourceNodeID     string `json:"sourceNodeId,omitempty"`
 	TargetText       string `json:"targetText,omitempty"`
 	ResolutionSource string `json:"resolutionSource,omitempty"`
+	Classification   string `json:"classification,omitempty"`
+	Actionability    string `json:"actionability,omitempty"`
 	FilePath         string `json:"filePath,omitempty"`
 	FileHash         string `json:"fileHash,omitempty"`
 	StartLine        int    `json:"startLine,omitempty"`
@@ -168,6 +200,8 @@ type Summary struct {
 	ExpectedIsolationReasonCounts        map[string]int     `json:"expectedIsolationReasonCounts"`
 	ConfidenceCounts                     map[string]int     `json:"confidenceCounts"`
 	DiagnosticCounts                     map[string]int     `json:"diagnosticCounts"`
+	DiagnosticClassificationCounts       map[string]int     `json:"diagnosticClassificationCounts"`
+	DiagnosticActionabilityCounts        map[string]int     `json:"diagnosticActionabilityCounts"`
 	ExcludedEdgeCounts                   map[string]int     `json:"excludedEdgeCounts"`
 	LargestDetachedComponents            []ComponentSummary `json:"largestDetachedComponents,omitempty"`
 }

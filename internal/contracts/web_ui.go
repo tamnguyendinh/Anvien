@@ -64,13 +64,16 @@ type WebUIContractManifest struct {
 		TypeScriptAdapter string `json:"typescriptAdapter"`
 	} `json:"artifacts"`
 	Graph struct {
-		NodeLabels                 []string                    `json:"nodeLabels"`
-		GraphRelationshipTypes     []string                    `json:"graphRelationshipTypes"`
-		LadybugDBNodeTables        []string                    `json:"ladybugdbNodeTables"`
-		LadybugDBRelationshipTypes []string                    `json:"ladybugdbRelationshipTypes"`
-		RelationshipDisplayPolicy  []RelationshipDisplayPolicy `json:"relationshipDisplayPolicy"`
-		RelationshipTableName      string                      `json:"relationshipTableName"`
-		EmbeddingTableName         string                      `json:"embeddingTableName"`
+		NodeLabels                           []string                    `json:"nodeLabels"`
+		GraphRelationshipTypes               []string                    `json:"graphRelationshipTypes"`
+		LadybugDBNodeTables                  []string                    `json:"ladybugdbNodeTables"`
+		LadybugDBRelationshipTypes           []string                    `json:"ladybugdbRelationshipTypes"`
+		RelationshipDisplayPolicy            []RelationshipDisplayPolicy `json:"relationshipDisplayPolicy"`
+		GraphHealthDiagnosticClassifications []string                    `json:"graphHealthDiagnosticClassifications"`
+		GraphHealthDiagnosticActionabilities []string                    `json:"graphHealthDiagnosticActionabilities"`
+		GraphHealthReportTriageDimensions    []string                    `json:"graphHealthReportTriageDimensions"`
+		RelationshipTableName                string                      `json:"relationshipTableName"`
+		EmbeddingTableName                   string                      `json:"embeddingTableName"`
 	} `json:"graph"`
 	Languages struct {
 		CodeLanguages          []LanguageContract      `json:"codeLanguages"`
@@ -427,6 +430,9 @@ func WebUIContract() WebUIContractManifest {
 	manifest.Graph.LadybugDBNodeTables = append([]string(nil), lbugschema.NodeTables...)
 	manifest.Graph.LadybugDBRelationshipTypes = append([]string(nil), lbugschema.RelationshipTypes...)
 	manifest.Graph.RelationshipDisplayPolicy = relationshipDisplayPolicies(graphRelationshipTypes)
+	manifest.Graph.GraphHealthDiagnosticClassifications = append([]string(nil), graphhealth.DiagnosticClassifications...)
+	manifest.Graph.GraphHealthDiagnosticActionabilities = append([]string(nil), graphhealth.DiagnosticActionabilities...)
+	manifest.Graph.GraphHealthReportTriageDimensions = []string{"topology", "diagnostic"}
 	manifest.Graph.RelationshipTableName = lbugschema.RelTableName
 	manifest.Graph.EmbeddingTableName = lbugschema.EmbeddingTableName
 	manifest.Languages.CodeLanguages = append([]LanguageContract(nil), codeLanguages...)
@@ -486,6 +492,10 @@ func WebUIContractTypeScript() (string, error) {
 	b.WriteString("export type GraphHealthConfidence = (typeof GRAPH_HEALTH_CONFIDENCE_LEVELS)[number];\n\n")
 	writeConstArray(&b, "GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS", graphhealth.ExpectedIsolationReasons)
 	b.WriteString("export type GraphHealthExpectedIsolationReason = (typeof GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS)[number];\n\n")
+	writeConstArray(&b, "GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATIONS", graphhealth.DiagnosticClassifications)
+	b.WriteString("export type GraphHealthDiagnosticClassification = (typeof GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATIONS)[number];\n\n")
+	writeConstArray(&b, "GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES", graphhealth.DiagnosticActionabilities)
+	b.WriteString("export type GraphHealthDiagnosticActionability = (typeof GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES)[number];\n\n")
 	b.WriteString(graphTypes)
 	writeConstArray(&b, "PIPELINE_PHASES", manifest.Pipeline.Phases)
 	b.WriteString("export type PipelinePhase = (typeof PIPELINE_PHASES)[number];\n\n")
@@ -873,6 +883,8 @@ const graphTypes = `export interface GraphHealthDiagnostic {
   sourceNodeId?: string;
   targetText?: string;
   resolutionSource?: string;
+  classification?: GraphHealthDiagnosticClassification;
+  actionability?: GraphHealthDiagnosticActionability;
   filePath?: string;
   fileHash?: string;
   startLine?: number;
@@ -919,6 +931,8 @@ export interface GraphHealthSummary {
   expectedIsolationReasonCounts: Partial<Record<GraphHealthExpectedIsolationReason, number>>;
   confidenceCounts: Partial<Record<GraphHealthConfidence, number>>;
   diagnosticCounts: Record<string, number>;
+  diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>;
+  diagnosticActionabilityCounts: Partial<Record<GraphHealthDiagnosticActionability, number>>;
   excludedEdgeCounts: Record<string, number>;
   largestDetachedComponents?: GraphHealthComponentSummary[];
 }
@@ -1018,6 +1032,8 @@ export interface GraphHealthComponentExplanation {
   expectedIsolationReasonCounts: Partial<Record<GraphHealthExpectedIsolationReason, number>>;
   confidenceCounts: Partial<Record<GraphHealthConfidence, number>>;
   diagnosticCounts: Record<string, number>;
+  diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>;
+  diagnosticActionabilityCounts: Partial<Record<GraphHealthDiagnosticActionability, number>>;
 }
 
 export interface GraphHealthExplainResponse {
@@ -1044,12 +1060,16 @@ export type GraphHealthReportPriority =
   | 'no_outgoing'
   | 'unknown_connectivity';
 
+export const GRAPH_HEALTH_REPORT_TRIAGE_DIMENSIONS = ['topology', 'diagnostic'] as const;
+export type GraphHealthReportTriageDimension = (typeof GRAPH_HEALTH_REPORT_TRIAGE_DIMENSIONS)[number];
+
 export interface GraphHealthReportCandidate {
   nodeId: string;
   label: NodeLabel | string;
   name?: string;
   filePath?: string;
   triagePriority: GraphHealthReportPriority;
+  triageDimension: GraphHealthReportTriageDimension;
   topologyStatus: GraphHealthTopologyStatus;
   confidence: GraphHealthConfidence;
   countedIncoming: number;

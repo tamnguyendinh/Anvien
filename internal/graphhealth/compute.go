@@ -146,8 +146,6 @@ func ComputeSummary(g *graph.Graph) Summary {
 
 		var status TopologyStatus
 		switch {
-		case hasUnresolvedDiagnostic:
-			status = TopologyUnknown
 		case component.Detached:
 			status = TopologyDetached
 		case in > 0 && out > 0:
@@ -166,7 +164,7 @@ func ComputeSummary(g *graph.Graph) Summary {
 		if hasAutomaticExpectedReason(reasons) {
 			conf = ConfidenceExpected
 		}
-		if status == TopologyUnknown {
+		if hasUnresolvedDiagnostic || status == TopologyUnknown {
 			conf = ConfidenceUnknown
 		}
 
@@ -227,18 +225,26 @@ func ComputeSummary(g *graph.Graph) Summary {
 
 func newSummary() Summary {
 	summary := Summary{
-		PolicyVersion:                 PolicyVersion,
-		TopologyStatusCounts:          map[string]int{},
-		ExpectedIsolationReasonCounts: map[string]int{},
-		ConfidenceCounts:              map[string]int{},
-		DiagnosticCounts:              map[string]int{},
-		ExcludedEdgeCounts:            map[string]int{},
+		PolicyVersion:                  PolicyVersion,
+		TopologyStatusCounts:           map[string]int{},
+		ExpectedIsolationReasonCounts:  map[string]int{},
+		ConfidenceCounts:               map[string]int{},
+		DiagnosticCounts:               map[string]int{},
+		DiagnosticClassificationCounts: map[string]int{},
+		DiagnosticActionabilityCounts:  map[string]int{},
+		ExcludedEdgeCounts:             map[string]int{},
 	}
 	for _, status := range TopologyStatuses {
 		summary.TopologyStatusCounts[string(status)] = 0
 	}
 	for _, confidence := range ConfidenceLevels {
 		summary.ConfidenceCounts[confidence] = 0
+	}
+	for _, classification := range DiagnosticClassifications {
+		summary.DiagnosticClassificationCounts[classification] = 0
+	}
+	for _, actionability := range DiagnosticActionabilities {
+		summary.DiagnosticActionabilityCounts[actionability] = 0
 	}
 	return summary
 }
@@ -254,6 +260,12 @@ func addNodeHealthToSummary(summary *Summary, health NodeHealth) {
 			continue
 		}
 		summary.DiagnosticCounts[diagnostic.Kind] += diagnosticCount(diagnostic)
+		if diagnostic.Classification != "" {
+			summary.DiagnosticClassificationCounts[diagnostic.Classification] += diagnosticCount(diagnostic)
+		}
+		if diagnostic.Actionability != "" {
+			summary.DiagnosticActionabilityCounts[diagnostic.Actionability] += diagnosticCount(diagnostic)
+		}
 	}
 }
 

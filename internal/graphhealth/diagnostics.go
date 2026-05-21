@@ -3,6 +3,7 @@ package graphhealth
 import (
 	"encoding/json"
 	"sort"
+	"strings"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
 )
@@ -34,6 +35,7 @@ func AppendDiagnosticToNode(g *graph.Graph, nodeID string, diagnostic Diagnostic
 	if diagnostic.Count <= 0 {
 		diagnostic.Count = 1
 	}
+	diagnostic = normalizeDiagnosticMetadata(diagnostic)
 	node.Properties[DiagnosticPropertyKey] = appendDiagnosticsFromProperties(node.Properties, diagnostic)
 	g.AddNode(node)
 	return true
@@ -88,6 +90,7 @@ func diagnosticsFromProperties(properties graph.NodeProperties) []Diagnostic {
 
 func appendDiagnosticsFromProperties(properties graph.NodeProperties, diagnostic Diagnostic) []Diagnostic {
 	diagnostics := diagnosticsFromProperties(properties)
+	diagnostic = normalizeDiagnosticMetadata(diagnostic)
 	for index := range diagnostics {
 		if sameDiagnosticBucket(diagnostics[index], diagnostic) {
 			diagnostics[index].Count += diagnosticCount(diagnostic)
@@ -140,20 +143,20 @@ func normalizeDiagnostics(value any) []Diagnostic {
 	case nil:
 		return nil
 	case []Diagnostic:
-		return append([]Diagnostic(nil), typed...)
+		return normalizeDiagnosticSlice(typed)
 	case Diagnostic:
-		return []Diagnostic{typed}
+		return []Diagnostic{normalizeDiagnosticMetadata(typed)}
 	case []any:
 		out := make([]Diagnostic, 0, len(typed))
 		for _, item := range typed {
 			if diagnostic, ok := normalizeDiagnostic(item); ok {
-				out = append(out, diagnostic)
+				out = append(out, normalizeDiagnosticMetadata(diagnostic))
 			}
 		}
 		return out
 	default:
 		if diagnostic, ok := normalizeDiagnostic(typed); ok {
-			return []Diagnostic{diagnostic}
+			return []Diagnostic{normalizeDiagnosticMetadata(diagnostic)}
 		}
 		return nil
 	}
@@ -170,6 +173,8 @@ func normalizeDiagnostic(value any) (Diagnostic, bool) {
 			SourceNodeID:     stringMapValue(typed, "sourceNodeId"),
 			TargetText:       stringMapValue(typed, "targetText"),
 			ResolutionSource: stringMapValue(typed, "resolutionSource"),
+			Classification:   stringMapValue(typed, "classification"),
+			Actionability:    stringMapValue(typed, "actionability"),
 			FilePath:         stringMapValue(typed, "filePath"),
 			FileHash:         stringMapValue(typed, "fileHash"),
 			StartLine:        intValue(typed["startLine"]),
@@ -189,6 +194,253 @@ func normalizeDiagnostic(value any) (Diagnostic, bool) {
 		}
 		return diagnostic, diagnostic.Kind != ""
 	}
+}
+
+func normalizeDiagnosticSlice(values []Diagnostic) []Diagnostic {
+	out := make([]Diagnostic, len(values))
+	for index, diagnostic := range values {
+		out[index] = normalizeDiagnosticMetadata(diagnostic)
+	}
+	return out
+}
+
+func normalizeDiagnosticMetadata(diagnostic Diagnostic) Diagnostic {
+	if diagnostic.Classification == "" {
+		diagnostic.Classification = classifyDiagnostic(diagnostic)
+	}
+	if diagnostic.Actionability == "" {
+		diagnostic.Actionability = actionabilityForDiagnosticClassification(diagnostic.Classification)
+	}
+	return diagnostic
+}
+
+func classifyDiagnostic(diagnostic Diagnostic) string {
+	if diagnostic.Kind != DiagnosticUnresolvedReference {
+		return DiagnosticClassificationUnclassified
+	}
+	target := strings.TrimSpace(diagnostic.TargetText)
+	if target == "" {
+		return DiagnosticClassificationUnclassified
+	}
+	target = strings.TrimPrefix(target, "*")
+	if isGoBuiltinOrPredeclared(target) || isGoCompositeTypeText(target) {
+		return DiagnosticClassificationBuiltin
+	}
+	if isGoTestFrameworkReference(target) {
+		return DiagnosticClassificationTestFramework
+	}
+	if qualifier, ok := diagnosticTargetQualifier(target); ok {
+		if goStandardLibraryQualifiers[qualifier] {
+			return DiagnosticClassificationStandardLibrary
+		}
+		if externalLibraryQualifiers[qualifier] {
+			return DiagnosticClassificationExternalLibrary
+		}
+		return DiagnosticClassificationInRepoUnresolved
+	}
+	return DiagnosticClassificationInRepoUnresolved
+}
+
+func actionabilityForDiagnosticClassification(classification string) string {
+	switch classification {
+	case DiagnosticClassificationBuiltin,
+		DiagnosticClassificationStandardLibrary,
+		DiagnosticClassificationTestFramework:
+		return DiagnosticActionabilityNonActionable
+	case DiagnosticClassificationInRepoUnresolved:
+		return DiagnosticActionabilityAnalyzerGap
+	case DiagnosticClassificationExternalLibrary,
+		DiagnosticClassificationUnclassified:
+		return DiagnosticActionabilityReview
+	default:
+		return DiagnosticActionabilityReview
+	}
+}
+
+func diagnosticTargetQualifier(target string) (string, bool) {
+	parts := strings.SplitN(target, ".", 2)
+	if len(parts) != 2 {
+		return "", false
+	}
+	qualifier := strings.TrimSpace(parts[0])
+	return qualifier, qualifier != ""
+}
+
+func isGoBuiltinOrPredeclared(target string) bool {
+	if goBuiltinOrPredeclared[target] {
+		return true
+	}
+	if qualifier, ok := diagnosticTargetQualifier(target); ok {
+		return goBuiltinOrPredeclared[qualifier]
+	}
+	return false
+}
+
+func isGoCompositeTypeText(target string) bool {
+	switch {
+	case strings.HasPrefix(target, "[]"),
+		strings.HasPrefix(target, "map["),
+		strings.HasPrefix(target, "chan "),
+		strings.HasPrefix(target, "<-chan "),
+		strings.Contains(target, "]"):
+		return true
+	default:
+		return false
+	}
+}
+
+func isGoTestFrameworkReference(target string) bool {
+	if target == "testing.T" || target == "testing.B" || target == "testing.M" {
+		return true
+	}
+	qualifier, ok := diagnosticTargetQualifier(target)
+	if !ok {
+		return false
+	}
+	if qualifier == "testing" {
+		return true
+	}
+	if qualifier != "t" && qualifier != "b" {
+		return false
+	}
+	member := strings.TrimPrefix(target, qualifier+".")
+	return goTestingHelperMembers[member]
+}
+
+var goBuiltinOrPredeclared = map[string]bool{
+	"any":        true,
+	"append":     true,
+	"bool":       true,
+	"byte":       true,
+	"cap":        true,
+	"clear":      true,
+	"close":      true,
+	"comparable": true,
+	"complex":    true,
+	"complex64":  true,
+	"complex128": true,
+	"copy":       true,
+	"delete":     true,
+	"error":      true,
+	"false":      true,
+	"float32":    true,
+	"float64":    true,
+	"imag":       true,
+	"int":        true,
+	"int8":       true,
+	"int16":      true,
+	"int32":      true,
+	"int64":      true,
+	"iota":       true,
+	"len":        true,
+	"make":       true,
+	"new":        true,
+	"nil":        true,
+	"panic":      true,
+	"print":      true,
+	"println":    true,
+	"real":       true,
+	"recover":    true,
+	"rune":       true,
+	"string":     true,
+	"true":       true,
+	"uint":       true,
+	"uint8":      true,
+	"uint16":     true,
+	"uint32":     true,
+	"uint64":     true,
+	"uintptr":    true,
+}
+
+var goStandardLibraryQualifiers = map[string]bool{
+	"archive":  true,
+	"bufio":    true,
+	"bytes":    true,
+	"cmp":      true,
+	"compress": true,
+	"context":  true,
+	"crypto":   true,
+	"csv":      true,
+	"database": true,
+	"debug":    true,
+	"embed":    true,
+	"encoding": true,
+	"errors":   true,
+	"expvar":   true,
+	"flag":     true,
+	"fmt":      true,
+	"go":       true,
+	"hash":     true,
+	"heap":     true,
+	"html":     true,
+	"http":     true,
+	"image":    true,
+	"io":       true,
+	"json":     true,
+	"log":      true,
+	"maps":     true,
+	"math":     true,
+	"mime":     true,
+	"net":      true,
+	"os":       true,
+	"path":     true,
+	"filepath": true,
+	"rand":     true,
+	"reflect":  true,
+	"regexp":   true,
+	"runtime":  true,
+	"slices":   true,
+	"sort":     true,
+	"strconv":  true,
+	"strings":  true,
+	"sync":     true,
+	"syscall":  true,
+	"template": true,
+	"testing":  true,
+	"text":     true,
+	"time":     true,
+	"unicode":  true,
+	"unsafe":   true,
+	"url":      true,
+	"utf8":     true,
+	"xml":      true,
+}
+
+var goTestingHelperMembers = map[string]bool{
+	"Cleanup":  true,
+	"Error":    true,
+	"Errorf":   true,
+	"Fail":     true,
+	"FailNow":  true,
+	"Failed":   true,
+	"Fatal":    true,
+	"Fatalf":   true,
+	"Helper":   true,
+	"Log":      true,
+	"Logf":     true,
+	"Name":     true,
+	"Parallel": true,
+	"Run":      true,
+	"Setenv":   true,
+	"Skip":     true,
+	"SkipNow":  true,
+	"Skipf":    true,
+	"Skipped":  true,
+	"TempDir":  true,
+}
+
+var externalLibraryQualifiers = map[string]bool{
+	"anthropic": true,
+	"assert":    true,
+	"cobra":     true,
+	"gin":       true,
+	"grpc":      true,
+	"jwt":       true,
+	"openai":    true,
+	"require":   true,
+	"uuid":      true,
+	"yaml":      true,
+	"zap":       true,
 }
 
 func stringMapValue(values map[string]any, key string) string {

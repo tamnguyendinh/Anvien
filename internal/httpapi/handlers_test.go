@@ -486,6 +486,9 @@ func TestGraphHealthReportReturnsCandidateExport(t *testing.T) {
 	if first.NodeID != "Function:helper" || first.TriagePriority != string(graphhealth.TopologyNoIncoming) {
 		t.Fatalf("unexpected first report candidate: %#v", first)
 	}
+	if first.TriageDimension != graphHealthTriageDimensionTopology {
+		t.Fatalf("first triage dimension=%q want topology: %#v", first.TriageDimension, first)
+	}
 	if first.TopologyStatus != graphhealth.TopologyNoIncoming || first.Confidence != graphhealth.ConfidenceCandidate {
 		t.Fatalf("unexpected first candidate health: %#v", first)
 	}
@@ -513,13 +516,60 @@ func TestGraphHealthReportCanIncludeExpected(t *testing.T) {
 	for _, candidate := range payload.Candidates {
 		if candidate.NodeID == "Process:main" {
 			foundProcess = true
-			if candidate.Confidence != graphhealth.ConfidenceExpected || candidate.TriagePriority != string(graphhealth.TopologyNoOutgoing) {
+			if candidate.Confidence != graphhealth.ConfidenceExpected ||
+				candidate.TriagePriority != string(graphhealth.TopologyNoOutgoing) ||
+				candidate.TriageDimension != graphHealthTriageDimensionTopology {
 				t.Fatalf("unexpected expected candidate: %#v", candidate)
 			}
 		}
 	}
 	if !foundProcess {
 		t.Fatalf("expected Process:main in includeExpected report: %#v", payload.Candidates)
+	}
+}
+
+func TestGraphHealthReportSeparatesTopologyAndDiagnosticTriage(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{ID: "Function:main", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "main", "filePath": "cmd/app/main.go", "isExported": true}})
+	g.AddNode(graph.Node{ID: "Function:connected", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "connected", "filePath": "src/app.ts"}})
+	g.AddNode(graph.Node{ID: "Function:leaf", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "leaf", "filePath": "src/app.ts"}})
+	g.AddNode(graph.Node{ID: "Function:unwiredRoot", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "unwiredRoot", "filePath": "src/unwired.ts"}})
+	g.AddNode(graph.Node{ID: "Function:unwiredLeaf", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "unwiredLeaf", "filePath": "src/unwired.ts"}})
+	g.AddRelationship(graph.Relationship{ID: "main-connected", SourceID: "Function:main", TargetID: "Function:connected", Type: graph.RelCalls})
+	g.AddRelationship(graph.Relationship{ID: "connected-leaf", SourceID: "Function:connected", TargetID: "Function:leaf", Type: graph.RelCalls})
+	g.AddRelationship(graph.Relationship{ID: "unwired-leaf", SourceID: "Function:unwiredRoot", TargetID: "Function:unwiredLeaf", Type: graph.RelCalls})
+	graphhealth.AppendDiagnosticToNode(g, "Function:connected", graphhealth.Diagnostic{
+		Kind:       graphhealth.DiagnosticUnresolvedReference,
+		FactFamily: "call",
+		TargetText: "missingCall",
+		FilePath:   "src/app.ts",
+	})
+	graphhealth.AppendDiagnosticToNode(g, "Function:unwiredRoot", graphhealth.Diagnostic{
+		Kind:       graphhealth.DiagnosticUnresolvedReference,
+		FactFamily: "call",
+		TargetText: "missingRootCall",
+		FilePath:   "src/unwired.ts",
+	})
+	graphhealth.ComputeSummary(g)
+
+	candidates := graphHealthReportCandidates(g, false)
+	connected := findReportCandidate(candidates, "Function:connected")
+	if connected == nil {
+		t.Fatalf("connected diagnostic node missing from diagnostic triage: %#v", candidates)
+	}
+	if connected.TopologyStatus != graphhealth.TopologyConnected ||
+		connected.TriagePriority != graphhealth.DiagnosticUnresolvedReference ||
+		connected.TriageDimension != graphHealthTriageDimensionDiagnostic {
+		t.Fatalf("connected diagnostic candidate = %#v", connected)
+	}
+	unwired := findReportCandidate(candidates, "Function:unwiredRoot")
+	if unwired == nil {
+		t.Fatalf("unwired diagnostic node missing from topology triage: %#v", candidates)
+	}
+	if unwired.TopologyStatus != graphhealth.TopologyDetached ||
+		unwired.TriagePriority != string(graphhealth.TopologyDetached) ||
+		unwired.TriageDimension != graphHealthTriageDimensionTopology {
+		t.Fatalf("unwired topology candidate = %#v", unwired)
 	}
 }
 
@@ -904,4 +954,13 @@ func intStats(files, nodes, edges int) *repo.Stats {
 		Nodes: &nodes,
 		Edges: &edges,
 	}
+}
+
+func findReportCandidate(candidates []graphHealthReportCandidate, nodeID string) *graphHealthReportCandidate {
+	for index := range candidates {
+		if candidates[index].NodeID == nodeID {
+			return &candidates[index]
+		}
+	}
+	return nil
 }
