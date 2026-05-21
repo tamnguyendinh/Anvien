@@ -289,7 +289,6 @@ The Go CLI must preserve the existing behavior before it replaces the TypeScript
 - `avmatrix analyze --force`
 - `avmatrix analyze --embeddings`
 - `avmatrix analyze --skills`
-- `avmatrix analyze --skip-agents-md`
 - `avmatrix analyze --no-stats`
 - `avmatrix analyze --skip-git`
 - `avmatrix analyze --skip-compatibility-cross-file`
@@ -971,7 +970,7 @@ Exit gate:
   - [x] Port AI context and skill generation command surfaces: `analyze --skills` forces a fresh
         analysis, writes `.avmatrix/meta.json`, registers the repo in the global registry, creates
         generated community skills, installs AVmatrix base skills, and upserts AVmatrix sections in
-        `AGENTS.md`/`CLAUDE.md` with `--skip-agents-md` and `--no-stats` behavior.
+        `AGENTS.md`/`CLAUDE.md` with `--no-stats` behavior and mandatory managed-section refresh.
   - [x] [P11-AI-CONTEXT-SKILL-GEN-PHASE17-CONVERSION-GUARD-2026-05-14] Record the Phase 17
         conversion guard for agent-facing generated content. Phase-jump note: Phase 17 is allowed
         to process the remaining TypeScript/JavaScript files that used to implement AI context,

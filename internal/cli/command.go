@@ -147,7 +147,6 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 	var force bool
 	var enableEmbeddings bool
 	var generateSkills bool
-	var skipAgentsMD bool
 	var noStats bool
 	var skipGit bool
 	var skipCompatibilityCrossFile bool
@@ -226,7 +225,7 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			aiResult, err := generateAnalyzeAIContext(result, registration.Name, skipAgentsMD, noStats, generateSkills)
+			aiResult, err := generateAnalyzeAIContext(result, registration.Name, noStats, generateSkills)
 			if err != nil {
 				return err
 			}
@@ -268,7 +267,6 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 	cmd.Flags().BoolVar(&force, "force", false, "remove previous index output before analyze")
 	cmd.Flags().BoolVar(&enableEmbeddings, "embeddings", false, "enable embedding generation for semantic search")
 	cmd.Flags().BoolVar(&generateSkills, "skills", false, "generate repo-specific skill files from detected communities")
-	cmd.Flags().BoolVar(&skipAgentsMD, "skip-agents-md", false, "skip updating the AVmatrix section in AGENTS.md and CLAUDE.md")
 	cmd.Flags().BoolVar(&noStats, "no-stats", false, "omit volatile file/symbol counts from AGENTS.md and CLAUDE.md")
 	cmd.Flags().BoolVar(&skipGit, "skip-git", false, "index a folder without requiring a .git directory")
 	cmd.Flags().BoolVar(&skipCompatibilityCrossFile, "skip-compatibility-cross-file", false, "diagnostic benchmark mode: skip compatibility cross-file work")

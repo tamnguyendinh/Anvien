@@ -641,7 +641,6 @@ func TestAnalyzeHelpShowsEmbeddingsFlag(t *testing.T) {
 		"--embeddings",
 		"enable embedding generation",
 		"--skills",
-		"--skip-agents-md",
 		"--no-stats",
 		"--skip-git",
 		"--skip-compatibility-cross-file",
@@ -653,6 +652,10 @@ func TestAnalyzeHelpShowsEmbeddingsFlag(t *testing.T) {
 		if !strings.Contains(out, want) {
 			t.Fatalf("analyze help missing %q:\n%s", want, out)
 		}
+	}
+	forbiddenFlag := "--skip-" + "agents-md"
+	if strings.Contains(out, forbiddenFlag) {
+		t.Fatalf("analyze help exposed forbidden context bypass flag:\n%s", out)
 	}
 }
 
@@ -908,7 +911,7 @@ func TestAnalyzeNameCollisionRequiresExplicitDuplicateBypass(t *testing.T) {
 	repoB := writeAnalyzeCollisionFixture(t)
 	repoC := writeAnalyzeCollisionFixture(t)
 
-	out, errOut, err := executeForTest(t, "analyze", repoA, "--force", "--skip-git", "--skip-agents-md", "--no-stats", "--name", "shared")
+	out, errOut, err := executeForTest(t, "analyze", repoA, "--force", "--skip-git", "--no-stats", "--name", "shared")
 	if err != nil {
 		t.Fatalf("first analyze returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
 	}
@@ -917,7 +920,7 @@ func TestAnalyzeNameCollisionRequiresExplicitDuplicateBypass(t *testing.T) {
 	}
 	assertRegisteredRepoNames(t, home, []string{"shared"})
 
-	out, errOut, err = executeForTest(t, "analyze", repoB, "--force", "--skip-git", "--skip-agents-md", "--no-stats", "--name", "shared")
+	out, errOut, err = executeForTest(t, "analyze", repoB, "--force", "--skip-git", "--no-stats", "--name", "shared")
 	if err == nil {
 		t.Fatal("second analyze with colliding --name unexpectedly succeeded")
 	}
@@ -925,13 +928,13 @@ func TestAnalyzeNameCollisionRequiresExplicitDuplicateBypass(t *testing.T) {
 		t.Fatalf("collision error missing registry name: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
 	}
 
-	out, errOut, err = executeForTest(t, "analyze", repoB, "--force", "--skip-git", "--skip-agents-md", "--no-stats", "--name", "shared", "--allow-duplicate-name")
+	out, errOut, err = executeForTest(t, "analyze", repoB, "--force", "--skip-git", "--no-stats", "--name", "shared", "--allow-duplicate-name")
 	if err != nil {
 		t.Fatalf("allow-duplicate analyze returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
 	}
 	assertRegisteredRepoNames(t, home, []string{"shared", "shared"})
 
-	out, errOut, err = executeForTest(t, "analyze", repoC, "--force", "--skip-git", "--skip-agents-md", "--no-stats", "--name", "shared", "--skills")
+	out, errOut, err = executeForTest(t, "analyze", repoC, "--force", "--skip-git", "--no-stats", "--name", "shared", "--skills")
 	if err == nil {
 		t.Fatal("analyze --skills unexpectedly bypassed the name collision guard")
 	}

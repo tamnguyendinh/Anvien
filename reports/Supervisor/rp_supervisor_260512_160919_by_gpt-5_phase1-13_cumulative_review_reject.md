@@ -152,7 +152,7 @@ Result: TypeScript/Vite build passed. Vite emitted existing chunk-size/dynamic-i
 Independent runtime repros:
 
 ```powershell
-go run ./cmd/avmatrix analyze .tmp\rename-line-repro --force --skip-agents-md --no-stats
+go run ./cmd/avmatrix analyze .tmp\rename-line-repro --force [redacted removed argument] --no-stats
 go run ./cmd/avmatrix mcp
 ```
 

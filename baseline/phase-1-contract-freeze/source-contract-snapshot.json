@@ -41,7 +41,6 @@
         "--force",
         "--embeddings",
         "--skills",
-        "--skip-agents-md",
         "--no-stats",
         "--skip-git",
         "--skip-compatibility-cross-file",

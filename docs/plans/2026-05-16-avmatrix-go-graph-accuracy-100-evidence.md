@@ -17,13 +17,13 @@ This ledger records commands, artifacts, validation results, and decisions for t
 Node/MCP command:
 
 ```powershell
-avmatrix analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json .tmp\compare2-node-analyze-20260516-r2.json --benchmark-label node-mcp-r2
+avmatrix analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats --benchmark-json .tmp\compare2-node-analyze-20260516-r2.json --benchmark-label node-mcp-r2
 ```
 
 Go local command:
 
 ```powershell
-.\avmatrix\bin\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json .tmp\compare2-go-analyze-20260516-r2.json --benchmark-label go-local-r2
+.\avmatrix\bin\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats --benchmark-json .tmp\compare2-go-analyze-20260516-r2.json --benchmark-label go-local-r2
 ```
 
 Artifacts:
@@ -160,7 +160,7 @@ go test ./...
 Go local analyze:
 
 ```powershell
-.\avmatrix\bin\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json <artifact> --benchmark-label <label>
+.\avmatrix\bin\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats --benchmark-json <artifact> --benchmark-label <label>
 ```
 
 Accuracy gate report mode:
@@ -270,7 +270,7 @@ Result: status reported the repo up to date at the fresh P1 analyze, and `contex
 - AVmatrix pre-commit refresh:
 
 ```powershell
-.\avmatrix\bin\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix\bin\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Result: passed; graph refreshed before staged `detect-changes`.
@@ -374,7 +374,7 @@ Result: status reported the repo up to date, and `context Request` returned `kin
 - AVmatrix pre-commit refresh:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Result: passed; graph refreshed with the P2 runtime before staged `detect-changes`.
@@ -487,7 +487,7 @@ Result: both symbols were found in the built Go runtime graph. `context` returne
 - AVmatrix pre-commit refresh:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Result: passed; graph refreshed with the P3 runtime before staged `detect-changes`.
@@ -620,7 +620,7 @@ Result: `context parseJCL` returned outgoing `CALLS` to `firstNonEmpty` with con
 - AVmatrix pre-commit refresh:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Result: passed; graph refreshed with the P4 runtime before staged `detect-changes`.

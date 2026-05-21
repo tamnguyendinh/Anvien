@@ -210,11 +210,11 @@ Artifacts:
 Commands:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force [redacted removed argument] --no-stats
 Copy-Item -LiteralPath 'E:\Website\.avmatrix\graph.json' -Destination '.tmp\p2-property-access-website-go-graph-20260519.json' -Force
 go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\p2-property-access-website-go-graph-20260519.json -out .tmp\p2-property-access-website-20260519.json -max-examples 20
 
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 Copy-Item -LiteralPath 'E:\AVmatrix-GO\.avmatrix\graph.json' -Destination '.tmp\p2-property-access-avmatrix-go-graph-20260519.json' -Force
 go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\p2-property-access-avmatrix-go-graph-20260519.json -out .tmp\p2-property-access-avmatrix-go-20260519.json -max-examples 20
 ```
@@ -325,11 +325,11 @@ Artifacts:
 Commands:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force [redacted removed argument] --no-stats
 Copy-Item -LiteralPath 'E:\Website\.avmatrix\graph.json' -Destination '.tmp\p2e-property-access-website-go-graph-20260519.json' -Force
 go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\p2e-property-access-website-go-graph-20260519.json -out .tmp\p2e-property-access-website-20260519.json -max-examples 20
 
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 Copy-Item -LiteralPath 'E:\AVmatrix-GO\.avmatrix\graph.json' -Destination '.tmp\p2e-property-access-avmatrix-go-graph-20260519.json' -Force
 go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\p2e-property-access-avmatrix-go-graph-20260519.json -out .tmp\p2e-property-access-avmatrix-go-20260519.json -max-examples 20
 ```
@@ -450,12 +450,12 @@ Artifacts:
 Commands:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force [redacted removed argument] --no-stats
 Copy-Item -LiteralPath 'E:\Website\.avmatrix\graph.json' -Destination '.tmp\p3b-property-access-website-go-graph-20260519.json' -Force
 go run ./cmd/property-access-audit -repo E:\Website -graph .tmp\p3b-property-access-website-go-graph-20260519.json -out .tmp\p3b-property-access-website-20260519.json -max-examples 20
 go run ./cmd/access-candidate-audit -repo E:\Website -out .tmp\p3b-access-candidates-website-20260519.json -max-examples 20
 
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 Copy-Item -LiteralPath 'E:\AVmatrix-GO\.avmatrix\graph.json' -Destination '.tmp\p3b-property-access-avmatrix-go-graph-20260519.json' -Force
 go run ./cmd/property-access-audit -repo E:\AVmatrix-GO -graph .tmp\p3b-property-access-avmatrix-go-graph-20260519.json -out .tmp\p3b-property-access-avmatrix-go-20260519.json -max-examples 20
 go run ./cmd/access-candidate-audit -repo E:\AVmatrix-GO -out .tmp\p3b-access-candidates-avmatrix-go-20260519.json -max-examples 20

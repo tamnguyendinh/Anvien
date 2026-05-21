@@ -54,7 +54,7 @@ When converting these files, preserve exact generated semantics, section markers
 upsert behavior, skip flags, and skill paths before ticking them:
 
 - `avmatrix/src/cli/ai-context.ts`: generates and upserts AVmatrix sections in `AGENTS.md` and
-  `CLAUDE.md`, installs base skills, and must preserve `--skip-agents-md` and `--no-stats`.
+  `CLAUDE.md`, installs base skills, and must preserve `--no-stats`.
 - `avmatrix/src/cli/skill-gen.ts`: generates `.claude/skills/generated/*/SKILL.md` content from
   communities; conversion needs snapshot/e2e coverage for generated markdown and path layout.
 - `avmatrix/src/core/run-analyze.ts` and `avmatrix/src/cli/analyze.ts`: orchestrate `--skills`

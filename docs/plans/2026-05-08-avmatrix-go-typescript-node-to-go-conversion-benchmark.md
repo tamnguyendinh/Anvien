@@ -1141,7 +1141,7 @@ Rules:
 | Analyze help | `analyze --help` | `34.2` | `1,539` | `0` |
 | Analyze non-Git parity | `analyze <temp> --force --skip-git --skip-compatibility-cross-file --benchmark-json <file> --benchmark-label admin-batch --name admin-batch-demo` | `2,690.2` | `230` | `0` |
 | Index existing | `index <temp git repo with .avmatrix/lbug>` | `164.0` | `108` | `0` |
-| Analyze clean fixture | `analyze <temp git repo> --force --skip-agents-md --no-stats --name clean-demo` | `1,605.2` | `226` | `0` |
+| Analyze clean fixture | `analyze <temp git repo> --force [redacted removed argument] --no-stats --name clean-demo` | `1,605.2` | `226` | `0` |
 | Clean force | `clean --force` from the temp indexed repo | `33.2` | `73` | `0` |
 | Benchmark compare | `benchmark-compare <before.json> <after.json>` | `44.8` | `289` | `0` |
 | Benchmark compare JSON | `benchmark-compare <before.json> <after.json> --json` | `35.9` | `577` | `0` |
@@ -1346,7 +1346,7 @@ Rules:
   remains separate unless a later slice records per-stage timings. `query` remains an open Phase 15
   optimization candidate; this route-index slice does not claim to optimize query ranking/search.
 - Graph parity/analyze smoke:
-  `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --benchmark-json
+  `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --benchmark-json
   .tmp\phase15-route-cache-graph-parity.json --benchmark-label phase15-route-cache-graph-parity`
   passed in `60,975ms`, producing `33,399` nodes and `66,035` relationships. DB load reported
   `fallbackInsertCount=0`, `fallbackInsertFailures=0`, `skippedRelationships=0`,
@@ -1380,8 +1380,8 @@ Rules:
 | Focused Go tests | `go test ./internal/providers/sfc ./internal/providers/vue ./internal/providers/svelte ./internal/providers/astro ./internal/scanner ./internal/frameworks ./internal/analyze ./internal/contracts -count=1` | passed |
 | Svelte provider benchmark | `go test ./internal/providers/svelte -run '^$' -bench BenchmarkExtractSvelteScopeIR -benchmem -count=5` | median `896,080ns/op`, `~147KB/op`, `3,073 allocs/op` |
 | Astro provider benchmark | `go test ./internal/providers/astro -run '^$' -bench BenchmarkExtractAstroScopeIR -benchmem -count=5` | median `830,770ns/op`, `~145KB/op`, `3,020 allocs/op` |
-| Isolated frontend/mobile fixture analyze | `avmatrix-launcher\server-bundle\avmatrix.exe analyze .tmp\phase14-frontend-mobile-fixture --skip-git --force --skip-agents-md --no-stats --name phase14-frontend-mobile --benchmark-json .tmp\phase14-frontend-mobile-analyze.json` | wall `7,646.2ms`, benchmark total `7,549.2ms` |
-| Current-repo packaged analyze | `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\phase14-frontend-mobile-current-repo.json` | wall `61,853.6ms`, benchmark total `61,521.2ms` |
+| Isolated frontend/mobile fixture analyze | `avmatrix-launcher\server-bundle\avmatrix.exe analyze .tmp\phase14-frontend-mobile-fixture --skip-git --force [redacted removed argument] --no-stats --name phase14-frontend-mobile --benchmark-json .tmp\phase14-frontend-mobile-analyze.json` | wall `7,646.2ms`, benchmark total `7,549.2ms` |
+| Current-repo packaged analyze | `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\phase14-frontend-mobile-current-repo.json` | wall `61,853.6ms`, benchmark total `61,521.2ms` |
 | Full Go tests | `go test ./cmd/... ./internal/... -count=1` | passed |
 | Browser E2E | `cd avmatrix-web && E2E=1 npx playwright test --workers=1 --reporter=line` with isolated packaged Go backend | `494,207.2ms`, `32` passed / `1` skipped |
 | Legacy baseline/test suite | `cd avmatrix && npm test` | `335,723.4ms`, passed |
@@ -1428,7 +1428,7 @@ Rules:
 | Focused loader tests | `go test ./internal/lbugload -count=1` | passed |
 | Normal COPY loader benchmark | `go test ./internal/lbugload -run '^$' -bench BenchmarkLoadCSVExportCopyPathNoop -benchmem -count=5` | `2,537-2,596ns/op`, `19 allocs/op` |
 | Diagnostic fallback benchmark | `go test ./internal/lbugload -run '^$' -bench BenchmarkDiagnosticFallbackPathNoop -benchmem -count=5` | `736,094-764,844ns/op`, `5,061 allocs/op` |
-| Current-repo packaged analyze | `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\fallback-failclosed-graph-parity.json --benchmark-label fallback-failclosed-graph-parity` | wall `59,937.2ms`, benchmark total `58,458.4ms` |
+| Current-repo packaged analyze | `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\fallback-failclosed-graph-parity.json --benchmark-label fallback-failclosed-graph-parity` | wall `59,937.2ms`, benchmark total `58,458.4ms` |
 | Full Go tests | `go test ./cmd/... ./internal/... -count=1` | `27,772.9ms`, passed |
 | Browser E2E | `cd avmatrix-web && E2E=1 npx playwright test --workers=1 --reporter=line` with isolated packaged Go backend | Playwright `512,685.5ms`, `32` passed / `1` skipped |
 | Legacy baseline/test suite | `cd avmatrix && npm test` | `438,204.3ms`, passed |
@@ -1491,7 +1491,7 @@ Rules:
   outgoing, process participation, and class-like constructor/file incoming refs, then sorts payload
   categories in one shared helper.
 - Graph parity/analyze smoke:
-  `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --no-stats
+  `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --no-stats
   --benchmark-json .tmp\phase15-context-final-graph-parity.json --benchmark-label
   phase15-context-final-graph-parity` passed in `59,979.6ms`, producing `33,574` nodes and `66,604`
   relationships. DB load reported `fallbackInsertCount=0`, `fallbackInsertFailures=0`,
@@ -1557,7 +1557,7 @@ Rules:
   `19,656.6ms` Go, resolution `3,694.0ms` TS vs `5,406.5ms` Go, and DB load `26,405.3ms` TS
   `lbugLoad` vs `28,981.7ms` Go `db_load`.
 - Graph parity/analyze smoke:
-  `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --no-stats
+  `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --no-stats
   --benchmark-json .tmp\phase15-impact-profile-graph-parity.json --benchmark-label
   phase15-impact-profile-graph-parity` passed in `79,991.1ms`, producing `33,612` nodes and
   `66,727` relationships. DB load reported `fallbackInsertCount=0`, `fallbackInsertFailures=0`,
@@ -1604,7 +1604,7 @@ Rules:
   `internal/group.WriteRegistry` persistence cost while preserving `contracts.json` schema,
   `GeneratedAt`, CLI/MCP payloads, and exact-match semantics. Target: warm HTTP `group_sync <=7ms`.
 - Graph parity/analyze smoke:
-  `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --no-stats
+  `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --no-stats
   --benchmark-json .tmp\phase15-group-sync-final-graph-parity.json --benchmark-label
   phase15-group-sync-final-graph-parity` passed in `59,704.6ms`, producing `33,643` nodes and
   `66,799` relationships. DB load reported `fallbackInsertCount=0`, `fallbackInsertFailures=0`,
@@ -1671,7 +1671,7 @@ Rules:
   preserves payload shape; no graph preload was added because that would move cold graph decode into
   startup/resources instead of reducing the work.
 - Graph parity/analyze smoke:
-  `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --no-stats
+  `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --no-stats
   --benchmark-json .tmp\phase15-p3-final-graph-parity.json --benchmark-label
   phase15-p3-final-graph-parity` passed in `58,540.0ms`, producing `33,660` nodes and `66,882`
   relationships. DB load reported `fallbackInsertCount=0`, `fallbackInsertFailures=0`,
@@ -1763,7 +1763,7 @@ Rules:
 | Start graph refresh | `.tmp\phase15-dbload-start-graph.json` | wall `64,949.7ms`; benchmark total `64,647.5ms`; DB load `33,662.1ms`; graph `33,703` nodes / `66,932` relationships; `nodeCopyCount=19`; `relationshipCopyCount=90`; fallback/skipped `0` |
 | Candidate build | `avmatrix-launcher\build.ps1` after changing COPY options to `PARALLEL=true` | passed in `36,663.0ms` |
 | Candidate focused test | `go test ./internal/lbugload -run 'Test(LoadCSVExportUsesCopyForSupportedNodeAndRelationshipPairs|CopyQueriesMatchLadybugCSVContract)' -count=1` | failed only because the contract snapshot still expected `PARALLEL=false`; this was not accepted as evidence of runtime safety |
-| Candidate analyze | packaged `avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\phase15-dbload-parallel-true-analyze.json --benchmark-label phase15-dbload-parallel-true-analyze` | failed closed in `33,143.2ms`; no benchmark JSON was written because native DB load failed |
+| Candidate analyze | packaged `avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\phase15-dbload-parallel-true-analyze.json --benchmark-label phase15-dbload-parallel-true-analyze` | failed closed in `33,143.2ms`; no benchmark JSON was written because native DB load failed |
 | Rollback build | `avmatrix-launcher\build.ps1` after restoring `PARALLEL=false` | passed in `33,780.9ms` |
 | Rollback-safe analyze | `.tmp\phase15-dbload-rollback-safe-analyze.json` | wall `59,961.4ms`; benchmark total `58,086.4ms`; parse `19,424.1ms`; resolution `5,311.4ms`; DB load `28,685.4ms`; graph/rows `33,703` nodes / `66,932` relationships; fallback/skipped `0` |
 

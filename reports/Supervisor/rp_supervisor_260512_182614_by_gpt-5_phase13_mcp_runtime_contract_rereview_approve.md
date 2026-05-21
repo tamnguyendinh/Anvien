@@ -114,7 +114,7 @@ Tests were treated as regression evidence only after source and runtime inspecti
 Commands run after source review:
 
 ```text
-avmatrix analyze --force --skip-agents-md --no-stats
+avmatrix analyze --force [redacted removed argument] --no-stats
 go test ./internal/mcp ./internal/httpapi ./internal/group -count=1
 go test ./cmd/... ./internal/... -count=1
 powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1

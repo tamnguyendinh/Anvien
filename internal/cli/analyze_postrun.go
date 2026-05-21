@@ -69,7 +69,7 @@ func statsFromAnalyzeResult(result analyze.Result) *repo.Stats {
 	return &stats
 }
 
-func generateAnalyzeAIContext(result analyze.Result, projectName string, skipAgentsMD bool, noStats bool, generateSkills bool) (analyzeAIContextResult, error) {
+func generateAnalyzeAIContext(result analyze.Result, projectName string, noStats bool, generateSkills bool) (analyzeAIContextResult, error) {
 	var skills []aicontext.GeneratedSkillInfo
 	if generateSkills {
 		var err error
@@ -88,8 +88,7 @@ func generateAnalyzeAIContext(result analyze.Result, projectName string, skipAge
 		stats.Edges = len(result.Graph.Relationships)
 	}
 	files, baseSkills, err := aicontext.GenerateAIContextFiles(result.RepoPath, projectName, stats, skills, aicontext.Options{
-		SkipAgentsMD: skipAgentsMD,
-		NoStats:      noStats,
+		NoStats: noStats,
 	})
 	if err != nil {
 		return analyzeAIContextResult{}, err

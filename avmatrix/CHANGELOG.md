@@ -141,7 +141,7 @@ All notable changes to AVmatrix will be documented in this file.
 - **MethodExtractor abstraction** — structured method metadata extraction (isAbstract, isFinal, annotations, visibility, parameter types) with config-driven factory pattern (#576)
   - Java and Kotlin configs with overload-safe `methodInfoCache` keyed by `name:line`
   - C# config with `sealed`, `params`/`out`/`ref`/optional parameters, `[Attribute]` syntax, `internal` visibility (#582)
-- **`--skip-agents-md` CLI flag** — opt out of overwriting AVmatrix-managed sections in AGENTS.md and CLAUDE.md during `avmatrix analyze` (#517)
+- **Agent context refresh** — `avmatrix analyze` refreshes AVmatrix-managed sections in AGENTS.md and CLAUDE.md during normal analysis (#517)
 - **Prettier** — monorepo-wide code formatter with lint-staged + Husky pre-commit hook, `.prettierrc` config, Tailwind CSS v4 plugin, `endOfLine: "lf"` + `.gitattributes` for Windows consistency (#563)
 - **ESLint v9** — flat config with `unused-imports` auto-removal, `@typescript-eslint` rules, React hooks rules, CI `lint` job (#564)
 

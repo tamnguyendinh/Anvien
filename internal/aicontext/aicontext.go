@@ -26,8 +26,7 @@ var managedSectionPattern = regexp.MustCompile(`(?is)<!--\s*[a-z0-9-]+:start\s*-
 var baseSkillFiles embed.FS
 
 type Options struct {
-	SkipAgentsMD bool
-	NoStats      bool
+	NoStats bool
 }
 
 type Stats struct {
@@ -86,19 +85,15 @@ func GenerateAIContextFiles(repoPath string, projectName string, stats Stats, sk
 	content := renderAVmatrixBlock(projectName, stats, skills, options.NoStats)
 	created := make([]string, 0, 3)
 
-	if options.SkipAgentsMD {
-		created = append(created, "AGENTS.md (skipped via --skip-agents-md)", "CLAUDE.md (skipped via --skip-agents-md)")
-	} else {
-		agentsResult, err := upsertSection(filepath.Join(repoPath, "AGENTS.md"), content)
-		if err != nil {
-			return nil, nil, err
-		}
-		claudeResult, err := upsertSection(filepath.Join(repoPath, "CLAUDE.md"), content)
-		if err != nil {
-			return nil, nil, err
-		}
-		created = append(created, "AGENTS.md ("+agentsResult+")", "CLAUDE.md ("+claudeResult+")")
+	agentsResult, err := upsertSection(filepath.Join(repoPath, "AGENTS.md"), content)
+	if err != nil {
+		return nil, nil, err
 	}
+	claudeResult, err := upsertSection(filepath.Join(repoPath, "CLAUDE.md"), content)
+	if err != nil {
+		return nil, nil, err
+	}
+	created = append(created, "AGENTS.md ("+agentsResult+")", "CLAUDE.md ("+claudeResult+")")
 
 	baseSkills, err := installBaseSkills(repoPath)
 	if err != nil {

@@ -104,7 +104,7 @@ The plan is grounded in AVmatrix and source inspection before it drives implemen
 AVmatrix index command:
 
 ```powershell
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 ```
 
 Result:
@@ -189,7 +189,7 @@ Date: 2026-05-20
 Status: recorded (completes P1-A1..P1-I)
 
 ### Investigation Commands Used (all AVmatrix + source per AGENTS.md + plan rules)
-- `go run ./cmd/avmatrix analyze --force --skip-agents-md --no-stats` (refreshed to nodes=21091, rels=52445)
+- `go run ./cmd/avmatrix analyze --force [redacted removed argument] --no-stats` (refreshed to nodes=21091, rels=52445)
 - `avmatrix__list_repos`, `avmatrix__query` (multiple for "orphan nodes...", "knowledgeGraphToGraphology...", "graph connectivity")
 - `avmatrix__context` on key symbols (Graph, FileTreePanel, etc. in prior E3)
 - Source reads: internal/graph/types.go (all 22 Rel* consts), internal/processes/processes.go (isTestFile, ENTRY_POINT_OF emission, findEntryPoints, buildCallsGraph), internal/ignore/constants.go (full ignore sets), internal/contracts/web_ui.go (relationshipDisplayPolicies, graphRelationshipTypes list), avmatrix-web/src/lib/graph-adapter.ts (forward/reverseHierarchyRelations exactly matching structural set), internal/graphaccuracy/property_access.go (separate orphanStatus)
@@ -331,7 +331,7 @@ Scope:
 AVmatrix refresh and impact commands:
 
 ```powershell
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix impact Compute --repo AVmatrix --direction upstream --depth 2 --include-tests
 go run .\cmd\avmatrix impact graphPayload --repo AVmatrix --direction upstream --depth 2 --include-tests
 go run .\cmd\avmatrix impact streamGraphNDJSON --repo AVmatrix --direction upstream --depth 2 --include-tests
@@ -383,7 +383,7 @@ go test ./internal/graphhealth ./internal/httpapi ./internal/contracts
 go run .\cmd\generate-web-contracts --check
 cd avmatrix-web; npm run build
 go test ./cmd/... ./internal/...
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
 ```
 
@@ -423,7 +423,7 @@ Scope:
 AVmatrix refresh and impact commands:
 
 ```powershell
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix impact ComputeSummary --repo AVmatrix --direction upstream --depth 2 --include-tests
 go run .\cmd\avmatrix impact NodeHealth --repo AVmatrix --direction upstream --depth 2 --include-tests
 go run .\cmd\avmatrix impact WebUIContractTypeScript --repo AVmatrix --direction upstream --depth 2 --include-tests
@@ -471,7 +471,7 @@ go run .\cmd\generate-web-contracts --check
 cd avmatrix-web; npm run build
 go build ./cmd/... ./internal/...
 go test ./cmd/... ./internal/...
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
 ```
 
@@ -510,7 +510,7 @@ Scope:
 AVmatrix refresh and impact commands:
 
 ```powershell
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix impact Graph --repo AVmatrix --direction upstream --depth 2 --include-tests
 go run .\cmd\avmatrix impact Metrics --repo AVmatrix --direction upstream --depth 2 --include-tests
 go run .\cmd\avmatrix impact ResolveBoundInto --repo AVmatrix --direction upstream --depth 2 --include-tests
@@ -576,8 +576,8 @@ go run .\cmd\generate-web-contracts --check
 go build ./cmd/... ./internal/...
 go test ./cmd/... ./internal/...
 npm --prefix avmatrix-web run build
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p2e-unresolved-diagnostics-benchmark.json --benchmark-label p2e-unresolved-diagnostics
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p2e-unresolved-diagnostics-benchmark.json --benchmark-label p2e-unresolved-diagnostics
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
 ```
 
@@ -612,7 +612,7 @@ Scope:
 AVmatrix refresh and impact commands:
 
 ```powershell
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix impact ComputeSummary --repo AVmatrix --direction upstream --depth 2 --include-tests
 ```
 
@@ -643,7 +643,7 @@ Validation commands and results:
 go test ./internal/graphhealth
 go build ./cmd/... ./internal/...
 go test ./cmd/... ./internal/...
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
 ```
 
@@ -675,7 +675,7 @@ Scope:
 AVmatrix refresh and impact commands:
 
 ```powershell
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix query "HTTP graph API routes and handlers for graph node detail endpoint" --repo AVmatrix
 go run .\cmd\avmatrix impact NewHandler --repo AVmatrix --direction upstream --depth 2 --include-tests
 go run .\cmd\avmatrix impact handleGraph --repo AVmatrix --direction upstream --depth 2 --include-tests
@@ -717,7 +717,7 @@ go run .\cmd\generate-web-contracts --check
 go build ./cmd/... ./internal/...
 go test ./cmd/... ./internal/...
 npm --prefix avmatrix-web run build
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
 ```
 
@@ -751,7 +751,7 @@ Scope:
 AVmatrix refresh and impact commands:
 
 ```powershell
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix impact NewHandler --repo AVmatrix --direction upstream --depth 2 --include-tests
 go run .\cmd\avmatrix impact WebUIContractTypeScript --repo AVmatrix --direction upstream --depth 2 --include-tests
 ```
@@ -790,7 +790,7 @@ go run .\cmd\generate-web-contracts --check
 go build ./cmd/... ./internal/...
 go test ./cmd/... ./internal/...
 npm --prefix avmatrix-web run build
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
 ```
 
@@ -826,7 +826,7 @@ Scope:
 AVmatrix refresh and impact commands:
 
 ```powershell
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix impact FileTreePanel --repo AVmatrix --direction upstream --depth 2 --include-tests
 go run .\cmd\avmatrix impact knowledgeGraphToGraphology --repo AVmatrix --direction upstream --depth 2 --include-tests
 go run .\cmd\avmatrix impact GraphStateProvider --repo AVmatrix --direction upstream --depth 2 --include-tests
@@ -876,7 +876,7 @@ npm --prefix avmatrix-web run test
 npm --prefix avmatrix-web run test:e2e -- e2e/server-connect.spec.ts -g "toggles uncommon node and edge types" --workers=1
 npm --prefix avmatrix-web run test:e2e -- --workers=1
 git diff --check
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
 ```
 
@@ -911,7 +911,7 @@ Scope:
 AVmatrix refresh and impact commands:
 
 ```powershell
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix impact CodeReferencesPanel --repo AVmatrix --direction upstream --depth 2 --include-tests
 go run .\cmd\avmatrix impact FileTreePanel --repo AVmatrix --direction upstream --depth 2 --include-tests
 go run .\cmd\avmatrix impact getNodeGraphHealth --repo AVmatrix --direction upstream --depth 2 --include-tests
@@ -955,7 +955,7 @@ npm --prefix avmatrix-web run test:e2e -- e2e/server-connect.spec.ts -g "toggles
 npm --prefix avmatrix-web run test:e2e -- e2e/graph-health-ui.spec.ts --workers=1
 npm --prefix avmatrix-web run test
 git diff --check
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
 ```
 

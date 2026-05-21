@@ -171,7 +171,7 @@ ok  	github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy
 AVmatrix refresh after the cross-language correction:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Result:
@@ -329,7 +329,7 @@ reason.unsupported_syntax=910
 AVmatrix refresh after the P1-G implementation:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Result:
@@ -429,8 +429,8 @@ ok  	github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy	0.528s
 Analyze e2e after full build:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force [redacted removed argument] --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Website result:
@@ -702,8 +702,8 @@ ok  	github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy
 Analyze e2e after full build:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force [redacted removed argument] --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Website result:
@@ -920,8 +920,8 @@ TestAuditAccessCandidatesResolvesTypeAliasMembers
 Analyze e2e after full build:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force [redacted removed argument] --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Website result:
@@ -1101,8 +1101,8 @@ TestAuditAccessCandidatesClassifiesReasons
 Analyze e2e after full build:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force [redacted removed argument] --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Website result:
@@ -1267,8 +1267,8 @@ TestSchemaQueriesPreserveDDLShape
 Analyze e2e after full build:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats --benchmark-json .tmp\p3f-website-analyze-20260519.json --benchmark-label p3f-website
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json .tmp\p3f-avmatrix-go-analyze-20260519.json --benchmark-label p3f-avmatrix-go
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force [redacted removed argument] --no-stats --benchmark-json .tmp\p3f-website-analyze-20260519.json --benchmark-label p3f-website
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats --benchmark-json .tmp\p3f-avmatrix-go-analyze-20260519.json --benchmark-label p3f-avmatrix-go
 ```
 
 Website result:
@@ -1435,7 +1435,7 @@ ok  	github.com/tamnguyendinh/avmatrix-go/internal/lbugschema
 Analyze e2e after full build:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json .tmp\p4-impact-default-avmatrix-go-analyze-20260519.json --benchmark-label p4-impact-default-avmatrix-go
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats --benchmark-json .tmp\p4-impact-default-avmatrix-go-analyze-20260519.json --benchmark-label p4-impact-default-avmatrix-go
 ```
 
 Result:
@@ -1581,8 +1581,8 @@ ok  	github.com/tamnguyendinh/avmatrix-go/internal/lbugschema
 Final analyze e2e:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats --benchmark-json .tmp\final-website-analyze-20260519.json --benchmark-label final-website
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json .tmp\final-avmatrix-go-analyze-20260519.json --benchmark-label final-avmatrix-go
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force [redacted removed argument] --no-stats --benchmark-json .tmp\final-website-analyze-20260519.json --benchmark-label final-website
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats --benchmark-json .tmp\final-avmatrix-go-analyze-20260519.json --benchmark-label final-avmatrix-go
 ```
 
 Results:

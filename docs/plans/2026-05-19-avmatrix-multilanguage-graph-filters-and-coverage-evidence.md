@@ -314,8 +314,8 @@ Shell implementation summary:
 Commands:
 
 ```powershell
-go run ./cmd/avmatrix analyze --force --skip-agents-md --no-stats
-go run ./cmd/avmatrix analyze E:\Restaurant_manager --force --skip-agents-md --no-stats
+go run ./cmd/avmatrix analyze --force [redacted removed argument] --no-stats
+go run ./cmd/avmatrix analyze E:\Restaurant_manager --force [redacted removed argument] --no-stats
 ```
 
 Results:
@@ -1023,7 +1023,7 @@ Commands:
 
 ```powershell
 go run .\cmd\avmatrix status
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats
 go run .\cmd\avmatrix context providerCoverage --repo AVmatrix
 go run .\cmd\avmatrix impact providerCoverage --repo AVmatrix --direction upstream --depth 3 --include-tests
 go run .\cmd\avmatrix context WebUIContract --repo AVmatrix

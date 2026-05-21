@@ -143,9 +143,9 @@ Source:
 - Repo: `E:\AVmatrix-GO`
 - Graph: `.avmatrix/graph.json`
 - Policy version: `graph-health-non-structural-v1`
-- P2-D refresh command: `go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats`
+- P2-D refresh command: `go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats`
 - P2-D refresh result: `nodes=21323 relationships=52940`
-- P2-E refresh command: `go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p2e-unresolved-diagnostics-benchmark.json --benchmark-label p2e-unresolved-diagnostics`
+- P2-E refresh command: `go run .\cmd\avmatrix analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p2e-unresolved-diagnostics-benchmark.json --benchmark-label p2e-unresolved-diagnostics`
 - P2-E refresh result: `files: scanned=707 parsed=534 unsupported=173 failed=0`; `graph: nodes=21388 relationships=53228`
 - Measurement code: temporary Go runner inside repo root importing `internal/graph` and `internal/graphhealth`, loading `.avmatrix/graph.json`, calling `graphhealth.ComputeSummary(&g)`, measuring content-stripped graph payload size before/after public Graph Health metadata, then removing the temporary runner.
 

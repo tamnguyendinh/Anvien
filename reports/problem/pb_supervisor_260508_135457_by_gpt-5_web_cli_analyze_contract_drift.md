@@ -27,7 +27,7 @@ If the intended product rule is "running analyze must always perform full analyz
 Command:
 
 ```powershell
-node avmatrix\dist\cli\index.js analyze E:\Lap_trinh\GitNexus-main --force --skip-git --skip-agents-md --no-stats --verbose
+node avmatrix\dist\cli\index.js analyze E:\Lap_trinh\GitNexus-main --force --skip-git [redacted removed argument] --no-stats --verbose
 ```
 
 Observed result:

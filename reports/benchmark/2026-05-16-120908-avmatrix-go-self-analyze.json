@@ -14,7 +14,7 @@
       "summary": {
         "avmatrixGo": {
           "engine": "avmatrix-go",
-          "command": ".\\avmatrix-launcher\\server-bundle\\avmatrix.exe analyze E:\\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-go-self-analyze.json --benchmark-label 2026-05-16-120908-avmatrix-go-self-analyze",
+          "command": ".\\avmatrix-launcher\\server-bundle\\avmatrix.exe analyze E:\\AVmatrix-GO --force [redacted removed argument] --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-go-self-analyze.json --benchmark-label 2026-05-16-120908-avmatrix-go-self-analyze",
           "totalWallMs": 13588.1,
           "graphNodes": 19984,
           "graphRelationships": 47622,
@@ -37,7 +37,7 @@
         "avmatrixMain": {
           "engine": "avmatrix-main",
           "enginePath": "E:\\avmatrix-main",
-          "command": "node E:\\avmatrix-main\\avmatrix\\dist\\cli\\index.js analyze E:\\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-main-self-analyze.json --benchmark-label 2026-05-16-120908-avmatrix-main-on-avmatrix-go",
+          "command": "node E:\\avmatrix-main\\avmatrix\\dist\\cli\\index.js analyze E:\\AVmatrix-GO --force [redacted removed argument] --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-main-self-analyze.json --benchmark-label 2026-05-16-120908-avmatrix-main-on-avmatrix-go",
           "totalWallMs": 63215.2,
           "graphNodes": 17539,
           "graphRelationships": 39019,
@@ -1019,7 +1019,7 @@
       "summary": {
         "avmatrixGo": {
           "engine": "avmatrix-go",
-          "command": ".\\avmatrix-launcher\\server-bundle\\avmatrix.exe analyze E:\\Website --force --skip-agents-md --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-go-on-website.json --benchmark-label 2026-05-16-120908-avmatrix-go-on-website",
+          "command": ".\\avmatrix-launcher\\server-bundle\\avmatrix.exe analyze E:\\Website --force [redacted removed argument] --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-go-on-website.json --benchmark-label 2026-05-16-120908-avmatrix-go-on-website",
           "totalWallMs": 20763.6,
           "graphNodes": 26081,
           "graphRelationships": 48163,
@@ -1042,7 +1042,7 @@
         "avmatrixMain": {
           "engine": "avmatrix-main",
           "enginePath": "E:\\avmatrix-main",
-          "command": "node E:\\avmatrix-main\\avmatrix\\dist\\cli\\index.js analyze E:\\Website --force --skip-agents-md --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-main-on-website.json --benchmark-label 2026-05-16-120908-avmatrix-main-on-website",
+          "command": "node E:\\avmatrix-main\\avmatrix\\dist\\cli\\index.js analyze E:\\Website --force [redacted removed argument] --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-main-on-website.json --benchmark-label 2026-05-16-120908-avmatrix-main-on-website",
           "totalWallMs": 70428.1,
           "graphNodes": 18607,
           "graphRelationships": 34055,
@@ -1970,7 +1970,7 @@
     "avmatrixGoSelf": {
       "avmatrixGo": {
         "engine": "avmatrix-go",
-        "command": ".\\avmatrix-launcher\\server-bundle\\avmatrix.exe analyze E:\\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-go-self-analyze.json --benchmark-label 2026-05-16-120908-avmatrix-go-self-analyze",
+        "command": ".\\avmatrix-launcher\\server-bundle\\avmatrix.exe analyze E:\\AVmatrix-GO --force [redacted removed argument] --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-go-self-analyze.json --benchmark-label 2026-05-16-120908-avmatrix-go-self-analyze",
         "totalWallMs": 13588.1,
         "graphNodes": 19984,
         "graphRelationships": 47622,
@@ -1993,7 +1993,7 @@
       "avmatrixMain": {
         "engine": "avmatrix-main",
         "enginePath": "E:\\avmatrix-main",
-        "command": "node E:\\avmatrix-main\\avmatrix\\dist\\cli\\index.js analyze E:\\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-main-self-analyze.json --benchmark-label 2026-05-16-120908-avmatrix-main-on-avmatrix-go",
+        "command": "node E:\\avmatrix-main\\avmatrix\\dist\\cli\\index.js analyze E:\\AVmatrix-GO --force [redacted removed argument] --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-main-self-analyze.json --benchmark-label 2026-05-16-120908-avmatrix-main-on-avmatrix-go",
         "totalWallMs": 63215.2,
         "graphNodes": 17539,
         "graphRelationships": 39019,
@@ -2073,7 +2073,7 @@
     "websiteTypescriptHeavy": {
       "avmatrixGo": {
         "engine": "avmatrix-go",
-        "command": ".\\avmatrix-launcher\\server-bundle\\avmatrix.exe analyze E:\\Website --force --skip-agents-md --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-go-on-website.json --benchmark-label 2026-05-16-120908-avmatrix-go-on-website",
+        "command": ".\\avmatrix-launcher\\server-bundle\\avmatrix.exe analyze E:\\Website --force [redacted removed argument] --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-go-on-website.json --benchmark-label 2026-05-16-120908-avmatrix-go-on-website",
         "totalWallMs": 20763.6,
         "graphNodes": 26081,
         "graphRelationships": 48163,
@@ -2096,7 +2096,7 @@
       "avmatrixMain": {
         "engine": "avmatrix-main",
         "enginePath": "E:\\avmatrix-main",
-        "command": "node E:\\avmatrix-main\\avmatrix\\dist\\cli\\index.js analyze E:\\Website --force --skip-agents-md --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-main-on-website.json --benchmark-label 2026-05-16-120908-avmatrix-main-on-website",
+        "command": "node E:\\avmatrix-main\\avmatrix\\dist\\cli\\index.js analyze E:\\Website --force [redacted removed argument] --no-stats --benchmark-json reports\\benchmark\\2026-05-16-120908-avmatrix-main-on-website.json --benchmark-label 2026-05-16-120908-avmatrix-main-on-website",
         "totalWallMs": 70428.1,
         "graphNodes": 18607,
         "graphRelationships": 34055,

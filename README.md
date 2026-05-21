@@ -212,7 +212,6 @@ avmatrix analyze [path]            # Full local repo analysis
 avmatrix analyze --force           # Force full re-index
 avmatrix analyze --embeddings      # Generate semantic embeddings
 avmatrix analyze --skills          # Generate repo-specific agent skills
-avmatrix analyze --skip-agents-md  # Skip AGENTS.md / CLAUDE.md block updates
 avmatrix analyze --no-stats        # Omit volatile stats from generated agent files
 avmatrix analyze --skip-git        # Analyze a folder without requiring .git
 avmatrix analyze --name <alias>    # Register repo under a custom name

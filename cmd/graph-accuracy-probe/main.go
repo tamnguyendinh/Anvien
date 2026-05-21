@@ -91,7 +91,7 @@ func runFreshAnalyze(repoPath string, avmatrixPath string, graphOutPath string, 
 	if err != nil {
 		return "", fmt.Errorf("resolve repo: %w", err)
 	}
-	args := []string{"analyze", repoAbs, "--force", "--skip-agents-md", "--no-stats"}
+	args := []string{"analyze", repoAbs, "--force", "--no-stats"}
 	if benchmarkPath != "" {
 		args = append(args, "--benchmark-json", benchmarkPath)
 	}

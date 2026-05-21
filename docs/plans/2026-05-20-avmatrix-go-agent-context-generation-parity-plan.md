@@ -60,11 +60,14 @@ Out of scope unless a later phase explicitly reopens it:
 
 The accepted Go behavior must match the original intent, not only the current port:
 
+Superseded policy update, 2026-05-21: analyze must always refresh the managed AVmatrix sections in
+root `AGENTS.md` and `CLAUDE.md`. Any prior root-file bypass behavior is retired and must not be
+preserved, documented as an accepted option, or used in smoke commands.
+
 | Behavior | Required contract |
 |---|---|
 | Default `avmatrix analyze` | Generates or updates `AGENTS.md`, `CLAUDE.md`, and base AVmatrix skill files after a successful analyze. |
 | `--skills` | Adds generated community skill files and generated-skill rows only; it must not be the gate for root `AGENTS.md`, `CLAUDE.md`, or base skill installation. |
-| `--skip-agents-md` | Preserves manual `AGENTS.md` and `CLAUDE.md` content exactly while still allowing non-root generated artifacts that are part of the accepted contract. |
 | `--no-stats` | Omits volatile symbol, relationship, and process counts from generated root context. |
 | Empty root files | Replaced with a clean AVmatrix managed block, not left empty and not converted into malformed whitespace. |
 | Existing AVmatrix block | Replaced in place between `<!-- avmatrix:start -->` and `<!-- avmatrix:end -->`. |
@@ -93,7 +96,7 @@ Required content corrections or confirmations:
 - A default analyze run installs base skill files under `.claude/skills/avmatrix/`.
 - Running analyze without `--skills` does not create `.claude/skills/generated/`.
 - Running analyze with `--skills` creates generated community skills when the graph has eligible communities and appends generated rows to the root context.
-- `--skip-agents-md` preserves existing root agent files byte-for-byte.
+- Analyze exposes no root context bypass flag and always refreshes managed root agent files.
 - Empty root agent files are replaced cleanly.
 - Legacy managed Code Intelligence blocks are replaced instead of duplicated.
 - Generated root content uses accurate MCP tool names, accurate MCP resource URIs, accurate skill headings, and a separate CLI fallback section if CLI commands are listed.
@@ -109,7 +112,7 @@ The following baseline must be recorded before implementation closure:
 - pre-fix or reproduced default analyze behavior for root `AGENTS.md` and `CLAUDE.md`;
 - default analyze behavior after the fix;
 - `--skills` analyze behavior after the fix;
-- `--skip-agents-md` behavior after the fix;
+- verification that no root context bypass flag is exposed after the fix;
 - empty file upsert behavior;
 - legacy managed block replacement behavior;
 - current and final base skill file sizes;
@@ -141,7 +144,7 @@ Initial source inspection identified these facts:
 
 - [x] [P1-A] Record the original TypeScript analyze-to-agent-context flow with source paths and command evidence.
 - [x] [P1-B] Record the current Go analyze-to-agent-context flow with source paths and command evidence.
-- [x] [P1-C] Identify every flag that affects AI context generation: `--skills`, `--skip-agents-md`, and `--no-stats`.
+- [x] [P1-C] Identify every flag that affects AI context generation: `--skills` and `--no-stats`; the former root context bypass flag is retired.
 - [x] [P1-D] Compare original packaged skill sources against Go generated skill output.
 - [x] [P1-E] Compare generated root resource/tool references against `internal/mcp` definitions and tests.
 - [x] [P1-F] Record all findings in the evidence ledger before editing implementation.
@@ -150,9 +153,9 @@ Initial source inspection identified these facts:
 
 - [x] [P2-A] Ensure successful default analyze calls AI context generation unconditionally after graph registration.
 - [x] [P2-B] Ensure `--skills` only controls generated community skills and generated rows.
-- [x] [P2-C] Ensure `--skip-agents-md` skips only the accepted root-file write behavior and preserves manual content exactly.
+- [x] [P2-C] Ensure no analyze flag can skip root `AGENTS.md` / `CLAUDE.md` managed-section refresh.
 - [x] [P2-D] Ensure `--no-stats` continues to omit volatile stats in root context.
-- [x] [P2-E] Add focused CLI tests for default analyze, `--skills`, `--skip-agents-md`, and `--no-stats`.
+- [x] [P2-E] Add focused CLI tests for default analyze, `--skills`, `--no-stats`, and absence of root context bypass help output.
 
 ## Phase 3 - Managed Block Upsert Correctness
 
@@ -186,7 +189,7 @@ Initial source inspection identified these facts:
 - [x] [P6-C] Run full applicable Go tests before closure. `go test ./internal/... ./cmd/...` passed; `go test ./...` still fails on intentionally non-buildable fixture packages.
 - [x] [P6-D] Run default analyze smoke on `E:\AVmatrix-GO`.
 - [x] [P6-E] Run analyze smoke with `--skills` when generated community skill behavior is touched.
-- [x] [P6-F] Run analyze smoke with `--skip-agents-md` against a temp repo or controlled fixture.
+- [x] [P6-F] Verify analyze help and source scans expose no root context bypass flag.
 - [x] [P6-G] Verify generated artifacts are ignored by git and no unintended tracked files are staged.
 - [x] [P6-H] Update evidence and benchmark ledgers with all validation results.
 

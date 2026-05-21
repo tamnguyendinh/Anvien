@@ -23,25 +23,25 @@ Raw benchmark payloads are embedded in `reports\benchmark\2026-05-16-120908-avma
 ### AVmatrix-GO / avmatrix-go
 
 ~~~powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json reports\benchmark\2026-05-16-120908-avmatrix-go-self-analyze.json --benchmark-label 2026-05-16-120908-avmatrix-go-self-analyze
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats --benchmark-json reports\benchmark\2026-05-16-120908-avmatrix-go-self-analyze.json --benchmark-label 2026-05-16-120908-avmatrix-go-self-analyze
 ~~~
 
 ### AVmatrix-GO / avmatrix-main
 
 ~~~powershell
-node E:\avmatrix-main\avmatrix\dist\cli\index.js analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats --benchmark-json reports\benchmark\2026-05-16-120908-avmatrix-main-self-analyze.json --benchmark-label 2026-05-16-120908-avmatrix-main-on-avmatrix-go
+node E:\avmatrix-main\avmatrix\dist\cli\index.js analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats --benchmark-json reports\benchmark\2026-05-16-120908-avmatrix-main-self-analyze.json --benchmark-label 2026-05-16-120908-avmatrix-main-on-avmatrix-go
 ~~~
 
 ### Website / avmatrix-main
 
 ~~~powershell
-node E:\avmatrix-main\avmatrix\dist\cli\index.js analyze E:\Website --force --skip-agents-md --no-stats --benchmark-json reports\benchmark\2026-05-16-120908-avmatrix-main-on-website.json --benchmark-label 2026-05-16-120908-avmatrix-main-on-website
+node E:\avmatrix-main\avmatrix\dist\cli\index.js analyze E:\Website --force [redacted removed argument] --no-stats --benchmark-json reports\benchmark\2026-05-16-120908-avmatrix-main-on-website.json --benchmark-label 2026-05-16-120908-avmatrix-main-on-website
 ~~~
 
 ### Website / avmatrix-go
 
 ~~~powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force --skip-agents-md --no-stats --benchmark-json reports\benchmark\2026-05-16-120908-avmatrix-go-on-website.json --benchmark-label 2026-05-16-120908-avmatrix-go-on-website
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\Website --force [redacted removed argument] --no-stats --benchmark-json reports\benchmark\2026-05-16-120908-avmatrix-go-on-website.json --benchmark-label 2026-05-16-120908-avmatrix-go-on-website
 ~~~
 
 ## AVmatrix-GO Detail

@@ -164,7 +164,7 @@ Date: 2026-05-19
 Command:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Result:
@@ -420,7 +420,7 @@ Scope:
 AVmatrix refresh:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Result:
@@ -538,7 +538,7 @@ risk: low, adapter contract and UI canvas behavior require focused Web tests plu
 AVmatrix refresh:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Result:
@@ -652,7 +652,7 @@ Scope:
 AVmatrix refresh and impact:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 .\avmatrix-launcher\server-bundle\avmatrix.exe context connectHeartbeat --repo AVmatrix
 .\avmatrix-launcher\server-bundle\avmatrix.exe impact connectHeartbeat --repo AVmatrix --direction upstream --depth 2 --include-tests
 .\avmatrix-launcher\server-bundle\avmatrix.exe context useSigma --repo AVmatrix
@@ -780,7 +780,7 @@ Scope:
 AVmatrix refresh and impact:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 .\avmatrix-launcher\server-bundle\avmatrix.exe impact knowledgeGraphToGraphology --repo AVmatrix --direction upstream --depth 2 --include-tests
 .\avmatrix-launcher\server-bundle\avmatrix.exe impact FileTreePanel --repo AVmatrix --direction upstream --depth 2 --include-tests
 ```
@@ -1031,7 +1031,7 @@ Implementation notes:
 Final AVmatrix analyze:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force --skip-agents-md --no-stats
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
 ```
 
 Result:

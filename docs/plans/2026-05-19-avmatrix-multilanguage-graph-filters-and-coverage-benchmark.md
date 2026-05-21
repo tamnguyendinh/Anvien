@@ -150,8 +150,8 @@ Measurement date: 2026-05-19
 Analyzer command used for final graph measurements:
 
 ```powershell
-go run ./cmd/avmatrix analyze --force --skip-agents-md --no-stats
-go run ./cmd/avmatrix analyze E:\Restaurant_manager --force --skip-agents-md --no-stats
+go run ./cmd/avmatrix analyze --force [redacted removed argument] --no-stats
+go run ./cmd/avmatrix analyze E:\Restaurant_manager --force [redacted removed argument] --no-stats
 ```
 
 Analyze runtime:

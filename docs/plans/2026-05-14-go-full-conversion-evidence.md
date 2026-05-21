@@ -79,7 +79,7 @@ Evidence:
   - `docs/plans/2026-05-14-go-full-conversion-evidence.md`
 - Phase jump: none
 - AVmatrix refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\phase0-inventory-refresh-20260514.json`
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\phase0-inventory-refresh-20260514.json`
   - Result: scanned `1234`, parsed `1058`, unsupported `176`, failed `0`, graph `34007` nodes / `67770` relationships.
 - AVmatrix query:
   - Command: `.\avmatrix\bin\avmatrix.exe query "TypeScript JavaScript runtime CLI MCP server package scripts contracts" --repo AVmatrix-GO --limit 8`
@@ -220,9 +220,9 @@ Evidence:
 - Phase jump:
   - Stayed in [P6-A]. User-requested AVmatrix-GO port split to backend `4848` and Web/launcher `5228` was included because it is packaging/runtime support needed before E2E and later batch conversion.
 - AVmatrix refresh:
-  - Pre-impact command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p6-clean-go-source-preimpact-20260514.json`
+  - Pre-impact command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p6-clean-go-source-preimpact-20260514.json`
   - Pre-impact result: scanned `1234`, parsed `1058`, failed `0`, graph `34009` / `67772`.
-  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p6-package-clean-port-delta-refresh-20260514.json`
+  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p6-package-clean-port-delta-refresh-20260514.json`
   - Final refresh result: scanned `1235`, parsed `1059`, failed `0`, graph `34032` / `67803`.
 - Impact checks:
   - `clean-go-source-package`: LOW, direct `0`, processes `0`.
@@ -265,7 +265,7 @@ Evidence:
 - Scope:
   - `avmatrix/test` non-fixture TypeScript test inventory.
 - AVmatrix refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-cluster-map-refresh-20260514.json`
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-cluster-map-refresh-20260514.json`
   - Result: scanned `1235`, parsed `1059`, unsupported `176`, failed `0`, graph `34032` nodes / `67803` relationships.
 - Result:
   - Corrected non-fixture TS test count before batch deletion: `252`.
@@ -315,7 +315,7 @@ Evidence:
 - Phase jump:
   - Kept `repo-graph-read-service.test.ts`, `server.test.ts`, `local-backend.test.ts`, and `local-backend-calltool.test.ts` because they cover broader TS runtime, graph read service, and MCP dispatch ownership beyond this endpoint/queue sub-slice. Return to [P7-C] or jump to [P5-A]/[P5-B] after those owners are confirmed.
 - AVmatrix refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-c1-profile-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-c1-profile-refresh-20260515.json`.
   - Result: scanned `1211`, parsed `1038`, unsupported `173`, failed `0`, graph `33992` nodes / `67832` relationships.
 - Impact checks:
   - `repoHoldQueueTimeout`: LOW, affected processes `0`.
@@ -340,7 +340,7 @@ Evidence:
 - Benchmark entry:
   - [P7-C1] in benchmark ledger.
 - Detect changes:
-  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-c1-final-refresh-20260515.json`.
+  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-c1-final-refresh-20260515.json`.
   - Final refresh result: scanned `1211`, parsed `1038`, unsupported `173`, failed `0`, graph `33992` nodes / `67840` relationships.
   - Staged recheck command: `.\avmatrix\bin\avmatrix.exe detect-changes --scope staged --repo AVmatrix-GO`.
   - Staged recheck result: HIGH risk, changed files `9`, changed symbols `27`, affected processes `7`.
@@ -435,7 +435,7 @@ Evidence:
 - AVmatrix refresh:
   - Initial refresh failed because legacy TypeScript MCP processes held `.avmatrix/graph.json`.
   - Stopped two targeted legacy `node avmatrix/dist/cli/index.js mcp` processes, then reran refresh successfully.
-  - Successful command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-batch2-pre-refresh-20260515.json`.
+  - Successful command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-batch2-pre-refresh-20260515.json`.
   - Result: scanned `1232`, parsed `1056`, unsupported `176`, failed `0`, graph `34038` nodes / `67822` relationships.
 - Impact checks:
   - `NewRootCommand`: CRITICAL, direct `1`, affected processes `11`.
@@ -487,7 +487,7 @@ Evidence:
 - Phase jump:
   - Continue [P7-B] remaining CLI/integration command tests after this commit.
 - AVmatrix refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-batch3-pre-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-batch3-pre-refresh-20260515.json`.
   - Result: scanned `1228`, parsed `1052`, unsupported `176`, failed `0`, graph `34013` nodes / `67786` relationships.
 - Impact checks:
   - `newCleanCommand`: CRITICAL, direct `1`, affected processes `39`.
@@ -555,7 +555,7 @@ Evidence:
 - Benchmark entry:
   - [P7-H1] in benchmark ledger.
 - Detect changes:
-  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-h1-final-refresh-20260515.json`.
+  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-h1-final-refresh-20260515.json`.
   - Refresh result: scanned `1222`, parsed `1046`, unsupported `176`, failed `0`, graph `33977` nodes / `67769` relationships.
   - `.\avmatrix\bin\avmatrix.exe detect-changes --scope all --repo AVmatrix-GO` reported changed files `7`, changed symbols `24`, affected processes `0`, risk `low`.
 - Commit:
@@ -582,7 +582,7 @@ Evidence:
 - Phase jump:
   - Continued [P7-H] because the Go `internal/aicontext` owner exists. At this point `skill-gen.test.ts` still needed a separate implementation decision; it was later converted in [P7-D11/P7-E6/P7-H3]. `skills-e2e.test.ts` remains a broad e2e until a Go replacement is selected.
 - AVmatrix refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-next-pre-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-next-pre-refresh-20260515.json`.
   - Result: scanned `1222`, parsed `1046`, unsupported `176`, failed `0`, graph `33977` nodes / `67769` relationships.
 - Impact checks:
   - `GenerateAIContextFiles`: CRITICAL, direct `1`, affected processes `16`.
@@ -602,7 +602,7 @@ Evidence:
 - Benchmark entry:
   - [P7-H2] in benchmark ledger.
 - Detect changes:
-  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-h2-final-refresh-20260515.json`.
+  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-h2-final-refresh-20260515.json`.
   - Refresh result: scanned `1222`, parsed `1046`, unsupported `176`, failed `0`, graph `33983` nodes / `67782` relationships.
   - `.\avmatrix\bin\avmatrix.exe detect-changes --scope all --repo AVmatrix-GO` reported changed files `5`, changed symbols `12`, affected processes `0`, risk `low`.
 - Commit:
@@ -631,7 +631,7 @@ Evidence:
 - Phase jump:
   - Jumped from broad [P7-D] MCP/tool cluster to a safer group matching sub-slice because Go `internal/group` owner exists. Keep remaining group bridge/extractor/service tests until their Go owners are confirmed or ported.
 - AVmatrix refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\continue-plan-pre-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\continue-plan-pre-refresh-20260515.json`.
   - Result: scanned `1222`, parsed `1046`, unsupported `176`, failed `0`, graph `33983` nodes / `67782` relationships.
 - Impact checks:
   - `runExactMatch` with UID `Function:internal/group/matching.go:runExactMatch#1`: LOW, affected processes `0`.
@@ -653,7 +653,7 @@ Evidence:
 - Benchmark entry:
   - [P7-D1] in benchmark ledger.
 - Detect changes:
-  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d1-final-refresh-20260515.json`.
+  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d1-final-refresh-20260515.json`.
   - Refresh result: scanned `1219`, parsed `1046`, unsupported `173`, failed `0`, graph `33992` nodes / `67818` relationships.
   - `.\avmatrix\bin\avmatrix.exe detect-changes --scope all --repo AVmatrix-GO` reported changed files `6`, changed symbols `23`, affected processes `0`, risk `low`.
 - Commit:
@@ -701,7 +701,7 @@ Evidence:
 - Benchmark entry:
   - [P7-D2] in benchmark ledger.
 - Detect changes:
-  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d2-final-refresh-20260515.json`.
+  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d2-final-refresh-20260515.json`.
   - Refresh result: scanned `1217`, parsed `1044`, unsupported `173`, failed `0`, graph `34001` nodes / `67805` relationships.
   - `.\avmatrix\bin\avmatrix.exe detect-changes --scope all --repo AVmatrix-GO` reported changed files `7`, changed symbols `30`, affected processes `0`, risk `low`.
 - Commit:
@@ -734,7 +734,7 @@ Evidence:
 - Phase jump:
   - Continued the safe group sub-slice from [P7-D] because Go `internal/group` and `internal/mcp` owners already exist. Before converting generated-looking group outputs or config snapshots, return to [P0-E].
 - AVmatrix refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d3-pre-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d3-pre-refresh-20260515.json`.
   - Result: scanned `1217`, parsed `1044`, unsupported `173`, failed `0`, graph `34001` nodes / `67805` relationships.
 - Impact checks:
   - `GroupsBaseDir`: CRITICAL, direct callers `2`, affected processes `8`.
@@ -757,7 +757,7 @@ Evidence:
 - Benchmark entry:
   - [P7-D3] in benchmark ledger.
 - Detect changes:
-  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d3-final-refresh-20260515.json`.
+  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d3-final-refresh-20260515.json`.
   - Refresh result: scanned `1216`, parsed `1043`, unsupported `173`, failed `0`, graph `34009` nodes / `67825` relationships.
   - `.\avmatrix\bin\avmatrix.exe detect-changes --scope all --repo AVmatrix-GO` reported changed files `6`, changed symbols `19`, affected processes `0`, risk `low`.
   - Staged recheck command: `.\avmatrix\bin\avmatrix.exe detect-changes --scope staged --repo AVmatrix-GO`.
@@ -803,7 +803,7 @@ Evidence:
 - Phase jump:
   - Kept `monorepo-sync.test.ts`, extractor tests, and bridge DB tests for a separate extractor/bridge owner cluster because they involve service-boundary extraction, protocol extractors, bridge DB files, and DB-output ownership.
 - AVmatrix refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d4-pre-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d4-pre-refresh-20260515.json`.
   - Result: scanned `1216`, parsed `1043`, unsupported `173`, failed `0`, graph `34010` nodes / `67826` relationships.
 - Impact checks:
   - `groupListTool`: LOW, affected processes `0`.
@@ -826,7 +826,7 @@ Evidence:
 - Benchmark entry:
   - [P7-D4] in benchmark ledger.
 - Detect changes:
-  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d4-final-refresh-20260515.json`.
+  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d4-final-refresh-20260515.json`.
   - Final refresh result: scanned `1212`, parsed `1039`, unsupported `173`, failed `0`, graph `33967` nodes / `67773` relationships.
   - All-scope command: `.\avmatrix\bin\avmatrix.exe detect-changes --scope all --repo AVmatrix-GO`.
   - All-scope result: LOW risk, changed files `11`, changed symbols `25`, affected processes `0`.
@@ -873,7 +873,7 @@ Evidence:
 - Benchmark entry:
   - [P7-D5] in benchmark ledger.
 - Detect changes:
-  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d5-final-refresh-20260515.json`.
+  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d5-final-refresh-20260515.json`.
   - Final refresh result: scanned `1210`, parsed `1037`, unsupported `173`, failed `0`, graph `33989` nodes / `67844` relationships.
   - Staged recheck command: `.\avmatrix\bin\avmatrix.exe detect-changes --scope staged --repo AVmatrix-GO`.
   - Staged recheck result: LOW risk, changed files `5`, changed symbols `23`, affected processes `0`.
@@ -899,7 +899,7 @@ Evidence:
 - Phase jump:
   - Kept `impact-confidence.test.ts` and `impact-batching-grouping.test.ts` for a later behavior/runtime owner batch because their TS local-backend confidence/chunking contracts differ from the current Go runtime surface.
 - AVmatrix graph state:
-  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d6-final-refresh-20260515.json`.
+  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d6-final-refresh-20260515.json`.
   - Final refresh result: scanned `1210`, parsed `1037`, unsupported `173`, failed `0`, graph `34011` nodes / `67858` relationships.
 - Impact checks:
   - Runtime implementation was not changed. No symbol impact was required for the Go test-only parser assertion patch.
@@ -977,7 +977,7 @@ Evidence:
 - Benchmark entry:
   - [P7-D7] in benchmark ledger.
 - Detect changes:
-  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d7-final-refresh-20260515.json`.
+  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d7-final-refresh-20260515.json`.
   - Final refresh result: scanned `1207`, parsed `1034`, unsupported `173`, failed `0`, graph `33973` nodes / `67854` relationships.
   - All-scope command: `.\avmatrix\bin\avmatrix.exe detect-changes --scope all --repo AVmatrix-GO`.
   - All-scope result: LOW risk, changed files `8`, changed symbols `38`, affected processes `0`.
@@ -1007,7 +1007,7 @@ Evidence:
   - The TS `IMPACT_MAX_CHUNKS`/DB enrichment cap is not ported because Go impact traversal operates over the loaded in-memory graph and does not issue chunked DB enrichment queries.
   - Marked parent [P7-D] complete for MCP/tool dispatch unit coverage; broader TS local-backend integration tests remain assigned to [P7-C]/[P5-A]/[P5-B].
 - AVmatrix graph state:
-  - Pre-edit refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d8-pre-refresh-20260515.json`.
+  - Pre-edit refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d8-pre-refresh-20260515.json`.
   - Pre-edit refresh result: scanned `1207`, parsed `1034`, unsupported `173`, failed `0`, graph `33973` nodes / `67854` relationships.
 - Impact checks:
   - `impactConfidence` upstream impact: LOW, direct caller `impactItemPayload`, affected processes `runImpactBFSProfiled` and `impactToolInternal`.
@@ -1029,7 +1029,7 @@ Evidence:
   - MCP stdio smoke through `.\avmatrix\bin\avmatrix.exe mcp` initialized successfully and called `impact` for `impactConfidence`, returning `impactedCount=2` and `risk=HIGH`.
   - First smoke attempt returned the same payload but failed due an overly strict PowerShell assertion against nested JSON text; rerun with text-token assertions passed.
 - Final graph refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d8-final-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d8-final-refresh-20260515.json`.
   - Result: scanned `1205`, parsed `1032`, unsupported `173`, failed `0`, graph `33945` nodes / `67850` relationships.
 - Benchmark entry:
   - [P7-D8] in benchmark ledger.
@@ -1072,7 +1072,7 @@ Evidence:
   - The legacy TS ignore test expected `.doc/.docx/.pdf` and spreadsheet/CSV files to be ignored. Go intentionally includes document and spreadsheet inputs for document ingestion, matching the prior Go conversion evidence; the old ignore expectation was not ported.
   - `repo-manager.test.ts`, `repo-resolver.test.ts`, `repo-read-executor.test.ts`, and MCP `resources.test.ts` remain for later P7-G/P7-C/P7-D owner batches because they include legacy CLI config, session binding, read executor, and MCP resource behavior beyond this first repo/ignore slice.
 - AVmatrix graph state:
-  - Pre-edit refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-g1-pre-refresh-20260515.json`.
+  - Pre-edit refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-g1-pre-refresh-20260515.json`.
   - Pre-edit refresh result: scanned `1205`, parsed `1032`, unsupported `173`, failed `0`, graph `33945` nodes / `67850` relationships.
 - Impact checks:
   - `Store.Register` upstream impact: LOW, direct caller `AnalyzeService.recordResult`, affected processes `0`.
@@ -1098,7 +1098,7 @@ Evidence:
   - `.\avmatrix\bin\avmatrix.exe status` inspected the current git repository and reported it up to date.
   - First smoke attempt returned the same valid output but failed due a PowerShell assertion against an array instead of joined text; rerun with joined-text assertions passed.
 - Final graph refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-g1-final-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-g1-final-refresh-20260515.json`.
   - Result: scanned `1202`, parsed `1029`, unsupported `173`, failed `0`, graph `33961` nodes / `67878` relationships.
 - Deletion proof:
   - Non-fixture TS test count is now `215`.
@@ -1134,7 +1134,7 @@ Evidence:
   - The TS compatibility import path for `src/cli/wiki.js` is not retained as runtime authority; Go `avmatrix wiki` is canonical and already covered.
   - Existing Go CLI tests cover status on non-git/indexed repos, analyze output/artifacts, direct tool JSON on stdout, wiki local-only gate, unknown command/help behavior, and direct MCP runtime dispatch. This batch adds the missing analyze-name collision wiring before deleting the TS e2e.
 - AVmatrix graph state:
-  - Pre-edit refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-b4-pre-refresh-20260515.json`.
+  - Pre-edit refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-b4-pre-refresh-20260515.json`.
   - Pre-edit refresh result: scanned `1202`, parsed `1029`, unsupported `173`, failed `0`, graph `33961` nodes / `67878` relationships.
 - Impact checks:
   - `NewRootCommand` upstream impact: LOW, direct caller `main`, affected process `main`.
@@ -1156,7 +1156,7 @@ Evidence:
   - First PowerShell smoke attempt failed before invoking the CLI assertion because `$home` collided with read-only `$HOME`.
   - Rerun with isolated `AVMATRIX_HOME` passed: `analyze repo-a --name shared` registered, `analyze repo-b --name shared` exited `1` with the expected registry collision message, and `analyze repo-b --name shared --allow-duplicate-name` passed.
 - Final graph refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-b4-final-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-b4-final-refresh-20260515.json`.
   - Result: scanned `1200`, parsed `1027`, unsupported `173`, failed `0`, graph `33910` nodes / `67822` relationships.
 - Deletion proof:
   - Non-fixture TS inventory count is now `213` using the benchmark ledger scope (`avmatrix/test` non-fixture `.ts/.tsx` plus `avmatrix/vitest.config.ts`); raw `avmatrix/test` non-fixture `.ts/.tsx` count is `212`.
@@ -1188,7 +1188,7 @@ Evidence:
   - Existing Go `internal/mcp/server_test.go` already covers JSON-RPC reads for context, clusters, processes, schema, cluster detail, process detail, prompts, and stale context warnings. This batch adds the static/URI/error coverage before deleting the TS resource unit test.
   - Broader TS local-backend integration tests such as `local-backend.test.ts` and `local-backend-calltool.test.ts` remain under [P7-C]/[P5-A]/[P5-B] because they cover legacy HTTP/MCP bridge ownership beyond direct MCP resources.
 - AVmatrix graph state:
-  - Pre-edit refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d9-pre-refresh-20260515.json`.
+  - Pre-edit refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d9-pre-refresh-20260515.json`.
   - Pre-edit refresh result: scanned `1200`, parsed `1027`, unsupported `173`, failed `0`, graph `33910` nodes / `67822` relationships.
 - Impact checks:
   - `resourceTemplates` upstream impact by UID `Function:internal/mcp/resources.go:resourceTemplates#0`: HIGH, direct caller `Server.handle`, affected processes `Handle -> PromptContent`, `Handle -> PromptMessage`, and `Handle -> StringArg`.
@@ -1209,7 +1209,7 @@ Evidence:
   - `.\avmatrix\bin\avmatrix.exe mcp` with isolated `AVMATRIX_HOME` returned `resources/list`, `resources/templates/list`, and `resources/read` for `avmatrix://repos` through stdio framing.
   - First PowerShell pipeline smoke attempt returned valid responses but exited `1` on a trailing pipeline read (`missing Content-Length header`); rerun using `ProcessStartInfo` and direct stdin close exited `0`.
 - Final graph refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-d9-final-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-d9-final-refresh-20260515.json`.
   - Result: scanned `1200`, parsed `1027`, unsupported `173`, failed `0`, graph `33932` nodes / `67858` relationships.
 - Deletion proof:
   - Non-fixture TS inventory count is now `212` using the benchmark ledger scope.
@@ -1240,9 +1240,9 @@ Evidence:
 - Phase jump:
   - The legacy TS test expected `31` node tables. Go canonical schema intentionally has `32` because it includes `Package` and `Section` in addition to core, multi-language, `Route`, and `Tool` nodes.
 - AVmatrix graph state:
-  - Pre-edit refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-f1-pre-refresh-20260515.json`.
+  - Pre-edit refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-f1-pre-refresh-20260515.json`.
   - Pre-edit refresh result: scanned `1200`, parsed `1027`, unsupported `173`, failed `0`, graph `33932` nodes / `67858` relationships.
-  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-f1-final-refresh-20260515.json`.
+  - Final refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-f1-final-refresh-20260515.json`.
   - Final refresh result: scanned `1199`, parsed `1026`, unsupported `173`, failed `0`, graph `33921` nodes / `67863` relationships.
 - Impact checks:
   - `SchemaQueries` upstream impact: LOW, direct caller `writeRunner.initializeSchema`, affected processes `0`.
@@ -1302,7 +1302,7 @@ Evidence:
 - Phase jump:
   - Kept `avmatrix/test/unit/chunker.test.ts` and `avmatrix/test/unit/embedding-chunking.test.ts` because they assert AST-aware chunking behavior that the current Go chunker does not yet implement 1-1. Return after the chunking owner is implemented or explicitly rescoped.
 - AVmatrix graph state:
-  - Pre-batch refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-f2-pre-scan-refresh-20260515.json`.
+  - Pre-batch refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-f2-pre-scan-refresh-20260515.json`.
   - Pre-batch refresh result: scanned `1199`, parsed `1026`, unsupported `173`, failed `0`, graph `33921` nodes / `67863` relationships.
 - Impact checks:
   - `ContentHashForNode` upstream impact: CRITICAL, direct callers include `embeddings.Run` and Go tests, affected processes `33`.
@@ -1332,7 +1332,7 @@ Evidence:
   - Impact attempts for `RelationPairs` and `RelationSchema` could not run after the failed forced refresh because `.avmatrix/graph.json` had been removed by the failed rebuild; this was recorded before applying the minimal schema-pair repair.
   - Added `Property -> Method` to the canonical LadybugDB relation pair set, updated schema tests, rebuilt `avmatrix/bin/avmatrix.exe`, and reran the graph refresh successfully.
 - Final graph refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-f2-final-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-f2-final-refresh-20260515.json`.
   - Result: scanned `1195`, parsed `1022`, unsupported `173`, failed `0`, graph `33882` nodes / `67873` relationships.
 - Deletion proof:
   - Non-fixture TS inventory count is now `207` using the benchmark ledger scope.
@@ -1378,7 +1378,7 @@ Evidence:
   - Kept `bm25-search.test.ts`, `hybrid-search.test.ts`, `search-core.test.ts`, and `search-pool.test.ts` because Go HTTP search currently reports BM25 as not wired; deleting those tests requires [P5-C] search parity or an explicit scope decision.
   - Kept `chunker.test.ts` and `embedding-chunking.test.ts` because AST-aware chunking parity remains blocked.
 - AVmatrix graph state:
-  - Pre-batch refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-f3-pre-refresh-20260515.json`.
+  - Pre-batch refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-f3-pre-refresh-20260515.json`.
   - Pre-batch refresh result: scanned `1195`, parsed `1022`, unsupported `173`, failed `0`, graph `33882` nodes / `67873` relationships.
 - Impact checks:
   - `collectBestChunks` by UID `Function:internal/embeddings/search.go:collectBestChunks#4` upstream impact: LOW, direct caller `SemanticSearch`, affected processes `0`.
@@ -1398,7 +1398,7 @@ Evidence:
 - Runtime e2e:
   - Built Go CLI smoke passed using isolated `AVMATRIX_HOME` and a temporary TypeScript repo. Command wrote benchmark JSON `.tmp\p7-f3-cli-smoke-20260515223038.json`, parsed `1` file, and loaded `4` nodes / `5` relationships.
 - Final graph refresh:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-f3-final-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-f3-final-refresh-20260515.json`.
   - Result: scanned `1192`, parsed `1019`, unsupported `173`, failed `0`, graph `33910` nodes / `67936` relationships.
 - Deletion proof:
   - Non-fixture TS inventory count is now `204` using the benchmark ledger scope.
@@ -1456,7 +1456,7 @@ Evidence:
   - `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` passed with known Vite chunk-size/dynamic-import warnings.
   - `cd avmatrix-web && npm test` passed: `39` files / `296` tests.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-lbug-runtime-cluster-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-lbug-runtime-cluster-refresh-20260515.json`.
   - Result: scanned `1184`, parsed `1011`, unsupported `173`, failed `0`, graph `33715` nodes / `66989` relationships.
 - Deletion proof:
   - Non-fixture TS inventory count is now `185` using `rg --files avmatrix\test | rg "\.(test|spec)\.ts$" | rg -v "^avmatrix\\test\\fixtures\\" | Measure-Object`.
@@ -1505,7 +1505,7 @@ Evidence:
   - `cd avmatrix && npm test` passed; deleted local-backend files were no longer referenced by the custom Vitest runner.
   - `cd avmatrix-web && npm test` passed: `39` files / `296` tests.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-cg-local-backend-repo-cluster-refresh-20260515.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-cg-local-backend-repo-cluster-refresh-20260515.json`.
   - Result: scanned `1174`, parsed `1001`, unsupported `173`, failed `0`, graph `33639` nodes / `66895` relationships.
 - Deletion proof:
   - Non-fixture TS inventory count is now `173` using `rg --files avmatrix\test | rg "\.(test|spec)\.ts$" | rg -v "^avmatrix\\test\\fixtures\\" | Measure-Object`.
@@ -1562,7 +1562,7 @@ Evidence:
   - `cd avmatrix && npm test` passed; deleted legacy tests were no longer referenced by the custom Vitest runner.
   - `cd avmatrix-web && npm test` passed: `39` files / `296` tests.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-e1-graph-process-pipeline-refresh-20260516.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-e1-graph-process-pipeline-refresh-20260516.json`.
   - Result: scanned `1168`, parsed `995`, unsupported `173`, failed `0`, graph `33678` nodes / `67091` relationships, processes `560`, communities `1216`, total duration `36365.4` ms.
 - Deletion proof:
   - Non-fixture TS inventory count is now `162` using `rg --files avmatrix\test | rg "\.(test|spec)\.ts$" | rg -v "^avmatrix\\test\\fixtures\\" | Measure-Object`.
@@ -1609,7 +1609,7 @@ Evidence:
   - `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` passed with known Vite chunk-size/dynamic-import warnings.
   - `cd avmatrix-web && npm test` passed: `39` files / `296` tests.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-e23-hook-resolution-provider-refresh-20260516.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-e23-hook-resolution-provider-refresh-20260516.json`.
   - Result: scanned `1146`, parsed `973`, unsupported `173`, failed `0`, graph `33151` nodes / `66305` relationships, processes `567`, communities `1215`, total duration `22718.1` ms.
 - Deletion proof:
   - Non-fixture TS inventory count is now `138`.
@@ -1670,7 +1670,7 @@ Evidence:
   - `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` passed with known Vite dynamic-import/chunk-size warnings.
   - `cd avmatrix-web && npm test` passed: `39` files / `296` tests.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-e4-framework-route-orm-provider-refresh-20260516.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-e4-framework-route-orm-provider-refresh-20260516.json`.
   - Result: scanned `1140`, parsed `967`, unsupported `173`, failed `0`, graph `33179` nodes / `66516` relationships, processes `563`, communities `1220`, total duration `31876.4` ms.
 - Deletion proof:
   - Non-fixture TS inventory count is now `130` using `rg --files avmatrix\test | rg "\.(test|spec)\.ts$" | rg -v "^avmatrix\\test\\fixtures\\" | Measure-Object`.
@@ -1727,7 +1727,7 @@ Evidence:
   - `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` passed with known Vite dynamic-import/chunk-size warnings.
   - First `cd avmatrix && npm test` run exposed stale runner entries for the deleted `class-impact-all-languages` and `java-class-impact` files; after removing those entries from `avmatrix/scripts/run-vitest-suite.cjs`, `cd avmatrix && npm test` passed.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-e5-mcp-provider-route-scope-refresh-20260516.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-e5-mcp-provider-route-scope-refresh-20260516.json`.
   - Result: scanned `1138`, parsed `965`, unsupported `173`, failed `0`, graph `33222` nodes / `66645` relationships, processes `567`, communities `1223`, total duration `29181.4` ms.
 - Deletion proof:
   - Non-fixture TS inventory count is now `123`.
@@ -1776,7 +1776,7 @@ Evidence:
   - `cd avmatrix && npm test` passed.
   - `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` passed with known Vite dynamic-import/chunk-size warnings.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-e6-mro-group-skill-refresh-20260516.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-e6-mro-group-skill-refresh-20260516.json`.
   - Result: scanned `1136`, parsed `963`, unsupported `173`, failed `0`, graph `33146` nodes / `66648` relationships, processes `567`, communities `1216`, total duration `22886.4` ms.
 - Deletion proof:
   - Non-fixture TS inventory count is now `120`.
@@ -1845,7 +1845,7 @@ Evidence:
   - `cd avmatrix-web && npm test` passed: `39` files / `296` tests.
   - `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` passed with known Vite dynamic-import/chunk-size warnings.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-e7-search-group-jcl-chunk-refresh-20260516.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-e7-search-group-jcl-chunk-refresh-20260516.json`.
   - Result: scanned `1134`, parsed `961`, unsupported `173`, failed `0`, graph `33522` nodes / `67490` relationships, processes `571`, communities `1253`, total duration `26315.5` ms.
 - Deletion proof:
   - Non-fixture TS inventory count is now `104`.
@@ -1918,7 +1918,7 @@ Evidence:
   - `cd avmatrix-web && npm test` passed: `39` files / `296` tests.
   - `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` passed with known Vite dynamic-import/chunk-size warnings.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-e8-scope-runtime-provider-cobol-refresh-20260516.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-e8-scope-runtime-provider-cobol-refresh-20260516.json`.
   - Result: scanned `1123`, parsed `950`, unsupported `173`, failed `0`, graph `33502` nodes / `67632` relationships, processes `567`, communities `1268`, total duration `25479.8` ms.
 - Deletion proof:
   - Non-fixture TS inventory count is now `87`.
@@ -1992,7 +1992,7 @@ Evidence:
   - `cd avmatrix-web && npm test` passed: `39` files / `296` tests.
   - Initial `cd avmatrix && npm test` failed on stale native DB runner/config entries for deleted `shape-check-regression.test.ts`; after updating `avmatrix/scripts/run-vitest-suite.cjs` and `avmatrix/vitest.config.ts`, `cd avmatrix && npm test` passed. Expected warnings remain for unavailable COBOL parser binding, LLM fallback tests, and scope error-resilience warnings.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-e9-provider-route-scope-refresh-20260516.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-e9-provider-route-scope-refresh-20260516.json`.
   - Result: scanned `1102`, parsed `929`, unsupported `173`, failed `0`, graph `32814` nodes / `67457` relationships, processes `572`, communities `1284`, total duration `20918.5` ms.
   - Route metrics included `24` routes emitted, `24` route handles, `28` fetches, and `6` duplicate routes.
 - Deletion proof:
@@ -2068,7 +2068,7 @@ Evidence:
   - `cd avmatrix && npm test` passed. Expected stderr warnings remain for unavailable COBOL parser binding, LLM fallback test, and scope error-resilience warnings.
   - `cd avmatrix-web && npm test` passed: `39` files / `296` tests.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-e10-runtime-provider-scope-refresh-20260516.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-e10-runtime-provider-scope-refresh-20260516.json`.
   - Result: scanned `1087`, parsed `914`, unsupported `173`, failed `0`, graph `32491` nodes / `67038` relationships, processes `572`, communities `1277`, total duration `20621.7` ms.
 - Deletion proof:
   - Non-fixture TS inventory count is now `44`.
@@ -2132,7 +2132,7 @@ Evidence:
   - `cd avmatrix && npm test` passed. Expected stderr warnings remain for unavailable COBOL parser binding, LLM fallback test, and scope error-resilience warnings.
   - `cd avmatrix-web && npm test` passed: `39` files / `296` tests.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-e11-import-runtime-contract-refresh-20260516.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-e11-import-runtime-contract-refresh-20260516.json`.
   - Result: scanned `1078`, parsed `905`, unsupported `173`, failed `0`, graph `32436` nodes / `67017` relationships, processes `573`, communities `1284`, total duration `20068.6` ms.
 - Deletion proof:
   - Non-fixture TS inventory count is now `29`.
@@ -2192,7 +2192,7 @@ Evidence:
   - `cd avmatrix && npm test` passed. Expected stderr warnings remain for unavailable COBOL parser binding and scope error-resilience warning paths.
   - `cd avmatrix-web && npm test` passed: `39` files / `296` tests.
 - Final graph refresh / benchmark artifact:
-  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-e12-resolution-shadow-enrichment-refresh-20260516.json`.
+  - Command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-e12-resolution-shadow-enrichment-refresh-20260516.json`.
   - Result: scanned `1080`, parsed `907`, unsupported `173`, failed `0`, graph `32689` nodes / `67624` relationships, processes `573`, communities `1313`, total duration `20720.2` ms, memory max observed sys `529408248`.
 - Deletion proof:
   - Non-fixture TS inventory count is now `19`.
@@ -2229,9 +2229,9 @@ Evidence:
 - Phase jump:
   - P7-J closed. No P7-K blocker remains because `avmatrix/test` now contains fixture input only.
 - AVmatrix refresh / benchmark artifacts:
-  - Test retirement command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-final-legacy-test-retirement-refresh-20260516.json`.
+  - Test retirement command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-final-legacy-test-retirement-refresh-20260516.json`.
   - Result: scanned `1076`, parsed `903`, unsupported `173`, failed `0`, graph `32761` nodes / `68116` relationships, processes `585`, communities `1328`, total duration `19586.8` ms.
-  - Harness retirement command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p7-final-harness-retirement-refresh-20260516.json`.
+  - Harness retirement command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p7-final-harness-retirement-refresh-20260516.json`.
   - Result: scanned `1066`, parsed `895`, unsupported `171`, failed `0`, graph `32639` nodes / `67926` relationships, processes `585`, communities `1327`, total duration `20249.4` ms, max observed sys `576545016`.
 - Impact checks:
   - `stripTypeAnnotation`: LOW, direct callers `0`, affected processes `0`.
@@ -2295,9 +2295,9 @@ Evidence:
 - Phase jump:
   - None. P1-P6 were closed by the final source/package cutover because the Go owners already existed and Phase 7 had retired non-Web legacy tests.
 - AVmatrix refresh:
-  - Pre-impact command: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p8-package-source-cutover-preimpact-20260516.json`.
+  - Pre-impact command: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p8-package-source-cutover-preimpact-20260516.json`.
   - Pre-impact result: scanned `1066`, parsed `895`, unsupported `171`, failed `0`, graph `32640` nodes / `67927` relationships.
-  - Final benchmark refresh: `.\avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\p8-package-source-cutover-refresh-20260516.json`.
+  - Final benchmark refresh: `.\avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p8-package-source-cutover-refresh-20260516.json`.
   - Final refresh result: scanned `684`, parsed `517`, unsupported `167`, failed `0`, graph `18969` nodes / `45066` relationships, processes `579`, communities `872`, total duration `12615.8ms`.
 - Impact checks:
   - `newPackageCommand`: CRITICAL, direct caller `NewRootCommand`, affected processes `11`.

@@ -84,7 +84,7 @@ Status: recorded
 Command:
 
 ```powershell
-rg -n "AGENTS\.md|CLAUDE\.md|generateAnalyzeAIContext|GenerateAIContextFiles|GenerateSkillFiles|--skills|skip-agents-md|managedSection" internal\cli internal\aicontext -g '*.go'
+rg -n "AGENTS\.md|CLAUDE\.md|generateAnalyzeAIContext|GenerateAIContextFiles|GenerateSkillFiles|--skills|--no-stats|managedSection" internal\cli internal\aicontext -g '*.go'
 ```
 
 Observed files:
@@ -100,7 +100,7 @@ Observed behavior requiring implementation or final verification:
 
 - `internal/aicontext/aicontext.go` owns `GenerateAIContextFiles`, base skill installation, generated community skill file generation, and managed block upsert behavior.
 - `internal/cli/analyze_postrun.go` owns the analyze post-run bridge into AI context generation.
-- `internal/cli/command.go` owns the analyze command flags `--skills`, `--skip-agents-md`, and `--no-stats`.
+- `internal/cli/command.go` owns the analyze command flags `--skills` and `--no-stats`; the former root context bypass flag is retired.
 - Focused tests already exist around AI context generation and analyze command behavior, so parity coverage should be added there rather than only covered by smoke tests.
 
 ## E3 - Original TypeScript Parity Evidence
@@ -114,7 +114,7 @@ Commands:
 ```powershell
 Test-Path -LiteralPath E:\avmatrix-main
 rg --files E:\avmatrix-main | rg "(ai-context|agent|claude|skills).*\.(ts|md)$"
-rg -n "AGENTS\.md|CLAUDE\.md|generateAIContext|setupAIContext|skills|skip-agents|AVmatrix - Code Intelligence|Resources|CLI" E:\avmatrix-main\avmatrix\src\cli\ai-context.ts E:\avmatrix-main\avmatrix\src\core\run-analyze.ts
+rg -n "AGENTS\.md|CLAUDE\.md|generateAIContext|setupAIContext|skills|AVmatrix - Code Intelligence|Resources|CLI" E:\avmatrix-main\avmatrix\src\cli\ai-context.ts E:\avmatrix-main\avmatrix\src\core\run-analyze.ts
 Get-Content -LiteralPath E:\avmatrix-main\avmatrix\src\cli\ai-context.ts -TotalCount 260
 Get-Content -LiteralPath E:\avmatrix-main\avmatrix\src\cli\ai-context.ts | Select-Object -Skip 190 -First 120
 ```
@@ -133,7 +133,7 @@ Observed original source paths:
 Observed original behavior:
 
 - `run-analyze.ts` imports `generateAIContextFiles` from the CLI AI context generator.
-- The original generator creates or updates both `AGENTS.md` and `CLAUDE.md` unless `skipAgentsMd` is set.
+- The original generator had a now-retired root-file bypass option; current Go behavior must not preserve it.
 - The original generator installs base skills under `.claude/skills/avmatrix/`.
 - The original generator reads package skill Markdown from `avmatrix\skills\avmatrix-*.md` and only falls back to minimal content if package skill files cannot be read.
 - The original upsert logic replaces any managed Code Intelligence block matched by `MANAGED_SECTION_PATTERN`.
@@ -276,7 +276,7 @@ Status: recorded
 Impact and graph refresh commands:
 
 ```powershell
-go run .\cmd\avmatrix analyze --force --skip-agents-md --no-stats
+go run .\cmd\avmatrix analyze --force --no-stats
 go run .\cmd\avmatrix impact renderAVmatrixBlock --repo AVmatrix --direction upstream --depth 2
 go run .\cmd\avmatrix impact installBaseSkills --repo AVmatrix --direction upstream --depth 2
 go run .\cmd\avmatrix impact GenerateAIContextFiles --repo AVmatrix --direction upstream --depth 2
@@ -350,7 +350,7 @@ Smoke validation commands:
 go run .\cmd\avmatrix analyze --force --no-stats
 go run .\cmd\avmatrix analyze --force --skills --no-stats
 # Temp repo smoke:
-go run .\cmd\avmatrix analyze <temp-repo> --force --skip-git --skip-agents-md --no-stats --name skip-agents-smoke
+go run .\cmd\avmatrix analyze <temp-repo> --force --skip-git --no-stats --name context-refresh-smoke
 git status --short
 git check-ignore -v AGENTS.md CLAUDE.md .avmatrix\graph.json .claude\skills\avmatrix\avmatrix-cli\SKILL.md .claude\skills\generated\graph\SKILL.md
 go run .\cmd\avmatrix detect-changes --repo AVmatrix --scope all
@@ -364,6 +364,6 @@ Smoke observations:
 - Default analyze did not create `.claude/skills/generated` when the generated directory was absent before the run.
 - `--skills` analyze completed with the same graph counts and printed `skills: generated=20 base=6 files=3`.
 - `--skills` created `20` generated community skill files totaling `59690` bytes and expanded `AGENTS.md` / `CLAUDE.md` to `5376` bytes each.
-- `--skip-agents-md` temp repo smoke preserved manual `AGENTS.md` and `CLAUDE.md` content exactly while installing the base skill path.
+- Superseded on 2026-05-21: the root context bypass smoke is retired. Analyze must refresh managed `AGENTS.md` and `CLAUDE.md` sections normally.
 - `git check-ignore -v` confirmed `AGENTS.md`, `CLAUDE.md`, `.avmatrix/graph.json`, `.claude/skills/avmatrix/avmatrix-cli/SKILL.md`, and `.claude/skills/generated/graph/SKILL.md` are ignored.
 - Final `detect-changes --scope all` reported `changed_count=53`, `changed_files=8`, `affected_count=13`, and `risk_level=high`; affected flows are concentrated around `NewAnalyzeCommand`, `generateAnalyzeAIContext`, `renderAVmatrixBlock`, and `upsertSection`.

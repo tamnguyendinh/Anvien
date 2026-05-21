@@ -151,7 +151,6 @@ avmatrix setup                      # Configure MCP for your editors (one-time)
 avmatrix analyze [path]             # Index a repository (or update stale index)
 avmatrix analyze --force            # Force full re-index
 avmatrix analyze --embeddings       # Enable embedding generation (slower, better search)
-avmatrix analyze --skip-agents-md   # Preserve custom AGENTS.md/CLAUDE.md AVmatrix section edits
 avmatrix analyze --verbose          # Log skipped files when parsers are unavailable
 avmatrix mcp                        # Start MCP server (stdio) — serves all indexed repos
 avmatrix serve                      # Start local HTTP server (multi-repo) for web UI

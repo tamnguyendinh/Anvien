@@ -51,7 +51,6 @@
       "--force": false,
       "--embeddings": false,
       "--skills": false,
-      "--skip-agents-md": false,
       "--no-stats": false,
       "--skip-git": false,
       "--skip-compatibility-cross-file": false,

@@ -20,7 +20,7 @@ Use this skill when a task needs terminal access to the local AVmatrix index. Ca
 
 `avmatrix analyze --force`
 
-Builds or refreshes the graph, writes `.avmatrix/graph.json`, registers the repo, updates generated AI context files, and installs AVmatrix skills. Use `--skip-agents-md` only when root `AGENTS.md` and `CLAUDE.md` must not be touched. Use `--no-stats` when volatile symbol and relationship counts should be omitted from generated context.
+Builds or refreshes the graph, writes `.avmatrix/graph.json`, registers the repo, updates generated AI context files, and installs AVmatrix skills. Analyze always updates the managed AVmatrix sections in root `AGENTS.md` and `CLAUDE.md`. Use `--no-stats` when volatile symbol and relationship counts should be omitted from generated context.
 
 ### status
 
@@ -68,4 +68,4 @@ Runs read-only graph queries against the indexed graph.
 
 - If an AVmatrix command reports a stale index, refresh with `avmatrix analyze --force`.
 - Prefer MCP tools when available; use CLI commands as a fallback or for smoke validation.
-- Do not use `--skip-agents-md` in smoke tests that are meant to validate generated root context files.
+- Smoke tests that validate generated root context files must run `avmatrix analyze --force` normally so `AGENTS.md` and `CLAUDE.md` are refreshed.

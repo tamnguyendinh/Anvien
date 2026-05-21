@@ -60,7 +60,6 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"## When Debugging",
 		"## When Refactoring",
 		"## Keeping the Index Fresh",
-		"`avmatrix analyze --force --skip-agents-md`",
 		"avmatrix_impact",
 		"avmatrix_detect_changes",
 		"avmatrix_query",
@@ -69,6 +68,10 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		if strings.Contains(text, retired) {
 			t.Fatalf("AGENTS.md contains retired content %q:\n%s", retired, text)
 		}
+	}
+	forbiddenFlag := "--skip-" + "agents-md"
+	if strings.Contains(text, forbiddenFlag) {
+		t.Fatalf("AGENTS.md contains forbidden context bypass flag:\n%s", text)
 	}
 
 	if _, _, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 10}, nil, Options{}); err != nil {
@@ -161,40 +164,6 @@ func TestGenerateAIContextFilesReplacesEmptyAndLegacyManagedContext(t *testing.T
 	}
 	if strings.Contains(text, "gitnexus:start") || strings.Contains(text, "old") {
 		t.Fatalf("legacy managed section was not replaced:\n%s", text)
-	}
-}
-
-func TestGenerateAIContextFilesSkipAgentsPreservesManualFiles(t *testing.T) {
-	dir := t.TempDir()
-	agentsPath := filepath.Join(dir, "AGENTS.md")
-	claudePath := filepath.Join(dir, "CLAUDE.md")
-	agentsContent := "# AGENTS\n\nCustom manual instructions only\n"
-	claudeContent := "# CLAUDE\n\nCustom manual instructions only\n"
-	if err := os.WriteFile(agentsPath, []byte(agentsContent), 0o644); err != nil {
-		t.Fatalf("write AGENTS.md: %v", err)
-	}
-	if err := os.WriteFile(claudePath, []byte(claudeContent), 0o644); err != nil {
-		t.Fatalf("write CLAUDE.md: %v", err)
-	}
-
-	files, baseSkills, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 42}, nil, Options{SkipAgentsMD: true})
-	if err != nil {
-		t.Fatalf("GenerateAIContextFiles: %v", err)
-	}
-	if len(baseSkills) == 0 {
-		t.Fatalf("expected base skills to be installed")
-	}
-	joined := strings.Join(files, "\n")
-	for _, want := range []string{"AGENTS.md (skipped via --skip-agents-md)", "CLAUDE.md (skipped via --skip-agents-md)"} {
-		if !strings.Contains(joined, want) {
-			t.Fatalf("generated file list missing %q: %v", want, files)
-		}
-	}
-	if got, err := os.ReadFile(agentsPath); err != nil || string(got) != agentsContent {
-		t.Fatalf("AGENTS.md changed: err=%v content=%q", err, got)
-	}
-	if got, err := os.ReadFile(claudePath); err != nil || string(got) != claudeContent {
-		t.Fatalf("CLAUDE.md changed: err=%v content=%q", err, got)
 	}
 }
 

@@ -605,7 +605,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
 
 - Re-ran `go test ./cmd/... ./internal/... -count=1`.
 
-- Added Go `analyze --skills`, `--skip-agents-md`, and `--no-stats` runtime behavior. Successful
+- Added Go `analyze --skills` and `--no-stats` runtime behavior. Successful
   CLI analyze now writes local repo metadata plus global registry entries before optional AI
   context generation, so `status` has a real Go-produced index state to read.
 
@@ -1908,12 +1908,12 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
 - Phase 17 current-repo large benchmark/parity probe at commit `5d64ece`:
   - Full launcher build was run first and passed.
   - TypeScript baseline command:
-    `node avmatrix\dist\cli\index.js analyze . --force --skip-agents-md --no-stats --benchmark-json
+    `node avmatrix\dist\cli\index.js analyze . --force [redacted removed argument] --no-stats --benchmark-json
     .tmp\phase17-cutover-ts-avmatrix-go.json --benchmark-label ts-phase17-current-repo` passed with
     `28,731` nodes, `51,603` CLI-reported edges, `52,686` graph-snapshot relationships, and
     `150,292.7ms` wall time.
   - Go packaged command:
-    `avmatrix-launcher\server-bundle\avmatrix.exe analyze . --force --skip-agents-md --no-stats
+    `avmatrix-launcher\server-bundle\avmatrix.exe analyze . --force [redacted removed argument] --no-stats
     --benchmark-json .tmp\phase17-cutover-go-avmatrix-go.json` passed with `31,829` nodes,
     `55,816` relationships, and `15,668.3ms` total duration.
   - Summary artifact:
@@ -1951,7 +1951,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     `go test ./cmd/... ./internal/... -count=1` passed, preserving the non-native fallback build
     surface for developer environments that are not packaging a cutover runtime.
   - Packaged current-repo analyze command:
-    `avmatrix-launcher\server-bundle\avmatrix.exe analyze . --force --skip-agents-md --no-stats
+    `avmatrix-launcher\server-bundle\avmatrix.exe analyze . --force [redacted removed argument] --no-stats
     --benchmark-json .tmp\phase17-cutover-go-native-avmatrix-go.json` passed with active DB load:
     `nodeRows=31,549`, `relationshipRows=55,824`, `fallbackInsertCount=0`, and no
     `dbLoad.skipped=true`.
@@ -1980,7 +1980,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     `go test ./internal/analyze -count=1` passed, and
     `go test ./cmd/... ./internal/... -count=1` passed.
   - Packaged current-repo rerun:
-    `avmatrix-launcher\server-bundle\avmatrix.exe analyze . --force --skip-agents-md --no-stats
+    `avmatrix-launcher\server-bundle\avmatrix.exe analyze . --force [redacted removed argument] --no-stats
     --benchmark-json .tmp\phase17-cutover-go-native-processfix.json` passed. Compared with the
     current TypeScript baseline `.tmp\phase17-cutover-ts-current.json`, `Process` improved from
     `75` before this fix to `556` (`TS=659`), `STEP_IN_PROCESS` improved from `293` to `1,954`
@@ -2009,7 +2009,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     lowered to `v0.15.0` with a stale date, then full launcher build refreshed it to `v0.16.1`
     and rebuilt `server-bundle\avmatrix.exe` with `lbug_shared.dll` beside the binary.
   - Packaged current-repo rerun:
-    `avmatrix-launcher\server-bundle\avmatrix.exe analyze . --force --skip-agents-md --no-stats
+    `avmatrix-launcher\server-bundle\avmatrix.exe analyze . --force [redacted removed argument] --no-stats
     --benchmark-json .tmp\phase17-cutover-go-importfix-notests.json` passed. Compared with
     `.tmp\phase17-cutover-ts-current.json`, `IMPORTS` improved from `201` before this fix to
     `2,140` (`TS=2,367`, remaining delta `-227`). `CALLS` remains open at `7,004`
@@ -2045,7 +2045,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     `.tmp\ladybug-native\v0.16.1\windows-x86_64\lbug_shared.dll` and
     `avmatrix-launcher\server-bundle\lbug_shared.dll`.
   - Packaged current-repo rerun:
-    `avmatrix-launcher\server-bundle\avmatrix.exe analyze . --force --skip-agents-md --no-stats
+    `avmatrix-launcher\server-bundle\avmatrix.exe analyze . --force [redacted removed argument] --no-stats
     --benchmark-json .tmp\phase17-cutover-go-call-compatfix-schema.json` passed with `32,735`
     nodes, `63,933` relationships, `CALLS=8,746`, `IMPORTS=2,140`, `STEP_IN_PROCESS=2,671`,
     `dbLoad.fallbackInsertFailures=0`, and `dbLoad.skippedRelationships=0`. Compared with the
@@ -2073,7 +2073,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` passed before tests,
     then `go test ./cmd/... ./internal/... -count=1` passed.
   - Packaged current-repo rerun:
-    `avmatrix-launcher\server-bundle\avmatrix.exe analyze . --force --skip-agents-md --no-stats
+    `avmatrix-launcher\server-bundle\avmatrix.exe analyze . --force [redacted removed argument] --no-stats
     --benchmark-json .tmp\phase17-cutover-go-call-returntype.json` passed with `32,767` nodes,
     `64,567` relationships, `CALLS=8,906`, `IMPORTS=2,140`, `STEP_IN_PROCESS=2,682`,
     `dbLoad.fallbackInsertFailures=0`, and `dbLoad.skippedRelationships=0`. Compared with the
@@ -2317,7 +2317,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     parity are normal local CLI cutover behavior. It is not Phase 15 optimization work.
   - Graph freshness and impact:
     after commit `54f3254`, the graph was refreshed with
-    `avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats` in `54,730.6ms`
+    `avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats` in `54,730.6ms`
     before graph-based impact checks. Impact was CRITICAL for the edited root/analyze/benchmark
     symbols because they sit on the normal CLI entry path: `NewRootCommand` affected `10`
     processes, `newAnalyzeCommand` affected `29`, `recordAnalyzeResult` affected `34`, and
@@ -2367,7 +2367,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     runtime/cutover behavior. It is not Phase 15 optimization work.
   - Graph freshness and impact:
     after commit `c7c278a`, the graph was refreshed with
-    `avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats` in `58,846.9ms`.
+    `avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats` in `58,846.9ms`.
     `NewRootCommand` impact remained CRITICAL because the root CLI fans out to normal runtime
     commands; the impact report showed `11` affected processes. The batch was limited to adding the
     `group` sibling command and tests, with no analyze/admin behavior changes.
@@ -2412,7 +2412,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     optimization work.
   - Graph freshness and impact:
     after commit `e0e4283`, the graph was refreshed with
-    `avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats` in `83,500.2ms`.
+    `avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats` in `83,500.2ms`.
     `NewRootCommand` impact remained CRITICAL because the root CLI fans out to normal runtime
     commands; the impact report showed `11` affected processes. A follow-up impact check on the
     path-normalization test assertion (`TestIndexRegistersExistingIndex`) was LOW with no affected
@@ -2461,7 +2461,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     command-surface gate closed. It is not Phase 15 optimization work.
   - Graph freshness and impact:
     after commit `3f8e5dc`, the graph was refreshed with
-    `avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats` in `55,369.8ms`.
+    `avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats` in `55,369.8ms`.
     `OnboardingGuide` impact was LOW: one direct file-level use from `DropZone.tsx` and one
     downstream import from `App.tsx`, with no affected processes.
   - Implementation:
@@ -2503,7 +2503,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     enter Phase 15; no MCP/provider performance optimization work was mixed into this slice.
   - Graph freshness and impact:
     after commit `2fac643`, the graph was refreshed with
-    `avmatrix\bin\avmatrix.exe analyze --force --skip-agents-md --no-stats` in `66,617.2ms`,
+    `avmatrix\bin\avmatrix.exe analyze --force [redacted removed argument] --no-stats` in `66,617.2ms`,
     producing `33,239` nodes and `65,612` relationships. Impact checks before editing showed
     `getSyntaxLanguageFromFilename` LOW with one direct Web function and no affected processes,
     `NODE_TABLES` LOW, and the Vite/Vitest package-resolution helper LOW. `SessionStatusResponse`
@@ -2547,7 +2547,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     It targets the fixed-priority P0 `route_map` regression from the Phase 13 MCP benchmark.
   - Graph freshness and impact:
     after commit `60e7ed8`, the packaged Go runtime refreshed the graph with
-    `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --no-stats` in
+    `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --no-stats` in
     `58,520ms`, producing `33,355` nodes and `65,816` relationships. Impact checks before editing:
     `graphForResource` LOW with no affected processes; `mcpRouteMapItems` LOW; `mcpRouteAnalysisRecords`
     LOW; `routeMapTool` LOW when addressed by UID; `loadResourceGraphSnapshot` HIGH because it is
@@ -2596,7 +2596,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     items remain open.
   - Graph freshness and impact:
     after commit `8e3a8dd`, the packaged Go runtime refreshed the graph with
-    `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --no-stats`,
+    `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --no-stats`,
     producing `33,400` nodes and `66,036` relationships. Impact checks before editing showed
     `DetectLanguage` HIGH (`3` impacted symbols, `4` affected processes), `parseFiles` CRITICAL
     (`3` impacted symbols, `61` affected processes), `DetectFromPath` CRITICAL (`3` impacted
@@ -2704,7 +2704,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     optimization items remain open.
   - Graph freshness and impact:
     before editing, the packaged Go runtime refreshed the graph with
-    `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --no-stats`,
+    `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --no-stats`,
     producing `33,491` nodes and `66,358` relationships. Impact checks showed `contextTool` LOW by
     exact UID, `contextCandidates` CRITICAL because it is also used by impact/rename flows,
     `contextCategorizedRefs` HIGH, `contextClassLikeIncomingRefs` HIGH,
@@ -2754,7 +2754,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     already cut-over Go runtime.
   - Graph freshness and impact:
     before editing, the packaged Go runtime refreshed the graph with
-    `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --no-stats` in
+    `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --no-stats` in
     `57,478.7ms`, producing `33,575` nodes and `66,605` relationships. Impact checks showed
     `impactTool` LOW by exact UID, `runImpactBFS` LOW with `impactTool` as its direct caller, and
     helper paths such as `impactAffectedProcesses`, `impactAffectedModules`, and
@@ -2806,7 +2806,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     an already cut-over Go runtime.
   - Graph freshness and impact:
     after commit `bb9749e`, the packaged Go runtime refreshed the graph with
-    `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --no-stats` in
+    `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --no-stats` in
     `58,272.3ms`, producing `33,613` nodes and `66,728` relationships. `groupSyncTool` impact by
     exact Go UID was LOW with no upstream impacted symbols. `internal/group.Sync` impact was
     CRITICAL because both CLI `group sync` and MCP `group_sync` depend on it, with CLI/MCP modules
@@ -2856,7 +2856,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     an already cut-over Go runtime.
   - Graph freshness and impact:
     before editing, the packaged Go runtime refreshed the graph with
-    `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --skip-agents-md --no-stats` in
+    `avmatrix-launcher\server-bundle\avmatrix.exe analyze --force [redacted removed argument] --no-stats` in
     `59,746.3ms`, producing `33,644` nodes and `66,800` relationships. AVmatrix impact checks were
     LOW for `queryTool`, `rankedProcessMatches`, and `resourceProcessSteps`/process-step resource
     helper usage in the edited path, with the direct query/resource callers identified before the
@@ -3108,7 +3108,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     not jump to Phase 14, Phase 10, or Phase 17 because the work is profile-backed allocation
     optimization on the already cut-over Go runtime.
   - AVmatrix usage and impact:
-    `avmatrix analyze --force --skip-agents-md` refreshed the graph before graph-based work.
+    `avmatrix analyze --force [redacted removed argument]` refreshed the graph before graph-based work.
     AVmatrix impact reported `buildWorkspace` CRITICAL because it feeds `BuildCrossFileBinding`,
     `definitionLookupNames` HIGH, and the targeted lookup helpers LOW. The direct caller and
     process blast radius were handled by limiting the change to pre-sizing and duplicate-candidate
@@ -3157,7 +3157,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
     not close the native COPY/cgo target; it reduced a separate DB-load export allocation hotspot
     shown by heap pprof.
   - AVmatrix usage and impact:
-    `avmatrix analyze --force --skip-agents-md` refreshed the graph before graph-based work.
+    `avmatrix analyze --force [redacted removed argument]` refreshed the graph before graph-based work.
     AVmatrix impact reported `validNodeTables`, `nodeColumns`, and `relationPairSupported` CRITICAL
     because they feed `ExportGraphCSVs`, `loadGraph`, and the analyze path. `RelationPairs` was LOW
     risk. The blast radius was handled by keeping the CSV/COPY contract unchanged and validating
@@ -3910,7 +3910,7 @@ This file contains execution evidence moved out of the checklist plan. Benchmark
   root Docker/web-server scripts from `[P17-NON-WEB-TSJS-CLASSIFICATION-MATRIX]`.
 - AVmatrix usage:
   refreshed `AVmatrix-GO` with
-  `.\\avmatrix\\bin\\avmatrix.exe analyze --force --skip-agents-md --no-stats --benchmark-json .tmp\\phase17-web-docker-nginx-preimpact-refresh.json`,
+  `.\\avmatrix\\bin\\avmatrix.exe analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\\phase17-web-docker-nginx-preimpact-refresh.json`,
   then ran `detect_changes(scope=all)`, `query` for Docker/static-server concepts, and attempted
   `impact(target="avmatrix-launcher/build.ps1")`. The graph mapped no code execution flow for this
   support/config slice; `detect_changes` reported low risk and no affected processes. A final
