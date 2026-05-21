@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import fs from "fs";
@@ -33,9 +33,40 @@ function findSiblingPackageDir(packageName: string): string {
 
 const CLI_ROOT = findSiblingPackageDir("avmatrix");
 const avmatrixCliPkg = _require(path.join(CLI_ROOT, "package.json"));
+const REPO_ROOT = path.resolve(__dirname, "..");
+const README_PATH = path.join(REPO_ROOT, "README.md");
+
+function rootReadmePlugin(): Plugin {
+  return {
+    name: "avmatrix-root-readme",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const requestPath = (req.url ?? "").split("?")[0];
+        if (requestPath !== "/README.md") {
+          next();
+          return;
+        }
+        if (!fs.existsSync(README_PATH)) {
+          res.statusCode = 404;
+          res.end("README.md not found");
+          return;
+        }
+        res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+        fs.createReadStream(README_PATH).pipe(res);
+      });
+    },
+    closeBundle() {
+      const outDir = path.resolve(__dirname, "dist");
+      if (!fs.existsSync(README_PATH) || !fs.existsSync(outDir)) {
+        return;
+      }
+      fs.copyFileSync(README_PATH, path.join(outDir, "README.md"));
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [rootReadmePlugin(), react(), tailwindcss()],
   define: {
     __REQUIRED_NODE_VERSION__: JSON.stringify(
       avmatrixCliPkg.engines.node.replace(/[>=^~\s]/g, ""),

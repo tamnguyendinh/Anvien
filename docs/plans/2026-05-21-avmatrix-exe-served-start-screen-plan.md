@@ -92,6 +92,12 @@ Completed P6 code facts:
 - Start reaches repo landing when repos exist and Analyze Repository when no repos exist.
 - The active Web UI no longer contains the manual `Start AVmatrix locally` / `avmatrix serve` guide.
 
+Completed P8 code facts:
+
+- The start screen User Guide button loads `/README.md`.
+- `README.md` is served in Vite dev mode and copied into `avmatrix-web\dist\` during Web build.
+- The packaged launcher serves `README.md` from `avmatrix-launcher\web-dist\`.
+
 ## Non-Goals
 
 - Do not remove the start screen feature.
@@ -123,7 +129,7 @@ Completed P6 code facts:
   - secondary action: `User Guide`;
   - status text for user feedback.
 - `Start AVmatrix` transitions inside the Web app to the existing repo landing/analyze flow. It must not call `avmatrix://start`.
-- `User Guide` remains available from this start surface. If `user_guide.md` is still absent, the UI must fail gracefully without a broken dead end.
+- `User Guide` remains available from this start surface and displays the repository `README.md`. If `README.md` is absent from a build, the UI must fail gracefully without a broken dead end.
 - `RESET RUNTIME` must continue to reset the packaged runtime through the launcher exe path and must remain hidden/no terminal flash. If the implementation uses `avmatrix://reset`, it must be treated as an internal exe reset action, not a separate start entrypoint.
 
 ### Packaged Start Flow
@@ -216,6 +222,15 @@ Completed P6 code facts:
 - [x] Record the exact command/tool used, whether a visible browser was opened, and the observed screen after clicking Start.
 - [x] Capture or reference a screenshot proving the post-Start screen is repo chooser/analyze, not the manual bridge guide.
 
+### P8 - User Guide Reads README
+
+- [x] Change the start screen User Guide loader from `user_guide.md` to root `README.md`.
+- [x] Ensure Web build/dev serving exposes `README.md` at `/README.md`.
+- [x] Ensure packaged launcher `web-dist` contains `README.md`.
+- [x] Add unit coverage proving User Guide fetches and displays `README.md`.
+- [x] Add e2e coverage proving User Guide displays README content from the served Web UI.
+- [x] Validate the same behavior through `AVmatrixLauncher.exe`.
+
 ## Completion Criteria
 
 - Running the rebuilt `AVmatrixLauncher.exe` opens the exe-served Web UI at the in-app start screen.
@@ -229,3 +244,4 @@ Completed P6 code facts:
 - Clicking `Start AVmatrix` from the packaged exe-served start screen never opens `Start AVmatrix locally` / `avmatrix serve`.
 - `Start AVmatrix locally` / manual `avmatrix serve` guide is removed from active Web UI behavior.
 - Browser validation includes a user-observable run, not only headless automation.
+- The User Guide button displays repository `README.md` content from the exe-served Web UI.

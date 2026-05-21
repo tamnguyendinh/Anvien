@@ -55,10 +55,31 @@ describe("LauncherStartScreen", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "User Guide" }));
 
+    expect(fetch).toHaveBeenCalledWith("/README.md", { cache: "no-store" });
+
     await waitFor(() => {
       expect(
-        screen.getByText("User guide content is not available in this build."),
+        screen.getByText("README.md content is not available in this build."),
       ).toBeInTheDocument();
+    });
+  });
+
+  it("loads README.md into the user guide panel", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: () => Promise.resolve("# AVmatrix\n\nREADME guide content"),
+      }),
+    );
+
+    render(<LauncherStartScreen onStart={() => {}} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "User Guide" }));
+
+    expect(fetch).toHaveBeenCalledWith("/README.md", { cache: "no-store" });
+    await waitFor(() => {
+      expect(screen.getByText(/README guide content/)).toBeInTheDocument();
     });
   });
 });

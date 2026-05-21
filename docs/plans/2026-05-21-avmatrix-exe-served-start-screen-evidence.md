@@ -282,3 +282,31 @@ Assessment:
 
 - The high detect risk is expected because this slice intentionally changes the backend-unavailable branch in the Start runtime path.
 - The happy paths remain covered by mocked e2e zero-repo and repo-landing flows, plus headed packaged launcher validation.
+
+## E12 - README User Guide Evidence
+
+Status: recorded
+
+User clarification:
+
+- Clicking the start screen `User Guide` button should display the contents of repository `README.md`.
+
+Implementation:
+
+- `LauncherStartScreen` now fetches `/README.md` instead of `/user_guide.md`.
+- `vite.config.ts` adds a root README plugin that:
+  - serves root `README.md` at `/README.md` in Vite dev mode;
+  - copies root `README.md` into `avmatrix-web\dist\README.md` during Web build.
+- The packaged launcher build copies the Web dist to `avmatrix-launcher\web-dist\`, so `README.md` is available to `AVmatrixLauncher.exe`.
+
+Validation:
+
+- First full build attempt failed because a previous packaged runtime process held `avmatrix-launcher\server-bundle\avmatrix-server.exe` locked. The repo-local launcher/server-bundle processes were stopped and the full build was rerun.
+- Full packaged build: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` passed.
+- Artifact check: `avmatrix-web\dist\README.md` and `avmatrix-launcher\web-dist\README.md` exist, both matching root README size at validation time.
+- Focused unit: `npm test -- LauncherStartScreen.local-only.test.tsx` passed with 1 file and 5 tests.
+- Full Web unit: `npm test` passed with 44 files and 354 tests.
+- Focused e2e on production preview: `npm run test:e2e -- e2e/onboarding.spec.ts -g "User Guide displays README.md content"` passed.
+- Full Web e2e on production preview: `npm run test:e2e` passed with 12 passed and 30 skipped.
+- Packaged launcher e2e: started `AVmatrixLauncher.exe` with browser auto-open suppressed, then ran the focused User Guide e2e against `127.0.0.1:5228`; passed.
+- Pre-commit change detection: after `avmatrix analyze --force`, `detect_changes(repo: "AVmatrix", scope: "all")` reported `changed_files=7`, `changed_count=25`, `affected_count=0`, `risk_level=low`.

@@ -115,3 +115,15 @@ Record after the follow-up implementation:
 | Backend unavailable state mentions manual terminal commands | no; neutral runtime connection e2e passed |
 | Visible browser validation was performed on the user's PC | yes; headed Playwright against `AVmatrixLauncher.exe` passed |
 | Visible browser screenshot or observation recorded | yes; `avmatrix-web/test-results/onboarding-Flow-1-Start-sc-396b2-nalyze-without-manual-guide-chromium/packaged-start-target.png` |
+
+## B6 - README User Guide Benchmarks
+
+Status: completed
+
+| UX/artifact check | Expected |
+| --- | --- |
+| User Guide fetch target | `/README.md` |
+| User Guide displays README heading | yes; unit and e2e passed |
+| `avmatrix-web\dist\README.md` exists after full build | yes |
+| `avmatrix-launcher\web-dist\README.md` exists after full build | yes |
+| Packaged launcher serves README-backed User Guide | yes; focused packaged e2e passed |

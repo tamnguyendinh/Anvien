@@ -7,7 +7,8 @@ interface LauncherStartScreenProps {
 }
 
 const GUIDE_UNAVAILABLE =
-  "User guide content is not available in this build.";
+  "README.md content is not available in this build.";
+const GUIDE_PATH = "/README.md";
 
 export const LauncherStartScreen = ({
   onStart,
@@ -16,16 +17,16 @@ export const LauncherStartScreen = ({
   const [status, setStatus] = useState("");
   const [guideOpen, setGuideOpen] = useState(false);
   const [guideLoaded, setGuideLoaded] = useState(false);
-  const [guideText, setGuideText] = useState("Loading user_guide.md...");
+  const [guideText, setGuideText] = useState("Loading README.md...");
 
   const loadGuide = async () => {
     if (guideLoaded) return;
     setGuideLoaded(true);
 
     try {
-      const response = await fetch("/user_guide.md", { cache: "no-store" });
+      const response = await fetch(GUIDE_PATH, { cache: "no-store" });
       if (!response.ok) {
-        throw new Error(`Unable to load user_guide.md (${response.status})`);
+        throw new Error(`Unable to load README.md (${response.status})`);
       }
       const markdown = await response.text();
       setGuideText(markdown.trim() || GUIDE_UNAVAILABLE);

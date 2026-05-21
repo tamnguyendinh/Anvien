@@ -59,6 +59,16 @@ test.describe('Flow 1: Start screen and runtime connection', () => {
     await expect(page.getByRole('button', { name: 'User Guide' })).toBeVisible();
   });
 
+  test('User Guide displays README.md content', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByRole('button', { name: 'User Guide' }).click();
+
+    await expect(page.getByRole('heading', { name: 'User Guide' })).toBeVisible();
+    await expect(page.getByText('# AVmatrix')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('## Why Use AVmatrix?')).toBeVisible();
+  });
+
   test('shows neutral runtime connection state when backend is unreachable', async ({
     page,
   }, testInfo) => {
