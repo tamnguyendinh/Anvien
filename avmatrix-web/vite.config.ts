@@ -1,5 +1,4 @@
 import { defineConfig } from "vite";
-import type { Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import fs from "fs";
@@ -35,28 +34,8 @@ function findSiblingPackageDir(packageName: string): string {
 const CLI_ROOT = findSiblingPackageDir("avmatrix");
 const avmatrixCliPkg = _require(path.join(CLI_ROOT, "package.json"));
 
-function launcherOnlyStartScreenGuard(): Plugin {
-  return {
-    name: "avmatrix-launcher-start-screen-guard",
-    configureServer(server) {
-      server.middlewares.use((req, res, next) => {
-        const pathname = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
-        if (pathname !== "/Start-AVmatrix.html") {
-          next();
-          return;
-        }
-        res.statusCode = 404;
-        res.setHeader("Content-Type", "text/plain; charset=utf-8");
-        res.end(
-          "Start-AVmatrix.html is a launcher entry at the repository root, not a Vite dev asset.",
-        );
-      });
-    },
-  };
-}
-
 export default defineConfig({
-  plugins: [launcherOnlyStartScreenGuard(), react(), tailwindcss()],
+  plugins: [react(), tailwindcss()],
   define: {
     __REQUIRED_NODE_VERSION__: JSON.stringify(
       avmatrixCliPkg.engines.node.replace(/[>=^~\s]/g, ""),

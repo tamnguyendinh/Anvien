@@ -30,7 +30,7 @@ vi.mock("../../src/services/backend-client", () => ({
 }));
 
 import { AnalyzeOnboarding } from "../../src/components/AnalyzeOnboarding";
-import { getStartScreenHref, Header } from "../../src/components/Header";
+import { Header } from "../../src/components/Header";
 import { HelpPanel } from "../../src/components/HelpPanel";
 import { RepoLanding } from "../../src/components/RepoLanding";
 
@@ -99,7 +99,7 @@ describe("AVmatrix branding on active local surfaces", () => {
     expect(setHelpDialogBoxOpen).toHaveBeenCalledWith(true);
   });
 
-  it("routes the header back action to the launcher start screen", () => {
+  it("routes the header back action to the in-app launcher start screen", () => {
     const onNavigateToStart = vi.fn();
 
     render(
@@ -108,8 +108,6 @@ describe("AVmatrix branding on active local surfaces", () => {
 
     fireEvent.click(screen.getByLabelText("Back to Start screen"));
 
-    expect(onNavigateToStart).toHaveBeenCalledWith(
-      getStartScreenHref(window.location.href),
-    );
+    expect(onNavigateToStart).toHaveBeenCalledTimes(1);
   });
 });

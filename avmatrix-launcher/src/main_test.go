@@ -50,20 +50,16 @@ func TestStaticHandlerServesFilesAndFallsBackToIndex(t *testing.T) {
 	assertBody(t, server.URL+"/repo/detail", "index")
 }
 
-func TestStaticHandlerWithLauncherStartServesRootStartScreen(t *testing.T) {
+func TestStaticHandlerDoesNotServeRootStartScreen(t *testing.T) {
 	webDist := t.TempDir()
 	if err := os.WriteFile(filepath.Join(webDist, "index.html"), []byte("index"), 0o644); err != nil {
 		t.Fatalf("write index: %v", err)
 	}
-	startScreen := filepath.Join(t.TempDir(), "Start-AVmatrix.html")
-	if err := os.WriteFile(startScreen, []byte("start"), 0o644); err != nil {
-		t.Fatalf("write start screen: %v", err)
-	}
 
-	server := httptest.NewServer(staticHandlerWithStartScreen(webDist, startScreen, nil))
+	server := httptest.NewServer(staticHandler(webDist))
 	defer server.Close()
 
-	assertBody(t, server.URL+"/Start-AVmatrix.html", "start")
+	assertBody(t, server.URL+"/Start-AVmatrix.html", "index")
 	assertBody(t, server.URL+"/repo/detail", "index")
 }
 

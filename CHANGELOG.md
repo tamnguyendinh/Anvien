@@ -4,6 +4,13 @@ All notable changes to avmatrix will be documented in this file.
 
 ## [Unreleased]
 
+### 2026-05-21
+
+#### Changed
+
+- Moved the Windows launcher start surface into the Web UI served by the rebuilt `AVmatrixLauncher.exe`, making the exe the single packaged user entrypoint.
+- Removed the separate root HTML start-file flow from active launcher docs and validation expectations.
+
 ### 2026-05-08
 
 #### Changed
@@ -96,8 +103,8 @@ All notable changes to avmatrix will be documented in this file.
 
 #### Added
 
-- Added the packaged root HTML launcher flow for Windows.
-- Added `Start-AVmatrix.html`, `AVmatrixLauncher.exe`, the Go launcher source, packaged Web UI output, backend server wrapper, and protocol registration for `avmatrix://start`.
+- Added the initial packaged launcher flow for Windows.
+- Added `AVmatrixLauncher.exe`, the Go launcher source, packaged Web UI output, backend server wrapper, and protocol registration for the original launcher start action.
 - Added launcher reset/start/stop behavior around the same local backend runtime.
 
 #### Changed

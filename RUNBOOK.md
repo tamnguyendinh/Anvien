@@ -267,19 +267,18 @@ powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
 Artifacts:
 
 ```text
-Start-AVmatrix.html
 avmatrix-launcher\AVmatrixLauncher.exe
 avmatrix-launcher\server-bundle\avmatrix-server.exe
 avmatrix-launcher\server-bundle\avmatrix.exe
 avmatrix-launcher\web-dist\
 ```
 
-`Start-AVmatrix.html` stays at repository root as the user-facing launcher entry. It must not be emitted into `avmatrix-web\dist\` or copied into `avmatrix-launcher\web-dist\`.
+`AVmatrixLauncher.exe` is rebuilt by `avmatrix-launcher\build.ps1` and is the packaged user entrypoint. The start screen is served from the packaged Web UI; there is no separate root HTML launcher file.
 
 Start:
 
-```text
-Open Start-AVmatrix.html
+```powershell
+.\avmatrix-launcher\AVmatrixLauncher.exe
 ```
 
 Reset runtime:

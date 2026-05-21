@@ -21,7 +21,7 @@ The core product is still local code intelligence:
 - `avmatrix analyze` builds a repo-local graph index in `<repo>/.avmatrix/`.
 - `avmatrix mcp` exposes indexed repos to MCP clients such as Claude Code, Codex, Cursor, and OpenCode.
 - `avmatrix serve` exposes the same local runtime over HTTP for the browser UI.
-- `avmatrix-launcher/` packages the local backend and Web UI for a Windows `Start-AVmatrix.html` flow.
+- `avmatrix-launcher/` packages the local backend and Web UI for a Windows `AVmatrixLauncher.exe` flow.
 
 No AVmatrix-hosted cloud service is involved in the active local runtime path.
 
@@ -37,7 +37,7 @@ You do not need to put API keys into AVmatrix. Indexing, graph storage, repo swi
 | MCP stdio | Agent-facing graph tools and resources | `avmatrix mcp` |
 | Local HTTP API | Web UI backend, graph streaming, analyze jobs, session bridge | `avmatrix serve` |
 | Web UI | Browser graph explorer, repo picker/analyze UI, Codex/Claude Code style session chat | `avmatrix-web/` or packaged launcher |
-| Windows launcher | Starts packaged Web UI and backend on `127.0.0.1` | `Start-AVmatrix.html`, `avmatrix://start` |
+| Windows launcher | Starts packaged Web UI and backend on `127.0.0.1` | `avmatrix-launcher\AVmatrixLauncher.exe` |
 
 The Web UI is a frontend over the local HTTP backend. Repo switching and graph loading use explicit repo-scoped read targets; they do not depend on one mutable process-global active repo.
 
@@ -185,7 +185,6 @@ powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
 Important artifacts:
 
 ```text
-Start-AVmatrix.html
 avmatrix-launcher\AVmatrixLauncher.exe
 avmatrix-launcher\server-bundle\avmatrix-server.exe
 avmatrix-launcher\server-bundle\avmatrix.exe
@@ -194,8 +193,8 @@ avmatrix-launcher\web-dist\
 
 Runtime behavior:
 
-- Root `Start-AVmatrix.html` is the user-facing launcher entry and launches `avmatrix://start`; it is not a Vite `dist` or `web-dist` artifact.
-- `AVmatrixLauncher.exe` serves the packaged Web UI on `127.0.0.1:5228`.
+- `AVmatrixLauncher.exe` is rebuilt by `avmatrix-launcher\build.ps1` and is the packaged user entrypoint.
+- `AVmatrixLauncher.exe` serves the packaged Web UI on `127.0.0.1:5228` and opens the in-app start screen.
 - `avmatrix-server.exe` starts the packaged Go backend and runs `avmatrix serve`.
 - backend health is checked at `http://127.0.0.1:4848/api/info`.
 - reset/stop use the launcher state file plus process path sweep for the packaged runtime.

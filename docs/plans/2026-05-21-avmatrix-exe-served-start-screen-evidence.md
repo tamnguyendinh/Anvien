@@ -124,13 +124,71 @@ Implementation implication:
 
 ## E5 - Implementation Evidence
 
-Status: pending
+Status: recorded
 
-Record per slice:
+Implemented slices:
 
-- files changed;
-- behavior changed;
-- tests added or updated;
-- build/test/e2e outputs;
-- artifact checks;
-- final change detection and commit hash.
+- P0 reconciled the interrupted wrong-direction edits by keeping the useful removal of loose HTML serving while restoring the Back feature as in-app navigation.
+- P1 added `avmatrix-web/src/components/LauncherStartScreen.tsx` with `AVmatrix`, `Start AVmatrix`, `RESET RUNTIME`, `User Guide`, and status feedback.
+- P1 updated `ViewMode` so the Web UI starts on the new in-app start screen.
+- P1 wired `Start AVmatrix` to `setViewMode("onboarding")` instead of `Start-AVmatrix.html` or `avmatrix://start`.
+- P1 made the User Guide panel fail gracefully when `user_guide.md` is unavailable.
+- P2 restored the Header Back button and changed it to call an in-app `onNavigateToStart` callback.
+- P2 updated App Back handling to clear graph/project state, close the right panel, remove `server`/`project` URL params, and return to the in-app start screen.
+- P3 removed launcher special serving of the root HTML start file.
+- P3 removed Vite dev-server special handling for the root HTML start file.
+- P3 deleted the tracked root HTML start file.
+- P4 updated active packaged launcher docs in `README.md`, `RUNBOOK.md`, `TESTING.md`, and `CHANGELOG.md`.
+
+Tests added or updated:
+
+- `avmatrix-web/test/unit/LauncherStartScreen.local-only.test.tsx`
+- `avmatrix-web/test/unit/Branding.local-only.test.tsx`
+- `avmatrix-web/e2e/onboarding.spec.ts`
+- `avmatrix-web/e2e/shell-interactions.spec.ts`
+- `avmatrix-launcher/src/main_test.go`
+
+## E6 - Validation Evidence
+
+Status: recorded
+
+Validation commands and results:
+
+- Full packaged build first: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` passed. It rebuilt Web dist, backend CLI, launcher exe, server wrapper, packaged Web dist, and protocol registration.
+- Focused launcher Go tests: `go test ./...` from `avmatrix-launcher\src` passed.
+- Focused Web unit tests: `npm test -- LauncherStartScreen.local-only.test.tsx Branding.local-only.test.tsx` passed with 2 files and 10 tests.
+- Full Web unit tests: `npm test` passed with 44 files and 353 tests.
+- Full Web e2e on production preview: `npm run test:e2e` passed with 15 passed and 29 skipped. Skips were runtime/backend-dependent smoke specs without an indexed local backend.
+- Focused mocked Back e2e: `npm run test:e2e -- graph-health-ui.spec.ts` passed with 2 tests, including `graph shell Back returns to the exe-served start screen`.
+- Packaged exe-served start screen check: started `avmatrix-launcher\AVmatrixLauncher.exe`, ran `npm run test:e2e -- onboarding.spec.ts -g "shows the exe-served start screen first"`, passed with 1 test, then stopped launcher runtime.
+- Broader Go tests: `go test ./cmd/... ./internal/...` passed.
+- Artifact check: root `Start-AVmatrix.html`, `avmatrix-web\dist\Start-AVmatrix.html`, and `avmatrix-launcher\web-dist\Start-AVmatrix.html` are absent.
+- Artifact check: `avmatrix-launcher\AVmatrixLauncher.exe`, `avmatrix-launcher\web-dist\index.html`, `avmatrix-launcher\server-bundle\avmatrix-server.exe`, and `avmatrix-launcher\server-bundle\avmatrix.exe` exist.
+- Active reference scan: `README.md`, `RUNBOOK.md`, `TESTING.md`, `CHANGELOG.md`, `avmatrix-launcher`, and `avmatrix-web` only retain `Start-AVmatrix.html` in stale-path tests.
+
+## E7 - Change Detection and Commit Evidence
+
+Status: recorded
+
+Final change detection:
+
+- Command: `avmatrix analyze --force`, then `detect_changes(repo: "AVmatrix", scope: "all")`.
+- Result: `changed_files=18`, `changed_count=43`, `affected_count=7`, `risk_level=high`.
+- Affected processes were the expected launcher runtime serving flows through `startRuntime`:
+  - `StartRuntime -> HiddenProcAttr`
+  - `StartRuntime -> AttachLog`
+  - `StartRuntime -> UrlReady`
+  - `StartRuntime -> BackendProcess`
+  - `StartRuntime -> Done`
+  - `StartRuntime -> LifecycleCheckInterval`
+  - `StartRuntime -> WebLifecycleMonitor`
+
+Assessment:
+
+- The high risk is expected because the launcher static handler is on the packaged runtime startup path.
+- The implementation intentionally limits launcher code changes to removing the loose root HTML special case and serving the packaged Web UI normally.
+- Build, unit, e2e, packaged exe-served start-screen validation, artifact checks, and reference scans passed before commit.
+
+Commit:
+
+- Recorded in the implementation commit containing this ledger update.

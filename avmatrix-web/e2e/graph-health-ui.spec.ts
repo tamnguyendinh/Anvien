@@ -135,4 +135,20 @@ test.describe('Graph Health UI', () => {
     await page.getByRole('button', { name: 'Focus component' }).click();
     await expect(page.getByText('detachedWidget').first()).toBeVisible();
   });
+
+  test('graph shell Back returns to the exe-served start screen', async ({ page }) => {
+    await page.goto(
+      `${FRONTEND_URL}/?server=${encodeURIComponent(BACKEND_URL)}&project=graph-health-demo`,
+    );
+
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+      timeout: 20_000,
+    });
+
+    await page.getByLabel('Back to Start screen').click();
+
+    await expect(page.getByRole('button', { name: 'Start AVmatrix' })).toBeVisible();
+    await expect(page).not.toHaveURL(/\/Start-AVmatrix\.html$/);
+    await expect(page.locator('[data-testid="server-reconnect-banner"]')).toHaveCount(0);
+  });
 });

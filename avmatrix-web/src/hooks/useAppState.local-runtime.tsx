@@ -38,7 +38,7 @@ import { FILE_REF_REGEX, NODE_REF_REGEX } from '../lib/grounding-patterns';
 import { GraphStateProvider, useGraphState } from './app-state/graph';
 import type { ChatRuntimeBridge } from './chat-runtime/types';
 
-export type ViewMode = 'onboarding' | 'loading' | 'exploring';
+export type ViewMode = 'start' | 'onboarding' | 'loading' | 'exploring';
 export type RightPanelTab = 'chat' | 'processes';
 export type EmbeddingStatus = 'idle' | 'loading' | 'embedding' | 'indexing' | 'ready' | 'error';
 
@@ -196,7 +196,7 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => (
 
 const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
   // View state
-  const [viewMode, setViewMode] = useState<ViewMode>('onboarding');
+  const [viewMode, setViewMode] = useState<ViewMode>('start');
 
   const {
     graph,

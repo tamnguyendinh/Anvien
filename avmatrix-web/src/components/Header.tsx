@@ -45,12 +45,9 @@ interface HeaderProps {
   onAnalyzeComplete?: (repo: string) => void;
   /** Called after a repo is deleted or list needs refresh. */
   onReposChanged?: (repos: BackendRepo[]) => void;
-  /** Called to leave the graph shell for the launcher start screen. */
-  onNavigateToStart?: (targetHref: string) => void;
+  /** Called to return from the graph shell to the in-app launcher start screen. */
+  onNavigateToStart?: () => void;
 }
-
-export const getStartScreenHref = (currentHref: string): string =>
-  new URL("/Start-AVmatrix.html", currentHref).toString();
 
 export const Header = ({
   onFocusNode,
@@ -174,12 +171,11 @@ export const Header = ({
   };
 
   const handleNavigateToStart = () => {
-    const targetHref = getStartScreenHref(window.location.href);
     if (onNavigateToStart) {
-      onNavigateToStart(targetHref);
+      onNavigateToStart();
       return;
     }
-    window.location.assign(targetHref);
+    window.location.assign("/");
   };
 
   return (

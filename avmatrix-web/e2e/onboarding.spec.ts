@@ -19,6 +19,16 @@ const ABSOLUTE_LOCAL_PATH = process.platform === 'win32' ? 'C:\\repos\\demo' : '
 
 let firstRepoName = '';
 
+async function launchFromStartScreen(page: import('@playwright/test').Page) {
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Start AVmatrix' })).toBeVisible({
+    timeout: 10_000,
+  });
+  await expect(page.getByRole('button', { name: 'RESET RUNTIME' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'User Guide' })).toBeVisible();
+  await page.getByRole('button', { name: 'Start AVmatrix' }).click();
+}
+
 async function enterExploringView(page: import('@playwright/test').Page) {
   await page.goto(
     `${FRONTEND_URL}/?server=${encodeURIComponent(BACKEND_URL)}&project=${encodeURIComponent(firstRepoName)}`,
@@ -40,11 +50,20 @@ async function openActiveRepoDropdown(page: import('@playwright/test').Page) {
 // ── Flow 1: Onboarding (no server running) ─────────────────────────────────
 
 test.describe('Flow 1: Onboarding — no server', () => {
+  test('shows the exe-served start screen first', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page.getByRole('heading', { name: 'AVmatrix' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start AVmatrix' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'RESET RUNTIME' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'User Guide' })).toBeVisible();
+  });
+
   test('shows OnboardingGuide when backend is unreachable', async ({ page }, testInfo) => {
     // Block all requests to the backend so the probe fails
     await page.route(`${BACKEND_URL}/**`, (route) => route.abort('connectionrefused'));
 
-    await page.goto('/');
+    await launchFromStartScreen(page);
 
     // Wait for initial probe to complete and onboarding to appear
     await expect(page.getByText('Start AVmatrix locally')).toBeVisible({ timeout: 10_000 });
@@ -53,7 +72,7 @@ test.describe('Flow 1: Onboarding — no server', () => {
 
   test('shows step-by-step instructions', async ({ page }) => {
     await page.route(`${BACKEND_URL}/**`, (route) => route.abort('connectionrefused'));
-    await page.goto('/');
+    await launchFromStartScreen(page);
 
     // Step 1 is active (done once polling starts)
     await expect(page.getByText('Copy the command')).toBeAttached({ timeout: 10_000 });
@@ -69,7 +88,7 @@ test.describe('Flow 1: Onboarding — no server', () => {
 
   test('shows terminal window with command', async ({ page }) => {
     await page.route(`${BACKEND_URL}/**`, (route) => route.abort('connectionrefused'));
-    await page.goto('/');
+    await launchFromStartScreen(page);
 
     // Should show either dev or prod command in a terminal block
     const terminal = page.locator('code');
@@ -81,7 +100,7 @@ test.describe('Flow 1: Onboarding — no server', () => {
 
   test('shows polling indicator', async ({ page }) => {
     await page.route(`${BACKEND_URL}/**`, (route) => route.abort('connectionrefused'));
-    await page.goto('/');
+    await launchFromStartScreen(page);
 
     // Polling starts after initial probe fails
     await expect(page.getByText('Listening for local bridge')).toBeVisible({ timeout: 10_000 });
@@ -89,7 +108,7 @@ test.describe('Flow 1: Onboarding — no server', () => {
 
   test('shows Node.js version requirement', async ({ page }) => {
     await page.route(`${BACKEND_URL}/**`, (route) => route.abort('connectionrefused'));
-    await page.goto('/');
+    await launchFromStartScreen(page);
 
     await expect(page.getByText(/Node\.js.*\d+/)).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText('Port 4848')).toBeVisible();
@@ -97,7 +116,7 @@ test.describe('Flow 1: Onboarding — no server', () => {
 
   test('copy button has accessible label', async ({ page }) => {
     await page.route(`${BACKEND_URL}/**`, (route) => route.abort('connectionrefused'));
-    await page.goto('/');
+    await launchFromStartScreen(page);
 
     await expect(page.getByText('Copy the command')).toBeVisible({ timeout: 10_000 });
     const copyBtn = page.getByLabel('Copy to clipboard').first();
@@ -142,7 +161,7 @@ test.describe('Flow 2: Server detected — auto-connect', () => {
       });
     });
 
-    await page.goto('/');
+    await launchFromStartScreen(page);
 
     // Verify onboarding is shown first
     await expect(page.getByText('Start AVmatrix locally')).toBeVisible({ timeout: 10_000 });
@@ -173,7 +192,7 @@ test.describe('Flow 2: Server detected — auto-connect', () => {
       }),
     );
 
-    await page.goto('/');
+    await launchFromStartScreen(page);
 
     // Should transition to analyze when no indexed repos exist.
     await expect(page.getByLabel('Repository Folder')).toBeVisible({ timeout: 20_000 });
@@ -201,7 +220,7 @@ test.describe('Flow 3: Analyze form', () => {
   });
 
   test('local path input validates absolute paths', async ({ page }, testInfo) => {
-    await page.goto('/');
+    await launchFromStartScreen(page);
 
     // Wait for analyze form (transition: onboarding → success → analyze)
     await expect(page.getByLabel('Repository Folder')).toBeVisible({ timeout: 20_000 });
@@ -228,7 +247,7 @@ test.describe('Flow 3: Analyze form', () => {
       return route.fulfill({ json: { path: ABSOLUTE_LOCAL_PATH, cancelled: false } });
     });
 
-    await page.goto('/');
+    await launchFromStartScreen(page);
 
     await expect(page.getByLabel('Repository Folder')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: 'Choose Repository' }).click();
@@ -263,7 +282,7 @@ test.describe('Flow 3: Analyze form', () => {
       });
     });
 
-    await page.goto('/');
+    await launchFromStartScreen(page);
     await expect(page.getByLabel('Repository Folder')).toBeVisible({ timeout: 20_000 });
 
     await page.getByRole('button', { name: 'Choose Repository' }).click();
@@ -312,7 +331,7 @@ test.describe('Flow 3: Analyze form', () => {
       return route.fulfill({ json: { deleted: 'demo-repo' } });
     });
 
-    await page.goto('/');
+    await launchFromStartScreen(page);
     await expect(page.getByText('demo-repo')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: 'Remove demo-repo from repository list' }).click();
 
@@ -322,7 +341,7 @@ test.describe('Flow 3: Analyze form', () => {
   });
 
   test('invalid path keeps analyze disabled until corrected', async ({ page }) => {
-    await page.goto('/');
+    await launchFromStartScreen(page);
 
     await expect(page.getByLabel('Repository Folder')).toBeVisible({ timeout: 20_000 });
 

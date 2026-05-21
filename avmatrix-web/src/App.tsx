@@ -8,6 +8,7 @@ import {
   useChatRuntime,
 } from "./hooks/chat-runtime/ChatRuntimeContext";
 import { DropZone } from "./components/DropZone";
+import { LauncherStartScreen } from "./components/LauncherStartScreen";
 import { LoadingOverlay } from "./components/LoadingOverlay";
 import { Header } from "./components/Header";
 import { GraphCanvas, GraphCanvasHandle } from "./components/GraphCanvas";
@@ -69,7 +70,6 @@ const AppContentBody = () => {
 
   const graphCanvasRef = useRef<GraphCanvasHandle>(null);
   const [serverDisconnected, setServerDisconnected] = useState(false);
-  const [isNavigatingToStart, setIsNavigatingToStart] = useState(false);
 
   const handleServerConnect = useCallback(
     async (result: ConnectResult): Promise<void> => {
@@ -244,6 +244,40 @@ const AppContentBody = () => {
     recordReconnectBannerState(serverDisconnected);
   }, [serverDisconnected]);
 
+  const showStartScreen = useCallback(() => {
+    setServerDisconnected(false);
+    setProgress(null);
+    setGraph(null);
+    setProjectName("");
+    setCurrentRepo("");
+    setRightPanelOpen(false);
+    setViewMode("start");
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("project");
+    url.searchParams.delete("server");
+    window.history.replaceState(null, "", url.toString());
+  }, [
+    setCurrentRepo,
+    setGraph,
+    setProgress,
+    setProjectName,
+    setRightPanelOpen,
+    setViewMode,
+  ]);
+
+  if (viewMode === "start") {
+    return (
+      <LauncherStartScreen
+        onStart={() => {
+          setServerDisconnected(false);
+          setProgress(null);
+          setViewMode("onboarding");
+        }}
+      />
+    );
+  }
+
   // Render based on view mode
   if (viewMode === "onboarding") {
     return (
@@ -280,10 +314,7 @@ const AppContentBody = () => {
         openRepoAnalyzerRequestId={repoAnalyzerRequestId}
         onSwitchRepo={switchRepo}
         onReposChanged={(repos) => setAvailableRepos(repos)}
-        onNavigateToStart={(targetHref) => {
-          setIsNavigatingToStart(true);
-          window.location.assign(targetHref);
-        }}
+        onNavigateToStart={showStartScreen}
         onAnalyzeComplete={async (repoName) => {
           // A repo was just fully indexed via the header dropdown. Connect to
           // the fresh graph, then make the dropdown list reflect that repo even
@@ -351,7 +382,7 @@ const AppContentBody = () => {
 
       <StatusBar />
 
-      {serverDisconnected && !isNavigatingToStart && (
+      {serverDisconnected && (
         <div
           className="fixed bottom-12 left-1/2 z-50 -translate-x-1/2 rounded-lg border-[3px] border-workspace-border-strong bg-workspace-surface px-4 py-2 text-sm text-workspace-text-primary"
           data-testid="server-reconnect-banner"

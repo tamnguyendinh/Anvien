@@ -2,7 +2,7 @@
 
 Date: 2026-05-21
 
-Status: planned
+Status: completed
 
 Companion files:
 
@@ -103,51 +103,51 @@ The correct product direction is not to delete the start experience. The correct
 
 ### P0 - Reconcile Interrupted Worktree
 
-- [ ] Inspect the current dirty worktree and separate intentional plan docs from interrupted code edits.
-- [ ] Do not accept the previous wrong direction as done: the Back button must be restored as an in-app navigation feature.
-- [ ] Ensure future commits stage only the intended slice files.
+- [x] Inspect the current dirty worktree and separate intentional plan docs from interrupted code edits.
+- [x] Do not accept the previous wrong direction as done: the Back button must be restored as an in-app navigation feature.
+- [x] Ensure future commits stage only the intended slice files.
 
 ### P1 - Add In-App Start Screen
 
-- [ ] Add a Web UI start screen component that preserves the old HTML surface's product actions and status feedback.
-- [ ] Add a new app state/view mode or equivalent state transition so the start screen is the initial packaged Web UI surface.
-- [ ] Wire `Start AVmatrix` to enter the existing repo landing/analyze flow without using `Start-AVmatrix.html` or `avmatrix://start`.
-- [ ] Preserve User Guide access or provide a graceful unavailable state.
+- [x] Add a Web UI start screen component that preserves the old HTML surface's product actions and status feedback.
+- [x] Add a new app state/view mode or equivalent state transition so the start screen is the initial packaged Web UI surface.
+- [x] Wire `Start AVmatrix` to enter the existing repo landing/analyze flow without using `Start-AVmatrix.html` or `avmatrix://start`.
+- [x] Preserve User Guide access or provide a graceful unavailable state.
 
 ### P2 - Preserve Back Feature
 
-- [ ] Keep the Header Back button visible in the graph shell.
-- [ ] Change the Back action to return to the in-app start screen.
-- [ ] Remove `/Start-AVmatrix.html` URL generation from Header.
-- [ ] Update unit and e2e tests to prove Back returns to the in-app start screen.
+- [x] Keep the Header Back button visible in the graph shell.
+- [x] Change the Back action to return to the in-app start screen.
+- [x] Remove `/Start-AVmatrix.html` URL generation from Header.
+- [x] Update unit and e2e tests to prove Back returns to the in-app start screen.
 
 ### P3 - Remove Loose HTML Entrypoint
 
-- [ ] Delete root `Start-AVmatrix.html` after P1/P2 are implemented.
-- [ ] Remove launcher static-handler special casing for root `Start-AVmatrix.html`.
-- [ ] Remove Vite dev-server special handling for root `Start-AVmatrix.html`.
-- [ ] Update launcher tests so stale `/Start-AVmatrix.html` requests do not serve a root file.
+- [x] Delete root `Start-AVmatrix.html` after P1/P2 are implemented.
+- [x] Remove launcher static-handler special casing for root `Start-AVmatrix.html`.
+- [x] Remove Vite dev-server special handling for root `Start-AVmatrix.html`.
+- [x] Update launcher tests so stale `/Start-AVmatrix.html` requests do not serve a root file.
 
 ### P4 - Update Active Docs
 
-- [ ] Update `README.md` packaged launcher docs to make `AVmatrixLauncher.exe` the entrypoint.
-- [ ] Update `RUNBOOK.md` packaged launcher run/reset instructions.
-- [ ] Update `TESTING.md` user acceptance steps.
-- [ ] Update `CHANGELOG.md` with the exe-served start screen migration.
+- [x] Update `README.md` packaged launcher docs to make `AVmatrixLauncher.exe` the entrypoint.
+- [x] Update `RUNBOOK.md` packaged launcher run/reset instructions.
+- [x] Update `TESTING.md` user acceptance steps.
+- [x] Update `CHANGELOG.md` with the exe-served start screen migration.
 
 ### P5 - Validation
 
-- [ ] Run full build first: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
-- [ ] Verify the build regenerates `avmatrix-launcher\AVmatrixLauncher.exe` and packaged `web-dist`.
-- [ ] Run focused launcher Go tests.
-- [ ] Run focused Web unit tests for start screen and Header Back.
-- [ ] Run full Web tests.
-- [ ] Run Web e2e tests covering initial start screen, Start action, Back action, and absence of root HTML navigation.
-- [ ] Run broader Go tests required by the touched packages.
-- [ ] Verify root `Start-AVmatrix.html` is absent and not copied into `avmatrix-web\dist\` or `avmatrix-launcher\web-dist\`.
-- [ ] Verify `rg -n "Start-AVmatrix.html|avmatrix://start"` has no active product/docs/test references except historical plan ledgers or explicit stale-path tests.
-- [ ] Run required change detection before commit according to active repo instructions.
-- [ ] Commit the completed implementation slice.
+- [x] Run full build first: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- [x] Verify the build regenerates `avmatrix-launcher\AVmatrixLauncher.exe` and packaged `web-dist`.
+- [x] Run focused launcher Go tests.
+- [x] Run focused Web unit tests for start screen and Header Back.
+- [x] Run full Web tests.
+- [x] Run Web e2e tests covering initial start screen, Start action, Back action, and absence of root HTML navigation.
+- [x] Run broader Go tests required by the touched packages.
+- [x] Verify root `Start-AVmatrix.html` is absent and not copied into `avmatrix-web\dist\` or `avmatrix-launcher\web-dist\`.
+- [x] Verify `rg -n "Start-AVmatrix.html|avmatrix://start"` has no active product/docs/test references except historical plan ledgers or explicit stale-path tests.
+- [x] Run required change detection before commit according to active repo instructions.
+- [x] Commit the completed implementation slice.
 
 ## Completion Criteria
 

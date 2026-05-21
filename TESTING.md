@@ -175,8 +175,9 @@ The pre-commit hook is useful for formatting/typecheck feedback, but do not trea
 For staged releases or UI betas, use the packaged local runtime rather than a remote staging service:
 
 1. Build with `avmatrix-launcher\build.ps1`.
-2. Open `Start-AVmatrix.html`.
-3. Confirm `Start-AVmatrix.html` remains at repository root and is absent from `avmatrix-web\dist\` and `avmatrix-launcher\web-dist\`.
-4. Verify backend health at `http://127.0.0.1:4848/api/info`.
-5. Verify repo picking, repo switching, graph selection, analyze, reset runtime, and chat status on the target Windows machine.
-6. Collect runtime logs from `avmatrix-launcher/logs/` when diagnosing failures.
+2. Run `.\avmatrix-launcher\AVmatrixLauncher.exe`.
+3. Confirm the browser opens the exe-served Web UI start screen.
+4. Confirm the old root start HTML launcher file is absent from repository root, `avmatrix-web\dist\`, and `avmatrix-launcher\web-dist\`.
+5. Verify backend health at `http://127.0.0.1:4848/api/info`.
+6. Verify start screen, Back to start screen, repo picking, repo switching, graph selection, analyze, reset runtime, and chat status on the target Windows machine.
+7. Collect runtime logs from `avmatrix-launcher/logs/` when diagnosing failures.
