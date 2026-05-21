@@ -181,6 +181,7 @@ Lop nay khong thay the node type hien co. No la truc phan loai thu hai, dung de 
 App layer de xuat:
 
 - `backend`
+- `api`
 - `frontend`
 - `cli_launcher`
 - `shared_contract`
@@ -197,6 +198,23 @@ Day la lop BE/FE thuc dung nhat va nen lam truoc vi:
 - de phan tich `unresolved_reference` theo boi canh san pham;
 - de lam nen cho query/impact/context/detect-changes sau nay;
 - de tach repo lon thanh cac vung de nhin hon.
+
+Trong thao luan bo sung, `api` nen la mot App Layer chinh, khong chi la functional area con. Ly do:
+
+- API la ranh gioi giua Frontend va Backend.
+- Web UI phu thuoc truc tiep vao API response shape va contract.
+- Nhieu loi co the nam o serialization/handler/response contract, khong phai o backend logic hay frontend render.
+- Neu API bi gop chung vao backend, graph kho nhin ra truong hop backend logic dung nhung API tra thieu field, hoac frontend dung nhung API contract sai.
+
+Vi vay App Layer nen co toi thieu:
+
+```text
+backend
+api
+frontend
+```
+
+voi API nam o giua ve mat layout va nghia san pham.
 
 Vi du:
 
@@ -222,6 +240,22 @@ App layer: shared_contract
 Functional area: contracts
 ```
 
+Vi du API:
+
+```text
+Node type: Function
+App layer: api
+Functional area: graph_health_api
+```
+
+hoac:
+
+```text
+Node type: Function
+App layer: frontend
+Functional area: api_client
+```
+
 ## 8. Rule suy luan App Layer ban dau
 
 Ban dau khong can AI phuc tap. Co the dung rule-based theo path, node label, va context.
@@ -240,12 +274,21 @@ internal/**
 cmd/**
 => backend
 
+internal/httpapi/**
+=> api
+
+avmatrix-web/src/services/backend-client.ts
+=> frontend + api_client
+
 avmatrix-launcher/**
 => cli_launcher
 
 contracts/**
 internal/contracts/**
-=> shared_contract
+=> shared_contract / api_contract
+
+cmd/generate-web-contracts/**
+=> shared_contract / api_contract
 
 docs/**
 reports/**
@@ -425,6 +468,7 @@ Toi thieu:
 
 ```text
 Backend Ring
+API Ring
 Frontend Ring
 ```
 
@@ -458,6 +502,14 @@ Backend Ring
 - Process island
 - ResolutionGap island
 
+API Ring
+- Handler island
+- Graph API island
+- Graph Health API island
+- Session/API bridge island
+- Contract serialization island
+- ResolutionGap island
+
 Frontend Ring
 - Function island
 - Component/UI island
@@ -468,6 +520,14 @@ Frontend Ring
 ```
 
 Cach nay giup nguoi dung nhin graph la thay van de tap trung o Backend, Frontend, Shared hay Docs/Test, thay vi tat ca bi tron trong mot vong lon.
+
+API Ring nen nam giua Backend Ring va Frontend Ring vi no la cau noi giua hai lop nay:
+
+```text
+Backend Ring <-> API Ring <-> Frontend Ring
+```
+
+Neu sau nay them Shared/Contract Ring, no co the nam gan API Ring vi contract la hinh dang du lieu cua API.
 
 ## 14. Quan he giua mau node va ring
 
@@ -496,6 +556,7 @@ Web UI phai the hien duoc cac lop moi, khong chi de AI doc metadata.
 Lens/filter nen co:
 
 - Backend unresolved calls
+- API unresolved handlers/contracts
 - Frontend unresolved type refs
 - Shared contract analyzer gaps
 - External unresolved symbols
@@ -521,6 +582,15 @@ Hoac:
 App Layer: Frontend
 Resolution Gap: Unresolved Type Target
 Actionability: Review
+```
+
+Hoac:
+
+```text
+App Layer: API
+Functional Area: Graph Health API
+Resolution Gap: Unresolved Type Target
+Actionability: Analyzer Gap
 ```
 
 ## 16. Khong nen bien thao luan nay thanh dead-code problem
@@ -650,10 +720,13 @@ Nhung cau hoi can chot:
 2. Test nen la app layer rieng hay la modifier tren BE/FE?
 3. `internal/contracts` nen la backend hay shared_contract?
 4. `avmatrix-web/e2e` nen la frontend hay test?
-5. ResolutionGap nen la node graph that, virtual node trong API response, hay filter/lens tinh o UI?
-6. Co can persist ResolutionGap vao `.avmatrix/graph.json` hay tinh luc load API?
-7. Query benchmark nen dat trong docs, reports, hay internal testdata?
-8. App Layer ring co can hien docs/test/config mac dinh hay chi hien khi bat filter?
+5. `internal/httpapi` nen la `api` App Layer rieng hay backend functional area? Huong thao luan hien tai nghieng ve `api` App Layer rieng.
+6. API client trong frontend nen gan `frontend + api_client` hay gan vao API Ring?
+7. API contract/generated contract nen nam trong `api`, `shared_contract`, hay `api_contract` modifier?
+8. ResolutionGap nen la node graph that, virtual node trong API response, hay filter/lens tinh o UI?
+9. Co can persist ResolutionGap vao `.avmatrix/graph.json` hay tinh luc load API?
+10. Query benchmark nen dat trong docs, reports, hay internal testdata?
+11. App Layer ring co can hien docs/test/config mac dinh hay chi hien khi bat filter?
 
 ## 22. Rui ro thiet ke
 
@@ -675,7 +748,7 @@ Can nang graph thanh nhieu lop ngu nghia:
 
 ```text
 Node Type
-+ App Layer BE/FE/Shared/Test/Docs
++ App Layer BE/API/FE/Shared/Test/Docs
 + Functional Area
 + ResolutionGap / UnresolvedSymbol
 + Multi-ring layout theo App Layer
@@ -687,7 +760,7 @@ Node Type
 Buoc dau hop ly nhat:
 
 1. Them App Layer cho node.
-2. Dung App Layer de chia layout thanh Backend Ring va Frontend Ring.
+2. Dung App Layer de chia layout thanh Backend Ring, API Ring va Frontend Ring.
 3. Dua `ResolutionGap` / `UnresolvedSymbol` thanh entity/filter rieng.
 4. Bo sung UI lens/filter cho Resolution Health.
 5. Audit va nang cap `query` de phu hop voi graph/codebase hien tai.
@@ -699,8 +772,9 @@ Cac diem da dong thuan:
 - `unknown_connectivity` va `unresolved_reference` khong duoc tron lai.
 - `unresolved_reference` la van de rieng, lon hon mot diagnostic text thong thuong.
 - UI phai the hien duoc van de, khong chi AI doc duoc metadata.
-- BE/FE la truc phan loai can co, va nen co truoc functional area sau.
-- Layout nen chuyen sang nhieu vong lon theo App Layer, toi thieu Backend Ring va Frontend Ring.
+- BE/API/FE la truc phan loai can co, va nen co truoc functional area sau.
+- API nen la App Layer/ring rieng vi no la ranh gioi quan trong giua FE va BE.
+- Layout nen chuyen sang nhieu vong lon theo App Layer, toi thieu Backend Ring, API Ring va Frontend Ring.
 - Trong moi ring van giu cach chia dao theo node type/filter mau hien co.
 - `analyze` la lenh goc, cac lenh con nhu `query`, `impact`, `context`, `detect-changes` moi la noi can nang cap.
 - `query` can audit bang benchmark vi co dau hieu tra nhiu voi codebase hien tai.
