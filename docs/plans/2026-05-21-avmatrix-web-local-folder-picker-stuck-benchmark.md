@@ -38,7 +38,6 @@ Baseline table:
 | Server wrapper executable subsystem | GUI | PE header inspection |
 | Backend executable subsystem | Console | PE header inspection |
 | Current protocol command | `E:\AVmatrix-GO\avmatrix-launcher\AVmatrixLauncher.exe "%1"` | registry inspection |
-| Launcher/reset AVmatrix impact checks | pending | required before implementation |
 
 ## B1 - Frontend Recovery Benchmark
 
@@ -87,7 +86,6 @@ Record validation commands and results:
 | Launcher/server-wrapper builds | pass |
 | Applicable e2e chooser flow | pass |
 | Packaged/manual reset validation | no visible terminal/helper window flashing |
-| `avmatrix detect-changes` | expected picker/analyze UI scope only |
 
 ## B4 - Runtime Reset Hidden Execution Benchmark
 
@@ -107,20 +105,6 @@ After implementation, record:
 | Logs written to files/status UI instead of visible terminal windows | yes |
 | Reset still allows runtime to start again | yes |
 | New product timeout/timer recovery added | no |
-
-## B4A - Launcher Impact Benchmark
-
-Status: planned
-
-Before launcher implementation, record AVmatrix impact results:
-
-| Symbol | Expected |
-| --- | --- |
-| `processAlive` | scoped to launcher reset/stop lifecycle |
-| `waitForPIDExit` | scoped to launcher reset/stop lifecycle |
-| `stopPID` | scoped to launcher process stop lifecycle |
-| `resetRuntime` | scoped to launcher reset flow |
-| `hiddenProcAttr` | scoped to launcher/server-wrapper hidden process behavior |
 
 ## B5 - Final Interpretation
 

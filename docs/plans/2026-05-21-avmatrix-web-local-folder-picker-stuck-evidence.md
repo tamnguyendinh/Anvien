@@ -91,9 +91,11 @@ Artifact and protocol inspection:
   - `avmatrix-launcher/server-bundle/avmatrix.exe`: Windows CUI/Console.
 - Interpretation: the backend console executable can be acceptable only when it is started through `avmatrix-server.exe` with hidden process attributes. The repeated visible-window report is more directly explained by unhidden `tasklist` calls inside `processAlive`.
 
-## E2 - AVmatrix Impact Evidence
+## E2 - Initial AVmatrix Tool Evidence
 
 Status: recorded
+
+This section records tool output already gathered during initial inspection. It is historical evidence, not a standalone replacement for the active `AGENTS.md` workflow.
 
 AVmatrix refresh:
 
@@ -148,18 +150,6 @@ Not allowed:
 - accepting flashing terminal/helper windows as normal reset behavior.
 - solving reset by instructing users to run commands manually in a terminal.
 
-## E3A - Required Launcher Impact Evidence
-
-Status: pending
-
-Before editing launcher/reset implementation symbols, run and record:
-
-- `avmatrix impact processAlive --repo "E:\AVmatrix-GO" --direction upstream --depth 2 --include-tests`
-- `avmatrix impact waitForPIDExit --repo "E:\AVmatrix-GO" --direction upstream --depth 2 --include-tests`
-- `avmatrix impact stopPID --repo "E:\AVmatrix-GO" --direction upstream --depth 2 --include-tests`
-- `avmatrix impact resetRuntime --repo "E:\AVmatrix-GO" --direction upstream --depth 2 --include-tests`
-- `avmatrix impact hiddenProcAttr --repo "E:\AVmatrix-GO" --direction upstream --depth 2 --include-tests`
-
 ## E4 - Implementation Evidence
 
 Status: pending
@@ -170,4 +160,4 @@ Record changed files and implementation details after code changes.
 
 Status: pending
 
-Record focused tests, build, e2e/browser validation, and AVmatrix detect-changes results after implementation.
+Record focused tests, build, e2e/browser validation, and required pre-commit scope evidence after implementation.

@@ -11,7 +11,7 @@ Companion files:
 
 ## Rules
 
-1. Use AVmatrix impact analysis before changing implementation symbols.
+1. Follow active workspace and repository instructions, including `AGENTS.md`, for AVmatrix and codebase workflow. This plan records product work and validation; it does not replace those rules.
 2. Update this plan, the benchmark ledger, and the evidence ledger as each implementation slice is completed.
 3. Do not add product/runtime timeout, timer reset, delayed reset, or elapsed-time budget to solve this issue.
 4. Timeout is allowed only in test runners or assertions that bound test failure.
@@ -132,8 +132,6 @@ Launcher/runtime reset:
 - [ ] [P0-B] Verify the stuck state is caused by the folder picker request remaining pending, not by analyze job startup.
 - [ ] [P0-C] Confirm manual path entry should remain available and recoverable without page reload.
 - [ ] [P0-D] Record current behavior in the benchmark ledger.
-- [ ] [P0-E] Run AVmatrix impact checks for launcher/reset symbols before implementation: `processAlive`, `waitForPIDExit`, `stopPID`, `resetRuntime`, and `hiddenProcAttr`.
-- [ ] [P0-F] Record launcher/reset impact results in the evidence ledger before editing launcher symbols.
 
 ### P1 - Frontend Cancellation Semantics
 
@@ -187,7 +185,6 @@ Launcher/runtime reset:
 - [ ] [P5-G] Run launcher and server-wrapper builds.
 - [ ] [P5-H] Run browser/e2e chooser validation.
 - [ ] [P5-I] Run packaged/manual reset validation or record why it cannot be automated in the current environment.
-- [ ] [P5-J] Run `avmatrix analyze --force` and `avmatrix detect-changes` before committing implementation.
 
 ## Acceptance Criteria
 
@@ -209,4 +206,4 @@ Launcher/runtime reset:
 
 ## Completion Definition
 
-This plan can be marked complete when the Analyze Repository screen provides explicit recovery from a stuck native picker, manual path analysis works without reload, the backend can cancel picker child processes through request context, `RESET RUNTIME` runs without visible terminal/helper window flashing in the packaged user-facing path, validation passes, benchmark/evidence ledgers are updated, no new timeout/timer-based product recovery path is introduced, and AVmatrix change detection confirms the affected scope is limited to the local folder picker/analyze UI and local runtime launcher lifecycle flow.
+This plan can be marked complete when the Analyze Repository screen provides explicit recovery from a stuck native picker, manual path analysis works without reload, the backend can cancel picker child processes through request context, `RESET RUNTIME` runs without visible terminal/helper window flashing in the packaged user-facing path, validation passes, benchmark/evidence ledgers are updated, no new timeout/timer-based product recovery path is introduced, and all active repo/tooling instructions have been satisfied.
