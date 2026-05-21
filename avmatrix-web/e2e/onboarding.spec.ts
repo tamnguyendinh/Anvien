@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
  * E2E tests for the onboarding and analysis user flows.
  *
  * These tests cover:
- *   - Flow 1: OnboardingGuide shown when no server is running
+ *   - Flow 1: Start screen and neutral runtime connection state
  *   - Flow 2: Analyze form when server has zero repos
  *   - Flow 3: Auto-connect when server has repos
  *   - Flow 4: Repo dropdown in exploring view
@@ -47,9 +47,9 @@ async function openActiveRepoDropdown(page: import('@playwright/test').Page) {
   await expect(page.getByText('Repositories')).toBeVisible({ timeout: 5_000 });
 }
 
-// ── Flow 1: Onboarding (no server running) ─────────────────────────────────
+// ── Flow 1: Start screen and runtime connection state ──────────────────────
 
-test.describe('Flow 1: Onboarding — no server', () => {
+test.describe('Flow 1: Start screen and runtime connection', () => {
   test('shows the exe-served start screen first', async ({ page }) => {
     await page.goto('/');
 
@@ -59,68 +59,55 @@ test.describe('Flow 1: Onboarding — no server', () => {
     await expect(page.getByRole('button', { name: 'User Guide' })).toBeVisible();
   });
 
-  test('shows OnboardingGuide when backend is unreachable', async ({ page }, testInfo) => {
+  test('shows neutral runtime connection state when backend is unreachable', async ({
+    page,
+  }, testInfo) => {
     // Block all requests to the backend so the probe fails
     await page.route(`${BACKEND_URL}/**`, (route) => route.abort('connectionrefused'));
 
     await launchFromStartScreen(page);
 
-    // Wait for initial probe to complete and onboarding to appear
-    await expect(page.getByText('Start AVmatrix locally')).toBeVisible({ timeout: 10_000 });
-    await page.screenshot({ path: testInfo.outputPath('onboarding-visible.png') });
-  });
-
-  test('shows step-by-step instructions', async ({ page }) => {
-    await page.route(`${BACKEND_URL}/**`, (route) => route.abort('connectionrefused'));
-    await launchFromStartScreen(page);
-
-    // Step 1 is active (done once polling starts)
-    await expect(page.getByText('Copy the command')).toBeAttached({ timeout: 10_000 });
-    // Step 2 title changes to "Waiting for server to start" once polling begins
-    await expect(page.getByText('Waiting for local bridge to start')).toBeAttached({
+    await expect(page.getByText('Connecting to AVmatrix runtime...')).toBeVisible({
       timeout: 10_000,
     });
-    // Step 3 is always rendered
-    await expect(page.getByText('Auto-connects and opens the graph')).toBeAttached({
-      timeout: 5_000,
-    });
+    await expect(page.getByText('Start AVmatrix locally')).toHaveCount(0);
+    await expect(page.getByText('avmatrix serve')).toHaveCount(0);
+    await expect(page.getByText('Copy the command')).toHaveCount(0);
+    await expect(page.getByText('Listening for local bridge')).toHaveCount(0);
+    await page.screenshot({ path: testInfo.outputPath('runtime-connecting.png') });
   });
 
-  test('shows terminal window with command', async ({ page }) => {
-    await page.route(`${BACKEND_URL}/**`, (route) => route.abort('connectionrefused'));
+  test('packaged launcher Start reaches repo chooser or analyze without manual guide', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      process.env.PACKAGED_LAUNCHER_E2E !== '1',
+      'Requires AVmatrixLauncher.exe serving the packaged Web UI and backend runtime',
+    );
+
     await launchFromStartScreen(page);
 
-    // Should show either dev or prod command in a terminal block
-    const terminal = page.locator('code');
-    await expect(terminal.first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Start AVmatrix locally')).toHaveCount(0);
+    await expect(page.getByText('avmatrix serve')).toHaveCount(0);
 
-    // The $ prompt should be present
-    await expect(page.getByText('$').first()).toBeVisible();
-  });
-
-  test('shows polling indicator', async ({ page }) => {
-    await page.route(`${BACKEND_URL}/**`, (route) => route.abort('connectionrefused'));
-    await launchFromStartScreen(page);
-
-    // Polling starts after initial probe fails
-    await expect(page.getByText('Listening for local bridge')).toBeVisible({ timeout: 10_000 });
-  });
-
-  test('shows Node.js version requirement', async ({ page }) => {
-    await page.route(`${BACKEND_URL}/**`, (route) => route.abort('connectionrefused'));
-    await launchFromStartScreen(page);
-
-    await expect(page.getByText(/Node\.js.*\d+/)).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText('Port 4848')).toBeVisible();
-  });
-
-  test('copy button has accessible label', async ({ page }) => {
-    await page.route(`${BACKEND_URL}/**`, (route) => route.abort('connectionrefused'));
-    await launchFromStartScreen(page);
-
-    await expect(page.getByText('Copy the command')).toBeVisible({ timeout: 10_000 });
-    const copyBtn = page.getByLabel('Copy to clipboard').first();
-    await expect(copyBtn).toBeVisible();
+    await expect
+      .poll(
+        async () => {
+          const repoCardVisible = await page
+            .getByTestId('landing-repo-card')
+            .first()
+            .isVisible()
+            .catch(() => false);
+          const analyzerVisible = await page
+            .getByLabel('Repository Folder')
+            .isVisible()
+            .catch(() => false);
+          return repoCardVisible || analyzerVisible;
+        },
+        { timeout: 45_000 },
+      )
+      .toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('packaged-start-target.png') });
   });
 });
 
@@ -163,8 +150,12 @@ test.describe('Flow 2: Server detected — auto-connect', () => {
 
     await launchFromStartScreen(page);
 
-    // Verify onboarding is shown first
-    await expect(page.getByText('Start AVmatrix locally')).toBeVisible({ timeout: 10_000 });
+    // Verify the neutral runtime connection state is shown first.
+    await expect(page.getByText('Connecting to AVmatrix runtime...')).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByText('Start AVmatrix locally')).toHaveCount(0);
+    await expect(page.getByText('avmatrix serve')).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath('before-server-start.png') });
 
     // "Start" the server by unblocking requests
@@ -222,7 +213,7 @@ test.describe('Flow 3: Analyze form', () => {
   test('local path input validates absolute paths', async ({ page }, testInfo) => {
     await launchFromStartScreen(page);
 
-    // Wait for analyze form (transition: onboarding → success → analyze)
+    // Wait for analyze form (transition: runtime connection -> success -> analyze)
     await expect(page.getByLabel('Repository Folder')).toBeVisible({ timeout: 20_000 });
 
     // Type an invalid relative path

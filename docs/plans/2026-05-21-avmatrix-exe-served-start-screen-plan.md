@@ -22,14 +22,31 @@ Companion files:
 
 ## Problem
 
-The packaged launcher currently has two user-facing start paths:
+Before this plan, the packaged launcher had two user-facing start paths:
 
 - double-clicking or running `avmatrix-launcher\AVmatrixLauncher.exe`;
 - opening the root `Start-AVmatrix.html` file, which then calls `avmatrix://start` or `avmatrix://reset`.
 
-These paths can show different UI because the HTML file is a separate entrypoint outside the Web app served by the launcher. The user clarified that the exe currently opens the inner Web UI directly, but the expected first screen is the start surface represented by the old HTML file.
+These paths could show different UI because the HTML file was a separate entrypoint outside the Web app served by the launcher. The user clarified that the exe opened the inner Web UI directly, but the expected first screen was the start surface represented by the old HTML file.
 
 The correct product direction is not to delete the start experience. The correct direction is to move that start experience into the Web UI served by the launcher exe, then remove the loose `Start-AVmatrix.html` file flow.
+
+## Reopened Problem - Start Enters Manual Bridge Guide
+
+User-provided screenshot `reports/problem/screenshot_1779366896.png` shows that clicking `Start AVmatrix` opens the `Start AVmatrix locally` / `avmatrix serve` guide.
+
+That is wrong for the packaged exe flow:
+
+- `AVmatrixLauncher.exe` is already responsible for starting the local backend/server bridge before opening the browser.
+- The Start button must not ask the user to start `avmatrix serve` manually.
+- After clicking Start in the packaged exe-served Web UI, the user should land in the repository chooser/analyze surface.
+- If the packaged runtime is still connecting, the UI may show a packaged-runtime connecting state, but not terminal instructions.
+- This must be validated in a browser that the user can actually observe, not only by headless Playwright.
+
+Additional user clarification:
+
+- The manual bridge guide screen itself is unnecessary and should be removed from active Web UI behavior.
+- The product should not show a screen that teaches the user to run `avmatrix serve` manually after entering the Web UI.
 
 ## User Clarification
 
@@ -39,19 +56,41 @@ The correct product direction is not to delete the start experience. The correct
 - The Back button is a feature and must remain available from the graph shell.
 - Back must return to the in-app start screen served by the launcher, not to `Start-AVmatrix.html`.
 
-## Current Code Facts
+## Code Facts
 
-- Root `Start-AVmatrix.html` contains the current start surface and calls:
+Historical baseline from before implementation commit `212080d`:
+
+- Root `Start-AVmatrix.html` contained the old start surface and called:
   - `window.location.href = 'avmatrix://start'` for Start;
   - `window.location.href = 'avmatrix://reset'` for Reset Runtime;
   - `fetch('user_guide.md')` for the User Guide panel.
-- `avmatrix-launcher/src/main.go` serves the packaged Web UI on `127.0.0.1:5228`.
-- The launcher currently has special handling that can serve root `Start-AVmatrix.html` from the repo root.
-- `avmatrix-web/src/App.tsx` currently starts at the Web onboarding/repo landing flow rather than a launcher start surface.
-- `avmatrix-web/src/components/Header.tsx` currently has a Back button that targets `/Start-AVmatrix.html`.
-- `avmatrix-web/vite.config.ts` has development-server knowledge of `/Start-AVmatrix.html`.
-- `README.md`, `RUNBOOK.md`, and `TESTING.md` still document `Start-AVmatrix.html` as the user-facing launcher entry.
-- Current interrupted worktree edits from the previous wrong direction deleted the root HTML file and removed the Back button. Those edits must not be considered a completed implementation of this plan.
+- `avmatrix-launcher/src/main.go` served the packaged Web UI on `127.0.0.1:5228` and had special handling that could serve root `Start-AVmatrix.html` from the repo root.
+- `avmatrix-web/src/App.tsx` started at the Web onboarding/repo landing flow rather than a launcher start surface.
+- `avmatrix-web/src/components/Header.tsx` had a Back button that targeted `/Start-AVmatrix.html`.
+- `avmatrix-web/vite.config.ts` had development-server knowledge of `/Start-AVmatrix.html`.
+- `README.md`, `RUNBOOK.md`, and `TESTING.md` documented `Start-AVmatrix.html` as the user-facing launcher entry.
+- The interrupted worktree edits from the previous wrong direction deleted the root HTML file and removed the Back button. Those edits were not accepted as a completed implementation of this plan.
+
+Reopened pre-fix code facts after implementation commit `212080d`:
+
+- Root `Start-AVmatrix.html` is deleted from tracked source and must stay removed.
+- Launcher special serving for root `Start-AVmatrix.html` is removed.
+- Vite dev-server special handling for root `Start-AVmatrix.html` is removed.
+- Active docs now point users to `AVmatrixLauncher.exe`, not root `Start-AVmatrix.html`.
+- `avmatrix-web/src/App.tsx` starts at the in-app `LauncherStartScreen`.
+- The Header Back button remains and returns to the in-app start screen instead of `/Start-AVmatrix.html`.
+- `Start AVmatrix` entered the existing `onboarding` view.
+- `DropZone` rendered `OnboardingGuide` when the backend probe failed or was still unavailable.
+- `OnboardingGuide` contained the manual `avmatrix serve` guidance. Per reopened clarification, it needed removal from active Web UI flow rather than preservation for dev mode.
+- The launcher already injects lifecycle JavaScript into `index.html` when serving the packaged Web UI, so implementation can use existing launcher/runtime state without adding a loose HTML entrypoint.
+
+Completed P6 code facts:
+
+- `DropZone` no longer imports or renders `OnboardingGuide`.
+- `OnboardingGuide.tsx` and its unit test are deleted.
+- Backend-unavailable state renders the neutral `Connecting to AVmatrix runtime...` card.
+- Start reaches repo landing when repos exist and Analyze Repository when no repos exist.
+- The active Web UI no longer contains the manual `Start AVmatrix locally` / `avmatrix serve` guide.
 
 ## Non-Goals
 
@@ -62,6 +101,9 @@ The correct product direction is not to delete the start experience. The correct
 - Do not introduce a new detached HTML launcher file.
 - Do not change graph layout, node clustering, optimizer behavior, graph schema, repo indexing, or chat behavior in this plan.
 - Do not solve entrypoint drift by adding timers, timeouts, delayed refresh, or retry loops.
+- Do not show `avmatrix serve` manual bridge instructions after the user clicks Start.
+- Do not preserve `OnboardingGuide` as an active fallback screen.
+- Do not hide the real problem with a headless-only test that the user cannot observe when checking the PC manually.
 
 ## Target Design
 
@@ -83,6 +125,13 @@ The correct product direction is not to delete the start experience. The correct
 - `Start AVmatrix` transitions inside the Web app to the existing repo landing/analyze flow. It must not call `avmatrix://start`.
 - `User Guide` remains available from this start surface. If `user_guide.md` is still absent, the UI must fail gracefully without a broken dead end.
 - `RESET RUNTIME` must continue to reset the packaged runtime through the launcher exe path and must remain hidden/no terminal flash. If the implementation uses `avmatrix://reset`, it must be treated as an internal exe reset action, not a separate start entrypoint.
+
+### Packaged Start Flow
+
+- Clicking `Start AVmatrix` must bypass the manual bridge guide and go directly to the runtime/repo landing/analyze path.
+- If the backend is not immediately reachable, show a neutral runtime connecting/recovery state driven by existing runtime state/probes; do not add timeout, retry-loop, delayed navigation, or elapsed-time budget logic.
+- The runtime connecting/recovery state must not tell the user to copy or run `avmatrix serve`.
+- The old manual bridge guide should not remain as an active dev fallback. If the backend is unavailable, use a neutral runtime connection state or a product-level recovery action, not terminal command instructions.
 
 ### Back Navigation
 
@@ -149,6 +198,24 @@ The correct product direction is not to delete the start experience. The correct
 - [x] Run required change detection before commit according to active repo instructions.
 - [x] Commit the completed implementation slice.
 
+### P6 - Fix Packaged Start Runtime Path
+
+- [x] Remove `OnboardingGuide` from active Web UI routing.
+- [x] Change `Start AVmatrix` so it enters the runtime/repo chooser flow, not the manual `OnboardingGuide`.
+- [x] Ensure runtime connection flow lands on repo landing when repos exist.
+- [x] Ensure runtime connection flow lands on Analyze Repository when no repos exist.
+- [x] Replace backend-unavailable behavior with a neutral runtime connecting/recovery state that does not mention `avmatrix serve`.
+- [x] Delete or retire tests that assert `Start AVmatrix locally` is shown.
+- [x] Add unit tests that prove Start never renders `Start AVmatrix locally` or `avmatrix serve`.
+- [x] Add e2e coverage that clicks Start and verifies repo chooser/analyze surface, not the manual bridge guide.
+
+### P7 - User-Observable Browser Validation
+
+- [x] Validate with a visible browser on the user's PC, not only headless Playwright.
+- [x] Prefer a headed Playwright run against the built packaged launcher runtime so the browser window is visible on the desktop.
+- [x] Record the exact command/tool used, whether a visible browser was opened, and the observed screen after clicking Start.
+- [x] Capture or reference a screenshot proving the post-Start screen is repo chooser/analyze, not the manual bridge guide.
+
 ## Completion Criteria
 
 - Running the rebuilt `AVmatrixLauncher.exe` opens the exe-served Web UI at the in-app start screen.
@@ -159,3 +226,6 @@ The correct product direction is not to delete the start experience. The correct
 - Root `Start-AVmatrix.html` is removed from tracked source and packaged artifacts.
 - There is no separate root HTML launcher flow left in active code.
 - Full build, focused tests, full tests, and Web e2e validation are recorded in evidence.
+- Clicking `Start AVmatrix` from the packaged exe-served start screen never opens `Start AVmatrix locally` / `avmatrix serve`.
+- `Start AVmatrix locally` / manual `avmatrix serve` guide is removed from active Web UI behavior.
+- Browser validation includes a user-observable run, not only headless automation.

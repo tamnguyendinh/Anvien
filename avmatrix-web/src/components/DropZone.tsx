@@ -11,7 +11,6 @@ import {
   type BackendRepo,
 } from '../services/backend-client';
 import { useBackend } from '../hooks/useBackend';
-import { OnboardingGuide } from './OnboardingGuide';
 import { AnalyzeOnboarding } from './AnalyzeOnboarding';
 import { RepoLanding } from './RepoLanding';
 import { EncouragementLine } from './EncouragementLine';
@@ -53,7 +52,7 @@ function SuccessCard() {
           <Check className="h-8 w-8 text-success" />
         </div>
 
-        <p className="press-eyebrow mb-2 text-center">Local bridge detected</p>
+        <p className="press-eyebrow mb-2 text-center">Local runtime detected</p>
         <h2 className="press-title mb-2 text-center text-2xl">Server Connected</h2>
         <p className="mx-auto text-center font-reading leading-relaxed text-base text-text-secondary">
           Preparing your code knowledge graph...
@@ -75,7 +74,7 @@ function SuccessCard() {
   );
 }
 
-function LoadingCard({ message }: { message: string }) {
+function LoadingCard({ message, detail }: { message: string; detail?: string }) {
   return (
     <div className="space-y-4">
       <div className="press-panel relative overflow-hidden p-8" role="status" aria-live="polite">
@@ -87,7 +86,7 @@ function LoadingCard({ message }: { message: string }) {
           <p className="press-eyebrow mb-2 text-center">Connecting</p>
           <h2 className="press-title mb-2 text-center text-2xl">{message || 'Connecting...'}</h2>
           <p className="mx-auto text-center font-reading leading-relaxed text-base text-text-secondary">
-            This may take a moment for large repositories
+            {detail || 'This may take a moment for large repositories'}
           </p>
         </div>
       </div>
@@ -114,11 +113,12 @@ export const DropZone = ({ onServerConnect }: DropZoneProps) => {
   const autoConnectRan = useRef(false);
 
   // Connection state
-  // 'analyze'  = server up but zero repos indexed — show local-path analyze input
-  // 'landing'  = server up with indexed repos — show repo picker + analyze
-  const [phase, setPhase] = useState<'onboarding' | 'analyze' | 'landing' | 'success' | 'loading'>(
-    'onboarding',
-  );
+  // 'connecting' = waiting for the packaged runtime/backend probe result
+  // 'analyze'    = server up but zero repos indexed - show local-path analyze input
+  // 'landing'    = server up with indexed repos - show repo picker + analyze
+  const [phase, setPhase] = useState<
+    'connecting' | 'analyze' | 'landing' | 'success' | 'loading'
+  >('connecting');
   const [loadingMessage, setLoadingMessage] = useState('');
   const abortControllerRef = useRef<AbortController | null>(null);
   const analyzeSseRef = useRef<AbortController | null>(null);
@@ -146,7 +146,7 @@ export const DropZone = ({ onServerConnect }: DropZoneProps) => {
       if ((err as Error).name === 'AbortError') return;
       const message = err instanceof Error ? err.message : 'Failed to connect';
       setError(message);
-      setPhase('onboarding');
+      setPhase('connecting');
     }
   };
 
@@ -278,10 +278,10 @@ export const DropZone = ({ onServerConnect }: DropZoneProps) => {
       setPhase('success');
       void handleAutoConnectRef.current();
     }
-    // Server went away — reset to onboarding (or analyze if we were on analyze)
+    // Server went away - keep the user in a neutral runtime connection state.
     if (!isConnected && autoConnectRan.current && !isProbing) {
       autoConnectRan.current = false;
-      setPhase('onboarding');
+      setPhase('connecting');
       setError(null);
     }
   }, [isConnected, isProbing, stopPolling]);
@@ -294,8 +294,7 @@ export const DropZone = ({ onServerConnect }: DropZoneProps) => {
     };
   }, []);
 
-  // Don't render until initial probe completes
-  const displayPhase = !initialProbeComplete ? null : phase;
+  const displayPhase = !initialProbeComplete ? 'connecting' : phase;
 
   return (
     <div className="press-shell press-ruled flex min-h-screen items-center justify-center p-8">
@@ -309,7 +308,12 @@ export const DropZone = ({ onServerConnect }: DropZoneProps) => {
         {/* Crossfade between phases */}
         {displayPhase && (
           <Crossfade activeKey={displayPhase}>
-            {displayPhase === 'onboarding' && <OnboardingGuide isPolling={isPolling} />}
+            {displayPhase === 'connecting' && (
+              <LoadingCard
+                message="Connecting to AVmatrix runtime..."
+                detail="The local runtime will open the repository screen when it is ready."
+              />
+            )}
             {displayPhase === 'analyze' && <AnalyzeOnboarding onComplete={loadRepoGraph} />}
             {displayPhase === 'landing' && (
               <RepoLanding

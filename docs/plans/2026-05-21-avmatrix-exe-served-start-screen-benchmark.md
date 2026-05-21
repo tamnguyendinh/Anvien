@@ -2,7 +2,7 @@
 
 Date: 2026-05-21
 
-Status: planned
+Status: completed
 
 Plan: [2026-05-21-avmatrix-exe-served-start-screen-plan.md](2026-05-21-avmatrix-exe-served-start-screen-plan.md)
 
@@ -29,13 +29,13 @@ Baseline product facts:
 
 ## B1 - Target Product Benchmarks
 
-Status: recorded from implementation; runtime validation pending in B3/B4
+Status: recorded from implementation; reopened runtime Start validation pending in B5
 
 Record after implementation:
 
 | Metric | Expected |
 | --- | --- |
-| Running rebuilt `AVmatrixLauncher.exe` opens in-app start screen first | yes; full-build/runtime validation pending |
+| Running rebuilt `AVmatrixLauncher.exe` opens in-app start screen first | yes; validated before reopened Start-click regression |
 | Start screen is served from packaged Web UI, not root HTML | yes; implemented as `LauncherStartScreen` |
 | Start screen includes `AVmatrix` title | yes |
 | Start screen includes `Start AVmatrix` | yes |
@@ -48,8 +48,8 @@ Record after implementation:
 | Header Back returns to in-app start screen | yes |
 | Header Back navigates to `/Start-AVmatrix.html` | no |
 | Root `Start-AVmatrix.html` tracked file exists | no |
-| Root `Start-AVmatrix.html` appears in `avmatrix-web\dist` | pending full build |
-| Root `Start-AVmatrix.html` appears in `avmatrix-launcher\web-dist` | pending full build |
+| Root `Start-AVmatrix.html` appears in `avmatrix-web\dist` | no; verified in B2 |
+| Root `Start-AVmatrix.html` appears in `avmatrix-launcher\web-dist` | no; verified in B2 |
 | Users are instructed to open root HTML in active docs | no |
 
 ## B2 - Artifact Benchmarks
@@ -98,3 +98,20 @@ Manual or automated packaged runtime checks:
 | Reset Runtime action does not open visible terminal/helper windows | not changed in this plan; previous hidden-reset validation remains applicable |
 | User Guide action does not dead-end if guide file is missing | yes; unit test passed |
 | Reloading the app at root shows start screen unless a deliberate project/server URL is provided | yes; e2e root start and query-param graph flows passed |
+
+## B5 - Reopened Runtime Start Benchmarks
+
+Status: completed
+
+Record after the follow-up implementation:
+
+| UX check | Expected |
+| --- | --- |
+| Clicking `Start AVmatrix` shows `Start AVmatrix locally` | no; unit, e2e, and headed packaged validation passed |
+| Clicking `Start AVmatrix` shows `avmatrix serve` command instructions | no; unit, e2e, and headed packaged validation passed |
+| `OnboardingGuide` remains in active Web UI routing | no; component import removed and retired file deleted |
+| Start reaches repo landing when repos exist | yes; mocked e2e and headed packaged launcher validation passed |
+| Start reaches Analyze Repository when no repos exist | yes; mocked e2e zero-repo flow passed |
+| Backend unavailable state mentions manual terminal commands | no; neutral runtime connection e2e passed |
+| Visible browser validation was performed on the user's PC | yes; headed Playwright against `AVmatrixLauncher.exe` passed |
+| Visible browser screenshot or observation recorded | yes; `avmatrix-web/test-results/onboarding-Flow-1-Start-sc-396b2-nalyze-without-manual-guide-chromium/packaged-start-target.png` |

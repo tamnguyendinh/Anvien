@@ -2,7 +2,7 @@
 
 Date: 2026-05-21
 
-Status: planned
+Status: completed
 
 Plan: [2026-05-21-avmatrix-exe-served-start-screen-plan.md](2026-05-21-avmatrix-exe-served-start-screen-plan.md)
 
@@ -192,3 +192,93 @@ Assessment:
 Commit:
 
 - Recorded in the implementation commit containing this ledger update.
+
+## E8 - Reopened Regression Evidence
+
+Status: recorded
+
+User-provided failing screenshot:
+
+- `reports/problem/screenshot_1779366896.png`
+
+Observed from screenshot:
+
+- URL: `127.0.0.1:5228`.
+- Screen title: `Start AVmatrix locally`.
+- The screen instructs the user to copy/run `avmatrix serve`.
+- It shows `Waiting for local bridge to start` and `Listening for local bridge...`.
+
+User clarification:
+
+- This manual bridge guide should not appear after clicking `Start AVmatrix`.
+- The manual guide screen is unnecessary and should be removed from active Web UI behavior.
+- In the packaged flow, the exe should already start the runtime/server bridge.
+- Start should lead to repository chooser/analyze flow, not manual startup instructions.
+
+Implementation implication:
+
+- Reopen this plan.
+- Remove `OnboardingGuide` from active Web UI routing.
+- Replace backend-unavailable/manual bridge fallback with a neutral runtime connection/recovery state that does not mention `avmatrix serve`.
+- Add visible-browser validation so the user can observe the tested behavior on the PC.
+
+## E9 - Follow-Up Implementation Evidence
+
+Status: recorded
+
+Implemented reopened slices:
+
+- Removed `OnboardingGuide` from active Web UI routing in `DropZone`.
+- Deleted the retired manual guide component file and its unit test:
+  - `avmatrix-web/src/components/OnboardingGuide.tsx`
+  - `avmatrix-web/test/unit/OnboardingGuide.local-only.test.tsx`
+- Changed backend-unavailable rendering to a neutral `Connecting to AVmatrix runtime...` state.
+- Kept the existing runtime/backend probe flow; did not add product timeout, retry-loop, delayed navigation, or elapsed-time budget logic.
+- Updated onboarding e2e coverage so backend-unavailable state asserts absence of `Start AVmatrix locally`, `avmatrix serve`, terminal copy guidance, and local bridge waiting copy.
+- Added `DropZone.runtime-connection.test.tsx` to prove the active fallback does not render the retired manual guide.
+- Added a packaged launcher smoke e2e gated by `PACKAGED_LAUNCHER_E2E=1` for visible browser validation against `AVmatrixLauncher.exe`.
+
+## E10 - Follow-Up Validation Evidence
+
+Status: recorded
+
+Validation commands and results:
+
+- Full packaged build first: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` passed.
+- Focused Web unit tests: `npm test -- DropZone.runtime-connection.test.tsx DropZone.full-analyze-flow.test.tsx LauncherStartScreen.local-only.test.tsx Branding.local-only.test.tsx` passed with 4 files and 15 tests.
+- Full Web unit tests: `npm test` passed with 44 files and 353 tests.
+- Full Web e2e on production preview: `npm run test:e2e` passed with 11 passed and 30 skipped. Skips were backend/indexed-repo dependent specs, including the packaged launcher smoke test when `PACKAGED_LAUNCHER_E2E` is not set.
+- Onboarding e2e file check on production preview: `npm run test:e2e -- e2e/onboarding.spec.ts` passed with 9 passed and 3 skipped.
+- Visible packaged launcher validation: started `avmatrix-launcher\AVmatrixLauncher.exe`, then ran `PACKAGED_LAUNCHER_E2E=1 npm run test:e2e -- e2e/onboarding.spec.ts -g "packaged launcher Start reaches repo chooser or analyze without manual guide" --headed`; passed with 1 test.
+- Visible validation screenshot: `avmatrix-web/test-results/onboarding-Flow-1-Start-sc-396b2-nalyze-without-manual-guide-chromium/packaged-start-target.png`.
+- Artifact check: root `Start-AVmatrix.html`, `avmatrix-web\dist\Start-AVmatrix.html`, and `avmatrix-launcher\web-dist\Start-AVmatrix.html` are absent.
+- Artifact check: `avmatrix-launcher\AVmatrixLauncher.exe` and `avmatrix-launcher\web-dist\index.html` exist.
+- Production Go package tests: `go test ./cmd/... ./internal/...` passed.
+- Launcher Go tests: `go test ./...` from `avmatrix-launcher\src` passed.
+
+Additional Go validation note:
+
+- `go test ./...` from the repo root was attempted and failed only in fixture packages under `avmatrix/test/fixtures/...` that intentionally contain non-buildable sample code/imports. Production `cmd`/`internal` packages and launcher tests passed.
+
+## E11 - Follow-Up Change Detection Evidence
+
+Status: recorded
+
+Pre-commit AVmatrix checks:
+
+- Refreshed graph with `avmatrix analyze --force`; no `--skip-agents-md` flag was used.
+- `impact` on `DropZone`, `OnboardingGuide`, `App`, `LoadingCard`, `SuccessCard`, and `handleAutoConnect` was LOW.
+- `detect_changes(repo: "AVmatrix", scope: "all")` reported `changed_files=7`, `changed_count=30`, `affected_count=7`, `risk_level=high`.
+- Affected processes were the expected `handleAutoConnect` flows:
+  - `HandleAutoConnect -> BackendError`
+  - `HandleAutoConnect -> AssertOk`
+  - `HandleAutoConnect -> FetchFromBackend`
+  - `HandleAutoConnect -> ProbeBackend`
+  - `HandleAutoConnect -> SetBackendUrl`
+  - `HandleAutoConnect -> FetchGraph`
+  - `HandleAutoConnect -> FetchRepoInfo`
+
+Assessment:
+
+- The high detect risk is expected because this slice intentionally changes the backend-unavailable branch in the Start runtime path.
+- The happy paths remain covered by mocked e2e zero-repo and repo-landing flows, plus headed packaged launcher validation.
