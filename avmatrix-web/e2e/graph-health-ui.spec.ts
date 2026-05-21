@@ -136,6 +136,29 @@ test.describe('Graph Health UI', () => {
     await expect(page.getByText('detachedWidget').first()).toBeVisible();
   });
 
+  test('selects all hidden node types from the left dashboard', async ({ page }) => {
+    await page.goto(
+      `${FRONTEND_URL}/?server=${encodeURIComponent(BACKEND_URL)}&project=graph-health-demo`,
+    );
+
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+      timeout: 20_000,
+    });
+
+    await page.getByRole('button', { name: 'Filters' }).click();
+
+    const functionNodeTypeButton = page.locator('button[title^="Function ("]').first();
+    const selectAllNodeTypesButton = page.getByTitle('Select all node types');
+
+    await expect(functionNodeTypeButton).toBeVisible({ timeout: 10_000 });
+    await expect(selectAllNodeTypesButton).toBeDisabled();
+    await functionNodeTypeButton.click();
+    await expect(functionNodeTypeButton).toHaveAttribute('aria-pressed', 'false');
+    await expect(selectAllNodeTypesButton).toBeEnabled();
+    await selectAllNodeTypesButton.click();
+    await expect(functionNodeTypeButton).toHaveAttribute('aria-pressed', 'true');
+  });
+
   test('graph shell Back returns to the exe-served start screen', async ({ page }) => {
     await page.goto(
       `${FRONTEND_URL}/?server=${encodeURIComponent(BACKEND_URL)}&project=graph-health-demo`,

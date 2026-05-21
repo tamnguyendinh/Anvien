@@ -480,6 +480,17 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
     }));
   }, [graph]);
 
+  const hiddenNodeTypeLabels = useMemo(() => {
+    const visibleLabelSet = new Set(visibleLabels);
+    return nodeTypeItems
+      .map(({ label }) => label)
+      .filter((label) => !visibleLabelSet.has(label));
+  }, [nodeTypeItems, visibleLabels]);
+
+  const selectAllNodeTypes = useCallback(() => {
+    hiddenNodeTypeLabels.forEach((label) => toggleLabelVisibility(label));
+  }, [hiddenNodeTypeLabels, toggleLabelVisibility]);
+
   const edgeTypeItems = useMemo(() => {
     if (!graph) {
       return ALL_EDGE_TYPES.map((type) => ({
@@ -681,9 +692,19 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
       {activeTab === "filters" && (
         <div className="scrollbar-thin flex-1 overflow-y-auto p-3">
           <div className="mb-3">
-            <h3 className="press-eyebrow mb-2 text-text-secondary">
-              Node Types
-            </h3>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h3 className="press-eyebrow text-text-secondary">
+                Node Types
+              </h3>
+              <button
+                onClick={selectAllNodeTypes}
+                disabled={hiddenNodeTypeLabels.length === 0}
+                className="rounded px-2 py-1 font-mono text-[10px] text-text-muted transition-colors hover:bg-base hover:text-text-primary disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-text-muted"
+                title="Select all node types"
+              >
+                Select all
+              </button>
+            </div>
             <p className="mb-3 text-[11px] text-text-muted">
               Toggle visibility of node types in the graph
             </p>

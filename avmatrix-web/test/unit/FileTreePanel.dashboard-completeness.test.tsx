@@ -232,6 +232,29 @@ describe("FileTreePanel dashboard completeness", () => {
     }
   });
 
+  it("selects all hidden node type filters", async () => {
+    const graph = makeGraph();
+    mockAppState = {
+      ...mockAppState,
+      graph,
+      visibleLabels: ["File"],
+    };
+
+    render(<FileTreePanel onFocusNode={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Filters" }));
+    await userEvent.click(screen.getByTitle("Select all node types"));
+
+    const hiddenLabels = graph.nodes
+      .map((node) => node.label)
+      .filter((label) => label !== "File");
+
+    expect(toggleLabelVisibility).toHaveBeenCalledTimes(hiddenLabels.length);
+    for (const label of hiddenLabels) {
+      expect(toggleLabelVisibility).toHaveBeenCalledWith(label);
+    }
+  });
+
   it("renders Graph Health filters and routes controls through app state", async () => {
     render(<FileTreePanel onFocusNode={vi.fn()} />);
 
