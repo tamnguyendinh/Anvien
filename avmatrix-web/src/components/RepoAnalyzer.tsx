@@ -8,6 +8,7 @@
 import { useState, useRef, useEffect, useId } from 'react';
 import { FolderOpen, Loader2, Check, ArrowRight, AlertCircle } from '@/lib/lucide-icons';
 import {
+  BackendError,
   pickLocalFolder,
   startAnalyze,
   cancelAnalyze,
@@ -29,6 +30,16 @@ function isLikelyAbsoluteLocalPath(value: string): boolean {
     return /^[a-zA-Z]:[\\/]/.test(trimmed);
   }
   return trimmed.startsWith('/');
+}
+
+function isPickerAbortError(err: unknown, signal: AbortSignal): boolean {
+  return (
+    signal.aborted ||
+    (err instanceof BackendError &&
+      err.status === 0 &&
+      err.code === 'network' &&
+      err.message === 'Request aborted')
+  );
 }
 
 // ── Analyze button ───────────────────────────────────────────────────────────
@@ -109,29 +120,49 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
 
   const jobIdRef = useRef<string | null>(null);
   const sseControllerRef = useRef<AbortController | null>(null);
+  const pickerControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     return () => {
+      pickerControllerRef.current?.abort();
       sseControllerRef.current?.abort();
     };
   }, []);
 
   const canSubmit =
-    !isPickingFolder &&
     isLikelyAbsoluteLocalPath(localPath) &&
     (phase === 'input' || phase === 'error');
+
+  const abortPickerRequest = () => {
+    pickerControllerRef.current?.abort();
+    pickerControllerRef.current = null;
+    setIsPickingFolder(false);
+  };
+
+  const handleCancelPicker = () => {
+    abortPickerRequest();
+    setValidationError(null);
+    if (phase === 'error') {
+      setPhase('input');
+    }
+  };
 
   const handleChooseRepository = async () => {
     if (isPickingFolder || phase === 'starting' || phase === 'analyzing') return;
 
+    const controller = new AbortController();
+    pickerControllerRef.current = controller;
     setValidationError(null);
     setIsPickingFolder(true);
     try {
-      const result = await pickLocalFolder();
+      const result = await pickLocalFolder(controller.signal);
       if (result.path) {
         setLocalPath(result.path);
       }
     } catch (err) {
+      if (isPickerAbortError(err, controller.signal)) {
+        return;
+      }
       setValidationError(
         err instanceof Error
           ? err.message
@@ -139,6 +170,9 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
       );
       setPhase('input');
     } finally {
+      if (pickerControllerRef.current === controller) {
+        pickerControllerRef.current = null;
+      }
       setIsPickingFolder(false);
     }
   };
@@ -149,6 +183,9 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
       return;
     }
 
+    if (isPickingFolder) {
+      abortPickerRequest();
+    }
     setValidationError(null);
     setPhase('starting');
 
@@ -168,7 +205,10 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
           setCompletedRepoName(name);
           setPhase('done');
           sseControllerRef.current = null;
-          onComplete({ repoName: name, repoPath: data.repoPath ?? localPath.trim() });
+          onComplete({
+            repoName: name,
+            repoPath: data.repoPath ?? localPath.trim(),
+          });
         },
         (errMsg) => {
           setValidationError(errMsg || 'Analysis failed. Check server logs.');
@@ -243,8 +283,8 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
           </div>
           <button
             type="button"
-            onClick={handleChooseRepository}
-            disabled={isLoading || isPickingFolder}
+            onClick={isPickingFolder ? handleCancelPicker : handleChooseRepository}
+            disabled={isLoading}
             className="press-outline-button flex w-full cursor-pointer items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-text-secondary disabled:opacity-50"
           >
             {isPickingFolder ? (
@@ -252,7 +292,7 @@ export const RepoAnalyzer = ({ variant, onComplete, onCancel }: RepoAnalyzerProp
             ) : (
               <FolderOpen className="h-3.5 w-3.5" />
             )}
-            {isPickingFolder ? 'Opening repository picker...' : 'Choose Repository'}
+            {isPickingFolder ? 'Cancel Repository Picker' : 'Choose Repository'}
           </button>
           <p className="text-xs text-text-muted">
             Select a local repository folder, or paste an absolute path.

@@ -227,7 +227,7 @@ func TestRepoDeleteRequiresRepoQuery(t *testing.T) {
 
 func TestLocalFolderPickerEndpointReturnsPickedPath(t *testing.T) {
 	previous := pickLocalFolderFunc
-	pickLocalFolderFunc = func() (string, error) {
+	pickLocalFolderFunc = func(context.Context) (string, error) {
 		return `C:\work\repo`, nil
 	}
 	t.Cleanup(func() {
@@ -246,7 +246,7 @@ func TestLocalFolderPickerEndpointReturnsPickedPath(t *testing.T) {
 
 func TestLocalFolderPickerEndpointReportsUnsupported(t *testing.T) {
 	previous := pickLocalFolderFunc
-	pickLocalFolderFunc = func() (string, error) {
+	pickLocalFolderFunc = func(context.Context) (string, error) {
 		return "", errFolderPickerUnsupported
 	}
 	t.Cleanup(func() {
@@ -260,6 +260,33 @@ func TestLocalFolderPickerEndpointReportsUnsupported(t *testing.T) {
 	postJSON(t, server.URL+"/api/local/folder-picker", `{}`, http.StatusNotImplemented, &payload)
 	if !strings.Contains(fmt.Sprint(payload["error"]), "folder picker") {
 		t.Fatalf("unsupported picker payload = %#v", payload)
+	}
+}
+
+func TestLocalFolderPickerEndpointPassesRequestContext(t *testing.T) {
+	previous := pickLocalFolderFunc
+	var pickerContext context.Context
+	pickLocalFolderFunc = func(ctx context.Context) (string, error) {
+		pickerContext = ctx
+		return "", ctx.Err()
+	}
+	t.Cleanup(func() {
+		pickLocalFolderFunc = previous
+	})
+
+	handler := NewHandler(Config{})
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	request := httptest.NewRequest(http.MethodPost, "/api/local/folder-picker", nil).WithContext(ctx)
+	response := httptest.NewRecorder()
+
+	handler.ServeHTTP(response, request)
+
+	if pickerContext == nil {
+		t.Fatalf("picker did not receive request context")
+	}
+	if !errors.Is(pickerContext.Err(), context.Canceled) {
+		t.Fatalf("picker context err = %v, want %v", pickerContext.Err(), context.Canceled)
 	}
 }
 

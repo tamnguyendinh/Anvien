@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"os/exec"
@@ -16,7 +17,7 @@ func (s Server) handleLocalFolderPicker(w http.ResponseWriter, r *http.Request) 
 	if !methodAllowed(w, r, http.MethodPost) {
 		return
 	}
-	path, err := pickLocalFolderFunc()
+	path, err := pickLocalFolderFunc(r.Context())
 	if err != nil {
 		if errors.Is(err, errFolderPickerUnsupported) {
 			writeError(w, http.StatusNotImplemented, err.Error())
@@ -29,23 +30,23 @@ func (s Server) handleLocalFolderPicker(w http.ResponseWriter, r *http.Request) 
 	writeJSON(w, http.StatusOK, map[string]any{"path": emptyStringToNil(path), "cancelled": cancelled})
 }
 
-func pickLocalFolder() (string, error) {
+func pickLocalFolder(ctx context.Context) (string, error) {
 	switch runtime.GOOS {
 	case "windows":
-		return pickWindowsFolder()
+		return pickWindowsFolder(ctx)
 	case "darwin":
-		return pickCommandFolder("osascript", "-e", `POSIX path of (choose folder with prompt "Choose repository folder")`)
+		return pickCommandFolder(ctx, "osascript", "-e", `POSIX path of (choose folder with prompt "Choose repository folder")`)
 	case "linux":
-		if path, err := pickCommandFolder("zenity", "--file-selection", "--directory", "--title=Choose repository folder"); err == nil || path != "" {
+		if path, err := pickCommandFolder(ctx, "zenity", "--file-selection", "--directory", "--title=Choose repository folder"); err == nil || path != "" {
 			return path, err
 		}
-		return pickCommandFolder("kdialog", "--getexistingdirectory", ".", "Choose repository folder")
+		return pickCommandFolder(ctx, "kdialog", "--getexistingdirectory", ".", "Choose repository folder")
 	default:
 		return "", errFolderPickerUnsupported
 	}
 }
 
-func pickWindowsFolder() (string, error) {
+func pickWindowsFolder(ctx context.Context) (string, error) {
 	script := `
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -60,11 +61,11 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
 }
 exit 2
 `
-	return pickCommandFolder("powershell.exe", "-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-Command", script)
+	return pickCommandFolder(ctx, "powershell.exe", "-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-Command", script)
 }
 
-func pickCommandFolder(name string, args ...string) (string, error) {
-	output, err := exec.Command(name, args...).Output()
+func pickCommandFolder(ctx context.Context, name string, args ...string) (string, error) {
+	output, err := exec.CommandContext(ctx, name, args...).Output()
 	if err != nil {
 		var exitErr *exec.ExitError
 		if errors.As(err, &exitErr) && (exitErr.ExitCode() == 1 || exitErr.ExitCode() == 2) {

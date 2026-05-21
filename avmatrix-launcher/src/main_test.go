@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -209,6 +210,39 @@ func TestOpenBrowserCanBeSuppressedForSmokeTests(t *testing.T) {
 	t.Setenv("AVMATRIX_LAUNCHER_NO_BROWSER", "1")
 	if err := openBrowser("http://127.0.0.1:5228"); err != nil {
 		t.Fatalf("openBrowser with suppression: %v", err)
+	}
+}
+
+func TestHiddenCommandAppliesHiddenProcAttr(t *testing.T) {
+	cmd := hiddenCommand("taskkill", "/PID", "123", "/T")
+	if cmd.SysProcAttr == nil {
+		t.Fatalf("hiddenCommand SysProcAttr = nil")
+	}
+	if runtime.GOOS == "windows" {
+		if !cmd.SysProcAttr.HideWindow {
+			t.Fatalf("hiddenCommand HideWindow = false, want true")
+		}
+		if cmd.SysProcAttr.CreationFlags&0x08000000 == 0 {
+			t.Fatalf("hiddenCommand CreationFlags = %#x, want CREATE_NO_WINDOW", cmd.SysProcAttr.CreationFlags)
+		}
+	}
+}
+
+func TestTasklistCommandRunsHiddenOnWindows(t *testing.T) {
+	cmd := tasklistCommand(1234)
+	if len(cmd.Args) < 2 || cmd.Args[0] != "tasklist" {
+		t.Fatalf("tasklist command args = %#v", cmd.Args)
+	}
+	if cmd.SysProcAttr == nil {
+		t.Fatalf("tasklist command SysProcAttr = nil")
+	}
+	if runtime.GOOS == "windows" {
+		if !cmd.SysProcAttr.HideWindow {
+			t.Fatalf("tasklist HideWindow = false, want true")
+		}
+		if cmd.SysProcAttr.CreationFlags&0x08000000 == 0 {
+			t.Fatalf("tasklist CreationFlags = %#x, want CREATE_NO_WINDOW", cmd.SysProcAttr.CreationFlags)
+		}
 	}
 }
 

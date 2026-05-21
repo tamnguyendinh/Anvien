@@ -628,8 +628,7 @@ Get-CimInstance Win32_Process | Where-Object {
   Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
 }
 `, os.Getpid(), psQuote(paths.exePath), psQuote(paths.serverExe), psQuote(paths.backendExe), psQuote(bundleDir))
-	cmd := exec.Command("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script)
-	cmd.SysProcAttr = hiddenProcAttr()
+	cmd := hiddenCommand("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("powershell process sweep: %w: %s", err, strings.TrimSpace(string(out)))
 	}
@@ -713,7 +712,7 @@ func processAlive(pid int) bool {
 		return false
 	}
 	if runtime.GOOS == "windows" {
-		out, err := exec.Command("tasklist", "/FI", fmt.Sprintf("PID eq %d", pid), "/FO", "CSV", "/NH").Output()
+		out, err := tasklistCommand(pid).Output()
 		return err == nil && strings.Contains(string(out), fmt.Sprintf("\"%d\"", pid))
 	}
 	proc, err := os.FindProcess(pid)
@@ -725,14 +724,12 @@ func stopPID(pid int) {
 		return
 	}
 	if runtime.GOOS == "windows" {
-		soft := exec.Command("taskkill", "/PID", fmt.Sprint(pid), "/T")
-		soft.SysProcAttr = hiddenProcAttr()
+		soft := hiddenCommand("taskkill", "/PID", fmt.Sprint(pid), "/T")
 		_ = soft.Run()
 		if waitForPIDExit(pid, 8*time.Second) {
 			return
 		}
-		force := exec.Command("taskkill", "/PID", fmt.Sprint(pid), "/T", "/F")
-		force.SysProcAttr = hiddenProcAttr()
+		force := hiddenCommand("taskkill", "/PID", fmt.Sprint(pid), "/T", "/F")
 		_ = force.Run()
 		waitForPIDExit(pid, 5*time.Second)
 		return
@@ -773,8 +770,7 @@ func registerProtocol(paths launcherPaths) error {
 		{"add", key + `\shell\open\command`, "/ve", "/d", command, "/f"},
 	}
 	for _, args := range commands {
-		cmd := exec.Command("reg", args...)
-		cmd.SysProcAttr = hiddenProcAttr()
+		cmd := hiddenCommand("reg", args...)
 		if out, err := cmd.CombinedOutput(); err != nil {
 			return fmt.Errorf("reg %s: %w: %s", strings.Join(args, " "), err, strings.TrimSpace(string(out)))
 		}
@@ -788,9 +784,7 @@ func openBrowser(url string) error {
 		return nil
 	}
 	if runtime.GOOS == "windows" {
-		cmd := exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
-		cmd.SysProcAttr = hiddenProcAttr()
-		return cmd.Start()
+		return hiddenCommand("rundll32", "url.dll,FileProtocolHandler", url).Start()
 	}
 	if runtime.GOOS == "darwin" {
 		return exec.Command("open", url).Start()
@@ -808,6 +802,16 @@ func attachLog(paths launcherPaths, cmd *exec.Cmd, fileName string) {
 	}
 	cmd.Stdout = file
 	cmd.Stderr = file
+}
+
+func hiddenCommand(name string, args ...string) *exec.Cmd {
+	cmd := exec.Command(name, args...)
+	cmd.SysProcAttr = hiddenProcAttr()
+	return cmd
+}
+
+func tasklistCommand(pid int) *exec.Cmd {
+	return hiddenCommand("tasklist", "/FI", fmt.Sprintf("PID eq %d", pid), "/FO", "CSV", "/NH")
 }
 
 func hiddenProcAttr() *syscall.SysProcAttr {

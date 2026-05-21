@@ -237,6 +237,48 @@ test.describe('Flow 3: Analyze form', () => {
     await page.screenshot({ path: testInfo.outputPath('local-folder-input.png') });
   });
 
+  test('pending repository chooser can be cancelled before analyzing a pasted path', async ({ page }) => {
+    let releasePicker: (() => void) | undefined;
+    let analyzeCalled = false;
+
+    await page.route(`${BACKEND_URL}/api/local/folder-picker`, async (route) => {
+      await new Promise<void>((resolve) => {
+        releasePicker = resolve;
+      });
+      await route.fulfill({ json: { path: null, cancelled: true } });
+    });
+    await page.route(`${BACKEND_URL}/api/analyze`, async (route) => {
+      expect(route.request().method()).toBe('POST');
+      analyzeCalled = true;
+      await route.fulfill({
+        status: 202,
+        json: { jobId: 'job-1', status: 'queued' },
+      });
+    });
+    await page.route(`${BACKEND_URL}/api/analyze/job-1/progress`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        headers: { 'Content-Type': 'text/event-stream' },
+        body: `event: complete\ndata: {"repoName":"demo","repoPath":"${ABSOLUTE_LOCAL_PATH.replace(/\\/g, '\\\\')}"}\n\n`,
+      });
+    });
+
+    await page.goto('/');
+    await expect(page.getByLabel('Repository Folder')).toBeVisible({ timeout: 20_000 });
+
+    await page.getByRole('button', { name: 'Choose Repository' }).click();
+    await expect(page.getByRole('button', { name: 'Cancel Repository Picker' })).toBeVisible();
+
+    await page.getByLabel('Repository Folder').fill(ABSOLUTE_LOCAL_PATH);
+    const analyzeButton = page.getByRole('button', { name: /Analyze Repository/i });
+    await expect(analyzeButton).toBeEnabled();
+    await analyzeButton.click();
+    releasePicker?.();
+
+    await expect.poll(() => analyzeCalled).toBe(true);
+    await expect(page.getByText('Request aborted')).toHaveCount(0);
+  });
+
   test('repo landing remove button deletes repo and removes card', async ({ page }) => {
     const repos = [
       {

@@ -639,9 +639,10 @@ export interface PickLocalFolderResult {
 }
 
 /** Open the local runtime's native folder picker and return an absolute path. */
-export const pickLocalFolder = async (): Promise<PickLocalFolderResult> => {
+export const pickLocalFolder = async (signal?: AbortSignal): Promise<PickLocalFolderResult> => {
   const response = await fetchFromBackend(`${_backendUrl}/api/local/folder-picker`, {
     method: 'POST',
+    signal,
   });
   await assertOk(response);
   return response.json() as Promise<PickLocalFolderResult>;
