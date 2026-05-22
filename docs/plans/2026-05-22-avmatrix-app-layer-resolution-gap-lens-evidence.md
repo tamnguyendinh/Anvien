@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES gate added before Phase 3
+Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback slice complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -244,7 +244,7 @@ Implemented evidence:
 
 ## E7A - Proof-Based CALLS/ACCESSES Evidence
 
-Status: pending
+Status: in progress; low-confidence global CALLS fallback slice complete
 
 Record during Phase 2A.
 
@@ -264,6 +264,20 @@ Required evidence:
 - graphaccuracy or dedicated CLI/report command output for B5A metrics;
 - graph/API/DB/contract/CLI visibility for source-site status and proof metadata, or exact limitations when a surface is deferred;
 - tests and benchmark output proving false resolved edges `0`, silent missing source sites `0`, source sites hidden by dedupe `0`, and non-property ACCESSES targets `0` in the golden corpus unless non-property uses have been split into a separate relation/fact role.
+
+Implemented evidence for the low-confidence global CALLS fallback slice:
+
+- `internal/resolution/indexes.go` now keeps `resolveName` behavior for existing non-call consumers but exposes `resolveScopedName` so call resolution can require local/import scope proof before trying narrower fallback paths.
+- `internal/resolution/resolve.go` now uses `resolveScopedName` for constructor/free-call proof, keeps same-file and Go same-package fallback as explicit lower-confidence resolved edges, and records `resolveGlobalCallName` matches as unresolved source-backed diagnostics with note `call target matched low-confidence global fallback only`.
+- `internal/resolution/resolution_test.go` updates the global fallback arity case to require no resolved edge and adds `TestResolveBareGoCallDoesNotFallbackToCrossLanguageMethod`, proving a bare Go `stop()` call does not emit `CALLS` to TypeScript `SSEListener.stop`.
+- `internal/providers/php/imports.go` now emits PHP `use function` and `use const` imports, and `internal/providers/php/extract_test.go` proves those imports exist. This preserves proof-backed PHP imported function calls after global fallback is rejected.
+- `internal/resolution/testdata/typescript_graph_signature.golden.json` records the expected confidence change for same-file function fallback from `1.000` to `0.950`.
+- Impact context was checked with AVmatrix after `avmatrix analyze --force`: `resolveCall`, `resolveAccess`, `propertyLabels`, `semanticEdgeKey`, `workspace.resolveName`, and PHP import surfaces were inspected. CRITICAL/HIGH results were treated as blast-radius context requiring focused and wider validation, not as a prohibition on editing the required code.
+- Full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`.
+- Focused tests passed: `go test .\internal\resolution`, `go test .\internal\providers\php`, and `go test .\internal\graphaccuracy .\internal\analyze .\internal\cli`.
+- Wider backend validation passed with `go test .\internal\... .\cmd\...`.
+- AVmatrix change detection before commit used fresh `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force` followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `25`, changed_files `9`, affected_count `0`, and risk_level `low`.
+- No Web UI behavior changed in this slice, so Web e2e was not required for this slice.
 
 ## E8 - ResolutionGap Persistence Evidence
 

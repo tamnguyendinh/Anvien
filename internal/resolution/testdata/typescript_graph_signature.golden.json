@@ -31,7 +31,7 @@
     "ACCESSES:Method:src/service.ts:Service.save->Property:src/user.ts:User.id:read",
     "CALLS:Function:src/service.ts:makeRepo->Class:src/repo.ts:Repo:scope-resolution: call | confidence 1.000",
     "CALLS:Method:src/service.ts:Service.save->Class:src/model.ts:Model:scope-resolution: call | confidence 1.000",
-    "CALLS:Method:src/service.ts:Service.save->Function:src/service.ts:makeRepo:scope-resolution: call | confidence 1.000",
+    "CALLS:Method:src/service.ts:Service.save->Function:src/service.ts:makeRepo:scope-resolution: call | confidence 0.950",
     "CALLS:Method:src/service.ts:Service.save->Function:src/user.ts:format:scope-resolution: call | confidence 1.000",
     "CALLS:Method:src/service.ts:Service.save->Method:src/repo.ts:Repo.write:scope-resolution: call | confidence 1.000",
     "DEFINES:File:src/contracts.ts->Class:src/contracts.ts:BaseService:",

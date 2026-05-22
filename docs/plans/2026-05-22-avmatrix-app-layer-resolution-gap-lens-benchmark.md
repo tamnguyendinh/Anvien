@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES gate added before Phase 3
+Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback slice complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -262,14 +262,14 @@ Phase 2A target metrics:
 | Source-site records with stable sourceSiteID | pending | all inventoried call/access sites | pending |
 | Resolved `CALLS` edges | 15109 discussion sample | proof-backed only | pending |
 | Resolved `ACCESSES` edges | 7670 discussion sample | property/field proof-backed only | pending |
-| Resolved edges from low-confidence/global fallback | pending | 0 unless accepted proof is present | pending |
-| Low-confidence/global fallback source sites inventoried | pending | explicit count and status distribution | pending |
+| Resolved edges from low-confidence/global fallback | pending | 0 unless accepted proof is present | 0 in focused resolver golden fixtures |
+| Low-confidence/global fallback source sites inventoried | pending | explicit count and status distribution | 2 focused resolver fixtures recorded as unresolved source-backed diagnostics; full inventory command pending |
 | Unresolved local-binding call sites | pending | explicit count | pending |
 | Unresolved external call/access sites | pending | explicit count | pending |
 | Ambiguous call/access sites | pending | explicit count | pending |
 | Dynamic call/access sites | pending | explicit count | pending |
 | Unsupported syntax sites | pending | explicit count | pending |
-| False resolved edges in golden corpus | pending | 0 | pending |
+| False resolved edges in golden corpus | pending | 0 | 0 for focused low-confidence global fallback fixtures |
 | Silent missing source sites in golden corpus | pending | 0 | pending |
 | Source sites hidden by relationship dedupe without occurrence evidence | pending | 0 | pending |
 | Resolved ACCESSES targets with label `Property` | pending | all resolved ACCESSES unless split relation says otherwise | pending |
@@ -278,9 +278,15 @@ Phase 2A target metrics:
 | Non-property resolved ACCESSES targets in golden corpus | pending | 0 | pending |
 | Duplicate resolved CALLS pairs | 0 discussion sample | 0 unless source-site evidence proves separate occurrences | pending |
 | Duplicate resolved ACCESSES pairs | 11 discussion sample | expected duplicates documented by source-site occurrence count | pending |
-| `stop()` false-positive edge to `SSEListener.stop` | observed | absent; source site unresolved/ambiguous unless proven | pending |
+| `stop()` false-positive edge to `SSEListener.stop` | observed | absent; source site unresolved/ambiguous unless proven | absent in `TestResolveBareGoCallDoesNotFallbackToCrossLanguageMethod` |
 | Selector/import function references emitted as ACCESSES | pending | 0 | pending |
 | Proof-based graphaccuracy/CLI report command | pending | emits all B5A metrics | pending |
+
+Low-confidence global CALLS fallback slice notes:
+
+- Same-file `CALLS` fallback remains resolved but now records confidence `0.950` in the TypeScript graph signature fixture instead of being promoted through global `resolveName` at confidence `1.000`.
+- PHP `use function` import evidence now keeps imported PHP function calls resolved through import binding rather than global fallback; the wider backend suite passed after this change.
+- Full source-site inventory counts remain pending until P2A-C/P2A-I persist and report all call/access source sites.
 
 ## B6 - ResolutionGap Persistence Metrics
 

@@ -885,7 +885,7 @@ func TestResolveMemberCallThroughImportedCallReturnBinding(t *testing.T) {
 	}
 }
 
-func TestResolveGlobalCallFallbackUsesArityToAvoidAmbiguity(t *testing.T) {
+func TestResolveGlobalCallFallbackDoesNotEmitResolvedEdge(t *testing.T) {
 	moduleScope := "scope:src/app.ts#1:0-3:1:Module"
 	functionScope := "scope:src/app.ts#1:0-3:1:Function"
 	callerDef := scopeir.DefinitionFact{
@@ -937,12 +937,99 @@ func TestResolveGlobalCallFallbackUsesArityToAvoidAmbiguity(t *testing.T) {
 	if err != nil {
 		t.Fatalf("resolve failed: %v", err)
 	}
-	relationship := requireRelationship(t, result.Graph, graph.RelCalls, "Function:src/app.ts:start", "Function:src/one.ts:target#1")
-	if relationship.Confidence != 0.5 {
-		t.Fatalf("global fallback confidence = %v, want 0.5", relationship.Confidence)
-	}
+	requireNoRelationship(t, result.Graph, graph.RelCalls, "Function:src/app.ts:start", "Function:src/one.ts:target#1")
 	requireNoRelationship(t, result.Graph, graph.RelCalls, "Function:src/app.ts:start", "Function:src/two.ts:target#2")
-	if result.Metrics.ResolvedCalls != 1 || result.Metrics.UnresolvedReferences != 0 {
+	source := requireNode(t, result.Graph, "Function", "src/app.ts", "start")
+	diagnostics, ok := source.Properties[graphhealth.DiagnosticPropertyKey].([]graphhealth.Diagnostic)
+	if !ok || len(diagnostics) != 1 {
+		t.Fatalf("source diagnostics = %#v", source.Properties[graphhealth.DiagnosticPropertyKey])
+	}
+	diagnostic := diagnostics[0]
+	if diagnostic.Kind != graphhealth.DiagnosticUnresolvedReference ||
+		diagnostic.FactFamily != "call" ||
+		diagnostic.SourceNodeID != source.ID ||
+		diagnostic.TargetText != "target" ||
+		diagnostic.Note != "call target matched low-confidence global fallback only" ||
+		diagnostic.Count != 1 {
+		t.Fatalf("unexpected diagnostic: %#v", diagnostic)
+	}
+	if result.Metrics.ResolvedCalls != 0 || result.Metrics.UnresolvedReferences != 1 {
+		t.Fatalf("unexpected metrics: %#v", result.Metrics)
+	}
+}
+
+func TestResolveBareGoCallDoesNotFallbackToCrossLanguageMethod(t *testing.T) {
+	moduleScope := "scope:backend/cmd/rms-backend/main.go#1:0-8:1:Module"
+	functionScope := "scope:backend/cmd/rms-backend/main.go#3:0-8:1:Function"
+	mainDef := scopeir.DefinitionFact{
+		ID:            "def:backend/cmd/rms-backend/main.go#3:0:Function:main",
+		FilePath:      "backend/cmd/rms-backend/main.go",
+		Name:          "main",
+		Label:         scopeir.NodeFunction,
+		QualifiedName: "main",
+		Range:         scopeir.Range{StartLine: 3, EndLine: 8},
+	}
+	goIR := scopeir.ScopeIR{
+		FilePath:    "backend/cmd/rms-backend/main.go",
+		FileHash:    "hash-main",
+		Language:    scanner.Go,
+		ModuleScope: moduleScope,
+		Scopes: []scopeir.ScopeFact{
+			{ID: moduleScope, Kind: scopeir.ScopeModule, FilePath: "backend/cmd/rms-backend/main.go", Range: scopeir.Range{StartLine: 1, EndLine: 8}},
+			{ID: functionScope, Parent: &[]string{moduleScope}[0], Kind: scopeir.ScopeFunction, FilePath: "backend/cmd/rms-backend/main.go", Range: scopeir.Range{StartLine: 3, EndLine: 8}, OwnedDefIDs: []string{mainDef.ID}, Bindings: []scopeir.BindingFact{{Name: "main", DefID: mainDef.ID, Origin: scopeir.BindingLocal}}},
+		},
+		Definitions: []scopeir.DefinitionFact{mainDef},
+		Calls: []scopeir.CallSiteFact{
+			{FilePath: "backend/cmd/rms-backend/main.go", FileHash: "hash-main", Name: "stop", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 6, StartCol: 2}},
+		},
+	}
+	listenerClass := scopeir.DefinitionFact{
+		ID:            "def:electron/main/sync/sse-listener.ts#1:0:Class:SSEListener",
+		FilePath:      "electron/main/sync/sse-listener.ts",
+		Name:          "SSEListener",
+		Label:         scopeir.NodeClass,
+		QualifiedName: "SSEListener",
+		Range:         scopeir.Range{StartLine: 1, EndLine: 8},
+	}
+	stopMethod := scopeir.DefinitionFact{
+		ID:             "def:electron/main/sync/sse-listener.ts#4:2:Method:SSEListener.stop",
+		FilePath:       "electron/main/sync/sse-listener.ts",
+		Name:           "stop",
+		Label:          scopeir.NodeMethod,
+		QualifiedName:  "SSEListener.stop",
+		OwnerID:        listenerClass.ID,
+		Range:          scopeir.Range{StartLine: 4, StartCol: 2, EndLine: 6, EndCol: 3},
+		ParameterCount: intPtr(0),
+	}
+	tsIR := scopeir.ScopeIR{
+		FilePath: "electron/main/sync/sse-listener.ts",
+		Language: scanner.TypeScript,
+		Definitions: []scopeir.DefinitionFact{
+			listenerClass,
+			stopMethod,
+		},
+	}
+
+	result, err := Resolve([]scopeir.ScopeIR{goIR, tsIR}, Options{})
+	if err != nil {
+		t.Fatalf("resolve failed: %v", err)
+	}
+	mainNode := requireNode(t, result.Graph, "Function", "backend/cmd/rms-backend/main.go", "main")
+	stopNode := requireNode(t, result.Graph, "Method", "electron/main/sync/sse-listener.ts", "SSEListener.stop")
+	requireNoRelationship(t, result.Graph, graph.RelCalls, mainNode.ID, stopNode.ID)
+	diagnostics, ok := mainNode.Properties[graphhealth.DiagnosticPropertyKey].([]graphhealth.Diagnostic)
+	if !ok || len(diagnostics) != 1 {
+		t.Fatalf("source diagnostics = %#v", mainNode.Properties[graphhealth.DiagnosticPropertyKey])
+	}
+	diagnostic := diagnostics[0]
+	if diagnostic.FactFamily != "call" ||
+		diagnostic.TargetText != "stop" ||
+		diagnostic.Note != "call target matched low-confidence global fallback only" ||
+		diagnostic.SourceNodeID != mainNode.ID ||
+		diagnostic.Count != 1 {
+		t.Fatalf("unexpected diagnostic: %#v", diagnostic)
+	}
+	if result.Metrics.ResolvedCalls != 0 || result.Metrics.UnresolvedReferences != 1 {
 		t.Fatalf("unexpected metrics: %#v", result.Metrics)
 	}
 }

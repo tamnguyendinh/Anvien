@@ -136,9 +136,10 @@ func resolveCall(w *workspace, e *emitter, call scopeir.CallSiteFact) {
 	}
 	var target defRef
 	confidence := 1.0
+	lowConfidenceFallback := false
 	switch call.CallForm {
 	case scopeir.CallConstructor:
-		target, ok = w.resolveName(call.Name, call.InScope, dispatchOwnerLabels())
+		target, ok = w.resolveScopedName(call.Name, call.InScope, dispatchOwnerLabels())
 		if !ok {
 			target, ok = w.resolveSameFileName(call.FilePath, call.Name, dispatchOwnerLabels())
 			if ok {
@@ -149,6 +150,7 @@ func resolveCall(w *workspace, e *emitter, call scopeir.CallSiteFact) {
 			target, ok = w.resolveGlobalCallName(call.Name, dispatchOwnerLabels(), call.Arity)
 			if ok {
 				confidence = 0.5
+				lowConfidenceFallback = true
 			}
 		}
 	case scopeir.CallMember:
@@ -163,10 +165,11 @@ func resolveCall(w *workspace, e *emitter, call scopeir.CallSiteFact) {
 			target, ok = w.resolveGlobalCallName(call.Name, callableLabels(), call.Arity)
 			if ok {
 				confidence = 0.5
+				lowConfidenceFallback = true
 			}
 		}
 	default:
-		target, ok = w.resolveName(call.Name, call.InScope, callableLabels())
+		target, ok = w.resolveScopedName(call.Name, call.InScope, callableLabels())
 		if !ok {
 			target, ok = w.resolveSameFileName(call.FilePath, call.Name, callableLabels())
 			if ok {
@@ -183,11 +186,16 @@ func resolveCall(w *workspace, e *emitter, call scopeir.CallSiteFact) {
 			target, ok = w.resolveGlobalCallName(call.Name, callableLabels(), call.Arity)
 			if ok {
 				confidence = 0.5
+				lowConfidenceFallback = true
 			}
 		}
 	}
 	if !ok {
 		e.emitUnresolvedReference(source, "call", callTargetText(call), call.FilePath, call.FileHash, call.Range, "call target not resolved", true)
+		return
+	}
+	if lowConfidenceFallback {
+		e.emitUnresolvedReference(source, "call", callTargetText(call), call.FilePath, call.FileHash, call.Range, "call target matched low-confidence global fallback only", true)
 		return
 	}
 	e.emitReference(source, target, Reference{

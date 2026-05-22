@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES gate added before Phase 3
+Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback slice complete
 
 Source discussion:
 
@@ -261,6 +261,8 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 - [ ] [P2A-C] Add persisted call/access source-site inventory before resolved-edge emission is finalized. Each record must keep sourceSiteID, source node ID, source App Layer, source Functional Area when known, file path, range or line/column, source text or target text, fact family, target role when known, status, proof kind, resolution source, evidence note, and any linked resolved target ID when proof exists. The implementation must choose and document whether this is persisted as extended `graph.Relationship` metadata, SourceSite graph entities/records, or both, then propagate the chosen schema through graph JSON, LadybugDB, HTTP/API contracts, generated Web contracts, and command/query consumers that need it.
 
 - [ ] [P2A-D] Gate resolved edge emission on proof. `CALLS` must be emitted only for proven call bindings; `ACCESSES` must be emitted only for proven property/field access targets. Bare calls without local/import/receiver proof, function variables without assignment/capture proof, low-confidence `resolveGlobalCallName` results, cross-language same-name matches, import selector references that resolve to functions, and coarse file-level matches must remain source-site facts with unresolved/ambiguous/external/dynamic/unsupported status instead of becoming resolved edges. Accepted same-file, same-package, import, receiver, and member matches must carry named proof kinds so tests can assert why they became resolved edges.
+
+- [x] [P2A-D1] Remove low-confidence global/simple-name fallback as proof for resolved `CALLS`. `resolveCall` now uses scoped local/import binding before same-file and same-package proof, treats `resolveGlobalCallName` matches as unresolved source-backed diagnostics, and includes golden resolver tests proving bare Go `stop()` does not call TypeScript `SSEListener.stop`. The slice also adds PHP `use function`/`use const` import facts so PHP function calls that have import evidence stay proof-backed instead of relying on global fallback.
 
 - [ ] [P2A-E] Connect source-site inventory to ResolutionGap/UnresolvedSymbol inputs so Phase 3 consumes source-backed unresolved/ambiguous/external call/access sites rather than reconstructing gaps from already-aggregated diagnostics. The implementation must preserve existing diagnostic summaries while making source-site records the more precise source of truth for call/access resolution health.
 

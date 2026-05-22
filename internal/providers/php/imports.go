@@ -11,7 +11,7 @@ import (
 func (c *collector) emitImport(node *sitter.Node) {
 	switch node.Kind() {
 	case "namespace_use_declaration":
-		if c.isFunctionOrConstUse(node) {
+		if c.emitFunctionOrConstUseImport(node) {
 			return
 		}
 		if c.emitGroupedUseImports(node) {
@@ -61,10 +61,37 @@ func (c *collector) emitGroupedUseImports(anchor *sitter.Node) bool {
 	return emitted
 }
 
-func (c *collector) isFunctionOrConstUse(node *sitter.Node) bool {
+func (c *collector) emitFunctionOrConstUseImport(node *sitter.Node) bool {
 	text := strings.TrimSpace(c.text(node))
 	lower := strings.ToLower(text)
-	return strings.HasPrefix(lower, "use function ") || strings.HasPrefix(lower, "use const ")
+	var body string
+	switch {
+	case strings.HasPrefix(lower, "use function "):
+		body = strings.TrimSpace(text[len("use function "):])
+	case strings.HasPrefix(lower, "use const "):
+		body = strings.TrimSpace(text[len("use const "):])
+	default:
+		return false
+	}
+	body = strings.TrimSuffix(body, ";")
+	emitted := false
+	for _, part := range strings.Split(body, ",") {
+		name, alias := splitPHPUseAlias(strings.TrimSpace(part))
+		name = strings.Trim(name, "\\")
+		if name == "" {
+			continue
+		}
+		imported := basePHPName(name)
+		local := imported
+		kind := scopeir.ImportNamed
+		if alias != "" {
+			local = alias
+			kind = scopeir.ImportAlias
+		}
+		c.addImportFact(node, kind, local, imported, alias, name)
+		emitted = true
+	}
+	return emitted
 }
 
 func (c *collector) emitUseClauseImport(anchor *sitter.Node, clause *sitter.Node) {

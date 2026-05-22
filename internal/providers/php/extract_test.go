@@ -171,7 +171,7 @@ func TestResolvePHPGraphParityCounts(t *testing.T) {
 	}
 }
 
-func TestExtractPHPLegacyUseFunctionAndConstDoNotCreateClassImports(t *testing.T) {
+func TestExtractPHPLegacyUseFunctionAndConstImports(t *testing.T) {
 	ir := parseAndExtract(t, "app/Services/Calculator.php", "hash-php-use-function", []byte(`<?php
 namespace App\Services;
 
@@ -187,11 +187,8 @@ class Calculator {
 `))
 
 	requireImport(t, ir, scopeir.ImportNamed, "User", "User", `App\Models\User`)
-	for _, item := range ir.Imports {
-		if item.LocalName == "formatName" || item.LocalName == "MAX_USERS" {
-			t.Fatalf("unexpected function/const import emitted: %#v", item)
-		}
-	}
+	requireImport(t, ir, scopeir.ImportNamed, "formatName", "formatName", `App\Utils\formatName`)
+	requireImport(t, ir, scopeir.ImportNamed, "MAX_USERS", "MAX_USERS", `App\Utils\MAX_USERS`)
 }
 
 func TestResolvePHPLegacyAliasGroupedImportsAndReceiverBinding(t *testing.T) {

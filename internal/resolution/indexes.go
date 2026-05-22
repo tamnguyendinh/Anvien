@@ -484,6 +484,13 @@ func (w *workspace) resolveImportedDef(targetFile string, item scopeir.ImportFac
 }
 
 func (w *workspace) resolveName(name string, startScope string, labels []scopeir.NodeLabel) (defRef, bool) {
+	if target, ok := w.resolveScopedName(name, startScope, labels); ok {
+		return target, true
+	}
+	return w.resolveGlobalName(name, labels)
+}
+
+func (w *workspace) resolveScopedName(name string, startScope string, labels []scopeir.NodeLabel) (defRef, bool) {
 	if name == "" {
 		return defRef{}, false
 	}
@@ -498,7 +505,7 @@ func (w *workspace) resolveName(name string, startScope string, labels []scopeir
 			}
 		}
 	}
-	return w.resolveGlobalName(name, labels)
+	return defRef{}, false
 }
 
 func (w *workspace) resolveGlobalName(name string, labels []scopeir.NodeLabel) (defRef, bool) {
