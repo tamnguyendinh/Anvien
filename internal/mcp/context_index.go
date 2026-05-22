@@ -40,12 +40,14 @@ func contextNeighborhood(g *graph.Graph, node graph.Node) (map[string][]map[stri
 				if relationship.Step != nil {
 					step = *relationship.Step
 				}
-				processes = append(processes, map[string]any{
+				row := map[string]any{
 					"id":         process.ID,
 					"name":       firstResourceNodeString(process, "heuristicLabel", "label", "name"),
 					"step_index": step,
 					"step_count": resourceNodeInt(process, "stepCount"),
-				})
+				}
+				addContextNodeSemanticFields(row, process)
+				processes = append(processes, row)
 			}
 		}
 		if classLike {

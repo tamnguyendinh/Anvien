@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 remains next
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context surfaces complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -547,14 +547,14 @@ Record before P5 and after P5.
 
 ## B9 - Semantic Command Surface Metrics
 
-Status: in progress; `query` complete for P6-A.
+Status: in progress; `query` complete for P6-A; `context` complete for P6-B.
 
 Record after P6.
 
 | Command | App Layer shown | Functional Area shown | ResolutionGap shown | Resolution Health shown | Limitation noted |
 | --- | --- | --- | --- | --- | --- |
 | `query` | yes | yes | yes | yes | complete for P6-A; `semanticStatus` and stale semantic warning are included, and per-row semantic fields are emitted only from persisted graph data |
-| `context` | pending | pending | pending | pending | pending |
+| `context` | yes | yes | yes | yes | complete for P6-B; includes `semanticStatus`, stale semantic warning, semantic fields on symbol/ref/candidate/process rows, source-site proof metadata on relationship rows, `sourceResolutionGaps` for source-node gaps, and `resolutionGapSources` for selected gap entities |
 | `impact` | pending | pending | pending | pending | pending |
 | `detect-changes` | pending | pending | pending | pending | pending |
 | resolution inventory command | yes | yes | yes | yes | implemented in Phase 4; command exposes full Resolution Health inventory from persisted graph data |
@@ -658,7 +658,8 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | Fresh analyze benchmark for P6-A query output | `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p6a-query-semantic-output-final-analyze.json --benchmark-label p6a-query-semantic-output-final` | passed | graph nodes 82935 and relationships 113953 after query ranking/output changes |
 | Query-health after P6-A query output | `.\avmatrix-launcher\server-bundle\avmatrix.exe query-health --suite .\docs\query-health\2026-05-22-avmatrix-app-layer-resolution-gap-suite.json --repo AVmatrix --out .\.tmp\2026-05-22-p6a-query-health-final.json --limit 10` | passed | 7 cases, 7 passed, 0 failed |
 | AVmatrix detect-changes for P6-A query output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 17, changed_count 432, changed_files 5, risk_level critical; affected surfaces match queryTool, rankedProcessMatches, matchingDefinitionRows, and related query retrieval flows |
-| `context` semantic output | pending | pending | pending |
+| `context` semantic output | `.\avmatrix-launcher\server-bundle\avmatrix.exe context --repo AVmatrix --uid "Function:internal/mcp/context.go:contextSymbolPayload#2"` and `.\avmatrix-launcher\server-bundle\avmatrix.exe context --repo AVmatrix --uid "ResolutionGap:SourceSite:internal/mcp/context.go#call#any#197#12#204#2"` | passed | output artifacts `.tmp\2026-05-22-p6b-context-symbol-output.txt` and `.tmp\2026-05-22-p6b-context-resolution-gap-output.txt` show semanticStatus, App Layer, Functional Area, source-site proof/status fields, sourceResolutionGaps, and separate ResolutionGap entity/source rows |
+| AVmatrix detect-changes for P6-B context output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 26, changed_count 87, changed_files 5, risk_level critical; affected surfaces match contextToolInternal, contextSymbolPayload, contextRefPayload, contextNeighborhood, semantic helper rows, and context candidate output flows |
 | `impact` semantic output | pending | pending | pending |
 | `detect-changes` semantic output | pending | pending | pending |
 | API-specific MCP semantic output | pending | pending | pending |

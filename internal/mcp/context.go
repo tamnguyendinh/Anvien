@@ -8,6 +8,7 @@ import (
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
 )
 
 var contextRelationshipTypes = map[string]bool{
@@ -98,12 +99,23 @@ func (s Server) contextToolInternal(args map[string]any, collectProfile bool) (m
 	mark(&profile.NeighborhoodRead)
 	symbol := contextSymbolPayload(node, boolArg(args, "include_content", false))
 	mark(&profile.SymbolPayload)
+	semanticStatus := semantic.GraphSemanticStatus(g)
 	payload := map[string]any{
-		"status":    "found",
-		"symbol":    symbol,
-		"incoming":  incoming,
-		"outgoing":  outgoing,
-		"processes": processes,
+		"status":         "found",
+		"semanticStatus": semanticStatus,
+		"symbol":         symbol,
+		"incoming":       incoming,
+		"outgoing":       outgoing,
+		"processes":      processes,
+	}
+	if warning := querySemanticWarning(semanticStatus); warning != "" {
+		payload["semanticWarning"] = warning
+	}
+	if gaps := contextSourceResolutionGaps(g, node.ID); len(gaps) > 0 {
+		payload["sourceResolutionGaps"] = gaps
+	}
+	if sources := contextResolutionGapSources(g, node.ID); len(sources) > 0 {
+		payload["resolutionGapSources"] = sources
 	}
 	mark(&profile.Formatting)
 	return payload, profile, nil
@@ -176,6 +188,7 @@ func contextCandidatePayloads(candidates []contextCandidate) []map[string]any {
 			"line":     resourceNodeInt(node, "startLine"),
 			"score":    candidate.Score,
 		})
+		addContextNodeSemanticFields(out[len(out)-1], node)
 	}
 	return out
 }
@@ -189,6 +202,8 @@ func contextSymbolPayload(node graph.Node, includeContent bool) map[string]any {
 		"startLine": resourceNodeInt(node, "startLine"),
 		"endLine":   resourceNodeInt(node, "endLine"),
 	}
+	addContextNodeSemanticFields(payload, node)
+	addContextResolutionGapEntityFields(payload, node)
 	if includeContent {
 		if content := resourceNodeString(node, "content"); content != "" {
 			payload["content"] = content
@@ -348,6 +363,8 @@ func contextRefPayload(node graph.Node, relationship graph.Relationship) map[str
 		"filePath": resourceNodeString(node, "filePath"),
 		"kind":     string(node.Label),
 	}
+	addContextNodeSemanticFields(payload, node)
+	addContextResolutionGapEntityFields(payload, node)
 	if relationship.Confidence != 0 {
 		payload["confidence"] = relationship.Confidence
 	}
@@ -360,10 +377,170 @@ func contextRefPayload(node graph.Node, relationship graph.Relationship) map[str
 	if relationship.FileHash != "" {
 		payload["fileHash"] = relationship.FileHash
 	}
+	if relationship.SourceSiteID != "" {
+		payload["sourceSiteId"] = relationship.SourceSiteID
+	}
+	if len(relationship.SourceSiteIDs) > 0 {
+		payload["sourceSiteIds"] = relationship.SourceSiteIDs
+	}
+	if relationship.SourceSiteCount > 0 {
+		payload["sourceSiteCount"] = relationship.SourceSiteCount
+	}
+	if relationship.SourceSiteStatus != "" {
+		payload["sourceSiteStatus"] = relationship.SourceSiteStatus
+	}
+	if relationship.ProofKind != "" {
+		payload["proofKind"] = relationship.ProofKind
+	}
+	if relationship.TargetRole != "" {
+		payload["targetRole"] = relationship.TargetRole
+	}
+	if relationship.TargetText != "" {
+		payload["targetText"] = relationship.TargetText
+	}
+	if relationship.FilePath != "" {
+		payload["relationshipFilePath"] = relationship.FilePath
+	}
+	if relationship.StartLine != 0 {
+		payload["relationshipStartLine"] = relationship.StartLine
+	}
+	if relationship.StartCol != 0 {
+		payload["relationshipStartCol"] = relationship.StartCol
+	}
+	if relationship.EndLine != 0 {
+		payload["relationshipEndLine"] = relationship.EndLine
+	}
+	if relationship.EndCol != 0 {
+		payload["relationshipEndCol"] = relationship.EndCol
+	}
 	if len(relationship.Evidence) > 0 {
 		payload["evidence"] = relationship.Evidence
 	}
 	return payload
+}
+
+func addContextNodeSemanticFields(payload map[string]any, node graph.Node) {
+	payload["type"] = string(node.Label)
+	copyContextStringNodeField(payload, node, "appLayer")
+	copyContextStringNodeField(payload, node, "appLayerSource")
+	copyContextStringNodeField(payload, node, "functionalArea")
+	copyContextStringNodeField(payload, node, "functionalAreaSource")
+	copyContextStringNodeField(payload, node, "topologyStatus")
+	copyContextStringNodeField(payload, node, "resolutionConfidence")
+	if value := resourceNodeInt(node, "resolutionGapCount"); value > 0 {
+		payload["resolutionGapCount"] = value
+	}
+	copyContextRawNodeField(payload, node, "resolutionHealthBuckets")
+}
+
+func addContextResolutionGapEntityFields(payload map[string]any, node graph.Node) {
+	if node.Label != scopeir.NodeResolutionGap {
+		return
+	}
+	payload["resolutionGapEntity"] = true
+	payload["resolvedTarget"] = false
+	payload["resolutionRelation"] = "resolution_gap_entity"
+	for _, key := range []string{
+		"gapKind",
+		"sourceSiteId",
+		"sourceNodeId",
+		"sourceNodeLabel",
+		"sourceAppLayer",
+		"sourceFunctionalArea",
+		"factFamily",
+		"targetText",
+		"targetRole",
+		"sourceSiteStatus",
+		"proofKind",
+		"classification",
+		"actionability",
+		"resolutionSource",
+		"source",
+		"fileHash",
+		"note",
+	} {
+		copyContextStringNodeField(payload, node, key)
+	}
+	for _, key := range []string{"startLine", "startCol", "endLine", "endCol", "count"} {
+		if value := resourceNodeInt(node, key); value > 0 {
+			payload[key] = value
+		}
+	}
+}
+
+func contextSourceResolutionGaps(g *graph.Graph, sourceID string) []map[string]any {
+	nodeByID := resourceGraphNodesByID(g)
+	rows := make([]map[string]any, 0)
+	for _, relationship := range g.Relationships {
+		if relationship.Type != graph.RelHasResolutionGap || relationship.SourceID != sourceID {
+			continue
+		}
+		gap, ok := nodeByID[relationship.TargetID]
+		if !ok || gap.Label != scopeir.NodeResolutionGap {
+			continue
+		}
+		row := contextRefPayload(gap, relationship)
+		row["relationshipType"] = string(graph.RelHasResolutionGap)
+		row["resolutionRelation"] = "source_node_gap"
+		row["resolvedTarget"] = false
+		if row["count"] == nil {
+			if relationship.SourceSiteCount > 0 {
+				row["count"] = relationship.SourceSiteCount
+			}
+		}
+		rows = append(rows, row)
+	}
+	sortContextRows(rows)
+	return rows
+}
+
+func contextResolutionGapSources(g *graph.Graph, gapID string) []map[string]any {
+	nodeByID := resourceGraphNodesByID(g)
+	rows := make([]map[string]any, 0)
+	for _, relationship := range g.Relationships {
+		if relationship.Type != graph.RelHasResolutionGap || relationship.TargetID != gapID {
+			continue
+		}
+		source, ok := nodeByID[relationship.SourceID]
+		if !ok {
+			continue
+		}
+		row := contextRefPayload(source, relationship)
+		row["relationshipType"] = string(graph.RelHasResolutionGap)
+		row["resolutionRelation"] = "gap_source_node"
+		row["resolvedSourceNode"] = true
+		rows = append(rows, row)
+	}
+	sortContextRows(rows)
+	return rows
+}
+
+func copyContextStringNodeField(payload map[string]any, node graph.Node, key string) {
+	if value := resourceNodeString(node, key); value != "" {
+		payload[key] = value
+	}
+}
+
+func copyContextRawNodeField(payload map[string]any, node graph.Node, key string) {
+	if node.Properties == nil {
+		return
+	}
+	if value, ok := node.Properties[key]; ok && value != nil {
+		payload[key] = value
+	}
+}
+
+func sortContextRows(rows []map[string]any) {
+	sort.Slice(rows, func(i, j int) bool {
+		left, right := rows[i], rows[j]
+		if fmt.Sprint(left["filePath"]) != fmt.Sprint(right["filePath"]) {
+			return fmt.Sprint(left["filePath"]) < fmt.Sprint(right["filePath"])
+		}
+		if fmt.Sprint(left["startLine"]) != fmt.Sprint(right["startLine"]) {
+			return fmt.Sprint(left["startLine"]) < fmt.Sprint(right["startLine"])
+		}
+		return fmt.Sprint(left["uid"]) < fmt.Sprint(right["uid"])
+	})
 }
 
 func contextProcessParticipation(g *graph.Graph, symbolID string) []map[string]any {

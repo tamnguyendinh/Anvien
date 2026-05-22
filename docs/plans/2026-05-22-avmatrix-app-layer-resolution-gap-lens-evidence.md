@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 remains next
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context surfaces complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -727,7 +727,7 @@ Validation evidence:
 
 ## E11 - Semantic Command Surface Evidence
 
-Status: in progress; `query` surface complete for P6-A.
+Status: in progress; `query` surface complete for P6-A; `context` surface complete for P6-B.
 
 Record during P6.
 
@@ -802,6 +802,62 @@ summary: affected_count=17, changed_count=432, changed_files=5, risk_level=criti
 ```
 
 The critical scope is expected for this slice because it intentionally changes the shared `queryTool`, `rankedProcessMatches`, and `matchingDefinitionRows` retrieval/output path and adds tests plus plan ledgers. The affected processes reported by AVmatrix are query-tool and matching/ranking flows such as `QueryTool -> MinInt`, `RankedProcessMatches -> QueryTokenStem`, and `MatchingDefinitionRows -> MinInt`.
+
+### P6-B - `context` Semantic Output Evidence
+
+Status: complete for `context`.
+
+Changed behavior:
+
+- `context` output now includes graph-level `semanticStatus` and `semanticWarning` when App Layer or Functional Area metadata is stale/incomplete.
+- `symbol`, ambiguous `candidates`, incoming/outgoing reference rows, and process rows expose `type`, `appLayer`, `appLayerSource`, `functionalArea`, `functionalAreaSource`, `topologyStatus`, `resolutionConfidence`, `resolutionGapCount`, and `resolutionHealthBuckets` when persisted graph data provides them.
+- Relationship rows now include source-site proof/status metadata such as `sourceSiteId`, `sourceSiteIds`, `sourceSiteCount`, `sourceSiteStatus`, `proofKind`, `targetRole`, `targetText`, relationship file/range, confidence, reason, and resolution source.
+- Source-node gaps are exposed in `sourceResolutionGaps` with `resolutionRelation=source_node_gap` and `resolvedTarget=false`.
+- When the selected node is a `ResolutionGap`, the symbol row is marked with `resolutionGapEntity=true`, `resolvedTarget=false`, and `resolutionRelation=resolution_gap_entity`; the real source nodes are exposed separately in `resolutionGapSources` with `resolutionRelation=gap_source_node`.
+
+Focused test evidence:
+
+```text
+powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1
+go test .\internal\mcp .\internal\cli
+go test .\internal\mcp -run "TestContextTool(ReturnsSemanticFieldsAndSourceResolutionGaps|DistinguishesResolutionGapEntityFromSourceNode|WarnsForStaleIncompleteSemanticMetadata)$" -count=1
+```
+
+All commands passed after the P6-B implementation. New coverage in `internal/mcp/context_semantic_test.go` verifies:
+
+- fresh semantic graphs return complete `semanticStatus` and no stale warning;
+- stale/incomplete semantic graphs return a semantic warning;
+- symbol rows preserve node type, App Layer, Functional Area, topology status, resolution confidence, resolution-health buckets, and gap counts;
+- outgoing references preserve semantic fields plus source-site proof/status metadata;
+- source-node gaps and selected `ResolutionGap` entities are separate output concepts.
+
+Fresh analyze evidence after P6-B:
+
+```text
+files: scanned=750 parsed=560 unsupported=190 failed=0
+graph: nodes=83205 relationships=114335 path=E:\AVmatrix-GO\.avmatrix\graph.json
+artifact: .tmp\2026-05-22-p6b-context-semantic-output-analyze.json
+```
+
+Representative command output artifacts:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe context --repo AVmatrix --uid "Function:internal/mcp/context.go:contextSymbolPayload#2" > .\.tmp\2026-05-22-p6b-context-symbol-output.txt
+.\avmatrix-launcher\server-bundle\avmatrix.exe context --repo AVmatrix --uid "ResolutionGap:SourceSite:internal/mcp/context.go#call#any#197#12#204#2" > .\.tmp\2026-05-22-p6b-context-resolution-gap-output.txt
+```
+
+The symbol output includes complete `semanticStatus` for `83205` nodes, semantic fields on incoming/outgoing refs and process rows, relationship proof fields such as `sourceSiteStatus=resolved` and `proofKind`, and `sourceResolutionGaps` entries with `resolutionRelation=source_node_gap` and `resolvedTarget=false`.
+
+The ResolutionGap output includes `resolutionGapEntity=true`, `resolvedTarget=false`, `sourceNodeId`, `targetText`, `semanticStatus`, and a separate `resolutionGapSources` array whose source row uses `resolutionRelation=gap_source_node`.
+
+Pre-commit AVmatrix scope check:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all
+summary: affected_count=26, changed_count=87, changed_files=5, risk_level=critical
+```
+
+The critical scope is expected for this slice because it intentionally changes shared `context` output paths: `contextToolInternal`, `contextSymbolPayload`, `contextRefPayload`, `contextNeighborhood`, and new semantic/gap helper functions. The affected flows are context neighborhood/symbol output flows plus shared ambiguous-candidate rows also used by impact/rename disambiguation output.
 
 ## E12 - Web UI Evidence
 

@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 remains next
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context surfaces complete
 
 Source discussion:
 
@@ -352,7 +352,7 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [x] [P6-A] Update `query` retrieval and result output so matching nodes or flows can expose node type, App Layer, Functional Area, Resolution Health, and related ResolutionGap summaries when those fields are available. The MCP/CLI `query` payload now includes graph `semanticStatus`, stale semantic-data warning when App Layer or Functional Area evidence is incomplete, semantic fields on process symbols and definition rows, and per-source ResolutionGap summaries from persisted `HAS_RESOLUTION_GAP` relations. Retrieval now tokenizes/stems query text, prioritizes executable/file surfaces, skips docs/tests unless explicitly requested, diversifies definition rows by file, and uses App Layer/Functional Area surface boosts for graph-health, layout, query, API, and frontend filter intents. Fresh P6-A query-health on the updated graph passed `7/7` suite cases with `.tmp\2026-05-22-p6a-query-health-final.json`.
 
-- [ ] [P6-B] Update `context` output so a symbol/node view includes node type, App Layer, Functional Area when known, topology status, resolution-health summary, and nearby/source ResolutionGaps. The output must distinguish source-node gaps from unresolved target entities.
+- [x] [P6-B] Update `context` output so a symbol/node view includes node type, App Layer, Functional Area when known, topology status, resolution-health summary, and nearby/source ResolutionGaps. `context` now returns graph-level `semanticStatus`/`semanticWarning`, semantic fields on symbol, ref, candidate, and process rows, source-site proof/status metadata on relationships, `sourceResolutionGaps` for source-node gaps, and `resolutionGapSources` for selected gap entities so unresolved target evidence is not presented as a resolved symbol.
 
 - [ ] [P6-C] Update `impact` output so blast-radius summaries include affected App Layers, affected Functional Areas, and resolution-health risks when graph evidence supports those summaries. Add command-output coverage proving high or critical risk warnings are reported as workflow safety information while inspection output remains available.
 
