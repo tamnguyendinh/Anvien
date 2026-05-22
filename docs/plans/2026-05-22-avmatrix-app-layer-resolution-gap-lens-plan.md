@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, and source-site accuracy command graph-inventory slices complete
+Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, and File-source CALLS gate slices complete
 
 Source discussion:
 
@@ -266,6 +266,8 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [x] [P2A-D1] Remove low-confidence global/simple-name fallback as proof for resolved `CALLS`. `resolveCall` now uses scoped local/import binding before same-file and same-package proof, treats `resolveGlobalCallName` matches as unresolved source-backed diagnostics, and includes golden resolver tests proving bare Go `stop()` does not call TypeScript `SSEListener.stop`. The slice also adds PHP `use function`/`use const` import facts so PHP function calls that have import evidence stay proof-backed instead of relying on global fallback.
 
+- [x] [P2A-D2] Gate file-level call sources out of resolved `CALLS`. A call site whose source owner is only the `File` node is now preserved as a source-site diagnostic with `sourceSiteStatus=unsupported_syntax` and note `call source is file-level; resolved edge not emitted`, instead of becoming a coarse `File -> Function` topology edge. This keeps source-site inventory without claiming a symbol-level caller that the analyzer did not prove.
+
 - [ ] [P2A-E] Connect source-site inventory to ResolutionGap/UnresolvedSymbol inputs so Phase 3 consumes source-backed unresolved/ambiguous/external call/access sites rather than reconstructing gaps from already-aggregated diagnostics. The implementation must preserve existing diagnostic summaries while making source-site records the more precise source of truth for call/access resolution health.
 
 - [ ] [P2A-F] Add a golden accuracy corpus for CALLS and ACCESSES with positive and negative expectations. Required cases include a proven property access, a proven method/function call, a selector call that must not become ACCESSES, the Go `stop()` local-binding false-positive class that must not call `SSEListener.stop`, local function variables, closures, imports, external/builtin calls, TypeScript/React method ownership, provider-level `CallSiteFact` and `AccessFact` preservation, duplicate-edge prevention with exact source-site occurrence counts, and at least one coarse File-source edge case that must not be accepted as symbol-level proof.
@@ -283,6 +285,8 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 - [ ] [P2A-J] Add backend tests, contract tests, command/API visibility tests, and benchmark/evidence ledger entries for the proof-based CALLS/ACCESSES slice. Run the full build before tests, include focused resolver/source-site tests and wider graph tests, then record validation and AVmatrix detect-changes before committing the slice.
 
 - [x] [P2A-J1] Add backend and CLI command tests for the graph-inventory source-site accuracy command. The tests cover JSON command output, source-site relationship and diagnostic counts, merged source-site occurrence evidence, low-confidence fallback diagnostics, strict ACCESSES target labeling, duplicate source-target pairs, and graph-policy violation candidate reporting. Validation for this slice uses full build first, then focused `internal/graphaccuracy` and `internal/cli` tests plus wider `internal/...` and `cmd/...` tests.
+
+- [x] [P2A-J2] Add resolver test coverage for the file-source CALLS gate and re-run the source-site accuracy report on a fresh graph. The report must show `coarseFileCallEdges=0`, `falseResolvedEdgeCandidates=0`, no resolved edges without proof, no resolved edges without sourceSiteID, no low-confidence fallback resolved edges, and no non-property ACCESSES targets.
 
 ## Phase 3 - Persisted ResolutionGap And UnresolvedSymbol Model
 

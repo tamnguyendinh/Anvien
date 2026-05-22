@@ -24,6 +24,8 @@ const (
 	targetRoleCallable = "callable"
 	targetRoleMember   = "member"
 	targetRoleType     = "type"
+
+	unresolvedNoteCallSourceFileLevel = "call source is file-level; resolved edge not emitted"
 )
 
 func sourceSiteID(factFamily string, filePath string, targetText string, factRange scopeir.Range) string {

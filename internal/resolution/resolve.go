@@ -134,6 +134,10 @@ func resolveCall(w *workspace, e *emitter, call scopeir.CallSiteFact) {
 		e.emitUnresolvedReference(defRef{}, "call", callTargetText(call), call.FilePath, call.FileHash, call.Range, "source scope not resolved", true)
 		return
 	}
+	if source.Fact.Label == scopeir.NodeFile {
+		e.emitUnresolvedReference(source, "call", callTargetText(call), call.FilePath, call.FileHash, call.Range, unresolvedNoteCallSourceFileLevel, true)
+		return
+	}
 	var target defRef
 	confidence := 1.0
 	proofKind := ""

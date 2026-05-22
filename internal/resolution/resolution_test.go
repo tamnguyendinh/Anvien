@@ -635,7 +635,7 @@ func TestUniqueDefsFastPathKeepsFirstCandidate(t *testing.T) {
 	}
 }
 
-func TestResolveFallsBackToSameFileCallTargetAndFileCaller(t *testing.T) {
+func TestResolveDoesNotEmitResolvedCallFromFileCaller(t *testing.T) {
 	moduleScope := "scope:src/app.ts#1:0-3:1:Module"
 	targetDef := scopeir.DefinitionFact{
 		ID:            "def:src/app.ts#4:0:Function:target",
@@ -680,11 +680,22 @@ func TestResolveFallsBackToSameFileCallTargetAndFileCaller(t *testing.T) {
 	if err != nil {
 		t.Fatalf("resolve failed: %v", err)
 	}
-	relationship := requireRelationship(t, result.Graph, graph.RelCalls, "File:src/app.ts", "Function:src/app.ts:target")
-	if relationship.Confidence != 0.95 {
-		t.Fatalf("same-file fallback confidence = %v, want 0.95", relationship.Confidence)
+	requireNoRelationship(t, result.Graph, graph.RelCalls, "File:src/app.ts", "Function:src/app.ts:target")
+	fileNode, ok := result.Graph.GetNode("File:src/app.ts")
+	if !ok {
+		t.Fatalf("source file node missing")
 	}
-	if result.Metrics.ResolvedCalls != 1 || result.Metrics.UnresolvedReferences != 0 {
+	diagnostics, ok := fileNode.Properties[graphhealth.DiagnosticPropertyKey].([]graphhealth.Diagnostic)
+	if !ok || len(diagnostics) != 1 {
+		t.Fatalf("file diagnostics = %#v", fileNode.Properties[graphhealth.DiagnosticPropertyKey])
+	}
+	diagnostic := diagnostics[0]
+	if diagnostic.TargetText != "target" ||
+		diagnostic.SourceSiteStatus != sourceSiteStatusUnsupportedSyntax ||
+		diagnostic.Note != unresolvedNoteCallSourceFileLevel {
+		t.Fatalf("unexpected file-source call diagnostic: %#v", diagnostic)
+	}
+	if result.Metrics.ResolvedCalls != 0 || result.Metrics.UnresolvedReferences != 1 {
 		t.Fatalf("unexpected metrics: %#v", result.Metrics)
 	}
 }

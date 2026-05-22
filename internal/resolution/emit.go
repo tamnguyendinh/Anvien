@@ -100,7 +100,7 @@ func (e *emitter) emitUnresolvedReference(source defRef, factFamily string, targ
 	if source.GraphID == "" {
 		status = sourceSiteStatusUnknown
 	}
-	if note == "heritage target text not modeled" {
+	if note == "heritage target text not modeled" || note == unresolvedNoteCallSourceFileLevel {
 		status = sourceSiteStatusUnsupportedSyntax
 	}
 	proofKind := proofKindNone

@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, and source-site accuracy command graph-inventory slices complete
+Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, and File-source CALLS gate slices complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -244,7 +244,7 @@ Implemented evidence:
 
 ## E7A - Proof-Based CALLS/ACCESSES Evidence
 
-Status: in progress; low-confidence global CALLS fallback, source-site metadata persistence, and source-site accuracy command graph-inventory slices complete
+Status: in progress; low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command graph-inventory, and File-source CALLS gate slices complete
 
 Record during Phase 2A.
 
@@ -307,6 +307,16 @@ Implemented evidence for the source-site accuracy command graph-inventory slice:
 - Validation evidence for this slice: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; focused tests passed with `go test .\internal\graphaccuracy` and `go test .\internal\cli`; wider backend validation passed with `go test .\internal\... .\cmd\...`.
 - AVmatrix change detection before commit used fresh `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force` followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `35`, changed_files `6`, affected_count `11`, and risk_level `high`. The high scope is expected because this slice adds a packaged root CLI command and extends graphaccuracy graph relationship decoding/reporting.
 - No visible Web UI behavior changed in this slice, so Web e2e was not required.
+
+Implemented evidence for the File-source CALLS gate slice:
+
+- `internal/resolution/resolve.go` now checks resolved call sources before target resolution. If the only caller owner is a `File` node, the resolver does not emit a resolved `CALLS` edge.
+- The file-level call site is preserved as a source-backed unresolved/reference diagnostic with `sourceSiteStatus=unsupported_syntax`, target role `callable`, and note `call source is file-level; resolved edge not emitted`. This keeps the source-site inventory while avoiding a fake symbol-level topology edge.
+- `internal/resolution/emit.go` maps that note to `unsupported_syntax`, and `internal/resolution/source_site.go` centralizes the note string.
+- `TestResolveDoesNotEmitResolvedCallFromFileCaller` proves a module-scope call to a same-file function no longer emits `File:src/app.ts -> Function:src/app.ts:target` and still preserves the source-site diagnostic on the file node.
+- Fresh local build/analyze/report command after the gate: `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force` produced scanned `736`, parsed `547`, unsupported `189`, failed `0`, graph nodes `22635`, graph relationships `52144`; `.\avmatrix-launcher\server-bundle\avmatrix.exe source-site-accuracy --graph .avmatrix\graph.json --out .tmp\2026-05-22-source-site-accuracy-after-file-source-call-gate.json --max-examples 20` produced `policy.falseResolvedEdgeCandidates=0`, `coarseFileCallEdges=0`, resolved edges without proof `0`, resolved edges without sourceSiteID `0`, low-confidence fallback resolved edges `0`, and non-property ACCESSES targets `0`.
+- Validation evidence for this slice: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; focused tests passed with `go test .\internal\resolution` and `go test .\internal\graphaccuracy`; wider backend validation passed with `go test .\internal\... .\cmd\...`.
+- AVmatrix change detection before commit used fresh `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force` followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `15`, changed_files `7`, affected_count `0`, and risk_level `low`.
 
 ## E8 - ResolutionGap Persistence Evidence
 
