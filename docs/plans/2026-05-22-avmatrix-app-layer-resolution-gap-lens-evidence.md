@@ -727,7 +727,7 @@ Validation evidence:
 
 ## E11 - Semantic Command Surface Evidence
 
-Status: in progress; `query` surface complete for P6-A; `context` surface complete for P6-B; `impact` surface complete for P6-C.
+Status: in progress; `query` surface complete for P6-A; `context` surface complete for P6-B; `impact` surface complete for P6-C; `detect-changes` surface complete for P6-D.
 
 Record during P6.
 
@@ -915,6 +915,62 @@ summary: affected_count=9, changed_count=127, changed_files=4, risk_level=high
 ```
 
 The high scope is expected for this slice because it intentionally changes the shared `impact` output path: `runImpactBFSProfiled`, `impactItemPayload`, `impactAffectedProcesses`, `impactAffectedModules`, and semantic summary helpers. The affected flows are impact output flows and shared resource helpers used to render impacted symbols, process rows, and module rows.
+
+### P6-D - `detect-changes` Semantic Output Evidence
+
+Status: complete for `detect-changes`.
+
+Changed behavior:
+
+- `detect-changes` output now includes graph-level `semanticStatus` and `semanticWarning` when semantic metadata is stale/incomplete.
+- changed symbol rows now include persisted `type`, `appLayer`, `appLayerSource`, `functionalArea`, `functionalAreaSource`, `topologyStatus`, `resolutionConfidence`, `resolutionGapCount`, and `resolutionHealthBuckets` when graph data provides them.
+- changed `ResolutionGap` entity rows include `resolutionGapEntity=true`, `resolvedTarget=false`, source node/layer/area fields, `gapKind`, `factFamily`, `targetText`, `targetRole`, `sourceSiteStatus`, `proofKind`, `classification`, `actionability`, range, count, and note fields from persisted graph data.
+- affected process rows now include persisted semantic fields plus `changedStepAppLayers`, `changedStepFunctionalAreas`, changed-step semantic fields, and per-process `resolutionHealthImpact` when changed steps carry gap/degraded evidence.
+- top-level and summary output now include `changedAppLayers`, `changedFunctionalAreas`, `affectedAppLayers`, `affectedFunctionalAreas`, `resolutionGapChanges`, and `resolutionHealthImpact` from persisted graph evidence.
+
+Focused test evidence:
+
+```text
+powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1
+go test .\internal\mcp .\internal\cli
+go test .\internal\mcp -run "TestDetectChangesToolReturnsSemanticSummaries|TestServeCallToolDetectChanges|TestServeCallToolDetectChangesReportsDeletedSymbols" -count=1
+```
+
+All commands passed after the P6-D implementation. New coverage in `internal/mcp/detect_changes_semantic_test.go` verifies:
+
+- changed App Layer and Functional Area counts are emitted from changed rows;
+- affected App Layer and Functional Area counts are emitted from affected process rows;
+- changed `ResolutionGap` rows preserve target text, actionability, and entity marker fields;
+- source changed rows preserve Resolution Health fields;
+- `resolutionGapChanges` counts changed gap entities, gap occurrence counts, source nodes with gaps, source resolution gap counts, and top targets;
+- `resolutionHealthImpact` counts degraded nodes, nodes with gaps, total gap count, and Resolution Health buckets;
+- affected process rows expose semantic fields and changed-step App Layer summaries.
+
+Fresh analyze evidence after P6-D:
+
+```text
+files: scanned=752 parsed=562 unsupported=190 failed=0
+graph: nodes=83783 relationships=115138 path=E:\AVmatrix-GO\.avmatrix\graph.json
+artifact: .tmp\2026-05-22-p6d-detect-semantic-output-analyze.json
+```
+
+Representative command output artifact:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all > .\.tmp\2026-05-22-p6d-detect-changes-semantic-output.txt
+```
+
+The command output includes `semanticStatus`, `changedAppLayers`, `changedFunctionalAreas`, `affectedAppLayers`, `affectedFunctionalAreas`, `changedStepAppLayers`, `resolutionGapEntity`, `resolutionGapChanges`, and `resolutionHealthImpact`. On the implementation-only P6-D diff before ledger updates it reported `changed_count=156`, `affected_count=15`, `changed_files=1`, `risk_level=high`, `changed_app_layers.api=156`, `affected_app_layers.api=15`, `changedGapEntities=94`, and `changedGapOccurrenceCount=95`.
+
+Pre-commit AVmatrix scope check:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all
+summary: affected_count=15, changed_count=164, changed_files=4, risk_level=high
+artifact: .tmp\2026-05-22-p6d-detect-changes-precommit-output.txt
+```
+
+The high scope is expected for this slice because it intentionally changes the shared `detect-changes` output path: `detectChangesTool`, `detectChangedSymbols`, `detectAffectedProcesses`, and new semantic summary helpers. The final pre-commit diff also includes the plan, evidence, and benchmark ledger updates. The affected flows are detect-changes output flows and shared semantic helper paths used to render changed symbols, affected process rows, changed-step summaries, ResolutionGap changes, and Resolution Health impact.
 
 ## E12 - Web UI Evidence
 

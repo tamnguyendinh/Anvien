@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context/impact surfaces complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context/impact/detect-changes surfaces complete
 
 Source discussion:
 
@@ -356,7 +356,7 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [x] [P6-C] Update `impact` output so blast-radius summaries include affected App Layers, affected Functional Areas, and resolution-health risks when graph evidence supports those summaries. `impact` now emits graph-level `semanticStatus`, semantic fields on target and impacted rows, affected App Layer/Functional Area count maps, `resolutionHealthRisks`, semantic process/module rows, source-site proof/status metadata, and `workflowWarningBlocksOutput=false` for HIGH/CRITICAL blast-radius warnings so inspection output remains available.
 
-- [ ] [P6-D] Update `detect-changes` output so changed symbols and affected flows summarize App Layers, Functional Areas, ResolutionGap changes, and resolution-health impact. This command remains the pre-commit graph-diff check required by repository rules.
+- [x] [P6-D] Update `detect-changes` output so changed symbols and affected flows summarize App Layers, Functional Areas, ResolutionGap changes, and resolution-health impact. `detect-changes` now emits graph-level `semanticStatus`, stale semantic warnings when applicable, semantic fields on changed symbols and affected process rows, changed/affected App Layer and Functional Area count maps, ResolutionGap change summaries including gap entities, occurrence counts, target roles, classifications, actionability, and top targets, plus Resolution Health impact summaries when changed symbols or changed process steps carry gap/degraded evidence.
 
 - [ ] [P6-E] Update API-specific MCP tools such as `route_map`, `shape_check`, and `api_impact` to surface App Layer, Functional Area, and Resolution Health where the persisted graph provides those fields. If a specific API tool cannot use the new semantic layer in this plan, record the exact limitation and follow-up in evidence.
 

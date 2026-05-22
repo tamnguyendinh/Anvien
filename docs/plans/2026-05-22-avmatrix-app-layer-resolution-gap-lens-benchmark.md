@@ -547,7 +547,7 @@ Record before P5 and after P5.
 
 ## B9 - Semantic Command Surface Metrics
 
-Status: in progress; `query` complete for P6-A; `context` complete for P6-B; `impact` complete for P6-C.
+Status: in progress; `query` complete for P6-A; `context` complete for P6-B; `impact` complete for P6-C; `detect-changes` complete for P6-D.
 
 Record after P6.
 
@@ -556,7 +556,7 @@ Record after P6.
 | `query` | yes | yes | yes | yes | complete for P6-A; `semanticStatus` and stale semantic warning are included, and per-row semantic fields are emitted only from persisted graph data |
 | `context` | yes | yes | yes | yes | complete for P6-B; includes `semanticStatus`, stale semantic warning, semantic fields on symbol/ref/candidate/process rows, source-site proof metadata on relationship rows, `sourceResolutionGaps` for source-node gaps, and `resolutionGapSources` for selected gap entities |
 | `impact` | yes | yes | yes | yes | complete for P6-C; includes semanticStatus, affected App Layer/Functional Area counts, resolutionHealthRisks, semantic fields on target/impacted/process/module rows, source-site proof metadata, and non-blocking workflow warning for HIGH/CRITICAL risk |
-| `detect-changes` | pending | pending | pending | pending | pending |
+| `detect-changes` | yes | yes | yes | yes | complete for P6-D; includes semanticStatus, changed/affected App Layer and Functional Area counts, semantic fields on changed symbols/processes/steps, ResolutionGap change summaries, and Resolution Health impact summaries when changed rows carry gap/degraded evidence |
 | resolution inventory command | yes | yes | yes | yes | implemented in Phase 4; command exposes full Resolution Health inventory from persisted graph data |
 | query-health command | yes | yes | yes | yes | P6-A final run passed 7/7 suite cases and captures semantic fields returned by `query` |
 
@@ -662,7 +662,8 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | AVmatrix detect-changes for P6-B context output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 26, changed_count 87, changed_files 5, risk_level critical; affected surfaces match contextToolInternal, contextSymbolPayload, contextRefPayload, contextNeighborhood, semantic helper rows, and context candidate output flows |
 | `impact` semantic output | `.\avmatrix-launcher\server-bundle\avmatrix.exe impact --repo AVmatrix --uid "Function:internal/mcp/context.go:contextSymbolPayload#2" --direction upstream` and `.\avmatrix-launcher\server-bundle\avmatrix.exe impact --repo AVmatrix --uid "Function:internal/mcp/impact.go:runImpactBFSProfiled#4" --direction upstream` | passed | output artifacts `.tmp\2026-05-22-p6c-impact-context-symbol-output.txt` and `.tmp\2026-05-22-p6c-impact-critical-warning-output.txt` show affectedAppLayers, affectedFunctionalAreas, resolutionHealthRisks, semantic fields, and `workflowWarningBlocksOutput=false` for CRITICAL output |
 | AVmatrix detect-changes for P6-C impact output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected high scope | affected_count 9, changed_count 127, changed_files 4, risk_level high; affected surfaces match runImpactBFSProfiled, impactItemPayload, impactAffectedProcesses, impactAffectedModules, and semantic impact summary helper output flows |
-| `detect-changes` semantic output | pending | pending | pending |
+| `detect-changes` semantic output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed | output artifact `.tmp\2026-05-22-p6d-detect-changes-semantic-output.txt` shows semanticStatus, changedAppLayers, changedFunctionalAreas, affectedAppLayers, affectedFunctionalAreas, changedStepAppLayers, resolutionGapEntity rows, resolutionGapChanges, and resolutionHealthImpact; implementation-only P6-D diff reported changed_count 156, affected_count 15, changed_files 1, risk_level high, changedGapEntities 94, and changedGapOccurrenceCount 95 |
+| AVmatrix detect-changes for P6-D detect-changes output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected high scope | after ledger updates: affected_count 15, changed_count 164, changed_files 4, risk_level high; affected surfaces match detectChangesTool, detectChangedSymbols, detectAffectedProcesses, semantic changed-symbol/process summary helpers, and plan ledgers |
 | API-specific MCP semantic output | pending | pending | pending |
 | AVmatrix detect-changes for implementation commits | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 24, changed_count 144, changed_files 18; affected surfaces match Functional Area semantic/schema/API/contract/export slice |
 

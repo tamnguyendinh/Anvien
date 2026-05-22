@@ -6,11 +6,15 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
 )
 
 var diffHunkPattern = regexp.MustCompile(`@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@`)
@@ -55,16 +59,48 @@ func (s Server) detectChangesTool(args map[string]any) (map[string]any, error) {
 	}
 	changedSymbols := detectChangedSymbols(g, fileDiffs)
 	affectedProcesses := detectAffectedProcesses(g, changedSymbols)
-	return map[string]any{
-		"summary": map[string]any{
-			"changed_count":  len(changedSymbols),
-			"affected_count": len(affectedProcesses),
-			"changed_files":  len(fileDiffs),
-			"risk_level":     detectRisk(len(affectedProcesses)),
-		},
-		"changed_symbols":    changedSymbols,
-		"affected_processes": affectedProcesses,
-	}, nil
+	semanticStatus := semantic.GraphSemanticStatus(g)
+	semanticSummary := detectChangesSemanticSummary(changedSymbols, affectedProcesses)
+	summary := map[string]any{
+		"changed_count":  len(changedSymbols),
+		"affected_count": len(affectedProcesses),
+		"changed_files":  len(fileDiffs),
+		"risk_level":     detectRisk(len(affectedProcesses)),
+	}
+	if changedAppLayers := impactCountMapResult(semanticSummary, "changedAppLayers"); len(changedAppLayers) > 0 {
+		summary["changed_app_layers"] = changedAppLayers
+	}
+	if changedAreas := impactCountMapResult(semanticSummary, "changedFunctionalAreas"); len(changedAreas) > 0 {
+		summary["changed_functional_areas"] = changedAreas
+	}
+	if affectedAppLayers := impactCountMapResult(semanticSummary, "affectedAppLayers"); len(affectedAppLayers) > 0 {
+		summary["affected_app_layers"] = affectedAppLayers
+	}
+	if affectedAreas := impactCountMapResult(semanticSummary, "affectedFunctionalAreas"); len(affectedAreas) > 0 {
+		summary["affected_functional_areas"] = affectedAreas
+	}
+	if gapChanges, ok := semanticSummary["resolutionGapChanges"].(map[string]any); ok && detectChangesResolutionGapChangesHasEvidence(gapChanges) {
+		summary["resolution_gap_changes"] = gapChanges
+	}
+	if healthImpact, ok := semanticSummary["resolutionHealthImpact"].(map[string]any); ok && detectChangesResolutionHealthImpactHasEvidence(healthImpact) {
+		summary["resolution_health_impact"] = healthImpact
+	}
+	result := map[string]any{
+		"summary":                 summary,
+		"semanticStatus":          semanticStatus,
+		"changedAppLayers":        semanticSummary["changedAppLayers"],
+		"changedFunctionalAreas":  semanticSummary["changedFunctionalAreas"],
+		"affectedAppLayers":       semanticSummary["affectedAppLayers"],
+		"affectedFunctionalAreas": semanticSummary["affectedFunctionalAreas"],
+		"resolutionGapChanges":    semanticSummary["resolutionGapChanges"],
+		"resolutionHealthImpact":  semanticSummary["resolutionHealthImpact"],
+		"changed_symbols":         changedSymbols,
+		"affected_processes":      affectedProcesses,
+	}
+	if warning := querySemanticWarning(semanticStatus); warning != "" {
+		result["semanticWarning"] = warning
+	}
+	return result, nil
 }
 
 func gitDiffForDetectChanges(entry repo.RegistryEntry, args map[string]any) (string, error) {
@@ -192,6 +228,8 @@ func detectChangedSymbols(g *graph.Graph, fileDiffs []detectFileDiff) []map[stri
 				"filePath":    resourceNodeString(node, "filePath"),
 				"change_type": changeType,
 			})
+			addContextNodeSemanticFields(out[len(out)-1], node)
+			addContextResolutionGapEntityFields(out[len(out)-1], node)
 		}
 	}
 	return out
@@ -211,8 +249,11 @@ func detectAffectedProcesses(g *graph.Graph, changedSymbols []map[string]any) []
 		return []map[string]any{}
 	}
 	changedSet := make(map[string]string, len(changedSymbols))
+	changedByID := make(map[string]map[string]any, len(changedSymbols))
 	for _, symbol := range changedSymbols {
-		changedSet[fmt.Sprint(symbol["id"])] = fmt.Sprint(symbol["name"])
+		id := fmt.Sprint(symbol["id"])
+		changedSet[id] = fmt.Sprint(symbol["name"])
+		changedByID[id] = symbol
 	}
 	nodeByID := resourceGraphNodesByID(g)
 	processes := make(map[string]map[string]any)
@@ -234,19 +275,249 @@ func detectAffectedProcesses(g *graph.Graph, changedSymbols []map[string]any) []
 				"step_count":    resourceNodeInt(process, "stepCount"),
 				"changed_steps": []map[string]any{},
 			}
+			addContextNodeSemanticFields(current, process)
 			processes[process.ID] = current
 		}
 		step := 0
 		if relationship.Step != nil {
 			step = *relationship.Step
 		}
-		current["changed_steps"] = append(current["changed_steps"].([]map[string]any), map[string]any{"symbol": symbolName, "step": step})
+		changedSymbol := changedByID[relationship.SourceID]
+		stepRow := map[string]any{"symbol": symbolName, "step": step}
+		if changedSymbol != nil {
+			stepRow["id"] = changedSymbol["id"]
+			detectCopySemanticRowFields(stepRow, changedSymbol)
+			if gapCount := impactIntValue(changedSymbol["resolutionGapCount"]); gapCount > 0 {
+				stepRow["resolutionGapCount"] = gapCount
+			}
+			if buckets := impactCountMapValue(changedSymbol["resolutionHealthBuckets"]); len(buckets) > 0 {
+				stepRow["resolutionHealthBuckets"] = buckets
+			}
+			detectIncrementCountField(current, "changedStepAppLayers", detectRowAppLayer(changedSymbol), 1)
+			detectIncrementCountField(current, "changedStepFunctionalAreas", detectRowFunctionalArea(changedSymbol), 1)
+		}
+		current["changed_steps"] = append(current["changed_steps"].([]map[string]any), stepRow)
 	}
 	out := make([]map[string]any, 0, len(processes))
 	for _, process := range processes {
+		if steps, ok := process["changed_steps"].([]map[string]any); ok {
+			if healthImpact := detectChangesResolutionHealthImpact(steps); detectChangesResolutionHealthImpactHasEvidence(healthImpact) {
+				process["resolutionHealthImpact"] = healthImpact
+			}
+		}
 		out = append(out, process)
 	}
+	sort.Slice(out, func(i, j int) bool {
+		left, right := out[i], out[j]
+		if fmt.Sprint(left["name"]) != fmt.Sprint(right["name"]) {
+			return fmt.Sprint(left["name"]) < fmt.Sprint(right["name"])
+		}
+		return fmt.Sprint(left["id"]) < fmt.Sprint(right["id"])
+	})
 	return out
+}
+
+func detectChangesSemanticSummary(changedSymbols []map[string]any, affectedProcesses []map[string]any) map[string]any {
+	return map[string]any{
+		"changedAppLayers":        detectCountRowsByAppLayer(changedSymbols),
+		"changedFunctionalAreas":  detectCountRowsByFunctionalArea(changedSymbols),
+		"affectedAppLayers":       detectCountRowsByAppLayer(affectedProcesses),
+		"affectedFunctionalAreas": detectCountRowsByFunctionalArea(affectedProcesses),
+		"resolutionGapChanges":    detectChangesResolutionGapChanges(changedSymbols),
+		"resolutionHealthImpact":  detectChangesResolutionHealthImpact(changedSymbols),
+	}
+}
+
+func detectCountRowsByAppLayer(rows []map[string]any) map[string]int {
+	counts := map[string]int{}
+	for _, row := range rows {
+		incrementQueryCount(counts, detectRowAppLayer(row), 1)
+	}
+	return cloneQueryCountMap(counts)
+}
+
+func detectCountRowsByFunctionalArea(rows []map[string]any) map[string]int {
+	counts := map[string]int{}
+	for _, row := range rows {
+		incrementQueryCount(counts, detectRowFunctionalArea(row), 1)
+	}
+	return cloneQueryCountMap(counts)
+}
+
+func detectRowAppLayer(row map[string]any) string {
+	return firstNonEmptyString(impactStringValue(row["appLayer"]), impactStringValue(row["sourceAppLayer"]))
+}
+
+func detectRowFunctionalArea(row map[string]any) string {
+	return firstNonEmptyString(impactStringValue(row["functionalArea"]), impactStringValue(row["sourceFunctionalArea"]))
+}
+
+func detectCopySemanticRowFields(dst map[string]any, src map[string]any) {
+	for _, key := range []string{
+		"type",
+		"filePath",
+		"appLayer",
+		"appLayerSource",
+		"functionalArea",
+		"functionalAreaSource",
+		"topologyStatus",
+		"resolutionConfidence",
+		"sourceAppLayer",
+		"sourceFunctionalArea",
+		"factFamily",
+		"targetRole",
+		"targetText",
+		"gapKind",
+		"classification",
+		"actionability",
+		"sourceSiteStatus",
+		"proofKind",
+	} {
+		if value, ok := src[key]; ok && value != nil && fmt.Sprint(value) != "" {
+			dst[key] = value
+		}
+	}
+}
+
+func detectIncrementCountField(payload map[string]any, key string, value string, count int) {
+	if value == "" || count <= 0 {
+		return
+	}
+	counts, _ := payload[key].(map[string]int)
+	if counts == nil {
+		counts = map[string]int{}
+		payload[key] = counts
+	}
+	incrementQueryCount(counts, value, count)
+}
+
+func detectChangesResolutionGapChanges(changedSymbols []map[string]any) map[string]any {
+	byGapKind := map[string]int{}
+	byFactFamily := map[string]int{}
+	byTargetRole := map[string]int{}
+	byClassification := map[string]int{}
+	byActionability := map[string]int{}
+	byAppLayer := map[string]int{}
+	byFunctionalArea := map[string]int{}
+	topTargets := map[string]int{}
+	gapEntities := 0
+	gapOccurrenceCount := 0
+	sourceNodesWithGaps := 0
+	totalGapCount := 0
+
+	for _, row := range changedSymbols {
+		if impactIntValue(row["resolutionGapCount"]) > 0 {
+			sourceNodesWithGaps++
+			totalGapCount += impactIntValue(row["resolutionGapCount"])
+		}
+		isGapEntity := fmt.Sprint(row["type"]) == string(scopeir.NodeResolutionGap)
+		if entity, _ := row["resolutionGapEntity"].(bool); entity {
+			isGapEntity = true
+		}
+		if !isGapEntity {
+			continue
+		}
+		gapEntities++
+		occurrenceCount := maxDetectCount(impactIntValue(row["count"]), 1)
+		gapOccurrenceCount += occurrenceCount
+		incrementQueryCount(byGapKind, impactStringValue(row["gapKind"]), 1)
+		incrementQueryCount(byFactFamily, impactStringValue(row["factFamily"]), 1)
+		incrementQueryCount(byTargetRole, impactStringValue(row["targetRole"]), 1)
+		incrementQueryCount(byClassification, impactStringValue(row["classification"]), 1)
+		incrementQueryCount(byActionability, impactStringValue(row["actionability"]), 1)
+		incrementQueryCount(byAppLayer, detectRowAppLayer(row), 1)
+		incrementQueryCount(byFunctionalArea, detectRowFunctionalArea(row), 1)
+		incrementQueryCount(topTargets, impactStringValue(row["targetText"]), occurrenceCount)
+	}
+
+	return map[string]any{
+		"changedGapEntities":         gapEntities,
+		"changedGapOccurrenceCount":  gapOccurrenceCount,
+		"changedSourceNodesWithGaps": sourceNodesWithGaps,
+		"totalResolutionGapCount":    totalGapCount,
+		"gapKinds":                   cloneQueryCountMap(byGapKind),
+		"factFamilies":               cloneQueryCountMap(byFactFamily),
+		"targetRoles":                cloneQueryCountMap(byTargetRole),
+		"classifications":            cloneQueryCountMap(byClassification),
+		"actionability":              cloneQueryCountMap(byActionability),
+		"appLayers":                  cloneQueryCountMap(byAppLayer),
+		"functionalAreas":            cloneQueryCountMap(byFunctionalArea),
+		"topTargets":                 topQueryCountMap(topTargets, 10),
+	}
+}
+
+func detectChangesResolutionHealthImpact(rows []map[string]any) map[string]any {
+	resolutionConfidence := map[string]int{}
+	resolutionBuckets := map[string]int{}
+	totalGapCount := 0
+	nodesWithGaps := 0
+	degradedNodes := 0
+	riskNodes := make([]map[string]any, 0)
+
+	for _, row := range rows {
+		confidence := impactStringValue(row["resolutionConfidence"])
+		incrementQueryCount(resolutionConfidence, confidence, 1)
+		if confidence == graphhealth.ResolutionConfidenceDegraded {
+			degradedNodes++
+		}
+		gapCount := impactIntValue(row["resolutionGapCount"])
+		if gapCount > 0 {
+			nodesWithGaps++
+			totalGapCount += gapCount
+		}
+		buckets := impactCountMapValue(row["resolutionHealthBuckets"])
+		for bucket, count := range buckets {
+			incrementQueryCount(resolutionBuckets, bucket, count)
+		}
+		if gapCount == 0 && confidence != graphhealth.ResolutionConfidenceDegraded && len(buckets) == 0 {
+			continue
+		}
+		riskNode := map[string]any{
+			"id":   row["id"],
+			"name": row["name"],
+			"type": row["type"],
+		}
+		detectCopySemanticRowFields(riskNode, row)
+		if gapCount > 0 {
+			riskNode["resolutionGapCount"] = gapCount
+		}
+		if len(buckets) > 0 {
+			riskNode["resolutionHealthBuckets"] = buckets
+		}
+		riskNodes = append(riskNodes, riskNode)
+	}
+
+	return map[string]any{
+		"nodesWithGaps":              nodesWithGaps,
+		"degradedNodes":              degradedNodes,
+		"totalResolutionGapCount":    totalGapCount,
+		"resolutionConfidenceCounts": cloneQueryCountMap(resolutionConfidence),
+		"resolutionHealthBuckets":    cloneQueryCountMap(resolutionBuckets),
+		"nodes":                      riskNodes,
+	}
+}
+
+func detectChangesResolutionGapChangesHasEvidence(changes map[string]any) bool {
+	return impactIntValue(changes["changedGapEntities"]) > 0 ||
+		impactIntValue(changes["changedGapOccurrenceCount"]) > 0 ||
+		impactIntValue(changes["changedSourceNodesWithGaps"]) > 0 ||
+		impactIntValue(changes["totalResolutionGapCount"]) > 0 ||
+		len(impactCountMapValue(changes["gapKinds"])) > 0 ||
+		len(impactCountMapValue(changes["topTargets"])) > 0
+}
+
+func detectChangesResolutionHealthImpactHasEvidence(impact map[string]any) bool {
+	return impactIntValue(impact["nodesWithGaps"]) > 0 ||
+		impactIntValue(impact["degradedNodes"]) > 0 ||
+		impactIntValue(impact["totalResolutionGapCount"]) > 0 ||
+		len(impactCountMapValue(impact["resolutionHealthBuckets"])) > 0
+}
+
+func maxDetectCount(left int, right int) int {
+	if left > right {
+		return left
+	}
+	return right
 }
 
 func detectRisk(processCount int) string {
