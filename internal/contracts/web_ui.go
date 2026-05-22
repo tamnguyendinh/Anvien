@@ -78,6 +78,8 @@ type WebUIContractManifest struct {
 		SemanticTerms                        []semantic.TermDefinition   `json:"semanticTerms"`
 		SemanticStatusValues                 []string                    `json:"semanticStatusValues"`
 		SemanticSchemaVersion                string                      `json:"semanticSchemaVersion"`
+		FunctionalAreas                      []string                    `json:"functionalAreas"`
+		FunctionalAreaLabels                 []semantic.TermDefinition   `json:"functionalAreaLabels"`
 		RelationshipTableName                string                      `json:"relationshipTableName"`
 		EmbeddingTableName                   string                      `json:"embeddingTableName"`
 	} `json:"graph"`
@@ -444,6 +446,8 @@ func WebUIContract() WebUIContractManifest {
 	manifest.Graph.SemanticTerms = semantic.SemanticTermDefinitions()
 	manifest.Graph.SemanticStatusValues = semantic.StatusValues()
 	manifest.Graph.SemanticSchemaVersion = semantic.SchemaVersion
+	manifest.Graph.FunctionalAreas = semantic.FunctionalAreaStrings()
+	manifest.Graph.FunctionalAreaLabels = semantic.FunctionalAreaDefinitions()
 	manifest.Graph.RelationshipTableName = lbugschema.RelTableName
 	manifest.Graph.EmbeddingTableName = lbugschema.EmbeddingTableName
 	manifest.Languages.CodeLanguages = append([]LanguageContract(nil), codeLanguages...)
@@ -517,6 +521,10 @@ func WebUIContractTypeScript() (string, error) {
 	b.WriteString("export type SemanticStatusValue = (typeof SEMANTIC_STATUS_VALUES)[number];\n\n")
 	writeConstString(&b, "SEMANTIC_SCHEMA_VERSION", manifest.Graph.SemanticSchemaVersion)
 	b.WriteString("\n")
+	writeConstArray(&b, "FUNCTIONAL_AREAS", manifest.Graph.FunctionalAreas)
+	b.WriteString("export type FunctionalArea = (typeof FUNCTIONAL_AREAS)[number];\n\n")
+	writeConstObjectArray(&b, "FUNCTIONAL_AREA_LABELS", manifest.Graph.FunctionalAreaLabels)
+	b.WriteString("export type FunctionalAreaLabel = (typeof FUNCTIONAL_AREA_LABELS)[number];\n\n")
 	b.WriteString(graphTypes)
 	writeConstArray(&b, "PIPELINE_PHASES", manifest.Pipeline.Phases)
 	b.WriteString("export type PipelinePhase = (typeof PIPELINE_PHASES)[number];\n\n")
@@ -975,6 +983,7 @@ export interface GraphSemanticFieldStatus {
 export interface GraphSemanticStatus {
   schemaVersion: string;
   appLayer: GraphSemanticFieldStatus;
+  functionalArea: GraphSemanticFieldStatus;
 }
 
 export type NodeProperties = {
@@ -982,6 +991,8 @@ export type NodeProperties = {
   filePath: string;
   appLayer?: AppLayer;
   appLayerSource?: string;
+  functionalArea?: FunctionalArea;
+  functionalAreaSource?: string;
   startLine?: number;
   endLine?: number;
   language?: SupportedLanguages | string;

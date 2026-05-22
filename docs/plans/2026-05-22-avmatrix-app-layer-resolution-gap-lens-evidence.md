@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: planned
+Status: in progress; Phase 2 complete and paused before Phase 3 for discussion
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -118,18 +118,18 @@ Record during P0-C and P0-G.
 
 | Surface | Files/symbols found | Notes |
 | --- | --- | --- |
-| graph schema/snapshot | `internal/graph/types.go`, `internal/analyze/analyze.go`, `.avmatrix/graph.json` | App Layer is persisted on node properties as `appLayer` and `appLayerSource`; graph snapshot from the locally built CLI has zero missing `appLayer` fields across 22239 nodes. |
-| analyze semantic enrichment flow | `internal/analyze/analyze.go`, `internal/semantic/app_layer.go` | New `semantic_enrichment` phase runs after processes and before graph compact, LadybugDB load, embeddings, and graph snapshot. Phase order from benchmark: scan, structure, documents, cobol, parse, routes, tools, orm, cross_file_binding, resolution, mro, communities, processes, semantic_enrichment, db_load. |
-| semantic enrichment input indexes and complexity | `internal/semantic/app_layer.go` | Enrichment builds `filePath -> classification`, `nodeID -> index`, and `nodeID -> appLayer` maps, then performs one relationship scan for process/community inference. It uses graph facts only; it does not rescan files or reparse ASTs. |
-| LadybugDB export/load | `internal/lbugschema/schema.go`, `internal/lbugload/csv.go`, `internal/lbugload/load_test.go` | Node schemas and COPY CSV columns include `appLayer`; benchmark DB load wrote 22239 node rows and 55006 relationship rows with zero fallback inserts. |
+| graph schema/snapshot | `internal/graph/types.go`, `internal/analyze/analyze.go`, `.avmatrix/graph.json` | App Layer is persisted on node properties as `appLayer`/`appLayerSource`; Functional Area is persisted as `functionalArea`/`functionalAreaSource`. Fresh graph snapshot from the locally built CLI has zero missing Functional Area fields across 22358 nodes. |
+| analyze semantic enrichment flow | `internal/analyze/analyze.go`, `internal/semantic/app_layer.go`, `internal/semantic/functional_area.go` | The `semantic_enrichment` phase runs after processes and before graph compact, LadybugDB load, embeddings, and graph snapshot. Phase order from benchmark: scan, structure, documents, cobol, parse, routes, tools, orm, cross_file_binding, resolution, mro, communities, processes, semantic_enrichment, db_load. Functional Area assignment runs in the same enrichment pass as App Layer after process/community signals exist. |
+| semantic enrichment input indexes and complexity | `internal/semantic/app_layer.go`, `internal/semantic/functional_area.go` | Enrichment builds App Layer and Functional Area path caches, `nodeID -> index`, `nodeID -> appLayer`, and `nodeID -> functionalArea` maps, then performs one relationship scan for Process/Community inference. It uses graph facts only; it does not rescan files or reparse ASTs. |
+| LadybugDB export/load | `internal/lbugschema/schema.go`, `internal/lbugload/csv.go`, `internal/lbugload/load_test.go` | Node schemas and COPY CSV columns include both `appLayer` and `functionalArea`; benchmark DB load wrote 22358 node rows and 55349 relationship rows with zero fallback inserts. |
 | unresolved call emission | pending | pending |
 | unresolved access emission | pending | pending |
 | unresolved type-reference emission | pending | pending |
 | unresolved heritage emission | pending | pending |
 | diagnostic attachment | pending | pending |
 | graph-health summary/report | pending | pending |
-| HTTP graph payload | `internal/httpapi/graph.go` | HTTP graph responses pass node `appLayer`/`appLayerSource` properties through and include `semanticStatus`; NDJSON starts with `semantic_status`. Missing App Layer metadata is reported as stale/incomplete schema evidence and is not classified in the API loader. |
-| generated Web contracts | `internal/contracts/web_ui.go`, `contracts/web-ui/avmatrix-web-contract.schema.json`, `avmatrix-web/src/generated/avmatrix-contracts.ts` | Contract manifest exposes `appLayers`, `appLayerLabels`, `semanticTerms`, `semanticStatusValues`, and `semanticSchemaVersion`; generated TypeScript exposes `APP_LAYERS`, `APP_LAYER_LABELS`, `SEMANTIC_TERMS`, `SemanticStatusValue`, `GraphSemanticStatus`, `GraphResponse.semanticStatus`, `AppLayer`, `NodeProperties.appLayer`, and `NodeProperties.appLayerSource`. |
+| HTTP graph payload | `internal/httpapi/graph.go`, `internal/semantic/metadata.go` | HTTP graph responses pass node `appLayer`/`appLayerSource` and `functionalArea`/`functionalAreaSource` properties through and include `semanticStatus`; NDJSON starts with `semantic_status`. Missing App Layer or Functional Area metadata is reported as stale/incomplete schema evidence and is not classified in the API loader. |
+| generated Web contracts | `internal/contracts/web_ui.go`, `contracts/web-ui/avmatrix-web-contract.schema.json`, `avmatrix-web/src/generated/avmatrix-contracts.ts` | Contract manifest exposes App Layer and Functional Area enums/labels plus semantic status terms. Generated TypeScript exposes `FUNCTIONAL_AREAS`, `FUNCTIONAL_AREA_LABELS`, `FunctionalArea`, `GraphSemanticStatus.functionalArea`, `NodeProperties.functionalArea`, and `NodeProperties.functionalAreaSource` in addition to the App Layer fields. |
 | query command | pending | pending |
 | context command | pending | pending |
 | impact command | pending | pending |
@@ -209,18 +209,23 @@ Implemented evidence:
 
 ## E7 - Functional Area Evidence
 
-Status: pending
+Status: complete for Phase 2.
 
-Record during P2.
+Implemented evidence:
 
-Required evidence:
-
-- evaluated candidate signals;
-- selected Functional Area rules and examples;
-- rejected low-confidence signals and reasons;
-- unknown counts and examples;
-- schema/API/contract/command visibility;
-- tests proving accepted rules and ambiguous unknown behavior.
+- Functional Area registry is defined in `internal/semantic/functional_area.go`: `resolution`, `graph_health`, `query`, `mcp`, `web_graph_ui`, `layout`, `contracts`, `providers`, `runtime`, `analyzer`, `session`, `launcher`, `cli`, `reporting`, `api`, `storage`, `embeddings`, `configuration`, `documentation`, `mixed`, and `unknown`.
+- Accepted signals for direct node classification are deterministic high-confidence path/package rules. Examples from fresh graph output include `internal/resolution/access_audit.go` as `resolution`, `internal/graphhealth/**` and `internal/graphaccuracy/**` as `graph_health`, `internal/httpapi/**` as `api`, `avmatrix-web/src/lib/graph-adapter.ts` as `layout`, `internal/lbugload/**` and `internal/graph/**` as `storage`, and markdown/docs paths as `documentation`.
+- Process and Community nodes use relationship-backed inference only after processes/communities exist: one non-unknown area becomes that area, multiple non-unknown areas become `mixed`, and no accepted evidence remains `unknown`.
+- Rejected low-confidence signals for Phase 2 are import/call neighborhood ownership, community label text, process label text, AI-assisted labeling, and explicit semantic config that does not yet exist. These are not used to reduce unknown counts.
+- Functional Area is persisted on graph node properties as `functionalArea` and `functionalAreaSource`; fresh analyze output has zero missing Functional Area fields. Unknown remains explicit evidence, not a stale-field fallback.
+- `semantic_app_functional_v1` in `internal/semantic/metadata.go` marks the schema version where both App Layer and Functional Area are required semantic fields. `GraphSemanticStatus` now reports both `appLayer` and `functionalArea`; stale fixture tests prove missing fields are reported as stale/incomplete rather than guessed at load time.
+- LadybugDB schema/export surfaces include `functionalArea` on node tables and CSV rows. This makes Functional Area available to DB-backed CLI/Cypher consumers immediately. Rich `query`, `context`, `impact`, and `detect-changes` semantic formatting remains Phase 6.
+- Generated Web contracts expose Functional Area enum values, labels, semantic status, and node property fields. Visible Web filters/detail rendering remain Phase 7; this slice only ensures the graph/API/contract data exists for those UI surfaces.
+- Fresh analyze benchmark using `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .tmp\2026-05-22-functional-area-semantic-enrichment.json --benchmark-label functional-area-semantic-enrichment` produced 22358 nodes, 55349 relationships, 0 missing `functionalArea`, 0 missing `functionalAreaSource`, 20622 classified Functional Area nodes, and 1736 `unknown` nodes.
+- Functional Area counts from `.avmatrix/graph.json`: analyzer 2426, api 1583, cli 943, configuration 37, contracts 248, documentation 1293, embeddings 701, graph_health 761, launcher 243, layout 280, mcp 1566, mixed 294, providers 4954, query 1154, reporting 308, resolution 1225, runtime 21, session 510, storage 1243, unknown 1736, web_graph_ui 832.
+- Test evidence includes `TestClassifyFunctionalAreaUsesHighConfidencePathRules`, `TestApplyAnnotatesAppLayerAndFunctionalArea`, `TestApplyInfersSemanticMetadataForProcessAndCommunityNodes`, `TestGraphSemanticStatusDistinguishesUnknownFromMissingMetadata`, `TestNodeSchemaIncludesSemanticFields`, `TestNodeCSVRowIncludesSemanticFields`, `TestLoadGraphWritesSemanticFields`, `TestWebUIContractManifestUsesGoRuntimeConstants`, and `TestGraphPayloadMarksFreshSemanticMetadataComplete`.
+- Validation evidence for this slice: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; focused Go tests passed with `go test .\internal\semantic .\internal\lbugschema .\internal\lbugload .\internal\contracts .\internal\httpapi .\internal\analyze`; wider Go tests passed with `go test .\internal\... .\cmd\...`; Web unit tests passed with `npm test -- --run` in `avmatrix-web`. Web e2e was not run for Phase 2 because this slice changed persisted graph/contract metadata but no visible Web UI behavior.
+- AVmatrix change detection before commit used `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it returned affected_count 24, changed_count 144, changed_files 18, risk_level `critical`. The critical scope is expected for this slice because it intentionally changes semantic enrichment, graph semantic status, LadybugDB schema/export, HTTP/Web contract surfaces, generated contracts, and plan/evidence ledgers.
 
 ## E8 - ResolutionGap Persistence Evidence
 

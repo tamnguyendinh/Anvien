@@ -47,6 +47,12 @@ func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {
 	if label := termDefinition(manifest.Graph.AppLayerLabels, "api"); label.DisplayLabel != "API Layer" {
 		t.Fatalf("api app layer label = %#v", label)
 	}
+	if !contains(manifest.Graph.FunctionalAreas, "resolution") || !contains(manifest.Graph.FunctionalAreas, "graph_health") {
+		t.Fatalf("functional area contract metadata missing: %#v", manifest.Graph.FunctionalAreas)
+	}
+	if label := termDefinition(manifest.Graph.FunctionalAreaLabels, "resolution"); label.DisplayLabel != "Resolution" {
+		t.Fatalf("resolution functional area label = %#v", label)
+	}
 	if policy := relationshipPolicy(manifest, "INHERITS"); policy.SemanticGroup != "normalized-heritage" {
 		t.Fatalf("INHERITS policy = %#v", policy)
 	}
@@ -92,8 +98,11 @@ func TestWebUIContractTypeScriptIsBrowserGeneratedGlue(t *testing.T) {
 		"export const SEMANTIC_TERMS",
 		"export type SemanticStatusValue",
 		"export interface GraphSemanticStatus",
+		"export const FUNCTIONAL_AREAS",
+		"export type FunctionalArea",
 		"export type AppLayer",
 		"appLayer?: AppLayer",
+		"functionalArea?: FunctionalArea",
 		"semanticStatus?: GraphSemanticStatus",
 		"diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>",
 		"triageDimension: GraphHealthReportTriageDimension",

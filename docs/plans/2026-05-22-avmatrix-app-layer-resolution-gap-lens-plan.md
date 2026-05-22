@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: planned
+Status: in progress; Phase 2 complete and paused before Phase 3 for discussion
 
 Source discussion:
 
@@ -210,19 +210,19 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 ## Phase 2 - Functional Area Accuracy Gate
 
-- [ ] [P2-A] Evaluate candidate Functional Area signals from P0 evidence: path prefix, package/module name, process membership, community detection, import/call neighborhood, explicit config, and any AI-assisted labeling only if it is reproducible and verifiable. Record accepted and rejected signals with examples instead of choosing a weak signal because it is easy to code.
+- [x] [P2-A] Evaluate candidate Functional Area signals from P0 evidence: path prefix, package/module name, process membership, community detection, import/call neighborhood, explicit config, and any AI-assisted labeling only if it is reproducible and verifiable. Record accepted and rejected signals with examples instead of choosing a weak signal because it is easy to code.
 
-- [ ] [P2-B] Define a Functional Area registry for high-confidence areas only. Initial candidates may include resolution, graph_health, query, mcp, web_graph_ui, layout, contracts, providers, runtime, analyzer, session, launcher, cli, reporting, and unknown; each accepted area must have exact evidence rules.
+- [x] [P2-B] Define a Functional Area registry for high-confidence areas only. Initial candidates may include resolution, graph_health, query, mcp, web_graph_ui, layout, contracts, providers, runtime, analyzer, session, launcher, cli, reporting, and unknown; each accepted area must have exact evidence rules.
 
-- [ ] [P2-C] Persist Functional Area metadata in graph output only for nodes that meet accepted rules. Ambiguous nodes must stay `unknown` or equivalent rather than being forced into a functional group.
+- [x] [P2-C] Persist Functional Area metadata in graph output only for nodes that meet accepted rules. Ambiguous nodes must stay `unknown` or equivalent rather than being forced into a functional group.
 
-- [ ] [P2-C2] Extend the analyze semantic enrichment phase with Functional Area assignment after the required signals from P0-H are available. If accepted rules depend on process or community membership, run this assignment after those phases and before graph compact, LadybugDB load, and graph snapshot writing.
+- [x] [P2-C2] Extend the analyze semantic enrichment phase with Functional Area assignment after the required signals from P0-H are available. If accepted rules depend on process or community membership, run this assignment after those phases and before graph compact, LadybugDB load, and graph snapshot writing.
 
-- [ ] [P2-D] Expose Functional Area through API payloads, generated contracts, CLI surfaces, and Web detail/filter data where available. Consumers must distinguish "unknown because not enough evidence" from "missing field because graph was not freshly analyzed".
+- [x] [P2-D] Expose Functional Area through API payloads, generated contracts, CLI surfaces, and Web detail/filter data where available. Consumers must distinguish "unknown because not enough evidence" from "missing field because graph was not freshly analyzed".
 
-- [ ] [P2-E] Add tests for accepted Functional Area rules, rejected low-confidence rules, ambiguous nodes, and command/API/Web contract visibility.
+- [x] [P2-E] Add tests for accepted Functional Area rules, rejected low-confidence rules, ambiguous nodes, and command/API/Web contract visibility.
 
-- [ ] [P2-F] Record selected rules, rejected rules, counts, unknown counts, example nodes, and test evidence in the evidence and benchmark ledgers.
+- [x] [P2-F] Record selected rules, rejected rules, counts, unknown counts, example nodes, and test evidence in the evidence and benchmark ledgers.
 
 ## Phase 3 - Persisted ResolutionGap And UnresolvedSymbol Model
 

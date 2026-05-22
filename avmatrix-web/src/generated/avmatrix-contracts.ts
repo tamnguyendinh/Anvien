@@ -3476,6 +3476,13 @@ export const SEMANTIC_TERMS = [
     "description": "Primary product layer assigned to each graph node."
   },
   {
+    "key": "functional_area",
+    "displayLabel": "Functional Area",
+    "cliLabel": "functional-area",
+    "webLabel": "Functional Area",
+    "description": "High-confidence functional ownership under an App Layer."
+  },
+  {
     "key": "api_layer",
     "displayLabel": "API Layer",
     "cliLabel": "api-layer",
@@ -3542,7 +3549,185 @@ export const SEMANTIC_STATUS_VALUES = [
 
 export type SemanticStatusValue = (typeof SEMANTIC_STATUS_VALUES)[number];
 
-export const SEMANTIC_SCHEMA_VERSION = "semantic_app_layer_v1" as const;
+export const SEMANTIC_SCHEMA_VERSION = "semantic_app_functional_v1" as const;
+
+export const FUNCTIONAL_AREAS = [
+  "resolution",
+  "graph_health",
+  "query",
+  "mcp",
+  "web_graph_ui",
+  "layout",
+  "contracts",
+  "providers",
+  "runtime",
+  "analyzer",
+  "session",
+  "launcher",
+  "cli",
+  "reporting",
+  "api",
+  "storage",
+  "embeddings",
+  "configuration",
+  "documentation",
+  "mixed",
+  "unknown"
+] as const;
+
+export type FunctionalArea = (typeof FUNCTIONAL_AREAS)[number];
+
+export const FUNCTIONAL_AREA_LABELS = [
+  {
+    "key": "resolution",
+    "displayLabel": "Resolution",
+    "cliLabel": "resolution",
+    "webLabel": "Resolution",
+    "description": "Reference binding and unresolved-reference detection."
+  },
+  {
+    "key": "graph_health",
+    "displayLabel": "Graph Health",
+    "cliLabel": "graph-health",
+    "webLabel": "Graph Health",
+    "description": "Topology health, diagnostic confidence, and graph quality policy."
+  },
+  {
+    "key": "query",
+    "displayLabel": "Query",
+    "cliLabel": "query",
+    "webLabel": "Query",
+    "description": "Graph query, retrieval, and benchmark surfaces."
+  },
+  {
+    "key": "mcp",
+    "displayLabel": "MCP",
+    "cliLabel": "mcp",
+    "webLabel": "MCP",
+    "description": "Model Context Protocol tools, resources, and integrations."
+  },
+  {
+    "key": "web_graph_ui",
+    "displayLabel": "Web Graph UI",
+    "cliLabel": "web-graph-ui",
+    "webLabel": "Web Graph UI",
+    "description": "Frontend graph panels, filters, and visual controls."
+  },
+  {
+    "key": "layout",
+    "displayLabel": "Layout",
+    "cliLabel": "layout",
+    "webLabel": "Layout",
+    "description": "Graph placement, rendering geometry, and layout controls."
+  },
+  {
+    "key": "contracts",
+    "displayLabel": "Contracts",
+    "cliLabel": "contracts",
+    "webLabel": "Contracts",
+    "description": "Generated and shared cross-surface contracts."
+  },
+  {
+    "key": "providers",
+    "displayLabel": "Providers",
+    "cliLabel": "providers",
+    "webLabel": "Providers",
+    "description": "Language provider extraction and ScopeIR conversion."
+  },
+  {
+    "key": "runtime",
+    "displayLabel": "Runtime",
+    "cliLabel": "runtime",
+    "webLabel": "Runtime",
+    "description": "Runtime process, local server, and execution management."
+  },
+  {
+    "key": "analyzer",
+    "displayLabel": "Analyzer",
+    "cliLabel": "analyzer",
+    "webLabel": "Analyzer",
+    "description": "Analyze pipeline phases and graph enrichment."
+  },
+  {
+    "key": "session",
+    "displayLabel": "Session",
+    "cliLabel": "session",
+    "webLabel": "Session",
+    "description": "Interactive session, job, and chat runtime services."
+  },
+  {
+    "key": "launcher",
+    "displayLabel": "Launcher",
+    "cliLabel": "launcher",
+    "webLabel": "Launcher",
+    "description": "Desktop launcher and startup flow."
+  },
+  {
+    "key": "cli",
+    "displayLabel": "CLI",
+    "cliLabel": "cli",
+    "webLabel": "CLI",
+    "description": "Command-line entrypoints and command behavior."
+  },
+  {
+    "key": "reporting",
+    "displayLabel": "Reporting",
+    "cliLabel": "reporting",
+    "webLabel": "Reporting",
+    "description": "Reports, ledgers, and problem records."
+  },
+  {
+    "key": "api",
+    "displayLabel": "API",
+    "cliLabel": "api",
+    "webLabel": "API",
+    "description": "HTTP API and API client behavior."
+  },
+  {
+    "key": "storage",
+    "displayLabel": "Storage",
+    "cliLabel": "storage",
+    "webLabel": "Storage",
+    "description": "Graph storage, LadybugDB export/load, and repository metadata."
+  },
+  {
+    "key": "embeddings",
+    "displayLabel": "Embeddings",
+    "cliLabel": "embeddings",
+    "webLabel": "Embeddings",
+    "description": "Embedding generation, indexing, and semantic search support."
+  },
+  {
+    "key": "configuration",
+    "displayLabel": "Configuration",
+    "cliLabel": "configuration",
+    "webLabel": "Configuration",
+    "description": "Project and build configuration."
+  },
+  {
+    "key": "documentation",
+    "displayLabel": "Documentation",
+    "cliLabel": "documentation",
+    "webLabel": "Documentation",
+    "description": "Documentation content."
+  },
+  {
+    "key": "mixed",
+    "displayLabel": "Mixed",
+    "cliLabel": "mixed",
+    "webLabel": "Mixed",
+    "description": "Process or community evidence spanning more than one Functional Area."
+  },
+  {
+    "key": "unknown",
+    "displayLabel": "Unknown",
+    "cliLabel": "unknown",
+    "webLabel": "Unknown",
+    "description": "Insufficient evidence for a stable Functional Area."
+  }
+] as const;
+
+export type FunctionalAreaLabel = (typeof FUNCTIONAL_AREA_LABELS)[number];
 
 export interface GraphHealthDiagnostic {
   kind: string;
@@ -3621,6 +3806,7 @@ export interface GraphSemanticFieldStatus {
 export interface GraphSemanticStatus {
   schemaVersion: string;
   appLayer: GraphSemanticFieldStatus;
+  functionalArea: GraphSemanticFieldStatus;
 }
 
 export type NodeProperties = {
@@ -3628,6 +3814,8 @@ export type NodeProperties = {
   filePath: string;
   appLayer?: AppLayer;
   appLayerSource?: string;
+  functionalArea?: FunctionalArea;
+  functionalAreaSource?: string;
   startLine?: number;
   endLine?: number;
   language?: SupportedLanguages | string;

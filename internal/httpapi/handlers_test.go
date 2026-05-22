@@ -380,9 +380,11 @@ func TestGraphStreamingBatchesFlushes(t *testing.T) {
 func TestGraphPayloadMarksFreshSemanticMetadataComplete(t *testing.T) {
 	g := graph.New()
 	g.AddNode(graph.Node{ID: "Function:fresh", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
-		"name":                          "fresh",
-		semantic.AppLayerProperty:       string(semantic.AppLayerBackend),
-		semantic.AppLayerSourceProperty: "backend_path",
+		"name":                                "fresh",
+		semantic.AppLayerProperty:             string(semantic.AppLayerBackend),
+		semantic.AppLayerSourceProperty:       "backend_path",
+		semantic.FunctionalAreaProperty:       string(semantic.FunctionalAreaAnalyzer),
+		semantic.FunctionalAreaSourceProperty: "analyzer_path",
 	}})
 
 	payload := graphPayload(g, false)
@@ -392,6 +394,9 @@ func TestGraphPayloadMarksFreshSemanticMetadataComplete(t *testing.T) {
 	}
 	if payload.SemanticStatus.AppLayer.NodesWithField != 1 || payload.SemanticStatus.AppLayer.MissingNodes != 0 {
 		t.Fatalf("fresh semantic counts = %#v, want one present node", payload.SemanticStatus.AppLayer)
+	}
+	if payload.SemanticStatus.FunctionalArea.Status != semantic.StatusComplete {
+		t.Fatalf("fresh functional area status = %#v, want complete", payload.SemanticStatus)
 	}
 }
 

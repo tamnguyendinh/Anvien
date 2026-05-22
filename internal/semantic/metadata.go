@@ -3,7 +3,7 @@ package semantic
 import "github.com/tamnguyendinh/avmatrix-go/internal/graph"
 
 const (
-	SchemaVersion = "semantic_app_layer_v1"
+	SchemaVersion = "semantic_app_functional_v1"
 
 	StatusComplete        = "complete"
 	StatusStaleIncomplete = "stale_incomplete"
@@ -24,8 +24,9 @@ type FieldStatus struct {
 }
 
 type GraphStatus struct {
-	SchemaVersion string      `json:"schemaVersion"`
-	AppLayer      FieldStatus `json:"appLayer"`
+	SchemaVersion  string      `json:"schemaVersion"`
+	AppLayer       FieldStatus `json:"appLayer"`
+	FunctionalArea FieldStatus `json:"functionalArea"`
 }
 
 type TermDefinition struct {
@@ -48,38 +49,54 @@ func GraphSemanticStatus(g *graph.Graph) GraphStatus {
 			Status:   StatusComplete,
 			Required: true,
 		},
+		FunctionalArea: FieldStatus{
+			Field:    FunctionalAreaProperty,
+			Status:   StatusComplete,
+			Required: true,
+		},
 	}
 	if g == nil {
 		return status
 	}
 
-	status.AppLayer.TotalNodes = len(g.Nodes)
+	status.AppLayer = semanticFieldStatus(g, AppLayerProperty, AppLayerSourceProperty, string(AppLayerUnknown))
+	status.FunctionalArea = semanticFieldStatus(g, FunctionalAreaProperty, FunctionalAreaSourceProperty, string(FunctionalAreaUnknown))
+	return status
+}
+
+func semanticFieldStatus(g *graph.Graph, field string, sourceField string, unknownValue string) FieldStatus {
+	status := FieldStatus{
+		Field:      field,
+		Status:     StatusComplete,
+		Required:   true,
+		TotalNodes: len(g.Nodes),
+	}
 	for _, node := range g.Nodes {
 		if node.Properties == nil {
-			status.AppLayer.MissingNodes++
-			status.AppLayer.MissingSourceNodes++
+			status.MissingNodes++
+			status.MissingSourceNodes++
 			continue
 		}
-		layer, hasLayer := stringValue(node.Properties[AppLayerProperty])
-		if hasLayer {
-			status.AppLayer.NodesWithField++
-			if layer == string(AppLayerUnknown) {
-				status.AppLayer.UnknownNodes++
+		value, hasValue := stringValue(node.Properties[field])
+		if hasValue {
+			status.NodesWithField++
+			if value == unknownValue {
+				status.UnknownNodes++
 			}
 		} else {
-			status.AppLayer.MissingNodes++
+			status.MissingNodes++
 		}
-		if _, hasSource := stringValue(node.Properties[AppLayerSourceProperty]); hasSource {
-			status.AppLayer.NodesWithSource++
+		if _, hasSource := stringValue(node.Properties[sourceField]); hasSource {
+			status.NodesWithSource++
 		} else {
-			status.AppLayer.MissingSourceNodes++
+			status.MissingSourceNodes++
 		}
 	}
 
-	if status.AppLayer.MissingNodes > 0 || status.AppLayer.MissingSourceNodes > 0 {
-		status.AppLayer.Status = StatusStaleIncomplete
-		status.AppLayer.StaleIncompleteSchemaEvidence = true
-		status.AppLayer.Message = "Graph semantic metadata is incomplete; run avmatrix analyze --force to refresh graph evidence."
+	if status.MissingNodes > 0 || status.MissingSourceNodes > 0 {
+		status.Status = StatusStaleIncomplete
+		status.StaleIncompleteSchemaEvidence = true
+		status.Message = "Graph semantic metadata is incomplete; run avmatrix analyze --force to refresh graph evidence."
 	}
 	return status
 }
@@ -109,6 +126,7 @@ func AppLayerDefinitions() []TermDefinition {
 func SemanticTermDefinitions() []TermDefinition {
 	return []TermDefinition{
 		{Key: "app_layer", DisplayLabel: "App Layer", CLILabel: "app-layer", WebLabel: "App Layer", Description: "Primary product layer assigned to each graph node."},
+		{Key: "functional_area", DisplayLabel: "Functional Area", CLILabel: "functional-area", WebLabel: "Functional Area", Description: "High-confidence functional ownership under an App Layer."},
 		{Key: "api_layer", DisplayLabel: "API Layer", CLILabel: "api-layer", WebLabel: "API Layer", Description: "Server-facing API handlers and API protocol surface."},
 		{Key: "api_contract", DisplayLabel: "API Contract", CLILabel: "api-contract", WebLabel: "API Contract", Description: "Schema or generated contract shared by API consumers."},
 		{Key: "frontend_api_client", DisplayLabel: "Frontend API Client", CLILabel: "frontend-api-client", WebLabel: "Frontend API Client", Description: "Frontend client surface that calls backend APIs."},

@@ -71,8 +71,12 @@ type Metrics struct {
 	NodesUnknown                   int            `json:"nodesUnknown"`
 	NodesInferredFromRelationships int            `json:"nodesInferredFromRelationships"`
 	FilePathCacheEntries           int            `json:"filePathCacheEntries"`
+	FunctionalPathCacheEntries     int            `json:"functionalPathCacheEntries"`
 	RelationshipsScanned           int            `json:"relationshipsScanned"`
 	AppLayerCounts                 map[string]int `json:"appLayerCounts,omitempty"`
+	FunctionalNodesClassified      int            `json:"functionalNodesClassified"`
+	FunctionalNodesUnknown         int            `json:"functionalNodesUnknown"`
+	FunctionalAreaCounts           map[string]int `json:"functionalAreaCounts,omitempty"`
 }
 
 func AppLayerStrings() []string {
@@ -86,13 +90,16 @@ func AppLayerStrings() []string {
 func Apply(g *graph.Graph) (Result, error) {
 	var result Result
 	result.Metrics.AppLayerCounts = map[string]int{}
+	result.Metrics.FunctionalAreaCounts = map[string]int{}
 	if g == nil {
 		return result, nil
 	}
 
 	pathCache := map[string]Classification{}
+	functionalPathCache := map[string]FunctionalAreaClassification{}
 	nodeIndex := make(map[string]int, len(g.Nodes))
 	nodeLayers := make(map[string]AppLayer, len(g.Nodes))
+	nodeAreas := make(map[string]FunctionalArea, len(g.Nodes))
 
 	for index := range g.Nodes {
 		node := &g.Nodes[index]
@@ -113,9 +120,18 @@ func Apply(g *graph.Graph) (Result, error) {
 		}
 		setAppLayer(node, classification)
 		nodeLayers[node.ID] = classification.Layer
+
+		functionalClassification, ok := functionalPathCache[filePath]
+		if !ok {
+			functionalClassification = ClassifyFunctionalArea(filePath)
+			functionalPathCache[filePath] = functionalClassification
+		}
+		setFunctionalArea(node, functionalClassification)
+		nodeAreas[node.ID] = functionalClassification.Area
 	}
 
 	result.Metrics.FilePathCacheEntries = len(pathCache)
+	result.Metrics.FunctionalPathCacheEntries = len(functionalPathCache)
 	inferred := inferRelationBackedLayers(g, nodeIndex, nodeLayers)
 	for nodeID, classification := range inferred {
 		index := nodeIndex[nodeID]
@@ -127,6 +143,16 @@ func Apply(g *graph.Graph) (Result, error) {
 		nodeLayers[nodeID] = classification.Layer
 		result.Metrics.NodesInferredFromRelationships++
 	}
+	inferredAreas := inferRelationBackedFunctionalAreas(g, nodeIndex, nodeAreas)
+	for nodeID, classification := range inferredAreas {
+		index := nodeIndex[nodeID]
+		node := &g.Nodes[index]
+		if nodeAreas[nodeID] != FunctionalAreaUnknown {
+			continue
+		}
+		setFunctionalArea(node, classification)
+		nodeAreas[nodeID] = classification.Area
+	}
 	result.Metrics.RelationshipsScanned = len(g.Relationships)
 
 	for _, layer := range nodeLayers {
@@ -136,6 +162,14 @@ func Apply(g *graph.Graph) (Result, error) {
 			continue
 		}
 		result.Metrics.NodesClassified++
+	}
+	for _, area := range nodeAreas {
+		result.Metrics.FunctionalAreaCounts[string(area)]++
+		if area == FunctionalAreaUnknown {
+			result.Metrics.FunctionalNodesUnknown++
+			continue
+		}
+		result.Metrics.FunctionalNodesClassified++
 	}
 
 	return result, nil
@@ -240,6 +274,57 @@ func setAppLayer(node *graph.Node, classification Classification) {
 	}
 	node.Properties[AppLayerProperty] = string(classification.Layer)
 	node.Properties[AppLayerSourceProperty] = classification.Source
+}
+
+func setFunctionalArea(node *graph.Node, classification FunctionalAreaClassification) {
+	if classification.Area == "" {
+		classification.Area = FunctionalAreaUnknown
+	}
+	if classification.Source == "" {
+		classification.Source = "unspecified"
+	}
+	node.Properties[FunctionalAreaProperty] = string(classification.Area)
+	node.Properties[FunctionalAreaSourceProperty] = classification.Source
+}
+
+func inferRelationBackedFunctionalAreas(g *graph.Graph, nodeIndex map[string]int, nodeAreas map[string]FunctionalArea) map[string]FunctionalAreaClassification {
+	areaSets := map[string]map[FunctionalArea]struct{}{}
+	for _, rel := range g.Relationships {
+		if rel.Type != graph.RelStepInProcess && rel.Type != graph.RelMemberOf {
+			continue
+		}
+		targetIndex, ok := nodeIndex[rel.TargetID]
+		if !ok {
+			continue
+		}
+		target := g.Nodes[targetIndex]
+		if target.Label != scopeir.NodeProcess && target.Label != scopeir.NodeCommunity {
+			continue
+		}
+		sourceArea := nodeAreas[rel.SourceID]
+		if sourceArea == "" || sourceArea == FunctionalAreaUnknown {
+			continue
+		}
+		if _, ok := areaSets[rel.TargetID]; !ok {
+			areaSets[rel.TargetID] = map[FunctionalArea]struct{}{}
+		}
+		areaSets[rel.TargetID][sourceArea] = struct{}{}
+	}
+
+	out := map[string]FunctionalAreaClassification{}
+	for nodeID, areas := range areaSets {
+		if len(areas) == 0 {
+			continue
+		}
+		if len(areas) == 1 {
+			for area := range areas {
+				out[nodeID] = FunctionalAreaClassification{Area: area, Source: "relationship_membership"}
+			}
+			continue
+		}
+		out[nodeID] = FunctionalAreaClassification{Area: FunctionalAreaMixed, Source: "mixed_relationship_membership"}
+	}
+	return out
 }
 
 func normalizePath(filePath string) string {

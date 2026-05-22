@@ -44,13 +44,13 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 	}
 
 	fileSchema := NodeSchema("File")
-	for _, want := range []string{"CREATE NODE TABLE File", "content STRING", "appLayer STRING", "PRIMARY KEY (id)"} {
+	for _, want := range []string{"CREATE NODE TABLE File", "content STRING", "appLayer STRING", "functionalArea STRING", "PRIMARY KEY (id)"} {
 		if !strings.Contains(fileSchema, want) {
 			t.Fatalf("File schema missing %q:\n%s", want, fileSchema)
 		}
 	}
 	methodSchema := NodeSchema("Method")
-	for _, want := range []string{"parameterCount INT32", "returnType STRING", "appLayer STRING"} {
+	for _, want := range []string{"parameterCount INT32", "returnType STRING", "appLayer STRING", "functionalArea STRING"} {
 		if !strings.Contains(methodSchema, want) {
 			t.Fatalf("Method schema missing %q:\n%s", want, methodSchema)
 		}

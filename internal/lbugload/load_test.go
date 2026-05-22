@@ -49,11 +49,11 @@ func TestLoadCSVExportUsesCopyForSupportedNodeAndRelationshipPairs(t *testing.T)
 
 	joined := strings.Join(runner.queries, "\n")
 	for _, want := range []string{
-		`COPY File(id, name, filePath, content, appLayer)`,
-		`COPY Function(id, name, filePath, startLine, endLine, isExported, content, description, appLayer)`,
-		`COPY Method(id, name, filePath, startLine, endLine, isExported, content, description, parameterCount, returnType, appLayer)`,
-		`COPY ` + "`TypeAlias`" + `(id, name, filePath, startLine, endLine, content, description, appLayer)`,
-		`COPY ` + "`Variable`" + `(id, name, filePath, startLine, endLine, content, description, appLayer)`,
+		`COPY File(id, name, filePath, content, appLayer, functionalArea)`,
+		`COPY Function(id, name, filePath, startLine, endLine, isExported, content, description, appLayer, functionalArea)`,
+		`COPY Method(id, name, filePath, startLine, endLine, isExported, content, description, parameterCount, returnType, appLayer, functionalArea)`,
+		`COPY ` + "`TypeAlias`" + `(id, name, filePath, startLine, endLine, content, description, appLayer, functionalArea)`,
+		`COPY ` + "`Variable`" + `(id, name, filePath, startLine, endLine, content, description, appLayer, functionalArea)`,
 		`from="TypeAlias", to="Method"`,
 		`COPY CodeRelation FROM`,
 	} {
@@ -248,7 +248,7 @@ func TestCopyQueriesMatchLadybugCSVContract(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NodeCopyQuery(Method) error = %v", err)
 	}
-	want := `COPY Method(id, name, filePath, startLine, endLine, isExported, content, description, parameterCount, returnType, appLayer) FROM "C:/tmp/method.csv" (HEADER=true, ESCAPE='"', DELIM=',', QUOTE='"', PARALLEL=false, auto_detect=false)`
+	want := `COPY Method(id, name, filePath, startLine, endLine, isExported, content, description, parameterCount, returnType, appLayer, functionalArea) FROM "C:/tmp/method.csv" (HEADER=true, ESCAPE='"', DELIM=',', QUOTE='"', PARALLEL=false, auto_detect=false)`
 	if query != want {
 		t.Fatalf("NodeCopyQuery(Method) = %q, want %q", query, want)
 	}

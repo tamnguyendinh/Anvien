@@ -41,6 +41,42 @@ func TestClassifyAppLayerUsesPrimaryNonOverlappingCategories(t *testing.T) {
 	}
 }
 
+func TestClassifyFunctionalAreaUsesHighConfidencePathRules(t *testing.T) {
+	tests := []struct {
+		name string
+		path string
+		want FunctionalArea
+	}{
+		{name: "resolution", path: "internal/resolution/resolve.go", want: FunctionalAreaResolution},
+		{name: "graph health", path: "internal/graphhealth/compute.go", want: FunctionalAreaGraphHealth},
+		{name: "query", path: "internal/group/query.go", want: FunctionalAreaQuery},
+		{name: "mcp", path: "internal/mcp/tools.go", want: FunctionalAreaMCP},
+		{name: "api", path: "internal/httpapi/graph.go", want: FunctionalAreaAPI},
+		{name: "contracts", path: "internal/contracts/web_ui.go", want: FunctionalAreaContracts},
+		{name: "layout", path: "avmatrix-web/src/lib/graph-adapter.ts", want: FunctionalAreaLayout},
+		{name: "web graph ui", path: "avmatrix-web/src/components/GraphCanvas.tsx", want: FunctionalAreaWebGraphUI},
+		{name: "providers", path: "internal/providers/tsjs/extract.go", want: FunctionalAreaProviders},
+		{name: "storage", path: "internal/lbugload/csv.go", want: FunctionalAreaStorage},
+		{name: "embeddings", path: "internal/embeddings/pipeline.go", want: FunctionalAreaEmbeddings},
+		{name: "session", path: "internal/session/controller.go", want: FunctionalAreaSession},
+		{name: "cli", path: "cmd/avmatrix/main.go", want: FunctionalAreaCLI},
+		{name: "launcher", path: "avmatrix-launcher/src/main.go", want: FunctionalAreaLauncher},
+		{name: "reporting", path: "reports/problem/example.md", want: FunctionalAreaReporting},
+		{name: "docs", path: "docs/plans/example.md", want: FunctionalAreaDocumentation},
+		{name: "config", path: "go.mod", want: FunctionalAreaConfiguration},
+		{name: "unknown", path: "scratch/example.tmp", want: FunctionalAreaUnknown},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ClassifyFunctionalArea(tt.path)
+			if got.Area != tt.want {
+				t.Fatalf("ClassifyFunctionalArea(%q) = %q source %q, want %q", tt.path, got.Area, got.Source, tt.want)
+			}
+		})
+	}
+}
+
 func TestApplyPersistsAppLayerAndInfersProcessLayer(t *testing.T) {
 	g := graph.New()
 	g.AddNode(graph.Node{ID: "Function:api", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "api", "filePath": "internal/httpapi/graph.go"}})
@@ -65,6 +101,12 @@ func TestApplyPersistsAppLayerAndInfersProcessLayer(t *testing.T) {
 	if got := processNode.Properties[AppLayerProperty]; got != string(AppLayerAPI) {
 		t.Fatalf("process app layer = %v, want %s", got, AppLayerAPI)
 	}
+	if got := apiNode.Properties[FunctionalAreaProperty]; got != string(FunctionalAreaAPI) {
+		t.Fatalf("api node functional area = %v, want %s", got, FunctionalAreaAPI)
+	}
+	if got := processNode.Properties[FunctionalAreaProperty]; got != string(FunctionalAreaAPI) {
+		t.Fatalf("process functional area = %v, want %s", got, FunctionalAreaAPI)
+	}
 	if result.Metrics.NodesInferredFromRelationships != 1 {
 		t.Fatalf("inferred count = %d, want 1", result.Metrics.NodesInferredFromRelationships)
 	}
@@ -87,6 +129,9 @@ func TestApplyUsesMixedForRelationshipBackedMultiLayerNodes(t *testing.T) {
 	}
 	if got := node.Properties[AppLayerProperty]; got != string(AppLayerMixed) {
 		t.Fatalf("community app layer = %v, want %s", got, AppLayerMixed)
+	}
+	if got := node.Properties[FunctionalAreaProperty]; got != string(FunctionalAreaMixed) {
+		t.Fatalf("community functional area = %v, want %s", got, FunctionalAreaMixed)
 	}
 }
 
@@ -114,6 +159,9 @@ func TestGraphSemanticStatusDistinguishesUnknownFromMissingMetadata(t *testing.T
 	if status.AppLayer.MissingNodes != 1 || status.AppLayer.MissingSourceNodes != 1 {
 		t.Fatalf("missing app layer counts = %#v, want one stale node", status.AppLayer)
 	}
+	if status.FunctionalArea.Status != StatusStaleIncomplete {
+		t.Fatalf("functional area status = %q, want %q", status.FunctionalArea.Status, StatusStaleIncomplete)
+	}
 }
 
 func TestSemanticTermDefinitionsAreStableAndNonOverlapping(t *testing.T) {
@@ -122,12 +170,19 @@ func TestSemanticTermDefinitionsAreStableAndNonOverlapping(t *testing.T) {
 		t.Fatalf("app layer definitions = %d, want %d", len(appLayerDefinitions), len(AppLayers))
 	}
 	requireUniqueTermKeys(t, appLayerDefinitions)
+	functionalAreaDefinitions := FunctionalAreaDefinitions()
+	if len(functionalAreaDefinitions) != len(FunctionalAreas) {
+		t.Fatalf("functional area definitions = %d, want %d", len(functionalAreaDefinitions), len(FunctionalAreas))
+	}
+	requireUniqueTermKeys(t, functionalAreaDefinitions)
 	terms := SemanticTermDefinitions()
 	requireUniqueTermKeys(t, terms)
 	requireTerm(t, terms, "resolution_gap", "Resolution Gap")
 	requireTerm(t, terms, "non_actionable_reference", "Non-actionable Reference")
 	requireTerm(t, appLayerDefinitions, string(AppLayerAPI), "API Layer")
 	requireTerm(t, appLayerDefinitions, string(AppLayerFrontendAPIClient), "Frontend API Client")
+	requireTerm(t, functionalAreaDefinitions, string(FunctionalAreaResolution), "Resolution")
+	requireTerm(t, functionalAreaDefinitions, string(FunctionalAreaGraphHealth), "Graph Health")
 }
 
 func requireUniqueTermKeys(t *testing.T, terms []TermDefinition) {

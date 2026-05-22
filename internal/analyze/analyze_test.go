@@ -123,7 +123,8 @@ export function main() {
 	if result.Metrics.Communities.CommunitiesEmitted == 0 || result.Metrics.Processes.ProcessesEmitted == 0 {
 		t.Fatalf("missing graph enrichment metrics: communities=%#v processes=%#v", result.Metrics.Communities, result.Metrics.Processes)
 	}
-	if result.Metrics.Semantic.NodesVisited == 0 || result.Metrics.Semantic.AppLayerCounts["docs"] == 0 || result.Metrics.Semantic.AppLayerCounts["api"] == 0 {
+	if result.Metrics.Semantic.NodesVisited == 0 || result.Metrics.Semantic.AppLayerCounts["docs"] == 0 || result.Metrics.Semantic.AppLayerCounts["api"] == 0 ||
+		result.Metrics.Semantic.FunctionalAreaCounts["documentation"] == 0 || result.Metrics.Semantic.FunctionalAreaCounts["api"] == 0 {
 		t.Fatalf("missing semantic enrichment metrics: %#v", result.Metrics.Semantic)
 	}
 	if result.Metrics.DBLoad.Skipped || result.Metrics.DBLoad.RelationshipCopyCount == 0 || result.Metrics.DBLoad.FallbackInsertCount != 0 {
@@ -192,7 +193,8 @@ export function main() {
 	if metrics.Communities.CommunitiesEmitted == 0 || metrics.Processes.ProcessesEmitted == 0 {
 		t.Fatalf("benchmark enrichment metrics = communities %#v processes %#v", metrics.Communities, metrics.Processes)
 	}
-	if metrics.Semantic.NodesVisited == 0 || metrics.Semantic.AppLayerCounts["docs"] == 0 || metrics.Semantic.AppLayerCounts["api"] == 0 {
+	if metrics.Semantic.NodesVisited == 0 || metrics.Semantic.AppLayerCounts["docs"] == 0 || metrics.Semantic.AppLayerCounts["api"] == 0 ||
+		metrics.Semantic.FunctionalAreaCounts["documentation"] == 0 || metrics.Semantic.FunctionalAreaCounts["api"] == 0 {
 		t.Fatalf("benchmark semantic metrics = %#v", metrics.Semantic)
 	}
 	if metrics.DBLoad.Skipped || metrics.DBLoad.RelationshipCopyCount == 0 || metrics.DBLoad.FallbackInsertCount != 0 {

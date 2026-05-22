@@ -49,7 +49,7 @@ func TestExportGraphCSVsWritesNodeRelationshipAndSplitContracts(t *testing.T) {
 	}
 
 	fileRows := readCSV(t, filepath.Join(export.CSVDir, "file.csv"))
-	wantFileHeader := []string{"id", "name", "filePath", "content", "appLayer"}
+	wantFileHeader := []string{"id", "name", "filePath", "content", "appLayer", "functionalArea"}
 	if !reflect.DeepEqual(fileRows[0], wantFileHeader) {
 		t.Fatalf("file.csv header = %#v, want %#v", fileRows[0], wantFileHeader)
 	}
@@ -59,9 +59,12 @@ func TestExportGraphCSVsWritesNodeRelationshipAndSplitContracts(t *testing.T) {
 	if fileRows[1][4] != "unknown" {
 		t.Fatalf("file appLayer fallback = %q, want unknown", fileRows[1][4])
 	}
+	if fileRows[1][5] != "unknown" {
+		t.Fatalf("file functionalArea fallback = %q, want unknown", fileRows[1][5])
+	}
 
 	functionRows := readCSV(t, filepath.Join(export.CSVDir, "function.csv"))
-	wantFunctionHeader := []string{"id", "name", "filePath", "startLine", "endLine", "isExported", "content", "description", "appLayer"}
+	wantFunctionHeader := []string{"id", "name", "filePath", "startLine", "endLine", "isExported", "content", "description", "appLayer", "functionalArea"}
 	if !reflect.DeepEqual(functionRows[0], wantFunctionHeader) {
 		t.Fatalf("function.csv header = %#v, want %#v", functionRows[0], wantFunctionHeader)
 	}

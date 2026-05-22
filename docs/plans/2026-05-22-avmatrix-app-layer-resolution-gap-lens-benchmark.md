@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: planned
+Status: in progress; Phase 2 complete and paused before Phase 3 for discussion
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -182,7 +182,7 @@ Public metadata/status snapshot after P1-E/P1-H:
 
 | Metric | Value |
 | --- | --- |
-| Semantic schema version | `semantic_app_layer_v1` |
+| Semantic schema version | `semantic_app_functional_v1` |
 | JSON graph payload semantic field | `semanticStatus` |
 | NDJSON semantic record | `semantic_status` |
 | Stale fixture graph behavior | `stale_incomplete`, 5 missing `appLayer` nodes in `TestGraphReturnsJSONForRegisteredRepo` |
@@ -192,33 +192,43 @@ Public metadata/status snapshot after P1-E/P1-H:
 
 ## B5 - Functional Area Metrics
 
-Status: pending
+Status: complete for Phase 2.
 
-Record after P2.
+Measured after `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .tmp\2026-05-22-functional-area-semantic-enrichment.json --benchmark-label functional-area-semantic-enrichment`.
 
 | Functional Area | Node count | Evidence rule | Unknown/rejected notes |
 | --- | ---: | --- | --- |
-| resolution | pending | pending | pending |
-| graph_health | pending | pending | pending |
-| query | pending | pending | pending |
-| mcp | pending | pending | pending |
-| web_graph_ui | pending | pending | pending |
-| layout | pending | pending | pending |
-| contracts | pending | pending | pending |
-| providers | pending | pending | pending |
-| runtime | pending | pending | pending |
-| analyzer | pending | pending | pending |
-| session | pending | pending | pending |
-| launcher | pending | pending | pending |
-| cli | pending | pending | pending |
-| reporting | pending | pending | pending |
-| unknown | pending | pending | pending |
+| analyzer | 2426 | `internal/analyze` and analyzer pipeline paths | high-confidence path rule |
+| api | 1583 | `internal/httpapi`, frontend backend-client API surface | high-confidence path rule |
+| cli | 943 | `cmd/**` and CLI command paths | high-confidence path rule |
+| configuration | 37 | known project/build config filenames | high-confidence path rule |
+| contracts | 248 | `contracts/**`, `internal/contracts/**`, generator paths | high-confidence path rule |
+| documentation | 1293 | docs and markdown content paths | high-confidence path rule |
+| embeddings | 701 | `internal/embeddings` and embedding API paths | high-confidence path rule |
+| graph_health | 761 | `internal/graphhealth`, `internal/graphaccuracy` | high-confidence path rule |
+| launcher | 243 | `avmatrix-launcher/**` | high-confidence path rule |
+| layout | 280 | graph adapter, edge style, links, Sigma/layout paths | high-confidence path rule |
+| mcp | 1566 | `internal/mcp/**` | high-confidence path rule |
+| mixed | 294 | Process/Community membership spans more than one non-unknown area | relationship-backed inference only |
+| providers | 4954 | parser/provider/ScopeIR extraction paths | high-confidence path rule |
+| query | 1154 | query/group/tool-command/query-profile paths | high-confidence path rule |
+| reporting | 308 | `reports/**` | high-confidence path rule |
+| resolution | 1225 | `internal/resolution/**` | high-confidence path rule |
+| runtime | 21 | logging/version/runtime management paths | high-confidence path rule |
+| session | 510 | `internal/session`, Web chat/session runtime paths | high-confidence path rule |
+| storage | 1243 | graph, repo, LadybugDB schema/load paths | high-confidence path rule |
+| unknown | 1736 | missing path or no accepted rule | intentionally not guessed |
+| web_graph_ui | 832 | Web App/components/state/filter graph UI paths | high-confidence path rule |
 
 Rejected candidate signals:
 
 | Signal | Rejection reason | Example |
 | --- | --- | --- |
-| pending | pending | pending |
+| Import/call neighborhood | Too easy to contaminate ownership through callers/callees; needs separate evidence before use | a provider called by query code should not become query-owned automatically |
+| Community label text | Heuristic labels are useful context but not stable enough as direct classification evidence | community names may be inferred from mixed symbols |
+| Process label text | Process membership is accepted for relationship-backed Process/Community inference, but label text alone is not enough | process label wording can drift with ranking/extraction |
+| AI-assisted labels | Not reproducible or verifiable in the analyze pipeline today | no persisted deterministic label source exists |
+| Explicit semantic config | No repository-owned config exists yet for Functional Area overrides | future phase may add one if needed |
 
 ## B6 - ResolutionGap Persistence Metrics
 
@@ -370,11 +380,12 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 
 | Validation | Command | Result | Notes |
 | --- | --- | --- | --- |
-| Full build | `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pending | pending |
-| Backend tests | pending | pending | pending |
-| Contract generation/check | pending | pending | pending |
-| Web unit tests | pending | pending | pending |
-| Web e2e tests | pending | pending | pending |
+| Full build | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | run before tests after Functional Area code changes |
+| Backend tests | `go test .\internal\semantic .\internal\lbugschema .\internal\lbugload .\internal\contracts .\internal\httpapi .\internal\analyze` | passed | focused Functional Area, schema/export, contract, API status coverage |
+| Backend tests | `go test .\internal\... .\cmd\...` | passed | wider Go validation excluding intentionally non-buildable fixture packages |
+| Contract generation/check | `go run .\cmd\generate-web-contracts` | passed | regenerated schema and TypeScript contract from Go source |
+| Web unit tests | `npm test -- --run` in `avmatrix-web` | passed | 44 test files, 357 tests |
+| Web e2e tests | not run for Phase 2 | not applicable to this slice | Functional Area is persisted graph/contract metadata; visible Web UI behavior remains Phase 7 |
 | Query-health command | pending | pending | pending |
 | Resolution inventory command | pending | pending | pending |
 | `query` semantic output | pending | pending | pending |
@@ -382,26 +393,26 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | `impact` semantic output | pending | pending | pending |
 | `detect-changes` semantic output | pending | pending | pending |
 | API-specific MCP semantic output | pending | pending | pending |
-| AVmatrix detect-changes for implementation commits | pending | pending | pending |
+| AVmatrix detect-changes for implementation commits | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 24, changed_count 144, changed_files 18; affected surfaces match Functional Area semantic/schema/API/contract/export slice |
 
 ## B12 - Semantic Enrichment Flow Metrics
 
-Status: in progress; App Layer semantic enrichment measured.
+Status: in progress; App Layer and Functional Area semantic enrichment measured.
 
 Record after the analyze semantic enrichment phase is introduced and after each phase extends it.
 
 | Metric | Baseline | After App Layer | After Functional Area | After ResolutionGap | Final |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Semantic enrichment phase latency | pending | 33.9997 ms | pending | pending | pending |
-| Semantic enrichment memory delta | pending | pending | pending | pending | pending |
-| Graph nodes before enrichment | pending | 22239 | pending | pending | pending |
-| Graph nodes after enrichment | pending | 22239 | pending | pending | pending |
-| Graph relationships before enrichment | pending | 55006 | pending | pending | pending |
-| Graph relationships after enrichment | pending | 55006 | pending | pending | pending |
-| Graph JSON size | pending | 45739916 bytes | pending | pending | pending |
-| LadybugDB node rows | pending | 22239 | pending | pending | pending |
-| LadybugDB relationship rows | pending | 55006 | pending | pending | pending |
-| Duplicate graph traversals introduced | pending | 0 nested whole-graph loops; one node pass and one relationship pass | pending | pending | pending |
-| File rescans introduced | pending | 0 | pending | pending | pending |
-| AST reparses introduced | pending | 0 | pending | pending | pending |
+| Semantic enrichment phase latency | pending | 33.9997 ms | 68.8814 ms | pending | pending |
+| Semantic enrichment memory delta | pending | pending | overall analyze heap +89525848 bytes; not phase-isolated | pending | pending |
+| Graph nodes before enrichment | pending | 22239 | 22358 | pending | pending |
+| Graph nodes after enrichment | pending | 22239 | 22358 | pending | pending |
+| Graph relationships before enrichment | pending | 55006 | 55349 | pending | pending |
+| Graph relationships after enrichment | pending | 55006 | 55349 | pending | pending |
+| Graph JSON size | pending | 45739916 bytes | 47953614 bytes | pending | pending |
+| LadybugDB node rows | pending | 22239 | 22358 | pending | pending |
+| LadybugDB relationship rows | pending | 55006 | 55349 | pending | pending |
+| Duplicate graph traversals introduced | pending | 0 nested whole-graph loops; one node pass and one relationship pass | 0 nested whole-graph loops; one node pass and one relationship pass shared by App Layer and Functional Area | pending | pending |
+| File rescans introduced | pending | 0 | 0 | pending | pending |
+| AST reparses introduced | pending | 0 | 0 | pending | pending |
 | Raw unresolved fact count | pending | pending | pending | pending | pending |
