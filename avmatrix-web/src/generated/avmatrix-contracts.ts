@@ -3740,6 +3740,13 @@ export interface GraphHealthDiagnostic {
   filePath?: string;
   fileHash?: string;
   startLine?: number;
+  startCol?: number;
+  endLine?: number;
+  endCol?: number;
+  sourceSiteId?: string;
+  sourceSiteStatus?: string;
+  proofKind?: string;
+  targetRole?: string;
   count?: number;
   note?: string;
   source?: string;
@@ -3883,6 +3890,18 @@ export interface GraphRelationship {
   step?: number;
   resolutionSource?: string;
   fileHash?: string;
+  sourceSiteId?: string;
+  sourceSiteIds?: readonly string[];
+  sourceSiteCount?: number;
+  sourceSiteStatus?: string;
+  proofKind?: string;
+  targetRole?: string;
+  targetText?: string;
+  filePath?: string;
+  startLine?: number;
+  startCol?: number;
+  endLine?: number;
+  endCol?: number;
   evidence?: readonly {
     readonly kind: string;
     readonly weight: number;

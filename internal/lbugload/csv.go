@@ -15,9 +15,9 @@ import (
 	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
 )
 
-const RelationshipCSVHeader = "from,to,type,confidence,reason,step,resolutionSource,evidence,fileHash"
+const RelationshipCSVHeader = "from,to,type,confidence,reason,step,resolutionSource,evidence,fileHash,sourceSiteId,sourceSiteIds,sourceSiteCount,sourceSiteStatus,proofKind,targetRole,targetText,filePath,startLine,startCol,endLine,endCol"
 
-var relationshipColumns = []string{"from", "to", "type", "confidence", "reason", "step", "resolutionSource", "evidence", "fileHash"}
+var relationshipColumns = []string{"from", "to", "type", "confidence", "reason", "step", "resolutionSource", "evidence", "fileHash", "sourceSiteId", "sourceSiteIds", "sourceSiteCount", "sourceSiteStatus", "proofKind", "targetRole", "targetText", "filePath", "startLine", "startCol", "endLine", "endCol"}
 
 var (
 	fileNodeColumns      = semanticNodeColumns("id", "name", "filePath", "content")
@@ -358,7 +358,30 @@ func relationshipCSVRow(rel graph.Relationship) []string {
 		rel.ResolutionSource,
 		relationshipEvidence(rel),
 		rel.FileHash,
+		rel.SourceSiteID,
+		stringArrayJSON(rel.SourceSiteIDs),
+		strconv.Itoa(rel.SourceSiteCount),
+		rel.SourceSiteStatus,
+		rel.ProofKind,
+		rel.TargetRole,
+		rel.TargetText,
+		rel.FilePath,
+		strconv.Itoa(rel.StartLine),
+		strconv.Itoa(rel.StartCol),
+		strconv.Itoa(rel.EndLine),
+		strconv.Itoa(rel.EndCol),
 	}
+}
+
+func stringArrayJSON(values []string) string {
+	if len(values) == 0 {
+		return ""
+	}
+	raw, err := json.Marshal(values)
+	if err != nil {
+		return ""
+	}
+	return string(raw)
 }
 
 func relationshipEvidence(rel graph.Relationship) string {

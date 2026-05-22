@@ -153,6 +153,13 @@ type Diagnostic struct {
 	FilePath         string `json:"filePath,omitempty"`
 	FileHash         string `json:"fileHash,omitempty"`
 	StartLine        int    `json:"startLine,omitempty"`
+	StartCol         int    `json:"startCol,omitempty"`
+	EndLine          int    `json:"endLine,omitempty"`
+	EndCol           int    `json:"endCol,omitempty"`
+	SourceSiteID     string `json:"sourceSiteId,omitempty"`
+	SourceSiteStatus string `json:"sourceSiteStatus,omitempty"`
+	ProofKind        string `json:"proofKind,omitempty"`
+	TargetRole       string `json:"targetRole,omitempty"`
 	Count            int    `json:"count,omitempty"`
 	Note             string `json:"note,omitempty"`
 	Source           string `json:"source,omitempty"`

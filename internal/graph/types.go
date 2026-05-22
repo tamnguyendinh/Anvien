@@ -58,6 +58,18 @@ type Relationship struct {
 	ResolutionSource string           `json:"resolutionSource,omitempty"`
 	FileHash         string           `json:"fileHash,omitempty"`
 	Evidence         []Evidence       `json:"evidence,omitempty"`
+	SourceSiteID     string           `json:"sourceSiteId,omitempty"`
+	SourceSiteIDs    []string         `json:"sourceSiteIds,omitempty"`
+	SourceSiteCount  int              `json:"sourceSiteCount,omitempty"`
+	SourceSiteStatus string           `json:"sourceSiteStatus,omitempty"`
+	ProofKind        string           `json:"proofKind,omitempty"`
+	TargetRole       string           `json:"targetRole,omitempty"`
+	TargetText       string           `json:"targetText,omitempty"`
+	FilePath         string           `json:"filePath,omitempty"`
+	StartLine        int              `json:"startLine,omitempty"`
+	StartCol         int              `json:"startCol,omitempty"`
+	EndLine          int              `json:"endLine,omitempty"`
+	EndCol           int              `json:"endCol,omitempty"`
 }
 
 type Graph struct {

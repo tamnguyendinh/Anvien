@@ -1013,7 +1013,7 @@ func typeLabels() []scopeir.NodeLabel {
 }
 
 func propertyLabels() []scopeir.NodeLabel {
-	return []scopeir.NodeLabel{scopeir.NodeProperty, scopeir.NodeVariable, scopeir.NodeConst, scopeir.NodeStatic}
+	return []scopeir.NodeLabel{scopeir.NodeProperty}
 }
 
 func importBindingOrigin(kind scopeir.ImportKind) scopeir.BindingOrigin {

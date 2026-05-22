@@ -79,11 +79,17 @@ const (
 )
 
 type Reference struct {
-	FromScope  string
-	ToDefID    string
-	FileHash   string
-	Range      scopeir.Range
-	Kind       ReferenceKind
-	Confidence float64
-	Evidence   []graph.Evidence
+	FromScope        string
+	ToDefID          string
+	FilePath         string
+	FileHash         string
+	Range            scopeir.Range
+	Kind             ReferenceKind
+	Confidence       float64
+	SourceSiteID     string
+	SourceSiteStatus string
+	ProofKind        string
+	TargetRole       string
+	TargetText       string
+	Evidence         []graph.Evidence
 }

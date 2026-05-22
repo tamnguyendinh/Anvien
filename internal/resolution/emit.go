@@ -63,9 +63,24 @@ func (e *emitter) emitReference(source defRef, target defRef, reference Referenc
 		Confidence:       reference.Confidence,
 		Reason:           reason,
 		ResolutionSource: e.sourceLabel,
+		SourceSiteID:     reference.SourceSiteID,
+		SourceSiteStatus: firstNonEmpty(reference.SourceSiteStatus, sourceSiteStatusResolved),
+		ProofKind:        reference.ProofKind,
+		TargetRole:       reference.TargetRole,
+		TargetText:       reference.TargetText,
+		FilePath:         cleanPath(reference.FilePath),
 		FileHash:         reference.FileHash,
+		StartLine:        reference.Range.StartLine,
+		StartCol:         reference.Range.StartCol,
+		EndLine:          reference.Range.EndLine,
+		EndCol:           reference.Range.EndCol,
 		Evidence:         reference.Evidence,
 	}
+	if relationship.SourceSiteID == "" {
+		relationship.SourceSiteID = sourceSiteID(string(reference.Kind), reference.FilePath, reference.TargetText, reference.Range)
+	}
+	relationship.SourceSiteIDs = []string{relationship.SourceSiteID}
+	relationship.SourceSiteCount = 1
 	if reference.Kind == ReferenceRead {
 		step := 1
 		relationship.Step = &step
@@ -81,6 +96,17 @@ func (e *emitter) emitUnresolvedReference(source defRef, factFamily string, targ
 	if incrementMetric {
 		e.metrics.UnresolvedReferences++
 	}
+	status := sourceSiteStatusUnresolvedLocalBinding
+	if source.GraphID == "" {
+		status = sourceSiteStatusUnknown
+	}
+	if note == "heritage target text not modeled" {
+		status = sourceSiteStatusUnsupportedSyntax
+	}
+	proofKind := proofKindNone
+	if note == "call target matched low-confidence global fallback only" {
+		proofKind = proofKindGlobalFallbackLowConfidence
+	}
 	diagnostic := graphhealth.Diagnostic{
 		Kind:             graphhealth.DiagnosticUnresolvedReference,
 		FactFamily:       factFamily,
@@ -90,6 +116,13 @@ func (e *emitter) emitUnresolvedReference(source defRef, factFamily string, targ
 		FilePath:         cleanPath(filePath),
 		FileHash:         fileHash,
 		StartLine:        factRange.StartLine,
+		StartCol:         factRange.StartCol,
+		EndLine:          factRange.EndLine,
+		EndCol:           factRange.EndCol,
+		SourceSiteID:     sourceSiteID(factFamily, filePath, targetText, factRange),
+		SourceSiteStatus: status,
+		ProofKind:        proofKind,
+		TargetRole:       targetRoleForFactFamily(factFamily),
 		Note:             note,
 		Source:           e.sourceLabel,
 	}
@@ -280,12 +313,18 @@ func emitHeritageCompatibilityEdges(e *emitter, item heritageResolution, emitInh
 		return
 	}
 	e.emitReference(item.Owner, item.Target, Reference{
-		FromScope:  item.Fact.InScope,
-		ToDefID:    item.Target.Fact.ID,
-		FileHash:   item.Fact.FileHash,
-		Range:      item.Fact.Range,
-		Kind:       ReferenceInherits,
-		Confidence: 1,
+		FromScope:        item.Fact.InScope,
+		ToDefID:          item.Target.Fact.ID,
+		FilePath:         item.Fact.FilePath,
+		FileHash:         item.Fact.FileHash,
+		Range:            item.Fact.Range,
+		Kind:             ReferenceInherits,
+		Confidence:       1,
+		SourceSiteID:     sourceSiteID("heritage", item.Fact.FilePath, item.Fact.Name, item.Fact.Range),
+		SourceSiteStatus: sourceSiteStatusResolved,
+		ProofKind:        proofKindScopeBinding,
+		TargetRole:       targetRoleType,
+		TargetText:       item.Fact.Name,
 		Evidence: []graph.Evidence{{
 			Kind:   "scope-chain",
 			Weight: 1,
@@ -385,10 +424,63 @@ func mergeRelationship(existing graph.Relationship, incoming graph.Relationship)
 	if incoming.FileHash != "" {
 		merged.FileHash = incoming.FileHash
 	}
+	if incoming.SourceSiteID != "" && merged.SourceSiteID == "" {
+		merged.SourceSiteID = incoming.SourceSiteID
+	}
+	merged.SourceSiteIDs = mergeSourceSiteIDs(merged.SourceSiteIDs, incoming.SourceSiteIDs, incoming.SourceSiteID)
+	if len(merged.SourceSiteIDs) > 0 {
+		merged.SourceSiteCount = len(merged.SourceSiteIDs)
+	} else if merged.SourceSiteCount == 0 && incoming.SourceSiteCount > 0 {
+		merged.SourceSiteCount = incoming.SourceSiteCount
+	}
+	if incoming.SourceSiteStatus != "" {
+		merged.SourceSiteStatus = incoming.SourceSiteStatus
+	}
+	if incoming.ProofKind != "" {
+		merged.ProofKind = incoming.ProofKind
+	}
+	if incoming.TargetRole != "" {
+		merged.TargetRole = incoming.TargetRole
+	}
+	if incoming.TargetText != "" {
+		merged.TargetText = incoming.TargetText
+	}
+	if incoming.FilePath != "" {
+		merged.FilePath = incoming.FilePath
+	}
+	if merged.StartLine == 0 || (incoming.StartLine > 0 && incoming.StartLine < merged.StartLine) {
+		merged.StartLine = incoming.StartLine
+		merged.StartCol = incoming.StartCol
+		merged.EndLine = incoming.EndLine
+		merged.EndCol = incoming.EndCol
+	}
 	if len(incoming.Evidence) > 0 {
 		merged.Evidence = append([]graph.Evidence(nil), incoming.Evidence...)
 	}
 	return merged
+}
+
+func mergeSourceSiteIDs(existing []string, incoming []string, single string) []string {
+	seen := make(map[string]bool, len(existing)+len(incoming)+1)
+	out := make([]string, 0, len(existing)+len(incoming)+1)
+	for _, value := range existing {
+		if value == "" || seen[value] {
+			continue
+		}
+		seen[value] = true
+		out = append(out, value)
+	}
+	for _, value := range incoming {
+		if value == "" || seen[value] {
+			continue
+		}
+		seen[value] = true
+		out = append(out, value)
+	}
+	if single != "" && !seen[single] {
+		out = append(out, single)
+	}
+	return out
 }
 
 func relationshipTypeForReference(kind ReferenceKind) graph.RelationshipType {

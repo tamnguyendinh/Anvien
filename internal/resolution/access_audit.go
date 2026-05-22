@@ -91,6 +91,7 @@ func AuditAccessCandidates(files []scopeir.ScopeIR, options AccessCandidateAudit
 		"external_library_type",
 		"unsupported_syntax",
 		"false_positive_candidate",
+		"non_property_target",
 		"missing_caller",
 	)
 	return result, nil
@@ -109,6 +110,9 @@ func classifyAccessCandidate(w *workspace, access scopeir.AccessFact) (string, b
 	if _, ok := w.resolveImportedMember(access.ExplicitReceiver, access.Name, access.InScope, propertyLabels()); ok {
 		return "resolved", true, "imported receiver and property member are unique"
 	}
+	if target, ok := w.resolveImportedMember(access.ExplicitReceiver, access.Name, access.InScope, accessCandidateRejectedLabels()); ok {
+		return "non_property_target", false, "imported receiver resolves to " + string(target.Fact.Label) + ", not Property"
+	}
 	if w.receiverIsUnresolvedImport(access.ExplicitReceiver, access.InScope) {
 		return "external_library_type", false, "receiver is imported but target is not resolved in the analyzed workspace"
 	}
@@ -125,10 +129,17 @@ func classifyAccessCandidate(w *workspace, access scopeir.AccessFact) (string, b
 	case 1:
 		return "resolved", true, "receiver owner and property member are unique"
 	case 0:
+		if rejected := filterDefRefsByLabel(w.ownerMembers[owner.Fact.ID][access.Name], accessCandidateRejectedLabels()); len(rejected) > 0 {
+			return "non_property_target", false, "receiver owner member resolves to " + string(rejected[0].Fact.Label) + ", not Property"
+		}
 		return "false_positive_candidate", false, "receiver owner exists but matching property does not"
 	default:
 		return "ambiguous_owner", false, "receiver owner has multiple matching property members"
 	}
+}
+
+func accessCandidateRejectedLabels() []scopeir.NodeLabel {
+	return []scopeir.NodeLabel{scopeir.NodeVariable, scopeir.NodeConst, scopeir.NodeStatic}
 }
 
 func unsupportedAccessReceiver(receiver string) bool {

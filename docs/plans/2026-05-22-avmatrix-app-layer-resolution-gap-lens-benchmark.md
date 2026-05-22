@@ -10,7 +10,7 @@ Evidence: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-evidence.md](2026-0
 
 ## B0 - Baseline Analyze Inventory
 
-Status: pending
+Status: in progress; low-confidence fallback and source-site metadata persistence slices measured
 
 Record after P0-B.
 
@@ -257,25 +257,25 @@ Phase 2A target metrics:
 
 | Metric | Baseline | Target | After |
 | --- | ---: | ---: | ---: |
-| Raw call source sites inventoried | pending | all syntactic call sites in supported files | pending |
-| Raw access source sites inventoried | pending | all syntactic access sites in supported files | pending |
-| Source-site records with stable sourceSiteID | pending | all inventoried call/access sites | pending |
-| Resolved `CALLS` edges | 15109 discussion sample | proof-backed only | pending |
-| Resolved `ACCESSES` edges | 7670 discussion sample | property/field proof-backed only | pending |
+| Raw call source sites inventoried | pending | all syntactic call sites in supported files | 38400 current graph records: 7611 resolved `CALLS` + 30789 unresolved call diagnostics |
+| Raw access source sites inventoried | pending | all syntactic access sites in supported files | 20982 current graph records: 3136 resolved `ACCESSES` + 17846 unresolved access diagnostics |
+| Source-site records with stable sourceSiteID | pending | all inventoried call/access sites | 59382 current call/access records; 72373 all relationship/diagnostic source-site records including type-reference/heritage |
+| Resolved `CALLS` edges | 15109 discussion sample | proof-backed only | 7611 current graph |
+| Resolved `ACCESSES` edges | 7670 discussion sample | property/field proof-backed only | 3136 current graph |
 | Resolved edges from low-confidence/global fallback | pending | 0 unless accepted proof is present | 0 in focused resolver golden fixtures |
-| Low-confidence/global fallback source sites inventoried | pending | explicit count and status distribution | 2 focused resolver fixtures recorded as unresolved source-backed diagnostics; full inventory command pending |
-| Unresolved local-binding call sites | pending | explicit count | pending |
+| Low-confidence/global fallback source sites inventoried | pending | explicit count and status distribution | 2154 current graph diagnostics with `proofKind=global-fallback-low-confidence`; 2 focused resolver fixtures recorded as unresolved source-backed diagnostics |
+| Unresolved local-binding call sites | pending | explicit count | 30789 current graph unresolved call diagnostics; finer external/ambiguous/dynamic split pending P3/P4 |
 | Unresolved external call/access sites | pending | explicit count | pending |
 | Ambiguous call/access sites | pending | explicit count | pending |
 | Dynamic call/access sites | pending | explicit count | pending |
 | Unsupported syntax sites | pending | explicit count | pending |
-| False resolved edges in golden corpus | pending | 0 | 0 for focused low-confidence global fallback fixtures |
+| False resolved edges in golden corpus | pending | 0 | 0 for focused low-confidence global fallback and imported non-property ACCESSES fixtures |
 | Silent missing source sites in golden corpus | pending | 0 | pending |
-| Source sites hidden by relationship dedupe without occurrence evidence | pending | 0 | pending |
-| Resolved ACCESSES targets with label `Property` | pending | all resolved ACCESSES unless split relation says otherwise | pending |
-| Resolved ACCESSES targets with labels `Variable`/`Const`/`Static` | pending | 0 or moved to separate non-ACCESSES relation/fact role | pending |
-| Resolved ACCESSES targets with labels `Function`/`Method`/other | pending | 0 | pending |
-| Non-property resolved ACCESSES targets in golden corpus | pending | 0 | pending |
+| Source sites hidden by relationship dedupe without occurrence evidence | pending | 0 | 0 in focused duplicate-edge resolver fixture; merged relationship carries `sourceSiteCount=2` and two `sourceSiteIds` |
+| Resolved ACCESSES targets with label `Property` | pending | all resolved ACCESSES unless split relation says otherwise | 3136 / 3136 current graph |
+| Resolved ACCESSES targets with labels `Variable`/`Const`/`Static` | pending | 0 or moved to separate non-ACCESSES relation/fact role | 0 current graph; access-candidate audit bucket `non_property_target` covers rejected selector targets |
+| Resolved ACCESSES targets with labels `Function`/`Method`/other | pending | 0 | 0 current graph |
+| Non-property resolved ACCESSES targets in golden corpus | pending | 0 | 0 |
 | Duplicate resolved CALLS pairs | 0 discussion sample | 0 unless source-site evidence proves separate occurrences | pending |
 | Duplicate resolved ACCESSES pairs | 11 discussion sample | expected duplicates documented by source-site occurrence count | pending |
 | `stop()` false-positive edge to `SSEListener.stop` | observed | absent; source site unresolved/ambiguous unless proven | absent in `TestResolveBareGoCallDoesNotFallbackToCrossLanguageMethod` |
@@ -286,7 +286,15 @@ Low-confidence global CALLS fallback slice notes:
 
 - Same-file `CALLS` fallback remains resolved but now records confidence `0.950` in the TypeScript graph signature fixture instead of being promoted through global `resolveName` at confidence `1.000`.
 - PHP `use function` import evidence now keeps imported PHP function calls resolved through import binding rather than global fallback; the wider backend suite passed after this change.
-- Full source-site inventory counts remain pending until P2A-C/P2A-I persist and report all call/access source sites.
+- Full source-site inventory now persists in graph JSON and LadybugDB relationship rows for resolved relationships, and in unresolved diagnostics for unresolved sites. A dedicated P2A-I report command is still pending so the counts above were measured from `.avmatrix\graph.json` with a temporary PowerShell inventory script.
+
+Source-site metadata persistence slice notes:
+
+- Fresh analyze after the schema update reported files scanned `733`, parsed `544`, unsupported `189`, failed `0`, graph nodes `22404`, and graph relationships `51521`.
+- Current source-site relationship counts by type: `CALLS=7611`, `ACCESSES=3136`, `USES=4512`, `INHERITS=1`.
+- Current source-site relationship proof counts: `scope-binding=4889`, `same-file=3783`, `go-same-package=2192`, `receiver-member=3736`, `import-member=660`.
+- Current unresolved diagnostic buckets by fact family: `call=30789`, `access=17846`, `type-reference=8471`, `heritage=7`.
+- Current unresolved diagnostic occurrences by fact family: `call=30789`, `access=17846`, `type-reference=9217`, `heritage=7`.
 
 ## B6 - ResolutionGap Persistence Metrics
 

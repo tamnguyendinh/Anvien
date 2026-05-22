@@ -63,7 +63,19 @@
         "step": "INT32",
         "resolutionSource": "STRING",
         "evidence": "STRING",
-        "fileHash": "STRING"
+        "fileHash": "STRING",
+        "sourceSiteId": "STRING",
+        "sourceSiteIds": "STRING",
+        "sourceSiteCount": "INT32",
+        "sourceSiteStatus": "STRING",
+        "proofKind": "STRING",
+        "targetRole": "STRING",
+        "targetText": "STRING",
+        "filePath": "STRING",
+        "startLine": "INT64",
+        "startCol": "INT64",
+        "endLine": "INT64",
+        "endCol": "INT64"
       },
       "note": "Relationship type is stored as a STRING property, not a database enum; schema constants are an application contract."
     },

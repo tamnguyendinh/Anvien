@@ -34,6 +34,18 @@ func TestExportGraphCSVsWritesNodeRelationshipAndSplitContracts(t *testing.T) {
 		Step:             &step,
 		ResolutionSource: "resolver",
 		FileHash:         "hash-1",
+		SourceSiteID:     "SourceSite:src/app.ts#call#doWork#7#2#7#8",
+		SourceSiteIDs:    []string{"SourceSite:src/app.ts#call#doWork#7#2#7#8"},
+		SourceSiteCount:  1,
+		SourceSiteStatus: "resolved",
+		ProofKind:        "scope-binding",
+		TargetRole:       "callable",
+		TargetText:       "doWork",
+		FilePath:         "src/app.ts",
+		StartLine:        7,
+		StartCol:         2,
+		EndLine:          7,
+		EndCol:           8,
 		Evidence:         []graph.Evidence{{Kind: "definition", Weight: 0.7, Note: "direct"}},
 	})
 
@@ -78,6 +90,19 @@ func TestExportGraphCSVsWritesNodeRelationshipAndSplitContracts(t *testing.T) {
 	}
 	if relationshipRows[1][6] != "resolver" || relationshipRows[1][8] != "hash-1" {
 		t.Fatalf("relationship audit columns not preserved: %#v", relationshipRows[1])
+	}
+	if relationshipRows[1][9] != "SourceSite:src/app.ts#call#doWork#7#2#7#8" ||
+		relationshipRows[1][11] != "1" ||
+		relationshipRows[1][12] != "resolved" ||
+		relationshipRows[1][13] != "scope-binding" ||
+		relationshipRows[1][14] != "callable" ||
+		relationshipRows[1][15] != "doWork" ||
+		relationshipRows[1][16] != "src/app.ts" ||
+		relationshipRows[1][17] != "7" ||
+		relationshipRows[1][18] != "2" ||
+		relationshipRows[1][19] != "7" ||
+		relationshipRows[1][20] != "8" {
+		t.Fatalf("relationship source-site columns not preserved: %#v", relationshipRows[1])
 	}
 	if !strings.Contains(relationshipRows[1][7], `"kind":"definition"`) {
 		t.Fatalf("relationship evidence JSON not preserved: %q", relationshipRows[1][7])

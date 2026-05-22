@@ -202,7 +202,7 @@ func TestResolveMemberAccessRejectsCrossLanguageGlobalOwner(t *testing.T) {
 	}
 }
 
-func TestResolveImportedWorkspaceMemberAccess(t *testing.T) {
+func TestResolveImportedConstSelectorDoesNotEmitAccess(t *testing.T) {
 	moduleScope := "scope:cmd/app/main.go:module"
 	functionScope := "scope:cmd/app/main.go:main"
 	targetRaw := "github.com/tamnguyendinh/avmatrix-go/internal/pkg"
@@ -244,9 +244,18 @@ func TestResolveImportedWorkspaceMemberAccess(t *testing.T) {
 	}
 	mainFn := requireNode(t, result.Graph, "Function", "cmd/app/main.go", "main")
 	mode := requireNode(t, result.Graph, "Const", "internal/pkg/constants.go", "Mode")
-	requireRelationship(t, result.Graph, graph.RelAccesses, mainFn.ID, mode.ID)
-	if result.Metrics.ResolvedAccesses != 1 || result.Metrics.UnresolvedReferences != 0 {
+	requireNoRelationship(t, result.Graph, graph.RelAccesses, mainFn.ID, mode.ID)
+	if result.Metrics.ResolvedAccesses != 0 || result.Metrics.UnresolvedReferences != 1 {
 		t.Fatalf("unexpected metrics: %#v", result.Metrics)
+	}
+	diagnostics, ok := mainFn.Properties[graphhealth.DiagnosticPropertyKey].([]graphhealth.Diagnostic)
+	if !ok || len(diagnostics) != 1 {
+		t.Fatalf("main diagnostics = %#v", mainFn.Properties[graphhealth.DiagnosticPropertyKey])
+	}
+	if diagnostics[0].TargetText != "pkg.Mode" ||
+		diagnostics[0].SourceSiteStatus != sourceSiteStatusUnresolvedLocalBinding ||
+		diagnostics[0].TargetRole != targetRoleMember {
+		t.Fatalf("unexpected imported const selector diagnostic: %#v", diagnostics[0])
 	}
 }
 
@@ -500,6 +509,25 @@ func TestResolveMergesDuplicateSemanticEdgesAndCountsUnresolved(t *testing.T) {
 	if result.Metrics.DuplicateEdgesMerged != 1 || result.Metrics.UnresolvedReferences != 1 {
 		t.Fatalf("unexpected duplicate/unresolved metrics: %#v", result.Metrics)
 	}
+	targetNode := requireNode(t, result.Graph, "Function", "src/app.ts", "target")
+	var targetCall graph.Relationship
+	for _, relationship := range result.Graph.Relationships {
+		if relationship.Type == graph.RelCalls && relationship.TargetID == targetNode.ID && relationship.TargetText == "target" {
+			targetCall = relationship
+			break
+		}
+	}
+	if targetCall.ID == "" {
+		t.Fatalf("missing merged target call relationship")
+	}
+	if targetCall.SourceSiteStatus != sourceSiteStatusResolved ||
+		targetCall.ProofKind != proofKindScopeBinding ||
+		targetCall.TargetRole != targetRoleCallable ||
+		targetCall.FilePath != "src/app.ts" ||
+		targetCall.SourceSiteCount != 2 ||
+		len(targetCall.SourceSiteIDs) != 2 {
+		t.Fatalf("merged call source-site metadata = %#v", targetCall)
+	}
 }
 
 func TestResolveAttachesSourceBackedUnresolvedDiagnostics(t *testing.T) {
@@ -545,6 +573,11 @@ func TestResolveAttachesSourceBackedUnresolvedDiagnostics(t *testing.T) {
 		diagnostic.ResolutionSource != "scope-resolution" ||
 		diagnostic.FilePath != "src/app.ts" ||
 		diagnostic.StartLine != 3 ||
+		diagnostic.StartCol != 2 ||
+		diagnostic.SourceSiteID != "SourceSite:src/app.ts#call#missing#3#2#0#0" ||
+		diagnostic.SourceSiteStatus != sourceSiteStatusUnresolvedLocalBinding ||
+		diagnostic.ProofKind != proofKindNone ||
+		diagnostic.TargetRole != targetRoleCallable ||
 		diagnostic.Count != 1 {
 		t.Fatalf("unexpected diagnostic: %#v", diagnostic)
 	}

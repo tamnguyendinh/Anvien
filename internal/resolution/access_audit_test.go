@@ -143,7 +143,7 @@ func TestAuditAccessCandidatesRejectsCrossLanguageGlobalOwner(t *testing.T) {
 	assertAccessReason(t, result, "false_positive_candidate", 0)
 }
 
-func TestAuditAccessCandidatesResolvesImportedWorkspaceMember(t *testing.T) {
+func TestAuditAccessCandidatesRejectsImportedConstAsAccess(t *testing.T) {
 	moduleScope := "scope:cmd/app/main.go:module"
 	functionScope := "scope:cmd/app/main.go:main"
 	targetRaw := "github.com/tamnguyendinh/avmatrix-go/internal/pkg"
@@ -183,7 +183,8 @@ func TestAuditAccessCandidatesResolvesImportedWorkspaceMember(t *testing.T) {
 	if err != nil {
 		t.Fatalf("AuditAccessCandidates() error = %v", err)
 	}
-	assertAccessReason(t, result, "resolved", 1)
+	assertAccessReason(t, result, "resolved", 0)
+	assertAccessReason(t, result, "non_property_target", 1)
 	assertAccessReason(t, result, "missing_receiver_type", 0)
 }
 

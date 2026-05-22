@@ -123,12 +123,21 @@ func appendDiagnosticsFromProperties(properties graph.NodeProperties, diagnostic
 }
 
 func sameDiagnosticBucket(left Diagnostic, right Diagnostic) bool {
-	return left.Kind == right.Kind &&
+	sameBase := left.Kind == right.Kind &&
 		left.FactFamily == right.FactFamily &&
 		left.SourceNodeID == right.SourceNodeID &&
 		left.ResolutionSource == right.ResolutionSource &&
 		left.FilePath == right.FilePath &&
 		left.Note == right.Note
+	if !sameBase {
+		return false
+	}
+	if left.SourceSiteID != "" || right.SourceSiteID != "" {
+		return left.SourceSiteID == right.SourceSiteID
+	}
+	return left.TargetText == right.TargetText &&
+		left.StartLine == right.StartLine &&
+		left.StartCol == right.StartCol
 }
 
 func diagnosticCount(diagnostic Diagnostic) int {
@@ -178,6 +187,13 @@ func normalizeDiagnostic(value any) (Diagnostic, bool) {
 			FilePath:         stringMapValue(typed, "filePath"),
 			FileHash:         stringMapValue(typed, "fileHash"),
 			StartLine:        intValue(typed["startLine"]),
+			StartCol:         intValue(typed["startCol"]),
+			EndLine:          intValue(typed["endLine"]),
+			EndCol:           intValue(typed["endCol"]),
+			SourceSiteID:     stringMapValue(typed, "sourceSiteId"),
+			SourceSiteStatus: stringMapValue(typed, "sourceSiteStatus"),
+			ProofKind:        stringMapValue(typed, "proofKind"),
+			TargetRole:       stringMapValue(typed, "targetRole"),
 			Count:            intValue(typed["count"]),
 			Note:             stringMapValue(typed, "note"),
 			Source:           stringMapValue(typed, "source"),

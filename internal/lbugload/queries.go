@@ -23,6 +23,18 @@ type RelationshipCSVRow struct {
 	ResolutionSource string
 	Evidence         string
 	FileHash         string
+	SourceSiteID     string
+	SourceSiteIDs    string
+	SourceSiteCount  string
+	SourceSiteStatus string
+	ProofKind        string
+	TargetRole       string
+	TargetText       string
+	FilePath         string
+	StartLine        string
+	StartCol         string
+	EndLine          string
+	EndCol           string
 }
 
 func NodeCopyQuery(table string, csvPath string) (string, error) {
@@ -56,8 +68,13 @@ func RetryCopyQuery(query string) string {
 func FallbackRelationshipInsertQuery(row RelationshipCSVRow, fromLabel string, toLabel string) string {
 	confidence := parseFloatString(row.Confidence, 1)
 	step := parseIntString(row.Step, 0)
+	sourceSiteCount := parseIntString(row.SourceSiteCount, 0)
+	startLine := parseIntString(row.StartLine, 0)
+	startCol := parseIntString(row.StartCol, 0)
+	endLine := parseIntString(row.EndLine, 0)
+	endCol := parseIntString(row.EndCol, 0)
 	return fmt.Sprintf(
-		`MATCH (a:%s {id: %s}), (b:%s {id: %s}) CREATE (a)-[:%s {type: %s, confidence: %s, reason: %s, step: %d, resolutionSource: %s, evidence: %s, fileHash: %s}]->(b)`,
+		`MATCH (a:%s {id: %s}), (b:%s {id: %s}) CREATE (a)-[:%s {type: %s, confidence: %s, reason: %s, step: %d, resolutionSource: %s, evidence: %s, fileHash: %s, sourceSiteId: %s, sourceSiteIds: %s, sourceSiteCount: %d, sourceSiteStatus: %s, proofKind: %s, targetRole: %s, targetText: %s, filePath: %s, startLine: %d, startCol: %d, endLine: %d, endCol: %d}]->(b)`,
 		lbugschema.FormatIdent(fromLabel),
 		cypherString(row.FromID),
 		lbugschema.FormatIdent(toLabel),
@@ -70,6 +87,18 @@ func FallbackRelationshipInsertQuery(row RelationshipCSVRow, fromLabel string, t
 		cypherString(row.ResolutionSource),
 		cypherString(row.Evidence),
 		cypherString(row.FileHash),
+		cypherString(row.SourceSiteID),
+		cypherString(row.SourceSiteIDs),
+		sourceSiteCount,
+		cypherString(row.SourceSiteStatus),
+		cypherString(row.ProofKind),
+		cypherString(row.TargetRole),
+		cypherString(row.TargetText),
+		cypherString(row.FilePath),
+		startLine,
+		startCol,
+		endLine,
+		endCol,
 	)
 }
 
@@ -125,6 +154,18 @@ func relationshipRowFromRecord(record []string) (RelationshipCSVRow, bool) {
 		ResolutionSource: record[6],
 		Evidence:         record[7],
 		FileHash:         record[8],
+		SourceSiteID:     record[9],
+		SourceSiteIDs:    record[10],
+		SourceSiteCount:  record[11],
+		SourceSiteStatus: record[12],
+		ProofKind:        record[13],
+		TargetRole:       record[14],
+		TargetText:       record[15],
+		FilePath:         record[16],
+		StartLine:        record[17],
+		StartCol:         record[18],
+		EndLine:          record[19],
+		EndCol:           record[20],
 	}, true
 }
 

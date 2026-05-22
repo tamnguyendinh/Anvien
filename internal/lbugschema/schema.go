@@ -442,7 +442,27 @@ type column struct {
 }
 
 func relationColumns() []column {
-	return []column{{"type", "STRING"}, {"confidence", "DOUBLE"}, {"reason", "STRING"}, {"step", "INT32"}, {"resolutionSource", "STRING"}, {"evidence", "STRING"}, {"fileHash", "STRING"}}
+	return []column{
+		{"type", "STRING"},
+		{"confidence", "DOUBLE"},
+		{"reason", "STRING"},
+		{"step", "INT32"},
+		{"resolutionSource", "STRING"},
+		{"evidence", "STRING"},
+		{"fileHash", "STRING"},
+		{"sourceSiteId", "STRING"},
+		{"sourceSiteIds", "STRING"},
+		{"sourceSiteCount", "INT32"},
+		{"sourceSiteStatus", "STRING"},
+		{"proofKind", "STRING"},
+		{"targetRole", "STRING"},
+		{"targetText", "STRING"},
+		{"filePath", "STRING"},
+		{"startLine", "INT64"},
+		{"startCol", "INT64"},
+		{"endLine", "INT64"},
+		{"endCol", "INT64"},
+	}
 }
 
 func nodeTable(name string, columns []column) string {

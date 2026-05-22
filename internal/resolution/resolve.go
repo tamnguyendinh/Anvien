@@ -136,14 +136,19 @@ func resolveCall(w *workspace, e *emitter, call scopeir.CallSiteFact) {
 	}
 	var target defRef
 	confidence := 1.0
+	proofKind := ""
 	lowConfidenceFallback := false
 	switch call.CallForm {
 	case scopeir.CallConstructor:
 		target, ok = w.resolveScopedName(call.Name, call.InScope, dispatchOwnerLabels())
+		if ok {
+			proofKind = proofKindScopeBinding
+		}
 		if !ok {
 			target, ok = w.resolveSameFileName(call.FilePath, call.Name, dispatchOwnerLabels())
 			if ok {
 				confidence = 0.95
+				proofKind = proofKindSameFile
 			}
 		}
 		if !ok {
@@ -155,10 +160,14 @@ func resolveCall(w *workspace, e *emitter, call scopeir.CallSiteFact) {
 		}
 	case scopeir.CallMember:
 		target, ok = w.resolveMember(call.Name, call.ExplicitReceiver, call.InScope, callableLabels())
+		if ok {
+			proofKind = proofKindReceiverMember
+		}
 		if !ok {
 			target, ok = w.resolveImportedMember(call.ExplicitReceiver, call.Name, call.InScope, callableLabels())
 			if ok {
 				confidence = 0.9
+				proofKind = proofKindImportMember
 			}
 		}
 		if !ok && call.ExplicitReceiver == "" {
@@ -170,16 +179,21 @@ func resolveCall(w *workspace, e *emitter, call scopeir.CallSiteFact) {
 		}
 	default:
 		target, ok = w.resolveScopedName(call.Name, call.InScope, callableLabels())
+		if ok {
+			proofKind = proofKindScopeBinding
+		}
 		if !ok {
 			target, ok = w.resolveSameFileName(call.FilePath, call.Name, callableLabels())
 			if ok {
 				confidence = 0.95
+				proofKind = proofKindSameFile
 			}
 		}
 		if !ok {
 			target, ok = w.resolveGoSamePackageFunction(call.FilePath, call.Name, call.Arity)
 			if ok {
 				confidence = 0.95
+				proofKind = proofKindGoSamePackage
 			}
 		}
 		if !ok {
@@ -199,12 +213,18 @@ func resolveCall(w *workspace, e *emitter, call scopeir.CallSiteFact) {
 		return
 	}
 	e.emitReference(source, target, Reference{
-		FromScope:  call.InScope,
-		ToDefID:    target.Fact.ID,
-		FileHash:   call.FileHash,
-		Range:      call.Range,
-		Kind:       ReferenceCall,
-		Confidence: confidence,
+		FromScope:        call.InScope,
+		ToDefID:          target.Fact.ID,
+		FilePath:         call.FilePath,
+		FileHash:         call.FileHash,
+		Range:            call.Range,
+		Kind:             ReferenceCall,
+		Confidence:       confidence,
+		SourceSiteID:     sourceSiteID("call", call.FilePath, callTargetText(call), call.Range),
+		SourceSiteStatus: sourceSiteStatusResolved,
+		ProofKind:        proofKind,
+		TargetRole:       targetRoleCallable,
+		TargetText:       callTargetText(call),
 		Evidence: []graph.Evidence{{
 			Kind:   callEvidenceKind(call.CallForm),
 			Weight: 1,
@@ -247,11 +267,13 @@ func resolveAccess(w *workspace, e *emitter, access scopeir.AccessFact) {
 	target, ok := w.resolveMember(access.Name, access.ExplicitReceiver, access.InScope, propertyLabels())
 	confidence := 1.0
 	evidenceKind := "type-binding"
+	proofKind := proofKindReceiverMember
 	if !ok {
 		target, ok = w.resolveImportedMember(access.ExplicitReceiver, access.Name, access.InScope, propertyLabels())
 		if ok {
 			confidence = 0.9
 			evidenceKind = "import-binding"
+			proofKind = proofKindImportMember
 		}
 	}
 	if !ok {
@@ -263,12 +285,18 @@ func resolveAccess(w *workspace, e *emitter, access scopeir.AccessFact) {
 		kind = ReferenceWrite
 	}
 	e.emitReference(source, target, Reference{
-		FromScope:  access.InScope,
-		ToDefID:    target.Fact.ID,
-		FileHash:   access.FileHash,
-		Range:      access.Range,
-		Kind:       kind,
-		Confidence: confidence,
+		FromScope:        access.InScope,
+		ToDefID:          target.Fact.ID,
+		FilePath:         access.FilePath,
+		FileHash:         access.FileHash,
+		Range:            access.Range,
+		Kind:             kind,
+		Confidence:       confidence,
+		SourceSiteID:     sourceSiteID("access", access.FilePath, accessTargetText(access), access.Range),
+		SourceSiteStatus: sourceSiteStatusResolved,
+		ProofKind:        proofKind,
+		TargetRole:       targetRoleMember,
+		TargetText:       accessTargetText(access),
 		Evidence: []graph.Evidence{{
 			Kind:   evidenceKind,
 			Weight: 1,
@@ -302,12 +330,18 @@ func resolveTypeAnnotation(w *workspace, e *emitter, annotation scopeir.TypeAnno
 		return
 	}
 	e.emitReference(source, target, Reference{
-		FromScope:  annotation.InScope,
-		ToDefID:    target.Fact.ID,
-		FileHash:   annotation.FileHash,
-		Range:      annotation.Range,
-		Kind:       ReferenceTypeReference,
-		Confidence: 1,
+		FromScope:        annotation.InScope,
+		ToDefID:          target.Fact.ID,
+		FilePath:         annotation.FilePath,
+		FileHash:         annotation.FileHash,
+		Range:            annotation.Range,
+		Kind:             ReferenceTypeReference,
+		Confidence:       1,
+		SourceSiteID:     sourceSiteID("type-reference", annotation.FilePath, annotation.Type.RawName, annotation.Range),
+		SourceSiteStatus: sourceSiteStatusResolved,
+		ProofKind:        proofKindScopeBinding,
+		TargetRole:       targetRoleType,
+		TargetText:       annotation.Type.RawName,
 		Evidence: []graph.Evidence{{
 			Kind:   "scope-chain",
 			Weight: 1,

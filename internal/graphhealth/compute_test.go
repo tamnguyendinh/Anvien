@@ -254,11 +254,12 @@ func TestCompute_UnresolvedDiagnosticPreservesTopologyAndMarksUnknownConfidence(
 
 	source := findNode(g, "Function:source")
 	health, ok := source.Properties["graphHealth"].(NodeHealth)
-	if !ok || len(health.Diagnostics) != 1 {
+	if !ok || len(health.Diagnostics) != 2 {
 		t.Fatalf("source graphHealth diagnostics = %#v", source.Properties["graphHealth"])
 	}
-	if health.Diagnostics[0].Count != 2 || health.Diagnostics[0].TargetText != "missing" {
-		t.Fatalf("source diagnostic aggregation = %#v", health.Diagnostics[0])
+	if health.Diagnostics[0].Count != 1 || health.Diagnostics[0].TargetText != "missing" ||
+		health.Diagnostics[1].Count != 1 || health.Diagnostics[1].TargetText != "otherMissing" {
+		t.Fatalf("source diagnostic aggregation = %#v", health.Diagnostics)
 	}
 	if health.Diagnostics[0].Classification != DiagnosticClassificationInRepoUnresolved ||
 		health.Diagnostics[0].Actionability != DiagnosticActionabilityAnalyzerGap {
