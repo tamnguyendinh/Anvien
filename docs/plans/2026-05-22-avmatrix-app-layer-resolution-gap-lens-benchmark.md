@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, and File-source CALLS gate slices complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, File-source CALLS gate, and golden corpus slices complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -240,7 +240,7 @@ Rejected candidate signals:
 
 ## B5A - Proof-Based CALLS/ACCESSES Accuracy Metrics
 
-Status: pending
+Status: in progress; graph-inventory and golden corpus metrics recorded.
 
 Record during Phase 2A.
 
@@ -271,17 +271,17 @@ Phase 2A target metrics:
 | Resolved edges from low-confidence/global fallback | pending | 0 unless accepted proof is present | 0 in focused resolver golden fixtures |
 | Low-confidence/global fallback source sites inventoried | pending | explicit count and status distribution | 2159 current graph diagnostics with `proofKind=global-fallback-low-confidence`; 2 focused resolver fixtures recorded as unresolved source-backed diagnostics |
 | Unresolved local-binding call sites | pending | explicit count | 30896 current graph unresolved call diagnostics; finer external/ambiguous/dynamic split pending P3/P4 |
-| Unresolved external call/access sites | pending | explicit count | pending |
-| Ambiguous call/access sites | pending | explicit count | pending |
-| Dynamic call/access sites | pending | explicit count | pending |
-| Unsupported syntax sites | pending | explicit count | pending |
-| False resolved edges in golden corpus | pending | 0 | 0 for focused low-confidence global fallback and imported non-property ACCESSES fixtures |
-| Silent missing source sites in golden corpus | pending | 0 | pending |
-| Source sites hidden by relationship dedupe without occurrence evidence | pending | 0 | 0 in focused duplicate-edge resolver fixture; current graph has 5161 merged relationships with 15862 source-site occurrences preserved |
+| Unresolved external call/access sites | pending | explicit count | 158 current `external_library` diagnostics; golden corpus covers `cobra.Command` as external/review |
+| Ambiguous call/access sites | pending | explicit count | 0 explicit `ambiguous` statuses in current graph and golden corpus; richer split remains Phase 3/4 |
+| Dynamic call/access sites | pending | explicit count | 0 explicit `dynamic` statuses in current graph and golden corpus; richer split remains Phase 3/4 |
+| Unsupported syntax sites | pending | explicit count | 398 current graph diagnostics; golden corpus covers 1 file-level call source as `unsupported_syntax` |
+| False resolved edges in golden corpus | pending | 0 | 0 in `TestProofBasedCallAccessGoldenCorpus` across callback variable, `stop()` cross-name, file-source call, and non-property ACCESSES cases |
+| Silent missing source sites in golden corpus | pending | 0 | 0 in `TestProofBasedCallAccessGoldenCorpus`; 12 expected call/access source sites are found |
+| Source sites hidden by relationship dedupe without occurrence evidence | pending | 0 | 0 in focused duplicate-edge resolver fixture and golden corpus; current graph has 5161 merged relationships with 15862 source-site occurrences preserved |
 | Resolved ACCESSES targets with label `Property` | pending | all resolved ACCESSES unless split relation says otherwise | 3297 / 3297 current graph |
 | Resolved ACCESSES targets with labels `Variable`/`Const`/`Static` | pending | 0 or moved to separate non-ACCESSES relation/fact role | 0 current graph; access-candidate audit bucket `non_property_target` covers rejected selector targets |
 | Resolved ACCESSES targets with labels `Function`/`Method`/other | pending | 0 | 0 current graph |
-| Non-property resolved ACCESSES targets in golden corpus | pending | 0 | 0 |
+| Non-property resolved ACCESSES targets in golden corpus | pending | 0 | 0 in `TestProofBasedCallAccessGoldenCorpus` |
 | Duplicate resolved CALLS pairs | 0 discussion sample | 0 unless source-site evidence proves separate occurrences | 10 duplicate source-target pairs across current `CALLS`/`ACCESSES`; max duplicate 2; exact source-site occurrence evidence preserved |
 | Duplicate resolved ACCESSES pairs | 11 discussion sample | expected duplicates documented by source-site occurrence count | included in 10 duplicate source-target pairs from current source-site report |
 | `stop()` false-positive edge to `SSEListener.stop` | observed | absent; source site unresolved/ambiguous unless proven | absent in `TestResolveBareGoCallDoesNotFallbackToCrossLanguageMethod` |
@@ -315,9 +315,19 @@ Source-site metadata persistence and accuracy command slice notes:
 - Current source-site inventory after the gate: relationship buckets `15476`, relationship occurrences `26177`, diagnostic buckets `57449`, diagnostic occurrences `58195`, all source-site occurrences `84372`, stable source-site ID occurrences `84372`, missing source-site ID occurrences `0`.
 - Current source-site accuracy policy after the gate: false resolved edge candidates `0`, resolved edges without proof `0`, resolved edges without source-site ID `0`, low-confidence fallback resolved edges `0`, coarse file call edges `0`, non-property ACCESSES targets `0`.
 
+Golden corpus slice notes:
+
+- `TestProofBasedCallAccessGoldenCorpus` fixture size: 10 call source sites and 2 access source sites.
+- Golden resolved source-site occurrences: 5 `CALLS` occurrences and 1 `ACCESSES` occurrence.
+- Golden unresolved source-site diagnostics: 5 call diagnostics and 1 access diagnostic.
+- Golden duplicate/merge check: two `helper()` calls merge into one `CALLS` edge with both source-site IDs and `sourceSiteCount=2`.
+- Golden false resolved edges: `0`.
+- Golden silent missing source sites: `0`.
+- Golden non-property resolved `ACCESSES` targets: `0`.
+
 ## B6 - ResolutionGap Persistence Metrics
 
-Status: pending
+Status: in progress; validation recorded through Phase 2A golden corpus slice.
 
 Record after P3.
 
@@ -481,6 +491,11 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | Backend tests | `go test .\internal\resolution` and `go test .\internal\graphaccuracy` | passed | focused File-source CALLS gate and source-site accuracy coverage |
 | Backend tests | `go test .\internal\... .\cmd\...` | passed | wider Go validation after File-source CALLS gate |
 | AVmatrix detect-changes for File-source CALLS gate | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed | affected_count 0, changed_count 15, changed_files 7, risk_level low |
+| Full build before golden corpus tests | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | run before tests for `TestProofBasedCallAccessGoldenCorpus` slice |
+| Backend tests | `go test .\internal\resolution` | passed | focused golden corpus coverage for proof-based CALLS/ACCESSES |
+| Backend tests | `go test .\internal\graphaccuracy .\internal\cli .\internal\contracts .\internal\lbugload .\internal\graphhealth` | passed | focused graphaccuracy/CLI/contract/export/diagnostic surfaces after golden corpus slice |
+| Backend tests | `go test .\internal\... .\cmd\...` | passed | wider Go validation after golden corpus slice |
+| AVmatrix detect-changes for golden corpus | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed | after staging new test file and final ledger updates: affected_count 0, changed_count 81, changed_files 4, risk_level low |
 | AVmatrix detect-changes for source-site accuracy command | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected high scope | affected_count 11, changed_count 35, changed_files 6; affected surfaces match root CLI command and graphaccuracy report/schema decoding changes |
 | Query-health command | pending | pending | pending |
 | Resolution inventory command | pending | pending | pending |

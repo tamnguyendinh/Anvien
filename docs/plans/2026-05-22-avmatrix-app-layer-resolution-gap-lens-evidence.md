@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, and File-source CALLS gate slices complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, File-source CALLS gate, and golden corpus slices complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -372,7 +372,7 @@ Implemented evidence:
 
 ## E7A - Proof-Based CALLS/ACCESSES Evidence
 
-Status: in progress; low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command graph-inventory, and File-source CALLS gate slices complete
+Status: in progress; low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command graph-inventory, File-source CALLS gate, and golden corpus slices complete
 
 Record during Phase 2A.
 
@@ -445,6 +445,17 @@ Implemented evidence for the File-source CALLS gate slice:
 - Fresh local build/analyze/report command after the gate: `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force` produced scanned `736`, parsed `547`, unsupported `189`, failed `0`, graph nodes `22635`, graph relationships `52144`; `.\avmatrix-launcher\server-bundle\avmatrix.exe source-site-accuracy --graph .avmatrix\graph.json --out .tmp\2026-05-22-source-site-accuracy-after-file-source-call-gate.json --max-examples 20` produced `policy.falseResolvedEdgeCandidates=0`, `coarseFileCallEdges=0`, resolved edges without proof `0`, resolved edges without sourceSiteID `0`, low-confidence fallback resolved edges `0`, and non-property ACCESSES targets `0`.
 - Validation evidence for this slice: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; focused tests passed with `go test .\internal\resolution` and `go test .\internal\graphaccuracy`; wider backend validation passed with `go test .\internal\... .\cmd\...`.
 - AVmatrix change detection before commit used fresh `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force` followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `15`, changed_files `7`, affected_count `0`, and risk_level `low`.
+
+Implemented evidence for the golden corpus slice:
+
+- `internal/resolution/proof_accuracy_golden_test.go` adds `TestProofBasedCallAccessGoldenCorpus`, a controlled ScopeIR fixture with twelve call/access source sites. It avoids parser ambiguity and asserts the resolver contract directly against graph relationships and source-backed diagnostics.
+- Positive edge expectations: two `helper()` calls merge into one proof-backed `CALLS` relationship with `sourceSiteCount=2`; `user.save()` emits a `CALLS` edge with `proofKind=receiver-member`; `closure()` emits a `CALLS` edge with `proofKind=scope-binding`; `api.fetchUser()` emits a `CALLS` edge with `proofKind=import-member`; `user.id` emits an `ACCESSES` edge with `proofKind=receiver-member`.
+- Negative edge expectations: `callback()` is a local function-variable call and must not emit `CALLS` to a `Variable`; bare `stop()` must not emit `CALLS` to TypeScript `SSEListener.stop`; a module/file-level `helper()` call must not emit `File -> Function` `CALLS`; `config.make` must not emit `ACCESSES` to a `Function`.
+- Diagnostic expectations: unresolved `callback`, low-confidence `stop`, builtin `len`, external `cobra.Command`, non-property selector `config.make`, and file-level `helper` all keep source-site IDs, fact family, target text, status, proof kind, classification, actionability, and occurrence count.
+- Golden metrics from the test: false resolved edges `0`; silent missing call/access source sites `0`; call/access source-site occurrences `12`; resolved call/access occurrences `6`; unresolved call/access diagnostics `6`; non-property resolved `ACCESSES` targets `0`; source sites hidden by helper-call dedupe `0` because both helper source-site IDs survive on the merged relationship.
+- Validation evidence for this slice: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; focused resolver validation passed with `go test .\internal\resolution`; focused graph/CLI/contract surfaces passed with `go test .\internal\graphaccuracy .\internal\cli .\internal\contracts .\internal\lbugload .\internal\graphhealth`; wider backend validation passed with `go test .\internal\... .\cmd\...`.
+- Fresh `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .tmp\2026-05-22-p2a-golden-postedit-analyze.json --benchmark-label p2a-golden-postedit` passed after the golden corpus slice and produced scanned `737`, parsed `548`, unsupported `189`, failed `0`, graph nodes `22710`, and graph relationships `52293`.
+- AVmatrix change detection before commit used fresh analyze output followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; after staging the new test file and final ledger updates it reported changed_count `81`, changed_files `4`, affected_count `0`, and risk_level `low`.
 
 ## E8 - ResolutionGap Persistence Evidence
 
