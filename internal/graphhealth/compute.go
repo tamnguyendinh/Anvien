@@ -41,6 +41,18 @@ func ComputeSummary(g *graph.Graph) Summary {
 		nodeByID[node.ID] = node
 	}
 	sort.Strings(nodeIDs)
+	resolutionInventory := computeResolutionHealthInventory(g, nodeByID)
+	summary.ResolutionGapNodeCount = resolutionInventory.resolutionGapNodeCount
+	summary.HasResolutionGapRelationshipCount = resolutionInventory.hasResolutionGapRelCount
+	summary.ResolutionGapCount = resolutionInventory.resolutionGapCount
+	summary.ResolvedReferenceCount = resolutionInventory.resolvedReferenceCount
+	summary.ResolutionHealthBucketCounts = cloneCounts(resolutionInventory.bucketCounts)
+	summary.ResolutionGapFactFamilyCounts = cloneCounts(resolutionInventory.factFamilyCounts)
+	summary.ResolutionGapTargetRoleCounts = cloneCounts(resolutionInventory.targetRoleCounts)
+	summary.ResolutionGapClassificationCounts = cloneCounts(resolutionInventory.classificationCounts)
+	summary.ResolutionGapActionabilityCounts = cloneCounts(resolutionInventory.actionabilityCounts)
+	summary.ResolutionGapAppLayerCounts = cloneCounts(resolutionInventory.appLayerCounts)
+	summary.ResolutionGapFunctionalAreaCounts = cloneCounts(resolutionInventory.functionalAreaCounts)
 
 	countedIn := make(map[string]int, len(g.Nodes))
 	countedOut := make(map[string]int, len(g.Nodes))
@@ -167,6 +179,9 @@ func ComputeSummary(g *graph.Graph) Summary {
 		if hasUnresolvedDiagnostic || status == TopologyUnknown {
 			conf = ConfidenceUnknown
 		}
+		resolutionBuckets := cloneCounts(resolutionInventory.bucketsByNode[n.ID])
+		resolutionGapCount := resolutionInventory.gapCountsByNode[n.ID]
+		resolutionConfidence := resolutionConfidenceForNode(resolutionBuckets, resolutionGapCount)
 
 		health := NodeHealth{
 			TopologyStatus:             status,
@@ -179,6 +194,9 @@ func ComputeSummary(g *graph.Graph) Summary {
 			ExpectedIsolationReasons:   reasons,
 			Diagnostics:                diagnostics,
 			Confidence:                 conf,
+			ResolutionHealthBuckets:    resolutionBuckets,
+			ResolutionGapCount:         resolutionGapCount,
+			ResolutionConfidence:       resolutionConfidence,
 		}
 		// Attach for consumers (flat + structured for easy access)
 		if n.Properties == nil {
@@ -203,6 +221,17 @@ func ComputeSummary(g *graph.Graph) Summary {
 			delete(n.Properties, "diagnostics")
 		}
 		n.Properties["confidence"] = health.Confidence
+		if len(health.ResolutionHealthBuckets) > 0 {
+			n.Properties["resolutionHealthBuckets"] = health.ResolutionHealthBuckets
+		} else {
+			delete(n.Properties, "resolutionHealthBuckets")
+		}
+		if health.ResolutionGapCount > 0 {
+			n.Properties["resolutionGapCount"] = health.ResolutionGapCount
+		} else {
+			delete(n.Properties, "resolutionGapCount")
+		}
+		n.Properties["resolutionConfidence"] = health.ResolutionConfidence
 		// Also embed full for typed consumers
 		n.Properties["graphHealth"] = health
 		addNodeHealthToSummary(&summary, health)
@@ -225,20 +254,40 @@ func ComputeSummary(g *graph.Graph) Summary {
 
 func newSummary() Summary {
 	summary := Summary{
-		PolicyVersion:                  PolicyVersion,
-		TopologyStatusCounts:           map[string]int{},
-		ExpectedIsolationReasonCounts:  map[string]int{},
-		ConfidenceCounts:               map[string]int{},
-		DiagnosticCounts:               map[string]int{},
-		DiagnosticClassificationCounts: map[string]int{},
-		DiagnosticActionabilityCounts:  map[string]int{},
-		ExcludedEdgeCounts:             map[string]int{},
+		PolicyVersion:                     PolicyVersion,
+		TopologyStatusCounts:              map[string]int{},
+		ExpectedIsolationReasonCounts:     map[string]int{},
+		ConfidenceCounts:                  map[string]int{},
+		DiagnosticCounts:                  map[string]int{},
+		DiagnosticClassificationCounts:    map[string]int{},
+		DiagnosticActionabilityCounts:     map[string]int{},
+		ExcludedEdgeCounts:                map[string]int{},
+		ResolutionHealthBucketCounts:      map[string]int{},
+		ResolutionConfidenceCounts:        map[string]int{},
+		ResolutionGapFactFamilyCounts:     map[string]int{},
+		ResolutionGapTargetRoleCounts:     map[string]int{},
+		ResolutionGapClassificationCounts: map[string]int{},
+		ResolutionGapActionabilityCounts:  map[string]int{},
+		ResolutionGapAppLayerCounts:       map[string]int{},
+		ResolutionGapFunctionalAreaCounts: map[string]int{},
+		ResolutionGapTopologyStatusCounts: map[string]int{},
+		TopologyResolutionOverlayCounts:   map[string]TopologyResolutionOverlay{},
 	}
 	for _, status := range TopologyStatuses {
 		summary.TopologyStatusCounts[string(status)] = 0
 	}
 	for _, confidence := range ConfidenceLevels {
 		summary.ConfidenceCounts[confidence] = 0
+	}
+	for _, confidence := range ResolutionConfidenceLevels {
+		summary.ResolutionConfidenceCounts[confidence] = 0
+	}
+	for _, bucket := range ResolutionHealthBuckets {
+		summary.ResolutionHealthBucketCounts[string(bucket)] = 0
+	}
+	for _, status := range TopologyStatuses {
+		summary.ResolutionGapTopologyStatusCounts[string(status)] = 0
+		summary.TopologyResolutionOverlayCounts[string(status)] = TopologyResolutionOverlay{}
 	}
 	for _, classification := range DiagnosticClassifications {
 		summary.DiagnosticClassificationCounts[classification] = 0
@@ -252,6 +301,21 @@ func newSummary() Summary {
 func addNodeHealthToSummary(summary *Summary, health NodeHealth) {
 	summary.TopologyStatusCounts[string(health.TopologyStatus)]++
 	summary.ConfidenceCounts[health.Confidence]++
+	summary.ResolutionConfidenceCounts[health.ResolutionConfidence]++
+	status := string(health.TopologyStatus)
+	if health.ResolutionGapCount > 0 {
+		summary.ResolutionGapTopologyStatusCounts[status] += health.ResolutionGapCount
+		overlay := summary.TopologyResolutionOverlayCounts[status]
+		overlay.NodesWithGaps++
+		if health.ResolutionConfidence == ResolutionConfidenceDegraded {
+			overlay.NodesWithDegradedResolution++
+		}
+		summary.TopologyResolutionOverlayCounts[status] = overlay
+	} else {
+		overlay := summary.TopologyResolutionOverlayCounts[status]
+		overlay.NodesWithNoGaps++
+		summary.TopologyResolutionOverlayCounts[status] = overlay
+	}
 	for _, reason := range health.ExpectedIsolationReasons {
 		summary.ExpectedIsolationReasonCounts[reason]++
 	}

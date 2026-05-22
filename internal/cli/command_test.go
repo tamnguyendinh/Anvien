@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/httpapi"
 	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
@@ -83,6 +84,7 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 		"list",
 		"mcp",
 		"query",
+		"resolution-inventory",
 		"serve",
 		"setup",
 		"source-site-accuracy",
@@ -100,6 +102,65 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 	}
 	if strings.Contains(out, "eval-server") {
 		t.Fatalf("root help still exposes eval-server:\n%s", out)
+	}
+}
+
+func TestResolutionInventoryCommandOutputsJSON(t *testing.T) {
+	dir := t.TempDir()
+	graphPath := filepath.Join(dir, "graph.json")
+	g := graph.New()
+	g.AddNode(graph.Node{ID: "Function:main", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "main", "filePath": "cmd/app/main.go", "isExported": true}})
+	g.AddNode(graph.Node{ID: "Function:source", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "source", "filePath": "internal/resolution/resolve.go", "appLayer": "backend", "functionalArea": "resolution"}})
+	g.AddNode(graph.Node{ID: "Function:target", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "target", "filePath": "internal/resolution/resolve.go", "appLayer": "backend", "functionalArea": "resolution"}})
+	g.AddRelationship(graph.Relationship{ID: "r-main-source", SourceID: "Function:main", TargetID: "Function:source", Type: graph.RelCalls, SourceSiteCount: 1, SourceSiteStatus: "resolved", ProofKind: "scope-binding"})
+	g.AddRelationship(graph.Relationship{ID: "r-source-target", SourceID: "Function:source", TargetID: "Function:target", Type: graph.RelCalls, SourceSiteCount: 2, SourceSiteStatus: "resolved", ProofKind: "scope-binding"})
+	gapInput := graphhealth.ResolutionGapInput{
+		SourceSiteID:         "site:missing-call",
+		SourceNodeID:         "Function:source",
+		SourceAppLayer:       "backend",
+		SourceFunctionalArea: "resolution",
+		FactFamily:           "call",
+		TargetText:           "missing",
+		TargetRole:           "callable",
+		SourceSiteStatus:     "unresolved_local_binding",
+		ProofKind:            "global-fallback-low-confidence",
+		Classification:       graphhealth.DiagnosticClassificationInRepoUnresolved,
+		Actionability:        graphhealth.DiagnosticActionabilityAnalyzerGap,
+		Count:                3,
+	}
+	g.AddNode(gapInput.GraphNode())
+	g.AddRelationship(gapInput.GraphRelationship())
+	raw, err := json.MarshalIndent(g, "", "  ")
+	if err != nil {
+		t.Fatalf("marshal graph fixture: %v", err)
+	}
+	if err := os.WriteFile(graphPath, raw, 0o644); err != nil {
+		t.Fatalf("write graph fixture: %v", err)
+	}
+
+	out, errOut, err := executeForTest(t, "resolution-inventory", "--graph", graphPath, "--json")
+	if err != nil {
+		t.Fatalf("resolution-inventory returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	if errOut != "" {
+		t.Fatalf("resolution-inventory wrote stderr: %q", errOut)
+	}
+	var decoded map[string]any
+	if err := json.Unmarshal([]byte(out), &decoded); err != nil {
+		t.Fatalf("resolution-inventory output is not JSON: %v\n%s", err, out)
+	}
+	for _, want := range []string{
+		`"resolutionGapNodeCount": 1`,
+		`"hasResolutionGapRelationshipCount": 1`,
+		`"resolutionGapCount": 3`,
+		`"resolvedReferenceCount": 3`,
+		`"in_repo_analyzer_gap": 3`,
+		`"unresolved_call_target": 3`,
+		`"resolutionGapTopologyStatusCounts"`,
+	} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("resolution-inventory output missing %q:\n%s", want, out)
+		}
 	}
 }
 

@@ -52,6 +52,9 @@ type graphHealthComponentExplanation struct {
 	DiagnosticCounts               map[string]int `json:"diagnosticCounts"`
 	DiagnosticClassificationCounts map[string]int `json:"diagnosticClassificationCounts"`
 	DiagnosticActionabilityCounts  map[string]int `json:"diagnosticActionabilityCounts"`
+	ResolutionGapCount             int            `json:"resolutionGapCount"`
+	ResolutionHealthBucketCounts   map[string]int `json:"resolutionHealthBucketCounts"`
+	ResolutionConfidenceCounts     map[string]int `json:"resolutionConfidenceCounts"`
 }
 
 type graphHealthReportResponse struct {
@@ -82,6 +85,9 @@ type graphHealthReportCandidate struct {
 	ComponentID                string                     `json:"componentId,omitempty"`
 	ComponentSize              int                        `json:"componentSize,omitempty"`
 	ComponentReachableFromRoot bool                       `json:"componentReachableFromRoot"`
+	ResolutionHealthBuckets    map[string]int             `json:"resolutionHealthBuckets,omitempty"`
+	ResolutionGapCount         int                        `json:"resolutionGapCount,omitempty"`
+	ResolutionConfidence       string                     `json:"resolutionConfidence"`
 }
 
 const graphNDJSONFlushInterval = 512
@@ -266,6 +272,8 @@ func graphHealthComponentExplain(g *graph.Graph, componentID string, includeCont
 		DiagnosticCounts:               map[string]int{},
 		DiagnosticClassificationCounts: map[string]int{},
 		DiagnosticActionabilityCounts:  map[string]int{},
+		ResolutionHealthBucketCounts:   map[string]int{},
+		ResolutionConfidenceCounts:     map[string]int{},
 	}
 	componentNodeIDs := map[string]bool{}
 	sampleNodes := make([]graph.Node, 0, graphHealthExplainSampleLimit)
@@ -279,6 +287,11 @@ func graphHealthComponentExplain(g *graph.Graph, componentID string, includeCont
 		component.ReachableFromRoot = component.ReachableFromRoot || health.ComponentReachableFromRoot
 		component.TopologyStatusCounts[string(health.TopologyStatus)]++
 		component.ConfidenceCounts[health.Confidence]++
+		component.ResolutionGapCount += health.ResolutionGapCount
+		component.ResolutionConfidenceCounts[health.ResolutionConfidence]++
+		for bucket, count := range health.ResolutionHealthBuckets {
+			component.ResolutionHealthBucketCounts[bucket] += count
+		}
 		for _, reason := range health.ExpectedIsolationReasons {
 			component.ExpectedIsolationReasonCounts[reason]++
 			if reason == graphhealth.ReasonFrameworkEntry {
@@ -356,6 +369,9 @@ func graphHealthReportCandidates(g *graph.Graph, includeExpected bool) []graphHe
 			ComponentID:                health.ComponentID,
 			ComponentSize:              health.ComponentSize,
 			ComponentReachableFromRoot: health.ComponentReachableFromRoot,
+			ResolutionHealthBuckets:    health.ResolutionHealthBuckets,
+			ResolutionGapCount:         health.ResolutionGapCount,
+			ResolutionConfidence:       health.ResolutionConfidence,
 		})
 	}
 	sort.SliceStable(candidates, func(i, j int) bool {

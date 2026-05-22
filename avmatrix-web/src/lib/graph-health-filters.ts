@@ -213,6 +213,9 @@ export const getNodeGraphHealth = (
     expectedIsolationReasons: node.properties.expectedIsolationReasons,
     diagnostics: node.properties.diagnostics,
     confidence: node.properties.confidence ?? "candidate",
+    resolutionHealthBuckets: node.properties.resolutionHealthBuckets,
+    resolutionGapCount: node.properties.resolutionGapCount,
+    resolutionConfidence: node.properties.resolutionConfidence ?? "unknown",
   };
 };
 

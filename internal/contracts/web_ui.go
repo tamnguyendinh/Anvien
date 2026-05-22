@@ -72,6 +72,8 @@ type WebUIContractManifest struct {
 		RelationshipDisplayPolicy            []RelationshipDisplayPolicy `json:"relationshipDisplayPolicy"`
 		GraphHealthDiagnosticClassifications []string                    `json:"graphHealthDiagnosticClassifications"`
 		GraphHealthDiagnosticActionabilities []string                    `json:"graphHealthDiagnosticActionabilities"`
+		GraphHealthResolutionHealthBuckets   []string                    `json:"graphHealthResolutionHealthBuckets"`
+		GraphHealthResolutionConfidence      []string                    `json:"graphHealthResolutionConfidence"`
 		GraphHealthReportTriageDimensions    []string                    `json:"graphHealthReportTriageDimensions"`
 		AppLayers                            []string                    `json:"appLayers"`
 		AppLayerLabels                       []semantic.TermDefinition   `json:"appLayerLabels"`
@@ -442,6 +444,8 @@ func WebUIContract() WebUIContractManifest {
 	manifest.Graph.RelationshipDisplayPolicy = relationshipDisplayPolicies(graphRelationshipTypes)
 	manifest.Graph.GraphHealthDiagnosticClassifications = append([]string(nil), graphhealth.DiagnosticClassifications...)
 	manifest.Graph.GraphHealthDiagnosticActionabilities = append([]string(nil), graphhealth.DiagnosticActionabilities...)
+	manifest.Graph.GraphHealthResolutionHealthBuckets = graphHealthResolutionHealthBucketStrings()
+	manifest.Graph.GraphHealthResolutionConfidence = append([]string(nil), graphhealth.ResolutionConfidenceLevels...)
 	manifest.Graph.GraphHealthReportTriageDimensions = []string{"topology", "diagnostic"}
 	manifest.Graph.AppLayers = semantic.AppLayerStrings()
 	manifest.Graph.AppLayerLabels = semantic.AppLayerDefinitions()
@@ -513,6 +517,10 @@ func WebUIContractTypeScript() (string, error) {
 	b.WriteString("export type GraphHealthDiagnosticClassification = (typeof GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATIONS)[number];\n\n")
 	writeConstArray(&b, "GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES", graphhealth.DiagnosticActionabilities)
 	b.WriteString("export type GraphHealthDiagnosticActionability = (typeof GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES)[number];\n\n")
+	writeConstArray(&b, "GRAPH_HEALTH_RESOLUTION_HEALTH_BUCKETS", manifest.Graph.GraphHealthResolutionHealthBuckets)
+	b.WriteString("export type GraphHealthResolutionHealthBucket = (typeof GRAPH_HEALTH_RESOLUTION_HEALTH_BUCKETS)[number];\n\n")
+	writeConstArray(&b, "GRAPH_HEALTH_RESOLUTION_CONFIDENCE_LEVELS", manifest.Graph.GraphHealthResolutionConfidence)
+	b.WriteString("export type GraphHealthResolutionConfidence = (typeof GRAPH_HEALTH_RESOLUTION_CONFIDENCE_LEVELS)[number];\n\n")
 	writeConstArray(&b, "APP_LAYERS", manifest.Graph.AppLayers)
 	b.WriteString("export type AppLayer = (typeof APP_LAYERS)[number];\n\n")
 	writeConstObjectArray(&b, "APP_LAYER_LABELS", manifest.Graph.AppLayerLabels)
@@ -567,6 +575,14 @@ func graphHealthTopologyStatusStrings() []string {
 	out := make([]string, 0, len(graphhealth.TopologyStatuses))
 	for _, status := range graphhealth.TopologyStatuses {
 		out = append(out, string(status))
+	}
+	return out
+}
+
+func graphHealthResolutionHealthBucketStrings() []string {
+	out := make([]string, 0, len(graphhealth.ResolutionHealthBuckets))
+	for _, bucket := range graphhealth.ResolutionHealthBuckets {
+		out = append(out, string(bucket))
 	}
 	return out
 }
@@ -949,6 +965,9 @@ export interface GraphHealthNodeMetadata {
   expectedIsolationReasons?: GraphHealthExpectedIsolationReason[];
   diagnostics?: GraphHealthDiagnostic[];
   confidence: GraphHealthConfidence;
+  resolutionHealthBuckets?: Partial<Record<GraphHealthResolutionHealthBucket, number>>;
+  resolutionGapCount?: number;
+  resolutionConfidence: GraphHealthResolutionConfidence;
 }
 
 export interface GraphHealthComponentSummary {
@@ -959,6 +978,12 @@ export interface GraphHealthComponentSummary {
   reachableFromRoot: boolean;
   rootNodeIds?: string[];
   sampleNodeIds?: string[];
+}
+
+export interface GraphHealthTopologyResolutionOverlay {
+  nodesWithNoGaps: number;
+  nodesWithGaps: number;
+  nodesWithDegradedResolution: number;
 }
 
 export interface GraphHealthSummary {
@@ -978,6 +1003,20 @@ export interface GraphHealthSummary {
   diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>;
   diagnosticActionabilityCounts: Partial<Record<GraphHealthDiagnosticActionability, number>>;
   excludedEdgeCounts: Record<string, number>;
+  resolutionGapNodeCount: number;
+  hasResolutionGapRelationshipCount: number;
+  resolutionGapCount: number;
+  resolvedReferenceCount: number;
+  resolutionHealthBucketCounts: Partial<Record<GraphHealthResolutionHealthBucket, number>>;
+  resolutionConfidenceCounts: Partial<Record<GraphHealthResolutionConfidence, number>>;
+  resolutionGapFactFamilyCounts: Record<string, number>;
+  resolutionGapTargetRoleCounts: Record<string, number>;
+  resolutionGapClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>;
+  resolutionGapActionabilityCounts: Partial<Record<GraphHealthDiagnosticActionability, number>>;
+  resolutionGapAppLayerCounts: Partial<Record<AppLayer, number>>;
+  resolutionGapFunctionalAreaCounts: Partial<Record<FunctionalArea, number>>;
+  resolutionGapTopologyStatusCounts: Partial<Record<GraphHealthTopologyStatus, number>>;
+  topologyResolutionOverlayCounts: Partial<Record<GraphHealthTopologyStatus, GraphHealthTopologyResolutionOverlay>>;
   largestDetachedComponents?: GraphHealthComponentSummary[];
 }
 
@@ -1055,6 +1094,9 @@ export type NodeProperties = {
   expectedIsolationReasons?: GraphHealthExpectedIsolationReason[];
   diagnostics?: GraphHealthDiagnostic[];
   confidence?: GraphHealthConfidence;
+  resolutionHealthBuckets?: Partial<Record<GraphHealthResolutionHealthBucket, number>>;
+  resolutionGapCount?: number;
+  resolutionConfidence?: GraphHealthResolutionConfidence;
   graphHealth?: GraphHealthNodeMetadata;
   [key: string]: unknown;
 };
@@ -1115,6 +1157,9 @@ export interface GraphHealthComponentExplanation {
   diagnosticCounts: Record<string, number>;
   diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>;
   diagnosticActionabilityCounts: Partial<Record<GraphHealthDiagnosticActionability, number>>;
+  resolutionGapCount: number;
+  resolutionHealthBucketCounts: Partial<Record<GraphHealthResolutionHealthBucket, number>>;
+  resolutionConfidenceCounts: Partial<Record<GraphHealthResolutionConfidence, number>>;
 }
 
 export interface GraphHealthExplainResponse {
@@ -1161,6 +1206,9 @@ export interface GraphHealthReportCandidate {
   componentId?: string;
   componentSize?: number;
   componentReachableFromRoot: boolean;
+  resolutionHealthBuckets?: Partial<Record<GraphHealthResolutionHealthBucket, number>>;
+  resolutionGapCount?: number;
+  resolutionConfidence: GraphHealthResolutionConfidence;
 }
 
 export interface GraphHealthReportResponse {

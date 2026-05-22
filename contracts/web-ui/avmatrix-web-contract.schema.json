@@ -283,6 +283,22 @@
       "review",
       "analyzer_gap"
     ],
+    "graphHealthResolutionHealthBuckets": [
+      "resolved_references",
+      "unresolved_non_actionable",
+      "external_unresolved",
+      "in_repo_analyzer_gap",
+      "unresolved_call_target",
+      "unresolved_access_target",
+      "unresolved_type_target",
+      "unresolved_heritage_target",
+      "unclassified_unknown"
+    ],
+    "graphHealthResolutionConfidence": [
+      "clear",
+      "degraded",
+      "unknown"
+    ],
     "graphHealthReportTriageDimensions": [
       "topology",
       "diagnostic"

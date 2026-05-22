@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 remains next
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 remains next
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -547,19 +547,120 @@ Remaining P3 evidence gaps: none.
 
 ## E9 - Resolution Health And Inventory Evidence
 
-Status: pending
+Status: complete for Phase 4.
 
 Record during P4.
 
-Required evidence:
+Implemented Resolution Health model:
 
-- separate Topology Health and Resolution Health payload examples;
-- connected node with gap remains connected;
-- `no_incoming` or detached node with gap retains topology and shows degraded resolution confidence;
-- API summary examples;
-- CLI inventory command output;
-- counts by App Layer, Functional Area, fact family, target role, classification, actionability, Resolution Health bucket, and topology;
-- backend/CLI test names/results.
+- `internal/graphhealth/policy.go` defines Resolution Health buckets separately from Topology Health: `resolved_references`, `unresolved_non_actionable`, `external_unresolved`, `in_repo_analyzer_gap`, `unresolved_call_target`, `unresolved_access_target`, `unresolved_type_target`, `unresolved_heritage_target`, and `unclassified_unknown`.
+- `NodeHealth` now exposes `resolutionHealthBuckets`, `resolutionGapCount`, and `resolutionConfidence` alongside existing topology-only `topologyStatus`, counted degree, and graph-health diagnostic fields.
+- `Summary` now exposes full inventory counts for ResolutionGap nodes, `HAS_RESOLUTION_GAP` relationships, gap occurrence counts, resolved references, Resolution Health buckets, Resolution Confidence, fact family, target role, classification, actionability, App Layer, Functional Area, topology status, and topology-plus-resolution overlay counts.
+- `internal/httpapi/graph.go` includes the new Resolution Health fields in graph summary, graph-health explain component summaries, and graph-health report candidates.
+- Generated Web contracts now include `GraphHealthResolutionHealthBucket`, `GraphHealthResolutionConfidence`, Resolution Health fields on `GraphHealthNodeMetadata`, `GraphHealthSummary`, `GraphHealthComponentExplanation`, and `GraphHealthReportCandidate`.
+- `avmatrix-web/src/lib/graph-health-filters.ts` maps flat graph properties into the new generated `GraphHealthNodeMetadata` fields when structured graphHealth is not present.
+- `avmatrix resolution-inventory` reads persisted `.avmatrix\graph.json`, calls the same `graphhealth.ComputeSummary` full-count path as API/Web graph responses, and writes JSON or summary lines without using capped `/api/graph/report` candidates.
+
+Topology separation evidence:
+
+- `TestCompute_ResolutionHealthOverlayPreservesTopology` proves a source node with one incoming counted `CALLS`, one outgoing counted `CALLS`, and an excluded `HAS_RESOLUTION_GAP` remains `connected` with counted degree `1/1`, while `resolutionConfidence=degraded`, `resolutionGapCount=3`, and Resolution Health buckets include `resolved_references=2`, `unresolved_call_target=3`, and `in_repo_analyzer_gap=3`.
+- The same test proves `HAS_RESOLUTION_GAP` is counted as an excluded `other` edge and does not become a topology edge.
+- `TestCompute_ResolutionHealthClassifiesExternalAndNonActionableGaps` covers non-actionable builtin gaps and external unresolved gaps as Resolution Health buckets without changing topology.
+- Existing graph-health e2e coverage passed after Phase 4 with the frontend server started correctly: `14` passed and `30` skipped.
+
+Fresh Phase 4 analyze and inventory artifacts:
+
+- Analyze artifact: `.tmp\2026-05-22-p4-resolution-health-inventory-analyze.json`.
+- CLI inventory artifact: `.tmp\2026-05-22-p4-resolution-inventory.json`.
+- Source-site accuracy artifact: `.tmp\2026-05-22-p4-resolution-health-source-site-accuracy.json`.
+
+Fresh analyze output:
+
+```text
+files: scanned=745 parsed=556 unsupported=189 failed=0
+graph: nodes=82062 relationships=112614 path=E:\AVmatrix-GO\.avmatrix\graph.json
+semantic: resolutionGapInputs=58879 resolutionGapNodes=58879 resolutionGapRelationships=58879
+semantic_enrichment duration: 586.7456 ms
+LadybugDB: nodeRows=82062 relationshipRows=112614 fallbackInsertCount=0 skippedRelationships=0
+```
+
+CLI inventory command output:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe resolution-inventory --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-22-p4-resolution-inventory.json
+```
+
+```text
+resolutionInventory.nodes=82062 relationships=112614 gapNodes=58879 gapRelationships=58879 gapOccurrences=59626 resolvedReferences=27195
+resolutionHealth.resolvedReferences=27195 unresolvedNonActionable=24926 externalUnresolved=163 inRepoAnalyzerGap=34537 unclassifiedUnknown=0
+resolutionHealth.targets.call=31590 access=18541 type=9488 heritage=7
+resolutionConfidence.clear=370 degraded=4573 unknown=77119
+resolutionGap.appLayers=api:4296,api_contract:627,api_test:5114,backend:18126,backend_test:20057,cli_launcher:553,config:88,frontend:4846,frontend_api_client:387,frontend_test:5510,generated_contract:22
+resolutionGap.functionalAreas=analyzer:7084,api:4660,cli:3116,configuration:88,contracts:880,embeddings:1701,graph_health:2590,launcher:671,layout:665,mcp:4716,providers:12674,query:2493,resolution:4060,runtime:30,session:1062,storage:2639,unknown:7881,web_graph_ui:2616
+resolutionGap.factFamilies=access:18541,call:31590,heritage:7,type-reference:9488
+resolutionGap.targetRoles=callable:31590,member:18541,type:9495
+resolutionGap.classifications=builtin:10149,external_library:163,in_repo_unresolved:34537,standard_library:7506,test_framework:7271
+resolutionGap.actionability=analyzer_gap:34537,non_actionable:24926,review:163
+resolutionGap.topology=connected:24054,detached_component:2659,no_incoming:28070,no_outgoing:2520,true_isolated:2323
+```
+
+Count table from CLI inventory JSON:
+
+| Metric | Count |
+| --- | ---: |
+| Graph nodes | 82062 |
+| Graph relationships | 112614 |
+| ResolutionGap nodes | 58879 |
+| `HAS_RESOLUTION_GAP` relationships | 58879 |
+| Gap occurrences | 59626 |
+| Resolved references | 27195 |
+| Resolution Confidence clear nodes | 370 |
+| Resolution Confidence degraded nodes | 4573 |
+| Resolution Confidence unknown nodes | 77119 |
+
+Resolution Health bucket counts:
+
+| Bucket | Count |
+| --- | ---: |
+| resolved_references | 27195 |
+| unresolved_non_actionable | 24926 |
+| external_unresolved | 163 |
+| in_repo_analyzer_gap | 34537 |
+| unresolved_call_target | 31590 |
+| unresolved_access_target | 18541 |
+| unresolved_type_target | 9488 |
+| unresolved_heritage_target | 7 |
+| unclassified_unknown | 0 |
+
+Topology overlay counts from gap occurrences:
+
+| Topology status | Gap occurrences |
+| --- | ---: |
+| connected | 24054 |
+| no_incoming | 28070 |
+| no_outgoing | 2520 |
+| detached_component | 2659 |
+| true_isolated | 2323 |
+| unknown_connectivity | 0 |
+
+Cypher/LadybugDB verification:
+
+- `MATCH (n:ResolutionGap) RETURN count(n) AS gapNodes` returned `58879`.
+- `MATCH (a)-[r]->(b) WHERE r.type = 'HAS_RESOLUTION_GAP' RETURN count(r) AS gapRelationships` returned `58879`.
+- `MATCH (n:ResolutionGap) RETURN n.gapKind AS gapKind, count(n) AS count ORDER BY count DESC LIMIT 10` returned call `31590`, access `18541`, type-reference node count `8741`, and heritage `7`. The type-reference node count is lower than occurrence count `9488` because CLI inventory counts source-site occurrences while Cypher count here counts gap nodes.
+- `MATCH (n:ResolutionGap) RETURN n.sourceAppLayer AS appLayer, count(n) AS count ORDER BY count DESC LIMIT 5` returned top node-count layers `backend_test=19975`, `backend=17799`, `frontend_test=5480`, `api_test=5046`, and `frontend=4819`.
+- `MATCH (n:ResolutionGap) RETURN n.functionalArea AS functionalArea, count(n) AS count ORDER BY count DESC LIMIT 5` returned `providers=12593`, `unknown=7821`, `analyzer=7000`, `mcp=4640`, and `api=4490`.
+
+Validation evidence for Phase 4:
+
+- Full build passed after contract regeneration: `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`.
+- Focused Go tests passed: `go test .\internal\graphhealth .\internal\cli .\internal\contracts .\internal\httpapi`.
+- Contract check passed: `go run .\cmd\generate-web-contracts --check`.
+- Wider Go tests passed: `go test .\internal\...` and `go test .\cmd\...`.
+- Web unit tests passed: `npm --prefix .\avmatrix-web run test -- --run` with `44` files and `358` tests passed.
+- Web e2e initially failed because no frontend server was listening on `127.0.0.1:5228`; rerun with a hidden Vite dev server passed: `14` passed and `30` skipped.
+- Source-site accuracy after Phase 4 reported all source-site occurrences `146447`, missing IDs `0`, false resolved edge candidates `0`, non-property ACCESSES targets `0`, resolved edges without proof `0`, and coarse file call edges `0`.
+- AVmatrix detect-changes after staging the Phase 4 slice used fresh analyze output followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `605`, changed_files `15`, affected_count `41`, and risk_level `critical`. The critical blast radius is expected because this slice extends root CLI registration, graph-health summary computation, HTTP graph/report/explain payloads, generated Web contracts, and Web graph-health metadata fallback.
 
 ## E10 - Query Health Command Evidence
 

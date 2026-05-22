@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 remains next
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 remains next
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -431,32 +431,103 @@ ResolutionGap persistence slice notes:
 
 ## B7 - Resolution Health Inventory Metrics
 
-Status: pending
+Status: complete for Phase 4.
+
+Measured after `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p4-resolution-health-inventory-analyze.json --benchmark-label p4-resolution-health-inventory` and `.\avmatrix-launcher\server-bundle\avmatrix.exe resolution-inventory --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-22-p4-resolution-inventory.json`.
 
 Record after P4.
 
 | Resolution Health bucket | Count after |
 | --- | ---: |
-| resolved references | pending |
-| unresolved non-actionable | pending |
-| external unresolved | pending |
-| in-repo analyzer gap | pending |
-| unresolved call target | pending |
-| unresolved access target | pending |
-| unresolved type target | pending |
-| unresolved heritage target | pending |
-| unclassified/unknown | pending |
+| resolved references | 27195 |
+| unresolved non-actionable | 24926 |
+| external unresolved | 163 |
+| in-repo analyzer gap | 34537 |
+| unresolved call target | 31590 |
+| unresolved access target | 18541 |
+| unresolved type target | 9488 |
+| unresolved heritage target | 7 |
+| unclassified/unknown | 0 |
 
 Topology plus resolution overlay:
 
 | Topology status | Nodes with no gaps | Nodes with gaps | Nodes with degraded confidence |
 | --- | ---: | ---: | ---: |
-| connected | pending | pending | pending |
-| no_incoming | pending | pending | pending |
-| no_outgoing | pending | pending | pending |
-| detached_component | pending | pending | pending |
-| true_isolated | pending | pending | pending |
-| unknown_connectivity | pending | pending | pending |
+| connected | 595 | 2146 | 2146 |
+| no_incoming | 175 | 1525 | 1525 |
+| no_outgoing | 2649 | 567 | 567 |
+| detached_component | 88 | 143 | 143 |
+| true_isolated | 73982 | 192 | 192 |
+| unknown_connectivity | 0 | 0 | 0 |
+
+Resolution inventory totals:
+
+| Metric | Count |
+| --- | ---: |
+| Graph nodes | 82062 |
+| Graph relationships | 112614 |
+| ResolutionGap nodes | 58879 |
+| `HAS_RESOLUTION_GAP` relationships | 58879 |
+| Gap occurrences | 59626 |
+| Resolved references | 27195 |
+| Resolution Confidence clear nodes | 370 |
+| Resolution Confidence degraded nodes | 4573 |
+| Resolution Confidence unknown nodes | 77119 |
+
+ResolutionGap occurrence counts by App Layer:
+
+| App Layer | Count |
+| --- | ---: |
+| backend_test | 20057 |
+| backend | 18126 |
+| frontend_test | 5510 |
+| api_test | 5114 |
+| frontend | 4846 |
+| api | 4296 |
+| api_contract | 627 |
+| cli_launcher | 553 |
+| frontend_api_client | 387 |
+| config | 88 |
+| generated_contract | 22 |
+
+ResolutionGap occurrence counts by Functional Area:
+
+| Functional Area | Count |
+| --- | ---: |
+| providers | 12674 |
+| unknown | 7881 |
+| analyzer | 7084 |
+| mcp | 4716 |
+| api | 4660 |
+| resolution | 4060 |
+| cli | 3116 |
+| graph_health | 2590 |
+| storage | 2639 |
+| web_graph_ui | 2616 |
+| query | 2493 |
+| embeddings | 1701 |
+| session | 1062 |
+| contracts | 880 |
+| launcher | 671 |
+| layout | 665 |
+| configuration | 88 |
+| runtime | 30 |
+
+Source-site accuracy after Phase 4:
+
+| Metric | Count |
+| --- | ---: |
+| Relationship source-site occurrences | 86821 |
+| Diagnostic source-site occurrences | 59626 |
+| All source-site occurrences | 146447 |
+| Missing source-site IDs | 0 |
+| Resolved CALLS | 7802 |
+| Resolved ACCESSES | 3639 |
+| False resolved edge candidates | 0 |
+| Non-property ACCESSES targets | 0 |
+| Resolved edges without proof | 0 |
+| Low-confidence fallback resolved edges | 0 |
+| Coarse File CALLS | 0 |
 
 ## B8 - Query Health Metrics
 
@@ -485,7 +556,7 @@ Record after P6.
 | `context` | pending | pending | pending | pending | pending |
 | `impact` | pending | pending | pending | pending | pending |
 | `detect-changes` | pending | pending | pending | pending | pending |
-| resolution inventory command | pending | pending | pending | pending | pending |
+| resolution inventory command | yes | yes | yes | yes | implemented in Phase 4; command exposes full Resolution Health inventory from persisted graph data |
 | query-health command | pending | pending | pending | pending | pending |
 
 ## B10 - Web UI Ring And Filter Metrics
@@ -564,8 +635,18 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | Fresh analyze benchmark for ResolutionGap aggregate policy | `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p3-aggregate-policy-postedit-analyze.json --benchmark-label p3-aggregate-policy-postedit` | passed | graph nodes 81522, relationships 111801, ResolutionGap nodes 58495, HAS_RESOLUTION_GAP relationships 58495, LadybugDB skipped relationships 0 |
 | Source-site accuracy after ResolutionGap aggregate policy | `.\avmatrix-launcher\server-bundle\avmatrix.exe source-site-accuracy --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-22-p3-aggregate-policy-source-site-accuracy.json --max-examples 20` | passed | all source-site occurrences 145390, missing IDs 0, false resolved edge candidates 0, resolved edges without proof 0, non-property ACCESSES targets 0, coarse file call edges 0 |
 | AVmatrix detect-changes for ResolutionGap aggregate policy | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed | after staging all slice files: affected_count 0, changed_count 228, changed_files 5, risk_level low |
+| Full build before Resolution Health tests | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | first post-contract build exposed a generated Web type consumer that needed `resolutionConfidence`; final full build passed after updating `getNodeGraphHealth` fallback fields |
+| Backend/contract focused tests for Resolution Health | `go test .\internal\graphhealth .\internal\cli .\internal\contracts .\internal\httpapi` | passed | covers Resolution Health overlay, `resolution-inventory` command output, generated contract fields, and HTTP graph/report/explain payload structs |
+| Contract generation/check | `go run .\cmd\generate-web-contracts` and `go run .\cmd\generate-web-contracts --check` | passed | generated schema and TypeScript contract expose Resolution Health buckets and confidence fields |
+| Web unit tests after Resolution Health contract update | `npm --prefix .\avmatrix-web run test -- --run` | passed | 44 files and 358 tests passed |
+| Backend tests after Resolution Health slice | `go test .\internal\...` and `go test .\cmd\...` | passed | wider Go validation after Resolution Health overlay and CLI command |
+| Web e2e after starting Vite dev server | `npm --prefix .\avmatrix-web run test:e2e` | passed | direct run without frontend server failed with `ERR_CONNECTION_REFUSED`; rerun with hidden Vite dev server passed 14 and skipped 30 |
+| Fresh analyze benchmark for Resolution Health inventory | `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p4-resolution-health-inventory-analyze.json --benchmark-label p4-resolution-health-inventory` | passed | graph nodes 82062, relationships 112614, ResolutionGap nodes 58879, HAS_RESOLUTION_GAP relationships 58879, LadybugDB skipped relationships 0 |
+| Resolution inventory command | `.\avmatrix-launcher\server-bundle\avmatrix.exe resolution-inventory --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-22-p4-resolution-inventory.json` | passed | gap occurrences 59626, resolved references 27195, analyzer-gap occurrences 34537, non-actionable occurrences 24926 |
+| Source-site accuracy after Resolution Health slice | `.\avmatrix-launcher\server-bundle\avmatrix.exe source-site-accuracy --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-22-p4-resolution-health-source-site-accuracy.json --max-examples 20` | passed | all source-site occurrences 146447, missing IDs 0, false resolved edge candidates 0, resolved edges without proof 0, non-property ACCESSES targets 0, coarse file call edges 0 |
+| Cypher ResolutionGap inventory | `cypher` queries over `ResolutionGap` and `HAS_RESOLUTION_GAP` | passed | `ResolutionGap` node count 58879 and `HAS_RESOLUTION_GAP` relationship count 58879 visible in LadybugDB |
 | Query-health command | pending | pending | pending |
-| Resolution inventory command | pending | pending | pending |
+| Resolution inventory command | `.\avmatrix-launcher\server-bundle\avmatrix.exe resolution-inventory --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-22-p4-resolution-inventory.json` | passed | implemented in Phase 4; duplicate retained here until P6 command-surface metrics are finalized |
 | `query` semantic output | pending | pending | pending |
 | `context` semantic output | pending | pending | pending |
 | `impact` semantic output | pending | pending | pending |
@@ -579,19 +660,19 @@ Status: in progress; App Layer and Functional Area semantic enrichment measured.
 
 Record after the analyze semantic enrichment phase is introduced and after each phase extends it.
 
-| Metric | Baseline | After App Layer | After Functional Area | After Source-Site Inventory | After ResolutionGap | After Role Validation | After Aggregate Policy | Final |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Semantic enrichment phase latency | pending | 33.9997 ms | 68.8814 ms | pending | 627.8377 ms | 609.862 ms | 595.5799 ms | pending |
-| Semantic enrichment memory delta | pending | pending | overall analyze heap +89525848 bytes; not phase-isolated | pending | overall analyze heap +256162968 bytes; not phase-isolated | overall analyze heap +256081936 bytes; not phase-isolated | overall analyze heap +241109064 bytes; not phase-isolated | pending |
-| Graph nodes before enrichment | pending | 22239 | 22358 | pending | 22874 inferred from after minus ResolutionGap nodes | 22948 inferred from after minus ResolutionGap nodes | 23027 inferred from after minus ResolutionGap nodes | pending |
-| Graph nodes after enrichment | pending | 22239 | 22358 | pending | 80957 | 81298 | 81522 | pending |
-| Graph relationships before enrichment | pending | 55006 | 55349 | pending | 52866 inferred from after minus HAS_RESOLUTION_GAP relationships | 53061 inferred from after minus HAS_RESOLUTION_GAP relationships | 53306 inferred from after minus HAS_RESOLUTION_GAP relationships | pending |
-| Graph relationships after enrichment | pending | 55006 | 55349 | pending | 110949 | 111411 | 111801 | pending |
-| Graph JSON size | pending | 45739916 bytes | 47953614 bytes | pending | 274996080 bytes | 276339686 bytes | 277198593 bytes | pending |
-| LadybugDB node rows | pending | 22239 | 22358 | pending | 80957 | 81298 | 81522 | pending |
-| LadybugDB relationship rows | pending | 55006 | 55349 | pending | 110949 | 111411 | 111801 | pending |
-| Duplicate graph traversals introduced | pending | 0 nested whole-graph loops; one node pass and one relationship pass | 0 nested whole-graph loops; one node pass and one relationship pass shared by App Layer and Functional Area | pending | 0 nested loops; adds one source-backed diagnostic node pass and per-gap AddNode/AddRelationship finalization | 0 nested loops; target-role inference is per gap and validator runs only in tests/explicit checks | 0 analyze traversals; aggregation is explicit inventory work outside analyze semantic enrichment | pending |
-| File rescans introduced | pending | 0 | 0 | pending | 0 | 0 | 0 | pending |
-| AST reparses introduced | pending | 0 | 0 | pending | 0 | 0 | 0 | pending |
-| Raw call/access source-site count | pending | pending | pending | pending | call 31220, access 18245 persisted gap nodes | call 31307, access 18383 persisted gap nodes | call 31393, access 18418 persisted gap nodes | pending |
-| Raw unresolved fact count | pending | pending | pending | pending | 58083 persisted sourceSiteID-backed gaps | 58350 persisted sourceSiteID-backed gaps | 58495 persisted sourceSiteID-backed gaps | pending |
+| Metric | Baseline | After App Layer | After Functional Area | After Source-Site Inventory | After ResolutionGap | After Role Validation | After Aggregate Policy | After Resolution Health | Final |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Semantic enrichment phase latency | pending | 33.9997 ms | 68.8814 ms | pending | 627.8377 ms | 609.862 ms | 595.5799 ms | 586.7456 ms | pending |
+| Semantic enrichment memory delta | pending | pending | overall analyze heap +89525848 bytes; not phase-isolated | pending | overall analyze heap +256162968 bytes; not phase-isolated | overall analyze heap +256081936 bytes; not phase-isolated | overall analyze heap +241109064 bytes; not phase-isolated | overall analyze heap +423902888 bytes; not phase-isolated | pending |
+| Graph nodes before enrichment | pending | 22239 | 22358 | pending | 22874 inferred from after minus ResolutionGap nodes | 22948 inferred from after minus ResolutionGap nodes | 23027 inferred from after minus ResolutionGap nodes | 23183 inferred from after minus ResolutionGap nodes | pending |
+| Graph nodes after enrichment | pending | 22239 | 22358 | pending | 80957 | 81298 | 81522 | 82062 | pending |
+| Graph relationships before enrichment | pending | 55006 | 55349 | pending | 52866 inferred from after minus HAS_RESOLUTION_GAP relationships | 53061 inferred from after minus HAS_RESOLUTION_GAP relationships | 53306 inferred from after minus HAS_RESOLUTION_GAP relationships | 53735 inferred from after minus HAS_RESOLUTION_GAP relationships | pending |
+| Graph relationships after enrichment | pending | 55006 | 55349 | pending | 110949 | 111411 | 111801 | 112614 | pending |
+| Graph JSON size | pending | 45739916 bytes | 47953614 bytes | pending | 274996080 bytes | 276339686 bytes | 277198593 bytes | 279176550 bytes | pending |
+| LadybugDB node rows | pending | 22239 | 22358 | pending | 80957 | 81298 | 81522 | 82062 | pending |
+| LadybugDB relationship rows | pending | 55006 | 55349 | pending | 110949 | 111411 | 111801 | 112614 | pending |
+| Duplicate graph traversals introduced | pending | 0 nested whole-graph loops; one node pass and one relationship pass | 0 nested whole-graph loops; one node pass and one relationship pass shared by App Layer and Functional Area | pending | 0 nested loops; adds one source-backed diagnostic node pass and per-gap AddNode/AddRelationship finalization | 0 nested loops; target-role inference is per gap and validator runs only in tests/explicit checks | 0 analyze traversals; aggregation is explicit inventory work outside analyze semantic enrichment | 0 analyze traversals; Resolution Health inventory runs in `ComputeSummary`/CLI/API from persisted graph data | pending |
+| File rescans introduced | pending | 0 | 0 | pending | 0 | 0 | 0 | 0 | pending |
+| AST reparses introduced | pending | 0 | 0 | pending | 0 | 0 | 0 | 0 | pending |
+| Raw call/access source-site count | pending | pending | pending | pending | call 31220, access 18245 persisted gap nodes | call 31307, access 18383 persisted gap nodes | call 31393, access 18418 persisted gap nodes | call 31590, access 18541 persisted gap nodes | pending |
+| Raw unresolved fact count | pending | pending | pending | pending | 58083 persisted sourceSiteID-backed gaps | 58350 persisted sourceSiteID-backed gaps | 58495 persisted sourceSiteID-backed gaps | 58879 persisted sourceSiteID-backed gaps | pending |

@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 remains next
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 remains next
 
 Source discussion:
 
@@ -322,17 +322,17 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 ## Phase 4 - Resolution Health Inventory And Topology Separation
 
-- [ ] [P4-A] Define Resolution Health buckets that are separate from Topology Health. Required buckets include resolved references when measurable, unresolved non-actionable, external unresolved, in-repo analyzer gap, unresolved call target, unresolved access target, unresolved type target, unresolved heritage target, and unclassified/unknown.
+- [x] [P4-A] Define Resolution Health buckets that are separate from Topology Health. `graphhealth` now defines `resolved_references`, `unresolved_non_actionable`, `external_unresolved`, `in_repo_analyzer_gap`, `unresolved_call_target`, `unresolved_access_target`, `unresolved_type_target`, `unresolved_heritage_target`, and `unclassified_unknown`, plus `clear/degraded/unknown` Resolution Confidence. These fields are exposed in Go summary structs and generated Web contracts.
 
-- [ ] [P4-B] Update graph-health/report summary builders and tests so topology status stays topology-only while resolution status and resolution confidence are overlays. Include a connected-node-with-gaps case that remains `connected` while showing degraded resolution confidence.
+- [x] [P4-B] Update graph-health/report summary builders and tests so topology status stays topology-only while resolution status and resolution confidence are overlays. `ComputeSummary` still derives topology only from counted relationships; `HAS_RESOLUTION_GAP` remains excluded from topology. Node health now carries `resolutionHealthBuckets`, `resolutionGapCount`, and `resolutionConfidence`. Backend tests prove a connected node with gaps remains `connected` while showing degraded resolution confidence.
 
-- [ ] [P4-C] Add graph/API inventory counts by App Layer, Functional Area, fact family, target role, classification, actionability, Resolution Health bucket, and topology status from the persisted graph/inventory source of truth. Wire CLI and Web consumers to that same full-count source instead of the capped `/api/graph/report` candidate list, and verify DB-backed/Cypher consumers can see the same inventory fields when the graph is loaded into LadybugDB.
+- [x] [P4-C] Add graph/API inventory counts by App Layer, Functional Area, fact family, target role, classification, actionability, Resolution Health bucket, and topology status from the persisted graph/inventory source of truth. `graphhealth.Summary`, HTTP graph/report/explain payloads, generated Web contracts, and `resolution-inventory` all read full persisted graph data, not capped report candidates. Cypher verification confirms LadybugDB can see `58879` `ResolutionGap` nodes, `58879` `HAS_RESOLUTION_GAP` relationships, and gap node fields such as `sourceAppLayer`, `functionalArea`, and `gapKind`.
 
-- [ ] [P4-D] Add or extend a CLI inventory command for resolution gaps and semantic graph health. It must read persisted analyze output and print the same full counts available to API/Web consumers, including App Layer and Functional Area grouping, without applying UI/report candidate caps.
+- [x] [P4-D] Add or extend a CLI inventory command for resolution gaps and semantic graph health. `avmatrix resolution-inventory --graph .avmatrix\graph.json --out .tmp\2026-05-22-p4-resolution-inventory.json` reads persisted analyze output and prints full counts for ResolutionGap nodes/relationships, occurrence counts, resolved references, App Layer, Functional Area, fact family, target role, classification, actionability, Resolution Health bucket, Resolution Confidence, and topology overlay without applying UI/report candidate caps.
 
-- [ ] [P4-E] Add backend and CLI tests proving Resolution Health is not a replacement for topology, inventory uses persisted graph data, and connected diagnostic nodes are not ranked as topology defects.
+- [x] [P4-E] Add backend and CLI tests proving Resolution Health is not a replacement for topology, inventory uses persisted graph data, and connected diagnostic nodes are not ranked as topology defects. Tests added/updated in `internal/graphhealth`, `internal/cli`, `internal/httpapi`, generated contract checks, Web unit tests, and e2e validation cover the new overlay and command output.
 
-- [ ] [P4-F] Record separate Resolution Health and Topology Health examples, command output, API payload samples, count tables, and tests in evidence/benchmark.
+- [x] [P4-F] Record separate Resolution Health and Topology Health examples, command output, API payload samples, count tables, and tests in evidence/benchmark. Evidence E9 and benchmark B7/B11/B12 now record the Phase 4 analyze artifact, CLI inventory artifact, source-site accuracy artifact, Cypher checks, build/test/e2e results, and count tables.
 
 ## Phase 5 - Query Health Benchmark Command
 

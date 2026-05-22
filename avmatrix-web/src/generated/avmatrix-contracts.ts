@@ -3331,6 +3331,28 @@ export const GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES = [
 
 export type GraphHealthDiagnosticActionability = (typeof GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES)[number];
 
+export const GRAPH_HEALTH_RESOLUTION_HEALTH_BUCKETS = [
+  "resolved_references",
+  "unresolved_non_actionable",
+  "external_unresolved",
+  "in_repo_analyzer_gap",
+  "unresolved_call_target",
+  "unresolved_access_target",
+  "unresolved_type_target",
+  "unresolved_heritage_target",
+  "unclassified_unknown"
+] as const;
+
+export type GraphHealthResolutionHealthBucket = (typeof GRAPH_HEALTH_RESOLUTION_HEALTH_BUCKETS)[number];
+
+export const GRAPH_HEALTH_RESOLUTION_CONFIDENCE_LEVELS = [
+  "clear",
+  "degraded",
+  "unknown"
+] as const;
+
+export type GraphHealthResolutionConfidence = (typeof GRAPH_HEALTH_RESOLUTION_CONFIDENCE_LEVELS)[number];
+
 export const APP_LAYERS = [
   "backend",
   "api",
@@ -3774,6 +3796,9 @@ export interface GraphHealthNodeMetadata {
   expectedIsolationReasons?: GraphHealthExpectedIsolationReason[];
   diagnostics?: GraphHealthDiagnostic[];
   confidence: GraphHealthConfidence;
+  resolutionHealthBuckets?: Partial<Record<GraphHealthResolutionHealthBucket, number>>;
+  resolutionGapCount?: number;
+  resolutionConfidence: GraphHealthResolutionConfidence;
 }
 
 export interface GraphHealthComponentSummary {
@@ -3784,6 +3809,12 @@ export interface GraphHealthComponentSummary {
   reachableFromRoot: boolean;
   rootNodeIds?: string[];
   sampleNodeIds?: string[];
+}
+
+export interface GraphHealthTopologyResolutionOverlay {
+  nodesWithNoGaps: number;
+  nodesWithGaps: number;
+  nodesWithDegradedResolution: number;
 }
 
 export interface GraphHealthSummary {
@@ -3803,6 +3834,20 @@ export interface GraphHealthSummary {
   diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>;
   diagnosticActionabilityCounts: Partial<Record<GraphHealthDiagnosticActionability, number>>;
   excludedEdgeCounts: Record<string, number>;
+  resolutionGapNodeCount: number;
+  hasResolutionGapRelationshipCount: number;
+  resolutionGapCount: number;
+  resolvedReferenceCount: number;
+  resolutionHealthBucketCounts: Partial<Record<GraphHealthResolutionHealthBucket, number>>;
+  resolutionConfidenceCounts: Partial<Record<GraphHealthResolutionConfidence, number>>;
+  resolutionGapFactFamilyCounts: Record<string, number>;
+  resolutionGapTargetRoleCounts: Record<string, number>;
+  resolutionGapClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>;
+  resolutionGapActionabilityCounts: Partial<Record<GraphHealthDiagnosticActionability, number>>;
+  resolutionGapAppLayerCounts: Partial<Record<AppLayer, number>>;
+  resolutionGapFunctionalAreaCounts: Partial<Record<FunctionalArea, number>>;
+  resolutionGapTopologyStatusCounts: Partial<Record<GraphHealthTopologyStatus, number>>;
+  topologyResolutionOverlayCounts: Partial<Record<GraphHealthTopologyStatus, GraphHealthTopologyResolutionOverlay>>;
   largestDetachedComponents?: GraphHealthComponentSummary[];
 }
 
@@ -3880,6 +3925,9 @@ export type NodeProperties = {
   expectedIsolationReasons?: GraphHealthExpectedIsolationReason[];
   diagnostics?: GraphHealthDiagnostic[];
   confidence?: GraphHealthConfidence;
+  resolutionHealthBuckets?: Partial<Record<GraphHealthResolutionHealthBucket, number>>;
+  resolutionGapCount?: number;
+  resolutionConfidence?: GraphHealthResolutionConfidence;
   graphHealth?: GraphHealthNodeMetadata;
   [key: string]: unknown;
 };
@@ -3940,6 +3988,9 @@ export interface GraphHealthComponentExplanation {
   diagnosticCounts: Record<string, number>;
   diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>;
   diagnosticActionabilityCounts: Partial<Record<GraphHealthDiagnosticActionability, number>>;
+  resolutionGapCount: number;
+  resolutionHealthBucketCounts: Partial<Record<GraphHealthResolutionHealthBucket, number>>;
+  resolutionConfidenceCounts: Partial<Record<GraphHealthResolutionConfidence, number>>;
 }
 
 export interface GraphHealthExplainResponse {
@@ -3986,6 +4037,9 @@ export interface GraphHealthReportCandidate {
   componentId?: string;
   componentSize?: number;
   componentReachableFromRoot: boolean;
+  resolutionHealthBuckets?: Partial<Record<GraphHealthResolutionHealthBucket, number>>;
+  resolutionGapCount?: number;
+  resolutionConfidence: GraphHealthResolutionConfidence;
 }
 
 export interface GraphHealthReportResponse {

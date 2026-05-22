@@ -106,6 +106,47 @@ var ConfidenceLevels = []string{
 	ConfidenceConfirmed,
 }
 
+// ResolutionHealthBucket values describe reference-resolution state separately
+// from topology status. Counts are occurrence counts when source-site evidence is
+// present.
+type ResolutionHealthBucket string
+
+const (
+	ResolutionHealthResolvedReferences       ResolutionHealthBucket = "resolved_references"
+	ResolutionHealthUnresolvedNonActionable  ResolutionHealthBucket = "unresolved_non_actionable"
+	ResolutionHealthExternalUnresolved       ResolutionHealthBucket = "external_unresolved"
+	ResolutionHealthInRepoAnalyzerGap        ResolutionHealthBucket = "in_repo_analyzer_gap"
+	ResolutionHealthUnresolvedCallTarget     ResolutionHealthBucket = "unresolved_call_target"
+	ResolutionHealthUnresolvedAccessTarget   ResolutionHealthBucket = "unresolved_access_target"
+	ResolutionHealthUnresolvedTypeTarget     ResolutionHealthBucket = "unresolved_type_target"
+	ResolutionHealthUnresolvedHeritageTarget ResolutionHealthBucket = "unresolved_heritage_target"
+	ResolutionHealthUnclassifiedUnknown      ResolutionHealthBucket = "unclassified_unknown"
+)
+
+var ResolutionHealthBuckets = []ResolutionHealthBucket{
+	ResolutionHealthResolvedReferences,
+	ResolutionHealthUnresolvedNonActionable,
+	ResolutionHealthExternalUnresolved,
+	ResolutionHealthInRepoAnalyzerGap,
+	ResolutionHealthUnresolvedCallTarget,
+	ResolutionHealthUnresolvedAccessTarget,
+	ResolutionHealthUnresolvedTypeTarget,
+	ResolutionHealthUnresolvedHeritageTarget,
+	ResolutionHealthUnclassifiedUnknown,
+}
+
+const (
+	ResolutionConfidenceClear    = "clear"
+	ResolutionConfidenceDegraded = "degraded"
+	ResolutionConfidenceUnknown  = "unknown"
+)
+
+var ResolutionConfidenceLevels = []string{
+	ResolutionConfidenceClear,
+	ResolutionConfidenceDegraded,
+	ResolutionConfidenceUnknown,
+}
+
 const (
 	DiagnosticUnresolvedReference = "unresolved_reference"
 	DiagnosticPropertyKey         = "graphHealthDiagnostics"
@@ -179,6 +220,9 @@ type NodeHealth struct {
 	ExpectedIsolationReasons   []string       `json:"expectedIsolationReasons,omitempty"`
 	Diagnostics                []Diagnostic   `json:"diagnostics,omitempty"`
 	Confidence                 string         `json:"confidence"`
+	ResolutionHealthBuckets    map[string]int `json:"resolutionHealthBuckets,omitempty"`
+	ResolutionGapCount         int            `json:"resolutionGapCount,omitempty"`
+	ResolutionConfidence       string         `json:"resolutionConfidence"`
 }
 
 // ComponentSummary captures component-level graph-health explanation data.
@@ -192,23 +236,45 @@ type ComponentSummary struct {
 	SampleNodeIDs     []string `json:"sampleNodeIds,omitempty"`
 }
 
+// TopologyResolutionOverlay captures how resolution gaps overlay each topology
+// bucket without changing the topology bucket itself.
+type TopologyResolutionOverlay struct {
+	NodesWithNoGaps             int `json:"nodesWithNoGaps"`
+	NodesWithGaps               int `json:"nodesWithGaps"`
+	NodesWithDegradedResolution int `json:"nodesWithDegradedResolution"`
+}
+
 // Summary captures graph-level inventory for consumer surfaces.
 type Summary struct {
-	PolicyVersion                        string             `json:"policyVersion"`
-	NodeCount                            int                `json:"nodeCount"`
-	CountedRelationshipCount             int                `json:"countedRelationshipCount"`
-	ComponentCount                       int                `json:"componentCount"`
-	DetachedComponentCount               int                `json:"detachedComponentCount"`
-	RootNodeCount                        int                `json:"rootNodeCount"`
-	UnresolvedReferenceCount             int                `json:"unresolvedReferenceCount"`
-	SourceBackedUnresolvedReferenceCount int                `json:"sourceBackedUnresolvedReferenceCount"`
-	UnattributedUnresolvedReferenceCount int                `json:"unattributedUnresolvedReferenceCount"`
-	TopologyStatusCounts                 map[string]int     `json:"topologyStatusCounts"`
-	ExpectedIsolationReasonCounts        map[string]int     `json:"expectedIsolationReasonCounts"`
-	ConfidenceCounts                     map[string]int     `json:"confidenceCounts"`
-	DiagnosticCounts                     map[string]int     `json:"diagnosticCounts"`
-	DiagnosticClassificationCounts       map[string]int     `json:"diagnosticClassificationCounts"`
-	DiagnosticActionabilityCounts        map[string]int     `json:"diagnosticActionabilityCounts"`
-	ExcludedEdgeCounts                   map[string]int     `json:"excludedEdgeCounts"`
-	LargestDetachedComponents            []ComponentSummary `json:"largestDetachedComponents,omitempty"`
+	PolicyVersion                        string                               `json:"policyVersion"`
+	NodeCount                            int                                  `json:"nodeCount"`
+	CountedRelationshipCount             int                                  `json:"countedRelationshipCount"`
+	ComponentCount                       int                                  `json:"componentCount"`
+	DetachedComponentCount               int                                  `json:"detachedComponentCount"`
+	RootNodeCount                        int                                  `json:"rootNodeCount"`
+	UnresolvedReferenceCount             int                                  `json:"unresolvedReferenceCount"`
+	SourceBackedUnresolvedReferenceCount int                                  `json:"sourceBackedUnresolvedReferenceCount"`
+	UnattributedUnresolvedReferenceCount int                                  `json:"unattributedUnresolvedReferenceCount"`
+	TopologyStatusCounts                 map[string]int                       `json:"topologyStatusCounts"`
+	ExpectedIsolationReasonCounts        map[string]int                       `json:"expectedIsolationReasonCounts"`
+	ConfidenceCounts                     map[string]int                       `json:"confidenceCounts"`
+	DiagnosticCounts                     map[string]int                       `json:"diagnosticCounts"`
+	DiagnosticClassificationCounts       map[string]int                       `json:"diagnosticClassificationCounts"`
+	DiagnosticActionabilityCounts        map[string]int                       `json:"diagnosticActionabilityCounts"`
+	ExcludedEdgeCounts                   map[string]int                       `json:"excludedEdgeCounts"`
+	ResolutionGapNodeCount               int                                  `json:"resolutionGapNodeCount"`
+	HasResolutionGapRelationshipCount    int                                  `json:"hasResolutionGapRelationshipCount"`
+	ResolutionGapCount                   int                                  `json:"resolutionGapCount"`
+	ResolvedReferenceCount               int                                  `json:"resolvedReferenceCount"`
+	ResolutionHealthBucketCounts         map[string]int                       `json:"resolutionHealthBucketCounts"`
+	ResolutionConfidenceCounts           map[string]int                       `json:"resolutionConfidenceCounts"`
+	ResolutionGapFactFamilyCounts        map[string]int                       `json:"resolutionGapFactFamilyCounts"`
+	ResolutionGapTargetRoleCounts        map[string]int                       `json:"resolutionGapTargetRoleCounts"`
+	ResolutionGapClassificationCounts    map[string]int                       `json:"resolutionGapClassificationCounts"`
+	ResolutionGapActionabilityCounts     map[string]int                       `json:"resolutionGapActionabilityCounts"`
+	ResolutionGapAppLayerCounts          map[string]int                       `json:"resolutionGapAppLayerCounts"`
+	ResolutionGapFunctionalAreaCounts    map[string]int                       `json:"resolutionGapFunctionalAreaCounts"`
+	ResolutionGapTopologyStatusCounts    map[string]int                       `json:"resolutionGapTopologyStatusCounts"`
+	TopologyResolutionOverlayCounts      map[string]TopologyResolutionOverlay `json:"topologyResolutionOverlayCounts"`
+	LargestDetachedComponents            []ComponentSummary                   `json:"largestDetachedComponents,omitempty"`
 }

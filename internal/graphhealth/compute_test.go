@@ -287,6 +287,154 @@ func TestCompute_UnresolvedDiagnosticPreservesTopologyAndMarksUnknownConfidence(
 	}
 }
 
+func TestCompute_ResolutionHealthOverlayPreservesTopology(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{ID: "Function:main", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "main", "filePath": "cmd/app/main.go", "isExported": true}})
+	g.AddNode(graph.Node{ID: "Function:source", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "source", "filePath": "internal/resolution/resolve.go", "appLayer": "backend", "functionalArea": "resolution"}})
+	g.AddNode(graph.Node{ID: "Function:target", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "target", "filePath": "internal/resolution/resolve.go", "appLayer": "backend", "functionalArea": "resolution"}})
+	g.AddRelationship(graph.Relationship{ID: "r-main-source", SourceID: "Function:main", TargetID: "Function:source", Type: graph.RelCalls, SourceSiteCount: 1, SourceSiteStatus: "resolved", ProofKind: "scope-binding"})
+	g.AddRelationship(graph.Relationship{ID: "r-source-target", SourceID: "Function:source", TargetID: "Function:target", Type: graph.RelCalls, SourceSiteCount: 2, SourceSiteStatus: "resolved", ProofKind: "scope-binding"})
+	gapInput := ResolutionGapInput{
+		SourceSiteID:         "site:missing-call",
+		SourceNodeID:         "Function:source",
+		SourceNodeLabel:      string(scopeir.NodeFunction),
+		SourceAppLayer:       "backend",
+		SourceFunctionalArea: "resolution",
+		FactFamily:           "call",
+		TargetText:           "missing",
+		TargetRole:           "callable",
+		SourceSiteStatus:     "unresolved_local_binding",
+		ProofKind:            "global-fallback-low-confidence",
+		Classification:       DiagnosticClassificationInRepoUnresolved,
+		Actionability:        DiagnosticActionabilityAnalyzerGap,
+		FilePath:             "internal/resolution/resolve.go",
+		StartLine:            42,
+		Count:                3,
+	}
+	g.AddNode(gapInput.GraphNode())
+	g.AddRelationship(gapInput.GraphRelationship())
+
+	summary := ComputeSummary(g)
+
+	source := findNode(g, "Function:source")
+	if source == nil {
+		t.Fatal("source node missing")
+	}
+	health, ok := source.Properties["graphHealth"].(NodeHealth)
+	if !ok {
+		t.Fatalf("source graphHealth missing: %#v", source.Properties["graphHealth"])
+	}
+	if health.TopologyStatus != TopologyConnected {
+		t.Fatalf("source topologyStatus=%s want connected", health.TopologyStatus)
+	}
+	if health.CountedIncoming != 1 || health.CountedOutgoing != 1 {
+		t.Fatalf("source counted degree = %d/%d want 1/1", health.CountedIncoming, health.CountedOutgoing)
+	}
+	if health.ExcludedEdgeCounts[ExcludedEdgeOther] != 1 {
+		t.Fatalf("source other excluded edges=%d want 1 for HAS_RESOLUTION_GAP", health.ExcludedEdgeCounts[ExcludedEdgeOther])
+	}
+	if health.ResolutionConfidence != ResolutionConfidenceDegraded {
+		t.Fatalf("source resolutionConfidence=%s want degraded", health.ResolutionConfidence)
+	}
+	if health.ResolutionGapCount != 3 {
+		t.Fatalf("source resolutionGapCount=%d want 3", health.ResolutionGapCount)
+	}
+	if health.ResolutionHealthBuckets[string(ResolutionHealthResolvedReferences)] != 2 ||
+		health.ResolutionHealthBuckets[string(ResolutionHealthUnresolvedCallTarget)] != 3 ||
+		health.ResolutionHealthBuckets[string(ResolutionHealthInRepoAnalyzerGap)] != 3 {
+		t.Fatalf("source resolution buckets = %#v", health.ResolutionHealthBuckets)
+	}
+	if got := summary.TopologyStatusCounts[string(TopologyConnected)]; got != 1 {
+		t.Fatalf("connected topology count=%d want 1", got)
+	}
+	if summary.ResolutionGapNodeCount != 1 ||
+		summary.HasResolutionGapRelationshipCount != 1 ||
+		summary.ResolutionGapCount != 3 ||
+		summary.ResolvedReferenceCount != 3 {
+		t.Fatalf("resolution inventory summary = %#v", summary)
+	}
+	if summary.ResolutionHealthBucketCounts[string(ResolutionHealthResolvedReferences)] != 3 ||
+		summary.ResolutionHealthBucketCounts[string(ResolutionHealthUnresolvedCallTarget)] != 3 ||
+		summary.ResolutionHealthBucketCounts[string(ResolutionHealthInRepoAnalyzerGap)] != 3 {
+		t.Fatalf("resolution bucket summary = %#v", summary.ResolutionHealthBucketCounts)
+	}
+	if summary.ResolutionGapAppLayerCounts["backend"] != 3 ||
+		summary.ResolutionGapFunctionalAreaCounts["resolution"] != 3 ||
+		summary.ResolutionGapFactFamilyCounts["call"] != 3 ||
+		summary.ResolutionGapTargetRoleCounts["callable"] != 3 ||
+		summary.ResolutionGapClassificationCounts[DiagnosticClassificationInRepoUnresolved] != 3 ||
+		summary.ResolutionGapActionabilityCounts[DiagnosticActionabilityAnalyzerGap] != 3 {
+		t.Fatalf("resolution gap inventory counts = app=%#v area=%#v fact=%#v role=%#v class=%#v action=%#v",
+			summary.ResolutionGapAppLayerCounts,
+			summary.ResolutionGapFunctionalAreaCounts,
+			summary.ResolutionGapFactFamilyCounts,
+			summary.ResolutionGapTargetRoleCounts,
+			summary.ResolutionGapClassificationCounts,
+			summary.ResolutionGapActionabilityCounts,
+		)
+	}
+	if summary.ResolutionGapTopologyStatusCounts[string(TopologyConnected)] != 3 {
+		t.Fatalf("resolution gap topology counts = %#v", summary.ResolutionGapTopologyStatusCounts)
+	}
+	overlay := summary.TopologyResolutionOverlayCounts[string(TopologyConnected)]
+	if overlay.NodesWithGaps != 1 || overlay.NodesWithDegradedResolution != 1 || overlay.NodesWithNoGaps != 0 {
+		t.Fatalf("connected overlay = %#v", overlay)
+	}
+	if summary.ResolutionConfidenceCounts[ResolutionConfidenceDegraded] != 1 ||
+		summary.ResolutionConfidenceCounts[ResolutionConfidenceClear] != 1 {
+		t.Fatalf("resolution confidence summary = %#v", summary.ResolutionConfidenceCounts)
+	}
+}
+
+func TestCompute_ResolutionHealthClassifiesExternalAndNonActionableGaps(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{ID: "Function:source", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "source", "filePath": "internal/graphhealth/compute.go", "appLayer": "backend", "functionalArea": "graph_health"}})
+	for _, input := range []ResolutionGapInput{
+		{
+			SourceSiteID:         "site:len",
+			SourceNodeID:         "Function:source",
+			SourceAppLayer:       "backend",
+			SourceFunctionalArea: "graph_health",
+			FactFamily:           "call",
+			TargetText:           "len",
+			Classification:       DiagnosticClassificationBuiltin,
+			Actionability:        DiagnosticActionabilityNonActionable,
+			Count:                2,
+		},
+		{
+			SourceSiteID:         "site:uuid",
+			SourceNodeID:         "Function:source",
+			SourceAppLayer:       "backend",
+			SourceFunctionalArea: "graph_health",
+			FactFamily:           "type-reference",
+			TargetText:           "uuid.UUID",
+			Classification:       DiagnosticClassificationExternalLibrary,
+			Actionability:        DiagnosticActionabilityReview,
+			Count:                1,
+		},
+	} {
+		g.AddNode(input.GraphNode())
+		g.AddRelationship(input.GraphRelationship())
+	}
+
+	summary := ComputeSummary(g)
+
+	if summary.ResolutionHealthBucketCounts[string(ResolutionHealthUnresolvedCallTarget)] != 2 ||
+		summary.ResolutionHealthBucketCounts[string(ResolutionHealthUnresolvedTypeTarget)] != 1 ||
+		summary.ResolutionHealthBucketCounts[string(ResolutionHealthUnresolvedNonActionable)] != 2 ||
+		summary.ResolutionHealthBucketCounts[string(ResolutionHealthExternalUnresolved)] != 1 {
+		t.Fatalf("resolution bucket summary = %#v", summary.ResolutionHealthBucketCounts)
+	}
+	source := findNode(g, "Function:source")
+	health, ok := source.Properties["graphHealth"].(NodeHealth)
+	if !ok {
+		t.Fatalf("source graphHealth missing: %#v", source.Properties["graphHealth"])
+	}
+	if health.ResolutionGapCount != 3 || health.ResolutionConfidence != ResolutionConfidenceDegraded {
+		t.Fatalf("source resolution health = %#v", health)
+	}
+}
+
 func TestCompute_NormalizesDecodedDiagnostics(t *testing.T) {
 	raw := []byte(`{
   "nodes": [
