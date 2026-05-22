@@ -531,34 +531,34 @@ Source-site accuracy after Phase 4:
 
 ## B8 - Query Health Metrics
 
-Status: complete for Phase 5 baseline; Phase 6 must improve retrieval and refresh final command-surface metrics.
+Status: complete for P6-A query retrieval; rerun in P8 for final full-plan validation.
 
 Record before P5 and after P5.
 
 | Intent | Expected core files/symbols | Baseline hit@5 | Baseline hit@10 | Final hit@5 | Final hit@10 | Result |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| unresolved reference diagnostic generation | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/graphhealth/diagnostics.go`, `resolveCall`, `emitUnresolvedReference`, `AppendDiagnosticToNode` | 1/6 | 1/6 | 1/6 | 1/6 | baseline fail; hits diagnostics but misses resolver/emit targets |
-| graph health unknown-connectivity separation | `internal/graphhealth/compute.go`, `internal/graphhealth/policy.go`, `avmatrix-web/src/lib/graph-health-filters.ts`, `ComputeSummary`, `getNodeGraphHealth` | 0/5 | 0/5 | 0/5 | 0/5 | baseline fail |
-| App Layer and ResolutionGap layout | `avmatrix-web/src/lib/graph-adapter.ts`, `avmatrix-web/src/hooks/useSigma.ts`, `avmatrix-web/src/lib/graph-health-filters.ts`, `knowledgeGraphToGraphology`, `useSigma` | 0/5 | 0/5 | 0/5 | 0/5 | baseline fail |
-| runtime reset hidden-terminal behavior | `avmatrix-launcher/src/main.go`, `startRuntime`, `resetRuntime`, `stopRuntime`, `hiddenCommand` | 4/5 | 4/5 | 4/5 | 4/5 | pass |
-| API contract surfaces | `internal/httpapi/graph.go`, `internal/contracts/web_ui.go`, `avmatrix-web/src/generated/avmatrix-contracts.ts`, `WebUIContract`, `WebUIContractTypeScript` | 0/5 | 2/5 | 0/5 | 2/5 | baseline fail; contract source partially appears by rank 10 |
-| query implementation surfaces | `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `cmd/avmatrix/main.go`, `queryTool`, `rankedProcessMatches`, `matchingDefinitionRows`, `newQueryCommand` | 0/7 | 0/7 | 0/7 | 0/7 | baseline fail; confirms current query retrieval misses its own implementation surface |
-| frontend graph filter surfaces | `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/hooks/app-state/graph.tsx`, `avmatrix-web/src/components/FileTreePanel.tsx`, `avmatrix-web/src/components/GraphCanvas.tsx`, `getNodeGraphHealth`, `GraphCanvas` | 0/6 | 0/6 | 0/6 | 0/6 | baseline fail |
+| unresolved reference diagnostic generation | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/graphhealth/diagnostics.go`, `resolveCall`, `emitUnresolvedReference`, `AppendDiagnosticToNode` | 1/6 | 1/6 | 4/6 | 4/6 | pass threshold after P6-A ranking/output changes |
+| graph health unknown-connectivity separation | `internal/graphhealth/compute.go`, `internal/graphhealth/policy.go`, `avmatrix-web/src/lib/graph-health-filters.ts`, `ComputeSummary`, `getNodeGraphHealth` | 0/5 | 0/5 | 4/5 | 5/5 | pass threshold after graph-health surface boost |
+| App Layer and ResolutionGap layout | `avmatrix-web/src/lib/graph-adapter.ts`, `avmatrix-web/src/hooks/useSigma.ts`, `avmatrix-web/src/lib/graph-health-filters.ts`, `knowledgeGraphToGraphology`, `useSigma` | 0/5 | 0/5 | 5/5 | 5/5 | pass threshold after layout/frontend surface boost and per-file result diversity |
+| runtime reset hidden-terminal behavior | `avmatrix-launcher/src/main.go`, `startRuntime`, `resetRuntime`, `stopRuntime`, `hiddenCommand` | 4/5 | 4/5 | 4/5 | 4/5 | pass threshold |
+| API contract surfaces | `internal/httpapi/graph.go`, `internal/contracts/web_ui.go`, `avmatrix-web/src/generated/avmatrix-contracts.ts`, `WebUIContract`, `WebUIContractTypeScript` | 0/5 | 2/5 | 3/5 | 4/5 | pass threshold after API/contract semantic surface boost |
+| query implementation surfaces | `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `cmd/avmatrix/main.go`, `queryTool`, `rankedProcessMatches`, `matchingDefinitionRows`, `newQueryCommand` | 0/7 | 0/7 | 6/7 | 6/7 | pass threshold after MCP/query/CLI surface boost |
+| frontend graph filter surfaces | `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/hooks/app-state/graph.tsx`, `avmatrix-web/src/components/FileTreePanel.tsx`, `avmatrix-web/src/components/GraphCanvas.tsx`, `getNodeGraphHealth`, `GraphCanvas` | 0/6 | 0/6 | 4/6 | 4/6 | pass threshold after frontend filter/detail surface boost |
 
 ## B9 - Semantic Command Surface Metrics
 
-Status: pending
+Status: in progress; `query` complete for P6-A.
 
 Record after P6.
 
 | Command | App Layer shown | Functional Area shown | ResolutionGap shown | Resolution Health shown | Limitation noted |
 | --- | --- | --- | --- | --- | --- |
-| `query` | pending | pending | pending | pending | pending |
+| `query` | yes | yes | yes | yes | complete for P6-A; `semanticStatus` and stale semantic warning are included, and per-row semantic fields are emitted only from persisted graph data |
 | `context` | pending | pending | pending | pending | pending |
 | `impact` | pending | pending | pending | pending | pending |
 | `detect-changes` | pending | pending | pending | pending | pending |
 | resolution inventory command | yes | yes | yes | yes | implemented in Phase 4; command exposes full Resolution Health inventory from persisted graph data |
-| query-health command | conditional | conditional | conditional | conditional | implemented in Phase 5; captures these semantic fields when current `query` output returns them, but current `query` still needs Phase 6 semantic enrichment |
+| query-health command | yes | yes | yes | yes | P6-A final run passed 7/7 suite cases and captures semantic fields returned by `query` |
 
 ## B10 - Web UI Ring And Filter Metrics
 
@@ -652,7 +652,12 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | Query-health command | `.\avmatrix-launcher\server-bundle\avmatrix.exe query-health --suite .\docs\query-health\2026-05-22-avmatrix-app-layer-resolution-gap-suite.json --repo AVmatrix --out .\.tmp\2026-05-22-p5-query-health-baseline.json --limit 10` | passed | command completed and wrote baseline report; 7 cases, 1 passed, 6 failed |
 | AVmatrix detect-changes for Query Health command | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 22, changed_count 493, changed_files 8, risk_level critical; affected surfaces match root CLI registration and new `runQueryHealth` flows |
 | Resolution inventory command | `.\avmatrix-launcher\server-bundle\avmatrix.exe resolution-inventory --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-22-p4-resolution-inventory.json` | passed | implemented in Phase 4; duplicate retained here until P6 command-surface metrics are finalized |
-| `query` semantic output | pending | pending | pending |
+| `query` semantic output | `.\avmatrix-launcher\server-bundle\avmatrix.exe query "query ranking process matching definitions CLI query command implementation" --repo AVmatrix --limit 10` | passed | output includes complete `semanticStatus`, App Layer, Functional Area, node type, ResolutionGap summaries, and Resolution Health fields where available |
+| Full build before P6-A query tests | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | run before focused MCP/CLI tests after query ranking/output changes |
+| Backend focused tests for P6-A query output | `go test .\internal\mcp .\internal\cli` | passed | covers query semantic fields, stale semantic warning, existing query path, and query-health scoring/output |
+| Fresh analyze benchmark for P6-A query output | `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p6a-query-semantic-output-final-analyze.json --benchmark-label p6a-query-semantic-output-final` | passed | graph nodes 82935 and relationships 113953 after query ranking/output changes |
+| Query-health after P6-A query output | `.\avmatrix-launcher\server-bundle\avmatrix.exe query-health --suite .\docs\query-health\2026-05-22-avmatrix-app-layer-resolution-gap-suite.json --repo AVmatrix --out .\.tmp\2026-05-22-p6a-query-health-final.json --limit 10` | passed | 7 cases, 7 passed, 0 failed |
+| AVmatrix detect-changes for P6-A query output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 17, changed_count 432, changed_files 5, risk_level critical; affected surfaces match queryTool, rankedProcessMatches, matchingDefinitionRows, and related query retrieval flows |
 | `context` semantic output | pending | pending | pending |
 | `impact` semantic output | pending | pending | pending |
 | `detect-changes` semantic output | pending | pending | pending |

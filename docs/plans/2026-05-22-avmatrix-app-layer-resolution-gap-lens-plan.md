@@ -350,7 +350,7 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 ## Phase 6 - Semantic Command Surfaces
 
-- [ ] [P6-A] Update `query` retrieval and result output so matching nodes or flows can expose node type, App Layer, Functional Area, Resolution Health, and related ResolutionGap summaries when those fields are available. Add missing/stale semantic-data handling and improve the current simple contains-scoring behavior enough for the P5 benchmark intents to hit expected files/symbols.
+- [x] [P6-A] Update `query` retrieval and result output so matching nodes or flows can expose node type, App Layer, Functional Area, Resolution Health, and related ResolutionGap summaries when those fields are available. The MCP/CLI `query` payload now includes graph `semanticStatus`, stale semantic-data warning when App Layer or Functional Area evidence is incomplete, semantic fields on process symbols and definition rows, and per-source ResolutionGap summaries from persisted `HAS_RESOLUTION_GAP` relations. Retrieval now tokenizes/stems query text, prioritizes executable/file surfaces, skips docs/tests unless explicitly requested, diversifies definition rows by file, and uses App Layer/Functional Area surface boosts for graph-health, layout, query, API, and frontend filter intents. Fresh P6-A query-health on the updated graph passed `7/7` suite cases with `.tmp\2026-05-22-p6a-query-health-final.json`.
 
 - [ ] [P6-B] Update `context` output so a symbol/node view includes node type, App Layer, Functional Area when known, topology status, resolution-health summary, and nearby/source ResolutionGaps. The output must distinguish source-node gaps from unresolved target entities.
 

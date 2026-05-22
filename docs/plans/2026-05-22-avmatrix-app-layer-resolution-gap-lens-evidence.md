@@ -727,7 +727,7 @@ Validation evidence:
 
 ## E11 - Semantic Command Surface Evidence
 
-Status: pending
+Status: in progress; `query` surface complete for P6-A.
 
 Record during P6.
 
@@ -739,6 +739,69 @@ Record during P6.
 | `detect-changes` | changed App Layers, changed Functional Areas, ResolutionGap changes, and resolution-health impact |
 
 If a command cannot fully expose a semantic layer in this implementation, record the exact limitation and follow-up.
+
+### P6-A - `query` Semantic Output And Retrieval Evidence
+
+Status: complete for `query`.
+
+Changed behavior:
+
+- `query` output includes `semanticStatus` from the loaded graph and `semanticWarning` when App Layer or Functional Area metadata is stale/incomplete.
+- `process_symbols` and `definitions` rows expose `type`, `appLayer`, `functionalArea`, `topologyStatus`, `resolutionConfidence`, `resolutionGapCount`, and related gap summary maps when persisted graph data provides them.
+- Related ResolutionGap summaries are read from persisted `HAS_RESOLUTION_GAP` relationships and `ResolutionGap` nodes; unresolved targets are not converted into fake resolved symbols or topology edges.
+- Retrieval ranking now tokenizes/stems query text, searches broader executable/file definitions, skips docs/tests unless requested, diversifies definition output by file, and boosts App Layer/Functional Area surfaces for graph-health, layout, query, API, and frontend graph-filter intents.
+
+Focused test evidence:
+
+```text
+powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1
+go test .\internal\mcp .\internal\cli
+```
+
+Both commands passed after the P6-A implementation. New coverage in `internal/mcp/query_semantic_test.go` verifies:
+
+- fresh semantic graphs return complete `semanticStatus` and no warning;
+- stale/incomplete semantic graphs return a semantic warning;
+- `query` definition and process-symbol rows preserve App Layer, Functional Area, topology status, resolution confidence, and ResolutionGap summaries.
+
+Fresh analyze evidence after P6-A:
+
+```text
+files: scanned=749 parsed=559 unsupported=190 failed=0
+graph: nodes=82935 relationships=113953 path=E:\AVmatrix-GO\.avmatrix\graph.json
+artifact: .tmp\2026-05-22-p6a-query-semantic-output-final-analyze.json
+```
+
+Final query-health evidence on the refreshed graph:
+
+```text
+artifact: .tmp\2026-05-22-p6a-query-health-final.json
+queryHealth.suite=avmatrix-app-layer-resolution-gap-lens cases=7 passed=7 failed=0
+queryHealth.case=unresolved-reference-diagnostic-generation status=PASS hitAt5=4/2 hitAt10=4/3 expected=6
+queryHealth.case=graph-health-unknown-connectivity-separation status=PASS hitAt5=4/2 hitAt10=5/3 expected=5
+queryHealth.case=app-layer-resolution-gap-layout status=PASS hitAt5=5/2 hitAt10=5/3 expected=5
+queryHealth.case=runtime-reset-hidden-terminal status=PASS hitAt5=4/2 hitAt10=4/3 expected=5
+queryHealth.case=api-contract-surfaces status=PASS hitAt5=3/2 hitAt10=4/3 expected=5
+queryHealth.case=query-implementation-surfaces status=PASS hitAt5=6/2 hitAt10=6/3 expected=7
+queryHealth.case=frontend-graph-filter-surfaces status=PASS hitAt5=4/2 hitAt10=4/3 expected=6
+```
+
+Representative command output:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe query "query ranking process matching definitions CLI query command implementation" --repo AVmatrix --limit 10
+```
+
+The output includes `semanticStatus` with complete App Layer and Functional Area coverage for `82935` nodes, `definitions` rows for `internal/mcp/tools.go`, `internal/cli/tool_command.go`, and query-related symbols, and `process_symbols` rows such as `rankedProcessMatches`, `matchingDefinitionRows`, and `queryTool` with App Layer, Functional Area, and ResolutionGap summaries.
+
+Pre-commit AVmatrix scope check:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all
+summary: affected_count=17, changed_count=432, changed_files=5, risk_level=critical
+```
+
+The critical scope is expected for this slice because it intentionally changes the shared `queryTool`, `rankedProcessMatches`, and `matchingDefinitionRows` retrieval/output path and adds tests plus plan ledgers. The affected processes reported by AVmatrix are query-tool and matching/ranking flows such as `QueryTool -> MinInt`, `RankedProcessMatches -> QueryTokenStem`, and `MatchingDefinitionRows -> MinInt`.
 
 ## E12 - Web UI Evidence
 

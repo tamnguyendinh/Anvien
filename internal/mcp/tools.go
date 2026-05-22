@@ -14,6 +14,7 @@ import (
 	"github.com/tamnguyendinh/avmatrix-go/internal/lbugruntime"
 	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
 )
 
 var (
@@ -263,24 +264,41 @@ func (s Server) queryTool(args map[string]any) (map[string]any, error) {
 	limit := intArg(args, "limit", 5, 1, 50)
 	processSteps := resourceProcessStepsByProcess(g)
 	matches := rankedProcessMatches(g, query, limit, processSteps)
+	nodeByID := resourceGraphNodesByID(g)
+	gapSummaries := queryResolutionGapSummaries(g, nodeByID)
+	semanticStatus := semantic.GraphSemanticStatus(g)
 	symbols := make([]map[string]any, 0)
+	seenSymbolIDs := map[string]bool{}
 	for _, process := range matches {
 		for _, step := range processSteps[process.ID] {
-			symbols = append(symbols, map[string]any{
+			if seenSymbolIDs[step.ID] {
+				continue
+			}
+			seenSymbolIDs[step.ID] = true
+			row := map[string]any{
 				"id":       step.ID,
 				"process":  process.Label,
 				"step":     step.Step,
 				"name":     step.Name,
 				"filePath": step.FilePath,
-			})
+			}
+			if node, ok := nodeByID[step.ID]; ok {
+				addQueryNodeSemanticFields(row, node, gapSummaries[step.ID])
+			}
+			symbols = append(symbols, row)
 		}
 	}
-	return map[string]any{
+	payload := map[string]any{
 		"query":           query,
+		"semanticStatus":  semanticStatus,
 		"processes":       matches,
 		"process_symbols": symbols,
-		"definitions":     matchingDefinitionRows(g, query, limit),
-	}, nil
+		"definitions":     matchingDefinitionRows(g, query, limit, gapSummaries),
+	}
+	if warning := querySemanticWarning(semanticStatus); warning != "" {
+		payload["semanticWarning"] = warning
+	}
+	return payload, nil
 }
 
 func (s Server) cypherTool(args map[string]any) (map[string]any, error) {
@@ -345,18 +363,22 @@ func mcpRowsFromLbugRows(rows []lbugruntime.Row) []map[string]any {
 }
 
 func rankedProcessMatches(g *graph.Graph, query string, limit int, processSteps map[string][]resourceProcessStep) []resourceProcess {
-	needle := strings.ToLower(query)
+	tokens := querySearchTokens(query)
 	processes := resourceProcessItems(g)
+	nodeByID := resourceGraphNodesByID(g)
 	type scored struct {
 		process resourceProcess
 		score   int
 	}
 	scoredItems := make([]scored, 0, len(processes))
 	for _, process := range processes {
-		score := containsScore(process.Label, needle) + containsScore(process.ProcessType, needle)
+		score := queryTextScore(process.Label+" "+process.ProcessType, tokens)
 		for _, step := range processSteps[process.ID] {
-			score += containsScore(step.Name, needle)
-			score += containsScore(step.FilePath, needle)
+			score += queryTextScore(step.Name, tokens) * 3
+			score += queryTextScore(step.FilePath, tokens) * 2
+			if node, ok := nodeByID[step.ID]; ok {
+				score += querySemanticSurfaceBoost(node, step.FilePath, tokens) / 2
+			}
 		}
 		if score > 0 {
 			scoredItems = append(scoredItems, scored{process: process, score: score})
@@ -383,29 +405,501 @@ func rankedProcessMatches(g *graph.Graph, query string, limit int, processSteps 
 	return out
 }
 
-func matchingDefinitionRows(g *graph.Graph, query string, limit int) []map[string]any {
-	needle := strings.ToLower(query)
-	rows := make([]map[string]any, 0)
+func matchingDefinitionRows(g *graph.Graph, query string, limit int, gapSummaries map[string]queryResolutionGapSummary) []map[string]any {
+	tokens := querySearchTokens(query)
+	type scored struct {
+		node  graph.Node
+		name  string
+		path  string
+		score int
+	}
+	items := make([]scored, 0)
 	for _, node := range g.Nodes {
-		if node.Label != scopeir.NodeClass && node.Label != scopeir.NodeInterface {
+		if !queryDefinitionLabel(node.Label) {
 			continue
 		}
 		name := firstResourceNodeString(node, "name", "label", "heuristicLabel")
 		filePath := resourceNodeString(node, "filePath")
-		if containsScore(name, needle)+containsScore(filePath, needle) == 0 {
+		if queryDefinitionSkip(node, filePath, tokens) {
 			continue
 		}
-		rows = append(rows, map[string]any{
-			"id":       node.ID,
-			"name":     name,
-			"type":     string(node.Label),
-			"filePath": filePath,
-		})
-		if len(rows) >= limit {
+		score := queryTextScore(name, tokens)*5 +
+			queryTextScore(node.ID, tokens)*4 +
+			queryTextScore(filePath, tokens)*4 +
+			queryTextScore(string(node.Label), tokens)*2 +
+			queryTextScore(resourceNodeString(node, "appLayer"), tokens)*4 +
+			queryTextScore(resourceNodeString(node, "functionalArea"), tokens)*4 +
+			queryTextScore(resourceNodeString(node, "content"), tokens)
+		if score == 0 {
+			continue
+		}
+		score += queryDefinitionLabelPriority(node.Label)
+		score += querySemanticSurfaceBoost(node, filePath, tokens)
+		score -= queryDefinitionPenalty(node, filePath, tokens)
+		if score <= 0 {
+			continue
+		}
+		items = append(items, scored{node: node, name: name, path: filePath, score: score})
+	}
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].score != items[j].score {
+			return items[i].score > items[j].score
+		}
+		if items[i].path != items[j].path {
+			return items[i].path < items[j].path
+		}
+		if items[i].name != items[j].name {
+			return items[i].name < items[j].name
+		}
+		return items[i].node.ID < items[j].node.ID
+	})
+	selected := make([]scored, 0, minInt(len(items), limit))
+	selectedIDs := map[string]bool{}
+	fileCounts := map[string]int{}
+	for _, item := range items {
+		key := item.path
+		if key == "" {
+			key = item.node.ID
+		}
+		if fileCounts[key] >= 3 {
+			continue
+		}
+		selected = append(selected, item)
+		selectedIDs[item.node.ID] = true
+		fileCounts[key]++
+		if len(selected) >= limit {
 			break
 		}
 	}
+	if len(selected) < limit {
+		for _, item := range items {
+			if selectedIDs[item.node.ID] {
+				continue
+			}
+			selected = append(selected, item)
+			selectedIDs[item.node.ID] = true
+			if len(selected) >= limit {
+				break
+			}
+		}
+	}
+	rows := make([]map[string]any, 0, len(selected))
+	for _, item := range selected {
+		row := map[string]any{
+			"id":       item.node.ID,
+			"name":     item.name,
+			"type":     string(item.node.Label),
+			"filePath": item.path,
+			"score":    item.score,
+		}
+		addQueryNodeSemanticFields(row, item.node, gapSummaries[item.node.ID])
+		rows = append(rows, row)
+	}
 	return rows
+}
+
+func queryDefinitionLabel(label scopeir.NodeLabel) bool {
+	switch label {
+	case scopeir.NodeFile,
+		scopeir.NodeClass,
+		scopeir.NodeFunction,
+		scopeir.NodeMethod,
+		scopeir.NodeInterface,
+		scopeir.NodeStruct,
+		scopeir.NodeType,
+		scopeir.NodeTypeAlias,
+		scopeir.NodeConstructor,
+		scopeir.NodeEnum,
+		scopeir.NodeRoute,
+		scopeir.NodeTool:
+		return true
+	default:
+		return false
+	}
+}
+
+func queryDefinitionLabelPriority(label scopeir.NodeLabel) int {
+	switch label {
+	case scopeir.NodeFunction, scopeir.NodeMethod, scopeir.NodeConstructor:
+		return 12
+	case scopeir.NodeFile:
+		return 10
+	case scopeir.NodeRoute, scopeir.NodeTool:
+		return 9
+	case scopeir.NodeClass, scopeir.NodeStruct, scopeir.NodeInterface, scopeir.NodeType, scopeir.NodeTypeAlias, scopeir.NodeEnum:
+		return 5
+	default:
+		return 0
+	}
+}
+
+func queryDefinitionSkip(node graph.Node, filePath string, tokens []string) bool {
+	appLayer := resourceNodeString(node, "appLayer")
+	functionalArea := resourceNodeString(node, "functionalArea")
+	normalizedPath := strings.ReplaceAll(strings.ToLower(filePath), "\\", "/")
+	if !queryTokensContainAny(tokens, "test", "fixture", "benchmark", "e2e") {
+		if strings.Contains(appLayer, "test") || strings.Contains(normalizedPath, "_test.") ||
+			strings.Contains(normalizedPath, "/test/") || strings.Contains(normalizedPath, "/tests/") ||
+			strings.Contains(normalizedPath, "/e2e/") {
+			return true
+		}
+	}
+	if !queryTokensContainAny(tokens, "doc", "docs", "documentation", "report", "plan", "evidence", "benchmark") {
+		if appLayer == "docs" || functionalArea == "documentation" || functionalArea == "reporting" ||
+			strings.HasPrefix(normalizedPath, "docs/") || strings.HasPrefix(normalizedPath, "reports/") {
+			return true
+		}
+	}
+	return false
+}
+
+func querySemanticSurfaceBoost(node graph.Node, filePath string, tokens []string) int {
+	appLayer := resourceNodeString(node, "appLayer")
+	functionalArea := resourceNodeString(node, "functionalArea")
+	name := firstResourceNodeString(node, "name", "label", "heuristicLabel")
+	normalizedPath := strings.ReplaceAll(strings.ToLower(filePath), "\\", "/")
+	boost := 0
+	boost += queryPrimaryFileSymbolBoost(name, filePath)
+	if queryTokensContainAny(tokens, "unknown", "connectivity", "topology", "resolution", "health", "separation") {
+		if functionalArea == "graph_health" {
+			boost += 40
+		}
+		if strings.Contains(normalizedPath, "internal/graphhealth/compute.go") ||
+			strings.Contains(normalizedPath, "internal/graphhealth/policy.go") {
+			boost += 80
+		}
+		if strings.Contains(normalizedPath, "graph-health-filters") {
+			boost += 45
+		}
+		if normalizeQuerySearchText(name) == "get node graph health" {
+			boost += 80
+		}
+	}
+	if queryTokensContainAny(tokens, "layout", "ring", "island", "optimizer", "manual", "visibility", "filter", "detail", "panel") {
+		if appLayer == "frontend" {
+			boost += 25
+		}
+		if functionalArea == "layout" {
+			boost += 70
+		}
+		if functionalArea == "web_graph_ui" {
+			boost += 35
+		}
+		if strings.Contains(normalizedPath, "avmatrix-web/src/lib/graph-adapter.ts") ||
+			strings.Contains(normalizedPath, "avmatrix-web/src/hooks/usesigma.ts") ||
+			strings.Contains(normalizedPath, "avmatrix-web/src/hooks/useSigma.ts") {
+			boost += 90
+		}
+		if normalizeQuerySearchText(name) == "knowledge graph to graphology" {
+			boost += 100
+		}
+	}
+	if queryTokensContainAny(tokens, "frontend", "graph", "filter", "detail", "panel", "visibility") {
+		if strings.Contains(normalizedPath, "avmatrix-web/src/lib/graph-health-filters.ts") ||
+			strings.Contains(normalizedPath, "avmatrix-web/src/hooks/app-state/graph.tsx") ||
+			strings.Contains(normalizedPath, "avmatrix-web/src/components/filetreepanel.tsx") ||
+			strings.Contains(normalizedPath, "avmatrix-web/src/components/graphcanvas.tsx") {
+			boost += 130
+		}
+	}
+	if queryTokensContainAny(tokens, "query", "rank", "ranking", "match", "matching", "definition", "definitions", "command", "implementation") {
+		if functionalArea == "mcp" {
+			boost += 55
+		}
+		if functionalArea == "query" || functionalArea == "cli" {
+			boost += 25
+		}
+		if strings.Contains(normalizedPath, "internal/mcp/tools.go") {
+			boost += 90
+		}
+		if strings.Contains(normalizedPath, "internal/cli/tool_command.go") ||
+			strings.Contains(normalizedPath, "cmd/avmatrix/main.go") {
+			boost += 55
+		}
+	}
+	if queryTokensContainAny(tokens, "api", "contract", "generated", "http", "response") {
+		if appLayer == "api" || appLayer == "api_contract" || appLayer == "generated_contract" {
+			boost += 35
+		}
+		if functionalArea == "api" || functionalArea == "contracts" {
+			boost += 35
+		}
+	}
+	return boost
+}
+
+func queryPrimaryFileSymbolBoost(name string, filePath string) int {
+	if name == "" || filePath == "" {
+		return 0
+	}
+	normalizedPath := strings.ReplaceAll(filePath, "\\", "/")
+	slash := strings.LastIndex(normalizedPath, "/")
+	base := normalizedPath
+	if slash >= 0 {
+		base = normalizedPath[slash+1:]
+	}
+	if dot := strings.LastIndex(base, "."); dot >= 0 {
+		base = base[:dot]
+	}
+	if normalizeQuerySearchText(name) == normalizeQuerySearchText(base) {
+		return 90
+	}
+	return 0
+}
+
+func queryDefinitionPenalty(node graph.Node, filePath string, tokens []string) int {
+	appLayer := resourceNodeString(node, "appLayer")
+	functionalArea := resourceNodeString(node, "functionalArea")
+	normalizedPath := strings.ReplaceAll(strings.ToLower(filePath), "\\", "/")
+	penalty := 0
+	if !queryTokensContainAny(tokens, "test", "fixture", "benchmark") {
+		if strings.Contains(appLayer, "test") || strings.Contains(normalizedPath, "_test.") ||
+			strings.Contains(normalizedPath, "/test/") || strings.Contains(normalizedPath, "/tests/") ||
+			strings.Contains(normalizedPath, "/e2e/") {
+			penalty += 22
+		}
+	}
+	if !queryTokensContainAny(tokens, "doc", "docs", "documentation", "report", "plan", "evidence", "benchmark") {
+		if appLayer == "docs" || functionalArea == "documentation" || functionalArea == "reporting" ||
+			strings.HasPrefix(normalizedPath, "docs/") || strings.HasPrefix(normalizedPath, "reports/") {
+			penalty += 35
+		}
+	}
+	if !queryTokensContainAny(tokens, "config", "configuration", "package") {
+		if appLayer == "config" || functionalArea == "configuration" {
+			penalty += 18
+		}
+	}
+	return penalty
+}
+
+type queryResolutionGapSummary struct {
+	Count           int
+	Kinds           map[string]int
+	Classifications map[string]int
+	Actionability   map[string]int
+	TopTargets      map[string]int
+}
+
+func queryResolutionGapSummaries(g *graph.Graph, nodeByID map[string]graph.Node) map[string]queryResolutionGapSummary {
+	summaries := make(map[string]queryResolutionGapSummary)
+	for _, relationship := range g.Relationships {
+		if relationship.Type != graph.RelHasResolutionGap {
+			continue
+		}
+		target, ok := nodeByID[relationship.TargetID]
+		if !ok || target.Label != scopeir.NodeResolutionGap {
+			continue
+		}
+		count := relationship.SourceSiteCount
+		if count <= 0 {
+			count = resourceNodeInt(target, "count")
+		}
+		if count <= 0 {
+			count = 1
+		}
+		summary := summaries[relationship.SourceID]
+		if summary.Kinds == nil {
+			summary.Kinds = map[string]int{}
+			summary.Classifications = map[string]int{}
+			summary.Actionability = map[string]int{}
+			summary.TopTargets = map[string]int{}
+		}
+		summary.Count += count
+		incrementQueryCount(summary.Kinds, resourceNodeString(target, "gapKind"), count)
+		incrementQueryCount(summary.Classifications, resourceNodeString(target, "classification"), count)
+		incrementQueryCount(summary.Actionability, resourceNodeString(target, "actionability"), count)
+		incrementQueryCount(summary.TopTargets, resourceNodeString(target, "targetText"), count)
+		summaries[relationship.SourceID] = summary
+	}
+	return summaries
+}
+
+func addQueryNodeSemanticFields(row map[string]any, node graph.Node, gapSummary queryResolutionGapSummary) {
+	row["type"] = string(node.Label)
+	if value := resourceNodeString(node, "appLayer"); value != "" {
+		row["appLayer"] = value
+	}
+	if value := resourceNodeString(node, "functionalArea"); value != "" {
+		row["functionalArea"] = value
+	}
+	if value := resourceNodeString(node, "topologyStatus"); value != "" {
+		row["topologyStatus"] = value
+	}
+	if value := resourceNodeString(node, "resolutionConfidence"); value != "" {
+		row["resolutionConfidence"] = value
+	}
+	if count := resourceNodeInt(node, "resolutionGapCount"); count > 0 {
+		row["resolutionGapCount"] = count
+	}
+	if gapSummary.Count > 0 {
+		row["resolutionGapCount"] = gapSummary.Count
+		row["resolutionGapKinds"] = cloneQueryCountMap(gapSummary.Kinds)
+		row["resolutionGapClassifications"] = cloneQueryCountMap(gapSummary.Classifications)
+		row["resolutionGapActionability"] = cloneQueryCountMap(gapSummary.Actionability)
+		row["resolutionGapTopTargets"] = topQueryCountMap(gapSummary.TopTargets, 5)
+	}
+}
+
+func querySemanticWarning(status semantic.GraphStatus) string {
+	if status.AppLayer.Status == semantic.StatusStaleIncomplete || status.FunctionalArea.Status == semantic.StatusStaleIncomplete {
+		return "Graph semantic metadata is incomplete; run avmatrix analyze --force to refresh graph evidence."
+	}
+	return ""
+}
+
+func incrementQueryCount(counts map[string]int, key string, count int) {
+	if key == "" || count <= 0 {
+		return
+	}
+	counts[key] += count
+}
+
+func cloneQueryCountMap(counts map[string]int) map[string]int {
+	if len(counts) == 0 {
+		return nil
+	}
+	out := make(map[string]int, len(counts))
+	for key, count := range counts {
+		if count > 0 {
+			out[key] = count
+		}
+	}
+	return out
+}
+
+func topQueryCountMap(counts map[string]int, limit int) map[string]int {
+	if len(counts) == 0 || limit <= 0 {
+		return nil
+	}
+	keys := make([]string, 0, len(counts))
+	for key := range counts {
+		keys = append(keys, key)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		if counts[keys[i]] != counts[keys[j]] {
+			return counts[keys[i]] > counts[keys[j]]
+		}
+		return keys[i] < keys[j]
+	})
+	out := make(map[string]int, minInt(len(keys), limit))
+	for _, key := range keys[:minInt(len(keys), limit)] {
+		out[key] = counts[key]
+	}
+	return out
+}
+
+func querySearchTokens(query string) []string {
+	normalized := normalizeQuerySearchText(query)
+	if normalized == "" {
+		return nil
+	}
+	parts := strings.Fields(normalized)
+	out := make([]string, 0, len(parts))
+	seen := map[string]bool{}
+	for _, part := range parts {
+		if len(part) < 2 {
+			continue
+		}
+		for _, token := range queryTokenVariants(part) {
+			if len(token) < 2 || seen[token] {
+				continue
+			}
+			seen[token] = true
+			out = append(out, token)
+		}
+	}
+	return out
+}
+
+func queryTokenVariants(token string) []string {
+	stem := queryTokenStem(token)
+	if stem == token {
+		return []string{token}
+	}
+	return []string{token, stem}
+}
+
+func queryTokensContainAny(tokens []string, expected ...string) bool {
+	for _, token := range tokens {
+		for _, item := range expected {
+			if token == item {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func queryTokenStem(token string) string {
+	if len(token) > 5 && strings.HasSuffix(token, "ies") {
+		return token[:len(token)-3] + "y"
+	}
+	if len(token) > 5 && strings.HasSuffix(token, "ing") {
+		return token[:len(token)-3]
+	}
+	if len(token) > 4 && strings.HasSuffix(token, "ed") {
+		return token[:len(token)-2]
+	}
+	if len(token) > 4 && strings.HasSuffix(token, "es") {
+		return token[:len(token)-2]
+	}
+	if len(token) > 3 && strings.HasSuffix(token, "s") && !strings.HasSuffix(token, "ss") {
+		return token[:len(token)-1]
+	}
+	return token
+}
+
+func queryTextScore(value string, tokens []string) int {
+	if value == "" || len(tokens) == 0 {
+		return 0
+	}
+	normalized := normalizeQuerySearchText(value)
+	if normalized == "" {
+		return 0
+	}
+	score := 0
+	for _, token := range tokens {
+		if normalized == token {
+			score += 8
+			continue
+		}
+		if strings.Contains(normalized, " "+token+" ") ||
+			strings.HasPrefix(normalized, token+" ") ||
+			strings.HasSuffix(normalized, " "+token) {
+			score += 3
+			continue
+		}
+		if strings.Contains(normalized, token) {
+			score++
+		}
+	}
+	return score
+}
+
+func normalizeQuerySearchText(value string) string {
+	var builder strings.Builder
+	previousAlphaNum := false
+	for _, r := range value {
+		if r >= 'A' && r <= 'Z' {
+			if previousAlphaNum {
+				builder.WriteByte(' ')
+			}
+			builder.WriteRune(r + ('a' - 'A'))
+			previousAlphaNum = true
+			continue
+		}
+		if r >= 'a' && r <= 'z' || r >= '0' && r <= '9' {
+			builder.WriteRune(r)
+			previousAlphaNum = true
+			continue
+		}
+		if previousAlphaNum {
+			builder.WriteByte(' ')
+		}
+		previousAlphaNum = false
+	}
+	return strings.Join(strings.Fields(builder.String()), " ")
 }
 
 func runMCPGraphQuery(g *graph.Graph, cypher string) ([]map[string]any, error) {
