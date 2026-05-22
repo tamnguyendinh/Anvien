@@ -84,6 +84,7 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 		"list",
 		"mcp",
 		"query",
+		"query-health",
 		"resolution-inventory",
 		"serve",
 		"setup",
@@ -562,6 +563,7 @@ func TestDirectToolHelpShowsCompatibilityFlags(t *testing.T) {
 		want []string
 	}{
 		{[]string{"query", "--help"}, []string{"avmatrix query <search_query>", "--repo", "--context", "--goal", "--limit", "--content"}},
+		{[]string{"query-health", "--help"}, []string{"avmatrix query-health", "--suite", "--repo", "--out", "--json", "--fail-on-threshold"}},
 		{[]string{"context", "--help"}, []string{"avmatrix context [name]", "--repo", "--uid", "--file", "--content"}},
 		{[]string{"impact", "--help"}, []string{"--direction", "--repo", "--uid", "--depth", "--include-tests"}},
 		{[]string{"cypher", "--help"}, []string{"--repo"}},

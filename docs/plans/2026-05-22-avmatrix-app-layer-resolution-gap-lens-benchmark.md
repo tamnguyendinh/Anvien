@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 remains next
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 remains next
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -531,18 +531,19 @@ Source-site accuracy after Phase 4:
 
 ## B8 - Query Health Metrics
 
-Status: pending
+Status: complete for Phase 5 baseline; Phase 6 must improve retrieval and refresh final command-surface metrics.
 
 Record before P5 and after P5.
 
 | Intent | Expected core files/symbols | Baseline hit@5 | Baseline hit@10 | Final hit@5 | Final hit@10 | Result |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| unresolved reference diagnostic generation | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/graphhealth/diagnostics.go` | pending | pending | pending | pending | pending |
-| graph health unknown-connectivity separation | `internal/graphhealth/compute.go`, `internal/graphhealth/policy.go`, `avmatrix-web/src/lib/graph-health-filters.ts` | pending | pending | pending | pending | pending |
-| App Layer and ResolutionGap layout | Web graph layout code, layout optimizer code, graph filter/lens code | pending | pending | pending | pending | pending |
-| runtime reset hidden-terminal behavior | `avmatrix-launcher/src/main.go`, runtime start/reset/stop code | pending | pending | pending | pending | pending |
-| API contract surfaces | HTTP API code, contract generation code, generated Web contract code | pending | pending | pending | pending | pending |
-| frontend graph filter surfaces | Web graph filter, detail, and layout code | pending | pending | pending | pending | pending |
+| unresolved reference diagnostic generation | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/graphhealth/diagnostics.go`, `resolveCall`, `emitUnresolvedReference`, `AppendDiagnosticToNode` | 1/6 | 1/6 | 1/6 | 1/6 | baseline fail; hits diagnostics but misses resolver/emit targets |
+| graph health unknown-connectivity separation | `internal/graphhealth/compute.go`, `internal/graphhealth/policy.go`, `avmatrix-web/src/lib/graph-health-filters.ts`, `ComputeSummary`, `getNodeGraphHealth` | 0/5 | 0/5 | 0/5 | 0/5 | baseline fail |
+| App Layer and ResolutionGap layout | `avmatrix-web/src/lib/graph-adapter.ts`, `avmatrix-web/src/hooks/useSigma.ts`, `avmatrix-web/src/lib/graph-health-filters.ts`, `knowledgeGraphToGraphology`, `useSigma` | 0/5 | 0/5 | 0/5 | 0/5 | baseline fail |
+| runtime reset hidden-terminal behavior | `avmatrix-launcher/src/main.go`, `startRuntime`, `resetRuntime`, `stopRuntime`, `hiddenCommand` | 4/5 | 4/5 | 4/5 | 4/5 | pass |
+| API contract surfaces | `internal/httpapi/graph.go`, `internal/contracts/web_ui.go`, `avmatrix-web/src/generated/avmatrix-contracts.ts`, `WebUIContract`, `WebUIContractTypeScript` | 0/5 | 2/5 | 0/5 | 2/5 | baseline fail; contract source partially appears by rank 10 |
+| query implementation surfaces | `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `cmd/avmatrix/main.go`, `queryTool`, `rankedProcessMatches`, `matchingDefinitionRows`, `newQueryCommand` | 0/7 | 0/7 | 0/7 | 0/7 | baseline fail; confirms current query retrieval misses its own implementation surface |
+| frontend graph filter surfaces | `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/hooks/app-state/graph.tsx`, `avmatrix-web/src/components/FileTreePanel.tsx`, `avmatrix-web/src/components/GraphCanvas.tsx`, `getNodeGraphHealth`, `GraphCanvas` | 0/6 | 0/6 | 0/6 | 0/6 | baseline fail |
 
 ## B9 - Semantic Command Surface Metrics
 
@@ -557,7 +558,7 @@ Record after P6.
 | `impact` | pending | pending | pending | pending | pending |
 | `detect-changes` | pending | pending | pending | pending | pending |
 | resolution inventory command | yes | yes | yes | yes | implemented in Phase 4; command exposes full Resolution Health inventory from persisted graph data |
-| query-health command | pending | pending | pending | pending | pending |
+| query-health command | conditional | conditional | conditional | conditional | implemented in Phase 5; captures these semantic fields when current `query` output returns them, but current `query` still needs Phase 6 semantic enrichment |
 
 ## B10 - Web UI Ring And Filter Metrics
 
@@ -645,7 +646,11 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | Resolution inventory command | `.\avmatrix-launcher\server-bundle\avmatrix.exe resolution-inventory --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-22-p4-resolution-inventory.json` | passed | gap occurrences 59626, resolved references 27195, analyzer-gap occurrences 34537, non-actionable occurrences 24926 |
 | Source-site accuracy after Resolution Health slice | `.\avmatrix-launcher\server-bundle\avmatrix.exe source-site-accuracy --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-22-p4-resolution-health-source-site-accuracy.json --max-examples 20` | passed | all source-site occurrences 146447, missing IDs 0, false resolved edge candidates 0, resolved edges without proof 0, non-property ACCESSES targets 0, coarse file call edges 0 |
 | Cypher ResolutionGap inventory | `cypher` queries over `ResolutionGap` and `HAS_RESOLUTION_GAP` | passed | `ResolutionGap` node count 58879 and `HAS_RESOLUTION_GAP` relationship count 58879 visible in LadybugDB |
-| Query-health command | pending | pending | pending |
+| Full build before Query Health tests | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | run before final focused tests after adding `query-health` command and suite |
+| Backend focused tests for Query Health | `go test .\internal\cli` and `go test .\internal\mcp` | passed | covers query-health suite parsing/scoring/output/threshold behavior and confirms existing MCP query path still passes |
+| Fresh analyze benchmark for Query Health command | `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p5-query-health-command-analyze.json --benchmark-label p5-query-health-command` | passed | graph nodes 82538 and relationships 113396 after adding the command, tests, and suite |
+| Query-health command | `.\avmatrix-launcher\server-bundle\avmatrix.exe query-health --suite .\docs\query-health\2026-05-22-avmatrix-app-layer-resolution-gap-suite.json --repo AVmatrix --out .\.tmp\2026-05-22-p5-query-health-baseline.json --limit 10` | passed | command completed and wrote baseline report; 7 cases, 1 passed, 6 failed |
+| AVmatrix detect-changes for Query Health command | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 22, changed_count 493, changed_files 8, risk_level critical; affected surfaces match root CLI registration and new `runQueryHealth` flows |
 | Resolution inventory command | `.\avmatrix-launcher\server-bundle\avmatrix.exe resolution-inventory --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-22-p4-resolution-inventory.json` | passed | implemented in Phase 4; duplicate retained here until P6 command-surface metrics are finalized |
 | `query` semantic output | pending | pending | pending |
 | `context` semantic output | pending | pending | pending |

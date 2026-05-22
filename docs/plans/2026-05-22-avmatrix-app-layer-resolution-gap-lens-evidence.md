@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 remains next
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 remains next
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -664,19 +664,66 @@ Validation evidence for Phase 4:
 
 ## E10 - Query Health Command Evidence
 
-Status: pending
+Status: complete for Phase 5.
 
 Record during P5.
 
-Required evidence:
+Command name and usage:
 
-- command name and usage;
-- suite fixture location and format;
-- expected file list for the first suite, including `resolve.go`, `emit.go`, `diagnostics.go`, `compute.go`, `policy.go`, `graph-health-filters.ts`, Web graph layout code, layout optimizer code, and launcher runtime code;
-- sample table or JSON output;
-- hit@5/hit@10 by intent;
-- noise reasons;
-- tests for parsing, scoring, semantic output, and threshold failure.
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe query-health --suite .\docs\query-health\2026-05-22-avmatrix-app-layer-resolution-gap-suite.json --repo AVmatrix --out .\.tmp\2026-05-22-p5-query-health-baseline.json --limit 10
+```
+
+The command verifies the target repo is not stale by comparing indexed commit and current commit, then runs every suite intent through the same local MCP `query` path used by `avmatrix query`. It writes JSON with expected targets, actual top results, matched/missed targets, hit@5, hit@10, noise reason, pass/fail, and semantic fields if current query results return them. It also supports `--json` and `--fail-on-threshold`.
+
+Suite fixture:
+
+- `docs/query-health/2026-05-22-avmatrix-app-layer-resolution-gap-suite.json`
+- Format: `schemaVersion`, `suite`, `description`, and `cases[]` with `id`, `intent`, `expectedFiles`, `expectedSymbols`, optional `expectedAppLayers`, optional `expectedFunctionalAreas`, `hitAt5Threshold`, and `hitAt10Threshold`.
+
+The first suite includes expected files for:
+
+- unresolved reference diagnostics: `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/graphhealth/diagnostics.go`;
+- graph-health separation: `internal/graphhealth/compute.go`, `internal/graphhealth/policy.go`, `avmatrix-web/src/lib/graph-health-filters.ts`;
+- layout and optimizer surfaces: `avmatrix-web/src/lib/graph-adapter.ts`, `avmatrix-web/src/hooks/useSigma.ts`;
+- runtime reset and hidden terminal behavior: `avmatrix-launcher/src/main.go`;
+- API/contract/query surfaces: `internal/httpapi/graph.go`, `internal/contracts/web_ui.go`, `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `cmd/avmatrix/main.go`, `avmatrix-web/src/generated/avmatrix-contracts.ts`;
+- frontend graph filter/detail/layout surfaces: `avmatrix-web/src/hooks/app-state/graph.tsx`, `avmatrix-web/src/components/FileTreePanel.tsx`, `avmatrix-web/src/components/GraphCanvas.tsx`.
+
+Fresh Phase 5 analyze evidence:
+
+```text
+files: scanned=748 parsed=558 unsupported=190 failed=0
+graph: nodes=82538 relationships=113396 path=E:\AVmatrix-GO\.avmatrix\graph.json
+artifact: .tmp\2026-05-22-p5-query-health-command-analyze.json
+```
+
+Query-health baseline command output:
+
+```text
+queryHealth.suite=avmatrix-app-layer-resolution-gap-lens cases=7 passed=1 failed=6
+queryHealth.case=unresolved-reference-diagnostic-generation status=FAIL hitAt5=1/2 hitAt10=1/3 expected=6
+queryHealth.case=graph-health-unknown-connectivity-separation status=FAIL hitAt5=0/2 hitAt10=0/3 expected=5
+queryHealth.case=app-layer-resolution-gap-layout status=FAIL hitAt5=0/2 hitAt10=0/3 expected=5
+queryHealth.case=runtime-reset-hidden-terminal status=PASS hitAt5=4/2 hitAt10=4/3 expected=5
+queryHealth.case=api-contract-surfaces status=FAIL hitAt5=0/2 hitAt10=2/3 expected=5
+queryHealth.case=query-implementation-surfaces status=FAIL hitAt5=0/2 hitAt10=0/3 expected=7
+queryHealth.case=frontend-graph-filter-surfaces status=FAIL hitAt5=0/2 hitAt10=0/3 expected=6
+```
+
+Noise examples:
+
+- Most failing cases still return launcher `avmatrix-launcher/src/main.go`, `internal/graphhealth/diagnostics.go`, `internal/graphhealth/resolution_gap_inputs.go`, `internal/semantic/app_layer.go`, and `avmatrix-web/src/components/Header.tsx` as top files.
+- `unresolved-reference-diagnostic-generation` hits `internal/graphhealth/diagnostics.go` but misses `resolve.go`, `emit.go`, `resolveCall`, `emitUnresolvedReference`, and `AppendDiagnosticToNode`.
+- `query-implementation-surfaces` misses `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `cmd/avmatrix/main.go`, `queryTool`, `rankedProcessMatches`, `matchingDefinitionRows`, and `newQueryCommand`.
+- These failures are expected baseline evidence for Phase 6; Phase 5 added the repeatable measurement command, not retrieval-ranking changes.
+
+Validation evidence:
+
+- Full build passed before final tests: `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`.
+- Focused tests passed after the full build: `go test .\internal\cli` and `go test .\internal\mcp`.
+- Tests cover suite parsing, scoring, missing expected targets, noisy results, semantic field output, JSON output, summary/table output, report writing, and threshold failure behavior.
+- AVmatrix detect-changes after staging the Phase 5 slice used fresh analyze output followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `493`, changed_files `8`, affected_count `22`, and risk_level `critical`. The critical scope is expected because this slice registers a root CLI command and adds new `runQueryHealth` command flows.
 
 ## E11 - Semantic Command Surface Evidence
 

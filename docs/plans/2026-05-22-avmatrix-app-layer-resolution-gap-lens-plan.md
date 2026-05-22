@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 remains next
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 remains next
 
 Source discussion:
 
@@ -336,17 +336,17 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 ## Phase 5 - Query Health Benchmark Command
 
-- [ ] [P5-A] Define a query benchmark suite format with intent text, expected files, expected symbols, optional expected App Layer/Functional Area, hit@5 threshold, hit@10 threshold, actual top results, noise reason, and pass/fail status.
+- [x] [P5-A] Define a query benchmark suite format with intent text, expected files, expected symbols, optional expected App Layer/Functional Area, hit@5 threshold, hit@10 threshold, actual top results, noise reason, and pass/fail status. `query-health` now reads JSON suites with `schemaVersion`, `suite`, and `cases[]` fields; each case records expected files/symbols, optional semantic expectations, hit thresholds, top results, matched/missed targets, noise reason, and pass/fail status.
 
-- [ ] [P5-B] Add a CLI command for query health so retrieval accuracy can be checked by running one command. The command must use fresh analyze output, read the suite, run each query intent through the same implementation path as `query`, score results, and write readable table or JSON output suitable for evidence and future automation.
+- [x] [P5-B] Add a CLI command for query health so retrieval accuracy can be checked by running one command. `avmatrix query-health --suite <suite.json> --repo <repo> --out <report.json> --limit 10` verifies the indexed repo is not stale by commit, calls the same local MCP `query` implementation path as `avmatrix query`, scores results, writes JSON reports, and prints readable summary lines; `--json` and `--fail-on-threshold` are available for automation.
 
-- [ ] [P5-C] Add initial suite entries for unresolved reference diagnostic generation, graph health unknown-connectivity separation, App Layer/resolution-gap layout, runtime reset hidden-terminal behavior, API contract surfaces, query implementation surfaces, and frontend graph filter surfaces. The first suite must include expected files from the discussion and source audit: `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/graphhealth/diagnostics.go`, `internal/graphhealth/compute.go`, `internal/graphhealth/policy.go`, `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `cmd/avmatrix/main.go`, `internal/httpapi/graph.go`, `internal/contracts/web_ui.go`, `avmatrix-web/src/lib/graph-health-filters.ts`, Web graph layout code, layout optimizer code, and `avmatrix-launcher/src/main.go`.
+- [x] [P5-C] Add initial suite entries for unresolved reference diagnostic generation, graph health unknown-connectivity separation, App Layer/resolution-gap layout, runtime reset hidden-terminal behavior, API contract surfaces, query implementation surfaces, and frontend graph filter surfaces. The suite at `docs/query-health/2026-05-22-avmatrix-app-layer-resolution-gap-suite.json` includes the required resolver, graph-health, query, CLI, API, contract, Web graph filter/layout/optimizer, and launcher runtime files.
 
-- [ ] [P5-D] Make command output report expected targets, actual top results, matched files/symbols, hit@5, hit@10, noise reason, pass/fail, any semantic layer fields returned by query results, and explicit miss reasons for function/method targets that current definition matching fails to return.
+- [x] [P5-D] Make command output report expected targets, actual top results, matched files/symbols, hit@5, hit@10, noise reason, pass/fail, any semantic layer fields returned by query results, and explicit miss reasons for function/method targets that current definition matching fails to return. JSON output includes expected targets, matched/missed targets, top results, rank/source/file/symbol fields, optional App Layer/Functional Area/Resolution Health fields when present, and specific miss reasons for missing function/method targets.
 
-- [ ] [P5-E] Add tests for suite parsing, scoring, missing expected targets, noisy results, semantic field output, JSON/table output if both exist, and failed threshold behavior.
+- [x] [P5-E] Add tests for suite parsing, scoring, missing expected targets, noisy results, semantic field output, JSON/table output if both exist, and failed threshold behavior. `internal/cli/query_health_command_test.go` covers suite parsing, scoring, noisy/missing targets, semantic field preservation, JSON output, summary output, report writing, and `--fail-on-threshold`.
 
-- [ ] [P5-F] Run the command on the current repository after implementation and record baseline/final hit rates, noisy intents, and examples in the evidence and benchmark ledgers.
+- [x] [P5-F] Run the command on the current repository after implementation and record baseline/final hit rates, noisy intents, and examples in the evidence and benchmark ledgers. After fresh analyze, `query-health` wrote `.tmp\2026-05-22-p5-query-health-baseline.json`; the current query implementation passed `1/7` cases and failed `6/7`, establishing the baseline that Phase 6 must improve.
 
 ## Phase 6 - Semantic Command Surfaces
 
