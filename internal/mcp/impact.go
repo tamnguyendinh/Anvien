@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
 )
 
 var (
@@ -284,6 +286,8 @@ func runImpactBFSProfiled(g *graph.Graph, target graph.Node, options impactOptio
 	grouped := groupImpactByDepth(impacted)
 	affectedProcesses := impactAffectedProcesses(g, impacted)
 	affectedModules := impactAffectedModules(g, impacted)
+	semanticStatus := semantic.GraphSemanticStatus(g)
+	semanticSummary := impactSemanticSummary(impacted)
 	risk := impactRisk(len(grouped["1"]), len(affectedProcesses), len(affectedModules), len(impacted))
 	if collectProfile {
 		now := time.Now()
@@ -291,20 +295,47 @@ func runImpactBFSProfiled(g *graph.Graph, target graph.Node, options impactOptio
 		last = now
 	}
 
+	targetPayload := map[string]any{
+		"id":       target.ID,
+		"name":     firstResourceNodeString(target, "name", "label", "heuristicLabel"),
+		"type":     string(target.Label),
+		"filePath": resourceNodeString(target, "filePath"),
+	}
+	addContextNodeSemanticFields(targetPayload, target)
+	summary := map[string]any{
+		"direct":             len(grouped["1"]),
+		"processes_affected": len(affectedProcesses),
+		"modules_affected":   len(affectedModules),
+	}
+	if appLayers := impactCountMapResult(semanticSummary, "affectedAppLayers"); len(appLayers) > 0 {
+		summary["affected_app_layers"] = appLayers
+	}
+	if areas := impactCountMapResult(semanticSummary, "affectedFunctionalAreas"); len(areas) > 0 {
+		summary["affected_functional_areas"] = areas
+	}
+	if risks, ok := semanticSummary["resolutionHealthRisks"].(map[string]any); ok && impactResolutionHealthRiskHasEvidence(risks) {
+		summary["resolution_health_risks"] = risks
+	}
 	result := map[string]any{
-		"target": map[string]any{
-			"id":       target.ID,
-			"name":     firstResourceNodeString(target, "name", "label", "heuristicLabel"),
-			"type":     string(target.Label),
-			"filePath": resourceNodeString(target, "filePath"),
-		},
-		"direction":          options.Direction,
-		"impactedCount":      len(impacted),
-		"risk":               risk,
-		"summary":            map[string]any{"direct": len(grouped["1"]), "processes_affected": len(affectedProcesses), "modules_affected": len(affectedModules)},
-		"affected_processes": affectedProcesses,
-		"affected_modules":   affectedModules,
-		"byDepth":            grouped,
+		"target":                  targetPayload,
+		"direction":               options.Direction,
+		"impactedCount":           len(impacted),
+		"risk":                    risk,
+		"summary":                 summary,
+		"semanticStatus":          semanticStatus,
+		"affectedAppLayers":       semanticSummary["affectedAppLayers"],
+		"affectedFunctionalAreas": semanticSummary["affectedFunctionalAreas"],
+		"resolutionHealthRisks":   semanticSummary["resolutionHealthRisks"],
+		"affected_processes":      affectedProcesses,
+		"affected_modules":        affectedModules,
+		"byDepth":                 grouped,
+	}
+	if warning := querySemanticWarning(semanticStatus); warning != "" {
+		result["semanticWarning"] = warning
+	}
+	if warning := impactWorkflowWarning(risk); warning != "" {
+		result["workflowWarning"] = warning
+		result["workflowWarningBlocksOutput"] = false
 	}
 	if !traversalComplete {
 		result["partial"] = true
@@ -346,6 +377,8 @@ func impactItemPayload(depth int, node graph.Node, relationship graph.Relationsh
 		"relationType": string(relationship.Type),
 		"confidence":   impactConfidence(relationship),
 	}
+	addContextNodeSemanticFields(payload, node)
+	addImpactRelationshipProofFields(payload, relationship)
 	if relationship.Reason != "" {
 		payload["reason"] = relationship.Reason
 	}
@@ -359,6 +392,180 @@ func impactItemPayload(depth int, node graph.Node, relationship graph.Relationsh
 		payload["evidence"] = relationship.Evidence
 	}
 	return payload
+}
+
+func addImpactRelationshipProofFields(payload map[string]any, relationship graph.Relationship) {
+	if relationship.SourceSiteID != "" {
+		payload["sourceSiteId"] = relationship.SourceSiteID
+	}
+	if len(relationship.SourceSiteIDs) > 0 {
+		payload["sourceSiteIds"] = relationship.SourceSiteIDs
+	}
+	if relationship.SourceSiteCount > 0 {
+		payload["sourceSiteCount"] = relationship.SourceSiteCount
+	}
+	if relationship.SourceSiteStatus != "" {
+		payload["sourceSiteStatus"] = relationship.SourceSiteStatus
+	}
+	if relationship.ProofKind != "" {
+		payload["proofKind"] = relationship.ProofKind
+	}
+	if relationship.TargetRole != "" {
+		payload["targetRole"] = relationship.TargetRole
+	}
+	if relationship.TargetText != "" {
+		payload["targetText"] = relationship.TargetText
+	}
+	if relationship.FilePath != "" {
+		payload["relationshipFilePath"] = relationship.FilePath
+	}
+	if relationship.StartLine != 0 {
+		payload["relationshipStartLine"] = relationship.StartLine
+	}
+	if relationship.StartCol != 0 {
+		payload["relationshipStartCol"] = relationship.StartCol
+	}
+	if relationship.EndLine != 0 {
+		payload["relationshipEndLine"] = relationship.EndLine
+	}
+	if relationship.EndCol != 0 {
+		payload["relationshipEndCol"] = relationship.EndCol
+	}
+}
+
+func impactSemanticSummary(impacted []map[string]any) map[string]any {
+	appLayers := map[string]int{}
+	functionalAreas := map[string]int{}
+	resolutionConfidence := map[string]int{}
+	resolutionBuckets := map[string]int{}
+	riskNodes := make([]map[string]any, 0)
+	totalGapCount := 0
+	nodesWithGaps := 0
+	degradedNodes := 0
+
+	for _, item := range impacted {
+		if appLayer := impactStringValue(item["appLayer"]); appLayer != "" {
+			incrementQueryCount(appLayers, appLayer, 1)
+		}
+		if functionalArea := impactStringValue(item["functionalArea"]); functionalArea != "" {
+			incrementQueryCount(functionalAreas, functionalArea, 1)
+		}
+		confidence := impactStringValue(item["resolutionConfidence"])
+		if confidence != "" {
+			incrementQueryCount(resolutionConfidence, confidence, 1)
+		}
+		if confidence == graphhealth.ResolutionConfidenceDegraded {
+			degradedNodes++
+		}
+		gapCount := impactIntValue(item["resolutionGapCount"])
+		if gapCount > 0 {
+			totalGapCount += gapCount
+			nodesWithGaps++
+		}
+		itemBuckets := impactCountMapValue(item["resolutionHealthBuckets"])
+		for bucket, count := range itemBuckets {
+			incrementQueryCount(resolutionBuckets, bucket, count)
+		}
+		if gapCount > 0 || confidence == graphhealth.ResolutionConfidenceDegraded || len(itemBuckets) > 0 {
+			riskNode := map[string]any{
+				"id":   item["id"],
+				"name": item["name"],
+				"type": item["type"],
+			}
+			if filePath := impactStringValue(item["filePath"]); filePath != "" {
+				riskNode["filePath"] = filePath
+			}
+			if appLayer := impactStringValue(item["appLayer"]); appLayer != "" {
+				riskNode["appLayer"] = appLayer
+			}
+			if functionalArea := impactStringValue(item["functionalArea"]); functionalArea != "" {
+				riskNode["functionalArea"] = functionalArea
+			}
+			if confidence != "" {
+				riskNode["resolutionConfidence"] = confidence
+			}
+			if gapCount > 0 {
+				riskNode["resolutionGapCount"] = gapCount
+			}
+			if len(itemBuckets) > 0 {
+				riskNode["resolutionHealthBuckets"] = itemBuckets
+			}
+			riskNodes = append(riskNodes, riskNode)
+		}
+	}
+
+	return map[string]any{
+		"affectedAppLayers":       cloneQueryCountMap(appLayers),
+		"affectedFunctionalAreas": cloneQueryCountMap(functionalAreas),
+		"resolutionHealthRisks": map[string]any{
+			"nodesWithGaps":              nodesWithGaps,
+			"degradedNodes":              degradedNodes,
+			"totalResolutionGapCount":    totalGapCount,
+			"resolutionConfidenceCounts": cloneQueryCountMap(resolutionConfidence),
+			"resolutionHealthBuckets":    cloneQueryCountMap(resolutionBuckets),
+			"nodes":                      riskNodes,
+		},
+	}
+}
+
+func impactWorkflowWarning(risk string) string {
+	switch strings.ToUpper(strings.TrimSpace(risk)) {
+	case "HIGH", "CRITICAL":
+		return "Impact risk is " + strings.ToUpper(risk) + "; this is workflow safety information, not a blocker. Review affected symbols and flows before editing."
+	default:
+		return ""
+	}
+}
+
+func impactResolutionHealthRiskHasEvidence(risks map[string]any) bool {
+	return impactIntValue(risks["nodesWithGaps"]) > 0 ||
+		impactIntValue(risks["degradedNodes"]) > 0 ||
+		impactIntValue(risks["totalResolutionGapCount"]) > 0 ||
+		len(impactCountMapValue(risks["resolutionHealthBuckets"])) > 0
+}
+
+func impactCountMapResult(summary map[string]any, key string) map[string]int {
+	return impactCountMapValue(summary[key])
+}
+
+func impactStringValue(value any) string {
+	text, ok := value.(string)
+	if !ok {
+		return ""
+	}
+	return strings.TrimSpace(text)
+}
+
+func impactIntValue(value any) int {
+	switch typed := value.(type) {
+	case int:
+		return typed
+	case int32:
+		return int(typed)
+	case int64:
+		return int(typed)
+	case float64:
+		return int(typed)
+	case float32:
+		return int(typed)
+	default:
+		return 0
+	}
+}
+
+func impactCountMapValue(value any) map[string]int {
+	out := map[string]int{}
+	switch typed := value.(type) {
+	case map[string]int:
+		for key, count := range typed {
+			incrementQueryCount(out, key, count)
+		}
+	case map[string]any:
+		for key, rawCount := range typed {
+			incrementQueryCount(out, key, impactIntValue(rawCount))
+		}
+	}
+	return cloneQueryCountMap(out)
 }
 
 func impactConfidence(relationship graph.Relationship) float64 {
@@ -431,19 +638,22 @@ func impactAffectedProcesses(g *graph.Graph, impacted []map[string]any) []map[st
 		}
 	}
 	out := make([]map[string]any, 0, len(processes))
-	for _, stats := range processes {
+	for processID, stats := range processes {
 		earliest := any(nil)
 		if stats.EarliestSet {
 			earliest = stats.Earliest
 		}
 		out = append(out, map[string]any{
 			"name":                   stats.Name,
-			"type":                   firstNonEmptyString(stats.Type, "process"),
+			"processType":            firstNonEmptyString(stats.Type, "process"),
 			"filePath":               stats.FilePath,
 			"affected_process_count": stats.Count,
 			"total_hits":             stats.TotalHits,
 			"earliest_broken_step":   earliest,
 		})
+		if processNode, ok := nodeByID[processID]; ok {
+			addContextNodeSemanticFields(out[len(out)-1], processNode)
+		}
 	}
 	sort.Slice(out, func(i, j int) bool {
 		left, _ := out[i]["total_hits"].(int)
@@ -465,8 +675,13 @@ func impactAffectedModules(g *graph.Graph, impacted []map[string]any) []map[stri
 		}
 	}
 	nodeByID := resourceGraphNodesByID(g)
-	hits := make(map[string]int)
-	directModules := make(map[string]bool)
+	type moduleStats struct {
+		Node   graph.Node
+		Name   string
+		Hits   int
+		Direct bool
+	}
+	modules := make(map[string]*moduleStats)
 	for _, relationship := range g.Relationships {
 		if relationship.Type != graph.RelMemberOf || !impactedSet[relationship.SourceID] {
 			continue
@@ -479,18 +694,25 @@ func impactAffectedModules(g *graph.Graph, impacted []map[string]any) []map[stri
 		if name == "" {
 			continue
 		}
-		hits[name]++
+		stats := modules[name]
+		if stats == nil {
+			stats = &moduleStats{Name: name, Node: module}
+			modules[name] = stats
+		}
+		stats.Hits++
 		if directSet[relationship.SourceID] {
-			directModules[name] = true
+			stats.Direct = true
 		}
 	}
-	out := make([]map[string]any, 0, len(hits))
-	for name, hitCount := range hits {
+	out := make([]map[string]any, 0, len(modules))
+	for _, stats := range modules {
 		impact := "indirect"
-		if directModules[name] {
+		if stats.Direct {
 			impact = "direct"
 		}
-		out = append(out, map[string]any{"name": name, "hits": hitCount, "impact": impact})
+		row := map[string]any{"name": stats.Name, "hits": stats.Hits, "impact": impact}
+		addContextNodeSemanticFields(row, stats.Node)
+		out = append(out, row)
 	}
 	sort.Slice(out, func(i, j int) bool {
 		left, _ := out[i]["hits"].(int)

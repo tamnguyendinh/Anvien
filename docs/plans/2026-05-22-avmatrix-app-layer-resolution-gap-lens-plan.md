@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context surfaces complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context/impact surfaces complete
 
 Source discussion:
 
@@ -354,7 +354,7 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [x] [P6-B] Update `context` output so a symbol/node view includes node type, App Layer, Functional Area when known, topology status, resolution-health summary, and nearby/source ResolutionGaps. `context` now returns graph-level `semanticStatus`/`semanticWarning`, semantic fields on symbol, ref, candidate, and process rows, source-site proof/status metadata on relationships, `sourceResolutionGaps` for source-node gaps, and `resolutionGapSources` for selected gap entities so unresolved target evidence is not presented as a resolved symbol.
 
-- [ ] [P6-C] Update `impact` output so blast-radius summaries include affected App Layers, affected Functional Areas, and resolution-health risks when graph evidence supports those summaries. Add command-output coverage proving high or critical risk warnings are reported as workflow safety information while inspection output remains available.
+- [x] [P6-C] Update `impact` output so blast-radius summaries include affected App Layers, affected Functional Areas, and resolution-health risks when graph evidence supports those summaries. `impact` now emits graph-level `semanticStatus`, semantic fields on target and impacted rows, affected App Layer/Functional Area count maps, `resolutionHealthRisks`, semantic process/module rows, source-site proof/status metadata, and `workflowWarningBlocksOutput=false` for HIGH/CRITICAL blast-radius warnings so inspection output remains available.
 
 - [ ] [P6-D] Update `detect-changes` output so changed symbols and affected flows summarize App Layers, Functional Areas, ResolutionGap changes, and resolution-health impact. This command remains the pre-commit graph-diff check required by repository rules.
 

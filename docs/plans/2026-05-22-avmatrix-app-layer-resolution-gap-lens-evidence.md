@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context surfaces complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context/impact surfaces complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -727,7 +727,7 @@ Validation evidence:
 
 ## E11 - Semantic Command Surface Evidence
 
-Status: in progress; `query` surface complete for P6-A; `context` surface complete for P6-B.
+Status: in progress; `query` surface complete for P6-A; `context` surface complete for P6-B; `impact` surface complete for P6-C.
 
 Record during P6.
 
@@ -858,6 +858,63 @@ summary: affected_count=26, changed_count=87, changed_files=5, risk_level=critic
 ```
 
 The critical scope is expected for this slice because it intentionally changes shared `context` output paths: `contextToolInternal`, `contextSymbolPayload`, `contextRefPayload`, `contextNeighborhood`, and new semantic/gap helper functions. The affected flows are context neighborhood/symbol output flows plus shared ambiguous-candidate rows also used by impact/rename disambiguation output.
+
+### P6-C - `impact` Semantic Output Evidence
+
+Status: complete for `impact`.
+
+Changed behavior:
+
+- `impact` output now includes graph-level `semanticStatus` and `semanticWarning` when semantic metadata is stale/incomplete.
+- target and `byDepth` impacted rows expose persisted `type`, `appLayer`, `appLayerSource`, `functionalArea`, `functionalAreaSource`, `topologyStatus`, `resolutionConfidence`, `resolutionGapCount`, and `resolutionHealthBuckets` when graph data provides them.
+- relationship rows now include source-site proof/status metadata such as `sourceSiteId`, `sourceSiteIds`, `sourceSiteCount`, `sourceSiteStatus`, `proofKind`, `targetRole`, `targetText`, relationship file/range, confidence, reason, and resolution source.
+- top-level `affectedAppLayers`, `affectedFunctionalAreas`, and `resolutionHealthRisks` summarize the impacted nodes.
+- affected process/module rows carry semantic fields from their persisted graph nodes.
+- HIGH/CRITICAL output now includes `workflowWarning` and `workflowWarningBlocksOutput=false`, making the blast-radius warning explicit workflow safety information while keeping inspection output available.
+
+Focused test evidence:
+
+```text
+powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1
+go test .\internal\mcp .\internal\cli
+go test .\internal\mcp -run "TestImpact(ToolReturnsSemanticAffectedLayerAndResolutionRiskSummary|HighCriticalRiskWarningKeepsInspectionOutput)$" -count=1
+```
+
+All commands passed after the P6-C implementation. New coverage in `internal/mcp/impact_semantic_test.go` verifies:
+
+- affected App Layer and Functional Area counts are emitted from impacted rows;
+- resolution-health risks count degraded nodes, nodes with gaps, total gap count, Resolution Health buckets, and risk node examples;
+- target, impacted rows, affected processes, and affected modules preserve semantic fields;
+- source-site proof/status metadata remains visible on impacted relationship rows;
+- CRITICAL risk output includes a non-blocking workflow warning and still returns `byDepth`.
+
+Fresh analyze evidence after P6-C:
+
+```text
+files: scanned=751 parsed=561 unsupported=190 failed=0
+graph: nodes=83519 relationships=114735 path=E:\AVmatrix-GO\.avmatrix\graph.json
+artifact: .tmp\2026-05-22-p6c-impact-semantic-output-analyze.json
+```
+
+Representative command output artifacts:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact --repo AVmatrix --uid "Function:internal/mcp/context.go:contextSymbolPayload#2" --direction upstream > .\.tmp\2026-05-22-p6c-impact-context-symbol-output.txt
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact --repo AVmatrix --uid "Function:internal/mcp/impact.go:runImpactBFSProfiled#4" --direction upstream > .\.tmp\2026-05-22-p6c-impact-critical-warning-output.txt
+```
+
+The `contextSymbolPayload` impact output includes `affectedAppLayers`, `affectedFunctionalAreas`, semantic fields on affected process rows, and `resolutionHealthRisks`.
+
+The `runImpactBFSProfiled` impact output has `risk=CRITICAL`, retains `byDepth`, `affected_processes`, and `affected_modules`, and includes `workflowWarningBlocksOutput=false` with wording that the warning is workflow safety information, not a blocker.
+
+Pre-commit AVmatrix scope check:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all
+summary: affected_count=9, changed_count=127, changed_files=4, risk_level=high
+```
+
+The high scope is expected for this slice because it intentionally changes the shared `impact` output path: `runImpactBFSProfiled`, `impactItemPayload`, `impactAffectedProcesses`, `impactAffectedModules`, and semantic summary helpers. The affected flows are impact output flows and shared resource helpers used to render impacted symbols, process rows, and module rows.
 
 ## E12 - Web UI Evidence
 
