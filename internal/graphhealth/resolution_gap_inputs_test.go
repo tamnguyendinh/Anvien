@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
 )
 
 func TestSourceBackedResolutionGapInputsPreserveSourceSiteEvidence(t *testing.T) {
@@ -148,4 +149,155 @@ func requireResolutionGapInput(t *testing.T, inputs []ResolutionGapInput, factFa
 	}
 	t.Fatalf("missing resolution gap input factFamily=%q targetText=%q in %#v", factFamily, targetText, inputs)
 	return ResolutionGapInput{}
+}
+
+func TestResolutionGapInputInfersTargetRole(t *testing.T) {
+	tests := []struct {
+		name           string
+		input          ResolutionGapInput
+		wantTargetRole string
+		wantGapKind    string
+	}{
+		{
+			name: "explicit target role wins",
+			input: ResolutionGapInput{
+				SourceSiteID:   "site-explicit",
+				SourceNodeID:   "Function:src/run",
+				FactFamily:     "call",
+				TargetText:     "custom",
+				TargetRole:     "custom_role",
+				Classification: DiagnosticClassificationBuiltin,
+			},
+			wantTargetRole: "custom_role",
+			wantGapKind:    ResolutionGapKindUnresolvedCall,
+		},
+		{
+			name: "call fact family is callable",
+			input: ResolutionGapInput{
+				SourceSiteID: "site-call",
+				SourceNodeID: "Function:src/run",
+				FactFamily:   "call",
+				TargetText:   "run",
+			},
+			wantTargetRole: "callable",
+			wantGapKind:    ResolutionGapKindUnresolvedCall,
+		},
+		{
+			name: "access fact family is member",
+			input: ResolutionGapInput{
+				SourceSiteID: "site-access",
+				SourceNodeID: "Function:src/run",
+				FactFamily:   "access",
+				TargetText:   "config.value",
+			},
+			wantTargetRole: "member",
+			wantGapKind:    ResolutionGapKindUnresolvedAccess,
+		},
+		{
+			name: "type reference fact family is type",
+			input: ResolutionGapInput{
+				SourceSiteID: "site-type",
+				SourceNodeID: "Function:src/run",
+				FactFamily:   "type-reference",
+				TargetText:   "MissingType",
+			},
+			wantTargetRole: "type",
+			wantGapKind:    ResolutionGapKindUnresolvedTypeReference,
+		},
+		{
+			name: "heritage fact family is type",
+			input: ResolutionGapInput{
+				SourceSiteID: "site-heritage",
+				SourceNodeID: "Class:src/child",
+				FactFamily:   "heritage",
+				TargetText:   "Base",
+			},
+			wantTargetRole: "type",
+			wantGapKind:    ResolutionGapKindUnresolvedHeritage,
+		},
+		{
+			name: "builtin classification is builtin when fact family does not decide",
+			input: ResolutionGapInput{
+				SourceSiteID:   "site-builtin",
+				SourceNodeID:   "Function:src/run",
+				FactFamily:     "reference",
+				TargetText:     "len",
+				Classification: DiagnosticClassificationBuiltin,
+			},
+			wantTargetRole: "builtin",
+			wantGapKind:    ResolutionGapKindUnresolvedReference,
+		},
+		{
+			name: "standard library classification is builtin-like when fact family does not decide",
+			input: ResolutionGapInput{
+				SourceSiteID:   "site-stdlib",
+				SourceNodeID:   "Function:src/run",
+				FactFamily:     "reference",
+				TargetText:     "strings.Contains",
+				Classification: DiagnosticClassificationStandardLibrary,
+			},
+			wantTargetRole: "builtin",
+			wantGapKind:    ResolutionGapKindUnresolvedReference,
+		},
+		{
+			name: "test framework classification is test when fact family does not decide",
+			input: ResolutionGapInput{
+				SourceSiteID:   "site-test",
+				SourceNodeID:   "Function:src/run",
+				FactFamily:     "reference",
+				TargetText:     "t.Fatalf",
+				Classification: DiagnosticClassificationTestFramework,
+			},
+			wantTargetRole: "test",
+			wantGapKind:    ResolutionGapKindUnresolvedReference,
+		},
+		{
+			name: "external classification is external when fact family does not decide",
+			input: ResolutionGapInput{
+				SourceSiteID:   "site-external",
+				SourceNodeID:   "Function:src/run",
+				FactFamily:     "reference",
+				TargetText:     "cobra.Command",
+				Classification: DiagnosticClassificationExternalLibrary,
+			},
+			wantTargetRole: "external",
+			wantGapKind:    ResolutionGapKindUnresolvedReference,
+		},
+		{
+			name: "unknown fallback",
+			input: ResolutionGapInput{
+				SourceSiteID: "site-unknown",
+				SourceNodeID: "Function:src/run",
+				FactFamily:   "reference",
+				TargetText:   "mystery",
+			},
+			wantTargetRole: "unknown",
+			wantGapKind:    ResolutionGapKindUnresolvedReference,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.input.InferredTargetRole(); got != tt.wantTargetRole {
+				t.Fatalf("InferredTargetRole() = %q, want %q", got, tt.wantTargetRole)
+			}
+			node := tt.input.GraphNode()
+			if node.Label != scopeir.NodeResolutionGap {
+				t.Fatalf("GraphNode() label = %q, want %q", node.Label, scopeir.NodeResolutionGap)
+			}
+			if got := node.Properties["targetRole"]; got != tt.wantTargetRole {
+				t.Fatalf("GraphNode targetRole = %v, want %q", got, tt.wantTargetRole)
+			}
+			if got := node.Properties["gapKind"]; got != tt.wantGapKind {
+				t.Fatalf("GraphNode gapKind = %v, want %q", got, tt.wantGapKind)
+			}
+			relationship := tt.input.GraphRelationship()
+			if relationship.TargetRole != tt.wantTargetRole {
+				t.Fatalf("GraphRelationship targetRole = %q, want %q", relationship.TargetRole, tt.wantTargetRole)
+			}
+			if relationship.Type != graph.RelHasResolutionGap {
+				t.Fatalf("GraphRelationship type = %q, want %q", relationship.Type, graph.RelHasResolutionGap)
+			}
+		})
+	}
 }

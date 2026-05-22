@@ -57,7 +57,7 @@ func (input ResolutionGapInput) ResolutionGapNodeID() string {
 		input.SourceNodeID,
 		input.FactFamily,
 		input.TargetText,
-		input.TargetRole,
+		input.InferredTargetRole(),
 		input.SourceSiteStatus,
 		input.ProofKind,
 		input.Classification,
@@ -118,6 +118,7 @@ func (input ResolutionGapInput) GraphNode() graph.Node {
 	if name == "" {
 		name = input.GapKind()
 	}
+	targetRole := input.InferredTargetRole()
 	return graph.Node{
 		ID:    input.ResolutionGapNodeID(),
 		Label: scopeir.NodeResolutionGap,
@@ -131,7 +132,7 @@ func (input ResolutionGapInput) GraphNode() graph.Node {
 			"sourceFunctionalArea": functionalArea,
 			"factFamily":           strings.TrimSpace(input.FactFamily),
 			"targetText":           strings.TrimSpace(input.TargetText),
-			"targetRole":           strings.TrimSpace(input.TargetRole),
+			"targetRole":           targetRole,
 			"sourceSiteStatus":     strings.TrimSpace(input.SourceSiteStatus),
 			"proofKind":            strings.TrimSpace(input.ProofKind),
 			"classification":       strings.TrimSpace(input.Classification),
@@ -182,7 +183,7 @@ func (input ResolutionGapInput) GraphRelationship() graph.Relationship {
 		SourceSiteCount:  count,
 		SourceSiteStatus: strings.TrimSpace(input.SourceSiteStatus),
 		ProofKind:        strings.TrimSpace(input.ProofKind),
-		TargetRole:       strings.TrimSpace(input.TargetRole),
+		TargetRole:       input.InferredTargetRole(),
 		TargetText:       strings.TrimSpace(input.TargetText),
 		FilePath:         strings.TrimSpace(input.FilePath),
 		StartLine:        input.StartLine,
@@ -195,6 +196,29 @@ func (input ResolutionGapInput) GraphRelationship() graph.Relationship {
 			Note:   note,
 		}},
 	}
+}
+
+func (input ResolutionGapInput) InferredTargetRole() string {
+	if role := strings.TrimSpace(input.TargetRole); role != "" {
+		return role
+	}
+	switch strings.TrimSpace(input.FactFamily) {
+	case "call":
+		return "callable"
+	case "access":
+		return "member"
+	case "type-reference", "type_reference", "type", "heritage", "inheritance", "inherits", "extends", "implements":
+		return "type"
+	}
+	switch strings.TrimSpace(input.Classification) {
+	case DiagnosticClassificationBuiltin, DiagnosticClassificationStandardLibrary:
+		return "builtin"
+	case DiagnosticClassificationTestFramework:
+		return "test"
+	case DiagnosticClassificationExternalLibrary:
+		return "external"
+	}
+	return "unknown"
 }
 
 func SourceBackedResolutionGapInputs(g *graph.Graph) []ResolutionGapInput {

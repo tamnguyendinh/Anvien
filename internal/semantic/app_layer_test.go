@@ -226,6 +226,123 @@ func TestApplyPersistsSourceBackedResolutionGaps(t *testing.T) {
 	}
 }
 
+func TestApplyPersistsResolutionGapRolesClassificationsAndOccurrences(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{
+		ID:    "Function:resolveMany",
+		Label: scopeir.NodeFunction,
+		Properties: graph.NodeProperties{
+			"name":     "resolveMany",
+			"filePath": "internal/resolution/resolve.go",
+			graphhealth.DiagnosticPropertyKey: []graphhealth.Diagnostic{
+				resolutionGapDiagnostic("call", "len", "site-call-builtin-len", "unresolved_external", "builtin-reference", "", graphhealth.DiagnosticClassificationBuiltin, graphhealth.DiagnosticActionabilityNonActionable, 2),
+				resolutionGapDiagnostic("access", "client.Do", "site-access-external-client-do", "unresolved_external", "external-member", "", graphhealth.DiagnosticClassificationExternalLibrary, graphhealth.DiagnosticActionabilityReview, 1),
+				resolutionGapDiagnostic("type-reference", "context.Context", "site-type-stdlib-context", "unresolved_external", "stdlib-type", "", graphhealth.DiagnosticClassificationStandardLibrary, graphhealth.DiagnosticActionabilityNonActionable, 1),
+				resolutionGapDiagnostic("heritage", "MissingBase", "site-heritage-inrepo-missing-base", "unresolved_local_binding", "none", "", graphhealth.DiagnosticClassificationInRepoUnresolved, graphhealth.DiagnosticActionabilityAnalyzerGap, 1),
+				resolutionGapDiagnostic("reference", "cobra.Command", "site-reference-external-cobra", "unresolved_external", "none", "", graphhealth.DiagnosticClassificationExternalLibrary, graphhealth.DiagnosticActionabilityReview, 1),
+				resolutionGapDiagnostic("reference", "t.Fatalf", "site-reference-test-fatalf", "unresolved_external", "none", "", graphhealth.DiagnosticClassificationTestFramework, graphhealth.DiagnosticActionabilityNonActionable, 1),
+				resolutionGapDiagnostic("reference", "mystery", "site-reference-unknown-mystery", "unknown", "none", "", graphhealth.DiagnosticClassificationUnclassified, graphhealth.DiagnosticActionabilityAnalyzerGap, 1),
+				resolutionGapDiagnostic("call", "missingOne", "site-call-missing-one", "unresolved_local_binding", "none", "", graphhealth.DiagnosticClassificationInRepoUnresolved, graphhealth.DiagnosticActionabilityAnalyzerGap, 3),
+				resolutionGapDiagnostic("call", "missingTwo", "site-call-missing-two", "unresolved_local_binding", "none", "", graphhealth.DiagnosticClassificationInRepoUnresolved, graphhealth.DiagnosticActionabilityAnalyzerGap, 1),
+			},
+		},
+	})
+
+	result, err := Apply(g)
+	if err != nil {
+		t.Fatalf("Apply() error = %v", err)
+	}
+	if result.Metrics.ResolutionGapInputs != 9 ||
+		result.Metrics.ResolutionGapNodes != 9 ||
+		result.Metrics.ResolutionGapRelationships != 9 {
+		t.Fatalf("resolution gap metrics = %#v, want 9 persisted gaps", result.Metrics)
+	}
+	validation := graphhealth.ValidateResolutionGapPersistence(g)
+	if !validation.OK() {
+		t.Fatalf("ValidateResolutionGapPersistence() = %#v, want OK", validation)
+	}
+
+	gaps := resolutionGapNodesByTargetText(g)
+	requireResolutionGapNode(t, gaps, "len", "callable", graphhealth.ResolutionGapKindUnresolvedCall, graphhealth.DiagnosticClassificationBuiltin, graphhealth.DiagnosticActionabilityNonActionable, "site-call-builtin-len", 2)
+	requireResolutionGapNode(t, gaps, "client.Do", "member", graphhealth.ResolutionGapKindUnresolvedAccess, graphhealth.DiagnosticClassificationExternalLibrary, graphhealth.DiagnosticActionabilityReview, "site-access-external-client-do", 1)
+	requireResolutionGapNode(t, gaps, "context.Context", "type", graphhealth.ResolutionGapKindUnresolvedTypeReference, graphhealth.DiagnosticClassificationStandardLibrary, graphhealth.DiagnosticActionabilityNonActionable, "site-type-stdlib-context", 1)
+	requireResolutionGapNode(t, gaps, "MissingBase", "type", graphhealth.ResolutionGapKindUnresolvedHeritage, graphhealth.DiagnosticClassificationInRepoUnresolved, graphhealth.DiagnosticActionabilityAnalyzerGap, "site-heritage-inrepo-missing-base", 1)
+	requireResolutionGapNode(t, gaps, "cobra.Command", "external", graphhealth.ResolutionGapKindUnresolvedReference, graphhealth.DiagnosticClassificationExternalLibrary, graphhealth.DiagnosticActionabilityReview, "site-reference-external-cobra", 1)
+	requireResolutionGapNode(t, gaps, "t.Fatalf", "test", graphhealth.ResolutionGapKindUnresolvedReference, graphhealth.DiagnosticClassificationTestFramework, graphhealth.DiagnosticActionabilityNonActionable, "site-reference-test-fatalf", 1)
+	requireResolutionGapNode(t, gaps, "mystery", "unknown", graphhealth.ResolutionGapKindUnresolvedReference, graphhealth.DiagnosticClassificationUnclassified, graphhealth.DiagnosticActionabilityAnalyzerGap, "site-reference-unknown-mystery", 1)
+	requireResolutionGapNode(t, gaps, "missingOne", "callable", graphhealth.ResolutionGapKindUnresolvedCall, graphhealth.DiagnosticClassificationInRepoUnresolved, graphhealth.DiagnosticActionabilityAnalyzerGap, "site-call-missing-one", 3)
+	requireResolutionGapNode(t, gaps, "missingTwo", "callable", graphhealth.ResolutionGapKindUnresolvedCall, graphhealth.DiagnosticClassificationInRepoUnresolved, graphhealth.DiagnosticActionabilityAnalyzerGap, "site-call-missing-two", 1)
+
+	for _, relationship := range g.Relationships {
+		if relationship.Type == graph.RelCalls || relationship.Type == graph.RelAccesses || relationship.Type == graph.RelUses || relationship.Type == graph.RelInherits {
+			t.Fatalf("unresolved diagnostics were incorrectly emitted as resolved semantic relationship: %#v", relationship)
+		}
+	}
+	for _, fakeTarget := range []string{"Function:len", "Function:client.Do", "Type:context.Context", "Class:MissingBase", "Function:missingOne", "Function:missingTwo"} {
+		if _, ok := g.GetNode(fakeTarget); ok {
+			t.Fatalf("unresolved target was incorrectly synthesized as %s", fakeTarget)
+		}
+	}
+}
+
+func resolutionGapDiagnostic(factFamily, targetText, sourceSiteID, status, proofKind, targetRole, classification, actionability string, count int) graphhealth.Diagnostic {
+	return graphhealth.Diagnostic{
+		Kind:             graphhealth.DiagnosticUnresolvedReference,
+		FactFamily:       factFamily,
+		SourceNodeID:     "Function:resolveMany",
+		TargetText:       targetText,
+		TargetRole:       targetRole,
+		SourceSiteID:     sourceSiteID,
+		SourceSiteStatus: status,
+		ProofKind:        proofKind,
+		Classification:   classification,
+		Actionability:    actionability,
+		ResolutionSource: "scope-resolution",
+		FilePath:         "internal/resolution/resolve.go",
+		FileHash:         "hash-resolution",
+		StartLine:        10,
+		StartCol:         2,
+		EndLine:          10,
+		EndCol:           12,
+		Count:            count,
+		Note:             "source-backed unresolved reference fixture",
+	}
+}
+
+func resolutionGapNodesByTargetText(g *graph.Graph) map[string]graph.Node {
+	gaps := map[string]graph.Node{}
+	for _, node := range g.Nodes {
+		if node.Label != scopeir.NodeResolutionGap {
+			continue
+		}
+		targetText, _ := node.Properties["targetText"].(string)
+		gaps[targetText] = node
+	}
+	return gaps
+}
+
+func requireResolutionGapNode(t *testing.T, gaps map[string]graph.Node, targetText, targetRole, gapKind, classification, actionability, sourceSiteID string, count int) {
+	t.Helper()
+	node, ok := gaps[targetText]
+	if !ok {
+		t.Fatalf("missing ResolutionGap targetText=%q in %#v", targetText, gaps)
+	}
+	if node.Properties["targetRole"] != targetRole ||
+		node.Properties["gapKind"] != gapKind ||
+		node.Properties["classification"] != classification ||
+		node.Properties["actionability"] != actionability ||
+		node.Properties["sourceSiteId"] != sourceSiteID ||
+		node.Properties["sourceSiteStatus"] == "" ||
+		node.Properties["proofKind"] == "" ||
+		node.Properties["sourceAppLayer"] != string(AppLayerBackend) ||
+		node.Properties["sourceFunctionalArea"] != string(FunctionalAreaResolution) ||
+		node.Properties[AppLayerProperty] != string(AppLayerBackend) ||
+		node.Properties[FunctionalAreaProperty] != string(FunctionalAreaResolution) ||
+		node.Properties["count"] != count {
+		t.Fatalf("ResolutionGap %q lost persisted metadata: %#v", targetText, node)
+	}
+}
+
 func TestGraphSemanticStatusDistinguishesUnknownFromMissingMetadata(t *testing.T) {
 	g := graph.New()
 	g.AddNode(graph.Node{ID: "Function:fresh", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{

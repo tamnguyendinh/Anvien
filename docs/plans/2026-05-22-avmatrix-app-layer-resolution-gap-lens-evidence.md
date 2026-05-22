@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 ready to start
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 persisted ResolutionGap entity, role inference, and validation fixture slices complete; P3-I remains next
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -485,7 +485,7 @@ Implemented evidence for the source-site to ResolutionGap input bridge slice:
 
 ## E8 - ResolutionGap Persistence Evidence
 
-Status: in progress; persisted ResolutionGap entity slice complete through P3-H.
+Status: in progress; persisted ResolutionGap entity, role inference, and validation fixture slices complete through P3-H; P3-I remains.
 
 Record during P3.
 
@@ -504,10 +504,17 @@ Source-backed examples and typed metadata:
 - `TestSourceBackedResolutionGapInputsPreserveSourceSiteEvidence` now proves a source-backed unresolved call input can materialize a `ResolutionGap` node and `HAS_RESOLUTION_GAP` relationship while preserving source-site ID/status, proof kind, target role, classification, actionability, App Layer, Functional Area, file/range, count, and note.
 - `TestApplyPersistsSourceBackedResolutionGaps` proves semantic enrichment persists a call gap from source-backed diagnostics after App Layer/Functional Area classification and does not synthesize `Function:stop` or a proofless `CALLS` edge.
 - `TestExportGraphCSVsWritesResolutionGapNodesAndPairs` proves LadybugDB CSV export writes one `ResolutionGap` row, one `Function -> ResolutionGap` pair file, and zero skipped graph facts for the fixture.
+- `TestResolutionGapInputInfersTargetRole` proves target-role inference preserves explicit roles, maps call/access/type-reference/heritage fact families to callable/member/type roles, maps builtin/standard-library/test-framework/external classifications when fact family does not decide, and writes the inferred role to both persisted gap nodes and `HAS_RESOLUTION_GAP` relationships.
+- `TestValidateResolutionGapPersistenceAcceptsSourceBackedGaps` and `TestValidateResolutionGapPersistenceFlagsFakeResolvedOrTopologyClaims` prove persisted gaps may exist as diagnostic entities while validator failures catch dangling gap relationships, gap relationships targeting real code nodes, gap nodes that claim resolved targets, and resolved semantic edges that reuse unresolved source-site IDs.
+- `TestApplyPersistsResolutionGapRolesClassificationsAndOccurrences` covers call, access, type-reference, heritage, builtin/predeclared, standard-library, test-framework, external, in-repo analyzer-gap, unknown target-role fallback, repeated occurrence count `3`, and two different target texts from the same source/fact/file/note fixture. The test proves target text, sourceSiteID, source-site status, proof kind, classification, actionability, App Layer, Functional Area, and count survive persistence without synthetic target nodes or resolved semantic edges.
 - Fresh analyze produced typed gap counts: `unresolved_call=31220`, `unresolved_access=18245`, `unresolved_type_reference=8611`, `unresolved_heritage=7`.
 - Fresh analyze produced classification counts: `in_repo_unresolved=33825`, `builtin=9854`, `test_framework=7154`, `standard_library=7092`, `external_library=158`.
 - Fresh analyze produced actionability counts: `analyzer_gap=33825`, `non_actionable=24100`, `review=158`.
 - Fresh analyze produced target-role counts: `callable=31220`, `member=18245`, `type=8618`.
+- Latest role-validation analyze produced typed gap counts: `unresolved_call=31307`, `unresolved_access=18383`, `unresolved_type_reference=8653`, `unresolved_heritage=7`.
+- Latest role-validation analyze produced classification counts: `in_repo_unresolved=34009`, `builtin=9880`, `test_framework=7205`, `standard_library=7098`, `external_library=158`.
+- Latest role-validation analyze produced actionability counts: `analyzer_gap=34009`, `non_actionable=24183`, `review=158`.
+- Latest role-validation analyze produced target-role counts: `callable=31307`, `member=18383`, `type=8660`.
 
 Before/after and validation evidence:
 
@@ -517,11 +524,17 @@ Before/after and validation evidence:
 - LadybugDB load evidence from the same analyze: node rows `80957`, relationship rows `110949`, node copy count `17`, relationship copy count `86`, fallback inserts `0`, skipped relationships `0`.
 - Field preservation inventory from `.avmatrix\graph.json`: missing source node ID `0`, missing sourceSiteID `0`, missing source-site status `0`, missing proof kind `0`, missing target text `0`, missing source App Layer `0`, missing actionability `0`; `7716` gaps have unknown source Functional Area because the source node was not functionally classified yet.
 - Validation commands passed after full build: `go test .\internal\graphhealth .\internal\semantic .\internal\lbugschema .\internal\lbugload .\internal\contracts .\internal\scopeir`; `go test .\internal\...`; `go test .\cmd\...`; `go run .\cmd\generate-web-contracts --check`; `npm --prefix .\avmatrix-web run test -- --run`; `npm --prefix .\avmatrix-web run test:e2e` with `14` passed and `30` skipped.
+- Role-validation analyze command: `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p3-role-validation-postedit-analyze.json --benchmark-label p3-role-validation-postedit`.
+- Role-validation graph inventory after inference/validation fixture slice: files scanned `741`, parsed `552`, unsupported `189`, failed `0`, graph nodes `81298`, relationships `111411`, `ResolutionGap` nodes `58350`, and `HAS_RESOLUTION_GAP` relationships `58350`.
+- Semantic enrichment benchmark after role-validation slice: `resolutionGapInputs=58350`, `resolutionGapNodes=58350`, `resolutionGapRelationships=58350`, semantic phase latency `609.862 ms`.
+- LadybugDB load evidence from the same analyze: node rows `81298`, relationship rows `111411`, node copy count `17`, relationship copy count `86`, fallback inserts `0`, skipped relationships `0`.
+- Field preservation inventory from the latest `.avmatrix\graph.json`: missing source node ID `0`, missing sourceSiteID `0`, missing source-site status `0`, missing proof kind `0`, missing target text `0`, missing source App Layer `0`; `7821` gaps have unknown source Functional Area because the source node was not functionally classified yet.
+- Source-site accuracy command after role-validation slice wrote `.tmp\2026-05-22-p3-role-validation-source-site-accuracy.json`: relationship source-site occurrences `85879`, diagnostic source-site occurrences `59097`, all source-site occurrences `144976`, stable source-site IDs `144976`, missing IDs `0`, resolved `CALLS=7733`, resolved `ACCESSES=3490`, unresolved diagnostics `59097`, non-property ACCESSES targets `0`, false resolved edge candidates `0`, resolved edges without proof `0`, resolved edges without sourceSiteID `0`, low-confidence fallback resolved edges `0`, and coarse file call edges `0`.
+- Validation commands passed after full build for role-validation slice: `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; `go test .\internal\graphhealth .\internal\semantic`; `go test .\internal\...`; `go test .\cmd\...`.
+- AVmatrix change detection after staging the role-validation slice used fresh analyze output followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `344`, changed_files `8`, affected_count `0`, and risk_level `low`.
 
 Remaining P3 evidence gaps:
 
-- P3-D target-role inference fallback is not complete beyond preserving source evidence.
-- P3-F/P3-G broad fixture coverage for access/type-reference/heritage, builtin/predeclared, standard-library, test-framework, external, analyzer-gap, unknown target role, repeated occurrence aggregation, and multiple target texts is still open.
 - P3-I aggregate/dedupe policy and representative source sample verification remain open.
 
 ## E9 - Resolution Health And Inventory Evidence
