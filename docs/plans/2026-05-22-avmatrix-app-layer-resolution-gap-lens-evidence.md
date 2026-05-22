@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback slice complete
+Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, and source-site accuracy command graph-inventory slices complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -244,7 +244,7 @@ Implemented evidence:
 
 ## E7A - Proof-Based CALLS/ACCESSES Evidence
 
-Status: in progress; low-confidence global CALLS fallback slice complete
+Status: in progress; low-confidence global CALLS fallback, source-site metadata persistence, and source-site accuracy command graph-inventory slices complete
 
 Record during Phase 2A.
 
@@ -293,6 +293,20 @@ Implemented evidence for the source-site/proof metadata persistence slice:
 - Fresh `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force` passed after schema propagation and wrote `.avmatrix\graph.json` with scanned `733`, parsed `544`, unsupported `189`, failed `0`, graph nodes `22404`, and graph relationships `51521`.
 - AVmatrix change detection before commit used fresh `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force` followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `100`, changed_files `21`, affected_count `33`, and risk_level `critical`. The critical scope is expected because this slice intentionally changes graph relationship schema, graphhealth diagnostic schema, resolver edge emission metadata, strict ACCESSES target policy, LadybugDB relation schema/export/load, generated Web contracts, and plan/evidence/benchmark ledgers.
 - No visible Web UI behavior changed in this slice, so Web e2e was not required for this slice.
+
+Implemented evidence for the source-site accuracy command graph-inventory slice:
+
+- `internal/graphaccuracy/graphaccuracy.go` now decodes source-site/proof fields from graph relationship JSON so graphaccuracy consumers can inspect the relationship metadata persisted by the resolver.
+- `internal/graphaccuracy/source_site_accuracy.go` adds `RunSourceSiteAccuracy`, `WriteSourceSiteAccuracyResult`, and `SourceSiteAccuracySummaryLines`. The report reads current graph JSON and records source-site relationship/diagnostic buckets and occurrences, status/proof/fact-family/target-role counts, resolved `CALLS`/`ACCESSES` counts, ACCESSES target label distribution, duplicate source-target pairs, merged source-site occurrence evidence, and graph-policy violation candidates.
+- `internal/cli/source_site_accuracy_command.go` adds packaged command `avmatrix source-site-accuracy` with `--graph`, `--out`, `--json`, and `--max-examples`. This puts the report into the built `avmatrix.exe` path instead of leaving it as a standalone development command.
+- The command deliberately reports golden validation as disabled in graph-inventory mode. P2A-F/P2A-G remain open for fixture-backed false-positive and silent-missing source-site checks; the command still exposes the fields so the later fixture mode can report them without changing the output shape.
+- Fresh local build/analyze/report command: `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force` produced scanned `736`, parsed `547`, unsupported `189`, failed `0`, graph nodes `22628`, graph relationships `52161`; `.\avmatrix-launcher\server-bundle\avmatrix.exe source-site-accuracy --graph .avmatrix\graph.json --out .tmp\2026-05-22-source-site-accuracy.json --max-examples 20` produced `84355` source-site occurrences with `84355` stable IDs and `0` missing IDs.
+- Source-site accuracy command output on the fresh graph: relationship source-site occurrences `26221` across `15494` buckets, diagnostic source-site occurrences `58134` across `57388` buckets, resolved `CALLS=7648`, resolved `ACCESSES=3298`, low-confidence fallback diagnostics `2159`, ACCESSES Property targets `3298/3298`, non-property ACCESSES targets `0`, duplicate source-target pairs `10`, max duplicate `2`, merged relationships `5174`, merged source-site occurrences `15901`, resolved edges without proof `0`, resolved edges without source-site ID `0`, and low-confidence fallback resolved edges `0`.
+- The command found `16` graph-policy false-resolved-edge candidates, all from coarse `File -> Function` `CALLS` edges in Web unit test files such as `File:avmatrix-web/test/unit/constants.test.ts -> Function:avmatrix-web/src/lib/constants.ts:getNodeColor`. This keeps P2A-D and P2A-F open: coarse file-level call sources still need to be kept out of resolved symbol-level `CALLS` or split into a separate relation/fact role.
+- Tests added: `TestRunSourceSiteAccuracyReportsProofInventory` and `TestSourceSiteAccuracyCommandOutputsJSON`.
+- Validation evidence for this slice: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; focused tests passed with `go test .\internal\graphaccuracy` and `go test .\internal\cli`; wider backend validation passed with `go test .\internal\... .\cmd\...`.
+- AVmatrix change detection before commit used fresh `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force` followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `35`, changed_files `6`, affected_count `11`, and risk_level `high`. The high scope is expected because this slice adds a packaged root CLI command and extends graphaccuracy graph relationship decoding/reporting.
+- No visible Web UI behavior changed in this slice, so Web e2e was not required.
 
 ## E8 - ResolutionGap Persistence Evidence
 

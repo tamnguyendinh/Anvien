@@ -34,11 +34,26 @@ type GraphNode struct {
 }
 
 type GraphRelationship struct {
-	ID       string `json:"id"`
-	Type     string `json:"type"`
-	SourceID string `json:"sourceId"`
-	TargetID string `json:"targetId"`
-	Reason   string `json:"reason"`
+	ID               string   `json:"id"`
+	Type             string   `json:"type"`
+	SourceID         string   `json:"sourceId"`
+	TargetID         string   `json:"targetId"`
+	Confidence       float64  `json:"confidence,omitempty"`
+	Reason           string   `json:"reason"`
+	ResolutionSource string   `json:"resolutionSource,omitempty"`
+	FileHash         string   `json:"fileHash,omitempty"`
+	SourceSiteID     string   `json:"sourceSiteId,omitempty"`
+	SourceSiteIDs    []string `json:"sourceSiteIds,omitempty"`
+	SourceSiteCount  int      `json:"sourceSiteCount,omitempty"`
+	SourceSiteStatus string   `json:"sourceSiteStatus,omitempty"`
+	ProofKind        string   `json:"proofKind,omitempty"`
+	TargetRole       string   `json:"targetRole,omitempty"`
+	TargetText       string   `json:"targetText,omitempty"`
+	FilePath         string   `json:"filePath,omitempty"`
+	StartLine        int      `json:"startLine,omitempty"`
+	StartCol         int      `json:"startCol,omitempty"`
+	EndLine          int      `json:"endLine,omitempty"`
+	EndCol           int      `json:"endCol,omitempty"`
 }
 
 type AnalyzerMetrics struct {

@@ -64,6 +64,7 @@ func NewRootCommand(options Options) *cobra.Command {
 		newServeCommand(logger),
 		newAnalyzeCommand(logger),
 		newBenchmarkCompareCommand(),
+		newSourceSiteAccuracyCommand(),
 		newCleanCommand(),
 		newGroupCommand(),
 		newIndexCommand(),

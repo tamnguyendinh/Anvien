@@ -85,6 +85,7 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 		"query",
 		"serve",
 		"setup",
+		"source-site-accuracy",
 		"status",
 		"version",
 		"wiki",
@@ -99,6 +100,40 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 	}
 	if strings.Contains(out, "eval-server") {
 		t.Fatalf("root help still exposes eval-server:\n%s", out)
+	}
+}
+
+func TestSourceSiteAccuracyCommandOutputsJSON(t *testing.T) {
+	dir := t.TempDir()
+	graphPath := filepath.Join(dir, "graph.json")
+	raw := `{
+  "nodes": [
+    {"id":"Function:main","label":"Function","properties":{"name":"main","graphHealthDiagnostics":[{"kind":"unresolved_reference","factFamily":"call","targetText":"missing","sourceSiteId":"site:missing","sourceSiteStatus":"unresolved_local_binding","proofKind":"global-fallback-low-confidence","targetRole":"callable","count":1}]}},
+    {"id":"Function:target","label":"Function","properties":{"name":"target"}}
+  ],
+  "relationships": [
+    {"id":"calls:main-target","type":"CALLS","sourceId":"Function:main","targetId":"Function:target","sourceSiteId":"site:call","sourceSiteStatus":"resolved","proofKind":"scope-binding","targetRole":"callable","targetText":"target"}
+  ]
+}`
+	if err := os.WriteFile(graphPath, []byte(raw), 0o644); err != nil {
+		t.Fatalf("write graph fixture: %v", err)
+	}
+
+	out, errOut, err := executeForTest(t, "source-site-accuracy", "--graph", graphPath, "--json")
+	if err != nil {
+		t.Fatalf("source-site-accuracy returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	if errOut != "" {
+		t.Fatalf("source-site-accuracy wrote stderr: %q", errOut)
+	}
+	var decoded map[string]any
+	if err := json.Unmarshal([]byte(out), &decoded); err != nil {
+		t.Fatalf("source-site-accuracy output is not JSON: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, `"sourceSiteInventory"`) ||
+		!strings.Contains(out, `"lowConfidenceGlobalFallbackOccurrences": 1`) ||
+		!strings.Contains(out, `"CALLS": 1`) {
+		t.Fatalf("source-site-accuracy output missing expected metrics:\n%s", out)
 	}
 }
 

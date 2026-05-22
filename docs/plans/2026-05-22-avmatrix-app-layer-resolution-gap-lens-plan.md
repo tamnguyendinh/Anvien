@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback and source-site metadata persistence slices complete
+Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, and source-site accuracy command graph-inventory slices complete
 
 Source discussion:
 
@@ -278,7 +278,11 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [ ] [P2A-I] Extend `internal/graphaccuracy` or add a dedicated CLI/report command for proof-based source-site accuracy. The command/report must read the current graph or accuracy fixtures and emit the B5A metrics: source-site inventory counts, resolved edge counts, unresolved/ambiguous/external/dynamic/unsupported status counts, low-confidence/global-fallback counts, ACCESSES target label distribution, duplicate/merged source-site counts, golden false-positive counts, and silent missing source-site counts.
 
+- [x] [P2A-I1] Add the graph-inventory implementation of `avmatrix source-site-accuracy` to the packaged CLI. The command reads `.avmatrix/graph.json` or a supplied `--graph`, writes JSON with `--out` or stdout with `--json`, and reports source-site occurrence counts, resolved `CALLS`/`ACCESSES` counts, unresolved diagnostic status/proof/fact-family counts, low-confidence fallback counts, ACCESSES target labels, duplicate and merged source-site counts, graph-policy violation candidates, and explicit golden-validation availability. Current graph inventory mode does not replace the future golden fixture corpus; it records golden validation as disabled and leaves P2A-F/P2A-G open for fixture-backed false-positive and silent-missing checks.
+
 - [ ] [P2A-J] Add backend tests, contract tests, command/API visibility tests, and benchmark/evidence ledger entries for the proof-based CALLS/ACCESSES slice. Run the full build before tests, include focused resolver/source-site tests and wider graph tests, then record validation and AVmatrix detect-changes before committing the slice.
+
+- [x] [P2A-J1] Add backend and CLI command tests for the graph-inventory source-site accuracy command. The tests cover JSON command output, source-site relationship and diagnostic counts, merged source-site occurrence evidence, low-confidence fallback diagnostics, strict ACCESSES target labeling, duplicate source-target pairs, and graph-policy violation candidate reporting. Validation for this slice uses full build first, then focused `internal/graphaccuracy` and `internal/cli` tests plus wider `internal/...` and `cmd/...` tests.
 
 ## Phase 3 - Persisted ResolutionGap And UnresolvedSymbol Model
 

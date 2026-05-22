@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback slice complete
+Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, and source-site accuracy command graph-inventory slices complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -10,7 +10,7 @@ Evidence: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-evidence.md](2026-0
 
 ## B0 - Baseline Analyze Inventory
 
-Status: in progress; low-confidence fallback and source-site metadata persistence slices measured
+Status: in progress; low-confidence fallback, source-site metadata persistence, and source-site accuracy command graph-inventory slices measured
 
 Record after P0-B.
 
@@ -49,7 +49,7 @@ Planning audit snapshot, not P0 closure baseline:
 
 ## B1 - Discussion Coverage Checklist
 
-Status: pending
+Status: in progress; source-site metadata persistence and source-site accuracy command graph-inventory slices measured
 
 Record after P0-A.
 
@@ -257,44 +257,52 @@ Phase 2A target metrics:
 
 | Metric | Baseline | Target | After |
 | --- | ---: | ---: | ---: |
-| Raw call source sites inventoried | pending | all syntactic call sites in supported files | 38400 current graph records: 7611 resolved `CALLS` + 30789 unresolved call diagnostics |
-| Raw access source sites inventoried | pending | all syntactic access sites in supported files | 20982 current graph records: 3136 resolved `ACCESSES` + 17846 unresolved access diagnostics |
-| Source-site records with stable sourceSiteID | pending | all inventoried call/access sites | 59382 current call/access records; 72373 all relationship/diagnostic source-site records including type-reference/heritage |
-| Resolved `CALLS` edges | 15109 discussion sample | proof-backed only | 7611 current graph |
-| Resolved `ACCESSES` edges | 7670 discussion sample | property/field proof-backed only | 3136 current graph |
+| Raw call source sites inventoried | pending | all syntactic call sites in supported files | 43157 current graph records: 12261 resolved `CALLS` occurrences + 30896 unresolved call diagnostics |
+| Raw access source sites inventoried | pending | all syntactic access sites in supported files | 24210 current graph records: 6286 resolved `ACCESSES` occurrences + 17924 unresolved access diagnostics |
+| Source-site records with stable sourceSiteID | pending | all inventoried call/access sites | 84355 all relationship/diagnostic source-site records including call/access/type-reference/heritage; missing sourceSiteID count 0 |
+| Resolved `CALLS` edges | 15109 discussion sample | proof-backed only | 7648 current graph edges; 12261 source-site occurrences |
+| Resolved `ACCESSES` edges | 7670 discussion sample | property/field proof-backed only | 3298 current graph edges; 6286 source-site occurrences |
 | Resolved edges from low-confidence/global fallback | pending | 0 unless accepted proof is present | 0 in focused resolver golden fixtures |
-| Low-confidence/global fallback source sites inventoried | pending | explicit count and status distribution | 2154 current graph diagnostics with `proofKind=global-fallback-low-confidence`; 2 focused resolver fixtures recorded as unresolved source-backed diagnostics |
-| Unresolved local-binding call sites | pending | explicit count | 30789 current graph unresolved call diagnostics; finer external/ambiguous/dynamic split pending P3/P4 |
+| Low-confidence/global fallback source sites inventoried | pending | explicit count and status distribution | 2159 current graph diagnostics with `proofKind=global-fallback-low-confidence`; 2 focused resolver fixtures recorded as unresolved source-backed diagnostics |
+| Unresolved local-binding call sites | pending | explicit count | 30896 current graph unresolved call diagnostics; finer external/ambiguous/dynamic split pending P3/P4 |
 | Unresolved external call/access sites | pending | explicit count | pending |
 | Ambiguous call/access sites | pending | explicit count | pending |
 | Dynamic call/access sites | pending | explicit count | pending |
 | Unsupported syntax sites | pending | explicit count | pending |
 | False resolved edges in golden corpus | pending | 0 | 0 for focused low-confidence global fallback and imported non-property ACCESSES fixtures |
 | Silent missing source sites in golden corpus | pending | 0 | pending |
-| Source sites hidden by relationship dedupe without occurrence evidence | pending | 0 | 0 in focused duplicate-edge resolver fixture; merged relationship carries `sourceSiteCount=2` and two `sourceSiteIds` |
-| Resolved ACCESSES targets with label `Property` | pending | all resolved ACCESSES unless split relation says otherwise | 3136 / 3136 current graph |
+| Source sites hidden by relationship dedupe without occurrence evidence | pending | 0 | 0 in focused duplicate-edge resolver fixture; current graph has 5174 merged relationships with 15901 source-site occurrences preserved |
+| Resolved ACCESSES targets with label `Property` | pending | all resolved ACCESSES unless split relation says otherwise | 3298 / 3298 current graph |
 | Resolved ACCESSES targets with labels `Variable`/`Const`/`Static` | pending | 0 or moved to separate non-ACCESSES relation/fact role | 0 current graph; access-candidate audit bucket `non_property_target` covers rejected selector targets |
 | Resolved ACCESSES targets with labels `Function`/`Method`/other | pending | 0 | 0 current graph |
 | Non-property resolved ACCESSES targets in golden corpus | pending | 0 | 0 |
-| Duplicate resolved CALLS pairs | 0 discussion sample | 0 unless source-site evidence proves separate occurrences | pending |
-| Duplicate resolved ACCESSES pairs | 11 discussion sample | expected duplicates documented by source-site occurrence count | pending |
+| Duplicate resolved CALLS pairs | 0 discussion sample | 0 unless source-site evidence proves separate occurrences | 10 duplicate source-target pairs across current `CALLS`/`ACCESSES`; max duplicate 2; exact source-site occurrence evidence preserved |
+| Duplicate resolved ACCESSES pairs | 11 discussion sample | expected duplicates documented by source-site occurrence count | included in 10 duplicate source-target pairs from current source-site report |
 | `stop()` false-positive edge to `SSEListener.stop` | observed | absent; source site unresolved/ambiguous unless proven | absent in `TestResolveBareGoCallDoesNotFallbackToCrossLanguageMethod` |
-| Selector/import function references emitted as ACCESSES | pending | 0 | pending |
-| Proof-based graphaccuracy/CLI report command | pending | emits all B5A metrics | pending |
+| Selector/import function references emitted as ACCESSES | pending | 0 | current graph has 0 non-property ACCESSES targets |
+| Proof-based graphaccuracy/CLI report command | pending | emits all B5A metrics | `avmatrix source-site-accuracy` implemented for graph-inventory mode; golden fixture mode remains pending P2A-F/P2A-G |
 
 Low-confidence global CALLS fallback slice notes:
 
 - Same-file `CALLS` fallback remains resolved but now records confidence `0.950` in the TypeScript graph signature fixture instead of being promoted through global `resolveName` at confidence `1.000`.
 - PHP `use function` import evidence now keeps imported PHP function calls resolved through import binding rather than global fallback; the wider backend suite passed after this change.
-- Full source-site inventory now persists in graph JSON and LadybugDB relationship rows for resolved relationships, and in unresolved diagnostics for unresolved sites. A dedicated P2A-I report command is still pending so the counts above were measured from `.avmatrix\graph.json` with a temporary PowerShell inventory script.
+- Full source-site inventory now persists in graph JSON and LadybugDB relationship rows for resolved relationships, and in unresolved diagnostics for unresolved sites. The first P2A-I report command now exists as `avmatrix source-site-accuracy`; older values above the fresh command snapshot came from temporary PowerShell inventory before the command was available.
 
-Source-site metadata persistence slice notes:
+Source-site metadata persistence and accuracy command slice notes:
 
 - Fresh analyze after the schema update reported files scanned `733`, parsed `544`, unsupported `189`, failed `0`, graph nodes `22404`, and graph relationships `51521`.
 - Current source-site relationship counts by type: `CALLS=7611`, `ACCESSES=3136`, `USES=4512`, `INHERITS=1`.
 - Current source-site relationship proof counts: `scope-binding=4889`, `same-file=3783`, `go-same-package=2192`, `receiver-member=3736`, `import-member=660`.
 - Current unresolved diagnostic buckets by fact family: `call=30789`, `access=17846`, `type-reference=8471`, `heritage=7`.
 - Current unresolved diagnostic occurrences by fact family: `call=30789`, `access=17846`, `type-reference=9217`, `heritage=7`.
+- Fresh graph inventory after the source-site accuracy command slice used local build output: `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force` scanned `736`, parsed `547`, unsupported `189`, failed `0`, graph nodes `22628`, and graph relationships `52161`.
+- Command output artifact: `.tmp\2026-05-22-source-site-accuracy.json` from `.\avmatrix-launcher\server-bundle\avmatrix.exe source-site-accuracy --graph .avmatrix\graph.json --out .tmp\2026-05-22-source-site-accuracy.json --max-examples 20`.
+- Current source-site inventory from the command: relationship buckets `15494`, relationship occurrences `26221`, diagnostic buckets `57388`, diagnostic occurrences `58134`, all source-site occurrences `84355`, stable source-site ID occurrences `84355`, missing source-site ID occurrences `0`.
+- Current source-site relationship occurrences by type: `CALLS=12261`, `ACCESSES=6286`, `USES=7673`, `INHERITS=1`.
+- Current unresolved diagnostic occurrences by fact family from the command: `call=30896`, `access=17924`, `type-reference=9307`, `heritage=7`.
+- Current source-site proof counts from the command: `scope-binding=8413`, `same-file=6706`, `go-same-package=3035`, `receiver-member=7255`, `import-member=812`, `global-fallback-low-confidence=2159`, `none=55975`.
+- Current status counts from the command: `resolved=26221`, `unresolved_local_binding=58134`. More precise external/ambiguous/dynamic/unsupported status splitting remains pending in later Phase 2A/Phase 3 work.
+- Current graph-policy violation candidates from the command: false resolved edge candidates `16`, all from coarse `File -> Function` `CALLS` edges; resolved edges without proof `0`, resolved edges without source-site ID `0`, low-confidence fallback resolved edges `0`, non-property ACCESSES targets `0`.
 
 ## B6 - ResolutionGap Persistence Metrics
 
@@ -455,6 +463,10 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | Contract generation/check | `go run .\cmd\generate-web-contracts` | passed | regenerated schema and TypeScript contract from Go source |
 | Web unit tests | `npm test -- --run` in `avmatrix-web` | passed | 44 test files, 357 tests |
 | Web e2e tests | not run for Phase 2 | not applicable to this slice | Functional Area is persisted graph/contract metadata; visible Web UI behavior remains Phase 7 |
+| Source-site accuracy command | `.\avmatrix-launcher\server-bundle\avmatrix.exe source-site-accuracy --graph .avmatrix\graph.json --out .tmp\2026-05-22-source-site-accuracy.json --max-examples 20` | passed | graph-inventory mode reported 84355 source-site occurrences, 0 missing source-site IDs, 0 non-property ACCESSES targets, and 16 coarse File-source CALLS candidates |
+| Backend tests | `go test .\internal\graphaccuracy` and `go test .\internal\cli` | passed | focused source-site accuracy report and packaged CLI command coverage |
+| Backend tests | `go test .\internal\... .\cmd\...` | passed | wider Go validation after source-site accuracy command implementation |
+| AVmatrix detect-changes for source-site accuracy command | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected high scope | affected_count 11, changed_count 35, changed_files 6; affected surfaces match root CLI command and graphaccuracy report/schema decoding changes |
 | Query-health command | pending | pending | pending |
 | Resolution inventory command | pending | pending | pending |
 | `query` semantic output | pending | pending | pending |
