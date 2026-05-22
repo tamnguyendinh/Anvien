@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, File-source CALLS gate, and golden corpus slices complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, File-source CALLS gate, golden corpus, and source-site accuracy golden fixture command slices complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -240,7 +240,7 @@ Rejected candidate signals:
 
 ## B5A - Proof-Based CALLS/ACCESSES Accuracy Metrics
 
-Status: in progress; graph-inventory and golden corpus metrics recorded.
+Status: in progress; graph-inventory, golden corpus, and source-site accuracy golden fixture command metrics recorded.
 
 Record during Phase 2A.
 
@@ -287,7 +287,7 @@ Phase 2A target metrics:
 | `stop()` false-positive edge to `SSEListener.stop` | observed | absent; source site unresolved/ambiguous unless proven | absent in `TestResolveBareGoCallDoesNotFallbackToCrossLanguageMethod` |
 | Selector/import function references emitted as ACCESSES | pending | 0 | current graph has 0 non-property ACCESSES targets |
 | Coarse File-source CALLS | 16 observed by source-site accuracy command | 0 | 0 after File-source CALLS gate |
-| Proof-based graphaccuracy/CLI report command | pending | emits all B5A metrics | `avmatrix source-site-accuracy` implemented for graph-inventory mode; golden fixture mode remains pending P2A-F/P2A-G |
+| Proof-based graphaccuracy/CLI report command | pending | emits all B5A metrics | `avmatrix source-site-accuracy` implemented for graph-inventory and `--golden` fixture modes |
 
 Low-confidence global CALLS fallback slice notes:
 
@@ -324,6 +324,19 @@ Golden corpus slice notes:
 - Golden false resolved edges: `0`.
 - Golden silent missing source sites: `0`.
 - Golden non-property resolved `ACCESSES` targets: `0`.
+
+Source-site accuracy golden fixture command slice notes:
+
+- Built command help exposes `--golden string` for source-site golden fixture JSON.
+- Fixture-mode unit metrics from `TestRunSourceSiteAccuracyValidatesGoldenFixture`: expected source-site IDs `7`, matched source-site IDs `6`, silent missing source sites `1`, expected false resolved edges `1`, false resolved edges found `1`.
+- CLI fixture-mode JSON visibility from `TestSourceSiteAccuracyCommandOutputsJSON`: golden validation enabled, silent missing source sites `1`, and false resolved edges `1`.
+- Fresh current-graph command artifact without fixture: `.tmp\2026-05-22-p2a-source-site-accuracy-command.json`.
+- Fresh current-graph command inventory: relationship buckets `15520`, relationship occurrences `26304`, diagnostic buckets `57709`, diagnostic occurrences `58455`, all source-site occurrences `84759`, stable source-site ID occurrences `84759`, missing source-site ID occurrences `0`.
+- Fresh current-graph resolved edges: `CALLS=7645`, `ACCESSES=3314`; low-confidence fallback diagnostics `2217`; ACCESSES Property targets `3314/3314`; non-property ACCESSES targets `0`.
+- Fresh current-graph policy: false resolved edge candidates `0`, resolved edges without proof `0`, resolved edges without source-site ID `0`, low-confidence fallback resolved edges `0`, coarse file call edges `0`.
+- Fresh current-graph golden validation: disabled when no fixture is supplied, with expected source sites `0`, matched source sites `0`, silent missing source sites `0`, expected false resolved edges `0`, and false resolved edges `0`.
+- Fresh post-edit analyze before detect-changes: scanned `737`, parsed `548`, unsupported `189`, failed `0`, graph nodes `22751`, graph relationships `52425`.
+- Pre-commit detect-changes summary: changed_count `74`, changed_files `7`, affected_count `12`, risk_level `high`.
 
 ## B6 - ResolutionGap Persistence Metrics
 

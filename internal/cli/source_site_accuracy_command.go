@@ -11,6 +11,7 @@ import (
 
 func newSourceSiteAccuracyCommand() *cobra.Command {
 	var graphPath string
+	var goldenPath string
 	var outPath string
 	var maxExamples int
 	var jsonOutput bool
@@ -22,6 +23,7 @@ func newSourceSiteAccuracyCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			result, err := graphaccuracy.RunSourceSiteAccuracy(graphaccuracy.SourceSiteAccuracyOptions{
 				GraphPath:   graphPath,
+				GoldenPath:  goldenPath,
 				OutPath:     outPath,
 				MaxExamples: maxExamples,
 			})
@@ -48,6 +50,7 @@ func newSourceSiteAccuracyCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&graphPath, "graph", filepath.Join(".avmatrix", "graph.json"), "AVmatrix graph snapshot JSON")
+	cmd.Flags().StringVar(&goldenPath, "golden", "", "source-site golden fixture JSON for false-edge and missing-site validation")
 	cmd.Flags().StringVar(&outPath, "out", "", "write report JSON to this path")
 	cmd.Flags().IntVar(&maxExamples, "max-examples", 50, "maximum examples to include per bucket")
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write full JSON report to stdout")

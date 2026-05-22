@@ -25,11 +25,12 @@ const (
 	sourceSiteProofGlobalFallbackLow   = "global-fallback-low-confidence"
 	sourceSiteAccessPropertyTarget     = "Property"
 	sourceSiteMissingTargetLabel       = "missing_target"
-	sourceSiteGoldenValidationDisabled = "golden fixture validation is not enabled for graph inventory mode; policy violation counts are computed from the graph."
+	sourceSiteGoldenValidationDisabled = "golden fixture validation is disabled unless --golden is provided; policy violation counts are computed from the graph."
 )
 
 type SourceSiteAccuracyOptions struct {
 	GraphPath   string
+	GoldenPath  string
 	OutPath     string
 	MaxExamples int
 }
@@ -37,7 +38,8 @@ type SourceSiteAccuracyOptions struct {
 type SourceSiteAccuracyResult struct {
 	GeneratedAt string `json:"generatedAt"`
 	Inputs      struct {
-		Graph string `json:"graph"`
+		Graph  string `json:"graph"`
+		Golden string `json:"golden,omitempty"`
 	} `json:"inputs"`
 	Totals                SourceSiteAccuracyTotals         `json:"totals"`
 	ResolvedEdges         SourceSiteResolvedEdgeMetrics    `json:"resolvedEdges"`
@@ -125,10 +127,16 @@ type SourceSitePolicyViolationMetrics struct {
 }
 
 type SourceSiteGoldenValidation struct {
-	Enabled                  bool   `json:"enabled"`
-	FalseResolvedEdges       int    `json:"falseResolvedEdges"`
-	SilentMissingSourceSites int    `json:"silentMissingSourceSites"`
-	Note                     string `json:"note"`
+	Enabled                    bool                        `json:"enabled"`
+	ExpectedSourceSites        int                         `json:"expectedSourceSites"`
+	MatchedSourceSites         int                         `json:"matchedSourceSites"`
+	SilentMissingSourceSites   int                         `json:"silentMissingSourceSites"`
+	ExpectedFalseResolvedEdges int                         `json:"expectedFalseResolvedEdges"`
+	FalseResolvedEdges         int                         `json:"falseResolvedEdges"`
+	MissingSourceSiteIDs       []string                    `json:"missingSourceSiteIds,omitempty"`
+	FalseResolvedEdgeExamples  []SourceSiteAccuracyExample `json:"falseResolvedEdgeExamples,omitempty"`
+	MissingSourceSiteExamples  []SourceSiteAccuracyExample `json:"missingSourceSiteExamples,omitempty"`
+	Note                       string                      `json:"note"`
 }
 
 type SourceSiteAccuracyExamples struct {
@@ -181,6 +189,19 @@ type sourceSiteDiagnostic struct {
 	Note             string `json:"note,omitempty"`
 }
 
+type SourceSiteGoldenFixture struct {
+	Name                  string                              `json:"name,omitempty"`
+	ExpectedSourceSiteIDs []string                            `json:"expectedSourceSiteIds,omitempty"`
+	FalseResolvedEdges    []SourceSiteGoldenFalseResolvedEdge `json:"falseResolvedEdges,omitempty"`
+}
+
+type SourceSiteGoldenFalseResolvedEdge struct {
+	Type     string `json:"type"`
+	SourceID string `json:"sourceId"`
+	TargetID string `json:"targetId"`
+	Reason   string `json:"reason,omitempty"`
+}
+
 func RunSourceSiteAccuracy(options SourceSiteAccuracyOptions) (SourceSiteAccuracyResult, error) {
 	if options.GraphPath == "" {
 		return SourceSiteAccuracyResult{}, fmt.Errorf("graph path is required")
@@ -193,6 +214,13 @@ func RunSourceSiteAccuracy(options SourceSiteAccuracyOptions) (SourceSiteAccurac
 		return SourceSiteAccuracyResult{}, err
 	}
 	result := buildSourceSiteAccuracy(options.GraphPath, graphFile, options.MaxExamples)
+	if options.GoldenPath != "" {
+		fixture, err := ReadSourceSiteGoldenFixture(options.GoldenPath)
+		if err != nil {
+			return SourceSiteAccuracyResult{}, err
+		}
+		applySourceSiteGoldenValidation(&result, graphFile, fixture, options.GoldenPath, options.MaxExamples)
+	}
 	if options.OutPath != "" {
 		if err := WriteSourceSiteAccuracyResult(options.OutPath, result); err != nil {
 			return SourceSiteAccuracyResult{}, err
@@ -210,6 +238,18 @@ func WriteSourceSiteAccuracyResult(path string, result SourceSiteAccuracyResult)
 		return err
 	}
 	return os.WriteFile(path, append(raw, '\n'), 0o644)
+}
+
+func ReadSourceSiteGoldenFixture(path string) (SourceSiteGoldenFixture, error) {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return SourceSiteGoldenFixture{}, fmt.Errorf("read source-site golden fixture %s: %w", path, err)
+	}
+	var fixture SourceSiteGoldenFixture
+	if err := json.Unmarshal(raw, &fixture); err != nil {
+		return SourceSiteGoldenFixture{}, fmt.Errorf("decode source-site golden fixture %s: %w", path, err)
+	}
+	return fixture, nil
 }
 
 func SourceSiteAccuracySummaryLines(result SourceSiteAccuracyResult) []string {
@@ -247,6 +287,14 @@ func SourceSiteAccuracySummaryLines(result SourceSiteAccuracyResult) []string {
 			result.PolicyViolations.ResolvedEdgesWithoutSourceSiteID,
 			result.PolicyViolations.LowConfidenceFallbackEdges,
 			result.PolicyViolations.CoarseFileSourceCallEdges+result.PolicyViolations.CoarseFileTargetCallEdges,
+		),
+		fmt.Sprintf("golden.enabled=%t expectedSourceSites=%d matchedSourceSites=%d silentMissingSourceSites=%d expectedFalseResolvedEdges=%d falseResolvedEdges=%d",
+			result.GoldenValidation.Enabled,
+			result.GoldenValidation.ExpectedSourceSites,
+			result.GoldenValidation.MatchedSourceSites,
+			result.GoldenValidation.SilentMissingSourceSites,
+			result.GoldenValidation.ExpectedFalseResolvedEdges,
+			result.GoldenValidation.FalseResolvedEdges,
 		),
 	}
 	return lines
@@ -383,9 +431,61 @@ func buildSourceSiteAccuracy(graphPath string, graphFile GraphFile, maxExamples 
 		"Source-site relationship occurrences use sourceSiteCount when present, then sourceSiteIds length, then sourceSiteId.",
 		"Unresolved source-site occurrences are read from graphHealthDiagnostics entries with kind unresolved_reference.",
 		"Policy violation counts are graph-inventory checks, not a replacement for golden corpus tests.",
-		"Golden validation is reported as disabled unless a future fixture mode is added to this command.",
+		"Golden validation is disabled unless --golden is provided.",
 	}
 	return result
+}
+
+func applySourceSiteGoldenValidation(result *SourceSiteAccuracyResult, graphFile GraphFile, fixture SourceSiteGoldenFixture, goldenPath string, maxExamples int) {
+	result.Inputs.Golden = goldenPath
+	result.GoldenValidation.Enabled = true
+	result.GoldenValidation.Note = fmt.Sprintf("golden fixture validation read from %s", filepath.ToSlash(goldenPath))
+
+	sourceSiteIDs := graphSourceSiteIDs(graphFile)
+	for _, id := range fixture.ExpectedSourceSiteIDs {
+		id = strings.TrimSpace(id)
+		if id == "" {
+			continue
+		}
+		result.GoldenValidation.ExpectedSourceSites++
+		if sourceSiteIDs[id] {
+			result.GoldenValidation.MatchedSourceSites++
+			continue
+		}
+		result.GoldenValidation.SilentMissingSourceSites++
+		if maxExamples <= 0 || len(result.GoldenValidation.MissingSourceSiteIDs) < maxExamples {
+			result.GoldenValidation.MissingSourceSiteIDs = append(result.GoldenValidation.MissingSourceSiteIDs, id)
+		}
+		addSourceSiteExample(&result.GoldenValidation.MissingSourceSiteExamples, SourceSiteAccuracyExample{
+			SourceSiteID: id,
+			Reason:       "expected source-site id is absent from graph relationships and unresolved diagnostics",
+		}, maxExamples)
+	}
+
+	relationshipsByKey := graphRelationshipsByGoldenKey(graphFile)
+	nodesByID := make(map[string]GraphNode, len(graphFile.Nodes))
+	for _, node := range graphFile.Nodes {
+		nodesByID[node.ID] = node
+	}
+	for _, expectedEdge := range fixture.FalseResolvedEdges {
+		key := sourceSiteGoldenFalseEdgeKey(expectedEdge.Type, expectedEdge.SourceID, expectedEdge.TargetID)
+		if key == "" {
+			continue
+		}
+		result.GoldenValidation.ExpectedFalseResolvedEdges++
+		relationship, ok := relationshipsByKey[key]
+		if !ok {
+			continue
+		}
+		result.GoldenValidation.FalseResolvedEdges++
+		reason := strings.TrimSpace(expectedEdge.Reason)
+		if reason == "" {
+			reason = "golden fixture marks this resolved edge as false"
+		}
+		addSourceSiteExample(&result.GoldenValidation.FalseResolvedEdgeExamples, relationshipSourceSiteExample(relationship, nodesByID, reason), maxExamples)
+	}
+
+	result.Notes = append(result.Notes, "Golden validation compares expected source-site IDs and known-false resolved edges against the graph snapshot.")
 }
 
 func checkResolvedRelationshipPolicy(relationship GraphRelationship, nodesByID map[string]GraphNode, result *SourceSiteAccuracyResult, maxExamples int) {
@@ -455,6 +555,66 @@ func sourceSiteDiagnosticsFromNode(node GraphNode) []sourceSiteDiagnostic {
 		return []sourceSiteDiagnostic{diagnostic}
 	}
 	return nil
+}
+
+func graphSourceSiteIDs(graphFile GraphFile) map[string]bool {
+	ids := map[string]bool{}
+	for _, relationship := range graphFile.Relationships {
+		for _, id := range relationshipSourceSiteIDs(relationship) {
+			ids[id] = true
+		}
+	}
+	for _, node := range graphFile.Nodes {
+		for _, diagnostic := range sourceSiteDiagnosticsFromNode(node) {
+			id := strings.TrimSpace(diagnostic.SourceSiteID)
+			if id != "" {
+				ids[id] = true
+			}
+		}
+	}
+	return ids
+}
+
+func graphRelationshipsByGoldenKey(graphFile GraphFile) map[string]GraphRelationship {
+	relationshipsByKey := map[string]GraphRelationship{}
+	for _, relationship := range graphFile.Relationships {
+		key := sourceSiteGoldenFalseEdgeKey(relationship.Type, relationship.SourceID, relationship.TargetID)
+		if key == "" {
+			continue
+		}
+		if _, exists := relationshipsByKey[key]; !exists {
+			relationshipsByKey[key] = relationship
+		}
+	}
+	return relationshipsByKey
+}
+
+func sourceSiteGoldenFalseEdgeKey(relationshipType string, sourceID string, targetID string) string {
+	relationshipType = strings.TrimSpace(relationshipType)
+	sourceID = strings.TrimSpace(sourceID)
+	targetID = strings.TrimSpace(targetID)
+	if relationshipType == "" || sourceID == "" || targetID == "" {
+		return ""
+	}
+	return relationshipType + "\x00" + sourceID + "\x00" + targetID
+}
+
+func relationshipSourceSiteIDs(relationship GraphRelationship) []string {
+	seen := map[string]bool{}
+	var ids []string
+	add := func(id string) {
+		id = strings.TrimSpace(id)
+		if id == "" || seen[id] {
+			return
+		}
+		seen[id] = true
+		ids = append(ids, id)
+	}
+	add(relationship.SourceSiteID)
+	for _, id := range relationship.SourceSiteIDs {
+		add(id)
+	}
+	return ids
 }
 
 func isResolvedAccuracyRelationship(relationshipType string) bool {

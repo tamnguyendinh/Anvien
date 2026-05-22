@@ -118,8 +118,18 @@ func TestSourceSiteAccuracyCommandOutputsJSON(t *testing.T) {
 	if err := os.WriteFile(graphPath, []byte(raw), 0o644); err != nil {
 		t.Fatalf("write graph fixture: %v", err)
 	}
+	goldenPath := filepath.Join(dir, "golden.json")
+	golden := `{
+  "expectedSourceSiteIds": ["site:call", "site:missing", "site:absent"],
+  "falseResolvedEdges": [
+    {"type":"CALLS","sourceId":"Function:main","targetId":"Function:target","reason":"fixture marks this edge false"}
+  ]
+}`
+	if err := os.WriteFile(goldenPath, []byte(golden), 0o644); err != nil {
+		t.Fatalf("write golden fixture: %v", err)
+	}
 
-	out, errOut, err := executeForTest(t, "source-site-accuracy", "--graph", graphPath, "--json")
+	out, errOut, err := executeForTest(t, "source-site-accuracy", "--graph", graphPath, "--golden", goldenPath, "--json")
 	if err != nil {
 		t.Fatalf("source-site-accuracy returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
 	}
@@ -132,7 +142,10 @@ func TestSourceSiteAccuracyCommandOutputsJSON(t *testing.T) {
 	}
 	if !strings.Contains(out, `"sourceSiteInventory"`) ||
 		!strings.Contains(out, `"lowConfidenceGlobalFallbackOccurrences": 1`) ||
-		!strings.Contains(out, `"CALLS": 1`) {
+		!strings.Contains(out, `"CALLS": 1`) ||
+		!strings.Contains(out, `"enabled": true`) ||
+		!strings.Contains(out, `"silentMissingSourceSites": 1`) ||
+		!strings.Contains(out, `"falseResolvedEdges": 1`) {
 		t.Fatalf("source-site-accuracy output missing expected metrics:\n%s", out)
 	}
 }

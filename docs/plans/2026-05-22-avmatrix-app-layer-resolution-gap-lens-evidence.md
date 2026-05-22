@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, File-source CALLS gate, and golden corpus slices complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, File-source CALLS gate, golden corpus, and source-site accuracy golden fixture command slices complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -372,7 +372,7 @@ Implemented evidence:
 
 ## E7A - Proof-Based CALLS/ACCESSES Evidence
 
-Status: in progress; low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command graph-inventory, File-source CALLS gate, and golden corpus slices complete
+Status: in progress; low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command graph-inventory, File-source CALLS gate, golden corpus, and source-site accuracy golden fixture command slices complete
 
 Record during Phase 2A.
 
@@ -456,6 +456,19 @@ Implemented evidence for the golden corpus slice:
 - Validation evidence for this slice: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; focused resolver validation passed with `go test .\internal\resolution`; focused graph/CLI/contract surfaces passed with `go test .\internal\graphaccuracy .\internal\cli .\internal\contracts .\internal\lbugload .\internal\graphhealth`; wider backend validation passed with `go test .\internal\... .\cmd\...`.
 - Fresh `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .tmp\2026-05-22-p2a-golden-postedit-analyze.json --benchmark-label p2a-golden-postedit` passed after the golden corpus slice and produced scanned `737`, parsed `548`, unsupported `189`, failed `0`, graph nodes `22710`, and graph relationships `52293`.
 - AVmatrix change detection before commit used fresh analyze output followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; after staging the new test file and final ledger updates it reported changed_count `81`, changed_files `4`, affected_count `0`, and risk_level `low`.
+
+Implemented evidence for the source-site accuracy golden fixture command slice:
+
+- `internal/graphaccuracy/source_site_accuracy.go` adds `GoldenPath` input, `ReadSourceSiteGoldenFixture`, fixture structs, and fixture-backed validation that compares expected source-site IDs plus known-false resolved edges against the current graph snapshot.
+- `SourceSiteGoldenValidation` now reports `expectedSourceSites`, `matchedSourceSites`, `silentMissingSourceSites`, `expectedFalseResolvedEdges`, `falseResolvedEdges`, missing source-site IDs, and capped examples for missing sites and false edges. This keeps graph inventory and fixture-backed policy checks in the same report shape.
+- `internal/cli/source_site_accuracy_command.go` adds packaged CLI flag `--golden`. Command help from the built executable shows `--golden string      source-site golden fixture JSON for false-edge and missing-site validation`.
+- `TestRunSourceSiteAccuracyValidatesGoldenFixture` validates fixture mode with 7 expected source-site IDs, 6 matched IDs, 1 silent missing source site, 1 expected false resolved edge, and 1 false resolved edge found in the fixture graph.
+- `TestSourceSiteAccuracyCommandOutputsJSON` validates CLI JSON visibility for `--golden`, including `"enabled": true`, `"silentMissingSourceSites": 1`, and `"falseResolvedEdges": 1`.
+- Fresh command output from the built executable on the current graph without a fixture was written to `.tmp\2026-05-22-p2a-source-site-accuracy-command.json`: relationship source-site occurrences `26304`, diagnostic source-site occurrences `58455`, all source-site occurrences `84759`, stable source-site ID occurrences `84759`, missing source-site ID occurrences `0`, resolved `CALLS=7645`, resolved `ACCESSES=3314`, low-confidence fallback diagnostics `2217`, ACCESSES Property targets `3314/3314`, non-property ACCESSES targets `0`, false resolved edge candidates `0`, coarse file call edges `0`, and golden validation disabled because no fixture was supplied.
+- Validation evidence for this slice: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; focused tests passed with `go test .\internal\graphaccuracy` and `go test .\internal\cli`; wider backend validation passed with `go test .\internal\...` and `go test .\cmd\...`.
+- Fresh `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .tmp\2026-05-22-p2a-source-site-accuracy-golden-command-postedit-analyze.json --benchmark-label p2a-source-site-accuracy-golden-command-postedit` passed before detect-changes and produced scanned `737`, parsed `548`, unsupported `189`, failed `0`, graph nodes `22751`, and graph relationships `52425`.
+- AVmatrix change detection before commit used fresh analyze output followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `74`, changed_files `7`, affected_count `12`, and risk_level `high`. The high scope is expected because this slice extends `RunSourceSiteAccuracy`, `SourceSiteAccuracySummaryLines`, `newSourceSiteAccuracyCommand`, and new graphaccuracy fixture-validation helpers in a packaged CLI/report flow.
+- No visible Web UI behavior changed in this slice, so browser/e2e validation was not required for this slice.
 
 ## E8 - ResolutionGap Persistence Evidence
 

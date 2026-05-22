@@ -1,8 +1,10 @@
 package graphaccuracy
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -63,6 +65,77 @@ func TestRunSourceSiteAccuracyReportsProofInventory(t *testing.T) {
 	if result.GoldenValidation.Enabled {
 		t.Fatalf("graph inventory mode should not claim golden validation: %#v", result.GoldenValidation)
 	}
+}
+
+func TestRunSourceSiteAccuracyValidatesGoldenFixture(t *testing.T) {
+	repo := t.TempDir()
+	graphPath := writeGraphFixture(t, repo, "source-site.json", sourceSiteAccuracyFixtureGraph())
+	goldenPath := writeSourceSiteGoldenFixture(t, repo, SourceSiteGoldenFixture{
+		Name: "source-site proof policy fixture",
+		ExpectedSourceSiteIDs: []string{
+			"call:src/main.go:3:target",
+			"call:src/main.go:4:target",
+			"call:src/main.go:5:target",
+			"access:src/main.go:6:value",
+			"access:src/main.go:7:Limit",
+			"call:src/main.go:8:stop",
+			"call:src/main.go:99:missing",
+		},
+		FalseResolvedEdges: []SourceSiteGoldenFalseResolvedEdge{
+			{
+				Type:     "ACCESSES",
+				SourceID: "Function:src/main.go:main",
+				TargetID: "Const:src/main.go:Limit",
+				Reason:   "selector reference to const must not be a property ACCESSES edge",
+			},
+		},
+	})
+
+	result, err := RunSourceSiteAccuracy(SourceSiteAccuracyOptions{
+		GraphPath:   graphPath,
+		GoldenPath:  goldenPath,
+		MaxExamples: 5,
+	})
+	if err != nil {
+		t.Fatalf("RunSourceSiteAccuracy() error = %v", err)
+	}
+
+	if !result.GoldenValidation.Enabled {
+		t.Fatalf("golden validation not enabled: %#v", result.GoldenValidation)
+	}
+	if result.Inputs.Golden != goldenPath {
+		t.Fatalf("golden input = %q, want %q", result.Inputs.Golden, goldenPath)
+	}
+	if result.GoldenValidation.ExpectedSourceSites != 7 ||
+		result.GoldenValidation.MatchedSourceSites != 6 ||
+		result.GoldenValidation.SilentMissingSourceSites != 1 {
+		t.Fatalf("golden source-site counts = %#v", result.GoldenValidation)
+	}
+	if result.GoldenValidation.ExpectedFalseResolvedEdges != 1 ||
+		result.GoldenValidation.FalseResolvedEdges != 1 {
+		t.Fatalf("golden false-edge counts = %#v", result.GoldenValidation)
+	}
+	if len(result.GoldenValidation.FalseResolvedEdgeExamples) != 1 ||
+		len(result.GoldenValidation.MissingSourceSiteExamples) != 1 ||
+		len(result.GoldenValidation.MissingSourceSiteIDs) != 1 {
+		t.Fatalf("golden examples = %#v", result.GoldenValidation)
+	}
+	if !strings.Contains(strings.Join(SourceSiteAccuracySummaryLines(result), "\n"), "golden.enabled=true") {
+		t.Fatalf("summary lines do not expose golden validation: %#v", SourceSiteAccuracySummaryLines(result))
+	}
+}
+
+func writeSourceSiteGoldenFixture(t *testing.T, repo string, fixture SourceSiteGoldenFixture) string {
+	t.Helper()
+	path := filepath.Join(repo, "source-site-golden.json")
+	raw, err := json.MarshalIndent(fixture, "", "  ")
+	if err != nil {
+		t.Fatalf("marshal golden fixture: %v", err)
+	}
+	if err := os.WriteFile(path, append(raw, '\n'), 0o644); err != nil {
+		t.Fatalf("write golden fixture: %v", err)
+	}
+	return path
 }
 
 func sourceSiteAccuracyFixtureGraph() GraphFile {
