@@ -5,12 +5,21 @@ import (
 	"strings"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
 )
 
 const (
 	resolutionGapInputKindPrefix  = "ResolutionGapInput:"
+	resolutionGapNodeKindPrefix   = "ResolutionGap:"
+	resolutionGapRelKindPrefix    = "rel:has-resolution-gap:"
 	resolutionGapFactFamilyCall   = "call"
 	resolutionGapFactFamilyAccess = "access"
+
+	ResolutionGapKindUnresolvedCall          = "unresolved_call"
+	ResolutionGapKindUnresolvedAccess        = "unresolved_access"
+	ResolutionGapKindUnresolvedTypeReference = "unresolved_type_reference"
+	ResolutionGapKindUnresolvedHeritage      = "unresolved_heritage"
+	ResolutionGapKindUnresolvedReference     = "unresolved_reference"
 )
 
 // ResolutionGapInput is the source-backed input record that later phases can
@@ -40,6 +49,152 @@ type ResolutionGapInput struct {
 	EndCol               int    `json:"endCol,omitempty"`
 	Count                int    `json:"count"`
 	Note                 string `json:"note,omitempty"`
+}
+
+func (input ResolutionGapInput) ResolutionGapNodeID() string {
+	return ResolutionGapNodeID(
+		input.SourceSiteID,
+		input.SourceNodeID,
+		input.FactFamily,
+		input.TargetText,
+		input.TargetRole,
+		input.SourceSiteStatus,
+		input.ProofKind,
+		input.Classification,
+		input.Actionability,
+	)
+}
+
+func ResolutionGapNodeID(sourceSiteID string, identityParts ...string) string {
+	sourceSiteID = strings.TrimSpace(sourceSiteID)
+	if sourceSiteID != "" {
+		return resolutionGapNodeKindPrefix + sourceSiteID
+	}
+	cleanParts := make([]string, 0, len(identityParts))
+	for _, part := range identityParts {
+		if trimmed := strings.TrimSpace(part); trimmed != "" {
+			cleanParts = append(cleanParts, trimmed)
+		}
+	}
+	if len(cleanParts) == 0 {
+		return resolutionGapNodeKindPrefix + "unknown"
+	}
+	return resolutionGapNodeKindPrefix + strings.Join(cleanParts, "|")
+}
+
+func (input ResolutionGapInput) ResolutionGapRelationshipID() string {
+	return resolutionGapRelKindPrefix + strings.TrimSpace(input.SourceNodeID) + "->" + input.ResolutionGapNodeID()
+}
+
+func (input ResolutionGapInput) GapKind() string {
+	switch strings.TrimSpace(input.FactFamily) {
+	case "call":
+		return ResolutionGapKindUnresolvedCall
+	case "access":
+		return ResolutionGapKindUnresolvedAccess
+	case "type-reference", "type_reference", "type":
+		return ResolutionGapKindUnresolvedTypeReference
+	case "heritage", "inheritance", "inherits", "extends", "implements":
+		return ResolutionGapKindUnresolvedHeritage
+	default:
+		return ResolutionGapKindUnresolvedReference
+	}
+}
+
+func (input ResolutionGapInput) GraphNode() graph.Node {
+	appLayer := strings.TrimSpace(input.SourceAppLayer)
+	if appLayer == "" {
+		appLayer = "unknown"
+	}
+	functionalArea := strings.TrimSpace(input.SourceFunctionalArea)
+	if functionalArea == "" {
+		functionalArea = "unknown"
+	}
+	count := input.Count
+	if count <= 0 {
+		count = 1
+	}
+	name := strings.TrimSpace(input.TargetText)
+	if name == "" {
+		name = input.GapKind()
+	}
+	return graph.Node{
+		ID:    input.ResolutionGapNodeID(),
+		Label: scopeir.NodeResolutionGap,
+		Properties: graph.NodeProperties{
+			"name":                 name,
+			"gapKind":              input.GapKind(),
+			"sourceSiteId":         strings.TrimSpace(input.SourceSiteID),
+			"sourceNodeId":         strings.TrimSpace(input.SourceNodeID),
+			"sourceNodeLabel":      strings.TrimSpace(input.SourceNodeLabel),
+			"sourceAppLayer":       appLayer,
+			"sourceFunctionalArea": functionalArea,
+			"factFamily":           strings.TrimSpace(input.FactFamily),
+			"targetText":           strings.TrimSpace(input.TargetText),
+			"targetRole":           strings.TrimSpace(input.TargetRole),
+			"sourceSiteStatus":     strings.TrimSpace(input.SourceSiteStatus),
+			"proofKind":            strings.TrimSpace(input.ProofKind),
+			"classification":       strings.TrimSpace(input.Classification),
+			"actionability":        strings.TrimSpace(input.Actionability),
+			"resolutionSource":     strings.TrimSpace(input.ResolutionSource),
+			"source":               strings.TrimSpace(input.Source),
+			"filePath":             strings.TrimSpace(input.FilePath),
+			"fileHash":             strings.TrimSpace(input.FileHash),
+			"startLine":            input.StartLine,
+			"startCol":             input.StartCol,
+			"endLine":              input.EndLine,
+			"endCol":               input.EndCol,
+			"count":                count,
+			"note":                 strings.TrimSpace(input.Note),
+			"appLayer":             appLayer,
+			"appLayerSource":       "resolution_gap_source_node",
+			"functionalArea":       functionalArea,
+			"functionalAreaSource": "resolution_gap_source_node",
+		},
+	}
+}
+
+func (input ResolutionGapInput) GraphRelationship() graph.Relationship {
+	count := input.Count
+	if count <= 0 {
+		count = 1
+	}
+	sourceSiteID := strings.TrimSpace(input.SourceSiteID)
+	sourceSiteIDs := []string(nil)
+	if sourceSiteID != "" {
+		sourceSiteIDs = []string{sourceSiteID}
+	}
+	note := strings.TrimSpace(input.Note)
+	if note == "" {
+		note = "source-backed unresolved reference"
+	}
+	return graph.Relationship{
+		ID:               input.ResolutionGapRelationshipID(),
+		SourceID:         strings.TrimSpace(input.SourceNodeID),
+		TargetID:         input.ResolutionGapNodeID(),
+		Type:             graph.RelHasResolutionGap,
+		Confidence:       1,
+		Reason:           "source-backed unresolved reference",
+		ResolutionSource: strings.TrimSpace(input.ResolutionSource),
+		FileHash:         strings.TrimSpace(input.FileHash),
+		SourceSiteID:     sourceSiteID,
+		SourceSiteIDs:    sourceSiteIDs,
+		SourceSiteCount:  count,
+		SourceSiteStatus: strings.TrimSpace(input.SourceSiteStatus),
+		ProofKind:        strings.TrimSpace(input.ProofKind),
+		TargetRole:       strings.TrimSpace(input.TargetRole),
+		TargetText:       strings.TrimSpace(input.TargetText),
+		FilePath:         strings.TrimSpace(input.FilePath),
+		StartLine:        input.StartLine,
+		StartCol:         input.StartCol,
+		EndLine:          input.EndLine,
+		EndCol:           input.EndCol,
+		Evidence: []graph.Evidence{{
+			Kind:   "resolution_gap",
+			Weight: 1,
+			Note:   note,
+		}},
+	}
 }
 
 func SourceBackedResolutionGapInputs(g *graph.Graph) []ResolutionGapInput {

@@ -353,60 +353,69 @@ Source-site to ResolutionGap input bridge slice notes:
 
 ## B6 - ResolutionGap Persistence Metrics
 
-Status: in progress; validation recorded through Phase 2A golden corpus slice.
+Status: in progress; persisted ResolutionGap entity slice measured through P3-H.
 
 Record after P3.
 
 | Metric | Before | Target / expected direction | After |
 | --- | ---: | --- | ---: |
-| Persisted ResolutionGap/UnresolvedSymbol entities | pending | source-backed unresolved buckets or accurate aggregate entities | pending |
-| Persisted gap relationships/typed relations | pending | nonzero where source evidence supports them | pending |
-| Gaps preserving source node ID | pending | all source-backed gaps | pending |
-| Gaps preserving sourceSiteID | pending | all gaps originating from call/access source-site inventory | pending |
-| Gaps preserving source-site status | pending | all gaps originating from call/access source-site inventory | pending |
-| Gaps preserving proof kind | pending | all gaps originating from call/access source-site inventory | pending |
-| Gaps preserving target text | pending | all source-backed gaps | pending |
-| Gaps preserving source App Layer | pending | all source-backed gaps with classified source | pending |
-| Gaps preserving source Functional Area | pending | all source-backed gaps with classified source | pending |
-| Gaps preserving actionability | pending | all modeled gaps | pending |
-| Fake resolved target nodes created | pending | 0 | pending |
+| Persisted ResolutionGap/UnresolvedSymbol entities | 0 | source-backed unresolved buckets or accurate aggregate entities | 58083 |
+| Persisted gap relationships/typed relations | 0 | nonzero where source evidence supports them | 58083 `HAS_RESOLUTION_GAP` |
+| Gaps preserving source node ID | pending | all source-backed gaps | 58083/58083; missing 0 |
+| Gaps preserving sourceSiteID | pending | all gaps originating from call/access source-site inventory | 58083/58083; missing 0 |
+| Gaps preserving source-site status | pending | all gaps originating from call/access source-site inventory | 58083/58083; missing 0 |
+| Gaps preserving proof kind | pending | all gaps originating from call/access source-site inventory | 58083/58083; missing 0 |
+| Gaps preserving target text | pending | all source-backed gaps | 58083/58083; missing 0 |
+| Gaps preserving source App Layer | pending | all source-backed gaps with classified source | 58083/58083; unknown/missing 0 |
+| Gaps preserving source Functional Area | pending | all source-backed gaps with classified source | 50367/58083 classified; 7716 unknown source area |
+| Gaps preserving actionability | pending | all modeled gaps | 58083/58083; missing 0 |
+| Fake resolved target nodes created | pending | 0 | 0 in `TestApplyPersistsSourceBackedResolutionGaps`; graph-wide validator remains P3-F |
 | Aggregates preserving exact occurrence count | pending | all aggregates | pending |
 | Aggregates preserving source samples | pending | all aggregates | pending |
-| Evidence capped away for graph-size reasons | pending | 0 | pending |
+| Evidence capped away for graph-size reasons | pending | 0 | 0 for persisted source-backed gaps; one node per sourceSiteID-backed diagnostic |
 
 By fact family:
 
 | Fact family | Count after |
 | --- | ---: |
-| unresolved call | pending |
-| unresolved access | pending |
-| unresolved type-reference | pending |
-| unresolved heritage | pending |
-| external symbol | pending |
-| builtin/stdlib/test reference | pending |
-| in-repo analyzer gap | pending |
-| unknown/unclassified | pending |
+| unresolved call | 31220 |
+| unresolved access | 18245 |
+| unresolved type-reference | 8611 |
+| unresolved heritage | 7 |
+| external symbol | 158 external_library |
+| builtin/stdlib/test reference | 24100 total; builtin 9854, standard_library 7092, test_framework 7154 |
+| in-repo analyzer gap | 33825 |
+| unknown/unclassified | 0 in current analyzed graph |
 
 By target role:
 
 | Target role | Count after |
 | --- | ---: |
-| callable | pending |
-| member | pending |
-| type | pending |
-| external | pending |
-| builtin | pending |
-| test | pending |
-| unknown | pending |
+| callable | 31220 |
+| member | 18245 |
+| type | 8618 |
+| external | 0 as target role; represented by classification `external_library=158` |
+| builtin | 0 as target role; represented by classification `builtin=9854` |
+| test | 0 as target role; represented by classification `test_framework=7154` |
+| unknown | 0 |
 
 By actionability:
 
 | Actionability | Count after |
 | --- | ---: |
-| non_actionable | pending |
-| review | pending |
-| analyzer_gap | pending |
-| unknown | pending |
+| non_actionable | 24100 |
+| review | 158 |
+| analyzer_gap | 33825 |
+| unknown | 0 |
+
+ResolutionGap persistence slice notes:
+
+- Fresh analyze artifact: `.tmp\2026-05-22-p3-resolution-gap-persist-analyze.json`.
+- Fresh analyze inventory: scanned `739`, parsed `550`, unsupported `189`, failed `0`, graph nodes `80957`, graph relationships `110949`.
+- Semantic persistence metrics from analyze: `resolutionGapInputs=58083`, `resolutionGapNodes=58083`, `resolutionGapRelationships=58083`.
+- LadybugDB load metrics from analyze: node rows `80957`, relationship rows `110949`, skipped relationships `0`, fallback inserts `0`.
+- Graph JSON inventory check: `ResolutionGap` nodes `58083`; `HAS_RESOLUTION_GAP` relationships `58083`; missing source node ID `0`, sourceSiteID `0`, source-site status `0`, proof kind `0`, target text `0`, source App Layer `0`, actionability `0`; unknown source Functional Area `7716`.
+- The current slice persists each sourceSiteID-backed unresolved diagnostic as its own graph entity. Aggregate/dedupe policy with representative source samples remains P3-I.
 
 ## B7 - Resolution Health Inventory Metrics
 
@@ -523,6 +532,14 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | Backend tests | `go test .\internal\... .\cmd\...` | passed | wider Go validation after golden corpus slice |
 | AVmatrix detect-changes for golden corpus | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed | after staging new test file and final ledger updates: affected_count 0, changed_count 81, changed_files 4, risk_level low |
 | AVmatrix detect-changes for source-site accuracy command | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected high scope | affected_count 11, changed_count 35, changed_files 6; affected surfaces match root CLI command and graphaccuracy report/schema decoding changes |
+| Full build before ResolutionGap persistence tests | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | first run exposed missing Web constants for new generated contract values; final run passed after adding `ResolutionGap` and `HAS_RESOLUTION_GAP` Web constants/icon coverage |
+| Backend/contract focused tests | `go test .\internal\graphhealth .\internal\semantic .\internal\lbugschema .\internal\lbugload .\internal\contracts .\internal\scopeir` | passed | focused persisted ResolutionGap model, semantic enrichment, LadybugDB schema/export, contract, and node-label coverage |
+| Backend tests | `go test .\internal\...` and `go test .\cmd\...` | passed | wider Go validation after persisted ResolutionGap slice |
+| Contract generation/check | `go run .\cmd\generate-web-contracts` and `go run .\cmd\generate-web-contracts --check` | passed | generated Web schema and TypeScript contract include `ResolutionGap` and `HAS_RESOLUTION_GAP` |
+| Web unit tests | `npm --prefix .\avmatrix-web run test -- --run` | passed | 44 test files, 358 tests after adding filter-panel icon coverage for `ResolutionGap` |
+| Web e2e tests | `npm --prefix .\avmatrix-web run test:e2e` | passed | 44 tests collected; 14 passed and 30 skipped under local mocked-backend conditions |
+| Fresh analyze benchmark for ResolutionGap persistence | `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p3-resolution-gap-persist-analyze.json --benchmark-label p3-resolution-gap-persist` | passed | graph nodes 80957, relationships 110949, ResolutionGap nodes 58083, HAS_RESOLUTION_GAP relationships 58083, LadybugDB skipped relationships 0 |
+| AVmatrix detect-changes for ResolutionGap persistence | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 20, changed_count 348, changed_files 22, risk_level critical; affected surfaces match semantic enrichment, graphhealth ResolutionGap model, LadybugDB schema/export, generated contracts, Web constants/filter icon coverage, and plan ledgers |
 | Query-health command | pending | pending | pending |
 | Resolution inventory command | pending | pending | pending |
 | `query` semantic output | pending | pending | pending |
@@ -540,17 +557,17 @@ Record after the analyze semantic enrichment phase is introduced and after each 
 
 | Metric | Baseline | After App Layer | After Functional Area | After Source-Site Inventory | After ResolutionGap | Final |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Semantic enrichment phase latency | pending | 33.9997 ms | 68.8814 ms | pending | pending | pending |
-| Semantic enrichment memory delta | pending | pending | overall analyze heap +89525848 bytes; not phase-isolated | pending | pending | pending |
-| Graph nodes before enrichment | pending | 22239 | 22358 | pending | pending | pending |
-| Graph nodes after enrichment | pending | 22239 | 22358 | pending | pending | pending |
-| Graph relationships before enrichment | pending | 55006 | 55349 | pending | pending | pending |
-| Graph relationships after enrichment | pending | 55006 | 55349 | pending | pending | pending |
-| Graph JSON size | pending | 45739916 bytes | 47953614 bytes | pending | pending | pending |
-| LadybugDB node rows | pending | 22239 | 22358 | pending | pending | pending |
-| LadybugDB relationship rows | pending | 55006 | 55349 | pending | pending | pending |
-| Duplicate graph traversals introduced | pending | 0 nested whole-graph loops; one node pass and one relationship pass | 0 nested whole-graph loops; one node pass and one relationship pass shared by App Layer and Functional Area | pending | pending | pending |
-| File rescans introduced | pending | 0 | 0 | pending | pending | pending |
-| AST reparses introduced | pending | 0 | 0 | pending | pending | pending |
-| Raw call/access source-site count | pending | pending | pending | pending | pending | pending |
-| Raw unresolved fact count | pending | pending | pending | pending | pending | pending |
+| Semantic enrichment phase latency | pending | 33.9997 ms | 68.8814 ms | pending | 627.8377 ms | pending |
+| Semantic enrichment memory delta | pending | pending | overall analyze heap +89525848 bytes; not phase-isolated | pending | overall analyze heap +256162968 bytes; not phase-isolated | pending |
+| Graph nodes before enrichment | pending | 22239 | 22358 | pending | 22874 inferred from after minus ResolutionGap nodes | pending |
+| Graph nodes after enrichment | pending | 22239 | 22358 | pending | 80957 | pending |
+| Graph relationships before enrichment | pending | 55006 | 55349 | pending | 52866 inferred from after minus HAS_RESOLUTION_GAP relationships | pending |
+| Graph relationships after enrichment | pending | 55006 | 55349 | pending | 110949 | pending |
+| Graph JSON size | pending | 45739916 bytes | 47953614 bytes | pending | 274996080 bytes | pending |
+| LadybugDB node rows | pending | 22239 | 22358 | pending | 80957 | pending |
+| LadybugDB relationship rows | pending | 55006 | 55349 | pending | 110949 | pending |
+| Duplicate graph traversals introduced | pending | 0 nested whole-graph loops; one node pass and one relationship pass | 0 nested whole-graph loops; one node pass and one relationship pass shared by App Layer and Functional Area | pending | 0 nested loops; adds one source-backed diagnostic node pass and per-gap AddNode/AddRelationship finalization | pending |
+| File rescans introduced | pending | 0 | 0 | pending | 0 | pending |
+| AST reparses introduced | pending | 0 | 0 | pending | 0 | pending |
+| Raw call/access source-site count | pending | pending | pending | pending | call 31220, access 18245 persisted gap nodes | pending |
+| Raw unresolved fact count | pending | pending | pending | pending | 58083 persisted sourceSiteID-backed gaps | pending |

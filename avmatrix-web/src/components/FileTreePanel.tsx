@@ -295,6 +295,8 @@ const getNodeTypeIcon = (label: string) => {
       return Globe;
     case "Process":
       return GitBranch;
+    case "ResolutionGap":
+      return AlertTriangle;
     case "Section":
     case DOCUMENTATION_NODE_LABEL:
       return Table;

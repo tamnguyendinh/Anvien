@@ -38,7 +38,8 @@ export const NODE_LABELS = [
   "Template",
   "Section",
   "Route",
-  "Tool"
+  "Tool",
+  "ResolutionGap"
 ] as const;
 
 export type NodeLabel = (typeof NODE_LABELS)[number];
@@ -65,7 +66,8 @@ export const GRAPH_RELATIONSHIP_TYPES = [
   "HANDLES_TOOL",
   "ENTRY_POINT_OF",
   "WRAPS",
-  "QUERIES"
+  "QUERIES",
+  "HAS_RESOLUTION_GAP"
 ] as const;
 
 export type RelationshipType = (typeof GRAPH_RELATIONSHIP_TYPES)[number];
@@ -102,7 +104,8 @@ export const NODE_TABLES = [
   "Template",
   "Module",
   "Route",
-  "Tool"
+  "Tool",
+  "ResolutionGap"
 ] as const;
 
 export type NodeTableName = (typeof NODE_TABLES)[number];
@@ -129,7 +132,8 @@ export const REL_TYPES = [
   "HANDLES_TOOL",
   "ENTRY_POINT_OF",
   "WRAPS",
-  "QUERIES"
+  "QUERIES",
+  "HAS_RESOLUTION_GAP"
 ] as const;
 
 export type RelType = (typeof REL_TYPES)[number];
@@ -266,6 +270,12 @@ export const RELATIONSHIP_DISPLAY_POLICY = [
     "displayLabel": "Queries",
     "semanticGroup": "first-class",
     "displayPolicy": "count and draw as an independent graph relationship"
+  },
+  {
+    "type": "HAS_RESOLUTION_GAP",
+    "displayLabel": "Has Resolution Gap",
+    "semanticGroup": "resolution-health",
+    "displayPolicy": "diagnostic relation from a real source node to a persisted ResolutionGap; do not treat as a resolved code edge"
   }
 ] as const;
 

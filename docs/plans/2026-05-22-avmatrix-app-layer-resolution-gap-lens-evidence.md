@@ -485,21 +485,44 @@ Implemented evidence for the source-site to ResolutionGap input bridge slice:
 
 ## E8 - ResolutionGap Persistence Evidence
 
-Status: pending
+Status: in progress; persisted ResolutionGap entity slice complete through P3-H.
 
 Record during P3.
 
-Required evidence:
+Persisted schema and graph representation:
 
-- persisted schema or graph representation;
-- source-backed gap examples for unresolved call, access, type-reference, and heritage;
-- sourceSiteID, source-site status, and proof kind preservation when a gap originates from Phase 2A call/access source-site inventory;
-- examples for builtin/predeclared, standard-library, test-framework, external, in-repo analyzer gap, unclassified, and unknown roles;
-- fine-grained relation or typed metadata examples;
-- proof that fake resolved in-repo nodes/edges were not created;
-- proof that aggregation or dedupe preserves exact counts, buckets, source samples, App Layer/Functional Area distributions, and traceability;
-- backend test names/results;
-- before/after persisted gap counts.
+- Graph node label: `ResolutionGap`.
+- Graph diagnostic relationship type: `HAS_RESOLUTION_GAP`.
+- Node identity: `ResolutionGap:<sourceSiteID>` when source-site ID exists; fallback identity includes source node, fact family, target text, target role, source-site status, proof kind, classification, and actionability so different target/status/proof/actionability buckets are not silently merged.
+- Relationship identity: `rel:has-resolution-gap:<sourceNodeID>-><ResolutionGapID>`.
+- Persisted node fields: `gapKind`, `sourceSiteId`, `sourceNodeId`, `sourceNodeLabel`, `sourceAppLayer`, `sourceFunctionalArea`, `factFamily`, `targetText`, `targetRole`, `sourceSiteStatus`, `proofKind`, `classification`, `actionability`, `resolutionSource`, `source`, `filePath`, `fileHash`, `startLine`, `startCol`, `endLine`, `endCol`, `count`, `note`, `appLayer`, and `functionalArea`.
+- LadybugDB schema/export/load: `ResolutionGap` node table added; `HAS_RESOLUTION_GAP` relationship type added; relationship pairs from all existing node tables to `ResolutionGap` added; CSV export preserves all persisted gap fields.
+- Web contract/UI constants: generated schema and TypeScript include `ResolutionGap` and `HAS_RESOLUTION_GAP`; Web node color/size/filter icon and edge metadata now cover them.
+
+Source-backed examples and typed metadata:
+
+- `TestSourceBackedResolutionGapInputsPreserveSourceSiteEvidence` now proves a source-backed unresolved call input can materialize a `ResolutionGap` node and `HAS_RESOLUTION_GAP` relationship while preserving source-site ID/status, proof kind, target role, classification, actionability, App Layer, Functional Area, file/range, count, and note.
+- `TestApplyPersistsSourceBackedResolutionGaps` proves semantic enrichment persists a call gap from source-backed diagnostics after App Layer/Functional Area classification and does not synthesize `Function:stop` or a proofless `CALLS` edge.
+- `TestExportGraphCSVsWritesResolutionGapNodesAndPairs` proves LadybugDB CSV export writes one `ResolutionGap` row, one `Function -> ResolutionGap` pair file, and zero skipped graph facts for the fixture.
+- Fresh analyze produced typed gap counts: `unresolved_call=31220`, `unresolved_access=18245`, `unresolved_type_reference=8611`, `unresolved_heritage=7`.
+- Fresh analyze produced classification counts: `in_repo_unresolved=33825`, `builtin=9854`, `test_framework=7154`, `standard_library=7092`, `external_library=158`.
+- Fresh analyze produced actionability counts: `analyzer_gap=33825`, `non_actionable=24100`, `review=158`.
+- Fresh analyze produced target-role counts: `callable=31220`, `member=18245`, `type=8618`.
+
+Before/after and validation evidence:
+
+- Fresh analyze command: `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p3-resolution-gap-persist-analyze.json --benchmark-label p3-resolution-gap-persist`.
+- Fresh graph inventory after persistence: nodes `80957`, relationships `110949`, `ResolutionGap` nodes `58083`, `HAS_RESOLUTION_GAP` relationships `58083`.
+- Semantic enrichment benchmark after persistence: `resolutionGapInputs=58083`, `resolutionGapNodes=58083`, `resolutionGapRelationships=58083`, semantic phase latency `627.8377 ms`.
+- LadybugDB load evidence from the same analyze: node rows `80957`, relationship rows `110949`, node copy count `17`, relationship copy count `86`, fallback inserts `0`, skipped relationships `0`.
+- Field preservation inventory from `.avmatrix\graph.json`: missing source node ID `0`, missing sourceSiteID `0`, missing source-site status `0`, missing proof kind `0`, missing target text `0`, missing source App Layer `0`, missing actionability `0`; `7716` gaps have unknown source Functional Area because the source node was not functionally classified yet.
+- Validation commands passed after full build: `go test .\internal\graphhealth .\internal\semantic .\internal\lbugschema .\internal\lbugload .\internal\contracts .\internal\scopeir`; `go test .\internal\...`; `go test .\cmd\...`; `go run .\cmd\generate-web-contracts --check`; `npm --prefix .\avmatrix-web run test -- --run`; `npm --prefix .\avmatrix-web run test:e2e` with `14` passed and `30` skipped.
+
+Remaining P3 evidence gaps:
+
+- P3-D target-role inference fallback is not complete beyond preserving source evidence.
+- P3-F/P3-G broad fixture coverage for access/type-reference/heritage, builtin/predeclared, standard-library, test-framework, external, analyzer-gap, unknown target role, repeated occurrence aggregation, and multiple target texts is still open.
+- P3-I aggregate/dedupe policy and representative source sample verification remain open.
 
 ## E9 - Resolution Health And Inventory Evidence
 

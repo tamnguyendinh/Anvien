@@ -60,6 +60,7 @@ export const NODE_COLORS: Record<DisplayNodeLabel, string> = {
   Template: "#a78bfa", // Violet light - like Type
   Route: "#f43f5e", // Rose - like Process
   Tool: "#a855f7", // Purple - like Project
+  ResolutionGap: "#ef4444", // Red - unresolved reference diagnostic entity
 };
 
 // Node sizes by type - keep hierarchy visible without making metadata impossible to inspect.
@@ -101,6 +102,7 @@ export const NODE_SIZES: Record<DisplayNodeLabel, number> = {
   Template: 3, // Like Type
   Route: 5, // Like Enum
   Tool: 5, // Like Enum
+  ResolutionGap: 3, // Diagnostic entity, capped small so it does not dominate the graph
 };
 
 export const getNodeColor = (label: string): string =>
@@ -219,6 +221,7 @@ export const EDGE_SIZE_MULTIPLIERS: Record<RelationshipType, number> = {
   ENTRY_POINT_OF: 0.8,
   WRAPS: 0.6,
   QUERIES: 0.7,
+  HAS_RESOLUTION_GAP: 0.3,
 };
 
 // Edge display info for UI
@@ -253,6 +256,12 @@ export const EDGE_INFO: Record<
   ENTRY_POINT_OF: { color: "#16a34a", label: "Entry Point Of" },
   WRAPS: { color: "#9333ea", label: "Wraps" },
   QUERIES: { color: "#ca8a04", label: "Queries" },
+  HAS_RESOLUTION_GAP: {
+    color: "#ef4444",
+    label: "Has Resolution Gap",
+    description:
+      "Diagnostic relationship from a real source node to a persisted unresolved-reference record. It is not a resolved code edge.",
+  },
 };
 
 const nodeLabelOrder = new Map<string, number>(

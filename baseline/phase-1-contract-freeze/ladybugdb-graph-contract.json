@@ -52,7 +52,8 @@
       "Template",
       "Module",
       "Route",
-      "Tool"
+      "Tool",
+      "ResolutionGap"
     ],
     "relationshipTable": {
       "name": "CodeRelation",
@@ -144,7 +145,8 @@
       "Template",
       "Module",
       "Route",
-      "Tool"
+      "Tool",
+      "ResolutionGap"
     ],
     "relationshipTypes": [
       "CONTAINS",
@@ -168,7 +170,8 @@
       "HANDLES_TOOL",
       "ENTRY_POINT_OF",
       "WRAPS",
-      "QUERIES"
+      "QUERIES",
+      "HAS_RESOLUTION_GAP"
     ]
   },
   "graphTypes": {

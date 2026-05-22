@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
 )
 
@@ -234,6 +235,69 @@ func TestExportGraphCSVsSplitsRelationshipPairsAndSkipsUnknownEndpoints(t *testi
 	}
 	if _, ok := pairs["Unknown|Class"]; ok {
 		t.Fatalf("unexpected pair file for unknown endpoint: %#v", pairs)
+	}
+}
+
+func TestExportGraphCSVsWritesResolutionGapNodesAndPairs(t *testing.T) {
+	input := graphhealth.ResolutionGapInput{
+		SourceSiteID:         "SourceSite:src/app.ts#call#stop#10#4#10#10",
+		SourceNodeID:         "Function:src/app.ts:run",
+		SourceNodeLabel:      "Function",
+		SourceAppLayer:       "backend",
+		SourceFunctionalArea: "resolution",
+		FactFamily:           "call",
+		TargetText:           "stop",
+		TargetRole:           "callable",
+		SourceSiteStatus:     "unresolved_local_binding",
+		ProofKind:            "none",
+		Classification:       graphhealth.DiagnosticClassificationInRepoUnresolved,
+		Actionability:        graphhealth.DiagnosticActionabilityAnalyzerGap,
+		ResolutionSource:     "scope-resolution",
+		Source:               "scope-resolution",
+		FilePath:             "src/app.ts",
+		FileHash:             "hash-1",
+		StartLine:            10,
+		StartCol:             4,
+		EndLine:              10,
+		EndCol:               10,
+		Count:                3,
+		Note:                 "bare call has no binding proof",
+	}
+	g := graph.New()
+	g.AddNode(graph.Node{ID: input.SourceNodeID, Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
+		"name": "run", "filePath": "src/app.ts",
+	}})
+	g.AddNode(input.GraphNode())
+	g.AddRelationship(input.GraphRelationship())
+
+	export, err := ExportGraphCSVs(g, filepath.Join(t.TempDir(), "csv"))
+	if err != nil {
+		t.Fatalf("ExportGraphCSVs() error = %v", err)
+	}
+	if export.Metrics.SkippedNodes != 0 || export.Metrics.SkippedRelationships != 0 {
+		t.Fatalf("resolution gap export skipped graph facts: %#v", export.Metrics)
+	}
+	if export.Metrics.RowsByTable["ResolutionGap"] != 1 {
+		t.Fatalf("ResolutionGap row count = %d, want 1", export.Metrics.RowsByTable["ResolutionGap"])
+	}
+	rows := readCSV(t, filepath.Join(export.CSVDir, "resolutiongap.csv"))
+	wantHeader := []string{"id", "name", "gapKind", "sourceSiteId", "sourceNodeId", "sourceNodeLabel", "sourceAppLayer", "sourceFunctionalArea", "factFamily", "targetText", "targetRole", "sourceSiteStatus", "proofKind", "classification", "actionability", "resolutionSource", "source", "filePath", "fileHash", "startLine", "startCol", "endLine", "endCol", "count", "note", "appLayer", "functionalArea"}
+	if !reflect.DeepEqual(rows[0], wantHeader) {
+		t.Fatalf("resolutiongap.csv header = %#v, want %#v", rows[0], wantHeader)
+	}
+	if rows[1][3] != input.SourceSiteID ||
+		rows[1][4] != input.SourceNodeID ||
+		rows[1][9] != "stop" ||
+		rows[1][13] != graphhealth.DiagnosticClassificationInRepoUnresolved ||
+		rows[1][14] != graphhealth.DiagnosticActionabilityAnalyzerGap ||
+		rows[1][23] != "3" ||
+		rows[1][25] != "backend" ||
+		rows[1][26] != "resolution" {
+		t.Fatalf("ResolutionGap row lost source-site fields: %#v", rows[1])
+	}
+	pairRows := readCSV(t, filepath.Join(export.CSVDir, "rel_Function_ResolutionGap.csv"))
+	if len(pairRows) != 2 || pairRows[1][2] != string(graph.RelHasResolutionGap) {
+		t.Fatalf("ResolutionGap relationship pair rows = %#v", pairRows)
 	}
 }
 

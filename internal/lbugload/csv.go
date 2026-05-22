@@ -29,20 +29,22 @@ var (
 	sectionNodeColumns   = semanticNodeColumns("id", "name", "filePath", "startLine", "endLine", "level", "content", "description")
 	routeNodeColumns     = semanticNodeColumns("id", "name", "filePath", "responseKeys", "errorKeys", "middleware")
 	toolNodeColumns      = semanticNodeColumns("id", "name", "filePath", "description")
+	resolutionGapColumns = semanticNodeColumns("id", "name", "gapKind", "sourceSiteId", "sourceNodeId", "sourceNodeLabel", "sourceAppLayer", "sourceFunctionalArea", "factFamily", "targetText", "targetRole", "sourceSiteStatus", "proofKind", "classification", "actionability", "resolutionSource", "source", "filePath", "fileHash", "startLine", "startCol", "endLine", "endCol", "count", "note")
 	defaultNodeColumns   = semanticNodeColumns("id", "name", "filePath", "startLine", "endLine", "content", "description")
 	nodeColumnLookup     = map[string][]string{
-		"File":        fileNodeColumns,
-		"Folder":      folderNodeColumns,
-		"Function":    symbolNodeColumns,
-		"Class":       symbolNodeColumns,
-		"Interface":   symbolNodeColumns,
-		"CodeElement": symbolNodeColumns,
-		"Method":      methodNodeColumns,
-		"Community":   communityNodeColumns,
-		"Process":     processNodeColumns,
-		"Section":     sectionNodeColumns,
-		"Route":       routeNodeColumns,
-		"Tool":        toolNodeColumns,
+		"File":          fileNodeColumns,
+		"Folder":        folderNodeColumns,
+		"Function":      symbolNodeColumns,
+		"Class":         symbolNodeColumns,
+		"Interface":     symbolNodeColumns,
+		"CodeElement":   symbolNodeColumns,
+		"Method":        methodNodeColumns,
+		"Community":     communityNodeColumns,
+		"Process":       processNodeColumns,
+		"Section":       sectionNodeColumns,
+		"Route":         routeNodeColumns,
+		"Tool":          toolNodeColumns,
+		"ResolutionGap": resolutionGapColumns,
 	}
 	validNodeTableLookup = makeValidNodeTableLookup()
 	relationPairLookup   = makeRelationPairLookup()
@@ -321,6 +323,34 @@ func nodeCSVRow(node graph.Node, table string) []string {
 		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), arrayLiteral(props["responseKeys"]), arrayLiteral(props["errorKeys"]), arrayLiteral(props["middleware"]))
 	case "Tool":
 		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "description", ""))
+	case "ResolutionGap":
+		return semanticValues(
+			node.ID,
+			stringProp(props, "name", ""),
+			stringProp(props, "gapKind", ""),
+			stringProp(props, "sourceSiteId", ""),
+			stringProp(props, "sourceNodeId", ""),
+			stringProp(props, "sourceNodeLabel", ""),
+			stringProp(props, "sourceAppLayer", ""),
+			stringProp(props, "sourceFunctionalArea", ""),
+			stringProp(props, "factFamily", ""),
+			stringProp(props, "targetText", ""),
+			stringProp(props, "targetRole", ""),
+			stringProp(props, "sourceSiteStatus", ""),
+			stringProp(props, "proofKind", ""),
+			stringProp(props, "classification", ""),
+			stringProp(props, "actionability", ""),
+			stringProp(props, "resolutionSource", ""),
+			stringProp(props, "source", ""),
+			stringProp(props, "filePath", ""),
+			stringProp(props, "fileHash", ""),
+			intProp(props, "startLine", 0),
+			intProp(props, "startCol", 0),
+			intProp(props, "endLine", 0),
+			intProp(props, "endCol", 0),
+			intProp(props, "count", 1),
+			stringProp(props, "note", ""),
+		)
 	default:
 		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), intProp(props, "startLine", -1), intProp(props, "endLine", -1), stringProp(props, "content", ""), stringProp(props, "description", ""))
 	}

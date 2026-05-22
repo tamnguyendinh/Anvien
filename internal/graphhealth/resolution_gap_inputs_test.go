@@ -100,6 +100,36 @@ func TestSourceBackedResolutionGapInputsPreserveSourceSiteEvidence(t *testing.T)
 		call.Note != "call target matched low-confidence global fallback only" {
 		t.Fatalf("call gap input lost source-site evidence: %#v", call)
 	}
+	gapNode := call.GraphNode()
+	if gapNode.ID != "ResolutionGap:SourceSite:src/app.ts#call#stop#10#4#10#10" ||
+		gapNode.Label != "ResolutionGap" ||
+		gapNode.Properties["gapKind"] != ResolutionGapKindUnresolvedCall ||
+		gapNode.Properties["sourceSiteId"] != call.SourceSiteID ||
+		gapNode.Properties["sourceNodeId"] != call.SourceNodeID ||
+		gapNode.Properties["targetText"] != "stop" ||
+		gapNode.Properties["targetRole"] != "callable" ||
+		gapNode.Properties["classification"] != DiagnosticClassificationInRepoUnresolved ||
+		gapNode.Properties["actionability"] != DiagnosticActionabilityAnalyzerGap ||
+		gapNode.Properties["appLayer"] != "backend" ||
+		gapNode.Properties["functionalArea"] != "resolution" ||
+		gapNode.Properties["count"] != 2 {
+		t.Fatalf("GraphNode() did not preserve persisted gap fields: %#v", gapNode)
+	}
+	gapRel := call.GraphRelationship()
+	if gapRel.ID != "rel:has-resolution-gap:Function:src/app.ts:run->ResolutionGap:SourceSite:src/app.ts#call#stop#10#4#10#10" ||
+		gapRel.SourceID != call.SourceNodeID ||
+		gapRel.TargetID != gapNode.ID ||
+		gapRel.Type != graph.RelHasResolutionGap ||
+		gapRel.SourceSiteID != call.SourceSiteID ||
+		gapRel.SourceSiteCount != 2 ||
+		gapRel.SourceSiteStatus != "unresolved_local_binding" ||
+		gapRel.ProofKind != "global-fallback-low-confidence" ||
+		gapRel.TargetRole != "callable" ||
+		gapRel.TargetText != "stop" ||
+		len(gapRel.Evidence) != 1 ||
+		gapRel.Evidence[0].Kind != "resolution_gap" {
+		t.Fatalf("GraphRelationship() did not preserve persisted gap evidence: %#v", gapRel)
+	}
 
 	callAccess := SourceBackedCallAccessResolutionGapInputs(g)
 	if len(callAccess) != 2 {

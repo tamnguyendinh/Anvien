@@ -39,8 +39,8 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 	if len(queries) != len(NodeTables)+2 {
 		t.Fatalf("SchemaQueries() len = %d, want %d", len(queries), len(NodeTables)+2)
 	}
-	if len(RelationPairs) != 254 {
-		t.Fatalf("RelationPairs len = %d, want 254", len(RelationPairs))
+	if len(RelationPairs) != 286 {
+		t.Fatalf("RelationPairs len = %d, want 286", len(RelationPairs))
 	}
 
 	fileSchema := NodeSchema("File")
@@ -57,6 +57,12 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 	}
 	if !strings.Contains(NodeSchema("Struct"), "CREATE NODE TABLE `Struct`") {
 		t.Fatalf("Struct schema must quote the table name:\n%s", NodeSchema("Struct"))
+	}
+	resolutionGapSchema := NodeSchema("ResolutionGap")
+	for _, want := range []string{"CREATE NODE TABLE ResolutionGap", "sourceSiteId STRING", "sourceNodeId STRING", "gapKind STRING", "classification STRING", "actionability STRING", "count INT32", "appLayer STRING", "functionalArea STRING"} {
+		if !strings.Contains(resolutionGapSchema, want) {
+			t.Fatalf("ResolutionGap schema missing %q:\n%s", want, resolutionGapSchema)
+		}
 	}
 
 	relationSchema := RelationSchema()
@@ -89,6 +95,8 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 		"FROM `Namespace` TO Function",
 		"FROM `TypeAlias` TO Method",
 		"FROM `TypeAlias` TO `Property`",
+		"FROM Function TO ResolutionGap",
+		"FROM Method TO ResolutionGap",
 		"type STRING",
 		"confidence DOUBLE",
 		"resolutionSource STRING",
@@ -107,20 +115,21 @@ func TestSchemaSurfaceCoversLegacyCoreAndModernNodeTypes(t *testing.T) {
 		"Package", "Section", "Struct", "Enum", "Macro", "Typedef", "Union", "Namespace", "Trait", "Impl",
 		"TypeAlias", "Const", "Static", "Variable", "Property", "Record", "Delegate", "Annotation", "Constructor",
 		"Template", "Module", "Route", "Tool",
+		"ResolutionGap",
 	} {
 		if !containsString(NodeTables, table) {
 			t.Fatalf("NodeTables missing %q", table)
 		}
 	}
-	if len(NodeTables) != 32 {
-		t.Fatalf("NodeTables length = %d, want 32", len(NodeTables))
+	if len(NodeTables) != 33 {
+		t.Fatalf("NodeTables length = %d, want 33", len(NodeTables))
 	}
 
 	for _, relationType := range []string{
 		"CONTAINS", "DEFINES", "IMPORTS", "CALLS", "USES", "INHERITS", "EXTENDS", "IMPLEMENTS",
 		"HAS_METHOD", "HAS_PROPERTY", "ACCESSES", "METHOD_OVERRIDES", "OVERRIDES", "METHOD_IMPLEMENTS",
 		"MEMBER_OF", "STEP_IN_PROCESS", "HANDLES_ROUTE", "FETCHES", "HANDLES_TOOL", "ENTRY_POINT_OF",
-		"WRAPS", "QUERIES",
+		"WRAPS", "QUERIES", "HAS_RESOLUTION_GAP",
 	} {
 		if !containsString(RelationshipTypes, relationType) {
 			t.Fatalf("RelationshipTypes missing %q", relationType)

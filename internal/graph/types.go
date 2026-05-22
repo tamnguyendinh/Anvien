@@ -31,6 +31,7 @@ const (
 	RelEntryPointOf     RelationshipType = "ENTRY_POINT_OF"
 	RelWraps            RelationshipType = "WRAPS"
 	RelQueries          RelationshipType = "QUERIES"
+	RelHasResolutionGap RelationshipType = "HAS_RESOLUTION_GAP"
 )
 
 type NodeProperties map[string]any

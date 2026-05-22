@@ -11,16 +11,16 @@ import (
 func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {
 	manifest := WebUIContract()
 
-	if !contains(manifest.Graph.NodeLabels, "Project") || !contains(manifest.Graph.NodeLabels, "Tool") {
+	if !contains(manifest.Graph.NodeLabels, "Project") || !contains(manifest.Graph.NodeLabels, "Tool") || !contains(manifest.Graph.NodeLabels, "ResolutionGap") {
 		t.Fatalf("node labels missing Go ScopeIR labels: %#v", manifest.Graph.NodeLabels)
 	}
-	if !contains(manifest.Graph.LadybugDBNodeTables, "Package") {
+	if !contains(manifest.Graph.LadybugDBNodeTables, "Package") || !contains(manifest.Graph.LadybugDBNodeTables, "ResolutionGap") {
 		t.Fatalf("LadybugDB node tables missing Package: %#v", manifest.Graph.LadybugDBNodeTables)
 	}
-	if !contains(manifest.Graph.LadybugDBRelationshipTypes, "OVERRIDES") {
+	if !contains(manifest.Graph.LadybugDBRelationshipTypes, "OVERRIDES") || !contains(manifest.Graph.LadybugDBRelationshipTypes, "HAS_RESOLUTION_GAP") {
 		t.Fatalf("LadybugDB relationship types missing legacy OVERRIDES: %#v", manifest.Graph.LadybugDBRelationshipTypes)
 	}
-	if !contains(manifest.Graph.GraphRelationshipTypes, "DECORATES") {
+	if !contains(manifest.Graph.GraphRelationshipTypes, "DECORATES") || !contains(manifest.Graph.GraphRelationshipTypes, "HAS_RESOLUTION_GAP") {
 		t.Fatalf("graph relationship types missing DECORATES: %#v", manifest.Graph.GraphRelationshipTypes)
 	}
 	if manifest.Graph.RelationshipTableName != "CodeRelation" || manifest.Graph.EmbeddingTableName != "CodeEmbedding" {
@@ -55,6 +55,9 @@ func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {
 	}
 	if policy := relationshipPolicy(manifest, "INHERITS"); policy.SemanticGroup != "normalized-heritage" {
 		t.Fatalf("INHERITS policy = %#v", policy)
+	}
+	if policy := relationshipPolicy(manifest, "HAS_RESOLUTION_GAP"); policy.SemanticGroup != "resolution-health" {
+		t.Fatalf("HAS_RESOLUTION_GAP policy = %#v", policy)
 	}
 	if len(manifest.Languages.GraphCoverage) != len(manifest.Languages.CodeLanguages) {
 		t.Fatalf("language graph coverage count mismatch: %#v", manifest.Languages.GraphCoverage)

@@ -50,6 +50,7 @@ const ICON_MAP: Record<string, string> = {
   Section: 'Table',
   Route: 'Server',
   Tool: 'Zap',
+  ResolutionGap: 'AlertTriangle',
 };
 
 describe('filter panel icon mappings', () => {

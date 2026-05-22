@@ -42,7 +42,8 @@
       "Template",
       "Section",
       "Route",
-      "Tool"
+      "Tool",
+      "ResolutionGap"
     ],
     "graphRelationshipTypes": [
       "CONTAINS",
@@ -66,7 +67,8 @@
       "HANDLES_TOOL",
       "ENTRY_POINT_OF",
       "WRAPS",
-      "QUERIES"
+      "QUERIES",
+      "HAS_RESOLUTION_GAP"
     ],
     "ladybugdbNodeTables": [
       "File",
@@ -100,7 +102,8 @@
       "Template",
       "Module",
       "Route",
-      "Tool"
+      "Tool",
+      "ResolutionGap"
     ],
     "ladybugdbRelationshipTypes": [
       "CONTAINS",
@@ -124,7 +127,8 @@
       "HANDLES_TOOL",
       "ENTRY_POINT_OF",
       "WRAPS",
-      "QUERIES"
+      "QUERIES",
+      "HAS_RESOLUTION_GAP"
     ],
     "relationshipDisplayPolicy": [
       {
@@ -258,6 +262,12 @@
         "displayLabel": "Queries",
         "semanticGroup": "first-class",
         "displayPolicy": "count and draw as an independent graph relationship"
+      },
+      {
+        "type": "HAS_RESOLUTION_GAP",
+        "displayLabel": "Has Resolution Gap",
+        "semanticGroup": "resolution-health",
+        "displayPolicy": "diagnostic relation from a real source node to a persisted ResolutionGap; do not treat as a resolved code edge"
       }
     ],
     "graphHealthDiagnosticClassifications": [

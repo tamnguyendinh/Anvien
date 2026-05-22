@@ -48,6 +48,7 @@ var NodeTables = []string{
 	"Module",
 	"Route",
 	"Tool",
+	"ResolutionGap",
 }
 
 var RelationshipTypes = []string{
@@ -73,6 +74,7 @@ var RelationshipTypes = []string{
 	"ENTRY_POINT_OF",
 	"WRAPS",
 	"QUERIES",
+	"HAS_RESOLUTION_GAP",
 }
 
 type RelationPair struct {
@@ -80,7 +82,7 @@ type RelationPair struct {
 	To   string
 }
 
-var RelationPairs = []RelationPair{
+var RelationPairs = appendResolutionGapPairs([]RelationPair{
 	{From: "File", To: "File"},
 	{From: "File", To: "Folder"},
 	{From: "File", To: "Function"},
@@ -335,6 +337,16 @@ var RelationPairs = []RelationPair{
 	{From: "CodeElement", To: "Process"},
 	{From: "Route", To: "Process"},
 	{From: "Tool", To: "Process"},
+})
+
+func appendResolutionGapPairs(pairs []RelationPair) []RelationPair {
+	for _, table := range NodeTables {
+		if table == "ResolutionGap" {
+			continue
+		}
+		pairs = append(pairs, RelationPair{From: table, To: "ResolutionGap"})
+	}
+	return pairs
 }
 
 func NodeSchemaQueries() []string {
@@ -365,6 +377,34 @@ func NodeSchema(table string) string {
 		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"description", "STRING"}})
 	case "Section":
 		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"level", "INT64"}, {"content", "STRING"}, {"description", "STRING"}})
+	case "ResolutionGap":
+		return nodeTableWithSemanticFields(table, []column{
+			{"id", "STRING"},
+			{"name", "STRING"},
+			{"gapKind", "STRING"},
+			{"sourceSiteId", "STRING"},
+			{"sourceNodeId", "STRING"},
+			{"sourceNodeLabel", "STRING"},
+			{"sourceAppLayer", "STRING"},
+			{"sourceFunctionalArea", "STRING"},
+			{"factFamily", "STRING"},
+			{"targetText", "STRING"},
+			{"targetRole", "STRING"},
+			{"sourceSiteStatus", "STRING"},
+			{"proofKind", "STRING"},
+			{"classification", "STRING"},
+			{"actionability", "STRING"},
+			{"resolutionSource", "STRING"},
+			{"source", "STRING"},
+			{"filePath", "STRING"},
+			{"fileHash", "STRING"},
+			{"startLine", "INT64"},
+			{"startCol", "INT64"},
+			{"endLine", "INT64"},
+			{"endCol", "INT64"},
+			{"count", "INT32"},
+			{"note", "STRING"},
+		})
 	default:
 		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"content", "STRING"}, {"description", "STRING"}})
 	}

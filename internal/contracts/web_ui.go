@@ -140,6 +140,7 @@ var nodeLabels = []scopeir.NodeLabel{
 	scopeir.NodeSection,
 	scopeir.NodeRoute,
 	scopeir.NodeTool,
+	scopeir.NodeResolutionGap,
 }
 
 var graphRelationshipTypes = []graph.RelationshipType{
@@ -165,6 +166,7 @@ var graphRelationshipTypes = []graph.RelationshipType{
 	graph.RelEntryPointOf,
 	graph.RelWraps,
 	graph.RelQueries,
+	graph.RelHasResolutionGap,
 }
 
 var codeLanguages = []LanguageContract{
@@ -582,6 +584,10 @@ func relationshipDisplayPolicies(types []graph.RelationshipType) []RelationshipD
 			policy.SemanticGroup = "normalized-heritage"
 			policy.DisplayPolicy = "group with matching EXTENDS or IMPLEMENTS source-target pairs; count and draw only standalone INHERITS edges as independent relationships"
 		}
+		if relType == graph.RelHasResolutionGap {
+			policy.SemanticGroup = "resolution-health"
+			policy.DisplayPolicy = "diagnostic relation from a real source node to a persisted ResolutionGap; do not treat as a resolved code edge"
+		}
 		out = append(out, policy)
 	}
 	return out
@@ -609,6 +615,8 @@ func displayLabelForRelationship(relType graph.RelationshipType) string {
 		return "Handles Tool"
 	case graph.RelEntryPointOf:
 		return "Entry Point Of"
+	case graph.RelHasResolutionGap:
+		return "Has Resolution Gap"
 	default:
 		return titleWords(string(relType))
 	}

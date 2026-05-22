@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
 )
 
@@ -132,6 +133,96 @@ func TestApplyUsesMixedForRelationshipBackedMultiLayerNodes(t *testing.T) {
 	}
 	if got := node.Properties[FunctionalAreaProperty]; got != string(FunctionalAreaMixed) {
 		t.Fatalf("community functional area = %v, want %s", got, FunctionalAreaMixed)
+	}
+}
+
+func TestApplyPersistsSourceBackedResolutionGaps(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{
+		ID:    "Function:resolve",
+		Label: scopeir.NodeFunction,
+		Properties: graph.NodeProperties{
+			"name":     "resolve",
+			"filePath": "internal/resolution/resolve.go",
+			graphhealth.DiagnosticPropertyKey: []graphhealth.Diagnostic{
+				{
+					Kind:             graphhealth.DiagnosticUnresolvedReference,
+					FactFamily:       "call",
+					SourceNodeID:     "Function:resolve",
+					TargetText:       "stop",
+					TargetRole:       "callable",
+					SourceSiteID:     "SourceSite:resolve.go#call#stop#10#4#10#10",
+					SourceSiteStatus: "unresolved_local_binding",
+					ProofKind:        "none",
+					Classification:   graphhealth.DiagnosticClassificationInRepoUnresolved,
+					Actionability:    graphhealth.DiagnosticActionabilityAnalyzerGap,
+					ResolutionSource: "scope-resolution",
+					FilePath:         "internal/resolution/resolve.go",
+					StartLine:        10,
+					StartCol:         4,
+					EndLine:          10,
+					EndCol:           10,
+					Count:            2,
+					Note:             "bare call has no binding proof",
+				},
+			},
+		},
+	})
+
+	result, err := Apply(g)
+	if err != nil {
+		t.Fatalf("Apply() error = %v", err)
+	}
+	if result.Metrics.ResolutionGapInputs != 1 ||
+		result.Metrics.ResolutionGapNodes != 1 ||
+		result.Metrics.ResolutionGapRelationships != 1 {
+		t.Fatalf("resolution gap metrics = %#v", result.Metrics)
+	}
+	source, ok := g.GetNode("Function:resolve")
+	if !ok {
+		t.Fatal("missing source node")
+	}
+	if got := source.Properties[AppLayerProperty]; got != string(AppLayerBackend) {
+		t.Fatalf("source app layer = %v, want %s", got, AppLayerBackend)
+	}
+	gapID := graphhealth.ResolutionGapNodeID("SourceSite:resolve.go#call#stop#10#4#10#10")
+	gapNode, ok := g.GetNode(gapID)
+	if !ok {
+		t.Fatalf("missing persisted resolution gap %q", gapID)
+	}
+	if gapNode.Label != scopeir.NodeResolutionGap ||
+		gapNode.Properties["gapKind"] != graphhealth.ResolutionGapKindUnresolvedCall ||
+		gapNode.Properties["sourceNodeId"] != "Function:resolve" ||
+		gapNode.Properties["targetText"] != "stop" ||
+		gapNode.Properties["sourceSiteStatus"] != "unresolved_local_binding" ||
+		gapNode.Properties["classification"] != graphhealth.DiagnosticClassificationInRepoUnresolved ||
+		gapNode.Properties["actionability"] != graphhealth.DiagnosticActionabilityAnalyzerGap ||
+		gapNode.Properties[AppLayerProperty] != string(AppLayerBackend) ||
+		gapNode.Properties[FunctionalAreaProperty] != string(FunctionalAreaResolution) ||
+		gapNode.Properties["count"] != 2 {
+		t.Fatalf("persisted resolution gap lost metadata: %#v", gapNode)
+	}
+	foundGapRelationship := false
+	for _, relationship := range g.Relationships {
+		if relationship.Type == graph.RelHasResolutionGap {
+			foundGapRelationship = true
+			if relationship.SourceID != "Function:resolve" ||
+				relationship.TargetID != gapID ||
+				relationship.SourceSiteID != "SourceSite:resolve.go#call#stop#10#4#10#10" ||
+				relationship.SourceSiteCount != 2 ||
+				relationship.TargetText != "stop" {
+				t.Fatalf("gap relationship lost source-site evidence: %#v", relationship)
+			}
+		}
+		if relationship.Type == graph.RelCalls && relationship.TargetText == "stop" {
+			t.Fatalf("unresolved call was incorrectly emitted as CALLS: %#v", relationship)
+		}
+	}
+	if !foundGapRelationship {
+		t.Fatal("missing HAS_RESOLUTION_GAP relationship")
+	}
+	if _, ok := g.GetNode("Function:stop"); ok {
+		t.Fatal("unresolved target was incorrectly synthesized as an in-repo Function node")
 	}
 }
 

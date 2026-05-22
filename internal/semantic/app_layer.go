@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
 )
 
@@ -77,6 +78,9 @@ type Metrics struct {
 	FunctionalNodesClassified      int            `json:"functionalNodesClassified"`
 	FunctionalNodesUnknown         int            `json:"functionalNodesUnknown"`
 	FunctionalAreaCounts           map[string]int `json:"functionalAreaCounts,omitempty"`
+	ResolutionGapInputs            int            `json:"resolutionGapInputs"`
+	ResolutionGapNodes             int            `json:"resolutionGapNodes"`
+	ResolutionGapRelationships     int            `json:"resolutionGapRelationships"`
 }
 
 func AppLayerStrings() []string {
@@ -153,6 +157,13 @@ func Apply(g *graph.Graph) (Result, error) {
 		setFunctionalArea(node, classification)
 		nodeAreas[nodeID] = classification.Area
 	}
+
+	gapMetrics := persistResolutionGaps(g, nodeLayers, nodeAreas)
+	result.Metrics.ResolutionGapInputs = gapMetrics.Inputs
+	result.Metrics.ResolutionGapNodes = gapMetrics.Nodes
+	result.Metrics.ResolutionGapRelationships = gapMetrics.Relationships
+	result.Metrics.NodesVisited += gapMetrics.Nodes
+	result.Metrics.NodesWithFilePath += gapMetrics.NodesWithFilePath
 	result.Metrics.RelationshipsScanned = len(g.Relationships)
 
 	for _, layer := range nodeLayers {
@@ -173,6 +184,68 @@ func Apply(g *graph.Graph) (Result, error) {
 	}
 
 	return result, nil
+}
+
+type resolutionGapPersistMetrics struct {
+	Inputs            int
+	Nodes             int
+	Relationships     int
+	NodesWithFilePath int
+}
+
+func persistResolutionGaps(g *graph.Graph, nodeLayers map[string]AppLayer, nodeAreas map[string]FunctionalArea) resolutionGapPersistMetrics {
+	var metrics resolutionGapPersistMetrics
+	inputs := graphhealth.SourceBackedResolutionGapInputs(g)
+	metrics.Inputs = len(inputs)
+	for _, input := range inputs {
+		if strings.TrimSpace(input.SourceNodeID) == "" {
+			continue
+		}
+		if _, ok := g.GetNode(input.SourceNodeID); !ok {
+			continue
+		}
+		if layer := nodeLayers[input.SourceNodeID]; layer != "" {
+			input.SourceAppLayer = string(layer)
+		}
+		if area := nodeAreas[input.SourceNodeID]; area != "" {
+			input.SourceFunctionalArea = string(area)
+		}
+		gapNode := input.GraphNode()
+		_, existingNode := g.GetNode(gapNode.ID)
+		g.AddNode(gapNode)
+		if !existingNode {
+			metrics.Nodes++
+			if stringProperty(gapNode.Properties, "filePath") != "" {
+				metrics.NodesWithFilePath++
+			}
+		}
+		nodeLayers[gapNode.ID] = appLayerFromString(input.SourceAppLayer)
+		nodeAreas[gapNode.ID] = functionalAreaFromString(input.SourceFunctionalArea)
+
+		gapRelationship := input.GraphRelationship()
+		_, existingRelationship := g.GetRelationship(gapRelationship.ID)
+		g.AddRelationship(gapRelationship)
+		if !existingRelationship {
+			metrics.Relationships++
+		}
+	}
+	return metrics
+}
+
+func appLayerFromString(value string) AppLayer {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return AppLayerUnknown
+	}
+	return AppLayer(value)
+}
+
+func functionalAreaFromString(value string) FunctionalArea {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return FunctionalAreaUnknown
+	}
+	return FunctionalArea(value)
 }
 
 func ClassifyAppLayer(filePath string) Classification {
