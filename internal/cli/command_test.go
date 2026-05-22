@@ -131,6 +131,50 @@ func TestResolutionInventoryCommandOutputsJSON(t *testing.T) {
 	}
 	g.AddNode(gapInput.GraphNode())
 	g.AddRelationship(gapInput.GraphRelationship())
+	for _, gapInput := range []graphhealth.ResolutionGapInput{
+		{
+			SourceSiteID:         "site:builtin",
+			SourceNodeID:         "Function:source",
+			SourceAppLayer:       "backend",
+			SourceFunctionalArea: "resolution",
+			FactFamily:           "call",
+			TargetText:           "len",
+			TargetRole:           "callable",
+			SourceSiteStatus:     "unresolved_external",
+			Classification:       graphhealth.DiagnosticClassificationBuiltin,
+			Actionability:        graphhealth.DiagnosticActionabilityNonActionable,
+			Count:                2,
+		},
+		{
+			SourceSiteID:         "site:stdlib",
+			SourceNodeID:         "Function:source",
+			SourceAppLayer:       "backend",
+			SourceFunctionalArea: "resolution",
+			FactFamily:           "call",
+			TargetText:           "strings.TrimSpace",
+			TargetRole:           "callable",
+			SourceSiteStatus:     "unresolved_external",
+			Classification:       graphhealth.DiagnosticClassificationStandardLibrary,
+			Actionability:        graphhealth.DiagnosticActionabilityNonActionable,
+			Count:                4,
+		},
+		{
+			SourceSiteID:         "site:test-framework",
+			SourceNodeID:         "Function:source",
+			SourceAppLayer:       "backend_test",
+			SourceFunctionalArea: "resolution",
+			FactFamily:           "call",
+			TargetText:           "t.Fatalf",
+			TargetRole:           "callable",
+			SourceSiteStatus:     "unresolved_external",
+			Classification:       graphhealth.DiagnosticClassificationTestFramework,
+			Actionability:        graphhealth.DiagnosticActionabilityNonActionable,
+			Count:                5,
+		},
+	} {
+		g.AddNode(gapInput.GraphNode())
+		g.AddRelationship(gapInput.GraphRelationship())
+	}
 	raw, err := json.MarshalIndent(g, "", "  ")
 	if err != nil {
 		t.Fatalf("marshal graph fixture: %v", err)
@@ -151,17 +195,32 @@ func TestResolutionInventoryCommandOutputsJSON(t *testing.T) {
 		t.Fatalf("resolution-inventory output is not JSON: %v\n%s", err, out)
 	}
 	for _, want := range []string{
-		`"resolutionGapNodeCount": 1`,
-		`"hasResolutionGapRelationshipCount": 1`,
-		`"resolutionGapCount": 3`,
+		`"resolutionGapNodeCount": 4`,
+		`"hasResolutionGapRelationshipCount": 4`,
+		`"resolutionGapCount": 14`,
 		`"resolvedReferenceCount": 3`,
 		`"in_repo_analyzer_gap": 3`,
-		`"unresolved_call_target": 3`,
+		`"unresolved_non_actionable": 11`,
+		`"builtin": 2`,
+		`"standard_library": 4`,
+		`"test_framework": 5`,
+		`"unresolved_call_target": 14`,
 		`"resolutionGapTopologyStatusCounts"`,
 	} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("resolution-inventory output missing %q:\n%s", want, out)
 		}
+	}
+
+	summaryOut, summaryErrOut, summaryErr := executeForTest(t, "resolution-inventory", "--graph", graphPath, "--out", filepath.Join(dir, "inventory.json"))
+	if summaryErr != nil {
+		t.Fatalf("resolution-inventory summary returned error: %v\nstdout:\n%s\nstderr:\n%s", summaryErr, summaryOut, summaryErrOut)
+	}
+	if summaryErrOut != "" {
+		t.Fatalf("resolution-inventory summary wrote stderr: %q", summaryErrOut)
+	}
+	if want := "resolutionHealth.unresolvedNonActionableBreakdown=builtin:2,standard_library:4,test_framework:5"; !strings.Contains(summaryOut, want) {
+		t.Fatalf("resolution-inventory summary missing %q:\n%s", want, summaryOut)
 	}
 }
 

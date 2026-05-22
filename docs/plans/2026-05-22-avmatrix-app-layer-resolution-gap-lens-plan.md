@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: implemented; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 complete; Phase 8 complete
+Status: implemented through Phase 9; non-actionable ResolutionGap subgroup visibility complete
 
 Source discussion:
 
@@ -409,3 +409,21 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 - [x] [P8-I] Run AVmatrix detect-changes according to repository rules before implementation commits and record the affected symbols/flows in evidence, with the doc-only commit exception handled by the repository rules. All implementation slices recorded pre-commit detect-changes evidence; the final closure changes are docs-only, so no extra AVmatrix gate is required solely for the final doc commit.
 
 - [x] [P8-J] Update this plan, the evidence ledger, and the benchmark ledger to implemented status only after all required validation passes or after any failed validation is recorded with a clear follow-up plan. Full validation passed: full build, backend tests, contract generation/check, Web unit tests, Web e2e tests, query-health, resolution inventory, semantic command examples, and detect-changes/doc-only closure evidence are recorded in the companion ledgers.
+
+## Phase 9 - Non-Actionable ResolutionGap Subgroups And Diagnostic Shape
+
+- [x] [P9-A] Update the plan/evidence/benchmark records for the `unresolved_non_actionable` follow-up. The work records that `unresolved_non_actionable` is an actionability total, currently made from `builtin`, `standard_library`, and `test_framework` ResolutionGap classifications. The graph and UI must expose those three categories separately so a reader can see which kind of non-actionable reference is present instead of reading only the combined `25833` total.
+
+- [x] [P9-B] Update the CLI `resolution-inventory` summary output so it prints a dedicated non-actionable breakdown line with exact `builtin`, `standard_library`, and `test_framework` counts from persisted ResolutionGap classification data. The summary now prints `resolutionHealth.unresolvedNonActionableBreakdown=builtin:<n>,standard_library:<n>,test_framework:<n>` while keeping the existing total actionability/classification maps and without changing graph semantics or inventing target nodes.
+
+- [x] [P9-C] Update the Web Resolution Health lens rows so `builtin`, `standard_library`, and `test_framework` non-actionable ResolutionGap categories appear as separate visible rows/groups. The row implementation reads persisted gap classification fields and replaces the collapsed `Builtin/Test/Stdlib` row with `builtin-non-actionable`, `standard-library-non-actionable`, and `test-framework-non-actionable`.
+
+- [x] [P9-D] Update Web graph island assignment so non-actionable ResolutionGap nodes are visually grouped by their persisted classification: `ResolutionGap:builtin`, `ResolutionGap:standard_library`, and `ResolutionGap:test_framework`. Other ResolutionGap entities keep their existing kind/fact-family grouping. This groups diagnostic entities only; it does not create fake resolved in-repo target nodes or fake semantic edges.
+
+- [x] [P9-E] Update Web graph node rendering metadata so persisted diagnostic/gap nodes are visually distinct from real code symbols: `ResolutionGap` nodes use a square renderer and a fixed rendered size of `1`. Hover/highlight/selection code still uses the existing reducer path, but the baseline graph node remains a small square so it is recognizable as a diagnostic entity rather than a normal symbol node.
+
+- [x] [P9-F] Add or update backend CLI and Web unit tests for the new breakdown and shape behavior. Focused tests cover the CLI breakdown line, the three Web lens row IDs/counts, ResolutionGap island keys for the three classifications, and baseline `ResolutionGap` node attributes showing square rendering with size `1`.
+
+- [x] [P9-G] Run the full build gate before tests, then run backend/CLI focused tests, contract checks if generated surfaces drift, Web unit tests, and a browser/e2e validation path for the Web UI behavior. Full build passed before tests; focused CLI and Web tests passed; backend/cmd tests passed; contract check passed; full Web unit tests passed `45` files / `369` tests; targeted browser/e2e validation passed for Backend/API/Frontend rings and Graph Health UI. Full e2e and full `server-connect.spec.ts` timed out during validation and are recorded as not passed rather than hidden.
+
+- [x] [P9-H] Run fresh `avmatrix analyze --force` and `detect-changes` before the implementation commit, record the expected changed scope, update this plan and companion ledgers to complete only after validation passes, commit the slice, and leave no open Phase 9 checklist item. Final analyze passed with `nodes=85732` and `relationships=117678`; final inventory recorded `unresolvedNonActionable=25841` split into `builtin=10725`, `standard_library=7677`, and `test_framework=7439`; pre-commit detect-changes after staging reported `changed_count=163`, `changed_files=13`, `affected_count=4`, and `risk_level=medium`.

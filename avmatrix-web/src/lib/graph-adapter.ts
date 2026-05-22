@@ -29,6 +29,7 @@ export interface SigmaNodeAttributes extends GraphHealthFilterable, SemanticFilt
   x: number;
   y: number;
   size: number;
+  type?: string;
   color: string;
   label: string;
   nodeType: string;
@@ -197,6 +198,14 @@ const getAppLayerRingKey = (attributes: SigmaNodeAttributes): string => {
 const getNodeIslandKey = (attributes: SigmaNodeAttributes): string => {
   if (attributes.nodeType !== "ResolutionGap") {
     return attributes.nodeType;
+  }
+
+  if (
+    attributes.classification === "builtin" ||
+    attributes.classification === "standard_library" ||
+    attributes.classification === "test_framework"
+  ) {
+    return ["ResolutionGap", attributes.classification].join(":");
   }
 
   const gapKind = stableString(attributes.gapKind);
@@ -587,6 +596,7 @@ export const knowledgeGraphToGraphology = (
     const displayNodeType = getNodeDisplayLabel(node);
     const baseSize = getNodeSize(displayNodeType);
     const scaledSize = getScaledNodeSize(baseSize, nodeCount, displayNodeType);
+    const isResolutionGap = node.label === "ResolutionGap";
     const communityIndex = communityMemberships?.get(node.id);
     const hasCommunity = communityIndex !== undefined;
     const nodeColor = getNodeColor(displayNodeType);
@@ -597,7 +607,8 @@ export const knowledgeGraphToGraphology = (
       ...semantic,
       x: 0,
       y: 0,
-      size: scaledSize,
+      size: isResolutionGap ? 1 : scaledSize,
+      type: isResolutionGap ? "square" : undefined,
       color: nodeColor,
       label: node.properties.name,
       nodeType: displayNodeType,

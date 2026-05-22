@@ -102,7 +102,7 @@ export const NODE_SIZES: Record<DisplayNodeLabel, number> = {
   Template: 3, // Like Type
   Route: 5, // Like Enum
   Tool: 5, // Like Enum
-  ResolutionGap: 3, // Diagnostic entity, capped small so it does not dominate the graph
+  ResolutionGap: 1, // Diagnostic entity, visually distinct from real code symbols
 };
 
 export const getNodeColor = (label: string): string =>

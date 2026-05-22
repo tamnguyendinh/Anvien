@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: implemented; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 complete; Phase 8 complete
+Status: implemented through Phase 9; non-actionable ResolutionGap subgroup visibility complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -789,3 +789,62 @@ Record after the analyze semantic enrichment phase is introduced and after each 
 | AST reparses introduced | pending | 0 | 0 | pending | 0 | 0 | 0 | 0 | 0 |
 | Raw call/access source-site count | pending | pending | pending | pending | call 31220, access 18245 persisted gap nodes | call 31307, access 18383 persisted gap nodes | call 31393, access 18418 persisted gap nodes | call 31590, access 18541 persisted gap nodes | call 32900, access 19348 persisted gap nodes |
 | Raw unresolved fact count | pending | pending | pending | pending | 58083 persisted sourceSiteID-backed gaps | 58350 persisted sourceSiteID-backed gaps | 58495 persisted sourceSiteID-backed gaps | 58879 persisted sourceSiteID-backed gaps | 61519 persisted sourceSiteID-backed gaps |
+
+## B13 - Phase 9 Non-Actionable Breakdown And Diagnostic Shape
+
+Status: complete.
+
+Starting graph refresh:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-23-p9-non-actionable-breakdown-start-analyze.json --benchmark-label p9-non-actionable-breakdown-start
+```
+
+| Metric | Value |
+| --- | ---: |
+| Files scanned | 755 |
+| Files parsed | 565 |
+| Unsupported files | 190 |
+| Failed files | 0 |
+| Graph nodes | 85604 |
+| Graph relationships | 117540 |
+
+Phase 8 non-actionable baseline to preserve and clarify:
+
+| Metric | Value |
+| --- | ---: |
+| `unresolvedNonActionable` total | 25833 |
+| `builtin` classification | 10723 |
+| `standard_library` classification | 7674 |
+| `test_framework` classification | 7436 |
+
+Final graph refresh after implementation:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-23-p9-non-actionable-breakdown-final-analyze.json --benchmark-label p9-non-actionable-breakdown-final
+```
+
+| Metric | Value |
+| --- | ---: |
+| Files scanned | 756 |
+| Files parsed | 566 |
+| Unsupported files | 190 |
+| Failed files | 0 |
+| Graph nodes | 85732 |
+| Graph relationships | 117678 |
+
+Validation and final metrics:
+
+| Metric | Result |
+| --- | --- |
+| CLI breakdown output | focused fixture expects `resolutionHealth.unresolvedNonActionableBreakdown=builtin:2,standard_library:4,test_framework:5` |
+| Web lens row count delta | `getResolutionLensRows` changed from `11` rows to `13` rows by replacing one collapsed non-actionable row with three classification rows |
+| ResolutionGap square-size unit coverage | `graph-adapter.edge-geometry.test.ts` asserts `nodeType=ResolutionGap`, `type=square`, and `size=1` |
+| Focused test output | `go test .\internal\cli -run "TestResolutionInventoryCommandOutputsJSON" -count=1` passed; Web focused tests passed `3` files / `33` tests |
+| Full build output | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` passed before tests |
+| Backend/cmd validation output | `go test .\internal\... .\cmd\...` passed |
+| Contract validation output | `go run .\cmd\generate-web-contracts --check` passed with no generated contract drift |
+| Full Web unit output | `npm --prefix .\avmatrix-web run test -- --run` passed `45` files / `369` tests |
+| Web/browser validation output | focused browser/e2e passed: `server-connect.spec.ts -g "reports Backend API Frontend rings"` passed `1` test; `graph-health-ui.spec.ts` passed `4` tests. Full e2e and full `server-connect.spec.ts` timed out in validation and are not recorded as passed. |
+| Final resolution inventory | `nodes=85732`, `relationships=117678`, `gapNodes=61625`, `gapRelationships=61625`, `gapOccurrences=62411`, `resolvedReferences=28419`, `unresolvedNonActionable=25841`, breakdown `builtin=10725`, `standard_library=7677`, `test_framework=7439` |
+| Pre-commit detect-changes | after staging the implementation slice, `detect-changes --repo AVmatrix --scope all` reported `changed_count=163`, `changed_files=13`, `affected_count=4`, `risk_level=medium`, affected app layer `frontend=4`, changed app layers `backend=10`, `backend_test=17`, `docs=10`, `frontend=53`, `frontend_test=73` |

@@ -350,6 +350,9 @@ describe("FileTreePanel dashboard completeness", () => {
     expect(screen.getByTitle(/API source gaps \(\d+\)/)).toBeInTheDocument();
     expect(screen.getByTitle(/^missingHandler \(\d+\)$/)).toBeInTheDocument();
     expect(screen.getByTitle(/API unresolved handlers\/contracts \(\d+\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/Builtin non-actionable \(\d+\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/Standard library non-actionable \(\d+\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/Test framework non-actionable \(\d+\)/)).toBeInTheDocument();
 
     await userEvent.click(screen.getByTitle(/Backend \(\d+\)/));
     expect(toggleSemanticAppLayer).toHaveBeenLastCalledWith("backend");

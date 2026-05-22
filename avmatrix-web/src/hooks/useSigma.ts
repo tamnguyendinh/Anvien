@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import Sigma from 'sigma';
 import Graph from 'graphology';
+import { DEFAULT_NODE_PROGRAM_CLASSES } from 'sigma/settings';
 import {
   SigmaNodeAttributes,
   SigmaEdgeAttributes,
@@ -13,6 +14,7 @@ import { getGraphEdgeVisibilityMode } from '../lib/graph-edge-visibility-mode';
 import { getSelectedContextEdgeSize } from '../lib/graph-edge-render-style';
 import { buildSelectedGraphContext } from '../lib/selected-graph-context';
 import { recordManualLayoutOptimizerInvocation } from '../lib/runtime-diagnostics';
+import { NodeSquareProgram } from '../lib/sigma-node-square-program';
 // Helper: Parse hex color to RGB
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -246,6 +248,14 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       maxCameraRatio: 50,
       hideEdgesOnMove: true,
       zIndex: true,
+      nodeProgramClasses: {
+        ...DEFAULT_NODE_PROGRAM_CLASSES,
+        square: NodeSquareProgram,
+      },
+      nodeHoverProgramClasses: {
+        ...DEFAULT_NODE_PROGRAM_CLASSES,
+        square: NodeSquareProgram,
+      },
 
       nodeReducer: (node, data) => {
         const res = { ...data };

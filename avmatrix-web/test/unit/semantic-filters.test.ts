@@ -145,6 +145,48 @@ describe("semantic filters", () => {
         },
         "ResolutionGap",
       ),
+      makeNode(
+        "builtin-gap",
+        {
+          appLayer: "backend",
+          sourceAppLayer: "backend",
+          functionalArea: "resolution",
+          factFamily: "call",
+          targetRole: "callable",
+          classification: "builtin",
+          actionability: "non_actionable",
+          targetText: "len",
+        },
+        "ResolutionGap",
+      ),
+      makeNode(
+        "stdlib-gap",
+        {
+          appLayer: "backend",
+          sourceAppLayer: "backend",
+          functionalArea: "resolution",
+          factFamily: "call",
+          targetRole: "callable",
+          classification: "standard_library",
+          actionability: "non_actionable",
+          targetText: "strings.TrimSpace",
+        },
+        "ResolutionGap",
+      ),
+      makeNode(
+        "test-gap",
+        {
+          appLayer: "backend_test",
+          sourceAppLayer: "backend_test",
+          functionalArea: "providers",
+          factFamily: "call",
+          targetRole: "callable",
+          classification: "test_framework",
+          actionability: "non_actionable",
+          targetText: "t.Fatalf",
+        },
+        "ResolutionGap",
+      ),
     ]);
 
     expect(rows.map((row) => row.id)).toEqual([
@@ -153,7 +195,9 @@ describe("semantic filters", () => {
       "frontend-unresolved-type-refs",
       "shared-contract-analyzer-gaps",
       "external-unresolved-symbols",
-      "builtin-test-stdlib-non-actionable",
+      "builtin-non-actionable",
+      "standard-library-non-actionable",
+      "test-framework-non-actionable",
       "in-repo-analyzer-gaps",
       "resolution-gaps-by-functional-area",
       "top-app-layers-by-analyzer-gap",
@@ -163,5 +207,8 @@ describe("semantic filters", () => {
     expect(rows.find((row) => row.id === "api-unresolved-handlers-contracts")?.count).toBe(1);
     expect(rows.find((row) => row.id === "frontend-unresolved-type-refs")?.count).toBe(1);
     expect(rows.find((row) => row.id === "in-repo-analyzer-gaps")?.count).toBe(2);
+    expect(rows.find((row) => row.id === "builtin-non-actionable")?.count).toBe(1);
+    expect(rows.find((row) => row.id === "standard-library-non-actionable")?.count).toBe(1);
+    expect(rows.find((row) => row.id === "test-framework-non-actionable")?.count).toBe(1);
   });
 });

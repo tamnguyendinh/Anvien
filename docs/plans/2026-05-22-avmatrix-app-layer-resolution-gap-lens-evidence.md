@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: implemented; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 complete; Phase 8 complete
+Status: implemented through Phase 9; non-actionable ResolutionGap subgroup visibility complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -1639,3 +1639,50 @@ Required evidence:
 - AVmatrix detect-changes output for implementation commits;
 - final commit hashes;
 - residual risks and follow-up plan if any validation fails.
+
+## E14 - Phase 9 Non-Actionable Subgroup Visibility
+
+Status: complete.
+
+User-facing issue:
+
+- The final Phase 8 inventory reported `unresolvedNonActionable=25833`, but that total is too coarse when reading graph health.
+- The total comes from three persisted ResolutionGap classifications: `builtin=10723`, `standard_library=7674`, and `test_framework=7436`.
+- Those categories should be visible as three separate groups in CLI/Web output so a reader can tell whether a non-actionable unresolved reference is a language builtin, standard library reference, or test-framework reference.
+- Because persisted ResolutionGap entities are diagnostic graph entities, not proven in-repo code symbols, the Web graph must render them differently from real symbol nodes: small square, fixed baseline size `1`.
+
+Fresh graph refresh before implementation:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-23-p9-non-actionable-breakdown-start-analyze.json --benchmark-label p9-non-actionable-breakdown-start
+```
+
+Result:
+
+```text
+files: scanned=755 parsed=565 unsupported=190 failed=0
+graph: nodes=85604 relationships=117540
+```
+
+AVmatrix query/impact evidence:
+
+| Surface | Evidence |
+| --- | --- |
+| CLI inventory | `query "resolution inventory command classification counts non actionable"` found `internal/cli/resolution_inventory_command.go:newResolutionInventoryCommand`; impact risk `CRITICAL` because it is registered from the root CLI command and affects `Main -> ...` flows. |
+| Web lens rows | `query "resolution inventory non actionable builtin standard library test framework web graph shape size square"` found `avmatrix-web/src/lib/semantic-filters.ts`, `FileTreePanel`, and graph-health filter surfaces. `getResolutionLensRows` impact risk `LOW`. |
+| Web graph adapter | `query "ResolutionGap graph adapter node rendering shape size semantic filters"` found `knowledgeGraphToGraphology`, `capRenderedNodeSize`, and `useSigma`; impact risk is `CRITICAL` for `knowledgeGraphToGraphology` and `useSigma` because they are central graph rendering paths. |
+
+Implementation evidence to fill after code:
+
+| Item | Result |
+| --- | --- |
+| CLI non-actionable breakdown line | implemented in `internal/cli/resolution_inventory_command.go`; summary output now includes `resolutionHealth.unresolvedNonActionableBreakdown=builtin:<n>,standard_library:<n>,test_framework:<n>` from persisted classification counts. |
+| Web lens rows for builtin / standard library / test framework | implemented in `avmatrix-web/src/lib/semantic-filters.ts`; the collapsed `Builtin/Test/Stdlib non-actionable` row is replaced by separate `builtin-non-actionable`, `standard-library-non-actionable`, and `test-framework-non-actionable` rows. |
+| ResolutionGap classification island keys | implemented in `avmatrix-web/src/lib/graph-adapter.ts`; non-actionable ResolutionGap nodes with `builtin`, `standard_library`, or `test_framework` classification use `ResolutionGap:<classification>` island keys. |
+| ResolutionGap square renderer and baseline size `1` | implemented with `NodeSquareProgram` in `avmatrix-web/src/lib/sigma-node-square-program.ts`, registered from `useSigma`, and assigned by `knowledgeGraphToGraphology` for `ResolutionGap` nodes with baseline size `1`. |
+| Focused backend/Web tests | passed: `go test .\internal\cli -run "TestResolutionInventoryCommandOutputsJSON" -count=1`; `npm --prefix .\avmatrix-web run test -- --run test/unit/semantic-filters.test.ts test/unit/graph-adapter.edge-geometry.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx` passed `3` files and `33` tests. |
+| Full build and validation | passed: `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; `go test .\internal\... .\cmd\...`; `go run .\cmd\generate-web-contracts --check`; `npm --prefix .\avmatrix-web run test -- --run` passed `45` files and `369` tests. |
+| Browser/e2e validation | passed targeted browser coverage: `npm --prefix .\avmatrix-web run test:e2e -- e2e/server-connect.spec.ts -g "reports Backend API Frontend rings"` passed `1` test, and `npm --prefix .\avmatrix-web run test:e2e -- e2e/graph-health-ui.spec.ts` passed `4` tests. Full e2e and full `server-connect.spec.ts` timed out during validation and are not recorded as passed. |
+| Final analyze | passed: `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-23-p9-non-actionable-breakdown-final-analyze.json --benchmark-label p9-non-actionable-breakdown-final`; result `files scanned=756`, `parsed=566`, `unsupported=190`, `failed=0`, `nodes=85732`, `relationships=117678`. |
+| Final resolution inventory | passed: `.\avmatrix-launcher\server-bundle\avmatrix.exe resolution-inventory --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-23-p9-resolution-inventory-final.json`; result `unresolvedNonActionable=25841`, breakdown `builtin=10725`, `standard_library=7677`, `test_framework=7439`. |
+| Detect-changes and commit | pre-commit `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` passed after staging the implementation slice: `changed_count=163`, `changed_files=13`, `affected_count=4`, `risk_level=medium`. Affected scope is the expected frontend graph rendering path through `useSigma`; changed scope covers backend CLI output, Web lens/layout/filter code, tests, and plan ledgers. |

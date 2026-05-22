@@ -661,6 +661,56 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     expect(getCircularGap(callGaps!, accessGaps!)).toBeGreaterThan(100);
   });
 
+  it("separates non-actionable ResolutionGap classifications as diagnostic square islands", () => {
+    const graph = createKnowledgeGraph();
+    const gapInputs = [
+      { classification: "builtin", targetText: "len" },
+      { classification: "standard_library", targetText: "strings.TrimSpace" },
+      { classification: "test_framework", targetText: "t.Fatalf" },
+    ];
+
+    for (const [offset, input] of gapInputs.entries()) {
+      for (let index = 0; index < 9; index++) {
+        graph.addNode(
+          withAppLayer(
+            createTypedNode(
+              "ResolutionGap",
+              offset * 100 + index,
+              `backend/gap-${input.classification}-${index}.go`,
+            ) as any,
+            "backend",
+            {
+              actionability: "non_actionable",
+              classification: input.classification,
+              factFamily: "call",
+              gapKind: "unresolved_call",
+              targetRole: "callable",
+              targetText: input.targetText,
+            },
+          ),
+        );
+      }
+    }
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const islands = getGeometryByRingAndIsland(sigmaGraph);
+    const builtin = islands.get("backend:ResolutionGap:builtin");
+    const standardLibrary = islands.get("backend:ResolutionGap:standard_library");
+    const testFramework = islands.get("backend:ResolutionGap:test_framework");
+
+    expect(builtin).toBeDefined();
+    expect(standardLibrary).toBeDefined();
+    expect(testFramework).toBeDefined();
+    expect(getCircularGap(builtin!, standardLibrary!)).toBeGreaterThan(100);
+    expect(getCircularGap(standardLibrary!, testFramework!)).toBeGreaterThan(100);
+
+    const [firstGapNodeId] = sigmaGraph.nodes();
+    const firstGap = sigmaGraph.getNodeAttributes(firstGapNodeId);
+    expect(firstGap.nodeType).toBe("ResolutionGap");
+    expect(firstGap.type).toBe("square");
+    expect(firstGap.size).toBe(1);
+  });
+
   it("uses the node type color for every node even when community metadata exists", () => {
     const graph = createKnowledgeGraph();
     const functionA = createFunctionNode("alpha", "src/a.ts", 1);

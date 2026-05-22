@@ -435,15 +435,27 @@ export const getResolutionLensRows = (nodes: GraphNode[]): SemanticLensRow[] => 
       ),
     },
     {
-      id: "builtin-test-stdlib-non-actionable",
-      label: "Builtin/Test/Stdlib non-actionable",
+      id: "builtin-non-actionable",
+      label: "Builtin non-actionable",
       count: countMatching(
         gapNodes,
-        (value) =>
-          value.actionability === "non_actionable" ||
-          value.classification === "builtin" ||
-          value.classification === "standard_library" ||
-          value.classification === "test_framework",
+        (value) => value.classification === "builtin",
+      ),
+    },
+    {
+      id: "standard-library-non-actionable",
+      label: "Standard library non-actionable",
+      count: countMatching(
+        gapNodes,
+        (value) => value.classification === "standard_library",
+      ),
+    },
+    {
+      id: "test-framework-non-actionable",
+      label: "Test framework non-actionable",
+      count: countMatching(
+        gapNodes,
+        (value) => value.classification === "test_framework",
       ),
     },
     {
