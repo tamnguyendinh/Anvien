@@ -547,7 +547,7 @@ Record before P5 and after P5.
 
 ## B9 - Semantic Command Surface Metrics
 
-Status: in progress; `query` complete for P6-A; `context` complete for P6-B; `impact` complete for P6-C; `detect-changes` complete for P6-D.
+Status: in progress; `query` complete for P6-A; `context` complete for P6-B; `impact` complete for P6-C; `detect-changes` complete for P6-D; API MCP tools complete for P6-E.
 
 Record after P6.
 
@@ -557,6 +557,7 @@ Record after P6.
 | `context` | yes | yes | yes | yes | complete for P6-B; includes `semanticStatus`, stale semantic warning, semantic fields on symbol/ref/candidate/process rows, source-site proof metadata on relationship rows, `sourceResolutionGaps` for source-node gaps, and `resolutionGapSources` for selected gap entities |
 | `impact` | yes | yes | yes | yes | complete for P6-C; includes semanticStatus, affected App Layer/Functional Area counts, resolutionHealthRisks, semantic fields on target/impacted/process/module rows, source-site proof metadata, and non-blocking workflow warning for HIGH/CRITICAL risk |
 | `detect-changes` | yes | yes | yes | yes | complete for P6-D; includes semanticStatus, changed/affected App Layer and Functional Area counts, semantic fields on changed symbols/processes/steps, ResolutionGap change summaries, and Resolution Health impact summaries when changed rows carry gap/degraded evidence |
+| API MCP tools | yes | yes | yes | yes | complete for P6-E; route_map, shape_check, and api_impact include semanticStatus plus route, consumer, flow-detail, summary, and Resolution Health impact fields when persisted route graph data exists; current AVmatrix graph has no route nodes, so live artifacts show semanticStatus on empty/error API-tool payloads while fixture tests prove populated rows |
 | resolution inventory command | yes | yes | yes | yes | implemented in Phase 4; command exposes full Resolution Health inventory from persisted graph data |
 | query-health command | yes | yes | yes | yes | P6-A final run passed 7/7 suite cases and captures semantic fields returned by `query` |
 
@@ -664,7 +665,8 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | AVmatrix detect-changes for P6-C impact output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected high scope | affected_count 9, changed_count 127, changed_files 4, risk_level high; affected surfaces match runImpactBFSProfiled, impactItemPayload, impactAffectedProcesses, impactAffectedModules, and semantic impact summary helper output flows |
 | `detect-changes` semantic output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed | output artifact `.tmp\2026-05-22-p6d-detect-changes-semantic-output.txt` shows semanticStatus, changedAppLayers, changedFunctionalAreas, affectedAppLayers, affectedFunctionalAreas, changedStepAppLayers, resolutionGapEntity rows, resolutionGapChanges, and resolutionHealthImpact; implementation-only P6-D diff reported changed_count 156, affected_count 15, changed_files 1, risk_level high, changedGapEntities 94, and changedGapOccurrenceCount 95 |
 | AVmatrix detect-changes for P6-D detect-changes output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected high scope | after ledger updates: affected_count 15, changed_count 164, changed_files 4, risk_level high; affected surfaces match detectChangesTool, detectChangedSymbols, detectAffectedProcesses, semantic changed-symbol/process summary helpers, and plan ledgers |
-| API-specific MCP semantic output | pending | pending | pending |
+| API-specific MCP semantic output | MCP `tools/call` for `route_map`, `shape_check`, and `api_impact` against repo `AVmatrix` | passed | artifacts `.tmp\2026-05-22-p6e-route-map-semantic-output.txt`, `.tmp\2026-05-22-p6e-shape-check-semantic-output.txt`, and `.tmp\2026-05-22-p6e-api-impact-semantic-output.txt` show semanticStatus on current empty/error API-tool payloads; focused fixture test proves populated route, consumer, flowDetail, executionFlowDetails, and impactSummary semantic fields |
+| AVmatrix detect-changes for P6-E API MCP output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 29, changed_count 273, changed_files 6, risk_level critical; affected surfaces match route index building, route consumers, flow details, API impact shaping, semantic helper rows, route fixture tests, and plan ledgers |
 | AVmatrix detect-changes for implementation commits | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 24, changed_count 144, changed_files 18; affected surfaces match Functional Area semantic/schema/API/contract/export slice |
 
 ## B12 - Semantic Enrichment Flow Metrics

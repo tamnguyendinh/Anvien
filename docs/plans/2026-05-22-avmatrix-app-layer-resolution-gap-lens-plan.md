@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context/impact/detect-changes surfaces complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context/impact/detect-changes/API MCP surfaces complete
 
 Source discussion:
 
@@ -358,7 +358,7 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [x] [P6-D] Update `detect-changes` output so changed symbols and affected flows summarize App Layers, Functional Areas, ResolutionGap changes, and resolution-health impact. `detect-changes` now emits graph-level `semanticStatus`, stale semantic warnings when applicable, semantic fields on changed symbols and affected process rows, changed/affected App Layer and Functional Area count maps, ResolutionGap change summaries including gap entities, occurrence counts, target roles, classifications, actionability, and top targets, plus Resolution Health impact summaries when changed symbols or changed process steps carry gap/degraded evidence.
 
-- [ ] [P6-E] Update API-specific MCP tools such as `route_map`, `shape_check`, and `api_impact` to surface App Layer, Functional Area, and Resolution Health where the persisted graph provides those fields. If a specific API tool cannot use the new semantic layer in this plan, record the exact limitation and follow-up in evidence.
+- [x] [P6-E] Update API-specific MCP tools such as `route_map`, `shape_check`, and `api_impact` to surface App Layer, Functional Area, and Resolution Health where the persisted graph provides those fields. `route_map`, `shape_check`, and `api_impact` now emit graph-level `semanticStatus`/`semanticWarning`, route semantic fields, consumer semantic fields, flow detail semantic fields, API impact summary layer counts, and Resolution Health impact summaries when persisted route/consumer/flow graph nodes carry gap/degraded evidence. The current AVmatrix graph has no route nodes, so live MCP artifacts show semantic status on empty/error API-tool output while fixture coverage proves populated route rows preserve semantic fields.
 
 - [ ] [P6-F] Add focused CLI/MCP tests or command-output tests for query/context/impact/detect-changes and API-specific MCP semantic fields, including cases where fields are unknown, missing because the graph is stale, or unavailable because the node is outside classified surfaces.
 

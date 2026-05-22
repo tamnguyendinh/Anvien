@@ -7,6 +7,7 @@ import (
 )
 
 type mcpRouteAnalysisRecord struct {
+	mcpSemanticFields
 	ID           string
 	Name         string
 	Handler      string
@@ -15,9 +16,11 @@ type mcpRouteAnalysisRecord struct {
 	Middleware   []string
 	Consumers    []mcpRouteConsumer
 	Flows        []string
+	FlowDetails  []mcpRouteFlow
 }
 
 type mcpShapeConsumer struct {
+	mcpSemanticFields
 	Name               string   `json:"name"`
 	FilePath           string   `json:"filePath"`
 	AccessedKeys       []string `json:"accessedKeys,omitempty"`
@@ -28,15 +31,19 @@ type mcpShapeConsumer struct {
 }
 
 type mcpShapeRoute struct {
+	mcpSemanticFields
 	Route        string             `json:"route"`
 	Handler      string             `json:"handler"`
 	ResponseKeys []string           `json:"responseKeys,omitempty"`
 	ErrorKeys    []string           `json:"errorKeys,omitempty"`
 	Consumers    []mcpShapeConsumer `json:"consumers"`
+	Flows        []string           `json:"flows,omitempty"`
+	FlowDetails  []mcpRouteFlow     `json:"flowDetails,omitempty"`
 	Status       string             `json:"status,omitempty"`
 }
 
 type mcpAPIConsumer struct {
+	mcpSemanticFields
 	Name            string   `json:"name"`
 	File            string   `json:"file"`
 	Accesses        []string `json:"accesses"`
@@ -51,16 +58,18 @@ type mcpAPIMismatch struct {
 }
 
 type mcpAPIImpactRoute struct {
-	Route               string              `json:"route"`
-	Handler             string              `json:"handler"`
-	ResponseShape       map[string][]string `json:"responseShape"`
-	Middleware          []string            `json:"middleware"`
-	MiddlewareDetection string              `json:"middlewareDetection,omitempty"`
-	MiddlewareNote      string              `json:"middlewareNote,omitempty"`
-	Consumers           []mcpAPIConsumer    `json:"consumers"`
-	Mismatches          []mcpAPIMismatch    `json:"mismatches,omitempty"`
-	ExecutionFlows      []string            `json:"executionFlows"`
-	ImpactSummary       map[string]any      `json:"impactSummary"`
+	mcpSemanticFields
+	Route                string              `json:"route"`
+	Handler              string              `json:"handler"`
+	ResponseShape        map[string][]string `json:"responseShape"`
+	Middleware           []string            `json:"middleware"`
+	MiddlewareDetection  string              `json:"middlewareDetection,omitempty"`
+	MiddlewareNote       string              `json:"middlewareNote,omitempty"`
+	Consumers            []mcpAPIConsumer    `json:"consumers"`
+	Mismatches           []mcpAPIMismatch    `json:"mismatches,omitempty"`
+	ExecutionFlows       []string            `json:"executionFlows"`
+	ExecutionFlowDetails []mcpRouteFlow      `json:"executionFlowDetails,omitempty"`
+	ImpactSummary        map[string]any      `json:"impactSummary"`
 }
 
 func (s Server) shapeCheckTool(args map[string]any) (map[string]any, error) {
@@ -80,11 +89,14 @@ func (s Server) shapeCheckTool(args map[string]any) (map[string]any, error) {
 			continue
 		}
 		route := mcpShapeRoute{
-			Route:        record.Name,
-			Handler:      record.Handler,
-			ResponseKeys: record.ResponseKeys,
-			ErrorKeys:    record.ErrorKeys,
-			Consumers:    mcpShapeConsumers(record),
+			mcpSemanticFields: cloneMCPSemanticFields(record.mcpSemanticFields),
+			Route:             record.Name,
+			Handler:           record.Handler,
+			ResponseKeys:      record.ResponseKeys,
+			ErrorKeys:         record.ErrorKeys,
+			Consumers:         mcpShapeConsumers(record),
+			Flows:             cloneNonNilStringSlice(record.Flows),
+			FlowDetails:       cloneNonNilRouteFlows(record.FlowDetails),
 		}
 		for _, consumer := range route.Consumers {
 			if len(consumer.Mismatched) > 0 {
@@ -112,7 +124,7 @@ func (s Server) shapeCheckTool(args map[string]any) (map[string]any, error) {
 	if mismatchCount > 0 {
 		result["mismatches"] = mismatchCount
 	}
-	return result, nil
+	return addMCPRouteIndexSemanticStatus(index, result), nil
 }
 
 func (s Server) apiImpactTool(args map[string]any) (map[string]any, error) {
@@ -131,7 +143,7 @@ func (s Server) apiImpactTool(args map[string]any) (map[string]any, error) {
 		if target == "" {
 			target = fileFilter
 		}
-		return map[string]any{"error": `No routes found matching "` + target + `".`}, nil
+		return addMCPRouteIndexSemanticStatus(index, map[string]any{"error": `No routes found matching "` + target + `".`}), nil
 	}
 	handlerCounts := make(map[string]int)
 	for _, record := range records {
@@ -144,9 +156,9 @@ func (s Server) apiImpactTool(args map[string]any) (map[string]any, error) {
 		routes = append(routes, mcpAPIImpactRecord(record, handlerCounts[record.Handler]))
 	}
 	if len(routes) == 1 {
-		return structToMap(routes[0]), nil
+		return addMCPRouteIndexSemanticStatus(index, structToMap(routes[0])), nil
 	}
-	return map[string]any{"routes": routes, "total": len(routes)}, nil
+	return addMCPRouteIndexSemanticStatus(index, map[string]any{"routes": routes, "total": len(routes)}), nil
 }
 
 func mcpRouteAnalysisRecords(g *graph.Graph, routeFilter string, fileFilter string) []mcpRouteAnalysisRecord {
@@ -159,8 +171,9 @@ func mcpShapeConsumers(record mcpRouteAnalysisRecord) []mcpShapeConsumer {
 	out := make([]mcpShapeConsumer, 0, len(record.Consumers))
 	for _, consumer := range record.Consumers {
 		item := mcpShapeConsumer{
-			Name:     consumer.Name,
-			FilePath: consumer.FilePath,
+			mcpSemanticFields: cloneMCPSemanticFields(consumer.mcpSemanticFields),
+			Name:              consumer.Name,
+			FilePath:          consumer.FilePath,
 		}
 		if len(consumer.AccessedKeys) > 0 {
 			item.AccessedKeys = consumer.AccessedKeys
@@ -187,9 +200,10 @@ func mcpAPIImpactRecord(record mcpRouteAnalysisRecord, handlerRouteCount int) mc
 	mismatches := make([]mcpAPIMismatch, 0)
 	for _, consumer := range record.Consumers {
 		item := mcpAPIConsumer{
-			Name:     consumer.Name,
-			File:     consumer.FilePath,
-			Accesses: append([]string(nil), consumer.AccessedKeys...),
+			mcpSemanticFields: cloneMCPSemanticFields(consumer.mcpSemanticFields),
+			Name:              consumer.Name,
+			File:              consumer.FilePath,
+			Accesses:          append([]string(nil), consumer.AccessedKeys...),
 		}
 		if consumer.FetchCount > 1 {
 			item.AttributionNote = "This file fetches " + intString(consumer.FetchCount) + " routes - accessed keys may belong to a different route."
@@ -214,24 +228,119 @@ func mcpAPIImpactRecord(record mcpRouteAnalysisRecord, handlerRouteCount int) mc
 		"affectedFlows":   len(record.Flows),
 		"riskLevel":       riskLevel,
 	}
+	mcpAddSemanticFieldsToMap(summary, record.mcpSemanticFields)
+	if appLayers := mcpSemanticCountByAppLayerFromConsumers(consumers); len(appLayers) > 0 {
+		summary["consumerAppLayers"] = appLayers
+	}
+	if areas := mcpSemanticCountByFunctionalAreaFromConsumers(consumers); len(areas) > 0 {
+		summary["consumerFunctionalAreas"] = areas
+	}
+	if appLayers := mcpSemanticCountByAppLayerFromFlows(record.FlowDetails); len(appLayers) > 0 {
+		summary["flowAppLayers"] = appLayers
+	}
+	if areas := mcpSemanticCountByFunctionalAreaFromFlows(record.FlowDetails); len(areas) > 0 {
+		summary["flowFunctionalAreas"] = areas
+	}
+	if health := mcpRouteResolutionHealthImpact(record.mcpSemanticFields, consumers, record.FlowDetails); detectChangesResolutionHealthImpactHasEvidence(health) {
+		summary["resolutionHealthImpact"] = health
+	}
 	if len(consumers) > 0 {
 		summary["warning"] = "Changing response shape will affect " + intString(len(consumers)) + " component" + pluralSuffix(len(consumers))
 	}
 	route := mcpAPIImpactRoute{
-		Route:          record.Name,
-		Handler:        record.Handler,
-		ResponseShape:  map[string][]string{"success": nonNilStringSlice(record.ResponseKeys), "error": nonNilStringSlice(record.ErrorKeys)},
-		Middleware:     nonNilStringSlice(record.Middleware),
-		Consumers:      nonNilAPIConsumers(consumers),
-		Mismatches:     mismatches,
-		ExecutionFlows: nonNilStringSlice(record.Flows),
-		ImpactSummary:  summary,
+		mcpSemanticFields:    cloneMCPSemanticFields(record.mcpSemanticFields),
+		Route:                record.Name,
+		Handler:              record.Handler,
+		ResponseShape:        map[string][]string{"success": nonNilStringSlice(record.ResponseKeys), "error": nonNilStringSlice(record.ErrorKeys)},
+		Middleware:           nonNilStringSlice(record.Middleware),
+		Consumers:            nonNilAPIConsumers(consumers),
+		Mismatches:           mismatches,
+		ExecutionFlows:       nonNilStringSlice(record.Flows),
+		ExecutionFlowDetails: cloneNonNilRouteFlows(record.FlowDetails),
+		ImpactSummary:        summary,
 	}
 	if len(record.Middleware) > 0 && handlerRouteCount > 1 {
 		route.MiddlewareDetection = "partial"
 		route.MiddlewareNote = "Middleware captured from first HTTP method export only - other methods in this handler may use different middleware chains."
 	}
 	return route
+}
+
+func mcpSemanticCountByAppLayerFromConsumers(consumers []mcpAPIConsumer) map[string]int {
+	counts := map[string]int{}
+	for _, consumer := range consumers {
+		incrementQueryCount(counts, consumer.AppLayer, 1)
+	}
+	return cloneQueryCountMap(counts)
+}
+
+func mcpSemanticCountByFunctionalAreaFromConsumers(consumers []mcpAPIConsumer) map[string]int {
+	counts := map[string]int{}
+	for _, consumer := range consumers {
+		incrementQueryCount(counts, consumer.FunctionalArea, 1)
+	}
+	return cloneQueryCountMap(counts)
+}
+
+func mcpSemanticCountByAppLayerFromFlows(flows []mcpRouteFlow) map[string]int {
+	counts := map[string]int{}
+	for _, flow := range flows {
+		incrementQueryCount(counts, flow.AppLayer, 1)
+	}
+	return cloneQueryCountMap(counts)
+}
+
+func mcpSemanticCountByFunctionalAreaFromFlows(flows []mcpRouteFlow) map[string]int {
+	counts := map[string]int{}
+	for _, flow := range flows {
+		incrementQueryCount(counts, flow.FunctionalArea, 1)
+	}
+	return cloneQueryCountMap(counts)
+}
+
+func mcpRouteResolutionHealthImpact(route mcpSemanticFields, consumers []mcpAPIConsumer, flows []mcpRouteFlow) map[string]any {
+	rows := make([]map[string]any, 0, 1+len(consumers)+len(flows))
+	rows = append(rows, mcpSemanticFieldsRow("route", route))
+	for _, consumer := range consumers {
+		rows = append(rows, mcpSemanticFieldsRow(consumer.Name, consumer.mcpSemanticFields))
+	}
+	for _, flow := range flows {
+		rows = append(rows, mcpSemanticFieldsRow(flow.Name, flow.mcpSemanticFields))
+	}
+	return detectChangesResolutionHealthImpact(rows)
+}
+
+func mcpSemanticFieldsRow(name string, fields mcpSemanticFields) map[string]any {
+	row := map[string]any{"name": name}
+	mcpAddSemanticFieldsToMap(row, fields)
+	return row
+}
+
+func mcpAddSemanticFieldsToMap(out map[string]any, fields mcpSemanticFields) {
+	if fields.AppLayer != "" {
+		out["appLayer"] = fields.AppLayer
+	}
+	if fields.AppLayerSource != "" {
+		out["appLayerSource"] = fields.AppLayerSource
+	}
+	if fields.FunctionalArea != "" {
+		out["functionalArea"] = fields.FunctionalArea
+	}
+	if fields.FunctionalAreaSource != "" {
+		out["functionalAreaSource"] = fields.FunctionalAreaSource
+	}
+	if fields.TopologyStatus != "" {
+		out["topologyStatus"] = fields.TopologyStatus
+	}
+	if fields.ResolutionConfidence != "" {
+		out["resolutionConfidence"] = fields.ResolutionConfidence
+	}
+	if fields.ResolutionGapCount > 0 {
+		out["resolutionGapCount"] = fields.ResolutionGapCount
+	}
+	if len(fields.ResolutionHealthBuckets) > 0 {
+		out["resolutionHealthBuckets"] = cloneQueryCountMap(fields.ResolutionHealthBuckets)
+	}
 }
 
 func stringSliceSet(values []string) map[string]bool {
@@ -310,6 +419,10 @@ func structToMap(route mcpAPIImpactRoute) map[string]any {
 		"executionFlows": route.ExecutionFlows,
 		"impactSummary":  route.ImpactSummary,
 	}
+	mcpAddSemanticFieldsToMap(out, route.mcpSemanticFields)
+	if len(route.ExecutionFlowDetails) > 0 {
+		out["executionFlowDetails"] = route.ExecutionFlowDetails
+	}
 	if route.MiddlewareDetection != "" {
 		out["middlewareDetection"] = route.MiddlewareDetection
 	}
@@ -326,5 +439,10 @@ func nonNilAPIConsumers(values []mcpAPIConsumer) []mcpAPIConsumer {
 	if values == nil {
 		return []mcpAPIConsumer{}
 	}
-	return values
+	out := append([]mcpAPIConsumer(nil), values...)
+	for i := range out {
+		out[i].mcpSemanticFields = cloneMCPSemanticFields(out[i].mcpSemanticFields)
+		out[i].Accesses = cloneStringSlice(out[i].Accesses)
+	}
+	return out
 }

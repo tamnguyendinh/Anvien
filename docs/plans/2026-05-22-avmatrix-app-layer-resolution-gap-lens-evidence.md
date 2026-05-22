@@ -727,7 +727,7 @@ Validation evidence:
 
 ## E11 - Semantic Command Surface Evidence
 
-Status: in progress; `query` surface complete for P6-A; `context` surface complete for P6-B; `impact` surface complete for P6-C; `detect-changes` surface complete for P6-D.
+Status: in progress; `query` surface complete for P6-A; `context` surface complete for P6-B; `impact` surface complete for P6-C; `detect-changes` surface complete for P6-D; API MCP surfaces complete for P6-E.
 
 Record during P6.
 
@@ -971,6 +971,62 @@ artifact: .tmp\2026-05-22-p6d-detect-changes-precommit-output.txt
 ```
 
 The high scope is expected for this slice because it intentionally changes the shared `detect-changes` output path: `detectChangesTool`, `detectChangedSymbols`, `detectAffectedProcesses`, and new semantic summary helpers. The final pre-commit diff also includes the plan, evidence, and benchmark ledger updates. The affected flows are detect-changes output flows and shared semantic helper paths used to render changed symbols, affected process rows, changed-step summaries, ResolutionGap changes, and Resolution Health impact.
+
+### P6-E - API MCP Semantic Output Evidence
+
+Status: complete for `route_map`, `shape_check`, and `api_impact`.
+
+Changed behavior:
+
+- `route_map`, `shape_check`, and `api_impact` now include graph-level `semanticStatus` and `semanticWarning` when semantic metadata is stale/incomplete.
+- route rows now carry persisted App Layer, Functional Area, Topology Health, Resolution Confidence, ResolutionGap count, and Resolution Health bucket fields.
+- route consumers now carry the same semantic fields from their persisted consumer graph nodes.
+- linked execution flows are still exposed as the existing `flows`/`executionFlows` string list, and now also appear as `flowDetails`/`executionFlowDetails` rows with process semantic fields.
+- `api_impact` summary now includes route semantic fields, consumer App Layer/Functional Area counts, flow App Layer/Functional Area counts, and `resolutionHealthImpact` when route, consumer, or flow rows carry gap/degraded evidence.
+
+Focused test evidence:
+
+```text
+powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1
+go test .\internal\mcp .\internal\cli -count=1
+go test .\internal\mcp -run "TestServeCallToolRouteAndToolMaps" -count=1
+```
+
+All commands passed after the P6-E implementation. `TestServeCallToolRouteAndToolMaps` now verifies:
+
+- `route_map` route rows expose `appLayer=api`, `functionalArea=api`, and Resolution Confidence from the route node;
+- `route_map` consumer rows expose `appLayer=frontend`, `functionalArea=web_graph_ui`, and `resolutionGapCount=1` from the consumer node;
+- `route_map` `flowDetails` exposes process App Layer and flow name while preserving the existing `flows` list;
+- `shape_check` route and consumer rows preserve semantic fields while still reporting mismatches;
+- `api_impact` route, consumer, `executionFlowDetails`, and `impactSummary.consumerAppLayers` preserve semantic fields.
+
+Fresh analyze evidence after P6-E:
+
+```text
+files: scanned=752 parsed=562 unsupported=190 failed=0
+graph: nodes=83982 relationships=115558 path=E:\AVmatrix-GO\.avmatrix\graph.json
+artifact: .tmp\2026-05-22-p6e-api-tools-semantic-output-analyze.json
+```
+
+Representative MCP output artifacts:
+
+```powershell
+route_map artifact: .tmp\2026-05-22-p6e-route-map-semantic-output.txt
+shape_check artifact: .tmp\2026-05-22-p6e-shape-check-semantic-output.txt
+api_impact artifact: .tmp\2026-05-22-p6e-api-impact-semantic-output.txt
+```
+
+The current AVmatrix graph has no persisted route nodes, so the live MCP artifacts return empty/error route payloads. They still include `semanticStatus` from the persisted graph, proving the API-specific tools surface graph semantic state even when no route rows match. Populated route/consumer/flow semantic rows are covered by the focused fixture test above.
+
+Pre-commit AVmatrix scope check:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all
+summary: affected_count=29, changed_count=273, changed_files=6, risk_level=critical
+artifact: .tmp\2026-05-22-p6e-api-tools-semantic-precommit-output.txt
+```
+
+The critical scope is expected for this slice because it intentionally changes the shared API MCP route index and output structs used by `route_map`, `shape_check`, `api_impact`, and `tool_map` flow-name reuse. The affected surfaces match `buildMCPRouteIndex`, route consumer and flow indexing, API impact record shaping, semantic field helpers, route fixture tests, and plan ledgers.
 
 ## E12 - Web UI Evidence
 

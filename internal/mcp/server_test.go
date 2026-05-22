@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/lbugnative"
 	"github.com/tamnguyendinh/avmatrix-go/internal/lbugruntime"
 	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
@@ -1121,6 +1122,15 @@ func TestServeCallToolRouteAndToolMaps(t *testing.T) {
 	if len(route.Consumers[0].AccessedKeys) != 3 || route.Consumers[0].FetchCount != 2 {
 		t.Fatalf("route_map consumer keys/count = %#v", route.Consumers[0])
 	}
+	if route.AppLayer != "api" || route.FunctionalArea != "api" || route.ResolutionConfidence != graphhealth.ResolutionConfidenceClear {
+		t.Fatalf("route_map semantic route fields = %#v", route)
+	}
+	if route.Consumers[0].AppLayer != "frontend" || route.Consumers[0].FunctionalArea != "web_graph_ui" || route.Consumers[0].ResolutionGapCount != 1 {
+		t.Fatalf("route_map semantic consumer fields = %#v", route.Consumers[0])
+	}
+	if len(route.FlowDetails) != 1 || route.FlowDetails[0].Name != "MainFlow" || route.FlowDetails[0].AppLayer != "api" {
+		t.Fatalf("route_map flowDetails = %#v", route.FlowDetails)
+	}
 
 	var shapePayload struct {
 		Routes     []mcpShapeRoute `json:"routes"`
@@ -1140,6 +1150,9 @@ func TestServeCallToolRouteAndToolMaps(t *testing.T) {
 	if shapePayload.Routes[0].Status != "MISMATCH" || len(shapePayload.Routes[0].Consumers[0].Mismatched) != 1 || shapePayload.Routes[0].Consumers[0].Mismatched[0] != "missing" {
 		t.Fatalf("shape_check route = %#v", shapePayload.Routes[0])
 	}
+	if shapePayload.Routes[0].AppLayer != "api" || shapePayload.Routes[0].Consumers[0].AppLayer != "frontend" {
+		t.Fatalf("shape_check semantic fields = %#v", shapePayload.Routes[0])
+	}
 
 	var apiPayload mcpAPIImpactRoute
 	apiText := toolTextFromResponse(t, responses[2])
@@ -1154,6 +1167,16 @@ func TestServeCallToolRouteAndToolMaps(t *testing.T) {
 	}
 	if apiPayload.ImpactSummary["riskLevel"] != "MEDIUM" || apiPayload.ImpactSummary["directConsumers"] != float64(1) {
 		t.Fatalf("api_impact summary = %#v", apiPayload.ImpactSummary)
+	}
+	if apiPayload.AppLayer != "api" || apiPayload.FunctionalArea != "api" || apiPayload.Consumers[0].AppLayer != "frontend" {
+		t.Fatalf("api_impact semantic fields = %#v", apiPayload)
+	}
+	if len(apiPayload.ExecutionFlowDetails) != 1 || apiPayload.ExecutionFlowDetails[0].AppLayer != "api" {
+		t.Fatalf("api_impact executionFlowDetails = %#v", apiPayload.ExecutionFlowDetails)
+	}
+	consumerLayers, _ := apiPayload.ImpactSummary["consumerAppLayers"].(map[string]any)
+	if consumerLayers["frontend"] != float64(1) {
+		t.Fatalf("api_impact consumerAppLayers = %#v", apiPayload.ImpactSummary)
 	}
 
 	var toolPayload struct {
@@ -1994,24 +2017,35 @@ func writeMCPResourceGraph(t *testing.T, repoPath string) {
 	g := graph.New()
 	g.AddNode(graph.Node{ID: "File:src/app.ts", Label: scopeir.NodeFile, Properties: graph.NodeProperties{
 		"name": "app.ts", "filePath": "src/app.ts",
+		"appLayer": "frontend", "appLayerSource": "test_fixture", "functionalArea": "web_graph_ui", "functionalAreaSource": "test_fixture",
+		"topologyStatus": string(graphhealth.TopologyConnected), "resolutionConfidence": graphhealth.ResolutionConfidenceDegraded, "resolutionGapCount": 1,
+		"resolutionHealthBuckets": map[string]int{string(graphhealth.ResolutionHealthUnresolvedCallTarget): 1},
 	}})
 	g.AddNode(graph.Node{ID: "Function:main", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
 		"name": "main", "filePath": "src/app.ts", "startLine": 1, "endLine": 3,
+		"appLayer": "frontend", "appLayerSource": "test_fixture", "functionalArea": "web_graph_ui", "functionalAreaSource": "test_fixture",
 	}})
 	g.AddNode(graph.Node{ID: "Function:helper", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
 		"name": "helper", "filePath": "src/helper.ts", "startLine": 1, "endLine": 3,
+		"appLayer": "backend", "appLayerSource": "test_fixture", "functionalArea": "api", "functionalAreaSource": "test_fixture",
 	}})
 	g.AddNode(graph.Node{ID: "Process:main", Label: scopeir.NodeProcess, Properties: graph.NodeProperties{
 		"name": "MainFlow", "label": "MainFlow", "heuristicLabel": "MainFlow", "processType": "cross_community", "stepCount": 2,
+		"appLayer": "api", "appLayerSource": "test_fixture", "functionalArea": "api", "functionalAreaSource": "test_fixture",
 	}})
 	g.AddNode(graph.Node{ID: "comm_api", Label: scopeir.NodeCommunity, Properties: graph.NodeProperties{
 		"name": "Api", "label": "Api", "heuristicLabel": "Api", "cohesion": 0.8, "symbolCount": 5,
+		"appLayer": "api", "appLayerSource": "test_fixture", "functionalArea": "api", "functionalAreaSource": "test_fixture",
 	}})
 	g.AddNode(graph.Node{ID: "Route:/api/users", Label: scopeir.NodeRoute, Properties: graph.NodeProperties{
 		"name": "/api/users", "filePath": "src/server.ts", "responseKeys": []string{"data", "total"}, "errorKeys": []string{"error"}, "middleware": []string{"withAuth"},
+		"appLayer": "api", "appLayerSource": "test_fixture", "functionalArea": "api", "functionalAreaSource": "test_fixture",
+		"topologyStatus": string(graphhealth.TopologyConnected), "resolutionConfidence": graphhealth.ResolutionConfidenceClear,
+		"resolutionHealthBuckets": map[string]int{string(graphhealth.ResolutionHealthResolvedReferences): 2},
 	}})
 	g.AddNode(graph.Node{ID: "Tool:search", Label: scopeir.NodeTool, Properties: graph.NodeProperties{
 		"name": "search", "filePath": "src/tools.ts", "description": "Search code intelligence",
+		"appLayer": "api", "appLayerSource": "test_fixture", "functionalArea": "mcp", "functionalAreaSource": "test_fixture",
 	}})
 	mainStep := 1
 	helperStep := 2
