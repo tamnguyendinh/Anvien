@@ -712,23 +712,257 @@ Topology Health
 Resolution Health
 ```
 
-## 21. Cac cau hoi can chot truoc khi tao plan
+## 21. Muoi van de da thao luan tiep va huong chot
 
-Nhung cau hoi can chot:
+Phan nay ghi lai 10 van de tiep theo da duoc thao luan sau khi bo sung App Layer, API Ring va ResolutionGap.
 
-1. App Layer ban dau co chi gom BE/FE hay gom luon shared/test/docs/config?
-2. Test nen la app layer rieng hay la modifier tren BE/FE?
-3. `internal/contracts` nen la backend hay shared_contract?
-4. `avmatrix-web/e2e` nen la frontend hay test?
-5. `internal/httpapi` nen la `api` App Layer rieng hay backend functional area? Huong thao luan hien tai nghieng ve `api` App Layer rieng.
-6. API client trong frontend nen gan `frontend + api_client` hay gan vao API Ring?
-7. API contract/generated contract nen nam trong `api`, `shared_contract`, hay `api_contract` modifier?
-8. ResolutionGap nen la node graph that, virtual node trong API response, hay filter/lens tinh o UI?
-9. Co can persist ResolutionGap vao `.avmatrix/graph.json` hay tinh luc load API?
-10. Query benchmark nen dat trong docs, reports, hay internal testdata?
-11. App Layer ring co can hien docs/test/config mac dinh hay chi hien khi bat filter?
+### 21.1. App Layer single-label hay multi-label
 
-## 22. Rui ro thiet ke
+Van de: mot node co the vua la frontend vua la test, hoac vua la api vua la shared contract.
+
+Huong chot:
+
+- Khong dung multi-label chong cheo kieu `frontend` + `test` tren cung mot truc hien thi.
+- Cai nao khong phai hon hop thi la mot loai rieng.
+- Cai nao hon hop thi tao loai rieng cho hon hop do.
+- Khong de cung mot mo ta bi lap lai o nhieu node/layer khac nhau.
+- Neu mot node la ket hop cua 3 thu thi tao mot loai ket hop rieng cho 3 thu do.
+
+Vi du:
+
+```text
+frontend
+backend
+api
+shared_contract
+frontend_test
+api_contract
+api_shared_contract
+frontend_api_client
+docs
+config
+```
+
+Ly do: nhin graph se ro hon. Vung nao la hon hop thi thay la hon hop, khong can doc nhieu tag moi hieu.
+
+### 21.2. ResolutionGap persist hay virtual
+
+Van de: `ResolutionGap` co nen ghi vao `.avmatrix/graph.json` nhu node/edge that, hay chi sinh virtual trong API/UI lens?
+
+Huong chot:
+
+- `ResolutionGap` nen persist vao graph.
+- Khong chi la virtual trong UI/API.
+
+Ly do:
+
+- query/context/impact/detect-changes can cung nhin thay no;
+- CLI va UI phai dung chung mot source of truth;
+- graph nen phan anh dung nhung gi analyzer biet va khong biet;
+- neu chi virtual o UI thi AI/CLI khong khai thac duoc day du.
+
+### 21.3. API Ring, contract va frontend API client nam o dau
+
+Van de: API co nhieu phan:
+
+- API server handler;
+- API contract/schema/generated types;
+- frontend API client.
+
+Huong chot:
+
+- Khong ep vao mot ring duy nhat neu chung co vai tro khac nhau.
+- Co bao nhieu loai ro rang thi tach thanh bay nhieu loai/ring phu hop.
+- Khong bi gioi han so vong tron.
+- Neu them ring giup tach ro van de thi cu them ring.
+
+Vi du:
+
+```text
+API Ring
+API Contract Ring
+Frontend API Client group/ring
+Shared Contract Ring
+```
+
+Nguyen tac: cai gi cang ro rang, khong xam lan, cang de kiem soat.
+
+### 21.4. Test/Docs/Config la ring rieng hay modifier
+
+Van de: test/docs/config co nen la ring rieng hay chi la modifier?
+
+Huong chot:
+
+- Khong so nhieu ring.
+- Ring co the lon hoac nho.
+- Neu tach ring giup ro van de thi nen tach.
+- Khong can co dinh vao it ring.
+
+Vi du:
+
+```text
+Frontend Test Ring
+Backend Test Ring
+Docs Ring
+Config Ring
+Generated Contract Ring
+```
+
+Neu mot loai la hon hop thi tao loai hon hop rieng, khong dung tag chong cheo lam mo nghia.
+
+### 21.5. Functional Area suy ra bang rule nao
+
+Van de: App Layer co the suy ra bang path kha de, nhung Functional Area kho hon.
+
+Huong chot:
+
+- Chon nguon nao cho ket qua chinh xac nhat.
+- Khong chon huong co do chinh xac thap chi vi de lam.
+- Neu can ket hop nhieu nguon de dat do chinh xac cao hon thi can thiet ke theo huong do.
+
+Nguon co the can danh gia:
+
+- path prefix;
+- package/module name;
+- process membership;
+- community detection;
+- import/call neighborhood;
+- explicit config file;
+- AI-assisted labeling sau analyze neu co bang chung va co the verify.
+
+Tieu chi chon: chinh xac truoc, tien loi sau.
+
+### 21.6. ResolutionGap edge nen tach nhu the nao
+
+Van de: nen dung edge chung `HAS_RESOLUTION_GAP` hay tach nhieu loai edge nhu `UNRESOLVED_CALLS`, `UNRESOLVED_ACCESSES`, `UNRESOLVED_USES_TYPE`.
+
+Huong chot:
+
+- Tach cang nho cang de kiem soat.
+- Khong nhat thiet chi co 3 loai.
+- Neu fact family/target role/actionability can edge rieng de nhin ro thi nen tach.
+
+Vi du co the co:
+
+```text
+UNRESOLVED_CALLS
+UNRESOLVED_ACCESSES
+UNRESOLVED_TYPE_REFERENCE
+UNRESOLVED_HERITAGE
+UNRESOLVED_EXTERNAL_SYMBOL
+UNRESOLVED_BUILTIN_REFERENCE
+UNRESOLVED_TEST_REFERENCE
+```
+
+Can tranh gop qua rong lam mat nghia.
+
+### 21.7. Query benchmark nen la test hay report
+
+Van de: query benchmark neu chi la report thu cong thi de quen.
+
+Huong chot:
+
+- Nen co lenh CLI moi co chuc nang nay.
+- Khi can danh gia thi chi can chay lenh do de ra ket qua.
+
+Vi du ten lenh can thao luan:
+
+```text
+avmatrix query-benchmark
+avmatrix query-health
+avmatrix benchmark-query
+```
+
+Lenh nay nen output duoc:
+
+- intent;
+- expected files/symbols;
+- actual top results;
+- hit@5 / hit@10;
+- noise reason;
+- pass/fail.
+
+### 21.8. Schema/version compatibility va graph cu
+
+Van de da neu: neu graph cu chua co App Layer/ResolutionGap thi UI/API/CLI xu ly sao?
+
+Dieu chinh sau thao luan:
+
+- Day khong phai van de can fallback doan mo.
+- Tool da co rule ro: lam viec graph-based thi phai `avmatrix analyze --force` truoc.
+- `analyze` la source of truth.
+
+Huong chot:
+
+```text
+Run analyze first. Analyze is the source of truth. No stale graph fallback.
+```
+
+Quy tac:
+
+- Khi them App Layer / ResolutionGap / API Ring, `analyze` phai sinh schema moi day du.
+- UI/API/CLI lam viec tren graph da analyze theo schema hien tai.
+- Neu graph thieu metadata moi thi coi la stale/incomplete graph.
+- Khong fallback classify o load time.
+- Khong show tam `unknown` de che van de.
+- Khong co gang support graph cu bang heuristic.
+
+### 21.9. Performance va graph size
+
+Van de: neu 51k unresolved occurrences thanh node/edge that thi graph se lon hon.
+
+Huong chot:
+
+- Trong tam khong phai graph lon hay nho.
+- Tool viet bang Go va bai toan chiu tai lon da la muc tieu cua tool.
+- Cai can uu tien la su chinh xac.
+- Khong hy sinh do chinh xac chi de lam graph nho hon.
+
+Dieu can thiet ke:
+
+- dung data model chinh xac;
+- neu can aggregate/dedupe thi chi lam khi khong lam mat nghia;
+- khong cap/cat bot evidence neu lam sai ban chat van de.
+
+### 21.10. User-facing naming
+
+Van de: ten hien thi nhu `Resolution Gap`, `Unresolved Symbol`, `Analyzer Gap`, `External Reference` can chot.
+
+Huong chot:
+
+- Chon ten phu hop voi van de that.
+- Khong bi khoa vao danh sach ten ban dau.
+- Neu van de mo rong thi co the them ten moi.
+- Ten phai giup nguoi dung nhin graph hieu ngay y nghia.
+
+Ten hien tai co the can tiep tuc thao luan:
+
+```text
+Resolution Gap
+Unresolved Symbol
+Analyzer Gap
+External Reference
+Non-actionable Reference
+App Layer
+API Layer
+API Contract
+Frontend API Client
+```
+
+## 22. Cac cau hoi con mo truoc khi tao plan
+
+Sau 10 van de tren, cac cau hoi con can lam ro khi tao plan:
+
+1. Danh sach App Layer/ring ban dau se gom chinh xac nhung loai nao?
+2. Cach dat ten cho cac loai hon hop nhu `frontend_test`, `api_contract`, `frontend_api_client`.
+3. ResolutionGap persist thanh node rieng, edge rieng, hay ca node va edge rieng theo tung fact family.
+4. Functional Area dung rule nao de dat do chinh xac cao nhat.
+5. Query benchmark command nen doc suite tu dau va output schema nao.
+6. Web UI se hien ring nho/to nhu the nao de khong lam roi mat khi co nhieu ring.
+7. Loai nao mac dinh hien, loai nao mac dinh an.
+8. Tieu chi nao de khang dinh App Layer/Functional Area classification la dung.
+
+## 23. Rui ro thiet ke
 
 Mot so rui ro can tranh:
 
@@ -740,7 +974,7 @@ Mot so rui ro can tranh:
 - Cai tien query dua tren mot vai query mau ma khong co benchmark.
 - Them rule phan loai qua dac thu cho AVmatrix-GO ma khong dung cho repo khac.
 
-## 23. Huong ket luan hien tai
+## 24. Huong ket luan hien tai
 
 Huong dung khong phai chi tach diagnostic.
 
@@ -765,7 +999,7 @@ Buoc dau hop ly nhat:
 4. Bo sung UI lens/filter cho Resolution Health.
 5. Audit va nang cap `query` de phu hop voi graph/codebase hien tai.
 
-## 24. Dieu da dong thuan trong thao luan
+## 25. Dieu da dong thuan trong thao luan
 
 Cac diem da dong thuan:
 
@@ -778,3 +1012,9 @@ Cac diem da dong thuan:
 - Trong moi ring van giu cach chia dao theo node type/filter mau hien co.
 - `analyze` la lenh goc, cac lenh con nhu `query`, `impact`, `context`, `detect-changes` moi la noi can nang cap.
 - `query` can audit bang benchmark vi co dau hieu tra nhiu voi codebase hien tai.
+- App Layer khong nen la multi-label chong cheo; loai hon hop nen thanh loai rieng.
+- ResolutionGap nen persist vao graph.
+- Khong so nhieu ring neu nhieu ring lam graph ro nghia hon.
+- Su chinh xac quan trong hon viec graph lon hay nho.
+- Query benchmark nen thanh mot lenh CLI rieng.
+- Khong fallback graph cu bang doan mo; graph-based workflow phai analyze truoc.
