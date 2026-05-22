@@ -277,6 +277,25 @@
       "topology",
       "diagnostic"
     ],
+    "appLayers": [
+      "backend",
+      "api",
+      "frontend",
+      "cli_launcher",
+      "shared_contract",
+      "api_contract",
+      "api_shared_contract",
+      "frontend_api_client",
+      "backend_test",
+      "frontend_test",
+      "api_test",
+      "generated_contract",
+      "docs",
+      "config",
+      "generated",
+      "mixed",
+      "unknown"
+    ],
     "relationshipTableName": "CodeRelation",
     "embeddingTableName": "CodeEmbedding"
   },

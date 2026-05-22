@@ -11,6 +11,7 @@ import (
 	"github.com/tamnguyendinh/avmatrix-go/internal/lbugschema"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
 )
 
 const (
@@ -72,6 +73,7 @@ type WebUIContractManifest struct {
 		GraphHealthDiagnosticClassifications []string                    `json:"graphHealthDiagnosticClassifications"`
 		GraphHealthDiagnosticActionabilities []string                    `json:"graphHealthDiagnosticActionabilities"`
 		GraphHealthReportTriageDimensions    []string                    `json:"graphHealthReportTriageDimensions"`
+		AppLayers                            []string                    `json:"appLayers"`
 		RelationshipTableName                string                      `json:"relationshipTableName"`
 		EmbeddingTableName                   string                      `json:"embeddingTableName"`
 	} `json:"graph"`
@@ -433,6 +435,7 @@ func WebUIContract() WebUIContractManifest {
 	manifest.Graph.GraphHealthDiagnosticClassifications = append([]string(nil), graphhealth.DiagnosticClassifications...)
 	manifest.Graph.GraphHealthDiagnosticActionabilities = append([]string(nil), graphhealth.DiagnosticActionabilities...)
 	manifest.Graph.GraphHealthReportTriageDimensions = []string{"topology", "diagnostic"}
+	manifest.Graph.AppLayers = semantic.AppLayerStrings()
 	manifest.Graph.RelationshipTableName = lbugschema.RelTableName
 	manifest.Graph.EmbeddingTableName = lbugschema.EmbeddingTableName
 	manifest.Languages.CodeLanguages = append([]LanguageContract(nil), codeLanguages...)
@@ -496,6 +499,8 @@ func WebUIContractTypeScript() (string, error) {
 	b.WriteString("export type GraphHealthDiagnosticClassification = (typeof GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATIONS)[number];\n\n")
 	writeConstArray(&b, "GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES", graphhealth.DiagnosticActionabilities)
 	b.WriteString("export type GraphHealthDiagnosticActionability = (typeof GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES)[number];\n\n")
+	writeConstArray(&b, "APP_LAYERS", manifest.Graph.AppLayers)
+	b.WriteString("export type AppLayer = (typeof APP_LAYERS)[number];\n\n")
 	b.WriteString(graphTypes)
 	writeConstArray(&b, "PIPELINE_PHASES", manifest.Pipeline.Phases)
 	b.WriteString("export type PipelinePhase = (typeof PIPELINE_PHASES)[number];\n\n")
@@ -940,6 +945,8 @@ export interface GraphHealthSummary {
 export type NodeProperties = {
   name: string;
   filePath: string;
+  appLayer?: AppLayer;
+  appLayerSource?: string;
   startLine?: number;
   endLine?: number;
   language?: SupportedLanguages | string;

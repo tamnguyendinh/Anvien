@@ -139,22 +139,44 @@ Record during P0-E. These are sizing measurements only until P1 persists product
 
 ## B4 - Target App Layer Persistence Metrics
 
-Status: pending
+Status: in progress; App Layer persistence slice measured after locally built CLI analyze.
 
 Record after P1.
 
 | Metric | Before | Target / expected direction | After |
 | --- | ---: | --- | ---: |
-| Nodes with persisted App Layer | pending | all classifiable graph nodes | pending |
-| Nodes with exactly one primary App Layer | pending | all graph nodes with field | pending |
-| Nodes classified as `api` | pending | nonzero if API code exists | pending |
-| Nodes classified as API contract/client/shared categories | pending | nonzero if such code exists | pending |
-| Nodes classified as test/doc/config/generated/mixed categories | pending | nonzero where source exists | pending |
-| Nodes left `unknown` | pending | only where evidence is insufficient | pending |
-| Generated contract exposes App Layer enum/fields | pending | yes | pending |
+| Nodes with persisted App Layer | 0 | all classifiable graph nodes | 22239 |
+| Nodes with exactly one primary App Layer | 0 | all graph nodes with field | 22239 |
+| Nodes classified as `api` | pending | nonzero if API code exists | 2013 |
+| Nodes classified as API contract/client/shared categories | pending | nonzero if such code exists | api_contract 155, frontend_api_client 182, shared_contract 0, api_shared_contract 0 |
+| Nodes classified as test/doc/config/generated/mixed categories | pending | nonzero where source exists | backend_test 4415, frontend_test 620, api_test 1102, docs 1601, config 37, generated_contract 17, generated 0, mixed 399 |
+| Nodes left `unknown` | pending | only where evidence is insufficient | 26 |
+| Generated contract exposes App Layer enum/fields | pending | yes | yes |
 | Missing metadata treated as stale/incomplete schema | pending | yes | pending |
-| Load-time App Layer heuristic fallback count | pending | 0 | pending |
+| Load-time App Layer heuristic fallback count | pending | 0 | 0 |
 | User-facing naming labels defined | pending | yes | pending |
+
+App Layer count snapshot from `.avmatrix/graph.json` after `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .tmp\2026-05-22-app-layer-semantic-enrichment.json --benchmark-label app-layer-semantic-enrichment`:
+
+| App Layer | Node count |
+| --- | ---: |
+| backend | 9554 |
+| api | 2013 |
+| frontend | 1862 |
+| cli_launcher | 256 |
+| shared_contract | 0 |
+| api_contract | 155 |
+| api_shared_contract | 0 |
+| frontend_api_client | 182 |
+| backend_test | 4415 |
+| frontend_test | 620 |
+| api_test | 1102 |
+| generated_contract | 17 |
+| docs | 1601 |
+| config | 37 |
+| generated | 0 |
+| mixed | 399 |
+| unknown | 26 |
 
 ## B5 - Functional Area Metrics
 
@@ -352,22 +374,22 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 
 ## B12 - Semantic Enrichment Flow Metrics
 
-Status: pending
+Status: in progress; App Layer semantic enrichment measured.
 
 Record after the analyze semantic enrichment phase is introduced and after each phase extends it.
 
 | Metric | Baseline | After App Layer | After Functional Area | After ResolutionGap | Final |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Semantic enrichment phase latency | pending | pending | pending | pending | pending |
+| Semantic enrichment phase latency | pending | 33.9997 ms | pending | pending | pending |
 | Semantic enrichment memory delta | pending | pending | pending | pending | pending |
-| Graph nodes before enrichment | pending | pending | pending | pending | pending |
-| Graph nodes after enrichment | pending | pending | pending | pending | pending |
-| Graph relationships before enrichment | pending | pending | pending | pending | pending |
-| Graph relationships after enrichment | pending | pending | pending | pending | pending |
-| Graph JSON size | pending | pending | pending | pending | pending |
-| LadybugDB node rows | pending | pending | pending | pending | pending |
-| LadybugDB relationship rows | pending | pending | pending | pending | pending |
-| Duplicate graph traversals introduced | pending | pending | pending | pending | pending |
-| File rescans introduced | pending | pending | pending | pending | pending |
-| AST reparses introduced | pending | pending | pending | pending | pending |
+| Graph nodes before enrichment | pending | 22239 | pending | pending | pending |
+| Graph nodes after enrichment | pending | 22239 | pending | pending | pending |
+| Graph relationships before enrichment | pending | 55006 | pending | pending | pending |
+| Graph relationships after enrichment | pending | 55006 | pending | pending | pending |
+| Graph JSON size | pending | 45739916 bytes | pending | pending | pending |
+| LadybugDB node rows | pending | 22239 | pending | pending | pending |
+| LadybugDB relationship rows | pending | 55006 | pending | pending | pending |
+| Duplicate graph traversals introduced | pending | 0 nested whole-graph loops; one node pass and one relationship pass | pending | pending | pending |
+| File rescans introduced | pending | 0 | pending | pending | pending |
+| AST reparses introduced | pending | 0 | pending | pending | pending |
 | Raw unresolved fact count | pending | pending | pending | pending | pending |

@@ -12,6 +12,7 @@ import (
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
 	"github.com/tamnguyendinh/avmatrix-go/internal/lbugschema"
+	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
 )
 
 const RelationshipCSVHeader = "from,to,type,confidence,reason,step,resolutionSource,evidence,fileHash"
@@ -19,16 +20,16 @@ const RelationshipCSVHeader = "from,to,type,confidence,reason,step,resolutionSou
 var relationshipColumns = []string{"from", "to", "type", "confidence", "reason", "step", "resolutionSource", "evidence", "fileHash"}
 
 var (
-	fileNodeColumns      = []string{"id", "name", "filePath", "content"}
-	folderNodeColumns    = []string{"id", "name", "filePath"}
-	symbolNodeColumns    = []string{"id", "name", "filePath", "startLine", "endLine", "isExported", "content", "description"}
-	methodNodeColumns    = []string{"id", "name", "filePath", "startLine", "endLine", "isExported", "content", "description", "parameterCount", "returnType"}
-	communityNodeColumns = []string{"id", "label", "heuristicLabel", "keywords", "description", "enrichedBy", "cohesion", "symbolCount"}
-	processNodeColumns   = []string{"id", "label", "heuristicLabel", "processType", "stepCount", "communities", "entryPointId", "terminalId"}
-	sectionNodeColumns   = []string{"id", "name", "filePath", "startLine", "endLine", "level", "content", "description"}
-	routeNodeColumns     = []string{"id", "name", "filePath", "responseKeys", "errorKeys", "middleware"}
-	toolNodeColumns      = []string{"id", "name", "filePath", "description"}
-	defaultNodeColumns   = []string{"id", "name", "filePath", "startLine", "endLine", "content", "description"}
+	fileNodeColumns      = []string{"id", "name", "filePath", "content", semantic.AppLayerProperty}
+	folderNodeColumns    = []string{"id", "name", "filePath", semantic.AppLayerProperty}
+	symbolNodeColumns    = []string{"id", "name", "filePath", "startLine", "endLine", "isExported", "content", "description", semantic.AppLayerProperty}
+	methodNodeColumns    = []string{"id", "name", "filePath", "startLine", "endLine", "isExported", "content", "description", "parameterCount", "returnType", semantic.AppLayerProperty}
+	communityNodeColumns = []string{"id", "label", "heuristicLabel", "keywords", "description", "enrichedBy", "cohesion", "symbolCount", semantic.AppLayerProperty}
+	processNodeColumns   = []string{"id", "label", "heuristicLabel", "processType", "stepCount", "communities", "entryPointId", "terminalId", semantic.AppLayerProperty}
+	sectionNodeColumns   = []string{"id", "name", "filePath", "startLine", "endLine", "level", "content", "description", semantic.AppLayerProperty}
+	routeNodeColumns     = []string{"id", "name", "filePath", "responseKeys", "errorKeys", "middleware", semantic.AppLayerProperty}
+	toolNodeColumns      = []string{"id", "name", "filePath", "description", semantic.AppLayerProperty}
+	defaultNodeColumns   = []string{"id", "name", "filePath", "startLine", "endLine", "content", "description", semantic.AppLayerProperty}
 	nodeColumnLookup     = map[string][]string{
 		"File":        fileNodeColumns,
 		"Folder":      folderNodeColumns,
@@ -296,28 +297,33 @@ func closeWriters(writers map[string]*csvFileWriter) error {
 
 func nodeCSVRow(node graph.Node, table string) []string {
 	props := node.Properties
+	appLayer := appLayerProp(props)
 	switch table {
 	case "File":
-		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "content", "")}
+		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "content", ""), appLayer}
 	case "Folder":
-		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", "")}
+		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), appLayer}
 	case "Function", "Class", "Interface", "CodeElement":
-		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), intProp(props, "startLine", -1), intProp(props, "endLine", -1), boolProp(props, "isExported"), stringProp(props, "content", ""), stringProp(props, "description", "")}
+		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), intProp(props, "startLine", -1), intProp(props, "endLine", -1), boolProp(props, "isExported"), stringProp(props, "content", ""), stringProp(props, "description", ""), appLayer}
 	case "Method":
-		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), intProp(props, "startLine", -1), intProp(props, "endLine", -1), boolProp(props, "isExported"), stringProp(props, "content", ""), stringProp(props, "description", ""), intProp(props, "parameterCount", 0), stringProp(props, "returnType", "")}
+		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), intProp(props, "startLine", -1), intProp(props, "endLine", -1), boolProp(props, "isExported"), stringProp(props, "content", ""), stringProp(props, "description", ""), intProp(props, "parameterCount", 0), stringProp(props, "returnType", ""), appLayer}
 	case "Community":
-		return []string{node.ID, firstStringProp(props, []string{"label", "name"}, ""), stringProp(props, "heuristicLabel", ""), arrayLiteral(props["keywords"]), stringProp(props, "description", ""), stringProp(props, "enrichedBy", "heuristic"), floatProp(props, "cohesion", 0), intProp(props, "symbolCount", 0)}
+		return []string{node.ID, firstStringProp(props, []string{"label", "name"}, ""), stringProp(props, "heuristicLabel", ""), arrayLiteral(props["keywords"]), stringProp(props, "description", ""), stringProp(props, "enrichedBy", "heuristic"), floatProp(props, "cohesion", 0), intProp(props, "symbolCount", 0), appLayer}
 	case "Process":
-		return []string{node.ID, firstStringProp(props, []string{"label", "name"}, ""), stringProp(props, "heuristicLabel", ""), stringProp(props, "processType", ""), intProp(props, "stepCount", 0), arrayLiteral(props["communities"]), stringProp(props, "entryPointId", ""), stringProp(props, "terminalId", "")}
+		return []string{node.ID, firstStringProp(props, []string{"label", "name"}, ""), stringProp(props, "heuristicLabel", ""), stringProp(props, "processType", ""), intProp(props, "stepCount", 0), arrayLiteral(props["communities"]), stringProp(props, "entryPointId", ""), stringProp(props, "terminalId", ""), appLayer}
 	case "Section":
-		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), intProp(props, "startLine", -1), intProp(props, "endLine", -1), intProp(props, "level", 1), stringProp(props, "content", ""), stringProp(props, "description", "")}
+		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), intProp(props, "startLine", -1), intProp(props, "endLine", -1), intProp(props, "level", 1), stringProp(props, "content", ""), stringProp(props, "description", ""), appLayer}
 	case "Route":
-		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), arrayLiteral(props["responseKeys"]), arrayLiteral(props["errorKeys"]), arrayLiteral(props["middleware"])}
+		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), arrayLiteral(props["responseKeys"]), arrayLiteral(props["errorKeys"]), arrayLiteral(props["middleware"]), appLayer}
 	case "Tool":
-		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "description", "")}
+		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "description", ""), appLayer}
 	default:
-		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), intProp(props, "startLine", -1), intProp(props, "endLine", -1), stringProp(props, "content", ""), stringProp(props, "description", "")}
+		return []string{node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), intProp(props, "startLine", -1), intProp(props, "endLine", -1), stringProp(props, "content", ""), stringProp(props, "description", ""), appLayer}
 	}
+}
+
+func appLayerProp(props graph.NodeProperties) string {
+	return stringProp(props, semantic.AppLayerProperty, string(semantic.AppLayerUnknown))
 }
 
 func relationshipCSVRow(rel graph.Relationship) []string {

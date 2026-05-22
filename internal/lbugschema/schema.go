@@ -346,26 +346,31 @@ func NodeSchemaQueries() []string {
 func NodeSchema(table string) string {
 	switch table {
 	case "File":
-		return nodeTable(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"content", "STRING"}})
+		return nodeTableWithAppLayer(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"content", "STRING"}})
 	case "Folder":
-		return nodeTable(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}})
+		return nodeTableWithAppLayer(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}})
 	case "Function", "Class", "Interface", "CodeElement":
-		return nodeTable(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"isExported", "BOOLEAN"}, {"content", "STRING"}, {"description", "STRING"}})
+		return nodeTableWithAppLayer(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"isExported", "BOOLEAN"}, {"content", "STRING"}, {"description", "STRING"}})
 	case "Method":
-		return nodeTable(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"isExported", "BOOLEAN"}, {"content", "STRING"}, {"description", "STRING"}, {"parameterCount", "INT32"}, {"returnType", "STRING"}})
+		return nodeTableWithAppLayer(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"isExported", "BOOLEAN"}, {"content", "STRING"}, {"description", "STRING"}, {"parameterCount", "INT32"}, {"returnType", "STRING"}})
 	case "Community":
-		return nodeTable(table, []column{{"id", "STRING"}, {"label", "STRING"}, {"heuristicLabel", "STRING"}, {"keywords", "STRING[]"}, {"description", "STRING"}, {"enrichedBy", "STRING"}, {"cohesion", "DOUBLE"}, {"symbolCount", "INT32"}})
+		return nodeTableWithAppLayer(table, []column{{"id", "STRING"}, {"label", "STRING"}, {"heuristicLabel", "STRING"}, {"keywords", "STRING[]"}, {"description", "STRING"}, {"enrichedBy", "STRING"}, {"cohesion", "DOUBLE"}, {"symbolCount", "INT32"}})
 	case "Process":
-		return nodeTable(table, []column{{"id", "STRING"}, {"label", "STRING"}, {"heuristicLabel", "STRING"}, {"processType", "STRING"}, {"stepCount", "INT32"}, {"communities", "STRING[]"}, {"entryPointId", "STRING"}, {"terminalId", "STRING"}})
+		return nodeTableWithAppLayer(table, []column{{"id", "STRING"}, {"label", "STRING"}, {"heuristicLabel", "STRING"}, {"processType", "STRING"}, {"stepCount", "INT32"}, {"communities", "STRING[]"}, {"entryPointId", "STRING"}, {"terminalId", "STRING"}})
 	case "Route":
-		return nodeTable(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"responseKeys", "STRING[]"}, {"errorKeys", "STRING[]"}, {"middleware", "STRING[]"}})
+		return nodeTableWithAppLayer(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"responseKeys", "STRING[]"}, {"errorKeys", "STRING[]"}, {"middleware", "STRING[]"}})
 	case "Tool":
-		return nodeTable(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"description", "STRING"}})
+		return nodeTableWithAppLayer(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"description", "STRING"}})
 	case "Section":
-		return nodeTable(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"level", "INT64"}, {"content", "STRING"}, {"description", "STRING"}})
+		return nodeTableWithAppLayer(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"level", "INT64"}, {"content", "STRING"}, {"description", "STRING"}})
 	default:
-		return nodeTable(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"content", "STRING"}, {"description", "STRING"}})
+		return nodeTableWithAppLayer(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"content", "STRING"}, {"description", "STRING"}})
 	}
+}
+
+func nodeTableWithAppLayer(table string, columns []column) string {
+	columns = append(columns, column{"appLayer", "STRING"})
+	return nodeTable(table, columns)
 }
 
 func RelationSchema() string {

@@ -3321,6 +3321,28 @@ export const GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES = [
 
 export type GraphHealthDiagnosticActionability = (typeof GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES)[number];
 
+export const APP_LAYERS = [
+  "backend",
+  "api",
+  "frontend",
+  "cli_launcher",
+  "shared_contract",
+  "api_contract",
+  "api_shared_contract",
+  "frontend_api_client",
+  "backend_test",
+  "frontend_test",
+  "api_test",
+  "generated_contract",
+  "docs",
+  "config",
+  "generated",
+  "mixed",
+  "unknown"
+] as const;
+
+export type AppLayer = (typeof APP_LAYERS)[number];
+
 export interface GraphHealthDiagnostic {
   kind: string;
   factFamily?: string;
@@ -3384,6 +3406,8 @@ export interface GraphHealthSummary {
 export type NodeProperties = {
   name: string;
   filePath: string;
+  appLayer?: AppLayer;
+  appLayerSource?: string;
   startLine?: number;
   endLine?: number;
   language?: SupportedLanguages | string;

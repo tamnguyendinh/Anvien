@@ -32,6 +32,10 @@ func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {
 		!contains(manifest.Graph.GraphHealthReportTriageDimensions, "diagnostic") {
 		t.Fatalf("graph health contract metadata missing: %#v", manifest.Graph)
 	}
+	if !contains(manifest.Graph.AppLayers, "backend") || !contains(manifest.Graph.AppLayers, "api") ||
+		!contains(manifest.Graph.AppLayers, "frontend") || !contains(manifest.Graph.AppLayers, "frontend_api_client") {
+		t.Fatalf("app layer contract metadata missing: %#v", manifest.Graph.AppLayers)
+	}
 	if policy := relationshipPolicy(manifest, "INHERITS"); policy.SemanticGroup != "normalized-heritage" {
 		t.Fatalf("INHERITS policy = %#v", policy)
 	}
@@ -72,6 +76,9 @@ func TestWebUIContractTypeScriptIsBrowserGeneratedGlue(t *testing.T) {
 		"export type GraphHealthDiagnosticActionability",
 		"export interface GraphHealthComponentSummary",
 		"export interface GraphHealthSummary",
+		"export const APP_LAYERS",
+		"export type AppLayer",
+		"appLayer?: AppLayer",
 		"diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>",
 		"triageDimension: GraphHealthReportTriageDimension",
 		"largestDetachedComponents?: GraphHealthComponentSummary[]",

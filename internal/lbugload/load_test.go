@@ -49,11 +49,11 @@ func TestLoadCSVExportUsesCopyForSupportedNodeAndRelationshipPairs(t *testing.T)
 
 	joined := strings.Join(runner.queries, "\n")
 	for _, want := range []string{
-		`COPY File(id, name, filePath, content)`,
-		`COPY Function(id, name, filePath, startLine, endLine, isExported, content, description)`,
-		`COPY Method(id, name, filePath, startLine, endLine, isExported, content, description, parameterCount, returnType)`,
-		`COPY ` + "`TypeAlias`" + `(id, name, filePath, startLine, endLine, content, description)`,
-		`COPY ` + "`Variable`" + `(id, name, filePath, startLine, endLine, content, description)`,
+		`COPY File(id, name, filePath, content, appLayer)`,
+		`COPY Function(id, name, filePath, startLine, endLine, isExported, content, description, appLayer)`,
+		`COPY Method(id, name, filePath, startLine, endLine, isExported, content, description, parameterCount, returnType, appLayer)`,
+		`COPY ` + "`TypeAlias`" + `(id, name, filePath, startLine, endLine, content, description, appLayer)`,
+		`COPY ` + "`Variable`" + `(id, name, filePath, startLine, endLine, content, description, appLayer)`,
 		`from="TypeAlias", to="Method"`,
 		`COPY CodeRelation FROM`,
 	} {
@@ -248,7 +248,7 @@ func TestCopyQueriesMatchLadybugCSVContract(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NodeCopyQuery(Method) error = %v", err)
 	}
-	want := `COPY Method(id, name, filePath, startLine, endLine, isExported, content, description, parameterCount, returnType) FROM "C:/tmp/method.csv" (HEADER=true, ESCAPE='"', DELIM=',', QUOTE='"', PARALLEL=false, auto_detect=false)`
+	want := `COPY Method(id, name, filePath, startLine, endLine, isExported, content, description, parameterCount, returnType, appLayer) FROM "C:/tmp/method.csv" (HEADER=true, ESCAPE='"', DELIM=',', QUOTE='"', PARALLEL=false, auto_detect=false)`
 	if query != want {
 		t.Fatalf("NodeCopyQuery(Method) = %q, want %q", query, want)
 	}

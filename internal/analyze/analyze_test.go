@@ -79,8 +79,8 @@ export function main() {
 	if result.Metrics.Files.Scanned != 12 || result.Metrics.Files.Parsed != 5 || result.Metrics.Files.Unsupported != 7 {
 		t.Fatalf("file metrics = %#v", result.Metrics.Files)
 	}
-	if len(result.Metrics.Phases) != 14 {
-		t.Fatalf("phase metrics len = %d, want 14", len(result.Metrics.Phases))
+	if len(result.Metrics.Phases) != 15 {
+		t.Fatalf("phase metrics len = %d, want 15", len(result.Metrics.Phases))
 	}
 	assertPhaseOrder(t, result.Metrics.Phases, []PhaseName{
 		PhaseScan,
@@ -96,6 +96,7 @@ export function main() {
 		PhaseMRO,
 		PhaseCommunities,
 		PhaseProcesses,
+		PhaseSemantic,
 		PhaseDBLoad,
 	})
 	if result.Metrics.Structure.FolderNodesAdded == 0 || result.Metrics.Structure.ContainsEmitted == 0 {
@@ -122,6 +123,9 @@ export function main() {
 	if result.Metrics.Communities.CommunitiesEmitted == 0 || result.Metrics.Processes.ProcessesEmitted == 0 {
 		t.Fatalf("missing graph enrichment metrics: communities=%#v processes=%#v", result.Metrics.Communities, result.Metrics.Processes)
 	}
+	if result.Metrics.Semantic.NodesVisited == 0 || result.Metrics.Semantic.AppLayerCounts["docs"] == 0 || result.Metrics.Semantic.AppLayerCounts["api"] == 0 {
+		t.Fatalf("missing semantic enrichment metrics: %#v", result.Metrics.Semantic)
+	}
 	if result.Metrics.DBLoad.Skipped || result.Metrics.DBLoad.RelationshipCopyCount == 0 || result.Metrics.DBLoad.FallbackInsertCount != 0 {
 		t.Fatalf("DB load metrics = %#v", result.Metrics.DBLoad)
 	}
@@ -134,7 +138,7 @@ export function main() {
 	if result.Metrics.Memory.StartAllocBytes == 0 || result.Metrics.Memory.MaxObservedSys == 0 {
 		t.Fatalf("memory metrics were not recorded: %#v", result.Metrics.Memory)
 	}
-	if !hasEvent(events, EventPhaseStart, PhaseScan) || !hasEvent(events, EventPhaseDone, PhaseProcesses) {
+	if !hasEvent(events, EventPhaseStart, PhaseScan) || !hasEvent(events, EventPhaseDone, PhaseSemantic) {
 		t.Fatalf("missing expected progress events: %#v", events)
 	}
 	if countNodes(result.Graph, scopeir.NodeCommunity) == 0 || countNodes(result.Graph, scopeir.NodeProcess) == 0 {
@@ -188,6 +192,9 @@ export function main() {
 	if metrics.Communities.CommunitiesEmitted == 0 || metrics.Processes.ProcessesEmitted == 0 {
 		t.Fatalf("benchmark enrichment metrics = communities %#v processes %#v", metrics.Communities, metrics.Processes)
 	}
+	if metrics.Semantic.NodesVisited == 0 || metrics.Semantic.AppLayerCounts["docs"] == 0 || metrics.Semantic.AppLayerCounts["api"] == 0 {
+		t.Fatalf("benchmark semantic metrics = %#v", metrics.Semantic)
+	}
 	if metrics.DBLoad.Skipped || metrics.DBLoad.RelationshipCopyCount == 0 || metrics.DBLoad.FallbackInsertCount != 0 {
 		t.Fatalf("benchmark DB load metrics = %#v", metrics.DBLoad)
 	}
@@ -207,6 +214,11 @@ export function main() {
 	}
 	if len(snapshot.Nodes) != len(result.Graph.Nodes) || len(snapshot.Relationships) != len(result.Graph.Relationships) {
 		t.Fatalf("graph snapshot size = %d/%d, want %d/%d", len(snapshot.Nodes), len(snapshot.Relationships), len(result.Graph.Nodes), len(result.Graph.Relationships))
+	}
+	for _, node := range snapshot.Nodes {
+		if node.Properties["appLayer"] == nil {
+			t.Fatalf("graph snapshot node missing appLayer: %#v", node)
+		}
 	}
 	if _, err := os.Stat(repo.Paths(dir).AnalyzeTempPath); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("analyze temp path stat error = %v, want cleanup", err)

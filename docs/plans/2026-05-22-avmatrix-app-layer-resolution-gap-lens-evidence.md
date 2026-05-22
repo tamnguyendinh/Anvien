@@ -118,18 +118,18 @@ Record during P0-C and P0-G.
 
 | Surface | Files/symbols found | Notes |
 | --- | --- | --- |
-| graph schema/snapshot | pending | pending |
-| analyze semantic enrichment flow | pending | pending |
-| semantic enrichment input indexes and complexity | pending | pending |
-| LadybugDB export/load | pending | pending |
+| graph schema/snapshot | `internal/graph/types.go`, `internal/analyze/analyze.go`, `.avmatrix/graph.json` | App Layer is persisted on node properties as `appLayer` and `appLayerSource`; graph snapshot from the locally built CLI has zero missing `appLayer` fields across 22239 nodes. |
+| analyze semantic enrichment flow | `internal/analyze/analyze.go`, `internal/semantic/app_layer.go` | New `semantic_enrichment` phase runs after processes and before graph compact, LadybugDB load, embeddings, and graph snapshot. Phase order from benchmark: scan, structure, documents, cobol, parse, routes, tools, orm, cross_file_binding, resolution, mro, communities, processes, semantic_enrichment, db_load. |
+| semantic enrichment input indexes and complexity | `internal/semantic/app_layer.go` | Enrichment builds `filePath -> classification`, `nodeID -> index`, and `nodeID -> appLayer` maps, then performs one relationship scan for process/community inference. It uses graph facts only; it does not rescan files or reparse ASTs. |
+| LadybugDB export/load | `internal/lbugschema/schema.go`, `internal/lbugload/csv.go`, `internal/lbugload/load_test.go` | Node schemas and COPY CSV columns include `appLayer`; benchmark DB load wrote 22239 node rows and 55006 relationship rows with zero fallback inserts. |
 | unresolved call emission | pending | pending |
 | unresolved access emission | pending | pending |
 | unresolved type-reference emission | pending | pending |
 | unresolved heritage emission | pending | pending |
 | diagnostic attachment | pending | pending |
 | graph-health summary/report | pending | pending |
-| HTTP graph payload | pending | pending |
-| generated Web contracts | pending | pending |
+| HTTP graph payload | `internal/httpapi/graph.go` | HTTP graph responses already pass graph node properties through `graphNodeForResponse`; no client-side/load-time App Layer classification was added. |
+| generated Web contracts | `internal/contracts/web_ui.go`, `contracts/web-ui/avmatrix-web-contract.schema.json`, `avmatrix-web/src/generated/avmatrix-contracts.ts` | Contract manifest exposes `appLayers`; generated TypeScript exposes `APP_LAYERS`, `AppLayer`, `NodeProperties.appLayer`, and `NodeProperties.appLayerSource`. |
 | query command | pending | pending |
 | context command | pending | pending |
 | impact command | pending | pending |
@@ -177,7 +177,7 @@ Record during P0-F.
 
 ## E6 - App Layer Implementation Evidence
 
-Status: pending
+Status: in progress; App Layer classifier and analyze persistence slice complete.
 
 Record during P1.
 
@@ -191,6 +191,16 @@ Required evidence:
 - schema/snapshot/API/contract fields changed;
 - tests proving one primary category per node and no overlapping primary labels;
 - before/after counts and generated contract output.
+
+Implemented evidence:
+
+- Category registry is defined in `internal/semantic/app_layer.go` as one primary `AppLayer` value per node: `backend`, `api`, `frontend`, `cli_launcher`, `shared_contract`, `api_contract`, `api_shared_contract`, `frontend_api_client`, `backend_test`, `frontend_test`, `api_test`, `generated_contract`, `docs`, `config`, `generated`, `mixed`, and `unknown`.
+- Source rules implemented in `ClassifyAppLayer`: docs/report/markdown paths; Web test roots and `*.test.*`/`*.spec.*`; Go API tests under `internal/httpapi`, `internal/mcp`, `internal/contracts`, and `cmd/generate-web-contracts`; generated contract paths; API contract paths; `avmatrix-web/src/services/backend-client.ts`; config files; generated paths; API paths including `internal/httpapi`, `internal/mcp`, `app/api`, and `pages/api`; frontend roots; CLI launcher paths; backend paths; otherwise `unknown`.
+- Mixed category inference is relationship-backed for Process and Community nodes: if membership/step relationships connect more than one non-unknown App Layer, the target node receives `mixed` rather than overlapping labels.
+- Generated contract output was regenerated with `go run ./cmd/generate-web-contracts`.
+- Fresh analyze with the locally built CLI produced these App Layer counts: backend 9554, api 2013, frontend 1862, cli_launcher 256, api_contract 155, frontend_api_client 182, backend_test 4415, frontend_test 620, api_test 1102, generated_contract 17, docs 1601, config 37, mixed 399, unknown 26, shared_contract 0, api_shared_contract 0, generated 0.
+- Validation evidence: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; Go validation passed with `go test ./internal/... ./cmd/...`; Web unit validation passed with `npm test` in `avmatrix-web`.
+- `go test ./...` still fails outside the implementation slice because fixture packages under `avmatrix/test/fixtures/...` are intentionally non-buildable as standalone Go packages; the prior real failure in `internal/analyze` is fixed.
 
 ## E7 - Functional Area Evidence
 

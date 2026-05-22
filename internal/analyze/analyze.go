@@ -47,6 +47,7 @@ import (
 	"github.com/tamnguyendinh/avmatrix-go/internal/routes"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
 	"github.com/tamnguyendinh/avmatrix-go/internal/structure"
 	"github.com/tamnguyendinh/avmatrix-go/internal/tools"
 )
@@ -70,6 +71,7 @@ const (
 	PhaseResolution  PhaseName = "resolution"
 	PhaseCommunities PhaseName = "communities"
 	PhaseProcesses   PhaseName = "processes"
+	PhaseSemantic    PhaseName = "semantic_enrichment"
 	PhaseDBLoad      PhaseName = "db_load"
 	PhaseEmbeddings  PhaseName = "embeddings"
 )
@@ -136,6 +138,7 @@ type Metrics struct {
 	Resolution    resolution.Metrics  `json:"resolution"`
 	Communities   communities.Metrics `json:"communities,omitempty"`
 	Processes     processes.Metrics   `json:"processes,omitempty"`
+	Semantic      semantic.Metrics    `json:"semantic,omitempty"`
 	DBLoad        DBLoadMetrics       `json:"dbLoad,omitempty"`
 	Embeddings    EmbeddingMetrics    `json:"embeddings,omitempty"`
 	Files         FileMetrics         `json:"files"`
@@ -373,6 +376,17 @@ func Run(ctx context.Context, repoPath string, options Options) (result Result, 
 		return result, err
 	}
 	result.Metrics.Processes = processResult.Metrics
+
+	semanticResult, err := runPhase(ctx, &result.Metrics, options.OnEvent, PhaseSemantic, func() (semantic.Result, error) {
+		if err := ctx.Err(); err != nil {
+			return semantic.Result{}, err
+		}
+		return semantic.Apply(result.Graph)
+	})
+	if err != nil {
+		return result, err
+	}
+	result.Metrics.Semantic = semanticResult.Metrics
 	result.Graph.Compact()
 	result.Metrics.Memory.MaxObservedSys = maxUint64(result.Metrics.Memory.MaxObservedSys, currentSys())
 

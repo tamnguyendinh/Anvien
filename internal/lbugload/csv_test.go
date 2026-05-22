@@ -49,16 +49,19 @@ func TestExportGraphCSVsWritesNodeRelationshipAndSplitContracts(t *testing.T) {
 	}
 
 	fileRows := readCSV(t, filepath.Join(export.CSVDir, "file.csv"))
-	wantFileHeader := []string{"id", "name", "filePath", "content"}
+	wantFileHeader := []string{"id", "name", "filePath", "content", "appLayer"}
 	if !reflect.DeepEqual(fileRows[0], wantFileHeader) {
 		t.Fatalf("file.csv header = %#v, want %#v", fileRows[0], wantFileHeader)
 	}
 	if fileRows[1][3] != `export const quoted = "value"` {
 		t.Fatalf("file content row not preserved: %#v", fileRows[1])
 	}
+	if fileRows[1][4] != "unknown" {
+		t.Fatalf("file appLayer fallback = %q, want unknown", fileRows[1][4])
+	}
 
 	functionRows := readCSV(t, filepath.Join(export.CSVDir, "function.csv"))
-	wantFunctionHeader := []string{"id", "name", "filePath", "startLine", "endLine", "isExported", "content", "description"}
+	wantFunctionHeader := []string{"id", "name", "filePath", "startLine", "endLine", "isExported", "content", "description", "appLayer"}
 	if !reflect.DeepEqual(functionRows[0], wantFunctionHeader) {
 		t.Fatalf("function.csv header = %#v, want %#v", functionRows[0], wantFunctionHeader)
 	}
