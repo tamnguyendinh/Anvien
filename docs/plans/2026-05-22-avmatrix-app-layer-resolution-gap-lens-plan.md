@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete and paused before Phase 3 for discussion
+Status: in progress; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES gate added before Phase 3
 
 Source discussion:
 
@@ -18,7 +18,7 @@ Companion files:
 1. Use AVmatrix for codebase analysis and impact checks while working on implementation slices in this plan.
 2. As each task is completed, update the corresponding checklist item immediately.
 3. Run the full build gate before testing; include backend, contract, Web unit, and browser/e2e validation before closing the plan.
-4. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured Web graph load behavior, layout start/stop counts, render/conversion latency, optimizer latency, memory, and graph interaction latency; build/test timings are validation evidence unless the slice changes those systems.
+4. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, query hit rate, command output inventory, graph inventory counts, source-site inventory counts, or resolved-edge accuracy; build/test/e2e timings are validation evidence unless the slice changes those systems.
 5. Record evidence as each evidenced task is completed.
 6. For doc-only commits, do not use AVmatrix.
 7. After each completed implementation slice, commit the work, then continue until the full plan is complete.
@@ -30,7 +30,7 @@ Companion files:
 3. As each task is completed, update the corresponding checklist item immediately.
 4. Run a full build before testing. For this plan the full build gate is `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
 5. Because this changes graph semantics, CLI command behavior, API contracts, and Web UI graph behavior, validation must include backend tests, contract checks, Web unit tests, and Web e2e tests.
-6. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, query hit rate, command output inventory, or graph inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.
+6. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, query hit rate, command output inventory, graph inventory counts, source-site inventory counts, or resolved-edge accuracy; build/test/e2e timings are validation evidence unless the slice changes those systems.
 7. Record evidence as each evidenced task is completed.
 8. After each completed implementation slice, commit the work, then continue until the full plan is complete.
 9. Do not use product/runtime timeouts, elapsed-time budgets, delayed refresh, or automatic layout optimizer runs as a fix mechanism.
@@ -51,12 +51,16 @@ A `Function` can belong to backend resolution, frontend React code, API handlers
 
 The Web UI only renders data provided by the graph/API. Therefore the fix must make the graph/API answer these questions first, then let the Web UI filter, group, color, and explain the result.
 
+An independent CALLS/ACCESSES benchmark found a deeper graph-accuracy requirement: AVmatrix currently has much cleaner ACCESSES output than GitNexus and fewer CALLS duplicates, but a resolved edge is still wrong if it was produced from an unproven name match. For example, a bare Go call such as `stop()` must not be connected to an unrelated TypeScript method named `stop` unless the resolver proves that binding. The correct graph contract is proof-based: source sites must be inventoried, but only proven relationships may become resolved `CALLS` or `ACCESSES` edges.
+
 ## Scope Boundary
 
 Implementation may touch:
 
 - graph node and relationship schema;
 - analyzer/graph generation metadata;
+- reference-resolution proof metadata for `CALLS` and `ACCESSES`;
+- call/access source-site inventory records;
 - analyze pipeline phase ordering and semantic enrichment flow;
 - resolution diagnostic emission and graph-health diagnostic attachment;
 - persisted graph snapshot shape under `.avmatrix`;
@@ -72,6 +76,7 @@ Out of scope unless a later phase explicitly reopens it:
 - treating unresolved references as confirmed dead code;
 - merging `unknown_connectivity` back into `unresolved_reference`;
 - synthesizing fake resolved in-repo target nodes or fake semantic edges for unresolved targets;
+- emitting resolved `CALLS` or `ACCESSES` edges from unproven global name fallback, cross-language name matching, or coarse file-level evidence;
 - using UI-only virtual data as the source of truth for graph semantics;
 - allowing overlapping primary App Layer labels on one node;
 - using low-confidence Functional Area guessing just to reduce `unknown` counts;
@@ -96,6 +101,12 @@ Query-related commands should understand the new semantic layers. `analyze` rema
 
 Existing graph-health diagnostic classification and actionability are product code that should be reused and extended where accurate. The plan must not create a second incompatible classification path for builtin, standard-library, test-framework, external-library, in-repo analyzer-gap, or unclassified cases.
 
+Resolved graph edges must be proof-based. `CALLS` is only for a call site whose target has been proven by local scope binding, import/module binding, receiver/type binding, or another explicitly recorded proof. `ACCESSES` is only for field/property read/write semantics where the target is proven to be a property/field-like node. A selector such as `config.NewConfig()` is not an `ACCESSES` edge when `NewConfig` is a function, and a method call must be represented as a call rather than as a property access unless a separate property read is proven.
+
+Every syntactic call/access source site must be inventoried even when it cannot emit a resolved edge. Source-site records need a stable ID, source node, file/range, source text or target text, fact family, status, proof kind, target role, and diagnostic/actionability fields when available. Valid statuses include at least `resolved`, `unresolved_local_binding`, `unresolved_external`, `ambiguous`, `dynamic`, `unsupported_syntax`, and `unknown`. A source site with no proof must become a persisted unresolved/ambiguous/external fact instead of a guessed edge.
+
+The graph-accuracy target is: resolved edge false positives are zero in the golden corpus, source-site inventory misses are zero in the golden corpus, unresolved/ambiguous classification is explicit, and silent missing facts are not allowed. More edges is not a success metric unless those edges are proven.
+
 The deterministic initial graph placement is separate from the manual layout optimizer. The Web graph already applies an initial filter-based clustered placement during graph conversion, while the optimizer button invokes layout work manually. This plan changes the deterministic initial placement into App Layer rings and type islands; it must not add automatic optimizer execution after render, load, filter changes, or refresh.
 
 Semantic enrichment is a graph/analyze pipeline concern. The implementation must choose and test one flow that produces the most accurate graph facts while preserving analyzer speed. Current source inspection shows analyze resolves references, applies MRO, communities, and processes, compacts the graph, loads LadybugDB, then writes the graph snapshot. App Layer, Functional Area, and ResolutionGap enrichment must run before LadybugDB load and graph snapshot, and after every upstream signal it depends on is available. If Functional Area depends on process/community membership, the enrichment phase belongs after those phases and before compact/load/snapshot. If ResolutionGap facts are produced during resolution, their raw target identity must be captured then and finalized later during enrichment.
@@ -107,6 +118,7 @@ scan/parse
 -> build graph
 -> cross-file binding
 -> resolution
+   -> capture call/access source sites with sourceSiteID, sourceNodeID, factFamily, targetText, filePath, range, status, proofKind, and evidence
    -> capture raw unresolved facts with sourceNodeID, factFamily, targetText, filePath, range, resolutionSource, and note
 -> MRO
 -> communities
@@ -114,6 +126,7 @@ scan/parse
 -> semantic enrichment
    -> App Layer
    -> Functional Area
+   -> source-site status/proof summaries
    -> ResolutionGap / UnresolvedSymbol
    -> Resolution Health inventory
 -> graph.Compact()
@@ -121,7 +134,7 @@ scan/parse
 -> graph.json snapshot
 ```
 
-The enrichment phase must not rescan files or reparse ASTs. It should build reusable indexes once, such as `nodeID -> node`, `filePath -> App Layer`, `nodeID -> process/community`, and `sourceNodeID -> raw gaps`, then run near `O(nodes + relationships + rawGaps)` work. App Layer should primarily use cached path/package rules, Functional Area should use only accepted high-confidence signals, and ResolutionGap bucketing must include `targetText` so repeated unresolved facts do not lose identity.
+The enrichment phase must not rescan files or reparse ASTs. It should build reusable indexes once, such as `nodeID -> node`, `filePath -> App Layer`, `nodeID -> process/community`, `sourceSiteID -> call/access site`, and `sourceNodeID -> raw gaps`, then run near `O(nodes + relationships + rawSites + rawGaps)` work. App Layer should primarily use cached path/package rules, Functional Area should use only accepted high-confidence signals, source-site status should preserve resolver proof, and ResolutionGap bucketing must include `targetText` so repeated unresolved facts do not lose identity.
 
 ## Acceptance Criteria
 
@@ -129,6 +142,11 @@ The enrichment phase must not rescan files or reparse ASTs. It should build reus
 - API and API-related mixed categories are first-class, not hidden under Backend or Frontend.
 - Functional Area metadata is persisted only where evidence is accurate enough; ambiguous nodes remain unknown.
 - Source-backed unresolved references are represented as persisted ResolutionGap/UnresolvedSymbol graph entities or equivalent persisted graph records, not only diagnostic text.
+- `CALLS` and `ACCESSES` edges are emitted only when the resolver records an explicit proof; unproven source sites are persisted as unresolved, ambiguous, external, dynamic, unsupported, or unknown source-site facts.
+- Every call/access source site has an inventory record with source node, file/range, target text, fact family, status, proof kind, target role when known, and evidence.
+- `ACCESSES` resolved targets are property/field-like targets only; functions, methods, consts, structs, variables, imports, and coarse file-level matches are not emitted as `ACCESSES` unless a field/property access proof exists.
+- Bare calls and cross-language same-name matches do not use global fallback to produce resolved `CALLS` edges. If local binding, import binding, receiver binding, or other accepted proof is absent, the site remains unresolved or ambiguous.
+- Golden accuracy tests prove expected edges exist, known false edges do not exist, unresolved source sites are not lost, duplicate resolved edges are controlled, and source-site inventory has no silent missing facts.
 - Repeated unresolved references with different target text are not collapsed into a bucket that loses target identity.
 - Fine-grained gap relationships or typed gap metadata preserve call, access, type-reference, heritage, external, builtin, test, analyzer-gap, and unknown distinctions where evidence supports them.
 - Topology Health and Resolution Health remain separate in graph/API/CLI/Web output.
@@ -140,7 +158,7 @@ The enrichment phase must not rescan files or reparse ASTs. It should build reus
 - Layout optimizer remains manual-only and is not auto-run after render.
 - Full build, backend tests, contract checks, Web unit tests, and Web e2e tests pass before closure.
 - Benchmark and evidence ledgers contain baseline and final inventories for App Layer, Functional Area, ResolutionGap, Resolution Health, query benchmark, CLI semantic output, and Web rings/filters.
-- Missing App Layer or ResolutionGap metadata in loaded graph data is treated as stale/incomplete graph evidence, not as a reason to guess at API/UI load time.
+- Missing App Layer, Functional Area, source-site proof/status, ResolutionGap, or Resolution Health metadata in loaded graph data is treated as stale/incomplete graph evidence when that metadata is required by the active schema, not as a reason to guess at API/UI load time.
 - If ResolutionGap data is aggregated or deduped, the aggregate keeps exact counts and representative source evidence without capping away meaning.
 - Resolution inventory and Resolution Health APIs/commands expose full counts and must not rely on capped graph-health triage report candidates.
 - Analyze produces one consistent semantic graph across in-memory graph, LadybugDB export, graph JSON, HTTP API, MCP tools, and Web contracts.
@@ -148,7 +166,7 @@ The enrichment phase must not rescan files or reparse ASTs. It should build reus
 
 ## Current Code Facts To Account For
 
-The following facts came from pre-implementation source inspection and must be re-verified in Phase 0 before implementation edits:
+The following facts came from planning and source inspection. Facts not already superseded by recorded Phase 1/Phase 2 evidence must be re-verified before the implementation slice that depends on them:
 
 - unresolved references are currently emitted from `internal/resolution/emit.go` and attached to source nodes with `graphhealth.AppendDiagnosticToNode`;
 - `internal/graphhealth/diagnostics.go` currently aggregates diagnostic buckets without `TargetText` in the bucket key, so different unresolved targets can collapse into one bucket and keep only the first target text;
@@ -163,6 +181,16 @@ The following facts came from pre-implementation source inspection and must be r
 - Web graph filter state is managed through `avmatrix-web/src/hooks/app-state/graph.tsx` in addition to panel and adapter files;
 - Web graph conversion currently applies deterministic filter-based clustered layout in `avmatrix-web/src/lib/graph-adapter.ts`, and the manual optimizer button calls layout work through `avmatrix-web/src/hooks/useSigma.ts`;
 - generated Web contracts in `internal/contracts/web_ui.go` are the boundary that should prevent the UI from relying on ad hoc shape guesses.
+- `internal/resolution/resolve.go` currently reaches `resolveGlobalCallName` as a fallback for constructor, member, and free-call resolution, then emits `CALLS` through `emitReference` when it returns a target, including confidence `0.5` paths. Phase 2A must treat low-confidence simple-name/global matches as source-site status unless an accepted proof kind exists.
+- `internal/resolution/indexes.go` defines the resolver proof surfaces that Phase 2A must audit: `resolveGlobalCallName`, `resolveSameFileName`, `resolveGoSamePackageFunction`, `resolveMember`, `resolveImportedMember`, `callableLabels`, `propertyLabels`, and dispatch-owner indexes.
+- `internal/resolution/emit.go` currently dedupes semantic edges with `semanticEdgeKey` using source, target, relationship type, and limited call/access details; it does not preserve a `sourceSiteID` on the resolved relationship, so Phase 2A must keep exact source-site occurrences or exact occurrence counts before dedupe hides them.
+- `internal/graph/types.go` `Relationship` currently has evidence, confidence, and resolution source fields, but no source-site status, proof kind, sourceSiteID, or source range fields. Phase 2A must choose an explicit persisted schema: extended relationship metadata, a persisted SourceSite entity/record, or both where each serves a clear consumer.
+- `internal/scopeir/facts.go` defines `CallSiteFact` and `AccessFact`; provider reference collectors, provider parity tests, and generated contract tests are implementation surfaces for making source-site inventory complete across languages.
+- `internal/resolution/indexes.go` `propertyLabels()` and `internal/contracts/web_ui.go` provider fact coverage currently allow `Property`, `Variable`, `Const`, and `Static` as ACCESSES-like targets. Phase 2A must align this with the strict `ACCESSES = proven property/field read/write` contract or split non-property uses into a separate relation/fact role before emitting.
+- `internal/graphaccuracy/graphaccuracy.go` currently validates Go definitions/imports and a direct CALLS subset; it does not yet validate ACCESSES precision, source-site inventory completeness, false resolved edges, or the cross-language `stop()` false-positive class.
+- independent benchmark evidence shows AVmatrix ACCESSES is much cleaner than GitNexus because all sampled AVmatrix ACCESSES targets are Property-like while GitNexus over-emits function/method/const targets and duplicates heavily; this should be preserved with a strict ACCESSES contract rather than relaxed.
+- independent benchmark evidence shows AVmatrix CALLS has zero duplicate pairs in the sampled comparison but still has a real false resolved edge where Go `main.stop()` is connected to TypeScript `SSEListener.stop`; this requires removing or gating dangerous simple-name/global fallback.
+- GitNexus emits more CALLS but includes coarse `File -> Function` edges; AVmatrix should keep symbol-level source precision and should not use file-level source edges as proof of a resolved call.
 
 ## Checklist Item Standard
 
@@ -170,9 +198,9 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 ## Phase 0 - Baseline, Discussion Coverage, And Source Trace
 
-- [ ] [P0-A] Read the full discussion report and write a coverage table in the evidence ledger that maps every major decision to this plan: node type insufficiency, BE/API/FE/App Layer rings, non-overlapping mixed categories, Functional Area accuracy, persisted ResolutionGap, fine-grained gap relations, Resolution Health, query-health command, semantic command output, multi-ring Web layout, no stale fallback, and no timeout/auto optimizer behavior.
+- [ ] [P0-A] Read the full discussion report and write a coverage table in the evidence ledger that maps every major decision to this plan: node type insufficiency, BE/API/FE/App Layer rings, non-overlapping mixed categories, Functional Area accuracy, proof-based CALLS/ACCESSES, source-site inventory, persisted ResolutionGap, fine-grained gap relations, Resolution Health, query-health command, semantic command output, multi-ring Web layout, no stale fallback, and no timeout/auto optimizer behavior.
 
-- [ ] [P0-B] Run `avmatrix analyze --force` at implementation start, then record scanned/parsed/unsupported/failed file counts, graph node count, graph relationship count, counted semantic relationship count, execution-flow count, `unknown_connectivity` count, and graph timestamp/hash in the benchmark ledger. Compare the fresh baseline against the discussion observations of about `22010` nodes, `26906` counted semantic relationships, `0` `unknown_connectivity`, `51232` unresolved occurrences, and `8880` unresolved buckets without assuming those old numbers are still exact.
+- [ ] [P0-B] Run `avmatrix analyze --force` before the next graph-based implementation slice that depends on baseline counts, then record scanned/parsed/unsupported/failed file counts, graph node count, graph relationship count, counted semantic relationship count, execution-flow count, `unknown_connectivity` count, and graph timestamp/hash in the benchmark ledger. Compare the fresh baseline against the discussion observations of about `22010` nodes, `26906` counted semantic relationships, `0` `unknown_connectivity`, `51232` unresolved occurrences, and `8880` unresolved buckets without assuming those old numbers are still exact.
 
 - [ ] [P0-C] Trace the current unresolved-reference pipeline from resolution source facts to graph/API output. Record the exact files/symbols that create unresolved call, access, type-reference, and heritage diagnostics; record where target text, source node, fact family, classification, actionability, and source location are currently kept or lost, including whether `sameDiagnosticBucket` collapses distinct target text in the same source/fact/file/note bucket.
 
@@ -182,11 +210,11 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [ ] [P0-F] Audit current query behavior with fixed benchmark intents before adding the new command. At minimum test intents for unresolved reference diagnostic generation, graph health unknown-connectivity separation, App Layer/resolution-gap layout, API contract surfaces, frontend graph filter surfaces, and runtime reset hidden-terminal behavior; record expected files/symbols, actual top results, hit/miss, and noise reason. The audit must include the current `internal/mcp/tools.go` process scoring and definition matching behavior so later query work fixes the actual retrieval path rather than only adding a benchmark wrapper.
 
-- [ ] [P0-G] Locate the implementation surfaces for graph schema, graph generation, resolution diagnostics, graph health, HTTP graph APIs, generated Web contracts, CLI query/context/impact/detect-changes, Web graph filters, Web graph detail panels, and Web layout. Record exact file paths in evidence, including `internal/resolution/emit.go`, `internal/resolution/resolve.go`, `internal/graphhealth/diagnostics.go`, `internal/graphhealth/policy.go`, `internal/httpapi/graph.go`, `internal/contracts/web_ui.go`, `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `avmatrix-web/src/lib/graph-adapter.ts`, `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/components/FileTreePanel.tsx`, `avmatrix-web/src/components/GraphCanvas.tsx`, and `avmatrix-web/src/hooks/useSigma.ts`.
+- [ ] [P0-G] Locate the implementation surfaces for graph schema, graph generation, resolution diagnostics, graph health, HTTP graph APIs, generated Web contracts, CLI query/context/impact/detect-changes, Web graph filters, Web graph detail panels, and Web layout. Record exact file paths in evidence, including `internal/resolution/emit.go`, `internal/resolution/resolve.go`, `internal/resolution/indexes.go`, `internal/scopeir/facts.go`, `internal/graph/types.go`, `internal/graphaccuracy/graphaccuracy.go`, `internal/graphhealth/diagnostics.go`, `internal/graphhealth/policy.go`, `internal/httpapi/graph.go`, `internal/contracts/web_ui.go`, `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `internal/providers/*/references.go`, `internal/providers/*/extract_test.go`, `internal/providers/provider_parity_test.go`, `avmatrix-web/src/lib/graph-adapter.ts`, `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/components/FileTreePanel.tsx`, `avmatrix-web/src/components/GraphCanvas.tsx`, and `avmatrix-web/src/hooks/useSigma.ts`.
 
 - [x] [P0-H] Trace the current analyze persistence flow and choose the semantic enrichment insertion point. Record the exact order around resolution, MRO, communities, processes, graph compact, LadybugDB load, and graph snapshot; define which App Layer, Functional Area, and ResolutionGap inputs are available at that point; record the performance constraints for keeping enrichment accurate and fast.
 
-- [x] [P0-I] Specify the semantic enrichment input indexes and complexity budget before implementation. The design must use already-produced graph/resolution/process/community facts, build reusable maps once, avoid file rescans and AST reparses, and target near `O(nodes + relationships + rawGaps)` behavior.
+- [x] [P0-I] Specify the semantic enrichment input indexes and complexity budget before implementation. The design must use already-produced graph/resolution/process/community facts, build reusable maps once, avoid file rescans and AST reparses, and target near `O(nodes + relationships + rawSites + rawGaps)` behavior when source-site inventory is present.
 
 ## Phase 1 - App Layer Taxonomy And Persistence
 
@@ -224,13 +252,35 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [x] [P2-F] Record selected rules, rejected rules, counts, unknown counts, example nodes, and test evidence in the evidence and benchmark ledgers.
 
+## Phase 2A - Proof-Based CALLS/ACCESSES And Source-Site Inventory
+
+- [ ] [P2A-A] Define the resolved-edge contract for `CALLS` and `ACCESSES` as a code-facing and test-facing specification. The contract must state accepted proof kinds for calls, accepted proof kinds for field/property accesses, rejected proof sources such as global simple-name fallback, low-confidence simple-name matches, and cross-language same-name fallback, and the exact status values used when a source site cannot produce a proven edge. Confidence may be recorded as evidence, but confidence alone is not proof.
+
+- [ ] [P2A-B] Trace the current CALLS/ACCESSES resolver paths and record where resolved edges are emitted, where unresolved facts are emitted, where target role is known, where duplicate suppression occurs, and where false edges can be introduced. The trace must cover `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/resolution/indexes.go`, `internal/scopeir/facts.go`, `internal/graph/types.go`, `internal/providers/*/references.go`, `internal/providers/*/extract_test.go`, `internal/providers/provider_parity_test.go`, `internal/contracts/web_ui.go`, and `internal/graphaccuracy/graphaccuracy.go`; it must specifically cover the `stop()` false-positive class, selector/import cases such as `config.NewConfig()`, receiver method calls, property reads/writes, local function variables, closures, imports, builtins, external packages, and TypeScript/React owner attribution.
+
+- [ ] [P2A-C] Add persisted call/access source-site inventory before resolved-edge emission is finalized. Each record must keep sourceSiteID, source node ID, source App Layer, source Functional Area when known, file path, range or line/column, source text or target text, fact family, target role when known, status, proof kind, resolution source, evidence note, and any linked resolved target ID when proof exists. The implementation must choose and document whether this is persisted as extended `graph.Relationship` metadata, SourceSite graph entities/records, or both, then propagate the chosen schema through graph JSON, LadybugDB, HTTP/API contracts, generated Web contracts, and command/query consumers that need it.
+
+- [ ] [P2A-D] Gate resolved edge emission on proof. `CALLS` must be emitted only for proven call bindings; `ACCESSES` must be emitted only for proven property/field access targets. Bare calls without local/import/receiver proof, function variables without assignment/capture proof, low-confidence `resolveGlobalCallName` results, cross-language same-name matches, import selector references that resolve to functions, and coarse file-level matches must remain source-site facts with unresolved/ambiguous/external/dynamic/unsupported status instead of becoming resolved edges. Accepted same-file, same-package, import, receiver, and member matches must carry named proof kinds so tests can assert why they became resolved edges.
+
+- [ ] [P2A-E] Connect source-site inventory to ResolutionGap/UnresolvedSymbol inputs so Phase 3 consumes source-backed unresolved/ambiguous/external call/access sites rather than reconstructing gaps from already-aggregated diagnostics. The implementation must preserve existing diagnostic summaries while making source-site records the more precise source of truth for call/access resolution health.
+
+- [ ] [P2A-F] Add a golden accuracy corpus for CALLS and ACCESSES with positive and negative expectations. Required cases include a proven property access, a proven method/function call, a selector call that must not become ACCESSES, the Go `stop()` local-binding false-positive class that must not call `SSEListener.stop`, local function variables, closures, imports, external/builtin calls, TypeScript/React method ownership, provider-level `CallSiteFact` and `AccessFact` preservation, duplicate-edge prevention with exact source-site occurrence counts, and at least one coarse File-source edge case that must not be accepted as symbol-level proof.
+
+- [ ] [P2A-G] Add accuracy metrics and benchmark output for source-site and edge correctness. Record raw call sites, raw access sites, resolved `CALLS`, resolved `ACCESSES`, low-confidence/global-fallback source sites, unresolved/ambiguous/external/dynamic/unsupported source sites, false resolved edges found by golden tests, silent missing source sites found by golden tests, duplicate resolved edges, source sites merged by edge dedupe without occurrence evidence, max duplicate, ACCESSES target label distribution, and non-property ACCESSES targets. The target for golden tests is false resolved edges `0`, silent missing source sites `0`, source sites hidden by dedupe `0`, and non-property ACCESSES targets `0` unless they have been split into a separate non-ACCESSES relation/fact role.
+
+- [ ] [P2A-H] Update graph snapshot, LadybugDB export/load, HTTP/API contracts, generated Web contracts, CLI/query inventory surfaces, and `internal/contracts/web_ui.go` provider fact coverage where needed so source-site status and proof metadata are available to later ResolutionGap, Resolution Health, query/context/impact, and Web UI work. This item must also update or split the current ACCESSES target-label contract so `Variable`, `Const`, and `Static` are not treated as proven property/field ACCESSES unless a separate relation/fact role explicitly explains them. If a surface cannot expose the full inventory in this slice, record the exact limitation and the persisted source of truth it can read later.
+
+- [ ] [P2A-I] Extend `internal/graphaccuracy` or add a dedicated CLI/report command for proof-based source-site accuracy. The command/report must read the current graph or accuracy fixtures and emit the B5A metrics: source-site inventory counts, resolved edge counts, unresolved/ambiguous/external/dynamic/unsupported status counts, low-confidence/global-fallback counts, ACCESSES target label distribution, duplicate/merged source-site counts, golden false-positive counts, and silent missing source-site counts.
+
+- [ ] [P2A-J] Add backend tests, contract tests, command/API visibility tests, and benchmark/evidence ledger entries for the proof-based CALLS/ACCESSES slice. Run the full build before tests, include focused resolver/source-site tests and wider graph tests, then record validation and AVmatrix detect-changes before committing the slice.
+
 ## Phase 3 - Persisted ResolutionGap And UnresolvedSymbol Model
 
-- [ ] [P3-A] Define the persisted ResolutionGap/UnresolvedSymbol data model. It must preserve source node ID, source App Layer, source Functional Area when known, fact family, target text, inferred target role, classification, actionability, resolution source, source file path, line/column when available, occurrence count, sample evidence, and notes for unclassified cases. The model must define bucket identity explicitly so different target texts, roles, or actionability classes are not merged into one misleading gap.
+- [ ] [P3-A] Define the persisted ResolutionGap/UnresolvedSymbol data model using Phase 2A source-site inventory where available. It must preserve sourceSiteID, source node ID, source App Layer, source Functional Area when known, fact family, target text, inferred target role, source-site status, proof kind, classification, actionability, resolution source, source file path, line/column when available, occurrence count, sample evidence, and notes for unclassified cases. The model must define bucket identity explicitly so different target texts, roles, statuses, proof kinds, or actionability classes are not merged into one misleading gap.
 
-- [ ] [P3-B] Add raw unresolved fact storage from resolution before diagnostic summary aggregation. The raw record must keep `sourceNodeID`, `factFamily`, `targetText`, `filePath`, range or line, `resolutionSource`, and note.
+- [ ] [P3-B] Add or extend raw unresolved fact storage from resolution before diagnostic summary aggregation. For call/access facts, consume the Phase 2A source-site record rather than inventing a second identity. The raw record must keep `sourceSiteID` when available, `sourceNodeID`, `factFamily`, `targetText`, `filePath`, range or line, `status`, `proofKind`, `resolutionSource`, and note.
 
-- [ ] [P3-B2] Finalize source-backed unresolved call, access, type-reference, and heritage raw facts into persisted graph entities or persisted graph records during the analyze semantic enrichment phase. Existing diagnostic summaries must remain compatible, but ResolutionGap persistence must consume raw unresolved facts rather than already-aggregated diagnostic text.
+- [ ] [P3-B2] Finalize source-backed unresolved call, access, type-reference, and heritage raw facts into persisted graph entities or persisted graph records during the analyze semantic enrichment phase. Existing diagnostic summaries must remain compatible, but ResolutionGap persistence must consume source-site/raw unresolved facts rather than already-aggregated diagnostic text.
 
 - [ ] [P3-C] Implement fine-grained gap relationships or typed gap metadata for every distinction supported by source evidence. Start with unresolved call, unresolved access, unresolved type-reference, unresolved heritage, external symbol, builtin/stdlib reference, test-framework reference, in-repo analyzer gap, and unknown/unclassified; add narrower types if P0 evidence shows they are useful.
 
@@ -240,9 +290,9 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [ ] [P3-E] Wire existing graph-health diagnostic classification/actionability into persisted ResolutionGap records and summaries. Builtin/stdlib/test references should be non-actionable when confidently recognized, external references should be reviewable unless rules say otherwise, in-repo unresolved references should be analyzer gaps, and unclassified references should remain review/unknown until better evidence exists.
 
-- [ ] [P3-F] Add graph validation and backend tests that inspect persisted ResolutionGap output and prove unresolved targets do not create fake in-repo target nodes, fake resolved semantic edges, or fake topology edges. The validation must allow unresolved gap entities while asserting they never claim analyzer-proven resolution.
+- [ ] [P3-F] Add graph validation and backend tests that inspect persisted ResolutionGap output and prove unresolved targets do not create fake in-repo target nodes, fake resolved semantic edges, fake topology edges, or proofless `CALLS`/`ACCESSES`. The validation must allow unresolved gap entities while asserting they never claim analyzer-proven resolution.
 
-- [ ] [P3-G] Add backend tests for unresolved call, access, type-reference, heritage, builtin/predeclared, standard-library, test-framework, external, in-repo analyzer-gap, unknown target-role, repeated occurrence aggregation, and multiple different target texts from the same source/fact/file/note bucket. Tests must prove exact target identity and occurrence counts survive persistence.
+- [ ] [P3-G] Add backend tests for unresolved call, access, type-reference, heritage, builtin/predeclared, standard-library, test-framework, external, in-repo analyzer-gap, unknown target-role, repeated occurrence aggregation, and multiple different target texts from the same source/fact/file/note bucket. Tests must prove exact target identity, sourceSiteID when present, source-site status, proof kind, and occurrence counts survive persistence.
 
 - [ ] [P3-H] Record persisted gap schema examples, before/after gap counts, top targets, target-role/actionability counts, and test evidence in the evidence and benchmark ledgers.
 
@@ -320,9 +370,9 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [ ] [P8-A] Run the full build gate before tests: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`. Record command output and generated artifact location in evidence.
 
-- [ ] [P8-B] Run backend tests for analyze semantic enrichment flow, App Layer classification, Functional Area classification, ResolutionGap persistence, LadybugDB export/load, fine-grained gap relations, Resolution Health inventory, graph/API summaries, CLI inventory, query-health command, API-specific MCP tools, and semantic command output.
+- [ ] [P8-B] Run backend tests for analyze semantic enrichment flow, App Layer classification, Functional Area classification, proof-based CALLS/ACCESSES source-site inventory, ResolutionGap persistence, LadybugDB export/load, fine-grained gap relations, Resolution Health inventory, graph/API summaries, CLI inventory, query-health command, API-specific MCP tools, and semantic command output.
 
-- [ ] [P8-C] Run contract generation/checks from the Go contract source and verify generated Web types expose App Layer, Functional Area, ResolutionGap, Resolution Health, relation metadata, and query/command-facing enum values. Confirm the generated TypeScript diff comes from the Go contract source.
+- [ ] [P8-C] Run contract generation/checks from the Go contract source and verify generated Web types expose App Layer, Functional Area, source-site status/proof metadata, ResolutionGap, Resolution Health, relation metadata, and query/command-facing enum values. Confirm the generated TypeScript diff comes from the Go contract source.
 
 - [ ] [P8-D] Run Web unit tests for filters, detail panels, graph layout, manual optimizer behavior, and generated contract usage.
 

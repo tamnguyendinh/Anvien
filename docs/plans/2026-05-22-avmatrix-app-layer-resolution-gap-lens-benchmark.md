@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete and paused before Phase 3 for discussion
+Status: in progress; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES gate added before Phase 3
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -44,6 +44,7 @@ Planning audit snapshot, not P0 closure baseline:
 | Semantic enrichment graph-size delta | pending |
 | LadybugDB semantic export rows | pending |
 | Raw unresolved facts captured before aggregation | pending |
+| Raw call/access source sites captured before resolved-edge emission | pending |
 | Semantic enrichment duplicate full-graph scans | pending |
 
 ## B1 - Discussion Coverage Checklist
@@ -60,6 +61,7 @@ Record after P0-A.
 | non-overlapping mixed categories | pending | pending | pending |
 | API first-class layer | pending | pending | pending |
 | Functional Area accuracy gate | pending | pending | pending |
+| Proof-based CALLS/ACCESSES and source-site inventory | pending | pending | pending |
 | persisted ResolutionGap/UnresolvedSymbol | pending | pending | pending |
 | fine-grained gap relations | pending | pending | pending |
 | Resolution Health separate from Topology Health | pending | pending | pending |
@@ -230,6 +232,56 @@ Rejected candidate signals:
 | AI-assisted labels | Not reproducible or verifiable in the analyze pipeline today | no persisted deterministic label source exists |
 | Explicit semantic config | No repository-owned config exists yet for Functional Area overrides | future phase may add one if needed |
 
+## B5A - Proof-Based CALLS/ACCESSES Accuracy Metrics
+
+Status: pending
+
+Record during Phase 2A.
+
+Discussion benchmark baseline that motivated this gate:
+
+| Metric | AVmatrix | GitNexus | Notes |
+| --- | ---: | ---: | --- |
+| Raw ACCESSES | 7670 | 27559 | GitNexus over-emits heavily |
+| Unique ACCESSES source-target | 7659 | 18236 | GitNexus duplicate count is high |
+| Duplicate ACCESSES edges | 11 | 9323 | AVmatrix duplicate behavior is much cleaner |
+| Max ACCESSES duplicate | 2 | 60 | GitNexus duplicate outliers are severe |
+| ACCESSES target is Property | 7670 / 7670 | 19102 / 27559 | AVmatrix must preserve this semantic contract |
+| Raw CALLS | 15109 | 20051 | More edges is not automatically better |
+| Unique CALLS source-target | 15109 | 19147 | GitNexus has duplicates and coarse edges |
+| Duplicate CALLS edges | 0 | 904 | AVmatrix currently cleaner on duplicate CALLS |
+| Duplicate CALLS pairs | 0 | 513 | AVmatrix currently cleaner on duplicate CALLS pairs |
+| Max CALLS duplicate | 1 | 20 | GitNexus duplicate outliers are severe |
+
+Phase 2A target metrics:
+
+| Metric | Baseline | Target | After |
+| --- | ---: | ---: | ---: |
+| Raw call source sites inventoried | pending | all syntactic call sites in supported files | pending |
+| Raw access source sites inventoried | pending | all syntactic access sites in supported files | pending |
+| Source-site records with stable sourceSiteID | pending | all inventoried call/access sites | pending |
+| Resolved `CALLS` edges | 15109 discussion sample | proof-backed only | pending |
+| Resolved `ACCESSES` edges | 7670 discussion sample | property/field proof-backed only | pending |
+| Resolved edges from low-confidence/global fallback | pending | 0 unless accepted proof is present | pending |
+| Low-confidence/global fallback source sites inventoried | pending | explicit count and status distribution | pending |
+| Unresolved local-binding call sites | pending | explicit count | pending |
+| Unresolved external call/access sites | pending | explicit count | pending |
+| Ambiguous call/access sites | pending | explicit count | pending |
+| Dynamic call/access sites | pending | explicit count | pending |
+| Unsupported syntax sites | pending | explicit count | pending |
+| False resolved edges in golden corpus | pending | 0 | pending |
+| Silent missing source sites in golden corpus | pending | 0 | pending |
+| Source sites hidden by relationship dedupe without occurrence evidence | pending | 0 | pending |
+| Resolved ACCESSES targets with label `Property` | pending | all resolved ACCESSES unless split relation says otherwise | pending |
+| Resolved ACCESSES targets with labels `Variable`/`Const`/`Static` | pending | 0 or moved to separate non-ACCESSES relation/fact role | pending |
+| Resolved ACCESSES targets with labels `Function`/`Method`/other | pending | 0 | pending |
+| Non-property resolved ACCESSES targets in golden corpus | pending | 0 | pending |
+| Duplicate resolved CALLS pairs | 0 discussion sample | 0 unless source-site evidence proves separate occurrences | pending |
+| Duplicate resolved ACCESSES pairs | 11 discussion sample | expected duplicates documented by source-site occurrence count | pending |
+| `stop()` false-positive edge to `SSEListener.stop` | observed | absent; source site unresolved/ambiguous unless proven | pending |
+| Selector/import function references emitted as ACCESSES | pending | 0 | pending |
+| Proof-based graphaccuracy/CLI report command | pending | emits all B5A metrics | pending |
+
 ## B6 - ResolutionGap Persistence Metrics
 
 Status: pending
@@ -241,6 +293,9 @@ Record after P3.
 | Persisted ResolutionGap/UnresolvedSymbol entities | pending | source-backed unresolved buckets or accurate aggregate entities | pending |
 | Persisted gap relationships/typed relations | pending | nonzero where source evidence supports them | pending |
 | Gaps preserving source node ID | pending | all source-backed gaps | pending |
+| Gaps preserving sourceSiteID | pending | all gaps originating from call/access source-site inventory | pending |
+| Gaps preserving source-site status | pending | all gaps originating from call/access source-site inventory | pending |
+| Gaps preserving proof kind | pending | all gaps originating from call/access source-site inventory | pending |
 | Gaps preserving target text | pending | all source-backed gaps | pending |
 | Gaps preserving source App Layer | pending | all source-backed gaps with classified source | pending |
 | Gaps preserving source Functional Area | pending | all source-backed gaps with classified source | pending |
@@ -401,18 +456,19 @@ Status: in progress; App Layer and Functional Area semantic enrichment measured.
 
 Record after the analyze semantic enrichment phase is introduced and after each phase extends it.
 
-| Metric | Baseline | After App Layer | After Functional Area | After ResolutionGap | Final |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Semantic enrichment phase latency | pending | 33.9997 ms | 68.8814 ms | pending | pending |
-| Semantic enrichment memory delta | pending | pending | overall analyze heap +89525848 bytes; not phase-isolated | pending | pending |
-| Graph nodes before enrichment | pending | 22239 | 22358 | pending | pending |
-| Graph nodes after enrichment | pending | 22239 | 22358 | pending | pending |
-| Graph relationships before enrichment | pending | 55006 | 55349 | pending | pending |
-| Graph relationships after enrichment | pending | 55006 | 55349 | pending | pending |
-| Graph JSON size | pending | 45739916 bytes | 47953614 bytes | pending | pending |
-| LadybugDB node rows | pending | 22239 | 22358 | pending | pending |
-| LadybugDB relationship rows | pending | 55006 | 55349 | pending | pending |
-| Duplicate graph traversals introduced | pending | 0 nested whole-graph loops; one node pass and one relationship pass | 0 nested whole-graph loops; one node pass and one relationship pass shared by App Layer and Functional Area | pending | pending |
-| File rescans introduced | pending | 0 | 0 | pending | pending |
-| AST reparses introduced | pending | 0 | 0 | pending | pending |
-| Raw unresolved fact count | pending | pending | pending | pending | pending |
+| Metric | Baseline | After App Layer | After Functional Area | After Source-Site Inventory | After ResolutionGap | Final |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Semantic enrichment phase latency | pending | 33.9997 ms | 68.8814 ms | pending | pending | pending |
+| Semantic enrichment memory delta | pending | pending | overall analyze heap +89525848 bytes; not phase-isolated | pending | pending | pending |
+| Graph nodes before enrichment | pending | 22239 | 22358 | pending | pending | pending |
+| Graph nodes after enrichment | pending | 22239 | 22358 | pending | pending | pending |
+| Graph relationships before enrichment | pending | 55006 | 55349 | pending | pending | pending |
+| Graph relationships after enrichment | pending | 55006 | 55349 | pending | pending | pending |
+| Graph JSON size | pending | 45739916 bytes | 47953614 bytes | pending | pending | pending |
+| LadybugDB node rows | pending | 22239 | 22358 | pending | pending | pending |
+| LadybugDB relationship rows | pending | 55006 | 55349 | pending | pending | pending |
+| Duplicate graph traversals introduced | pending | 0 nested whole-graph loops; one node pass and one relationship pass | 0 nested whole-graph loops; one node pass and one relationship pass shared by App Layer and Functional Area | pending | pending | pending |
+| File rescans introduced | pending | 0 | 0 | pending | pending | pending |
+| AST reparses introduced | pending | 0 | 0 | pending | pending | pending |
+| Raw call/access source-site count | pending | pending | pending | pending | pending | pending |
+| Raw unresolved fact count | pending | pending | pending | pending | pending | pending |

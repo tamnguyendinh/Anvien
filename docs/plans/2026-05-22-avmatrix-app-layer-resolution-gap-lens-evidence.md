@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete and paused before Phase 3 for discussion
+Status: in progress; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES gate added before Phase 3
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -29,6 +29,8 @@ Key decisions already captured:
 - query-health should become a command, not a one-off report;
 - query/context/impact/detect-changes should surface the new semantic layers when available;
 - API-specific MCP tools should surface the semantic layers where applicable because API is a first-class layer;
+- resolved `CALLS` and `ACCESSES` must be proof-based; unproven source sites must become unresolved/ambiguous/external/dynamic/unsupported facts instead of guessed edges;
+- every syntactic call/access source site needs inventory so unresolved facts are not silently lost;
 - graph-based work starts from fresh analyze output; no stale graph fallback is a product path;
 - accuracy is more important than minimizing graph size.
 - analyze semantic enrichment must preserve both correctness and speed; neither may be traded away silently.
@@ -38,18 +40,26 @@ Key decisions already captured:
 
 Status: recorded
 
-This audit was performed after the initial plan commit to make the plan match the current source tree. It is planning evidence only; Phase 0 must still rerun the required fresh baseline at implementation start.
+This audit was performed after the initial plan commit to make the plan match the current source tree. It is planning evidence only; facts not already superseded by recorded Phase 1/Phase 2 evidence must still be re-verified before the implementation slice that depends on them.
 
 Source facts that must shape implementation:
 
 - `avmatrix analyze --force` on 2026-05-22 scanned `728` files, parsed `539`, reported `189` unsupported, `0` failed, and produced `22095` nodes and `54772` relationships at `.avmatrix/graph.json`.
+- A follow-up planning review with `avmatrix analyze --force` on 2026-05-22 scanned `732` files, parsed `543`, reported `189` unsupported, `0` failed, and produced `22361` nodes and `55352` relationships. Baseline counts must still be refreshed at implementation start because graph counts drift as code changes.
 - `internal/resolution/emit.go` emits unresolved references through `emitUnresolvedReference`, then attaches them to source nodes with `graphhealth.AppendDiagnosticToNode`.
 - `internal/resolution/resolve.go` emits unresolved heritage, call, access, and type-reference diagnostics.
+- `internal/resolution/resolve.go` also emits resolved `CALLS` through fallback paths that include `resolveGlobalCallName` with confidence `0.5`. This is the code path that must stop becoming a resolved edge unless Phase 2A defines and proves an accepted binding.
+- `internal/resolution/indexes.go` contains the resolver indexes and labels that must be audited for proof kinds: `resolveGlobalCallName`, `resolveSameFileName`, `resolveGoSamePackageFunction`, `resolveMember`, `resolveImportedMember`, `callableLabels`, `propertyLabels`, and dispatch-owner indexes.
+- `internal/resolution/emit.go` dedupes semantic relationships with `semanticEdgeKey`; source-site inventory must be recorded before this dedupe can hide distinct occurrences.
+- `internal/graph/types.go` `Relationship` has evidence, confidence, and resolution-source fields, but does not currently have sourceSiteID, source-site status, proof kind, or source range fields.
+- `internal/scopeir/facts.go` defines `CallSiteFact` and `AccessFact`, and provider collectors/tests under `internal/providers/*/references.go`, `internal/providers/*/extract_test.go`, and `internal/providers/provider_parity_test.go` emit or validate those facts across languages. The source-site inventory must start from these provider facts rather than reconstructing call/access sites after the graph has already merged relationships.
+- `internal/resolution/indexes.go` `propertyLabels()` and `internal/contracts/web_ui.go` provider fact coverage currently include `Property`, `Variable`, `Const`, and `Static` as ACCESSES-like labels. Phase 2A must either restrict resolved ACCESSES to proven property/field targets or split non-property uses into a separate relation/fact role.
+- `internal/graphaccuracy/graphaccuracy.go` currently focuses on Go definitions/imports and a direct CALLS subset; it does not yet provide ACCESSES precision metrics, source-site inventory metrics, false resolved edge detection, or the cross-language `stop()` false-positive fixture.
 - `internal/graphhealth/diagnostics.go` stores diagnostics under `graphHealthDiagnostics`; `sameDiagnosticBucket` currently does not include `TargetText`, so different unresolved target texts can collapse into one bucket.
 - `internal/graphhealth/policy.go` and `internal/graphhealth/diagnostics.go` already define diagnostic classification/actionability for builtin, standard-library, test-framework, external-library, in-repo unresolved, unclassified, non-actionable, review, and analyzer-gap.
 - `internal/httpapi/graph.go` calls graph-health summary computation when building graph responses, and its graph-health report candidate limit is capped. Full ResolutionGap inventory must not rely on that capped report path.
 - `internal/analyze/analyze.go` currently runs resolution, MRO, communities, processes, graph compaction, LadybugDB load, and graph snapshot writing in that order. Semantic enrichment must run before LadybugDB load and graph snapshot writing, and after any upstream signal it depends on.
-- The target flow is resolution with raw unresolved fact capture, then MRO, communities, processes, semantic enrichment, graph compaction, LadybugDB load, and graph snapshot. Raw unresolved facts should keep `sourceNodeID`, `factFamily`, `targetText`, `filePath`, range or line, `resolutionSource`, and note.
+- The target flow is resolution with raw unresolved fact capture, then MRO, communities, processes, semantic enrichment, graph compaction, LadybugDB load, and graph snapshot. Raw unresolved facts should keep `sourceNodeID`, `factFamily`, `targetText`, `filePath`, range or line, `resolutionSource`, and note; call/access facts from Phase 2A must also keep `sourceSiteID`, source-site status, proof kind, and target role when known.
 - Semantic enrichment should use already-produced facts and reusable indexes such as `nodeID -> node`, `filePath -> App Layer`, `nodeID -> process/community`, and `sourceNodeID -> raw gaps`; it should avoid file rescans, AST reparses, and nested whole-graph loops.
 - `internal/lbugload` exports the in-memory graph into LadybugDB. New semantic fields, entities, or relationships need export/load coverage when query or Cypher consumers are expected to see them.
 - `internal/mcp` already contains API-specific tools including `route_map`, `shape_check`, and `api_impact`; these need inclusion or explicit limitation because API is now a first-class App Layer.
@@ -65,6 +75,7 @@ Query audit sample from the current codebase:
 | --- | --- | --- |
 | unresolved reference diagnostic graph health resolution gap | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/graphhealth/diagnostics.go` | launcher `HiddenProcAttr`, Web `handleKeyDown`, backend-client process steps |
 | query ranking process matching definitions | `internal/mcp/tools.go`, CLI query command surfaces | launcher `HiddenProcAttr`, Web `handleKeyDown`, generated contract process |
+| CALLS ACCESSES resolver proof and source-site inventory | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/resolution/indexes.go`, `internal/scopeir/facts.go`, `internal/graphaccuracy/graphaccuracy.go` | launcher/runtime and Web process matches instead of resolver/source-site files |
 
 ## E1 - Discussion-To-Plan Coverage
 
@@ -80,6 +91,7 @@ Record during P0-A.
 | Non-overlapping mixed App Layer categories | pending | pending |
 | API as first-class layer | pending | pending |
 | Functional Area accuracy gate | pending | pending |
+| Proof-based CALLS/ACCESSES and source-site inventory | pending | pending |
 | Persisted ResolutionGap/UnresolvedSymbol | pending | pending |
 | Fine-grained gap relations | pending | pending |
 | Resolution Health separate from Topology Health | pending | pending |
@@ -122,8 +134,11 @@ Record during P0-C and P0-G.
 | analyze semantic enrichment flow | `internal/analyze/analyze.go`, `internal/semantic/app_layer.go`, `internal/semantic/functional_area.go` | The `semantic_enrichment` phase runs after processes and before graph compact, LadybugDB load, embeddings, and graph snapshot. Phase order from benchmark: scan, structure, documents, cobol, parse, routes, tools, orm, cross_file_binding, resolution, mro, communities, processes, semantic_enrichment, db_load. Functional Area assignment runs in the same enrichment pass as App Layer after process/community signals exist. |
 | semantic enrichment input indexes and complexity | `internal/semantic/app_layer.go`, `internal/semantic/functional_area.go` | Enrichment builds App Layer and Functional Area path caches, `nodeID -> index`, `nodeID -> appLayer`, and `nodeID -> functionalArea` maps, then performs one relationship scan for Process/Community inference. It uses graph facts only; it does not rescan files or reparse ASTs. |
 | LadybugDB export/load | `internal/lbugschema/schema.go`, `internal/lbugload/csv.go`, `internal/lbugload/load_test.go` | Node schemas and COPY CSV columns include both `appLayer` and `functionalArea`; benchmark DB load wrote 22358 node rows and 55349 relationship rows with zero fallback inserts. |
-| unresolved call emission | pending | pending |
-| unresolved access emission | pending | pending |
+| resolved/unresolved call emission | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/resolution/indexes.go` | Must trace fallback order, confidence values, proof kinds, and whether `resolveGlobalCallName` can emit a resolved `CALLS` edge. |
+| resolved/unresolved access emission | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/resolution/indexes.go` | Must trace property/member resolution, `propertyLabels()`, and whether non-property labels are emitted as ACCESSES. |
+| call/access source facts | `internal/scopeir/facts.go`, `internal/providers/*/references.go`, `internal/providers/*/extract_test.go`, `internal/providers/provider_parity_test.go` | Must prove sourceSiteID/status/proof metadata starts from raw provider facts and survives relationship dedupe. |
+| relationship dedupe/proof metadata | `internal/resolution/emit.go`, `internal/graph/types.go` | `semanticEdgeKey` and `Relationship` currently do not preserve all source-site/proof fields. |
+| graph accuracy command/report | `internal/graphaccuracy/graphaccuracy.go` | Existing accuracy checks need extension for ACCESSES, source-site inventory, false resolved edges, and low-confidence fallback counts. |
 | unresolved type-reference emission | pending | pending |
 | unresolved heritage emission | pending | pending |
 | diagnostic attachment | pending | pending |
@@ -227,6 +242,29 @@ Implemented evidence:
 - Validation evidence for this slice: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; focused Go tests passed with `go test .\internal\semantic .\internal\lbugschema .\internal\lbugload .\internal\contracts .\internal\httpapi .\internal\analyze`; wider Go tests passed with `go test .\internal\... .\cmd\...`; Web unit tests passed with `npm test -- --run` in `avmatrix-web`. Web e2e was not run for Phase 2 because this slice changed persisted graph/contract metadata but no visible Web UI behavior.
 - AVmatrix change detection before commit used `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it returned affected_count 24, changed_count 144, changed_files 18, risk_level `critical`. The critical scope is expected for this slice because it intentionally changes semantic enrichment, graph semantic status, LadybugDB schema/export, HTTP/Web contract surfaces, generated contracts, and plan/evidence ledgers.
 
+## E7A - Proof-Based CALLS/ACCESSES Evidence
+
+Status: pending
+
+Record during Phase 2A.
+
+Required evidence:
+
+- final resolved-edge contract for `CALLS` and `ACCESSES`;
+- accepted proof kinds for calls and property/field accesses;
+- rejected proof sources such as global simple-name fallback, cross-language same-name fallback, coarse file-level source edges, and selector/import references that resolve to functions;
+- code trace proving low-confidence `resolveGlobalCallName` results are no longer emitted as resolved `CALLS` without accepted proof;
+- source-site inventory schema with sourceSiteID, source node, file/range, target text, fact family, status, proof kind, target role, and linked resolved target when available;
+- chosen persistence schema for source-site facts: extended `graph.Relationship` metadata, SourceSite entity/record, or both, plus the exact consumer contract for each;
+- evidence that `semanticEdgeKey` or any replacement dedupe preserves exact source-site occurrences or exact occurrence counts;
+- evidence that `propertyLabels()` and provider fact coverage now match the strict ACCESSES contract or split non-property uses into a separate relation/fact role;
+- resolver trace for the Go `stop()` false-positive class, selector/import cases, receiver method calls, property reads/writes, local function variables, closures, imports, builtins, external packages, and TypeScript/React owner attribution;
+- provider and scope-IR evidence for `CallSiteFact` and `AccessFact` preservation across supported languages;
+- golden corpus cases proving expected resolved edges exist, known false edges do not exist, and unresolved source sites are persisted;
+- graphaccuracy or dedicated CLI/report command output for B5A metrics;
+- graph/API/DB/contract/CLI visibility for source-site status and proof metadata, or exact limitations when a surface is deferred;
+- tests and benchmark output proving false resolved edges `0`, silent missing source sites `0`, source sites hidden by dedupe `0`, and non-property ACCESSES targets `0` in the golden corpus unless non-property uses have been split into a separate relation/fact role.
+
 ## E8 - ResolutionGap Persistence Evidence
 
 Status: pending
@@ -237,6 +275,7 @@ Required evidence:
 
 - persisted schema or graph representation;
 - source-backed gap examples for unresolved call, access, type-reference, and heritage;
+- sourceSiteID, source-site status, and proof kind preservation when a gap originates from Phase 2A call/access source-site inventory;
 - examples for builtin/predeclared, standard-library, test-framework, external, in-repo analyzer gap, unclassified, and unknown roles;
 - fine-grained relation or typed metadata examples;
 - proof that fake resolved in-repo nodes/edges were not created;
@@ -322,6 +361,8 @@ Required evidence:
 - full build command/output;
 - backend test command/output;
 - contract generation/check command/output;
+- proof-based CALLS/ACCESSES golden corpus command/output;
+- source-site inventory and resolved-edge accuracy benchmark output;
 - Web unit command/output;
 - Web e2e command/output;
 - query-health benchmark output;
