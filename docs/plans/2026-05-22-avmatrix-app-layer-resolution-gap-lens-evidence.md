@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, and File-source CALLS gate slices complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, and File-source CALLS gate slices complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -79,54 +79,95 @@ Query audit sample from the current codebase:
 
 ## E1 - Discussion-To-Plan Coverage
 
-Status: pending
+Status: complete for Phase 0 closure audit.
 
-Record during P0-A.
+Recorded during P0-A from the discussion record and current plan.
 
 | Discussion area | Plan task | Evidence result |
 | --- | --- | --- |
-| Node type is insufficient | pending | pending |
-| Graph/API, not UI, must answer ownership | pending | pending |
-| BE/API/FE/App Layer rings | pending | pending |
-| Non-overlapping mixed App Layer categories | pending | pending |
-| API as first-class layer | pending | pending |
-| Functional Area accuracy gate | pending | pending |
-| Proof-based CALLS/ACCESSES and source-site inventory | pending | pending |
-| Persisted ResolutionGap/UnresolvedSymbol | pending | pending |
-| Fine-grained gap relations | pending | pending |
-| Resolution Health separate from Topology Health | pending | pending |
-| Query-health command | pending | pending |
-| Query/context/impact/detect-changes semantic output | pending | pending |
-| API-specific MCP semantic output | pending | pending |
-| Multi-ring layout and same-color islands | pending | pending |
-| No dead-code verdict from unresolved refs alone | pending | pending |
-| No timeout/auto optimizer behavior | pending | pending |
-| No stale graph fallback | pending | pending |
-| No evidence loss for graph-size reasons | pending | pending |
-| User-facing naming consistency | pending | pending |
+| Node type is insufficient | Problem, Design Decisions, P1/P2/P3 | Covered: node labels are symbol shape, not product ownership. |
+| Graph/API, not UI, must answer ownership | Problem, Scope Boundary, P1/P3/P6/P7 | Covered: Web UI must render persisted graph/API truth, not infer ownership client-side. |
+| BE/API/FE/App Layer rings | Design Decisions, P1, P7 | Covered: App Layer is macro placement ring; API is first-class; Web rings remain Phase 7. |
+| Non-overlapping mixed App Layer categories | Design Decisions, P1-A/P1-B | Covered: one primary category; mixed concerns become separate category values. |
+| API as first-class layer | Design Decisions, P1/P6 | Covered: API, API contract, API shared contract, frontend API client, and API test categories exist. |
+| Functional Area accuracy gate | Design Decisions, P2 | Covered: only high-confidence deterministic rules are accepted; ambiguous nodes remain `unknown`. |
+| Proof-based CALLS/ACCESSES and source-site inventory | Problem, Design Decisions, Phase 2A | Covered: resolved edges need proof; source sites are inventoried even when unresolved. |
+| Persisted ResolutionGap/UnresolvedSymbol | Design Decisions, P3 | Covered: persisted graph records are required; virtual UI-only data is out of scope. |
+| Fine-grained gap relations | Acceptance Criteria, P3-C | Covered: call/access/type-reference/heritage/external/builtin/test/analyzer-gap distinctions are planned. |
+| Resolution Health separate from Topology Health | Design Decisions, P3/P4 | Covered: resolution confidence does not overwrite topology status. |
+| Query-health command | Design Decisions, P5 | Covered: query-health must be a repeatable command, not a one-off report. |
+| Query/context/impact/detect-changes semantic output | Scope Boundary, P6 | Covered: command output must surface App Layer, Functional Area, and ResolutionGap when persisted. |
+| API-specific MCP semantic output | Scope Boundary, P6 | Covered: route_map, shape_check, and api_impact are included because API is first-class. |
+| Multi-ring layout and same-color islands | Design Decisions, P7 | Covered: App Layer controls macro rings; node type/gap kind controls islands inside each ring. |
+| No dead-code verdict from unresolved refs alone | Scope Boundary | Covered: unresolved references are not treated as confirmed dead code. |
+| No timeout/auto optimizer behavior | Rules of plan, Scope Boundary, P7 | Covered: no product/runtime timeouts, delayed refresh, elapsed-time budget, or automatic optimizer runs. |
+| No stale graph fallback | Rules of plan, Acceptance Criteria | Covered: stale/missing semantic metadata is incomplete evidence, not a trigger for API/UI guessing. |
+| No evidence loss for graph-size reasons | Rules of plan, Acceptance Criteria | Covered: aggregation/dedupe may only preserve counts, samples, and traceability. |
+| User-facing naming consistency | P1-H/P3/P7 | Covered: naming registry exists for semantic terms; later phases extend it as new gap categories land. |
 
 ## E2 - Baseline Analyze Evidence
 
-Status: pending
+Status: complete for Phase 0 closure audit.
 
-Record during P0-B.
+Recorded during P0-B.
 
-Required evidence:
+Command used:
 
-- command used;
-- command output or reproducible notes;
-- graph timestamp/hash if available;
-- scanned/parsed/unsupported/failed counts;
-- node/relationship/counted-semantic-relationship/execution-flow counts;
-- `unknown_connectivity` count;
-- comparison with discussion observations: about `22010` nodes, `26906` counted semantic relationships, `0` `unknown_connectivity`, `51232` unresolved occurrences, and `8880` unresolved buckets;
-- repo path and analyzer version/commit if available.
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .tmp\2026-05-22-phase0-baseline.json --benchmark-label phase0-baseline
+```
+
+Command output:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=736 parsed=547 unsupported=189 failed=0
+graph: nodes=22635 relationships=52144 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Index status after analyze:
+
+```text
+Repository: E:\AVmatrix-GO
+Indexed: 5/22/2026, 1:44:46 PM
+Indexed commit: 7c5b858
+Current commit: 7c5b858
+Status: up-to-date
+```
+
+Fresh graph evidence:
+
+| Metric | Value |
+| --- | ---: |
+| Files scanned | 736 |
+| Files parsed | 547 |
+| Unsupported files | 189 |
+| Failed files | 0 |
+| Graph nodes | 22635 |
+| Graph relationships | 52144 |
+| Counted semantic relationships | 23437 |
+| Execution flow nodes | 645 |
+| `unknown_connectivity` nodes in graph snapshot | 0 |
+| Graph path | `.avmatrix/graph.json` |
+| Graph size | 108027212 bytes |
+| Graph timestamp | 2026-05-22 13:44:46 +07:00 |
+| Graph SHA-256 | `DB28BF1D99D0CFEEC860840AE3921A878DA7B20086481F9139C437D9112F9432` |
+
+Comparison with discussion observations:
+
+| Metric | Discussion observation | Fresh baseline | Note |
+| --- | ---: | ---: | --- |
+| Graph nodes | about 22010 | 22635 | Drift expected after implementation slices. |
+| Counted semantic relationships | about 26906 | 23437 | Current counted policy excludes structural edges and reflects proof-based CALLS gates already implemented. |
+| `unknown_connectivity` | 0 | 0 | Still separated from unresolved diagnostics. |
+| Unresolved occurrences | about 51232 | 58195 | Increased after source-site inventory and low-confidence fallback demotion. |
+| Unresolved buckets | about 8880 | 57449 | Buckets now preserve source-site identity; old collapsed bucket count is no longer comparable. |
 
 ## E3 - Source Trace Evidence
 
-Status: pending
+Status: complete for Phase 0 closure audit.
 
-Record during P0-C and P0-G.
+Recorded during P0-C and P0-G. Items marked for later phases are implementation work still covered by the plan, not missing Phase 0 discovery.
 
 | Surface | Files/symbols found | Notes |
 | --- | --- | --- |
@@ -134,61 +175,148 @@ Record during P0-C and P0-G.
 | analyze semantic enrichment flow | `internal/analyze/analyze.go`, `internal/semantic/app_layer.go`, `internal/semantic/functional_area.go` | The `semantic_enrichment` phase runs after processes and before graph compact, LadybugDB load, embeddings, and graph snapshot. Phase order from benchmark: scan, structure, documents, cobol, parse, routes, tools, orm, cross_file_binding, resolution, mro, communities, processes, semantic_enrichment, db_load. Functional Area assignment runs in the same enrichment pass as App Layer after process/community signals exist. |
 | semantic enrichment input indexes and complexity | `internal/semantic/app_layer.go`, `internal/semantic/functional_area.go` | Enrichment builds App Layer and Functional Area path caches, `nodeID -> index`, `nodeID -> appLayer`, and `nodeID -> functionalArea` maps, then performs one relationship scan for Process/Community inference. It uses graph facts only; it does not rescan files or reparse ASTs. |
 | LadybugDB export/load | `internal/lbugschema/schema.go`, `internal/lbugload/csv.go`, `internal/lbugload/load_test.go` | Node schemas and COPY CSV columns include both `appLayer` and `functionalArea`; benchmark DB load wrote 22358 node rows and 55349 relationship rows with zero fallback inserts. |
-| resolved/unresolved call emission | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/resolution/indexes.go` | Must trace fallback order, confidence values, proof kinds, and whether `resolveGlobalCallName` can emit a resolved `CALLS` edge. |
-| resolved/unresolved access emission | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/resolution/indexes.go` | Must trace property/member resolution, `propertyLabels()`, and whether non-property labels are emitted as ACCESSES. |
-| call/access source facts | `internal/scopeir/facts.go`, `internal/providers/*/references.go`, `internal/providers/*/extract_test.go`, `internal/providers/provider_parity_test.go` | Must prove sourceSiteID/status/proof metadata starts from raw provider facts and survives relationship dedupe. |
-| relationship dedupe/proof metadata | `internal/resolution/emit.go`, `internal/graph/types.go` | `semanticEdgeKey` and `Relationship` currently do not preserve all source-site/proof fields. |
-| graph accuracy command/report | `internal/graphaccuracy/graphaccuracy.go` | Existing accuracy checks need extension for ACCESSES, source-site inventory, false resolved edges, and low-confidence fallback counts. |
-| unresolved type-reference emission | pending | pending |
-| unresolved heritage emission | pending | pending |
-| diagnostic attachment | pending | pending |
-| graph-health summary/report | pending | pending |
+| resolved/unresolved call emission | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/resolution/indexes.go`, `internal/resolution/source_site.go` | `resolveCall` emits source-backed unresolved diagnostics for missing source scope, file-level call source, unresolved target, and low-confidence global fallback. Proven calls emit `CALLS` with `sourceSiteID`, `sourceSiteStatus=resolved`, proof kind, target role, target text, file path, and range. |
+| resolved/unresolved access emission | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/resolution/indexes.go`, `internal/resolution/access_audit.go` | `resolveAccess` resolves receiver/imported members through `propertyLabels()` and emits unresolved access diagnostics with source-site metadata when property proof is absent. Current source-site report shows `ACCESSES` targets are `Property` only. |
+| call/access source facts | `internal/scopeir/facts.go`, `internal/providers/*/references.go`, `internal/providers/*/extract_test.go`, `internal/providers/provider_parity_test.go` | Provider facts carry call/access name, receiver, scope, file, hash, range, and arity. Resolution converts those facts into source-site IDs before relationship dedupe, so the fresh graph has 84372 source-site occurrences and 0 missing source-site IDs. |
+| relationship dedupe/proof metadata | `internal/resolution/emit.go`, `internal/graph/types.go`, `internal/lbugload/csv.go`, `internal/lbugload/queries.go` | `Relationship` now carries `sourceSiteId`, `sourceSiteIds`, `sourceSiteCount`, `sourceSiteStatus`, `proofKind`, `targetRole`, `targetText`, file path, and range. Dedupe preserves merged source-site IDs and occurrence counts. |
+| graph accuracy command/report | `internal/graphaccuracy/source_site_accuracy.go`, `internal/cli/source_site_accuracy_command.go`, `internal/graphaccuracy/graphaccuracy.go` | `source-site-accuracy` reports source-site inventory, ACCESSES target labels, low-confidence fallback diagnostics, duplicate/merged relationship evidence, and false resolved edge candidates. Existing `graphaccuracy.go` still owns older Go graph accuracy checks. |
+| unresolved type-reference emission | `internal/resolution/resolve.go`, `internal/resolution/emit.go` | `resolveTypeAnnotation` emits `type-reference` unresolved diagnostics with `sourceSiteID`, target text, source node, file hash, range, classification, and actionability when the type target is not resolved. |
+| unresolved heritage emission | `internal/resolution/indexes.go`, `internal/resolution/resolve.go`, `internal/resolution/emit.go` | `resolveHeritage` indexes raw heritage facts; unresolved heritage calls `emitUnresolvedReference` with fact family `heritage`; resolved inheritance carries source-site metadata on `INHERITS`. |
+| diagnostic attachment | `internal/resolution/emit.go`, `internal/graphhealth/diagnostics.go`, `internal/graphhealth/policy.go` | `emitUnresolvedReference` builds `graphhealth.Diagnostic` and attaches it with `AppendDiagnosticToNode`. Classification/actionability reuse the existing policy path. `sameDiagnosticBucket` uses `sourceSiteID` when present; fresh graph evidence has 0 missing diagnostic source-site IDs, so target identity is not lost in current data. |
+| graph-health summary/report | `internal/graphhealth/compute.go`, `internal/graphhealth/policy.go`, `internal/httpapi/graph.go`, `internal/httpapi/server.go`, `internal/contracts/web_ui.go` | Topology status is computed by HTTP graph/report paths and typed in Web contracts; it is not persisted as a node property in `.avmatrix/graph.json`. Resolution diagnostics are persisted on source nodes under `graphHealthDiagnostics`. |
 | HTTP graph payload | `internal/httpapi/graph.go`, `internal/semantic/metadata.go` | HTTP graph responses pass node `appLayer`/`appLayerSource` and `functionalArea`/`functionalAreaSource` properties through and include `semanticStatus`; NDJSON starts with `semantic_status`. Missing App Layer or Functional Area metadata is reported as stale/incomplete schema evidence and is not classified in the API loader. |
 | generated Web contracts | `internal/contracts/web_ui.go`, `contracts/web-ui/avmatrix-web-contract.schema.json`, `avmatrix-web/src/generated/avmatrix-contracts.ts` | Contract manifest exposes App Layer and Functional Area enums/labels plus semantic status terms. Generated TypeScript exposes `FUNCTIONAL_AREAS`, `FUNCTIONAL_AREA_LABELS`, `FunctionalArea`, `GraphSemanticStatus.functionalArea`, `NodeProperties.functionalArea`, and `NodeProperties.functionalAreaSource` in addition to the App Layer fields. |
-| query command | pending | pending |
-| context command | pending | pending |
-| impact command | pending | pending |
-| detect-changes command | pending | pending |
-| API-specific MCP tools | pending | pending |
-| Web graph app state | pending | pending |
-| Web graph filters/detail/layout | pending | pending |
+| query command | `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `internal/httpapi/query.go` | Current query audit shows noisy process ranking; Phase 5/6 must improve the actual retrieval path and command output semantics. |
+| context command | `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `internal/httpapi/query.go`, `internal/lbugload/queries.go` | Context can read graph/DB data but does not yet present App Layer, Functional Area, and ResolutionGap as first-class semantic output. |
+| impact command | `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `internal/group/*`, `internal/lbugload/queries.go` | Impact surfaces graph blast radius; Phase 6 must add semantic layer/gap context without treating HIGH/CRITICAL as a blocker. |
+| detect-changes command | `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `internal/group/*`, `internal/repo/*` | Detect-changes remains required before commits; Phase 6 must include semantic layer/gap context in changed-scope output. |
+| API-specific MCP tools | `internal/mcp/tools.go`, `internal/httpapi/*`, `internal/contracts/web_ui.go` | `route_map`, `shape_check`, and `api_impact` are API App Layer consumers and need semantic output coverage in later phases. |
+| Web graph app state | `avmatrix-web/src/hooks/app-state/graph.tsx`, `avmatrix-web/src/services/backend-client.ts`, `avmatrix-web/src/generated/avmatrix-contracts.ts` | Web state receives graph nodes, relationships, and semantic status from API/stream contracts; it must not invent missing semantic truth client-side. |
+| Web graph filters/detail/layout | `avmatrix-web/src/lib/graph-adapter.ts`, `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/components/FileTreePanel.tsx`, `avmatrix-web/src/components/GraphCanvas.tsx`, `avmatrix-web/src/hooks/useSigma.ts` | Current deterministic layout and filters do not yet expose App Layer rings/Resolution Health filters. Optimizer remains manual through `useSigma`; Phase 7 must not add auto optimizer execution. |
 
 ## E4 - Baseline Unresolved And App Layer Evidence
 
-Status: pending
+Status: complete for Phase 0 closure audit.
 
-Record during P0-D and P0-E.
+Recorded during P0-D and P0-E from fresh `.avmatrix/graph.json`, `.tmp\2026-05-22-phase0-baseline.json`, and `.tmp\2026-05-22-phase0-source-site-accuracy.json`.
 
-Required unresolved evidence:
+Unresolved inventory:
 
-- unresolved bucket and occurrence counts;
-- fact family counts;
-- diagnostic classification/actionability counts if current graph has them;
-- top target texts and examples;
-- source node labels and path buckets;
-- examples where source topology is known but resolution confidence is degraded.
+| Metric | Value |
+| --- | ---: |
+| Unresolved diagnostic buckets | 57449 |
+| Unresolved diagnostic occurrences | 58195 |
+| Source-site diagnostic buckets | 57449 |
+| Source-site diagnostic occurrences | 58195 |
+| Low-confidence global fallback occurrences | 2159 |
+| Missing diagnostic source-site IDs | 0 |
 
-Required provisional App Layer evidence:
+Unresolved fact-family counts:
 
-- path/package rules used only for sizing;
-- classification notes for these seed paths when present: `avmatrix-web/src/**`, `avmatrix-web/test/**`, `avmatrix-web/e2e/**`, `internal/**`, `cmd/**`, `internal/httpapi/**`, `avmatrix-web/src/services/backend-client.ts`, `avmatrix-launcher/**`, `contracts/**`, `internal/contracts/**`, `cmd/generate-web-contracts/**`, `docs/**`, `reports/**`, `*.md`, `*_test.go`, `test/fixtures/**`, config files, package files, and build scripts;
-- counts by backend, api, frontend, cli_launcher, shared_contract, api_contract, api_shared_contract, frontend_api_client, backend_test, frontend_test, api_test, generated_contract, docs, config, generated, mixed, and unknown;
-- examples proving why ambiguous buckets should remain unknown until better rules exist.
+| Fact family | Buckets | Occurrences |
+| --- | ---: | ---: |
+| call | 30946 | 30946 |
+| access | 17935 | 17935 |
+| type-reference | 8561 | 9307 |
+| heritage | 7 | 7 |
+
+Classification/actionability counts:
+
+| Classification | Buckets | Occurrences | Actionability |
+| --- | ---: | ---: | --- |
+| in_repo_unresolved | 33428 | 33753 | analyzer_gap |
+| builtin | 9775 | 9851 | non_actionable |
+| standard_library | 7009 | 7339 | non_actionable |
+| test_framework | 7079 | 7094 | non_actionable |
+| external_library | 158 | 158 | review |
+
+Top unresolved target texts:
+
+| Rank | Fact family | Target text | Occurrences | Classification | Actionability | Source App Layer |
+| ---: | --- | --- | ---: | --- | --- | --- |
+| 1 | call | `t.Fatalf` | 3410 | test_framework | non_actionable | backend_test |
+| 2 | type-reference | `testing.T` | 2452 | test_framework | non_actionable | backend_test |
+| 3 | call | `len` | 1955 | builtin | non_actionable | cli_launcher |
+| 4 | call | `string` | 1561 | builtin | non_actionable | cli_launcher |
+| 5 | call | `append` | 1198 | builtin | non_actionable | cli_launcher |
+| 6 | type-reference | `int` | 1075 | builtin | non_actionable | cli_launcher |
+| 7 | call | `expect` | 870 | in_repo_unresolved | analyzer_gap | frontend_test |
+| 8 | call | `make` | 652 | builtin | non_actionable | cli_launcher |
+| 9 | call | `strings.Contains` | 587 | standard_library | non_actionable | cli_launcher |
+| 10 | access | `result.Metrics` | 575 | in_repo_unresolved | analyzer_gap | backend |
+| 11 | type-reference | `collector` | 481 | in_repo_unresolved | analyzer_gap | backend |
+| 12 | call | `any` | 474 | builtin | non_actionable | backend_test |
+| 13 | call | `filepath.Join` | 432 | standard_library | non_actionable | cli_launcher |
+| 14 | call | `c.text` | 379 | in_repo_unresolved | analyzer_gap | backend |
+| 15 | call | `t.Helper` | 345 | test_framework | non_actionable | backend_test |
+
+Source buckets:
+
+| Source dimension | Top values |
+| --- | --- |
+| Source labels | Function 44043, Method 7589, Variable 4128, Struct 926, File 418, Property 162, Package 59, TypeAlias 44, Const 31, Interface 24 |
+| Source App Layers | backend_test 19155, backend 17229, frontend_test 5480, api_test 5041, frontend 4813, api 4116, api_contract 609, cli_launcher 525, frontend_api_client 371, config 88, generated_contract 22 |
+| Source Functional Areas | providers 12593, unknown 7618, analyzer 7000, mcp 4640, api 4477, resolution 3777, cli 2923, web_graph_ui 2598, storage 2561, query 2475, graph_health 1835, embeddings 1646 |
+| Source path buckets | internal/providers 11299, avmatrix-web/src 5227, internal/mcp 4775, internal/httpapi 4391, avmatrix-web/test 3914, internal/resolution 3800, internal/cli 2996, internal/group 2175, internal/analyze 2009, internal/embeddings 1701, avmatrix-web/e2e 1596 |
+
+Topology-status note:
+
+- The graph snapshot persists resolution diagnostics on source nodes, but it does not persist a topology-status node property. Topology Health is computed by graph-health/API report paths. Phase 3/4 must keep Resolution Health separate from this computed topology layer and must not use unresolved references alone as dead-code proof.
+
+App Layer inventory from the fresh graph:
+
+| App Layer | Node count |
+| --- | ---: |
+| backend | 9937 |
+| backend_test | 4457 |
+| api | 2010 |
+| frontend | 1859 |
+| docs | 1604 |
+| api_test | 1107 |
+| frontend_test | 620 |
+| mixed | 364 |
+| cli_launcher | 256 |
+| frontend_api_client | 181 |
+| api_contract | 161 |
+| config | 37 |
+| unknown | 26 |
+| generated_contract | 16 |
+| shared_contract | 0 |
+| api_shared_contract | 0 |
+| generated | 0 |
+
+Seed-path rule notes:
+
+| Seed path or pattern | Current classification behavior |
+| --- | --- |
+| `avmatrix-web/src/**` | frontend, except `avmatrix-web/src/services/backend-client.ts` as `frontend_api_client`. |
+| `avmatrix-web/test/**`, `avmatrix-web/e2e/**` | frontend_test. |
+| `internal/**` | backend by default, with stronger rules for API, contracts, providers, graph health, resolution, storage, and other Functional Areas. |
+| `cmd/**` | backend/cli command surfaces; API contract generator paths classify into API contract/test categories when applicable. |
+| `internal/httpapi/**`, `internal/mcp/**` | api or api_test depending on test/source path. |
+| `contracts/**`, `internal/contracts/**`, `cmd/generate-web-contracts/**` | api_contract, generated_contract, or api_test depending on source/test/generated path. |
+| `docs/**`, `reports/**`, `*.md` | docs/reporting categories. |
+| `*_test.go`, Web `*.test.*` and `*.spec.*` | backend_test, api_test, or frontend_test based on owning path. |
+| Config/package/build files | config when covered by explicit known config/build rules; unknown when evidence is insufficient. |
+
+Unknown App Layer examples:
+
+- `Dockerfile.cli`, `Dockerfile.web`, `avmatrix-web/vercel.json`, `baseline/phase-1-contract-freeze/*.json`, and several root/folder nodes remain `unknown` because the current rules do not have enough high-confidence ownership evidence.
 
 ## E5 - Baseline Query Evidence
 
-Status: pending
+Status: complete for Phase 0 closure audit.
 
-Record during P0-F.
+Recorded during P0-F after fresh analyze. Raw query output files are `.tmp\phase0-query-*.json`.
 
 | Intent | Expected files/symbols | Actual top results | Hit/miss | Noise reason |
 | --- | --- | --- | --- | --- |
-| unresolved reference diagnostic generation | pending | pending | pending | pending |
-| graph health unknown-connectivity separation | pending | pending | pending | pending |
-| App Layer and ResolutionGap layout | pending | pending | pending | pending |
-| runtime reset hidden-terminal behavior | pending | pending | pending | pending |
-| API contract surfaces | pending | pending | pending | pending |
-| frontend graph filter surfaces | pending | pending | pending | pending |
+| unresolved reference diagnostic generation | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/graphhealth/diagnostics.go`, `internal/graphhealth/policy.go` | `avmatrix-launcher/src/main.go` `main/resetRuntime/stopRuntime/...`; `internal/graphaccuracy/property_access.go`; `internal/contracts/web_ui.go`; `internal/cli/admin_command.go` | miss | Process ranking returns generic `Main -> HiddenProcAttr`, property-access audit, contract title-word, and clean-command flows instead of resolver/diagnostic code. |
+| graph health unknown-connectivity separation | `internal/graphhealth/compute.go`, `internal/graphhealth/policy.go`, `internal/httpapi/graph.go`, `internal/contracts/web_ui.go` | Same generic launcher/property-access/contracts/admin top processes | miss | Query terms `graph health` and `unknown connectivity` do not pull the graph-health implementation; process contains scoring dominates. |
+| App Layer and ResolutionGap layout | `internal/semantic/app_layer.go`, `internal/semantic/functional_area.go`, `avmatrix-web/src/lib/graph-adapter.ts`, `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/hooks/useSigma.ts` | Same generic launcher/property-access/contracts/admin top processes | miss | Layout/filter terms are not matching Web graph surfaces; current retrieval is not layer-aware. |
+| API contract surfaces | `internal/contracts/web_ui.go`, `contracts/web-ui/avmatrix-web-contract.schema.json`, `avmatrix-web/src/generated/avmatrix-contracts.ts`, `avmatrix-web/src/services/backend-client.ts` | Launcher flow first, then property-access audit and contract title-word process | partial | Contract file appears through `WebUIContract*`, but top result is unrelated launcher noise and frontend client/generated schema are not surfaced. |
+| frontend graph filter surfaces | `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/hooks/app-state/graph.tsx`, `avmatrix-web/src/components/FileTreePanel.tsx`, `avmatrix-web/src/components/GraphCanvas.tsx` | Same generic launcher/property-access/contracts/admin top processes | miss | Frontend graph/filter files are absent from top results; query is dominated by unrelated process labels. |
+| runtime reset hidden-terminal behavior | `avmatrix-launcher/src/main.go` `resetRuntime`, `stopRuntime`, `hiddenCommand`, `hiddenProcAttr` | `avmatrix-launcher/src/main.go` `main/resetRuntime/stopRuntime/stopPID/waitForPIDExit/processAlive/tasklistCommand/hiddenCommand/hiddenProcAttr` | hit | This intent matches because expected terms overlap the dominant launcher process. |
 
 ## E6 - App Layer Implementation Evidence
 

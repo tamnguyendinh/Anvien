@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, and File-source CALLS gate slices complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, and File-source CALLS gate slices complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -10,7 +10,7 @@ Evidence: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-evidence.md](2026-0
 
 ## B0 - Baseline Analyze Inventory
 
-Status: in progress; low-confidence fallback, source-site metadata persistence, source-site accuracy command graph-inventory, and File-source CALLS gate slices measured
+Status: complete for Phase 0 closure audit; later implementation slices continue to record changed metrics.
 
 Record after P0-B.
 
@@ -28,116 +28,122 @@ Planning audit snapshot, not P0 closure baseline:
 
 | Metric | Value |
 | --- | ---: |
-| Files scanned | pending |
-| Files parsed | pending |
-| Unsupported files | pending |
-| Failed files | pending |
-| Graph nodes | pending |
-| Graph relationships | pending |
-| Counted semantic relationships | pending |
-| Execution flows | pending |
-| `unknown_connectivity` nodes | pending |
-| Graph timestamp/hash | pending |
-| Analyze semantic enrichment phase present | pending |
-| Semantic enrichment latency | pending |
-| Semantic enrichment memory delta | pending |
-| Semantic enrichment graph-size delta | pending |
-| LadybugDB semantic export rows | pending |
-| Raw unresolved facts captured before aggregation | pending |
-| Raw call/access source sites captured before resolved-edge emission | pending |
-| Semantic enrichment duplicate full-graph scans | pending |
+| Files scanned | 736 |
+| Files parsed | 547 |
+| Unsupported files | 189 |
+| Failed files | 0 |
+| Graph nodes | 22635 |
+| Graph relationships | 52144 |
+| Counted semantic relationships | 23437 |
+| Execution flows | 645 |
+| `unknown_connectivity` nodes | 0 |
+| Graph timestamp/hash | 2026-05-22 13:44:46 +07:00 / `DB28BF1D99D0CFEEC860840AE3921A878DA7B20086481F9139C437D9112F9432` |
+| Analyze semantic enrichment phase present | yes |
+| Semantic enrichment latency | 58102700 ns |
+| Semantic enrichment memory delta | start alloc 1195152 bytes; end alloc 151258008 bytes; max observed sys 536672504 bytes |
+| Semantic enrichment graph-size delta | 22635 nodes / 52144 relationships after analyze |
+| LadybugDB semantic export rows | 22635 node rows / 52144 relationship rows; fallback inserts 0; skipped relationships 0 |
+| Raw unresolved facts captured before aggregation | 58195 unresolved diagnostics; 57449 buckets |
+| Raw call/access source sites captured before resolved-edge emission | 43163 call source-site occurrences; 24222 access source-site occurrences |
+| Semantic enrichment duplicate full-graph scans | one relationship scan recorded by semantic metrics: 52144 relationships scanned |
+
+Phase 0 command:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .tmp\2026-05-22-phase0-baseline.json --benchmark-label phase0-baseline
+```
 
 ## B1 - Discussion Coverage Checklist
 
-Status: in progress; source-site metadata persistence, source-site accuracy command graph-inventory, and File-source CALLS gate slices measured
+Status: complete for Phase 0 closure audit.
 
 Record after P0-A.
 
 | Discussion area | Plan task mapped | Evidence section mapped | Validation mapped |
 | --- | --- | --- | --- |
-| node type is insufficient | pending | pending | pending |
-| graph/API must answer before UI | pending | pending | pending |
-| App Layer and BE/API/FE rings | pending | pending | pending |
-| non-overlapping mixed categories | pending | pending | pending |
-| API first-class layer | pending | pending | pending |
-| Functional Area accuracy gate | pending | pending | pending |
-| Proof-based CALLS/ACCESSES and source-site inventory | pending | pending | pending |
-| persisted ResolutionGap/UnresolvedSymbol | pending | pending | pending |
-| fine-grained gap relations | pending | pending | pending |
-| Resolution Health separate from Topology Health | pending | pending | pending |
-| query-health command | pending | pending | pending |
-| semantic query/context/impact/detect-changes output | pending | pending | pending |
-| API-specific MCP semantic output | pending | pending | pending |
-| multi-ring layout and same-color islands | pending | pending | pending |
-| no dead-code verdict from unresolved refs alone | pending | pending | pending |
-| no timeout/auto optimizer behavior | pending | pending | pending |
-| no stale graph fallback | pending | pending | pending |
-| no evidence loss for graph-size reasons | pending | pending | pending |
-| user-facing naming consistency | pending | pending | pending |
+| node type is insufficient | Problem, P1, P2, P3 | E1 | P0-A |
+| graph/API must answer before UI | Problem, P1, P3, P6, P7 | E1, E3 | P0-A/P0-G |
+| App Layer and BE/API/FE rings | P1, P7 | E1, E4 | P0-A/P0-E |
+| non-overlapping mixed categories | P1-A/P1-B | E1, E4 | P0-A/P0-E |
+| API first-class layer | P1, P6 | E1, E4 | P0-A/P0-E |
+| Functional Area accuracy gate | P2 | E1, E3, E4 | P0-A/P0-G |
+| Proof-based CALLS/ACCESSES and source-site inventory | Phase 2A | E1, E3, E4 | P0-A/P0-C/P0-D |
+| persisted ResolutionGap/UnresolvedSymbol | P3 | E1, E3 | P0-A/P0-G |
+| fine-grained gap relations | P3-C | E1, E4 | P0-A/P0-D |
+| Resolution Health separate from Topology Health | P3/P4 | E1, E4 | P0-A/P0-D |
+| query-health command | P5 | E1, E5 | P0-A/P0-F |
+| semantic query/context/impact/detect-changes output | P6 | E1, E3, E5 | P0-A/P0-F/P0-G |
+| API-specific MCP semantic output | P6 | E1, E3, E5 | P0-A/P0-F/P0-G |
+| multi-ring layout and same-color islands | P7 | E1, E3, E5 | P0-A/P0-F/P0-G |
+| no dead-code verdict from unresolved refs alone | Scope Boundary, P3/P4 | E1, E4 | P0-A/P0-D |
+| no timeout/auto optimizer behavior | Rules of plan, P7 | E1, E3 | P0-A/P0-G |
+| no stale graph fallback | Rules of plan, P1/P2/P3 | E1, E2 | P0-A/P0-B |
+| no evidence loss for graph-size reasons | Rules of plan, P3/P5 | E1, E4 | P0-A/P0-D |
+| user-facing naming consistency | P1-H, P3, P7 | E1, E3 | P0-A/P0-G |
 
 ## B2 - Baseline Unresolved Inventory
 
-Status: pending
+Status: complete for Phase 0 closure audit.
 
 Record during P0-D.
 
 | Metric | Value |
 | --- | ---: |
-| Unresolved buckets | pending |
-| Unresolved occurrences | pending |
+| Unresolved buckets | 57449 |
+| Unresolved occurrences | 58195 |
 | Discussion observed unresolved buckets | about 8880 |
 | Discussion observed unresolved occurrences | about 51232 |
-| Call gaps | pending |
-| Access gaps | pending |
-| Type-reference gaps | pending |
-| Heritage gaps | pending |
-| Builtin/predeclared classified | pending |
-| Standard-library classified | pending |
-| Test-framework classified | pending |
-| External classified | pending |
-| In-repo analyzer gaps | pending |
-| Unclassified/unknown | pending |
+| Call gaps | 30946 |
+| Access gaps | 17935 |
+| Type-reference gaps | 9307 |
+| Heritage gaps | 7 |
+| Builtin/predeclared classified | 9851 |
+| Standard-library classified | 7339 |
+| Test-framework classified | 7094 |
+| External classified | 158 |
+| In-repo analyzer gaps | 33753 |
+| Unclassified/unknown | 0 |
 
 Top unresolved targets:
 
 | Rank | Fact family | Target text | Count | Current classification | Source App Layer hypothesis |
 | ---: | --- | --- | ---: | --- | --- |
-| 1 | pending | pending | pending | pending | pending |
-| 2 | pending | pending | pending | pending | pending |
-| 3 | pending | pending | pending | pending | pending |
-| 4 | pending | pending | pending | pending | pending |
-| 5 | pending | pending | pending | pending | pending |
-| 6 | pending | pending | pending | pending | pending |
-| 7 | pending | pending | pending | pending | pending |
-| 8 | pending | pending | pending | pending | pending |
-| 9 | pending | pending | pending | pending | pending |
-| 10 | pending | pending | pending | pending | pending |
+| 1 | call | `t.Fatalf` | 3410 | test_framework / non_actionable | backend_test |
+| 2 | type-reference | `testing.T` | 2452 | test_framework / non_actionable | backend_test |
+| 3 | call | `len` | 1955 | builtin / non_actionable | cli_launcher |
+| 4 | call | `string` | 1561 | builtin / non_actionable | cli_launcher |
+| 5 | call | `append` | 1198 | builtin / non_actionable | cli_launcher |
+| 6 | type-reference | `int` | 1075 | builtin / non_actionable | cli_launcher |
+| 7 | call | `expect` | 870 | in_repo_unresolved / analyzer_gap | frontend_test |
+| 8 | call | `make` | 652 | builtin / non_actionable | cli_launcher |
+| 9 | call | `strings.Contains` | 587 | standard_library / non_actionable | cli_launcher |
+| 10 | access | `result.Metrics` | 575 | in_repo_unresolved / analyzer_gap | backend |
 
 ## B3 - Provisional App Layer Inventory
 
-Status: pending
+Status: complete for Phase 0 closure audit.
 
-Record during P0-E. These are sizing measurements only until P1 persists product semantics.
+Record during P0-E. The plan already implemented Phase 1 before this closure audit, so these are fresh persisted App Layer graph counts rather than pre-implementation sizing-only counts.
 
 | Provisional App Layer | Node count | Evidence confidence | Notes |
 | --- | ---: | --- | --- |
-| backend | pending | pending | pending |
-| api | pending | pending | pending |
-| frontend | pending | pending | pending |
-| cli_launcher | pending | pending | pending |
-| shared_contract | pending | pending | pending |
-| api_contract | pending | pending | pending |
-| api_shared_contract | pending | pending | pending |
-| frontend_api_client | pending | pending | pending |
-| backend_test | pending | pending | pending |
-| frontend_test | pending | pending | pending |
-| api_test | pending | pending | pending |
-| generated_contract | pending | pending | pending |
-| docs | pending | pending | pending |
-| config | pending | pending | pending |
-| generated | pending | pending | pending |
-| mixed | pending | pending | pending |
-| unknown | pending | pending | pending |
+| backend | 9937 | high | Backend source and inferred backend-owned Process/Community nodes. |
+| api | 2010 | high | `internal/httpapi`, `internal/mcp`, and API surfaces. |
+| frontend | 1859 | high | `avmatrix-web/src/**` excluding more specific frontend API client/test rules. |
+| cli_launcher | 256 | high | `avmatrix-launcher/**`. |
+| shared_contract | 0 | high | No current nodes assigned to this standalone category in fresh graph. |
+| api_contract | 161 | high | Contract source/generator surfaces. |
+| api_shared_contract | 0 | high | No current nodes assigned to this mixed category in fresh graph. |
+| frontend_api_client | 181 | high | `avmatrix-web/src/services/backend-client.ts` and owned symbols. |
+| backend_test | 4457 | high | Go/backend tests. |
+| frontend_test | 620 | high | Web unit/e2e/manual test roots. |
+| api_test | 1107 | high | API/MCP/contract tests. |
+| generated_contract | 16 | high | Generated contract artifacts. |
+| docs | 1604 | high | Markdown/docs/reporting paths. |
+| config | 37 | high | Known config/package/build files covered by rules. |
+| generated | 0 | high | No current generic generated nodes assigned outside generated contracts. |
+| mixed | 364 | relationship-backed | Process/Community nodes spanning multiple non-unknown App Layers. |
+| unknown | 26 | explicit insufficient evidence | Examples include Dockerfiles, `avmatrix-web/vercel.json`, and baseline proof JSON files. |
 
 ## B4 - Target App Layer Persistence Metrics
 
