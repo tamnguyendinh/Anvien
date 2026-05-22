@@ -43,6 +43,10 @@ export interface SigmaNodeAttributes extends GraphHealthFilterable, SemanticFilt
   community?: number; // Community index from Leiden algorithm
   communityColor?: string; // Color assigned by community
   confidence?: string;
+  appLayerRing?: string;
+  islandKey?: string;
+  appLayerRingCenterX?: number;
+  appLayerRingCenterY?: number;
 }
 
 export interface SigmaEdgeAttributes {
@@ -126,6 +130,114 @@ const getClusterNodeSpacing = (nodeCount: number): number => {
 };
 
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+const MISSING_APP_LAYER_RING = "missing_app_layer";
+
+export const APP_LAYER_RING_ORDER = [
+  "frontend",
+  "frontend_test",
+  "generated",
+  "generated_contract",
+  "config",
+  MISSING_APP_LAYER_RING,
+  "unknown",
+  "mixed",
+  "backend",
+  "backend_test",
+  "shared_contract",
+  "api_contract",
+  "api_shared_contract",
+  "api",
+  "frontend_api_client",
+  "api_test",
+  "cli_launcher",
+  "docs",
+] as const;
+
+const appLayerRingOrder = new Map<string, number>(
+  APP_LAYER_RING_ORDER.map((layer, index) => [layer, index]),
+);
+
+const APP_LAYER_RING_ANGLES: Record<string, number> = {
+  frontend: 0,
+  frontend_test: Math.PI / 6,
+  generated: Math.PI / 3,
+  generated_contract: (Math.PI * 4) / 9,
+  config: (Math.PI * 11) / 18,
+  [MISSING_APP_LAYER_RING]: (Math.PI * 25) / 36,
+  unknown: (Math.PI * 31) / 36,
+  mixed: (Math.PI * 3) / 4,
+  backend: Math.PI,
+  backend_test: (Math.PI * 41) / 36,
+  shared_contract: (Math.PI * 5) / 4,
+  api_contract: (Math.PI * 49) / 36,
+  api_shared_contract: (Math.PI * 13) / 9,
+  api: (Math.PI * 3) / 2,
+  frontend_api_client: (Math.PI * 5) / 3,
+  api_test: (Math.PI * 16) / 9,
+  cli_launcher: (Math.PI * 17) / 9,
+};
+
+const compareAppLayerRingKeys = (left: string, right: string): number => {
+  const leftOrder = appLayerRingOrder.get(left);
+  const rightOrder = appLayerRingOrder.get(right);
+  if (leftOrder !== undefined && rightOrder !== undefined) {
+    return leftOrder - rightOrder;
+  }
+  if (leftOrder !== undefined) return -1;
+  if (rightOrder !== undefined) return 1;
+  return compareStableString(left, right);
+};
+
+const getAppLayerRingKey = (attributes: SigmaNodeAttributes): string => {
+  if (attributes.appLayer) return attributes.appLayer;
+  if (attributes.nodeType === DOCUMENTATION_NODE_LABEL) return "docs";
+  return MISSING_APP_LAYER_RING;
+};
+
+const getNodeIslandKey = (attributes: SigmaNodeAttributes): string => {
+  if (attributes.nodeType !== "ResolutionGap") {
+    return attributes.nodeType;
+  }
+
+  const gapKind = stableString(attributes.gapKind);
+  const factFamily = stableString(attributes.factFamily);
+  const targetRole = stableString(attributes.targetRole);
+  return ["ResolutionGap", gapKind || factFamily || targetRole || "unknown"].join(
+    ":",
+  );
+};
+
+const getComparableIslandLabel = (islandKey: string): string =>
+  islandKey.startsWith("ResolutionGap:") ? "ResolutionGap" : islandKey;
+
+const compareIslandKeys = (left: string, right: string): number =>
+  compareClusterLabels(getComparableIslandLabel(left), getComparableIslandLabel(right)) ||
+  compareStableString(left, right);
+
+const getAppLayerRingAngle = (layer: string): number => {
+  const knownAngle = APP_LAYER_RING_ANGLES[layer];
+  if (knownAngle !== undefined) return knownAngle;
+
+  const seed = getStableLabelSeed(layer);
+  return (seed / 0xffffffff) * Math.PI * 2;
+};
+
+const getMinimumAngularSeparation = (angles: number[]): number => {
+  if (angles.length <= 1) return Math.PI * 2;
+  const normalized = angles
+    .map((angle) => ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2))
+    .sort((left, right) => left - right);
+  let minimum = Math.PI * 2;
+  normalized.forEach((angle, index) => {
+    const next = normalized[(index + 1) % normalized.length];
+    const gap =
+      index === normalized.length - 1
+        ? next + Math.PI * 2 - angle
+        : next - angle;
+    minimum = Math.min(minimum, gap);
+  });
+  return Math.max(minimum, Math.PI / 36);
+};
 
 const getStableLabelSeed = (label: string): number => {
   let hash = 2166136261;
@@ -217,33 +329,80 @@ export const applyFilterBasedClusteredLayout = (
   const totalNodeCount = graph.order;
   if (totalNodeCount === 0) return;
 
-  const nodeIdsByLabel = new Map<string, string[]>();
+  const nodeIdsByRingAndIsland = new Map<string, Map<string, string[]>>();
   graph.forEachNode((nodeId, attributes) => {
-    const label = stableString(attributes.nodeType);
-    const nodeIds = nodeIdsByLabel.get(label) ?? [];
+    const ringKey = getAppLayerRingKey(attributes);
+    const islandKey = getNodeIslandKey(attributes);
+    const nodeIdsByIsland =
+      nodeIdsByRingAndIsland.get(ringKey) ?? new Map<string, string[]>();
+    const nodeIds = nodeIdsByIsland.get(islandKey) ?? [];
     nodeIds.push(nodeId);
-    nodeIdsByLabel.set(label, nodeIds);
+    nodeIdsByIsland.set(islandKey, nodeIds);
+    nodeIdsByRingAndIsland.set(ringKey, nodeIdsByIsland);
+    graph.setNodeAttribute(nodeId, "appLayerRing", ringKey);
+    graph.setNodeAttribute(nodeId, "islandKey", islandKey);
   });
 
   const nodeSpacing = getClusterNodeSpacing(totalNodeCount);
-  const clusterLabels = [...nodeIdsByLabel.keys()].sort(compareClusterLabels);
+  const rings = [...nodeIdsByRingAndIsland.entries()]
+    .sort(([left], [right]) => compareAppLayerRingKeys(left, right))
+    .map(([ringKey, nodeIdsByIsland]) => {
+      const islandKeys = [...nodeIdsByIsland.keys()].sort(compareIslandKeys);
+      const clusters = islandKeys.map((islandKey) => {
+        const nodeIds = [...(nodeIdsByIsland.get(islandKey) ?? [])].sort(
+          (left, right) => compareClusterNodeIds(graph, left, right),
+        );
 
-  const clusters = clusterLabels.map((label) => {
-    const nodeIds = [...(nodeIdsByLabel.get(label) ?? [])].sort((left, right) =>
-      compareClusterNodeIds(graph, left, right),
-    );
+        return {
+          label: islandKey,
+          nodeIds,
+          labelSeed: getStableLabelSeed(`${ringKey}:${islandKey}`),
+          radius: getClusterIslandRadius(nodeIds.length, nodeSpacing),
+        };
+      });
+      const largestClusterRadius = clusters.reduce(
+        (maximum, cluster) => Math.max(maximum, cluster.radius),
+        nodeSpacing * 4,
+      );
+      const islandGap = Math.max(
+        nodeSpacing * 14,
+        largestClusterRadius * 0.3,
+      );
+      const minimumAngularStep =
+        clusters.length <= 1 ? Math.PI : Math.sin(Math.PI / clusters.length);
+      const largestAdjacentClusterSpan = clusters.reduce((maximum, cluster) => {
+        const clusterIndex = clusters.indexOf(cluster);
+        const nextCluster =
+          clusters[(clusterIndex + 1) % clusters.length] ?? cluster;
+        return Math.max(
+          maximum,
+          cluster.radius + nextCluster.radius + islandGap,
+        );
+      }, nodeSpacing * 8);
+      const islandOrbitRadius =
+        clusters.length <= 1
+          ? 0
+          : Math.max(
+              largestClusterRadius * 1.35 + islandGap,
+              largestAdjacentClusterSpan / (2 * minimumAngularStep),
+              nodeSpacing * 16,
+            );
 
-    return {
-      label,
-      nodeIds,
-      labelSeed: getStableLabelSeed(label),
-      radius: getClusterIslandRadius(nodeIds.length, nodeSpacing),
-    };
-  });
+      return {
+        key: ringKey,
+        clusters,
+        labelSeed: getStableLabelSeed(ringKey),
+        radius: islandOrbitRadius + largestClusterRadius,
+        islandOrbitRadius,
+      };
+    });
+
   const placeCluster = (
-    cluster: (typeof clusters)[number],
+    cluster: (typeof rings)[number]["clusters"][number],
     centerX: number,
     centerY: number,
+    ringCenterX = centerX,
+    ringCenterY = centerY,
   ) => {
     const offsets = cluster.nodeIds.map((_, nodeIndex) =>
       getIslandOffset(nodeIndex, nodeSpacing, cluster.labelSeed),
@@ -269,86 +428,91 @@ export const applyFilterBasedClusteredLayout = (
       const offset = offsets[nodeIndex];
       graph.setNodeAttribute(nodeId, "x", centerX + offset.x - offsetCenterX);
       graph.setNodeAttribute(nodeId, "y", centerY + offset.y - offsetCenterY);
+      graph.setNodeAttribute(nodeId, "appLayerRingCenterX", ringCenterX);
+      graph.setNodeAttribute(nodeId, "appLayerRingCenterY", ringCenterY);
     });
   };
 
-  const documentationCluster = clusters.find(
-    (cluster) => cluster.label === DOCUMENTATION_NODE_LABEL,
-  );
-  const outerClusters = clusters.filter(
-    (cluster) => cluster.label !== DOCUMENTATION_NODE_LABEL,
-  );
+  const placeRingIslands = (
+    ring: (typeof rings)[number],
+    centerX: number,
+    centerY: number,
+  ) => {
+    if (ring.clusters.length === 0) return;
+    if (ring.clusters.length === 1) {
+      placeCluster(ring.clusters[0], centerX, centerY, centerX, centerY);
+      return;
+    }
 
-  if (documentationCluster) {
-    placeCluster(documentationCluster, 0, 0);
+    const balancedSlots = getBalancedCircularSlots(ring.clusters.length);
+    const clustersByPlacementSize = [...ring.clusters].sort(
+      (left, right) =>
+        right.radius - left.radius || compareIslandKeys(left.label, right.label),
+    );
+    const slotByClusterLabel = new Map<string, number>();
+    clustersByPlacementSize.forEach((cluster, index) => {
+      slotByClusterLabel.set(cluster.label, balancedSlots[index] ?? index);
+    });
+
+    ring.clusters.forEach((cluster, clusterIndex) => {
+      const clusterSlot = slotByClusterLabel.get(cluster.label) ?? clusterIndex;
+      const clusterAngle =
+        -Math.PI / 2 + (clusterSlot / ring.clusters.length) * Math.PI * 2;
+      const clusterCenterX =
+        centerX + Math.cos(clusterAngle) * ring.islandOrbitRadius;
+      const clusterCenterY =
+        centerY + Math.sin(clusterAngle) * ring.islandOrbitRadius;
+
+      placeCluster(cluster, clusterCenterX, clusterCenterY, centerX, centerY);
+    });
+  };
+
+  const documentationRing = rings.find((ring) => ring.key === "docs");
+  const outerRings = rings.filter((ring) => ring.key !== "docs");
+
+  if (documentationRing) {
+    placeRingIslands(documentationRing, 0, 0);
   }
-  if (outerClusters.length === 0) return;
+  if (outerRings.length === 0) return;
 
-  const balancedSlots = getBalancedCircularSlots(outerClusters.length);
-  const clustersByPlacementSize = [...outerClusters].sort(
-    (left, right) =>
-      right.radius - left.radius || compareClusterLabels(left.label, right.label),
-  );
-  const slotByClusterLabel = new Map<string, number>();
-  clustersByPlacementSize.forEach((cluster, index) => {
-    slotByClusterLabel.set(cluster.label, balancedSlots[index] ?? index);
-  });
-  const clustersBySlot = outerClusters.map((cluster) => ({
-    cluster,
-    slot: slotByClusterLabel.get(cluster.label) ?? 0,
-  }));
-
-  const largestOuterClusterRadius = outerClusters.reduce(
-    (maximum, cluster) => Math.max(maximum, cluster.radius),
+  const largestOuterRingRadius = outerRings.reduce(
+    (maximum, ring) => Math.max(maximum, ring.radius),
     nodeSpacing * 4,
   );
-  const clusterGap = Math.max(
-    nodeSpacing * 18,
-    largestOuterClusterRadius * 0.18,
-  );
-  const centerClearance = documentationCluster
-    ? documentationCluster.radius + largestOuterClusterRadius + clusterGap
+  const ringGap = Math.max(nodeSpacing * 28, largestOuterRingRadius * 0.35);
+  const centerClearance = documentationRing
+    ? documentationRing.radius + largestOuterRingRadius + ringGap
     : 0;
-  const minimumAngularStep =
-    outerClusters.length <= 1 ? Math.PI : Math.sin(Math.PI / outerClusters.length);
-  const largestAdjacentClusterSpan = clustersBySlot.reduce(
-    (maximum, placedCluster) => {
-      const nextPlacedCluster =
-        clustersBySlot.find(
-          (candidate) =>
-            candidate.slot === (placedCluster.slot + 1) % outerClusters.length,
-        ) ?? placedCluster;
-      return Math.max(
-        maximum,
-        placedCluster.cluster.radius + nextPlacedCluster.cluster.radius + clusterGap,
-      );
-    },
-    nodeSpacing * 8,
-  );
+  const ringAngles = outerRings.map((ring) => getAppLayerRingAngle(ring.key));
+  const minimumAngularSeparation = getMinimumAngularSeparation(ringAngles);
+  const largestAdjacentRingSpan = outerRings.reduce((maximum, ring) => {
+    const ringAngle = getAppLayerRingAngle(ring.key);
+    const nextRing =
+      outerRings
+        .filter((candidate) => candidate !== ring)
+        .sort(
+          (left, right) =>
+            Math.abs(getAppLayerRingAngle(left.key) - ringAngle) -
+            Math.abs(getAppLayerRingAngle(right.key) - ringAngle),
+        )[0] ?? ring;
+    return Math.max(maximum, ring.radius + nextRing.radius + ringGap);
+  }, nodeSpacing * 8);
   const orbitRadius =
-    outerClusters.length <= 1
+    outerRings.length <= 1
       ? centerClearance
       : Math.max(
-          largestOuterClusterRadius * 1.4 + clusterGap,
-          largestAdjacentClusterSpan / (2 * minimumAngularStep),
+          largestOuterRingRadius * 1.5 + ringGap,
+          largestAdjacentRingSpan / (2 * Math.sin(minimumAngularSeparation / 2)),
           centerClearance,
-          nodeSpacing * 24,
+          nodeSpacing * 36,
         );
-  const radialBand = Math.min(clusterGap * 0.35, orbitRadius * 0.06);
 
-  outerClusters.forEach((cluster, clusterIndex) => {
-    const clusterSlot = slotByClusterLabel.get(cluster.label) ?? clusterIndex;
-    const clusterAngle =
-      outerClusters.length <= 1
-        ? 0
-        : -Math.PI / 2 + (clusterSlot / outerClusters.length) * Math.PI * 2;
-    const radialOffset =
-      outerClusters.length <= 2 ? 0 : ((clusterIndex % 3) - 1) * radialBand;
-    const clusterCenterRadius = orbitRadius + radialOffset;
-    const clusterCenterX = Math.cos(clusterAngle) * clusterCenterRadius;
-    const clusterCenterY = Math.sin(clusterAngle) * clusterCenterRadius;
+  outerRings.forEach((ring) => {
+    const ringAngle = outerRings.length <= 1 ? 0 : getAppLayerRingAngle(ring.key);
+    const ringCenterX = Math.cos(ringAngle) * orbitRadius;
+    const ringCenterY = Math.sin(ringAngle) * orbitRadius;
 
-    placeCluster(cluster, clusterCenterX, clusterCenterY);
+    placeRingIslands(ring, ringCenterX, ringCenterY);
   });
 };
 

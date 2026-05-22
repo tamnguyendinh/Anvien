@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 App Layer and Resolution Health Web filter slice complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -1070,7 +1070,7 @@ Command-surface limitations recorded for Phase 6:
 
 ## E12 - Web UI Evidence
 
-Status: in progress; P7-A/P7-A2/P7-B filter and lens slice complete; P7-C detail-panel lens complete; ring layout slices pending.
+Status: complete for Phase 7 Web filters, detail lens, deterministic multi-ring layout, manual-only optimizer behavior, and browser evidence.
 
 ### P7-A / P7-A2 / P7-B - App Layer And Resolution Health Filter Evidence
 
@@ -1244,20 +1244,133 @@ artifact: .tmp\2026-05-22-p7c-detail-lens-precommit-output.txt
 
 The low scope is expected for this slice because it changes one Web detail panel, its focused unit test, and plan ledgers. AVmatrix reported no affected execution flows.
 
-Remaining P7 evidence still pending:
+### P7-D / P7-E / P7-F / P7-G / P7-H / P7-I / P7-J - Multi-Ring Layout, Islands, Manual Optimizer, And Browser Evidence
 
-Required evidence:
+Status: complete for deterministic App Layer rings, node-type/ResolutionGap islands, docs-center anchor diagnostics, manual-only optimizer behavior, and Web unit/e2e evidence.
 
-- screenshots or Playwright screenshots for Backend/API/Frontend rings;
-- proof that API is placed between Backend and Frontend, and contract rings sit near API when present;
-- screenshots or Playwright screenshots for additional rings when present;
-- proof that same node type/color islands remain grouped inside rings;
-- ring size, spacing, ordering, and default visibility behavior;
-- App Layer filter behavior;
-- Resolution Health filter behavior;
-- explicit lens rows for Backend unresolved calls, API unresolved handlers/contracts, Frontend unresolved type refs, Shared contract analyzer gaps, External unresolved symbols, Builtin/Test/Stdlib non-actionable references, In-repo analyzer gaps, Resolution gaps by functional area, Top app layers by analyzer gap count, Top functional areas by unresolved count, and Top unresolved target text;
-- proof that optimizer is manual-only and not auto-run after render/load/filter changes;
-- Web unit/e2e test names/results.
+Changed behavior:
+
+- `applyFilterBasedClusteredLayout` now uses persisted App Layer as the macro ring and node type or ResolutionGap kind as the micro island inside each ring.
+- Backend, API, and Frontend are separate rings when present; the API ring is placed between Backend and Frontend.
+- Docs are anchored at the center of the App Layer ring field; node attributes record `appLayerRingCenterX` and `appLayerRingCenterY` so browser diagnostics can distinguish macro ring center from imbalanced node bounds.
+- Additional rings appear from graph data when present, including backend_test, frontend_test, api_test, frontend_api_client, api_contract, generated_contract, config, mixed, unknown, cli_launcher, and docs.
+- Existing node type/filter colors remain unchanged and grouped by island. The browser diagnostic reports `sameColorIslandViolations=0`.
+- The optimizer remains manual-only. Render, graph load, filter changes, and ring placement do not start layout optimization automatically.
+- The e2e test budget for heartbeat graph-load readiness was raised to match large graph load behavior; this is test validation timing only and does not add product/runtime timeout behavior.
+- The shell interaction e2e now matches the current default visibility policy: if large-graph defaults hide uncommon node types, `Select all node types` is initially enabled and becomes disabled only after all node types are visible.
+
+Browser runtime ring diagnostic captured against `AVmatrix` on `127.0.0.1:5228` with `avmatrix serve` on `127.0.0.1:4848`:
+
+| Metric | Value |
+| --- | ---: |
+| Graph nodes in browser | 85561 |
+| App Layer rings visible | 14 |
+| Backend ring nodes | 28466 |
+| API ring nodes | 6907 |
+| Frontend ring nodes | 7585 |
+| Backend test ring nodes | 24683 |
+| Frontend test ring nodes | 6678 |
+| API test ring nodes | 6948 |
+| Frontend API client ring nodes | 555 |
+| API contract ring nodes | 790 |
+| Generated contract ring nodes | 38 |
+| Docs ring nodes | 1614 |
+| Config ring nodes | 125 |
+| Unknown ring nodes | 26 |
+| Mixed ring nodes | 365 |
+| API between Backend and Frontend | true |
+| Docs centered | true |
+| Same-color island violations | 0 |
+| Backend islands | 16 |
+| API islands | 16 |
+| Frontend islands | 16 |
+| Docs islands | 3 |
+
+Screenshot artifact:
+
+```text
+avmatrix-web\test-results\server-connect-Graph-Dashb-1289f-ode-type-islands-in-browser-chromium\app-layer-rings-visible.png
+```
+
+Impact evidence before the layout/diagnostic edits:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p7-layout-start-analyze.json --benchmark-label p7-layout-start
+files: scanned=755 parsed=565 unsupported=190 failed=0
+graph: nodes=84982 relationships=116778
+
+impact applyFilterBasedClusteredLayout: HIGH/CRITICAL frontend layout scope across graph adapter and manual optimizer users
+impact GraphCanvas: LOW frontend Web graph UI scope
+
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p7-layout-docs-anchor-preedit-analyze.json --benchmark-label p7-layout-docs-anchor-preedit
+files: scanned=755 parsed=565 unsupported=190 failed=0
+graph: nodes=85561 relationships=117496
+
+impact buildLayoutRingDiagnostics: CRITICAL frontend Web graph UI diagnostic scope
+```
+
+Focused validation evidence:
+
+```text
+powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1
+npm --prefix .\avmatrix-web run test -- --run test/unit/graph-adapter.edge-geometry.test.ts test/unit/GraphCanvas.selection-performance.test.tsx test/unit/runtime-diagnostics.test.ts
+npm --prefix .\avmatrix-web run test:e2e -- e2e/server-connect.spec.ts
+```
+
+Result:
+
+```text
+Full build passed after stopping the temporary `avmatrix serve` process that was locking avmatrix.exe.
+Focused Web unit tests passed: 3 files, 29 tests.
+server-connect e2e passed with backend and browser: 10 tests passed.
+```
+
+Full Web validation after final Phase 7 edits:
+
+```text
+powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1
+npm --prefix .\avmatrix-web run test -- --run
+```
+
+Result:
+
+```text
+Full build passed.
+Web unit suite passed: 45 files, 368 tests.
+```
+
+Full e2e coverage was run per spec because the single all-spec command exceeded the tool execution window; the timed-out all-spec run is not counted as passing evidence. Per-spec browser results:
+
+| Spec | Result |
+| --- | --- |
+| `e2e/server-connect.spec.ts` | 10 passed |
+| `e2e/graph-health-ui.spec.ts` | 4 passed |
+| `e2e/heartbeat-reconnect.spec.ts` | 2 passed |
+| `e2e/multi-repo-scoping.spec.ts` | 3 passed |
+| `e2e/repo-switching.spec.ts` | 6 passed |
+| `e2e/onboarding.spec.ts` | 12 passed, 1 skipped by `PACKAGED_LAUNCHER_E2E` flag |
+| `e2e/shell-interactions.spec.ts` | 7 passed |
+| Ring screenshot focused rerun | 1 passed and wrote `app-layer-rings-visible.png` |
+
+The Phase 7 e2e total for non-manual specs is `44` passed and `1` expected packaged-launcher skip, plus the focused screenshot rerun.
+
+Pre-commit AVmatrix scope check after staging the P7-D through P7-J layout slice:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p7-layout-final2-precommit-analyze.json --benchmark-label p7-layout-final2-precommit
+files: scanned=755 parsed=565 unsupported=190 failed=0
+graph: nodes=85594 relationships=117530
+
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all
+summary: affected_count=12, changed_count=761, changed_files=12, risk_level=high
+changed_app_layers: docs=8, frontend=417, frontend_test=336
+changed_functional_areas: documentation=8, layout=221, unknown=396, web_graph_ui=136
+affected_app_layers: frontend=9, mixed=3
+affected_functional_areas: mixed=9, web_graph_ui=3
+artifact: .tmp\2026-05-22-p7-layout-final2-precommit-output.txt
+```
+
+The high scope is expected for this slice because it intentionally changes shared Web graph layout conversion, GraphCanvas runtime diagnostics, runtime diagnostics state, browser e2e coverage, Web unit layout coverage, and the Phase 7 ledgers. The affected processes are frontend/mixed Web graph UI flows rooted in `createLayoutRingBounds` and related GraphCanvas layout diagnostics.
 
 ## E13 - Full Validation Evidence
 

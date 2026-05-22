@@ -23,6 +23,16 @@ const {
     sigmaGraph: {
       order: 1,
       nodes: () => ['Function:src/foo.ts:loadFoo'],
+      getNodeAttributes: () => ({
+        x: -100,
+        y: 0,
+        size: 2,
+        color: '#10b981',
+        label: 'loadFoo',
+        nodeType: 'Function',
+        appLayerRing: 'backend',
+        islandKey: 'Function',
+      }),
       getNodeAttribute: (_nodeId: string, attribute: string) =>
         attribute === 'nodeType' ? 'Function' : 2,
     },
@@ -215,5 +225,41 @@ describe('GraphCanvas selection performance guards', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Optimize Layout' }));
 
     expect(startLayoutSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not invoke manual layout optimization during filter changes', async () => {
+    render(
+      <AppStateProvider>
+        <Harness />
+        <GraphCanvas />
+      </AppStateProvider>,
+    );
+
+    await waitFor(() => expect(appState).not.toBeNull());
+
+    const graph = createKnowledgeGraph();
+    graph.addNode(
+      createFunctionNode(
+        'Function:src/foo.ts:loadFoo',
+        'loadFoo',
+        'src/foo.ts',
+        10,
+        20,
+      ),
+    );
+
+    await act(async () => {
+      appState!.setGraph(graph);
+    });
+
+    startLayoutSpy.mockClear();
+
+    await act(async () => {
+      appState!.toggleLabelVisibility('Function');
+      appState!.toggleSemanticAppLayer('backend');
+      appState!.toggleResolutionConfidence('degraded');
+    });
+
+    expect(startLayoutSpy).not.toHaveBeenCalled();
   });
 });

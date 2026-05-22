@@ -26,6 +26,17 @@ export interface WebRuntimeDiagnostics {
     lastManualOptimizerInvokedAt: number;
     lastManualOptimizerRunMs: number;
   };
+  layoutRings: {
+    recordedAt: number;
+    nodeCount: number;
+    ringCount: number;
+    ringNodeCounts: Record<string, number>;
+    ringCenters: Record<string, { x: number; y: number }>;
+    ringIslandCounts: Record<string, number>;
+    apiBetweenBackendAndFrontend: boolean;
+    docsCentered: boolean;
+    sameColorIslandViolations: number;
+  };
   heartbeat: {
     connects: number;
     reconnects: number;
@@ -78,6 +89,17 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
     lastNodeCount: 0,
     lastManualOptimizerInvokedAt: 0,
     lastManualOptimizerRunMs: 0,
+  },
+  layoutRings: {
+    recordedAt: 0,
+    nodeCount: 0,
+    ringCount: 0,
+    ringNodeCounts: {},
+    ringCenters: {},
+    ringIslandCounts: {},
+    apiBetweenBackendAndFrontend: false,
+    docsCentered: false,
+    sameColorIslandViolations: 0,
   },
   heartbeat: {
     connects: 0,
@@ -144,6 +166,24 @@ export const recordVisualScale = (input: {
   diagnostics.visualScale = {
     maxSizeByLabel: {},
     ...input,
+    recordedAt: nowMs(),
+  };
+};
+
+export const recordLayoutRings = (input: {
+  nodeCount: number;
+  ringNodeCounts: Record<string, number>;
+  ringCenters: Record<string, { x: number; y: number }>;
+  ringIslandCounts: Record<string, number>;
+  apiBetweenBackendAndFrontend: boolean;
+  docsCentered: boolean;
+  sameColorIslandViolations: number;
+}): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  diagnostics.layoutRings = {
+    ...input,
+    ringCount: Object.keys(input.ringNodeCounts).length,
     recordedAt: nowMs(),
   };
 };

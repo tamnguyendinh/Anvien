@@ -23,6 +23,7 @@ import {
 } from '../lib/graph-adapter';
 import {
   recordGraphConversion,
+  recordLayoutRings,
   recordVisualScale,
 } from '../lib/runtime-diagnostics';
 import type { GraphNode } from '@/generated/avmatrix-contracts';
@@ -32,6 +33,118 @@ import Graph from 'graphology';
 export interface GraphCanvasHandle {
   focusNode: (nodeId: string) => void;
 }
+
+type LayoutRingBounds = {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  count: number;
+};
+
+const createLayoutRingBounds = (): LayoutRingBounds => ({
+  minX: Number.POSITIVE_INFINITY,
+  maxX: Number.NEGATIVE_INFINITY,
+  minY: Number.POSITIVE_INFINITY,
+  maxY: Number.NEGATIVE_INFINITY,
+  count: 0,
+});
+
+const buildLayoutRingDiagnostics = (
+  sigmaGraph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>,
+) => {
+  const boundsByRing = new Map<string, LayoutRingBounds>();
+  const anchorsByRing = new Map<string, { x: number; y: number }>();
+  const islandsByRing = new Map<string, Set<string>>();
+  const colorsByRingIsland = new Map<string, Set<string>>();
+  const islandsByRingNodeType = new Map<string, Set<string>>();
+
+  for (const nodeId of sigmaGraph.nodes()) {
+    const attributes = sigmaGraph.getNodeAttributes(nodeId);
+    const ring = attributes.appLayerRing ?? 'missing_app_layer';
+    const island = attributes.islandKey ?? attributes.nodeType;
+    const ringIslandKey = `${ring}:${island}`;
+    const ringNodeTypeKey = `${ring}:${attributes.nodeType}`;
+
+    const bounds = boundsByRing.get(ring) ?? createLayoutRingBounds();
+    bounds.minX = Math.min(bounds.minX, attributes.x);
+    bounds.maxX = Math.max(bounds.maxX, attributes.x);
+    bounds.minY = Math.min(bounds.minY, attributes.y);
+    bounds.maxY = Math.max(bounds.maxY, attributes.y);
+    bounds.count++;
+    boundsByRing.set(ring, bounds);
+    if (
+      !anchorsByRing.has(ring) &&
+      typeof attributes.appLayerRingCenterX === 'number' &&
+      typeof attributes.appLayerRingCenterY === 'number'
+    ) {
+      anchorsByRing.set(ring, {
+        x: attributes.appLayerRingCenterX,
+        y: attributes.appLayerRingCenterY,
+      });
+    }
+
+    const ringIslands = islandsByRing.get(ring) ?? new Set<string>();
+    ringIslands.add(island);
+    islandsByRing.set(ring, ringIslands);
+
+    const colors = colorsByRingIsland.get(ringIslandKey) ?? new Set<string>();
+    colors.add(attributes.color);
+    colorsByRingIsland.set(ringIslandKey, colors);
+
+    const nodeTypeIslands =
+      islandsByRingNodeType.get(ringNodeTypeKey) ?? new Set<string>();
+    nodeTypeIslands.add(island);
+    islandsByRingNodeType.set(ringNodeTypeKey, nodeTypeIslands);
+  }
+
+  const ringNodeCounts: Record<string, number> = {};
+  const ringCenters: Record<string, { x: number; y: number }> = {};
+  const ringIslandCounts: Record<string, number> = {};
+
+  for (const [ring, bounds] of boundsByRing) {
+    const anchor = anchorsByRing.get(ring);
+    ringNodeCounts[ring] = bounds.count;
+    ringCenters[ring] =
+      anchor ?? {
+        x: (bounds.minX + bounds.maxX) / 2,
+        y: (bounds.minY + bounds.maxY) / 2,
+      };
+    ringIslandCounts[ring] = islandsByRing.get(ring)?.size ?? 0;
+  }
+
+  const backendX = ringCenters.backend?.x;
+  const apiX = ringCenters.api?.x;
+  const frontendX = ringCenters.frontend?.x;
+  const apiBetweenBackendAndFrontend =
+    backendX !== undefined &&
+    apiX !== undefined &&
+    frontendX !== undefined &&
+    ((backendX <= apiX && apiX <= frontendX) ||
+      (frontendX <= apiX && apiX <= backendX));
+  const docsCenter = ringCenters.docs;
+  const docsCentered = docsCenter
+    ? Math.hypot(docsCenter.x, docsCenter.y) <= 1
+    : false;
+  let sameColorIslandViolations = 0;
+  for (const colors of colorsByRingIsland.values()) {
+    if (colors.size > 1) sameColorIslandViolations++;
+  }
+  for (const [ringNodeType, islands] of islandsByRingNodeType) {
+    if (ringNodeType.endsWith(':ResolutionGap')) continue;
+    if (islands.size > 1) sameColorIslandViolations++;
+  }
+
+  return {
+    nodeCount: sigmaGraph.order,
+    ringNodeCounts,
+    ringCenters,
+    ringIslandCounts,
+    apiBetweenBackendAndFrontend,
+    docsCentered,
+    sameColorIslandViolations,
+  };
+};
 
 export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
   const {
@@ -231,6 +344,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
           : 0,
       maxSizeByLabel,
     });
+    recordLayoutRings(buildLayoutRingDiagnostics(sigmaGraph));
     setSigmaGraph(sigmaGraph);
   }, [graph, nodeById, setSigmaGraph]);
 

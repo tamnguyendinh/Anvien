@@ -199,12 +199,15 @@ test.describe("Shell interactions", () => {
     });
     const fileNodeTypeButton = page.locator('button[title^="File ("]').first();
     const selectAllNodeTypesButton = page.getByTitle("Select all node types");
+    await expect(selectAllNodeTypesButton).toBeEnabled();
+    await selectAllNodeTypesButton.click();
     await expect(selectAllNodeTypesButton).toBeDisabled();
     await fileNodeTypeButton.click();
     await expect(fileNodeTypeButton).toHaveAttribute("aria-pressed", "false");
     await expect(selectAllNodeTypesButton).toBeEnabled();
     await selectAllNodeTypesButton.click();
     await expect(fileNodeTypeButton).toHaveAttribute("aria-pressed", "true");
+    await expect(selectAllNodeTypesButton).toBeDisabled();
 
     await expect(
       page.locator('div[title^="Legend node File ("]').first(),

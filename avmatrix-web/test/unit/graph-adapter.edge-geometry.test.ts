@@ -8,6 +8,7 @@ import {
   getMaxRenderedNodeSize,
   getScaledNodeSize,
   knowledgeGraphToGraphology,
+  type SigmaNodeAttributes,
 } from "../../src/lib/graph-adapter";
 import { DOCUMENTATION_NODE_LABEL, getNodeColor } from "../../src/lib/constants";
 import { DEFAULT_SEMANTIC_FILTERS } from "../../src/lib/semantic-filters";
@@ -101,6 +102,83 @@ const getGeometryByType = (
 
   return geometryByType;
 };
+
+const getGeometryByAttribute = (
+  sigmaGraph: ReturnType<typeof knowledgeGraphToGraphology>,
+  readKey: (attributes: SigmaNodeAttributes) => string,
+) => {
+  const boundsByKey = new Map<string, ClusterBounds & { count: number }>();
+
+  for (const nodeId of sigmaGraph.nodes()) {
+    const attributes = sigmaGraph.getNodeAttributes(nodeId);
+    const key = readKey(attributes);
+    const current =
+      boundsByKey.get(key) ??
+      {
+        minX: Number.POSITIVE_INFINITY,
+        maxX: Number.NEGATIVE_INFINITY,
+        minY: Number.POSITIVE_INFINITY,
+        maxY: Number.NEGATIVE_INFINITY,
+        count: 0,
+      };
+    current.minX = Math.min(current.minX, attributes.x);
+    current.maxX = Math.max(current.maxX, attributes.x);
+    current.minY = Math.min(current.minY, attributes.y);
+    current.maxY = Math.max(current.maxY, attributes.y);
+    current.count++;
+    boundsByKey.set(key, current);
+  }
+
+  const geometryByKey = new Map<string, ClusterGeometry>();
+  for (const [key, bounds] of boundsByKey) {
+    const width = bounds.maxX - bounds.minX;
+    const height = bounds.maxY - bounds.minY;
+    const centerX = bounds.minX + width / 2;
+    const centerY = bounds.minY + height / 2;
+    geometryByKey.set(key, {
+      ...bounds,
+      centerX,
+      centerY,
+      width,
+      height,
+      radius: Math.hypot(width, height) / 2,
+    });
+  }
+  return geometryByKey;
+};
+
+const getGeometryByAppLayerRing = (
+  sigmaGraph: ReturnType<typeof knowledgeGraphToGraphology>,
+) =>
+  getGeometryByAttribute(
+    sigmaGraph,
+    (attributes) => attributes.appLayerRing ?? "missing_app_layer",
+  );
+
+const getGeometryByRingAndIsland = (
+  sigmaGraph: ReturnType<typeof knowledgeGraphToGraphology>,
+) =>
+  getGeometryByAttribute(
+    sigmaGraph,
+    (attributes) =>
+      `${attributes.appLayerRing ?? "missing_app_layer"}:${
+        attributes.islandKey ?? attributes.nodeType
+      }`,
+  );
+
+const withAppLayer = <T extends { properties: any }>(
+  node: T,
+  appLayer: string,
+  extra: Record<string, unknown> = {},
+): T =>
+  ({
+    ...node,
+    properties: {
+      ...node.properties,
+      appLayer,
+      ...extra,
+    },
+  }) as T;
 
 const getCircularGap = (
   left: ClusterGeometry,
@@ -428,6 +506,159 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
 
     expect(minimumRadius).toBeGreaterThan(0);
     expect(maximumRadius / minimumRadius).toBeLessThanOrEqual(1.2);
+  });
+
+  it("places App Layer rings with API between Backend and Frontend", () => {
+    const graph = createKnowledgeGraph();
+    const docsNodeIds: string[] = [];
+
+    for (let index = 0; index < 16; index++) {
+      graph.addNode(
+        withAppLayer(
+          createFunctionNode(`backend${index}`, `backend/${index}.go`, index),
+          "backend",
+        ),
+      );
+      graph.addNode(
+        withAppLayer(
+          createFunctionNode(`api${index}`, `internal/httpapi/${index}.go`, index),
+          "api",
+        ),
+      );
+      graph.addNode(
+        withAppLayer(
+          createFunctionNode(
+            `frontend${index}`,
+            `avmatrix-web/src/${index}.tsx`,
+            index,
+          ),
+          "frontend",
+        ),
+      );
+    }
+    for (let index = 0; index < 9; index++) {
+      const node = withAppLayer(
+        createTypedNode("File", index, `docs/guide-${index}.md`) as any,
+        "docs",
+      );
+      docsNodeIds.push(node.id);
+      graph.addNode(node);
+    }
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const rings = getGeometryByAppLayerRing(sigmaGraph);
+    const backend = rings.get("backend");
+    const api = rings.get("api");
+    const frontend = rings.get("frontend");
+    const docs = rings.get("docs");
+
+    expect(backend).toBeDefined();
+    expect(api).toBeDefined();
+    expect(frontend).toBeDefined();
+    expect(docs).toBeDefined();
+    expect(backend!.centerX).toBeLessThan(api!.centerX);
+    expect(api!.centerX).toBeLessThan(frontend!.centerX);
+    expect(Math.hypot(docs!.centerX, docs!.centerY)).toBeLessThan(1);
+    for (const nodeId of docsNodeIds) {
+      expect(sigmaGraph.getNodeAttribute(nodeId, "appLayerRingCenterX")).toBe(0);
+      expect(sigmaGraph.getNodeAttribute(nodeId, "appLayerRingCenterY")).toBe(0);
+    }
+    expect(getCircularGap(backend!, api!)).toBeGreaterThan(200);
+    expect(getCircularGap(api!, frontend!)).toBeGreaterThan(200);
+  });
+
+  it("keeps node type color islands grouped inside each App Layer ring", () => {
+    const graph = createKnowledgeGraph();
+    const backendFunctionIds: string[] = [];
+    const backendClassIds: string[] = [];
+
+    for (let index = 0; index < 25; index++) {
+      const node = withAppLayer(
+        createFunctionNode(`backendFn${index}`, `backend/fn-${index}.go`, index),
+        "backend",
+      );
+      backendFunctionIds.push(node.id);
+      graph.addNode(node);
+    }
+    for (let index = 0; index < 16; index++) {
+      const node = withAppLayer(
+        createClassNode(`BackendClass${index}`, `backend/class-${index}.go`),
+        "backend",
+      );
+      backendClassIds.push(node.id);
+      graph.addNode(node);
+    }
+    for (let index = 0; index < 16; index++) {
+      graph.addNode(
+        withAppLayer(
+          createFunctionNode(
+            `frontendFn${index}`,
+            `avmatrix-web/src/fn-${index}.tsx`,
+            index,
+          ),
+          "frontend",
+        ),
+      );
+    }
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const islands = getGeometryByRingAndIsland(sigmaGraph);
+    const backendFunctions = islands.get("backend:Function");
+    const backendClasses = islands.get("backend:Class");
+
+    expect(backendFunctions).toBeDefined();
+    expect(backendClasses).toBeDefined();
+    expect(getCircularGap(backendFunctions!, backendClasses!)).toBeGreaterThan(
+      100,
+    );
+
+    for (const nodeId of backendFunctionIds) {
+      expect(sigmaGraph.getNodeAttribute(nodeId, "appLayerRing")).toBe("backend");
+      expect(sigmaGraph.getNodeAttribute(nodeId, "islandKey")).toBe("Function");
+      expect(sigmaGraph.getNodeAttribute(nodeId, "color")).toBe(
+        getNodeColor("Function"),
+      );
+    }
+    for (const nodeId of backendClassIds) {
+      expect(sigmaGraph.getNodeAttribute(nodeId, "islandKey")).toBe("Class");
+      expect(sigmaGraph.getNodeAttribute(nodeId, "color")).toBe(
+        getNodeColor("Class"),
+      );
+    }
+  });
+
+  it("separates ResolutionGap kinds as islands inside their App Layer ring", () => {
+    const graph = createKnowledgeGraph();
+
+    for (let index = 0; index < 12; index++) {
+      graph.addNode(
+        withAppLayer(
+          createTypedNode("ResolutionGap", index, `backend/gap-call-${index}.go`) as any,
+          "backend",
+          { gapKind: "unresolved_call", factFamily: "call" },
+        ),
+      );
+      graph.addNode(
+        withAppLayer(
+          createTypedNode(
+            "ResolutionGap",
+            index + 100,
+            `backend/gap-access-${index}.go`,
+          ) as any,
+          "backend",
+          { gapKind: "unresolved_access", factFamily: "access" },
+        ),
+      );
+    }
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const islands = getGeometryByRingAndIsland(sigmaGraph);
+    const callGaps = islands.get("backend:ResolutionGap:unresolved_call");
+    const accessGaps = islands.get("backend:ResolutionGap:unresolved_access");
+
+    expect(callGaps).toBeDefined();
+    expect(accessGaps).toBeDefined();
+    expect(getCircularGap(callGaps!, accessGaps!)).toBeGreaterThan(100);
   });
 
   it("uses the node type color for every node even when community metadata exists", () => {

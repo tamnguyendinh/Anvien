@@ -37,6 +37,17 @@ type RuntimeDiagnostics = {
     manualOptimizerInvocations: number;
     isRunning: boolean;
   };
+  layoutRings: {
+    recordedAt: number;
+    nodeCount: number;
+    ringCount: number;
+    ringNodeCounts: Record<string, number>;
+    ringCenters: Record<string, { x: number; y: number }>;
+    ringIslandCounts: Record<string, number>;
+    apiBetweenBackendAndFrontend: boolean;
+    docsCentered: boolean;
+    sameColorIslandViolations: number;
+  };
   heartbeat: {
     connects: number;
     reconnects: number;
@@ -282,6 +293,39 @@ test.describe('Graph Dashboard Controls', () => {
     expect(visualScale.structuralToLeafRatio).toBeLessThanOrEqual(3);
     expect(visualScale.maxSizeByLabel.Package ?? 0).toBeLessThanOrEqual(1.5);
     expect(visualScale.maxSizeByLabel.Section ?? 0).toBeLessThanOrEqual(1);
+  });
+
+  test('reports Backend API Frontend rings and node-type islands in browser', async ({
+    page,
+  }, testInfo) => {
+    await waitForGraphLoaded(page);
+
+    await expect
+      .poll(
+        async () => (await getRuntimeDiagnostics(page))?.layoutRings.ringCount ?? 0,
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThan(0);
+
+    const diagnostics = await getRuntimeDiagnostics(page);
+    const rings = diagnostics!.layoutRings;
+    expect(rings.ringNodeCounts.backend).toBeGreaterThan(0);
+    expect(rings.ringNodeCounts.api).toBeGreaterThan(0);
+    expect(rings.ringNodeCounts.frontend).toBeGreaterThan(0);
+    expect(rings.apiBetweenBackendAndFrontend).toBe(true);
+    expect(rings.sameColorIslandViolations).toBe(0);
+    expect(rings.ringIslandCounts.backend).toBeGreaterThan(0);
+    expect(rings.ringIslandCounts.api).toBeGreaterThan(0);
+    expect(rings.ringIslandCounts.frontend).toBeGreaterThan(0);
+    if ((rings.ringNodeCounts.docs ?? 0) > 0) {
+      expect(rings.docsCentered).toBe(true);
+    }
+
+    await expect(page.locator('canvas').first()).toBeVisible({ timeout: 10_000 });
+    await page.screenshot({
+      path: testInfo.outputPath('app-layer-rings-visible.png'),
+      fullPage: true,
+    });
   });
 });
 

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   getWebRuntimeDiagnostics,
   recordGraphConversion,
+  recordLayoutRings,
   recordManualLayoutOptimizerInvocation,
   recordReconnectBannerState,
   recordVisualScale,
@@ -68,6 +69,30 @@ describe('runtime diagnostics', () => {
     expect(diagnostics?.visualScale.structuralToLeafRatio).toBe(3);
     expect(diagnostics?.visualScale.maxSizeByLabel.Package).toBe(1.5);
     expect(diagnostics?.visualScale.maxSizeByLabel.Section).toBe(1);
+  });
+
+  it('records App Layer ring layout diagnostics for e2e assertions', () => {
+    recordLayoutRings({
+      nodeCount: 120,
+      ringNodeCounts: { backend: 40, api: 20, frontend: 60 },
+      ringCenters: {
+        backend: { x: -100, y: 0 },
+        api: { x: 0, y: 80 },
+        frontend: { x: 100, y: 0 },
+      },
+      ringIslandCounts: { backend: 3, api: 2, frontend: 4 },
+      apiBetweenBackendAndFrontend: true,
+      docsCentered: true,
+      sameColorIslandViolations: 0,
+    });
+
+    const diagnostics = getWebRuntimeDiagnostics();
+    expect(diagnostics?.layoutRings.nodeCount).toBe(120);
+    expect(diagnostics?.layoutRings.ringCount).toBe(3);
+    expect(diagnostics?.layoutRings.ringNodeCounts.api).toBe(20);
+    expect(diagnostics?.layoutRings.ringIslandCounts.frontend).toBe(4);
+    expect(diagnostics?.layoutRings.apiBetweenBackendAndFrontend).toBe(true);
+    expect(diagnostics?.layoutRings.sameColorIslandViolations).toBe(0);
   });
 
   it('counts reconnect banner transitions without double-counting the same state', () => {

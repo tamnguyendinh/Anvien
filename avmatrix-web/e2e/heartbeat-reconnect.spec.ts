@@ -14,6 +14,7 @@ import { test, expect } from '@playwright/test';
 
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://127.0.0.1:4848';
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://127.0.0.1:5228';
+const GRAPH_READY_TIMEOUT_MS = 45_000;
 
 let firstRepoName = '';
 
@@ -73,7 +74,9 @@ test.describe('Heartbeat Reconnect', () => {
     await page.goto(graphUrl());
 
     // Wait for graph to load (heartbeat is blocked, but graph loads fine)
-    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+      timeout: GRAPH_READY_TIMEOUT_MS,
+    });
 
     // The reconnecting banner should appear (heartbeat is failing)
     const banner = page.getByText('Server connection lost');
@@ -93,7 +96,9 @@ test.describe('Heartbeat Reconnect', () => {
 
     await page.goto(graphUrl());
 
-    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+      timeout: GRAPH_READY_TIMEOUT_MS,
+    });
 
     // Verify banner appears
     const banner = page.getByText('Server connection lost');

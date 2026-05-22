@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 App Layer and Resolution Health Web filter slice complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -564,29 +564,29 @@ Record after P6.
 
 ## B10 - Web UI Ring And Filter Metrics
 
-Status: in progress; P7-A/P7-A2/P7-B filter metrics recorded; P7-C detail-panel metrics recorded; ring/layout metrics pending P7-D through P7-J.
+Status: complete for Phase 7 Web filter, detail-panel, ring layout, island, and manual optimizer metrics.
 
 Record after P7.
 
 | Metric | Value |
 | --- | ---: |
-| Visible App Layer ring count | pending |
-| Backend ring node count | pending |
-| API ring node count | pending |
-| Frontend ring node count | pending |
-| API ring placed between Backend and Frontend | pending |
-| Contract rings placed near API when present | pending |
-| Shared/API contract ring count | pending |
-| Frontend API client ring count | pending |
-| Test ring/group count | pending |
-| Docs/Config/Generated ring count | pending |
-| Unknown/Mixed ring count | pending |
-| Ring size/spacing policy recorded | pending |
-| Default visible ring/lens count | pending |
-| Default hidden/collapsed ring/lens count | pending |
-| Node type islands visible | pending |
-| Same-color island violations | pending |
-| ResolutionGap visible count | pending |
+| Visible App Layer ring count | 14 |
+| Backend ring node count | 28466 |
+| API ring node count | 6907 |
+| Frontend ring node count | 7585 |
+| API ring placed between Backend and Frontend | true |
+| Contract rings placed near API when present | api_contract 790 nodes; generated_contract 38 nodes; frontend_api_client 555 nodes near API/Frontend side |
+| Shared/API contract ring count | api_contract 1; generated_contract 1; standalone shared/api_shared rings absent in current graph |
+| Frontend API client ring count | 1 |
+| Test ring/group count | 3 rings: backend_test 24683, frontend_test 6678, api_test 6948 |
+| Docs/Config/Generated ring count | docs 1614, config 125, generated_contract 38 |
+| Unknown/Mixed ring count | unknown 26, mixed 365 |
+| Ring size/spacing policy recorded | deterministic App Layer angles, adaptive island radius, island gap, ring gap, docs center clearance, no fixed ring limit |
+| Default visible ring/lens count | all App Layer rings remain data-visible by default; node visibility still follows existing node-type/App Layer/Resolution Health filters |
+| Default hidden/collapsed ring/lens count | no ring-level collapse added; uncommon node types may remain hidden by existing default node-type policy |
+| Node type islands visible | backend 16, api 16, frontend 16, docs 3; all visible rings report at least 2 islands |
+| Same-color island violations | 0 |
+| ResolutionGap visible count | covered by persisted graph/API filter counts from P7-B; browser ring metric groups ResolutionGap by gap kind when visible |
 | App Layer filters available | 17 default contract values plus missing App Layer stale/incomplete graph toggle |
 | Resolution Health filters available | 3 confidence values, 9 health buckets, 8 gap fact families, 7 target roles, diagnostic classifications/actionability values, source App Layer filters, top target text filters, and 11 required lens rows |
 | Detail panel App Layer fields | implemented from persisted node `appLayer` |
@@ -594,7 +594,7 @@ Record after P7.
 | Detail panel Resolution Health fields | implemented: confidence, gap count, bucket counts |
 | Detail panel related ResolutionGap rows | implemented via persisted `HAS_RESOLUTION_GAP` relationships |
 | Degraded resolution confidence dead-code separation | implemented and covered by focused test |
-| Optimizer auto-run events after render/load/filter | pending |
+| Optimizer auto-run events after render/load/filter | 0 in browser diagnostics before manual click; manual optimizer invocation count increments only after `Optimize Layout` click |
 
 P7-A/P7-A2/P7-B filter/lens counts:
 
@@ -622,6 +622,22 @@ P7-C detail-panel counts:
 | Full Web unit tests after detail-panel slice | 363 passed |
 | Playwright e2e after detail-panel slice | 14 passed / 30 skipped |
 
+P7-D through P7-J ring/layout counts:
+
+| Metric | Value |
+| --- | ---: |
+| Browser graph nodes | 85561 |
+| Browser App Layer rings | 14 |
+| Ring screenshot artifact size | 231660 bytes |
+| Ring screenshot artifact | `avmatrix-web\test-results\server-connect-Graph-Dashb-1289f-ode-type-islands-in-browser-chromium\app-layer-rings-visible.png` |
+| Focused layout/unit tests | 29 passed |
+| Full Web unit tests after final Phase 7 edits | 368 passed |
+| Full e2e per-spec total | 44 passed / 1 expected packaged-launcher skip |
+| Focused screenshot rerun | 1 passed |
+| Browser `sameColorIslandViolations` | 0 |
+| Browser `apiBetweenBackendAndFrontend` | true |
+| Browser `docsCentered` | true |
+
 ## B11 - Validation Outputs
 
 Status: pending
@@ -643,6 +659,19 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | Web e2e after P7-C | `npm --prefix .\avmatrix-web run test:e2e` | passed | already-running hidden Vite dev server on 127.0.0.1:5228; 14 passed and 30 skipped |
 | Fresh analyze benchmark for P7-C detail panel | `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p7c-detail-lens-start-analyze.json --benchmark-label p7c-detail-lens-start` | passed | files scanned 755, parsed 565, unsupported 190, failed 0; graph nodes 84880 and relationships 116668 |
 | AVmatrix detect-changes for P7-C detail panel | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected low scope | after staging all slice files: affected_count 0, changed_count 102, changed_files 5, risk_level low; changed app layers docs 8, frontend 68, frontend_test 26 |
+| Full build before P7-D through P7-J layout tests | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | rerun after ring layout, diagnostics, and e2e test updates; temporary `avmatrix serve` process had to be stopped before build because it locked the generated exe |
+| Focused P7 layout/unit tests | `npm --prefix .\avmatrix-web run test -- --run test/unit/graph-adapter.edge-geometry.test.ts test/unit/GraphCanvas.selection-performance.test.tsx test/unit/runtime-diagnostics.test.ts` | passed | 3 files and 29 tests passed; covers ring grouping, color/type islands, ResolutionGap islands, docs ring anchor fields, runtime diagnostics, and no auto optimizer invocation |
+| Web unit tests after final Phase 7 edits | `npm --prefix .\avmatrix-web run test -- --run` | passed | 45 files and 368 tests passed |
+| Server-connect e2e with backend for P7 layout | `npm --prefix .\avmatrix-web run test:e2e -- e2e/server-connect.spec.ts` | passed | 10 tests passed; includes large-graph stability without automatic optimizer, manual optimizer invocation only after user action, visual scale cap, and Backend/API/Frontend ring diagnostic |
+| Graph Health e2e | `npm --prefix .\avmatrix-web run test:e2e -- e2e/graph-health-ui.spec.ts` | passed | 4 tests passed |
+| Heartbeat reconnect e2e | `npm --prefix .\avmatrix-web run test:e2e -- e2e/heartbeat-reconnect.spec.ts` | passed | 2 tests passed after updating the e2e wait budget to match observed large-graph load; no product/runtime timeout behavior changed |
+| Multi-repo scoping e2e | `npm --prefix .\avmatrix-web run test:e2e -- e2e/multi-repo-scoping.spec.ts` | passed | 3 tests passed |
+| Repo switching e2e | `npm --prefix .\avmatrix-web run test:e2e -- e2e/repo-switching.spec.ts` | passed | 6 tests passed |
+| Onboarding e2e | `npm --prefix .\avmatrix-web run test:e2e -- e2e/onboarding.spec.ts` | passed with expected skip | 12 tests passed; packaged launcher case skipped unless `PACKAGED_LAUNCHER_E2E=1` |
+| Shell interactions e2e | `npm --prefix .\avmatrix-web run test:e2e -- e2e/shell-interactions.spec.ts` | passed | 7 tests passed after aligning select-all expectation with default hidden node-type policy for large graphs |
+| Focused ring screenshot e2e rerun | `npm --prefix .\avmatrix-web run test:e2e -- e2e/server-connect.spec.ts -g "reports Backend API Frontend rings"` | passed | 1 test passed and wrote `app-layer-rings-visible.png` |
+| Fresh analyze benchmark for P7-D through P7-J layout slice | `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p7-layout-final2-precommit-analyze.json --benchmark-label p7-layout-final2-precommit` | passed | files scanned 755, parsed 565, unsupported 190, failed 0; graph nodes 85594 and relationships 117530 |
+| AVmatrix detect-changes for P7-D through P7-J layout slice | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected high scope | after staging all slice files: affected_count 12, changed_count 761, changed_files 12, risk_level high; changed app layers docs 8, frontend 417, frontend_test 336; affected app layers frontend 9 and mixed 3 |
 | Full build | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | run before tests after Functional Area code changes |
 | Backend tests | `go test .\internal\semantic .\internal\lbugschema .\internal\lbugload .\internal\contracts .\internal\httpapi .\internal\analyze` | passed | focused Functional Area, schema/export, contract, API status coverage |
 | Backend tests | `go test .\internal\... .\cmd\...` | passed | wider Go validation excluding intentionally non-buildable fixture packages |
