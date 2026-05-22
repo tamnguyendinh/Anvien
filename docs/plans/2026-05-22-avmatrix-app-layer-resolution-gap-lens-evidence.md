@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 persisted ResolutionGap entity, role inference, and validation fixture slices complete; P3-I remains next
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 remains next
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -485,7 +485,7 @@ Implemented evidence for the source-site to ResolutionGap input bridge slice:
 
 ## E8 - ResolutionGap Persistence Evidence
 
-Status: in progress; persisted ResolutionGap entity, role inference, and validation fixture slices complete through P3-H; P3-I remains.
+Status: complete for Phase 3.
 
 Record during P3.
 
@@ -507,6 +507,9 @@ Source-backed examples and typed metadata:
 - `TestResolutionGapInputInfersTargetRole` proves target-role inference preserves explicit roles, maps call/access/type-reference/heritage fact families to callable/member/type roles, maps builtin/standard-library/test-framework/external classifications when fact family does not decide, and writes the inferred role to both persisted gap nodes and `HAS_RESOLUTION_GAP` relationships.
 - `TestValidateResolutionGapPersistenceAcceptsSourceBackedGaps` and `TestValidateResolutionGapPersistenceFlagsFakeResolvedOrTopologyClaims` prove persisted gaps may exist as diagnostic entities while validator failures catch dangling gap relationships, gap relationships targeting real code nodes, gap nodes that claim resolved targets, and resolved semantic edges that reuse unresolved source-site IDs.
 - `TestApplyPersistsResolutionGapRolesClassificationsAndOccurrences` covers call, access, type-reference, heritage, builtin/predeclared, standard-library, test-framework, external, in-repo analyzer-gap, unknown target-role fallback, repeated occurrence count `3`, and two different target texts from the same source/fact/file/note fixture. The test proves target text, sourceSiteID, source-site status, proof kind, classification, actionability, App Layer, Functional Area, and count survive persistence without synthetic target nodes or resolved semantic edges.
+- `ResolutionGapAggregates` and `SourceBackedResolutionGapAggregates` implement the Phase 3 aggregate/dedupe policy as an inventory layer over source-backed inputs. The aggregate keeps target text in bucket identity, sums exact occurrence counts, keeps full `sourceSiteIds`, records App Layer/Functional Area/file distributions, and caps only representative samples when requested.
+- `TestResolutionGapAggregatesPreserveCountsSamplesAndDistributions` proves repeated source sites with counts `3` and `2` aggregate to occurrence count `5`, keep both sourceSiteIDs, preserve App Layer and Functional Area occurrence distributions, cap samples to one representative sample without losing counts, and keep a different target text in a different bucket.
+- `TestSourceBackedResolutionGapAggregatesUseGraphDiagnostics` proves graph diagnostics can feed aggregate buckets directly, preserving access/member role, source-site traceability, occurrence count `5`, and samples from source-backed diagnostics.
 - Fresh analyze produced typed gap counts: `unresolved_call=31220`, `unresolved_access=18245`, `unresolved_type_reference=8611`, `unresolved_heritage=7`.
 - Fresh analyze produced classification counts: `in_repo_unresolved=33825`, `builtin=9854`, `test_framework=7154`, `standard_library=7092`, `external_library=158`.
 - Fresh analyze produced actionability counts: `analyzer_gap=33825`, `non_actionable=24100`, `review=158`.
@@ -532,10 +535,15 @@ Before/after and validation evidence:
 - Source-site accuracy command after role-validation slice wrote `.tmp\2026-05-22-p3-role-validation-source-site-accuracy.json`: relationship source-site occurrences `85879`, diagnostic source-site occurrences `59097`, all source-site occurrences `144976`, stable source-site IDs `144976`, missing IDs `0`, resolved `CALLS=7733`, resolved `ACCESSES=3490`, unresolved diagnostics `59097`, non-property ACCESSES targets `0`, false resolved edge candidates `0`, resolved edges without proof `0`, resolved edges without sourceSiteID `0`, low-confidence fallback resolved edges `0`, and coarse file call edges `0`.
 - Validation commands passed after full build for role-validation slice: `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; `go test .\internal\graphhealth .\internal\semantic`; `go test .\internal\...`; `go test .\cmd\...`.
 - AVmatrix change detection after staging the role-validation slice used fresh analyze output followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `344`, changed_files `8`, affected_count `0`, and risk_level `low`.
+- Aggregate-policy analyze command: `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p3-aggregate-policy-postedit-analyze.json --benchmark-label p3-aggregate-policy-postedit`.
+- Aggregate-policy graph inventory after the new aggregate code/tests: files scanned `743`, parsed `554`, unsupported `189`, failed `0`, graph nodes `81522`, relationships `111801`, `ResolutionGap` nodes `58495`, and `HAS_RESOLUTION_GAP` relationships `58495`.
+- Semantic enrichment benchmark after aggregate-policy slice: `resolutionGapInputs=58495`, `resolutionGapNodes=58495`, `resolutionGapRelationships=58495`, semantic phase latency `595.5799 ms`.
+- Aggregate inventory over the latest graph produced `58495` source-backed gap nodes, `35411` aggregate buckets, `59242` exact occurrences, `10854` buckets with multiple source sites, max bucket source sites `99`, and max bucket occurrences `99`. Top buckets by occurrences included `strings.HasSuffix` `99`, `strings.Contains` `97`, `any` `92`, `string` `63`, and `result.Metrics` access buckets `51` and `49`.
+- Source-site accuracy command after aggregate-policy slice wrote `.tmp\2026-05-22-p3-aggregate-policy-source-site-accuracy.json`: relationship source-site occurrences `86148`, diagnostic source-site occurrences `59242`, all source-site occurrences `145390`, stable source-site IDs `145390`, missing IDs `0`, resolved `CALLS=7751`, resolved `ACCESSES=3548`, unresolved diagnostics `59242`, non-property ACCESSES targets `0`, false resolved edge candidates `0`, resolved edges without proof `0`, resolved edges without sourceSiteID `0`, low-confidence fallback resolved edges `0`, and coarse file call edges `0`.
+- Validation commands passed after full build for aggregate-policy slice: `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; `go test .\internal\graphhealth`; `go test .\internal\...`; `go test .\cmd\...`.
+- AVmatrix change detection after staging the aggregate-policy slice used fresh analyze output followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `228`, changed_files `5`, affected_count `0`, and risk_level `low`.
 
-Remaining P3 evidence gaps:
-
-- P3-I aggregate/dedupe policy and representative source sample verification remain open.
+Remaining P3 evidence gaps: none.
 
 ## E9 - Resolution Health And Inventory Evidence
 

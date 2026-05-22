@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 persisted ResolutionGap entity, role inference, and validation fixture slices complete through P3-H; P3-I remains next
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 remains next
 
 Source discussion:
 
@@ -318,7 +318,7 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [x] [P3-H] Record persisted gap schema examples, before/after gap counts, top targets, target-role/actionability counts, and test evidence in the evidence and benchmark ledgers. Evidence E8 and benchmark B6/B11/B12 now record the persisted schema, latest graph count `58350` ResolutionGap nodes, `58350` HAS_RESOLUTION_GAP relationships, fact-family/gap-kind counts, target-role counts, classification/actionability counts, validation commands, source-site accuracy output, and the fresh analyze benchmark artifacts through `.tmp\2026-05-22-p3-role-validation-postedit-analyze.json`.
 
-- [ ] [P3-I] Implement the aggregation/dedupe policy for unresolved occurrences with exact occurrence counts, target text identity, bucket identity, representative source samples, source App Layer/Functional Area distribution, and traceability back to source diagnostics. Add verification that full unresolved inventories keep their meaning at `51232`-scale observations.
+- [x] [P3-I] Implement the aggregation/dedupe policy for unresolved occurrences with exact occurrence counts, target text identity, bucket identity, representative source samples, source App Layer/Functional Area distribution, and traceability back to source diagnostics. `ResolutionGapAggregates` and `SourceBackedResolutionGapAggregates` now compute evidence-preserving aggregate buckets from source-backed inputs without reducing persisted gap entities; buckets include exact input and occurrence counts, full sourceSiteID traceability, capped representative samples, App Layer/Functional Area/file distributions, and target text in bucket identity. Tests prove repeated occurrences, sample caps, distributions, and multiple different target texts from the same source/fact/file/note fixture keep their meaning.
 
 ## Phase 4 - Resolution Health Inventory And Topology Separation
 
