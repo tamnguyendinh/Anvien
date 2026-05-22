@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 complete
+Status: implemented; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 complete; Phase 8 complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -320,7 +320,7 @@ Recorded during P0-F after fresh analyze. Raw query output files are `.tmp\phase
 
 ## E6 - App Layer Implementation Evidence
 
-Status: in progress; Phase 1 App Layer taxonomy, persistence, public status, and naming registry complete.
+Status: complete for Phase 1 App Layer taxonomy, persistence, public status, and naming registry.
 
 Record during P1.
 
@@ -1374,9 +1374,255 @@ The high scope is expected for this slice because it intentionally changes share
 
 ## E13 - Full Validation Evidence
 
-Status: pending
+Status: complete; P8-A through P8-J complete.
 
-Record during P8.
+### P8-A - Full Build Gate
+
+Status: complete.
+
+Command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1
+```
+
+Result:
+
+```text
+passed
+Go: go version go1.26.3 windows/amd64
+LadybugDB native runtime: .tmp\ladybug-native\v0.16.1\windows-x86_64
+Web build: tsc -b && vite build
+Vite output: avmatrix-web\dist
+```
+
+Vite emitted the existing chunk-size warnings for large bundles and the existing dynamic/static import warning for `ProcessFlowModal.tsx`; those warnings did not fail the build.
+
+### P8-B - Backend Tests
+
+Status: complete.
+
+Command:
+
+```powershell
+go test .\internal\... .\cmd\...
+```
+
+Result:
+
+```text
+passed
+```
+
+Coverage note: this is the wide backend/cmd gate for analyze semantic enrichment flow, App Layer and Functional Area classification, proof-based CALLS/ACCESSES inventory, ResolutionGap persistence, LadybugDB export/load, Resolution Health inventory, graph/API summaries, CLI inventory, query-health, API-specific MCP tools, and semantic command output.
+
+### P8-C - Contract Generation And Check
+
+Status: complete.
+
+Commands:
+
+```powershell
+go run .\cmd\generate-web-contracts
+go run .\cmd\generate-web-contracts --check
+```
+
+Result:
+
+```text
+passed
+```
+
+The generated Web contract check passed from the Go contract source. No generated contract drift was left in the worktree after the check.
+
+### P8-D - Web Unit Tests
+
+Status: complete.
+
+Command:
+
+```powershell
+npm --prefix .\avmatrix-web run test -- --run
+```
+
+Result:
+
+```text
+Test Files 45 passed
+Tests 368 passed
+Duration 35.84s
+```
+
+Coverage note: the suite includes semantic filters, FileTreePanel dashboard completeness, CodeReferencesPanel graph-health details, graph adapter ring/island layout, runtime diagnostics, manual optimizer guards, generated contracts/constants, graph health filters, graph edge visibility/rendering, local runtime state, connection, and launcher/onboarding unit surfaces.
+
+### P8-E - Web E2E Tests
+
+Status: complete.
+
+Environment:
+
+```text
+Vite: 127.0.0.1:5228
+avmatrix serve: 127.0.0.1:4848
+```
+
+Commands and results:
+
+| Spec | Result |
+| --- | --- |
+| `npm --prefix .\avmatrix-web run test:e2e -- e2e/server-connect.spec.ts` | 10 passed |
+| `npm --prefix .\avmatrix-web run test:e2e -- e2e/graph-health-ui.spec.ts` | 4 passed |
+| `npm --prefix .\avmatrix-web run test:e2e -- e2e/heartbeat-reconnect.spec.ts` | 2 passed |
+| `npm --prefix .\avmatrix-web run test:e2e -- e2e/multi-repo-scoping.spec.ts` | 3 passed |
+| `npm --prefix .\avmatrix-web run test:e2e -- e2e/repo-switching.spec.ts` | 6 passed |
+| `npm --prefix .\avmatrix-web run test:e2e -- e2e/onboarding.spec.ts` | 12 passed, 1 packaged-launcher case skipped by `PACKAGED_LAUNCHER_E2E` flag |
+| `npm --prefix .\avmatrix-web run test:e2e -- e2e/shell-interactions.spec.ts` | 7 passed |
+
+Total: `44` passed, `1` expected packaged-launcher skip.
+
+Coverage note: the browser suite covers large graph loading, Backend/API/Frontend ring diagnostics, node visual scale cap, left-dashboard filters and legends, Graph Health and Resolution Health composition, App Layer filter surfaces, back/start-screen behavior, User Guide README rendering, repo switching and URL recovery, heartbeat reconnect behavior, and manual-only optimizer invocation.
+
+### P8-F - Query Health Benchmark
+
+Status: complete.
+
+Fresh analyze command:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p8-final-analyze.json --benchmark-label p8-final
+```
+
+Analyze result:
+
+```text
+files: scanned=755 parsed=565 unsupported=190 failed=0
+graph: nodes=85599 relationships=117535
+```
+
+Query-health command:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe query-health --suite .\docs\query-health\2026-05-22-avmatrix-app-layer-resolution-gap-suite.json --repo AVmatrix --out .\.tmp\2026-05-22-p8-query-health-final.json --limit 10
+```
+
+Result:
+
+| Case | Status | hit@5 | hit@10 | Noise |
+| --- | --- | ---: | ---: | --- |
+| unresolved-reference-diagnostic-generation | PASS | 4/2 | 4/3 | thresholds met |
+| graph-health-unknown-connectivity-separation | PASS | 4/2 | 5/3 | thresholds met |
+| app-layer-resolution-gap-layout | PASS | 5/2 | 5/3 | thresholds met |
+| runtime-reset-hidden-terminal | PASS | 4/2 | 4/3 | thresholds met |
+| api-contract-surfaces | PASS | 3/2 | 4/3 | thresholds met |
+| query-implementation-surfaces | PASS | 6/2 | 6/3 | thresholds met |
+| frontend-graph-filter-surfaces | PASS | 5/2 | 5/3 | thresholds met |
+
+Summary: `7` passed, `0` failed. Artifact: `.tmp\2026-05-22-p8-query-health-final.json`.
+
+### P8-G - Resolution Inventory
+
+Status: complete.
+
+Command:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe resolution-inventory --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-22-p8-resolution-inventory-final.json
+```
+
+Result:
+
+| Metric | Value |
+| --- | ---: |
+| Graph nodes | 85599 |
+| Graph relationships | 117535 |
+| ResolutionGap nodes | 61519 |
+| HAS_RESOLUTION_GAP relationships | 61519 |
+| Gap occurrences | 62305 |
+| Resolved references | 28395 |
+| Unresolved non-actionable | 25833 |
+| External unresolved | 168 |
+| In-repo analyzer gap | 36304 |
+| Unclassified unknown | 0 |
+| Resolution confidence clear | 376 |
+| Resolution confidence degraded | 4677 |
+| Resolution confidence unknown | 80546 |
+
+Final inventory slices:
+
+```text
+resolutionGap.appLayers=api:4775,api_contract:627,api_test:5775,backend:18345,backend_test:20136,cli_launcher:553,config:88,frontend:5532,frontend_api_client:389,frontend_test:6063,generated_contract:22
+resolutionGap.functionalAreas=analyzer:7084,api:4662,cli:3414,configuration:88,contracts:880,embeddings:1701,graph_health:2590,launcher:671,layout:748,mcp:5856,providers:12674,query:2493,resolution:4060,runtime:30,session:1062,storage:2639,unknown:8693,web_graph_ui:2960
+resolutionGap.factFamilies=access:19348,call:32900,heritage:7,type-reference:10050
+resolutionGap.targetRoles=callable:32900,member:19348,type:10057
+resolutionGap.classifications=builtin:10723,external_library:168,in_repo_unresolved:36304,standard_library:7674,test_framework:7436
+resolutionGap.actionability=analyzer_gap:36304,non_actionable:25833,review:168
+resolutionGap.topology=connected:26255,detached_component:2749,no_incoming:28464,no_outgoing:2541,true_isolated:2296
+```
+
+Artifact: `.tmp\2026-05-22-p8-resolution-inventory-final.json`.
+
+### P8-H - Semantic Command Examples
+
+Status: complete.
+
+Fresh analyze command before command examples:
+
+```powershell
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p8-command-examples-analyze.json --benchmark-label p8-command-examples
+```
+
+Analyze result:
+
+```text
+files: scanned=755 parsed=565 unsupported=190 failed=0
+graph: nodes=85601 relationships=117537
+```
+
+Command artifacts:
+
+| Command | Artifact | Result |
+| --- | --- | --- |
+| `query "layout optimizer app layer ring graph filters" --repo AVmatrix --limit 10` | `.tmp\2026-05-22-p8-query-output.txt` | returned layout/frontend definitions including `knowledgeGraphToGraphology`, `compareAppLayerRingKeys`, `getAppLayerRingAngle`, and `useSigma`, with App Layer and Functional Area fields |
+| `context "applyFilterBasedClusteredLayout" --repo AVmatrix` | `.tmp\2026-05-22-p8-context-output.txt` | found the function with `appLayer=frontend`, `functionalArea=layout`, incoming proof-backed calls/import uses, source-site proof/status metadata, and complete semantic status |
+| `impact "applyFilterBasedClusteredLayout" --repo AVmatrix --direction upstream` | `.tmp\2026-05-22-p8-impact-output.txt` | reported `risk=CRITICAL`, `workflowWarningBlocksOutput=false`, `impactedCount=6`, affected App Layer `frontend=6`, affected Functional Areas `layout=3` and `web_graph_ui=3` |
+| `detect-changes --repo AVmatrix --scope all` | `.tmp\2026-05-22-p8-detect-output.txt` | reported `risk_level=low`, `changed_count=13`, `changed_files=3`, changed App Layer `docs=13`, changed Functional Area `documentation=13`, no affected processes, and complete semantic status |
+
+Limitations: none observed for these examples. HIGH/CRITICAL impact output remains a blast-radius warning and does not block inspection output.
+
+### P8-I - Detect-Changes Commit Rule Evidence
+
+Status: complete.
+
+Implementation-slice detect-changes evidence is already recorded in earlier phase sections, including Phase 7 layout pre-commit output. The P8-H detect example shows the current remaining worktree changes are documentation-only:
+
+```text
+affected_count=0
+changed_count=13
+changed_files=3
+risk_level=low
+changed_app_layers=docs:13
+changed_functional_areas=documentation:13
+```
+
+Because the remaining closure commit is doc-only, the repository rule's doc-only exception applies and no extra AVmatrix detect-changes gate is required solely for that final commit.
+
+### P8-J - Closure Status
+
+Status: complete.
+
+All required Phase 8 gates passed or were recorded with the expected skip semantics:
+
+- full build gate passed;
+- backend/cmd tests passed;
+- contract generation/check passed;
+- Web unit tests passed;
+- Web e2e passed with `44` passed and `1` expected packaged-launcher skip;
+- query-health final benchmark passed `7/7`;
+- resolution inventory final counts were recorded;
+- semantic command examples were recorded;
+- detect-changes/doc-only closure evidence was recorded.
+
+No failed validation remains open for this plan.
 
 Required evidence:
 

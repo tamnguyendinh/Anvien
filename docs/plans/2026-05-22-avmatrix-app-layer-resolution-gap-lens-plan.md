@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 complete
+Status: implemented; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 complete; Phase 8 complete
 
 Source discussion:
 
@@ -390,22 +390,22 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 ## Phase 8 - Full Validation And Closure
 
-- [ ] [P8-A] Run the full build gate before tests: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`. Record command output and generated artifact location in evidence.
+- [x] [P8-A] Run the full build gate before tests: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`. Full build passed after the Phase 7 commit; the launcher build used Go `go1.26.3`, rebuilt `avmatrix-web/dist`, and produced the launcher/server bundle artifacts before any P8 tests were run.
 
-- [ ] [P8-B] Run backend tests for analyze semantic enrichment flow, App Layer classification, Functional Area classification, proof-based CALLS/ACCESSES source-site inventory, ResolutionGap persistence, LadybugDB export/load, fine-grained gap relations, Resolution Health inventory, graph/API summaries, CLI inventory, query-health command, API-specific MCP tools, and semantic command output.
+- [x] [P8-B] Run backend tests for analyze semantic enrichment flow, App Layer classification, Functional Area classification, proof-based CALLS/ACCESSES source-site inventory, ResolutionGap persistence, LadybugDB export/load, fine-grained gap relations, Resolution Health inventory, graph/API summaries, CLI inventory, query-health command, API-specific MCP tools, and semantic command output. `go test .\internal\... .\cmd\...` passed after the P8-A full build gate.
 
-- [ ] [P8-C] Run contract generation/checks from the Go contract source and verify generated Web types expose App Layer, Functional Area, source-site status/proof metadata, ResolutionGap, Resolution Health, relation metadata, and query/command-facing enum values. Confirm the generated TypeScript diff comes from the Go contract source.
+- [x] [P8-C] Run contract generation/checks from the Go contract source and verify generated Web types expose App Layer, Functional Area, source-site status/proof metadata, ResolutionGap, Resolution Health, relation metadata, and query/command-facing enum values. `go run .\cmd\generate-web-contracts` and `go run .\cmd\generate-web-contracts --check` passed with no generated contract drift.
 
-- [ ] [P8-D] Run Web unit tests for filters, detail panels, graph layout, manual optimizer behavior, and generated contract usage.
+- [x] [P8-D] Run Web unit tests for filters, detail panels, graph layout, manual optimizer behavior, and generated contract usage. `npm --prefix .\avmatrix-web run test -- --run` passed with `45` files and `368` tests.
 
-- [ ] [P8-E] Run Web e2e tests covering multi-ring layout, App Layer filters, Resolution Health filters, persisted ResolutionGap visibility, node type island grouping, and manual-only optimizer behavior.
+- [x] [P8-E] Run Web e2e tests covering multi-ring layout, App Layer filters, Resolution Health filters, persisted ResolutionGap visibility, node type island grouping, and manual-only optimizer behavior. Playwright passed the full non-manual spec set against Vite on `127.0.0.1:5228` and `avmatrix serve` on `127.0.0.1:4848`: `44` passed and `1` packaged-launcher case skipped by flag.
 
-- [ ] [P8-F] Run the query-health benchmark command and record final hit@5/hit@10, pass/fail, noisy intents, and regression notes.
+- [x] [P8-F] Run the query-health benchmark command and record final hit@5/hit@10, pass/fail, noisy intents, and regression notes. After fresh `analyze --force`, `query-health` passed `7/7` cases and wrote `.tmp\2026-05-22-p8-query-health-final.json`.
 
-- [ ] [P8-G] Run the resolution inventory command and record final counts by App Layer, Functional Area, fact family, target role, actionability, Resolution Health bucket, and topology status.
+- [x] [P8-G] Run the resolution inventory command and record final counts by App Layer, Functional Area, fact family, target role, actionability, Resolution Health bucket, and topology status. `resolution-inventory` wrote `.tmp\2026-05-22-p8-resolution-inventory-final.json` with `61519` gap nodes, `62305` gap occurrences, and `28395` resolved references.
 
-- [ ] [P8-H] Run `query`, `context`, `impact`, and `detect-changes` examples and record semantic output or explicit limitations in the evidence ledger.
+- [x] [P8-H] Run `query`, `context`, `impact`, and `detect-changes` examples and record semantic output or explicit limitations in the evidence ledger. After fresh `analyze --force`, query/context/impact/detect output artifacts were written under `.tmp\2026-05-22-p8-*`; semantic status was complete, `impact` reported expected CRITICAL frontend layout blast radius without blocking output, and `detect-changes` reported only docs changes at low risk.
 
-- [ ] [P8-I] Run AVmatrix detect-changes according to repository rules before implementation commits and record the affected symbols/flows in evidence, with the doc-only commit exception handled by the repository rules.
+- [x] [P8-I] Run AVmatrix detect-changes according to repository rules before implementation commits and record the affected symbols/flows in evidence, with the doc-only commit exception handled by the repository rules. All implementation slices recorded pre-commit detect-changes evidence; the final closure changes are docs-only, so no extra AVmatrix gate is required solely for the final doc commit.
 
-- [ ] [P8-J] Update this plan, the evidence ledger, and the benchmark ledger to implemented status only after all required validation passes or after any failed validation is recorded with a clear follow-up plan.
+- [x] [P8-J] Update this plan, the evidence ledger, and the benchmark ledger to implemented status only after all required validation passes or after any failed validation is recorded with a clear follow-up plan. Full validation passed: full build, backend tests, contract generation/check, Web unit tests, Web e2e tests, query-health, resolution inventory, semantic command examples, and detect-changes/doc-only closure evidence are recorded in the companion ledgers.
