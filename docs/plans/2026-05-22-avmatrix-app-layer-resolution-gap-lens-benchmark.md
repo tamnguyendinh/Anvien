@@ -564,7 +564,7 @@ Record after P6.
 
 ## B10 - Web UI Ring And Filter Metrics
 
-Status: in progress; P7-A/P7-A2/P7-B filter metrics recorded, ring/layout metrics pending P7-D through P7-J.
+Status: in progress; P7-A/P7-A2/P7-B filter metrics recorded; P7-C detail-panel metrics recorded; ring/layout metrics pending P7-D through P7-J.
 
 Record after P7.
 
@@ -589,6 +589,11 @@ Record after P7.
 | ResolutionGap visible count | pending |
 | App Layer filters available | 17 default contract values plus missing App Layer stale/incomplete graph toggle |
 | Resolution Health filters available | 3 confidence values, 9 health buckets, 8 gap fact families, 7 target roles, diagnostic classifications/actionability values, source App Layer filters, top target text filters, and 11 required lens rows |
+| Detail panel App Layer fields | implemented from persisted node `appLayer` |
+| Detail panel Functional Area fields | implemented from persisted node `functionalArea` |
+| Detail panel Resolution Health fields | implemented: confidence, gap count, bucket counts |
+| Detail panel related ResolutionGap rows | implemented via persisted `HAS_RESOLUTION_GAP` relationships |
+| Degraded resolution confidence dead-code separation | implemented and covered by focused test |
 | Optimizer auto-run events after render/load/filter | pending |
 
 P7-A/P7-A2/P7-B filter/lens counts:
@@ -606,6 +611,17 @@ P7-A/P7-A2/P7-B filter/lens counts:
 | Full Web unit tests after filter slice | 363 passed |
 | Playwright e2e after hidden Vite server start | 14 passed / 30 skipped |
 
+P7-C detail-panel counts:
+
+| Metric | Value |
+| --- | ---: |
+| Detail panel semantic field groups implemented | 4: App Layer, Functional Area, Topology Health, Resolution Health |
+| Related ResolutionGap lookup path | 1 persisted relationship type: `HAS_RESOLUTION_GAP` |
+| Related ResolutionGap fields rendered | 8: fact family, target text, target role, classification, actionability, source-site status, proof kind, count |
+| Focused detail-panel unit tests | 1 passed |
+| Full Web unit tests after detail-panel slice | 363 passed |
+| Playwright e2e after detail-panel slice | 14 passed / 30 skipped |
+
 ## B11 - Validation Outputs
 
 Status: pending
@@ -621,6 +637,12 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | Web e2e after P7-A/P7-A2/P7-B | `npm --prefix .\avmatrix-web run test:e2e` | passed after starting hidden Vite dev server | direct run without frontend server failed with `ERR_CONNECTION_REFUSED`; rerun with hidden Vite dev server on 127.0.0.1:5228 passed 14 and skipped 30 |
 | Fresh analyze benchmark for P7-A/P7-A2/P7-B Web filters | `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p7a-p7b-web-semantic-filters-analyze.json --benchmark-label p7a-p7b-web-semantic-filters` | passed | files scanned 755, parsed 565, unsupported 190, failed 0; graph nodes 84880 and relationships 116668 |
 | AVmatrix detect-changes for P7-A/P7-A2/P7-B Web filters | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | after staging all slice files: affected_count 24, changed_count 859, changed_files 17, risk_level critical; affected surfaces match shared Web graph state, graph adapter filtering, GraphCanvas, FileTreePanel, backend graph response handling, tests, and plan ledgers |
+| Full build before P7-C detail-panel tests | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | run before tests after semantic detail-panel implementation |
+| Focused Web detail-panel test | `npm --prefix .\avmatrix-web run test -- --run test/unit/CodeReferencesPanel.graph-health.test.tsx` | passed | 1 file and 1 test passed; covers App Layer, Functional Area, Topology Health, Resolution Health, degraded confidence copy, and related persisted ResolutionGap rendering |
+| Web unit tests after P7-C | `npm --prefix .\avmatrix-web run test -- --run` | passed | 45 files and 363 tests passed |
+| Web e2e after P7-C | `npm --prefix .\avmatrix-web run test:e2e` | passed | already-running hidden Vite dev server on 127.0.0.1:5228; 14 passed and 30 skipped |
+| Fresh analyze benchmark for P7-C detail panel | `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p7c-detail-lens-start-analyze.json --benchmark-label p7c-detail-lens-start` | passed | files scanned 755, parsed 565, unsupported 190, failed 0; graph nodes 84880 and relationships 116668 |
+| AVmatrix detect-changes for P7-C detail panel | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected low scope | after staging all slice files: affected_count 0, changed_count 102, changed_files 5, risk_level low; changed app layers docs 8, frontend 68, frontend_test 26 |
 | Full build | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | run before tests after Functional Area code changes |
 | Backend tests | `go test .\internal\semantic .\internal\lbugschema .\internal\lbugload .\internal\contracts .\internal\httpapi .\internal\analyze` | passed | focused Functional Area, schema/export, contract, API status coverage |
 | Backend tests | `go test .\internal\... .\cmd\...` | passed | wider Go validation excluding intentionally non-buildable fixture packages |

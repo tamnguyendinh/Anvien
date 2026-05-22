@@ -15,6 +15,7 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useAppState } from "../hooks/useAppState.local-runtime";
 import {
   type GraphHealthDiagnostic,
+  type GraphHealthResolutionHealthBucket,
   type GraphNode,
   getSyntaxLanguageFromFilename,
 } from "@/generated/avmatrix-contracts";
@@ -33,6 +34,7 @@ import {
   getGraphHealthNextAction,
   getNodeGraphHealth,
 } from "../lib/graph-health-filters";
+import { getAppLayerLabel } from "../lib/semantic-filters";
 import { readFile, type ReadFileResult } from "../services/backend-client";
 
 const getSyntaxLanguage = (filePath: string | undefined): string => {
@@ -89,6 +91,82 @@ const formatDiagnosticDetail = (diagnostic: GraphHealthDiagnostic): string => {
     : "";
   const metadata = [classification, actionability].filter(Boolean).join(", ");
   return `${label} x${count}${detail}${metadata ? ` (${metadata})` : ""}`;
+};
+
+const formatSemanticKey = (value: string | undefined): string =>
+  value ? formatGraphHealthKey(value.replace(/-/g, "_")) : "Unknown";
+
+const formatCountMap = (
+  counts:
+    | Partial<Record<GraphHealthResolutionHealthBucket, number>>
+    | Record<string, number>
+    | undefined,
+): string => {
+  const entries = Object.entries(counts ?? {}).filter(([, count]) => count > 0);
+  if (entries.length === 0) return "None";
+  return entries
+    .map(([bucket, count]) => `${formatSemanticKey(bucket)} ${count}`)
+    .join(", ");
+};
+
+const resolutionConfidenceDescription = (
+  confidence: string | undefined,
+): string => {
+  switch (confidence) {
+    case "clear":
+      return "Resolution evidence has no persisted gaps for this node.";
+    case "degraded":
+      return "Resolution evidence is degraded by unresolved references; topology remains counted wiring evidence, not a dead-code verdict.";
+    case "unknown":
+    default:
+      return "Resolution confidence is unknown because the graph does not provide enough resolution metadata.";
+  }
+};
+
+const stringProperty = (
+  node: GraphNode,
+  key: string,
+): string | undefined => {
+  const value = node.properties[key];
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+};
+
+const numberProperty = (node: GraphNode, key: string): number | undefined => {
+  const value = node.properties[key];
+  return typeof value === "number" && Number.isFinite(value)
+    ? value
+    : undefined;
+};
+
+const formatResolutionGapNode = (node: GraphNode): string => {
+  const factFamily = stringProperty(node, "factFamily");
+  const targetText = stringProperty(node, "targetText");
+  const targetRole = stringProperty(node, "targetRole");
+  const classification = stringProperty(node, "classification");
+  const actionability = stringProperty(node, "actionability");
+  const status = stringProperty(node, "sourceSiteStatus");
+  const proofKind = stringProperty(node, "proofKind");
+  const count = numberProperty(node, "count") ?? 1;
+
+  const parts = [
+    formatSemanticKey(factFamily),
+    targetText ? `target ${targetText}` : undefined,
+    targetRole ? `role ${formatSemanticKey(targetRole)}` : undefined,
+    classification
+      ? GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATION_LABELS[
+          classification as keyof typeof GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATION_LABELS
+        ] ?? formatSemanticKey(classification)
+      : undefined,
+    actionability
+      ? GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITY_LABELS[
+          actionability as keyof typeof GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITY_LABELS
+        ] ?? formatSemanticKey(actionability)
+      : undefined,
+    status ? `status ${formatSemanticKey(status)}` : undefined,
+    proofKind ? `proof ${formatSemanticKey(proofKind)}` : undefined,
+  ].filter(Boolean);
+
+  return `${parts.join(" · ")} x${count}`;
 };
 
 export interface CodeReferencesPanelProps {
@@ -268,6 +346,21 @@ export const CodeReferencesPanel = ({
     () => (selectedNode ? getNodeGraphHealth(selectedNode) : null),
     [selectedNode],
   );
+  const selectedResolutionGapNodes = useMemo(() => {
+    if (!graph || !selectedNode) return [];
+    if (selectedNode.label === "ResolutionGap") return [selectedNode];
+    const gapIds = new Set(
+      graph.relationships
+        .filter(
+          (relationship) =>
+            relationship.type === "HAS_RESOLUTION_GAP" &&
+            relationship.sourceId === selectedNode.id,
+        )
+        .map((relationship) => relationship.targetId),
+    );
+    if (gapIds.size === 0) return [];
+    return graph.nodes.filter((node) => gapIds.has(node.id));
+  }, [graph, selectedNode]);
   const selectedComponentNodeIds = useMemo(() => {
     if (!graph || !selectedGraphHealth?.componentId) return [];
     return graph.nodes
@@ -525,6 +618,23 @@ export const CodeReferencesPanel = ({
                     )}
                 </div>
 
+                <div className="mb-2 grid grid-cols-2 gap-2 text-[11px] text-workspace-text-secondary">
+                  <div title="Primary App Layer persisted by analyze semantic enrichment">
+                    App Layer{" "}
+                    <span className="font-mono text-workspace-text-primary">
+                      {selectedNode?.properties.appLayer
+                        ? getAppLayerLabel(selectedNode.properties.appLayer)
+                        : "Missing"}
+                    </span>
+                  </div>
+                  <div title="Functional Area persisted by analyze semantic enrichment">
+                    Functional Area{" "}
+                    <span className="font-mono text-workspace-text-primary">
+                      {formatSemanticKey(selectedNode?.properties.functionalArea)}
+                    </span>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-3 gap-2 text-[11px] text-workspace-text-secondary">
                   <div title="Counted incoming relationships under the Graph Health edge policy">
                     In{" "}
@@ -546,7 +656,34 @@ export const CodeReferencesPanel = ({
                   </div>
                 </div>
 
+                <div className="mt-2 grid grid-cols-3 gap-2 text-[11px] text-workspace-text-secondary">
+                  <div title={resolutionConfidenceDescription(selectedGraphHealth.resolutionConfidence)}>
+                    Resolution{" "}
+                    <span className="font-mono text-workspace-text-primary">
+                      {formatSemanticKey(selectedGraphHealth.resolutionConfidence)}
+                    </span>
+                  </div>
+                  <div title="Persisted ResolutionGap count attached to this node">
+                    Gaps{" "}
+                    <span className="font-mono text-workspace-text-primary">
+                      {selectedGraphHealth.resolutionGapCount ?? 0}
+                    </span>
+                  </div>
+                  <div title="Resolution Health buckets are separate from topology status">
+                    Buckets{" "}
+                    <span className="font-mono text-workspace-text-primary">
+                      {formatCountMap(selectedGraphHealth.resolutionHealthBuckets)}
+                    </span>
+                  </div>
+                </div>
+
                 <div className="mt-2 space-y-1 text-[11px] text-workspace-text-secondary">
+                  <div title="Resolution Health does not change topology status and does not prove dead code.">
+                    Resolution confidence:{" "}
+                    {resolutionConfidenceDescription(
+                      selectedGraphHealth.resolutionConfidence,
+                    )}
+                  </div>
                   <div title="Excluded edge categories are not counted as topology wiring">
                     Excluded:{" "}
                     {formatExcludedEdgeCounts(
@@ -599,11 +736,40 @@ export const CodeReferencesPanel = ({
                       <span>None</span>
                     )}
                   </div>
+                  <div>
+                    ResolutionGaps:{" "}
+                    {selectedResolutionGapNodes.length > 0 ? (
+                      <span className="inline-flex flex-wrap gap-1 align-middle">
+                        {selectedResolutionGapNodes.slice(0, 8).map((gapNode) => (
+                          <span
+                            key={gapNode.id}
+                            className="rounded bg-workspace-inset px-1.5 py-0.5 text-[10px] text-workspace-text-primary"
+                            title="Persisted unresolved-reference evidence, not a resolved target node or dead-code verdict."
+                          >
+                            {formatResolutionGapNode(gapNode)}
+                          </span>
+                        ))}
+                        {selectedResolutionGapNodes.length > 8 && (
+                          <span className="rounded bg-workspace-inset px-1.5 py-0.5 text-[10px] text-workspace-text-secondary">
+                            +{selectedResolutionGapNodes.length - 8} more
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      <span>None</span>
+                    )}
+                  </div>
                   {selectedGraphHealth.topologyStatus ===
                     "detached_component" && (
                     <div title="Detached components have counted internal wiring but no accepted root reachability">
                       Detached: no accepted root reaches this counted-edge
                       component.
+                    </div>
+                  )}
+                  {selectedNode?.label === "ResolutionGap" && (
+                    <div title="A ResolutionGap is persisted evidence, not a resolved code symbol.">
+                      ResolutionGap entity: this node records unresolved
+                      evidence and must not be read as a resolved target.
                     </div>
                   )}
                   <div className="text-workspace-text-primary">

@@ -1070,7 +1070,7 @@ Command-surface limitations recorded for Phase 6:
 
 ## E12 - Web UI Evidence
 
-Status: in progress; P7-A/P7-A2/P7-B filter and lens slice complete, detail panel and ring layout slices pending.
+Status: in progress; P7-A/P7-A2/P7-B filter and lens slice complete; P7-C detail-panel lens complete; ring layout slices pending.
 
 ### P7-A / P7-A2 / P7-B - App Layer And Resolution Health Filter Evidence
 
@@ -1169,6 +1169,81 @@ artifact: .tmp\2026-05-22-p7a-p7b-web-semantic-filters-precommit-output.txt
 
 The critical scope is expected for this slice because it intentionally changes shared Web graph state, graph creation, backend graph response handling, graph adapter filtering, GraphCanvas filtering, FileTreePanel dashboard controls, and Web filter test surfaces. The affected scope stayed in frontend/mixed Web graph UI paths.
 
+### P7-C - Semantic Detail Panel Evidence
+
+Status: complete for node/detail-panel App Layer, Functional Area, Topology Health, Resolution Health, and related ResolutionGap explanations.
+
+Changed behavior:
+
+- `CodeReferencesPanel` now renders persisted `appLayer` and `functionalArea` values for the selected graph node, using the same App Layer labels as the Web semantic filters instead of inferring ownership in the client.
+- The Graph Health detail panel shows Topology Health counters/status separately from Resolution Health data: `resolutionConfidence`, `resolutionGapCount`, and `resolutionHealthBuckets`.
+- Degraded resolution confidence is explained as unresolved-reference evidence that does not turn the topology result into a dead-code verdict.
+- Related persisted `ResolutionGap` nodes are resolved through `HAS_RESOLUTION_GAP` relationships and rendered with fact family, target text, target role, classification, actionability, source-site status, proof kind, and occurrence count.
+- Selecting a `ResolutionGap` entity explains that it is unresolved evidence, not a resolved target symbol.
+
+Focused test evidence:
+
+```text
+npm --prefix .\avmatrix-web run test -- --run test/unit/CodeReferencesPanel.graph-health.test.tsx
+```
+
+Result:
+
+```text
+Test Files 1 passed
+Tests 1 passed
+```
+
+The focused test covers a backend/resolution node with `topologyStatus=detached_component`, `resolutionConfidence=degraded`, `resolutionGapCount=2`, `unresolved_call_target` and `in_repo_analyzer_gap` buckets, and one related persisted `ResolutionGap` reached by `HAS_RESOLUTION_GAP`. The assertions verify App Layer, Functional Area, topology counters, degraded resolution copy, unresolved-call bucket text, existing diagnostics, and the related gap detail string.
+
+Validation evidence:
+
+```text
+powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1
+npm --prefix .\avmatrix-web run test -- --run test/unit/CodeReferencesPanel.graph-health.test.tsx
+npm --prefix .\avmatrix-web run test -- --run
+npm --prefix .\avmatrix-web run test:e2e
+```
+
+Result:
+
+```text
+Full build passed.
+Focused detail-panel test passed: 1 file, 1 test.
+Web unit suite passed: 45 files, 363 tests.
+Playwright e2e passed against the already-running hidden Vite server on 127.0.0.1:5228: 14 passed, 30 skipped.
+```
+
+Fresh analyze and impact evidence before the P7-C detail-panel slice:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p7c-detail-lens-start-analyze.json --benchmark-label p7c-detail-lens-start
+files: scanned=755 parsed=565 unsupported=190 failed=0
+graph: nodes=84880 relationships=116668 path=E:\AVmatrix-GO\.avmatrix\graph.json
+
+.\avmatrix-launcher\server-bundle\avmatrix.exe impact "CodeReferencesPanel" --repo AVmatrix --direction upstream
+risk: LOW
+impacted upstream: App.tsx and main.tsx
+affected app layers: frontend=2
+affected functional areas: web_graph_ui=2
+```
+
+Pre-commit AVmatrix scope check after staging the P7-C detail-panel slice:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p7c-detail-lens-precommit-analyze.json --benchmark-label p7c-detail-lens-precommit
+files: scanned=755 parsed=565 unsupported=190 failed=0
+graph: nodes=84982 relationships=116778 path=E:\AVmatrix-GO\.avmatrix\graph.json
+
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all
+summary: affected_count=0, changed_count=102, changed_files=5, risk_level=low
+changed_app_layers: docs=8, frontend=68, frontend_test=26
+changed_functional_areas: documentation=8, unknown=26, web_graph_ui=68
+artifact: .tmp\2026-05-22-p7c-detail-lens-precommit-output.txt
+```
+
+The low scope is expected for this slice because it changes one Web detail panel, its focused unit test, and plan ledgers. AVmatrix reported no affected execution flows.
+
 Remaining P7 evidence still pending:
 
 Required evidence:
@@ -1181,7 +1256,6 @@ Required evidence:
 - App Layer filter behavior;
 - Resolution Health filter behavior;
 - explicit lens rows for Backend unresolved calls, API unresolved handlers/contracts, Frontend unresolved type refs, Shared contract analyzer gaps, External unresolved symbols, Builtin/Test/Stdlib non-actionable references, In-repo analyzer gaps, Resolution gaps by functional area, Top app layers by analyzer gap count, Top functional areas by unresolved count, and Top unresolved target text;
-- node detail fields for App Layer, Functional Area, Topology Health, Resolution Health, and gaps;
 - proof that optimizer is manual-only and not auto-run after render/load/filter changes;
 - Web unit/e2e test names/results.
 
