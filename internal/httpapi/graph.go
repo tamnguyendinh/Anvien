@@ -12,12 +12,14 @@ import (
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
 	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
+	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
 )
 
 type graphResponse struct {
-	Nodes         []graph.Node         `json:"nodes"`
-	Relationships []graph.Relationship `json:"relationships"`
-	GraphHealth   graphhealth.Summary  `json:"graphHealth"`
+	Nodes          []graph.Node         `json:"nodes"`
+	Relationships  []graph.Relationship `json:"relationships"`
+	GraphHealth    graphhealth.Summary  `json:"graphHealth"`
+	SemanticStatus semantic.GraphStatus `json:"semanticStatus"`
 }
 
 type graphHealthExplainResponse struct {
@@ -224,11 +226,12 @@ func (s Server) handleGraphHealthReport(w http.ResponseWriter, r *http.Request) 
 
 func graphPayload(g *graph.Graph, includeContent bool) graphResponse {
 	summary := graphhealth.ComputeSummary(g)
+	semanticStatus := semantic.GraphSemanticStatus(g)
 	nodes := make([]graph.Node, 0, len(g.Nodes))
 	for _, node := range g.Nodes {
 		nodes = append(nodes, graphNodeForResponse(node, includeContent))
 	}
-	return graphResponse{Nodes: nodes, Relationships: g.Relationships, GraphHealth: summary}
+	return graphResponse{Nodes: nodes, Relationships: g.Relationships, GraphHealth: summary, SemanticStatus: semanticStatus}
 }
 
 func graphHealthNodeExplain(g *graph.Graph, nodeID string, includeContent bool) (graphHealthExplainResponse, bool) {
@@ -429,6 +432,12 @@ func streamGraphNDJSON(w http.ResponseWriter, g *graph.Graph, includeContent boo
 			flusher.Flush()
 		}
 	}
+	_ = encoder.Encode(map[string]any{
+		"type": "semantic_status",
+		"data": semantic.GraphSemanticStatus(g),
+	})
+	written++
+	flush(false)
 	for _, node := range g.Nodes {
 		_ = encoder.Encode(map[string]any{
 			"type": "node",

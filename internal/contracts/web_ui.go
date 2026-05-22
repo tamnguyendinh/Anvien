@@ -74,6 +74,10 @@ type WebUIContractManifest struct {
 		GraphHealthDiagnosticActionabilities []string                    `json:"graphHealthDiagnosticActionabilities"`
 		GraphHealthReportTriageDimensions    []string                    `json:"graphHealthReportTriageDimensions"`
 		AppLayers                            []string                    `json:"appLayers"`
+		AppLayerLabels                       []semantic.TermDefinition   `json:"appLayerLabels"`
+		SemanticTerms                        []semantic.TermDefinition   `json:"semanticTerms"`
+		SemanticStatusValues                 []string                    `json:"semanticStatusValues"`
+		SemanticSchemaVersion                string                      `json:"semanticSchemaVersion"`
 		RelationshipTableName                string                      `json:"relationshipTableName"`
 		EmbeddingTableName                   string                      `json:"embeddingTableName"`
 	} `json:"graph"`
@@ -436,6 +440,10 @@ func WebUIContract() WebUIContractManifest {
 	manifest.Graph.GraphHealthDiagnosticActionabilities = append([]string(nil), graphhealth.DiagnosticActionabilities...)
 	manifest.Graph.GraphHealthReportTriageDimensions = []string{"topology", "diagnostic"}
 	manifest.Graph.AppLayers = semantic.AppLayerStrings()
+	manifest.Graph.AppLayerLabels = semantic.AppLayerDefinitions()
+	manifest.Graph.SemanticTerms = semantic.SemanticTermDefinitions()
+	manifest.Graph.SemanticStatusValues = semantic.StatusValues()
+	manifest.Graph.SemanticSchemaVersion = semantic.SchemaVersion
 	manifest.Graph.RelationshipTableName = lbugschema.RelTableName
 	manifest.Graph.EmbeddingTableName = lbugschema.EmbeddingTableName
 	manifest.Languages.CodeLanguages = append([]LanguageContract(nil), codeLanguages...)
@@ -501,6 +509,14 @@ func WebUIContractTypeScript() (string, error) {
 	b.WriteString("export type GraphHealthDiagnosticActionability = (typeof GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES)[number];\n\n")
 	writeConstArray(&b, "APP_LAYERS", manifest.Graph.AppLayers)
 	b.WriteString("export type AppLayer = (typeof APP_LAYERS)[number];\n\n")
+	writeConstObjectArray(&b, "APP_LAYER_LABELS", manifest.Graph.AppLayerLabels)
+	b.WriteString("export type AppLayerLabel = (typeof APP_LAYER_LABELS)[number];\n\n")
+	writeConstObjectArray(&b, "SEMANTIC_TERMS", manifest.Graph.SemanticTerms)
+	b.WriteString("export type SemanticTerm = (typeof SEMANTIC_TERMS)[number];\n\n")
+	writeConstArray(&b, "SEMANTIC_STATUS_VALUES", manifest.Graph.SemanticStatusValues)
+	b.WriteString("export type SemanticStatusValue = (typeof SEMANTIC_STATUS_VALUES)[number];\n\n")
+	writeConstString(&b, "SEMANTIC_SCHEMA_VERSION", manifest.Graph.SemanticSchemaVersion)
+	b.WriteString("\n")
 	b.WriteString(graphTypes)
 	writeConstArray(&b, "PIPELINE_PHASES", manifest.Pipeline.Phases)
 	b.WriteString("export type PipelinePhase = (typeof PIPELINE_PHASES)[number];\n\n")
@@ -942,6 +958,25 @@ export interface GraphHealthSummary {
   largestDetachedComponents?: GraphHealthComponentSummary[];
 }
 
+export interface GraphSemanticFieldStatus {
+  field: string;
+  status: SemanticStatusValue;
+  required: boolean;
+  totalNodes: number;
+  nodesWithField: number;
+  missingNodes: number;
+  unknownNodes: number;
+  nodesWithSource: number;
+  missingSourceNodes: number;
+  staleIncompleteSchemaEvidence: boolean;
+  message?: string;
+}
+
+export interface GraphSemanticStatus {
+  schemaVersion: string;
+  appLayer: GraphSemanticFieldStatus;
+}
+
 export type NodeProperties = {
   name: string;
   filePath: string;
@@ -1025,6 +1060,7 @@ export interface GraphResponse {
   nodes: GraphNode[];
   relationships: GraphRelationship[];
   graphHealth?: GraphHealthSummary;
+  semanticStatus?: GraphSemanticStatus;
 }
 
 export interface GraphHealthComponentExplanation {

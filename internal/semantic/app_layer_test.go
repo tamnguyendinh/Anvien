@@ -89,3 +89,70 @@ func TestApplyUsesMixedForRelationshipBackedMultiLayerNodes(t *testing.T) {
 		t.Fatalf("community app layer = %v, want %s", got, AppLayerMixed)
 	}
 }
+
+func TestGraphSemanticStatusDistinguishesUnknownFromMissingMetadata(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{ID: "Function:fresh", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
+		AppLayerProperty:       string(AppLayerUnknown),
+		AppLayerSourceProperty: "unmatched_path",
+	}})
+	g.AddNode(graph.Node{ID: "Function:stale", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
+		"name": "stale",
+	}})
+
+	status := GraphSemanticStatus(g)
+
+	if status.SchemaVersion != SchemaVersion {
+		t.Fatalf("schema version = %q, want %q", status.SchemaVersion, SchemaVersion)
+	}
+	if status.AppLayer.Status != StatusStaleIncomplete {
+		t.Fatalf("app layer status = %q, want %q", status.AppLayer.Status, StatusStaleIncomplete)
+	}
+	if status.AppLayer.UnknownNodes != 1 {
+		t.Fatalf("unknown nodes = %d, want 1", status.AppLayer.UnknownNodes)
+	}
+	if status.AppLayer.MissingNodes != 1 || status.AppLayer.MissingSourceNodes != 1 {
+		t.Fatalf("missing app layer counts = %#v, want one stale node", status.AppLayer)
+	}
+}
+
+func TestSemanticTermDefinitionsAreStableAndNonOverlapping(t *testing.T) {
+	appLayerDefinitions := AppLayerDefinitions()
+	if len(appLayerDefinitions) != len(AppLayers) {
+		t.Fatalf("app layer definitions = %d, want %d", len(appLayerDefinitions), len(AppLayers))
+	}
+	requireUniqueTermKeys(t, appLayerDefinitions)
+	terms := SemanticTermDefinitions()
+	requireUniqueTermKeys(t, terms)
+	requireTerm(t, terms, "resolution_gap", "Resolution Gap")
+	requireTerm(t, terms, "non_actionable_reference", "Non-actionable Reference")
+	requireTerm(t, appLayerDefinitions, string(AppLayerAPI), "API Layer")
+	requireTerm(t, appLayerDefinitions, string(AppLayerFrontendAPIClient), "Frontend API Client")
+}
+
+func requireUniqueTermKeys(t *testing.T, terms []TermDefinition) {
+	t.Helper()
+	seen := map[string]bool{}
+	for _, term := range terms {
+		if term.Key == "" || term.DisplayLabel == "" || term.CLILabel == "" || term.WebLabel == "" {
+			t.Fatalf("incomplete term definition: %#v", term)
+		}
+		if seen[term.Key] {
+			t.Fatalf("duplicate term key %q", term.Key)
+		}
+		seen[term.Key] = true
+	}
+}
+
+func requireTerm(t *testing.T, terms []TermDefinition, key string, displayLabel string) {
+	t.Helper()
+	for _, term := range terms {
+		if term.Key == key {
+			if term.DisplayLabel != displayLabel {
+				t.Fatalf("%s display label = %q, want %q", key, term.DisplayLabel, displayLabel)
+			}
+			return
+		}
+	}
+	t.Fatalf("missing term %q in %#v", key, terms)
+}

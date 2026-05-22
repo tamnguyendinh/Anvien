@@ -6,7 +6,12 @@
  * and file operations go through this client.
  */
 
-import type { GraphNode, GraphRelationship } from '@/generated/avmatrix-contracts';
+import type {
+  GraphNode,
+  GraphRelationship,
+  GraphResponse,
+  GraphSemanticStatus,
+} from '@/generated/avmatrix-contracts';
 import {
   recordHeartbeatConnect,
   recordHeartbeatReconnect,
@@ -408,7 +413,7 @@ export const fetchGraph = async (
     signal?: AbortSignal;
     onProgress?: (downloaded: number, total: number | null) => void;
   },
-): Promise<{ nodes: GraphNode[]; relationships: GraphRelationship[] }> => {
+): Promise<GraphResponse> => {
   const params = [repoParam(repo), opts?.includeContent ? 'includeContent=true' : '', 'stream=true']
     .filter(Boolean)
     .join('&');
@@ -422,7 +427,7 @@ export const fetchGraph = async (
   }
 
   if (!opts?.onProgress || !response.body) {
-    return response.json() as Promise<{ nodes: GraphNode[]; relationships: GraphRelationship[] }>;
+    return response.json() as Promise<GraphResponse>;
   }
 
   // Streaming download with progress
@@ -452,7 +457,7 @@ export const fetchGraph = async (
 const parseNdjsonGraphResponse = async (
   response: Response,
   onProgress?: (downloaded: number, total: number | null) => void,
-): Promise<{ nodes: GraphNode[]; relationships: GraphRelationship[] }> => {
+): Promise<GraphResponse> => {
   if (!response.body) {
     throw new BackendError('No response body', response.status, 'server');
   }
@@ -463,6 +468,7 @@ const parseNdjsonGraphResponse = async (
   const decoder = new TextDecoder();
   const nodes: GraphNode[] = [];
   const relationships: GraphRelationship[] = [];
+  let semanticStatus: GraphSemanticStatus | undefined;
   let buffer = '';
   let downloaded = 0;
 
@@ -473,8 +479,13 @@ const parseNdjsonGraphResponse = async (
     const record = JSON.parse(trimmed) as
       | { type: 'node'; data: GraphNode }
       | { type: 'relationship'; data: GraphRelationship }
+      | { type: 'semantic_status'; data: GraphSemanticStatus }
       | { type: 'error'; error: string };
 
+    if (record.type === 'semantic_status') {
+      semanticStatus = record.data;
+      return;
+    }
     if (record.type === 'node') {
       nodes.push(record.data);
       return;
@@ -506,7 +517,7 @@ const parseNdjsonGraphResponse = async (
   buffer += decoder.decode();
   parseLine(buffer);
 
-  return { nodes, relationships };
+  return { nodes, relationships, semanticStatus };
 };
 
 /** Execute a Cypher query. Returns rows. */

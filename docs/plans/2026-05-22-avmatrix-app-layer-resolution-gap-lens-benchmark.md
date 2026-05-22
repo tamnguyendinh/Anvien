@@ -152,9 +152,9 @@ Record after P1.
 | Nodes classified as test/doc/config/generated/mixed categories | pending | nonzero where source exists | backend_test 4415, frontend_test 620, api_test 1102, docs 1601, config 37, generated_contract 17, generated 0, mixed 399 |
 | Nodes left `unknown` | pending | only where evidence is insufficient | 26 |
 | Generated contract exposes App Layer enum/fields | pending | yes | yes |
-| Missing metadata treated as stale/incomplete schema | pending | yes | pending |
+| Missing metadata treated as stale/incomplete schema | pending | yes | yes |
 | Load-time App Layer heuristic fallback count | pending | 0 | 0 |
-| User-facing naming labels defined | pending | yes | pending |
+| User-facing naming labels defined | pending | yes | yes |
 
 App Layer count snapshot from `.avmatrix/graph.json` after `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .tmp\2026-05-22-app-layer-semantic-enrichment.json --benchmark-label app-layer-semantic-enrichment`:
 
@@ -177,6 +177,18 @@ App Layer count snapshot from `.avmatrix/graph.json` after `.\avmatrix-launcher\
 | generated | 0 |
 | mixed | 399 |
 | unknown | 26 |
+
+Public metadata/status snapshot after P1-E/P1-H:
+
+| Metric | Value |
+| --- | --- |
+| Semantic schema version | `semantic_app_layer_v1` |
+| JSON graph payload semantic field | `semanticStatus` |
+| NDJSON semantic record | `semantic_status` |
+| Stale fixture graph behavior | `stale_incomplete`, 5 missing `appLayer` nodes in `TestGraphReturnsJSONForRegisteredRepo` |
+| Fresh explicit unknown behavior | explicit `unknown` is counted as unknown semantic evidence, not stale metadata |
+| Generated Web status/types | `SEMANTIC_STATUS_VALUES`, `SEMANTIC_SCHEMA_VERSION`, `GraphSemanticStatus`, `GraphResponse.semanticStatus` |
+| Generated Web naming constants | `APP_LAYER_LABELS`, `SEMANTIC_TERMS` |
 
 ## B5 - Functional Area Metrics
 

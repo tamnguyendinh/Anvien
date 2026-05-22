@@ -200,13 +200,13 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [x] [P1-D] Make API first-class by classifying server handlers, API graph endpoints, API contract/schema code, generated API contract files, and frontend API clients into separate categories when evidence supports that separation. If a surface is both API and shared contract, use a mixed category such as `api_shared_contract` rather than overlapping labels.
 
-- [ ] [P1-E] Update graph schema, snapshot serialization, LadybugDB export/load schema, HTTP graph payloads, generated Web contracts, and any contract tests so App Layer values are stable public fields. A freshly analyzed but ambiguous node may use `unknown`; graph data that lacks the new metadata entirely must be treated as stale/incomplete schema evidence and must not trigger load-time classification heuristics.
+- [x] [P1-E] Update graph schema, snapshot serialization, LadybugDB export/load schema, HTTP graph payloads, generated Web contracts, and any contract tests so App Layer values are stable public fields. A freshly analyzed but ambiguous node may use `unknown`; graph data that lacks the new metadata entirely must be treated as stale/incomplete schema evidence and must not trigger load-time classification heuristics.
 
 - [x] [P1-F] Add tests for simple and mixed App Layer examples. Coverage must prove one primary App Layer per node, correct API classification, correct mixed category classification, correct unknown handling for ambiguous input, and no accidental multi-label primary classification.
 
 - [x] [P1-G] Record before/after App Layer counts, examples by category, changed schema fields, generated contract output, and test evidence in the benchmark and evidence ledgers.
 
-- [ ] [P1-H] Define user-facing and machine-facing names for App Layer, API Layer, API Contract, Frontend API Client, Resolution Gap, Unresolved Symbol, Analyzer Gap, External Reference, and Non-actionable Reference. Record enum keys, display labels, CLI labels, and Web labels so API, CLI, and UI do not drift.
+- [x] [P1-H] Define user-facing and machine-facing names for App Layer, API Layer, API Contract, Frontend API Client, Resolution Gap, Unresolved Symbol, Analyzer Gap, External Reference, and Non-actionable Reference. Record enum keys, display labels, CLI labels, and Web labels so API, CLI, and UI do not drift.
 
 ## Phase 2 - Functional Area Accuracy Gate
 

@@ -296,6 +296,197 @@
       "mixed",
       "unknown"
     ],
+    "appLayerLabels": [
+      {
+        "key": "backend",
+        "displayLabel": "Backend",
+        "cliLabel": "backend",
+        "webLabel": "Backend",
+        "description": "Backend analyzer, storage, and runtime code."
+      },
+      {
+        "key": "api",
+        "displayLabel": "API Layer",
+        "cliLabel": "api",
+        "webLabel": "API",
+        "description": "Server-side API handler and protocol surface."
+      },
+      {
+        "key": "frontend",
+        "displayLabel": "Frontend",
+        "cliLabel": "frontend",
+        "webLabel": "Frontend",
+        "description": "Browser UI source code."
+      },
+      {
+        "key": "cli_launcher",
+        "displayLabel": "CLI Launcher",
+        "cliLabel": "cli-launcher",
+        "webLabel": "CLI Launcher",
+        "description": "CLI, launcher, and startup surfaces."
+      },
+      {
+        "key": "shared_contract",
+        "displayLabel": "Shared Contract",
+        "cliLabel": "shared-contract",
+        "webLabel": "Shared Contract",
+        "description": "Contract data shared across product surfaces."
+      },
+      {
+        "key": "api_contract",
+        "displayLabel": "API Contract",
+        "cliLabel": "api-contract",
+        "webLabel": "API Contract",
+        "description": "API schema, generated contract, or contract source."
+      },
+      {
+        "key": "api_shared_contract",
+        "displayLabel": "API Shared Contract",
+        "cliLabel": "api-shared-contract",
+        "webLabel": "API Shared Contract",
+        "description": "Contract surface that is both API-owned and shared."
+      },
+      {
+        "key": "frontend_api_client",
+        "displayLabel": "Frontend API Client",
+        "cliLabel": "frontend-api-client",
+        "webLabel": "Frontend API Client",
+        "description": "Frontend client code that talks to backend APIs."
+      },
+      {
+        "key": "backend_test",
+        "displayLabel": "Backend Test",
+        "cliLabel": "backend-test",
+        "webLabel": "Backend Test",
+        "description": "Backend test and fixture code."
+      },
+      {
+        "key": "frontend_test",
+        "displayLabel": "Frontend Test",
+        "cliLabel": "frontend-test",
+        "webLabel": "Frontend Test",
+        "description": "Frontend unit, integration, or e2e test code."
+      },
+      {
+        "key": "api_test",
+        "displayLabel": "API Test",
+        "cliLabel": "api-test",
+        "webLabel": "API Test",
+        "description": "API or contract test code."
+      },
+      {
+        "key": "generated_contract",
+        "displayLabel": "Generated Contract",
+        "cliLabel": "generated-contract",
+        "webLabel": "Generated Contract",
+        "description": "Generated cross-surface contract artifacts."
+      },
+      {
+        "key": "docs",
+        "displayLabel": "Docs",
+        "cliLabel": "docs",
+        "webLabel": "Docs",
+        "description": "Documentation and report files."
+      },
+      {
+        "key": "config",
+        "displayLabel": "Config",
+        "cliLabel": "config",
+        "webLabel": "Config",
+        "description": "Configuration files."
+      },
+      {
+        "key": "generated",
+        "displayLabel": "Generated",
+        "cliLabel": "generated",
+        "webLabel": "Generated",
+        "description": "Generated build or output files outside contract surfaces."
+      },
+      {
+        "key": "mixed",
+        "displayLabel": "Mixed",
+        "cliLabel": "mixed",
+        "webLabel": "Mixed",
+        "description": "Process or community evidence spanning more than one App Layer."
+      },
+      {
+        "key": "unknown",
+        "displayLabel": "Unknown",
+        "cliLabel": "unknown",
+        "webLabel": "Unknown",
+        "description": "Insufficient evidence for a stable App Layer."
+      }
+    ],
+    "semanticTerms": [
+      {
+        "key": "app_layer",
+        "displayLabel": "App Layer",
+        "cliLabel": "app-layer",
+        "webLabel": "App Layer",
+        "description": "Primary product layer assigned to each graph node."
+      },
+      {
+        "key": "api_layer",
+        "displayLabel": "API Layer",
+        "cliLabel": "api-layer",
+        "webLabel": "API Layer",
+        "description": "Server-facing API handlers and API protocol surface."
+      },
+      {
+        "key": "api_contract",
+        "displayLabel": "API Contract",
+        "cliLabel": "api-contract",
+        "webLabel": "API Contract",
+        "description": "Schema or generated contract shared by API consumers."
+      },
+      {
+        "key": "frontend_api_client",
+        "displayLabel": "Frontend API Client",
+        "cliLabel": "frontend-api-client",
+        "webLabel": "Frontend API Client",
+        "description": "Frontend client surface that calls backend APIs."
+      },
+      {
+        "key": "resolution_gap",
+        "displayLabel": "Resolution Gap",
+        "cliLabel": "resolution-gap",
+        "webLabel": "Resolution Gap",
+        "description": "Persisted evidence that a source reference could not be resolved."
+      },
+      {
+        "key": "unresolved_symbol",
+        "displayLabel": "Unresolved Symbol",
+        "cliLabel": "unresolved-symbol",
+        "webLabel": "Unresolved Symbol",
+        "description": "Unresolved target text retained without claiming a resolved in-repo symbol."
+      },
+      {
+        "key": "analyzer_gap",
+        "displayLabel": "Analyzer Gap",
+        "cliLabel": "analyzer-gap",
+        "webLabel": "Analyzer Gap",
+        "description": "In-repo evidence that the analyzer could not resolve confidently."
+      },
+      {
+        "key": "external_reference",
+        "displayLabel": "External Reference",
+        "cliLabel": "external-reference",
+        "webLabel": "External Reference",
+        "description": "Reference expected to resolve outside the indexed repository."
+      },
+      {
+        "key": "non_actionable_reference",
+        "displayLabel": "Non-actionable Reference",
+        "cliLabel": "non-actionable-reference",
+        "webLabel": "Non-actionable Reference",
+        "description": "Builtin, standard library, fixture, or otherwise non-actionable unresolved reference."
+      }
+    ],
+    "semanticStatusValues": [
+      "complete",
+      "stale_incomplete"
+    ],
+    "semanticSchemaVersion": "semantic_app_layer_v1",
     "relationshipTableName": "CodeRelation",
     "embeddingTableName": "CodeEmbedding"
   },

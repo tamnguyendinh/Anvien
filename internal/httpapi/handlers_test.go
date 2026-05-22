@@ -21,6 +21,7 @@ import (
 	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
 )
 
 func TestInfoPreservesWebUICompatibilityShape(t *testing.T) {
@@ -303,6 +304,12 @@ func TestGraphReturnsJSONForRegisteredRepo(t *testing.T) {
 	if payload.GraphHealth.PolicyVersion != graphhealth.PolicyVersion {
 		t.Fatalf("graph JSON missing graph health summary: %#v", payload.GraphHealth)
 	}
+	if payload.SemanticStatus.AppLayer.Status != semantic.StatusStaleIncomplete {
+		t.Fatalf("graph JSON should mark fixture graph as stale semantic schema evidence: %#v", payload.SemanticStatus)
+	}
+	if payload.SemanticStatus.AppLayer.MissingNodes != 5 {
+		t.Fatalf("graph JSON semantic missing node count = %d, want 5", payload.SemanticStatus.AppLayer.MissingNodes)
+	}
 	if payload.GraphHealth.NodeCount != 5 || payload.GraphHealth.CountedRelationshipCount != 3 {
 		t.Fatalf("unexpected graph health summary counts: %#v", payload.GraphHealth)
 	}
@@ -348,6 +355,9 @@ func TestGraphStreamingReturnsNDJSON(t *testing.T) {
 	if !strings.Contains(text, `"graphHealth"`) {
 		t.Fatalf("stream body missing per-node graph health metadata: %q", string(body))
 	}
+	if !strings.Contains(text, `"type":"semantic_status"`) {
+		t.Fatalf("stream body missing semantic status metadata: %q", string(body))
+	}
 }
 
 func TestGraphStreamingBatchesFlushes(t *testing.T) {
@@ -362,8 +372,26 @@ func TestGraphStreamingBatchesFlushes(t *testing.T) {
 	if recorder.flushes != 2 {
 		t.Fatalf("flushes = %d, want interval flush plus final flush", recorder.flushes)
 	}
-	if lines := strings.Count(recorder.String(), "\n"); lines != graphNDJSONFlushInterval+1 {
+	if lines := strings.Count(recorder.String(), "\n"); lines != graphNDJSONFlushInterval+2 {
 		t.Fatalf("stream lines = %d", lines)
+	}
+}
+
+func TestGraphPayloadMarksFreshSemanticMetadataComplete(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{ID: "Function:fresh", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
+		"name":                          "fresh",
+		semantic.AppLayerProperty:       string(semantic.AppLayerBackend),
+		semantic.AppLayerSourceProperty: "backend_path",
+	}})
+
+	payload := graphPayload(g, false)
+
+	if payload.SemanticStatus.AppLayer.Status != semantic.StatusComplete {
+		t.Fatalf("fresh semantic status = %#v, want complete", payload.SemanticStatus)
+	}
+	if payload.SemanticStatus.AppLayer.NodesWithField != 1 || payload.SemanticStatus.AppLayer.MissingNodes != 0 {
+		t.Fatalf("fresh semantic counts = %#v, want one present node", payload.SemanticStatus.AppLayer)
 	}
 }
 
@@ -592,8 +620,8 @@ func TestGraphStreamingKeepsRouteAndToolMetadata(t *testing.T) {
 	streamGraphNDJSON(recorder, g, false)
 
 	lines := strings.Split(strings.TrimSpace(recorder.String()), "\n")
-	if len(lines) != 2 {
-		t.Fatalf("stream lines = %d, want 2: %q", len(lines), recorder.String())
+	if len(lines) != 3 {
+		t.Fatalf("stream lines = %d, want 3: %q", len(lines), recorder.String())
 	}
 	var records []map[string]any
 	for _, line := range lines {
@@ -604,15 +632,18 @@ func TestGraphStreamingKeepsRouteAndToolMetadata(t *testing.T) {
 		records = append(records, record)
 	}
 
-	route := records[0]["data"].(map[string]any)
+	if records[0]["type"] != "semantic_status" {
+		t.Fatalf("first stream record should expose semantic status: %#v", records[0])
+	}
+	route := records[1]["data"].(map[string]any)
 	routeProps := route["properties"].(map[string]any)
 	if route["label"] != "Route" || routeProps["responseKeys"] == nil || routeProps["errorKeys"] == nil || routeProps["middleware"] == nil {
-		t.Fatalf("route stream record = %#v", records[0])
+		t.Fatalf("route stream record = %#v", records[1])
 	}
-	tool := records[1]["data"].(map[string]any)
+	tool := records[2]["data"].(map[string]any)
 	toolProps := tool["properties"].(map[string]any)
 	if tool["label"] != "Tool" || toolProps["description"] != "Query the code graph" {
-		t.Fatalf("tool stream record = %#v", records[1])
+		t.Fatalf("tool stream record = %#v", records[2])
 	}
 }
 

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
 )
 
 func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {
@@ -35,6 +37,15 @@ func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {
 	if !contains(manifest.Graph.AppLayers, "backend") || !contains(manifest.Graph.AppLayers, "api") ||
 		!contains(manifest.Graph.AppLayers, "frontend") || !contains(manifest.Graph.AppLayers, "frontend_api_client") {
 		t.Fatalf("app layer contract metadata missing: %#v", manifest.Graph.AppLayers)
+	}
+	if manifest.Graph.SemanticSchemaVersion == "" || !contains(manifest.Graph.SemanticStatusValues, "stale_incomplete") {
+		t.Fatalf("semantic status contract metadata missing: %#v", manifest.Graph)
+	}
+	if term := termDefinition(manifest.Graph.SemanticTerms, "resolution_gap"); term.WebLabel != "Resolution Gap" {
+		t.Fatalf("resolution gap term = %#v", term)
+	}
+	if label := termDefinition(manifest.Graph.AppLayerLabels, "api"); label.DisplayLabel != "API Layer" {
+		t.Fatalf("api app layer label = %#v", label)
 	}
 	if policy := relationshipPolicy(manifest, "INHERITS"); policy.SemanticGroup != "normalized-heritage" {
 		t.Fatalf("INHERITS policy = %#v", policy)
@@ -77,8 +88,13 @@ func TestWebUIContractTypeScriptIsBrowserGeneratedGlue(t *testing.T) {
 		"export interface GraphHealthComponentSummary",
 		"export interface GraphHealthSummary",
 		"export const APP_LAYERS",
+		"export const APP_LAYER_LABELS",
+		"export const SEMANTIC_TERMS",
+		"export type SemanticStatusValue",
+		"export interface GraphSemanticStatus",
 		"export type AppLayer",
 		"appLayer?: AppLayer",
+		"semanticStatus?: GraphSemanticStatus",
 		"diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>",
 		"triageDimension: GraphHealthReportTriageDimension",
 		"largestDetachedComponents?: GraphHealthComponentSummary[]",
@@ -111,6 +127,15 @@ func findLanguageCoverage(manifest WebUIContractManifest, language string) Langu
 		}
 	}
 	return LanguageGraphCoverage{}
+}
+
+func termDefinition(terms []semantic.TermDefinition, key string) semantic.TermDefinition {
+	for _, term := range terms {
+		if term.Key == key {
+			return term
+		}
+	}
+	return semantic.TermDefinition{}
 }
 
 func requireExplicitLanguageCoverage(t *testing.T, coverage LanguageGraphCoverage) {

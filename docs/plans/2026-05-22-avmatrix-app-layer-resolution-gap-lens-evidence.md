@@ -128,8 +128,8 @@ Record during P0-C and P0-G.
 | unresolved heritage emission | pending | pending |
 | diagnostic attachment | pending | pending |
 | graph-health summary/report | pending | pending |
-| HTTP graph payload | `internal/httpapi/graph.go` | HTTP graph responses already pass graph node properties through `graphNodeForResponse`; no client-side/load-time App Layer classification was added. |
-| generated Web contracts | `internal/contracts/web_ui.go`, `contracts/web-ui/avmatrix-web-contract.schema.json`, `avmatrix-web/src/generated/avmatrix-contracts.ts` | Contract manifest exposes `appLayers`; generated TypeScript exposes `APP_LAYERS`, `AppLayer`, `NodeProperties.appLayer`, and `NodeProperties.appLayerSource`. |
+| HTTP graph payload | `internal/httpapi/graph.go` | HTTP graph responses pass node `appLayer`/`appLayerSource` properties through and include `semanticStatus`; NDJSON starts with `semantic_status`. Missing App Layer metadata is reported as stale/incomplete schema evidence and is not classified in the API loader. |
+| generated Web contracts | `internal/contracts/web_ui.go`, `contracts/web-ui/avmatrix-web-contract.schema.json`, `avmatrix-web/src/generated/avmatrix-contracts.ts` | Contract manifest exposes `appLayers`, `appLayerLabels`, `semanticTerms`, `semanticStatusValues`, and `semanticSchemaVersion`; generated TypeScript exposes `APP_LAYERS`, `APP_LAYER_LABELS`, `SEMANTIC_TERMS`, `SemanticStatusValue`, `GraphSemanticStatus`, `GraphResponse.semanticStatus`, `AppLayer`, `NodeProperties.appLayer`, and `NodeProperties.appLayerSource`. |
 | query command | pending | pending |
 | context command | pending | pending |
 | impact command | pending | pending |
@@ -177,7 +177,7 @@ Record during P0-F.
 
 ## E6 - App Layer Implementation Evidence
 
-Status: in progress; App Layer classifier and analyze persistence slice complete.
+Status: in progress; Phase 1 App Layer taxonomy, persistence, public status, and naming registry complete.
 
 Record during P1.
 
@@ -198,8 +198,13 @@ Implemented evidence:
 - Source rules implemented in `ClassifyAppLayer`: docs/report/markdown paths; Web test roots and `*.test.*`/`*.spec.*`; Go API tests under `internal/httpapi`, `internal/mcp`, `internal/contracts`, and `cmd/generate-web-contracts`; generated contract paths; API contract paths; `avmatrix-web/src/services/backend-client.ts`; config files; generated paths; API paths including `internal/httpapi`, `internal/mcp`, `app/api`, and `pages/api`; frontend roots; CLI launcher paths; backend paths; otherwise `unknown`.
 - Mixed category inference is relationship-backed for Process and Community nodes: if membership/step relationships connect more than one non-unknown App Layer, the target node receives `mixed` rather than overlapping labels.
 - Generated contract output was regenerated with `go run ./cmd/generate-web-contracts`.
+- `internal/semantic/metadata.go` defines `semantic_app_layer_v1`, `GraphSemanticStatus`, `StatusComplete`, and `StatusStaleIncomplete`. `GraphSemanticStatus` only counts existing node metadata; it does not infer App Layer at API or UI load time.
+- `internal/httpapi/graph.go` returns `semanticStatus` in JSON graph payloads and emits a first NDJSON record with type `semantic_status`. A graph with missing `appLayer` or `appLayerSource` is marked `stale_incomplete`; a graph with explicit `unknown` App Layer remains fresh semantic evidence.
+- `avmatrix-web/src/services/backend-client.ts` accepts the streamed `semantic_status` record and returns it as `semanticStatus` with the graph payload.
+- User-facing and machine-facing names are centralized in `internal/semantic/metadata.go`: App Layer category labels plus semantic terms for `app_layer`, `api_layer`, `api_contract`, `frontend_api_client`, `resolution_gap`, `unresolved_symbol`, `analyzer_gap`, `external_reference`, and `non_actionable_reference`. The Go contract exports those labels into the Web manifest and generated TypeScript.
 - Fresh analyze with the locally built CLI produced these App Layer counts: backend 9554, api 2013, frontend 1862, cli_launcher 256, api_contract 155, frontend_api_client 182, backend_test 4415, frontend_test 620, api_test 1102, generated_contract 17, docs 1601, config 37, mixed 399, unknown 26, shared_contract 0, api_shared_contract 0, generated 0.
-- Validation evidence: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; Go validation passed with `go test ./internal/... ./cmd/...`; Web unit validation passed with `npm test` in `avmatrix-web`.
+- Validation evidence: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; focused Go validation passed with `go test .\internal\semantic .\internal\httpapi .\internal\contracts`; wider Go validation passed with `go test .\internal\... .\cmd\...`; Web unit validation passed with `npm test -- --run` in `avmatrix-web`; whitespace validation passed with `git diff --check`.
+- Test evidence includes `TestGraphSemanticStatusDistinguishesUnknownFromMissingMetadata`, `TestSemanticTermDefinitionsAreStableAndNonOverlapping`, `TestGraphReturnsJSONForRegisteredRepo`, `TestGraphPayloadMarksFreshSemanticMetadataComplete`, `TestGraphStreamingReturnsNDJSON`, `TestGraphStreamingKeepsRouteAndToolMetadata`, and `TestWebUIContractManifestUsesGoRuntimeConstants`.
 - `go test ./...` still fails outside the implementation slice because fixture packages under `avmatrix/test/fixtures/...` are intentionally non-buildable as standalone Go packages; the prior real failure in `internal/analyze` is fixed.
 
 ## E7 - Functional Area Evidence
