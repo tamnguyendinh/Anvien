@@ -12,6 +12,10 @@ import {
   type GraphHealthFilterState,
 } from '../../lib/graph-health-filters';
 import {
+  DEFAULT_SEMANTIC_FILTERS,
+  type SemanticFilterState,
+} from '../../lib/semantic-filters';
+import {
   readGraphLinksVisibilityPreference,
   writeGraphLinksVisibilityPreference,
 } from '../../lib/graph-links-visibility';
@@ -33,6 +37,28 @@ interface GraphStateContextValue {
   toggleGraphHealthExpectedReason: (reason: GraphHealthExpectedIsolationReason) => void;
   toggleGraphHealthDiagnosticKind: (kind: GraphHealthDiagnosticKind) => void;
   resetGraphHealthFilters: () => void;
+  semanticFilters: SemanticFilterState;
+  toggleSemanticAppLayer: (layer: SemanticFilterState['visibleAppLayers'][number]) => void;
+  toggleSemanticMissingAppLayer: () => void;
+  toggleResolutionConfidence: (
+    confidence: SemanticFilterState['visibleResolutionConfidences'][number],
+  ) => void;
+  toggleResolutionHealthBucket: (
+    bucket: SemanticFilterState['visibleResolutionHealthBuckets'][number],
+  ) => void;
+  toggleResolutionGapFactFamily: (family: string) => void;
+  toggleResolutionGapTargetRole: (role: string) => void;
+  toggleResolutionGapClassification: (
+    classification: SemanticFilterState['visibleResolutionGapClassifications'][number],
+  ) => void;
+  toggleResolutionGapActionability: (
+    actionability: SemanticFilterState['visibleResolutionGapActionabilities'][number],
+  ) => void;
+  toggleResolutionGapSourceAppLayer: (
+    layer: SemanticFilterState['visibleResolutionGapSourceAppLayers'][number],
+  ) => void;
+  toggleResolutionGapTargetText: (targetText: string) => void;
+  resetSemanticFilters: () => void;
   depthFilter: number | null;
   setDepthFilter: (depth: number | null) => void;
   highlightedNodeIds: Set<string>;
@@ -41,6 +67,9 @@ interface GraphStateContextValue {
 
 const GraphStateContext = createContext<GraphStateContextValue | null>(null);
 
+const toggleArrayValue = <T extends string>(items: T[], value: T): T[] =>
+  items.includes(value) ? items.filter((item) => item !== value) : [...items, value];
+
 export const GraphStateProvider = ({ children }: { children: ReactNode }) => {
   const [graph, setGraph] = useState<KnowledgeGraph | null>(null);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
@@ -48,6 +77,9 @@ export const GraphStateProvider = ({ children }: { children: ReactNode }) => {
   const [visibleEdgeTypes, setVisibleEdgeTypes] = useState<EdgeType[]>(DEFAULT_VISIBLE_EDGES);
   const [graphHealthFilters, setGraphHealthFilters] = useState<GraphHealthFilterState>(
     DEFAULT_GRAPH_HEALTH_FILTERS,
+  );
+  const [semanticFilters, setSemanticFilters] = useState<SemanticFilterState>(
+    DEFAULT_SEMANTIC_FILTERS,
   );
   const [areGraphLinksVisible, setGraphLinksVisibleState] = useState<boolean>(() =>
     readGraphLinksVisibilityPreference(),
@@ -98,6 +130,122 @@ export const GraphStateProvider = ({ children }: { children: ReactNode }) => {
     setGraphHealthFilters(DEFAULT_GRAPH_HEALTH_FILTERS);
   }, []);
 
+  const toggleSemanticAppLayer = useCallback(
+    (layer: SemanticFilterState['visibleAppLayers'][number]) => {
+      setSemanticFilters((prev) => ({
+        ...prev,
+        visibleAppLayers: toggleArrayValue(prev.visibleAppLayers, layer),
+      }));
+    },
+    [],
+  );
+
+  const toggleSemanticMissingAppLayer = useCallback(() => {
+    setSemanticFilters((prev) => ({
+      ...prev,
+      showNodesMissingAppLayer: !prev.showNodesMissingAppLayer,
+    }));
+  }, []);
+
+  const toggleResolutionConfidence = useCallback(
+    (confidence: SemanticFilterState['visibleResolutionConfidences'][number]) => {
+      setSemanticFilters((prev) => ({
+        ...prev,
+        visibleResolutionConfidences: toggleArrayValue(
+          prev.visibleResolutionConfidences,
+          confidence,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const toggleResolutionHealthBucket = useCallback(
+    (bucket: SemanticFilterState['visibleResolutionHealthBuckets'][number]) => {
+      setSemanticFilters((prev) => ({
+        ...prev,
+        visibleResolutionHealthBuckets: toggleArrayValue(
+          prev.visibleResolutionHealthBuckets,
+          bucket,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const toggleResolutionGapFactFamily = useCallback((family: string) => {
+    setSemanticFilters((prev) => ({
+      ...prev,
+      visibleResolutionGapFactFamilies: toggleArrayValue(
+        prev.visibleResolutionGapFactFamilies,
+        family,
+      ),
+    }));
+  }, []);
+
+  const toggleResolutionGapTargetRole = useCallback((role: string) => {
+    setSemanticFilters((prev) => ({
+      ...prev,
+      visibleResolutionGapTargetRoles: toggleArrayValue(
+        prev.visibleResolutionGapTargetRoles,
+        role,
+      ),
+    }));
+  }, []);
+
+  const toggleResolutionGapClassification = useCallback(
+    (classification: SemanticFilterState['visibleResolutionGapClassifications'][number]) => {
+      setSemanticFilters((prev) => ({
+        ...prev,
+        visibleResolutionGapClassifications: toggleArrayValue(
+          prev.visibleResolutionGapClassifications,
+          classification,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const toggleResolutionGapActionability = useCallback(
+    (actionability: SemanticFilterState['visibleResolutionGapActionabilities'][number]) => {
+      setSemanticFilters((prev) => ({
+        ...prev,
+        visibleResolutionGapActionabilities: toggleArrayValue(
+          prev.visibleResolutionGapActionabilities,
+          actionability,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const toggleResolutionGapSourceAppLayer = useCallback(
+    (layer: SemanticFilterState['visibleResolutionGapSourceAppLayers'][number]) => {
+      setSemanticFilters((prev) => ({
+        ...prev,
+        visibleResolutionGapSourceAppLayers: toggleArrayValue(
+          prev.visibleResolutionGapSourceAppLayers,
+          layer,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const toggleResolutionGapTargetText = useCallback((targetText: string) => {
+    setSemanticFilters((prev) => ({
+      ...prev,
+      visibleResolutionGapTargetTexts: toggleArrayValue(
+        prev.visibleResolutionGapTargetTexts,
+        targetText,
+      ),
+    }));
+  }, []);
+
+  const resetSemanticFilters = useCallback(() => {
+    setSemanticFilters(DEFAULT_SEMANTIC_FILTERS);
+  }, []);
+
   const setGraphLinksVisible = useCallback((visible: boolean) => {
     setGraphLinksVisibleState(visible);
     writeGraphLinksVisibilityPreference(visible);
@@ -129,6 +277,18 @@ export const GraphStateProvider = ({ children }: { children: ReactNode }) => {
       toggleGraphHealthExpectedReason,
       toggleGraphHealthDiagnosticKind,
       resetGraphHealthFilters,
+      semanticFilters,
+      toggleSemanticAppLayer,
+      toggleSemanticMissingAppLayer,
+      toggleResolutionConfidence,
+      toggleResolutionHealthBucket,
+      toggleResolutionGapFactFamily,
+      toggleResolutionGapTargetRole,
+      toggleResolutionGapClassification,
+      toggleResolutionGapActionability,
+      toggleResolutionGapSourceAppLayer,
+      toggleResolutionGapTargetText,
+      resetSemanticFilters,
       depthFilter,
       setDepthFilter,
       highlightedNodeIds,
@@ -140,6 +300,7 @@ export const GraphStateProvider = ({ children }: { children: ReactNode }) => {
       visibleLabels,
       visibleEdgeTypes,
       graphHealthFilters,
+      semanticFilters,
       areGraphLinksVisible,
       setGraphLinksVisible,
       toggleGraphLinksVisible,

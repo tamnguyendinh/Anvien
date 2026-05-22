@@ -22,6 +22,7 @@ import type {
   GraphHealthDiagnosticKind,
   GraphHealthFilterState,
 } from '../lib/graph-health-filters';
+import type { SemanticFilterState } from '../lib/semantic-filters';
 import {
   connectToServer,
   runQuery as backendRunQuery,
@@ -112,6 +113,28 @@ interface AppState {
   toggleGraphHealthExpectedReason: (reason: GraphHealthExpectedIsolationReason) => void;
   toggleGraphHealthDiagnosticKind: (kind: GraphHealthDiagnosticKind) => void;
   resetGraphHealthFilters: () => void;
+  semanticFilters: SemanticFilterState;
+  toggleSemanticAppLayer: (layer: SemanticFilterState['visibleAppLayers'][number]) => void;
+  toggleSemanticMissingAppLayer: () => void;
+  toggleResolutionConfidence: (
+    confidence: SemanticFilterState['visibleResolutionConfidences'][number],
+  ) => void;
+  toggleResolutionHealthBucket: (
+    bucket: SemanticFilterState['visibleResolutionHealthBuckets'][number],
+  ) => void;
+  toggleResolutionGapFactFamily: (family: string) => void;
+  toggleResolutionGapTargetRole: (role: string) => void;
+  toggleResolutionGapClassification: (
+    classification: SemanticFilterState['visibleResolutionGapClassifications'][number],
+  ) => void;
+  toggleResolutionGapActionability: (
+    actionability: SemanticFilterState['visibleResolutionGapActionabilities'][number],
+  ) => void;
+  toggleResolutionGapSourceAppLayer: (
+    layer: SemanticFilterState['visibleResolutionGapSourceAppLayers'][number],
+  ) => void;
+  toggleResolutionGapTargetText: (targetText: string) => void;
+  resetSemanticFilters: () => void;
 
   // Depth filter (N hops from selection)
   depthFilter: number | null;
@@ -215,6 +238,18 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
     toggleGraphHealthExpectedReason,
     toggleGraphHealthDiagnosticKind,
     resetGraphHealthFilters,
+    semanticFilters,
+    toggleSemanticAppLayer,
+    toggleSemanticMissingAppLayer,
+    toggleResolutionConfidence,
+    toggleResolutionHealthBucket,
+    toggleResolutionGapFactFamily,
+    toggleResolutionGapTargetRole,
+    toggleResolutionGapClassification,
+    toggleResolutionGapActionability,
+    toggleResolutionGapSourceAppLayer,
+    toggleResolutionGapTargetText,
+    resetSemanticFilters,
     depthFilter,
     setDepthFilter,
     highlightedNodeIds,
@@ -850,7 +885,7 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
 
         pNameStr = pName;
 
-        const newGraph = createKnowledgeGraph();
+        const newGraph = createKnowledgeGraph(result.semanticStatus);
         for (const node of result.nodes) newGraph.addNode(node);
         for (const rel of result.relationships) newGraph.addRelationship(rel);
         setGraph(newGraph);
@@ -958,6 +993,18 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
     toggleGraphHealthExpectedReason,
     toggleGraphHealthDiagnosticKind,
     resetGraphHealthFilters,
+    semanticFilters,
+    toggleSemanticAppLayer,
+    toggleSemanticMissingAppLayer,
+    toggleResolutionConfidence,
+    toggleResolutionHealthBucket,
+    toggleResolutionGapFactFamily,
+    toggleResolutionGapTargetRole,
+    toggleResolutionGapClassification,
+    toggleResolutionGapActionability,
+    toggleResolutionGapSourceAppLayer,
+    toggleResolutionGapTargetText,
+    resetSemanticFilters,
     depthFilter,
     setDepthFilter,
     highlightedNodeIds,

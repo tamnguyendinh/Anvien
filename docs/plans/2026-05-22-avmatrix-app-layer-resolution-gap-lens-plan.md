@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 App Layer and Resolution Health Web filter slice complete
 
 Source discussion:
 
@@ -366,11 +366,11 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 ## Phase 7 - Web UI Filters, Detail Lens, And Multi-Ring Layout
 
-- [ ] [P7-A] Add App Layer filters/lens to the Web UI using backend/API fields. Source filter values such as Backend, API, Frontend, Shared Contract, API Contract, Frontend API Client, Tests, Docs, Config, Generated, Mixed, and Unknown from graph data and render a missing-data state when those fields are absent.
+- [x] [P7-A] Add App Layer filters/lens to the Web UI using backend/API fields. `semanticStatus` now travels with `KnowledgeGraph`, `connectToServer`, and graph creation, and `avmatrix-web/src/lib/semantic-filters.ts` reads persisted `appLayer` fields from graph nodes instead of inferring ownership in the client. `FileTreePanel` renders App Layer counts, the full persisted App Layer filter set, and a missing App Layer stale/incomplete graph state for nodes whose graph data lacks the required field.
 
-- [ ] [P7-A2] Extend Web graph state management in `avmatrix-web/src/hooks/app-state/graph.tsx` and related app-state types for App Layer and Resolution Health filters. The state must compose with existing node type, edge type, focus-depth, selected-node, and Graph Health filters without resetting unrelated controls.
+- [x] [P7-A2] Extend Web graph state management in `avmatrix-web/src/hooks/app-state/graph.tsx` and related app-state types for App Layer and Resolution Health filters. `GraphStateProvider` and `useAppState.local-runtime.tsx` now carry `semanticFilters` plus toggle/reset handlers for App Layer, missing App Layer, Resolution Confidence, Resolution Health bucket, ResolutionGap fact family, target role, classification, actionability, source App Layer, and target text. `GraphCanvas` passes those filters into label and depth filtering so they compose with node type, edge type, focus-depth, selected-node, and Graph Health filters without resetting unrelated controls.
 
-- [ ] [P7-B] Add Resolution Health filters/lens for fact family, target role, classification, actionability, analyzer-gap concentration, top unresolved target text, and source App Layer. Minimum user-facing lens rows must include Backend unresolved calls, API unresolved handlers/contracts, Frontend unresolved type refs, Shared contract analyzer gaps, External unresolved symbols, Builtin/Test/Stdlib non-actionable references, In-repo analyzer gaps, Resolution gaps by functional area, Top app layers by analyzer gap count, Top functional areas by unresolved count, and Top unresolved target text. These filters must compose with existing node type, edge type, graph health, focus-depth, and selected-node filters.
+- [x] [P7-B] Add Resolution Health filters/lens for fact family, target role, classification, actionability, analyzer-gap concentration, top unresolved target text, and source App Layer. `semantic-filters.ts` provides Resolution Health counts and the required 11 lens rows: Backend unresolved calls, API unresolved handlers/contracts, Frontend unresolved type refs, Shared contract analyzer gaps, External unresolved symbols, Builtin/Test/Stdlib non-actionable references, In-repo analyzer gaps, Resolution gaps by functional area, Top app layers by analyzer gap count, Top functional areas by unresolved count, and Top unresolved target text. `FileTreePanel` renders these rows and filters from persisted node/gap metadata, while `graph-adapter.ts` composes the semantic predicates with existing node type, Graph Health, focus-depth, and selected-node filtering.
 
 - [ ] [P7-C] Add node/detail-panel explanations for App Layer, Functional Area, Topology Health, Resolution Health, and related ResolutionGaps. Include user-facing copy and tests that label degraded resolution confidence separately from dead-code conclusions.
 

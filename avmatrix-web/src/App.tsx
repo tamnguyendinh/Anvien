@@ -85,7 +85,7 @@ const AppContentBody = () => {
       setCurrentRepo(repoPath || projectName);
 
       // Build KnowledgeGraph from server data for visualization
-      const graph = createKnowledgeGraph();
+      const graph = createKnowledgeGraph(result.semanticStatus);
       for (const node of result.nodes) {
         graph.addNode(node);
       }

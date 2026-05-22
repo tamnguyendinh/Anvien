@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 App Layer and Resolution Health Web filter slice complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -1070,9 +1070,106 @@ Command-surface limitations recorded for Phase 6:
 
 ## E12 - Web UI Evidence
 
-Status: pending
+Status: in progress; P7-A/P7-A2/P7-B filter and lens slice complete, detail panel and ring layout slices pending.
 
-Record during P7.
+### P7-A / P7-A2 / P7-B - App Layer And Resolution Health Filter Evidence
+
+Status: complete for Web filter state, left-dashboard filters, graph filtering composition, and required Resolution Health lens rows.
+
+Changed behavior:
+
+- `KnowledgeGraph` carries API-provided `semanticStatus`, and `connectToServer` returns `semanticStatus` from the graph response so the Web UI can report stale/incomplete semantic graph evidence without guessing on the client.
+- `avmatrix-web/src/lib/semantic-filters.ts` centralizes App Layer labels, Resolution Health filter defaults, filterable node extraction, count builders, semantic predicates, and the required Resolution Health lens rows.
+- `GraphStateProvider` and `useAppState.local-runtime.tsx` expose `semanticFilters` plus toggle/reset handlers for App Layer, missing App Layer, Resolution Confidence, Resolution Health bucket, ResolutionGap fact family, target role, classification, actionability, source App Layer, and target text.
+- `FileTreePanel` renders App Layer counts, missing App Layer stale/incomplete graph state, Resolution Health confidence/bucket/filter sections, top unresolved target text filters, and the required lens rows from persisted graph/API fields.
+- `GraphCanvas` and `graph-adapter.ts` pass semantic filters through both label filtering and depth filtering, composing them with node type, Graph Health, focus-depth, selected-node, and edge visibility behavior.
+
+Implemented filter/lens inventory:
+
+| Surface | Count / behavior |
+| --- | --- |
+| Default App Layer filter values | 17 persisted contract values: backend, api, frontend, cli_launcher, shared_contract, api_contract, api_shared_contract, frontend_api_client, backend_test, frontend_test, api_test, generated_contract, docs, config, generated, mixed, unknown |
+| Missing App Layer state | explicit toggle for nodes whose loaded graph data lacks required `appLayer`; no client-side ownership inference |
+| Resolution Confidence filters | 3 values: clear, degraded, unknown |
+| Resolution Health bucket filters | 9 values: resolved_references, unresolved_non_actionable, external_unresolved, in_repo_analyzer_gap, unresolved_call_target, unresolved_access_target, unresolved_type_target, unresolved_heritage_target, unclassified_unknown |
+| ResolutionGap fact-family filters | 8 values: call, access, type-reference, heritage, external, builtin, test, unknown |
+| ResolutionGap target-role filters | 7 values: callable, member, type, external, builtin, test, unknown |
+| Required Resolution Health lens rows | 11 rows implemented and covered by `semantic-filters.test.ts` |
+
+Focused test evidence:
+
+```text
+npm --prefix .\avmatrix-web run test -- --run test/unit/semantic-filters.test.ts test/unit/graph-adapter.edge-geometry.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx
+```
+
+Result:
+
+```text
+Test Files 3 passed
+Tests 29 passed
+```
+
+Additional regression test evidence:
+
+```text
+npm --prefix .\avmatrix-web run test -- --run test/unit/GraphCanvas.selection-performance.test.tsx
+npm --prefix .\avmatrix-web run test -- --run
+```
+
+Result:
+
+```text
+GraphCanvas selection performance: 1 file passed, 3 tests passed
+Web unit suite: 45 files passed, 363 tests passed
+```
+
+Full build and e2e evidence:
+
+```text
+powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1
+npm --prefix .\avmatrix-web run test:e2e
+```
+
+Result:
+
+```text
+Full build passed.
+The first e2e run failed because no frontend server was listening on 127.0.0.1:5228.
+After starting the Vite dev server hidden on 127.0.0.1:5228, Playwright passed: 14 passed, 30 skipped.
+```
+
+Fresh analyze evidence after the P7-A/P7-A2/P7-B Web filter slice:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p7a-p7b-web-semantic-filters-analyze.json --benchmark-label p7a-p7b-web-semantic-filters
+files: scanned=755 parsed=565 unsupported=190 failed=0
+graph: nodes=84880 relationships=116668 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Impact and graph freshness evidence before the Web filter slice:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p7-start-analyze.json --benchmark-label p7-start
+impact checks: GraphStateProvider LOW; AppStateProviderInner LOW; FileTreePanel LOW; createKnowledgeGraph CRITICAL; graphNodeMatchesHealthFilters LOW; filterGraphByLabels CRITICAL; filterGraphByDepth LOW; GraphCanvas LOW; AppContent LOW; connectToServer CRITICAL
+```
+
+The CRITICAL results are expected scope warnings for shared graph adapter/API surfaces and are not blockers under the plan rules. The slice intentionally changed those Web graph creation, filtering, and connection paths.
+
+Pre-commit AVmatrix scope check after staging the P7-A/P7-A2/P7-B Web filter slice:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all
+summary: affected_count=24, changed_count=859, changed_files=17, risk_level=critical
+changed_app_layers: docs=8, frontend=582, frontend_api_client=5, frontend_test=264
+affected_app_layers: frontend=4, mixed=20
+changed_functional_areas: api=5, documentation=8, layout=13, unknown=579, web_graph_ui=254
+affected_functional_areas: mixed=20, web_graph_ui=4
+artifact: .tmp\2026-05-22-p7a-p7b-web-semantic-filters-precommit-output.txt
+```
+
+The critical scope is expected for this slice because it intentionally changes shared Web graph state, graph creation, backend graph response handling, graph adapter filtering, GraphCanvas filtering, FileTreePanel dashboard controls, and Web filter test surfaces. The affected scope stayed in frontend/mixed Web graph UI paths.
+
+Remaining P7 evidence still pending:
 
 Required evidence:
 

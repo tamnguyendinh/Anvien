@@ -178,6 +178,10 @@ describe('GraphCanvas selection performance guards', () => {
       expect.objectContaining({
         visibleTopologyStatuses: expect.any(Array),
       }),
+      expect.objectContaining({
+        visibleAppLayers: expect.any(Array),
+        visibleResolutionHealthBuckets: expect.any(Array),
+      }),
     );
   });
 

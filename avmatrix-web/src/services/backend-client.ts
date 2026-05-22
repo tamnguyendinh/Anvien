@@ -760,6 +760,7 @@ export const streamEmbeddingProgress = (
 export interface ConnectResult {
   nodes: GraphNode[];
   relationships: GraphRelationship[];
+  semanticStatus?: GraphSemanticStatus;
   repoInfo: BackendRepo;
 }
 
@@ -784,10 +785,10 @@ export async function connectToServer(
   const graphRepo = repoInfo.repoPath ?? repoInfo.path ?? repoName;
 
   onProgress?.('downloading', 0, null);
-  const { nodes, relationships } = await fetchGraph(graphRepo, {
+  const { nodes, relationships, semanticStatus } = await fetchGraph(graphRepo, {
     signal,
     onProgress: (downloaded, total) => onProgress?.('downloading', downloaded, total),
   });
 
-  return { nodes, relationships, repoInfo };
+  return { nodes, relationships, semanticStatus, repoInfo };
 }

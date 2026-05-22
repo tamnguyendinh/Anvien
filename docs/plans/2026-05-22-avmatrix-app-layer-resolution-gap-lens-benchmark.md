@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete; Phase 7 App Layer and Resolution Health Web filter slice complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -564,7 +564,7 @@ Record after P6.
 
 ## B10 - Web UI Ring And Filter Metrics
 
-Status: pending
+Status: in progress; P7-A/P7-A2/P7-B filter metrics recorded, ring/layout metrics pending P7-D through P7-J.
 
 Record after P7.
 
@@ -587,9 +587,24 @@ Record after P7.
 | Node type islands visible | pending |
 | Same-color island violations | pending |
 | ResolutionGap visible count | pending |
-| App Layer filters available | pending |
-| Resolution Health filters available | pending |
+| App Layer filters available | 17 default contract values plus missing App Layer stale/incomplete graph toggle |
+| Resolution Health filters available | 3 confidence values, 9 health buckets, 8 gap fact families, 7 target roles, diagnostic classifications/actionability values, source App Layer filters, top target text filters, and 11 required lens rows |
 | Optimizer auto-run events after render/load/filter | pending |
+
+P7-A/P7-A2/P7-B filter/lens counts:
+
+| Metric | Value |
+| --- | ---: |
+| Default App Layer values | 17 |
+| Missing App Layer toggle | 1 |
+| Resolution Confidence values | 3 |
+| Resolution Health bucket values | 9 |
+| ResolutionGap fact-family values | 8 |
+| ResolutionGap target-role values | 7 |
+| Required Resolution Health lens rows implemented | 11 |
+| Focused semantic/Web filter unit tests | 29 passed |
+| Full Web unit tests after filter slice | 363 passed |
+| Playwright e2e after hidden Vite server start | 14 passed / 30 skipped |
 
 ## B11 - Validation Outputs
 
@@ -599,6 +614,13 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 
 | Validation | Command | Result | Notes |
 | --- | --- | --- | --- |
+| Full build before P7-A/P7-A2/P7-B Web filter tests | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | run after App Layer/Resolution Health Web filter implementation |
+| Focused Web filter tests | `npm --prefix .\avmatrix-web run test -- --run test/unit/semantic-filters.test.ts test/unit/graph-adapter.edge-geometry.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx` | passed | 3 files and 29 tests passed; covers semantic filter counts/predicates, graph adapter filter composition, dashboard App Layer and Resolution Health rendering |
+| GraphCanvas semantic depth-filter guard | `npm --prefix .\avmatrix-web run test -- --run test/unit/GraphCanvas.selection-performance.test.tsx` | passed | 1 file and 3 tests passed; covers selection/depth filtering and no manual optimizer invocation during graph load |
+| Web unit tests after P7-A/P7-A2/P7-B | `npm --prefix .\avmatrix-web run test -- --run` | passed | 45 files and 363 tests passed |
+| Web e2e after P7-A/P7-A2/P7-B | `npm --prefix .\avmatrix-web run test:e2e` | passed after starting hidden Vite dev server | direct run without frontend server failed with `ERR_CONNECTION_REFUSED`; rerun with hidden Vite dev server on 127.0.0.1:5228 passed 14 and skipped 30 |
+| Fresh analyze benchmark for P7-A/P7-A2/P7-B Web filters | `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-22-p7a-p7b-web-semantic-filters-analyze.json --benchmark-label p7a-p7b-web-semantic-filters` | passed | files scanned 755, parsed 565, unsupported 190, failed 0; graph nodes 84880 and relationships 116668 |
+| AVmatrix detect-changes for P7-A/P7-A2/P7-B Web filters | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | after staging all slice files: affected_count 24, changed_count 859, changed_files 17, risk_level critical; affected surfaces match shared Web graph state, graph adapter filtering, GraphCanvas, FileTreePanel, backend graph response handling, tests, and plan ledgers |
 | Full build | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | run before tests after Functional Area code changes |
 | Backend tests | `go test .\internal\semantic .\internal\lbugschema .\internal\lbugload .\internal\contracts .\internal\httpapi .\internal\analyze` | passed | focused Functional Area, schema/export, contract, API status coverage |
 | Backend tests | `go test .\internal\... .\cmd\...` | passed | wider Go validation excluding intentionally non-buildable fixture packages |

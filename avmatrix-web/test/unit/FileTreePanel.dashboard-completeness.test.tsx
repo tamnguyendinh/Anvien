@@ -12,6 +12,7 @@ import {
 import type { KnowledgeGraph } from "../../src/core/graph/types";
 import { getEdgeInfo } from "../../src/lib/constants";
 import { DEFAULT_GRAPH_HEALTH_FILTERS } from "../../src/lib/graph-health-filters";
+import { DEFAULT_SEMANTIC_FILTERS } from "../../src/lib/semantic-filters";
 
 let mockAppState: Record<string, unknown>;
 let toggleLabelVisibility: ReturnType<typeof vi.fn>;
@@ -20,6 +21,17 @@ let toggleGraphHealthTopologyStatus: ReturnType<typeof vi.fn>;
 let toggleGraphHealthExpectedReason: ReturnType<typeof vi.fn>;
 let toggleGraphHealthDiagnosticKind: ReturnType<typeof vi.fn>;
 let resetGraphHealthFilters: ReturnType<typeof vi.fn>;
+let toggleSemanticAppLayer: ReturnType<typeof vi.fn>;
+let toggleSemanticMissingAppLayer: ReturnType<typeof vi.fn>;
+let toggleResolutionConfidence: ReturnType<typeof vi.fn>;
+let toggleResolutionHealthBucket: ReturnType<typeof vi.fn>;
+let toggleResolutionGapFactFamily: ReturnType<typeof vi.fn>;
+let toggleResolutionGapTargetRole: ReturnType<typeof vi.fn>;
+let toggleResolutionGapClassification: ReturnType<typeof vi.fn>;
+let toggleResolutionGapActionability: ReturnType<typeof vi.fn>;
+let toggleResolutionGapSourceAppLayer: ReturnType<typeof vi.fn>;
+let toggleResolutionGapTargetText: ReturnType<typeof vi.fn>;
+let resetSemanticFilters: ReturnType<typeof vi.fn>;
 
 vi.mock("../../src/hooks/useAppState.local-runtime", () => ({
   useAppState: () => mockAppState,
@@ -34,6 +46,20 @@ const makeNode = (label: string, index: number): GraphNode =>
     properties: {
       name: label,
       filePath: `src/${label.toLowerCase()}-${index}.ts`,
+      appLayer: index === 0 ? "backend" : index === 1 ? "api" : "frontend",
+      appLayerSource: "test",
+      functionalArea: index === 1 ? "api" : "web_graph_ui",
+      functionalAreaSource: "test",
+      resolutionConfidence: index === 1 ? "degraded" : "clear",
+      resolutionHealthBuckets:
+        index === 1 ? { in_repo_analyzer_gap: 2, unresolved_call_target: 1 } : undefined,
+      resolutionGapCount: index === 1 ? 2 : 0,
+      factFamily: label === "ResolutionGap" ? "call" : undefined,
+      targetRole: label === "ResolutionGap" ? "callable" : undefined,
+      classification: label === "ResolutionGap" ? "in_repo_unresolved" : undefined,
+      actionability: label === "ResolutionGap" ? "analyzer_gap" : undefined,
+      targetText: label === "ResolutionGap" ? "missingHandler" : undefined,
+      sourceAppLayer: label === "ResolutionGap" ? "api" : undefined,
       graphHealth:
         index === 1
           ? {
@@ -91,6 +117,17 @@ describe("FileTreePanel dashboard completeness", () => {
     toggleGraphHealthExpectedReason = vi.fn();
     toggleGraphHealthDiagnosticKind = vi.fn();
     resetGraphHealthFilters = vi.fn();
+    toggleSemanticAppLayer = vi.fn();
+    toggleSemanticMissingAppLayer = vi.fn();
+    toggleResolutionConfidence = vi.fn();
+    toggleResolutionHealthBucket = vi.fn();
+    toggleResolutionGapFactFamily = vi.fn();
+    toggleResolutionGapTargetRole = vi.fn();
+    toggleResolutionGapClassification = vi.fn();
+    toggleResolutionGapActionability = vi.fn();
+    toggleResolutionGapSourceAppLayer = vi.fn();
+    toggleResolutionGapTargetText = vi.fn();
+    resetSemanticFilters = vi.fn();
     mockAppState = {
       graph,
       visibleLabels: graph.nodes.map((node) => node.label),
@@ -104,6 +141,18 @@ describe("FileTreePanel dashboard completeness", () => {
       toggleGraphHealthExpectedReason,
       toggleGraphHealthDiagnosticKind,
       resetGraphHealthFilters,
+      semanticFilters: DEFAULT_SEMANTIC_FILTERS,
+      toggleSemanticAppLayer,
+      toggleSemanticMissingAppLayer,
+      toggleResolutionConfidence,
+      toggleResolutionHealthBucket,
+      toggleResolutionGapFactFamily,
+      toggleResolutionGapTargetRole,
+      toggleResolutionGapClassification,
+      toggleResolutionGapActionability,
+      toggleResolutionGapSourceAppLayer,
+      toggleResolutionGapTargetText,
+      resetSemanticFilters,
       selectedNode: null,
       setSelectedNode: vi.fn(),
       openCodePanel: vi.fn(),
@@ -281,6 +330,56 @@ describe("FileTreePanel dashboard completeness", () => {
 
     await userEvent.click(screen.getByTitle("Reset Graph Health filters"));
     expect(resetGraphHealthFilters).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders App Layer and Resolution Health filters from graph data", async () => {
+    render(<FileTreePanel onFocusNode={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Filters" }));
+
+    expect(screen.getByTestId("app-layer-filter-section")).toBeInTheDocument();
+    expect(screen.getByTitle(/Backend \(\d+\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/^API \(\d+\) -/)).toBeInTheDocument();
+    expect(screen.getByTestId("resolution-health-filter-section")).toBeInTheDocument();
+    expect(screen.getByTitle(/Resolution confidence Degraded \(1\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/In Repo Analyzer Gap \(2\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/Call \(\d+\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/Callable \(\d+\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/Analyzer gap \(\d+\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/In-repo unresolved \(\d+\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/API source gaps \(\d+\)/)).toBeInTheDocument();
+    expect(screen.getByTitle(/^missingHandler \(\d+\)$/)).toBeInTheDocument();
+    expect(screen.getByTitle(/API unresolved handlers\/contracts \(\d+\)/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByTitle(/Backend \(\d+\)/));
+    expect(toggleSemanticAppLayer).toHaveBeenLastCalledWith("backend");
+
+    await userEvent.click(screen.getByTitle(/Resolution confidence Degraded \(1\)/));
+    expect(toggleResolutionConfidence).toHaveBeenLastCalledWith("degraded");
+
+    await userEvent.click(screen.getByTitle(/In Repo Analyzer Gap \(2\)/));
+    expect(toggleResolutionHealthBucket).toHaveBeenLastCalledWith("in_repo_analyzer_gap");
+
+    await userEvent.click(screen.getByTitle(/Call \(\d+\)/));
+    expect(toggleResolutionGapFactFamily).toHaveBeenLastCalledWith("call");
+
+    await userEvent.click(screen.getByTitle(/Callable \(\d+\)/));
+    expect(toggleResolutionGapTargetRole).toHaveBeenLastCalledWith("callable");
+
+    await userEvent.click(screen.getByTitle(/Analyzer gap \(\d+\)/));
+    expect(toggleResolutionGapActionability).toHaveBeenLastCalledWith("analyzer_gap");
+
+    await userEvent.click(screen.getByTitle(/In-repo unresolved \(\d+\)/));
+    expect(toggleResolutionGapClassification).toHaveBeenLastCalledWith("in_repo_unresolved");
+
+    await userEvent.click(screen.getByTitle(/API source gaps \(\d+\)/));
+    expect(toggleResolutionGapSourceAppLayer).toHaveBeenLastCalledWith("api");
+
+    await userEvent.click(screen.getByTitle(/^missingHandler \(\d+\)$/));
+    expect(toggleResolutionGapTargetText).toHaveBeenLastCalledWith("missingHandler");
+
+    await userEvent.click(screen.getByTitle("Reset semantic filters"));
+    expect(resetSemanticFilters).toHaveBeenCalledTimes(1);
   });
 
   it("routes focus-depth controls through app state and warns without a selected node", async () => {

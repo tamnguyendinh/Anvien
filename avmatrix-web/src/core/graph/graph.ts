@@ -1,7 +1,13 @@
-import type { GraphNode, GraphRelationship } from '@/generated/avmatrix-contracts';
+import type {
+  GraphNode,
+  GraphRelationship,
+  GraphSemanticStatus,
+} from '@/generated/avmatrix-contracts';
 import type { KnowledgeGraph } from './types';
 
-export const createKnowledgeGraph = (): KnowledgeGraph => {
+export const createKnowledgeGraph = (
+  semanticStatus?: GraphSemanticStatus,
+): KnowledgeGraph => {
   const nodeMap = new Map<string, GraphNode>();
   const relationshipMap = new Map<string, GraphRelationship>();
 
@@ -25,6 +31,8 @@ export const createKnowledgeGraph = (): KnowledgeGraph => {
     get relationships() {
       return Array.from(relationshipMap.values());
     },
+
+    semanticStatus,
 
     // O(1) count getters - avoid creating arrays just for length
     get nodeCount() {

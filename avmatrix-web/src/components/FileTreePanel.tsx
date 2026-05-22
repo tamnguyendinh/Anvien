@@ -44,17 +44,29 @@ import {
   getRelationshipTypeCounts,
 } from "../lib/constants";
 import {
+  APP_LAYERS,
   GRAPH_HEALTH_CONFIDENCE_LEVELS,
+  GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES,
+  GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATIONS,
   GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS,
+  GRAPH_HEALTH_RESOLUTION_CONFIDENCE_LEVELS,
+  GRAPH_HEALTH_RESOLUTION_HEALTH_BUCKETS,
   GRAPH_HEALTH_TOPOLOGY_STATUSES,
+  type AppLayer,
   type GraphHealthConfidence,
+  type GraphHealthDiagnosticActionability,
+  type GraphHealthDiagnosticClassification,
   type GraphHealthExpectedIsolationReason,
+  type GraphHealthResolutionConfidence,
+  type GraphHealthResolutionHealthBucket,
   type GraphHealthTopologyStatus,
   type GraphNode,
 } from "@/generated/avmatrix-contracts";
 import {
   GRAPH_HEALTH_CONFIDENCE_DESCRIPTIONS,
   GRAPH_HEALTH_CONFIDENCE_LABELS,
+  GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITY_LABELS,
+  GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATION_LABELS,
   GRAPH_HEALTH_DIAGNOSTIC_KINDS,
   GRAPH_HEALTH_DIAGNOSTIC_DESCRIPTIONS,
   GRAPH_HEALTH_DIAGNOSTIC_LABELS,
@@ -68,6 +80,23 @@ import {
   getGraphHealthTopologyCounts,
   type GraphHealthDiagnosticKind,
 } from "../lib/graph-health-filters";
+import {
+  RESOLUTION_GAP_FACT_FAMILIES,
+  RESOLUTION_GAP_TARGET_ROLES,
+  getAppLayerCounts,
+  getAppLayerDescription,
+  getAppLayerLabel,
+  getResolutionConfidenceCounts,
+  getResolutionGapActionabilityCounts,
+  getResolutionGapClassificationCounts,
+  getResolutionGapFactFamilyCounts,
+  getResolutionGapSourceAppLayerCounts,
+  getResolutionGapTargetRoleCounts,
+  getResolutionGapTargetTextCounts,
+  getResolutionHealthBucketCounts,
+  getResolutionLensRows,
+  getTopCountEntries,
+} from "../lib/semantic-filters";
 
 // Tree node structure
 interface TreeNode {
@@ -328,6 +357,29 @@ const loadStoredLeftPanelWidth = (): number => {
     : LEFT_PANEL_DEFAULT_WIDTH;
 };
 
+const formatSemanticKey = (value: string): string =>
+  value
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+
+const getCountItems = <T extends string>(
+  knownValues: readonly T[],
+  counts: Map<string, number>,
+  labelForValue: (value: T) => string = formatSemanticKey,
+) => {
+  const values = new Set<string>([...knownValues, ...counts.keys()]);
+  return [...values]
+    .map((value) => ({
+      value: value as T,
+      label: labelForValue(value as T),
+      count: counts.get(value) ?? 0,
+    }))
+    .filter((item) => item.count > 0)
+    .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label));
+};
+
 export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
   const {
     graph,
@@ -340,6 +392,18 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
     toggleGraphHealthExpectedReason,
     toggleGraphHealthDiagnosticKind,
     resetGraphHealthFilters,
+    semanticFilters,
+    toggleSemanticAppLayer,
+    toggleSemanticMissingAppLayer,
+    toggleResolutionConfidence,
+    toggleResolutionHealthBucket,
+    toggleResolutionGapFactFamily,
+    toggleResolutionGapTargetRole,
+    toggleResolutionGapClassification,
+    toggleResolutionGapActionability,
+    toggleResolutionGapSourceAppLayer,
+    toggleResolutionGapTargetText,
+    resetSemanticFilters,
     selectedNode,
     setSelectedNode,
     openCodePanel,
@@ -553,6 +617,84 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
     }));
   }, [graph]);
 
+  const appLayerItems = useMemo(() => {
+    const counts = getAppLayerCounts(graph?.nodes ?? []);
+    return APP_LAYERS.map((layer) => ({
+      layer,
+      label: getAppLayerLabel(layer),
+      description: getAppLayerDescription(layer),
+      count: counts.get(layer) ?? 0,
+    })).filter((item) => item.count > 0);
+  }, [graph]);
+
+  const missingAppLayerCount = useMemo(
+    () => getAppLayerCounts(graph?.nodes ?? []).get("missing") ?? 0,
+    [graph],
+  );
+
+  const appLayerStatus = graph?.semanticStatus?.appLayer;
+
+  const resolutionConfidenceItems = useMemo(() => {
+    const counts = getResolutionConfidenceCounts(graph?.nodes ?? []);
+    return GRAPH_HEALTH_RESOLUTION_CONFIDENCE_LEVELS.map((confidence) => ({
+      confidence,
+      label: formatSemanticKey(confidence),
+      count: counts.get(confidence) ?? 0,
+    })).filter((item) => item.count > 0);
+  }, [graph]);
+
+  const resolutionHealthBucketItems = useMemo(() => {
+    const counts = getResolutionHealthBucketCounts(graph?.nodes ?? []);
+    return getCountItems(GRAPH_HEALTH_RESOLUTION_HEALTH_BUCKETS, counts);
+  }, [graph]);
+
+  const resolutionGapFactFamilyItems = useMemo(() => {
+    const counts = getResolutionGapFactFamilyCounts(graph?.nodes ?? []);
+    return getCountItems(RESOLUTION_GAP_FACT_FAMILIES, counts);
+  }, [graph]);
+
+  const resolutionGapTargetRoleItems = useMemo(() => {
+    const counts = getResolutionGapTargetRoleCounts(graph?.nodes ?? []);
+    return getCountItems(RESOLUTION_GAP_TARGET_ROLES, counts);
+  }, [graph]);
+
+  const resolutionGapClassificationItems = useMemo(() => {
+    const counts = getResolutionGapClassificationCounts(graph?.nodes ?? []);
+    return getCountItems(
+      GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATIONS,
+      counts,
+      (classification) =>
+        GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATION_LABELS[classification] ??
+        formatSemanticKey(classification),
+    );
+  }, [graph]);
+
+  const resolutionGapActionabilityItems = useMemo(() => {
+    const counts = getResolutionGapActionabilityCounts(graph?.nodes ?? []);
+    return getCountItems(
+      GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES,
+      counts,
+      (actionability) =>
+        GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITY_LABELS[actionability] ??
+        formatSemanticKey(actionability),
+    );
+  }, [graph]);
+
+  const resolutionGapSourceAppLayerItems = useMemo(() => {
+    const counts = getResolutionGapSourceAppLayerCounts(graph?.nodes ?? []);
+    return getCountItems(APP_LAYERS, counts, getAppLayerLabel);
+  }, [graph]);
+
+  const resolutionGapTargetTextItems = useMemo(() => {
+    const counts = getResolutionGapTargetTextCounts(graph?.nodes ?? []);
+    return getTopCountEntries(counts, 8);
+  }, [graph]);
+
+  const resolutionLensRows = useMemo(
+    () => getResolutionLensRows(graph?.nodes ?? []),
+    [graph],
+  );
+
   const communityColorLegend = useMemo(() => {
     if (!graph) return null;
     const memberRelationships = graph.relationships.filter(
@@ -749,6 +891,90 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
             })}
           </div>
 
+          {/* App Layer Toggles */}
+          <div
+            className="mt-6 border-t border-border-subtle pt-4"
+            data-testid="app-layer-filter-section"
+          >
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <h3 className="press-eyebrow text-text-secondary">
+                <Layers className="mr-1.5 inline h-3 w-3" />
+                App Layer
+              </h3>
+              <button
+                onClick={resetSemanticFilters}
+                className="rounded px-2 py-1 font-mono text-[10px] text-text-muted transition-colors hover:bg-base hover:text-text-primary"
+                title="Reset semantic filters"
+              >
+                Reset
+              </button>
+            </div>
+
+            {appLayerStatus &&
+              appLayerStatus.status !== "complete" && (
+                <div
+                  className="mb-2 rounded border border-warning/40 bg-warning/10 px-2 py-1.5 text-[10px] text-warning"
+                  title={appLayerStatus.message ?? "App Layer metadata is incomplete"}
+                >
+                  App Layer metadata incomplete: {appLayerStatus.missingNodes} missing
+                </div>
+              )}
+
+            <div className="flex flex-col gap-1">
+              {appLayerItems.map(({ layer, label, description, count }) => {
+                const isVisible = semanticFilters.visibleAppLayers.includes(
+                  layer as AppLayer,
+                );
+                return (
+                  <button
+                    key={layer}
+                    onClick={() => toggleSemanticAppLayer(layer as AppLayer)}
+                    title={`${label} (${count}) - ${description}`}
+                    aria-pressed={isVisible}
+                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                      isVisible
+                        ? "bg-base text-text-primary"
+                        : "text-text-muted hover:bg-base hover:text-text-secondary"
+                    } `}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-xs">
+                      {label}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+
+              {missingAppLayerCount > 0 && (
+                <button
+                  onClick={toggleSemanticMissingAppLayer}
+                  title={`Missing App Layer (${missingAppLayerCount}) - graph data did not provide App Layer metadata for these nodes`}
+                  aria-pressed={semanticFilters.showNodesMissingAppLayer}
+                  className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                    semanticFilters.showNodesMissingAppLayer
+                      ? "bg-base text-text-primary"
+                      : "text-text-muted hover:bg-base hover:text-text-secondary"
+                  } `}
+                >
+                  <div
+                    className={`h-2 w-2 rounded-full ${semanticFilters.showNodesMissingAppLayer ? "bg-border-strong" : "bg-border-subtle"}`}
+                  />
+                  <span className="min-w-0 flex-1 truncate text-xs">
+                    Missing App Layer
+                  </span>
+                  <span className="font-mono text-[10px] text-text-muted">
+                    {missingAppLayerCount}
+                  </span>
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Graph Health Toggles */}
           <div
             className="mt-6 border-t border-border-subtle pt-4"
@@ -910,6 +1136,332 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                   <span className="font-mono text-[10px]">{count}</span>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Resolution Health Toggles */}
+          <div
+            className="mt-6 border-t border-border-subtle pt-4"
+            data-testid="resolution-health-filter-section"
+          >
+            <h3 className="press-eyebrow mb-3 text-text-secondary">
+              <AlertTriangle className="mr-1.5 inline h-3 w-3" />
+              Resolution Health
+            </h3>
+
+            <h4 className="mb-2 font-mono text-[10px] text-text-muted">
+              Confidence
+            </h4>
+            <div className="flex flex-col gap-1">
+              {resolutionConfidenceItems.map(({ confidence, label, count }) => {
+                const isVisible =
+                  semanticFilters.visibleResolutionConfidences.includes(
+                    confidence as GraphHealthResolutionConfidence,
+                  );
+                return (
+                  <button
+                    key={confidence}
+                    onClick={() =>
+                      toggleResolutionConfidence(
+                        confidence as GraphHealthResolutionConfidence,
+                      )
+                    }
+                    title={`Resolution confidence ${label} (${count})`}
+                    aria-pressed={isVisible}
+                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                      isVisible
+                        ? "bg-base text-text-primary"
+                        : "text-text-muted hover:bg-base hover:text-text-secondary"
+                    } `}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-xs">
+                      {label}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <h4 className="mt-4 mb-2 font-mono text-[10px] text-text-muted">
+              Buckets
+            </h4>
+            <div className="flex flex-col gap-1">
+              {resolutionHealthBucketItems.map(({ value, label, count }) => {
+                const isVisible =
+                  semanticFilters.visibleResolutionHealthBuckets.includes(
+                    value as GraphHealthResolutionHealthBucket,
+                  );
+                return (
+                  <button
+                    key={value}
+                    onClick={() =>
+                      toggleResolutionHealthBucket(
+                        value as GraphHealthResolutionHealthBucket,
+                      )
+                    }
+                    title={`${label} (${count})`}
+                    aria-pressed={isVisible}
+                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                      isVisible
+                        ? "bg-base text-text-primary"
+                        : "text-text-muted hover:bg-base hover:text-text-secondary"
+                    } `}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-xs">
+                      {label}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <h4 className="mt-4 mb-2 font-mono text-[10px] text-text-muted">
+              Resolution Gap Lens
+            </h4>
+            <div className="flex flex-col gap-1">
+              {resolutionLensRows.map((row) => (
+                <div
+                  key={row.id}
+                  title={`${row.label} (${row.count})${row.detail ? ` - ${row.detail}` : ""}`}
+                  className="flex items-center gap-2.5 rounded px-2 py-1.5 text-left text-text-muted"
+                >
+                  <div className="h-2 w-2 rounded-full bg-border-subtle" />
+                  <span className="min-w-0 flex-1 truncate text-xs">
+                    {row.label}
+                  </span>
+                  {row.detail && (
+                    <span className="max-w-[72px] truncate font-mono text-[9px]">
+                      {row.detail}
+                    </span>
+                  )}
+                  <span className="font-mono text-[10px]">{row.count}</span>
+                </div>
+              ))}
+            </div>
+
+            <h4 className="mt-4 mb-2 font-mono text-[10px] text-text-muted">
+              Gap Fact Family
+            </h4>
+            <div className="flex flex-col gap-1">
+              {resolutionGapFactFamilyItems.map(({ value, label, count }) => {
+                const isVisible =
+                  semanticFilters.visibleResolutionGapFactFamilies.includes(value);
+                return (
+                  <button
+                    key={value}
+                    onClick={() => toggleResolutionGapFactFamily(value)}
+                    title={`${label} (${count})`}
+                    aria-pressed={isVisible}
+                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                      isVisible
+                        ? "bg-base text-text-primary"
+                        : "text-text-muted hover:bg-base hover:text-text-secondary"
+                    } `}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-xs">
+                      {label}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <h4 className="mt-4 mb-2 font-mono text-[10px] text-text-muted">
+              Target Role
+            </h4>
+            <div className="flex flex-col gap-1">
+              {resolutionGapTargetRoleItems.map(({ value, label, count }) => {
+                const isVisible =
+                  semanticFilters.visibleResolutionGapTargetRoles.includes(value);
+                return (
+                  <button
+                    key={value}
+                    onClick={() => toggleResolutionGapTargetRole(value)}
+                    title={`${label} (${count})`}
+                    aria-pressed={isVisible}
+                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                      isVisible
+                        ? "bg-base text-text-primary"
+                        : "text-text-muted hover:bg-base hover:text-text-secondary"
+                    } `}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-xs">
+                      {label}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <h4 className="mt-4 mb-2 font-mono text-[10px] text-text-muted">
+              Actionability
+            </h4>
+            <div className="flex flex-col gap-1">
+              {resolutionGapActionabilityItems.map(({ value, label, count }) => {
+                const isVisible =
+                  semanticFilters.visibleResolutionGapActionabilities.includes(
+                    value as GraphHealthDiagnosticActionability,
+                  );
+                return (
+                  <button
+                    key={value}
+                    onClick={() =>
+                      toggleResolutionGapActionability(
+                        value as GraphHealthDiagnosticActionability,
+                      )
+                    }
+                    title={`${label} (${count})`}
+                    aria-pressed={isVisible}
+                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                      isVisible
+                        ? "bg-base text-text-primary"
+                        : "text-text-muted hover:bg-base hover:text-text-secondary"
+                    } `}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-xs">
+                      {label}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <h4 className="mt-4 mb-2 font-mono text-[10px] text-text-muted">
+              Classification
+            </h4>
+            <div className="flex flex-col gap-1">
+              {resolutionGapClassificationItems.map(({ value, label, count }) => {
+                const isVisible =
+                  semanticFilters.visibleResolutionGapClassifications.includes(
+                    value as GraphHealthDiagnosticClassification,
+                  );
+                return (
+                  <button
+                    key={value}
+                    onClick={() =>
+                      toggleResolutionGapClassification(
+                        value as GraphHealthDiagnosticClassification,
+                      )
+                    }
+                    title={`${label} (${count})`}
+                    aria-pressed={isVisible}
+                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                      isVisible
+                        ? "bg-base text-text-primary"
+                        : "text-text-muted hover:bg-base hover:text-text-secondary"
+                    } `}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-xs">
+                      {label}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <h4 className="mt-4 mb-2 font-mono text-[10px] text-text-muted">
+              Source App Layer
+            </h4>
+            <div className="flex flex-col gap-1">
+              {resolutionGapSourceAppLayerItems.map(({ value, label, count }) => {
+                const isVisible =
+                  semanticFilters.visibleResolutionGapSourceAppLayers.includes(
+                    value as AppLayer,
+                  );
+                return (
+                  <button
+                    key={value}
+                    onClick={() => toggleResolutionGapSourceAppLayer(value as AppLayer)}
+                    title={`${label} source gaps (${count})`}
+                    aria-pressed={isVisible}
+                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                      isVisible
+                        ? "bg-base text-text-primary"
+                        : "text-text-muted hover:bg-base hover:text-text-secondary"
+                    } `}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-xs">
+                      {label}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <h4 className="mt-4 mb-2 font-mono text-[10px] text-text-muted">
+              Top Target Text
+            </h4>
+            <div className="flex flex-col gap-1">
+              {resolutionGapTargetTextItems.map(({ value, count }) => {
+                const isVisible =
+                  semanticFilters.visibleResolutionGapTargetTexts.length === 0 ||
+                  semanticFilters.visibleResolutionGapTargetTexts.includes(value);
+                return (
+                  <button
+                    key={value}
+                    onClick={() => toggleResolutionGapTargetText(value)}
+                    title={`${value} (${count})`}
+                    aria-pressed={isVisible}
+                    className={`flex items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors ${
+                      isVisible
+                        ? "bg-base text-text-primary"
+                        : "text-text-muted hover:bg-base hover:text-text-secondary"
+                    } `}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${isVisible ? "bg-border-strong" : "bg-border-subtle"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate font-mono text-xs">
+                      {value}
+                    </span>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

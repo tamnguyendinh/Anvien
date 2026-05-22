@@ -4,11 +4,13 @@ import {
   MAX_DENSE_RENDERED_NODE_SIZE,
   MAX_RENDERED_NODE_SIZE,
   capRenderedNodeSize,
+  filterGraphByLabels,
   getMaxRenderedNodeSize,
   getScaledNodeSize,
   knowledgeGraphToGraphology,
 } from "../../src/lib/graph-adapter";
 import { DOCUMENTATION_NODE_LABEL, getNodeColor } from "../../src/lib/constants";
+import { DEFAULT_SEMANTIC_FILTERS } from "../../src/lib/semantic-filters";
 import type { GraphRelationship } from "../../src/generated/avmatrix-contracts";
 import {
   createCallsRelationship,
@@ -456,6 +458,46 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     );
     expect(sigmaGraph.getNodeAttribute(functionA.id, "community")).toBe(0);
     expect(sigmaGraph.getNodeAttribute(functionB.id, "community")).toBe(1);
+  });
+
+  it("applies App Layer and Resolution Health filters without changing node type colors", () => {
+    const graph = createKnowledgeGraph();
+    const backendFunction = {
+      ...createFunctionNode("backendHandler", "backend/main.go", 1),
+      properties: {
+        ...createFunctionNode("backendHandler", "backend/main.go", 1).properties,
+        appLayer: "backend",
+        resolutionConfidence: "clear",
+      },
+    } as any;
+    const frontendFunction = {
+      ...createFunctionNode("frontendHelper", "avmatrix-web/src/app.ts", 1),
+      properties: {
+        ...createFunctionNode("frontendHelper", "avmatrix-web/src/app.ts", 1)
+          .properties,
+        appLayer: "frontend",
+        resolutionConfidence: "degraded",
+        resolutionHealthBuckets: { in_repo_analyzer_gap: 1 },
+      },
+    } as any;
+
+    graph.addNode(backendFunction);
+    graph.addNode(frontendFunction);
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    filterGraphByLabels(sigmaGraph, ["Function"], undefined, {
+      ...DEFAULT_SEMANTIC_FILTERS,
+      visibleAppLayers: ["backend"],
+    });
+
+    expect(sigmaGraph.getNodeAttribute(backendFunction.id, "hidden")).toBe(false);
+    expect(sigmaGraph.getNodeAttribute(frontendFunction.id, "hidden")).toBe(true);
+    expect(sigmaGraph.getNodeAttribute(backendFunction.id, "color")).toBe(
+      getNodeColor("Function"),
+    );
+    expect(sigmaGraph.getNodeAttribute(frontendFunction.id, "color")).toBe(
+      getNodeColor("Function"),
+    );
   });
 
   it("routes documentation files into the Documentation display filter", () => {

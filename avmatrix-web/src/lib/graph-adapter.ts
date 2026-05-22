@@ -18,8 +18,14 @@ import {
   type GraphHealthFilterable,
   type GraphHealthFilterState,
 } from "./graph-health-filters";
+import {
+  getSemanticFilterableFromNode,
+  semanticMatchesFilters,
+  type SemanticFilterable,
+  type SemanticFilterState,
+} from "./semantic-filters";
 
-export interface SigmaNodeAttributes extends GraphHealthFilterable {
+export interface SigmaNodeAttributes extends GraphHealthFilterable, SemanticFilterable {
   x: number;
   y: number;
   size: number;
@@ -421,8 +427,10 @@ export const knowledgeGraphToGraphology = (
     const hasCommunity = communityIndex !== undefined;
     const nodeColor = getNodeColor(displayNodeType);
     const graphHealth = getNodeGraphHealth(node);
+    const semantic = getSemanticFilterableFromNode(node);
 
     graph.addNode(node.id, {
+      ...semantic,
       x: 0,
       y: 0,
       size: scaledSize,
@@ -439,6 +447,9 @@ export const knowledgeGraphToGraphology = (
       expectedIsolationReasons: graphHealth?.expectedIsolationReasons,
       diagnostics: graphHealth?.diagnostics,
       confidence: graphHealth?.confidence,
+      resolutionHealthBuckets: semantic.resolutionHealthBuckets,
+      resolutionGapCount: semantic.resolutionGapCount,
+      resolutionConfidence: semantic.resolutionConfidence,
       community: communityIndex,
       communityColor: hasCommunity
         ? getCommunityColor(communityIndex!)
@@ -482,13 +493,21 @@ export const filterGraphByLabels = (
   graph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>,
   visibleLabels: string[],
   graphHealthFilters?: GraphHealthFilterState,
+  semanticFilters?: SemanticFilterState,
 ): void => {
   graph.forEachNode((nodeId, attributes) => {
     const isVisible = visibleLabels.includes(attributes.nodeType);
     const isGraphHealthVisible = graphHealthFilters
       ? graphHealthMatchesFilters(attributes, graphHealthFilters)
       : true;
-    graph.setNodeAttribute(nodeId, "hidden", !isVisible || !isGraphHealthVisible);
+    const isSemanticVisible = semanticFilters
+      ? semanticMatchesFilters(attributes, semanticFilters)
+      : true;
+    graph.setNodeAttribute(
+      nodeId,
+      "hidden",
+      !isVisible || !isGraphHealthVisible || !isSemanticVisible,
+    );
   });
 };
 
@@ -532,14 +551,15 @@ export const filterGraphByDepth = (
   maxHops: number | null,
   visibleLabels: string[],
   graphHealthFilters?: GraphHealthFilterState,
+  semanticFilters?: SemanticFilterState,
 ): void => {
   if (maxHops === null) {
-    filterGraphByLabels(graph, visibleLabels, graphHealthFilters);
+    filterGraphByLabels(graph, visibleLabels, graphHealthFilters, semanticFilters);
     return;
   }
 
   if (selectedNodeId === null || !graph.hasNode(selectedNodeId)) {
-    filterGraphByLabels(graph, visibleLabels, graphHealthFilters);
+    filterGraphByLabels(graph, visibleLabels, graphHealthFilters, semanticFilters);
     return;
   }
 
@@ -551,10 +571,13 @@ export const filterGraphByDepth = (
     const isGraphHealthVisible = graphHealthFilters
       ? graphHealthMatchesFilters(attributes, graphHealthFilters)
       : true;
+    const isSemanticVisible = semanticFilters
+      ? semanticMatchesFilters(attributes, semanticFilters)
+      : true;
     graph.setNodeAttribute(
       nodeId,
       "hidden",
-      !isLabelVisible || !isInRange || !isGraphHealthVisible,
+      !isLabelVisible || !isInRange || !isGraphHealthVisible || !isSemanticVisible,
     );
   });
 };
