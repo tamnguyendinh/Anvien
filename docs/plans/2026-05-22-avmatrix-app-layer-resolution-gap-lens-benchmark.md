@@ -14,6 +14,18 @@ Status: pending
 
 Record after P0-B.
 
+Planning audit snapshot, not P0 closure baseline:
+
+| Metric | Planning audit value |
+| --- | ---: |
+| Files scanned | 728 |
+| Files parsed | 539 |
+| Unsupported files | 189 |
+| Failed files | 0 |
+| Graph nodes | 22095 |
+| Graph relationships | 54772 |
+| Graph path | `.avmatrix/graph.json` |
+
 | Metric | Value |
 | --- | ---: |
 | Files scanned | pending |

@@ -17,7 +17,7 @@ Companion files:
 
 1. Use AVmatrix for codebase analysis and impact checks while working on implementation slices in this plan.
 2. As each task is completed, update the corresponding checklist item immediately.
-3. Run a full applicable Web validation before closing the plan; include unit coverage for layout policy and a browser/e2e check for graph load behavior.
+3. Run the full build gate before testing; include backend, contract, Web unit, and browser/e2e validation before closing the plan.
 4. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured Web graph load behavior, layout start/stop counts, render/conversion latency, optimizer latency, memory, and graph interaction latency; build/test timings are validation evidence unless the slice changes those systems.
 5. Record evidence as each evidenced task is completed.
 6. For doc-only commits, do not use AVmatrix.
@@ -92,16 +92,22 @@ Web layout should use App Layer as the macro placement ring and existing node ty
 
 Query-related commands should understand the new semantic layers. `analyze` remains the base graph-producing command; child commands such as `query`, `context`, `impact`, `detect-changes`, and a new query-health/inventory command should surface App Layer, Functional Area, and ResolutionGap meaning when the graph provides it.
 
+Existing graph-health diagnostic classification and actionability are product code that should be reused and extended where accurate. The plan must not create a second incompatible classification path for builtin, standard-library, test-framework, external-library, in-repo analyzer-gap, or unclassified cases.
+
+The deterministic initial graph placement is separate from the manual layout optimizer. The Web graph already applies an initial filter-based clustered placement during graph conversion, while the optimizer button invokes layout work manually. This plan changes the deterministic initial placement into App Layer rings and type islands; it must not add automatic optimizer execution after render, load, filter changes, or refresh.
+
 ## Acceptance Criteria
 
 - Graph nodes expose a persisted primary App Layer category with no overlapping primary labels.
 - API and API-related mixed categories are first-class, not hidden under Backend or Frontend.
 - Functional Area metadata is persisted only where evidence is accurate enough; ambiguous nodes remain unknown.
 - Source-backed unresolved references are represented as persisted ResolutionGap/UnresolvedSymbol graph entities or equivalent persisted graph records, not only diagnostic text.
+- Repeated unresolved references with different target text are not collapsed into a bucket that loses target identity.
 - Fine-grained gap relationships or typed gap metadata preserve call, access, type-reference, heritage, external, builtin, test, analyzer-gap, and unknown distinctions where evidence supports them.
 - Topology Health and Resolution Health remain separate in graph/API/CLI/Web output.
 - CLI/query command surfaces can report App Layer, Functional Area, ResolutionGap, and resolution-health information from persisted graph data.
 - A query-health benchmark command exists and reports hit@5/hit@10, expected files/symbols, actual results, noise reason, and pass/fail.
+- Query-health captures the current noisy baseline and then validates the improved `query` implementation against expected source files and symbols.
 - Web UI exposes App Layer filters, Resolution Health filters, and a multi-ring layout where App Layer controls macro placement and node type/gap kind controls islands inside rings.
 - The Web UI does not invent App Layer, Functional Area, or ResolutionGap truth on the client.
 - Layout optimizer remains manual-only and is not auto-run after render.
@@ -109,17 +115,25 @@ Query-related commands should understand the new semantic layers. `analyze` rema
 - Benchmark and evidence ledgers contain baseline and final inventories for App Layer, Functional Area, ResolutionGap, Resolution Health, query benchmark, CLI semantic output, and Web rings/filters.
 - Missing App Layer or ResolutionGap metadata in loaded graph data is treated as stale/incomplete graph evidence, not as a reason to guess at API/UI load time.
 - If ResolutionGap data is aggregated or deduped, the aggregate keeps exact counts and representative source evidence without capping away meaning.
+- Resolution inventory and Resolution Health APIs/commands expose full counts and must not rely on capped graph-health triage report candidates.
 
-## Current Code Facts To Verify
+## Current Code Facts To Account For
 
-The following facts are expected from the recent graph-health work and must be verified in Phase 0 before implementation edits:
+The following facts came from pre-implementation source inspection and must be re-verified in Phase 0 before implementation edits:
 
-- unresolved references are currently emitted as diagnostics from resolution paths and attached to source nodes;
-- `unknown_connectivity` is already separated from ordinary unresolved diagnostics;
-- Web graph filters currently consume graph/API metadata, generated contracts, and client-side filter state;
-- graph layout already has filter-based clustering and a manual optimizer path;
-- command surfaces exist for query/context/impact/detect-changes but do not yet expose the proposed App Layer and ResolutionGap semantics consistently;
-- generated Web contracts are the boundary that should prevent the UI from relying on ad hoc shape guesses.
+- unresolved references are currently emitted from `internal/resolution/emit.go` and attached to source nodes with `graphhealth.AppendDiagnosticToNode`;
+- `internal/graphhealth/diagnostics.go` currently aggregates diagnostic buckets without `TargetText` in the bucket key, so different unresolved targets can collapse into one bucket and keep only the first target text;
+- graph-health diagnostic classification/actionability already exists in `internal/graphhealth/policy.go` and `internal/graphhealth/diagnostics.go`;
+- graph-health summaries are computed by HTTP graph paths such as `internal/httpapi/graph.go`, so persisted ResolutionGap/App Layer semantics must be produced earlier than API response shaping;
+- `/api/graph/report` has a capped candidate limit and is not sufficient as the full ResolutionGap inventory source;
+- `query` currently ranks process matches with simple contains scoring in `internal/mcp/tools.go`, and definition matching is limited enough that function/method-centric intents can miss the expected files;
+- Web graph filters currently consume graph/API metadata, generated contracts, and client-side filter state, but App Layer and Resolution Health filters do not exist yet;
+- Web graph conversion currently applies deterministic filter-based clustered layout in `avmatrix-web/src/lib/graph-adapter.ts`, and the manual optimizer button calls layout work through `avmatrix-web/src/hooks/useSigma.ts`;
+- generated Web contracts in `internal/contracts/web_ui.go` are the boundary that should prevent the UI from relying on ad hoc shape guesses.
+
+## Checklist Item Standard
+
+Each checkbox below is a concrete unit of work with a visible output in code, generated contracts, tests, benchmark data, or evidence ledgers. Constraints and cautions may appear inside an item, but only as part of doing that concrete work correctly.
 
 ## Phase 0 - Baseline, Discussion Coverage, And Source Trace
 
@@ -127,23 +141,23 @@ The following facts are expected from the recent graph-health work and must be v
 
 - [ ] [P0-B] Run `avmatrix analyze --force` at implementation start, then record scanned/parsed/unsupported/failed file counts, graph node count, graph relationship count, counted semantic relationship count, execution-flow count, `unknown_connectivity` count, and graph timestamp/hash in the benchmark ledger. Compare the fresh baseline against the discussion observations of about `22010` nodes, `26906` counted semantic relationships, `0` `unknown_connectivity`, `51232` unresolved occurrences, and `8880` unresolved buckets without assuming those old numbers are still exact.
 
-- [ ] [P0-C] Trace the current unresolved-reference pipeline from resolution source facts to graph/API output. Record the exact files/symbols that create unresolved call, access, type-reference, and heritage diagnostics; record where target text, source node, fact family, classification, actionability, and source location are currently kept or lost.
+- [ ] [P0-C] Trace the current unresolved-reference pipeline from resolution source facts to graph/API output. Record the exact files/symbols that create unresolved call, access, type-reference, and heritage diagnostics; record where target text, source node, fact family, classification, actionability, and source location are currently kept or lost, including whether `sameDiagnosticBucket` collapses distinct target text in the same source/fact/file/note bucket.
 
-- [ ] [P0-D] Measure the current unresolved-reference inventory before changing semantics. Record bucket count, occurrence count, fact family counts, diagnostic classification/actionability counts if present, top target texts, source node labels, source path buckets, and whether each source already has a topology status.
+- [ ] [P0-D] Measure the current unresolved-reference inventory before changing semantics using full graph data or a temporary audit script that preserves full counts when existing APIs/commands are capped. Record bucket count, occurrence count, fact family counts, diagnostic classification/actionability counts if present, top target texts, source node labels, source path buckets, and whether each source already has a topology status.
 
 - [ ] [P0-E] Measure a provisional path/package-derived App Layer inventory without changing product behavior. Seed the audit with the discussion examples `avmatrix-web/src/**`, `avmatrix-web/test/**`, `avmatrix-web/e2e/**`, `internal/**`, `cmd/**`, `internal/httpapi/**`, `avmatrix-web/src/services/backend-client.ts`, `avmatrix-launcher/**`, `contracts/**`, `internal/contracts/**`, `cmd/generate-web-contracts/**`, `docs/**`, `reports/**`, `*.md`, `*_test.go`, `test/fixtures/**`, config files, package files, and build scripts. The evidence must show candidate counts for backend, api, frontend, cli_launcher, shared_contract, api_contract, api_shared_contract, frontend_api_client, backend_test, frontend_test, api_test, generated_contract, docs, config, generated, mixed, and unknown, plus examples explaining every uncertain bucket.
 
-- [ ] [P0-F] Audit current query behavior with fixed benchmark intents before adding the new command. At minimum test intents for unresolved reference diagnostic generation, graph health unknown-connectivity separation, App Layer/resolution-gap layout, and runtime reset hidden-terminal behavior; record expected files/symbols, actual top results, hit/miss, and noise reason.
+- [ ] [P0-F] Audit current query behavior with fixed benchmark intents before adding the new command. At minimum test intents for unresolved reference diagnostic generation, graph health unknown-connectivity separation, App Layer/resolution-gap layout, API contract surfaces, frontend graph filter surfaces, and runtime reset hidden-terminal behavior; record expected files/symbols, actual top results, hit/miss, and noise reason. The audit must include the current `internal/mcp/tools.go` process scoring and definition matching behavior so later query work fixes the actual retrieval path rather than only adding a benchmark wrapper.
 
-- [ ] [P0-G] Locate the implementation surfaces for graph schema, graph generation, resolution diagnostics, graph health, HTTP graph APIs, generated Web contracts, CLI query/context/impact/detect-changes, Web graph filters, Web graph detail panels, and Web layout. Record exact file paths in evidence so later phases edit the identified surfaces rather than guessing.
+- [ ] [P0-G] Locate the implementation surfaces for graph schema, graph generation, resolution diagnostics, graph health, HTTP graph APIs, generated Web contracts, CLI query/context/impact/detect-changes, Web graph filters, Web graph detail panels, and Web layout. Record exact file paths in evidence, including `internal/resolution/emit.go`, `internal/resolution/resolve.go`, `internal/graphhealth/diagnostics.go`, `internal/graphhealth/policy.go`, `internal/httpapi/graph.go`, `internal/contracts/web_ui.go`, `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `avmatrix-web/src/lib/graph-adapter.ts`, `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/components/FileTreePanel.tsx`, `avmatrix-web/src/components/GraphCanvas.tsx`, and `avmatrix-web/src/hooks/useSigma.ts`.
 
 ## Phase 1 - App Layer Taxonomy And Persistence
 
 - [ ] [P1-A] Define the persisted App Layer category registry as a primary one-of field, not overlapping tags. The category list must include normal categories and mixed categories where needed: backend, api, frontend, cli_launcher, shared_contract, api_contract, api_shared_contract, frontend_api_client, backend_test, frontend_test, api_test, generated_contract, docs, config, generated, mixed, unknown, and any additional categories proven necessary by P0 evidence.
 
-- [ ] [P1-B] Define the source evidence required for every App Layer category. Use high-confidence signals such as path, package/module, generated-contract location, API route/handler location, frontend source roots, test naming, docs/config paths, and launcher/runtime ownership; start from the P0-E path seed list and refine it with source inspection. Do not classify a node into a precise category when evidence is insufficient.
+- [ ] [P1-B] Define the source evidence required for every App Layer category and the explicit `unknown` assignment rule for insufficient evidence. Use high-confidence signals such as path, package/module, generated-contract location, API route/handler location, frontend source roots, test naming, docs/config paths, and launcher/runtime ownership; start from the P0-E path seed list and refine it with source inspection.
 
-- [ ] [P1-C] Implement App Layer classification during analyze/graph generation and persist the result in graph output. The Web UI and API consumers must read the persisted field; they must not classify nodes at load time except for defensive display of missing data.
+- [ ] [P1-C] Implement App Layer classification during analyze/graph generation and persist the result in graph output through a dedicated backend semantic classification surface. Update API and Web consumers to read the persisted field and show defensive missing-data state when metadata is absent.
 
 - [ ] [P1-D] Make API first-class by classifying server handlers, API graph endpoints, API contract/schema code, generated API contract files, and frontend API clients into separate categories when evidence supports that separation. If a surface is both API and shared contract, use a mixed category such as `api_shared_contract` rather than overlapping labels.
 
@@ -171,33 +185,33 @@ The following facts are expected from the recent graph-health work and must be v
 
 ## Phase 3 - Persisted ResolutionGap And UnresolvedSymbol Model
 
-- [ ] [P3-A] Define the persisted ResolutionGap/UnresolvedSymbol data model. It must preserve source node ID, source App Layer, source Functional Area when known, fact family, target text, inferred target role, classification, actionability, resolution source, source file path, line/column when available, occurrence count, sample evidence, and notes for unclassified cases.
+- [ ] [P3-A] Define the persisted ResolutionGap/UnresolvedSymbol data model. It must preserve source node ID, source App Layer, source Functional Area when known, fact family, target text, inferred target role, classification, actionability, resolution source, source file path, line/column when available, occurrence count, sample evidence, and notes for unclassified cases. The model must define bucket identity explicitly so different target texts, roles, or actionability classes are not merged into one misleading gap.
 
-- [ ] [P3-B] Promote source-backed unresolved call, access, type-reference, and heritage diagnostics into persisted graph entities or persisted graph records. Existing diagnostic summaries must remain compatible, but diagnostic text alone must no longer be the only machine-readable representation.
+- [ ] [P3-B] Promote source-backed unresolved call, access, type-reference, and heritage facts into persisted graph entities or persisted graph records before evidence is collapsed by diagnostic summary aggregation. Existing diagnostic summaries must remain compatible, but already-collapsed diagnostic text must not be the only machine-readable source for ResolutionGap truth.
 
 - [ ] [P3-C] Implement fine-grained gap relationships or typed gap metadata for every distinction supported by source evidence. Start with unresolved call, unresolved access, unresolved type-reference, unresolved heritage, external symbol, builtin/stdlib reference, test-framework reference, in-repo analyzer gap, and unknown/unclassified; add narrower types if P0 evidence shows they are useful.
 
-- [ ] [P3-D] Infer target role from fact family and source evidence without pretending the target is resolved. Examples: calls map to callable-like gaps, member accesses map to member-like gaps, type annotations and heritage map to type-like gaps, and external/builtin/test evidence maps to those roles only when classification supports it.
+- [ ] [P3-D] Implement target-role inference for ResolutionGap records from fact family and source evidence. Calls map to callable-like gaps, member accesses map to member-like gaps, type annotations and heritage map to type-like gaps, and external/builtin/test evidence maps to those roles only when classification supports it, without marking the unresolved target as resolved.
 
-- [ ] [P3-E] Preserve actionability as graph-readable data. Builtin/stdlib/test references should be non-actionable when confidently recognized, external references should be reviewable unless rules say otherwise, in-repo unresolved references should be analyzer gaps, and unclassified references should remain review/unknown until better evidence exists.
+- [ ] [P3-E] Wire existing graph-health diagnostic classification/actionability into persisted ResolutionGap records and summaries. Builtin/stdlib/test references should be non-actionable when confidently recognized, external references should be reviewable unless rules say otherwise, in-repo unresolved references should be analyzer gaps, and unclassified references should remain review/unknown until better evidence exists.
 
-- [ ] [P3-F] Do not synthesize fake in-repo target nodes, fake resolved semantic edges, or fake topology edges for unresolved targets. The persisted gap may be a node/entity, but it must not claim resolution that the analyzer did not prove.
+- [ ] [P3-F] Add graph validation and backend tests that inspect persisted ResolutionGap output and prove unresolved targets do not create fake in-repo target nodes, fake resolved semantic edges, or fake topology edges. The validation must allow unresolved gap entities while asserting they never claim analyzer-proven resolution.
 
-- [ ] [P3-G] Add backend tests for unresolved call, access, type-reference, heritage, builtin/predeclared, standard-library, test-framework, external, in-repo analyzer-gap, unknown target-role, and repeated occurrence aggregation cases.
+- [ ] [P3-G] Add backend tests for unresolved call, access, type-reference, heritage, builtin/predeclared, standard-library, test-framework, external, in-repo analyzer-gap, unknown target-role, repeated occurrence aggregation, and multiple different target texts from the same source/fact/file/note bucket. Tests must prove exact target identity and occurrence counts survive persistence.
 
 - [ ] [P3-H] Record persisted gap schema examples, before/after gap counts, top targets, target-role/actionability counts, and test evidence in the evidence and benchmark ledgers.
 
-- [ ] [P3-I] If unresolved occurrences are aggregated or deduped, preserve exact occurrence counts, bucket identity, representative source samples, source App Layer/Functional Area distribution, and traceability back to source diagnostics. Do not cap, sample, or collapse evidence in a way that changes the meaning of `51232`-scale unresolved inventories.
+- [ ] [P3-I] Implement the aggregation/dedupe policy for unresolved occurrences with exact occurrence counts, target text identity, bucket identity, representative source samples, source App Layer/Functional Area distribution, and traceability back to source diagnostics. Add verification that full unresolved inventories keep their meaning at `51232`-scale observations.
 
 ## Phase 4 - Resolution Health Inventory And Topology Separation
 
 - [ ] [P4-A] Define Resolution Health buckets that are separate from Topology Health. Required buckets include resolved references when measurable, unresolved non-actionable, external unresolved, in-repo analyzer gap, unresolved call target, unresolved access target, unresolved type target, unresolved heritage target, and unclassified/unknown.
 
-- [ ] [P4-B] Update graph-health and report summaries so topology status stays topology-only while resolution status and resolution confidence are overlays. A node with `connected` topology and unresolved gaps must remain connected while showing degraded resolution confidence.
+- [ ] [P4-B] Update graph-health/report summary builders and tests so topology status stays topology-only while resolution status and resolution confidence are overlays. Include a connected-node-with-gaps case that remains `connected` while showing degraded resolution confidence.
 
-- [ ] [P4-C] Add graph/API inventory counts by App Layer, Functional Area, fact family, target role, classification, actionability, Resolution Health bucket, and topology status. The same source of truth must be usable by CLI and Web consumers.
+- [ ] [P4-C] Add graph/API inventory counts by App Layer, Functional Area, fact family, target role, classification, actionability, Resolution Health bucket, and topology status from the persisted graph/inventory source of truth. Wire CLI and Web consumers to that same full-count source instead of the capped `/api/graph/report` candidate list.
 
-- [ ] [P4-D] Add or extend a CLI inventory command for resolution gaps and semantic graph health. It must read persisted analyze output and print the same counts available to API/Web consumers, including App Layer and Functional Area grouping.
+- [ ] [P4-D] Add or extend a CLI inventory command for resolution gaps and semantic graph health. It must read persisted analyze output and print the same full counts available to API/Web consumers, including App Layer and Functional Area grouping, without applying UI/report candidate caps.
 
 - [ ] [P4-E] Add backend and CLI tests proving Resolution Health is not a replacement for topology, inventory uses persisted graph data, and connected diagnostic nodes are not ranked as topology defects.
 
@@ -207,11 +221,11 @@ The following facts are expected from the recent graph-health work and must be v
 
 - [ ] [P5-A] Define a query benchmark suite format with intent text, expected files, expected symbols, optional expected App Layer/Functional Area, hit@5 threshold, hit@10 threshold, actual top results, noise reason, and pass/fail status.
 
-- [ ] [P5-B] Add a CLI command for query health so retrieval accuracy can be checked by running one command. The command must use fresh analyze output, read the suite, run each query intent, score results, and write readable table or JSON output suitable for evidence and future automation.
+- [ ] [P5-B] Add a CLI command for query health so retrieval accuracy can be checked by running one command. The command must use fresh analyze output, read the suite, run each query intent through the same implementation path as `query`, score results, and write readable table or JSON output suitable for evidence and future automation.
 
-- [ ] [P5-C] Add initial suite entries for unresolved reference diagnostic generation, graph health unknown-connectivity separation, App Layer/resolution-gap layout, runtime reset hidden-terminal behavior, API contract surfaces, and frontend graph filter surfaces. The first suite must include expected files from the discussion: `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/graphhealth/diagnostics.go`, `internal/graphhealth/compute.go`, `internal/graphhealth/policy.go`, `avmatrix-web/src/lib/graph-health-filters.ts`, Web graph layout code, layout optimizer code, and `avmatrix-launcher/src/main.go`.
+- [ ] [P5-C] Add initial suite entries for unresolved reference diagnostic generation, graph health unknown-connectivity separation, App Layer/resolution-gap layout, runtime reset hidden-terminal behavior, API contract surfaces, query implementation surfaces, and frontend graph filter surfaces. The first suite must include expected files from the discussion and source audit: `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/graphhealth/diagnostics.go`, `internal/graphhealth/compute.go`, `internal/graphhealth/policy.go`, `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `cmd/avmatrix/main.go`, `internal/httpapi/graph.go`, `internal/contracts/web_ui.go`, `avmatrix-web/src/lib/graph-health-filters.ts`, Web graph layout code, layout optimizer code, and `avmatrix-launcher/src/main.go`.
 
-- [ ] [P5-D] Make command output report expected targets, actual top results, matched files/symbols, hit@5, hit@10, noise reason, pass/fail, and any semantic layer fields returned by query results. This output must make noisy retrieval visible rather than hiding it behind a generic score.
+- [ ] [P5-D] Make command output report expected targets, actual top results, matched files/symbols, hit@5, hit@10, noise reason, pass/fail, any semantic layer fields returned by query results, and explicit miss reasons for function/method targets that current definition matching fails to return.
 
 - [ ] [P5-E] Add tests for suite parsing, scoring, missing expected targets, noisy results, semantic field output, JSON/table output if both exist, and failed threshold behavior.
 
@@ -219,11 +233,11 @@ The following facts are expected from the recent graph-health work and must be v
 
 ## Phase 6 - Semantic Command Surfaces
 
-- [ ] [P6-A] Update `query` result output so matching nodes or flows can expose node type, App Layer, Functional Area, Resolution Health, and related ResolutionGap summaries when those fields are available. The command must not make up fields when the graph lacks fresh semantic data.
+- [ ] [P6-A] Update `query` retrieval and result output so matching nodes or flows can expose node type, App Layer, Functional Area, Resolution Health, and related ResolutionGap summaries when those fields are available. Add missing/stale semantic-data handling and improve the current simple contains-scoring behavior enough for the P5 benchmark intents to hit expected files/symbols.
 
 - [ ] [P6-B] Update `context` output so a symbol/node view includes node type, App Layer, Functional Area when known, topology status, resolution-health summary, and nearby/source ResolutionGaps. The output must distinguish source-node gaps from unresolved target entities.
 
-- [ ] [P6-C] Update `impact` output so blast-radius summaries include affected App Layers, affected Functional Areas, and resolution-health risks when graph evidence supports those summaries. High or critical risk warnings remain informational for workflow safety; they must not mean the tool refuses to inspect or change code.
+- [ ] [P6-C] Update `impact` output so blast-radius summaries include affected App Layers, affected Functional Areas, and resolution-health risks when graph evidence supports those summaries. Add command-output coverage proving high or critical risk warnings are reported as workflow safety information while inspection output remains available.
 
 - [ ] [P6-D] Update `detect-changes` output so changed symbols and affected flows summarize App Layers, Functional Areas, ResolutionGap changes, and resolution-health impact. This command remains the pre-commit graph-diff check required by repository rules.
 
@@ -233,19 +247,19 @@ The following facts are expected from the recent graph-health work and must be v
 
 ## Phase 7 - Web UI Filters, Detail Lens, And Multi-Ring Layout
 
-- [ ] [P7-A] Add App Layer filters/lens to the Web UI using backend/API fields. The UI must show categories such as Backend, API, Frontend, Shared Contract, API Contract, Frontend API Client, Tests, Docs, Config, Generated, Mixed, and Unknown only from graph data, not client-side invented classification.
+- [ ] [P7-A] Add App Layer filters/lens to the Web UI using backend/API fields. Source filter values such as Backend, API, Frontend, Shared Contract, API Contract, Frontend API Client, Tests, Docs, Config, Generated, Mixed, and Unknown from graph data and render a missing-data state when those fields are absent.
 
 - [ ] [P7-B] Add Resolution Health filters/lens for fact family, target role, classification, actionability, analyzer-gap concentration, top unresolved target text, and source App Layer. Minimum user-facing lens rows must include Backend unresolved calls, API unresolved handlers/contracts, Frontend unresolved type refs, Shared contract analyzer gaps, External unresolved symbols, Builtin/Test/Stdlib non-actionable references, In-repo analyzer gaps, Resolution gaps by functional area, Top app layers by analyzer gap count, Top functional areas by unresolved count, and Top unresolved target text. These filters must compose with existing node type, edge type, graph health, focus-depth, and selected-node filters.
 
-- [ ] [P7-C] Add node/detail-panel explanations for App Layer, Functional Area, Topology Health, Resolution Health, and related ResolutionGaps. The detail panel must show why a node has degraded resolution confidence without calling it dead code by default.
+- [ ] [P7-C] Add node/detail-panel explanations for App Layer, Functional Area, Topology Health, Resolution Health, and related ResolutionGaps. Include user-facing copy and tests that label degraded resolution confidence separately from dead-code conclusions.
 
-- [ ] [P7-D] Implement deterministic multi-ring placement where App Layer is the macro position and node type or ResolutionGap kind is the micro island inside that ring. Backend, API, and Frontend must be distinct rings when present, with API placed between Backend and Frontend as the bridge; Shared/API Contract rings should sit near API, and Frontend API Client should sit near Frontend/API. Shared/API Contract/Frontend API Client/Test/Docs/Config/Generated/Mixed/Unknown may become additional rings when the graph contains those categories.
+- [ ] [P7-D] Replace or extend the current deterministic filter-based clustered placement with deterministic multi-ring placement where App Layer is the macro position and node type or ResolutionGap kind is the micro island inside that ring. Backend, API, and Frontend must be distinct rings when present, with API placed between Backend and Frontend as the bridge; Shared/API Contract rings should sit near API, and Frontend API Client should sit near Frontend/API. Shared/API Contract/Frontend API Client/Test/Docs/Config/Generated/Mixed/Unknown may become additional rings when the graph contains those categories.
 
-- [ ] [P7-E] Preserve existing node type/filter colors and keep same-type islands visually together inside their App Layer ring. A yellow node type should stay in the yellow island, a blue node type in the blue island, and unrelated colors must not be interleaved in the same island.
+- [ ] [P7-E] Update Web graph adapter color and island assignment so existing node type/filter colors stay grouped inside each App Layer ring. Add assertions or screenshot-backed checks that a yellow node type stays in the yellow island, a blue node type stays in the blue island, and unrelated colors are not interleaved in the same island.
 
-- [ ] [P7-F] Keep layout optimizer manual-only. Do not auto-run optimizer after render, after data load, after filter changes, or after ring placement; do not add timeout, delayed refresh, or elapsed-time budget behavior to hide layout work.
+- [ ] [P7-F] Add layout optimizer invocation guards and tests around render, data load, filter changes, and ring placement so optimizer execution is only triggered by the manual Web UI control. Verify the implementation has no timeout, delayed refresh, or elapsed-time budget path for layout behavior.
 
-- [ ] [P7-G] Define ring size, spacing, ordering, and default visibility rules before coding layout behavior. Rings may be large or small, and there is no fixed maximum number of rings, but the UI must avoid overlap, must keep node type islands readable, and must explicitly decide which rings/lenses are visible by default versus collapsed or hidden by default.
+- [ ] [P7-G] Define ring size, spacing, ordering, and default visibility rules before coding layout behavior. Rings may be large or small, and there is no fixed maximum number of rings, but the UI must avoid overlap, must keep node type islands readable, and must explicitly decide which rings/lenses are visible by default versus collapsed or hidden by default. Because rendered node size is already capped at `3`, this task must focus on island spacing, island radius, ring radius, label density, edge density, and screenshot evidence rather than assuming node-size caps solve the unreadable "metal block" layout.
 
 - [ ] [P7-H] Add Web unit tests for App Layer filters, Resolution Health filters, detail-panel fields, ring grouping, color/type island behavior, ring size/default visibility policy, graph-health composition, and no auto optimizer invocation.
 
@@ -259,7 +273,7 @@ The following facts are expected from the recent graph-health work and must be v
 
 - [ ] [P8-B] Run backend tests for App Layer classification, Functional Area classification, ResolutionGap persistence, fine-grained gap relations, Resolution Health inventory, graph/API summaries, CLI inventory, query-health command, and semantic command output.
 
-- [ ] [P8-C] Run contract generation/checks and verify generated Web types expose App Layer, Functional Area, ResolutionGap, Resolution Health, relation metadata, and query/command-facing enum values.
+- [ ] [P8-C] Run contract generation/checks from the Go contract source and verify generated Web types expose App Layer, Functional Area, ResolutionGap, Resolution Health, relation metadata, and query/command-facing enum values. Confirm the generated TypeScript diff comes from the Go contract source.
 
 - [ ] [P8-D] Run Web unit tests for filters, detail panels, graph layout, manual optimizer behavior, and generated contract usage.
 
@@ -271,6 +285,6 @@ The following facts are expected from the recent graph-health work and must be v
 
 - [ ] [P8-H] Run `query`, `context`, `impact`, and `detect-changes` examples and record semantic output or explicit limitations in the evidence ledger.
 
-- [ ] [P8-I] Run AVmatrix detect-changes according to repository rules before implementation commits and record the affected symbols/flows in evidence. Do not run this for doc-only commits.
+- [ ] [P8-I] Run AVmatrix detect-changes according to repository rules before implementation commits and record the affected symbols/flows in evidence, with the doc-only commit exception handled by the repository rules.
 
 - [ ] [P8-J] Update this plan, the evidence ledger, and the benchmark ledger to implemented status only after all required validation passes or after any failed validation is recorded with a clear follow-up plan.

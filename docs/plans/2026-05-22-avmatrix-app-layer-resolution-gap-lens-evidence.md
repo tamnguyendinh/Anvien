@@ -32,6 +32,33 @@ Key decisions already captured:
 - accuracy is more important than minimizing graph size.
 - aggregation or dedupe must not discard evidence only to make the graph smaller.
 
+## E0A - Planning Codebase Audit Findings
+
+Status: recorded
+
+This audit was performed after the initial plan commit to make the plan match the current source tree. It is planning evidence only; Phase 0 must still rerun the required fresh baseline at implementation start.
+
+Source facts that must shape implementation:
+
+- `avmatrix analyze --force` on 2026-05-22 scanned `728` files, parsed `539`, reported `189` unsupported, `0` failed, and produced `22095` nodes and `54772` relationships at `.avmatrix/graph.json`.
+- `internal/resolution/emit.go` emits unresolved references through `emitUnresolvedReference`, then attaches them to source nodes with `graphhealth.AppendDiagnosticToNode`.
+- `internal/resolution/resolve.go` emits unresolved heritage, call, access, and type-reference diagnostics.
+- `internal/graphhealth/diagnostics.go` stores diagnostics under `graphHealthDiagnostics`; `sameDiagnosticBucket` currently does not include `TargetText`, so different unresolved target texts can collapse into one bucket.
+- `internal/graphhealth/policy.go` and `internal/graphhealth/diagnostics.go` already define diagnostic classification/actionability for builtin, standard-library, test-framework, external-library, in-repo unresolved, unclassified, non-actionable, review, and analyzer-gap.
+- `internal/httpapi/graph.go` calls graph-health summary computation when building graph responses, and its graph-health report candidate limit is capped. Full ResolutionGap inventory must not rely on that capped report path.
+- `internal/mcp/tools.go` currently ranks `query` results with simple process/step contains scoring, and definition matching is narrow enough that function/method-heavy intents can miss the expected files.
+- `internal/contracts/web_ui.go` is the generated Web contract source; Web TypeScript contract shape should be generated from this source rather than hand-edited.
+- `avmatrix-web/src/lib/graph-adapter.ts` currently applies deterministic filter-based clustered layout during graph conversion and already caps rendered node size at `3`.
+- `avmatrix-web/src/hooks/useSigma.ts` invokes layout work from the manual optimizer path; the current plan should change deterministic initial placement, not add automatic optimizer execution.
+- `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/components/FileTreePanel.tsx`, and `avmatrix-web/src/components/GraphCanvas.tsx` are current Web filter/layout surfaces and do not yet have App Layer or Resolution Health filter state.
+
+Query audit sample from the current codebase:
+
+| Intent | Expected area | Observed top noise |
+| --- | --- | --- |
+| unresolved reference diagnostic graph health resolution gap | `internal/resolution/resolve.go`, `internal/resolution/emit.go`, `internal/graphhealth/diagnostics.go` | launcher `HiddenProcAttr`, Web `handleKeyDown`, backend-client process steps |
+| query ranking process matching definitions | `internal/mcp/tools.go`, CLI query command surfaces | launcher `HiddenProcAttr`, Web `handleKeyDown`, generated contract process |
+
 ## E1 - Discussion-To-Plan Coverage
 
 Status: pending
