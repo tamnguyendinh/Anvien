@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context/impact/detect-changes/API MCP surfaces complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete
 
 Source discussion:
 
@@ -360,9 +360,9 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [x] [P6-E] Update API-specific MCP tools such as `route_map`, `shape_check`, and `api_impact` to surface App Layer, Functional Area, and Resolution Health where the persisted graph provides those fields. `route_map`, `shape_check`, and `api_impact` now emit graph-level `semanticStatus`/`semanticWarning`, route semantic fields, consumer semantic fields, flow detail semantic fields, API impact summary layer counts, and Resolution Health impact summaries when persisted route/consumer/flow graph nodes carry gap/degraded evidence. The current AVmatrix graph has no route nodes, so live MCP artifacts show semantic status on empty/error API-tool output while fixture coverage proves populated route rows preserve semantic fields.
 
-- [ ] [P6-F] Add focused CLI/MCP tests or command-output tests for query/context/impact/detect-changes and API-specific MCP semantic fields, including cases where fields are unknown, missing because the graph is stale, or unavailable because the node is outside classified surfaces.
+- [x] [P6-F] Add focused CLI/MCP tests or command-output tests for query/context/impact/detect-changes and API-specific MCP semantic fields, including cases where fields are unknown, missing because the graph is stale, or unavailable because the node is outside classified surfaces. `internal/mcp/semantic_command_surface_edge_test.go` now covers stale/incomplete semantic warnings and no invented App Layer fields for `impact`, `detect-changes`, `route_map`, `shape_check`, and `api_impact`; this complements the existing P6-A through P6-E tests for fresh semantic output.
 
-- [ ] [P6-G] Record command examples, limitations, changed output fields, and test evidence in the evidence and benchmark ledgers.
+- [x] [P6-G] Record command examples, limitations, changed output fields, and test evidence in the evidence and benchmark ledgers. Evidence E11 now records changed output fields, representative command artifacts, current limitations, and P6-F stale/missing-field tests; benchmark B9/B11 record semantic command-surface coverage and validation commands for Phase 6.
 
 ## Phase 7 - Web UI Filters, Detail Lens, And Multi-Ring Layout
 

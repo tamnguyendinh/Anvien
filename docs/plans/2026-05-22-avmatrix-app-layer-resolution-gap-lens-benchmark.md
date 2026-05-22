@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context/impact surfaces complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -547,7 +547,7 @@ Record before P5 and after P5.
 
 ## B9 - Semantic Command Surface Metrics
 
-Status: in progress; `query` complete for P6-A; `context` complete for P6-B; `impact` complete for P6-C; `detect-changes` complete for P6-D; API MCP tools complete for P6-E.
+Status: complete for Phase 6.
 
 Record after P6.
 
@@ -558,6 +558,7 @@ Record after P6.
 | `impact` | yes | yes | yes | yes | complete for P6-C; includes semanticStatus, affected App Layer/Functional Area counts, resolutionHealthRisks, semantic fields on target/impacted/process/module rows, source-site proof metadata, and non-blocking workflow warning for HIGH/CRITICAL risk |
 | `detect-changes` | yes | yes | yes | yes | complete for P6-D; includes semanticStatus, changed/affected App Layer and Functional Area counts, semantic fields on changed symbols/processes/steps, ResolutionGap change summaries, and Resolution Health impact summaries when changed rows carry gap/degraded evidence |
 | API MCP tools | yes | yes | yes | yes | complete for P6-E; route_map, shape_check, and api_impact include semanticStatus plus route, consumer, flow-detail, summary, and Resolution Health impact fields when persisted route graph data exists; current AVmatrix graph has no route nodes, so live artifacts show semanticStatus on empty/error API-tool payloads while fixture tests prove populated rows |
+| stale/missing semantic metadata tests | yes | yes | yes | yes | complete for P6-F; focused MCP tests prove stale/incomplete semantic metadata emits warnings and command/API output does not invent App Layer fields for `impact`, `detect-changes`, `route_map`, `shape_check`, or `api_impact` |
 | resolution inventory command | yes | yes | yes | yes | implemented in Phase 4; command exposes full Resolution Health inventory from persisted graph data |
 | query-health command | yes | yes | yes | yes | P6-A final run passed 7/7 suite cases and captures semantic fields returned by `query` |
 
@@ -667,6 +668,10 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | AVmatrix detect-changes for P6-D detect-changes output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected high scope | after ledger updates: affected_count 15, changed_count 164, changed_files 4, risk_level high; affected surfaces match detectChangesTool, detectChangedSymbols, detectAffectedProcesses, semantic changed-symbol/process summary helpers, and plan ledgers |
 | API-specific MCP semantic output | MCP `tools/call` for `route_map`, `shape_check`, and `api_impact` against repo `AVmatrix` | passed | artifacts `.tmp\2026-05-22-p6e-route-map-semantic-output.txt`, `.tmp\2026-05-22-p6e-shape-check-semantic-output.txt`, and `.tmp\2026-05-22-p6e-api-impact-semantic-output.txt` show semanticStatus on current empty/error API-tool payloads; focused fixture test proves populated route, consumer, flowDetail, executionFlowDetails, and impactSummary semantic fields |
 | AVmatrix detect-changes for P6-E API MCP output | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 29, changed_count 273, changed_files 6, risk_level critical; affected surfaces match route index building, route consumers, flow details, API impact shaping, semantic helper rows, route fixture tests, and plan ledgers |
+| Full build before P6-F semantic edge tests | `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` | passed | run before focused MCP edge tests after adding stale/missing semantic metadata coverage |
+| Focused P6-F semantic edge tests | `go test .\internal\mcp -run "Test(ImpactToolWarnsForStaleIncompleteSemanticMetadata|DetectChangesToolWarnsForStaleIncompleteSemanticMetadata|APIMCPToolsWarnForStaleAndDoNotInventSemanticFields)$" -count=1` | passed | covers stale/incomplete warnings and no invented App Layer fields for impact, detect-changes, route_map, shape_check, and api_impact |
+| Backend focused tests for P6-F command surfaces | `go test .\internal\mcp .\internal\cli -count=1` | passed | verifies existing MCP/CLI semantic command-surface tests continue to pass with edge coverage |
+| AVmatrix detect-changes for P6-F command edge tests | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected low scope | after staging the test and ledger files: affected_count 0, changed_count 125, changed_files 4, risk_level low; changed_app_layers api_test 117 and docs 8; changedGapEntities 92 from test-fixture graph evidence |
 | AVmatrix detect-changes for implementation commits | `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` | passed with expected critical scope | affected_count 24, changed_count 144, changed_files 18; affected surfaces match Functional Area semantic/schema/API/contract/export slice |
 
 ## B12 - Semantic Enrichment Flow Metrics

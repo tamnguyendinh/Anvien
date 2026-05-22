@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 query/context/impact surfaces complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 complete; Phase 4 complete; Phase 5 complete; Phase 6 complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -727,7 +727,7 @@ Validation evidence:
 
 ## E11 - Semantic Command Surface Evidence
 
-Status: in progress; `query` surface complete for P6-A; `context` surface complete for P6-B; `impact` surface complete for P6-C; `detect-changes` surface complete for P6-D; API MCP surfaces complete for P6-E.
+Status: complete for Phase 6.
 
 Record during P6.
 
@@ -1027,6 +1027,46 @@ artifact: .tmp\2026-05-22-p6e-api-tools-semantic-precommit-output.txt
 ```
 
 The critical scope is expected for this slice because it intentionally changes the shared API MCP route index and output structs used by `route_map`, `shape_check`, `api_impact`, and `tool_map` flow-name reuse. The affected surfaces match `buildMCPRouteIndex`, route consumer and flow indexing, API impact record shaping, semantic field helpers, route fixture tests, and plan ledgers.
+
+### P6-F / P6-G - Semantic Command Edge Tests And Ledger Closure
+
+Status: complete for Phase 6 command-surface edge coverage and ledger records.
+
+Changed test coverage:
+
+- `impact` now has focused stale/incomplete semantic metadata coverage proving the payload emits `semanticStatus`, emits `semanticWarning`, and does not invent `appLayer` fields for symbols whose graph nodes do not carry persisted App Layer metadata.
+- `detect-changes` now has focused stale/incomplete semantic metadata coverage proving changed symbol rows preserve the missing-data state rather than guessing App Layer at command-output time.
+- API MCP command surfaces now have focused stale/missing-field coverage for `route_map`, `shape_check`, and `api_impact`; route, consumer, and route-impact payloads warn about stale semantic evidence and do not synthesize App Layer fields when the persisted graph does not provide them.
+- The P6-A through P6-E sections above already record changed output fields, representative command artifacts, live limitations, and populated fixture behavior for `query`, `context`, `impact`, `detect-changes`, `route_map`, `shape_check`, and `api_impact`.
+
+Validation evidence:
+
+```text
+powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1
+go test .\internal\mcp -run "Test(ImpactToolWarnsForStaleIncompleteSemanticMetadata|DetectChangesToolWarnsForStaleIncompleteSemanticMetadata|APIMCPToolsWarnForStaleAndDoNotInventSemanticFields)$" -count=1
+go test .\internal\mcp .\internal\cli -count=1
+```
+
+All commands passed after adding `internal/mcp/semantic_command_surface_edge_test.go`.
+
+Pre-commit AVmatrix scope check after staging the P6-F/P6-G slice:
+
+```text
+.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all
+summary: affected_count=0, changed_count=125, changed_files=4, risk_level=low
+changed_app_layers: api_test=117, docs=8
+changed_functional_areas: mcp=117, documentation=8
+changedGapEntities=92, changedGapOccurrenceCount=92
+artifact: .tmp\2026-05-22-p6f-semantic-command-edge-tests-staged-output.txt
+```
+
+The low scope is expected for this slice because it adds focused MCP test coverage and updates the Phase 6 plan ledgers. No affected execution flows were reported.
+
+Command-surface limitations recorded for Phase 6:
+
+- Semantic command surfaces expose App Layer, Functional Area, ResolutionGap, and Resolution Health only from persisted graph data.
+- When graph metadata is stale or incomplete, command output returns `semanticStatus`/`semanticWarning` rather than classifying nodes at command/API/UI load time.
+- The current AVmatrix graph has no persisted route nodes, so live `route_map`, `shape_check`, and `api_impact` artifacts show semantic status on empty/error route payloads; fixture tests prove populated route, consumer, flow-detail, and impact-summary semantic fields.
 
 ## E12 - Web UI Evidence
 
