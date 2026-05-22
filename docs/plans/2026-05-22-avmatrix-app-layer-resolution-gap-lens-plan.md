@@ -13,7 +13,17 @@ Companion files:
 - Benchmark ledger: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-benchmark.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-benchmark.md)
 - Evidence ledger: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-evidence.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-evidence.md)
 
-## Rules
+## Master rules
+
+1. Use AVmatrix for codebase analysis and impact checks while working on implementation slices in this plan.
+2. As each task is completed, update the corresponding checklist item immediately.
+3. Run a full applicable Web validation before closing the plan; include unit coverage for layout policy and a browser/e2e check for graph load behavior.
+4. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured Web graph load behavior, layout start/stop counts, render/conversion latency, optimizer latency, memory, and graph interaction latency; build/test timings are validation evidence unless the slice changes those systems.
+5. Record evidence as each evidenced task is completed.
+6. For doc-only commits, do not use AVmatrix.
+7. After each completed implementation slice, commit the work, then continue until the full plan is complete.
+
+## Rules of plan
 
 1. Follow active workspace and repository instructions, including `AGENTS.md`; this plan records product work and validation, it does not replace repository rules.
 2. Use AVmatrix according to active repository instructions for implementation slices; do not use AVmatrix for doc-only commits.
