@@ -1,0 +1,121 @@
+package graphhealth
+
+import (
+	"testing"
+
+	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+)
+
+func TestSourceBackedResolutionGapInputsPreserveSourceSiteEvidence(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{
+		ID:    "Function:src/app.ts:run",
+		Label: "Function",
+		Properties: graph.NodeProperties{
+			"appLayer":       "backend",
+			"functionalArea": "resolution",
+			DiagnosticPropertyKey: []Diagnostic{
+				{
+					Kind:             DiagnosticUnresolvedReference,
+					FactFamily:       "call",
+					SourceNodeID:     "Function:src/app.ts:run",
+					TargetText:       "stop",
+					ResolutionSource: "scope-resolution",
+					Classification:   DiagnosticClassificationInRepoUnresolved,
+					Actionability:    DiagnosticActionabilityAnalyzerGap,
+					FilePath:         "src/app.ts",
+					FileHash:         "hash-1",
+					StartLine:        10,
+					StartCol:         4,
+					EndLine:          10,
+					EndCol:           10,
+					SourceSiteID:     "SourceSite:src/app.ts#call#stop#10#4#10#10",
+					SourceSiteStatus: "unresolved_local_binding",
+					ProofKind:        "global-fallback-low-confidence",
+					TargetRole:       "callable",
+					Count:            2,
+					Note:             "call target matched low-confidence global fallback only",
+					Source:           "scope-resolution",
+				},
+				{
+					Kind:             DiagnosticUnresolvedReference,
+					FactFamily:       "access",
+					SourceNodeID:     "Function:src/app.ts:run",
+					TargetText:       "config.make",
+					Classification:   DiagnosticClassificationInRepoUnresolved,
+					Actionability:    DiagnosticActionabilityAnalyzerGap,
+					FilePath:         "src/app.ts",
+					StartLine:        12,
+					SourceSiteID:     "SourceSite:src/app.ts#access#config.make#12#2#12#13",
+					SourceSiteStatus: "unresolved_local_binding",
+					ProofKind:        "none",
+					TargetRole:       "member",
+				},
+				{
+					Kind:         DiagnosticUnresolvedReference,
+					FactFamily:   "type-reference",
+					TargetText:   "MissingType",
+					FilePath:     "src/app.ts",
+					StartLine:    14,
+					SourceSiteID: "SourceSite:src/app.ts#type-reference#MissingType#14#1#14#12",
+					TargetRole:   "type",
+				},
+				{
+					Kind:       DiagnosticUnresolvedReference,
+					FactFamily: "call",
+					TargetText: "missingSourceSite",
+					FilePath:   "src/app.ts",
+					StartLine:  16,
+				},
+			},
+		},
+	})
+
+	inputs := SourceBackedResolutionGapInputs(g)
+	if len(inputs) != 3 {
+		t.Fatalf("SourceBackedResolutionGapInputs() len = %d, want 3: %#v", len(inputs), inputs)
+	}
+	call := requireResolutionGapInput(t, inputs, "call", "stop")
+	if call.ID != "ResolutionGapInput:SourceSite:src/app.ts#call#stop#10#4#10#10" ||
+		call.SourceSiteID != "SourceSite:src/app.ts#call#stop#10#4#10#10" ||
+		call.SourceNodeID != "Function:src/app.ts:run" ||
+		call.SourceNodeLabel != "Function" ||
+		call.SourceAppLayer != "backend" ||
+		call.SourceFunctionalArea != "resolution" ||
+		call.FactFamily != "call" ||
+		call.TargetText != "stop" ||
+		call.TargetRole != "callable" ||
+		call.SourceSiteStatus != "unresolved_local_binding" ||
+		call.ProofKind != "global-fallback-low-confidence" ||
+		call.Classification != DiagnosticClassificationInRepoUnresolved ||
+		call.Actionability != DiagnosticActionabilityAnalyzerGap ||
+		call.ResolutionSource != "scope-resolution" ||
+		call.FilePath != "src/app.ts" ||
+		call.FileHash != "hash-1" ||
+		call.StartLine != 10 ||
+		call.StartCol != 4 ||
+		call.EndLine != 10 ||
+		call.EndCol != 10 ||
+		call.Count != 2 ||
+		call.Note != "call target matched low-confidence global fallback only" {
+		t.Fatalf("call gap input lost source-site evidence: %#v", call)
+	}
+
+	callAccess := SourceBackedCallAccessResolutionGapInputs(g)
+	if len(callAccess) != 2 {
+		t.Fatalf("SourceBackedCallAccessResolutionGapInputs() len = %d, want 2: %#v", len(callAccess), callAccess)
+	}
+	requireResolutionGapInput(t, callAccess, "call", "stop")
+	requireResolutionGapInput(t, callAccess, "access", "config.make")
+}
+
+func requireResolutionGapInput(t *testing.T, inputs []ResolutionGapInput, factFamily string, targetText string) ResolutionGapInput {
+	t.Helper()
+	for _, input := range inputs {
+		if input.FactFamily == factFamily && input.TargetText == targetText {
+			return input
+		}
+	}
+	t.Fatalf("missing resolution gap input factFamily=%q targetText=%q in %#v", factFamily, targetText, inputs)
+	return ResolutionGapInput{}
+}

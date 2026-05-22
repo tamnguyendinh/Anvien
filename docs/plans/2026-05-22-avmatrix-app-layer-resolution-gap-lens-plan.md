@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, File-source CALLS gate, golden corpus, and source-site accuracy golden fixture command slices complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 ready to start
 
 Source discussion:
 
@@ -268,7 +268,9 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [x] [P2A-D2] Gate file-level call sources out of resolved `CALLS`. A call site whose source owner is only the `File` node is now preserved as a source-site diagnostic with `sourceSiteStatus=unsupported_syntax` and note `call source is file-level; resolved edge not emitted`, instead of becoming a coarse `File -> Function` topology edge. This keeps source-site inventory without claiming a symbol-level caller that the analyzer did not prove.
 
-- [ ] [P2A-E] Connect source-site inventory to ResolutionGap/UnresolvedSymbol inputs so Phase 3 consumes source-backed unresolved/ambiguous/external call/access sites rather than reconstructing gaps from already-aggregated diagnostics. The implementation must preserve existing diagnostic summaries while making source-site records the more precise source of truth for call/access resolution health.
+- [x] [P2A-E] Connect source-site inventory to ResolutionGap/UnresolvedSymbol inputs so Phase 3 consumes source-backed unresolved/ambiguous/external call/access sites rather than reconstructing gaps from already-aggregated diagnostics. The implementation must preserve existing diagnostic summaries while making source-site records the more precise source of truth for call/access resolution health.
+
+- [x] [P2A-E1] Add the reusable source-backed ResolutionGap input model in `internal/graphhealth`. `SourceBackedResolutionGapInputs` reads persisted unresolved-reference diagnostics with `sourceSiteId` directly from node diagnostic properties and preserves source node, App Layer, Functional Area, fact family, target text, target role, source-site status, proof kind, classification, actionability, resolution source, file/range, count, and note. `SourceBackedCallAccessResolutionGapInputs` provides the Phase 3 call/access-specific input without reading graph-health summaries or creating fake target nodes/edges. Pre-commit detect-changes after staging the new files reported changed_count `56`, changed_files `5`, affected_count `0`, risk_level `low`.
 
 - [x] [P2A-F] Add a golden accuracy corpus for CALLS and ACCESSES with positive and negative expectations. Required cases include a proven property access, a proven method/function call, a selector call that must not become ACCESSES, the Go `stop()` local-binding false-positive class that must not call `SSEListener.stop`, local function variables, closures, imports, external/builtin calls, TypeScript/React method ownership, provider-level `CallSiteFact` and `AccessFact` preservation, duplicate-edge prevention with exact source-site occurrence counts, and at least one coarse File-source edge case that must not be accepted as symbol-level proof.
 

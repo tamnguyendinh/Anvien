@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, File-source CALLS gate, golden corpus, and source-site accuracy golden fixture command slices complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 ready to start
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -372,7 +372,7 @@ Implemented evidence:
 
 ## E7A - Proof-Based CALLS/ACCESSES Evidence
 
-Status: in progress; low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command graph-inventory, File-source CALLS gate, golden corpus, and source-site accuracy golden fixture command slices complete
+Status: complete for Phase 2A; Phase 3 can now consume source-backed unresolved inputs
 
 Record during Phase 2A.
 
@@ -468,6 +468,19 @@ Implemented evidence for the source-site accuracy golden fixture command slice:
 - Validation evidence for this slice: full build passed with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; focused tests passed with `go test .\internal\graphaccuracy` and `go test .\internal\cli`; wider backend validation passed with `go test .\internal\...` and `go test .\cmd\...`.
 - Fresh `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .tmp\2026-05-22-p2a-source-site-accuracy-golden-command-postedit-analyze.json --benchmark-label p2a-source-site-accuracy-golden-command-postedit` passed before detect-changes and produced scanned `737`, parsed `548`, unsupported `189`, failed `0`, graph nodes `22751`, and graph relationships `52425`.
 - AVmatrix change detection before commit used fresh analyze output followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `74`, changed_files `7`, affected_count `12`, and risk_level `high`. The high scope is expected because this slice extends `RunSourceSiteAccuracy`, `SourceSiteAccuracySummaryLines`, `newSourceSiteAccuracyCommand`, and new graphaccuracy fixture-validation helpers in a packaged CLI/report flow.
+- No visible Web UI behavior changed in this slice, so browser/e2e validation was not required for this slice.
+
+Implemented evidence for the source-site to ResolutionGap input bridge slice:
+
+- `internal/graphhealth/resolution_gap_inputs.go` adds `ResolutionGapInput`, the source-backed input record intended for Phase 3 ResolutionGap/UnresolvedSymbol persistence. It is an input model only; it does not synthesize fake in-repo target nodes, fake resolved semantic edges, or fake topology edges.
+- `SourceBackedResolutionGapInputs` reads persisted `graphHealthDiagnostics` entries whose kind is `unresolved_reference` and whose `sourceSiteId` is present. It preserves `sourceSiteId`, source node ID/label, source App Layer, source Functional Area, fact family, target text, target role, source-site status, proof kind, classification, actionability, resolution source, source, file path, file hash, range, count, and note.
+- `SourceBackedCallAccessResolutionGapInputs` filters those source-backed inputs to call/access fact families so Phase 3 can consume call/access resolution health from source-site records rather than graph-health summary counts.
+- The existing diagnostic summaries remain unchanged. The new bridge reads the persisted per-source-site diagnostic records before summary/report aggregation and does not rely on capped graph-health report candidates.
+- `TestSourceBackedResolutionGapInputsPreserveSourceSiteEvidence` proves call/access/type-reference source-backed inputs preserve App Layer, Functional Area, source-site ID/status, proof kind, target role, classification, actionability, file/range, count, and note; it also proves diagnostics without `sourceSiteId` are not used as precise source-backed inputs.
+- Fresh source-site accuracy command after this slice wrote `.tmp\2026-05-22-p2a-gap-input-source-site-accuracy.json`: relationship source-site occurrences `26395`, diagnostic source-site occurrences `58560`, all source-site occurrences `84955`, stable source-site ID occurrences `84955`, missing source-site ID occurrences `0`, unresolved diagnostic fact-family counts `call=31091`, `access=18129`, `type-reference=9333`, `heritage=7`, resolved `CALLS=7662`, resolved `ACCESSES=3344`, false resolved edge candidates `0`, and non-property ACCESSES targets `0`.
+- Validation evidence for this slice: full build passed twice with `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1` because the focused test was corrected after an ordering assertion failure; final focused tests passed with `go test .\internal\graphhealth` and `go test .\internal\resolution .\internal\graphaccuracy`; wider backend validation passed with `go test .\internal\...` and `go test .\cmd\...`.
+- Fresh `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .tmp\2026-05-22-p2a-gap-input-postedit-analyze.json --benchmark-label p2a-gap-input-postedit` passed before detect-changes and produced scanned `739`, parsed `550`, unsupported `189`, failed `0`, graph nodes `22806`, and graph relationships `52584`.
+- AVmatrix change detection after staging the new source files used fresh analyze output followed by `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all`; it reported changed_count `56`, changed_files `5`, affected_count `0`, and risk_level `low`.
 - No visible Web UI behavior changed in this slice, so browser/e2e validation was not required for this slice.
 
 ## E8 - ResolutionGap Persistence Evidence

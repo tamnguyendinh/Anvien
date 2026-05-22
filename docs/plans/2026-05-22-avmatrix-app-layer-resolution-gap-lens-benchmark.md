@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A low-confidence global CALLS fallback, source-site metadata persistence, source-site accuracy command, File-source CALLS gate, golden corpus, and source-site accuracy golden fixture command slices complete
+Status: in progress; Phase 0 closure audit complete; Phase 2 complete; Phase 2A proof-based CALLS/ACCESSES and source-site bridge slices complete; Phase 3 ready to start
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -240,7 +240,7 @@ Rejected candidate signals:
 
 ## B5A - Proof-Based CALLS/ACCESSES Accuracy Metrics
 
-Status: in progress; graph-inventory, golden corpus, and source-site accuracy golden fixture command metrics recorded.
+Status: complete for Phase 2A; graph-inventory, golden corpus, source-site accuracy golden fixture command, and source-site bridge metrics recorded.
 
 Record during Phase 2A.
 
@@ -337,6 +337,19 @@ Source-site accuracy golden fixture command slice notes:
 - Fresh current-graph golden validation: disabled when no fixture is supplied, with expected source sites `0`, matched source sites `0`, silent missing source sites `0`, expected false resolved edges `0`, and false resolved edges `0`.
 - Fresh post-edit analyze before detect-changes: scanned `737`, parsed `548`, unsupported `189`, failed `0`, graph nodes `22751`, graph relationships `52425`.
 - Pre-commit detect-changes summary: changed_count `74`, changed_files `7`, affected_count `12`, risk_level `high`.
+
+Source-site to ResolutionGap input bridge slice notes:
+
+- Source-backed bridge model: `internal/graphhealth.ResolutionGapInput`.
+- Full source-backed extractor: `SourceBackedResolutionGapInputs`.
+- Call/access-specific Phase 3 input extractor: `SourceBackedCallAccessResolutionGapInputs`.
+- Fixture bridge test counts: `3` source-backed unresolved inputs from call/access/type-reference diagnostics; `2` call/access inputs; `1` diagnostic without `sourceSiteId` excluded from precise source-backed input.
+- Fresh current-graph command artifact for this slice: `.tmp\2026-05-22-p2a-gap-input-source-site-accuracy.json`.
+- Fresh current-graph source-site inventory for the bridge: relationship buckets `15578`, relationship occurrences `26395`, diagnostic buckets `57814`, diagnostic occurrences `58560`, all source-site occurrences `84955`, stable source-site ID occurrences `84955`, missing source-site ID occurrences `0`.
+- Fresh unresolved diagnostic fact-family counts usable by Phase 3 input records: call `31091`, access `18129`, type-reference `9333`, heritage `7`.
+- Fresh current-graph policy after the bridge: false resolved edge candidates `0`, resolved edges without proof `0`, resolved edges without source-site ID `0`, low-confidence fallback resolved edges `0`, coarse file call edges `0`, non-property ACCESSES targets `0`.
+- Fresh post-edit analyze before detect-changes: scanned `739`, parsed `550`, unsupported `189`, failed `0`, graph nodes `22806`, graph relationships `52584`.
+- Pre-commit detect-changes summary after staging new files: changed_count `56`, changed_files `5`, affected_count `0`, risk_level `low`.
 
 ## B6 - ResolutionGap Persistence Metrics
 
