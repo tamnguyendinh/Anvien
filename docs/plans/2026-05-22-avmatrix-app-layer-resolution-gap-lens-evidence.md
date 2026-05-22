@@ -28,8 +28,10 @@ Key decisions already captured:
 - Resolution Health and Topology Health must remain separate;
 - query-health should become a command, not a one-off report;
 - query/context/impact/detect-changes should surface the new semantic layers when available;
+- API-specific MCP tools should surface the semantic layers where applicable because API is a first-class layer;
 - graph-based work starts from fresh analyze output; no stale graph fallback is a product path;
 - accuracy is more important than minimizing graph size.
+- analyze semantic enrichment must preserve both correctness and speed; neither may be traded away silently.
 - aggregation or dedupe must not discard evidence only to make the graph smaller.
 
 ## E0A - Planning Codebase Audit Findings
@@ -46,11 +48,16 @@ Source facts that must shape implementation:
 - `internal/graphhealth/diagnostics.go` stores diagnostics under `graphHealthDiagnostics`; `sameDiagnosticBucket` currently does not include `TargetText`, so different unresolved target texts can collapse into one bucket.
 - `internal/graphhealth/policy.go` and `internal/graphhealth/diagnostics.go` already define diagnostic classification/actionability for builtin, standard-library, test-framework, external-library, in-repo unresolved, unclassified, non-actionable, review, and analyzer-gap.
 - `internal/httpapi/graph.go` calls graph-health summary computation when building graph responses, and its graph-health report candidate limit is capped. Full ResolutionGap inventory must not rely on that capped report path.
+- `internal/analyze/analyze.go` currently runs resolution, MRO, communities, processes, graph compaction, LadybugDB load, and graph snapshot writing in that order. Semantic enrichment must run before LadybugDB load and graph snapshot writing, and after any upstream signal it depends on.
+- The target flow is resolution with raw unresolved fact capture, then MRO, communities, processes, semantic enrichment, graph compaction, LadybugDB load, and graph snapshot. Raw unresolved facts should keep `sourceNodeID`, `factFamily`, `targetText`, `filePath`, range or line, `resolutionSource`, and note.
+- Semantic enrichment should use already-produced facts and reusable indexes such as `nodeID -> node`, `filePath -> App Layer`, `nodeID -> process/community`, and `sourceNodeID -> raw gaps`; it should avoid file rescans, AST reparses, and nested whole-graph loops.
+- `internal/lbugload` exports the in-memory graph into LadybugDB. New semantic fields, entities, or relationships need export/load coverage when query or Cypher consumers are expected to see them.
+- `internal/mcp` already contains API-specific tools including `route_map`, `shape_check`, and `api_impact`; these need inclusion or explicit limitation because API is now a first-class App Layer.
 - `internal/mcp/tools.go` currently ranks `query` results with simple process/step contains scoring, and definition matching is narrow enough that function/method-heavy intents can miss the expected files.
 - `internal/contracts/web_ui.go` is the generated Web contract source; Web TypeScript contract shape should be generated from this source rather than hand-edited.
 - `avmatrix-web/src/lib/graph-adapter.ts` currently applies deterministic filter-based clustered layout during graph conversion and already caps rendered node size at `3`.
 - `avmatrix-web/src/hooks/useSigma.ts` invokes layout work from the manual optimizer path; the current plan should change deterministic initial placement, not add automatic optimizer execution.
-- `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/components/FileTreePanel.tsx`, and `avmatrix-web/src/components/GraphCanvas.tsx` are current Web filter/layout surfaces and do not yet have App Layer or Resolution Health filter state.
+- `avmatrix-web/src/hooks/app-state/graph.tsx`, `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/components/FileTreePanel.tsx`, and `avmatrix-web/src/components/GraphCanvas.tsx` are current Web state/filter/layout surfaces and do not yet have App Layer or Resolution Health filter state.
 
 Query audit sample from the current codebase:
 
@@ -78,6 +85,7 @@ Record during P0-A.
 | Resolution Health separate from Topology Health | pending | pending |
 | Query-health command | pending | pending |
 | Query/context/impact/detect-changes semantic output | pending | pending |
+| API-specific MCP semantic output | pending | pending |
 | Multi-ring layout and same-color islands | pending | pending |
 | No dead-code verdict from unresolved refs alone | pending | pending |
 | No timeout/auto optimizer behavior | pending | pending |
@@ -111,6 +119,9 @@ Record during P0-C and P0-G.
 | Surface | Files/symbols found | Notes |
 | --- | --- | --- |
 | graph schema/snapshot | pending | pending |
+| analyze semantic enrichment flow | pending | pending |
+| semantic enrichment input indexes and complexity | pending | pending |
+| LadybugDB export/load | pending | pending |
 | unresolved call emission | pending | pending |
 | unresolved access emission | pending | pending |
 | unresolved type-reference emission | pending | pending |
@@ -123,6 +134,8 @@ Record during P0-C and P0-G.
 | context command | pending | pending |
 | impact command | pending | pending |
 | detect-changes command | pending | pending |
+| API-specific MCP tools | pending | pending |
+| Web graph app state | pending | pending |
 | Web graph filters/detail/layout | pending | pending |
 
 ## E4 - Baseline Unresolved And App Layer Evidence

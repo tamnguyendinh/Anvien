@@ -57,12 +57,14 @@ Implementation may touch:
 
 - graph node and relationship schema;
 - analyzer/graph generation metadata;
+- analyze pipeline phase ordering and semantic enrichment flow;
 - resolution diagnostic emission and graph-health diagnostic attachment;
 - persisted graph snapshot shape under `.avmatrix`;
+- LadybugDB schema/export/load surfaces used by graph-backed query and Cypher;
 - graph-health and resolution-health summaries;
 - HTTP graph APIs and generated Web contracts;
-- CLI/query/MCP command output for `query`, `context`, `impact`, `detect-changes`, and any new query-health or resolution-inventory command;
-- Web graph filters, graph detail panels, dashboards, generated types, and layout placement;
+- CLI/query/MCP command output for `query`, `context`, `impact`, `detect-changes`, API-specific MCP tools, and any new query-health or resolution-inventory command;
+- Web graph state, filters, graph detail panels, dashboards, generated types, and layout placement;
 - backend, contract, Web unit, and Web e2e tests.
 
 Out of scope unless a later phase explicitly reopens it:
@@ -96,6 +98,31 @@ Existing graph-health diagnostic classification and actionability are product co
 
 The deterministic initial graph placement is separate from the manual layout optimizer. The Web graph already applies an initial filter-based clustered placement during graph conversion, while the optimizer button invokes layout work manually. This plan changes the deterministic initial placement into App Layer rings and type islands; it must not add automatic optimizer execution after render, load, filter changes, or refresh.
 
+Semantic enrichment is a graph/analyze pipeline concern. The implementation must choose and test one flow that produces the most accurate graph facts while preserving analyzer speed. Current source inspection shows analyze resolves references, applies MRO, communities, and processes, compacts the graph, loads LadybugDB, then writes the graph snapshot. App Layer, Functional Area, and ResolutionGap enrichment must run before LadybugDB load and graph snapshot, and after every upstream signal it depends on is available. If Functional Area depends on process/community membership, the enrichment phase belongs after those phases and before compact/load/snapshot. If ResolutionGap facts are produced during resolution, their raw target identity must be captured then and finalized later during enrichment.
+
+The target analyze flow for this plan is:
+
+```text
+scan/parse
+-> build graph
+-> cross-file binding
+-> resolution
+   -> capture raw unresolved facts with sourceNodeID, factFamily, targetText, filePath, range, resolutionSource, and note
+-> MRO
+-> communities
+-> processes
+-> semantic enrichment
+   -> App Layer
+   -> Functional Area
+   -> ResolutionGap / UnresolvedSymbol
+   -> Resolution Health inventory
+-> graph.Compact()
+-> LadybugDB load
+-> graph.json snapshot
+```
+
+The enrichment phase must not rescan files or reparse ASTs. It should build reusable indexes once, such as `nodeID -> node`, `filePath -> App Layer`, `nodeID -> process/community`, and `sourceNodeID -> raw gaps`, then run near `O(nodes + relationships + rawGaps)` work. App Layer should primarily use cached path/package rules, Functional Area should use only accepted high-confidence signals, and ResolutionGap bucketing must include `targetText` so repeated unresolved facts do not lose identity.
+
 ## Acceptance Criteria
 
 - Graph nodes expose a persisted primary App Layer category with no overlapping primary labels.
@@ -116,6 +143,8 @@ The deterministic initial graph placement is separate from the manual layout opt
 - Missing App Layer or ResolutionGap metadata in loaded graph data is treated as stale/incomplete graph evidence, not as a reason to guess at API/UI load time.
 - If ResolutionGap data is aggregated or deduped, the aggregate keeps exact counts and representative source evidence without capping away meaning.
 - Resolution inventory and Resolution Health APIs/commands expose full counts and must not rely on capped graph-health triage report candidates.
+- Analyze produces one consistent semantic graph across in-memory graph, LadybugDB export, graph JSON, HTTP API, MCP tools, and Web contracts.
+- Semantic enrichment has recorded runtime/memory/graph-size benchmarks and does not add avoidable rescans or duplicate graph traversals.
 
 ## Current Code Facts To Account For
 
@@ -125,9 +154,13 @@ The following facts came from pre-implementation source inspection and must be r
 - `internal/graphhealth/diagnostics.go` currently aggregates diagnostic buckets without `TargetText` in the bucket key, so different unresolved targets can collapse into one bucket and keep only the first target text;
 - graph-health diagnostic classification/actionability already exists in `internal/graphhealth/policy.go` and `internal/graphhealth/diagnostics.go`;
 - graph-health summaries are computed by HTTP graph paths such as `internal/httpapi/graph.go`, so persisted ResolutionGap/App Layer semantics must be produced earlier than API response shaping;
+- analyze currently runs resolution, MRO, communities, processes, graph compaction, LadybugDB load, and graph snapshot writing in `internal/analyze/analyze.go`;
+- LadybugDB data is exported from the in-memory graph through `internal/lbugload`, so new persisted semantic fields or entities must be exported there when query/Cypher consumers need them;
+- API-specific MCP surfaces such as `route_map`, `shape_check`, and `api_impact` already exist and must be considered because API is a first-class App Layer;
 - `/api/graph/report` has a capped candidate limit and is not sufficient as the full ResolutionGap inventory source;
 - `query` currently ranks process matches with simple contains scoring in `internal/mcp/tools.go`, and definition matching is limited enough that function/method-centric intents can miss the expected files;
 - Web graph filters currently consume graph/API metadata, generated contracts, and client-side filter state, but App Layer and Resolution Health filters do not exist yet;
+- Web graph filter state is managed through `avmatrix-web/src/hooks/app-state/graph.tsx` in addition to panel and adapter files;
 - Web graph conversion currently applies deterministic filter-based clustered layout in `avmatrix-web/src/lib/graph-adapter.ts`, and the manual optimizer button calls layout work through `avmatrix-web/src/hooks/useSigma.ts`;
 - generated Web contracts in `internal/contracts/web_ui.go` are the boundary that should prevent the UI from relying on ad hoc shape guesses.
 
@@ -151,17 +184,23 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [ ] [P0-G] Locate the implementation surfaces for graph schema, graph generation, resolution diagnostics, graph health, HTTP graph APIs, generated Web contracts, CLI query/context/impact/detect-changes, Web graph filters, Web graph detail panels, and Web layout. Record exact file paths in evidence, including `internal/resolution/emit.go`, `internal/resolution/resolve.go`, `internal/graphhealth/diagnostics.go`, `internal/graphhealth/policy.go`, `internal/httpapi/graph.go`, `internal/contracts/web_ui.go`, `internal/mcp/tools.go`, `internal/cli/tool_command.go`, `avmatrix-web/src/lib/graph-adapter.ts`, `avmatrix-web/src/lib/graph-health-filters.ts`, `avmatrix-web/src/components/FileTreePanel.tsx`, `avmatrix-web/src/components/GraphCanvas.tsx`, and `avmatrix-web/src/hooks/useSigma.ts`.
 
+- [ ] [P0-H] Trace the current analyze persistence flow and choose the semantic enrichment insertion point. Record the exact order around resolution, MRO, communities, processes, graph compact, LadybugDB load, and graph snapshot; define which App Layer, Functional Area, and ResolutionGap inputs are available at that point; record the performance constraints for keeping enrichment accurate and fast.
+
+- [ ] [P0-I] Specify the semantic enrichment input indexes and complexity budget before implementation. The design must use already-produced graph/resolution/process/community facts, build reusable maps once, avoid file rescans and AST reparses, and target near `O(nodes + relationships + rawGaps)` behavior.
+
 ## Phase 1 - App Layer Taxonomy And Persistence
 
 - [ ] [P1-A] Define the persisted App Layer category registry as a primary one-of field, not overlapping tags. The category list must include normal categories and mixed categories where needed: backend, api, frontend, cli_launcher, shared_contract, api_contract, api_shared_contract, frontend_api_client, backend_test, frontend_test, api_test, generated_contract, docs, config, generated, mixed, unknown, and any additional categories proven necessary by P0 evidence.
 
 - [ ] [P1-B] Define the source evidence required for every App Layer category and the explicit `unknown` assignment rule for insufficient evidence. Use high-confidence signals such as path, package/module, generated-contract location, API route/handler location, frontend source roots, test naming, docs/config paths, and launcher/runtime ownership; start from the P0-E path seed list and refine it with source inspection.
 
-- [ ] [P1-C] Implement App Layer classification during analyze/graph generation and persist the result in graph output through a dedicated backend semantic classification surface. Update API and Web consumers to read the persisted field and show defensive missing-data state when metadata is absent.
+- [ ] [P1-C] Implement the backend App Layer classifier as a dedicated semantic classification surface with unit coverage for category evidence rules, mixed categories, and `unknown` assignment. Keep this classifier reusable by the analyze enrichment phase, inventory code, and tests.
+
+- [ ] [P1-C2] Wire the App Layer classifier into the analyze semantic enrichment phase and persist the result in graph output. Place it according to P0-H so App Layer metadata is present before graph compact, LadybugDB load, graph snapshot writing, HTTP API consumption, and MCP graph reads. Record enrichment latency, memory, and graph-size impact in the benchmark ledger.
 
 - [ ] [P1-D] Make API first-class by classifying server handlers, API graph endpoints, API contract/schema code, generated API contract files, and frontend API clients into separate categories when evidence supports that separation. If a surface is both API and shared contract, use a mixed category such as `api_shared_contract` rather than overlapping labels.
 
-- [ ] [P1-E] Update graph schema, snapshot serialization, HTTP graph payloads, generated Web contracts, and any contract tests so App Layer values are stable public fields. A freshly analyzed but ambiguous node may use `unknown`; graph data that lacks the new metadata entirely must be treated as stale/incomplete schema evidence and must not trigger load-time classification heuristics.
+- [ ] [P1-E] Update graph schema, snapshot serialization, LadybugDB export/load schema, HTTP graph payloads, generated Web contracts, and any contract tests so App Layer values are stable public fields. A freshly analyzed but ambiguous node may use `unknown`; graph data that lacks the new metadata entirely must be treated as stale/incomplete schema evidence and must not trigger load-time classification heuristics.
 
 - [ ] [P1-F] Add tests for simple and mixed App Layer examples. Coverage must prove one primary App Layer per node, correct API classification, correct mixed category classification, correct unknown handling for ambiguous input, and no accidental multi-label primary classification.
 
@@ -177,6 +216,8 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [ ] [P2-C] Persist Functional Area metadata in graph output only for nodes that meet accepted rules. Ambiguous nodes must stay `unknown` or equivalent rather than being forced into a functional group.
 
+- [ ] [P2-C2] Extend the analyze semantic enrichment phase with Functional Area assignment after the required signals from P0-H are available. If accepted rules depend on process or community membership, run this assignment after those phases and before graph compact, LadybugDB load, and graph snapshot writing.
+
 - [ ] [P2-D] Expose Functional Area through API payloads, generated contracts, CLI surfaces, and Web detail/filter data where available. Consumers must distinguish "unknown because not enough evidence" from "missing field because graph was not freshly analyzed".
 
 - [ ] [P2-E] Add tests for accepted Functional Area rules, rejected low-confidence rules, ambiguous nodes, and command/API/Web contract visibility.
@@ -187,9 +228,13 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [ ] [P3-A] Define the persisted ResolutionGap/UnresolvedSymbol data model. It must preserve source node ID, source App Layer, source Functional Area when known, fact family, target text, inferred target role, classification, actionability, resolution source, source file path, line/column when available, occurrence count, sample evidence, and notes for unclassified cases. The model must define bucket identity explicitly so different target texts, roles, or actionability classes are not merged into one misleading gap.
 
-- [ ] [P3-B] Promote source-backed unresolved call, access, type-reference, and heritage facts into persisted graph entities or persisted graph records before evidence is collapsed by diagnostic summary aggregation. Existing diagnostic summaries must remain compatible, but already-collapsed diagnostic text must not be the only machine-readable source for ResolutionGap truth.
+- [ ] [P3-B] Add raw unresolved fact storage from resolution before diagnostic summary aggregation. The raw record must keep `sourceNodeID`, `factFamily`, `targetText`, `filePath`, range or line, `resolutionSource`, and note.
+
+- [ ] [P3-B2] Finalize source-backed unresolved call, access, type-reference, and heritage raw facts into persisted graph entities or persisted graph records during the analyze semantic enrichment phase. Existing diagnostic summaries must remain compatible, but ResolutionGap persistence must consume raw unresolved facts rather than already-aggregated diagnostic text.
 
 - [ ] [P3-C] Implement fine-grained gap relationships or typed gap metadata for every distinction supported by source evidence. Start with unresolved call, unresolved access, unresolved type-reference, unresolved heritage, external symbol, builtin/stdlib reference, test-framework reference, in-repo analyzer gap, and unknown/unclassified; add narrower types if P0 evidence shows they are useful.
+
+- [ ] [P3-C2] Update LadybugDB export/load schema and graph snapshot serialization for persisted ResolutionGap entities, relations, or records so graph JSON, DB-backed Cypher, HTTP API, MCP resources, and Web consumers read the same semantic facts.
 
 - [ ] [P3-D] Implement target-role inference for ResolutionGap records from fact family and source evidence. Calls map to callable-like gaps, member accesses map to member-like gaps, type annotations and heritage map to type-like gaps, and external/builtin/test evidence maps to those roles only when classification supports it, without marking the unresolved target as resolved.
 
@@ -209,7 +254,7 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [ ] [P4-B] Update graph-health/report summary builders and tests so topology status stays topology-only while resolution status and resolution confidence are overlays. Include a connected-node-with-gaps case that remains `connected` while showing degraded resolution confidence.
 
-- [ ] [P4-C] Add graph/API inventory counts by App Layer, Functional Area, fact family, target role, classification, actionability, Resolution Health bucket, and topology status from the persisted graph/inventory source of truth. Wire CLI and Web consumers to that same full-count source instead of the capped `/api/graph/report` candidate list.
+- [ ] [P4-C] Add graph/API inventory counts by App Layer, Functional Area, fact family, target role, classification, actionability, Resolution Health bucket, and topology status from the persisted graph/inventory source of truth. Wire CLI and Web consumers to that same full-count source instead of the capped `/api/graph/report` candidate list, and verify DB-backed/Cypher consumers can see the same inventory fields when the graph is loaded into LadybugDB.
 
 - [ ] [P4-D] Add or extend a CLI inventory command for resolution gaps and semantic graph health. It must read persisted analyze output and print the same full counts available to API/Web consumers, including App Layer and Functional Area grouping, without applying UI/report candidate caps.
 
@@ -241,13 +286,17 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [ ] [P6-D] Update `detect-changes` output so changed symbols and affected flows summarize App Layers, Functional Areas, ResolutionGap changes, and resolution-health impact. This command remains the pre-commit graph-diff check required by repository rules.
 
-- [ ] [P6-E] Add focused CLI/MCP tests or command-output tests for query/context/impact/detect-changes semantic fields, including cases where fields are unknown, missing because the graph is stale, or unavailable because the node is outside classified surfaces.
+- [ ] [P6-E] Update API-specific MCP tools such as `route_map`, `shape_check`, and `api_impact` to surface App Layer, Functional Area, and Resolution Health where the persisted graph provides those fields. If a specific API tool cannot use the new semantic layer in this plan, record the exact limitation and follow-up in evidence.
 
-- [ ] [P6-F] Record command examples, limitations, changed output fields, and test evidence in the evidence and benchmark ledgers.
+- [ ] [P6-F] Add focused CLI/MCP tests or command-output tests for query/context/impact/detect-changes and API-specific MCP semantic fields, including cases where fields are unknown, missing because the graph is stale, or unavailable because the node is outside classified surfaces.
+
+- [ ] [P6-G] Record command examples, limitations, changed output fields, and test evidence in the evidence and benchmark ledgers.
 
 ## Phase 7 - Web UI Filters, Detail Lens, And Multi-Ring Layout
 
 - [ ] [P7-A] Add App Layer filters/lens to the Web UI using backend/API fields. Source filter values such as Backend, API, Frontend, Shared Contract, API Contract, Frontend API Client, Tests, Docs, Config, Generated, Mixed, and Unknown from graph data and render a missing-data state when those fields are absent.
+
+- [ ] [P7-A2] Extend Web graph state management in `avmatrix-web/src/hooks/app-state/graph.tsx` and related app-state types for App Layer and Resolution Health filters. The state must compose with existing node type, edge type, focus-depth, selected-node, and Graph Health filters without resetting unrelated controls.
 
 - [ ] [P7-B] Add Resolution Health filters/lens for fact family, target role, classification, actionability, analyzer-gap concentration, top unresolved target text, and source App Layer. Minimum user-facing lens rows must include Backend unresolved calls, API unresolved handlers/contracts, Frontend unresolved type refs, Shared contract analyzer gaps, External unresolved symbols, Builtin/Test/Stdlib non-actionable references, In-repo analyzer gaps, Resolution gaps by functional area, Top app layers by analyzer gap count, Top functional areas by unresolved count, and Top unresolved target text. These filters must compose with existing node type, edge type, graph health, focus-depth, and selected-node filters.
 
@@ -271,7 +320,7 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [ ] [P8-A] Run the full build gate before tests: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`. Record command output and generated artifact location in evidence.
 
-- [ ] [P8-B] Run backend tests for App Layer classification, Functional Area classification, ResolutionGap persistence, fine-grained gap relations, Resolution Health inventory, graph/API summaries, CLI inventory, query-health command, and semantic command output.
+- [ ] [P8-B] Run backend tests for analyze semantic enrichment flow, App Layer classification, Functional Area classification, ResolutionGap persistence, LadybugDB export/load, fine-grained gap relations, Resolution Health inventory, graph/API summaries, CLI inventory, query-health command, API-specific MCP tools, and semantic command output.
 
 - [ ] [P8-C] Run contract generation/checks from the Go contract source and verify generated Web types expose App Layer, Functional Area, ResolutionGap, Resolution Health, relation metadata, and query/command-facing enum values. Confirm the generated TypeScript diff comes from the Go contract source.
 

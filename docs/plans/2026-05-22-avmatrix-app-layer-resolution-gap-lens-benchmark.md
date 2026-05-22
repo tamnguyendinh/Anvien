@@ -38,6 +38,13 @@ Planning audit snapshot, not P0 closure baseline:
 | Execution flows | pending |
 | `unknown_connectivity` nodes | pending |
 | Graph timestamp/hash | pending |
+| Analyze semantic enrichment phase present | pending |
+| Semantic enrichment latency | pending |
+| Semantic enrichment memory delta | pending |
+| Semantic enrichment graph-size delta | pending |
+| LadybugDB semantic export rows | pending |
+| Raw unresolved facts captured before aggregation | pending |
+| Semantic enrichment duplicate full-graph scans | pending |
 
 ## B1 - Discussion Coverage Checklist
 
@@ -58,6 +65,7 @@ Record after P0-A.
 | Resolution Health separate from Topology Health | pending | pending | pending |
 | query-health command | pending | pending | pending |
 | semantic query/context/impact/detect-changes output | pending | pending | pending |
+| API-specific MCP semantic output | pending | pending | pending |
 | multi-ring layout and same-color islands | pending | pending | pending |
 | no dead-code verdict from unresolved refs alone | pending | pending | pending |
 | no timeout/auto optimizer behavior | pending | pending | pending |
@@ -339,4 +347,27 @@ Build/test/e2e timings are validation evidence, not product performance benchmar
 | `context` semantic output | pending | pending | pending |
 | `impact` semantic output | pending | pending | pending |
 | `detect-changes` semantic output | pending | pending | pending |
+| API-specific MCP semantic output | pending | pending | pending |
 | AVmatrix detect-changes for implementation commits | pending | pending | pending |
+
+## B12 - Semantic Enrichment Flow Metrics
+
+Status: pending
+
+Record after the analyze semantic enrichment phase is introduced and after each phase extends it.
+
+| Metric | Baseline | After App Layer | After Functional Area | After ResolutionGap | Final |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Semantic enrichment phase latency | pending | pending | pending | pending | pending |
+| Semantic enrichment memory delta | pending | pending | pending | pending | pending |
+| Graph nodes before enrichment | pending | pending | pending | pending | pending |
+| Graph nodes after enrichment | pending | pending | pending | pending | pending |
+| Graph relationships before enrichment | pending | pending | pending | pending | pending |
+| Graph relationships after enrichment | pending | pending | pending | pending | pending |
+| Graph JSON size | pending | pending | pending | pending | pending |
+| LadybugDB node rows | pending | pending | pending | pending | pending |
+| LadybugDB relationship rows | pending | pending | pending | pending | pending |
+| Duplicate graph traversals introduced | pending | pending | pending | pending | pending |
+| File rescans introduced | pending | pending | pending | pending | pending |
+| AST reparses introduced | pending | pending | pending | pending | pending |
+| Raw unresolved fact count | pending | pending | pending | pending | pending |
