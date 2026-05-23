@@ -1,14 +1,17 @@
-# AVmatrix
+# AVmatrix (version: `1.2.2`)
 
 ## Why Use AVmatrix?
+```md
+> **AVmatrix builds one of the fastest and most accurate code intelligence graphs for large repositories.**
+```
 
 When you vibe code with AI, the context window is always limited. The longer a session runs, the easier it is for the agent to lose track of information it already read, trace the same code again, or misunderstand how files, functions, and modules relate to each other.
 
 AVmatrix solves this by building a connected map of your codebase: which files relate to which files, which functions call each other, and which modules belong to each execution flow. This helps AI agents understand the project structure faster, navigate relationships across the codebase, and spend less time rediscovering context.
 
-### In short: **AVmatrix is a code map for AI coding agents.**
-
-Current CLI package version: `1.2.2` (`avmatrix/package.json`).
+```md
+## In short: **AVmatrix is a code map for AI coding agents.**
+```
 
 ---
 
@@ -46,21 +49,33 @@ The Web chat does not run an AI model inside AVmatrix. The shared session contra
 
 ---
 
-## Quick Start: CLI + MCP
+  ## How to use AVmatrix
 
-Requires Node.js 20+.
+  Requires Node.js 20+, npm, and Go.
 
-### Agent-assisted quick install
+  1. Clone or download the AVmatrix repository.
 
-1. Download or clone AVmatrix from GitHub.
-2. Open Codex CLI or Claude Code in the folder that contains the AVmatrix repo, or inside the AVmatrix repo itself.
-3. Paste this prompt:
+  2. Open Codex CLI or Claude Code in the AVmatrix repository folder.
 
-```text
-"Install AVmatrix from this repository and configure its MCP integration."
-```
+  3. Paste this prompt:
 
-The agent should build the Go-backed `avmatrix` package, install/link the local CLI, run `avmatrix setup`, and verify `avmatrix --version`.
+     ```text
+     Install AVmatrix from this repository and configure its MCP integration.
+     ```
+
+
+     Then run:
+
+     ```
+     powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+     ```
+
+  4. Use avmatrix-launcher\AVmatrixLauncher.exe to open the visual Web UI.
+  5. After AVmatrix MCP is configured, your AI agent can use AVmatrix tools
+     for codebase analysis, impact checks, graph queries, and navigation.
+
+  The agent should build the Go-backed avmatrix package, install or link the
+  local CLI, run avmatrix setup, and verify avmatrix --version.
 
 ### Manual install
 
