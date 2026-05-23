@@ -66,6 +66,14 @@ Record the current command/tool/resource inventory and final skill coverage:
 
 Status: pending
 
+Dedicated suite for this plan:
+
+| Artifact | Baseline | Final | Notes |
+|---|---|---|---|
+| Query-health suite path | pending | `docs/query-health/2026-05-23-avmatrix-skill-system-upgrade-suite.json` or recorded equivalent | Keep this plan's query cases separate from older suites with different product goals. |
+| Suite case count | pending | pending | Must include AI-context owner discovery and representative non-AI-context query capability lanes. |
+| Suite validates query as umbrella command | pending | pending | Cases must not define `query` as only an AI-context lookup. |
+
 Query behavior contract for this plan:
 
 | Behavior | Baseline measurement | Final requirement |
@@ -76,6 +84,24 @@ Query behavior contract for this plan:
 | Wrong-owner demotion | pending | Plausible but unrelated launcher/resolution/frontend/backend flows do not outrank stronger AI-context owner evidence. |
 | Result auditability | pending | Query or query-health output exposes match reason evidence and noise/miss reasons. |
 | `query` versus `context` separation | pending | `query` remains broad discovery; `context` remains exact symbol inspection. |
+| Query lane evidence | pending | Results expose query lane or equivalent match reason when available. |
+| Source/global ranking semantics | pending | Hit@5 and hit@10 are based on documented result ordering. |
+| User-facing lane discovery | pending | CLI/MCP help or command output lets users and agents discover query lanes. |
+| Explainable query output | pending | CLI/MCP JSON output exposes lane/rank/match evidence without reading internal code. |
+| Normal query compatibility | pending | Existing `avmatrix query "<intent>" --repo <repo>` behavior still works. |
+
+Query Capability Taxonomy coverage:
+
+| Query capability | Baseline case | Final case | Result fields to record |
+|---|---|---|---|
+| owner discovery | pending | pending | expected owners, matched owners, missed owners, rank, reason |
+| concept discovery | pending | pending | top code areas, lane/reason evidence, unrelated result count |
+| execution-flow discovery | pending | pending | process/flow candidates, matched steps, flow overlap evidence |
+| API surface discovery | pending | pending | handlers/contracts/consumers, route/tool evidence |
+| graph-quality discovery | pending | pending | query-health/resolution/source-site/graph-health owners |
+| docs/setup/AI-context discovery | pending | pending | generator/setup/package/resource guidance owners |
+| command-surface discovery | pending | pending | CLI/MCP/resource/Web/API command owners |
+| cross-repo discovery | pending | pending | group/cross-repo owners when indexed data supports them |
 
 Record broad-intent query behavior before and after implementation:
 
@@ -99,6 +125,11 @@ Root-cause and fix metrics:
 | noise reason reported explicitly | pending | pending |
 | broad-discovery regression check passes | pending | pending |
 | useful execution-flow candidates preserved | pending | pending |
+| query lane coverage recorded | pending | pending |
+| source/global rank behavior recorded | pending | pending |
+| CLI lane/explain commands validated | pending | pending |
+| MCP query evidence fields validated | pending | pending |
+| existing query command compatibility validated | pending | pending |
 
 Record final query-health fields for the AI-context intent case:
 
@@ -112,6 +143,8 @@ Record final query-health fields for the AI-context intent case:
 | matched targets | pending |
 | missed targets | pending |
 | noise reason | pending |
+| query lane / match reason | pending |
+| source rank and global rank behavior | pending |
 
 ## B1A - Binary Command Surface Mismatch Inventory
 
@@ -165,9 +198,15 @@ Record final validation:
 | Command | Result | Pass/fail count | Notes |
 |---|---|---:|---|
 | `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pending | pending | Full build gate before tests. |
-| `go test .\internal\aicontext .\internal\cli -count=1` | pending | pending | Minimum focused test scope. |
+| `go test .\internal\mcp .\internal\cli .\internal\aicontext -count=1` | pending | pending | Minimum focused test scope for query, query-health, AI context, setup/package surfaces. |
 | `avmatrix analyze --force` | pending | pending | Must not use `--skip-agents-md`. |
+| `go run .\cmd\avmatrix query --help` | pending | pending | Must expose normal query usage and any lane/explain surface. |
+| `go run .\cmd\avmatrix query lanes` or recorded equivalent | pending | pending | Must let users/agents discover query capability lanes. |
+| `go run .\cmd\avmatrix query explain "<intent>" --repo AVmatrix --json` or recorded equivalent | pending | pending | Must expose lane/rank/match evidence without reading code. |
+| `go run .\cmd\avmatrix query "<intent>" --repo AVmatrix` | pending | pending | Existing broad query behavior must remain compatible. |
+| `go run .\cmd\avmatrix query-health --suite docs/query-health/2026-05-23-avmatrix-skill-system-upgrade-suite.json --repo AVmatrix --json` | pending | pending | Dedicated suite for this plan. |
 | Generated skill inventory check | pending | pending | Count and content fragments. |
 | Setup/package smoke commands | pending | pending | Required if touched. |
 | MCP setup/resource guidance smoke | pending | pending | Required if MCP resource guidance is touched. |
+| MCP `query` smoke through local tool wrapper or focused test | pending | pending | Must verify machine-readable lane/rank/match evidence for agents. |
 | `detect-changes` | pending | pending | Scope should match AI context/skills/docs changes. |

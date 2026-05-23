@@ -61,7 +61,7 @@ Implementation may touch:
 - `internal/aicontext/skills/*.md`;
 - tests under `internal/aicontext`;
 - CLI/setup/package tests under `internal/cli` if they assert skill counts, skill paths, generated output, or packaging behavior;
-- query implementation and tests under `internal/mcp`, `internal/cli`, query-health suites, and any query ranking/scoring helpers if source inspection proves broad-intent query misses expected owners;
+- query implementation, query user-facing command surfaces, query output formatting, and tests under `internal/mcp`, `internal/cli`, query-health suites, and any query ranking/scoring helpers if source inspection proves broad-intent query misses expected owners;
 - MCP setup/resource guidance under `internal/mcp` if it contains tool, resource, setup, or command-surface reference text;
 - README and user-facing docs that explain generated AVmatrix skills, AI context setup, or AVmatrix command surfaces;
 - packaging/setup code only if source inspection proves the expanded embedded skill set is not installed or packaged correctly.
@@ -70,7 +70,7 @@ Out of scope unless source inspection proves it is required:
 
 - changing the behavior of AVmatrix graph analysis commands;
 - changing Web UI graph rendering;
-- changing MCP tool schemas;
+- changing MCP tool input schemas unless a backward-compatible query usability extension is required by this plan;
 - editing generated `.claude/skills/avmatrix/**`, `AGENTS.md`, or `CLAUDE.md` directly as the source of truth;
 - changing historical evidence ledgers only to make old records match the new skill set.
 
@@ -110,13 +110,32 @@ The upgraded skills must explain query reliability honestly. `query` is useful f
 
 The current `query` command must be treated as a concept-to-code and concept-to-flow discovery command. The CLI `avmatrix query` surface is a wrapper into the MCP query implementation, which combines graph data, process matches, definition matches, semantic fields, resolution-gap summaries, and warnings. Its product purpose is not the same as `context`: `query` should help an agent find likely work areas from broad intent, while `context` should inspect a known symbol or exact owner after the candidate area is identified.
 
+`query` is a broad command family, not one narrow lookup. The implementation must define a Query Capability Taxonomy under the top-level `query` behavior instead of treating one bug case as the full product definition. The taxonomy should include at least:
+
+| Query capability | Purpose |
+|---|---|
+| owner discovery | Find the file, symbol, command, resource, generated artifact, or package that owns a problem. |
+| concept discovery | Find likely code areas from broad natural-language intent. |
+| execution-flow discovery | Find processes, flows, and process steps related to the intent. |
+| API surface discovery | Find route/tool handlers, contracts, generated API types, and consumers. |
+| graph-quality discovery | Find query-health, source-site, resolution, ResolutionGap, graph-health, and accuracy surfaces. |
+| docs/setup/AI-context discovery | Find generated guidance, skill source, setup, package, and AI context generation surfaces. |
+| command-surface discovery | Find CLI, MCP, resource, Web/API, package, and runtime command owners. |
+| cross-repo discovery | Find group/cross-repo query, contracts, sync, status, and multi-repo surfaces when indexed data supports them. |
+
+These capabilities are not separate product commands unless the codebase already exposes them that way. They are retrieval lanes inside the umbrella `query` behavior. A query result may be produced by one or more lanes, and the output should expose the lane or match reason so users and agents can understand why it ranked.
+
+Query capability work must produce usable product surfaces, not hidden internal scoring. A capability is not complete because a struct field or scoring branch exists in code. It is complete only when a user or agent can discover and use it through AVmatrix command surfaces. The CLI must expose clear query subcommands or flags for lane discovery and explainable query output, such as `avmatrix query lanes`, `avmatrix query explain "<intent>" --repo <repo> --json`, or an equivalent source-verified design. The existing `avmatrix query "<intent>" --repo <repo>` behavior must remain available for normal broad discovery. MCP `query` output must expose the same lane/rank/match evidence in a machine-readable way for agents. If an existing Web/API query/search surface consumes query results, it must display or pass through the lane/rank/match evidence; if no such UI surface exists, the evidence ledger must record why CLI/MCP/API output is the usable surface for this plan.
+
 The query reliability bug must be fixed with a measured retrieval path, not only worked around in skills. The implementation should first reproduce the miss in `query-health`, inspect the current query implementation and scoring reasons, then improve retrieval/ranking so expected owner files and symbols appear in the top results. A result with weak or no lexical/semantic overlap should not outrank exact path, symbol, package, generated-artifact, command-name, or resource-name matches. Query output should expose enough match reason evidence for agents to understand why a result was ranked.
 
-The query fix must preserve the original discovery value of `query`. It must not turn `query` into a pure grep command, a `context` alias, or an exact-symbol-only lookup. Execution-flow and process results remain important, but they must be ranked behind stronger owner evidence when the process has weak overlap with the user intent. The accepted behavior change is lower noise in top results, not loss of broad concept discovery.
+The query fix must preserve and expand the original discovery value of `query`. It must not turn `query` into a pure grep command, a `context` alias, an exact-symbol-only lookup, or a tool tuned only for the AI-context plan case. Execution-flow and process results remain important, but they must be ranked behind stronger owner evidence when the process has weak overlap with the user intent. The accepted behavior change is structured broad discovery with lower wrong-owner noise, not loss of broad concept discovery.
 
-The final query behavior must separate four roles clearly: candidate discovery through `query`, exact owner inspection through `context` or source inspection, retrieval-quality measurement through `query-health`, and validation evidence through the benchmark/evidence ledgers. Query-health output must distinguish usable retrieval from exact coverage: a usable pass means enough correct owner evidence appears to guide the agent, while an exact pass means no expected target was missed.
+The final query behavior must separate four roles clearly: candidate discovery through `query`, exact owner inspection through `context` or source inspection, retrieval-quality measurement through `query-health`, and validation evidence through the benchmark/evidence ledgers. Query-health output must distinguish usable retrieval from exact coverage: a usable pass means enough correct owner evidence appears to guide the agent, while an exact pass means no expected target was missed. Query-health must also make result ordering meaningful across sources; if process-symbol and definition ranks are merged, the report must define or expose a global rank/source rank so hit@5 and hit@10 are not ambiguous.
 
-The target behavior for this plan's AI-context query case is: broad queries about generated AVmatrix skills and AI context must surface `internal/aicontext/aicontext.go`, embedded skill source files, analyze post-run AI context generation, setup/editor skill installation, package skill distribution, and MCP setup/resource guidance where relevant. If an exact target cannot be found, the query-health report must make the miss explicit through exact pass/fail, matched targets, missed targets, and noise reason.
+The target behavior for this plan's AI-context query case is one benchmark lane, not the whole definition of `query`: broad queries about generated AVmatrix skills and AI context must surface `internal/aicontext/aicontext.go`, embedded skill source files, analyze post-run AI context generation, setup/editor skill installation, package skill distribution, and MCP setup/resource guidance where relevant. If an exact target cannot be found, the query-health report must make the miss explicit through exact pass/fail, matched targets, missed targets, and noise reason.
+
+The query result evidence schema should remain backward compatible while adding auditable fields. Prefer optional fields such as `queryLane`, `matchedFields`, `matchReasons`, `scoreClass`, `sourceRank`, `globalRank`, and `noiseReason` where appropriate. Do not require verbose raw scoring internals in normal output, but JSON/detail output must be strong enough for query-health and agents to explain why a result ranked.
 
 ## Acceptance Criteria
 
@@ -141,6 +160,11 @@ The target behavior for this plan's AI-context query case is: broad queries abou
 - Query result ranking favors exact owner evidence over unrelated process flows for AI context skill-generation intent, and query output or query-health evidence explains match/noise reasons.
 - Query still works as a broad concept and execution-flow discovery command after the fix. Validation must prove the implementation did not collapse `query` into exact symbol lookup, grep-only search, or a `context` alias.
 - Query-health reports usable pass and exact pass separately, and any exact misses are visible to agents and users instead of being hidden by a threshold pass.
+- The plan has a dedicated query-health suite for this work, such as `docs/query-health/2026-05-23-avmatrix-skill-system-upgrade-suite.json`, so skill-system query reliability is not mixed into an older suite with a different purpose.
+- Query-health ranking semantics are clear. Hit@5 and hit@10 must use a documented global result order or explicitly separated source-rank/global-rank fields.
+- Query capability lanes are validated by representative cases so the query repair does not become an AI-context-only fix.
+- Query capability lanes are usable through product surfaces. CLI help/output and MCP JSON output must expose lane discovery and explainable query results; Web/API display or pass-through must be validated if an existing UI/API query surface is in scope.
+- No query capability is counted complete if it only exists as internal code, unrendered fields, or tests that users and agents cannot invoke.
 - Full build, focused tests, generation smoke, setup/package validation if touched, and `detect-changes` pass before closure.
 
 ## Phase 0 - Generator Source Trace And Command Inventory
@@ -163,9 +187,11 @@ The target behavior for this plan's AI-context query case is: broad queries abou
 
 - [ ] [P0-I] Record the broad-intent query reliability bug as baseline evidence. Run and record query results for AI context skill generation, setup/editor skill installation, package skill distribution, and MCP setup/resource guidance; then verify the correct owner surfaces with `context` and exact file inspection. The evidence must show when query output is only a candidate, when it misses expected owner files, and why that miss is dangerous for agent edit-surface selection.
 
-- [ ] [P0-J] Add or extend a query-health suite case that reproduces the AI-context skill-generation query miss before any retrieval fix. The case must list expected files/symbols, actual top results, hit@5/hit@10, exact target coverage, missed targets, and noise reason so the bug is measurable.
+- [ ] [P0-J] Create a dedicated query-health suite for this plan, for example `docs/query-health/2026-05-23-avmatrix-skill-system-upgrade-suite.json`, and add a case that reproduces the AI-context skill-generation query miss before any retrieval fix. The case must list expected files/symbols, actual top results, hit@5/hit@10, exact target coverage, missed targets, and noise reason so the bug is measurable without mixing this plan into an older suite with a different purpose.
 
 - [ ] [P0-K] Trace the current query implementation and scoring path before changing it. Record the exact files and symbols that rank definitions, process symbols, execution flows, lexical tokens, path/name matches, semantic fields, filters, and result limits. The trace must explain why unrelated launcher/resolution/frontend flows outrank the expected AI-context owners.
+
+- [ ] [P0-L] Inventory the current user-facing query surfaces before changing them. Record CLI help/output for `avmatrix query`, MCP `query` tool schema/output, `query-health` output, and any existing Web/API query/search surface. The evidence must state which surfaces users and agents can actually invoke today and which query-lane evidence is currently hidden or absent.
 
 ## Phase 1 - Core Query Reliability Repair
 
@@ -175,23 +201,25 @@ This is a large blocking phase. The rest of the skill-system upgrade depends on 
 
 - [ ] [P1-B] Root-cause the current `query` retrieval and ranking pipeline. Trace the exact implementation path for CLI/MCP query from input text to returned definitions/processes, including tokenization, lexical matching, process scoring, definition scoring, path/name scoring, App Layer/Functional Area boosts, docs/test filtering, result limits, and result diversification. The evidence must explain why launcher/resolution/frontend flows can outrank `internal/aicontext` owners for the AI-context intent.
 
-- [ ] [P1-C] Define the query relevance contract for broad-intent repository work. The contract must describe the current intended command role: `query` performs concept-to-code and concept-to-flow discovery, while `context` performs exact symbol inspection after a candidate owner is found. The contract must state that exact file path, exact symbol name, generated artifact name, command name, resource URI/name, package/module name, and high lexical overlap are strong evidence; unrelated execution-flow names with weak overlap must not outrank those owners. The contract must also define how docs/tests/examples are ranked when the query is about product source versus documentation.
+- [ ] [P1-C] Define the Query Capability Taxonomy and relevance contract for broad-intent repository work. The contract must describe `query` as an umbrella command with retrieval lanes such as owner discovery, concept discovery, execution-flow discovery, API surface discovery, graph-quality discovery, docs/setup/AI-context discovery, command-surface discovery, and cross-repo discovery. It must also define that `context` performs exact symbol inspection after a candidate owner is found. Exact file path, exact symbol name, generated artifact name, command name, resource URI/name, package/module name, and high lexical overlap are strong evidence; unrelated execution-flow names with weak overlap must not outrank those owners. The contract must also define how docs/tests/examples are ranked when the query is about product source versus documentation.
 
-- [ ] [P1-D] Implement the query retrieval/ranking fix for the AI-context and skill-generation intents. The implementation must improve owner discovery using proven signals such as exact symbol/file/path matches, command/resource names, generated artifact names, package/module names, lexical token overlap, and process/definition relevance. It must demote unrelated process flows that lack meaningful overlap with the query intent, while preserving useful process results when they have clear evidence. The implementation must keep broad discovery behavior intact and must not replace `query` with grep-only matching or exact-symbol-only lookup.
+- [ ] [P1-D] Implement the query retrieval/ranking fix through the capability taxonomy rather than through an AI-context-only patch. The implementation must improve owner discovery using proven signals such as exact symbol/file/path matches, command/resource names, generated artifact names, package/module names, lexical token overlap, and process/definition relevance. It must preserve concept and execution-flow discovery, demote unrelated process flows that lack meaningful overlap with the query intent, and keep useful process/API/graph-quality/docs-command results when they have clear evidence. The implementation must keep broad discovery behavior intact and must not replace `query` with grep-only matching or exact-symbol-only lookup.
 
-- [ ] [P1-E] Add result reason output where needed so query results are auditable. Query or query-health output must expose enough match evidence for an agent/user to see why a result ranked highly, such as matched tokens, matched path/symbol/command/resource fields, score class, and noise reason for expected misses. This must not turn into verbose raw internals by default; use summary fields or JSON detail where appropriate.
+- [ ] [P1-E] Add result reason output where needed so query results are auditable. Query or query-health output must expose enough match evidence for an agent/user to see why a result ranked highly, such as query lane, matched tokens, matched path/symbol/command/resource fields, score class, source rank, global rank, and noise reason for expected misses. This must not turn into verbose raw internals by default; use summary fields or JSON detail where appropriate.
 
-- [ ] [P1-F] Add focused unit tests for query scoring and filtering. Tests must cover exact owner file/symbol/path matches, generated artifact names such as `AGENTS.md` and `.claude/skills/avmatrix`, command/resource-name matches such as `setupResource` and `query-health`, and a negative case where unrelated launcher/resolution/frontend flows must not outrank stronger owner evidence.
+- [ ] [P1-F] Add the user-facing query lane command surface. Preserve the existing `avmatrix query "<intent>" --repo <repo>` command, then add clear lane discovery and explainable query usage through subcommands or flags such as `avmatrix query lanes`, `avmatrix query explain "<intent>" --repo <repo> --json`, `--lane <lane>`, or an equivalent source-verified design. Help output must describe each lane and show how a user or agent can get lane/rank/match evidence.
 
-- [ ] [P1-G] Add or update CLI/MCP query and query-health integration tests. Tests must prove the AI-context intent returns expected owner surfaces, threshold pass is reported separately from exact pass, missed-target reporting works, and unrelated high-scoring results cannot silently be accepted as a passing exact result.
+- [ ] [P1-G] Add focused unit tests for query scoring, lane assignment, and filtering. Tests must cover exact owner file/symbol/path matches, generated artifact names such as `AGENTS.md` and `.claude/skills/avmatrix`, command/resource-name matches such as `setupResource` and `query-health`, execution-flow results with real overlap, API/graph-quality/docs-command lane examples where supported by current data, and a negative case where unrelated launcher/resolution/frontend flows must not outrank stronger owner evidence.
 
-- [ ] [P1-H] Run the updated query-health case after the query fix and record threshold pass/fail, exact pass/fail, expected targets, matched targets, missed targets, unrelated top-result count, and remaining noise reason in the benchmark ledger.
+- [ ] [P1-H] Add or update CLI/MCP query and query-health integration tests. Tests must prove the AI-context intent returns expected owner surfaces, representative non-AI-context query lanes still return useful results, threshold pass is reported separately from exact pass, missed-target reporting works, source/global ranking semantics are clear, CLI lane/explain commands are invokable, MCP output exposes equivalent machine-readable evidence, and unrelated high-scoring results cannot silently be accepted as a passing exact result.
 
-- [ ] [P1-I] Update skill guidance only after the query behavior is measured. `avmatrix-exploring`, `avmatrix-debugging`, `avmatrix-graph-quality`, and `avmatrix-ai-context` must explain both sides: `query` is the right broad discovery command, and broad results still need verification with `context` or exact source inspection when selecting edit surfaces.
+- [ ] [P1-I] Run the updated query-health suite after the query fix and record threshold pass/fail, exact pass/fail, expected targets, matched targets, missed targets, query lane coverage, unrelated top-result count, source/global rank behavior, user-facing command outputs, and remaining noise reason in the benchmark ledger.
 
-- [ ] [P1-J] Add a closure gate for query reliability before moving to the rest of the skill-system implementation. The gate is satisfied only when the AI-context query-health case has recorded threshold and exact results, the remaining missed targets if any are explicit, and the plan/evidence/benchmark ledgers state whether the query bug is fixed or still has a tracked blocker.
+- [ ] [P1-J] Finalize skill-guidance requirements only after the query behavior and command surface are measured. Do not edit embedded skill content in this phase. Record the exact guidance that Phase 2 must apply to `avmatrix-exploring`, `avmatrix-debugging`, `avmatrix-graph-quality`, and `avmatrix-ai-context`: `query` is the right broad discovery command with multiple usable capability lanes, and broad results still need verification with `context` or exact source inspection when selecting edit surfaces.
 
-- [ ] [P1-K] Add a broad-discovery regression check for `query` after the ranking fix. Use at least one non-AI-context intent that should naturally return execution-flow or process candidates, record the before/after top results, and prove the fix reduced wrong-owner noise without removing the original concept-to-flow discovery capability.
+- [ ] [P1-K] Add a closure gate for query reliability before moving to the rest of the skill-system implementation. The gate is satisfied only when the AI-context query-health case has recorded threshold and exact results, the remaining missed targets if any are explicit, the usable CLI/MCP query lane surfaces are validated, and the plan/evidence/benchmark ledgers state whether the query bug is fixed or still has a tracked blocker.
+
+- [ ] [P1-L] Add broad-discovery regression checks for `query` after the ranking fix. Use representative non-AI-context intents across the capability taxonomy, including at least one intent that should naturally return execution-flow or process candidates. Record the before/after top results and prove the fix reduced wrong-owner noise without removing the original concept-to-flow discovery capability.
 
 ## Phase 2 - Embedded Skill Source Upgrade
 
@@ -209,7 +237,7 @@ This is a large blocking phase. The rest of the skill-system upgrade depends on 
 
 - [ ] [P2-G] Add frontmatter/source-content tests for every final embedded base skill. The test must fail if a registered base skill is missing its embedded Markdown file, has empty content, has mismatched `name`, lacks `description`, or would rely on `fallbackBaseSkillContent`.
 
-- [ ] [P2-H] Update `avmatrix-exploring`, `avmatrix-debugging`, `avmatrix-graph-quality`, and `avmatrix-ai-context` skill content so agents do not treat broad `query` output as definitive. The guidance must state that broad intent query is for candidate discovery, `context` is preferred when an exact symbol is known, and noisy/missed query results must be recorded as graph-quality/query-health evidence.
+- [ ] [P2-H] Update `avmatrix-exploring`, `avmatrix-debugging`, `avmatrix-graph-quality`, and `avmatrix-ai-context` skill content using the measured Phase 1 guidance. The guidance must state that broad intent query is a multi-lane candidate discovery command, explain the user-facing CLI/MCP query lane commands or flags, state that `context` is preferred when an exact symbol is known, and tell agents that noisy/missed query results must be recorded as graph-quality/query-health evidence.
 
 - [ ] [P2-I] Add or extend skill-facing query-health guidance for this plan's AI-context intent. The skill should point to the query-health suite/case created in Phase 0/Phase 1, explain threshold versus exact pass, and tell agents to record missed targets instead of treating partial retrieval as complete.
 
@@ -233,7 +261,7 @@ This is a large blocking phase. The rest of the skill-system upgrade depends on 
 
 - [ ] [P4-A] Run the full build gate before tests: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`. Record the command result in evidence.
 
-- [ ] [P4-B] Run focused backend/CLI tests for AI context generation, setup, and packaging surfaces touched by the implementation. The minimum expected test scope is `go test .\internal\aicontext .\internal\cli -count=1`, expanded as needed if package/setup code outside those packages changes.
+- [ ] [P4-B] Run focused backend/CLI/MCP tests for AI context generation, setup, packaging, query, and query-health surfaces touched by the implementation. The minimum expected test scope is `go test .\internal\mcp .\internal\cli .\internal\aicontext -count=1`, expanded as needed if package/setup code outside those packages changes.
 
 - [ ] [P4-C] Run the normal generation path with `avmatrix analyze --force` and no `--skip-agents-md`. Verify generated `AGENTS.md`, generated `CLAUDE.md`, and `.claude/skills/avmatrix/**` contain the final skill set and expected content fragments.
 
@@ -243,11 +271,13 @@ This is a large blocking phase. The rest of the skill-system upgrade depends on 
 
 - [ ] [P4-F] Validate MCP setup/resource output if Phase 3 touched MCP resources. Record the exact `avmatrix://setup` or equivalent resource output check in evidence so the generated guidance and MCP-facing guide are proven consistent.
 
-- [ ] [P4-G] Run the query-health case or suite updated for this plan's AI-context skill-generation intent. Record threshold pass/fail, exact pass/fail, expected targets, matched targets, missed targets, and noise reason in benchmark/evidence.
+- [ ] [P4-G] Run the dedicated query-health suite updated for this plan's AI-context skill-generation intent and representative query capability lanes. Record threshold pass/fail, exact pass/fail, expected targets, matched targets, missed targets, source/global rank behavior, query lane coverage, and noise reason in benchmark/evidence.
 
-- [ ] [P4-H] Run the query broad-discovery regression check from Phase 1 and record whether execution-flow candidates still appear with meaningful match evidence after the ranking fix.
+- [ ] [P4-H] Run user-facing query lane smoke commands after the full build. Validate normal query behavior, lane discovery, explainable JSON output, MCP query JSON evidence, and the dedicated query-health suite command; record exact commands and representative output in evidence and benchmark.
 
-- [ ] [P4-I] Run `detect-changes` before commit and record the affected scope. Commit the implementation slice after checklist items and ledgers are updated.
+- [ ] [P4-I] Run the query broad-discovery regression check from Phase 1 and record whether execution-flow candidates still appear with meaningful match evidence after the ranking fix.
+
+- [ ] [P4-J] Run `detect-changes` before commit and record the affected scope. Commit the implementation slice after checklist items and ledgers are updated.
 
 ## Phase 5 - Zero-Trust Closure Review
 

@@ -249,3 +249,18 @@ Query behavior analysis added to the plan:
 - Execution-flow and process results remain valuable, but they must not outrank stronger owner evidence when they have weak overlap with the query intent.
 - Query-health must separate usable retrieval from exact coverage. A usable pass means enough correct owner evidence exists to guide work; an exact pass means no expected target was missed.
 - The plan now requires a broad-discovery regression check so the query reliability repair cannot accidentally remove the original broad concept discovery purpose.
+
+Query umbrella-command correction:
+
+- The plan must not define `query` through a narrow set of implementation symbols or through the AI-context bug case alone.
+- `query` is a top-level command family. The plan now treats its behavior as multiple retrieval lanes under one umbrella command: owner discovery, concept discovery, execution-flow discovery, API surface discovery, graph-quality discovery, docs/setup/AI-context discovery, command-surface discovery, and cross-repo discovery when indexed data supports it.
+- The AI-context skill-generation case is one benchmark lane. It is not the product definition of `query`.
+- Implementation work must preserve broad query behavior while adding stronger structure, lane evidence, match reasons, and clearer ranking.
+- Query-health evidence must record whether hit@5/hit@10 use a global rank or source-specific rank so users and agents can interpret the benchmark correctly.
+
+Usability requirement added:
+
+- A query capability is not complete if it only exists as hidden scoring code, unrendered fields, or internal tests.
+- Query lanes must be discoverable and usable through AVmatrix command surfaces. The plan now requires CLI lane discovery, explainable query JSON output, normal `avmatrix query` compatibility, and MCP query output with machine-readable lane/rank/match evidence.
+- If an existing Web/API query/search surface consumes query results, it must display or pass through the new evidence. If no Web UI surface is in scope, the evidence ledger must record that CLI/MCP/API output is the usable product surface for this plan.
+- Validation must run actual commands or focused MCP tests that prove users and agents can invoke the feature without reading internal code.
