@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: Phase 10 query-health threshold/exact separation in progress; Phase 9 full e2e closure validation remains open
+Status: Phase 9 and Phase 10 closure validation complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -1378,7 +1378,7 @@ Status: complete; P8-A through P8-J complete.
 
 ### P8-A - Full Build Gate
 
-Status: reopened for P9-I full e2e closure validation.
+Status: complete; P9-I full e2e closure validation passed after per-spec reruns.
 
 Command:
 
@@ -1683,7 +1683,7 @@ Implementation evidence to fill after code:
 | Focused backend/Web tests | passed: `go test .\internal\cli -run "TestResolutionInventoryCommandOutputsJSON" -count=1`; `npm --prefix .\avmatrix-web run test -- --run test/unit/semantic-filters.test.ts test/unit/graph-adapter.edge-geometry.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx` passed `3` files and `33` tests. |
 | Full build and validation | passed: `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; `go test .\internal\... .\cmd\...`; `go run .\cmd\generate-web-contracts --check`; `npm --prefix .\avmatrix-web run test -- --run` passed `45` files and `369` tests. |
 | Browser/e2e validation | passed targeted browser coverage: `npm --prefix .\avmatrix-web run test:e2e -- e2e/server-connect.spec.ts -g "reports Backend API Frontend rings"` passed `1` test, and `npm --prefix .\avmatrix-web run test:e2e -- e2e/graph-health-ui.spec.ts` passed `4` tests. Full e2e and full `server-connect.spec.ts` timed out during validation and are not recorded as passed. |
-| P9-I full e2e closure validation | pending rerun. The closure audit requires a fresh full build gate, then full Web e2e and full `server-connect.spec.ts` evidence after the Phase 9 changes. |
+| P9-I full e2e closure validation | passed after fresh full build gate. The all-spec command `npm --prefix .\avmatrix-web run test:e2e` was attempted and timed out at `1804044 ms`, so it is not counted as passing evidence. Per-spec reruns covered the full non-ignored suite: `server-connect.spec.ts` `10/10` passed in `11.1m`; `graph-health-ui.spec.ts` `4/4` passed in `20.9s`; `heartbeat-reconnect.spec.ts` `2/2` passed in `1.9m`; `multi-repo-scoping.spec.ts` `3/3` passed in `3.6m`; `repo-switching.spec.ts` `6/6` passed in `8.8m`; `onboarding.spec.ts` `12` passed and `1` expected packaged-launcher case skipped in `2.4m`; `shell-interactions.spec.ts` `7/7` passed in `6.3m`. Total closure evidence: `44` passed and `1` expected skip. |
 | Final analyze | passed: `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-23-p9-non-actionable-breakdown-final-analyze.json --benchmark-label p9-non-actionable-breakdown-final`; result `files scanned=756`, `parsed=566`, `unsupported=190`, `failed=0`, `nodes=85732`, `relationships=117678`. |
 | Final resolution inventory | passed: `.\avmatrix-launcher\server-bundle\avmatrix.exe resolution-inventory --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-23-p9-resolution-inventory-final.json`; result `unresolvedNonActionable=25841`, breakdown `builtin=10725`, `standard_library=7677`, `test_framework=7439`. |
 | Detect-changes and commit | pre-commit `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` passed after staging the implementation slice: `changed_count=163`, `changed_files=13`, `affected_count=4`, `risk_level=medium`. Affected scope is the expected frontend graph rendering path through `useSigma`; changed scope covers backend CLI output, Web lens/layout/filter code, tests, and plan ledgers. |

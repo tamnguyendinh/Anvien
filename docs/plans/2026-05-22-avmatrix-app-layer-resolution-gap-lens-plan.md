@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: Phase 10 query-health threshold/exact separation in progress; Phase 9 full e2e closure validation remains open
+Status: Phase 9 and Phase 10 closure validation complete
 
 Source discussion:
 
@@ -428,7 +428,7 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 - [x] [P9-H] Run fresh `avmatrix analyze --force` and `detect-changes` before the implementation commit, record the expected changed scope, update this plan and companion ledgers to complete only after validation passes, commit the slice, and leave no open Phase 9 checklist item. Final analyze passed with `nodes=85732` and `relationships=117678`; final inventory recorded `unresolvedNonActionable=25841` split into `builtin=10725`, `standard_library=7677`, and `test_framework=7439`; pre-commit detect-changes after staging reported `changed_count=163`, `changed_files=13`, `affected_count=4`, and `risk_level=medium`.
 
-- [ ] [P9-I] Close the Phase 9 validation gap by rerunning the full build gate, then running the full Web e2e suite and full `server-connect.spec.ts` validation after the non-actionable subgroup and diagnostic-shape changes. Record exact pass/fail counts, skips, command outputs, and any remaining limitation in the evidence and benchmark ledgers. If a failure is product behavior, fix the code under the normal implementation rules; if it is only a tool execution-window issue, record per-spec reruns clearly rather than counting the timed-out all-spec command as passing evidence.
+- [x] [P9-I] Close the Phase 9 validation gap by rerunning the full build gate, then running the full Web e2e suite and full `server-connect.spec.ts` validation after the non-actionable subgroup and diagnostic-shape changes. The fresh full build gate passed first. The single all-spec e2e command was attempted and timed out at the tool execution window, so it is not counted as passing evidence. Per-spec reruns then covered the full non-ignored Playwright suite: `server-connect.spec.ts` passed `10/10`, `graph-health-ui.spec.ts` passed `4/4`, `heartbeat-reconnect.spec.ts` passed `2/2`, `multi-repo-scoping.spec.ts` passed `3/3`, `repo-switching.spec.ts` passed `6/6`, `onboarding.spec.ts` passed `12` with `1` expected packaged-launcher skip, and `shell-interactions.spec.ts` passed `7/7`, for total browser evidence of `44` passed and `1` expected skip.
 
 ## Phase 10 - Query Health Threshold And Exact Target Coverage
 

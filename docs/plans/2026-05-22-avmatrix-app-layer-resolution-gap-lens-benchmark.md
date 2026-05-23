@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: Phase 10 query-health threshold/exact separation in progress; Phase 9 full e2e closure validation remains open
+Status: Phase 9 and Phase 10 closure validation complete
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -792,7 +792,7 @@ Record after the analyze semantic enrichment phase is introduced and after each 
 
 ## B13 - Phase 9 Non-Actionable Breakdown And Diagnostic Shape
 
-Status: reopened for P9-I full e2e closure validation.
+Status: complete after P9-I full e2e closure validation.
 
 Starting graph refresh:
 
@@ -846,7 +846,16 @@ Validation and final metrics:
 | Contract validation output | `go run .\cmd\generate-web-contracts --check` passed with no generated contract drift |
 | Full Web unit output | `npm --prefix .\avmatrix-web run test -- --run` passed `45` files / `369` tests |
 | Web/browser validation output | focused browser/e2e passed: `server-connect.spec.ts -g "reports Backend API Frontend rings"` passed `1` test; `graph-health-ui.spec.ts` passed `4` tests. Full e2e and full `server-connect.spec.ts` timed out in validation and are not recorded as passed. |
-| P9-I full e2e closure validation | pending rerun after fresh full build gate; record full Web e2e pass/fail/skip counts, full `server-connect.spec.ts` result, and any remaining limitation. |
+| P9-I fresh full build gate | passed before browser validation |
+| P9-I all-spec e2e command | attempted `npm --prefix .\avmatrix-web run test:e2e`; timed out at `1804044 ms` and is not counted as passing evidence |
+| P9-I full `server-connect.spec.ts` | `10/10` passed in `11.1m` |
+| P9-I `graph-health-ui.spec.ts` | `4/4` passed in `20.9s` |
+| P9-I `heartbeat-reconnect.spec.ts` | `2/2` passed in `1.9m` |
+| P9-I `multi-repo-scoping.spec.ts` | `3/3` passed in `3.6m` |
+| P9-I `repo-switching.spec.ts` | `6/6` passed in `8.8m` |
+| P9-I `onboarding.spec.ts` | `12` passed, `1` expected packaged-launcher skip in `2.4m` |
+| P9-I `shell-interactions.spec.ts` | `7/7` passed in `6.3m` |
+| P9-I full e2e closure total | `44` passed, `0` failed, `1` expected skip |
 | Final resolution inventory | `nodes=85732`, `relationships=117678`, `gapNodes=61625`, `gapRelationships=61625`, `gapOccurrences=62411`, `resolvedReferences=28419`, `unresolvedNonActionable=25841`, breakdown `builtin=10725`, `standard_library=7677`, `test_framework=7439` |
 | Pre-commit detect-changes | after staging the implementation slice, `detect-changes --repo AVmatrix --scope all` reported `changed_count=163`, `changed_files=13`, `affected_count=4`, `risk_level=medium`, affected app layer `frontend=4`, changed app layers `backend=10`, `backend_test=17`, `docs=10`, `frontend=53`, `frontend_test=73` |
 
