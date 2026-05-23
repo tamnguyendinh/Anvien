@@ -13,7 +13,7 @@ Companion files:
 
 1. Use AVmatrix for codebase analysis and impact checks while working on implementation slices in this plan.
 2. As each task is completed, update the corresponding checklist item immediately.
-3. Run the full build gate before testing; include focused backend/CLI/setup/package validation for generated skill behavior, and include Web/e2e validation only if Web behavior changes.
+3. Run the full build gate before testing; include focused backend/CLI/setup/package validation for generated skill behavior, and include Web unit/e2e/browser screenshot validation for the graph labeling phase.
 4. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, query hit rate, command output inventory, graph inventory counts, source-site inventory counts, generated skill inventory counts, setup/package file inventories, or resolved-edge accuracy; build/test/e2e timings are validation evidence unless the slice changes those systems.
 5. Record evidence as each evidenced task is completed.
 6. For doc-only commits, do not use AVmatrix.
@@ -53,6 +53,8 @@ There is also a source-distribution risk. Repository-local generated skills are 
 
 There is a query reliability bug. A broad intent query can return plausible but wrong code regions. During plan review, broad queries about AI context skill generation returned unrelated launcher, resolution-gap, and frontend/backend flows instead of the expected `internal/aicontext`, analyze post-run, setup, and package-skill surfaces. That behavior is dangerous for agent work because a query that cannot identify the right region can send the agent to edit or reason about the wrong code. This is not a minor documentation issue or normal behavior to accept. `query` is a core AVmatrix feature and must be able to locate the correct work area for broad intent. Until the bug is fixed, broad `query` output must be treated as candidate retrieval and verified by symbol-level `context`, exact file/symbol inspection, or `query-health` evidence.
 
+There is also a Web graph orientation problem shown by `reports/problem/screenshot_1779517751.png`. The graph can contain visible rings and node islands, but the canvas does not name the ring or island directly. Users can see colored clusters, but they cannot immediately tell whether a macro ring is Backend, Frontend, API, Docs, Config, Shared, Test, Unknown, or another top-level group, and they cannot tell whether an island is Function, Method, File, Route, ResolutionGap, External Reference, or another node/filter group without looking away from the graph. Color and side-panel filters are not enough; the graph itself must communicate what each ring and island represents.
+
 ## Scope
 
 Implementation may touch:
@@ -62,6 +64,7 @@ Implementation may touch:
 - tests under `internal/aicontext`;
 - CLI/setup/package tests under `internal/cli` if they assert skill counts, skill paths, generated output, or packaging behavior;
 - query implementation, query user-facing command surfaces, query output formatting, and tests under `internal/mcp`, `internal/cli`, query-health suites, and any query ranking/scoring helpers if source inspection proves broad-intent query misses expected owners;
+- Web graph layout, graph adapter, Sigma/canvas overlay, graph canvas components, graph filter/legend integration, and Web tests under `avmatrix-web` for ring/island labeling and visual orientation;
 - MCP setup/resource guidance under `internal/mcp` if it contains tool, resource, setup, or command-surface reference text;
 - README and user-facing docs that explain generated AVmatrix skills, AI context setup, or AVmatrix command surfaces;
 - packaging/setup code only if source inspection proves the expanded embedded skill set is not installed or packaged correctly.
@@ -69,7 +72,7 @@ Implementation may touch:
 Out of scope unless source inspection proves it is required:
 
 - changing the behavior of AVmatrix graph analysis commands;
-- changing Web UI graph rendering;
+- changing Web UI graph rendering outside the graph labeling and visual orientation layer required by this plan;
 - changing MCP tool input schemas unless a backward-compatible query usability extension is required by this plan;
 - editing generated `.claude/skills/avmatrix/**`, `AGENTS.md`, or `CLAUDE.md` directly as the source of truth;
 - changing historical evidence ledgers only to make old records match the new skill set.
@@ -127,6 +130,8 @@ These capabilities are not separate product commands unless the codebase already
 
 Query capability work must produce usable product surfaces, not hidden internal scoring. A capability is not complete because a struct field or scoring branch exists in code. It is complete only when a user or agent can discover and use it through AVmatrix command surfaces. The CLI must expose clear query subcommands or flags for lane discovery and explainable query output, such as `avmatrix query lanes`, `avmatrix query explain "<intent>" --repo <repo> --json`, or an equivalent source-verified design. The existing `avmatrix query "<intent>" --repo <repo>` behavior must remain available for normal broad discovery. MCP `query` output must expose the same lane/rank/match evidence in a machine-readable way for agents. If an existing Web/API query/search surface consumes query results, it must display or pass through the lane/rank/match evidence; if no such UI surface exists, the evidence ledger must record why CLI/MCP/API output is the usable surface for this plan.
 
+The current CLI `query` command accepts a single positional search query. Any lane/explain surface added in this plan must account for that existing parsing behavior instead of accidentally treating reserved words as the only supported query use. The implementation may use subcommands, flags, or another source-verified design, but tests must prove normal `avmatrix query "<intent>" --repo <repo>` still works and users can still search ordinary terms that resemble lane/explain command words unless the new syntax explicitly documents a non-ambiguous escape path.
+
 The query reliability bug must be fixed with a measured retrieval path, not only worked around in skills. The implementation should first reproduce the miss in `query-health`, inspect the current query implementation and scoring reasons, then improve retrieval/ranking so expected owner files and symbols appear in the top results. A result with weak or no lexical/semantic overlap should not outrank exact path, symbol, package, generated-artifact, command-name, or resource-name matches. Query output should expose enough match reason evidence for agents to understand why a result was ranked.
 
 The query fix must preserve and expand the original discovery value of `query`. It must not turn `query` into a pure grep command, a `context` alias, an exact-symbol-only lookup, or a tool tuned only for the AI-context plan case. Execution-flow and process results remain important, but they must be ranked behind stronger owner evidence when the process has weak overlap with the user intent. The accepted behavior change is structured broad discovery with lower wrong-owner noise, not loss of broad concept discovery.
@@ -136,6 +141,14 @@ The final query behavior must separate four roles clearly: candidate discovery t
 The target behavior for this plan's AI-context query case is one benchmark lane, not the whole definition of `query`: broad queries about generated AVmatrix skills and AI context must surface `internal/aicontext/aicontext.go`, embedded skill source files, analyze post-run AI context generation, setup/editor skill installation, package skill distribution, and MCP setup/resource guidance where relevant. If an exact target cannot be found, the query-health report must make the miss explicit through exact pass/fail, matched targets, missed targets, and noise reason.
 
 The query result evidence schema should remain backward compatible while adding auditable fields. Prefer optional fields such as `queryLane`, `matchedFields`, `matchReasons`, `scoreClass`, `sourceRank`, `globalRank`, and `noiseReason` where appropriate. Do not require verbose raw scoring internals in normal output, but JSON/detail output must be strong enough for query-health and agents to explain why a result ranked.
+
+The Web graph must have a visual orientation layer. Macro rings and node islands are not complete if they only exist as coordinates or colors. Each visible macro ring must have an on-canvas name that identifies the top-level group, such as Backend, Frontend, API, Docs, Config, Shared, Test, Unknown, or the current graph's equivalent category. Each visible island must have an on-canvas label that identifies the cluster/filter/node group, such as Function, Method, File, Route, ResolutionGap, External Reference, or the current graph's equivalent group.
+
+Ring and island labels are layout output, not optional hover help. Users must be able to understand the graph structure without hovering individual nodes or reading only the left dashboard. Macro labels should sit near the ring center or an equivalent stable ring anchor. Island labels should sit above or near each island. Labels must remain readable during normal zoom/pan, avoid incoherent overlap with dense nodes, edges, or controls, and may simplify at far zoom levels only if users can recover the names by zooming or selecting the area.
+
+Graph label data must come from existing graph metadata where possible: app layer, node type/filter label, semantic group, layout ring key, island key, and existing display labels. The implementation should not invent a separate hidden taxonomy when graph metadata already carries the category. Unknown/Unresolved/ResolutionGap-style areas are especially important to label because they represent investigation zones.
+
+Graph label visibility must follow the current visible graph, not only the original graph conversion. If node type filters, graph-health filters, semantic filters, or depth filtering hide every node in a ring or island, that ring/island label must hide or update with the visible subset. Label counts and anchors should be recomputed from the Sigma graph attributes that are visible after filtering, or from an equivalent state that is proven to match the currently rendered graph.
 
 ## Acceptance Criteria
 
@@ -165,6 +178,10 @@ The query result evidence schema should remain backward compatible while adding 
 - Query capability lanes are validated by representative cases so the query repair does not become an AI-context-only fix.
 - Query capability lanes are usable through product surfaces. CLI help/output and MCP JSON output must expose lane discovery and explainable query results; Web/API display or pass-through must be validated if an existing UI/API query surface is in scope.
 - No query capability is counted complete if it only exists as internal code, unrendered fields, or tests that users and agents cannot invoke.
+- Web graph macro rings have readable on-canvas labels so users can identify each top-level ring directly on the graph.
+- Web graph node islands have readable on-canvas labels so users can identify each cluster/filter/node group directly on the graph.
+- Label placement, zoom behavior, and overlap behavior are validated with unit geometry checks and real browser screenshots. A graph that still requires users to infer island meaning only from color or side-panel filters is not accepted.
+- Web unit tests and Web e2e/browser screenshot validation pass for graph labeling behavior.
 - Full build, focused tests, generation smoke, setup/package validation if touched, and `detect-changes` pass before closure.
 
 ## Phase 0 - Generator Source Trace And Command Inventory
@@ -209,80 +226,104 @@ This is a large blocking phase. The rest of the skill-system upgrade depends on 
 
 - [ ] [P1-F] Add the user-facing query lane command surface. Preserve the existing `avmatrix query "<intent>" --repo <repo>` command, then add clear lane discovery and explainable query usage through subcommands or flags such as `avmatrix query lanes`, `avmatrix query explain "<intent>" --repo <repo> --json`, `--lane <lane>`, or an equivalent source-verified design. Help output must describe each lane and show how a user or agent can get lane/rank/match evidence.
 
+- [ ] [P1-F2] Protect `query` CLI compatibility while adding lane/explain syntax. Current source uses one positional `query <search_query>`, so the implementation must choose a non-ambiguous Cobra design, flag design, or escape behavior, then add tests proving ordinary broad query strings still work, lane/explain help is discoverable, JSON evidence is invokable, and a search term that looks like a lane/explain command is not silently routed to the wrong behavior.
+
 - [ ] [P1-G] Add focused unit tests for query scoring, lane assignment, and filtering. Tests must cover exact owner file/symbol/path matches, generated artifact names such as `AGENTS.md` and `.claude/skills/avmatrix`, command/resource-name matches such as `setupResource` and `query-health`, execution-flow results with real overlap, API/graph-quality/docs-command lane examples where supported by current data, and a negative case where unrelated launcher/resolution/frontend flows must not outrank stronger owner evidence.
 
 - [ ] [P1-H] Add or update CLI/MCP query and query-health integration tests. Tests must prove the AI-context intent returns expected owner surfaces, representative non-AI-context query lanes still return useful results, threshold pass is reported separately from exact pass, missed-target reporting works, source/global ranking semantics are clear, CLI lane/explain commands are invokable, MCP output exposes equivalent machine-readable evidence, and unrelated high-scoring results cannot silently be accepted as a passing exact result.
 
 - [ ] [P1-I] Run the updated query-health suite after the query fix and record threshold pass/fail, exact pass/fail, expected targets, matched targets, missed targets, query lane coverage, unrelated top-result count, source/global rank behavior, user-facing command outputs, and remaining noise reason in the benchmark ledger.
 
-- [ ] [P1-J] Finalize skill-guidance requirements only after the query behavior and command surface are measured. Do not edit embedded skill content in this phase. Record the exact guidance that Phase 2 must apply to `avmatrix-exploring`, `avmatrix-debugging`, `avmatrix-graph-quality`, and `avmatrix-ai-context`: `query` is the right broad discovery command with multiple usable capability lanes, and broad results still need verification with `context` or exact source inspection when selecting edit surfaces.
+- [ ] [P1-J] Finalize skill-guidance requirements only after the query behavior and command surface are measured. Do not edit embedded skill content in this phase. Record the exact guidance that Phase 3 must apply to `avmatrix-exploring`, `avmatrix-debugging`, `avmatrix-graph-quality`, and `avmatrix-ai-context`: `query` is the right broad discovery command with multiple usable capability lanes, and broad results still need verification with `context` or exact source inspection when selecting edit surfaces.
 
 - [ ] [P1-K] Add a closure gate for query reliability before moving to the rest of the skill-system implementation. The gate is satisfied only when the AI-context query-health case has recorded threshold and exact results, the remaining missed targets if any are explicit, the usable CLI/MCP query lane surfaces are validated, and the plan/evidence/benchmark ledgers state whether the query bug is fixed or still has a tracked blocker.
 
 - [ ] [P1-L] Add broad-discovery regression checks for `query` after the ranking fix. Use representative non-AI-context intents across the capability taxonomy, including at least one intent that should naturally return execution-flow or process candidates. Record the before/after top results and prove the fix reduced wrong-owner noise without removing the original concept-to-flow discovery capability.
 
-## Phase 2 - Embedded Skill Source Upgrade
+## Phase 2 - Graph Labeling And Visual Orientation Layer
 
-- [ ] [P2-A] Upgrade the six existing embedded skill Markdown files in `internal/aicontext/skills/`. Each file must become a practical task guide with command choices, when to use each AVmatrix surface, validation expectations, and current limitations. `avmatrix-impact-analysis` must explain that HIGH/CRITICAL is blast-radius evidence to report and account for, not a blanket prohibition against required work.
+- [ ] [P2-A] Record the graph orientation problem from `reports/problem/screenshot_1779517751.png` in the evidence ledger. The evidence must state that visible rings and islands currently lack direct names on the graph, making users infer meaning from color or side-panel filters instead of reading the graph itself.
 
-- [ ] [P2-B] Add the new embedded source skill files under `internal/aicontext/skills/`: `avmatrix-graph-quality.md`, `avmatrix-api-surface.md`, `avmatrix-cross-repo.md`, `avmatrix-runtime-packaging.md`, and `avmatrix-ai-context.md`. Each new skill must contain concrete usage guidance, command examples based on implemented commands, expected outputs, and validation notes.
+- [ ] [P2-B] Trace the current Web graph layout and rendering owners before editing. Record the files and symbols that produce ring/island coordinates, node type colors, app-layer rings, island keys, Sigma rendering, overlays, and graph filter/legend state. The trace must include `avmatrix-web/src/lib/graph-adapter.ts`, `avmatrix-web/src/components/GraphCanvas.tsx`, `avmatrix-web/src/hooks/useSigma.ts`, and any better owner discovered by source inspection.
 
-- [ ] [P2-C] Update the base skill registry and generated Skills table in `internal/aicontext/aicontext.go`. The registry and generated table must include all final skills, use repo-agnostic descriptions, and avoid splitting AVmatrix into misleading MCP-only versus CLI-only capability lists.
+- [ ] [P2-C] Define the visual label data contract. Macro ring labels must be derived from app-layer/top-level ring metadata where available. Island labels must be derived from node type/filter/island metadata where available. The contract must include label kind, display text, source key, anchor coordinates, visible node count, and fallback text for unknown/custom categories. It must not rely on color alone.
 
-- [ ] [P2-D] Add or update `internal/aicontext` tests so generated root files and generated base skills are protected. Tests must assert the final skill ids, generated `.claude/skills/avmatrix/<skill>/SKILL.md` paths, generated Skills table links, and representative key phrases for the new command surfaces.
+- [ ] [P2-D] Implement macro ring labels as a visible graph orientation layer. Each currently visible macro ring must show a stable name near the ring center or equivalent anchor, remain readable during normal zoom/pan, and avoid covering controls or dense node areas. Ring labels must update when node type filters, graph-health filters, semantic filters, or depth filtering remove every visible node in a ring.
 
-- [ ] [P2-E] Add coverage tests that prevent the guide from regressing back to a six-skill or analyze/query/impact-only view. The tests should check the generated guidance for the AI context skill, graph-quality skill, API-surface skill, cross-repo skill, runtime/packaging skill, and a current command-surface fragment confirmed in Phase 0.
+- [ ] [P2-E] Implement island labels as a visible graph orientation layer. Each major currently visible node island must show a stable name above or near the island, such as Function, Method, File, Route, ResolutionGap, External Reference, or the graph's current group label. Island labels must update when filters/depth change the visible subset. Labels may be simplified when zoomed far out, but users must be able to recover names by zooming or selecting the area.
 
-- [ ] [P2-F] Add or update tests that validate command naming by surface. The test should protect at least one CLI-only hyphenated command such as `query-health`, one MCP underscore tool such as `route_map`, and one statement that does not invent a CLI spelling for an MCP-only tool.
+- [ ] [P2-F] Add label placement and visibility tests. Unit tests must verify ring/island label metadata, stable anchors, visible-node counts, filter/depth visibility behavior, zoom visibility rules, and overlap guardrails where they can be tested deterministically.
 
-- [ ] [P2-G] Add frontmatter/source-content tests for every final embedded base skill. The test must fail if a registered base skill is missing its embedded Markdown file, has empty content, has mismatched `name`, lacks `description`, or would rely on `fallbackBaseSkillContent`.
+- [ ] [P2-G] Add Web UI validation for readable labels. Extend runtime diagnostics or test selectors so browser tests can count visible ring/island labels and inspect representative label text without relying only on screenshot pixels. Use browser/e2e validation and screenshots to prove that macro ring labels and island labels are visible, readable, update after filters, and do not incoherently overlap nodes, edges, or controls on representative desktop and smaller viewports.
 
-- [ ] [P2-H] Update `avmatrix-exploring`, `avmatrix-debugging`, `avmatrix-graph-quality`, and `avmatrix-ai-context` skill content using the measured Phase 1 guidance. The guidance must state that broad intent query is a multi-lane candidate discovery command, explain the user-facing CLI/MCP query lane commands or flags, state that `context` is preferred when an exact symbol is known, and tell agents that noisy/missed query results must be recorded as graph-quality/query-health evidence.
+- [ ] [P2-H] Update user-facing graph guidance only if the UI needs a short label toggle or explanation. Do not add in-app instructional prose as a substitute for labels; the graph itself must name the rings and islands.
 
-- [ ] [P2-I] Add or extend skill-facing query-health guidance for this plan's AI-context intent. The skill should point to the query-health suite/case created in Phase 0/Phase 1, explain threshold versus exact pass, and tell agents to record missed targets instead of treating partial retrieval as complete.
+## Phase 3 - Embedded Skill Source Upgrade
 
-## Phase 3 - Setup, Package, And Documentation Integration
+- [ ] [P3-A] Upgrade the six existing embedded skill Markdown files in `internal/aicontext/skills/`. Each file must become a practical task guide with command choices, when to use each AVmatrix surface, validation expectations, and current limitations. `avmatrix-impact-analysis` must explain that HIGH/CRITICAL is blast-radius evidence to report and account for, not a blanket prohibition against required work.
 
-- [ ] [P3-A] Verify the analyze post-run path installs the expanded base skill set through the same normal generation path that creates `AGENTS.md` and `CLAUDE.md`. If tests currently assert the old six-skill count or specific old table rows, update them to assert the new final set.
+- [ ] [P3-B] Add the new embedded source skill files under `internal/aicontext/skills/`: `avmatrix-graph-quality.md`, `avmatrix-api-surface.md`, `avmatrix-cross-repo.md`, `avmatrix-runtime-packaging.md`, and `avmatrix-ai-context.md`. Each new skill must contain concrete usage guidance, command examples based on implemented commands, expected outputs, and validation notes.
 
-- [ ] [P3-B] Verify setup/editor installation behavior for the expanded embedded skill set. Inspect and test `setupInstallEditorSkills` and related setup command behavior so supported editor skill directories receive the same final skill content without relying on generated repository-local `.claude/skills/avmatrix/**` as source.
+- [ ] [P3-C] Update the base skill registry and generated Skills table in `internal/aicontext/aicontext.go`. The registry and generated table must include all final skills, use repo-agnostic descriptions, and avoid splitting AVmatrix into misleading MCP-only versus CLI-only capability lists.
 
-- [ ] [P3-C] Verify package/runtime distribution behavior for the expanded embedded skill set. If packaging tests or package assembly code enumerate skills, update them so the packaged tool can generate and install the final skill set from embedded source files.
+- [ ] [P3-D] Add or update `internal/aicontext` tests so generated root files and generated base skills are protected. Tests must assert the final skill ids, generated `.claude/skills/avmatrix/<skill>/SKILL.md` paths, generated Skills table links, and representative key phrases for the new command surfaces.
 
-- [ ] [P3-D] Reconcile package-root `skills/` with embedded `internal/aicontext/skills/*.md`. Either make the package/setup path materialize or copy from the same canonical skill source, or document and test a deliberately equivalent packaged `skills/` directory. The output must prove `avmatrix setup` installs the same final base skill ids and content family as `avmatrix analyze --force` generates in `.claude/skills/avmatrix/**`.
+- [ ] [P3-E] Add coverage tests that prevent the guide from regressing back to a six-skill or analyze/query/impact-only view. The tests should check the generated guidance for the AI context skill, graph-quality skill, API-surface skill, cross-repo skill, runtime/packaging skill, and a current command-surface fragment confirmed in Phase 0.
 
-- [ ] [P3-E] Update MCP setup/resource guidance if Phase 0 finds stale command/tool/resource text. This includes the source that renders `avmatrix://setup`, MCP tool reference tables, and any setup onboarding text used by agents.
+- [ ] [P3-F] Add or update tests that validate command naming by surface. The test should protect at least one CLI-only hyphenated command such as `query-health`, one MCP underscore tool such as `route_map`, and one statement that does not invent a CLI spelling for an MCP-only tool.
 
-- [ ] [P3-F] Update README and relevant user-facing docs that describe AVmatrix skills, AI context generation, setup, or usage. The docs must tell users that `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/avmatrix/**` are generated by AVmatrix, and that source changes belong in the embedded skill source and generator code.
+- [ ] [P3-G] Add frontmatter/source-content tests for every final embedded base skill. The test must fail if a registered base skill is missing its embedded Markdown file, has empty content, has mismatched `name`, lacks `description`, or would rely on `fallbackBaseSkillContent`.
 
-- [ ] [P3-G] Search the active documentation for stale six-skill-only guidance, stale package-root skill assumptions, or stale wording that treats MCP and CLI as separate incomplete command lists. Update current guides and README-style docs; leave historical ledgers untouched unless they are actively reused as user guidance.
+- [ ] [P3-H] Update `avmatrix-exploring`, `avmatrix-debugging`, `avmatrix-graph-quality`, and `avmatrix-ai-context` skill content using the measured Phase 1 guidance. The guidance must state that broad intent query is a multi-lane candidate discovery command, explain the user-facing CLI/MCP query lane commands or flags, state that `context` is preferred when an exact symbol is known, and tell agents that noisy/missed query results must be recorded as graph-quality/query-health evidence.
 
-## Phase 4 - Regeneration And Validation
+- [ ] [P3-I] Add or extend skill-facing query-health guidance for this plan's AI-context intent. The skill should point to the query-health suite/case created in Phase 0/Phase 1, explain threshold versus exact pass, and tell agents to record missed targets instead of treating partial retrieval as complete.
 
-- [ ] [P4-A] Run the full build gate before tests: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`. Record the command result in evidence.
+## Phase 4 - Setup, Package, And Documentation Integration
 
-- [ ] [P4-B] Run focused backend/CLI/MCP tests for AI context generation, setup, packaging, query, and query-health surfaces touched by the implementation. The minimum expected test scope is `go test .\internal\mcp .\internal\cli .\internal\aicontext -count=1`, expanded as needed if package/setup code outside those packages changes.
+- [ ] [P4-A] Verify the analyze post-run path installs the expanded base skill set through the same normal generation path that creates `AGENTS.md` and `CLAUDE.md`. If tests currently assert the old six-skill count or specific old table rows, update them to assert the new final set.
 
-- [ ] [P4-C] Run the normal generation path with `avmatrix analyze --force` and no `--skip-agents-md`. Verify generated `AGENTS.md`, generated `CLAUDE.md`, and `.claude/skills/avmatrix/**` contain the final skill set and expected content fragments.
+- [ ] [P4-B] Verify setup/editor installation behavior for the expanded embedded skill set. Inspect and test `setupInstallEditorSkills` and related setup command behavior so supported editor skill directories receive the same final skill content without relying on generated repository-local `.claude/skills/avmatrix/**` as source.
 
-- [ ] [P4-D] Compare source and generated skill inventories after regeneration. Record final skill count, generated file paths, byte/line counts, and any intentional generated differences in the benchmark ledger.
+- [ ] [P4-C] Verify package/runtime distribution behavior for the expanded embedded skill set. If packaging tests or package assembly code enumerate skills, update them so the packaged tool can generate and install the final skill set from embedded source files.
 
-- [ ] [P4-E] Validate setup/package behavior if Phase 3 changed setup or package code. Record the exact command outputs and installed/packaged skill file inventories in evidence and benchmark ledgers.
+- [ ] [P4-D] Reconcile package-root `skills/` with embedded `internal/aicontext/skills/*.md`. Either make the package/setup path materialize or copy from the same canonical skill source, or document and test a deliberately equivalent packaged `skills/` directory. The output must prove `avmatrix setup` installs the same final base skill ids and content family as `avmatrix analyze --force` generates in `.claude/skills/avmatrix/**`.
 
-- [ ] [P4-F] Validate MCP setup/resource output if Phase 3 touched MCP resources. Record the exact `avmatrix://setup` or equivalent resource output check in evidence so the generated guidance and MCP-facing guide are proven consistent.
+- [ ] [P4-E] Update MCP setup/resource guidance if Phase 0 finds stale command/tool/resource text. This includes the source that renders `avmatrix://setup`, MCP tool reference tables, and any setup onboarding text used by agents.
 
-- [ ] [P4-G] Run the dedicated query-health suite updated for this plan's AI-context skill-generation intent and representative query capability lanes. Record threshold pass/fail, exact pass/fail, expected targets, matched targets, missed targets, source/global rank behavior, query lane coverage, and noise reason in benchmark/evidence.
+- [ ] [P4-F] Update README and relevant user-facing docs that describe AVmatrix skills, AI context generation, setup, or usage. The docs must tell users that `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/avmatrix/**` are generated by AVmatrix, and that source changes belong in the embedded skill source and generator code.
 
-- [ ] [P4-H] Run user-facing query lane smoke commands after the full build. Validate normal query behavior, lane discovery, explainable JSON output, MCP query JSON evidence, and the dedicated query-health suite command; record exact commands and representative output in evidence and benchmark.
+- [ ] [P4-G] Search the active documentation for stale six-skill-only guidance, stale package-root skill assumptions, or stale wording that treats MCP and CLI as separate incomplete command lists. Update current guides and README-style docs; leave historical ledgers untouched unless they are actively reused as user guidance.
 
-- [ ] [P4-I] Run the query broad-discovery regression check from Phase 1 and record whether execution-flow candidates still appear with meaningful match evidence after the ranking fix.
+## Phase 5 - Regeneration And Validation
 
-- [ ] [P4-J] Run `detect-changes` before commit and record the affected scope. Commit the implementation slice after checklist items and ledgers are updated.
+- [ ] [P5-A] Run the full build gate before tests: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`. Record the command result in evidence.
 
-## Phase 5 - Zero-Trust Closure Review
+- [ ] [P5-B] Run focused backend/CLI/MCP tests for AI context generation, setup, packaging, query, and query-health surfaces touched by the implementation. The minimum expected test scope is `go test .\internal\mcp .\internal\cli .\internal\aicontext -count=1`, expanded as needed if package/setup code outside those packages changes.
 
-- [ ] [P5-A] Review the codebase and documentation for old assumptions after implementation. Search for old six-skill-only tables, old `avmatrix-cli` descriptions that omit current command families, stale generated-output instructions, and any direct-edit guidance for `.claude/skills/avmatrix/**`; fix active docs that would mislead users or agents.
+- [ ] [P5-C] Run Web unit tests after graph labeling work: `cd avmatrix-web; npm run test`. Record exact pass/fail counts and any focused label/layout tests in evidence.
 
-- [ ] [P5-B] Re-run the final validation commands required by this plan after the closure review changes. Record final pass/fail counts, generated inventory, setup/package inventory if applicable, and any remaining limitation in the evidence and benchmark ledgers.
+- [ ] [P5-D] Run Web e2e/browser validation after graph labeling work: `cd avmatrix-web; npm run test:e2e` or a focused Playwright command expanded to full e2e before closure. Capture desktop and smaller-viewport screenshots that prove macro ring labels and island labels are readable and not incoherently overlapping the graph.
 
-- [ ] [P5-C] Mark the plan complete only after source files, generated validation output, tests, docs, benchmark ledger, evidence ledger, and commit state all agree on the final skill set and the AI-context query-health case has recorded threshold and exact results.
+- [ ] [P5-E] Run the normal generation path with `avmatrix analyze --force` and no `--skip-agents-md`. Verify generated `AGENTS.md`, generated `CLAUDE.md`, and `.claude/skills/avmatrix/**` contain the final skill set and expected content fragments.
+
+- [ ] [P5-F] Compare source and generated skill inventories after regeneration. Record final skill count, generated file paths, byte/line counts, and any intentional generated differences in the benchmark ledger.
+
+- [ ] [P5-G] Validate setup/package behavior if Phase 4 changed setup or package code. Record the exact command outputs and installed/packaged skill file inventories in evidence and benchmark ledgers.
+
+- [ ] [P5-H] Validate MCP setup/resource output if Phase 4 touched MCP resources. Record the exact `avmatrix://setup` or equivalent resource output check in evidence so the generated guidance and MCP-facing guide are proven consistent.
+
+- [ ] [P5-I] Run the dedicated query-health suite updated for this plan's AI-context skill-generation intent and representative query capability lanes. Record threshold pass/fail, exact pass/fail, expected targets, matched targets, missed targets, source/global rank behavior, query lane coverage, and noise reason in benchmark/evidence.
+
+- [ ] [P5-J] Run user-facing query lane smoke commands after the full build. Validate normal query behavior, lane discovery, explainable JSON output, MCP query JSON evidence, and the dedicated query-health suite command; record exact commands and representative output in evidence and benchmark.
+
+- [ ] [P5-K] Run the query broad-discovery regression check from Phase 1 and record whether execution-flow candidates still appear with meaningful match evidence after the ranking fix.
+
+- [ ] [P5-L] Run `detect-changes` before commit and record the affected scope. Commit the implementation slice after checklist items and ledgers are updated.
+
+## Phase 6 - Zero-Trust Closure Review
+
+- [ ] [P6-A] Review the codebase and documentation for old assumptions after implementation. Search for old six-skill-only tables, old `avmatrix-cli` descriptions that omit current command families, stale generated-output instructions, any direct-edit guidance for `.claude/skills/avmatrix/**`, and any graph guidance that expects users to infer rings/islands only from color or side-panel filters; fix active docs that would mislead users or agents.
+
+- [ ] [P6-B] Re-run the final validation commands required by this plan after the closure review changes. Record final pass/fail counts, generated inventory, setup/package inventory if applicable, Web label screenshot evidence, and any remaining limitation in the evidence and benchmark ledgers.
+
+- [ ] [P6-C] Mark the plan complete only after source files, generated validation output, tests, Web graph label validation, docs, benchmark ledger, evidence ledger, and commit state all agree on the final skill set, graph orientation labels, and the AI-context query-health case has recorded threshold and exact results.

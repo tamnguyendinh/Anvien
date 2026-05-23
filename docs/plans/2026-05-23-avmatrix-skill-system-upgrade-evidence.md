@@ -226,7 +226,7 @@ Package/editor skill source finding:
 - `setupInstallSkillsTo` reads from `setupResolvePackagePath("skills")`.
 - Repository-local generation reads embedded files from `internal/aicontext/skills/*.md`.
 - Initial filesystem inspection did not show a root-level `skills/` directory in the working tree.
-- Phase 0 and Phase 2 must reconcile package/editor skill installation with embedded AI-context skill source so the packaged setup path does not drift from generated repository-local skills.
+- Phase 0, Phase 3, and Phase 4 must reconcile package/editor skill installation with embedded AI-context skill source so the packaged setup path does not drift from generated repository-local skills.
 
 MCP/resource guidance finding:
 
@@ -264,3 +264,94 @@ Usability requirement added:
 - Query lanes must be discoverable and usable through AVmatrix command surfaces. The plan now requires CLI lane discovery, explainable query JSON output, normal `avmatrix query` compatibility, and MCP query output with machine-readable lane/rank/match evidence.
 - If an existing Web/API query/search surface consumes query results, it must display or pass through the new evidence. If no Web UI surface is in scope, the evidence ledger must record that CLI/MCP/API output is the usable product surface for this plan.
 - Validation must run actual commands or focused MCP tests that prove users and agents can invoke the feature without reading internal code.
+
+## E6 - Graph Labeling Problem Evidence
+
+Date: 2026-05-23
+
+Status: recorded for planning; implementation must re-verify before code edits
+
+Problem screenshot:
+
+| Artifact | Size | Finding |
+|---|---:|---|
+| `reports/problem/screenshot_1779517751.png` | 341,738 bytes | The graph shows visible rings/islands, but the canvas does not directly name each macro ring or each island. |
+
+Observed UI issue:
+
+- The graph has visual grouping, but users still need to infer the meaning of groups from color, side-panel filters, memory, or hover behavior.
+- The center of each macro ring should carry a readable name such as Backend, Frontend, API, Docs, Config, Shared, Test, Unknown, or the graph's current equivalent.
+- Each visible node island should carry a readable label above or near the island, such as Function, Method, File, Route, ResolutionGap, External Reference, or the graph's current group label.
+- Color and the left dashboard are not enough. The graph itself must communicate what the visible structure represents.
+
+Preliminary Web source trace:
+
+```powershell
+Get-Content -Path avmatrix-web/package.json
+rg -n "export .*GraphCanvas|function GraphCanvas|const GraphCanvas|useSigma\(|export const useSigma|layoutRings|buildGraph|adaptGraph|nodeLabel|appLayer|ring|island" avmatrix-web/src/components/GraphCanvas.tsx avmatrix-web/src/hooks/useSigma.ts avmatrix-web/src/lib/graph-adapter.ts avmatrix-web/src/lib/constants.ts avmatrix-web/e2e/server-connect.spec.ts avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts
+```
+
+Observed candidate owners:
+
+| Area | Path | Finding |
+|---|---|---|
+| Graph canvas and runtime diagnostics | `avmatrix-web/src/components/GraphCanvas.tsx` | Already computes app-layer ring diagnostics, ring centers, island counts, and render ownership around `GraphCanvas`. |
+| Sigma rendering hook | `avmatrix-web/src/hooks/useSigma.ts` | Owns Sigma lifecycle and custom rendering behavior that may need overlay/label integration. |
+| Graph layout adapter | `avmatrix-web/src/lib/graph-adapter.ts` | Assigns `appLayerRing`, `islandKey`, ring centers, island placement, and node attributes used by the current layout. |
+| Display constants | `avmatrix-web/src/lib/constants.ts` | Owns node colors, display labels, filterable labels, documentation display label, and relationship display helpers. |
+| Unit geometry tests | `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts` | Already tests ring/island geometry and is the likely place for deterministic label metadata/anchor tests. |
+| Browser/e2e graph diagnostics | `avmatrix-web/e2e/server-connect.spec.ts` | Already validates layout rings and node-type islands in browser and captures graph screenshots. |
+
+Validation commands available from `avmatrix-web/package.json`:
+
+```powershell
+cd avmatrix-web
+npm run test
+npm run test:e2e
+```
+
+## E7 - Zero-Trust Plan Readiness Review
+
+Date: 2026-05-23
+
+Status: recorded
+
+Fresh graph command:
+
+```powershell
+avmatrix analyze --force
+```
+
+Result:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=762 parsed=569 unsupported=193 failed=0
+graph: nodes=24211 relationships=60614 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+AVmatrix context checks:
+
+```powershell
+avmatrix context GenerateAIContextFiles --repo AVmatrix
+avmatrix context installBaseSkills --repo AVmatrix
+avmatrix context setupInstallSkillsTo --repo AVmatrix
+avmatrix context GraphCanvas --repo AVmatrix
+avmatrix context useSigma --repo AVmatrix
+```
+
+Codebase observations from the readiness review:
+
+| Area | Observation | Plan effect |
+|---|---|---|
+| AI context generation | `GenerateAIContextFiles` calls `renderAVmatrixBlock`, `upsertSection`, and `installBaseSkills`; `installBaseSkills` reads embedded source skill Markdown through `baseSkillContent`. | Existing Phase 0/3/5 coverage is sufficient. |
+| Setup/editor skill installation | `setupInstallSkillsTo` reads package-root `skills/` via `setupResolvePackagePath("skills")`, while repository-local generation reads `internal/aicontext/skills/*.md`. | Existing Phase 0/4 coverage is sufficient and must remain. |
+| Query CLI surface | `internal/cli/tool_command.go` currently defines `avmatrix query <search_query>` as one positional argument and forwards to MCP `query`. | Added a compatibility requirement so lane/explain syntax cannot break normal broad query usage. |
+| Query ranking owner | MCP `query` is implemented in `internal/mcp/tools.go`, with `rankedProcessMatches`, `matchingDefinitionRows`, token scoring, semantic boosts, and query-health consuming the same local query output. | Existing Phase 0/1 coverage is sufficient; implementation must inspect these real owners. |
+| Web graph layout | `graph-adapter.ts` assigns `appLayerRing`, `islandKey`, ring centers, and node positions; `GraphCanvas.tsx` records ring diagnostics; `useSigma.ts` owns Sigma rendering and manual layout optimization. | Added label visibility requirements tied to the currently visible filtered/depth graph. |
+| Web label validation | Existing e2e diagnostics already count rings/islands but not label entities. | Added requirement for runtime diagnostics or test selectors that make label counts machine-checkable in browser tests. |
+
+Readiness conclusion:
+
+- The plan has the right implementation phases and owner files.
+- The plan needed two execution guardrails before implementation: `query` lane syntax must preserve the current positional query behavior, and graph labels must update with the visible graph after filters/depth changes instead of using stale initial conversion metadata.

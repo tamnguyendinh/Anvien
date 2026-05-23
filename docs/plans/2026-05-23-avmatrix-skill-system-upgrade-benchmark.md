@@ -161,6 +161,32 @@ Status: preliminary baseline recorded
 | Current source | `go run .\cmd\avmatrix resolution-inventory --help` | Help output exists with `--graph`, `--json`, and `--out`. | Skill content can document this after build/source verification. |
 | Current source | `go run .\cmd\avmatrix source-site-accuracy --help` | Help output exists with `--golden`, `--graph`, `--json`, `--max-examples`, and `--out`. | Skill content can document this after build/source verification. |
 
+## B1G - Graph Labeling And Visual Orientation Inventory
+
+Status: pending
+
+Baseline problem artifact:
+
+| Artifact | Baseline | Final | Notes |
+|---|---|---|---|
+| `reports/problem/screenshot_1779517751.png` | present | pending | Shows visible graph rings/islands without direct on-canvas names for the macro rings or each island. |
+
+Record before and after the graph labeling phase:
+
+| Metric | Baseline | Final | Notes |
+|---|---:|---:|---|
+| Runtime-visible macro ring count | pending | pending | Count from browser diagnostics or graph label metadata. |
+| Macro rings with on-canvas labels | pending | pending | Must match visible macro rings unless a ring is intentionally hidden by filter. |
+| Runtime-visible island count | pending | pending | Count per macro ring where possible. |
+| Islands with on-canvas labels | pending | pending | Must cover major visible node islands and investigation islands such as ResolutionGap/Unresolved/Unknown where present. |
+| Labels sourced from graph metadata | pending | pending | Record whether labels came from app layer, node type/filter, island key, semantic group, or fallback. |
+| Labels update after filters/depth changes | pending | pending | Ring/island label count must match the currently visible graph subset, not stale initial conversion state. |
+| Runtime diagnostics/test selector label count | pending | pending | Browser validation must have a machine-checkable count or selector in addition to screenshot review. |
+| Desktop screenshot label readability | pending | pending | Browser screenshot must show ring and island names without relying on hover or side panel text. |
+| Smaller viewport screenshot label readability | pending | pending | Labels may simplify at far zoom, but names must be recoverable by normal zoom/select behavior. |
+| Label overlap violations | pending | pending | Count obvious incoherent overlap with dense nodes, edges, panels, controls, or other labels. |
+| Graph guidance fallback required | pending | pending | Record only if a short toggle/explanation is added; guidance cannot substitute for graph labels. |
+
 ## B2 - Generated Output Inventory
 
 Status: pending
@@ -205,8 +231,11 @@ Record final validation:
 | `go run .\cmd\avmatrix query explain "<intent>" --repo AVmatrix --json` or recorded equivalent | pending | pending | Must expose lane/rank/match evidence without reading code. |
 | `go run .\cmd\avmatrix query "<intent>" --repo AVmatrix` | pending | pending | Existing broad query behavior must remain compatible. |
 | `go run .\cmd\avmatrix query-health --suite docs/query-health/2026-05-23-avmatrix-skill-system-upgrade-suite.json --repo AVmatrix --json` | pending | pending | Dedicated suite for this plan. |
+| `cd avmatrix-web; npm run test` | pending | pending | Required after graph labeling work; must include focused label/layout tests. |
+| `cd avmatrix-web; npm run test:e2e` or focused Playwright expanded to full e2e before closure | pending | pending | Must prove ring and island labels are visible/readable in browser. |
+| Browser screenshot validation for graph labels | pending | pending | Capture desktop and smaller viewport screenshots and record artifact paths. |
 | Generated skill inventory check | pending | pending | Count and content fragments. |
 | Setup/package smoke commands | pending | pending | Required if touched. |
 | MCP setup/resource guidance smoke | pending | pending | Required if MCP resource guidance is touched. |
 | MCP `query` smoke through local tool wrapper or focused test | pending | pending | Must verify machine-readable lane/rank/match evidence for agents. |
-| `detect-changes` | pending | pending | Scope should match AI context/skills/docs changes. |
+| `detect-changes` | pending | pending | Scope should match query, Web graph labels, AI context, skills, setup/package, and docs changes. |
