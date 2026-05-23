@@ -245,6 +245,19 @@ func TestLocalFolderPickerEndpointReturnsPickedPath(t *testing.T) {
 	}
 }
 
+func TestWindowsFolderPickerScriptUsesTopmostOwner(t *testing.T) {
+	script := windowsFolderPickerScript()
+	for _, want := range []string{
+		"$owner.TopMost = $true",
+		"$owner.ShowInTaskbar = $false",
+		"$dialog.ShowDialog($owner)",
+	} {
+		if !strings.Contains(script, want) {
+			t.Fatalf("windows folder picker script missing %q:\n%s", want, script)
+		}
+	}
+}
+
 func TestLocalFolderPickerEndpointReportsUnsupported(t *testing.T) {
 	previous := pickLocalFolderFunc
 	pickLocalFolderFunc = func(context.Context) (string, error) {
