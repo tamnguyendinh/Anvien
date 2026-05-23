@@ -182,6 +182,11 @@ Record before and after the graph labeling phase:
 | Labels sourced from graph metadata | pending | pending | Record whether labels came from app layer, node type/filter, island key, semantic group, or fallback. |
 | Labels update after filters/depth changes | pending | pending | Ring/island label count must match the currently visible graph subset, not stale initial conversion state. |
 | Runtime diagnostics/test selector label count | pending | pending | Browser validation must have a machine-checkable count or selector in addition to screenshot review. |
+| Minimum node spacing inside islands | pending | pending | Measure representative nearest-neighbor distance or deterministic geometry guardrail so nodes do not visually stack. |
+| Island radius growth by visible node count | pending | pending | Larger visible islands must expand instead of compressing into a dense mass. |
+| Island-to-island gutter distance | pending | pending | Neighboring islands inside a ring must have readable whitespace. |
+| Macro ring gutter distance | pending | pending | Neighboring macro rings must remain visually distinct when zoomed out. |
+| Rail-like island shape violations | pending | pending | Count islands that collapse into marched/rail-like lines instead of readable two-dimensional groups. |
 | Desktop screenshot label readability | pending | pending | Browser screenshot must show ring and island names without relying on hover or side panel text. |
 | Smaller viewport screenshot label readability | pending | pending | Labels may simplify at far zoom, but names must be recoverable by normal zoom/select behavior. |
 | Label overlap violations | pending | pending | Count obvious incoherent overlap with dense nodes, edges, panels, controls, or other labels. |

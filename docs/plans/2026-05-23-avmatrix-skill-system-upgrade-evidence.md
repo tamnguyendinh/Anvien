@@ -280,9 +280,11 @@ Problem screenshot:
 Observed UI issue:
 
 - The graph has visual grouping, but users still need to infer the meaning of groups from color, side-panel filters, memory, or hover behavior.
+- Node islands are also too visually compressed in the reported graph. Nodes can appear too close together, island spiral bands do not leave enough breathing room, and neighboring islands/rings can read as dense masses instead of separate groups.
 - The center of each macro ring should carry a readable name such as Backend, Frontend, API, Docs, Config, Shared, Test, Unknown, or the graph's current equivalent.
 - Each visible node island should carry a readable label above or near the island, such as Function, Method, File, Route, ResolutionGap, External Reference, or the graph's current group label.
-- Color and the left dashboard are not enough. The graph itself must communicate what the visible structure represents.
+- Island radius and ring/orbit spacing should expand with visible node count so users can see individual nodes at near zoom and still understand the separated ring/island structure when zoomed out.
+- Color and the left dashboard are not enough. The graph itself must communicate what the visible structure represents and leave enough whitespace for users to read that structure.
 
 Preliminary Web source trace:
 
