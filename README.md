@@ -8,7 +8,7 @@ AVmatrix solves this by building a connected map of your codebase: which files r
 
 ### In short: **AVmatrix is a code map for AI coding agents.**
 
-Current CLI package version: `1.2.1` (`avmatrix/package.json`).
+Current CLI package version: `1.2.2` (`avmatrix/package.json`).
 
 ---
 
@@ -19,6 +19,7 @@ AVmatrix indexes a local codebase into a knowledge graph, then exposes that grap
 The core product is still local code intelligence:
 
 - `avmatrix analyze` builds a repo-local graph index in `<repo>/.avmatrix/`.
+- the graph stores semantic layers such as App Layer, Functional Area, source-site proof metadata, ResolutionGap entities, and Resolution Health summaries.
 - `avmatrix mcp` exposes indexed repos to MCP clients such as Claude Code, Codex, Cursor, and OpenCode.
 - `avmatrix serve` exposes the same local runtime over HTTP for the browser UI.
 - `avmatrix-launcher/` packages the local backend and Web UI for a Windows `AVmatrixLauncher.exe` flow.
@@ -233,7 +234,20 @@ avmatrix context [name]
 avmatrix impact [target]
 avmatrix cypher <query>
 avmatrix detect-changes
+avmatrix query-health
+avmatrix resolution-inventory
+avmatrix source-site-accuracy
 ```
+
+Semantic graph diagnostics:
+
+```bash
+avmatrix query-health --repo <repo> --out .tmp/query-health.json
+avmatrix resolution-inventory --graph .avmatrix/graph.json --out .tmp/resolution-inventory.json
+avmatrix source-site-accuracy --graph .avmatrix/graph.json --out .tmp/source-site-accuracy.json
+```
+
+These commands are for checking graph quality, not for replacing `analyze`. `analyze` remains the source of truth that refreshes the graph. `query-health` measures whether query results find expected files and symbols. `resolution-inventory` reports persisted ResolutionGap and Resolution Health counts, including non-actionable breakdowns such as `builtin`, `standard_library`, and `test_framework`. `source-site-accuracy` reports proof-based CALLS/ACCESSES inventory, missing source-site IDs, false resolved edge candidates, and other graph accuracy gates.
 
 Repository groups:
 
@@ -259,12 +273,12 @@ AVmatrix exposes 16 MCP tools:
 | Tool | Purpose |
 |------|---------|
 | `list_repos` | Discover indexed repos |
-| `query` | Hybrid BM25 + semantic search over execution flows and symbols |
+| `query` | Hybrid search over execution flows and symbols, with semantic App Layer, Functional Area, and Resolution Health fields when available |
 | `cypher` | Raw Cypher against the graph |
-| `context` | 360-degree symbol context |
-| `detect_changes` | Map git diffs to affected symbols/processes |
+| `context` | 360-degree symbol context, source-site proof/status metadata, and related ResolutionGap rows |
+| `detect_changes` | Map git diffs to affected symbols/processes, changed App Layers, ResolutionGap changes, and resolution-health impact |
 | `rename` | Graph-assisted multi-file rename preview/application |
-| `impact` | Upstream/downstream blast radius |
+| `impact` | Upstream/downstream blast radius with affected App Layers, Functional Areas, and resolution-health risks |
 | `route_map` | API route to handler/consumer mapping |
 | `tool_map` | MCP/RPC tool definition and handler mapping |
 | `shape_check` | API response shape vs consumer access checks |
@@ -306,10 +320,21 @@ When only one repo is indexed, most repo-scoped tool calls can omit `repo`. With
 ```text
 scan -> structure -> [markdown, cobol] -> parse -> [routes, tools, orm]
   -> crossFile -> mro -> communities -> processes
-  -> LadybugDB load -> FTS -> optional embeddings -> metadata/registry/agent files
+  -> semantic enrichment -> LadybugDB load -> FTS
+  -> optional embeddings -> metadata/registry/agent files
 ```
 
 The graph is stored in LadybugDB under `<repo>/.avmatrix/`.
+
+Semantic enrichment adds user-facing graph meaning on top of raw code symbols:
+
+- **App Layer**: backend, frontend, API, shared contract, docs, tests, config, generated contract, mixed, or unknown.
+- **Functional Area**: high-confidence ownership such as resolution, graph health, query, MCP, Web graph UI, layout, contracts, providers, runtime, analyzer, session, launcher, CLI, storage, or unknown.
+- **Source-site proof**: resolved relationships keep source-site IDs, proof kind, target role, target text, file/range, confidence, and resolution source.
+- **ResolutionGap**: unresolved, external, ambiguous, unsupported, or non-actionable references are persisted as diagnostic graph entities instead of being silently dropped or converted into fake resolved edges.
+- **Resolution Health**: graph readers can separate resolved references, in-repo analyzer gaps, external unresolved references, non-actionable builtins/standard-library/test-framework references, and unclassified unknowns.
+
+In the Web UI, ResolutionGap entities are diagnostic nodes rather than real code symbols. They are rendered as small square nodes and can be filtered or grouped separately from normal symbol nodes.
 
 Storage:
 

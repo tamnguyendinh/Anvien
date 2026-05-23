@@ -4,6 +4,18 @@ All notable changes to avmatrix will be documented in this file.
 
 ## [Unreleased]
 
+### 2026-05-23
+
+#### Added
+
+- Added user-facing documentation for semantic graph output: App Layer, Functional Area, source-site proof metadata, persisted ResolutionGap entities, Resolution Health, and diagnostic square nodes in the Web UI.
+- Documented the graph quality commands `query-health`, `resolution-inventory`, and `source-site-accuracy`.
+
+#### Changed
+
+- Bumped the CLI package version from `1.2.1` to `1.2.2`.
+- Updated CLI/MCP documentation to describe semantic fields on `query`, `context`, `impact`, `detect-changes`, `route_map`, `shape_check`, and `api_impact`.
+
 ### 2026-05-21
 
 #### Changed

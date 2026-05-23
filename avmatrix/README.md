@@ -105,9 +105,22 @@ AVmatrix builds a complete knowledge graph of your codebase through a multi-phas
    - **Return-Type-Aware Variable Binding** — Infers variable types from function return types, enabling accurate call-result binding
 4. **Clustering** — Groups related symbols into functional communities
 5. **Processes** — Traces execution flows from entry points through call chains
-6. **Search** — Builds hybrid search indexes for fast retrieval
+6. **Semantic enrichment** — Adds App Layer, Functional Area, source-site proof metadata, ResolutionGap entities, and Resolution Health summaries
+7. **Search** — Builds hybrid search indexes for fast retrieval
 
 The result is a **LadybugDB graph database** stored locally for your repo in `.avmatrix/`, with full-text search and semantic embeddings.
+
+### Semantic Graph Output
+
+AVmatrix now persists graph meaning that users and agents can inspect consistently from CLI, MCP, and the Web UI:
+
+- **App Layer** separates backend, frontend, API, shared contract, docs, tests, config, generated contract, mixed, and unknown graph regions.
+- **Functional Area** records high-confidence ownership such as resolution, graph health, query, MCP, Web graph UI, layout, contracts, providers, runtime, analyzer, session, launcher, CLI, and storage.
+- **Source-site proof** records why a `CALLS`, `ACCESSES`, type-reference, or heritage edge was accepted, including source-site IDs, proof kind, target role, target text, file/range, confidence, and resolution source.
+- **ResolutionGap** persists unresolved or diagnostic references instead of inventing fake resolved in-repo edges. Non-actionable gaps are split into `builtin`, `standard_library`, and `test_framework` groups.
+- **Resolution Health** exposes clear, degraded, unknown, in-repo analyzer gap, external unresolved, and non-actionable reference counts.
+
+In the Web UI, ResolutionGap entities are diagnostic graph nodes, not normal code symbols. They render as small square nodes and can be filtered or grouped separately from real symbols.
 
 ## MCP Tools
 
@@ -116,12 +129,21 @@ Your AI agent gets these tools automatically:
 | Tool | What It Does | `repo` Param |
 |------|-------------|--------------|
 | `list_repos` | Discover all indexed repositories | — |
-| `query` | Process-grouped hybrid search (BM25 + semantic + RRF) | Optional |
-| `context` | 360-degree symbol view — categorized refs, process participation | Optional |
-| `impact` | Blast radius analysis with depth grouping and confidence | Optional |
-| `detect_changes` | Git-diff impact — maps changed lines to affected processes | Optional |
+| `query` | Process-grouped search with App Layer, Functional Area, Resolution Health, and gap summaries | Optional |
+| `context` | 360-degree symbol view, categorized refs, process participation, source-site proof/status, and related ResolutionGap rows | Optional |
+| `impact` | Blast radius analysis with affected App Layers, Functional Areas, resolution-health risks, depth grouping, and confidence | Optional |
+| `detect_changes` | Git-diff impact with changed App Layers, affected App Layers, ResolutionGap changes, and resolution-health impact | Optional |
 | `rename` | Multi-file coordinated rename with graph + text search | Optional |
 | `cypher` | Raw Cypher graph queries | Optional |
+| `route_map` | API route to handler/consumer mapping with semantic route, consumer, and flow fields | Optional |
+| `tool_map` | MCP/RPC tool definition and handler mapping | Optional |
+| `shape_check` | API response shape vs consumer access checks with semantic fields | Optional |
+| `api_impact` | API route impact with consumer/flow layer summaries and resolution-health impact | Optional |
+| `group_list` | List repo groups | — |
+| `group_sync` | Build cross-repo contract registry | — |
+| `group_contracts` | Inspect group contracts and cross-links | — |
+| `group_query` | Search across a repo group | — |
+| `group_status` | Check group/repo staleness | — |
 
 > With one indexed repo, the `repo` param is optional. With multiple, specify which: `query({query: "auth", repo: "my-app"})`.
 
@@ -161,6 +183,15 @@ avmatrix clean                      # Delete index for current repo
 avmatrix clean --all --force        # Delete all indexes
 avmatrix wiki [path]                # Generate LLM-powered docs from knowledge graph
 avmatrix wiki --model <model>       # Wiki with custom LLM model (default: gpt-4o-mini)
+
+# Graph quality and semantic diagnostics
+avmatrix query <search_query>        # Search graph flows/symbols with semantic fields
+avmatrix context [name]              # Inspect a symbol/node and related ResolutionGap rows
+avmatrix impact [target]             # Inspect blast radius and resolution-health risks
+avmatrix detect-changes              # Inspect changed symbols, affected flows, and gap impact
+avmatrix query-health                # Benchmark query retrieval accuracy against a suite
+avmatrix resolution-inventory        # Report persisted ResolutionGap and Resolution Health inventory
+avmatrix source-site-accuracy        # Report source-site and resolved-edge accuracy metrics
 
 # Repository groups (multi-repo / monorepo service tracking)
 avmatrix group create <name>        # Create a repository group
