@@ -232,3 +232,20 @@ MCP/resource guidance finding:
 
 - `internal/mcp/resources.go` contains setup/resource/tool guidance including MCP tool tables and setup reference output.
 - This file must be part of the plan's stale-guidance search because updating only `internal/aicontext/aicontext.go` would leave another user-facing command guide that can drift.
+
+Query reliability bug finding:
+
+- Broad intent query was not reliable enough to identify the correct owner region for this plan.
+- Query intents around AI context skill generation, setup/editor skills, package skill distribution, and command surface returned plausible but unrelated launcher, resolution-gap, and frontend/backend flows instead of consistently surfacing `internal/aicontext/aicontext.go`, `internal/aicontext/skills/*.md`, `internal/cli/analyze_postrun.go`, `internal/cli/setup_command.go`, package lifecycle code, and `internal/mcp/resources.go`.
+- Symbol-level `context` calls on `GenerateAIContextFiles`, `installBaseSkills`, `setupInstallSkillsTo`, `NewRootCommand`, `newPackageCommand`, `newQueryHealthCommand`, `newResolutionInventoryCommand`, `newSourceSiteAccuracyCommand`, and `setupResource` did locate the correct owner surfaces.
+- Classification: this is a core `query` feature reliability bug, not only a documentation issue. A query that cannot identify the target region can send an agent to edit or reason about the wrong code.
+- Conclusion: broad `query` output must be treated as candidate retrieval until the bug is fixed. The implementation plan must reproduce the miss in query-health, root-cause ranking/scoring, fix retrieval where possible, and keep exact missed-target reporting visible even when threshold retrieval passes.
+
+Query behavior analysis added to the plan:
+
+- `query` is intended to be concept-to-code and concept-to-flow discovery. It should help an agent find likely work areas from broad intent.
+- `query` is not meant to replace `context`. `context` remains the exact symbol inspection tool once a candidate symbol or owner file is known.
+- The planned fix must improve retrieval/ranking and auditability without reducing `query` to grep-only matching or exact-symbol-only lookup.
+- Execution-flow and process results remain valuable, but they must not outrank stronger owner evidence when they have weak overlap with the query intent.
+- Query-health must separate usable retrieval from exact coverage. A usable pass means enough correct owner evidence exists to guide work; an exact pass means no expected target was missed.
+- The plan now requires a broad-discovery regression check so the query reliability repair cannot accidentally remove the original broad concept discovery purpose.

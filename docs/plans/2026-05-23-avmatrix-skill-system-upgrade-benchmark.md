@@ -62,6 +62,57 @@ Record the current command/tool/resource inventory and final skill coverage:
 | wiki/hook commands | pending | pending | pending | Confirm current command names and behavior. |
 | MCP resources | pending | pending | pending | `avmatrix://...` resources. |
 
+## B1Q - Query Reliability Bug Inventory
+
+Status: pending
+
+Query behavior contract for this plan:
+
+| Behavior | Baseline measurement | Final requirement |
+|---|---|---|
+| Broad concept discovery | pending | `query` still returns relevant code/process candidates for broad intent. |
+| Exact owner discovery | pending | Exact owner files/symbols outrank weak-overlap process flows for the AI-context case. |
+| Execution-flow preservation | pending | Useful process/flow results remain present when they have clear query overlap. |
+| Wrong-owner demotion | pending | Plausible but unrelated launcher/resolution/frontend/backend flows do not outrank stronger AI-context owner evidence. |
+| Result auditability | pending | Query or query-health output exposes match reason evidence and noise/miss reasons. |
+| `query` versus `context` separation | pending | `query` remains broad discovery; `context` remains exact symbol inspection. |
+
+Record broad-intent query behavior before and after implementation:
+
+| Query intent | Expected owner targets | Baseline result | Final result | Notes |
+|---|---|---|---|---|
+| AI context generated skills and `AGENTS.md`/`CLAUDE.md` | `internal/aicontext/aicontext.go`, `internal/aicontext/skills/*.md`, `internal/cli/analyze_postrun.go` | pending | pending | Broad query previously returned unrelated launcher/resolution/frontend flows; measure instead of relying on memory. |
+| Setup/editor skill installation | `internal/cli/setup_command.go`, `setupInstallSkillsTo`, package-root `skills/` handling | pending | pending | Verify query can surface setup owner or record exact misses. |
+| Package skill distribution | `internal/cli/package_command.go`, `internal/cli/package_runtime.go`, package metadata/source-copy behavior | pending | pending | Package commands are hidden today; query-health should still make owner discovery auditable. |
+| MCP setup/resource guidance | `internal/mcp/resources.go`, `setupResource`, resource/tool reference tests | pending | pending | Verify broad query can locate MCP-facing guidance owner. |
+
+Root-cause and fix metrics:
+
+| Metric | Baseline | Final |
+|---|---:|---:|
+| unrelated top results before expected owner | pending | pending |
+| expected owner files in top 5 | pending | pending |
+| expected owner files in top 10 | pending | pending |
+| expected owner symbols in top 10 | pending | pending |
+| top result has match reason evidence | pending | pending |
+| missed targets reported explicitly | pending | pending |
+| noise reason reported explicitly | pending | pending |
+| broad-discovery regression check passes | pending | pending |
+| useful execution-flow candidates preserved | pending | pending |
+
+Record final query-health fields for the AI-context intent case:
+
+| Metric | Final |
+|---|---:|
+| threshold pass/fail | pending |
+| exact pass/fail | pending |
+| usable retrieval meaning | pending |
+| exact coverage meaning | pending |
+| expected targets | pending |
+| matched targets | pending |
+| missed targets | pending |
+| noise reason | pending |
+
 ## B1A - Binary Command Surface Mismatch Inventory
 
 Status: preliminary baseline recorded
