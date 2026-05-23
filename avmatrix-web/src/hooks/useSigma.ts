@@ -208,7 +208,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
         context.font = `${weight} ${size}px ${font}`;
         const textWidth = context.measureText(label).width;
 
-        const nodeSize = data.size || 8;
+        const nodeSize = capRenderedNodeSize(data.size || 8, graph.order);
         const x = data.x;
         const y = data.y - nodeSize - 10;
         const paddingX = 8;

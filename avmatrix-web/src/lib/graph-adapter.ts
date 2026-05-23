@@ -123,10 +123,10 @@ const compareClusterLabels = (left: string, right: string): number => {
 };
 
 const getClusterNodeSpacing = (nodeCount: number): number => {
-  if (nodeCount > 50000) return 18;
-  if (nodeCount > 20000) return 20;
-  if (nodeCount > 5000) return 24;
-  if (nodeCount > 1000) return 30;
+  if (nodeCount > 50000) return 34;
+  if (nodeCount > 20000) return 32;
+  if (nodeCount > 5000) return 30;
+  if (nodeCount > 1000) return 36;
   return 42;
 };
 
@@ -261,8 +261,8 @@ const getClusterIslandRadius = (
   nodeCount: number,
   nodeSpacing: number,
 ): number => {
-  if (nodeCount <= 1) return nodeSpacing * 4;
-  return nodeSpacing * Math.sqrt(nodeCount - 1) * 1.08 + nodeSpacing * 4;
+  if (nodeCount <= 1) return nodeSpacing * 5;
+  return nodeSpacing * Math.sqrt(nodeCount - 1) * 1.22 + nodeSpacing * 5;
 };
 
 const getIslandOffset = (
@@ -315,6 +315,27 @@ const getBalancedCircularSlots = (slotCount: number): number[] => {
   }
 
   return slots;
+};
+
+const getPinwheelRadiusMultiplier = (
+  slotIndex: number,
+  slotCount: number,
+): number => {
+  if (slotCount <= 2) return 1;
+  const band = slotIndex % 3;
+  const bandOffset = band === 0 ? 0 : band === 1 ? 0.18 : 0.34;
+  const progress = slotIndex / Math.max(1, slotCount - 1);
+  return 1 + bandOffset + progress * 0.08;
+};
+
+const getPinwheelAngleOffset = (
+  slotIndex: number,
+  slotCount: number,
+): number => {
+  if (slotCount <= 2) return 0;
+  const band = slotIndex % 3;
+  const bandOffset = band === 0 ? 0 : band === 1 ? 0.07 : -0.07;
+  return bandOffset + Math.sin(slotIndex * GOLDEN_ANGLE) * 0.025;
 };
 
 const compareClusterNodeIds = (
@@ -374,8 +395,8 @@ export const applyFilterBasedClusteredLayout = (
         nodeSpacing * 4,
       );
       const islandGap = Math.max(
-        nodeSpacing * 14,
-        largestClusterRadius * 0.3,
+        nodeSpacing * 34,
+        largestClusterRadius * 0.55,
       );
       const minimumAngularStep =
         clusters.length <= 1 ? Math.PI : Math.sin(Math.PI / clusters.length);
@@ -392,16 +413,28 @@ export const applyFilterBasedClusteredLayout = (
         clusters.length <= 1
           ? 0
           : Math.max(
-              largestClusterRadius * 1.35 + islandGap,
+              largestClusterRadius * 1.85 + islandGap,
               largestAdjacentClusterSpan / (2 * minimumAngularStep),
-              nodeSpacing * 16,
+              nodeSpacing * 28,
+            );
+      const maxIslandRadiusMultiplier =
+        clusters.length <= 1
+          ? 1
+          : clusters.reduce(
+              (maximum, _cluster, index) =>
+                Math.max(
+                  maximum,
+                  getPinwheelRadiusMultiplier(index, clusters.length),
+                ),
+              1,
             );
 
       return {
         key: ringKey,
         clusters,
         labelSeed: getStableLabelSeed(ringKey),
-        radius: islandOrbitRadius + largestClusterRadius,
+        radius:
+          islandOrbitRadius * maxIslandRadiusMultiplier + largestClusterRadius,
         islandOrbitRadius,
       };
     });
@@ -466,11 +499,16 @@ export const applyFilterBasedClusteredLayout = (
     ring.clusters.forEach((cluster, clusterIndex) => {
       const clusterSlot = slotByClusterLabel.get(cluster.label) ?? clusterIndex;
       const clusterAngle =
-        -Math.PI / 2 + (clusterSlot / ring.clusters.length) * Math.PI * 2;
+        -Math.PI / 2 +
+        (clusterSlot / ring.clusters.length) * Math.PI * 2 +
+        getPinwheelAngleOffset(clusterSlot, ring.clusters.length);
+      const clusterOrbitRadius =
+        ring.islandOrbitRadius *
+        getPinwheelRadiusMultiplier(clusterSlot, ring.clusters.length);
       const clusterCenterX =
-        centerX + Math.cos(clusterAngle) * ring.islandOrbitRadius;
+        centerX + Math.cos(clusterAngle) * clusterOrbitRadius;
       const clusterCenterY =
-        centerY + Math.sin(clusterAngle) * ring.islandOrbitRadius;
+        centerY + Math.sin(clusterAngle) * clusterOrbitRadius;
 
       placeCluster(cluster, clusterCenterX, clusterCenterY, centerX, centerY);
     });
@@ -488,7 +526,7 @@ export const applyFilterBasedClusteredLayout = (
     (maximum, ring) => Math.max(maximum, ring.radius),
     nodeSpacing * 4,
   );
-  const ringGap = Math.max(nodeSpacing * 28, largestOuterRingRadius * 0.35);
+  const ringGap = Math.max(nodeSpacing * 70, largestOuterRingRadius * 0.75);
   const centerClearance = documentationRing
     ? documentationRing.radius + largestOuterRingRadius + ringGap
     : 0;
@@ -510,10 +548,10 @@ export const applyFilterBasedClusteredLayout = (
     outerRings.length <= 1
       ? centerClearance
       : Math.max(
-          largestOuterRingRadius * 1.5 + ringGap,
+          largestOuterRingRadius * 2.1 + ringGap,
           largestAdjacentRingSpan / (2 * Math.sin(minimumAngularSeparation / 2)),
           centerClearance,
-          nodeSpacing * 36,
+          nodeSpacing * 72,
         );
 
   outerRings.forEach((ring) => {

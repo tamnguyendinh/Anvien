@@ -443,6 +443,61 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     }
   });
 
+  it("keeps dense large-repo islands separated with pinwheel gutters", () => {
+    const graph = createKnowledgeGraph();
+    const countsByLabel = new Map([
+      ["Function", 1800],
+      ["Method", 1400],
+      ["File", 1000],
+      ["Class", 700],
+      ["Interface", 500],
+      ["Struct", 400],
+      ["Enum", 300],
+    ]);
+
+    for (const [label, count] of countsByLabel) {
+      for (let index = 0; index < count; index++) {
+        graph.addNode(
+          withAppLayer(
+            createTypedNode(label, index, `frontend/${label}/${index}.ts`) as any,
+            "frontend",
+          ),
+        );
+      }
+    }
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const geometries = [...getGeometryByRingAndIsland(sigmaGraph).entries()];
+    const frontendIslands = geometries.filter(([key]) =>
+      key.startsWith("frontend:"),
+    );
+    const centerRadii = frontendIslands.map(([, geometry]) =>
+      Math.hypot(geometry.centerX, geometry.centerY),
+    );
+
+    expect(frontendIslands.length).toBe(countsByLabel.size);
+    expect(Math.max(...centerRadii) / Math.min(...centerRadii)).toBeGreaterThan(
+      1.15,
+    );
+
+    for (let leftIndex = 0; leftIndex < frontendIslands.length; leftIndex++) {
+      for (
+        let rightIndex = leftIndex + 1;
+        rightIndex < frontendIslands.length;
+        rightIndex++
+      ) {
+        const [leftLabel, left] = frontendIslands[leftIndex];
+        const [rightLabel, right] = frontendIslands[rightIndex];
+        const gap = getCircularGap(left, right);
+
+        expect(
+          gap,
+          `${leftLabel} and ${rightLabel} should have readable whitespace between islands`,
+        ).toBeGreaterThanOrEqual(900);
+      }
+    }
+  });
+
   it("lays out medium and large clusters as two-dimensional islands instead of rails", () => {
     const graph = createKnowledgeGraph();
     const countsByLabel = new Map([
@@ -480,7 +535,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     }
   });
 
-  it("places node type islands on one large circular graph field", () => {
+  it("places node type islands on one large pinwheel graph field", () => {
     const graph = createKnowledgeGraph();
     const countsByLabel = new Map([
       ["Project", 4],
@@ -505,7 +560,8 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     const maximumRadius = Math.max(...centerRadii);
 
     expect(minimumRadius).toBeGreaterThan(0);
-    expect(maximumRadius / minimumRadius).toBeLessThanOrEqual(1.2);
+    expect(maximumRadius / minimumRadius).toBeGreaterThan(1.2);
+    expect(maximumRadius / minimumRadius).toBeLessThanOrEqual(1.6);
   });
 
   it("places App Layer rings with API between Backend and Frontend", () => {
