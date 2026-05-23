@@ -49,9 +49,9 @@ Record the current command/tool/resource inventory and final skill coverage:
 | `cypher` | pending | pending | pending | Read-only graph queries. |
 | `rename` | pending | pending | pending | Graph-guided rename. |
 | `augment` | pending | pending | pending | Confirm exact behavior from source. |
-| API route/tool/shape/impact commands | pending | pending | pending | Confirm exact command and MCP tool names. |
-| Query-health / graph-quality commands | pending | pending | pending | Confirm exact command names and output shape. |
-| Resolution/source-site/accuracy commands | pending | pending | pending | Confirm exact command names and output shape. |
+| API route/tool/shape/impact commands | pending | pending | pending | Confirm exact MCP tool names and do not invent CLI names where no CLI command exists. |
+| Query-health / graph-quality commands | pending | pending | pending | Confirm from source or freshly built binary; PATH binary may be stale. |
+| Resolution/source-site/accuracy commands | pending | pending | pending | Confirm from source or freshly built binary; PATH binary may be stale. |
 | `benchmark-compare` | pending | pending | pending | Confirm exact command name and scope. |
 | group/cross-repo commands | pending | pending | pending | Confirm exact command names. |
 | `serve` / Web runtime | pending | pending | pending | Local server/Web UI behavior. |
@@ -61,6 +61,21 @@ Record the current command/tool/resource inventory and final skill coverage:
 | package/runtime commands | pending | pending | pending | Build/package runtime assets. |
 | wiki/hook commands | pending | pending | pending | Confirm current command names and behavior. |
 | MCP resources | pending | pending | pending | `avmatrix://...` resources. |
+
+## B1A - Binary Command Surface Mismatch Inventory
+
+Status: preliminary baseline recorded
+
+| Surface | Command | Observed result | Interpretation |
+|---|---|---|---|
+| PATH binary | `avmatrix --help` | Did not list `query-health`, `resolution-inventory`, or `source-site-accuracy`. | PATH binary is stale for this plan's command inventory. |
+| PATH binary | `avmatrix query-health --help` | `unknown command "query-health" for "avmatrix"` | Do not use PATH binary as source of truth. |
+| PATH binary | `avmatrix resolution-inventory --help` | `unknown command "resolution-inventory" for "avmatrix"` | Do not use PATH binary as source of truth. |
+| PATH binary | `avmatrix source-site-accuracy --help` | `unknown command "source-site-accuracy" for "avmatrix"` | Do not use PATH binary as source of truth. |
+| Current source | `go run .\cmd\avmatrix --help` | Listed `query-health`, `resolution-inventory`, and `source-site-accuracy`. | Current source contains the newer command surface. |
+| Current source | `go run .\cmd\avmatrix query-health --help` | Help output exists with `--fail-on-exact`, `--fail-on-threshold`, `--json`, `--limit`, `--out`, `--repo`, and `--suite`. | Skill content can document this after build/source verification. |
+| Current source | `go run .\cmd\avmatrix resolution-inventory --help` | Help output exists with `--graph`, `--json`, and `--out`. | Skill content can document this after build/source verification. |
+| Current source | `go run .\cmd\avmatrix source-site-accuracy --help` | Help output exists with `--golden`, `--graph`, `--json`, `--max-examples`, and `--out`. | Skill content can document this after build/source verification. |
 
 ## B2 - Generated Output Inventory
 
@@ -86,6 +101,7 @@ Record if setup/package behavior is touched or tested:
 |---|---:|---:|---|
 | Editor skill install targets checked | pending | pending | Cursor, Claude Code, OpenCode, Codex if available in setup path. |
 | Skills copied per editor target | pending | pending | Must match final base skill count. |
+| Package-root `skills/` source exists | not observed in repo root during preliminary review | pending | Setup currently reads package-root `skills/`; reconcile with embedded source. |
 | Packaged embedded skills | pending | pending | Count packaged source skill files if package flow materializes them. |
 | Package/runtime size delta | pending | pending | Only record if package build is run. |
 
@@ -102,5 +118,5 @@ Record final validation:
 | `avmatrix analyze --force` | pending | pending | Must not use `--skip-agents-md`. |
 | Generated skill inventory check | pending | pending | Count and content fragments. |
 | Setup/package smoke commands | pending | pending | Required if touched. |
+| MCP setup/resource guidance smoke | pending | pending | Required if MCP resource guidance is touched. |
 | `detect-changes` | pending | pending | Scope should match AI context/skills/docs changes. |
-

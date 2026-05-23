@@ -156,3 +156,79 @@ Record here:
 - `detect-changes` output before commit.
 - Commit hashes.
 
+## E5 - Codebase Review Before Implementation
+
+Date: 2026-05-23
+
+Status: recorded
+
+Fresh graph command:
+
+```powershell
+avmatrix analyze --force
+```
+
+Result:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=762 parsed=569 unsupported=193 failed=0
+graph: nodes=24204 relationships=60607 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+AVmatrix context commands used:
+
+```powershell
+avmatrix context GenerateAIContextFiles --repo AVmatrix
+avmatrix context installBaseSkills --repo AVmatrix
+avmatrix context setupInstallSkillsTo --repo AVmatrix
+avmatrix context newRootCommand --repo AVmatrix
+avmatrix context newPackageCommand --repo AVmatrix
+avmatrix context newQueryHealthCommand --repo AVmatrix
+avmatrix context newResolutionInventoryCommand --repo AVmatrix
+avmatrix context newSourceSiteAccuracyCommand --repo AVmatrix
+```
+
+Confirmed code facts:
+
+| Symbol | File | Finding |
+|---|---|---|
+| `GenerateAIContextFiles` | `internal/aicontext/aicontext.go` | Generates root `AGENTS.md`, root `CLAUDE.md`, and calls `installBaseSkills`. Incoming callers include `Generate`, `generateAnalyzeAIContext`, and AI context tests. |
+| `installBaseSkills` | `internal/aicontext/aicontext.go` | Writes `.claude/skills/avmatrix/<skill>/SKILL.md` from embedded base skill content. |
+| `setupInstallSkillsTo` | `internal/cli/setup_command.go` | Installs editor skills by reading package-root `skills/`, then copying flat `.md` or directory `SKILL.md` entries to editor skill directories. |
+| `NewRootCommand` | `internal/cli/command.go` | Registers current CLI commands including package, group, query-health, resolution-inventory, and source-site-accuracy from source. |
+| `newPackageCommand` | `internal/cli/package_command.go` | Owns package lifecycle subcommands. |
+| `newQueryHealthCommand` | `internal/cli/query_health_command.go` | Source contains query-health command registration. |
+| `newResolutionInventoryCommand` | `internal/cli/resolution_inventory_command.go` | Source contains resolution-inventory command registration. |
+| `newSourceSiteAccuracyCommand` | `internal/cli/source_site_accuracy_command.go` | Source contains source-site-accuracy command registration. |
+
+Command-surface mismatch discovered:
+
+```powershell
+avmatrix --help
+avmatrix query-health --help
+avmatrix resolution-inventory --help
+avmatrix source-site-accuracy --help
+go run .\cmd\avmatrix --help
+go run .\cmd\avmatrix query-health --help
+go run .\cmd\avmatrix resolution-inventory --help
+go run .\cmd\avmatrix source-site-accuracy --help
+```
+
+Observed behavior:
+
+- `avmatrix` from `PATH` did not list `query-health`, `resolution-inventory`, or `source-site-accuracy`.
+- `go run .\cmd\avmatrix --help` from the current source did list `query-health`, `resolution-inventory`, and `source-site-accuracy`.
+- Therefore command inventory for this plan must use current source or the freshly built local binary, not an older binary found in `PATH`.
+
+Package/editor skill source finding:
+
+- `setupInstallSkillsTo` reads from `setupResolvePackagePath("skills")`.
+- Repository-local generation reads embedded files from `internal/aicontext/skills/*.md`.
+- Initial filesystem inspection did not show a root-level `skills/` directory in the working tree.
+- Phase 0 and Phase 2 must reconcile package/editor skill installation with embedded AI-context skill source so the packaged setup path does not drift from generated repository-local skills.
+
+MCP/resource guidance finding:
+
+- `internal/mcp/resources.go` contains setup/resource/tool guidance including MCP tool tables and setup reference output.
+- This file must be part of the plan's stale-guidance search because updating only `internal/aicontext/aicontext.go` would leave another user-facing command guide that can drift.

@@ -30,6 +30,7 @@ Companion files:
 7. Run a full build before testing. For this plan the full build gate is `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
 8. If implementation touches function, class, or method symbols, run impact first and record the blast radius. HIGH or CRITICAL risk is a warning to report and account for, not a reason to abandon the required work.
 9. Run `detect-changes` before committing an implementation slice and record the expected changed scope.
+10. Command inventory must be taken from the current source tree or the freshly built local binary. A stale `avmatrix` found in `PATH` may be recorded as evidence, but it must not define final skill content.
 
 ## Problem
 
@@ -48,6 +49,8 @@ Those skills are generated from source files, not manually authored under `.clau
 
 The skill content also under-describes current AVmatrix capability. It does not clearly route agents to newer or specialized surfaces such as API route/tool analysis, query health, resolution/source-site accuracy, cross-repo groups, runtime/packaging/setup flows, generated AI context maintenance, or the unified command surface that includes MCP tools and CLI equivalents.
 
+There is also a source-distribution risk. Repository-local generated skills are produced from embedded Markdown under `internal/aicontext/skills/*.md`, but editor setup currently installs skills from a package-root `skills/` directory when one exists. If those two sources are not reconciled, users can receive different skills depending on whether they run `analyze` in a repository or `setup` from a packaged install.
+
 ## Scope
 
 Implementation may touch:
@@ -56,6 +59,7 @@ Implementation may touch:
 - `internal/aicontext/skills/*.md`;
 - tests under `internal/aicontext`;
 - CLI/setup/package tests under `internal/cli` if they assert skill counts, skill paths, generated output, or packaging behavior;
+- MCP setup/resource guidance under `internal/mcp` if it contains tool, resource, setup, or command-surface reference text;
 - README and user-facing docs that explain generated AVmatrix skills, AI context setup, or AVmatrix command surfaces;
 - packaging/setup code only if source inspection proves the expanded embedded skill set is not installed or packaged correctly.
 
@@ -91,6 +95,14 @@ The upgraded skill set should keep the existing six skills and add five focused 
 
 The exact command list inside each skill must be based on current source/help output during implementation. If a command name in this plan is not available in the current codebase, the implementation must not document it as available; record the mismatch in evidence and update the skill wording accordingly.
 
+Command names must match the surface that implements them. CLI commands use hyphenated names such as `query-health`, `resolution-inventory`, and `source-site-accuracy`. MCP tools use underscore names such as `route_map`, `tool_map`, `shape_check`, and `api_impact`. A skill may mention both surfaces, but it must not invent a CLI command just because an MCP tool exists.
+
+The package/editor setup skill source must be reconciled with the embedded AI-context skill source. The final implementation should make it hard for package-root `skills/`, embedded `internal/aicontext/skills/*.md`, and generated `.claude/skills/avmatrix/**` to drift away from each other.
+
+Every base skill source file must include valid skill frontmatter with `name` and `description`. The fallback skill generator remains useful as defensive code, but final tests should prove no final base skill depends on fallback content because of a missing or empty embedded source file.
+
+MCP setup/resource guidance is part of the same user-facing command guide. If `avmatrix://setup` or related resource output lists tools/resources/commands, it must be checked and updated with the same final command taxonomy instead of leaving a second stale guide in the codebase.
+
 ## Acceptance Criteria
 
 - The source files responsible for generating `.claude/skills/avmatrix/**` are identified in the evidence ledger with exact paths and responsibilities.
@@ -103,6 +115,11 @@ The exact command list inside each skill must be based on current source/help ou
 - Skill content distinguishes generated files from source files and states that generated AI context files must be regenerated through AVmatrix rather than manually patched.
 - README and relevant docs explain the skill system accurately enough for users and agents to know where skills come from and how to regenerate them.
 - Tests protect base skill registration, generated root Skills table content, generated skill file creation, and key command-surface coverage.
+- The command inventory is generated from current source or the freshly built local binary, and any stale `PATH` binary mismatch is recorded instead of used as truth.
+- Final skill docs use correct CLI hyphen names and MCP underscore names for each surface.
+- Package/editor setup installs the same final skill set as repository-local AI context generation, or the evidence ledger records an explicit design decision for any intentional difference.
+- MCP setup/resource guidance is updated or explicitly verified as already consistent with the final command taxonomy.
+- Tests prove every final base skill has non-empty embedded source content and valid frontmatter, so no final skill silently falls back to minimal placeholder content.
 - Full build, focused tests, generation smoke, setup/package validation if touched, and `detect-changes` pass before closure.
 
 ## Phase 0 - Generator Source Trace And Command Inventory
@@ -114,6 +131,14 @@ The exact command list inside each skill must be based on current source/help ou
 - [ ] [P0-C] Inventory the current AVmatrix command surface from code/tests/help output before writing skill content. Record actual available CLI commands, MCP tools, MCP resources, setup/package commands, runtime commands, group/cross-repo commands, API-surface commands, and graph-quality/accuracy commands. The evidence must distinguish implemented commands from planned or absent commands so skills do not document non-existent behavior as real.
 
 - [ ] [P0-D] Build the skill routing matrix from the command inventory. Map every current command/tool/resource family to one primary skill and any secondary skill references, then record the final decision in evidence. The matrix must include the existing six skills and the proposed new skills for graph quality, API surface, cross-repo work, runtime/packaging, and AI context generation.
+
+- [ ] [P0-E] Compare the command surface exposed by the current `PATH` binary, `go run .\cmd\avmatrix --help`, and the binary produced by the full build gate. Record mismatches in evidence and use only the current source or freshly built local binary as the source of truth for skill content.
+
+- [ ] [P0-F] Trace the package/editor skill source path from `setupInstallSkillsTo` and package lifecycle code. Record whether package-root `skills/` exists, how packaged installs are expected to contain skills, and what code/test change is needed so packaged/editor skills cannot drift from embedded AI-context skills.
+
+- [ ] [P0-G] Inspect MCP resource/setup guidance such as `avmatrix://setup` and the source that renders it. Record whether it already matches the final command taxonomy or must be updated alongside `internal/aicontext/aicontext.go`.
+
+- [ ] [P0-H] Audit embedded base skill source validity before editing. Record each source file's frontmatter `name`, `description`, non-empty body status, and whether `baseSkillContent` would read real content or fall back.
 
 ## Phase 1 - Embedded Skill Source Upgrade
 
@@ -127,6 +152,10 @@ The exact command list inside each skill must be based on current source/help ou
 
 - [ ] [P1-E] Add coverage tests that prevent the guide from regressing back to a six-skill or analyze/query/impact-only view. The tests should check the generated guidance for the AI context skill, graph-quality skill, API-surface skill, cross-repo skill, runtime/packaging skill, and a current command-surface fragment confirmed in Phase 0.
 
+- [ ] [P1-F] Add or update tests that validate command naming by surface. The test should protect at least one CLI-only hyphenated command such as `query-health`, one MCP underscore tool such as `route_map`, and one statement that does not invent a CLI spelling for an MCP-only tool.
+
+- [ ] [P1-G] Add frontmatter/source-content tests for every final embedded base skill. The test must fail if a registered base skill is missing its embedded Markdown file, has empty content, has mismatched `name`, lacks `description`, or would rely on `fallbackBaseSkillContent`.
+
 ## Phase 2 - Setup, Package, And Documentation Integration
 
 - [ ] [P2-A] Verify the analyze post-run path installs the expanded base skill set through the same normal generation path that creates `AGENTS.md` and `CLAUDE.md`. If tests currently assert the old six-skill count or specific old table rows, update them to assert the new final set.
@@ -135,9 +164,13 @@ The exact command list inside each skill must be based on current source/help ou
 
 - [ ] [P2-C] Verify package/runtime distribution behavior for the expanded embedded skill set. If packaging tests or package assembly code enumerate skills, update them so the packaged tool can generate and install the final skill set from embedded source files.
 
-- [ ] [P2-D] Update README and relevant user-facing docs that describe AVmatrix skills, AI context generation, setup, or usage. The docs must tell users that `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/avmatrix/**` are generated by AVmatrix, and that source changes belong in the embedded skill source and generator code.
+- [ ] [P2-D] Reconcile package-root `skills/` with embedded `internal/aicontext/skills/*.md`. Either make the package/setup path materialize or copy from the same canonical skill source, or document and test a deliberately equivalent packaged `skills/` directory. The output must prove `avmatrix setup` installs the same final base skill ids and content family as `avmatrix analyze --force` generates in `.claude/skills/avmatrix/**`.
 
-- [ ] [P2-E] Search the active documentation for stale six-skill-only guidance or stale wording that treats MCP and CLI as separate incomplete command lists. Update current guides and README-style docs; leave historical ledgers untouched unless they are actively reused as user guidance.
+- [ ] [P2-E] Update MCP setup/resource guidance if Phase 0 finds stale command/tool/resource text. This includes the source that renders `avmatrix://setup`, MCP tool reference tables, and any setup onboarding text used by agents.
+
+- [ ] [P2-F] Update README and relevant user-facing docs that describe AVmatrix skills, AI context generation, setup, or usage. The docs must tell users that `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/avmatrix/**` are generated by AVmatrix, and that source changes belong in the embedded skill source and generator code.
+
+- [ ] [P2-G] Search the active documentation for stale six-skill-only guidance, stale package-root skill assumptions, or stale wording that treats MCP and CLI as separate incomplete command lists. Update current guides and README-style docs; leave historical ledgers untouched unless they are actively reused as user guidance.
 
 ## Phase 3 - Regeneration And Validation
 
@@ -151,7 +184,9 @@ The exact command list inside each skill must be based on current source/help ou
 
 - [ ] [P3-E] Validate setup/package behavior if Phase 2 changed setup or package code. Record the exact command outputs and installed/packaged skill file inventories in evidence and benchmark ledgers.
 
-- [ ] [P3-F] Run `detect-changes` before commit and record the affected scope. Commit the implementation slice after checklist items and ledgers are updated.
+- [ ] [P3-F] Validate MCP setup/resource output if Phase 2 touched MCP resources. Record the exact `avmatrix://setup` or equivalent resource output check in evidence so the generated guidance and MCP-facing guide are proven consistent.
+
+- [ ] [P3-G] Run `detect-changes` before commit and record the affected scope. Commit the implementation slice after checklist items and ledgers are updated.
 
 ## Phase 4 - Zero-Trust Closure Review
 
@@ -160,4 +195,3 @@ The exact command list inside each skill must be based on current source/help ou
 - [ ] [P4-B] Re-run the final validation commands required by this plan after the closure review changes. Record final pass/fail counts, generated inventory, setup/package inventory if applicable, and any remaining limitation in the evidence and benchmark ledgers.
 
 - [ ] [P4-C] Mark the plan complete only after source files, generated validation output, tests, docs, benchmark ledger, evidence ledger, and commit state all agree on the final skill set.
-
