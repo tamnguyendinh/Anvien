@@ -135,7 +135,7 @@ func renderAVmatrixBlock(projectName string, stats Stats, skills []GeneratedSkil
 	builder.WriteString("Use the surface that fits the current environment. Do not treat MCP tools and CLI commands as separate capabilities.\n\n")
 	builder.WriteString("There is no single mandatory workflow beyond freshness, impact-before-edit, and change detection before commit. AVmatrix commands are selected by task. Use the full command set when it gives better evidence.\n\n")
 	builder.WriteString("## Always Do\n\n")
-	builder.WriteString("- **MUST refresh the graph before graph-based work.** Run `avmatrix analyze --force` before using graph/query/impact/context/change-detection/cypher/accuracy commands.\n")
+	builder.WriteString("- **MUST refresh the graph before graph-based work.** Run `avmatrix analyze --force` before using any AVmatrix CLI command, MCP tool, MCP resource, Web/API view, or accuracy/benchmark command that reads, queries, validates, mutates, or reports on the semantic graph. This includes `query`, `context`, `impact`, `detect-changes`, `cypher`, `rename`, `route-map`, `tool-map`, `shape-check`, `api-impact`, `augment`, `query-health`, `resolution-inventory`, `source-site-accuracy`, and `benchmark-compare`.\n")
 	builder.WriteString("- **MUST run impact analysis before editing any function, class, method, exported symbol, API handler, graph builder, resolver, analyzer, or shared contract.**\n")
 	builder.WriteString("- **MUST report blast radius.** HIGH or CRITICAL impact means warn clearly and proceed carefully; it is not an automatic ban on editing.\n")
 	builder.WriteString("- **MUST run change detection before committing implementation work.** Use MCP `detect_changes` or CLI `avmatrix detect-changes --repo <repo> --scope all`.\n")
