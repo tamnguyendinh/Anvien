@@ -247,7 +247,7 @@ avmatrix resolution-inventory --graph .avmatrix/graph.json --out .tmp/resolution
 avmatrix source-site-accuracy --graph .avmatrix/graph.json --out .tmp/source-site-accuracy.json
 ```
 
-These commands are for checking graph quality, not for replacing `analyze`. `analyze` remains the source of truth that refreshes the graph. `query-health` measures whether query results find expected files and symbols. `resolution-inventory` reports persisted ResolutionGap and Resolution Health counts, including non-actionable breakdowns such as `builtin`, `standard_library`, and `test_framework`. `source-site-accuracy` reports proof-based CALLS/ACCESSES inventory, missing source-site IDs, false resolved edge candidates, and other graph accuracy gates.
+These commands are for checking graph quality, not for replacing `analyze`. `analyze` remains the source of truth that refreshes the graph. `query-health` measures query retrieval with two separate outcomes: threshold pass/fail for usable retrieval, and exact pass/fail for complete expected target coverage. Use `--fail-on-threshold` to fail when hit@5/hit@10 thresholds are missed, or `--fail-on-exact` to fail when any expected file/symbol is still missing. `resolution-inventory` reports persisted ResolutionGap and Resolution Health counts, including non-actionable breakdowns such as `builtin`, `standard_library`, and `test_framework`. `source-site-accuracy` reports proof-based CALLS/ACCESSES inventory, missing source-site IDs, false resolved edge candidates, and other graph accuracy gates.
 
 Repository groups:
 

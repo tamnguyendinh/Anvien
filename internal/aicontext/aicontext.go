@@ -185,7 +185,7 @@ func renderAVmatrixBlock(projectName string, stats Stats, skills []GeneratedSkil
 	fmt.Fprintf(&builder, "| `avmatrix context \"symbol\" --repo %s` | Inspect callers, callees, and process membership |\n", projectName)
 	fmt.Fprintf(&builder, "| `avmatrix impact \"symbol\" --repo %s --direction upstream` | Check blast radius before editing |\n", projectName)
 	fmt.Fprintf(&builder, "| `avmatrix detect-changes --repo %s --scope all` | Check changed symbols and affected flows before committing |\n", projectName)
-	fmt.Fprintf(&builder, "| `avmatrix query-health --repo %s` | Benchmark query retrieval against expected files and symbols |\n", projectName)
+	fmt.Fprintf(&builder, "| `avmatrix query-health --repo %s` | Benchmark query retrieval with separate threshold and exact target-coverage results |\n", projectName)
 	builder.WriteString("| `avmatrix resolution-inventory --graph .avmatrix/graph.json` | Report persisted ResolutionGap and Resolution Health inventory |\n")
 	builder.WriteString("| `avmatrix source-site-accuracy --graph .avmatrix/graph.json` | Report proof-based source-site and resolved-edge accuracy metrics |\n")
 	builder.WriteString("\n" + endMarker)

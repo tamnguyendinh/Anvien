@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: implemented through Phase 9; non-actionable ResolutionGap subgroup visibility complete
+Status: Phase 10 query-health threshold/exact separation in progress; Phase 9 full e2e closure validation remains open
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -1378,7 +1378,7 @@ Status: complete; P8-A through P8-J complete.
 
 ### P8-A - Full Build Gate
 
-Status: complete.
+Status: reopened for P9-I full e2e closure validation.
 
 Command:
 
@@ -1683,6 +1683,38 @@ Implementation evidence to fill after code:
 | Focused backend/Web tests | passed: `go test .\internal\cli -run "TestResolutionInventoryCommandOutputsJSON" -count=1`; `npm --prefix .\avmatrix-web run test -- --run test/unit/semantic-filters.test.ts test/unit/graph-adapter.edge-geometry.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx` passed `3` files and `33` tests. |
 | Full build and validation | passed: `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; `go test .\internal\... .\cmd\...`; `go run .\cmd\generate-web-contracts --check`; `npm --prefix .\avmatrix-web run test -- --run` passed `45` files and `369` tests. |
 | Browser/e2e validation | passed targeted browser coverage: `npm --prefix .\avmatrix-web run test:e2e -- e2e/server-connect.spec.ts -g "reports Backend API Frontend rings"` passed `1` test, and `npm --prefix .\avmatrix-web run test:e2e -- e2e/graph-health-ui.spec.ts` passed `4` tests. Full e2e and full `server-connect.spec.ts` timed out during validation and are not recorded as passed. |
+| P9-I full e2e closure validation | pending rerun. The closure audit requires a fresh full build gate, then full Web e2e and full `server-connect.spec.ts` evidence after the Phase 9 changes. |
 | Final analyze | passed: `.\avmatrix-launcher\server-bundle\avmatrix.exe analyze --force --benchmark-json .\.tmp\2026-05-23-p9-non-actionable-breakdown-final-analyze.json --benchmark-label p9-non-actionable-breakdown-final`; result `files scanned=756`, `parsed=566`, `unsupported=190`, `failed=0`, `nodes=85732`, `relationships=117678`. |
 | Final resolution inventory | passed: `.\avmatrix-launcher\server-bundle\avmatrix.exe resolution-inventory --graph .\.avmatrix\graph.json --out .\.tmp\2026-05-23-p9-resolution-inventory-final.json`; result `unresolvedNonActionable=25841`, breakdown `builtin=10725`, `standard_library=7677`, `test_framework=7439`. |
 | Detect-changes and commit | pre-commit `.\avmatrix-launcher\server-bundle\avmatrix.exe detect-changes --repo AVmatrix --scope all` passed after staging the implementation slice: `changed_count=163`, `changed_files=13`, `affected_count=4`, `risk_level=medium`. Affected scope is the expected frontend graph rendering path through `useSigma`; changed scope covers backend CLI output, Web lens/layout/filter code, tests, and plan ledgers. |
+
+## E15 - Phase 10 Query Health Threshold And Exact Coverage
+
+Status: complete.
+
+User-facing issue:
+
+- `query-health` previously exposed one generic pass/fail meaning in readable output.
+- That mixed two different questions: whether retrieval was usable enough to guide an agent to the right code area, and whether every expected file/symbol target was present.
+- The command must expose both outcomes at once so a threshold pass cannot hide exact target misses.
+
+Implemented behavior before validation:
+
+| Item | Result |
+| --- | --- |
+| CLI JSON/table fields | `query-health` cases now expose `thresholdPassed`, `exactPassed`, `matchedTargetCount`, and `missedTargetCount`; the summary exposes `thresholdPassed`, `thresholdFailed`, `exactPassed`, `exactFailed`, `expectedTargetCount`, `matchedTargetCount`, and `missedTargetCount`. |
+| Legacy compatibility | the existing JSON `passed` field remains equivalent to `thresholdPassed` so existing usable-retrieval gates do not silently change behavior. |
+| Automation flags | `--fail-on-threshold` fails on hit@5/hit@10 threshold misses; `--fail-on-exact` fails on any missed expected file/symbol target. |
+| Readable output | table summary lines print `threshold=PASS/FAIL exact=PASS/FAIL` plus matched/missed target counts. |
+| Documentation | root README, packaged README, AVmatrix CLI/guide skill docs, and the generated AGENTS/CLAUDE context block describe threshold pass and exact pass as separate outcomes. |
+
+Validation evidence to fill after P10-E/P10-F:
+
+| Item | Result |
+| --- | --- |
+| Full build before tests | passed: `powershell -ExecutionPolicy Bypass -File .\avmatrix-launcher\build.ps1`; Vite emitted existing chunk-size/dynamic-import warnings only. |
+| Focused Go tests | passed: `go test .\internal\cli .\internal\aicontext -count=1`; covers query-health threshold/exact behavior, `--fail-on-exact`, command help, and generated AGENTS/CLAUDE context copy. |
+| Source hygiene check | passed: `rg -n "gitnexus\|GitNexus\|git-nexus" internal cmd avmatrix README.md AGENTS.md CLAUDE.md` returned no source/context matches after replacing the old test fixture with an AVmatrix-managed block. |
+| Live query-health command | passed: `.\avmatrix-launcher\server-bundle\avmatrix.exe query-health --suite .\docs\query-health\2026-05-22-avmatrix-app-layer-resolution-gap-suite.json --repo AVmatrix --out .\.tmp\2026-05-23-p10-query-health-threshold-exact.json --limit 10`. |
+| Query-health threshold/exact counts | `thresholdPassed=7`, `thresholdFailed=0`, `exactPassed=2`, `exactFailed=5`, `matchedTargets=33/39`, `missedTargets=6`. Exact misses are `resolveCall`, `AppendDiagnosticToNode`, `startRuntime`, `avmatrix-web/src/generated/avmatrix-contracts.ts`, `cmd/avmatrix/main.go`, and `GraphCanvas`. |
+| Pre-commit analyze/detect-changes | passed: fresh `analyze --force` produced `nodes=85822`, `relationships=117824`; `detect-changes --repo AVmatrix --scope all` was saved to `.tmp\2026-05-23-p10-detect-changes.txt` and reported `changed_count=152`, `changed_files=12`, `affected_count=12`, `risk_level=high`, changed App Layers `backend=78`, `backend_test=51`, `docs=23`, and affected App Layer `backend=12`. The high scope matches root CLI `query-health` output/scoring and generated context-copy changes. |

@@ -62,7 +62,7 @@ Maps current git changes to affected symbols and execution flows. Run before com
 
 `avmatrix query-health --repo MyRepo --out .tmp/query-health.json`
 
-Runs a query retrieval benchmark suite and reports hit@5, hit@10, expected files/symbols, actual top results, noise reason, and pass/fail. Use `--fail-on-threshold` when the benchmark should fail the command on missed thresholds.
+Runs a query retrieval benchmark suite and reports hit@5, hit@10, expected files/symbols, actual top results, noise reason, and two separate pass results. `thresholdPassed` means the query returned enough expected targets to be usable for navigation; `exactPassed` means no expected file/symbol target was missed. Use `--fail-on-threshold` for usable-retrieval gates and `--fail-on-exact` for strict target-coverage gates.
 
 ### resolution-inventory
 

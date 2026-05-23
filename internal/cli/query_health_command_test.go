@@ -53,11 +53,46 @@ func TestQueryHealthSuiteParsingAndScoring(t *testing.T) {
 		ResolutionGapCount:   4,
 	}}
 	result := scoreQueryHealthCase(suite.Cases[0], actual, 10)
-	if !result.Passed || result.HitAt5 != 2 || result.HitAt10 != 2 {
+	if !result.Passed || !result.ThresholdPassed || !result.ExactPassed || result.HitAt5 != 2 || result.HitAt10 != 2 {
 		t.Fatalf("score result = %#v", result)
+	}
+	if result.MatchedTargetCount != 2 || result.MissedTargetCount != 0 {
+		t.Fatalf("target coverage = matched %d missed %d", result.MatchedTargetCount, result.MissedTargetCount)
 	}
 	if len(result.TopResults) != 1 || result.TopResults[0].AppLayer != "backend" || result.TopResults[0].FunctionalArea != "graph_health" {
 		t.Fatalf("semantic fields not preserved in top results: %#v", result.TopResults)
+	}
+}
+
+func TestQueryHealthScoringSeparatesThresholdAndExactPass(t *testing.T) {
+	testCase := queryHealthCase{
+		ID:               "partial-match",
+		Intent:           "query implementation",
+		ExpectedFiles:    []string{"internal/cli/query_health_command.go"},
+		ExpectedSymbols:  []string{"missingExactSymbol"},
+		HitAt5Threshold:  1,
+		HitAt10Threshold: 1,
+	}
+	actual := []queryHealthActualResult{{
+		Rank:     1,
+		Source:   "definition",
+		ID:       "Function:internal/cli/query_health_command.go:runQueryHealth#2",
+		Name:     "runQueryHealth",
+		FilePath: "internal/cli/query_health_command.go",
+	}}
+	result := scoreQueryHealthCase(testCase, actual, 10)
+	if !result.Passed || !result.ThresholdPassed {
+		t.Fatalf("threshold pass should remain true for usable retrieval: %#v", result)
+	}
+	if result.ExactPassed {
+		t.Fatalf("exact pass should be false when any expected target is missed: %#v", result)
+	}
+	if result.MatchedTargetCount != 1 || result.MissedTargetCount != 1 {
+		t.Fatalf("target coverage = matched %d missed %d", result.MatchedTargetCount, result.MissedTargetCount)
+	}
+	if !strings.Contains(result.NoiseReason, "thresholds met; exact target misses") ||
+		!strings.Contains(result.NoiseReason, "symbol:missingExactSymbol") {
+		t.Fatalf("noise reason should distinguish exact miss: %s", result.NoiseReason)
 	}
 }
 
@@ -112,10 +147,24 @@ func TestQueryHealthCommandOutputsJSONTableAndFailsThreshold(t *testing.T) {
 	if err := json.Unmarshal([]byte(out), &decoded); err != nil {
 		t.Fatalf("query-health output is not JSON: %v\n%s", err, out)
 	}
-	if decoded.Summary.Passed != 1 || decoded.Summary.Failed != 0 || decoded.Cases[0].HitAt5 != 2 {
+	if decoded.Summary.Passed != 1 ||
+		decoded.Summary.Failed != 0 ||
+		decoded.Summary.ThresholdPassed != 1 ||
+		decoded.Summary.ThresholdFailed != 0 ||
+		decoded.Summary.ExactPassed != 1 ||
+		decoded.Summary.ExactFailed != 0 ||
+		decoded.Summary.MatchedTargetCount != 2 ||
+		decoded.Summary.ExpectedTargetCount != 2 ||
+		decoded.Cases[0].HitAt5 != 2 ||
+		!decoded.Cases[0].ThresholdPassed ||
+		!decoded.Cases[0].ExactPassed {
 		t.Fatalf("decoded report = %#v", decoded)
 	}
-	if !strings.Contains(out, `"topResults"`) || !strings.Contains(out, `"Function:main"`) {
+	if !strings.Contains(out, `"thresholdPassed"`) ||
+		!strings.Contains(out, `"exactPassed"`) ||
+		!strings.Contains(out, `"matchedTargetCount"`) ||
+		!strings.Contains(out, `"topResults"`) ||
+		!strings.Contains(out, `"Function:main"`) {
 		t.Fatalf("query-health JSON missing expected result details:\n%s", out)
 	}
 
@@ -127,7 +176,10 @@ func TestQueryHealthCommandOutputsJSONTableAndFailsThreshold(t *testing.T) {
 	if errOut != "" {
 		t.Fatalf("query-health table wrote stderr: %q", errOut)
 	}
-	if !strings.Contains(out, "queryHealth.suite=fixture-suite") || !strings.Contains(out, "status=PASS") {
+	if !strings.Contains(out, "queryHealth.suite=fixture-suite") ||
+		!strings.Contains(out, "thresholdPassed=1") ||
+		!strings.Contains(out, "exactPassed=1") ||
+		!strings.Contains(out, "threshold=PASS exact=PASS") {
 		t.Fatalf("query-health table missing summary:\n%s", out)
 	}
 	if _, err := os.Stat(reportPath); err != nil {
@@ -145,6 +197,23 @@ func TestQueryHealthCommandOutputsJSONTableAndFailsThreshold(t *testing.T) {
 	}
 	if !strings.Contains(out, `"passed": false`) || !strings.Contains(out, `"missedTargets"`) {
 		t.Fatalf("threshold failure did not include failure report:\n%s", out)
+	}
+
+	partialSuite := filepath.Join(dir, "partial-suite.json")
+	writeQueryHealthTestSuite(t, partialSuite, "src/app.ts", "missingExactSymbol", 1, 1)
+	out, errOut, err = executeForTest(t, "query-health", "--suite", partialSuite, "--repo", "fixture", "--out", filepath.Join(dir, "partial.json"))
+	if err != nil {
+		t.Fatalf("query-health partial exact miss should pass threshold: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	if !strings.Contains(out, "threshold=PASS exact=FAIL") || !strings.Contains(out, "missedTargets=1") {
+		t.Fatalf("partial exact miss output did not separate threshold/exact:\n%s", out)
+	}
+	out, errOut, err = executeForTest(t, "query-health", "--suite", partialSuite, "--repo", "fixture", "--json", "--fail-on-exact")
+	if err == nil {
+		t.Fatalf("query-health fail-on-exact unexpectedly passed\nstdout:\n%s\nstderr:\n%s", out, errOut)
+	}
+	if !strings.Contains(err.Error(), "query-health exact target coverage failed") {
+		t.Fatalf("unexpected exact coverage error: %v", err)
 	}
 }
 

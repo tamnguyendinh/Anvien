@@ -62,7 +62,7 @@ For graph quality checks, use these CLI-only diagnostic commands:
 
 | Command | Use |
 |---|---|
-| `avmatrix query-health` | Benchmark query retrieval against expected files and symbols, with hit@5/hit@10 and noise reason. |
+| `avmatrix query-health` | Benchmark query retrieval against expected files and symbols, with separate threshold pass and exact target-coverage pass results. |
 | `avmatrix resolution-inventory` | Report persisted ResolutionGap and Resolution Health counts, including classification/actionability and non-actionable builtin/standard-library/test-framework breakdown. |
 | `avmatrix source-site-accuracy` | Report source-site inventory and proof-based resolved-edge accuracy metrics, with optional golden fixture validation. |
 

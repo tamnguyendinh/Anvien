@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: implemented through Phase 9; non-actionable ResolutionGap subgroup visibility complete
+Status: Phase 10 query-health threshold/exact separation in progress; Phase 9 full e2e closure validation remains open
 
 Plan: [2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md](2026-05-22-avmatrix-app-layer-resolution-gap-lens-plan.md)
 
@@ -792,7 +792,7 @@ Record after the analyze semantic enrichment phase is introduced and after each 
 
 ## B13 - Phase 9 Non-Actionable Breakdown And Diagnostic Shape
 
-Status: complete.
+Status: reopened for P9-I full e2e closure validation.
 
 Starting graph refresh:
 
@@ -846,5 +846,53 @@ Validation and final metrics:
 | Contract validation output | `go run .\cmd\generate-web-contracts --check` passed with no generated contract drift |
 | Full Web unit output | `npm --prefix .\avmatrix-web run test -- --run` passed `45` files / `369` tests |
 | Web/browser validation output | focused browser/e2e passed: `server-connect.spec.ts -g "reports Backend API Frontend rings"` passed `1` test; `graph-health-ui.spec.ts` passed `4` tests. Full e2e and full `server-connect.spec.ts` timed out in validation and are not recorded as passed. |
+| P9-I full e2e closure validation | pending rerun after fresh full build gate; record full Web e2e pass/fail/skip counts, full `server-connect.spec.ts` result, and any remaining limitation. |
 | Final resolution inventory | `nodes=85732`, `relationships=117678`, `gapNodes=61625`, `gapRelationships=61625`, `gapOccurrences=62411`, `resolvedReferences=28419`, `unresolvedNonActionable=25841`, breakdown `builtin=10725`, `standard_library=7677`, `test_framework=7439` |
 | Pre-commit detect-changes | after staging the implementation slice, `detect-changes --repo AVmatrix --scope all` reported `changed_count=163`, `changed_files=13`, `affected_count=4`, `risk_level=medium`, affected app layer `frontend=4`, changed app layers `backend=10`, `backend_test=17`, `docs=10`, `frontend=53`, `frontend_test=73` |
+
+## B14 - Query Health Threshold And Exact Coverage
+
+Status: complete.
+
+Metric contract:
+
+| Metric | Meaning |
+| --- | --- |
+| Threshold pass | hit@5 and hit@10 meet the suite thresholds; this is the usable-retrieval result. |
+| Exact pass | every expected file/symbol target is found; this is complete expected-target coverage. |
+| Legacy `passed` | compatibility field equal to threshold pass. |
+| Matched targets | expected file/symbol targets matched by top query results. |
+| Missed targets | expected file/symbol targets not matched by top query results. |
+
+Validation and live command metrics:
+
+| Metric | Value |
+| --- | ---: |
+| Full build before tests | passed |
+| Focused Go tests | passed |
+| Live query-health threshold-passed cases | 7 |
+| Live query-health threshold-failed cases | 0 |
+| Live query-health exact-passed cases | 2 |
+| Live query-health exact-failed cases | 5 |
+| Live query-health matched targets | 33 |
+| Live query-health expected targets | 39 |
+| Live query-health missed targets | 6 |
+| Query-health artifact | `.tmp\2026-05-23-p10-query-health-threshold-exact.json` |
+| Fresh analyze before commit | `nodes=85822`, `relationships=117824` |
+| Pre-commit detect-changes risk | `high` |
+| Pre-commit detect-changes changed count | 152 |
+| Pre-commit detect-changes changed files | 12 |
+| Pre-commit detect-changes affected count | 12 |
+| Pre-commit detect-changes artifact | `.tmp\2026-05-23-p10-detect-changes.txt` |
+
+Exact-miss inventory:
+
+| Case | Threshold | Exact | Missed targets |
+| --- | --- | --- | --- |
+| unresolved-reference-diagnostic-generation | PASS | FAIL | `resolveCall`, `AppendDiagnosticToNode` |
+| graph-health-unknown-connectivity-separation | PASS | PASS | none |
+| app-layer-resolution-gap-layout | PASS | PASS | none |
+| runtime-reset-hidden-terminal | PASS | FAIL | `startRuntime` |
+| api-contract-surfaces | PASS | FAIL | `avmatrix-web/src/generated/avmatrix-contracts.ts` |
+| query-implementation-surfaces | PASS | FAIL | `cmd/avmatrix/main.go` |
+| frontend-graph-filter-surfaces | PASS | FAIL | `GraphCanvas` |

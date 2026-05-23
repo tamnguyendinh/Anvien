@@ -204,6 +204,12 @@ avmatrix group query <name> <q>     # Search execution flows across all repos in
 avmatrix group status <name>        # Check staleness of repos in a group
 ```
 
+`query-health` reports two separate outcomes. The threshold result says whether
+hit@5/hit@10 found enough expected targets to make retrieval usable for an
+agent, while the exact result says whether every expected file/symbol was found.
+Use `--fail-on-threshold` for usable-retrieval gates and `--fail-on-exact` for
+strict target-coverage gates.
+
 ## Remote Embeddings
 
 Set these env vars to use a remote OpenAI-compatible `/v1/embeddings` endpoint instead of the local model:

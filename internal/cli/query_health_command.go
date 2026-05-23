@@ -54,9 +54,16 @@ type queryHealthSuiteSummary struct {
 }
 
 type queryHealthReportSummary struct {
-	CaseCount int `json:"caseCount"`
-	Passed    int `json:"passed"`
-	Failed    int `json:"failed"`
+	CaseCount           int `json:"caseCount"`
+	Passed              int `json:"passed"`
+	Failed              int `json:"failed"`
+	ThresholdPassed     int `json:"thresholdPassed"`
+	ThresholdFailed     int `json:"thresholdFailed"`
+	ExactPassed         int `json:"exactPassed"`
+	ExactFailed         int `json:"exactFailed"`
+	ExpectedTargetCount int `json:"expectedTargetCount"`
+	MatchedTargetCount  int `json:"matchedTargetCount"`
+	MissedTargetCount   int `json:"missedTargetCount"`
 }
 
 type queryHealthCaseResult struct {
@@ -72,6 +79,10 @@ type queryHealthCaseResult struct {
 	HitAt5Threshold         int                       `json:"hitAt5Threshold"`
 	HitAt10Threshold        int                       `json:"hitAt10Threshold"`
 	Passed                  bool                      `json:"passed"`
+	ThresholdPassed         bool                      `json:"thresholdPassed"`
+	ExactPassed             bool                      `json:"exactPassed"`
+	MatchedTargetCount      int                       `json:"matchedTargetCount"`
+	MissedTargetCount       int                       `json:"missedTargetCount"`
 	MatchedTargets          []queryHealthTargetMatch  `json:"matchedTargets,omitempty"`
 	MissedTargets           []queryHealthTargetMiss   `json:"missedTargets,omitempty"`
 	TopResults              []queryHealthActualResult `json:"topResults,omitempty"`
@@ -131,6 +142,7 @@ func newQueryHealthCommand() *cobra.Command {
 	var limit int
 	var jsonOutput bool
 	var failOnThreshold bool
+	var failOnExact bool
 
 	cmd := &cobra.Command{
 		Use:   "query-health",
@@ -168,8 +180,11 @@ func newQueryHealthCommand() *cobra.Command {
 					}
 				}
 			}
-			if failOnThreshold && report.Summary.Failed > 0 {
-				return fmt.Errorf("query-health thresholds failed for %d/%d cases", report.Summary.Failed, report.Summary.CaseCount)
+			if failOnThreshold && report.Summary.ThresholdFailed > 0 {
+				return fmt.Errorf("query-health thresholds failed for %d/%d cases", report.Summary.ThresholdFailed, report.Summary.CaseCount)
+			}
+			if failOnExact && report.Summary.ExactFailed > 0 {
+				return fmt.Errorf("query-health exact target coverage failed for %d/%d cases", report.Summary.ExactFailed, report.Summary.CaseCount)
 			}
 			return nil
 		},
@@ -180,6 +195,7 @@ func newQueryHealthCommand() *cobra.Command {
 	cmd.Flags().IntVarP(&limit, "limit", "l", 10, "max query processes to request from the query tool")
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write full JSON report to stdout")
 	cmd.Flags().BoolVar(&failOnThreshold, "fail-on-threshold", false, "return an error when any case misses its thresholds")
+	cmd.Flags().BoolVar(&failOnExact, "fail-on-exact", false, "return an error when any case misses any expected target")
 	return cmd
 }
 
@@ -216,6 +232,19 @@ func runQueryHealth(options queryHealthRunOptions, runner queryHealthRunner) (qu
 		} else {
 			summary.Failed++
 		}
+		if result.ThresholdPassed {
+			summary.ThresholdPassed++
+		} else {
+			summary.ThresholdFailed++
+		}
+		if result.ExactPassed {
+			summary.ExactPassed++
+		} else {
+			summary.ExactFailed++
+		}
+		summary.ExpectedTargetCount += result.ExpectedTargetCount
+		summary.MatchedTargetCount += result.MatchedTargetCount
+		summary.MissedTargetCount += result.MissedTargetCount
 	}
 	return queryHealthReport{
 		GeneratedAt: time.Now().Format(time.RFC3339),
@@ -412,7 +441,11 @@ func scoreQueryHealthCase(testCase queryHealthCase, actual []queryHealthActualRe
 		}
 		result.MissedTargets = append(result.MissedTargets, queryHealthTargetMiss{Kind: "symbol", Expected: expected, Reason: "expected function/method target was not returned by current definition or process-symbol matching"})
 	}
-	result.Passed = result.HitAt5 >= testCase.HitAt5Threshold && result.HitAt10 >= testCase.HitAt10Threshold
+	result.MatchedTargetCount = len(result.MatchedTargets)
+	result.MissedTargetCount = len(result.MissedTargets)
+	result.ThresholdPassed = result.HitAt5 >= testCase.HitAt5Threshold && result.HitAt10 >= testCase.HitAt10Threshold
+	result.Passed = result.ThresholdPassed
+	result.ExactPassed = result.MissedTargetCount == 0
 	result.NoiseReason = queryHealthNoiseReason(result, actual)
 	return result
 }
@@ -479,17 +512,25 @@ func topQueryHealthResults(actual []queryHealthActualResult, limit int) []queryH
 
 func queryHealthNoiseReason(result queryHealthCaseResult, actual []queryHealthActualResult) string {
 	if result.Passed {
-		return "thresholds met"
+		if result.ExactPassed {
+			return "thresholds met; exact target coverage met"
+		}
+		return "thresholds met; exact target misses: " + strings.Join(queryHealthMissLabels(result.MissedTargets), ", ")
 	}
-	missing := make([]string, 0, len(result.MissedTargets))
-	for _, miss := range result.MissedTargets {
-		missing = append(missing, miss.Kind+":"+miss.Expected)
-	}
+	missing := queryHealthMissLabels(result.MissedTargets)
 	topFiles := uniqueTopQueryHealthFiles(actual, 5)
 	if len(topFiles) == 0 {
 		return "no query results; missing " + strings.Join(missing, ", ")
 	}
 	return "missing " + strings.Join(missing, ", ") + "; top files: " + strings.Join(topFiles, ", ")
+}
+
+func queryHealthMissLabels(misses []queryHealthTargetMiss) []string {
+	labels := make([]string, 0, len(misses))
+	for _, miss := range misses {
+		labels = append(labels, miss.Kind+":"+miss.Expected)
+	}
+	return labels
 }
 
 func uniqueTopQueryHealthFiles(actual []queryHealthActualResult, maxFiles int) []string {
@@ -522,22 +563,40 @@ func writeQueryHealthReport(path string, report queryHealthReport) error {
 
 func queryHealthSummaryLines(report queryHealthReport) []string {
 	lines := []string{
-		fmt.Sprintf("queryHealth.suite=%s cases=%d passed=%d failed=%d", report.Suite.Suite, report.Summary.CaseCount, report.Summary.Passed, report.Summary.Failed),
+		fmt.Sprintf(
+			"queryHealth.suite=%s cases=%d thresholdPassed=%d thresholdFailed=%d exactPassed=%d exactFailed=%d matchedTargets=%d/%d missedTargets=%d",
+			report.Suite.Suite,
+			report.Summary.CaseCount,
+			report.Summary.ThresholdPassed,
+			report.Summary.ThresholdFailed,
+			report.Summary.ExactPassed,
+			report.Summary.ExactFailed,
+			report.Summary.MatchedTargetCount,
+			report.Summary.ExpectedTargetCount,
+			report.Summary.MissedTargetCount,
+		),
 	}
 	for _, result := range report.Cases {
-		status := "FAIL"
-		if result.Passed {
-			status = "PASS"
+		thresholdStatus := "FAIL"
+		if result.ThresholdPassed {
+			thresholdStatus = "PASS"
+		}
+		exactStatus := "FAIL"
+		if result.ExactPassed {
+			exactStatus = "PASS"
 		}
 		lines = append(lines, fmt.Sprintf(
-			"queryHealth.case=%s status=%s hitAt5=%d/%d hitAt10=%d/%d expected=%d noise=%s",
+			"queryHealth.case=%s threshold=%s exact=%s hitAt5=%d/%d hitAt10=%d/%d matchedTargets=%d/%d missedTargets=%d noise=%s",
 			result.ID,
-			status,
+			thresholdStatus,
+			exactStatus,
 			result.HitAt5,
 			result.HitAt5Threshold,
 			result.HitAt10,
 			result.HitAt10Threshold,
+			result.MatchedTargetCount,
 			result.ExpectedTargetCount,
+			result.MissedTargetCount,
 			result.NoiseReason,
 		))
 	}

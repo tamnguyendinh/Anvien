@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 
-Status: implemented through Phase 9; non-actionable ResolutionGap subgroup visibility complete
+Status: Phase 10 query-health threshold/exact separation in progress; Phase 9 full e2e closure validation remains open
 
 Source discussion:
 
@@ -151,7 +151,7 @@ The enrichment phase must not rescan files or reparse ASTs. It should build reus
 - Fine-grained gap relationships or typed gap metadata preserve call, access, type-reference, heritage, external, builtin, test, analyzer-gap, and unknown distinctions where evidence supports them.
 - Topology Health and Resolution Health remain separate in graph/API/CLI/Web output.
 - CLI/query command surfaces can report App Layer, Functional Area, ResolutionGap, and resolution-health information from persisted graph data.
-- A query-health benchmark command exists and reports hit@5/hit@10, expected files/symbols, actual results, noise reason, and pass/fail.
+- A query-health benchmark command exists and reports hit@5/hit@10, expected files/symbols, actual results, noise reason, threshold pass/fail for usable retrieval, and exact pass/fail for complete expected target coverage.
 - Query-health captures the current noisy baseline and then validates the improved `query` implementation against expected source files and symbols.
 - Web UI exposes App Layer filters, Resolution Health filters, and a multi-ring layout where App Layer controls macro placement and node type/gap kind controls islands inside rings.
 - The Web UI does not invent App Layer, Functional Area, or ResolutionGap truth on the client.
@@ -336,15 +336,15 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 
 ## Phase 5 - Query Health Benchmark Command
 
-- [x] [P5-A] Define a query benchmark suite format with intent text, expected files, expected symbols, optional expected App Layer/Functional Area, hit@5 threshold, hit@10 threshold, actual top results, noise reason, and pass/fail status. `query-health` now reads JSON suites with `schemaVersion`, `suite`, and `cases[]` fields; each case records expected files/symbols, optional semantic expectations, hit thresholds, top results, matched/missed targets, noise reason, and pass/fail status.
+- [x] [P5-A] Define a query benchmark suite format with intent text, expected files, expected symbols, optional expected App Layer/Functional Area, hit@5 threshold, hit@10 threshold, actual top results, noise reason, and pass/fail status. `query-health` now reads JSON suites with `schemaVersion`, `suite`, and `cases[]` fields; each case records expected files/symbols, optional semantic expectations, hit thresholds, top results, matched/missed targets, noise reason, and pass/fail status. Phase 10 splits that pass/fail into threshold and exact coverage semantics without changing the suite format.
 
-- [x] [P5-B] Add a CLI command for query health so retrieval accuracy can be checked by running one command. `avmatrix query-health --suite <suite.json> --repo <repo> --out <report.json> --limit 10` verifies the indexed repo is not stale by commit, calls the same local MCP `query` implementation path as `avmatrix query`, scores results, writes JSON reports, and prints readable summary lines; `--json` and `--fail-on-threshold` are available for automation.
+- [x] [P5-B] Add a CLI command for query health so retrieval accuracy can be checked by running one command. `avmatrix query-health --suite <suite.json> --repo <repo> --out <report.json> --limit 10` verifies the indexed repo is not stale by commit, calls the same local MCP `query` implementation path as `avmatrix query`, scores results, writes JSON reports, and prints readable summary lines; `--json` and `--fail-on-threshold` are available for automation. Phase 10 adds `--fail-on-exact` for strict expected-target coverage.
 
 - [x] [P5-C] Add initial suite entries for unresolved reference diagnostic generation, graph health unknown-connectivity separation, App Layer/resolution-gap layout, runtime reset hidden-terminal behavior, API contract surfaces, query implementation surfaces, and frontend graph filter surfaces. The suite at `docs/query-health/2026-05-22-avmatrix-app-layer-resolution-gap-suite.json` includes the required resolver, graph-health, query, CLI, API, contract, Web graph filter/layout/optimizer, and launcher runtime files.
 
-- [x] [P5-D] Make command output report expected targets, actual top results, matched files/symbols, hit@5, hit@10, noise reason, pass/fail, any semantic layer fields returned by query results, and explicit miss reasons for function/method targets that current definition matching fails to return. JSON output includes expected targets, matched/missed targets, top results, rank/source/file/symbol fields, optional App Layer/Functional Area/Resolution Health fields when present, and specific miss reasons for missing function/method targets.
+- [x] [P5-D] Make command output report expected targets, actual top results, matched files/symbols, hit@5, hit@10, noise reason, pass/fail, any semantic layer fields returned by query results, and explicit miss reasons for function/method targets that current definition matching fails to return. JSON output includes expected targets, matched/missed targets, top results, rank/source/file/symbol fields, optional App Layer/Functional Area/Resolution Health fields when present, and specific miss reasons for missing function/method targets. Phase 10 makes the table and JSON expose `thresholdPassed` separately from `exactPassed` so a usable retrieval pass cannot hide missed expected targets.
 
-- [x] [P5-E] Add tests for suite parsing, scoring, missing expected targets, noisy results, semantic field output, JSON/table output if both exist, and failed threshold behavior. `internal/cli/query_health_command_test.go` covers suite parsing, scoring, noisy/missing targets, semantic field preservation, JSON output, summary output, report writing, and `--fail-on-threshold`.
+- [x] [P5-E] Add tests for suite parsing, scoring, missing expected targets, noisy results, semantic field output, JSON/table output if both exist, and failed threshold behavior. `internal/cli/query_health_command_test.go` covers suite parsing, scoring, noisy/missing targets, semantic field preservation, JSON output, summary output, report writing, and `--fail-on-threshold`. Phase 10 adds focused coverage for threshold pass with exact target miss and `--fail-on-exact`.
 
 - [x] [P5-F] Run the command on the current repository after implementation and record baseline/final hit rates, noisy intents, and examples in the evidence and benchmark ledgers. After fresh analyze, `query-health` wrote `.tmp\2026-05-22-p5-query-health-baseline.json`; the current query implementation passed `1/7` cases and failed `6/7`, establishing the baseline that Phase 6 must improve.
 
@@ -427,3 +427,19 @@ Each checkbox below is a concrete unit of work with a visible output in code, ge
 - [x] [P9-G] Run the full build gate before tests, then run backend/CLI focused tests, contract checks if generated surfaces drift, Web unit tests, and a browser/e2e validation path for the Web UI behavior. Full build passed before tests; focused CLI and Web tests passed; backend/cmd tests passed; contract check passed; full Web unit tests passed `45` files / `369` tests; targeted browser/e2e validation passed for Backend/API/Frontend rings and Graph Health UI. Full e2e and full `server-connect.spec.ts` timed out during validation and are recorded as not passed rather than hidden.
 
 - [x] [P9-H] Run fresh `avmatrix analyze --force` and `detect-changes` before the implementation commit, record the expected changed scope, update this plan and companion ledgers to complete only after validation passes, commit the slice, and leave no open Phase 9 checklist item. Final analyze passed with `nodes=85732` and `relationships=117678`; final inventory recorded `unresolvedNonActionable=25841` split into `builtin=10725`, `standard_library=7677`, and `test_framework=7439`; pre-commit detect-changes after staging reported `changed_count=163`, `changed_files=13`, `affected_count=4`, and `risk_level=medium`.
+
+- [ ] [P9-I] Close the Phase 9 validation gap by rerunning the full build gate, then running the full Web e2e suite and full `server-connect.spec.ts` validation after the non-actionable subgroup and diagnostic-shape changes. Record exact pass/fail counts, skips, command outputs, and any remaining limitation in the evidence and benchmark ledgers. If a failure is product behavior, fix the code under the normal implementation rules; if it is only a tool execution-window issue, record per-spec reruns clearly rather than counting the timed-out all-spec command as passing evidence.
+
+## Phase 10 - Query Health Threshold And Exact Target Coverage
+
+- [x] [P10-A] Update this plan and companion ledgers so `query-health` no longer treats one generic pass/fail as both usable retrieval and exact expected-target coverage. The plan now defines threshold pass as the hit@5/hit@10 usable-retrieval gate and exact pass as zero missed expected file/symbol targets; older P5/P8 reports that said `passed` are legacy threshold-pass evidence unless they explicitly record exact coverage.
+
+- [x] [P10-B] Update the CLI `query-health` report model, JSON output, and table summary so every case and suite summary exposes separate threshold and exact results. The report now carries `thresholdPassed`, `thresholdFailed`, `exactPassed`, `exactFailed`, `expectedTargetCount`, `matchedTargetCount`, and `missedTargetCount`; readable output prints `threshold=PASS/FAIL` and `exact=PASS/FAIL` together so agents and users can see partial coverage immediately.
+
+- [x] [P10-C] Add strict exact-coverage automation behavior without breaking the existing usable-retrieval threshold gate. `--fail-on-threshold` continues to fail only when hit@5/hit@10 thresholds miss, `--fail-on-exact` fails when any expected target is missed, and the legacy JSON `passed` field remains the threshold result for compatibility.
+
+- [x] [P10-D] Add or update tests and user-facing documentation for the separated query-health semantics. Focused CLI tests cover exact pass, exact fail with threshold pass, JSON fields, table fields, `--fail-on-threshold`, and `--fail-on-exact`; README, packaged README, AVmatrix CLI/guide skill docs, and the AGENTS/CLAUDE generated context block describe threshold and exact results separately.
+
+- [x] [P10-E] Run the full build gate before testing, then run focused backend/aicontext tests and a live `query-health` command on the current suite. The full build passed, focused `go test .\internal\cli .\internal\aicontext -count=1` passed, `git diff --check` passed, and live `query-health` wrote `.tmp\2026-05-23-p10-query-health-threshold-exact.json` with `thresholdPassed=7`, `thresholdFailed=0`, `exactPassed=2`, `exactFailed=5`, `matchedTargets=33/39`, and `missedTargets=6`.
+
+- [x] [P10-F] Run fresh `avmatrix analyze --force` and `detect-changes` before the implementation commit, record the affected scope, then commit the slice. Fresh analyze passed with `nodes=85822` and `relationships=117824`; pre-commit `detect-changes --repo AVmatrix --scope all` reported `changed_count=152`, `changed_files=12`, `affected_count=12`, and `risk_level=high`. The high scope is expected for this slice because it changes root CLI `query-health` scoring/output behavior and AGENTS/CLAUDE generated context copy through `renderAVmatrixBlock`.

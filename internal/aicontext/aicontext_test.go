@@ -56,6 +56,7 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"## CLI",
 		"`avmatrix detect-changes --repo TestProject --scope all`",
 		"`avmatrix query-health --repo TestProject`",
+		"separate threshold and exact target-coverage results",
 		"`avmatrix resolution-inventory --graph .avmatrix/graph.json`",
 		"`avmatrix source-site-accuracy --graph .avmatrix/graph.json`",
 		"avmatrix-impact-analysis/SKILL.md",
@@ -156,7 +157,7 @@ func TestGenerateAIContextFilesReplacesEmptyAndLegacyManagedContext(t *testing.T
 		t.Fatalf("empty AGENTS.md was not replaced cleanly:\n%s", agents)
 	}
 
-	legacy := "# Manual\n\n<!-- gitnexus:start -->\n# GitNexus - Code Intelligence\nold\n<!-- gitnexus:end -->\n\n# Tail\n"
+	legacy := "# Manual\n\n<!-- avmatrix:start -->\n# AVmatrix - Code Intelligence\nold legacy body\n<!-- avmatrix:end -->\n\n# Tail\n"
 	if err := os.WriteFile(filepath.Join(dir, "CLAUDE.md"), []byte(legacy), 0o644); err != nil {
 		t.Fatalf("write legacy CLAUDE.md: %v", err)
 	}
@@ -173,7 +174,7 @@ func TestGenerateAIContextFilesReplacesEmptyAndLegacyManagedContext(t *testing.T
 			t.Fatalf("legacy CLAUDE.md missing %q:\n%s", want, text)
 		}
 	}
-	if strings.Contains(text, "gitnexus:start") || strings.Contains(text, "old") {
+	if strings.Contains(text, "\nold legacy body\n") {
 		t.Fatalf("legacy managed section was not replaced:\n%s", text)
 	}
 }
