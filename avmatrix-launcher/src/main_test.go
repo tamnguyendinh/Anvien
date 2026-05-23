@@ -103,6 +103,31 @@ func TestStaticHandlerInjectsLauncherLifecycleAndRecordsHeartbeat(t *testing.T) 
 	}
 }
 
+func TestLauncherWebReadyRequiresLifecycleHeartbeat(t *testing.T) {
+	launcherServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == launcherHeartbeatPath && r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer launcherServer.Close()
+
+	if !launcherWebReadyAt(launcherServer.URL + launcherHeartbeatPath) {
+		t.Fatalf("launcher heartbeat endpoint should mark web runtime ready")
+	}
+
+	devServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("vite index"))
+	}))
+	defer devServer.Close()
+
+	if launcherWebReadyAt(devServer.URL + launcherHeartbeatPath) {
+		t.Fatalf("plain 200 response must not be accepted as launcher web runtime")
+	}
+}
+
 func TestWebLifecycleMonitorDoesNotExpireAfterHeartbeatStops(t *testing.T) {
 	lifecycle := newWebLifecycleMonitor(40 * time.Millisecond)
 	lifecycle.start()
@@ -221,6 +246,39 @@ func TestHiddenCommandAppliesHiddenProcAttr(t *testing.T) {
 		if cmd.SysProcAttr.CreationFlags&0x08000000 == 0 {
 			t.Fatalf("hiddenCommand CreationFlags = %#x, want CREATE_NO_WINDOW", cmd.SysProcAttr.CreationFlags)
 		}
+	}
+}
+
+func TestRuntimeProcessSweepIncludesRepoViteServer(t *testing.T) {
+	paths := launcherPaths{
+		exePath:    filepath.Join("C:", "repo", "avmatrix-launcher", "AVmatrixLauncher.exe"),
+		rootDir:    filepath.Join("C:", "repo"),
+		homeDir:    filepath.Join("C:", "repo", "avmatrix-launcher"),
+		serverExe:  filepath.Join("C:", "repo", "avmatrix-launcher", "server-bundle", "avmatrix-server.exe"),
+		backendExe: filepath.Join("C:", "repo", "avmatrix-launcher", "server-bundle", "avmatrix.exe"),
+	}
+
+	script := buildStopRuntimeProcessesScript(paths, 1234)
+	for _, want := range []string{"node.exe", "avmatrix-web", "vite", "--port 5228"} {
+		if !strings.Contains(script, want) {
+			t.Fatalf("runtime sweep script missing %q:\n%s", want, script)
+		}
+	}
+}
+
+func TestConflictingWebRuntimeSweepTargetsOnlyRepoViteServer(t *testing.T) {
+	paths := launcherPaths{
+		rootDir: filepath.Join("C:", "repo"),
+	}
+
+	script := buildStopWebDevServerScript(paths, 1234)
+	for _, want := range []string{"node.exe", "avmatrix-web", "vite", "--port 5228"} {
+		if !strings.Contains(script, want) {
+			t.Fatalf("web runtime sweep script missing %q:\n%s", want, script)
+		}
+	}
+	if strings.Contains(script, "avmatrix-server.exe") || strings.Contains(script, "avmatrix.exe") {
+		t.Fatalf("web runtime sweep should not target packaged backend processes:\n%s", script)
 	}
 }
 

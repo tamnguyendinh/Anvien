@@ -26,6 +26,7 @@ const (
 	webURL           = "http://127.0.0.1:5228"
 
 	launcherHeartbeatPath = "/__avmatrix_launcher/heartbeat"
+	launcherHeartbeatURL  = webURL + launcherHeartbeatPath
 	launcherClosedPath    = "/__avmatrix_launcher/closed"
 	launcherUICloseGrace  = 2 * time.Second
 )
@@ -142,7 +143,7 @@ func initLog(paths launcherPaths) {
 func startRuntime(paths launcherPaths) error {
 	log.Printf("start root=%s", paths.rootDir)
 	if state, err := readState(paths); err == nil && state.LauncherPID != os.Getpid() && processAlive(state.LauncherPID) {
-		if waitForURL(backendHealthURL, 4*time.Second) && waitForURL(webURL, 4*time.Second) {
+		if waitForURL(backendHealthURL, 4*time.Second) && waitForLauncherWeb(4*time.Second) {
 			log.Printf("reusing existing launcher pid=%d", state.LauncherPID)
 			return openBrowser(webURL)
 		}
@@ -150,6 +151,16 @@ func startRuntime(paths launcherPaths) error {
 		stopPID(state.BackendPID)
 		stopPID(state.LauncherPID)
 		_ = os.Remove(paths.stateFile)
+	}
+
+	if !launcherWebReady() && urlReady(webURL) {
+		log.Printf("web url is occupied by a non-launcher runtime; attempting cleanup")
+		if err := stopConflictingWebRuntime(paths); err != nil {
+			log.Printf("web runtime cleanup failed: %v", err)
+		}
+		if !waitForURLDown(webURL, 12*time.Second) {
+			return errors.New("web ui port is occupied by a non-launcher process")
+		}
 	}
 
 	backend, err := ensureBackend(paths)
@@ -166,7 +177,7 @@ func startRuntime(paths launcherPaths) error {
 	}
 
 	webStarted := false
-	if !urlReady(webURL) {
+	if !launcherWebReady() {
 		if err := verifyWebDist(paths.webDist); err != nil {
 			return err
 		}
@@ -189,7 +200,7 @@ func startRuntime(paths launcherPaths) error {
 		writeState(paths, "error", backend.pid)
 		return errors.New("backend did not become ready")
 	}
-	if !waitForURL(webURL, 90*time.Second) {
+	if !waitForLauncherWeb(90 * time.Second) {
 		writeState(paths, "error", backend.pid)
 		return errors.New("web ui did not become ready")
 	}
@@ -575,7 +586,7 @@ func stopRuntime(paths launcherPaths) error {
 	if err := stopRuntimeProcessesByPath(paths); err != nil {
 		log.Printf("runtime process sweep failed: %v", err)
 	}
-	waitForURLDown(webURL, 12*time.Second)
+	waitForLauncherWebDown(12 * time.Second)
 	waitForURLDown(backendHealthURL, 12*time.Second)
 	_ = os.Remove(paths.stateFile)
 	return nil
@@ -585,19 +596,40 @@ func stopRuntimeProcessesByPath(paths launcherPaths) error {
 	if runtime.GOOS != "windows" {
 		return nil
 	}
+	script := buildStopRuntimeProcessesScript(paths, os.Getpid())
+	if err := runPowerShellProcessSweep(script); err != nil {
+		return fmt.Errorf("powershell process sweep: %w", err)
+	}
+	return nil
+}
+
+func stopConflictingWebRuntime(paths launcherPaths) error {
+	if runtime.GOOS != "windows" {
+		return nil
+	}
+	script := buildStopWebDevServerScript(paths, os.Getpid())
+	if err := runPowerShellProcessSweep(script); err != nil {
+		return fmt.Errorf("powershell web runtime sweep: %w", err)
+	}
+	return nil
+}
+
+func buildStopRuntimeProcessesScript(paths launcherPaths, currentPID int) string {
 	bundleDir := filepath.Join(paths.homeDir, "server-bundle")
-	script := fmt.Sprintf(`
+	webDir := filepath.Join(paths.rootDir, "avmatrix-web")
+	return fmt.Sprintf(`
 $ErrorActionPreference = 'SilentlyContinue'
 $currentPid = %d
 $launcherPath = [System.IO.Path]::GetFullPath(%s).ToLowerInvariant()
 $serverPath = [System.IO.Path]::GetFullPath(%s).ToLowerInvariant()
 $backendPath = [System.IO.Path]::GetFullPath(%s).ToLowerInvariant()
 $bundleDir = [System.IO.Path]::GetFullPath(%s).TrimEnd([char]92).ToLowerInvariant()
+$webDir = [System.IO.Path]::GetFullPath(%s).TrimEnd([char]92).ToLowerInvariant()
 Get-CimInstance Win32_Process | Where-Object {
   if ($_.ProcessId -eq $currentPid) { return $false }
   $exe = if ($_.ExecutablePath) { $_.ExecutablePath.ToLowerInvariant() } else { '' }
   $cmd = if ($_.CommandLine) { $_.CommandLine.ToLowerInvariant() } else { '' }
-  (
+  $isPackagedRuntime = (
     ($_.Name -ieq 'AVmatrixLauncher.exe' -and $exe -eq $launcherPath) -or
     ($_.Name -ieq 'avmatrix-server.exe' -and $exe -eq $serverPath) -or
     ($_.Name -ieq 'avmatrix.exe' -and (
@@ -606,13 +638,42 @@ Get-CimInstance Win32_Process | Where-Object {
       $cmd.Contains($bundleDir)
     ))
   )
+  $isRepoWebRuntime = (
+    $_.Name -ieq 'node.exe' -and
+    $cmd.Contains($webDir) -and
+    $cmd.Contains('vite') -and
+    ($cmd.Contains('--port 5228') -or $cmd.Contains('--port=5228'))
+  )
+  $isPackagedRuntime -or $isRepoWebRuntime
 } | ForEach-Object {
   Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
 }
-`, os.Getpid(), psQuote(paths.exePath), psQuote(paths.serverExe), psQuote(paths.backendExe), psQuote(bundleDir))
+`, currentPID, psQuote(paths.exePath), psQuote(paths.serverExe), psQuote(paths.backendExe), psQuote(bundleDir), psQuote(webDir))
+}
+
+func buildStopWebDevServerScript(paths launcherPaths, currentPID int) string {
+	webDir := filepath.Join(paths.rootDir, "avmatrix-web")
+	return fmt.Sprintf(`
+$ErrorActionPreference = 'SilentlyContinue'
+$currentPid = %d
+$webDir = [System.IO.Path]::GetFullPath(%s).TrimEnd([char]92).ToLowerInvariant()
+Get-CimInstance Win32_Process | Where-Object {
+  if ($_.ProcessId -eq $currentPid) { return $false }
+  $cmd = if ($_.CommandLine) { $_.CommandLine.ToLowerInvariant() } else { '' }
+  $_.Name -ieq 'node.exe' -and
+    $cmd.Contains($webDir) -and
+    $cmd.Contains('vite') -and
+    ($cmd.Contains('--port 5228') -or $cmd.Contains('--port=5228'))
+} | ForEach-Object {
+  Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+}
+`, currentPID, psQuote(webDir))
+}
+
+func runPowerShellProcessSweep(script string) error {
 	cmd := hiddenCommand("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("powershell process sweep: %w: %s", err, strings.TrimSpace(string(out)))
+		return fmt.Errorf("%w: %s", err, strings.TrimSpace(string(out)))
 	}
 	return nil
 }
@@ -667,6 +728,26 @@ func urlReady(url string) bool {
 	return resp.StatusCode >= 200 && resp.StatusCode < 500
 }
 
+func launcherWebReady() bool {
+	return launcherWebReadyAt(launcherHeartbeatURL)
+}
+
+func launcherWebReadyAt(url string) bool {
+	ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Millisecond)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
+	if err != nil {
+		return false
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return false
+	}
+	_, _ = io.Copy(io.Discard, resp.Body)
+	_ = resp.Body.Close()
+	return resp.StatusCode == http.StatusNoContent
+}
+
 func waitForURL(url string, timeout time.Duration) bool {
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
@@ -678,6 +759,17 @@ func waitForURL(url string, timeout time.Duration) bool {
 	return false
 }
 
+func waitForLauncherWeb(timeout time.Duration) bool {
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		if launcherWebReady() {
+			return true
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	return launcherWebReady()
+}
+
 func waitForURLDown(url string, timeout time.Duration) bool {
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
@@ -687,6 +779,17 @@ func waitForURLDown(url string, timeout time.Duration) bool {
 		time.Sleep(300 * time.Millisecond)
 	}
 	return !urlReady(url)
+}
+
+func waitForLauncherWebDown(timeout time.Duration) bool {
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		if !launcherWebReady() {
+			return true
+		}
+		time.Sleep(300 * time.Millisecond)
+	}
+	return !launcherWebReady()
 }
 
 func processAlive(pid int) bool {
