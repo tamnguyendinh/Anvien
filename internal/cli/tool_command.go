@@ -48,18 +48,37 @@ func newQueryCommand() *cobra.Command {
 	var goal string
 	var limit string
 	var includeContent bool
+	var showLanes bool
+	var explain bool
+	var jsonOutput bool
 
 	cmd := &cobra.Command{
 		Use:   "query <search_query>",
-		Short: "Search the knowledge graph for execution flows related to a concept",
-		Args:  cobra.ExactArgs(1),
+		Short: "Search the knowledge graph for code, owner, flow, and command-surface candidates",
+		Long:  queryCommandLongDescription(),
+		Args: func(cmd *cobra.Command, args []string) error {
+			if showLanes {
+				if len(args) > 0 {
+					return fmt.Errorf("query --lanes does not accept a search query")
+				}
+				return nil
+			}
+			if len(args) != 1 {
+				return fmt.Errorf("usage: avmatrix query <search_query>")
+			}
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if showLanes {
+				return printQueryCapabilityLanes(cmd, jsonOutput)
+			}
 			toolArgs := map[string]any{
 				"query":           args[0],
 				"repo":            emptyToNil(repoName),
 				"task_context":    emptyToNil(taskContext),
 				"goal":            emptyToNil(goal),
 				"include_content": includeContent,
+				"explain":         explain,
 			}
 			if limit != "" {
 				parsed, err := parsePositiveIntFlag("limit", limit)
@@ -76,7 +95,39 @@ func newQueryCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&goal, "goal", "g", "", "what you want to find")
 	cmd.Flags().StringVarP(&limit, "limit", "l", "", "max processes to return")
 	cmd.Flags().BoolVar(&includeContent, "content", false, "include full symbol source code")
+	cmd.Flags().BoolVar(&showLanes, "lanes", false, "list query capability lanes")
+	cmd.Flags().BoolVar(&explain, "explain", false, "include lane, rank, and match evidence in query output")
+	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write JSON output where the selected query mode supports it")
 	return cmd
+}
+
+func queryCommandLongDescription() string {
+	var builder strings.Builder
+	builder.WriteString("Search the knowledge graph for code, owner, flow, and command-surface candidates.\n\n")
+	builder.WriteString("Query capability lanes:\n")
+	for _, lane := range mcpserver.QueryCapabilityLanes() {
+		fmt.Fprintf(&builder, "  - %s: %s\n", lane.ID, lane.Description)
+	}
+	builder.WriteString("\nUse --lanes to list lanes, and --explain to include lane, rank, and match evidence in query output.")
+	return builder.String()
+}
+
+func printQueryCapabilityLanes(cmd *cobra.Command, jsonOutput bool) error {
+	lanes := mcpserver.QueryCapabilityLanes()
+	if jsonOutput {
+		raw, err := json.MarshalIndent(map[string]any{"queryCapabilities": lanes}, "", "  ")
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(cmd.OutOrStdout(), "%s\n", raw)
+		return err
+	}
+	for _, lane := range lanes {
+		if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s\n", lane.ID, lane.Name, lane.Description); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func newContextCommand() *cobra.Command {

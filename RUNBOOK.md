@@ -268,12 +268,12 @@ Artifacts:
 
 ```text
 avmatrix-launcher\AVmatrixLauncher.exe
+avmatrix\bin\avmatrix.exe
 avmatrix-launcher\server-bundle\avmatrix-server.exe
-avmatrix-launcher\server-bundle\avmatrix.exe
 avmatrix-launcher\web-dist\
 ```
 
-`AVmatrixLauncher.exe` is rebuilt by `avmatrix-launcher\build.ps1` and is the packaged user entrypoint. The start screen is served from the packaged Web UI; there is no separate root HTML launcher file.
+`AVmatrixLauncher.exe` is rebuilt by `avmatrix-launcher\build.ps1` and is the packaged user entrypoint. `avmatrix\bin\avmatrix.exe` is the single production AVmatrix CLI/runtime executable; the launcher backend wrapper runs that file with `serve`. The start screen is served from the packaged Web UI; there is no separate root HTML launcher file.
 
 Start:
 

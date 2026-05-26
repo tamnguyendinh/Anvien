@@ -133,6 +133,78 @@ func TestQueryToolWarnsForStaleIncompleteSemanticMetadata(t *testing.T) {
 	}
 }
 
+func TestQueryToolRanksAIContextOwnersAndExplainsLanes(t *testing.T) {
+	store, repoPath := newMCPQueryBenchmarkRepo(t)
+	g := graph.New()
+	g.AddNode(graph.Node{ID: "Function:contract-main", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
+		"name":                                "main",
+		"filePath":                            "cmd/generate-web-contracts/main.go",
+		"content":                             "generated web contracts",
+		semantic.AppLayerProperty:             "generated_contract",
+		semantic.AppLayerSourceProperty:       "path_rule",
+		semantic.FunctionalAreaProperty:       "contracts",
+		semantic.FunctionalAreaSourceProperty: "path_rule",
+	}})
+	g.AddNode(graph.Node{ID: "Function:generate-ai-context", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
+		"name":                                "GenerateAIContextFiles",
+		"filePath":                            "internal/aicontext/aicontext.go",
+		"content":                             "generate AGENTS.md CLAUDE.md and AVmatrix skills",
+		semantic.AppLayerProperty:             string(semantic.AppLayerBackend),
+		semantic.AppLayerSourceProperty:       "path_rule",
+		semantic.FunctionalAreaProperty:       string(semantic.FunctionalAreaCLI),
+		semantic.FunctionalAreaSourceProperty: "path_rule",
+	}})
+	g.AddNode(graph.Node{ID: "Function:install-base-skills", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
+		"name":                                "installBaseSkills",
+		"filePath":                            "internal/aicontext/aicontext.go",
+		"content":                             "install generated .claude skills avmatrix skill files",
+		semantic.AppLayerProperty:             string(semantic.AppLayerBackend),
+		semantic.AppLayerSourceProperty:       "path_rule",
+		semantic.FunctionalAreaProperty:       string(semantic.FunctionalAreaCLI),
+		semantic.FunctionalAreaSourceProperty: "path_rule",
+	}})
+	g.AddNode(graph.Node{ID: "File:internal/aicontext/skills/avmatrix-cli.md", Label: scopeir.NodeFile, Properties: graph.NodeProperties{
+		"name":                                "avmatrix-cli.md",
+		"filePath":                            "internal/aicontext/skills/avmatrix-cli.md",
+		semantic.AppLayerProperty:             string(semantic.AppLayerBackend),
+		semantic.AppLayerSourceProperty:       "path_rule",
+		semantic.FunctionalAreaProperty:       string(semantic.FunctionalAreaCLI),
+		semantic.FunctionalAreaSourceProperty: "path_rule",
+	}})
+	writeMCPGraphTB(t, repoPath, g)
+
+	server := NewServer(Config{Store: store})
+	payload, err := server.queryTool(map[string]any{
+		"repo":    "fixture",
+		"query":   "generated AVmatrix skills AGENTS.md CLAUDE.md internal aicontext",
+		"limit":   5,
+		"explain": true,
+	})
+	if err != nil {
+		t.Fatalf("queryTool: %v", err)
+	}
+	definitions := payload["definitions"].([]map[string]any)
+	if len(definitions) < 2 {
+		t.Fatalf("definitions = %#v", definitions)
+	}
+	first := definitions[0]
+	if first["filePath"] != "internal/aicontext/aicontext.go" {
+		t.Fatalf("first definition should be AI-context owner, got %#v", first)
+	}
+	if !queryTestStringSliceContains(first["queryLanes"], "docs_setup_ai_context_discovery") {
+		t.Fatalf("first definition missing AI-context lane: %#v", first)
+	}
+	if !queryTestStringSliceContains(first["matchReasons"], "semanticSurface") {
+		t.Fatalf("first definition missing semantic surface reason: %#v", first)
+	}
+	if !queryTestPayloadLane(payload["queryCapabilities"], "docs_setup_ai_context_discovery") {
+		t.Fatalf("payload missing AI-context query capability: %#v", payload["queryCapabilities"])
+	}
+	if _, ok := payload["explain"].(map[string]any); !ok {
+		t.Fatalf("explain payload missing: %#v", payload)
+	}
+}
+
 func findQueryRow(rows []map[string]any, id string) map[string]any {
 	for _, row := range rows {
 		if row["id"] == id {
@@ -140,4 +212,35 @@ func findQueryRow(rows []map[string]any, id string) map[string]any {
 		}
 	}
 	return nil
+}
+
+func queryTestStringSliceContains(raw any, want string) bool {
+	switch values := raw.(type) {
+	case []string:
+		for _, value := range values {
+			if value == want {
+				return true
+			}
+		}
+	case []any:
+		for _, value := range values {
+			if text, ok := value.(string); ok && text == want {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func queryTestPayloadLane(raw any, want string) bool {
+	lanes, ok := raw.([]map[string]any)
+	if !ok {
+		return false
+	}
+	for _, lane := range lanes {
+		if lane["id"] == want {
+			return true
+		}
+	}
+	return false
 }

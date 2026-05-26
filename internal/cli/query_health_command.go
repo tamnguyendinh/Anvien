@@ -90,13 +90,18 @@ type queryHealthCaseResult struct {
 }
 
 type queryHealthTargetMatch struct {
-	Kind     string `json:"kind"`
-	Expected string `json:"expected"`
-	Rank     int    `json:"rank"`
-	ResultID string `json:"resultId,omitempty"`
-	Name     string `json:"name,omitempty"`
-	FilePath string `json:"filePath,omitempty"`
-	Source   string `json:"source,omitempty"`
+	Kind         string   `json:"kind"`
+	Expected     string   `json:"expected"`
+	Rank         int      `json:"rank"`
+	GlobalRank   int      `json:"globalRank,omitempty"`
+	SourceRank   int      `json:"sourceRank,omitempty"`
+	ProcessRank  int      `json:"processRank,omitempty"`
+	ResultID     string   `json:"resultId,omitempty"`
+	Name         string   `json:"name,omitempty"`
+	FilePath     string   `json:"filePath,omitempty"`
+	Source       string   `json:"source,omitempty"`
+	QueryLanes   []string `json:"queryLanes,omitempty"`
+	MatchReasons []string `json:"matchReasons,omitempty"`
 }
 
 type queryHealthTargetMiss struct {
@@ -107,6 +112,9 @@ type queryHealthTargetMiss struct {
 
 type queryHealthActualResult struct {
 	Rank                    int            `json:"rank"`
+	GlobalRank              int            `json:"globalRank,omitempty"`
+	SourceRank              int            `json:"sourceRank,omitempty"`
+	ProcessRank             int            `json:"processRank,omitempty"`
 	Source                  string         `json:"source"`
 	ID                      string         `json:"id,omitempty"`
 	Name                    string         `json:"name,omitempty"`
@@ -118,13 +126,16 @@ type queryHealthActualResult struct {
 	ResolutionConfidence    string         `json:"resolutionConfidence,omitempty"`
 	ResolutionGapCount      int            `json:"resolutionGapCount,omitempty"`
 	ResolutionHealthBuckets map[string]int `json:"resolutionHealthBuckets,omitempty"`
+	QueryLanes              []string       `json:"queryLanes,omitempty"`
+	MatchReasons            []string       `json:"matchReasons,omitempty"`
 }
 
 type queryHealthQueryPayload struct {
-	Query          string           `json:"query"`
-	Processes      []map[string]any `json:"processes"`
-	ProcessSymbols []map[string]any `json:"process_symbols"`
-	Definitions    []map[string]any `json:"definitions"`
+	Query             string           `json:"query"`
+	QueryCapabilities []map[string]any `json:"queryCapabilities,omitempty"`
+	Processes         []map[string]any `json:"processes"`
+	ProcessSymbols    []map[string]any `json:"process_symbols"`
+	Definitions       []map[string]any `json:"definitions"`
 }
 
 type queryHealthRunOptions struct {
@@ -352,7 +363,8 @@ func queryHealthActualResults(payload queryHealthQueryPayload, limit int) []quer
 		}
 	}
 	results := make([]queryHealthActualResult, 0, len(payload.ProcessSymbols)+len(payload.Definitions))
-	for _, symbol := range payload.ProcessSymbols {
+	globalRank := 1
+	for index, symbol := range payload.ProcessSymbols {
 		process := firstNonEmptyMapString(symbol, "process", "Process")
 		rank := processRank[process]
 		if rank == 0 {
@@ -360,6 +372,9 @@ func queryHealthActualResults(payload queryHealthQueryPayload, limit int) []quer
 		}
 		results = append(results, queryHealthActualResult{
 			Rank:                    rank,
+			GlobalRank:              globalRank,
+			SourceRank:              firstPositiveInt(mapInt(symbol, "sourceRank", "SourceRank"), index+1),
+			ProcessRank:             firstPositiveInt(mapInt(symbol, "processRank", "ProcessRank"), rank),
 			Source:                  "process_symbol",
 			ID:                      firstNonEmptyMapString(symbol, "id", "ID"),
 			Name:                    firstNonEmptyMapString(symbol, "name", "Name"),
@@ -371,11 +386,17 @@ func queryHealthActualResults(payload queryHealthQueryPayload, limit int) []quer
 			ResolutionConfidence:    firstNonEmptyMapString(symbol, "resolutionConfidence", "ResolutionConfidence"),
 			ResolutionGapCount:      mapInt(symbol, "resolutionGapCount", "ResolutionGapCount"),
 			ResolutionHealthBuckets: mapStringInt(symbol, "resolutionHealthBuckets", "ResolutionHealthBuckets"),
+			QueryLanes:              mapStringSlice(symbol, "queryLanes", "QueryLanes"),
+			MatchReasons:            mapStringSlice(symbol, "matchReasons", "MatchReasons"),
 		})
+		globalRank++
 	}
 	for index, definition := range payload.Definitions {
+		rank := firstPositiveInt(mapInt(definition, "rank", "Rank"), index+1)
 		results = append(results, queryHealthActualResult{
-			Rank:                    index + 1,
+			Rank:                    rank,
+			GlobalRank:              globalRank,
+			SourceRank:              rank,
 			Source:                  "definition",
 			ID:                      firstNonEmptyMapString(definition, "id", "ID"),
 			Name:                    firstNonEmptyMapString(definition, "name", "Name"),
@@ -386,7 +407,10 @@ func queryHealthActualResults(payload queryHealthQueryPayload, limit int) []quer
 			ResolutionConfidence:    firstNonEmptyMapString(definition, "resolutionConfidence", "ResolutionConfidence"),
 			ResolutionGapCount:      mapInt(definition, "resolutionGapCount", "ResolutionGapCount"),
 			ResolutionHealthBuckets: mapStringInt(definition, "resolutionHealthBuckets", "ResolutionHealthBuckets"),
+			QueryLanes:              mapStringSlice(definition, "queryLanes", "QueryLanes"),
+			MatchReasons:            mapStringSlice(definition, "matchReasons", "MatchReasons"),
 		})
+		globalRank++
 	}
 	sort.SliceStable(results, func(i, j int) bool {
 		if results[i].Rank != results[j].Rank {
@@ -463,13 +487,18 @@ func findQueryHealthMatch(kind string, expected string, actual []queryHealthActu
 			continue
 		}
 		return queryHealthTargetMatch{
-			Kind:     kind,
-			Expected: expected,
-			Rank:     item.Rank,
-			ResultID: item.ID,
-			Name:     item.Name,
-			FilePath: item.FilePath,
-			Source:   item.Source,
+			Kind:         kind,
+			Expected:     expected,
+			Rank:         item.Rank,
+			GlobalRank:   item.GlobalRank,
+			SourceRank:   item.SourceRank,
+			ProcessRank:  item.ProcessRank,
+			ResultID:     item.ID,
+			Name:         item.Name,
+			FilePath:     item.FilePath,
+			Source:       item.Source,
+			QueryLanes:   append([]string{}, item.QueryLanes...),
+			MatchReasons: append([]string{}, item.MatchReasons...),
 		}, true
 	}
 	return queryHealthTargetMatch{}, false
@@ -643,6 +672,40 @@ func mapInt(values map[string]any, keys ...string) int {
 		}
 	}
 	return 0
+}
+
+func firstPositiveInt(values ...int) int {
+	for _, value := range values {
+		if value > 0 {
+			return value
+		}
+	}
+	return 0
+}
+
+func mapStringSlice(values map[string]any, keys ...string) []string {
+	for _, key := range keys {
+		raw, ok := values[key]
+		if !ok || raw == nil {
+			continue
+		}
+		var out []string
+		switch typed := raw.(type) {
+		case []string:
+			out = append(out, typed...)
+		case []any:
+			for _, item := range typed {
+				text := strings.TrimSpace(fmt.Sprint(item))
+				if text != "" {
+					out = append(out, text)
+				}
+			}
+		}
+		if len(out) > 0 {
+			return out
+		}
+	}
+	return nil
 }
 
 func mapStringInt(values map[string]any, keys ...string) map[string]int {

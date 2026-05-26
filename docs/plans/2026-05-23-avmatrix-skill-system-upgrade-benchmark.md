@@ -2,319 +2,151 @@
 
 Date: 2026-05-23
 
-Status: Planned
+Status: active
 
 Companion files:
 
 - Plan: [2026-05-23-avmatrix-skill-system-upgrade-plan.md](2026-05-23-avmatrix-skill-system-upgrade-plan.md)
-- Evidence ledger: [2026-05-23-avmatrix-skill-system-upgrade-evidence.md](2026-05-23-avmatrix-skill-system-upgrade-evidence.md)
+- Evidence: [2026-05-23-avmatrix-skill-system-upgrade-evidence.md](2026-05-23-avmatrix-skill-system-upgrade-evidence.md)
 
 ## Benchmark Rules
 
-Record benchmarkable results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, query hit rate, command output inventory, graph inventory counts, source-site inventory counts, generated skill inventory counts, setup/package file inventories, or resolved-edge accuracy.
+This file records only quantitative benchmark data: inventory counts, before/after counts, rates, sizes, latency, throughput, graph counts, hit/miss counts, coverage percentages, and measured UI geometry.
 
-Build/test/e2e timings are validation evidence unless the implementation changes those systems.
+Command output, validation logs, impact details, screenshots, and implementation notes belong in the evidence ledger. A benchmark row must be measurable and must use baseline/final or before/after values wherever a comparison exists.
 
-Do not count generated output as correct because it exists. Record generated file count, paths, sizes, representative content checks, and source-to-generated agreement.
+Use `pending` only when a future phase has not measured that value yet.
 
-## B0 - Source Skill Inventory
+## B0 - Skill Source And Generated Inventory
 
-Status: pending
+Status: baseline recorded; final pending.
 
-Record before and after implementation:
+| Metric | Unit | Baseline | Latest | Delta | Final target |
+|---|---:|---:|---:|---:|---:|
+| Embedded source skill Markdown files | files | 6 | 6 | 0 | 11 |
+| Registered base skills | skills | 6 | 6 | 0 | 11 |
+| Generated `.claude/skills/avmatrix/**/SKILL.md` files | files | 6 | 6 | 0 | 11 |
+| Root generated Skills table rows | rows | 6 | 6 | 0 | 11 |
+| Source skill total size | bytes | 17,499 | 17,499 | 0 | record |
+| Generated skill total size | bytes | 17,499 | 17,499 | 0 | equal source total |
+| Source/generated matching hashes | pairs | 6 | 6 | 0 | final generated skill count |
+| Source skills with `name` frontmatter | files | 6 | 6 | 0 | final source skill count |
+| Source skills with `description` frontmatter | files | 6 | 6 | 0 | final source skill count |
 
-| Metric | Baseline | Final | Notes |
-|---|---:|---:|---|
-| Embedded source skill Markdown files under `internal/aicontext/skills` | pending | pending | Count source files, not generated files. |
-| Registered base skills in `internal/aicontext/aicontext.go` | pending | pending | Count `baseSkills` entries. |
-| Generated `.claude/skills/avmatrix/**/SKILL.md` files | pending | pending | Measured after normal generation. |
-| Root generated Skills table rows | pending | pending | Measured in generated `AGENTS.md` or `CLAUDE.md`. |
-| Source skill total bytes | pending | pending | Sum source Markdown bytes. |
-| Generated skill total bytes | pending | pending | Sum generated local skill bytes after generation. |
+## B1 - Command Surface Inventory
 
-## B1 - Command Surface Coverage Inventory
+Status: baseline recorded; Phase 1 query-lane metrics recorded; final pending.
 
-Status: pending
+| Metric | Unit | Baseline | Latest | Delta | Final target |
+|---|---:|---:|---:|---:|---:|
+| Visible built CLI top-level commands | commands | 24 | 24 | 0 | >= 24 |
+| Visible source CLI top-level commands | commands | 24 | 24 | 0 | >= 24 |
+| Hidden lifecycle command families from source | families | 2 | 2 | 0 | record |
+| MCP tools from source | tools | 15 | 15 | 0 | record |
+| MCP fixed resources from source | resources | 2 | 2 | 0 | record |
+| MCP resource templates from source | templates | 6 | 6 | 0 | record |
+| MCP prompts from source | prompts | 2 | 2 | 0 | 2 |
+| Discoverable query capability lanes | lanes | 0 | 8 | +8 | >= 8 |
+| Query explain metadata fields validated | fields | 0 | 6 | +6 | >= 6 |
+| Query-health cases with lane evidence fields | cases | 0 | 8 | +8 | 8 |
+| Normal query compatibility failures | failures | 0 | 0 | 0 | 0 |
+| First-class graph-health CLI command families | families | 0 | 0 | 0 | >= 1 |
+| MCP prompt templates reviewed | prompts | 0 | 0 | 0 | 2 |
+| Accepted CLI parity gaps implemented | gaps | 0 | pending | pending | pending |
 
-Record the current command/tool/resource inventory and final skill coverage:
+## B2 - Query Reliability Metrics
 
-| Command/tool/resource family | Implemented in current code? | Covered by final skill | Primary skill | Notes |
-|---|---|---|---|---|
-| `analyze` / graph refresh | pending | pending | pending | Base graph generation. |
-| `status` | pending | pending | pending | Freshness and repo index state. |
-| `query` | pending | pending | pending | Concept/process retrieval. |
-| `context` | pending | pending | pending | Symbol/process neighborhood. |
-| `impact` | pending | pending | pending | Blast radius. |
-| `detect-changes` | pending | pending | pending | Git-diff graph impact. |
-| `cypher` | pending | pending | pending | Read-only graph queries. |
-| `rename` | pending | pending | pending | Graph-guided rename. |
-| `augment` | pending | pending | pending | Confirm exact behavior from source. |
-| API route/tool/shape/impact commands | pending | pending | pending | Confirm exact MCP tool names and do not invent CLI names where no CLI command exists. |
-| Query-health / graph-quality commands | pending | pending | pending | Confirm from source or freshly built binary; PATH binary may be stale. |
-| Resolution/source-site/accuracy commands | pending | pending | pending | Confirm from source or freshly built binary; PATH binary may be stale. |
-| `benchmark-compare` | pending | pending | pending | Confirm exact command name and scope. |
-| group/cross-repo commands | pending | pending | pending | Confirm exact command names. |
-| `serve` / Web runtime | pending | pending | pending | Local server/Web UI behavior. |
-| `mcp` | pending | pending | pending | MCP server behavior. |
-| `setup` | pending | pending | pending | Editor/MCP setup and skill installation. |
-| `version` | pending | pending | pending | Version output. |
-| package/runtime commands | pending | pending | pending | Build/package runtime assets. |
-| wiki/hook commands | pending | pending | pending | Confirm current command names and behavior. |
-| MCP resources | pending | pending | pending | `avmatrix://...` resources. |
+Status: Phase 1 recorded.
 
-## B1Q - Query Reliability Bug Inventory
+Suite-level before/after:
 
-Status: pending
+| Metric | Unit | Baseline | After Phase 1 | Delta | Target |
+|---|---:|---:|---:|---:|---:|
+| Suite cases | cases | 8 | 8 | 0 | 8 |
+| Expected targets | targets | 54 | 54 | 0 | 54 |
+| Matched targets | targets | 33 | 46 | +13 | increase |
+| Matched target rate | percent | 61.11 | 85.19 | +24.08 pp | increase |
+| Missed targets | targets | 21 | 8 | -13 | decrease |
+| Missed target rate | percent | 38.89 | 14.81 | -24.08 pp | decrease |
+| Threshold passed | cases | 5 | 8 | +3 | 8 |
+| Threshold pass rate | percent | 62.50 | 100.00 | +37.50 pp | 100.00 |
+| Threshold failed | cases | 3 | 0 | -3 | 0 |
+| Exact passed | cases | 1 | 3 | +2 | record |
+| Exact pass rate | percent | 12.50 | 37.50 | +25.00 pp | record |
+| Exact failed | cases | 7 | 5 | -2 | record |
 
-Dedicated suite for this plan:
+Per-case before/after:
 
-| Artifact | Baseline | Final | Notes |
-|---|---|---|---|
-| Query-health suite path | pending | `docs/query-health/2026-05-23-avmatrix-skill-system-upgrade-suite.json` or recorded equivalent | Keep this plan's query cases separate from older suites with different product goals. |
-| Suite case count | pending | pending | Must include AI-context owner discovery and representative non-AI-context query capability lanes. |
-| Suite validates query as umbrella command | pending | pending | Cases must not define `query` as only an AI-context lookup. |
+| Case | Expected | Threshold baseline | Threshold after | Exact baseline | Exact after | Hit@5 baseline | Hit@5 after | Hit@10 baseline | Hit@10 after | Matched baseline | Matched after | Missed baseline | Missed after |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `ai-context-generated-skills-owner-discovery` | 6 | 0 | 1 | 0 | 0 | 0 | 5 | 1 | 5 | 1 | 5 | 5 | 1 |
+| `setup-editor-skill-installation-owner-discovery` | 4 | 0 | 1 | 0 | 1 | 3 | 4 | 3 | 4 | 3 | 4 | 1 | 0 |
+| `package-skill-distribution-owner-discovery` | 6 | 1 | 1 | 1 | 0 | 5 | 2 | 6 | 4 | 6 | 4 | 0 | 2 |
+| `mcp-setup-resource-prompt-guidance-owner-discovery` | 7 | 1 | 1 | 0 | 0 | 3 | 3 | 5 | 6 | 5 | 6 | 2 | 1 |
+| `query-command-surface-owner-discovery` | 8 | 1 | 1 | 0 | 0 | 6 | 4 | 6 | 6 | 6 | 6 | 2 | 2 |
+| `graph-quality-command-surface-owner-discovery` | 8 | 0 | 1 | 0 | 0 | 2 | 6 | 2 | 6 | 2 | 6 | 6 | 2 |
+| `api-surface-tool-discovery` | 7 | 1 | 1 | 0 | 1 | 5 | 6 | 6 | 7 | 6 | 7 | 1 | 0 |
+| `cross-repo-command-surface-discovery` | 8 | 1 | 1 | 0 | 1 | 4 | 8 | 4 | 8 | 4 | 8 | 4 | 0 |
 
-Query behavior contract for this plan:
+## B3 - Canonical Executable And Package Artifact Metrics
 
-| Behavior | Baseline measurement | Final requirement |
-|---|---|---|
-| Broad concept discovery | pending | `query` still returns relevant code/process candidates for broad intent. |
-| Exact owner discovery | pending | Exact owner files/symbols outrank weak-overlap process flows for the AI-context case. |
-| Execution-flow preservation | pending | Useful process/flow results remain present when they have clear query overlap. |
-| Wrong-owner demotion | pending | Plausible but unrelated launcher/resolution/frontend/backend flows do not outrank stronger AI-context owner evidence. |
-| Result auditability | pending | Query or query-health output exposes match reason evidence and noise/miss reasons. |
-| `query` versus `context` separation | pending | `query` remains broad discovery; `context` remains exact symbol inspection. |
-| Query lane evidence | pending | Results expose query lane or equivalent match reason when available. |
-| Source/global ranking semantics | pending | Hit@5 and hit@10 are based on documented result ordering. |
-| User-facing lane discovery | pending | CLI/MCP help or command output lets users and agents discover query lanes. |
-| Explainable query output | pending | CLI/MCP JSON output exposes lane/rank/match evidence without reading internal code. |
-| Normal query compatibility | pending | Existing `avmatrix query "<intent>" --repo <repo>` behavior still works. |
+Status: P4-H recorded.
 
-Query Capability Taxonomy coverage:
+| Metric | Unit | Baseline | After P4-H | Delta | Target |
+|---|---:|---:|---:|---:|---:|
+| Canonical CLI size | bytes | 50,344,448 | 50,395,136 | +50,688 | record |
+| Launcher executable size | bytes | 6,993,408 | 6,993,408 | 0 | record |
+| Launcher support wrapper size | bytes | 2,053,632 | 2,053,632 | 0 | record |
+| Production AVmatrix CLI executable authorities | count | 2 | 1 | -1 | 1 |
+| Independent `server-bundle/avmatrix.exe` executables | count | 1 | 0 | -1 | 0 |
+| Launcher support wrapper executables | count | 1 | 1 | 0 | 1 |
+| Native DLL content mismatches after build | count | pending | 0 | pending | 0 |
 
-| Query capability | Baseline case | Final case | Result fields to record |
-|---|---|---|---|
-| owner discovery | pending | pending | expected owners, matched owners, missed owners, rank, reason |
-| concept discovery | pending | pending | top code areas, lane/reason evidence, unrelated result count |
-| execution-flow discovery | pending | pending | process/flow candidates, matched steps, flow overlap evidence |
-| API surface discovery | pending | pending | handlers/contracts/consumers, route/tool evidence |
-| graph-quality discovery | pending | pending | query-health/resolution/source-site/graph-health owners |
-| docs/setup/AI-context discovery | pending | pending | generator/setup/package/resource guidance owners |
-| command-surface discovery | pending | pending | CLI/MCP/resource/Web/API command owners |
-| cross-repo discovery | pending | pending | group/cross-repo owners when indexed data supports them |
+## B4 - Graph Labeling And Visual Layout Metrics
 
-Record broad-intent query behavior before and after implementation:
+Status: baseline problem identified; measured browser baseline and final pending.
 
-| Query intent | Expected owner targets | Baseline result | Final result | Notes |
-|---|---|---|---|---|
-| AI context generated skills and `AGENTS.md`/`CLAUDE.md` | `internal/aicontext/aicontext.go`, `internal/aicontext/skills/*.md`, `internal/cli/analyze_postrun.go` | pending | pending | Broad query previously returned unrelated launcher/resolution/frontend flows; measure instead of relying on memory. |
-| Setup/editor skill installation | `internal/cli/setup_command.go`, `setupInstallSkillsTo`, package-root `skills/` handling | pending | pending | Verify query can surface setup owner or record exact misses. |
-| Package skill distribution | `internal/cli/package_command.go`, `internal/cli/package_runtime.go`, package metadata/source-copy behavior | pending | pending | Package commands are hidden today; query-health should still make owner discovery auditable. |
-| MCP setup/resource guidance | `internal/mcp/resources.go`, `setupResource`, resource/tool reference tests | pending | pending | Verify broad query can locate MCP-facing guidance owner. |
+| Metric | Unit | Baseline | Final | Delta | Target |
+|---|---:|---:|---:|---:|---:|
+| On-canvas macro ring labels | labels | 0 | pending | pending | visible macro ring count |
+| On-canvas island labels | labels | 0 | pending | pending | visible major island count |
+| Macro ring label coverage | percent | 0.00 | pending | pending | 100.00 |
+| Island label coverage | percent | 0.00 | pending | pending | 100.00 |
+| Label overlap violations | violations | pending | pending | pending | 0 |
+| Runtime-visible macro rings | rings | pending | pending | pending | record |
+| Runtime-visible islands | islands | pending | pending | pending | record |
+| Minimum node spacing inside islands | px | pending | pending | pending | >= 2x rendered node diameter |
+| Island-to-island gutter distance | px | pending | pending | pending | >= 1x largest visible island radius |
+| Macro ring gutter distance | px | pending | pending | pending | > 0 |
+| Rail-like island shape violations | islands | pending | pending | pending | 0 |
+| Auto optimizer runs before manual click | runs | 0 | pending | pending | 0 |
+| Manual optimizer runs after one click | runs | pending | pending | pending | 1 |
 
-Root-cause and fix metrics:
+## B5 - Setup And Package Skill Distribution Metrics
 
-| Metric | Baseline | Final |
-|---|---:|---:|
-| unrelated top results before expected owner | pending | pending |
-| expected owner files in top 5 | pending | pending |
-| expected owner files in top 10 | pending | pending |
-| expected owner symbols in top 10 | pending | pending |
-| top result has match reason evidence | pending | pending |
-| missed targets reported explicitly | pending | pending |
-| noise reason reported explicitly | pending | pending |
-| broad-discovery regression check passes | pending | pending |
-| useful execution-flow candidates preserved | pending | pending |
-| query lane coverage recorded | pending | pending |
-| source/global rank behavior recorded | pending | pending |
-| CLI lane/explain commands validated | pending | pending |
-| MCP query evidence fields validated | pending | pending |
-| existing query command compatibility validated | pending | pending |
+Status: final pending.
 
-Record final query-health fields for the AI-context intent case:
+| Metric | Unit | Baseline | Final | Delta | Target |
+|---|---:|---:|---:|---:|---:|
+| Editor skill install targets checked | targets | 0 | pending | pending | supported target count |
+| Skills installed per checked editor target | skills | pending | pending | pending | 11 |
+| Package-root skill source files | files | 0 | pending | pending | 0 or 11, depending on selected package design |
+| Packaged embedded skill files | files | pending | pending | pending | 11 |
+| Setup/generated skill inventory mismatches | mismatches | pending | pending | pending | 0 |
+| Package/generated skill inventory mismatches | mismatches | pending | pending | pending | 0 |
+| Setup/package skill content hash mismatches | mismatches | pending | pending | pending | 0 |
 
-| Metric | Final |
-|---|---:|
-| threshold pass/fail | pending |
-| exact pass/fail | pending |
-| usable retrieval meaning | pending |
-| exact coverage meaning | pending |
-| expected targets | pending |
-| matched targets | pending |
-| missed targets | pending |
-| noise reason | pending |
-| query lane / match reason | pending |
-| source rank and global rank behavior | pending |
+## B6 - Generated AI Context Final Metrics
 
-## B1A - Binary Command Surface Mismatch Inventory
+Status: final pending.
 
-Status: preliminary baseline recorded
-
-| Surface | Command | Observed result | Interpretation |
-|---|---|---|---|
-| PATH binary | `avmatrix --help` | Did not list `query-health`, `resolution-inventory`, or `source-site-accuracy`. | PATH binary is stale for this plan's command inventory. |
-| PATH binary | `avmatrix query-health --help` | `unknown command "query-health" for "avmatrix"` | Do not use PATH binary as source of truth. |
-| PATH binary | `avmatrix resolution-inventory --help` | `unknown command "resolution-inventory" for "avmatrix"` | Do not use PATH binary as source of truth. |
-| PATH binary | `avmatrix source-site-accuracy --help` | `unknown command "source-site-accuracy" for "avmatrix"` | Do not use PATH binary as source of truth. |
-| Current source | `go run .\cmd\avmatrix --help` | Listed `query-health`, `resolution-inventory`, and `source-site-accuracy`. | Current source contains the newer command surface. |
-| Current source | `go run .\cmd\avmatrix query-health --help` | Help output exists with `--fail-on-exact`, `--fail-on-threshold`, `--json`, `--limit`, `--out`, `--repo`, and `--suite`. | Skill content can document this after build/source verification. |
-| Current source | `go run .\cmd\avmatrix resolution-inventory --help` | Help output exists with `--graph`, `--json`, and `--out`. | Skill content can document this after build/source verification. |
-| Current source | `go run .\cmd\avmatrix source-site-accuracy --help` | Help output exists with `--golden`, `--graph`, `--json`, `--max-examples`, and `--out`. | Skill content can document this after build/source verification. |
-
-## B1G - Graph Labeling And Visual Orientation Inventory
-
-Status: pending
-
-Baseline problem artifact:
-
-| Artifact | Baseline | Final | Notes |
-|---|---|---|---|
-| `reports/problem/screenshot_1779517751.png` | present | pending | Shows visible graph rings/islands without direct on-canvas names for the macro rings or each island. |
-
-Record before and after the graph labeling phase:
-
-| Metric | Baseline | Final | Notes |
-|---|---:|---:|---|
-| Runtime-visible macro ring count | pending | pending | Count from browser diagnostics or graph label metadata. |
-| Macro rings with on-canvas labels | pending | pending | Must match visible macro rings unless a ring is intentionally hidden by filter. |
-| Runtime-visible island count | pending | pending | Count per macro ring where possible. |
-| Islands with on-canvas labels | pending | pending | Must cover major visible node islands and investigation islands such as ResolutionGap/Unresolved/Unknown where present. |
-| Labels sourced from graph metadata | pending | pending | Record whether labels came from app layer, node type/filter, island key, semantic group, or fallback. |
-| Labels update after filters/depth changes | pending | pending | Ring/island label count must match the currently visible graph subset, not stale initial conversion state. |
-| Runtime diagnostics/test selector label count | pending | pending | Browser validation must have a machine-checkable count or selector in addition to screenshot review. |
-| Minimum node spacing inside islands | pending | pending | Measure representative nearest-neighbor distance or deterministic geometry guardrail so nodes do not visually stack. |
-| Island radius growth by visible node count | pending | pending | Larger visible islands must expand instead of compressing into a dense mass. |
-| Island-to-island gutter distance | pending | pending | Neighboring islands inside a ring must have readable whitespace. |
-| Macro ring gutter distance | pending | pending | Neighboring macro rings must remain visually distinct when zoomed out. |
-| Rail-like island shape violations | pending | pending | Count islands that collapse into marched/rail-like lines instead of readable two-dimensional groups. |
-| Desktop screenshot label readability | pending | pending | Browser screenshot must show ring and island names without relying on hover or side panel text. |
-| Smaller viewport screenshot label readability | pending | pending | Labels may simplify at far zoom, but names must be recoverable by normal zoom/select behavior. |
-| Label overlap violations | pending | pending | Count obvious incoherent overlap with dense nodes, edges, panels, controls, or other labels. |
-| Graph guidance fallback required | pending | pending | Record only if a short toggle/explanation is added; guidance cannot substitute for graph labels. |
-
-## B2 - Generated Output Inventory
-
-Status: pending
-
-Record after normal generation through `avmatrix analyze --force`:
-
-| Generated artifact | Expected final count/content | Observed final result | Pass/fail |
-|---|---|---|---|
-| `AGENTS.md` managed AVmatrix block | Final skill table, repo-agnostic guidance, current stats line | pending | pending |
-| `CLAUDE.md` managed AVmatrix block | Same final skill table and guidance | pending | pending |
-| `.claude/skills/avmatrix/<skill>/SKILL.md` | One file for each final base skill | pending | pending |
-| Skill table/source registry agreement | Generated table matches `baseSkills` final set | pending | pending |
-| Generated skill/source content agreement | Generated files match embedded source content except expected path wrapping | pending | pending |
-
-## B3 - Setup And Package Inventory
-
-Status: pending
-
-Record if setup/package behavior is touched or tested:
-
-| Surface | Baseline | Final | Notes |
-|---|---:|---:|---|
-| Editor skill install targets checked | pending | pending | Cursor, Claude Code, OpenCode, Codex if available in setup path. |
-| Skills copied per editor target | pending | pending | Must match final base skill count. |
-| Package-root `skills/` source exists | not observed in repo root during preliminary review | pending | Setup currently reads package-root `skills/`; reconcile with embedded source. |
-| Packaged embedded skills | pending | pending | Count packaged source skill files if package flow materializes them. |
-| Package/runtime size delta | pending | pending | Only record if package build is run. |
-
-## B4 - Validation Command Results
-
-Status: pending
-
-Record final validation:
-
-| Command | Result | Pass/fail count | Notes |
-|---|---|---:|---|
-| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pending | pending | Full build gate before tests. |
-| `go test .\internal\mcp .\internal\cli .\internal\aicontext -count=1` | pending | pending | Minimum focused test scope for query, query-health, AI context, setup/package surfaces. |
-| `avmatrix analyze --force` | pending | pending | Must not use `--skip-agents-md`. |
-| `go run .\cmd\avmatrix query --help` | pending | pending | Must expose normal query usage and any lane/explain surface. |
-| `go run .\cmd\avmatrix query lanes` or recorded equivalent | pending | pending | Must let users/agents discover query capability lanes. |
-| `go run .\cmd\avmatrix query explain "<intent>" --repo AVmatrix --json` or recorded equivalent | pending | pending | Must expose lane/rank/match evidence without reading code. |
-| `go run .\cmd\avmatrix query "<intent>" --repo AVmatrix` | pending | pending | Existing broad query behavior must remain compatible. |
-| `go run .\cmd\avmatrix query-health --suite docs/query-health/2026-05-23-avmatrix-skill-system-upgrade-suite.json --repo AVmatrix --json` | pending | pending | Dedicated suite for this plan. |
-| `cd avmatrix-web; npm run test` | pending | pending | Required after graph labeling work; must include focused label/layout tests. |
-| `cd avmatrix-web; npm run test:e2e` or focused Playwright expanded to full e2e before closure | pending | pending | Must prove ring and island labels are visible/readable in browser. |
-| Browser screenshot validation for graph labels | pending | pending | Capture desktop and smaller viewport screenshots and record artifact paths. |
-| Generated skill inventory check | pending | pending | Count and content fragments. |
-| Setup/package smoke commands | pending | pending | Required if touched. |
-| MCP setup/resource guidance smoke | pending | pending | Required if MCP resource guidance is touched. |
-| MCP `query` smoke through local tool wrapper or focused test | pending | pending | Must verify machine-readable lane/rank/match evidence for agents. |
-| `detect-changes` | pending | pending | Scope should match query, Web graph labels, AI context, skills, setup/package, and docs changes. |
-
-## B5 - Phase 0 Measured Baseline
-
-Status: recorded before implementation edits
-
-Build and binary inventory:
-
-| Metric | Baseline |
-|---|---:|
-| Full build gate result | pass |
-| Built CLI path | `avmatrix/bin/avmatrix.exe` |
-| Built CLI size | 50,344,448 bytes |
-| Launcher binary path | `avmatrix-launcher/AVmatrixLauncher.exe` |
-| Launcher binary size | 6,993,408 bytes |
-| Visible built CLI commands | 24 |
-| Visible `go run .\cmd\avmatrix --help` commands | 24 |
-| Visible PATH `avmatrix --help` commands | 24 |
-| Hidden lifecycle command families from source | 2 (`package`, `hook`) |
-| MCP tools from source | 15 |
-| MCP fixed resources from source | 2 |
-| MCP resource templates from source | 6 |
-| MCP prompts from source | 2 |
-
-Current source/generated skill inventory:
-
-| Metric | Baseline |
-|---|---:|
-| Embedded source skill files | 6 |
-| Registered base skills | 6 |
-| Generated `.claude/skills/avmatrix/**/SKILL.md` files | 6 |
-| Source skill total bytes | 17,499 |
-| Generated skill total bytes | 17,499 |
-| Source/generated matching hashes | 6/6 |
-| Source skills with `name` frontmatter | 6/6 |
-| Source skills with `description` frontmatter | 6/6 |
-
-Dedicated query-health baseline:
-
-| Metric | Baseline |
-|---|---:|
-| Suite path | `docs/query-health/2026-05-23-avmatrix-skill-system-upgrade-suite.json` |
-| Suite case count | 8 |
-| Expected targets | 54 |
-| Matched targets | 33 |
-| Missed targets | 21 |
-| Threshold passed | 5 |
-| Threshold failed | 3 |
-| Exact passed | 1 |
-| Exact failed | 7 |
-
-Baseline query-health cases:
-
-| Case | Threshold | Exact | Hit@5 | Hit@10 | Matched | Missed |
-|---|---|---|---:|---:|---:|---:|
-| `ai-context-generated-skills-owner-discovery` | fail | fail | 0/2 | 1/4 | 1/6 | 5 |
-| `setup-editor-skill-installation-owner-discovery` | fail | fail | 3/3 | 3/4 | 3/4 | 1 |
-| `package-skill-distribution-owner-discovery` | pass | pass | 5/2 | 6/4 | 6/6 | 0 |
-| `mcp-setup-resource-prompt-guidance-owner-discovery` | pass | fail | 3/3 | 5/5 | 5/7 | 2 |
-| `query-command-surface-owner-discovery` | pass | fail | 6/3 | 6/5 | 6/8 | 2 |
-| `graph-quality-command-surface-owner-discovery` | fail | fail | 2/2 | 2/4 | 2/8 | 6 |
-| `api-surface-tool-discovery` | pass | fail | 5/2 | 6/4 | 6/7 | 1 |
-| `cross-repo-command-surface-discovery` | pass | fail | 4/2 | 4/4 | 4/8 | 4 |
-
-Baseline interpretation:
-
-| Requirement | Baseline |
-|---|---|
-| Broad concept discovery | partially works, but owner discovery is unreliable for AI-context and graph-quality command intents |
-| Owner discovery | fails for AI-context generated skills and graph-quality CLI owners |
-| Execution-flow preservation | present, but process symbols can outrank stronger owner evidence |
-| Result auditability | query-health exposes threshold/exact misses and top results; normal query lacks lane/match-reason output |
-| Query lane evidence | absent from user-facing query output |
-| User-facing lane discovery | absent |
-| Normal query compatibility | current `avmatrix query "<intent>" --repo <repo>` works and must be preserved |
+| Metric | Unit | Baseline | Final | Delta | Target |
+|---|---:|---:|---:|---:|---:|
+| Generated root managed blocks | files | 2 | pending | pending | 2 |
+| Generated root stats lines | lines | 2 | pending | pending | 2 |
+| Generated root command selection table rows | rows | pending | pending | pending | record |
+| Generated root Skills table rows | rows | 6 | pending | pending | 11 |
+| Generated skill files | files | 6 | pending | pending | 11 |
+| Generated skill total size | bytes | 17,499 | pending | pending | record |
+| Generated skill/source hash matches | pairs | 6 | pending | pending | 11 |
+| Generated files edited directly | files | 0 | pending | pending | 0 |

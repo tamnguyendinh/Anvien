@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	bundleDir, logFile, err := resolveRuntime()
+	backendPath, logFile, err := resolveRuntime()
 	if err != nil {
 		fatal(err)
 	}
@@ -20,13 +20,12 @@ func main() {
 		log.SetOutput(logFile)
 	}
 
-	backendPath := filepath.Join(bundleDir, "avmatrix.exe")
 	if _, err := os.Stat(backendPath); err != nil {
-		fatal(fmt.Errorf("packaged Go backend missing: %s", backendPath))
+		fatal(fmt.Errorf("canonical AVmatrix CLI missing: %s", backendPath))
 	}
 
 	cmd := exec.Command(backendPath, "serve", "--host", "127.0.0.1", "--port", "4848")
-	cmd.Dir = bundleDir
+	cmd.Dir = filepath.Dir(backendPath)
 	cmd.Stdout = logFile
 	cmd.Stderr = logFile
 	cmd.SysProcAttr = hiddenProcAttr()
@@ -47,6 +46,7 @@ func resolveRuntime() (string, *os.File, error) {
 	}
 	bundleDir := filepath.Dir(exePath)
 	launcherDir := filepath.Dir(bundleDir)
+	rootDir := filepath.Dir(launcherDir)
 	logDir := filepath.Join(launcherDir, "logs")
 	if err := os.MkdirAll(logDir, 0o755); err != nil {
 		return "", nil, err
@@ -55,7 +55,7 @@ func resolveRuntime() (string, *os.File, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return bundleDir, logFile, nil
+	return filepath.Join(rootDir, "avmatrix", "bin", "avmatrix.exe"), logFile, nil
 }
 
 func hiddenProcAttr() *syscall.SysProcAttr {

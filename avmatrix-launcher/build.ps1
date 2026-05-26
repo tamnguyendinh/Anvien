@@ -6,9 +6,10 @@ $LauncherSourceRoot = Join-Path $LauncherRoot "src"
 $ServerSourceRoot = Join-Path $LauncherRoot "server-wrapper"
 $ServerBundleRoot = Join-Path $LauncherRoot "server-bundle"
 $WebDistRoot = Join-Path $LauncherRoot "web-dist"
+$CanonicalCliBinRoot = Join-Path $RepoRoot "avmatrix\bin"
+$CanonicalCliOutPath = Join-Path $CanonicalCliBinRoot "avmatrix.exe"
 $LauncherOutPath = Join-Path $LauncherRoot "AVmatrixLauncher.exe"
 $ServerOutPath = Join-Path $ServerBundleRoot "avmatrix-server.exe"
-$BackendCliOutPath = Join-Path $ServerBundleRoot "avmatrix.exe"
 $WebRoot = Join-Path $RepoRoot "avmatrix-web"
 $WebBuildRoot = Join-Path $WebRoot "dist"
 $NativeRuntimeScript = Join-Path $RepoRoot "scripts\ensure-ladybug-native.ps1"
@@ -60,6 +61,19 @@ function Reset-Directory($Path) {
   New-Item -ItemType Directory -Path $Path -Force | Out-Null
 }
 
+function Copy-FileIfChanged($Source, $DestinationDirectory) {
+  $Destination = Join-Path $DestinationDirectory (Split-Path -Leaf $Source)
+  if (Test-Path -LiteralPath $Destination) {
+    $SourceHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $Source).Hash
+    $DestinationHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $Destination).Hash
+    if ($SourceHash -eq $DestinationHash) {
+      Write-Host "[build] up to date: $Destination"
+      return
+    }
+  }
+  Copy-Item -LiteralPath $Source -Destination $DestinationDirectory -Force
+}
+
 Assert-Command "npm"
 Assert-Command "node"
 
@@ -81,6 +95,7 @@ try {
 }
 
 Reset-Directory $ServerBundleRoot
+New-Item -ItemType Directory -Path $CanonicalCliBinRoot -Force | Out-Null
 
 Push-Location $RepoRoot
 try {
@@ -92,7 +107,7 @@ try {
   $env:CGO_CFLAGS = "-I$NativeDir"
   $env:CGO_LDFLAGS = "-L$NativeDir -llbug_shared"
   $env:PATH = "$NativeDir;$env:PATH"
-  & $Go build -tags ladybugdb -ldflags="-s -w" -o $BackendCliOutPath .\cmd\avmatrix
+  & $Go build -tags ladybugdb -ldflags="-s -w" -o $CanonicalCliOutPath .\cmd\avmatrix
   Assert-NativeSuccess "go build cmd/avmatrix"
 } finally {
   $env:CGO_ENABLED = $PreviousCgoEnabled
@@ -102,7 +117,7 @@ try {
   Pop-Location
 }
 
-Copy-Item -LiteralPath (Join-Path $NativeDir "lbug_shared.dll") -Destination $ServerBundleRoot -Force
+Copy-FileIfChanged (Join-Path $NativeDir "lbug_shared.dll") $CanonicalCliBinRoot
 
 Push-Location $LauncherSourceRoot
 try {

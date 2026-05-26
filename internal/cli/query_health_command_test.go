@@ -51,6 +51,8 @@ func TestQueryHealthSuiteParsingAndScoring(t *testing.T) {
 		FunctionalArea:       "graph_health",
 		ResolutionConfidence: "degraded",
 		ResolutionGapCount:   4,
+		QueryLanes:           []string{"graph_quality_discovery"},
+		MatchReasons:         []string{"filePath", "semanticSurface"},
 	}}
 	result := scoreQueryHealthCase(suite.Cases[0], actual, 10)
 	if !result.Passed || !result.ThresholdPassed || !result.ExactPassed || result.HitAt5 != 2 || result.HitAt10 != 2 {
@@ -61,6 +63,10 @@ func TestQueryHealthSuiteParsingAndScoring(t *testing.T) {
 	}
 	if len(result.TopResults) != 1 || result.TopResults[0].AppLayer != "backend" || result.TopResults[0].FunctionalArea != "graph_health" {
 		t.Fatalf("semantic fields not preserved in top results: %#v", result.TopResults)
+	}
+	if len(result.TopResults[0].QueryLanes) != 1 || result.TopResults[0].QueryLanes[0] != "graph_quality_discovery" ||
+		len(result.MatchedTargets[0].MatchReasons) == 0 {
+		t.Fatalf("query lane evidence not preserved: %#v", result)
 	}
 }
 

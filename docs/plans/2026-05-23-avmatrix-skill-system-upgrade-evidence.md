@@ -484,3 +484,74 @@ Query implementation/scoring trace:
 - `matchingDefinitionRows` scores name/id/file path/label/app layer/functional area/content, applies semantic surface boosts and penalties, then caps results per file.
 - `querySemanticSurfaceBoost` currently has specific boost lanes for graph health, layout/front-end graph surfaces, query internals, and API/contract terms, but not for AI-context generated skills, setup/editor skill installation, package-root skills, or MCP prompt guidance.
 - Current query output does not expose lane/match-reason evidence to the CLI/MCP user beyond result fields and query-health top results. Phase 1 must add a usable lane/explain surface without breaking `avmatrix query "<intent>" --repo <repo>`.
+
+## Phase 1 Query Reliability Implementation Evidence
+
+Status: completed for Phase 1.
+
+Blast-radius checks before editing query and launcher/runtime code:
+
+| Target | Result |
+|---|---|
+| `querySemanticSurfaceBoost` | CRITICAL; affects query ranking surface and MCP/CLI query results, handled as blast-radius warning. |
+| `matchingDefinitionRows` | CRITICAL; affects query result ranking/definition rows. |
+| `rankedProcessMatches` | CRITICAL; affects process ranking in query output. |
+| `newQueryCommand` | CRITICAL; affects CLI query command surface. |
+| `queryTool` | LOW. |
+| `queryHealthActualResults`, `scoreQueryHealthCase`, `queryHealthSummaryLines` | CRITICAL; affects query-health reporting semantics. |
+| `avmatrix-launcher/build.ps1` | LOW. |
+| `avmatrix-launcher/src/main.go` | LOW. |
+| `avmatrix-launcher/server-wrapper/main.go` | LOW. |
+
+Implemented query changes:
+
+- Added Query Capability Lane metadata in `internal/mcp/tools.go`.
+- Added lane evidence and match reasons to MCP `query` output through `queryCapabilities`, `queryLanes`, `matchReasons`, `rank`, `sourceRank`, and `processRank`.
+- Added CLI `query --lanes`, `query --lanes --json`, and `query --explain`.
+- Updated `query --help` so the help text names all query lanes and tells users to use `--lanes` and `--explain`.
+- Preserved existing `avmatrix query "<intent>" --repo <repo>` behavior.
+- Updated `query-health` output to keep threshold pass and exact pass as separate meanings and to include lane/rank/match evidence in matched/top results.
+
+Canonical executable/build changes:
+
+- `avmatrix\bin\avmatrix.exe` is now the only production AVmatrix CLI/runtime executable built by `avmatrix-launcher\build.ps1`.
+- `avmatrix-launcher\server-bundle\avmatrix.exe` is no longer built and no longer exists after the full build.
+- `avmatrix-launcher\server-bundle\avmatrix-server.exe` remains a launcher support wrapper and starts `avmatrix\bin\avmatrix.exe serve --host 127.0.0.1 --port 4848`.
+- Launcher process cleanup now targets canonical `avmatrix\bin\avmatrix.exe` only when its command line is the launcher-owned `serve` process on port `4848`, instead of killing every canonical AVmatrix CLI/MCP process.
+- The build script copies `lbug_shared.dll` into `avmatrix\bin` only when content differs. If the existing DLL is already identical but locked by another process, the build records it as up to date and continues.
+
+Validation after full build:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass; Web build completed, canonical CLI built to `avmatrix\bin\avmatrix.exe`, native DLL already up to date, launcher and server wrapper built. |
+| `go test .\internal\mcp .\internal\cli -count=1` | pass: `internal/mcp`, `internal/cli`. |
+| `go test . -count=1` in `avmatrix-launcher\src` | pass: `avmatrix-launcher`. |
+| `go test . -count=1` in `avmatrix-launcher\server-wrapper` | pass: `avmatrix-server-wrapper`. |
+| `Get-ChildItem avmatrix\bin, avmatrix-launcher\server-bundle -Filter *.exe` | only `avmatrix\bin\avmatrix.exe` and `avmatrix-launcher\server-bundle\avmatrix-server.exe` were present. |
+| `Test-Path avmatrix-launcher\server-bundle\avmatrix.exe` | `False`. |
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass; final pre-commit run reported `files: scanned=762 parsed=568 unsupported=194 failed=0`, `nodes=85963 relationships=117955`. |
+| `.\avmatrix\bin\avmatrix.exe version` | `1.2.2`. |
+| `.\avmatrix\bin\avmatrix.exe query --help` | pass; help lists all eight query capability lanes plus `--lanes` and `--explain`. |
+| `.\avmatrix\bin\avmatrix.exe query --lanes --json` | pass; JSON returned eight `queryCapabilities`. |
+| `.\avmatrix\bin\avmatrix.exe query "generated AVmatrix skills AGENTS.md CLAUDE.md internal aicontext" --repo AVmatrix --limit 5 --explain` | pass; top definitions were `installBaseSkills`, `baseSkillContent`, `setupInstallEditorSkills`, `setupInstallSkillsTo`, `setupSkillTargetName`, with lane/match evidence. |
+| `.\avmatrix\bin\avmatrix.exe query-health --repo AVmatrix --suite .\docs\query-health\2026-05-23-avmatrix-skill-system-upgrade-suite.json --limit 10 --out .\.tmp\2026-05-23-skill-system-query-health-phase1-canonical-final.json` | pass; threshold 8/8, exact 3/8, matched targets 46/54. |
+| `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass; final pre-commit run reported `changed_files=15`, `changed_count=391`, `affected_count=26`, `risk_level=critical`. Critical risk is expected for this slice because query/MCP/CLI and launcher runtime code changed. |
+
+Pre-commit changed scope from `detect-changes`:
+
+| Scope | Output |
+|---|---|
+| Changed app layers | `api=137`, `api_test=66`, `backend=110`, `backend_test=35`, `cli_launcher=18`, `docs=25`. |
+| Affected app layers | `api=9`, `backend=6`, `cli_launcher=5`, `mixed=6`. |
+| Changed functional areas | `cli=94`, `documentation=25`, `launcher=26`, `mcp=203`, `query=43`. |
+| Affected functional areas | `cli=5`, `launcher=5`, `mcp=9`, `mixed=6`, `query=1`. |
+| Resolution gap changes | `changedGapEntities=268`, `changedGapOccurrenceCount=269`; top changed targets included `strings.Contains`, `string`, `append`, and `t.Fatalf`. |
+
+Phase 3 skill guidance requirements from Phase 1:
+
+- `query` is the broad candidate-discovery command, not a replacement for exact `context`.
+- `query` now exposes multiple capability lanes: owner, concept, execution-flow, API surface, graph-quality, docs/setup/AI-context, command-surface, and cross-repo discovery.
+- Broad query results must be verified with `context` or exact source/file inspection before choosing edit surfaces.
+- Query-health reports two separate meanings: threshold/usable pass and exact expected-target coverage. Agents must record missed exact targets instead of treating threshold pass as full coverage.
+- `query --lanes --json` and `query --explain` are the user-facing CLI surfaces for lane and match evidence.

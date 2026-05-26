@@ -29,6 +29,71 @@ var (
 
 var errUnsupportedMCPGraphQuery = errors.New("unsupported graph query in Go MCP graph adapter")
 
+// QueryCapabilityLane describes a user-facing retrieval lane under the umbrella query command.
+type QueryCapabilityLane struct {
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Keywords    []string `json:"keywords"`
+}
+
+var queryCapabilityLaneDefinitions = []QueryCapabilityLane{
+	{
+		ID:          "owner_discovery",
+		Name:        "Owner discovery",
+		Description: "Find the file, symbol, command, resource, generated artifact, or package that owns a problem.",
+		Keywords:    []string{"owner", "owns", "source", "file", "symbol", "function", "method", "class", "where", "surface", "implementation"},
+	},
+	{
+		ID:          "concept_discovery",
+		Name:        "Concept discovery",
+		Description: "Find likely code areas from broad natural-language intent.",
+		Keywords:    []string{"concept", "behavior", "feature", "flow", "logic", "how", "why", "work"},
+	},
+	{
+		ID:          "execution_flow_discovery",
+		Name:        "Execution-flow discovery",
+		Description: "Find processes, flows, and process steps related to the intent.",
+		Keywords:    []string{"process", "flow", "execution", "step", "trace", "call", "calls"},
+	},
+	{
+		ID:          "api_surface_discovery",
+		Name:        "API surface discovery",
+		Description: "Find route/tool handlers, API contracts, generated API types, and consumers.",
+		Keywords:    []string{"api", "route", "handler", "tool", "mcp", "contract", "shape", "impact", "consumer", "response"},
+	},
+	{
+		ID:          "graph_quality_discovery",
+		Name:        "Graph-quality discovery",
+		Description: "Find query-health, source-site, resolution, ResolutionGap, graph-health, and accuracy surfaces.",
+		Keywords:    []string{"graph", "quality", "health", "query", "resolution", "inventory", "source", "site", "accuracy", "benchmark", "gap"},
+	},
+	{
+		ID:          "docs_setup_ai_context_discovery",
+		Name:        "Docs/setup/AI-context discovery",
+		Description: "Find generated guidance, skill source, setup, package, and AI context generation surfaces.",
+		Keywords:    []string{"doc", "docs", "setup", "skill", "skills", "agent", "agents", "claude", "aicontext", "context", "generated", "package"},
+	},
+	{
+		ID:          "command_surface_discovery",
+		Name:        "Command-surface discovery",
+		Description: "Find CLI, MCP, resource, Web/API, package, and runtime command owners.",
+		Keywords:    []string{"command", "cli", "mcp", "resource", "resources", "prompt", "prompts", "web", "runtime", "surface", "help"},
+	},
+	{
+		ID:          "cross_repo_discovery",
+		Name:        "Cross-repo discovery",
+		Description: "Find group and cross-repo query, contracts, sync, status, and multi-repo surfaces.",
+		Keywords:    []string{"cross", "repo", "repository", "repositories", "group", "groups", "sync", "contracts", "status", "multi"},
+	},
+}
+
+func QueryCapabilityLanes() []QueryCapabilityLane {
+	out := make([]QueryCapabilityLane, len(queryCapabilityLaneDefinitions))
+	copy(out, queryCapabilityLaneDefinitions)
+	return out
+}
+
 func mcpTools() []toolDefinition {
 	return []toolDefinition{
 		{
@@ -267,33 +332,48 @@ func (s Server) queryTool(args map[string]any) (map[string]any, error) {
 	nodeByID := resourceGraphNodesByID(g)
 	gapSummaries := queryResolutionGapSummaries(g, nodeByID)
 	semanticStatus := semantic.GraphSemanticStatus(g)
+	tokens := querySearchTokens(query)
 	symbols := make([]map[string]any, 0)
 	seenSymbolIDs := map[string]bool{}
-	for _, process := range matches {
-		for _, step := range processSteps[process.ID] {
+	for processIndex, process := range matches {
+		for stepIndex, step := range processSteps[process.ID] {
 			if seenSymbolIDs[step.ID] {
 				continue
 			}
 			seenSymbolIDs[step.ID] = true
 			row := map[string]any{
-				"id":       step.ID,
-				"process":  process.Label,
-				"step":     step.Step,
-				"name":     step.Name,
-				"filePath": step.FilePath,
+				"id":          step.ID,
+				"process":     process.Label,
+				"processRank": processIndex + 1,
+				"sourceRank":  stepIndex + 1,
+				"step":        step.Step,
+				"name":        step.Name,
+				"filePath":    step.FilePath,
 			}
 			if node, ok := nodeByID[step.ID]; ok {
 				addQueryNodeSemanticFields(row, node, gapSummaries[step.ID])
+				addQueryMatchEvidence(row, node, step.Name, step.FilePath, tokens)
 			}
 			symbols = append(symbols, row)
 		}
 	}
 	payload := map[string]any{
-		"query":           query,
-		"semanticStatus":  semanticStatus,
-		"processes":       matches,
-		"process_symbols": symbols,
-		"definitions":     matchingDefinitionRows(g, query, limit, gapSummaries),
+		"query":             query,
+		"queryCapabilities": queryCapabilityEvidence(tokens),
+		"semanticStatus":    semanticStatus,
+		"processes":         matches,
+		"process_symbols":   symbols,
+		"definitions":       matchingDefinitionRows(g, query, limit, gapSummaries),
+	}
+	if boolArg(args, "explain", false) {
+		payload["explain"] = map[string]any{
+			"rankFields": []string{"processRank", "sourceRank", "rank", "score"},
+			"evidenceFields": []string{
+				"queryCapabilities",
+				"queryLanes",
+				"matchReasons",
+			},
+		}
 	}
 	if warning := querySemanticWarning(semanticStatus); warning != "" {
 		payload["semanticWarning"] = warning
@@ -484,15 +564,17 @@ func matchingDefinitionRows(g *graph.Graph, query string, limit int, gapSummarie
 		}
 	}
 	rows := make([]map[string]any, 0, len(selected))
-	for _, item := range selected {
+	for index, item := range selected {
 		row := map[string]any{
 			"id":       item.node.ID,
 			"name":     item.name,
 			"type":     string(item.node.Label),
 			"filePath": item.path,
+			"rank":     index + 1,
 			"score":    item.score,
 		}
 		addQueryNodeSemanticFields(row, item.node, gapSummaries[item.node.ID])
+		addQueryMatchEvidence(row, item.node, item.name, item.path, tokens)
 		rows = append(rows, row)
 	}
 	return rows
@@ -553,6 +635,129 @@ func queryDefinitionSkip(node graph.Node, filePath string, tokens []string) bool
 	return false
 }
 
+func queryCapabilityEvidence(tokens []string) []map[string]any {
+	out := make([]map[string]any, 0, len(queryCapabilityLaneDefinitions))
+	for _, lane := range queryCapabilityLaneDefinitions {
+		matched := queryMatchedLaneTokens(tokens, lane)
+		if len(matched) == 0 && lane.ID != "concept_discovery" {
+			continue
+		}
+		out = append(out, map[string]any{
+			"id":            lane.ID,
+			"name":          lane.Name,
+			"description":   lane.Description,
+			"matchedTokens": matched,
+		})
+	}
+	return out
+}
+
+func queryMatchedLaneTokens(tokens []string, lane QueryCapabilityLane) []string {
+	matched := make([]string, 0)
+	seen := map[string]bool{}
+	for _, token := range tokens {
+		for _, keyword := range lane.Keywords {
+			if token != keyword || seen[token] {
+				continue
+			}
+			seen[token] = true
+			matched = append(matched, token)
+		}
+	}
+	return matched
+}
+
+func addQueryMatchEvidence(row map[string]any, node graph.Node, name string, filePath string, tokens []string) {
+	lanes := queryNodeCapabilityLanes(node, name, filePath, tokens)
+	if len(lanes) > 0 {
+		row["queryLanes"] = lanes
+	}
+	reasons := queryMatchReasons(node, name, filePath, tokens)
+	if len(reasons) > 0 {
+		row["matchReasons"] = reasons
+	}
+}
+
+func queryNodeCapabilityLanes(node graph.Node, name string, filePath string, tokens []string) []string {
+	normalizedPath := strings.ReplaceAll(strings.ToLower(filePath), "\\", "/")
+	appLayer := resourceNodeString(node, "appLayer")
+	functionalArea := resourceNodeString(node, "functionalArea")
+	out := make([]string, 0)
+	for _, lane := range queryCapabilityLaneDefinitions {
+		if len(queryMatchedLaneTokens(tokens, lane)) > 0 {
+			out = append(out, lane.ID)
+			continue
+		}
+		switch lane.ID {
+		case "api_surface_discovery":
+			if appLayer == "api" || appLayer == "api_contract" || functionalArea == "api" || functionalArea == "mcp" || strings.Contains(normalizedPath, "internal/mcp/") {
+				out = append(out, lane.ID)
+			}
+		case "graph_quality_discovery":
+			if functionalArea == "graph_health" || strings.Contains(normalizedPath, "query_health") || strings.Contains(normalizedPath, "resolution_inventory") || strings.Contains(normalizedPath, "source_site_accuracy") {
+				out = append(out, lane.ID)
+			}
+		case "docs_setup_ai_context_discovery":
+			if strings.Contains(normalizedPath, "internal/aicontext/") || strings.Contains(normalizedPath, "internal/cli/setup_command.go") || strings.Contains(normalizedPath, "internal/cli/analyze_postrun.go") {
+				out = append(out, lane.ID)
+			}
+		case "command_surface_discovery":
+			if functionalArea == "cli" || strings.Contains(normalizedPath, "internal/cli/") || strings.Contains(normalizedPath, "internal/mcp/resources.go") || strings.Contains(normalizedPath, "internal/mcp/prompts.go") {
+				out = append(out, lane.ID)
+			}
+		case "cross_repo_discovery":
+			if strings.Contains(normalizedPath, "internal/group/") || strings.Contains(normalizedPath, "group_command.go") || strings.Contains(normalizedPath, "group_tools.go") {
+				out = append(out, lane.ID)
+			}
+		case "owner_discovery":
+			if queryTextScore(name+" "+filePath, tokens) > 0 {
+				out = append(out, lane.ID)
+			}
+		}
+	}
+	return uniqueQueryStrings(out)
+}
+
+func queryMatchReasons(node graph.Node, name string, filePath string, tokens []string) []string {
+	reasons := make([]string, 0, 6)
+	if queryTextScore(name, tokens) > 0 {
+		reasons = append(reasons, "name")
+	}
+	if queryTextScore(node.ID, tokens) > 0 {
+		reasons = append(reasons, "id")
+	}
+	if queryTextScore(filePath, tokens) > 0 {
+		reasons = append(reasons, "filePath")
+	}
+	if queryTextScore(resourceNodeString(node, "appLayer"), tokens) > 0 {
+		reasons = append(reasons, "appLayer")
+	}
+	if queryTextScore(resourceNodeString(node, "functionalArea"), tokens) > 0 {
+		reasons = append(reasons, "functionalArea")
+	}
+	if querySemanticSurfaceBoost(node, filePath, tokens) > 0 {
+		reasons = append(reasons, "semanticSurface")
+	}
+	return uniqueQueryStrings(reasons)
+}
+
+func uniqueQueryStrings(values []string) []string {
+	if len(values) == 0 {
+		return nil
+	}
+	out := make([]string, 0, len(values))
+	seen := map[string]bool{}
+	for _, value := range values {
+		value = strings.TrimSpace(value)
+		if value == "" || seen[value] {
+			continue
+		}
+		seen[value] = true
+		out = append(out, value)
+	}
+	return out
+}
+
 func querySemanticSurfaceBoost(node graph.Node, filePath string, tokens []string) int {
 	appLayer := resourceNodeString(node, "appLayer")
 	functionalArea := resourceNodeString(node, "functionalArea")
@@ -560,6 +765,47 @@ func querySemanticSurfaceBoost(node graph.Node, filePath string, tokens []string
 	normalizedPath := strings.ReplaceAll(strings.ToLower(filePath), "\\", "/")
 	boost := 0
 	boost += queryPrimaryFileSymbolBoost(name, filePath)
+	normalizedName := normalizeQuerySearchText(name)
+	if queryTokensContainAny(tokens, "agent", "agents", "claude", "skill", "skills", "aicontext", "generated", "setup", "package") {
+		if strings.Contains(normalizedPath, "internal/aicontext/") {
+			boost += 180
+		}
+		if strings.Contains(normalizedPath, "internal/aicontext/skills/") {
+			boost += 80
+		}
+		if strings.Contains(normalizedPath, "internal/cli/analyze_postrun.go") {
+			boost += 140
+		}
+		if strings.Contains(normalizedPath, "internal/cli/setup_command.go") {
+			boost += 130
+		}
+		if strings.Contains(normalizedPath, "internal/cli/package_command.go") ||
+			strings.Contains(normalizedPath, "internal/cli/package_runtime.go") {
+			boost += 80
+		}
+		if normalizedName == "generate ai context files" ||
+			normalizedName == "install base skills" ||
+			normalizedName == "base skill content" ||
+			normalizedName == "setup install skills to" ||
+			normalizedName == "setup install editor skills" ||
+			normalizedName == "setup skill target name" {
+			boost += 180
+		}
+	}
+	if queryTokensContainAny(tokens, "prompt", "prompts", "resource", "resources", "setup", "mcp") {
+		if strings.Contains(normalizedPath, "internal/mcp/prompts.go") {
+			boost += 150
+		}
+		if strings.Contains(normalizedPath, "internal/mcp/resources.go") {
+			boost += 120
+		}
+		if normalizedName == "prompt definitions" ||
+			normalizedName == "generate map prompt" ||
+			normalizedName == "setup resource" ||
+			normalizedName == "mcp tools" {
+			boost += 140
+		}
+	}
 	if queryTokensContainAny(tokens, "unknown", "connectivity", "topology", "resolution", "health", "separation") {
 		if functionalArea == "graph_health" {
 			boost += 40
@@ -573,6 +819,16 @@ func querySemanticSurfaceBoost(node graph.Node, filePath string, tokens []string
 		}
 		if normalizeQuerySearchText(name) == "get node graph health" {
 			boost += 80
+		}
+		if strings.Contains(normalizedPath, "internal/cli/query_health_command.go") ||
+			strings.Contains(normalizedPath, "internal/cli/resolution_inventory_command.go") ||
+			strings.Contains(normalizedPath, "internal/cli/source_site_accuracy_command.go") {
+			boost += 170
+		}
+		if normalizedName == "new query health command" ||
+			normalizedName == "new resolution inventory command" ||
+			normalizedName == "new source site accuracy command" {
+			boost += 180
 		}
 	}
 	if queryTokensContainAny(tokens, "layout", "ring", "island", "optimizer", "manual", "visibility", "filter", "detail", "panel") {
@@ -616,6 +872,9 @@ func querySemanticSurfaceBoost(node graph.Node, filePath string, tokens []string
 			strings.Contains(normalizedPath, "cmd/avmatrix/main.go") {
 			boost += 55
 		}
+		if strings.Contains(normalizedPath, "internal/cli/query_health_command.go") {
+			boost += 120
+		}
 	}
 	if queryTokensContainAny(tokens, "api", "contract", "generated", "http", "response") {
 		if appLayer == "api" || appLayer == "api_contract" || appLayer == "generated_contract" {
@@ -623,6 +882,31 @@ func querySemanticSurfaceBoost(node graph.Node, filePath string, tokens []string
 		}
 		if functionalArea == "api" || functionalArea == "contracts" {
 			boost += 35
+		}
+	}
+	if queryTokensContainAny(tokens, "api", "route", "tool", "tools", "shape", "impact", "handler", "handlers") {
+		if strings.Contains(normalizedPath, "internal/mcp/route_tool_map.go") ||
+			strings.Contains(normalizedPath, "internal/mcp/route_shape_impact.go") {
+			boost += 150
+		}
+		if normalizedName == "route map tool" ||
+			normalizedName == "tool map tool" ||
+			normalizedName == "shape check tool" ||
+			normalizedName == "api impact tool" {
+			boost += 180
+		}
+	}
+	if queryTokensContainAny(tokens, "group", "groups", "cross", "repo", "repository", "contracts", "sync", "status") {
+		if strings.Contains(normalizedPath, "internal/cli/group_command.go") ||
+			strings.Contains(normalizedPath, "internal/mcp/group_tools.go") ||
+			strings.Contains(normalizedPath, "internal/group/") {
+			boost += 150
+		}
+		if normalizedName == "new group command" ||
+			normalizedName == "group query tool" ||
+			normalizedName == "query" ||
+			normalizedName == "sync" {
+			boost += 120
 		}
 	}
 	return boost

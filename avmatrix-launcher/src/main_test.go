@@ -255,14 +255,17 @@ func TestRuntimeProcessSweepIncludesRepoViteServer(t *testing.T) {
 		rootDir:    filepath.Join("C:", "repo"),
 		homeDir:    filepath.Join("C:", "repo", "avmatrix-launcher"),
 		serverExe:  filepath.Join("C:", "repo", "avmatrix-launcher", "server-bundle", "avmatrix-server.exe"),
-		backendExe: filepath.Join("C:", "repo", "avmatrix-launcher", "server-bundle", "avmatrix.exe"),
+		backendExe: filepath.Join("C:", "repo", "avmatrix", "bin", "avmatrix.exe"),
 	}
 
 	script := buildStopRuntimeProcessesScript(paths, 1234)
-	for _, want := range []string{"node.exe", "avmatrix-web", "vite", "--port 5228"} {
+	for _, want := range []string{"node.exe", "avmatrix-web", "vite", "--port 5228", "avmatrix\\bin\\avmatrix.exe", " serve", "--port 4848"} {
 		if !strings.Contains(script, want) {
 			t.Fatalf("runtime sweep script missing %q:\n%s", want, script)
 		}
+	}
+	if strings.Contains(script, "$bundleDir") || strings.Contains(script, "server-bundle', 'avmatrix.exe") {
+		t.Fatalf("runtime sweep should not target a server-bundle avmatrix.exe authority:\n%s", script)
 	}
 }
 

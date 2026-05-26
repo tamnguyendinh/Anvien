@@ -621,7 +621,7 @@ func TestDirectToolHelpShowsCompatibilityFlags(t *testing.T) {
 		args []string
 		want []string
 	}{
-		{[]string{"query", "--help"}, []string{"avmatrix query <search_query>", "--repo", "--context", "--goal", "--limit", "--content"}},
+		{[]string{"query", "--help"}, []string{"avmatrix query <search_query>", "--repo", "--context", "--goal", "--limit", "--content", "--lanes", "--explain", "--json"}},
 		{[]string{"query-health", "--help"}, []string{"avmatrix query-health", "--suite", "--repo", "--out", "--json", "--fail-on-threshold", "--fail-on-exact"}},
 		{[]string{"context", "--help"}, []string{"avmatrix context [name]", "--repo", "--uid", "--file", "--content"}},
 		{[]string{"impact", "--help"}, []string{"--direction", "--repo", "--uid", "--depth", "--include-tests"}},
@@ -659,6 +659,32 @@ func TestDirectToolCommandsUseLocalMCPRuntime(t *testing.T) {
 	for _, want := range []string{`"query": "MainFlow"`, `"Label": "MainFlow"`, `"Function:main"`} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("query output missing %q:\n%s", want, out)
+		}
+	}
+
+	out, errOut, err = executeForTest(t, "query", "--lanes", "--json")
+	if err != nil {
+		t.Fatalf("query lanes returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	if errOut != "" {
+		t.Fatalf("query lanes wrote stderr: %q", errOut)
+	}
+	for _, want := range []string{`"queryCapabilities"`, `"owner_discovery"`, `"docs_setup_ai_context_discovery"`, `"command_surface_discovery"`} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("query lanes output missing %q:\n%s", want, out)
+		}
+	}
+
+	out, errOut, err = executeForTest(t, "query", "MainFlow", "--repo", "fixture", "--limit", "2", "--explain")
+	if err != nil {
+		t.Fatalf("query explain returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	if errOut != "" {
+		t.Fatalf("query explain wrote stderr: %q", errOut)
+	}
+	for _, want := range []string{`"queryCapabilities"`, `"queryLanes"`, `"matchReasons"`, `"explain"`} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("query explain output missing %q:\n%s", want, out)
 		}
 	}
 

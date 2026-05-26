@@ -202,16 +202,17 @@ Important artifacts:
 
 ```text
 avmatrix-launcher\AVmatrixLauncher.exe
+avmatrix\bin\avmatrix.exe
 avmatrix-launcher\server-bundle\avmatrix-server.exe
-avmatrix-launcher\server-bundle\avmatrix.exe
 avmatrix-launcher\web-dist\
 ```
 
 Runtime behavior:
 
 - `AVmatrixLauncher.exe` is rebuilt by `avmatrix-launcher\build.ps1` and is the packaged user entrypoint.
+- `avmatrix\bin\avmatrix.exe` is the single production AVmatrix CLI/runtime executable built by the full build.
 - `AVmatrixLauncher.exe` serves the packaged Web UI on `127.0.0.1:5228` and opens the in-app start screen.
-- `avmatrix-server.exe` starts the packaged Go backend and runs `avmatrix serve`.
+- `avmatrix-server.exe` starts `avmatrix\bin\avmatrix.exe serve`.
 - backend health is checked at `http://127.0.0.1:4848/api/info`.
 - reset/stop use the launcher state file plus process path sweep for the packaged runtime.
 

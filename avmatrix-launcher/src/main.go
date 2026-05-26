@@ -100,7 +100,7 @@ func resolvePaths() (launcherPaths, error) {
 		logDir:     filepath.Join(homeDir, "logs"),
 		webDist:    filepath.Join(homeDir, "web-dist"),
 		serverExe:  filepath.Join(homeDir, "server-bundle", "avmatrix-server.exe"),
-		backendExe: filepath.Join(homeDir, "server-bundle", "avmatrix.exe"),
+		backendExe: filepath.Join(rootDir, "avmatrix", "bin", "avmatrix.exe"),
 		stateFile:  stateFile,
 	}, nil
 }
@@ -224,6 +224,9 @@ func ensureBackend(paths launcherPaths) (backendProcess, error) {
 	}
 	if _, err := os.Stat(paths.serverExe); err != nil {
 		return backendProcess{}, fmt.Errorf("packaged backend missing: %s", paths.serverExe)
+	}
+	if _, err := os.Stat(paths.backendExe); err != nil {
+		return backendProcess{}, fmt.Errorf("canonical AVmatrix CLI missing: %s", paths.backendExe)
 	}
 
 	cmd := exec.Command(paths.serverExe)
@@ -615,7 +618,6 @@ func stopConflictingWebRuntime(paths launcherPaths) error {
 }
 
 func buildStopRuntimeProcessesScript(paths launcherPaths, currentPID int) string {
-	bundleDir := filepath.Join(paths.homeDir, "server-bundle")
 	webDir := filepath.Join(paths.rootDir, "avmatrix-web")
 	return fmt.Sprintf(`
 $ErrorActionPreference = 'SilentlyContinue'
@@ -623,20 +625,21 @@ $currentPid = %d
 $launcherPath = [System.IO.Path]::GetFullPath(%s).ToLowerInvariant()
 $serverPath = [System.IO.Path]::GetFullPath(%s).ToLowerInvariant()
 $backendPath = [System.IO.Path]::GetFullPath(%s).ToLowerInvariant()
-$bundleDir = [System.IO.Path]::GetFullPath(%s).TrimEnd([char]92).ToLowerInvariant()
 $webDir = [System.IO.Path]::GetFullPath(%s).TrimEnd([char]92).ToLowerInvariant()
 Get-CimInstance Win32_Process | Where-Object {
   if ($_.ProcessId -eq $currentPid) { return $false }
   $exe = if ($_.ExecutablePath) { $_.ExecutablePath.ToLowerInvariant() } else { '' }
   $cmd = if ($_.CommandLine) { $_.CommandLine.ToLowerInvariant() } else { '' }
+  $isCanonicalBackendServe = (
+    $_.Name -ieq 'avmatrix.exe' -and
+    $exe -eq $backendPath -and
+    $cmd.Contains(' serve') -and
+    ($cmd.Contains('--port 4848') -or $cmd.Contains('--port=4848'))
+  )
   $isPackagedRuntime = (
     ($_.Name -ieq 'AVmatrixLauncher.exe' -and $exe -eq $launcherPath) -or
     ($_.Name -ieq 'avmatrix-server.exe' -and $exe -eq $serverPath) -or
-    ($_.Name -ieq 'avmatrix.exe' -and (
-      $exe -eq $backendPath -or
-      $exe.StartsWith($bundleDir) -or
-      $cmd.Contains($bundleDir)
-    ))
+    $isCanonicalBackendServe
   )
   $isRepoWebRuntime = (
     $_.Name -ieq 'node.exe' -and
@@ -648,7 +651,7 @@ Get-CimInstance Win32_Process | Where-Object {
 } | ForEach-Object {
   Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
 }
-`, currentPID, psQuote(paths.exePath), psQuote(paths.serverExe), psQuote(paths.backendExe), psQuote(bundleDir), psQuote(webDir))
+`, currentPID, psQuote(paths.exePath), psQuote(paths.serverExe), psQuote(paths.backendExe), psQuote(webDir))
 }
 
 func buildStopWebDevServerScript(paths launcherPaths, currentPID int) string {
