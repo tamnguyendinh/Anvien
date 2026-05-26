@@ -334,8 +334,10 @@ MCP prompts:
 
 | Prompt | Purpose |
 |--------|---------|
-| `detect_impact` | Pre-change impact workflow |
-| `generate_map` | Architecture map from graph context |
+| `detect_impact` | Agent template for pre-commit impact analysis with `detect_changes`, `context`, `impact`, freshness checks, and HIGH/CRITICAL blast-radius interpretation |
+| `generate_map` | Agent template for evidence-backed architecture documentation from `avmatrix://repos`, repo context, clusters, processes, selected process details, and any extra tools/commands the agent actually reads |
+
+MCP prompts are workflow templates for MCP-capable agents, not CLI commands. `generate_map` must resolve an exact repo before reading repo resources, URL-escape repo and process names in resource URIs, refresh stale graph evidence with `avmatrix analyze --force` when required, and avoid architecture claims or Mermaid edges that are not backed by graph evidence the agent actually read.
 
 When only one repo is indexed, most repo-scoped tool calls can omit `repo`. With multiple indexed repos, pass the repo name or path explicitly.
 

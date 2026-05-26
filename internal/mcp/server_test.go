@@ -1895,8 +1895,21 @@ func TestServeReadsSchemaDetailResourcesAndPrompts(t *testing.T) {
 	}
 	promptMessages := responses[8]["result"].(map[string]any)["messages"].([]any)
 	promptText := promptMessages[0].(map[string]any)["content"].(map[string]any)["text"].(string)
-	if !strings.Contains(promptText, "avmatrix://repo/fixture/clusters") {
-		t.Fatalf("generate_map prompt = %s", promptText)
+	for _, want := range []string{
+		"Use the supplied repo name exactly as `fixture`",
+		"avmatrix://repo/fixture/context",
+		"avmatrix://repo/fixture/clusters",
+		"avmatrix://repo/fixture/processes",
+		"avmatrix://repo/fixture/process/<process-uri>",
+		"avmatrix analyze --force",
+		"Do not invent Mermaid nodes, edges, dependencies, layers, or ownership.",
+	} {
+		if !strings.Contains(promptText, want) {
+			t.Fatalf("generate_map prompt missing %q:\n%s", want, promptText)
+		}
+	}
+	if strings.Contains(promptText, "{name}") {
+		t.Fatalf("generate_map prompt contains stale placeholder:\n%s", promptText)
 	}
 }
 

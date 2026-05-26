@@ -51,7 +51,7 @@ Status: baseline recorded; Phase 1 query-lane metrics and P1.5 graph-health comm
 | Query-health cases with lane evidence fields | cases | 0 | 9 | +9 | >= 9 |
 | Normal query compatibility failures | failures | 0 | 0 | 0 | 0 |
 | First-class graph-health CLI command families | families | 0 | 1 | +1 | >= 1 |
-| MCP prompt templates reviewed | prompts | 0 | 0 | 0 | 2 |
+| MCP prompt templates reviewed | prompts | 0 | 2 | +2 | 2 |
 | Accepted CLI parity gaps implemented | gaps | 0 | 5 | +5 | 5 |
 
 P1.5 graph-health CLI smoke inventory:
@@ -108,6 +108,32 @@ P1.6 CLI parity inventory and smoke:
 | P1.6 AVmatrix `rename NewRootCommand` dry-run total edits | edits | 4 |
 | AVmatrix self graph Route nodes available for API smoke | nodes | 0 |
 | AVmatrix self graph Tool nodes available for API smoke | nodes | 0 |
+
+P1.7 MCP prompt inventory and smoke:
+
+| Metric | Unit | Result |
+|---|---:|---:|
+| MCP prompt templates reviewed | prompts | 2 |
+| MCP prompts returned by runtime `prompts/list` smoke | prompts | 2 |
+| MCP prompt argument schemas validated | arguments | 3 |
+| Runtime MCP JSON-RPC smoke requests | requests | 4 |
+| Runtime MCP JSON-RPC smoke responses | responses | 4 |
+| Runtime MCP smoke process exit code | code | 0 |
+| `generate_map` actionable `{name}` placeholders with repo argument | placeholders | 0 |
+| `generate_map` actionable `{name}` placeholders without repo argument | placeholders | 0 |
+| `generate_map` concrete repo resource URIs validated | URIs | 3 |
+| `generate_map` repo-discovery resource references validated | references | 1 |
+| `generate_map` freshness command references validated | references | 1 |
+| `generate_map` deterministic selection criteria groups documented | groups | 5 |
+| `detect_impact` change-detection surfaces validated | surfaces | 2 |
+| Focused P1.7 test package failures | failures | 0 |
+| P1.7 final analyze scanned files | files | 772 |
+| P1.7 final analyze parsed files | files | 575 |
+| P1.7 final analyze graph nodes | nodes | 87,883 |
+| P1.7 final analyze graph relationships | relationships | 120,603 |
+| P1.7 detect-changes changed files | files | 11 |
+| P1.7 detect-changes changed symbols | symbols | 49 |
+| P1.7 detect-changes affected processes | processes | 9 |
 
 ## B2 - Query Reliability Metrics
 

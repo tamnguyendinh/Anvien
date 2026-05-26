@@ -903,3 +903,87 @@ Pre-commit checks:
 | `git diff --check` | pass. |
 | `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after checklist/evidence/benchmark updates; `files: scanned=771 parsed=574 unsupported=197 failed=0`, `nodes=87768 relationships=120511`. |
 | `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass; summary `changed_files=13`, `changed_count=103`, `affected_count=20`, `risk_level=critical`; changed App Layers `api=4`, `api_test=2`, `backend=53`, `backend_test=16`, `docs=28`; affected App Layers `backend=3`, `mixed=17`. Critical scope is expected for root CLI registration, direct MCP wrapper, AI-context generator, MCP resource guidance, and docs/test changes. |
+
+## Phase 1.7 MCP Prompt Template Accuracy Evidence
+
+Status: complete.
+
+Fresh graph and impact commands:
+
+| Command | Result |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass before P1.7 impact checks; `files: scanned=771 parsed=574 unsupported=197 failed=0`, `nodes=87768 relationships=120511`. |
+| `.\avmatrix\bin\avmatrix.exe impact "promptDefinitions" --repo AVmatrix --direction upstream` | CRITICAL; prompt list registration affects the MCP `prompts/list` surface through `Server.handle` and 7 execution processes. This is blast-radius evidence, not an edit ban. |
+| `.\avmatrix\bin\avmatrix.exe impact "detectImpactPrompt" --repo AVmatrix --direction upstream` | CRITICAL; generated `detect_impact` prompt body flows through `getPrompt` and `Server.handle` into MCP prompt execution. |
+| `.\avmatrix\bin\avmatrix.exe impact "generateMapPrompt" --repo AVmatrix --direction upstream` | CRITICAL; generated `generate_map` prompt body flows through `getPrompt` and `Server.handle` into MCP prompt execution. |
+| `.\avmatrix\bin\avmatrix.exe impact "getPrompt" --repo AVmatrix --direction upstream` | CRITICAL; shared prompt dispatcher affects MCP prompt retrieval. |
+| `.\avmatrix\bin\avmatrix.exe impact "renderAVmatrixBlock" --repo AVmatrix --direction upstream` | CRITICAL; generated `AGENTS.md` / `CLAUDE.md` context path through AI-context generation. |
+| `.\avmatrix\bin\avmatrix.exe impact "setupResource" --repo AVmatrix --direction upstream` | LOW; MCP setup resource guidance text surface. |
+| `.\avmatrix\bin\avmatrix.exe impact "contextResource" --repo AVmatrix --direction upstream` | LOW; MCP repo context guidance text surface. |
+
+### P1.7-A/B Prompt Inventory And Audit
+
+Prompt inventory:
+
+| Prompt | Arguments | Runtime role | Source/guidance references |
+|---|---|---|---|
+| `detect_impact` | `scope`, `base_ref` | Agent workflow template for pre-commit change detection, context, impact, freshness rules, and blast-radius interpretation. It produces analysis text, not files. | `internal/mcp/prompts.go`, README MCP prompts table, MCP setup resource, AI-context generated guidance, `avmatrix-guide` embedded skill. |
+| `generate_map` | `repo` | Agent workflow template for evidence-backed architecture-map drafting. It may draft `ARCHITECTURE.md`-ready content, but tells the agent not to edit/create files unless the user explicitly asks. | `internal/mcp/prompts.go`, README MCP prompts table, MCP setup resource, repo context resource prompt list, AI-context generated guidance, `avmatrix-guide` embedded skill. |
+
+Audit findings before the fix:
+
+| Finding | Resolution |
+|---|---|
+| `generate_map` used `{name}` when `repo` was omitted, which could become a bogus actionable resource URI. | The prompt now reads `avmatrix://repos`, selects the single repo or workspace-path match, and stops to ask the user if multiple repos remain ambiguous. |
+| Repo and process resource names need URI escaping. | The prompt now uses URL-escaped repo and process URI guidance and tests assert escaped repo resource paths. |
+| Stale graph handling was not explicit. | The prompt now requires context/freshness checks and `avmatrix analyze --force` before graph-based mapping when stale or required by repo rules. |
+| "Top 5 most important processes" had no deterministic selection rule. | The prompt now selects representative clusters/processes by user request, runtime/API/tool relevance, graph surface involvement, step count, and centrality if available, while recording the reason for each selection. |
+| Architecture docs and Mermaid diagrams could be inferred beyond read graph evidence. | The prompt now requires claims, nodes, edges, dependencies, layers, and ownership to come only from resources/tools/commands the agent actually read, with uncertainty notes for incomplete evidence. |
+
+### P1.7-C Through H Implementation
+
+Implementation:
+
+| File | Change |
+|---|---|
+| `internal/mcp/prompts.go` | Rewrote `generate_map` and `detect_impact` bodies; added repo discovery, URL-escaped resource URI guidance, freshness handling, deterministic selection criteria, evidence-only output rules, and current change-detection wording. |
+| `internal/mcp/prompts_test.go` | Added focused prompt tests for `generate_map` with repo, `generate_map` without repo, and `detect_impact` workflow wording. |
+| `internal/mcp/server_test.go` | Expanded MCP prompt server assertions for escaped resource URIs, freshness language, no actionable `{name}`, evidence-only architecture guidance, and process selection criteria. |
+| `internal/mcp/resources.go` | Added MCP prompt guidance to setup and repo context resources. |
+| `internal/mcp/resources_parity_test.go` | Updated setup-resource expectations for MCP prompt guidance. |
+| `internal/aicontext/aicontext.go` | Added generated MCP prompt guidance and prompt/workflow distinction to AI-context output. |
+| `internal/aicontext/aicontext_test.go` | Updated AI-context expectations for prompt guidance. |
+| `internal/aicontext/skills/avmatrix-guide.md` | Added embedded guide section for MCP prompts and prompt-vs-command distinction. |
+| `README.md` | Updated MCP prompt table and clarified that prompts are agent templates, not CLI commands. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass before focused tests; Go build and Web production build completed. Existing Vite chunk-size/dynamic-import warnings only. |
+| `go test .\internal\mcp .\internal\aicontext -count=1` | pass; `internal/mcp` 4.849s, `internal/aicontext` 0.660s. |
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass after final prompt-command wording patch; same existing Vite warnings only. |
+| `go test .\internal\mcp .\internal\aicontext -count=1` | pass; `internal/mcp` 4.794s, `internal/aicontext` 0.758s. |
+
+### P1.7-I Runtime MCP Prompt Smoke
+
+Runtime smoke:
+
+| Check | Result |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe mcp` JSON-RPC `prompts/list` | pass; response includes `detect_impact`, `generate_map`, `scope`, `base_ref`, and `repo`. |
+| `prompts/get generate_map` with `repo=AVmatrix` | pass; body includes `avmatrix://repo/AVmatrix/context`, `avmatrix://repo/AVmatrix/clusters`, `avmatrix://repo/AVmatrix/processes`, freshness instruction `avmatrix analyze --force`, and evidence-only / do-not-invent guidance. No actionable `{name}` placeholder remains. |
+| `prompts/get generate_map` without repo | pass; body includes `avmatrix://repos`, single-repo/workspace-match selection rules, ambiguity stop/ask-user behavior, and no actionable `{name}` placeholder. |
+| `prompts/get detect_impact` with `scope=all`, `base_ref=HEAD~1` | pass; body includes MCP `detect_changes`, CLI fallback `avmatrix detect-changes`, and states HIGH/CRITICAL are blast-radius warnings, not an edit ban. |
+
+Intentional limitation:
+
+- MCP prompts are executable agent templates, but they still depend on the receiving agent actually reading the named resources/tools/commands. The templates now forbid unsupported claims; they do not themselves fetch graph evidence.
+
+Pre-commit checks:
+
+| Command | Result |
+|---|---|
+| `git diff --check` | pass. |
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after checklist/evidence/benchmark updates; `files: scanned=772 parsed=575 unsupported=197 failed=0`, `nodes=87883 relationships=120603`. |
+| `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass; summary `changed_files=11`, `changed_count=49`, `affected_count=9`, `risk_level=high`; changed App Layers `api=15`, `api_test=8`, `backend=7`, `backend_test=2`, `docs=17`; affected App Layers `api=7`, `backend=1`, `mixed=1`. High scope is expected for shared MCP prompt dispatch, MCP resource text, AI-context generator, docs, and tests. |

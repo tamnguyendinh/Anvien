@@ -70,6 +70,10 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"avmatrix://setup",
 		"avmatrix://repo/<repo>/schema",
 		"avmatrix://repo/<repo>/cluster/{name}",
+		"## MCP Prompts",
+		"`detect_impact`",
+		"`generate_map`",
+		"MCP prompts are agent templates, not CLI commands.",
 		"## Skills",
 		"avmatrix-impact-analysis/SKILL.md",
 	} {

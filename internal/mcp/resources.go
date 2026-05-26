@@ -294,6 +294,10 @@ func (s Server) contextResource(repoName string) (string, error) {
 		"  - "+canonicalResourceScheme+"://repo/"+resourceName+"/processes: All execution flows",
 		"  - "+canonicalResourceScheme+"://repo/"+resourceName+"/cluster/{name}: Module details",
 		"  - "+canonicalResourceScheme+"://repo/"+resourceName+"/process/{name}: Process trace",
+		"",
+		"prompts_available:",
+		"  - detect_impact: Agent template for pre-commit impact analysis using detect_changes, context, and impact",
+		"  - generate_map: Agent template for evidence-backed architecture documentation from resources/tools actually read",
 	)
 	return strings.Join(lines, "\n"), nil
 }
@@ -380,6 +384,15 @@ func (s Server) setupResource() (string, error) {
 			"| `avmatrix api tool-map [tool] --repo <repo>` | MCP `tool_map` |",
 			"| `avmatrix api shape-check [route] --repo <repo>` | MCP `shape_check` |",
 			"| `avmatrix api impact [route] --repo <repo>` | MCP `api_impact` |",
+			"",
+			"## MCP Prompts",
+			"",
+			"| Prompt | What it automates |",
+			"|--------|-------------------|",
+			"| `detect_impact` | Pre-commit impact workflow using MCP `detect_changes`, `context`, and `impact`, with CLI fallback guidance. HIGH/CRITICAL are blast-radius warnings, not edit bans. |",
+			"| `generate_map` | Evidence-backed architecture map workflow. If `repo` is omitted, the prompt first uses `" + canonicalResourceScheme + "://repos` for repo selection, then reads repo context, clusters, processes, and selected process details. |",
+			"",
+			"MCP prompts are templates for agents, not CLI commands. They still require fresh graph evidence and should not invent architecture claims beyond resources/tools/commands the agent actually read.",
 			"",
 			"## Resources",
 			"",

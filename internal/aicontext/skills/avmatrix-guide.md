@@ -36,6 +36,15 @@ Use this skill as the reference for the local AVmatrix MCP and CLI surfaces.
 | `avmatrix://repo/{name}/process/{processName}` | Step-by-step trace |
 | `avmatrix://repo/{name}/schema` | Graph schema for Cypher |
 
+## MCP Prompts
+
+| Prompt | Use |
+|---|---|
+| `detect_impact` | Agent template for pre-commit impact analysis using `detect_changes`, `context`, and `impact`, with CLI fallback guidance. HIGH/CRITICAL are blast-radius warnings, not edit bans. |
+| `generate_map` | Agent template for architecture documentation from graph evidence. It resolves the repo through `avmatrix://repos` when needed, checks freshness, reads context/clusters/processes/process details, and restricts claims and Mermaid edges to resources/tools/commands actually read. |
+
+Prompts are MCP prompt templates, not CLI commands. They automate a workflow for the agent; they do not replace repository rules, impact checks, or change detection.
+
 ## Standard Workflows
 
 ### Explore
