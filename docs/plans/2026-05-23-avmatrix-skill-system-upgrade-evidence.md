@@ -1350,3 +1350,62 @@ P6-C closure state:
 | Prior command-surface validations | pass; P5 recorded graph-health CLI validation, CLI parity validation, MCP prompt validation, Web graph label validation, and the dedicated AI-context query-health threshold/exact results. |
 | Benchmark and evidence ledgers | pass; P6-B records final evidence and B8 records final closure-review inventory metrics. |
 | Commit-state check | pass; `git diff --check` returned clean, `git diff --stat` showed only 4 doc/README files changed. AVmatrix `detect-changes` was not run for this closure commit because it is doc-only and repository rule 6 says not to use AVmatrix for doc-only commits. |
+
+## Phase 7 Final README And AI Context Command Documentation Sync Evidence
+
+Status: in progress.
+
+P7-A final command-surface inventory:
+
+| Surface | Result |
+|---|---|
+| Fresh graph before inventory | `.\avmatrix\bin\avmatrix.exe analyze --force` passed; `files: scanned=774 parsed=578 unsupported=196 failed=0`, `nodes=88585 relationships=121476`. |
+| Binary root help | `.\avmatrix\bin\avmatrix.exe --help` listed 28 visible commands: `analyze`, `api`, `augment`, `benchmark-compare`, `clean`, `completion`, `context`, `cypher`, `detect-changes`, `doctor`, `graph-health`, `group`, `help`, `impact`, `index`, `list`, `mcp`, `query`, `query-health`, `rename`, `resolution-inventory`, `serve`, `setup`, `source-site-accuracy`, `status`, `version`, `wiki`, and `wiki-mode`. |
+| Binary subcommand families | `api --help` listed 4 accepted API parity subcommands: `impact`, `route-map`, `shape-check`, `tool-map`. `graph-health --help` listed 4 graph-health subcommands: `components`, `explain`, `report`, `summary`. `group --help` listed 7 group subcommands: `add`, `contracts`, `create`, `list`, `query`, `remove`, `status`, `sync`. |
+| MCP runtime inventory | JSON-RPC stdio batch against `.\avmatrix\bin\avmatrix.exe mcp` returned 16 tools: `list_repos`, `query`, `cypher`, `context`, `detect_changes`, `rename`, `impact`, `route_map`, `tool_map`, `shape_check`, `api_impact`, `group_list`, `group_sync`, `group_contracts`, `group_query`, `group_status`; 2 resources: `avmatrix://repos`, `avmatrix://setup`; 6 resource templates; and 2 prompts: `detect_impact`, `generate_map`. |
+| MCP setup resource | `avmatrix://setup` read through JSON-RPC contained CLI equivalents, MCP prompts, AI Context And Skills, and the package-root `skills/` non-source-of-truth warning; setup text length was 12,950 chars. |
+| Local HTTP/Web API registration | `internal/httpapi/server.go` registered 24 local endpoints, including `/api/info`, `/api/heartbeat`, `/api/repos`, `/api/repo`, `/api/graph`, `/api/graph/explain`, `/api/graph/report`, `/api/query`, `/api/search`, `/api/file`, `/api/grep`, `/api/processes`, `/api/process`, `/api/clusters`, `/api/cluster`, `/api/local/folder-picker`, `/api/analyze`, `/api/analyze/`, `/api/embed`, `/api/embed/`, `/api/mcp`, `/api/session/status`, `/api/session/chat`, and `/api/session/`. Phase 1.6 keeps these as Web/API surfaces rather than promoting `grep`, `processes`, or `clusters` to root CLI commands. |
+| Hidden lifecycle surfaces | Source registration still adds hidden lifecycle `package` and `hook`; they are intentionally absent from root help as normal user commands. Generated guidance may mention them as hidden lifecycle helpers. |
+| Documentation drift found before edits | Root `README.md` omitted visible root commands `doctor`, `completion`, `version`, `augment`, and `benchmark-compare` from the main command tables. Packaged `avmatrix/README.md` omitted `doctor` and `completion`. `internal/aicontext/aicontext.go`, generated `AGENTS.md`/`CLAUDE.md`, `avmatrix-cli`, and `avmatrix-runtime-packaging` omitted `doctor`; generated AI context and CLI skill also omitted shell `completion`. |
+
+P7-B through P7-E implementation:
+
+| Item | Result |
+|---|---|
+| Impact before generator/test edits | `renderAVmatrixBlock` impact was CRITICAL (`impactedCount=7`, direct impacted nodes `1`, affected processes `12`, affected App Layers `backend=4`, `backend_test=3`); this is generated AI-context blast-radius evidence, not an edit ban. `baseSkills`, `TestGenerateAIContextFilesCreatesAndUpdatesManagedContext`, and `TestSkillGuidanceProtectsExpandedCommandSurface` were LOW with `impactedCount=0`. |
+| `README.md` | Added visible `doctor`, `version`, and `completion` rows to main CLI commands, and added `augment` plus `benchmark-compare` to direct graph tools. |
+| `avmatrix/README.md` | Added visible `doctor` and `completion` rows to packaged CLI command docs. |
+| `internal/aicontext/aicontext.go` | Added generated command-selection rows for `avmatrix doctor locks --repo <repo> --json` / `avmatrix doctor processes --json` and `avmatrix completion <shell>`. Updated `avmatrix-cli` and `avmatrix-runtime-packaging` registry descriptions to include runtime diagnostics and completion where applicable. |
+| Embedded skills | Updated `avmatrix-cli` with `completion`, `doctor locks`, and `doctor processes`; updated `avmatrix-runtime-packaging` with doctor diagnostics, process ownership inspection, and lock/process evidence guidance. |
+| Tests | Updated `internal/aicontext/aicontext_test.go` so generated root output and combined skill guidance must contain `doctor` and `completion` command guidance. |
+| Formatting | `gofmt -w internal\aicontext\aicontext.go internal\aicontext\aicontext_test.go` completed. |
+
+P7-F regeneration:
+
+| Command | Result |
+|---|---|
+| First `.\avmatrix\bin\avmatrix.exe analyze --force` after source edits | pass as graph analyze, but generated output was stale because the binary had not yet been rebuilt with the edited embedded source/generator. Inventory showed source count 11, generated count 11, SHA-256 mismatches 2, source bytes 31,693, generated bytes 30,984, generated command rows still 44, and no `doctor`/`completion` fragments in `AGENTS.md` or `CLAUDE.md`. |
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass; rebuilt the canonical binary after P7 generator/embedded-skill source edits. Web production build transformed 2,931 modules and built in 18.80s; existing Vite dynamic-import and chunk-size warnings only. |
+| Second `.\avmatrix\bin\avmatrix.exe analyze --force` | pass with rebuilt binary and no `--skip-agents-md`; `files: scanned=774 parsed=578 unsupported=196 failed=0`, `nodes=88589 relationships=121480`. |
+| Generated/source inventory after rebuilt regeneration | pass; source count 11, generated count 11, name diff 0, SHA-256 mismatch 0, source bytes 31,693, generated bytes 31,693, source lines 563, generated lines 563. `AGENTS.md` and `CLAUDE.md` each contained 11 skill rows, 46 command-selection rows, `avmatrix doctor locks --repo <repo> --json`, `avmatrix doctor processes --json`, and `avmatrix completion <shell>`. |
+
+P7-G final validation and command-surface smoke:
+
+| Command | Result |
+|---|---|
+| `go test .\internal\aicontext .\internal\cli .\internal\mcp -count=1` | pass; `internal/aicontext` 0.935s, `internal/cli` 11.144s, `internal/mcp` 6.728s. |
+| Root CLI/help smoke | pass; `.\avmatrix\bin\avmatrix.exe --help` contained required visible commands `doctor`, `completion`, `version`, `augment`, `benchmark-compare`, `graph-health`, `query-health`, `source-site-accuracy`, `resolution-inventory`, and `api`. |
+| Doctor/completion smoke | pass; `doctor --help` listed `locks` and `processes`; `doctor locks --help` listed `--repo`; `doctor processes --help` listed `--json`; `doctor locks --repo AVmatrix --json` returned lock status `free` with diagnosis fields; `completion powershell` generated 222 non-empty lines and contained `Register-ArgumentCompleter`. |
+| MCP runtime smoke | pass; JSON-RPC stdio against rebuilt `.\avmatrix\bin\avmatrix.exe mcp` still returned 16 tools, 2 resources, 6 resource templates, and 2 prompts (`detect_impact`, `generate_map`). `avmatrix://setup` still contained CLI equivalents, MCP prompts, and AI Context And Skills. |
+| Package README smoke | pass; `cd avmatrix; npm pack --dry-run --ignore-scripts --json` returned 7 tarball files, included `README.md` at 18,788 bytes, package-root `skills/` files 0, and the packaged README text contained `avmatrix doctor` plus `avmatrix completion <shell>`. |
+| Web validation scope | no Web unit/e2e rerun for P7-G because this slice changed command documentation, generated AI-context output, and embedded skill text only; no Web UI behavior changed. The full build still rebuilt the Web production bundle. |
+
+P7-H closure and pre-commit checks:
+
+| Check | Result |
+|---|---|
+| Final command-surface agreement | pass; root README, packaged README, `internal/aicontext/aicontext.go`, embedded `avmatrix-cli` and `avmatrix-runtime-packaging` skills, generated `AGENTS.md`, generated `CLAUDE.md`, generated `.claude/skills/avmatrix/avmatrix-cli/SKILL.md`, and generated `.claude/skills/avmatrix/avmatrix-runtime-packaging/SKILL.md` all contain the final `doctor`/`completion` guidance plus existing graph/API/quality command guidance. |
+| Generated artifact commit status | verified generated output after P7-F, but `git status --short` did not show `AGENTS.md`, `CLAUDE.md`, or `.claude/skills/avmatrix/**` as tracked modifications in this checkout. The source-of-truth edits are in `internal/aicontext/aicontext.go` and `internal/aicontext/skills/*.md`. |
+| `git diff --check` | pass before final P7-H ledger update. |
+| Final refresh before change detection | `.\avmatrix\bin\avmatrix.exe analyze --force` passed; `files: scanned=774 parsed=578 unsupported=196 failed=0`, `nodes=88589 relationships=121480`. |
+| `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass; summary `changed_files=9`, `changed_count=33`, `affected_count=1`, `risk_level=medium`. Changed App Layers `backend=4`, `backend_test=7`, `docs=22`; affected App Layers `backend=1`; affected Functional Areas `cli=1`. Affected process was `NewAnalyzeCommand -> RenderAVmatrixBlock`, which matches the intentional generated AI-context command table update. Resolution gap changes were 6 changed gap entities/occurrences with top targets `writeCommandRow`, `string`, and `map[string][]string`; resolution health degraded nodes 0. |

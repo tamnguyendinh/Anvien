@@ -182,9 +182,11 @@ avmatrix status                      # Show index status for current repo
 avmatrix clean --all --force         # Delete all indexes
 avmatrix mcp                         # Start MCP server over stdio
 avmatrix serve                       # Start local HTTP backend for the Web UI
+avmatrix doctor                      # Inspect local runtime locks and processes
 avmatrix version                     # Print version/build information
 avmatrix wiki                        # Show wiki capability status
 avmatrix wiki-mode [off|local]       # Show or set local wiki capability mode
+avmatrix completion <shell>          # Generate shell completion script
 ```
 
 Direct graph, API, and quality tools:

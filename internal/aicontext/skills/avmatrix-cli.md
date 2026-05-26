@@ -1,6 +1,6 @@
 ---
 name: avmatrix-cli
-description: "Use when the user needs to run AVmatrix CLI commands for analysis, query, graph quality, API parity, groups, setup, runtime, package, wiki, hook, or version workflows."
+description: "Use when the user needs to run AVmatrix CLI commands for analysis, query, graph quality, API parity, groups, setup, runtime diagnostics, completion, package, wiki, hook, or version workflows."
 ---
 
 # AVmatrix CLI Commands
@@ -18,6 +18,7 @@ Use this skill for terminal access to AVmatrix. In a development checkout, prefe
 | `avmatrix clean --force` | Remove the current repo index. |
 | `avmatrix clean --all --force` | Remove all indexed repo data. |
 | `avmatrix version` | Print version/build information. |
+| `avmatrix completion <shell>` | Generate shell completion scripts. |
 
 ## Graph Navigation Commands
 
@@ -63,6 +64,8 @@ CLI API commands delegate to MCP owners so terminal and agent behavior stay alig
 | `avmatrix serve --host 127.0.0.1 --port <port>` | Start local Web/API runtime. |
 | `avmatrix mcp` | Start MCP server. |
 | `avmatrix setup` | Configure editor/agent integrations. |
+| `avmatrix doctor locks --repo <repo> --json` | Inspect analyze lock state for a repo. |
+| `avmatrix doctor processes --json` | Inspect AVmatrix runtime processes without stopping them. |
 | `avmatrix group list|status|sync|contracts|query` | Multi-repo groups, contracts, and cross-repo query. |
 | `avmatrix wiki` and `avmatrix wiki-mode [off|local]` | Wiki capability status and mode. |
 | `avmatrix package ...` | Hidden lifecycle package/runtime maintenance. |

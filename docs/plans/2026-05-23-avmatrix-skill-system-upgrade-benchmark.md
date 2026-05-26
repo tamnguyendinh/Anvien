@@ -412,3 +412,44 @@ Status: final closure-review inventory captured after P6-B validation.
 | Package dry-run package-root skill files | files | 7 | 0 | -7 | 0 |
 | Final desktop graph-label screenshot size | bytes | pending | 237,028 | pending | record |
 | Final small filtered graph-label screenshot size | bytes | pending | 92,012 | pending | record |
+
+## B9 - Phase 7 Command-Surface Inventory Metrics
+
+Status: P7-A inventory captured before documentation/generator edits.
+
+| Metric | Unit | Baseline | Latest | Delta | Target |
+|---|---:|---:|---:|---:|---:|
+| Fresh graph nodes before P7 inventory | nodes | pending | 88,585 | pending | record |
+| Fresh graph relationships before P7 inventory | relationships | pending | 121,476 | pending | record |
+| Visible root CLI commands in binary help | commands | pending | 28 | pending | record |
+| Visible API parity subcommands | commands | pending | 4 | pending | 4 |
+| Visible graph-health subcommands | commands | pending | 4 | pending | 4 |
+| Visible group subcommands | commands | pending | 7 | pending | record |
+| MCP runtime tools | tools | pending | 16 | pending | 16 |
+| MCP resources | resources | pending | 2 | pending | 2 |
+| MCP resource templates | templates | pending | 6 | pending | 6 |
+| MCP prompts | prompts | pending | 2 | pending | 2 |
+| MCP setup resource text size | chars | pending | 12,950 | pending | record |
+| Local HTTP/API registered endpoints | endpoints | pending | 24 | pending | record |
+| Root README visible-command omissions found | commands | pending | 5 | pending | 0 after P7-B |
+| Packaged README visible-command omissions found | commands | pending | 2 | pending | 0 after P7-B |
+| Generated AI-context visible-command omissions found | commands | pending | 2 | pending | 0 after P7-C |
+| Generated AI-context command rows after P7 regeneration | rows/root | 44 | 46 | +2 | record |
+| Generated/source skill bytes after P7 regeneration | bytes | 30,984 | 31,693 | +709 | record |
+| Generated/source skill lines after P7 regeneration | lines | 556 | 563 | +7 | record |
+| Generated/source skill SHA-256 mismatches after rebuilt regeneration | mismatches | 2 | 0 | -2 | 0 |
+| Generated root `doctor` fragments after P7 regeneration | fragments/root | 0 | 2 | +2 | 2 |
+| Generated root `completion` fragments after P7 regeneration | fragments/root | 0 | 1 | +1 | 1 |
+| Focused P7 Go test packages passed | packages | pending | 3 | pending | 3 |
+| Root help required command omissions after P7 | commands | 5 | 0 | -5 | 0 |
+| Doctor lock smoke status count | statuses | pending | 1 | pending | record |
+| PowerShell completion non-empty lines | lines | pending | 222 | pending | record |
+| MCP runtime tools after P7 rebuild | tools | 16 | 16 | 0 | 16 |
+| MCP runtime prompts after P7 rebuild | prompts | 2 | 2 | 0 | 2 |
+| Packaged README size after P7 | bytes | 18,635 | 18,788 | +153 | record |
+| Packaged README package-root skill files after P7 | files | 0 | 0 | 0 | 0 |
+| P7 final detect changed files | files | pending | 9 | pending | record |
+| P7 final detect changed symbols/items | items | pending | 33 | pending | record |
+| P7 final detect affected processes | processes | pending | 1 | pending | record |
+| P7 final detect resolution gap changed entities | entities | pending | 6 | pending | record |
+| P7 final detect degraded resolution-health nodes | nodes | pending | 0 | pending | 0 |

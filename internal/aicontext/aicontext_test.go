@@ -91,6 +91,8 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"`avmatrix query-health --repo <repo>`",
 		"`avmatrix resolution-inventory --graph .avmatrix/graph.json`",
 		"`avmatrix source-site-accuracy --graph .avmatrix/graph.json`",
+		"`avmatrix doctor locks --repo <repo> --json`",
+		"`avmatrix completion <shell>`",
 		"MCP `group_query` or CLI `avmatrix group query <name> \"<query>\"`",
 		"## Resources",
 		"avmatrix://repos",
@@ -275,6 +277,7 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 			"serve",
 			"mcp",
 			"setup",
+			"doctor",
 			"package",
 		},
 	}
@@ -296,6 +299,8 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 		"`avmatrix query-health`",
 		"`route_map`",
 		"`avmatrix api route-map",
+		"`avmatrix doctor processes --json`",
+		"`avmatrix completion <shell>`",
 	} {
 		if !strings.Contains(allGuidance, want) {
 			t.Fatalf("combined skill guidance missing %q", want)

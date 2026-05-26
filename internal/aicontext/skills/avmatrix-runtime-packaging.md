@@ -1,11 +1,11 @@
 ---
 name: avmatrix-runtime-packaging
-description: "Use when the user needs serve, mcp, setup, launcher, package runtime, canonical executable, startup, or process lifecycle validation."
+description: "Use when the user needs serve, mcp, setup, doctor diagnostics, launcher, package runtime, canonical executable, startup, or process lifecycle validation."
 ---
 
 # Runtime And Packaging With AVmatrix
 
-Use this skill for local runtime startup, MCP server startup, editor setup, launcher behavior, package lifecycle helpers, canonical executable validation, and process lifecycle bugs.
+Use this skill for local runtime startup, MCP server startup, editor setup, doctor diagnostics, launcher behavior, package lifecycle helpers, canonical executable validation, and process lifecycle bugs.
 
 ## Command Choices
 
@@ -15,6 +15,8 @@ Use this skill for local runtime startup, MCP server startup, editor setup, laun
 | Start Web/API runtime | `avmatrix serve --host 127.0.0.1 --port <port>` |
 | Start MCP server | `avmatrix mcp` |
 | Configure editor/agent integrations | `avmatrix setup` |
+| Inspect analyze lock state | `avmatrix doctor locks --repo <repo> --json` |
+| Inspect runtime processes | `avmatrix doctor processes --json` |
 | Verify package runtime | `avmatrix package ensure-runtime` |
 | Build package runtime | `avmatrix package build-runtime` |
 | Prepare/clean package source | `avmatrix package prepare-go-source`, `avmatrix package clean-go-source` |
@@ -26,14 +28,16 @@ In this repository, product validation should use the canonical executable path 
 
 1. Run the full build before runtime/package validation.
 2. Use explicit host/port for local server smoke checks.
-3. Track started process ids and stop the exact process tree you started.
-4. For setup/package skill behavior, verify installed/generated skill inventories and content hashes from embedded skill source; package-root `skills/` files are not a source of truth.
-5. For lifecycle bugs, validate that browser close, app exit, failed analyze, and reset paths do not leave orphan backend/analyze processes.
+3. Use `avmatrix doctor processes --json` to inspect ownership before deciding whether a process is editor-owned, user-command-owned, or launcher-owned.
+4. Track started process ids and stop the exact process tree you started.
+5. For setup/package skill behavior, verify installed/generated skill inventories and content hashes from embedded skill source; package-root `skills/` files are not a source of truth.
+6. For lifecycle bugs, validate that browser close, app exit, failed analyze, and reset paths do not leave orphan backend/analyze processes.
 
 ## Evidence To Record
 
 - Built executable path, size, and version.
 - Runtime command, host, port, pid, readiness output, and cleanup result.
+- Doctor lock/process output when diagnosing stuck analyze or orphan runtime behavior.
 - Setup/package target directories and file inventories.
 - Any process cleanup checks before and after validation.
 

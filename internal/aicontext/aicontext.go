@@ -164,7 +164,9 @@ func renderAVmatrixBlock(projectName string, stats Stats, noStats bool) string {
 	writeCommandRow("Start local Web/API runtime", "`avmatrix serve --host 127.0.0.1 --port <port>`")
 	writeCommandRow("Start the MCP server for agents", "`avmatrix mcp`")
 	writeCommandRow("Configure editor/agent integrations", "`avmatrix setup`")
+	writeCommandRow("Inspect local runtime locks and processes", "`avmatrix doctor locks --repo <repo> --json` or `avmatrix doctor processes --json`")
 	writeCommandRow("Print AVmatrix version", "`avmatrix version`")
+	writeCommandRow("Generate shell completion scripts", "`avmatrix completion <shell>`")
 	writeCommandRow("Run Claude Code hook integration (hidden lifecycle helper)", "`avmatrix hook claude`")
 	writeCommandRow("Create a repository group", "MCP `group_list` for discovery or CLI `avmatrix group create <name>`")
 	writeCommandRow("Add an indexed repo to a group", "`avmatrix group add <group> <groupPath> <registryName>`")
@@ -283,11 +285,11 @@ var baseSkills = []baseSkill{
 	{Name: "avmatrix-debugging", Description: `Use when the user is debugging a bug, tracing an error, or asking why something fails.`, Task: `Trace bugs, failures, diagnostics, and graph-quality evidence`},
 	{Name: "avmatrix-refactoring", Description: `Use when the user wants to rename, extract, split, move, or restructure code safely.`, Task: `Rename, extract, split, move, or restructure code safely`},
 	{Name: "avmatrix-guide", Description: `Use when the user asks about AVmatrix itself, available tools, MCP resources, graph schema, prompts, or workflow reference.`, Task: `Unified CLI, MCP, resource, prompt, and Web/API reference`},
-	{Name: "avmatrix-cli", Description: `Use when the user needs to run AVmatrix CLI commands for analysis, query, graph quality, API parity, groups, setup, runtime, package, wiki, hook, or version workflows.`, Task: `Terminal command guide for AVmatrix CLI surfaces`},
+	{Name: "avmatrix-cli", Description: `Use when the user needs to run AVmatrix CLI commands for analysis, query, graph quality, API parity, groups, setup, runtime diagnostics, completion, package, wiki, hook, or version workflows.`, Task: `Terminal command guide for AVmatrix CLI surfaces`},
 	{Name: "avmatrix-graph-quality", Description: `Use when the user needs graph-health, query-health, resolution inventory, source-site accuracy, or benchmark comparison evidence.`, Task: `Graph health, query health, resolution inventory, and accuracy audits`},
 	{Name: "avmatrix-api-surface", Description: `Use when the user needs to inspect API routes, MCP tools, contract shape drift, generated Web contracts, handlers, consumers, or route/tool impact.`, Task: `API routes, MCP tools, shape checks, contracts, and consumers`},
 	{Name: "avmatrix-cross-repo", Description: `Use when the user works across indexed repository groups, cross-repo query, contracts, status, sync, or multi-repo ownership.`, Task: `Repository groups, cross-repo query, contracts, status, and sync`},
-	{Name: "avmatrix-runtime-packaging", Description: `Use when the user needs serve, mcp, setup, launcher, package runtime, canonical executable, startup, or process lifecycle validation.`, Task: `Runtime, setup, launcher, package, and canonical executable workflows`},
+	{Name: "avmatrix-runtime-packaging", Description: `Use when the user needs serve, mcp, setup, doctor diagnostics, launcher, package runtime, canonical executable, startup, or process lifecycle validation.`, Task: `Runtime, setup, launcher, package, and canonical executable workflows`},
 	{Name: "avmatrix-ai-context", Description: `Use when the user changes generated AGENTS.md, CLAUDE.md, embedded AVmatrix skills, AI context generation, or source-vs-generated validation.`, Task: `Generated AGENTS.md, CLAUDE.md, embedded skills, and AI context validation`},
 }
 

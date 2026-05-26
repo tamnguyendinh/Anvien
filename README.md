@@ -238,8 +238,11 @@ avmatrix clean                     # Delete current repo index
 avmatrix clean --all --force       # Delete all indexes
 avmatrix mcp                       # Start MCP server over stdio
 avmatrix serve                     # Start local HTTP backend on 127.0.0.1:4848
+avmatrix doctor                    # Inspect local runtime locks and processes
+avmatrix version                   # Print version/build information
 avmatrix wiki                      # Show wiki capability status
 avmatrix wiki-mode [off|local]     # Show or set local wiki capability mode
+avmatrix completion <shell>        # Generate shell completion script
 ```
 
 Direct graph tools:
@@ -251,6 +254,7 @@ avmatrix impact [target]
 avmatrix rename <symbol> <newName>
 avmatrix cypher <query>
 avmatrix detect-changes
+avmatrix augment <pattern>
 avmatrix api route-map [route]
 avmatrix api tool-map [tool]
 avmatrix api shape-check [route]
@@ -259,6 +263,7 @@ avmatrix graph-health
 avmatrix query-health
 avmatrix resolution-inventory
 avmatrix source-site-accuracy
+avmatrix benchmark-compare <before> <after>
 ```
 
 AI context and skills:
