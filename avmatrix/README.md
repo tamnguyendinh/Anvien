@@ -169,39 +169,57 @@ Your AI agent gets these tools automatically:
 ## CLI Commands
 
 ```bash
-avmatrix setup                      # Configure MCP for your editors (one-time)
-avmatrix analyze [path]             # Index a repository (or update stale index)
-avmatrix analyze --force            # Force full re-index
-avmatrix analyze --embeddings       # Enable embedding generation (slower, better search)
-avmatrix analyze --verbose          # Log skipped files when parsers are unavailable
-avmatrix mcp                        # Start MCP server (stdio) — serves all indexed repos
-avmatrix serve                      # Start local HTTP server (multi-repo) for web UI
-avmatrix index                      # Register an existing local index folder into the global registry
-avmatrix list                       # List all indexed repositories
-avmatrix status                     # Show index status for current repo
-avmatrix clean                      # Delete index for current repo
-avmatrix clean --all --force        # Delete all indexes
-avmatrix wiki [path]                # Generate LLM-powered docs from knowledge graph
-avmatrix wiki --model <model>       # Wiki with custom LLM model (default: gpt-4o-mini)
+avmatrix setup                       # Configure MCP/editor access and embedded skills
+avmatrix analyze [path]              # Index a repository and refresh AI context
+avmatrix analyze --force             # Force full re-index
+avmatrix analyze --embeddings        # Enable embedding generation
+avmatrix analyze --no-stats          # Omit volatile stats from generated agent files
+avmatrix analyze --skip-git          # Analyze a folder without requiring .git
+avmatrix analyze --name <alias>      # Register repo under a custom name
+avmatrix index [path...]             # Register existing local indexes
+avmatrix list                        # List indexed repositories
+avmatrix status                      # Show index status for current repo
+avmatrix clean --all --force         # Delete all indexes
+avmatrix mcp                         # Start MCP server over stdio
+avmatrix serve                       # Start local HTTP backend for the Web UI
+avmatrix version                     # Print version/build information
+avmatrix wiki                        # Show wiki capability status
+avmatrix wiki-mode [off|local]       # Show or set local wiki capability mode
+```
 
-# Graph quality and semantic diagnostics
-avmatrix query <search_query>        # Search graph flows/symbols with semantic fields
-avmatrix context [name]              # Inspect a symbol/node and related ResolutionGap rows
-avmatrix impact [target]             # Inspect blast radius and resolution-health risks
-avmatrix detect-changes              # Inspect changed symbols, affected flows, and gap impact
-avmatrix query-health                # Benchmark query retrieval accuracy against a suite
-avmatrix resolution-inventory        # Report persisted ResolutionGap and Resolution Health inventory
-avmatrix source-site-accuracy        # Report source-site and resolved-edge accuracy metrics
+Direct graph, API, and quality tools:
 
-# Repository groups (multi-repo / monorepo service tracking)
-avmatrix group create <name>        # Create a repository group
-avmatrix group add <name> <repo>    # Add a repo to a group
-avmatrix group remove <name> <repo> # Remove a repo from a group
-avmatrix group list [name]          # List groups, or show one group's config
-avmatrix group sync <name>          # Extract contracts and match across repos/services
-avmatrix group contracts <name>     # Inspect extracted contracts and cross-links
-avmatrix group query <name> <q>     # Search execution flows across all repos in a group
-avmatrix group status <name>        # Check staleness of repos in a group
+```bash
+avmatrix query <search_query>         # Multi-lane graph discovery
+avmatrix query --lanes --json         # List query capability lanes
+avmatrix context [name]               # Inspect a symbol/node and related graph facts
+avmatrix impact [target]              # Inspect blast radius and resolution-health risks
+avmatrix detect-changes               # Inspect changed symbols, affected flows, and gap impact
+avmatrix cypher <query>               # Run read-only graph queries
+avmatrix augment <pattern>            # Add graph context to text search
+avmatrix rename <symbol> <newName>    # Graph-guided rename, dry-run by default
+avmatrix api route-map [route]        # Route handlers, consumers, and linked flows
+avmatrix api tool-map [tool]          # MCP/RPC tool handlers and linked flows
+avmatrix api shape-check [route]      # Response shape drift against consumers
+avmatrix api impact [route]           # Route/API blast radius and shape risk
+avmatrix graph-health                 # Topology, diagnostics, components, explanations
+avmatrix query-health                 # Query retrieval benchmark
+avmatrix resolution-inventory         # Persisted ResolutionGap inventory
+avmatrix source-site-accuracy         # Source-site and resolved-edge accuracy metrics
+avmatrix benchmark-compare <a> <b>    # Compare analyze benchmark outputs
+```
+
+Repository groups:
+
+```bash
+avmatrix group create <name>
+avmatrix group add <group> <groupPath> <registryName>
+avmatrix group remove <group> <path>
+avmatrix group list [name]
+avmatrix group status <name>
+avmatrix group sync <name>
+avmatrix group contracts <name>
+avmatrix group query <name> <query>
 ```
 
 `query-health` reports two separate outcomes. The threshold result says whether
@@ -209,6 +227,12 @@ hit@5/hit@10 found enough expected targets to make retrieval usable for an
 agent, while the exact result says whether every expected file/symbol was found.
 Use `--fail-on-threshold` for usable-retrieval gates and `--fail-on-exact` for
 strict target-coverage gates.
+
+`graph-health` audits topology status, component membership, diagnostics,
+confidence, resolution-health overlays, and prioritized candidates from the
+indexed graph. `rename` and `api ...` commands are CLI equivalents for MCP
+`rename`, `route_map`, `tool_map`, `shape_check`, and `api_impact`, so terminal
+and agent workflows use the same local owner logic.
 
 ## Remote Embeddings
 

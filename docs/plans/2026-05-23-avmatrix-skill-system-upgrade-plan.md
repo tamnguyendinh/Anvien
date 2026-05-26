@@ -423,11 +423,11 @@ This phase fixes MCP prompts as product command surfaces. It belongs after CLI p
 
 ## Phase 6 - Zero-Trust Closure Review
 
-- [ ] [P6-A] Review the codebase and documentation for old assumptions after implementation. Search for old six-skill-only tables, old `avmatrix-cli` descriptions that omit current command families, stale generated-output instructions, any direct-edit guidance for `.claude/skills/avmatrix/**`, and any graph guidance that expects users to infer rings/islands only from color or side-panel filters; fix active docs that would mislead users or agents.
+- [x] [P6-A] Review the codebase and documentation for old assumptions after implementation. Search for old six-skill-only tables, old `avmatrix-cli` descriptions that omit current command families, stale generated-output instructions, any direct-edit guidance for `.claude/skills/avmatrix/**`, and any graph guidance that expects users to infer rings/islands only from color or side-panel filters; fix active docs that would mislead users or agents.
 
-- [ ] [P6-B] Re-run the final validation commands required by this plan after the closure review changes. Record final pass/fail counts, generated inventory, setup/package inventory if applicable, Web label screenshot evidence, and any remaining limitation in the evidence and benchmark ledgers.
+- [x] [P6-B] Re-run the final validation commands required by this plan after the closure review changes. Record final pass/fail counts, generated inventory, setup/package inventory if applicable, Web label screenshot evidence, and any remaining limitation in the evidence and benchmark ledgers.
 
-- [ ] [P6-C] Mark the plan complete only after source files, generated validation output, tests, graph-health CLI validation, CLI parity validation, MCP prompt validation, Web graph label validation, docs, benchmark ledger, evidence ledger, and commit state all agree on the final skill set, graph orientation labels, graph-health command surface, CLI parity decisions, MCP prompt behavior, and the AI-context query-health case has recorded threshold and exact results.
+- [x] [P6-C] Mark the plan complete only after source files, generated validation output, tests, graph-health CLI validation, CLI parity validation, MCP prompt validation, Web graph label validation, docs, benchmark ledger, evidence ledger, and commit state all agree on the final skill set, graph orientation labels, graph-health command surface, CLI parity decisions, MCP prompt behavior, and the AI-context query-health case has recorded threshold and exact results.
 
 ## Phase 7 - Final README And AI Context Command Documentation Sync
 

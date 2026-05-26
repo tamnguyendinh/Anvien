@@ -333,7 +333,7 @@ Status: final inventory captured after P5-E regeneration.
 
 ## B7 - Phase 5 Command Output Inventory Metrics
 
-Status: in progress.
+Status: complete after Phase 5 command smoke validation.
 
 | Metric | Unit | Baseline | Latest | Delta | Target |
 |---|---:|---:|---:|---:|---:|
@@ -383,3 +383,32 @@ Status: in progress.
 | MCP prompt get messages checked | messages | pending | 3 | pending | 3 |
 | `generate_map` no-arg required guidance checks passed | checks | pending | 8 | pending | 8 |
 | `detect_impact` required guidance checks passed | checks | pending | 4 | pending | 4 |
+
+## B8 - Phase 6 Closure Review Inventory Metrics
+
+Status: final closure-review inventory captured after P6-B validation.
+
+| Metric | Unit | Baseline | Latest | Delta | Target |
+|---|---:|---:|---:|---:|---:|
+| Final analyze scanned files | files | pending | 774 | pending | record |
+| Final analyze parsed files | files | pending | 578 | pending | record |
+| Final analyze unsupported files | files | pending | 196 | pending | record |
+| Final analyze failed files | files | pending | 0 | pending | 0 |
+| Final graph nodes | nodes | pending | 88,584 | pending | record |
+| Final graph relationships | relationships | pending | 121,475 | pending | record |
+| Source embedded skill files | files | 6 | 11 | +5 | 11 |
+| Generated embedded skill files | files | 6 | 11 | +5 | 11 |
+| Generated/source skill name diffs | diffs | pending | 0 | pending | 0 |
+| Generated/source skill SHA-256 mismatches | mismatches | pending | 0 | pending | 0 |
+| Source embedded skill bytes | bytes | 17,499 | 30,984 | +13,485 | record |
+| Generated embedded skill bytes | bytes | 17,499 | 30,984 | +13,485 | record |
+| Source embedded skill lines | lines | pending | 556 | pending | record |
+| Generated embedded skill lines | lines | pending | 556 | pending | record |
+| Generated root skill rows per root file | rows/root | 6 | 11 | +5 | 11 |
+| Generated root command-selection rows per root file | rows/root | pending | 44 | pending | record |
+| Package dry-run tarball files after README update | files | pending | 7 | pending | record |
+| Package dry-run README files | files | pending | 1 | pending | 1 |
+| Package dry-run README size | bytes | pending | 18,635 | pending | record |
+| Package dry-run package-root skill files | files | 7 | 0 | -7 | 0 |
+| Final desktop graph-label screenshot size | bytes | pending | 237,028 | pending | record |
+| Final small filtered graph-label screenshot size | bytes | pending | 92,012 | pending | record |
