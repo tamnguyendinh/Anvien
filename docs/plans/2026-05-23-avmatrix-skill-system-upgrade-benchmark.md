@@ -244,3 +244,77 @@ Record final validation:
 | MCP setup/resource guidance smoke | pending | pending | Required if MCP resource guidance is touched. |
 | MCP `query` smoke through local tool wrapper or focused test | pending | pending | Must verify machine-readable lane/rank/match evidence for agents. |
 | `detect-changes` | pending | pending | Scope should match query, Web graph labels, AI context, skills, setup/package, and docs changes. |
+
+## B5 - Phase 0 Measured Baseline
+
+Status: recorded before implementation edits
+
+Build and binary inventory:
+
+| Metric | Baseline |
+|---|---:|
+| Full build gate result | pass |
+| Built CLI path | `avmatrix/bin/avmatrix.exe` |
+| Built CLI size | 50,344,448 bytes |
+| Launcher binary path | `avmatrix-launcher/AVmatrixLauncher.exe` |
+| Launcher binary size | 6,993,408 bytes |
+| Visible built CLI commands | 24 |
+| Visible `go run .\cmd\avmatrix --help` commands | 24 |
+| Visible PATH `avmatrix --help` commands | 24 |
+| Hidden lifecycle command families from source | 2 (`package`, `hook`) |
+| MCP tools from source | 15 |
+| MCP fixed resources from source | 2 |
+| MCP resource templates from source | 6 |
+| MCP prompts from source | 2 |
+
+Current source/generated skill inventory:
+
+| Metric | Baseline |
+|---|---:|
+| Embedded source skill files | 6 |
+| Registered base skills | 6 |
+| Generated `.claude/skills/avmatrix/**/SKILL.md` files | 6 |
+| Source skill total bytes | 17,499 |
+| Generated skill total bytes | 17,499 |
+| Source/generated matching hashes | 6/6 |
+| Source skills with `name` frontmatter | 6/6 |
+| Source skills with `description` frontmatter | 6/6 |
+
+Dedicated query-health baseline:
+
+| Metric | Baseline |
+|---|---:|
+| Suite path | `docs/query-health/2026-05-23-avmatrix-skill-system-upgrade-suite.json` |
+| Suite case count | 8 |
+| Expected targets | 54 |
+| Matched targets | 33 |
+| Missed targets | 21 |
+| Threshold passed | 5 |
+| Threshold failed | 3 |
+| Exact passed | 1 |
+| Exact failed | 7 |
+
+Baseline query-health cases:
+
+| Case | Threshold | Exact | Hit@5 | Hit@10 | Matched | Missed |
+|---|---|---|---:|---:|---:|---:|
+| `ai-context-generated-skills-owner-discovery` | fail | fail | 0/2 | 1/4 | 1/6 | 5 |
+| `setup-editor-skill-installation-owner-discovery` | fail | fail | 3/3 | 3/4 | 3/4 | 1 |
+| `package-skill-distribution-owner-discovery` | pass | pass | 5/2 | 6/4 | 6/6 | 0 |
+| `mcp-setup-resource-prompt-guidance-owner-discovery` | pass | fail | 3/3 | 5/5 | 5/7 | 2 |
+| `query-command-surface-owner-discovery` | pass | fail | 6/3 | 6/5 | 6/8 | 2 |
+| `graph-quality-command-surface-owner-discovery` | fail | fail | 2/2 | 2/4 | 2/8 | 6 |
+| `api-surface-tool-discovery` | pass | fail | 5/2 | 6/4 | 6/7 | 1 |
+| `cross-repo-command-surface-discovery` | pass | fail | 4/2 | 4/4 | 4/8 | 4 |
+
+Baseline interpretation:
+
+| Requirement | Baseline |
+|---|---|
+| Broad concept discovery | partially works, but owner discovery is unreliable for AI-context and graph-quality command intents |
+| Owner discovery | fails for AI-context generated skills and graph-quality CLI owners |
+| Execution-flow preservation | present, but process symbols can outrank stronger owner evidence |
+| Result auditability | query-health exposes threshold/exact misses and top results; normal query lacks lane/match-reason output |
+| Query lane evidence | absent from user-facing query output |
+| User-facing lane discovery | absent |
+| Normal query compatibility | current `avmatrix query "<intent>" --repo <repo>` works and must be preserved |

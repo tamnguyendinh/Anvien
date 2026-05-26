@@ -1,0 +1,195 @@
+{
+  "schemaVersion": "avmatrix.query_health.v1",
+  "suite": "avmatrix-skill-system-upgrade",
+  "description": "Query-health suite for AVmatrix skill generation, AI-context source ownership, setup/package skill distribution, MCP prompt/resource guidance, command-surface discovery, and representative non-AI-context query lanes.",
+  "cases": [
+    {
+      "id": "ai-context-generated-skills-owner-discovery",
+      "intent": "generated AVmatrix skills AGENTS.md CLAUDE.md internal aicontext",
+      "expectedFiles": [
+        "internal/aicontext/aicontext.go",
+        "internal/aicontext/skills/avmatrix-cli.md",
+        "internal/cli/analyze_postrun.go"
+      ],
+      "expectedSymbols": [
+        "GenerateAIContextFiles",
+        "installBaseSkills",
+        "baseSkillContent"
+      ],
+      "expectedAppLayers": [
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "cli"
+      ],
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 4
+    },
+    {
+      "id": "setup-editor-skill-installation-owner-discovery",
+      "intent": "setup editor skill installation package root skills",
+      "expectedFiles": [
+        "internal/cli/setup_command.go"
+      ],
+      "expectedSymbols": [
+        "setupInstallEditorSkills",
+        "setupInstallSkillsTo",
+        "setupSkillTargetName"
+      ],
+      "expectedAppLayers": [
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "cli"
+      ],
+      "hitAt5Threshold": 3,
+      "hitAt10Threshold": 4
+    },
+    {
+      "id": "package-skill-distribution-owner-discovery",
+      "intent": "package skill distribution embedded skills setup package lifecycle",
+      "expectedFiles": [
+        "internal/cli/package_command.go",
+        "internal/cli/package_runtime.go",
+        "internal/cli/setup_command.go"
+      ],
+      "expectedSymbols": [
+        "newPackageCommand",
+        "setupInstallSkillsTo",
+        "resolvePackageSourceRoot"
+      ],
+      "expectedAppLayers": [
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "cli"
+      ],
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 4
+    },
+    {
+      "id": "mcp-setup-resource-prompt-guidance-owner-discovery",
+      "intent": "MCP setup resource guidance tools resources prompts",
+      "expectedFiles": [
+        "internal/mcp/resources.go",
+        "internal/mcp/prompts.go",
+        "internal/mcp/tools.go"
+      ],
+      "expectedSymbols": [
+        "setupResource",
+        "promptDefinitions",
+        "generateMapPrompt",
+        "mcpTools"
+      ],
+      "expectedAppLayers": [
+        "api"
+      ],
+      "expectedFunctionalAreas": [
+        "mcp"
+      ],
+      "hitAt5Threshold": 3,
+      "hitAt10Threshold": 5
+    },
+    {
+      "id": "query-command-surface-owner-discovery",
+      "intent": "query ranking process matching definitions CLI query command implementation",
+      "expectedFiles": [
+        "internal/mcp/tools.go",
+        "internal/cli/tool_command.go",
+        "internal/cli/query_health_command.go"
+      ],
+      "expectedSymbols": [
+        "queryTool",
+        "rankedProcessMatches",
+        "matchingDefinitionRows",
+        "newQueryCommand",
+        "runQueryHealth"
+      ],
+      "expectedAppLayers": [
+        "api",
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "mcp",
+        "cli"
+      ],
+      "hitAt5Threshold": 3,
+      "hitAt10Threshold": 5
+    },
+    {
+      "id": "graph-quality-command-surface-owner-discovery",
+      "intent": "graph quality graph health query health resolution inventory source site accuracy command surface",
+      "expectedFiles": [
+        "internal/graphhealth/compute.go",
+        "internal/cli/query_health_command.go",
+        "internal/cli/resolution_inventory_command.go",
+        "internal/cli/source_site_accuracy_command.go"
+      ],
+      "expectedSymbols": [
+        "Compute",
+        "newQueryHealthCommand",
+        "newResolutionInventoryCommand",
+        "newSourceSiteAccuracyCommand"
+      ],
+      "expectedAppLayers": [
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "graph_health",
+        "cli"
+      ],
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 4
+    },
+    {
+      "id": "api-surface-tool-discovery",
+      "intent": "API route map tool map shape check API impact MCP tool handlers",
+      "expectedFiles": [
+        "internal/mcp/route_tool_map.go",
+        "internal/mcp/route_shape_impact.go",
+        "internal/mcp/tools.go"
+      ],
+      "expectedSymbols": [
+        "routeMapTool",
+        "toolMapTool",
+        "shapeCheckTool",
+        "apiImpactTool"
+      ],
+      "expectedAppLayers": [
+        "api"
+      ],
+      "expectedFunctionalAreas": [
+        "mcp"
+      ],
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 4
+    },
+    {
+      "id": "cross-repo-command-surface-discovery",
+      "intent": "group cross repo query contracts sync status command surface",
+      "expectedFiles": [
+        "internal/cli/group_command.go",
+        "internal/mcp/group_tools.go",
+        "internal/group/query.go",
+        "internal/group/sync.go"
+      ],
+      "expectedSymbols": [
+        "newGroupCommand",
+        "groupQueryTool",
+        "Query",
+        "Sync"
+      ],
+      "expectedAppLayers": [
+        "backend",
+        "api"
+      ],
+      "expectedFunctionalAreas": [
+        "cli",
+        "mcp",
+        "query"
+      ],
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 4
+    }
+  ]
+}
