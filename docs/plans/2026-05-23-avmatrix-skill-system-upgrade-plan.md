@@ -53,6 +53,10 @@ There is also a source-distribution risk. Repository-local generated skills are 
 
 There is also a graph-health command-surface gap. Graph-health computation and metadata exist in the codebase, and Web/API surfaces already use graph-health data for topology, confidence, diagnostics, explain/report behavior, and filters. However, `avmatrix --help` does not expose a first-class `graph-health` CLI command. Agents and users therefore cannot audit topology health directly from terminal workflows when they need to investigate orphan nodes, unknown connectivity, detached components, no-incoming/no-outgoing nodes, or dead-code candidates. This is a missing product surface, not missing graph-health engine capability.
 
+There is also a broader CLI parity gap. Current source/help comparison shows several implemented MCP/API/Web capabilities are not exposed as clear user-facing CLI commands. `rename` exists as an MCP tool but does not have a CLI command. API-surface tools such as `route_map`, `tool_map`, `shape_check`, and `api_impact` exist as MCP tools but not as CLI commands. HTTP/Web graph support exposes graph explain/report, grep, process, cluster, and search endpoints, while the CLI only exposes a subset through `cypher`, `query`, or MCP resources. This plan must not silently normalize missing terminal surfaces when the product goal is a broad AVmatrix command system that agents and users can operate from CLI, MCP, resources, Web/API, and generated skills.
+
+There is also an MCP prompt-template accuracy gap. README lists MCP prompts such as `generate_map`, and source inspection shows `generate_map` is a real MCP prompt in `internal/mcp/prompts.go`, not a CLI command. However, its current body is too loose for reliable agent execution in large repositories: it uses `{name}` as a placeholder when no repo is supplied, does not instruct the agent how to resolve the repo from `avmatrix://repos`, does not make freshness/staleness handling explicit, does not define how to choose "top 5 most important processes", and can encourage architecture diagrams that are inferred beyond graph evidence. MCP prompts are part of AVmatrix's command surface and must be accurate, executable templates rather than demo text.
+
 There is a query reliability bug. A broad intent query can return plausible but wrong code regions. During plan review, broad queries about AI context skill generation returned unrelated launcher, resolution-gap, and frontend/backend flows instead of the expected `internal/aicontext`, analyze post-run, setup, and package-skill surfaces. That behavior is dangerous for agent work because a query that cannot identify the right region can send the agent to edit or reason about the wrong code. This is not a minor documentation issue or normal behavior to accept. `query` is a core AVmatrix feature and must be able to locate the correct work area for broad intent. Until the bug is fixed, broad `query` output must be treated as candidate retrieval and verified by symbol-level `context`, exact file/symbol inspection, or `query-health` evidence.
 
 There is also a Web graph orientation problem shown by `reports/problem/screenshot_1779517751.png`. The graph can contain visible rings and node islands, but the canvas does not name the ring or island directly. Users can see colored clusters, but they cannot immediately tell whether a macro ring is Backend, Frontend, API, Docs, Config, Shared, Test, Unknown, or another top-level group, and they cannot tell whether an island is Function, Method, File, Route, ResolutionGap, External Reference, or another node/filter group without looking away from the graph. Color and side-panel filters are not enough; the graph itself must communicate what each ring and island represents.
@@ -66,6 +70,8 @@ Implementation may touch:
 - tests under `internal/aicontext`;
 - CLI/setup/package tests under `internal/cli` if they assert skill counts, skill paths, generated output, or packaging behavior;
 - graph-health CLI command implementation and tests under `internal/cli`, shared graph-health report/explain logic under `internal/graphhealth` or another source-verified shared package, and API reuse points under `internal/httpapi` if needed to avoid duplicate graph-health semantics;
+- CLI parity command implementation and tests for implemented MCP/API/Web surfaces that are accepted as user-facing terminal commands, including `rename`, API-surface tools, graph/process/cluster panels, grep/search, or equivalent grouped command families if source inspection confirms they should be exposed;
+- MCP prompt implementation and tests under `internal/mcp`, especially `internal/mcp/prompts.go` and prompt surface snapshots if they describe architecture-map or impact workflows;
 - query implementation, query user-facing command surfaces, query output formatting, and tests under `internal/mcp`, `internal/cli`, query-health suites, and any query ranking/scoring helpers if source inspection proves broad-intent query misses expected owners;
 - Web graph layout, graph adapter, Sigma/canvas overlay, graph canvas components, graph filter/legend integration, and Web tests under `avmatrix-web` for ring/island labeling and visual orientation;
 - MCP setup/resource guidance under `internal/mcp` if it contains tool, resource, setup, or command-surface reference text;
@@ -107,6 +113,10 @@ The exact command list inside each skill must be based on current source/help ou
 Command names must match the surface that implements them. CLI commands use hyphenated names such as `query-health`, `resolution-inventory`, `source-site-accuracy`, and the planned `graph-health` command. MCP tools use underscore names such as `route_map`, `tool_map`, `shape_check`, and `api_impact`. A skill may mention both surfaces, but it must not invent a CLI command just because an MCP tool exists.
 
 The graph-health CLI surface must be a first-class graph-quality command, not a Web-only feature and not a query-health substitute. The implementation should expose topology health through subcommands such as `avmatrix graph-health summary --repo <repo> --json`, `avmatrix graph-health report --repo <repo> --limit <n> --json`, `avmatrix graph-health explain "<node-id-or-name>" --repo <repo> --json`, and `avmatrix graph-health components --repo <repo> --json`, or an equivalent source-verified design. The command must start from fresh analyze output according to repository rules, read the same graph-health metadata/compute behavior used by Web/API, and return table output plus machine-readable JSON. It must not fork a second graph-health definition that can drift from Web/API semantics.
+
+CLI parity must be decided deliberately, not by accident. Phase 1.6 must inventory MCP tools, MCP resources, HTTP/Web endpoints, and generated guidance against the CLI command tree, classify each gap as must-add, intentionally MCP/API/Web-only, hidden lifecycle-only, or already covered by an existing CLI command. Accepted must-add surfaces should prefer coherent command families over scattered top-level commands where that improves usability, for example `avmatrix api route-map`, `avmatrix api tool-map`, `avmatrix api shape-check`, `avmatrix api impact`, `avmatrix graph-health ...`, or `avmatrix graph process/cluster/search` if source inspection supports those shapes. Hidden lifecycle commands such as package or editor hook helpers must remain documented as internal only if they are not meant for normal users.
+
+MCP prompts must be treated as executable agent templates, not static README examples. A prompt such as `generate_map` must resolve the target repo deterministically, treat `avmatrix://repos` only as a discovery/selection resource, never continue with `{name}` as a real URI, require fresh graph evidence before graph-based mapping, define how process candidates are selected, and require diagrams and architecture claims to be backed by resources or command output the agent actually read.
 
 The package/editor setup skill source must be reconciled with the embedded AI-context skill source. The final implementation should make it hard for package-root `skills/`, embedded `internal/aicontext/skills/*.md`, and generated `.claude/skills/avmatrix/**` to drift away from each other.
 
@@ -188,6 +198,9 @@ The Phase 2 layout work must also improve visual spacing, not only add labels. N
 - `avmatrix graph-health` is exposed in CLI help as a first-class graph-quality command, with source-verified summary, report, explain, and components behavior or an explicitly documented equivalent command design.
 - Graph-health CLI output reuses the same topology, confidence, diagnostic, component, resolution-confidence, and priority semantics as the graph-health engine/Web/API surfaces instead of implementing an incompatible duplicate.
 - Graph-health CLI table and JSON outputs are usable by users and agents for orphan/dead-code/unknown-connectivity investigation, including counts, candidate node identifiers, labels, paths, topology status, confidence, diagnostics, component details, and explain evidence where applicable.
+- CLI parity gaps are inventoried and classified with exact source/help evidence. The plan must state which missing terminal surfaces are implemented now, which are intentionally MCP/API/Web-only, which are hidden lifecycle-only, and which remain tracked follow-up work.
+- Accepted CLI parity additions expose user-facing help, table output, JSON output where appropriate, tests, and generated skill/docs guidance. No implemented capability should be counted as user-usable from CLI if it only exists as MCP/API/Web internals.
+- MCP prompt templates are inventoried, classified, and updated where needed. `generate_map` must be executable without ambiguous placeholders, must use `avmatrix://repos` only to select an exact repo when no repo argument is supplied, must require stale/freshness handling, and must constrain generated architecture docs and Mermaid diagrams to graph evidence read by the agent.
 - Web graph macro rings have readable on-canvas labels so users can identify each top-level ring directly on the graph.
 - Web graph node islands have readable on-canvas labels so users can identify each cluster/filter/node group directly on the graph.
 - Web graph node islands use adaptive spacing so nodes do not visually stack, island spiral bands are readable, neighboring islands have clear gutters, island radius grows from visible node count and minimum node gap, and macro-ring radius grows from expanded island footprints instead of forcing large islands into a fixed ring.
@@ -269,6 +282,48 @@ This phase closes the gap where graph-health exists as engine metadata and Web/A
 
 - [ ] [P1.5-G] Validate graph-health CLI with real command smoke output after the full build. Run representative commands such as `avmatrix graph-health summary --repo AVmatrix`, `avmatrix graph-health report --repo AVmatrix --limit 20 --json`, `avmatrix graph-health components --repo AVmatrix --json`, and one `graph-health explain` command against a real node discovered from the report. Record counts, candidate examples, exact command output summaries, and any limitation in the evidence and benchmark ledgers.
 
+## Phase 1.6 - CLI Parity Audit And Missing Command Surfaces
+
+This phase makes the broader command-surface parity decision explicit. It must not assume every MCP/API/Web capability needs a CLI command, but it must prevent accidental gaps where implemented product capabilities are unavailable to terminal users and AI agents using the CLI.
+
+- [ ] [P1.6-A] Inventory the current CLI command tree from both the freshly built local binary and source registration. Record top-level commands, subcommands, hidden commands, visible help text, and command families from `internal/cli/command.go`, `internal/cli/*_command.go`, `avmatrix --help`, and `go run .\cmd\avmatrix --help`.
+
+- [ ] [P1.6-B] Inventory non-CLI command surfaces from source. Record MCP tools such as `rename`, `route_map`, `tool_map`, `shape_check`, `api_impact`, group tools, and graph tools; MCP resources such as repo context, clusters, processes, schema, cluster detail, and process detail; HTTP/Web endpoints such as graph explain/report, grep, search, processes, process, clusters, cluster, file, repo, analyze, embed, and session; and any Web-only controls that represent product capability.
+
+- [ ] [P1.6-C] Build a CLI parity matrix. For each MCP/API/Web/resource surface, classify it as `has_cli`, `must_add_cli`, `covered_by_existing_cli`, `mcp_api_web_only_by_design`, `hidden_lifecycle_only`, or `follow_up`. The matrix must include exact evidence for `rename`, `route_map`, `tool_map`, `shape_check`, `api_impact`, graph explain/report, grep, search, processes, process detail, clusters, cluster detail, and graph-health.
+
+- [ ] [P1.6-D] Define the accepted CLI command design for parity gaps. The design must decide whether to use grouped commands or top-level commands, for example `avmatrix api route-map`, `avmatrix api tool-map`, `avmatrix api shape-check`, `avmatrix api impact`, `avmatrix rename`, `avmatrix graph grep/search/processes/process/clusters/cluster`, or another source-verified structure. The design must preserve current commands and avoid ambiguous parsing with existing `query`, `group`, and hidden lifecycle commands.
+
+- [ ] [P1.6-E] Implement the CLI parity commands accepted for this plan, or explicitly record why a surface is intentionally not implemented in this plan. For each implemented command, reuse the existing MCP/API/Web owner logic where possible, support repo selection, provide readable table output, add `--json` where the output is structured, and avoid copying divergent semantics.
+
+- [ ] [P1.6-F] Add tests for accepted CLI parity commands and for intentionally hidden/internal commands. Tests must cover help output, command registration, representative success output, JSON shape, error handling, and non-regression that hidden lifecycle helpers such as `package` or `hook` are not promoted accidentally if they are not user-facing.
+
+- [ ] [P1.6-G] Update generated skills, setup/resource guidance, README/docs, and command-surface tables after the parity decision. Guidance must explain which surfaces are available through CLI, which remain MCP/API/Web/resource-only by design, and how agents should choose the right surface without falling back to incomplete command lists.
+
+- [ ] [P1.6-H] Validate accepted CLI parity commands with real smoke output after the full build. Record representative commands, outputs, and any intentionally deferred surface in the evidence and benchmark ledgers. At minimum, validation must include each command family accepted in P1.6-D and a source/help check proving the final CLI list matches the documented command surface.
+
+## Phase 1.7 - MCP Prompt Template Accuracy
+
+This phase fixes MCP prompts as product command surfaces. It belongs after CLI parity inventory because prompts must be classified beside tools/resources/CLI/Web/API surfaces, and before skill/docs work because README, generated AI context, and skills must document the final prompt behavior rather than stale prompt text.
+
+- [ ] [P1.7-A] Inventory the current MCP prompt surface from source and runtime behavior. Record every prompt name, description, argument, generated prompt body, tests, README references, MCP resource references, and whether the prompt is meant to create files, produce analysis, guide command use, or only explain a workflow. The inventory must include `detect_impact` and `generate_map`.
+
+- [ ] [P1.7-B] Audit `generate_map` for executable correctness. The audit must verify each referenced resource exists, identify the placeholder behavior when `repo` is omitted, check repo and process URI escaping requirements, verify whether stale graph handling is stated, identify how "top 5 most important processes" is selected, and list every instruction that could cause architecture claims or Mermaid edges to be invented without graph evidence.
+
+- [ ] [P1.7-C] Redesign `generate_map` as a precise architecture-map prompt template. If `repo` is provided, the prompt must use that exact repo name with safe resource URI guidance. If `repo` is omitted, it must first read `avmatrix://repos`, select the repo whose indexed path matches the current workspace when possible, use the single listed repo when only one exists, and stop to ask the user when multiple repos exist and no match is provable. It must never use `{name}` as a real resource URI.
+
+- [ ] [P1.7-D] Add freshness and evidence rules to `generate_map`. The prompt must tell the agent to verify graph freshness from repo context or active instructions, run `avmatrix analyze --force` when graph work requires a refresh, and write architecture documentation only from resources, tools, or command output it actually read. It must require uncertainty notes when clusters, processes, unresolved references, graph-health, or query-health evidence is incomplete.
+
+- [ ] [P1.7-E] Define deterministic process and cluster selection rules for `generate_map`. The prompt must tell the agent how to choose representative processes and clusters, such as by user-facing runtime relevance, process type, step count, route/tool/API involvement, graph centrality if available, or explicit user request. The prompt must record the reason for each selected process instead of saying only "top 5 most important processes".
+
+- [ ] [P1.7-F] Update `detect_impact` if the inventory shows the prompt is stale. It must align with the current AVmatrix rules: refresh before graph-based work when required, use change detection before implementation commits, treat HIGH/CRITICAL as blast-radius warnings rather than an edit ban, and point to the correct CLI/MCP surface names without replacing repository rules.
+
+- [ ] [P1.7-G] Add or update MCP prompt tests. Tests must cover `prompts/list`, `prompts/get` for `generate_map` with and without `repo`, no literal `{name}` continuation as an actionable URI, presence of `avmatrix://repos` discovery instructions, repo selection ambiguity handling, freshness language, evidence-only architecture claims, process selection criteria, and snapshot updates for expected prompt text.
+
+- [ ] [P1.7-H] Update README, MCP setup/resource guidance, generated skills, and AI-context generator text that mention MCP prompts. Documentation must label `generate_map` and `detect_impact` as MCP prompts, not CLI commands, and must explain what they automate, what they require from the agent, and how they relate to CLI/MCP tools/resources.
+
+- [ ] [P1.7-I] Validate MCP prompt behavior after the full build. Run focused MCP tests and one real `prompts/get` smoke check for `generate_map` and `detect_impact`; record the prompt names, argument schemas, key generated instruction fragments, and any intentional limitation in the evidence ledger.
+
 ## Phase 2 - Graph Labeling And Visual Orientation Layer
 
 - [ ] [P2-A] Record the graph orientation problem from `reports/problem/screenshot_1779517751.png` in the evidence ledger. The evidence must state that visible rings and islands currently lack direct names on the graph, making users infer meaning from color or side-panel filters instead of reading the graph itself.
@@ -329,7 +384,7 @@ This phase closes the gap where graph-health exists as engine metadata and Web/A
 
 - [ ] [P5-A] Run the full build gate before tests: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`. Record the command result in evidence.
 
-- [ ] [P5-B] Run focused backend/CLI/MCP tests for AI context generation, setup, packaging, query, query-health, and graph-health surfaces touched by the implementation. The minimum expected test scope is `go test .\internal\mcp .\internal\cli .\internal\aicontext .\internal\graphhealth .\internal\httpapi -count=1`, expanded as needed if package/setup code outside those packages changes.
+- [ ] [P5-B] Run focused backend/CLI/MCP tests for AI context generation, setup, packaging, query, query-health, graph-health, CLI parity surfaces, and MCP prompt templates touched by the implementation. The minimum expected test scope is `go test .\internal\mcp .\internal\cli .\internal\aicontext .\internal\graphhealth .\internal\httpapi -count=1`, expanded as needed if package/setup code outside those packages changes.
 
 - [ ] [P5-C] Run Web unit tests after graph labeling work: `cd avmatrix-web; npm run test`. Record exact pass/fail counts and any focused label/layout tests in evidence.
 
@@ -351,6 +406,10 @@ This phase closes the gap where graph-health exists as engine metadata and Web/A
 
 - [ ] [P5-K2] Run user-facing graph-health CLI smoke commands after the full build. Validate help output, summary, report, components, explain, `--json`, missing-node error behavior, and parity with Web/API graph-health semantics where applicable. Record exact commands and representative output in evidence and benchmark.
 
+- [ ] [P5-K3] Run user-facing CLI parity smoke commands after the full build. Validate every command family accepted in Phase 1.6, plus the source/help inventory that proves intentionally MCP/API/Web-only or hidden lifecycle surfaces are classified correctly. Record exact commands and representative output in evidence and benchmark.
+
+- [ ] [P5-K4] Run MCP prompt smoke validation after the full build. Validate `prompts/list` and `prompts/get` for `generate_map` and `detect_impact`, including prompt descriptions, arguments, repo-selection instructions, freshness instructions, evidence-only architecture guidance, and correct distinction between MCP prompts, MCP tools, MCP resources, CLI commands, and Web/API surfaces. Record representative output in evidence and benchmark.
+
 - [ ] [P5-L] Run `detect-changes` before commit and record the affected scope. Commit the implementation slice after checklist items and ledgers are updated.
 
 ## Phase 6 - Zero-Trust Closure Review
@@ -359,4 +418,24 @@ This phase closes the gap where graph-health exists as engine metadata and Web/A
 
 - [ ] [P6-B] Re-run the final validation commands required by this plan after the closure review changes. Record final pass/fail counts, generated inventory, setup/package inventory if applicable, Web label screenshot evidence, and any remaining limitation in the evidence and benchmark ledgers.
 
-- [ ] [P6-C] Mark the plan complete only after source files, generated validation output, tests, graph-health CLI validation, Web graph label validation, docs, benchmark ledger, evidence ledger, and commit state all agree on the final skill set, graph orientation labels, graph-health command surface, and the AI-context query-health case has recorded threshold and exact results.
+- [ ] [P6-C] Mark the plan complete only after source files, generated validation output, tests, graph-health CLI validation, CLI parity validation, MCP prompt validation, Web graph label validation, docs, benchmark ledger, evidence ledger, and commit state all agree on the final skill set, graph orientation labels, graph-health command surface, CLI parity decisions, MCP prompt behavior, and the AI-context query-health case has recorded threshold and exact results.
+
+## Phase 7 - Final README And AI Context Command Documentation Sync
+
+This phase runs after all implementation, CLI parity, graph-health, query, Web graph, and validation phases have finished enough to know the final command surface. Its purpose is to prevent new commands from existing only in code while README, generated `AGENTS.md` / `CLAUDE.md` content, and generated skills still describe an older or incomplete AVmatrix command set.
+
+- [ ] [P7-A] Inventory the final user-facing command surface from the freshly built binary, MCP tool registration, MCP prompt registration, MCP setup/resource guidance, and any accepted Web/API-only surfaces from Phase 1.6. Record the final command families, exact command names, prompt names, intentionally hidden lifecycle commands, and intentionally non-CLI surfaces in the evidence ledger before editing documentation.
+
+- [ ] [P7-B] Update `README.md` so new commands and command families added or accepted by this plan are visible to normal users. The README must explain the practical purpose of the new graph-quality, query-health, source-site accuracy, resolution inventory, CLI parity, setup, MCP, runtime, and Web/API command surfaces without presenting AVmatrix as only analyze/query/impact.
+
+- [ ] [P7-C] Update `internal/aicontext/aicontext.go` so generated `AGENTS.md` and `CLAUDE.md` command guidance includes the final command surface. The generated text must stay repo-agnostic, preserve the auto-updated project/index summary between `<!-- avmatrix:start -->` and `<!-- avmatrix:end -->`, and avoid splitting MCP tools and CLI commands into misleading incomplete lists.
+
+- [ ] [P7-D] Update any embedded skill source files under `internal/aicontext/skills/*.md` that reference command selection, graph quality, API surface inspection, query behavior, setup, packaging, or runtime usage. Each changed skill must point users and agents to the actual implemented command names and must explain when a command is CLI, MCP, Web/API, resource-only, or intentionally hidden.
+
+- [ ] [P7-E] Update tests that protect README-adjacent guidance and generated AI context output. The tests must fail if new accepted commands are missing from generated command tables, if old six-skill/analyze-query-impact-only wording returns, or if generated output invents CLI names for MCP/API/Web-only surfaces.
+
+- [ ] [P7-F] Regenerate the AI context with `avmatrix analyze --force` and no `--skip-agents-md`. Verify generated `AGENTS.md`, generated `CLAUDE.md`, and generated `.claude/skills/avmatrix/**` contain the final command guidance from `internal/aicontext/aicontext.go` and embedded skill sources rather than stale generated output.
+
+- [ ] [P7-G] Re-run the full build gate, focused docs/generator tests, and final command-surface smoke checks after the README and AI-context updates. Record exact command output summaries, generated file checks, and any remaining intentionally deferred documentation surface in the evidence and benchmark ledgers.
+
+- [ ] [P7-H] Close the plan only after README, `internal/aicontext/aicontext.go`, embedded skills, generated `AGENTS.md` / `CLAUDE.md`, validation evidence, benchmark evidence, and the final CLI/MCP prompt/MCP tool/resource/Web/API command inventory all describe the same command surface.
