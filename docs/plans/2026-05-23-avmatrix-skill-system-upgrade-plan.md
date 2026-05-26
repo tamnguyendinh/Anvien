@@ -51,6 +51,8 @@ The skill content also under-describes current AVmatrix capability. It does not 
 
 There is also a source-distribution risk. Repository-local generated skills are produced from embedded Markdown under `internal/aicontext/skills/*.md`, but editor setup currently installs skills from a package-root `skills/` directory when one exists. If those two sources are not reconciled, users can receive different skills depending on whether they run `analyze` in a repository or `setup` from a packaged install.
 
+There is also a graph-health command-surface gap. Graph-health computation and metadata exist in the codebase, and Web/API surfaces already use graph-health data for topology, confidence, diagnostics, explain/report behavior, and filters. However, `avmatrix --help` does not expose a first-class `graph-health` CLI command. Agents and users therefore cannot audit topology health directly from terminal workflows when they need to investigate orphan nodes, unknown connectivity, detached components, no-incoming/no-outgoing nodes, or dead-code candidates. This is a missing product surface, not missing graph-health engine capability.
+
 There is a query reliability bug. A broad intent query can return plausible but wrong code regions. During plan review, broad queries about AI context skill generation returned unrelated launcher, resolution-gap, and frontend/backend flows instead of the expected `internal/aicontext`, analyze post-run, setup, and package-skill surfaces. That behavior is dangerous for agent work because a query that cannot identify the right region can send the agent to edit or reason about the wrong code. This is not a minor documentation issue or normal behavior to accept. `query` is a core AVmatrix feature and must be able to locate the correct work area for broad intent. Until the bug is fixed, broad `query` output must be treated as candidate retrieval and verified by symbol-level `context`, exact file/symbol inspection, or `query-health` evidence.
 
 There is also a Web graph orientation problem shown by `reports/problem/screenshot_1779517751.png`. The graph can contain visible rings and node islands, but the canvas does not name the ring or island directly. Users can see colored clusters, but they cannot immediately tell whether a macro ring is Backend, Frontend, API, Docs, Config, Shared, Test, Unknown, or another top-level group, and they cannot tell whether an island is Function, Method, File, Route, ResolutionGap, External Reference, or another node/filter group without looking away from the graph. Color and side-panel filters are not enough; the graph itself must communicate what each ring and island represents.
@@ -63,6 +65,7 @@ Implementation may touch:
 - `internal/aicontext/skills/*.md`;
 - tests under `internal/aicontext`;
 - CLI/setup/package tests under `internal/cli` if they assert skill counts, skill paths, generated output, or packaging behavior;
+- graph-health CLI command implementation and tests under `internal/cli`, shared graph-health report/explain logic under `internal/graphhealth` or another source-verified shared package, and API reuse points under `internal/httpapi` if needed to avoid duplicate graph-health semantics;
 - query implementation, query user-facing command surfaces, query output formatting, and tests under `internal/mcp`, `internal/cli`, query-health suites, and any query ranking/scoring helpers if source inspection proves broad-intent query misses expected owners;
 - Web graph layout, graph adapter, Sigma/canvas overlay, graph canvas components, graph filter/legend integration, and Web tests under `avmatrix-web` for ring/island labeling and visual orientation;
 - MCP setup/resource guidance under `internal/mcp` if it contains tool, resource, setup, or command-surface reference text;
@@ -92,8 +95,8 @@ The upgraded skill set should keep the existing six skills and add five focused 
 | `avmatrix-debugging` | Bug tracing with graph facts, runtime evidence, diagnostics, source-site and resolution health where relevant. |
 | `avmatrix-refactoring` | Rename/extract/split/refactor workflows using graph guidance, impact, query/context, and detect-changes. |
 | `avmatrix-guide` | Unified AVmatrix command surface and schema/resource reference across MCP, CLI, resources, Web/API, and generated skills. |
-| `avmatrix-cli` | Complete CLI command guide, including analyze/status/query/context/impact/detect-changes/cypher/rename/augment/group/setup/serve/mcp/package/wiki/hook/version and any current accuracy commands confirmed by source. |
-| `avmatrix-graph-quality` | Query health, source-site inventory, resolution inventory, edge accuracy, ResolutionGap/UnresolvedSymbol review, and benchmark comparison. |
+| `avmatrix-cli` | Complete CLI command guide, including analyze/status/query/context/impact/detect-changes/cypher/rename/augment/group/setup/serve/mcp/package/wiki/hook/version, graph-health, and any current accuracy commands confirmed by source. |
+| `avmatrix-graph-quality` | Graph-health topology audit, query health, source-site inventory, resolution inventory, edge accuracy, ResolutionGap/UnresolvedSymbol review, and benchmark comparison. |
 | `avmatrix-api-surface` | API routes, MCP tools, contract shape checks, API impact, generated Web contracts, handlers, and consumers. |
 | `avmatrix-cross-repo` | Group repositories, cross-repo query/contracts/status/sync, and multi-repo analysis guidance. |
 | `avmatrix-runtime-packaging` | `serve`, `mcp`, `setup`, launcher, packaged runtime, package preparation, runtime cleanup, and startup validation. |
@@ -101,7 +104,9 @@ The upgraded skill set should keep the existing six skills and add five focused 
 
 The exact command list inside each skill must be based on current source/help output during implementation. If a command name in this plan is not available in the current codebase, the implementation must not document it as available; record the mismatch in evidence and update the skill wording accordingly.
 
-Command names must match the surface that implements them. CLI commands use hyphenated names such as `query-health`, `resolution-inventory`, and `source-site-accuracy`. MCP tools use underscore names such as `route_map`, `tool_map`, `shape_check`, and `api_impact`. A skill may mention both surfaces, but it must not invent a CLI command just because an MCP tool exists.
+Command names must match the surface that implements them. CLI commands use hyphenated names such as `query-health`, `resolution-inventory`, `source-site-accuracy`, and the planned `graph-health` command. MCP tools use underscore names such as `route_map`, `tool_map`, `shape_check`, and `api_impact`. A skill may mention both surfaces, but it must not invent a CLI command just because an MCP tool exists.
+
+The graph-health CLI surface must be a first-class graph-quality command, not a Web-only feature and not a query-health substitute. The implementation should expose topology health through subcommands such as `avmatrix graph-health summary --repo <repo> --json`, `avmatrix graph-health report --repo <repo> --limit <n> --json`, `avmatrix graph-health explain "<node-id-or-name>" --repo <repo> --json`, and `avmatrix graph-health components --repo <repo> --json`, or an equivalent source-verified design. The command must start from fresh analyze output according to repository rules, read the same graph-health metadata/compute behavior used by Web/API, and return table output plus machine-readable JSON. It must not fork a second graph-health definition that can drift from Web/API semantics.
 
 The package/editor setup skill source must be reconciled with the embedded AI-context skill source. The final implementation should make it hard for package-root `skills/`, embedded `internal/aicontext/skills/*.md`, and generated `.claude/skills/avmatrix/**` to drift away from each other.
 
@@ -180,6 +185,9 @@ The Phase 2 layout work must also improve visual spacing, not only add labels. N
 - Query capability lanes are validated by representative cases so the query repair does not become an AI-context-only fix.
 - Query capability lanes are usable through product surfaces. CLI help/output and MCP JSON output must expose lane discovery and explainable query results; Web/API display or pass-through must be validated if an existing UI/API query surface is in scope.
 - No query capability is counted complete if it only exists as internal code, unrendered fields, or tests that users and agents cannot invoke.
+- `avmatrix graph-health` is exposed in CLI help as a first-class graph-quality command, with source-verified summary, report, explain, and components behavior or an explicitly documented equivalent command design.
+- Graph-health CLI output reuses the same topology, confidence, diagnostic, component, resolution-confidence, and priority semantics as the graph-health engine/Web/API surfaces instead of implementing an incompatible duplicate.
+- Graph-health CLI table and JSON outputs are usable by users and agents for orphan/dead-code/unknown-connectivity investigation, including counts, candidate node identifiers, labels, paths, topology status, confidence, diagnostics, component details, and explain evidence where applicable.
 - Web graph macro rings have readable on-canvas labels so users can identify each top-level ring directly on the graph.
 - Web graph node islands have readable on-canvas labels so users can identify each cluster/filter/node group directly on the graph.
 - Web graph node islands use adaptive spacing so nodes do not visually stack, island spiral bands are readable, neighboring islands have clear gutters, island radius grows from visible node count and minimum node gap, and macro-ring radius grows from expanded island footprints instead of forcing large islands into a fixed ring.
@@ -243,6 +251,24 @@ This is a large blocking phase. The rest of the skill-system upgrade depends on 
 
 - [ ] [P1-L] Add broad-discovery regression checks for `query` after the ranking fix. Use representative non-AI-context intents across the capability taxonomy, including at least one intent that should naturally return execution-flow or process candidates. Record the before/after top results and prove the fix reduced wrong-owner noise without removing the original concept-to-flow discovery capability.
 
+## Phase 1.5 - Graph Health CLI Surface
+
+This phase closes the gap where graph-health exists as engine metadata and Web/API behavior but cannot be invoked as a first-class CLI command. It must create a usable graph-quality surface for terminal workflows without duplicating or redefining graph-health semantics separately from the existing engine/API/Web behavior.
+
+- [ ] [P1.5-A] Trace the current graph-health implementation before editing. Record the files and symbols that compute topology status, counted/excluded edges, confidence, diagnostics, resolution confidence, component IDs/sizes, report priority, explain payloads, Web filters, and API routes. The trace must include `internal/graphhealth/compute.go`, `internal/httpapi/graph.go`, `avmatrix-web/src/lib/graph-health-filters.ts`, the CLI root command registration in `internal/cli/command.go`, and any better owner found by source inspection.
+
+- [ ] [P1.5-B] Define the `graph-health` CLI contract from the traced source behavior. The contract must specify table and `--json` output for summary, report, explain, and components behavior or an explicitly justified equivalent design. It must define required inputs such as `--repo`, node id/name selection for explain, `--limit`, graph freshness expectations, output fields, ordering/priority, and how unknown or missing nodes are reported.
+
+- [ ] [P1.5-C] Refactor graph-health report/explain logic into a shared reusable owner if the current API code owns behavior that the CLI needs. The shared owner must preserve Web/API semantics for topology status, confidence, diagnostics, component membership, resolution health buckets, counted/excluded relationship samples, and triage priority. Do not copy-paste a second CLI-only implementation that can drift.
+
+- [ ] [P1.5-D] Implement the user-facing CLI command surface. Add `avmatrix graph-health` to the CLI command tree with discoverable help and subcommands or flags for summary, report, explain, and components. The command must support human-readable table output and `--json`, use the current indexed graph for the selected repo, and fail clearly when no fresh graph exists or a requested node cannot be found.
+
+- [ ] [P1.5-E] Add focused CLI/unit tests for graph-health. Tests must cover command registration/help output, summary counts, report ordering/limit behavior, explain by node id or source-verified selector, components output, JSON shape, missing-node errors, stale/missing graph handling, and parity with shared graph-health semantics used by API/Web where that can be tested deterministically.
+
+- [ ] [P1.5-F] Add graph-health command guidance to generated command surfaces after the CLI behavior exists. Update `internal/aicontext/aicontext.go`, `internal/aicontext/skills/avmatrix-graph-quality.md` or its planned source, `avmatrix-cli`/`avmatrix-guide` content, MCP setup/resource guidance if it lists CLI command families, and README/user docs that describe graph-quality commands. The guidance must explain that `graph-health` audits topology/diagnostics, while `query-health`, `resolution-inventory`, and `source-site-accuracy` answer different graph-quality questions.
+
+- [ ] [P1.5-G] Validate graph-health CLI with real command smoke output after the full build. Run representative commands such as `avmatrix graph-health summary --repo AVmatrix`, `avmatrix graph-health report --repo AVmatrix --limit 20 --json`, `avmatrix graph-health components --repo AVmatrix --json`, and one `graph-health explain` command against a real node discovered from the report. Record counts, candidate examples, exact command output summaries, and any limitation in the evidence and benchmark ledgers.
+
 ## Phase 2 - Graph Labeling And Visual Orientation Layer
 
 - [ ] [P2-A] Record the graph orientation problem from `reports/problem/screenshot_1779517751.png` in the evidence ledger. The evidence must state that visible rings and islands currently lack direct names on the graph, making users infer meaning from color or side-panel filters instead of reading the graph itself.
@@ -267,7 +293,7 @@ This is a large blocking phase. The rest of the skill-system upgrade depends on 
 
 - [ ] [P3-A] Upgrade the six existing embedded skill Markdown files in `internal/aicontext/skills/`. Each file must become a practical task guide with command choices, when to use each AVmatrix surface, validation expectations, and current limitations. `avmatrix-impact-analysis` must explain that HIGH/CRITICAL is blast-radius evidence to report and account for, not a blanket prohibition against required work.
 
-- [ ] [P3-B] Add the new embedded source skill files under `internal/aicontext/skills/`: `avmatrix-graph-quality.md`, `avmatrix-api-surface.md`, `avmatrix-cross-repo.md`, `avmatrix-runtime-packaging.md`, and `avmatrix-ai-context.md`. Each new skill must contain concrete usage guidance, command examples based on implemented commands, expected outputs, and validation notes.
+- [ ] [P3-B] Add the new embedded source skill files under `internal/aicontext/skills/`: `avmatrix-graph-quality.md`, `avmatrix-api-surface.md`, `avmatrix-cross-repo.md`, `avmatrix-runtime-packaging.md`, and `avmatrix-ai-context.md`. Each new skill must contain concrete usage guidance, command examples based on implemented commands, expected outputs, and validation notes. The graph-quality skill must include the `graph-health` CLI command from Phase 1.5 after that command exists.
 
 - [ ] [P3-C] Update the base skill registry and generated Skills table in `internal/aicontext/aicontext.go`. The registry and generated table must include all final skills, use repo-agnostic descriptions, and avoid splitting AVmatrix into misleading MCP-only versus CLI-only capability lists.
 
@@ -303,7 +329,7 @@ This is a large blocking phase. The rest of the skill-system upgrade depends on 
 
 - [ ] [P5-A] Run the full build gate before tests: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`. Record the command result in evidence.
 
-- [ ] [P5-B] Run focused backend/CLI/MCP tests for AI context generation, setup, packaging, query, and query-health surfaces touched by the implementation. The minimum expected test scope is `go test .\internal\mcp .\internal\cli .\internal\aicontext -count=1`, expanded as needed if package/setup code outside those packages changes.
+- [ ] [P5-B] Run focused backend/CLI/MCP tests for AI context generation, setup, packaging, query, query-health, and graph-health surfaces touched by the implementation. The minimum expected test scope is `go test .\internal\mcp .\internal\cli .\internal\aicontext .\internal\graphhealth .\internal\httpapi -count=1`, expanded as needed if package/setup code outside those packages changes.
 
 - [ ] [P5-C] Run Web unit tests after graph labeling work: `cd avmatrix-web; npm run test`. Record exact pass/fail counts and any focused label/layout tests in evidence.
 
@@ -323,6 +349,8 @@ This is a large blocking phase. The rest of the skill-system upgrade depends on 
 
 - [ ] [P5-K] Run the query broad-discovery regression check from Phase 1 and record whether execution-flow candidates still appear with meaningful match evidence after the ranking fix.
 
+- [ ] [P5-K2] Run user-facing graph-health CLI smoke commands after the full build. Validate help output, summary, report, components, explain, `--json`, missing-node error behavior, and parity with Web/API graph-health semantics where applicable. Record exact commands and representative output in evidence and benchmark.
+
 - [ ] [P5-L] Run `detect-changes` before commit and record the affected scope. Commit the implementation slice after checklist items and ledgers are updated.
 
 ## Phase 6 - Zero-Trust Closure Review
@@ -331,4 +359,4 @@ This is a large blocking phase. The rest of the skill-system upgrade depends on 
 
 - [ ] [P6-B] Re-run the final validation commands required by this plan after the closure review changes. Record final pass/fail counts, generated inventory, setup/package inventory if applicable, Web label screenshot evidence, and any remaining limitation in the evidence and benchmark ledgers.
 
-- [ ] [P6-C] Mark the plan complete only after source files, generated validation output, tests, Web graph label validation, docs, benchmark ledger, evidence ledger, and commit state all agree on the final skill set, graph orientation labels, and the AI-context query-health case has recorded threshold and exact results.
+- [ ] [P6-C] Mark the plan complete only after source files, generated validation output, tests, graph-health CLI validation, Web graph label validation, docs, benchmark ledger, evidence ledger, and commit state all agree on the final skill set, graph orientation labels, graph-health command surface, and the AI-context query-health case has recorded threshold and exact results.
