@@ -32,8 +32,7 @@
   },
   "files": [
     "bin",
-    "go-src",
-    "skills"
+    "go-src"
   ],
   "scripts": {
     "build": "go run ../cmd/avmatrix package build-runtime",

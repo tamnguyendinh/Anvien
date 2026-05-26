@@ -228,7 +228,6 @@ avmatrix setup                     # Configure local MCP/editor access
 avmatrix analyze [path]            # Full local repo analysis
 avmatrix analyze --force           # Force full re-index
 avmatrix analyze --embeddings      # Generate semantic embeddings
-avmatrix analyze --skills          # Generate repo-specific agent skills
 avmatrix analyze --no-stats        # Omit volatile stats from generated agent files
 avmatrix analyze --skip-git        # Analyze a folder without requiring .git
 avmatrix analyze --name <alias>    # Register repo under a custom name
@@ -261,6 +260,10 @@ avmatrix query-health
 avmatrix resolution-inventory
 avmatrix source-site-accuracy
 ```
+
+AI context and skills:
+
+`avmatrix analyze` refreshes managed `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/avmatrix/**` from embedded source files under `internal/aicontext/skills/*.md`. `avmatrix setup` installs the same embedded base skill set into supported editor skill directories. Do not edit generated root context or `.claude/skills/avmatrix/**` as source; change the embedded skill source or generator and regenerate through analyze.
 
 Semantic graph diagnostics:
 
@@ -457,7 +460,7 @@ To make host repos visible to the container, set `WORKSPACE_DIR` to a local fold
 | `avmatrix-web/` | React/Vite Web UI and local runtime client |
 | `contracts/web-ui/` | Go-generated Web UI contract manifest |
 | `avmatrix-launcher/` | Windows launcher, server wrapper, packaged Web UI/backend assets |
-| `.claude/`, `avmatrix-claude-plugin/`, `avmatrix-cursor-integration/` | Agent skills and plugin metadata |
+| `.claude/`, `avmatrix-claude-plugin/`, `avmatrix-cursor-integration/` | Generated agent context output and plugin metadata |
 | `docs/plans/` | Implementation plans and investigation records |
 | `.github/` | CI workflows |
 

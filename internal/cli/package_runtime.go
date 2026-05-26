@@ -333,12 +333,15 @@ func copyPackageGoDir(repoRoot, relativeDir, outputRoot string, copied *[]string
 				stack = append(stack, source)
 				continue
 			}
-			if !entry.Type().IsRegular() || !strings.HasSuffix(entry.Name(), ".go") || strings.HasSuffix(entry.Name(), "_test.go") {
-				continue
-			}
 			rel, err := filepath.Rel(repoRoot, source)
 			if err != nil {
 				return err
+			}
+			relSlash := filepath.ToSlash(rel)
+			goSource := strings.HasSuffix(entry.Name(), ".go") && !strings.HasSuffix(entry.Name(), "_test.go")
+			embeddedSkillSource := strings.HasPrefix(relSlash, "internal/aicontext/skills/") && strings.HasSuffix(entry.Name(), ".md")
+			if !entry.Type().IsRegular() || (!goSource && !embeddedSkillSource) {
+				continue
 			}
 			if err := copyPackageFile(source, filepath.Join(outputRoot, rel), outputRoot, copied); err != nil {
 				return err

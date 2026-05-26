@@ -38,6 +38,13 @@ type Result struct {
 	BaseSkillIDs []string
 }
 
+type BaseSkillFile struct {
+	Name        string
+	Description string
+	Task        string
+	Content     string
+}
+
 func Generate(repoPath string, projectName string, run analyze.Result, options Options) (Result, error) {
 	files, baseSkills, err := GenerateAIContextFiles(repoPath, projectName, statsFromRun(run), options)
 	if err != nil {
@@ -284,27 +291,63 @@ var baseSkills = []baseSkill{
 	{Name: "avmatrix-ai-context", Description: `Use when the user changes generated AGENTS.md, CLAUDE.md, embedded AVmatrix skills, AI context generation, or source-vs-generated validation.`, Task: `Generated AGENTS.md, CLAUDE.md, embedded skills, and AI context validation`},
 }
 
+var retiredBaseSkillNames = []string{
+	"avmatrix-pr-review",
+}
+
+func BaseSkillFiles() ([]BaseSkillFile, error) {
+	files := make([]BaseSkillFile, 0, len(baseSkills))
+	for _, skill := range baseSkills {
+		content, err := baseSkillContent(skill)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, BaseSkillFile{
+			Name:        skill.Name,
+			Description: skill.Description,
+			Task:        skill.Task,
+			Content:     content,
+		})
+	}
+	return files, nil
+}
+
+func InstallBaseSkillsTo(targetDir string) ([]string, error) {
+	files, err := BaseSkillFiles()
+	if err != nil {
+		return nil, err
+	}
+	if err := os.MkdirAll(targetDir, 0o755); err != nil {
+		return nil, err
+	}
+	for _, retired := range retiredBaseSkillNames {
+		if err := os.RemoveAll(filepath.Join(targetDir, retired)); err != nil {
+			return nil, err
+		}
+	}
+	installed := make([]string, 0, len(files))
+	for _, file := range files {
+		dir := filepath.Join(targetDir, file.Name)
+		if err := os.RemoveAll(dir); err != nil {
+			return installed, err
+		}
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return installed, err
+		}
+		if err := os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte(file.Content), 0o644); err != nil {
+			return installed, err
+		}
+		installed = append(installed, file.Name)
+	}
+	return installed, nil
+}
+
 func installBaseSkills(repoPath string) ([]string, error) {
 	skillsDir := filepath.Join(repoPath, ".claude", "skills", "avmatrix")
 	if err := os.RemoveAll(skillsDir); err != nil {
 		return nil, err
 	}
-	installed := make([]string, 0, len(baseSkills))
-	for _, skill := range baseSkills {
-		dir := filepath.Join(skillsDir, skill.Name)
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return nil, err
-		}
-		content, err := baseSkillContent(skill)
-		if err != nil {
-			return nil, err
-		}
-		if err := os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte(content), 0o644); err != nil {
-			return nil, err
-		}
-		installed = append(installed, skill.Name)
-	}
-	return installed, nil
+	return InstallBaseSkillsTo(skillsDir)
 }
 
 func baseSkillContent(skill baseSkill) (string, error) {

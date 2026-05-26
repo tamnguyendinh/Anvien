@@ -27,14 +27,15 @@
     },
     {
       "id": "setup-editor-skill-installation-owner-discovery",
-      "intent": "setup editor skill installation package root skills",
+      "intent": "setup editor skill installation embedded AVmatrix skills",
       "expectedFiles": [
-        "internal/cli/setup_command.go"
+        "internal/cli/setup_command.go",
+        "internal/aicontext/aicontext.go"
       ],
       "expectedSymbols": [
         "setupInstallEditorSkills",
         "setupInstallSkillsTo",
-        "setupSkillTargetName"
+        "InstallBaseSkillsTo"
       ],
       "expectedAppLayers": [
         "backend"
@@ -49,14 +50,15 @@
       "id": "package-skill-distribution-owner-discovery",
       "intent": "package skill distribution embedded skills setup package lifecycle",
       "expectedFiles": [
-        "internal/cli/package_command.go",
+        "internal/aicontext/aicontext.go",
         "internal/cli/package_runtime.go",
         "internal/cli/setup_command.go"
       ],
       "expectedSymbols": [
-        "newPackageCommand",
+        "prepareGoSourcePackage",
+        "copyPackageGoDir",
         "setupInstallSkillsTo",
-        "resolvePackageSourceRoot"
+        "InstallBaseSkillsTo"
       ],
       "expectedAppLayers": [
         "backend"

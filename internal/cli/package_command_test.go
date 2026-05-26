@@ -116,6 +116,8 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 	writePackageTestFile(t, parent, "go.sum", "")
 	writePackageTestFile(t, parent, "cmd/avmatrix/main.go", "package main\n")
 	writePackageTestFile(t, parent, "cmd/avmatrix/main_test.go", "package main\n")
+	writePackageTestFile(t, parent, "internal/aicontext/aicontext.go", "package aicontext\n")
+	writePackageTestFile(t, parent, "internal/aicontext/skills/avmatrix-cli.md", "# AVmatrix CLI Commands\n")
 	writePackageTestFile(t, parent, "internal/cli/command.go", "package cli\n")
 	writePackageTestFile(t, parent, "internal/cli/command_test.go", "package cli\n")
 	writePackageTestFile(t, parent, "scripts/ensure-ladybug-native.ps1", "Write-Output native\n")
@@ -132,6 +134,8 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 		"go.mod",
 		"go.sum",
 		"cmd/avmatrix/main.go",
+		"internal/aicontext/aicontext.go",
+		"internal/aicontext/skills/avmatrix-cli.md",
 		"internal/cli/command.go",
 		"scripts/ensure-ladybug-native.ps1",
 		"scripts/ensure-ladybug-native.sh",
@@ -146,7 +150,7 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 			t.Fatalf("prepared source retained excluded path %s: %v", rel, err)
 		}
 	}
-	if !strings.Contains(out.String(), "[prepare-go-source-package] copied 6 files") {
+	if !strings.Contains(out.String(), "[prepare-go-source-package] copied 8 files") {
 		t.Fatalf("prepare output missing copied count: %q", out.String())
 	}
 }
@@ -172,10 +176,13 @@ func TestPackageJSONUsesCanonicalGoBinaryAndPackageCleanupCommand(t *testing.T) 
 	if len(pkg.Bin) != 1 {
 		t.Fatalf("pkg.bin should expose only avmatrix: %#v", pkg.Bin)
 	}
-	for _, want := range []string{"bin", "go-src", "skills"} {
+	for _, want := range []string{"bin", "go-src"} {
 		if !containsString(pkg.Files, want) {
 			t.Fatalf("pkg.files missing %q: %#v", want, pkg.Files)
 		}
+	}
+	if containsString(pkg.Files, "skills") {
+		t.Fatalf("pkg.files should not ship package-root skills: %#v", pkg.Files)
 	}
 	for _, retiredFile := range []string{"dist", "scripts", "vendor"} {
 		if containsString(pkg.Files, retiredFile) {

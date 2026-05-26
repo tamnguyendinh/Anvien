@@ -27,7 +27,7 @@ In this repository, product validation should use the canonical executable path 
 1. Run the full build before runtime/package validation.
 2. Use explicit host/port for local server smoke checks.
 3. Track started process ids and stop the exact process tree you started.
-4. For setup/package skill behavior, verify installed/generated skill inventories and content hashes rather than assuming package-root files match embedded skills.
+4. For setup/package skill behavior, verify installed/generated skill inventories and content hashes from embedded skill source; package-root `skills/` files are not a source of truth.
 5. For lifecycle bugs, validate that browser close, app exit, failed analyze, and reset paths do not leave orphan backend/analyze processes.
 
 ## Evidence To Record

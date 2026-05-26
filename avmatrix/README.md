@@ -22,11 +22,11 @@ AI coding tools don't understand your codebase structure. They edit a function w
 avmatrix analyze
 ```
 
-That's it. This indexes the codebase, installs agent skills, registers Claude Code hooks, and creates `AGENTS.md` / `CLAUDE.md` context files — all in one command.
+That's it. This indexes the codebase and writes managed `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/avmatrix/**` context files from AVmatrix's embedded skill source.
 
 To configure MCP for your editor, run `avmatrix setup` once — or set it up manually below.
 
-`avmatrix setup` auto-detects your editors and writes the correct global MCP config. You only need to run it once.
+`avmatrix setup` auto-detects your editors, writes the correct global MCP config, and installs the same embedded base skills into supported editor skill directories. You only need to run it once.
 
 ### Editor Support
 
@@ -254,14 +254,21 @@ TypeScript, JavaScript, Python, Java, C, C++, C#, Go, Rust, PHP, Kotlin, Swift, 
 
 ## Agent Skills
 
-AVmatrix ships with skill files that teach AI agents how to use the tools effectively:
+AVmatrix ships embedded base skills that teach AI agents how to use the tool surfaces effectively:
 
-- **Exploring** — Navigate unfamiliar code using the knowledge graph
-- **Debugging** — Trace bugs through call chains
-- **Impact Analysis** — Analyze blast radius before changes
-- **Refactoring** — Plan safe refactors using dependency mapping
+- **Exploring** — architecture, ownership, and execution flow discovery
+- **Impact Analysis** — blast radius, HIGH/CRITICAL warnings, and changed-scope checks
+- **Debugging** — failures, diagnostics, and graph-quality evidence
+- **Refactoring** — rename, extract, split, move, and restructure work
+- **Guide** — unified CLI, MCP, resource, prompt, and Web/API reference
+- **CLI** — terminal command guide for AVmatrix CLI surfaces
+- **Graph Quality** — graph-health, query-health, resolution inventory, and accuracy audits
+- **API Surface** — API routes, MCP tools, shape checks, contracts, and consumers
+- **Cross Repo** — repository groups, cross-repo query, contracts, status, and sync
+- **Runtime Packaging** — runtime, setup, launcher, package, and process lifecycle workflows
+- **AI Context** — generated `AGENTS.md`, `CLAUDE.md`, embedded skills, and validation
 
-Installed automatically by both `avmatrix analyze` (per-repo) and `avmatrix setup` (global).
+`avmatrix analyze` installs the per-repo generated output under `.claude/skills/avmatrix/**`. `avmatrix setup` installs the same embedded base skill content into supported editor skill directories. Package-root `skills/` files are not a source of truth.
 
 ## Requirements
 

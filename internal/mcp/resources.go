@@ -82,7 +82,7 @@ func resourceDefinitions() []resourceDefinition {
 		{
 			URI:         canonicalResourceScheme + "://setup",
 			Name:        "AVmatrix Setup Content",
-			Description: "Returns AGENTS.md content for all indexed repos. Useful for setup/onboarding.",
+			Description: "Returns setup/onboarding, command-surface, AI-context, and skill guidance for indexed repos.",
 			MimeType:    "text/markdown",
 		},
 	}
@@ -393,6 +393,12 @@ func (s Server) setupResource() (string, error) {
 			"| `generate_map` | Evidence-backed architecture map workflow. If `repo` is omitted, the prompt first uses `" + canonicalResourceScheme + "://repos` for repo selection, then reads repo context, clusters, processes, and selected process details. |",
 			"",
 			"MCP prompts are templates for agents, not CLI commands. They still require fresh graph evidence and should not invent architecture claims beyond resources/tools/commands the agent actually read.",
+			"",
+			"## AI Context And Skills",
+			"",
+			"- `avmatrix analyze --force` generates managed `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/avmatrix/**` from embedded `internal/aicontext/skills/*.md` source.",
+			"- `avmatrix setup` installs the same embedded base skill set into supported editor skill directories; package-root `skills/` is not a source of truth.",
+			"- Update embedded skill Markdown and generator code, then regenerate; do not edit generated root context or `.claude/skills/avmatrix/**` as source.",
 			"",
 			"## Resources",
 			"",

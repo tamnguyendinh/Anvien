@@ -293,17 +293,25 @@ P2-C through P2-H implementation and runtime metrics:
 
 ## B5 - Setup And Package Skill Distribution Metrics
 
-Status: final pending.
+Status: P4 setup/package reconciliation recorded.
 
 | Metric | Unit | Baseline | Final | Delta | Target |
 |---|---:|---:|---:|---:|---:|
-| Editor skill install targets checked | targets | 0 | pending | pending | supported target count |
-| Skills installed per checked editor target | skills | pending | pending | pending | 11 |
-| Package-root skill source files | files | 0 | pending | pending | 0 or 11, depending on selected package design |
-| Packaged embedded skill files | files | pending | pending | pending | 11 |
-| Setup/generated skill inventory mismatches | mismatches | pending | pending | pending | 0 |
-| Package/generated skill inventory mismatches | mismatches | pending | pending | pending | 0 |
-| Setup/package skill content hash mismatches | mismatches | pending | pending | pending | 0 |
+| Editor skill install targets checked | targets | 0 | 4 | +4 | 4 supported setup targets |
+| Skills installed per checked editor target | skills | 7 | 11 | +4 | 11 |
+| Installed embedded skill bytes per checked editor target | bytes | pending | 30,984 | pending | record |
+| Package-root skill source files | files | 7 | 0 | -7 | 0 |
+| Retired package-root `avmatrix-pr-review` installed | files | 1 | 0 | -1 | 0 |
+| Package fallback copied files | files | pending | 293 | pending | record |
+| Package fallback copied Go files | files | pending | 278 | pending | record |
+| Packaged embedded skill Markdown files | files | pending | 11 | pending | 11 |
+| Packaged embedded skill Markdown bytes | bytes | pending | 30,984 | pending | record |
+| Package dry-run tarball files | files | pending | 7 | pending | record |
+| Package dry-run package-root skill files | files | 7 | 0 | -7 | 0 |
+| Setup/generated skill inventory mismatches | mismatches | pending | 0 | pending | 0 |
+| Package/generated skill inventory mismatches | mismatches | pending | 0 | pending | 0 |
+| Package source/prepared skill SHA-256 mismatches | mismatches | pending | 0 | pending | 0 |
+| Setup/package skill content hash mismatches | mismatches | pending | 0 | pending | 0 |
 
 ## B6 - Generated AI Context Final Metrics
 

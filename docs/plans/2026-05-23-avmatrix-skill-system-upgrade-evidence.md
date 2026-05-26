@@ -1153,3 +1153,70 @@ Pre-commit checks:
 | `git diff --check` | pass. |
 | `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after staging the P3 slice; `files: scanned=780 parsed=578 unsupported=202 failed=0`, `nodes=88644 relationships=121551`. |
 | `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass after staging the P3 slice; summary `changed_files=16`, `changed_count=158`, `affected_count=1`, `risk_level=medium`; changed App Layers `backend=7`, `backend_test=77`, `docs=74`; affected App Layers `backend=1`. |
+
+## Phase 4 Setup, Package, And Documentation Integration Evidence
+
+Status: complete; pre-commit detect pending.
+
+Fresh graph and owner trace:
+
+| Command | Result |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass before Phase 4 graph work; `files: scanned=780 parsed=578 unsupported=202 failed=0`, `nodes=88644 relationships=121551`. |
+| `.\avmatrix\bin\avmatrix.exe query "setup editor skills package embedded aicontext skills distribution" --repo AVmatrix --limit 10` | Top owners included `installBaseSkills`, `setupInstallEditorSkills`, `baseSkillContent`, `setupInstallSkillsTo`, `setupSkillTargetName`, `setupResource`, and package lifecycle functions. |
+| `.\avmatrix\bin\avmatrix.exe context "setupInstallSkillsTo" --repo AVmatrix` | Confirmed the pre-change setup path read package-root `skills/` through `setupResolvePackagePath("skills")`. |
+| `.\avmatrix\bin\avmatrix.exe context "setupInstallEditorSkills" --repo AVmatrix` | Confirmed editor setup callers for Cursor, Claude Code, OpenCode, and Codex all flow through `setupInstallSkillsTo`. |
+| `.\avmatrix\bin\avmatrix.exe context "resolvePackageSourceRoot" --repo AVmatrix` | Confirmed package fallback builds use `go-src` when source is not available beside the package root. |
+
+Impact:
+
+| Target | Result |
+|---|---|
+| `setupInstallSkillsTo` | CRITICAL; `impactedCount=9`, affected App Layers `backend=6`, `backend_test=3`, affected Functional Area `cli=9`, affected setup processes `5`. This is setup/editor install blast-radius evidence, not an edit ban. |
+| `setupInstallEditorSkills` | CRITICAL; `impactedCount=9`, direct impacted nodes `4`, affected setup processes `5`. This covers all supported editor setup callers. |
+| `baseSkillContent` | HIGH; `impactedCount=9`, affected App Layers `backend=4`, `backend_test=5`; this is canonical embedded skill content loading. |
+| `installBaseSkills` | CRITICAL; `impactedCount=7`, affected analyze AI-context processes `12`; this is analyze-generated root context/base skill output. |
+| `setupResource` | LOW; no upstream impacted nodes; this is MCP setup/onboarding text. |
+| `prepareGoSourcePackage` | CRITICAL; `impactedCount=6`, affected package/root CLI paths and `18` processes; this is package fallback source assembly. |
+| `copyPackageGoDir` | CRITICAL; `impactedCount=4`, affected package source-copy path and `18` processes; this is package fallback source file selection. |
+| Removed setup package-root helper path | `setupSkillTargetName`, `setupResolvePackagePath`, `setupCopyDir`, and `setupFileExists` were CRITICAL through the old `setupInstallSkillsTo` package-root flow; `setupCopyFile`, `setupAncestorRoots`, and `setupPathExists` were LOW. They were removed because setup no longer reads package-root skills. |
+| `TestAnalyzeCommandGeneratesAIContextByDefault` | LOW; no upstream impacted nodes; test was tightened to assert all final embedded base skills are generated, not only `avmatrix-cli`. |
+
+Implementation:
+
+| File | Change |
+|---|---|
+| `internal/aicontext/aicontext.go` | Added exported `BaseSkillFile`, `BaseSkillFiles`, and `InstallBaseSkillsTo` so setup and tests materialize the same embedded base skill source as analyze. Added retired `avmatrix-pr-review` cleanup and made `installBaseSkills` delegate through the shared installer after cleaning the generated AVmatrix skill root. |
+| `internal/cli/setup_command.go` | Replaced package-root `skills/` discovery/copy behavior with `aicontext.InstallBaseSkillsTo`. Removed the package-root skill target/copy/path helpers so editor setup cannot drift from embedded skill source. |
+| `internal/cli/package_runtime.go` | Updated package fallback source assembly so `copyPackageGoDir` also copies `internal/aicontext/skills/*.md`, preserving `go:embed` inputs in `go-src`. |
+| `internal/cli/command_test.go` | Added setup assertions that Cursor, Claude Code, OpenCode, and Codex receive all embedded base skills with exact content. Replaced the old package-root install test with a test proving package-root `flat-skill`, directory skills, and retired `avmatrix-pr-review` are not installed. Tightened default analyze coverage to assert all final generated base skill files. |
+| `internal/cli/package_command_test.go` | Added package fallback coverage for embedded skill Markdown in `go-src`; updated package metadata expectations so `skills` is no longer shipped as a package-root authority. |
+| `internal/aicontext/aicontext_test.go` | Added `BaseSkillFiles` inventory and metadata assertions. |
+| `internal/mcp/resources.go` and `internal/mcp/resources_parity_test.go` | Updated `avmatrix://setup` guidance to explain generated AI context, embedded skill source, setup-installed embedded skills, and the non-authority status of package-root `skills/`. |
+| `README.md` and `avmatrix/README.md` | Removed stale `analyze --skills`/old four-skill/package-root assumptions and documented generated `AGENTS.md`, `CLAUDE.md`, `.claude/skills/avmatrix/**`, embedded source ownership, and setup-installed embedded base skills. |
+| `avmatrix/package.json` and `avmatrix/skills/*.md` | Removed `skills` from npm package files and deleted the stale package-root skill source files, including retired `avmatrix-pr-review`. |
+| `docs/query-health/2026-05-23-avmatrix-skill-system-upgrade-suite.json` | Updated setup/package owner expectations from package-root skill helpers to embedded skill owners and package source-copy owners. |
+| `internal/aicontext/skills/avmatrix-runtime-packaging.md` | Clarified that setup/package skill validation must use embedded skill source and that package-root `skills/` is not a source of truth. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass after Phase 4 implementation; Go build and Web production build completed. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test .\internal\aicontext .\internal\cli .\internal\mcp -count=1` | pass after the final analyze/setup/package test tightening; `internal/aicontext` 1.294s, `internal/cli` 12.076s, `internal/mcp` 6.530s. |
+| Built binary setup smoke with temp `HOME`/`USERPROFILE`, temp Cursor/Claude/OpenCode/Codex dirs, and isolated `AVMATRIX_HOME` | pass; setup reported 11 skills for Cursor, Claude Code, OpenCode, and Codex. Each checked editor target contained 11 embedded skill directories totaling 30,984 bytes, with `avmatrix-pr-review` absent. |
+| `avmatrix\bin\avmatrix.exe package prepare-go-source` from `avmatrix/`, followed by inventory and `package clean-go-source` | pass; prepare copied 293 files, inventory found 278 Go files and 11 embedded skill Markdown files under `go-src/internal/aicontext/skills`, totaling 30,984 bytes, then cleanup removed `go-src`. |
+| Package source/hash comparison during temporary `go-src` preparation | pass; source skill Markdown count 11, prepared skill Markdown count 11, name mismatches 0, SHA-256 hash mismatches 0, prepared skill bytes 30,984. |
+| `npm pack --dry-run --ignore-scripts` from `avmatrix/` | pass for skill distribution check; package dry-run listed 7 tarball files and no package-root `skills/` files. Existing bin backup artifacts remain in the dry-run inventory and are outside this skill-source reconciliation slice. |
+
+Validation note:
+
+- The first setup smoke script attempt failed before invoking AVmatrix because the PowerShell script tried to overwrite the read-only `$HOME` variable. The rerun used a separate `$tempHome` variable and passed.
+
+Pre-commit checks:
+
+| Command | Result |
+|---|---|
+| `git diff --check` | pass. |
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after Phase 4 implementation and ledger updates; `files: scanned=773 parsed=578 unsupported=195 failed=0`, `nodes=88582 relationships=121473`. |
+| `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass after Phase 4 implementation and ledger updates; summary `changed_files=23`, `changed_count=145`, `affected_count=1`, `risk_level=medium`; changed App Layers `api=3`, `api_test=2`, `backend=55`, `backend_test=69`, `docs=16`; affected App Layers `api=1`; affected Functional Areas `mcp=1`. |

@@ -4,23 +4,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"sort"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/tamnguyendinh/avmatrix-go/internal/aicontext"
 	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
 )
 
 const (
-	setupBrand          = "AVmatrix"
-	setupCommandName    = "avmatrix"
-	setupMCPServerName  = "avmatrix"
-	setupSkillNamespace = "avmatrix"
+	setupBrand         = "AVmatrix"
+	setupCommandName   = "avmatrix"
+	setupMCPServerName = "avmatrix"
 )
 
 type setupResult struct {
@@ -302,65 +300,7 @@ func setupInstallEditorSkills(result *setupResult, editor string, targetDir stri
 }
 
 func setupInstallSkillsTo(targetDir string) ([]string, error) {
-	skillsRoot := setupResolvePackagePath("skills")
-	if skillsRoot == "" {
-		return nil, nil
-	}
-	entries, err := os.ReadDir(skillsRoot)
-	if err != nil {
-		return nil, nil
-	}
-	sort.Slice(entries, func(i, j int) bool { return entries[i].Name() < entries[j].Name() })
-
-	installed := make([]string, 0, len(entries))
-	for _, entry := range entries {
-		name := entry.Name()
-		sourcePath := filepath.Join(skillsRoot, name)
-		if entry.IsDir() {
-			skillPath := filepath.Join(sourcePath, "SKILL.md")
-			if !setupFileExists(skillPath) {
-				continue
-			}
-			targetName := setupSkillTargetName(name)
-			targetPath := filepath.Join(targetDir, targetName)
-			if err := os.RemoveAll(targetPath); err != nil {
-				return installed, err
-			}
-			if err := setupCopyDir(sourcePath, targetPath); err != nil {
-				return installed, err
-			}
-			installed = append(installed, targetName)
-			continue
-		}
-		if !strings.EqualFold(filepath.Ext(name), ".md") {
-			continue
-		}
-		skillName := strings.TrimSuffix(name, filepath.Ext(name))
-		targetName := setupSkillTargetName(skillName)
-		targetPath := filepath.Join(targetDir, targetName)
-		if err := os.RemoveAll(targetPath); err != nil {
-			return installed, err
-		}
-		if err := os.MkdirAll(targetPath, 0o755); err != nil {
-			return installed, err
-		}
-		raw, err := os.ReadFile(sourcePath)
-		if err != nil {
-			return installed, err
-		}
-		if err := os.WriteFile(filepath.Join(targetPath, "SKILL.md"), raw, 0o644); err != nil {
-			return installed, err
-		}
-		installed = append(installed, targetName)
-	}
-	return installed, nil
-}
-
-func setupSkillTargetName(name string) string {
-	if strings.HasPrefix(name, setupSkillNamespace+"-") {
-		return setupSkillNamespace + "-" + strings.TrimPrefix(name, setupSkillNamespace+"-")
-	}
-	return name
+	return aicontext.InstallBaseSkillsTo(targetDir)
 }
 
 func setupInstallClaudeHooks(result *setupResult, claudeDir string) {
@@ -432,46 +372,6 @@ func setupHookEntryContains(entry any, needle string) bool {
 	return false
 }
 
-func setupResolvePackagePath(rel string) string {
-	rel = filepath.Clean(rel)
-	candidates := make([]string, 0, 8)
-	if cwd, err := os.Getwd(); err == nil {
-		for _, root := range setupAncestorRoots(cwd) {
-			candidates = append(candidates, filepath.Join(root, rel), filepath.Join(root, "avmatrix", rel))
-		}
-	}
-	if exe, err := os.Executable(); err == nil {
-		for _, root := range setupAncestorRoots(filepath.Dir(exe)) {
-			candidates = append(candidates, filepath.Join(root, rel), filepath.Join(root, "avmatrix", rel))
-		}
-	}
-	seen := map[string]struct{}{}
-	for _, candidate := range candidates {
-		candidate = filepath.Clean(candidate)
-		if _, ok := seen[candidate]; ok {
-			continue
-		}
-		seen[candidate] = struct{}{}
-		if setupPathExists(candidate) {
-			return candidate
-		}
-	}
-	return ""
-}
-
-func setupAncestorRoots(start string) []string {
-	roots := make([]string, 0, 8)
-	current := filepath.Clean(start)
-	for {
-		roots = append(roots, current)
-		parent := filepath.Dir(current)
-		if parent == current {
-			return roots
-		}
-		current = parent
-	}
-}
-
 func setupHomeDir() string {
 	if runtime.GOOS == "windows" {
 		if home := strings.TrimSpace(os.Getenv("USERPROFILE")); home != "" {
@@ -503,44 +403,6 @@ func setupDisplayHomePath(path string) string {
 func setupDirExists(path string) bool {
 	info, err := os.Stat(path)
 	return err == nil && info.IsDir()
-}
-
-func setupFileExists(path string) bool {
-	info, err := os.Stat(path)
-	return err == nil && !info.IsDir()
-}
-
-func setupPathExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
-}
-
-func setupCopyFile(source string, destination string) error {
-	raw, err := os.ReadFile(source)
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
-		return err
-	}
-	return os.WriteFile(destination, raw, 0o644)
-}
-
-func setupCopyDir(source string, destination string) error {
-	return filepath.WalkDir(source, func(path string, entry fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		rel, err := filepath.Rel(source, path)
-		if err != nil {
-			return err
-		}
-		target := filepath.Join(destination, rel)
-		if entry.IsDir() {
-			return os.MkdirAll(target, 0o755)
-		}
-		return setupCopyFile(path, target)
-	})
 }
 
 func strconvQuote(value string) string {

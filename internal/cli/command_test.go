@@ -15,6 +15,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/tamnguyendinh/avmatrix-go/internal/aicontext"
 	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
 	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
 	"github.com/tamnguyendinh/avmatrix-go/internal/httpapi"
@@ -409,19 +410,13 @@ func TestSetupCommandWritesEditorConfigsAndSkills(t *testing.T) {
 		t.Fatalf("Codex fallback config missing MCP entry:\n%s", codexConfig)
 	}
 
-	for _, path := range []string{
-		filepath.Join(home, ".cursor", "skills", "avmatrix-cli", "SKILL.md"),
-		filepath.Join(home, ".claude", "skills", "avmatrix-cli", "SKILL.md"),
-		filepath.Join(home, ".config", "opencode", "skill", "avmatrix-cli", "SKILL.md"),
-		filepath.Join(home, ".agents", "skills", "avmatrix-cli", "SKILL.md"),
+	for _, root := range []string{
+		filepath.Join(home, ".cursor", "skills"),
+		filepath.Join(home, ".claude", "skills"),
+		filepath.Join(home, ".config", "opencode", "skill"),
+		filepath.Join(home, ".agents", "skills"),
 	} {
-		raw, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatalf("read installed skill %s: %v", path, err)
-		}
-		if !strings.Contains(string(raw), "AVmatrix CLI Commands") {
-			t.Fatalf("installed skill %s did not copy packaged content:\n%s", path, raw)
-		}
+		assertInstalledEmbeddedBaseSkills(t, root)
 	}
 
 	claudeSettings := readTestJSONFile(t, filepath.Join(home, ".claude", "settings.json"))
@@ -535,7 +530,7 @@ func TestSetupCodexUsesCLIWhenAvailableAndSkipsMissingInstall(t *testing.T) {
 	}
 }
 
-func TestSetupInstallsFlatAndDirectorySkillsFromPackageRoot(t *testing.T) {
+func TestSetupInstallsEmbeddedSkillsInsteadOfPackageRootSkills(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("USERPROFILE", home)
@@ -550,6 +545,9 @@ func TestSetupInstallsFlatAndDirectorySkillsFromPackageRoot(t *testing.T) {
 	}
 	if err := os.WriteFile(filepath.Join(skillsRoot, "flat-skill.md"), []byte("# Flat Test Skill\n"), 0o644); err != nil {
 		t.Fatalf("write flat skill: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(skillsRoot, "avmatrix-pr-review.md"), []byte("# Retired Package Root Skill\n"), 0o644); err != nil {
+		t.Fatalf("write retired package skill: %v", err)
 	}
 	if err := os.WriteFile(filepath.Join(skillsRoot, "dir-skill", "SKILL.md"), []byte("# Directory Test Skill\n"), 0o644); err != nil {
 		t.Fatalf("write dir skill: %v", err)
@@ -567,14 +565,37 @@ func TestSetupInstallsFlatAndDirectorySkillsFromPackageRoot(t *testing.T) {
 	})
 
 	cursorSkillsRoot := filepath.Join(home, ".cursor", "skills")
+	assertInstalledEmbeddedBaseSkills(t, cursorSkillsRoot)
 	for _, rel := range []string{
 		filepath.Join("flat-skill", "SKILL.md"),
 		filepath.Join("dir-skill", "SKILL.md"),
 		filepath.Join("dir-skill", "references", "note.md"),
+		filepath.Join("avmatrix-pr-review", "SKILL.md"),
 	} {
-		if _, err := os.Stat(filepath.Join(cursorSkillsRoot, rel)); err != nil {
-			t.Fatalf("installed skill file missing %s: %v", rel, err)
+		if _, err := os.Stat(filepath.Join(cursorSkillsRoot, rel)); !os.IsNotExist(err) {
+			t.Fatalf("package-root skill should not be installed %s: %v", rel, err)
 		}
+	}
+}
+
+func assertInstalledEmbeddedBaseSkills(t *testing.T, root string) {
+	t.Helper()
+	files, err := aicontext.BaseSkillFiles()
+	if err != nil {
+		t.Fatalf("load embedded base skills: %v", err)
+	}
+	for _, skill := range files {
+		path := filepath.Join(root, skill.Name, "SKILL.md")
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read installed skill %s: %v", path, err)
+		}
+		if string(raw) != skill.Content {
+			t.Fatalf("installed skill %s does not match embedded content", path)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(root, "avmatrix-pr-review", "SKILL.md")); !os.IsNotExist(err) {
+		t.Fatalf("retired package-root skill should not be installed: %v", err)
 	}
 }
 
@@ -1334,6 +1355,7 @@ export function beta() {
 		!strings.Contains(string(agents), ".claude/skills/avmatrix/avmatrix-cli/SKILL.md") {
 		t.Fatalf("AGENTS.md missing AVmatrix context:\n%s", agents)
 	}
+	assertInstalledEmbeddedBaseSkills(t, filepath.Join(dir, ".claude", "skills", "avmatrix"))
 	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "generated")); !os.IsNotExist(err) {
 		t.Fatalf("default analyze should not create generated skills dir: %v", err)
 	}

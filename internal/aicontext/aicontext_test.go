@@ -190,6 +190,13 @@ func TestBaseSkillRegistryAndSourceFrontmatter(t *testing.T) {
 	if got, want := strings.Join(registeredBaseSkillIDs(), ","), strings.Join(expectedBaseSkillIDs(), ","); got != want {
 		t.Fatalf("base skill registry mismatch:\n got: %s\nwant: %s", got, want)
 	}
+	files, err := BaseSkillFiles()
+	if err != nil {
+		t.Fatalf("BaseSkillFiles: %v", err)
+	}
+	if len(files) != len(expectedBaseSkillIDs()) {
+		t.Fatalf("BaseSkillFiles returned %d files, want %d", len(files), len(expectedBaseSkillIDs()))
+	}
 	for _, skill := range baseSkills {
 		if strings.TrimSpace(skill.Task) == "" {
 			t.Fatalf("base skill %s has empty task", skill.Name)
@@ -213,6 +220,14 @@ func TestBaseSkillRegistryAndSourceFrontmatter(t *testing.T) {
 		}
 		if strings.Contains(content, "Use AVmatrix tools to accomplish this task.") {
 			t.Fatalf("base skill %s uses fallback placeholder content:\n%s", skill.Name, content)
+		}
+	}
+	for i, file := range files {
+		if file.Name != expectedBaseSkillIDs()[i] {
+			t.Fatalf("BaseSkillFiles[%d].Name = %q, want %q", i, file.Name, expectedBaseSkillIDs()[i])
+		}
+		if strings.TrimSpace(file.Content) == "" || strings.TrimSpace(file.Task) == "" || strings.TrimSpace(file.Description) == "" {
+			t.Fatalf("BaseSkillFiles[%d] missing metadata/content: %#v", i, file)
 		}
 	}
 }
