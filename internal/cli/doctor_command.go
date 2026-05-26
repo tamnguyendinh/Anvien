@@ -366,6 +366,10 @@ func classifyDoctorProcess(process doctorProcess) doctorProcess {
 		process.Role = "analyze"
 		process.Ownership = "user-command-or-job"
 		process.Notes = append(process.Notes, "should exit when analysis completes or is cancelled")
+	case strings.Contains(haystack, " embed") || strings.Contains(haystack, " embedding"):
+		process.Role = "embed"
+		process.Ownership = "user-command-or-job"
+		process.Notes = append(process.Notes, "should exit when embedding completes or is cancelled")
 	case strings.Contains(haystack, " serve") || strings.Contains(haystack, ".exe serve"):
 		process.Role = "serve"
 		if strings.Contains(haystack, "--port 4848") || strings.Contains(haystack, "--port=4848") {

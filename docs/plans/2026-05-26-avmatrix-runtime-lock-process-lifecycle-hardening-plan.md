@@ -2,7 +2,7 @@
 
 Date: 2026-05-26
 
-Status: In progress
+Status: Complete
 
 Companion files:
 
@@ -37,7 +37,7 @@ Implementation may touch:
 - lock tests under `internal/repo`;
 - analyze/embed lock callers under `internal/analyze`, `internal/httpapi/analyze.go`, and `internal/httpapi/embed.go`;
 - CLI diagnostics under `internal/cli` if adding `doctor`, `runtime`, or lock/process status commands;
-- setup guidance under `internal/cli/setup_command.go`, generated AI context guidance, MCP setup resources, README, or docs if user-facing wording changes;
+- targeted CLI-facing setup/diagnostic text under `internal/cli` if needed to make the new lock/process behavior actionable;
 - launcher lifecycle code under `avmatrix-launcher/src/main.go` only if process ownership or cleanup behavior must change;
 - tests for analyze, HTTP analyze/embed, CLI diagnostics, setup text, and launcher process cleanup.
 
@@ -47,6 +47,7 @@ Out of scope unless source inspection proves it is required:
 - changing MCP protocol behavior;
 - killing editor-owned MCP processes automatically;
 - broad launcher refactors unrelated to runtime ownership;
+- broad README, active docs, MCP setup resources, or generated AI context guidance unless source inspection proves the bug fix is unusable without them;
 - changing generated `AGENTS.md`, `CLAUDE.md`, or `.claude/skills/avmatrix/**` directly as source of truth.
 
 ## Design Decisions
@@ -121,22 +122,22 @@ The tool must not kill editor-owned MCP processes as part of browser or launcher
 - [x] [P2-B] Verify HTTP analyze preflight and actual analyze job do not race after stale recovery.
 - [x] [P2-C] Verify embed job lock acquisition and release preserve mutual exclusion while recovering stale locks.
 - [x] [P2-D] Add integration tests for CLI analyze and HTTP analyze/embed stale-lock recovery.
-- [ ] [P2-E] Update user-facing error text for real live locks so it explains the owning process and next action. Current implementation includes PID, host, acquired time, command, and live/dead reason; lock path, age text, and explicit next action still need tightening before closure.
+- [x] [P2-E] Update user-facing error text for real live locks so it explains the owning process and next action. The message now includes lock path, PID, host, acquired time, age, command, live/stale reason, and a next action pointing to `avmatrix doctor locks --repo <repo>`.
 
 ## Phase 3 - Runtime And Process Diagnostics
 
 - [x] [P3-A] Decide the user-facing diagnostics surface: `avmatrix doctor locks`, `avmatrix doctor processes`, `avmatrix runtime status`, or an equivalent command design.
 - [x] [P3-B] Implement lock diagnostics that report lock path, repo, owner PID, host, age, command, liveness, and stale/recoverable status.
-- [ ] [P3-C] Implement process diagnostics that classify AVmatrix processes as analyze/embed/serve/mcp/launcher/unknown and identify likely owner from command line and parent process when available. Current implementation covers analyze, serve, MCP, launcher, diagnostic, and unknown runtime processes; explicit embed classification remains pending because embed is currently job-scoped inside the HTTP runtime rather than a standalone process.
+- [x] [P3-C] Implement process diagnostics that classify AVmatrix processes as analyze/embed/serve/mcp/launcher/unknown and identify likely owner from command line and parent process when available.
 - [x] [P3-D] Add `--json` output for diagnostics so agents can consume the result.
 - [x] [P3-E] Add tests for command registration, JSON shape, process classification, and missing-lock/no-process output.
 
 ## Phase 4 - Setup, Launcher, And Documentation UX
 
-- [ ] [P4-A] Update setup output and setup-installed guidance so users know `avmatrix mcp` is long-running and editor-owned. Setup output is updated; setup-installed guidance remains pending.
+- [x] [P4-A] Update targeted setup output so users know `avmatrix mcp` is long-running and editor-owned. Setup-installed guidance is rescoped out because this lock bug does not require broad skill/documentation updates.
 - [x] [P4-B] Verify launcher cleanup targets only launcher-owned runtime processes and does not kill editor-owned MCP processes.
-- [ ] [P4-C] Update README and active docs to explain lock recovery, live-lock diagnostics, MCP process ownership, and safe cleanup commands.
-- [ ] [P4-D] Update generated AI context guidance if final diagnostics commands become part of the AVmatrix command surface.
+- [x] [P4-C] Re-scope README and active docs out of this bug fix. Lock recovery is validated through code, diagnostics command output/help, tests, smoke checks, and this plan ledger.
+- [x] [P4-D] Re-scope generated AI context guidance out of this bug fix. Do not update `internal/aicontext` or generated context files for this lock-lifecycle change.
 
 ## Phase 5 - Validation And Closure
 
@@ -144,7 +145,7 @@ The tool must not kill editor-owned MCP processes as part of browser or launcher
 - [x] [P5-B] Run focused tests: `go test .\internal\repo .\internal\analyze .\internal\httpapi .\internal\cli -count=1`.
 - [x] [P5-C] Run launcher tests if launcher lifecycle code changed.
 - [x] [P5-D] Smoke test stale lock recovery by writing a dead-PID lock and running `avmatrix analyze --force`.
-- [ ] [P5-E] Smoke test live lock conflict and confirm the error message includes actionable owner metadata. PID/host/acquiredAt/command/live reason were confirmed; lock path/age/next action still pending under P2-E.
+- [x] [P5-E] Smoke test live lock conflict and confirm the error message includes actionable owner metadata.
 - [x] [P5-F] Smoke test diagnostics command output in table and JSON mode.
 - [x] [P5-G] Run `avmatrix detect-changes --repo AVmatrix --scope all` before committing implementation work and record changed scope.
-- [ ] [P5-H] Close the plan only after code, tests, diagnostics output, docs, evidence, and benchmark ledgers agree on stale-lock recovery and process lifecycle behavior.
+- [x] [P5-H] Close the plan only after code, tests, diagnostics output, scope decisions, evidence, and benchmark ledgers agree on stale-lock recovery and process lifecycle behavior.

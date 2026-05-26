@@ -149,8 +149,10 @@ func TestAnalyzeRejectsHeldRepoLock(t *testing.T) {
 	if resp.StatusCode != http.StatusConflict {
 		t.Fatalf("analyze status = %d, want 409; body=%s", resp.StatusCode, body)
 	}
-	if !strings.Contains(string(body), "already in progress") || !strings.Contains(string(body), "pid=") {
-		t.Fatalf("analyze lock conflict body missing owner metadata: %s", body)
+	for _, want := range []string{"already in progress", "path=", "pid=", "age=", "next=", "doctor locks"} {
+		if !strings.Contains(string(body), want) {
+			t.Fatalf("analyze lock conflict body missing %q: %s", want, body)
+		}
 	}
 
 	select {

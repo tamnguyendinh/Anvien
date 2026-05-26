@@ -65,8 +65,10 @@ func TestEmbedEndpointRejectsHeldRepoLock(t *testing.T) {
 	if !strings.Contains(payload["error"], "already in progress") {
 		t.Fatalf("error = %#v", payload)
 	}
-	if !strings.Contains(payload["error"], "pid=") {
-		t.Fatalf("error missing lock owner metadata: %#v", payload)
+	for _, want := range []string{"path=", "pid=", "age=", "next=", "doctor locks"} {
+		if !strings.Contains(payload["error"], want) {
+			t.Fatalf("error missing lock owner metadata %q: %#v", want, payload)
+		}
 	}
 	if runner.called {
 		t.Fatalf("runner should not be called when lock is held")

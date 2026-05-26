@@ -65,6 +65,9 @@ func (e *LockHeldError) Error() string {
 		return ErrLockHeld.Error()
 	}
 	details := []string{}
+	if e.Info.Path != "" {
+		details = append(details, "path="+e.Info.Path)
+	}
 	if e.Info.PID > 0 {
 		details = append(details, fmt.Sprintf("pid=%d", e.Info.PID))
 	}
@@ -73,6 +76,9 @@ func (e *LockHeldError) Error() string {
 	}
 	if !e.Info.AcquiredAt.IsZero() {
 		details = append(details, "acquiredAt="+e.Info.AcquiredAt.Format(time.RFC3339Nano))
+	}
+	if age := lockInfoAge(e.Info, time.Now().UTC()); age > 0 {
+		details = append(details, "age="+formatLockAge(age))
 	}
 	if e.Info.Command != "" {
 		details = append(details, "command="+e.Info.Command)
@@ -83,6 +89,7 @@ func (e *LockHeldError) Error() string {
 	if e.Reason != "" {
 		details = append(details, "reason="+e.Reason)
 	}
+	details = append(details, "next="+lockHeldNextAction(e.Info))
 	if len(details) == 0 {
 		return ErrLockHeld.Error()
 	}
@@ -370,6 +377,40 @@ func lockInfoAge(info LockInfo, now time.Time) time.Duration {
 		return 0
 	}
 	return age
+}
+
+func formatLockAge(age time.Duration) string {
+	if age <= 0 {
+		return "0s"
+	}
+	if age < time.Second {
+		return age.Truncate(time.Millisecond).String()
+	}
+	return age.Truncate(time.Second).String()
+}
+
+func lockHeldNextAction(info LockInfo) string {
+	action := "wait for the owning process to finish"
+	if info.PID > 0 {
+		action = fmt.Sprintf("%s or stop pid %d if it is stale", action, info.PID)
+	} else {
+		action += " or stop the owning process if it is stale"
+	}
+	return action + "; inspect with avmatrix doctor locks --repo " + lockInfoRepoHint(info)
+}
+
+func lockInfoRepoHint(info LockInfo) string {
+	if info.Path == "" {
+		return "<repo>"
+	}
+	lockDir := filepath.Dir(info.Path)
+	if strings.EqualFold(filepath.Base(info.Path), "analyze.lock") && strings.EqualFold(filepath.Base(lockDir), ".avmatrix") {
+		repoPath := filepath.Dir(lockDir)
+		if repoPath != "" && repoPath != "." {
+			return repoPath
+		}
+	}
+	return "<repo>"
 }
 
 func currentHostname() string {

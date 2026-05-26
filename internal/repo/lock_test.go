@@ -125,6 +125,37 @@ func TestAcquireStorageLockKeepsForeignHostLock(t *testing.T) {
 	}
 }
 
+func TestLockHeldErrorIncludesActionableMetadata(t *testing.T) {
+	repoPath := t.TempDir()
+	lockPath := filepath.Join(repoPath, ".avmatrix", "analyze.lock")
+	err := (&LockHeldError{
+		Info: LockInfo{
+			Path:       lockPath,
+			PID:        424242,
+			Host:       "test-host",
+			Command:    "avmatrix analyze --force",
+			AcquiredAt: time.Now().Add(-90 * time.Minute),
+		},
+		Reason: "owning process is still running",
+	}).Error()
+
+	for _, want := range []string{
+		ErrLockHeld.Error(),
+		"path=" + lockPath,
+		"pid=424242",
+		"host=test-host",
+		"age=",
+		"command=avmatrix analyze --force",
+		"reason=owning process is still running",
+		"next=wait for the owning process to finish or stop pid 424242 if it is stale",
+		"avmatrix doctor locks --repo " + repoPath,
+	} {
+		if !strings.Contains(err, want) {
+			t.Fatalf("LockHeldError.Error() missing %q:\n%s", want, err)
+		}
+	}
+}
+
 func TestAcquireStorageLockRecoversMalformedOldLock(t *testing.T) {
 	lockPath := filepath.Join(t.TempDir(), ".avmatrix", "analyze.lock")
 	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {

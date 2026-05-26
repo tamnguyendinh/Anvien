@@ -162,6 +162,14 @@ func TestDoctorProcessClassificationDistinguishesMCPAndAnalyze(t *testing.T) {
 		t.Fatalf("analyze classification = %#v", analyze)
 	}
 
+	embed := classifyDoctorProcess(doctorProcess{
+		Name:        "avmatrix.exe",
+		CommandLine: `E:\AVmatrix-GO\avmatrix\bin\avmatrix.exe embed --repo AVmatrix`,
+	})
+	if embed.Role != "embed" || embed.Ownership != "user-command-or-job" || len(embed.Notes) == 0 {
+		t.Fatalf("embed classification = %#v", embed)
+	}
+
 	doctor := classifyDoctorProcess(doctorProcess{
 		Name:        "avmatrix.exe",
 		CommandLine: `E:\AVmatrix-GO\avmatrix\bin\avmatrix.exe doctor processes --json`,
