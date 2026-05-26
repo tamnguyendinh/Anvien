@@ -1,5 +1,9 @@
 # AVmatrix (version: `1.2.2`)
 
+```md
+## **AVmatrix is a code map for AI coding agents.**
+```
+
 ## Why Use AVmatrix?
 ```md
 > **AVmatrix builds one of the fastest and most accurate code intelligence graphs for large repositories.**
@@ -9,9 +13,6 @@ When you vibe code with AI, the context window is always limited. The longer a s
 
 AVmatrix solves this by building a connected map of your codebase: which files relate to which files, which functions call each other, and which modules belong to each execution flow. This helps AI agents understand the project structure faster, navigate relationships across the codebase, and spend less time rediscovering context.
 
-```md
-## In short: **AVmatrix is a code map for AI coding agents.**
-```
 
 ---
 
