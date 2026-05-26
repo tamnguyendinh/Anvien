@@ -10,9 +10,15 @@ import (
 func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	dir := t.TempDir()
 	stats := Stats{Nodes: 50, Edges: 100, Processes: 5}
-	skills := []GeneratedSkillInfo{{Name: "core", Label: "Core", SymbolCount: 12, FileCount: 3}}
+	staleGenerated := filepath.Join(dir, ".claude", "skills", "generated", "legacy", "SKILL.md")
+	if err := os.MkdirAll(filepath.Dir(staleGenerated), 0o755); err != nil {
+		t.Fatalf("mkdir stale generated skill: %v", err)
+	}
+	if err := os.WriteFile(staleGenerated, []byte("# Legacy Generated Skill\n"), 0o644); err != nil {
+		t.Fatalf("write stale generated skill: %v", err)
+	}
 
-	files, installedBaseSkills, err := GenerateAIContextFiles(dir, "TestProject", stats, skills, Options{})
+	files, installedBaseSkills, err := GenerateAIContextFiles(dir, "TestProject", stats, Options{})
 	if err != nil {
 		t.Fatalf("GenerateAIContextFiles: %v", err)
 	}
@@ -35,7 +41,6 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"TestProject",
 		"50 symbols, 100 relationships, 5 execution flows",
 		"AVmatrix is repo-agnostic",
-		".claude/skills/generated/core/SKILL.md",
 		"## Core Rule",
 		"MCP tools are AVmatrix commands exposed to AI agents",
 		"There is no single mandatory workflow",
@@ -70,6 +75,12 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 			t.Fatalf("AGENTS.md missing %q:\n%s", want, text)
 		}
 	}
+	if strings.Contains(text, ".claude/skills/generated/") {
+		t.Fatalf("AGENTS.md should not reference generated skills:\n%s", text)
+	}
+	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "generated")); !os.IsNotExist(err) {
+		t.Fatalf("generated skills directory should not be created: %v", err)
+	}
 	for _, retired := range []string{
 		"## Tools Quick Reference",
 		"## Impact Risk Levels",
@@ -98,7 +109,7 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		t.Fatalf("AGENTS.md contains forbidden context bypass flag:\n%s", text)
 	}
 
-	if _, _, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 10}, nil, Options{}); err != nil {
+	if _, _, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 10}, Options{}); err != nil {
 		t.Fatalf("second GenerateAIContextFiles: %v", err)
 	}
 	updated, err := os.ReadFile(agentsPath)
@@ -134,7 +145,7 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 
 func TestGenerateAIContextFilesNoStatsOmitsVolatileCounts(t *testing.T) {
 	dir := t.TempDir()
-	if _, _, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 50, Edges: 100, Processes: 5}, nil, Options{NoStats: true}); err != nil {
+	if _, _, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 50, Edges: 100, Processes: 5}, Options{NoStats: true}); err != nil {
 		t.Fatalf("GenerateAIContextFiles: %v", err)
 	}
 	content, err := os.ReadFile(filepath.Join(dir, "AGENTS.md"))
@@ -158,7 +169,7 @@ func TestGenerateAIContextFilesReplacesEmptyAndLegacyManagedContext(t *testing.T
 		}
 	}
 
-	if _, _, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 1}, nil, Options{}); err != nil {
+	if _, _, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 1}, Options{}); err != nil {
 		t.Fatalf("GenerateAIContextFiles empty files: %v", err)
 	}
 	agents, err := os.ReadFile(filepath.Join(dir, "AGENTS.md"))
@@ -173,7 +184,7 @@ func TestGenerateAIContextFilesReplacesEmptyAndLegacyManagedContext(t *testing.T
 	if err := os.WriteFile(filepath.Join(dir, "CLAUDE.md"), []byte(legacy), 0o644); err != nil {
 		t.Fatalf("write legacy CLAUDE.md: %v", err)
 	}
-	if _, _, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 2}, nil, Options{}); err != nil {
+	if _, _, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 2}, Options{}); err != nil {
 		t.Fatalf("GenerateAIContextFiles legacy files: %v", err)
 	}
 	claude, err := os.ReadFile(filepath.Join(dir, "CLAUDE.md"))

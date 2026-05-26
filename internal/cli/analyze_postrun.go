@@ -19,9 +19,8 @@ type analyzeRecordOptions struct {
 }
 
 type analyzeAIContextResult struct {
-	Files           []string
-	GeneratedSkills []aicontext.GeneratedSkillInfo
-	BaseSkillCount  int
+	Files          []string
+	BaseSkillCount int
 }
 
 func recordAnalyzeResult(result analyze.Result, options analyzeRecordOptions) (analyzeRegistration, error) {
@@ -69,15 +68,7 @@ func statsFromAnalyzeResult(result analyze.Result) *repo.Stats {
 	return &stats
 }
 
-func generateAnalyzeAIContext(result analyze.Result, projectName string, noStats bool, generateSkills bool) (analyzeAIContextResult, error) {
-	var skills []aicontext.GeneratedSkillInfo
-	if generateSkills {
-		var err error
-		skills, _, err = aicontext.GenerateSkillFiles(result.RepoPath, projectName, result.Graph)
-		if err != nil {
-			return analyzeAIContextResult{}, err
-		}
-	}
+func generateAnalyzeAIContext(result analyze.Result, projectName string, noStats bool) (analyzeAIContextResult, error) {
 	stats := aicontext.Stats{
 		Files:       result.Metrics.Files.Scanned,
 		Communities: result.Metrics.Communities.CommunitiesEmitted,
@@ -87,15 +78,14 @@ func generateAnalyzeAIContext(result analyze.Result, projectName string, noStats
 		stats.Nodes = len(result.Graph.Nodes)
 		stats.Edges = len(result.Graph.Relationships)
 	}
-	files, baseSkills, err := aicontext.GenerateAIContextFiles(result.RepoPath, projectName, stats, skills, aicontext.Options{
+	files, baseSkills, err := aicontext.GenerateAIContextFiles(result.RepoPath, projectName, stats, aicontext.Options{
 		NoStats: noStats,
 	})
 	if err != nil {
 		return analyzeAIContextResult{}, err
 	}
 	return analyzeAIContextResult{
-		Files:           files,
-		GeneratedSkills: skills,
-		BaseSkillCount:  len(baseSkills),
+		Files:          files,
+		BaseSkillCount: len(baseSkills),
 	}, nil
 }

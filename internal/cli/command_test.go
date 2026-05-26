@@ -810,7 +810,6 @@ func TestAnalyzeHelpShowsEmbeddingsFlag(t *testing.T) {
 	for _, want := range []string{
 		"--embeddings",
 		"enable embedding generation",
-		"--skills",
 		"--no-stats",
 		"--skip-git",
 		"--skip-compatibility-cross-file",
@@ -826,6 +825,19 @@ func TestAnalyzeHelpShowsEmbeddingsFlag(t *testing.T) {
 	forbiddenFlag := "--skip-" + "agents-md"
 	if strings.Contains(out, forbiddenFlag) {
 		t.Fatalf("analyze help exposed forbidden context bypass flag:\n%s", out)
+	}
+	if strings.Contains(out, "--skills") {
+		t.Fatalf("analyze help exposed removed generated-skill flag:\n%s", out)
+	}
+}
+
+func TestAnalyzeCommandRejectsGeneratedSkillsFlag(t *testing.T) {
+	_, _, err := executeForTest(t, "analyze", "--skills")
+	if err == nil {
+		t.Fatal("analyze --skills unexpectedly succeeded")
+	}
+	if !strings.Contains(err.Error(), "unknown flag: --skills") {
+		t.Fatalf("analyze --skills error = %v, want unknown flag", err)
 	}
 }
 
@@ -1079,7 +1091,6 @@ func TestAnalyzeNameCollisionRequiresExplicitDuplicateBypass(t *testing.T) {
 	t.Setenv(repo.HomeEnvName, home)
 	repoA := writeAnalyzeCollisionFixture(t)
 	repoB := writeAnalyzeCollisionFixture(t)
-	repoC := writeAnalyzeCollisionFixture(t)
 
 	out, errOut, err := executeForTest(t, "analyze", repoA, "--force", "--skip-git", "--no-stats", "--name", "shared")
 	if err != nil {
@@ -1103,14 +1114,6 @@ func TestAnalyzeNameCollisionRequiresExplicitDuplicateBypass(t *testing.T) {
 		t.Fatalf("allow-duplicate analyze returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
 	}
 	assertRegisteredRepoNames(t, home, []string{"shared", "shared"})
-
-	out, errOut, err = executeForTest(t, "analyze", repoC, "--force", "--skip-git", "--no-stats", "--name", "shared", "--skills")
-	if err == nil {
-		t.Fatal("analyze --skills unexpectedly bypassed the name collision guard")
-	}
-	if !strings.Contains(err.Error(), `registry name "shared" is already used`) {
-		t.Fatalf("--skills collision error missing registry name: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
-	}
 
 	entries, err := repo.NewStore(home).ReadRegistry()
 	if err != nil {
@@ -1174,65 +1177,6 @@ export function profiled() {
 		if info.Size() == 0 {
 			t.Fatalf("profile is empty: %s", path)
 		}
-	}
-}
-
-func TestAnalyzeCommandGeneratesAIContextAndSkills(t *testing.T) {
-	dir := initGitRepo(t)
-	home := t.TempDir()
-	t.Setenv(repo.HomeEnvName, home)
-	writeCLITestFile(t, dir, "src/main.ts", `
-export function alpha() {
-  return beta();
-}
-export function beta() {
-  return gamma();
-}
-export function gamma() {
-  return 1;
-}
-`)
-
-	out, errOut, err := executeForTest(t, "analyze", dir, "--force", "--skills")
-	if err != nil {
-		t.Fatalf("analyze --skills returned error: %v", err)
-	}
-	if errOut != "" {
-		t.Fatalf("analyze --skills wrote stderr: %q", errOut)
-	}
-	for _, want := range []string{"analyzed ", "skills: generated=", "base=6"} {
-		if !strings.Contains(out, want) {
-			t.Fatalf("analyze --skills output missing %q:\n%s", want, out)
-		}
-	}
-	for _, rel := range []string{
-		"AGENTS.md",
-		"CLAUDE.md",
-		filepath.Join(".claude", "skills", "avmatrix", "avmatrix-cli", "SKILL.md"),
-		filepath.Join(".avmatrix", "meta.json"),
-	} {
-		if _, err := os.Stat(filepath.Join(dir, rel)); err != nil {
-			t.Fatalf("%s missing: %v", rel, err)
-		}
-	}
-	agents, err := os.ReadFile(filepath.Join(dir, "AGENTS.md"))
-	if err != nil {
-		t.Fatalf("read AGENTS.md: %v", err)
-	}
-	if !strings.Contains(string(agents), "<!-- avmatrix:start -->") ||
-		!strings.Contains(string(agents), ".claude/skills/avmatrix/avmatrix-cli/SKILL.md") {
-		t.Fatalf("AGENTS.md missing AVmatrix context:\n%s", agents)
-	}
-	generatedDir := filepath.Join(dir, ".claude", "skills", "generated")
-	generatedEntries, err := os.ReadDir(generatedDir)
-	if err != nil {
-		t.Fatalf("generated skills dir missing: %v", err)
-	}
-	if len(generatedEntries) == 0 {
-		t.Fatalf("expected generated skills in %s", generatedDir)
-	}
-	if _, err := os.Stat(filepath.Join(home, "registry.json")); err != nil {
-		t.Fatalf("registry missing: %v", err)
 	}
 }
 

@@ -6,13 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/tamnguyendinh/avmatrix-go/internal/analyze"
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
 )
 
 const (
@@ -37,33 +33,18 @@ type Stats struct {
 	Processes   int
 }
 
-type GeneratedSkillInfo struct {
-	Name        string
-	Label       string
-	SymbolCount int
-	FileCount   int
-}
-
 type Result struct {
 	Files        []string
-	Skills       []GeneratedSkillInfo
-	SkillsPath   string
 	BaseSkillIDs []string
 }
 
 func Generate(repoPath string, projectName string, run analyze.Result, options Options) (Result, error) {
-	skills, skillsPath, err := GenerateSkillFiles(repoPath, projectName, run.Graph)
-	if err != nil {
-		return Result{}, err
-	}
-	files, baseSkills, err := GenerateAIContextFiles(repoPath, projectName, statsFromRun(run), skills, options)
+	files, baseSkills, err := GenerateAIContextFiles(repoPath, projectName, statsFromRun(run), options)
 	if err != nil {
 		return Result{}, err
 	}
 	return Result{
 		Files:        files,
-		Skills:       skills,
-		SkillsPath:   skillsPath,
 		BaseSkillIDs: baseSkills,
 	}, nil
 }
@@ -81,8 +62,8 @@ func statsFromRun(run analyze.Result) Stats {
 	return stats
 }
 
-func GenerateAIContextFiles(repoPath string, projectName string, stats Stats, skills []GeneratedSkillInfo, options Options) ([]string, []string, error) {
-	content := renderAVmatrixBlock(projectName, stats, skills, options.NoStats)
+func GenerateAIContextFiles(repoPath string, projectName string, stats Stats, options Options) ([]string, []string, error) {
+	content := renderAVmatrixBlock(projectName, stats, options.NoStats)
 	created := make([]string, 0, 3)
 
 	agentsResult, err := upsertSection(filepath.Join(repoPath, "AGENTS.md"), content)
@@ -102,20 +83,13 @@ func GenerateAIContextFiles(repoPath string, projectName string, stats Stats, sk
 	if len(baseSkills) > 0 {
 		created = append(created, fmt.Sprintf(".claude/skills/avmatrix/ (%d skills)", len(baseSkills)))
 	}
+	if err := removeGeneratedSkills(repoPath); err != nil {
+		return nil, nil, err
+	}
 	return created, baseSkills, nil
 }
 
-func renderAVmatrixBlock(projectName string, stats Stats, skills []GeneratedSkillInfo, noStats bool) string {
-	generatedRows := strings.Builder{}
-	for _, skill := range skills {
-		generatedRows.WriteString(fmt.Sprintf(
-			"\n| Work in the %s area (%d symbols) | `.claude/skills/generated/%s/SKILL.md` |",
-			skill.Label,
-			skill.SymbolCount,
-			skill.Name,
-		))
-	}
-
+func renderAVmatrixBlock(projectName string, stats Stats, noStats bool) string {
 	statsText := ""
 	if !noStats {
 		statsText = fmt.Sprintf(" (%d symbols, %d relationships, %d execution flows)", stats.Nodes, stats.Edges, stats.Processes)
@@ -220,7 +194,6 @@ func renderAVmatrixBlock(projectName string, stats Stats, skills []GeneratedSkil
 	builder.WriteString("| Rename / extract / split / refactor | `.claude/skills/avmatrix/avmatrix-refactoring/SKILL.md` |\n")
 	builder.WriteString("| Tools, resources, schema reference | `.claude/skills/avmatrix/avmatrix-guide/SKILL.md` |\n")
 	builder.WriteString("| Index, status, clean, and wiki capability CLI commands | `.claude/skills/avmatrix/avmatrix-cli/SKILL.md` |")
-	builder.WriteString(generatedRows.String())
 	builder.WriteString("\n" + endMarker)
 	return builder.String()
 }
@@ -339,343 +312,6 @@ func fallbackBaseSkillContent(skill baseSkill) string {
 	return fmt.Sprintf("---\nname: %s\ndescription: \"%s\"\n---\n\n# %s\n\n%s\n\nUse AVmatrix tools to accomplish this task.\n", skill.Name, skill.Description, skill.Name, skill.Description)
 }
 
-type communityInfo struct {
-	ID          string
-	Label       string
-	Cohesion    float64
-	SymbolCount int
-	Members     []graph.Node
-}
-
-func GenerateSkillFiles(repoPath string, projectName string, g *graph.Graph) ([]GeneratedSkillInfo, string, error) {
-	outputDir := filepath.Join(repoPath, ".claude", "skills", "generated")
-	if g == nil {
-		return nil, outputDir, nil
-	}
-	communities := significantCommunities(g)
-	if len(communities) == 0 {
-		return nil, outputDir, nil
-	}
-	if err := os.RemoveAll(outputDir); err != nil {
-		return nil, outputDir, err
-	}
-	if err := os.MkdirAll(outputDir, 0o755); err != nil {
-		return nil, outputDir, err
-	}
-
-	usedNames := make(map[string]struct{})
-	skills := make([]GeneratedSkillInfo, 0, len(communities))
-	for _, community := range communities {
-		files := filesForMembers(repoPath, community.Members)
-		name := uniqueKebab(community.Label, usedNames)
-		dir := filepath.Join(outputDir, name)
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return nil, outputDir, err
-		}
-		if err := os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte(renderSkill(projectName, name, community, files, processesForCommunity(g, community.ID))), 0o644); err != nil {
-			return nil, outputDir, err
-		}
-		skills = append(skills, GeneratedSkillInfo{
-			Name:        name,
-			Label:       community.Label,
-			SymbolCount: community.SymbolCount,
-			FileCount:   len(files),
-		})
-	}
-	return skills, outputDir, nil
-}
-
-func significantCommunities(g *graph.Graph) []communityInfo {
-	membersByCommunity := make(map[string][]graph.Node)
-	for _, relationship := range g.Relationships {
-		if relationship.Type != graph.RelMemberOf {
-			continue
-		}
-		member, ok := g.GetNode(relationship.SourceID)
-		if ok {
-			membersByCommunity[relationship.TargetID] = append(membersByCommunity[relationship.TargetID], member)
-		}
-	}
-	communities := make([]communityInfo, 0)
-	for _, node := range g.Nodes {
-		if node.Label != scopeir.NodeCommunity {
-			continue
-		}
-		members := membersByCommunity[node.ID]
-		symbolCount := intProperty(node.Properties, "symbolCount")
-		if symbolCount == 0 {
-			symbolCount = len(members)
-		}
-		if symbolCount < 3 {
-			continue
-		}
-		communities = append(communities, communityInfo{
-			ID:          node.ID,
-			Label:       firstNonEmpty(stringProperty(node.Properties, "heuristicLabel"), stringProperty(node.Properties, "label"), "Cluster"),
-			Cohesion:    floatProperty(node.Properties, "cohesion"),
-			SymbolCount: symbolCount,
-			Members:     members,
-		})
-	}
-	sort.Slice(communities, func(i, j int) bool {
-		if communities[i].SymbolCount != communities[j].SymbolCount {
-			return communities[i].SymbolCount > communities[j].SymbolCount
-		}
-		return communities[i].Label < communities[j].Label
-	})
-	if len(communities) > 20 {
-		return communities[:20]
-	}
-	return communities
-}
-
-type fileInfo struct {
-	Path    string
-	Symbols []string
-}
-
-func filesForMembers(repoPath string, members []graph.Node) []fileInfo {
-	byFile := make(map[string][]string)
-	for _, member := range members {
-		filePath := displayPath(repoPath, stringProperty(member.Properties, "filePath"))
-		if filePath == "" {
-			continue
-		}
-		byFile[filePath] = append(byFile[filePath], firstNonEmpty(stringProperty(member.Properties, "name"), member.ID))
-	}
-	files := make([]fileInfo, 0, len(byFile))
-	for path, symbols := range byFile {
-		sort.Strings(symbols)
-		files = append(files, fileInfo{Path: path, Symbols: symbols})
-	}
-	sort.Slice(files, func(i, j int) bool {
-		if len(files[i].Symbols) != len(files[j].Symbols) {
-			return len(files[i].Symbols) > len(files[j].Symbols)
-		}
-		return files[i].Path < files[j].Path
-	})
-	return files
-}
-
-func processesForCommunity(g *graph.Graph, communityID string) []graph.Node {
-	processes := make([]graph.Node, 0)
-	for _, node := range g.Nodes {
-		if node.Label != scopeir.NodeProcess {
-			continue
-		}
-		if containsString(stringSliceProperty(node.Properties, "communities"), communityID) {
-			processes = append(processes, node)
-		}
-	}
-	sort.Slice(processes, func(i, j int) bool {
-		left := intProperty(processes[i].Properties, "stepCount")
-		right := intProperty(processes[j].Properties, "stepCount")
-		if left != right {
-			return left > right
-		}
-		return stringProperty(processes[i].Properties, "heuristicLabel") < stringProperty(processes[j].Properties, "heuristicLabel")
-	})
-	return processes
-}
-
-func renderSkill(projectName string, name string, community communityInfo, files []fileInfo, processes []graph.Node) string {
-	lines := []string{
-		"---",
-		"name: " + name,
-		fmt.Sprintf("description: \"Skill for the %s area of %s. %d symbols across %d files.\"", community.Label, projectName, community.SymbolCount, len(files)),
-		"---",
-		"",
-		"# " + community.Label,
-		"",
-		fmt.Sprintf("%d symbols | %d files | Cohesion: %d%%", community.SymbolCount, len(files), int(community.Cohesion*100)),
-		"",
-		"## When to Use",
-		"",
-		fmt.Sprintf("- Modifying %s-related functionality", strings.ToLower(community.Label)),
-	}
-	if len(files) > 0 {
-		lines = append(lines, "- Working with code in `"+filepath.ToSlash(filepath.Dir(files[0].Path))+"/`")
-	}
-	lines = append(lines, "", "## Key Files", "", "| File | Symbols |", "|------|---------|")
-	for _, file := range limitFiles(files, 10) {
-		symbols := strings.Join(limitStrings(file.Symbols, 5), ", ")
-		if len(file.Symbols) > 5 {
-			symbols += fmt.Sprintf(" (+%d)", len(file.Symbols)-5)
-		}
-		lines = append(lines, fmt.Sprintf("| `%s` | %s |", file.Path, symbols))
-	}
-	lines = append(lines, "", "## Key Symbols", "", "| Symbol | Type | File | Line |", "|--------|------|------|------|")
-	for _, member := range limitNodes(community.Members, 20) {
-		lines = append(lines, fmt.Sprintf(
-			"| `%s` | %s | `%s` | %d |",
-			firstNonEmpty(stringProperty(member.Properties, "name"), member.ID),
-			member.Label,
-			displayPath("", stringProperty(member.Properties, "filePath")),
-			intProperty(member.Properties, "startLine"),
-		))
-	}
-	if len(processes) > 0 {
-		lines = append(lines, "", "## Execution Flows", "", "| Flow | Type | Steps |", "|------|------|-------|")
-		for _, process := range limitNodes(processes, 10) {
-			lines = append(lines, fmt.Sprintf(
-				"| `%s` | %s | %d |",
-				firstNonEmpty(stringProperty(process.Properties, "heuristicLabel"), stringProperty(process.Properties, "label"), process.ID),
-				stringProperty(process.Properties, "processType"),
-				intProperty(process.Properties, "stepCount"),
-			))
-		}
-	}
-	lines = append(lines, "", "## How to Explore", "", fmt.Sprintf("1. `query({query: \"%s\"})`", strings.ToLower(community.Label)), "2. Read key files listed above for implementation details", "")
-	return strings.Join(lines, "\n")
-}
-
-func displayPath(repoPath string, filePath string) string {
-	if filePath == "" {
-		return ""
-	}
-	filePath = filepath.Clean(filePath)
-	if repoPath != "" && filepath.IsAbs(filePath) {
-		if rel, err := filepath.Rel(repoPath, filePath); err == nil {
-			return filepath.ToSlash(rel)
-		}
-	}
-	return filepath.ToSlash(filePath)
-}
-
-func uniqueKebab(label string, used map[string]struct{}) string {
-	builder := strings.Builder{}
-	lastDash := false
-	for _, char := range strings.ToLower(label) {
-		valid := (char >= 'a' && char <= 'z') || (char >= '0' && char <= '9')
-		if valid {
-			builder.WriteRune(char)
-			lastDash = false
-			continue
-		}
-		if !lastDash {
-			builder.WriteByte('-')
-			lastDash = true
-		}
-	}
-	base := strings.Trim(builder.String(), "-")
-	if base == "" {
-		base = "skill"
-	}
-	if len(base) > 50 {
-		base = strings.TrimRight(base[:50], "-")
-	}
-	candidate := base
-	for index := 2; ; index++ {
-		if _, ok := used[candidate]; !ok {
-			used[candidate] = struct{}{}
-			return candidate
-		}
-		candidate = base + "-" + strconv.Itoa(index)
-	}
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if value != "" {
-			return value
-		}
-	}
-	return ""
-}
-
-func stringProperty(properties graph.NodeProperties, key string) string {
-	value, ok := properties[key]
-	if !ok || value == nil {
-		return ""
-	}
-	text, ok := value.(string)
-	if !ok {
-		return ""
-	}
-	return text
-}
-
-func intProperty(properties graph.NodeProperties, key string) int {
-	value, ok := properties[key]
-	if !ok || value == nil {
-		return 0
-	}
-	switch typed := value.(type) {
-	case int:
-		return typed
-	case int64:
-		return int(typed)
-	case float64:
-		return int(typed)
-	default:
-		return 0
-	}
-}
-
-func floatProperty(properties graph.NodeProperties, key string) float64 {
-	value, ok := properties[key]
-	if !ok || value == nil {
-		return 0
-	}
-	switch typed := value.(type) {
-	case float64:
-		return typed
-	case float32:
-		return float64(typed)
-	case int:
-		return float64(typed)
-	default:
-		return 0
-	}
-}
-
-func stringSliceProperty(properties graph.NodeProperties, key string) []string {
-	value, ok := properties[key]
-	if !ok || value == nil {
-		return nil
-	}
-	switch typed := value.(type) {
-	case []string:
-		return typed
-	case []any:
-		out := make([]string, 0, len(typed))
-		for _, item := range typed {
-			if text, ok := item.(string); ok {
-				out = append(out, text)
-			}
-		}
-		return out
-	default:
-		return nil
-	}
-}
-
-func containsString(values []string, target string) bool {
-	for _, value := range values {
-		if value == target {
-			return true
-		}
-	}
-	return false
-}
-
-func limitStrings(values []string, limit int) []string {
-	if len(values) <= limit {
-		return values
-	}
-	return values[:limit]
-}
-
-func limitNodes(values []graph.Node, limit int) []graph.Node {
-	if len(values) <= limit {
-		return values
-	}
-	return values[:limit]
-}
-
-func limitFiles(values []fileInfo, limit int) []fileInfo {
-	if len(values) <= limit {
-		return values
-	}
-	return values[:limit]
+func removeGeneratedSkills(repoPath string) error {
+	return os.RemoveAll(filepath.Join(repoPath, ".claude", "skills", "generated"))
 }
