@@ -2,7 +2,7 @@
 
 Date: 2026-05-26
 
-Status: Active
+Status: Complete
 
 Companion files:
 
@@ -160,5 +160,5 @@ Existing label and island/ring spacing behavior must remain intact. The fix must
 - [x] [P5-D] Run Web e2e/browser validation for graph spacing and labels.
 - [x] [P5-E] Run any focused backend or generated-contract validation only if implementation touches shared contracts or generated payloads.
 - [x] [P5-F] Run `avmatrix detect-changes --repo AVmatrix --scope all` and record changed scope before committing implementation work.
-- [ ] [P5-G] Commit the completed implementation slice, then continue if any checklist items remain.
-- [ ] [P5-H] Mark the plan complete only after code, tests, browser evidence, benchmark metrics, evidence ledger, and commit state agree that dense graph nodes no longer overlap and default spacing provides one rendered node diameter of edge gap.
+- [x] [P5-G] Commit the completed implementation slice, then continue if any checklist items remain.
+- [x] [P5-H] Mark the plan complete only after code, tests, browser evidence, benchmark metrics, evidence ledger, and commit state agree that dense graph nodes no longer overlap and default spacing provides one rendered node diameter of edge gap.

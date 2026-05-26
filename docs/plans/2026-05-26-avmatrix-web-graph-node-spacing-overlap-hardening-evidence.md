@@ -2,7 +2,7 @@
 
 Date: 2026-05-26
 
-Status: Active
+Status: Complete
 
 Companion files:
 
@@ -645,3 +645,22 @@ Result:
 
 - Exit code: `0`
 - No whitespace errors reported.
+
+## E21 - P5-G And P5-H Commit And Closure
+
+Date: 2026-05-26
+
+Status: complete
+
+Implementation commit:
+
+```text
+05d5ae4 Harden graph node spacing layout
+```
+
+Closure state:
+
+- Code implementation, focused geometry tests, full Web unit tests, Web e2e/browser screenshots, browser diagnostics, benchmark metrics, pre-commit change detection, and implementation commit are recorded.
+- Dense graph same-island nodes no longer overlap in the measured fixtures.
+- The default browser/runtime spacing contract records one rendered node diameter of edge-to-edge gap.
+- The implementation commit was completed before marking `P5-G` and `P5-H`.
