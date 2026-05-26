@@ -604,3 +604,166 @@ Before/after interpretation:
 
 - The Phase 1 benchmark already recorded the non-AI-context cross-repo case improving from `matched=4/8` and `missed=4` at baseline to `matched=8/8` and `missed=0` after the ranking fix.
 - P1-L adds an execution-flow-specific regression case on top of that fixed behavior. It proves the broad query still returns meaningful concept-to-flow/process candidates while keeping strong owner surfaces at the top.
+
+## Phase 1.5 Graph Health CLI Surface Evidence
+
+### P1.5-A Current Implementation Trace
+
+Status: recorded before graph-health CLI edits.
+
+Graph refresh:
+
+| Command | Result |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after P1-L commit; `files: scanned=766 parsed=569 unsupported=197 failed=0`, `nodes=86838 relationships=119165`. |
+
+Source trace:
+
+| Surface | Files and symbols |
+|---|---|
+| Core graph-health computation | `internal/graphhealth/compute.go`: `Compute`, `ComputeSummary`, `computeComponents`, `reachableNodes`, `largestDetachedComponents`, `componentSummary`, `addNodeHealthToSummary`. |
+| Graph-health policy and data contract | `internal/graphhealth/policy.go`: `PolicyVersion`, `IsCounted`, `CountedEdgeTypes`, `StructuralEdgeTypes`, topology statuses, confidence levels, diagnostic classifications/actionability, resolution health buckets, `NodeHealth`, `ComponentSummary`, `Summary`. |
+| Topology/count metadata | `ComputeSummary` builds counted incoming/outgoing maps from `IsCounted`, excluded edge counts from structural/other categories, component IDs/sizes/root reachability, root nodes, detached components, expected isolation reasons, diagnostics, confidence, resolution confidence, and summary inventory counts. |
+| HTTP graph payload | `internal/httpapi/graph.go`: `graphPayload` calls `graphhealth.ComputeSummary` and returns `graphHealth` summary with graph nodes/relationships and semantic status. |
+| HTTP graph-health report | `internal/httpapi/graph.go`: `handleGraphHealthReport`, `graphHealthReportCandidates`, `graphHealthReportPriority`, `graphHealthReportPriorityRank`, `graphHealthReportLimit`. Candidate priority order is topology `no_incoming`, `detached_component`, `true_isolated`, `no_outgoing`, `unknown_connectivity`, then diagnostic `unresolved_reference`. |
+| HTTP graph-health explain | `internal/httpapi/graph.go`: `handleGraphHealthExplain`, `graphHealthNodeExplain`, `graphHealthComponentExplain`, `graphHealthNodeRelationships`, `graphHealthComponentRelationshipSamples`, `countComponentCountedEdges`, `graphHealthDiagnosticCount`. Explain supports exactly one of `nodeId` or `componentId`, strips content unless requested, and returns counted/excluded relationship samples. |
+| Web filters and labels | `avmatrix-web/src/lib/graph-health-filters.ts`: `getNodeGraphHealth`, `graphHealthMatchesFilters`, `graphNodeMatchesHealthFilters`, topology/reason/diagnostic/confidence labels, descriptions, next-action text, and count helpers. |
+| CLI root registration | `internal/cli/command.go`: `NewRootCommand` currently registers `query-health`, `resolution-inventory`, and `source-site-accuracy`, but not `graph-health`. |
+| Existing CLI graph-health-adjacent surface | `internal/cli/resolution_inventory_command.go`: `runResolutionInventory` already calls `graphhealth.ComputeSummary`, but it reports resolution inventory, not graph-health topology/report/explain/components. |
+
+AVmatrix context checks:
+
+| Symbol | Key incoming/current ownership |
+|---|---|
+| `ComputeSummary` | Called by `graphhealth.Compute`, `httpapi.graphPayload`, `httpapi.handleGraphHealthReport`, `cli.runResolutionInventory`, and graphhealth tests. |
+| `graphHealthReportCandidates` | Owned by `internal/httpapi/graph.go`; called by `handleGraphHealthReport` and HTTP tests. |
+| `graphHealthNodeExplain` | Owned by `internal/httpapi/graph.go`; called by `handleGraphHealthExplain`. |
+| `graphHealthComponentExplain` | Owned by `internal/httpapi/graph.go`; called by `handleGraphHealthExplain`. |
+| `NewRootCommand` | Owns CLI command registration; no graph-health command is present. |
+
+Trace conclusion:
+
+- Graph-health computation is already shared under `internal/graphhealth`.
+- Report/explain/component behavior is currently HTTP-owned even though CLI needs the same semantics. P1.5-C should move that behavior into a reusable `graphhealth` owner and leave HTTP as a thin adapter so CLI and API do not drift.
+- `resolution-inventory` must remain separate: it reports resolution gap inventory and uses graph-health summary, but it is not a substitute for topology/report/explain/components graph-health triage.
+
+### P1.5-B Graph Health CLI Contract
+
+Status: defined before graph-health CLI edits.
+
+Command family:
+
+| Command | Purpose | Required/optional inputs | Output |
+|---|---|---|---|
+| `avmatrix graph-health summary --repo <repo> [--json]` | Compute and print graph-level topology, component, diagnostic, confidence, and resolution-health summary from the selected indexed graph. | `--repo` optional only when a single repo is indexed. Requires fresh analyze output. | Table by default; full `graphhealth.Summary` JSON with input metadata when `--json`. |
+| `avmatrix graph-health report --repo <repo> [--limit <n>] [--include-expected] [--json]` | Print triage candidates using the same priority rules as HTTP report. | `--limit` defaults to HTTP default and is capped at the same max; `--include-expected` includes expected-isolated nodes. Requires fresh analyze output. | Table by default; JSON report with summary, total/returned candidate counts, candidates, priority/dimension, topology/confidence/diagnostics/component fields. |
+| `avmatrix graph-health components --repo <repo> [--limit <n>] [--json]` | List component-level graph-health summaries for detached or otherwise notable components. | `--limit` defaults to a bounded list. Requires fresh analyze output. | Table by default; JSON component summaries with component ID, node count, counted edge count, detached/reachable flags, root/sample node IDs, and health/resolution counts. |
+| `avmatrix graph-health explain <node-id-or-name> --repo <repo> [--json]` | Explain one graph node by exact ID or unique node name. | Positional selector; if ambiguous or missing, fail clearly. Requires fresh analyze output. | Table by default; JSON node explain with node, health, counted incoming/outgoing relationships, excluded relationships. |
+| `avmatrix graph-health explain --component <component-id> --repo <repo> [--json]` | Explain one component by component ID. | `--component` must not be combined with a node selector. Requires fresh analyze output. | Table by default; JSON component explain with component aggregate counts, sample nodes, counted relationship samples, excluded relationship samples, and sample limit. |
+
+Contract constraints:
+
+- CLI must load the selected repo's indexed `graph.json` from the registry/storage path, not a separately supplied ad hoc graph path, because the user-facing contract is repo-oriented.
+- Freshness behavior must match current query-health expectations: if indexed commit and current commit differ, fail and tell the user to run `avmatrix analyze --force`.
+- Report/explain/components must reuse shared graph-health semantics moved from HTTP, including topology status, counted/excluded edge policy, confidence, diagnostics, resolution confidence, component membership, priority ordering, and sample limits.
+- Missing graph returns a clear "Graph not found. Run: avmatrix analyze --force" style error.
+- Unknown node selector returns "Graph node not found"; ambiguous node name returns an ambiguity error listing candidate IDs; unknown component returns "Graph component not found".
+- Table output must include stable identifiers users can feed into `explain`, especially node IDs and component IDs.
+
+### P1.5-C/D/E Shared Graph-Health CLI Implementation Evidence
+
+Status: implementation and focused validation complete; guidance/smoke remain in P1.5-F/G.
+
+Blast radius:
+
+| Symbol | Risk | Interpretation |
+|---|---:|---|
+| `graphHealthReportCandidates` | CRITICAL | HTTP graph-health report priority path; refactored into shared `graphhealth.ReportCandidates` with HTTP wrapper kept for tests/parity. |
+| `graphHealthNodeExplain` | CRITICAL | HTTP graph-health node explain path; moved to shared `graphhealth.ExplainNode`. |
+| `graphHealthComponentExplain` | CRITICAL | HTTP graph-health component explain path; moved to shared `graphhealth.ExplainComponent`. |
+| `graphHealthReportPriority` | CRITICAL | Shared triage ordering path; moved to `graphhealth.ReportPriority` / `ReportPriorityRank`. |
+| `NewRootCommand` | CRITICAL | CLI launcher registration point; scoped edit only added `newGraphHealthCommand()` to the command tree. |
+| `handleGraphHealthExplain` | LOW | API adapter now calls shared graphhealth explain and still strips response content/internal diagnostics through `graphNodeForResponse`. |
+| `handleGraphHealthReport` | LOW | API adapter now calls shared graphhealth report builder. |
+
+Implementation:
+
+| Task | Evidence |
+|---|---|
+| P1.5-C shared owner | Added `internal/graphhealth/report.go` with `BuildReport`, `ReportCandidates`, `ReportPriority`, `ExplainNode`, `ExplainComponent`, `ComponentSummaries`, shared response structs, report limit constants, counted/excluded relationship sampling, component aggregation, and priority ordering. |
+| HTTP parity | `internal/httpapi/graph.go` now aliases shared graphhealth response/candidate types, uses `graphhealth.BuildReport`, `graphhealth.ExplainNode`, and `graphhealth.ExplainComponent`, and keeps only HTTP-specific response sanitization. |
+| P1.5-D CLI command surface | Added `internal/cli/graph_health_command.go` and registered `avmatrix graph-health` in `NewRootCommand`. Subcommands implemented: `summary`, `report`, `components`, `explain`; all support table output and `--json`, load selected repo graph from registry storage, and enforce stale commit/missing graph errors. |
+| Node/component selectors | `explain` accepts exact node ID first, then unique node `name`; ambiguous names list matching IDs; `--component` is mutually exclusive with positional node selector. |
+| P1.5-E tests | Added `internal/cli/graph_health_command_test.go` covering summary counts, report ordering/limit, table/JSON output, components output, explain by ID/name/component, missing node, ambiguous name, missing graph, stale commit, and help registration. Existing HTTP graph-health tests continue to validate API semantics through shared wrappers. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass; Go build and Web production build completed. Vite emitted existing chunk-size/dynamic-import warnings only. |
+| `go test .\internal\graphhealth .\internal\httpapi .\internal\cli -count=1` | pass; `graphhealth` 1.158s, `httpapi` 2.327s, `cli` 8.963s. |
+
+### P1.5-F Graph-Health Guidance Evidence
+
+Status: complete.
+
+Blast radius:
+
+| Symbol | Risk | Interpretation |
+|---|---:|---|
+| `renderAVmatrixBlock` | CRITICAL | Analyze-generated AGENTS/CLAUDE context path; scoped edit only adds `graph-health` to graph-refresh guidance and command selection. |
+
+Updated guidance sources:
+
+| File | Change |
+|---|---|
+| `internal/aicontext/aicontext.go` | Added `graph-health` to freshness-sensitive graph command list and command selection guide. |
+| `internal/aicontext/skills/avmatrix-cli.md` | Added `graph-health` command examples for summary/report/components/explain and clarified graph-quality command boundaries. |
+| `internal/aicontext/skills/avmatrix-guide.md` | Added `avmatrix graph-health` to CLI graph-quality diagnostic commands and clarified that it answers topology/component/diagnostic triage, not retrieval or source-site accuracy. |
+| `README.md` | Added `avmatrix graph-health` to direct graph tools and semantic graph diagnostics with summary/report/components examples. |
+| `internal/aicontext/aicontext_test.go` | Updated generated context expectations for `graph-health`. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass after guidance changes; same existing Vite chunk-size/dynamic-import warnings only. |
+| `go test .\internal\aicontext .\internal\cli -count=1` | pass; `aicontext` 0.769s, `cli` 8.412s. |
+
+Note: dedicated `internal/aicontext/skills/avmatrix-graph-quality.md` does not exist yet in this phase; the new dedicated graph-quality skill remains part of the later Phase 3 skill expansion. The current generated guidance surfaces that exist today now mention the implemented `graph-health` CLI behavior.
+
+### P1.5-G Real Graph-Health CLI Smoke Evidence
+
+Status: complete.
+
+Fresh graph:
+
+| Command | Result |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass; `files: scanned=769 parsed=572 unsupported=197 failed=0`, `nodes=87382 relationships=120022`, graph path `E:\AVmatrix-GO\.avmatrix\graph.json`. |
+
+Smoke commands:
+
+| Command | Representative output |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe graph-health --help` | Help lists `components`, `explain`, `report`, `summary`, and persistent `--repo`. |
+| `.\avmatrix\bin\avmatrix.exe graph-health summary --repo AVmatrix` | `nodes=87382 relationships=120022 countedRelationships=25951 components=79089 detachedComponents=62 rootNodes=852`; topology counts include `connected:2897`, `detached_component:236`, `no_incoming:1743`, `no_outgoing:3482`, `true_isolated:79024`; diagnostics `unresolved_reference:63576`. |
+| `.\avmatrix\bin\avmatrix.exe graph-health summary --repo AVmatrix --json` | JSON parse confirmed `summary.nodeCount=87382`, `totals.relationships=120022`, `summary.countedRelationshipCount=25951`, `summary.componentCount=79089`, `summary.detachedComponentCount=62`, `summary.unresolvedReferenceCount=63576`. |
+| `.\avmatrix\bin\avmatrix.exe graph-health report --repo AVmatrix --limit 20 --json` | JSON parse confirmed `totalCandidates=47316`, `returnedCandidates=20`; first candidate `File:avmatrix-web/src/components/RightPanel.tsx`, priority `no_incoming`, dimension `topology`, topology `no_incoming`, confidence `candidate`, component `component_000001`. |
+| `.\avmatrix\bin\avmatrix.exe graph-health components --repo AVmatrix --limit 20 --json` | JSON parse confirmed `totalComponents=79089`, `returnedComponents=20`; first listed component `component_000936`, `nodeCount=21`, `countedEdgeCount=53`, `detached=true`, `reachableFromRoot=false`. |
+| `.\avmatrix\bin\avmatrix.exe graph-health explain "File:avmatrix-web/src/components/RightPanel.tsx" --repo AVmatrix` | Table output: `topology=no_incoming`, `confidence=candidate`, `incoming=0`, `outgoing=6`, `excluded=6`, `component="component_000001"`, `resolutionConfidence=unknown`, `resolutionGaps=0`. |
+| `.\avmatrix\bin\avmatrix.exe graph-health explain "File:avmatrix-web/src/components/RightPanel.tsx" --repo AVmatrix --json` | JSON parse confirmed node explain with `kind=node`, same node ID, topology `no_incoming`, incoming `0`, outgoing `6`, component `component_000001`, excluded relationships `6`. |
+| `.\avmatrix\bin\avmatrix.exe graph-health explain --component component_000001 --repo AVmatrix --json` | JSON parse confirmed component explain with `kind=component`, `nodeCount=7990`, `countedEdgeCount=25322`, `detached=false`, `reachableFromRoot=true`, `sampleNodes=20`. |
+| `.\avmatrix\bin\avmatrix.exe graph-health explain "__missing_graph_health_node__" --repo AVmatrix` | Expected failure; exit code `1`, output `graph node not found: __missing_graph_health_node__`. |
+
+Limitations:
+
+- The CLI freshness check compares indexed commit to current commit, matching existing `query-health` behavior. It does not treat uncommitted working tree edits as stale by itself; the workflow rule still requires `avmatrix analyze --force` before graph-based work.
+
+Pre-commit checks:
+
+| Command | Result |
+|---|---|
+| `git diff --check` | pass. |
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after evidence/benchmark updates; `files: scanned=769 parsed=572 unsupported=197 failed=0`, `nodes=87383 relationships=120023`. |
+| `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass; summary `changed_files=11`, `changed_count=79`, `affected_count=35`, `risk_level=critical`; changed App Layers `api=36`, `backend=5`, `backend_test=12`, `docs=26`; affected App Layers `api=1`, `backend=1`, `mixed=33`. Critical scope is expected for shared graph-health/API/CLI/generator changes. |

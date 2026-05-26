@@ -19,7 +19,7 @@ Use `pending` only when a future phase has not measured that value yet.
 
 ## B0 - Skill Source And Generated Inventory
 
-Status: baseline recorded; final pending.
+Status: baseline recorded; P1.5 guidance size update recorded; final pending.
 
 | Metric | Unit | Baseline | Latest | Delta | Final target |
 |---|---:|---:|---:|---:|---:|
@@ -27,20 +27,20 @@ Status: baseline recorded; final pending.
 | Registered base skills | skills | 6 | 6 | 0 | 11 |
 | Generated `.claude/skills/avmatrix/**/SKILL.md` files | files | 6 | 6 | 0 | 11 |
 | Root generated Skills table rows | rows | 6 | 6 | 0 | 11 |
-| Source skill total size | bytes | 17,499 | 17,499 | 0 | record |
-| Generated skill total size | bytes | 17,499 | 17,499 | 0 | equal source total |
+| Source skill total size | bytes | 17,499 | 18,843 | +1,344 | record |
+| Generated skill total size | bytes | 17,499 | 18,843 | +1,344 | equal source total |
 | Source/generated matching hashes | pairs | 6 | 6 | 0 | final generated skill count |
 | Source skills with `name` frontmatter | files | 6 | 6 | 0 | final source skill count |
 | Source skills with `description` frontmatter | files | 6 | 6 | 0 | final source skill count |
 
 ## B1 - Command Surface Inventory
 
-Status: baseline recorded; Phase 1 query-lane metrics recorded; final pending.
+Status: baseline recorded; Phase 1 query-lane metrics and P1.5 graph-health command metrics recorded; final pending.
 
 | Metric | Unit | Baseline | Latest | Delta | Final target |
 |---|---:|---:|---:|---:|---:|
-| Visible built CLI top-level commands | commands | 24 | 24 | 0 | >= 24 |
-| Visible source CLI top-level commands | commands | 24 | 24 | 0 | >= 24 |
+| Visible built CLI top-level commands | commands | 24 | 25 | +1 | >= 25 |
+| Visible source CLI top-level commands | commands | 24 | 25 | +1 | >= 25 |
 | Hidden lifecycle command families from source | families | 2 | 2 | 0 | record |
 | MCP tools from source | tools | 15 | 15 | 0 | record |
 | MCP fixed resources from source | resources | 2 | 2 | 0 | record |
@@ -50,9 +50,30 @@ Status: baseline recorded; Phase 1 query-lane metrics recorded; final pending.
 | Query explain metadata fields validated | fields | 0 | 6 | +6 | >= 6 |
 | Query-health cases with lane evidence fields | cases | 0 | 9 | +9 | >= 9 |
 | Normal query compatibility failures | failures | 0 | 0 | 0 | 0 |
-| First-class graph-health CLI command families | families | 0 | 0 | 0 | >= 1 |
+| First-class graph-health CLI command families | families | 0 | 1 | +1 | >= 1 |
 | MCP prompt templates reviewed | prompts | 0 | 0 | 0 | 2 |
 | Accepted CLI parity gaps implemented | gaps | 0 | pending | pending | pending |
+
+P1.5 graph-health CLI smoke inventory:
+
+| Metric | Unit | Result |
+|---|---:|---:|
+| Analyze scanned files before smoke | files | 769 |
+| Analyze parsed files before smoke | files | 572 |
+| Analyze graph nodes before smoke | nodes | 87,382 |
+| Analyze graph relationships before smoke | relationships | 120,022 |
+| Graph-health counted relationships | relationships | 25,951 |
+| Graph-health components | components | 79,089 |
+| Graph-health detached components | components | 62 |
+| Graph-health root nodes | nodes | 852 |
+| Graph-health unresolved references | references | 63,576 |
+| Graph-health report total candidates | candidates | 47,316 |
+| Graph-health report returned candidates at `--limit 20` | candidates | 20 |
+| Graph-health component list total components | components | 79,089 |
+| Graph-health component list returned at `--limit 20` | components | 20 |
+| First report candidate counted incoming | relationships | 0 |
+| First report candidate counted outgoing | relationships | 6 |
+| First explained component sample nodes | nodes | 20 |
 
 ## B2 - Query Reliability Metrics
 

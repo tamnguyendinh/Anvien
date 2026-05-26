@@ -62,9 +62,12 @@ For graph quality checks, use these CLI-only diagnostic commands:
 
 | Command | Use |
 |---|---|
+| `avmatrix graph-health` | Audit topology health, diagnostics, component membership, confidence, resolution-health overlays, and prioritized graph-health candidates from the indexed repo graph. |
 | `avmatrix query-health` | Benchmark query retrieval against expected files and symbols, with separate threshold pass and exact target-coverage pass results. |
 | `avmatrix resolution-inventory` | Report persisted ResolutionGap and Resolution Health counts, including classification/actionability and non-actionable builtin/standard-library/test-framework breakdown. |
 | `avmatrix source-site-accuracy` | Report source-site inventory and proof-based resolved-edge accuracy metrics, with optional golden fixture validation. |
+
+Use these commands for different graph-quality questions: `graph-health` answers topology/component/diagnostic triage, `query-health` answers retrieval quality, `resolution-inventory` answers persisted gap inventory, and `source-site-accuracy` answers proof/source-site accuracy.
 
 ## Semantic Graph Fields
 

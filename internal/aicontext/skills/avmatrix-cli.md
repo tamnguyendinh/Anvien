@@ -64,6 +64,12 @@ Maps current git changes to affected symbols and execution flows. Run before com
 
 Runs a query retrieval benchmark suite and reports hit@5, hit@10, expected files/symbols, actual top results, noise reason, and two separate pass results. `thresholdPassed` means the query returned enough expected targets to be usable for navigation; `exactPassed` means no expected file/symbol target was missed. Use `--fail-on-threshold` for usable-retrieval gates and `--fail-on-exact` for strict target-coverage gates.
 
+### graph-health
+
+`avmatrix graph-health summary --repo MyRepo --json`
+
+Audits computed topology health, component membership, diagnostic counts, confidence buckets, and resolution-health overlays for an indexed repo. Use `graph-health report --repo MyRepo --limit 20 --json` for prioritized topology/diagnostic triage candidates, `graph-health components --repo MyRepo --json` for component summaries, and `graph-health explain <node-id-or-name> --repo MyRepo --json` or `graph-health explain --component <component-id> --repo MyRepo --json` for traceable evidence.
+
 ### resolution-inventory
 
 `avmatrix resolution-inventory --graph .avmatrix/graph.json --out .tmp/resolution-inventory.json`
@@ -88,3 +94,4 @@ Runs read-only graph queries against the indexed graph.
 - Prefer MCP tools when available; use CLI commands as a fallback or for smoke validation.
 - Smoke tests that validate generated root context files must run `avmatrix analyze --force` normally so `AGENTS.md` and `CLAUDE.md` are refreshed.
 - Do not treat unresolved or diagnostic references as proven topology. Persisted ResolutionGap entities are diagnostic graph facts, not fake resolved symbols.
+- Keep graph-quality commands distinct: `graph-health` audits topology, components, confidence, and diagnostics; `query-health` measures retrieval quality; `resolution-inventory` reports persisted ResolutionGap/Resolution Health inventory; `source-site-accuracy` checks proof/source-site accuracy.

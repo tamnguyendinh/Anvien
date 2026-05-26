@@ -67,6 +67,7 @@ func NewRootCommand(options Options) *cobra.Command {
 		newSourceSiteAccuracyCommand(),
 		newResolutionInventoryCommand(),
 		newQueryHealthCommand(),
+		newGraphHealthCommand(),
 		newCleanCommand(),
 		newGroupCommand(),
 		newIndexCommand(),

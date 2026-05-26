@@ -80,6 +80,7 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 		"cypher",
 		"detect-changes",
 		"doctor",
+		"graph-health",
 		"group",
 		"impact",
 		"index",
@@ -696,6 +697,8 @@ func TestDirectToolHelpShowsCompatibilityFlags(t *testing.T) {
 	}{
 		{[]string{"query", "--help"}, []string{"avmatrix query <search_query>", "--repo", "--context", "--goal", "--limit", "--content", "--lanes", "--explain", "--json"}},
 		{[]string{"query-health", "--help"}, []string{"avmatrix query-health", "--suite", "--repo", "--out", "--json", "--fail-on-threshold", "--fail-on-exact"}},
+		{[]string{"graph-health", "--help"}, []string{"avmatrix graph-health", "summary", "report", "components", "explain", "--repo"}},
+		{[]string{"graph-health", "report", "--help"}, []string{"avmatrix graph-health report", "--limit", "--include-expected", "--json", "--repo"}},
 		{[]string{"context", "--help"}, []string{"avmatrix context [name]", "--repo", "--uid", "--file", "--content"}},
 		{[]string{"impact", "--help"}, []string{"--direction", "--repo", "--uid", "--depth", "--include-tests"}},
 		{[]string{"cypher", "--help"}, []string{"--repo"}},
