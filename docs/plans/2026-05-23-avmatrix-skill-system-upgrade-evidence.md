@@ -987,3 +987,111 @@ Pre-commit checks:
 | `git diff --check` | pass. |
 | `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after checklist/evidence/benchmark updates; `files: scanned=772 parsed=575 unsupported=197 failed=0`, `nodes=87883 relationships=120603`. |
 | `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass; summary `changed_files=11`, `changed_count=49`, `affected_count=9`, `risk_level=high`; changed App Layers `api=15`, `api_test=8`, `backend=7`, `backend_test=2`, `docs=17`; affected App Layers `api=7`, `backend=1`, `mixed=1`. High scope is expected for shared MCP prompt dispatch, MCP resource text, AI-context generator, docs, and tests. |
+
+## Phase 2 Graph Labeling And Visual Orientation Evidence
+
+Status: active.
+
+### P2-A Problem Screenshot Evidence
+
+| Evidence | Result |
+|---|---|
+| `reports/problem/screenshot_1779517751.png` | File exists; `341,738` bytes; last modified `2026-05-26 14:54:54`. |
+| Image dimensions | `1314x826`, `Format24bppRgb`. |
+| Product issue recorded from screenshot | The graph view shows visible macro rings and node islands, but the rings and islands do not carry direct readable names on the graph canvas. Users must infer area meaning from color, spatial grouping, legend/filter state, or side-panel context instead of reading labels on the graph itself. |
+
+### P2-B Web Graph Owner Trace
+
+Fresh graph:
+
+| Command | Result |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass before Web graph trace; `files: scanned=772 parsed=575 unsupported=197 failed=0`, `nodes=87885 relationships=120605`. |
+
+AVmatrix trace:
+
+| Command | Finding |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe query "web graph layout ring island Sigma labels filters graph adapter" --repo AVmatrix --limit 10` | Top owners include `knowledgeGraphToGraphology`, `useSigma`, `filterGraphByLabels`, `applyFilterBasedClusteredLayout`, `graphHealthMatchesFilters`, `graphNodeMatchesHealthFilters`, `buildLayoutRingDiagnostics`, and `createLayoutRingBounds`. |
+| `.\avmatrix\bin\avmatrix.exe context "GraphCanvas" --repo AVmatrix` | `GraphCanvas` lives in `avmatrix-web/src/components/GraphCanvas.tsx`; it is imported by `App.tsx` and an existing selection-performance unit test. |
+| `.\avmatrix\bin\avmatrix.exe context "useSigma" --repo AVmatrix` | `useSigma` lives in `avmatrix-web/src/hooks/useSigma.ts`; it owns Sigma creation, label renderer settings, reducers, camera controls, graph replacement, and manual layout optimization. |
+| `.\avmatrix\bin\avmatrix.exe context "filterGraphByLabels" --repo AVmatrix` | `filterGraphByLabels` lives in `avmatrix-web/src/lib/graph-adapter.ts`; it sets node `hidden` from node label, graph-health filters, and semantic filters. |
+| `.\avmatrix\bin\avmatrix.exe context "useGraphState" --repo AVmatrix` | `useGraphState` lives in `avmatrix-web/src/hooks/app-state/graph.tsx`; it owns `visibleLabels`, `graphHealthFilters`, `semanticFilters`, depth filter state, selected node state, and graph-link visibility. |
+| `.\avmatrix\bin\avmatrix.exe impact "GraphCanvas" --repo AVmatrix --direction upstream` | LOW; direct dependent `App.tsx`, depth-2 dependent `main.tsx`, no affected process listed. This is the edit blast-radius record for the Web overlay slice. |
+
+Source owner map:
+
+| Concern | Owner |
+|---|---|
+| Ring and island coordinate generation | `applyFilterBasedClusteredLayout` in `avmatrix-web/src/lib/graph-adapter.ts`; it groups nodes by `appLayerRing` and `islandKey`, places ring centers, island centers, and node spirals. |
+| Node type colors and display labels | `getNodeColor`, `getNodeDisplayLabel`, `FILTERABLE_LABELS`, and related constants imported by `graph-adapter.ts`. |
+| Per-node ring/island metadata | `getAppLayerRingKey`, `getNodeIslandKey`, and `applyFilterBasedClusteredLayout` write `appLayerRing`, `islandKey`, `appLayerRingCenterX`, and `appLayerRingCenterY` into Sigma node attributes. |
+| Sigma rendering and camera projection | `useSigma` creates the Sigma renderer, sets label/camera options, replaces the graph, exposes `sigmaRef`, and refreshes after filtering and layout. |
+| Overlay and diagnostics host | `GraphCanvas.tsx` hosts the Sigma container, top/selected-node overlays, zoom/layout controls, graph conversion, filter effects, and `buildLayoutRingDiagnostics`. |
+| Filter/depth visibility | `filterGraphByLabels`, `filterGraphByDepth`, `graph-health-filters.ts`, `semantic-filters.ts`, and `useGraphState` determine which nodes have `hidden=true`. |
+
+Design decision before edit:
+
+- Keep coordinate generation in `graph-adapter.ts` unchanged for the first label slice.
+- Add a pure orientation-label contract/helper so unit tests can verify ring/island label metadata without a browser.
+- Render labels as a DOM overlay in `GraphCanvas` using Sigma `graphToViewport`, so browser tests can query `data-testid` and text content instead of relying only on pixels.
+
+### P2-C Through H Implementation
+
+Implementation:
+
+| File | Change |
+|---|---|
+| `avmatrix-web/src/lib/graph-orientation-labels.ts` | Added the pure ring/island orientation label contract, ring/island label formatting, visible-node counting from non-hidden Sigma nodes, zoom presentation rules, viewport projection, clamping, collision-aware placement, and fallback text behavior for unknown/custom categories. |
+| `avmatrix-web/src/components/GraphCanvas.tsx` | Added a DOM graph orientation label overlay backed by Sigma `graphToViewport`; recomputes after graph load, filter/depth/semantic/graph-health changes, camera updates, render, resize, and window resize. |
+| `avmatrix-web/test/unit/graph-orientation-labels.test.ts` | Added deterministic unit coverage for label metadata, anchors, visible counts, hidden-node behavior, ResolutionGap/custom labels, zoom visibility, viewport clamping, and overlap guardrails. |
+| `avmatrix-web/test/unit/GraphCanvas.selection-performance.test.tsx` | Extended the Sigma mock so the new overlay can recompute labels without changing the existing selection and manual-layout performance assertions. |
+| `avmatrix-web/e2e/graph-orientation-labels.spec.ts` | Added mocked runtime graph e2e coverage that counts labels through selectors, checks representative ring/island text, validates filter updates, asserts label-overlap count is zero, and captures desktop/smaller-viewport screenshots. |
+
+P2-F2 layout geometry verification:
+
+| Source/test | Finding |
+|---|---|
+| `avmatrix-web/src/lib/graph-adapter.ts` lines around `getClusterNodeSpacing`, `getClusterIslandRadius`, `getIslandOffset`, `islandGap`, `largestAdjacentClusterSpan`, `ringGap`, and `largestAdjacentRingSpan` | Current layout already computes density-aware node spacing, island radius, spiral offsets, island gutter, adjacent island span, ring gutter, and adjacent ring span from cluster footprint instead of a fixed-size circle. No `graph-adapter.ts` edit was required for this slice. |
+| `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts` | Existing deterministic geometry tests cover separated node-type islands, imbalanced island gutters, dense large-repo pinwheel gutters, non-rail island shapes, App Layer ring ordering, ring/island grouping, ResolutionGap island separation, documentation island center placement, and deterministic spiral ordering. |
+
+Impact and freshness:
+
+| Command | Result |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass before final placement edit; `files: scanned=775 parsed=578 unsupported=197 failed=0`, `nodes=88501 relationships=121393`. |
+| `.\avmatrix\bin\avmatrix.exe impact --uid "Function:avmatrix-web/src/lib/graph-orientation-labels.ts:placeGraphOrientationLabels" --repo AVmatrix --direction upstream --include-tests` | CRITICAL; `impactedCount=7`, direct impacted nodes `4`, affected processes `12`, affected app layers `frontend=4` and `frontend_test=3`. This is blast-radius evidence for a shared Web label-placement helper, not an edit ban. |
+| `.\avmatrix\bin\avmatrix.exe impact "GraphCanvas" --repo AVmatrix --direction upstream` | LOW; direct dependent `App.tsx`, depth-2 dependent `main.tsx`. This is the GraphCanvas overlay blast-radius record. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass after final label-placement patch; Go build and Web production build completed. Existing Vite dynamic-import and chunk-size warnings only. |
+| `cd avmatrix-web; npm run test -- graph-orientation-labels GraphCanvas.selection-performance graph-adapter.edge-geometry` | pass; `3` test files, `33` tests. |
+| `cd avmatrix-web; npx playwright test graph-orientation-labels.spec.ts --project chromium` | pass; `2` Chromium e2e tests. |
+| `cd avmatrix-web; npm run test` | pass after final label-placement patch; `46` test files, `377` tests. |
+| Playwright DOM measurement script against the mocked orientation graph | pass; label counts, filter-update counts, and overlap counts recorded in the benchmark ledger. |
+
+Screenshot artifacts:
+
+| Artifact | Result |
+|---|---|
+| `avmatrix-web/test-results/graph-orientation-labels-G-5b603-labels-on-the-desktop-graph-chromium/graph-orientation-labels-desktop.png` | Captured by e2e after final placement patch. |
+| `avmatrix-web/test-results/graph-orientation-labels-G-e5a0a-t-and-updates-after-filters-chromium/graph-orientation-labels-small-filtered.png` | Captured by e2e after final placement patch. |
+
+Browser validation note:
+
+- The Browser plugin skill was reviewed for local browser validation, but the expected Node REPL browser tool was not available through tool discovery in this session. The phase used repo Playwright e2e plus a Playwright DOM measurement script instead, which validates the same local runtime target and selector/screenshot behavior.
+
+P2-H guidance decision:
+
+- No user-facing instructional prose or label toggle was added. The UI change names the rings and islands directly on the graph.
+
+Pre-commit checks:
+
+| Command | Result |
+|---|---|
+| `git diff --check` | pass. |
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after staging the P2 slice; `files: scanned=775 parsed=578 unsupported=197 failed=0`, `nodes=88580 relationships=121455`. |
+| `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass after staging the P2 slice; summary `changed_files=8`, `changed_count=737`, `affected_count=0`, `risk_level=low`; changed App Layers `frontend=434`, `frontend_test=292`, `docs=11`; changed Functional Areas `web_graph_ui=75`, `unknown=651`, `documentation=11`. |

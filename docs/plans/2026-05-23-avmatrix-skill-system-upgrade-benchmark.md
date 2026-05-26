@@ -207,20 +207,72 @@ Status: P4-H recorded.
 
 Status: baseline problem identified; measured browser baseline and final pending.
 
+P2-A screenshot evidence asset:
+
+| Metric | Unit | Baseline |
+|---|---:|---:|
+| Problem screenshot width | px | 1,314 |
+| Problem screenshot height | px | 826 |
+| Problem screenshot file size | bytes | 341,738 |
+
+P2-B trace inventory:
+
+| Metric | Unit | Result |
+|---|---:|---:|
+| Fresh graph nodes before Web trace | nodes | 87,885 |
+| Fresh graph relationships before Web trace | relationships | 120,605 |
+| Top query owner definitions recorded | definitions | 10 |
+| Source owner files traced | files | 7 |
+| Source owner symbols traced | symbols | 8 |
+| `GraphCanvas` direct upstream dependents | dependents | 1 |
+| `GraphCanvas` total upstream impacted nodes | nodes | 2 |
+
+P2-C through P2-H implementation and runtime metrics:
+
+| Metric | Unit | Result |
+|---|---:|---:|
+| Orientation label contract fields | fields | 11 |
+| Orientation viewport label fields | fields | 15 |
+| E2E orientation fixture nodes | nodes | 36 |
+| E2E orientation fixture relationships | relationships | 35 |
+| Desktop viewport width | px | 1,280 |
+| Desktop viewport height | px | 800 |
+| Desktop e2e screenshot size | bytes | 237,028 |
+| Desktop visible ring labels | labels | 3 |
+| Desktop visible island labels | labels | 5 |
+| Desktop label overlap violations | violations | 0 |
+| Smaller viewport width | px | 480 |
+| Smaller viewport height | px | 720 |
+| Smaller e2e screenshot size | bytes | 92,013 |
+| Smaller visible ring labels before filter | labels | 3 |
+| Smaller visible island labels before filter | labels | 2 |
+| Smaller label overlap violations before filter | violations | 0 |
+| Smaller visible ring labels after Method filter | labels | 3 |
+| Smaller visible island labels after Method filter | labels | 2 |
+| Smaller Method island labels after Method filter | labels | 0 |
+| Smaller label overlap violations after Method filter | violations | 0 |
+| Narrow-viewport clamped ring overlap violations in unit test | violations | 0 |
+| Existing geometry unit tests validating P2-F2 layout behavior | tests | 22 |
+| Small island gutter minimum validated | px | 100 |
+| Imbalanced island gutter minimum validated | px | 500 |
+| Dense large-repo island gutter minimum validated | px | 900 |
+| App Layer ring gap minimum validated | px | 200 |
+| Rail-like island aspect-ratio violations validated | violations | 0 |
+
 | Metric | Unit | Baseline | Final | Delta | Target |
 |---|---:|---:|---:|---:|---:|
-| On-canvas macro ring labels | labels | 0 | pending | pending | visible macro ring count |
-| On-canvas island labels | labels | 0 | pending | pending | visible major island count |
-| Macro ring label coverage | percent | 0.00 | pending | pending | 100.00 |
-| Island label coverage | percent | 0.00 | pending | pending | 100.00 |
-| Label overlap violations | violations | pending | pending | pending | 0 |
-| Runtime-visible macro rings | rings | pending | pending | pending | record |
-| Runtime-visible islands | islands | pending | pending | pending | record |
-| Minimum node spacing inside islands | px | pending | pending | pending | >= 2x rendered node diameter |
-| Island-to-island gutter distance | px | pending | pending | pending | >= 1x largest visible island radius |
-| Macro ring gutter distance | px | pending | pending | pending | > 0 |
-| Rail-like island shape violations | islands | pending | pending | pending | 0 |
-| Auto optimizer runs before manual click | runs | 0 | pending | pending | 0 |
+| On-canvas macro ring labels | labels | 0 | 3 | +3 | visible macro ring count |
+| On-canvas island labels | labels | 0 | 5 | +5 | visible major island count |
+| Macro ring label coverage | percent | 0.00 | 100.00 | +100.00 pp | 100.00 |
+| Island label coverage | percent | 0.00 | 100.00 | +100.00 pp | 100.00 |
+| Label overlap violations | violations | pending | 0 | pending | 0 |
+| Runtime-visible macro rings | rings | pending | 3 | pending | record |
+| Runtime-visible islands | islands | pending | 5 | pending | record |
+| Minimum node spacing inside islands | px | pending | 30 | pending | >= 2x rendered node diameter |
+| Island-to-island gutter distance | px | pending | 900 | pending | >= 1x largest visible island radius |
+| Macro ring gutter distance | px | pending | 200 | pending | > 0 |
+| Rail-like island shape violations | islands | pending | 0 | pending | 0 |
+| Auto optimizer runs before manual click | runs | 0 | 0 | 0 | 0 |
 | Manual optimizer runs after one click | runs | pending | pending | pending | 1 |
 
 ## B5 - Setup And Package Skill Distribution Metrics

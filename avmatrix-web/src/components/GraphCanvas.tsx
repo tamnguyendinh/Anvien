@@ -26,6 +26,11 @@ import {
   recordLayoutRings,
   recordVisualScale,
 } from '../lib/runtime-diagnostics';
+import {
+  buildGraphOrientationLabels,
+  placeGraphOrientationLabels,
+  type GraphOrientationViewportLabel,
+} from '../lib/graph-orientation-labels';
 import type { GraphNode } from '@/generated/avmatrix-contracts';
 import { QueryFAB } from './QueryFAB';
 import Graph from 'graphology';
@@ -170,6 +175,9 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     animatedNodes,
   } = useAppState();
   const [hoveredNodeName, setHoveredNodeName] = useState<string | null>(null);
+  const [orientationLabels, setOrientationLabels] = useState<
+    GraphOrientationViewportLabel[]
+  >([]);
 
   const effectiveHighlightedNodeIds = useMemo(() => {
     if (!isAIHighlightsEnabled) return highlightedNodeIds;
@@ -271,6 +279,78 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     areGraphLinksVisible,
   });
 
+  const recomputeOrientationLabels = useCallback(() => {
+    const sigma = sigmaRef.current;
+    if (!sigma) {
+      setOrientationLabels([]);
+      return;
+    }
+
+    const sigmaGraph = sigma.getGraph() as Graph<
+      SigmaNodeAttributes,
+      SigmaEdgeAttributes
+    >;
+    if (!sigmaGraph || sigmaGraph.order === 0) {
+      setOrientationLabels([]);
+      return;
+    }
+
+    const dimensions =
+      typeof sigma.getDimensions === 'function'
+        ? sigma.getDimensions()
+        : {
+            width: containerRef.current?.clientWidth ?? 0,
+            height: containerRef.current?.clientHeight ?? 0,
+          };
+    const cameraRatio =
+      typeof sigma.getCamera === 'function'
+        ? sigma.getCamera().getState().ratio
+        : 1;
+    const graphLabels = buildGraphOrientationLabels(sigmaGraph);
+    const placedLabels = placeGraphOrientationLabels(graphLabels, {
+      viewportWidth: dimensions.width,
+      viewportHeight: dimensions.height,
+      cameraRatio,
+      project: (point) =>
+        typeof sigma.graphToViewport === 'function'
+          ? sigma.graphToViewport(point)
+          : point,
+    });
+    setOrientationLabels(placedLabels);
+  }, [containerRef, sigmaRef]);
+
+  useEffect(() => {
+    const sigma = sigmaRef.current;
+    if (!sigma) {
+      setOrientationLabels([]);
+      return;
+    }
+
+    const handleRefresh = () => recomputeOrientationLabels();
+    const camera = typeof sigma.getCamera === 'function' ? sigma.getCamera() : null;
+
+    handleRefresh();
+    sigma.on?.('afterRender', handleRefresh);
+    sigma.on?.('resize', handleRefresh);
+    camera?.on?.('updated', handleRefresh);
+    window.addEventListener('resize', handleRefresh);
+
+    return () => {
+      sigma.off?.('afterRender', handleRefresh);
+      sigma.off?.('resize', handleRefresh);
+      camera?.off?.('updated', handleRefresh);
+      window.removeEventListener('resize', handleRefresh);
+    };
+  }, [
+    recomputeOrientationLabels,
+    graph,
+    visibleLabels,
+    depthFilter,
+    appSelectedNode?.id,
+    graphHealthFilters,
+    semanticFilters,
+  ]);
+
   // Expose focusNode to parent via ref
   useImperativeHandle(
     ref,
@@ -346,6 +426,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     });
     recordLayoutRings(buildLayoutRingDiagnostics(sigmaGraph));
     setSigmaGraph(sigmaGraph);
+    window.requestAnimationFrame(recomputeOrientationLabels);
   }, [graph, nodeById, setSigmaGraph]);
 
   // Update graph visibility when label filters or depth filter mode change.
@@ -369,6 +450,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       );
     }
     sigma.refresh();
+    recomputeOrientationLabels();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sigmaRef identity never changes
   }, [visibleLabels, depthFilter, graphHealthFilters, semanticFilters]);
 
@@ -391,6 +473,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       semanticFilters,
     );
     sigma.refresh();
+    recomputeOrientationLabels();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sigmaRef identity never changes
   }, [appSelectedNode?.id, graphHealthFilters, semanticFilters]);
 
@@ -435,6 +518,41 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
         ref={containerRef}
         className="sigma-container h-full w-full cursor-grab active:cursor-grabbing"
       />
+
+      {orientationLabels.length > 0 && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-[5]"
+          data-testid="graph-orientation-label-layer"
+        >
+          {orientationLabels.map((label) => (
+            <div
+              key={label.id}
+              className={`absolute flex max-w-[190px] -translate-x-1/2 -translate-y-1/2 items-center gap-1 overflow-hidden rounded-md border px-2 py-1 font-mono shadow-sm backdrop-blur-sm ${
+                label.kind === 'ring'
+                  ? 'border-workspace-border-strong bg-workspace-surface/90 text-[11px] font-semibold uppercase tracking-normal text-workspace-text-primary'
+                  : 'border-workspace-border-default bg-workspace-base/82 text-[10px] font-medium text-workspace-text-secondary'
+              }`}
+              data-label-kind={label.kind}
+              data-label-source={label.sourceKey}
+              data-label-count={label.visibleNodeCount}
+              data-testid={`graph-orientation-label-${label.kind}`}
+              style={{
+                left: `${label.viewportX}px`,
+                top: `${label.viewportY}px`,
+                width: `${label.width}px`,
+              }}
+            >
+              <span className="min-w-0 flex-1 truncate">{label.displayText}</span>
+              {!label.compact && (
+                <span className="shrink-0 text-workspace-text-muted">
+                  {label.visibleNodeCount}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {hoveredNodeName && !sigmaSelectedNode && (
         <div className="pointer-events-none absolute top-4 left-1/2 z-20 -translate-x-1/2 animate-fade-in rounded-lg border-[2px] border-workspace-border-default bg-workspace-surface/95 px-3 py-1.5 backdrop-blur-sm">

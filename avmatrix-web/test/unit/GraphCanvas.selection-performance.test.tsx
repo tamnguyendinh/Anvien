@@ -11,19 +11,33 @@ const {
   setSigmaSelectedNodeSpy,
   setSigmaGraphSpy,
   startLayoutSpy,
+  sigmaOnSpy,
+  sigmaOffSpy,
+  cameraOnSpy,
+  cameraOffSpy,
   sigmaGraph,
+  containerRefMock,
+  sigmaRefMock,
 } = vi.hoisted(() => {
-  return {
-    filterGraphByDepthSpy: vi.fn(),
-    filterGraphByLabelsSpy: vi.fn(),
-    sigmaRefreshSpy: vi.fn(),
-    setSigmaSelectedNodeSpy: vi.fn(),
-    setSigmaGraphSpy: vi.fn(),
-    startLayoutSpy: vi.fn(),
-    sigmaGraph: {
-      order: 1,
-      nodes: () => ['Function:src/foo.ts:loadFoo'],
-      getNodeAttributes: () => ({
+  const sigmaGraph = {
+    order: 1,
+    nodes: () => ['Function:src/foo.ts:loadFoo'],
+    getNodeAttributes: () => ({
+      x: -100,
+      y: 0,
+      size: 2,
+      color: '#10b981',
+      label: 'loadFoo',
+      nodeType: 'Function',
+      appLayerRing: 'backend',
+      islandKey: 'Function',
+      appLayerRingCenterX: -100,
+      appLayerRingCenterY: 0,
+    }),
+    getNodeAttribute: (_nodeId: string, attribute: string) =>
+      attribute === 'nodeType' ? 'Function' : 2,
+    forEachNode: (callback: (nodeId: string, attributes: any) => void) => {
+      callback('Function:src/foo.ts:loadFoo', {
         x: -100,
         y: 0,
         size: 2,
@@ -32,10 +46,45 @@ const {
         nodeType: 'Function',
         appLayerRing: 'backend',
         islandKey: 'Function',
-      }),
-      getNodeAttribute: (_nodeId: string, attribute: string) =>
-        attribute === 'nodeType' ? 'Function' : 2,
+        appLayerRingCenterX: -100,
+        appLayerRingCenterY: 0,
+      });
     },
+  };
+  const sigmaOnSpy = vi.fn();
+  const sigmaOffSpy = vi.fn();
+  const cameraOnSpy = vi.fn();
+  const cameraOffSpy = vi.fn();
+  const sigmaInstance = {
+    getGraph: () => sigmaGraph,
+    getDimensions: () => ({ width: 800, height: 600 }),
+    graphToViewport: ({ x, y }: { x: number; y: number }) => ({
+      x: x + 400,
+      y: y + 300,
+    }),
+    getCamera: () => ({
+      getState: () => ({ x: 0, y: 0, angle: 0, ratio: 1 }),
+      on: cameraOnSpy,
+      off: cameraOffSpy,
+    }),
+    on: sigmaOnSpy,
+    off: sigmaOffSpy,
+    refresh: vi.fn(),
+  };
+  return {
+    filterGraphByDepthSpy: vi.fn(),
+    filterGraphByLabelsSpy: vi.fn(),
+    sigmaRefreshSpy: sigmaInstance.refresh,
+    setSigmaSelectedNodeSpy: vi.fn(),
+    setSigmaGraphSpy: vi.fn(),
+    startLayoutSpy: vi.fn(),
+    sigmaOnSpy,
+    sigmaOffSpy,
+    cameraOnSpy,
+    cameraOffSpy,
+    sigmaGraph,
+    containerRefMock: { current: null },
+    sigmaRefMock: { current: sigmaInstance },
   };
 });
 
@@ -45,13 +94,8 @@ vi.mock('../../src/components/QueryFAB', () => ({
 
 vi.mock('../../src/hooks/useSigma', () => ({
   useSigma: () => ({
-    containerRef: { current: null },
-    sigmaRef: {
-      current: {
-        getGraph: () => sigmaGraph,
-        refresh: sigmaRefreshSpy,
-      },
-    },
+    containerRef: containerRefMock,
+    sigmaRef: sigmaRefMock,
     setGraph: setSigmaGraphSpy,
     zoomIn: vi.fn(),
     zoomOut: vi.fn(),
