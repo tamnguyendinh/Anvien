@@ -1095,3 +1095,61 @@ Pre-commit checks:
 | `git diff --check` | pass. |
 | `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after staging the P2 slice; `files: scanned=775 parsed=578 unsupported=197 failed=0`, `nodes=88580 relationships=121455`. |
 | `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass after staging the P2 slice; summary `changed_files=8`, `changed_count=737`, `affected_count=0`, `risk_level=low`; changed App Layers `frontend=434`, `frontend_test=292`, `docs=11`; changed Functional Areas `web_graph_ui=75`, `unknown=651`, `documentation=11`. |
+
+## Phase 3 Embedded Skill Source Upgrade Evidence
+
+Status: complete; pre-commit detect pending.
+
+Fresh graph and owner trace:
+
+| Command | Result |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass before Phase 3 graph work; `files: scanned=775 parsed=578 unsupported=197 failed=0`, `nodes=88580 relationships=121455`. |
+| `.\avmatrix\bin\avmatrix.exe query "embedded AVmatrix skills baseSkills AI context generated skills tests" --repo AVmatrix --limit 10` | Top owners included `installBaseSkills`, `baseSkillContent`, `GenerateAIContextFiles`, `renderAVmatrixBlock`, setup skill installation owners, and `internal/aicontext/aicontext_test.go`. |
+| `.\avmatrix\bin\avmatrix.exe context "GenerateAIContextFiles" --repo AVmatrix` | Confirmed `GenerateAIContextFiles` writes root context, installs base skills, removes generated community skills, and is reached from analyze post-run. |
+| `.\avmatrix\bin\avmatrix.exe context "baseSkillContent" --repo AVmatrix` | Confirmed embedded Markdown is loaded from `internal/aicontext/skills/<skill>.md`, with `fallbackBaseSkillContent` only as defensive behavior. |
+
+Impact:
+
+| Command | Result |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe impact "renderAVmatrixBlock" --repo AVmatrix --direction upstream --include-tests` | CRITICAL; `impactedCount=7`, direct impacted nodes `1`, affected processes `12`; affected App Layers `backend=4`, `backend_test=3`. This is blast-radius evidence for generated root context output, not an edit ban. |
+| `.\avmatrix\bin\avmatrix.exe impact --uid "Variable:internal/aicontext/aicontext.go:baseSkills" --repo AVmatrix --direction upstream --include-tests` | LOW; no impacted processes. |
+| `.\avmatrix\bin\avmatrix.exe impact "TestGenerateAIContextFilesCreatesAndUpdatesManagedContext" --repo AVmatrix --direction upstream --include-tests` | LOW; no impacted processes. |
+
+Implementation:
+
+| File | Change |
+|---|---|
+| `internal/aicontext/aicontext.go` | Expanded `baseSkills` from 6 to 11, added per-skill generated table task text, and made the generated Skills table iterate over `baseSkills` to prevent registry/table drift. |
+| `internal/aicontext/skills/avmatrix-exploring.md` | Rewritten as a practical exploration guide with command choices, multi-lane query guidance, context verification, validation, and limitations. |
+| `internal/aicontext/skills/avmatrix-impact-analysis.md` | Rewritten with impact workflow, command choices, risk interpretation, and explicit HIGH/CRITICAL blast-radius wording. |
+| `internal/aicontext/skills/avmatrix-debugging.md` | Rewritten with symptom-to-owner workflow, graph-quality command choices, query reliability rule, and evidence expectations. |
+| `internal/aicontext/skills/avmatrix-refactoring.md` | Rewritten with context/impact/rename/API-impact workflow and behavior-preserving refactor rules. |
+| `internal/aicontext/skills/avmatrix-guide.md` | Rewritten as a unified CLI/MCP/resource/prompt/Web/API guide, with surface-correct command naming. |
+| `internal/aicontext/skills/avmatrix-cli.md` | Rewritten as a current CLI command guide covering core graph navigation, API parity, graph quality, runtime/setup/package/groups/wiki/version surfaces. |
+| `internal/aicontext/skills/avmatrix-graph-quality.md` | Added graph-health, query-health, resolution-inventory, source-site-accuracy, benchmark-compare, query reliability, and evidence guidance. |
+| `internal/aicontext/skills/avmatrix-api-surface.md` | Added route/tool/shape/API-impact guidance with CLI-vs-MCP command naming rules. |
+| `internal/aicontext/skills/avmatrix-cross-repo.md` | Added group status/sync/contracts/query guidance and cross-repo validation rules. |
+| `internal/aicontext/skills/avmatrix-runtime-packaging.md` | Added serve/mcp/setup/package/launcher/canonical executable/process lifecycle guidance. |
+| `internal/aicontext/skills/avmatrix-ai-context.md` | Added source-vs-generated rules for `AGENTS.md`, `CLAUDE.md`, `.claude/skills/avmatrix/**`, embedded skill source, and validation. |
+| `internal/aicontext/aicontext_test.go` | Added final skill id assertions, generated Skills table coverage, embedded frontmatter/source-content tests, expanded command-surface regression checks, and surface-correct command naming tests. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass after final skill wording; Go build and Web production build completed. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test .\internal\aicontext .\internal\cli -count=1` | pass; `internal/aicontext` 0.695s, `internal/cli` 8.478s. |
+
+Intermediate validation finding:
+
+- The first focused Phase 3 test run failed because a skill used an example that contained the forbidden invented CLI spelling `avmatrix route_map`. The wording was changed to forbid MCP underscore names as top-level AVmatrix CLI commands without including a fake command example, and the final focused test passed.
+
+Pre-commit checks:
+
+| Command | Result |
+|---|---|
+| `git diff --check` | pass. |
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after staging the P3 slice; `files: scanned=780 parsed=578 unsupported=202 failed=0`, `nodes=88644 relationships=121551`. |
+| `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass after staging the P3 slice; summary `changed_files=16`, `changed_count=158`, `affected_count=1`, `risk_level=medium`; changed App Layers `backend=7`, `backend_test=77`, `docs=74`; affected App Layers `backend=1`. |

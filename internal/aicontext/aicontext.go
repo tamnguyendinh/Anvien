@@ -195,12 +195,9 @@ func renderAVmatrixBlock(projectName string, stats Stats, noStats bool) string {
 	builder.WriteString("## Skills\n\n")
 	builder.WriteString("| Task | Read this skill file |\n")
 	builder.WriteString("|------|---------------------|\n")
-	builder.WriteString("| Understand architecture / \"How does X work?\" | `.claude/skills/avmatrix/avmatrix-exploring/SKILL.md` |\n")
-	builder.WriteString("| Blast radius / \"What breaks if I change X?\" | `.claude/skills/avmatrix/avmatrix-impact-analysis/SKILL.md` |\n")
-	builder.WriteString("| Trace bugs / \"Why is X failing?\" | `.claude/skills/avmatrix/avmatrix-debugging/SKILL.md` |\n")
-	builder.WriteString("| Rename / extract / split / refactor | `.claude/skills/avmatrix/avmatrix-refactoring/SKILL.md` |\n")
-	builder.WriteString("| Tools, resources, schema reference | `.claude/skills/avmatrix/avmatrix-guide/SKILL.md` |\n")
-	builder.WriteString("| Index, status, clean, and wiki capability CLI commands | `.claude/skills/avmatrix/avmatrix-cli/SKILL.md` |")
+	for _, skill := range baseSkills {
+		fmt.Fprintf(&builder, "| %s | `.claude/skills/avmatrix/%s/SKILL.md` |\n", skill.Task, skill.Name)
+	}
 	builder.WriteString("\n" + endMarker)
 	return builder.String()
 }
@@ -270,15 +267,21 @@ func upsertSection(path string, content string) (string, error) {
 type baseSkill struct {
 	Name        string
 	Description string
+	Task        string
 }
 
 var baseSkills = []baseSkill{
-	{Name: "avmatrix-exploring", Description: `Use when the user asks how code works, wants to understand architecture, trace execution flows, or explore unfamiliar parts of the codebase.`},
-	{Name: "avmatrix-debugging", Description: `Use when the user is debugging a bug, tracing an error, or asking why something fails.`},
-	{Name: "avmatrix-impact-analysis", Description: `Use when the user wants to know what will break if they change something, or needs safety analysis before editing code.`},
-	{Name: "avmatrix-refactoring", Description: `Use when the user wants to rename, extract, split, move, or restructure code safely.`},
-	{Name: "avmatrix-guide", Description: `Use when the user asks about AVmatrix itself, available tools, MCP resources, graph schema, or workflow reference.`},
-	{Name: "avmatrix-cli", Description: `Use when the user needs to run AVmatrix CLI commands like analyze/index a repo, check status, clean the index, inspect wiki capability mode, or list indexed repos.`},
+	{Name: "avmatrix-exploring", Description: `Use when the user asks how code works, wants to understand architecture, trace execution flows, or explore unfamiliar parts of the codebase.`, Task: `Understand architecture, ownership, and execution flows`},
+	{Name: "avmatrix-impact-analysis", Description: `Use when the user wants to know what will break if they change something, or needs safety analysis before editing code.`, Task: `Blast radius, HIGH/CRITICAL warnings, and changed-scope checks`},
+	{Name: "avmatrix-debugging", Description: `Use when the user is debugging a bug, tracing an error, or asking why something fails.`, Task: `Trace bugs, failures, diagnostics, and graph-quality evidence`},
+	{Name: "avmatrix-refactoring", Description: `Use when the user wants to rename, extract, split, move, or restructure code safely.`, Task: `Rename, extract, split, move, or restructure code safely`},
+	{Name: "avmatrix-guide", Description: `Use when the user asks about AVmatrix itself, available tools, MCP resources, graph schema, prompts, or workflow reference.`, Task: `Unified CLI, MCP, resource, prompt, and Web/API reference`},
+	{Name: "avmatrix-cli", Description: `Use when the user needs to run AVmatrix CLI commands for analysis, query, graph quality, API parity, groups, setup, runtime, package, wiki, hook, or version workflows.`, Task: `Terminal command guide for AVmatrix CLI surfaces`},
+	{Name: "avmatrix-graph-quality", Description: `Use when the user needs graph-health, query-health, resolution inventory, source-site accuracy, or benchmark comparison evidence.`, Task: `Graph health, query health, resolution inventory, and accuracy audits`},
+	{Name: "avmatrix-api-surface", Description: `Use when the user needs to inspect API routes, MCP tools, contract shape drift, generated Web contracts, handlers, consumers, or route/tool impact.`, Task: `API routes, MCP tools, shape checks, contracts, and consumers`},
+	{Name: "avmatrix-cross-repo", Description: `Use when the user works across indexed repository groups, cross-repo query, contracts, status, sync, or multi-repo ownership.`, Task: `Repository groups, cross-repo query, contracts, status, and sync`},
+	{Name: "avmatrix-runtime-packaging", Description: `Use when the user needs serve, mcp, setup, launcher, package runtime, canonical executable, startup, or process lifecycle validation.`, Task: `Runtime, setup, launcher, package, and canonical executable workflows`},
+	{Name: "avmatrix-ai-context", Description: `Use when the user changes generated AGENTS.md, CLAUDE.md, embedded AVmatrix skills, AI context generation, or source-vs-generated validation.`, Task: `Generated AGENTS.md, CLAUDE.md, embedded skills, and AI context validation`},
 }
 
 func installBaseSkills(repoPath string) ([]string, error) {

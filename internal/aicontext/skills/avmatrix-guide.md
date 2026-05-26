@@ -1,107 +1,68 @@
 ---
 name: avmatrix-guide
-description: "Use when the user asks about AVmatrix itself, available tools, MCP resources, graph schema, or workflow reference. Examples: \"What AVmatrix tools are available?\", \"How do I use AVmatrix?\""
+description: "Use when the user asks about AVmatrix itself, available tools, MCP resources, graph schema, prompts, or workflow reference."
 ---
 
-# AVmatrix Tool And Resource Guide
+# AVmatrix Guide
 
-Use this skill as the reference for the local AVmatrix MCP and CLI surfaces.
+Use this skill as the unified reference for AVmatrix command surfaces. CLI commands, MCP tools, resources, prompts, and Web/API views expose the same local repository intelligence through different interfaces.
 
-## MCP Tools
+## Surfaces
 
-| Tool | Use |
+| Surface | Use |
 |---|---|
-| `list_repos` | List indexed repositories |
-| `query` | Process-grouped search for a concept, with App Layer, Functional Area, and ResolutionGap summaries when available |
-| `context` | Symbol callers, callees, refs, processes, source-site proof/status, and related ResolutionGap rows |
-| `impact` | Blast radius analysis before edits, with affected App Layers, Functional Areas, and resolution-health risks |
-| `detect_changes` | Git-diff impact before commit, with changed/affected semantic layers and ResolutionGap impact |
-| `rename` | Graph-guided symbol rename |
-| `cypher` | Read-only graph query |
-| `route_map` | Route surface inspection with semantic route, consumer, and flow fields |
-| `tool_map` | Tool surface inspection |
-| `shape_check` | Contract and shape checks with semantic route/consumer fields |
-| `api_impact` | API route impact analysis with consumer/flow layer summaries and resolution-health impact |
+| CLI | Terminal workflows, smoke checks, build/package/setup validation, scripts |
+| MCP tools | Agent-native graph operations such as `query`, `context`, `impact`, `detect_changes`, `rename`, `route_map`, `tool_map`, `shape_check`, and `api_impact` |
+| MCP resources | Stable repo context, clusters, processes, process traces, setup reference, and schema |
+| MCP prompts | Agent templates such as `detect_impact` and `generate_map`; these are not CLI commands |
+| Web/API | Local runtime graph, panels, route/search views, and browser validation |
+
+## Command Selection
+
+| Need | CLI | MCP/resource |
+|---|---|---|
+| Refresh graph | `avmatrix analyze --force` | Run CLI from agent shell |
+| List repos | `avmatrix list` | `list_repos`, `avmatrix://repos` |
+| Broad discovery | `avmatrix query "<concept>" --repo <repo>` | `query` |
+| Exact symbol view | `avmatrix context "<symbol>" --repo <repo>` | `context` |
+| Blast radius | `avmatrix impact "<symbol>" --repo <repo> --direction upstream` | `impact` |
+| Changed-scope review | `avmatrix detect-changes --repo <repo> --scope all` | `detect_changes` |
+| Rename | `avmatrix rename <symbol> <newName> --repo <repo>` | `rename` |
+| API route map | `avmatrix api route-map [route] --repo <repo>` | `route_map` |
+| MCP/tool map | `avmatrix api tool-map [tool] --repo <repo>` | `tool_map` |
+| Shape check | `avmatrix api shape-check [route] --repo <repo>` | `shape_check` |
+| API impact | `avmatrix api impact [route] --repo <repo>` | `api_impact` |
+
+Do not invent CLI spellings for MCP-only names. The MCP tool is `route_map`; the CLI command is `avmatrix api route-map`. The MCP tool is `api_impact`; the CLI command is `avmatrix api impact`.
+
+## Graph Quality Commands
+
+- `avmatrix graph-health summary|report|components|explain` audits topology, diagnostics, component membership, confidence, and resolution-health overlays.
+- `avmatrix query-health` measures retrieval quality with threshold and exact pass modes.
+- `avmatrix resolution-inventory` reports persisted ResolutionGap and Resolution Health inventory.
+- `avmatrix source-site-accuracy` audits proof/source-site accuracy and resolved-edge quality.
+- `avmatrix benchmark-compare` compares analyze benchmark output files.
 
 ## Resources
 
 | Resource | Use |
 |---|---|
-| `avmatrix://repos` | All indexed repos |
-| `avmatrix://setup` | Setup and surface reference |
-| `avmatrix://repo/{name}/context` | Repo overview and freshness |
-| `avmatrix://repo/{name}/clusters` | Functional areas |
-| `avmatrix://repo/{name}/cluster/{clusterName}` | Functional area detail |
-| `avmatrix://repo/{name}/processes` | Execution flow list |
-| `avmatrix://repo/{name}/process/{processName}` | Step-by-step trace |
-| `avmatrix://repo/{name}/schema` | Graph schema for Cypher |
+| `avmatrix://repos` | Discover indexed repo names |
+| `avmatrix://setup` | Tool, resource, prompt, setup, and command reference |
+| `avmatrix://repo/<repo>/context` | Overview and freshness |
+| `avmatrix://repo/<repo>/clusters` | Functional areas |
+| `avmatrix://repo/<repo>/processes` | Execution flow list |
+| `avmatrix://repo/<repo>/process/{name}` | Step-by-step flow trace |
+| `avmatrix://repo/<repo>/schema` | Graph schema for Cypher |
 
-## MCP Prompts
+## Standard Rules
 
-| Prompt | Use |
-|---|---|
-| `detect_impact` | Agent template for pre-commit impact analysis using `detect_changes`, `context`, and `impact`, with CLI fallback guidance. HIGH/CRITICAL are blast-radius warnings, not edit bans. |
-| `generate_map` | Agent template for architecture documentation from graph evidence. It resolves the repo through `avmatrix://repos` when needed, checks freshness, reads context/clusters/processes/process details, and restricts claims and Mermaid edges to resources/tools/commands actually read. |
+- Run `avmatrix analyze --force` before graph-based work when freshness is required.
+- Run impact before editing important symbols or contracts.
+- HIGH/CRITICAL impact is blast-radius evidence to report and account for, not an edit ban.
+- Run `detect-changes` before committing implementation work.
+- Preserve graph counts, samples, and traceability in evidence.
 
-Prompts are MCP prompt templates, not CLI commands. They automate a workflow for the agent; they do not replace repository rules, impact checks, or change detection.
+## Current Limitations
 
-## Standard Workflows
-
-### Explore
-
-Use `query` for concepts, then `context` on important symbols, then process resources for traces.
-
-### Edit
-
-Run `impact({target: "<symbol>", direction: "upstream"})` before editing functions, classes, or methods. Warn on HIGH or CRITICAL risk and review direct callers first.
-
-### Commit
-
-Run `detect_changes({scope: "all"})` before committing. Confirm changed symbols and affected flows match the intended scope.
-
-### Rename
-
-Use `rename` instead of text replacement. Start with a dry run, inspect confidence, apply only when the edits make sense, then run `detect_changes`.
-
-## CLI Fallback
-
-When MCP tools are unavailable, use the CLI equivalent with `--repo <name>`.
-
-| Need | CLI |
-|---|---|
-| Concept search | `avmatrix query "<concept>" --repo <name>` |
-| Symbol context | `avmatrix context "<symbol>" --repo <name>` |
-| Blast radius | `avmatrix impact "<symbol>" --repo <name> --direction upstream` |
-| Changed-scope review | `avmatrix detect-changes --repo <name> --scope all` |
-| Graph query | `avmatrix cypher "<query>" --repo <name>` |
-| Symbol rename | `avmatrix rename <symbol> <newName> --repo <name>` |
-| Route map | `avmatrix api route-map [route] --repo <name>` |
-| Tool map | `avmatrix api tool-map [tool] --repo <name>` |
-| Shape check | `avmatrix api shape-check [route] --repo <name>` |
-| API impact | `avmatrix api impact [route] --repo <name>` |
-
-For graph quality checks, use these CLI-only diagnostic commands:
-
-| Command | Use |
-|---|---|
-| `avmatrix graph-health` | Audit topology health, diagnostics, component membership, confidence, resolution-health overlays, and prioritized graph-health candidates from the indexed repo graph. |
-| `avmatrix query-health` | Benchmark query retrieval against expected files and symbols, with separate threshold pass and exact target-coverage pass results. |
-| `avmatrix resolution-inventory` | Report persisted ResolutionGap and Resolution Health counts, including classification/actionability and non-actionable builtin/standard-library/test-framework breakdown. |
-| `avmatrix source-site-accuracy` | Report source-site inventory and proof-based resolved-edge accuracy metrics, with optional golden fixture validation. |
-
-Use these commands for different graph-quality questions: `graph-health` answers topology/component/diagnostic triage, `query-health` answers retrieval quality, `resolution-inventory` answers persisted gap inventory, and `source-site-accuracy` answers proof/source-site accuracy.
-
-## Semantic Graph Fields
-
-Fresh `analyze` output can include:
-
-- `appLayer` and `functionalArea` on graph nodes;
-- source-site IDs, proof kind, target role, target text, and range metadata on proven relationships;
-- persisted `ResolutionGap` entities for unresolved or diagnostic references;
-- `resolutionConfidence`, `resolutionGapCount`, and Resolution Health buckets for graph readers.
-
-ResolutionGap entities are diagnostic facts, not proven in-repo symbols. Do not treat them as resolved topology unless the graph also provides a proven relationship.
-
-## Stale Index Policy
-
-If any AVmatrix surface reports stale data, refresh with `avmatrix analyze --force` before relying on graph facts.
+Some surfaces are intentionally not normal user CLI commands. Hidden lifecycle helpers such as `package` and `hook` are for AVmatrix maintenance. MCP prompts guide agents but do not fetch evidence themselves; the receiving agent must read the named tools/resources/commands.

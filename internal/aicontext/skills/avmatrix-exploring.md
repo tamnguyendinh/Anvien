@@ -1,56 +1,46 @@
 ---
 name: avmatrix-exploring
-description: "Use when the user asks how code works, wants to understand architecture, trace execution flows, or explore unfamiliar parts of the codebase. Examples: \"How does X work?\", \"What calls this function?\", \"Show me the auth flow\""
+description: "Use when the user asks how code works, wants to understand architecture, trace execution flows, or explore unfamiliar parts of the codebase."
 ---
 
 # Exploring Codebases With AVmatrix
 
-Use this skill when you need to understand unfamiliar code before editing it.
+Use this skill when the task is to understand a repo before editing. Exploration should produce concrete owners, entrypoints, flows, and open questions, not guesses.
+
+## Command Choices
+
+| Need | Use |
+|---|---|
+| Confirm repo names and freshness | `avmatrix://repos`, `avmatrix://repo/<repo>/context`, or `avmatrix status` |
+| Broad concept discovery | MCP `query` or CLI `avmatrix query "<concept>" --repo <repo>` |
+| Exact symbol inspection | MCP `context` or CLI `avmatrix context "<symbol>" --repo <repo>` |
+| Execution flow detail | `avmatrix://repo/<repo>/processes` and `avmatrix://repo/<repo>/process/{name}` |
+| Functional area inventory | `avmatrix://repo/<repo>/clusters` and `avmatrix://repo/<repo>/cluster/{name}` |
+| Custom graph questions | MCP/CLI `cypher` after higher-level tools narrow the target |
 
 ## Workflow
 
-1. Read `avmatrix://repos` to discover indexed repositories when the repo name is unknown.
-2. Read `avmatrix://repo/{name}/context` for overview, stats, and stale-index warnings.
-3. Use `query({query: "<concept>"})` to find process-grouped execution flows.
-4. Use `context({name: "<symbol>"})` for a 360-degree symbol view.
-5. Read `avmatrix://repo/{name}/process/{processName}` for step-by-step flow details.
-6. Read source files only after the graph points to the relevant files.
+1. Refresh graph evidence with `avmatrix analyze --force` before graph-based work when repo rules require it or freshness is unclear.
+2. Resolve the repo name from `avmatrix://repos` or `avmatrix list`.
+3. Use `query` for broad concepts, product terms, symptoms, command surfaces, and flow discovery.
+4. Treat broad `query` output as candidate retrieval. Verify owner regions with `context`, process resources, and exact source inspection before selecting edit targets.
+5. When a symbol or file is already known, prefer `context` and source inspection over another broad query.
+6. Record missed or noisy query results as graph-quality/query-health evidence instead of silently accepting them.
 
-## Resources
+## Query Interpretation
 
-| Resource | Use |
-|---|---|
-| `avmatrix://repos` | All indexed repos |
-| `avmatrix://repo/{name}/context` | Repo overview and freshness check |
-| `avmatrix://repo/{name}/clusters` | Functional areas |
-| `avmatrix://repo/{name}/cluster/{clusterName}` | Area members and files |
-| `avmatrix://repo/{name}/processes` | Execution flow list |
-| `avmatrix://repo/{name}/process/{processName}` | Detailed process trace |
-| `avmatrix://repo/{name}/schema` | Graph schema for Cypher |
+`query` is a multi-lane discovery command. It can return owner, concept, execution-flow, API-surface, graph-quality, docs/setup/AI-context, command-surface, and cross-repo evidence when the indexed graph supports it. A threshold query-health pass means the result is usable for navigation; exact target coverage is a stricter claim and must be checked separately.
 
-## Tool Patterns
+Use `context` to inspect the exact symbol once candidates are known. Use process resources when the question is about runtime order, route/tool flow, or how a subsystem hangs together.
 
-`query({query: "authentication"})`
+## Validation
 
-Returns processes and symbols related to authentication.
+- Name the repo and freshness source used.
+- Record the command/resource that identified each owner.
+- Include process names or symbol names that support the explanation.
+- State uncertainty when the graph has ResolutionGap rows or unresolved source-site evidence.
+- Before editing any symbol discovered during exploration, switch to impact analysis.
 
-`context({name: "validateSession"})`
+## Current Limitations
 
-Returns incoming calls, outgoing calls, process participation, and nearby graph facts.
-
-`cypher({query: "MATCH (n:Function) RETURN n.id LIMIT 10"})`
-
-Use only for custom graph questions after checking the higher-level tools.
-
-## Exploration Checklist
-
-- [ ] Confirm repo name and freshness.
-- [ ] Query by product concept or subsystem.
-- [ ] Inspect processes before individual files.
-- [ ] Use `context` on key symbols.
-- [ ] Read source after graph navigation narrows the search.
-- [ ] Record open questions and uncertain edges instead of guessing.
-
-## When To Stop Exploring
-
-Stop broad exploration once you can name the relevant entrypoints, core symbols, affected files, and tests. Switch to impact analysis before making code changes.
+AVmatrix graph facts are only as fresh as the last analyze run. Broad query can still return plausible but incomplete regions, especially for docs/setup or generated-context work. Do not use color, UI grouping, or query rank alone as proof of ownership; confirm with symbol context, source, tests, or query-health evidence.

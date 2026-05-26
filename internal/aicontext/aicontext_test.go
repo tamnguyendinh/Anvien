@@ -7,6 +7,30 @@ import (
 	"testing"
 )
 
+func expectedBaseSkillIDs() []string {
+	return []string{
+		"avmatrix-exploring",
+		"avmatrix-impact-analysis",
+		"avmatrix-debugging",
+		"avmatrix-refactoring",
+		"avmatrix-guide",
+		"avmatrix-cli",
+		"avmatrix-graph-quality",
+		"avmatrix-api-surface",
+		"avmatrix-cross-repo",
+		"avmatrix-runtime-packaging",
+		"avmatrix-ai-context",
+	}
+}
+
+func registeredBaseSkillIDs() []string {
+	ids := make([]string, 0, len(baseSkills))
+	for _, skill := range baseSkills {
+		ids = append(ids, skill.Name)
+	}
+	return ids
+}
+
 func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	dir := t.TempDir()
 	stats := Stats{Nodes: 50, Edges: 100, Processes: 5}
@@ -27,6 +51,9 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	}
 	if len(installedBaseSkills) == 0 {
 		t.Fatalf("expected base skills to be installed")
+	}
+	if got, want := strings.Join(installedBaseSkills, ","), strings.Join(expectedBaseSkillIDs(), ","); got != want {
+		t.Fatalf("installed base skill ids mismatch:\n got: %s\nwant: %s", got, want)
 	}
 
 	agentsPath := filepath.Join(dir, "AGENTS.md")
@@ -76,6 +103,16 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"MCP prompts are agent templates, not CLI commands.",
 		"## Skills",
 		"avmatrix-impact-analysis/SKILL.md",
+		"avmatrix-graph-quality/SKILL.md",
+		"avmatrix-api-surface/SKILL.md",
+		"avmatrix-cross-repo/SKILL.md",
+		"avmatrix-runtime-packaging/SKILL.md",
+		"avmatrix-ai-context/SKILL.md",
+		"Graph health, query health, resolution inventory, and accuracy audits",
+		"API routes, MCP tools, shape checks, contracts, and consumers",
+		"Repository groups, cross-repo query, contracts, status, and sync",
+		"Runtime, setup, launcher, package, and canonical executable workflows",
+		"Generated AGENTS.md, CLAUDE.md, embedded skills, and AI context validation",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("AGENTS.md missing %q:\n%s", want, text)
@@ -145,6 +182,119 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		}
 		if !strings.Contains(skillText, "##") {
 			t.Fatalf("base skill %s missing rich sections:\n%s", skill.Name, skillText)
+		}
+	}
+}
+
+func TestBaseSkillRegistryAndSourceFrontmatter(t *testing.T) {
+	if got, want := strings.Join(registeredBaseSkillIDs(), ","), strings.Join(expectedBaseSkillIDs(), ","); got != want {
+		t.Fatalf("base skill registry mismatch:\n got: %s\nwant: %s", got, want)
+	}
+	for _, skill := range baseSkills {
+		if strings.TrimSpace(skill.Task) == "" {
+			t.Fatalf("base skill %s has empty task", skill.Name)
+		}
+		content, err := baseSkillContent(skill)
+		if err != nil {
+			t.Fatalf("base skill %s content: %v", skill.Name, err)
+		}
+		trimmed := strings.TrimSpace(content)
+		if len(trimmed) < 1000 {
+			t.Fatalf("base skill %s content is too small: %d bytes", skill.Name, len(trimmed))
+		}
+		if !strings.HasPrefix(trimmed, "---\n") {
+			t.Fatalf("base skill %s missing frontmatter start:\n%s", skill.Name, content)
+		}
+		if !strings.Contains(content, "\nname: "+skill.Name+"\n") {
+			t.Fatalf("base skill %s frontmatter name mismatch:\n%s", skill.Name, content)
+		}
+		if !strings.Contains(content, "\ndescription: ") {
+			t.Fatalf("base skill %s missing description frontmatter:\n%s", skill.Name, content)
+		}
+		if strings.Contains(content, "Use AVmatrix tools to accomplish this task.") {
+			t.Fatalf("base skill %s uses fallback placeholder content:\n%s", skill.Name, content)
+		}
+	}
+}
+
+func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
+	contentBySkill := make(map[string]string, len(baseSkills))
+	var combined strings.Builder
+	for _, skill := range baseSkills {
+		content, err := baseSkillContent(skill)
+		if err != nil {
+			t.Fatalf("base skill %s content: %v", skill.Name, err)
+		}
+		contentBySkill[skill.Name] = content
+		combined.WriteString(content)
+		combined.WriteString("\n")
+	}
+
+	checks := map[string][]string{
+		"avmatrix-ai-context": {
+			"AGENTS.md",
+			"CLAUDE.md",
+			"internal/aicontext/skills/*.md",
+			"fallbackBaseSkillContent",
+		},
+		"avmatrix-api-surface": {
+			"route_map",
+			"avmatrix api route-map",
+			"api_impact",
+			"Do not invent CLI commands",
+		},
+		"avmatrix-cross-repo": {
+			"group_query",
+			"avmatrix group query",
+			"group contracts",
+		},
+		"avmatrix-graph-quality": {
+			"graph-health",
+			"query-health",
+			"resolution-inventory",
+			"source-site-accuracy",
+			"threshold and exact",
+		},
+		"avmatrix-runtime-packaging": {
+			"avmatrix\\bin\\avmatrix.exe",
+			"serve",
+			"mcp",
+			"setup",
+			"package",
+		},
+	}
+	for skillName, fragments := range checks {
+		content := contentBySkill[skillName]
+		for _, fragment := range fragments {
+			if !strings.Contains(content, fragment) {
+				t.Fatalf("%s missing guidance fragment %q:\n%s", skillName, fragment, content)
+			}
+		}
+	}
+
+	allGuidance := combined.String()
+	for _, want := range []string{
+		"multi-lane",
+		"candidate retrieval",
+		"context",
+		"`avmatrix query --lanes --json`",
+		"`avmatrix query-health`",
+		"`route_map`",
+		"`avmatrix api route-map",
+	} {
+		if !strings.Contains(allGuidance, want) {
+			t.Fatalf("combined skill guidance missing %q", want)
+		}
+	}
+	for _, forbidden := range []string{
+		"avmatrix route_map",
+		"avmatrix tool_map",
+		"avmatrix shape_check",
+		"avmatrix api_impact",
+		"avmatrix query_health",
+	} {
+		if strings.Contains(allGuidance, forbidden) {
+			t.Fatalf("combined skill guidance contains invented CLI spelling %q", forbidden)
 		}
 	}
 }

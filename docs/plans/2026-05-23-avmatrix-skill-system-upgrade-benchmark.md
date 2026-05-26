@@ -19,19 +19,35 @@ Use `pending` only when a future phase has not measured that value yet.
 
 ## B0 - Skill Source And Generated Inventory
 
-Status: baseline recorded; P1.5 guidance size update recorded; final pending.
+Status: baseline recorded; P1.5 guidance size update recorded; Phase 3 source/registry update recorded; final regeneration pending.
 
 | Metric | Unit | Baseline | Latest | Delta | Final target |
 |---|---:|---:|---:|---:|---:|
-| Embedded source skill Markdown files | files | 6 | 6 | 0 | 11 |
-| Registered base skills | skills | 6 | 6 | 0 | 11 |
-| Generated `.claude/skills/avmatrix/**/SKILL.md` files | files | 6 | 6 | 0 | 11 |
-| Root generated Skills table rows | rows | 6 | 6 | 0 | 11 |
-| Source skill total size | bytes | 17,499 | 18,843 | +1,344 | record |
-| Generated skill total size | bytes | 17,499 | 18,843 | +1,344 | equal source total |
-| Source/generated matching hashes | pairs | 6 | 6 | 0 | final generated skill count |
-| Source skills with `name` frontmatter | files | 6 | 6 | 0 | final source skill count |
-| Source skills with `description` frontmatter | files | 6 | 6 | 0 | final source skill count |
+| Embedded source skill Markdown files | files | 6 | 11 | +5 | 11 |
+| Registered base skills | skills | 6 | 11 | +5 | 11 |
+| Generated `.claude/skills/avmatrix/**/SKILL.md` files | files | 6 | 11 | +5 | 11 |
+| Root generated Skills table rows | rows | 6 | 11 | +5 | 11 |
+| Source skill total size | bytes | 17,499 | 30,963 | +13,464 | record |
+| Generated skill total size | bytes | 17,499 | 30,963 | +13,464 | equal source total |
+| Source/generated matching hashes | pairs | 6 | 11 | +5 | final generated skill count |
+| Source skills with `name` frontmatter | files | 6 | 11 | +5 | final source skill count |
+| Source skills with `description` frontmatter | files | 6 | 11 | +5 | final source skill count |
+
+P3 embedded source skill inventory:
+
+| Skill source file | Bytes |
+|---|---:|
+| `avmatrix-ai-context.md` | 2,883 |
+| `avmatrix-api-surface.md` | 2,278 |
+| `avmatrix-cli.md` | 4,259 |
+| `avmatrix-cross-repo.md` | 2,072 |
+| `avmatrix-debugging.md` | 2,454 |
+| `avmatrix-exploring.md` | 3,045 |
+| `avmatrix-graph-quality.md` | 3,086 |
+| `avmatrix-guide.md` | 3,842 |
+| `avmatrix-impact-analysis.md` | 2,657 |
+| `avmatrix-refactoring.md` | 2,170 |
+| `avmatrix-runtime-packaging.md` | 2,217 |
 
 ## B1 - Command Surface Inventory
 

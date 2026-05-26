@@ -1,53 +1,45 @@
 ---
 name: avmatrix-refactoring
-description: "Use when the user wants to rename, extract, split, move, or restructure code safely. Examples: \"Rename this function\", \"Extract this into a module\", \"Refactor this class\", \"Move this to a separate file\""
+description: "Use when the user wants to rename, extract, split, move, or restructure code safely."
 ---
 
 # Refactoring With AVmatrix
 
-Use this skill for symbol renames, extraction, moves, and shared-code restructuring.
+Use this skill for behavior-preserving renames, extractions, moves, splits, and shared-code cleanup.
+
+## Command Choices
+
+| Need | Use |
+|---|---|
+| Understand current ownership | MCP/CLI `context` |
+| Check callers and flows before editing | MCP/CLI `impact --direction upstream` |
+| Rename a symbol | MCP `rename` or CLI `avmatrix rename <symbol> <newName> --repo <repo>` |
+| Check API route/contract consumers | MCP `api_impact` or CLI `avmatrix api impact [route] --repo <repo>` |
+| Verify changed scope before commit | MCP `detect_changes` or CLI `avmatrix detect-changes --repo <repo> --scope all` |
 
 ## Workflow
 
-1. Refresh the graph if stale with `avmatrix analyze --force`.
-2. Use `context({name: "<target>"})` to understand the symbol and disambiguate candidates.
-3. Use `impact({target: "<target>", direction: "upstream"})` before editing.
-4. For renames, use `rename` instead of find-and-replace.
-5. Make the smallest refactor that satisfies the goal.
-6. Run focused tests and `detect_changes({scope: "all"})`.
+1. Refresh the graph with `avmatrix analyze --force` before graph-based refactoring.
+2. Use `context` to inspect the exact target. If multiple candidates exist, use UID/file disambiguation.
+3. Run upstream impact and report the blast radius. HIGH/CRITICAL means proceed carefully, not stop automatically.
+4. For renames, start with a graph-guided dry run. Do not use find-and-replace for symbols.
+5. Make behavior-preserving changes first. Defer unrelated cleanup unless required.
+6. Run focused tests, broader tests when shared contracts are touched, and `detect-changes`.
 
 ## Rename Flow
 
-1. Run `rename({symbol_name: "oldName", new_name: "newName", dry_run: true})`.
-2. Inspect files, line edits, and confidence.
-3. Apply only when the edit list is correct.
-4. Run tests and `detect_changes`.
+1. `avmatrix rename oldName newName --repo <repo> --json`
+2. Inspect files, edit counts, graph edits, text-search edits, and ambiguity warnings.
+3. Use `--uid` or `--file` if the dry run is ambiguous.
+4. Apply only when the edit list matches the intended scope.
 
-## Extract Or Split Flow
+## Extract, Split, Or Move Flow
 
-1. Use `context` to identify callers and callees.
-2. Use `impact` to identify consumers that must stay compatible.
-3. Extract without changing behavior first.
-4. Update imports and call sites deliberately.
-5. Run tests for affected flows.
+- Use `context` to identify callers/callees and nearby contracts.
+- Use `impact` to identify consumers that must remain compatible.
+- Move code in a small slice, update imports deliberately, and preserve behavior.
+- Re-run tests that cover affected flows and any API shape tests if contracts moved.
 
-## Move Flow
+## Current Limitations
 
-1. Check current module ownership with `context`.
-2. Review affected modules from `impact`.
-3. Move code and update references.
-4. Confirm no unrelated files changed.
-
-## Checklist
-
-- [ ] Exact target symbol is known.
-- [ ] `context` has been reviewed.
-- [ ] `impact` has been run before edits.
-- [ ] HIGH or CRITICAL impact has been reported before proceeding.
-- [ ] Rename operations use `rename`, not text replacement.
-- [ ] Tests cover changed flows.
-- [ ] `detect_changes` confirms expected scope.
-
-## Guardrail
-
-Avoid opportunistic cleanup. Refactoring should preserve behavior unless the user explicitly asked for behavior change.
+Graph-guided rename is safer than text replacement, but generated files, dynamic references, string-based APIs, and external integrations still need source review and tests.

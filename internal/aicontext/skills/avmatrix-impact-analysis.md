@@ -1,63 +1,51 @@
 ---
 name: avmatrix-impact-analysis
-description: "Use when the user wants to know what will break if they change something, or needs safety analysis before editing code. Examples: \"Is it safe to change X?\", \"What depends on this?\", \"What will break?\""
+description: "Use when the user wants to know what will break if they change something, or needs safety analysis before editing code."
 ---
 
 # Impact Analysis With AVmatrix
 
-Use this skill before editing a function, class, method, API surface, or shared module.
+Use this skill before editing functions, classes, methods, exported symbols, API handlers, graph builders, resolvers, analyzers, shared contracts, or generated-context owners.
+
+## Command Choices
+
+| Need | Use |
+|---|---|
+| Blast radius for one symbol | MCP `impact` or CLI `avmatrix impact "<symbol>" --repo <repo> --direction upstream` |
+| Disambiguate a target | MCP/CLI `context` and `impact --uid <uid>` |
+| Route or contract impact | MCP `api_impact` or CLI `avmatrix api impact [route] --repo <repo>` |
+| Changed-scope review before commit | MCP `detect_changes` or CLI `avmatrix detect-changes --repo <repo> --scope all` |
+| Resolution/topology risk context | `graph-health`, `resolution-inventory`, or `source-site-accuracy` when relevant |
 
 ## Workflow
 
-1. Refresh the graph if stale with `avmatrix analyze --force`.
-2. Run `impact({target: "<symbol>", direction: "upstream"})` before editing.
-3. Review direct depth-1 dependents first; these are most likely to break.
-4. Inspect affected processes and modules.
-5. Warn the user before proceeding when risk is HIGH or CRITICAL.
-6. After editing, run focused tests and `detect_changes({scope: "all"})`.
-
-## Impact Directions
-
-| Direction | Question |
-|---|---|
-| `upstream` | What callers, flows, or modules depend on this symbol? |
-| `downstream` | What callees or dependencies does this symbol use? |
-
-Use upstream for most edit safety checks. Use downstream when you need to understand data flow or dependency behavior.
+1. Run `avmatrix analyze --force` before graph-based impact work when required by repo rules.
+2. Identify the exact symbol. If impact returns candidates, use `context` or `--uid` to disambiguate.
+3. Run upstream impact before editing. Review direct depth-1 dependents first.
+4. Report affected files, App Layers, Functional Areas, execution flows, and risk.
+5. Proceed carefully on HIGH or CRITICAL impact. Those levels are blast-radius warnings to account for, not a ban on required code changes.
+6. Keep the implementation scoped to the reason for the edit.
+7. Run focused validation and `detect-changes` before commit.
 
 ## Risk Interpretation
 
 | Risk | Meaning |
 |---|---|
-| LOW | Small or local blast radius |
-| MEDIUM | Multiple dependents or flows need review |
-| HIGH | Broad caller or flow impact; warn before edits |
-| CRITICAL | Core path or many flows affected; narrow the change and validate heavily |
+| LOW | Local or small blast radius. Still run relevant tests. |
+| MEDIUM | Multiple dependents or flows need review. |
+| HIGH | Important shared code or broad callers; warn clearly and validate carefully. |
+| CRITICAL | Core path, command surface, generated context, runtime, or many flows; work is allowed but evidence and tests must be strong. |
 
-## Tool Patterns
+HIGH/CRITICAL is not a prohibition. If the requested fix requires editing that area, edit it deliberately, avoid unrelated refactors, and record why the blast radius is acceptable.
 
-`impact({target: "validateUser", direction: "upstream"})`
+## Validation
 
-Finds callers and affected flows before changing `validateUser`.
+- Impact command and target UID/name recorded.
+- Direct dependents reviewed.
+- Affected process names reviewed when present.
+- Tests cover the affected behavior.
+- `detect-changes --scope all` matches the intended scope before commit.
 
-`context({name: "validateUser"})`
+## Current Limitations
 
-Use after impact to inspect the target and disambiguate candidates.
-
-`detect_changes({scope: "all"})`
-
-Use after edits to verify the changed symbols and affected flows match the intended scope.
-
-## Checklist
-
-- [ ] Identify the exact target symbol.
-- [ ] Run upstream impact before editing.
-- [ ] Report direct callers, affected processes, and risk.
-- [ ] Warn before HIGH or CRITICAL changes.
-- [ ] Keep the implementation scoped to the stated blast radius.
-- [ ] Run tests that cover affected flows.
-- [ ] Run `detect_changes` before commit.
-
-## Guardrail
-
-Do not treat impact output as permission to skip source review. It is a map of likely affected code; source and tests decide correctness.
+Impact relies on current graph relationships and source-site resolution. ResolutionGap rows can show unresolved references or analyzer gaps; treat them as risk evidence, not fake resolved dependencies.

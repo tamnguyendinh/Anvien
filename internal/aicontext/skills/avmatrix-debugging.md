@@ -1,56 +1,47 @@
 ---
 name: avmatrix-debugging
-description: "Use when the user is debugging a bug, tracing an error, or asking why something fails. Examples: \"Why is X failing?\", \"Where does this error come from?\", \"Trace this bug\""
+description: "Use when the user is debugging a bug, tracing an error, or asking why something fails."
 ---
 
 # Debugging With AVmatrix
 
-Use this skill to trace a bug through execution flows, callers, callees, and graph-backed context before changing code.
+Use this skill to trace a bug from symptom to owner using graph facts, runtime evidence, source inspection, and tests.
+
+## Command Choices
+
+| Need | Use |
+|---|---|
+| Find candidate owners from a symptom | MCP `query` or CLI `avmatrix query "<symptom>" --repo <repo>` |
+| Inspect suspect symbol callers/callees | MCP/CLI `context` |
+| Trace a known flow | `avmatrix://repo/<repo>/process/{name}` |
+| Check topology or diagnostic candidates | CLI `avmatrix graph-health ...` |
+| Inspect unresolved references | CLI `avmatrix resolution-inventory --graph .avmatrix/graph.json` |
+| Check source-site proof quality | CLI `avmatrix source-site-accuracy --graph .avmatrix/graph.json` |
+| Measure query reliability for a bug class | CLI `avmatrix query-health --repo <repo> --suite <file>` |
 
 ## Workflow
 
-1. Refresh the graph if stale with `avmatrix analyze --force`.
-2. Run `query({query: "<error or symptom>"})` to find relevant execution flows.
-3. Run `context({name: "<suspect symbol>"})` for callers, callees, and process membership.
-4. Read `avmatrix://repo/{name}/process/{processName}` for the full step trace when the failure sits inside a known flow.
-5. Use `cypher` only for targeted graph questions that `query` and `context` do not answer.
+1. Reproduce or capture the symptom first: command, input, log, screenshot, failing test, or runtime trace.
+2. Refresh graph evidence with `avmatrix analyze --force` before graph-based debugging when needed.
+3. Use `query` for broad symptom and domain discovery, then verify the candidate owner with `context` and source.
+4. Follow process resources when the failure sits in a route/tool/CLI/runtime flow.
+5. Use graph-quality commands when the bug may be missing topology, stale graph data, unresolved references, or poor query retrieval.
+6. Run impact before editing the suspected owner.
+7. Add or update focused regression tests for the failure.
 
-## Evidence To Collect
+## Query Reliability Rule
 
-- The failing symptom or error text.
-- The process or route/tool flow that reaches the failing code.
-- Incoming callers that can trigger the path.
-- Outgoing calls or external dependencies that can return bad data.
-- Tests or fixtures that already cover the failing path.
+Broad `query` is useful but not proof. It has multiple lanes and can surface plausible but wrong regions. If broad query misses expected owners, record the miss as graph-quality/query-health evidence. When the exact symbol or file is known, use `context` and source inspection directly.
 
-## Tool Patterns
+## Evidence To Record
 
-`query({query: "timeout while saving invoice"})`
+- Symptom and reproduction command.
+- Query/context/process commands used to locate the owner.
+- ResolutionGap or graph-health evidence if relevant.
+- Impact result before edits.
+- Regression test or validation command after the fix.
+- `detect-changes` before commit.
 
-Finds processes, symbols, and modules related to the symptom.
+## Current Limitations
 
-`context({name: "saveInvoice"})`
-
-Shows what calls the suspect symbol, what it calls, and which flows include it.
-
-`impact({target: "saveInvoice", direction: "upstream"})`
-
-Use before editing the suspect symbol to understand what may break.
-
-`detect_changes({scope: "all"})`
-
-Run after the fix and before commit to verify the affected scope matches the bug fix.
-
-## Debugging Checklist
-
-- [ ] Query by symptom, error text, and domain concept.
-- [ ] Inspect the most relevant process trace.
-- [ ] Inspect the suspect symbol with `context`.
-- [ ] Identify direct callers and external dependencies.
-- [ ] Run impact before edits.
-- [ ] Add or update focused tests for the failing path.
-- [ ] Run `detect_changes` before commit.
-
-## Interpretation
-
-Do not assume the first matching symbol is the root cause. Treat AVmatrix output as navigation and impact evidence, then confirm behavior in source and tests.
+AVmatrix can identify likely owners and dependency paths, but it does not prove runtime state by itself. Confirm with tests, logs, browser/e2e evidence, or CLI smoke commands that exercise the failing behavior.
