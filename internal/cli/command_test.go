@@ -73,6 +73,7 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 	for _, want := range []string{
 		"AVmatrix local CLI and MCP server",
 		"analyze",
+		"api",
 		"augment",
 		"benchmark-compare",
 		"clean",
@@ -88,6 +89,7 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 		"mcp",
 		"query",
 		"query-health",
+		"rename",
 		"resolution-inventory",
 		"serve",
 		"setup",
@@ -705,6 +707,10 @@ func TestDirectToolHelpShowsCompatibilityFlags(t *testing.T) {
 		{[]string{"detect-changes", "--help"}, []string{"Analyze uncommitted git changes", "--scope", "--base-ref", "--repo"}},
 		{[]string{"doctor", "locks", "--help"}, []string{"Inspect repository analyze lock state", "--repo", "--json"}},
 		{[]string{"doctor", "processes", "--help"}, []string{"Inspect AVmatrix runtime processes", "--json"}},
+		{[]string{"rename", "--help"}, []string{"avmatrix rename", "--uid", "--file", "--apply", "--json", "--repo"}},
+		{[]string{"api", "--help"}, []string{"avmatrix api", "route-map", "tool-map", "shape-check", "impact", "--repo"}},
+		{[]string{"api", "route-map", "--help"}, []string{"avmatrix api route-map", "--route", "--json", "--repo"}},
+		{[]string{"api", "impact", "--help"}, []string{"avmatrix api impact", "--route", "--file", "--json", "--repo"}},
 	}
 
 	for _, tc := range cases {

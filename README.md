@@ -249,8 +249,13 @@ Direct graph tools:
 avmatrix query <search_query>
 avmatrix context [name]
 avmatrix impact [target]
+avmatrix rename <symbol> <newName>
 avmatrix cypher <query>
 avmatrix detect-changes
+avmatrix api route-map [route]
+avmatrix api tool-map [tool]
+avmatrix api shape-check [route]
+avmatrix api impact [route]
 avmatrix graph-health
 avmatrix query-health
 avmatrix resolution-inventory
@@ -269,6 +274,8 @@ avmatrix source-site-accuracy --graph .avmatrix/graph.json --out .tmp/source-sit
 ```
 
 These commands are for checking graph quality, not for replacing `analyze`. `analyze` remains the source of truth that refreshes the graph. `graph-health` audits computed topology health, diagnostics, component membership, confidence, resolution-health overlays, and prioritized candidate reports from the indexed repo graph. `query-health` measures query retrieval with two separate outcomes: threshold pass/fail for usable retrieval, and exact pass/fail for complete expected target coverage. Use `--fail-on-threshold` to fail when hit@5/hit@10 thresholds are missed, or `--fail-on-exact` to fail when any expected file/symbol is still missing. `resolution-inventory` reports persisted ResolutionGap and Resolution Health counts, including non-actionable breakdowns such as `builtin`, `standard_library`, and `test_framework`. `source-site-accuracy` reports proof-based CALLS/ACCESSES inventory, missing source-site IDs, false resolved edge candidates, and other graph accuracy gates.
+
+`avmatrix rename` and `avmatrix api ...` are CLI equivalents for the MCP `rename`, `route_map`, `tool_map`, `shape_check`, and `api_impact` tools. Use them for terminal workflows and smoke validation; they delegate to the same local MCP tool logic so API/rename semantics stay consistent across command surfaces.
 
 Repository groups:
 

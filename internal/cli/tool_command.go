@@ -211,6 +211,55 @@ func newImpactCommand() *cobra.Command {
 	return cmd
 }
 
+func newRenameCommand() *cobra.Command {
+	var repoName string
+	var uid string
+	var filePath string
+	var apply bool
+	var jsonOutput bool
+
+	cmd := &cobra.Command{
+		Use:   "rename [symbol_name] <new_name>",
+		Short: "Preview or apply a graph-guided symbol rename",
+		Args: func(cmd *cobra.Command, args []string) error {
+			if strings.TrimSpace(uid) != "" {
+				if len(args) != 1 {
+					return fmt.Errorf("usage: avmatrix rename --uid <symbol_uid> <new_name>")
+				}
+				return nil
+			}
+			if len(args) != 2 {
+				return fmt.Errorf("usage: avmatrix rename <symbol_name> <new_name>")
+			}
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			symbolName := ""
+			newName := ""
+			if strings.TrimSpace(uid) != "" {
+				newName = args[0]
+			} else {
+				symbolName = args[0]
+				newName = args[1]
+			}
+			return printLocalMCPToolWithJSON(cmd, "rename", map[string]any{
+				"symbol_name": emptyToNil(symbolName),
+				"symbol_uid":  emptyToNil(uid),
+				"new_name":    newName,
+				"file_path":   emptyToNil(filePath),
+				"dry_run":     !apply,
+				"repo":        emptyToNil(repoName),
+			}, jsonOutput)
+		},
+	}
+	cmd.Flags().StringVarP(&repoName, "repo", "r", "", "target repository")
+	cmd.Flags().StringVarP(&uid, "uid", "u", "", "direct symbol UID")
+	cmd.Flags().StringVarP(&filePath, "file", "f", "", "file path to disambiguate common names")
+	cmd.Flags().BoolVar(&apply, "apply", false, "apply edits instead of running a dry run")
+	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write only the JSON payload")
+	return cmd
+}
+
 func newCypherCommand() *cobra.Command {
 	var repoName string
 	cmd := &cobra.Command{
@@ -252,12 +301,26 @@ func newDetectChangesCommand() *cobra.Command {
 }
 
 func printLocalMCPTool(cmd *cobra.Command, toolName string, args map[string]any) error {
+	return printLocalMCPToolWithJSON(cmd, toolName, args, false)
+}
+
+func printLocalMCPToolWithJSON(cmd *cobra.Command, toolName string, args map[string]any, jsonOutput bool) error {
 	text, err := callLocalMCPTool(toolName, args)
 	if err != nil {
 		return err
 	}
+	if jsonOutput {
+		text = primaryMCPToolPayload(text)
+	}
 	_, err = fmt.Fprintln(cmd.OutOrStdout(), text)
 	return err
+}
+
+func primaryMCPToolPayload(text string) string {
+	if before, _, ok := strings.Cut(text, "\n\n---\n"); ok {
+		return strings.TrimSpace(before)
+	}
+	return strings.TrimSpace(text)
 }
 
 func callLocalMCPTool(toolName string, args map[string]any) (string, error) {

@@ -39,10 +39,10 @@ Status: baseline recorded; Phase 1 query-lane metrics and P1.5 graph-health comm
 
 | Metric | Unit | Baseline | Latest | Delta | Final target |
 |---|---:|---:|---:|---:|---:|
-| Visible built CLI top-level commands | commands | 24 | 25 | +1 | >= 25 |
-| Visible source CLI top-level commands | commands | 24 | 25 | +1 | >= 25 |
+| Visible built CLI top-level commands, including Cobra built-ins | commands | 24 | 28 | +4 | >= 28 |
+| Explicit visible source CLI top-level commands | commands | 24 | 26 | +2 | >= 26 |
 | Hidden lifecycle command families from source | families | 2 | 2 | 0 | record |
-| MCP tools from source | tools | 15 | 15 | 0 | record |
+| MCP tools from source | tools | 15 | 16 | +1 | record |
 | MCP fixed resources from source | resources | 2 | 2 | 0 | record |
 | MCP resource templates from source | templates | 6 | 6 | 0 | record |
 | MCP prompts from source | prompts | 2 | 2 | 0 | 2 |
@@ -52,7 +52,7 @@ Status: baseline recorded; Phase 1 query-lane metrics and P1.5 graph-health comm
 | Normal query compatibility failures | failures | 0 | 0 | 0 | 0 |
 | First-class graph-health CLI command families | families | 0 | 1 | +1 | >= 1 |
 | MCP prompt templates reviewed | prompts | 0 | 0 | 0 | 2 |
-| Accepted CLI parity gaps implemented | gaps | 0 | pending | pending | pending |
+| Accepted CLI parity gaps implemented | gaps | 0 | 5 | +5 | 5 |
 
 P1.5 graph-health CLI smoke inventory:
 
@@ -74,6 +74,40 @@ P1.5 graph-health CLI smoke inventory:
 | First report candidate counted incoming | relationships | 0 |
 | First report candidate counted outgoing | relationships | 6 |
 | First explained component sample nodes | nodes | 20 |
+
+P1.6 CLI parity inventory and smoke:
+
+| Metric | Unit | Result |
+|---|---:|---:|
+| Built CLI visible top-level commands, including Cobra built-ins | commands | 28 |
+| Built CLI new P1.6 top-level commands | commands | 2 |
+| Explicit source visible top-level commands | commands | 26 |
+| Explicit source hidden lifecycle families | families | 2 |
+| Explicit source hidden lifecycle subcommands | commands | 5 |
+| MCP tools inventoried from source | tools | 16 |
+| MCP fixed resources inventoried from source | resources | 2 |
+| MCP resource templates inventoried from source | templates | 6 |
+| MCP prompt templates inventoried from source | prompts | 2 |
+| HTTP/Web endpoint handlers inventoried | endpoints | 24 |
+| P1.6 accepted parity commands implemented | commands | 5 |
+| P1.6 CLI parity focused test package failures | failures | 0 |
+| P1.6 fixture analyze scanned files | files | 3 |
+| P1.6 fixture analyze parsed files | files | 2 |
+| P1.6 fixture analyze graph nodes | nodes | 22 |
+| P1.6 fixture analyze graph relationships | relationships | 20 |
+| P1.6 fixture `api route-map` total routes | routes | 1 |
+| P1.6 fixture `api route-map` consumers for `/api/users` | consumers | 1 |
+| P1.6 fixture `api tool-map` total tools | tools | 1 |
+| P1.6 fixture `api shape-check` routes checked | routes | 1 |
+| P1.6 fixture `api shape-check` mismatches | mismatches | 1 |
+| P1.6 fixture `api impact` direct consumers | consumers | 1 |
+| P1.6 fixture `api impact` affected flows | flows | 0 |
+| P1.6 fixture `rename` dry-run files affected | files | 1 |
+| P1.6 fixture `rename` dry-run total edits | edits | 1 |
+| P1.6 AVmatrix `rename NewRootCommand` dry-run files affected | files | 4 |
+| P1.6 AVmatrix `rename NewRootCommand` dry-run total edits | edits | 4 |
+| AVmatrix self graph Route nodes available for API smoke | nodes | 0 |
+| AVmatrix self graph Tool nodes available for API smoke | nodes | 0 |
 
 ## B2 - Query Reliability Metrics
 

@@ -767,3 +767,139 @@ Pre-commit checks:
 | `git diff --check` | pass. |
 | `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after evidence/benchmark updates; `files: scanned=769 parsed=572 unsupported=197 failed=0`, `nodes=87383 relationships=120023`. |
 | `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass; summary `changed_files=11`, `changed_count=79`, `affected_count=35`, `risk_level=critical`; changed App Layers `api=36`, `backend=5`, `backend_test=12`, `docs=26`; affected App Layers `api=1`, `backend=1`, `mixed=33`. Critical scope is expected for shared graph-health/API/CLI/generator changes. |
+
+## Phase 1.6 CLI Parity Audit And Missing Command Surfaces Evidence
+
+Status: complete.
+
+Fresh graph and impact commands:
+
+| Command | Result |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass before P1.6 impact checks; `files: scanned=770 parsed=573 unsupported=197 failed=0`, `nodes=87524 relationships=120184`. |
+| `.\avmatrix\bin\avmatrix.exe impact "NewRootCommand" --repo AVmatrix --direction upstream` | CRITICAL; root CLI registration path affects `cmd/avmatrix/main.go:main` and 11 execution processes. This is blast-radius evidence, not a blocker. |
+| `.\avmatrix\bin\avmatrix.exe impact "printLocalMCPTool" --repo AVmatrix --direction upstream` | CRITICAL; shared direct CLI tool wrapper affects query/context/impact/cypher/detect-changes style commands through `NewRootCommand` and CLI launcher paths. |
+| `.\avmatrix\bin\avmatrix.exe impact "callLocalMCPTool" --repo AVmatrix --direction upstream` | CRITICAL; shared local MCP invocation helper affects direct tool commands and query-health local query execution. |
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass before guidance impact checks; `files: scanned=771 parsed=574 unsupported=197 failed=0`, `nodes=87760 relationships=120503`. |
+| `.\avmatrix\bin\avmatrix.exe impact "renderAVmatrixBlock" --repo AVmatrix --direction upstream` | CRITICAL; analyze-generated AGENTS/CLAUDE context path through `GenerateAIContextFiles` and analyze post-run. |
+| `.\avmatrix\bin\avmatrix.exe impact "contextResource" --repo AVmatrix --direction upstream` | LOW; MCP repo context resource text surface. |
+| `.\avmatrix\bin\avmatrix.exe impact "setupResource" --repo AVmatrix --direction upstream` | LOW; MCP setup resource text surface. |
+
+### P1.6-A/B Command Surface Inventory
+
+Source and binary inventory commands:
+
+| Command | Result |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe --help` | pass; visible help lists 28 top-level commands including Cobra built-ins `completion` and `help`. New user-facing commands are `api` and `rename`. |
+| `go run .\cmd\avmatrix --help` | pass; source-run help matches the freshly built canonical binary help for the visible command list. |
+| `rg -n 'Use:\s+"' internal\cli -g '*.go'` | source registration inventory recorded 26 explicit visible top-level user commands plus 2 hidden lifecycle families, `hook` and `package`. |
+| `rg -n 'Name:\s+"..." internal\mcp -g '*.go'` | source MCP inventory recorded 16 tools: `list_repos`, `query`, `cypher`, `context`, `detect_changes`, `rename`, `impact`, `route_map`, `tool_map`, `shape_check`, `api_impact`, `group_list`, `group_sync`, `group_contracts`, `group_query`, `group_status`. |
+| `rg -n 'resourceDefinitions|resourceTemplates|promptDefinitions' internal\mcp -g '*.go'` | source MCP surface remains 2 fixed resources, 6 resource templates, and 2 prompt templates. |
+| `rg -n 'HandleFunc\(|/api/' internal\httpapi avmatrix-web\src\services -g '*.go' -g '*.ts' -g '*.tsx'` | HTTP/Web inventory recorded `/api/heartbeat`, `/api/info`, `/api/repos`, `/api/repo`, `/api/local/folder-picker`, `/api/graph`, `/api/graph/explain`, `/api/graph/report`, `/api/file`, `/api/grep`, `/api/query`, `/api/processes`, `/api/process`, `/api/clusters`, `/api/cluster`, `/api/analyze`, `/api/analyze/`, `/api/search`, `/api/embed`, `/api/embed/`, `/api/mcp`, `/api/session/status`, `/api/session/chat`, and `/api/session/`. |
+
+### P1.6-C/D Parity Matrix And Accepted Design
+
+Accepted CLI additions use a grouped API command family plus one top-level rename command:
+
+| Surface | Classification | P1.6 decision |
+|---|---|---|
+| MCP `rename` | `has_cli` after P1.6 | Add `avmatrix rename [symbol_name] <new_name>` with `--repo`, `--uid`, `--file`, `--apply`, and `--json`. Default remains dry run. |
+| MCP `route_map` | `has_cli` after P1.6 | Add `avmatrix api route-map [route] --repo <repo> [--json]`, delegating to MCP `route_map`. |
+| MCP `tool_map` | `has_cli` after P1.6 | Add `avmatrix api tool-map [tool] --repo <repo> [--json]`, delegating to MCP `tool_map`. |
+| MCP `shape_check` | `has_cli` after P1.6 | Add `avmatrix api shape-check [route] --repo <repo> [--json]`, delegating to MCP `shape_check`. |
+| MCP `api_impact` | `has_cli` after P1.6 | Add `avmatrix api impact [route] --repo <repo> [--file <path>] [--json]`, delegating to MCP `api_impact`. |
+| Graph explain/report | `has_cli` | Already covered by `avmatrix graph-health report`, `components`, and `explain` from Phase 1.5. |
+| HTTP/Web `grep` | `mcp_api_web_only_by_design` for P1.6 | Not promoted in this slice. CLI users have native `rg` for text grep and `avmatrix augment`/`query` for graph-context search. |
+| HTTP/Web `search` | `covered_by_existing_cli` plus `follow_up` for semantic Web behavior | `avmatrix query` is the CLI graph search surface. Web/API semantic search remains runtime-oriented and can be revisited if a product CLI search command is required. |
+| HTTP/Web `processes` and `process` | `mcp_api_web_only_by_design` for P1.6 | Exposed through MCP resources `avmatrix://repo/{name}/processes` and `avmatrix://repo/{name}/process/{processName}`; no CLI command added in this slice. |
+| HTTP/Web `clusters` and `cluster` | `mcp_api_web_only_by_design` for P1.6 | Exposed through MCP resources `avmatrix://repo/{name}/clusters` and `avmatrix://repo/{name}/cluster/{clusterName}`; no CLI command added in this slice. |
+| HTTP/Web `file` | `mcp_api_web_only_by_design` for P1.6 | Web/API source viewer endpoint only. CLI users can inspect files directly. |
+| HTTP/Web `repo`, `repos`, `analyze`, `embed`, `session`, local folder picker | `has_cli` or `web_runtime_only` | Repo/analyze have CLI equivalents; embed/session/folder picker remain Web/runtime workflows in this slice. |
+| Hidden `package` and `hook` | `hidden_lifecycle_only` | Kept hidden. Guidance now labels these as lifecycle helpers, not normal repo-analysis commands. |
+
+Design constraints:
+
+- The new CLI commands call existing MCP tool owners through `callLocalMCPTool`, avoiding a second implementation of rename/API semantics.
+- `--json` strips the MCP next-step hint and prints only the primary JSON payload.
+- Positional selectors and selector flags are mutually exclusive for API subcommands.
+- Existing `query`, `group`, graph-health, and hidden lifecycle command parsing is preserved.
+
+### P1.6-E/F Implementation And Tests
+
+Implementation:
+
+| File | Change |
+|---|---|
+| `internal/cli/api_command.go` | Added `avmatrix api` with `route-map`, `tool-map`, `shape-check`, and `impact` subcommands. |
+| `internal/cli/tool_command.go` | Added `avmatrix rename`; added JSON-only wrapper behavior through `printLocalMCPToolWithJSON` and `primaryMCPToolPayload`. |
+| `internal/cli/command.go` | Registered `newAPICommand()` and `newRenameCommand()` in the root CLI tree. |
+| `internal/cli/api_command_test.go` | Added focused tests for API command JSON success paths, duplicate selector error handling, and rename dry-run JSON behavior through the local MCP runtime. |
+| `internal/cli/command_test.go` | Updated root/help tests for `api` and `rename`. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass before focused tests; Go build and Web production build completed. Existing Vite chunk-size/dynamic-import warnings only. |
+| `go test .\internal\cli -count=1` | pass; `internal/cli` 8.287s. |
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass after guidance updates; same existing Vite warnings only. |
+| `go test .\internal\cli .\internal\aicontext .\internal\mcp -count=1` | pass; `cli` 10.186s, `aicontext` 0.756s, `mcp` 6.279s. |
+
+### P1.6-G Guidance Updates
+
+Updated guidance sources:
+
+| File | Change |
+|---|---|
+| `internal/aicontext/aicontext.go` | Generated command selection now lists CLI `rename` and `api route-map`/`api tool-map`/`api shape-check`/`api impact` equivalents beside MCP tools. Hidden `package`/`hook` rows are labeled lifecycle helpers. |
+| `internal/aicontext/skills/avmatrix-cli.md` | Added `rename` and `api` command sections and clarified CLI vs MCP use. |
+| `internal/aicontext/skills/avmatrix-guide.md` | Added CLI equivalent table for query/context/impact/detect-changes/cypher/rename/API parity commands. |
+| `internal/mcp/resources.go` | Added CLI equivalents to repo context and setup resources. |
+| `README.md` | Added `rename` and `api ...` commands to direct graph tools and documented that they delegate to MCP owners. |
+| `internal/aicontext/aicontext_test.go`, `internal/mcp/resources_parity_test.go` | Updated generated guidance/resource expectations for the new command taxonomy. |
+
+### P1.6-H User-Facing Smoke
+
+Fresh graph before smoke:
+
+| Command | Result |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after P1.6 guidance updates; `files: scanned=771 parsed=574 unsupported=197 failed=0`, `nodes=87762 relationships=120505`. |
+
+Help and source smoke:
+
+| Command | Representative output |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe --help` | Lists `api` and `rename`; visible help count is 28 including `completion` and `help`. |
+| `go run .\cmd\avmatrix --help` | Matches canonical binary help for visible command list. |
+| `.\avmatrix\bin\avmatrix.exe api --help` | Lists `impact`, `route-map`, `shape-check`, `tool-map`, and persistent `--repo`. |
+| `.\avmatrix\bin\avmatrix.exe rename --help` | Lists `--apply`, `--file`, `--json`, `--repo`, and `--uid`. |
+
+AVmatrix repo smoke:
+
+| Command | Representative output |
+|---|---|
+| `.\avmatrix\bin\avmatrix.exe rename NewRootCommand NewRootCommand2 --repo AVmatrix --json` | Dry-run JSON parse succeeded: `status=success applied=false files=4 edits=4 graphEdits=4 textSearchEdits=0`. |
+| `.\avmatrix\bin\avmatrix.exe cypher "MATCH (n:Route) RETURN n.id AS id, n.name AS name, n.filePath AS filePath LIMIT 10" --repo AVmatrix` | `_No rows_`; current AVmatrix self graph has no `Route` nodes, so positive API command smoke used a small analyzed fixture below. |
+| `.\avmatrix\bin\avmatrix.exe cypher "MATCH (n:Tool) RETURN n.id AS id, n.name AS name, n.filePath AS filePath LIMIT 10" --repo AVmatrix` | `_No rows_`; current AVmatrix self graph has no `Tool` nodes. |
+
+Positive API/rename smoke fixture:
+
+| Command | Result |
+|---|---|
+| Created `.tmp\p1-6-cli-parity-smoke-20260526173638` | Fixture contains `app/api/users/route.ts`, `src/client.ts`, and `README.md`. |
+| `.\avmatrix\bin\avmatrix.exe analyze .tmp\p1-6-cli-parity-smoke-20260526173638 --force --skip-git --no-stats --name p1-6-cli-parity-smoke-20260526173638` | pass; `files: scanned=3 parsed=2 unsupported=1 failed=0`, `nodes=22 relationships=20`. |
+| `.\avmatrix\bin\avmatrix.exe api route-map "/api/users" --repo p1-6-cli-parity-smoke-20260526173638 --json` | JSON parse confirmed `total=1`, route `/api/users`, handler `app/api/users/route.ts`, `consumers=1`, `flows=0`. |
+| `.\avmatrix\bin\avmatrix.exe api tool-map query --repo p1-6-cli-parity-smoke-20260526173638 --json` | JSON parse confirmed `total=1`, tool `query`, file `src/client.ts`, description `Query tool`, `flows=0`. |
+| `.\avmatrix\bin\avmatrix.exe api shape-check "/api/users" --repo p1-6-cli-parity-smoke-20260526173638 --json` | JSON parse confirmed `total=1`, `mismatches=1`, route status `MISMATCH`. |
+| `.\avmatrix\bin\avmatrix.exe api impact "/api/users" --repo p1-6-cli-parity-smoke-20260526173638 --json` | JSON parse confirmed route `/api/users`, handler `app/api/users/route.ts`, `consumers=1`, `flows=0`, `risk=MEDIUM`, `mismatches=1`. |
+| `.\avmatrix\bin\avmatrix.exe rename loadUsers loadUsers2 --repo p1-6-cli-parity-smoke-20260526173638 --json` | Dry-run JSON parse confirmed `status=success`, `applied=false`, `files=1`, `edits=1`, `graphEdits=1`, `textSearchEdits=0`. |
+
+Pre-commit checks:
+
+| Command | Result |
+|---|---|
+| `git diff --check` | pass. |
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after checklist/evidence/benchmark updates; `files: scanned=771 parsed=574 unsupported=197 failed=0`, `nodes=87768 relationships=120511`. |
+| `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass; summary `changed_files=13`, `changed_count=103`, `affected_count=20`, `risk_level=critical`; changed App Layers `api=4`, `api_test=2`, `backend=53`, `backend_test=16`, `docs=28`; affected App Layers `backend=3`, `mixed=17`. Critical scope is expected for root CLI registration, direct MCP wrapper, AI-context generator, MCP resource guidance, and docs/test changes. |

@@ -56,7 +56,20 @@ Use `rename` instead of text replacement. Start with a dry run, inspect confiden
 
 ## CLI Fallback
 
-When MCP tools are unavailable, use `avmatrix query`, `avmatrix context`, `avmatrix impact`, `avmatrix detect-changes`, and `avmatrix cypher` with `--repo <name>`.
+When MCP tools are unavailable, use the CLI equivalent with `--repo <name>`.
+
+| Need | CLI |
+|---|---|
+| Concept search | `avmatrix query "<concept>" --repo <name>` |
+| Symbol context | `avmatrix context "<symbol>" --repo <name>` |
+| Blast radius | `avmatrix impact "<symbol>" --repo <name> --direction upstream` |
+| Changed-scope review | `avmatrix detect-changes --repo <name> --scope all` |
+| Graph query | `avmatrix cypher "<query>" --repo <name>` |
+| Symbol rename | `avmatrix rename <symbol> <newName> --repo <name>` |
+| Route map | `avmatrix api route-map [route] --repo <name>` |
+| Tool map | `avmatrix api tool-map [tool] --repo <name>` |
+| Shape check | `avmatrix api shape-check [route] --repo <name>` |
+| API impact | `avmatrix api impact [route] --repo <name>` |
 
 For graph quality checks, use these CLI-only diagnostic commands:
 
