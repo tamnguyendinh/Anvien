@@ -59,6 +59,47 @@ const createOrientationGraph = () => {
   return { nodes, relationships };
 };
 
+const createDenseSpacingGraph = () => {
+  const nodes = [
+    ...Array.from({ length: 1000 }, (_item, index) =>
+      makeNode(
+        "Function",
+        index,
+        "frontend",
+        `avmatrix-web/src/dense/function-${index}.tsx`,
+      ),
+    ),
+    ...Array.from({ length: 300 }, (_item, index) =>
+      makeNode(
+        "Method",
+        index,
+        "frontend",
+        `avmatrix-web/src/dense/method-${index}.tsx`,
+      ),
+    ),
+    ...Array.from({ length: 60 }, (_item, index) =>
+      makeNode("Function", index, "backend", `internal/dense/function-${index}.go`),
+    ),
+    ...Array.from({ length: 80 }, (_item, index) =>
+      makeNode("Route", index, "api", `internal/httpapi/dense-route-${index}.go`),
+    ),
+    ...Array.from({ length: 40 }, (_item, index) =>
+      makeNode("File", index, "docs", `docs/dense-guide-${index}.md`),
+    ),
+  ];
+
+  const relationships = nodes.slice(1).map((node, index) => ({
+    id: `dense-rel-${index}`,
+    sourceId: nodes[index].id,
+    targetId: node.id,
+    type: "CALLS",
+    confidence: 1,
+    reason: "dense-spacing-fixture",
+  }));
+
+  return { nodes, relationships };
+};
+
 const countOrientationLabelOverlaps = async (page: Page) =>
   page
     .locator(
@@ -95,6 +136,25 @@ const countOrientationLabelOverlaps = async (page: Page) =>
       }
       return overlaps;
     });
+
+const getLayoutNodeSpacingDiagnostics = async (page: Page) =>
+  page.evaluate(() => {
+    const win = window as typeof window & {
+      __AVMATRIX_WEB_DIAGNOSTICS__?: {
+        layoutNodeSpacing?: {
+          nodeCount: number;
+          islandCount: number;
+          requiredEdgeGap: number;
+          requiredCenterDistance: number;
+          minObservedCenterDistance: number;
+          minObservedEdgeGap: number;
+          overlapCount: number;
+          targetGapViolationCount: number;
+        };
+      };
+    };
+    return win.__AVMATRIX_WEB_DIAGNOSTICS__?.layoutNodeSpacing ?? null;
+  });
 
 test.describe("Graph orientation labels", () => {
   test.beforeEach(async ({ page }) => {
@@ -224,6 +284,71 @@ test.describe("Graph orientation labels", () => {
 
     await page.screenshot({
       path: testInfo.outputPath("graph-orientation-labels-small-filtered.png"),
+      fullPage: false,
+    });
+  });
+
+  test("keeps dense graph nodes separated by the default node gap", async ({
+    page,
+  }, testInfo) => {
+    await page.unroute(`${BACKEND_URL}/api/graph**`);
+    await page.route(`${BACKEND_URL}/api/graph**`, (route) =>
+      route.fulfill({ json: createDenseSpacingGraph() }),
+    );
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(
+      `${FRONTEND_URL}/?server=${encodeURIComponent(BACKEND_URL)}&project=orientation-demo`,
+    );
+
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+      timeout: 20_000,
+    });
+
+    await expect
+      .poll(
+        async () => (await getLayoutNodeSpacingDiagnostics(page))?.nodeCount ?? 0,
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThanOrEqual(1480);
+
+    const desktopDiagnostics = await getLayoutNodeSpacingDiagnostics(page);
+    expect(desktopDiagnostics?.islandCount).toBeGreaterThanOrEqual(4);
+    expect(desktopDiagnostics?.overlapCount).toBe(0);
+    expect(desktopDiagnostics?.targetGapViolationCount).toBe(0);
+    expect(desktopDiagnostics?.minObservedCenterDistance).toBeGreaterThanOrEqual(
+      desktopDiagnostics?.requiredCenterDistance ?? Number.POSITIVE_INFINITY,
+    );
+    expect(desktopDiagnostics?.minObservedEdgeGap).toBeGreaterThanOrEqual(
+      desktopDiagnostics?.requiredEdgeGap ?? Number.POSITIVE_INFINITY,
+    );
+
+    await expect
+      .poll(
+        async () => page.locator('[data-testid="graph-orientation-label-ring"]').count(),
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThanOrEqual(3);
+    await expect(
+      page.locator(
+        '[data-testid="graph-orientation-label-island"][data-label-source="frontend:Function"]',
+      ),
+    ).toContainText("Function");
+    await expect
+      .poll(async () => countOrientationLabelOverlaps(page), { timeout: 10_000 })
+      .toBe(0);
+
+    await page.screenshot({
+      path: testInfo.outputPath("graph-node-spacing-dense-desktop.png"),
+      fullPage: false,
+    });
+
+    await page.setViewportSize({ width: 520, height: 720 });
+    await expect
+      .poll(async () => countOrientationLabelOverlaps(page), { timeout: 10_000 })
+      .toBe(0);
+    await page.screenshot({
+      path: testInfo.outputPath("graph-node-spacing-dense-small.png"),
       fullPage: false,
     });
   });

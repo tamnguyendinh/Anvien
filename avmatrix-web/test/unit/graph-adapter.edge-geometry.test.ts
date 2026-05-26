@@ -6,6 +6,8 @@ import {
   capRenderedNodeSize,
   filterGraphByLabels,
   getMaxRenderedNodeSize,
+  getMinimumNodeCenterDistance,
+  getMinimumNodeEdgeGap,
   getScaledNodeSize,
   knowledgeGraphToGraphology,
   type SigmaNodeAttributes,
@@ -191,6 +193,51 @@ const getCircularGap = (
   );
 };
 
+type PairwiseSpacingStats = {
+  minCenterDistance: number;
+  minEdgeGap: number;
+  overlapCount: number;
+  targetGapViolationCount: number;
+};
+
+const getPairwiseSpacingStats = (
+  sigmaGraph: ReturnType<typeof knowledgeGraphToGraphology>,
+  nodeIds: string[],
+): PairwiseSpacingStats => {
+  const renderedRadius = getMaxRenderedNodeSize(sigmaGraph.order);
+  const renderedDiameter = renderedRadius * 2;
+  const minimumCenterDistance = getMinimumNodeCenterDistance(sigmaGraph.order);
+  let minCenterDistance = Number.POSITIVE_INFINITY;
+  let overlapCount = 0;
+  let targetGapViolationCount = 0;
+
+  for (let leftIndex = 0; leftIndex < nodeIds.length; leftIndex++) {
+    const left = sigmaGraph.getNodeAttributes(nodeIds[leftIndex]);
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < nodeIds.length;
+      rightIndex++
+    ) {
+      const right = sigmaGraph.getNodeAttributes(nodeIds[rightIndex]);
+      const centerDistance = Math.hypot(left.x - right.x, left.y - right.y);
+      minCenterDistance = Math.min(minCenterDistance, centerDistance);
+      if (centerDistance < renderedDiameter) {
+        overlapCount++;
+      }
+      if (centerDistance < minimumCenterDistance) {
+        targetGapViolationCount++;
+      }
+    }
+  }
+
+  return {
+    minCenterDistance,
+    minEdgeGap: minCenterDistance - renderedDiameter,
+    overlapCount,
+    targetGapViolationCount,
+  };
+};
+
 const getAngleProgress = (x: number, y: number): number => {
   const startAngle = -Math.PI / 2;
   const fullCircle = Math.PI * 2;
@@ -324,6 +371,18 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     );
     expect(capRenderedNodeSize(100, largeGraphNodeCount)).toBe(
       MAX_DENSE_RENDERED_NODE_SIZE,
+    );
+  });
+
+  it("defines one rendered node diameter as the default node edge gap", () => {
+    const graphNodeCount = 6_100;
+    const renderedRadius = getMaxRenderedNodeSize(graphNodeCount);
+    const renderedDiameter = renderedRadius * 2;
+
+    expect(renderedRadius).toBe(3);
+    expect(getMinimumNodeEdgeGap(graphNodeCount)).toBe(renderedDiameter);
+    expect(getMinimumNodeCenterDistance(graphNodeCount)).toBe(
+      renderedDiameter * 2,
     );
   });
 
@@ -496,6 +555,93 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
         ).toBeGreaterThanOrEqual(900);
       }
     }
+  });
+
+  it("keeps dense same-island nodes at least one rendered node apart", () => {
+    const graph = createKnowledgeGraph();
+    const countsByLabel = new Map([
+      ["Function", 1800],
+      ["Method", 1400],
+      ["File", 1000],
+      ["Class", 700],
+      ["Interface", 500],
+      ["Struct", 400],
+      ["Enum", 300],
+    ]);
+
+    for (const [label, count] of countsByLabel) {
+      for (let index = 0; index < count; index++) {
+        graph.addNode(
+          withAppLayer(
+            createTypedNode(label, index, `frontend/${label}/${index}.ts`) as any,
+            "frontend",
+          ),
+        );
+      }
+    }
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const minimumCenterDistance = getMinimumNodeCenterDistance(sigmaGraph.order);
+    const minimumEdgeGap = getMinimumNodeEdgeGap(sigmaGraph.order);
+    const functionNodeIds = sigmaGraph
+      .nodes()
+      .filter((nodeId) => sigmaGraph.getNodeAttribute(nodeId, "islandKey") === "Function");
+    const methodNodeIds = sigmaGraph
+      .nodes()
+      .filter((nodeId) => sigmaGraph.getNodeAttribute(nodeId, "islandKey") === "Method");
+
+    for (const [label, nodeIds] of [
+      ["Function", functionNodeIds],
+      ["Method", methodNodeIds],
+    ] as const) {
+      const stats = getPairwiseSpacingStats(sigmaGraph, nodeIds);
+
+      expect(stats.overlapCount, `${label} nodes should not overlap`).toBe(0);
+      expect(
+        stats.targetGapViolationCount,
+        `${label} nodes should preserve one rendered node diameter of edge gap`,
+      ).toBe(0);
+      expect(stats.minCenterDistance).toBeGreaterThanOrEqual(
+        minimumCenterDistance,
+      );
+      expect(stats.minEdgeGap).toBeGreaterThanOrEqual(minimumEdgeGap);
+    }
+  });
+
+  it("regresses the previous dense spiral close-pair condition", () => {
+    const graph = createKnowledgeGraph();
+    const countsByLabel = new Map([
+      ["Function", 1800],
+      ["Method", 1400],
+      ["File", 1000],
+      ["Class", 700],
+      ["Interface", 500],
+      ["Struct", 400],
+      ["Enum", 300],
+    ]);
+
+    for (const [label, count] of countsByLabel) {
+      for (let index = 0; index < count; index++) {
+        graph.addNode(
+          withAppLayer(
+            createTypedNode(label, index, `frontend/${label}/${index}.ts`) as any,
+            "frontend",
+          ),
+        );
+      }
+    }
+
+    const sigmaGraph = knowledgeGraphToGraphology(graph);
+    const functionNodeIds = sigmaGraph
+      .nodes()
+      .filter((nodeId) => sigmaGraph.getNodeAttribute(nodeId, "islandKey") === "Function");
+    const stats = getPairwiseSpacingStats(sigmaGraph, functionNodeIds);
+
+    expect(stats.minCenterDistance).toBeGreaterThanOrEqual(
+      getMinimumNodeCenterDistance(sigmaGraph.order),
+    );
+    expect(stats.overlapCount).toBe(0);
+    expect(stats.targetGapViolationCount).toBe(0);
   });
 
   it("lays out medium and large clusters as two-dimensional islands instead of rails", () => {

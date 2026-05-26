@@ -18,11 +18,14 @@ import {
   filterGraphByDepth,
   filterGraphByLabels,
   getMaxRenderedNodeSize,
+  getMinimumNodeCenterDistance,
+  getMinimumNodeEdgeGap,
   SigmaNodeAttributes,
   SigmaEdgeAttributes,
 } from '../lib/graph-adapter';
 import {
   recordGraphConversion,
+  recordLayoutNodeSpacing,
   recordLayoutRings,
   recordVisualScale,
 } from '../lib/runtime-diagnostics';
@@ -148,6 +151,77 @@ const buildLayoutRingDiagnostics = (
     apiBetweenBackendAndFrontend,
     docsCentered,
     sameColorIslandViolations,
+  };
+};
+
+const buildLayoutNodeSpacingDiagnostics = (
+  sigmaGraph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>,
+) => {
+  const nodeCount = sigmaGraph.order;
+  const renderedRadius = getMaxRenderedNodeSize(nodeCount);
+  const renderedDiameter = renderedRadius * 2;
+  const requiredEdgeGap = getMinimumNodeEdgeGap(nodeCount);
+  const requiredCenterDistance = getMinimumNodeCenterDistance(nodeCount);
+  const nodeGridByIsland = new Map<
+    string,
+    Map<string, Array<{ x: number; y: number }>>
+  >();
+  const islandKeys = new Set<string>();
+  let minObservedCenterDistance = requiredCenterDistance;
+  let overlapCount = 0;
+  let targetGapViolationCount = 0;
+
+  for (const nodeId of sigmaGraph.nodes()) {
+    const attributes = sigmaGraph.getNodeAttributes(nodeId);
+    const islandKey = `${attributes.appLayerRing ?? 'missing_app_layer'}:${
+      attributes.islandKey ?? attributes.nodeType
+    }`;
+    islandKeys.add(islandKey);
+    const islandGrid = nodeGridByIsland.get(islandKey) ?? new Map();
+    const cellX = Math.floor(attributes.x / requiredCenterDistance);
+    const cellY = Math.floor(attributes.y / requiredCenterDistance);
+
+    for (let x = cellX - 1; x <= cellX + 1; x++) {
+      for (let y = cellY - 1; y <= cellY + 1; y++) {
+        const neighbors = islandGrid.get(`${x}:${y}`);
+        if (!neighbors) continue;
+        for (const neighbor of neighbors) {
+          const centerDistance = Math.hypot(
+            attributes.x - neighbor.x,
+            attributes.y - neighbor.y,
+          );
+          if (centerDistance < requiredCenterDistance) {
+            minObservedCenterDistance = Math.min(
+              minObservedCenterDistance,
+              centerDistance,
+            );
+            targetGapViolationCount++;
+          }
+          if (centerDistance < renderedDiameter) {
+            overlapCount++;
+          }
+        }
+      }
+    }
+
+    const cellKey = `${cellX}:${cellY}`;
+    const cellNodes = islandGrid.get(cellKey) ?? [];
+    cellNodes.push({ x: attributes.x, y: attributes.y });
+    islandGrid.set(cellKey, cellNodes);
+    nodeGridByIsland.set(islandKey, islandGrid);
+  }
+
+  return {
+    nodeCount,
+    islandCount: islandKeys.size,
+    renderedRadius,
+    renderedDiameter,
+    requiredEdgeGap,
+    requiredCenterDistance,
+    minObservedCenterDistance,
+    minObservedEdgeGap: minObservedCenterDistance - renderedDiameter,
+    overlapCount,
+    targetGapViolationCount,
   };
 };
 
@@ -425,6 +499,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       maxSizeByLabel,
     });
     recordLayoutRings(buildLayoutRingDiagnostics(sigmaGraph));
+    recordLayoutNodeSpacing(buildLayoutNodeSpacingDiagnostics(sigmaGraph));
     setSigmaGraph(sigmaGraph);
     window.requestAnimationFrame(recomputeOrientationLabels);
   }, [graph, nodeById, setSigmaGraph]);

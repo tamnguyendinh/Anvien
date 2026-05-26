@@ -110,55 +110,55 @@ Existing label and island/ring spacing behavior must remain intact. The fix must
 
 ## Phase 0 - Baseline Trace And Reproduction
 
-- [ ] [P0-A] Refresh the AVmatrix graph before graph-based implementation work and record graph counts in the evidence ledger.
-- [ ] [P0-B] Trace Web graph layout ownership and record the files/symbols for node spacing, node size capping, island radius, island offset, island placement, ring placement, Sigma size handling, camera fit, and relevant tests.
-- [ ] [P0-C] Reproduce the dense-node overlap/crowding issue with a deterministic fixture or script using the current layout formula. Record the minimum center distance, minimum edge gap, overlap count, and fixture size in the benchmark ledger.
-- [ ] [P0-D] Verify whether Sigma/Web `size` behaves as rendered radius or diameter for the purpose of graph layout checks. Record the source/test/browser evidence.
-- [ ] [P0-E] Inventory existing geometry tests and e2e tests to identify which checks already cover island/ring separation and which checks are missing pairwise node spacing.
-- [ ] [P0-F] Run impact analysis before editing any graph layout, Sigma/camera, or graph canvas symbols. Record blast radius and affected flows.
+- [x] [P0-A] Refresh the AVmatrix graph before graph-based implementation work and record graph counts in the evidence ledger.
+- [x] [P0-B] Trace Web graph layout ownership and record the files/symbols for node spacing, node size capping, island radius, island offset, island placement, ring placement, Sigma size handling, camera fit, and relevant tests.
+- [x] [P0-C] Reproduce the dense-node overlap/crowding issue with a deterministic fixture or script using the current layout formula. Record the minimum center distance, minimum edge gap, overlap count, and fixture size in the benchmark ledger.
+- [x] [P0-D] Verify whether Sigma/Web `size` behaves as rendered radius or diameter for the purpose of graph layout checks. Record the source/test/browser evidence.
+- [x] [P0-E] Inventory existing geometry tests and e2e tests to identify which checks already cover island/ring separation and which checks are missing pairwise node spacing.
+- [x] [P0-F] Run impact analysis before editing any graph layout, Sigma/camera, or graph canvas symbols. Record blast radius and affected flows.
 
 ## Phase 1 - Spacing Contract And Geometry Design
 
-- [ ] [P1-A] Define the rendered node spacing contract: rendered size, diameter, minimum edge gap, and minimum center distance.
-- [ ] [P1-B] Add or update geometry helpers so spacing thresholds are named and testable instead of hidden in numeric constants.
-- [ ] [P1-C] Decide the deterministic placement strategy that can guarantee pairwise clearance without producing rail-like dense islands.
-- [ ] [P1-D] Define how organic/jitter perturbation is preserved, reduced, or removed when it conflicts with the minimum gap invariant.
-- [ ] [P1-E] Define expected large-graph footprint and camera behavior so the layout does not solve density by visual compression.
+- [x] [P1-A] Define the rendered node spacing contract: rendered size, diameter, minimum edge gap, and minimum center distance.
+- [x] [P1-B] Add or update geometry helpers so spacing thresholds are named and testable instead of hidden in numeric constants.
+- [x] [P1-C] Decide the deterministic placement strategy that can guarantee pairwise clearance without producing rail-like dense islands.
+- [x] [P1-D] Define how organic/jitter perturbation is preserved, reduced, or removed when it conflicts with the minimum gap invariant.
+- [x] [P1-E] Define expected large-graph footprint and camera behavior so the layout does not solve density by visual compression.
 
 ## Phase 2 - Layout Implementation
 
-- [ ] [P2-A] Update internal island node placement so candidate positions satisfy minimum center distance before assignment.
-- [ ] [P2-B] Update island radius computation so dense islands reserve enough space for the required node gap.
-- [ ] [P2-C] Update neighboring island spacing so expanded island footprints do not collide.
-- [ ] [P2-D] Update macro ring radius computation so expanded islands fit inside their rings without compressing into other rings.
-- [ ] [P2-E] Preserve deterministic ordering, stable anchors, ring labels, island labels, and filter/depth visibility semantics.
-- [ ] [P2-F] If needed, adjust Sigma camera/default fit behavior so the initial graph remains inspectable after footprint expansion.
-- [ ] [P2-G] Update the checklist immediately after each completed implementation subtask and record matching evidence/benchmark entries.
+- [x] [P2-A] Update internal island node placement so candidate positions satisfy minimum center distance before assignment.
+- [x] [P2-B] Update island radius computation so dense islands reserve enough space for the required node gap.
+- [x] [P2-C] Update neighboring island spacing so expanded island footprints do not collide.
+- [x] [P2-D] Update macro ring radius computation so expanded islands fit inside their rings without compressing into other rings.
+- [x] [P2-E] Preserve deterministic ordering, stable anchors, ring labels, island labels, and filter/depth visibility semantics.
+- [x] [P2-F] If needed, adjust Sigma camera/default fit behavior so the initial graph remains inspectable after footprint expansion.
+- [x] [P2-G] Update the checklist immediately after each completed implementation subtask and record matching evidence/benchmark entries.
 
 ## Phase 3 - Unit And Geometry Validation
 
-- [ ] [P3-A] Add unit tests for pairwise same-island minimum center distance on dense fixtures.
-- [ ] [P3-B] Add unit tests for one-node-diameter minimum edge gap using the verified rendered-size semantics.
-- [ ] [P3-C] Add a regression fixture that fails against the old spiral formula or reproduces the previously observed close-pair condition.
-- [ ] [P3-D] Keep or extend tests for island-to-island gutter, macro-ring expansion, non-rail dense shapes, and label metadata.
-- [ ] [P3-E] Record geometry metrics in the benchmark ledger: fixture node count, minimum center distance, minimum edge gap, overlap count, island radius, graph footprint, and changed ratios versus baseline.
+- [x] [P3-A] Add unit tests for pairwise same-island minimum center distance on dense fixtures.
+- [x] [P3-B] Add unit tests for one-node-diameter minimum edge gap using the verified rendered-size semantics.
+- [x] [P3-C] Add a regression fixture that fails against the old spiral formula or reproduces the previously observed close-pair condition.
+- [x] [P3-D] Keep or extend tests for island-to-island gutter, macro-ring expansion, non-rail dense shapes, and label metadata.
+- [x] [P3-E] Record geometry metrics in the benchmark ledger: fixture node count, minimum center distance, minimum edge gap, overlap count, island radius, graph footprint, and changed ratios versus baseline.
 
 ## Phase 4 - Browser And UX Validation
 
-- [ ] [P4-A] Add or update e2e diagnostics so browser tests can measure visible dense-node overlap/gap behavior without relying only on human screenshot review.
-- [ ] [P4-B] Capture desktop screenshot evidence for a dense graph showing readable node separation and preserved ring/island labels.
-- [ ] [P4-C] Capture smaller-viewport screenshot evidence for the same dense graph or representative fixture.
-- [ ] [P4-D] Validate filter changes do not leave stale spacing labels or stale layout measurements.
-- [ ] [P4-E] Record screenshot paths, DOM diagnostic output, and observations in the evidence ledger.
-- [ ] [P4-F] Record quantitative browser metrics in the benchmark ledger: visible overlap count, minimum measured screen gap where feasible, label overlap count, viewport size, and graph fixture size.
+- [x] [P4-A] Add or update e2e diagnostics so browser tests can measure visible dense-node overlap/gap behavior without relying only on human screenshot review.
+- [x] [P4-B] Capture desktop screenshot evidence for a dense graph showing readable node separation and preserved ring/island labels.
+- [x] [P4-C] Capture smaller-viewport screenshot evidence for the same dense graph or representative fixture.
+- [x] [P4-D] Validate filter changes do not leave stale spacing labels or stale layout measurements.
+- [x] [P4-E] Record screenshot paths, DOM diagnostic output, and observations in the evidence ledger.
+- [x] [P4-F] Record quantitative browser metrics in the benchmark ledger: visible overlap count, minimum measured screen gap where feasible, label overlap count, viewport size, and graph fixture size.
 
 ## Phase 5 - Build, Test, And Closure
 
-- [ ] [P5-A] Run the full build gate before testing: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
-- [ ] [P5-B] Run focused Web unit tests for graph adapter geometry and graph orientation labels.
-- [ ] [P5-C] Run full Web unit tests: `cd avmatrix-web; npm run test`.
-- [ ] [P5-D] Run Web e2e/browser validation for graph spacing and labels.
-- [ ] [P5-E] Run any focused backend or generated-contract validation only if implementation touches shared contracts or generated payloads.
-- [ ] [P5-F] Run `avmatrix detect-changes --repo AVmatrix --scope all` and record changed scope before committing implementation work.
+- [x] [P5-A] Run the full build gate before testing: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- [x] [P5-B] Run focused Web unit tests for graph adapter geometry and graph orientation labels.
+- [x] [P5-C] Run full Web unit tests: `cd avmatrix-web; npm run test`.
+- [x] [P5-D] Run Web e2e/browser validation for graph spacing and labels.
+- [x] [P5-E] Run any focused backend or generated-contract validation only if implementation touches shared contracts or generated payloads.
+- [x] [P5-F] Run `avmatrix detect-changes --repo AVmatrix --scope all` and record changed scope before committing implementation work.
 - [ ] [P5-G] Commit the completed implementation slice, then continue if any checklist items remain.
 - [ ] [P5-H] Mark the plan complete only after code, tests, browser evidence, benchmark metrics, evidence ledger, and commit state agree that dense graph nodes no longer overlap and default spacing provides one rendered node diameter of edge gap.

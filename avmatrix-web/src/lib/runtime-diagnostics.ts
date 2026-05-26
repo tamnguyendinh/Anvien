@@ -37,6 +37,19 @@ export interface WebRuntimeDiagnostics {
     docsCentered: boolean;
     sameColorIslandViolations: number;
   };
+  layoutNodeSpacing: {
+    recordedAt: number;
+    nodeCount: number;
+    islandCount: number;
+    renderedRadius: number;
+    renderedDiameter: number;
+    requiredEdgeGap: number;
+    requiredCenterDistance: number;
+    minObservedCenterDistance: number;
+    minObservedEdgeGap: number;
+    overlapCount: number;
+    targetGapViolationCount: number;
+  };
   heartbeat: {
     connects: number;
     reconnects: number;
@@ -100,6 +113,19 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
     apiBetweenBackendAndFrontend: false,
     docsCentered: false,
     sameColorIslandViolations: 0,
+  },
+  layoutNodeSpacing: {
+    recordedAt: 0,
+    nodeCount: 0,
+    islandCount: 0,
+    renderedRadius: 0,
+    renderedDiameter: 0,
+    requiredEdgeGap: 0,
+    requiredCenterDistance: 0,
+    minObservedCenterDistance: 0,
+    minObservedEdgeGap: 0,
+    overlapCount: 0,
+    targetGapViolationCount: 0,
   },
   heartbeat: {
     connects: 0,
@@ -184,6 +210,26 @@ export const recordLayoutRings = (input: {
   diagnostics.layoutRings = {
     ...input,
     ringCount: Object.keys(input.ringNodeCounts).length,
+    recordedAt: nowMs(),
+  };
+};
+
+export const recordLayoutNodeSpacing = (input: {
+  nodeCount: number;
+  islandCount: number;
+  renderedRadius: number;
+  renderedDiameter: number;
+  requiredEdgeGap: number;
+  requiredCenterDistance: number;
+  minObservedCenterDistance: number;
+  minObservedEdgeGap: number;
+  overlapCount: number;
+  targetGapViolationCount: number;
+}): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  diagnostics.layoutNodeSpacing = {
+    ...input,
     recordedAt: nowMs(),
   };
 };

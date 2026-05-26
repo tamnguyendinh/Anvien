@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   getWebRuntimeDiagnostics,
   recordGraphConversion,
+  recordLayoutNodeSpacing,
   recordLayoutRings,
   recordManualLayoutOptimizerInvocation,
   recordReconnectBannerState,
@@ -93,6 +94,29 @@ describe('runtime diagnostics', () => {
     expect(diagnostics?.layoutRings.ringIslandCounts.frontend).toBe(4);
     expect(diagnostics?.layoutRings.apiBetweenBackendAndFrontend).toBe(true);
     expect(diagnostics?.layoutRings.sameColorIslandViolations).toBe(0);
+  });
+
+  it('records node spacing layout diagnostics for e2e assertions', () => {
+    recordLayoutNodeSpacing({
+      nodeCount: 1800,
+      islandCount: 1,
+      renderedRadius: 3,
+      renderedDiameter: 6,
+      requiredEdgeGap: 6,
+      requiredCenterDistance: 12,
+      minObservedCenterDistance: 12,
+      minObservedEdgeGap: 6,
+      overlapCount: 0,
+      targetGapViolationCount: 0,
+    });
+
+    const diagnostics = getWebRuntimeDiagnostics();
+    expect(diagnostics?.layoutNodeSpacing.nodeCount).toBe(1800);
+    expect(diagnostics?.layoutNodeSpacing.islandCount).toBe(1);
+    expect(diagnostics?.layoutNodeSpacing.requiredCenterDistance).toBe(12);
+    expect(diagnostics?.layoutNodeSpacing.minObservedEdgeGap).toBe(6);
+    expect(diagnostics?.layoutNodeSpacing.overlapCount).toBe(0);
+    expect(diagnostics?.layoutNodeSpacing.targetGapViolationCount).toBe(0);
   });
 
   it('counts reconnect banner transitions without double-counting the same state', () => {
