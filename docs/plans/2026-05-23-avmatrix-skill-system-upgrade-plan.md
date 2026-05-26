@@ -2,7 +2,7 @@
 
 Date: 2026-05-23
 
-Status: Planned
+Status: Active
 
 Companion files:
 
@@ -267,7 +267,7 @@ This is a large blocking phase. The rest of the skill-system upgrade depends on 
 
 - [x] [P1-K] Add a closure gate for query reliability before moving to the rest of the skill-system implementation. The gate is satisfied only when the AI-context query-health case has recorded threshold and exact results, the remaining missed targets if any are explicit, the usable CLI/MCP query lane surfaces are validated, and the plan/evidence/benchmark ledgers state whether the query bug is fixed or still has a tracked blocker.
 
-- [ ] [P1-L] Add broad-discovery regression checks for `query` after the ranking fix. Use representative non-AI-context intents across the capability taxonomy, including at least one intent that should naturally return execution-flow or process candidates. Record the before/after top results and prove the fix reduced wrong-owner noise without removing the original concept-to-flow discovery capability.
+- [x] [P1-L] Add broad-discovery regression checks for `query` after the ranking fix. Use representative non-AI-context intents across the capability taxonomy, including at least one intent that should naturally return execution-flow or process candidates. Record the before/after top results and prove the fix reduced wrong-owner noise without removing the original concept-to-flow discovery capability.
 
 ## Phase 1.5 - Graph Health CLI Surface
 

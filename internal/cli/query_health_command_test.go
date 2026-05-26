@@ -102,6 +102,65 @@ func TestQueryHealthScoringSeparatesThresholdAndExactPass(t *testing.T) {
 	}
 }
 
+func TestQueryHealthScoringMatchesProcessTargets(t *testing.T) {
+	testCase := queryHealthCase{
+		ID:                "process-flow",
+		Intent:            "group query execution flow process",
+		ExpectedProcesses: []string{"Query -> GroupProcess"},
+		HitAt5Threshold:   1,
+		HitAt10Threshold:  1,
+	}
+	actual := []queryHealthActualResult{{
+		Rank:        2,
+		GlobalRank:  1,
+		SourceRank:  2,
+		ProcessRank: 2,
+		Source:      "process",
+		ID:          "proc_190_query",
+		Name:        "Query -> GroupProcess",
+		Type:        "cross_community",
+		Process:     "Query -> GroupProcess",
+	}}
+	result := scoreQueryHealthCase(testCase, actual, 10)
+	if !result.Passed || !result.ThresholdPassed || !result.ExactPassed {
+		t.Fatalf("process target should pass: %#v", result)
+	}
+	if result.ExpectedTargetCount != 1 || result.MatchedTargetCount != 1 || result.MissedTargetCount != 0 {
+		t.Fatalf("target coverage = expected %d matched %d missed %d", result.ExpectedTargetCount, result.MatchedTargetCount, result.MissedTargetCount)
+	}
+	match := result.MatchedTargets[0]
+	if match.Kind != "process" || match.Source != "process" || match.Process != "Query -> GroupProcess" || match.ProcessRank != 2 {
+		t.Fatalf("process match did not preserve process evidence: %#v", match)
+	}
+}
+
+func TestQueryHealthActualResultsIncludesProcessRows(t *testing.T) {
+	payload := queryHealthQueryPayload{
+		Processes: []map[string]any{{
+			"ID":          "proc_190_query",
+			"Label":       "Query -> GroupProcess",
+			"ProcessType": "cross_community",
+			"StepCount":   float64(4),
+		}},
+		ProcessSymbols: []map[string]any{{
+			"id":       "Function:internal/group/query.go:Query#6",
+			"name":     "Query",
+			"filePath": "internal/group/query.go",
+			"process":  "Query -> GroupProcess",
+		}},
+	}
+	actual := queryHealthActualResults(payload, 10)
+	if len(actual) != 2 {
+		t.Fatalf("actual results = %#v", actual)
+	}
+	if actual[0].Source != "process" || actual[0].Process != "Query -> GroupProcess" || actual[0].ProcessRank != 1 {
+		t.Fatalf("process row missing or malformed: %#v", actual)
+	}
+	if actual[1].Source != "process_symbol" || actual[1].ProcessRank != 1 {
+		t.Fatalf("process symbol rank should follow process label rank: %#v", actual)
+	}
+}
+
 func TestQueryHealthScoringReportsMissingAndNoisyResults(t *testing.T) {
 	testCase := queryHealthCase{
 		ID:               "missing-resolution",

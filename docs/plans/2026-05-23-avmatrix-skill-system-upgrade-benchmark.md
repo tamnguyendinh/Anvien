@@ -48,7 +48,7 @@ Status: baseline recorded; Phase 1 query-lane metrics recorded; final pending.
 | MCP prompts from source | prompts | 2 | 2 | 0 | 2 |
 | Discoverable query capability lanes | lanes | 0 | 8 | +8 | >= 8 |
 | Query explain metadata fields validated | fields | 0 | 6 | +6 | >= 6 |
-| Query-health cases with lane evidence fields | cases | 0 | 8 | +8 | 8 |
+| Query-health cases with lane evidence fields | cases | 0 | 9 | +9 | >= 9 |
 | Normal query compatibility failures | failures | 0 | 0 | 0 | 0 |
 | First-class graph-health CLI command families | families | 0 | 0 | 0 | >= 1 |
 | MCP prompt templates reviewed | prompts | 0 | 0 | 0 | 2 |
@@ -56,7 +56,7 @@ Status: baseline recorded; Phase 1 query-lane metrics recorded; final pending.
 
 ## B2 - Query Reliability Metrics
 
-Status: Phase 1 recorded.
+Status: Phase 1 and P1-L recorded.
 
 Suite-level before/after:
 
@@ -87,6 +87,26 @@ Per-case before/after:
 | `graph-quality-command-surface-owner-discovery` | 8 | 0 | 1 | 0 | 0 | 2 | 6 | 2 | 6 | 2 | 6 | 6 | 2 |
 | `api-surface-tool-discovery` | 7 | 1 | 1 | 0 | 1 | 5 | 6 | 6 | 7 | 6 | 7 | 1 | 0 |
 | `cross-repo-command-surface-discovery` | 8 | 1 | 1 | 0 | 1 | 4 | 8 | 4 | 8 | 4 | 8 | 4 | 0 |
+
+P1-L expanded-suite regression:
+
+| Metric | Unit | After P1-L | Target |
+|---|---:|---:|---:|
+| Suite cases | cases | 9 | >= 9 |
+| Expected targets | targets | 61 | >= 61 |
+| Expected process targets | targets | 2 | >= 2 |
+| Matched targets | targets | 53 | increase |
+| Missed targets | targets | 8 | record |
+| Threshold passed | cases | 9 | 9 |
+| Threshold failed | cases | 0 | 0 |
+| Exact passed | cases | 4 | record |
+| Exact failed | cases | 5 | record |
+
+P1-L process case:
+
+| Case | Expected | Threshold | Exact | Hit@5 | Hit@10 | Matched | Missed | Matched process labels |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `cross-repo-execution-flow-process-discovery` | 7 | 1 | 1 | 7 | 7 | 7 | 0 | `Sync -> NormalizeHTTPPath`, `Query -> GroupProcess` |
 
 ## B3 - Canonical Executable And Package Artifact Metrics
 

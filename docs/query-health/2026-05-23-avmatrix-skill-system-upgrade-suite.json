@@ -190,6 +190,31 @@
       ],
       "hitAt5Threshold": 2,
       "hitAt10Threshold": 4
+    },
+    {
+      "id": "cross-repo-execution-flow-process-discovery",
+      "intent": "group query execution flow process sync contracts",
+      "expectedFiles": [
+        "internal/group/query.go",
+        "internal/group/sync.go"
+      ],
+      "expectedSymbols": [
+        "Query",
+        "Sync",
+        "rankedGroupProcesses"
+      ],
+      "expectedProcesses": [
+        "Sync -> NormalizeHTTPPath",
+        "Query -> GroupProcess"
+      ],
+      "expectedAppLayers": [
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "query"
+      ],
+      "hitAt5Threshold": 6,
+      "hitAt10Threshold": 7
     }
   ]
 }

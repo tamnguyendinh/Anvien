@@ -27,6 +27,7 @@ type queryHealthCase struct {
 	Intent                  string   `json:"intent"`
 	ExpectedFiles           []string `json:"expectedFiles,omitempty"`
 	ExpectedSymbols         []string `json:"expectedSymbols,omitempty"`
+	ExpectedProcesses       []string `json:"expectedProcesses,omitempty"`
 	ExpectedAppLayers       []string `json:"expectedAppLayers,omitempty"`
 	ExpectedFunctionalAreas []string `json:"expectedFunctionalAreas,omitempty"`
 	HitAt5Threshold         int      `json:"hitAt5Threshold"`
@@ -71,6 +72,7 @@ type queryHealthCaseResult struct {
 	Intent                  string                    `json:"intent"`
 	ExpectedFiles           []string                  `json:"expectedFiles,omitempty"`
 	ExpectedSymbols         []string                  `json:"expectedSymbols,omitempty"`
+	ExpectedProcesses       []string                  `json:"expectedProcesses,omitempty"`
 	ExpectedAppLayers       []string                  `json:"expectedAppLayers,omitempty"`
 	ExpectedFunctionalAreas []string                  `json:"expectedFunctionalAreas,omitempty"`
 	ExpectedTargetCount     int                       `json:"expectedTargetCount"`
@@ -99,6 +101,7 @@ type queryHealthTargetMatch struct {
 	ResultID     string   `json:"resultId,omitempty"`
 	Name         string   `json:"name,omitempty"`
 	FilePath     string   `json:"filePath,omitempty"`
+	Process      string   `json:"process,omitempty"`
 	Source       string   `json:"source,omitempty"`
 	QueryLanes   []string `json:"queryLanes,omitempty"`
 	MatchReasons []string `json:"matchReasons,omitempty"`
@@ -296,8 +299,8 @@ func readQueryHealthSuite(path string) (queryHealthSuite, error) {
 		if strings.TrimSpace(testCase.Intent) == "" {
 			return queryHealthSuite{}, fmt.Errorf("query-health case %q is missing intent", testCase.ID)
 		}
-		if len(testCase.ExpectedFiles)+len(testCase.ExpectedSymbols) == 0 {
-			return queryHealthSuite{}, fmt.Errorf("query-health case %q has no expected files or symbols", testCase.ID)
+		if len(testCase.ExpectedFiles)+len(testCase.ExpectedSymbols)+len(testCase.ExpectedProcesses) == 0 {
+			return queryHealthSuite{}, fmt.Errorf("query-health case %q has no expected files, symbols, or processes", testCase.ID)
 		}
 	}
 	return suite, nil
@@ -362,8 +365,24 @@ func queryHealthActualResults(payload queryHealthQueryPayload, limit int) []quer
 			}
 		}
 	}
-	results := make([]queryHealthActualResult, 0, len(payload.ProcessSymbols)+len(payload.Definitions))
+	results := make([]queryHealthActualResult, 0, len(payload.Processes)+len(payload.ProcessSymbols)+len(payload.Definitions))
 	globalRank := 1
+	for index, process := range payload.Processes {
+		rank := index + 1
+		label := firstNonEmptyMapString(process, "Label", "label", "name", "Name")
+		results = append(results, queryHealthActualResult{
+			Rank:        rank,
+			GlobalRank:  globalRank,
+			SourceRank:  rank,
+			ProcessRank: rank,
+			Source:      "process",
+			ID:          firstNonEmptyMapString(process, "ID", "id"),
+			Name:        label,
+			Type:        firstNonEmptyMapString(process, "ProcessType", "processType", "type", "Type"),
+			Process:     label,
+		})
+		globalRank++
+	}
 	for index, symbol := range payload.ProcessSymbols {
 		process := firstNonEmptyMapString(symbol, "process", "Process")
 		rank := processRank[process]
@@ -430,9 +449,10 @@ func scoreQueryHealthCase(testCase queryHealthCase, actual []queryHealthActualRe
 		Intent:                  testCase.Intent,
 		ExpectedFiles:           append([]string{}, testCase.ExpectedFiles...),
 		ExpectedSymbols:         append([]string{}, testCase.ExpectedSymbols...),
+		ExpectedProcesses:       append([]string{}, testCase.ExpectedProcesses...),
 		ExpectedAppLayers:       append([]string{}, testCase.ExpectedAppLayers...),
 		ExpectedFunctionalAreas: append([]string{}, testCase.ExpectedFunctionalAreas...),
-		ExpectedTargetCount:     len(testCase.ExpectedFiles) + len(testCase.ExpectedSymbols),
+		ExpectedTargetCount:     len(testCase.ExpectedFiles) + len(testCase.ExpectedSymbols) + len(testCase.ExpectedProcesses),
 		HitAt5Threshold:         testCase.HitAt5Threshold,
 		HitAt10Threshold:        testCase.HitAt10Threshold,
 		TopResults:              topQueryHealthResults(actual, outputLimit),
@@ -465,6 +485,20 @@ func scoreQueryHealthCase(testCase queryHealthCase, actual []queryHealthActualRe
 		}
 		result.MissedTargets = append(result.MissedTargets, queryHealthTargetMiss{Kind: "symbol", Expected: expected, Reason: "expected function/method target was not returned by current definition or process-symbol matching"})
 	}
+	for _, expected := range testCase.ExpectedProcesses {
+		match, ok := findQueryHealthMatch("process", expected, actual)
+		if ok {
+			result.MatchedTargets = append(result.MatchedTargets, match)
+			if match.Rank <= 5 {
+				result.HitAt5++
+			}
+			if match.Rank <= 10 {
+				result.HitAt10++
+			}
+			continue
+		}
+		result.MissedTargets = append(result.MissedTargets, queryHealthTargetMiss{Kind: "process", Expected: expected, Reason: "expected execution process label was not returned by query top results"})
+	}
 	result.MatchedTargetCount = len(result.MatchedTargets)
 	result.MissedTargetCount = len(result.MissedTargets)
 	result.ThresholdPassed = result.HitAt5 >= testCase.HitAt5Threshold && result.HitAt10 >= testCase.HitAt10Threshold
@@ -482,6 +516,8 @@ func findQueryHealthMatch(kind string, expected string, actual []queryHealthActu
 			matched = queryHealthPathMatches(item.FilePath, expected)
 		case "symbol":
 			matched = queryHealthSymbolMatches(item, expected)
+		case "process":
+			matched = queryHealthProcessMatches(item, expected)
 		}
 		if !matched {
 			continue
@@ -496,6 +532,7 @@ func findQueryHealthMatch(kind string, expected string, actual []queryHealthActu
 			ResultID:     item.ID,
 			Name:         item.Name,
 			FilePath:     item.FilePath,
+			Process:      item.Process,
 			Source:       item.Source,
 			QueryLanes:   append([]string{}, item.QueryLanes...),
 			MatchReasons: append([]string{}, item.MatchReasons...),
@@ -527,6 +564,17 @@ func queryHealthSymbolMatches(item queryHealthActualResult, expected string) boo
 	name := strings.ToLower(strings.TrimSpace(item.Name))
 	id := strings.ToLower(strings.TrimSpace(item.ID))
 	return name == expected || strings.Contains(id, ":"+expected) || strings.Contains(id, "#"+expected)
+}
+
+func queryHealthProcessMatches(item queryHealthActualResult, expected string) bool {
+	expected = strings.ToLower(strings.TrimSpace(expected))
+	if expected == "" {
+		return false
+	}
+	process := strings.ToLower(strings.TrimSpace(item.Process))
+	name := strings.ToLower(strings.TrimSpace(item.Name))
+	id := strings.ToLower(strings.TrimSpace(item.ID))
+	return process == expected || name == expected || id == expected
 }
 
 func topQueryHealthResults(actual []queryHealthActualResult, limit int) []queryHealthActualResult {

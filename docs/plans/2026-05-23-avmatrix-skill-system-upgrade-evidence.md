@@ -2,7 +2,7 @@
 
 Date: 2026-05-23
 
-Status: Planned
+Status: Active
 
 Companion files:
 
@@ -555,3 +555,52 @@ Phase 3 skill guidance requirements from Phase 1:
 - Broad query results must be verified with `context` or exact source/file inspection before choosing edit surfaces.
 - Query-health reports two separate meanings: threshold/usable pass and exact expected-target coverage. Agents must record missed exact targets instead of treating threshold pass as full coverage.
 - `query --lanes --json` and `query --explain` are the user-facing CLI surfaces for lane and match evidence.
+
+## Phase 1 P1-L Broad-Discovery Regression Evidence
+
+Status: completed for P1-L.
+
+Blast-radius checks before editing query-health regression code:
+
+| Target | Result |
+|---|---|
+| `scoreQueryHealthCase` | CRITICAL; affects query-health scoring and reporting through `runQueryHealth`. This is blast-radius evidence, not a blocker. |
+| `queryHealthActualResults` | CRITICAL; affects query-health conversion of query output into scored rows. This is blast-radius evidence, not a blocker. |
+| `runQueryHealth` | CRITICAL; affects the CLI `query-health` command through `newQueryHealthCommand` and `NewRootCommand`. This is blast-radius evidence, not a blocker. |
+| `readQueryHealthSuite` | CRITICAL; affects suite schema validation through `runQueryHealth`. This is blast-radius evidence, not a blocker. |
+
+Implementation:
+
+- Extended `query-health` suites with optional `expectedProcesses` so broad-discovery regression cases can assert returned execution-flow/process labels, not only files and symbols.
+- Added process rows from MCP `query` output into query-health scoring, preserving process label, process rank, source rank, source type, and process match evidence.
+- Added focused CLI tests proving process target matching and process-row conversion.
+- Added `cross-repo-execution-flow-process-discovery` to `docs/query-health/2026-05-23-avmatrix-skill-system-upgrade-suite.json`.
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass; full build completed before testing. |
+| `go test .\internal\cli .\internal\mcp -count=1` | pass: `internal/cli` and `internal/mcp`. |
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass after implementation; `files: scanned=766 parsed=569 unsupported=197 failed=0`, `nodes=86837 relationships=119164`. |
+| `.\avmatrix\bin\avmatrix.exe query-health --repo AVmatrix --suite .\docs\query-health\2026-05-23-avmatrix-skill-system-upgrade-suite.json --limit 10 --out .\.tmp\2026-05-23-skill-system-query-health-p1l-process-regression.json` | pass; `cases=9 thresholdPassed=9 thresholdFailed=0 exactPassed=4 exactFailed=5 matchedTargets=53/61 missedTargets=8`. |
+| `.\avmatrix\bin\avmatrix.exe query "group query execution flow process sync contracts" --repo AVmatrix --limit 10 --explain --json` | pass; top definitions include `Query`, `Sync`, `groupQueryTool`, `Contracts`, and `newGroupCommand`; top process labels include `Sync -> NormalizeHTTPPath` and `Query -> GroupProcess`. |
+| `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all` | pass before commit; `changed_files=6`, `changed_count=84`, `affected_count=9`, `risk_level=high`. HIGH is expected because this slice changes shared CLI/query-health scoring. Changed app layers: `backend=44`, `backend_test=32`, `docs=8`; affected app layers: `backend=9`. |
+
+P1-L regression case result:
+
+| Case | Expected targets | Hit@5 | Hit@10 | Threshold | Exact | Matched | Missed |
+|---|---:|---:|---:|---|---|---:|---:|
+| `cross-repo-execution-flow-process-discovery` | 7 | 7 | 7 | PASS | PASS | 7 | 0 |
+
+Matched process targets:
+
+| Expected process | Rank | Source |
+|---|---:|---|
+| `Sync -> NormalizeHTTPPath` | 1 | `process` |
+| `Query -> GroupProcess` | 2 | `process` |
+
+Before/after interpretation:
+
+- The Phase 1 benchmark already recorded the non-AI-context cross-repo case improving from `matched=4/8` and `missed=4` at baseline to `matched=8/8` and `missed=0` after the ranking fix.
+- P1-L adds an execution-flow-specific regression case on top of that fixed behavior. It proves the broad query still returns meaningful concept-to-flow/process candidates while keeping strong owner surfaces at the top.
