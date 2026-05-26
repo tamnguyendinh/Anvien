@@ -584,7 +584,7 @@ a0ba34c Harden runtime lock lifecycle diagnostics
 
 Date: 2026-05-26
 
-Status: implementation slice complete; commit pending
+Status: committed as `c2f52e5`
 
 ### Scope Correction
 
@@ -766,4 +766,12 @@ resolution_gap_changes.changedGapEntities=51
 resolution_gap_changes.changedGapOccurrenceCount=52
 semanticStatus.appLayer.status=complete
 semanticStatus.functionalArea.status=complete
+```
+
+### Slice Commit
+
+Committed as:
+
+```text
+c2f52e5 Complete runtime lock UX hardening
 ```
