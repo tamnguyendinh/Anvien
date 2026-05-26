@@ -2,7 +2,7 @@
 
 Date: 2026-05-26
 
-Status: Planned
+Status: In progress
 
 Companion files:
 
@@ -249,17 +249,330 @@ Conclusion:
 
 ## E6 - Implementation Evidence
 
-Date: pending
+Date: 2026-05-26
 
-Status: pending
+Status: implementation slice in progress; commit pending
 
-Record here:
+### Fresh Graph Refreshes
 
-- Fresh AVmatrix analyze and impact evidence for implementation slices.
-- Edited source files.
-- Lock metadata examples before and after implementation.
-- Unit and integration test results.
-- Process diagnostics smoke output.
-- Full build result.
-- `detect-changes` output before commit.
-- Commit hashes.
+Commands:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe analyze --force
+```
+
+Observed graph refreshes during implementation:
+
+| Time/order | Files scanned | Files parsed | Unsupported | Failed | Nodes | Relationships |
+|---|---:|---:|---:|---:|---:|---:|
+| Pre-edit refresh | 765 | 568 | 197 | 0 | 85995 | 117993 |
+| Post-doctor/setup refresh | 766 | 569 | 197 | 0 | 86590 | 118875 |
+| Post-smoke refresh | 766 | 569 | 197 | 0 | 86682 | 118981 |
+| Pre-detect refresh | 766 | 569 | 197 | 0 | 86706 | 119008 |
+
+### Impact Evidence
+
+Commands:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe impact AcquireStorageLock --repo AVmatrix --direction upstream
+.\avmatrix\bin\avmatrix.exe impact ensureAnalyzeLockAvailable --repo AVmatrix --direction upstream
+.\avmatrix\bin\avmatrix.exe impact handleEmbed --repo AVmatrix --direction upstream
+.\avmatrix\bin\avmatrix.exe impact NewRootCommand --repo AVmatrix --direction upstream
+.\avmatrix\bin\avmatrix.exe impact printSetupResult --repo AVmatrix --direction upstream
+.\avmatrix\bin\avmatrix.exe impact collectAVmatrixProcesses --repo AVmatrix --direction upstream
+.\avmatrix\bin\avmatrix.exe impact collectWindowsAVmatrixProcesses --repo AVmatrix --direction upstream
+```
+
+Observed impact summaries:
+
+| Symbol | Risk | Impacted count | Processes affected | Notes |
+|---|---:|---:|---:|---|
+| `AcquireStorageLock` | CRITICAL | 8 | 53 | Shared lock path used by CLI analyze, HTTP analyze, HTTP embed, and graph-health access audit flow. |
+| `ensureAnalyzeLockAvailable` | CRITICAL | 1 | 9 | HTTP analyze preflight only; direct caller is `Server.handleAnalyze`. |
+| `handleEmbed` | LOW | 0 | 0 | No upstream callers were reported by AVmatrix for the handler method. |
+| `NewRootCommand` | CRITICAL | 1 | 11 | Root CLI command surface; direct external entry is `cmd/avmatrix/main.go:main`. |
+| `printSetupResult` | CRITICAL | 3 | 11 | Setup output path through root command; wording-only change. |
+| `collectAVmatrixProcesses` | CRITICAL | 3 | 11 | Diagnostics process collection path through `doctor processes`. |
+| `collectWindowsAVmatrixProcesses` | LOW | 3 | 0 | Windows diagnostics helper under `doctor processes`. |
+
+Blast radius interpretation:
+
+- HIGH/CRITICAL is treated as a workflow safety warning, not a prohibition. The lock implementation is shared infrastructure, so the code change was kept behind the existing `AcquireStorageLock(lockPath string)` API.
+- The launcher cleanup code was inspected but not edited in this slice.
+
+### Edited Source Files
+
+Implementation files:
+
+- `internal/repo/lock.go`
+- `internal/repo/lock_test.go`
+- `internal/cli/command.go`
+- `internal/cli/command_test.go`
+- `internal/cli/doctor_command.go`
+- `internal/cli/setup_command.go`
+- `internal/httpapi/analyze.go`
+- `internal/httpapi/analyze_test.go`
+- `internal/httpapi/embed.go`
+- `internal/httpapi/embed_test.go`
+
+Plan ledger files:
+
+- `docs/plans/2026-05-26-avmatrix-runtime-lock-process-lifecycle-hardening-plan.md`
+- `docs/plans/2026-05-26-avmatrix-runtime-lock-process-lifecycle-hardening-evidence.md`
+- `docs/plans/2026-05-26-avmatrix-runtime-lock-process-lifecycle-hardening-benchmark.md`
+
+### Lock Implementation Evidence
+
+New lock metadata format written by `AcquireStorageLock`:
+
+```text
+version=2
+pid=<pid>
+acquiredAt=<RFC3339Nano UTC timestamp>
+host=<hostname>
+command=<command line>
+token=<random ownership token>
+```
+
+Compatibility behavior:
+
+- Existing old-format locks with only `pid` and `acquiredAt` are parsed.
+- Same-host dead-PID locks are considered stale/recoverable and removed before retrying acquisition.
+- Live same-host locks still return an error compatible with `errors.Is(err, repo.ErrLockHeld)`.
+- Foreign-host locks are not removed based on local PID liveness.
+- Malformed locks are recoverable only after the malformed grace period.
+- `StorageLock.Release` reads the lock token and does not remove a replaced lock whose token no longer matches.
+
+### Diagnostics Evidence
+
+New CLI surface:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe doctor locks --repo .
+.\avmatrix\bin\avmatrix.exe doctor locks --repo . --json
+.\avmatrix\bin\avmatrix.exe doctor processes --json
+```
+
+Observed `doctor locks --repo .` output before the final process self-filter refinement:
+
+```text
+AVmatrix analyze lock
+Repo: E:\AVmatrix-GO
+Storage: E:\AVmatrix-GO\.avmatrix
+Lock: E:\AVmatrix-GO\.avmatrix\analyze.lock
+Status: free
+```
+
+Observed `doctor locks --repo . --json` output before the final process self-filter refinement:
+
+```json
+{
+  "repoPath": "E:\\AVmatrix-GO",
+  "storagePath": "E:\\AVmatrix-GO\\.avmatrix",
+  "lockPath": "E:\\AVmatrix-GO\\.avmatrix\\analyze.lock",
+  "status": "free",
+  "diagnosis": {
+    "exists": false,
+    "alive": false,
+    "stale": false,
+    "recoverable": false,
+    "foreignHost": false,
+    "reason": "lock file does not exist"
+  }
+}
+```
+
+Observed `doctor processes --json` before the final self-filter refinement:
+
+- Included `avmatrix mcp` PID `14008`, parent `cmd.exe` PID `912`, parent chain rooted under `codex.exe`.
+- Classified the MCP process as `role=mcp`, `ownership=editor-owned`.
+- Also reported the current diagnostic command and PowerShell helper; this led to a follow-up filter change to exclude the current doctor process/helper from output.
+
+### Setup UX Evidence
+
+Changed `internal/cli/setup_command.go` setup output summary:
+
+```text
+MCP lifecycle: avmatrix mcp is editor-owned and may stay running while the editor or agent session is active.
+Diagnostics: avmatrix doctor locks, avmatrix doctor processes
+```
+
+Current limitation:
+
+- Setup output is updated.
+- README and generated AI-context guidance updates remain pending and are not marked complete.
+
+### Validation Evidence
+
+Full build command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+```
+
+Observed latest result:
+
+- Exit code `0`.
+- Web build completed through Vite.
+- Go launcher/runtime build completed.
+- Existing Vite warnings remained: large chunks and dynamic/static import chunking for `ProcessFlowModal.tsx`.
+
+Focused test command:
+
+```powershell
+go test ./internal/repo ./internal/cli ./internal/httpapi ./internal/analyze
+```
+
+Observed latest result:
+
+```text
+ok github.com/tamnguyendinh/avmatrix-go/internal/repo
+ok github.com/tamnguyendinh/avmatrix-go/internal/cli 9.586s
+ok github.com/tamnguyendinh/avmatrix-go/internal/httpapi
+ok github.com/tamnguyendinh/avmatrix-go/internal/analyze
+```
+
+Exact focused test gate:
+
+```powershell
+go test .\internal\repo .\internal\analyze .\internal\httpapi .\internal\cli -count=1
+```
+
+Observed latest result:
+
+```text
+ok github.com/tamnguyendinh/avmatrix-go/internal/repo 3.603s
+ok github.com/tamnguyendinh/avmatrix-go/internal/analyze 1.599s
+ok github.com/tamnguyendinh/avmatrix-go/internal/httpapi 2.633s
+ok github.com/tamnguyendinh/avmatrix-go/internal/cli 8.674s
+```
+
+Source package test command:
+
+```powershell
+go test ./cmd/... ./internal/...
+```
+
+Observed latest result:
+
+- Exit code `0`.
+- All `cmd/...` and `internal/...` packages passed.
+
+Launcher test command:
+
+```powershell
+go test ./...
+```
+
+Working directory:
+
+```text
+E:\AVmatrix-GO\avmatrix-launcher\src
+```
+
+Observed latest result:
+
+```text
+ok avmatrix-launcher
+```
+
+Known invalid broad test command:
+
+```powershell
+go test ./...
+```
+
+Observed repository-root result:
+
+- Failed because it tries to build intentionally invalid fixture packages under `avmatrix/test/fixtures` and `node_modules`.
+- `cmd/...` and `internal/...` are the valid Go source package set for this repo.
+
+### Smoke Evidence
+
+Dead-PID stale lock smoke command:
+
+```powershell
+$lock = Join-Path (Get-Location) '.avmatrix\analyze.lock'
+New-Item -ItemType Directory -Force -Path (Split-Path $lock) | Out-Null
+Set-Content -Path $lock -Encoding ASCII -Value "pid=999999999`nacquiredAt=2026-05-26T07:50:03Z`n"
+.\avmatrix\bin\avmatrix.exe analyze --force
+```
+
+Observed output:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=766 parsed=569 unsupported=197 failed=0
+graph: nodes=86682 relationships=118981 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Live-lock conflict smoke command:
+
+```powershell
+$lock = Join-Path (Get-Location) '.avmatrix\analyze.lock'
+$hostName = [System.Net.Dns]::GetHostName()
+Set-Content -Path $lock -Encoding ASCII -Value "version=2`npid=$PID`nacquiredAt=2026-05-26T07:50:03Z`nhost=$hostName`ncommand=manual live lock smoke`ntoken=smoke-token`n"
+.\avmatrix\bin\avmatrix.exe analyze --force
+```
+
+Observed output:
+
+```text
+exit=1
+repository index lock is already held (pid=13332, host=TAM-PC, acquiredAt=2026-05-26T07:50:03Z, command=manual live lock smoke, reason=owning process is still running)
+```
+
+Current limitation:
+
+- Live-lock conflict smoke confirms PID, host, acquired time, command, and live reason.
+- Lock path, explicit age text, and explicit next action are still pending under P2-E/P5-E.
+
+Diagnostics smoke commands after self-filter refinement:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe doctor locks --repo .
+.\avmatrix\bin\avmatrix.exe doctor locks --repo . --json
+.\avmatrix\bin\avmatrix.exe doctor processes --json
+```
+
+Observed latest result:
+
+- `doctor locks --repo .` reported repo `E:\AVmatrix-GO`, lock `E:\AVmatrix-GO\.avmatrix\analyze.lock`, and status `free`.
+- `doctor locks --repo . --json` reported status `free` with `reason: lock file does not exist`.
+- `doctor processes --json` reported the active Playwright `avmatrix-web` test server and editor-owned MCP processes.
+- The latest process output did not include the running `doctor processes` command or its PowerShell helper process.
+
+Pre-commit change detection:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all
+```
+
+Observed summary:
+
+```text
+risk_level=critical
+affected_count=32
+changed_count=542
+changed_files=12
+affected_app_layers={api:8, backend:5, mixed:19}
+affected_functional_areas={api:8, cli:5, mixed:19}
+changed_app_layers={api:7, api_test:55, backend:227, backend_test:227, docs:26}
+changed_functional_areas={api:62, cli:95, documentation:26, storage:359}
+resolution_gap_changes.changedGapEntities=380
+resolution_gap_changes.changedGapOccurrenceCount=385
+semanticStatus.appLayer.status=complete
+semanticStatus.functionalArea.status=complete
+```
+
+Blast radius note:
+
+- `detect-changes` reported `risk_level=critical`; this means the slice touched important shared code paths and required careful impact analysis, build/test gates, smoke checks, diagnostics checks, and pre-commit change detection.
+- HIGH/CRITICAL blast radius is not a prohibition on editing and does not mean the commit must be artificially narrowed. It is a signal to keep the work deliberate, validated, and traceable.
+- The current slice intentionally covers the storage lock lifecycle, lock diagnostics, process diagnostics, setup text, and focused tests/docs needed for those behaviors.
+
+### Pending Before Commit
+
+- Update README / generated AI context guidance or explicitly leave those plan items open.
+- Commit the implementation slice and record the commit hash.

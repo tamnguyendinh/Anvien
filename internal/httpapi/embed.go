@@ -73,7 +73,7 @@ func (s Server) handleEmbed(w http.ResponseWriter, r *http.Request) {
 	lock, err := repo.AcquireStorageLock(target.AnalyzeLockPath)
 	if err != nil {
 		if errors.Is(err, repo.ErrLockHeld) {
-			writeError(w, http.StatusConflict, "Embedding or analysis already in progress for this repository")
+			writeError(w, http.StatusConflict, lockHeldMessage(err))
 			return
 		}
 		writeError(w, http.StatusInternalServerError, err.Error())

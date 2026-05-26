@@ -98,11 +98,13 @@ func printSetupResult(cmd *cobra.Command, result setupResult) {
 	fmt.Fprintln(out, "  Summary:")
 	fmt.Fprintf(out, "    MCP configured for: %s\n", setupConfiguredMCPNames(result.Configured))
 	fmt.Fprintf(out, "    Skills installed to: %s\n", setupConfiguredSkillNames(result.Configured))
+	fmt.Fprintf(out, "    MCP lifecycle: %s mcp is editor-owned and may stay running while the editor or agent session is active.\n", setupCommandName)
+	fmt.Fprintf(out, "    Diagnostics: %s doctor locks, %s doctor processes\n", setupCommandName, setupCommandName)
 	fmt.Fprintln(out)
 	fmt.Fprintln(out, "  Next steps:")
 	fmt.Fprintln(out, "    1. cd into any git repo")
 	fmt.Fprintf(out, "    2. Run: %s analyze\n", setupCommandName)
-	fmt.Fprintln(out, "    3. Open the repo in your editor; MCP is ready.")
+	fmt.Fprintln(out, "    3. Open the repo in your editor; MCP is ready and owned by that editor session.")
 	fmt.Fprintln(out)
 }
 

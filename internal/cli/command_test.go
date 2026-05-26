@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"os"
@@ -78,6 +79,7 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 		"context",
 		"cypher",
 		"detect-changes",
+		"doctor",
 		"group",
 		"impact",
 		"index",
@@ -103,6 +105,69 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 	}
 	if strings.Contains(out, "eval-server") {
 		t.Fatalf("root help still exposes eval-server:\n%s", out)
+	}
+}
+
+func TestDoctorLocksReportsStaleLockJSON(t *testing.T) {
+	dir := t.TempDir()
+	paths := repo.Paths(dir)
+	if err := os.MkdirAll(filepath.Dir(paths.AnalyzeLockPath), 0o755); err != nil {
+		t.Fatalf("mkdir lock dir: %v", err)
+	}
+	if err := os.WriteFile(paths.AnalyzeLockPath, []byte("pid=999999999\nacquiredAt=2026-05-26T07:50:03Z\n"), 0o644); err != nil {
+		t.Fatalf("write stale lock: %v", err)
+	}
+
+	out, errOut, err := executeForTest(t, "doctor", "locks", "--repo", dir, "--json")
+	if err != nil {
+		t.Fatalf("doctor locks returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	if errOut != "" {
+		t.Fatalf("doctor locks wrote stderr: %q", errOut)
+	}
+	var decoded struct {
+		Status    string `json:"status"`
+		Diagnosis struct {
+			Stale       bool `json:"stale"`
+			Recoverable bool `json:"recoverable"`
+			Info        struct {
+				PID int `json:"pid"`
+			} `json:"info"`
+		} `json:"diagnosis"`
+	}
+	if err := json.Unmarshal([]byte(out), &decoded); err != nil {
+		t.Fatalf("doctor locks output is not JSON: %v\n%s", err, out)
+	}
+	if decoded.Status != "stale-recoverable" || !decoded.Diagnosis.Stale || !decoded.Diagnosis.Recoverable || decoded.Diagnosis.Info.PID != 999999999 {
+		t.Fatalf("doctor locks decoded = %#v\n%s", decoded, out)
+	}
+}
+
+func TestDoctorProcessClassificationDistinguishesMCPAndAnalyze(t *testing.T) {
+	mcp := classifyDoctorProcess(doctorProcess{
+		Name:              "avmatrix.exe",
+		CommandLine:       `C:\Users\TAM\AppData\Roaming\npm\avmatrix.exe mcp`,
+		ParentName:        "codex.exe",
+		ParentCommandLine: "codex",
+	})
+	if mcp.Role != "mcp" || mcp.Ownership != "editor-owned" || len(mcp.Notes) == 0 {
+		t.Fatalf("mcp classification = %#v", mcp)
+	}
+
+	analyze := classifyDoctorProcess(doctorProcess{
+		Name:        "avmatrix.exe",
+		CommandLine: `E:\AVmatrix-GO\avmatrix\bin\avmatrix.exe analyze --force`,
+	})
+	if analyze.Role != "analyze" || analyze.Ownership != "user-command-or-job" {
+		t.Fatalf("analyze classification = %#v", analyze)
+	}
+
+	doctor := classifyDoctorProcess(doctorProcess{
+		Name:        "avmatrix.exe",
+		CommandLine: `E:\AVmatrix-GO\avmatrix\bin\avmatrix.exe doctor processes --json`,
+	})
+	if doctor.Role != "doctor" || doctor.Ownership != "diagnostic-command" {
+		t.Fatalf("doctor classification = %#v", doctor)
 	}
 }
 
@@ -302,7 +367,7 @@ func TestSetupCommandWritesEditorConfigsAndSkills(t *testing.T) {
 	if errOut != "" {
 		t.Fatalf("setup wrote stderr: %q", errOut)
 	}
-	for _, want := range []string{"AVmatrix Setup", "Cursor", "Claude Code", "OpenCode", "Codex", "Skills installed to"} {
+	for _, want := range []string{"AVmatrix Setup", "Cursor", "Claude Code", "OpenCode", "Codex", "Skills installed to", "MCP lifecycle", "doctor processes"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("setup output missing %q:\n%s", want, out)
 		}
@@ -627,6 +692,8 @@ func TestDirectToolHelpShowsCompatibilityFlags(t *testing.T) {
 		{[]string{"impact", "--help"}, []string{"--direction", "--repo", "--uid", "--depth", "--include-tests"}},
 		{[]string{"cypher", "--help"}, []string{"--repo"}},
 		{[]string{"detect-changes", "--help"}, []string{"Analyze uncommitted git changes", "--scope", "--base-ref", "--repo"}},
+		{[]string{"doctor", "locks", "--help"}, []string{"Inspect repository analyze lock state", "--repo", "--json"}},
+		{[]string{"doctor", "processes", "--help"}, []string{"Inspect AVmatrix runtime processes", "--json"}},
 	}
 
 	for _, tc := range cases {
@@ -1269,6 +1336,27 @@ func TestAnalyzeCommandRequiresGitUnlessSkipped(t *testing.T) {
 	}
 }
 
+func TestAnalyzeCommandRecoversStaleLock(t *testing.T) {
+	dir := initGitRepo(t)
+	t.Setenv(repo.HomeEnvName, t.TempDir())
+	writeCLITestFile(t, dir, "src/main.ts", "export function main() { return 1 }\n")
+	writeDeadPIDLockForTest(t, repo.Paths(dir).AnalyzeLockPath)
+
+	out, errOut, err := executeForTest(t, "analyze", dir, "--force")
+	if err != nil {
+		t.Fatalf("analyze returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	if errOut != "" {
+		t.Fatalf("analyze wrote stderr: %q", errOut)
+	}
+	if !strings.Contains(out, "analyzed ") {
+		t.Fatalf("analyze output missing success:\n%s", out)
+	}
+	if _, err := os.Stat(repo.Paths(dir).AnalyzeLockPath); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("lock file after analyze stat error = %v, want not exist", err)
+	}
+}
+
 func TestCleanRequiresForceAndPreservesSettings(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv(repo.HomeEnvName, home)
@@ -1757,5 +1845,15 @@ func runGit(t *testing.T, dir string, args ...string) {
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("git %s failed: %v\n%s", strings.Join(args, " "), err, output)
+	}
+}
+
+func writeDeadPIDLockForTest(t *testing.T, lockPath string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
+		t.Fatalf("mkdir lock dir: %v", err)
+	}
+	if err := os.WriteFile(lockPath, []byte("pid=999999999\nacquiredAt=2026-05-26T07:50:03Z\n"), 0o644); err != nil {
+		t.Fatalf("write dead-pid lock: %v", err)
 	}
 }

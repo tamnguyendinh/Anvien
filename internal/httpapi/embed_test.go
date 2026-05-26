@@ -65,8 +65,34 @@ func TestEmbedEndpointRejectsHeldRepoLock(t *testing.T) {
 	if !strings.Contains(payload["error"], "already in progress") {
 		t.Fatalf("error = %#v", payload)
 	}
+	if !strings.Contains(payload["error"], "pid=") {
+		t.Fatalf("error missing lock owner metadata: %#v", payload)
+	}
 	if runner.called {
 		t.Fatalf("runner should not be called when lock is held")
+	}
+}
+
+func TestEmbedEndpointRecoversStaleRepoLock(t *testing.T) {
+	runner := &recordingEmbedRunner{}
+	server, fixtures := newRepoServerWithConfig(t, []repoFixture{{name: "alpha"}}, func(config *Config) {
+		config.EmbedRunner = runner
+	})
+	defer server.Close()
+
+	writeDeadPIDLockForHTTPTest(t, fixtures[0].path)
+
+	var payload embedStartResponse
+	postJSON(t, server.URL+"/api/embed", `{"repo":"`+jsonEscape(fixtures[0].path)+`"}`, http.StatusAccepted, &payload)
+
+	if payload.JobID == "" || payload.Status != JobAnalyzing {
+		t.Fatalf("unexpected embed start response: %#v", payload)
+	}
+	if !runner.called {
+		t.Fatal("runner should be called after stale lock recovery")
+	}
+	if runner.target.RepoPath != fixtures[0].path {
+		t.Fatalf("runner target = %#v", runner.target)
 	}
 }
 
@@ -99,6 +125,17 @@ func TestEmbedEndpointCancelMarksJobFailed(t *testing.T) {
 	job := waitForEmbedJob(t, server.URL, started.JobID, JobFailed)
 	if job.Error != "Cancelled by user" {
 		t.Fatalf("cancelled job = %#v", job)
+	}
+}
+
+func writeDeadPIDLockForHTTPTest(t *testing.T, repoPath string) {
+	t.Helper()
+	paths := repo.Paths(repoPath)
+	if err := os.MkdirAll(paths.StoragePath, 0o755); err != nil {
+		t.Fatalf("mkdir storage: %v", err)
+	}
+	if err := os.WriteFile(paths.AnalyzeLockPath, []byte("pid=999999999\nacquiredAt=2026-05-26T07:50:03Z\n"), 0o644); err != nil {
+		t.Fatalf("write dead-pid lock: %v", err)
 	}
 }
 

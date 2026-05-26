@@ -145,15 +145,45 @@ func TestAnalyzeRejectsHeldRepoLock(t *testing.T) {
 		t.Fatalf("POST analyze: %v", err)
 	}
 	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusConflict {
-		body, _ := io.ReadAll(resp.Body)
 		t.Fatalf("analyze status = %d, want 409; body=%s", resp.StatusCode, body)
+	}
+	if !strings.Contains(string(body), "already in progress") || !strings.Contains(string(body), "pid=") {
+		t.Fatalf("analyze lock conflict body missing owner metadata: %s", body)
 	}
 
 	select {
 	case <-runner.started:
 		t.Fatal("runner started even though repo lock was held")
 	case <-time.After(50 * time.Millisecond):
+	}
+}
+
+func TestAnalyzeRecoversStaleRepoLock(t *testing.T) {
+	runner := &immediateAnalyzeRunner{repoName: "alpha"}
+	server, _ := newRepoServerWithConfig(t, nil, func(config *Config) {
+		config.AnalyzeRunner = runner
+	})
+	defer server.Close()
+
+	repoPath := t.TempDir()
+	resolvedPath, err := repo.ResolveAnalyzePath(repoPath)
+	if err != nil {
+		t.Fatalf("resolve temp repo path: %v", err)
+	}
+	writeDeadPIDLockForHTTPTest(t, resolvedPath)
+
+	started := startAnalyzeForTest(t, server.URL, repoPath)
+	if started.Status != JobAnalyzing || started.JobID == "" {
+		t.Fatalf("unexpected start response: %#v", started)
+	}
+	job := waitForAnalyzeStatus(t, server.URL, started.JobID, JobComplete)
+	if job.RepoPath != resolvedPath || job.RepoName != "alpha" {
+		t.Fatalf("job completion identity = %#v", job)
+	}
+	if runner.target.RepoPath != resolvedPath {
+		t.Fatalf("runner target = %#v", runner.target)
 	}
 }
 

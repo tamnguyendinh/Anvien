@@ -77,6 +77,7 @@ func NewRootCommand(options Options) *cobra.Command {
 		newStatusCommand(),
 		newWikiCommand(),
 		newWikiModeCommand(),
+		newDoctorCommand(),
 		newAugmentCommand(),
 		newQueryCommand(),
 		newContextCommand(),

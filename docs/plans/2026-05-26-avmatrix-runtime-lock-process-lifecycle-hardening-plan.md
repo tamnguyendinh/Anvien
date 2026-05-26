@@ -2,19 +2,19 @@
 
 Date: 2026-05-26
 
-Status: Planned
+Status: In progress
 
 Companion files:
 
 - Evidence ledger: [2026-05-26-avmatrix-runtime-lock-process-lifecycle-hardening-evidence.md](2026-05-26-avmatrix-runtime-lock-process-lifecycle-hardening-evidence.md)
 - Benchmark ledger: [2026-05-26-avmatrix-runtime-lock-process-lifecycle-hardening-benchmark.md](2026-05-26-avmatrix-runtime-lock-process-lifecycle-hardening-benchmark.md)
 
-## Master Rules
+## Master rules
 
 1. Use AVmatrix for codebase analysis and impact checks while working on implementation slices in this plan.
 2. As each task is completed, update the corresponding checklist item immediately.
-3. Run a full build before testing: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
-4. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured runtime behavior, process counts, lock inventory counts, command output counts, recovery rates, or CLI/API response inventory. Build/test timings are validation evidence unless the slice changes those systems.
+3. Run the full build gate before testing; include focused backend/CLI/setup/package validation for generated skill behavior, and include Web unit/e2e/browser screenshot validation for the graph labeling phase.
+4. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, query hit rate, command output inventory, graph inventory counts, source-site inventory counts, generated skill inventory counts, setup/package file inventories, or resolved-edge accuracy; build/test/e2e timings are validation evidence unless the slice changes those systems.
 5. Record evidence as each evidenced task is completed.
 6. For doc-only commits, do not use AVmatrix.
 7. After each completed implementation slice, commit the work, then continue until the full plan is complete.
@@ -99,52 +99,52 @@ The tool must not kill editor-owned MCP processes as part of browser or launcher
 
 ## Phase 0 - Baseline And Reproduction
 
-- [ ] [P0-A] Refresh the AVmatrix graph before graph-based work and record graph counts in the evidence ledger.
-- [ ] [P0-B] Trace lock owner code and record files/symbols for `AcquireStorageLock`, `StorageLock.Release`, analyze callers, HTTP analyze checks, and embed lock acquisition.
-- [ ] [P0-C] Reproduce stale lock behavior with a lock file containing a dead PID. Record command output, lock file content, and expected recovery behavior.
-- [ ] [P0-D] Inventory current AVmatrix processes on Windows with parent process chains. Record which processes are editor-owned `mcp`, launcher-owned `serve`, one-shot CLI commands, or unknown.
-- [ ] [P0-E] Trace setup-generated MCP configuration for Codex, Claude, Cursor, and OpenCode. Record how `avmatrix mcp` is started and why browser shutdown does not own that lifecycle.
-- [ ] [P0-F] Run impact analysis before editing lock or lifecycle symbols. Record blast radius and risk level for `AcquireStorageLock`, `StorageLock.Release`, HTTP analyze/embed lock callers, and any launcher cleanup symbols touched.
+- [x] [P0-A] Refresh the AVmatrix graph before graph-based work and record graph counts in the evidence ledger.
+- [x] [P0-B] Trace lock owner code and record files/symbols for `AcquireStorageLock`, `StorageLock.Release`, analyze callers, HTTP analyze checks, and embed lock acquisition.
+- [x] [P0-C] Reproduce stale lock behavior with a lock file containing a dead PID. Record command output, lock file content, and expected recovery behavior.
+- [x] [P0-D] Inventory current AVmatrix processes on Windows with parent process chains. Record which processes are editor-owned `mcp`, launcher-owned `serve`, one-shot CLI commands, or unknown.
+- [x] [P0-E] Trace setup-generated MCP configuration for Codex, Claude, Cursor, and OpenCode. Record how `avmatrix mcp` is started and why browser shutdown does not own that lifecycle.
+- [x] [P0-F] Run impact analysis before editing lock or lifecycle symbols. Record blast radius and risk level for `AcquireStorageLock`, `StorageLock.Release`, HTTP analyze/embed lock callers, and any launcher cleanup symbols touched.
 
 ## Phase 1 - Stale Lock Recovery
 
-- [ ] [P1-A] Define lock metadata format and compatibility behavior for existing two-line locks containing only `pid` and `acquiredAt`.
-- [ ] [P1-B] Add lock metadata parsing, process liveness detection, host matching, malformed metadata handling, and age calculation.
-- [ ] [P1-C] Update `AcquireStorageLock` so same-host dead-PID locks are removed and acquisition retries.
-- [ ] [P1-D] Update conflict errors to carry structured lock metadata while preserving `errors.Is(err, ErrLockHeld)` compatibility.
-- [ ] [P1-E] Update `StorageLock.Release` so it removes only the lock token it owns.
-- [ ] [P1-F] Add unit tests for live lock exclusion, dead PID stale recovery, old-format lock recovery, malformed stale lock recovery, foreign-host safety, and token-safe release.
+- [x] [P1-A] Define lock metadata format and compatibility behavior for existing two-line locks containing only `pid` and `acquiredAt`.
+- [x] [P1-B] Add lock metadata parsing, process liveness detection, host matching, malformed metadata handling, and age calculation.
+- [x] [P1-C] Update `AcquireStorageLock` so same-host dead-PID locks are removed and acquisition retries.
+- [x] [P1-D] Update conflict errors to carry structured lock metadata while preserving `errors.Is(err, ErrLockHeld)` compatibility.
+- [x] [P1-E] Update `StorageLock.Release` so it removes only the lock token it owns.
+- [x] [P1-F] Add unit tests for live lock exclusion, dead PID stale recovery, old-format lock recovery, malformed stale lock recovery, foreign-host safety, and token-safe release.
 
 ## Phase 2 - Analyze, Embed, And API Behavior
 
-- [ ] [P2-A] Verify CLI analyze uses the hardened lock path without extra caller-specific stale logic.
-- [ ] [P2-B] Verify HTTP analyze preflight and actual analyze job do not race after stale recovery.
-- [ ] [P2-C] Verify embed job lock acquisition and release preserve mutual exclusion while recovering stale locks.
-- [ ] [P2-D] Add integration tests for CLI analyze and HTTP analyze/embed stale-lock recovery.
-- [ ] [P2-E] Update user-facing error text for real live locks so it explains the owning process and next action.
+- [x] [P2-A] Verify CLI analyze uses the hardened lock path without extra caller-specific stale logic.
+- [x] [P2-B] Verify HTTP analyze preflight and actual analyze job do not race after stale recovery.
+- [x] [P2-C] Verify embed job lock acquisition and release preserve mutual exclusion while recovering stale locks.
+- [x] [P2-D] Add integration tests for CLI analyze and HTTP analyze/embed stale-lock recovery.
+- [ ] [P2-E] Update user-facing error text for real live locks so it explains the owning process and next action. Current implementation includes PID, host, acquired time, command, and live/dead reason; lock path, age text, and explicit next action still need tightening before closure.
 
 ## Phase 3 - Runtime And Process Diagnostics
 
-- [ ] [P3-A] Decide the user-facing diagnostics surface: `avmatrix doctor locks`, `avmatrix doctor processes`, `avmatrix runtime status`, or an equivalent command design.
-- [ ] [P3-B] Implement lock diagnostics that report lock path, repo, owner PID, host, age, command, liveness, and stale/recoverable status.
-- [ ] [P3-C] Implement process diagnostics that classify AVmatrix processes as analyze/embed/serve/mcp/launcher/unknown and identify likely owner from command line and parent process when available.
-- [ ] [P3-D] Add `--json` output for diagnostics so agents can consume the result.
-- [ ] [P3-E] Add tests for command registration, JSON shape, process classification, and missing-lock/no-process output.
+- [x] [P3-A] Decide the user-facing diagnostics surface: `avmatrix doctor locks`, `avmatrix doctor processes`, `avmatrix runtime status`, or an equivalent command design.
+- [x] [P3-B] Implement lock diagnostics that report lock path, repo, owner PID, host, age, command, liveness, and stale/recoverable status.
+- [ ] [P3-C] Implement process diagnostics that classify AVmatrix processes as analyze/embed/serve/mcp/launcher/unknown and identify likely owner from command line and parent process when available. Current implementation covers analyze, serve, MCP, launcher, diagnostic, and unknown runtime processes; explicit embed classification remains pending because embed is currently job-scoped inside the HTTP runtime rather than a standalone process.
+- [x] [P3-D] Add `--json` output for diagnostics so agents can consume the result.
+- [x] [P3-E] Add tests for command registration, JSON shape, process classification, and missing-lock/no-process output.
 
 ## Phase 4 - Setup, Launcher, And Documentation UX
 
-- [ ] [P4-A] Update setup output and setup-installed guidance so users know `avmatrix mcp` is long-running and editor-owned.
-- [ ] [P4-B] Verify launcher cleanup targets only launcher-owned runtime processes and does not kill editor-owned MCP processes.
+- [ ] [P4-A] Update setup output and setup-installed guidance so users know `avmatrix mcp` is long-running and editor-owned. Setup output is updated; setup-installed guidance remains pending.
+- [x] [P4-B] Verify launcher cleanup targets only launcher-owned runtime processes and does not kill editor-owned MCP processes.
 - [ ] [P4-C] Update README and active docs to explain lock recovery, live-lock diagnostics, MCP process ownership, and safe cleanup commands.
 - [ ] [P4-D] Update generated AI context guidance if final diagnostics commands become part of the AVmatrix command surface.
 
 ## Phase 5 - Validation And Closure
 
-- [ ] [P5-A] Run the full build gate: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
-- [ ] [P5-B] Run focused tests: `go test .\internal\repo .\internal\analyze .\internal\httpapi .\internal\cli -count=1`.
-- [ ] [P5-C] Run launcher tests if launcher lifecycle code changed.
-- [ ] [P5-D] Smoke test stale lock recovery by writing a dead-PID lock and running `avmatrix analyze --force`.
-- [ ] [P5-E] Smoke test live lock conflict and confirm the error message includes actionable owner metadata.
-- [ ] [P5-F] Smoke test diagnostics command output in table and JSON mode.
-- [ ] [P5-G] Run `avmatrix detect-changes --repo AVmatrix --scope all` before committing implementation work and record changed scope.
+- [x] [P5-A] Run the full build gate: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- [x] [P5-B] Run focused tests: `go test .\internal\repo .\internal\analyze .\internal\httpapi .\internal\cli -count=1`.
+- [x] [P5-C] Run launcher tests if launcher lifecycle code changed.
+- [x] [P5-D] Smoke test stale lock recovery by writing a dead-PID lock and running `avmatrix analyze --force`.
+- [ ] [P5-E] Smoke test live lock conflict and confirm the error message includes actionable owner metadata. PID/host/acquiredAt/command/live reason were confirmed; lock path/age/next action still pending under P2-E.
+- [x] [P5-F] Smoke test diagnostics command output in table and JSON mode.
+- [x] [P5-G] Run `avmatrix detect-changes --repo AVmatrix --scope all` before committing implementation work and record changed scope.
 - [ ] [P5-H] Close the plan only after code, tests, diagnostics output, docs, evidence, and benchmark ledgers agree on stale-lock recovery and process lifecycle behavior.

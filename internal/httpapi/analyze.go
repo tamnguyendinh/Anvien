@@ -80,7 +80,7 @@ func (s Server) handleAnalyze(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := ensureAnalyzeLockAvailable(resolvedPath); err != nil {
 		if errors.Is(err, repo.ErrLockHeld) {
-			writeError(w, http.StatusConflict, "Embedding or analysis already in progress for this repository")
+			writeError(w, http.StatusConflict, lockHeldMessage(err))
 			return
 		}
 		writeError(w, http.StatusInternalServerError, err.Error())
@@ -156,6 +156,14 @@ func ensureAnalyzeLockAvailable(repoPath string) error {
 		return err
 	}
 	return lock.Release()
+}
+
+func lockHeldMessage(err error) string {
+	message := "Embedding or analysis already in progress for this repository"
+	if err == nil {
+		return message
+	}
+	return message + ": " + err.Error()
 }
 
 func (s Server) runAnalyzeJob(jobID string, target AnalyzeTarget) {
