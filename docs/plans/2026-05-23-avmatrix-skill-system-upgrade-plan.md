@@ -389,35 +389,35 @@ This phase fixes MCP prompts as product command surfaces. It belongs after CLI p
 
 ## Phase 5 - Regeneration And Validation
 
-- [ ] [P5-A] Run the full build gate before tests: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`. Record the command result in evidence.
+- [x] [P5-A] Run the full build gate before tests: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`. Record the command result in evidence.
 
-- [ ] [P5-B] Run focused backend/CLI/MCP tests for AI context generation, setup, packaging, query, query-health, graph-health, CLI parity surfaces, and MCP prompt templates touched by the implementation. The minimum expected test scope is `go test .\internal\mcp .\internal\cli .\internal\aicontext .\internal\graphhealth .\internal\httpapi -count=1`, expanded as needed if package/setup code outside those packages changes.
+- [x] [P5-B] Run focused backend/CLI/MCP tests for AI context generation, setup, packaging, query, query-health, graph-health, CLI parity surfaces, and MCP prompt templates touched by the implementation. The minimum expected test scope is `go test .\internal\mcp .\internal\cli .\internal\aicontext .\internal\graphhealth .\internal\httpapi -count=1`, expanded as needed if package/setup code outside those packages changes.
 
-- [ ] [P5-C] Run Web unit tests after graph labeling work: `cd avmatrix-web; npm run test`. Record exact pass/fail counts and any focused label/layout tests in evidence.
+- [x] [P5-C] Run Web unit tests after graph labeling work: `cd avmatrix-web; npm run test`. Record exact pass/fail counts and any focused label/layout tests in evidence.
 
-- [ ] [P5-D] Run Web e2e/browser validation after graph labeling work: `cd avmatrix-web; npm run test:e2e` or a focused Playwright command expanded to full e2e before closure. Capture desktop and smaller-viewport screenshots that prove macro ring labels and island labels are readable and not incoherently overlapping the graph.
+- [x] [P5-D] Run Web e2e/browser validation after graph labeling work: `cd avmatrix-web; npm run test:e2e` or a focused Playwright command expanded to full e2e before closure. Capture desktop and smaller-viewport screenshots that prove macro ring labels and island labels are readable and not incoherently overlapping the graph.
 
-- [ ] [P5-E] Run the normal generation path with `avmatrix analyze --force` and no `--skip-agents-md`. Verify generated `AGENTS.md`, generated `CLAUDE.md`, and `.claude/skills/avmatrix/**` contain the final skill set and expected content fragments.
+- [x] [P5-E] Run the normal generation path with `avmatrix analyze --force` and no `--skip-agents-md`. Verify generated `AGENTS.md`, generated `CLAUDE.md`, and `.claude/skills/avmatrix/**` contain the final skill set and expected content fragments.
 
-- [ ] [P5-F] Compare source and generated skill inventories after regeneration. Record final skill count, generated file paths, byte/line counts, and any intentional generated differences in the benchmark ledger.
+- [x] [P5-F] Compare source and generated skill inventories after regeneration. Record final skill count, generated file paths, byte/line counts, and any intentional generated differences in the benchmark ledger.
 
-- [ ] [P5-G] Validate setup/package behavior if Phase 4 changed setup or package code. Record the exact command outputs and installed/packaged skill file inventories in evidence and benchmark ledgers.
+- [x] [P5-G] Validate setup/package behavior if Phase 4 changed setup or package code. Record the exact command outputs and installed/packaged skill file inventories in evidence and benchmark ledgers.
 
 - [x] [P5-G2] Validate canonical executable behavior after the full build. Record `Get-ChildItem avmatrix\bin\avmatrix.exe`, `avmatrix\bin\avmatrix.exe version`, `avmatrix\bin\avmatrix.exe query --help`, `avmatrix\bin\avmatrix.exe query --lanes --json`, `avmatrix\bin\avmatrix.exe query "<representative intent>" --repo AVmatrix --limit 5 --explain`, and `avmatrix\bin\avmatrix.exe query-health --repo AVmatrix --suite docs\query-health\2026-05-23-avmatrix-skill-system-upgrade-suite.json --limit 10`. Also record that no independent `avmatrix-launcher\server-bundle\avmatrix.exe` remains as a production/runtime command source.
 
-- [ ] [P5-H] Validate MCP setup/resource output if Phase 4 touched MCP resources. Record the exact `avmatrix://setup` or equivalent resource output check in evidence so the generated guidance and MCP-facing guide are proven consistent.
+- [x] [P5-H] Validate MCP setup/resource output if Phase 4 touched MCP resources. Record the exact `avmatrix://setup` or equivalent resource output check in evidence so the generated guidance and MCP-facing guide are proven consistent.
 
-- [ ] [P5-I] Run the dedicated query-health suite updated for this plan's AI-context skill-generation intent and representative query capability lanes. Record threshold pass/fail, exact pass/fail, expected targets, matched targets, missed targets, source/global rank behavior, query lane coverage, and noise reason in benchmark/evidence.
+- [x] [P5-I] Run the dedicated query-health suite updated for this plan's AI-context skill-generation intent and representative query capability lanes. Record threshold pass/fail, exact pass/fail, expected targets, matched targets, missed targets, source/global rank behavior, query lane coverage, and noise reason in benchmark/evidence.
 
 - [x] [P5-J] Run user-facing query lane smoke commands after the full build. Validate normal query behavior, lane discovery, explainable JSON output, MCP query JSON evidence, and the dedicated query-health suite command; record exact commands and representative output in evidence and benchmark.
 
-- [ ] [P5-K] Run the query broad-discovery regression check from Phase 1 and record whether execution-flow candidates still appear with meaningful match evidence after the ranking fix.
+- [x] [P5-K] Run the query broad-discovery regression check from Phase 1 and record whether execution-flow candidates still appear with meaningful match evidence after the ranking fix.
 
-- [ ] [P5-K2] Run user-facing graph-health CLI smoke commands after the full build. Validate help output, summary, report, components, explain, `--json`, missing-node error behavior, and parity with Web/API graph-health semantics where applicable. Record exact commands and representative output in evidence and benchmark.
+- [x] [P5-K2] Run user-facing graph-health CLI smoke commands after the full build. Validate help output, summary, report, components, explain, `--json`, missing-node error behavior, and parity with Web/API graph-health semantics where applicable. Record exact commands and representative output in evidence and benchmark.
 
-- [ ] [P5-K3] Run user-facing CLI parity smoke commands after the full build. Validate every command family accepted in Phase 1.6, plus the source/help inventory that proves intentionally MCP/API/Web-only or hidden lifecycle surfaces are classified correctly. Record exact commands and representative output in evidence and benchmark.
+- [x] [P5-K3] Run user-facing CLI parity smoke commands after the full build. Validate every command family accepted in Phase 1.6, plus the source/help inventory that proves intentionally MCP/API/Web-only or hidden lifecycle surfaces are classified correctly. Record exact commands and representative output in evidence and benchmark.
 
-- [ ] [P5-K4] Run MCP prompt smoke validation after the full build. Validate `prompts/list` and `prompts/get` for `generate_map` and `detect_impact`, including prompt descriptions, arguments, repo-selection instructions, freshness instructions, evidence-only architecture guidance, and correct distinction between MCP prompts, MCP tools, MCP resources, CLI commands, and Web/API surfaces. Record representative output in evidence and benchmark.
+- [x] [P5-K4] Run MCP prompt smoke validation after the full build. Validate `prompts/list` and `prompts/get` for `generate_map` and `detect_impact`, including prompt descriptions, arguments, repo-selection instructions, freshness instructions, evidence-only architecture guidance, and correct distinction between MCP prompts, MCP tools, MCP resources, CLI commands, and Web/API surfaces. Record representative output in evidence and benchmark.
 
 - [x] [P5-L] Run `detect-changes` before commit and record the affected scope. Commit the implementation slice after checklist items and ledgers are updated.
 

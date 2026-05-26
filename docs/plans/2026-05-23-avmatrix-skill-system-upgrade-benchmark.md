@@ -259,7 +259,7 @@ P2-C through P2-H implementation and runtime metrics:
 | Desktop label overlap violations | violations | 0 |
 | Smaller viewport width | px | 480 |
 | Smaller viewport height | px | 720 |
-| Smaller e2e screenshot size | bytes | 92,013 |
+| Smaller e2e screenshot size | bytes | 92,005 |
 | Smaller visible ring labels before filter | labels | 3 |
 | Smaller visible island labels before filter | labels | 2 |
 | Smaller label overlap violations before filter | violations | 0 |
@@ -293,7 +293,7 @@ P2-C through P2-H implementation and runtime metrics:
 
 ## B5 - Setup And Package Skill Distribution Metrics
 
-Status: P4 setup/package reconciliation recorded.
+Status: P5 setup/package validation recorded after full build and regeneration.
 
 | Metric | Unit | Baseline | Final | Delta | Target |
 |---|---:|---:|---:|---:|---:|
@@ -303,10 +303,11 @@ Status: P4 setup/package reconciliation recorded.
 | Package-root skill source files | files | 7 | 0 | -7 | 0 |
 | Retired package-root `avmatrix-pr-review` installed | files | 1 | 0 | -1 | 0 |
 | Package fallback copied files | files | pending | 293 | pending | record |
+| Package fallback inventory files | files | pending | 294 | pending | record |
 | Package fallback copied Go files | files | pending | 278 | pending | record |
 | Packaged embedded skill Markdown files | files | pending | 11 | pending | 11 |
 | Packaged embedded skill Markdown bytes | bytes | pending | 30,984 | pending | record |
-| Package dry-run tarball files | files | pending | 7 | pending | record |
+| Package fallback dry-run tarball files | files | pending | 301 | pending | record |
 | Package dry-run package-root skill files | files | 7 | 0 | -7 | 0 |
 | Setup/generated skill inventory mismatches | mismatches | pending | 0 | pending | 0 |
 | Package/generated skill inventory mismatches | mismatches | pending | 0 | pending | 0 |
@@ -315,15 +316,70 @@ Status: P4 setup/package reconciliation recorded.
 
 ## B6 - Generated AI Context Final Metrics
 
-Status: final pending.
+Status: final inventory captured after P5-E regeneration.
 
 | Metric | Unit | Baseline | Final | Delta | Target |
 |---|---:|---:|---:|---:|---:|
-| Generated root managed blocks | files | 2 | pending | pending | 2 |
-| Generated root stats lines | lines | 2 | pending | pending | 2 |
-| Generated root command selection table rows | rows | pending | pending | pending | record |
-| Generated root Skills table rows | rows | 6 | pending | pending | 11 |
-| Generated skill files | files | 6 | pending | pending | 11 |
-| Generated skill total size | bytes | 17,499 | pending | pending | record |
-| Generated skill/source hash matches | pairs | 6 | pending | pending | 11 |
-| Generated files edited directly | files | 0 | pending | pending | 0 |
+| Generated root managed blocks | files | 2 | 2 | 0 | 2 |
+| Generated root stats lines | lines | 2 | 2 | 0 | 2 |
+| Generated root command selection table rows | rows/root | pending | 28 | pending | record |
+| Generated root Skills table rows | rows/root | 6 | 11 | +5 | 11 |
+| Generated skill files | files | 6 | 11 | +5 | 11 |
+| Generated skill total size | bytes | 17,499 | 30,984 | +13,485 | record |
+| Generated skill/source hash matches | pairs | 6 | 11 | +5 | 11 |
+| Generated skill/source hash mismatches | mismatches | pending | 0 | pending | 0 |
+| Generated skill total lines | lines | pending | 556 | pending | record |
+| Generated files edited directly | files | 0 | 0 | 0 | 0 |
+
+## B7 - Phase 5 Command Output Inventory Metrics
+
+Status: in progress.
+
+| Metric | Unit | Baseline | Latest | Delta | Target |
+|---|---:|---:|---:|---:|---:|
+| MCP `avmatrix://setup` repo sections | sections | pending | 4 | pending | record |
+| MCP `avmatrix://setup` code-table rows | rows | pending | 92 | pending | record |
+| MCP `avmatrix://setup` CLI equivalent rows | rows | pending | 20 | pending | record |
+| MCP `avmatrix://setup` prompt rows | rows | pending | 8 | pending | record |
+| MCP `avmatrix://setup` AI Context sections | sections | pending | 4 | pending | >=1 |
+| MCP `avmatrix://setup` repo resource links | links | pending | 16 | pending | record |
+| Query-health cases | cases | pending | 9 | pending | record |
+| Query-health threshold passed | cases | pending | 9 | pending | 9 |
+| Query-health threshold failed | cases | pending | 0 | pending | 0 |
+| Query-health exact passed | cases | pending | 4 | pending | record |
+| Query-health exact failed | cases | pending | 5 | pending | record |
+| Query-health expected targets | targets | pending | 63 | pending | record |
+| Query-health matched targets | targets | pending | 54 | pending | record |
+| Query-health missed targets | targets | pending | 9 | pending | record |
+| Query-health unique matched lanes | lanes | pending | 8 | pending | record |
+| Query-health top-result source categories | categories | pending | 3 | pending | record |
+| Query-health matched target global rank max | rank | pending | 41 | pending | record |
+| Query-health matched target source rank max | rank | pending | 9 | pending | record |
+| Broad-discovery regression definitions | results | pending | 10 | pending | record |
+| Broad-discovery regression process candidates | results | pending | 10 | pending | >0 |
+| Broad-discovery definitions with match reasons | results | pending | 10 | pending | 10 |
+| Broad-discovery definitions with execution-flow lane | results | pending | 10 | pending | >0 |
+| Broad-discovery distinct definition lanes | lanes | pending | 7 | pending | record |
+| Graph-health summary nodes | nodes | pending | 88,583 | pending | record |
+| Graph-health summary relationships | relationships | pending | 121,474 | pending | record |
+| Graph-health component count | components | pending | 80,216 | pending | record |
+| Graph-health detached component count | components | pending | 64 | pending | record |
+| Graph-health report candidates with `--limit 5` | candidates | pending | 5 | pending | 5 |
+| Graph-health components with `--limit 5` | components | pending | 5 | pending | 5 |
+| Graph-health explain missing-node exit code | exit_code | pending | 1 | pending | nonzero |
+| CLI parity accepted API subcommands | commands | pending | 4 | pending | 4 |
+| CLI parity fixture route-map total | routes | pending | 1 | pending | 1 |
+| CLI parity fixture tool-map total | tools | pending | 1 | pending | 1 |
+| CLI parity fixture shape mismatches | mismatches | pending | 1 | pending | 1 |
+| CLI parity fixture API impact direct consumers | consumers | pending | 1 | pending | 1 |
+| CLI parity fixture rename files affected | files | pending | 1 | pending | 1 |
+| CLI parity fixture rename total edits | edits | pending | 1 | pending | 1 |
+| Hidden lifecycle source inventory lines | lines | pending | 9 | pending | record |
+| Root help hidden lifecycle commands visible | commands | pending | 0 | pending | 0 |
+| Root help intentionally MCP/API/Web-only grep/process/cluster commands visible | commands | pending | 0 | pending | 0 |
+| MCP prompt list count | prompts | pending | 2 | pending | 2 |
+| MCP `generate_map` argument count | arguments | pending | 1 | pending | record |
+| MCP `detect_impact` argument count | arguments | pending | 2 | pending | record |
+| MCP prompt get messages checked | messages | pending | 3 | pending | 3 |
+| `generate_map` no-arg required guidance checks passed | checks | pending | 8 | pending | 8 |
+| `detect_impact` required guidance checks passed | checks | pending | 4 | pending | 4 |
