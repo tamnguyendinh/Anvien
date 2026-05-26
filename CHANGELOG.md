@@ -4,24 +4,139 @@ All notable changes to avmatrix will be documented in this file.
 
 ## [Unreleased]
 
+### 2026-05-26
+
+#### Added
+
+- Added runtime lock metadata and diagnostics so users can distinguish one-shot `analyze` / `embed` work from long-running `serve` and editor-owned `mcp` processes.
+- Added Web graph node-spacing diagnostics and dense-graph e2e screenshot coverage for desktop and smaller viewport validation.
+
+#### Changed
+
+- Hardened repository storage locks with PID, host, command, timestamp, and token ownership metadata.
+- Bumped the CLI package version from `1.2.2` to `1.2.3`.
+- Made stale same-host analyze/embed locks recoverable while preserving live-lock protection and foreign-host safety.
+- Made Web graph dense-island placement enforce a deterministic minimum node gap based on rendered Sigma node size.
+- Expanded dense island and macro-ring footprints from actual node offsets so large graphs prefer readable separation over compressed overlap.
+
+#### Fixed
+
+- Fixed stale `.avmatrix/analyze.lock` files blocking analyze after owner death, crash, or reboot.
+- Fixed lock release so an older owner cannot remove a lock acquired by a newer process.
+- Fixed dense Web graph node overlap by enforcing one rendered node diameter of empty edge-to-edge gap between rendered nodes.
+
 ### 2026-05-23
 
 #### Added
 
 - Added user-facing documentation for semantic graph output: App Layer, Functional Area, source-site proof metadata, persisted ResolutionGap entities, Resolution Health, and diagnostic square nodes in the Web UI.
 - Documented the graph quality commands `query-health`, `resolution-inventory`, and `source-site-accuracy`.
+- Added expanded generated AVmatrix skill guidance for graph quality, API surface work, cross-repo workflows, runtime packaging, and generated AI context maintenance.
+- Added graph orientation labels so Web graph macro rings and node-type islands identify their App Layer and node/filter groups directly on the canvas.
 
 #### Changed
 
 - Bumped the CLI package version from `1.2.1` to `1.2.2`.
 - Updated CLI/MCP documentation to describe semantic fields on `query`, `context`, `impact`, `detect-changes`, `route_map`, `shape_check`, and `api_impact`.
+- Reconciled generated AI context skill sources, package/setup skill distribution, and root `AGENTS.md` / `CLAUDE.md` guidance around the current AVmatrix command surface.
+- Standardized guidance around the canonical production executable path `avmatrix\bin\avmatrix.exe`.
+
+### 2026-05-22
+
+#### Added
+
+- Added App Layer and Functional Area semantic metadata to graph output and consumer surfaces.
+- Added persisted ResolutionGap / unresolved-symbol records with source-site inventory and actionability metadata.
+- Added graph quality inventory commands and reporting for query health, resolution gaps, source-site accuracy, and resolved-edge accuracy.
+- Added Web UI App Layer rings and node-type islands so graph layout separates Backend, API, Frontend, Docs, Config, Test, Generated, Mixed, and related layers when present.
+
+#### Changed
+
+- Made resolved `CALLS` and `ACCESSES` graph edges proof-based, while preserving unresolved, ambiguous, external, dynamic, and unsupported source sites as inspectable graph evidence.
+- Separated Resolution Health from topology Graph Health so connected nodes can still expose degraded resolution confidence without being mislabeled as topology unknown.
 
 ### 2026-05-21
+
+#### Added
+
+- Added the exe-served in-app launcher start screen as the single packaged entry surface.
+- Added explicit folder-picker cancellation and request cancellation propagation for local repository selection.
 
 #### Changed
 
 - Moved the Windows launcher start surface into the Web UI served by the rebuilt `AVmatrixLauncher.exe`, making the exe the single packaged user entrypoint.
 - Removed the separate root HTML start-file flow from active launcher docs and validation expectations.
+- Kept the graph-shell Back action as an in-app navigation path back to the served start screen.
+
+#### Fixed
+
+- Fixed the packaged Start action entering the manual `avmatrix serve` bridge guide instead of the repository chooser/analyze surface.
+- Fixed local folder picker UX so a pending native picker no longer traps the Analyze Repository screen or blocks manual path analysis.
+- Fixed reset/runtime helper process handling so reset does not rely on visible terminal windows in the packaged flow.
+- Fixed Graph Health `Unknown` semantics by separating topology status from unresolved-reference diagnostics.
+
+### 2026-05-20
+
+#### Added
+
+- Added default generation of non-empty root `AGENTS.md` and `CLAUDE.md` AVmatrix managed blocks from the Go implementation.
+- Added base AVmatrix skill installation during analyze and preserved generated community skills behind the explicit `--skills` path.
+- Added the Graph Health connectivity lens taxonomy for connected, isolated, no-incoming, no-outgoing, detached-component, and unknown-connectivity states.
+- Added a dedicated Documentation display filter and centered documentation island in the Web graph layout.
+
+#### Changed
+
+- Made generated agent context refresh on analyze without preserving the old root-context bypass behavior.
+- Reworked Web graph initial placement into deterministic filter/color islands and kept layout optimization as an explicit manual action.
+- Classified graph-health diagnostics, expected-isolated reasons, and topology as separate overlays instead of one ambiguous orphan-node label.
+
+#### Fixed
+
+- Fixed empty or stale generated agent context files by replacing managed blocks cleanly and preserving manual content outside the managed region.
+- Fixed automatic graph layout optimization after graph load so normal loading uses deterministic initial layout instead of post-load movement.
+
+### 2026-05-19
+
+#### Added
+
+- Added multi-language graph coverage classification across supported scanner/provider languages and graph fact families.
+- Added source-site and graph-truth auditing for property ownership, `HAS_PROPERTY`, and member `ACCESSES` facts.
+- Added Web dashboard completeness coverage for graph-present node labels, relationship types, color legend rows, and representative uncommon graph payloads.
+
+#### Changed
+
+- Made the Web graph dashboard enumerate loaded graph node labels and relationship types instead of relying on a small fixed subset.
+- Grouped or explained compatibility heritage relationships so `EXTENDS` and `INHERITS` duplicates do not look like independent source facts.
+- Preserved parallel relationships between the same source and target instead of collapsing them into a single canvas edge.
+- Bounded rendered node sizes so structural nodes remain readable without visually dominating large graphs.
+
+#### Fixed
+
+- Fixed TypeScript and multi-language heritage graph coverage gaps found during the Restaurant_manager audit.
+- Fixed misleading standalone property ownership/access graph facts by distinguishing true orphans, false orphans, unknowns, and intentionally unmodeled cases.
+
+### 2026-05-16
+
+#### Fixed
+
+- Closed the Go graph-accuracy gate for the local AVmatrix graph, including TypeAlias, Variable, and direct `CALLS` recall targets.
+- Fixed Go graph extraction/resolution gaps that prevented measured local accuracy categories from reaching the plan target.
+
+### 2026-05-14
+
+#### Changed
+
+- Completed the Go full-conversion cutover for non-Web AVmatrix runtime authority.
+- Kept TypeScript/React as the Web UI display/build surface while moving CLI, backend, analyzer, graph, MCP, setup, packaging, and runtime authority to Go.
+- Removed or replaced non-Web TypeScript/Node implementation authority after converted Go implementations and tests passed.
+
+#### Performance
+
+- Preserved the Go runtime as the accepted faster large-repo analyze path while keeping deeper optimization work outside the conversion cutover.
+
+#### Documented
+
+- Closed the TypeScript/Node-to-Go conversion planning thread through the final Go cutover evidence and benchmark ledgers.
 
 ### 2026-05-08
 

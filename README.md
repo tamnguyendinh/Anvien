@@ -1,4 +1,4 @@
-# AVmatrix (version: `1.2.2`)
+# AVmatrix (version: `1.2.3`)
 
 ```md
 ## **AVmatrix is a code map for AI coding agents.**

@@ -2,7 +2,7 @@
 
 Copy-paste operations for the current local AVmatrix runtime: CLI, MCP, Web UI, packaged launcher, repo indexes, and recovery.
 
-Current CLI package version: `1.2.1` (`avmatrix/package.json`).
+Current CLI package version: `1.2.3` (`avmatrix/package.json`).
 
 ---
 
