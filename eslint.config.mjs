@@ -11,6 +11,8 @@ export default [
       '**/dist/**',
       '**/node_modules/**',
       '**/coverage/**',
+      '.agents/**',
+      '.avmatrix/**',
       'avmatrix/vendor/**',
       'avmatrix-web/src/vendor/**',
       'avmatrix/test/fixtures/**',
@@ -18,7 +20,14 @@ export default [
       'avmatrix-web/test-results/**',
       '**/*.d.ts',
       '.claude/**',
+      '.claude-flow/**',
+      '.codex/**',
+      '.codex-tmp/**',
+      '.grok/**',
       '.history/**',
+      '.swarm/**',
+      '.tmp/**',
+      '.worktrees/**',
     ],
   },
 
@@ -55,14 +64,6 @@ export default [
       'prefer-const': 'error',
       'no-var': 'error',
       eqeqeq: ['error', 'always', { null: 'ignore' }],
-    },
-  },
-
-  // CLI package — allow console.log (it's a CLI tool)
-  {
-    files: ['avmatrix/src/cli/**/*.ts', 'avmatrix/src/server/**/*.ts'],
-    rules: {
-      'no-console': 'off',
     },
   },
 
