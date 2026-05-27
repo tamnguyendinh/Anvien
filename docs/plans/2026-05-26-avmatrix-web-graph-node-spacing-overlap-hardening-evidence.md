@@ -646,6 +646,183 @@ Result:
 - Exit code: `0`
 - No whitespace errors reported.
 
+## E27 - P7 Node Visibility Regression Trace
+
+Date: 2026-05-27
+
+Status: pass
+
+Trigger:
+
+- User reported that the Web UI showed edges but effectively no nodes after the previous screen-space fix.
+- Browser screenshot review confirmed the P6 metrics were insufficient: radius/gap checks passed, but the first dense viewport could still show only one tiny node or no useful node set.
+
+Root cause:
+
+- `MIN_READABLE_NODE_RADIUS_PX = 0.75` made nodes technically non-overlapping but visually too small.
+- Increasing radius alone over-zoomed into sparse regions because dense same-island layout spacing was much larger than the minimum center-distance contract.
+- The readable camera initially centered on aggregate island positions instead of a local patch with actual visible nodes.
+- Ambient dense edges remained visually dominant over small nodes.
+
+AVmatrix refresh before graph-based impact checks:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe analyze --force
+```
+
+Output:
+
+```text
+files: scanned=771 parsed=572 unsupported=199 failed=0
+graph: nodes=89426 relationships=122567 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Impact checks:
+
+| Symbol | Risk | Notes |
+|---|---|---|
+| `useSigma` | CRITICAL | Web graph UI render/reducer path; handled as blast-radius warning, not a block. |
+| `buildReadableGraphCameraState` | CRITICAL | Camera boundary for dense graph initial view. |
+| `buildScreenNodeSpacingDiagnostics` | CRITICAL | Browser diagnostics used by e2e evidence. |
+| `getClusterNodeSpacing` | LOW | Dense layout spacing helper. |
+| `applyFilterBasedClusteredLayout` | HIGH | Shared Web graph layout path; edited narrowly and validated with geometry/e2e tests. |
+
+Implementation evidence:
+
+- Dense layout spacing for graphs above 1000 nodes now uses `getMinimumNodeCenterDistance(nodeCount)`, matching the one-node-gap center-distance contract instead of over-expanding dense islands.
+- Island gutter now keeps a minimum `minimumNodeCenterDistance * 75` whitespace floor so denser same-island placement does not collapse neighboring islands.
+- Readable camera now targets a visible `2px` max node radius and focuses a densest local graph-space patch.
+- Screen diagnostics now record visible viewport node counts, per-island visible counts, camera center, graph viewport bounds, and readable-camera focus metadata.
+- Dense ambient edges are dimmed and thinned so nodes are not visually buried by edge volume.
+
+## E28 - P7 Validation
+
+Date: 2026-05-27
+
+Status: pass
+
+Full build gate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+```
+
+Result:
+
+- Exit code: `0`
+
+Focused Web unit validation:
+
+```powershell
+npm run test -- graph-adapter.edge-geometry.test.ts graph-readable-camera.test.ts graph-screen-spacing.test.ts graph-orientation-labels.test.ts GraphCanvas.selection-performance.test.tsx
+```
+
+Working directory:
+
+```text
+E:\AVmatrix-GO\avmatrix-web
+```
+
+Result:
+
+- Exit code: `0`
+- Test files: `5 passed`
+- Tests: `42 passed`
+
+Full Web unit validation:
+
+```powershell
+npm run test
+```
+
+Working directory:
+
+```text
+E:\AVmatrix-GO\avmatrix-web
+```
+
+Result:
+
+- Exit code: `0`
+- Test files: `47 passed`
+- Tests: `384 passed`
+
+Web e2e/browser validation:
+
+```powershell
+npm run test:e2e -- graph-orientation-labels.spec.ts
+```
+
+Server handling:
+
+- Started `npm run dev` on `127.0.0.1:5228`.
+- Stopped the Vite process tree in `finally`.
+
+Result:
+
+- Exit code: `0`
+- Tests: `3 passed`
+- Duration: `1.5m`
+
+Screenshot artifacts reviewed:
+
+- `avmatrix-web/test-results/graph-orientation-labels-G-1d271-ted-by-the-default-node-gap-chromium/graph-node-spacing-dense-desktop.png`
+- `avmatrix-web/test-results/graph-orientation-labels-G-1d271-ted-by-the-default-node-gap-chromium/graph-node-spacing-dense-small.png`
+
+Observation:
+
+- Desktop dense graph screenshot now shows multiple visible green nodes instead of an edge-only view.
+- Small viewport shows at least one visible node with radius/gap checks still passing; graph canvas width is narrow because the sidebar remains open in the fixture.
+
+## E29 - P7 Pre-Commit Change Detection
+
+Date: 2026-05-27
+
+Status: pass
+
+Graph refresh command before change detection:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe analyze --force
+```
+
+Graph refresh output:
+
+```text
+files: scanned=771 parsed=572 unsupported=199 failed=0
+graph: nodes=89442 relationships=122583 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Change detection command:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all
+```
+
+Output summary:
+
+| Field | Value |
+|---|---:|
+| Risk level | `low` |
+| Changed files | `12` |
+| Changed symbols | `356` |
+| Affected count | `0` |
+| Changed app layers | `docs: 10`, `frontend: 281`, `frontend_test: 65` |
+| Changed functional areas | `documentation: 10`, `layout: 22`, `unknown: 324` |
+| Resolution health degraded nodes | `0` |
+| Total resolution gap count | `0` |
+
+Additional pre-commit check:
+
+```powershell
+git diff --check
+```
+
+Result:
+
+- Exit code: `0`
+- No whitespace errors reported.
+
 ## E21 - P5-G And P5-H Commit And Closure
 
 Date: 2026-05-26

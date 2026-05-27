@@ -59,6 +59,10 @@ const createSigma = (
       x: x * 0.1,
       y: y * 0.1,
     }),
+    viewportToGraph: ({ x, y }: { x: number; y: number }) => ({
+      x: x / 0.1,
+      y: y / 0.1,
+    }),
     viewportToFramedGraph: ({ x, y }: { x: number; y: number }) => ({
       x: x / 10000,
       y: y / 10000,

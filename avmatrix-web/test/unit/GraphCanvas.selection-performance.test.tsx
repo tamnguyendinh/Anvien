@@ -62,6 +62,10 @@ const {
       x: x + 400,
       y: y + 300,
     }),
+    viewportToGraph: ({ x, y }: { x: number; y: number }) => ({
+      x: x - 400,
+      y: y - 300,
+    }),
     scaleSize: (size = 1) => size,
     getNodeDisplayData: () => ({
       x: 300,

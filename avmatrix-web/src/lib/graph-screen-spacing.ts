@@ -11,7 +11,17 @@ export type ScreenNodeSpacingDiagnostics = {
   islandCount: number;
   viewportWidth: number;
   viewportHeight: number;
+  visibleViewportNodeCount: number;
+  visibleViewportIslandCounts: Record<string, number>;
   cameraRatio: number;
+  cameraX: number;
+  cameraY: number;
+  viewportGraphCenterX: number;
+  viewportGraphCenterY: number;
+  viewportGraphMinX: number;
+  viewportGraphMaxX: number;
+  viewportGraphMinY: number;
+  viewportGraphMaxY: number;
   minRenderedRadius: number;
   maxRenderedRadius: number;
   maxRenderedDiameter: number;
@@ -48,11 +58,23 @@ export const buildScreenNodeSpacingDiagnostics = (
     SigmaEdgeAttributes
   >;
   const dimensions = sigma.getDimensions();
-  const cameraRatio = sigma.getCamera().getState().ratio;
+  const cameraState = sigma.getCamera().getState();
+  const cameraRatio = cameraState.ratio;
+  const viewportGraphCenter = sigma.viewportToGraph({
+    x: dimensions.width / 2,
+    y: dimensions.height / 2,
+  });
+  const viewportGraphTopLeft = sigma.viewportToGraph({ x: 0, y: 0 });
+  const viewportGraphBottomRight = sigma.viewportToGraph({
+    x: dimensions.width,
+    y: dimensions.height,
+  });
   const nodes: ScreenNode[] = [];
   const islands = new Set<string>();
   let minRenderedRadius = Number.POSITIVE_INFINITY;
   let maxRenderedRadius = 0;
+  let visibleViewportNodeCount = 0;
+  const visibleViewportIslandCounts: Record<string, number> = {};
 
   for (const nodeId of graph.nodes()) {
     const attributes = graph.getNodeAttributes(nodeId);
@@ -76,6 +98,16 @@ export const buildScreenNodeSpacingDiagnostics = (
     islands.add(islandKey);
     minRenderedRadius = Math.min(minRenderedRadius, radius);
     maxRenderedRadius = Math.max(maxRenderedRadius, radius);
+    if (
+      viewport.x >= 0 &&
+      viewport.x <= dimensions.width &&
+      viewport.y >= 0 &&
+      viewport.y <= dimensions.height
+    ) {
+      visibleViewportNodeCount++;
+      visibleViewportIslandCounts[islandKey] =
+        (visibleViewportIslandCounts[islandKey] ?? 0) + 1;
+    }
     nodes.push({
       x: viewport.x,
       y: viewport.y,
@@ -160,7 +192,29 @@ export const buildScreenNodeSpacingDiagnostics = (
     islandCount: islands.size,
     viewportWidth: dimensions.width,
     viewportHeight: dimensions.height,
+    visibleViewportNodeCount,
+    visibleViewportIslandCounts,
     cameraRatio,
+    cameraX: cameraState.x,
+    cameraY: cameraState.y,
+    viewportGraphCenterX: viewportGraphCenter.x,
+    viewportGraphCenterY: viewportGraphCenter.y,
+    viewportGraphMinX: Math.min(
+      viewportGraphTopLeft.x,
+      viewportGraphBottomRight.x,
+    ),
+    viewportGraphMaxX: Math.max(
+      viewportGraphTopLeft.x,
+      viewportGraphBottomRight.x,
+    ),
+    viewportGraphMinY: Math.min(
+      viewportGraphTopLeft.y,
+      viewportGraphBottomRight.y,
+    ),
+    viewportGraphMaxY: Math.max(
+      viewportGraphTopLeft.y,
+      viewportGraphBottomRight.y,
+    ),
     minRenderedRadius: Number.isFinite(minRenderedRadius)
       ? minRenderedRadius
       : 0,

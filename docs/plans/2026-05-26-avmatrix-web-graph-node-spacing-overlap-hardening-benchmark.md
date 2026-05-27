@@ -161,3 +161,42 @@ Status: final measured.
 | Dense graph desktop screenshots captured | files | 1 | pending | 1 | >= 1 |
 | Dense graph small screenshots captured | files | 1 | pending | 1 | >= 1 |
 | Closure status | status | complete | reopened | complete | complete only after screen-space metrics pass |
+
+## B7 - Node Visibility Regression Metrics
+
+Status: final measured.
+
+| Metric | Unit | P6 final | P7 final | Target |
+|---|---:|---:|---:|---:|
+| Dense browser fixture node count | nodes | 2157 | 2157 | record |
+| Dense browser fixture relationship count | relationships | 2156 | 2156 | record |
+| Dense fixture `Function` island size | nodes | 1677 | 1677 | >= 1677 |
+| Dense graph readable camera target max radius | px | 0.75 | 2.0 | visible node marker |
+| Dense layout spacing for `>1000` nodes | layout units | 36 | 12 | minimum center-distance contract |
+| Dense layout minimum center distance | layout units | 12 | 12 | >= 12 |
+| Dense layout minimum edge gap | layout units | 6 | 6 | >= 6 |
+| Dense layout overlap count | violations | 0 | 0 | 0 |
+| Dense layout target gap violations | violations | 0 | 0 | 0 |
+| Dense island-to-island gutter floor | layout units | derived from spacing | `minimumNodeCenterDistance * 75` | preserve >= 900 test threshold |
+| Desktop graph canvas width | px | 1032 | 1032 | record |
+| Desktop graph canvas height | px | 702 | 702 | record |
+| Desktop visible viewport node count | nodes | not measured | 20 | >= 16 |
+| Desktop visible `frontend:Function` nodes | nodes | not measured | 20 | >= 16 |
+| Desktop max rendered node radius | px | 0.75 | 2.0 | >= 1.99 |
+| Desktop max rendered node diameter | px | 1.5 | 4.0 | record |
+| Desktop screen minimum center distance | px | 3.0 | 8.0 | >= max required center |
+| Desktop screen minimum edge gap | px | 1.5 | 4.0 | >= one rendered node diameter |
+| Desktop screen overlap count | violations | 0 | 0 | 0 |
+| Desktop screen target gap violations | violations | 0 | 0 | 0 |
+| Small graph canvas width | px | 272 | 272 | record |
+| Small graph canvas height | px | 606 | 606 | record |
+| Small visible viewport node count | nodes | not measured | 1 | >= 1 |
+| Small visible `frontend:Function` nodes | nodes | not measured | 1 | >= 1 |
+| Small max rendered node radius | px | 0.75 | >= 1.99 | >= 1.99 |
+| Small screen overlap count | violations | 0 | 0 | 0 |
+| Small screen target gap violations | violations | 0 | 0 | 0 |
+| Focused Web unit tests | tests | pass | 42 passed | pass |
+| Full Web unit tests | tests | 384 passed | 384 passed | pass |
+| Web e2e graph tests | tests | 3 passed | 3 passed | pass |
+| Dense graph desktop screenshot | files | 1 | 1 | >= 1 |
+| Dense graph small screenshot | files | 1 | 1 | >= 1 |

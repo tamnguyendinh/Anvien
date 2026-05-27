@@ -53,6 +53,10 @@ const createSigma = (
       x: x * options.positionScale,
       y: y * options.positionScale,
     }),
+    viewportToGraph: ({ x, y }: { x: number; y: number }) => ({
+      x: x / options.positionScale,
+      y: y / options.positionScale,
+    }),
     scaleSize: (size = 1) => size * options.sizeScale,
   }) as any;
 

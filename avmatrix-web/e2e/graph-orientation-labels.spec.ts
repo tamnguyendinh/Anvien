@@ -166,7 +166,17 @@ const getScreenNodeSpacingDiagnostics = async (page: Page) =>
           islandCount: number;
           viewportWidth: number;
           viewportHeight: number;
+          visibleViewportNodeCount: number;
+          visibleViewportIslandCounts: Record<string, number>;
           cameraRatio: number;
+          cameraX: number;
+          cameraY: number;
+          viewportGraphCenterX: number;
+          viewportGraphCenterY: number;
+          viewportGraphMinX: number;
+          viewportGraphMaxX: number;
+          viewportGraphMinY: number;
+          viewportGraphMaxY: number;
           minRenderedRadius: number;
           maxRenderedRadius: number;
           maxRenderedDiameter: number;
@@ -350,9 +360,15 @@ test.describe("Graph orientation labels", () => {
     const desktopScreenDiagnostics = await getScreenNodeSpacingDiagnostics(page);
     expect(desktopScreenDiagnostics?.coordinateSpace).toBe("viewport_px");
     expect(desktopScreenDiagnostics?.nodeCount).toBeGreaterThanOrEqual(2077);
+    expect(desktopScreenDiagnostics?.visibleViewportNodeCount).toBeGreaterThanOrEqual(
+      16,
+    );
+    expect(
+      desktopScreenDiagnostics?.visibleViewportIslandCounts["frontend:Function"] ?? 0,
+    ).toBeGreaterThanOrEqual(16);
     expect(desktopScreenDiagnostics?.overlapCount).toBe(0);
     expect(desktopScreenDiagnostics?.targetGapViolationCount).toBe(0);
-    expect(desktopScreenDiagnostics?.maxRenderedRadius).toBeGreaterThanOrEqual(0.74);
+    expect(desktopScreenDiagnostics?.maxRenderedRadius).toBeGreaterThanOrEqual(1.99);
     expect(desktopScreenDiagnostics?.minObservedEdgeGap).toBeGreaterThanOrEqual(
       desktopScreenDiagnostics?.maxRenderedDiameter ?? Number.POSITIVE_INFINITY,
     );
@@ -388,7 +404,13 @@ test.describe("Graph orientation labels", () => {
       .toBeGreaterThanOrEqual(2077);
     const smallScreenDiagnostics = await getScreenNodeSpacingDiagnostics(page);
     expect(smallScreenDiagnostics?.viewportWidth).toBeGreaterThan(200);
-    expect(smallScreenDiagnostics?.maxRenderedRadius).toBeGreaterThanOrEqual(0.74);
+    expect(smallScreenDiagnostics?.visibleViewportNodeCount).toBeGreaterThanOrEqual(
+      1,
+    );
+    expect(
+      smallScreenDiagnostics?.visibleViewportIslandCounts["frontend:Function"] ?? 0,
+    ).toBeGreaterThanOrEqual(1);
+    expect(smallScreenDiagnostics?.maxRenderedRadius).toBeGreaterThanOrEqual(1.99);
     expect(smallScreenDiagnostics?.overlapCount).toBe(0);
     expect(smallScreenDiagnostics?.targetGapViolationCount).toBe(0);
     expect(smallScreenDiagnostics?.minObservedEdgeGap).toBeGreaterThanOrEqual(

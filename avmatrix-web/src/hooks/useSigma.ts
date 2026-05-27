@@ -17,8 +17,14 @@ import { recordManualLayoutOptimizerInvocation } from '../lib/runtime-diagnostic
 import {
   applyReadableGraphCamera,
   MIN_READABLE_CAMERA_RATIO,
+  READABLE_GRAPH_NODE_COUNT_THRESHOLD,
 } from '../lib/graph-readable-camera';
 import { NodeSquareProgram } from '../lib/sigma-node-square-program';
+
+const DENSE_GRAPH_AMBIENT_EDGE_DIM_AMOUNT = 0.04;
+const DENSE_GRAPH_AMBIENT_EDGE_SIZE_MULTIPLIER = 0.12;
+const DENSE_GRAPH_AMBIENT_EDGE_MAX_SIZE = 0.12;
+
 // Helper: Parse hex color to RGB
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -400,6 +406,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
         const highlighted = highlightedRef.current;
         const blastRadius = blastRadiusRef.current;
         const hasHighlights = highlighted.size > 0 || blastRadius.size > 0; // Check BOTH sets
+        const isDenseGraph = graph.order >= READABLE_GRAPH_NODE_COUNT_THRESHOLD;
 
         if (hasHighlights && !currentSelected) {
           // Check if nodes are in EITHER set
@@ -449,6 +456,13 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
             res.size = 0.3;
             res.zIndex = 0;
           }
+        } else if (isDenseGraph && visibilityMode === 'ambient') {
+          res.color = dimColor(data.color || '#2a2a3a', DENSE_GRAPH_AMBIENT_EDGE_DIM_AMOUNT);
+          res.size = Math.min(
+            DENSE_GRAPH_AMBIENT_EDGE_MAX_SIZE,
+            (data.size || 1) * DENSE_GRAPH_AMBIENT_EDGE_SIZE_MULTIPLIER,
+          );
+          res.zIndex = 0;
         }
 
         return res;

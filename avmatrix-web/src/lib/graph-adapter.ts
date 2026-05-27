@@ -135,10 +135,7 @@ const compareClusterLabels = (left: string, right: string): number => {
 };
 
 const getClusterNodeSpacing = (nodeCount: number): number => {
-  if (nodeCount > 50000) return 34;
-  if (nodeCount > 20000) return 32;
-  if (nodeCount > 5000) return 30;
-  if (nodeCount > 1000) return 36;
+  if (nodeCount > 1000) return getMinimumNodeCenterDistance(nodeCount);
   return 42;
 };
 
@@ -592,6 +589,7 @@ export const applyFilterBasedClusteredLayout = (
       );
       const islandGap = Math.max(
         nodeSpacing * 34,
+        minimumNodeCenterDistance * 75,
         largestClusterRadius * 0.55,
       );
       const minimumAngularStep =

@@ -57,7 +57,17 @@ export interface WebRuntimeDiagnostics {
     islandCount: number;
     viewportWidth: number;
     viewportHeight: number;
+    visibleViewportNodeCount: number;
+    visibleViewportIslandCounts: Record<string, number>;
     cameraRatio: number;
+    cameraX: number;
+    cameraY: number;
+    viewportGraphCenterX: number;
+    viewportGraphCenterY: number;
+    viewportGraphMinX: number;
+    viewportGraphMaxX: number;
+    viewportGraphMinY: number;
+    viewportGraphMaxY: number;
     minRenderedRadius: number;
     maxRenderedRadius: number;
     maxRenderedDiameter: number;
@@ -66,6 +76,19 @@ export interface WebRuntimeDiagnostics {
     maxRequiredCenterDistance: number;
     overlapCount: number;
     targetGapViolationCount: number;
+  };
+  readableCamera: {
+    recordedAt: number;
+    applied: boolean;
+    focusedIslandKey: string;
+    focusedIslandNodeCount: number;
+    focusCellNodeCount: number;
+    focusRawX: number;
+    focusRawY: number;
+    cameraX: number;
+    cameraY: number;
+    ratio: number;
+    previousMaxRenderedRadius: number;
   };
   heartbeat: {
     connects: number;
@@ -151,7 +174,17 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
     islandCount: 0,
     viewportWidth: 0,
     viewportHeight: 0,
+    visibleViewportNodeCount: 0,
+    visibleViewportIslandCounts: {},
     cameraRatio: 0,
+    cameraX: 0,
+    cameraY: 0,
+    viewportGraphCenterX: 0,
+    viewportGraphCenterY: 0,
+    viewportGraphMinX: 0,
+    viewportGraphMaxX: 0,
+    viewportGraphMinY: 0,
+    viewportGraphMaxY: 0,
     minRenderedRadius: 0,
     maxRenderedRadius: 0,
     maxRenderedDiameter: 0,
@@ -160,6 +193,19 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
     maxRequiredCenterDistance: 0,
     overlapCount: 0,
     targetGapViolationCount: 0,
+  },
+  readableCamera: {
+    recordedAt: 0,
+    applied: false,
+    focusedIslandKey: '',
+    focusedIslandNodeCount: 0,
+    focusCellNodeCount: 0,
+    focusRawX: 0,
+    focusRawY: 0,
+    cameraX: 0,
+    cameraY: 0,
+    ratio: 0,
+    previousMaxRenderedRadius: 0,
   },
   heartbeat: {
     connects: 0,
@@ -274,7 +320,17 @@ export const recordScreenNodeSpacing = (input: {
   islandCount: number;
   viewportWidth: number;
   viewportHeight: number;
+  visibleViewportNodeCount: number;
+  visibleViewportIslandCounts: Record<string, number>;
   cameraRatio: number;
+  cameraX: number;
+  cameraY: number;
+  viewportGraphCenterX: number;
+  viewportGraphCenterY: number;
+  viewportGraphMinX: number;
+  viewportGraphMaxX: number;
+  viewportGraphMinY: number;
+  viewportGraphMaxY: number;
   minRenderedRadius: number;
   maxRenderedRadius: number;
   maxRenderedDiameter: number;
@@ -287,6 +343,26 @@ export const recordScreenNodeSpacing = (input: {
   const diagnostics = getWebRuntimeDiagnostics();
   if (!diagnostics) return;
   diagnostics.screenNodeSpacing = {
+    ...input,
+    recordedAt: nowMs(),
+  };
+};
+
+export const recordReadableCamera = (input: {
+  applied: boolean;
+  focusedIslandKey: string;
+  focusedIslandNodeCount: number;
+  focusCellNodeCount: number;
+  focusRawX: number;
+  focusRawY: number;
+  cameraX: number;
+  cameraY: number;
+  ratio: number;
+  previousMaxRenderedRadius: number;
+}): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  diagnostics.readableCamera = {
     ...input,
     recordedAt: nowMs(),
   };

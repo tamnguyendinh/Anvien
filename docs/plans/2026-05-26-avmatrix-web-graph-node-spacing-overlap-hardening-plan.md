@@ -195,3 +195,16 @@ Existing label and island/ring spacing behavior must remain intact. The fix must
 - [x] [P6-I] Run the full build gate before tests, then focused Web unit/e2e/browser screenshot validation.
 - [x] [P6-J] Update evidence and benchmark ledgers with screen-space measurements, screenshot paths, build/test output, and AVmatrix detect-changes output.
 - [x] [P6-K] Commit the reopened implementation slice only after screen-space overlap metrics and screenshots prove the bug is fixed.
+
+## Phase 7 - Reopened Node Visibility Regression Fix
+
+- [x] [P7-A] Reproduce and classify the post-P6 visual regression where dense graph screenshots showed edges but no practically visible node set.
+- [x] [P7-B] Refresh AVmatrix graph and run impact analysis before editing camera, screen diagnostics, edge rendering, and dense layout spacing.
+- [x] [P7-C] Add browser diagnostics for visible viewport node count, visible island counts, camera center, graph viewport bounds, and readable-camera focus metadata.
+- [x] [P7-D] Adjust dense layout spacing so large graphs use the minimum center-distance contract instead of over-expanding same-island node spacing.
+- [x] [P7-E] Preserve island-to-island whitespace by adding a minimum island gutter tied to the node center-distance contract.
+- [x] [P7-F] Adjust readable camera behavior to target a visible 2px max node radius and focus the densest local graph-space patch.
+- [x] [P7-G] Dim dense ambient edges so nodes remain visible when many edges are rendered.
+- [x] [P7-H] Update Web unit mocks and e2e assertions so tests fail when dense graph node visibility collapses back to zero or near-zero.
+- [x] [P7-I] Run full build before testing, focused Web unit tests, full Web unit tests, and Web e2e/browser screenshot validation.
+- [x] [P7-J] Update evidence and benchmark ledgers with final node visibility metrics, screenshot observations, and validation output.
