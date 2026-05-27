@@ -55,6 +55,7 @@ AVmatrix query/context identified the current owners:
 - `avmatrix-web/src/lib/graph-adapter.ts`: graphology conversion, node color, node size, layout spacing, island geometry.
 - `avmatrix-web/src/lib/graph-screen-spacing.ts`: viewport spacing diagnostics using `sigma.scaleSize`.
 - `avmatrix-web/src/components/GraphCanvas.tsx`: diagnostics publication and Web graph integration.
+- `avmatrix-web/src/lib/runtime-diagnostics.ts`: browser diagnostics object for e2e-visible runtime metrics.
 
 Exact current facts:
 
@@ -64,6 +65,7 @@ Exact current facts:
 - `graph-readable-camera.ts` selects `getDensestVisibleIsland` and applies the camera to that island.
 - `graph-adapter.ts` assigns node color from `getNodeColor(displayNodeType)`. The color palette is still present; the color loss is caused by viewport collapse to one node-type island.
 - `graph-adapter.ts` defines fixed rendered-size assumptions: `MAX_RENDERED_NODE_SIZE = 3`, `MAX_DENSE_RENDERED_NODE_SIZE = 3`, fixed minimum edge gap, and fixed center distance.
+- Current runtime diagnostics publish screen spacing and `visibleViewportNodeCount`; they do not publish overview visible color count, visible island count, dominant island share, and visible node-type inventory.
 - Sigma package defaults are `itemSizesReference: "screen"` and `zoomToSizeRatioFunction: Math.sqrt`.
 - Sigma `scaleSize` uses `itemSizesReference === "positions"` to multiply by `cameraRatio * graphToViewportRatio`. That setting changes node-size zoom semantics.
 - Commit `67ba0dd` introduced the default-load readable camera path and changed the previous `animatedReset`.
@@ -94,6 +96,7 @@ Implementation touches:
 - Sigma/camera/render behavior in `avmatrix-web/src/hooks/useSigma.ts`;
 - readable camera behavior in `avmatrix-web/src/lib/graph-readable-camera.ts`;
 - graph screen diagnostics in `avmatrix-web/src/lib/graph-screen-spacing.ts`;
+- browser runtime diagnostics in `avmatrix-web/src/lib/runtime-diagnostics.ts`;
 - graph canvas diagnostics/test hooks in `avmatrix-web/src/components/GraphCanvas.tsx`;
 - Web unit tests under `avmatrix-web/test/unit`;
 - Web e2e tests under `avmatrix-web/e2e`;
@@ -136,7 +139,8 @@ The first implementation slice restores default overview behavior exactly:
 5. Restore `minCameraRatio: 0.002` for overview behavior.
 6. Remove `itemSizesReference: 'positions'` so Sigma uses its default `"screen"` sizing semantics.
 7. Keep readable camera code out of default load.
-8. Add tests that fail when default overview collapses to one visible color. Add tests that fail when default overview collapses to one visible island. Add tests that fail when baseline node-type inventory is reduced.
+8. Add Phase 1 overview diagnostics for visible color count, visible island count, dominant island share, visible node-type inventory, and filter node-type inventory.
+9. Add tests that fail when default overview collapses to one visible color. Add tests that fail when default overview collapses to one visible island. Add tests that fail when baseline node-type inventory is reduced.
 
 This slice fixes the color regression before spacing work starts because the palette is still correct and the regression is a camera/render semantic regression.
 
@@ -246,6 +250,7 @@ Only named product policy constants remain, such as minimum readable pixel targe
 - Every baseline-visible overview node type remains visibly rendered after the fix.
 - Fixed-size assumptions are inventoried before edits.
 - Sigma node-size behavior under zoom is empirically verified.
+- Phase 1 overview diagnostics exist before e2e parity assertions are written.
 - `graph-scale-model.ts` exists and owns graph scale derivation.
 - Default graph load restores overview behavior.
 - Default overview on a multi-type dense fixture has at least three visible color groups and at least three visible islands.
@@ -280,12 +285,13 @@ Only named product policy constants remain, such as minimum readable pixel targe
 - [ ] P1-I Remove default-load `applyReadableGraphCamera(sigma)` and keep readable camera out of graph load.
 - [ ] P1-J Restore overview camera sizing by using `minCameraRatio: 0.002`.
 - [ ] P1-K Restore Sigma default screen-size semantics by removing `itemSizesReference: 'positions'`.
-- [ ] P1-L Add tests that fail when the default viewport collapses to one color on a multi-color fixture.
-- [ ] P1-M Add tests that fail when any baseline node type disappears from graph/filter inventory and baseline-visible overview rendering.
-- [ ] P1-N Record color and node-type parity evidence and benchmark metrics.
-- [ ] P1-O Run full build before tests, then focused Web unit tests, e2e tests, and browser screenshot validation for this slice.
-- [ ] P1-P Run AVmatrix detect-changes for the slice.
-- [ ] P1-Q Commit the completed color/overview/node-type restoration slice.
+- [ ] P1-L Add Phase 1 overview diagnostics in `runtime-diagnostics.ts` and `GraphCanvas.tsx` for visible color count, visible island count, dominant island share, visible node-type inventory, and filter node-type inventory.
+- [ ] P1-M Add tests that fail when the default viewport collapses to one color on a multi-color fixture.
+- [ ] P1-N Add tests that fail when any baseline node type disappears from graph/filter inventory and baseline-visible overview rendering.
+- [ ] P1-O Record color and node-type parity evidence and benchmark metrics.
+- [ ] P1-P Run full build before tests, then focused Web unit tests, e2e tests, and browser screenshot validation for this slice.
+- [ ] P1-Q Run AVmatrix detect-changes for the slice.
+- [ ] P1-R Commit the completed color/overview/node-type restoration slice.
 
 ## Phase 2 - Audit Scale, Zoom, Spacing Failure And Blast Radius
 
@@ -338,7 +344,7 @@ Only named product policy constants remain, such as minimum readable pixel targe
 
 ## Phase 6 - Diagnostics And E2E Coverage
 
-- [ ] P6-A Extend browser diagnostics with visible color count, visible island count, dominant island share, visible node-type inventory, and zoom radius samples.
+- [ ] P6-A Extend Phase 1 overview diagnostics with zoom radius samples, detail/focus samples, and dynamic gap samples.
 - [ ] P6-B Replace e2e assertions that accept a single `frontend:Function` viewport as success.
 - [ ] P6-C Add overview e2e assertions for baseline color parity and multi-color/multi-island default load.
 - [ ] P6-D Add zoom e2e assertions for rendered radius growth/shrink.

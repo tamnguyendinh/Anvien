@@ -88,6 +88,7 @@ Code findings:
 - `avmatrix-web/src/lib/graph-adapter.ts:590-593` derives island gap from fixed multiples.
 - `avmatrix-web/src/lib/graph-adapter.ts:811-848` assigns node color from `getNodeColor(displayNodeType)`, so the palette remains type-based.
 - `avmatrix-web/src/lib/graph-screen-spacing.ts:90-93` uses `sigma.scaleSize` for viewport diagnostics.
+- `avmatrix-web/src/lib/runtime-diagnostics.ts` publishes graph conversion, visual scale, layout rings, layout spacing, screen spacing, readable camera, heartbeat, and reconnect diagnostics. It lacks overview visible color count, visible island count, dominant island share, visible node-type inventory, and filter node-type inventory.
 - Sigma local package defaults: `itemSizesReference: "screen"` and `zoomToSizeRatioFunction: Math.sqrt`.
 - Sigma local package `scaleSize` formula multiplies by `cameraRatio * graphToViewportRatio` only when `itemSizesReference` is `"positions"`.
 
@@ -138,6 +139,7 @@ Expected code areas to audit:
 - `avmatrix-web/src/lib/graph-adapter.ts`
 - `avmatrix-web/src/lib/graph-readable-camera.ts`
 - `avmatrix-web/src/lib/graph-screen-spacing.ts`
+- `avmatrix-web/src/lib/runtime-diagnostics.ts`
 - `avmatrix-web/src/components/GraphCanvas.tsx`
 - `avmatrix-web/e2e/graph-orientation-labels.spec.ts`
 - related unit tests under `avmatrix-web/test/unit`
@@ -161,6 +163,7 @@ Required evidence:
 - overview-visible node-type inventory comparison;
 - missing node-type list, expected empty;
 - ring/island label comparison;
+- Phase 1 overview diagnostics shape and test evidence;
 - decision record: default-load readable camera removed from overview, Sigma screen sizing restored, baseline reset restored;
 - test evidence proving a one-color default viewport fails on a multi-color fixture;
 - test evidence proving a missing baseline node type fails before dynamic scale work proceeds.

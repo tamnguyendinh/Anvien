@@ -43,6 +43,7 @@ Status: pending.
 | Current/restored graph/filter node-type inventory | node types | pending | pending | zero missing baseline node type |
 | Baseline overview visible node-type count | node types | pending | pending | reference visible inventory from `80a7972` |
 | Current/restored overview visible node-type count | node types | pending | pending | zero missing baseline-visible node type |
+| Phase 1 overview diagnostics inventory | fields | pending | pending | visible color count, visible island count, dominant island share, visible node-type inventory, filter node-type inventory |
 | Baseline overview screenshot inventory | files | pending | pending | captured from `.tmp/graph-baseline-80a7972` |
 | Current/restored overview screenshot inventory | files | pending | pending | restored screenshots match baseline behavior |
 | Initial overview visible color count | colors | pending | pending | `>= 3` on multi-type dense fixture |
