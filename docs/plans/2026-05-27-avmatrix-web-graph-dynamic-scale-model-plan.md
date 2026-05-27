@@ -295,13 +295,13 @@ Only named product policy constants remain, such as minimum readable pixel targe
 
 ## Phase 2 - Audit Scale, Zoom, Spacing Failure And Blast Radius
 
-- [ ] P2-A Use AVmatrix context/query to trace graph layout, Sigma render, camera, diagnostics, and e2e owners after Phase 1.
-- [ ] P2-B Run impact analysis before editing each planned function/class/method/exported symbol.
-- [ ] P2-C Record HIGH/CRITICAL blast radius as warnings where present.
-- [ ] P2-D Inventory all fixed-size and fixed-camera assumptions.
-- [ ] P2-E Capture browser baseline screenshots for overview, zoom sequence, and detail/focus after color parity is restored.
-- [ ] P2-F Record baseline benchmark metrics in `B1`.
-- [ ] P2-G Update evidence ledger with audit findings.
+- [x] P2-A Use AVmatrix context/query to trace graph layout, Sigma render, camera, diagnostics, and e2e owners after Phase 1.
+- [x] P2-B Run impact analysis before editing each planned function/class/method/exported symbol.
+- [x] P2-C Record HIGH/CRITICAL blast radius as warnings where present.
+- [x] P2-D Inventory all fixed-size and fixed-camera assumptions.
+- [x] P2-E Capture browser baseline screenshots for overview, zoom sequence, and detail/focus after color parity is restored.
+- [x] P2-F Record baseline benchmark metrics in `B1`.
+- [x] P2-G Update evidence ledger with audit findings.
 
 ## Phase 3 - Implement Dynamic Graph Scale Model
 

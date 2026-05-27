@@ -144,6 +144,49 @@ Record:
 - restored overview visible node-type inventory;
 - parity result for baseline overview behavior.
 
+## B1B - Phase 2 Audit Browser Baseline
+
+Status: completed.
+
+Artifacts:
+
+- `reports/problem/2026-05-27-graph-phase2-overview.png`
+- `reports/problem/2026-05-27-graph-phase2-overview.json`
+- `reports/problem/2026-05-27-graph-phase2-zoom-in-1.png`
+- `reports/problem/2026-05-27-graph-phase2-zoom-in-1.json`
+- `reports/problem/2026-05-27-graph-phase2-zoom-in-2.png`
+- `reports/problem/2026-05-27-graph-phase2-zoom-in-2.json`
+- `reports/problem/2026-05-27-graph-phase2-zoom-out.png`
+- `reports/problem/2026-05-27-graph-phase2-zoom-out.json`
+- `reports/problem/2026-05-27-graph-phase2-detail-focus.png`
+- `reports/problem/2026-05-27-graph-phase2-detail-focus.json`
+
+Dense fixture metrics:
+
+| Stage | Camera ratio | Max rendered radius px | Visible nodes | Visible island count | Overlap count | Target-gap violations |
+|---|---:|---:|---:|---:|---:|---:|
+| Overview | 1 | 3 | 1400 | 4 | 27425 | 97426 |
+| Zoom in 1 | 0.6666666666666666 | 3.6742346141747673 | 40 | 1 | 18411 | 68085 |
+| Zoom in 2 | 0.4444444444444444 | 4.5 | 0 | 0 | 12240 | 47002 |
+| Zoom out | 0.6666666666666666 | 3.6742346141747673 | 40 | 1 | 18411 | 68085 |
+
+Detail/focus fixture metrics:
+
+| Metric | Value |
+|---|---:|
+| Selection succeeded | true |
+| Focus button clicked | true |
+| Camera ratio after focus | 1 |
+| Max rendered radius after focus | 3 |
+| Visible viewport node count after focus | 1 |
+
+Audit benchmark result:
+
+- Zoom radius grows from `3` to `3.6742346141747673` to `4.5`.
+- Visible dense overview inventory regresses during zoom: visible island count drops from `4` to `1` to `0`.
+- Detail/focus click path keeps camera ratio at `1` after focus button click.
+- Diagnostics require a resize event to record zoom camera changes in the current code.
+
 ## B2 - Dynamic Scale Model Metrics
 
 Status: pending.

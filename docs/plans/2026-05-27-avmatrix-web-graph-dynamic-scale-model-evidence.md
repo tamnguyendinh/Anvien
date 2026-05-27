@@ -291,6 +291,99 @@ Required evidence:
 - test evidence proving a one-color default viewport fails on a multi-color fixture;
 - test evidence proving a missing baseline node type fails before dynamic scale work proceeds.
 
+## E1B - Phase 2 Scale, Zoom, Spacing Audit
+
+Status: completed.
+
+AVmatrix refresh:
+
+- `avmatrix analyze --force`: scanned `779`, parsed `574`, unsupported `205`, failed `0`.
+- Refreshed graph: `89896` nodes, `123159` relationships.
+
+AVmatrix owner trace:
+
+- Query `graph layout sigma camera zoom rendered node radius spacing diagnostics fixed constants` ranked `knowledgeGraphToGraphology`, `buildLayoutNodeSpacingDiagnostics`, `useSigma`, `getRenderedNodeRadius`, and `capRenderedNodeSize` as primary owners.
+- `useSigma` context maps Sigma initialization, camera config, node reducer, edge reducer, selection, zoom buttons, reset, and focus.
+- `knowledgeGraphToGraphology` context maps graph conversion, node size, node color, layout, edge size, and display filter linkage.
+- `buildGraphOverviewDiagnostics` context maps Phase 1 graph overview inventory diagnostics.
+
+Impact summary:
+
+| Symbol | Risk | Affected processes | Notes |
+|---|---:|---:|---|
+| `useSigma` | CRITICAL | 11 | central Sigma render, reducer, camera, selection |
+| `knowledgeGraphToGraphology` | CRITICAL | 11 | graph conversion, layout, unit tests, GraphCanvas |
+| `buildLayoutNodeSpacingDiagnostics` | LOW | 0 | local GraphCanvas layout diagnostics |
+| `buildGraphOverviewDiagnostics` | CRITICAL | 11 | overview diagnostics consumed by GraphCanvas and e2e |
+| `buildScreenNodeSpacingDiagnostics` | CRITICAL | 11 | screen spacing diagnostics, readable camera, tests |
+| `applyReadableGraphCamera` | LOW | 0 | readable camera apply path |
+| `getRenderedNodeRadius` | HIGH | 4 | rendered diameter and layout metrics |
+| `capRenderedNodeSize` | CRITICAL | 11 | useSigma reducer and edge-geometry tests |
+| `getMinimumNodeCenterDistance` | CRITICAL | 15 | GraphCanvas diagnostics, graph layout, edge-geometry tests |
+| `getClusterNodeSpacing` | LOW | 0 | graph-adapter layout helper |
+| `getIslandOffsets` | LOW | 0 | graph-adapter layout helper |
+
+Blast radius note:
+
+- HIGH and CRITICAL mark central graph UI paths. They are warnings that require scoped edits, not edit bans.
+
+Fixed assumption inventory:
+
+- `graph-adapter.ts`: `MAX_RENDERED_NODE_SIZE = 3`, `MAX_DENSE_RENDERED_NODE_SIZE = 3`, and `getMaxRenderedNodeSize` always returns the dense cap.
+- `graph-adapter.ts`: `getClusterNodeSpacing` returns `42` below `1000` nodes and `getMinimumNodeCenterDistance` above that threshold.
+- `graph-adapter.ts`: island gap uses `nodeSpacing * 34`, `minimumNodeCenterDistance * 75`, and `largestClusterRadius * 0.55`.
+- `graph-adapter.ts`: island orbit uses `largestClusterRadius * 1.85`, adjacent span math, and `nodeSpacing * 28`.
+- `graph-adapter.ts`: ring gap uses `nodeSpacing * 70` and `largestOuterRingRadius * 0.75`; outer orbit also uses `largestOuterRingRadius * 2.1` and `nodeSpacing * 72`.
+- `graph-adapter.ts`: node size scaling is step-based at `1000`, `5000`, `20000`, and `50000` graph nodes.
+- `graph-adapter.ts`: edge base size is step-based at `5000` and `20000` graph nodes.
+- `useSigma.ts`: camera config uses `minCameraRatio: 0.002` and `maxCameraRatio: 50`.
+- `useSigma.ts`: default load reset duration is `500`; focus camera uses hardcoded `ratio: 0.15` and duration `400`.
+- `useSigma.ts`: zoom button durations are `200`; reset duration is `300`.
+- `useSigma.ts`: node reducer uses fixed highlight multipliers including `1.8`, `1.6`, `1.4`, `1.3`, `0.6`, `0.5`, and `0.4`.
+- `useSigma.ts`: edge reducer uses fixed dense ambient edge size and opacity policy.
+- `graph-readable-camera.ts`: readable threshold is `1000` nodes, readable radius target is `2px`, and minimum readable camera ratio is `0.00004`.
+- `graph-readable-camera.ts`: readable camera selects the densest visible island.
+- `graph-screen-spacing.ts`: screen diagnostics use Sigma `scaleSize`, pair edge gap as largest rendered diameter, and center distance as two radii plus required edge gap.
+- `GraphCanvas.tsx`: diagnostics refresh on resize and setGraph. Camera `updated` currently refreshes orientation labels but does not refresh screen diagnostics.
+
+Phase 2 browser artifacts:
+
+- `reports/problem/2026-05-27-graph-phase2-overview.png`
+- `reports/problem/2026-05-27-graph-phase2-overview.json`
+- `reports/problem/2026-05-27-graph-phase2-zoom-in-1.png`
+- `reports/problem/2026-05-27-graph-phase2-zoom-in-1.json`
+- `reports/problem/2026-05-27-graph-phase2-zoom-in-2.png`
+- `reports/problem/2026-05-27-graph-phase2-zoom-in-2.json`
+- `reports/problem/2026-05-27-graph-phase2-zoom-out.png`
+- `reports/problem/2026-05-27-graph-phase2-zoom-out.json`
+- `reports/problem/2026-05-27-graph-phase2-detail-focus.png`
+- `reports/problem/2026-05-27-graph-phase2-detail-focus.json`
+
+Dense browser baseline:
+
+| Stage | Camera ratio | Max radius px | Visible nodes | Visible island inventory | Overlap count | Target-gap violations |
+|---|---:|---:|---:|---|---:|---:|
+| Overview | 1 | 3 | 1400 | `backend:Function`, `docs:Documentation`, `frontend:Function`, `frontend:Method` | 27425 | 97426 |
+| Zoom in 1 | 0.6666666666666666 | 3.6742346141747673 | 40 | `docs:Documentation` | 18411 | 68085 |
+| Zoom in 2 | 0.4444444444444444 | 4.5 | 0 | empty | 12240 | 47002 |
+| Zoom out | 0.6666666666666666 | 3.6742346141747673 | 40 | `docs:Documentation` | 18411 | 68085 |
+
+Zoom audit result:
+
+- Rendered radius grows when camera ratio decreases, so Sigma screen sizing now provides visible zoom growth.
+- Default zoom from overview collapses visible inventory from full dense overview to `docs:Documentation`, then to zero visible nodes.
+- Runtime diagnostics did not update after zoom until a resize event was dispatched; Phase 6 must attach screen diagnostics refresh to camera updates.
+
+Detail/focus baseline:
+
+- Fixture: single-node focus fixture.
+- Selection succeeded: `true`.
+- Focus button clicked: `true`.
+- Camera ratio after focus: `1`.
+- Max rendered radius after focus: `3`.
+- Visible viewport node count after focus: `1`.
+- Code audit explains this: `useSigma.focusNode` skips camera animation when `selectedNodeRef.current === nodeId`, so focusing a node that was just selected by click does not change camera ratio.
+
 ## E2 - Dynamic Scale Model Evidence
 
 Status: pending.

@@ -1,0 +1,132 @@
+{
+  "stage": "detail-focus",
+  "fixture": "single-node-focus",
+  "selected": true,
+  "focusClicked": true,
+  "graphOverview": {
+    "nodeCount": 1,
+    "viewportWidth": 1032,
+    "viewportHeight": 702,
+    "visibleViewportNodeCount": 1,
+    "visibleColorCount": 1,
+    "visibleRingCount": 1,
+    "visibleIslandCount": 1,
+    "dominantIslandKey": "backend:Function",
+    "dominantIslandShare": 1,
+    "visibleColorCounts": {
+      "#10b981": 1
+    },
+    "visibleRingCounts": {
+      "backend": 1
+    },
+    "visibleIslandCounts": {
+      "backend:Function": 1
+    },
+    "visibleNodeTypeCounts": {
+      "Function": 1
+    },
+    "graphRingCounts": {
+      "backend": 1
+    },
+    "graphIslandCounts": {
+      "backend:Function": 1
+    },
+    "graphNodeTypeCounts": {
+      "Function": 1
+    },
+    "visibleRingInventory": [
+      "backend"
+    ],
+    "visibleNodeTypeInventory": [
+      "Function"
+    ],
+    "graphRingInventory": [
+      "backend"
+    ],
+    "graphIslandInventory": [
+      "backend:Function"
+    ],
+    "filterNodeTypeInventory": [
+      "Function"
+    ],
+    "cameraRatio": 1,
+    "cameraX": 0.5,
+    "cameraY": 0.5,
+    "recordedAt": 3887.6000000089407
+  },
+  "layoutRings": {
+    "nodeCount": 1,
+    "ringNodeCounts": {
+      "backend": 1
+    },
+    "ringCenters": {
+      "backend": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "ringIslandCounts": {
+      "backend": 1
+    },
+    "apiBetweenBackendAndFrontend": false,
+    "docsCentered": false,
+    "sameColorIslandViolations": 0,
+    "ringCount": 1,
+    "recordedAt": 2196.1000000089407
+  },
+  "layoutNodeSpacing": {
+    "nodeCount": 1,
+    "islandCount": 1,
+    "renderedRadius": 3,
+    "renderedDiameter": 6,
+    "requiredEdgeGap": 6,
+    "requiredCenterDistance": 12,
+    "minObservedCenterDistance": 12,
+    "minObservedEdgeGap": 6,
+    "overlapCount": 0,
+    "targetGapViolationCount": 0,
+    "recordedAt": 2196.1000000089407
+  },
+  "screenNodeSpacing": {
+    "coordinateSpace": "viewport_px",
+    "nodeCount": 1,
+    "islandCount": 1,
+    "viewportWidth": 1032,
+    "viewportHeight": 702,
+    "visibleViewportNodeCount": 1,
+    "visibleViewportIslandCounts": {
+      "backend:Function": 1
+    },
+    "cameraRatio": 1,
+    "cameraX": 0.5,
+    "cameraY": 0.5,
+    "viewportGraphCenterX": 0,
+    "viewportGraphCenterY": 0,
+    "viewportGraphMinX": -0.8037382960319519,
+    "viewportGraphMaxX": 0.8037382960319519,
+    "viewportGraphMinY": -0.5467289686203003,
+    "viewportGraphMaxY": 0.5467289686203003,
+    "minRenderedRadius": 3,
+    "maxRenderedRadius": 3,
+    "maxRenderedDiameter": 6,
+    "minObservedCenterDistance": 12,
+    "minObservedEdgeGap": 6,
+    "maxRequiredCenterDistance": 12,
+    "overlapCount": 0,
+    "targetGapViolationCount": 0,
+    "recordedAt": 3887.4000000059605
+  },
+  "readableCamera": {
+    "recordedAt": 0,
+    "applied": false,
+    "focusedIslandKey": "",
+    "focusedIslandNodeCount": 0,
+    "focusCellNodeCount": 0,
+    "focusRawX": 0,
+    "focusRawY": 0,
+    "cameraX": 0,
+    "cameraY": 0,
+    "ratio": 0,
+    "previousMaxRenderedRadius": 0
+  }
+}
