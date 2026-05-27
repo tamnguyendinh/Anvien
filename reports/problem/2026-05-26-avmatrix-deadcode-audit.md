@@ -8,7 +8,8 @@ Scope: identify and report deadcode candidates. The audit phase did not delete s
 Status update:
 
 - 2026-05-26: the high-confidence Web source deadcode group listed in this report was removed after review and validation.
-- Remaining sections are still review material for later decisions.
+- 2026-05-27: the product-dead but test-referenced Web candidates listed in this report were removed after review and validation.
+- Remaining unresolved sections are still review material for later decisions.
 
 ## Summary
 
@@ -17,7 +18,7 @@ This audit used AVmatrix as the primary codebase graph source, then cross-checke
 Original findings:
 
 - High-confidence Web source deadcode candidates: 7 files, about 1,162 lines. Status: removed on 2026-05-26.
-- Product-dead but test-referenced Web candidates: 2 files, about 714 lines.
+- Product-dead but test-referenced Web candidates: 2 files, about 714 lines. Status: removed on 2026-05-27.
 - Unused exported Web API client functions inside an otherwise live file: 9 functions.
 - Standalone Go audit binaries needing owner decision: 3 `cmd/*` programs.
 - No production Go internal package was flagged as package-level deadcode in this pass. `internal/testutil` and root `internal/providers` are test-only/test-container packages and were excluded.
@@ -104,7 +105,7 @@ These files had no incoming `IMPORTS` in the AVmatrix graph and source search di
 
 | Candidate | Lines | Evidence | Notes |
 |---|---:|---|---|
-| `avmatrix-web/src/components/HelpPanel.the-press.tsx` | 395 | AVmatrix: no incoming imports. `context HelpPanelThePress`: `incoming: {}`. `rg HelpPanelThePress` only matches this file. | Looks like an older/alternate Help panel implementation. Current `HelpPanel.tsx` is separate. |
+| `avmatrix-web/src/components/HelpPanel.the-press.tsx` | 395 | AVmatrix: no incoming imports. `context HelpPanelThePress`: `incoming: {}`. `rg HelpPanelThePress` only matches this file. | Looked like an older/alternate Help panel implementation. The separate `HelpPanel.tsx` candidate was also removed later as product-dead code. |
 | `avmatrix-web/src/components/RightPanel.tsx` | 66 | AVmatrix: no incoming imports. `context RightPanel`: `incoming: {}`. `rg RightPanel` shows product code uses `RightPanelResizable`, not `RightPanel`. | Likely superseded by `RightPanel.resizable.tsx`. |
 | `avmatrix-web/src/components/settings/ProviderConfigCard.tsx` | 108 | AVmatrix: no incoming imports. `rg ProviderConfigCard` only matches this file. | Settings UI appears to use local-runtime settings paths directly. |
 | `avmatrix-web/src/config/ignore-service.ts` | 312 | AVmatrix: no incoming imports. `context shouldIgnorePath`: `incoming: {}`. `rg shouldIgnorePath` only matches this file. | Frontend ignore matcher appears unused; backend has current ignore handling under `internal/ignore`. |
@@ -128,10 +129,12 @@ Detailed symbols reported by AVmatrix in these files:
 
 These are not used by product source files, but still have tests or test-only references. Removing them requires updating or deleting the tests intentionally.
 
+Status: removed on 2026-05-27. The test-only references were removed with the dead source.
+
 | Candidate | Lines | Evidence | Notes |
 |---|---:|---|---|
-| `avmatrix-web/src/components/HelpPanel.tsx` | 711 | AVmatrix source-only import query reports no incoming imports from `avmatrix-web/src`. `rg HelpPanel` shows only `avmatrix-web/test/unit/Branding.local-only.test.tsx` imports/renders it. | Product UI does not appear to mount the Help panel now. Keep only if test is protecting intended future UI. |
-| `avmatrix-web/src/lib/utils.ts` | 3 | AVmatrix source-only import query reports no incoming imports from `avmatrix-web/src`. `rg generateId` shows test-only usage through `avmatrix-web/test/unit/utils.test.ts`. | `generateId` is not used by product source. |
+| `avmatrix-web/src/components/HelpPanel.tsx` | 711 | AVmatrix source-only import query reports no incoming imports from `avmatrix-web/src`. `rg HelpPanel` shows only `avmatrix-web/test/unit/Branding.local-only.test.tsx` imports/renders it. | Removed on 2026-05-27 with the test-only branding assertion. |
+| `avmatrix-web/src/lib/utils.ts` | 3 | AVmatrix source-only import query reports no incoming imports from `avmatrix-web/src`. `rg generateId` shows test-only usage through `avmatrix-web/test/unit/utils.test.ts`. | Removed on 2026-05-27 with `utils.test.ts`. |
 
 ## Unused Exports In Live Files
 
@@ -203,8 +206,8 @@ Both were excluded:
 
 ## Recommended Review Order
 
-1. Decide whether to keep or delete the high-confidence Web files.
-2. For `HelpPanel.tsx`, decide whether the Help UI is intentionally dormant or the app lost its mount point.
+1. High-confidence Web files: resolved, removed on 2026-05-26.
+2. Product-dead but test-referenced Web files: resolved, removed on 2026-05-27.
 3. For `backend-client.ts` unused exports, decide whether they are public API helpers or stale client methods.
 4. For the three standalone Go audit commands, decide whether to keep them as documented manual tools, wire them into a QA workflow, or remove them.
 5. Only after decisions, create a cleanup plan with build/test gates. Do not delete directly from this report.

@@ -31,7 +31,6 @@ vi.mock("../../src/services/backend-client", () => ({
 
 import { AnalyzeOnboarding } from "../../src/components/AnalyzeOnboarding";
 import { Header } from "../../src/components/Header";
-import { HelpPanel } from "../../src/components/HelpPanel";
 import { RepoLanding } from "../../src/components/RepoLanding";
 
 describe("AVmatrix branding on active local surfaces", () => {
@@ -63,23 +62,6 @@ describe("AVmatrix branding on active local surfaces", () => {
       screen.getByText(
         /Local only\. No repository data leaves this machine\./i,
       ),
-    ).toBeInTheDocument();
-  });
-
-  it("uses AVmatrix copy in HelpPanel", () => {
-    render(
-      <HelpPanel
-        isOpen={true}
-        onClose={() => {}}
-        nodeCount={10}
-        edgeCount={20}
-      />,
-    );
-
-    expect(screen.getByText("What is AVmatrix?")).toBeInTheDocument();
-    expect(screen.getByText("AVmatrix — graph explorer")).toBeInTheDocument();
-    expect(
-      screen.getByText("AVmatrix — local-first codebase graph explorer"),
     ).toBeInTheDocument();
   });
 
