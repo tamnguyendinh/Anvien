@@ -2,7 +2,7 @@
 
 Date: 2026-05-27
 
-Status: Planned
+Status: Completed
 
 Companion files:
 
@@ -31,43 +31,21 @@ Build/test/e2e durations are validation evidence for this plan.
 
 ## B0 - Required Metric Inventory
 
-Status: pending.
+Status: completed.
 
-| Metric | Unit | Baseline | Final | Target |
-|---|---:|---:|---:|---:|
-| Baseline overview visible color count | colors | pending | pending | reference value from `80a7972` |
-| Current HEAD overview visible color count | colors | pending | pending | restored to baseline parity before scale work |
-| Baseline overview visible ring count | rings | pending | pending | reference value from `80a7972` |
-| Current HEAD overview visible ring count | rings | pending | pending | restored to baseline parity before scale work |
-| Baseline overview visible island count | islands | pending | pending | reference value from `80a7972` |
-| Current HEAD overview visible island count | islands | pending | pending | restored to baseline parity before scale work |
-| Baseline graph/filter node-type inventory | node types | pending | pending | reference inventory from `80a7972` |
-| Current/restored graph/filter node-type inventory | node types | pending | pending | zero missing baseline node type |
-| Baseline overview visible node-type count | node types | pending | pending | reference visible inventory from `80a7972` |
-| Current/restored overview visible node-type count | node types | pending | pending | zero missing baseline-visible node type |
-| Phase 1 overview diagnostics inventory | fields | pending | pending | visible color count, visible ring count, visible island count, dominant island share, visible ring inventory, visible node-type inventory, graph ring inventory, filter node-type inventory |
-| Baseline overview screenshot inventory | files | pending | pending | captured from `.tmp/graph-baseline-80a7972` |
-| Current/restored overview screenshot inventory | files | pending | pending | restored screenshots match baseline behavior |
-| Initial overview visible color count | colors | pending | pending | equals computed visible color inventory for fixture/baseline |
-| Initial overview visible ring count | rings | pending | pending | equals computed visible ring inventory for fixture/baseline |
-| Initial overview visible island count | islands | pending | pending | equals computed visible island inventory for fixture/baseline |
-| Initial overview ring label count | labels | pending | pending | equals computed visible ring label inventory for fixture/baseline |
-| Initial overview dominant island share | ratio | pending | pending | `< 0.85` on multi-island dense fixture |
-| Initial overview max rendered node radius | px | pending | pending | record, not forced to detail size |
-| First zoom-in rendered node radius growth | ratio | pending | pending | `> 1.0` |
-| Second zoom-in rendered node radius growth | ratio | pending | pending | greater than first zoom-in |
-| Zoom-out rendered node radius shrink | ratio | pending | pending | `< 1.0` against previous zoom step |
-| Detail/focus max rendered node radius | px | pending | pending | readable target from scale model |
-| Detail/focus overlap count | violations | pending | pending | `0` |
-| Detail/focus target-gap violation count | violations | pending | pending | `0` |
-| Detail/focus minimum edge gap | px | pending | pending | `>= dynamic required gap` |
-| Dense layout conversion time | ms | pending | pending | no material regression without evidence |
-| Dense graph node count | nodes | pending | pending | record |
-| Dense graph edge count | edges | pending | pending | record |
+| Metric group | Completion evidence |
+|---|---|
+| Baseline and restored overview parity | B1, B1A |
+| Fixed-assumption audit baseline | B1B |
+| Dynamic scale model metrics | B2 |
+| Dynamic hex layout metrics | B2A |
+| Overview and zoom browser metrics | B3 |
+| Detail/focus browser metrics | B4, B4A |
+| Final validation inventory | B5 |
 
 ## B1 - Baseline Capture Before Implementation
 
-Status: in progress.
+Status: completed.
 
 Baseline worktree:
 
@@ -103,7 +81,7 @@ Restored Phase 1 metrics:
 | Readable camera applied | false |
 | Camera ratio | 1 |
 
-Required before code edits:
+Completed before code edits:
 
 - create `.tmp/graph-baseline-80a7972` from commit `80a7972`;
 - capture baseline browser screenshot and metrics;
@@ -288,7 +266,7 @@ Growth metrics:
 
 ## B4 - Detail Spacing Browser Metrics
 
-Status: in progress.
+Status: completed.
 
 Phase 5 explicit focus metrics:
 
@@ -310,7 +288,7 @@ Screenshot artifacts:
 - `reports/problem/2026-05-27-graph-phase5-search-focus.png`
 - `reports/problem/2026-05-27-graph-phase5-same-selected-refocus.png`
 
-Remaining detail spacing metrics are completed in the diagnostics and e2e phase.
+Detail spacing diagnostics were completed in B4A.
 
 ## B4A - Phase 6 Diagnostics And E2E Metrics
 
