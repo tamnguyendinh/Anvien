@@ -13,7 +13,10 @@ import type { EdgeType } from '../lib/constants';
 import { getGraphEdgeVisibilityMode } from '../lib/graph-edge-visibility-mode';
 import { getSelectedContextEdgeSize } from '../lib/graph-edge-render-style';
 import { buildSelectedGraphContext } from '../lib/selected-graph-context';
-import { recordManualLayoutOptimizerInvocation } from '../lib/runtime-diagnostics';
+import {
+  recordGraphInteractionMode,
+  recordManualLayoutOptimizerInvocation,
+} from '../lib/runtime-diagnostics';
 import { READABLE_GRAPH_NODE_COUNT_THRESHOLD } from '../lib/graph-readable-camera';
 import { NodeSquareProgram } from '../lib/sigma-node-square-program';
 import {
@@ -515,6 +518,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       setSelectedNode(null);
 
       const overviewAction = buildOverviewCameraAction();
+      recordGraphInteractionMode({ mode: 'overview' });
       sigma.getCamera().animatedReset({ duration: overviewAction.durationMs });
     },
     [setSelectedNode],
@@ -543,6 +547,10 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       });
 
       setSelectedNode(nodeId);
+      recordGraphInteractionMode({
+        mode: 'detail-focus',
+        targetNodeId: nodeId,
+      });
 
       sigma.getCamera().animate(focusAction.cameraState, {
         duration: focusAction.durationMs,
@@ -554,14 +562,17 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
   );
 
   const zoomIn = useCallback(() => {
+    recordGraphInteractionMode({ mode: 'zoom-in' });
     sigmaRef.current?.getCamera().animatedZoom({ duration: 200 });
   }, []);
 
   const zoomOut = useCallback(() => {
+    recordGraphInteractionMode({ mode: 'zoom-out' });
     sigmaRef.current?.getCamera().animatedUnzoom({ duration: 200 });
   }, []);
 
   const resetZoom = useCallback(() => {
+    recordGraphInteractionMode({ mode: 'overview' });
     sigmaRef.current?.getCamera().animatedReset({ duration: 300 });
     setSelectedNode(null);
   }, [setSelectedNode]);

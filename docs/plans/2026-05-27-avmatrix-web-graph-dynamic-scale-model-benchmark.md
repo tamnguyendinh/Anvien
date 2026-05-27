@@ -312,6 +312,71 @@ Screenshot artifacts:
 
 Remaining detail spacing metrics are completed in the diagnostics and e2e phase.
 
+## B4A - Phase 6 Diagnostics And E2E Metrics
+
+Status: completed for Phase 6 diagnostics and e2e slice.
+
+Dense fixture inventory from active graph:
+
+| Metric | Value |
+|---|---:|
+| Dense fixture graph nodes | 2157 |
+| Dense fixture graph edges | 2156 |
+| Default-visible node count | 2077 |
+| Visible ring count from active inventory | 3 |
+| Visible island count from active inventory | 4 |
+| Visible node-type count from active inventory | 3 |
+| Visible color count from active inventory | 3 |
+
+Runtime interaction sample inventory:
+
+| Sample list | Count |
+|---|---:|
+| Overview samples | 6 |
+| Zoom samples | 12 |
+| Detail/focus samples | 7 |
+| Dynamic-gap samples | 12 |
+
+Overview sample metrics:
+
+| Metric | Value |
+|---|---:|
+| Visible viewport nodes | 2077 |
+| Visible viewport islands | 4 |
+| Camera ratio | 1 |
+| Max rendered radius px | 3 |
+| Dominant island share | 0.8074145402022147 |
+
+Zoom sample metrics:
+
+| Stage | Camera ratio | Max rendered radius px | Visible nodes | Visible islands |
+|---|---:|---:|---:|---:|
+| Initial overview | 1 | 3 | 2077 | 4 |
+| Zoom in 1 | 0.6666666666666666 | 3.6742346141747673 | 773 | 2 |
+| Zoom in 2 | 0.4444444444444444 | 4.5 | 40 | 1 |
+| Zoom out | 0.6666666666666666 | 3.6742346141747673 | 773 | 2 |
+
+Detail/focus diagnostic metrics:
+
+| Metric | Value |
+|---|---:|
+| Search focus visible viewport nodes | 800 |
+| Search focus visible viewport islands | 1 |
+| Search focus max rendered radius px | 7.8670397179696385 |
+| Search focus max rendered diameter px | 15.734079435939277 |
+| Search focus minimum observed edge gap px | 16.412827972783575 |
+| Search focus max required center distance px | 31.468158871878554 |
+| Search focus overlap count | 0 |
+| Search focus target-gap violation count | 0 |
+
+Validation inventory:
+
+- Full Web build before tests: passed.
+- Focused runtime diagnostics unit test: `1` file, `9` tests passed.
+- Full Web unit tests: `50` files, `397` tests passed.
+- Graph e2e/browser tests: `3` tests passed.
+- Screenshot artifacts: `4` PNG files.
+
 ## B5 - Final Validation Inventory
 
 Status: pending.

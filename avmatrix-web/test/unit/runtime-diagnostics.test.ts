@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   getWebRuntimeDiagnostics,
   recordGraphConversion,
+  recordGraphInteractionMode,
   recordGraphOverview,
   recordLayoutNodeSpacing,
   recordLayoutRings,
@@ -128,7 +129,17 @@ describe('runtime diagnostics', () => {
       islandCount: 1,
       viewportWidth: 1280,
       viewportHeight: 800,
+      visibleViewportNodeCount: 1677,
+      visibleViewportIslandCounts: { 'frontend:Function': 1677 },
       cameraRatio: 1,
+      cameraX: 0,
+      cameraY: 0,
+      viewportGraphCenterX: 0,
+      viewportGraphCenterY: 0,
+      viewportGraphMinX: -640,
+      viewportGraphMaxX: 640,
+      viewportGraphMinY: -400,
+      viewportGraphMaxY: 400,
       minRenderedRadius: 0.5,
       maxRenderedRadius: 3,
       maxRenderedDiameter: 6,
@@ -142,11 +153,75 @@ describe('runtime diagnostics', () => {
     const diagnostics = getWebRuntimeDiagnostics();
     expect(diagnostics?.screenNodeSpacing.coordinateSpace).toBe('viewport_px');
     expect(diagnostics?.screenNodeSpacing.nodeCount).toBe(1677);
+    expect(diagnostics?.screenNodeSpacing.visibleViewportNodeCount).toBe(1677);
     expect(diagnostics?.screenNodeSpacing.viewportWidth).toBe(1280);
     expect(diagnostics?.screenNodeSpacing.maxRenderedDiameter).toBe(6);
     expect(diagnostics?.screenNodeSpacing.minObservedEdgeGap).toBe(6);
     expect(diagnostics?.screenNodeSpacing.overlapCount).toBe(0);
     expect(diagnostics?.screenNodeSpacing.targetGapViolationCount).toBe(0);
+    expect(diagnostics?.graphInteraction.overviewSamples).toHaveLength(1);
+    expect(
+      diagnostics?.graphInteraction.overviewSamples[0].visibleViewportIslandCount,
+    ).toBe(1);
+  });
+
+  it('records bounded graph interaction samples by current camera mode', () => {
+    const input = {
+      coordinateSpace: 'viewport_px' as const,
+      nodeCount: 20,
+      islandCount: 3,
+      viewportWidth: 1280,
+      viewportHeight: 800,
+      visibleViewportNodeCount: 15,
+      visibleViewportIslandCounts: {
+        'backend:Function': 5,
+        'frontend:Function': 8,
+        'docs:Documentation': 2,
+      },
+      cameraRatio: 1,
+      cameraX: 0,
+      cameraY: 0,
+      viewportGraphCenterX: 0,
+      viewportGraphCenterY: 0,
+      viewportGraphMinX: -100,
+      viewportGraphMaxX: 100,
+      viewportGraphMinY: -100,
+      viewportGraphMaxY: 100,
+      minRenderedRadius: 1,
+      maxRenderedRadius: 3,
+      maxRenderedDiameter: 6,
+      minObservedCenterDistance: 12,
+      minObservedEdgeGap: 6,
+      maxRequiredCenterDistance: 12,
+      overlapCount: 0,
+      targetGapViolationCount: 0,
+    };
+
+    recordGraphInteractionMode({ mode: 'zoom-in' });
+    recordScreenNodeSpacing({ ...input, cameraRatio: 0.75 });
+    recordGraphInteractionMode({
+      mode: 'detail-focus',
+      targetNodeId: 'Function:frontend:0',
+    });
+    for (let index = 0; index < 13; index++) {
+      recordScreenNodeSpacing({
+        ...input,
+        cameraRatio: 0.5 - index * 0.01,
+      });
+    }
+
+    const diagnostics = getWebRuntimeDiagnostics();
+    expect(diagnostics?.graphInteraction.zoomSamples).toHaveLength(1);
+    expect(diagnostics?.graphInteraction.zoomSamples[0].mode).toBe('zoom-in');
+    expect(diagnostics?.graphInteraction.detailFocusSamples).toHaveLength(12);
+    expect(
+      diagnostics?.graphInteraction.detailFocusSamples.at(-1)?.targetNodeId,
+    ).toBe('Function:frontend:0');
+    expect(
+      diagnostics?.graphInteraction.detailFocusSamples.at(-1)
+        ?.visibleViewportIslandCount,
+    ).toBe(3);
+    expect(diagnostics?.graphInteraction.dynamicGapSamples).toHaveLength(12);
   });
 
   it('records graph overview diagnostics for e2e assertions', () => {

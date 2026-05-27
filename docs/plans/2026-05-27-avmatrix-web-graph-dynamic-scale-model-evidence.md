@@ -587,6 +587,33 @@ Screenshot artifacts:
 
 Status: in progress.
 
+Phase 6 diagnostics sampling:
+
+- Added `graphInteraction` diagnostics with current mode, current target node, overview samples, zoom samples, detail/focus samples, and dynamic-gap samples.
+- Added bounded sample retention at `12` samples per sample list.
+- Added camera mode recording in `useSigma` for overview load, zoom-in, zoom-out, reset, and explicit detail focus.
+- Added runtime unit coverage proving overview samples, zoom samples, detail/focus samples, visible island count derivation, target node tracking, and bounded sample retention.
+- Inventory counts remain runtime-derived. The dense fixture still defines its own exact visible ring, island, node-type, color, and visible-node expectations.
+
+Phase 6 focused validation:
+
+- Full Web build before tests: `npm run build` passed.
+- Focused Web unit test: `npx vitest run test/unit/runtime-diagnostics.test.ts` passed, `1` file and `9` tests.
+- Full Web unit test: `npx vitest run test/unit` passed, `50` files and `397` tests.
+- First Phase 6 e2e run exposed one incorrect assertion: it checked the display text `Function0` against a graph node id. The assertion now derives the expected target id from the dense fixture.
+- Phase 6 e2e hardening added settled-state polling for detail/focus target-gap violations before diagnostics capture.
+- Full Web build after e2e hardening: `npm run build` passed.
+- Final graph e2e/browser run: `npx playwright test e2e/graph-orientation-labels.spec.ts --project=chromium` passed, `3` tests.
+- Browser screenshot validation inspected `graph-node-spacing-dense-desktop.png` and `graph-node-spacing-dense-small.png`; nodes, ring labels, island labels, and multi-cluster overview remained visible.
+- Browser plugin tool discovery did not expose `node_repl`; local Playwright screenshots and image inspection were used for the browser validation step.
+
+Phase 6 e2e coverage:
+
+- Overview assertions compare visible ring, island, node-type, color, and node count against inventory derived from the active dense fixture.
+- Zoom assertions require sampled zoom-in and zoom-out modes plus rendered radius growth and shrink.
+- Detail/focus assertions require `overlapCount = 0`, `targetGapViolationCount = 0`, and dynamic required center distance above rendered diameter after settled focus.
+- Dynamic-gap samples are recorded from runtime screen-spacing diagnostics and capped to bounded sample history.
+
 Phase 5 validation:
 
 - Full Web build before tests: `npm run build` passed.
@@ -613,5 +640,22 @@ Phase 5 pre-commit detection:
 - Affected count: `0`.
 - Affected processes: `0`.
 - Resolution gap changes: `119` analyzer bookkeeping entries.
+- Changed source nodes with gaps: `0`.
+- Resolution health impact: degraded nodes `0`, total resolution gap count `0`.
+
+Phase 6 pre-commit detection:
+
+- `git diff --check`: passed.
+- Forbidden wording scan across the three plan ledgers: no matches.
+- `avmatrix analyze --force`: scanned `789`, parsed `578`, unsupported `211`, failed `0`.
+- Refreshed graph: `90536` nodes, `123974` relationships.
+- `detect_changes` through AVmatrix MCP with `repo=AVmatrix`, `scope=all`: risk level `low`.
+- Changed files: `7`.
+- Changed symbols: `358`.
+- Changed app layers: docs `8`, frontend `109`, frontend_test `241`.
+- Changed functional areas: documentation `8`, layout `16`, unknown `334`.
+- Affected count: `0`.
+- Affected processes: `0`.
+- Resolution gap changes: `255` analyzer bookkeeping entries.
 - Changed source nodes with gaps: `0`.
 - Resolution health impact: degraded nodes `0`, total resolution gap count `0`.

@@ -77,6 +77,15 @@ export interface WebRuntimeDiagnostics {
     overlapCount: number;
     targetGapViolationCount: number;
   };
+  graphInteraction: {
+    currentMode: GraphInteractionMode;
+    currentTargetNodeId: string;
+    lastModeChangedAt: number;
+    overviewSamples: GraphInteractionSample[];
+    zoomSamples: GraphInteractionSample[];
+    detailFocusSamples: GraphInteractionSample[];
+    dynamicGapSamples: GraphInteractionSample[];
+  };
   graphOverview: GraphOverviewDiagnostics;
   readableCamera: {
     recordedAt: number;
@@ -134,6 +143,36 @@ export interface GraphOverviewDiagnostics {
   cameraY: number;
 }
 
+export type GraphInteractionMode =
+  | 'overview'
+  | 'zoom-in'
+  | 'zoom-out'
+  | 'detail-focus';
+
+export interface GraphInteractionSample {
+  recordedAt: number;
+  mode: GraphInteractionMode;
+  targetNodeId: string;
+  coordinateSpace: 'viewport_px';
+  nodeCount: number;
+  islandCount: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  visibleViewportNodeCount: number;
+  visibleViewportIslandCount: number;
+  cameraRatio: number;
+  cameraX: number;
+  cameraY: number;
+  minRenderedRadius: number;
+  maxRenderedRadius: number;
+  maxRenderedDiameter: number;
+  minObservedCenterDistance: number;
+  minObservedEdgeGap: number;
+  maxRequiredCenterDistance: number;
+  overlapCount: number;
+  targetGapViolationCount: number;
+}
+
 export type GraphOverviewDiagnosticsInput = Omit<
   GraphOverviewDiagnostics,
   'recordedAt'
@@ -148,6 +187,79 @@ declare global {
 
 const nowMs = (): number =>
   typeof performance !== 'undefined' ? performance.now() : Date.now();
+
+const GRAPH_INTERACTION_SAMPLE_LIMIT = 12;
+
+const appendBoundedSample = (
+  samples: GraphInteractionSample[],
+  sample: GraphInteractionSample,
+): void => {
+  samples.push(sample);
+  if (samples.length > GRAPH_INTERACTION_SAMPLE_LIMIT) {
+    samples.splice(0, samples.length - GRAPH_INTERACTION_SAMPLE_LIMIT);
+  }
+};
+
+const buildGraphInteractionSample = (
+  input: Omit<WebRuntimeDiagnostics['screenNodeSpacing'], 'recordedAt'>,
+  recordedAt: number,
+  mode: GraphInteractionMode,
+  targetNodeId: string,
+): GraphInteractionSample => {
+  const visibleViewportIslandCounts = input.visibleViewportIslandCounts ?? {};
+
+  return {
+    recordedAt,
+    mode,
+    targetNodeId,
+    coordinateSpace: input.coordinateSpace,
+    nodeCount: input.nodeCount,
+    islandCount: input.islandCount,
+    viewportWidth: input.viewportWidth,
+    viewportHeight: input.viewportHeight,
+    visibleViewportNodeCount: input.visibleViewportNodeCount ?? 0,
+    visibleViewportIslandCount: Object.keys(visibleViewportIslandCounts).length,
+    cameraRatio: input.cameraRatio,
+    cameraX: input.cameraX,
+    cameraY: input.cameraY,
+    minRenderedRadius: input.minRenderedRadius,
+    maxRenderedRadius: input.maxRenderedRadius,
+    maxRenderedDiameter: input.maxRenderedDiameter,
+    minObservedCenterDistance: input.minObservedCenterDistance,
+    minObservedEdgeGap: input.minObservedEdgeGap,
+    maxRequiredCenterDistance: input.maxRequiredCenterDistance,
+    overlapCount: input.overlapCount,
+    targetGapViolationCount: input.targetGapViolationCount,
+  };
+};
+
+const recordGraphInteractionSample = (
+  diagnostics: WebRuntimeDiagnostics,
+  input: Omit<WebRuntimeDiagnostics['screenNodeSpacing'], 'recordedAt'>,
+  recordedAt: number,
+): void => {
+  const { currentMode, currentTargetNodeId } = diagnostics.graphInteraction;
+  const sample = buildGraphInteractionSample(
+    input,
+    recordedAt,
+    currentMode,
+    currentTargetNodeId,
+  );
+
+  if (currentMode === 'overview') {
+    appendBoundedSample(diagnostics.graphInteraction.overviewSamples, sample);
+  }
+  if (currentMode === 'zoom-in' || currentMode === 'zoom-out') {
+    appendBoundedSample(diagnostics.graphInteraction.zoomSamples, sample);
+  }
+  if (currentMode === 'detail-focus') {
+    appendBoundedSample(
+      diagnostics.graphInteraction.detailFocusSamples,
+      sample,
+    );
+  }
+  appendBoundedSample(diagnostics.graphInteraction.dynamicGapSamples, sample);
+};
 
 const createDiagnostics = (): WebRuntimeDiagnostics => ({
   graphConversion: {
@@ -227,6 +339,15 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
     maxRequiredCenterDistance: 0,
     overlapCount: 0,
     targetGapViolationCount: 0,
+  },
+  graphInteraction: {
+    currentMode: 'overview',
+    currentTargetNodeId: '',
+    lastModeChangedAt: 0,
+    overviewSamples: [],
+    zoomSamples: [],
+    detailFocusSamples: [],
+    dynamicGapSamples: [],
   },
   graphOverview: {
     recordedAt: 0,
@@ -403,10 +524,23 @@ export const recordScreenNodeSpacing = (input: {
 }): void => {
   const diagnostics = getWebRuntimeDiagnostics();
   if (!diagnostics) return;
+  const recordedAt = nowMs();
   diagnostics.screenNodeSpacing = {
     ...input,
-    recordedAt: nowMs(),
+    recordedAt,
   };
+  recordGraphInteractionSample(diagnostics, input, recordedAt);
+};
+
+export const recordGraphInteractionMode = (input: {
+  mode: GraphInteractionMode;
+  targetNodeId?: string;
+}): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  diagnostics.graphInteraction.currentMode = input.mode;
+  diagnostics.graphInteraction.currentTargetNodeId = input.targetNodeId ?? '';
+  diagnostics.graphInteraction.lastModeChangedAt = nowMs();
 };
 
 export const recordGraphOverview = (

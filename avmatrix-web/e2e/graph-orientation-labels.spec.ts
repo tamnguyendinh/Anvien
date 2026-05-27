@@ -103,6 +103,40 @@ const createDenseSpacingGraph = () => {
 type FixtureGraph = ReturnType<typeof createDenseSpacingGraph>;
 type FixtureNode = FixtureGraph["nodes"][number];
 
+type RuntimeGraphInteractionSample = {
+  recordedAt: number;
+  mode: "overview" | "zoom-in" | "zoom-out" | "detail-focus";
+  targetNodeId: string;
+  coordinateSpace: "viewport_px";
+  nodeCount: number;
+  islandCount: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  visibleViewportNodeCount: number;
+  visibleViewportIslandCount: number;
+  cameraRatio: number;
+  cameraX: number;
+  cameraY: number;
+  minRenderedRadius: number;
+  maxRenderedRadius: number;
+  maxRenderedDiameter: number;
+  minObservedCenterDistance: number;
+  minObservedEdgeGap: number;
+  maxRequiredCenterDistance: number;
+  overlapCount: number;
+  targetGapViolationCount: number;
+};
+
+type RuntimeGraphInteractionDiagnostics = {
+  currentMode: RuntimeGraphInteractionSample["mode"];
+  currentTargetNodeId: string;
+  lastModeChangedAt: number;
+  overviewSamples: RuntimeGraphInteractionSample[];
+  zoomSamples: RuntimeGraphInteractionSample[];
+  detailFocusSamples: RuntimeGraphInteractionSample[];
+  dynamicGapSamples: RuntimeGraphInteractionSample[];
+};
+
 const DEFAULT_VISIBLE_FIXTURE_LABELS = new Set([
   "Project",
   "Package",
@@ -307,6 +341,16 @@ const getGraphOverviewDiagnostics = async (page: Page) =>
     return win.__AVMATRIX_WEB_DIAGNOSTICS__?.graphOverview ?? null;
   });
 
+const getGraphInteractionDiagnostics = async (page: Page) =>
+  page.evaluate(() => {
+    const win = window as typeof window & {
+      __AVMATRIX_WEB_DIAGNOSTICS__?: {
+        graphInteraction?: RuntimeGraphInteractionDiagnostics;
+      };
+    };
+    return win.__AVMATRIX_WEB_DIAGNOSTICS__?.graphInteraction ?? null;
+  });
+
 test.describe("Graph orientation labels", () => {
   test.beforeEach(async ({ page }) => {
     const graph = createOrientationGraph();
@@ -469,6 +513,9 @@ test.describe("Graph orientation labels", () => {
     const expectedDenseIslandInventory = getFixtureIslandInventory(denseGraph);
     const expectedDenseVisibleNodeCount =
       getDefaultVisibleFixtureNodes(denseGraph).length;
+    const expectedSearchTargetId =
+      denseGraph.nodes.find((node) => node.properties.name === "Function0")?.id ??
+      "";
 
     await page.unroute(`${BACKEND_URL}/api/graph**`);
     await page.route(`${BACKEND_URL}/api/graph**`, (route) =>
@@ -560,6 +607,24 @@ test.describe("Graph orientation labels", () => {
       sumCounts(desktopVisibleIslandCounts),
     );
     expect(desktopScreenDiagnostics?.cameraRatio).toBeGreaterThan(0);
+    await expect
+      .poll(
+        async () =>
+          (await getGraphInteractionDiagnostics(page))?.overviewSamples.length ?? 0,
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThan(0);
+    const overviewInteraction = await getGraphInteractionDiagnostics(page);
+    const latestOverviewSample = overviewInteraction?.overviewSamples.at(-1);
+    expect(latestOverviewSample?.mode).toBe("overview");
+    expect(latestOverviewSample?.nodeCount).toBe(expectedDenseVisibleNodeCount);
+    expect(latestOverviewSample?.visibleViewportNodeCount).toBe(
+      desktopScreenDiagnostics?.visibleViewportNodeCount,
+    );
+    expect(latestOverviewSample?.visibleViewportIslandCount).toBe(
+      expectedDenseIslandInventory.length,
+    );
+    expect(overviewInteraction?.dynamicGapSamples.at(-1)?.mode).toBe("overview");
 
     await expect
       .poll(
@@ -621,6 +686,22 @@ test.describe("Graph orientation labels", () => {
     expect(zoomOutDiagnostics?.maxRenderedRadius).toBeLessThan(
       (zoomInTwoDiagnostics?.maxRenderedRadius ?? 0) * 0.9,
     );
+    const zoomInteraction = await getGraphInteractionDiagnostics(page);
+    const zoomInSamples =
+      zoomInteraction?.zoomSamples.filter((sample) => sample.mode === "zoom-in") ??
+      [];
+    const zoomOutSamples =
+      zoomInteraction?.zoomSamples.filter((sample) => sample.mode === "zoom-out") ??
+      [];
+    expect(zoomInSamples.length).toBeGreaterThan(0);
+    expect(zoomOutSamples.length).toBeGreaterThan(0);
+    expect(zoomInSamples.at(-1)?.maxRenderedRadius).toBeGreaterThan(
+      (initialZoomDiagnostics?.maxRenderedRadius ?? Number.POSITIVE_INFINITY) *
+        1.1,
+    );
+    expect(zoomOutSamples.at(-1)?.maxRenderedRadius).toBeLessThan(
+      (zoomInTwoDiagnostics?.maxRenderedRadius ?? 0) * 0.9,
+    );
 
     await page.getByPlaceholder("Search nodes...").fill("Function0");
     await page.locator("button").filter({ hasText: "Function0" }).first().click();
@@ -630,8 +711,40 @@ test.describe("Graph orientation labels", () => {
         { timeout: 10_000 },
       )
       .toBeLessThan((zoomOutDiagnostics?.cameraRatio ?? 0) * 0.5);
+    await expect
+      .poll(
+        async () =>
+          (await getScreenNodeSpacingDiagnostics(page))
+            ?.targetGapViolationCount ?? -1,
+        { timeout: 10_000 },
+      )
+      .toBe(0);
     const searchFocusDiagnostics = await getScreenNodeSpacingDiagnostics(page);
     expect(searchFocusDiagnostics?.visibleViewportNodeCount).toBeGreaterThan(0);
+    expect(searchFocusDiagnostics?.overlapCount).toBe(0);
+    expect(searchFocusDiagnostics?.targetGapViolationCount).toBe(0);
+    expect(searchFocusDiagnostics?.minObservedEdgeGap).toBeGreaterThanOrEqual(
+      searchFocusDiagnostics?.maxRenderedDiameter ?? Number.POSITIVE_INFINITY,
+    );
+    await expect
+      .poll(
+        async () =>
+          (await getGraphInteractionDiagnostics(page))?.detailFocusSamples
+            .length ?? 0,
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThan(0);
+    const detailInteraction = await getGraphInteractionDiagnostics(page);
+    const searchFocusSample = detailInteraction?.detailFocusSamples.at(-1);
+    expect(expectedSearchTargetId).not.toBe("");
+    expect(searchFocusSample?.mode).toBe("detail-focus");
+    expect(searchFocusSample?.targetNodeId).toBe(expectedSearchTargetId);
+    expect(searchFocusSample?.visibleViewportNodeCount).toBeGreaterThan(0);
+    expect(searchFocusSample?.overlapCount).toBe(0);
+    expect(searchFocusSample?.targetGapViolationCount).toBe(0);
+    expect(searchFocusSample?.maxRequiredCenterDistance).toBeGreaterThan(
+      searchFocusSample?.maxRenderedDiameter ?? Number.POSITIVE_INFINITY,
+    );
 
     await page.getByTitle("Zoom Out").click();
     await expect
@@ -652,6 +765,14 @@ test.describe("Graph orientation labels", () => {
         { timeout: 10_000 },
       )
       .toBeLessThan((sameSelectionShiftedDiagnostics?.cameraRatio ?? 0) * 0.75);
+    await expect
+      .poll(
+        async () =>
+          (await getScreenNodeSpacingDiagnostics(page))
+            ?.targetGapViolationCount ?? -1,
+        { timeout: 10_000 },
+      )
+      .toBe(0);
     const sameSelectionFocusDiagnostics =
       await getScreenNodeSpacingDiagnostics(page);
     expect(
@@ -660,6 +781,19 @@ test.describe("Graph orientation labels", () => {
     expect(sameSelectionFocusDiagnostics?.maxRenderedRadius).toBeGreaterThan(
       (sameSelectionShiftedDiagnostics?.maxRenderedRadius ??
         Number.POSITIVE_INFINITY) * 1.1,
+    );
+    expect(sameSelectionFocusDiagnostics?.overlapCount).toBe(0);
+    expect(sameSelectionFocusDiagnostics?.targetGapViolationCount).toBe(0);
+    const sameSelectionInteraction = await getGraphInteractionDiagnostics(page);
+    const sameSelectionFocusSample =
+      sameSelectionInteraction?.detailFocusSamples.at(-1);
+    expect(sameSelectionFocusSample?.mode).toBe("detail-focus");
+    expect(sameSelectionFocusSample?.maxRenderedRadius).toBeGreaterThan(
+      (sameSelectionShiftedDiagnostics?.maxRenderedRadius ??
+        Number.POSITIVE_INFINITY) * 1.1,
+    );
+    expect(sameSelectionInteraction?.dynamicGapSamples.at(-1)?.mode).toBe(
+      "detail-focus",
     );
 
     await page.setViewportSize({ width: 520, height: 720 });

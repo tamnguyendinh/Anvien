@@ -79,6 +79,7 @@ Exact current facts:
 - Default load is an overview of the graph, not an automatic jump into the densest local patch.
 - Default overview preserves multi-island and multi-color information on fixtures that contain multiple visible node types and app layers.
 - Expected ring, island, color, node-type, and visible-node counts are computed from the active graph inventory. For the current dense fixture, the computed product expectation is exactly `3` rings, `4` islands, `3` visible node types, and `2077` default-visible nodes; repositories with different language/taxonomy inventories must produce their own exact counts.
+- Every exact inventory count in this plan is measured fixture evidence, not a product constant.
 - User zoom-in visibly increases rendered node radius in viewport pixels.
 - User zoom-out visibly decreases rendered node radius in viewport pixels.
 - Detail/focus mode makes raw nodes readable without overlap.
@@ -346,16 +347,16 @@ Only named product policy constants remain, such as minimum readable pixel targe
 
 ## Phase 6 - Diagnostics And E2E Coverage
 
-- [ ] P6-A Extend Phase 1 overview diagnostics with zoom radius samples, detail/focus samples, and dynamic gap samples.
-- [ ] P6-B Replace e2e assertions that accept a single `frontend:Function` viewport as success.
-- [ ] P6-C Add overview e2e assertions for baseline color parity and multi-color/multi-island default load.
-- [ ] P6-D Add zoom e2e assertions for rendered radius growth/shrink.
-- [ ] P6-E Add detail/focus e2e assertions for no overlap and dynamic target gap.
-- [ ] P6-F Capture desktop and small-viewport screenshots.
-- [ ] P6-G Record diagnostics evidence and benchmark metrics.
-- [ ] P6-H Run full build before tests, then full Web unit tests and Web e2e/browser tests for this slice.
-- [ ] P6-I Run AVmatrix detect-changes for the slice.
-- [ ] P6-J Commit the completed diagnostics/e2e slice.
+- [x] P6-A Extend Phase 1 overview diagnostics with zoom radius samples, detail/focus samples, and dynamic gap samples.
+- [x] P6-B Replace e2e assertions that accept a single `frontend:Function` viewport as success.
+- [x] P6-C Add overview e2e assertions for baseline color parity and multi-color/multi-island default load.
+- [x] P6-D Add zoom e2e assertions for rendered radius growth/shrink.
+- [x] P6-E Add detail/focus e2e assertions for no overlap and dynamic target gap.
+- [x] P6-F Capture desktop and small-viewport screenshots.
+- [x] P6-G Record diagnostics evidence and benchmark metrics.
+- [x] P6-H Run full build before tests, then full Web unit tests and Web e2e/browser tests for this slice.
+- [x] P6-I Run AVmatrix detect-changes for the slice.
+- [x] P6-J Commit the completed diagnostics/e2e slice.
 
 ## Phase 7 - Full Validation And Closure
 
