@@ -50,6 +50,23 @@ export interface WebRuntimeDiagnostics {
     overlapCount: number;
     targetGapViolationCount: number;
   };
+  screenNodeSpacing: {
+    recordedAt: number;
+    coordinateSpace: 'viewport_px';
+    nodeCount: number;
+    islandCount: number;
+    viewportWidth: number;
+    viewportHeight: number;
+    cameraRatio: number;
+    minRenderedRadius: number;
+    maxRenderedRadius: number;
+    maxRenderedDiameter: number;
+    minObservedCenterDistance: number;
+    minObservedEdgeGap: number;
+    maxRequiredCenterDistance: number;
+    overlapCount: number;
+    targetGapViolationCount: number;
+  };
   heartbeat: {
     connects: number;
     reconnects: number;
@@ -124,6 +141,23 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
     requiredCenterDistance: 0,
     minObservedCenterDistance: 0,
     minObservedEdgeGap: 0,
+    overlapCount: 0,
+    targetGapViolationCount: 0,
+  },
+  screenNodeSpacing: {
+    recordedAt: 0,
+    coordinateSpace: 'viewport_px',
+    nodeCount: 0,
+    islandCount: 0,
+    viewportWidth: 0,
+    viewportHeight: 0,
+    cameraRatio: 0,
+    minRenderedRadius: 0,
+    maxRenderedRadius: 0,
+    maxRenderedDiameter: 0,
+    minObservedCenterDistance: 0,
+    minObservedEdgeGap: 0,
+    maxRequiredCenterDistance: 0,
     overlapCount: 0,
     targetGapViolationCount: 0,
   },
@@ -229,6 +263,30 @@ export const recordLayoutNodeSpacing = (input: {
   const diagnostics = getWebRuntimeDiagnostics();
   if (!diagnostics) return;
   diagnostics.layoutNodeSpacing = {
+    ...input,
+    recordedAt: nowMs(),
+  };
+};
+
+export const recordScreenNodeSpacing = (input: {
+  coordinateSpace: 'viewport_px';
+  nodeCount: number;
+  islandCount: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  cameraRatio: number;
+  minRenderedRadius: number;
+  maxRenderedRadius: number;
+  maxRenderedDiameter: number;
+  minObservedCenterDistance: number;
+  minObservedEdgeGap: number;
+  maxRequiredCenterDistance: number;
+  overlapCount: number;
+  targetGapViolationCount: number;
+}): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  diagnostics.screenNodeSpacing = {
     ...input,
     recordedAt: nowMs(),
   };

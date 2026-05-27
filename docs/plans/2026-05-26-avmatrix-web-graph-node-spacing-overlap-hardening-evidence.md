@@ -2,7 +2,7 @@
 
 Date: 2026-05-26
 
-Status: Complete
+Status: Reopened
 
 Companion files:
 
@@ -664,3 +664,289 @@ Closure state:
 - Dense graph same-island nodes no longer overlap in the measured fixtures.
 - The default browser/runtime spacing contract records one rendered node diameter of edge-to-edge gap.
 - The implementation commit was completed before marking `P5-G` and `P5-H`.
+
+## E22 - 2026-05-27 Reopen Failure Evidence
+
+Date: 2026-05-27
+
+Status: reopened
+
+Failure artifact:
+
+- `reports/problem/screenshot_1779846657.png`
+
+Observed screenshot failure:
+
+- A real Web UI graph view shows the `Function` island with `1677` nodes rendered as a dense connected blob.
+- Individual node circles visually overlap or merge; the displayed result does not satisfy the product requirement that rendered node edges have one node diameter of empty space between them.
+- The failure is visible in the rendered viewport, not only in abstract layout coordinates.
+
+Source evidence inspected during reopen:
+
+| Source | Finding |
+|---|---|
+| `avmatrix-web/src/lib/graph-adapter.ts` | `getMinimumNodeCenterDistance` returns `12` layout units for max rendered radius `3`; same-island placement rejects candidates below this threshold in graph/layout coordinates. |
+| `avmatrix-web/src/components/GraphCanvas.tsx` | `buildLayoutNodeSpacingDiagnostics` reads raw Sigma graph `x`/`y` attributes and records spacing in layout coordinates before `setSigmaGraph`; it does not use `sigma.graphToViewport` or rendered node display data. |
+| `avmatrix-web/e2e/graph-orientation-labels.spec.ts` | The dense spacing e2e asserts `layoutNodeSpacing` diagnostics from layout coordinates, then captures screenshots; it does not assert screen-projected center distances or rendered pixel gaps. |
+| `avmatrix-web/node_modules/sigma/dist/index-16136237.cjs.prod.js` | Sigma computes viewport positions through normalization/camera matrix paths such as `graphToViewport`, `framedGraphToViewport`, `graphToViewportRatio`, and scales node display size through `scaleSize`. |
+
+Invalidated previous evidence:
+
+- E18 browser validation is incomplete for the product requirement because it measured layout-coordinate spacing, not screen-rendered spacing.
+- B4 browser UX metrics are incomplete for the same reason; `Desktop visible node overlap violations = 0` and `Smaller-viewport visible node overlap violations = 0` were based on the wrong diagnostic surface.
+- P5-H closure is invalidated by the new rendered screenshot evidence.
+
+Root-cause assessment:
+
+- The previous full build gate did run and was recorded in E13.
+- The failure is not explained by skipping the build.
+- The likely cause is a code/design bug plus a validation blind spot: spacing was enforced in the wrong coordinate space for the UX claim.
+
+Next required evidence:
+
+- Trace Sigma's exact screen projection and size scaling behavior with source and browser runtime measurements.
+- Add browser diagnostics that compare screen-projected node center distances against rendered node radii in pixels.
+- Reproduce the failure with a dense island at or above the screenshot-class `Function 1677` case before changing closure status again.
+
+## E23 - P6-A/P6-B/P6-F Reopen Baseline And Impact
+
+Date: 2026-05-27
+
+Status: recorded
+
+AVmatrix refresh:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe analyze --force
+```
+
+Output summary:
+
+```text
+files: scanned=767 parsed=568 unsupported=199 failed=0
+graph: nodes=88570 relationships=121510 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Additional Sigma source trace:
+
+| Source | Finding |
+|---|---|
+| `avmatrix-web/node_modules/sigma/settings/dist/sigma-settings.esm.js` | Default `itemSizesReference` is `"screen"`, default `zoomToSizeRatioFunction` is `Math.sqrt`, and `autoRescale` is `true`. |
+| `avmatrix-web/node_modules/sigma/dist/declarations/src/sigma.d.ts` | `scaleSize`, `graphToViewport`, `framedGraphToViewport`, `getGraphToViewportRatio`, `setCustomBBox`, and camera accessors are public Sigma APIs. |
+| `avmatrix-web/node_modules/sigma/dist/sigma.cjs.prod.js` | `scaleSize(size, cameraRatio)` returns a screen size and changes behavior when `itemSizesReference === "positions"`. |
+
+Impact analysis before code edits:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe impact "buildLayoutNodeSpacingDiagnostics" --repo AVmatrix --direction upstream --include-tests
+.\avmatrix\bin\avmatrix.exe impact "useSigma" --repo AVmatrix --direction upstream --include-tests
+.\avmatrix\bin\avmatrix.exe impact "recordLayoutNodeSpacing" --repo AVmatrix --direction upstream --include-tests
+.\avmatrix\bin\avmatrix.exe impact "applyFilterBasedClusteredLayout" --repo AVmatrix --direction upstream --include-tests
+```
+
+Impact results:
+
+| Target | Risk | Summary |
+|---|---|---|
+| `buildLayoutNodeSpacingDiagnostics` | LOW | `impactedCount=0`; diagnostic helper only. |
+| `useSigma` | CRITICAL | `impactedCount=5`; direct affected graph UI and `GraphCanvas` paths. |
+| `recordLayoutNodeSpacing` | CRITICAL | `impactedCount=7`; frontend diagnostics and tests. |
+| `applyFilterBasedClusteredLayout` | CRITICAL | `impactedCount=7`; layout entry point, `useSigma`, `GraphCanvas`, graph UI flows. |
+
+Blast radius note:
+
+- HIGH/CRITICAL impact marks important graph UI/layout code that must be edited carefully.
+- It is not treated as a ban on the required fix.
+
+## E24 - P6-C Through P6-H Screen-Space Implementation
+
+Date: 2026-05-27
+
+Status: recorded
+
+Failure reproduction:
+
+- The deterministic dense browser fixture was raised to `Function 1677`, matching the screenshot-class island size from `reports/problem/screenshot_1779846657.png`.
+- A browser screenshot taken during the reopened work showed that layout-coordinate spacing was not enough proof: the dense graph could still render as a visual blob when only fit-to-screen/coordinate-space checks were used.
+- The reopened acceptance criteria therefore require viewport-pixel spacing diagnostics and screenshot review, not only graph-layout coordinate checks.
+
+Touched files:
+
+| Path | Change |
+|---|---|
+| `avmatrix-web/src/lib/graph-screen-spacing.ts` | Added viewport-pixel node spacing diagnostics using Sigma projection APIs and rendered radius data; diagnostics now track coordinate space, viewport size, camera ratio, rendered radius/diameter, minimum center/edge gap, overlap count, and target-gap violations. |
+| `avmatrix-web/src/lib/graph-readable-camera.ts` | Added dense-graph initial camera helper. Large graphs open at a readable zoom around the densest visible island instead of compressing rendered nodes into a fit-to-screen blob. |
+| `avmatrix-web/src/hooks/useSigma.ts` | Switched Sigma node size reference to position-scaled rendering and applies the readable camera after graph load. |
+| `avmatrix-web/src/components/GraphCanvas.tsx` | Records screen-space node spacing diagnostics after graph load, render/resize, and filter/depth changes. |
+| `avmatrix-web/src/lib/runtime-diagnostics.ts` | Added `screenNodeSpacing` runtime diagnostics and `recordScreenNodeSpacing`. |
+| `avmatrix-web/src/lib/graph-orientation-labels.ts` | Prevented ring-label fallback placement from introducing overlaps when a collision-free placement is unavailable. |
+| `avmatrix-web/test/unit/graph-screen-spacing.test.ts` | Added screen-space diagnostics regression coverage. |
+| `avmatrix-web/test/unit/graph-readable-camera.test.ts` | Added dense readable-camera contract coverage. |
+| `avmatrix-web/test/unit/runtime-diagnostics.test.ts` | Added `screenNodeSpacing` diagnostics coverage. |
+| `avmatrix-web/test/unit/GraphCanvas.selection-performance.test.tsx` | Updated Sigma mock for screen-spacing diagnostics. |
+| `avmatrix-web/e2e/graph-orientation-labels.spec.ts` | Added `Function 1677` dense fixture, viewport-pixel spacing assertions, readable camera assertions, and desktop/small screenshots. |
+
+Additional impact analysis:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe analyze --force
+.\avmatrix\bin\avmatrix.exe impact --repo AVmatrix --direction upstream --include-tests --uid "Function:avmatrix-web/src/lib/graph-orientation-labels.ts:placeGraphOrientationLabels"
+```
+
+Impact result:
+
+| Target | Risk | Summary |
+|---|---|---|
+| `placeGraphOrientationLabels` | CRITICAL | `impactedCount=7`; affected Web graph UI and orientation-label unit tests. |
+
+Blast radius note:
+
+- The label placement change is in important Web graph UI code, so it was kept narrowly scoped to collision fallback behavior and covered by unit/e2e validation.
+
+Implementation notes:
+
+- Screen-space diagnostics measure the same-island node gap in `viewport_px`.
+- Dense large graphs keep the one-node-diameter edge gap in rendered screen space by making node size scale with graph positions and applying a readable initial camera.
+- The final dense screenshots still contain many ambient edges because the fixture intentionally renders `2156` relationships with graph links enabled. That is edge-density visual clutter, not node overlap; reducing dense-edge clutter is a separate UX slice.
+
+## E25 - P6-I Browser, Build, Unit, Lint, And Screenshot Validation
+
+Date: 2026-05-27
+
+Status: pass
+
+Full build gate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+```
+
+Final result:
+
+- Exit code: `0`
+- Go runtime detected: `go version go1.26.3 windows/amd64`
+- Web build command: `tsc -b && vite build`
+- Vite modules transformed: `2933`
+- Final Vite build duration: `18.86s`
+- Native runtime file `avmatrix\bin\lbug_shared.dll` was already up to date.
+- Existing Vite chunk-size and mixed dynamic/static import warnings remained non-fatal.
+
+Focused unit validation:
+
+```powershell
+npm run test -- graph-readable-camera.test.ts graph-screen-spacing.test.ts graph-orientation-labels.test.ts
+```
+
+Result:
+
+- Exit code: `0`
+- Test files: `3 passed`
+- Tests: `13 passed`
+
+Lint:
+
+```powershell
+npm run lint -- --quiet
+```
+
+Result:
+
+- Exit code: `0`
+
+Full Web unit validation:
+
+```powershell
+npm test
+```
+
+Working directory:
+
+```text
+E:\AVmatrix-GO\avmatrix-web
+```
+
+Result:
+
+- Exit code: `0`
+- Test files: `47 passed`
+- Tests: `384 passed`
+
+Web e2e/browser validation:
+
+```powershell
+npm run test:e2e -- graph-orientation-labels.spec.ts
+```
+
+Server handling:
+
+- Started `npm run dev` on `127.0.0.1:5228` for the test run.
+- Stopped the Vite process tree in `finally` after Playwright completed.
+
+Result:
+
+- Exit code: `0`
+- Tests: `3 passed`
+- Duration: `1.5m`
+
+Screenshot artifacts:
+
+- `avmatrix-web/test-results/graph-orientation-labels-G-1d271-ted-by-the-default-node-gap-chromium/graph-node-spacing-dense-desktop.png`
+- `avmatrix-web/test-results/graph-orientation-labels-G-1d271-ted-by-the-default-node-gap-chromium/graph-node-spacing-dense-small.png`
+- `avmatrix-web/test-results/graph-orientation-labels-G-5b603-labels-on-the-desktop-graph-chromium/graph-orientation-labels-desktop.png`
+- `avmatrix-web/test-results/graph-orientation-labels-G-e5a0a-t-and-updates-after-filters-chromium/graph-orientation-labels-small-filtered.png`
+
+Observed fixes from failed validation attempts:
+
+- First reopened e2e attempts exposed that screen diagnostics could pass while screenshots were still visually wrong when the readable-camera boundary was missing.
+- Later e2e attempts exposed a diagnostics lower-bound issue and a ring-label fallback overlap; both were fixed before the final passing e2e run.
+
+Quantitative browser metrics are recorded in benchmark ledger `B6`.
+
+## E26 - P6-J Pre-Commit Change Detection
+
+Date: 2026-05-27
+
+Status: pass
+
+Graph refresh command before change detection:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe analyze --force
+```
+
+Graph refresh output:
+
+```text
+files: scanned=771 parsed=572 unsupported=199 failed=0
+graph: nodes=89166 relationships=122218 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Change detection command:
+
+```powershell
+.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all
+```
+
+Output summary:
+
+| Field | Value |
+|---|---:|
+| Risk level | `low` |
+| Changed files | `10` |
+| Changed symbols | `239` |
+| Affected count | `0` |
+| Changed app layers | `docs: 14`, `frontend: 103`, `frontend_test: 121` |
+| Changed functional areas | `documentation: 14`, `layout: 11`, `unknown: 188`, `web_graph_ui: 25` |
+| Resolution health degraded nodes | `0` |
+| Total resolution gap count | `0` |
+
+Additional pre-commit check:
+
+```powershell
+git diff --check
+```
+
+Result:
+
+- Exit code: `0`
+- No whitespace errors reported.

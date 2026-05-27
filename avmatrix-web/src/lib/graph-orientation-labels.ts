@@ -479,13 +479,21 @@ export const placeGraphOrientationLabels = (
       break;
     }
     if (!selectedPlacement && candidate.kind === "ring") {
-      selectedPlacement = clampCandidateToViewport(
+      const fallbackPlacement = clampCandidateToViewport(
         candidate,
         options.viewportWidth,
         options.viewportHeight,
         safeInset,
       );
-      selectedBox = createBox(selectedPlacement);
+      const fallbackBox = createBox(fallbackPlacement);
+      if (
+        !placedBoxes.some((placedBox) =>
+          boxesOverlap(fallbackBox, placedBox, collisionPadding),
+        )
+      ) {
+        selectedPlacement = fallbackPlacement;
+        selectedBox = fallbackBox;
+      }
     }
     if (!selectedPlacement || !selectedBox) {
       continue;

@@ -27,8 +27,10 @@ import {
   recordGraphConversion,
   recordLayoutNodeSpacing,
   recordLayoutRings,
+  recordScreenNodeSpacing,
   recordVisualScale,
 } from '../lib/runtime-diagnostics';
+import { buildScreenNodeSpacingDiagnostics } from '../lib/graph-screen-spacing';
 import {
   buildGraphOrientationLabels,
   placeGraphOrientationLabels,
@@ -393,6 +395,12 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     setOrientationLabels(placedLabels);
   }, [containerRef, sigmaRef]);
 
+  const recordCurrentScreenNodeSpacing = useCallback(() => {
+    const sigma = sigmaRef.current;
+    if (!sigma) return;
+    recordScreenNodeSpacing(buildScreenNodeSpacingDiagnostics(sigma));
+  }, [sigmaRef]);
+
   useEffect(() => {
     const sigma = sigmaRef.current;
     if (!sigma) {
@@ -401,22 +409,30 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     }
 
     const handleRefresh = () => recomputeOrientationLabels();
+    const handleResizeDiagnostics = () => {
+      window.requestAnimationFrame(recordCurrentScreenNodeSpacing);
+    };
     const camera = typeof sigma.getCamera === 'function' ? sigma.getCamera() : null;
 
     handleRefresh();
     sigma.on?.('afterRender', handleRefresh);
     sigma.on?.('resize', handleRefresh);
+    sigma.on?.('resize', handleResizeDiagnostics);
     camera?.on?.('updated', handleRefresh);
     window.addEventListener('resize', handleRefresh);
+    window.addEventListener('resize', handleResizeDiagnostics);
 
     return () => {
       sigma.off?.('afterRender', handleRefresh);
       sigma.off?.('resize', handleRefresh);
+      sigma.off?.('resize', handleResizeDiagnostics);
       camera?.off?.('updated', handleRefresh);
       window.removeEventListener('resize', handleRefresh);
+      window.removeEventListener('resize', handleResizeDiagnostics);
     };
   }, [
     recomputeOrientationLabels,
+    recordCurrentScreenNodeSpacing,
     graph,
     visibleLabels,
     depthFilter,
@@ -501,7 +517,11 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     recordLayoutRings(buildLayoutRingDiagnostics(sigmaGraph));
     recordLayoutNodeSpacing(buildLayoutNodeSpacingDiagnostics(sigmaGraph));
     setSigmaGraph(sigmaGraph);
-    window.requestAnimationFrame(recomputeOrientationLabels);
+    recordCurrentScreenNodeSpacing();
+    window.requestAnimationFrame(() => {
+      recordCurrentScreenNodeSpacing();
+      recomputeOrientationLabels();
+    });
   }, [graph, nodeById, setSigmaGraph]);
 
   // Update graph visibility when label filters or depth filter mode change.
@@ -525,6 +545,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       );
     }
     sigma.refresh();
+    recordCurrentScreenNodeSpacing();
     recomputeOrientationLabels();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sigmaRef identity never changes
   }, [visibleLabels, depthFilter, graphHealthFilters, semanticFilters]);
@@ -548,6 +569,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       semanticFilters,
     );
     sigma.refresh();
+    recordCurrentScreenNodeSpacing();
     recomputeOrientationLabels();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sigmaRef identity never changes
   }, [appSelectedNode?.id, graphHealthFilters, semanticFilters]);

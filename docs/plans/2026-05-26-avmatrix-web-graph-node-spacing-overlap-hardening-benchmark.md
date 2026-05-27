@@ -109,3 +109,55 @@ Status: pending implementation validation.
 | Web e2e/browser graph spacing result | pass/fail | pending | pass | pass | pass |
 | `detect-changes` pre-commit result | pass/fail | pending | pass | pass | pass |
 | Implementation commits recorded | commits | 0 | 1 | +1 | >= 1 after implementation slice |
+
+## B6 - Reopened Screen-Space Failure Metrics
+
+Status: final measured.
+
+| Metric | Unit | Previous latest | Reopen observation | Final measured | Target |
+|---|---:|---:|---:|---:|---:|
+| Dense browser fixture node count | nodes | 1480 | pending | 2157 | record |
+| Dense browser fixture relationship count | relationships | 1479 | pending | 2156 | record |
+| Dense fixture `Function` island size | nodes | pending | 1677 | 1677 | >= 1677 |
+| Browser diagnostic coordinate space | category | layout coordinates | insufficient for screenshot failure | viewport_px | screen-projected viewport pixels |
+| Layout diagnostic node count | nodes | 1480 | pending | 2157 | record |
+| Layout diagnostic island count | islands | pending | pending | 5 | record |
+| Layout minimum center distance | layout units | 12 | pending | 12 | >= 12 |
+| Layout minimum edge gap | layout units | 6 | pending | 6 | >= 6 |
+| Layout overlap count | violations | 0 | pending | 0 | 0 |
+| Layout target gap violations | violations | 0 | pending | 0 | 0 |
+| Desktop screen diagnostic node count | nodes | pending | pending | 2077 | record |
+| Desktop screen diagnostic island count | islands | pending | pending | 4 | record |
+| Desktop viewport width | px | 1280 page | pending | 1032 graph canvas | record |
+| Desktop viewport height | px | 800 page | pending | 702 graph canvas | record |
+| Desktop camera ratio | ratio | pending | pending | 0.008524702358442132 | record |
+| Desktop min rendered radius | px | pending | pending | 0.6249999779166772 | record |
+| Desktop max rendered radius | px | pending | pending | 0.7499999735000125 | >= 0.74 |
+| Desktop max rendered diameter | px | pending | pending | 1.499999947000025 | record |
+| Desktop screen minimum center distance | px | pending | pending | 2.99999989400005 | >= max required center |
+| Desktop screen minimum edge gap | px | pending | pending | 1.499999947000025 | >= one rendered node diameter |
+| Desktop screen max required center distance | px | pending | pending | 2.99999989400005 | record |
+| Desktop screen overlap count | violations | pending | visible blob | 0 | 0 |
+| Desktop screen target gap violations | violations | pending | pending | 0 | 0 |
+| Desktop ring labels visible | labels | 3 | pending | 2 | >= 1 |
+| Desktop island labels visible | labels | 4 | pending | 1 | record |
+| Desktop label overlap count | violations | 0 | pending | 0 | 0 |
+| Small screen diagnostic node count | nodes | pending | pending | 2077 | record |
+| Small screen diagnostic island count | islands | pending | pending | 4 | record |
+| Small viewport width | px | 520 page | pending | 272 graph canvas | record |
+| Small viewport height | px | 720 page | pending | 606 graph canvas | record |
+| Small camera ratio | ratio | pending | pending | 0.00043012603675720635 | record |
+| Small min rendered radius | px | pending | pending | 0.624999992016073 | record |
+| Small max rendered radius | px | pending | pending | 0.7499999904192876 | >= 0.74 |
+| Small max rendered diameter | px | pending | pending | 1.499999980838575 | record |
+| Small screen minimum center distance | px | pending | pending | 2.99999996167715 | >= max required center |
+| Small screen minimum edge gap | px | pending | pending | 1.499999980838575 | >= one rendered node diameter |
+| Small screen max required center distance | px | pending | pending | 2.99999996167715 | record |
+| Small screen overlap count | violations | pending | pending | 0 | 0 |
+| Small screen target gap violations | violations | pending | pending | 0 | 0 |
+| Small ring labels visible | labels | 3 | pending | 2 | >= 1 |
+| Small island labels visible | labels | 3 | pending | 0 | record |
+| Small label overlap count | violations | 0 | pending | 0 | 0 |
+| Dense graph desktop screenshots captured | files | 1 | pending | 1 | >= 1 |
+| Dense graph small screenshots captured | files | 1 | pending | 1 | >= 1 |
+| Closure status | status | complete | reopened | complete | complete only after screen-space metrics pass |

@@ -9,6 +9,23 @@ Companion files:
 - Evidence ledger: [2026-05-26-avmatrix-web-graph-node-spacing-overlap-hardening-evidence.md](2026-05-26-avmatrix-web-graph-node-spacing-overlap-hardening-evidence.md)
 - Benchmark ledger: [2026-05-26-avmatrix-web-graph-node-spacing-overlap-hardening-benchmark.md](2026-05-26-avmatrix-web-graph-node-spacing-overlap-hardening-benchmark.md)
 
+## Reopen Note
+
+Reopened on 2026-05-27 after real UI evidence showed dense graph nodes still visually overlapping after the previous completion commit.
+
+Failure artifact:
+
+- `reports/problem/screenshot_1779846657.png`
+
+Current root-cause hypothesis:
+
+- the previous implementation enforced the minimum node gap in graph/layout coordinates;
+- the previous browser diagnostic also measured graph/layout coordinates;
+- Sigma normalizes/fits graph coordinates into the viewport and renders node size in screen space, so a valid `12` layout-unit center gap can become much less than one rendered node diameter on screen for large graph extents;
+- therefore the previous build/test run was not enough proof of UX correctness. The issue is a code/design and validation-gap bug, not simply a missing build command.
+
+This reopened plan must not be closed again until browser validation measures screen-projected node centers and rendered node radii, not only raw graph coordinates.
+
 ## Master rules
 
 1. Use AVmatrix for codebase analysis and impact checks while working on implementation slices in this plan.
@@ -104,6 +121,8 @@ Existing label and island/ring spacing behavior must remain intact. The fix must
 - Unit tests include regression coverage for large islands where the previous spiral formula could place nodes too close.
 - Unit tests preserve existing island/ring separation and label visibility behavior.
 - Browser/e2e validation captures desktop and smaller-viewport screenshots for a dense graph and records node overlap/gap diagnostics.
+- Browser/e2e validation must measure screen-projected node spacing using Sigma viewport coordinates or equivalent rendered data. Graph-coordinate-only diagnostics are insufficient.
+- The first visible viewport for a real large graph must not visually compress dense islands into overlapping node blobs; if the full graph cannot satisfy this while fully fit-to-screen, the UX must define and implement an explicit large-graph initial camera/readability boundary.
 - Web build and full repository build gate pass before closure.
 - `avmatrix detect-changes --repo AVmatrix --scope all` runs before each implementation commit and the changed scope is recorded.
 - Evidence and benchmark ledgers are updated after each completed task or measured benchmark, with evidence kept separate from quantitative metrics.
@@ -162,3 +181,17 @@ Existing label and island/ring spacing behavior must remain intact. The fix must
 - [x] [P5-F] Run `avmatrix detect-changes --repo AVmatrix --scope all` and record changed scope before committing implementation work.
 - [x] [P5-G] Commit the completed implementation slice, then continue if any checklist items remain.
 - [x] [P5-H] Mark the plan complete only after code, tests, browser evidence, benchmark metrics, evidence ledger, and commit state agree that dense graph nodes no longer overlap and default spacing provides one rendered node diameter of edge gap.
+
+## Phase 6 - Reopened Screen-Space Overlap Fix
+
+- [x] [P6-A] Record the 2026-05-27 screenshot failure in the evidence ledger and classify which completed acceptance criteria were invalidated.
+- [x] [P6-B] Trace Sigma coordinate normalization, camera ratio, `graphToViewport`, `framedGraphToViewport`, `scaleSize`, and `itemSizesReference` behavior with source evidence.
+- [x] [P6-C] Reproduce the screenshot-class failure with a deterministic fixture or captured real graph that includes at least one dense island at or above `Function 1677`.
+- [x] [P6-D] Add browser diagnostics that measure visible same-island node center distances in viewport pixels and compare them against rendered node radius/diameter in pixels.
+- [x] [P6-E] Redesign the spacing contract so placement, graph footprint, and initial camera behavior preserve the one-node-diameter edge gap in rendered screen space or define a deliberate large-graph UX boundary.
+- [x] [P6-F] Run impact analysis before editing `graph-adapter.ts`, `GraphCanvas.tsx`, `useSigma.ts`, or runtime diagnostics.
+- [x] [P6-G] Implement the screen-space spacing/camera fix while preserving deterministic layout, labels, filters, and selection behavior.
+- [x] [P6-H] Add unit coverage for any new layout/camera contract and e2e coverage for real screen-projected overlap metrics.
+- [x] [P6-I] Run the full build gate before tests, then focused Web unit/e2e/browser screenshot validation.
+- [x] [P6-J] Update evidence and benchmark ledgers with screen-space measurements, screenshot paths, build/test output, and AVmatrix detect-changes output.
+- [x] [P6-K] Commit the reopened implementation slice only after screen-space overlap metrics and screenshots prove the bug is fixed.

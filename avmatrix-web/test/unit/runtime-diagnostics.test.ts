@@ -6,6 +6,7 @@ import {
   recordLayoutRings,
   recordManualLayoutOptimizerInvocation,
   recordReconnectBannerState,
+  recordScreenNodeSpacing,
   recordVisualScale,
   resetWebRuntimeDiagnostics,
 } from '../../src/lib/runtime-diagnostics';
@@ -117,6 +118,34 @@ describe('runtime diagnostics', () => {
     expect(diagnostics?.layoutNodeSpacing.minObservedEdgeGap).toBe(6);
     expect(diagnostics?.layoutNodeSpacing.overlapCount).toBe(0);
     expect(diagnostics?.layoutNodeSpacing.targetGapViolationCount).toBe(0);
+  });
+
+  it('records screen-space node spacing diagnostics for e2e assertions', () => {
+    recordScreenNodeSpacing({
+      coordinateSpace: 'viewport_px',
+      nodeCount: 1677,
+      islandCount: 1,
+      viewportWidth: 1280,
+      viewportHeight: 800,
+      cameraRatio: 1,
+      minRenderedRadius: 0.5,
+      maxRenderedRadius: 3,
+      maxRenderedDiameter: 6,
+      minObservedCenterDistance: 12,
+      minObservedEdgeGap: 6,
+      maxRequiredCenterDistance: 12,
+      overlapCount: 0,
+      targetGapViolationCount: 0,
+    });
+
+    const diagnostics = getWebRuntimeDiagnostics();
+    expect(diagnostics?.screenNodeSpacing.coordinateSpace).toBe('viewport_px');
+    expect(diagnostics?.screenNodeSpacing.nodeCount).toBe(1677);
+    expect(diagnostics?.screenNodeSpacing.viewportWidth).toBe(1280);
+    expect(diagnostics?.screenNodeSpacing.maxRenderedDiameter).toBe(6);
+    expect(diagnostics?.screenNodeSpacing.minObservedEdgeGap).toBe(6);
+    expect(diagnostics?.screenNodeSpacing.overlapCount).toBe(0);
+    expect(diagnostics?.screenNodeSpacing.targetGapViolationCount).toBe(0);
   });
 
   it('counts reconnect banner transitions without double-counting the same state', () => {

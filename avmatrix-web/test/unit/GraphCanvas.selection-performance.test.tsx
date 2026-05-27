@@ -62,6 +62,17 @@ const {
       x: x + 400,
       y: y + 300,
     }),
+    scaleSize: (size = 1) => size,
+    getNodeDisplayData: () => ({
+      x: 300,
+      y: 300,
+      size: 2,
+      color: '#10b981',
+      label: 'loadFoo',
+      nodeType: 'Function',
+      appLayerRing: 'backend',
+      islandKey: 'Function',
+    }),
     getCamera: () => ({
       getState: () => ({ x: 0, y: 0, angle: 0, ratio: 1 }),
       on: cameraOnSpy,

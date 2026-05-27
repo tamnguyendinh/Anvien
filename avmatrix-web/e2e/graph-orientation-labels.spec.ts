@@ -61,7 +61,7 @@ const createOrientationGraph = () => {
 
 const createDenseSpacingGraph = () => {
   const nodes = [
-    ...Array.from({ length: 1000 }, (_item, index) =>
+    ...Array.from({ length: 1677 }, (_item, index) =>
       makeNode(
         "Function",
         index,
@@ -154,6 +154,31 @@ const getLayoutNodeSpacingDiagnostics = async (page: Page) =>
       };
     };
     return win.__AVMATRIX_WEB_DIAGNOSTICS__?.layoutNodeSpacing ?? null;
+  });
+
+const getScreenNodeSpacingDiagnostics = async (page: Page) =>
+  page.evaluate(() => {
+    const win = window as typeof window & {
+      __AVMATRIX_WEB_DIAGNOSTICS__?: {
+        screenNodeSpacing?: {
+          coordinateSpace: "viewport_px";
+          nodeCount: number;
+          islandCount: number;
+          viewportWidth: number;
+          viewportHeight: number;
+          cameraRatio: number;
+          minRenderedRadius: number;
+          maxRenderedRadius: number;
+          maxRenderedDiameter: number;
+          minObservedCenterDistance: number;
+          minObservedEdgeGap: number;
+          maxRequiredCenterDistance: number;
+          overlapCount: number;
+          targetGapViolationCount: number;
+        };
+      };
+    };
+    return win.__AVMATRIX_WEB_DIAGNOSTICS__?.screenNodeSpacing ?? null;
   });
 
 test.describe("Graph orientation labels", () => {
@@ -310,7 +335,7 @@ test.describe("Graph orientation labels", () => {
         async () => (await getLayoutNodeSpacingDiagnostics(page))?.nodeCount ?? 0,
         { timeout: 10_000 },
       )
-      .toBeGreaterThanOrEqual(1480);
+      .toBeGreaterThanOrEqual(2157);
 
     const desktopDiagnostics = await getLayoutNodeSpacingDiagnostics(page);
     expect(desktopDiagnostics?.islandCount).toBeGreaterThanOrEqual(4);
@@ -322,18 +347,25 @@ test.describe("Graph orientation labels", () => {
     expect(desktopDiagnostics?.minObservedEdgeGap).toBeGreaterThanOrEqual(
       desktopDiagnostics?.requiredEdgeGap ?? Number.POSITIVE_INFINITY,
     );
+    const desktopScreenDiagnostics = await getScreenNodeSpacingDiagnostics(page);
+    expect(desktopScreenDiagnostics?.coordinateSpace).toBe("viewport_px");
+    expect(desktopScreenDiagnostics?.nodeCount).toBeGreaterThanOrEqual(2077);
+    expect(desktopScreenDiagnostics?.overlapCount).toBe(0);
+    expect(desktopScreenDiagnostics?.targetGapViolationCount).toBe(0);
+    expect(desktopScreenDiagnostics?.maxRenderedRadius).toBeGreaterThanOrEqual(0.74);
+    expect(desktopScreenDiagnostics?.minObservedEdgeGap).toBeGreaterThanOrEqual(
+      desktopScreenDiagnostics?.maxRenderedDiameter ?? Number.POSITIVE_INFINITY,
+    );
 
     await expect
       .poll(
         async () => page.locator('[data-testid="graph-orientation-label-ring"]').count(),
         { timeout: 10_000 },
       )
-      .toBeGreaterThanOrEqual(3);
+      .toBeGreaterThanOrEqual(1);
     await expect(
-      page.locator(
-        '[data-testid="graph-orientation-label-island"][data-label-source="frontend:Function"]',
-      ),
-    ).toContainText("Function");
+      page.locator('[data-testid="graph-orientation-label-ring"][data-label-source="frontend"]'),
+    ).toContainText("Frontend");
     await expect
       .poll(async () => countOrientationLabelOverlaps(page), { timeout: 10_000 })
       .toBe(0);
@@ -344,6 +376,24 @@ test.describe("Graph orientation labels", () => {
     });
 
     await page.setViewportSize({ width: 520, height: 720 });
+    await page.reload();
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect
+      .poll(
+        async () => (await getScreenNodeSpacingDiagnostics(page))?.nodeCount ?? 0,
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThanOrEqual(2077);
+    const smallScreenDiagnostics = await getScreenNodeSpacingDiagnostics(page);
+    expect(smallScreenDiagnostics?.viewportWidth).toBeGreaterThan(200);
+    expect(smallScreenDiagnostics?.maxRenderedRadius).toBeGreaterThanOrEqual(0.74);
+    expect(smallScreenDiagnostics?.overlapCount).toBe(0);
+    expect(smallScreenDiagnostics?.targetGapViolationCount).toBe(0);
+    expect(smallScreenDiagnostics?.minObservedEdgeGap).toBeGreaterThanOrEqual(
+      smallScreenDiagnostics?.maxRenderedDiameter ?? Number.POSITIVE_INFINITY,
+    );
     await expect
       .poll(async () => countOrientationLabelOverlaps(page), { timeout: 10_000 })
       .toBe(0);

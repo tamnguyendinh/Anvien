@@ -14,6 +14,10 @@ import { getGraphEdgeVisibilityMode } from '../lib/graph-edge-visibility-mode';
 import { getSelectedContextEdgeSize } from '../lib/graph-edge-render-style';
 import { buildSelectedGraphContext } from '../lib/selected-graph-context';
 import { recordManualLayoutOptimizerInvocation } from '../lib/runtime-diagnostics';
+import {
+  applyReadableGraphCamera,
+  MIN_READABLE_CAMERA_RATIO,
+} from '../lib/graph-readable-camera';
 import { NodeSquareProgram } from '../lib/sigma-node-square-program';
 // Helper: Parse hex color to RGB
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
@@ -244,8 +248,9 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
         context.globalAlpha = 1;
       },
 
-      minCameraRatio: 0.002,
+      minCameraRatio: MIN_READABLE_CAMERA_RATIO,
       maxCameraRatio: 50,
+      itemSizesReference: 'positions',
       hideEdgesOnMove: true,
       zIndex: true,
       nodeProgramClasses: {
@@ -496,7 +501,9 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       sigma.setGraph(newGraph);
       setSelectedNode(null);
 
-      sigma.getCamera().animatedReset({ duration: 500 });
+      sigma.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1, angle: 0 });
+      sigma.refresh();
+      applyReadableGraphCamera(sigma);
     },
     [setSelectedNode],
   );
