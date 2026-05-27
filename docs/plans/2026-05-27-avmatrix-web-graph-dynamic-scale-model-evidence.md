@@ -434,6 +434,61 @@ AVmatrix pre-commit detection for Phase 3:
 - Resolution health impact: degraded nodes `0`, total resolution gap count `0`.
 - `git diff --check`: passed.
 
+## E2A - Dynamic Hex Layout Evidence
+
+Status: completed for Phase 4 layout slice.
+
+Blast radius:
+
+- `applyFilterBasedClusteredLayout`: CRITICAL, affected processes `15`.
+- `getIslandOffset`, `getFallbackIslandOffset`, `isIslandOffsetFarEnough`, `addIslandOffsetToGrid`: HIGH, affected processes `4` each.
+- `getClusterNodeSpacing`, `getClusterIslandRadius`, `getIslandOffsets`, `getPinwheelRadiusMultiplier`, `getPinwheelAngleOffset`: LOW.
+- HIGH and CRITICAL were treated as required-care warnings, not edit bans.
+
+Implemented files:
+
+- Updated `avmatrix-web/src/lib/graph-adapter.ts`.
+- Updated `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts`.
+
+Layout behavior:
+
+- Same-island placement now uses deterministic axial hex coordinates.
+- Cell spacing derives from `getMinimumNodeCenterDistance`, which is tied to rendered node diameter plus required edge gap.
+- The old spiral attempt search, distance grid, secondary spiral, organic wave, and pinwheel radius/angle jitter were removed from protected no-overlap paths.
+- Island radius derives from final offset bounds plus dynamic footprint margin.
+- Island and ring gaps derive from adjacent footprint radii plus dynamic center-distance floor.
+- Unit tests now compare island/ring whitespace to dynamic graph gap floors instead of fixed `100`, `200`, `500`, and `900` graph-unit thresholds.
+
+Validation:
+
+- Full Web build: `npm run build` passed.
+- Focused Web unit tests: `npx vitest run test/unit/graph-scale-model.test.ts test/unit/graph-screen-spacing.test.ts test/unit/graph-adapter.edge-geometry.test.ts` passed, 3 files, 34 tests.
+- Web e2e/browser tests: `npx playwright test e2e/graph-orientation-labels.spec.ts --project=chromium` passed, 3 tests.
+- Vite dev server was started on `127.0.0.1:5228` for e2e and stopped after the run.
+
+Screenshot validation:
+
+- `avmatrix-web/test-results/graph-orientation-labels-G-5b603-labels-on-the-desktop-graph-chromium/graph-orientation-labels-desktop.png`
+- `avmatrix-web/test-results/graph-orientation-labels-G-e5a0a-t-and-updates-after-filters-chromium/graph-orientation-labels-small-filtered.png`
+- `avmatrix-web/test-results/graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium/graph-node-spacing-dense-desktop.png`
+- `avmatrix-web/test-results/graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium/graph-node-spacing-dense-small.png`
+
+AVmatrix pre-commit detection for Phase 4:
+
+- `avmatrix analyze --force`: scanned `786`, parsed `576`, unsupported `210`, failed `0`.
+- Refreshed graph: `90038` nodes, `123327` relationships.
+- `avmatrix detect-changes --repo AVmatrix --scope all`: risk level `low`.
+- Changed files: `5`.
+- Changed symbols: `145`.
+- Changed app layers: docs `6`, frontend `69`, frontend_test `70`.
+- Changed functional areas: documentation `6`, layout `69`, unknown `70`.
+- Affected count: `0`.
+- Affected processes: `0`.
+- Resolution gap changes: `109` bookkeeping entries, actionability analyzer_gap `106`, non_actionable `3`.
+- Changed source nodes with gaps: `0`.
+- Resolution health impact: degraded nodes `0`, total resolution gap count `0`.
+- `git diff --check`: passed.
+
 ## E3 - Overview Preservation Evidence
 
 Status: pending.

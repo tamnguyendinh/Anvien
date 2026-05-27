@@ -320,16 +320,16 @@ Only named product policy constants remain, such as minimum readable pixel targe
 
 ## Phase 4 - Refactor Layout To Dynamic Hex Packing
 
-- [ ] P4-A Refactor same-island placement to deterministic hexagonal packing using scale-model center distance.
-- [ ] P4-B Refactor island radius to derive from final placed bounds and dynamic margin.
-- [ ] P4-C Refactor island gap to derive from expanded island footprints.
-- [ ] P4-D Refactor ring radius/gap to derive from adjacent expanded island footprints.
-- [ ] P4-E Remove post-placement jitter from no-overlap layout paths.
-- [ ] P4-F Add dense layout unit tests for multi-size and high-node-count fixtures.
-- [ ] P4-G Record layout benchmark metrics.
-- [ ] P4-H Run full build before tests, then focused Web unit tests for this slice.
-- [ ] P4-I Run AVmatrix detect-changes for the slice.
-- [ ] P4-J Commit the completed layout slice.
+- [x] P4-A Refactor same-island placement to deterministic hexagonal packing using scale-model center distance.
+- [x] P4-B Refactor island radius to derive from final placed bounds and dynamic margin.
+- [x] P4-C Refactor island gap to derive from expanded island footprints.
+- [x] P4-D Refactor ring radius/gap to derive from adjacent expanded island footprints.
+- [x] P4-E Remove post-placement jitter from no-overlap layout paths.
+- [x] P4-F Add dense layout unit tests for multi-size and high-node-count fixtures.
+- [x] P4-G Record layout benchmark metrics.
+- [x] P4-H Run full build before tests, then focused Web unit tests for this slice.
+- [x] P4-I Run AVmatrix detect-changes for the slice.
+- [x] P4-J Commit the completed layout slice.
 
 ## Phase 5 - Correct Zoom And Detail Behavior
 

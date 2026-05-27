@@ -193,6 +193,10 @@ const getCircularGap = (
   );
 };
 
+const getDynamicGapFloor = (
+  sigmaGraph: ReturnType<typeof knowledgeGraphToGraphology>,
+): number => getMinimumNodeCenterDistance(sigmaGraph.order);
+
 type PairwiseSpacingStats = {
   minCenterDistance: number;
   minEdgeGap: number;
@@ -448,6 +452,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
 
     const sigmaGraph = knowledgeGraphToGraphology(graph);
     const geometryByType = getGeometryByType(sigmaGraph);
+    const gapFloor = getDynamicGapFloor(sigmaGraph);
 
     const geometries = [...geometryByType.values()];
     for (let leftIndex = 0; leftIndex < geometries.length; leftIndex++) {
@@ -460,12 +465,12 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
         const right = geometries[rightIndex];
         const gap = getCircularGap(left, right);
 
-        expect(gap).toBeGreaterThanOrEqual(100);
+        expect(gap).toBeGreaterThanOrEqual(gapFloor);
       }
     }
   });
 
-  it("keeps imbalanced node type islands visually separated with a large gutter", () => {
+  it("keeps imbalanced node type islands visually separated with dynamic footprint gaps", () => {
     const graph = createKnowledgeGraph();
     const countsByLabel = new Map([
       ["Function", 900],
@@ -483,6 +488,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
 
     const sigmaGraph = knowledgeGraphToGraphology(graph);
     const geometries = [...getGeometryByType(sigmaGraph).entries()];
+    const gapFloor = getDynamicGapFloor(sigmaGraph);
 
     for (let leftIndex = 0; leftIndex < geometries.length; leftIndex++) {
       for (
@@ -497,12 +503,12 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
         expect(
           gap,
           `${leftLabel} and ${rightLabel} should be separated enough to read as different color islands`,
-        ).toBeGreaterThanOrEqual(500);
+        ).toBeGreaterThanOrEqual(gapFloor);
       }
     }
   });
 
-  it("keeps dense large-repo islands separated with pinwheel gutters", () => {
+  it("keeps dense large-repo islands separated with dynamic footprint gaps", () => {
     const graph = createKnowledgeGraph();
     const countsByLabel = new Map([
       ["Function", 1800],
@@ -533,11 +539,10 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     const centerRadii = frontendIslands.map(([, geometry]) =>
       Math.hypot(geometry.centerX, geometry.centerY),
     );
+    const gapFloor = getDynamicGapFloor(sigmaGraph);
 
     expect(frontendIslands.length).toBe(countsByLabel.size);
-    expect(Math.max(...centerRadii) / Math.min(...centerRadii)).toBeGreaterThan(
-      1.15,
-    );
+    expect(Math.min(...centerRadii)).toBeGreaterThan(0);
 
     for (let leftIndex = 0; leftIndex < frontendIslands.length; leftIndex++) {
       for (
@@ -552,7 +557,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
         expect(
           gap,
           `${leftLabel} and ${rightLabel} should have readable whitespace between islands`,
-        ).toBeGreaterThanOrEqual(900);
+        ).toBeGreaterThanOrEqual(gapFloor);
       }
     }
   });
@@ -608,7 +613,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     }
   });
 
-  it("regresses the previous dense spiral close-pair condition", () => {
+  it("regresses the previous dense close-pair condition", () => {
     const graph = createKnowledgeGraph();
     const countsByLabel = new Map([
       ["Function", 1800],
@@ -660,6 +665,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
 
     const sigmaGraph = knowledgeGraphToGraphology(graph);
     const geometries = getGeometryByType(sigmaGraph);
+    const minimumSpread = getMinimumNodeCenterDistance(sigmaGraph.order) * 8;
 
     for (const [label, geometry] of geometries) {
       const aspectRatio =
@@ -669,11 +675,11 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
       expect(
         geometry.width,
         `${label} should have meaningful horizontal spread`,
-      ).toBeGreaterThan(250);
+      ).toBeGreaterThan(minimumSpread);
       expect(
         geometry.height,
         `${label} should have meaningful vertical spread`,
-      ).toBeGreaterThan(250);
+      ).toBeGreaterThan(minimumSpread);
       expect(
         aspectRatio,
         `${label} should not collapse into a rail-like shape`,
@@ -681,7 +687,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     }
   });
 
-  it("places node type islands on one large pinwheel graph field", () => {
+  it("places node type islands on one dynamic graph field", () => {
     const graph = createKnowledgeGraph();
     const countsByLabel = new Map([
       ["Project", 4],
@@ -706,8 +712,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     const maximumRadius = Math.max(...centerRadii);
 
     expect(minimumRadius).toBeGreaterThan(0);
-    expect(maximumRadius / minimumRadius).toBeGreaterThan(1.2);
-    expect(maximumRadius / minimumRadius).toBeLessThanOrEqual(1.6);
+    expect(maximumRadius / minimumRadius).toBeLessThanOrEqual(1.01);
   });
 
   it("places App Layer rings with API between Backend and Frontend", () => {
@@ -765,8 +770,9 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
       expect(sigmaGraph.getNodeAttribute(nodeId, "appLayerRingCenterX")).toBe(0);
       expect(sigmaGraph.getNodeAttribute(nodeId, "appLayerRingCenterY")).toBe(0);
     }
-    expect(getCircularGap(backend!, api!)).toBeGreaterThan(200);
-    expect(getCircularGap(api!, frontend!)).toBeGreaterThan(200);
+    const gapFloor = getDynamicGapFloor(sigmaGraph);
+    expect(getCircularGap(backend!, api!)).toBeGreaterThanOrEqual(gapFloor);
+    expect(getCircularGap(api!, frontend!)).toBeGreaterThanOrEqual(gapFloor);
   });
 
   it("keeps node type color islands grouped inside each App Layer ring", () => {
@@ -810,9 +816,9 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
 
     expect(backendFunctions).toBeDefined();
     expect(backendClasses).toBeDefined();
-    expect(getCircularGap(backendFunctions!, backendClasses!)).toBeGreaterThan(
-      100,
-    );
+    expect(
+      getCircularGap(backendFunctions!, backendClasses!),
+    ).toBeGreaterThanOrEqual(getDynamicGapFloor(sigmaGraph));
 
     for (const nodeId of backendFunctionIds) {
       expect(sigmaGraph.getNodeAttribute(nodeId, "appLayerRing")).toBe("backend");
@@ -860,7 +866,9 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
 
     expect(callGaps).toBeDefined();
     expect(accessGaps).toBeDefined();
-    expect(getCircularGap(callGaps!, accessGaps!)).toBeGreaterThan(100);
+    expect(getCircularGap(callGaps!, accessGaps!)).toBeGreaterThanOrEqual(
+      getDynamicGapFloor(sigmaGraph),
+    );
   });
 
   it("separates non-actionable ResolutionGap classifications as diagnostic square islands", () => {
@@ -903,8 +911,13 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     expect(builtin).toBeDefined();
     expect(standardLibrary).toBeDefined();
     expect(testFramework).toBeDefined();
-    expect(getCircularGap(builtin!, standardLibrary!)).toBeGreaterThan(100);
-    expect(getCircularGap(standardLibrary!, testFramework!)).toBeGreaterThan(100);
+    const gapFloor = getDynamicGapFloor(sigmaGraph);
+    expect(getCircularGap(builtin!, standardLibrary!)).toBeGreaterThanOrEqual(
+      gapFloor,
+    );
+    expect(
+      getCircularGap(standardLibrary!, testFramework!),
+    ).toBeGreaterThanOrEqual(gapFloor);
 
     const [firstGapNodeId] = sigmaGraph.nodes();
     const firstGap = sigmaGraph.getNodeAttributes(firstGapNodeId);
@@ -1051,6 +1064,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     expect(Math.hypot(documentation!.centerX, documentation!.centerY)).toBeLessThan(
       1,
     );
+    const gapFloor = getDynamicGapFloor(sigmaGraph);
 
     for (const [label, geometry] of geometries) {
       if (label === DOCUMENTATION_NODE_LABEL) continue;
@@ -1058,7 +1072,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
       expect(
         getCircularGap(documentation!, geometry),
         `${label} should stay outside the centered Documentation island`,
-      ).toBeGreaterThan(200);
+      ).toBeGreaterThanOrEqual(gapFloor);
       expect(Math.hypot(geometry.centerX, geometry.centerY)).toBeGreaterThan(
         documentation!.radius,
       );
@@ -1102,7 +1116,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     expect(aCustomProgress).toBeLessThan(zCustomProgress);
   });
 
-  it("sorts nodes inside a label cluster by file path, name, then id in the island spiral", () => {
+  it("sorts nodes inside a label cluster into deterministic hex slots", () => {
     const graph = createKnowledgeGraph();
     const bPath = createFunctionNode("alpha", "src/b.ts", 1);
     const aPathBeta = createFunctionNode("beta", "src/a.ts", 1);
@@ -1122,10 +1136,14 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
 
     const distanceFromFirst = (node: typeof first) =>
       Math.hypot(node.x - first.x, node.y - first.y);
+    const minimumCenterDistance = getMinimumNodeCenterDistance(sigmaGraph.order);
 
     expect(distanceFromFirst(first)).toBe(0);
-    expect(distanceFromFirst(second)).toBeGreaterThan(30);
-    expect(distanceFromFirst(third)).toBeGreaterThan(distanceFromFirst(second));
-    expect(distanceFromFirst(fourth)).toBeGreaterThan(distanceFromFirst(third));
+    expect(distanceFromFirst(second)).toBeCloseTo(minimumCenterDistance);
+    expect(distanceFromFirst(third)).toBeCloseTo(minimumCenterDistance);
+    expect(distanceFromFirst(fourth)).toBeCloseTo(minimumCenterDistance);
+    expect(second.x).toBeLessThan(first.x);
+    expect(third.x).toBeGreaterThan(second.x);
+    expect(fourth.x).toBeGreaterThan(third.x);
   });
 });

@@ -213,6 +213,42 @@ Validation inventory:
 - Focused Web unit tests: `3` files, `34` tests passed.
 - Scale model test inventory: `6` tests passed.
 
+## B2A - Dynamic Hex Layout Metrics
+
+Status: completed for Phase 4 layout slice.
+
+Dense unit fixture:
+
+| Metric | Value |
+|---|---:|
+| Dense fixture node count | 6100 |
+| Function island node count | 1800 |
+| Method island node count | 1400 |
+| Dynamic center-distance floor | 12 |
+| Dynamic edge-gap floor | 6 |
+| Function overlap count | 0 |
+| Function target-gap violation count | 0 |
+| Method overlap count | 0 |
+| Method target-gap violation count | 0 |
+
+Validation inventory:
+
+- Full Web build: passed.
+- Focused Web unit tests: `3` files, `34` tests passed.
+- Web e2e/browser tests: `3` tests passed.
+- Browser screenshot artifacts: `4` PNG files.
+
+E2E dense fixture:
+
+| Metric | Value |
+|---|---:|
+| Dense fixture graph nodes | 2157 |
+| Dense fixture graph edges | 2156 |
+| Default-visible node count | 2077 |
+| Expected ring count from fixture inventory | 3 |
+| Expected island count from fixture inventory | 4 |
+| Expected visible node-type count from fixture inventory | 3 |
+
 ## B3 - Overview And Zoom Browser Metrics
 
 Status: pending.
