@@ -333,16 +333,16 @@ Only named product policy constants remain, such as minimum readable pixel targe
 
 ## Phase 5 - Correct Zoom And Detail Behavior
 
-- [ ] P5-A Keep default reset/load behavior in overview mode.
-- [ ] P5-B Ensure zoom-in visibly increases node radius.
-- [ ] P5-C Ensure zoom-out visibly decreases node radius.
-- [ ] P5-D Move readable camera behavior behind explicit selection, search result focus, island focus, node focus, and named detail mode.
-- [ ] P5-E Keep selection/search/blast-radius highlight behavior intact.
-- [ ] P5-F Add unit tests for camera mode selection.
-- [ ] P5-G Record overview and zoom benchmark metrics.
-- [ ] P5-H Run full build before tests, then focused Web unit tests and e2e zoom tests for this slice.
-- [ ] P5-I Run AVmatrix detect-changes for the slice.
-- [ ] P5-J Commit the completed camera/zoom slice.
+- [x] P5-A Keep default reset/load behavior in overview mode.
+- [x] P5-B Ensure zoom-in visibly increases node radius.
+- [x] P5-C Ensure zoom-out visibly decreases node radius.
+- [x] P5-D Move readable camera behavior behind explicit selection, search result focus, island focus, node focus, and named detail mode.
+- [x] P5-E Keep selection/search/blast-radius highlight behavior intact.
+- [x] P5-F Add unit tests for camera mode selection.
+- [x] P5-G Record overview and zoom benchmark metrics.
+- [x] P5-H Run full build before tests, then focused Web unit tests and e2e zoom tests for this slice.
+- [x] P5-I Run AVmatrix detect-changes for the slice.
+- [x] P5-J Commit the completed camera/zoom slice.
 
 ## Phase 6 - Diagnostics And E2E Coverage
 

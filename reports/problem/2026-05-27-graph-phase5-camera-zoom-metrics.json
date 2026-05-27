@@ -1,0 +1,790 @@
+{
+  "graphNodes": 2157,
+  "graphEdges": 2156,
+  "stages": {
+    "initialOverview": {
+      "screen": {
+        "coordinateSpace": "viewport_px",
+        "nodeCount": 2077,
+        "islandCount": 4,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 2077,
+        "visibleViewportIslandCounts": {
+          "frontend:Function": 1677,
+          "frontend:Method": 300,
+          "backend:Function": 60,
+          "docs:Documentation": 40
+        },
+        "cameraRatio": 1,
+        "cameraX": 0.5,
+        "cameraY": 0.5,
+        "viewportGraphCenterX": 114.00011399999994,
+        "viewportGraphCenterY": -253.40843123440652,
+        "viewportGraphMinX": -1210.5620369390194,
+        "viewportGraphMaxX": 1438.5622649390193,
+        "viewportGraphMinY": -1154.4187398123918,
+        "viewportGraphMaxY": 647.6018773435787,
+        "minRenderedRadius": 2.5,
+        "maxRenderedRadius": 3,
+        "maxRenderedDiameter": 6,
+        "minObservedCenterDistance": 4.67475679249992,
+        "minObservedEdgeGap": -1.3252432075000797,
+        "maxRequiredCenterDistance": 12,
+        "overlapCount": 5976,
+        "targetGapViolationCount": 17443,
+        "recordedAt": 3119.7999999970198
+      },
+      "overview": {
+        "nodeCount": 2157,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 2077,
+        "visibleColorCount": 3,
+        "visibleRingCount": 3,
+        "visibleIslandCount": 4,
+        "dominantIslandKey": "frontend:Function",
+        "dominantIslandShare": 0.8074145402022147,
+        "visibleColorCounts": {
+          "#10b981": 1737,
+          "#14b8a6": 300,
+          "#84cc16": 40
+        },
+        "visibleRingCounts": {
+          "frontend": 1977,
+          "backend": 60,
+          "docs": 40
+        },
+        "visibleIslandCounts": {
+          "frontend:Function": 1677,
+          "frontend:Method": 300,
+          "backend:Function": 60,
+          "docs:Documentation": 40
+        },
+        "visibleNodeTypeCounts": {
+          "Function": 1737,
+          "Method": 300,
+          "Documentation": 40
+        },
+        "graphRingCounts": {
+          "frontend": 1977,
+          "backend": 60,
+          "docs": 40
+        },
+        "graphIslandCounts": {
+          "frontend:Function": 1677,
+          "frontend:Method": 300,
+          "backend:Function": 60,
+          "docs:Documentation": 40
+        },
+        "graphNodeTypeCounts": {
+          "Function": 1737,
+          "Method": 300,
+          "Documentation": 40
+        },
+        "visibleRingInventory": [
+          "backend",
+          "docs",
+          "frontend"
+        ],
+        "visibleNodeTypeInventory": [
+          "Documentation",
+          "Function",
+          "Method"
+        ],
+        "graphRingInventory": [
+          "backend",
+          "docs",
+          "frontend"
+        ],
+        "graphIslandInventory": [
+          "backend:Function",
+          "docs:Documentation",
+          "frontend:Function",
+          "frontend:Method"
+        ],
+        "filterNodeTypeInventory": [
+          "Documentation",
+          "Function",
+          "Method"
+        ],
+        "cameraRatio": 1,
+        "cameraX": 0.5,
+        "cameraY": 0.5,
+        "recordedAt": 3124.0999999940395
+      }
+    },
+    "zoomInOne": {
+      "screen": {
+        "coordinateSpace": "viewport_px",
+        "nodeCount": 2077,
+        "islandCount": 4,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 773,
+        "visibleViewportIslandCounts": {
+          "frontend:Function": 733,
+          "docs:Documentation": 40
+        },
+        "cameraRatio": 0.6666666666666666,
+        "cameraX": 0.5,
+        "cameraY": 0.5,
+        "viewportGraphCenterX": 114.00011399999994,
+        "viewportGraphCenterY": -253.40843123440652,
+        "viewportGraphMinX": -769.0413671442866,
+        "viewportGraphMaxX": 997.0415951442865,
+        "viewportGraphMinY": -854.082017471337,
+        "viewportGraphMaxY": 347.265155002524,
+        "minRenderedRadius": 3.0618621784789726,
+        "maxRenderedRadius": 3.6742346141747673,
+        "maxRenderedDiameter": 7.3484692283495345,
+        "minObservedCenterDistance": 7.012134877938479,
+        "minObservedEdgeGap": -0.33633435041105564,
+        "maxRequiredCenterDistance": 14.696938456699069,
+        "overlapCount": 5137,
+        "targetGapViolationCount": 16664,
+        "recordedAt": 8610.39999999106
+      },
+      "overview": {
+        "nodeCount": 2157,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 773,
+        "visibleColorCount": 2,
+        "visibleRingCount": 2,
+        "visibleIslandCount": 2,
+        "dominantIslandKey": "frontend:Function",
+        "dominantIslandShare": 0.9482535575679172,
+        "visibleColorCounts": {
+          "#10b981": 733,
+          "#84cc16": 40
+        },
+        "visibleRingCounts": {
+          "frontend": 733,
+          "docs": 40
+        },
+        "visibleIslandCounts": {
+          "frontend:Function": 733,
+          "docs:Documentation": 40
+        },
+        "visibleNodeTypeCounts": {
+          "Function": 733,
+          "Documentation": 40
+        },
+        "graphRingCounts": {
+          "frontend": 1977,
+          "backend": 60,
+          "docs": 40
+        },
+        "graphIslandCounts": {
+          "frontend:Function": 1677,
+          "frontend:Method": 300,
+          "backend:Function": 60,
+          "docs:Documentation": 40
+        },
+        "graphNodeTypeCounts": {
+          "Function": 1737,
+          "Method": 300,
+          "Documentation": 40
+        },
+        "visibleRingInventory": [
+          "docs",
+          "frontend"
+        ],
+        "visibleNodeTypeInventory": [
+          "Documentation",
+          "Function"
+        ],
+        "graphRingInventory": [
+          "backend",
+          "docs",
+          "frontend"
+        ],
+        "graphIslandInventory": [
+          "backend:Function",
+          "docs:Documentation",
+          "frontend:Function",
+          "frontend:Method"
+        ],
+        "filterNodeTypeInventory": [
+          "Documentation",
+          "Function",
+          "Method"
+        ],
+        "cameraRatio": 0.6666666666666666,
+        "cameraX": 0.5,
+        "cameraY": 0.5,
+        "recordedAt": 8614
+      }
+    },
+    "zoomInTwo": {
+      "screen": {
+        "coordinateSpace": "viewport_px",
+        "nodeCount": 2077,
+        "islandCount": 4,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 40,
+        "visibleViewportIslandCounts": {
+          "docs:Documentation": 40
+        },
+        "cameraRatio": 0.4444444444444444,
+        "cameraX": 0.5,
+        "cameraY": 0.5,
+        "viewportGraphCenterX": 114.00011399999994,
+        "viewportGraphCenterY": -253.40843123440652,
+        "viewportGraphMinX": -474.69418317038753,
+        "viewportGraphMaxX": 702.6944111703874,
+        "viewportGraphMinY": -653.8574651332233,
+        "viewportGraphMaxY": 147.0406026644103,
+        "minRenderedRadius": 3.75,
+        "maxRenderedRadius": 4.5,
+        "maxRenderedDiameter": 9,
+        "minObservedCenterDistance": 10.518202938530749,
+        "minObservedEdgeGap": 1.5182029385307487,
+        "maxRequiredCenterDistance": 18,
+        "overlapCount": 0,
+        "targetGapViolationCount": 5976,
+        "recordedAt": 9089.09999999404
+      },
+      "overview": {
+        "nodeCount": 2157,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 40,
+        "visibleColorCount": 1,
+        "visibleRingCount": 1,
+        "visibleIslandCount": 1,
+        "dominantIslandKey": "docs:Documentation",
+        "dominantIslandShare": 1,
+        "visibleColorCounts": {
+          "#84cc16": 40
+        },
+        "visibleRingCounts": {
+          "docs": 40
+        },
+        "visibleIslandCounts": {
+          "docs:Documentation": 40
+        },
+        "visibleNodeTypeCounts": {
+          "Documentation": 40
+        },
+        "graphRingCounts": {
+          "frontend": 1977,
+          "backend": 60,
+          "docs": 40
+        },
+        "graphIslandCounts": {
+          "frontend:Function": 1677,
+          "frontend:Method": 300,
+          "backend:Function": 60,
+          "docs:Documentation": 40
+        },
+        "graphNodeTypeCounts": {
+          "Function": 1737,
+          "Method": 300,
+          "Documentation": 40
+        },
+        "visibleRingInventory": [
+          "docs"
+        ],
+        "visibleNodeTypeInventory": [
+          "Documentation"
+        ],
+        "graphRingInventory": [
+          "backend",
+          "docs",
+          "frontend"
+        ],
+        "graphIslandInventory": [
+          "backend:Function",
+          "docs:Documentation",
+          "frontend:Function",
+          "frontend:Method"
+        ],
+        "filterNodeTypeInventory": [
+          "Documentation",
+          "Function",
+          "Method"
+        ],
+        "cameraRatio": 0.4444444444444444,
+        "cameraX": 0.5,
+        "cameraY": 0.5,
+        "recordedAt": 9093.5
+      }
+    },
+    "zoomOut": {
+      "screen": {
+        "coordinateSpace": "viewport_px",
+        "nodeCount": 2077,
+        "islandCount": 4,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 773,
+        "visibleViewportIslandCounts": {
+          "frontend:Function": 733,
+          "docs:Documentation": 40
+        },
+        "cameraRatio": 0.6666666666666666,
+        "cameraX": 0.5,
+        "cameraY": 0.5,
+        "viewportGraphCenterX": 114.00011399999994,
+        "viewportGraphCenterY": -253.40843123440652,
+        "viewportGraphMinX": -769.0413671442866,
+        "viewportGraphMaxX": 997.0415951442865,
+        "viewportGraphMinY": -854.082017471337,
+        "viewportGraphMaxY": 347.265155002524,
+        "minRenderedRadius": 3.0618621784789726,
+        "maxRenderedRadius": 3.6742346141747673,
+        "maxRenderedDiameter": 7.3484692283495345,
+        "minObservedCenterDistance": 7.012134877938479,
+        "minObservedEdgeGap": -0.33633435041105564,
+        "maxRequiredCenterDistance": 14.696938456699069,
+        "overlapCount": 5137,
+        "targetGapViolationCount": 16664,
+        "recordedAt": 9645
+      },
+      "overview": {
+        "nodeCount": 2157,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 773,
+        "visibleColorCount": 2,
+        "visibleRingCount": 2,
+        "visibleIslandCount": 2,
+        "dominantIslandKey": "frontend:Function",
+        "dominantIslandShare": 0.9482535575679172,
+        "visibleColorCounts": {
+          "#10b981": 733,
+          "#84cc16": 40
+        },
+        "visibleRingCounts": {
+          "frontend": 733,
+          "docs": 40
+        },
+        "visibleIslandCounts": {
+          "frontend:Function": 733,
+          "docs:Documentation": 40
+        },
+        "visibleNodeTypeCounts": {
+          "Function": 733,
+          "Documentation": 40
+        },
+        "graphRingCounts": {
+          "frontend": 1977,
+          "backend": 60,
+          "docs": 40
+        },
+        "graphIslandCounts": {
+          "frontend:Function": 1677,
+          "frontend:Method": 300,
+          "backend:Function": 60,
+          "docs:Documentation": 40
+        },
+        "graphNodeTypeCounts": {
+          "Function": 1737,
+          "Method": 300,
+          "Documentation": 40
+        },
+        "visibleRingInventory": [
+          "docs",
+          "frontend"
+        ],
+        "visibleNodeTypeInventory": [
+          "Documentation",
+          "Function"
+        ],
+        "graphRingInventory": [
+          "backend",
+          "docs",
+          "frontend"
+        ],
+        "graphIslandInventory": [
+          "backend:Function",
+          "docs:Documentation",
+          "frontend:Function",
+          "frontend:Method"
+        ],
+        "filterNodeTypeInventory": [
+          "Documentation",
+          "Function",
+          "Method"
+        ],
+        "cameraRatio": 0.6666666666666666,
+        "cameraX": 0.5,
+        "cameraY": 0.5,
+        "recordedAt": 9647.89999999106
+      }
+    },
+    "searchFocus": {
+      "screen": {
+        "coordinateSpace": "viewport_px",
+        "nodeCount": 2077,
+        "islandCount": 4,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 787,
+        "visibleViewportIslandCounts": {
+          "frontend:Function": 787
+        },
+        "cameraRatio": 0.140625,
+        "cameraX": 0.8837842452637699,
+        "cameraY": 0.4058260999535439,
+        "viewportGraphCenterX": 1025.4476842010397,
+        "viewportGraphCenterY": -477.06165123287485,
+        "viewportGraphMinX": 839.1811273016519,
+        "viewportGraphMaxX": 1211.7142411004274,
+        "viewportGraphMinY": -603.7662214530659,
+        "viewportGraphMaxY": -350.35708101268386,
+        "minRenderedRadius": 4,
+        "maxRenderedRadius": 8,
+        "maxRenderedDiameter": 16,
+        "minObservedCenterDistance": 33.242714968888606,
+        "minObservedEdgeGap": 17.242716443436535,
+        "maxRequiredCenterDistance": 32,
+        "overlapCount": 0,
+        "targetGapViolationCount": 0,
+        "recordedAt": 10475.5
+      },
+      "overview": {
+        "nodeCount": 2157,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 787,
+        "visibleColorCount": 2,
+        "visibleRingCount": 1,
+        "visibleIslandCount": 1,
+        "dominantIslandKey": "frontend:Function",
+        "dominantIslandShare": 1,
+        "visibleColorCounts": {
+          "#10b981": 2,
+          "#123c35": 785
+        },
+        "visibleRingCounts": {
+          "frontend": 787
+        },
+        "visibleIslandCounts": {
+          "frontend:Function": 787
+        },
+        "visibleNodeTypeCounts": {
+          "Function": 787
+        },
+        "graphRingCounts": {
+          "frontend": 1977,
+          "backend": 60,
+          "docs": 40
+        },
+        "graphIslandCounts": {
+          "frontend:Function": 1677,
+          "frontend:Method": 300,
+          "backend:Function": 60,
+          "docs:Documentation": 40
+        },
+        "graphNodeTypeCounts": {
+          "Function": 1737,
+          "Method": 300,
+          "Documentation": 40
+        },
+        "visibleRingInventory": [
+          "frontend"
+        ],
+        "visibleNodeTypeInventory": [
+          "Function"
+        ],
+        "graphRingInventory": [
+          "backend",
+          "docs",
+          "frontend"
+        ],
+        "graphIslandInventory": [
+          "backend:Function",
+          "docs:Documentation",
+          "frontend:Function",
+          "frontend:Method"
+        ],
+        "filterNodeTypeInventory": [
+          "Documentation",
+          "Function",
+          "Method"
+        ],
+        "cameraRatio": 0.140625,
+        "cameraX": 0.8837842452637699,
+        "cameraY": 0.4058260999535439,
+        "recordedAt": 10478.5
+      }
+    },
+    "sameSelectionShifted": {
+      "screen": {
+        "coordinateSpace": "viewport_px",
+        "nodeCount": 2077,
+        "islandCount": 4,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 1397,
+        "visibleViewportIslandCounts": {
+          "frontend:Function": 1397
+        },
+        "cameraRatio": 0.2109375,
+        "cameraX": 0.8837842452637699,
+        "cameraY": 0.4058260999535439,
+        "viewportGraphCenterX": 1025.4476842010397,
+        "viewportGraphCenterY": -477.06165123287485,
+        "viewportGraphMinX": 746.0478576991344,
+        "viewportGraphMaxX": 1304.8475107029449,
+        "viewportGraphMinY": -667.1185154103377,
+        "viewportGraphMaxY": -287.004787055412,
+        "minRenderedRadius": 3.265986323710904,
+        "maxRenderedRadius": 6.531972647421808,
+        "maxRenderedDiameter": 13.063945294843617,
+        "minObservedCenterDistance": 22.161809150428553,
+        "minObservedEdgeGap": 9.097865460239749,
+        "maxRequiredCenterDistance": 26.127890589687233,
+        "overlapCount": 0,
+        "targetGapViolationCount": 11,
+        "recordedAt": 11663.59999999404
+      },
+      "overview": {
+        "nodeCount": 2157,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 1397,
+        "visibleColorCount": 2,
+        "visibleRingCount": 1,
+        "visibleIslandCount": 1,
+        "dominantIslandKey": "frontend:Function",
+        "dominantIslandShare": 1,
+        "visibleColorCounts": {
+          "#10b981": 2,
+          "#123c35": 1395
+        },
+        "visibleRingCounts": {
+          "frontend": 1397
+        },
+        "visibleIslandCounts": {
+          "frontend:Function": 1397
+        },
+        "visibleNodeTypeCounts": {
+          "Function": 1397
+        },
+        "graphRingCounts": {
+          "frontend": 1977,
+          "backend": 60,
+          "docs": 40
+        },
+        "graphIslandCounts": {
+          "frontend:Function": 1677,
+          "frontend:Method": 300,
+          "backend:Function": 60,
+          "docs:Documentation": 40
+        },
+        "graphNodeTypeCounts": {
+          "Function": 1737,
+          "Method": 300,
+          "Documentation": 40
+        },
+        "visibleRingInventory": [
+          "frontend"
+        ],
+        "visibleNodeTypeInventory": [
+          "Function"
+        ],
+        "graphRingInventory": [
+          "backend",
+          "docs",
+          "frontend"
+        ],
+        "graphIslandInventory": [
+          "backend:Function",
+          "docs:Documentation",
+          "frontend:Function",
+          "frontend:Method"
+        ],
+        "filterNodeTypeInventory": [
+          "Documentation",
+          "Function",
+          "Method"
+        ],
+        "cameraRatio": 0.2109375,
+        "cameraX": 0.8837842452637699,
+        "cameraY": 0.4058260999535439,
+        "recordedAt": 11666.5
+      }
+    },
+    "sameSelectionRefocus": {
+      "screen": {
+        "coordinateSpace": "viewport_px",
+        "nodeCount": 2077,
+        "islandCount": 4,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 787,
+        "visibleViewportIslandCounts": {
+          "frontend:Function": 787
+        },
+        "cameraRatio": 0.140625,
+        "cameraX": 0.8837842868368531,
+        "cameraY": 0.40582611716398315,
+        "viewportGraphCenterX": 1025.4478257558608,
+        "viewportGraphCenterY": -477.0615804554643,
+        "viewportGraphMinX": 839.181268856473,
+        "viewportGraphMaxX": 1211.7143826552485,
+        "viewportGraphMinY": -603.7661506756554,
+        "viewportGraphMaxY": -350.3570102352733,
+        "minRenderedRadius": 4,
+        "maxRenderedRadius": 8,
+        "maxRenderedDiameter": 16,
+        "minObservedCenterDistance": 33.242714968888606,
+        "minObservedEdgeGap": 17.242716443436535,
+        "maxRequiredCenterDistance": 32,
+        "overlapCount": 0,
+        "targetGapViolationCount": 0,
+        "recordedAt": 12460.59999999404
+      },
+      "overview": {
+        "nodeCount": 2157,
+        "viewportWidth": 1032,
+        "viewportHeight": 702,
+        "visibleViewportNodeCount": 787,
+        "visibleColorCount": 2,
+        "visibleRingCount": 1,
+        "visibleIslandCount": 1,
+        "dominantIslandKey": "frontend:Function",
+        "dominantIslandShare": 1,
+        "visibleColorCounts": {
+          "#10b981": 2,
+          "#123c35": 785
+        },
+        "visibleRingCounts": {
+          "frontend": 787
+        },
+        "visibleIslandCounts": {
+          "frontend:Function": 787
+        },
+        "visibleNodeTypeCounts": {
+          "Function": 787
+        },
+        "graphRingCounts": {
+          "frontend": 1977,
+          "backend": 60,
+          "docs": 40
+        },
+        "graphIslandCounts": {
+          "frontend:Function": 1677,
+          "frontend:Method": 300,
+          "backend:Function": 60,
+          "docs:Documentation": 40
+        },
+        "graphNodeTypeCounts": {
+          "Function": 1737,
+          "Method": 300,
+          "Documentation": 40
+        },
+        "visibleRingInventory": [
+          "frontend"
+        ],
+        "visibleNodeTypeInventory": [
+          "Function"
+        ],
+        "graphRingInventory": [
+          "backend",
+          "docs",
+          "frontend"
+        ],
+        "graphIslandInventory": [
+          "backend:Function",
+          "docs:Documentation",
+          "frontend:Function",
+          "frontend:Method"
+        ],
+        "filterNodeTypeInventory": [
+          "Documentation",
+          "Function",
+          "Method"
+        ],
+        "cameraRatio": 0.140625,
+        "cameraX": 0.8837842868368531,
+        "cameraY": 0.40582611716398315,
+        "recordedAt": 12464.29999999702
+      }
+    }
+  },
+  "summary": {
+    "initialOverview": {
+      "cameraRatio": 1,
+      "maxRenderedRadius": 3,
+      "visibleViewportNodeCount": 2077,
+      "visibleViewportIslandCount": 4,
+      "visibleColorCount": 3,
+      "visibleRingCount": 3,
+      "visibleIslandCount": 4,
+      "dominantIslandShare": 0.8074145402022147
+    },
+    "zoomInOne": {
+      "cameraRatio": 0.6666666666666666,
+      "maxRenderedRadius": 3.6742346141747673,
+      "visibleViewportNodeCount": 773,
+      "visibleViewportIslandCount": 2,
+      "visibleColorCount": 2,
+      "visibleRingCount": 2,
+      "visibleIslandCount": 2,
+      "dominantIslandShare": 0.9482535575679172
+    },
+    "zoomInTwo": {
+      "cameraRatio": 0.4444444444444444,
+      "maxRenderedRadius": 4.5,
+      "visibleViewportNodeCount": 40,
+      "visibleViewportIslandCount": 1,
+      "visibleColorCount": 1,
+      "visibleRingCount": 1,
+      "visibleIslandCount": 1,
+      "dominantIslandShare": 1
+    },
+    "zoomOut": {
+      "cameraRatio": 0.6666666666666666,
+      "maxRenderedRadius": 3.6742346141747673,
+      "visibleViewportNodeCount": 773,
+      "visibleViewportIslandCount": 2,
+      "visibleColorCount": 2,
+      "visibleRingCount": 2,
+      "visibleIslandCount": 2,
+      "dominantIslandShare": 0.9482535575679172
+    },
+    "searchFocus": {
+      "cameraRatio": 0.140625,
+      "maxRenderedRadius": 8,
+      "visibleViewportNodeCount": 787,
+      "visibleViewportIslandCount": 1,
+      "visibleColorCount": 2,
+      "visibleRingCount": 1,
+      "visibleIslandCount": 1,
+      "dominantIslandShare": 1
+    },
+    "sameSelectionShifted": {
+      "cameraRatio": 0.2109375,
+      "maxRenderedRadius": 6.531972647421808,
+      "visibleViewportNodeCount": 1397,
+      "visibleViewportIslandCount": 1,
+      "visibleColorCount": 2,
+      "visibleRingCount": 1,
+      "visibleIslandCount": 1,
+      "dominantIslandShare": 1
+    },
+    "sameSelectionRefocus": {
+      "cameraRatio": 0.140625,
+      "maxRenderedRadius": 8,
+      "visibleViewportNodeCount": 787,
+      "visibleViewportIslandCount": 1,
+      "visibleColorCount": 2,
+      "visibleRingCount": 1,
+      "visibleIslandCount": 1,
+      "dominantIslandShare": 1
+    }
+  },
+  "growth": {
+    "zoomInOneRadiusGrowth": 1.2247448713915892,
+    "zoomInTwoRadiusGrowth": 1.224744871391589,
+    "zoomOutRadiusShrink": 0.816496580927726,
+    "searchFocusRadiusGrowth": 2.1773242158072694,
+    "sameSelectionRefocusRadiusGrowth": 1.224744871391589
+  }
+}

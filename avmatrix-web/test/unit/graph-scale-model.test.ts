@@ -3,6 +3,7 @@ import {
   buildGraphScaleModel,
   getPolicyDenseRenderedNodeRadiusPx,
   getPolicyOverviewRenderedNodeRadiusPx,
+  getDetailFocusCameraRatio,
   getRequiredCenterDistanceGraph,
   getRequiredCenterDistancePx,
   getRequiredEdgeGapPx,
@@ -25,6 +26,16 @@ describe('graph scale model', () => {
 
     expect(getRenderedNodeRadiusPx(scaler, 3, 1)).toBe(3);
     expect(getRenderedNodeRadiusPx(scaler, 3, 0.25)).toBe(6);
+  });
+
+  it('derives detail focus camera ratio from current rendered node radius', () => {
+    expect(
+      getDetailFocusCameraRatio({
+        currentCameraRatio: 1,
+        currentRenderedNodeRadiusPx: 3,
+        targetRenderedNodeRadiusPx: 8,
+      }),
+    ).toBeCloseTo(0.140625);
   });
 
   it('enforces a one-diameter edge gap for equal-size nodes', () => {

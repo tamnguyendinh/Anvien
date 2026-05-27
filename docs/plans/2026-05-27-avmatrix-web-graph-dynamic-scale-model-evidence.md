@@ -491,64 +491,127 @@ AVmatrix pre-commit detection for Phase 4:
 
 ## E3 - Overview Preservation Evidence
 
-Status: pending.
+Status: completed for Phase 5 camera and zoom slice.
 
-Record once implemented:
+AVmatrix refresh before Phase 5 edits:
 
-- default load behavior;
-- screenshot paths for overview;
-- visible color count;
-- visible island count;
-- dominant island share;
-- ring/island label counts;
-- proof that default load does not auto-focus only the densest local island.
+- `avmatrix analyze --force`: scanned `786`, parsed `576`, unsupported `210`, failed `0`.
+- Refreshed graph: `90038` nodes, `123327` relationships.
+
+Phase 5 impact summary:
+
+| Symbol | Risk | Affected processes | Notes |
+|---|---:|---:|---|
+| `useSigma` | CRITICAL | 11 | central Sigma camera, selection, zoom, reducer path |
+| `focusNode` variable in `useSigma.ts` | LOW | 0 | direct focus behavior implementation |
+| `GraphCanvas` | LOW | 0 | imperative focus handle and diagnostics event wiring |
+| `recordCurrentScreenNodeSpacing` | LOW | 0 | browser diagnostics refresh path |
+| `applyReadableGraphCamera` | LOW | 0 | confirmed default load has no incoming use |
+
+Blast-radius decision:
+
+- CRITICAL on `useSigma` is a required-care warning because graph camera behavior is central Web UI behavior.
+- The edit stayed scoped to graph camera mode, focus coordinates, diagnostics refresh, and tests.
+
+Implemented overview behavior:
+
+- Default graph load still uses overview reset through `buildOverviewCameraAction`.
+- Default graph load still keeps readable/detail camera out of initial load.
+- Graph overview diagnostics remain inventory-driven.
+- For the current dense fixture, runtime inventory recorded `2157` graph nodes, `2077` default-visible nodes, `3` visible colors, `3` visible rings, `4` visible islands, and `3` visible node types.
+- These `3`, `4`, and `2077` values are measured dense-fixture inventory values. Repositories with different language/taxonomy content compute their own exact values from active graph inventory.
+
+Screenshot artifacts:
+
+- `reports/problem/2026-05-27-graph-phase5-overview.png`
+- `avmatrix-web/test-results/graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium/graph-node-spacing-dense-desktop.png`
+- `avmatrix-web/test-results/graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium/graph-node-spacing-dense-small.png`
 
 ## E4 - Zoom Semantics Evidence
 
-Status: pending.
+Status: completed for Phase 5 camera and zoom slice.
 
-Record once implemented:
+Implemented zoom behavior:
 
-- node radius at initial camera ratio;
-- node radius after first zoom in;
-- node radius after second zoom in;
-- node radius after zoom out;
-- proof that node radius changes monotonically with zoom direction;
-- screenshot paths for zoom sequence.
+- Camera `updated` events now refresh screen spacing and overview diagnostics.
+- E2E waits for visible camera-ratio movement instead of accepting the first animation tick.
+- Zoom assertions require meaningful radius growth and shrink, not a tiny early-frame delta.
+
+Measured dense-fixture zoom sequence:
+
+| Stage | Camera ratio | Max rendered radius px | Visible viewport nodes | Visible islands |
+|---|---:|---:|---:|---:|
+| Initial overview | 1 | 3 | 2077 | 4 |
+| Zoom in 1 | 0.6666666666666666 | 3.6742346141747673 | 773 | 2 |
+| Zoom in 2 | 0.4444444444444444 | 4.5 | 40 | 1 |
+| Zoom out | 0.6666666666666666 | 3.6742346141747673 | 773 | 2 |
+
+Radius result:
+
+- Zoom-in 1 radius growth: `1.2247448713915892`.
+- Zoom-in 2 radius growth: `1.224744871391589`.
+- Zoom-out radius shrink against zoom-in 2: `0.816496580927726`.
 
 ## E5 - Detail Spacing Evidence
 
-Status: pending.
+Status: completed for Phase 5 explicit focus camera behavior.
 
-Record once implemented:
+Implemented detail/focus behavior:
 
-- detail/focus behavior trigger;
-- same-island node spacing diagnostics;
-- overlap count;
-- target-gap violation count;
-- minimum edge gap;
-- screenshot paths for detail/focus views.
+- Search result focus and parent `GraphCanvasHandle.focusNode` now call the real `useSigma.focusNode` camera path.
+- Focusing an already selected node still animates camera back to detail mode.
+- Detail focus ratio is derived from current rendered node radius through the scale model, targeting `8px` visible node radius.
+- Focus camera target uses framed camera coordinates derived from `sigma.graphToViewport` and `sigma.viewportToFramedGraph`; raw graph coordinates are not used as camera coordinates.
+- E2E asserts that explicit focus leaves visible viewport node count above `0`.
+
+Measured focus sequence:
+
+| Stage | Camera ratio | Max rendered radius px | Visible viewport nodes | Visible islands |
+|---|---:|---:|---:|---:|
+| Search focus | 0.140625 | 8 | 787 | 1 |
+| Same selection shifted by zoom-out | 0.2109375 | 6.531972647421808 | 1397 | 1 |
+| Same selection refocus | 0.140625 | 8 | 787 | 1 |
+
+Focus result:
+
+- Search focus radius growth against prior zoom-out: `2.1773242158072694`.
+- Same-selected refocus radius growth after zoom-out: `1.224744871391589`.
+
+Screenshot artifacts:
+
+- `reports/problem/2026-05-27-graph-phase5-search-focus.png`
+- `reports/problem/2026-05-27-graph-phase5-same-selected-refocus.png`
+- `reports/problem/2026-05-27-graph-phase5-camera-zoom-metrics.json`
 
 ## E6 - Validation Evidence
 
-Status: pending.
+Status: in progress.
 
-Record:
+Phase 5 validation:
 
-- full build gate command and result;
-- focused unit test command and result;
-- full Web unit test command and result;
-- Web e2e/browser command and result;
-- screenshot artifact paths;
-- every failure and fix loop before final pass.
+- Full Web build before tests: `npm run build` passed.
+- Focused Web unit tests: `npx vitest run test/unit/graph-scale-model.test.ts test/unit/graph-camera-mode.test.ts test/unit/graph-screen-spacing.test.ts test/unit/graph-adapter.edge-geometry.test.ts` passed, `4` files and `38` tests.
+- Web e2e/browser tests: `npx playwright test e2e/graph-orientation-labels.spec.ts --project=chromium` passed, `3` tests.
+- Browser screenshot validation inspected Phase 5 overview, search focus, and same-selected refocus artifacts.
+- First e2e attempt exposed that search selected a node without calling `useSigma.focusNode`; `GraphCanvasHandle.focusNode` now calls the camera focus path.
+- Benchmark capture exposed that raw graph coordinates could focus an empty viewport; `useSigma.focusNode` now converts target node coordinates into framed camera coordinates.
 
 ## E7 - Pre-Commit Change Detection
 
-Status: pending.
+Status: in progress.
 
-Before committing implementation work, record:
+Phase 5 pre-commit detection:
 
-- final `git diff --check`;
-- final `avmatrix analyze --force`;
-- final `avmatrix detect-changes --repo AVmatrix --scope all`;
-- summary: risk level, changed files, changed symbols, affected count, changed app layers, changed functional areas, resolution health impact.
+- `git diff --check`: passed.
+- `avmatrix analyze --force`: scanned `789`, parsed `578`, unsupported `211`, failed `0`.
+- Refreshed graph: `90253` nodes, `123573` relationships.
+- `avmatrix detect-changes --repo AVmatrix --scope all`: risk level `low`.
+- Changed files: `8`.
+- Changed symbols: `155`.
+- Changed app layers: docs `11`, frontend `61`, frontend_test `83`.
+- Changed functional areas: documentation `11`, layout `34`, unknown `101`, web_graph_ui `9`.
+- Affected count: `0`.
+- Affected processes: `0`.
+- Resolution gap changes: `119` analyzer bookkeeping entries.
+- Changed source nodes with gaps: `0`.
+- Resolution health impact: degraded nodes `0`, total resolution gap count `0`.

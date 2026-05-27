@@ -37,6 +37,8 @@ export const GRAPH_MAX_DENSE_RENDERED_NODE_RADIUS_PX = 3;
 export const GRAPH_REQUIRED_EDGE_GAP_DIAMETER_MULTIPLIER = 1;
 export const GRAPH_VIEWPORT_PROBE_GRAPH_UNITS = 1;
 export const GRAPH_MINIMUM_GRAPH_UNIT_TO_VIEWPORT_PX = 0.000001;
+export const GRAPH_DETAIL_FOCUS_RENDERED_NODE_RADIUS_PX = 8;
+export const GRAPH_MINIMUM_DETAIL_FOCUS_CAMERA_RATIO = 0.002;
 
 export const GRAPH_RENDER_SCALE_POLICY: GraphScalePolicy = {
   maxRenderedNodeRadiusPx: GRAPH_MAX_RENDERED_NODE_RADIUS_PX,
@@ -71,6 +73,35 @@ export const getRenderedNodeRadiusPx = (
   size: number,
   cameraRatio: number,
 ): number => scaler.scaleSize(size, cameraRatio);
+
+export const getDetailFocusCameraRatio = ({
+  currentCameraRatio,
+  currentRenderedNodeRadiusPx,
+  targetRenderedNodeRadiusPx = GRAPH_DETAIL_FOCUS_RENDERED_NODE_RADIUS_PX,
+  minimumCameraRatio = GRAPH_MINIMUM_DETAIL_FOCUS_CAMERA_RATIO,
+}: {
+  currentCameraRatio: number;
+  currentRenderedNodeRadiusPx: number;
+  targetRenderedNodeRadiusPx?: number;
+  minimumCameraRatio?: number;
+}): number => {
+  if (
+    !Number.isFinite(currentCameraRatio) ||
+    currentCameraRatio <= 0 ||
+    !Number.isFinite(currentRenderedNodeRadiusPx) ||
+    currentRenderedNodeRadiusPx <= 0 ||
+    !Number.isFinite(targetRenderedNodeRadiusPx) ||
+    targetRenderedNodeRadiusPx <= 0
+  ) {
+    return Math.max(minimumCameraRatio, currentCameraRatio || 1);
+  }
+
+  return Math.max(
+    minimumCameraRatio,
+    currentCameraRatio *
+      Math.pow(currentRenderedNodeRadiusPx / targetRenderedNodeRadiusPx, 2),
+  );
+};
 
 export const getRequiredEdgeGapPx = (
   leftRadiusPx: number,

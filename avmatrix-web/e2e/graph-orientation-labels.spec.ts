@@ -579,6 +579,89 @@ test.describe("Graph orientation labels", () => {
       fullPage: false,
     });
 
+    const initialZoomDiagnostics = await getScreenNodeSpacingDiagnostics(page);
+    expect(initialZoomDiagnostics).not.toBeNull();
+
+    await page.getByTitle("Zoom In").click();
+    await expect
+      .poll(
+        async () => (await getScreenNodeSpacingDiagnostics(page))?.cameraRatio ?? 1,
+        { timeout: 10_000 },
+      )
+      .toBeLessThan((initialZoomDiagnostics?.cameraRatio ?? 0) * 0.75);
+    const zoomInOneDiagnostics = await getScreenNodeSpacingDiagnostics(page);
+    expect(zoomInOneDiagnostics?.maxRenderedRadius).toBeGreaterThan(
+      (initialZoomDiagnostics?.maxRenderedRadius ?? Number.POSITIVE_INFINITY) *
+        1.1,
+    );
+
+    await page.getByTitle("Zoom In").click();
+    await expect
+      .poll(
+        async () => (await getScreenNodeSpacingDiagnostics(page))?.cameraRatio ?? 1,
+        { timeout: 10_000 },
+      )
+      .toBeLessThan((zoomInOneDiagnostics?.cameraRatio ?? 0) * 0.75);
+    const zoomInTwoDiagnostics = await getScreenNodeSpacingDiagnostics(page);
+    expect(zoomInTwoDiagnostics?.maxRenderedRadius).toBeGreaterThan(
+      (zoomInOneDiagnostics?.maxRenderedRadius ?? Number.POSITIVE_INFINITY) *
+        1.1,
+    );
+
+    await page.getByTitle("Zoom Out").click();
+    await expect
+      .poll(
+        async () => (await getScreenNodeSpacingDiagnostics(page))?.cameraRatio ?? 0,
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThan(
+        (zoomInTwoDiagnostics?.cameraRatio ?? Number.POSITIVE_INFINITY) * 1.25,
+      );
+    const zoomOutDiagnostics = await getScreenNodeSpacingDiagnostics(page);
+    expect(zoomOutDiagnostics?.maxRenderedRadius).toBeLessThan(
+      (zoomInTwoDiagnostics?.maxRenderedRadius ?? 0) * 0.9,
+    );
+
+    await page.getByPlaceholder("Search nodes...").fill("Function0");
+    await page.locator("button").filter({ hasText: "Function0" }).first().click();
+    await expect
+      .poll(
+        async () => (await getScreenNodeSpacingDiagnostics(page))?.cameraRatio ?? 1,
+        { timeout: 10_000 },
+      )
+      .toBeLessThan((zoomOutDiagnostics?.cameraRatio ?? 0) * 0.5);
+    const searchFocusDiagnostics = await getScreenNodeSpacingDiagnostics(page);
+    expect(searchFocusDiagnostics?.visibleViewportNodeCount).toBeGreaterThan(0);
+
+    await page.getByTitle("Zoom Out").click();
+    await expect
+      .poll(
+        async () => (await getScreenNodeSpacingDiagnostics(page))?.cameraRatio ?? 0,
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThan(
+        (searchFocusDiagnostics?.cameraRatio ?? Number.POSITIVE_INFINITY) * 1.25,
+      );
+    const sameSelectionShiftedDiagnostics =
+      await getScreenNodeSpacingDiagnostics(page);
+
+    await page.getByTitle("Focus on Selected Node").click();
+    await expect
+      .poll(
+        async () => (await getScreenNodeSpacingDiagnostics(page))?.cameraRatio ?? 1,
+        { timeout: 10_000 },
+      )
+      .toBeLessThan((sameSelectionShiftedDiagnostics?.cameraRatio ?? 0) * 0.75);
+    const sameSelectionFocusDiagnostics =
+      await getScreenNodeSpacingDiagnostics(page);
+    expect(
+      sameSelectionFocusDiagnostics?.visibleViewportNodeCount,
+    ).toBeGreaterThan(0);
+    expect(sameSelectionFocusDiagnostics?.maxRenderedRadius).toBeGreaterThan(
+      (sameSelectionShiftedDiagnostics?.maxRenderedRadius ??
+        Number.POSITIVE_INFINITY) * 1.1,
+    );
+
     await page.setViewportSize({ width: 520, height: 720 });
     await page.reload();
     await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({

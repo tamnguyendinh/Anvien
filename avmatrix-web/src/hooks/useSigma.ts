@@ -16,6 +16,10 @@ import { buildSelectedGraphContext } from '../lib/selected-graph-context';
 import { recordManualLayoutOptimizerInvocation } from '../lib/runtime-diagnostics';
 import { READABLE_GRAPH_NODE_COUNT_THRESHOLD } from '../lib/graph-readable-camera';
 import { NodeSquareProgram } from '../lib/sigma-node-square-program';
+import {
+  buildDetailFocusCameraAction,
+  buildOverviewCameraAction,
+} from '../lib/graph-camera-mode';
 
 const DENSE_GRAPH_AMBIENT_EDGE_DIM_AMOUNT = 0.04;
 const DENSE_GRAPH_AMBIENT_EDGE_SIZE_MULTIPLIER = 0.12;
@@ -510,7 +514,8 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       sigma.setGraph(newGraph);
       setSelectedNode(null);
 
-      sigma.getCamera().animatedReset({ duration: 500 });
+      const overviewAction = buildOverviewCameraAction();
+      sigma.getCamera().animatedReset({ duration: overviewAction.durationMs });
     },
     [setSelectedNode],
   );
@@ -521,21 +526,27 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       const graph = graphRef.current;
       if (!sigma || !graph || !graph.hasNode(nodeId)) return;
 
-      // Skip if already focused on this node (prevents double-click issues)
-      const alreadySelected = selectedNodeRef.current === nodeId;
+      const currentSelectedNodeId = selectedNodeRef.current;
+      const nodeAttrs = graph.getNodeAttributes(nodeId);
+      const cameraState = sigma.getCamera().getState();
+      const focusPoint = sigma.viewportToFramedGraph(
+        sigma.graphToViewport({ x: nodeAttrs.x, y: nodeAttrs.y }),
+      );
+      const focusAction = buildDetailFocusCameraAction({
+        targetNodeId: nodeId,
+        currentSelectedNodeId,
+        nodeX: focusPoint.x,
+        nodeY: focusPoint.y,
+        nodeSize: nodeAttrs.size || 1,
+        currentCameraRatio: cameraState.ratio,
+        scaler: sigma,
+      });
 
       setSelectedNode(nodeId);
 
-      // Only animate camera if selecting a new node
-      if (!alreadySelected) {
-        const nodeAttrs = graph.getNodeAttributes(nodeId);
-        sigma
-          .getCamera()
-          .animate(
-            { x: nodeAttrs.x, y: nodeAttrs.y, ratio: 0.15 },
-            { duration: 400 },
-          );
-      }
+      sigma.getCamera().animate(focusAction.cameraState, {
+        duration: focusAction.durationMs,
+      });
 
       sigma.refresh();
     },

@@ -251,30 +251,66 @@ E2E dense fixture:
 
 ## B3 - Overview And Zoom Browser Metrics
 
-Status: pending.
+Status: completed for Phase 5 camera and zoom slice.
 
-Record after camera/zoom behavior is implemented:
+Artifact:
 
-- initial overview visible color count;
-- initial overview visible island count;
-- initial overview dominant island share;
-- zoom-in rendered radius growth;
-- zoom-out rendered radius shrink;
-- reset returns to overview, not a dense local patch.
+- `reports/problem/2026-05-27-graph-phase5-camera-zoom-metrics.json`
+
+Dense fixture inventory:
+
+| Metric | Value |
+|---|---:|
+| Dense fixture graph nodes | 2157 |
+| Dense fixture graph edges | 2156 |
+| Default-visible node count | 2077 |
+| Visible color count from active inventory | 3 |
+| Visible ring count from active inventory | 3 |
+| Visible island count from active inventory | 4 |
+| Visible node-type count from active inventory | 3 |
+
+Zoom metrics:
+
+| Stage | Camera ratio | Max rendered radius px | Visible nodes | Visible islands | Dominant island share |
+|---|---:|---:|---:|---:|---:|
+| Initial overview | 1 | 3 | 2077 | 4 | 0.8074145402022147 |
+| Zoom in 1 | 0.6666666666666666 | 3.6742346141747673 | 773 | 2 | 0.9482535575679172 |
+| Zoom in 2 | 0.4444444444444444 | 4.5 | 40 | 1 | 1 |
+| Zoom out | 0.6666666666666666 | 3.6742346141747673 | 773 | 2 | 0.9482535575679172 |
+
+Growth metrics:
+
+| Metric | Value |
+|---|---:|
+| Zoom-in 1 radius growth | 1.2247448713915892 |
+| Zoom-in 2 radius growth | 1.224744871391589 |
+| Zoom-out radius shrink | 0.816496580927726 |
 
 ## B4 - Detail Spacing Browser Metrics
 
-Status: pending.
+Status: in progress.
 
-Record after detail/focus behavior is implemented:
+Phase 5 explicit focus metrics:
 
-- selected detail viewport node count;
-- selected detail viewport same-island node count;
-- overlap count;
-- target-gap violation count;
-- minimum observed edge gap;
-- maximum rendered node diameter;
-- screenshot artifacts.
+| Stage | Camera ratio | Max rendered radius px | Visible nodes | Visible islands |
+|---|---:|---:|---:|---:|
+| Search focus | 0.140625 | 8 | 787 | 1 |
+| Same selection shifted by zoom-out | 0.2109375 | 6.531972647421808 | 1397 | 1 |
+| Same selection refocus | 0.140625 | 8 | 787 | 1 |
+
+Focus growth metrics:
+
+| Metric | Value |
+|---|---:|
+| Search focus radius growth against prior zoom-out | 2.1773242158072694 |
+| Same-selected refocus radius growth after zoom-out | 1.224744871391589 |
+
+Screenshot artifacts:
+
+- `reports/problem/2026-05-27-graph-phase5-search-focus.png`
+- `reports/problem/2026-05-27-graph-phase5-same-selected-refocus.png`
+
+Remaining detail spacing metrics are completed in the diagnostics and e2e phase.
 
 ## B5 - Final Validation Inventory
 

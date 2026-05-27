@@ -415,13 +415,17 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     const handleResizeDiagnostics = () => {
       window.requestAnimationFrame(recordCurrentScreenNodeSpacing);
     };
+    const handleCameraUpdated = () => {
+      handleRefresh();
+      handleResizeDiagnostics();
+    };
     const camera = typeof sigma.getCamera === 'function' ? sigma.getCamera() : null;
 
     handleRefresh();
     sigma.on?.('afterRender', handleRefresh);
     sigma.on?.('resize', handleRefresh);
     sigma.on?.('resize', handleResizeDiagnostics);
-    camera?.on?.('updated', handleRefresh);
+    camera?.on?.('updated', handleCameraUpdated);
     window.addEventListener('resize', handleRefresh);
     window.addEventListener('resize', handleResizeDiagnostics);
 
@@ -429,7 +433,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       sigma.off?.('afterRender', handleRefresh);
       sigma.off?.('resize', handleRefresh);
       sigma.off?.('resize', handleResizeDiagnostics);
-      camera?.off?.('updated', handleRefresh);
+      camera?.off?.('updated', handleCameraUpdated);
       window.removeEventListener('resize', handleRefresh);
       window.removeEventListener('resize', handleResizeDiagnostics);
     };
@@ -449,11 +453,11 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     ref,
     () => ({
       focusNode: (nodeId: string) => {
-        setSigmaSelectedNode(nodeId);
+        focusNode(nodeId);
         handleNodeClick(nodeId);
       },
     }),
-    [setSigmaSelectedNode, handleNodeClick],
+    [focusNode, handleNodeClick],
   );
 
   // Update Sigma graph when KnowledgeGraph changes
