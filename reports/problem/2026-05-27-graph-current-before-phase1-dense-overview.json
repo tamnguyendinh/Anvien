@@ -1,0 +1,111 @@
+{
+  "ringLabelCount": 2,
+  "islandLabelCount": 0,
+  "ringLabels": [
+    "backend",
+    "frontend"
+  ],
+  "islandLabels": [],
+  "layoutRings": {
+    "nodeCount": 1480,
+    "ringNodeCounts": {
+      "frontend": 1300,
+      "backend": 60,
+      "api": 80,
+      "docs": 40
+    },
+    "ringCenters": {
+      "frontend": {
+        "x": 6810.841226923436,
+        "y": 0
+      },
+      "backend": {
+        "x": -6810.841226923436,
+        "y": 8.340874908052618e-13
+      },
+      "api": {
+        "x": -1.2511312362078926e-12,
+        "y": -6810.841226923436
+      },
+      "docs": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "ringIslandCounts": {
+      "frontend": 2,
+      "backend": 1,
+      "api": 1,
+      "docs": 1
+    },
+    "apiBetweenBackendAndFrontend": true,
+    "docsCentered": true,
+    "sameColorIslandViolations": 0,
+    "ringCount": 4,
+    "recordedAt": 5446.29999999702
+  },
+  "layoutNodeSpacing": {
+    "nodeCount": 1480,
+    "islandCount": 5,
+    "renderedRadius": 3,
+    "renderedDiameter": 6,
+    "requiredEdgeGap": 6,
+    "requiredCenterDistance": 12,
+    "minObservedCenterDistance": 12,
+    "minObservedEdgeGap": 6,
+    "overlapCount": 0,
+    "targetGapViolationCount": 0,
+    "recordedAt": 5451.0999999940395
+  },
+  "screenNodeSpacing": {
+    "coordinateSpace": "viewport_px",
+    "nodeCount": 1400,
+    "islandCount": 4,
+    "viewportWidth": 1032,
+    "viewportHeight": 702,
+    "visibleViewportNodeCount": 40,
+    "visibleViewportIslandCounts": {
+      "frontend:Function": 40
+    },
+    "cameraRatio": 0.010029304328422596,
+    "cameraX": 0.9758972718270402,
+    "cameraY": 0.5407431827442509,
+    "viewportGraphCenterX": 6899.515851717437,
+    "viewportGraphCenterY": -1846.6048716004925,
+    "viewportGraphMinX": 6822.002522168903,
+    "viewportGraphMaxX": 6977.029181265971,
+    "viewportGraphMinY": -1899.331962661548,
+    "viewportGraphMaxY": -1793.8777805394366,
+    "minRenderedRadius": 1.6666665681132218,
+    "maxRenderedRadius": 1.9999998817358662,
+    "maxRenderedDiameter": 3.9999997634717324,
+    "minObservedCenterDistance": 7.999999526943465,
+    "minObservedEdgeGap": 3.9999997634717324,
+    "maxRequiredCenterDistance": 7.999999526943465,
+    "overlapCount": 0,
+    "targetGapViolationCount": 0,
+    "recordedAt": 5677.79999999702
+  },
+  "readableCamera": {
+    "applied": true,
+    "focusedIslandKey": "frontend:Function",
+    "focusedIslandNodeCount": 1000,
+    "focusCellNodeCount": 40,
+    "focusRawX": 6899.516127736865,
+    "focusRawY": -1846.6047241944252,
+    "cameraX": 0.9758972718270402,
+    "cameraY": 0.5407431827442509,
+    "ratio": 0.010029304328422596,
+    "previousMaxRenderedRadius": 0.20029282891229627,
+    "recordedAt": 5529.199999988079
+  },
+  "graphConversion": {
+    "count": 2,
+    "lastMs": 79.8999999910593,
+    "maxMs": 133.40000000596046,
+    "lastNodeCount": 1480,
+    "lastRelationshipCount": 1479,
+    "lastStartedAt": 5363.29999999702,
+    "lastFinishedAt": 5443.199999988079
+  }
+}

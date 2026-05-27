@@ -25,12 +25,14 @@ import {
 } from '../lib/graph-adapter';
 import {
   recordGraphConversion,
+  recordGraphOverview,
   recordLayoutNodeSpacing,
   recordLayoutRings,
   recordScreenNodeSpacing,
   recordVisualScale,
 } from '../lib/runtime-diagnostics';
 import { buildScreenNodeSpacingDiagnostics } from '../lib/graph-screen-spacing';
+import { buildGraphOverviewDiagnostics } from '../lib/graph-overview-diagnostics';
 import {
   buildGraphOrientationLabels,
   placeGraphOrientationLabels,
@@ -399,6 +401,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     const sigma = sigmaRef.current;
     if (!sigma) return;
     recordScreenNodeSpacing(buildScreenNodeSpacingDiagnostics(sigma));
+    recordGraphOverview(buildGraphOverviewDiagnostics(sigma));
   }, [sigmaRef]);
 
   useEffect(() => {

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   getWebRuntimeDiagnostics,
   recordGraphConversion,
+  recordGraphOverview,
   recordLayoutNodeSpacing,
   recordLayoutRings,
   recordManualLayoutOptimizerInvocation,
@@ -146,6 +147,78 @@ describe('runtime diagnostics', () => {
     expect(diagnostics?.screenNodeSpacing.minObservedEdgeGap).toBe(6);
     expect(diagnostics?.screenNodeSpacing.overlapCount).toBe(0);
     expect(diagnostics?.screenNodeSpacing.targetGapViolationCount).toBe(0);
+  });
+
+  it('records graph overview diagnostics for e2e assertions', () => {
+    recordGraphOverview({
+      nodeCount: 100,
+      viewportWidth: 1280,
+      viewportHeight: 800,
+      visibleViewportNodeCount: 40,
+      visibleColorCount: 4,
+      visibleRingCount: 3,
+      visibleIslandCount: 3,
+      dominantIslandKey: 'frontend:Function',
+      dominantIslandShare: 0.5,
+      visibleColorCounts: {
+        '#22c55e': 20,
+        '#3b82f6': 10,
+        '#f59e0b': 5,
+        '#84cc16': 5,
+      },
+      visibleRingCounts: {
+        frontend: 20,
+        backend: 10,
+        docs: 10,
+      },
+      visibleIslandCounts: {
+        'frontend:Function': 20,
+        'backend:Function': 10,
+        'docs:Documentation': 10,
+      },
+      visibleNodeTypeCounts: { Function: 30, Documentation: 10 },
+      graphRingCounts: {
+        frontend: 80,
+        backend: 10,
+        docs: 10,
+      },
+      graphIslandCounts: {
+        'frontend:Function': 60,
+        'frontend:Method': 20,
+        'backend:Function': 10,
+        'docs:Documentation': 10,
+      },
+      graphNodeTypeCounts: {
+        Function: 60,
+        Method: 20,
+        Route: 10,
+        Documentation: 10,
+      },
+      visibleRingInventory: ['backend', 'docs', 'frontend'],
+      visibleNodeTypeInventory: ['Documentation', 'Function'],
+      graphRingInventory: ['backend', 'docs', 'frontend'],
+      graphIslandInventory: [
+        'backend:Function',
+        'docs:Documentation',
+        'frontend:Function',
+        'frontend:Method',
+      ],
+      filterNodeTypeInventory: ['Documentation', 'Function', 'Method', 'Route'],
+      cameraRatio: 1,
+      cameraX: 0.5,
+      cameraY: 0.5,
+    });
+
+    const diagnostics = getWebRuntimeDiagnostics();
+    expect(diagnostics?.graphOverview.visibleColorCount).toBe(4);
+    expect(diagnostics?.graphOverview.visibleRingCount).toBe(3);
+    expect(diagnostics?.graphOverview.visibleIslandCount).toBe(3);
+    expect(diagnostics?.graphOverview.dominantIslandShare).toBe(0.5);
+    expect(diagnostics?.graphOverview.graphRingInventory).toContain('frontend');
+    expect(diagnostics?.graphOverview.graphIslandInventory).toContain(
+      'frontend:Method',
+    );
+    expect(diagnostics?.graphOverview.filterNodeTypeInventory).toContain('Route');
   });
 
   it('counts reconnect banner transitions without double-counting the same state', () => {

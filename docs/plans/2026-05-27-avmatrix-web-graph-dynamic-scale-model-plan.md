@@ -238,7 +238,7 @@ Implementation replaces fixed geometry with scale-model policy inputs:
 - label thresholds;
 - e2e thresholds that lock success to one island.
 
-Only named product policy constants remain, such as minimum readable pixel target, minimum overview visible color count, and minimum overview visible island count.
+Only named product policy constants remain, such as minimum readable pixel target. Overview color, ring, island, and node-type expectations come from the active graph inventory.
 
 ## Acceptance Criteria
 
@@ -253,7 +253,7 @@ Only named product policy constants remain, such as minimum readable pixel targe
 - Phase 1 overview diagnostics exist before e2e parity assertions are written.
 - `graph-scale-model.ts` exists and owns graph scale derivation.
 - Default graph load restores overview behavior.
-- Default overview on a multi-type dense fixture has at least three visible color groups and at least three visible islands.
+- Default overview on a multi-type dense fixture reports the computed visible color, island, ring, and node-type inventories for that fixture.
 - Default overview dominant island share stays below `0.85` on the multi-island dense fixture.
 - Zoom-in increases rendered node radius.
 - Zoom-out decreases rendered node radius.
@@ -274,24 +274,24 @@ Only named product policy constants remain, such as minimum readable pixel targe
 
 ## Phase 1 - Restore Original Color Overview Gate
 
-- [ ] P1-A Run `avmatrix analyze --force`.
-- [ ] P1-B Use AVmatrix context/query to trace current graph color assignment, initial camera, Sigma render, readable camera, layout, and overview diagnostics owners.
-- [ ] P1-C Run impact analysis before editing each planned function/class/method/exported symbol involved in color, camera, render, layout, and diagnostics.
-- [ ] P1-D Create non-destructive baseline worktree `.tmp/graph-baseline-80a7972` from commit `80a7972`.
-- [ ] P1-E Capture baseline browser screenshots and metrics for visible colors, visible islands, visible node types, filter node-type inventory, labels, and camera state.
-- [ ] P1-F Capture current HEAD browser screenshots and metrics for the same viewport and fixture.
-- [ ] P1-G Compare current HEAD against the baseline and record the exact color/island/node-type/label regression.
-- [ ] P1-H Restore default-load overview by reverting the `useSigma.setGraph` camera path to `animatedReset({ duration: 500 })`.
-- [ ] P1-I Remove default-load `applyReadableGraphCamera(sigma)` and keep readable camera out of graph load.
-- [ ] P1-J Restore overview camera sizing by using `minCameraRatio: 0.002`.
-- [ ] P1-K Restore Sigma default screen-size semantics by removing `itemSizesReference: 'positions'`.
-- [ ] P1-L Add Phase 1 overview diagnostics in `runtime-diagnostics.ts` and `GraphCanvas.tsx` for visible color count, visible island count, dominant island share, visible node-type inventory, and filter node-type inventory.
-- [ ] P1-M Add tests that fail when the default viewport collapses to one color on a multi-color fixture.
-- [ ] P1-N Add tests that fail when any baseline node type disappears from graph/filter inventory and baseline-visible overview rendering.
-- [ ] P1-O Record color and node-type parity evidence and benchmark metrics.
-- [ ] P1-P Run full build before tests, then focused Web unit tests, e2e tests, and browser screenshot validation for this slice.
-- [ ] P1-Q Run AVmatrix detect-changes for the slice.
-- [ ] P1-R Commit the completed color/overview/node-type restoration slice.
+- [x] P1-A Run `avmatrix analyze --force`.
+- [x] P1-B Use AVmatrix context/query to trace current graph color assignment, initial camera, Sigma render, readable camera, layout, and overview diagnostics owners.
+- [x] P1-C Run impact analysis before editing each planned function/class/method/exported symbol involved in color, camera, render, layout, and diagnostics.
+- [x] P1-D Create non-destructive baseline worktree `.tmp/graph-baseline-80a7972` from commit `80a7972`.
+- [x] P1-E Capture baseline browser screenshots and metrics for visible colors, visible islands, visible node types, filter node-type inventory, labels, and camera state.
+- [x] P1-F Capture current HEAD browser screenshots and metrics for the same viewport and fixture.
+- [x] P1-G Compare current HEAD against the baseline and record the exact color/island/node-type/label regression.
+- [x] P1-H Restore default-load overview by reverting the `useSigma.setGraph` camera path to `animatedReset({ duration: 500 })`.
+- [x] P1-I Remove default-load `applyReadableGraphCamera(sigma)` and keep readable camera out of graph load.
+- [x] P1-J Restore overview camera sizing by using `minCameraRatio: 0.002`.
+- [x] P1-K Restore Sigma default screen-size semantics by removing `itemSizesReference: 'positions'`.
+- [x] P1-L Add Phase 1 overview diagnostics in `runtime-diagnostics.ts` and `GraphCanvas.tsx` for visible color count, visible ring count, visible island count, dominant island share, visible ring inventory, visible node-type inventory, graph ring inventory, and filter node-type inventory.
+- [x] P1-M Add tests that fail when the default viewport collapses to one color on a multi-color fixture.
+- [x] P1-N Add tests that fail when any baseline node type disappears from graph/filter inventory and baseline-visible overview rendering.
+- [x] P1-O Record color and node-type parity evidence and benchmark metrics.
+- [x] P1-P Run full build before tests, then focused Web unit tests, e2e tests, and browser screenshot validation for this slice.
+- [x] P1-Q Run AVmatrix detect-changes for the slice.
+- [x] P1-R Commit the completed color/overview/node-type restoration slice.
 
 ## Phase 2 - Audit Scale, Zoom, Spacing Failure And Blast Radius
 

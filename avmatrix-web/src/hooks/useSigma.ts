@@ -14,11 +14,7 @@ import { getGraphEdgeVisibilityMode } from '../lib/graph-edge-visibility-mode';
 import { getSelectedContextEdgeSize } from '../lib/graph-edge-render-style';
 import { buildSelectedGraphContext } from '../lib/selected-graph-context';
 import { recordManualLayoutOptimizerInvocation } from '../lib/runtime-diagnostics';
-import {
-  applyReadableGraphCamera,
-  MIN_READABLE_CAMERA_RATIO,
-  READABLE_GRAPH_NODE_COUNT_THRESHOLD,
-} from '../lib/graph-readable-camera';
+import { READABLE_GRAPH_NODE_COUNT_THRESHOLD } from '../lib/graph-readable-camera';
 import { NodeSquareProgram } from '../lib/sigma-node-square-program';
 
 const DENSE_GRAPH_AMBIENT_EDGE_DIM_AMOUNT = 0.04;
@@ -254,9 +250,8 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
         context.globalAlpha = 1;
       },
 
-      minCameraRatio: MIN_READABLE_CAMERA_RATIO,
+      minCameraRatio: 0.002,
       maxCameraRatio: 50,
-      itemSizesReference: 'positions',
       hideEdgesOnMove: true,
       zIndex: true,
       nodeProgramClasses: {
@@ -515,9 +510,7 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       sigma.setGraph(newGraph);
       setSelectedNode(null);
 
-      sigma.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1, angle: 0 });
-      sigma.refresh();
-      applyReadableGraphCamera(sigma);
+      sigma.getCamera().animatedReset({ duration: 500 });
     },
     [setSelectedNode],
   );

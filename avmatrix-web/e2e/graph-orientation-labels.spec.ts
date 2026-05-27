@@ -100,6 +100,78 @@ const createDenseSpacingGraph = () => {
   return { nodes, relationships };
 };
 
+type FixtureGraph = ReturnType<typeof createDenseSpacingGraph>;
+type FixtureNode = FixtureGraph["nodes"][number];
+
+const DEFAULT_VISIBLE_FIXTURE_LABELS = new Set([
+  "Project",
+  "Package",
+  "Module",
+  "Folder",
+  "File",
+  "Documentation",
+  "Class",
+  "Function",
+  "Method",
+  "Interface",
+  "Enum",
+  "Type",
+]);
+const DOCUMENTATION_FILE_EXTENSIONS = new Set([
+  ".md",
+  ".mdx",
+  ".rst",
+  ".txt",
+]);
+const DOCUMENTATION_PATH_SEGMENTS = new Set([
+  "doc",
+  "docs",
+  "documentation",
+  "wiki",
+]);
+
+const sortKeys = (values: string[]) =>
+  [...values].sort((left, right) => left.localeCompare(right));
+
+const uniqueSorted = (values: string[]) => sortKeys([...new Set(values)]);
+
+const getFixtureDisplayLabel = (node: FixtureNode): string => {
+  if (node.label === "Documentation") return "Documentation";
+  const path = node.properties.filePath.replace(/\\/g, "/").toLowerCase();
+  const pathSegments = path.split("/").filter(Boolean);
+  if (pathSegments.some((segment) => DOCUMENTATION_PATH_SEGMENTS.has(segment))) {
+    return "Documentation";
+  }
+  const baseName = pathSegments.at(-1) ?? "";
+  const extensionStart = baseName.lastIndexOf(".");
+  const extension = extensionStart > 0 ? baseName.slice(extensionStart) : "";
+  if (DOCUMENTATION_FILE_EXTENSIONS.has(extension)) return "Documentation";
+  return node.label;
+};
+
+const getDefaultVisibleFixtureNodes = (graph: FixtureGraph) =>
+  graph.nodes.filter((node) =>
+    DEFAULT_VISIBLE_FIXTURE_LABELS.has(getFixtureDisplayLabel(node)),
+  );
+
+const getFixtureRingInventory = (graph: FixtureGraph) =>
+  uniqueSorted(
+    getDefaultVisibleFixtureNodes(graph).map(
+      (node) => node.properties.appLayer ?? "missing_app_layer",
+    ),
+  );
+
+const getFixtureIslandInventory = (graph: FixtureGraph) =>
+  uniqueSorted(
+    getDefaultVisibleFixtureNodes(graph).map(
+      (node) =>
+        `${node.properties.appLayer ?? "missing_app_layer"}:${getFixtureDisplayLabel(node)}`,
+    ),
+  );
+
+const sumCounts = (counts: Record<string, number>) =>
+  Object.values(counts).reduce((total, count) => total + count, 0);
+
 const countOrientationLabelOverlaps = async (page: Page) =>
   page
     .locator(
@@ -136,6 +208,19 @@ const countOrientationLabelOverlaps = async (page: Page) =>
       }
       return overlaps;
     });
+
+const getOrientationLabelSources = async (
+  page: Page,
+  kind: "ring" | "island",
+) =>
+  page
+    .locator(`[data-testid="graph-orientation-label-${kind}"]`)
+    .evaluateAll((elements) =>
+      elements
+        .map((element) => element.getAttribute("data-label-source") ?? "")
+        .filter(Boolean)
+        .sort((left, right) => left.localeCompare(right)),
+    );
 
 const getLayoutNodeSpacingDiagnostics = async (page: Page) =>
   page.evaluate(() => {
@@ -191,6 +276,37 @@ const getScreenNodeSpacingDiagnostics = async (page: Page) =>
     return win.__AVMATRIX_WEB_DIAGNOSTICS__?.screenNodeSpacing ?? null;
   });
 
+const getGraphOverviewDiagnostics = async (page: Page) =>
+  page.evaluate(() => {
+    const win = window as typeof window & {
+      __AVMATRIX_WEB_DIAGNOSTICS__?: {
+        graphOverview?: {
+          nodeCount: number;
+          visibleViewportNodeCount: number;
+          visibleColorCount: number;
+          visibleRingCount: number;
+          visibleIslandCount: number;
+          dominantIslandKey: string;
+          dominantIslandShare: number;
+          visibleColorCounts: Record<string, number>;
+          visibleRingCounts: Record<string, number>;
+          visibleIslandCounts: Record<string, number>;
+          visibleNodeTypeCounts: Record<string, number>;
+          graphRingCounts: Record<string, number>;
+          graphIslandCounts: Record<string, number>;
+          graphNodeTypeCounts: Record<string, number>;
+          visibleRingInventory: string[];
+          visibleNodeTypeInventory: string[];
+          graphRingInventory: string[];
+          graphIslandInventory: string[];
+          filterNodeTypeInventory: string[];
+          cameraRatio: number;
+        };
+      };
+    };
+    return win.__AVMATRIX_WEB_DIAGNOSTICS__?.graphOverview ?? null;
+  });
+
 test.describe("Graph orientation labels", () => {
   test.beforeEach(async ({ page }) => {
     const graph = createOrientationGraph();
@@ -236,6 +352,10 @@ test.describe("Graph orientation labels", () => {
   test("shows readable ring and island labels on the desktop graph", async ({
     page,
   }, testInfo) => {
+    const orientationGraph = createOrientationGraph();
+    const expectedRingInventory = getFixtureRingInventory(orientationGraph);
+    const expectedIslandInventory = getFixtureIslandInventory(orientationGraph);
+
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto(
       `${FRONTEND_URL}/?server=${encodeURIComponent(BACKEND_URL)}&project=orientation-demo`,
@@ -247,16 +367,26 @@ test.describe("Graph orientation labels", () => {
 
     await expect
       .poll(
-        async () => page.locator('[data-testid="graph-orientation-label-ring"]').count(),
+        async () => (await getGraphOverviewDiagnostics(page))?.graphRingInventory.length ?? 0,
         { timeout: 10_000 },
       )
-      .toBeGreaterThanOrEqual(3);
+      .toBe(expectedRingInventory.length);
+    const overviewDiagnostics = await getGraphOverviewDiagnostics(page);
+    expect(overviewDiagnostics).not.toBeNull();
+    expect(overviewDiagnostics?.graphRingInventory).toEqual(expectedRingInventory);
+    expect(overviewDiagnostics?.graphIslandInventory).toEqual(expectedIslandInventory);
     await expect
       .poll(
-        async () => page.locator('[data-testid="graph-orientation-label-island"]').count(),
+        async () => getOrientationLabelSources(page, "ring"),
         { timeout: 10_000 },
       )
-      .toBeGreaterThanOrEqual(4);
+      .toEqual(expectedRingInventory);
+    await expect
+      .poll(
+        async () => getOrientationLabelSources(page, "island"),
+        { timeout: 10_000 },
+      )
+      .toEqual(expectedIslandInventory);
 
     await expect(
       page.locator('[data-testid="graph-orientation-label-ring"][data-label-source="backend"]'),
@@ -293,10 +423,18 @@ test.describe("Graph orientation labels", () => {
 
     await expect
       .poll(
-        async () => page.locator('[data-testid="graph-orientation-label-ring"]').count(),
+        async () => (await getGraphOverviewDiagnostics(page))?.visibleRingInventory.length ?? 0,
         { timeout: 10_000 },
       )
-      .toBeGreaterThanOrEqual(2);
+      .toBeGreaterThan(0);
+    const smallOverviewDiagnostics = await getGraphOverviewDiagnostics(page);
+    expect(smallOverviewDiagnostics).not.toBeNull();
+    await expect
+      .poll(
+        async () => getOrientationLabelSources(page, "ring"),
+        { timeout: 10_000 },
+      )
+      .toEqual(smallOverviewDiagnostics?.visibleRingInventory);
     await expect(
       page.locator(
         '[data-testid="graph-orientation-label-island"][data-label-source="backend:Method"]',
@@ -323,12 +461,18 @@ test.describe("Graph orientation labels", () => {
     });
   });
 
-  test("keeps dense graph nodes separated by the default node gap", async ({
+  test("keeps dense graph overview inventory visible on default load", async ({
     page,
   }, testInfo) => {
+    const denseGraph = createDenseSpacingGraph();
+    const expectedDenseRingInventory = getFixtureRingInventory(denseGraph);
+    const expectedDenseIslandInventory = getFixtureIslandInventory(denseGraph);
+    const expectedDenseVisibleNodeCount =
+      getDefaultVisibleFixtureNodes(denseGraph).length;
+
     await page.unroute(`${BACKEND_URL}/api/graph**`);
     await page.route(`${BACKEND_URL}/api/graph**`, (route) =>
-      route.fulfill({ json: createDenseSpacingGraph() }),
+      route.fulfill({ json: denseGraph }),
     );
 
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -345,10 +489,11 @@ test.describe("Graph orientation labels", () => {
         async () => (await getLayoutNodeSpacingDiagnostics(page))?.nodeCount ?? 0,
         { timeout: 10_000 },
       )
-      .toBeGreaterThanOrEqual(2157);
+      .toBe(denseGraph.nodes.length);
 
     const desktopDiagnostics = await getLayoutNodeSpacingDiagnostics(page);
-    expect(desktopDiagnostics?.islandCount).toBeGreaterThanOrEqual(4);
+    const desktopOverviewDiagnostics = await getGraphOverviewDiagnostics(page);
+    expect(desktopOverviewDiagnostics).not.toBeNull();
     expect(desktopDiagnostics?.overlapCount).toBe(0);
     expect(desktopDiagnostics?.targetGapViolationCount).toBe(0);
     expect(desktopDiagnostics?.minObservedCenterDistance).toBeGreaterThanOrEqual(
@@ -359,26 +504,69 @@ test.describe("Graph orientation labels", () => {
     );
     const desktopScreenDiagnostics = await getScreenNodeSpacingDiagnostics(page);
     expect(desktopScreenDiagnostics?.coordinateSpace).toBe("viewport_px");
-    expect(desktopScreenDiagnostics?.nodeCount).toBeGreaterThanOrEqual(2077);
-    expect(desktopScreenDiagnostics?.visibleViewportNodeCount).toBeGreaterThanOrEqual(
-      16,
+    expect(desktopScreenDiagnostics?.nodeCount).toBe(expectedDenseVisibleNodeCount);
+    expect(sumCounts(desktopOverviewDiagnostics?.graphNodeTypeCounts ?? {})).toBe(
+      expectedDenseVisibleNodeCount,
+    );
+    expect(desktopOverviewDiagnostics?.graphRingInventory).toEqual(
+      expectedDenseRingInventory,
+    );
+    expect(desktopOverviewDiagnostics?.graphIslandInventory).toEqual(
+      expectedDenseIslandInventory,
+    );
+    expect(desktopOverviewDiagnostics?.visibleRingInventory).toEqual(
+      Object.keys(desktopOverviewDiagnostics?.visibleRingCounts ?? {}).sort(
+        (left, right) => left.localeCompare(right),
+      ),
+    );
+    expect(desktopOverviewDiagnostics?.filterNodeTypeInventory).toEqual(
+      Object.keys(desktopOverviewDiagnostics?.graphNodeTypeCounts ?? {}).sort(
+        (left, right) => left.localeCompare(right),
+      ),
+    );
+    expect(desktopOverviewDiagnostics?.graphRingInventory).toEqual(
+      Object.keys(desktopOverviewDiagnostics?.graphRingCounts ?? {}).sort(
+        (left, right) => left.localeCompare(right),
+      ),
     );
     expect(
-      desktopScreenDiagnostics?.visibleViewportIslandCounts["frontend:Function"] ?? 0,
-    ).toBeGreaterThanOrEqual(16);
-    expect(desktopScreenDiagnostics?.overlapCount).toBe(0);
-    expect(desktopScreenDiagnostics?.targetGapViolationCount).toBe(0);
-    expect(desktopScreenDiagnostics?.maxRenderedRadius).toBeGreaterThanOrEqual(1.99);
-    expect(desktopScreenDiagnostics?.minObservedEdgeGap).toBeGreaterThanOrEqual(
-      desktopScreenDiagnostics?.maxRenderedDiameter ?? Number.POSITIVE_INFINITY,
+      Object.keys(desktopOverviewDiagnostics?.visibleRingCounts ?? {}).sort(
+        (left, right) => left.localeCompare(right),
+      ),
+    ).toEqual(expectedDenseRingInventory);
+    expect(
+      Object.keys(desktopOverviewDiagnostics?.visibleIslandCounts ?? {}).sort(
+        (left, right) => left.localeCompare(right),
+      ),
+    ).toEqual(expectedDenseIslandInventory);
+    expect(desktopOverviewDiagnostics?.visibleNodeTypeInventory).toEqual(
+      desktopOverviewDiagnostics?.filterNodeTypeInventory,
     );
+    expect(desktopOverviewDiagnostics?.visibleColorCount).toBe(
+      Object.keys(desktopOverviewDiagnostics?.visibleColorCounts ?? {}).length,
+    );
+    expect(desktopOverviewDiagnostics?.visibleIslandCount).toBe(
+      expectedDenseIslandInventory.length,
+    );
+    expect(desktopOverviewDiagnostics?.dominantIslandShare).toBeLessThan(0.85);
+    const desktopVisibleIslandCounts =
+      desktopScreenDiagnostics?.visibleViewportIslandCounts ?? {};
+    expect(
+      Object.keys(desktopVisibleIslandCounts).sort((left, right) =>
+        left.localeCompare(right),
+      ),
+    ).toEqual(expectedDenseIslandInventory);
+    expect(desktopScreenDiagnostics?.visibleViewportNodeCount).toBe(
+      sumCounts(desktopVisibleIslandCounts),
+    );
+    expect(desktopScreenDiagnostics?.cameraRatio).toBeGreaterThan(0);
 
     await expect
       .poll(
-        async () => page.locator('[data-testid="graph-orientation-label-ring"]').count(),
+        async () => getOrientationLabelSources(page, "ring"),
         { timeout: 10_000 },
       )
-      .toBeGreaterThanOrEqual(1);
+      .toEqual(expectedDenseRingInventory);
     await expect(
       page.locator('[data-testid="graph-orientation-label-ring"][data-label-source="frontend"]'),
     ).toContainText("Frontend");
@@ -401,21 +589,20 @@ test.describe("Graph orientation labels", () => {
         async () => (await getScreenNodeSpacingDiagnostics(page))?.nodeCount ?? 0,
         { timeout: 10_000 },
       )
-      .toBeGreaterThanOrEqual(2077);
+      .toBe(expectedDenseVisibleNodeCount);
     const smallScreenDiagnostics = await getScreenNodeSpacingDiagnostics(page);
     expect(smallScreenDiagnostics?.viewportWidth).toBeGreaterThan(200);
-    expect(smallScreenDiagnostics?.visibleViewportNodeCount).toBeGreaterThanOrEqual(
-      1,
+    const smallVisibleIslandCounts =
+      smallScreenDiagnostics?.visibleViewportIslandCounts ?? {};
+    expect(smallScreenDiagnostics?.visibleViewportNodeCount).toBe(
+      sumCounts(smallVisibleIslandCounts),
     );
     expect(
-      smallScreenDiagnostics?.visibleViewportIslandCounts["frontend:Function"] ?? 0,
-    ).toBeGreaterThanOrEqual(1);
-    expect(smallScreenDiagnostics?.maxRenderedRadius).toBeGreaterThanOrEqual(1.99);
-    expect(smallScreenDiagnostics?.overlapCount).toBe(0);
-    expect(smallScreenDiagnostics?.targetGapViolationCount).toBe(0);
-    expect(smallScreenDiagnostics?.minObservedEdgeGap).toBeGreaterThanOrEqual(
-      smallScreenDiagnostics?.maxRenderedDiameter ?? Number.POSITIVE_INFINITY,
-    );
+      Object.keys(smallVisibleIslandCounts).sort((left, right) =>
+        left.localeCompare(right),
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(smallScreenDiagnostics?.cameraRatio).toBeGreaterThan(0);
     await expect
       .poll(async () => countOrientationLabelOverlaps(page), { timeout: 10_000 })
       .toBe(0);

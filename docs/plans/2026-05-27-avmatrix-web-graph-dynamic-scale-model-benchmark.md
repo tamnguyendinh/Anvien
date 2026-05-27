@@ -17,8 +17,8 @@ Benchmarkable items for this plan include:
 
 - measured rendered node radius at multiple camera zoom ratios;
 - rendered node radius growth factor after user zoom-in actions;
-- visible viewport color count and island count in default overview;
-- visible viewport node count, color count, and island count in detail/focus views;
+- visible viewport color count, ring count, and island count in default overview;
+- visible viewport node count, color count, ring count, and island count in detail/focus views;
 - same-island screen-space overlap count and target-gap violation count;
 - minimum observed screen-space edge gap;
 - graph coordinate bounds and viewport dimensions;
@@ -37,18 +37,21 @@ Status: pending.
 |---|---:|---:|---:|---:|
 | Baseline overview visible color count | colors | pending | pending | reference value from `80a7972` |
 | Current HEAD overview visible color count | colors | pending | pending | restored to baseline parity before scale work |
+| Baseline overview visible ring count | rings | pending | pending | reference value from `80a7972` |
+| Current HEAD overview visible ring count | rings | pending | pending | restored to baseline parity before scale work |
 | Baseline overview visible island count | islands | pending | pending | reference value from `80a7972` |
 | Current HEAD overview visible island count | islands | pending | pending | restored to baseline parity before scale work |
 | Baseline graph/filter node-type inventory | node types | pending | pending | reference inventory from `80a7972` |
 | Current/restored graph/filter node-type inventory | node types | pending | pending | zero missing baseline node type |
 | Baseline overview visible node-type count | node types | pending | pending | reference visible inventory from `80a7972` |
 | Current/restored overview visible node-type count | node types | pending | pending | zero missing baseline-visible node type |
-| Phase 1 overview diagnostics inventory | fields | pending | pending | visible color count, visible island count, dominant island share, visible node-type inventory, filter node-type inventory |
+| Phase 1 overview diagnostics inventory | fields | pending | pending | visible color count, visible ring count, visible island count, dominant island share, visible ring inventory, visible node-type inventory, graph ring inventory, filter node-type inventory |
 | Baseline overview screenshot inventory | files | pending | pending | captured from `.tmp/graph-baseline-80a7972` |
 | Current/restored overview screenshot inventory | files | pending | pending | restored screenshots match baseline behavior |
-| Initial overview visible color count | colors | pending | pending | `>= 3` on multi-type dense fixture |
-| Initial overview visible island count | islands | pending | pending | `>= 3` on multi-island dense fixture |
-| Initial overview ring label count | labels | pending | pending | `>= 3` on multi-ring fixture |
+| Initial overview visible color count | colors | pending | pending | equals computed visible color inventory for fixture/baseline |
+| Initial overview visible ring count | rings | pending | pending | equals computed visible ring inventory for fixture/baseline |
+| Initial overview visible island count | islands | pending | pending | equals computed visible island inventory for fixture/baseline |
+| Initial overview ring label count | labels | pending | pending | equals computed visible ring label inventory for fixture/baseline |
 | Initial overview dominant island share | ratio | pending | pending | `< 0.85` on multi-island dense fixture |
 | Initial overview max rendered node radius | px | pending | pending | record, not forced to detail size |
 | First zoom-in rendered node radius growth | ratio | pending | pending | `> 1.0` |
@@ -64,7 +67,41 @@ Status: pending.
 
 ## B1 - Baseline Capture Before Implementation
 
-Status: pending.
+Status: in progress.
+
+Baseline worktree:
+
+- Source commit: `80a7972`
+- Worktree path: `.tmp/graph-baseline-80a7972`
+
+Recorded metrics:
+
+| Metric | Baseline `80a7972` | Current pre-fix |
+|---|---:|---:|
+| Dense fixture node count | 1480 | 1480 |
+| Overview ring label count | 3 | 2 |
+| Overview island label count | 4 | 0 |
+| Layout island count | 5 | 5 |
+| Layout overlap count | 0 | 0 |
+| Layout target-gap violation count | 0 | 0 |
+| Current visible viewport node count | not available in baseline | 40 |
+| Current visible viewport island count | not available in baseline | 1 |
+| Current readable camera applied | not present in baseline | true |
+
+Restored Phase 1 metrics:
+
+| Metric | Restored Phase 1 |
+|---|---:|
+| Dense fixture node count | 1480 |
+| Overview ring label count | 3 |
+| Overview island label count | 4 |
+| Visible viewport node count | 1400 |
+| Visible color count | 3 |
+| Visible ring count | 3 |
+| Visible island count | 4 |
+| Dominant island share | 0.7142857142857143 |
+| Readable camera applied | false |
+| Camera ratio | 1 |
 
 Required before code edits:
 
@@ -79,7 +116,7 @@ Required before code edits:
 
 ## B1A - Color Overview Parity Gate
 
-Status: pending.
+Status: completed for Phase 1.
 
 This benchmark gate must pass before dynamic scale, spacing, and zoom implementation work proceeds.
 
@@ -87,16 +124,22 @@ Record:
 
 - baseline commit `80a7972`;
 - baseline visible color count;
+- baseline visible ring count;
 - baseline visible island count;
+- baseline graph/visible ring inventory;
 - baseline graph/filter node-type inventory;
 - baseline overview visible node-type inventory;
 - baseline ring/island label counts;
 - current HEAD visible color count;
+- current HEAD visible ring count;
 - current HEAD visible island count;
+- current HEAD graph/visible ring inventory;
 - current HEAD graph/filter node-type inventory;
 - current HEAD overview visible node-type inventory;
 - restored visible color count;
+- restored visible ring count;
 - restored visible island count;
+- restored graph/visible ring inventory;
 - restored graph/filter node-type inventory;
 - restored overview visible node-type inventory;
 - parity result for baseline overview behavior.

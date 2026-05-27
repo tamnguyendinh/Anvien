@@ -1,0 +1,75 @@
+{
+  "ringLabelCount": 3,
+  "islandLabelCount": 4,
+  "ringLabels": [
+    "backend",
+    "docs",
+    "frontend"
+  ],
+  "islandLabels": [
+    "backend:Function",
+    "docs:Documentation",
+    "frontend:Function",
+    "frontend:Method"
+  ],
+  "layoutRings": {
+    "nodeCount": 1480,
+    "ringNodeCounts": {
+      "frontend": 1300,
+      "backend": 60,
+      "api": 80,
+      "docs": 40
+    },
+    "ringCenters": {
+      "frontend": {
+        "x": 16225.92368077031,
+        "y": 0
+      },
+      "backend": {
+        "x": -16225.92368077031,
+        "y": 1.98710254988646e-12
+      },
+      "api": {
+        "x": -2.9806538248296897e-12,
+        "y": -16225.92368077031
+      },
+      "docs": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "ringIslandCounts": {
+      "frontend": 2,
+      "backend": 1,
+      "api": 1,
+      "docs": 1
+    },
+    "apiBetweenBackendAndFrontend": true,
+    "docsCentered": true,
+    "sameColorIslandViolations": 0,
+    "ringCount": 4,
+    "recordedAt": 5106
+  },
+  "layoutNodeSpacing": {
+    "nodeCount": 1480,
+    "islandCount": 5,
+    "renderedRadius": 3,
+    "renderedDiameter": 6,
+    "requiredEdgeGap": 6,
+    "requiredCenterDistance": 12,
+    "minObservedCenterDistance": 12,
+    "minObservedEdgeGap": 6,
+    "overlapCount": 0,
+    "targetGapViolationCount": 0,
+    "recordedAt": 5111.5999999940395
+  },
+  "graphConversion": {
+    "count": 2,
+    "lastMs": 40.70000000298023,
+    "maxMs": 59,
+    "lastNodeCount": 1480,
+    "lastRelationshipCount": 1479,
+    "lastStartedAt": 5061.899999991059,
+    "lastFinishedAt": 5102.5999999940395
+  }
+}

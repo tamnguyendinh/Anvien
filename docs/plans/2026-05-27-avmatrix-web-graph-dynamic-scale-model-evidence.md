@@ -114,7 +114,29 @@ The implementation path restores baseline overview first by reverting the defaul
 
 ## E1 - Required Pre-Implementation Audit
 
-Status: pending.
+Status: in progress.
+
+Completed pre-edit evidence on 2026-05-27:
+
+- AVmatrix refresh command: `.\avmatrix\bin\avmatrix.exe analyze --force`
+- AVmatrix refresh output: `files: scanned=774 parsed=572 unsupported=202 failed=0`, `graph: nodes=89489 relationships=122636 path=E:\AVmatrix-GO\.avmatrix\graph.json`
+- AVmatrix context/query owners: `useSigma`, `applyReadableGraphCamera`, `knowledgeGraphToGraphology`, `buildLayoutNodeSpacingDiagnostics`, `runtime-diagnostics.ts`
+- Non-destructive baseline worktree command: `git worktree add .tmp\graph-baseline-80a7972 80a7972`
+- Baseline worktree result: detached worktree at commit `80a7972`
+
+Pre-edit impact evidence:
+
+- `useSigma`: CRITICAL, affected frontend GraphCanvas flow and 11 detected processes.
+- `applyReadableGraphCamera`: LOW, direct caller `useSigma.ts`.
+- `knowledgeGraphToGraphology`: CRITICAL with tests included, affected frontend GraphCanvas, unit tests, and 11 detected processes.
+- `buildLayoutNodeSpacingDiagnostics`: LOW in upstream impact.
+- `createDiagnostics`: LOW in upstream impact.
+- `recordScreenNodeSpacing`: CRITICAL, affected GraphCanvas, runtime diagnostics test, and 11 detected processes.
+- `recordCurrentScreenNodeSpacing`: LOW in upstream impact.
+
+Blast-radius decision:
+
+HIGH/CRITICAL results are workflow warnings for central Web graph behavior. The Phase 1 slice proceeds with scoped edits to default graph load, overview diagnostics, and parity tests.
 
 Before implementation edits, record:
 
@@ -146,7 +168,106 @@ Expected code areas to audit:
 
 ## E1A - Color Overview Parity Gate
 
-Status: pending.
+Status: in progress.
+
+Baseline capture:
+
+- Source: commit `80a7972`
+- Worktree: `.tmp\graph-baseline-80a7972`
+- Screenshot: `reports/problem/2026-05-27-graph-baseline-80a7972-dense-overview.png`
+- Metrics: `reports/problem/2026-05-27-graph-baseline-80a7972-dense-overview.json`
+- Fixture node count: 1480
+- Baseline ring label count: 3
+- Baseline ring labels: `backend`, `docs`, `frontend`
+- Baseline island label count: 4
+- Baseline island labels: `backend:Function`, `docs:Documentation`, `frontend:Function`, `frontend:Method`
+- Baseline layout island count: 5
+- Baseline spacing violations: overlap `0`, target-gap `0`
+
+Current HEAD pre-fix capture:
+
+- Source: current HEAD before Phase 1 edits
+- Screenshot: `reports/problem/2026-05-27-graph-current-before-phase1-dense-overview.png`
+- Metrics: `reports/problem/2026-05-27-graph-current-before-phase1-dense-overview.json`
+- Fixture node count: 1480
+- Current ring label count: 2
+- Current ring labels: `backend`, `frontend`
+- Current island label count: 0
+- Current screen visible viewport node count: 40
+- Current screen visible island counts: `frontend:Function` = 40
+- Current readable camera applied: `true`
+- Current readable camera focused island: `frontend:Function`
+- Current camera ratio: `0.010029304328422596`
+
+Regression delta:
+
+- Ring labels dropped from 3 to 2.
+- Island labels dropped from 4 to 0.
+- Default viewport collapsed to a single visible island, `frontend:Function`.
+- Readable camera applied during default graph load and focused the densest island.
+- Baseline preserved overview labels for backend, docs, frontend, and multiple island labels.
+
+Count interpretation:
+
+- The recorded `3` ring labels and `4` island labels are measured baseline values for this dense fixture only.
+- Product behavior must not hardcode those numbers for every repository.
+- Tests must derive expected ring, island, color, and node-type inventories from the active fixture/baseline data.
+- A repository with different languages and taxonomy displays its own computed inventory count.
+
+Phase 1 camera/render correction:
+
+- `avmatrix-web/src/hooks/useSigma.ts` default `setGraph` path now uses `sigma.getCamera().animatedReset({ duration: 500 })`.
+- Default graph load no longer calls `applyReadableGraphCamera(sigma)`.
+- Overview `minCameraRatio` restored to `0.002`.
+- Sigma `itemSizesReference: 'positions'` override removed so Sigma uses default screen sizing semantics.
+
+Phase 1 overview diagnostics correction:
+
+- Added `graphOverview` diagnostics with visible color count, visible ring count, visible island count, dominant island share, visible color counts, visible ring counts, visible island counts, visible node-type counts, graph ring counts, graph node-type counts, visible ring inventory, visible node-type inventory, graph ring inventory, filter node-type inventory, and camera state.
+- Added `buildGraphOverviewDiagnostics` to derive inventories from the active graph and viewport.
+- Added unit coverage for graph overview diagnostics.
+- Updated dense graph e2e assertions to derive expected ring, island, node-type, and node-count inventory from the fixture graph instead of hardcoding global counts.
+- Removed default-overview screen-space overlap expectations from the Phase 1 e2e path. Screen-space no-overlap belongs to explicit detail/focus mode in later phases.
+- Plan and benchmark targets now treat measured `3` and `4` values as fixture-specific baseline evidence, not global product constants.
+
+Restored Phase 1 capture:
+
+- Screenshot: `reports/problem/2026-05-27-graph-restored-phase1-dense-overview.png`
+- Metrics: `reports/problem/2026-05-27-graph-restored-phase1-dense-overview.json`
+- Restored ring label count: 3
+- Restored ring labels: `backend`, `docs`, `frontend`
+- Restored island label count: 4
+- Restored island labels: `backend:Function`, `docs:Documentation`, `frontend:Function`, `frontend:Method`
+- Restored visible viewport node count: 1400
+- Restored visible color count: 3
+- Restored visible ring count: 3
+- Restored visible island count: 4
+- Restored dominant island share: `0.7142857142857143`
+- Restored visible ring inventory: `backend`, `docs`, `frontend`
+- Restored visible node-type inventory: `Documentation`, `Function`, `Method`
+- Restored graph ring inventory: `backend`, `docs`, `frontend`
+- Restored graph island inventory: `backend:Function`, `docs:Documentation`, `frontend:Function`, `frontend:Method`
+- Restored filter node-type inventory: `Documentation`, `Function`, `Method`
+- Restored readable camera applied: `false`
+- Restored camera ratio: `1`
+
+Validation completed before Phase 1 pre-commit detection:
+
+- Full Web build: `npm run build` passed.
+- Focused Web unit tests: `npx vitest run test/unit/runtime-diagnostics.test.ts test/unit/graph-overview-diagnostics.test.ts` passed, 2 files, 9 tests.
+- Web e2e/browser tests: first run failed because the Vite server on `127.0.0.1:5228` was not running; after starting `npm run dev`, `npx playwright test e2e/graph-orientation-labels.spec.ts --project=chromium` passed, 3 tests. The dev server was stopped after the run.
+- Browser screenshots captured for baseline, current pre-fix, and restored Phase 1 overview.
+
+AVmatrix pre-commit detection:
+
+- `avmatrix analyze --force` after Phase 1 edits: scanned `779`, parsed `574`, unsupported `205`, failed `0`.
+- Refreshed graph: `89896` nodes, `123159` relationships.
+- `avmatrix detect-changes --repo AVmatrix --scope all`: changed files `8`, changed symbols `372`.
+- Changed app layers: docs `13`, frontend `61`, frontend_test `298`.
+- Changed functional areas: documentation `13`, layout `9`, unknown `344`, web_graph_ui `6`.
+- Affected processes: `0`.
+- Resolution health degraded nodes: `0`.
+- Reported risk level: `low`.
 
 This gate must be completed before dynamic scale, zoom, and spacing implementation proceeds.
 
@@ -158,7 +279,9 @@ Required evidence:
 - current HEAD screenshot paths;
 - restored screenshot paths;
 - visible color count comparison;
+- visible ring count comparison;
 - visible island count comparison;
+- graph/visible ring inventory comparison;
 - graph/filter node-type inventory comparison;
 - overview-visible node-type inventory comparison;
 - missing node-type list, expected empty;

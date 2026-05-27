@@ -77,6 +77,7 @@ export interface WebRuntimeDiagnostics {
     overlapCount: number;
     targetGapViolationCount: number;
   };
+  graphOverview: GraphOverviewDiagnostics;
   readableCamera: {
     recordedAt: number;
     applied: boolean;
@@ -104,6 +105,39 @@ export interface WebRuntimeDiagnostics {
     lastChangedAt: number;
   };
 }
+
+export interface GraphOverviewDiagnostics {
+  recordedAt: number;
+  nodeCount: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  visibleViewportNodeCount: number;
+  visibleColorCount: number;
+  visibleRingCount: number;
+  visibleIslandCount: number;
+  dominantIslandKey: string;
+  dominantIslandShare: number;
+  visibleColorCounts: Record<string, number>;
+  visibleRingCounts: Record<string, number>;
+  visibleIslandCounts: Record<string, number>;
+  visibleNodeTypeCounts: Record<string, number>;
+  graphRingCounts: Record<string, number>;
+  graphIslandCounts: Record<string, number>;
+  graphNodeTypeCounts: Record<string, number>;
+  visibleRingInventory: string[];
+  visibleNodeTypeInventory: string[];
+  graphRingInventory: string[];
+  graphIslandInventory: string[];
+  filterNodeTypeInventory: string[];
+  cameraRatio: number;
+  cameraX: number;
+  cameraY: number;
+}
+
+export type GraphOverviewDiagnosticsInput = Omit<
+  GraphOverviewDiagnostics,
+  'recordedAt'
+>;
 
 declare global {
   interface Window {
@@ -193,6 +227,33 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
     maxRequiredCenterDistance: 0,
     overlapCount: 0,
     targetGapViolationCount: 0,
+  },
+  graphOverview: {
+    recordedAt: 0,
+    nodeCount: 0,
+    viewportWidth: 0,
+    viewportHeight: 0,
+    visibleViewportNodeCount: 0,
+    visibleColorCount: 0,
+    visibleRingCount: 0,
+    visibleIslandCount: 0,
+    dominantIslandKey: '',
+    dominantIslandShare: 0,
+    visibleColorCounts: {},
+    visibleRingCounts: {},
+    visibleIslandCounts: {},
+    visibleNodeTypeCounts: {},
+    graphRingCounts: {},
+    graphIslandCounts: {},
+    graphNodeTypeCounts: {},
+    visibleRingInventory: [],
+    visibleNodeTypeInventory: [],
+    graphRingInventory: [],
+    graphIslandInventory: [],
+    filterNodeTypeInventory: [],
+    cameraRatio: 0,
+    cameraX: 0,
+    cameraY: 0,
   },
   readableCamera: {
     recordedAt: 0,
@@ -343,6 +404,17 @@ export const recordScreenNodeSpacing = (input: {
   const diagnostics = getWebRuntimeDiagnostics();
   if (!diagnostics) return;
   diagnostics.screenNodeSpacing = {
+    ...input,
+    recordedAt: nowMs(),
+  };
+};
+
+export const recordGraphOverview = (
+  input: GraphOverviewDiagnosticsInput,
+): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  diagnostics.graphOverview = {
     ...input,
     recordedAt: nowMs(),
   };
