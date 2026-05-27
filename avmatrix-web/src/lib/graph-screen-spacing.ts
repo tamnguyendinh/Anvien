@@ -4,6 +4,7 @@ import type {
   SigmaEdgeAttributes,
   SigmaNodeAttributes,
 } from './graph-adapter';
+import { getRequiredCenterDistancePx } from './graph-scale-model';
 
 export type ScreenNodeSpacingDiagnostics = {
   coordinateSpace: 'viewport_px';
@@ -39,13 +40,10 @@ type ScreenNode = {
   islandKey: string;
 };
 
-const getPairRequiredEdgeGap = (left: ScreenNode, right: ScreenNode): number =>
-  Math.max(left.radius * 2, right.radius * 2);
-
 const getPairRequiredCenterDistance = (
   left: ScreenNode,
   right: ScreenNode,
-): number => left.radius + right.radius + getPairRequiredEdgeGap(left, right);
+): number => getRequiredCenterDistancePx(left.radius, right.radius);
 
 const getGridKey = (node: ScreenNode, cellSize: number): string =>
   `${Math.floor(node.x / cellSize)}:${Math.floor(node.y / cellSize)}`;

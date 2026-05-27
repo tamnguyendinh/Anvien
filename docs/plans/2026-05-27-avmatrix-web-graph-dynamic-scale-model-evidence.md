@@ -213,6 +213,7 @@ Count interpretation:
 - Product behavior must not hardcode those numbers for every repository.
 - Tests must derive expected ring, island, color, and node-type inventories from the active fixture/baseline data.
 - A repository with different languages and taxonomy displays its own computed inventory count.
+- The current dense fixture has `2157` graph nodes and `2077` default-visible nodes after default filters; its computed overview inventory is exactly `3` rings, `4` islands, `3` visible node types, and `3` visible colors.
 
 Phase 1 camera/render correction:
 
@@ -386,17 +387,52 @@ Detail/focus baseline:
 
 ## E2 - Dynamic Scale Model Evidence
 
-Status: pending.
+Status: completed for Phase 3 scale-model slice.
 
-Record once implemented:
+Implemented files:
 
-- `graph-scale-model.ts` as the single source of truth for graph scale;
-- how node screen radius is measured with Sigma `scaleSize`;
-- how graph-coordinate distance converts to viewport pixels;
-- how required node center distance is derived;
-- how zoom changes node radius;
-- how overview differs from detail/focus mode;
-- which old fixed constants were removed, replaced, and constrained.
+- Added `avmatrix-web/src/lib/graph-scale-model.ts`.
+- Added `avmatrix-web/test/unit/graph-scale-model.test.ts`.
+- Updated `graph-screen-spacing.ts` to use `getRequiredCenterDistancePx`.
+- Updated `graph-adapter.ts` rendered-size exports to read from `GRAPH_RENDER_SCALE_POLICY`.
+
+Scale model behavior:
+
+- `getRenderedNodeRadiusPx` delegates node size and camera ratio to Sigma `scaleSize`.
+- `measureGraphUnitToViewportPx` measures graph-coordinate distance through `graphToViewport`.
+- `getRequiredEdgeGapPx` uses the largest rendered diameter of the compared nodes.
+- `getRequiredCenterDistancePx` uses left radius plus right radius plus required edge gap.
+- `getRequiredCenterDistanceGraph` converts required viewport pixels back to graph units.
+- `buildGraphScaleModel` records camera ratio, graph-unit scale, min/max rendered radius, max diameter, required edge gap, required center distance in pixels, and required center distance in graph units.
+
+Focused validation:
+
+- Full Web build: `npm run build` passed.
+- Focused tests: `npx vitest run test/unit/graph-scale-model.test.ts test/unit/graph-screen-spacing.test.ts test/unit/graph-adapter.edge-geometry.test.ts` passed, 3 files, 34 tests.
+
+Measured unit facts:
+
+- Radius with size `3` at camera ratio `1`: `3`.
+- Radius with size `3` at camera ratio `0.25`: `6`.
+- Equal-size radius `3` required edge gap: `6`.
+- Equal-size radius `3` required center distance: `12`.
+- Graph-unit scale from projection `x * 5`: `5px` per graph unit.
+- Built model at camera ratio `0.25` with node sizes `2` and `3`: min radius `4`, max radius `6`, required edge gap `12`, required center distance `24px`, required center distance `12` graph units.
+
+AVmatrix pre-commit detection for Phase 3:
+
+- `avmatrix analyze --force`: scanned `786`, parsed `576`, unsupported `210`, failed `0`.
+- Refreshed graph: `90067` nodes, `123382` relationships.
+- `avmatrix detect-changes --repo AVmatrix --scope all`: risk level `low`.
+- Changed files: `5`.
+- Changed symbols: `12`.
+- Changed app layers: docs `9`, frontend `3`.
+- Changed functional areas: documentation `9`, layout `2`, unknown `1`.
+- Affected count: `0`.
+- Affected processes: `0`.
+- Resolution gap changes: `0`.
+- Resolution health impact: degraded nodes `0`, total resolution gap count `0`.
+- `git diff --check`: passed.
 
 ## E3 - Overview Preservation Evidence
 

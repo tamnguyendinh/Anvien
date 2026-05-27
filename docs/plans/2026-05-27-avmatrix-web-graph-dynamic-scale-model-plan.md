@@ -78,6 +78,7 @@ Exact current facts:
 - Fixes preserve every baseline node type: none are removed; none are hidden; none become unreachable; none are visually de-emphasized.
 - Default load is an overview of the graph, not an automatic jump into the densest local patch.
 - Default overview preserves multi-island and multi-color information on fixtures that contain multiple visible node types and app layers.
+- Expected ring, island, color, node-type, and visible-node counts are computed from the active graph inventory. For the current dense fixture, the computed product expectation is exactly `3` rings, `4` islands, `3` visible node types, and `2077` default-visible nodes; repositories with different language/taxonomy inventories must produce their own exact counts.
 - User zoom-in visibly increases rendered node radius in viewport pixels.
 - User zoom-out visibly decreases rendered node radius in viewport pixels.
 - Detail/focus mode makes raw nodes readable without overlap.
@@ -253,7 +254,8 @@ Only named product policy constants remain, such as minimum readable pixel targe
 - Phase 1 overview diagnostics exist before e2e parity assertions are written.
 - `graph-scale-model.ts` exists and owns graph scale derivation.
 - Default graph load restores overview behavior.
-- Default overview on a multi-type dense fixture reports the computed visible color, island, ring, and node-type inventories for that fixture.
+- Default overview on a multi-type dense fixture reports the computed visible color, island, ring, node-type, and default-visible node inventories for that fixture.
+- The current dense fixture reports exactly `3` rings, `4` islands, `3` visible node types, and `2077` default-visible nodes, with those expectations derived from the fixture graph instead of hardcoded into assertions.
 - Default overview dominant island share stays below `0.85` on the multi-island dense fixture.
 - Zoom-in increases rendered node radius.
 - Zoom-out decreases rendered node radius.
@@ -305,16 +307,16 @@ Only named product policy constants remain, such as minimum readable pixel targe
 
 ## Phase 3 - Implement Dynamic Graph Scale Model
 
-- [ ] P3-A Add `avmatrix-web/src/lib/graph-scale-model.ts`.
-- [ ] P3-B Implement rendered radius derivation through Sigma `scaleSize`.
-- [ ] P3-C Implement graph-unit-to-viewport-pixel conversion.
-- [ ] P3-D Implement required edge gap, center distance in pixels, and center distance in graph units.
-- [ ] P3-E Replace fixed rendered-size helpers with scale-model policy inputs.
-- [ ] P3-F Add focused unit tests for scale derivation and zoom radius behavior.
-- [ ] P3-G Record scale-model evidence and metrics.
-- [ ] P3-H Run full build before tests, then focused Web unit tests for this slice.
-- [ ] P3-I Run AVmatrix detect-changes for the slice.
-- [ ] P3-J Commit the completed scale-model slice.
+- [x] P3-A Add `avmatrix-web/src/lib/graph-scale-model.ts`.
+- [x] P3-B Implement rendered radius derivation through Sigma `scaleSize`.
+- [x] P3-C Implement graph-unit-to-viewport-pixel conversion.
+- [x] P3-D Implement required edge gap, center distance in pixels, and center distance in graph units.
+- [x] P3-E Replace fixed rendered-size helpers with scale-model policy inputs.
+- [x] P3-F Add focused unit tests for scale derivation and zoom radius behavior.
+- [x] P3-G Record scale-model evidence and metrics.
+- [x] P3-H Run full build before tests, then focused Web unit tests for this slice.
+- [x] P3-I Run AVmatrix detect-changes for the slice.
+- [x] P3-J Commit the completed scale-model slice.
 
 ## Phase 4 - Refactor Layout To Dynamic Hex Packing
 

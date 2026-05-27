@@ -24,6 +24,11 @@ import {
   type SemanticFilterable,
   type SemanticFilterState,
 } from "./semantic-filters";
+import {
+  GRAPH_RENDER_SCALE_POLICY,
+  capRenderedNodeRadiusByPolicy,
+  getPolicyMaxRenderedNodeRadiusPx,
+} from "./graph-scale-model";
 
 export interface SigmaNodeAttributes extends GraphHealthFilterable, SemanticFilterable {
   x: number;
@@ -86,13 +91,13 @@ const getLabelScaledNodeSizeCap = (
 export const MAX_RENDERED_NODE_SIZE = 3;
 export const MAX_DENSE_RENDERED_NODE_SIZE = 3;
 
-export const getMaxRenderedNodeSize = (_nodeCount: number): number =>
-  MAX_DENSE_RENDERED_NODE_SIZE;
+export const getMaxRenderedNodeSize = (nodeCount: number): number =>
+  getPolicyMaxRenderedNodeRadiusPx(nodeCount, GRAPH_RENDER_SCALE_POLICY);
 
 export const capRenderedNodeSize = (
   size: number,
   nodeCount: number = 0,
-): number => Math.min(size, getMaxRenderedNodeSize(nodeCount));
+): number => capRenderedNodeRadiusByPolicy(size, nodeCount);
 
 export const getRenderedNodeRadius = (nodeCount: number = 0): number =>
   getMaxRenderedNodeSize(nodeCount);

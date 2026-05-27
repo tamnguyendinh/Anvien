@@ -189,15 +189,29 @@ Audit benchmark result:
 
 ## B2 - Dynamic Scale Model Metrics
 
-Status: pending.
+Status: completed for Phase 3 scale-model slice.
 
-Record after the scale model is implemented:
+Focused unit metrics:
 
-- graph-unit-to-viewport-pixel scale at each measured camera ratio;
-- measured Sigma node-size behavior at each measured camera ratio;
-- expected vs observed rendered node radius;
-- expected vs observed required center distance;
-- layout bounds before and after dynamic spacing.
+| Metric | Value |
+|---|---:|
+| Radius for size `3` at camera ratio `1` | 3 |
+| Radius for size `3` at camera ratio `0.25` | 6 |
+| Required edge gap for two radius-`3` nodes | 6 |
+| Required center distance for two radius-`3` nodes | 12 |
+| Projection scale from `x * 5` fixture | 5 px/graph-unit |
+| Model camera ratio fixture | 0.25 |
+| Model min radius from sizes `2`, `3` | 4 |
+| Model max radius from sizes `2`, `3` | 6 |
+| Model required edge gap | 12 |
+| Model required center distance px | 24 |
+| Model required center distance graph units | 12 |
+
+Validation inventory:
+
+- Full Web build: passed.
+- Focused Web unit tests: `3` files, `34` tests passed.
+- Scale model test inventory: `6` tests passed.
 
 ## B3 - Overview And Zoom Browser Metrics
 
