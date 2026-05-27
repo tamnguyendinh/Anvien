@@ -360,16 +360,16 @@ Only named product policy constants remain, such as minimum readable pixel targe
 
 ## Phase 7 - Full Validation And Closure
 
-- [ ] P7-A Run the full build gate before tests.
-- [ ] P7-B Run focused Web unit tests.
-- [ ] P7-C Run full Web unit tests.
-- [ ] P7-D Run Web e2e/browser tests and inspect screenshots.
-- [ ] P7-E Run final `git diff --check`.
-- [ ] P7-F Run final `avmatrix analyze --force`.
-- [ ] P7-G Run final `avmatrix detect-changes --repo AVmatrix --scope all`.
-- [ ] P7-H Record final evidence and benchmark summaries.
-- [ ] P7-I Commit the final implementation slice.
-- [ ] P7-J Confirm working tree state and remaining plan items.
+- [x] P7-A Run the full build gate before tests.
+- [x] P7-B Run focused Web unit tests.
+- [x] P7-C Run full Web unit tests.
+- [x] P7-D Run Web e2e/browser tests and inspect screenshots.
+- [x] P7-E Run final `git diff --check`.
+- [x] P7-F Run final `avmatrix analyze --force`.
+- [x] P7-G Run final `avmatrix detect-changes --repo AVmatrix --scope all`.
+- [x] P7-H Record final evidence and benchmark summaries.
+- [x] P7-I Commit the final implementation slice.
+- [x] P7-J Confirm working tree state and remaining plan items.
 
 ## Risk Notes
 

@@ -659,3 +659,20 @@ Phase 6 pre-commit detection:
 - Resolution gap changes: `255` analyzer bookkeeping entries.
 - Changed source nodes with gaps: `0`.
 - Resolution health impact: degraded nodes `0`, total resolution gap count `0`.
+
+## E8 - Final Closure Evidence
+
+Status: completed for Phase 7 closure.
+
+Phase 7 validation:
+
+- Full Web build gate: `npm run build` passed.
+- Focused Web unit tests: `npx vitest run test/unit/graph-scale-model.test.ts test/unit/graph-camera-mode.test.ts test/unit/graph-screen-spacing.test.ts test/unit/graph-adapter.edge-geometry.test.ts test/unit/runtime-diagnostics.test.ts` passed, `5` files and `47` tests.
+- Full Web unit tests: `npx vitest run test/unit` passed, `50` files and `397` tests.
+- Web e2e/browser tests: `npx playwright test e2e/graph-orientation-labels.spec.ts --project=chromium` passed, `3` tests.
+- Browser screenshots inspected: dense desktop and dense small viewport both showed nodes, labels, and multi-cluster overview.
+- Final `git diff --check`: passed.
+- Final forbidden wording scan across the three plan ledgers: no matches.
+- Final `avmatrix analyze --force`: scanned `789`, parsed `578`, unsupported `211`, failed `0`; graph `90536` nodes and `123974` relationships.
+- Final AVmatrix MCP `detect_changes` with `repo=AVmatrix`, `scope=all`: risk level `low`, changed files `1`, changed symbols `2`, changed app layers docs `2`, affected processes `0`, resolution health degraded nodes `0`, total resolution gap count `0`.
+- Dev server on `127.0.0.1:5228` was stopped after e2e validation.

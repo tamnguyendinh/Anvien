@@ -379,13 +379,26 @@ Validation inventory:
 
 ## B5 - Final Validation Inventory
 
-Status: pending.
+Status: completed.
 
-Record final:
+Final validation inventory:
 
-- full build result;
-- focused unit test inventory;
-- full Web unit test inventory;
-- Web e2e/browser test inventory;
-- screenshot artifact paths;
-- AVmatrix change detection summary before implementation commit.
+| Gate | Result |
+|---|---:|
+| Full Web build | passed |
+| Focused Web unit files | 5 |
+| Focused Web unit tests | 47 |
+| Full Web unit files | 50 |
+| Full Web unit tests | 397 |
+| Web e2e/browser files | 1 |
+| Web e2e/browser tests | 3 |
+| Browser screenshot PNG artifacts inspected | 2 |
+| Final AVmatrix changed files at closure detect | 1 |
+| Final AVmatrix changed symbols at closure detect | 2 |
+| Final affected processes | 0 |
+| Final degraded resolution-health nodes | 0 |
+
+Final screenshot artifacts inspected:
+
+- `avmatrix-web/test-results/graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium/graph-node-spacing-dense-desktop.png`
+- `avmatrix-web/test-results/graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium/graph-node-spacing-dense-small.png`
