@@ -38,6 +38,30 @@ describe('graph scale model', () => {
     ).toBeCloseTo(0.140625);
   });
 
+  it('zooms detail focus deeper when screen spacing needs a lower camera ratio', () => {
+    expect(
+      getDetailFocusCameraRatio({
+        currentCameraRatio: 1,
+        currentRenderedNodeRadiusPx: 3,
+        targetRenderedNodeRadiusPx: 8,
+        currentRequiredCenterDistanceGraph: 48,
+        minimumGraphCenterDistance: 12,
+      }),
+    ).toBeCloseTo(0.0625);
+  });
+
+  it('keeps readable detail focus ratio when current graph spacing is already safe', () => {
+    expect(
+      getDetailFocusCameraRatio({
+        currentCameraRatio: 1,
+        currentRenderedNodeRadiusPx: 3,
+        targetRenderedNodeRadiusPx: 8,
+        currentRequiredCenterDistanceGraph: 10,
+        minimumGraphCenterDistance: 12,
+      }),
+    ).toBeCloseTo(0.140625);
+  });
+
   it('enforces a one-diameter edge gap for equal-size nodes', () => {
     const radius = 3;
 

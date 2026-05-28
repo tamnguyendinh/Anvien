@@ -248,6 +248,12 @@ const getAngleProgress = (x: number, y: number): number => {
   return (Math.atan2(y, x) - startAngle + fullCircle) % fullCircle;
 };
 
+const average = (values: number[]): number =>
+  values.reduce((total, value) => total + value, 0) / values.length;
+
+const getRoundedUniqueCount = (values: number[], precision = 4): number =>
+  new Set(values.map((value) => value.toFixed(precision))).size;
+
 describe("knowledgeGraphToGraphology edge geometry", () => {
   it("creates straight edges without curved-edge metadata", () => {
     const graph = createKnowledgeGraph();
@@ -687,7 +693,7 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     }
   });
 
-  it("places node type islands on one dynamic graph field", () => {
+  it("places node type islands on a radial pinwheel orbit with dynamic variation", () => {
     const graph = createKnowledgeGraph();
     const countsByLabel = new Map([
       ["Project", 4],
@@ -705,14 +711,28 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     }
 
     const sigmaGraph = knowledgeGraphToGraphology(graph);
-    const centerRadii = [...getGeometryByType(sigmaGraph).values()].map(
+    const geometries = [...getGeometryByType(sigmaGraph).values()];
+    const centerRadii = geometries.map(
       (geometry) => Math.hypot(geometry.centerX, geometry.centerY),
     );
     const minimumRadius = Math.min(...centerRadii);
     const maximumRadius = Math.max(...centerRadii);
 
     expect(minimumRadius).toBeGreaterThan(0);
-    expect(maximumRadius / minimumRadius).toBeLessThanOrEqual(1.01);
+    expect(maximumRadius / minimumRadius).toBeGreaterThanOrEqual(1.08);
+
+    const gapFloor = getDynamicGapFloor(sigmaGraph);
+    for (let leftIndex = 0; leftIndex < geometries.length; leftIndex++) {
+      for (
+        let rightIndex = leftIndex + 1;
+        rightIndex < geometries.length;
+        rightIndex++
+      ) {
+        expect(
+          getCircularGap(geometries[leftIndex], geometries[rightIndex]),
+        ).toBeGreaterThanOrEqual(gapFloor);
+      }
+    }
   });
 
   it("places App Layer rings with API between Backend and Frontend", () => {
@@ -1116,34 +1136,54 @@ describe("knowledgeGraphToGraphology edge geometry", () => {
     expect(aCustomProgress).toBeLessThan(zCustomProgress);
   });
 
-  it("sorts nodes inside a label cluster into deterministic hex slots", () => {
+  it("sorts nodes inside a label cluster into deterministic collision-safe spiral positions", () => {
     const graph = createKnowledgeGraph();
-    const bPath = createFunctionNode("alpha", "src/b.ts", 1);
-    const aPathBeta = createFunctionNode("beta", "src/a.ts", 1);
-    const aPathAlphaLine2 = createFunctionNode("alpha", "src/a.ts", 2);
-    const aPathAlphaLine1 = createFunctionNode("alpha", "src/a.ts", 1);
+    const nodeIds: string[] = [];
 
-    graph.addNode(bPath);
-    graph.addNode(aPathBeta);
-    graph.addNode(aPathAlphaLine2);
-    graph.addNode(aPathAlphaLine1);
+    for (let index = 0; index < 144; index++) {
+      const node = createFunctionNode(
+        `fn${String(index).padStart(3, "0")}`,
+        `src/spiral/${String(index).padStart(3, "0")}.ts`,
+        index + 1,
+      );
+      nodeIds.push(node.id);
+      graph.addNode(node);
+    }
 
     const sigmaGraph = knowledgeGraphToGraphology(graph);
-    const first = sigmaGraph.getNodeAttributes(aPathAlphaLine1.id);
-    const second = sigmaGraph.getNodeAttributes(aPathAlphaLine2.id);
-    const third = sigmaGraph.getNodeAttributes(aPathBeta.id);
-    const fourth = sigmaGraph.getNodeAttributes(bPath.id);
+    const geometry = getGeometryByType(sigmaGraph).get("Function");
+    expect(geometry).toBeDefined();
+    const relativePositions = nodeIds.map((nodeId) => {
+      const attributes = sigmaGraph.getNodeAttributes(nodeId);
+      return {
+        x: attributes.x - geometry!.centerX,
+        y: attributes.y - geometry!.centerY,
+      };
+    });
+    const radialDistances = relativePositions.map((position) =>
+      Math.hypot(position.x, position.y),
+    );
+    const innerAverageRadius = average(radialDistances.slice(0, 18));
+    const outerAverageRadius = average(radialDistances.slice(-18));
+    const angularBins = new Set(
+      relativePositions
+        .slice(1)
+        .map((position) =>
+          Math.floor((getAngleProgress(position.x, position.y) / (Math.PI * 2)) * 24),
+        ),
+    );
 
-    const distanceFromFirst = (node: typeof first) =>
-      Math.hypot(node.x - first.x, node.y - first.y);
-    const minimumCenterDistance = getMinimumNodeCenterDistance(sigmaGraph.order);
+    expect(outerAverageRadius).toBeGreaterThan(innerAverageRadius * 2.5);
+    expect(angularBins.size).toBeGreaterThanOrEqual(20);
+    expect(getRoundedUniqueCount(relativePositions.map((position) => position.x))).toBeGreaterThan(
+      nodeIds.length * 0.85,
+    );
+    expect(getRoundedUniqueCount(relativePositions.map((position) => position.y))).toBeGreaterThan(
+      nodeIds.length * 0.85,
+    );
 
-    expect(distanceFromFirst(first)).toBe(0);
-    expect(distanceFromFirst(second)).toBeCloseTo(minimumCenterDistance);
-    expect(distanceFromFirst(third)).toBeCloseTo(minimumCenterDistance);
-    expect(distanceFromFirst(fourth)).toBeCloseTo(minimumCenterDistance);
-    expect(second.x).toBeLessThan(first.x);
-    expect(third.x).toBeGreaterThan(second.x);
-    expect(fourth.x).toBeGreaterThan(third.x);
+    const stats = getPairwiseSpacingStats(sigmaGraph, nodeIds);
+    expect(stats.overlapCount).toBe(0);
+    expect(stats.targetGapViolationCount).toBe(0);
   });
 });

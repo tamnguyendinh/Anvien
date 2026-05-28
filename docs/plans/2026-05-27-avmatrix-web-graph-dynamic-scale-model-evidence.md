@@ -2,7 +2,7 @@
 
 Date: 2026-05-27
 
-Status: Completed
+Status: Active - Phase 9B pre-commit pending
 
 Companion files:
 
@@ -871,7 +871,7 @@ Phase 9 planning decision:
 
 ## E10 - Phase 9A Graph Adapter Split Evidence
 
-Status: in progress for P9-F through P9-J.
+Status: completed for P9-F through P9-J.
 
 P9-F code split:
 
@@ -956,3 +956,107 @@ P9-J pre-commit AVmatrix detection:
 - Exact UID impact: `Function:avmatrix-web/src/lib/graph-conversion.ts:knowledgeGraphToGraphology`.
 - Exact UID impact result: risk `LOW`, impacted count `9`, processes affected `0`; direct impact is the `graph-adapter.ts` re-export facade and upstream imports through `GraphCanvas.tsx`, `useSigma.ts`, graph diagnostics, readable camera, selected graph context, and `App.tsx`.
 - Decision: medium changed-scope risk is expected for moving existing graph conversion/layout code into new modules. The runtime behavior was already validated through the full launcher build, focused unit tests, and launcher-served e2e/browser screenshots.
+
+## E11 - Phase 9B Spiral Topology Restoration Evidence
+
+Status: in progress for P9-K through P9-Z.
+
+P9-K failing topology tests:
+
+- AVmatrix refresh before topology work: `avmatrix analyze --force`.
+- Result: scanned `797`, parsed `583`, unsupported `214`, failed `0`; graph `91018` nodes and `124419` relationships.
+- Exact impact target: `Function:avmatrix-web/src/lib/graph-layout.ts:applyFilterBasedClusteredLayout`.
+- Exact impact result: risk `HIGH`, impacted count `11`, affected module `Cluster`, affected processes `4`.
+- Affected processes:
+  - `KnowledgeGraphToGraphology -> CompareKnownOrder`.
+  - `KnowledgeGraphToGraphology -> GetDisplayGraphRelationships`.
+  - `KnowledgeGraphToGraphology -> GetFileExtension`.
+  - `KnowledgeGraphToGraphology -> GetFileStem`.
+- HIGH is a blast-radius warning for central Web graph layout, not an edit ban.
+- Added unit coverage in `avmatrix-web\test\unit\graph-adapter.edge-geometry.test.ts`:
+  - island centers inside one app-layer ring must use radial pinwheel variation, not one equal-radius orbit;
+  - same-island nodes must use deterministic collision-safe spiral positions, not hex/grid rows;
+  - existing same-island spacing, edge-gap, color, ring, and island tests remain in the same file.
+- Failing command before implementation: `npx vitest run test/unit/graph-adapter.edge-geometry.test.ts`.
+- Expected failure result before implementation: `2` failed tests and `23` passed tests.
+- Failing assertions:
+  - pinwheel variation: expected center-radius ratio `1.0000000000000002` to be at least `1.08`;
+  - spiral/non-grid placement: expected rounded unique x-count `27` to be greater than `122.39999999999999`.
+
+P9-L through P9-S implementation evidence:
+
+- Replaced the hex-only same-island placement path in `avmatrix-web\src\lib\graph-layout.ts` with deterministic golden-angle/radial candidate placement.
+- Added a collision grid and fallback radial candidate path so same-island placement remains deterministic and collision-safe.
+- Restored app-layer island radial/pinwheel variation through per-slot radius and angle offsets while keeping dynamic footprint gaps.
+- Tightened Web e2e layout diagnostics in `avmatrix-web\e2e\graph-orientation-labels.spec.ts`:
+  - layout ring inventory is derived from the active dense graph instead of a fixed count;
+  - ring center/order checks preserve API between backend/frontend and docs centered behavior;
+  - same-color island violations must remain zero;
+  - frontend ring must keep multiple islands.
+- Added focused camera spacing protection after the first topology e2e run exposed a remaining failure:
+  - failing symptom: detail/search focus reached `targetGapViolationCount=1188`;
+  - impacted symbols were checked with AVmatrix before edits;
+  - detail focus ratio now uses scale-model spacing constraints so explicit search/focus can zoom deeper when screen-space spacing requires it.
+- The focus-ratio fix preserves node data, filters, color, labels, diagnostics, interactions, and topology. It changes camera ratio only for explicit detail focus.
+
+P9-L through P9-S AVmatrix impact evidence:
+
+- AVmatrix refresh command: `avmatrix analyze --force`.
+- Result: scanned `797`, parsed `583`, unsupported `214`, failed `0`; graph `91147` nodes and `124601` relationships.
+- Exact impact `Function:avmatrix-web/src/lib/graph-camera-mode.ts:buildDetailFocusCameraAction`: risk `CRITICAL`, impacted count `5`, affected processes `5`.
+- Exact impact `Function:avmatrix-web/src/hooks/useSigma.ts:useSigma`: risk `CRITICAL`, impacted count `4`, affected processes `11`.
+- Exact impact `Function:avmatrix-web/src/lib/graph-scale-model.ts:getDetailFocusCameraRatio`: risk `CRITICAL`, impacted count `6`, affected processes `5`.
+- Exact impact `Function:avmatrix-web/src/lib/graph-scale-model.ts:buildGraphScaleModel`: risk `LOW`, impacted count `0`.
+- CRITICAL is a blast-radius warning for central graph UI camera/interaction paths, not an edit ban.
+
+P9-T/P9-U full build gate:
+
+- Stopped the launcher-owned runtime group with `avmatrix-launcher\AVmatrixLauncher.exe stop` before rebuilding artifacts.
+- Command: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- Result: passed.
+- The build rebuilt `avmatrix-web\dist`, recopied `avmatrix-launcher\web-dist`, rebuilt `avmatrix\bin\avmatrix.exe`, rebuilt `avmatrix-launcher\server-bundle\avmatrix-server.exe`, and rebuilt `avmatrix-launcher\AVmatrixLauncher.exe`.
+- Build warnings were limited to existing Vite chunk/dynamic-import warnings; they did not fail the gate.
+- Launcher executable and packaged bundle metrics are recorded in benchmark row `B10`.
+
+P9-V validation:
+
+- Preliminary focused unit command after the camera-ratio fix: `npx vitest run test/unit/graph-scale-model.test.ts test/unit/graph-camera-mode.test.ts test/unit/graph-adapter.edge-geometry.test.ts`.
+- Preliminary focused unit result: passed, `3` files and `38` tests.
+- Official focused Web unit command after full build: `npx vitest run test/unit/graph-adapter.edge-geometry.test.ts test/unit/graph-scale-model.test.ts test/unit/graph-screen-spacing.test.ts test/unit/graph-overview-diagnostics.test.ts test/unit/graph-orientation-labels.test.ts test/unit/graph-camera-mode.test.ts test/unit/runtime-diagnostics.test.ts`.
+- Official focused Web unit result: passed, `7` files and `59` tests.
+- Full Web unit command: `npx vitest run test/unit`.
+- Full Web unit result: passed, `50` files and `401` tests.
+- Launcher-served app start: `AVMATRIX_LAUNCHER_NO_BROWSER=1` and `avmatrix-launcher\AVmatrixLauncher.exe start`.
+- Port check: `127.0.0.1:5228` returned `TcpTestSucceeded=True`.
+- Web e2e/browser command: `npx playwright test e2e/graph-orientation-labels.spec.ts --project=chromium`.
+- Web e2e/browser result: passed, `3` tests.
+- Screenshot artifacts:
+  - `avmatrix-web\test-results\graph-orientation-labels-G-5b603-labels-on-the-desktop-graph-chromium\graph-orientation-labels-desktop.png`.
+  - `avmatrix-web\test-results\graph-orientation-labels-G-e5a0a-t-and-updates-after-filters-chromium\graph-orientation-labels-small-filtered.png`.
+  - `avmatrix-web\test-results\graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium\graph-node-spacing-dense-desktop.png`.
+  - `avmatrix-web\test-results\graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium\graph-node-spacing-dense-small.png`.
+
+P9-W evidence/benchmark update:
+
+- Product/runtime metrics are recorded in benchmark row `B10`.
+- This evidence row records traceability, command results, implementation decisions, impact checks, and validation outcomes only.
+
+P9-X pre-commit change detection:
+
+- `git diff --check`: passed.
+- `avmatrix analyze --force`: scanned `797`, parsed `583`, unsupported `214`, failed `0`.
+- Refreshed graph: `91187` nodes and `124660` relationships.
+- `avmatrix detect-changes --repo AVmatrix --scope all`: risk level `medium`.
+- Changed files: `11`.
+- Changed symbols: `332`.
+- Changed app layers: docs `8`, frontend `149`, frontend_test `175`.
+- Changed functional areas: documentation `8`, layout `27`, unknown `297`.
+- Affected count: `2`.
+- Affected app layers: frontend `2`.
+- Affected functional areas: layout `2`.
+- Affected processes:
+  - `HandleWheel -> GetFocusIslandNodeSizes`.
+  - `HandleWheel -> GetNodeIslandKey`.
+- Resolution gap changes: `236` changed gap entities and `254` changed gap occurrences; changed source nodes with gaps `0`.
+- Resolution health impact: degraded nodes `0`, total resolution gap count `0`.
+- Decision: medium changed-scope risk is expected because the slice changes graph layout topology, focus-camera spacing, and topology/e2e assertions. Full build, focused unit, full unit, launcher-served e2e, and screenshot validation passed before this detection.

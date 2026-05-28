@@ -79,11 +79,15 @@ export const getDetailFocusCameraRatio = ({
   currentRenderedNodeRadiusPx,
   targetRenderedNodeRadiusPx = GRAPH_DETAIL_FOCUS_RENDERED_NODE_RADIUS_PX,
   minimumCameraRatio = GRAPH_MINIMUM_DETAIL_FOCUS_CAMERA_RATIO,
+  currentRequiredCenterDistanceGraph,
+  minimumGraphCenterDistance,
 }: {
   currentCameraRatio: number;
   currentRenderedNodeRadiusPx: number;
   targetRenderedNodeRadiusPx?: number;
   minimumCameraRatio?: number;
+  currentRequiredCenterDistanceGraph?: number;
+  minimumGraphCenterDistance?: number;
 }): number => {
   if (
     !Number.isFinite(currentCameraRatio) ||
@@ -96,10 +100,31 @@ export const getDetailFocusCameraRatio = ({
     return Math.max(minimumCameraRatio, currentCameraRatio || 1);
   }
 
-  return Math.max(
+  const readableCameraRatio = Math.max(
     minimumCameraRatio,
     currentCameraRatio *
       Math.pow(currentRenderedNodeRadiusPx / targetRenderedNodeRadiusPx, 2),
+  );
+
+  if (
+    !Number.isFinite(currentRequiredCenterDistanceGraph) ||
+    !Number.isFinite(minimumGraphCenterDistance) ||
+    currentRequiredCenterDistanceGraph === undefined ||
+    minimumGraphCenterDistance === undefined ||
+    currentRequiredCenterDistanceGraph <= 0 ||
+    minimumGraphCenterDistance <= 0 ||
+    currentRequiredCenterDistanceGraph <= minimumGraphCenterDistance
+  ) {
+    return readableCameraRatio;
+  }
+
+  const spacingSafeCameraRatio =
+    currentCameraRatio *
+    Math.pow(minimumGraphCenterDistance / currentRequiredCenterDistanceGraph, 2);
+
+  return Math.max(
+    minimumCameraRatio,
+    Math.min(readableCameraRatio, spacingSafeCameraRatio),
   );
 };
 

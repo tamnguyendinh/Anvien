@@ -4,7 +4,7 @@ Date: 2026-05-27
 Reopened: 2026-05-28
 Reopened again: 2026-05-28
 
-Status: Reopened - Phase 9 pending
+Status: Reopened - Phase 9B pre-commit detection passed, implementation commit pending
 
 Companion files:
 
@@ -602,20 +602,20 @@ Slice 9A is a behavior-preserving code split. Slice 9B restores topology. Each c
 - [x] P9-H Run the full build gate before tests for the split slice.
 - [x] P9-I Run focused Web unit tests and existing Web e2e/browser validation for the split slice.
 - [x] P9-J Run `avmatrix detect-changes --repo AVmatrix --scope all` and commit the split slice.
-- [ ] P9-K Add unit geometry tests that fail when same-island placement becomes hex/grid-only instead of spiral/radial.
-- [ ] P9-L Add or tighten Web e2e/browser screenshot validation that checks spiral/ring topology together with spacing, color, node inventory, ring/island inventory, and zoom.
-- [ ] P9-M Replace hex-only same-island placement with deterministic collision-safe golden-angle/radial spiral placement.
-- [ ] P9-N Restore radial/pinwheel island placement around app-layer rings while preserving dynamic footprint gaps.
-- [ ] P9-O Preserve rendered-size spacing: edge-to-edge gap is at least one rendered node diameter for protected same-island/detail validation.
-- [ ] P9-P Preserve dynamic graph-derived inventories; do not hardcode ring, island, node-type, or color counts.
-- [ ] P9-Q Preserve all node types, filters, colors, community colors, edges, ring labels, island labels, and diagnostics fields.
-- [ ] P9-R Preserve mouse-wheel zoom, button zoom, click, hover, focus/search, selected/highlight, and blast-radius interactions.
-- [ ] P9-S Preserve render performance strategy: scheduling/caching/coalescing only; no feature removal.
-- [ ] P9-T Run the full build gate: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
-- [ ] P9-U Verify the full build refreshed `avmatrix-launcher\AVmatrixLauncher.exe` by recording LastWriteTime, file size, and hash.
-- [ ] P9-V Run focused Web unit tests, full Web unit tests, and Web e2e/browser screenshot validation.
-- [ ] P9-W Record Phase 9 evidence in the evidence ledger and Phase 9 product/runtime/layout/inventory/performance metrics in the benchmark ledger.
-- [ ] P9-X Run `avmatrix detect-changes --repo AVmatrix --scope all`.
+- [x] P9-K Add unit geometry tests that fail when same-island placement becomes hex/grid-only instead of spiral/radial.
+- [x] P9-L Add or tighten Web e2e/browser screenshot validation that checks spiral/ring topology together with spacing, color, node inventory, ring/island inventory, and zoom.
+- [x] P9-M Replace hex-only same-island placement with deterministic collision-safe golden-angle/radial spiral placement.
+- [x] P9-N Restore radial/pinwheel island placement around app-layer rings while preserving dynamic footprint gaps.
+- [x] P9-O Preserve rendered-size spacing: edge-to-edge gap is at least one rendered node diameter for protected same-island/detail validation.
+- [x] P9-P Preserve dynamic graph-derived inventories; do not hardcode ring, island, node-type, or color counts.
+- [x] P9-Q Preserve all node types, filters, colors, community colors, edges, ring labels, island labels, and diagnostics fields.
+- [x] P9-R Preserve mouse-wheel zoom, button zoom, click, hover, focus/search, selected/highlight, and blast-radius interactions.
+- [x] P9-S Preserve render performance strategy: scheduling/caching/coalescing only; no feature removal.
+- [x] P9-T Run the full build gate: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- [x] P9-U Verify the full build refreshed `avmatrix-launcher\AVmatrixLauncher.exe` by recording LastWriteTime, file size, and hash.
+- [x] P9-V Run focused Web unit tests, full Web unit tests, and Web e2e/browser screenshot validation.
+- [x] P9-W Record Phase 9 evidence in the evidence ledger and Phase 9 product/runtime/layout/inventory/performance metrics in the benchmark ledger.
+- [x] P9-X Run `avmatrix detect-changes --repo AVmatrix --scope all`.
 - [ ] P9-Y Commit the completed topology restoration slice.
 - [ ] P9-Z Confirm working tree state and close Phase 9 only after split, topology, spacing, color/inventory, zoom, interaction, performance, launcher, evidence, and benchmark gates pass together.
 

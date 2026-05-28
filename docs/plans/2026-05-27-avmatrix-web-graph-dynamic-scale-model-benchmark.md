@@ -2,7 +2,7 @@
 
 Date: 2026-05-27
 
-Status: Completed
+Status: Active - Phase 9B pre-commit pending
 
 Companion files:
 
@@ -544,7 +544,7 @@ Counts such as `3` rings or `4` islands are fixture metrics only. Product assert
 
 ## B9 - Phase 9A Code Split Metrics
 
-Status: in progress for split-slice validation.
+Status: completed for split-slice validation.
 
 | Metric | Value |
 |---|---:|
@@ -607,3 +607,90 @@ Phase 9A screenshot artifact inventory:
 | `avmatrix-web\test-results\graph-orientation-labels-G-e5a0a-t-and-updates-after-filters-chromium\graph-orientation-labels-small-filtered.png` | 92846 |
 | `avmatrix-web\test-results\graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium\graph-node-spacing-dense-desktop.png` | 301048 |
 | `avmatrix-web\test-results\graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium\graph-node-spacing-dense-small.png` | 106522 |
+
+## B10 - Phase 9B Spiral Topology Restoration Metrics
+
+Status: recorded for topology-slice validation before pre-commit detection.
+
+Topology metrics:
+
+| Metric | Value |
+|---|---:|
+| Pinwheel fixture node count | 24 |
+| Pinwheel island count | 6 |
+| Pinwheel minimum island-center radius | 96.00000000000001 |
+| Pinwheel maximum island-center radius | 136.32000000000002 |
+| Pinwheel center-radius ratio | 1.42 |
+| Spiral fixture node count | 144 |
+| Spiral rounded unique x count | 144 |
+| Spiral rounded unique y count | 144 |
+| Spiral angular bin count out of 24 | 24 |
+| Spiral inner average radius | 34.51037422931348 |
+| Spiral outer average radius | 140.3944893621236 |
+
+Spacing metrics:
+
+| Metric | Value |
+|---|---:|
+| Spiral minimum center distance | 13.873976602029874 |
+| Spiral minimum edge gap | 7.873976602029874 |
+| Spiral overlap count | 0 |
+| Spiral target-gap violation count | 0 |
+| Dense same-island node count | 1800 |
+| Dense same-island required center distance | 12 |
+| Dense same-island required edge gap | 6 |
+| Dense same-island minimum center distance | 12.002430877226336 |
+| Dense same-island minimum edge gap | 6.002430877226336 |
+| Dense same-island overlap count | 0 |
+| Dense same-island target-gap violation count | 0 |
+
+Detail-focus camera metrics:
+
+| Metric | Value |
+|---|---:|
+| Readable-only detail focus ratio from radius 3 to 8 | 0.140625 |
+| Spacing-safe detail focus ratio for 48 graph-unit requirement against 12 graph-unit layout floor | 0.0625 |
+
+Dense e2e fixture inventory:
+
+| Metric | Value |
+|---|---:|
+| Dense fixture graph nodes | 2157 |
+| Dense fixture graph edges | 2156 |
+| Dense fixture default-visible node count | 2077 |
+| Dense fixture default visible color count | 3 |
+| Dense fixture default visible ring count | 3 |
+| Dense fixture default visible island count | 4 |
+| Dense fixture layout ring count from full graph inventory | 4 |
+| Dense fixture visible node-type count | 3 |
+| Dense fixture layout same-color island violations | 0 |
+
+Phase 9B package/build artifact metrics:
+
+| Metric | Value |
+|---|---:|
+| Web bundle | `avmatrix-web\dist\assets\index-C_89qSiV.js` |
+| Web bundle bytes | 2055954 |
+| Web bundle SHA256 | `55B5097D4DA274EE728771FBCA0F88E51195BFFEBA6963CCEFD22AE41539FAC1` |
+| Launcher web bundle | `avmatrix-launcher\web-dist\assets\index-C_89qSiV.js` |
+| Launcher web bundle bytes | 2055954 |
+| Launcher web bundle SHA256 | `55B5097D4DA274EE728771FBCA0F88E51195BFFEBA6963CCEFD22AE41539FAC1` |
+| Web and launcher bundle hashes match | true |
+| Launcher exe LastWriteTime | `2026-05-28 12:18:41 +07:00` |
+| Launcher exe bytes | 6993408 |
+| Launcher exe SHA256 | `90C55E9CA00260F7E9640933CEFFC466E990552DE9A8F62F05EFF79B89D8B473` |
+| Launcher server exe LastWriteTime | `2026-05-28 12:18:42 +07:00` |
+| Launcher server exe bytes | 2053632 |
+| Launcher server exe SHA256 | `01DBC522477067916B8C82818CEBB54128E441D035F2A815044D83168E8E2110` |
+| CLI exe LastWriteTime | `2026-05-28 12:18:40 +07:00` |
+| CLI exe bytes | 50528768 |
+| CLI exe SHA256 | `87583817B46EF441D111C60783D0705DF04B5B5A4EFAC94B0F2A191C4303046D` |
+
+Phase 9B screenshot artifact inventory:
+
+| Artifact | Bytes |
+|---|---:|
+| `avmatrix-web\test-results\graph-orientation-labels-G-5b603-labels-on-the-desktop-graph-chromium\graph-orientation-labels-desktop.png` | 238812 |
+| `avmatrix-web\test-results\graph-orientation-labels-G-e5a0a-t-and-updates-after-filters-chromium\graph-orientation-labels-small-filtered.png` | 93029 |
+| `avmatrix-web\test-results\graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium\graph-node-spacing-dense-desktop.png` | 286065 |
+| `avmatrix-web\test-results\graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium\graph-node-spacing-dense-small.png` | 106634 |

@@ -7,6 +7,7 @@ import {
   SigmaEdgeAttributes,
   applyFilterBasedClusteredLayout,
   capRenderedNodeSize,
+  getMinimumNodeCenterDistance,
 } from '../lib/graph-adapter';
 import type { NodeAnimation } from './useAppState.local-runtime';
 import type { EdgeType } from '../lib/constants';
@@ -23,6 +24,7 @@ import {
   buildDetailFocusCameraAction,
   buildOverviewCameraAction,
 } from '../lib/graph-camera-mode';
+import { buildGraphScaleModel } from '../lib/graph-scale-model';
 
 const DENSE_GRAPH_AMBIENT_EDGE_DIM_AMOUNT = 0.04;
 const DENSE_GRAPH_AMBIENT_EDGE_SIZE_MULTIPLIER = 0.12;
@@ -110,6 +112,29 @@ const capNodeReducerSize = (
     attributes.size = capRenderedNodeSize(attributes.size, nodeCount);
   }
   return attributes;
+};
+
+const getNodeIslandKey = (attributes: SigmaNodeAttributes): string =>
+  `${attributes.appLayerRing ?? 'missing_app_layer'}:${
+    attributes.islandKey ?? attributes.nodeType
+  }`;
+
+const getFocusIslandNodeSizes = (
+  graph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>,
+  targetAttributes: SigmaNodeAttributes,
+): number[] => {
+  const targetIslandKey = getNodeIslandKey(targetAttributes);
+  const nodeSizes: number[] = [];
+
+  for (const nodeId of graph.nodes()) {
+    const attributes = graph.getNodeAttributes(nodeId);
+    if (attributes.hidden || getNodeIslandKey(attributes) !== targetIslandKey) {
+      continue;
+    }
+    nodeSizes.push(attributes.size || 1);
+  }
+
+  return nodeSizes.length > 0 ? nodeSizes : [targetAttributes.size || 1];
 };
 
 export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
@@ -544,6 +569,18 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       const currentSelectedNodeId = selectedNodeRef.current;
       const nodeAttrs = graph.getNodeAttributes(nodeId);
       const cameraState = sigma.getCamera().getState();
+      const minimumGraphCenterDistance = getMinimumNodeCenterDistance(
+        graph.order,
+      );
+      const focusScaleModel = buildGraphScaleModel(
+        sigma,
+        [
+          ...getFocusIslandNodeSizes(graph, nodeAttrs),
+          minimumGraphCenterDistance / 4,
+        ],
+        undefined,
+        { x: nodeAttrs.x, y: nodeAttrs.y },
+      );
       const focusPoint = sigma.viewportToFramedGraph(
         sigma.graphToViewport({ x: nodeAttrs.x, y: nodeAttrs.y }),
       );
@@ -555,6 +592,9 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
         nodeSize: nodeAttrs.size || 1,
         currentCameraRatio: cameraState.ratio,
         scaler: sigma,
+        currentRequiredCenterDistanceGraph:
+          focusScaleModel.requiredCenterDistanceGraph,
+        minimumGraphCenterDistance,
       });
 
       setSelectedNode(nodeId);

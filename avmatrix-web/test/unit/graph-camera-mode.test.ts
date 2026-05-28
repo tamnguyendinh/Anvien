@@ -52,4 +52,20 @@ describe('graph camera mode', () => {
     expect(action.shouldAnimateCamera).toBe(true);
     expect(action.cameraState.ratio).toBeCloseTo(0.140625);
   });
+
+  it('uses the spacing-safe ratio when detail focus would otherwise violate layout spacing', () => {
+    const action = buildDetailFocusCameraAction({
+      targetNodeId: 'Function:src/app.ts:main',
+      currentSelectedNodeId: null,
+      nodeX: 42,
+      nodeY: 24,
+      nodeSize: 3,
+      currentCameraRatio: 1,
+      scaler: createScaleSizer(),
+      currentRequiredCenterDistanceGraph: 48,
+      minimumGraphCenterDistance: 12,
+    });
+
+    expect(action.cameraState.ratio).toBeCloseTo(0.0625);
+  });
 });

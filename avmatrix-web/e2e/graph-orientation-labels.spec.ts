@@ -285,6 +285,25 @@ const getLayoutNodeSpacingDiagnostics = async (page: Page) =>
     return win.__AVMATRIX_WEB_DIAGNOSTICS__?.layoutNodeSpacing ?? null;
   });
 
+const getLayoutRingDiagnostics = async (page: Page) =>
+  page.evaluate(() => {
+    const win = window as typeof window & {
+      __AVMATRIX_WEB_DIAGNOSTICS__?: {
+        layoutRings?: {
+          nodeCount: number;
+          ringCount: number;
+          ringNodeCounts: Record<string, number>;
+          ringCenters: Record<string, { x: number; y: number }>;
+          ringIslandCounts: Record<string, number>;
+          apiBetweenBackendAndFrontend: boolean;
+          docsCentered: boolean;
+          sameColorIslandViolations: number;
+        };
+      };
+    };
+    return win.__AVMATRIX_WEB_DIAGNOSTICS__?.layoutRings ?? null;
+  });
+
 const getScreenNodeSpacingDiagnostics = async (page: Page) =>
   page.evaluate(() => {
     const win = window as typeof window & {
@@ -642,6 +661,11 @@ test.describe("Graph orientation labels", () => {
   }, testInfo) => {
     const denseGraph = createDenseSpacingGraph();
     const expectedDenseRingInventory = getFixtureRingInventory(denseGraph);
+    const expectedDenseLayoutRingInventory = uniqueSorted(
+      denseGraph.nodes.map(
+        (node) => node.properties.appLayer ?? "missing_app_layer",
+      ),
+    );
     const expectedDenseIslandInventory = getFixtureIslandInventory(denseGraph);
     const expectedDenseVisibleNodeCount =
       getDefaultVisibleFixtureNodes(denseGraph).length;
@@ -672,8 +696,23 @@ test.describe("Graph orientation labels", () => {
       .toBe(denseGraph.nodes.length);
 
     const desktopDiagnostics = await getLayoutNodeSpacingDiagnostics(page);
+    const desktopRingDiagnostics = await getLayoutRingDiagnostics(page);
     const desktopOverviewDiagnostics = await getGraphOverviewDiagnostics(page);
     expect(desktopOverviewDiagnostics).not.toBeNull();
+    expect(desktopRingDiagnostics).not.toBeNull();
+    expect(desktopRingDiagnostics?.nodeCount).toBe(denseGraph.nodes.length);
+    expect(desktopRingDiagnostics?.ringCount).toBe(
+      expectedDenseLayoutRingInventory.length,
+    );
+    expect(
+      Object.keys(desktopRingDiagnostics?.ringNodeCounts ?? {}).sort((left, right) =>
+        left.localeCompare(right),
+      ),
+    ).toEqual(expectedDenseLayoutRingInventory);
+    expect(desktopRingDiagnostics?.apiBetweenBackendAndFrontend).toBe(true);
+    expect(desktopRingDiagnostics?.docsCentered).toBe(true);
+    expect(desktopRingDiagnostics?.sameColorIslandViolations).toBe(0);
+    expect(desktopRingDiagnostics?.ringIslandCounts.frontend).toBeGreaterThan(1);
     expect(desktopDiagnostics?.overlapCount).toBe(0);
     expect(desktopDiagnostics?.targetGapViolationCount).toBe(0);
     expect(desktopDiagnostics?.minObservedCenterDistance).toBeGreaterThanOrEqual(

@@ -39,6 +39,8 @@ export const buildDetailFocusCameraAction = ({
   nodeSize,
   currentCameraRatio,
   scaler,
+  currentRequiredCenterDistanceGraph,
+  minimumGraphCenterDistance,
 }: {
   targetNodeId: string;
   currentSelectedNodeId: string | null;
@@ -47,6 +49,8 @@ export const buildDetailFocusCameraAction = ({
   nodeSize: number;
   currentCameraRatio: number;
   scaler: GraphScaleSizeScaler;
+  currentRequiredCenterDistanceGraph?: number;
+  minimumGraphCenterDistance?: number;
 }): GraphDetailFocusCameraAction => {
   const currentRenderedNodeRadiusPx = getRenderedNodeRadiusPx(
     scaler,
@@ -62,6 +66,8 @@ export const buildDetailFocusCameraAction = ({
       ratio: getDetailFocusCameraRatio({
         currentCameraRatio,
         currentRenderedNodeRadiusPx,
+        currentRequiredCenterDistanceGraph,
+        minimumGraphCenterDistance,
       }),
     },
     durationMs: GRAPH_DETAIL_FOCUS_CAMERA_DURATION_MS,

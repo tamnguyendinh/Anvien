@@ -38,6 +38,7 @@ const compareClusterLabels = (left: string, right: string): number => {
 const getClusterNodeSpacing = (nodeCount: number): number =>
   getMinimumNodeCenterDistance(nodeCount);
 
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 const MISSING_APP_LAYER_RING = "missing_app_layer";
 
 export const APP_LAYER_RING_ORDER = [
@@ -208,61 +209,152 @@ const getClusterIslandRadius = (
   );
 };
 
-const HEX_AXIAL_DIRECTIONS: Array<[number, number]> = [
-  [1, 0],
-  [1, -1],
-  [0, -1],
-  [-1, 0],
-  [-1, 1],
-  [0, 1],
-];
+const getIslandOffset = (
+  nodeIndex: number,
+  nodeSpacing: number,
+  labelSeed: number,
+): IslandOffset => {
+  if (nodeIndex === 0) {
+    return { x: 0, y: 0 };
+  }
 
-const getHexAxialRingCoordinates = (
-  ringIndex: number,
-): Array<[number, number]> => {
-  const coordinates: Array<[number, number]> = [];
-  let q = -ringIndex;
-  let r = ringIndex;
+  const seedRadians = ((labelSeed % 360) * Math.PI) / 180;
+  const organicWave = Math.sin((nodeIndex + 1) * ((labelSeed % 997) + 1) * 0.013);
+  const radius = nodeSpacing * Math.sqrt(nodeIndex) * (1 + organicWave * 0.035);
+  const angle =
+    nodeIndex * GOLDEN_ANGLE +
+    seedRadians +
+    Math.sin((nodeIndex + 1) * 0.37 + seedRadians) * 0.025;
 
-  for (const [dq, dr] of HEX_AXIAL_DIRECTIONS) {
-    for (let step = 0; step < ringIndex; step++) {
-      coordinates.push([q, r]);
-      q += dq;
-      r += dr;
+  return {
+    x: Math.cos(angle) * radius,
+    y: Math.sin(angle) * radius,
+  };
+};
+
+const getIslandOffsetCellKey = (
+  offset: IslandOffset,
+  cellSize: number,
+): string =>
+  `${Math.floor(offset.x / cellSize)}:${Math.floor(offset.y / cellSize)}`;
+
+const isIslandOffsetFarEnough = (
+  offset: IslandOffset,
+  offsetGrid: Map<string, IslandOffset[]>,
+  minimumNodeCenterDistance: number,
+): boolean => {
+  const cellX = Math.floor(offset.x / minimumNodeCenterDistance);
+  const cellY = Math.floor(offset.y / minimumNodeCenterDistance);
+  const minimumDistanceSquared =
+    minimumNodeCenterDistance * minimumNodeCenterDistance;
+
+  for (let x = cellX - 1; x <= cellX + 1; x++) {
+    for (let y = cellY - 1; y <= cellY + 1; y++) {
+      const neighbors = offsetGrid.get(`${x}:${y}`);
+      if (!neighbors) continue;
+      for (const neighbor of neighbors) {
+        const dx = offset.x - neighbor.x;
+        const dy = offset.y - neighbor.y;
+        if (dx * dx + dy * dy < minimumDistanceSquared) {
+          return false;
+        }
+      }
     }
   }
 
-  return coordinates;
+  return true;
 };
 
-const getHexIslandOffset = (
-  axialQ: number,
-  axialR: number,
-  cellSpacing: number,
-): IslandOffset => ({
-  x: cellSpacing * (axialQ + axialR / 2),
-  y: cellSpacing * (Math.sqrt(3) / 2) * axialR,
-});
+const addIslandOffsetToGrid = (
+  offset: IslandOffset,
+  offsetGrid: Map<string, IslandOffset[]>,
+  minimumNodeCenterDistance: number,
+): void => {
+  const key = getIslandOffsetCellKey(offset, minimumNodeCenterDistance);
+  const offsets = offsetGrid.get(key) ?? [];
+  offsets.push(offset);
+  offsetGrid.set(key, offsets);
+};
+
+const getFallbackIslandOffset = (
+  nodeIndex: number,
+  minimumNodeCenterDistance: number,
+  labelSeed: number,
+): IslandOffset => {
+  const ringIndex = Math.ceil(Math.sqrt(nodeIndex + 1));
+  const slotsInRing = Math.max(8, ringIndex * 8);
+  const slot = (nodeIndex + labelSeed) % slotsInRing;
+  const angle =
+    (slot / slotsInRing) * Math.PI * 2 +
+    ((labelSeed % 360) * Math.PI) / 180;
+  const radius = ringIndex * minimumNodeCenterDistance * 1.08;
+
+  return {
+    x: Math.cos(angle) * radius,
+    y: Math.sin(angle) * radius,
+  };
+};
 
 const getIslandOffsets = (
   nodeCount: number,
   nodeSpacing: number,
-  _labelSeed: number,
+  labelSeed: number,
   minimumNodeCenterDistance: number,
 ): IslandOffset[] => {
   if (nodeCount <= 0) return [];
 
-  const cellSpacing =
+  const spiralSpacing =
     Math.max(nodeSpacing, minimumNodeCenterDistance) * 1.000001;
-  const offsets: IslandOffset[] = [{ x: 0, y: 0 }];
-  let ringIndex = 1;
+  const offsets: IslandOffset[] = [];
+  const offsetGrid = new Map<string, IslandOffset[]>();
+  const maxCandidateAttempts = Math.max(64, Math.ceil(Math.sqrt(nodeCount)) * 8);
 
-  while (offsets.length < nodeCount) {
-    for (const [q, r] of getHexAxialRingCoordinates(ringIndex)) {
-      offsets.push(getHexIslandOffset(q, r, cellSpacing));
-      if (offsets.length === nodeCount) break;
+  for (let nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
+    let selectedOffset: IslandOffset | null = null;
+
+    for (
+      let attempt = 0;
+      attempt < maxCandidateAttempts && selectedOffset === null;
+      attempt++
+    ) {
+      const candidateIndex = nodeIndex + attempt;
+      const candidate = getIslandOffset(
+        candidateIndex,
+        spiralSpacing,
+        labelSeed,
+      );
+      if (
+        isIslandOffsetFarEnough(
+          candidate,
+          offsetGrid,
+          minimumNodeCenterDistance,
+        )
+      ) {
+        selectedOffset = candidate;
+      }
     }
-    ringIndex++;
+
+    let fallbackIndex = nodeIndex;
+    while (selectedOffset === null) {
+      const candidate = getFallbackIslandOffset(
+        fallbackIndex,
+        minimumNodeCenterDistance,
+        labelSeed,
+      );
+      if (
+        isIslandOffsetFarEnough(
+          candidate,
+          offsetGrid,
+          minimumNodeCenterDistance,
+        )
+      ) {
+        selectedOffset = candidate;
+      }
+      fallbackIndex += nodeCount;
+    }
+
+    offsets.push(selectedOffset);
+    addIslandOffsetToGrid(selectedOffset, offsetGrid, minimumNodeCenterDistance);
   }
 
   return offsets;
@@ -295,6 +387,27 @@ const getBalancedCircularSlots = (slotCount: number): number[] => {
   }
 
   return slots;
+};
+
+const getPinwheelRadiusMultiplier = (
+  slotIndex: number,
+  slotCount: number,
+): number => {
+  if (slotCount <= 2) return 1;
+  const band = slotIndex % 3;
+  const bandOffset = band === 0 ? 0 : band === 1 ? 0.18 : 0.34;
+  const progress = slotIndex / Math.max(1, slotCount - 1);
+  return 1 + bandOffset + progress * 0.08;
+};
+
+const getPinwheelAngleOffset = (
+  slotIndex: number,
+  slotCount: number,
+): number => {
+  if (slotCount <= 2) return 0;
+  const band = slotIndex % 3;
+  const bandOffset = band === 0 ? 0 : band === 1 ? 0.07 : -0.07;
+  return bandOffset + Math.sin(slotIndex * GOLDEN_ANGLE) * 0.025;
 };
 
 const compareClusterNodeIds = (
@@ -404,12 +517,24 @@ export const applyFilterBasedClusteredLayout = (
                   minimumNodeCenterDistance,
                 ),
             );
+      const maxIslandRadiusMultiplier =
+        clusters.length <= 1
+          ? 1
+          : clusters.reduce(
+              (maximum, _cluster, index) =>
+                Math.max(
+                  maximum,
+                  getPinwheelRadiusMultiplier(index, clusters.length),
+                ),
+              1,
+            );
 
       return {
         key: ringKey,
         clusters,
         labelSeed: getStableLabelSeed(ringKey),
-        radius: islandOrbitRadius + largestClusterRadius,
+        radius:
+          islandOrbitRadius * maxIslandRadiusMultiplier + largestClusterRadius,
         islandOrbitRadius,
       };
     });
@@ -459,8 +584,11 @@ export const applyFilterBasedClusteredLayout = (
       const clusterSlot = slotByClusterLabel.get(cluster.label) ?? clusterIndex;
       const clusterAngle =
         -Math.PI / 2 +
-        (clusterSlot / ring.clusters.length) * Math.PI * 2;
-      const clusterOrbitRadius = ring.islandOrbitRadius;
+        (clusterSlot / ring.clusters.length) * Math.PI * 2 +
+        getPinwheelAngleOffset(clusterSlot, ring.clusters.length);
+      const clusterOrbitRadius =
+        ring.islandOrbitRadius *
+        getPinwheelRadiusMultiplier(clusterSlot, ring.clusters.length);
       const clusterCenterX =
         centerX + Math.cos(clusterAngle) * clusterOrbitRadius;
       const clusterCenterY =
@@ -522,4 +650,3 @@ export const applyFilterBasedClusteredLayout = (
     placeRingIslands(ring, ringCenterX, ringCenterY);
   });
 };
-
