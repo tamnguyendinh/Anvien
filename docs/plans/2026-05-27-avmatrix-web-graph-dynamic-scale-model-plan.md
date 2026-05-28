@@ -1,8 +1,9 @@
 # AVmatrix Web Graph Dynamic Scale Model And Zoom Semantics Plan
 
 Date: 2026-05-27
+Reopened: 2026-05-28
 
-Status: Completed
+Status: Reopened - Phase 8 pending
 
 Companion files:
 
@@ -13,7 +14,7 @@ Companion files:
 
 1. Use AVmatrix for codebase analysis and impact checks while working on implementation slices in this plan.
 2. As each task is completed, update the corresponding checklist item immediately.
-3. Run a full build before testing; Web UI behavior changes must include Web unit tests, e2e tests, and browser screenshot validation.
+3. Run the full build gate before testing. For this plan, full build means `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`, and it must rebuild `avmatrix-launcher\AVmatrixLauncher.exe`.
 4. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, graph inventory counts, graph layout geometry metrics, rendered node radius metrics, zoom growth metrics, visible color/island counts, and browser screenshot artifact inventories. Build/test/e2e timings are validation evidence for this plan.
 5. Record evidence as each evidenced task is completed.
 6. Only skip AVmatrix when running `git commit` for documentation-only staged changes. All docs technical planning, evidence, benchmark, report, and architecture work must use AVmatrix and read the codebase.
@@ -39,6 +40,37 @@ The root product rule is:
 When one graph dimension changes, all dependent dimensions must move with it. No fixed-size assumption is allowed to silently control layout, render, camera, diagnostics, and tests.
 ```
 
+## Reopened Failure - 2026-05-28
+
+The previous closure is invalid because the completed implementation still creates product-visible lag and incomplete zoom semantics.
+
+The current graph render path is still doing full-graph work in camera interaction hot paths. This causes the UI to freeze after graph load and during wheel zoom even when total machine CPU and RAM look low. Whole-machine CPU is not the deciding metric here; the browser tab main thread is blocked by long synchronous tasks.
+
+Measured current-build dense fixture evidence:
+
+- Fixture size: `2157` nodes and `2156` relationships.
+- Current build preview load: `readyMs=1690`.
+- Load long tasks: `3`, total `979ms`, longest `531ms`, max frame delta `567ms`.
+- Wheel zoom changes camera ratio from `1` to `0.5882352941176471`, so wheel input reaches Sigma.
+- One wheel burst writes `screenNodeSpacing` `6` times and `graphOverview` `6` times.
+- Wheel long tasks: `4`, total `907ms`, longest `728ms`, max frame delta `717ms`.
+- Button zoom changes camera ratio from `0.5882352941176471` to `0.39215686274509803`, writes diagnostics `7` times, and records `zoom-in` samples.
+- Wheel zoom remains recorded as `overview`, so interaction telemetry does not identify wheel zoom.
+
+The current diagnostics also expose a correctness gap:
+
+- `layoutNodeSpacing` reports `overlapCount=0` and `targetGapViolationCount=0`.
+- `screenNodeSpacing` on default overview reports `overlapCount=5976` and `targetGapViolationCount=17443`.
+
+This means graph-coordinate layout validation can pass while screen-space product behavior still fails. The plan must protect viewport behavior directly, not only graph-layout geometry.
+
+Packaging freshness is also part of the failure surface:
+
+- The currently served launcher bundle at `avmatrix-launcher\web-dist\assets\index-B3tJBsjs.js` does not contain `graphOverview` or `graphInteraction`.
+- The current Web build bundle at `avmatrix-web\dist\assets\index-Bxk3Ac59.js` does contain `graphOverview` and `graphInteraction`.
+- User-facing launcher validation must therefore verify that packaged `web-dist` is rebuilt and serving the same behavior as the current Web build.
+- The plan's full build gate must rebuild the launcher executable at `avmatrix-launcher\AVmatrixLauncher.exe`, not only rebuild Web assets.
+
 ## Codebase Findings
 
 AVmatrix graph refresh was run on 2026-05-27 before this planning update:
@@ -46,6 +78,13 @@ AVmatrix graph refresh was run on 2026-05-27 before this planning update:
 ```text
 files: scanned=774 parsed=572 unsupported=202 failed=0
 graph: nodes=89484 relationships=122631 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+AVmatrix graph refresh was run again on 2026-05-28 before reopening this plan:
+
+```text
+files: scanned=789 parsed=578 unsupported=211 failed=0
+graph: nodes=90537 relationships=123975 path=E:\AVmatrix-GO\.avmatrix\graph.json
 ```
 
 AVmatrix query/context identified the current owners:
@@ -70,6 +109,26 @@ Exact current facts:
 - Sigma `scaleSize` uses `itemSizesReference === "positions"` to multiply by `cameraRatio * graphToViewportRatio`. That setting changes node-size zoom semantics.
 - Commit `67ba0dd` introduced the default-load readable camera path and changed the previous `animatedReset`.
 - The pre-regression baseline commit is `80a7972`, which is `67ba0dd^`.
+
+Additional reopened facts from 2026-05-28:
+
+- `GraphCanvas.tsx` registers `camera?.on?.('updated', handleCameraUpdated)`.
+- `handleCameraUpdated` recomputes orientation labels and schedules screen diagnostics.
+- `recordCurrentScreenNodeSpacing` calls both `buildScreenNodeSpacingDiagnostics(sigma)` and `buildGraphOverviewDiagnostics(sigma)`.
+- `buildScreenNodeSpacingDiagnostics` walks `graph.nodes()`, calls `sigma.getNodeDisplayData`, `sigma.graphToViewport`, `sigma.scaleSize`, then performs same-island neighbor-pair checks.
+- `buildGraphOverviewDiagnostics` walks `graph.nodes()`, calls `sigma.getNodeDisplayData` and `sigma.graphToViewport`, then counts visible colors, rings, islands, and node types.
+- `buildGraphOrientationLabels` walks the graph with `graph.forEachNode`.
+- `useSigma.zoomIn` and `useSigma.zoomOut` record interaction modes for button zoom only.
+- Wheel zoom reaches Sigma and changes camera ratio, but no dedicated wheel interaction mode is recorded.
+- AVmatrix impact for `buildScreenNodeSpacingDiagnostics`, `buildGraphOverviewDiagnostics`, and `buildGraphOrientationLabels` is `CRITICAL`.
+- AVmatrix impact for `applyFilterBasedClusteredLayout` is `HIGH`.
+- `avmatrix-launcher\build.ps1` sets `$LauncherOutPath = Join-Path $LauncherRoot "AVmatrixLauncher.exe"`.
+- `avmatrix-launcher\build.ps1` runs `npm run build` in `avmatrix-web`.
+- `avmatrix-launcher\build.ps1` builds the canonical CLI at `avmatrix\bin\avmatrix.exe`.
+- `avmatrix-launcher\build.ps1` builds the launcher with `go build -ldflags="-s -w -H=windowsgui" -o $LauncherOutPath .`.
+- `avmatrix-launcher\build.ps1` builds `avmatrix-launcher\server-bundle\avmatrix-server.exe`.
+- `avmatrix-launcher\build.ps1` deletes and recopies `avmatrix-web\dist` to `avmatrix-launcher\web-dist`.
+- Therefore the script is the correct full build gate for this requirement, but validation must prove the launcher exe and packaged Web bundle were actually refreshed.
 
 ## Non-Negotiable Product Invariants
 
@@ -103,6 +162,11 @@ Implementation touches:
 - Web unit tests under `avmatrix-web/test/unit`;
 - Web e2e tests under `avmatrix-web/e2e`;
 - evidence and benchmark ledgers for this plan.
+- graph diagnostics scheduling and throttling in `avmatrix-web/src/components/GraphCanvas.tsx`;
+- graph overview and screen-spacing diagnostic split/caching behavior;
+- orientation label inventory caching and camera-placement refresh behavior;
+- wheel-zoom interaction telemetry and e2e behavior coverage;
+- packaged launcher Web dist freshness validation.
 
 Out of scope:
 
@@ -242,6 +306,76 @@ Implementation replaces fixed geometry with scale-model policy inputs:
 
 Only named product policy constants remain, such as minimum readable pixel target. Overview color, ring, island, and node-type expectations come from the active graph inventory.
 
+### Reopened Performance And Interaction Direction
+
+The Phase 8 implementation keeps every feature and changes scheduling, caching, and instrumentation only.
+
+The Web graph must separate three work classes:
+
+| Work class | Trigger | Main-thread budget |
+|---|---|---|
+| Static graph inventory | graph/filter/semantic-filter changes | full graph walk allowed |
+| Cheap camera sample | camera update, wheel, button zoom, pan, resize | one coalesced RAF, no pairwise full-graph audit |
+| Full viewport spacing audit | camera settled, explicit validation, e2e/debug sample | idle/settled task, never every camera tick |
+
+Required scheduler algorithm:
+
+```text
+onGraphOrFilterChanged:
+  rebuild cached graph inventories
+  rebuild cached orientation label sources
+  schedule full viewport spacing audit
+
+onCameraUpdated:
+  mark camera moving
+  schedule one RAF if none is pending
+  reset camera-settled timer
+
+RAF camera sample:
+  place orientation labels from cached label sources
+  record cheap camera and rendered-radius sample
+  do not run full graph pairwise spacing audit
+  do not rebuild static inventory
+
+camera-settled timer:
+  after 160ms without camera update, schedule full audit with requestIdleCallback
+  fallback to setTimeout when requestIdleCallback is unavailable
+
+idle full audit:
+  run buildScreenNodeSpacingDiagnostics once
+  run visible overview diagnostics once
+  publish graphInteraction sample with the current interaction mode
+```
+
+Wheel zoom must get first-class semantics:
+
+```text
+on wheel zoom:
+  recordGraphInteractionMode({ mode: 'wheel-zoom' })
+  assert cameraRatio changes
+  assert rendered node radius changes
+```
+
+The implementation must not remove node types, edges, colors, filters, labels, diagnostics, or screenshots. Any reduction in work must come from scheduling, caching, coalescing, and moving full audits out of interactive frames.
+
+### Full Build Gate Definition
+
+For every reopened implementation slice, the full build gate is:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+```
+
+This gate fails unless all required product artifacts are freshly produced and verified:
+
+- `avmatrix-web\dist`;
+- `avmatrix-launcher\web-dist`;
+- `avmatrix\bin\avmatrix.exe`;
+- `avmatrix-launcher\server-bundle\avmatrix-server.exe`;
+- `avmatrix-launcher\AVmatrixLauncher.exe`.
+
+The evidence ledger must record the launcher exe `LastWriteTime`, file size, and content hash after the build. Browser validation must use the launcher-served app on `127.0.0.1:5228` after this build, not only Vite preview or `avmatrix-web\dist`.
+
 ## Acceptance Criteria
 
 - AVmatrix refresh and impact checks are recorded before implementation edits.
@@ -267,6 +401,21 @@ Only named product policy constants remain, such as minimum readable pixel targe
 - Full build, focused Web unit tests, full Web unit tests, and Web e2e/browser tests pass.
 - AVmatrix detect-changes is run before implementation commit.
 - Each completed implementation slice is committed before continuing.
+- Reopened Phase 8 records the current long-task, frame-delta, diagnostics-write, and wheel-ratio baseline before edits.
+- Reopened Phase 8 uses `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` as the full build gate.
+- The full build evidence proves `avmatrix-launcher\AVmatrixLauncher.exe` was rebuilt.
+- The full build evidence proves `avmatrix-launcher\web-dist` was recopied from the current `avmatrix-web\dist`.
+- Camera update handling no longer runs full `buildScreenNodeSpacingDiagnostics` and `buildGraphOverviewDiagnostics` on every camera tick.
+- Orientation labels preserve the same visible label behavior without walking the full graph on every camera tick.
+- Wheel zoom has a dedicated runtime interaction mode and e2e coverage.
+- Wheel zoom changes camera ratio and rendered node radius in the browser test.
+- Dense fixture wheel burst no longer produces a single long task above `100ms`.
+- Dense fixture wheel burst max frame delta stays below `150ms`.
+- Full pairwise screen-spacing audit runs after camera settle and remains available for e2e/debug validation.
+- Static graph inventories remain exact and are recomputed on graph/filter changes.
+- No node type, edge type, color, label, filter, or diagnostic field is removed to meet performance targets.
+- `avmatrix-launcher\web-dist` is rebuilt from the current Web build and verified to contain the current diagnostics/interaction code.
+- Packaged launcher validation proves the user-facing `5228` bundle matches current Web behavior.
 
 ## Phase 0 - Plan Creation
 
@@ -371,8 +520,39 @@ Only named product policy constants remain, such as minimum readable pixel targe
 - [x] P7-I Commit the final implementation slice.
 - [x] P7-J Confirm working tree state and remaining plan items.
 
+## Phase 8 - Reopened Render Hot Path And Wheel Zoom Hardening
+
+- [ ] P8-A Run `avmatrix analyze --force`.
+- [ ] P8-B Use AVmatrix query/context to trace `GraphCanvas` camera updates, screen spacing diagnostics, graph overview diagnostics, orientation labels, wheel zoom, and package/launcher serving paths.
+- [ ] P8-C Run impact analysis before editing each planned function/class/method/exported symbol in graph render, diagnostics, orientation labels, zoom interaction, and package build flow.
+- [ ] P8-D Record HIGH/CRITICAL blast radius warnings in evidence and proceed carefully.
+- [ ] P8-E Reproduce and record baseline browser performance metrics for current build and packaged launcher: load long tasks, wheel long tasks, max frame delta, diagnostics write counts, camera ratio, rendered radius, visible color count, visible ring count, visible island count, and screenshot artifacts.
+- [ ] P8-F Add reusable browser performance probe coverage for dense graph load, wheel zoom, button zoom, and camera settle.
+- [ ] P8-G Add `wheel-zoom` interaction mode in runtime diagnostics.
+- [ ] P8-H Add e2e coverage that sends mouse wheel input and asserts camera ratio and rendered node radius change.
+- [ ] P8-I Split graph diagnostics into cached static inventory, cheap camera sample, and settled full viewport spacing audit.
+- [ ] P8-J Coalesce camera-update diagnostics to one pending RAF and prevent duplicate diagnostics writes during the same frame.
+- [ ] P8-K Move full pairwise `buildScreenNodeSpacingDiagnostics` execution to camera-settled idle work.
+- [ ] P8-L Move full visible overview diagnostics execution to graph/filter changes and camera-settled idle work.
+- [ ] P8-M Cache orientation label source inventory on graph/filter changes and use camera updates only for placement from cached sources.
+- [ ] P8-N Preserve all existing node types, edges, colors, filters, labels, graph inventories, screen spacing diagnostics, graph overview diagnostics, and screenshots.
+- [ ] P8-O Run the full build gate: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- [ ] P8-P Verify the full build refreshed `avmatrix-launcher\AVmatrixLauncher.exe` by recording `LastWriteTime`, file size, and hash.
+- [ ] P8-Q Verify `avmatrix-launcher\web-dist` was recopied from the current `avmatrix-web\dist`.
+- [ ] P8-R Verify the launcher-served bundle on `127.0.0.1:5228` contains current graph overview, graph interaction, and wheel zoom diagnostics.
+- [ ] P8-S Run focused Web unit tests for diagnostics scheduling, wheel interaction mode, orientation label cache behavior, and graph inventory preservation.
+- [ ] P8-T Run full Web unit tests.
+- [ ] P8-U Run Web e2e/browser tests with screenshots for dense overview, wheel zoom, button zoom, and detail/focus.
+- [ ] P8-V Record performance benchmark results after each benchmarkable task.
+- [ ] P8-W Record evidence after each evidenced task.
+- [ ] P8-X Run `avmatrix detect-changes --repo AVmatrix --scope all`.
+- [ ] P8-Y Commit the completed reopened render hot path and wheel zoom hardening slice.
+- [ ] P8-Z Confirm working tree state and close the reopened plan only after launcher and current build both pass.
+
 ## Risk Notes
 
 Blast radius is HIGH/CRITICAL because graph layout, Sigma rendering, camera behavior, and e2e fixtures are central Web UI behavior. The implementation proceeds carefully with evidence and tests; HIGH/CRITICAL is not a reason to avoid required code changes.
 
 The main risk is solving only one symptom again. This plan closes only after overview, node-type preservation, zoom semantics, and detail spacing pass together.
+
+The reopened risk is treating performance as a reason to remove graph information. That is forbidden for this plan. Performance work must preserve the feature set and reduce repeated work by using scheduling, caching, coalescing, and settled/idle audits.
