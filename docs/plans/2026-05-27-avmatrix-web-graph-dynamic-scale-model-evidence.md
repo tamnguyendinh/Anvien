@@ -2,7 +2,7 @@
 
 Date: 2026-05-27
 
-Status: Active - Phase 9B pre-commit pending
+Status: Completed
 
 Companion files:
 
@@ -1060,3 +1060,9 @@ P9-X pre-commit change detection:
 - Resolution gap changes: `236` changed gap entities and `254` changed gap occurrences; changed source nodes with gaps `0`.
 - Resolution health impact: degraded nodes `0`, total resolution gap count `0`.
 - Decision: medium changed-scope risk is expected because the slice changes graph layout topology, focus-camera spacing, and topology/e2e assertions. Full build, focused unit, full unit, launcher-served e2e, and screenshot validation passed before this detection.
+
+P9-Y/P9-Z closure:
+
+- Implementation commit: `955be36 fix(web): restore spiral graph topology`.
+- Post-commit `git status --short`: clean.
+- Phase 9 closure condition met: graph adapter split is committed, spiral/pinwheel topology is restored, rendered-size spacing is preserved, color/inventory and node-type preservation e2e checks pass, zoom/focus interactions pass, full launcher build artifacts were rebuilt, evidence and benchmark ledgers are separated and updated.

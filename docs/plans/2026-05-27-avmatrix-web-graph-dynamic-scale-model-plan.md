@@ -4,7 +4,7 @@ Date: 2026-05-27
 Reopened: 2026-05-28
 Reopened again: 2026-05-28
 
-Status: Reopened - Phase 9B pre-commit detection passed, implementation commit pending
+Status: Completed
 
 Companion files:
 
@@ -616,8 +616,8 @@ Slice 9A is a behavior-preserving code split. Slice 9B restores topology. Each c
 - [x] P9-V Run focused Web unit tests, full Web unit tests, and Web e2e/browser screenshot validation.
 - [x] P9-W Record Phase 9 evidence in the evidence ledger and Phase 9 product/runtime/layout/inventory/performance metrics in the benchmark ledger.
 - [x] P9-X Run `avmatrix detect-changes --repo AVmatrix --scope all`.
-- [ ] P9-Y Commit the completed topology restoration slice.
-- [ ] P9-Z Confirm working tree state and close Phase 9 only after split, topology, spacing, color/inventory, zoom, interaction, performance, launcher, evidence, and benchmark gates pass together.
+- [x] P9-Y Commit the completed topology restoration slice.
+- [x] P9-Z Confirm working tree state and close Phase 9 only after split, topology, spacing, color/inventory, zoom, interaction, performance, launcher, evidence, and benchmark gates pass together.
 
 ## Risk Notes
 
