@@ -810,3 +810,149 @@ P8-Y/P8-Z closure:
 - Implementation commit: `deb5a71 fix(web): harden graph zoom diagnostics`.
 - Post-implementation `git status --short`: clean.
 - Reopened Phase 8 closure condition met: current build passed through the full launcher build gate, launcher-served bundle passed e2e/browser validation, and benchmark/evidence artifacts were recorded.
+
+## E9 - Phase 9 Plan Reopen Evidence
+
+Status: active for P9-A through P9-E.
+
+Correction:
+
+- A prior response misread "split files" as documentation splitting. That was incorrect.
+- The required split is codebase splitting: reduce mixed responsibilities in overloaded Web graph code before restoring ring/spiral topology.
+- The temporary doc split files were removed and are not part of the Phase 9 plan.
+
+AVmatrix refresh:
+
+- Command: `avmatrix analyze --force`.
+- Result: passed.
+- Files: scanned `792`, parsed `578`, unsupported `214`, failed `0`.
+- Refreshed graph: `90916` nodes, `124370` relationships.
+
+AVmatrix owner discovery:
+
+- Query: `graph-adapter overloaded layout conversion node color edge filter spiral hex spacing inventory zoom`.
+- Primary owners returned:
+  - `avmatrix-web/src/lib/graph-adapter.ts:knowledgeGraphToGraphology`.
+  - `avmatrix-web/src/lib/graph-adapter.ts:getClusterNodeSpacing`.
+  - `avmatrix-web/src/lib/graph-adapter.ts:applyFilterBasedClusteredLayout`.
+  - `avmatrix-web/src/components/GraphCanvas.tsx:buildLayoutNodeSpacingDiagnostics`.
+  - `avmatrix-web/src/hooks/useSigma.ts:useSigma`.
+
+Codebase read:
+
+- `avmatrix-web/src/lib/graph-adapter.ts` is `764` lines.
+- The file currently owns exported Sigma node/edge attributes, rendered-size helpers, app-layer ring taxonomy, island classification, layout geometry, node mass, graph conversion, edge conversion, label filtering, and depth filtering.
+- This mixed ownership increases the chance that a layout fix changes unrelated conversion, filtering, color, edge, or interaction behavior.
+
+Topology regression evidence:
+
+- Current layout owner: `applyFilterBasedClusteredLayout`, lines `426-628`.
+- Current conversion owner calls layout through `knowledgeGraphToGraphology`, line `737`.
+- Current same-island placement uses `getHexAxialRingCoordinates`, `getHexIslandOffset`, and `getIslandOffsets`.
+- Commit `0963d96 feat(web): use dynamic hex graph layout` removed `GOLDEN_ANGLE`, `getIslandOffset`, `getFallbackIslandOffset`, `getPinwheelRadiusMultiplier`, and `getPinwheelAngleOffset`.
+- The same commit added axial hex coordinate placement and changed island placement to one equal `clusterOrbitRadius`.
+- Therefore the missing ring/spiral/galaxy shape is a code regression, not a build-only failure.
+
+Impact evidence:
+
+- `avmatrix context "applyFilterBasedClusteredLayout" --repo AVmatrix` found incoming calls from `useSigma.ts` and `graph-adapter.ts`.
+- `avmatrix impact "applyFilterBasedClusteredLayout" --repo AVmatrix --direction upstream` returned risk `CRITICAL`.
+- Affected app layers: frontend `6`.
+- Affected functional areas: layout `4`, web_graph_ui `2`.
+- Affected processes: `8`, including `HandleWheel -> ApplyFilterBasedClusteredLayout`, `HandleWheel -> CapRenderedNodeSize`, `HandleWheel -> HexToRgb`, `HandleWheel -> RgbToHex`, and `GetRenderedNodeRadius` flows.
+- HIGH/CRITICAL is a warning to work carefully, not a ban on changing the layout owner.
+
+Phase 9 planning decision:
+
+- Phase 9 has one implementation direction with two ordered slices.
+- Slice 9A is behavior-preserving code file splitting from `graph-adapter.ts` into responsibility-owned modules while keeping the existing public import surface.
+- Slice 9B restores collision-safe spiral/ring topology.
+- Phase 9 must preserve spacing, dynamic inventory, node types, filters, colors, community colors, zoom, performance strategy, interactions, edges, labels, full launcher build, validation, evidence, and benchmark separation.
+
+## E10 - Phase 9A Graph Adapter Split Evidence
+
+Status: in progress for P9-F through P9-J.
+
+P9-F code split:
+
+- `avmatrix-web/src/lib/graph-adapter.ts` is now a public facade that re-exports the existing public graph adapter surface.
+- Added `avmatrix-web/src/lib/graph-adapter-types.ts` for `SigmaNodeAttributes` and `SigmaEdgeAttributes`.
+- Added `avmatrix-web/src/lib/graph-node-sizing.ts` for rendered node size, scaled node size, center-distance helpers, and node mass.
+- Added `avmatrix-web/src/lib/graph-layout.ts` for app-layer ring taxonomy and `applyFilterBasedClusteredLayout`.
+- Added `avmatrix-web/src/lib/graph-conversion.ts` for `knowledgeGraphToGraphology`.
+- Added `avmatrix-web/src/lib/graph-filtering.ts` for label and depth filtering.
+- External imports from `graph-adapter.ts` are intentionally preserved for the split slice.
+- The split slice has not changed the hex layout algorithm; topology restoration remains pending P9-K through P9-N.
+
+P9-F pre-validation status:
+
+- `git diff --check` first found one blank line at EOF in `graph-adapter.ts`; it was removed before validation.
+
+P9-H full build first attempt:
+
+- Command: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- Web build portion passed: TypeScript project build and Vite build completed.
+- Build gate did not pass because launcher packaging could not remove `avmatrix-launcher\server-bundle\avmatrix-server.exe`.
+- Error: `Remove-Item : Cannot remove item E:\AVmatrix-GO\avmatrix-launcher\server-bundle\avmatrix-server.exe: Access to the path 'avmatrix-server.exe' is denied.`
+- Runtime process trace found launcher-owned processes still holding repo build artifacts:
+  - `AVmatrixLauncher.exe` PID `11592`, path `E:\AVmatrix-GO\avmatrix-launcher\AVmatrixLauncher.exe`, parent `explorer.exe`.
+  - `avmatrix-server.exe` PID `10352`, path `E:\AVmatrix-GO\avmatrix-launcher\server-bundle\avmatrix-server.exe`, parent `AVmatrixLauncher.exe`.
+  - `avmatrix.exe` PID `12388`, path `E:\AVmatrix-GO\avmatrix\bin\avmatrix.exe`, command `serve --host 127.0.0.1 --port 4848`, parent `avmatrix-server.exe`.
+- Editor-owned AVmatrix MCP processes were also present and were not part of the build lock.
+- Decision: stop only the launcher-owned runtime group, then rerun the same full build gate. P9-H remains incomplete until the retry passes.
+
+P9-H full build retry:
+
+- Launcher-owned runtime group was stopped with `avmatrix-launcher\AVmatrixLauncher.exe stop`.
+- `avmatrix doctor processes --json` then showed only editor-owned AVmatrix MCP processes and a VS Code Playwright test-server; the repo launcher process group was gone.
+- Command: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- Result: passed.
+- Web build completed TypeScript project build and Vite production build.
+- `avmatrix-web\dist` was rebuilt.
+- `avmatrix-launcher\web-dist` was recopied from the current Web dist.
+- `avmatrix\bin\avmatrix.exe` was rebuilt.
+- `avmatrix-launcher\server-bundle\avmatrix-server.exe` was rebuilt.
+- `avmatrix-launcher\AVmatrixLauncher.exe` was rebuilt.
+- Build warnings were limited to existing Vite chunk/dynamic-import warnings; they did not fail the gate.
+- Artifact hashes and sizes are recorded in benchmark row `B9`.
+
+P9-G/P9-I behavior-preserving validation:
+
+- Focused Web unit command: `npx vitest run test/unit/graph-adapter.edge-geometry.test.ts test/unit/graph-scale-model.test.ts test/unit/graph-screen-spacing.test.ts test/unit/graph-overview-diagnostics.test.ts test/unit/graph-orientation-labels.test.ts test/unit/graph-camera-mode.test.ts test/unit/runtime-diagnostics.test.ts`.
+- Focused Web unit result: passed, `7` files and `56` tests.
+- Launcher-served app was started with `AVMATRIX_LAUNCHER_NO_BROWSER=1` and `avmatrix-launcher\AVmatrixLauncher.exe start`.
+- Launcher process trace after start:
+  - `AVmatrixLauncher.exe` PID `4284`, path `E:\AVmatrix-GO\avmatrix-launcher\AVmatrixLauncher.exe`.
+  - `avmatrix-server.exe` PID `10368`, path `E:\AVmatrix-GO\avmatrix-launcher\server-bundle\avmatrix-server.exe`.
+  - `avmatrix.exe` PID `6892`, path `E:\AVmatrix-GO\avmatrix\bin\avmatrix.exe`, command `serve --host 127.0.0.1 --port 4848`.
+- Port check: `127.0.0.1:5228` returned `TcpTestSucceeded=True`.
+- Existing Web e2e/browser command: `npx playwright test e2e/graph-orientation-labels.spec.ts --project=chromium`.
+- Existing Web e2e/browser result: passed, `3` tests.
+- Screenshot artifacts were produced under `avmatrix-web\test-results` for desktop graph labels, small filtered labels, dense desktop overview, and dense small overview.
+- Behavior-preserving decision: the split slice changed ownership boundaries only. The public `graph-adapter.ts` import surface remained stable, the current hex topology was intentionally left unchanged, and the focused unit plus launcher-served e2e coverage passed before topology edits began.
+
+P9-J pre-commit AVmatrix detection:
+
+- `git diff --check`: passed.
+- `avmatrix analyze --force`: scanned `797`, parsed `583`, unsupported `214`, failed `0`.
+- Refreshed graph: `91018` nodes and `124419` relationships.
+- First `detect-changes --scope all` before staging saw only documentation because new split modules were still untracked; the slice was staged and detection was rerun on the staged scope.
+- Staged `avmatrix detect-changes --repo AVmatrix --scope staged`: risk level `medium`.
+- Changed files: `9`.
+- Changed symbols: `539`.
+- Changed app layers: docs `17`, frontend `522`.
+- Changed functional areas: documentation `17`, unknown `522`.
+- Affected count: `4`.
+- Affected app layers: frontend `4`.
+- Affected functional areas: unknown `4`.
+- Affected processes:
+  - `KnowledgeGraphToGraphology -> CompareKnownOrder`.
+  - `KnowledgeGraphToGraphology -> GetDisplayGraphRelationships`.
+  - `KnowledgeGraphToGraphology -> GetFileExtension`.
+  - `KnowledgeGraphToGraphology -> GetFileStem`.
+- Resolution gap changes: `332` changed gap entities and `332` changed gap occurrences; changed source nodes with gaps `0`.
+- Resolution health impact: degraded nodes `0`, total resolution gap count `0`.
+- `knowledgeGraphToGraphology` context/impact was ambiguous by name after the split, so the exact UID was used for impact.
+- Exact UID impact: `Function:avmatrix-web/src/lib/graph-conversion.ts:knowledgeGraphToGraphology`.
+- Exact UID impact result: risk `LOW`, impacted count `9`, processes affected `0`; direct impact is the `graph-adapter.ts` re-export facade and upstream imports through `GraphCanvas.tsx`, `useSigma.ts`, graph diagnostics, readable camera, selected graph context, and `App.tsx`.
+- Decision: medium changed-scope risk is expected for moving existing graph conversion/layout code into new modules. The runtime behavior was already validated through the full launcher build, focused unit tests, and launcher-served e2e/browser screenshots.

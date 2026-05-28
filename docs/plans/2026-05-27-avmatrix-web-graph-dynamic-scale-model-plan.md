@@ -2,8 +2,9 @@
 
 Date: 2026-05-27
 Reopened: 2026-05-28
+Reopened again: 2026-05-28
 
-Status: Reopened - Phase 8 pending
+Status: Reopened - Phase 9 pending
 
 Companion files:
 
@@ -130,6 +131,40 @@ Additional reopened facts from 2026-05-28:
 - `avmatrix-launcher\build.ps1` deletes and recopies `avmatrix-web\dist` to `avmatrix-launcher\web-dist`.
 - Therefore the script is the correct full build gate for this requirement, but validation must prove the launcher exe and packaged Web bundle were actually refreshed.
 
+## Reopened Failure - 2026-05-28 Spiral Topology And Code Responsibility
+
+Phase 4 closure is invalid as final product behavior. It solved one spacing path by replacing the previous spiral/pinwheel visual topology with deterministic hex packing. That made the graph readable for overlap tests but removed the ring/spiral/galaxy topology the Web UI must preserve.
+
+The new work has two inseparable goals:
+
+1. Split overloaded code files so layout, graph conversion, sizing, taxonomy, filtering, and diagnostics are not changed through one large mixed-responsibility file.
+2. Restore ring/spiral/galaxy topology while preserving all spacing, dynamic inventory, color, zoom, performance, interaction, edge/label, launcher build, validation, evidence, and benchmark requirements.
+
+This is one implementation direction. Code splitting is not a cosmetic refactor; it is the control needed to avoid breaking unrelated graph behavior while restoring topology.
+
+Current code smell:
+
+- `avmatrix-web/src/lib/graph-adapter.ts` is `764` lines and currently owns exported Sigma node/edge types, node rendered-size helpers, app-layer ring taxonomy, island key classification, layout geometry, node mass, graph conversion, edge conversion, label filtering, and depth filtering.
+- The topology regression owner is `applyFilterBasedClusteredLayout`.
+- The graph conversion owner is `knowledgeGraphToGraphology`.
+- The current hex-only placement path is `getHexAxialRingCoordinates`, `getHexIslandOffset`, and `getIslandOffsets`.
+- Commit `0963d96 feat(web): use dynamic hex graph layout` removed `GOLDEN_ANGLE`, `getIslandOffset`, `getFallbackIslandOffset`, `getPinwheelRadiusMultiplier`, and `getPinwheelAngleOffset`.
+
+Phase 9 must not be interpreted as "restore spiral only." It must restore topology and keep all preserved behavior below at the same time:
+
+- ring/spiral/galaxy topology;
+- rendered-size spacing with one-node-diameter edge gap;
+- dynamic graph-derived ring/island/node-type counts;
+- no lost node type or filter;
+- no lost node type/community colors;
+- mouse-wheel and button zoom visibly change rendered node radius;
+- render performance uses scheduling/caching/coalescing without cutting graph information;
+- click, hover, focus/search, selected/highlight, and blast-radius interactions remain intact;
+- edges render and ring/island labels remain readable;
+- full build rebuilds `avmatrix-launcher\AVmatrixLauncher.exe`;
+- unit geometry tests plus Web e2e/browser screenshots validate topology, spacing, color, node inventory, ring/island inventory, and zoom together;
+- evidence and benchmark ledgers remain separate.
+
 ## Non-Negotiable Product Invariants
 
 - First restore the original color/overview behavior. Scale, spacing, zoom, and camera implementation starts after this gate passes.
@@ -152,7 +187,8 @@ Additional reopened facts from 2026-05-28:
 
 Implementation touches:
 
-- Web graph layout geometry in `avmatrix-web/src/lib/graph-adapter.ts`;
+- Web graph layout geometry currently in `avmatrix-web/src/lib/graph-adapter.ts`;
+- behavior-preserving code split from `graph-adapter.ts` into responsibility-owned modules before topology edits;
 - a new single-owner scale model module `avmatrix-web/src/lib/graph-scale-model.ts`;
 - Sigma/camera/render behavior in `avmatrix-web/src/hooks/useSigma.ts`;
 - readable camera behavior in `avmatrix-web/src/lib/graph-readable-camera.ts`;
@@ -268,27 +304,22 @@ center-to-center distance = radius + diameter + radius
 
 ### Layout Algorithm
 
-Same-island dense placement uses deterministic hexagonal packing.
+Phase 4 used deterministic hexagonal packing. Phase 9 supersedes that as final product topology because hex-only placement removed the spiral/ring/galaxy visual feature.
 
-Algorithm:
+Phase 9 layout algorithm:
 
 1. Sort nodes by stable node id.
-2. Compute `cellSpacingGraph` from the dynamic scale model's required center distance at detail/focus camera ratio.
-3. Place nodes on axial hex coordinates expanding ring by ring around island center:
+2. Compute the required center distance from rendered node size and active scale policy.
+3. Generate primary same-island candidates with golden-angle/radial spiral progression.
+4. Apply stable per-island seed rotation so islands do not all align identically.
+5. Use a spatial collision grid to reject candidates that violate required center distance.
+6. Continue outward on the same spiral until a candidate passes the spacing rule.
+7. Compute island radius from final accepted candidate bounds plus dynamic margin.
+8. Place islands around app-layer rings with radial/pinwheel variation, not one flat equal-radius circle.
+9. Compute app-layer ring radii and inter-ring gaps from accepted island footprints.
+10. Validate same-island graph-coordinate spacing and viewport spacing in tests.
 
-```text
-x = centerX + cellSpacingGraph * (q + r / 2)
-y = centerY + cellSpacingGraph * sqrt(3) / 2 * r
-```
-
-4. Validate every same-island neighbor pair in viewport pixels.
-5. Expand `cellSpacingGraph` by the measured violation ratio and recompute the island until overlap count is zero and target-gap violation count is zero.
-6. Compute island radius from final placed bounds plus dynamic required graph margin.
-7. Compute app-layer ring radii from island footprints.
-8. Compute inter-ring gaps from the largest adjacent expanded footprint.
-9. Remove post-placement jitter from paths protected by the no-overlap invariant.
-
-This algorithm is deterministic, scales with node count, and keeps geometry derived from rendered size instead of fixed constants.
+This algorithm is deterministic, scales with node count, keeps geometry derived from rendered size instead of fixed constants, and preserves the spiral/ring/galaxy shape. Hex/grid-only placement is not an acceptable final layout.
 
 ### Fixed-Size Assumption Removal
 
@@ -379,6 +410,12 @@ The evidence ledger must record the launcher exe `LastWriteTime`, file size, and
 ## Acceptance Criteria
 
 - AVmatrix refresh and impact checks are recorded before implementation edits.
+- Phase 9 records AVmatrix/codebase evidence before code splitting and topology edits.
+- `graph-adapter.ts` is split into responsibility-owned modules without changing public graph adapter imports during the split slice.
+- Code splitting is behavior-preserving and validated before topology edits.
+- Same-island node placement is collision-safe spiral/radial placement, not hex/grid-only placement.
+- App-layer island placement keeps radial/pinwheel variation instead of a flat equal-radius circle.
+- Tests fail if ring/spiral topology is lost again.
 - The known-good color overview is captured from baseline commit `80a7972` using a non-destructive worktree.
 - Current UI restores color/overview parity with baseline before dynamic scale work starts.
 - Current UI restores node-type parity with baseline before dynamic scale work starts.
@@ -470,6 +507,8 @@ The evidence ledger must record the launcher exe `LastWriteTime`, file size, and
 
 ## Phase 4 - Refactor Layout To Dynamic Hex Packing
 
+Phase 9 invalidates this phase as final product topology. The Phase 4 work remains historical evidence for dynamic spacing, but hex-only placement must be replaced with collision-safe spiral/ring topology.
+
 - [x] P4-A Refactor same-island placement to deterministic hexagonal packing using scale-model center distance.
 - [x] P4-B Refactor island radius to derive from final placed bounds and dynamic margin.
 - [x] P4-C Refactor island gap to derive from expanded island footprints.
@@ -549,6 +588,37 @@ The evidence ledger must record the launcher exe `LastWriteTime`, file size, and
 - [x] P8-Y Commit the completed reopened render hot path and wheel zoom hardening slice.
 - [x] P8-Z Confirm working tree state and close the reopened plan only after launcher and current build both pass.
 
+## Phase 9 - Split Graph Adapter And Restore Collision-Safe Spiral Topology
+
+Slice 9A is a behavior-preserving code split. Slice 9B restores topology. Each completed implementation slice must be committed before continuing.
+
+- [x] P9-A Run `avmatrix analyze --force`.
+- [x] P9-B Use AVmatrix query/context to trace current graph layout, graph conversion, hex regression, test owners, and code ownership.
+- [x] P9-C Run impact analysis for `applyFilterBasedClusteredLayout`; record CRITICAL blast radius as a warning, not an edit ban.
+- [x] P9-D Re-read `graph-adapter.ts`, current layout tests, Phase 4 regression diff, Phase 8 validation, evidence, and benchmark files.
+- [x] P9-E Update this plan so Phase 9 explicitly covers both code file splitting and ring/spiral topology restoration with all preservation invariants.
+- [x] P9-F Split `graph-adapter.ts` into responsibility-owned modules while preserving the existing public import surface from `graph-adapter.ts`.
+- [x] P9-G Keep graph adapter split behavior-preserving: no topology, spacing, color, zoom, interaction, edge, label, filter, or diagnostics semantic change in the split slice.
+- [x] P9-H Run the full build gate before tests for the split slice.
+- [x] P9-I Run focused Web unit tests and existing Web e2e/browser validation for the split slice.
+- [x] P9-J Run `avmatrix detect-changes --repo AVmatrix --scope all` and commit the split slice.
+- [ ] P9-K Add unit geometry tests that fail when same-island placement becomes hex/grid-only instead of spiral/radial.
+- [ ] P9-L Add or tighten Web e2e/browser screenshot validation that checks spiral/ring topology together with spacing, color, node inventory, ring/island inventory, and zoom.
+- [ ] P9-M Replace hex-only same-island placement with deterministic collision-safe golden-angle/radial spiral placement.
+- [ ] P9-N Restore radial/pinwheel island placement around app-layer rings while preserving dynamic footprint gaps.
+- [ ] P9-O Preserve rendered-size spacing: edge-to-edge gap is at least one rendered node diameter for protected same-island/detail validation.
+- [ ] P9-P Preserve dynamic graph-derived inventories; do not hardcode ring, island, node-type, or color counts.
+- [ ] P9-Q Preserve all node types, filters, colors, community colors, edges, ring labels, island labels, and diagnostics fields.
+- [ ] P9-R Preserve mouse-wheel zoom, button zoom, click, hover, focus/search, selected/highlight, and blast-radius interactions.
+- [ ] P9-S Preserve render performance strategy: scheduling/caching/coalescing only; no feature removal.
+- [ ] P9-T Run the full build gate: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- [ ] P9-U Verify the full build refreshed `avmatrix-launcher\AVmatrixLauncher.exe` by recording LastWriteTime, file size, and hash.
+- [ ] P9-V Run focused Web unit tests, full Web unit tests, and Web e2e/browser screenshot validation.
+- [ ] P9-W Record Phase 9 evidence in the evidence ledger and Phase 9 product/runtime/layout/inventory/performance metrics in the benchmark ledger.
+- [ ] P9-X Run `avmatrix detect-changes --repo AVmatrix --scope all`.
+- [ ] P9-Y Commit the completed topology restoration slice.
+- [ ] P9-Z Confirm working tree state and close Phase 9 only after split, topology, spacing, color/inventory, zoom, interaction, performance, launcher, evidence, and benchmark gates pass together.
+
 ## Risk Notes
 
 Blast radius is HIGH/CRITICAL because graph layout, Sigma rendering, camera behavior, and e2e fixtures are central Web UI behavior. The implementation proceeds carefully with evidence and tests; HIGH/CRITICAL is not a reason to avoid required code changes.
@@ -556,3 +626,5 @@ Blast radius is HIGH/CRITICAL because graph layout, Sigma rendering, camera beha
 The main risk is solving only one symptom again. This plan closes only after overview, node-type preservation, zoom semantics, and detail spacing pass together.
 
 The reopened risk is treating performance as a reason to remove graph information. That is forbidden for this plan. Performance work must preserve the feature set and reduce repeated work by using scheduling, caching, coalescing, and settled/idle audits.
+
+The Phase 9 risk is solving only the visible spiral symptom and losing spacing, color, inventory, zoom, interaction, edge/label, performance, launcher, evidence, or benchmark guarantees. Phase 9 must close only when all listed invariants pass together.

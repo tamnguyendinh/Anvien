@@ -520,3 +520,90 @@ Final artifacts:
 - `reports/problem/2026-05-28-phase8-launcher-final.json`
 - `reports/problem/2026-05-28-phase8-launcher-final-load.png`
 - `reports/problem/2026-05-28-phase8-launcher-final-wheel.png`
+
+## B8 - Phase 9 Benchmark Contract
+
+Status: pending Phase 9 implementation metrics.
+
+Phase 9 benchmark rows must record measured product/runtime metrics only. Command logs, trace notes, screenshots, and build/test pass-fail details belong in the evidence ledger.
+
+Required Phase 9 metric groups:
+
+| Group | Required metrics |
+|---|---|
+| Code split | module count, `graph-adapter.ts` line count before/after, public export/import inventory |
+| Topology | same-island radial progression score, angular diversity, detected hex-grid-only failure count, ring/pinwheel variation count |
+| Spacing | overlap count, target-gap violation count, minimum rendered edge gap, minimum center distance |
+| Dynamic inventory | graph node type count, filter node type count, ring count, island count, edge type count |
+| Color | visible color count, node type color inventory, community color inventory where present |
+| Zoom | wheel camera ratio change, wheel rendered radius growth, button camera ratio change, button rendered radius growth/shrink |
+| Performance | load long tasks, wheel long tasks, longest long task, max frame delta, diagnostics write counts |
+| Launcher/package | Web bundle hash, launcher web bundle hash, launcher exe LastWriteTime, launcher exe size, launcher exe SHA256 |
+
+Counts such as `3` rings or `4` islands are fixture metrics only. Product assertions must derive expected counts from the active graph or fixture inventory.
+
+## B9 - Phase 9A Code Split Metrics
+
+Status: in progress for split-slice validation.
+
+| Metric | Value |
+|---|---:|
+| Pre-split `graph-adapter.ts` lines | 764 |
+| Post-split `graph-adapter.ts` facade lines | 25 |
+| Added responsibility modules | 5 |
+| Split file inventory count including facade | 6 |
+| `graph-adapter-types.ts` lines | 42 |
+| `graph-node-sizing.ts` lines | 98 |
+| `graph-layout.ts` lines | 525 |
+| `graph-conversion.ts` lines | 104 |
+| `graph-filtering.ts` lines | 101 |
+
+Public facade exports preserved:
+
+- `SigmaEdgeAttributes`
+- `SigmaNodeAttributes`
+- `MAX_DENSE_RENDERED_NODE_SIZE`
+- `MAX_RENDERED_NODE_SIZE`
+- `capRenderedNodeSize`
+- `getMaxRenderedNodeSize`
+- `getMinimumNodeCenterDistance`
+- `getMinimumNodeEdgeGap`
+- `getRenderedNodeDiameter`
+- `getRenderedNodeRadius`
+- `getScaledNodeSize`
+- `APP_LAYER_RING_ORDER`
+- `applyFilterBasedClusteredLayout`
+- `knowledgeGraphToGraphology`
+- `filterGraphByDepth`
+- `filterGraphByLabels`
+- `getNodesWithinHops`
+
+Phase 9A package/build artifact metrics:
+
+| Metric | Value |
+|---|---:|
+| Web bundle | `avmatrix-web\dist\assets\index-B2G1nHHi.js` |
+| Web bundle bytes | 2053493 |
+| Web bundle SHA256 | `791B71A86CDAB764A84F0D81AF54390318A70EF3F9A0B67491AE1C181E1188BC` |
+| Launcher web bundle | `avmatrix-launcher\web-dist\assets\index-B2G1nHHi.js` |
+| Launcher web bundle bytes | 2053493 |
+| Launcher web bundle SHA256 | `791B71A86CDAB764A84F0D81AF54390318A70EF3F9A0B67491AE1C181E1188BC` |
+| Web and launcher bundle hashes match | true |
+| Launcher exe LastWriteTime | `2026-05-28 11:51:59 +07:00` |
+| Launcher exe bytes | 6993408 |
+| Launcher exe SHA256 | `434C4DD66434AE273506B6137B67DEEDDA117F62E9C7B0E11D6333461BB73001` |
+| Launcher server exe LastWriteTime | `2026-05-28 11:52:01 +07:00` |
+| Launcher server exe bytes | 2053632 |
+| Launcher server exe SHA256 | `0A30E55DD961E71A170DE36A742B15E60CEA57EE4FC789B24A222A970D39D6B6` |
+| CLI exe LastWriteTime | `2026-05-28 11:51:54 +07:00` |
+| CLI exe bytes | 50528768 |
+| CLI exe SHA256 | `B736109674774C26A2676B01DA69BED510AD261A11648C53618E3F2F36C363D6` |
+
+Phase 9A screenshot artifact inventory:
+
+| Artifact | Bytes |
+|---|---:|
+| `avmatrix-web\test-results\graph-orientation-labels-G-5b603-labels-on-the-desktop-graph-chromium\graph-orientation-labels-desktop.png` | 240685 |
+| `avmatrix-web\test-results\graph-orientation-labels-G-e5a0a-t-and-updates-after-filters-chromium\graph-orientation-labels-small-filtered.png` | 92846 |
+| `avmatrix-web\test-results\graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium\graph-node-spacing-dense-desktop.png` | 301048 |
+| `avmatrix-web\test-results\graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium\graph-node-spacing-dense-small.png` | 106522 |
