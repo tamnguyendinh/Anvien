@@ -804,3 +804,9 @@ P8-X pre-commit change detection:
 - Affected processes: `4`, all from the new `handleWheel` flow (`HandleWheel -> ApplyFilterBasedClusteredLayout`, `HandleWheel -> CapRenderedNodeSize`, `HandleWheel -> HexToRgb`, `HandleWheel -> RgbToHex`).
 - Resolution gap changes: `319` changed gap entities and `328` changed gap occurrences; changed source nodes with gaps `0`.
 - Resolution health impact: degraded nodes `0`, total resolution gap count `0`.
+
+P8-Y/P8-Z closure:
+
+- Implementation commit: `deb5a71 fix(web): harden graph zoom diagnostics`.
+- Post-implementation `git status --short`: clean.
+- Reopened Phase 8 closure condition met: current build passed through the full launcher build gate, launcher-served bundle passed e2e/browser validation, and benchmark/evidence artifacts were recorded.

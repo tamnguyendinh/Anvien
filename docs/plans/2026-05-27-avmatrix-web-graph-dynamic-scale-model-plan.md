@@ -547,7 +547,7 @@ The evidence ledger must record the launcher exe `LastWriteTime`, file size, and
 - [x] P8-W Record evidence after each evidenced task.
 - [x] P8-X Run `avmatrix detect-changes --repo AVmatrix --scope all`.
 - [x] P8-Y Commit the completed reopened render hot path and wheel zoom hardening slice.
-- [ ] P8-Z Confirm working tree state and close the reopened plan only after launcher and current build both pass.
+- [x] P8-Z Confirm working tree state and close the reopened plan only after launcher and current build both pass.
 
 ## Risk Notes
 
