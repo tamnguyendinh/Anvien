@@ -1,0 +1,83 @@
+{
+  "frontendUrl": "http://127.0.0.1:5228",
+  "backendUrl": "http://127.0.0.1:4848",
+  "readyMs": 2427,
+  "denseGraph": {
+    "nodes": 2157,
+    "relationships": 2156
+  },
+  "beforeWheelRatio": 0.004001487892151231,
+  "captures": {
+    "load": {
+      "label": "load",
+      "probe": {
+        "longTaskCount": 4,
+        "totalLongTaskMs": 1766,
+        "longestLongTaskMs": 964,
+        "maxFrameDeltaMs": 1166.7,
+        "frameDropCount": 7,
+        "screenWrites": 2,
+        "overviewWrites": 0
+      },
+      "hasScreenNodeSpacing": true,
+      "hasGraphOverview": false,
+      "hasGraphInteraction": false,
+      "graphConversion": {
+        "count": 1,
+        "lastMs": 329.69999998807907,
+        "maxMs": 329.69999998807907,
+        "lastNodeCount": 2157,
+        "lastRelationshipCount": 2156,
+        "lastStartedAt": 1311.4000000059605,
+        "lastFinishedAt": 1641.0999999940395
+      },
+      "screenNodeSpacing": {
+        "nodeCount": 2077,
+        "visibleViewportNodeCount": 17,
+        "cameraRatio": 0.004001487892151231,
+        "maxRenderedRadius": 2.0000000473025636,
+        "overlapCount": 0,
+        "targetGapViolationCount": 0
+      },
+      "graphOverview": null,
+      "graphInteraction": null
+    },
+    "wheel": {
+      "label": "wheel",
+      "probe": {
+        "longTaskCount": 6,
+        "totalLongTaskMs": 374,
+        "longestLongTaskMs": 78,
+        "maxFrameDeltaMs": 66.79999999999927,
+        "frameDropCount": 7,
+        "screenWrites": 0,
+        "overviewWrites": 0
+      },
+      "hasScreenNodeSpacing": true,
+      "hasGraphOverview": false,
+      "hasGraphInteraction": false,
+      "graphConversion": {
+        "count": 1,
+        "lastMs": 329.69999998807907,
+        "maxMs": 329.69999998807907,
+        "lastNodeCount": 2157,
+        "lastRelationshipCount": 2156,
+        "lastStartedAt": 1311.4000000059605,
+        "lastFinishedAt": 1641.0999999940395
+      },
+      "screenNodeSpacing": {
+        "nodeCount": 2077,
+        "visibleViewportNodeCount": 17,
+        "cameraRatio": 0.004001487892151231,
+        "maxRenderedRadius": 2.0000000473025636,
+        "overlapCount": 0,
+        "targetGapViolationCount": 0
+      },
+      "graphOverview": null,
+      "graphInteraction": null
+    }
+  },
+  "screenshots": [
+    "E:\\AVmatrix-GO\\reports\\problem\\2026-05-28-phase8-packaged-launcher-baseline-load.png"
+  ]
+}

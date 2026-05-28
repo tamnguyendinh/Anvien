@@ -192,11 +192,12 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
   // Initialize Sigma ONCE
   useEffect(() => {
     if (!containerRef.current) return;
+    const container = containerRef.current;
 
     const graph = new Graph<SigmaNodeAttributes, SigmaEdgeAttributes>();
     graphRef.current = graph;
 
-    const sigma = new Sigma(graph, containerRef.current, {
+    const sigma = new Sigma(graph, container, {
       renderLabels: true,
       labelFont: 'JetBrains Mono, monospace',
       labelSize: 11,
@@ -497,7 +498,17 @@ export const useSigma = (options: UseSigmaOptions = {}): UseSigmaReturn => {
       }
     });
 
+    const handleWheel = () => {
+      recordGraphInteractionMode({
+        mode: 'wheel-zoom',
+        targetNodeId: selectedNodeRef.current ?? undefined,
+      });
+    };
+    const wheelListenerOptions = { passive: true, capture: true };
+    container.addEventListener('wheel', handleWheel, wheelListenerOptions);
+
     return () => {
+      container.removeEventListener('wheel', handleWheel, wheelListenerOptions);
       sigma.kill();
       sigmaRef.current = null;
       graphRef.current = null;

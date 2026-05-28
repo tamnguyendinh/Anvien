@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   getWebRuntimeDiagnostics,
+  recordGraphCameraSample,
   recordGraphConversion,
   recordGraphInteractionMode,
   recordGraphOverview,
@@ -199,6 +200,8 @@ describe('runtime diagnostics', () => {
 
     recordGraphInteractionMode({ mode: 'zoom-in' });
     recordScreenNodeSpacing({ ...input, cameraRatio: 0.75 });
+    recordGraphInteractionMode({ mode: 'wheel-zoom' });
+    recordScreenNodeSpacing({ ...input, cameraRatio: 0.65 });
     recordGraphInteractionMode({
       mode: 'detail-focus',
       targetNodeId: 'Function:frontend:0',
@@ -211,8 +214,11 @@ describe('runtime diagnostics', () => {
     }
 
     const diagnostics = getWebRuntimeDiagnostics();
-    expect(diagnostics?.graphInteraction.zoomSamples).toHaveLength(1);
+    expect(diagnostics?.graphInteraction.zoomSamples).toHaveLength(2);
     expect(diagnostics?.graphInteraction.zoomSamples[0].mode).toBe('zoom-in');
+    expect(diagnostics?.graphInteraction.zoomSamples[1].mode).toBe(
+      'wheel-zoom',
+    );
     expect(diagnostics?.graphInteraction.detailFocusSamples).toHaveLength(12);
     expect(
       diagnostics?.graphInteraction.detailFocusSamples.at(-1)?.targetNodeId,
@@ -222,6 +228,22 @@ describe('runtime diagnostics', () => {
         ?.visibleViewportIslandCount,
     ).toBe(3);
     expect(diagnostics?.graphInteraction.dynamicGapSamples).toHaveLength(12);
+  });
+
+  it('records cheap camera samples without requiring a full spacing audit', () => {
+    recordGraphInteractionMode({ mode: 'wheel-zoom' });
+    recordGraphCameraSample({
+      cameraRatio: 0.625,
+      cameraX: 10,
+      cameraY: -5,
+    });
+
+    const diagnostics = getWebRuntimeDiagnostics();
+    expect(diagnostics?.graphCamera.mode).toBe('wheel-zoom');
+    expect(diagnostics?.graphCamera.cameraRatio).toBe(0.625);
+    expect(diagnostics?.graphCamera.cameraX).toBe(10);
+    expect(diagnostics?.graphCamera.cameraY).toBe(-5);
+    expect(diagnostics?.graphInteraction.zoomSamples).toHaveLength(0);
   });
 
   it('records graph overview diagnostics for e2e assertions', () => {

@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo, useState, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, useCallback, useMemo, useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import {
   ZoomIn,
   ZoomOut,
@@ -25,6 +25,7 @@ import {
 } from '../lib/graph-adapter';
 import {
   recordGraphConversion,
+  recordGraphCameraSample,
   recordGraphOverview,
   recordLayoutNodeSpacing,
   recordLayoutRings,
@@ -36,6 +37,7 @@ import { buildGraphOverviewDiagnostics } from '../lib/graph-overview-diagnostics
 import {
   buildGraphOrientationLabels,
   placeGraphOrientationLabels,
+  type GraphOrientationLabel,
   type GraphOrientationViewportLabel,
 } from '../lib/graph-orientation-labels';
 import type { GraphNode } from '@/generated/avmatrix-contracts';
@@ -52,6 +54,14 @@ type LayoutRingBounds = {
   minY: number;
   maxY: number;
   count: number;
+};
+
+type IdleSchedulerWindow = Window & {
+  requestIdleCallback?: (
+    callback: () => void,
+    options?: { timeout?: number },
+  ) => number;
+  cancelIdleCallback?: (handle: number) => void;
 };
 
 const createLayoutRingBounds = (): LayoutRingBounds => ({
@@ -256,6 +266,16 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
   const [orientationLabels, setOrientationLabels] = useState<
     GraphOrientationViewportLabel[]
   >([]);
+  const orientationLabelSourcesRef = useRef<GraphOrientationLabel[]>([]);
+  const orientationPlacementFrameRef = useRef<number | null>(null);
+  const cameraSampleFrameRef = useRef<number | null>(null);
+  const pendingCameraSampleRef = useRef<{
+    cameraRatio: number;
+    cameraX: number;
+    cameraY: number;
+  } | null>(null);
+  const diagnosticsSettleTimeoutRef = useRef<number | null>(null);
+  const diagnosticsIdleCancelRef = useRef<(() => void) | null>(null);
 
   const effectiveHighlightedNodeIds = useMemo(() => {
     if (!isAIHighlightsEnabled) return highlightedNodeIds;
@@ -357,18 +377,15 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     areGraphLinksVisible,
   });
 
-  const recomputeOrientationLabels = useCallback(() => {
+  const placeOrientationLabelsFromSources = useCallback(() => {
     const sigma = sigmaRef.current;
     if (!sigma) {
       setOrientationLabels([]);
       return;
     }
 
-    const sigmaGraph = sigma.getGraph() as Graph<
-      SigmaNodeAttributes,
-      SigmaEdgeAttributes
-    >;
-    if (!sigmaGraph || sigmaGraph.order === 0) {
+    const graphLabels = orientationLabelSourcesRef.current;
+    if (graphLabels.length === 0) {
       setOrientationLabels([]);
       return;
     }
@@ -384,7 +401,6 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       typeof sigma.getCamera === 'function'
         ? sigma.getCamera().getState().ratio
         : 1;
-    const graphLabels = buildGraphOrientationLabels(sigmaGraph);
     const placedLabels = placeGraphOrientationLabels(graphLabels, {
       viewportWidth: dimensions.width,
       viewportHeight: dimensions.height,
@@ -397,12 +413,108 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     setOrientationLabels(placedLabels);
   }, [containerRef, sigmaRef]);
 
+  const refreshOrientationLabelSources = useCallback(() => {
+    const sigma = sigmaRef.current;
+    if (!sigma) {
+      orientationLabelSourcesRef.current = [];
+      setOrientationLabels([]);
+      return;
+    }
+
+    const sigmaGraph = sigma.getGraph() as Graph<
+      SigmaNodeAttributes,
+      SigmaEdgeAttributes
+    >;
+    if (!sigmaGraph || sigmaGraph.order === 0) {
+      orientationLabelSourcesRef.current = [];
+      setOrientationLabels([]);
+      return;
+    }
+
+    orientationLabelSourcesRef.current = buildGraphOrientationLabels(sigmaGraph);
+    placeOrientationLabelsFromSources();
+  }, [placeOrientationLabelsFromSources, sigmaRef]);
+
+  const scheduleOrientationLabelPlacement = useCallback(() => {
+    if (orientationPlacementFrameRef.current !== null) return;
+    orientationPlacementFrameRef.current = window.requestAnimationFrame(() => {
+      orientationPlacementFrameRef.current = null;
+      placeOrientationLabelsFromSources();
+    });
+  }, [placeOrientationLabelsFromSources]);
+
+  const scheduleGraphCameraSample = useCallback(
+    (sample: { cameraRatio: number; cameraX: number; cameraY: number }) => {
+      pendingCameraSampleRef.current = sample;
+      if (cameraSampleFrameRef.current !== null) return;
+      cameraSampleFrameRef.current = window.requestAnimationFrame(() => {
+        cameraSampleFrameRef.current = null;
+        const nextSample = pendingCameraSampleRef.current;
+        pendingCameraSampleRef.current = null;
+        if (nextSample) {
+          recordGraphCameraSample(nextSample);
+        }
+      });
+    },
+    [],
+  );
+
   const recordCurrentScreenNodeSpacing = useCallback(() => {
     const sigma = sigmaRef.current;
     if (!sigma) return;
     recordScreenNodeSpacing(buildScreenNodeSpacingDiagnostics(sigma));
     recordGraphOverview(buildGraphOverviewDiagnostics(sigma));
   }, [sigmaRef]);
+
+  const cancelPendingSettledDiagnostics = useCallback(() => {
+    if (diagnosticsSettleTimeoutRef.current !== null) {
+      window.clearTimeout(diagnosticsSettleTimeoutRef.current);
+      diagnosticsSettleTimeoutRef.current = null;
+    }
+    diagnosticsIdleCancelRef.current?.();
+    diagnosticsIdleCancelRef.current = null;
+  }, []);
+
+  const scheduleSettledScreenNodeSpacingAudit = useCallback(() => {
+    if (diagnosticsSettleTimeoutRef.current !== null) {
+      window.clearTimeout(diagnosticsSettleTimeoutRef.current);
+    }
+    diagnosticsSettleTimeoutRef.current = window.setTimeout(() => {
+      diagnosticsSettleTimeoutRef.current = null;
+      diagnosticsIdleCancelRef.current?.();
+      diagnosticsIdleCancelRef.current = null;
+
+      const runAudit = () => {
+        diagnosticsIdleCancelRef.current = null;
+        recordCurrentScreenNodeSpacing();
+      };
+      const idleWindow = window as IdleSchedulerWindow;
+      if (typeof idleWindow.requestIdleCallback === 'function') {
+        const handle = idleWindow.requestIdleCallback(runAudit, { timeout: 500 });
+        diagnosticsIdleCancelRef.current = () =>
+          idleWindow.cancelIdleCallback?.(handle);
+        return;
+      }
+
+      const handle = window.setTimeout(runAudit, 0);
+      diagnosticsIdleCancelRef.current = () => window.clearTimeout(handle);
+    }, 160);
+  }, [recordCurrentScreenNodeSpacing]);
+
+  useEffect(() => {
+    return () => {
+      if (orientationPlacementFrameRef.current !== null) {
+        window.cancelAnimationFrame(orientationPlacementFrameRef.current);
+        orientationPlacementFrameRef.current = null;
+      }
+      if (cameraSampleFrameRef.current !== null) {
+        window.cancelAnimationFrame(cameraSampleFrameRef.current);
+        cameraSampleFrameRef.current = null;
+      }
+      pendingCameraSampleRef.current = null;
+      cancelPendingSettledDiagnostics();
+    };
+  }, [cancelPendingSettledDiagnostics]);
 
   useEffect(() => {
     const sigma = sigmaRef.current;
@@ -411,17 +523,23 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       return;
     }
 
-    const handleRefresh = () => recomputeOrientationLabels();
-    const handleResizeDiagnostics = () => {
-      window.requestAnimationFrame(recordCurrentScreenNodeSpacing);
-    };
+    const handleRefresh = () => scheduleOrientationLabelPlacement();
+    const handleResizeDiagnostics = () => scheduleSettledScreenNodeSpacingAudit();
     const handleCameraUpdated = () => {
+      const cameraState = camera?.getState();
+      if (cameraState) {
+        scheduleGraphCameraSample({
+          cameraRatio: cameraState.ratio,
+          cameraX: cameraState.x,
+          cameraY: cameraState.y,
+        });
+      }
       handleRefresh();
       handleResizeDiagnostics();
     };
     const camera = typeof sigma.getCamera === 'function' ? sigma.getCamera() : null;
 
-    handleRefresh();
+    refreshOrientationLabelSources();
     sigma.on?.('afterRender', handleRefresh);
     sigma.on?.('resize', handleRefresh);
     sigma.on?.('resize', handleResizeDiagnostics);
@@ -438,8 +556,10 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
       window.removeEventListener('resize', handleResizeDiagnostics);
     };
   }, [
-    recomputeOrientationLabels,
-    recordCurrentScreenNodeSpacing,
+    refreshOrientationLabelSources,
+    scheduleGraphCameraSample,
+    scheduleOrientationLabelPlacement,
+    scheduleSettledScreenNodeSpacingAudit,
     graph,
     visibleLabels,
     depthFilter,
@@ -527,9 +647,9 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     recordCurrentScreenNodeSpacing();
     window.requestAnimationFrame(() => {
       recordCurrentScreenNodeSpacing();
-      recomputeOrientationLabels();
+      refreshOrientationLabelSources();
     });
-  }, [graph, nodeById, setSigmaGraph]);
+  }, [graph, nodeById, setSigmaGraph, recordCurrentScreenNodeSpacing, refreshOrientationLabelSources]);
 
   // Update graph visibility when label filters or depth filter mode change.
   useEffect(() => {
@@ -553,9 +673,16 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     }
     sigma.refresh();
     recordCurrentScreenNodeSpacing();
-    recomputeOrientationLabels();
+    refreshOrientationLabelSources();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sigmaRef identity never changes
-  }, [visibleLabels, depthFilter, graphHealthFilters, semanticFilters]);
+  }, [
+    visibleLabels,
+    depthFilter,
+    graphHealthFilters,
+    semanticFilters,
+    recordCurrentScreenNodeSpacing,
+    refreshOrientationLabelSources,
+  ]);
 
   // Re-apply depth filtering when selection changes only if the feature is enabled.
   useEffect(() => {
@@ -577,9 +704,15 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
     );
     sigma.refresh();
     recordCurrentScreenNodeSpacing();
-    recomputeOrientationLabels();
+    refreshOrientationLabelSources();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sigmaRef identity never changes
-  }, [appSelectedNode?.id, graphHealthFilters, semanticFilters]);
+  }, [
+    appSelectedNode?.id,
+    graphHealthFilters,
+    semanticFilters,
+    recordCurrentScreenNodeSpacing,
+    refreshOrientationLabelSources,
+  ]);
 
   // Sync app selected node with sigma
   useEffect(() => {

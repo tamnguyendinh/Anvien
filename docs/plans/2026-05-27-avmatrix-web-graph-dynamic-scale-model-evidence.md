@@ -676,3 +676,131 @@ Phase 7 validation:
 - Final `avmatrix analyze --force`: scanned `789`, parsed `578`, unsupported `211`, failed `0`; graph `90536` nodes and `123974` relationships.
 - Final AVmatrix MCP `detect_changes` with `repo=AVmatrix`, `scope=all`: risk level `low`, changed files `1`, changed symbols `2`, changed app layers docs `2`, affected processes `0`, resolution health degraded nodes `0`, total resolution gap count `0`.
 - Dev server on `127.0.0.1:5228` was stopped after e2e validation.
+
+## E9 - Phase 8 Reopened Performance Hardening Evidence
+
+Status: in progress.
+
+P8-A AVmatrix refresh:
+
+- Date: 2026-05-28.
+- Command: `avmatrix analyze --force`.
+- Result: passed.
+- Files: scanned `789`, parsed `578`, unsupported `211`, failed `0`.
+- Refreshed graph: `90541` nodes, `123979` relationships.
+
+P8-B AVmatrix owner trace:
+
+- `avmatrix query "GraphCanvas camera updated screen spacing diagnostics graph overview orientation labels wheel zoom runtime diagnostics launcher build" --repo AVmatrix --limit 10`: traced the active Web graph owner to `avmatrix-web/src/components/GraphCanvas.tsx`, screen spacing diagnostics, overview diagnostics, orientation labels, `useSigma`, runtime diagnostics, and launcher-related results.
+- `avmatrix context "GraphCanvas" --repo AVmatrix`: `GraphCanvas` is consumed by `App.tsx` and `GraphCanvas.selection-performance.test.tsx`.
+- `avmatrix context --uid "Function:avmatrix-web/src/lib/graph-screen-spacing.ts:buildScreenNodeSpacingDiagnostics" --repo AVmatrix`: incoming calls from `GraphCanvas.tsx`, `graph-readable-camera.ts`, and unit coverage.
+- `avmatrix context --uid "Function:avmatrix-web/src/lib/graph-overview-diagnostics.ts:buildGraphOverviewDiagnostics" --repo AVmatrix`: incoming calls from `GraphCanvas.tsx` and unit coverage.
+- `avmatrix context --uid "Function:avmatrix-web/src/lib/graph-orientation-labels.ts:buildGraphOrientationLabels" --repo AVmatrix`: incoming calls from `GraphCanvas.tsx` and unit coverage.
+- `avmatrix context --uid "Function:avmatrix-web/src/lib/graph-orientation-labels.ts:placeGraphOrientationLabels" --repo AVmatrix`: incoming calls from `GraphCanvas.tsx` and unit coverage.
+- `avmatrix context "recordGraphInteractionMode" --repo AVmatrix`: owner is `avmatrix-web/src/lib/runtime-diagnostics.ts`; calls come from `useSigma.ts` and runtime diagnostics tests.
+- `avmatrix context "useSigma" --repo AVmatrix`: owner is `avmatrix-web/src/hooks/useSigma.ts`; call site is `GraphCanvas.tsx`.
+- `avmatrix query "launcher build web-dist AVmatrixLauncher.exe build.ps1 copy web dist" --repo AVmatrix --limit 10`: traced `avmatrix-launcher/build.ps1`, `avmatrix-launcher/src/main.go`, and launcher runtime processes.
+- `avmatrix query "serve launcher web-dist embedded static files AVmatrixLauncher" --repo AVmatrix --limit 10`: traced launcher static serving through `avmatrix-launcher/src/main.go:serveStaticFile` and launcher runtime processes.
+- `avmatrix context "build.ps1" --repo AVmatrix`: indexed file owner is `avmatrix-launcher/build.ps1` with app layer `cli_launcher` and functional area `launcher`.
+
+P8-C/P8-D impact and blast radius:
+
+| Target | Risk | Impacted count | Affected processes | Direct owner evidence |
+|---|---:|---:|---:|---|
+| `GraphCanvas` | LOW | 2 | 0 | `App.tsx`, `main.tsx` |
+| `buildScreenNodeSpacingDiagnostics` | CRITICAL | 7 | 11 | `GraphCanvas.tsx`, `graph-readable-camera.ts`, unit tests |
+| `buildGraphOverviewDiagnostics` | CRITICAL | 4 | 11 | `GraphCanvas.tsx`, unit tests |
+| `buildGraphOrientationLabels` | CRITICAL | 4 | 11 | `GraphCanvas.tsx`, unit tests |
+| `placeGraphOrientationLabels` | CRITICAL | 4 | 11 | `GraphCanvas.tsx`, unit tests |
+| `useSigma` | CRITICAL | 4 | 11 | `GraphCanvas.tsx`, `App.tsx`, `main.tsx` |
+| `recordScreenNodeSpacing` | CRITICAL | 4 | 11 | `GraphCanvas.tsx`, `App.tsx`, `main.tsx` |
+| `recordGraphOverview` | CRITICAL | 4 | 11 | `GraphCanvas.tsx`, `App.tsx`, `main.tsx` |
+| `recordGraphInteractionMode` | LOW | 4 | 0 | `useSigma.ts`, `GraphCanvas.tsx`, `App.tsx` |
+
+Blast radius note:
+
+- The CRITICAL results are workflow warnings for Web graph render and diagnostics paths. They do not block edits; they require scoped changes, preservation checks for colors/types/labels/edges, and full build plus e2e validation.
+
+P8-E baseline reproduction:
+
+- Current Web build command before baseline: `npm run build` in `avmatrix-web`; result passed. Bundle artifact includes `assets/index-Bxk3Ac59.js`.
+- Current build preview: served `avmatrix-web/dist` on `http://127.0.0.1:5231`; stopped after capture.
+- Packaged launcher baseline: started `avmatrix-launcher\AVmatrixLauncher.exe start` with `AVMATRIX_LAUNCHER_NO_BROWSER=1`, captured `http://127.0.0.1:5228`, then stopped with `avmatrix-launcher\AVmatrixLauncher.exe stop`.
+- Baseline JSON artifacts:
+  - `reports/problem/2026-05-28-phase8-current-build-baseline.json`.
+  - `reports/problem/2026-05-28-phase8-packaged-launcher-baseline.json`.
+- Baseline screenshot artifacts:
+  - `reports/problem/2026-05-28-phase8-current-build-baseline-load.png`.
+  - `reports/problem/2026-05-28-phase8-current-build-baseline-wheel.png`.
+  - `reports/problem/2026-05-28-phase8-packaged-launcher-baseline-load.png`.
+- Current build baseline confirmed the regression remains before edits: wheel input changes camera ratio from `1` to `0.5882352941176471`, but `graphInteraction.currentMode` stays `overview` and `zoomSamples` stays `0`.
+- Current build load retained graph inventory: `visibleColorCount=3`, `visibleRingCount=3`, `visibleIslandCount=4`, `graphRingInventory=[backend, docs, frontend]`, `graphIslandInventory=[backend:Function, docs:Documentation, frontend:Function, frontend:Method]`.
+- Packaged launcher baseline confirmed the serving bug remains before edits: `screenNodeSpacing` exists, but `graphOverview` and `graphInteraction` are absent from the served bundle; wheel input did not change the stale launcher camera ratio (`0.004001487892151231` before and after wheel).
+
+P8-O/P8-P/P8-Q full build gate:
+
+- Command: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- Result: passed.
+- Web build bundle: `avmatrix-web\dist\assets\index-cazHqvFt.js`, length `2053493`, SHA256 `CD837CA78F245717A6316A8DEB95D0309D3B9A61FEE2B5B806A715AECCDF7AEA`.
+- Launcher web bundle: `avmatrix-launcher\web-dist\assets\index-cazHqvFt.js`, length `2053493`, SHA256 `CD837CA78F245717A6316A8DEB95D0309D3B9A61FEE2B5B806A715AECCDF7AEA`, copied match `true`.
+- Launcher executable: `avmatrix-launcher\AVmatrixLauncher.exe`, LastWriteTime `2026-05-28 09:45:29 +07:00`, size `6993408`, SHA256 `1802C7DD2EC4114E2B123895205E08FA51E4D0A06827192DA089D2919ABD0945`.
+- Canonical CLI executable: `avmatrix\bin\avmatrix.exe`, LastWriteTime `2026-05-28 09:45:28 +07:00`, size `50528768`, SHA256 `AA8AA6F57663AA4793C63A078C079D6A6A330A747F441CCB3F5F9C53BC48DC7C`.
+- Launcher server executable: `avmatrix-launcher\server-bundle\avmatrix-server.exe`, LastWriteTime `2026-05-28 09:45:30 +07:00`, size `2053632`, SHA256 `1C61675647F748460DFED28BEAC2896F791EFD34F1E21215C1E522F7015A9103`.
+
+P8-F through P8-M implementation evidence:
+
+- Added reusable browser performance probe helpers in `avmatrix-web\e2e\graph-orientation-labels.spec.ts` for long tasks, max frame delta, frame drops, and diagnostics-write counts across dense load, wheel zoom, button zoom, and camera settle.
+- Added `wheel-zoom` to `GraphInteractionMode` and routed `wheel-zoom` samples into `graphInteraction.zoomSamples`.
+- Added `graphCamera` diagnostics for cheap camera-only samples without running full screen spacing or overview audits.
+- Coalesced `graphCamera` writes through one pending RAF so repeated camera updates in the same frame keep only the latest camera sample.
+- Added capture-phase wheel listener in `useSigma` so mouse wheel zoom records `wheel-zoom` before Sigma consumes the event path.
+- Reworked `GraphCanvas` orientation labels so source inventory is built on graph/filter changes and camera/afterRender only places cached labels.
+- Reworked `GraphCanvas` camera hot path so full `buildScreenNodeSpacingDiagnostics` and `buildGraphOverviewDiagnostics` run after camera settle through idle work instead of on every camera update.
+- Preserved graph/filter-triggered full diagnostics and initial load diagnostics so existing screen spacing and overview inventory evidence remains available.
+
+P8-R launcher-served bundle verification:
+
+- Launcher server: `http://127.0.0.1:5228`.
+- Served bundle: `assets/index-cazHqvFt.js`.
+- Served bundle contains `graphOverview`: `true`.
+- Served bundle contains `graphInteraction`: `true`.
+- Served bundle contains `wheel-zoom`: `true`.
+
+P8-S/P8-T/P8-U validation:
+
+- First launcher e2e attempt exposed the exact remaining wheel bug: camera/radius changed, but `wheel-zoom` was not present in `zoomSamples`. The listener was then changed from bubble-phase to capture-phase.
+- Focused Web unit tests after the capture-phase fix: `npx vitest run test/unit/runtime-diagnostics.test.ts test/unit/graph-screen-spacing.test.ts test/unit/graph-orientation-labels.test.ts test/unit/graph-adapter.edge-geometry.test.ts` passed, `4` files and `45` tests.
+- Full Web unit tests after the capture-phase fix: `npx vitest run test/unit` passed, `50` files and `398` tests.
+- Web e2e/browser tests against launcher-served `127.0.0.1:5228`: `npx playwright test e2e/graph-orientation-labels.spec.ts --project=chromium` passed, `3` tests.
+- Browser screenshot validation inspected:
+  - `avmatrix-web\test-results\graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium\graph-node-spacing-dense-desktop.png`.
+  - `avmatrix-web\test-results\graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium\graph-node-spacing-dense-small.png`.
+  - `reports\problem\2026-05-28-phase8-launcher-final-load.png`.
+  - `reports\problem\2026-05-28-phase8-launcher-final-wheel.png`.
+- Screenshots show graph nodes, multiple color groups, ring labels, island labels, zoom controls, and dense overview/focused wheel views still visible.
+
+P8-N preservation evidence:
+
+- Final dense load inventory retained `visibleColorCount=3`, `visibleRingCount=3`, `visibleIslandCount=4`.
+- Final graph ring inventory retained `[backend, docs, frontend]`.
+- Final graph island inventory retained `[backend:Function, docs:Documentation, frontend:Function, frontend:Method]`.
+- Final filter node type inventory retained `[Documentation, Function, Method]`.
+- Final wheel zoom retained graph island inventory and recorded `graphInteraction.currentMode=wheel-zoom`, `zoomSamples=1`, and `graphCamera.mode=wheel-zoom`.
+- Final button zoom retained graph island inventory and recorded `graphInteraction.currentMode=zoom-in`, `zoomSamples=2`, and `graphCamera.mode=zoom-in`.
+
+P8-X pre-commit change detection:
+
+- `git diff --check`: passed.
+- `avmatrix analyze --force`: scanned `792`, parsed `578`, unsupported `214`, failed `0`.
+- Refreshed graph: `90916` nodes, `124370` relationships.
+- `avmatrix detect-changes --repo AVmatrix --scope all`: risk level `medium`.
+- Changed files: `8`.
+- Changed symbols: `412`.
+- Changed app layers: docs `9`, frontend `187`, frontend_test `216`.
+- Changed functional areas: documentation `9`, layout `12`, unknown `242`, web_graph_ui `149`.
+- Affected count: `4`.
+- Affected app layers: frontend `4`.
+- Affected functional areas: layout `4`.
+- Affected processes: `4`, all from the new `handleWheel` flow (`HandleWheel -> ApplyFilterBasedClusteredLayout`, `HandleWheel -> CapRenderedNodeSize`, `HandleWheel -> HexToRgb`, `HandleWheel -> RgbToHex`).
+- Resolution gap changes: `319` changed gap entities and `328` changed gap occurrences; changed source nodes with gaps `0`.
+- Resolution health impact: degraded nodes `0`, total resolution gap count `0`.

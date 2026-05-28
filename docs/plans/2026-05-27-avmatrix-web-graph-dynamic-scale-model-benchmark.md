@@ -380,3 +380,143 @@ Final screenshot artifacts inspected:
 
 - `avmatrix-web/test-results/graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium/graph-node-spacing-dense-desktop.png`
 - `avmatrix-web/test-results/graph-orientation-labels-G-537e2-ory-visible-on-default-load-chromium/graph-node-spacing-dense-small.png`
+
+## B6 - Phase 8 Baseline Performance
+
+Status: completed for P8-E baseline.
+
+Current Web build baseline:
+
+| Metric | Value |
+|---|---:|
+| Dense fixture graph nodes | 2157 |
+| Dense fixture graph relationships | 2156 |
+| Ready time ms | 1591 |
+| Load long tasks | 3 |
+| Load total long-task ms | 1085 |
+| Load longest long-task ms | 461 |
+| Load max frame delta ms | 616.6 |
+| Load screen diagnostics writes | 2 |
+| Load overview diagnostics writes | 2 |
+| Graph conversion last ms | 43.80000001192093 |
+| Load camera ratio | 1 |
+| Load max rendered radius px | 3 |
+| Load visible color count | 3 |
+| Load visible ring count | 3 |
+| Load visible island count | 4 |
+| Wheel camera ratio | 0.5882352941176471 |
+| Wheel max rendered radius px | 3.9115214431215892 |
+| Wheel long tasks | 4 |
+| Wheel total long-task ms | 446 |
+| Wheel longest long-task ms | 119 |
+| Wheel max frame delta ms | 133.30000000000018 |
+| Wheel screen diagnostics writes | 4 |
+| Wheel overview diagnostics writes | 4 |
+| Wheel zoom samples | 0 |
+| Button camera ratio | 0.39215686274509803 |
+| Button max rendered radius px | 4.790615826801394 |
+| Button long tasks | 4 |
+| Button total long-task ms | 329 |
+| Button max frame delta ms | 83.40000000000009 |
+| Button screen diagnostics writes | 4 |
+| Button overview diagnostics writes | 4 |
+| Button zoom samples | 4 |
+
+Packaged launcher baseline:
+
+| Metric | Value |
+|---|---:|
+| Dense fixture graph nodes | 2157 |
+| Dense fixture graph relationships | 2156 |
+| Ready time ms | 2427 |
+| Load long tasks | 4 |
+| Load total long-task ms | 1766 |
+| Load longest long-task ms | 964 |
+| Load max frame delta ms | 1166.7 |
+| Load screen diagnostics writes | 2 |
+| Load overview diagnostics writes | 0 |
+| Graph conversion last ms | 329.69999998807907 |
+| Load camera ratio | 0.004001487892151231 |
+| Load max rendered radius px | 2.0000000473025636 |
+| Load graph overview present | 0 |
+| Load graph interaction present | 0 |
+| Wheel camera ratio | 0.004001487892151231 |
+| Wheel long tasks | 6 |
+| Wheel total long-task ms | 374 |
+| Wheel max frame delta ms | 66.79999999999927 |
+| Wheel screen diagnostics writes | 0 |
+| Wheel overview diagnostics writes | 0 |
+
+Artifacts:
+
+- `reports/problem/2026-05-28-phase8-current-build-baseline.json`
+- `reports/problem/2026-05-28-phase8-current-build-baseline-load.png`
+- `reports/problem/2026-05-28-phase8-current-build-baseline-wheel.png`
+- `reports/problem/2026-05-28-phase8-packaged-launcher-baseline.json`
+- `reports/problem/2026-05-28-phase8-packaged-launcher-baseline-load.png`
+
+## B7 - Phase 8 Final Launcher Performance
+
+Status: completed for P8-V.
+
+Final launcher benchmark:
+
+| Metric | Value |
+|---|---:|
+| Dense fixture graph nodes | 2157 |
+| Dense fixture graph relationships | 2156 |
+| Ready time ms | 1431 |
+| Load long tasks | 4 |
+| Load total long-task ms | 1122 |
+| Load longest long-task ms | 446 |
+| Load max frame delta ms | 633.3000000000001 |
+| Load screen diagnostics writes | 2 |
+| Load overview diagnostics writes | 2 |
+| Graph conversion last ms | 51.5 |
+| Load camera ratio | 1 |
+| Load max rendered radius px | 3 |
+| Load visible color count | 3 |
+| Load visible ring count | 3 |
+| Load visible island count | 4 |
+| Wheel camera ratio | 0.5882352941176471 |
+| Wheel max rendered radius px | 3.9115214431215892 |
+| Wheel long tasks | 6 |
+| Wheel total long-task ms | 420 |
+| Wheel longest long-task ms | 83 |
+| Wheel max frame delta ms | 83.30000000000018 |
+| Wheel screen diagnostics writes | 1 |
+| Wheel overview diagnostics writes | 1 |
+| Wheel zoom samples | 1 |
+| Button camera ratio | 0.39215686274509803 |
+| Button max rendered radius px | 4.790615826801394 |
+| Button long tasks | 5 |
+| Button total long-task ms | 308 |
+| Button longest long-task ms | 75 |
+| Button max frame delta ms | 66.69999999999982 |
+| Button screen diagnostics writes | 1 |
+| Button overview diagnostics writes | 1 |
+| Button zoom samples | 2 |
+
+Baseline to final comparison:
+
+| Metric | Baseline current build | Baseline packaged launcher | Final launcher |
+|---|---:|---:|---:|
+| Ready time ms | 1591 | 2427 | 1431 |
+| Load longest long-task ms | 461 | 964 | 446 |
+| Load max frame delta ms | 616.6 | 1166.7 | 633.3000000000001 |
+| Load visible color count | 3 | unavailable | 3 |
+| Load visible ring count | 3 | unavailable | 3 |
+| Load visible island count | 4 | unavailable | 4 |
+| Wheel screen diagnostics writes | 4 | 0 | 1 |
+| Wheel overview diagnostics writes | 4 | 0 | 1 |
+| Wheel zoom samples | 0 | unavailable | 1 |
+| Wheel max frame delta ms | 133.30000000000018 | 66.79999999999927 | 83.30000000000018 |
+| Button screen diagnostics writes | 4 | unavailable | 1 |
+| Button overview diagnostics writes | 4 | unavailable | 1 |
+| Button zoom samples | 4 | unavailable | 2 |
+
+Final artifacts:
+
+- `reports/problem/2026-05-28-phase8-launcher-final.json`
+- `reports/problem/2026-05-28-phase8-launcher-final-load.png`
+- `reports/problem/2026-05-28-phase8-launcher-final-wheel.png`

@@ -1,0 +1,222 @@
+{
+  "frontendUrl": "http://127.0.0.1:5228",
+  "backendUrl": "http://127.0.0.1:4848",
+  "readyMs": 1431,
+  "denseGraph": {
+    "nodes": 2157,
+    "relationships": 2156
+  },
+  "captures": {
+    "load": {
+      "label": "load",
+      "probe": {
+        "longTaskCount": 4,
+        "totalLongTaskMs": 1122,
+        "longestLongTaskMs": 446,
+        "maxFrameDeltaMs": 633.3000000000001,
+        "frameDropCount": 7,
+        "screenWrites": 2,
+        "overviewWrites": 2
+      },
+      "graphConversion": {
+        "count": 1,
+        "lastMs": 51.5,
+        "maxMs": 51.5,
+        "lastNodeCount": 2157,
+        "lastRelationshipCount": 2156,
+        "lastStartedAt": 867.4000000059605,
+        "lastFinishedAt": 918.9000000059605
+      },
+      "graphCamera": {
+        "recordedAt": 0,
+        "mode": "overview",
+        "targetNodeId": "",
+        "cameraRatio": 0,
+        "cameraX": 0,
+        "cameraY": 0
+      },
+      "screenNodeSpacing": {
+        "nodeCount": 2077,
+        "visibleViewportNodeCount": 2077,
+        "cameraRatio": 1,
+        "maxRenderedRadius": 3,
+        "overlapCount": 5976,
+        "targetGapViolationCount": 17443
+      },
+      "graphOverview": {
+        "nodeCount": 2157,
+        "visibleViewportNodeCount": 2077,
+        "visibleColorCount": 3,
+        "visibleRingCount": 3,
+        "visibleIslandCount": 4,
+        "cameraRatio": 1,
+        "graphRingInventory": [
+          "backend",
+          "docs",
+          "frontend"
+        ],
+        "graphIslandInventory": [
+          "backend:Function",
+          "docs:Documentation",
+          "frontend:Function",
+          "frontend:Method"
+        ],
+        "filterNodeTypeInventory": [
+          "Documentation",
+          "Function",
+          "Method"
+        ]
+      },
+      "graphInteraction": {
+        "currentMode": "overview",
+        "overviewSamples": 3,
+        "zoomSamples": 0,
+        "detailFocusSamples": 0,
+        "dynamicGapSamples": 3,
+        "latestZoomMode": ""
+      }
+    },
+    "wheel": {
+      "label": "wheel",
+      "probe": {
+        "longTaskCount": 6,
+        "totalLongTaskMs": 420,
+        "longestLongTaskMs": 83,
+        "maxFrameDeltaMs": 83.30000000000018,
+        "frameDropCount": 7,
+        "screenWrites": 1,
+        "overviewWrites": 1
+      },
+      "graphConversion": {
+        "count": 1,
+        "lastMs": 51.5,
+        "maxMs": 51.5,
+        "lastNodeCount": 2157,
+        "lastRelationshipCount": 2156,
+        "lastStartedAt": 867.4000000059605,
+        "lastFinishedAt": 918.9000000059605
+      },
+      "graphCamera": {
+        "cameraRatio": 0.5882352941176471,
+        "cameraX": 0.5,
+        "cameraY": 0.5004450688514754,
+        "mode": "wheel-zoom",
+        "targetNodeId": "",
+        "recordedAt": 2719.199999988079
+      },
+      "screenNodeSpacing": {
+        "nodeCount": 2077,
+        "visibleViewportNodeCount": 341,
+        "cameraRatio": 0.5882352941176471,
+        "maxRenderedRadius": 3.9115214431215892,
+        "overlapCount": 0,
+        "targetGapViolationCount": 10934
+      },
+      "graphOverview": {
+        "nodeCount": 2157,
+        "visibleViewportNodeCount": 341,
+        "visibleColorCount": 2,
+        "visibleRingCount": 2,
+        "visibleIslandCount": 2,
+        "cameraRatio": 0.5882352941176471,
+        "graphRingInventory": [
+          "backend",
+          "docs",
+          "frontend"
+        ],
+        "graphIslandInventory": [
+          "backend:Function",
+          "docs:Documentation",
+          "frontend:Function",
+          "frontend:Method"
+        ],
+        "filterNodeTypeInventory": [
+          "Documentation",
+          "Function",
+          "Method"
+        ]
+      },
+      "graphInteraction": {
+        "currentMode": "wheel-zoom",
+        "overviewSamples": 3,
+        "zoomSamples": 1,
+        "detailFocusSamples": 0,
+        "dynamicGapSamples": 4,
+        "latestZoomMode": "wheel-zoom"
+      }
+    },
+    "button": {
+      "label": "button",
+      "probe": {
+        "longTaskCount": 5,
+        "totalLongTaskMs": 308,
+        "longestLongTaskMs": 75,
+        "maxFrameDeltaMs": 66.69999999999982,
+        "frameDropCount": 5,
+        "screenWrites": 1,
+        "overviewWrites": 1
+      },
+      "graphConversion": {
+        "count": 1,
+        "lastMs": 51.5,
+        "maxMs": 51.5,
+        "lastNodeCount": 2157,
+        "lastRelationshipCount": 2156,
+        "lastStartedAt": 867.4000000059605,
+        "lastFinishedAt": 918.9000000059605
+      },
+      "graphCamera": {
+        "cameraRatio": 0.39215686274509803,
+        "cameraX": 0.5,
+        "cameraY": 0.5004450688514754,
+        "mode": "zoom-in",
+        "targetNodeId": "",
+        "recordedAt": 4013.5
+      },
+      "screenNodeSpacing": {
+        "nodeCount": 2077,
+        "visibleViewportNodeCount": 40,
+        "cameraRatio": 0.39215686274509803,
+        "maxRenderedRadius": 4.790615826801394,
+        "overlapCount": 0,
+        "targetGapViolationCount": 5976
+      },
+      "graphOverview": {
+        "nodeCount": 2157,
+        "visibleViewportNodeCount": 40,
+        "visibleColorCount": 1,
+        "visibleRingCount": 1,
+        "visibleIslandCount": 1,
+        "cameraRatio": 0.39215686274509803,
+        "graphRingInventory": [
+          "backend",
+          "docs",
+          "frontend"
+        ],
+        "graphIslandInventory": [
+          "backend:Function",
+          "docs:Documentation",
+          "frontend:Function",
+          "frontend:Method"
+        ],
+        "filterNodeTypeInventory": [
+          "Documentation",
+          "Function",
+          "Method"
+        ]
+      },
+      "graphInteraction": {
+        "currentMode": "zoom-in",
+        "overviewSamples": 3,
+        "zoomSamples": 2,
+        "detailFocusSamples": 0,
+        "dynamicGapSamples": 5,
+        "latestZoomMode": "zoom-in"
+      }
+    }
+  },
+  "screenshots": [
+    "E:\\AVmatrix-GO\\reports\\problem\\2026-05-28-phase8-launcher-final-load.png",
+    "E:\\AVmatrix-GO\\reports\\problem\\2026-05-28-phase8-launcher-final-wheel.png"
+  ]
+}

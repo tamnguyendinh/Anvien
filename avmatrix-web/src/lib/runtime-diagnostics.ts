@@ -86,6 +86,14 @@ export interface WebRuntimeDiagnostics {
     detailFocusSamples: GraphInteractionSample[];
     dynamicGapSamples: GraphInteractionSample[];
   };
+  graphCamera: {
+    recordedAt: number;
+    mode: GraphInteractionMode;
+    targetNodeId: string;
+    cameraRatio: number;
+    cameraX: number;
+    cameraY: number;
+  };
   graphOverview: GraphOverviewDiagnostics;
   readableCamera: {
     recordedAt: number;
@@ -147,6 +155,7 @@ export type GraphInteractionMode =
   | 'overview'
   | 'zoom-in'
   | 'zoom-out'
+  | 'wheel-zoom'
   | 'detail-focus';
 
 export interface GraphInteractionSample {
@@ -249,7 +258,11 @@ const recordGraphInteractionSample = (
   if (currentMode === 'overview') {
     appendBoundedSample(diagnostics.graphInteraction.overviewSamples, sample);
   }
-  if (currentMode === 'zoom-in' || currentMode === 'zoom-out') {
+  if (
+    currentMode === 'zoom-in' ||
+    currentMode === 'zoom-out' ||
+    currentMode === 'wheel-zoom'
+  ) {
     appendBoundedSample(diagnostics.graphInteraction.zoomSamples, sample);
   }
   if (currentMode === 'detail-focus') {
@@ -348,6 +361,14 @@ const createDiagnostics = (): WebRuntimeDiagnostics => ({
     zoomSamples: [],
     detailFocusSamples: [],
     dynamicGapSamples: [],
+  },
+  graphCamera: {
+    recordedAt: 0,
+    mode: 'overview',
+    targetNodeId: '',
+    cameraRatio: 0,
+    cameraX: 0,
+    cameraY: 0,
   },
   graphOverview: {
     recordedAt: 0,
@@ -541,6 +562,21 @@ export const recordGraphInteractionMode = (input: {
   diagnostics.graphInteraction.currentMode = input.mode;
   diagnostics.graphInteraction.currentTargetNodeId = input.targetNodeId ?? '';
   diagnostics.graphInteraction.lastModeChangedAt = nowMs();
+};
+
+export const recordGraphCameraSample = (input: {
+  cameraRatio: number;
+  cameraX: number;
+  cameraY: number;
+}): void => {
+  const diagnostics = getWebRuntimeDiagnostics();
+  if (!diagnostics) return;
+  diagnostics.graphCamera = {
+    ...input,
+    mode: diagnostics.graphInteraction.currentMode,
+    targetNodeId: diagnostics.graphInteraction.currentTargetNodeId,
+    recordedAt: nowMs(),
+  };
 };
 
 export const recordGraphOverview = (

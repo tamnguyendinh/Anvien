@@ -105,7 +105,7 @@ type FixtureNode = FixtureGraph["nodes"][number];
 
 type RuntimeGraphInteractionSample = {
   recordedAt: number;
-  mode: "overview" | "zoom-in" | "zoom-out" | "detail-focus";
+  mode: "overview" | "zoom-in" | "zoom-out" | "wheel-zoom" | "detail-focus";
   targetNodeId: string;
   coordinateSpace: "viewport_px";
   nodeCount: number;
@@ -135,6 +135,16 @@ type RuntimeGraphInteractionDiagnostics = {
   zoomSamples: RuntimeGraphInteractionSample[];
   detailFocusSamples: RuntimeGraphInteractionSample[];
   dynamicGapSamples: RuntimeGraphInteractionSample[];
+};
+
+type BrowserPerformanceProbeSnapshot = {
+  longTaskCount: number;
+  totalLongTaskMs: number;
+  longestLongTaskMs: number;
+  maxFrameDeltaMs: number;
+  frameDropCount: number;
+  screenWrites: number;
+  overviewWrites: number;
 };
 
 const DEFAULT_VISIBLE_FIXTURE_LABELS = new Set([
@@ -351,6 +361,128 @@ const getGraphInteractionDiagnostics = async (page: Page) =>
     return win.__AVMATRIX_WEB_DIAGNOSTICS__?.graphInteraction ?? null;
   });
 
+const installBrowserPerformanceProbe = async (page: Page) =>
+  page.addInitScript(() => {
+    const probe = {
+      longTasks: [] as number[],
+      maxFrameDelta: 0,
+      frameDrops: 0,
+      screenWrites: 0,
+      overviewWrites: 0,
+      lastScreenRecordedAt: 0,
+      lastOverviewRecordedAt: 0,
+      reset() {
+        const diagnostics = (
+          window as typeof window & {
+            __AVMATRIX_WEB_DIAGNOSTICS__?: {
+              screenNodeSpacing?: { recordedAt: number };
+              graphOverview?: { recordedAt: number };
+            };
+          }
+        ).__AVMATRIX_WEB_DIAGNOSTICS__;
+        this.longTasks = [];
+        this.maxFrameDelta = 0;
+        this.frameDrops = 0;
+        this.screenWrites = 0;
+        this.overviewWrites = 0;
+        this.lastScreenRecordedAt =
+          diagnostics?.screenNodeSpacing?.recordedAt ?? 0;
+        this.lastOverviewRecordedAt =
+          diagnostics?.graphOverview?.recordedAt ?? 0;
+      },
+      snapshot(): BrowserPerformanceProbeSnapshot {
+        const totalLongTaskMs = this.longTasks.reduce(
+          (total, duration) => total + duration,
+          0,
+        );
+        return {
+          longTaskCount: this.longTasks.length,
+          totalLongTaskMs,
+          longestLongTaskMs: this.longTasks.reduce(
+            (maximum, duration) => Math.max(maximum, duration),
+            0,
+          ),
+          maxFrameDeltaMs: this.maxFrameDelta,
+          frameDropCount: this.frameDrops,
+          screenWrites: this.screenWrites,
+          overviewWrites: this.overviewWrites,
+        };
+      },
+    };
+    (
+      window as typeof window & {
+        __AVMATRIX_PHASE8_PROBE__?: typeof probe;
+      }
+    ).__AVMATRIX_PHASE8_PROBE__ = probe;
+    try {
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          probe.longTasks.push(entry.duration);
+        }
+      });
+      observer.observe({ entryTypes: ["longtask"] });
+    } catch (_error) {
+      // The probe still records frame and diagnostics-write counts.
+    }
+
+    let previousFrame = 0;
+    const tick = (now: number) => {
+      if (previousFrame > 0) {
+        const delta = now - previousFrame;
+        probe.maxFrameDelta = Math.max(probe.maxFrameDelta, delta);
+        if (delta > 32) probe.frameDrops++;
+      }
+      previousFrame = now;
+
+      const diagnostics = (
+        window as typeof window & {
+          __AVMATRIX_WEB_DIAGNOSTICS__?: {
+            screenNodeSpacing?: { recordedAt: number };
+            graphOverview?: { recordedAt: number };
+          };
+        }
+      ).__AVMATRIX_WEB_DIAGNOSTICS__;
+      const screenRecordedAt = diagnostics?.screenNodeSpacing?.recordedAt ?? 0;
+      const overviewRecordedAt = diagnostics?.graphOverview?.recordedAt ?? 0;
+      if (
+        screenRecordedAt > 0 &&
+        screenRecordedAt !== probe.lastScreenRecordedAt
+      ) {
+        probe.screenWrites++;
+        probe.lastScreenRecordedAt = screenRecordedAt;
+      }
+      if (
+        overviewRecordedAt > 0 &&
+        overviewRecordedAt !== probe.lastOverviewRecordedAt
+      ) {
+        probe.overviewWrites++;
+        probe.lastOverviewRecordedAt = overviewRecordedAt;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+
+const resetBrowserPerformanceProbe = async (page: Page) =>
+  page.evaluate(() => {
+    (
+      window as typeof window & {
+        __AVMATRIX_PHASE8_PROBE__?: { reset: () => void };
+      }
+    ).__AVMATRIX_PHASE8_PROBE__?.reset();
+  });
+
+const getBrowserPerformanceProbe = async (page: Page) =>
+  page.evaluate(() => {
+    return (
+      window as typeof window & {
+        __AVMATRIX_PHASE8_PROBE__?: {
+          snapshot: () => BrowserPerformanceProbeSnapshot;
+        };
+      }
+    ).__AVMATRIX_PHASE8_PROBE__?.snapshot() ?? null;
+  });
+
 test.describe("Graph orientation labels", () => {
   test.beforeEach(async ({ page }) => {
     const graph = createOrientationGraph();
@@ -522,6 +654,7 @@ test.describe("Graph orientation labels", () => {
       route.fulfill({ json: denseGraph }),
     );
 
+    await installBrowserPerformanceProbe(page);
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto(
       `${FRONTEND_URL}/?server=${encodeURIComponent(BACKEND_URL)}&project=orientation-demo`,
@@ -643,22 +776,61 @@ test.describe("Graph orientation labels", () => {
       path: testInfo.outputPath("graph-node-spacing-dense-desktop.png"),
       fullPage: false,
     });
+    const loadProbe = await getBrowserPerformanceProbe(page);
+    expect(loadProbe?.screenWrites).toBeGreaterThan(0);
+    expect(loadProbe?.overviewWrites).toBeGreaterThan(0);
 
     const initialZoomDiagnostics = await getScreenNodeSpacingDiagnostics(page);
     expect(initialZoomDiagnostics).not.toBeNull();
 
-    await page.getByTitle("Zoom In").click();
+    await resetBrowserPerformanceProbe(page);
+    const graphBox = await page.locator(".sigma-container").boundingBox();
+    expect(graphBox).not.toBeNull();
+    await page.mouse.move(
+      (graphBox?.x ?? 0) + (graphBox?.width ?? 0) / 2,
+      (graphBox?.y ?? 0) + (graphBox?.height ?? 0) / 2,
+    );
+    await page.mouse.wheel(0, -600);
     await expect
       .poll(
         async () => (await getScreenNodeSpacingDiagnostics(page))?.cameraRatio ?? 1,
         { timeout: 10_000 },
       )
       .toBeLessThan((initialZoomDiagnostics?.cameraRatio ?? 0) * 0.75);
-    const zoomInOneDiagnostics = await getScreenNodeSpacingDiagnostics(page);
-    expect(zoomInOneDiagnostics?.maxRenderedRadius).toBeGreaterThan(
+    const wheelZoomDiagnostics = await getScreenNodeSpacingDiagnostics(page);
+    expect(wheelZoomDiagnostics?.maxRenderedRadius).toBeGreaterThan(
       (initialZoomDiagnostics?.maxRenderedRadius ?? Number.POSITIVE_INFINITY) *
         1.1,
     );
+    await expect
+      .poll(
+        async () =>
+          (await getGraphInteractionDiagnostics(page))?.zoomSamples.some(
+            (sample) => sample.mode === "wheel-zoom",
+          ) ?? false,
+        { timeout: 10_000 },
+      )
+      .toBe(true);
+    const wheelProbe = await getBrowserPerformanceProbe(page);
+    expect(wheelProbe?.screenWrites).toBeLessThanOrEqual(3);
+    expect(wheelProbe?.overviewWrites).toBeLessThanOrEqual(3);
+
+    await resetBrowserPerformanceProbe(page);
+    await page.getByTitle("Zoom In").click();
+    await expect
+      .poll(
+        async () => (await getScreenNodeSpacingDiagnostics(page))?.cameraRatio ?? 1,
+        { timeout: 10_000 },
+      )
+      .toBeLessThan((wheelZoomDiagnostics?.cameraRatio ?? 0) * 0.75);
+    const zoomInOneDiagnostics = await getScreenNodeSpacingDiagnostics(page);
+    expect(zoomInOneDiagnostics?.maxRenderedRadius).toBeGreaterThan(
+      (wheelZoomDiagnostics?.maxRenderedRadius ?? Number.POSITIVE_INFINITY) *
+        1.1,
+    );
+    const buttonProbe = await getBrowserPerformanceProbe(page);
+    expect(buttonProbe?.screenWrites).toBeLessThanOrEqual(3);
+    expect(buttonProbe?.overviewWrites).toBeLessThanOrEqual(3);
 
     await page.getByTitle("Zoom In").click();
     await expect
@@ -690,11 +862,20 @@ test.describe("Graph orientation labels", () => {
     const zoomInSamples =
       zoomInteraction?.zoomSamples.filter((sample) => sample.mode === "zoom-in") ??
       [];
+    const wheelZoomSamples =
+      zoomInteraction?.zoomSamples.filter(
+        (sample) => sample.mode === "wheel-zoom",
+      ) ?? [];
     const zoomOutSamples =
       zoomInteraction?.zoomSamples.filter((sample) => sample.mode === "zoom-out") ??
       [];
     expect(zoomInSamples.length).toBeGreaterThan(0);
+    expect(wheelZoomSamples.length).toBeGreaterThan(0);
     expect(zoomOutSamples.length).toBeGreaterThan(0);
+    expect(wheelZoomSamples.at(-1)?.maxRenderedRadius).toBeGreaterThan(
+      (initialZoomDiagnostics?.maxRenderedRadius ?? Number.POSITIVE_INFINITY) *
+        1.1,
+    );
     expect(zoomInSamples.at(-1)?.maxRenderedRadius).toBeGreaterThan(
       (initialZoomDiagnostics?.maxRenderedRadius ?? Number.POSITIVE_INFINITY) *
         1.1,

@@ -522,31 +522,31 @@ The evidence ledger must record the launcher exe `LastWriteTime`, file size, and
 
 ## Phase 8 - Reopened Render Hot Path And Wheel Zoom Hardening
 
-- [ ] P8-A Run `avmatrix analyze --force`.
-- [ ] P8-B Use AVmatrix query/context to trace `GraphCanvas` camera updates, screen spacing diagnostics, graph overview diagnostics, orientation labels, wheel zoom, and package/launcher serving paths.
-- [ ] P8-C Run impact analysis before editing each planned function/class/method/exported symbol in graph render, diagnostics, orientation labels, zoom interaction, and package build flow.
-- [ ] P8-D Record HIGH/CRITICAL blast radius warnings in evidence and proceed carefully.
-- [ ] P8-E Reproduce and record baseline browser performance metrics for current build and packaged launcher: load long tasks, wheel long tasks, max frame delta, diagnostics write counts, camera ratio, rendered radius, visible color count, visible ring count, visible island count, and screenshot artifacts.
-- [ ] P8-F Add reusable browser performance probe coverage for dense graph load, wheel zoom, button zoom, and camera settle.
-- [ ] P8-G Add `wheel-zoom` interaction mode in runtime diagnostics.
-- [ ] P8-H Add e2e coverage that sends mouse wheel input and asserts camera ratio and rendered node radius change.
-- [ ] P8-I Split graph diagnostics into cached static inventory, cheap camera sample, and settled full viewport spacing audit.
-- [ ] P8-J Coalesce camera-update diagnostics to one pending RAF and prevent duplicate diagnostics writes during the same frame.
-- [ ] P8-K Move full pairwise `buildScreenNodeSpacingDiagnostics` execution to camera-settled idle work.
-- [ ] P8-L Move full visible overview diagnostics execution to graph/filter changes and camera-settled idle work.
-- [ ] P8-M Cache orientation label source inventory on graph/filter changes and use camera updates only for placement from cached sources.
-- [ ] P8-N Preserve all existing node types, edges, colors, filters, labels, graph inventories, screen spacing diagnostics, graph overview diagnostics, and screenshots.
-- [ ] P8-O Run the full build gate: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
-- [ ] P8-P Verify the full build refreshed `avmatrix-launcher\AVmatrixLauncher.exe` by recording `LastWriteTime`, file size, and hash.
-- [ ] P8-Q Verify `avmatrix-launcher\web-dist` was recopied from the current `avmatrix-web\dist`.
-- [ ] P8-R Verify the launcher-served bundle on `127.0.0.1:5228` contains current graph overview, graph interaction, and wheel zoom diagnostics.
-- [ ] P8-S Run focused Web unit tests for diagnostics scheduling, wheel interaction mode, orientation label cache behavior, and graph inventory preservation.
-- [ ] P8-T Run full Web unit tests.
-- [ ] P8-U Run Web e2e/browser tests with screenshots for dense overview, wheel zoom, button zoom, and detail/focus.
-- [ ] P8-V Record performance benchmark results after each benchmarkable task.
-- [ ] P8-W Record evidence after each evidenced task.
-- [ ] P8-X Run `avmatrix detect-changes --repo AVmatrix --scope all`.
-- [ ] P8-Y Commit the completed reopened render hot path and wheel zoom hardening slice.
+- [x] P8-A Run `avmatrix analyze --force`.
+- [x] P8-B Use AVmatrix query/context to trace `GraphCanvas` camera updates, screen spacing diagnostics, graph overview diagnostics, orientation labels, wheel zoom, and package/launcher serving paths.
+- [x] P8-C Run impact analysis before editing each planned function/class/method/exported symbol in graph render, diagnostics, orientation labels, zoom interaction, and package build flow.
+- [x] P8-D Record HIGH/CRITICAL blast radius warnings in evidence and proceed carefully.
+- [x] P8-E Reproduce and record baseline browser performance metrics for current build and packaged launcher: load long tasks, wheel long tasks, max frame delta, diagnostics write counts, camera ratio, rendered radius, visible color count, visible ring count, visible island count, and screenshot artifacts.
+- [x] P8-F Add reusable browser performance probe coverage for dense graph load, wheel zoom, button zoom, and camera settle.
+- [x] P8-G Add `wheel-zoom` interaction mode in runtime diagnostics.
+- [x] P8-H Add e2e coverage that sends mouse wheel input and asserts camera ratio and rendered node radius change.
+- [x] P8-I Split graph diagnostics into cached static inventory, cheap camera sample, and settled full viewport spacing audit.
+- [x] P8-J Coalesce camera-update diagnostics to one pending RAF and prevent duplicate diagnostics writes during the same frame.
+- [x] P8-K Move full pairwise `buildScreenNodeSpacingDiagnostics` execution to camera-settled idle work.
+- [x] P8-L Move full visible overview diagnostics execution to graph/filter changes and camera-settled idle work.
+- [x] P8-M Cache orientation label source inventory on graph/filter changes and use camera updates only for placement from cached sources.
+- [x] P8-N Preserve all existing node types, edges, colors, filters, labels, graph inventories, screen spacing diagnostics, graph overview diagnostics, and screenshots.
+- [x] P8-O Run the full build gate: `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1`.
+- [x] P8-P Verify the full build refreshed `avmatrix-launcher\AVmatrixLauncher.exe` by recording `LastWriteTime`, file size, and hash.
+- [x] P8-Q Verify `avmatrix-launcher\web-dist` was recopied from the current `avmatrix-web\dist`.
+- [x] P8-R Verify the launcher-served bundle on `127.0.0.1:5228` contains current graph overview, graph interaction, and wheel zoom diagnostics.
+- [x] P8-S Run focused Web unit tests for diagnostics scheduling, wheel interaction mode, orientation label cache behavior, and graph inventory preservation.
+- [x] P8-T Run full Web unit tests.
+- [x] P8-U Run Web e2e/browser tests with screenshots for dense overview, wheel zoom, button zoom, and detail/focus.
+- [x] P8-V Record performance benchmark results after each benchmarkable task.
+- [x] P8-W Record evidence after each evidenced task.
+- [x] P8-X Run `avmatrix detect-changes --repo AVmatrix --scope all`.
+- [x] P8-Y Commit the completed reopened render hot path and wheel zoom hardening slice.
 - [ ] P8-Z Confirm working tree state and close the reopened plan only after launcher and current build both pass.
 
 ## Risk Notes
