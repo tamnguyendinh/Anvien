@@ -88,6 +88,23 @@ Status: recorded
 | `.github` `setup-avmatrix` references | matches | 6 | 6 | 0 | 0 active |
 | `.github` old GitHub URL references | matches | 0 | 0 | 0 | 0 |
 
+## B3.2 - Agent Integration And Generated Contract Old-Name Baseline
+
+Status: recorded
+
+| Area | Unit | Baseline | Latest | Delta | Final target |
+|---|---:|---:|---:|---:|---:|
+| `.mcp.json` old-name matches | matches | 2 | 2 | 0 | 0 |
+| `.mcp.json` files with old names | files | 1 | 1 | 0 | 0 |
+| `.grok` old-name matches | matches | 21 | 21 | 0 | 0 |
+| `.grok` files with old names | files | 1 | 1 | 0 | 0 |
+| `avmatrix-claude-plugin` old-name matches | matches | 113 | 113 | 0 | 0 active |
+| `avmatrix-claude-plugin` files with old names | files | 16 | 16 | 0 | 0 active |
+| `contracts` old-name matches | matches | 4 | 4 | 0 | 0 active |
+| `contracts` files with old names | files | 1 | 1 | 0 | 0 active |
+| `avmatrix-web/src/generated` old-name matches | matches | 1 | 1 | 0 | 0 active |
+| `avmatrix-web/src/generated` files with old names | files | 1 | 1 | 0 | 0 active |
+
 ## B4 - Future Runtime/Package Metrics
 
 Status: pending implementation

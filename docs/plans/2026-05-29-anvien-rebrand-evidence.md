@@ -369,6 +369,68 @@ Plan amendment:
 
 - Phase 2 was expanded from a single GitHub rename item into a detailed GitHub execution checklist covering repo Settings, metadata, branch/ruleset checks, Actions secrets/variables/environments, integrations, release config, templates, `.github/actions`, `.github/workflows`, publish/Docker/GHCR, badges, local remote, fresh clone validation, and redirect evidence.
 
+## E5.2 - Plan Review Gap Inventory
+
+Date: 2026-05-29
+
+Status: recorded
+
+Graph refresh before this review:
+
+```powershell
+avmatrix analyze --force
+```
+
+Output summary:
+
+```text
+files: scanned=800 parsed=583 unsupported=217 failed=0
+graph: nodes=91230 relationships=124709
+```
+
+Additional AVmatrix queries used:
+
+- `avmatrix query "agent integration config mcp json codex claude grok plugin setup avmatrix" --repo AVmatrix`
+- `avmatrix query "docker deploy compose release package publish ghcr npm installer avmatrix" --repo AVmatrix`
+- `avmatrix query "contract generated web contracts package lock reports baseline snapshots avmatrix" --repo AVmatrix`
+- `avmatrix query "configuration files dotfiles mcp.json agents codex claude grok avmatrix" --repo AVmatrix`
+
+Additional checked-in old-name areas found by source inventory:
+
+| Area | Old-name matches | Files |
+|---|---:|---:|
+| `.mcp.json` | 2 | 1 |
+| `.grok` | 21 | 1 |
+| `avmatrix-claude-plugin` | 113 | 16 |
+| `contracts` | 4 | 1 |
+| `avmatrix-web/src/generated` | 1 | 1 |
+
+Specific files requiring plan coverage:
+
+- `.mcp.json`
+- `.grok/config.toml`
+- `avmatrix-claude-plugin/.mcp.json`
+- `avmatrix-claude-plugin/hooks/hooks.json`
+- `avmatrix-claude-plugin/hooks/avmatrix-hook.js`
+- `avmatrix-claude-plugin/skills/**/SKILL.md`
+- `avmatrix-claude-plugin/skills/**/mcp.json`
+- `contracts/web-ui/avmatrix-web-contract.schema.json`
+- `avmatrix-web/src/generated/avmatrix-contracts.ts`
+
+Current local git remote still points to the old repository URL:
+
+```text
+origin https://github.com/tamnguyendinh/AVmatrix.git
+```
+
+Plan amendments from this review:
+
+- Added explicit coverage for checked-in `.mcp.json` and `.grok/config.toml`.
+- Added a dedicated Claude plugin and agent integration package phase.
+- Added generated Web contract filename/output rename requirements.
+- Added file/directory-name inventory requirements beyond text content inventory.
+- Added tracked historical report handling so old filenames do not silently remain active product surfaces.
+
 ## E6 - Naming Decisions
 
 Date: pending

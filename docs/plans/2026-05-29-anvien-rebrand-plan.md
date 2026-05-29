@@ -101,6 +101,8 @@ AVmatrix query/context identified these owners before documentation rewrite:
 - Web UI brand/onboarding: `avmatrix-web/index.html`, `avmatrix-web/src/components/LauncherStartScreen.tsx`, `avmatrix-web/src/components/AnalyzeOnboarding.tsx`
 - launcher/protocol/process names: `avmatrix-launcher/src/main.go`, `avmatrix-launcher/server-wrapper/main.go`, `avmatrix-launcher/build.ps1`
 - GitHub automation and repo metadata sources: `.github/workflows/*.yml`, `.github/actions/setup-avmatrix/action.yml`, `.github/actions/setup-avmatrix-web/action.yml`, `.github/ISSUE_TEMPLATE/*.yml`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/release-drafter.yml`, `.github/release.yml`, `.github/scripts/**`
+- checked-in agent integration config and plugin surfaces: `.mcp.json`, `.grok/config.toml`, `avmatrix-claude-plugin/.mcp.json`, `avmatrix-claude-plugin/hooks/avmatrix-hook.js`, `avmatrix-claude-plugin/hooks/hooks.json`, `avmatrix-claude-plugin/skills/**`
+- generated Web contract filenames and contents: `contracts/web-ui/avmatrix-web-contract.schema.json`, `avmatrix-web/src/generated/avmatrix-contracts.ts`
 - tests and snapshots: `internal/mcp/*_test.go`, `internal/version/version_test.go`, `avmatrix-web/e2e/*.spec.ts`, launcher tests, baseline snapshots
 
 Initial exact-reference inventory excluding `node_modules` and this rebrand file set:
@@ -126,6 +128,16 @@ Initial `.github` reference inventory:
 | `AVmatrix-GO` | 0 |
 | `setup-avmatrix` | 6 |
 | `github.com/tamnguyendinh/AVmatrix` | 0 |
+
+Additional checked-in integration/contract inventory found during plan review:
+
+| Area | Old-name matches | Files |
+|---|---:|---:|
+| `.mcp.json` | 2 | 1 |
+| `.grok` | 21 | 1 |
+| `avmatrix-claude-plugin` | 113 | 16 |
+| `contracts` | 4 | 1 |
+| `avmatrix-web/src/generated` | 1 | 1 |
 
 Top old-name file groups by file count:
 
@@ -170,6 +182,8 @@ Top old-name file groups by file count:
 - [ ] [P1-C] Identify all generated outputs and their source generators. Do not edit generated `AGENTS.md`, `CLAUDE.md`, `.claude/skills/**`, `avmatrix-launcher/web-dist/**`, or generated Web contracts as permanent source.
 - [ ] [P1-D] Run AVmatrix impact analysis for `NewRootCommand`, `newMCPCommand`, `runSetup`, `setupWriteMCPJSON`, `setupWriteOpenCodeJSON`, `setupRunCodexMCPAdd`, `setupUpsertCodexToml`, `setupMergeClaudeHookSettings`, `GenerateAIContextFiles`, `renderAVmatrixBlock`, `repo.Paths`, `repo.GlobalDir`, MCP resource/prompt handlers, launcher startup/reset/cleanup functions, and every other edited symbol found during inventory.
 - [ ] [P1-E] Record blast radius and HIGH/CRITICAL warnings before code edits.
+- [ ] [P1-F] Inventory file and directory names, not only file contents. Rename or remove checked-in paths containing old names, including package folders, command folders, generated contract filenames, plugin folders, action folders, and executable artifacts.
+- [ ] [P1-G] Classify local-only generated/cache/temp paths such as `.avmatrix`, `.tmp`, `.codex-tmp`, and `.history` separately from tracked files. Do not carry old local cache names into release artifacts.
 
 ## Phase 2 - GitHub Repository Rename Execution
 
@@ -226,6 +240,9 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 - [ ] [P4-G] Change MCP `canonicalResourceScheme` from `avmatrix` to `anvien`.
 - [ ] [P4-H] Update all MCP next-step hints, setup resources, prompt text, tests, and snapshots from `avmatrix://...` to `anvien://...`.
 - [ ] [P4-I] Validate MCP stdio and HTTP bridge: `tools/list`, `resources/list`, `resources/read` for `anvien://repos` and `anvien://setup`, `prompts/list`, and representative tool calls.
+- [ ] [P4-J] Update checked-in root `.mcp.json` from server key/command `avmatrix` to `anvien`.
+- [ ] [P4-K] Update `.grok/config.toml` from `[mcp_servers.avmatrix]`, `cmd/avmatrix`, `avmatrix-stable`, and old examples to Anvien-only names.
+- [ ] [P4-L] Update every checked-in `mcp.json` under plugin or skill directories so no generated or packaged MCP config uses the old server name.
 
 ## Phase 5 - Storage, Registry, Env Vars, And Local Data
 
@@ -245,6 +262,14 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 - [ ] [P6-E] Regenerate `AGENTS.md`, `CLAUDE.md`, and generated skills from source.
 - [ ] [P6-F] Update generated-context tests to assert Anvien names and absence of active old names.
 
+## Phase 6.5 - Claude Plugin And Agent Integration Package
+
+- [ ] [P6.5-A] Decide whether `avmatrix-claude-plugin` remains a supported package. If it remains, hard rename the directory/package to Anvien; if it is obsolete, remove it with evidence.
+- [ ] [P6.5-B] Rename `avmatrix-claude-plugin/hooks/avmatrix-hook.js` and all hook function names, status messages, env vars, `.avmatrix` path checks, CLI/npx invocations, and stale-index messages to Anvien.
+- [ ] [P6.5-C] Update `avmatrix-claude-plugin/hooks/hooks.json` so hook commands and status messages use Anvien only.
+- [ ] [P6.5-D] Rename plugin skill ids/directories from `avmatrix-*` to `anvien-*` and update every `SKILL.md` and `mcp.json` inside the plugin.
+- [ ] [P6.5-E] Validate plugin installation or packaging behavior if this plugin is still shipped.
+
 ## Phase 7 - Web UI And Launcher
 
 - [ ] [P7-A] Update Web UI package name, HTML title, onboarding, start screen, status messages, README rendering, diagnostics globals, and e2e assertions.
@@ -257,9 +282,11 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 
 - [ ] [P8-A] Update README, ARCHITECTURE, RUNBOOK, TESTING, CONTRIBUTING, CHANGELOG current entries, Docker docs, install instructions, setup docs, and badges.
 - [ ] [P8-B] Regenerate or rewrite active baseline contract snapshots that still assert old names.
-- [ ] [P8-C] Delete stale generated reports or update them if they are active validation artifacts.
+- [ ] [P8-C] Delete stale generated reports or update them if they are active validation artifacts. For tracked historical reports, record whether old-name filenames are preserved only as historical evidence.
 - [ ] [P8-D] Keep old-name wording only in this rebrand plan/evidence/benchmark set and final release note history sentence.
 - [ ] [P8-E] Run a final old-name search and record every remaining occurrence with a reason.
+- [ ] [P8-F] Rename generated Web contract output paths from `contracts/web-ui/avmatrix-web-contract.schema.json` and `avmatrix-web/src/generated/avmatrix-contracts.ts` to Anvien paths, then update the generator and imports rather than hand-editing generated outputs.
+- [ ] [P8-G] Update root `package-lock.json`, per-package lockfiles, and any lockfile package names after package/folder renames.
 
 ## Phase 9 - Validation And Commits
 
