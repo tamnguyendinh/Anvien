@@ -183,7 +183,7 @@ func TestGraphHealthCommandRejectsStaleIndexedCommit(t *testing.T) {
 	if err == nil {
 		t.Fatalf("stale graph unexpectedly passed\nstdout:\n%s\nstderr:\n%s", out, errOut)
 	}
-	if !strings.Contains(err.Error(), "graph-health requires fresh analyze output") || !strings.Contains(err.Error(), "run avmatrix analyze --force") {
+	if !strings.Contains(err.Error(), "graph-health requires fresh analyze output") || !strings.Contains(err.Error(), "run anvien analyze --force") {
 		t.Fatalf("stale graph error = %v", err)
 	}
 }

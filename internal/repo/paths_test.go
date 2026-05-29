@@ -10,7 +10,7 @@ func TestPathsMatchStorageContract(t *testing.T) {
 	repoPath := t.TempDir()
 
 	paths := Paths(repoPath)
-	wantStorage := filepath.Join(absClean(repoPath), ".avmatrix")
+	wantStorage := filepath.Join(absClean(repoPath), ".anvien")
 	if paths.StoragePath != wantStorage {
 		t.Fatalf("StoragePath = %q, want %q", paths.StoragePath, wantStorage)
 	}
@@ -31,7 +31,7 @@ func TestPathsMatchStorageContract(t *testing.T) {
 	}
 }
 
-func TestGlobalDirUsesAVmatrixHome(t *testing.T) {
+func TestGlobalDirUsesAnvienHome(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv(HomeEnvName, home)
 
@@ -57,7 +57,7 @@ func TestStoragePathCleansRelativeInput(t *testing.T) {
 		t.Fatalf("get cwd: %v", err)
 	}
 	got := StoragePath(".")
-	want := filepath.Join(cwd, ".avmatrix")
+	want := filepath.Join(cwd, ".anvien")
 	if got != want {
 		t.Fatalf("StoragePath(.) = %q, want %q", got, want)
 	}

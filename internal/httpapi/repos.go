@@ -200,7 +200,7 @@ func resolveRepoQuery(entries []repo.RegistryEntry, query string) (repo.Registry
 		}
 		return repo.RegistryEntry{},
 			http.StatusNotFound,
-			"Repository not found. Run: avmatrix analyze",
+			"Repository not found. Run: anvien analyze",
 			errors.New("repository not found")
 	}
 
@@ -215,7 +215,7 @@ func resolveRepoQuery(entries []repo.RegistryEntry, query string) (repo.Registry
 	}
 	return repo.RegistryEntry{},
 		http.StatusNotFound,
-		"Repository not found. Run: avmatrix analyze",
+		"Repository not found. Run: anvien analyze",
 		err
 }
 

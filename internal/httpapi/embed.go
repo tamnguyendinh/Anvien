@@ -308,7 +308,7 @@ func loadGraphSnapshot(path string) (*graph.Graph, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return nil, fmt.Errorf("graph snapshot not found; run avmatrix analyze --force first")
+			return nil, fmt.Errorf("graph snapshot not found; run anvien analyze --force first")
 		}
 		return nil, err
 	}

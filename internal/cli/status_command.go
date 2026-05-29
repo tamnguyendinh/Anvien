@@ -38,21 +38,21 @@ func newStatusCommand() *cobra.Command {
 					if err != nil {
 						return err
 					}
-					_, err = fmt.Fprintln(cmd.OutOrStdout(), "Run: avmatrix analyze   (rebuilds the index with LadybugDB)")
+					_, err = fmt.Fprintln(cmd.OutOrStdout(), "Run: anvien analyze   (rebuilds the index with LadybugDB)")
 					return err
 				}
 				_, err = fmt.Fprintln(cmd.OutOrStdout(), "Repository not indexed.")
 				if err != nil {
 					return err
 				}
-				_, err = fmt.Fprintln(cmd.OutOrStdout(), "Run: avmatrix analyze")
+				_, err = fmt.Fprintln(cmd.OutOrStdout(), "Run: anvien analyze")
 				return err
 			}
 
 			currentCommit := repo.CurrentCommit(indexed.RepoPath)
 			status := "✅ up-to-date"
 			if currentCommit != indexed.Meta.LastCommit {
-				status = "⚠️ stale (re-run avmatrix analyze)"
+				status = "stale (re-run anvien analyze)"
 			}
 
 			_, err = fmt.Fprintf(

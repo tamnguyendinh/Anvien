@@ -68,7 +68,7 @@ func newResolutionInventoryCommand() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&graphPath, "graph", filepath.Join(".avmatrix", "graph.json"), "AVmatrix graph snapshot JSON")
+	cmd.Flags().StringVar(&graphPath, "graph", filepath.Join(".anvien", "graph.json"), "Anvien graph snapshot JSON")
 	cmd.Flags().StringVar(&outPath, "out", "", "write inventory JSON to this path")
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write full JSON report to stdout")
 	return cmd

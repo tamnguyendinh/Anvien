@@ -13,7 +13,7 @@ func TestSaveLoadMetaRoundTrip(t *testing.T) {
 		IndexedAt:  "2026-05-08T00:00:00Z",
 		Stats:      &Stats{Files: &files},
 	}
-	storagePath := filepath.Join(t.TempDir(), ".avmatrix")
+	storagePath := filepath.Join(t.TempDir(), ".anvien")
 
 	if err := SaveMeta(storagePath, meta); err != nil {
 		t.Fatalf("SaveMeta() error = %v", err)

@@ -175,7 +175,7 @@ func TestRepoInfoNotFoundKeepsErrorShape(t *testing.T) {
 	var payload map[string]string
 	getJSON(t, server.URL+"/api/repo?repo=missing", http.StatusNotFound, &payload)
 
-	if payload["error"] != "Repository not found. Run: avmatrix analyze" {
+	if payload["error"] != "Repository not found. Run: anvien analyze" {
 		t.Fatalf("unexpected not found error: %#v", payload)
 	}
 }

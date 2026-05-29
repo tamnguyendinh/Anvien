@@ -6,8 +6,8 @@ import (
 )
 
 func TestSamePathUsesWindowsCaseRules(t *testing.T) {
-	left := `C:\AVmatrix\Repo`
-	right := `c:\avmatrix\repo`
+	left := `C:\Anvien\Repo`
+	right := `c:\anvien\repo`
 
 	got := SamePath(left, right)
 	if runtime.GOOS == "windows" && !got {
@@ -19,11 +19,11 @@ func TestSamePathUsesWindowsCaseRules(t *testing.T) {
 }
 
 func TestRuntimeIDIsStable(t *testing.T) {
-	path := "/tmp/avmatrix/repo"
+	path := "/tmp/anvien/repo"
 	if RuntimeID(path) != RuntimeID(path) {
 		t.Fatal("RuntimeID must be stable for the same path")
 	}
-	if RuntimeID(path) == RuntimeID("/tmp/avmatrix/other") {
+	if RuntimeID(path) == RuntimeID("/tmp/anvien/other") {
 		t.Fatal("RuntimeID should differ for different paths")
 	}
 }

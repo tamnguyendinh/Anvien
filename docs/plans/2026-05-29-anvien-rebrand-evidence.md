@@ -633,7 +633,73 @@ Pre-commit change detection:
 - Affected runtime processes: `3`, all in the analyze AI context flow: `NewAnalyzeCommand -> RemoveGeneratedSkills`, `NewAnalyzeCommand -> RenderAnvienBlock`, and `NewAnalyzeCommand -> UpsertSection`.
 - Resolution health impact: `0` degraded nodes and `0` nodes with gaps.
 
-## E8 - Future Implementation Evidence
+## E8 - Phase 4/5 Setup And Storage Generator Slice
+
+Date: 2026-05-29
+
+Status: recorded
+
+Scope:
+
+- Updated repo/global storage source in `internal/repo/paths.go` from `.avmatrix`/`AVMATRIX_HOME` to `.anvien`/`ANVIEN_HOME`.
+- Updated storage consumers and diagnostics in lock handling, status/index guidance, graph-health/query-health messages, source-site/resolution-inventory defaults, HTTP graph/embed errors, and Claude hook stale-index checks.
+- Updated setup generator source in `internal/cli/setup_command.go` so editor MCP config, Codex TOML, Codex MCP add command, Claude hook command, and setup output generate `Anvien`/`anvien`.
+- Updated `.gitignore` from `.avmatrix/` to `.anvien/`.
+- Removed `478` untracked generated `.avmatrix` directories from the local workspace after verifying no tracked files were under `.avmatrix/`.
+
+Graph and impact evidence:
+
+- Fresh graph before storage impact checks: `.\avmatrix\bin\avmatrix.exe analyze --force`.
+- `impact Paths --repo AVmatrix --direction upstream`: CRITICAL; affected app layers `api:6`, `backend:18`, `cli_launcher:2`; affected functional areas include analyzer, api, cli, graph_health, session, and storage; `71` affected processes.
+- `impact GlobalDir --repo AVmatrix --direction upstream`: CRITICAL; affected app layers `api:3`, `backend:51`; affected functional areas include api, cli, mcp, query, and storage; `80` affected processes.
+- `impact StorageDirName --repo AVmatrix --direction upstream`: LOW; `0` affected processes.
+- `impact HomeEnvName --repo AVmatrix --direction upstream`: LOW; `0` affected processes.
+- `impact lockHeldNextAction`: LOW; `1` impacted node. `impact lockInfoRepoHint`: LOW; `2` impacted nodes.
+- Additional edited command/API helpers were checked before edits. CRITICAL examples: `newIndexCommand`, `resolveIndexPath`, `newStatusCommand`, `loadGraphHealthGraph`, `verifyQueryHealthFreshRepo`, `newSourceSiteAccuracyCommand`, `newResolutionInventoryCommand`, `handleClaudePostToolUse`, `resolveRepoQuery`, and `loadGraphSnapshot`.
+- Hook helper rename impact: `findClaudeHookAVmatrixDir` LOW, then renamed to `findClaudeHookAnvienDir`.
+- Fresh graph before setup generator edits: `.\avmatrix\bin\avmatrix.exe analyze --force`.
+- `impact newSetupCommand --repo AVmatrix --direction upstream`: CRITICAL; affected app layers `backend:1`, `cli_launcher:1`; `11` affected processes through `NewRootCommand` and CLI `main`.
+- `impact runSetup --repo AVmatrix --direction upstream`: CRITICAL; affected app layers `backend:2`, `cli_launcher:1`; `11` affected processes.
+- `impact setupMCPServerName` and `impact setupCommandName`: LOW; `0` affected processes.
+- `impact TestFindClaudeHookAVmatrixDirWalksParents`: LOW; `0` affected processes, then test renamed to `TestFindClaudeHookAnvienDirWalksParents`.
+
+Implementation notes:
+
+- `repo.StorageDirName` is now `.anvien`.
+- `repo.HomeEnvName` is now `ANVIEN_HOME`; no `AVMATRIX_HOME` fallback was added.
+- `repo.GlobalDir()` falls back to `~/.anvien`.
+- Default graph helper paths now use `.anvien/graph.json`.
+- Hook stale-index messages now say `Anvien index is stale` and suggest `anvien analyze`.
+- Setup now writes MCP server key `anvien` and command `anvien` for Cursor, Claude Code, OpenCode, and Codex.
+- Setup still removes stale old hook entries by using a constructed cleanup needle. This is cleanup only, not a supported legacy hook path or alias.
+- Remaining old-name matches in touched source are Go module import paths or later-slice package/plugin surfaces, not active storage/setup output.
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass after setup/storage edits; existing Vite dynamic-import and chunk-size warnings only. |
+| `go test .\internal\repo .\internal\cli .\internal\httpapi .\internal\mcp .\internal\group -count=1` | pass; repo `3.196s`, cli `13.009s`, httpapi `3.591s`, mcp `8.032s`, group `2.053s`. |
+| Temp repo smoke with `ANVIEN_HOME=<temp>\home` and `.\avmatrix\bin\avmatrix.exe analyze <temp>\repo --force --skip-git --name storage-smoke` | pass; generated `<repo>\.anvien\graph.json`, `meta.json`, `settings.json`, `lbug`, and `<home>\registry.json`; `<repo>\.avmatrix` was `False`. |
+| `git ls-files \| rg '(^\|/)\.avmatrix/'` before local cleanup | no tracked `.avmatrix/` files. |
+| `Get-ChildItem -Path . -Directory -Recurse -Force -Filter .avmatrix` after cleanup | no `.avmatrix` directories remained in the workspace. |
+
+E2E status:
+
+- Not run for this slice because no Web UI behavior changed.
+
+Pre-commit change detection:
+
+- Command: `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all`.
+- Result: pass; summary risk `critical`.
+- Changed scope: `28` files, `311` changed symbols.
+- Changed app layers: `api` `9`, `api_test` `41`, `backend` `67`, `backend_test` `182`, `docs` `12`.
+- Changed functional areas: `api` `50`, `cli` `187`, `documentation` `12`, `storage` `62`.
+- Affected scope: `73` affected symbols/process nodes; affected app layers `api` `3`, `backend` `24`, `mixed` `46`.
+- Resolution health impact: `0` degraded nodes and `0` nodes with gaps.
+- The CRITICAL summary is expected for this slice because storage path constants and setup generator output sit under CLI/API startup and graph-loading flows.
+
+## E9 - Future Implementation Evidence
 
 Date: pending
 

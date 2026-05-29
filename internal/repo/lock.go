@@ -396,7 +396,7 @@ func lockHeldNextAction(info LockInfo) string {
 	} else {
 		action += " or stop the owning process if it is stale"
 	}
-	return action + "; inspect with avmatrix doctor locks --repo " + lockInfoRepoHint(info)
+	return action + "; inspect with anvien doctor locks --repo " + lockInfoRepoHint(info)
 }
 
 func lockInfoRepoHint(info LockInfo) string {
@@ -404,7 +404,7 @@ func lockInfoRepoHint(info LockInfo) string {
 		return "<repo>"
 	}
 	lockDir := filepath.Dir(info.Path)
-	if strings.EqualFold(filepath.Base(info.Path), "analyze.lock") && strings.EqualFold(filepath.Base(lockDir), ".avmatrix") {
+	if strings.EqualFold(filepath.Base(info.Path), "analyze.lock") && strings.EqualFold(filepath.Base(lockDir), StorageDirName) {
 		repoPath := filepath.Dir(lockDir)
 		if repoPath != "" && repoPath != "." {
 			return repoPath

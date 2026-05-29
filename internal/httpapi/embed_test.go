@@ -41,7 +41,7 @@ func TestEmbedEndpointStartsJobAndCompletes(t *testing.T) {
 	if runner.target.RepoPath != fixtures[0].path {
 		t.Fatalf("runner repo = %q, want %q", runner.target.RepoPath, fixtures[0].path)
 	}
-	if runner.target.LbugPath != filepath.Join(fixtures[0].path, ".avmatrix", "lbug") {
+	if runner.target.LbugPath != filepath.Join(fixtures[0].path, ".anvien", "lbug") {
 		t.Fatalf("runner lbug path = %q", runner.target.LbugPath)
 	}
 }

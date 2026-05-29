@@ -138,16 +138,16 @@ func newIndexCommand() *cobra.Command {
 			paths := repo.Paths(repoPath)
 			if _, err := os.Stat(paths.StoragePath); err != nil {
 				if errors.Is(err, os.ErrNotExist) {
-					_, _ = fmt.Fprintf(cmd.OutOrStdout(), "No .avmatrix/ folder found at: %s\n", paths.StoragePath)
-					_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Run `avmatrix analyze` to build the index first.")
+					_, _ = fmt.Fprintf(cmd.OutOrStdout(), "No %s/ folder found at: %s\n", repo.StorageDirName, paths.StoragePath)
+					_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Run `anvien analyze` to build the index first.")
 					return ExitError{Code: 1}
 				}
 				return err
 			}
 			if _, err := os.Stat(paths.LbugPath); err != nil {
 				if errors.Is(err, os.ErrNotExist) {
-					_, _ = fmt.Fprintln(cmd.OutOrStdout(), ".avmatrix/ folder exists but contains no LadybugDB index.")
-					_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Run `avmatrix analyze` to build the index.")
+					_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s/ folder exists but contains no LadybugDB index.\n", repo.StorageDirName)
+					_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Run `anvien analyze` to build the index.")
 					return ExitError{Code: 1}
 				}
 				return err
@@ -158,8 +158,8 @@ func newIndexCommand() *cobra.Command {
 			}
 			if meta == nil {
 				if !force {
-					_, _ = fmt.Fprintln(cmd.OutOrStdout(), ".avmatrix/ exists but meta.json is missing.")
-					_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Use --force to register anyway, or run `avmatrix analyze` to rebuild properly.")
+					_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s/ exists but meta.json is missing.\n", repo.StorageDirName)
+					_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Use --force to register anyway, or run `anvien analyze` to rebuild properly.")
 					return ExitError{Code: 1}
 				}
 				meta = &repo.Meta{
@@ -230,7 +230,7 @@ func resolveIndexPath(args []string, allowNonGit bool) (string, error) {
 		return "", err
 	}
 	if !allowNonGit && !repo.IsGitRepo(resolved) {
-		return "", fmt.Errorf("not a git repository: %s; use --allow-non-git to register an existing .avmatrix index anyway", resolved)
+		return "", fmt.Errorf("not a git repository: %s; use --allow-non-git to register an existing %s index anyway", resolved, repo.StorageDirName)
 	}
 	return resolved, nil
 }

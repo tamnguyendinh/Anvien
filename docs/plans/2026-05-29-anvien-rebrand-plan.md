@@ -257,12 +257,12 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 
 ## Phase 4 - MCP Hard Rename
 
-- [ ] [P4-A] Change setup constants in `internal/cli/setup_command.go`: brand `Anvien`, command `anvien`, MCP server name `anvien`.
-- [ ] [P4-B] Update Cursor/Claude JSON setup generation from `mcpServers.avmatrix` to `mcpServers.anvien`.
-- [ ] [P4-C] Update OpenCode setup generation from `mcp.avmatrix` to `mcp.anvien`.
-- [ ] [P4-D] Update Codex setup command from `codex mcp add avmatrix -- avmatrix mcp` to `codex mcp add anvien -- anvien mcp`.
-- [ ] [P4-E] Update Codex TOML output from `[mcp_servers.avmatrix]` to `[mcp_servers.anvien]`.
-- [ ] [P4-F] Remove old hook matching that preserves `avmatrix-hook` or `avmatrix hook claude`; replace with Anvien-only hook cleanup/generation.
+- [x] [P4-A] Change setup constants in `internal/cli/setup_command.go`: brand `Anvien`, command `anvien`, MCP server name `anvien`.
+- [x] [P4-B] Update Cursor/Claude JSON setup generation from `mcpServers.avmatrix` to `mcpServers.anvien`.
+- [x] [P4-C] Update OpenCode setup generation from `mcp.avmatrix` to `mcp.anvien`.
+- [x] [P4-D] Update Codex setup command from `codex mcp add avmatrix -- avmatrix mcp` to `codex mcp add anvien -- anvien mcp`.
+- [x] [P4-E] Update Codex TOML output from `[mcp_servers.avmatrix]` to `[mcp_servers.anvien]`.
+- [x] [P4-F] Remove old hook matching that preserves `avmatrix-hook` or `avmatrix hook claude`; replace with Anvien-only hook cleanup/generation.
 - [ ] [P4-G] Change MCP `canonicalResourceScheme` from `avmatrix` to `anvien`.
 - [ ] [P4-H] Update all MCP next-step hints, setup resources, prompt text, tests, and snapshots from `avmatrix://...` to `anvien://...`.
 - [ ] [P4-I] Validate MCP stdio and HTTP bridge: `tools/list`, `resources/list`, `resources/read` for `anvien://repos` and `anvien://setup`, `prompts/list`, and representative tool calls.
@@ -272,14 +272,16 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 
 ## Phase 5 - Storage, Registry, Env Vars, And Local Data
 
-- [ ] [P5-A] Rename repo/global storage constants from `.avmatrix` to `.anvien`.
-- [ ] [P5-B] Rename `AVMATRIX_HOME` to `ANVIEN_HOME` with no fallback.
+- [x] [P5-A] Rename repo/global storage constants from `.avmatrix` to `.anvien`.
+- [x] [P5-B] Rename `AVMATRIX_HOME` to `ANVIEN_HOME` with no fallback.
 - [ ] [P5-C] Rename all `AVMATRIX_*` variables to `ANVIEN_*` with no fallback.
 - [ ] [P5-D] Update settings examples, lock paths, graph paths, registry docs, group storage docs, and tests.
 - [ ] [P5-E] Decide whether existing local `.avmatrix` data is moved once by release instructions or discarded/rebuilt. Do not implement dual-read support.
-- [ ] [P5-F] Validate analyze creates `<repo>/.anvien/graph.json` and global registry under `~/.anvien/registry.json`.
+- [x] [P5-F] Validate analyze creates `<repo>/.anvien/graph.json` and global registry under `~/.anvien/registry.json`.
 - [ ] [P5-G] Validate the full generated storage shape: `<repo>/.anvien/lbug`, optional `lbug.wal`/`lbug.lock`, `graph.json`, `meta.json`, `settings.json`, `analyze.lock`, `analyze.tmp`, plus `~/.anvien/runtime.json` and `~/.anvien/groups/**` where relevant.
 - [ ] [P5-H] Validate `analyze`, `status`, `index`, `clean`, `doctor locks`, `doctor processes`, `serve`, MCP resources/tools, graph-health, query-health, `resolution-inventory`, `source-site-accuracy`, and graph-accuracy helpers do not recreate or default to `.avmatrix`.
+
+Interim Phase 5 validation completed the core repo/global storage slice: `repo.Paths`, `repo.GlobalDir`, `ANVIEN_HOME`, hook stale-index checks, status/index/graph-health/query-health/source-site/resolution-inventory/httpapi graph guidance, and `.gitignore` now use `.anvien`. P5-C, P5-D, P5-G, and P5-H stay open because broader `AVMATRIX_*` launcher/package vars, group/runtime storage, and full command matrix validation remain in later slices.
 
 ## Phase 6 - Generated AI Context And Skills
 

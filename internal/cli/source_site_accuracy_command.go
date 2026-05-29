@@ -49,7 +49,7 @@ func newSourceSiteAccuracyCommand() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&graphPath, "graph", filepath.Join(".avmatrix", "graph.json"), "AVmatrix graph snapshot JSON")
+	cmd.Flags().StringVar(&graphPath, "graph", filepath.Join(".anvien", "graph.json"), "Anvien graph snapshot JSON")
 	cmd.Flags().StringVar(&goldenPath, "golden", "", "source-site golden fixture JSON for false-edge and missing-site validation")
 	cmd.Flags().StringVar(&outPath, "out", "", "write report JSON to this path")
 	cmd.Flags().IntVar(&maxExamples, "max-examples", 50, "maximum examples to include per bucket")

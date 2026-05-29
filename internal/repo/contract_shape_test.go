@@ -10,7 +10,7 @@ func TestRegistryEntryJSONShapeMatchesFrozenContract(t *testing.T) {
 	entry := RegistryEntry{
 		Name:        "sample",
 		Path:        "C:/sample",
-		StoragePath: "C:/sample/.avmatrix",
+		StoragePath: "C:/sample/.anvien",
 		IndexedAt:   "2026-05-08T00:00:00Z",
 		LastCommit:  "abc123",
 		Stats:       &Stats{Files: &statsCount},

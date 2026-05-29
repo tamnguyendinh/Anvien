@@ -50,7 +50,7 @@ func TestSearchEndpointCallsSearchServiceAndReturnsResults(t *testing.T) {
 	if searcher.target.RepoPath != fixtures[0].path {
 		t.Fatalf("target repo = %q, want %q", searcher.target.RepoPath, fixtures[0].path)
 	}
-	wantLbugPath := filepath.Join(fixtures[0].path, ".avmatrix", "lbug")
+	wantLbugPath := filepath.Join(fixtures[0].path, ".anvien", "lbug")
 	if searcher.target.LbugPath != wantLbugPath {
 		t.Fatalf("target lbug = %q, want %q", searcher.target.LbugPath, wantLbugPath)
 	}
@@ -89,7 +89,7 @@ func TestSearchServiceUsesSemanticRuntime(t *testing.T) {
 	runner := &semanticSearchRunner{}
 	service := SearchService{
 		OpenReadRunner: func(path string) (lbugnative.ReadRunner, error) {
-			if path != filepath.Join("repo", ".avmatrix", "lbug") {
+			if path != filepath.Join("repo", ".anvien", "lbug") {
 				t.Fatalf("lbug path = %q", path)
 			}
 			return runner, nil
@@ -99,7 +99,7 @@ func TestSearchServiceUsesSemanticRuntime(t *testing.T) {
 		},
 	}
 
-	results, err := service.Search(context.Background(), SearchTarget{LbugPath: filepath.Join("repo", ".avmatrix", "lbug")}, SearchRequest{
+	results, err := service.Search(context.Background(), SearchTarget{LbugPath: filepath.Join("repo", ".anvien", "lbug")}, SearchRequest{
 		Query: "find alpha",
 		Mode:  searchModeSemantic,
 		Limit: 1,
@@ -145,14 +145,14 @@ func TestSearchServiceUsesBM25Runtime(t *testing.T) {
 	}
 	service := SearchService{
 		OpenReadRunner: func(path string) (lbugnative.ReadRunner, error) {
-			if path != filepath.Join("repo", ".avmatrix", "lbug") {
+			if path != filepath.Join("repo", ".anvien", "lbug") {
 				t.Fatalf("lbug path = %q", path)
 			}
 			return runner, nil
 		},
 	}
 
-	results, err := service.Search(context.Background(), SearchTarget{LbugPath: filepath.Join("repo", ".avmatrix", "lbug")}, SearchRequest{
+	results, err := service.Search(context.Background(), SearchTarget{LbugPath: filepath.Join("repo", ".anvien", "lbug")}, SearchRequest{
 		Query: "user authentication",
 		Mode:  searchModeBM25,
 		Limit: 2,
@@ -194,7 +194,7 @@ func TestSearchServiceBM25HandlesEmptyInputAndIndexErrors(t *testing.T) {
 		},
 	}
 
-	results, err := service.Search(context.Background(), SearchTarget{LbugPath: "repo/.avmatrix/lbug"}, SearchRequest{
+	results, err := service.Search(context.Background(), SearchTarget{LbugPath: "repo/.anvien/lbug"}, SearchRequest{
 		Query: "   ",
 		Mode:  searchModeBM25,
 		Limit: 10,
@@ -206,7 +206,7 @@ func TestSearchServiceBM25HandlesEmptyInputAndIndexErrors(t *testing.T) {
 		t.Fatalf("empty query results/openCount = %#v/%d, want empty/0", results, openCount)
 	}
 
-	results, err = service.Search(context.Background(), SearchTarget{LbugPath: "repo/.avmatrix/lbug"}, SearchRequest{
+	results, err = service.Search(context.Background(), SearchTarget{LbugPath: "repo/.anvien/lbug"}, SearchRequest{
 		Query: "user authentication",
 		Mode:  searchModeBM25,
 		Limit: 0,
@@ -232,7 +232,7 @@ func TestSearchServiceBM25HandlesEmptyInputAndIndexErrors(t *testing.T) {
 	service.OpenReadRunner = func(string) (lbugnative.ReadRunner, error) {
 		return runner, nil
 	}
-	results, err = service.Search(context.Background(), SearchTarget{LbugPath: "repo/.avmatrix/lbug"}, SearchRequest{
+	results, err = service.Search(context.Background(), SearchTarget{LbugPath: "repo/.anvien/lbug"}, SearchRequest{
 		Query: "user* OR auth+' \\",
 		Mode:  searchModeBM25,
 		Limit: 3,
@@ -342,7 +342,7 @@ func TestSearchServiceHybridMergesBM25AndSemanticAndFallsBack(t *testing.T) {
 		},
 	}
 
-	results, err := service.Search(context.Background(), SearchTarget{LbugPath: "repo/.avmatrix/lbug"}, SearchRequest{
+	results, err := service.Search(context.Background(), SearchTarget{LbugPath: "repo/.anvien/lbug"}, SearchRequest{
 		Query: "shared auth",
 		Mode:  searchModeHybrid,
 		Limit: 3,
@@ -376,7 +376,7 @@ func TestSearchServiceHybridMergesBM25AndSemanticAndFallsBack(t *testing.T) {
 			return nil, embeddings.Config{}, errors.New("embedder offline")
 		},
 	}
-	results, err = fallbackService.Search(context.Background(), SearchTarget{LbugPath: "repo/.avmatrix/lbug"}, SearchRequest{
+	results, err = fallbackService.Search(context.Background(), SearchTarget{LbugPath: "repo/.anvien/lbug"}, SearchRequest{
 		Query: "authentication",
 		Mode:  searchModeHybrid,
 		Limit: 2,

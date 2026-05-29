@@ -46,7 +46,7 @@ HANDOFF*.md
 
 
 .env*.local
-.avmatrix/
+.anvien/
 .codex/
 .claude/settings.local.json
 .grok/

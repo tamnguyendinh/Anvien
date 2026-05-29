@@ -21,12 +21,12 @@ Status: recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Notes |
 |---|---:|---:|---:|---:|---|
-| Files scanned | files | 800 | 800 | 0 | `avmatrix analyze --force` |
+| Files scanned | files | 800 | 801 | +1 | `avmatrix analyze --force` after setup/storage slice |
 | Files parsed | files | 583 | 583 | 0 | `avmatrix analyze --force` |
-| Unsupported files | files | 217 | 217 | 0 | `avmatrix analyze --force` |
+| Unsupported files | files | 217 | 218 | +1 | `avmatrix analyze --force` after setup/storage slice |
 | Failed files | files | 0 | 0 | 0 | `avmatrix analyze --force` |
-| Graph nodes | nodes | 91223 | 91233 | +10 | Fresh graph after plan docs update |
-| Graph relationships | relationships | 124702 | 124712 | +10 | Fresh graph after plan docs update |
+| Graph nodes | nodes | 91223 | 91274 | +51 | Fresh graph after setup/storage slice |
+| Graph relationships | relationships | 124702 | 124754 | +52 | Fresh graph after setup/storage slice |
 
 ## B1 - Old-Name Reference Baseline
 
@@ -100,9 +100,9 @@ Status: baseline recorded
 | Surface | Unit | Baseline | Latest | Delta | Final target |
 |---|---:|---:|---:|---:|---:|
 | Old CLI command names accepted/generated | count | 1 | 1 | 0 | 0 |
-| Old MCP server names generated | count | 1 | 1 | 0 | 0 |
+| Old MCP server names generated | count | 1 | 0 | -1 | 0 |
 | Old MCP resource schemes generated | count | 1 | 1 | 0 | 0 |
-| Old repo/global storage dirs generated | count | 2 | 2 | 0 | 0 |
+| Old repo/global storage dirs generated | count | 2 | 0 | -2 | 0 |
 | Old env var prefixes read | count | 1+ | 1+ | 0 | 0 |
 | Old package/bin names generated | count | 1+ | 1+ | 0 | 0 |
 | Old launcher protocol/executable names generated | count | 3+ | 3+ | 0 | 0 |
@@ -146,10 +146,10 @@ Status: recorded
 |---|---:|---:|---:|---:|---:|
 | AI context generator and embedded skills | matches | 299 | 1 | -298 | 0 active |
 | AI context generator and embedded skills | files | 12 | 1 | -11 | 0 active |
-| Setup/editor config generator | matches | 8 | 8 | 0 | 0 active |
+| Setup/editor config generator | matches | 8 | 2 | -6 | 0 active |
 | Setup/editor config generator | files | 1 | 1 | 0 | 0 active |
-| Repo/global storage generators | matches | 4 | 4 | 0 | 0 active |
-| Repo/global storage generators | files | 2 | 2 | 0 | 0 active |
+| Repo/global storage generators | matches | 4 | 0 | -4 | 0 active |
+| Repo/global storage generators | files | 2 | 0 | -2 | 0 active |
 | MCP served setup/resources/prompts | matches | 59 | 59 | 0 | 0 active |
 | MCP served setup/resources/prompts | files | 3 | 3 | 0 | 0 active |
 | Web contract generator | matches | 11 | 11 | 0 | 0 active |
@@ -191,3 +191,17 @@ Date: 2026-05-29
 | Generated `.claude\skills\anvien` old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" .claude\skills\anvien` | `0` | Generated skill output is clean for this slice. |
 | Old generated skill namespace exists | `Test-Path .claude\skills\avmatrix` | `0` | `False`; analyze regeneration did not recreate the old skill namespace. |
 | Generated context old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" AGENTS.md CLAUDE.md .claude\skills\anvien` | `6` | All matches are outside generated skill files: top coding rules and indexed repo name still `AVmatrix` until repo/module rename. |
+
+## B6 - Phase 4/5 Setup And Storage Counts
+
+Status: recorded
+
+Date: 2026-05-29
+
+| Metric | Command | Latest | Note |
+|---|---|---:|---|
+| Setup generator old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" internal\cli\setup_command.go` | `2` | Both matches are old Go module import paths; active generated setup output uses Anvien names. |
+| Repo/global storage source old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" internal\repo\paths.go internal\repo\meta.go internal\repo\settings.go internal\repo\registry.go internal\repo\runtime_config.go internal\repo\lock.go` | `0` | Core storage generators no longer emit `.avmatrix` or `AVMATRIX_HOME`. |
+| Temp smoke required `.anvien` artifacts present | analyze smoke on temp repo with `ANVIEN_HOME` | `6` | `.anvien`, `graph.json`, `meta.json`, `settings.json`, `lbug`, and global `registry.json`. |
+| Temp smoke old `.avmatrix` artifact present | same smoke | `0` | `<repo>\.avmatrix` was `False`. |
+| Local generated `.avmatrix` dirs removed | `Get-ChildItem -Directory -Recurse -Force -Filter .avmatrix` before cleanup | `478` | Verified no tracked files under `.avmatrix/` before removal. |

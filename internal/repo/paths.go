@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	StorageDirName = ".avmatrix"
-	HomeEnvName    = "AVMATRIX_HOME"
+	StorageDirName = ".anvien"
+	HomeEnvName    = "ANVIEN_HOME"
 )
 
 type StoragePaths struct {

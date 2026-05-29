@@ -10,7 +10,7 @@ import (
 )
 
 func TestAcquireStorageLockExcludesConcurrentWritersAndReleases(t *testing.T) {
-	lockPath := filepath.Join(t.TempDir(), ".avmatrix", "analyze.lock")
+	lockPath := filepath.Join(t.TempDir(), ".anvien", "analyze.lock")
 
 	lock, err := AcquireStorageLock(lockPath)
 	if err != nil {
@@ -34,7 +34,7 @@ func TestAcquireStorageLockExcludesConcurrentWritersAndReleases(t *testing.T) {
 
 func TestAcquireStorageLockRecoversDeadPIDLock(t *testing.T) {
 	dir := t.TempDir()
-	lockPath := filepath.Join(dir, ".avmatrix", "analyze.lock")
+	lockPath := filepath.Join(dir, ".anvien", "analyze.lock")
 	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
 		t.Fatalf("mkdir lock dir: %v", err)
 	}
@@ -62,11 +62,11 @@ func TestAcquireStorageLockRecoversDeadPIDLock(t *testing.T) {
 }
 
 func TestAcquireStorageLockKeepsLivePIDLock(t *testing.T) {
-	lockPath := filepath.Join(t.TempDir(), ".avmatrix", "analyze.lock")
+	lockPath := filepath.Join(t.TempDir(), ".anvien", "analyze.lock")
 	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
 		t.Fatalf("mkdir lock dir: %v", err)
 	}
-	existing := "version=2\npid=424242\nacquiredAt=2026-05-26T07:50:03Z\nhost=test-host\ncommand=avmatrix analyze\ntoken=owner\n"
+	existing := "version=2\npid=424242\nacquiredAt=2026-05-26T07:50:03Z\nhost=test-host\ncommand=anvien analyze\ntoken=owner\n"
 	if err := os.WriteFile(lockPath, []byte(existing), 0o644); err != nil {
 		t.Fatalf("write lock: %v", err)
 	}
@@ -81,7 +81,7 @@ func TestAcquireStorageLockKeepsLivePIDLock(t *testing.T) {
 	if !errors.As(err, &held) {
 		t.Fatalf("acquireStorageLock() error type = %T, want *LockHeldError", err)
 	}
-	if held.Info.PID != 424242 || held.Info.Command != "avmatrix analyze" {
+	if held.Info.PID != 424242 || held.Info.Command != "anvien analyze" {
 		t.Fatalf("LockHeldError info = %#v", held.Info)
 	}
 	raw, err := os.ReadFile(lockPath)
@@ -94,11 +94,11 @@ func TestAcquireStorageLockKeepsLivePIDLock(t *testing.T) {
 }
 
 func TestAcquireStorageLockKeepsForeignHostLock(t *testing.T) {
-	lockPath := filepath.Join(t.TempDir(), ".avmatrix", "analyze.lock")
+	lockPath := filepath.Join(t.TempDir(), ".anvien", "analyze.lock")
 	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
 		t.Fatalf("mkdir lock dir: %v", err)
 	}
-	existing := "version=2\npid=424242\nacquiredAt=2026-05-26T07:50:03Z\nhost=other-host\ncommand=avmatrix analyze\ntoken=owner\n"
+	existing := "version=2\npid=424242\nacquiredAt=2026-05-26T07:50:03Z\nhost=other-host\ncommand=anvien analyze\ntoken=owner\n"
 	if err := os.WriteFile(lockPath, []byte(existing), 0o644); err != nil {
 		t.Fatalf("write lock: %v", err)
 	}
@@ -127,13 +127,13 @@ func TestAcquireStorageLockKeepsForeignHostLock(t *testing.T) {
 
 func TestLockHeldErrorIncludesActionableMetadata(t *testing.T) {
 	repoPath := t.TempDir()
-	lockPath := filepath.Join(repoPath, ".avmatrix", "analyze.lock")
+	lockPath := filepath.Join(repoPath, ".anvien", "analyze.lock")
 	err := (&LockHeldError{
 		Info: LockInfo{
 			Path:       lockPath,
 			PID:        424242,
 			Host:       "test-host",
-			Command:    "avmatrix analyze --force",
+			Command:    "anvien analyze --force",
 			AcquiredAt: time.Now().Add(-90 * time.Minute),
 		},
 		Reason: "owning process is still running",
@@ -145,10 +145,10 @@ func TestLockHeldErrorIncludesActionableMetadata(t *testing.T) {
 		"pid=424242",
 		"host=test-host",
 		"age=",
-		"command=avmatrix analyze --force",
+		"command=anvien analyze --force",
 		"reason=owning process is still running",
 		"next=wait for the owning process to finish or stop pid 424242 if it is stale",
-		"avmatrix doctor locks --repo " + repoPath,
+		"anvien doctor locks --repo " + repoPath,
 	} {
 		if !strings.Contains(err, want) {
 			t.Fatalf("LockHeldError.Error() missing %q:\n%s", want, err)
@@ -157,7 +157,7 @@ func TestLockHeldErrorIncludesActionableMetadata(t *testing.T) {
 }
 
 func TestAcquireStorageLockRecoversMalformedOldLock(t *testing.T) {
-	lockPath := filepath.Join(t.TempDir(), ".avmatrix", "analyze.lock")
+	lockPath := filepath.Join(t.TempDir(), ".anvien", "analyze.lock")
 	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
 		t.Fatalf("mkdir lock dir: %v", err)
 	}
@@ -186,14 +186,14 @@ func TestAcquireStorageLockRecoversMalformedOldLock(t *testing.T) {
 }
 
 func TestReleaseDoesNotRemoveReplacedLock(t *testing.T) {
-	lockPath := filepath.Join(t.TempDir(), ".avmatrix", "analyze.lock")
+	lockPath := filepath.Join(t.TempDir(), ".anvien", "analyze.lock")
 	lock, err := acquireStorageLock(lockPath, testStorageLockOptions(func(pid int) bool {
 		return false
 	}))
 	if err != nil {
 		t.Fatalf("acquireStorageLock() error = %v", err)
 	}
-	replacement := "version=2\npid=123\nacquiredAt=2026-05-26T07:50:03Z\nhost=test-host\ncommand=avmatrix analyze\ntoken=replacement\n"
+	replacement := "version=2\npid=123\nacquiredAt=2026-05-26T07:50:03Z\nhost=test-host\ncommand=anvien analyze\ntoken=replacement\n"
 	if err := os.WriteFile(lockPath, []byte(replacement), 0o644); err != nil {
 		t.Fatalf("replace lock: %v", err)
 	}
@@ -211,7 +211,7 @@ func TestReleaseDoesNotRemoveReplacedLock(t *testing.T) {
 }
 
 func TestDiagnoseStorageLockReportsRecoverableStaleLock(t *testing.T) {
-	lockPath := filepath.Join(t.TempDir(), ".avmatrix", "analyze.lock")
+	lockPath := filepath.Join(t.TempDir(), ".anvien", "analyze.lock")
 	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
 		t.Fatalf("mkdir lock dir: %v", err)
 	}
@@ -246,7 +246,7 @@ func testStorageLockOptions(processAlive func(int) bool) storageLockOptions {
 			return 9001
 		},
 		commandLine: func() string {
-			return "avmatrix analyze --force"
+			return "anvien analyze --force"
 		},
 		processAlive: processAlive,
 		token: func() string {

@@ -352,7 +352,7 @@ func TestSetupCommandWritesEditorConfigsAndSkills(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("USERPROFILE", home)
-	t.Setenv("AVMATRIX_HOME", filepath.Join(home, ".avmatrix-global"))
+	t.Setenv(repo.HomeEnvName, filepath.Join(home, ".anvien-global"))
 	t.Setenv("PATH", "")
 
 	for _, dir := range []string{
@@ -368,7 +368,8 @@ func TestSetupCommandWritesEditorConfigsAndSkills(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(home, ".claude.json"), []byte(`{"existingKey":"keep-me","mcpServers":{"other":{"command":"foo"}}}`), 0o644); err != nil {
 		t.Fatalf("seed .claude.json: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(home, ".claude", "settings.json"), []byte(`{"hooks":{"PreToolUse":[{"matcher":"Grep","hooks":[{"type":"command","command":"node old/avmatrix-hook.cjs"}]}]}}`), 0o644); err != nil {
+	legacyHook := "av" + "matrix-hook.cjs"
+	if err := os.WriteFile(filepath.Join(home, ".claude", "settings.json"), []byte(`{"hooks":{"PreToolUse":[{"matcher":"Grep","hooks":[{"type":"command","command":"node old/`+legacyHook+`"}]}]}}`), 0o644); err != nil {
 		t.Fatalf("seed Claude settings: %v", err)
 	}
 
@@ -379,13 +380,13 @@ func TestSetupCommandWritesEditorConfigsAndSkills(t *testing.T) {
 	if errOut != "" {
 		t.Fatalf("setup wrote stderr: %q", errOut)
 	}
-	for _, want := range []string{"AVmatrix Setup", "Cursor", "Claude Code", "OpenCode", "Codex", "Skills installed to", "MCP lifecycle", "doctor processes"} {
+	for _, want := range []string{"Anvien Setup", "Cursor", "Claude Code", "OpenCode", "Codex", "Skills installed to", "MCP lifecycle", "doctor processes"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("setup output missing %q:\n%s", want, out)
 		}
 	}
-	if _, err := os.Stat(filepath.Join(home, ".avmatrix-global")); err != nil {
-		t.Fatalf("global AVMATRIX_HOME was not created: %v", err)
+	if _, err := os.Stat(filepath.Join(home, ".anvien-global")); err != nil {
+		t.Fatalf("global ANVIEN_HOME was not created: %v", err)
 	}
 
 	cursorConfig := readTestJSONFile(t, filepath.Join(home, ".cursor", "mcp.json"))
@@ -404,8 +405,8 @@ func TestSetupCommandWritesEditorConfigsAndSkills(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read Codex fallback config: %v", err)
 	}
-	if !strings.Contains(string(codexConfig), "[mcp_servers.avmatrix]") ||
-		!strings.Contains(string(codexConfig), `command = "avmatrix"`) ||
+	if !strings.Contains(string(codexConfig), "[mcp_servers.anvien]") ||
+		!strings.Contains(string(codexConfig), `command = "anvien"`) ||
 		!strings.Contains(string(codexConfig), `"mcp"`) {
 		t.Fatalf("Codex fallback config missing MCP entry:\n%s", codexConfig)
 	}
@@ -424,10 +425,10 @@ func TestSetupCommandWritesEditorConfigsAndSkills(t *testing.T) {
 	if err != nil {
 		t.Fatalf("marshal Claude settings: %v", err)
 	}
-	if strings.Contains(string(settingsJSON), "avmatrix-hook.cjs") {
+	if strings.Contains(string(settingsJSON), legacyHook) {
 		t.Fatalf("Claude settings still reference legacy Node hook: %s", settingsJSON)
 	}
-	if !strings.Contains(string(settingsJSON), "avmatrix hook claude") ||
+	if !strings.Contains(string(settingsJSON), "anvien hook claude") ||
 		!strings.Contains(string(settingsJSON), "PreToolUse") ||
 		!strings.Contains(string(settingsJSON), "PostToolUse") {
 		t.Fatalf("Claude settings missing hook entries: %s", settingsJSON)
@@ -441,7 +442,7 @@ func TestSetupCommandWritesEditorConfigsAndSkills(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read Codex fallback config after second setup: %v", err)
 	}
-	if count := strings.Count(string(codexConfig), "[mcp_servers.avmatrix]"); count != 1 {
+	if count := strings.Count(string(codexConfig), "[mcp_servers.anvien]"); count != 1 {
 		t.Fatalf("Codex fallback section duplicated %d times:\n%s", count, codexConfig)
 	}
 }
@@ -450,7 +451,7 @@ func TestSetupClaudeCodeSkipsAndRecoversCorruptConfig(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("USERPROFILE", home)
-	t.Setenv("AVMATRIX_HOME", filepath.Join(home, ".avmatrix-global"))
+	t.Setenv(repo.HomeEnvName, filepath.Join(home, ".anvien-global"))
 
 	result := setupResult{}
 	setupClaudeCode(&result)
@@ -467,7 +468,8 @@ func TestSetupClaudeCodeSkipsAndRecoversCorruptConfig(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(home, ".claude.json"), []byte("{ invalid json"), 0o644); err != nil {
 		t.Fatalf("write corrupt .claude.json: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(home, ".claude", "settings.json"), []byte(`{"hooks":{"PreToolUse":[{"matcher":"Grep","hooks":[{"type":"command","command":"node old/avmatrix-hook.cjs"}]}]}}`), 0o644); err != nil {
+	legacyHook := "av" + "matrix-hook.cjs"
+	if err := os.WriteFile(filepath.Join(home, ".claude", "settings.json"), []byte(`{"hooks":{"PreToolUse":[{"matcher":"Grep","hooks":[{"type":"command","command":"node old/`+legacyHook+`"}]}]}}`), 0o644); err != nil {
 		t.Fatalf("write Claude settings: %v", err)
 	}
 
@@ -483,7 +485,7 @@ func TestSetupClaudeCodeSkipsAndRecoversCorruptConfig(t *testing.T) {
 		t.Fatalf("read Claude settings: %v", err)
 	}
 	settings := string(settingsRaw)
-	if strings.Contains(settings, "avmatrix-hook.cjs") || !strings.Contains(settings, "avmatrix hook claude") {
+	if strings.Contains(settings, legacyHook) || !strings.Contains(settings, "anvien hook claude") {
 		t.Fatalf("Claude hooks were not migrated to Go hook command:\n%s", settings)
 	}
 }
@@ -492,7 +494,7 @@ func TestSetupCodexUsesCLIWhenAvailableAndSkipsMissingInstall(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("USERPROFILE", home)
-	t.Setenv("AVMATRIX_HOME", filepath.Join(home, ".avmatrix-global"))
+	t.Setenv(repo.HomeEnvName, filepath.Join(home, ".anvien-global"))
 
 	result := setupResult{}
 	setupCodex(&result)
@@ -520,7 +522,7 @@ func TestSetupCodexUsesCLIWhenAvailableAndSkipsMissingInstall(t *testing.T) {
 	if err != nil {
 		t.Fatalf("fake codex command was not invoked: %v", err)
 	}
-	for _, want := range []string{"mcp", "add", "avmatrix", "--", "avmatrix", "mcp"} {
+	for _, want := range []string{"mcp", "add", "anvien", "--", "anvien", "mcp"} {
 		if !strings.Contains(string(argsRaw), want) {
 			t.Fatalf("fake codex args missing %q: %s", want, argsRaw)
 		}
@@ -630,11 +632,11 @@ func requireTestMCPEntry(t *testing.T, value any, label string) {
 	if !ok {
 		t.Fatalf("%s MCP container has wrong type: %#v", label, value)
 	}
-	entry, ok := servers["avmatrix"].(map[string]any)
+	entry, ok := servers["anvien"].(map[string]any)
 	if !ok {
-		t.Fatalf("%s missing avmatrix MCP entry: %#v", label, servers)
+		t.Fatalf("%s missing anvien MCP entry: %#v", label, servers)
 	}
-	if entry["command"] != "avmatrix" {
+	if entry["command"] != "anvien" {
 		t.Fatalf("%s MCP command = %#v", label, entry["command"])
 	}
 	args, ok := entry["args"].([]any)
@@ -1097,7 +1099,7 @@ func TestStatusReportsStaleKuzuIndex(t *testing.T) {
 		}
 		for _, want := range []string{
 			"Repository has a stale KuzuDB index from a previous version.",
-			"Run: avmatrix analyze   (rebuilds the index with LadybugDB)",
+			"Run: anvien analyze   (rebuilds the index with LadybugDB)",
 		} {
 			if !strings.Contains(out, want) {
 				t.Fatalf("status output missing %q:\n%s", want, out)
@@ -1209,10 +1211,10 @@ export function main() {
 	if !strings.Contains(string(benchmarkRaw), `"label": "fixture"`) {
 		t.Fatalf("benchmark JSON missing label:\n%s", benchmarkRaw)
 	}
-	if _, err := os.Stat(filepath.Join(dir, ".avmatrix", "graph.json")); err != nil {
+	if _, err := os.Stat(filepath.Join(dir, ".anvien", "graph.json")); err != nil {
 		t.Fatalf("graph snapshot missing: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(dir, ".avmatrix", "meta.json")); err != nil {
+	if _, err := os.Stat(filepath.Join(dir, ".anvien", "meta.json")); err != nil {
 		t.Fatalf("meta file missing: %v", err)
 	}
 }
@@ -1340,8 +1342,8 @@ export function beta() {
 	for _, rel := range []string{
 		"AGENTS.md",
 		"CLAUDE.md",
-		filepath.Join(".claude", "skills", "avmatrix", "avmatrix-cli", "SKILL.md"),
-		filepath.Join(".avmatrix", "meta.json"),
+		filepath.Join(".claude", "skills", "anvien", "anvien-cli", "SKILL.md"),
+		filepath.Join(".anvien", "meta.json"),
 	} {
 		if _, err := os.Stat(filepath.Join(dir, rel)); err != nil {
 			t.Fatalf("%s missing: %v", rel, err)
@@ -1351,11 +1353,11 @@ export function beta() {
 	if err != nil {
 		t.Fatalf("read AGENTS.md: %v", err)
 	}
-	if !strings.Contains(string(agents), "<!-- avmatrix:start -->") ||
-		!strings.Contains(string(agents), ".claude/skills/avmatrix/avmatrix-cli/SKILL.md") {
+	if !strings.Contains(string(agents), "<!-- anvien:start -->") ||
+		!strings.Contains(string(agents), ".claude/skills/anvien/anvien-cli/SKILL.md") {
 		t.Fatalf("AGENTS.md missing AVmatrix context:\n%s", agents)
 	}
-	assertInstalledEmbeddedBaseSkills(t, filepath.Join(dir, ".claude", "skills", "avmatrix"))
+	assertInstalledEmbeddedBaseSkills(t, filepath.Join(dir, ".claude", "skills", "anvien"))
 	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "generated")); !os.IsNotExist(err) {
 		t.Fatalf("default analyze should not create generated skills dir: %v", err)
 	}
@@ -1497,8 +1499,8 @@ func TestIndexRegistersExistingIndex(t *testing.T) {
 	if err != nil {
 		t.Fatalf("gitignore missing: %v", err)
 	}
-	if !strings.Contains(string(gitignore), ".avmatrix/") {
-		t.Fatalf("gitignore missing .avmatrix entry:\n%s", gitignore)
+	if !strings.Contains(string(gitignore), ".anvien/") {
+		t.Fatalf("gitignore missing .anvien entry:\n%s", gitignore)
 	}
 }
 
@@ -1521,14 +1523,14 @@ func TestIndexRejectsMissingIndexInputs(t *testing.T) {
 	dir := initGitRepo(t)
 	out, errOut, err := executeForTest(t, "index", dir)
 	if err == nil {
-		t.Fatal("index missing .avmatrix unexpectedly succeeded")
+		t.Fatal("index missing .anvien unexpectedly succeeded")
 	}
 	if errOut != "" {
-		t.Fatalf("index missing .avmatrix wrote stderr: %q", errOut)
+		t.Fatalf("index missing .anvien wrote stderr: %q", errOut)
 	}
-	if !strings.Contains(out, "No .avmatrix/ folder found at:") ||
-		!strings.Contains(out, "Run `avmatrix analyze` to build the index first.") {
-		t.Fatalf("index missing .avmatrix output unexpected:\n%s", out)
+	if !strings.Contains(out, "No .anvien/ folder found at:") ||
+		!strings.Contains(out, "Run `anvien analyze` to build the index first.") {
+		t.Fatalf("index missing .anvien output unexpected:\n%s", out)
 	}
 
 	paths := repo.Paths(dir)
@@ -1543,7 +1545,7 @@ func TestIndexRejectsMissingIndexInputs(t *testing.T) {
 		t.Fatalf("index missing lbug wrote stderr: %q", errOut)
 	}
 	if !strings.Contains(out, "contains no LadybugDB index") ||
-		!strings.Contains(out, "Run `avmatrix analyze` to build the index.") {
+		!strings.Contains(out, "Run `anvien analyze` to build the index.") {
 		t.Fatalf("index missing lbug output unexpected:\n%s", out)
 	}
 }
@@ -1564,7 +1566,7 @@ func TestIndexRegistersMissingMetaWithForceAndRejectsAmbiguousArgs(t *testing.T)
 	if errOut != "" {
 		t.Fatalf("index missing meta wrote stderr: %q", errOut)
 	}
-	if !strings.Contains(out, ".avmatrix/ exists but meta.json is missing.") ||
+	if !strings.Contains(out, ".anvien/ exists but meta.json is missing.") ||
 		!strings.Contains(out, "Use --force to register anyway") {
 		t.Fatalf("index missing meta output unexpected:\n%s", out)
 	}

@@ -13,8 +13,8 @@ import (
 
 func TestClaudeHookPreToolUseAugmentsSearchWithGoCLI(t *testing.T) {
 	repoDir := t.TempDir()
-	if err := os.Mkdir(filepath.Join(repoDir, ".avmatrix"), 0o755); err != nil {
-		t.Fatalf("mkdir .avmatrix: %v", err)
+	if err := os.Mkdir(filepath.Join(repoDir, ".anvien"), 0o755); err != nil {
+		t.Fatalf("mkdir .anvien: %v", err)
 	}
 	input := `{"hook_event_name":"PreToolUse","tool_name":"Grep","tool_input":{"pattern":"AuthService"},"cwd":` + strconvQuote(repoDir) + `}`
 	var output bytes.Buffer
@@ -51,11 +51,11 @@ func TestClaudeHookPreToolUseAugmentsSearchWithGoCLI(t *testing.T) {
 
 func TestClaudeHookPostToolUseReportsStaleIndex(t *testing.T) {
 	repoDir := t.TempDir()
-	avmatrixDir := filepath.Join(repoDir, ".avmatrix")
-	if err := os.Mkdir(avmatrixDir, 0o755); err != nil {
-		t.Fatalf("mkdir .avmatrix: %v", err)
+	anvienDir := filepath.Join(repoDir, ".anvien")
+	if err := os.Mkdir(anvienDir, 0o755); err != nil {
+		t.Fatalf("mkdir .anvien: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(avmatrixDir, "meta.json"), []byte(`{"lastCommit":"abcdef123456","stats":{"embeddings":1}}`), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(anvienDir, "meta.json"), []byte(`{"lastCommit":"abcdef123456","stats":{"embeddings":1}}`), 0o644); err != nil {
 		t.Fatalf("write meta: %v", err)
 	}
 	input := `{"hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"git commit -m test"},"tool_output":{"exit_code":0},"cwd":` + strconvQuote(repoDir) + `}`
@@ -66,7 +66,7 @@ func TestClaudeHookPostToolUseReportsStaleIndex(t *testing.T) {
 	if err != nil {
 		t.Fatalf("runClaudeHook: %v", err)
 	}
-	if !strings.Contains(output.String(), "AVmatrix index is stale") || !strings.Contains(output.String(), "avmatrix analyze --embeddings") {
+	if !strings.Contains(output.String(), "Anvien index is stale") || !strings.Contains(output.String(), "anvien analyze --embeddings") {
 		t.Fatalf("unexpected stale output:\n%s", output.String())
 	}
 }
@@ -105,8 +105,8 @@ func TestClaudeHookPatternExtraction(t *testing.T) {
 
 func TestClaudeHookPreToolUseSilentCases(t *testing.T) {
 	repoDir := t.TempDir()
-	if err := os.Mkdir(filepath.Join(repoDir, ".avmatrix"), 0o755); err != nil {
-		t.Fatalf("mkdir .avmatrix: %v", err)
+	if err := os.Mkdir(filepath.Join(repoDir, ".anvien"), 0o755); err != nil {
+		t.Fatalf("mkdir .anvien: %v", err)
 	}
 	noIndexDir := t.TempDir()
 	calls := 0
@@ -145,11 +145,11 @@ func TestClaudeHookPreToolUseSilentCases(t *testing.T) {
 
 func TestClaudeHookPostToolUseSilentCases(t *testing.T) {
 	repoDir := t.TempDir()
-	avmatrixDir := filepath.Join(repoDir, ".avmatrix")
-	if err := os.Mkdir(avmatrixDir, 0o755); err != nil {
-		t.Fatalf("mkdir .avmatrix: %v", err)
+	anvienDir := filepath.Join(repoDir, ".anvien")
+	if err := os.Mkdir(anvienDir, 0o755); err != nil {
+		t.Fatalf("mkdir .anvien: %v", err)
 	}
-	writeClaudeHookMeta(t, avmatrixDir, `{"lastCommit":"head123","stats":{"embeddings":0}}`)
+	writeClaudeHookMeta(t, anvienDir, `{"lastCommit":"head123","stats":{"embeddings":0}}`)
 	noIndexDir := t.TempDir()
 
 	tests := []struct {
@@ -181,11 +181,11 @@ func TestClaudeHookPostToolUseSilentCases(t *testing.T) {
 
 func TestClaudeHookPostToolUseGitMutationVariants(t *testing.T) {
 	repoDir := t.TempDir()
-	avmatrixDir := filepath.Join(repoDir, ".avmatrix")
-	if err := os.Mkdir(avmatrixDir, 0o755); err != nil {
-		t.Fatalf("mkdir .avmatrix: %v", err)
+	anvienDir := filepath.Join(repoDir, ".anvien")
+	if err := os.Mkdir(anvienDir, 0o755); err != nil {
+		t.Fatalf("mkdir .anvien: %v", err)
 	}
-	writeClaudeHookMeta(t, avmatrixDir, `{"lastCommit":"oldcommit","stats":{"embeddings":0}}`)
+	writeClaudeHookMeta(t, anvienDir, `{"lastCommit":"oldcommit","stats":{"embeddings":0}}`)
 	commands := []string{
 		"git commit -m test",
 		"git merge feature",
@@ -200,7 +200,7 @@ func TestClaudeHookPostToolUseGitMutationVariants(t *testing.T) {
 			if err := runClaudeHook(strings.NewReader(input), &output, nil, fixedHead("newhead")); err != nil {
 				t.Fatalf("runClaudeHook() error = %v", err)
 			}
-			if !strings.Contains(output.String(), "AVmatrix index is stale") {
+			if !strings.Contains(output.String(), "Anvien index is stale") {
 				t.Fatalf("output = %q, want stale notification", output.String())
 			}
 		})
@@ -217,12 +217,12 @@ func TestClaudeHookPostToolUseMissingOrCorruptMetaTreatsAsStale(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			repoDir := t.TempDir()
-			avmatrixDir := filepath.Join(repoDir, ".avmatrix")
-			if err := os.Mkdir(avmatrixDir, 0o755); err != nil {
-				t.Fatalf("mkdir .avmatrix: %v", err)
+			anvienDir := filepath.Join(repoDir, ".anvien")
+			if err := os.Mkdir(anvienDir, 0o755); err != nil {
+				t.Fatalf("mkdir .anvien: %v", err)
 			}
 			if tt.meta != nil {
-				writeClaudeHookMeta(t, avmatrixDir, *tt.meta)
+				writeClaudeHookMeta(t, anvienDir, *tt.meta)
 			}
 			input := `{"hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"git commit -m test"},"tool_output":{"exit_code":0},"cwd":` + strconvQuote(repoDir) + `}`
 			var output bytes.Buffer
@@ -238,17 +238,17 @@ func TestClaudeHookPostToolUseMissingOrCorruptMetaTreatsAsStale(t *testing.T) {
 
 func TestClaudeHookPostToolUseEmbeddingsHint(t *testing.T) {
 	repoDir := t.TempDir()
-	avmatrixDir := filepath.Join(repoDir, ".avmatrix")
-	if err := os.Mkdir(avmatrixDir, 0o755); err != nil {
-		t.Fatalf("mkdir .avmatrix: %v", err)
+	anvienDir := filepath.Join(repoDir, ".anvien")
+	if err := os.Mkdir(anvienDir, 0o755); err != nil {
+		t.Fatalf("mkdir .anvien: %v", err)
 	}
-	writeClaudeHookMeta(t, avmatrixDir, `{"lastCommit":"oldcommit","stats":{"embeddings":42}}`)
+	writeClaudeHookMeta(t, anvienDir, `{"lastCommit":"oldcommit","stats":{"embeddings":42}}`)
 	input := `{"hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"git merge feature"},"tool_output":{"exit_code":0},"cwd":` + strconvQuote(repoDir) + `}`
 	var output bytes.Buffer
 	if err := runClaudeHook(strings.NewReader(input), &output, nil, fixedHead("newhead")); err != nil {
 		t.Fatalf("runClaudeHook() error = %v", err)
 	}
-	if !strings.Contains(output.String(), "avmatrix analyze --embeddings") {
+	if !strings.Contains(output.String(), "anvien analyze --embeddings") {
 		t.Fatalf("output = %q, want embeddings hint", output.String())
 	}
 }
@@ -268,17 +268,17 @@ func TestRunClaudeHookIgnoresMalformedInputAndUnknownEvents(t *testing.T) {
 	}
 }
 
-func TestFindClaudeHookAVmatrixDirWalksParents(t *testing.T) {
+func TestFindClaudeHookAnvienDirWalksParents(t *testing.T) {
 	repoDir := t.TempDir()
-	if err := os.Mkdir(filepath.Join(repoDir, ".avmatrix"), 0o755); err != nil {
-		t.Fatalf("mkdir .avmatrix: %v", err)
+	if err := os.Mkdir(filepath.Join(repoDir, ".anvien"), 0o755); err != nil {
+		t.Fatalf("mkdir .anvien: %v", err)
 	}
 	nested := filepath.Join(repoDir, "a", "b", "c")
 	if err := os.MkdirAll(nested, 0o755); err != nil {
 		t.Fatalf("mkdir nested: %v", err)
 	}
-	if got := findClaudeHookAVmatrixDir(nested); got != filepath.Join(repoDir, ".avmatrix") {
-		t.Fatalf("findClaudeHookAVmatrixDir() = %q", got)
+	if got := findClaudeHookAnvienDir(nested); got != filepath.Join(repoDir, ".anvien") {
+		t.Fatalf("findClaudeHookAnvienDir() = %q", got)
 	}
 }
 
@@ -318,9 +318,9 @@ func fixedHead(head string) claudeHookHeadFunc {
 	}
 }
 
-func writeClaudeHookMeta(t *testing.T, avmatrixDir string, content string) {
+func writeClaudeHookMeta(t *testing.T, anvienDir string, content string) {
 	t.Helper()
-	if err := os.WriteFile(filepath.Join(avmatrixDir, "meta.json"), []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(anvienDir, "meta.json"), []byte(content), 0o644); err != nil {
 		t.Fatalf("write meta: %v", err)
 	}
 }

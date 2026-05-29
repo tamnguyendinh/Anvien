@@ -254,7 +254,7 @@ func loadGraphHealthGraph(repoName string) (graphHealthCommandInputs, *graph.Gra
 	var entry repo.RegistryEntry
 	if strings.TrimSpace(repoName) == "" {
 		if len(entries) != 1 {
-			return graphHealthCommandInputs{}, nil, fmt.Errorf("Repository not found. Run: avmatrix analyze --force")
+			return graphHealthCommandInputs{}, nil, fmt.Errorf("Repository not found. Run: anvien analyze --force")
 		}
 		entry = entries[0]
 	} else {
@@ -266,7 +266,7 @@ func loadGraphHealthGraph(repoName string) (graphHealthCommandInputs, *graph.Gra
 	}
 	currentCommit := repo.CurrentCommit(entry.Path)
 	if currentCommit != "" && entry.LastCommit != "" && currentCommit != entry.LastCommit {
-		return graphHealthCommandInputs{}, nil, fmt.Errorf("graph-health requires fresh analyze output for %s: indexed commit %s current commit %s; run avmatrix analyze --force", entry.Name, shortCommit(entry.LastCommit), shortCommit(currentCommit))
+		return graphHealthCommandInputs{}, nil, fmt.Errorf("graph-health requires fresh analyze output for %s: indexed commit %s current commit %s; run anvien analyze --force", entry.Name, shortCommit(entry.LastCommit), shortCommit(currentCommit))
 	}
 	storagePath := entry.StoragePath
 	if storagePath == "" {
@@ -276,7 +276,7 @@ func loadGraphHealthGraph(repoName string) (graphHealthCommandInputs, *graph.Gra
 	raw, err := os.ReadFile(graphPath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return graphHealthCommandInputs{}, nil, fmt.Errorf("graph-health requires fresh analyze output for %s: graph not found at %s; run avmatrix analyze --force", entry.Name, graphPath)
+			return graphHealthCommandInputs{}, nil, fmt.Errorf("graph-health requires fresh analyze output for %s: graph not found at %s; run anvien analyze --force", entry.Name, graphPath)
 		}
 		return graphHealthCommandInputs{}, nil, fmt.Errorf("read graph %s: %w", graphPath, err)
 	}

@@ -78,7 +78,7 @@ func handleClaudePreToolUse(input claudeHookInput, output io.Writer, runner clau
 			cwd = current
 		}
 	}
-	if !filepath.IsAbs(cwd) || findClaudeHookAVmatrixDir(cwd) == "" {
+	if !filepath.IsAbs(cwd) || findClaudeHookAnvienDir(cwd) == "" {
 		return nil
 	}
 	if input.ToolName != "Grep" && input.ToolName != "Glob" && input.ToolName != "Bash" {
@@ -122,8 +122,8 @@ func handleClaudePostToolUse(input claudeHookInput, output io.Writer, currentHea
 	if !filepath.IsAbs(cwd) {
 		return nil
 	}
-	avmatrixDir := findClaudeHookAVmatrixDir(cwd)
-	if avmatrixDir == "" {
+	anvienDir := findClaudeHookAnvienDir(cwd)
+	if anvienDir == "" {
 		return nil
 	}
 	head, err := currentHead(cwd)
@@ -136,11 +136,11 @@ func handleClaudePostToolUse(input claudeHookInput, output io.Writer, currentHea
 			Embeddings int `json:"embeddings"`
 		} `json:"stats"`
 	}{}
-	_ = readJSONFile(filepath.Join(avmatrixDir, "meta.json"), &meta)
+	_ = readJSONFile(filepath.Join(anvienDir, "meta.json"), &meta)
 	if head == meta.LastCommit {
 		return nil
 	}
-	analyzeCmd := "avmatrix analyze"
+	analyzeCmd := "anvien analyze"
 	if meta.Stats.Embeddings > 0 {
 		analyzeCmd += " --embeddings"
 	}
@@ -151,7 +151,7 @@ func handleClaudePostToolUse(input claudeHookInput, output io.Writer, currentHea
 	return writeClaudeHookResponse(
 		output,
 		"PostToolUse",
-		fmt.Sprintf("AVmatrix index is stale (last indexed: %s). Run `%s` to update the knowledge graph.", last, analyzeCmd),
+		fmt.Sprintf("Anvien index is stale (last indexed: %s). Run `%s` to update the knowledge graph.", last, analyzeCmd),
 	)
 }
 
@@ -209,10 +209,10 @@ func claudeHookBashPattern(command string) string {
 	return ""
 }
 
-func findClaudeHookAVmatrixDir(startDir string) string {
+func findClaudeHookAnvienDir(startDir string) string {
 	dir := startDir
 	for i := 0; i < 5; i++ {
-		candidate := filepath.Join(dir, ".avmatrix")
+		candidate := filepath.Join(dir, ".anvien")
 		if stat, err := os.Stat(candidate); err == nil && stat.IsDir() {
 			return candidate
 		}

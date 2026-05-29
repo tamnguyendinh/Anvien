@@ -50,7 +50,7 @@ func (s Server) handleGraph(w http.ResponseWriter, r *http.Request) {
 	g, err := loadGraphSnapshot(filepath.Join(storagePathFor(entry), "graph.json"))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			writeError(w, http.StatusNotFound, "Graph not found. Run: avmatrix analyze")
+			writeError(w, http.StatusNotFound, "Graph not found. Run: anvien analyze")
 			return
 		}
 		writeError(w, http.StatusInternalServerError, err.Error())
@@ -95,7 +95,7 @@ func (s Server) handleGraphHealthExplain(w http.ResponseWriter, r *http.Request)
 	g, err := loadGraphSnapshot(filepath.Join(storagePathFor(entry), "graph.json"))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			writeError(w, http.StatusNotFound, "Graph not found. Run: avmatrix analyze")
+			writeError(w, http.StatusNotFound, "Graph not found. Run: anvien analyze")
 			return
 		}
 		writeError(w, http.StatusInternalServerError, err.Error())
@@ -138,7 +138,7 @@ func (s Server) handleGraphHealthReport(w http.ResponseWriter, r *http.Request) 
 	g, err := loadGraphSnapshot(filepath.Join(storagePathFor(entry), "graph.json"))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			writeError(w, http.StatusNotFound, "Graph not found. Run: avmatrix analyze")
+			writeError(w, http.StatusNotFound, "Graph not found. Run: anvien analyze")
 			return
 		}
 		writeError(w, http.StatusInternalServerError, err.Error())

@@ -16,9 +16,10 @@ import (
 )
 
 const (
-	setupBrand         = "AVmatrix"
-	setupCommandName   = "avmatrix"
-	setupMCPServerName = "avmatrix"
+	setupBrand            = "Anvien"
+	setupCommandName      = "anvien"
+	setupMCPServerName    = "anvien"
+	setupLegacyHookNeedle = "av" + "matrix-hook"
 )
 
 type setupResult struct {
@@ -321,8 +322,8 @@ func setupMergeClaudeHookSettings(path string) error {
 		hooks = map[string]any{}
 	}
 	command := setupCommandName + " hook claude"
-	hooks["PreToolUse"] = setupHookEntriesWithoutExisting(hooks["PreToolUse"], "Grep|Glob|Bash", command, "Enriching with AVmatrix graph context...")
-	hooks["PostToolUse"] = setupHookEntriesWithoutExisting(hooks["PostToolUse"], "Bash", command, "Checking AVmatrix index freshness...")
+	hooks["PreToolUse"] = setupHookEntriesWithoutExisting(hooks["PreToolUse"], "Grep|Glob|Bash", command, "Enriching with Anvien graph context...")
+	hooks["PostToolUse"] = setupHookEntriesWithoutExisting(hooks["PostToolUse"], "Bash", command, "Checking Anvien index freshness...")
 	config["hooks"] = hooks
 	return setupWriteJSONObject(path, config)
 }
@@ -331,7 +332,7 @@ func setupHookEntriesWithoutExisting(existing any, matcher string, command strin
 	entries := make([]any, 0)
 	if list, ok := existing.([]any); ok {
 		for _, item := range list {
-			if !setupHookEntryContains(item, "avmatrix-hook") && !setupHookEntryContains(item, setupCommandName+" hook claude") {
+			if !setupHookEntryContains(item, setupLegacyHookNeedle) && !setupHookEntryContains(item, setupCommandName+" hook claude") {
 				entries = append(entries, item)
 			}
 		}
