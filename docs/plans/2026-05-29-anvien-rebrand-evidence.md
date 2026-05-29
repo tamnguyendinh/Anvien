@@ -1180,3 +1180,53 @@ Remaining limitations:
 
 - GitHub branch protection, secrets, variables, environments, webhooks, deploy keys, Apps, Pages, package permissions, social preview, and pinned repository references still need Settings/API access.
 - `anvien\bin\anvien-runtime.json` is ignored build output and still records source path `E:/AVmatrix-GO` while the active workspace folder has that name. It will regenerate with `E:\Anvien` after the final top-level folder rename and package build.
+
+## E17 - Phase 10 Local Workspace Filesystem Rename Validation
+
+Date: 2026-05-29
+
+Status: recorded
+
+Scope:
+
+- Validated the reopened workspace from `E:\Anvien`.
+- Used the Anvien CLI because the Codex MCP client reported that the `anvien` MCP server failed to complete startup handshaking.
+- Rebuilt ignored package runtime metadata so it records the renamed source path.
+- Refreshed the graph, re-registered the repository as `Anvien`, ran change detection, and verified final active old-name content/path inventories.
+
+Filesystem and registry evidence:
+
+| Command or check | Result |
+|---|---|
+| `Get-Location` | `E:\Anvien`. |
+| `Test-Path E:\AVmatrix-GO` | `False`. |
+| `Test-Path E:\Anvien` | `True`. |
+| `git config --global --add safe.directory E:/Anvien` | pass; required because Git initially rejected the renamed checkout as dubious ownership. |
+| first `.\anvien\bin\anvien.exe analyze --force --name Anvien` | blocked by stale global registry alias: `Anvien` was still attached to `E:\AVmatrix-GO`. |
+| `.\anvien\bin\anvien.exe list` after the blocked analyze | pass; validation pruned the stale unavailable `E:\AVmatrix-GO` registry entry. |
+| `%USERPROFILE%\.anvien\registry.json` after final analyze | contains `Anvien` at `E:\Anvien` with storage path `E:\Anvien\.anvien`; no `E:\AVmatrix-GO` entry. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `npm run build` in `anvien` | pass; package runtime build reported `Go source root: E:\Anvien` and wrote `E:\Anvien\anvien\bin\anvien.exe`. |
+| `Get-Content .\anvien\bin\anvien-runtime.json` | pass; ignored runtime metadata source is `E:/Anvien`. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | pass; scanned `816`, parsed `584`, unsupported `232`, failed `0`; graph `91529` nodes and `124990` relationships at `E:\Anvien\.anvien\graph.json`. |
+| `.\anvien\bin\anvien.exe list` | pass; `Anvien` is registered at `E:\Anvien`, commit `2b5b69f`. |
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | pass; `No changes detected`, risk `none`, affected count `0`. |
+| active old-name content inventory excluding rebrand ledger, `.git`, `.anvien`, dependency folders, and generated build/test output | pass; `0` matches. |
+| active old-name path inventory with the same exclusions | initially found only untracked local leftovers; after cleanup, pass with `0` paths. |
+| `git status --short` after cleanup and before ledger edits | pass; no tracked changes from build/analyze/local cleanup. |
+
+Local cleanup:
+
+- Removed untracked old-name temp files under `.codex-tmp`.
+- Removed untracked local `.history\avmatrix`.
+- Removed the untracked stale empty `cmd\avmatrix` directory.
+- No tracked files were removed by this cleanup.
+
+Pre-commit change detection:
+
+- The Phase 10 implementation validation ran `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` before the ledger update and returned no changes.
+- The final tracked changes for this slice are documentation ledger/checklist updates only.

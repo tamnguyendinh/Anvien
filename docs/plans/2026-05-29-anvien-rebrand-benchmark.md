@@ -21,12 +21,12 @@ Status: recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Notes |
 |---|---:|---:|---:|---:|---|
-| Files scanned | files | 800 | 816 | +16 | `anvien analyze --force` after folder/Web/plugin slice |
-| Files parsed | files | 583 | 584 | +1 | `anvien analyze --force` after folder/Web/plugin slice |
-| Unsupported files | files | 217 | 232 | +15 | `anvien analyze --force` after folder/Web/plugin slice |
-| Failed files | files | 0 | 0 | 0 | `anvien analyze --force` after folder/Web/plugin slice |
-| Graph nodes | nodes | 91223 | 91525 | +302 | Final local validation graph |
-| Graph relationships | relationships | 124702 | 124986 | +284 | Final local validation graph |
+| Files scanned | files | 800 | 816 | +16 | Phase 10 `anvien analyze --force --name Anvien` from `E:\Anvien` |
+| Files parsed | files | 583 | 584 | +1 | Phase 10 `anvien analyze --force --name Anvien` from `E:\Anvien` |
+| Unsupported files | files | 217 | 232 | +15 | Phase 10 `anvien analyze --force --name Anvien` from `E:\Anvien` |
+| Failed files | files | 0 | 0 | 0 | Phase 10 `anvien analyze --force --name Anvien` from `E:\Anvien` |
+| Graph nodes | nodes | 91223 | 91529 | +306 | Phase 10 renamed-workspace graph |
+| Graph relationships | relationships | 124702 | 124990 | +288 | Phase 10 renamed-workspace graph |
 
 ## B1 - Old-Name Reference Baseline
 
@@ -379,3 +379,26 @@ Date: 2026-05-29
 | Final cleanup changed files | `anvien detect-changes --repo Anvien --scope all` | `5` | Includes `2` backend test files plus `3` rebrand ledger files. |
 | Final cleanup changed symbols | same detect-changes command | `19` | Backend test symbols, non-actionable `testing.T` resolution-gap entities, and documentation sections. |
 | Final cleanup affected count | same detect-changes command | `0` | No affected processes or downstream symbols. |
+
+## B15 - Phase 10 Local Workspace Filesystem Rename Counts
+
+Status: recorded
+
+Date: 2026-05-29
+
+| Metric | Command | Latest | Note |
+|---|---|---:|---|
+| Old top-level workspace path exists | `Test-Path E:\AVmatrix-GO` | `0` | Renamed workspace path is no longer present. |
+| New top-level workspace path exists | `Test-Path E:\Anvien` | `1` | Current checkout path. |
+| Package runtime source path | `Get-Content anvien\bin\anvien-runtime.json` | `E:/Anvien` | `npm run build` in `anvien` rewrote ignored runtime metadata. |
+| Phase 10 analyze scanned files | `anvien analyze --force --name Anvien` | `816` | Ran from `E:\Anvien`. |
+| Phase 10 analyze parsed files | same command | `584` | Ran from `E:\Anvien`. |
+| Phase 10 analyze unsupported files | same command | `232` | Ran from `E:\Anvien`. |
+| Phase 10 analyze failed files | same command | `0` | Ran from `E:\Anvien`. |
+| Phase 10 graph nodes | same command | `91529` | Graph path `E:\Anvien\.anvien\graph.json`. |
+| Phase 10 graph relationships | same command | `124990` | Graph path `E:\Anvien\.anvien\graph.json`. |
+| Registered `Anvien` repo path | `anvien list` | `E:\Anvien` | Stale unavailable `E:\AVmatrix-GO` registry entry was pruned. |
+| Phase 10 detect-changes changed symbols | `anvien detect-changes --repo Anvien --scope all` | `0` | Risk `none`; affected count `0`. |
+| Active old-name content matches | final active `rg` excluding rebrand ledger, `.git`, `.anvien`, dependencies, and generated build/test output | `0` | Covers `AVmatrix-GO`, `AVmatrix`, `avmatrix`, `AVMATRIX`, `.avmatrix`, `avmatrix://`, and `avmatrix-`. |
+| Active old-name paths before local cleanup | path inventory with same exclusions | `7` | All were untracked local `.codex-tmp`, `.history`, or stale empty directory leftovers. |
+| Active old-name paths after local cleanup | same path inventory | `0` | No tracked files were removed. |

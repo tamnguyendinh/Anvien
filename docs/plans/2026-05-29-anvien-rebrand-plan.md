@@ -350,15 +350,17 @@ Interim Phase 7 launcher validation completed binary/protocol/process/lifecycle 
 - [x] [P9-F] Run `avmatrix detect-changes --repo AVmatrix --scope all` before commits until the rename slice changes the command; then record and use the Anvien equivalent.
 - [x] [P9-G] Commit each completed implementation slice with evidence and benchmark ledgers updated.
 
-Final local validation passed on 2026-05-29: full build, Go cmd/internal tests, Web unit tests, onboarding e2e, package runtime build/ensure, MCP initialize, serve smoke, final old-name inventory, and final `anvien detect-changes --repo Anvien --scope all` validation. GitHub repository rename, local remote update, push, fresh clone, and redirect checks are complete; the remaining open items are GitHub settings surfaces that require unavailable Settings/API access and the final top-level filesystem folder rename from `E:\AVmatrix-GO` to `E:\Anvien` after this workspace is no longer held open.
+Final local validation passed on 2026-05-29: full build, Go cmd/internal tests, Web unit tests, onboarding e2e, package runtime build/ensure, MCP initialize, serve smoke, final old-name inventory, and final `anvien detect-changes --repo Anvien --scope all` validation. GitHub repository rename, local remote update, push, fresh clone, redirect checks, and the final top-level filesystem folder rename from `E:\AVmatrix-GO` to `E:\Anvien` are complete; the remaining open items are GitHub settings surfaces that require unavailable Settings/API access.
 
 ## Phase 10 - Local Workspace Filesystem Rename
 
-- [ ] [P10-A] Close Codex, terminals, dev servers, and any process whose current working directory is `E:\AVmatrix-GO`.
-- [ ] [P10-B] Rename the top-level local workspace folder from `E:\AVmatrix-GO` to `E:\Anvien`.
-- [ ] [P10-C] Reopen the workspace from `E:\Anvien` and run `npm run build` in `anvien` so ignored package runtime metadata no longer records the old absolute source path.
-- [ ] [P10-D] Run `anvien analyze --force --name Anvien`, `anvien list`, and `anvien detect-changes --repo Anvien --scope all` from `E:\Anvien`.
-- [ ] [P10-E] Verify active old-name search for `AVmatrix-GO`, `AVmatrix`, `avmatrix`, `AVMATRIX`, `.avmatrix`, `avmatrix://`, and `avmatrix-` is `0` outside this rebrand ledger, `.git`, and approved historical release-note wording.
+- [x] [P10-A] Close Codex, terminals, dev servers, and any process whose current working directory is `E:\AVmatrix-GO`.
+- [x] [P10-B] Rename the top-level local workspace folder from `E:\AVmatrix-GO` to `E:\Anvien`.
+- [x] [P10-C] Reopen the workspace from `E:\Anvien` and run `npm run build` in `anvien` so ignored package runtime metadata no longer records the old absolute source path.
+- [x] [P10-D] Run `anvien analyze --force --name Anvien`, `anvien list`, and `anvien detect-changes --repo Anvien --scope all` from `E:\Anvien`.
+- [x] [P10-E] Verify active old-name search for `AVmatrix-GO`, `AVmatrix`, `avmatrix`, `AVMATRIX`, `.avmatrix`, `avmatrix://`, and `avmatrix-` is `0` outside this rebrand ledger, `.git`, and approved historical release-note wording.
+
+Phase 10 validation completed from `E:\Anvien`. `npm run build` in `anvien` regenerated runtime metadata with source `E:/Anvien`; `anvien analyze --force --name Anvien` refreshed the graph at `E:\Anvien\.anvien\graph.json`; `anvien list` registers `Anvien` at `E:\Anvien`; `anvien detect-changes --repo Anvien --scope all` returned no changes; and active old-name content/path inventories returned `0` after removing untracked local temp/history leftovers.
 
 ## Benchmark Requirements
 
