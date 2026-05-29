@@ -11,12 +11,12 @@ Companion files:
 
 ## Rules
 
-1. Use AVmatrix for codebase analysis and impact checks while working on implementation slices in this plan.
+1. Use Anvien for codebase analysis and impact checks while working on implementation slices in this plan.
 2. As each task is completed, update the corresponding checklist item immediately.
 3. Run a full build before testing; the test suite must include an e2e test.
 4. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, or conversion-inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.
 5. Record evidence as each evidenced task is completed.
-6. For doc-only commits, do not use AVmatrix.
+6. For doc-only commits, do not use Anvien.
 7. After each completed implementation slice, commit the work, then continue until the full plan is complete.
 
 ## Problem
@@ -32,16 +32,16 @@ This is not a Go-language problem and not primarily a source-of-truth wording pr
 - rendered node scale can become visually disproportionate, as shown by `reports/problem/screenshot_1779178877.png`, where many purple structural/folder-like nodes are far too large compared with surrounding nodes;
 - after the graph appears to finish loading in the Web UI, the launcher lifecycle can expire and close the session/backend, causing the UI to show `Server connection lost - reconnecting...`.
 
-The UI must remain language-agnostic. AVmatrix supports many languages, and the dashboard must represent graph components produced from all supported language families.
+The UI must remain language-agnostic. Anvien supports many languages, and the dashboard must represent graph components produced from all supported language families.
 
 ## Scope Boundary
 
 This plan covers Web UI graph display, filtering, legend, and canvas adapter behavior:
 
-- `avmatrix-web/src/lib/constants.ts`
-- `avmatrix-web/src/components/FileTreePanel.tsx`
-- `avmatrix-web/src/lib/graph-adapter.ts`
-- `avmatrix-web/src/hooks/useSigma.ts`
+- `anvien-web/src/lib/constants.ts`
+- `anvien-web/src/components/FileTreePanel.tsx`
+- `anvien-web/src/lib/graph-adapter.ts`
+- `anvien-web/src/hooks/useSigma.ts`
 - graph state and tests that control node/edge visibility
 - node size scaling and canvas readability after graph load
 - heartbeat/server connection behavior during and after graph load
@@ -81,7 +81,7 @@ Dashboard relationship boundary:
 
 Current graph snapshot after analyze:
 
-- graph path: `.avmatrix/graph.json`
+- graph path: `.anvien/graph.json`
 - nodes: `20,354`
 - relationships: `50,980`
 - unique node labels in current graph: `16`
@@ -111,18 +111,18 @@ These findings come from the initial codebase review and should guide implementa
 Oversized purple structural-node root cause:
 
 - The screenshot shows many large purple nodes around the graph perimeter with folder-like labels such as `service`, `config`, `app`, `audit`, and `db_test`, not only one selected node.
-- `avmatrix-web/src/lib/constants.ts` intentionally uses "dramatic size differences": `Project=20`, `Package=16`, `Module=13`, `Folder=10`, while leaf/member nodes are often `1.5-2`.
-- `avmatrix-web/src/lib/graph-adapter.ts` scales the current `20,354` node graph with `baseSize * 0.5`, leaving `Project=10`, `Package=8`, `Module=6.5`, and most variable/property/member nodes at `1.5`.
+- `anvien-web/src/lib/constants.ts` intentionally uses "dramatic size differences": `Project=20`, `Package=16`, `Module=13`, `Folder=10`, while leaf/member nodes are often `1.5-2`.
+- `anvien-web/src/lib/graph-adapter.ts` scales the current `20,354` node graph with `baseSize * 0.5`, leaving `Project=10`, `Package=8`, `Module=6.5`, and most variable/property/member nodes at `1.5`.
 - Even without selection/highlight, a scaled `Folder=5` has more than `11x` the circle area of a scaled `Function=2` or `Property=1.5` node. `Project=10` has more than `44x` the area of a `Property=1.5` node.
-- `avmatrix-web/src/hooks/useSigma.ts` can multiply node sizes again for selected/highlighted/animated states: selected `1.8x`, query highlight `1.6x`, glow animation up to `2.0x`, ripple animation up to `2.5x`.
+- `anvien-web/src/hooks/useSigma.ts` can multiply node sizes again for selected/highlighted/animated states: selected `1.8x`, query highlight `1.6x`, glow animation up to `2.0x`, ripple animation up to `2.5x`.
 - There is no final rendered-size cap after base scaling or reducer multipliers. Structural/folder/purple nodes can therefore dominate the canvas out of proportion with the rest of the graph.
 - The fix should not make all nodes equal; it should introduce bounded, proportional scale so larger structural nodes remain readable without dominating the canvas.
 
 Post-load reconnect root cause chain:
 
-- The launcher log records `start root=E:\AVmatrix-GO` at `2026-05-19 15:20:03`, screenshot evidence at `15:21:30`, then `web ui session closed` at `15:21:45`.
-- In `avmatrix-launcher/src/main.go`, `web ui session closed` is emitted only when `lifecycleDone(...)` fires. That means the launcher lifecycle monitor expired; this is not merely a cosmetic Web banner.
-- The lifecycle script pings `/__avmatrix_launcher/heartbeat` every `5s`, but `launcherUITimeout` is only `15s`. A heavy graph load/render/layout path can exceed that budget and make the launcher close the session while the user is still looking at the graph.
+- The launcher log records `start root=E:\Anvien` at `2026-05-19 15:20:03`, screenshot evidence at `15:21:30`, then `web ui session closed` at `15:21:45`.
+- In `anvien-launcher/src/main.go`, `web ui session closed` is emitted only when `lifecycleDone(...)` fires. That means the launcher lifecycle monitor expired; this is not merely a cosmetic Web banner.
+- The lifecycle script pings `/__anvien_launcher/heartbeat` every `5s`, but `launcherUITimeout` is only `15s`. A heavy graph load/render/layout path can exceed that budget and make the launcher close the session while the user is still looking at the graph.
 - `waitForExit` then returns, and `startRuntime` has `defer stopPID(backend.pid)`, so when the launcher owns the backend process, lifecycle expiry can stop the backend. The Web heartbeat SSE `/api/heartbeat` then errors and `App.tsx` shows `Server connection lost - reconnecting...`.
 - The exact subcause for the missing launcher heartbeat still needs instrumentation: likely browser main-thread starvation from synchronous graph conversion/layout/noverlap, but the primary runtime design defect is already clear: using heartbeat age as an auto-shutdown budget is invalid for heavy graph loads.
 - The fix must treat heavy repo load as a supported workload, not an exceptional case. It must not merely raise the heartbeat budget; it must remove heartbeat age as a runtime shutdown condition and reserve shutdown for explicit close/user lifecycle signals.
@@ -148,7 +148,7 @@ Post-load reconnect root cause chain:
 ## Phase 1 - Inventory, Root-Cause Review, and Display Policy
 
 - [x] [P1-A] Inventory current Web UI graph display lists: node filters, edge filters, color legend, icon map, node sizes, edge styles, and layout relationship groups.
-- [x] [P1-B] Inventory loaded graph labels and relationship types from `.avmatrix/graph.json` and record counts in the benchmark ledger.
+- [x] [P1-B] Inventory loaded graph labels and relationship types from `.anvien/graph.json` and record counts in the benchmark ledger.
 - [x] [P1-C] Define a display policy for graph categories: structure, code symbols, member/property facts, references/calls/imports, process/community metadata, route/tool/API facts, and unknown/future graph types. Result: generated contract order is the stable known-type order, loaded-graph inventory drives controls, and unknown/future labels/types use safe fallback color/size/label/icon.
 - [x] [P1-D] Decide which zero-count labels/relationship types should stay hidden by default and how users can reveal them if needed. Result: loaded graph controls show present labels/types with counts; zero-count known types are covered by fixture/fallback tests and appear when present in a graph payload.
 - [x] [P1-E] Record evidence showing current missing node labels, missing relationship types, and parallel relationship risk.
@@ -160,7 +160,7 @@ Post-load reconnect root cause chain:
 ## Phase 2 - Heavy Graph Runtime Stability
 
 - [x] [P2-A] Add launcher lifecycle instrumentation that records heartbeat age, close-grace expiry reason, and whether the backend was stopped because UI lifecycle exit occurred. Result: `webLifecycleSnapshot` now records heartbeat age, close age, close-grace, exit reason, and backend ownership in launcher logs.
-- [x] [P2-B] Add Web-side instrumentation or test hooks for graph conversion time, layout start/stop time, noverlap duration, heartbeat reconnects, and reconnect-banner state. Result: `window.__AVMATRIX_WEB_DIAGNOSTICS__` records graph conversion, layout/noverlap, heartbeat, and reconnect-banner counters.
+- [x] [P2-B] Add Web-side instrumentation or test hooks for graph conversion time, layout start/stop time, noverlap duration, heartbeat reconnects, and reconnect-banner state. Result: `window.__ANVIEN_WEB_DIAGNOSTICS__` records graph conversion, layout/noverlap, heartbeat, and reconnect-banner counters.
 - [x] [P2-C] Reproduce the post-load `Server connection lost - reconnecting...` behavior under controlled conditions with the current large graph and recorded launcher/Web timings. Result: controlled large-graph e2e no longer reproduces the banner after lifecycle budget removal; diagnostics recorded active layout with `0` heartbeat reconnects and `0` banner shows.
 - [x] [P2-D] Fix the lifecycle design so heavy graph load cannot close the runtime while the page is alive. Result: removed heartbeat-budget auto-shutdown entirely; heartbeat is now instrumentation/liveness evidence only, while explicit page-close signals still close after a short reload grace.
 - [x] [P2-E] Ensure a lifecycle timeout does not stop the backend during a known active graph load/layout window. Result: there is no heartbeat timeout path left to stop the backend during graph load/layout.
@@ -195,7 +195,7 @@ Post-load reconnect root cause chain:
 - [x] [P5-E] Audit current node size rules, scaled size output, zoom behavior, and community/structural node styling against `reports/problem/screenshot_1779178877.png`. Result: current graph baseline had `Project=10` versus `Property=1.5`, a `6.7x` radius and `44.4x` area ratio before reducer multipliers.
 - [x] [P5-F] Define and implement a proportional node-size cap after base scaling and reducer multipliers so important structural/highlighted nodes remain larger without producing oversized circles that distort graph readability. Result: dense-graph base scaling caps generic structural nodes at `3.0`, caps `Package` at `1.5`, caps `Section` at `1.0`, and caps dense post-reducer display size at `3.0`; smaller graphs retain the broader reducer cap.
 - [x] [P5-G] Add unit tests for node-size scaling boundaries on small, medium, large, and very large graph sizes. Result: tests cover `100`, `1,500`, `6,000`, `20,421`, and `60,000` node graph sizes.
-- [x] [P5-H] Measure graph adapter conversion time, edge preservation counts, and node-size ratio bounds on the current AVmatrix-GO graph. Result: `51,176 / 51,176` relationships preserved, `1,412` parallel source-target pairs preserved, conversion `478.37ms`, current graph structural/property radius ratio `3x`.
+- [x] [P5-H] Measure graph adapter conversion time, edge preservation counts, and node-size ratio bounds on the current Anvien graph. Result: `51,176 / 51,176` relationships preserved, `1,412` parallel source-target pairs preserved, conversion `478.37ms`, current graph structural/property radius ratio `3x`.
 - [x] [P5-I] Re-check dense-graph size output for every known node label after reducing `Package` and `Section`. Result: all known node labels stay within `1.0-3.0` at `78,350` nodes; `Package=1.5`, `Section=1.0`, and the largest labels are capped at `3.0`.
 
 ## Phase 6 - Legend Accuracy
@@ -207,7 +207,7 @@ Post-load reconnect root cause chain:
 
 ## Phase 7 - Validation
 
-- [x] [P7-A] Run full build before tests. Result: `go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix` and `npm --prefix avmatrix-web run build` passed before validation tests.
+- [x] [P7-A] Run full build before tests. Result: `go build -trimpath -o .tmp\anvien.exe .\cmd\anvien` and `npm --prefix anvien-web run build` passed before validation tests.
 - [x] [P7-B] Run focused Web UI unit tests for constants, filter panel, graph adapter, edge visibility, legend behavior, node-size scaling, and connection stability helpers. Result: focused tests passed, followed by full Web unit suite `41` files / `316` tests passed.
 - [x] [P7-C] Add and run an e2e test that loads a graph fixture with uncommon node/edge types, toggles them in the left dashboard, and verifies visible graph behavior. Result: e2e toggles uncommon `Property` node and `Accesses` edge controls and verifies `aria-pressed` state plus legend entries.
 - [x] [P7-D] Add and run an e2e visual-scale check using the oversized-node screenshot scenario or an equivalent deterministic graph fixture. Result: e2e asserts loaded graph visual-scale diagnostics stay within max-size and ratio bounds.
@@ -218,9 +218,9 @@ Post-load reconnect root cause chain:
 Minimum validation commands, unless the implementation discovers a repo-specific replacement:
 
 - `go test ./...`
-- `npm --prefix avmatrix-web run build`
-- `npm --prefix avmatrix-web run test`
-- `npm --prefix avmatrix-web run test:e2e`
+- `npm --prefix anvien-web run build`
+- `npm --prefix anvien-web run test`
+- `npm --prefix anvien-web run test:e2e`
 
 ## Phase 8 - Closure
 

@@ -1,7 +1,7 @@
 {
-  "project": "AVmatrix",
-  "url": "http://127.0.0.1:5228/?server=http%3A%2F%2F127.0.0.1%3A4848&project=AVmatrix",
-  "screenshotPath": "E:\\AVmatrix-GO\\reports\\problem\\screenshot_20260520_documentation_center_after.png",
+  "project": "Anvien",
+  "url": "http://127.0.0.1:5228/?server=http%3A%2F%2F127.0.0.1%3A4848&project=Anvien",
+  "screenshotPath": "E:\\Anvien\\reports\\problem\\screenshot_20260520_documentation_center_after.png",
   "documentationFilterTitle": "Documentation (1335)",
   "diagnostics": {
     "graphConversion": {

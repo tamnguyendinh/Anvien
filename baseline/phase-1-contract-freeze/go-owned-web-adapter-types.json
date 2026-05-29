@@ -1,7 +1,7 @@
 {
   "observedAtLocal": "2026-05-08T21:41:27+07:00",
   "status": "go_owned_web_adapter_type_authority_decided",
-  "decision": "The Go codebase owns browser-facing contract types after conversion. TypeScript contract files used by avmatrix-web are generated browser-side adapter artifacts only.",
+  "decision": "The Go codebase owns browser-facing contract types after conversion. TypeScript contract files used by anvien-web are generated browser-side adapter artifacts only.",
   "goAuthority": {
     "futurePackage": "internal/contracts",
     "owns": [
@@ -14,16 +14,16 @@
       "error envelope structs"
     ],
     "forbidden": [
-      "using avmatrix-shared TypeScript as runtime contract authority after Go cutover",
+      "using anvien-shared TypeScript as runtime contract authority after Go cutover",
       "hand-editing generated Web UI TypeScript contract files",
       "letting Web UI generated types import Node-only packages",
       "adding browser-only fields to Go runtime contracts without an explicit adapter mapping"
     ]
   },
   "generatedArtifacts": {
-    "schemaManifest": "contracts/web-ui/avmatrix-web-contract.schema.json",
-    "typescriptAdapter": "avmatrix-web/src/generated/avmatrix-contracts.ts",
-    "adapterPurpose": "Type-only browser compilation surface for avmatrix-web. It must not own runtime behavior."
+    "schemaManifest": "contracts/web-ui/anvien-web-contract.schema.json",
+    "typescriptAdapter": "anvien-web/src/generated/anvien-contracts.ts",
+    "adapterPurpose": "Type-only browser compilation surface for anvien-web. It must not own runtime behavior."
   },
   "generationRules": [
     "Go structs and constants are the source of truth.",
@@ -42,7 +42,7 @@
   "migrationSequence": [
     "Port contract structs/constants into internal/contracts.",
     "Add contract generation command for schema manifest and TypeScript adapter.",
-    "Switch avmatrix-web imports from avmatrix-shared runtime contracts to generated adapter types.",
+    "Switch anvien-web imports from anvien-shared runtime contracts to generated adapter types.",
     "Run existing Web UI against Go backend and compare payload compatibility to the Phase 1 baseline."
   ]
 }

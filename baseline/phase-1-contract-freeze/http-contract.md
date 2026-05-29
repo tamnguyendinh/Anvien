@@ -4,9 +4,9 @@ Observed: 2026-05-08T21:18:00+07:00
 
 Source files:
 
-- `avmatrix/src/server/api.ts`
-- `avmatrix/src/server/session-bridge.ts`
-- `avmatrix/src/server/mcp-http.ts`
+- `anvien/src/server/api.ts`
+- `anvien/src/server/session-bridge.ts`
+- `anvien/src/server/mcp-http.ts`
 
 ## Server Defaults
 

@@ -25,8 +25,8 @@ Status: recorded
 | Files parsed | files | 583 | 584 | +1 | `anvien analyze --force` after folder/Web/plugin slice |
 | Unsupported files | files | 217 | 232 | +15 | `anvien analyze --force` after folder/Web/plugin slice |
 | Failed files | files | 0 | 0 | 0 | `anvien analyze --force` after folder/Web/plugin slice |
-| Graph nodes | nodes | 91223 | 91521 | +298 | Fresh graph after folder/Web/plugin slice |
-| Graph relationships | relationships | 124702 | 124982 | +280 | Fresh graph after folder/Web/plugin slice |
+| Graph nodes | nodes | 91223 | 91523 | +300 | Fresh graph after config/docs artifact slice |
+| Graph relationships | relationships | 124702 | 124984 | +282 | Fresh graph after config/docs artifact slice |
 
 ## B1 - Old-Name Reference Baseline
 
@@ -36,13 +36,13 @@ Search excluded `node_modules` and this rebrand file set.
 
 | Pattern | Unit | Baseline | Latest | Delta | Final target |
 |---|---:|---:|---:|---:|---:|
-| `AVmatrix` | matches | 2238 | 2238 | 0 | 0 active |
-| `avmatrix` | matches | 9291 | 9291 | 0 | 0 active |
-| `AVMATRIX` | matches | 281 | 281 | 0 | 0 active |
-| `AVmatrix-GO` | matches | 629 | 629 | 0 | 0 active |
+| `AVmatrix` | matches | 2238 | 0 | -2238 | 0 active |
+| `avmatrix` | matches | 9291 | 0 | -9291 | 0 active |
+| `AVMATRIX` | matches | 281 | 0 | -281 | 0 active |
+| `AVmatrix-GO` | matches | 629 | 0 | -629 | 0 active |
 | `avmatrix.com` | matches | 0 | 0 | 0 | 0 |
-| `.avmatrix` | matches | 316 | 316 | 0 | 0 active |
-| `AVMATRIX_` | matches | 281 | 281 | 0 | 0 active |
+| `.avmatrix` | matches | 316 | 0 | -316 | 0 active |
+| `AVMATRIX_` | matches | 281 | 0 | -281 | 0 active |
 | `mcpServers` | matches | 9 | 9 | 0 | inspect/update keys |
 
 ## B2 - Old-Name File Group Baseline
@@ -51,14 +51,14 @@ Status: recorded
 
 | Group | Unit | Baseline | Latest | Delta | Final target |
 |---|---:|---:|---:|---:|---:|
-| `internal` | files | 338 | 338 | 0 | 0 active old names |
-| `reports` | files | 70 | 70 | 0 | delete/update/classify |
-| `avmatrix-web` | files | 68 | 68 | 0 | rename/update |
-| `docs` | files | 55 | 55 | 0 | update active docs |
-| `baseline` | files | 19 | 19 | 0 | regenerate/update active baselines |
-| `avmatrix-launcher` | files | 6 | 6 | 0 | rename/update |
-| `avmatrix` | files | 5 | 5 | 0 | rename package |
-| `cmd` | files | 5 | 5 | 0 | rename entrypoint/imports |
+| `internal` | files | 338 | 0 | -338 | 0 active old names |
+| `reports` | files | 70 | 0 | -70 | delete/update/classify |
+| `avmatrix-web` | files | 68 | 0 | -68 | rename/update |
+| `docs` | files | 55 | 0 | -55 | update active docs |
+| `baseline` | files | 19 | 0 | -19 | regenerate/update active baselines |
+| `avmatrix-launcher` | files | 6 | 0 | -6 | rename/update |
+| `avmatrix` | files | 5 | 0 | -5 | rename package |
+| `cmd` | files | 5 | 0 | -5 | rename entrypoint/imports |
 
 ## B2.1 - Tracked Inventory Classification Baseline
 
@@ -68,30 +68,30 @@ Source artifact: `docs/plans/2026-05-29-anvien-rebrand-inventory.csv`
 
 | Category | Unit | Baseline | Latest | Delta | Final target |
 |---|---:|---:|---:|---:|---:|
-| `source-or-config` | files | 316 | 316 | 0 | 0 active old names |
-| `source-or-config` | matches | 1546 | 1546 | 0 | 0 active old names |
-| `report` | files | 70 | 70 | 0 | classify/delete/update |
-| `report` | matches | 923 | 923 | 0 | classify/delete/update |
-| `web-ui` | files | 67 | 67 | 0 | 0 active old names |
-| `web-ui` | matches | 244 | 244 | 0 | 0 active old names |
-| `docs` | files | 55 | 55 | 0 | update active or preserve historical |
-| `docs` | matches | 8094 | 8094 | 0 | update active or preserve historical |
-| `generator-source` | files | 31 | 31 | 0 | 0 active old names |
-| `generator-source` | matches | 183 | 183 | 0 | 0 active old names |
-| `baseline` | files | 19 | 19 | 0 | regenerate/update active |
-| `baseline` | matches | 250 | 250 | 0 | regenerate/update active |
-| `generator-ai-context` | files | 13 | 1 | -12 | 0 active old names |
-| `generator-ai-context` | matches | 384 | 1 | -383 | 0 active old names |
-| `launcher` | files | 6 | 6 | 0 | 0 active old names |
-| `launcher` | matches | 56 | 56 | 0 | 0 active old names |
-| `npm-package` | files | 5 | 5 | 0 | 0 active old names |
-| `npm-package` | matches | 156 | 156 | 0 | 0 active old names |
-| `cli-command` | files | 3 | 3 | 0 | 0 active old names |
-| `cli-command` | matches | 4 | 4 | 0 | 0 active old names |
-| `generated-contract` | files | 2 | 2 | 0 | regenerate from generator |
-| `generated-contract` | matches | 5 | 5 | 0 | regenerate from generator |
-| `github-automation` | files | 1 | 1 | 0 | 0 active old names |
-| `github-automation` | matches | 17 | 17 | 0 | 0 active old names |
+| `source-or-config` | files | 316 | 0 | -316 | 0 active old names |
+| `source-or-config` | matches | 1546 | 0 | -1546 | 0 active old names |
+| `report` | files | 70 | 0 | -70 | classify/delete/update |
+| `report` | matches | 923 | 0 | -923 | classify/delete/update |
+| `web-ui` | files | 67 | 0 | -67 | 0 active old names |
+| `web-ui` | matches | 244 | 0 | -244 | 0 active old names |
+| `docs` | files | 55 | 0 | -55 | update active or preserve historical |
+| `docs` | matches | 8094 | 0 | -8094 | update active or preserve historical |
+| `generator-source` | files | 31 | 0 | -31 | 0 active old names |
+| `generator-source` | matches | 183 | 0 | -183 | 0 active old names |
+| `baseline` | files | 19 | 0 | -19 | regenerate/update active |
+| `baseline` | matches | 250 | 0 | -250 | regenerate/update active |
+| `generator-ai-context` | files | 13 | 0 | -13 | 0 active old names |
+| `generator-ai-context` | matches | 384 | 0 | -384 | 0 active old names |
+| `launcher` | files | 6 | 0 | -6 | 0 active old names |
+| `launcher` | matches | 56 | 0 | -56 | 0 active old names |
+| `npm-package` | files | 5 | 0 | -5 | 0 active old names |
+| `npm-package` | matches | 156 | 0 | -156 | 0 active old names |
+| `cli-command` | files | 3 | 0 | -3 | 0 active old names |
+| `cli-command` | matches | 4 | 0 | -4 | 0 active old names |
+| `generated-contract` | files | 2 | 0 | -2 | regenerate from generator |
+| `generated-contract` | matches | 5 | 0 | -5 | regenerate from generator |
+| `github-automation` | files | 1 | 0 | -1 | 0 active old names |
+| `github-automation` | matches | 17 | 0 | -17 | 0 active old names |
 
 ## B3 - Active Legacy Surface Count
 
@@ -288,3 +288,22 @@ Date: 2026-05-29
 | `anvien.exe` size after folder rename | `Get-Item anvien\bin\anvien.exe` | `50478080` | Rebuilt by package lifecycle. |
 | `AnvienLauncher.exe` size after folder rename | `Get-Item anvien-launcher\AnvienLauncher.exe` | `6993408` | Rebuilt by launcher build script. |
 | `anvien-server.exe` size after folder rename | `Get-Item anvien-launcher\server-bundle\anvien-server.exe` | `2053632` | Rebuilt by launcher build script. |
+
+## B11 - Phase 5/8 Config And Historical Artifact Counts
+
+Status: recorded
+
+Date: 2026-05-29
+
+| Metric | Command | Latest | Note |
+|---|---|---:|---|
+| Files with old-name contents outside rebrand ledger and `.git` | active old-name `rg -l` excluding `docs/plans/2026-05-29-anvien-rebrand-*`, generated build/test output, `node_modules`, and `.git` | `0` | Confirms old-name wording is confined to the active rebrand ledger and Git metadata. |
+| Old-name content matches outside rebrand ledger and `.git` | same search | `0` | No active docs, reports, baselines, source, or config old-name matches remain. |
+| Files rewritten by historical artifact slice | bulk rewrite script output | `144` | Includes historical plans, query-health suites, baselines, reports, and active config files. |
+| Files renamed by historical artifact slice | bulk rename script output | `95` | Historical artifact filenames with old slugs were renamed to Anvien slugs. |
+| `*avmatrix*` filenames under `docs/plans` | `Get-ChildItem docs\plans -Filter '*avmatrix*'` excluding rebrand ledger by existing names | `0` | Rebrand ledger filenames already use Anvien and remain the audit exception for content only. |
+| `*avmatrix*` filenames under `docs/query-health` | `Get-ChildItem docs\query-health -Filter '*avmatrix*'` | `0` | Query-health suite filenames were renamed. |
+| `*avmatrix*` filenames under `reports` | `Get-ChildItem reports -Recurse -File -Filter '*avmatrix*'` | `0` | Report artifact filenames were renamed. |
+| `.env.example` old-name matches | old-name `rg` over `.env.example` | `0` | Docker image examples and container names use Anvien. |
+| `eslint.config.mjs` old-name matches | old-name `rg` over `eslint.config.mjs` | `0` | Ignore paths and React file glob use Anvien folders. |
+| Root ESLint validation | `npm run lint` | `0 errors / 164 warnings` | Existing warnings only; command exited `0`. |

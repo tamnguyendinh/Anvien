@@ -11,7 +11,7 @@ Scope reviewed:
 
 ### [HIGH] Scope-resolved member edges can point at non-existent `def:*` ids
 
-File: `avmatrix/src/core/ingestion/emit-references.ts:127`
+File: `anvien/src/core/ingestion/emit-references.ts:127`
 
 Issue: `emitReferencesToGraph` maps a scope `SymbolDefinition` to a graph node through `createGraphNodeResolver`, but when semantic matching is ambiguous it falls back to `def.nodeId` (`emit-references.ts:398`). For TypeScript methods/properties, the AST capture emits only `@declaration.owner` (`typescript-javascript.ts:143`, `typescript-javascript.ts:156`, `typescript-javascript.ts:448`) and does not emit a qualified member name. `ScopeExtractor` therefore falls back to the simple name (`scope-extractor.ts:495`, `scope-extractor.ts:505`). If two classes in the same file both declare `save()`, the resolver sees two graph `Method` nodes with `name=save`, cannot choose uniquely, and emits `CALLS` to `def:src/app.ts#...:Method:save`.
 
@@ -56,7 +56,7 @@ Fix direction:
 
 ### [HIGH] Duplicate edge guard discards scope audit metadata for legacy-overlap edges
 
-File: `avmatrix/src/core/ingestion/emit-references.ts:132`
+File: `anvien/src/core/ingestion/emit-references.ts:132`
 
 Issue: the duplicate guard builds a semantic edge key from existing graph relationships (`emit-references.ts:504`, `emit-references.ts:512`) and simply skips the scope-resolved edge when that key already exists (`emit-references.ts:132`). The existing legacy edge is left unchanged. That means the single persisted edge for the resolved relation can still have no `resolutionSource`, no `evidence`, and no `fileHash`, even though the scope resolver had that audit data.
 
@@ -89,9 +89,9 @@ Fix direction:
 
 ### [HIGH] Full plan validation gate is not passing on current head
 
-File: `avmatrix/test/integration/cli-e2e.test.ts:175`
+File: `anvien/test/integration/cli-e2e.test.ts:175`
 
-Issue: the plan lists `cd avmatrix && npm test` as a validation command. On current head, targeted scope/benchmark tests pass, but full `npm test` fails. The failures include `cli-e2e` timing out on `analyze command runs pipeline on mini-repo`, and multiple `skills-e2e` `analyze --skills` runs exiting with code `3221226505`.
+Issue: the plan lists `cd anvien && npm test` as a validation command. On current head, targeted scope/benchmark tests pass, but full `npm test` fails. The failures include `cli-e2e` timing out on `analyze command runs pipeline on mini-repo`, and multiple `skills-e2e` `analyze --skills` runs exiting with code `3221226505`.
 
 Observed result:
 
@@ -120,11 +120,11 @@ Fix direction:
 
 Passed:
 - `git diff --check 837853d..HEAD`
-- `cd avmatrix && npx tsc --noEmit`
-- `cd avmatrix && npx vitest run test/unit/scope-resolution/typescript-single-pass-parity.test.ts test/unit/scope-resolution/scope-reference-resolver.test.ts test/unit/scope-resolution/emit-references.test.ts test/unit/scope-resolution/resolution-phase.test.ts test/unit/analyze-benchmark-snapshot.test.ts test/unit/benchmark-compare-command.test.ts` (`6` files, `32` tests passed)
+- `cd anvien && npx tsc --noEmit`
+- `cd anvien && npx vitest run test/unit/scope-resolution/typescript-single-pass-parity.test.ts test/unit/scope-resolution/scope-reference-resolver.test.ts test/unit/scope-resolution/emit-references.test.ts test/unit/scope-resolution/resolution-phase.test.ts test/unit/analyze-benchmark-snapshot.test.ts test/unit/benchmark-compare-command.test.ts` (`6` files, `32` tests passed)
 
 Failed:
-- `cd avmatrix && npm test` (`11` failed tests, `17` unhandled worker errors)
+- `cd anvien && npm test` (`11` failed tests, `17` unhandled worker errors)
 
 ## Required Fix List For Resubmission
 

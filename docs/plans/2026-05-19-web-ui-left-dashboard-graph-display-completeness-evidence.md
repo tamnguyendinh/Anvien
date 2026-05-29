@@ -13,7 +13,7 @@ Companion files:
 
 Record evidence as each evidenced task is completed. Evidence should include commands, impacted files, test results, e2e artifacts, and concise observations needed to audit the plan later.
 
-For doc-only commits, do not use AVmatrix.
+For doc-only commits, do not use Anvien.
 
 ## E0 - Plan Creation Evidence
 
@@ -33,7 +33,7 @@ Plan review update:
 
 - tightened the requirement so every node label and relationship type present in the loaded graph must appear as an individual dashboard option;
 - clarified that visual grouping is allowed only for sectioning, not for hiding real graph types;
-- added representative fixture coverage because the current AVmatrix-GO graph does not contain every known graph label or relationship type;
+- added representative fixture coverage because the current Anvien graph does not contain every known graph label or relationship type;
 - added fallback requirements for unknown/future node labels and relationship types;
 - documented that dashboard edge controls target graph payload relationship types, not storage-only LadybugDB constants unless those appear in graph payloads;
 - added the oversized purple structural-node visual-scale issue from `reports/problem/screenshot_1779178877.png`;
@@ -45,22 +45,22 @@ Date: 2026-05-19
 
 Observed files:
 
-- `avmatrix-web/src/lib/constants.ts`
-- `avmatrix-web/src/components/FileTreePanel.tsx`
-- `avmatrix-web/src/lib/graph-adapter.ts`
-- `avmatrix-web/src/hooks/useSigma.ts`
-- `avmatrix-web/src/generated/avmatrix-contracts.ts`
+- `anvien-web/src/lib/constants.ts`
+- `anvien-web/src/components/FileTreePanel.tsx`
+- `anvien-web/src/lib/graph-adapter.ts`
+- `anvien-web/src/hooks/useSigma.ts`
+- `anvien-web/src/generated/anvien-contracts.ts`
 - `internal/graph/types.go`
 - `internal/httpapi/graph.go`
 - `internal/httpapi/heartbeat.go`
-- `avmatrix-web/src/services/backend-client.ts`
-- `avmatrix-web/src/App.tsx`
-- `avmatrix-launcher/src/main.go`
+- `anvien-web/src/services/backend-client.ts`
+- `anvien-web/src/App.tsx`
+- `anvien-launcher/src/main.go`
 
 Observed implementation facts:
 
-- `FILTERABLE_LABELS` is a hard-coded list of 11 labels in `avmatrix-web/src/lib/constants.ts`.
-- `EdgeType` is a hard-coded union of 6 relationship types in `avmatrix-web/src/lib/constants.ts`.
+- `FILTERABLE_LABELS` is a hard-coded list of 11 labels in `anvien-web/src/lib/constants.ts`.
+- `EdgeType` is a hard-coded union of 6 relationship types in `anvien-web/src/lib/constants.ts`.
 - `Color Legend` in `FileTreePanel.tsx` is a hard-coded list of 10 labels.
 - `graph-adapter.ts` only treats `CONTAINS`, `DEFINES`, and `IMPORTS` as hierarchy relationships for positioning.
 - `graph-adapter.ts` checks whether an edge already exists between a source and target before adding a relationship, which can lose information when multiple relationship types share the same endpoints.
@@ -71,7 +71,7 @@ Observed implementation facts:
 Checklist updates from this review:
 
 - `P1-A` completed: source lists, size maps, edge style maps, layout groups, and heartbeat paths were inspected.
-- `P1-B` completed: `.avmatrix/graph.json` inventory was recorded in the benchmark ledger.
+- `P1-B` completed: `.anvien/graph.json` inventory was recorded in the benchmark ledger.
 - `P1-E` completed: missing labels/types and parallel relationship risk were recorded.
 - `P1-H` completed: oversized purple-node code path was reviewed and conclusions/hypotheses were recorded.
 - `P1-I` completed: post-load reconnect code path was reviewed and conclusions/hypotheses were recorded.
@@ -89,7 +89,7 @@ reports/problem/screenshot_1779178877.png
 File check:
 
 ```text
-FullName: E:\AVmatrix-GO\reports\problem\screenshot_1779178877.png
+FullName: E:\Anvien\reports\problem\screenshot_1779178877.png
 Length: 1,144,772 bytes
 LastWriteTime: 2026-05-19 15:21:30 local time
 ```
@@ -106,7 +106,7 @@ Problem 2:
 
 - After the Web UI finishes loading/rendering the graph and runs for a short while, the UI can show `Server connection lost - reconnecting...`.
 - This is a real stability problem, not just a transient banner.
-- Confirmed root cause chain from log/code: `avmatrix-launcher/src/main.go` injects a script that pings every `5s`, while launcher expiry is `15s`. The launcher log shows `web ui session closed` at `2026-05-19 15:21:45`, 15 seconds after the screenshot timestamp window, while the graph was visible. That line is emitted only when the lifecycle monitor fires. Because this launcher owned backend pid `13752`, lifecycle expiry can stop the backend, which makes the Web heartbeat SSE fail and show the reconnect banner.
+- Confirmed root cause chain from log/code: `anvien-launcher/src/main.go` injects a script that pings every `5s`, while launcher expiry is `15s`. The launcher log shows `web ui session closed` at `2026-05-19 15:21:45`, 15 seconds after the screenshot timestamp window, while the graph was visible. That line is emitted only when the lifecycle monitor fires. Because this launcher owned backend pid `13752`, lifecycle expiry can stop the backend, which makes the Web heartbeat SSE fail and show the reconnect banner.
 - The remaining subcause to measure is why launcher heartbeat was not delivered in time. The leading candidate is browser main-thread starvation from synchronous graph conversion/layout/noverlap during heavy graph load.
 
 ## E1C - Root-Cause Code Review Details
@@ -115,12 +115,12 @@ Date: 2026-05-19
 
 Oversized node code paths reviewed:
 
-- `avmatrix-web/src/lib/constants.ts`
+- `anvien-web/src/lib/constants.ts`
   - `NODE_SIZES` sets `Project=20`, `Package=16`, `Module=13`, `Folder=10`, and leaf/member nodes often `1.5-2`.
-- `avmatrix-web/src/lib/graph-adapter.ts`
+- `anvien-web/src/lib/graph-adapter.ts`
   - `getScaledNodeSize` uses `baseSize * 0.5` when node count is greater than `20,000`.
   - current graph size is `20,354`, so Project scales to `10`, Package to `8`, Module to `6.5`, while member/leaf nodes floor at `1.5`.
-- `avmatrix-web/src/hooks/useSigma.ts`
+- `anvien-web/src/hooks/useSigma.ts`
   - selected node multiplier is `1.8x`;
   - query highlight multiplier is `1.6x`;
   - glow animation multiplier reaches `2.0x`;
@@ -129,16 +129,16 @@ Oversized node code paths reviewed:
 
 Post-load reconnect code paths reviewed:
 
-- `avmatrix-web/src/App.tsx`
+- `anvien-web/src/App.tsx`
   - heartbeat is created only when `viewMode === 'exploring'`;
   - the banner text is shown when `serverDisconnected` is true.
-- `avmatrix-web/src/services/backend-client.ts`
+- `anvien-web/src/services/backend-client.ts`
   - `connectHeartbeat` opens `EventSource('/api/heartbeat')`;
   - on any EventSource error it immediately calls `onReconnecting`, which shows the banner;
   - it retries indefinitely.
 - `internal/httpapi/heartbeat.go`
   - `/api/heartbeat` writes an SSE comment immediately, then every `15s`.
-- `avmatrix-launcher/src/main.go`
+- `anvien-launcher/src/main.go`
   - lifecycle script sends launcher heartbeat every `5s`;
   - launcher UI timeout is `15s`;
   - when lifecycle expires, `waitForExit` treats the UI session as closed and removes state.
@@ -152,7 +152,7 @@ Root-cause conclusions and remaining hypotheses:
 Launcher log excerpt:
 
 ```text
-2026/05/19 15:20:03.638886 start root=E:\AVmatrix-GO
+2026/05/19 15:20:03.638886 start root=E:\Anvien
 2026/05/19 15:20:03.646305 backend pid=13752
 2026/05/19 15:21:45.648312 web ui session closed
 ```
@@ -164,21 +164,21 @@ Date: 2026-05-19
 Command:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
+.\anvien-launcher\server-bundle\anvien.exe analyze E:\Anvien --force [redacted removed argument] --no-stats
 ```
 
 Result:
 
 ```text
-analyzed E:\AVmatrix-GO
+analyzed E:\Anvien
 files: scanned=682 parsed=527 unsupported=155 failed=0
-graph: nodes=20354 relationships=50980 path=E:\AVmatrix-GO\.avmatrix\graph.json
+graph: nodes=20354 relationships=50980 path=E:\Anvien\.anvien\graph.json
 ```
 
 Node label inventory command:
 
 ```powershell
-$g = Get-Content -Raw -LiteralPath '.avmatrix\graph.json' | ConvertFrom-Json
+$g = Get-Content -Raw -LiteralPath '.anvien\graph.json' | ConvertFrom-Json
 $g.nodes | Group-Object label | Sort-Object Name
 ```
 
@@ -246,7 +246,7 @@ Status: active
 Record each implementation slice here:
 
 - files changed;
-- AVmatrix impact/check results where applicable;
+- Anvien impact/check results where applicable;
 - build/test/e2e commands;
 - important screenshots or textual e2e assertions;
 - benchmark ledger entries updated.
@@ -257,19 +257,19 @@ Date: 2026-05-19
 
 Scope:
 
-- `avmatrix-launcher/src/main.go`
-- `avmatrix-launcher/src/main_test.go`
+- `anvien-launcher/src/main.go`
+- `anvien-launcher/src/main_test.go`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-evidence.md`
 
-AVmatrix context/impact used before implementation:
+Anvien context/impact used before implementation:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe context newWebLifecycleMonitor --repo AVmatrix
-.\avmatrix-launcher\server-bundle\avmatrix.exe impact newWebLifecycleMonitor --repo AVmatrix --direction upstream --depth 2 --include-tests
-.\avmatrix-launcher\server-bundle\avmatrix.exe context connectHeartbeat --repo AVmatrix
-.\avmatrix-launcher\server-bundle\avmatrix.exe impact connectHeartbeat --repo AVmatrix --direction upstream --depth 2 --include-tests
+.\anvien-launcher\server-bundle\anvien.exe context newWebLifecycleMonitor --repo Anvien
+.\anvien-launcher\server-bundle\anvien.exe impact newWebLifecycleMonitor --repo Anvien --direction upstream --depth 2 --include-tests
+.\anvien-launcher\server-bundle\anvien.exe context connectHeartbeat --repo Anvien
+.\anvien-launcher\server-bundle\anvien.exe impact connectHeartbeat --repo Anvien --direction upstream --depth 2 --include-tests
 ```
 
 Result summary:
@@ -294,7 +294,7 @@ go build ./...
 Result:
 
 ```text
-failed in intentionally non-standalone fixture packages under avmatrix/test/fixtures:
+failed in intentionally non-standalone fixture packages under anvien/test/fixtures:
 - package models is not in std
 - package animal is not in std; mixed packages animal/main
 - C source files not allowed when not using cgo or SWIG
@@ -303,17 +303,17 @@ failed in intentionally non-standalone fixture packages under avmatrix/test/fixt
 Repo-specific build commands used after confirming the known fixture boundary:
 
 ```powershell
-npm --prefix avmatrix-web run build
-go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix
+npm --prefix anvien-web run build
+go build -trimpath -o .tmp\anvien.exe .\cmd\anvien
 go build .
 ```
 
 Results:
 
 ```text
-npm --prefix avmatrix-web run build: passed, built in 21.74s
-go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix: passed
-go build . in avmatrix-launcher/src: passed
+npm --prefix anvien-web run build: passed, built in 21.74s
+go build -trimpath -o .tmp\anvien.exe .\cmd\anvien: passed
+go build . in anvien-launcher/src: passed
 ```
 
 Focused tests:
@@ -325,13 +325,13 @@ go test .
 Run from:
 
 ```text
-E:\AVmatrix-GO\avmatrix-launcher\src
+E:\Anvien\anvien-launcher\src
 ```
 
 Result:
 
 ```text
-ok avmatrix-launcher 3.871s
+ok anvien-launcher 3.871s
 ```
 
 Broader Go validation:
@@ -366,7 +366,7 @@ Interpretation: the `internal/session` failure is pre-existing/flaky ordering be
 Web unit tests:
 
 ```powershell
-npm --prefix avmatrix-web run test
+npm --prefix anvien-web run test
 ```
 
 Result:
@@ -379,7 +379,7 @@ Result:
 E2E:
 
 ```powershell
-npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "selects a repo from landing and loads graph" --workers=1 --timeout=120000
+npm --prefix anvien-web run test:e2e -- server-connect.spec.ts -g "selects a repo from landing and loads graph" --workers=1 --timeout=120000
 ```
 
 Result:
@@ -393,7 +393,7 @@ total duration: 31.4s
 Known validation note:
 
 - Full `server-connect.spec.ts` run was attempted with a `180s` command timeout and did not complete before the shell timeout. The focused graph-load e2e above completed successfully.
-- An initial `npm --prefix avmatrix-web run test -- --runInBand` attempt failed because Vitest does not support the Jest `--runInBand` option; the normal Vitest command passed.
+- An initial `npm --prefix anvien-web run test -- --runInBand` attempt failed because Vitest does not support the Jest `--runInBand` option; the normal Vitest command passed.
 
 Benchmark ledger updated:
 
@@ -405,30 +405,30 @@ Date: 2026-05-19
 
 Scope:
 
-- `avmatrix-web/src/lib/constants.ts`
-- `avmatrix-web/src/components/FileTreePanel.tsx`
-- `avmatrix-web/src/hooks/app-state/graph.tsx`
-- `avmatrix-web/src/hooks/useAppState.local-runtime.tsx`
-- `avmatrix-web/src/lib/graph-adapter.ts`
-- `avmatrix-web/test/unit/constants.test.ts`
-- `avmatrix-web/test/unit/filter-panel.test.ts`
-- `avmatrix-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`
+- `anvien-web/src/lib/constants.ts`
+- `anvien-web/src/components/FileTreePanel.tsx`
+- `anvien-web/src/hooks/app-state/graph.tsx`
+- `anvien-web/src/hooks/useAppState.local-runtime.tsx`
+- `anvien-web/src/lib/graph-adapter.ts`
+- `anvien-web/test/unit/constants.test.ts`
+- `anvien-web/test/unit/filter-panel.test.ts`
+- `anvien-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-evidence.md`
 
-AVmatrix refresh:
+Anvien refresh:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
+.\anvien-launcher\server-bundle\anvien.exe analyze E:\Anvien --force [redacted removed argument] --no-stats
 ```
 
 Result:
 
 ```text
-analyzed E:\AVmatrix-GO
+analyzed E:\Anvien
 files: scanned=685 parsed=527 unsupported=158 failed=0
-graph: nodes=20421 relationships=51111 path=E:\AVmatrix-GO\.avmatrix\graph.json
+graph: nodes=20421 relationships=51111 path=E:\Anvien\.anvien\graph.json
 ```
 
 Implementation:
@@ -445,23 +445,23 @@ Implementation:
 Build before tests:
 
 ```powershell
-go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix
-npm --prefix avmatrix-web run build
+go build -trimpath -o .tmp\anvien.exe .\cmd\anvien
+npm --prefix anvien-web run build
 ```
 
 Results:
 
 ```text
-go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix: passed
-npm --prefix avmatrix-web run build: passed, built in 25.01s
+go build -trimpath -o .tmp\anvien.exe .\cmd\anvien: passed
+npm --prefix anvien-web run build: passed, built in 25.01s
 ```
 
 Tests:
 
 ```powershell
-npm --prefix avmatrix-web run test -- test/unit/constants.test.ts test/unit/filter-panel.test.ts test/unit/graph-links-visibility.test.ts test/unit/graph-edge-visibility-mode.test.ts
-npm --prefix avmatrix-web run test -- test/unit/FileTreePanel.dashboard-completeness.test.tsx
-npm --prefix avmatrix-web run test
+npm --prefix anvien-web run test -- test/unit/constants.test.ts test/unit/filter-panel.test.ts test/unit/graph-links-visibility.test.ts test/unit/graph-edge-visibility-mode.test.ts
+npm --prefix anvien-web run test -- test/unit/FileTreePanel.dashboard-completeness.test.tsx
+npm --prefix anvien-web run test
 go test ./cmd/... ./internal/... -count=1
 ```
 
@@ -477,7 +477,7 @@ go test ./cmd/... ./internal/... -count=1: passed
 E2E:
 
 ```powershell
-npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "selects a repo from landing and loads graph" --workers=1 --timeout=120000
+npm --prefix anvien-web run test:e2e -- server-connect.spec.ts -g "selects a repo from landing and loads graph" --workers=1 --timeout=120000
 ```
 
 Result:
@@ -491,7 +491,7 @@ total duration: 35.3s
 Runtime UI inspection with Playwright:
 
 ```text
-repo: AVmatrix
+repo: Anvien
 Community (930): 1
 Property (3106): 1
 TypeAlias (70): 1
@@ -511,19 +511,19 @@ Date: 2026-05-19
 
 Scope:
 
-- `avmatrix-web/src/lib/graph-adapter.ts`
-- `avmatrix-web/src/hooks/useSigma.ts`
-- `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts`
+- `anvien-web/src/lib/graph-adapter.ts`
+- `anvien-web/src/hooks/useSigma.ts`
+- `anvien-web/test/unit/graph-adapter.edge-geometry.test.ts`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-evidence.md`
 
-AVmatrix context and impact:
+Anvien context and impact:
 
 ```powershell
-avmatrix status
-avmatrix context knowledgeGraphToGraphology --repo AVmatrix
-avmatrix impact knowledgeGraphToGraphology --repo AVmatrix --direction upstream --depth 2 --include-tests
+anvien status
+anvien context knowledgeGraphToGraphology --repo Anvien
+anvien impact knowledgeGraphToGraphology --repo Anvien --direction upstream --depth 2 --include-tests
 ```
 
 Result:
@@ -535,18 +535,18 @@ depth-2 affected: App.tsx, GraphCanvas.selection-performance.test.tsx
 risk: low, adapter contract and UI canvas behavior require focused Web tests plus e2e graph-load validation
 ```
 
-AVmatrix refresh:
+Anvien refresh:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
+.\anvien-launcher\server-bundle\anvien.exe analyze E:\Anvien --force [redacted removed argument] --no-stats
 ```
 
 Result:
 
 ```text
-analyzed E:\AVmatrix-GO
+analyzed E:\Anvien
 files: scanned=686 parsed=528 unsupported=158 failed=0
-graph: nodes=20436 relationships=51176 path=E:\AVmatrix-GO\.avmatrix\graph.json
+graph: nodes=20436 relationships=51176 path=E:\Anvien\.anvien\graph.json
 ```
 
 Implementation:
@@ -581,23 +581,23 @@ Benchmark measurement:
 Build before tests:
 
 ```powershell
-go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix
-npm --prefix avmatrix-web run build
+go build -trimpath -o .tmp\anvien.exe .\cmd\anvien
+npm --prefix anvien-web run build
 ```
 
 Results:
 
 ```text
-go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix: passed
-npm --prefix avmatrix-web run build: passed, built in 24.55s
+go build -trimpath -o .tmp\anvien.exe .\cmd\anvien: passed
+npm --prefix anvien-web run build: passed, built in 24.55s
 ```
 
 Tests:
 
 ```powershell
-npm --prefix avmatrix-web run test -- test/unit/graph-adapter.edge-geometry.test.ts test/unit/selected-graph-context.test.ts test/unit/graph-edge-visibility-mode.test.ts
-npm --prefix avmatrix-web run test -- test/unit/graph-adapter.edge-geometry.test.ts
-npm --prefix avmatrix-web run test
+npm --prefix anvien-web run test -- test/unit/graph-adapter.edge-geometry.test.ts test/unit/selected-graph-context.test.ts test/unit/graph-edge-visibility-mode.test.ts
+npm --prefix anvien-web run test -- test/unit/graph-adapter.edge-geometry.test.ts
+npm --prefix anvien-web run test
 go test ./cmd/... ./internal/... -count=1
 go test ./internal/embeddings -run TestHTTPEmbedderDoesNotRetryTimeout -count=3 -v
 ```
@@ -615,7 +615,7 @@ targeted embeddings rerun: passed 3 / 3
 E2E:
 
 ```powershell
-npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "selects a repo from landing and loads graph" --workers=1 --timeout=120000
+npm --prefix anvien-web run test:e2e -- server-connect.spec.ts -g "selects a repo from landing and loads graph" --workers=1 --timeout=120000
 ```
 
 Result:
@@ -637,26 +637,26 @@ Date: 2026-05-19
 
 Scope:
 
-- `avmatrix-web/src/lib/runtime-diagnostics.ts`
-- `avmatrix-web/src/services/backend-client.ts`
-- `avmatrix-web/src/App.tsx`
-- `avmatrix-web/src/components/GraphCanvas.tsx`
-- `avmatrix-web/src/hooks/useSigma.ts`
-- `avmatrix-web/test/unit/heartbeat.test.ts`
-- `avmatrix-web/test/unit/runtime-diagnostics.test.ts`
-- `avmatrix-web/e2e/server-connect.spec.ts`
+- `anvien-web/src/lib/runtime-diagnostics.ts`
+- `anvien-web/src/services/backend-client.ts`
+- `anvien-web/src/App.tsx`
+- `anvien-web/src/components/GraphCanvas.tsx`
+- `anvien-web/src/hooks/useSigma.ts`
+- `anvien-web/test/unit/heartbeat.test.ts`
+- `anvien-web/test/unit/runtime-diagnostics.test.ts`
+- `anvien-web/e2e/server-connect.spec.ts`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-evidence.md`
 
-AVmatrix refresh and impact:
+Anvien refresh and impact:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
-.\avmatrix-launcher\server-bundle\avmatrix.exe context connectHeartbeat --repo AVmatrix
-.\avmatrix-launcher\server-bundle\avmatrix.exe impact connectHeartbeat --repo AVmatrix --direction upstream --depth 2 --include-tests
-.\avmatrix-launcher\server-bundle\avmatrix.exe context useSigma --repo AVmatrix
-.\avmatrix-launcher\server-bundle\avmatrix.exe impact useSigma --repo AVmatrix --direction upstream --depth 2 --include-tests
+.\anvien-launcher\server-bundle\anvien.exe analyze E:\Anvien --force [redacted removed argument] --no-stats
+.\anvien-launcher\server-bundle\anvien.exe context connectHeartbeat --repo Anvien
+.\anvien-launcher\server-bundle\anvien.exe impact connectHeartbeat --repo Anvien --direction upstream --depth 2 --include-tests
+.\anvien-launcher\server-bundle\anvien.exe context useSigma --repo Anvien
+.\anvien-launcher\server-bundle\anvien.exe impact useSigma --repo Anvien --direction upstream --depth 2 --include-tests
 ```
 
 Results:
@@ -671,7 +671,7 @@ useSigma upstream risk: LOW, impacted count 4
 
 Implementation:
 
-- Added `runtime-diagnostics.ts` with `window.__AVMATRIX_WEB_DIAGNOSTICS__` and `window.__AVMATRIX_RESET_WEB_DIAGNOSTICS__` test hooks.
+- Added `runtime-diagnostics.ts` with `window.__ANVIEN_WEB_DIAGNOSTICS__` and `window.__ANVIEN_RESET_WEB_DIAGNOSTICS__` test hooks.
 - Recorded graph conversion count/timing and graph node/relationship counts in `GraphCanvas`.
 - Recorded layout start/stop, duration budget, active state, and noverlap duration in `useSigma`.
 - Recorded heartbeat connect/reconnect counters in `connectHeartbeat`.
@@ -682,22 +682,22 @@ Implementation:
 Build before tests:
 
 ```powershell
-go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix
-npm --prefix avmatrix-web run build
+go build -trimpath -o .tmp\anvien.exe .\cmd\anvien
+npm --prefix anvien-web run build
 ```
 
 Results:
 
 ```text
-go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix: passed
-npm --prefix avmatrix-web run build: passed, built in 29.09s
+go build -trimpath -o .tmp\anvien.exe .\cmd\anvien: passed
+npm --prefix anvien-web run build: passed, built in 29.09s
 ```
 
 Tests:
 
 ```powershell
-npm --prefix avmatrix-web run test -- test/unit/heartbeat.test.ts test/unit/runtime-diagnostics.test.ts test/unit/GraphCanvas.selection-performance.test.tsx
-npm --prefix avmatrix-web run test
+npm --prefix anvien-web run test -- test/unit/heartbeat.test.ts test/unit/runtime-diagnostics.test.ts test/unit/GraphCanvas.selection-performance.test.tsx
+npm --prefix anvien-web run test
 ```
 
 Results:
@@ -710,7 +710,7 @@ full Web unit suite: 41 files passed, 312 tests passed, duration 33.69s
 E2E:
 
 ```powershell
-npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000
+npm --prefix anvien-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000
 ```
 
 Result:
@@ -769,20 +769,20 @@ Date: 2026-05-19
 
 Scope:
 
-- `avmatrix-web/src/lib/graph-adapter.ts`
-- `avmatrix-web/src/components/FileTreePanel.tsx`
-- `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts`
-- `avmatrix-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`
+- `anvien-web/src/lib/graph-adapter.ts`
+- `anvien-web/src/components/FileTreePanel.tsx`
+- `anvien-web/test/unit/graph-adapter.edge-geometry.test.ts`
+- `anvien-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-plan.md`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-benchmark.md`
 - `docs/plans/2026-05-19-web-ui-left-dashboard-graph-display-completeness-evidence.md`
 
-AVmatrix refresh and impact:
+Anvien refresh and impact:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
-.\avmatrix-launcher\server-bundle\avmatrix.exe impact knowledgeGraphToGraphology --repo AVmatrix --direction upstream --depth 2 --include-tests
-.\avmatrix-launcher\server-bundle\avmatrix.exe impact FileTreePanel --repo AVmatrix --direction upstream --depth 2 --include-tests
+.\anvien-launcher\server-bundle\anvien.exe analyze E:\Anvien --force [redacted removed argument] --no-stats
+.\anvien-launcher\server-bundle\anvien.exe impact knowledgeGraphToGraphology --repo Anvien --direction upstream --depth 2 --include-tests
+.\anvien-launcher\server-bundle\anvien.exe impact FileTreePanel --repo Anvien --direction upstream --depth 2 --include-tests
 ```
 
 Results:
@@ -824,21 +824,21 @@ total hierarchy candidates=32,720
 Build before tests:
 
 ```powershell
-go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix
-npm --prefix avmatrix-web run build
+go build -trimpath -o .tmp\anvien.exe .\cmd\anvien
+npm --prefix anvien-web run build
 ```
 
 Result:
 
 ```text
-go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix: passed
-npm --prefix avmatrix-web run build: passed, built in 23.40s
+go build -trimpath -o .tmp\anvien.exe .\cmd\anvien: passed
+npm --prefix anvien-web run build: passed, built in 23.40s
 ```
 
 Tests:
 
 ```powershell
-npm --prefix avmatrix-web run test -- test/unit/graph-adapter.edge-geometry.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx
+npm --prefix anvien-web run test -- test/unit/graph-adapter.edge-geometry.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx
 ```
 
 Result:
@@ -858,23 +858,23 @@ Date: 2026-05-19
 
 Scope:
 
-- `avmatrix-web/src/lib/graph-adapter.ts`
-- `avmatrix-web/src/lib/runtime-diagnostics.ts`
-- `avmatrix-web/src/components/GraphCanvas.tsx`
-- `avmatrix-web/e2e/server-connect.spec.ts`
-- `avmatrix-web/test/unit/graph-adapter.edge-geometry.test.ts`
-- `avmatrix-web/test/unit/runtime-diagnostics.test.ts`
-- `avmatrix-web/test/unit/GraphCanvas.selection-performance.test.tsx`
+- `anvien-web/src/lib/graph-adapter.ts`
+- `anvien-web/src/lib/runtime-diagnostics.ts`
+- `anvien-web/src/components/GraphCanvas.tsx`
+- `anvien-web/e2e/server-connect.spec.ts`
+- `anvien-web/test/unit/graph-adapter.edge-geometry.test.ts`
+- `anvien-web/test/unit/runtime-diagnostics.test.ts`
+- `anvien-web/test/unit/GraphCanvas.selection-performance.test.tsx`
 - plan, benchmark, and evidence ledgers
 
-AVmatrix context and impact:
+Anvien context and impact:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe context getScaledNodeSize --repo AVmatrix
-.\avmatrix-launcher\server-bundle\avmatrix.exe impact getScaledNodeSize --repo AVmatrix --direction upstream --depth 2 --include-tests
-.\avmatrix-launcher\server-bundle\avmatrix.exe context getNodeSize --repo AVmatrix
-.\avmatrix-launcher\server-bundle\avmatrix.exe context capRenderedNodeSize --repo AVmatrix
-.\avmatrix-launcher\server-bundle\avmatrix.exe impact capRenderedNodeSize --repo AVmatrix --direction upstream --depth 2 --include-tests
+.\anvien-launcher\server-bundle\anvien.exe context getScaledNodeSize --repo Anvien
+.\anvien-launcher\server-bundle\anvien.exe impact getScaledNodeSize --repo Anvien --direction upstream --depth 2 --include-tests
+.\anvien-launcher\server-bundle\anvien.exe context getNodeSize --repo Anvien
+.\anvien-launcher\server-bundle\anvien.exe context capRenderedNodeSize --repo Anvien
+.\anvien-launcher\server-bundle\anvien.exe impact capRenderedNodeSize --repo Anvien --direction upstream --depth 2 --include-tests
 ```
 
 Result summary:
@@ -896,7 +896,7 @@ Implementation:
 Focused unit tests:
 
 ```powershell
-npm --prefix avmatrix-web run test -- test/unit/graph-adapter.edge-geometry.test.ts test/unit/runtime-diagnostics.test.ts test/unit/GraphCanvas.selection-performance.test.tsx
+npm --prefix anvien-web run test -- test/unit/graph-adapter.edge-geometry.test.ts test/unit/runtime-diagnostics.test.ts test/unit/GraphCanvas.selection-performance.test.tsx
 ```
 
 Result:
@@ -908,7 +908,7 @@ passed, 3 files / 12 tests
 Full Web unit suite:
 
 ```powershell
-npm --prefix avmatrix-web run test
+npm --prefix anvien-web run test
 ```
 
 Result:
@@ -920,7 +920,7 @@ passed, 41 files / 316 tests, duration 33.29s
 Build before e2e:
 
 ```powershell
-npm --prefix avmatrix-web run build
+npm --prefix anvien-web run build
 ```
 
 Result:
@@ -932,7 +932,7 @@ passed, built in 24.02s
 E2E:
 
 ```powershell
-npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps loaded graph node visual scale bounded" --workers=1 --timeout=120000
+npm --prefix anvien-web run test:e2e -- server-connect.spec.ts -g "keeps loaded graph node visual scale bounded" --workers=1 --timeout=120000
 ```
 
 Result:
@@ -1008,19 +1008,19 @@ Date: 2026-05-19
 
 Final implementation scope added after `E3E`:
 
-- `avmatrix-web/src/lib/runtime-diagnostics.ts`
-- `avmatrix-web/src/components/GraphCanvas.tsx`
-- `avmatrix-web/src/components/FileTreePanel.tsx`
-- `avmatrix-web/e2e/server-connect.spec.ts`
-- `avmatrix-web/test/unit/GraphCanvas.selection-performance.test.tsx`
-- `avmatrix-web/test/unit/runtime-diagnostics.test.ts`
+- `anvien-web/src/lib/runtime-diagnostics.ts`
+- `anvien-web/src/components/GraphCanvas.tsx`
+- `anvien-web/src/components/FileTreePanel.tsx`
+- `anvien-web/e2e/server-connect.spec.ts`
+- `anvien-web/test/unit/GraphCanvas.selection-performance.test.tsx`
+- `anvien-web/test/unit/runtime-diagnostics.test.ts`
 - `internal/session/controller_test.go`
 - `internal/embeddings/http_client_test.go`
 - plan, benchmark, and evidence ledgers
 
 Implementation notes:
 
-- Added visual-scale diagnostics to `window.__AVMATRIX_WEB_DIAGNOSTICS__` so e2e can assert loaded graph node scale bounds.
+- Added visual-scale diagnostics to `window.__ANVIEN_WEB_DIAGNOSTICS__` so e2e can assert loaded graph node scale bounds.
 - Added `aria-pressed` to Node Type and Edge Type controls so e2e can verify toggle state.
 - Added e2e coverage for uncommon `Property` node and `Accesses` edge controls.
 - Added e2e visual-scale coverage using loaded graph diagnostics.
@@ -1028,39 +1028,39 @@ Implementation notes:
   - `internal/session/controller_test.go` now waits for the first chat to actually start before starting the second chat and protects fake adapter run records with a mutex.
   - `internal/embeddings/http_client_test.go` now uses a deterministic blocking `RoundTripper` for timeout/no-retry behavior instead of racing a `1ms` timeout against an `httptest.Server` handler.
 
-Final AVmatrix analyze:
+Final Anvien analyze:
 
 ```powershell
-.\avmatrix-launcher\server-bundle\avmatrix.exe analyze E:\AVmatrix-GO --force [redacted removed argument] --no-stats
+.\anvien-launcher\server-bundle\anvien.exe analyze E:\Anvien --force [redacted removed argument] --no-stats
 ```
 
 Result:
 
 ```text
-analyzed E:\AVmatrix-GO
+analyzed E:\Anvien
 files: scanned=688 parsed=530 unsupported=158 failed=0
-graph: nodes=20611 relationships=51507 path=E:\AVmatrix-GO\.avmatrix\graph.json
+graph: nodes=20611 relationships=51507 path=E:\Anvien\.anvien\graph.json
 ```
 
 Build before final tests:
 
 ```powershell
-go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix
-npm --prefix avmatrix-web run build
+go build -trimpath -o .tmp\anvien.exe .\cmd\anvien
+npm --prefix anvien-web run build
 ```
 
 Results:
 
 ```text
-go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix: passed
-npm --prefix avmatrix-web run build: passed, built in 23.97s
+go build -trimpath -o .tmp\anvien.exe .\cmd\anvien: passed
+npm --prefix anvien-web run build: passed, built in 23.97s
 ```
 
 Focused validation:
 
 ```powershell
-npm --prefix avmatrix-web run test -- test/unit/runtime-diagnostics.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx
-npm --prefix avmatrix-web run test -- test/unit/GraphCanvas.selection-performance.test.tsx test/unit/runtime-diagnostics.test.ts
+npm --prefix anvien-web run test -- test/unit/runtime-diagnostics.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx
+npm --prefix anvien-web run test -- test/unit/GraphCanvas.selection-performance.test.tsx test/unit/runtime-diagnostics.test.ts
 go test ./internal/session -run TestControllerCancelsPreviousSessionForSameRepo -count=10 -v
 go test ./internal/embeddings -run TestHTTPEmbedderDoesNotRetryTimeout -count=10 -v
 ```
@@ -1077,16 +1077,16 @@ embedding timeout targeted Go test: passed 10 / 10
 Full validation:
 
 ```powershell
-npm --prefix avmatrix-web run test
+npm --prefix anvien-web run test
 go test ./cmd/... ./internal/... -count=1
-npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "Graph Dashboard Controls" --workers=1 --timeout=120000
-npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000
+npm --prefix anvien-web run test:e2e -- server-connect.spec.ts -g "Graph Dashboard Controls" --workers=1 --timeout=120000
+npm --prefix anvien-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000
 ```
 
 Results:
 
 ```text
-npm --prefix avmatrix-web run test: passed, 41 files / 316 tests, duration 33.29s
+npm --prefix anvien-web run test: passed, 41 files / 316 tests, duration 33.29s
 go test ./cmd/... ./internal/... -count=1: passed
 Graph Dashboard Controls e2e: passed, 2 / 2, duration 1.6m
 post-load connection stability e2e: passed, 1 / 1, duration 1.2m

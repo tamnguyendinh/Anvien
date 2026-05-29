@@ -12,12 +12,12 @@ export default [
       '**/node_modules/**',
       '**/coverage/**',
       '.agents/**',
-      '.avmatrix/**',
-      'avmatrix/vendor/**',
-      'avmatrix-web/src/vendor/**',
-      'avmatrix/test/fixtures/**',
-      'avmatrix-web/playwright-report/**',
-      'avmatrix-web/test-results/**',
+      '.anvien/**',
+      'anvien/vendor/**',
+      'anvien-web/src/vendor/**',
+      'anvien/test/fixtures/**',
+      'anvien-web/playwright-report/**',
+      'anvien-web/test-results/**',
       '**/*.d.ts',
       '.claude/**',
       '.claude-flow/**',
@@ -67,9 +67,9 @@ export default [
     },
   },
 
-  // React-specific rules for avmatrix-web
+  // React-specific rules for anvien-web
   {
-    files: ['avmatrix-web/src/**/*.{ts,tsx}'],
+    files: ['anvien-web/src/**/*.{ts,tsx}'],
     plugins: {
       'react-hooks': reactHooks,
     },

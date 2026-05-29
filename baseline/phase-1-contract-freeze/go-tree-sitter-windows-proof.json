@@ -25,7 +25,7 @@
   },
   "proofProgram": {
     "location": ".tmp/phase1-go-proofs/tree-sitter",
-    "module": "avmatrix-phase1-treesitter-proof",
+    "module": "anvien-phase1-treesitter-proof",
     "operations": [
       "create parser",
       "load Go grammar through tree_sitter_go.Language()",

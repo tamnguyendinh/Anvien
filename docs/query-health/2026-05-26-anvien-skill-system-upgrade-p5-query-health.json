@@ -1,0 +1,3697 @@
+{
+  "generatedAt": "2026-05-26T20:09:43+07:00",
+  "inputs": {
+    "suitePath": "docs\\query-health\\2026-05-23-anvien-skill-system-upgrade-suite.json",
+    "repo": "Anvien",
+    "limit": 10
+  },
+  "suite": {
+    "schemaVersion": "anvien.query_health.v1",
+    "suite": "anvien-skill-system-upgrade",
+    "description": "Query-health suite for Anvien skill generation, AI-context source ownership, setup/package skill distribution, MCP prompt/resource guidance, command-surface discovery, and representative non-AI-context query lanes."
+  },
+  "summary": {
+    "caseCount": 9,
+    "passed": 9,
+    "failed": 0,
+    "thresholdPassed": 9,
+    "thresholdFailed": 0,
+    "exactPassed": 4,
+    "exactFailed": 5,
+    "expectedTargetCount": 63,
+    "matchedTargetCount": 54,
+    "missedTargetCount": 9
+  },
+  "cases": [
+    {
+      "id": "ai-context-generated-skills-owner-discovery",
+      "intent": "generated Anvien skills AGENTS.md CLAUDE.md internal aicontext",
+      "expectedFiles": [
+        "internal/aicontext/aicontext.go",
+        "internal/aicontext/skills/anvien-cli.md",
+        "internal/cli/analyze_postrun.go"
+      ],
+      "expectedSymbols": [
+        "GenerateAIContextFiles",
+        "installBaseSkills",
+        "baseSkillContent"
+      ],
+      "expectedAppLayers": [
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "cli"
+      ],
+      "expectedTargetCount": 6,
+      "hitAt5": 5,
+      "hitAt10": 5,
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 4,
+      "passed": true,
+      "thresholdPassed": true,
+      "exactPassed": false,
+      "matchedTargetCount": 5,
+      "missedTargetCount": 1,
+      "matchedTargets": [
+        {
+          "kind": "file",
+          "expected": "internal/aicontext/aicontext.go",
+          "rank": 1,
+          "globalRank": 34,
+          "sourceRank": 1,
+          "resultId": "Function:internal/aicontext/aicontext.go:installBaseSkills#1",
+          "name": "installBaseSkills",
+          "filePath": "internal/aicontext/aicontext.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/cli/analyze_postrun.go",
+          "rank": 1,
+          "globalRank": 12,
+          "sourceRank": 2,
+          "processRank": 1,
+          "resultId": "Function:internal/cli/analyze_postrun.go:generateAnalyzeAIContext#3",
+          "name": "generateAnalyzeAIContext",
+          "filePath": "internal/cli/analyze_postrun.go",
+          "process": "NewAnalyzeCommand -\u003e RemoveGeneratedSkills",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "GenerateAIContextFiles",
+          "rank": 1,
+          "globalRank": 13,
+          "sourceRank": 3,
+          "processRank": 1,
+          "resultId": "Function:internal/aicontext/aicontext.go:GenerateAIContextFiles#4",
+          "name": "GenerateAIContextFiles",
+          "filePath": "internal/aicontext/aicontext.go",
+          "process": "NewAnalyzeCommand -\u003e RemoveGeneratedSkills",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "installBaseSkills",
+          "rank": 1,
+          "globalRank": 34,
+          "sourceRank": 1,
+          "resultId": "Function:internal/aicontext/aicontext.go:installBaseSkills#1",
+          "name": "installBaseSkills",
+          "filePath": "internal/aicontext/aicontext.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "baseSkillContent",
+          "rank": 2,
+          "globalRank": 35,
+          "sourceRank": 2,
+          "resultId": "Function:internal/aicontext/aicontext.go:baseSkillContent#1",
+          "name": "baseSkillContent",
+          "filePath": "internal/aicontext/aicontext.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "missedTargets": [
+        {
+          "kind": "file",
+          "expected": "internal/aicontext/skills/anvien-cli.md",
+          "reason": "expected file was not returned by query top results"
+        }
+      ],
+      "topResults": [
+        {
+          "rank": 1,
+          "globalRank": 34,
+          "sourceRank": 1,
+          "source": "definition",
+          "id": "Function:internal/aicontext/aicontext.go:installBaseSkills#1",
+          "name": "installBaseSkills",
+          "type": "Function",
+          "filePath": "internal/aicontext/aicontext.go",
+          "appLayer": "backend",
+          "functionalArea": "unknown",
+          "resolutionGapCount": 2,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 1,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process",
+          "id": "proc_150_newanalyzecommand",
+          "name": "NewAnalyzeCommand -\u003e RemoveGeneratedSkills",
+          "type": "cross_community",
+          "process": "NewAnalyzeCommand -\u003e RemoveGeneratedSkills"
+        },
+        {
+          "rank": 1,
+          "globalRank": 13,
+          "sourceRank": 3,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/aicontext/aicontext.go:GenerateAIContextFiles#4",
+          "name": "GenerateAIContextFiles",
+          "type": "Function",
+          "filePath": "internal/aicontext/aicontext.go",
+          "process": "NewAnalyzeCommand -\u003e RemoveGeneratedSkills",
+          "appLayer": "backend",
+          "functionalArea": "unknown",
+          "resolutionGapCount": 14,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 14,
+          "sourceRank": 4,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/aicontext/aicontext.go:removeGeneratedSkills#1",
+          "name": "removeGeneratedSkills",
+          "type": "Function",
+          "filePath": "internal/aicontext/aicontext.go",
+          "process": "NewAnalyzeCommand -\u003e RemoveGeneratedSkills",
+          "appLayer": "backend",
+          "functionalArea": "unknown",
+          "resolutionGapCount": 2,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 12,
+          "sourceRank": 2,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/analyze_postrun.go:generateAnalyzeAIContext#3",
+          "name": "generateAnalyzeAIContext",
+          "type": "Function",
+          "filePath": "internal/cli/analyze_postrun.go",
+          "process": "NewAnalyzeCommand -\u003e RemoveGeneratedSkills",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 25,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/command.go:newAnalyzeCommand#1",
+          "name": "newAnalyzeCommand",
+          "type": "Function",
+          "filePath": "internal/cli/command.go",
+          "process": "NewAnalyzeCommand -\u003e RemoveGeneratedSkills",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 83,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "id",
+            "filePath"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 35,
+          "sourceRank": 2,
+          "source": "definition",
+          "id": "Function:internal/aicontext/aicontext.go:baseSkillContent#1",
+          "name": "baseSkillContent",
+          "type": "Function",
+          "filePath": "internal/aicontext/aicontext.go",
+          "appLayer": "backend",
+          "functionalArea": "unknown",
+          "resolutionGapCount": 4,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 2,
+          "sourceRank": 2,
+          "processRank": 2,
+          "source": "process",
+          "id": "proc_151_newanalyzecommand",
+          "name": "NewAnalyzeCommand -\u003e RenderAnvienBlock",
+          "type": "cross_community",
+          "process": "NewAnalyzeCommand -\u003e RenderAnvienBlock"
+        },
+        {
+          "rank": 2,
+          "globalRank": 15,
+          "sourceRank": 4,
+          "processRank": 2,
+          "source": "process_symbol",
+          "id": "Function:internal/aicontext/aicontext.go:renderAnvienBlock#3",
+          "name": "renderAnvienBlock",
+          "type": "Function",
+          "filePath": "internal/aicontext/aicontext.go",
+          "process": "NewAnalyzeCommand -\u003e RenderAnvienBlock",
+          "appLayer": "backend",
+          "functionalArea": "unknown",
+          "resolutionGapCount": 110,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 3,
+          "globalRank": 36,
+          "sourceRank": 3,
+          "source": "definition",
+          "id": "Function:internal/cli/setup_command.go:setupInstallEditorSkills#3",
+          "name": "setupInstallEditorSkills",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 6,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "noiseReason": "thresholds met; exact target misses: file:internal/aicontext/skills/anvien-cli.md"
+    },
+    {
+      "id": "setup-editor-skill-installation-owner-discovery",
+      "intent": "setup editor skill installation embedded Anvien skills",
+      "expectedFiles": [
+        "internal/cli/setup_command.go",
+        "internal/aicontext/aicontext.go"
+      ],
+      "expectedSymbols": [
+        "setupInstallEditorSkills",
+        "setupInstallSkillsTo",
+        "InstallBaseSkillsTo"
+      ],
+      "expectedAppLayers": [
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "cli"
+      ],
+      "expectedTargetCount": 5,
+      "hitAt5": 4,
+      "hitAt10": 5,
+      "hitAt5Threshold": 3,
+      "hitAt10Threshold": 4,
+      "passed": true,
+      "thresholdPassed": true,
+      "exactPassed": true,
+      "matchedTargetCount": 5,
+      "missedTargetCount": 0,
+      "matchedTargets": [
+        {
+          "kind": "file",
+          "expected": "internal/cli/setup_command.go",
+          "rank": 1,
+          "globalRank": 36,
+          "sourceRank": 1,
+          "resultId": "Function:internal/cli/setup_command.go:setupInstallEditorSkills#3",
+          "name": "setupInstallEditorSkills",
+          "filePath": "internal/cli/setup_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/aicontext/aicontext.go",
+          "rank": 2,
+          "globalRank": 37,
+          "sourceRank": 2,
+          "resultId": "Function:internal/aicontext/aicontext.go:installBaseSkills#1",
+          "name": "installBaseSkills",
+          "filePath": "internal/aicontext/aicontext.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "setupInstallEditorSkills",
+          "rank": 1,
+          "globalRank": 36,
+          "sourceRank": 1,
+          "resultId": "Function:internal/cli/setup_command.go:setupInstallEditorSkills#3",
+          "name": "setupInstallEditorSkills",
+          "filePath": "internal/cli/setup_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "setupInstallSkillsTo",
+          "rank": 4,
+          "globalRank": 39,
+          "sourceRank": 4,
+          "resultId": "Function:internal/cli/setup_command.go:setupInstallSkillsTo#1",
+          "name": "setupInstallSkillsTo",
+          "filePath": "internal/cli/setup_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "InstallBaseSkillsTo",
+          "rank": 6,
+          "globalRank": 41,
+          "sourceRank": 6,
+          "resultId": "Function:internal/aicontext/aicontext.go:InstallBaseSkillsTo#1",
+          "name": "InstallBaseSkillsTo",
+          "filePath": "internal/aicontext/aicontext.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "topResults": [
+        {
+          "rank": 1,
+          "globalRank": 36,
+          "sourceRank": 1,
+          "source": "definition",
+          "id": "Function:internal/cli/setup_command.go:setupInstallEditorSkills#3",
+          "name": "setupInstallEditorSkills",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 6,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 1,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process",
+          "id": "proc_186_runsetup",
+          "name": "RunSetup -\u003e SetupReadJSONObject",
+          "type": "cross_community",
+          "process": "RunSetup -\u003e SetupReadJSONObject"
+        },
+        {
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/setup_command.go:runSetup#0",
+          "name": "runSetup",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "process": "RunSetup -\u003e SetupReadJSONObject",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 1,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 12,
+          "sourceRank": 2,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/setup_command.go:setupCursor#1",
+          "name": "setupCursor",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "process": "RunSetup -\u003e SetupReadJSONObject",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 8,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 14,
+          "sourceRank": 4,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/setup_command.go:setupReadJSONObject#1",
+          "name": "setupReadJSONObject",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "process": "RunSetup -\u003e SetupReadJSONObject",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 7,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 13,
+          "sourceRank": 3,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/setup_command.go:setupWriteMCPJSON#1",
+          "name": "setupWriteMCPJSON",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "process": "RunSetup -\u003e SetupReadJSONObject",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 3,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 37,
+          "sourceRank": 2,
+          "source": "definition",
+          "id": "Function:internal/aicontext/aicontext.go:installBaseSkills#1",
+          "name": "installBaseSkills",
+          "type": "Function",
+          "filePath": "internal/aicontext/aicontext.go",
+          "appLayer": "backend",
+          "functionalArea": "unknown",
+          "resolutionGapCount": 2,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 2,
+          "sourceRank": 2,
+          "processRank": 2,
+          "source": "process",
+          "id": "proc_187_runsetup",
+          "name": "RunSetup -\u003e SetupWriteJSONObject",
+          "type": "cross_community",
+          "process": "RunSetup -\u003e SetupWriteJSONObject"
+        },
+        {
+          "rank": 2,
+          "globalRank": 15,
+          "sourceRank": 4,
+          "processRank": 2,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/setup_command.go:setupWriteJSONObject#2",
+          "name": "setupWriteJSONObject",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "process": "RunSetup -\u003e SetupWriteJSONObject",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 6,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 3,
+          "globalRank": 38,
+          "sourceRank": 3,
+          "source": "definition",
+          "id": "Function:internal/aicontext/aicontext.go:baseSkillContent#1",
+          "name": "baseSkillContent",
+          "type": "Function",
+          "filePath": "internal/aicontext/aicontext.go",
+          "appLayer": "backend",
+          "functionalArea": "unknown",
+          "resolutionGapCount": 4,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "noiseReason": "thresholds met; exact target coverage met"
+    },
+    {
+      "id": "package-skill-distribution-owner-discovery",
+      "intent": "package skill distribution embedded skills setup package lifecycle",
+      "expectedFiles": [
+        "internal/aicontext/aicontext.go",
+        "internal/cli/package_runtime.go",
+        "internal/cli/setup_command.go"
+      ],
+      "expectedSymbols": [
+        "prepareGoSourcePackage",
+        "copyPackageGoDir",
+        "setupInstallSkillsTo",
+        "InstallBaseSkillsTo"
+      ],
+      "expectedAppLayers": [
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "cli"
+      ],
+      "expectedTargetCount": 7,
+      "hitAt5": 3,
+      "hitAt10": 4,
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 4,
+      "passed": true,
+      "thresholdPassed": true,
+      "exactPassed": false,
+      "matchedTargetCount": 4,
+      "missedTargetCount": 3,
+      "matchedTargets": [
+        {
+          "kind": "file",
+          "expected": "internal/aicontext/aicontext.go",
+          "rank": 1,
+          "globalRank": 36,
+          "sourceRank": 1,
+          "resultId": "Function:internal/aicontext/aicontext.go:installBaseSkills#1",
+          "name": "installBaseSkills",
+          "filePath": "internal/aicontext/aicontext.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/cli/setup_command.go",
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "resultId": "Function:internal/cli/setup_command.go:runSetup#0",
+          "name": "runSetup",
+          "filePath": "internal/cli/setup_command.go",
+          "process": "RunSetup -\u003e SetupReadJSONObject",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "setupInstallSkillsTo",
+          "rank": 4,
+          "globalRank": 39,
+          "sourceRank": 4,
+          "resultId": "Function:internal/cli/setup_command.go:setupInstallSkillsTo#1",
+          "name": "setupInstallSkillsTo",
+          "filePath": "internal/cli/setup_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "InstallBaseSkillsTo",
+          "rank": 6,
+          "globalRank": 41,
+          "sourceRank": 6,
+          "resultId": "Function:internal/aicontext/aicontext.go:InstallBaseSkillsTo#1",
+          "name": "InstallBaseSkillsTo",
+          "filePath": "internal/aicontext/aicontext.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "missedTargets": [
+        {
+          "kind": "file",
+          "expected": "internal/cli/package_runtime.go",
+          "reason": "expected file was not returned by query top results"
+        },
+        {
+          "kind": "symbol",
+          "expected": "prepareGoSourcePackage",
+          "reason": "expected function/method target was not returned by current definition or process-symbol matching"
+        },
+        {
+          "kind": "symbol",
+          "expected": "copyPackageGoDir",
+          "reason": "expected function/method target was not returned by current definition or process-symbol matching"
+        }
+      ],
+      "topResults": [
+        {
+          "rank": 1,
+          "globalRank": 36,
+          "sourceRank": 1,
+          "source": "definition",
+          "id": "Function:internal/aicontext/aicontext.go:installBaseSkills#1",
+          "name": "installBaseSkills",
+          "type": "Function",
+          "filePath": "internal/aicontext/aicontext.go",
+          "appLayer": "backend",
+          "functionalArea": "unknown",
+          "resolutionGapCount": 2,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 1,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process",
+          "id": "proc_186_runsetup",
+          "name": "RunSetup -\u003e SetupReadJSONObject",
+          "type": "cross_community",
+          "process": "RunSetup -\u003e SetupReadJSONObject"
+        },
+        {
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/setup_command.go:runSetup#0",
+          "name": "runSetup",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "process": "RunSetup -\u003e SetupReadJSONObject",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 1,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 12,
+          "sourceRank": 2,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/setup_command.go:setupCursor#1",
+          "name": "setupCursor",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "process": "RunSetup -\u003e SetupReadJSONObject",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 8,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 14,
+          "sourceRank": 4,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/setup_command.go:setupReadJSONObject#1",
+          "name": "setupReadJSONObject",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "process": "RunSetup -\u003e SetupReadJSONObject",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 7,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 13,
+          "sourceRank": 3,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/setup_command.go:setupWriteMCPJSON#1",
+          "name": "setupWriteMCPJSON",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "process": "RunSetup -\u003e SetupReadJSONObject",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 3,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 37,
+          "sourceRank": 2,
+          "source": "definition",
+          "id": "Function:internal/aicontext/aicontext.go:baseSkillContent#1",
+          "name": "baseSkillContent",
+          "type": "Function",
+          "filePath": "internal/aicontext/aicontext.go",
+          "appLayer": "backend",
+          "functionalArea": "unknown",
+          "resolutionGapCount": 4,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 2,
+          "sourceRank": 2,
+          "processRank": 2,
+          "source": "process",
+          "id": "proc_187_runsetup",
+          "name": "RunSetup -\u003e SetupWriteJSONObject",
+          "type": "cross_community",
+          "process": "RunSetup -\u003e SetupWriteJSONObject"
+        },
+        {
+          "rank": 2,
+          "globalRank": 15,
+          "sourceRank": 4,
+          "processRank": 2,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/setup_command.go:setupWriteJSONObject#2",
+          "name": "setupWriteJSONObject",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "process": "RunSetup -\u003e SetupWriteJSONObject",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 6,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 3,
+          "globalRank": 38,
+          "sourceRank": 3,
+          "source": "definition",
+          "id": "Function:internal/cli/setup_command.go:setupInstallEditorSkills#3",
+          "name": "setupInstallEditorSkills",
+          "type": "Function",
+          "filePath": "internal/cli/setup_command.go",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 6,
+          "queryLanes": [
+            "owner_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "noiseReason": "thresholds met; exact target misses: file:internal/cli/package_runtime.go, symbol:prepareGoSourcePackage, symbol:copyPackageGoDir"
+    },
+    {
+      "id": "mcp-setup-resource-prompt-guidance-owner-discovery",
+      "intent": "MCP setup resource guidance tools resources prompts",
+      "expectedFiles": [
+        "internal/mcp/resources.go",
+        "internal/mcp/prompts.go",
+        "internal/mcp/tools.go"
+      ],
+      "expectedSymbols": [
+        "setupResource",
+        "promptDefinitions",
+        "generateMapPrompt",
+        "mcpTools"
+      ],
+      "expectedAppLayers": [
+        "api"
+      ],
+      "expectedFunctionalAreas": [
+        "mcp"
+      ],
+      "expectedTargetCount": 7,
+      "hitAt5": 5,
+      "hitAt10": 6,
+      "hitAt5Threshold": 3,
+      "hitAt10Threshold": 5,
+      "passed": true,
+      "thresholdPassed": true,
+      "exactPassed": false,
+      "matchedTargetCount": 6,
+      "missedTargetCount": 1,
+      "matchedTargets": [
+        {
+          "kind": "file",
+          "expected": "internal/mcp/resources.go",
+          "rank": 1,
+          "globalRank": 13,
+          "sourceRank": 3,
+          "processRank": 1,
+          "resultId": "Function:internal/mcp/resources.go:firstResourceNodeString#1",
+          "name": "firstResourceNodeString",
+          "filePath": "internal/mcp/resources.go",
+          "process": "McpToolMapItems -\u003e ResourceNodeString",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/mcp/prompts.go",
+          "rank": 4,
+          "globalRank": 22,
+          "sourceRank": 3,
+          "processRank": 4,
+          "resultId": "Function:internal/mcp/prompts.go:generateMapPrompt#1",
+          "name": "generateMapPrompt",
+          "filePath": "internal/mcp/prompts.go",
+          "process": "Handle -\u003e GenerateMapSteps",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/mcp/tools.go",
+          "rank": 3,
+          "globalRank": 17,
+          "sourceRank": 1,
+          "processRank": 3,
+          "resultId": "Function:internal/mcp/tools.go:rankedProcessMatches#4",
+          "name": "rankedProcessMatches",
+          "filePath": "internal/mcp/tools.go",
+          "process": "RankedProcessMatches -\u003e ResourceNodeString",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "id",
+            "filePath"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "setupResource",
+          "rank": 5,
+          "globalRank": 35,
+          "sourceRank": 5,
+          "resultId": "Method:internal/mcp/resources.go:Server.setupResource#0",
+          "name": "setupResource",
+          "filePath": "internal/mcp/resources.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "promptDefinitions",
+          "rank": 9,
+          "globalRank": 39,
+          "sourceRank": 9,
+          "resultId": "Function:internal/mcp/prompts.go:promptDefinitions#0",
+          "name": "promptDefinitions",
+          "filePath": "internal/mcp/prompts.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "generateMapPrompt",
+          "rank": 4,
+          "globalRank": 22,
+          "sourceRank": 3,
+          "processRank": 4,
+          "resultId": "Function:internal/mcp/prompts.go:generateMapPrompt#1",
+          "name": "generateMapPrompt",
+          "filePath": "internal/mcp/prompts.go",
+          "process": "Handle -\u003e GenerateMapSteps",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "missedTargets": [
+        {
+          "kind": "symbol",
+          "expected": "mcpTools",
+          "reason": "expected function/method target was not returned by current definition or process-symbol matching"
+        }
+      ],
+      "topResults": [
+        {
+          "rank": 1,
+          "globalRank": 31,
+          "sourceRank": 1,
+          "source": "definition",
+          "id": "Method:internal/mcp/route_tool_map.go:Server.routeMapTool#1",
+          "name": "routeMapTool",
+          "type": "Method",
+          "filePath": "internal/mcp/route_tool_map.go",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 9,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 1,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process",
+          "id": "proc_247_mcptoolmapitems",
+          "name": "McpToolMapItems -\u003e ResourceNodeString",
+          "type": "cross_community",
+          "process": "McpToolMapItems -\u003e ResourceNodeString"
+        },
+        {
+          "rank": 1,
+          "globalRank": 13,
+          "sourceRank": 3,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/resources.go:firstResourceNodeString#1",
+          "name": "firstResourceNodeString",
+          "type": "Function",
+          "filePath": "internal/mcp/resources.go",
+          "process": "McpToolMapItems -\u003e ResourceNodeString",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 3,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 14,
+          "sourceRank": 4,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/resources.go:resourceNodeString#2",
+          "name": "resourceNodeString",
+          "type": "Function",
+          "filePath": "internal/mcp/resources.go",
+          "process": "McpToolMapItems -\u003e ResourceNodeString",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 12,
+          "sourceRank": 2,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/route_tool_map.go:mcpLinkedFlowsBySource#2",
+          "name": "mcpLinkedFlowsBySource",
+          "type": "Function",
+          "filePath": "internal/mcp/route_tool_map.go",
+          "process": "McpToolMapItems -\u003e ResourceNodeString",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 16,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/route_tool_map.go:mcpToolMapItems#2",
+          "name": "mcpToolMapItems",
+          "type": "Function",
+          "filePath": "internal/mcp/route_tool_map.go",
+          "process": "McpToolMapItems -\u003e ResourceNodeString",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 14,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 32,
+          "sourceRank": 2,
+          "source": "definition",
+          "id": "Method:internal/mcp/route_tool_map.go:Server.toolMapTool#1",
+          "name": "toolMapTool",
+          "type": "Method",
+          "filePath": "internal/mcp/route_tool_map.go",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 8,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 2,
+          "sourceRank": 2,
+          "processRank": 2,
+          "source": "process",
+          "id": "proc_248_mcptoolmapitems",
+          "name": "McpToolMapItems -\u003e ResourceNodeInt",
+          "type": "cross_community",
+          "process": "McpToolMapItems -\u003e ResourceNodeInt"
+        },
+        {
+          "rank": 2,
+          "globalRank": 16,
+          "sourceRank": 4,
+          "processRank": 2,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/resources.go:resourceNodeInt#2",
+          "name": "resourceNodeInt",
+          "type": "Function",
+          "filePath": "internal/mcp/resources.go",
+          "process": "McpToolMapItems -\u003e ResourceNodeInt",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 3,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 15,
+          "sourceRank": 3,
+          "processRank": 2,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/route_tool_map.go:mcpSemanticFieldsFromNode#1",
+          "name": "mcpSemanticFieldsFromNode",
+          "type": "Function",
+          "filePath": "internal/mcp/route_tool_map.go",
+          "process": "McpToolMapItems -\u003e ResourceNodeInt",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "docs_setup_ai_context_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "noiseReason": "thresholds met; exact target misses: symbol:mcpTools"
+    },
+    {
+      "id": "query-command-surface-owner-discovery",
+      "intent": "query ranking process matching definitions CLI query command implementation",
+      "expectedFiles": [
+        "internal/mcp/tools.go",
+        "internal/cli/tool_command.go",
+        "internal/cli/query_health_command.go"
+      ],
+      "expectedSymbols": [
+        "queryTool",
+        "rankedProcessMatches",
+        "matchingDefinitionRows",
+        "newQueryCommand",
+        "runQueryHealth"
+      ],
+      "expectedAppLayers": [
+        "api",
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "mcp",
+        "cli"
+      ],
+      "expectedTargetCount": 8,
+      "hitAt5": 4,
+      "hitAt10": 6,
+      "hitAt5Threshold": 3,
+      "hitAt10Threshold": 5,
+      "passed": true,
+      "thresholdPassed": true,
+      "exactPassed": false,
+      "matchedTargetCount": 6,
+      "missedTargetCount": 2,
+      "matchedTargets": [
+        {
+          "kind": "file",
+          "expected": "internal/mcp/tools.go",
+          "rank": 1,
+          "globalRank": 12,
+          "sourceRank": 2,
+          "processRank": 1,
+          "resultId": "Function:internal/mcp/tools.go:addQueryMatchEvidence#5",
+          "name": "addQueryMatchEvidence",
+          "filePath": "internal/mcp/tools.go",
+          "process": "MatchingDefinitionRows -\u003e NormalizeQuerySearchText",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/cli/tool_command.go",
+          "rank": 8,
+          "globalRank": 40,
+          "sourceRank": 8,
+          "resultId": "Function:internal/cli/tool_command.go:newQueryCommand#0",
+          "name": "newQueryCommand",
+          "filePath": "internal/cli/tool_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/cli/query_health_command.go",
+          "rank": 1,
+          "globalRank": 33,
+          "sourceRank": 1,
+          "resultId": "Function:internal/cli/query_health_command.go:queryHealthProcessMatches#2",
+          "name": "queryHealthProcessMatches",
+          "filePath": "internal/cli/query_health_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "matchingDefinitionRows",
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "resultId": "Function:internal/mcp/tools.go:matchingDefinitionRows#4",
+          "name": "matchingDefinitionRows",
+          "filePath": "internal/mcp/tools.go",
+          "process": "MatchingDefinitionRows -\u003e NormalizeQuerySearchText",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "newQueryCommand",
+          "rank": 8,
+          "globalRank": 40,
+          "sourceRank": 8,
+          "resultId": "Function:internal/cli/tool_command.go:newQueryCommand#0",
+          "name": "newQueryCommand",
+          "filePath": "internal/cli/tool_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "runQueryHealth",
+          "rank": 3,
+          "globalRank": 18,
+          "sourceRank": 1,
+          "processRank": 3,
+          "resultId": "Function:internal/cli/query_health_command.go:runQueryHealth#2",
+          "name": "runQueryHealth",
+          "filePath": "internal/cli/query_health_command.go",
+          "process": "RunQueryHealth -\u003e QueryHealthProcessMatches",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "missedTargets": [
+        {
+          "kind": "symbol",
+          "expected": "queryTool",
+          "reason": "expected function/method target was not returned by current definition or process-symbol matching"
+        },
+        {
+          "kind": "symbol",
+          "expected": "rankedProcessMatches",
+          "reason": "expected function/method target was not returned by current definition or process-symbol matching"
+        }
+      ],
+      "topResults": [
+        {
+          "rank": 1,
+          "globalRank": 33,
+          "sourceRank": 1,
+          "source": "definition",
+          "id": "Function:internal/cli/query_health_command.go:queryHealthProcessMatches#2",
+          "name": "queryHealthProcessMatches",
+          "type": "Function",
+          "filePath": "internal/cli/query_health_command.go",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 8,
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 1,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process",
+          "id": "proc_75_matchingdefinitionro",
+          "name": "MatchingDefinitionRows -\u003e NormalizeQuerySearchText",
+          "type": "cross_community",
+          "process": "MatchingDefinitionRows -\u003e NormalizeQuerySearchText"
+        },
+        {
+          "rank": 1,
+          "globalRank": 12,
+          "sourceRank": 2,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/tools.go:addQueryMatchEvidence#5",
+          "name": "addQueryMatchEvidence",
+          "type": "Function",
+          "filePath": "internal/mcp/tools.go",
+          "process": "MatchingDefinitionRows -\u003e NormalizeQuerySearchText",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 3,
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/tools.go:matchingDefinitionRows#4",
+          "name": "matchingDefinitionRows",
+          "type": "Function",
+          "filePath": "internal/mcp/tools.go",
+          "process": "MatchingDefinitionRows -\u003e NormalizeQuerySearchText",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 69,
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 15,
+          "sourceRank": 5,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/tools.go:normalizeQuerySearchText#1",
+          "name": "normalizeQuerySearchText",
+          "type": "Function",
+          "filePath": "internal/mcp/tools.go",
+          "process": "MatchingDefinitionRows -\u003e NormalizeQuerySearchText",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 9,
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 13,
+          "sourceRank": 3,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/tools.go:queryMatchReasons#4",
+          "name": "queryMatchReasons",
+          "type": "Function",
+          "filePath": "internal/mcp/tools.go",
+          "process": "MatchingDefinitionRows -\u003e NormalizeQuerySearchText",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 7,
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 14,
+          "sourceRank": 4,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/tools.go:querySemanticSurfaceBoost#3",
+          "name": "querySemanticSurfaceBoost",
+          "type": "Function",
+          "filePath": "internal/mcp/tools.go",
+          "process": "MatchingDefinitionRows -\u003e NormalizeQuerySearchText",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 32,
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 34,
+          "sourceRank": 2,
+          "source": "definition",
+          "id": "Function:internal/cli/query_health_command.go:findQueryHealthMatch#3",
+          "name": "findQueryHealthMatch",
+          "type": "Function",
+          "filePath": "internal/cli/query_health_command.go",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 16,
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 2,
+          "sourceRank": 2,
+          "processRank": 2,
+          "source": "process",
+          "id": "proc_23_matchingdefinitionro",
+          "name": "MatchingDefinitionRows -\u003e FirstNonEmptyString",
+          "type": "cross_community",
+          "process": "MatchingDefinitionRows -\u003e FirstNonEmptyString"
+        },
+        {
+          "rank": 2,
+          "globalRank": 17,
+          "sourceRank": 6,
+          "processRank": 2,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/resources.go:firstNonEmptyString#0",
+          "name": "firstNonEmptyString",
+          "type": "Function",
+          "filePath": "internal/mcp/resources.go",
+          "process": "MatchingDefinitionRows -\u003e FirstNonEmptyString",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "queryLanes": [
+            "owner_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "semanticSurface"
+          ]
+        }
+      ],
+      "noiseReason": "thresholds met; exact target misses: symbol:queryTool, symbol:rankedProcessMatches"
+    },
+    {
+      "id": "graph-quality-command-surface-owner-discovery",
+      "intent": "graph quality graph health query health resolution inventory source site accuracy command surface",
+      "expectedFiles": [
+        "internal/graphhealth/compute.go",
+        "internal/cli/query_health_command.go",
+        "internal/cli/resolution_inventory_command.go",
+        "internal/cli/source_site_accuracy_command.go"
+      ],
+      "expectedSymbols": [
+        "Compute",
+        "newQueryHealthCommand",
+        "newResolutionInventoryCommand",
+        "newSourceSiteAccuracyCommand"
+      ],
+      "expectedAppLayers": [
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "graph_health",
+        "cli"
+      ],
+      "expectedTargetCount": 8,
+      "hitAt5": 6,
+      "hitAt10": 6,
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 4,
+      "passed": true,
+      "thresholdPassed": true,
+      "exactPassed": false,
+      "matchedTargetCount": 6,
+      "missedTargetCount": 2,
+      "matchedTargets": [
+        {
+          "kind": "file",
+          "expected": "internal/cli/query_health_command.go",
+          "rank": 1,
+          "globalRank": 29,
+          "sourceRank": 1,
+          "resultId": "Function:internal/cli/query_health_command.go:newQueryHealthCommand#0",
+          "name": "newQueryHealthCommand",
+          "filePath": "internal/cli/query_health_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/cli/resolution_inventory_command.go",
+          "rank": 3,
+          "globalRank": 31,
+          "sourceRank": 3,
+          "resultId": "Function:internal/cli/resolution_inventory_command.go:newResolutionInventoryCommand#0",
+          "name": "newResolutionInventoryCommand",
+          "filePath": "internal/cli/resolution_inventory_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/cli/source_site_accuracy_command.go",
+          "rank": 2,
+          "globalRank": 30,
+          "sourceRank": 2,
+          "resultId": "Function:internal/cli/source_site_accuracy_command.go:newSourceSiteAccuracyCommand#0",
+          "name": "newSourceSiteAccuracyCommand",
+          "filePath": "internal/cli/source_site_accuracy_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "newQueryHealthCommand",
+          "rank": 1,
+          "globalRank": 29,
+          "sourceRank": 1,
+          "resultId": "Function:internal/cli/query_health_command.go:newQueryHealthCommand#0",
+          "name": "newQueryHealthCommand",
+          "filePath": "internal/cli/query_health_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "newResolutionInventoryCommand",
+          "rank": 3,
+          "globalRank": 31,
+          "sourceRank": 3,
+          "resultId": "Function:internal/cli/resolution_inventory_command.go:newResolutionInventoryCommand#0",
+          "name": "newResolutionInventoryCommand",
+          "filePath": "internal/cli/resolution_inventory_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "newSourceSiteAccuracyCommand",
+          "rank": 2,
+          "globalRank": 30,
+          "sourceRank": 2,
+          "resultId": "Function:internal/cli/source_site_accuracy_command.go:newSourceSiteAccuracyCommand#0",
+          "name": "newSourceSiteAccuracyCommand",
+          "filePath": "internal/cli/source_site_accuracy_command.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "missedTargets": [
+        {
+          "kind": "file",
+          "expected": "internal/graphhealth/compute.go",
+          "reason": "expected file was not returned by query top results"
+        },
+        {
+          "kind": "symbol",
+          "expected": "Compute",
+          "reason": "expected function/method target was not returned by current definition or process-symbol matching"
+        }
+      ],
+      "topResults": [
+        {
+          "rank": 1,
+          "globalRank": 29,
+          "sourceRank": 1,
+          "source": "definition",
+          "id": "Function:internal/cli/query_health_command.go:newQueryHealthCommand#0",
+          "name": "newQueryHealthCommand",
+          "type": "Function",
+          "filePath": "internal/cli/query_health_command.go",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 44,
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 1,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process",
+          "id": "proc_185_runqueryhealth",
+          "name": "RunQueryHealth -\u003e QueryHealthMissLabels",
+          "type": "cross_community",
+          "process": "RunQueryHealth -\u003e QueryHealthMissLabels"
+        },
+        {
+          "rank": 1,
+          "globalRank": 14,
+          "sourceRank": 4,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/query_health_command.go:queryHealthMissLabels#1",
+          "name": "queryHealthMissLabels",
+          "type": "Function",
+          "filePath": "internal/cli/query_health_command.go",
+          "process": "RunQueryHealth -\u003e QueryHealthMissLabels",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 5,
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 13,
+          "sourceRank": 3,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/query_health_command.go:queryHealthNoiseReason#2",
+          "name": "queryHealthNoiseReason",
+          "type": "Function",
+          "filePath": "internal/cli/query_health_command.go",
+          "process": "RunQueryHealth -\u003e QueryHealthMissLabels",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 5,
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/query_health_command.go:runQueryHealth#2",
+          "name": "runQueryHealth",
+          "type": "Function",
+          "filePath": "internal/cli/query_health_command.go",
+          "process": "RunQueryHealth -\u003e QueryHealthMissLabels",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 19,
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 12,
+          "sourceRank": 2,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/query_health_command.go:scoreQueryHealthCase#3",
+          "name": "scoreQueryHealthCase",
+          "type": "Function",
+          "filePath": "internal/cli/query_health_command.go",
+          "process": "RunQueryHealth -\u003e QueryHealthMissLabels",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 28,
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 30,
+          "sourceRank": 2,
+          "source": "definition",
+          "id": "Function:internal/cli/source_site_accuracy_command.go:newSourceSiteAccuracyCommand#0",
+          "name": "newSourceSiteAccuracyCommand",
+          "type": "Function",
+          "filePath": "internal/cli/source_site_accuracy_command.go",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 27,
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 2,
+          "sourceRank": 2,
+          "processRank": 2,
+          "source": "process",
+          "id": "proc_182_runqueryhealth",
+          "name": "RunQueryHealth -\u003e QueryHealthProcessMatches",
+          "type": "cross_community",
+          "process": "RunQueryHealth -\u003e QueryHealthProcessMatches"
+        },
+        {
+          "rank": 2,
+          "globalRank": 15,
+          "sourceRank": 3,
+          "processRank": 2,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/query_health_command.go:findQueryHealthMatch#3",
+          "name": "findQueryHealthMatch",
+          "type": "Function",
+          "filePath": "internal/cli/query_health_command.go",
+          "process": "RunQueryHealth -\u003e QueryHealthProcessMatches",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 16,
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 16,
+          "sourceRank": 4,
+          "processRank": 2,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/query_health_command.go:queryHealthProcessMatches#2",
+          "name": "queryHealthProcessMatches",
+          "type": "Function",
+          "filePath": "internal/cli/query_health_command.go",
+          "process": "RunQueryHealth -\u003e QueryHealthProcessMatches",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 8,
+          "queryLanes": [
+            "owner_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "noiseReason": "thresholds met; exact target misses: file:internal/graphhealth/compute.go, symbol:Compute"
+    },
+    {
+      "id": "api-surface-tool-discovery",
+      "intent": "API route map tool map shape check API impact MCP tool handlers",
+      "expectedFiles": [
+        "internal/mcp/route_tool_map.go",
+        "internal/mcp/route_shape_impact.go",
+        "internal/mcp/tools.go"
+      ],
+      "expectedSymbols": [
+        "routeMapTool",
+        "toolMapTool",
+        "shapeCheckTool",
+        "apiImpactTool"
+      ],
+      "expectedAppLayers": [
+        "api"
+      ],
+      "expectedFunctionalAreas": [
+        "mcp"
+      ],
+      "expectedTargetCount": 7,
+      "hitAt5": 6,
+      "hitAt10": 7,
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 4,
+      "passed": true,
+      "thresholdPassed": true,
+      "exactPassed": true,
+      "matchedTargetCount": 7,
+      "missedTargetCount": 0,
+      "matchedTargets": [
+        {
+          "kind": "file",
+          "expected": "internal/mcp/route_tool_map.go",
+          "rank": 2,
+          "globalRank": 26,
+          "sourceRank": 2,
+          "resultId": "Method:internal/mcp/route_tool_map.go:Server.routeMapTool#1",
+          "name": "routeMapTool",
+          "filePath": "internal/mcp/route_tool_map.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/mcp/route_shape_impact.go",
+          "rank": 1,
+          "globalRank": 25,
+          "sourceRank": 1,
+          "resultId": "Method:internal/mcp/route_shape_impact.go:Server.shapeCheckTool#1",
+          "name": "shapeCheckTool",
+          "filePath": "internal/mcp/route_shape_impact.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/mcp/tools.go",
+          "rank": 8,
+          "globalRank": 24,
+          "sourceRank": 5,
+          "processRank": 8,
+          "resultId": "Function:internal/mcp/tools.go:cloneQueryCountMap#1",
+          "name": "cloneQueryCountMap",
+          "filePath": "internal/mcp/tools.go",
+          "process": "McpToolMapItems -\u003e CloneQueryCountMap",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "routeMapTool",
+          "rank": 2,
+          "globalRank": 26,
+          "sourceRank": 2,
+          "resultId": "Method:internal/mcp/route_tool_map.go:Server.routeMapTool#1",
+          "name": "routeMapTool",
+          "filePath": "internal/mcp/route_tool_map.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "toolMapTool",
+          "rank": 4,
+          "globalRank": 28,
+          "sourceRank": 4,
+          "resultId": "Method:internal/mcp/route_tool_map.go:Server.toolMapTool#1",
+          "name": "toolMapTool",
+          "filePath": "internal/mcp/route_tool_map.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "shapeCheckTool",
+          "rank": 1,
+          "globalRank": 25,
+          "sourceRank": 1,
+          "resultId": "Method:internal/mcp/route_shape_impact.go:Server.shapeCheckTool#1",
+          "name": "shapeCheckTool",
+          "filePath": "internal/mcp/route_shape_impact.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "apiImpactTool",
+          "rank": 3,
+          "globalRank": 27,
+          "sourceRank": 3,
+          "resultId": "Method:internal/mcp/route_shape_impact.go:Server.apiImpactTool#1",
+          "name": "apiImpactTool",
+          "filePath": "internal/mcp/route_shape_impact.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "topResults": [
+        {
+          "rank": 1,
+          "globalRank": 25,
+          "sourceRank": 1,
+          "source": "definition",
+          "id": "Method:internal/mcp/route_shape_impact.go:Server.shapeCheckTool#1",
+          "name": "shapeCheckTool",
+          "type": "Method",
+          "filePath": "internal/mcp/route_shape_impact.go",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 30,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 1,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process",
+          "id": "proc_661_shapechecktool",
+          "name": "ShapeCheckTool -\u003e ErrorPathKeys",
+          "type": "cross_community",
+          "process": "ShapeCheckTool -\u003e ErrorPathKeys"
+        },
+        {
+          "rank": 1,
+          "globalRank": 13,
+          "sourceRank": 3,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/route_shape_impact.go:errorPathKeys#3",
+          "name": "errorPathKeys",
+          "type": "Function",
+          "filePath": "internal/mcp/route_shape_impact.go",
+          "process": "ShapeCheckTool -\u003e ErrorPathKeys",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 4,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 12,
+          "sourceRank": 2,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/route_shape_impact.go:mcpShapeConsumers#1",
+          "name": "mcpShapeConsumers",
+          "type": "Function",
+          "filePath": "internal/mcp/route_shape_impact.go",
+          "process": "ShapeCheckTool -\u003e ErrorPathKeys",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 20,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Method:internal/mcp/route_shape_impact.go:Server.shapeCheckTool#1",
+          "name": "shapeCheckTool",
+          "type": "Method",
+          "filePath": "internal/mcp/route_shape_impact.go",
+          "process": "ShapeCheckTool -\u003e ErrorPathKeys",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 30,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 26,
+          "sourceRank": 2,
+          "source": "definition",
+          "id": "Method:internal/mcp/route_tool_map.go:Server.routeMapTool#1",
+          "name": "routeMapTool",
+          "type": "Method",
+          "filePath": "internal/mcp/route_tool_map.go",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 9,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 2,
+          "sourceRank": 2,
+          "processRank": 2,
+          "source": "process",
+          "id": "proc_662_shapechecktool",
+          "name": "ShapeCheckTool -\u003e IntString",
+          "type": "cross_community",
+          "process": "ShapeCheckTool -\u003e IntString"
+        },
+        {
+          "rank": 2,
+          "globalRank": 14,
+          "sourceRank": 3,
+          "processRank": 2,
+          "source": "process_symbol",
+          "id": "Function:internal/mcp/route_shape_impact.go:intString#1",
+          "name": "intString",
+          "type": "Function",
+          "filePath": "internal/mcp/route_shape_impact.go",
+          "process": "ShapeCheckTool -\u003e IntString",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 6,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 3,
+          "globalRank": 27,
+          "sourceRank": 3,
+          "source": "definition",
+          "id": "Method:internal/mcp/route_shape_impact.go:Server.apiImpactTool#1",
+          "name": "apiImpactTool",
+          "type": "Method",
+          "filePath": "internal/mcp/route_shape_impact.go",
+          "appLayer": "api",
+          "functionalArea": "mcp",
+          "resolutionGapCount": 19,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 3,
+          "globalRank": 3,
+          "sourceRank": 3,
+          "processRank": 3,
+          "source": "process",
+          "id": "proc_663_shapechecktool",
+          "name": "ShapeCheckTool -\u003e MissingKeys",
+          "type": "cross_community",
+          "process": "ShapeCheckTool -\u003e MissingKeys"
+        }
+      ],
+      "noiseReason": "thresholds met; exact target coverage met"
+    },
+    {
+      "id": "cross-repo-command-surface-discovery",
+      "intent": "group cross repo query contracts sync status command surface",
+      "expectedFiles": [
+        "internal/cli/group_command.go",
+        "internal/mcp/group_tools.go",
+        "internal/group/query.go",
+        "internal/group/sync.go"
+      ],
+      "expectedSymbols": [
+        "newGroupCommand",
+        "groupQueryTool",
+        "Query",
+        "Sync"
+      ],
+      "expectedAppLayers": [
+        "backend",
+        "api"
+      ],
+      "expectedFunctionalAreas": [
+        "cli",
+        "mcp",
+        "query"
+      ],
+      "expectedTargetCount": 8,
+      "hitAt5": 8,
+      "hitAt10": 8,
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 4,
+      "passed": true,
+      "thresholdPassed": true,
+      "exactPassed": true,
+      "matchedTargetCount": 8,
+      "missedTargetCount": 0,
+      "matchedTargets": [
+        {
+          "kind": "file",
+          "expected": "internal/cli/group_command.go",
+          "rank": 2,
+          "globalRank": 17,
+          "sourceRank": 2,
+          "processRank": 2,
+          "resultId": "Function:internal/cli/group_command.go:newGroupAddCommand#0",
+          "name": "newGroupAddCommand",
+          "filePath": "internal/cli/group_command.go",
+          "process": "NewGroupCommand -\u003e SortedStringKeys",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/mcp/group_tools.go",
+          "rank": 3,
+          "globalRank": 37,
+          "sourceRank": 3,
+          "resultId": "Method:internal/mcp/group_tools.go:Server.groupQueryTool#1",
+          "name": "groupQueryTool",
+          "filePath": "internal/mcp/group_tools.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/group/query.go",
+          "rank": 1,
+          "globalRank": 35,
+          "sourceRank": 1,
+          "resultId": "Function:internal/group/query.go:Query#6",
+          "name": "Query",
+          "filePath": "internal/group/query.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/group/sync.go",
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "resultId": "Function:internal/group/sync.go:Sync#4",
+          "name": "Sync",
+          "filePath": "internal/group/sync.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "newGroupCommand",
+          "rank": 2,
+          "globalRank": 16,
+          "sourceRank": 1,
+          "processRank": 2,
+          "resultId": "Function:internal/cli/group_command.go:newGroupCommand#0",
+          "name": "newGroupCommand",
+          "filePath": "internal/cli/group_command.go",
+          "process": "NewGroupCommand -\u003e SortedStringKeys",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "groupQueryTool",
+          "rank": 3,
+          "globalRank": 37,
+          "sourceRank": 3,
+          "resultId": "Method:internal/mcp/group_tools.go:Server.groupQueryTool#1",
+          "name": "groupQueryTool",
+          "filePath": "internal/mcp/group_tools.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "Query",
+          "rank": 1,
+          "globalRank": 35,
+          "sourceRank": 1,
+          "resultId": "Function:internal/group/query.go:Query#6",
+          "name": "Query",
+          "filePath": "internal/group/query.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "Sync",
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "resultId": "Function:internal/group/sync.go:Sync#4",
+          "name": "Sync",
+          "filePath": "internal/group/sync.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "topResults": [
+        {
+          "rank": 1,
+          "globalRank": 35,
+          "sourceRank": 1,
+          "source": "definition",
+          "id": "Function:internal/group/query.go:Query#6",
+          "name": "Query",
+          "type": "Function",
+          "filePath": "internal/group/query.go",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 37,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 1,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process",
+          "id": "proc_66_sync",
+          "name": "Sync -\u003e NormalizeHTTPPath",
+          "type": "cross_community",
+          "process": "Sync -\u003e NormalizeHTTPPath"
+        },
+        {
+          "rank": 1,
+          "globalRank": 14,
+          "sourceRank": 4,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/group/manifest.go:httpContractID#2",
+          "name": "httpContractID",
+          "type": "Function",
+          "filePath": "internal/group/manifest.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 2,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 13,
+          "sourceRank": 3,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/group/manifest.go:manifestContractID#2",
+          "name": "manifestContractID",
+          "type": "Function",
+          "filePath": "internal/group/manifest.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 12,
+          "sourceRank": 2,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/group/manifest.go:manifestContractsAndLinks#1",
+          "name": "manifestContractsAndLinks",
+          "type": "Function",
+          "filePath": "internal/group/manifest.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 29,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 15,
+          "sourceRank": 5,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/group/manifest.go:normalizeHTTPPath#1",
+          "name": "normalizeHTTPPath",
+          "type": "Function",
+          "filePath": "internal/group/manifest.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 5,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/group/sync.go:Sync#4",
+          "name": "Sync",
+          "type": "Function",
+          "filePath": "internal/group/sync.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 28,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 36,
+          "sourceRank": 2,
+          "source": "definition",
+          "id": "Function:internal/group/sync.go:Sync#4",
+          "name": "Sync",
+          "type": "Function",
+          "filePath": "internal/group/sync.go",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 28,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 2,
+          "sourceRank": 2,
+          "processRank": 2,
+          "source": "process",
+          "id": "proc_56_newgroupcommand",
+          "name": "NewGroupCommand -\u003e SortedStringKeys",
+          "type": "cross_community",
+          "process": "NewGroupCommand -\u003e SortedStringKeys"
+        },
+        {
+          "rank": 2,
+          "globalRank": 17,
+          "sourceRank": 2,
+          "processRank": 2,
+          "source": "process_symbol",
+          "id": "Function:internal/cli/group_command.go:newGroupAddCommand#0",
+          "name": "newGroupAddCommand",
+          "type": "Function",
+          "filePath": "internal/cli/group_command.go",
+          "process": "NewGroupCommand -\u003e SortedStringKeys",
+          "appLayer": "backend",
+          "functionalArea": "cli",
+          "resolutionGapCount": 14,
+          "queryLanes": [
+            "owner_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "command_surface_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "noiseReason": "thresholds met; exact target coverage met"
+    },
+    {
+      "id": "cross-repo-execution-flow-process-discovery",
+      "intent": "group query execution flow process sync contracts",
+      "expectedFiles": [
+        "internal/group/query.go",
+        "internal/group/sync.go"
+      ],
+      "expectedSymbols": [
+        "Query",
+        "Sync",
+        "rankedGroupProcesses"
+      ],
+      "expectedProcesses": [
+        "Sync -\u003e NormalizeHTTPPath",
+        "Query -\u003e GroupProcess"
+      ],
+      "expectedAppLayers": [
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "query"
+      ],
+      "expectedTargetCount": 7,
+      "hitAt5": 7,
+      "hitAt10": 7,
+      "hitAt5Threshold": 6,
+      "hitAt10Threshold": 7,
+      "passed": true,
+      "thresholdPassed": true,
+      "exactPassed": true,
+      "matchedTargetCount": 7,
+      "missedTargetCount": 0,
+      "matchedTargets": [
+        {
+          "kind": "file",
+          "expected": "internal/group/query.go",
+          "rank": 1,
+          "globalRank": 35,
+          "sourceRank": 1,
+          "resultId": "Function:internal/group/query.go:Query#6",
+          "name": "Query",
+          "filePath": "internal/group/query.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "file",
+          "expected": "internal/group/sync.go",
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "resultId": "Function:internal/group/sync.go:Sync#4",
+          "name": "Sync",
+          "filePath": "internal/group/sync.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "Query",
+          "rank": 1,
+          "globalRank": 35,
+          "sourceRank": 1,
+          "resultId": "Function:internal/group/query.go:Query#6",
+          "name": "Query",
+          "filePath": "internal/group/query.go",
+          "source": "definition",
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "Sync",
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "resultId": "Function:internal/group/sync.go:Sync#4",
+          "name": "Sync",
+          "filePath": "internal/group/sync.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "symbol",
+          "expected": "rankedGroupProcesses",
+          "rank": 2,
+          "globalRank": 17,
+          "sourceRank": 2,
+          "processRank": 2,
+          "resultId": "Function:internal/group/query.go:rankedGroupProcesses#3",
+          "name": "rankedGroupProcesses",
+          "filePath": "internal/group/query.go",
+          "process": "Query -\u003e GroupProcess",
+          "source": "process_symbol",
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "kind": "process",
+          "expected": "Sync -\u003e NormalizeHTTPPath",
+          "rank": 1,
+          "globalRank": 1,
+          "sourceRank": 1,
+          "processRank": 1,
+          "resultId": "proc_66_sync",
+          "name": "Sync -\u003e NormalizeHTTPPath",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "source": "process"
+        },
+        {
+          "kind": "process",
+          "expected": "Query -\u003e GroupProcess",
+          "rank": 2,
+          "globalRank": 2,
+          "sourceRank": 2,
+          "processRank": 2,
+          "resultId": "proc_215_query",
+          "name": "Query -\u003e GroupProcess",
+          "process": "Query -\u003e GroupProcess",
+          "source": "process"
+        }
+      ],
+      "topResults": [
+        {
+          "rank": 1,
+          "globalRank": 35,
+          "sourceRank": 1,
+          "source": "definition",
+          "id": "Function:internal/group/query.go:Query#6",
+          "name": "Query",
+          "type": "Function",
+          "filePath": "internal/group/query.go",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 37,
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 1,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process",
+          "id": "proc_66_sync",
+          "name": "Sync -\u003e NormalizeHTTPPath",
+          "type": "cross_community",
+          "process": "Sync -\u003e NormalizeHTTPPath"
+        },
+        {
+          "rank": 1,
+          "globalRank": 14,
+          "sourceRank": 4,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/group/manifest.go:httpContractID#2",
+          "name": "httpContractID",
+          "type": "Function",
+          "filePath": "internal/group/manifest.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 2,
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 13,
+          "sourceRank": 3,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/group/manifest.go:manifestContractID#2",
+          "name": "manifestContractID",
+          "type": "Function",
+          "filePath": "internal/group/manifest.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 12,
+          "sourceRank": 2,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/group/manifest.go:manifestContractsAndLinks#1",
+          "name": "manifestContractsAndLinks",
+          "type": "Function",
+          "filePath": "internal/group/manifest.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 29,
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 15,
+          "sourceRank": 5,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/group/manifest.go:normalizeHTTPPath#1",
+          "name": "normalizeHTTPPath",
+          "type": "Function",
+          "filePath": "internal/group/manifest.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 5,
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 1,
+          "globalRank": 11,
+          "sourceRank": 1,
+          "processRank": 1,
+          "source": "process_symbol",
+          "id": "Function:internal/group/sync.go:Sync#4",
+          "name": "Sync",
+          "type": "Function",
+          "filePath": "internal/group/sync.go",
+          "process": "Sync -\u003e NormalizeHTTPPath",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 28,
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 36,
+          "sourceRank": 2,
+          "source": "definition",
+          "id": "Function:internal/group/sync.go:Sync#4",
+          "name": "Sync",
+          "type": "Function",
+          "filePath": "internal/group/sync.go",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 28,
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        },
+        {
+          "rank": 2,
+          "globalRank": 2,
+          "sourceRank": 2,
+          "processRank": 2,
+          "source": "process",
+          "id": "proc_215_query",
+          "name": "Query -\u003e GroupProcess",
+          "type": "cross_community",
+          "process": "Query -\u003e GroupProcess"
+        },
+        {
+          "rank": 2,
+          "globalRank": 16,
+          "sourceRank": 1,
+          "processRank": 2,
+          "source": "process_symbol",
+          "id": "Function:internal/group/query.go:Query#6",
+          "name": "Query",
+          "type": "Function",
+          "filePath": "internal/group/query.go",
+          "process": "Query -\u003e GroupProcess",
+          "appLayer": "backend",
+          "functionalArea": "query",
+          "resolutionGapCount": 37,
+          "queryLanes": [
+            "owner_discovery",
+            "concept_discovery",
+            "execution_flow_discovery",
+            "api_surface_discovery",
+            "graph_quality_discovery",
+            "cross_repo_discovery"
+          ],
+          "matchReasons": [
+            "name",
+            "id",
+            "filePath",
+            "functionalArea",
+            "semanticSurface"
+          ]
+        }
+      ],
+      "noiseReason": "thresholds met; exact target coverage met"
+    }
+  ]
+}

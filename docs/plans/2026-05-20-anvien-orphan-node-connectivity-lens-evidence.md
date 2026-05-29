@@ -1,0 +1,1112 @@
+# Anvien Orphan Node Connectivity Lens Evidence Ledger
+
+Date: 2026-05-20
+
+Status: complete
+
+Companion files:
+
+- Plan: [2026-05-20-anvien-orphan-node-connectivity-lens-plan.md](2026-05-20-anvien-orphan-node-connectivity-lens-plan.md)
+- Benchmark ledger: [2026-05-20-anvien-orphan-node-connectivity-lens-benchmark.md](2026-05-20-anvien-orphan-node-connectivity-lens-benchmark.md)
+
+## Evidence Rules
+
+Record evidence as each evidenced task is completed. Evidence should include commands, impacted files, test results, e2e artifacts, and concise observations needed to audit the plan later.
+
+For doc-only commits, do not use Anvien.
+
+Do not record inferred graph counts. Every count must include the command, source graph, repo path, commit or graph timestamp when available, and interpretation.
+
+## E0 - Plan Creation Evidence
+
+Date: 2026-05-20
+
+Status: recorded
+
+Created file set:
+
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-benchmark.md`
+
+Plan creation scope:
+
+- Use the repository's established plan, evidence, and benchmark ledger format.
+- Ground implementation work in codebase-reviewed facts.
+- Leave unknown graph-health counts pending until measured.
+
+Convention inspection commands:
+
+```powershell
+Get-ChildItem docs\plans | Sort-Object Name | Select-Object -Last 20 | Format-Table -AutoSize
+rg -n "^# |^Status:|^## |Acceptance|Validation|Closure|Evidence|Benchmark|Zero-Trust|Phase" docs\plans
+Get-Content docs\plans\2026-05-19-anvien-multilanguage-graph-filters-and-coverage-plan.md -TotalCount 280
+Get-Content docs\plans\2026-05-19-anvien-multilanguage-graph-filters-and-coverage-evidence.md -TotalCount 160
+Get-Content docs\plans\2026-05-19-anvien-multilanguage-graph-filters-and-coverage-benchmark.md -TotalCount 160
+```
+
+Observed planning standard:
+
+- Plan file has date, status, companion files, rules, problem/scope, acceptance guardrails, phase checklist, ledger, and closure definition.
+- Evidence ledger records commands, files, status, observations, and validation artifacts.
+- Benchmark ledger records measured counts and benchmarkable inventory; unmeasured values remain pending.
+
+Plan creation decisions:
+
+- Status is `active` because this is a formal plan for future implementation.
+- No graph counts were invented.
+- At initial creation, baseline graph-health counts were left `pending measurement`; E3/E4 supersede that gap with codebase review and initial measured baselines.
+- "Orphan node" is defined as derived connectivity status, not a primary semantic node label.
+
+## E1 - Initial Product Reasoning Evidence
+
+Date: 2026-05-20
+
+Status: recorded
+
+Discussion summary:
+
+- The product question is whether lonely/orphan nodes should be classified or mapped into a separate node/filter type to manage code, buggy functions, and unwired code.
+- The accepted planning direction is to classify this as a graph-health/connectivity lens, not a semantic node label.
+- The plan requires taxonomy and evidence before presenting any orphan status as a bug.
+
+Current claim boundary:
+
+- No current orphan counts are claimed.
+- No current analyzer defect is claimed.
+- No dead-code count is claimed.
+- No UI implementation detail is considered accepted until inspected during implementation phases.
+
+## E2 - Pending Baseline Evidence
+
+Date: 2026-05-20
+
+Status: partially superseded by E3/E4 initial `E:\Anvien` measured baseline; representative cross-repo baseline pending
+
+Required before implementation claims:
+
+- measured connectivity inventory for `E:\Anvien`;
+- measured connectivity inventory for representative indexed repos selected by documented criteria when available;
+- recorded edge policy used for the measurements;
+- expected-isolated policy and count by reason;
+- comparison of raw graph connectivity versus Web-visible connectivity.
+
+## E3 - Anvien And Source Code Review Evidence
+
+Date: 2026-05-20
+
+Status: recorded
+
+Reason:
+
+The plan is grounded in Anvien and source inspection before it drives implementation.
+
+Anvien index command:
+
+```powershell
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+```
+
+Result:
+
+```text
+analyzed E:\Anvien
+files: scanned=694 parsed=530 unsupported=164 failed=0
+graph: nodes=20967 relationships=52302 path=E:\Anvien\.anvien\graph.json
+```
+
+Anvien context commands:
+
+```powershell
+go run .\cmd\anvien context Graph --repo Anvien
+go run .\cmd\anvien context knowledgeGraphToGraphology --repo Anvien
+go run .\cmd\anvien context FileTreePanel --repo Anvien
+go run .\cmd\anvien context GraphRelationshipTypes --repo Anvien
+```
+
+Observed Anvien/codebase targets:
+
+- `internal/graph/types.go`
+- `internal/httpapi/graph.go`
+- `internal/contracts/web_ui.go`
+- `internal/ignore/constants.go`
+- `internal/processes/processes.go`
+- `internal/graphaccuracy/property_access.go`
+- `cmd/property-access-audit/main.go`
+- `anvien-web/src/core/graph/types.ts`
+- `anvien-web/src/services/backend-client.ts`
+- `anvien-web/src/lib/constants.ts`
+- `anvien-web/src/lib/graph-adapter.ts`
+- `anvien-web/src/components/FileTreePanel.tsx`
+
+Source inspection commands:
+
+```powershell
+Get-Content internal\graph\types.go
+Get-Content internal\httpapi\graph.go | Select-Object -First 260
+Get-Content internal\contracts\web_ui.go | Select-Object -First 220
+Get-Content internal\ignore\constants.go | Select-Object -First 140
+Get-Content internal\processes\processes.go | Select-Object -Skip 180 -First 320
+Get-Content internal\graphaccuracy\property_access.go | Select-Object -First 280
+Get-Content internal\graphaccuracy\property_access.go | Select-Object -Skip 380 -First 100
+rg -n "property-access-audit|OrphanStatus|true_orphan|false_orphan|orphan\\.\\*" cmd internal
+Get-Content anvien-web\src\core\graph\types.ts
+Get-Content anvien-web\src\services\backend-client.ts | Select-Object -Skip 480 -First 100
+Get-Content anvien-web\src\lib\constants.ts | Select-Object -First 480
+Get-Content anvien-web\src\lib\graph-adapter.ts | Select-Object -First 460
+Get-Content anvien-web\src\components\FileTreePanel.tsx | Select-Object -First 900
+```
+
+Codebase findings:
+
+- `internal/graph/types.go` has no `connectivityStatus` metadata today.
+- `internal/httpapi/graph.go` streams raw graph nodes/relationships; it strips node `content` by default but does not derive connectivity.
+- `internal/contracts/web_ui.go` exposes semantic node labels and relationship types but no Graph Health contract.
+- `anvien-web/src/core/graph/types.ts` models `KnowledgeGraph` as raw node and relationship arrays.
+- `anvien-web/src/lib/constants.ts` owns node/edge labels, colors, sizes, filterable labels, edge display metadata, and grouped heritage compatibility counts.
+- `anvien-web/src/components/FileTreePanel.tsx` currently renders Node Types, Edge Types, Focus Depth, and Color Legend. There is no Graph Health group.
+- `anvien-web/src/lib/graph-adapter.ts` has a layout-only comment about "orphan nodes that weren't reached" after hierarchy BFS. This is not an orphan/dead-code taxonomy.
+- `internal/processes/processes.go` already encodes relevant graph-health heuristics: process entrypoints are Function/Method, tests are excluded by `isTestFile`, calls under confidence `0.5` are ignored, and Route/Tool resources are linked to processes by `ENTRY_POINT_OF`.
+- `internal/ignore/constants.go` contains existing path policy that should inform expected-isolated classification for vendor, generated, fixture, test, build, cache, and dependency directories.
+- `internal/graphaccuracy/property_access.go` already emits a Property-specific `orphanStatus` taxonomy: `owner_linked`, `false_orphan`, `true_orphan`, `unknown`, `external_library_owned`, and `intentionally_unmodeled`.
+- `cmd/property-access-audit` prints property audit counts as `orphan.*` summary lines. The Graph Health plan must keep the new node-connectivity taxonomy separate unless compatibility mapping is explicitly designed and tested.
+- Scanner-ignored paths such as vendor, dependency, generated, fixture, build, and cache directories may never enter the graph. Expected-isolated policy must distinguish graph-present nodes from out-of-graph ignored inputs.
+
+Conclusion:
+
+The plan must not derive orphan status from raw incoming/outgoing edges. Structural edges such as `DEFINES`, `CONTAINS`, `HAS_METHOD`, `HAS_PROPERTY`, and `MEMBER_OF` materially change zero-incoming/zero-outgoing counts and can hide dead/unwired candidates if counted blindly.
+
+## E4 - Initial Connectivity Baseline Commands
+
+Date: 2026-05-20
+
+Status: recorded
+
+## E5 - Phase 1 Policy Decisions: Counted Edge + Expected-Isolated + Taxonomy + Ownership + Root Rules + Confidence
+
+Date: 2026-05-20
+
+Status: recorded (completes P1-A1..P1-I)
+
+### Investigation Commands Used (all Anvien + source per AGENTS.md + plan rules)
+- `go run ./cmd/anvien analyze --force [redacted removed argument] --no-stats` (refreshed to nodes=21091, rels=52445)
+- `anvien__list_repos`, `anvien__query` (multiple for "orphan nodes...", "knowledgeGraphToGraphology...", "graph connectivity")
+- `anvien__context` on key symbols (Graph, FileTreePanel, etc. in prior E3)
+- Source reads: internal/graph/types.go (all 22 Rel* consts), internal/processes/processes.go (isTestFile, ENTRY_POINT_OF emission, findEntryPoints, buildCallsGraph), internal/ignore/constants.go (full ignore sets), internal/contracts/web_ui.go (relationshipDisplayPolicies, graphRelationshipTypes list), anvien-web/src/lib/graph-adapter.ts (forward/reverseHierarchyRelations exactly matching structural set), internal/graphaccuracy/property_access.go (separate orphanStatus)
+- Python graph.json loaders for exact degree counts on both E:\Anvien and E:\Restaurant_manager (reproducible, no inference)
+- `anvien__cypher` attempted (limited on Go adapter)
+
+### Counted Edge Policy (P1-A1/A2/A3 - finalized)
+See benchmark B0 for the exact table and rationale. In short: count only "wiring/usage/flow" edges; exclude the 5 structural ownership edges that the layout already treats separately and that empirically collapse all zero-incoming to zero. This was the key blocker identified in E3/E4.
+
+Recorded in plan design section, benchmark, this evidence. No change to graph.Rel* consts or emission — pure derivation policy.
+
+### Expected-Isolated Overlay Policy (P1-B1/B2/B3 - finalized)
+Automatic reasons (path/label/evidence based, hide or de-emphasize by default in triage):
+- `test`: isTestFile() patterns (exact copy of processes.go:465) OR /test/ /__tests__/ .test. .spec. _test.* ; also test helpers inside those files.
+- `fixture`: /fixtures/ /__snapshots__/ /snapshots__ /testdata/
+- `generated`: path contains /generated/ .generated. or parser properties indicating generated code.
+- `vendor_dependency`: /vendor/ /node_modules/ /dist/ /build/ (even if scanner let a few through).
+- `documentation`: label=="Section" OR *.md files OR /docs/ /README* that carry no CALLS/ACCESSES etc.
+- `migration_script`: /migrations/ *.sql change files, db/migrate scripts.
+- `cli_mcp`: symbols under internal/cli, internal/mcp, or registered via cmd/* or server tools.
+
+Prioritization modifier only (never auto-expected-isolated, still shown in candidate lists but lower priority):
+- `exported_api`: boolProperty "isExported"==true (from processes scoring). These may legitimately have zero internal incoming because they are the public surface for external callers or reflection. Triage must inspect callers outside repo + tests + docs.
+
+Framework entry surfaces (roots, not candidates even if low degree):
+- `framework_entry`: label in {Route, Tool} OR has outgoing ENTRY_POINT_OF / HANDLES_ROUTE / HANDLES_TOOL OR isProcessSymbol(main-like) that findEntryPoints would consider. These are the accepted roots for detached traversal.
+
+Evidence rule: automatic reasons take precedence for hiding; exported + framework only affect sort order in reports ("triage these last"). A node can carry multiple reasons (e.g. exported test helper).
+
+This policy bridges the existing ignore + processes.isTestFile + exported scoring without inventing new scanners.
+
+### Topology Taxonomy (P1-F)
+Accepted exactly as proposed in plan §Design Decision (connected / true_isolated / no_incoming / no_outgoing / detached_component / unknown_connectivity). No changes. `no_outgoing` remains low-priority (normal leaves).
+
+### Confidence Levels (P1-C)
+- `candidate`: isolated topology status + zero expected reasons + zero source-backed diagnostics → actionable triage item.
+- `expected`: any expected-isolated reason present (even if topologically isolated).
+- `unknown`: unresolved_reference with source node evidence, or external-only targets dominate, or policy edge case.
+- `confirmed`: human + additional runtime/test evidence only; never auto-set by derivation.
+
+TopologyStatus and expectedIsolatedReasons and diagnostics are orthogonal fields on the derived metadata; they coexist.
+
+### Root Surfaces + Traversal for detached_component (P1-G)
+Accepted roots (start traversal from these):
+- All Process nodes
+- All nodes that are source of at least one ENTRY_POINT_OF, HANDLES_ROUTE, HANDLES_TOOL relationship
+- All nodes with label Route or Tool
+- Functions/Methods named "main", "init", "run", "start", "bootstrap" (case-insensitive) that have isExported or high frameworkMultiplier
+- MCP tool registrations and CLI command entry symbols
+
+Traversal: directed outgoing along counted edges (CALLS + process links + heritage for type reachability) from the roots. A component (weakly connected subgraph under non-structural edges) that has internal edges but zero path from any accepted root → `detached_component`.
+
+Directed chosen over undirected because call graph and process traces are directional; a "downstream only" module that nothing calls into is still detached if no root reaches it.
+
+Undirected fallback only for pure structural cycles that survived filtering (rare).
+
+### Metadata Ownership (P1-H)
+Core graph layer (recommended path):
+- New package `internal/graphhealth` (or extension inside `internal/graph`) will expose `AnnotateGraphHealth(g *graph.Graph, policy EdgePolicy, expectedPolicy)` that mutates/adds to each Node.Properties:
+  - "topologyStatus": string
+  - "countedIncoming": int
+  - "countedOutgoing": int
+  - "excludedEdgeCategories": map or array
+  - "expectedIsolationReasons": []string
+  - "diagnostics": [] {kind, evidence...}
+  - "confidence": string
+- Derivation runs once after full graph assembly (in analyze or http graph handler or dedicated MCP resource), before any consumer (Web, query, reports, cypher views).
+- Benefits: MCP `context`/`query`/`impact` can surface health without Web-only derivation; consistent truth for all surfaces (P3 requirement); no duplication.
+- Alternative (Web-only) rejected for this reason.
+
+Implementation in Phase 2 will keep raw graph immutable; health is always derived view (or cached annotation).
+
+### Compatibility with Existing orphanStatus (P1-F)
+`cmd/property-access-audit` + `internal/graphaccuracy/property_access.go` "orphanStatus" (owner_linked / true_orphan / false_orphan / ...) remains Property-only, audit-only surface. New Graph Health taxonomy is node-global, topology+overlay, and explicitly namespaced. No overwrite, no shared enum. If future phase wants mapping, it will be a separate documented transform with tests.
+
+### All Phase 1 Decisions Documented
+- Plan updated with decisions.
+- Benchmark B0 now authoritative with policy + numbers for both repos.
+- This E5 + E3/E4 provide full audit trail.
+- No implementation code changed in this slice (doc-only per plan rule 6).
+
+Conclusion: Phase 1 complete. Ready for Phase 2 backend derivation without risk of ambiguous "orphan" meaning. All guardrails (no primary label change, candidate not verdict, explanations required) satisfied.
+
+Raw all-relationship baseline command:
+
+```powershell
+$repos = @(@{Name='Anvien'; Path='E:\Anvien\.anvien\graph.json'})
+$codeLabels = @('Class','Function','Method','Interface','Struct','Trait','Impl','TypeAlias','Enum','Record','Delegate','Constructor','Route','Tool')
+# Count incoming/outgoing by all relationships, then summarize raw zero-incoming,
+# zero-outgoing, zero-both, code-label subsets, path-policy candidates, node labels, and relationship types.
+```
+
+Raw all-relationship result summary:
+
+```text
+Anvien:
+nodes=20967 relationships=52302
+rawZeroIncoming=20 rawZeroOutgoing=15216 rawZeroBoth=8
+codeNodeCount=4929 codeZeroIncoming=0 codeZeroOutgoing=200 codeZeroBoth=0
+pathExpectedCandidateNodes=5743 pathExpectedCandidateZeroBoth=0
+```
+
+Provisional non-structural policy command:
+
+```powershell
+$nonStructuralTypes = @('CALLS','INHERITS','METHOD_OVERRIDES','METHOD_IMPLEMENTS','IMPORTS','USES','DECORATES','IMPLEMENTS','EXTENDS','ACCESSES','STEP_IN_PROCESS','HANDLES_ROUTE','FETCHES','HANDLES_TOOL','ENTRY_POINT_OF','WRAPS','QUERIES')
+$callGraphTypes = @('CALLS','HANDLES_ROUTE','HANDLES_TOOL','ENTRY_POINT_OF','STEP_IN_PROCESS')
+# Count code/callable node incoming/outgoing using those relationship type sets only.
+```
+
+Provisional policy result summary:
+
+```text
+Anvien:
+nonStructural code nodes=4929 zeroIn=1616 zeroOut=1100 zeroBoth=133
+callable flow nodes=4242 zeroIn=1587 zeroOut=1323 zeroBoth=264
+```
+
+Interpretation:
+
+- Raw all-relationship counts are not suitable as the orphan/dead-code denominator because `DEFINES` and container/ownership edges give code nodes incoming edges.
+- The provisional policy is not final product behavior. It is recorded only to prove why Phase 1 must define a counted-edge policy before implementation.
+- Representative cross-repo baseline was pending at this initial baseline stage; E5/B0 later records the selection criteria and `Restaurant_manager` measurement.
+
+## E6 - Phase 2/3 Backend Graph-Health Derivation Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Implement backend-owned graph-health derivation in `internal/graphhealth`.
+- Emit per-node graph-health metadata in HTTP graph JSON and NDJSON node records.
+- Emit graph-health summary in non-stream `/api/graph` JSON response.
+- Generate explicit Web contract types for Graph Health metadata without adding Web UI filters yet.
+- At the time of this slice, detached-component traversal, source-backed unresolved diagnostics, node/component explain endpoint, and Web filter UI were left for later phases.
+
+Anvien refresh and impact commands:
+
+```powershell
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien impact Compute --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact graphPayload --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact streamGraphNDJSON --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact graphNodeForResponse --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact WebUIContractTypeScript --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact WebUIContract --repo Anvien --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `Compute`: LOW risk; direct test impact in `internal/graphhealth`.
+- HTTP graph functions: CRITICAL risk because they feed `Server.handleGraph` and graph API consumers. Mitigation: no stream record shape change; focused JSON/NDJSON tests added.
+- `WebUIContract` / `WebUIContractTypeScript`: CRITICAL risk because generated contract glue and contract tests depend on it. Mitigation: generated contracts refreshed and `--check` passed.
+
+Changed files:
+
+- `internal/graphhealth/policy.go`
+- `internal/graphhealth/compute.go`
+- `internal/graphhealth/compute_test.go`
+- `internal/httpapi/graph.go`
+- `internal/httpapi/handlers_test.go`
+- `internal/contracts/web_ui.go`
+- `internal/contracts/web_ui_test.go`
+- `anvien-web/src/generated/anvien-contracts.ts`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- `graphhealth.ComputeSummary` annotates graph nodes in-place and returns summary counts.
+- Per-node `properties.graphHealth` includes topology status, counted incoming/outgoing counts, excluded structural counts, expected-isolated reasons, diagnostics field, and confidence.
+- Flat properties (`topologyStatus`, `countedIncoming`, `countedOutgoing`, `expectedIsolationReasons`, `confidence`) remain for simple consumers.
+- `exported_api` alone remains `candidate`; automatic expected reasons and `framework_entry` produce `expected`.
+- HTTP NDJSON keeps the existing record types (`node`, `relationship`, `error`) and only adds metadata inside node properties.
+- Non-stream HTTP JSON adds top-level `graphHealth` summary.
+- Generated Web contracts now include `GRAPH_HEALTH_TOPOLOGY_STATUSES`, `GRAPH_HEALTH_CONFIDENCE_LEVELS`, `GRAPH_HEALTH_EXPECTED_ISOLATION_REASONS`, `GraphHealthNodeMetadata`, `GraphHealthSummary`, and `GraphResponse`.
+
+Validation commands and results:
+
+```powershell
+go test ./internal/graphhealth
+go test ./internal/httpapi -run "TestGraph"
+go test ./internal/contracts
+go run .\cmd\generate-web-contracts
+go build ./...
+go build ./cmd/... ./internal/...
+go test ./internal/graphhealth ./internal/httpapi ./internal/contracts
+go run .\cmd\generate-web-contracts --check
+cd anvien-web; npm run build
+go test ./cmd/... ./internal/...
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien detect-changes --repo Anvien --scope all
+```
+
+Results:
+
+- Focused graphhealth/httpapi/contracts tests passed.
+- `go run .\cmd\generate-web-contracts` refreshed `anvien-web/src/generated/anvien-contracts.ts`.
+- `go run .\cmd\generate-web-contracts --check` passed.
+- `go build ./...` failed on existing fixture packages under `anvien/test/fixtures/...` (`models`, `animal`, and C fixture source). This is outside the implementation slice and is why P6-A remains not fully complete.
+- `go build ./cmd/... ./internal/...` passed.
+- `go test ./cmd/... ./internal/...` passed.
+- `npm run build` in `anvien-web` passed; Vite reported existing chunk-size/dynamic-import warnings only.
+- Post-change Anvien refresh passed with `nodes=21233 relationships=52777`.
+- `detect-changes` passed and reported `risk_level=high`, `changed_files=12`, `changed_count=79`, `affected_count=14`. The affected processes were expected graph API and contract generation flows, including `HandleGraph -> GraphResponse`, `HandleGraph -> AddNodeHealthToSummary`, and `WebUIContractTypeScript -> ...`.
+
+Current unrelated worktree note:
+
+- `.gitignore` has an existing local change adding `.grok/`. This slice did not depend on it and must not stage it unless separately requested.
+
+Conclusion:
+
+Backend/API/contract Graph Health derivation is implemented for counted-edge topology and expected-isolated overlays. The slice does not complete detached-component traversal, unresolved-reference diagnostics, report/explain endpoints, or Web UI filters.
+
+## E7 - Phase 2 Detached-Component Derivation Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Implement P2-D detached-component grouping in `internal/graphhealth`.
+- Preserve existing graph API and NDJSON record shapes.
+- Expose component fields through generated Web contract types.
+- At the time of this slice, keep P2-E unresolved-reference diagnostics and P3-C/P3-D explain/report endpoints pending.
+
+Anvien refresh and impact commands:
+
+```powershell
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien impact ComputeSummary --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact NodeHealth --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact WebUIContractTypeScript --repo Anvien --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `ComputeSummary` / `NodeHealth`: CRITICAL risk because graph-health metadata feeds `graphPayload`, `streamGraphNDJSON`, and `/api/graph`.
+- `WebUIContractTypeScript`: CRITICAL risk because generated Web glue and contract tests depend on it.
+- Mitigation: no primary node labels changed, no NDJSON record type changed, focused graphhealth/API/contract tests plus Web build passed.
+
+Changed files:
+
+- `internal/graphhealth/policy.go`
+- `internal/graphhealth/compute.go`
+- `internal/graphhealth/compute_test.go`
+- `internal/contracts/web_ui.go`
+- `internal/contracts/web_ui_test.go`
+- `anvien-web/src/generated/anvien-contracts.ts`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- Counted edges build both directed adjacency and weak adjacency.
+- Accepted roots are:
+  - `Process`, `Route`, and `Tool` nodes;
+  - sources of `ENTRY_POINT_OF`, `HANDLES_ROUTE`, and `HANDLES_TOOL`;
+  - main-like `Function`/`Method` nodes named `main`, `init`, `run`, `start`, or `bootstrap` when exported or framework-weighted.
+- Directed traversal from roots marks reachable nodes.
+- Weak counted-edge components with internal counted edges and no root reachability become `detached_component`.
+- Isolated nodes with no counted edge remain `true_isolated`, not detached.
+- Per-node metadata now includes `componentId`, `componentSize`, and `componentReachableFromRoot`.
+- Component root IDs stay in component summaries, not duplicated on every node. An initial measurement that repeated root IDs on each node caused excessive payload growth; the final implementation avoids that.
+- `Summary` now includes `componentCount`, `detachedComponentCount`, `rootNodeCount`, and `largestDetachedComponents`.
+
+Validation commands and results:
+
+```powershell
+go test ./internal/graphhealth
+go test ./internal/graphhealth ./internal/httpapi ./internal/contracts
+go run .\cmd\generate-web-contracts
+go run .\cmd\generate-web-contracts --check
+cd anvien-web; npm run build
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien detect-changes --repo Anvien --scope all
+```
+
+Results:
+
+- Focused graphhealth/httpapi/contracts tests passed.
+- `go run .\cmd\generate-web-contracts --check` passed.
+- `npm run build` in `anvien-web` passed; Vite reported the existing chunk-size/dynamic-import warnings only.
+- `go build ./cmd/... ./internal/...` passed.
+- `go test ./cmd/... ./internal/...` passed.
+- Anvien refresh before benchmark passed with `nodes=21323 relationships=52940`.
+- Final `detect-changes` passed and reported `risk_level=medium`, `changed_files=10`, `changed_count=98`, `affected_count=4`. The affected processes are expected `HandleGraph -> ...` flows through `ComputeSummary` and `appendReason`.
+
+Benchmark note:
+
+- B1 records the post-detached summary: `detachedComponentCount=48`, `detached_component` node count `157`, derivation runtime `181.027ms`, JSON payload delta `+10,752,183 bytes` (`+37.84%`).
+
+Conclusion:
+
+P2-D is complete for backend derivation and generated contract shape. At this point P2-E diagnostics remained the next backend gap; E8 later closes that diagnostics gap.
+
+## E8 - Phase 2 Source-Backed Unresolved Diagnostics Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Implement P2-E source-backed `unresolved_reference` diagnostics.
+- Preserve unresolved-reference counts in Graph Health summaries even when diagnostics are not attached to a node.
+- Classify nodes with source-backed unresolved diagnostics as `unknown_connectivity` with `unknown` confidence.
+- Aggregate repeated diagnostics to keep HTTP graph payload growth bounded.
+- Strip the internal raw diagnostic storage property from public graph JSON and NDJSON responses.
+
+Anvien refresh and impact commands:
+
+```powershell
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien impact Graph --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact Metrics --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact ResolveBoundInto --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact resolveCall --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact resolveAccess --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact resolveTypeAnnotation --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact workspace --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact resolveHeritage --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact ComputeSummary --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact Summary --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact Diagnostic --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact writeGraphSnapshotJSON --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact graphNodeForResponse --repo Anvien --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- Multiple targets reported CRITICAL blast radius because the slice touches graph serialization, resolution metrics, API graph responses, and generated Web contracts.
+- User was warned before editing affected implementation symbols.
+- Mitigation: diagnostics are source-backed only, the internal raw diagnostic property is stripped from HTTP responses, public diagnostics are aggregated, focused tests were added at each touched boundary, and generated contracts were checked.
+
+Changed files:
+
+- `internal/graph/types.go`
+- `internal/analyze/analyze.go`
+- `internal/analyze/analyze_test.go`
+- `internal/graphhealth/diagnostics.go`
+- `internal/graphhealth/compute.go`
+- `internal/graphhealth/compute_test.go`
+- `internal/graphhealth/policy.go`
+- `internal/resolution/types.go`
+- `internal/resolution/indexes.go`
+- `internal/resolution/resolve.go`
+- `internal/resolution/emit.go`
+- `internal/resolution/resolution_test.go`
+- `internal/httpapi/graph.go`
+- `internal/httpapi/handlers_test.go`
+- `internal/contracts/web_ui.go`
+- `anvien-web/src/generated/anvien-contracts.ts`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- `graph.Graph` now supports optional snapshot metadata so analyzer output can persist unresolved-reference counters.
+- `writeGraphSnapshotJSON` preserves graph metadata, with a regression test for snapshot persistence.
+- `graphhealth.Diagnostic` now carries source node, fact family, target text, resolution source, file/path evidence, line, count, note, and source metadata.
+- Raw source diagnostics are stored under internal node property `graphHealthDiagnostics`; public `diagnostics` are aggregated by kind, fact family, source node, resolution source, file, and note.
+- `Summary` now exposes `unresolvedReferenceCount`, `sourceBackedUnresolvedReferenceCount`, and `unattributedUnresolvedReferenceCount`.
+- Resolution emits diagnostics for unresolved calls, accesses, type annotations, and heritage facts when a source node or file node is available.
+- Existing unresolved counters are not double-counted for heritage facts already counted during cross-file binding.
+- Nodes with unresolved diagnostics become `unknown_connectivity` and `unknown` confidence; diagnostic occurrence counts use the aggregated `count` value.
+- HTTP graph responses strip `graphHealthDiagnostics` from public JSON/NDJSON node properties while preserving public `diagnostics`.
+- Initial non-aggregated output produced 49,561 public diagnostic records and an excessive payload; aggregation reduced public diagnostic records to 8,756 while preserving 49,576 diagnostic occurrences.
+
+Validation commands and results:
+
+```powershell
+go test ./internal/graphhealth
+go test ./internal/resolution ./internal/analyze ./internal/httpapi ./internal/contracts
+go run .\cmd\generate-web-contracts --check
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+npm --prefix anvien-web run build
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats --benchmark-json .tmp\p2e-unresolved-diagnostics-benchmark.json --benchmark-label p2e-unresolved-diagnostics
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien detect-changes --repo Anvien --scope all
+```
+
+Results:
+
+- Focused graphhealth/resolution/analyze/httpapi/contracts tests passed.
+- Applicable Go build passed for `./cmd/... ./internal/...`.
+- Applicable Go test suite passed for `./cmd/... ./internal/...`.
+- Generated Web contract check passed.
+- Web production build passed; Vite reported the existing chunk-size/dynamic-import warnings only.
+- Benchmark analyze passed with `files: scanned=707 parsed=534 unsupported=173 failed=0`, `graph: nodes=21388 relationships=53228`.
+- P2-E graph-health summary measured `unresolvedReferenceCount=49576`, `sourceBackedUnresolvedReferenceCount=49576`, `unattributedUnresolvedReferenceCount=0`, `unknown_connectivity=4301`, `diagnosticCounts.unresolved_reference=49576`, and `diagnosticRecords=8756`.
+- Final pre-commit Anvien refresh passed with `files: scanned=707 parsed=534 unsupported=173 failed=0`, `graph: nodes=21390 relationships=53246`.
+- `detect-changes` passed and reported `risk_level=critical`, `changed_files=19`, `changed_count=138`, `affected_count=54`. The affected processes were expected resolution, graph-health, and graph API flows, including `ResolveAccess`, `ResolveTypeAnnotation`, `ResolveBoundInto`, `ResolveHeritage`, `EmitUnresolvedHeritageDiagnostics`, `HandleGraph -> ComputeSummary`, `HandleGraph -> GraphNodeForResponse`, and `RunAccessCandidateAudit`.
+
+Conclusion:
+
+P2-E is complete for source-backed unresolved diagnostics and summary counts. Remaining backend gap in P2 is P2-F exhaustive matrix coverage across every topology/status/reason combination; P3-C/P3-D explain/report endpoints and Web UI filter work remain open.
+
+## E9 - Phase 2 Graph-Health Coverage Matrix Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Complete P2-F unit coverage for the backend Graph Health derivation rules.
+- Cover every topology status, every expected-isolated overlay reason, diagnostics aggregation/source attribution rules, confidence transitions, and counted/excluded edge policy.
+- Keep this slice test-only for production code; no runtime graph-health logic changed.
+
+Anvien refresh and impact commands:
+
+```powershell
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien impact ComputeSummary --repo Anvien --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `ComputeSummary` reported CRITICAL impact because it feeds graph API and generated contract flows.
+- User was warned before editing tests that cover this high-impact symbol.
+- Mitigation: production code was not changed in this slice; only focused unit coverage and ledgers were updated.
+
+Changed files:
+
+- `internal/graphhealth/compute_test.go`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- Added expected-isolated reason matrix coverage for `test`, `fixture`, `generated`, `vendor`, `documentation`, `migration`, `exported_api`, `framework_entry`, and `cli_mcp`.
+- Added explicit `connected` topology coverage with counted incoming/outgoing degree `1/1`.
+- Added non-structural/non-counted `other` exclusion coverage with a custom display-only relationship type.
+- Added unattributed unresolved metadata coverage proving unresolved counts stay in summaries without changing any node to `unknown_connectivity` when no source-backed diagnostic exists.
+- Added exact counted-edge and structural-edge policy set coverage.
+
+Validation commands and results:
+
+```powershell
+go test ./internal/graphhealth
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien detect-changes --repo Anvien --scope all
+```
+
+Results:
+
+- Focused graphhealth tests passed.
+- Applicable Go build passed for `./cmd/... ./internal/...`.
+- Applicable Go test suite passed for `./cmd/... ./internal/...`.
+- Final pre-commit Anvien refresh passed with `files: scanned=707 parsed=534 unsupported=173 failed=0`, `graph: nodes=21413 relationships=53339`.
+- `detect-changes` passed and reported `risk_level=low`, `changed_files=5`, `changed_count=29`, `affected_count=0`, as expected for a test/ledger-only slice.
+
+Conclusion:
+
+P2-F is complete. Phase 2 backend Graph Health derivation is closed; P3-C/P3-D explain/report endpoints and Web UI filter phases remain open.
+
+## E10 - Phase 3 Graph Health Explain Endpoint Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Implement P3-C explain output for a single Graph Health node or component.
+- Add HTTP API route `GET /api/graph/explain`.
+- Add generated Web contract types for the explain response.
+- Keep `/api/graph` JSON and NDJSON shapes unchanged.
+
+Anvien refresh and impact commands:
+
+```powershell
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien query "HTTP graph API routes and handlers for graph node detail endpoint" --repo Anvien
+go run .\cmd\anvien impact NewHandler --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact handleGraph --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact WebUIContractTypeScript --repo Anvien --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `NewHandler` reported HIGH risk because route registration affects HTTP API tests.
+- `WebUIContractTypeScript` reported CRITICAL risk because generated Web contracts depend on it.
+- `handleGraph` reported LOW risk.
+- Mitigation: added a new route instead of changing `/api/graph`; added HTTP tests for node explain, component explain, and missing-target validation; regenerated and checked contracts.
+
+Changed files:
+
+- `internal/httpapi/server.go`
+- `internal/httpapi/graph.go`
+- `internal/httpapi/handlers_test.go`
+- `internal/contracts/web_ui.go`
+- `anvien-web/src/generated/anvien-contracts.ts`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- `GET /api/graph/explain` requires exactly one query parameter: `nodeId` or `componentId`.
+- Node explain returns the public node record, `GraphHealthNodeMetadata`, counted incoming/outgoing relationships, and excluded relationships.
+- Component explain returns component counts, root node IDs, topology/reason/confidence/diagnostic count maps, and bounded node/relationship samples.
+- Component sample limit is `20` to avoid returning a whole large component in one explain response.
+- Internal raw `graphHealthDiagnostics` remains stripped by the existing `graphNodeForResponse` boundary.
+- Generated TypeScript now includes `GraphHealthComponentExplanation` and `GraphHealthExplainResponse`.
+
+Validation commands and results:
+
+```powershell
+go test ./internal/httpapi ./internal/contracts
+go run .\cmd\generate-web-contracts --check
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+npm --prefix anvien-web run build
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien detect-changes --repo Anvien --scope all
+```
+
+Results:
+
+- Focused HTTP API and contract tests passed.
+- Generated Web contract check passed.
+- Applicable Go build passed for `./cmd/... ./internal/...`.
+- Applicable Go test suite passed for `./cmd/... ./internal/...`.
+- Web production build passed; Vite reported existing chunk-size/dynamic-import warnings only.
+- Final pre-commit Anvien refresh passed with `files: scanned=707 parsed=534 unsupported=173 failed=0`, `graph: nodes=21485 relationships=53561`.
+- `detect-changes` passed and reported `risk_level=high`, `changed_files=9`, `changed_count=80`, `affected_count=8`. The affected flows were expected HTTP routing, Graph Health explain helpers, and generated contract flow changes.
+
+Conclusion:
+
+P3-C is complete for HTTP/API and generated contract surfaces. P3-D report/export remains the only open Phase 3 item.
+
+## E11 - Phase 3 Graph Health Report Export Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Implement P3-D report/export path for Graph Health candidate review.
+- Add HTTP API route `GET /api/graph/report`.
+- Add generated Web contract types for the report response.
+- Keep the report wording candidate-focused and explicitly non-confirming.
+
+Anvien refresh and impact commands:
+
+```powershell
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien impact NewHandler --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact WebUIContractTypeScript --repo Anvien --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `NewHandler` reported HIGH risk because route registration affects HTTP API tests.
+- `WebUIContractTypeScript` reported CRITICAL risk because generated Web contracts depend on it.
+- Mitigation: added a new independent report route, added focused HTTP tests, regenerated contracts, and kept existing `/api/graph` and `/api/graph/explain` behavior unchanged.
+
+Changed files:
+
+- `internal/httpapi/server.go`
+- `internal/httpapi/graph.go`
+- `internal/httpapi/handlers_test.go`
+- `internal/contracts/web_ui.go`
+- `anvien-web/src/generated/anvien-contracts.ts`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- `GET /api/graph/report` returns `reportType=graph_health_candidate_review` and `verdictPolicy=candidate_not_confirmed`.
+- Default report hides expected-isolated nodes; `includeExpected=true` includes them for complete export/review.
+- `limit` defaults to `100` and caps at `1000`.
+- Candidates are sorted by triage priority: `no_incoming`, `detached_component`, `unresolved_reference`, `true_isolated`, `no_outgoing`, then `unknown_connectivity`.
+- Candidate rows include node identity, file path, topology status, confidence, counted degrees, expected reasons, diagnostics, excluded edge counts, and component metadata.
+- Generated TypeScript now includes `GraphHealthReportPriority`, `GraphHealthReportCandidate`, and `GraphHealthReportResponse`.
+
+Validation commands and results:
+
+```powershell
+go test ./internal/httpapi ./internal/contracts
+go run .\cmd\generate-web-contracts --check
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+npm --prefix anvien-web run build
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien detect-changes --repo Anvien --scope all
+```
+
+Results:
+
+- Focused HTTP API and contract tests passed.
+- Generated Web contract check passed.
+- Applicable Go build passed for `./cmd/... ./internal/...`.
+- Applicable Go test suite passed for `./cmd/... ./internal/...`.
+- Web production build passed; Vite reported existing chunk-size/dynamic-import warnings only.
+- Final pre-commit Anvien refresh passed with `files: scanned=707 parsed=534 unsupported=173 failed=0`, `graph: nodes=21546 relationships=53742`.
+- `detect-changes` passed and reported `risk_level=high`, `changed_files=9`, `changed_count=66`, `affected_count=8`. The affected flows were expected HTTP route/report helpers and generated contract flow changes.
+
+Conclusion:
+
+P3-D is complete. Phase 3 Contract/API/Reporting Surface is closed; Web UI filters and triage workflow refinements remain open.
+
+## E12 - Phase 4 Web Graph Health Filter Composition Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Implement P4-A/B/C/G/H/I for Web Graph Health filters.
+- Add a dedicated `Graph Health` filter group in the left dashboard without mixing topology with semantic node labels.
+- Add topology controls, expected-isolated reason controls, and source-backed diagnostic controls.
+- Compose Graph Health filters through app state, `GraphCanvas`, `knowledgeGraphToGraphology`, Sigma node attributes, node-type filters, focus-depth filtering, and existing graph refresh behavior.
+- Add focused unit coverage and targeted Playwright dashboard e2e coverage.
+- Leave P4-D explanatory tooltips/confidence summaries, P4-E node detail explanations, and P4-F detached-component focus for the next Web slice.
+
+Anvien refresh and impact commands:
+
+```powershell
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien impact FileTreePanel --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact knowledgeGraphToGraphology --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact GraphStateProvider --repo Anvien --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `FileTreePanel`: LOW impact for dashboard/filter rendering and tests.
+- `knowledgeGraphToGraphology`: LOW impact for graph conversion/filter composition tests.
+- `GraphStateProvider`: LOW impact for app-state filter plumbing.
+- No HIGH or CRITICAL Graph Health edit impact was reported for this slice.
+
+Changed files:
+
+- `anvien-web/src/lib/graph-health-filters.ts`
+- `anvien-web/src/lib/graph-adapter.ts`
+- `anvien-web/src/hooks/app-state/graph.tsx`
+- `anvien-web/src/hooks/useAppState.local-runtime.tsx`
+- `anvien-web/src/components/FileTreePanel.tsx`
+- `anvien-web/src/components/GraphCanvas.tsx`
+- `anvien-web/test/unit/graph-health-filters.test.ts`
+- `anvien-web/test/unit/graph.test.ts`
+- `anvien-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`
+- `anvien-web/test/unit/GraphCanvas.selection-performance.test.tsx`
+- `anvien-web/e2e/server-connect.spec.ts`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- `GraphHealthFilterState` tracks visible topology statuses, hidden expected-isolated reasons, and visible diagnostic kinds.
+- The dashboard shows `connected` as a count-only baseline and toggles `true_isolated`, `no_incoming`, `no_outgoing`, `detached_component`, and `unknown_connectivity`.
+- Expected-isolated reasons are independent overlays and can be hidden without changing topology status.
+- `unresolved_reference` diagnostics can be hidden when they are attached to source-backed node metadata.
+- Unknown future diagnostic kinds are not hidden by default when no explicit UI toggle exists for them.
+- Sigma node attributes carry topology, expected-isolated reasons, diagnostics, and confidence from backend-derived `graphHealth` metadata.
+- Label filtering and focus-depth filtering now compose with Graph Health filtering.
+- Existing edge-type visibility and graph-link visibility remain separate from Graph Health node filtering.
+
+Validation commands and results:
+
+```powershell
+npm --prefix anvien-web run test -- test/unit/graph-health-filters.test.ts test/unit/graph.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx test/unit/GraphCanvas.selection-performance.test.tsx
+npm --prefix anvien-web run build
+npm --prefix anvien-web run test
+npm --prefix anvien-web run test:e2e -- e2e/server-connect.spec.ts -g "toggles uncommon node and edge types" --workers=1
+npm --prefix anvien-web run test:e2e -- --workers=1
+git diff --check
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien detect-changes --repo Anvien --scope all
+```
+
+Results:
+
+- Focused Web unit tests passed: `4` files, `19` tests.
+- Web production build passed; Vite reported the existing dynamic-import and chunk-size warnings only.
+- Full Web unit suite passed: `42` files, `330` tests.
+- Targeted Playwright dashboard e2e passed: `1` test, `1.9m`. The test verifies Graph Health section visibility, Expected Isolation and Diagnostics sections, topology/reason/diagnostic toggles, and existing node/edge filter toggles in the same dashboard flow.
+- Full Playwright e2e command timed out after `15` minutes and produced no useful stdout before timeout. This is recorded as residual validation risk; Phase 4 full e2e remains open until node explanation and detached-component focus are implemented and the suite can be run within a stable budget.
+- `git diff --check` passed.
+- Final pre-commit Anvien refresh passed with `files: scanned=709 parsed=536 unsupported=173 failed=0`, `graph: nodes=21634 relationships=53900`.
+- `detect-changes` passed and reported `risk_level=low`, `changed_files=13`, `changed_count=56`, `affected_count=0`.
+
+Conclusion:
+
+P4-A, P4-B, P4-C, P4-G, P4-H, and P4-I are complete for the Web filter-composition slice. P4-D remains partially complete, and P4-E/P4-F remain open for the next Web implementation slice.
+
+## E13 - Phase 4 Web Graph Health Detail And Detached Focus Slice
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Complete P4-D explanatory dashboard tooltips and confidence summaries.
+- Complete P4-E selected-node Graph Health explanations inside the Code Inspector.
+- Complete P4-F detached-component focus/highlight interaction.
+- Add deterministic e2e coverage for selected-node explanation and detached-component focus without relying on a large indexed repo.
+
+Anvien refresh and impact commands:
+
+```powershell
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien impact CodeReferencesPanel --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact FileTreePanel --repo Anvien --direction upstream --depth 2 --include-tests
+go run .\cmd\anvien impact getNodeGraphHealth --repo Anvien --direction upstream --depth 2 --include-tests
+```
+
+Impact observations:
+
+- `CodeReferencesPanel`: LOW impact; direct consumer is `App.tsx`.
+- `FileTreePanel`: LOW impact; direct consumers are `App.tsx` and dashboard unit tests.
+- `getNodeGraphHealth`: HIGH impact because it feeds graph conversion, filters, tests, and graph display flows. Mitigation: this slice did not edit `getNodeGraphHealth`; it only added separate presentation helpers around the existing extraction behavior.
+
+Changed files:
+
+- `anvien-web/src/lib/graph-health-filters.ts`
+- `anvien-web/src/components/FileTreePanel.tsx`
+- `anvien-web/src/components/CodeReferencesPanel.tsx`
+- `anvien-web/test/unit/graph-health-filters.test.ts`
+- `anvien-web/test/unit/FileTreePanel.dashboard-completeness.test.tsx`
+- `anvien-web/test/unit/CodeReferencesPanel.graph-health.test.tsx`
+- `anvien-web/e2e/server-connect.spec.ts`
+- `anvien-web/e2e/graph-health-ui.spec.ts`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-benchmark.md`
+
+Implementation notes:
+
+- Added safe label/description maps for topology status, expected-isolated reasons, diagnostics, and confidence.
+- Added confidence counts to the dashboard Graph Health section.
+- Dashboard Graph Health titles now explain status/reason/diagnostic/confidence meaning without calling candidates bugs.
+- Code Inspector now shows selected-node Graph Health detail: topology, confidence, counted incoming/outgoing, component size, excluded edge categories, expected reasons, diagnostics, detached explanation, and next triage action.
+- Detached nodes with a `componentId` expose a `Focus component` action that highlights all nodes with the same component id and focuses the selected node.
+- Next-action wording stays candidate-focused and avoids confirmed bug/deletion language.
+
+Validation commands and results:
+
+```powershell
+npm --prefix anvien-web run test -- test/unit/graph-health-filters.test.ts test/unit/FileTreePanel.dashboard-completeness.test.tsx test/unit/CodeReferencesPanel.graph-health.test.tsx
+npm --prefix anvien-web run build
+npm --prefix anvien-web run test:e2e -- e2e/server-connect.spec.ts -g "toggles uncommon node and edge types" --workers=1
+npm --prefix anvien-web run test:e2e -- e2e/graph-health-ui.spec.ts --workers=1
+npm --prefix anvien-web run test
+git diff --check
+go run .\cmd\anvien analyze --force [redacted removed argument] --no-stats
+go run .\cmd\anvien detect-changes --repo Anvien --scope all
+```
+
+Results:
+
+- Focused Web unit tests passed: `3` files, `12` tests.
+- Web production build passed; Vite reported the existing dynamic-import and chunk-size warnings only.
+- Targeted large-graph dashboard e2e passed: `1` test, `2.3m`; it covers Graph Health filters, Confidence count display, existing node/edge controls, and selected-node Graph Health detail on a real indexed repo.
+- Deterministic mocked Graph Health e2e passed: `1` test, `7.1s`; it covers selected-node explanation and detached-component `Focus component` action.
+- Full Web unit suite passed: `43` files, `332` tests.
+- `git diff --check` passed.
+- Final pre-commit Anvien refresh passed with `files: scanned=711 parsed=538 unsupported=173 failed=0`, `graph: nodes=21658 relationships=53962`.
+- `detect-changes` passed and reported `risk_level=low`, `changed_files=10`, `changed_count=34`, `affected_count=0`.
+
+Conclusion:
+
+P4-D, P4-E, and P4-F are complete. Phase 4 Web UI Graph Health filters and explanations are closed.
+
+## E14 - Phase 5 Triage Workflow Reconciliation
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Close Phase 5 checklist items that were implemented by previous code slices.
+- Record this as doc-only reconciliation; per plan rule 6, Anvien was not used for this doc-only commit.
+
+Inspection commands:
+
+```powershell
+rg -n "triage|candidate_not_confirmed|no_incoming|detached_component|includeExpected|expectedIsolation|Next:|getGraphHealthNextAction|Focus component|P5-" internal anvien-web docs\plans\2026-05-20-anvien-orphan-node-connectivity-lens-plan.md
+Get-Content docs\plans\2026-05-20-anvien-orphan-node-connectivity-lens-plan.md | Select-Object -Skip 252 -First 70
+git diff --check
+```
+
+Findings:
+
+- P5-A is implemented by `GET /api/graph/report`: report candidates are ordered by `no_incoming`, `detached_component`, `unresolved_reference`, `true_isolated`, optional `no_outgoing`, then `unknown_connectivity`; expected-isolated nodes are hidden unless `includeExpected=true`.
+- P5-B is implemented by report/export contracts and HTTP output using `reportType=graph_health_candidate_review` and `verdictPolicy=candidate_not_confirmed`.
+- P5-C is implemented by Web Graph Health titles and the Code Inspector detail panel, including `getGraphHealthNextAction`.
+- P5-D is implemented by Web Graph Health expected-isolated reason filters using `hiddenExpectedIsolationReasons`, without mutating raw graph data or topology status.
+
+Changed files:
+
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-plan.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-evidence.md`
+- `docs/plans/2026-05-20-anvien-orphan-node-connectivity-lens-benchmark.md`
+
+Validation:
+
+- `git diff --check` passed.
+
+Conclusion:
+
+Phase 5 is complete. No runtime code changed in this reconciliation slice.
+
+## E15 - Phase 6 Final Validation And Web Latency Evidence
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Close remaining validation evidence for applicable Go build/test and Web Graph Health latency.
+- Record final graph-health inventory from the HTTP graph summary.
+
+Commands:
+
+```powershell
+go build ./cmd/... ./internal/...
+go test ./cmd/... ./internal/...
+
+# Web latency benchmark, run from anvien-web with Playwright chromium against live local services.
+@'
+const { chromium, expect } = require('@playwright/test');
+# opens Restaurant_manager, waits for status-ready, opens Filters, toggles:
+# No incoming off/on, Test off/on, Unresolved reference off/on
+# measures click -> aria-pressed update -> requestAnimationFrame
+'@ | node -
+
+(Invoke-RestMethod -Uri 'http://127.0.0.1:4848/api/repos' -TimeoutSec 10) | ConvertTo-Json -Depth 4
+$payload = Invoke-RestMethod -Uri 'http://127.0.0.1:4848/api/graph?repo=Anvien&stream=false' -TimeoutSec 120
+$payload.graphHealth | ConvertTo-Json -Depth 8
+```
+
+Results:
+
+- `go build ./cmd/... ./internal/...` passed.
+- `go test ./cmd/... ./internal/...` passed.
+- Full `go build ./...` remains intentionally not used for closure because existing non-buildable fixture packages under `anvien/test/fixtures/...` block it; this blocker was recorded earlier in P6-A.
+- Web latency benchmark on `Restaurant_manager` (`78,358` nodes, `130,588` relationships) measured 6 Graph Health toggle samples:
+  - `No incoming` off: `4236.831ms`
+  - `No incoming` on: `3541.886ms`
+  - `Test` off: `4198.017ms`
+  - `Test` on: `4256.324ms`
+  - `Unresolved reference` off: `3856.182ms`
+  - `Unresolved reference` on: `6402.975ms`
+  - average: `4415.369ms`; p95: `6402.975ms`
+- Same benchmark captured Web diagnostics: graph conversion `4980.800ms`, visual graph node count `78,358`, max node size `3`, rendered size cap `3`, structural-to-leaf ratio `3`.
+- Final `Anvien` graph-health HTTP summary measured `21,658` nodes, `53,962` relationships, counted relationships `26,578`, component count `14,186`, detached components `48`, root nodes `805`, unresolved references `50,543`, and source-backed unresolved references `50,543`.
+
+Conclusion:
+
+Phase 6 validation is complete for applicable build/test/e2e and measured Web latency. The only full-build caveat is the existing fixture-package blocker for `go build ./...`.
+
+## E16 - Final Closure
+
+Date: 2026-05-20
+
+Status: recorded
+
+Scope:
+
+- Close the plan after all phases, ledgers, validation, benchmarks, and commits.
+- This is a doc-only closure slice; per plan rule 6, Anvien was not used.
+
+Recent closure commits:
+
+```text
+f8d53fa docs: record graph health validation benchmark
+d62c67d docs: close graph health triage workflow
+1a8dbfd feat: explain graph health in code inspector
+9eef2fb feat: add graph health web filters
+05a3b18 feat: export graph health candidate report
+ce98c8a feat: expose graph health explain endpoint
+b191c34 test: cover graph health connectivity matrix
+d8fe055 feat: classify source-backed unresolved connectivity
+81d434f feat: derive detached graph health components
+cbadef3 feat: expose graph health metadata
+2b31225 feat(graphhealth): Phase 2 starter - core derivation with accepted policies + unit test
+```
+
+Closure state:
+
+- Phase 1 policy/baseline is complete.
+- Phase 2 backend derivation is complete.
+- Phase 3 contract/API/reporting is complete.
+- Phase 4 Web UI filters, explanations, and detached-component focus are complete.
+- Phase 5 triage workflow is complete.
+- Phase 6 applicable validation and final benchmark recording are complete.
+- Phase 7 closure is complete.
+
+Residual caveats:
+
+- `go build ./...` remains blocked by existing non-buildable fixture packages under `anvien/test/fixtures/...`; applicable `go build ./cmd/... ./internal/...` and `go test ./cmd/... ./internal/...` passed.
+- The monolithic full Playwright suite previously exceeded the local 15-minute command budget; targeted large-graph and deterministic Graph Health e2e coverage passed and are recorded in E12/E13.
+- Large-graph Web Graph Health toggles are functional but measured at multi-second latency on `Restaurant_manager`; optimization is a future performance improvement, not a closure blocker for this plan.
+
+Conclusion:
+
+The orphan-node connectivity lens plan is complete. Graph Health is implemented as derived metadata and candidate/explanation workflow, not as a semantic `OrphanNode` label or automatic bug/deletion verdict.

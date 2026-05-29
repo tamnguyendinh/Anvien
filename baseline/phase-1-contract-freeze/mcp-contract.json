@@ -2,12 +2,12 @@
   "observedAtLocal": "2026-05-08T21:30:00+07:00",
   "status": "mcp_contract_frozen",
   "verification": {
-    "runtimeDumpCommand": "node --input-type=module import AVMATRIX_TOOLS/getResourceDefinitions/getResourceTemplates from avmatrix/dist",
+    "runtimeDumpCommand": "node --input-type=module import ANVIEN_TOOLS/getResourceDefinitions/getResourceTemplates from anvien/dist",
     "runtimeDumpPath": ".tmp/phase1_mcp_runtime_dump.json",
     "buildPrerequisite": "npm run build had passed before the runtime dump"
   },
   "transport": {
-    "stdio": "avmatrix mcp starts the MCP server over CompatibleStdioServerTransport",
+    "stdio": "anvien mcp starts the MCP server over CompatibleStdioServerTransport",
     "http": "ALL /api/mcp uses StreamableHTTP transport with stateful sessions",
     "httpSessionHeader": "mcp-session-id",
     "httpSessionTtlMs": 1800000,
@@ -165,51 +165,51 @@
   },
   "resources": [
     {
-      "uri": "avmatrix://repos",
+      "uri": "anvien://repos",
       "name": "All Indexed Repositories",
       "mimeType": "text/yaml",
       "outputShape": "repos list or repos: [] with analyze hint"
     },
     {
-      "uri": "avmatrix://setup",
-      "name": "AVmatrix Setup Content",
+      "uri": "anvien://setup",
+      "name": "Anvien Setup Content",
       "mimeType": "text/markdown",
       "outputShape": "AGENTS.md content blocks for indexed repos"
     }
   ],
   "resourceTemplates": [
     {
-      "uriTemplate": "avmatrix://repo/{name}/context",
+      "uriTemplate": "anvien://repo/{name}/context",
       "name": "Repo Overview",
       "mimeType": "text/yaml",
       "outputShape": "project/stats/tools/resources plus optional staleness hint"
     },
     {
-      "uriTemplate": "avmatrix://repo/{name}/clusters",
+      "uriTemplate": "anvien://repo/{name}/clusters",
       "name": "Repo Modules",
       "mimeType": "text/yaml",
       "outputShape": "modules list; empty output includes analyze hint"
     },
     {
-      "uriTemplate": "avmatrix://repo/{name}/processes",
+      "uriTemplate": "anvien://repo/{name}/processes",
       "name": "Repo Processes",
       "mimeType": "text/yaml",
       "outputShape": "processes list; empty output includes analyze hint"
     },
     {
-      "uriTemplate": "avmatrix://repo/{name}/schema",
+      "uriTemplate": "anvien://repo/{name}/schema",
       "name": "Graph Schema",
       "mimeType": "text/yaml",
       "outputShape": "Cypher schema reference"
     },
     {
-      "uriTemplate": "avmatrix://repo/{name}/cluster/{clusterName}",
+      "uriTemplate": "anvien://repo/{name}/cluster/{clusterName}",
       "name": "Module Detail",
       "mimeType": "text/yaml",
       "outputShape": "module detail and members"
     },
     {
-      "uriTemplate": "avmatrix://repo/{name}/process/{processName}",
+      "uriTemplate": "anvien://repo/{name}/process/{processName}",
       "name": "Process Trace",
       "mimeType": "text/yaml",
       "outputShape": "process trace steps"
@@ -228,11 +228,11 @@
     }
   ],
   "staleIndexBehavior": [
-    "LocalBackend init rejects stale legacy KuzuDB indexes with: AVmatrix: \"<repo>\" has a stale KuzuDB index. Run: avmatrix analyze <path>",
-    "No indexed repositories error: No indexed repositories. Run: avmatrix analyze",
+    "LocalBackend init rejects stale legacy KuzuDB indexes with: Anvien: \"<repo>\" has a stale KuzuDB index. Run: anvien analyze <path>",
+    "No indexed repositories error: No indexed repositories. Run: anvien analyze",
     "Repo context resource includes staleness: \"<hint>\" when checkStaleness reports stale",
-    "Repo context resource always includes re_index: Run `avmatrix analyze` in terminal if data is stale",
-    "FTS unavailable warning tells user to run avmatrix analyze --force to rebuild indexes"
+    "Repo context resource always includes re_index: Run `anvien analyze` in terminal if data is stale",
+    "FTS unavailable warning tells user to run anvien analyze --force to rebuild indexes"
   ],
   "callToolEnvelope": {
     "success": [{ "type": "text", "text": "result text plus next-step hint" }],
@@ -241,7 +241,7 @@
       "isError": true
     },
     "nextStepHints": {
-      "list_repos": "READ avmatrix://repo/{name}/context",
+      "list_repos": "READ anvien://repo/{name}/context",
       "query": "use context({name})",
       "context": "use impact({target}) or read processes",
       "impact": "review d=1 and read processes",

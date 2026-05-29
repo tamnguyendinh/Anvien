@@ -27,7 +27,7 @@
   },
   "proofProgram": {
     "location": ".tmp/phase1-go-proofs/ladybugdb",
-    "module": "avmatrix-phase1-ladybug-proof",
+    "module": "anvien-phase1-ladybug-proof",
     "operations": [
       "open in-memory LadybugDB database",
       "open connection",

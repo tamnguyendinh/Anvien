@@ -25,7 +25,7 @@ For this Web UI plan, benchmarkable measurements include:
 
 Inventory measurements must include both:
 
-- the current real graph loaded from `.avmatrix/graph.json`;
+- the current real graph loaded from `.anvien/graph.json`;
 - a representative Web UI fixture that covers known and fallback graph display cases, because the current real graph may not contain every supported label or relationship type.
 
 ## B0 - Initial Inventory Baseline
@@ -34,8 +34,8 @@ Date: 2026-05-19
 
 Graph snapshot:
 
-- path: `.avmatrix/graph.json`
-- repo: `E:\AVmatrix-GO`
+- path: `.anvien/graph.json`
+- repo: `E:\Anvien`
 - nodes: `20,354`
 - relationships: `50,980`
 - unique node labels present: `16`
@@ -127,9 +127,9 @@ Sample pairs:
 
 | Source-target pair | Relationship types |
 |---|---|
-| `Class:avmatrix-web/test/unit/use-auto-scroll.test.tsx:ResizeObserverMock -> Property:avmatrix-web/test/unit/use-auto-scroll.test.tsx:ResizeObserverMock.observedElements` | `ACCESSES`, `HAS_PROPERTY` |
+| `Class:anvien-web/test/unit/use-auto-scroll.test.tsx:ResizeObserverMock -> Property:anvien-web/test/unit/use-auto-scroll.test.tsx:ResizeObserverMock.observedElements` | `ACCESSES`, `HAS_PROPERTY` |
 | `Const:internal/aicontext/aicontext.go:startMarker -> Struct:internal/aicontext/aicontext.go:baseSkill` | `CALLS`, `USES` |
-| `File:avmatrix-web/test/unit/graph-edge-render-style.test.ts -> Function:avmatrix-web/src/lib/graph-edge-render-style.ts:getSelectedContextEdgeSize` | `CALLS`, `USES` |
+| `File:anvien-web/test/unit/graph-edge-render-style.test.ts -> Function:anvien-web/src/lib/graph-edge-render-style.ts:getSelectedContextEdgeSize` | `CALLS`, `USES` |
 
 ### Visual Scale Problem Baseline
 
@@ -197,7 +197,7 @@ Initial code-path baseline:
 |---|---|---|
 | Web app heartbeat | `connectHeartbeat` starts only in `exploring` mode | heartbeat starts after graph data handoff, while canvas work begins |
 | Backend heartbeat endpoint | `/api/heartbeat` sends SSE `:ok` immediately and every `15s` | EventSource errors if backend/connection drops |
-| Launcher UI heartbeat | injected script pings `/__avmatrix_launcher/heartbeat` every `5s` | browser main-thread stall can delay interval/fetch |
+| Launcher UI heartbeat | injected script pings `/__anvien_launcher/heartbeat` every `5s` | browser main-thread stall can delay interval/fetch |
 | Launcher lifecycle timeout | `15s` without UI heartbeat closes session | heavy graph conversion/layout may exceed timeout budget |
 | Graph conversion | graphology conversion runs synchronously on main thread | can starve timers/fetches on large graphs |
 | Layout cleanup | `noverlap.assign` runs on main thread after layout stop | can add another stall after graph is already visible |
@@ -206,7 +206,7 @@ Observed launcher log evidence:
 
 | Time | Log / artifact | Meaning |
 |---|---|---|
-| 2026-05-19 15:20:03.638886 | `start root=E:\AVmatrix-GO` | launcher session started |
+| 2026-05-19 15:20:03.638886 | `start root=E:\Anvien` | launcher session started |
 | 2026-05-19 15:20:03.646305 | `backend pid=13752` | launcher owned backend process |
 | 2026-05-19 15:21:30 | `reports/problem/screenshot_1779178877.png` timestamp | graph UI visible before session closed |
 | 2026-05-19 15:21:45.648312 | `web ui session closed` | lifecycle monitor fired while UI should still have been usable |
@@ -237,8 +237,8 @@ Date: 2026-05-19
 
 Current graph snapshot after re-analyze:
 
-- path: `.avmatrix/graph.json`
-- repo: `E:\AVmatrix-GO`
+- path: `.anvien/graph.json`
+- repo: `E:\Anvien`
 - nodes: `20,421`
 - relationships: `51,111`
 - unique node labels present: `16`
@@ -358,7 +358,7 @@ Date: 2026-05-19
 Current graph input:
 
 ```text
-repo: E:\AVmatrix-GO
+repo: E:\Anvien
 nodes: 20,436
 relationships: 51,176
 ```
@@ -409,7 +409,7 @@ Layout parent candidates:
 
 Notes:
 
-- `HANDLES_ROUTE`, `HANDLES_TOOL`, and `WRAPS` are supported by the layout policy but have zero count in the current AVmatrix-GO graph snapshot.
+- `HANDLES_ROUTE`, `HANDLES_TOOL`, and `WRAPS` are supported by the layout policy but have zero count in the current Anvien graph snapshot.
 - Process/route/tool grouping uses higher priority than broad file-level `DEFINES`; community membership stays lower priority so it does not override stronger containment/ownership.
 
 ## B4 - Visual Scale and Connection Stability
@@ -443,7 +443,7 @@ Focused e2e graph-load evidence:
 
 | Command | Result | Duration |
 |---|---|---:|
-| `npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "selects a repo from landing and loads graph" --workers=1 --timeout=120000` | passed, `1 / 1` | `25.8s` test time, `31.4s` total |
+| `npm --prefix anvien-web run test:e2e -- server-connect.spec.ts -g "selects a repo from landing and loads graph" --workers=1 --timeout=120000` | passed, `1 / 1` | `25.8s` test time, `31.4s` total |
 
 Notes:
 
@@ -474,7 +474,7 @@ After visual-scale fix:
 | Project/Property radius ratio | `3x` |
 | Dense rendered node size cap after reducer multipliers | `3` |
 
-Measured with the current AVmatrix-GO graph:
+Measured with the current Anvien graph:
 
 ```json
 {
@@ -510,7 +510,7 @@ Focused e2e result:
 
 | Command | Result | Duration |
 |---|---|---:|
-| `npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000` | passed, `1 / 1` | `1.1m` test time, `1.3m` total |
+| `npm --prefix anvien-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000` | passed, `1 / 1` | `1.1m` test time, `1.3m` total |
 
 Runtime diagnostics captured from the same server/frontend setup:
 
@@ -656,7 +656,7 @@ Status: completed
 
 Date: 2026-05-19
 
-Final AVmatrix-GO analyze:
+Final Anvien analyze:
 
 ```text
 files: scanned=688 parsed=530 unsupported=158 failed=0
@@ -733,12 +733,12 @@ Final validation summary:
 
 | Command | Result |
 |---|---|
-| `go build -trimpath -o .tmp\avmatrix.exe .\cmd\avmatrix` | passed |
-| `npm --prefix avmatrix-web run build` | passed, built in `24.02s` |
-| `npm --prefix avmatrix-web run test` | passed, `41` files / `316` tests, `33.29s` |
+| `go build -trimpath -o .tmp\anvien.exe .\cmd\anvien` | passed |
+| `npm --prefix anvien-web run build` | passed, built in `24.02s` |
+| `npm --prefix anvien-web run test` | passed, `41` files / `316` tests, `33.29s` |
 | `go test ./cmd/... ./internal/... -count=1` | passed |
-| `npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "Graph Dashboard Controls" --workers=1 --timeout=120000` | passed, `2 / 2`, `1.6m` |
-| `npm --prefix avmatrix-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000` | passed, `1 / 1`, `1.2m` |
+| `npm --prefix anvien-web run test:e2e -- server-connect.spec.ts -g "Graph Dashboard Controls" --workers=1 --timeout=120000` | passed, `2 / 2`, `1.6m` |
+| `npm --prefix anvien-web run test:e2e -- server-connect.spec.ts -g "keeps connection stable after large graph load and layout window" --workers=1 --timeout=120000` | passed, `1 / 1`, `1.2m` |
 
 Test stability fixes completed during final validation:
 

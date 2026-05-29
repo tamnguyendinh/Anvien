@@ -14,7 +14,7 @@ Residual same-family unverified surfaces: none.
 
 ## Zero-trust Review Basis
 
-I did not accept coder claims, plan wording, report wording, or test names as proof. I inspected the source diff from `18ebce2..6e3eeed`, read the touched runtime files before running verification, refreshed the AVmatrix graph, used AVmatrix context for the affected MCP symbols, reproduced the prior runtime failures through stdio and HTTP MCP paths, then ran targeted and broad Go verification.
+I did not accept coder claims, plan wording, report wording, or test names as proof. I inspected the source diff from `18ebce2..6e3eeed`, read the touched runtime files before running verification, refreshed the Anvien graph, used Anvien context for the affected MCP symbols, reproduced the prior runtime failures through stdio and HTTP MCP paths, then ran targeted and broad Go verification.
 
 Untracked file left untouched: `coder.md`.
 
@@ -114,18 +114,18 @@ Tests were treated as regression evidence only after source and runtime inspecti
 Commands run after source review:
 
 ```text
-avmatrix analyze --force [redacted removed argument] --no-stats
+anvien analyze --force [redacted removed argument] --no-stats
 go test ./internal/mcp ./internal/httpapi ./internal/group -count=1
 go test ./cmd/... ./internal/... -count=1
-powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1
 ```
 
 Results:
 
-- AVmatrix graph refresh completed successfully: 25,488 nodes, 44,615 edges, 614 clusters, 658 flows.
+- Anvien graph refresh completed successfully: 25,488 nodes, 44,615 edges, 614 clusters, 658 flows.
 - Targeted Go tests passed for `internal/mcp`, `internal/httpapi`, and `internal/group`.
 - Broad Go command/internal tests passed.
-- Launcher build passed, including `avmatrix-web` Vite build. Vite emitted existing chunk-size and mixed static/dynamic import warnings only.
+- Launcher build passed, including `anvien-web` Vite build. Vite emitted existing chunk-size and mixed static/dynamic import warnings only.
 - Stdio MCP smoke passed for both cypher fail-close and rename apply.
 - HTTP MCP smoke passed for both cypher fail-close and rename apply.
 

@@ -27,7 +27,7 @@ If the intended product rule is "running analyze must always perform full analyz
 Command:
 
 ```powershell
-node avmatrix\dist\cli\index.js analyze E:\Lap_trinh\GitNexus-main --force --skip-git [redacted removed argument] --no-stats --verbose
+node anvien\dist\cli\index.js analyze E:\Lap_trinh\GitNexus-main --force --skip-git [redacted removed argument] --no-stats --verbose
 ```
 
 Observed result:
@@ -75,44 +75,44 @@ This proves Web/API analyze can complete quickly by taking the up-to-date shortc
 
 ### Full analyze path includes pipeline, DB load, FTS, and total timing
 
-- `avmatrix/src/core/run-analyze.ts:217` calls `runPipelineFromRepo(...)`.
-- `avmatrix/src/core/run-analyze.ts:250` loads the graph into LadybugDB via `loadGraphToLbug(...)`.
-- `avmatrix/src/core/run-analyze.ts:263` begins FTS index creation.
-- `avmatrix/src/core/run-analyze.ts:464` records `totalWallMs: metrics.elapsedMs()`.
+- `anvien/src/core/run-analyze.ts:217` calls `runPipelineFromRepo(...)`.
+- `anvien/src/core/run-analyze.ts:250` loads the graph into LadybugDB via `loadGraphToLbug(...)`.
+- `anvien/src/core/run-analyze.ts:263` begins FTS index creation.
+- `anvien/src/core/run-analyze.ts:464` records `totalWallMs: metrics.elapsedMs()`.
 
 ### Up-to-date shortcut bypasses full analyze
 
-- `avmatrix/src/core/run-analyze.ts:164` returns early when `existingMeta && !options.force && existingMeta.lastCommit === currentCommit`.
-- `avmatrix/src/cli/analyze.ts:255` prints `Already up to date`.
-- `avmatrix/src/cli/analyze.ts:257` explicitly says benchmark JSON is not written unless rerun with `--force`.
+- `anvien/src/core/run-analyze.ts:164` returns early when `existingMeta && !options.force && existingMeta.lastCommit === currentCommit`.
+- `anvien/src/cli/analyze.ts:255` prints `Already up to date`.
+- `anvien/src/cli/analyze.ts:257` explicitly says benchmark JSON is not written unless rerun with `--force`.
 
 ### Web Analyze form does not force full analyze
 
-- `avmatrix-web/src/components/RepoAnalyzer.tsx:157` sends `const request = { path: localPath.trim() };`.
-- `avmatrix-web/src/components/RepoAnalyzer.tsx:158` calls `startAnalyze(request)`.
+- `anvien-web/src/components/RepoAnalyzer.tsx:157` sends `const request = { path: localPath.trim() };`.
+- `anvien-web/src/components/RepoAnalyzer.tsx:158` calls `startAnalyze(request)`.
 - No `force: true` is sent from this form.
 
 ### Header Re-analyze does force
 
-- `avmatrix-web/src/components/Header.tsx:304` calls `startAnalyze({ ... })`.
-- `avmatrix-web/src/components/Header.tsx:306` sends `force: true`.
+- `anvien-web/src/components/Header.tsx:304` calls `startAnalyze({ ... })`.
+- `anvien-web/src/components/Header.tsx:306` sends `force: true`.
 
 This means Web UI has inconsistent analyze semantics depending on which UI path is used.
 
 ### Repo click / connect path only loads graph
 
-- `avmatrix-web/src/components/DropZone.tsx:178` defines `connectToRepo(...)`.
-- `avmatrix-web/src/components/DropZone.tsx:188` calls `connectToServer(...)`.
-- `avmatrix-web/src/services/backend-client.ts:806` calls `fetchGraph(...)`.
-- `avmatrix-web/src/services/backend-client.ts:441` builds `/api/graph?...stream=true`.
-- `avmatrix/src/server/api.ts:490` serves `GET /api/graph`.
-- `avmatrix/src/runtime/repo-runtime/graph-read-service.ts:217` reads graph via `executeRepoReadQuery(...)`.
+- `anvien-web/src/components/DropZone.tsx:178` defines `connectToRepo(...)`.
+- `anvien-web/src/components/DropZone.tsx:188` calls `connectToServer(...)`.
+- `anvien-web/src/services/backend-client.ts:806` calls `fetchGraph(...)`.
+- `anvien-web/src/services/backend-client.ts:441` builds `/api/graph?...stream=true`.
+- `anvien/src/server/api.ts:490` serves `GET /api/graph`.
+- `anvien/src/runtime/repo-runtime/graph-read-service.ts:217` reads graph via `executeRepoReadQuery(...)`.
 
 This path is graph load, not analyze.
 
 ### Backend only forces when client sends force
 
-- `avmatrix/src/server/api.ts:1157` sends worker options as `{ force: !!force, embeddings: !!embeddings }`.
+- `anvien/src/server/api.ts:1157` sends worker options as `{ force: !!force, embeddings: !!embeddings }`.
 
 Therefore the backend allows non-force analyze from Web clients.
 
@@ -161,4 +161,4 @@ Before approval, provide same-head evidence for the corrected contract:
 
 ## Notes
 
-No source code was changed as part of this investigation. Runtime measurement did regenerate the `.avmatrix` index for `E:\Lap_trinh\GitNexus-main` during the CLI full-rebuild measurement.
+No source code was changed as part of this investigation. Runtime measurement did regenerate the `.anvien` index for `E:\Lap_trinh\GitNexus-main` during the CLI full-rebuild measurement.

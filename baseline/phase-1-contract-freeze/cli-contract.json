@@ -136,30 +136,30 @@
   "exitCodes": [
     {
       "case": "help output",
-      "command": "avmatrix --help and subcommand --help",
+      "command": "anvien --help and subcommand --help",
       "exitCode": 0
     },
     {
       "case": "wiki disabled",
-      "command": "avmatrix wiki",
+      "command": "anvien wiki",
       "exitCode": 1,
       "expectedOutput": "Wiki capability mode: off"
     },
     {
       "case": "serve rejects non-loopback host",
-      "command": "avmatrix serve --host 0.0.0.0",
+      "command": "anvien serve --host 0.0.0.0",
       "exitCode": 1,
       "expectedOutput": "Local-only mode only allows loopback hosts: localhost, 127.0.0.1, or ::1."
     },
     {
       "case": "impact missing target and uid",
-      "command": "avmatrix impact",
+      "command": "anvien impact",
       "exitCode": 1,
-      "expectedOutput": "Usage: avmatrix impact [symbol_name] [--uid <uid>] [--direction upstream|downstream]"
+      "expectedOutput": "Usage: anvien impact [symbol_name] [--uid <uid>] [--direction upstream|downstream]"
     },
     {
       "case": "clean without force",
-      "command": "avmatrix clean",
+      "command": "anvien clean",
       "exitCode": 0,
       "expectedOutput": "Run with --force to confirm deletion."
     },
@@ -167,14 +167,14 @@
       "case": "direct tool command when no indexed repos exist",
       "command": "query/context/impact/cypher/detect-changes after argument validation",
       "exitCode": 1,
-      "expectedOutput": "AVmatrix: No indexed repositories found. Run: avmatrix analyze"
+      "expectedOutput": "Anvien: No indexed repositories found. Run: anvien analyze"
     }
   ],
   "outputSnapshots": {
-    "rootHelpStartsWith": "Usage: avmatrix [options] [command]",
+    "rootHelpStartsWith": "Usage: anvien [options] [command]",
     "analyzeHelpIncludesEnvironmentVariables": [
-      "AVMATRIX_NO_GITIGNORE=1  Skip .gitignore parsing (still reads the local ignore override file)",
-      "AVMATRIX_MAX_PROCESSES=700  Temporarily override maxExecutionFlows from .avmatrix/settings.json in the target repo during analyze"
+      "ANVIEN_NO_GITIGNORE=1  Skip .gitignore parsing (still reads the local ignore override file)",
+      "ANVIEN_MAX_PROCESSES=700  Temporarily override maxExecutionFlows from .anvien/settings.json in the target repo during analyze"
     ],
     "serveHelpIncludes": "Port number (default: \"4747\")",
     "groupSyncHelpIncludes": "Sync Contract Registry"

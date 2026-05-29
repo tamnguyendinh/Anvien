@@ -1,16 +1,16 @@
 {
   "observedAtLocal": "2026-05-08T21:39:40+07:00",
   "status": "web_ui_shared_contract_exported",
-  "scope": "Current browser-facing payload contracts between the local backend and avmatrix-web. Web UI remains TypeScript/React; non-Web UI runtime is the future Go owner.",
+  "scope": "Current browser-facing payload contracts between the local backend and anvien-web. Web UI remains TypeScript/React; non-Web UI runtime is the future Go owner.",
   "authorities": {
-    "graphTypes": "avmatrix-shared/src/graph/types.ts",
-    "schemaConstants": "avmatrix-shared/src/lbug/schema-constants.ts",
-    "pipelineTypes": "avmatrix-shared/src/pipeline.ts",
-    "sessionTypes": "avmatrix-shared/src/session.ts",
-    "webClientTypes": "avmatrix-web/src/services/backend-client.ts",
-    "httpProducer": "avmatrix/src/server/api.ts",
-    "sessionProducer": "avmatrix/src/server/session-bridge.ts",
-    "jobProducer": "avmatrix/src/server/analyze-job.ts"
+    "graphTypes": "anvien-shared/src/graph/types.ts",
+    "schemaConstants": "anvien-shared/src/lbug/schema-constants.ts",
+    "pipelineTypes": "anvien-shared/src/pipeline.ts",
+    "sessionTypes": "anvien-shared/src/session.ts",
+    "webClientTypes": "anvien-web/src/services/backend-client.ts",
+    "httpProducer": "anvien/src/server/api.ts",
+    "sessionProducer": "anvien/src/server/session-bridge.ts",
+    "jobProducer": "anvien/src/server/analyze-job.ts"
   },
   "graphPayload": {
     "endpoints": [
@@ -193,7 +193,7 @@
     "availability": ["ready", "not_installed", "not_signed_in", "error"],
     "executionModes": ["sandboxed", "bypass"],
     "runtimeEnvironments": ["native", "wsl2"],
-    "statusResponse": "SessionStatusResponse from avmatrix-shared/src/session.ts",
+    "statusResponse": "SessionStatusResponse from anvien-shared/src/session.ts",
     "chatRequest": { "message": "string", "repoName": "string?", "repoPath": "string?" },
     "streamEvents": [
       "session_started",

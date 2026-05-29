@@ -12,13 +12,13 @@
 
 The refactor moved the active transcript click chain onto the new chat surface:
 
-- `avmatrix-web/src/components/ChatPanel.tsx:37`
-- `avmatrix-web/src/components/ChatPanel.tsx:50`
-- `avmatrix-web/src/components/right-panel/ChatTranscript.tsx:134`
-- `avmatrix-web/src/components/right-panel/ChatTranscript.tsx:149`
-- `avmatrix-web/src/components/MarkdownRenderer.tsx:93`
-- `avmatrix-web/src/components/MarkdownRenderer.tsx:125`
-- `avmatrix-web/src/hooks/useAppState.local-runtime.tsx:548`
+- `anvien-web/src/components/ChatPanel.tsx:37`
+- `anvien-web/src/components/ChatPanel.tsx:50`
+- `anvien-web/src/components/right-panel/ChatTranscript.tsx:134`
+- `anvien-web/src/components/right-panel/ChatTranscript.tsx:149`
+- `anvien-web/src/components/MarkdownRenderer.tsx:93`
+- `anvien-web/src/components/MarkdownRenderer.tsx:125`
+- `anvien-web/src/hooks/useAppState.local-runtime.tsx:548`
 
 That is now the real active wiring for:
 
@@ -29,9 +29,9 @@ That is now the real active wiring for:
 
 But the new tests only lock:
 
-- analyze CTA and typing behavior in `avmatrix-web/test/unit/ChatPanel.test.tsx:69`
-- bridge parsing via direct calls in `avmatrix-web/test/unit/useAppState.local-runtime.test.tsx:83`
-- runtime lazy start / repo reset in `avmatrix-web/test/unit/ChatRuntimeContext.test.tsx:54`
+- analyze CTA and typing behavior in `anvien-web/test/unit/ChatPanel.test.tsx:69`
+- bridge parsing via direct calls in `anvien-web/test/unit/useAppState.local-runtime.test.tsx:83`
+- runtime lazy start / repo reset in `anvien-web/test/unit/ChatRuntimeContext.test.tsx:54`
 
 I did not find any test that exercises the active `ChatPanel -> ChatTranscript -> MarkdownRenderer -> handleTranscriptLinkClick -> addCodeReference` click path after the refactor. The plan explicitly lists this as a mandatory behavioral check under:
 
@@ -43,24 +43,24 @@ Under the supervisor hard rule, a missing/stale test in the same refactor scope 
 ## What is already good
 
 - `RightPanel` is now a shell that mounts `ChatPanel` / `ProcessesPanel` only.
-  - `avmatrix-web/src/components/RightPanel.tsx:12`
-  - `avmatrix-web/src/components/RightPanel.tsx:71`
+  - `anvien-web/src/components/RightPanel.tsx:12`
+  - `anvien-web/src/components/RightPanel.tsx:71`
 - `ChatPanel` no longer reads graph state directly.
   - no `GraphCanvas`
   - no `useSigma`
   - no direct `useAppState()` in `ChatPanel`
 - chat runtime moved into the new provider.
-  - `avmatrix-web/src/hooks/chat-runtime/ChatRuntimeContext.tsx:33`
+  - `anvien-web/src/hooks/chat-runtime/ChatRuntimeContext.tsx:33`
 - `AppContent` now gets `refreshLLMSettings` from `useChatRuntime`, not old app context.
-  - `avmatrix-web/src/App.tsx:61`
+  - `anvien-web/src/App.tsx:61`
 - targeted plan validation passes
-- full `avmatrix-web` suite passes
+- full `anvien-web` suite passes
 
 ## Validation run
 
-- `cd avmatrix-web && npx vitest run test/unit/ChatRuntimeContext.test.tsx test/unit/ChatPanel.test.tsx test/unit/RightPanel.local-runtime.test.tsx test/unit/ChatComposer.test.tsx`
-- `cd avmatrix-web && npx tsc -b --noEmit`
-- `cd avmatrix-web && npm test`
+- `cd anvien-web && npx vitest run test/unit/ChatRuntimeContext.test.tsx test/unit/ChatPanel.test.tsx test/unit/RightPanel.local-runtime.test.tsx test/unit/ChatComposer.test.tsx`
+- `cd anvien-web && npx tsc -b --noEmit`
+- `cd anvien-web && npm test`
 
 Results:
 

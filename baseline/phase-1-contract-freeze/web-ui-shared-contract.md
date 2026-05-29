@@ -2,19 +2,19 @@
 
 Observed: 2026-05-08T21:39:40+07:00
 
-This freezes the browser-facing payload contracts used by `avmatrix-web`. The Web UI remains
+This freezes the browser-facing payload contracts used by `anvien-web`. The Web UI remains
 TypeScript/React. The future Go runtime must preserve these payloads or generate equivalent
 TypeScript adapter types for the Web UI.
 
 ## Authorities
 
-- Graph payloads: `avmatrix-shared/src/graph/types.ts` and
-  `avmatrix-shared/src/lbug/schema-constants.ts`.
-- Pipeline progress: `avmatrix-shared/src/pipeline.ts`.
-- Session status/events: `avmatrix-shared/src/session.ts`.
-- Web client surface: `avmatrix-web/src/services/backend-client.ts`.
-- Runtime producers: `avmatrix/src/server/api.ts`, `avmatrix/src/server/session-bridge.ts`, and
-  `avmatrix/src/server/analyze-job.ts`.
+- Graph payloads: `anvien-shared/src/graph/types.ts` and
+  `anvien-shared/src/lbug/schema-constants.ts`.
+- Pipeline progress: `anvien-shared/src/pipeline.ts`.
+- Session status/events: `anvien-shared/src/session.ts`.
+- Web client surface: `anvien-web/src/services/backend-client.ts`.
+- Runtime producers: `anvien/src/server/api.ts`, `anvien/src/server/session-bridge.ts`, and
+  `anvien/src/server/analyze-job.ts`.
 
 ## Graph Payload
 

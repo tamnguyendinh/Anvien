@@ -2,8 +2,8 @@
 
 Observed: 2026-05-08T21:30:00+07:00
 
-Runtime dump source: `AVMATRIX_TOOLS`, `getResourceDefinitions`, and `getResourceTemplates` from
-the built `avmatrix/dist` output. The temporary full dump is `.tmp/phase1_mcp_runtime_dump.json`;
+Runtime dump source: `ANVIEN_TOOLS`, `getResourceDefinitions`, and `getResourceTemplates` from
+the built `anvien/dist` output. The temporary full dump is `.tmp/phase1_mcp_runtime_dump.json`;
 the durable contract is `mcp-contract.json`.
 
 ## Tools
@@ -34,17 +34,17 @@ Legacy aliases still route through backend dispatch: `search -> query`, `explore
 
 Static resources:
 
-- `avmatrix://repos`
-- `avmatrix://setup`
+- `anvien://repos`
+- `anvien://setup`
 
 Templates:
 
-- `avmatrix://repo/{name}/context`
-- `avmatrix://repo/{name}/clusters`
-- `avmatrix://repo/{name}/processes`
-- `avmatrix://repo/{name}/schema`
-- `avmatrix://repo/{name}/cluster/{clusterName}`
-- `avmatrix://repo/{name}/process/{processName}`
+- `anvien://repo/{name}/context`
+- `anvien://repo/{name}/clusters`
+- `anvien://repo/{name}/processes`
+- `anvien://repo/{name}/schema`
+- `anvien://repo/{name}/cluster/{clusterName}`
+- `anvien://repo/{name}/process/{processName}`
 
 ## Prompts
 
@@ -53,11 +53,11 @@ Templates:
 
 ## Staleness And Error Behavior
 
-- No indexed repositories: `No indexed repositories. Run: avmatrix analyze`.
-- Stale legacy Kuzu index: `AVmatrix: "<repo>" has a stale KuzuDB index. Run: avmatrix analyze <path>`.
+- No indexed repositories: `No indexed repositories. Run: anvien analyze`.
+- Stale legacy Kuzu index: `Anvien: "<repo>" has a stale KuzuDB index. Run: anvien analyze <path>`.
 - Repo context resource includes `staleness: "<hint>"` when git staleness is detected.
-- Repo context resource always includes `re_index: Run avmatrix analyze in terminal if data is stale`.
-- FTS degraded warning tells the user to run `avmatrix analyze --force`.
+- Repo context resource always includes `re_index: Run anvien analyze in terminal if data is stale`.
+- FTS degraded warning tells the user to run `anvien analyze --force`.
 
 ## Response Envelope
 

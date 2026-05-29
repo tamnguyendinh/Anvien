@@ -2,7 +2,7 @@
 
 Timestamp: 2026-05-12 16:09:19 UTC+7
 Lane: supervisor
-Scope: `docs/plans/2026-05-08-avmatrix-go-typescript-node-to-go-conversion-plan.md`, cumulative implementation through Phase 13 only.
+Scope: `docs/plans/2026-05-08-anvien-typescript-node-to-go-conversion-plan.md`, cumulative implementation through Phase 13 only.
 Reviewed head: `41e6753` (`Fix MCP phase reject findings`)
 Mode: Mode 2 current worktree / post-coder re-review.
 Verdict: REJECT
@@ -29,7 +29,7 @@ None found.
 
 File: `internal/mcp/tools.go:312`
 
-Issue: `cypherTool` validates read-only syntax and calls `runCypherRead`. In default builds, `lbugnative.OpenReadRunner` returns `ErrUnavailable` (`internal/lbugnative/runner_default.go:9`), and the packaged launcher build compiles without the `ladybugdb` tag (`avmatrix-launcher/build.ps1:72`). That makes default MCP `cypher` fall back to `runMCPGraphQuery` (`internal/mcp/tools.go:328`), which pattern-matches only broad query fragments (`internal/mcp/tools.go:411`) and ignores actual Cypher predicates/projections for relationship queries (`internal/mcp/tools.go:421`, `internal/mcp/tools.go:498`).
+Issue: `cypherTool` validates read-only syntax and calls `runCypherRead`. In default builds, `lbugnative.OpenReadRunner` returns `ErrUnavailable` (`internal/lbugnative/runner_default.go:9`), and the packaged launcher build compiles without the `ladybugdb` tag (`anvien-launcher/build.ps1:72`). That makes default MCP `cypher` fall back to `runMCPGraphQuery` (`internal/mcp/tools.go:328`), which pattern-matches only broad query fragments (`internal/mcp/tools.go:411`) and ignores actual Cypher predicates/projections for relationship queries (`internal/mcp/tools.go:421`, `internal/mcp/tools.go:498`).
 
 Independent runtime repro on a temporary indexed repo:
 
@@ -41,7 +41,7 @@ RETURN a.name, a.filePath
 Expected:
 row_count = 0
 
-Observed from `go run ./cmd/avmatrix mcp`:
+Observed from `go run ./cmd/anvien mcp`:
 row_count = 1
 row: main -> helper
 ```
@@ -73,7 +73,7 @@ function main() {
 }
 ```
 
-Observed from `go run ./cmd/avmatrix mcp` with `rename(helper -> renamedHelper, dry_run=true)`:
+Observed from `go run ./cmd/anvien mcp` with `rename(helper -> renamedHelper, dry_run=true)`:
 
 ```json
 {
@@ -105,7 +105,7 @@ None found beyond the two HIGH runtime blockers above.
 
 ## Suggestions
 
-- Align the Go MCP `rename` discovery text with actual behavior after the fix. The TypeScript baseline describes graph plus text search (`avmatrix/src/mcp/tools.ts:208`), while the Go tool currently reports `text_search_edits: 0` unconditionally (`internal/mcp/rename.go:84`).
+- Align the Go MCP `rename` discovery text with actual behavior after the fix. The TypeScript baseline describes graph plus text search (`anvien/src/mcp/tools.ts:208`), while the Go tool currently reports `text_search_edits: 0` unconditionally (`internal/mcp/rename.go:84`).
 - Keep `go test ./...` out of the Phase 1-13 gate until the plan's later cutover isolation/removal of legacy fixture packages is done. The valid current Go gate is `go test ./cmd/... ./internal/...`.
 
 ## Source-Level Clearance Notes By Production File Group
@@ -120,7 +120,7 @@ None found beyond the two HIGH runtime blockers above.
 - HTTP API: cleared for Phase 12/13 routes. Handler registers analyze, graph, search/embed, and MCP endpoints at `internal/httpapi/server.go:47`; analyze rejects remote URLs and resolves local path at `internal/httpapi/analyze.go:63`; graph loads/streams `graph.json` at `internal/httpapi/graph.go:32`; HTTP MCP session creation requires initialize before no-session use at `internal/httpapi/mcp.go:153`.
 - MCP resources/prompts/context/impact/route tools: cleared except for `cypher` and `rename`. Tool dispatch includes all Phase 13 tools at `internal/mcp/server.go:244`; resources/templates/prompts are exposed at `internal/mcp/resources.go:74`, `internal/mcp/resources.go:91`, and `internal/mcp/prompts.go:30`; context expands class/interface incoming refs at `internal/mcp/context.go:61`; impact validates direction/relation types and runs bounded BFS at `internal/mcp/impact.go:101`; route/API shape tools read Route nodes and consumer metadata at `internal/mcp/route_shape_impact.go:68`.
 - Group tools and contract registry: cleared for the implemented Phase 13 graph slice. MCP group tools dispatch to group core at `internal/mcp/group_tools.go:47`; config parses repos/links/detect/matching/packages and validates manifest link type/role/contract at `internal/group/config.go:9`; sync resolves registered members, extracts HTTP contracts only when enabled, exact-matches, and writes `contracts.json` at `internal/group/sync.go:10`.
-- Launcher build gate: cleared for Go-aware packaging, with one relevant caveat for `cypher`. The launcher build compiles the Go backend CLI into `server-bundle/avmatrix.exe` at `avmatrix-launcher/build.ps1:72`, but that build line does not set `-tags ladybugdb`, so default MCP `cypher` reaches the fallback bug described above.
+- Launcher build gate: cleared for Go-aware packaging, with one relevant caveat for `cypher`. The launcher build compiles the Go backend CLI into `server-bundle/anvien.exe` at `anvien-launcher/build.ps1:72`, but that build line does not set `-tags ladybugdb`, so default MCP `cypher` reaches the fallback bug described above.
 
 ## Verification Run
 
@@ -143,7 +143,7 @@ Result: all command/internal packages passed.
 Passed:
 
 ```powershell
-cd avmatrix-web
+cd anvien-web
 npm run build
 ```
 
@@ -152,8 +152,8 @@ Result: TypeScript/Vite build passed. Vite emitted existing chunk-size/dynamic-i
 Independent runtime repros:
 
 ```powershell
-go run ./cmd/avmatrix analyze .tmp\rename-line-repro --force [redacted removed argument] --no-stats
-go run ./cmd/avmatrix mcp
+go run ./cmd/anvien analyze .tmp\rename-line-repro --force [redacted removed argument] --no-stats
+go run ./cmd/anvien mcp
 ```
 
 Observed the `cypher` false-positive row and `rename` duplicate-line dry-run/apply failure described above.

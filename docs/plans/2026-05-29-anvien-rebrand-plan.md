@@ -281,7 +281,7 @@ Interim Phase 4 MCP served-resource validation completed `canonicalResourceSchem
 - [x] [P5-A] Rename repo/global storage constants from `.avmatrix` to `.anvien`.
 - [x] [P5-B] Rename `AVMATRIX_HOME` to `ANVIEN_HOME` with no fallback.
 - [x] [P5-C] Rename all `AVMATRIX_*` variables to `ANVIEN_*` with no fallback.
-- [ ] [P5-D] Update settings examples, lock paths, graph paths, registry docs, group storage docs, and tests.
+- [x] [P5-D] Update settings examples, lock paths, graph paths, registry docs, group storage docs, and tests.
 - [ ] [P5-E] Decide whether existing local `.avmatrix` data is moved once by release instructions or discarded/rebuilt. Do not implement dual-read support.
 - [x] [P5-F] Validate analyze creates `<repo>/.anvien/graph.json` and global registry under `~/.anvien/registry.json`.
 - [ ] [P5-G] Validate the full generated storage shape: `<repo>/.anvien/lbug`, optional `lbug.wal`/`lbug.lock`, `graph.json`, `meta.json`, `settings.json`, `analyze.lock`, `analyze.tmp`, plus `~/.anvien/runtime.json` and `~/.anvien/groups/**` where relevant.
@@ -325,10 +325,10 @@ Interim Phase 7 launcher validation completed binary/protocol/process/lifecycle 
 ## Phase 8 - Documentation, Baselines, And Reports
 
 - [x] [P8-A] Update README, ARCHITECTURE, RUNBOOK, TESTING, CONTRIBUTING, CHANGELOG current entries, Docker docs, install instructions, setup docs, and badges.
-- [ ] [P8-B] Regenerate or rewrite active baseline contract snapshots that still assert old names.
-- [ ] [P8-C] Delete stale generated reports or update them if they are active validation artifacts. For tracked historical reports, record whether old-name filenames are preserved only as historical evidence.
-- [ ] [P8-D] Keep old-name wording only in this rebrand plan/evidence/benchmark set and final release note history sentence.
-- [ ] [P8-E] Run a final old-name search and record every remaining occurrence with a reason.
+- [x] [P8-B] Regenerate or rewrite active baseline contract snapshots that still assert old names.
+- [x] [P8-C] Delete stale generated reports or update them if they are active validation artifacts. For tracked historical reports, record whether old-name filenames are preserved only as historical evidence.
+- [x] [P8-D] Keep old-name wording only in this rebrand plan/evidence/benchmark set and final release note history sentence.
+- [x] [P8-E] Run a final old-name search and record every remaining occurrence with a reason.
 - [x] [P8-F] Rename generated Web contract output paths from `contracts/web-ui/avmatrix-web-contract.schema.json` and `avmatrix-web/src/generated/avmatrix-contracts.ts` to Anvien paths, then update the generator and imports rather than hand-editing generated outputs.
 - [x] [P8-G] Update root `package-lock.json`, per-package lockfiles, and any lockfile package names after package/folder renames.
 

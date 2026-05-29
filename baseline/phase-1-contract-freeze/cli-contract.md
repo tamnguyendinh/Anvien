@@ -2,7 +2,7 @@
 
 Observed: 2026-05-08T21:05:00+07:00
 
-Build gate before CLI snapshots: `cd avmatrix && npm run build` passed.
+Build gate before CLI snapshots: `cd anvien && npm run build` passed.
 
 Temporary output files were written under `.tmp/phase1_cli_*` and are intentionally not committed.
 The durable contract is this file plus `cli-contract.json`.
@@ -57,21 +57,21 @@ Group subcommands:
 Root help begins with:
 
 ```text
-Usage: avmatrix [options] [command]
+Usage: anvien [options] [command]
 ```
 
 Analyze help includes:
 
 ```text
 Environment variables:
-  AVMATRIX_NO_GITIGNORE=1  Skip .gitignore parsing (still reads the local ignore override file)
-  AVMATRIX_MAX_PROCESSES=700  Temporarily override maxExecutionFlows from .avmatrix/settings.json in the target repo during analyze
+  ANVIEN_NO_GITIGNORE=1  Skip .gitignore parsing (still reads the local ignore override file)
+  ANVIEN_MAX_PROCESSES=700  Temporarily override maxExecutionFlows from .anvien/settings.json in the target repo during analyze
 ```
 
 Bad serve host output:
 
 ```text
-Failed to start AVmatrix server:
+Failed to start Anvien server:
 
   Local-only mode only allows loopback hosts: localhost, 127.0.0.1, or ::1.
 ```
@@ -79,7 +79,7 @@ Failed to start AVmatrix server:
 Missing impact target output:
 
 ```text
-Usage: avmatrix impact [symbol_name] [--uid <uid>] [--direction upstream|downstream]
+Usage: anvien impact [symbol_name] [--uid <uid>] [--direction upstream|downstream]
 ```
 
 Wiki disabled output begins with:
@@ -97,10 +97,10 @@ Run with --force to confirm deletion.
 ## Exit Codes
 
 - Help output: `0`.
-- `avmatrix wiki`: `1` while local wiki is disabled.
-- `avmatrix serve --host 0.0.0.0`: `1`.
-- `avmatrix impact` with neither target nor `--uid`: `1`.
-- `avmatrix clean` without `--force`: `0`, no deletion.
+- `anvien wiki`: `1` while local wiki is disabled.
+- `anvien serve --host 0.0.0.0`: `1`.
+- `anvien impact` with neither target nor `--uid`: `1`.
+- `anvien clean` without `--force`: `0`, no deletion.
 - Direct tool commands exit `1` after validation when no indexed repositories exist.
 
 ## Environment Reference

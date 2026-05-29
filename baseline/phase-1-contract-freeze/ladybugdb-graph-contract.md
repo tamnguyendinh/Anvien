@@ -4,19 +4,19 @@ Observed: 2026-05-08T21:38:00+07:00
 
 Verification:
 
-- `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` passed.
-- `cd avmatrix && npx vitest run test/unit/schema.test.ts test/unit/security.test.ts test/unit/impact-confidence.test.ts test/unit/impact-contract.test.ts test/unit/contract-freeze/phase1-contract-snapshot.test.ts test/integration/pipeline-graph-golden.test.ts` passed.
-- `cd avmatrix-web && npx vitest run test/unit/security-guards.test.ts` passed.
+- `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` passed.
+- `cd anvien && npx vitest run test/unit/schema.test.ts test/unit/security.test.ts test/unit/impact-confidence.test.ts test/unit/impact-contract.test.ts test/unit/contract-freeze/phase1-contract-snapshot.test.ts test/integration/pipeline-graph-golden.test.ts` passed.
+- `cd anvien-web && npx vitest run test/unit/security-guards.test.ts` passed.
 
 ## LadybugDB Contract
 
-- Node tables are the `NODE_TABLES` set from `avmatrix-shared/src/lbug/schema-constants.ts`.
+- Node tables are the `NODE_TABLES` set from `anvien-shared/src/lbug/schema-constants.ts`.
 - All graph edges are stored in one `CodeRelation` relationship table.
 - `CodeRelation.type` is a `STRING` property; the database does not enforce relationship type enum
   membership. Schema constants are the application-level contract.
 - `CodeRelation` columns: `type`, `confidence`, `reason`, `step`, `resolutionSource`, `evidence`,
   `fileHash`.
-- Embeddings live in `CodeEmbedding` with chunk metadata and `FLOAT[AVMATRIX_EMBEDDING_DIMS]`;
+- Embeddings live in `CodeEmbedding` with chunk metadata and `FLOAT[ANVIEN_EMBEDDING_DIMS]`;
   default dimensions are `384`.
 - Vector index: `code_embedding_idx`, cosine metric.
 - Analyze creates FTS indexes for `File`, `Function`, `Class`, `Method`, and `Interface`.

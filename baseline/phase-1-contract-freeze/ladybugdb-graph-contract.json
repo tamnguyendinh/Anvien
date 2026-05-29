@@ -2,22 +2,22 @@
   "observedAtLocal": "2026-05-08T21:38:00+07:00",
   "status": "ladybugdb_graph_contract_reconciled",
   "verification": {
-    "fullLauncherBuild": "powershell -ExecutionPolicy Bypass -File avmatrix-launcher\\build.ps1 PASS",
-    "avmatrixTargeted": "cd avmatrix && npx vitest run test/unit/schema.test.ts test/unit/security.test.ts test/unit/impact-confidence.test.ts test/unit/impact-contract.test.ts test/unit/contract-freeze/phase1-contract-snapshot.test.ts test/integration/pipeline-graph-golden.test.ts PASS",
-    "webTargeted": "cd avmatrix-web && npx vitest run test/unit/security-guards.test.ts PASS"
+    "fullLauncherBuild": "powershell -ExecutionPolicy Bypass -File anvien-launcher\\build.ps1 PASS",
+    "anvienTargeted": "cd anvien && npx vitest run test/unit/schema.test.ts test/unit/security.test.ts test/unit/impact-confidence.test.ts test/unit/impact-contract.test.ts test/unit/contract-freeze/phase1-contract-snapshot.test.ts test/integration/pipeline-graph-golden.test.ts PASS",
+    "webTargeted": "cd anvien-web && npx vitest run test/unit/security-guards.test.ts PASS"
   },
   "authorities": {
-    "graphTypes": "avmatrix-shared/src/graph/types.ts",
-    "schemaConstants": "avmatrix-shared/src/lbug/schema-constants.ts",
-    "ladybugDdl": "avmatrix/src/core/lbug/schema.ts",
+    "graphTypes": "anvien-shared/src/graph/types.ts",
+    "schemaConstants": "anvien-shared/src/lbug/schema-constants.ts",
+    "ladybugDdl": "anvien/src/core/lbug/schema.ts",
     "runtimeEmitters": [
-      "avmatrix/src/core/ingestion/emit-references.ts",
-      "avmatrix/src/core/ingestion/call-processor.ts",
-      "avmatrix/src/core/ingestion/import-processor.ts",
-      "avmatrix/src/core/ingestion/mro-processor.ts",
-      "avmatrix/src/core/ingestion/pipeline-phases/processes.ts"
+      "anvien/src/core/ingestion/emit-references.ts",
+      "anvien/src/core/ingestion/call-processor.ts",
+      "anvien/src/core/ingestion/import-processor.ts",
+      "anvien/src/core/ingestion/mro-processor.ts",
+      "anvien/src/core/ingestion/pipeline-phases/processes.ts"
     ],
-    "fixtureGolden": "avmatrix/test/fixtures/pipeline-golden/mini-repo/expected-graph.json"
+    "fixtureGolden": "anvien/test/fixtures/pipeline-golden/mini-repo/expected-graph.json"
   },
   "ladybugdb": {
     "nodeTables": [
@@ -88,7 +88,7 @@
         "chunkIndex": "INT32",
         "startLine": "INT64",
         "endLine": "INT64",
-        "embedding": "FLOAT[AVMATRIX_EMBEDDING_DIMS default 384]",
+        "embedding": "FLOAT[ANVIEN_EMBEDDING_DIMS default 384]",
         "contentHash": "STRING"
       },
       "vectorIndex": "CALL CREATE_VECTOR_INDEX('CodeEmbedding', 'code_embedding_idx', 'embedding', metric := 'cosine')"

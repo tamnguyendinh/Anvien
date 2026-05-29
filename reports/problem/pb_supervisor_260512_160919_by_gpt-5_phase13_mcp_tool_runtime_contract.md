@@ -2,7 +2,7 @@
 
 Timestamp: 2026-05-12 16:09:19 UTC+7
 Lane: supervisor
-Scope: Phase 13 MCP tools in `docs/plans/2026-05-08-avmatrix-go-typescript-node-to-go-conversion-plan.md`
+Scope: Phase 13 MCP tools in `docs/plans/2026-05-08-anvien-typescript-node-to-go-conversion-plan.md`
 Reviewed head: `41e6753`
 Verdict: BLOCKER
 Severity: HIGH
@@ -30,7 +30,7 @@ MATCH (a)-[:CodeRelation {type: 'CALLS'}]->(b:Function {name: "doesNotExist"})
 RETURN a.name, a.filePath
 ```
 
-Observed through `go run ./cmd/avmatrix mcp`: `row_count = 1`, returning `main -> helper`.
+Observed through `go run ./cmd/anvien mcp`: `row_count = 1`, returning `main -> helper`.
 
 Expected: zero rows or a closed/unavailable error.
 
@@ -56,7 +56,7 @@ function main() {
 }
 ```
 
-Observed through `go run ./cmd/avmatrix mcp`:
+Observed through `go run ./cmd/anvien mcp`:
 - dry-run returns two `graph` edits for `src/app.ts:1`.
 - dry-run omits the actual `return helper();` call-site.
 - `dry_run=false` returns `rename edit mismatch at src/app.ts:1`.

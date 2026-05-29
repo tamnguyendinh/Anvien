@@ -972,7 +972,51 @@ Pre-commit change detection:
 - Resolution gap change inventory reported `91` changed gap entities from touched files, with total resolution gap count still `0`; classifications were standard library/test framework/builtin/in-repo analyzer gaps and not a runtime compatibility fallback.
 - The CRITICAL summary is expected for this slice because it intentionally touches package folders, Web/launcher paths, contract generation, semantic path classifiers, GitHub automation, plugin configs, and generated output paths.
 
-## E13 - Future Implementation Evidence
+## E13 - Phase 5/8 Active Config And Historical Artifact Rewrite
+
+Date: 2026-05-29
+
+Status: recorded
+
+Scope:
+
+- Updated active root `.env.example` image examples and container names from old package/image/container names to Anvien names.
+- Updated `eslint.config.mjs` ignore rules and React file globs from old package/Web folders to `anvien` and `anvien-web`.
+- Rewrote old-name contents in historical `docs/plans/**`, `docs/query-health/**`, `baseline/**`, and `reports/**` artifacts outside the rebrand ledger.
+- Renamed historical artifact filenames that contained old slugs to Anvien slugs. The bulk rewrite reported `144` rewritten files and `95` renamed files.
+- Preserved the rebrand plan/evidence/benchmark/inventory files as the only intentional old-name ledger, because they need to identify the pre-rename state and audit the removal.
+
+Implementation notes:
+
+- This slice was a mechanical docs/config artifact rewrite, not a runtime compatibility layer.
+- No old-name aliases were added.
+- Reports were updated rather than deleted because they are tracked historical audit artifacts; old-name filenames and contents were not preserved as a runtime/history exception.
+
+Validation:
+
+| Command | Result |
+|---|---|
+| active old-name search excluding `docs/plans/2026-05-29-anvien-rebrand-*`, generated build output, `node_modules`, test output, and `.git` | pass; `0` matches. |
+| filename search for `*avmatrix*` under `docs/plans`, `docs/query-health`, and `reports` | pass; `0` files. |
+| `rg` over `.env.example` and `eslint.config.mjs` for old names | pass; `0` matches. |
+| positive `rg` over `.env.example` and `eslint.config.mjs` for Anvien paths/names | pass; image examples, container names, ignore paths, and React file glob use Anvien names. |
+| `npm run lint` | pass; `0` errors and `164` existing warnings. |
+| `.\anvien\bin\anvien.exe analyze --force` | pass; scanned `816`, parsed `584`, unsupported `232`, failed `0`; graph `91523` nodes and `124984` relationships. |
+
+E2E status:
+
+- Not run for this slice because no Web UI behavior changed. The changed frontend-adjacent file is ESLint config only.
+
+Pre-commit change detection:
+
+- Command: `.\anvien\bin\anvien.exe detect-changes --repo AVmatrix --scope all`.
+- Result: pass; summary risk `low`.
+- Changed scope: `149` files, `279` changed symbols.
+- Changed app layers: `docs` `279`.
+- Changed functional areas: `documentation` `153`, `reporting` `126`.
+- Affected scope: `0` affected symbols/process nodes.
+
+## E14 - Future Implementation Evidence
 
 Date: pending
 

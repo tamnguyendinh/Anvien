@@ -7,7 +7,7 @@
 
 ## Why this correction exists
 
-The previous Phase 1 re-review blocked sign-off using a remaining full-suite `vitest` worker-fork error from `cd avmatrix && npm test`.
+The previous Phase 1 re-review blocked sign-off using a remaining full-suite `vitest` worker-fork error from `cd anvien && npm test`.
 
 That blocker was too broad for this plan review.
 
@@ -36,19 +36,19 @@ Phase 1 now matches the intended plan behavior:
 Relevant code:
 
 - WSL2-only Windows adapter path:
-  - [`avmatrix/src/runtime/session-adapters/codex.ts:285`](F:\AVmatrix-main\avmatrix\src\runtime\session-adapters\codex.ts:285)
-  - [`avmatrix/src/runtime/session-adapters/codex.ts:319`](F:\AVmatrix-main\avmatrix\src\runtime\session-adapters\codex.ts:319)
+  - [`anvien/src/runtime/session-adapters/codex.ts:285`](F:\Anvien-main\anvien\src\runtime\session-adapters\codex.ts:285)
+  - [`anvien/src/runtime/session-adapters/codex.ts:319`](F:\Anvien-main\anvien\src\runtime\session-adapters\codex.ts:319)
 - no Windows shell/native branch kept alive in adapter launch:
-  - [`avmatrix/src/runtime/session-adapters/codex.ts:62`](F:\AVmatrix-main\avmatrix\src\runtime\session-adapters\codex.ts:62)
+  - [`anvien/src/runtime/session-adapters/codex.ts:62`](F:\Anvien-main\anvien\src\runtime\session-adapters\codex.ts:62)
 - stale registry path handling through `repoName`:
-  - [`avmatrix/src/runtime/runtime-controller.ts:163`](F:\AVmatrix-main\avmatrix\src\runtime\runtime-controller.ts:163)
-  - [`avmatrix/src/runtime/runtime-controller.ts:183`](F:\AVmatrix-main\avmatrix\src\runtime\runtime-controller.ts:183)
+  - [`anvien/src/runtime/runtime-controller.ts:163`](F:\Anvien-main\anvien\src\runtime\runtime-controller.ts:163)
+  - [`anvien/src/runtime/runtime-controller.ts:183`](F:\Anvien-main\anvien\src\runtime\runtime-controller.ts:183)
 
 ## Validation that is in-scope for Phase 1
 
-- `cd avmatrix && npx vitest run test/unit/runtime-controller.test.ts test/unit/session-bridge.test.ts test/unit/codex-session-adapter.test.ts`
+- `cd anvien && npx vitest run test/unit/runtime-controller.test.ts test/unit/session-bridge.test.ts test/unit/codex-session-adapter.test.ts`
   - result: `18/18` pass
-- `cd avmatrix && npx tsc --noEmit`
+- `cd anvien && npx tsc --noEmit`
   - result: pass
 - real smoke for `CodexSessionAdapter.getStatus()`
   - result:
@@ -59,16 +59,16 @@ Relevant code:
 Updated behavioral tests are aligned with the migrated contract:
 
 - stale registry path via `repoName` status path:
-  - [`avmatrix/test/unit/runtime-controller.test.ts:144`](F:\AVmatrix-main\avmatrix\test\unit\runtime-controller.test.ts:144)
+  - [`anvien/test/unit/runtime-controller.test.ts:144`](F:\Anvien-main\anvien\test\unit\runtime-controller.test.ts:144)
 - stale registry path via `repoName` chat path:
-  - [`avmatrix/test/unit/runtime-controller.test.ts:216`](F:\AVmatrix-main\avmatrix\test\unit\runtime-controller.test.ts:216)
+  - [`anvien/test/unit/runtime-controller.test.ts:216`](F:\Anvien-main\anvien\test\unit\runtime-controller.test.ts:216)
 - WSL2 available / WSL2 required adapter behavior:
-  - [`avmatrix/test/unit/codex-session-adapter.test.ts:56`](F:\AVmatrix-main\avmatrix\test\unit\codex-session-adapter.test.ts:56)
-  - [`avmatrix/test/unit/codex-session-adapter.test.ts:64`](F:\AVmatrix-main\avmatrix\test\unit\codex-session-adapter.test.ts:64)
+  - [`anvien/test/unit/codex-session-adapter.test.ts:56`](F:\Anvien-main\anvien\test\unit\codex-session-adapter.test.ts:56)
+  - [`anvien/test/unit/codex-session-adapter.test.ts:64`](F:\Anvien-main\anvien\test\unit\codex-session-adapter.test.ts:64)
 
 ## Out-of-scope note
 
-`cd avmatrix && npm test` still reports one repo-wide unhandled worker-fork error.
+`cd anvien && npm test` still reports one repo-wide unhandled worker-fork error.
 
 At the time of this correction, that error has **not** been traced to:
 

@@ -1,0 +1,170 @@
+{
+  "schemaVersion": "anvien.query_health.v1",
+  "suite": "anvien-app-layer-resolution-gap-lens",
+  "description": "Initial query-health suite for App Layer, ResolutionGap, graph-health, launcher runtime, API contract, and Web graph surfaces.",
+  "cases": [
+    {
+      "id": "unresolved-reference-diagnostic-generation",
+      "intent": "unresolved reference diagnostic generation",
+      "expectedFiles": [
+        "internal/resolution/resolve.go",
+        "internal/resolution/emit.go",
+        "internal/graphhealth/diagnostics.go"
+      ],
+      "expectedSymbols": [
+        "resolveCall",
+        "emitUnresolvedReference",
+        "AppendDiagnosticToNode"
+      ],
+      "expectedAppLayers": [
+        "backend"
+      ],
+      "expectedFunctionalAreas": [
+        "resolution",
+        "graph_health"
+      ],
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 3
+    },
+    {
+      "id": "graph-health-unknown-connectivity-separation",
+      "intent": "graph health unknown connectivity topology resolution health separation",
+      "expectedFiles": [
+        "internal/graphhealth/compute.go",
+        "internal/graphhealth/policy.go",
+        "anvien-web/src/lib/graph-health-filters.ts"
+      ],
+      "expectedSymbols": [
+        "ComputeSummary",
+        "getNodeGraphHealth"
+      ],
+      "expectedAppLayers": [
+        "backend",
+        "frontend"
+      ],
+      "expectedFunctionalAreas": [
+        "graph_health",
+        "web_graph_ui"
+      ],
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 3
+    },
+    {
+      "id": "app-layer-resolution-gap-layout",
+      "intent": "app layer resolution gap layout rings graph islands optimizer manual",
+      "expectedFiles": [
+        "anvien-web/src/lib/graph-adapter.ts",
+        "anvien-web/src/hooks/useSigma.ts",
+        "anvien-web/src/lib/graph-health-filters.ts"
+      ],
+      "expectedSymbols": [
+        "knowledgeGraphToGraphology",
+        "useSigma"
+      ],
+      "expectedAppLayers": [
+        "frontend"
+      ],
+      "expectedFunctionalAreas": [
+        "layout",
+        "web_graph_ui"
+      ],
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 3
+    },
+    {
+      "id": "runtime-reset-hidden-terminal",
+      "intent": "runtime reset hidden terminal launcher start stop browser web ui",
+      "expectedFiles": [
+        "anvien-launcher/src/main.go"
+      ],
+      "expectedSymbols": [
+        "startRuntime",
+        "resetRuntime",
+        "stopRuntime",
+        "hiddenCommand"
+      ],
+      "expectedAppLayers": [
+        "cli_launcher"
+      ],
+      "expectedFunctionalAreas": [
+        "launcher",
+        "runtime"
+      ],
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 3
+    },
+    {
+      "id": "api-contract-surfaces",
+      "intent": "api contract generated web contract http graph response surfaces",
+      "expectedFiles": [
+        "internal/httpapi/graph.go",
+        "internal/contracts/web_ui.go",
+        "anvien-web/src/generated/anvien-contracts.ts"
+      ],
+      "expectedSymbols": [
+        "WebUIContract",
+        "WebUIContractTypeScript"
+      ],
+      "expectedAppLayers": [
+        "api",
+        "api_contract",
+        "generated_contract"
+      ],
+      "expectedFunctionalAreas": [
+        "api",
+        "contracts"
+      ],
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 3
+    },
+    {
+      "id": "query-implementation-surfaces",
+      "intent": "query ranking process matching definitions CLI query command implementation",
+      "expectedFiles": [
+        "internal/mcp/tools.go",
+        "internal/cli/tool_command.go",
+        "cmd/anvien/main.go"
+      ],
+      "expectedSymbols": [
+        "queryTool",
+        "rankedProcessMatches",
+        "matchingDefinitionRows",
+        "newQueryCommand"
+      ],
+      "expectedAppLayers": [
+        "api",
+        "cli_launcher"
+      ],
+      "expectedFunctionalAreas": [
+        "query",
+        "mcp",
+        "cli"
+      ],
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 3
+    },
+    {
+      "id": "frontend-graph-filter-surfaces",
+      "intent": "frontend graph filters detail panel graph health resolution health layout visibility",
+      "expectedFiles": [
+        "anvien-web/src/lib/graph-health-filters.ts",
+        "anvien-web/src/hooks/app-state/graph.tsx",
+        "anvien-web/src/components/FileTreePanel.tsx",
+        "anvien-web/src/components/GraphCanvas.tsx"
+      ],
+      "expectedSymbols": [
+        "getNodeGraphHealth",
+        "GraphCanvas"
+      ],
+      "expectedAppLayers": [
+        "frontend"
+      ],
+      "expectedFunctionalAreas": [
+        "web_graph_ui",
+        "layout"
+      ],
+      "hitAt5Threshold": 2,
+      "hitAt10Threshold": 3
+    }
+  ]
+}

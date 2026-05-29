@@ -1,4 +1,4 @@
-# AVmatrix Go Full Conversion Benchmark Ledger
+# Anvien Go Full Conversion Benchmark Ledger
 
 Date: 2026-05-14
 
@@ -6,7 +6,7 @@ Source plan: [2026-05-14-go-full-conversion-plan.md](2026-05-14-go-full-conversi
 
 This ledger records only benchmark data: measured runtime performance, throughput, capacity,
 package size, startup/readiness, graph/DB metrics, and conversion inventory counts. Validation
-command timings, build timings, unit-test timings, e2e timings, and AVmatrix impact/detect timings
+command timings, build timings, unit-test timings, e2e timings, and Anvien impact/detect timings
 belong in the evidence ledger, not here.
 
 ## Phase 0 - Inventory And Ownership
@@ -15,7 +15,7 @@ belong in the evidence ledger, not here.
 
 - Date: 2026-05-14
 - Commit: pending
-- Benchmark command: `rg --files -g '*.ts' -g '*.tsx' -g '*.js' -g '*.jsx' -g '*.mjs' -g '*.cjs' -g '!node_modules/**' -g '!dist/**' -g '!build/**' -g '!coverage/**' -g '!.git/**' -g '!.avmatrix/**' -g '!avmatrix-web/dist/**' -g '!avmatrix-launcher/server-bundle/**' -g '!avmatrix/vendor/**'`
+- Benchmark command: `rg --files -g '*.ts' -g '*.tsx' -g '*.js' -g '*.jsx' -g '*.mjs' -g '*.cjs' -g '!node_modules/**' -g '!dist/**' -g '!build/**' -g '!coverage/**' -g '!.git/**' -g '!.anvien/**' -g '!anvien-web/dist/**' -g '!anvien-launcher/server-bundle/**' -g '!anvien/vendor/**'`
 - Artifact paths: `.tmp\phase0-inventory-refresh-20260514.json`
 
 | Metric | Result |
@@ -31,12 +31,12 @@ belong in the evidence ledger, not here.
 | Package test config files | 1 |
 | Web dev config files | 1 |
 | Unknown ownership files | 0 |
-| AVmatrix graph nodes | 34007 |
-| AVmatrix graph relationships | 67770 |
-| AVmatrix scanned / parsed / failed | 1234 / 1058 / 0 |
+| Anvien graph nodes | 34007 |
+| Anvien graph relationships | 67770 |
+| Anvien scanned / parsed / failed | 1234 / 1058 / 0 |
 
 Decision:
-- Phase 0 inventory is sufficient to start package-script conversion. The first selected implementation slice is `avmatrix/scripts/clean-go-source-package.cjs` under [P6-A].
+- Phase 0 inventory is sufficient to start package-script conversion. The first selected implementation slice is `anvien/scripts/clean-go-source-package.cjs` under [P6-A].
 
 ## Phase 6 - Packaging, Scripts, Hooks, Launcher Support
 
@@ -45,17 +45,17 @@ Decision:
 - Status: benchmark remeasured 2026-05-15.
 - Commit: `b041a65`.
 - Benchmark commands:
-  - package size: `Get-ChildItem avmatrix-launcher\server-bundle -File`
-  - readiness/latency: start `avmatrix-launcher\server-bundle\avmatrix.exe serve --host 127.0.0.1 --port 4848`, poll `/api/info`, then run 30 requests per measured endpoint.
+  - package size: `Get-ChildItem anvien-launcher\server-bundle -File`
+  - readiness/latency: start `anvien-launcher\server-bundle\anvien.exe serve --host 127.0.0.1 --port 4848`, poll `/api/info`, then run 30 requests per measured endpoint.
 - Artifact paths:
   - `.tmp\p6-packaged-http-benchmark.out.log`
   - `.tmp\p6-packaged-http-benchmark.err.log`
 
 | Metric | Result | Notes |
 | --- | ---: | --- |
-| `AVmatrixLauncher.exe` size | 6,982,144 bytes | launcher binary |
-| `server-bundle\avmatrix.exe` size | 49,482,240 bytes | packaged Go CLI/backend |
-| `server-bundle\avmatrix-server.exe` size | 2,053,632 bytes | launcher server wrapper |
+| `AnvienLauncher.exe` size | 6,982,144 bytes | launcher binary |
+| `server-bundle\anvien.exe` size | 49,482,240 bytes | packaged Go CLI/backend |
+| `server-bundle\anvien-server.exe` size | 2,053,632 bytes | launcher server wrapper |
 | `server-bundle\lbug_shared.dll` size | 18,938,880 bytes | native DB dependency |
 | `server-bundle` file size total | 70,474,752 bytes | binary/DLL files only |
 | `server-bundle\node.exe` | absent | Node runtime removed from normal package |
@@ -73,11 +73,11 @@ Decision:
 - Status: completed.
 - Date: 2026-05-14.
 - Benchmark command:
-  - corrected non-fixture file classification command over `avmatrix/test`.
+  - corrected non-fixture file classification command over `anvien/test`.
 
 | Metric | Result | Notes |
 | --- | ---: | --- |
-| Non-fixture TS test files before batch deletion | 252 | excludes `avmatrix/test/fixtures` |
+| Non-fixture TS test files before batch deletion | 252 | excludes `anvien/test/fixtures` |
 | CLI/package candidates | 48 | first safe subset selected separately |
 | DB/search/embed candidates | 16 | owner confirmation per batch |
 | Graph/provider candidates | 98 | owner confirmation per batch |
@@ -116,7 +116,7 @@ Decision:
 | P7-F1 | 211 | -1 | LadybugDB schema test removed |
 | P7-F2 | 207 | -4 | embedding HTTP/cache/pipeline tests removed |
 | P7-F3 | 204 | -3 | semantic chunk and lbug retry/vector tests removed |
-| P7-F4 | 185 | -19 | LadybugDB runtime/CSV/security cluster removed; this row uses the exact current `rg --files avmatrix\test | rg "\.(test|spec)\.ts$" | rg -v "^avmatrix\\test\\fixtures\\" | Measure-Object` inventory and reconciles prior ledger drift while deleting 10 active TS test files in this batch |
+| P7-F4 | 185 | -19 | LadybugDB runtime/CSV/security cluster removed; this row uses the exact current `rg --files anvien\test | rg "\.(test|spec)\.ts$" | rg -v "^anvien\\test\\fixtures\\" | Measure-Object` inventory and reconciles prior ledger drift while deleting 10 active TS test files in this batch |
 | P7-C2/G2 | 173 | -12 | local backend, repo runtime/storage, and analyze server/job cluster removed |
 | P7-E1 | 162 | -11 | graph/process/pipeline/parser/filesystem tests removed |
 | P7-E2/E3/I1 | 138 | -24 | resolution/model, parser/provider/language, and Claude hook tests removed; orphan model helper removed outside the test count |
@@ -130,7 +130,7 @@ Decision:
 | P7-D16/P7-E11/P7-F9/P7-I3 | 29 | -15 | import/cross-file/query, runtime pipeline/worker, contract snapshot, and scope-audit tests removed |
 | P7-D17/P7-E12/P7-F10/P7-I4 | 19 | -10 | resolution/heritage/suffix, shadow parity, enrichment, registry-primary, AST cache, and lazy action tests removed |
 | P7-D18/P7-E13/P7-F11/P7-I5 | 0 | -19 | final augmentation, resolver, scope/type/call, runtime/session/stdio/Codex, and COBOL preprocessor tests removed |
-| P7-J harness | 0 | n/a | non-fixture `avmatrix/test` files are now 0; only fixture input remains |
+| P7-J harness | 0 | n/a | non-fixture `anvien/test` files are now 0; only fixture input remains |
 
 ### [P7] Runtime/Graph Benchmark Artifacts
 
@@ -293,10 +293,10 @@ These entries are benchmark artifacts tied to completed P7 conversion batches, s
 | Metric | Result | Notes |
 | --- | ---: | --- |
 | Final non-Web TS/JS inventory | 1 | only `eslint.config.mjs`; root Web/dev lint config |
-| Non-Web CLI/backend/runtime TS/JS inventory | 0 | `avmatrix/src`, `avmatrix-shared`, `avmatrix/scripts`, legacy vendor glue deleted |
+| Non-Web CLI/backend/runtime TS/JS inventory | 0 | `anvien/src`, `anvien-shared`, `anvien/scripts`, legacy vendor glue deleted |
 | npm package tarball size | 16,270,066 bytes | `npm pack --dry-run --json` |
 | npm package unpacked size | 70,081,542 bytes | includes Go runtime binary, native DLL, generated `go-src`, skills |
-| npm package entry count | 267 | no `dist`, `scripts`, `vendor`, or `avmatrix-shared` entries |
+| npm package entry count | 267 | no `dist`, `scripts`, `vendor`, or `anvien-shared` entries |
 | MCP smoke latency | 51.9ms | initialize + tools/list through Go runtime |
 | CLI query smoke latency | 40.1ms | isolated smoke repo |
 | CLI context smoke latency | 39.7ms | isolated smoke repo |

@@ -23,17 +23,17 @@ None found. The previous runtime blockers are closed:
 
 ### [MEDIUM] Final benchmark artifacts still do not satisfy the plan's reproducibility/language-coverage protocol
 
-File: `avmatrix/src/core/analyze/analyze-benchmark-snapshot.ts:60`
+File: `anvien/src/core/analyze/analyze-benchmark-snapshot.ts:60`
 
 Issue: the plan's benchmark protocol requires commit hashes and language coverage for every benchmarked repo. Current benchmark schema/key metrics only expose aggregate parse/scope counters (`parseableFiles`, `scopeParsedFiles`, `scopeExtractionAstReusedFiles`, etc.) and do not define any per-language coverage field (`analyze-benchmark-snapshot.ts:60`, `analyze-benchmark-snapshot.ts:73`, `analyze-benchmark-snapshot.ts:77`, `analyze-benchmark-snapshot.ts:82`). The source counters have the same aggregate-only shape (`analyze-metrics.ts:25`, `analyze-metrics.ts:41`, `analyze-metrics.ts:46`).
 
-The environment schema has optional `repoGitCommit` and `repoGitDirty` fields (`analyze-benchmark-snapshot.ts:31`, `analyze-benchmark-snapshot.ts:36`), and `collectBenchmarkEnvironment` only writes them when `git -C <repoPath>` succeeds (`analyze.ts:435`, `analyze.ts:443`). The final repeated benchmark artifacts in `reports/benchmark/2026-05-07-avmatrix-final-equivalent-accuracy-run*.json` contain `environment`, but no `repoGitCommit`, no `repoGitDirty`, and no explicit unavailable/non-git marker.
+The environment schema has optional `repoGitCommit` and `repoGitDirty` fields (`analyze-benchmark-snapshot.ts:31`, `analyze-benchmark-snapshot.ts:36`), and `collectBenchmarkEnvironment` only writes them when `git -C <repoPath>` succeeds (`analyze.ts:435`, `analyze.ts:443`). The final repeated benchmark artifacts in `reports/benchmark/2026-05-07-anvien-final-equivalent-accuracy-run*.json` contain `environment`, but no `repoGitCommit`, no `repoGitDirty`, and no explicit unavailable/non-git marker.
 
 Observed final artifact evidence:
 
 ```text
-reports/benchmark/2026-05-07-avmatrix-final-equivalent-accuracy-run1-gitnexus-main.json
-environment: avmatrixVersion, nodeVersion, platform, arch
+reports/benchmark/2026-05-07-anvien-final-equivalent-accuracy-run1-gitnexus-main.json
+environment: anvienVersion, nodeVersion, platform, arch
 missing: repoGitCommit, repoGitDirty, language coverage
 key metrics: parseableFiles=750, scopeParsedFiles=750, scopeExtractionAstReusedFiles=750
 ```
@@ -63,10 +63,10 @@ Fix:
 
 Passed:
 - `git diff --check ba2f0e4..HEAD`
-- `cd avmatrix && npm run build`
-- `cd avmatrix && npx tsc --noEmit`
-- `cd avmatrix && npx vitest run test/unit/scope-resolution/typescript-single-pass-parity.test.ts test/unit/scope-resolution/python-single-pass-parity.test.ts test/unit/scope-resolution/scope-reference-resolver.test.ts test/unit/scope-resolution/emit-references.test.ts test/unit/scope-resolution/finalize-orchestrator.test.ts test/unit/cross-file.test.ts test/unit/analyze-benchmark-snapshot.test.ts test/unit/benchmark-compare-command.test.ts --pool=vmForks` (`8` files, `70` tests)
-- `cd avmatrix && npm test` (exit code `0`)
+- `cd anvien && npm run build`
+- `cd anvien && npx tsc --noEmit`
+- `cd anvien && npx vitest run test/unit/scope-resolution/typescript-single-pass-parity.test.ts test/unit/scope-resolution/python-single-pass-parity.test.ts test/unit/scope-resolution/scope-reference-resolver.test.ts test/unit/scope-resolution/emit-references.test.ts test/unit/scope-resolution/finalize-orchestrator.test.ts test/unit/cross-file.test.ts test/unit/analyze-benchmark-snapshot.test.ts test/unit/benchmark-compare-command.test.ts --pool=vmForks` (`8` files, `70` tests)
+- `cd anvien && npm test` (exit code `0`)
 
 Additional repro checks:
 - Same-file duplicate method mapping now resolves to real graph node ids.

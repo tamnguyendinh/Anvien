@@ -2,12 +2,12 @@
 
 Date: 2026-05-08
 
-Plan: `docs/plans/2026-05-08-avmatrix-go-typescript-node-to-go-conversion-plan.md`
+Plan: `docs/plans/2026-05-08-anvien-typescript-node-to-go-conversion-plan.md`
 
 Scope:
 
-- Active implementation repository: `F:/AVmatrix-GO`
-- Architecture/runtime-flow reference: `F:/avmatrix-main`
+- Active implementation repository: `F:/Anvien`
+- Architecture/runtime-flow reference: `F:/anvien-main`
 - Active baseline commit: `f2b7e6a5a966c100387566fa8d73208f233ac6bd`
 - Reference commit read for this batch: `79103232acb738d1536bc58e0c7ca7bb261d783d`
 

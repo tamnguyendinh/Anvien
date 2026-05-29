@@ -3,20 +3,20 @@
 Observed: 2026-05-08T21:41:27+07:00
 
 Decision: after conversion, Go owns the Web UI-facing contract types. TypeScript contract files used
-by `avmatrix-web` are generated browser-side adapter artifacts only.
+by `anvien-web` are generated browser-side adapter artifacts only.
 
 ## Authority
 
 - Future Go authority package: `internal/contracts`.
 - Go owns graph payload structs, schema constants, HTTP request/response payloads, analyze/embed
   job status/progress, session status/events, repo list/info payloads, and error envelopes.
-- `avmatrix-shared` TypeScript is baseline input only. It must not remain the runtime contract
+- `anvien-shared` TypeScript is baseline input only. It must not remain the runtime contract
   authority after Go cutover.
 
 ## Generated Artifacts
 
-- Schema manifest: `contracts/web-ui/avmatrix-web-contract.schema.json`.
-- Web UI TypeScript adapter: `avmatrix-web/src/generated/avmatrix-contracts.ts`.
+- Schema manifest: `contracts/web-ui/anvien-web-contract.schema.json`.
+- Web UI TypeScript adapter: `anvien-web/src/generated/anvien-contracts.ts`.
 - Generated TypeScript exists only to compile the existing browser Web UI.
 
 ## Rules
