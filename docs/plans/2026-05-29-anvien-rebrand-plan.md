@@ -87,7 +87,7 @@ AVmatrix graph refresh for this planning update:
 
 - `avmatrix analyze --force`
 - scanned `800` files, parsed `583`, unsupported `217`, failed `0`
-- graph `91223` nodes, `124702` relationships
+- graph `91233` nodes, `124712` relationships after the post-commit generator review
 
 AVmatrix query/context identified these owners before documentation rewrite:
 
@@ -139,6 +139,20 @@ Additional checked-in integration/contract inventory found during plan review:
 | `contracts` | 4 | 1 |
 | `avmatrix-web/src/generated` | 1 | 1 |
 
+Generator/source-of-truth inventory requiring explicit audit before output edits:
+
+| Generator area | Source files | Generated or served output to verify |
+|---|---|---|
+| AI context and embedded skills | `internal/aicontext/aicontext.go`, `internal/aicontext/skills/*.md` | `AGENTS.md`, `CLAUDE.md`, `.claude/skills/anvien/**`, editor-installed skills |
+| Setup/editor config | `internal/cli/setup_command.go` | Cursor/Claude/OpenCode/Codex MCP config, Codex TOML, Claude hooks, installed skills |
+| Repo/global storage | `internal/repo/paths.go`, `internal/repo/meta.go`, `internal/repo/settings.go`, `internal/repo/registry.go`, `internal/repo/runtime_config.go` | `<repo>/.anvien/{lbug,graph.json,meta.json,settings.json,analyze.lock,analyze.tmp}`, `~/.anvien/{registry.json,runtime.json}` |
+| Group registry storage | `internal/group/storage.go`, `internal/cli/group_command.go`, `internal/mcp/group_tools.go` | `~/.anvien/groups/<name>/group.yaml`, `~/.anvien/groups/<name>/contracts.json`, group command/help output |
+| MCP served setup and prompts | `internal/mcp/resources.go`, `internal/mcp/prompts.go`, `internal/mcp/tools.go` | `anvien://setup`, next-step hints, prompt templates, tool descriptions |
+| Web contract generation | `internal/contracts/web_ui.go`, `cmd/generate-web-contracts/main.go` | Web contract schema and TypeScript generated adapter filenames/imports |
+| Launcher and package outputs | `avmatrix-launcher/build.ps1`, `avmatrix-launcher/src/main.go`, `avmatrix-launcher/server-wrapper/main.go`, `internal/cli/package_runtime.go` | `web-dist`, launcher state/log files, packaged binaries, native runtime copies |
+| Hook/plugin integration | `internal/cli/hook_command.go`, `avmatrix-claude-plugin/**` | hook config/status text, plugin skill dirs, plugin `mcp.json`, package install output |
+| Graph-quality helper defaults | `cmd/graph-accuracy-probe/main.go`, `internal/cli/resolution_inventory_command.go`, `internal/cli/source_site_accuracy_command.go` | default graph path examples and generated reports that read `.anvien/graph.json` |
+
 Top old-name file groups by file count:
 
 | Group | Files containing old name |
@@ -179,11 +193,22 @@ Top old-name file groups by file count:
 
 - [ ] [P1-A] Build a full file inventory for every old-name reference, grouped by active source, test, generated artifact, docs, baseline, package output, report, GitHub automation, and temporary output.
 - [ ] [P1-B] Classify each file as rename-in-place, regenerate, delete stale output, or preserve only as rebrand evidence.
-- [ ] [P1-C] Identify all generated outputs and their source generators. Do not edit generated `AGENTS.md`, `CLAUDE.md`, `.claude/skills/**`, `avmatrix-launcher/web-dist/**`, or generated Web contracts as permanent source.
+- [ ] [P1-C] Identify all generated outputs and their source generators. Do not edit generated `AGENTS.md`, `CLAUDE.md`, `.claude/skills/**`, `avmatrix-launcher/web-dist/**`, or generated Web contracts as permanent source; update the generator first, then regenerate.
 - [ ] [P1-D] Run AVmatrix impact analysis for `NewRootCommand`, `newMCPCommand`, `runSetup`, `setupWriteMCPJSON`, `setupWriteOpenCodeJSON`, `setupRunCodexMCPAdd`, `setupUpsertCodexToml`, `setupMergeClaudeHookSettings`, `GenerateAIContextFiles`, `renderAVmatrixBlock`, `repo.Paths`, `repo.GlobalDir`, MCP resource/prompt handlers, launcher startup/reset/cleanup functions, and every other edited symbol found during inventory.
 - [ ] [P1-E] Record blast radius and HIGH/CRITICAL warnings before code edits.
 - [ ] [P1-F] Inventory file and directory names, not only file contents. Rename or remove checked-in paths containing old names, including package folders, command folders, generated contract filenames, plugin folders, action folders, and executable artifacts.
 - [ ] [P1-G] Classify local-only generated/cache/temp paths such as `.avmatrix`, `.tmp`, `.codex-tmp`, and `.history` separately from tracked files. Do not carry old local cache names into release artifacts.
+- [ ] [P1-H] Build a generator-to-output matrix for every file-writing or served-content generator listed above. Each row must name the source, generated output, regeneration command, and old-name validation command.
+- [ ] [P1-I] Treat a generator still emitting `AVmatrix`, `avmatrix`, `AVMATRIX`, `.avmatrix`, `avmatrix://`, or `avmatrix-*` as a blocker for completing its implementation slice, even if the checked-in output was manually edited.
+
+## Phase 1.5 - Generator Source Audit
+
+- [ ] [P1.5-A] Audit `internal/aicontext/aicontext.go` and `internal/aicontext/skills/*.md` as the source of truth for generated `AGENTS.md`, `CLAUDE.md`, `.claude/skills/**`, and editor-installed skills.
+- [ ] [P1.5-B] Audit `internal/cli/setup_command.go` as the source of truth for generated editor MCP configs, Codex TOML, Claude hooks, and skill installation paths.
+- [ ] [P1.5-C] Audit repo/global storage generators so `.anvien` output covers `lbug`, `graph.json`, `meta.json`, `settings.json`, `analyze.lock`, `analyze.tmp`, `registry.json`, `runtime.json`, and `groups/**`.
+- [ ] [P1.5-D] Audit MCP served-content generators so `anvien://setup`, resources, prompts, tool descriptions, and next-step hints cannot regenerate old names.
+- [ ] [P1.5-E] Audit Web contract and launcher/package generators before touching their generated outputs.
+- [ ] [P1.5-F] After each generator edit, run the generator or owning command and search the regenerated outputs for old names. Record results immediately in evidence and benchmark ledgers.
 
 ## Phase 2 - GitHub Repository Rename Execution
 
@@ -252,6 +277,8 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 - [ ] [P5-D] Update settings examples, lock paths, graph paths, registry docs, group storage docs, and tests.
 - [ ] [P5-E] Decide whether existing local `.avmatrix` data is moved once by release instructions or discarded/rebuilt. Do not implement dual-read support.
 - [ ] [P5-F] Validate analyze creates `<repo>/.anvien/graph.json` and global registry under `~/.anvien/registry.json`.
+- [ ] [P5-G] Validate the full generated storage shape: `<repo>/.anvien/lbug`, optional `lbug.wal`/`lbug.lock`, `graph.json`, `meta.json`, `settings.json`, `analyze.lock`, `analyze.tmp`, plus `~/.anvien/runtime.json` and `~/.anvien/groups/**` where relevant.
+- [ ] [P5-H] Validate `analyze`, `status`, `index`, `clean`, `doctor locks`, `doctor processes`, `serve`, MCP resources/tools, graph-health, query-health, `resolution-inventory`, `source-site-accuracy`, and graph-accuracy helpers do not recreate or default to `.avmatrix`.
 
 ## Phase 6 - Generated AI Context And Skills
 
@@ -261,6 +288,8 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 - [ ] [P6-D] Update skill descriptions, command tables, MCP resource references, and setup instructions to Anvien names.
 - [ ] [P6-E] Regenerate `AGENTS.md`, `CLAUDE.md`, and generated skills from source.
 - [ ] [P6-F] Update generated-context tests to assert Anvien names and absence of active old names.
+- [ ] [P6-G] Replace generated markers from `<!-- avmatrix:start -->` / `<!-- avmatrix:end -->` to Anvien markers, remove old generated blocks during the rename slice, and do not leave steady-state old-marker compatibility.
+- [ ] [P6-H] Verify a fresh `anvien analyze --force` regenerates `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` without recreating `.claude/skills/avmatrix/**` or `avmatrix-*` skill ids.
 
 ## Phase 6.5 - Claude Plugin And Agent Integration Package
 

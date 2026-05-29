@@ -25,8 +25,8 @@ Status: recorded
 | Files parsed | files | 583 | 583 | 0 | `avmatrix analyze --force` |
 | Unsupported files | files | 217 | 217 | 0 | `avmatrix analyze --force` |
 | Failed files | files | 0 | 0 | 0 | `avmatrix analyze --force` |
-| Graph nodes | nodes | 91223 | 91223 | 0 | Fresh graph |
-| Graph relationships | relationships | 124702 | 124702 | 0 | Fresh graph |
+| Graph nodes | nodes | 91223 | 91233 | +10 | Fresh graph after plan docs update |
+| Graph relationships | relationships | 124702 | 124712 | +10 | Fresh graph after plan docs update |
 
 ## B1 - Old-Name Reference Baseline
 
@@ -104,6 +104,31 @@ Status: recorded
 | `contracts` files with old names | files | 1 | 1 | 0 | 0 active |
 | `avmatrix-web/src/generated` old-name matches | matches | 1 | 1 | 0 | 0 active |
 | `avmatrix-web/src/generated` files with old names | files | 1 | 1 | 0 | 0 active |
+
+## B3.3 - Generator Source Old-Name Baseline
+
+Status: recorded
+
+| Generator area | Unit | Baseline | Latest | Delta | Final target |
+|---|---:|---:|---:|---:|---:|
+| AI context generator and embedded skills | matches | 299 | 299 | 0 | 0 active |
+| AI context generator and embedded skills | files | 12 | 12 | 0 | 0 active |
+| Setup/editor config generator | matches | 8 | 8 | 0 | 0 active |
+| Setup/editor config generator | files | 1 | 1 | 0 | 0 active |
+| Repo/global storage generators | matches | 4 | 4 | 0 | 0 active |
+| Repo/global storage generators | files | 2 | 2 | 0 | 0 active |
+| MCP served setup/resources/prompts | matches | 59 | 59 | 0 | 0 active |
+| MCP served setup/resources/prompts | files | 3 | 3 | 0 | 0 active |
+| Web contract generator | matches | 11 | 11 | 0 | 0 active |
+| Web contract generator | files | 2 | 2 | 0 | 0 active |
+| Group registry generators | matches | 13 | 13 | 0 | 0 active |
+| Group registry generators | files | 6 | 6 | 0 | 0 active |
+| Launcher/package generated outputs | matches | 48 | 48 | 0 | 0 active |
+| Launcher/package generated outputs | files | 6 | 6 | 0 | 0 active |
+| Hook/plugin generated integration | matches | 122 | 122 | 0 | 0 active |
+| Hook/plugin generated integration | files | 17 | 17 | 0 | 0 active |
+| Graph accuracy/default graph path helpers | matches | 21 | 21 | 0 | 0 active |
+| Graph accuracy/default graph path helpers | files | 3 | 3 | 0 | 0 active |
 
 ## B4 - Future Runtime/Package Metrics
 

@@ -431,6 +431,92 @@ Plan amendments from this review:
 - Added file/directory-name inventory requirements beyond text content inventory.
 - Added tracked historical report handling so old filenames do not silently remain active product surfaces.
 
+## E5.3 - Generator Source Review
+
+Date: 2026-05-29
+
+Status: recorded
+
+User review note:
+
+- Generated files and folders must be checked through their source generators. Manually editing generated output is not enough, because the next `analyze`, `setup`, contract generation, build, package, or plugin install can recreate old `AVmatrix`/`avmatrix` names.
+
+Graph refresh before this review:
+
+```powershell
+avmatrix analyze --force
+```
+
+Output summary:
+
+```text
+files: scanned=800 parsed=583 unsupported=217 failed=0
+graph: nodes=91233 relationships=124712
+```
+
+Additional AVmatrix query used:
+
+```powershell
+avmatrix query "content generators write generated files folders AGENTS CLAUDE skills contracts web-dist setup mcp storage .avmatrix" --repo AVmatrix
+```
+
+Generator/source-of-truth evidence:
+
+| Area | Source evidence | Generated or served output risk |
+|---|---|---|
+| AI context | `internal/aicontext/aicontext.go` defines `startMarker`, `endMarker`, `GenerateAIContextFiles`, `renderAVmatrixBlock`, `baseSkills`, `installBaseSkills`, and embeds `skills/*.md` | Recreates `AGENTS.md`, `CLAUDE.md`, `.claude/skills/avmatrix/**`, old markers, old skill ids, and command/resource tables |
+| Embedded skills | `internal/aicontext/skills/avmatrix-*.md` | Reinstalled into repo/editor skill directories by analyze/setup |
+| Setup/editor config | `internal/cli/setup_command.go` defines `setupBrand`, `setupCommandName`, `setupMCPServerName`, `setupWriteMCPJSON`, `setupWriteOpenCodeJSON`, `setupUpsertCodexToml`, `setupMergeClaudeHookSettings` | Recreates old MCP server keys, commands, Codex TOML, Claude hooks, and skill installs |
+| Repo/global storage | `internal/repo/paths.go`, `meta.go`, `settings.go`, `registry.go`, `runtime_config.go` | Recreates `.avmatrix`, `AVMATRIX_HOME`, `graph.json`, `meta.json`, `settings.json`, `registry.json`, `runtime.json` paths |
+| Group registry | `internal/group/storage.go`, `internal/cli/group_command.go`, `internal/mcp/group_tools.go` | Recreates group config/contract registry under the global storage root |
+| MCP served text | `internal/mcp/resources.go`, `internal/mcp/prompts.go`, `internal/mcp/tools.go` | Recreates old resource schemes, setup resource text, prompt templates, tool descriptions, and next-step hints |
+| Web contracts | `internal/contracts/web_ui.go`, `cmd/generate-web-contracts/main.go` | Recreates old generated schema/TypeScript filenames and imports |
+| Launcher/package | `avmatrix-launcher/build.ps1`, `avmatrix-launcher/src/main.go`, `avmatrix-launcher/server-wrapper/main.go`, `internal/cli/package_runtime.go` | Recreates old package folders, `web-dist`, launcher state/log/output names, and executable artifact names |
+| Hook/plugin | `internal/cli/hook_command.go`, `avmatrix-claude-plugin/**` | Recreates or ships old hook names, `.avmatrix` stale checks, plugin skill dirs, and plugin MCP config |
+| Graph-quality helper defaults | `cmd/graph-accuracy-probe/main.go`, `internal/cli/resolution_inventory_command.go`, `internal/cli/source_site_accuracy_command.go` | Defaults to `.avmatrix/graph.json` in helper commands and generated report workflows |
+
+Local generated storage observed in this workspace after analyze:
+
+```text
+.avmatrix/graph.json
+.avmatrix/lbug
+.avmatrix/meta.json
+.avmatrix/settings.json
+```
+
+Code also defines or documents these storage artifacts:
+
+- `.avmatrix/analyze.lock`
+- `.avmatrix/analyze.tmp`
+- `.avmatrix/lbug.wal`
+- `.avmatrix/lbug.lock`
+- `~/.avmatrix/registry.json`
+- `~/.avmatrix/runtime.json`
+- `~/.avmatrix/groups/<name>/group.yaml`
+- `~/.avmatrix/groups/<name>/contracts.json`
+
+Old-name generator baseline from source inventory:
+
+| Generator area | Old-name matches | Files |
+|---|---:|---:|
+| AI context generator and embedded skills | 299 | 12 |
+| Setup/editor config generator | 8 | 1 |
+| Repo/global storage generators | 4 | 2 |
+| MCP served setup/resources/prompts | 59 | 3 |
+| Web contract generator | 11 | 2 |
+| Group registry generators | 13 | 6 |
+| Launcher/package generated outputs | 48 | 6 |
+| Hook/plugin generated integration | 122 | 17 |
+| Graph accuracy/default graph path helpers | 21 | 3 |
+
+Plan amendments from this review:
+
+- Added a generator/source-of-truth inventory table to the plan.
+- Added Phase 1.5 for generator source audit before output edits.
+- Expanded storage validation to include concrete `.anvien` artifacts, not only the top-level directory.
+- Added generated marker validation for `AGENTS.md`, `CLAUDE.md`, and skill output so old markers and old skill ids do not remain as steady-state compatibility.
+- Added benchmark rows for old-name counts inside generator source areas.
+
 ## E6 - Naming Decisions
 
 Date: pending
