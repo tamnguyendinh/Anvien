@@ -1,0 +1,252 @@
+# Anvien Hard Rebrand Plan
+
+Date: 2026-05-29
+
+Status: Draft
+
+Companion files:
+
+- Evidence ledger: [2026-05-29-anvien-rebrand-evidence.md](2026-05-29-anvien-rebrand-evidence.md)
+- Benchmark ledger: [2026-05-29-anvien-rebrand-benchmark.md](2026-05-29-anvien-rebrand-benchmark.md)
+
+## Master Rules
+
+1. Use AVmatrix for codebase analysis and impact checks while working on this plan, including documentation planning when the plan depends on actual codebase surfaces.
+2. As each task is completed, update the corresponding checklist item immediately.
+3. Run a full build before testing; the test suite must include an e2e test if Web UI behavior changes.
+4. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, graph inventory counts, or rename inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.
+5. Record evidence as each evidenced task is completed.
+6. Before graph-based work, refresh the graph with `avmatrix analyze --force`.
+7. Before editing any function, class, method, exported symbol, API handler, graph builder, resolver, analyzer, or shared contract, run AVmatrix impact analysis and record blast radius.
+8. Before every implementation commit, run `avmatrix detect-changes --repo AVmatrix --scope all`.
+9. After each completed implementation slice, commit the work, then continue until the full plan is complete.
+
+## Problem
+
+The current product/repository name, `AVmatrix`, conflicts with an external brand presence and a third-party website. The project must be renamed to `Anvien` on GitHub and in this local repository.
+
+This is not a simple text replacement. Current codebase evidence shows the old name is embedded into command names, MCP setup, MCP resource URI schemes, generated AI context, storage paths, environment variables, package metadata, launcher paths, Web UI text, tests, snapshots, and generated distribution artifacts.
+
+## Non-Ownership Constraint
+
+`avmatrix.com` is owned by another party and is outside this project. This plan must not include DNS, redirect, certificate, hosting, analytics, or ownership work for that domain.
+
+The only allowed domain-related work is removing repository references that could imply ownership, affiliation, or official status.
+
+## Hard Rename Rule
+
+No legacy runtime or compatibility alias is allowed.
+
+Final implementation must not keep:
+
+- `avmatrix` as an accepted CLI command name;
+- `avmatrix` as an MCP server name in editor config;
+- `avmatrix://` as an MCP resource URI scheme;
+- `.avmatrix` as the active repo/global storage directory;
+- `AVMATRIX_*` as active environment variable names;
+- `AVmatrixLauncher.exe`, `avmatrix-server.exe`, or `avmatrix.exe` as active release artifact names;
+- `avmatrix` as an npm package/bin name;
+- `avmatrix-go` as a Go module/repository path;
+- generated `.claude/skills/avmatrix/**` or embedded `avmatrix-*` skill ids as active generated output.
+
+Historical mentions are allowed only inside this rebrand plan/evidence/benchmark set and any release-note sentence that identifies the previous name. They must not create a working alias or dual support path.
+
+## Required Final Names
+
+| Surface | Current evidence | Final required name |
+|---|---|---|
+| Brand display | `AVmatrix` | `Anvien` |
+| GitHub repository | `tamnguyendinh/AVmatrix` / `avmatrix-go` references | `tamnguyendinh/Anvien` or the approved Anvien slug |
+| Local folder | `E:\AVmatrix-GO` | `E:\Anvien` unless a different exact path is approved |
+| CLI command | `avmatrix` | `anvien` |
+| Cobra command name | `internal/version.CommandName = "avmatrix"` | `anvien` |
+| Go command entrypoint | `cmd/avmatrix` | `cmd/anvien` |
+| Go module path | `github.com/tamnguyendinh/avmatrix-go` | approved Anvien module path |
+| npm package | `avmatrix/package.json` name/bin `avmatrix` | `anvien` package/bin |
+| Web package | `avmatrix-web` | `anvien-web` if package/folder names are renamed |
+| Launcher package | `avmatrix-launcher` | `anvien-launcher` if package/folder names are renamed |
+| MCP server name | `setupMCPServerName = "avmatrix"` | `anvien` |
+| MCP start command | `avmatrix mcp` | `anvien mcp` |
+| MCP resource scheme | `canonicalResourceScheme = "avmatrix"` | `anvien://` |
+| MCP resources | `avmatrix://repos`, `avmatrix://setup`, `avmatrix://repo/...` | `anvien://repos`, `anvien://setup`, `anvien://repo/...` |
+| Editor config keys | `mcpServers.avmatrix`, `[mcp_servers.avmatrix]`, OpenCode `mcp.avmatrix` | `anvien` keys only |
+| Repo storage dir | `.avmatrix` | `.anvien` |
+| Global storage dir | `~/.avmatrix` | `~/.anvien` |
+| Home env var | `AVMATRIX_HOME` | `ANVIEN_HOME` |
+| Analyze env vars | `AVMATRIX_MAX_PROCESSES`, related `AVMATRIX_*` | `ANVIEN_*` |
+| Launcher env vars | `AVMATRIX_GO`, `AVMATRIX_LAUNCHER_NO_BROWSER`, etc. | `ANVIEN_*` |
+| Launcher protocol | `avmatrix://reset` and registry key `HKCU\Software\Classes\avmatrix` | `anvien://...` and Anvien registry key |
+| Launcher executables | `AVmatrixLauncher.exe`, `avmatrix-server.exe`, `avmatrix.exe` | `AnvienLauncher.exe`, `anvien-server.exe`, `anvien.exe` |
+| Generated AI context block | `renderAVmatrixBlock` and generated AVmatrix tables | `renderAnvienBlock` and Anvien tables |
+| Embedded skills | `internal/aicontext/skills/avmatrix-*.md` | `internal/aicontext/skills/anvien-*.md` |
+| Generated skills | `.claude/skills/avmatrix/**` | `.claude/skills/anvien/**` |
+
+## Actual Codebase Surface Evidence
+
+AVmatrix graph refresh for this planning update:
+
+- `avmatrix analyze --force`
+- scanned `800` files, parsed `583`, unsupported `217`, failed `0`
+- graph `91223` nodes, `124702` relationships
+
+AVmatrix query/context identified these owners before documentation rewrite:
+
+- MCP server/resources/prompts/tools: `internal/mcp/server.go`, `internal/mcp/resources.go`, `internal/mcp/prompts.go`, `internal/mcp/tools.go`
+- MCP editor setup: `internal/cli/setup_command.go`
+- CLI root and subcommands: `internal/cli/command.go`
+- command name constant: `internal/version/version.go`
+- storage paths/env var: `internal/repo/paths.go`
+- generated AI context and embedded skills: `internal/aicontext/aicontext.go`, `internal/aicontext/skills/*.md`
+- package metadata/runtime packaging: `avmatrix/package.json`, root `package.json`, package lifecycle commands
+- Web UI brand/onboarding: `avmatrix-web/index.html`, `avmatrix-web/src/components/LauncherStartScreen.tsx`, `avmatrix-web/src/components/AnalyzeOnboarding.tsx`
+- launcher/protocol/process names: `avmatrix-launcher/src/main.go`, `avmatrix-launcher/server-wrapper/main.go`, `avmatrix-launcher/build.ps1`
+- tests and snapshots: `internal/mcp/*_test.go`, `internal/version/version_test.go`, `avmatrix-web/e2e/*.spec.ts`, launcher tests, baseline snapshots
+
+Initial exact-reference inventory excluding `node_modules` and this rebrand file set:
+
+| Pattern | Count |
+|---|---:|
+| `AVmatrix` | 2238 |
+| `avmatrix` | 9291 |
+| `AVMATRIX` | 281 |
+| `AVmatrix-GO` | 629 |
+| `avmatrix.com` | 0 |
+| `.avmatrix` | 316 |
+| `AVMATRIX_` | 281 |
+| `mcpServers` | 9 |
+
+Top old-name file groups by file count:
+
+| Group | Files containing old name |
+|---|---:|
+| `internal` | 338 |
+| `reports` | 70 |
+| `avmatrix-web` | 68 |
+| `docs` | 55 |
+| `baseline` | 19 |
+| `avmatrix-launcher` | 6 |
+| `avmatrix` | 5 |
+| `cmd` | 5 |
+
+## Acceptance Criteria
+
+- The active GitHub repository, local workspace naming, package metadata, Web UI, launcher, CLI, MCP server name, MCP resource URI scheme, generated AI context, config paths, and environment variables use `Anvien`/`anvien`.
+- No active runtime path accepts or generates the old CLI name, MCP server name, MCP URI scheme, storage path, or environment variable prefix.
+- All active tests, snapshots, docs, package files, generated artifacts, and e2e checks expect Anvien names.
+- Any remaining old-name reference is confined to this plan/evidence/benchmark set, release-note historical wording, or unavoidable git history.
+- `avmatrix.com` remains treated as a third-party website and no plan step attempts to control it.
+- AVmatrix impact analysis is recorded before every implementation edit to functions/classes/methods/exported symbols/API handlers/shared contracts.
+- Full build runs before tests.
+- Web UI brand changes include e2e coverage.
+- MCP rename changes include MCP protocol tests for tools/list, resources/list, resources/read, prompts/list, setup output, and editor config generation.
+- `avmatrix detect-changes --repo AVmatrix --scope all` runs before every implementation commit until the tool itself is renamed; after the rename slice, use the new equivalent command and record the switch.
+
+## Phase 0 - Baseline And Decisions
+
+- [x] [P0-A] Create the rebrand plan file set under `docs/plans`.
+- [x] [P0-B] Refresh the graph with `avmatrix analyze --force` before codebase-dependent planning.
+- [x] [P0-C] Record initial AVmatrix query/context evidence for MCP, CLI, generated context, storage, Web UI, package, and launcher surfaces.
+- [x] [P0-D] Record initial old-name reference counts.
+- [x] [P0-E] Record that `avmatrix.com` is third-party and not controlled by this project.
+- [ ] [P0-F] Confirm final GitHub owner/repo slug and local folder path.
+- [ ] [P0-G] Confirm whether folders are renamed in-place in the same PR or through a filesystem step before commit.
+
+## Phase 1 - Full Inventory And Edit Map
+
+- [ ] [P1-A] Build a full file inventory for every old-name reference, grouped by active source, test, generated artifact, docs, baseline, package output, report, and temporary output.
+- [ ] [P1-B] Classify each file as rename-in-place, regenerate, delete stale output, or preserve only as rebrand evidence.
+- [ ] [P1-C] Identify all generated outputs and their source generators. Do not edit generated `AGENTS.md`, `CLAUDE.md`, `.claude/skills/**`, `avmatrix-launcher/web-dist/**`, or generated Web contracts as permanent source.
+- [ ] [P1-D] Run AVmatrix impact analysis for `NewRootCommand`, `newMCPCommand`, `runSetup`, `setupWriteMCPJSON`, `setupWriteOpenCodeJSON`, `setupRunCodexMCPAdd`, `setupUpsertCodexToml`, `setupMergeClaudeHookSettings`, `GenerateAIContextFiles`, `renderAVmatrixBlock`, `repo.Paths`, `repo.GlobalDir`, MCP resource/prompt handlers, launcher startup/reset/cleanup functions, and every other edited symbol found during inventory.
+- [ ] [P1-E] Record blast radius and HIGH/CRITICAL warnings before code edits.
+
+## Phase 2 - Repository, Module, Package, And Folder Names
+
+- [ ] [P2-A] Rename GitHub repository to the approved Anvien slug.
+- [ ] [P2-B] Update local `origin` remote to the new GitHub URL.
+- [ ] [P2-C] Rename Go module path from the old `avmatrix-go` path to the approved Anvien path.
+- [ ] [P2-D] Rename `cmd/avmatrix` to `cmd/anvien` and update all build scripts.
+- [ ] [P2-E] Rename package folder `avmatrix` to `anvien` if npm package layout is kept.
+- [ ] [P2-F] Rename `avmatrix-web` to `anvien-web` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
+- [ ] [P2-G] Rename `avmatrix-launcher` to `anvien-launcher` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
+- [ ] [P2-H] Update imports, workspace scripts, Docker files, compose files, deploy scripts, CI, release automation, package-lock, and docs links.
+
+## Phase 3 - CLI Hard Rename
+
+- [ ] [P3-A] Change `internal/version.CommandName` from `avmatrix` to `anvien`.
+- [ ] [P3-B] Update root command short/help/version text to `Anvien`.
+- [ ] [P3-C] Update every command example from `avmatrix ...` to `anvien ...`.
+- [ ] [P3-D] Update package `bin` mapping to expose only `anvien`.
+- [ ] [P3-E] Remove old `avmatrix` binary output path from build/package/runtime scripts.
+- [ ] [P3-F] Update CLI tests and snapshots so the old command name is not accepted or expected.
+- [ ] [P3-G] Validate `anvien --help`, `anvien version`, `anvien analyze --help`, `anvien mcp`, `anvien serve --help`, `anvien setup --help`, and package lifecycle commands.
+
+## Phase 4 - MCP Hard Rename
+
+- [ ] [P4-A] Change setup constants in `internal/cli/setup_command.go`: brand `Anvien`, command `anvien`, MCP server name `anvien`.
+- [ ] [P4-B] Update Cursor/Claude JSON setup generation from `mcpServers.avmatrix` to `mcpServers.anvien`.
+- [ ] [P4-C] Update OpenCode setup generation from `mcp.avmatrix` to `mcp.anvien`.
+- [ ] [P4-D] Update Codex setup command from `codex mcp add avmatrix -- avmatrix mcp` to `codex mcp add anvien -- anvien mcp`.
+- [ ] [P4-E] Update Codex TOML output from `[mcp_servers.avmatrix]` to `[mcp_servers.anvien]`.
+- [ ] [P4-F] Remove old hook matching that preserves `avmatrix-hook` or `avmatrix hook claude`; replace with Anvien-only hook cleanup/generation.
+- [ ] [P4-G] Change MCP `canonicalResourceScheme` from `avmatrix` to `anvien`.
+- [ ] [P4-H] Update all MCP next-step hints, setup resources, prompt text, tests, and snapshots from `avmatrix://...` to `anvien://...`.
+- [ ] [P4-I] Validate MCP stdio and HTTP bridge: `tools/list`, `resources/list`, `resources/read` for `anvien://repos` and `anvien://setup`, `prompts/list`, and representative tool calls.
+
+## Phase 5 - Storage, Registry, Env Vars, And Local Data
+
+- [ ] [P5-A] Rename repo/global storage constants from `.avmatrix` to `.anvien`.
+- [ ] [P5-B] Rename `AVMATRIX_HOME` to `ANVIEN_HOME` with no fallback.
+- [ ] [P5-C] Rename all `AVMATRIX_*` variables to `ANVIEN_*` with no fallback.
+- [ ] [P5-D] Update settings examples, lock paths, graph paths, registry docs, group storage docs, and tests.
+- [ ] [P5-E] Decide whether existing local `.avmatrix` data is moved once by release instructions or discarded/rebuilt. Do not implement dual-read support.
+- [ ] [P5-F] Validate analyze creates `<repo>/.anvien/graph.json` and global registry under `~/.anvien/registry.json`.
+
+## Phase 6 - Generated AI Context And Skills
+
+- [ ] [P6-A] Rename `renderAVmatrixBlock` and generated section names to Anvien equivalents.
+- [ ] [P6-B] Rename embedded skill files from `avmatrix-*.md` to `anvien-*.md`.
+- [ ] [P6-C] Rename generated skill output from `.claude/skills/avmatrix/**` to `.claude/skills/anvien/**`.
+- [ ] [P6-D] Update skill descriptions, command tables, MCP resource references, and setup instructions to Anvien names.
+- [ ] [P6-E] Regenerate `AGENTS.md`, `CLAUDE.md`, and generated skills from source.
+- [ ] [P6-F] Update generated-context tests to assert Anvien names and absence of active old names.
+
+## Phase 7 - Web UI And Launcher
+
+- [ ] [P7-A] Update Web UI package name, HTML title, onboarding, start screen, status messages, README rendering, diagnostics globals, and e2e assertions.
+- [ ] [P7-B] Update launcher executable names, server wrapper paths, temp state names, heartbeat/closed paths, lifecycle data attributes, process cleanup filters, registry protocol key, and tests.
+- [ ] [P7-C] Rename launcher protocol from `avmatrix://` to `anvien://`.
+- [ ] [P7-D] Rebuild packaged Web distribution from source so `web-dist` does not retain old names.
+- [ ] [P7-E] Add/update e2e test coverage for visible `Anvien` branding and launcher start behavior.
+
+## Phase 8 - Documentation, Baselines, And Reports
+
+- [ ] [P8-A] Update README, ARCHITECTURE, RUNBOOK, TESTING, CONTRIBUTING, CHANGELOG current entries, Docker docs, install instructions, setup docs, and badges.
+- [ ] [P8-B] Regenerate or rewrite active baseline contract snapshots that still assert old names.
+- [ ] [P8-C] Delete stale generated reports or update them if they are active validation artifacts.
+- [ ] [P8-D] Keep old-name wording only in this rebrand plan/evidence/benchmark set and final release note history sentence.
+- [ ] [P8-E] Run a final old-name search and record every remaining occurrence with a reason.
+
+## Phase 9 - Validation And Commits
+
+- [ ] [P9-A] Run the full build gate before tests.
+- [ ] [P9-B] Run backend/CLI/MCP tests covering renamed command, setup, storage, resources, prompts, package, and generated context behavior.
+- [ ] [P9-C] Run Web unit tests and e2e tests for visible branding and launcher/onboarding behavior.
+- [ ] [P9-D] Run package/install/startup smoke tests for `anvien`, `anvien mcp`, and `anvien serve`.
+- [ ] [P9-E] Run final reference inventory and require zero active old runtime names.
+- [ ] [P9-F] Run `avmatrix detect-changes --repo AVmatrix --scope all` before commits until the rename slice changes the command; then record and use the Anvien equivalent.
+- [ ] [P9-G] Commit each completed implementation slice with evidence and benchmark ledgers updated.
+
+## Benchmark Requirements
+
+Record:
+
+- old-name reference counts before and after each slice;
+- active old runtime-name count, target `0`;
+- package/binary/launcher artifact sizes after rename;
+- CLI startup timing if command/package dispatch changes;
+- graph inventory counts after generated context and storage rename;
+- Web e2e pass/fail counts for Anvien visible text.
+
+## Notes
+
+This plan intentionally rejects a compatibility-preserving rename. The target is a clean Anvien identity with no active AVmatrix runtime, MCP, package, config, or generated-context surface left behind.

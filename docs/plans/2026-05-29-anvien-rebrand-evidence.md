@@ -1,0 +1,342 @@
+# Anvien Hard Rebrand Evidence Ledger
+
+Date: 2026-05-29
+
+Status: Draft
+
+Companion files:
+
+- Plan: [2026-05-29-anvien-rebrand-plan.md](2026-05-29-anvien-rebrand-plan.md)
+- Benchmark ledger: [2026-05-29-anvien-rebrand-benchmark.md](2026-05-29-anvien-rebrand-benchmark.md)
+
+## Evidence Rules
+
+Record commands, changed files, naming decisions, old-name inventories, AVmatrix impact output, build/test/e2e output, package smoke results, and concise observations needed to audit the hard rebrand later.
+
+No inferred behavior is accepted as evidence. Every behavior claim needs source inspection, AVmatrix output, command output, test output, or an explicit recorded decision.
+
+## E0 - Plan Creation Evidence
+
+Date: 2026-05-29
+
+Status: recorded
+
+Created file set:
+
+- `docs/plans/2026-05-29-anvien-rebrand-plan.md`
+- `docs/plans/2026-05-29-anvien-rebrand-evidence.md`
+- `docs/plans/2026-05-29-anvien-rebrand-benchmark.md`
+
+Original plan issue found:
+
+- The first draft treated this as a generic compatibility-preserving rename.
+- User clarified that MCP must also be renamed to `anvien` and that no legacy alias should remain.
+- The plan was rewritten as a hard rename with no active legacy runtime/config/MCP/package surface.
+
+## E1 - AVmatrix Graph Refresh
+
+Date: 2026-05-29
+
+Status: recorded
+
+Command:
+
+```powershell
+avmatrix analyze --force
+```
+
+Output summary:
+
+```text
+analyzed E:\AVmatrix-GO
+files: scanned=800 parsed=583 unsupported=217 failed=0
+graph: nodes=91223 relationships=124702 path=E:\AVmatrix-GO\.avmatrix\graph.json
+```
+
+Indexed repo discovery:
+
+```text
+AVmatrix
+Path: E:\AVmatrix-GO
+Commit: 3e37a3e
+```
+
+## E2 - AVmatrix Query Evidence
+
+Date: 2026-05-29
+
+Status: recorded
+
+MCP query:
+
+```powershell
+avmatrix query "MCP server command setup configuration mcp" --repo AVmatrix
+```
+
+Key results:
+
+- `internal/mcp/resources.go`: `Server.setupResource`
+- `internal/mcp/prompts.go`: `generateMapPrompt`, `promptDefinitions`
+- `internal/cli/setup_command.go`: `setupInstallEditorSkills`, `setupInstallSkillsTo`
+- `internal/mcp/tools.go`: query/context/process matching functions
+- process evidence included `Handle -> GenerateMapSteps` and MCP resource/tool flows
+
+CLI/package query:
+
+```powershell
+avmatrix query "CLI command name binary package metadata launcher npm" --repo AVmatrix
+```
+
+Key results:
+
+- `internal/cli/setup_command.go`: `newSetupCommand`, `runSetup`, setup installer functions
+- `internal/cli/query_health_command.go`: command-surface example
+- `internal/cli/package_command.go`: package command owner
+
+Generated context query:
+
+```powershell
+avmatrix query "generated AGENTS CLAUDE skills AI context avmatrix" --repo AVmatrix
+```
+
+Key results:
+
+- `internal/aicontext/aicontext.go`: `installBaseSkills`, `baseSkillContent`, `GenerateAIContextFiles`, `renderAVmatrixBlock`, `removeGeneratedSkills`
+- `internal/cli/analyze_postrun.go`: `generateAnalyzeAIContext`
+- process evidence included `NewAnalyzeCommand -> RenderAVmatrixBlock`
+
+Web/launcher query:
+
+```powershell
+avmatrix query "web UI brand title onboarding start AVmatrix launcher" --repo AVmatrix
+```
+
+Key results:
+
+- `avmatrix-web/src/components/LauncherStartScreen.tsx`: `LauncherStartScreen`
+- `avmatrix-web/src/components/AnalyzeOnboarding.tsx`: `AnalyzeOnboarding`
+- `avmatrix-launcher/src/main.go`: launcher lifecycle/process functions
+- `avmatrix-launcher/server-wrapper/main.go`: server wrapper entrypoint
+
+Storage query:
+
+```powershell
+avmatrix query "repo storage directory .avmatrix AVMATRIX_HOME registry paths" --repo AVmatrix
+```
+
+Key results:
+
+- `internal/repo/paths.go`: `Paths`
+- `internal/group/storage.go`: storage/registry readers
+- `internal/cli/group_command.go`: group path normalization and config writers
+
+MCP resource scheme query:
+
+```powershell
+avmatrix query "MCP resource scheme avmatrix:// resources prompts setupResource" --repo AVmatrix
+```
+
+Key results:
+
+- `internal/mcp/resources.go`: `Server.setupResource`, `resourceDefinitions`, resource process helpers
+- `internal/mcp/prompts.go`: `generateMapPrompt`, `promptDefinitions`
+- `internal/cli/setup_command.go`: setup write flow
+
+## E3 - AVmatrix Context Evidence
+
+Date: 2026-05-29
+
+Status: recorded
+
+`setupWriteMCPJSON`:
+
+```powershell
+avmatrix context "setupWriteMCPJSON" --repo AVmatrix
+```
+
+Observed:
+
+- symbol: `Function:internal/cli/setup_command.go:setupWriteMCPJSON#1`
+- lines: `207-222`
+- incoming calls: `setupClaudeCode` at line `158`, `setupCursor` at line `143`
+- outgoing calls: `setupReadJSONObject`, `setupWriteJSONObject`
+- process membership: `RunSetup -> SetupReadJSONObject`, `RunSetup -> SetupWriteJSONObject`
+
+`runSetup`:
+
+```powershell
+avmatrix context "runSetup" --repo AVmatrix
+```
+
+Observed:
+
+- symbol: `Function:internal/cli/setup_command.go:runSetup#0`
+- incoming call: `newSetupCommand`
+- outgoing calls: `setupCursor`, `setupClaudeCode`, `setupOpenCode`, `setupCodex`, `repo.GlobalDir`
+
+`renderAVmatrixBlock`:
+
+```powershell
+avmatrix context "renderAVmatrixBlock" --repo AVmatrix
+```
+
+Observed:
+
+- symbol: `Function:internal/aicontext/aicontext.go:renderAVmatrixBlock#3`
+- lines: `99-212`
+- incoming call: `GenerateAIContextFiles`
+- process membership: `NewAnalyzeCommand -> RenderAVmatrixBlock`
+
+## E4 - Source Inspection Evidence
+
+Date: 2026-05-29
+
+Status: recorded
+
+`internal/cli/setup_command.go` currently hardcodes:
+
+```go
+setupBrand         = "AVmatrix"
+setupCommandName   = "avmatrix"
+setupMCPServerName = "avmatrix"
+```
+
+The same file writes:
+
+- Cursor/Claude config under `mcpServers[setupMCPServerName]`
+- OpenCode config under `mcp[setupMCPServerName]`
+- Codex command `codex mcp add <server> -- <command> mcp`
+- Codex TOML `[mcp_servers.<server>]`
+- hook commands/status messages containing the old brand
+
+`internal/version/version.go` currently hardcodes:
+
+```go
+CommandName = "avmatrix"
+Version     = "1.2.3"
+```
+
+`internal/repo/paths.go` currently hardcodes:
+
+```go
+StorageDirName = ".avmatrix"
+HomeEnvName    = "AVMATRIX_HOME"
+```
+
+`internal/mcp/resources.go` currently hardcodes:
+
+```go
+canonicalResourceScheme = "avmatrix"
+```
+
+`cmd/avmatrix/main.go` is the current CLI entrypoint and imports the old Go module path:
+
+```go
+github.com/tamnguyendinh/avmatrix-go/internal/cli
+```
+
+`avmatrix/package.json` currently exposes:
+
+- package name `avmatrix`
+- description beginning `AVmatrix graph-powered...`
+- GitHub URLs under `tamnguyendinh/AVmatrix`
+- keyword `avmatrix`
+- bin mapping `"avmatrix": "bin/avmatrix.exe"`
+- lifecycle scripts using `cmd/avmatrix` and `bin/avmatrix.exe`
+
+`avmatrix-web/index.html` currently has:
+
+```html
+<title>avmatrix</title>
+```
+
+Launcher source currently includes old protocol, executable, env, and package names:
+
+- `avmatrix://reset`
+- `AVmatrixLauncher.exe`
+- `avmatrix-server.exe`
+- `avmatrix.exe`
+- `avmatrix-web`
+- `avmatrix-launcher`
+- `HKCU\Software\Classes\avmatrix`
+- `AVMATRIX_LAUNCHER_NO_BROWSER`
+- `AVMATRIX_GO`
+
+## E5 - Initial Reference Inventory
+
+Date: 2026-05-29
+
+Status: recorded
+
+Command shape:
+
+```powershell
+rg -o <pattern> --glob '!node_modules/**' --glob '!docs/plans/2026-05-29-anvien-rebrand-*'
+```
+
+Counts:
+
+| Pattern | Count |
+|---|---:|
+| `AVmatrix` | 2238 |
+| `avmatrix` | 9291 |
+| `AVMATRIX` | 281 |
+| `AVmatrix-GO` | 629 |
+| `avmatrix.com` | 0 |
+| `.avmatrix` | 316 |
+| `AVMATRIX_` | 281 |
+| `mcpServers` | 9 |
+
+File-group count command:
+
+```powershell
+rg -l -i "avmatrix" --glob '!node_modules/**' --glob '!docs/plans/2026-05-29-anvien-rebrand-*'
+```
+
+Top groups:
+
+| Group | Files |
+|---|---:|
+| `internal` | 338 |
+| `reports` | 70 |
+| `avmatrix-web` | 68 |
+| `docs` | 55 |
+| `baseline` | 19 |
+| `avmatrix-launcher` | 6 |
+| `avmatrix` | 5 |
+| `cmd` | 5 |
+
+## E6 - Naming Decisions
+
+Date: pending
+
+Status: pending
+
+| Surface | Decision | Evidence |
+|---|---|---|
+| Brand display name | `Anvien` | user request |
+| CLI command | `anvien` | user clarified MCP/server name must not remain old name |
+| MCP server name | `anvien` | user clarified MCP/server name must not remain old name |
+| MCP resource scheme | `anvien://` | derived from hard-rename requirement |
+| GitHub owner/repo slug | pending | pending |
+| Local folder path | pending | pending |
+| Go module path | pending | pending |
+| npm package name | `anvien` unless unavailable | pending registry check |
+| Storage dir | `.anvien` | derived from no-legacy rule |
+| Env prefix | `ANVIEN_` | derived from no-legacy rule |
+| Domain strategy | no action on third-party `avmatrix.com` | user clarification |
+
+## E7 - Future Implementation Evidence
+
+Date: pending
+
+Status: pending
+
+Record during implementation:
+
+- impact outputs for every edited symbol;
+- changed files by slice;
+- build/test/e2e output;
+- MCP protocol smoke output after the MCP scheme/server rename;
+- package/install smoke output for `anvien`;
+- final old-name inventory and every remaining exception.
