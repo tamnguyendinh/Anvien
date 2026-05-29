@@ -23,7 +23,7 @@ func TestAugmentLegacyConversionUsesLocalGraphContext(t *testing.T) {
 		if out != "" {
 			t.Fatalf("augment wrote stdout: %q", out)
 		}
-		for _, want := range []string{`AVmatrix graph context for "MainFlow"`, `"Label": "MainFlow"`, `"Function:main"`} {
+		for _, want := range []string{`Anvien graph context for "MainFlow"`, `"Label": "MainFlow"`, `"Function:main"`} {
 			if !strings.Contains(errOut, want) {
 				t.Fatalf("augment stderr missing %q:\n%s", want, errOut)
 			}

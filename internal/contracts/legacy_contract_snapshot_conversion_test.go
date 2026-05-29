@@ -20,8 +20,8 @@ import (
 
 func TestLegacyPhase1ContractSnapshotSurfacesAreGoOwned(t *testing.T) {
 	root := cli.NewRootCommand(cli.Options{Out: io.Discard, Err: io.Discard})
-	if root.CommandPath() != "avmatrix" {
-		t.Fatalf("root command path = %q, want avmatrix", root.CommandPath())
+	if root.CommandPath() != "anvien" {
+		t.Fatalf("root command path = %q, want anvien", root.CommandPath())
 	}
 	analyzeCommand, _, err := root.Find([]string{"analyze"})
 	if err != nil || analyzeCommand == nil || analyzeCommand.Use != "analyze [path]" {
@@ -81,7 +81,7 @@ func TestLegacyPhase1ContractSnapshotSurfacesAreGoOwned(t *testing.T) {
 	if !mcpNamedEntryExists(responses[1]["result"].(map[string]any)["tools"].([]any), "impact") {
 		t.Fatalf("tools/list missing impact: %#v", responses[1]["result"])
 	}
-	if !mcpURITemplateExists(responses[2]["result"].(map[string]any)["resourceTemplates"].([]any), "avmatrix://repo/{name}/schema") {
+	if !mcpURITemplateExists(responses[2]["result"].(map[string]any)["resourceTemplates"].([]any), "anvien://repo/{name}/schema") {
 		t.Fatalf("resources/templates/list missing repo schema: %#v", responses[2]["result"])
 	}
 	prompts := responses[3]["result"].(map[string]any)["prompts"].([]any)

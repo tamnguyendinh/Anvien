@@ -47,7 +47,7 @@ func NewRootCommand(options Options) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:           version.CommandName,
-		Short:         "AVmatrix local CLI and MCP server",
+		Short:         "Anvien local CLI and MCP server",
 		Version:       version.Version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -109,7 +109,7 @@ func newMCPCommand() *cobra.Command {
 func newVersionCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
-		Short: "Print the AVmatrix version",
+		Short: "Print the Anvien version",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			_, err := fmt.Fprintln(cmd.OutOrStdout(), version.Version)

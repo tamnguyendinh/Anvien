@@ -45,7 +45,7 @@ type doctorProcess struct {
 func newDoctorCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "doctor",
-		Short: "Inspect AVmatrix local runtime locks and processes",
+		Short: "Inspect Anvien local runtime locks and processes",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
@@ -100,10 +100,10 @@ func newDoctorProcessesCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "processes",
-		Short: "Inspect AVmatrix runtime processes without stopping them",
+		Short: "Inspect Anvien runtime processes without stopping them",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			processes, err := collectAVmatrixProcesses(contextFromCommand(cmd))
+			processes, err := collectAnvienProcesses(contextFromCommand(cmd))
 			if err != nil {
 				return err
 			}
@@ -201,7 +201,7 @@ func doctorLockStatus(diagnosis repo.LockDiagnosis) string {
 
 func writeDoctorLockReport(cmd *cobra.Command, report doctorLockReport) error {
 	out := cmd.OutOrStdout()
-	if _, err := fmt.Fprintln(out, "AVmatrix analyze lock"); err != nil {
+	if _, err := fmt.Fprintln(out, "Anvien analyze lock"); err != nil {
 		return err
 	}
 	for _, line := range []string{
@@ -250,13 +250,13 @@ func timeLayoutRFC3339Nano() string {
 	return "2006-01-02T15:04:05.999999999Z07:00"
 }
 
-func collectAVmatrixProcesses(ctx context.Context) ([]doctorProcess, error) {
+func collectAnvienProcesses(ctx context.Context) ([]doctorProcess, error) {
 	var processes []doctorProcess
 	var err error
 	if runtime.GOOS == "windows" {
-		processes, err = collectWindowsAVmatrixProcesses(ctx)
+		processes, err = collectWindowsAnvienProcesses(ctx)
 	} else {
-		processes, err = collectUnixAVmatrixProcesses(ctx)
+		processes, err = collectUnixAnvienProcesses(ctx)
 	}
 	if err != nil {
 		return nil, err
@@ -273,7 +273,7 @@ func collectAVmatrixProcesses(ctx context.Context) ([]doctorProcess, error) {
 	return filtered, nil
 }
 
-func collectWindowsAVmatrixProcesses(ctx context.Context) ([]doctorProcess, error) {
+func collectWindowsAnvienProcesses(ctx context.Context) ([]doctorProcess, error) {
 	script := fmt.Sprintf(`
 $currentPid = %d
 $all = Get-CimInstance Win32_Process
@@ -283,7 +283,7 @@ $rows = $all | Where-Object {
   if ($_.ProcessId -eq $currentPid -or $_.ParentProcessId -eq $currentPid) { return $false }
   $name = if ($_.Name) { $_.Name } else { '' }
   $cmd = if ($_.CommandLine) { $_.CommandLine } else { '' }
-  $name -match 'avmatrix' -or $cmd -match 'avmatrix'
+  $name -match 'anvien' -or $cmd -match 'anvien'
 } | ForEach-Object {
   $parent = $byPid[[int]$_.ParentProcessId]
   [PSCustomObject]@{
@@ -318,7 +318,7 @@ $rows = $all | Where-Object {
 	return processes, nil
 }
 
-func collectUnixAVmatrixProcesses(ctx context.Context) ([]doctorProcess, error) {
+func collectUnixAnvienProcesses(ctx context.Context) ([]doctorProcess, error) {
 	cmd := exec.CommandContext(ctx, "ps", "-eo", "pid=,ppid=,comm=,args=")
 	raw, err := cmd.Output()
 	if err != nil {
@@ -337,7 +337,7 @@ func collectUnixAVmatrixProcesses(ctx context.Context) ([]doctorProcess, error) 
 		}
 		name := fields[2]
 		command := strings.Join(fields[3:], " ")
-		if !strings.Contains(strings.ToLower(name+" "+command), "avmatrix") {
+		if !strings.Contains(strings.ToLower(name+" "+command), "anvien") {
 			continue
 		}
 		processes = append(processes, doctorProcess{
@@ -377,11 +377,11 @@ func classifyDoctorProcess(process doctorProcess) doctorProcess {
 		} else {
 			process.Ownership = "user-command-or-dev-server"
 		}
-	case strings.Contains(haystack, "avmatrixlauncher.exe") || strings.Contains(haystack, "avmatrix-server.exe"):
+	case strings.Contains(haystack, "anvienlauncher.exe") || strings.Contains(haystack, "anvien-server.exe"):
 		process.Role = "packaged-launcher"
 		process.Ownership = "launcher-owned"
 	default:
-		process.Role = "avmatrix-runtime"
+		process.Role = "anvien-runtime"
 		process.Ownership = "unknown"
 	}
 
@@ -394,10 +394,10 @@ func classifyDoctorProcess(process doctorProcess) doctorProcess {
 func writeDoctorProcesses(cmd *cobra.Command, processes []doctorProcess) error {
 	out := cmd.OutOrStdout()
 	if len(processes) == 0 {
-		_, err := fmt.Fprintln(out, "No AVmatrix processes found.")
+		_, err := fmt.Fprintln(out, "No Anvien processes found.")
 		return err
 	}
-	if _, err := fmt.Fprintln(out, "AVmatrix processes:"); err != nil {
+	if _, err := fmt.Fprintln(out, "Anvien processes:"); err != nil {
 		return err
 	}
 	for _, process := range processes {

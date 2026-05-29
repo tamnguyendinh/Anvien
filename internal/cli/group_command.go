@@ -66,7 +66,7 @@ func newGroupCreateCommand() *cobra.Command {
 			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "Created group %q at %s\n", name, dir); err != nil {
 				return err
 			}
-			_, err = fmt.Fprintf(cmd.OutOrStdout(), "Edit group.yaml to add repos, then run: avmatrix group sync %s\n", name)
+			_, err = fmt.Fprintf(cmd.OutOrStdout(), "Edit group.yaml to add repos, then run: anvien group sync %s\n", name)
 			return err
 		},
 	}
@@ -95,7 +95,7 @@ func newGroupAddCommand() *cobra.Command {
 			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "Added %s as %q to group %q\n", registryName, groupPath, groupName); err != nil {
 				return err
 			}
-			_, err = fmt.Fprintf(cmd.OutOrStdout(), "Run: avmatrix group sync %s\n", groupName)
+			_, err = fmt.Fprintf(cmd.OutOrStdout(), "Run: anvien group sync %s\n", groupName)
 			return err
 		},
 	}
@@ -137,7 +137,7 @@ func newGroupListCommand() *cobra.Command {
 					return err
 				}
 				if len(groups) == 0 {
-					_, err = fmt.Fprintln(cmd.OutOrStdout(), "No groups configured. Create one with: avmatrix group create <name>")
+					_, err = fmt.Fprintln(cmd.OutOrStdout(), "No groups configured. Create one with: anvien group create <name>")
 					return err
 				}
 				if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Groups:"); err != nil {

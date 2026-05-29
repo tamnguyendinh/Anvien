@@ -158,7 +158,7 @@ func formatBenchmarkComparison(comparison benchmarkComparison) string {
 	var lines []string
 	beforeLabel := firstNonEmpty(comparison.BeforeLabel, "before")
 	afterLabel := firstNonEmpty(comparison.AfterLabel, "after")
-	lines = append(lines, "AVmatrix benchmark comparison")
+	lines = append(lines, "Anvien benchmark comparison")
 	lines = append(lines, fmt.Sprintf("labels: %s -> %s", beforeLabel, afterLabel))
 	lines = append(lines, fmt.Sprintf("wall: %s", formatDelta(comparison.TotalWallMs)))
 	appendDeltaSection(&lines, "phaseMs", comparison.PhaseMs)

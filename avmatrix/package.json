@@ -1,17 +1,17 @@
 {
-  "name": "avmatrix",
+  "name": "anvien",
   "version": "1.2.3",
-  "description": "AVmatrix graph-powered code intelligence for AI agents. Index any codebase, query via MCP or CLI.",
+  "description": "Anvien graph-powered code intelligence for AI agents. Index any codebase, query via MCP or CLI.",
   "author": "Abhigyan Patwari",
   "license": "PolyForm-Noncommercial-1.0.0",
-  "homepage": "https://github.com/tamnguyendinh/AVmatrix#readme",
+  "homepage": "https://github.com/tamnguyendinh/Anvien#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tamnguyendinh/AVmatrix.git",
-    "directory": "avmatrix"
+    "url": "git+https://github.com/tamnguyendinh/Anvien.git",
+    "directory": "anvien"
   },
   "bugs": {
-    "url": "https://github.com/tamnguyendinh/AVmatrix/issues"
+    "url": "https://github.com/tamnguyendinh/Anvien/issues"
   },
   "keywords": [
     "mcp",
@@ -22,27 +22,27 @@
     "claude",
     "codex",
     "ai-agent",
-    "avmatrix",
+    "anvien",
     "static-analysis",
     "codebase-indexing"
   ],
   "type": "module",
   "bin": {
-    "avmatrix": "bin/avmatrix.exe"
+    "anvien": "bin/anvien.exe"
   },
   "files": [
     "bin",
     "go-src"
   ],
   "scripts": {
-    "build": "go run ../cmd/avmatrix package build-runtime",
-    "serve": "go run ../cmd/avmatrix serve",
-    "dev": "go run ../cmd/avmatrix",
-    "test": "node -e \"console.log('No AVmatrix TypeScript test files remain; use go test ./cmd/... ./internal/... and avmatrix-web tests.')\"",
-    "postinstall": "go run ../cmd/avmatrix package build-runtime || go run ./go-src/cmd/avmatrix package build-runtime || cmd /c .\\bin\\avmatrix.exe package ensure-runtime || ./bin/avmatrix.exe package ensure-runtime",
+    "build": "go run ../cmd/anvien package build-runtime",
+    "serve": "go run ../cmd/anvien serve",
+    "dev": "go run ../cmd/anvien",
+    "test": "node -e \"console.log('No Anvien TypeScript test files remain; use go test ./cmd/... ./internal/... and Web UI tests.')\"",
+    "postinstall": "go run ../cmd/anvien package build-runtime || go run ./go-src/cmd/anvien package build-runtime || cmd /c .\\bin\\anvien.exe package ensure-runtime || ./bin/anvien.exe package ensure-runtime",
     "prepare": "npm run build",
-    "prepack": "npm run build && go run ../cmd/avmatrix package prepare-go-source",
-    "postpack": "go run ../cmd/avmatrix package clean-go-source || cmd /c .\\bin\\avmatrix.exe package clean-go-source || ./bin/avmatrix.exe package clean-go-source"
+    "prepack": "npm run build && go run ../cmd/anvien package prepare-go-source",
+    "postpack": "go run ../cmd/anvien package clean-go-source || cmd /c .\\bin\\anvien.exe package clean-go-source || ./bin/anvien.exe package clean-go-source"
   },
   "engines": {
     "node": ">=20.0.0"

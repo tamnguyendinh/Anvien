@@ -1,3 +1,3 @@
-module avmatrix-server-wrapper
+module anvien-server-wrapper
 
 go 1.26.3

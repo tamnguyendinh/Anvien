@@ -36,7 +36,7 @@ func newAugmentCommand() *cobra.Command {
 			if strings.TrimSpace(text) == "" {
 				return nil
 			}
-			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "AVmatrix graph context for %q:\n%s\n", pattern, text)
+			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Anvien graph context for %q:\n%s\n", pattern, text)
 			return nil
 		},
 	}
@@ -64,7 +64,7 @@ func newQueryCommand() *cobra.Command {
 				return nil
 			}
 			if len(args) != 1 {
-				return fmt.Errorf("usage: avmatrix query <search_query>")
+				return fmt.Errorf("usage: anvien query <search_query>")
 			}
 			return nil
 		},
@@ -146,7 +146,7 @@ func newContextCommand() *cobra.Command {
 				name = args[0]
 			}
 			if strings.TrimSpace(name) == "" && strings.TrimSpace(uid) == "" {
-				return fmt.Errorf("usage: avmatrix context <symbol_name> [--uid <uid>] [--file <path>]")
+				return fmt.Errorf("usage: anvien context <symbol_name> [--uid <uid>] [--file <path>]")
 			}
 			return printLocalMCPTool(cmd, "context", map[string]any{
 				"name":            emptyToNil(name),
@@ -181,7 +181,7 @@ func newImpactCommand() *cobra.Command {
 				target = args[0]
 			}
 			if strings.TrimSpace(target) == "" && strings.TrimSpace(uid) == "" {
-				return fmt.Errorf("usage: avmatrix impact [symbol_name] [--uid <uid>] [--direction upstream|downstream]")
+				return fmt.Errorf("usage: anvien impact [symbol_name] [--uid <uid>] [--direction upstream|downstream]")
 			}
 			if direction != "upstream" && direction != "downstream" {
 				return fmt.Errorf("direction must be upstream or downstream")
@@ -224,12 +224,12 @@ func newRenameCommand() *cobra.Command {
 		Args: func(cmd *cobra.Command, args []string) error {
 			if strings.TrimSpace(uid) != "" {
 				if len(args) != 1 {
-					return fmt.Errorf("usage: avmatrix rename --uid <symbol_uid> <new_name>")
+					return fmt.Errorf("usage: anvien rename --uid <symbol_uid> <new_name>")
 				}
 				return nil
 			}
 			if len(args) != 2 {
-				return fmt.Errorf("usage: avmatrix rename <symbol_name> <new_name>")
+				return fmt.Errorf("usage: anvien rename <symbol_name> <new_name>")
 			}
 			return nil
 		},

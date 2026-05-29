@@ -20,7 +20,7 @@ func TestCleanGoSourcePackageRemovesOnlyPackageGoSrc(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(nested, "x.go"), []byte("package x\n"), 0o644); err != nil {
 		t.Fatalf("write go-src file: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(root, "package.json"), []byte(`{"name":"avmatrix"}`), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "package.json"), []byte(`{"name":"anvien"}`), 0o644); err != nil {
 		t.Fatalf("write package.json: %v", err)
 	}
 
@@ -41,7 +41,7 @@ func TestCleanGoSourcePackageRemovesOnlyPackageGoSrc(t *testing.T) {
 
 func TestPackageCleanGoSourceCommandUsesWorkingDirectoryPackageRoot(t *testing.T) {
 	root := t.TempDir()
-	if err := os.WriteFile(filepath.Join(root, "package.json"), []byte(`{"name":"avmatrix"}`), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "package.json"), []byte(`{"name":"anvien"}`), 0o644); err != nil {
 		t.Fatalf("write package.json: %v", err)
 	}
 	if err := os.MkdirAll(filepath.Join(root, "go-src"), 0o755); err != nil {
@@ -76,13 +76,13 @@ func TestEnsurePackagedRuntimeAcceptsCurrentPlatformMetadata(t *testing.T) {
 	if err := os.MkdirAll(binDir, 0o755); err != nil {
 		t.Fatalf("mkdir bin: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(binDir, "avmatrix.exe"), []byte("runtime"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(binDir, "anvien.exe"), []byte("runtime"), 0o644); err != nil {
 		t.Fatalf("write runtime: %v", err)
 	}
 	metadata := packageRuntimeMetadata{
 		Platform: runtime.GOOS,
 		Arch:     runtime.GOARCH,
-		Binary:   "avmatrix.exe",
+		Binary:   "anvien.exe",
 		Source:   "..",
 		Tags:     []string{"ladybugdb"},
 	}
@@ -90,7 +90,7 @@ func TestEnsurePackagedRuntimeAcceptsCurrentPlatformMetadata(t *testing.T) {
 	if err != nil {
 		t.Fatalf("marshal metadata: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(binDir, "avmatrix-runtime.json"), raw, 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(binDir, "anvien-runtime.json"), raw, 0o644); err != nil {
 		t.Fatalf("write metadata: %v", err)
 	}
 
@@ -105,19 +105,19 @@ func TestEnsurePackagedRuntimeAcceptsCurrentPlatformMetadata(t *testing.T) {
 
 func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 	parent := t.TempDir()
-	packageRoot := filepath.Join(parent, "avmatrix")
+	packageRoot := filepath.Join(parent, "anvien")
 	if err := os.MkdirAll(packageRoot, 0o755); err != nil {
 		t.Fatalf("mkdir package root: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(packageRoot, "package.json"), []byte(`{"name":"avmatrix"}`), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(packageRoot, "package.json"), []byte(`{"name":"anvien"}`), 0o644); err != nil {
 		t.Fatalf("write package.json: %v", err)
 	}
-	writePackageTestFile(t, parent, "go.mod", "module example.com/avmatrix\n")
+	writePackageTestFile(t, parent, "go.mod", "module example.com/anvien\n")
 	writePackageTestFile(t, parent, "go.sum", "")
-	writePackageTestFile(t, parent, "cmd/avmatrix/main.go", "package main\n")
-	writePackageTestFile(t, parent, "cmd/avmatrix/main_test.go", "package main\n")
+	writePackageTestFile(t, parent, "cmd/anvien/main.go", "package main\n")
+	writePackageTestFile(t, parent, "cmd/anvien/main_test.go", "package main\n")
 	writePackageTestFile(t, parent, "internal/aicontext/aicontext.go", "package aicontext\n")
-	writePackageTestFile(t, parent, "internal/aicontext/skills/avmatrix-cli.md", "# AVmatrix CLI Commands\n")
+	writePackageTestFile(t, parent, "internal/aicontext/skills/anvien-cli.md", "# Anvien CLI Commands\n")
 	writePackageTestFile(t, parent, "internal/cli/command.go", "package cli\n")
 	writePackageTestFile(t, parent, "internal/cli/command_test.go", "package cli\n")
 	writePackageTestFile(t, parent, "scripts/ensure-ladybug-native.ps1", "Write-Output native\n")
@@ -133,19 +133,19 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 	for _, rel := range []string{
 		"go.mod",
 		"go.sum",
-		"cmd/avmatrix/main.go",
+		"cmd/anvien/main.go",
 		"internal/aicontext/aicontext.go",
-		"internal/aicontext/skills/avmatrix-cli.md",
+		"internal/aicontext/skills/anvien-cli.md",
 		"internal/cli/command.go",
 		"scripts/ensure-ladybug-native.ps1",
 		"scripts/ensure-ladybug-native.sh",
-		"avmatrix-go-source.json",
+		"anvien-go-source.json",
 	} {
 		if _, err := os.Stat(filepath.Join(packageRoot, "go-src", filepath.FromSlash(rel))); err != nil {
 			t.Fatalf("prepared source missing %s: %v", rel, err)
 		}
 	}
-	for _, rel := range []string{"cmd/avmatrix/main_test.go", "internal/cli/command_test.go", "old"} {
+	for _, rel := range []string{"cmd/anvien/main_test.go", "internal/cli/command_test.go", "old"} {
 		if _, err := os.Stat(filepath.Join(packageRoot, "go-src", filepath.FromSlash(rel))); !os.IsNotExist(err) {
 			t.Fatalf("prepared source retained excluded path %s: %v", rel, err)
 		}
@@ -170,11 +170,11 @@ func TestPackageJSONUsesCanonicalGoBinaryAndPackageCleanupCommand(t *testing.T) 
 		t.Fatalf("parse package.json: %v", err)
 	}
 
-	if got := pkg.Bin["avmatrix"]; got != "bin/avmatrix.exe" {
-		t.Fatalf("pkg.bin.avmatrix = %q", got)
+	if got := pkg.Bin["anvien"]; got != "bin/anvien.exe" {
+		t.Fatalf("pkg.bin.anvien = %q", got)
 	}
 	if len(pkg.Bin) != 1 {
-		t.Fatalf("pkg.bin should expose only avmatrix: %#v", pkg.Bin)
+		t.Fatalf("pkg.bin should expose only anvien: %#v", pkg.Bin)
 	}
 	for _, want := range []string{"bin", "go-src"} {
 		if !containsString(pkg.Files, want) {
@@ -189,7 +189,7 @@ func TestPackageJSONUsesCanonicalGoBinaryAndPackageCleanupCommand(t *testing.T) 
 			t.Fatalf("pkg.files still ships retired legacy path %q: %#v", retiredFile, pkg.Files)
 		}
 	}
-	if got := pkg.Scripts["build"]; got != "go run ../cmd/avmatrix package build-runtime" {
+	if got := pkg.Scripts["build"]; got != "go run ../cmd/anvien package build-runtime" {
 		t.Fatalf("pkg.scripts.build = %q", got)
 	}
 	if got := pkg.Scripts["prepack"]; !strings.Contains(got, "package prepare-go-source") {

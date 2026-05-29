@@ -7,13 +7,18 @@ $ServerSourceRoot = Join-Path $LauncherRoot "server-wrapper"
 $ServerBundleRoot = Join-Path $LauncherRoot "server-bundle"
 $WebDistRoot = Join-Path $LauncherRoot "web-dist"
 $CanonicalCliBinRoot = Join-Path $RepoRoot "avmatrix\bin"
-$CanonicalCliOutPath = Join-Path $CanonicalCliBinRoot "avmatrix.exe"
-$LauncherOutPath = Join-Path $LauncherRoot "AVmatrixLauncher.exe"
-$ServerOutPath = Join-Path $ServerBundleRoot "avmatrix-server.exe"
+$CanonicalCliOutPath = Join-Path $CanonicalCliBinRoot "anvien.exe"
+$LauncherOutPath = Join-Path $LauncherRoot "AnvienLauncher.exe"
+$ServerOutPath = Join-Path $ServerBundleRoot "anvien-server.exe"
+$LegacyCliOutPath = Join-Path $CanonicalCliBinRoot "avmatrix.exe"
+$LegacyCliBackupPath = Join-Path $CanonicalCliBinRoot "avmatrix.exe~"
+$LegacyCliMetadataPath = Join-Path $CanonicalCliBinRoot "avmatrix-runtime.json"
+$LegacyLauncherOutPath = Join-Path $LauncherRoot "AVmatrixLauncher.exe"
+$LegacyServerOutPath = Join-Path $ServerBundleRoot "avmatrix-server.exe"
 $WebRoot = Join-Path $RepoRoot "avmatrix-web"
 $WebBuildRoot = Join-Path $WebRoot "dist"
 $NativeRuntimeScript = Join-Path $RepoRoot "scripts\ensure-ladybug-native.ps1"
-$LadybugVersion = if ($env:AVMATRIX_LADYBUGDB_VERSION) { $env:AVMATRIX_LADYBUGDB_VERSION } else { "auto" }
+$LadybugVersion = if ($env:ANVIEN_LADYBUGDB_VERSION) { $env:ANVIEN_LADYBUGDB_VERSION } else { "auto" }
 
 function Assert-Command($Name) {
   if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
@@ -22,8 +27,8 @@ function Assert-Command($Name) {
 }
 
 function Resolve-GoCommand {
-  if ($env:AVMATRIX_GO -and (Test-Path -LiteralPath $env:AVMATRIX_GO)) {
-    return $env:AVMATRIX_GO
+  if ($env:ANVIEN_GO -and (Test-Path -LiteralPath $env:ANVIEN_GO)) {
+    return $env:ANVIEN_GO
   }
 
   $SelectedGo = Join-Path $env:USERPROFILE "go\bin\go1.26.3.exe"
@@ -36,7 +41,7 @@ function Resolve-GoCommand {
     return $GoCommand.Source
   }
 
-  throw "Go 1.26.3 is required to build the Go launcher runtime. Install it or set AVMATRIX_GO."
+  throw "Go 1.26.3 is required to build the Go launcher runtime. Install it or set ANVIEN_GO."
 }
 
 function Assert-ChildPath($Parent, $Child) {
@@ -96,6 +101,12 @@ try {
 
 Reset-Directory $ServerBundleRoot
 New-Item -ItemType Directory -Path $CanonicalCliBinRoot -Force | Out-Null
+foreach ($LegacyArtifact in @($LegacyCliOutPath, $LegacyCliBackupPath, $LegacyCliMetadataPath, $LegacyLauncherOutPath, $LegacyServerOutPath)) {
+  Assert-ChildPath $RepoRoot $LegacyArtifact
+  if (Test-Path -LiteralPath $LegacyArtifact -PathType Leaf) {
+    Remove-Item -LiteralPath $LegacyArtifact -Force
+  }
+}
 
 Push-Location $RepoRoot
 try {
@@ -107,8 +118,8 @@ try {
   $env:CGO_CFLAGS = "-I$NativeDir"
   $env:CGO_LDFLAGS = "-L$NativeDir -llbug_shared"
   $env:PATH = "$NativeDir;$env:PATH"
-  & $Go build -tags ladybugdb -ldflags="-s -w" -o $CanonicalCliOutPath .\cmd\avmatrix
-  Assert-NativeSuccess "go build cmd/avmatrix"
+  & $Go build -tags ladybugdb -ldflags="-s -w" -o $CanonicalCliOutPath .\cmd\anvien
+  Assert-NativeSuccess "go build cmd/anvien"
 } finally {
   $env:CGO_ENABLED = $PreviousCgoEnabled
   $env:CGO_CFLAGS = $PreviousCgoCflags

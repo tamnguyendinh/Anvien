@@ -21,7 +21,7 @@ func main() {
 	}
 
 	if _, err := os.Stat(backendPath); err != nil {
-		fatal(fmt.Errorf("canonical AVmatrix CLI missing: %s", backendPath))
+		fatal(fmt.Errorf("canonical Anvien CLI missing: %s", backendPath))
 	}
 
 	cmd := exec.Command(backendPath, "serve", "--host", "127.0.0.1", "--port", "4848")
@@ -55,7 +55,7 @@ func resolveRuntime() (string, *os.File, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return filepath.Join(rootDir, "avmatrix", "bin", "avmatrix.exe"), logFile, nil
+	return filepath.Join(rootDir, "avmatrix", "bin", "anvien.exe"), logFile, nil
 }
 
 func hiddenProcAttr() *syscall.SysProcAttr {

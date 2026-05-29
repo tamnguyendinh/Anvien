@@ -26,8 +26,8 @@ func ensurePackagedRuntime(packageRoot string, output io.Writer) error {
 	if err != nil {
 		return err
 	}
-	outputPath := filepath.Join(root, "bin", "avmatrix.exe")
-	metadataPath := filepath.Join(root, "bin", "avmatrix-runtime.json")
+	outputPath := filepath.Join(root, "bin", "anvien.exe")
+	metadataPath := filepath.Join(root, "bin", "anvien-runtime.json")
 	stat, err := os.Stat(outputPath)
 	if err != nil || stat.IsDir() {
 		return fmt.Errorf("packaged Go runtime is missing: %s", outputPath)
@@ -66,12 +66,12 @@ func buildGoRuntimePackage(packageRoot string, output io.Writer) error {
 		if ensureErr := ensurePackagedRuntime(root, output); ensureErr == nil {
 			return nil
 		}
-		return fmt.Errorf("Go toolchain is required to build the packaged AVmatrix runtime: %w", err)
+		return fmt.Errorf("Go toolchain is required to build the packaged Anvien runtime: %w", err)
 	}
 
 	outputDir := filepath.Join(root, "bin")
-	outputPath := filepath.Join(outputDir, "avmatrix.exe")
-	metadataPath := filepath.Join(outputDir, "avmatrix-runtime.json")
+	outputPath := filepath.Join(outputDir, "anvien.exe")
+	metadataPath := filepath.Join(outputDir, "anvien-runtime.json")
 	if err := os.MkdirAll(outputDir, 0o755); err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func buildGoRuntimePackage(packageRoot string, output io.Writer) error {
 	fmt.Fprintf(output, "[package-runtime] building Go runtime for %s/%s\n", runtime.GOOS, runtime.GOARCH)
 	fmt.Fprintf(output, "[package-runtime] Go source root: %s\n", sourceRoot)
 	fmt.Fprintf(output, "[package-runtime] LadybugDB native runtime: %s\n", nativeDir)
-	if err := runPackageCommand(output, sourceRoot, env, "go", "build", "-tags", "ladybugdb", "-trimpath", "-ldflags=-s -w", "-o", outputPath, "./cmd/avmatrix"); err != nil {
+	if err := runPackageCommand(output, sourceRoot, env, "go", "build", "-tags", "ladybugdb", "-trimpath", "-ldflags=-s -w", "-o", outputPath, "./cmd/anvien"); err != nil {
 		return err
 	}
 	if err := os.Chmod(outputPath, 0o755); err != nil {
@@ -114,7 +114,7 @@ func buildGoRuntimePackage(packageRoot string, output io.Writer) error {
 	metadata := packageRuntimeMetadata{
 		Platform: runtime.GOOS,
 		Arch:     runtime.GOARCH,
-		Binary:   "avmatrix.exe",
+		Binary:   "anvien.exe",
 		Source:   filepath.ToSlash(relativeSource),
 		Tags:     []string{"ladybugdb"},
 	}
@@ -164,7 +164,7 @@ func prepareGoSourcePackage(packageRoot string, output io.Writer) error {
 	}
 	sort.Strings(copied)
 	manifest := map[string]any{
-		"generatedBy": "avmatrix package prepare-go-source",
+		"generatedBy": "anvien package prepare-go-source",
 		"source":      "repo-root",
 		"files":       len(copied),
 	}
@@ -172,7 +172,7 @@ func prepareGoSourcePackage(packageRoot string, output io.Writer) error {
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(filepath.Join(outputRoot, "avmatrix-go-source.json"), append(raw, '\n'), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(outputRoot, "anvien-go-source.json"), append(raw, '\n'), 0o644); err != nil {
 		return err
 	}
 	_, err = fmt.Fprintf(output, "[prepare-go-source-package] copied %d files to %s\n", len(copied), outputRoot)
@@ -192,7 +192,7 @@ func resolvePackageSourceRoot(packageRoot string) (string, error) {
 }
 
 func hasPackageGoSource(root string) bool {
-	required := []string{"go.mod", "go.sum", "cmd/avmatrix/main.go", "internal/cli/command.go"}
+	required := []string{"go.mod", "go.sum", "cmd/anvien/main.go", "internal/cli/command.go"}
 	for _, rel := range required {
 		if stat, err := os.Stat(filepath.Join(root, rel)); err != nil || stat.IsDir() {
 			return false
@@ -202,7 +202,7 @@ func hasPackageGoSource(root string) bool {
 }
 
 func resolvePackageNativeDir(sourceRoot string) (string, error) {
-	version := os.Getenv("AVMATRIX_LADYBUGDB_VERSION")
+	version := os.Getenv("ANVIEN_LADYBUGDB_VERSION")
 	if strings.TrimSpace(version) == "" {
 		version = "auto"
 	}

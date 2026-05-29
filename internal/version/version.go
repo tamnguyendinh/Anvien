@@ -1,6 +1,6 @@
 package version
 
 const (
-	CommandName = "avmatrix"
+	CommandName = "anvien"
 	Version     = "1.2.3"
 )

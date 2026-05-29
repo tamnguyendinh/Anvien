@@ -25,9 +25,9 @@ const (
 	backendHealthURL = "http://127.0.0.1:4848/api/info"
 	webURL           = "http://127.0.0.1:5228"
 
-	launcherHeartbeatPath = "/__avmatrix_launcher/heartbeat"
+	launcherHeartbeatPath = "/__anvien_launcher/heartbeat"
 	launcherHeartbeatURL  = webURL + launcherHeartbeatPath
-	launcherClosedPath    = "/__avmatrix_launcher/closed"
+	launcherClosedPath    = "/__anvien_launcher/closed"
 	launcherUICloseGrace  = 2 * time.Second
 )
 
@@ -92,15 +92,15 @@ func resolvePaths() (launcherPaths, error) {
 
 	homeDir := filepath.Dir(exePath)
 	rootDir := filepath.Dir(homeDir)
-	stateFile := filepath.Join(os.TempDir(), "avmatrix-launcher-"+shortHash(rootDir)+".json")
+	stateFile := filepath.Join(os.TempDir(), "anvien-launcher-"+shortHash(rootDir)+".json")
 	return launcherPaths{
 		exePath:    exePath,
 		rootDir:    rootDir,
 		homeDir:    homeDir,
 		logDir:     filepath.Join(homeDir, "logs"),
 		webDist:    filepath.Join(homeDir, "web-dist"),
-		serverExe:  filepath.Join(homeDir, "server-bundle", "avmatrix-server.exe"),
-		backendExe: filepath.Join(rootDir, "avmatrix", "bin", "avmatrix.exe"),
+		serverExe:  filepath.Join(homeDir, "server-bundle", "anvien-server.exe"),
+		backendExe: filepath.Join(rootDir, "avmatrix", "bin", "anvien.exe"),
 		stateFile:  stateFile,
 	}, nil
 }
@@ -226,7 +226,7 @@ func ensureBackend(paths launcherPaths) (backendProcess, error) {
 		return backendProcess{}, fmt.Errorf("packaged backend missing: %s", paths.serverExe)
 	}
 	if _, err := os.Stat(paths.backendExe); err != nil {
-		return backendProcess{}, fmt.Errorf("canonical AVmatrix CLI missing: %s", paths.backendExe)
+		return backendProcess{}, fmt.Errorf("canonical Anvien CLI missing: %s", paths.backendExe)
 	}
 
 	cmd := exec.Command(paths.serverExe)
@@ -304,10 +304,10 @@ func injectLauncherLifecycle(raw []byte) []byte {
 	return result
 }
 
-const launcherLifecycleScript = `<script data-avmatrix-launcher-lifecycle>
+const launcherLifecycleScript = `<script data-anvien-launcher-lifecycle>
 (() => {
-  const heartbeat = "/__avmatrix_launcher/heartbeat";
-  const closed = "/__avmatrix_launcher/closed";
+  const heartbeat = "/__anvien_launcher/heartbeat";
+  const closed = "/__anvien_launcher/closed";
   const ping = () => fetch(heartbeat, { method: "POST", cache: "no-store", keepalive: true }).catch(() => {});
   ping();
   const timer = setInterval(ping, 5000);
@@ -631,14 +631,14 @@ Get-CimInstance Win32_Process | Where-Object {
   $exe = if ($_.ExecutablePath) { $_.ExecutablePath.ToLowerInvariant() } else { '' }
   $cmd = if ($_.CommandLine) { $_.CommandLine.ToLowerInvariant() } else { '' }
   $isCanonicalBackendServe = (
-    $_.Name -ieq 'avmatrix.exe' -and
+    $_.Name -ieq 'anvien.exe' -and
     $exe -eq $backendPath -and
     $cmd.Contains(' serve') -and
     ($cmd.Contains('--port 4848') -or $cmd.Contains('--port=4848'))
   )
   $isPackagedRuntime = (
-    ($_.Name -ieq 'AVmatrixLauncher.exe' -and $exe -eq $launcherPath) -or
-    ($_.Name -ieq 'avmatrix-server.exe' -and $exe -eq $serverPath) -or
+    ($_.Name -ieq 'AnvienLauncher.exe' -and $exe -eq $launcherPath) -or
+    ($_.Name -ieq 'anvien-server.exe' -and $exe -eq $serverPath) -or
     $isCanonicalBackendServe
   )
   $isRepoWebRuntime = (
@@ -851,9 +851,9 @@ func registerProtocol(paths launcherPaths) error {
 		return errors.New("protocol registration is Windows-only")
 	}
 	command := fmt.Sprintf(`"%s" "%%1"`, paths.exePath)
-	key := `HKCU\Software\Classes\avmatrix`
+	key := `HKCU\Software\Classes\anvien`
 	commands := [][]string{
-		{"add", key, "/ve", "/d", "URL:AVmatrix Launcher", "/f"},
+		{"add", key, "/ve", "/d", "URL:Anvien Launcher", "/f"},
 		{"add", key, "/v", "URL Protocol", "/d", "", "/f"},
 		{"add", key + `\shell\open\command`, "/ve", "/d", command, "/f"},
 	}
@@ -867,8 +867,8 @@ func registerProtocol(paths launcherPaths) error {
 }
 
 func openBrowser(url string) error {
-	if os.Getenv("AVMATRIX_LAUNCHER_NO_BROWSER") == "1" {
-		log.Printf("browser open suppressed by AVMATRIX_LAUNCHER_NO_BROWSER")
+	if os.Getenv("ANVIEN_LAUNCHER_NO_BROWSER") == "1" {
+		log.Printf("browser open suppressed by ANVIEN_LAUNCHER_NO_BROWSER")
 		return nil
 	}
 	if runtime.GOOS == "windows" {

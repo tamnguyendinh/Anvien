@@ -31,14 +31,14 @@ function findSiblingPackageDir(packageName: string): string {
   );
 }
 
-const CLI_ROOT = findSiblingPackageDir("avmatrix");
-const avmatrixCliPkg = _require(path.join(CLI_ROOT, "package.json"));
+const CLI_ROOT = findSiblingPackageDir("anvien");
+const anvienCliPkg = _require(path.join(CLI_ROOT, "package.json"));
 const REPO_ROOT = path.resolve(__dirname, "..");
 const README_PATH = path.join(REPO_ROOT, "README.md");
 
 function rootReadmePlugin(): Plugin {
   return {
-    name: "avmatrix-root-readme",
+    name: "anvien-root-readme",
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const requestPath = (req.url ?? "").split("?")[0];
@@ -69,7 +69,7 @@ export default defineConfig({
   plugins: [rootReadmePlugin(), react(), tailwindcss()],
   define: {
     __REQUIRED_NODE_VERSION__: JSON.stringify(
-      avmatrixCliPkg.engines.node.replace(/[>=^~\s]/g, ""),
+      anvienCliPkg.engines.node.replace(/[>=^~\s]/g, ""),
     ),
   },
   resolve: {

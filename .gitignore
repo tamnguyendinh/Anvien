@@ -111,8 +111,8 @@ avmatrix/undefined/
 undefined/
 
 # Local AVmatrix launcher generated artifacts
-avmatrix-launcher/AVmatrixLauncher.exe
-avmatrix-launcher/AVmatrixLauncher.exe~
+avmatrix-launcher/AnvienLauncher.exe
+avmatrix-launcher/AnvienLauncher.exe~
 avmatrix-launcher/logs/
 avmatrix-launcher/server-bundle/
 avmatrix-launcher/web-dist/

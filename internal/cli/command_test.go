@@ -72,7 +72,7 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 		t.Fatalf("help returned error: %v", err)
 	}
 	for _, want := range []string{
-		"AVmatrix local CLI and MCP server",
+		"Anvien local CLI and MCP server",
 		"analyze",
 		"api",
 		"augment",
@@ -149,8 +149,8 @@ func TestDoctorLocksReportsStaleLockJSON(t *testing.T) {
 
 func TestDoctorProcessClassificationDistinguishesMCPAndAnalyze(t *testing.T) {
 	mcp := classifyDoctorProcess(doctorProcess{
-		Name:              "avmatrix.exe",
-		CommandLine:       `C:\Users\TAM\AppData\Roaming\npm\avmatrix.exe mcp`,
+		Name:              "anvien.exe",
+		CommandLine:       `C:\Users\TAM\AppData\Roaming\npm\anvien.exe mcp`,
 		ParentName:        "codex.exe",
 		ParentCommandLine: "codex",
 	})
@@ -159,24 +159,24 @@ func TestDoctorProcessClassificationDistinguishesMCPAndAnalyze(t *testing.T) {
 	}
 
 	analyze := classifyDoctorProcess(doctorProcess{
-		Name:        "avmatrix.exe",
-		CommandLine: `E:\AVmatrix-GO\avmatrix\bin\avmatrix.exe analyze --force`,
+		Name:        "anvien.exe",
+		CommandLine: `E:\Anvien\anvien\bin\anvien.exe analyze --force`,
 	})
 	if analyze.Role != "analyze" || analyze.Ownership != "user-command-or-job" {
 		t.Fatalf("analyze classification = %#v", analyze)
 	}
 
 	embed := classifyDoctorProcess(doctorProcess{
-		Name:        "avmatrix.exe",
-		CommandLine: `E:\AVmatrix-GO\avmatrix\bin\avmatrix.exe embed --repo AVmatrix`,
+		Name:        "anvien.exe",
+		CommandLine: `E:\Anvien\anvien\bin\anvien.exe embed --repo Anvien`,
 	})
 	if embed.Role != "embed" || embed.Ownership != "user-command-or-job" || len(embed.Notes) == 0 {
 		t.Fatalf("embed classification = %#v", embed)
 	}
 
 	doctor := classifyDoctorProcess(doctorProcess{
-		Name:        "avmatrix.exe",
-		CommandLine: `E:\AVmatrix-GO\avmatrix\bin\avmatrix.exe doctor processes --json`,
+		Name:        "anvien.exe",
+		CommandLine: `E:\Anvien\anvien\bin\anvien.exe doctor processes --json`,
 	})
 	if doctor.Role != "doctor" || doctor.Ownership != "diagnostic-command" {
 		t.Fatalf("doctor classification = %#v", doctor)
@@ -720,20 +720,20 @@ func TestDirectToolHelpShowsCompatibilityFlags(t *testing.T) {
 		args []string
 		want []string
 	}{
-		{[]string{"query", "--help"}, []string{"avmatrix query <search_query>", "--repo", "--context", "--goal", "--limit", "--content", "--lanes", "--explain", "--json"}},
-		{[]string{"query-health", "--help"}, []string{"avmatrix query-health", "--suite", "--repo", "--out", "--json", "--fail-on-threshold", "--fail-on-exact"}},
-		{[]string{"graph-health", "--help"}, []string{"avmatrix graph-health", "summary", "report", "components", "explain", "--repo"}},
-		{[]string{"graph-health", "report", "--help"}, []string{"avmatrix graph-health report", "--limit", "--include-expected", "--json", "--repo"}},
-		{[]string{"context", "--help"}, []string{"avmatrix context [name]", "--repo", "--uid", "--file", "--content"}},
+		{[]string{"query", "--help"}, []string{"anvien query <search_query>", "--repo", "--context", "--goal", "--limit", "--content", "--lanes", "--explain", "--json"}},
+		{[]string{"query-health", "--help"}, []string{"anvien query-health", "--suite", "--repo", "--out", "--json", "--fail-on-threshold", "--fail-on-exact"}},
+		{[]string{"graph-health", "--help"}, []string{"anvien graph-health", "summary", "report", "components", "explain", "--repo"}},
+		{[]string{"graph-health", "report", "--help"}, []string{"anvien graph-health report", "--limit", "--include-expected", "--json", "--repo"}},
+		{[]string{"context", "--help"}, []string{"anvien context [name]", "--repo", "--uid", "--file", "--content"}},
 		{[]string{"impact", "--help"}, []string{"--direction", "--repo", "--uid", "--depth", "--include-tests"}},
 		{[]string{"cypher", "--help"}, []string{"--repo"}},
 		{[]string{"detect-changes", "--help"}, []string{"Analyze uncommitted git changes", "--scope", "--base-ref", "--repo"}},
 		{[]string{"doctor", "locks", "--help"}, []string{"Inspect repository analyze lock state", "--repo", "--json"}},
-		{[]string{"doctor", "processes", "--help"}, []string{"Inspect AVmatrix runtime processes", "--json"}},
-		{[]string{"rename", "--help"}, []string{"avmatrix rename", "--uid", "--file", "--apply", "--json", "--repo"}},
-		{[]string{"api", "--help"}, []string{"avmatrix api", "route-map", "tool-map", "shape-check", "impact", "--repo"}},
-		{[]string{"api", "route-map", "--help"}, []string{"avmatrix api route-map", "--route", "--json", "--repo"}},
-		{[]string{"api", "impact", "--help"}, []string{"avmatrix api impact", "--route", "--file", "--json", "--repo"}},
+		{[]string{"doctor", "processes", "--help"}, []string{"Inspect Anvien runtime processes", "--json"}},
+		{[]string{"rename", "--help"}, []string{"anvien rename", "--uid", "--file", "--apply", "--json", "--repo"}},
+		{[]string{"api", "--help"}, []string{"anvien api", "route-map", "tool-map", "shape-check", "impact", "--repo"}},
+		{[]string{"api", "route-map", "--help"}, []string{"anvien api route-map", "--route", "--json", "--repo"}},
+		{[]string{"api", "impact", "--help"}, []string{"anvien api impact", "--route", "--file", "--json", "--repo"}},
 	}
 
 	for _, tc := range cases {
@@ -923,7 +923,7 @@ func TestWikiHelpExposesOnlyLocalCapabilityGate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("wiki help returned error: %v", err)
 	}
-	for _, want := range []string{"Show wiki capability status", "avmatrix wiki [path]"} {
+	for _, want := range []string{"Show wiki capability status", "anvien wiki [path]"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("wiki help missing %q:\n%s", want, out)
 		}
@@ -1355,7 +1355,7 @@ export function beta() {
 	}
 	if !strings.Contains(string(agents), "<!-- anvien:start -->") ||
 		!strings.Contains(string(agents), ".claude/skills/anvien/anvien-cli/SKILL.md") {
-		t.Fatalf("AGENTS.md missing AVmatrix context:\n%s", agents)
+		t.Fatalf("AGENTS.md missing Anvien context:\n%s", agents)
 	}
 	assertInstalledEmbeddedBaseSkills(t, filepath.Join(dir, ".claude", "skills", "anvien"))
 	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "generated")); !os.IsNotExist(err) {
@@ -1625,7 +1625,7 @@ func TestBenchmarkCompareReportsDeltas(t *testing.T) {
 		t.Fatalf("benchmark-compare returned error: %v", err)
 	}
 	for _, want := range []string{
-		"AVmatrix benchmark comparison",
+		"Anvien benchmark comparison",
 		"labels: before -> after",
 		"wall: 1000 -> 1500 (+500, +50%)",
 		"scan: 100 -> 250 (+150, +150%)",

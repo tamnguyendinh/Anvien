@@ -19,7 +19,7 @@ func TestParseAction(t *testing.T) {
 	}{
 		{nil, "start"},
 		{[]string{"register"}, "register"},
-		{[]string{"avmatrix://reset"}, "reset"},
+		{[]string{"anvien://reset"}, "reset"},
 		{[]string{"stop"}, "stop"},
 		{[]string{"unknown"}, "start"},
 	}
@@ -59,7 +59,7 @@ func TestStaticHandlerDoesNotServeRootStartScreen(t *testing.T) {
 	server := httptest.NewServer(staticHandler(webDist))
 	defer server.Close()
 
-	assertBody(t, server.URL+"/Start-AVmatrix.html", "index")
+	assertBody(t, server.URL+"/Start-Anvien.html", "index")
 	assertBody(t, server.URL+"/repo/detail", "index")
 }
 
@@ -82,7 +82,7 @@ func TestStaticHandlerInjectsLauncherLifecycleAndRecordsHeartbeat(t *testing.T) 
 		t.Fatalf("read index: %v", err)
 	}
 	body := string(raw)
-	if !strings.Contains(body, "data-avmatrix-launcher-lifecycle") || !strings.Contains(body, launcherHeartbeatPath) {
+	if !strings.Contains(body, "data-anvien-launcher-lifecycle") || !strings.Contains(body, launcherHeartbeatPath) {
 		t.Fatalf("index missing launcher lifecycle script:\n%s", body)
 	}
 
@@ -228,7 +228,7 @@ func TestVerifyWebDist(t *testing.T) {
 }
 
 func TestOpenBrowserCanBeSuppressedForSmokeTests(t *testing.T) {
-	t.Setenv("AVMATRIX_LAUNCHER_NO_BROWSER", "1")
+	t.Setenv("ANVIEN_LAUNCHER_NO_BROWSER", "1")
 	if err := openBrowser("http://127.0.0.1:5228"); err != nil {
 		t.Fatalf("openBrowser with suppression: %v", err)
 	}
@@ -251,21 +251,21 @@ func TestHiddenCommandAppliesHiddenProcAttr(t *testing.T) {
 
 func TestRuntimeProcessSweepIncludesRepoViteServer(t *testing.T) {
 	paths := launcherPaths{
-		exePath:    filepath.Join("C:", "repo", "avmatrix-launcher", "AVmatrixLauncher.exe"),
+		exePath:    filepath.Join("C:", "repo", "avmatrix-launcher", "AnvienLauncher.exe"),
 		rootDir:    filepath.Join("C:", "repo"),
 		homeDir:    filepath.Join("C:", "repo", "avmatrix-launcher"),
-		serverExe:  filepath.Join("C:", "repo", "avmatrix-launcher", "server-bundle", "avmatrix-server.exe"),
-		backendExe: filepath.Join("C:", "repo", "avmatrix", "bin", "avmatrix.exe"),
+		serverExe:  filepath.Join("C:", "repo", "avmatrix-launcher", "server-bundle", "anvien-server.exe"),
+		backendExe: filepath.Join("C:", "repo", "avmatrix", "bin", "anvien.exe"),
 	}
 
 	script := buildStopRuntimeProcessesScript(paths, 1234)
-	for _, want := range []string{"node.exe", "avmatrix-web", "vite", "--port 5228", "avmatrix\\bin\\avmatrix.exe", " serve", "--port 4848"} {
+	for _, want := range []string{"node.exe", "avmatrix-web", "vite", "--port 5228", "avmatrix\\bin\\anvien.exe", " serve", "--port 4848"} {
 		if !strings.Contains(script, want) {
 			t.Fatalf("runtime sweep script missing %q:\n%s", want, script)
 		}
 	}
-	if strings.Contains(script, "$bundleDir") || strings.Contains(script, "server-bundle', 'avmatrix.exe") {
-		t.Fatalf("runtime sweep should not target a server-bundle avmatrix.exe authority:\n%s", script)
+	if strings.Contains(script, "$bundleDir") || strings.Contains(script, "server-bundle', 'anvien.exe") {
+		t.Fatalf("runtime sweep should not target a server-bundle anvien.exe authority:\n%s", script)
 	}
 }
 
@@ -280,7 +280,7 @@ func TestConflictingWebRuntimeSweepTargetsOnlyRepoViteServer(t *testing.T) {
 			t.Fatalf("web runtime sweep script missing %q:\n%s", want, script)
 		}
 	}
-	if strings.Contains(script, "avmatrix-server.exe") || strings.Contains(script, "avmatrix.exe") {
+	if strings.Contains(script, "anvien-server.exe") || strings.Contains(script, "anvien.exe") {
 		t.Fatalf("web runtime sweep should not target packaged backend processes:\n%s", script)
 	}
 }

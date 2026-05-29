@@ -239,7 +239,7 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 ## Phase 2.5 - Module, Package, And Folder Names
 
 - [ ] [P2.5-A] Rename Go module path from the old `avmatrix-go` path to the approved Anvien path.
-- [ ] [P2.5-B] Rename `cmd/avmatrix` to `cmd/anvien` and update all build scripts.
+- [x] [P2.5-B] Rename `cmd/avmatrix` to `cmd/anvien` and update all build scripts.
 - [ ] [P2.5-C] Rename package folder `avmatrix` to `anvien` if npm package layout is kept.
 - [ ] [P2.5-D] Rename `avmatrix-web` to `anvien-web` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
 - [ ] [P2.5-E] Rename `avmatrix-launcher` to `anvien-launcher` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
@@ -247,13 +247,15 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 
 ## Phase 3 - CLI Hard Rename
 
-- [ ] [P3-A] Change `internal/version.CommandName` from `avmatrix` to `anvien`.
-- [ ] [P3-B] Update root command short/help/version text to `Anvien`.
-- [ ] [P3-C] Update every command example from `avmatrix ...` to `anvien ...`.
-- [ ] [P3-D] Update package `bin` mapping to expose only `anvien`.
-- [ ] [P3-E] Remove old `avmatrix` binary output path from build/package/runtime scripts.
-- [ ] [P3-F] Update CLI tests and snapshots so the old command name is not accepted or expected.
-- [ ] [P3-G] Validate `anvien --help`, `anvien version`, `anvien analyze --help`, `anvien mcp`, `anvien serve --help`, `anvien setup --help`, and package lifecycle commands.
+- [x] [P3-A] Change `internal/version.CommandName` from `avmatrix` to `anvien`.
+- [x] [P3-B] Update root command short/help/version text to `Anvien`.
+- [x] [P3-C] Update every command example from `avmatrix ...` to `anvien ...`.
+- [x] [P3-D] Update package `bin` mapping to expose only `anvien`.
+- [x] [P3-E] Remove old `avmatrix` binary output path from build/package/runtime scripts.
+- [x] [P3-F] Update CLI tests and snapshots so the old command name is not accepted or expected.
+- [x] [P3-G] Validate `anvien --help`, `anvien version`, `anvien analyze --help`, `anvien mcp`, `anvien serve --help`, `anvien setup --help`, and package lifecycle commands.
+
+Interim Phase 3 validation completed the command entrypoint, Cobra command name, package bin mapping, package runtime metadata, build/package scripts, help/version smoke, MCP initialize smoke through `anvien mcp`, and package `npm run build`/`package ensure-runtime`. Folder names such as `avmatrix`, `avmatrix-web`, and `avmatrix-launcher` remain open under Phase 2.5 and later slices, not as compatibility aliases.
 
 ## Phase 4 - MCP Hard Rename
 
@@ -285,6 +287,8 @@ Interim Phase 4 MCP served-resource validation completed `canonicalResourceSchem
 
 Interim Phase 5 validation completed the core repo/global storage slice: `repo.Paths`, `repo.GlobalDir`, `ANVIEN_HOME`, hook stale-index checks, status/index/graph-health/query-health/source-site/resolution-inventory/httpapi graph guidance, and `.gitignore` now use `.anvien`. P5-C, P5-D, P5-G, and P5-H stay open because broader `AVMATRIX_*` launcher/package vars, group/runtime storage, and full command matrix validation remain in later slices.
 
+Phase 3/7 launcher package work additionally renamed package/launcher env vars already touched by the active build/runtime flow: `ANVIEN_GO`, `ANVIEN_LADYBUGDB_VERSION`, and `ANVIEN_LAUNCHER_NO_BROWSER`. P5-C remains open until every remaining `AVMATRIX_*` source, test, docs, plugin, workflow, and external-helper variable is audited.
+
 ## Phase 6 - Generated AI Context And Skills
 
 - [x] [P6-A] Rename `renderAVmatrixBlock` and generated section names to Anvien equivalents.
@@ -309,10 +313,12 @@ Interim Phase 6 validation was run with the current local binary path `.\avmatri
 ## Phase 7 - Web UI And Launcher
 
 - [ ] [P7-A] Update Web UI package name, HTML title, onboarding, start screen, status messages, README rendering, diagnostics globals, and e2e assertions.
-- [ ] [P7-B] Update launcher executable names, server wrapper paths, temp state names, heartbeat/closed paths, lifecycle data attributes, process cleanup filters, registry protocol key, and tests.
-- [ ] [P7-C] Rename launcher protocol from `avmatrix://` to `anvien://`.
+- [x] [P7-B] Update launcher executable names, server wrapper paths, temp state names, heartbeat/closed paths, lifecycle data attributes, process cleanup filters, registry protocol key, and tests.
+- [x] [P7-C] Rename launcher protocol from `avmatrix://` to `anvien://`.
 - [ ] [P7-D] Rebuild packaged Web distribution from source so `web-dist` does not retain old names.
 - [ ] [P7-E] Add/update e2e test coverage for visible `Anvien` branding and launcher start behavior.
+
+Interim Phase 7 launcher validation completed binary/protocol/process/lifecycle rename for the packaged launcher path. P7-A, P7-D, and P7-E remain open because the visible Web UI package/source branding and rebuilt `web-dist` old-name content must be fixed from source before e2e branding checks can be final.
 
 ## Phase 8 - Documentation, Baselines, And Reports
 

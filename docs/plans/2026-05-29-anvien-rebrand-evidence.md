@@ -764,7 +764,72 @@ Pre-commit change detection:
 - Resolution health impact: `0` degraded nodes and `0` nodes with gaps.
 - The HIGH summary is expected for this slice because served MCP resources/prompts/tools flow through `Server.handle` and agent-facing MCP protocol responses.
 
-## E10 - Future Implementation Evidence
+## E10 - Phase 3 CLI/Package Runtime And Launcher Artifact Slice
+
+Date: 2026-05-29
+
+Status: recorded
+
+Scope:
+
+- Renamed the Go command entrypoint from `cmd/avmatrix` to `cmd/anvien`.
+- Changed `internal/version.CommandName` to `anvien` and root/version/help text to `Anvien`.
+- Updated direct CLI usage strings, group/admin/wiki/benchmark text, package tests, and contract smoke assertions to expect `anvien`.
+- Updated npm package metadata and lockfiles so package/bin name is `anvien` and package scripts call `cmd/anvien`.
+- Updated package runtime generation to emit `bin/anvien.exe`, `bin/anvien-runtime.json`, `anvien-go-source.json`, and `ANVIEN_LADYBUGDB_VERSION`.
+- Updated launcher build/runtime flow to emit `AnvienLauncher.exe`, `anvien-server.exe`, use `anvien://`, `ANVIEN_GO`, `ANVIEN_LAUNCHER_NO_BROWSER`, Anvien temp state/lifecycle paths, and process cleanup filters for Anvien artifacts.
+- Updated build script cleanup so stale generated `avmatrix.exe`, `avmatrix.exe~`, `avmatrix-runtime.json`, `AVmatrixLauncher.exe`, and `avmatrix-server.exe` are removed before Anvien artifacts are built. These are cleanup-only references, not aliases.
+
+Graph and impact evidence:
+
+- Fresh graph before launcher impact checks: `.\avmatrix\bin\avmatrix.exe analyze --force`; scanned `801`, parsed `583`, unsupported `218`, failed `0`; graph `91276` nodes, `124756` relationships.
+- CLI/package impacts before edits included `CommandName` LOW; `NewRootCommand` CRITICAL with `11` affected processes; `newVersionCommand` CRITICAL with `11` affected processes; package lifecycle helpers (`packageRootForLifecycle`, `ensurePackagedRuntime`, `buildGoRuntimePackage`, `prepareGoSourcePackage`, `hasPackageGoSource`, `resolvePackageNativeDir`) CRITICAL across backend/cli launcher flows.
+- Doctor process rename impacts included `newDoctorCommand` and `newDoctorProcessesCommand` CRITICAL with `11` affected processes; process classifier/default role checks were LOW where directly tested.
+- Launcher impacts included `resolvePaths` HIGH with `4` affected processes; `ensureBackend` CRITICAL with `12` affected processes; `buildStopRuntimeProcessesScript` HIGH with `4`; `buildStopWebDevServerScript` CRITICAL with `12`; `registerProtocol` HIGH with `4`; `openBrowser`, `staticHandlerWithLifecycle`, and `injectLauncherLifecycle` CRITICAL through startup/lifecycle flows; `resolveRuntime` LOW.
+- CLI user-facing text impacts included `newCleanCommand` and `runCleanAll` CRITICAL with `11` affected processes; `newGroupCreateCommand`, `newGroupAddCommand`, and `newGroupListCommand` CRITICAL with `17`; direct tool commands (`newAugmentCommand`, `newQueryCommand`, `newContextCommand`, `newImpactCommand`, `newRenameCommand`) CRITICAL with `11`; `newWikiModeCommand` and `newBenchmarkCompareCommand` CRITICAL with `11`.
+- Edited launcher, CLI, package, and contract tests were checked before edits; targeted test impacts were LOW with `0` affected processes.
+
+Implementation notes:
+
+- `anvien --help` now shows `Anvien local CLI and MCP server` and `Use "anvien [command] --help"`.
+- `anvien mcp` initialize smoke returns `serverInfo.name = "anvien"`.
+- Package runtime metadata now records `Binary: "anvien.exe"`.
+- Build output now has `avmatrix\bin\anvien.exe`, `avmatrix\bin\anvien-runtime.json`, `avmatrix-launcher\AnvienLauncher.exe`, and `avmatrix-launcher\server-bundle\anvien-server.exe`.
+- No local generated `avmatrix.exe`, `avmatrix.exe~`, `avmatrix-runtime.json`, `AVmatrixLauncher.exe`, or `avmatrix-server.exe` remained after validation.
+- Folder names `avmatrix`, `avmatrix-web`, and `avmatrix-launcher` remain active deferred work under Phase 2.5/Web UI slices, not compatibility aliases.
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass after cleanup additions; existing Vite dynamic-import and chunk-size warnings only. |
+| `go test .\cmd\anvien .\internal\version .\internal\cli .\internal\contracts -count=1` | pass; cmd/anvien no test files, version `0.973s`, cli `14.975s`, contracts `0.889s`. |
+| `go test .` in `avmatrix-launcher\src` | pass; module `anvien-launcher`, `2.636s`. |
+| `go test .` in `avmatrix-launcher\server-wrapper` | pass; module `anvien-server-wrapper`, `1.175s`. |
+| `.\avmatrix\bin\anvien.exe --help` and `.\avmatrix\bin\anvien.exe version` | pass; help uses `anvien`, version prints `1.2.3`. |
+| `.\avmatrix\bin\anvien.exe analyze --help`, `mcp --help`, `serve --help`, `setup --help`, `package build-runtime --help` | pass; all usage lines use `anvien`. |
+| MCP initialize frame piped to `.\avmatrix\bin\anvien.exe mcp` | pass; response includes `serverInfo.name:"anvien"`. |
+| `npm run build` in `avmatrix` | pass; builds package runtime through `go run ../cmd/anvien package build-runtime`; existing tree-sitter Swift C warning only. |
+| `.\bin\anvien.exe package ensure-runtime` in `avmatrix` | pass; uses packaged runtime `windows/amd64`. |
+| old active runtime-name search across touched CLI/package/launcher surfaces | only cleanup-only build-script references to stale artifact names remained; non-cleanup matches `0`. |
+| generated artifact existence checks | old artifacts all `False`; Anvien artifacts present. |
+
+E2E status:
+
+- Not run for this slice because visible Web UI branding/source behavior was not changed. Launcher lifecycle/protocol behavior is covered by launcher Go tests here; visible Web UI Anvien branding remains open under Phase 7.
+
+Pre-commit change detection:
+
+- Command: `.\avmatrix\bin\anvien.exe detect-changes --repo AVmatrix --scope all`.
+- Result: pass; summary risk `critical`.
+- Changed scope: `30` files, `254` changed symbols.
+- Changed app layers: `api_test` `4`, `backend` `105`, `backend_test` `98`, `cli_launcher` `24`, `config` `10`, `docs` `13`.
+- Changed functional areas: `cli` `154`, `configuration` `10`, `contracts` `4`, `documentation` `13`, `launcher` `49`, `query` `22`, `runtime` `2`.
+- Affected scope: `26` affected symbols/process nodes; affected app layers `backend` `10`, `cli_launcher` `5`, `mixed` `11`; affected functional areas `cli` `13`, `launcher` `5`, `mixed` `8`.
+- Resolution health impact: `0` degraded nodes and `0` nodes with gaps.
+- The CRITICAL summary is expected for this slice because root CLI/package runtime helpers and launcher startup/cleanup flows are changed intentionally.
+
+## E11 - Future Implementation Evidence
 
 Date: pending
 
@@ -775,6 +840,6 @@ Record during implementation:
 - impact outputs for every edited symbol;
 - changed files by slice;
 - build/test/e2e output;
-- MCP protocol smoke output after the MCP scheme/server rename;
-- package/install smoke output for `anvien`;
+- package/folder/module rename smoke output;
+- Web UI branding e2e output;
 - final old-name inventory and every remaining exception.

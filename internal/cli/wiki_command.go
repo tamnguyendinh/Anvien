@@ -54,10 +54,10 @@ func formatWikiModeStatus(mode repo.WikiMode) string {
 		return "\n" +
 			"  Wiki capability mode: local\n\n" +
 			"  Local wiki mode is reserved, but the local wiki engine is not available yet in this build.\n" +
-			"  AVmatrix will not fall back to any remote wiki service.\n"
+			"  Anvien will not fall back to any remote wiki service.\n"
 	}
 	return "\n" +
 		"  Wiki capability mode: off\n\n" +
 		"  Wiki generation is disabled in local-only mode.\n" +
-		"  Run `avmatrix wiki-mode local` later when the local wiki engine is ready.\n"
+		"  Run `anvien wiki-mode local` later when the local wiki engine is ready.\n"
 }

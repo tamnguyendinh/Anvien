@@ -3,7 +3,7 @@ package version
 import "testing"
 
 func TestVersionMetadataIsPresent(t *testing.T) {
-	if CommandName != "avmatrix" {
+	if CommandName != "anvien" {
 		t.Fatalf("CommandName = %q", CommandName)
 	}
 	if Version == "" {

@@ -18,7 +18,7 @@ func newCleanCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "clean",
-		Short: "Delete AVmatrix index for current repo",
+		Short: "Delete Anvien index for current repo",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			store := repo.NewEnvStore()
@@ -38,7 +38,7 @@ func newCleanCommand() *cobra.Command {
 				return err
 			}
 			if !force {
-				if _, err := fmt.Fprintf(cmd.OutOrStdout(), "This will delete the AVmatrix index for: %s\n", filepath.Base(indexed.RepoPath)); err != nil {
+				if _, err := fmt.Fprintf(cmd.OutOrStdout(), "This will delete the Anvien index for: %s\n", filepath.Base(indexed.RepoPath)); err != nil {
 					return err
 				}
 				if _, err := fmt.Fprintf(cmd.OutOrStdout(), "   Path: %s\n", indexed.StoragePath); err != nil {
@@ -72,7 +72,7 @@ func runCleanAll(cmd *cobra.Command, store repo.Store, force bool) error {
 		return err
 	}
 	if !force {
-		if _, err := fmt.Fprintf(cmd.OutOrStdout(), "This will delete AVmatrix indexes for %d repo(s):\n", len(entries)); err != nil {
+		if _, err := fmt.Fprintf(cmd.OutOrStdout(), "This will delete Anvien indexes for %d repo(s):\n", len(entries)); err != nil {
 			return err
 		}
 		for _, entry := range entries {
