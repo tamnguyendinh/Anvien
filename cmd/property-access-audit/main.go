@@ -10,7 +10,7 @@ import (
 
 func main() {
 	repo := flag.String("repo", ".", "repository root used to read source lines")
-	graphPath := flag.String("graph", "", "AVmatrix graph snapshot JSON")
+	graphPath := flag.String("graph", "", "Anvien graph snapshot JSON")
 	outPath := flag.String("out", "", "output JSON path")
 	maxExamples := flag.Int("max-examples", 50, "maximum examples to include per bucket")
 	flag.Parse()

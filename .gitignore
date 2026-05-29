@@ -3,7 +3,7 @@ node_modules/
 
 # Build output
 dist/
-avmatrix/bin/
+anvien/bin/
 
 # TypeScript build info
 *.tsbuildinfo
@@ -64,27 +64,27 @@ assets/
 repomix-output*
 
 # Playwright artifacts
-avmatrix-web/playwright-report/
-avmatrix-web/test-results/
+anvien-web/playwright-report/
+anvien-web/test-results/
 
 # Design docs (local only)
 
 
-avmatrix/test/fixtures/mini-repo/*.md
-avmatrix/test/fixtures/mini-repo/.claude
-avmatrix/test/fixtures/mini-repo/.gitignore
+anvien/test/fixtures/mini-repo/*.md
+anvien/test/fixtures/mini-repo/.claude
+anvien/test/fixtures/mini-repo/.gitignore
 
 # Ignore csharp generated obj and bin folders
-avmatrix/test/fixtures/lang-resolution/**/obj
-avmatrix/test/fixtures/lang-resolution/**/bin
-avmatrix.sln
+anvien/test/fixtures/lang-resolution/**/obj
+anvien/test/fixtures/lang-resolution/**/bin
+anvien.sln
 # Git worktrees
 .worktrees/
 
 # Vendored tree-sitter grammar build artifacts (created at install time,
 # never committed). See docs/plans/2026-04-15-002-fix-tree-sitter-proto-vendor-deps-plan.md
-avmatrix/vendor/**/build/
-avmatrix/vendor/**/node_modules/
+anvien/vendor/**/build/
+anvien/vendor/**/node_modules/
 
 /github/scripts/triage/__pycache__/
 
@@ -93,8 +93,7 @@ avmatrix/vendor/**/node_modules/
 .claude/
 .claude-plugin/
 .history/
-avmatrix-claude-plugin/
-avmatrix-cursor-integration/
+anvien-cursor-integration/
 .agents/
 .swarm/
 
@@ -105,14 +104,14 @@ AGENTS.md
 CLAUDE.md
 
 # other
-avmatrix/undefined/
+anvien/undefined/
 .codex-tmp/
 .tmp/
 undefined/
 
-# Local AVmatrix launcher generated artifacts
-avmatrix-launcher/AnvienLauncher.exe
-avmatrix-launcher/AnvienLauncher.exe~
-avmatrix-launcher/logs/
-avmatrix-launcher/server-bundle/
-avmatrix-launcher/web-dist/
+# Local Anvien launcher generated artifacts
+anvien-launcher/AnvienLauncher.exe
+anvien-launcher/AnvienLauncher.exe~
+anvien-launcher/logs/
+anvien-launcher/server-bundle/
+anvien-launcher/web-dist/

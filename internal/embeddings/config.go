@@ -18,10 +18,10 @@ const (
 	DefaultOverlap              = 120
 	DefaultMaxDescriptionLength = 150
 
-	EnvEmbeddingURL    = "AVMATRIX_EMBEDDING_URL"
-	EnvEmbeddingModel  = "AVMATRIX_EMBEDDING_MODEL"
-	EnvEmbeddingAPIKey = "AVMATRIX_EMBEDDING_API_KEY"
-	EnvEmbeddingDims   = "AVMATRIX_EMBEDDING_DIMS"
+	EnvEmbeddingURL    = "ANVIEN_EMBEDDING_URL"
+	EnvEmbeddingModel  = "ANVIEN_EMBEDDING_MODEL"
+	EnvEmbeddingAPIKey = "ANVIEN_EMBEDDING_API_KEY"
+	EnvEmbeddingDims   = "ANVIEN_EMBEDDING_DIMS"
 )
 
 type Device string

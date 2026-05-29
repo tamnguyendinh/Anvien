@@ -283,8 +283,8 @@ func TestFindClaudeHookAnvienDirWalksParents(t *testing.T) {
 }
 
 func TestClaudePluginHookSourceStaticGuards(t *testing.T) {
-	source := readRepoFile(t, "avmatrix-claude-plugin", "hooks", "avmatrix-hook.js")
-	if !strings.Contains(source, "npx.cmd") || !strings.Contains(source, "avmatrix.cmd") {
+	source := readRepoFile(t, "anvien-claude-plugin", "hooks", "anvien-hook.js")
+	if !strings.Contains(source, "npx.cmd") || !strings.Contains(source, "anvien.cmd") {
 		t.Fatalf("plugin hook is missing Windows .cmd command handling")
 	}
 	for index, line := range strings.Split(source, "\n") {

@@ -13,7 +13,7 @@ import (
 	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
-const defaultQueryHealthSuitePath = "docs/query-health/2026-05-22-avmatrix-app-layer-resolution-gap-suite.json"
+const defaultQueryHealthSuitePath = "docs/query-health/2026-05-22-anvien-app-layer-resolution-gap-suite.json"
 
 type queryHealthSuite struct {
 	SchemaVersion string            `json:"schemaVersion"`

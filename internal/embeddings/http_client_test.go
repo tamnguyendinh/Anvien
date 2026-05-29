@@ -110,7 +110,7 @@ func TestHTTPEmbedderRejectsDimensionMismatchWithHint(t *testing.T) {
 	}, server.Client())
 
 	_, err := embedder.Embed(context.Background(), []string{"a"})
-	if err == nil || !strings.Contains(err.Error(), "expected 384d") || !strings.Contains(err.Error(), "AVMATRIX_EMBEDDING_DIMS=2") {
+	if err == nil || !strings.Contains(err.Error(), "expected 384d") || !strings.Contains(err.Error(), "ANVIEN_EMBEDDING_DIMS=2") {
 		t.Fatalf("Embed() error = %v, want dimension mismatch hint", err)
 	}
 }

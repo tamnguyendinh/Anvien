@@ -227,7 +227,7 @@ func DiffShadowResolutions(callsite ShadowCallsite, baseline []ShadowResolution,
 }
 
 func shadowModeEnabled() bool {
-	switch strings.TrimSpace(strings.ToLower(os.Getenv("AVMATRIX_SHADOW_MODE"))) {
+	switch strings.TrimSpace(strings.ToLower(os.Getenv("ANVIEN_SHADOW_MODE"))) {
 	case "1", "true", "yes":
 		return true
 	default:

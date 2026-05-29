@@ -20,10 +20,10 @@ func main() {
 	nodeGraphPath := flag.String("node", "", "Node/MCP API graph JSON")
 	goGraphPath := flag.String("go", "", "Go local API graph JSON")
 	outPath := flag.String("out", "", "output JSON path")
-	avmatrixPath := flag.String("avmatrix", "", "local AVmatrix binary used to regenerate the Go graph before comparison")
+	anvienPath := flag.String("anvien", "", "local Anvien binary used to regenerate the Go graph before comparison")
 	freshGoGraphPath := flag.String("fresh-go-graph", "", "copy the freshly analyzed Go graph snapshot to this path and use it as -go")
-	benchmarkPath := flag.String("benchmark-json", "", "write analyze benchmark metrics JSON when -avmatrix is used")
-	benchmarkLabel := flag.String("benchmark-label", "", "attach a label to the analyze benchmark JSON when -avmatrix is used")
+	benchmarkPath := flag.String("benchmark-json", "", "write analyze benchmark metrics JSON when -anvien is used")
+	benchmarkLabel := flag.String("benchmark-label", "", "attach a label to the analyze benchmark JSON when -anvien is used")
 	maxExamples := flag.Int("max-examples", 50, "maximum missing/extra examples to include per gate")
 	flag.Parse()
 
@@ -33,18 +33,18 @@ func main() {
 	if *mode != "report" && *mode != "enforce" {
 		exitf("-mode must be report or enforce")
 	}
-	if *avmatrixPath != "" || *freshGoGraphPath != "" {
-		if *avmatrixPath == "" || *freshGoGraphPath == "" {
-			exitf("-avmatrix and -fresh-go-graph must be provided together")
+	if *anvienPath != "" || *freshGoGraphPath != "" {
+		if *anvienPath == "" || *freshGoGraphPath == "" {
+			exitf("-anvien and -fresh-go-graph must be provided together")
 		}
-		freshGraph, err := runFreshAnalyze(*repo, *avmatrixPath, *freshGoGraphPath, *benchmarkPath, *benchmarkLabel)
+		freshGraph, err := runFreshAnalyze(*repo, *anvienPath, *freshGoGraphPath, *benchmarkPath, *benchmarkLabel)
 		if err != nil {
 			exitf("%v", err)
 		}
 		*goGraphPath = freshGraph
 	}
 	if *goGraphPath == "" {
-		exitf("missing -go, or provide -avmatrix with -fresh-go-graph")
+		exitf("missing -go, or provide -anvien with -fresh-go-graph")
 	}
 
 	result, err := graphaccuracy.Run(graphaccuracy.Options{
@@ -86,7 +86,7 @@ func main() {
 	}
 }
 
-func runFreshAnalyze(repoPath string, avmatrixPath string, graphOutPath string, benchmarkPath string, benchmarkLabel string) (string, error) {
+func runFreshAnalyze(repoPath string, anvienPath string, graphOutPath string, benchmarkPath string, benchmarkLabel string) (string, error) {
 	repoAbs, err := filepath.Abs(repoPath)
 	if err != nil {
 		return "", fmt.Errorf("resolve repo: %w", err)
@@ -98,7 +98,7 @@ func runFreshAnalyze(repoPath string, avmatrixPath string, graphOutPath string, 
 	if benchmarkLabel != "" {
 		args = append(args, "--benchmark-label", benchmarkLabel)
 	}
-	cmd := exec.Command(avmatrixPath, args...)
+	cmd := exec.Command(anvienPath, args...)
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &stdout
@@ -113,7 +113,7 @@ func runFreshAnalyze(repoPath string, avmatrixPath string, graphOutPath string, 
 
 	graphPath := parseGraphPath(stdout.String())
 	if graphPath == "" {
-		graphPath = filepath.Join(repoAbs, ".avmatrix", "graph.json")
+		graphPath = filepath.Join(repoAbs, ".anvien", "graph.json")
 	}
 	if err := copyFile(graphPath, graphOutPath); err != nil {
 		return "", err

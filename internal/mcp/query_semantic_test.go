@@ -148,7 +148,7 @@ func TestQueryToolRanksAIContextOwnersAndExplainsLanes(t *testing.T) {
 	g.AddNode(graph.Node{ID: "Function:generate-ai-context", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
 		"name":                                "GenerateAIContextFiles",
 		"filePath":                            "internal/aicontext/aicontext.go",
-		"content":                             "generate AGENTS.md CLAUDE.md and AVmatrix skills",
+		"content":                             "generate AGENTS.md CLAUDE.md and Anvien skills",
 		semantic.AppLayerProperty:             string(semantic.AppLayerBackend),
 		semantic.AppLayerSourceProperty:       "path_rule",
 		semantic.FunctionalAreaProperty:       string(semantic.FunctionalAreaCLI),
@@ -157,15 +157,15 @@ func TestQueryToolRanksAIContextOwnersAndExplainsLanes(t *testing.T) {
 	g.AddNode(graph.Node{ID: "Function:install-base-skills", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
 		"name":                                "installBaseSkills",
 		"filePath":                            "internal/aicontext/aicontext.go",
-		"content":                             "install generated .claude skills avmatrix skill files",
+		"content":                             "install generated .claude skills anvien skill files",
 		semantic.AppLayerProperty:             string(semantic.AppLayerBackend),
 		semantic.AppLayerSourceProperty:       "path_rule",
 		semantic.FunctionalAreaProperty:       string(semantic.FunctionalAreaCLI),
 		semantic.FunctionalAreaSourceProperty: "path_rule",
 	}})
-	g.AddNode(graph.Node{ID: "File:internal/aicontext/skills/avmatrix-cli.md", Label: scopeir.NodeFile, Properties: graph.NodeProperties{
-		"name":                                "avmatrix-cli.md",
-		"filePath":                            "internal/aicontext/skills/avmatrix-cli.md",
+	g.AddNode(graph.Node{ID: "File:internal/aicontext/skills/anvien-cli.md", Label: scopeir.NodeFile, Properties: graph.NodeProperties{
+		"name":                                "anvien-cli.md",
+		"filePath":                            "internal/aicontext/skills/anvien-cli.md",
 		semantic.AppLayerProperty:             string(semantic.AppLayerBackend),
 		semantic.AppLayerSourceProperty:       "path_rule",
 		semantic.FunctionalAreaProperty:       string(semantic.FunctionalAreaCLI),
@@ -176,7 +176,7 @@ func TestQueryToolRanksAIContextOwnersAndExplainsLanes(t *testing.T) {
 	server := NewServer(Config{Store: store})
 	payload, err := server.queryTool(map[string]any{
 		"repo":    "fixture",
-		"query":   "generated AVmatrix skills AGENTS.md CLAUDE.md internal aicontext",
+		"query":   "generated Anvien skills AGENTS.md CLAUDE.md internal aicontext",
 		"limit":   5,
 		"explain": true,
 	})

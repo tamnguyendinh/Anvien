@@ -1,8 +1,8 @@
-# Runbook - AVmatrix
+# Runbook - Anvien
 
-Copy-paste operations for the current local AVmatrix runtime: CLI, MCP, Web UI, packaged launcher, repo indexes, and recovery.
+Copy-paste operations for the current local Anvien runtime: CLI, MCP, Web UI, packaged launcher, repo indexes, and recovery.
 
-Current CLI package version: `1.2.3` (`avmatrix/package.json`).
+Current CLI package version: `1.2.3` (`anvien/package.json`).
 
 ---
 
@@ -22,18 +22,18 @@ Required only for the packaged Windows launcher:
 Build and link the local CLI from source:
 
 ```powershell
-cd avmatrix
+cd anvien
 npm install
 npm run build
 npm link
 
-avmatrix --version
+anvien --version
 ```
 
 If you are using Codex CLI or Claude Code inside this repository, you can also ask the agent:
 
 ```text
-Install AVmatrix from this repository and configure its MCP integration.
+Install Anvien from this repository and configure its MCP integration.
 ```
 
 ---
@@ -43,38 +43,38 @@ Install AVmatrix from this repository and configure its MCP integration.
 From the target repo:
 
 ```powershell
-avmatrix analyze .
+anvien analyze .
 ```
 
 Force a full rebuild:
 
 ```powershell
-avmatrix analyze . --force
+anvien analyze . --force
 ```
 
 Analyze a folder without requiring `.git`:
 
 ```powershell
-avmatrix analyze C:\path\to\repo --skip-git
+anvien analyze C:\path\to\repo --skip-git
 ```
 
 Register the repo under a custom name:
 
 ```powershell
-avmatrix analyze C:\path\to\repo --name MyRepo
+anvien analyze C:\path\to\repo --name MyRepo
 ```
 
-Check what AVmatrix knows:
+Check what Anvien knows:
 
 ```powershell
-avmatrix status
-avmatrix list
+anvien status
+anvien list
 ```
 
 Index data is stored in the repo:
 
 ```text
-<repo>\.avmatrix\
+<repo>\.anvien\
   lbug
   lbug.wal
   lbug.lock
@@ -85,7 +85,7 @@ Index data is stored in the repo:
 The global registry is stored at:
 
 ```text
-~\.avmatrix\registry.json
+~\.anvien\registry.json
 ```
 
 ---
@@ -101,13 +101,13 @@ Fix:
 
 ```powershell
 cd C:\path\to\repo
-avmatrix analyze .
+anvien analyze .
 ```
 
 If the index may be corrupt or the schema/runtime changed:
 
 ```powershell
-avmatrix analyze . --force
+anvien analyze . --force
 ```
 
 ---
@@ -117,35 +117,35 @@ avmatrix analyze . --force
 Configure detected editors/agents:
 
 ```powershell
-avmatrix setup
+anvien setup
 ```
 
 Manual examples:
 
 ```powershell
-claude mcp add avmatrix -- avmatrix mcp
-codex mcp add avmatrix -- avmatrix mcp
+claude mcp add anvien -- anvien mcp
+codex mcp add anvien -- anvien mcp
 ```
 
 Codex TOML:
 
 ```toml
-[mcp_servers.avmatrix]
-command = "avmatrix"
+[mcp_servers.anvien]
+command = "anvien"
 args = ["mcp"]
 ```
 
 Start MCP manually:
 
 ```powershell
-avmatrix mcp
+anvien mcp
 ```
 
 If MCP says no repos are indexed:
 
 ```powershell
 cd C:\path\to\repo
-avmatrix analyze .
+anvien analyze .
 ```
 
 If multiple repos are indexed, pass `repo` explicitly in MCP tool calls or call `list_repos` first.
@@ -157,14 +157,14 @@ If multiple repos are indexed, pass `repo` explicitly in MCP tool calls or call 
 Start the HTTP backend:
 
 ```powershell
-cd avmatrix
+cd anvien
 node dist\cli\index.js serve
 ```
 
 Or, after `npm link`:
 
 ```powershell
-avmatrix serve
+anvien serve
 ```
 
 Default backend:
@@ -183,7 +183,7 @@ Invoke-WebRequest http://127.0.0.1:4848/api/repos
 Start the Web UI dev server:
 
 ```powershell
-cd avmatrix-web
+cd anvien-web
 npm install
 npm run dev
 ```
@@ -196,7 +196,7 @@ http://127.0.0.1:5228
 
 Important behavior:
 
-- `avmatrix serve` is loopback-only by default.
+- `anvien serve` is loopback-only by default.
 - Web graph loading uses explicit repo-scoped read targets.
 - The graph switch path is `/api/graph?repo=...&stream=true`.
 - The Web UI is a frontend over the local backend, not a separate index/runtime.
@@ -216,14 +216,14 @@ Invoke-WebRequest http://127.0.0.1:4848/api/info
 If the port is down, restart:
 
 ```powershell
-cd avmatrix
+cd anvien
 node dist\cli\index.js serve
 ```
 
 If port `4848` is already in use:
 
 ```powershell
-avmatrix serve --port 4748
+anvien serve --port 4748
 ```
 
 The default Web UI expects `4848`; use the packaged/default path unless you are deliberately testing another backend URL.
@@ -233,7 +233,7 @@ The default Web UI expects `4848`; use the packaged/default path unless you are 
 Check the target repo is registered:
 
 ```powershell
-avmatrix list
+anvien list
 ```
 
 Check the graph endpoint directly:
@@ -252,7 +252,7 @@ Check the registry response:
 Invoke-WebRequest http://127.0.0.1:4848/api/repos
 ```
 
-If the repo exists in CLI but not the Web UI, refresh the browser. If needed, restart `avmatrix serve`.
+If the repo exists in CLI but not the Web UI, refresh the browser. If needed, restart `anvien serve`.
 
 ---
 
@@ -261,59 +261,59 @@ If the repo exists in CLI but not the Web UI, refresh the browser. If needed, re
 Build the full packaged local runtime:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1
 ```
 
 Artifacts:
 
 ```text
-avmatrix-launcher\AVmatrixLauncher.exe
-avmatrix\bin\avmatrix.exe
-avmatrix-launcher\server-bundle\avmatrix-server.exe
-avmatrix-launcher\web-dist\
+anvien-launcher\AnvienLauncher.exe
+anvien\bin\anvien.exe
+anvien-launcher\server-bundle\anvien-server.exe
+anvien-launcher\web-dist\
 ```
 
-`AVmatrixLauncher.exe` is rebuilt by `avmatrix-launcher\build.ps1` and is the packaged user entrypoint. `avmatrix\bin\avmatrix.exe` is the single production AVmatrix CLI/runtime executable; the launcher backend wrapper runs that file with `serve`. The start screen is served from the packaged Web UI; there is no separate root HTML launcher file.
+`AnvienLauncher.exe` is rebuilt by `anvien-launcher\build.ps1` and is the packaged user entrypoint. `anvien\bin\anvien.exe` is the single production Anvien CLI/runtime executable; the launcher backend wrapper runs that file with `serve`. The start screen is served from the packaged Web UI; there is no separate root HTML launcher file.
 
 Start:
 
 ```powershell
-.\avmatrix-launcher\AVmatrixLauncher.exe
+.\anvien-launcher\AnvienLauncher.exe
 ```
 
 Reset runtime:
 
 ```powershell
-.\avmatrix-launcher\AVmatrixLauncher.exe reset
+.\anvien-launcher\AnvienLauncher.exe reset
 ```
 
 Stop runtime:
 
 ```powershell
-.\avmatrix-launcher\AVmatrixLauncher.exe stop
+.\anvien-launcher\AnvienLauncher.exe stop
 ```
 
 Register protocol:
 
 ```powershell
-.\avmatrix-launcher\AVmatrixLauncher.exe register
+.\anvien-launcher\AnvienLauncher.exe register
 ```
 
 Logs:
 
 ```text
-avmatrix-launcher\logs\launcher.log
-avmatrix-launcher\logs\backend.log
-avmatrix-launcher\logs\server-wrapper.log
+anvien-launcher\logs\launcher.log
+anvien-launcher\logs\backend.log
+anvien-launcher\logs\server-wrapper.log
 ```
 
-The launcher is optional. It starts the same local backend that `avmatrix serve` starts directly.
+The launcher is optional. It starts the same local backend that `anvien serve` starts directly.
 
 ---
 
 ## Session Chat Runtime
 
-The Web chat does not run an AI model inside AVmatrix. It sends chat requests through the local session bridge and currently executes them with the Codex CLI session available on this machine.
+The Web chat does not run an AI model inside Anvien. It sends chat requests through the local session bridge and currently executes them with the Codex CLI session available on this machine.
 
 Implemented chat provider:
 
@@ -341,7 +341,7 @@ If chat is unavailable:
 - verify the selected repo is indexed
 - check `http://127.0.0.1:4848/api/session/status`
 
-AVmatrix does not store provider API keys in the browser and does not route chat through an AVmatrix cloud service.
+Anvien does not store provider API keys in the browser and does not route chat through an Anvien cloud service.
 
 ---
 
@@ -350,7 +350,7 @@ AVmatrix does not store provider API keys in the browser and does not route chat
 Generate embeddings during full analyze:
 
 ```powershell
-avmatrix analyze . --embeddings
+anvien analyze . --embeddings
 ```
 
 If you want to preserve/regenerate embeddings on future rebuilds, keep passing `--embeddings`.
@@ -380,29 +380,29 @@ Analyze and embed jobs are locked per repo to avoid concurrent writes to the sam
 Current repo:
 
 ```powershell
-avmatrix clean --force
+anvien clean --force
 ```
 
 All indexed repos:
 
 ```powershell
-avmatrix clean --all --force
+anvien clean --all --force
 ```
 
 Then rebuild:
 
 ```powershell
-avmatrix analyze . --force
+anvien analyze . --force
 ```
 
 If you see WAL/checksum corruption:
 
-1. Stop the packaged launcher or `avmatrix serve`.
+1. Stop the packaged launcher or `anvien serve`.
 2. Stop MCP sessions that may have the repo open.
 3. Clean the repo index.
-4. Re-run `avmatrix analyze . --force`.
+4. Re-run `anvien analyze . --force`.
 
-Do not manually delete `.avmatrix\lbug*` while launcher/backend/MCP is running.
+Do not manually delete `.anvien\lbug*` while launcher/backend/MCP is running.
 
 ---
 
@@ -432,11 +432,11 @@ Fix:
 Useful when debugging without an editor:
 
 ```powershell
-avmatrix query "authentication flow" --repo MyRepo
-avmatrix context SomeSymbol --repo MyRepo
-avmatrix impact SomeSymbol --direction upstream --repo MyRepo
-avmatrix cypher "MATCH (n) RETURN count(n) LIMIT 1" --repo MyRepo
-avmatrix detect-changes --repo MyRepo
+anvien query "authentication flow" --repo MyRepo
+anvien context SomeSymbol --repo MyRepo
+anvien impact SomeSymbol --direction upstream --repo MyRepo
+anvien cypher "MATCH (n) RETURN count(n) LIMIT 1" --repo MyRepo
+anvien detect-changes --repo MyRepo
 ```
 
 ---
@@ -446,10 +446,10 @@ avmatrix detect-changes --repo MyRepo
 The active local-only build has no remote wiki fallback.
 
 ```powershell
-avmatrix wiki
-avmatrix wiki-mode
-avmatrix wiki-mode off
-avmatrix wiki-mode local
+anvien wiki
+anvien wiki-mode
+anvien wiki-mode off
+anvien wiki-mode local
 ```
 
 `wiki-mode local` is reserved for a future local wiki engine.
@@ -493,7 +493,7 @@ To analyze host repos inside Docker, set `WORKSPACE_DIR` to a local folder that 
 Core:
 
 ```powershell
-cd avmatrix
+cd anvien
 npm run build
 npm test
 npx tsc --noEmit
@@ -502,7 +502,7 @@ npx tsc --noEmit
 Web:
 
 ```powershell
-cd avmatrix-web
+cd anvien-web
 npm run build
 npm test
 ```
@@ -510,10 +510,10 @@ npm test
 Web e2e requires both backend and frontend running:
 
 ```powershell
-cd avmatrix
-avmatrix serve
+cd anvien
+anvien serve
 
-cd ..\avmatrix-web
+cd ..\anvien-web
 npm run dev
 npm run test:e2e
 ```
@@ -521,7 +521,7 @@ npm run test:e2e
 Launcher package:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1
 ```
 
 ---

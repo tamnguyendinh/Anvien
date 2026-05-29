@@ -1,36 +1,36 @@
-# AVmatrix (version: `1.2.3`)
+# Anvien (version: `1.2.3`)
 
 ```md
-## **AVmatrix is a code map for AI coding agents.**
+## **Anvien is a code map for AI coding agents.**
 ```
 
-## Why Use AVmatrix?
+## Why Use Anvien?
 ```md
-> **AVmatrix builds one of the fastest and most accurate code intelligence graphs for large repositories.**
+> **Anvien builds one of the fastest and most accurate code intelligence graphs for large repositories.**
 ```
 
 When you vibe code with AI, the context window is always limited. The longer a session runs, the easier it is for the agent to lose track of information it already read, trace the same code again, or misunderstand how files, functions, and modules relate to each other.
 
-AVmatrix solves this by building a connected map of your codebase: which files relate to which files, which functions call each other, and which modules belong to each execution flow. This helps AI agents understand the project structure faster, navigate relationships across the codebase, and spend less time rediscovering context.
+Anvien solves this by building a connected map of your codebase: which files relate to which files, which functions call each other, and which modules belong to each execution flow. This helps AI agents understand the project structure faster, navigate relationships across the codebase, and spend less time rediscovering context.
 
 
 ---
 
-## Important notice: **AVmatrix has no official cryptocurrency, token, or coin. Any token/coin using the AVmatrix name is not affiliated with, endorsed by, or created by this project or its maintainers.**
+## Important notice: **Anvien has no official cryptocurrency, token, or coin. Any token/coin using the Anvien name is not affiliated with, endorsed by, or created by this project or its maintainers.**
 
-AVmatrix indexes a local codebase into a knowledge graph, then exposes that graph to AI coding agents, CLI commands, and a local Web UI.
+Anvien indexes a local codebase into a knowledge graph, then exposes that graph to AI coding agents, CLI commands, and a local Web UI.
 
 The core product is still local code intelligence:
 
-- `avmatrix analyze` builds a repo-local graph index in `<repo>/.avmatrix/`.
+- `anvien analyze` builds a repo-local graph index in `<repo>/.anvien/`.
 - the graph stores semantic layers such as App Layer, Functional Area, source-site proof metadata, ResolutionGap entities, and Resolution Health summaries.
-- `avmatrix mcp` exposes indexed repos to MCP clients such as Claude Code, Codex, Cursor, and OpenCode.
-- `avmatrix serve` exposes the same local runtime over HTTP for the browser UI.
-- `avmatrix-launcher/` packages the local backend and Web UI for a Windows `AVmatrixLauncher.exe` flow.
+- `anvien mcp` exposes indexed repos to MCP clients such as Claude Code, Codex, Cursor, and OpenCode.
+- `anvien serve` exposes the same local runtime over HTTP for the browser UI.
+- `anvien-launcher/` packages the local backend and Web UI for a Windows `AnvienLauncher.exe` flow.
 
-No AVmatrix-hosted cloud service is involved in the active local runtime path.
+No Anvien-hosted cloud service is involved in the active local runtime path.
 
-You do not need to put API keys into AVmatrix. Indexing, graph storage, repo switching, and graph queries run locally on your machine. For chat, AVmatrix uses the local Codex or Claude Code session/account you already use on this machine; AVmatrix does not store provider keys or route chat through an AVmatrix cloud service.
+You do not need to put API keys into Anvien. Indexing, graph storage, repo switching, and graph queries run locally on your machine. For chat, Anvien uses the local Codex or Claude Code session/account you already use on this machine; Anvien does not store provider keys or route chat through an Anvien cloud service.
 
 ---
 
@@ -38,86 +38,86 @@ You do not need to put API keys into AVmatrix. Indexing, graph storage, repo swi
 
 | Surface | Purpose | Entry point |
 |---------|---------|-------------|
-| CLI | Analyze repos, query the graph, inspect impact, manage indexes/groups | `avmatrix ...` |
-| MCP stdio | Agent-facing graph tools and resources | `avmatrix mcp` |
-| Local HTTP API | Web UI backend, graph streaming, analyze jobs, session bridge | `avmatrix serve` |
-| Web UI | Browser graph explorer, repo picker/analyze UI, Codex/Claude Code style session chat | `avmatrix-web/` or packaged launcher |
-| Windows launcher | Starts packaged Web UI and backend on `127.0.0.1` | `avmatrix-launcher\AVmatrixLauncher.exe` |
+| CLI | Analyze repos, query the graph, inspect impact, manage indexes/groups | `anvien ...` |
+| MCP stdio | Agent-facing graph tools and resources | `anvien mcp` |
+| Local HTTP API | Web UI backend, graph streaming, analyze jobs, session bridge | `anvien serve` |
+| Web UI | Browser graph explorer, repo picker/analyze UI, Codex/Claude Code style session chat | `anvien-web/` or packaged launcher |
+| Windows launcher | Starts packaged Web UI and backend on `127.0.0.1` | `anvien-launcher\AnvienLauncher.exe` |
 
 The Web UI is a frontend over the local HTTP backend. Repo switching and graph loading use explicit repo-scoped read targets; they do not depend on one mutable process-global active repo.
 
-The Web chat does not run an AI model inside AVmatrix. The shared session contract supports `codex` and `claude-code`; the current backend mounts the Codex CLI adapter. AVmatrix keeps repo binding, streaming, cancellation, and UI state local.
+The Web chat does not run an AI model inside Anvien. The shared session contract supports `codex` and `claude-code`; the current backend mounts the Codex CLI adapter. Anvien keeps repo binding, streaming, cancellation, and UI state local.
 
 ---
 
-  ## How to use AVmatrix
+  ## How to use Anvien
 
   Requires Node.js 20+, npm, and Go.
 
-  1. Clone or download the AVmatrix repository.
+  1. Clone or download the Anvien repository.
 
-  2. Open Codex CLI or Claude Code in the AVmatrix repository folder.
+  2. Open Codex CLI or Claude Code in the Anvien repository folder.
 
   3. Paste this prompt:
 
      ```text
-     Install AVmatrix from this repository and configure its MCP integration.
+     Install Anvien from this repository and configure its MCP integration.
      ```
 
 
      Then run:
 
      ```
-     powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+     powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1
      ```
 
-  4. Use avmatrix-launcher\AVmatrixLauncher.exe to open the visual Web UI.
-  5. After AVmatrix MCP is configured, your AI agent can use AVmatrix tools
+  4. Use anvien-launcher\AnvienLauncher.exe to open the visual Web UI.
+  5. After Anvien MCP is configured, your AI agent can use Anvien tools
      for codebase analysis, impact checks, graph queries, and navigation.
 
-  The agent should build the Go-backed avmatrix package, install or link the
-  local CLI, run avmatrix setup, and verify avmatrix --version.
+  The agent should build the Go-backed anvien package, install or link the
+  local CLI, run anvien setup, and verify anvien --version.
 
 ### Manual install
 
 ```bash
-git clone https://github.com/tamnguyendinh/AVmatrix.git
-cd AVmatrix
+git clone https://github.com/tamnguyendinh/Anvien.git
+cd Anvien
 
-cd avmatrix
+cd anvien
 npm install
 npm link
 
-avmatrix --version
+anvien --version
 ```
 
 Index a local repository:
 
 ```bash
 cd /path/to/your/repo
-avmatrix analyze .
+anvien analyze .
 ```
 
-This creates `<repo>/.avmatrix/` and registers the repo in `~/.avmatrix/registry.json`.
+This creates `<repo>/.anvien/` and registers the repo in `~/.anvien/registry.json`.
 
 Configure MCP/editor integration:
 
 ```bash
-avmatrix setup
+anvien setup
 ```
 
 Manual MCP examples:
 
 ```bash
-claude mcp add avmatrix -- avmatrix mcp
-codex mcp add avmatrix -- avmatrix mcp
+claude mcp add anvien -- anvien mcp
+codex mcp add anvien -- anvien mcp
 ```
 
 Codex TOML:
 
 ```toml
-[mcp_servers.avmatrix]
-command = "avmatrix"
+[mcp_servers.anvien]
+command = "anvien"
 args = ["mcp"]
 ```
 
@@ -125,12 +125,12 @@ args = ["mcp"]
 
 This repository provides a **Grok-only** MCP configuration at `.grok/config.toml`.
 
-When you open the AVmatrix-GO folder with Grok, the AVmatrix tools are automatically available (this file has higher priority than `.mcp.json` and does not affect Claude, Cursor, Codex, or other agents).
+When you open the Anvien folder with Grok, the Anvien tools are automatically available (this file has higher priority than `.mcp.json` and does not affect Claude, Cursor, Codex, or other agents).
 
 **For contributors working inside this repo:**
 
 - Start Grok (recommended: `grok --model grok-build --effort high` or `xhigh`)
-- The MCP server will be started via `go run ./cmd/avmatrix mcp`
+- The MCP server will be started via `go run ./cmd/anvien mcp`
 - Verify with `/mcps` or `grok mcp list`
 
 **For other projects or daily use:**
@@ -138,11 +138,11 @@ When you open the AVmatrix-GO folder with Grok, the AVmatrix tools are automatic
 Build once and register with an explicit path:
 
 ```bash
-go build -o avmatrix-stable.exe ./cmd/avmatrix
-grok mcp add avmatrix -- "E:\\path\\to\\avmatrix-stable.exe" mcp
+go build -o anvien-stable.exe ./cmd/anvien
+grok mcp add anvien -- "E:\\path\\to\\anvien-stable.exe" mcp
 ```
 
-You can also create a `.grok/config.toml` in any of your own repositories to enable AVmatrix tools there.
+You can also create a `.grok/config.toml` in any of your own repositories to enable Anvien tools there.
 
 This approach keeps the public MCP contract (used by all other agents) completely unchanged.
 
@@ -154,14 +154,14 @@ Development flow:
 
 ```bash
 # terminal 1, from the repo root
-go run ./cmd/avmatrix serve --host 127.0.0.1 --port 4848
+go run ./cmd/anvien serve --host 127.0.0.1 --port 4848
 
 # or build the local Go CLI once, then run it
-go build -trimpath -o .tmp/avmatrix.exe ./cmd/avmatrix
-.\.tmp\avmatrix.exe serve --host 127.0.0.1 --port 4848
+go build -trimpath -o .tmp/anvien.exe ./cmd/anvien
+.\.tmp\anvien.exe serve --host 127.0.0.1 --port 4848
 
 # terminal 2, from the repo root
-cd avmatrix-web
+cd anvien-web
 npm install
 npm run dev
 ```
@@ -196,115 +196,115 @@ The packaged launcher is a convenience layer around the same local backend and W
 Build it:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1
 ```
 
 Important artifacts:
 
 ```text
-avmatrix-launcher\AVmatrixLauncher.exe
-avmatrix\bin\avmatrix.exe
-avmatrix-launcher\server-bundle\avmatrix-server.exe
-avmatrix-launcher\web-dist\
+anvien-launcher\AnvienLauncher.exe
+anvien\bin\anvien.exe
+anvien-launcher\server-bundle\anvien-server.exe
+anvien-launcher\web-dist\
 ```
 
 Runtime behavior:
 
-- `AVmatrixLauncher.exe` is rebuilt by `avmatrix-launcher\build.ps1` and is the packaged user entrypoint.
-- `avmatrix\bin\avmatrix.exe` is the single production AVmatrix CLI/runtime executable built by the full build.
-- `AVmatrixLauncher.exe` serves the packaged Web UI on `127.0.0.1:5228` and opens the in-app start screen.
-- `avmatrix-server.exe` starts `avmatrix\bin\avmatrix.exe serve`.
+- `AnvienLauncher.exe` is rebuilt by `anvien-launcher\build.ps1` and is the packaged user entrypoint.
+- `anvien\bin\anvien.exe` is the single production Anvien CLI/runtime executable built by the full build.
+- `AnvienLauncher.exe` serves the packaged Web UI on `127.0.0.1:5228` and opens the in-app start screen.
+- `anvien-server.exe` starts `anvien\bin\anvien.exe serve`.
 - backend health is checked at `http://127.0.0.1:4848/api/info`.
 - reset/stop use the launcher state file plus process path sweep for the packaged runtime.
 
-The launcher must remain optional. `avmatrix serve` is still the direct backend entry point.
+The launcher must remain optional. `anvien serve` is still the direct backend entry point.
 
 ---
 
 ## Main CLI Commands
 
 ```bash
-avmatrix setup                     # Configure local MCP/editor access
-avmatrix analyze [path]            # Full local repo analysis
-avmatrix analyze --force           # Force full re-index
-avmatrix analyze --embeddings      # Generate semantic embeddings
-avmatrix analyze --no-stats        # Omit volatile stats from generated agent files
-avmatrix analyze --skip-git        # Analyze a folder without requiring .git
-avmatrix analyze --name <alias>    # Register repo under a custom name
-avmatrix index [path...]           # Register an existing local index
-avmatrix list                      # List indexed repos
-avmatrix status                    # Show index status for current repo
-avmatrix clean                     # Delete current repo index
-avmatrix clean --all --force       # Delete all indexes
-avmatrix mcp                       # Start MCP server over stdio
-avmatrix serve                     # Start local HTTP backend on 127.0.0.1:4848
-avmatrix doctor                    # Inspect local runtime locks and processes
-avmatrix version                   # Print version/build information
-avmatrix wiki                      # Show wiki capability status
-avmatrix wiki-mode [off|local]     # Show or set local wiki capability mode
-avmatrix completion <shell>        # Generate shell completion script
+anvien setup                     # Configure local MCP/editor access
+anvien analyze [path]            # Full local repo analysis
+anvien analyze --force           # Force full re-index
+anvien analyze --embeddings      # Generate semantic embeddings
+anvien analyze --no-stats        # Omit volatile stats from generated agent files
+anvien analyze --skip-git        # Analyze a folder without requiring .git
+anvien analyze --name <alias>    # Register repo under a custom name
+anvien index [path...]           # Register an existing local index
+anvien list                      # List indexed repos
+anvien status                    # Show index status for current repo
+anvien clean                     # Delete current repo index
+anvien clean --all --force       # Delete all indexes
+anvien mcp                       # Start MCP server over stdio
+anvien serve                     # Start local HTTP backend on 127.0.0.1:4848
+anvien doctor                    # Inspect local runtime locks and processes
+anvien version                   # Print version/build information
+anvien wiki                      # Show wiki capability status
+anvien wiki-mode [off|local]     # Show or set local wiki capability mode
+anvien completion <shell>        # Generate shell completion script
 ```
 
 Direct graph tools:
 
 ```bash
-avmatrix query <search_query>
-avmatrix context [name]
-avmatrix impact [target]
-avmatrix rename <symbol> <newName>
-avmatrix cypher <query>
-avmatrix detect-changes
-avmatrix augment <pattern>
-avmatrix api route-map [route]
-avmatrix api tool-map [tool]
-avmatrix api shape-check [route]
-avmatrix api impact [route]
-avmatrix graph-health
-avmatrix query-health
-avmatrix resolution-inventory
-avmatrix source-site-accuracy
-avmatrix benchmark-compare <before> <after>
+anvien query <search_query>
+anvien context [name]
+anvien impact [target]
+anvien rename <symbol> <newName>
+anvien cypher <query>
+anvien detect-changes
+anvien augment <pattern>
+anvien api route-map [route]
+anvien api tool-map [tool]
+anvien api shape-check [route]
+anvien api impact [route]
+anvien graph-health
+anvien query-health
+anvien resolution-inventory
+anvien source-site-accuracy
+anvien benchmark-compare <before> <after>
 ```
 
 AI context and skills:
 
-`avmatrix analyze` refreshes managed `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/avmatrix/**` from embedded source files under `internal/aicontext/skills/*.md`. `avmatrix setup` installs the same embedded base skill set into supported editor skill directories. Do not edit generated root context or `.claude/skills/avmatrix/**` as source; change the embedded skill source or generator and regenerate through analyze.
+`anvien analyze` refreshes managed `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` from embedded source files under `internal/aicontext/skills/*.md`. `anvien setup` installs the same embedded base skill set into supported editor skill directories. Do not edit generated root context or `.claude/skills/anvien/**` as source; change the embedded skill source or generator and regenerate through analyze.
 
 Semantic graph diagnostics:
 
 ```bash
-avmatrix graph-health summary --repo <repo> --json
-avmatrix graph-health report --repo <repo> --limit 20 --json
-avmatrix graph-health components --repo <repo> --json
-avmatrix query-health --repo <repo> --out .tmp/query-health.json
-avmatrix resolution-inventory --graph .avmatrix/graph.json --out .tmp/resolution-inventory.json
-avmatrix source-site-accuracy --graph .avmatrix/graph.json --out .tmp/source-site-accuracy.json
+anvien graph-health summary --repo <repo> --json
+anvien graph-health report --repo <repo> --limit 20 --json
+anvien graph-health components --repo <repo> --json
+anvien query-health --repo <repo> --out .tmp/query-health.json
+anvien resolution-inventory --graph .anvien/graph.json --out .tmp/resolution-inventory.json
+anvien source-site-accuracy --graph .anvien/graph.json --out .tmp/source-site-accuracy.json
 ```
 
 These commands are for checking graph quality, not for replacing `analyze`. `analyze` remains the source of truth that refreshes the graph. `graph-health` audits computed topology health, diagnostics, component membership, confidence, resolution-health overlays, and prioritized candidate reports from the indexed repo graph. `query-health` measures query retrieval with two separate outcomes: threshold pass/fail for usable retrieval, and exact pass/fail for complete expected target coverage. Use `--fail-on-threshold` to fail when hit@5/hit@10 thresholds are missed, or `--fail-on-exact` to fail when any expected file/symbol is still missing. `resolution-inventory` reports persisted ResolutionGap and Resolution Health counts, including non-actionable breakdowns such as `builtin`, `standard_library`, and `test_framework`. `source-site-accuracy` reports proof-based CALLS/ACCESSES inventory, missing source-site IDs, false resolved edge candidates, and other graph accuracy gates.
 
-`avmatrix rename` and `avmatrix api ...` are CLI equivalents for the MCP `rename`, `route_map`, `tool_map`, `shape_check`, and `api_impact` tools. Use them for terminal workflows and smoke validation; they delegate to the same local MCP tool logic so API/rename semantics stay consistent across command surfaces.
+`anvien rename` and `anvien api ...` are CLI equivalents for the MCP `rename`, `route_map`, `tool_map`, `shape_check`, and `api_impact` tools. Use them for terminal workflows and smoke validation; they delegate to the same local MCP tool logic so API/rename semantics stay consistent across command surfaces.
 
 Repository groups:
 
 ```bash
-avmatrix group create <name>
-avmatrix group add <group> <groupPath> <registryName>
-avmatrix group remove <group> <path>
-avmatrix group list [name]
-avmatrix group sync <name>
-avmatrix group contracts <name>
-avmatrix group query <name> <query>
-avmatrix group status <name>
+anvien group create <name>
+anvien group add <group> <groupPath> <registryName>
+anvien group remove <group> <path>
+anvien group list [name]
+anvien group sync <name>
+anvien group contracts <name>
+anvien group query <name> <query>
+anvien group status <name>
 ```
 
-Repo-local settings live in `.avmatrix/settings.json`. The current repo-local setting is `maxExecutionFlows`, which controls the cap used while materializing execution flows during `analyze`. `AVMATRIX_MAX_PROCESSES` remains available as a temporary override.
+Repo-local settings live in `.anvien/settings.json`. The current repo-local setting is `maxExecutionFlows`, which controls the cap used while materializing execution flows during `analyze`. `ANVIEN_MAX_PROCESSES` remains available as a temporary override.
 
 ---
 
 ## MCP Tools And Resources
 
-AVmatrix exposes 16 MCP tools:
+Anvien exposes 16 MCP tools:
 
 | Tool | Purpose |
 |------|---------|
@@ -329,23 +329,23 @@ Common resources:
 
 | Resource | Purpose |
 |----------|---------|
-| `avmatrix://repos` | All indexed repos |
-| `avmatrix://setup` | Generated setup/onboarding content |
-| `avmatrix://repo/{name}/context` | Repo overview and stats |
-| `avmatrix://repo/{name}/clusters` | Functional clusters |
-| `avmatrix://repo/{name}/cluster/{name}` | Cluster detail |
-| `avmatrix://repo/{name}/processes` | Execution flows |
-| `avmatrix://repo/{name}/process/{name}` | Process trace |
-| `avmatrix://repo/{name}/schema` | Graph schema |
+| `anvien://repos` | All indexed repos |
+| `anvien://setup` | Generated setup/onboarding content |
+| `anvien://repo/{name}/context` | Repo overview and stats |
+| `anvien://repo/{name}/clusters` | Functional clusters |
+| `anvien://repo/{name}/cluster/{name}` | Cluster detail |
+| `anvien://repo/{name}/processes` | Execution flows |
+| `anvien://repo/{name}/process/{name}` | Process trace |
+| `anvien://repo/{name}/schema` | Graph schema |
 
 MCP prompts:
 
 | Prompt | Purpose |
 |--------|---------|
 | `detect_impact` | Agent template for pre-commit impact analysis with `detect_changes`, `context`, `impact`, freshness checks, and HIGH/CRITICAL blast-radius interpretation |
-| `generate_map` | Agent template for evidence-backed architecture documentation from `avmatrix://repos`, repo context, clusters, processes, selected process details, and any extra tools/commands the agent actually reads |
+| `generate_map` | Agent template for evidence-backed architecture documentation from `anvien://repos`, repo context, clusters, processes, selected process details, and any extra tools/commands the agent actually reads |
 
-MCP prompts are workflow templates for MCP-capable agents, not CLI commands. `generate_map` must resolve an exact repo before reading repo resources, URL-escape repo and process names in resource URIs, refresh stale graph evidence with `avmatrix analyze --force` when required, and avoid architecture claims or Mermaid edges that are not backed by graph evidence the agent actually read.
+MCP prompts are workflow templates for MCP-capable agents, not CLI commands. `generate_map` must resolve an exact repo before reading repo resources, URL-escape repo and process names in resource URIs, refresh stale graph evidence with `anvien analyze --force` when required, and avoid architecture claims or Mermaid edges that are not backed by graph evidence the agent actually read.
 
 When only one repo is indexed, most repo-scoped tool calls can omit `repo`. With multiple indexed repos, pass the repo name or path explicitly.
 
@@ -353,7 +353,7 @@ When only one repo is indexed, most repo-scoped tool calls can omit `repo`. With
 
 ## How Indexing Works
 
-`avmatrix analyze` runs a full local pipeline:
+`anvien analyze` runs a full local pipeline:
 
 ```text
 scan -> structure -> [markdown, cobol] -> parse -> [routes, tools, orm]
@@ -362,7 +362,7 @@ scan -> structure -> [markdown, cobol] -> parse -> [routes, tools, orm]
   -> optional embeddings -> metadata/registry/agent files
 ```
 
-The graph is stored in LadybugDB under `<repo>/.avmatrix/`.
+The graph is stored in LadybugDB under `<repo>/.anvien/`.
 
 Semantic enrichment adds user-facing graph meaning on top of raw code symbols:
 
@@ -377,14 +377,14 @@ In the Web UI, ResolutionGap entities are diagnostic nodes rather than real code
 Storage:
 
 ```text
-<repo>/.avmatrix/
+<repo>/.anvien/
   lbug
   lbug.wal
   lbug.lock
   meta.json
   settings.json
 
-~/.avmatrix/
+~/.anvien/
   registry.json
 ```
 
@@ -401,7 +401,7 @@ COBOL/JCL is handled through the dedicated COBOL phase rather than the normal tr
 
 ## Local HTTP API
 
-`avmatrix serve` exposes the local backend used by the Web UI:
+`anvien serve` exposes the local backend used by the Web UI:
 
 | Endpoint | Purpose |
 |----------|---------|
@@ -461,11 +461,11 @@ To make host repos visible to the container, set `WORKSPACE_DIR` to a local fold
 | Path | Role |
 |------|------|
 | `cmd/`, `internal/` | Go CLI, MCP server, HTTP API, ingestion, LadybugDB, embeddings, contracts, session/runtime code |
-| `avmatrix/` | npm packaging and Go runtime distribution glue |
-| `avmatrix-web/` | React/Vite Web UI and local runtime client |
+| `anvien/` | npm packaging and Go runtime distribution glue |
+| `anvien-web/` | React/Vite Web UI and local runtime client |
 | `contracts/web-ui/` | Go-generated Web UI contract manifest |
-| `avmatrix-launcher/` | Windows launcher, server wrapper, packaged Web UI/backend assets |
-| `.claude/`, `avmatrix-claude-plugin/`, `avmatrix-cursor-integration/` | Generated agent context output and plugin metadata |
+| `anvien-launcher/` | Windows launcher, server wrapper, packaged Web UI/backend assets |
+| `.claude/`, `anvien-claude-plugin/`, `anvien-cursor-integration/` | Generated agent context output and plugin metadata |
 | `docs/plans/` | Implementation plans and investigation records |
 | `.github/` | CI workflows |
 
@@ -478,7 +478,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the detailed system map.
 Build core packages:
 
 ```bash
-cd avmatrix
+cd anvien
 npm install
 npm run build
 ```
@@ -488,7 +488,7 @@ Build Web UI:
 ```bash
 go run ./cmd/generate-web-contracts --check
 
-cd avmatrix-web
+cd anvien-web
 npm install
 npm run build
 ```
@@ -496,7 +496,7 @@ npm run build
 Build full Windows launcher package:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1
+powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1
 ```
 
 Useful docs:
@@ -512,11 +512,11 @@ Useful docs:
 
 ## Security And Privacy
 
-- Index data is stored locally in `<repo>/.avmatrix/`.
-- The global registry is local under `~/.avmatrix/`.
+- Index data is stored locally in `<repo>/.anvien/`.
+- The global registry is local under `~/.anvien/`.
 - The Web UI talks to the local backend at `127.0.0.1:4848`.
-- AVmatrix does not store AI provider API keys in the browser.
-- AVmatrix does not route chat through an AVmatrix cloud service.
+- Anvien does not store AI provider API keys in the browser.
+- Anvien does not route chat through an Anvien cloud service.
 - Codex/Claude Code style chat depends on the local session/provider already available on the machine.
 
 ---

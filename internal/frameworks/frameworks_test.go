@@ -62,7 +62,7 @@ func TestDetectFromPathMatchesFrameworkConventions(t *testing.T) {
 		{"src/bin/server.rs", "rust", "rust-bin", 2.5},
 		{"src/main.c", "c-cpp", "c-main", 3.0},
 		{"src/main.cpp", "c-cpp", "c-main", 3.0},
-		{"bin/avmatrix.rb", "ruby", "ruby-executable", 2.5},
+		{"bin/anvien.rb", "ruby", "ruby-executable", 2.5},
 		{"routes\\auth.ts", "express", "routes-folder", 2.5},
 	}
 
@@ -267,7 +267,7 @@ func BenchmarkDetectFromPath(b *testing.B) {
 		"lib/screens/HomePage.dart",
 		"cmd/server/main.go",
 		"src/bin/server.rs",
-		"bin/avmatrix.rb",
+		"bin/anvien.rb",
 		"src/lib/util.txt",
 	}
 	b.ReportAllocs()

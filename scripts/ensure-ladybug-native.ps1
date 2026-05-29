@@ -32,7 +32,7 @@ function Resolve-LatestVersionTag($OutputRootFull) {
 
   $Release = Invoke-RestMethod -Uri "https://api.github.com/repos/LadybugDB/ladybug/releases/latest" -Headers @{
     "Accept" = "application/vnd.github+json"
-    "User-Agent" = "avmatrix-go-native-bootstrap"
+    "User-Agent" = "anvien-go-native-bootstrap"
   }
   if (-not $Release.tag_name) {
     throw "Could not resolve latest LadybugDB release tag from GitHub."

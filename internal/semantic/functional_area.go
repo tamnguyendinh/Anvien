@@ -192,19 +192,19 @@ func isMCPAreaPath(path string) bool {
 }
 
 func isLayoutAreaPath(path string) bool {
-	return path == "avmatrix-web/src/lib/graph-adapter.ts" ||
-		path == "avmatrix-web/src/hooks/usesigma.ts" ||
-		strings.Contains(path, "avmatrix-web/src/lib/graph-edge") ||
-		strings.Contains(path, "avmatrix-web/src/lib/graph-links") ||
-		strings.Contains(path, "avmatrix-web/src/lib/selected-graph-context")
+	return path == "anvien-web/src/lib/graph-adapter.ts" ||
+		path == "anvien-web/src/hooks/usesigma.ts" ||
+		strings.Contains(path, "anvien-web/src/lib/graph-edge") ||
+		strings.Contains(path, "anvien-web/src/lib/graph-links") ||
+		strings.Contains(path, "anvien-web/src/lib/selected-graph-context")
 }
 
 func isWebGraphUIAreaPath(path string) bool {
-	return hasPathPrefix(path, "avmatrix-web/src/components") ||
-		hasPathPrefix(path, "avmatrix-web/src/hooks/app-state") ||
-		path == "avmatrix-web/src/app.tsx" ||
-		path == "avmatrix-web/src/main.tsx" ||
-		path == "avmatrix-web/src/lib/graph-health-filters.ts"
+	return hasPathPrefix(path, "anvien-web/src/components") ||
+		hasPathPrefix(path, "anvien-web/src/hooks/app-state") ||
+		path == "anvien-web/src/app.tsx" ||
+		path == "anvien-web/src/main.tsx" ||
+		path == "anvien-web/src/lib/graph-health-filters.ts"
 }
 
 func isProviderAreaPath(path string) bool {
@@ -215,8 +215,8 @@ func isProviderAreaPath(path string) bool {
 
 func isSessionAreaPath(path string) bool {
 	return hasPathPrefix(path, "internal/session") ||
-		pathContains(path, "avmatrix-web/src/hooks/chat-runtime") ||
-		path == "avmatrix-web/src/core/llm/session-client.ts"
+		pathContains(path, "anvien-web/src/hooks/chat-runtime") ||
+		path == "anvien-web/src/core/llm/session-client.ts"
 }
 
 func isStorageAreaPath(path string) bool {
@@ -239,15 +239,15 @@ func isRuntimeAreaPath(path string) bool {
 
 func isCLIAreaPath(path string) bool {
 	return hasPathPrefix(path, "internal/cli") ||
-		hasPathPrefix(path, "cmd/avmatrix") ||
+		hasPathPrefix(path, "cmd/anvien") ||
 		hasPathPrefix(path, "cmd/access-candidate-audit") ||
 		hasPathPrefix(path, "cmd/graph-accuracy-probe") ||
 		hasPathPrefix(path, "cmd/property-access-audit")
 }
 
 func isLauncherAreaPath(path string) bool {
-	return hasPathPrefix(path, "avmatrix-launcher") ||
-		path == "start-avmatrix.html"
+	return hasPathPrefix(path, "anvien-launcher") ||
+		path == "start-anvien.html"
 }
 
 func isReportingAreaPath(path string) bool {

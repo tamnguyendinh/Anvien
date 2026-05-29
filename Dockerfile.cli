@@ -30,28 +30,28 @@ RUN test "${TARGETOS:-linux}" = "linux" \
     && CGO_CFLAGS="-I${LADYBUG_NATIVE_DIR}" \
        CGO_LDFLAGS="-L${LADYBUG_NATIVE_DIR} -llbug" \
        GOOS=linux GOARCH=amd64 CGO_ENABLED=1 \
-       go build -tags ladybugdb -trimpath -ldflags="-s -w" -o /out/avmatrix ./cmd/avmatrix
+       go build -tags ladybugdb -trimpath -ldflags="-s -w" -o /out/anvien ./cmd/anvien
 
 FROM debian:${DEBIAN_VERSION}-slim AS runtime
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl git libstdc++6 \
     && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p /data/avmatrix /workspace \
-    && groupadd --system avmatrix \
-    && useradd --system --gid avmatrix --home-dir /data/avmatrix avmatrix \
-    && chown -R avmatrix:avmatrix /data/avmatrix /workspace
+    && mkdir -p /data/anvien /workspace \
+    && groupadd --system anvien \
+    && useradd --system --gid anvien --home-dir /data/anvien anvien \
+    && chown -R anvien:anvien /data/anvien /workspace
 
-USER avmatrix
+USER anvien
 WORKDIR /workspace
 
-ENV AVMATRIX_HOME=/data/avmatrix \
+ENV ANVIEN_HOME=/data/anvien \
     LD_LIBRARY_PATH=/usr/local/lib \
     PORT=4848
 
-COPY --from=builder /out/avmatrix /usr/local/bin/avmatrix
+COPY --from=builder /out/anvien /usr/local/bin/anvien
 COPY --from=builder /opt/ladybug-current/liblbug.so* /usr/local/lib/
 
 EXPOSE 4848
 
-CMD ["avmatrix", "serve", "--host", "0.0.0.0", "--port", "4848"]
+CMD ["anvien", "serve", "--host", "0.0.0.0", "--port", "4848"]

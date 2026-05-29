@@ -71,7 +71,7 @@ func TestIsHardcodedIgnoredDirectory(t *testing.T) {
 func TestMatcherCombinesGitignoreAndAvmatrixignore(t *testing.T) {
 	dir := t.TempDir()
 	writeFile(t, dir, ".gitignore", "data/\n*.log\n")
-	writeFile(t, dir, ".avmatrixignore", "local/\n")
+	writeFile(t, dir, ".anvienignore", "local/\n")
 
 	matcher, err := Load(dir, Options{})
 	if err != nil {
@@ -91,7 +91,7 @@ func TestMatcherCombinesGitignoreAndAvmatrixignore(t *testing.T) {
 func TestNoGitignoreStillReadsAvmatrixignore(t *testing.T) {
 	dir := t.TempDir()
 	writeFile(t, dir, ".gitignore", "data/\n")
-	writeFile(t, dir, ".avmatrixignore", "local/\n")
+	writeFile(t, dir, ".anvienignore", "local/\n")
 
 	matcher, err := Load(dir, Options{NoGitignore: true})
 	if err != nil {
@@ -102,7 +102,7 @@ func TestNoGitignoreStillReadsAvmatrixignore(t *testing.T) {
 		t.Fatal("gitignore rule applied despite NoGitignore")
 	}
 	if !matcher.Ignored("local/plugin.js", false) {
-		t.Fatal("avmatrixignore rule was not applied")
+		t.Fatal("anvienignore rule was not applied")
 	}
 }
 
@@ -116,14 +116,14 @@ func TestNoGitignoreEnv(t *testing.T) {
 		t.Fatalf("Load failed: %v", err)
 	}
 	if matcher.Ignored("data/file.json", false) {
-		t.Fatal("gitignore rule applied despite AVMATRIX_NO_GITIGNORE")
+		t.Fatal("gitignore rule applied despite ANVIEN_NO_GITIGNORE")
 	}
 }
 
 func TestMatcherHandlesCommentsBareDirsGlobsAndNegations(t *testing.T) {
 	dir := t.TempDir()
 	writeFile(t, dir, ".gitignore", "# comment\n\nlocal\n*.log\n")
-	writeFile(t, dir, ".avmatrixignore", "*\n!iOS\n!iOS/**\n!backend/\n!backend/living_plan/**\n")
+	writeFile(t, dir, ".anvienignore", "*\n!iOS\n!iOS/**\n!backend/\n!backend/living_plan/**\n")
 
 	matcher, err := Load(dir, Options{})
 	if err != nil {

@@ -1,9 +1,9 @@
-# Architecture - AVmatrix
+# Architecture - Anvien
 
-AVmatrix is a local-first code intelligence system. The backend, CLI, MCP server,
+Anvien is a local-first code intelligence system. The backend, CLI, MCP server,
 analyzer, storage, contracts, and session bridge are implemented in Go under
 `cmd/` and `internal/`. The Web UI remains a thin React/Vite client under
-`avmatrix-web/`. The npm package under `avmatrix/` ships the Go runtime binary,
+`anvien-web/`. The npm package under `anvien/` ships the Go runtime binary,
 package metadata, skills, and generated Go source fallback for install-time
 rebuilds.
 
@@ -11,7 +11,7 @@ rebuilds.
 
 | Path | Role |
 |------|------|
-| `cmd/avmatrix/` | CLI entry point. |
+| `cmd/anvien/` | CLI entry point. |
 | `cmd/generate-web-contracts/` | Regenerates browser-side Web contract glue from Go contract definitions. |
 | `internal/analyze/` | End-to-end analyze orchestration, benchmark output, graph loading flow. |
 | `internal/scanner/`, `internal/parser/`, `internal/providers/` | File scanning, parser readiness/pool, language-specific ScopeIR extraction. |
@@ -23,16 +23,16 @@ rebuilds.
 | `internal/contracts/` | Go-owned contracts and generated Web UI TypeScript contract source. |
 | `internal/session/` | Local session bridge and Codex CLI adapter. |
 | `internal/group/`, `internal/tools/`, `internal/routes/`, `internal/communities/`, `internal/processes/` | Higher-level graph enrichments and runtime views. |
-| `avmatrix/` | npm package metadata, packaged skills, built `bin/` runtime artifacts, and generated `go-src` only during package fallback workflows. |
-| `avmatrix-web/` | React/Vite Web UI. Runtime calls go through `avmatrix serve`. |
+| `anvien/` | npm package metadata, packaged skills, built `bin/` runtime artifacts, and generated `go-src` only during package fallback workflows. |
+| `anvien-web/` | React/Vite Web UI. Runtime calls go through `anvien serve`. |
 | `contracts/web-ui/` | Go-generated contract manifest for browser glue. |
-| `avmatrix-launcher/` | Windows launcher, server wrapper, packaged Web assets, and backend bundle. |
+| `anvien-launcher/` | Windows launcher, server wrapper, packaged Web assets, and backend bundle. |
 
 ## End-to-End Flow
 
 1. **CLI or HTTP starts analyze**
-   - CLI path: `cmd/avmatrix` -> `internal/cli` -> `internal/analyze`.
-   - HTTP path: `avmatrix serve` -> `internal/httpapi` -> `internal/analyze`.
+   - CLI path: `cmd/anvien` -> `internal/cli` -> `internal/analyze`.
+   - HTTP path: `anvien serve` -> `internal/httpapi` -> `internal/analyze`.
 
 2. **Scan and parse**
    - `internal/scanner` selects files and language IDs.
@@ -51,15 +51,15 @@ rebuilds.
    - Repo metadata and registry state are managed by `internal/repo`.
 
 5. **Serve local interfaces**
-   - CLI: `avmatrix query|context|impact|cypher|detect-changes|rename|...`.
-   - MCP stdio: `avmatrix mcp`.
-   - HTTP/Web: `avmatrix serve`, then `avmatrix-web` talks to loopback HTTP.
-   - Launcher: `avmatrix-launcher` wraps the same backend and Web UI.
+   - CLI: `anvien query|context|impact|cypher|detect-changes|rename|...`.
+   - MCP stdio: `anvien mcp`.
+   - HTTP/Web: `anvien serve`, then `anvien-web` talks to loopback HTTP.
+   - Launcher: `anvien-launcher` wraps the same backend and Web UI.
 
 ## Local HTTP Runtime
 
-`avmatrix serve` binds to loopback by default and exposes the local backend. It
-does not introduce an AVmatrix-hosted cloud service.
+`anvien serve` binds to loopback by default and exposes the local backend. It
+does not introduce an Anvien-hosted cloud service.
 
 | Endpoint family | Purpose | Main implementation |
 |-----------------|---------|---------------------|
@@ -82,10 +82,10 @@ The browser-side contract source is generated from Go:
 ```text
 internal/contracts -> cmd/generate-web-contracts
   -> contracts/web-ui/web-ui-contract.json
-  -> avmatrix-web/src/generated/avmatrix-contracts.ts
+  -> anvien-web/src/generated/anvien-contracts.ts
 ```
 
-`avmatrix-web/` may contain TypeScript/React UI code and generated browser glue.
+`anvien-web/` may contain TypeScript/React UI code and generated browser glue.
 Backend, CLI, MCP, analyzer, persistence, and session authority live in Go.
 
 ## Package Lifecycle
@@ -94,9 +94,9 @@ The npm package is a Go runtime distribution wrapper:
 
 | Command | Behavior |
 |---------|----------|
-| `npm run build` in `avmatrix/` | Runs `go run ../cmd/avmatrix package build-runtime` and writes `avmatrix/bin/avmatrix.exe`. |
-| `prepack` | Builds the runtime and runs `avmatrix package prepare-go-source` to create generated `go-src` fallback source. |
-| `postpack` | Runs `avmatrix package clean-go-source` to remove generated package source from the working tree. |
+| `npm run build` in `anvien/` | Runs `go run ../cmd/anvien package build-runtime` and writes `anvien/bin/anvien.exe`. |
+| `prepack` | Builds the runtime and runs `anvien package prepare-go-source` to create generated `go-src` fallback source. |
+| `postpack` | Runs `anvien package clean-go-source` to remove generated package source from the working tree. |
 | `postinstall` | Rebuilds from repo or packaged `go-src` when Go is available, otherwise verifies the packaged binary for the current platform. |
 
 Package lifecycle helpers live in `internal/cli/package_command.go` and
@@ -146,13 +146,13 @@ Shared code in `internal/analyze`, `internal/scopeir`, and
 ## Storage
 
 ```text
-<repo>/.avmatrix/
+<repo>/.anvien/
   graph.json        JSON graph snapshot for fallback/runtime readers
   lbug              LadybugDB database
   meta.json         repoPath, lastCommit, indexedAt, stats
   settings.json     optional repo-local settings such as maxExecutionFlows
 
-~/.avmatrix/
+~/.anvien/
   registry.json     indexed repo registry for CLI/MCP/Web discovery
 ```
 
@@ -160,8 +160,8 @@ LadybugDB runtime side files such as WAL or lock files may appear while the
 database is open or recovering, but they are transient implementation details
 rather than required index outputs.
 
-Launcher runtime state and logs are managed under `avmatrix-launcher/` and the
-user temp directory. The launcher is optional; `avmatrix serve` remains the
+Launcher runtime state and logs are managed under `anvien-launcher/` and the
+user temp directory. The launcher is optional; `anvien serve` remains the
 direct backend entry point.
 
 ## MCP Tools
@@ -183,7 +183,7 @@ direct backend entry point.
 | Concern | Start in |
 |---------|----------|
 | CLI commands/flags | `internal/cli/` |
-| Package lifecycle | `internal/cli/package_command.go`, `internal/cli/package_runtime.go`, `avmatrix/package.json` |
+| Package lifecycle | `internal/cli/package_command.go`, `internal/cli/package_runtime.go`, `anvien/package.json` |
 | Analyze orchestration | `internal/analyze/` |
 | File scanning/language selection | `internal/scanner/` |
 | Parser readiness/pool | `internal/parser/` |
@@ -195,16 +195,16 @@ direct backend entry point.
 | MCP server/tools/resources | `internal/mcp/` |
 | Search and embeddings | `internal/embeddings/`, `internal/httpapi/search.go` |
 | Session bridge | `internal/session/`, `internal/httpapi/session.go` |
-| Web UI | `avmatrix-web/src/` |
-| Generated Web contracts | `internal/contracts/`, `cmd/generate-web-contracts/`, `avmatrix-web/src/generated/` |
-| Launcher | `avmatrix-launcher/src/main.go`, `avmatrix-launcher/server-wrapper/main.go`, `avmatrix-launcher/build.ps1` |
+| Web UI | `anvien-web/src/` |
+| Generated Web contracts | `internal/contracts/`, `cmd/generate-web-contracts/`, `anvien-web/src/generated/` |
+| Launcher | `anvien-launcher/src/main.go`, `anvien-launcher/server-wrapper/main.go`, `anvien-launcher/build.ps1` |
 
 ## Known Constraints
 
-- Only one analyze writer should touch a repo-local `.avmatrix/lbug` database at
+- Only one analyze writer should touch a repo-local `.anvien/lbug` database at
   a time.
-- Embeddings are opt-in. Use `avmatrix analyze --embeddings` when preserving or
+- Embeddings are opt-in. Use `anvien analyze --embeddings` when preserving or
   refreshing vector data matters.
 - Web graph loading must stay repo-scoped by explicit repo path/name.
-- `avmatrix-web/` must remain a thin client over the local backend.
+- `anvien-web/` must remain a thin client over the local backend.
 - The launcher must remain a convenience layer over the same backend semantics.

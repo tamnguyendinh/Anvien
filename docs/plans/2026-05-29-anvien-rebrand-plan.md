@@ -224,13 +224,13 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 - [ ] [P2-G] Audit and update GitHub webhooks, deploy keys, GitHub Apps, Pages settings, environments, package permissions, and repository integrations that point at old repo URLs or old package/image names.
 - [ ] [P2-H] Update GitHub Releases and release-drafter configuration so generated release titles, notes, assets, and links use Anvien names.
 - [ ] [P2-I] Update GitHub issue templates, PR template, labels, CODEOWNERS if present, funding metadata, and support/security contact text that still says AVmatrix.
-- [ ] [P2-J] Update `.github/actions/setup-avmatrix` to an Anvien action directory/name and update all workflow references to it.
-- [ ] [P2-K] Update `.github/actions/setup-avmatrix-web` to an Anvien action directory/name and update all workflow references to it.
-- [ ] [P2-L] Update `.github/workflows/**` path filters, working directories, cache dependency paths, artifact paths, test commands, build commands, workflow comments, and workflow env markers from old names to Anvien names.
-- [ ] [P2-M] Update publish workflows for npm package name, package directory, tarball names, release asset names, and authentication scopes.
-- [ ] [P2-N] Update Docker/GHCR workflows from `avmatrix`/`avmatrix-web` image slugs to Anvien image slugs.
-- [ ] [P2-O] Update GitHub automation scripts under `.github/scripts/**` that reference the old package directory or old constants.
-- [ ] [P2-P] Update badges in README/docs to use the new repository slug and workflow names.
+- [x] [P2-J] Update `.github/actions/setup-avmatrix` to an Anvien action directory/name and update all workflow references to it.
+- [x] [P2-K] Update `.github/actions/setup-avmatrix-web` to an Anvien action directory/name and update all workflow references to it.
+- [x] [P2-L] Update `.github/workflows/**` path filters, working directories, cache dependency paths, artifact paths, test commands, build commands, workflow comments, and workflow env markers from old names to Anvien names.
+- [x] [P2-M] Update publish workflows for npm package name, package directory, tarball names, release asset names, and authentication scopes.
+- [x] [P2-N] Update Docker/GHCR workflows from `avmatrix`/`avmatrix-web` image slugs to Anvien image slugs.
+- [x] [P2-O] Update GitHub automation scripts under `.github/scripts/**` that reference the old package directory or old constants.
+- [x] [P2-P] Update badges in README/docs to use the new repository slug and workflow names.
 - [ ] [P2-Q] Update local `origin` remote to the new GitHub URL and record `git remote -v`.
 - [ ] [P2-R] Verify a fresh clone from the new GitHub URL works.
 - [ ] [P2-S] Verify old GitHub URL behavior only as GitHub redirect evidence. Do not rely on the redirect as a supported runtime or documentation path.
@@ -240,10 +240,10 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 
 - [x] [P2.5-A] Rename Go module path from the old `avmatrix-go` path to the approved Anvien path.
 - [x] [P2.5-B] Rename `cmd/avmatrix` to `cmd/anvien` and update all build scripts.
-- [ ] [P2.5-C] Rename package folder `avmatrix` to `anvien` if npm package layout is kept.
-- [ ] [P2.5-D] Rename `avmatrix-web` to `anvien-web` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
-- [ ] [P2.5-E] Rename `avmatrix-launcher` to `anvien-launcher` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
-- [ ] [P2.5-F] Update imports, workspace scripts, Docker files, compose files, deploy scripts, CI, release automation, package-lock, and docs links.
+- [x] [P2.5-C] Rename package folder `avmatrix` to `anvien` if npm package layout is kept.
+- [x] [P2.5-D] Rename `avmatrix-web` to `anvien-web` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
+- [x] [P2.5-E] Rename `avmatrix-launcher` to `anvien-launcher` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
+- [x] [P2.5-F] Update imports, workspace scripts, Docker files, compose files, deploy scripts, CI, release automation, package-lock, and docs links.
 
 ## Phase 3 - CLI Hard Rename
 
@@ -271,16 +271,16 @@ Interim Phase 2.5 module-path validation renamed the Go module and all active Go
 - [x] [P4-H] Update all MCP next-step hints, setup resources, prompt text, tests, and snapshots from `avmatrix://...` to `anvien://...`.
 - [x] [P4-I] Validate MCP stdio and HTTP bridge: `tools/list`, `resources/list`, `resources/read` for `anvien://repos` and `anvien://setup`, `prompts/list`, and representative tool calls.
 - [x] [P4-J] Update checked-in root `.mcp.json` from server key/command `avmatrix` to `anvien`.
-- [ ] [P4-K] Update `.grok/config.toml` from `[mcp_servers.avmatrix]`, `cmd/avmatrix`, `avmatrix-stable`, and old examples to Anvien-only names.
-- [ ] [P4-L] Update every checked-in `mcp.json` under plugin or skill directories so no generated or packaged MCP config uses the old server name.
+- [x] [P4-K] Update `.grok/config.toml` from `[mcp_servers.avmatrix]`, `cmd/avmatrix`, `avmatrix-stable`, and old examples to Anvien-only names.
+- [x] [P4-L] Update every checked-in `mcp.json` under plugin or skill directories so no generated or packaged MCP config uses the old server name.
 
-Interim Phase 4 MCP served-resource validation completed `canonicalResourceScheme`, served resource URIs, prompt text, next-step hints, `serverInfo.name`, tests, MCP baseline testdata, and root `.mcp.json`. P4-K stays open because `.grok/config.toml` is local-untracked in this workspace, not a checked-in commit target. P4-L stays open because plugin/package MCP configs remain under the later plugin/package slice.
+Interim Phase 4 MCP served-resource validation completed `canonicalResourceScheme`, served resource URIs, prompt text, next-step hints, `serverInfo.name`, tests, MCP baseline testdata, and root `.mcp.json`. The folder/plugin slice also updated local `.grok/config.toml` and all plugin/skill `mcp.json` files to Anvien-only server names.
 
 ## Phase 5 - Storage, Registry, Env Vars, And Local Data
 
 - [x] [P5-A] Rename repo/global storage constants from `.avmatrix` to `.anvien`.
 - [x] [P5-B] Rename `AVMATRIX_HOME` to `ANVIEN_HOME` with no fallback.
-- [ ] [P5-C] Rename all `AVMATRIX_*` variables to `ANVIEN_*` with no fallback.
+- [x] [P5-C] Rename all `AVMATRIX_*` variables to `ANVIEN_*` with no fallback.
 - [ ] [P5-D] Update settings examples, lock paths, graph paths, registry docs, group storage docs, and tests.
 - [ ] [P5-E] Decide whether existing local `.avmatrix` data is moved once by release instructions or discarded/rebuilt. Do not implement dual-read support.
 - [x] [P5-F] Validate analyze creates `<repo>/.anvien/graph.json` and global registry under `~/.anvien/registry.json`.
@@ -289,7 +289,7 @@ Interim Phase 4 MCP served-resource validation completed `canonicalResourceSchem
 
 Interim Phase 5 validation completed the core repo/global storage slice: `repo.Paths`, `repo.GlobalDir`, `ANVIEN_HOME`, hook stale-index checks, status/index/graph-health/query-health/source-site/resolution-inventory/httpapi graph guidance, and `.gitignore` now use `.anvien`. P5-C, P5-D, P5-G, and P5-H stay open because broader `AVMATRIX_*` launcher/package vars, group/runtime storage, and full command matrix validation remain in later slices.
 
-Phase 3/7 launcher package work additionally renamed package/launcher env vars already touched by the active build/runtime flow: `ANVIEN_GO`, `ANVIEN_LADYBUGDB_VERSION`, and `ANVIEN_LAUNCHER_NO_BROWSER`. P5-C remains open until every remaining `AVMATRIX_*` source, test, docs, plugin, workflow, and external-helper variable is audited.
+Phase 3/7 launcher package work additionally renamed package/launcher env vars already touched by the active build/runtime flow: `ANVIEN_GO`, `ANVIEN_LADYBUGDB_VERSION`, and `ANVIEN_LAUNCHER_NO_BROWSER`. The folder/plugin slice then verified `AVMATRIX_*` has `0` active matches across selected source, workflow, package, Web, launcher, plugin, MCP, and local Grok config surfaces.
 
 ## Phase 6 - Generated AI Context And Skills
 
@@ -300,37 +300,37 @@ Phase 3/7 launcher package work additionally renamed package/launcher env vars a
 - [x] [P6-E] Regenerate `AGENTS.md`, `CLAUDE.md`, and generated skills from source.
 - [x] [P6-F] Update generated-context tests to assert Anvien names and absence of active old names.
 - [x] [P6-G] Replace generated markers from `<!-- avmatrix:start -->` / `<!-- avmatrix:end -->` to Anvien markers, remove old generated blocks during the rename slice, and do not leave steady-state old-marker compatibility.
-- [ ] [P6-H] Verify a fresh `anvien analyze --force` regenerates `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` without recreating `.claude/skills/avmatrix/**` or `avmatrix-*` skill ids.
+- [x] [P6-H] Verify a fresh `anvien analyze --force` regenerates `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` without recreating `.claude/skills/avmatrix/**` or `avmatrix-*` skill ids.
 
-Interim Phase 6 validation was run with the current local binary path `.\avmatrix\bin\avmatrix.exe analyze --force` because the CLI/module/package rename slices are not complete yet. Final P6-H stays open until the command itself is `anvien`.
+Interim Phase 6 validation was first run with the temporary local binary path while folder/package renames were still pending. The folder/Web slice completed P6-H with `.\anvien\bin\anvien.exe analyze --force`; `.claude\skills\avmatrix` was not recreated, `.claude\skills\anvien` exists, and generated skill ids/markers have no old namespace.
 
 ## Phase 6.5 - Claude Plugin And Agent Integration Package
 
-- [ ] [P6.5-A] Decide whether `avmatrix-claude-plugin` remains a supported package. If it remains, hard rename the directory/package to Anvien; if it is obsolete, remove it with evidence.
-- [ ] [P6.5-B] Rename `avmatrix-claude-plugin/hooks/avmatrix-hook.js` and all hook function names, status messages, env vars, `.avmatrix` path checks, CLI/npx invocations, and stale-index messages to Anvien.
-- [ ] [P6.5-C] Update `avmatrix-claude-plugin/hooks/hooks.json` so hook commands and status messages use Anvien only.
-- [ ] [P6.5-D] Rename plugin skill ids/directories from `avmatrix-*` to `anvien-*` and update every `SKILL.md` and `mcp.json` inside the plugin.
-- [ ] [P6.5-E] Validate plugin installation or packaging behavior if this plugin is still shipped.
+- [x] [P6.5-A] Decide whether `avmatrix-claude-plugin` remains a supported package. If it remains, hard rename the directory/package to Anvien; if it is obsolete, remove it with evidence.
+- [x] [P6.5-B] Rename `avmatrix-claude-plugin/hooks/avmatrix-hook.js` and all hook function names, status messages, env vars, `.avmatrix` path checks, CLI/npx invocations, and stale-index messages to Anvien.
+- [x] [P6.5-C] Update `avmatrix-claude-plugin/hooks/hooks.json` so hook commands and status messages use Anvien only.
+- [x] [P6.5-D] Rename plugin skill ids/directories from `avmatrix-*` to `anvien-*` and update every `SKILL.md` and `mcp.json` inside the plugin.
+- [x] [P6.5-E] Validate plugin installation or packaging behavior if this plugin is still shipped.
 
 ## Phase 7 - Web UI And Launcher
 
-- [ ] [P7-A] Update Web UI package name, HTML title, onboarding, start screen, status messages, README rendering, diagnostics globals, and e2e assertions.
+- [x] [P7-A] Update Web UI package name, HTML title, onboarding, start screen, status messages, README rendering, diagnostics globals, and e2e assertions.
 - [x] [P7-B] Update launcher executable names, server wrapper paths, temp state names, heartbeat/closed paths, lifecycle data attributes, process cleanup filters, registry protocol key, and tests.
 - [x] [P7-C] Rename launcher protocol from `avmatrix://` to `anvien://`.
-- [ ] [P7-D] Rebuild packaged Web distribution from source so `web-dist` does not retain old names.
-- [ ] [P7-E] Add/update e2e test coverage for visible `Anvien` branding and launcher start behavior.
+- [x] [P7-D] Rebuild packaged Web distribution from source so `web-dist` does not retain old names.
+- [x] [P7-E] Add/update e2e test coverage for visible `Anvien` branding and launcher start behavior.
 
-Interim Phase 7 launcher validation completed binary/protocol/process/lifecycle rename for the packaged launcher path. P7-A, P7-D, and P7-E remain open because the visible Web UI package/source branding and rebuilt `web-dist` old-name content must be fixed from source before e2e branding checks can be final.
+Interim Phase 7 launcher validation completed binary/protocol/process/lifecycle rename for the packaged launcher path. The folder/Web slice then completed visible Web UI source branding, rebuilt `anvien-launcher\web-dist`, and ran onboarding e2e with Anvien assertions passing.
 
 ## Phase 8 - Documentation, Baselines, And Reports
 
-- [ ] [P8-A] Update README, ARCHITECTURE, RUNBOOK, TESTING, CONTRIBUTING, CHANGELOG current entries, Docker docs, install instructions, setup docs, and badges.
+- [x] [P8-A] Update README, ARCHITECTURE, RUNBOOK, TESTING, CONTRIBUTING, CHANGELOG current entries, Docker docs, install instructions, setup docs, and badges.
 - [ ] [P8-B] Regenerate or rewrite active baseline contract snapshots that still assert old names.
 - [ ] [P8-C] Delete stale generated reports or update them if they are active validation artifacts. For tracked historical reports, record whether old-name filenames are preserved only as historical evidence.
 - [ ] [P8-D] Keep old-name wording only in this rebrand plan/evidence/benchmark set and final release note history sentence.
 - [ ] [P8-E] Run a final old-name search and record every remaining occurrence with a reason.
-- [ ] [P8-F] Rename generated Web contract output paths from `contracts/web-ui/avmatrix-web-contract.schema.json` and `avmatrix-web/src/generated/avmatrix-contracts.ts` to Anvien paths, then update the generator and imports rather than hand-editing generated outputs.
-- [ ] [P8-G] Update root `package-lock.json`, per-package lockfiles, and any lockfile package names after package/folder renames.
+- [x] [P8-F] Rename generated Web contract output paths from `contracts/web-ui/avmatrix-web-contract.schema.json` and `avmatrix-web/src/generated/avmatrix-contracts.ts` to Anvien paths, then update the generator and imports rather than hand-editing generated outputs.
+- [x] [P8-G] Update root `package-lock.json`, per-package lockfiles, and any lockfile package names after package/folder renames.
 
 ## Phase 9 - Validation And Commits
 

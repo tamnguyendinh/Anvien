@@ -243,7 +243,7 @@ func buildPropertyAccessAudit(repoAbs string, graphPath string, graphFile GraphF
 
 	result.Notes = []string{
 		"ACCESSES and HAS_PROPERTY are counted from final graph relationships.",
-		"The gate includes every Property node in the graph, across every language AVmatrix-Go currently emits.",
+		"The gate includes every Property node in the graph, across every language Anvien-Go currently emits.",
 		"True orphan and false orphan classifications are conservative taxonomy outputs; they are not instructions to force-link all Property nodes.",
 		"Unknown no-edge cases must remain unlinked until source evidence proves a real relationship.",
 		"Invalid HAS_PROPERTY edges are structural problems: missing endpoint nodes or non-Property targets.",

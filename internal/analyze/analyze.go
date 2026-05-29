@@ -76,7 +76,7 @@ const (
 	PhaseEmbeddings  PhaseName = "embeddings"
 )
 
-const maxProcessesEnv = "AVMATRIX_MAX_PROCESSES"
+const maxProcessesEnv = "ANVIEN_MAX_PROCESSES"
 
 type EventKind string
 

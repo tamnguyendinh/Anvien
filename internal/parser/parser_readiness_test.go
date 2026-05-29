@@ -208,7 +208,7 @@ func TestPoolHandlesEmptyAndBinaryLikeSources(t *testing.T) {
 }
 
 func TestSampleCodeFixturesExistForParserReadiness(t *testing.T) {
-	fixtureDir := filepath.Join("..", "..", "avmatrix", "test", "fixtures", "sample-code")
+	fixtureDir := filepath.Join("..", "..", "anvien", "test", "fixtures", "sample-code")
 	for _, fixture := range []string{
 		"simple.js",
 		"simple.ts",

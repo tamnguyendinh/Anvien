@@ -83,7 +83,7 @@ func NewCodexAdapter(options CodexAdapterOptions) *CodexAdapter {
 	}
 	mode := options.ExecutionMode
 	if mode == "" {
-		if configured := os.Getenv("AVMATRIX_SESSION_EXECUTION_MODE"); configured == "bypass" {
+		if configured := os.Getenv("ANVIEN_SESSION_EXECUTION_MODE"); configured == "bypass" {
 			mode = ExecutionModeBypass
 		} else if platform == "windows" {
 			mode = ExecutionModeBypass
@@ -187,7 +187,7 @@ func (a *CodexAdapter) RunChat(ctx context.Context, job *Job, request ChatReques
 		)
 	}
 
-	outputFile := filepath.Join(a.tempDir, "avmatrix-codex-"+job.ID+".txt")
+	outputFile := filepath.Join(a.tempDir, "anvien-codex-"+job.ID+".txt")
 	runtimeRepoPath := chatContext.Repo.RepoPath
 	runtimeOutputPath := outputFile
 	if status.RuntimeEnvironment == RuntimeWSL2 {
@@ -456,7 +456,7 @@ func coerceToolCall(item map[string]any, status string) *ToolCall {
 }
 
 func nativeCodexExecutable(platform string) string {
-	if configured := os.Getenv("AVMATRIX_CODEX_EXECUTABLE"); configured != "" {
+	if configured := os.Getenv("ANVIEN_CODEX_EXECUTABLE"); configured != "" {
 		return configured
 	}
 	if platform == "windows" {

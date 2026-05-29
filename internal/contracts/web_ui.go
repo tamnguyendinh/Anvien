@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	WebUIContractSchemaPath     = "contracts/web-ui/avmatrix-web-contract.schema.json"
-	WebUIContractTypeScriptPath = "avmatrix-web/src/generated/avmatrix-contracts.ts"
+	WebUIContractSchemaPath     = "contracts/web-ui/anvien-web-contract.schema.json"
+	WebUIContractTypeScriptPath = "anvien-web/src/generated/anvien-contracts.ts"
 )
 
 type LanguageContract struct {
@@ -211,7 +211,7 @@ var languageGraphCoverage = []LanguageGraphCoverage{
 		[]string{"tsjs provider unit fixture", "provider call/import/owner/heritage parity", "Restaurant_manager committed heritage fixture"},
 		"representative endpoint/count-level provider parity plus Restaurant_manager heritage target fixture",
 		"default committed Restaurant_manager heritage fixture",
-		"external Restaurant_manager source trace when AVMATRIX_RESTAURANT_MANAGER_ROOT is set",
+		"external Restaurant_manager source trace when ANVIEN_RESTAURANT_MANAGER_ROOT is set",
 	),
 	languageCoverage(
 		scanner.Python,

@@ -24,8 +24,8 @@ jobs:
               - 'Dockerfile.cli'
               - 'docker-compose.yaml'
               - 'scripts/**'
-              - 'avmatrix-launcher/**'
-              - 'avmatrix-web/**'
+              - 'anvien-launcher/**'
+              - 'anvien-web/**'
 
   e2e:
     name: e2e (chromium)
@@ -45,15 +45,15 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: avmatrix-web/package-lock.json
+          cache-dependency-path: anvien-web/package-lock.json
 
       - name: Install Web UI dependencies
         run: npm ci
-        working-directory: avmatrix-web
+        working-directory: anvien-web
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
-        working-directory: avmatrix-web
+        working-directory: anvien-web
 
       - name: Prepare LadybugDB native runtime
         run: |
@@ -65,37 +65,37 @@ jobs:
           mkdir -p .tmp
           CGO_CFLAGS="-I$LADYBUG_NATIVE_DIR" \
             CGO_LDFLAGS="-L$LADYBUG_NATIVE_DIR -llbug" \
-            go build -tags ladybugdb -trimpath -o .tmp/avmatrix ./cmd/avmatrix
+            go build -tags ladybugdb -trimpath -o .tmp/anvien ./cmd/anvien
 
       - name: Analyze repository (index for backend)
         run: |
           export LD_LIBRARY_PATH="$LADYBUG_NATIVE_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          ./.tmp/avmatrix analyze --force || true
-          if [ ! -d ".avmatrix" ]; then
-            echo "::error::No .avmatrix index created"
+          ./.tmp/anvien analyze --force || true
+          if [ ! -d ".anvien" ]; then
+            echo "::error::No .anvien index created"
             exit 1
           fi
 
       - name: Start backend server
         run: |
           export LD_LIBRARY_PATH="$LADYBUG_NATIVE_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          ./.tmp/avmatrix serve --host 127.0.0.1 --port 4747 &
+          ./.tmp/anvien serve --host 127.0.0.1 --port 4747 &
 
       - name: Wait for backend readiness
         run: npx wait-on http://127.0.0.1:4747/api/info --timeout 30000
-        working-directory: avmatrix-web
+        working-directory: anvien-web
 
       - name: Start Vite dev server
         run: npm run dev &
-        working-directory: avmatrix-web
+        working-directory: anvien-web
 
       - name: Wait for Vite dev server
-        run: npx wait-on http://127.0.0.1:5173 --timeout 30000
-        working-directory: avmatrix-web
+        run: npx wait-on http://127.0.0.1:5228 --timeout 30000
+        working-directory: anvien-web
 
       - name: Run E2E tests
         run: npx playwright test --workers=1
-        working-directory: avmatrix-web
+        working-directory: anvien-web
         env:
           E2E: '1'
 
@@ -105,6 +105,6 @@ jobs:
         with:
           name: e2e-results
           path: |
-            avmatrix-web/test-results/
-            avmatrix-web/playwright-report/
+            anvien-web/test-results/
+            anvien-web/playwright-report/
           retention-days: 5

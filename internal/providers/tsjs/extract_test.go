@@ -203,9 +203,9 @@ func TestExtractRestaurantManagerTypeScriptHeritageFixture(t *testing.T) {
 }
 
 func TestExtractRestaurantManagerTypeScriptHeritageSites(t *testing.T) {
-	root := os.Getenv("AVMATRIX_RESTAURANT_MANAGER_ROOT")
+	root := os.Getenv("ANVIEN_RESTAURANT_MANAGER_ROOT")
 	if root == "" {
-		t.Skip("set AVMATRIX_RESTAURANT_MANAGER_ROOT to trace Restaurant_manager TS heritage sites")
+		t.Skip("set ANVIEN_RESTAURANT_MANAGER_ROOT to trace Restaurant_manager TS heritage sites")
 	}
 
 	total := assertRestaurantManagerHeritageCases(t, func(t *testing.T, test restaurantManagerHeritageCase) []byte {

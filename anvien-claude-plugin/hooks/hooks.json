@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Grep|Glob|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/anvien-hook.js",
+            "timeout": 10,
+            "statusMessage": "Enriching with Anvien graph context..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/anvien-hook.js",
+            "timeout": 10,
+            "statusMessage": "Checking Anvien index freshness..."
+          }
+        ]
+      }
+    ]
+  }
+}

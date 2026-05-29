@@ -107,7 +107,7 @@ func TestWalkRepositoryPathsIncludesMainframeFiles(t *testing.T) {
 func TestWalkRepositoryPathsAppliesGitignoreAvmatrixignoreAndEnv(t *testing.T) {
 	dir := t.TempDir()
 	writeScannerFile(t, dir, ".gitignore", "data/\n*.log\n")
-	writeScannerFile(t, dir, ".avmatrixignore", "vendor/\n")
+	writeScannerFile(t, dir, ".anvienignore", "vendor/\n")
 	writeScannerFile(t, dir, "src/index.ts", "source")
 	writeScannerFile(t, dir, "src/App.swift", "class App {}\n")
 	writeScannerFile(t, dir, "data/dump.json", "{}")
@@ -131,17 +131,17 @@ func TestWalkRepositoryPathsAppliesGitignoreAvmatrixignoreAndEnv(t *testing.T) {
 		}
 	}
 
-	t.Setenv("AVMATRIX_NO_GITIGNORE", "1")
+	t.Setenv("ANVIEN_NO_GITIGNORE", "1")
 	files, _, err = WalkRepositoryPaths(dir, Options{}, nil)
 	if err != nil {
 		t.Fatalf("WalkRepositoryPaths with env failed: %v", err)
 	}
 	paths = filePaths(files)
 	if !contains(paths, "data/dump.json") {
-		t.Fatalf("gitignored path not restored by AVMATRIX_NO_GITIGNORE: %#v", paths)
+		t.Fatalf("gitignored path not restored by ANVIEN_NO_GITIGNORE: %#v", paths)
 	}
 	if contains(paths, "vendor/lib.js") {
-		t.Fatalf("avmatrixignore path was restored unexpectedly: %#v", paths)
+		t.Fatalf("anvienignore path was restored unexpectedly: %#v", paths)
 	}
 }
 

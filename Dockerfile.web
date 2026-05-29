@@ -5,18 +5,18 @@ FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 
 WORKDIR /app
 
-COPY avmatrix-web/package.json avmatrix-web/package-lock.json ./avmatrix-web/
-RUN npm ci --prefix avmatrix-web
+COPY anvien-web/package.json anvien-web/package-lock.json ./anvien-web/
+RUN npm ci --prefix anvien-web
 
-COPY avmatrix/package.json ./avmatrix/
-COPY avmatrix-web ./avmatrix-web
-RUN npm run build --prefix avmatrix-web
+COPY anvien/package.json ./anvien/
+COPY anvien-web ./anvien-web
+RUN npm run build --prefix anvien-web
 
 FROM nginx:alpine AS runtime
 
 RUN apk add --no-cache curl
 
 COPY docker/web-nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/avmatrix-web/dist /usr/share/nginx/html
+COPY --from=builder /app/anvien-web/dist /usr/share/nginx/html
 
 EXPOSE 4173

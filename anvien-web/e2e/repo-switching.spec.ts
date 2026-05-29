@@ -1,0 +1,238 @@
+import { test, expect } from '@playwright/test';
+
+/**
+ * E2E tests for the repo-switching and false-404 fixes.
+ *
+ * Most tests use the live backend (same pattern as multi-repo-scoping.spec.ts).
+ * The 503 hold-queue test uses route interception to simulate a backend hold response.
+ */
+
+const BACKEND_URL = process.env.BACKEND_URL ?? 'http://127.0.0.1:4848';
+const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://127.0.0.1:5228';
+
+let firstRepoName: string;
+let repoNames: string[] = [];
+
+test.beforeAll(async () => {
+  if (process.env.E2E) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/repos`);
+      const repos = await res.json();
+      repoNames = repos.map((repo: { name: string }) => repo.name);
+      firstRepoName = repos[0]?.name ?? '';
+    } catch {
+      firstRepoName = '';
+    }
+    return;
+  }
+  try {
+    const [backendRes, frontendRes] = await Promise.allSettled([
+      fetch(`${BACKEND_URL}/api/repos`),
+      fetch(FRONTEND_URL),
+    ]);
+    if (
+      backendRes.status === 'rejected' ||
+      (backendRes.status === 'fulfilled' && !backendRes.value.ok)
+    ) {
+      test.skip(true, 'anvien serve not available');
+      return;
+    }
+    if (
+      frontendRes.status === 'rejected' ||
+      (frontendRes.status === 'fulfilled' && !frontendRes.value.ok)
+    ) {
+      test.skip(true, 'Vite dev server not available');
+      return;
+    }
+    if (backendRes.status === 'fulfilled') {
+      const repos = await backendRes.value.json();
+      if (!repos.length) {
+        test.skip(true, 'No indexed repos');
+        return;
+      }
+      repoNames = repos.map((repo: { name: string }) => repo.name);
+      firstRepoName = repos[0].name;
+    }
+  } catch {
+    test.skip(true, 'servers not available');
+  }
+});
+
+// ── 5. Repeated dropdown switching ───────────────────────────────────────────
+
+test.describe('Repeated dropdown repo switching', () => {
+  test('loads the target graph after repeated switches across repos', async ({ page }) => {
+    test.slow();
+    if (repoNames.length < 2) test.skip(true, 'requires at least two indexed repos');
+
+    const [first, second] = repoNames;
+    let current = first;
+
+    await page.goto(
+      `${FRONTEND_URL}/?server=${encodeURIComponent(BACKEND_URL)}&project=${encodeURIComponent(current)}`,
+    );
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+      timeout: READY_TIMEOUT_MS,
+    });
+
+    const sequence = [second, first, second, first, second, first];
+    for (const target of sequence) {
+      await page.locator('header button').filter({ hasText: current }).first().click();
+      await page.locator('button').filter({ hasText: target }).first().click();
+
+      await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+        timeout: READY_TIMEOUT_MS,
+      });
+      await expect(page.locator('[data-testid="graph-stats"]')).toContainText(/nodes/i, {
+        timeout: 10_000,
+      });
+
+      const url = new URL(page.url());
+      expect(url.searchParams.get('project')).toBe(target);
+      current = target;
+    }
+  });
+});
+
+// ── 1. Hold-queue: 503 → descriptive user message ────────────────────────────
+
+test.describe('Hold-queue 503 error', () => {
+  test('shows descriptive message when /api/repo returns 503', async ({ page }, testInfo) => {
+    // Intercept only /api/repo (singular) — not /api/repos — to return a 503
+    // regex: /api/repo followed by end, ?, or # — NOT /api/repos
+    await page.route(/\/api\/repo(?!s)(\?.*)?$/, (route) =>
+      route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          error: `Repository analysis for "${firstRepoName}" is taking longer than expected. Please try again in a moment.`,
+        }),
+      }),
+    );
+
+    await page.goto(graphUrl());
+
+    // UI should show the 503 error message
+    await expect(page.getByText(/taking longer than expected/i)).toBeVisible({
+      timeout: 20_000,
+    });
+
+    await page.screenshot({ path: testInfo.outputPath('hold-queue-503.png') });
+  });
+});
+
+// ── 2. ?project= URL persistence ─────────────────────────────────────────────
+
+// Auto-connect downloads the full graph from the backend; under parallel
+// workers in CI the same backend serves multiple downloads concurrently, so
+// reaching the "Ready" state can take noticeably longer than a single-worker
+// run. Match the 45s budget used by waitForGraphLoaded() in
+// server-connect.spec.ts which has been stable on the same backend.
+const READY_TIMEOUT_MS = 45_000;
+
+function graphUrl(repoName = firstRepoName) {
+  return `${FRONTEND_URL}/?server=${encodeURIComponent(BACKEND_URL)}&project=${encodeURIComponent(repoName)}`;
+}
+
+test.describe('?project= URL persistence', () => {
+  test('?project= remains in URL after explicit repo-scoped connect', async ({ page }) => {
+    await page.goto(graphUrl());
+
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+      timeout: READY_TIMEOUT_MS,
+    });
+
+    const url = new URL(page.url());
+    const project = url.searchParams.get('project');
+    expect(project).toBeTruthy();
+    // first repo returned by the live backend
+    if (firstRepoName) expect(project).toBe(firstRepoName);
+  });
+
+  test('?project= is still present after F5 reload', async ({ page }) => {
+    // Two sequential auto-connects (initial + reload), each up to READY_TIMEOUT_MS,
+    // can exceed the default 60s test timeout under parallel workers.
+    test.slow();
+
+    await page.goto(graphUrl());
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+      timeout: READY_TIMEOUT_MS,
+    });
+
+    // After connect, URL has ?server=&project= — F5 re-uses both params
+    await page.reload();
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+      timeout: READY_TIMEOUT_MS,
+    });
+
+    const url = new URL(page.url());
+    expect(url.searchParams.get('project')).toBeTruthy();
+  });
+});
+
+// ── 3. ?project= + ?server= combined auto-connect ────────────────────────────
+
+test.describe('?project= auto-connect', () => {
+  test('navigating with ?server=&project= connects to the correct repo', async ({
+    page,
+  }, testInfo) => {
+    if (!firstRepoName) test.skip(true, 'no repo name available');
+
+    await page.goto(graphUrl(firstRepoName));
+
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+      timeout: READY_TIMEOUT_MS,
+    });
+
+    // ?project= in URL should match what we passed in
+    const url = new URL(page.url());
+    expect(url.searchParams.get('project')).toBe(firstRepoName);
+
+    await page.screenshot({ path: testInfo.outputPath('project-param-connect.png') });
+  });
+});
+
+// ── 4. Windows path normalization ─────────────────────────────────────────────
+
+test.describe('Windows path normalization', () => {
+  test('project name uses basename when /api/repo returns a Windows-style repoPath', async ({
+    page,
+  }) => {
+    const repoName = firstRepoName || 'test-repo';
+    const windowsPath = `C:\\Users\\LENOVO\\.anvien\\repos\\${repoName}`;
+
+    // Mock /api/repo to return a Windows backslash path while keeping name correct
+    await page.route(/\/api\/repo(?!s)(\?.*)?$/, (route) =>
+      route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          // intentionally omit `name` to force path-based extraction
+          path: windowsPath,
+          repoPath: windowsPath,
+        }),
+      }),
+    );
+    await page.route(/\/api\/graph(\?.*)?$/, (route) => {
+      const url = new URL(route.request().url());
+      expect(url.searchParams.get('repo')).toBe(windowsPath);
+      return route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ nodes: [], relationships: [] }),
+      });
+    });
+
+    await page.goto(graphUrl());
+
+    await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
+      timeout: READY_TIMEOUT_MS,
+    });
+
+    // URL ?project= must be the short basename, NOT the full Windows path
+    const url = new URL(page.url());
+    const project = url.searchParams.get('project');
+    expect(project).toBeTruthy();
+    expect(project).not.toContain('\\');
+    expect(project).not.toContain('LENOVO');
+    expect(project).toBe(repoName);
+  });
+});

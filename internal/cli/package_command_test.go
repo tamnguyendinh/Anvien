@@ -156,7 +156,7 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 }
 
 func TestPackageJSONUsesCanonicalGoBinaryAndPackageCleanupCommand(t *testing.T) {
-	raw, err := os.ReadFile(filepath.Join("..", "..", "avmatrix", "package.json"))
+	raw, err := os.ReadFile(filepath.Join("..", "..", "anvien", "package.json"))
 	if err != nil {
 		t.Fatalf("read package.json: %v", err)
 	}

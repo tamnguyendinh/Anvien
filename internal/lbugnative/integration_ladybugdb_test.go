@@ -14,7 +14,7 @@ import (
 )
 
 func TestNativeLadybugPersistenceReadbackAndStream(t *testing.T) {
-	dbPath := filepath.Join(t.TempDir(), "avmatrix-test.lbug")
+	dbPath := filepath.Join(t.TempDir(), "anvien-test.lbug")
 
 	db, err := openNativeDatabase(dbPath, false)
 	if err != nil {

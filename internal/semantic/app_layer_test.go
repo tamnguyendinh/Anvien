@@ -19,16 +19,16 @@ func TestClassifyAppLayerUsesPrimaryNonOverlappingCategories(t *testing.T) {
 		{name: "mcp api", path: "internal/mcp/tools.go", want: AppLayerAPI},
 		{name: "app route api", path: "app/api/users/route.ts", want: AppLayerAPI},
 		{name: "pages route api", path: "pages/api/users.ts", want: AppLayerAPI},
-		{name: "frontend", path: "avmatrix-web/src/components/GraphCanvas.tsx", want: AppLayerFrontend},
-		{name: "frontend test", path: "avmatrix-web/e2e/graph.spec.ts", want: AppLayerFrontendTest},
+		{name: "frontend", path: "anvien-web/src/components/GraphCanvas.tsx", want: AppLayerFrontend},
+		{name: "frontend test", path: "anvien-web/e2e/graph.spec.ts", want: AppLayerFrontendTest},
 		{name: "api test", path: "internal/httpapi/graph_test.go", want: AppLayerAPITest},
 		{name: "backend test", path: "internal/analyze/analyze_test.go", want: AppLayerBackendTest},
 		{name: "api contract", path: "internal/contracts/web_ui.go", want: AppLayerAPIContract},
-		{name: "generated contract", path: "avmatrix-web/src/generated/avmatrix-contracts.ts", want: AppLayerGeneratedContract},
-		{name: "frontend api client", path: "avmatrix-web/src/services/backend-client.ts", want: AppLayerFrontendAPIClient},
-		{name: "cli launcher", path: "cmd/avmatrix/main.go", want: AppLayerCLILauncher},
+		{name: "generated contract", path: "anvien-web/src/generated/anvien-contracts.ts", want: AppLayerGeneratedContract},
+		{name: "frontend api client", path: "anvien-web/src/services/backend-client.ts", want: AppLayerFrontendAPIClient},
+		{name: "cli launcher", path: "cmd/anvien/main.go", want: AppLayerCLILauncher},
 		{name: "docs", path: "docs/plans/example.md", want: AppLayerDocs},
-		{name: "config", path: "avmatrix-web/package.json", want: AppLayerConfig},
+		{name: "config", path: "anvien-web/package.json", want: AppLayerConfig},
 		{name: "unknown", path: "", want: AppLayerUnknown},
 	}
 
@@ -54,14 +54,14 @@ func TestClassifyFunctionalAreaUsesHighConfidencePathRules(t *testing.T) {
 		{name: "mcp", path: "internal/mcp/tools.go", want: FunctionalAreaMCP},
 		{name: "api", path: "internal/httpapi/graph.go", want: FunctionalAreaAPI},
 		{name: "contracts", path: "internal/contracts/web_ui.go", want: FunctionalAreaContracts},
-		{name: "layout", path: "avmatrix-web/src/lib/graph-adapter.ts", want: FunctionalAreaLayout},
-		{name: "web graph ui", path: "avmatrix-web/src/components/GraphCanvas.tsx", want: FunctionalAreaWebGraphUI},
+		{name: "layout", path: "anvien-web/src/lib/graph-adapter.ts", want: FunctionalAreaLayout},
+		{name: "web graph ui", path: "anvien-web/src/components/GraphCanvas.tsx", want: FunctionalAreaWebGraphUI},
 		{name: "providers", path: "internal/providers/tsjs/extract.go", want: FunctionalAreaProviders},
 		{name: "storage", path: "internal/lbugload/csv.go", want: FunctionalAreaStorage},
 		{name: "embeddings", path: "internal/embeddings/pipeline.go", want: FunctionalAreaEmbeddings},
 		{name: "session", path: "internal/session/controller.go", want: FunctionalAreaSession},
-		{name: "cli", path: "cmd/avmatrix/main.go", want: FunctionalAreaCLI},
-		{name: "launcher", path: "avmatrix-launcher/src/main.go", want: FunctionalAreaLauncher},
+		{name: "cli", path: "cmd/anvien/main.go", want: FunctionalAreaCLI},
+		{name: "launcher", path: "anvien-launcher/src/main.go", want: FunctionalAreaLauncher},
 		{name: "reporting", path: "reports/problem/example.md", want: FunctionalAreaReporting},
 		{name: "docs", path: "docs/plans/example.md", want: FunctionalAreaDocumentation},
 		{name: "config", path: "go.mod", want: FunctionalAreaConfiguration},
@@ -116,7 +116,7 @@ func TestApplyPersistsAppLayerAndInfersProcessLayer(t *testing.T) {
 func TestApplyUsesMixedForRelationshipBackedMultiLayerNodes(t *testing.T) {
 	g := graph.New()
 	g.AddNode(graph.Node{ID: "Function:backend", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "backend", "filePath": "internal/analyze/analyze.go"}})
-	g.AddNode(graph.Node{ID: "Function:frontend", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "frontend", "filePath": "avmatrix-web/src/lib/graph-adapter.ts"}})
+	g.AddNode(graph.Node{ID: "Function:frontend", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "frontend", "filePath": "anvien-web/src/lib/graph-adapter.ts"}})
 	g.AddNode(graph.Node{ID: "Community:mixed", Label: scopeir.NodeCommunity, Properties: graph.NodeProperties{"name": "mixed"}})
 	g.AddRelationship(graph.Relationship{ID: "member-a", SourceID: "Function:backend", TargetID: "Community:mixed", Type: graph.RelMemberOf})
 	g.AddRelationship(graph.Relationship{ID: "member-b", SourceID: "Function:frontend", TargetID: "Community:mixed", Type: graph.RelMemberOf})

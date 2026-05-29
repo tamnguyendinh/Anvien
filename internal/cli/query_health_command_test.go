@@ -14,7 +14,7 @@ func TestQueryHealthSuiteParsingAndScoring(t *testing.T) {
 	dir := t.TempDir()
 	suitePath := filepath.Join(dir, "suite.json")
 	raw := `{
-  "schemaVersion": "avmatrix.query_health.v1",
+  "schemaVersion": "anvien.query_health.v1",
   "suite": "fixture-suite",
   "description": "fixture",
   "cases": [
@@ -173,9 +173,9 @@ func TestQueryHealthScoringReportsMissingAndNoisyResults(t *testing.T) {
 	actual := []queryHealthActualResult{{
 		Rank:     1,
 		Source:   "process_symbol",
-		ID:       "Function:avmatrix-launcher/src/main.go:hiddenProcAttr#1",
+		ID:       "Function:anvien-launcher/src/main.go:hiddenProcAttr#1",
 		Name:     "hiddenProcAttr",
-		FilePath: "avmatrix-launcher/src/main.go",
+		FilePath: "anvien-launcher/src/main.go",
 	}}
 	result := scoreQueryHealthCase(testCase, actual, 10)
 	if result.Passed || result.HitAt5 != 0 || result.HitAt10 != 0 {
@@ -185,7 +185,7 @@ func TestQueryHealthScoringReportsMissingAndNoisyResults(t *testing.T) {
 		t.Fatalf("misses = %#v", result.MissedTargets)
 	}
 	if !strings.Contains(result.NoiseReason, "internal/resolution/resolve.go") ||
-		!strings.Contains(result.NoiseReason, "avmatrix-launcher/src/main.go") {
+		!strings.Contains(result.NoiseReason, "anvien-launcher/src/main.go") {
 		t.Fatalf("noise reason missing details: %s", result.NoiseReason)
 	}
 }
@@ -285,7 +285,7 @@ func TestQueryHealthCommandOutputsJSONTableAndFailsThreshold(t *testing.T) {
 func writeQueryHealthTestSuite(t *testing.T, path string, expectedFile string, expectedSymbol string, hitAt5 int, hitAt10 int) {
 	t.Helper()
 	suite := queryHealthSuite{
-		SchemaVersion: "avmatrix.query_health.v1",
+		SchemaVersion: "anvien.query_health.v1",
 		Suite:         "fixture-suite",
 		Cases: []queryHealthCase{{
 			ID:               "main-flow",

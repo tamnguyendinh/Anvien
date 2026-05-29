@@ -888,7 +888,91 @@ Pre-commit change detection:
 - Resolution health impact: `0` degraded nodes and `0` nodes with gaps.
 - Resolution gap delta was limited to changed test literals after module import rewrites: `8` changed gap entities, all in backend tests; total resolution gap count remained `0`.
 
-## E12 - Future Implementation Evidence
+## E12 - Phase 2.5/4/6.5/7/8 Folder, Web, Plugin, And Automation Slice
+
+Date: 2026-05-29
+
+Status: recorded
+
+Scope:
+
+- Renamed active package and app folders from `avmatrix`, `avmatrix-web`, and `avmatrix-launcher` to `anvien`, `anvien-web`, and `anvien-launcher`.
+- Renamed checked-in GitHub composite action directories from `.github/actions/setup-avmatrix*` to `.github/actions/setup-anvien*` and updated workflow references, path filters, working directories, artifact paths, cache paths, publish paths, Docker paths, and release automation references.
+- Renamed Web contract outputs from `contracts/web-ui/avmatrix-web-contract.schema.json` and `avmatrix-web/src/generated/avmatrix-contracts.ts` to Anvien paths, then regenerated the generated TypeScript contract through `go run .\cmd\generate-web-contracts`.
+- Renamed the Claude plugin package folder to `anvien-claude-plugin`, hook file to `anvien-hook.js`, skill ids/directories to `anvien-*`, and all plugin MCP server configs to Anvien-only names.
+- Updated local `.grok/config.toml` from `mcp_servers.avmatrix`, `cmd/avmatrix`, and `avmatrix-stable` examples to Anvien-only local MCP config. This file is local-untracked in this workspace but was still updated because it affects local agent behavior.
+- Updated active root docs, Docker files, scripts, package lockfiles, package metadata, Web source, launcher source, active Go source/tests, contracts, and config surfaces so the selected active old-name search returns `0`.
+
+Graph and impact evidence:
+
+- Fresh graph before final change detection: `.\anvien\bin\anvien.exe analyze --force`; scanned `816`, parsed `584`, unsupported `232`, failed `0`; graph `91521` nodes, `124982` relationships at `.anvien\graph.json`.
+- The slice used the current indexed repo name `AVmatrix` because the GitHub/repo registry rename is still pending.
+- AVmatrix query: `anvien query "package folder avmatrix avmatrix-web avmatrix-launcher path references build scripts" --repo AVmatrix --limit 12` found package folder, Web app folder, launcher folder, build scripts, and path constants as affected surfaces.
+- `impact buildGoRuntimePackage --repo AVmatrix --direction upstream`: CRITICAL; affected package lifecycle through `newPackageCommand`, `NewRootCommand`, CLI main, and `11` affected processes.
+- `impact buildStopWebDevServerScript --repo AVmatrix --direction upstream`: CRITICAL; affected launcher stop/runtime flows and `12` affected processes.
+- `impact WebUIContractJSON --repo AVmatrix --direction upstream`: CRITICAL; affected contract generator main and `5` generated-contract processes.
+- `impact ClassifyAppLayer --repo AVmatrix --direction upstream`: CRITICAL; affected analyze/semantic/app-layer flows and `35` affected processes.
+- `impact ClassifyFunctionalArea --repo AVmatrix --direction upstream`: CRITICAL; affected semantic functional-area flows and `35` affected processes.
+- `impact resolvePaths --repo AVmatrix --direction upstream`: HIGH; affected launcher startup path resolution and `4` affected processes.
+- Direct impact targets `GenerateWebUIContract`, `AppLayerForPath`, `FunctionalAreaForPath`, and `resolveExecutable` were not resolvable by the graph; the concrete symbols above were used instead.
+
+Implementation notes:
+
+- `anvien-launcher\build.ps1` now builds `anvien\bin\anvien.exe`, `anvien-launcher\AnvienLauncher.exe`, `anvien-launcher\server-bundle\anvien-server.exe`, and `anvien-launcher\web-dist`.
+- Removed the prior stale-artifact cleanup loop from `anvien-launcher\build.ps1` after the bulk rename changed those cleanup variables into current Anvien artifact paths. Keeping it would have risked deleting current build output.
+- `.gitignore` now uses Anvien paths and no longer ignores `anvien-claude-plugin/`, so the renamed plugin can be tracked.
+- `.github/` remains globally ignored in this repo, so the new action directories must be force-added before the commit.
+- The plugin has no `package.json` or `.codex-plugin/plugin.json` in this checkout; validation for P6.5-E is therefore syntax/config validation of the shipped hook, hooks config, root MCP config, and skill MCP configs.
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | pass; existing Vite dynamic-import and chunk-size warnings only. |
+| `go run .\cmd\generate-web-contracts --check` | pass. |
+| `go test .\cmd\... .\internal\... -count=1` | pass after folder/plugin rename. |
+| `go test .\internal\cli -count=1` | pass after plugin folder rename. |
+| `go test . -count=1` in `anvien-launcher\src` | pass; `anvien-launcher` package. |
+| `go test . -count=1` in `anvien-launcher\server-wrapper` | pass; `anvien-server-wrapper` package. |
+| `npm run build` in `anvien` | pass; writes `anvien\bin\anvien.exe`. |
+| `.\bin\anvien.exe package ensure-runtime` in `anvien` | pass; packaged runtime resolves for `windows/amd64`. |
+| `npm run test` in `anvien-web` | pass; `50` test files and `401` tests. |
+| `node --check anvien-claude-plugin\hooks\anvien-hook.js` | pass. |
+| JSON parse for `anvien-claude-plugin\.mcp.json`, `hooks\hooks.json`, and all skill `mcp.json` files | pass. |
+| active selected old-name search over `.github`, Docker, scripts, source, package, Web, launcher, plugin, contracts, MCP, local Grok config, and active root docs | pass; `0` matches and `0` files. |
+| old/new path existence check | old paths `0`; new package, Web, launcher, plugin, action, and contract paths present. |
+| `rg` over `anvien-launcher\web-dist` and `anvien-web\dist` excluding maps | pass; `0` old-name matches. |
+
+E2E status:
+
+- Web UI behavior changed, so onboarding e2e was rerun against a local Vite server on `127.0.0.1:5228`.
+- Final command: `npx playwright test e2e/onboarding.spec.ts --workers=1` in `anvien-web`.
+- Result: exit `0`; `13` total tests, `10` passed, `3` skipped. The skipped tests are the existing packaged-launcher/Flow 4 gated cases.
+- Process cleanup was verified with no leftover `node.exe`, `cmd.exe`, or `esbuild.exe` processes for `E:\AVmatrix-GO\anvien-web`.
+
+Inventory and size evidence:
+
+- Active selected old-name pattern counts after the slice: `AVmatrix 0`, `avmatrix 0`, `AVMATRIX 0`, `.avmatrix 0`, `avmatrix:// 0`, `avmatrix- 0`.
+- Area counts after the slice: `.github 0`, `.grok 0`, `anvien-claude-plugin 0`, `contracts 0`, `anvien-web/src/generated 0`, `anvien-launcher/web-dist 0`, `anvien-web/dist 0`.
+- Old path existence: `avmatrix`, `avmatrix-web`, `avmatrix-launcher`, `avmatrix-claude-plugin`, `.github/actions/setup-avmatrix`, `.github/actions/setup-avmatrix-web`, and `contracts/web-ui/avmatrix-web-contract.schema.json` all `False`.
+- New path existence: `anvien`, `anvien-web`, `anvien-launcher`, `anvien-claude-plugin`, `.github/actions/setup-anvien`, `.github/actions/setup-anvien-web`, and `contracts/web-ui/anvien-web-contract.schema.json` all `True`.
+- Artifact sizes: `anvien\bin\anvien.exe` `50478080` bytes; `anvien\bin\anvien-runtime.json` `136` bytes; `anvien-launcher\AnvienLauncher.exe` `6993408` bytes; `anvien-launcher\server-bundle\anvien-server.exe` `2053632` bytes.
+
+Pre-commit change detection:
+
+- Command: `.\anvien\bin\anvien.exe detect-changes --repo AVmatrix --scope all`.
+- Result: pass; summary risk `critical`.
+- Changed scope: `1744` files, `306` changed symbols.
+- Changed app layers: `api` `10`, `api_contract` `3`, `api_test` `26`, `backend` `46`, `backend_test` `80`, `cli_launcher` `15`, `docs` `126`.
+- Changed functional areas: `analyzer` `23`, `api` `5`, `cli` `41`, `contracts` `6`, `documentation` `126`, `embeddings` `11`, `graph_health` `2`, `mcp` `28`, `providers` `6`, `query` `9`, `resolution` `6`, `session` `9`, `storage` `4`, `unknown` `30`.
+- Affected scope: `35` affected symbols/process nodes.
+- Affected app layers: `api` `3`, `backend` `10`, `cli_launcher` `2`, `mixed` `20`.
+- Affected functional areas: `cli` `2`, `graph_health` `5`, `mcp` `3`, `mixed` `20`, `resolution` `1`, `session` `4`.
+- Resolution health impact: `0` degraded nodes, `0` nodes with gaps, total resolution gap count `0`.
+- Resolution gap change inventory reported `91` changed gap entities from touched files, with total resolution gap count still `0`; classifications were standard library/test framework/builtin/in-repo analyzer gaps and not a runtime compatibility fallback.
+- The CRITICAL summary is expected for this slice because it intentionally touches package folders, Web/launcher paths, contract generation, semantic path classifiers, GitHub automation, plugin configs, and generated output paths.
+
+## E13 - Future Implementation Evidence
 
 Date: pending
 
@@ -899,6 +983,6 @@ Record during implementation:
 - impact outputs for every edited symbol;
 - changed files by slice;
 - build/test/e2e output;
-- package/folder/module rename smoke output;
-- Web UI branding e2e output;
+- GitHub repository/settings/remote rename evidence;
+- local workspace folder rename evidence;
 - final old-name inventory and every remaining exception.

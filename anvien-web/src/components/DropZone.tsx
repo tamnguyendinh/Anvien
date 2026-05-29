@@ -1,0 +1,333 @@
+import { useState, useRef, useEffect } from 'react';
+import { Loader2, Check } from '@/lib/lucide-icons';
+import {
+  startAnalyze,
+  connectToServer,
+  deleteRepo,
+  fetchRepos,
+  streamAnalyzeProgress,
+  type AnalyzeCompleteData,
+  type ConnectResult,
+  type BackendRepo,
+} from '../services/backend-client';
+import { useBackend } from '../hooks/useBackend';
+import { AnalyzeOnboarding } from './AnalyzeOnboarding';
+import { RepoLanding } from './RepoLanding';
+import { EncouragementLine } from './EncouragementLine';
+
+interface DropZoneProps {
+  onServerConnect?: (result: ConnectResult, serverUrl?: string) => void | Promise<void>;
+}
+
+// ── Crossfade wrapper ───────────────────────────────────────────────────────
+// Captures the outgoing children during fade-out, then swaps to the new children on fade-in.
+
+function Crossfade({ activeKey, children }: { activeKey: string; children: React.ReactNode }) {
+  void activeKey;
+
+  return (
+    <div
+      className="transition-[opacity,transform] duration-300 ease-out"
+      style={{
+        opacity: 1,
+        transform: 'scale(1) translateY(0)',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ── Phase cards ─────────────────────────────────────────────────────────────
+
+function SuccessCard() {
+  return (
+    <div
+      className="press-panel-strong press-ruled relative overflow-hidden p-8"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="relative">
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-xl border-[3px] border-border-strong bg-inset">
+          <Check className="h-8 w-8 text-success" />
+        </div>
+
+        <p className="press-eyebrow mb-2 text-center">Local runtime detected</p>
+        <h2 className="press-title mb-2 text-center text-2xl">Server Connected</h2>
+        <p className="mx-auto text-center font-reading leading-relaxed text-base text-text-secondary">
+          Preparing your code knowledge graph...
+        </p>
+
+        <div className="mt-6 flex items-center justify-center gap-2">
+          <div className="flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="h-1.5 w-1.5 animate-pulse rounded-full bg-border-strong"
+                style={{ animationDelay: `${i * 200}ms` }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LoadingCard({ message, detail }: { message: string; detail?: string }) {
+  return (
+    <div className="space-y-4">
+      <div className="press-panel relative overflow-hidden p-8" role="status" aria-live="polite">
+        <div className="relative">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-xl border-[3px] border-border-default bg-inset">
+            <Loader2 className="h-8 w-8 animate-spin text-border-strong" />
+          </div>
+
+          <p className="press-eyebrow mb-2 text-center">Connecting</p>
+          <h2 className="press-title mb-2 text-center text-2xl">{message || 'Connecting...'}</h2>
+          <p className="mx-auto text-center font-reading leading-relaxed text-base text-text-secondary">
+            {detail || 'This may take a moment for large repositories'}
+          </p>
+        </div>
+      </div>
+      <EncouragementLine />
+    </div>
+  );
+}
+
+// ── DropZone ─────────────────────────────────────────────────────────────────
+
+export const DropZone = ({ onServerConnect }: DropZoneProps) => {
+  const [error, setError] = useState<string | null>(null);
+
+  // Backend polling for server detection
+  const {
+    isConnected,
+    isProbing,
+    startPolling,
+    stopPolling,
+    isPolling,
+    backendUrl: detectedBackendUrl,
+  } = useBackend();
+  const [initialProbeComplete, setInitialProbeComplete] = useState(false);
+  const autoConnectRan = useRef(false);
+
+  // Connection state
+  // 'connecting' = waiting for the packaged runtime/backend probe result
+  // 'analyze'    = server up but zero repos indexed - show local-path analyze input
+  // 'landing'    = server up with indexed repos - show repo picker + analyze
+  const [phase, setPhase] = useState<
+    'connecting' | 'analyze' | 'landing' | 'success' | 'loading'
+  >('connecting');
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const analyzeSseRef = useRef<AbortController | null>(null);
+  const [detectedRepos, setDetectedRepos] = useState<BackendRepo[]>([]);
+
+  // Auto-connect to the detected server — fetch repo list and show the
+  // appropriate screen (landing with repo cards, or analyze for zero repos).
+  const handleAutoConnect = async () => {
+    setPhase('loading');
+    setLoadingMessage('Connecting...');
+    setError(null);
+
+    try {
+      const repos = await fetchRepos();
+      if (repos.length === 0) {
+        setPhase('analyze');
+        autoConnectRan.current = false;
+        return;
+      }
+
+      // Show landing screen so the user can choose which repo to explore
+      setDetectedRepos(repos);
+      setPhase('landing');
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return;
+      const message = err instanceof Error ? err.message : 'Failed to connect';
+      setError(message);
+      setPhase('connecting');
+    }
+  };
+
+  const handleAutoConnectRef = useRef(handleAutoConnect);
+  handleAutoConnectRef.current = handleAutoConnect;
+
+  // Load the graph after an analyze job has completed.
+  const loadRepoGraph = (repo: string | AnalyzeCompleteData) => {
+    const repoName = typeof repo === 'string' ? repo : (repo.repoPath ?? repo.repoName);
+    if (!repoName) {
+      setError('Repository path not found after analyze');
+      setPhase(detectedRepos.length > 0 ? 'landing' : 'analyze');
+      return;
+    }
+
+    autoConnectRan.current = true;
+    setPhase('loading');
+    setLoadingMessage('Loading graph...');
+    setError(null);
+
+    (async () => {
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+      try {
+        const result = await connectToServer(
+          detectedBackendUrl,
+          (p, downloaded, total) => {
+            if (p === 'validating') {
+              setLoadingMessage('Validating server...');
+            } else if (p === 'downloading') {
+              const pct = total ? Math.round((downloaded / total) * 100) : null;
+              const mb = (downloaded / (1024 * 1024)).toFixed(1);
+              setLoadingMessage(pct ? `Loading graph... ${pct}%` : `Loading graph... ${mb} MB`);
+            } else if (p === 'extracting') {
+              setLoadingMessage('Processing graph...');
+            }
+          },
+          abortController.signal,
+          repoName,
+          { awaitAnalysis: true },
+        );
+        if (onServerConnect) {
+          await onServerConnect(result, detectedBackendUrl);
+        }
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
+        const message = err instanceof Error ? err.message : 'Failed to load graph';
+        setError(`${message} (${repoName})`);
+        setPhase(detectedRepos.length > 0 ? 'landing' : 'analyze');
+      } finally {
+        abortControllerRef.current = null;
+      }
+    })();
+  };
+
+  // Repo-card selection is analyze-first: rebuild the repo, then load the new graph.
+  const analyzeRepoAndLoad = (repo: BackendRepo) => {
+    const repoPath = repo?.path || repo?.repoPath;
+    if (!repoPath) {
+      setError(`Repository path not found for ${repo?.name ?? 'selected repository'}`);
+      setPhase(detectedRepos.length > 0 ? 'landing' : 'analyze');
+      return;
+    }
+
+    autoConnectRan.current = true;
+    setPhase('loading');
+    setLoadingMessage('Starting full analysis...');
+    setError(null);
+
+    (async () => {
+      try {
+        const { jobId } = await startAnalyze({ path: repoPath });
+        const controller = streamAnalyzeProgress(
+          jobId,
+          (progress) => {
+            const pct = Math.max(0, Math.min(100, Math.round(progress.percent)));
+            setLoadingMessage(`Analyzing ${repo.name}... ${pct}% - ${progress.message}`);
+          },
+          (data) => {
+            analyzeSseRef.current = null;
+            loadRepoGraph(repoPath);
+          },
+          (errMsg) => {
+            analyzeSseRef.current = null;
+            setError(`${errMsg || `Failed to analyze ${repo.name}`} (${repoPath})`);
+            setPhase(detectedRepos.length > 0 ? 'landing' : 'analyze');
+          },
+        );
+        analyzeSseRef.current = controller;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : `Failed to analyze ${repo.name}`;
+        setError(`${message} (${repoPath})`);
+        setPhase(detectedRepos.length > 0 ? 'landing' : 'analyze');
+      }
+    })();
+  };
+
+  const removeRepoFromLanding = async (repoName: string) => {
+    setError(null);
+    await deleteRepo(repoName);
+
+    const repos = await fetchRepos();
+    setDetectedRepos(repos);
+    if (repos.length === 0) {
+      setPhase('analyze');
+      autoConnectRan.current = false;
+    }
+  };
+
+  // Track when the initial probe finishes
+  useEffect(() => {
+    if (!isProbing && !initialProbeComplete) {
+      setInitialProbeComplete(true);
+    }
+  }, [isProbing, initialProbeComplete]);
+
+  // Start polling once after initial probe fails
+  useEffect(() => {
+    if (initialProbeComplete && !isConnected && !isPolling && !autoConnectRan.current) {
+      startPolling();
+    }
+  }, [initialProbeComplete, isConnected, isPolling, startPolling]);
+
+  // Auto-connect when server is detected
+  useEffect(() => {
+    if (isConnected && !autoConnectRan.current) {
+      autoConnectRan.current = true;
+      stopPolling();
+      setPhase('success');
+      void handleAutoConnectRef.current();
+    }
+    // Server went away - keep the user in a neutral runtime connection state.
+    if (!isConnected && autoConnectRan.current && !isProbing) {
+      autoConnectRan.current = false;
+      setPhase('connecting');
+      setError(null);
+    }
+  }, [isConnected, isProbing, stopPolling]);
+
+  // Cleanup active requests on unmount
+  useEffect(() => {
+    return () => {
+      analyzeSseRef.current?.abort();
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
+  const displayPhase = !initialProbeComplete ? 'connecting' : phase;
+
+  return (
+    <div className="press-shell press-ruled flex min-h-screen items-center justify-center p-8">
+      <div className="relative w-full max-w-lg">
+        {error && (
+          <div className="mb-4 animate-fade-in rounded-xl border-[3px] border-error bg-surface p-3 text-center text-sm text-error">
+            {error}
+          </div>
+        )}
+
+        {/* Crossfade between phases */}
+        {displayPhase && (
+          <Crossfade activeKey={displayPhase}>
+            {displayPhase === 'connecting' && (
+              <LoadingCard
+                message="Connecting to Anvien runtime..."
+                detail="The local runtime will open the repository screen when it is ready."
+              />
+            )}
+            {displayPhase === 'analyze' && <AnalyzeOnboarding onComplete={loadRepoGraph} />}
+            {displayPhase === 'landing' && (
+              <RepoLanding
+                repos={detectedRepos}
+                onSelectRepo={analyzeRepoAndLoad}
+                onAnalyzeComplete={loadRepoGraph}
+                onRemoveRepo={removeRepoFromLanding}
+              />
+            )}
+            {displayPhase === 'success' && <SuccessCard />}
+            {displayPhase === 'loading' && <LoadingCard message={loadingMessage} />}
+          </Crossfade>
+        )}
+      </div>
+    </div>
+  );
+};

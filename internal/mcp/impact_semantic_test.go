@@ -24,7 +24,7 @@ func TestImpactToolReturnsSemanticAffectedLayerAndResolutionRiskSummary(t *testi
 		},
 	)}
 	callerFrontend := graph.Node{ID: "Function:FrontendCaller", Label: scopeir.NodeFunction, Properties: impactSemanticProps(
-		"FrontendCaller", "avmatrix-web/src/GraphCanvas.tsx", string(semantic.AppLayerFrontend), string(semantic.FunctionalAreaWebGraphUI), graph.NodeProperties{
+		"FrontendCaller", "anvien-web/src/GraphCanvas.tsx", string(semantic.AppLayerFrontend), string(semantic.FunctionalAreaWebGraphUI), graph.NodeProperties{
 			"topologyStatus":       string(graphhealth.TopologyConnected),
 			"resolutionConfidence": graphhealth.ResolutionConfidenceClear,
 		},

@@ -428,12 +428,12 @@ func isDocsPath(path string, base string) bool {
 }
 
 func isWebTestPath(path string, base string) bool {
-	if !hasPathPrefix(path, "avmatrix-web") {
+	if !hasPathPrefix(path, "anvien-web") {
 		return false
 	}
-	return pathContains(path, "avmatrix-web/test") ||
-		pathContains(path, "avmatrix-web/tests") ||
-		pathContains(path, "avmatrix-web/e2e") ||
+	return pathContains(path, "anvien-web/test") ||
+		pathContains(path, "anvien-web/tests") ||
+		pathContains(path, "anvien-web/e2e") ||
 		strings.Contains(base, ".test.") ||
 		strings.Contains(base, ".spec.")
 }
@@ -456,7 +456,7 @@ func isBackendTestPath(path string, base string) bool {
 
 func isGeneratedContractPath(path string) bool {
 	return hasPathPrefix(path, "cmd/generate-web-contracts") ||
-		pathContains(path, "avmatrix-web/src/generated") ||
+		pathContains(path, "anvien-web/src/generated") ||
 		pathContains(path, "contracts/web-ui")
 }
 
@@ -466,8 +466,8 @@ func isAPIContractPath(path string) bool {
 }
 
 func isFrontendAPIClientPath(path string) bool {
-	return path == "avmatrix-web/src/services/backend-client.ts" ||
-		strings.HasSuffix(path, "/avmatrix-web/src/services/backend-client.ts")
+	return path == "anvien-web/src/services/backend-client.ts" ||
+		strings.HasSuffix(path, "/anvien-web/src/services/backend-client.ts")
 }
 
 func isConfigPath(path string, base string) bool {
@@ -509,17 +509,17 @@ func isAPIPath(path string) bool {
 }
 
 func isFrontendPath(path string) bool {
-	return hasPathPrefix(path, "avmatrix-web/src") ||
-		hasPathPrefix(path, "avmatrix-web/public") ||
-		hasPathPrefix(path, "avmatrix-web/app") ||
-		path == "avmatrix-web/index.html" ||
-		strings.HasSuffix(path, "/avmatrix-web/index.html")
+	return hasPathPrefix(path, "anvien-web/src") ||
+		hasPathPrefix(path, "anvien-web/public") ||
+		hasPathPrefix(path, "anvien-web/app") ||
+		path == "anvien-web/index.html" ||
+		strings.HasSuffix(path, "/anvien-web/index.html")
 }
 
 func isCLILauncherPath(path string, base string) bool {
 	return hasPathPrefix(path, "cmd") ||
-		hasPathPrefix(path, "avmatrix-launcher") ||
-		base == "start-avmatrix.html"
+		hasPathPrefix(path, "anvien-launcher") ||
+		base == "start-anvien.html"
 }
 
 func isBackendPath(path string) bool {

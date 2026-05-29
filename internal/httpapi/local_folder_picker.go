@@ -56,7 +56,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 [System.Windows.Forms.Application]::EnableVisualStyles()
 $owner = New-Object System.Windows.Forms.Form
-$owner.Text = 'AVmatrix'
+$owner.Text = 'Anvien'
 $owner.StartPosition = 'CenterScreen'
 $owner.Size = New-Object System.Drawing.Size(1, 1)
 $owner.ShowInTaskbar = $false

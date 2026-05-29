@@ -22,7 +22,7 @@ func TestIsAllowedOriginMatchesLoopbackContract(t *testing.T) {
 		{name: "https ipv4", origin: "https://127.0.0.1", want: true},
 		{name: "ipv6", origin: "http://[::1]:5228", want: true},
 		{name: "https ipv6", origin: "https://[::1]", want: true},
-		{name: "hosted app", origin: "https://avmatrix.vercel.app", want: false},
+		{name: "hosted app", origin: "https://anvien.vercel.app", want: false},
 		{name: "private 10 range", origin: "http://10.0.0.5:3000", want: false},
 		{name: "private 172 range", origin: "http://172.16.5.1:3000", want: false},
 		{name: "private 192 range", origin: "http://192.168.1.10:3000", want: false},

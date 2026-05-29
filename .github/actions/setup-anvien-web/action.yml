@@ -1,0 +1,16 @@
+name: Setup Anvien Web
+description: Setup Node.js 20 and install web dependencies
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version: 20
+        cache: npm
+        cache-dependency-path: anvien-web/package-lock.json
+
+    - name: Install web dependencies
+      run: npm ci
+      shell: bash
+      working-directory: anvien-web

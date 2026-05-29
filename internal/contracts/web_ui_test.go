@@ -118,7 +118,7 @@ func TestWebUIContractTypeScriptIsBrowserGeneratedGlue(t *testing.T) {
 			t.Fatalf("generated TypeScript missing %q", want)
 		}
 	}
-	if strings.Contains(source, "avmatrix-shared") || strings.Contains(source, "node:") {
+	if strings.Contains(source, "anvien-shared") || strings.Contains(source, "node:") {
 		t.Fatalf("generated TypeScript must stay browser-only glue:\n%s", source)
 	}
 }

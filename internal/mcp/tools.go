@@ -841,9 +841,9 @@ func querySemanticSurfaceBoost(node graph.Node, filePath string, tokens []string
 		if functionalArea == "web_graph_ui" {
 			boost += 35
 		}
-		if strings.Contains(normalizedPath, "avmatrix-web/src/lib/graph-adapter.ts") ||
-			strings.Contains(normalizedPath, "avmatrix-web/src/hooks/usesigma.ts") ||
-			strings.Contains(normalizedPath, "avmatrix-web/src/hooks/useSigma.ts") {
+		if strings.Contains(normalizedPath, "anvien-web/src/lib/graph-adapter.ts") ||
+			strings.Contains(normalizedPath, "anvien-web/src/hooks/usesigma.ts") ||
+			strings.Contains(normalizedPath, "anvien-web/src/hooks/useSigma.ts") {
 			boost += 90
 		}
 		if normalizeQuerySearchText(name) == "knowledge graph to graphology" {
@@ -851,10 +851,10 @@ func querySemanticSurfaceBoost(node graph.Node, filePath string, tokens []string
 		}
 	}
 	if queryTokensContainAny(tokens, "frontend", "graph", "filter", "detail", "panel", "visibility") {
-		if strings.Contains(normalizedPath, "avmatrix-web/src/lib/graph-health-filters.ts") ||
-			strings.Contains(normalizedPath, "avmatrix-web/src/hooks/app-state/graph.tsx") ||
-			strings.Contains(normalizedPath, "avmatrix-web/src/components/filetreepanel.tsx") ||
-			strings.Contains(normalizedPath, "avmatrix-web/src/components/graphcanvas.tsx") {
+		if strings.Contains(normalizedPath, "anvien-web/src/lib/graph-health-filters.ts") ||
+			strings.Contains(normalizedPath, "anvien-web/src/hooks/app-state/graph.tsx") ||
+			strings.Contains(normalizedPath, "anvien-web/src/components/filetreepanel.tsx") ||
+			strings.Contains(normalizedPath, "anvien-web/src/components/graphcanvas.tsx") {
 			boost += 130
 		}
 	}
@@ -869,7 +869,7 @@ func querySemanticSurfaceBoost(node graph.Node, filePath string, tokens []string
 			boost += 90
 		}
 		if strings.Contains(normalizedPath, "internal/cli/tool_command.go") ||
-			strings.Contains(normalizedPath, "cmd/avmatrix/main.go") {
+			strings.Contains(normalizedPath, "cmd/anvien/main.go") {
 			boost += 55
 		}
 		if strings.Contains(normalizedPath, "internal/cli/query_health_command.go") {

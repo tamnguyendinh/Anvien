@@ -25,8 +25,8 @@ func TestCleanPathNormalizesSegments(t *testing.T) {
 }
 
 func TestSamePathForTestMatchesWindowsCaseRules(t *testing.T) {
-	left := CleanPath("C:\\AVmatrix", "Repo")
-	right := CleanPath("c:\\avmatrix", "repo")
+	left := CleanPath("C:\\Anvien", "Repo")
+	right := CleanPath("c:\\anvien", "repo")
 	got := SamePathForTest(left, right)
 
 	if runtime.GOOS == "windows" && !got {

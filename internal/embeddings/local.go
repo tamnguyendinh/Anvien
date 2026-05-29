@@ -20,8 +20,8 @@ const (
 	DefaultLocalONNXFilePath = "onnx/model.onnx"
 	defaultLocalRevision     = "main"
 	defaultHFEndpoint        = "https://huggingface.co"
-	localPipelineName        = "avmatrix-local-embedding"
-	localCacheSubdir         = "avmatrix-go"
+	localPipelineName        = "anvien-local-embedding"
+	localCacheSubdir         = "anvien-go"
 )
 
 var (

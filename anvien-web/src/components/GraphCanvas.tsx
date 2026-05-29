@@ -1,0 +1,932 @@
+import { useEffect, useCallback, useMemo, useState, forwardRef, useImperativeHandle, useRef } from 'react';
+import {
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  Focus,
+  RotateCcw,
+  Play,
+  Pause,
+  GitBranch,
+  Lightbulb,
+  LightbulbOff,
+} from '@/lib/lucide-icons';
+import { useSigma } from '../hooks/useSigma';
+import { useAppState } from '../hooks/useAppState.local-runtime';
+import {
+  knowledgeGraphToGraphology,
+  filterGraphByDepth,
+  filterGraphByLabels,
+  getMaxRenderedNodeSize,
+  getMinimumNodeCenterDistance,
+  getMinimumNodeEdgeGap,
+  SigmaNodeAttributes,
+  SigmaEdgeAttributes,
+} from '../lib/graph-adapter';
+import {
+  recordGraphConversion,
+  recordGraphCameraSample,
+  recordGraphOverview,
+  recordLayoutNodeSpacing,
+  recordLayoutRings,
+  recordScreenNodeSpacing,
+  recordVisualScale,
+} from '../lib/runtime-diagnostics';
+import { buildScreenNodeSpacingDiagnostics } from '../lib/graph-screen-spacing';
+import { buildGraphOverviewDiagnostics } from '../lib/graph-overview-diagnostics';
+import {
+  buildGraphOrientationLabels,
+  placeGraphOrientationLabels,
+  type GraphOrientationLabel,
+  type GraphOrientationViewportLabel,
+} from '../lib/graph-orientation-labels';
+import type { GraphNode } from '@/generated/anvien-contracts';
+import { QueryFAB } from './QueryFAB';
+import Graph from 'graphology';
+
+export interface GraphCanvasHandle {
+  focusNode: (nodeId: string) => void;
+}
+
+type LayoutRingBounds = {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  count: number;
+};
+
+type IdleSchedulerWindow = Window & {
+  requestIdleCallback?: (
+    callback: () => void,
+    options?: { timeout?: number },
+  ) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
+const createLayoutRingBounds = (): LayoutRingBounds => ({
+  minX: Number.POSITIVE_INFINITY,
+  maxX: Number.NEGATIVE_INFINITY,
+  minY: Number.POSITIVE_INFINITY,
+  maxY: Number.NEGATIVE_INFINITY,
+  count: 0,
+});
+
+const buildLayoutRingDiagnostics = (
+  sigmaGraph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>,
+) => {
+  const boundsByRing = new Map<string, LayoutRingBounds>();
+  const anchorsByRing = new Map<string, { x: number; y: number }>();
+  const islandsByRing = new Map<string, Set<string>>();
+  const colorsByRingIsland = new Map<string, Set<string>>();
+  const islandsByRingNodeType = new Map<string, Set<string>>();
+
+  for (const nodeId of sigmaGraph.nodes()) {
+    const attributes = sigmaGraph.getNodeAttributes(nodeId);
+    const ring = attributes.appLayerRing ?? 'missing_app_layer';
+    const island = attributes.islandKey ?? attributes.nodeType;
+    const ringIslandKey = `${ring}:${island}`;
+    const ringNodeTypeKey = `${ring}:${attributes.nodeType}`;
+
+    const bounds = boundsByRing.get(ring) ?? createLayoutRingBounds();
+    bounds.minX = Math.min(bounds.minX, attributes.x);
+    bounds.maxX = Math.max(bounds.maxX, attributes.x);
+    bounds.minY = Math.min(bounds.minY, attributes.y);
+    bounds.maxY = Math.max(bounds.maxY, attributes.y);
+    bounds.count++;
+    boundsByRing.set(ring, bounds);
+    if (
+      !anchorsByRing.has(ring) &&
+      typeof attributes.appLayerRingCenterX === 'number' &&
+      typeof attributes.appLayerRingCenterY === 'number'
+    ) {
+      anchorsByRing.set(ring, {
+        x: attributes.appLayerRingCenterX,
+        y: attributes.appLayerRingCenterY,
+      });
+    }
+
+    const ringIslands = islandsByRing.get(ring) ?? new Set<string>();
+    ringIslands.add(island);
+    islandsByRing.set(ring, ringIslands);
+
+    const colors = colorsByRingIsland.get(ringIslandKey) ?? new Set<string>();
+    colors.add(attributes.color);
+    colorsByRingIsland.set(ringIslandKey, colors);
+
+    const nodeTypeIslands =
+      islandsByRingNodeType.get(ringNodeTypeKey) ?? new Set<string>();
+    nodeTypeIslands.add(island);
+    islandsByRingNodeType.set(ringNodeTypeKey, nodeTypeIslands);
+  }
+
+  const ringNodeCounts: Record<string, number> = {};
+  const ringCenters: Record<string, { x: number; y: number }> = {};
+  const ringIslandCounts: Record<string, number> = {};
+
+  for (const [ring, bounds] of boundsByRing) {
+    const anchor = anchorsByRing.get(ring);
+    ringNodeCounts[ring] = bounds.count;
+    ringCenters[ring] =
+      anchor ?? {
+        x: (bounds.minX + bounds.maxX) / 2,
+        y: (bounds.minY + bounds.maxY) / 2,
+      };
+    ringIslandCounts[ring] = islandsByRing.get(ring)?.size ?? 0;
+  }
+
+  const backendX = ringCenters.backend?.x;
+  const apiX = ringCenters.api?.x;
+  const frontendX = ringCenters.frontend?.x;
+  const apiBetweenBackendAndFrontend =
+    backendX !== undefined &&
+    apiX !== undefined &&
+    frontendX !== undefined &&
+    ((backendX <= apiX && apiX <= frontendX) ||
+      (frontendX <= apiX && apiX <= backendX));
+  const docsCenter = ringCenters.docs;
+  const docsCentered = docsCenter
+    ? Math.hypot(docsCenter.x, docsCenter.y) <= 1
+    : false;
+  let sameColorIslandViolations = 0;
+  for (const colors of colorsByRingIsland.values()) {
+    if (colors.size > 1) sameColorIslandViolations++;
+  }
+  for (const [ringNodeType, islands] of islandsByRingNodeType) {
+    if (ringNodeType.endsWith(':ResolutionGap')) continue;
+    if (islands.size > 1) sameColorIslandViolations++;
+  }
+
+  return {
+    nodeCount: sigmaGraph.order,
+    ringNodeCounts,
+    ringCenters,
+    ringIslandCounts,
+    apiBetweenBackendAndFrontend,
+    docsCentered,
+    sameColorIslandViolations,
+  };
+};
+
+const buildLayoutNodeSpacingDiagnostics = (
+  sigmaGraph: Graph<SigmaNodeAttributes, SigmaEdgeAttributes>,
+) => {
+  const nodeCount = sigmaGraph.order;
+  const renderedRadius = getMaxRenderedNodeSize(nodeCount);
+  const renderedDiameter = renderedRadius * 2;
+  const requiredEdgeGap = getMinimumNodeEdgeGap(nodeCount);
+  const requiredCenterDistance = getMinimumNodeCenterDistance(nodeCount);
+  const nodeGridByIsland = new Map<
+    string,
+    Map<string, Array<{ x: number; y: number }>>
+  >();
+  const islandKeys = new Set<string>();
+  let minObservedCenterDistance = requiredCenterDistance;
+  let overlapCount = 0;
+  let targetGapViolationCount = 0;
+
+  for (const nodeId of sigmaGraph.nodes()) {
+    const attributes = sigmaGraph.getNodeAttributes(nodeId);
+    const islandKey = `${attributes.appLayerRing ?? 'missing_app_layer'}:${
+      attributes.islandKey ?? attributes.nodeType
+    }`;
+    islandKeys.add(islandKey);
+    const islandGrid = nodeGridByIsland.get(islandKey) ?? new Map();
+    const cellX = Math.floor(attributes.x / requiredCenterDistance);
+    const cellY = Math.floor(attributes.y / requiredCenterDistance);
+
+    for (let x = cellX - 1; x <= cellX + 1; x++) {
+      for (let y = cellY - 1; y <= cellY + 1; y++) {
+        const neighbors = islandGrid.get(`${x}:${y}`);
+        if (!neighbors) continue;
+        for (const neighbor of neighbors) {
+          const centerDistance = Math.hypot(
+            attributes.x - neighbor.x,
+            attributes.y - neighbor.y,
+          );
+          if (centerDistance < requiredCenterDistance) {
+            minObservedCenterDistance = Math.min(
+              minObservedCenterDistance,
+              centerDistance,
+            );
+            targetGapViolationCount++;
+          }
+          if (centerDistance < renderedDiameter) {
+            overlapCount++;
+          }
+        }
+      }
+    }
+
+    const cellKey = `${cellX}:${cellY}`;
+    const cellNodes = islandGrid.get(cellKey) ?? [];
+    cellNodes.push({ x: attributes.x, y: attributes.y });
+    islandGrid.set(cellKey, cellNodes);
+    nodeGridByIsland.set(islandKey, islandGrid);
+  }
+
+  return {
+    nodeCount,
+    islandCount: islandKeys.size,
+    renderedRadius,
+    renderedDiameter,
+    requiredEdgeGap,
+    requiredCenterDistance,
+    minObservedCenterDistance,
+    minObservedEdgeGap: minObservedCenterDistance - renderedDiameter,
+    overlapCount,
+    targetGapViolationCount,
+  };
+};
+
+export const GraphCanvas = forwardRef<GraphCanvasHandle>((_, ref) => {
+  const {
+    graph,
+    setSelectedNode,
+    selectedNode: appSelectedNode,
+    visibleLabels,
+    visibleEdgeTypes,
+    areGraphLinksVisible,
+    graphHealthFilters,
+    semanticFilters,
+    depthFilter,
+    highlightedNodeIds,
+    aiCitationHighlightedNodeIds,
+    aiToolHighlightedNodeIds,
+    blastRadiusNodeIds,
+    isAIHighlightsEnabled,
+    toggleAIHighlights,
+    toggleGraphLinksVisible,
+    clearAIToolHighlights,
+    clearAICitationHighlights,
+    clearBlastRadius,
+    animatedNodes,
+  } = useAppState();
+  const [hoveredNodeName, setHoveredNodeName] = useState<string | null>(null);
+  const [orientationLabels, setOrientationLabels] = useState<
+    GraphOrientationViewportLabel[]
+  >([]);
+  const orientationLabelSourcesRef = useRef<GraphOrientationLabel[]>([]);
+  const orientationPlacementFrameRef = useRef<number | null>(null);
+  const cameraSampleFrameRef = useRef<number | null>(null);
+  const pendingCameraSampleRef = useRef<{
+    cameraRatio: number;
+    cameraX: number;
+    cameraY: number;
+  } | null>(null);
+  const diagnosticsSettleTimeoutRef = useRef<number | null>(null);
+  const diagnosticsIdleCancelRef = useRef<(() => void) | null>(null);
+
+  const effectiveHighlightedNodeIds = useMemo(() => {
+    if (!isAIHighlightsEnabled) return highlightedNodeIds;
+    const next = new Set(highlightedNodeIds);
+    for (const id of aiCitationHighlightedNodeIds) next.add(id);
+    for (const id of aiToolHighlightedNodeIds) next.add(id);
+    // Note: blast radius nodes are handled separately with red color
+    return next;
+  }, [
+    highlightedNodeIds,
+    aiCitationHighlightedNodeIds,
+    aiToolHighlightedNodeIds,
+    isAIHighlightsEnabled,
+  ]);
+
+  // Blast radius nodes (only when AI highlights enabled)
+  const effectiveBlastRadiusNodeIds = useMemo(() => {
+    if (!isAIHighlightsEnabled) return new Set<string>();
+    return blastRadiusNodeIds;
+  }, [blastRadiusNodeIds, isAIHighlightsEnabled]);
+
+  // Animated nodes (only when AI highlights enabled)
+  const effectiveAnimatedNodes = useMemo(() => {
+    if (!isAIHighlightsEnabled) return new Map();
+    return animatedNodes;
+  }, [animatedNodes, isAIHighlightsEnabled]);
+
+  const nodeById = useMemo(() => {
+    if (!graph) return new Map<string, GraphNode>();
+    return new Map(graph.nodes.map((n) => [n.id, n]));
+  }, [graph]);
+
+  const handleNodeClick = useCallback(
+    (nodeId: string) => {
+      if (!graph) return;
+      const node = nodeById.get(nodeId);
+      if (node) {
+        setSelectedNode(node);
+      }
+    },
+    [graph, nodeById, setSelectedNode],
+  );
+
+  const handleNodeHover = useCallback(
+    (nodeId: string | null) => {
+      if (!nodeId || !graph) {
+        setHoveredNodeName(null);
+        return;
+      }
+      const node = nodeById.get(nodeId);
+      setHoveredNodeName(node ? node.properties.name : null);
+    },
+    [graph, nodeById],
+  );
+
+  const handleStageClick = useCallback(() => {
+    setSelectedNode(null);
+  }, [setSelectedNode]);
+
+  const handleToggleAIHighlights = useCallback(() => {
+    if (isAIHighlightsEnabled) {
+      clearAIToolHighlights();
+      clearAICitationHighlights();
+      clearBlastRadius();
+      setSelectedNode(null);
+      setSigmaSelectedNode(null);
+    }
+    toggleAIHighlights();
+  }, [
+    isAIHighlightsEnabled,
+    clearAIToolHighlights,
+    clearAICitationHighlights,
+    clearBlastRadius,
+    setSelectedNode,
+    toggleAIHighlights,
+  ]);
+
+  const {
+    containerRef,
+    sigmaRef,
+    setGraph: setSigmaGraph,
+    zoomIn,
+    zoomOut,
+    resetZoom,
+    focusNode,
+    isLayoutRunning,
+    startLayout,
+    stopLayout,
+    selectedNode: sigmaSelectedNode,
+    setSelectedNode: setSigmaSelectedNode,
+  } = useSigma({
+    onNodeClick: handleNodeClick,
+    onNodeHover: handleNodeHover,
+    onStageClick: handleStageClick,
+    highlightedNodeIds: effectiveHighlightedNodeIds,
+    blastRadiusNodeIds: effectiveBlastRadiusNodeIds,
+    animatedNodes: effectiveAnimatedNodes,
+    visibleEdgeTypes,
+    areGraphLinksVisible,
+  });
+
+  const placeOrientationLabelsFromSources = useCallback(() => {
+    const sigma = sigmaRef.current;
+    if (!sigma) {
+      setOrientationLabels([]);
+      return;
+    }
+
+    const graphLabels = orientationLabelSourcesRef.current;
+    if (graphLabels.length === 0) {
+      setOrientationLabels([]);
+      return;
+    }
+
+    const dimensions =
+      typeof sigma.getDimensions === 'function'
+        ? sigma.getDimensions()
+        : {
+            width: containerRef.current?.clientWidth ?? 0,
+            height: containerRef.current?.clientHeight ?? 0,
+          };
+    const cameraRatio =
+      typeof sigma.getCamera === 'function'
+        ? sigma.getCamera().getState().ratio
+        : 1;
+    const placedLabels = placeGraphOrientationLabels(graphLabels, {
+      viewportWidth: dimensions.width,
+      viewportHeight: dimensions.height,
+      cameraRatio,
+      project: (point) =>
+        typeof sigma.graphToViewport === 'function'
+          ? sigma.graphToViewport(point)
+          : point,
+    });
+    setOrientationLabels(placedLabels);
+  }, [containerRef, sigmaRef]);
+
+  const refreshOrientationLabelSources = useCallback(() => {
+    const sigma = sigmaRef.current;
+    if (!sigma) {
+      orientationLabelSourcesRef.current = [];
+      setOrientationLabels([]);
+      return;
+    }
+
+    const sigmaGraph = sigma.getGraph() as Graph<
+      SigmaNodeAttributes,
+      SigmaEdgeAttributes
+    >;
+    if (!sigmaGraph || sigmaGraph.order === 0) {
+      orientationLabelSourcesRef.current = [];
+      setOrientationLabels([]);
+      return;
+    }
+
+    orientationLabelSourcesRef.current = buildGraphOrientationLabels(sigmaGraph);
+    placeOrientationLabelsFromSources();
+  }, [placeOrientationLabelsFromSources, sigmaRef]);
+
+  const scheduleOrientationLabelPlacement = useCallback(() => {
+    if (orientationPlacementFrameRef.current !== null) return;
+    orientationPlacementFrameRef.current = window.requestAnimationFrame(() => {
+      orientationPlacementFrameRef.current = null;
+      placeOrientationLabelsFromSources();
+    });
+  }, [placeOrientationLabelsFromSources]);
+
+  const scheduleGraphCameraSample = useCallback(
+    (sample: { cameraRatio: number; cameraX: number; cameraY: number }) => {
+      pendingCameraSampleRef.current = sample;
+      if (cameraSampleFrameRef.current !== null) return;
+      cameraSampleFrameRef.current = window.requestAnimationFrame(() => {
+        cameraSampleFrameRef.current = null;
+        const nextSample = pendingCameraSampleRef.current;
+        pendingCameraSampleRef.current = null;
+        if (nextSample) {
+          recordGraphCameraSample(nextSample);
+        }
+      });
+    },
+    [],
+  );
+
+  const recordCurrentScreenNodeSpacing = useCallback(() => {
+    const sigma = sigmaRef.current;
+    if (!sigma) return;
+    recordScreenNodeSpacing(buildScreenNodeSpacingDiagnostics(sigma));
+    recordGraphOverview(buildGraphOverviewDiagnostics(sigma));
+  }, [sigmaRef]);
+
+  const cancelPendingSettledDiagnostics = useCallback(() => {
+    if (diagnosticsSettleTimeoutRef.current !== null) {
+      window.clearTimeout(diagnosticsSettleTimeoutRef.current);
+      diagnosticsSettleTimeoutRef.current = null;
+    }
+    diagnosticsIdleCancelRef.current?.();
+    diagnosticsIdleCancelRef.current = null;
+  }, []);
+
+  const scheduleSettledScreenNodeSpacingAudit = useCallback(() => {
+    if (diagnosticsSettleTimeoutRef.current !== null) {
+      window.clearTimeout(diagnosticsSettleTimeoutRef.current);
+    }
+    diagnosticsSettleTimeoutRef.current = window.setTimeout(() => {
+      diagnosticsSettleTimeoutRef.current = null;
+      diagnosticsIdleCancelRef.current?.();
+      diagnosticsIdleCancelRef.current = null;
+
+      const runAudit = () => {
+        diagnosticsIdleCancelRef.current = null;
+        recordCurrentScreenNodeSpacing();
+      };
+      const idleWindow = window as IdleSchedulerWindow;
+      if (typeof idleWindow.requestIdleCallback === 'function') {
+        const handle = idleWindow.requestIdleCallback(runAudit, { timeout: 500 });
+        diagnosticsIdleCancelRef.current = () =>
+          idleWindow.cancelIdleCallback?.(handle);
+        return;
+      }
+
+      const handle = window.setTimeout(runAudit, 0);
+      diagnosticsIdleCancelRef.current = () => window.clearTimeout(handle);
+    }, 160);
+  }, [recordCurrentScreenNodeSpacing]);
+
+  useEffect(() => {
+    return () => {
+      if (orientationPlacementFrameRef.current !== null) {
+        window.cancelAnimationFrame(orientationPlacementFrameRef.current);
+        orientationPlacementFrameRef.current = null;
+      }
+      if (cameraSampleFrameRef.current !== null) {
+        window.cancelAnimationFrame(cameraSampleFrameRef.current);
+        cameraSampleFrameRef.current = null;
+      }
+      pendingCameraSampleRef.current = null;
+      cancelPendingSettledDiagnostics();
+    };
+  }, [cancelPendingSettledDiagnostics]);
+
+  useEffect(() => {
+    const sigma = sigmaRef.current;
+    if (!sigma) {
+      setOrientationLabels([]);
+      return;
+    }
+
+    const handleRefresh = () => scheduleOrientationLabelPlacement();
+    const handleResizeDiagnostics = () => scheduleSettledScreenNodeSpacingAudit();
+    const handleCameraUpdated = () => {
+      const cameraState = camera?.getState();
+      if (cameraState) {
+        scheduleGraphCameraSample({
+          cameraRatio: cameraState.ratio,
+          cameraX: cameraState.x,
+          cameraY: cameraState.y,
+        });
+      }
+      handleRefresh();
+      handleResizeDiagnostics();
+    };
+    const camera = typeof sigma.getCamera === 'function' ? sigma.getCamera() : null;
+
+    refreshOrientationLabelSources();
+    sigma.on?.('afterRender', handleRefresh);
+    sigma.on?.('resize', handleRefresh);
+    sigma.on?.('resize', handleResizeDiagnostics);
+    camera?.on?.('updated', handleCameraUpdated);
+    window.addEventListener('resize', handleRefresh);
+    window.addEventListener('resize', handleResizeDiagnostics);
+
+    return () => {
+      sigma.off?.('afterRender', handleRefresh);
+      sigma.off?.('resize', handleRefresh);
+      sigma.off?.('resize', handleResizeDiagnostics);
+      camera?.off?.('updated', handleCameraUpdated);
+      window.removeEventListener('resize', handleRefresh);
+      window.removeEventListener('resize', handleResizeDiagnostics);
+    };
+  }, [
+    refreshOrientationLabelSources,
+    scheduleGraphCameraSample,
+    scheduleOrientationLabelPlacement,
+    scheduleSettledScreenNodeSpacingAudit,
+    graph,
+    visibleLabels,
+    depthFilter,
+    appSelectedNode?.id,
+    graphHealthFilters,
+    semanticFilters,
+  ]);
+
+  // Expose focusNode to parent via ref
+  useImperativeHandle(
+    ref,
+    () => ({
+      focusNode: (nodeId: string) => {
+        focusNode(nodeId);
+        handleNodeClick(nodeId);
+      },
+    }),
+    [focusNode, handleNodeClick],
+  );
+
+  // Update Sigma graph when KnowledgeGraph changes
+  useEffect(() => {
+    if (!graph) return;
+
+    // Build communityMemberships map from MEMBER_OF relationships
+    // MEMBER_OF edges: nodeId -> communityId (stored as targetId)
+    const communityMemberships = new Map<string, number>();
+    graph.relationships.forEach((rel) => {
+      if (rel.type === 'MEMBER_OF') {
+        // Find the community node to get its index
+        const communityNode = nodeById.get(rel.targetId);
+        if (communityNode && communityNode.label === 'Community') {
+          // Extract community index from id (e.g., "comm_5" -> 5)
+          const numericPart = rel.targetId.replace('comm_', '');
+          const communityIdx = /^\d+$/.test(numericPart) ? parseInt(numericPart, 10) : 0;
+          communityMemberships.set(rel.sourceId, communityIdx);
+        }
+      }
+    });
+
+    const conversionStartedAt = performance.now();
+    const sigmaGraph = knowledgeGraphToGraphology(graph, communityMemberships);
+    recordGraphConversion({
+      startedAt: conversionStartedAt,
+      nodeCount: graph.nodes.length,
+      relationshipCount: graph.relationships.length,
+    });
+    const nodeSizes = sigmaGraph
+      .nodes()
+      .map((nodeId) => sigmaGraph.getNodeAttribute(nodeId, 'size'))
+      .filter((size): size is number => typeof size === 'number');
+    const maxSizeByLabel = sigmaGraph.nodes().reduce<Record<string, number>>(
+      (sizes, nodeId) => {
+        const label = sigmaGraph.getNodeAttribute(nodeId, 'nodeType');
+        const size = sigmaGraph.getNodeAttribute(nodeId, 'size');
+        if (typeof label === 'string' && typeof size === 'number') {
+          sizes[label] = Math.max(sizes[label] ?? 0, size);
+        }
+        return sizes;
+      },
+      {},
+    );
+    const minNodeSize = nodeSizes.reduce(
+      (minimum, size) => Math.min(minimum, size),
+      Number.POSITIVE_INFINITY,
+    );
+    const maxNodeSize = nodeSizes.reduce(
+      (maximum, size) => Math.max(maximum, size),
+      0,
+    );
+    recordVisualScale({
+      nodeCount: sigmaGraph.order,
+      minNodeSize: Number.isFinite(minNodeSize) ? minNodeSize : 0,
+      maxNodeSize,
+      maxRenderedNodeSizeCap: getMaxRenderedNodeSize(sigmaGraph.order),
+      structuralToLeafRatio:
+        Number.isFinite(minNodeSize) && minNodeSize > 0
+          ? maxNodeSize / minNodeSize
+          : 0,
+      maxSizeByLabel,
+    });
+    recordLayoutRings(buildLayoutRingDiagnostics(sigmaGraph));
+    recordLayoutNodeSpacing(buildLayoutNodeSpacingDiagnostics(sigmaGraph));
+    setSigmaGraph(sigmaGraph);
+    recordCurrentScreenNodeSpacing();
+    window.requestAnimationFrame(() => {
+      recordCurrentScreenNodeSpacing();
+      refreshOrientationLabelSources();
+    });
+  }, [graph, nodeById, setSigmaGraph, recordCurrentScreenNodeSpacing, refreshOrientationLabelSources]);
+
+  // Update graph visibility when label filters or depth filter mode change.
+  useEffect(() => {
+    const sigma = sigmaRef.current;
+    if (!sigma) return;
+
+    const sigmaGraph = sigma.getGraph() as Graph<SigmaNodeAttributes, SigmaEdgeAttributes>;
+    if (sigmaGraph.order === 0) return; // Don't filter empty graph
+
+    if (depthFilter === null) {
+      filterGraphByLabels(sigmaGraph, visibleLabels, graphHealthFilters, semanticFilters);
+    } else {
+      filterGraphByDepth(
+        sigmaGraph,
+        appSelectedNode?.id || null,
+        depthFilter,
+        visibleLabels,
+        graphHealthFilters,
+        semanticFilters,
+      );
+    }
+    sigma.refresh();
+    recordCurrentScreenNodeSpacing();
+    refreshOrientationLabelSources();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sigmaRef identity never changes
+  }, [
+    visibleLabels,
+    depthFilter,
+    graphHealthFilters,
+    semanticFilters,
+    recordCurrentScreenNodeSpacing,
+    refreshOrientationLabelSources,
+  ]);
+
+  // Re-apply depth filtering when selection changes only if the feature is enabled.
+  useEffect(() => {
+    if (depthFilter === null) return;
+
+    const sigma = sigmaRef.current;
+    if (!sigma) return;
+
+    const sigmaGraph = sigma.getGraph() as Graph<SigmaNodeAttributes, SigmaEdgeAttributes>;
+    if (sigmaGraph.order === 0) return;
+
+    filterGraphByDepth(
+      sigmaGraph,
+      appSelectedNode?.id || null,
+      depthFilter,
+      visibleLabels,
+      graphHealthFilters,
+      semanticFilters,
+    );
+    sigma.refresh();
+    recordCurrentScreenNodeSpacing();
+    refreshOrientationLabelSources();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sigmaRef identity never changes
+  }, [
+    appSelectedNode?.id,
+    graphHealthFilters,
+    semanticFilters,
+    recordCurrentScreenNodeSpacing,
+    refreshOrientationLabelSources,
+  ]);
+
+  // Sync app selected node with sigma
+  useEffect(() => {
+    if (appSelectedNode) {
+      setSigmaSelectedNode(appSelectedNode.id);
+    } else {
+      setSigmaSelectedNode(null);
+    }
+  }, [appSelectedNode, setSigmaSelectedNode]);
+
+  // Focus on selected node
+  const handleFocusSelected = useCallback(() => {
+    if (appSelectedNode) {
+      focusNode(appSelectedNode.id);
+    }
+  }, [appSelectedNode, focusNode]);
+
+  // Clear selection
+  const handleClearSelection = useCallback(() => {
+    setSelectedNode(null);
+    setSigmaSelectedNode(null);
+    resetZoom();
+  }, [setSelectedNode, setSigmaSelectedNode, resetZoom]);
+
+  return (
+    <div className="workspace-shell relative h-full w-full bg-workspace-base">
+      <div className="pointer-events-none absolute inset-0">
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(circle at 50% 50%, rgba(154, 126, 99, 0.08) 0%, transparent 70%),
+              linear-gradient(to bottom, #1f1b18, #29231f)
+            `,
+          }}
+        />
+      </div>
+
+      <div
+        ref={containerRef}
+        className="sigma-container h-full w-full cursor-grab active:cursor-grabbing"
+      />
+
+      {orientationLabels.length > 0 && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-[5]"
+          data-testid="graph-orientation-label-layer"
+        >
+          {orientationLabels.map((label) => (
+            <div
+              key={label.id}
+              className={`absolute flex max-w-[190px] -translate-x-1/2 -translate-y-1/2 items-center gap-1 overflow-hidden rounded-md border px-2 py-1 font-mono shadow-sm backdrop-blur-sm ${
+                label.kind === 'ring'
+                  ? 'border-workspace-border-strong bg-workspace-surface/90 text-[11px] font-semibold uppercase tracking-normal text-workspace-text-primary'
+                  : 'border-workspace-border-default bg-workspace-base/82 text-[10px] font-medium text-workspace-text-secondary'
+              }`}
+              data-label-kind={label.kind}
+              data-label-source={label.sourceKey}
+              data-label-count={label.visibleNodeCount}
+              data-testid={`graph-orientation-label-${label.kind}`}
+              style={{
+                left: `${label.viewportX}px`,
+                top: `${label.viewportY}px`,
+                width: `${label.width}px`,
+              }}
+            >
+              <span className="min-w-0 flex-1 truncate">{label.displayText}</span>
+              {!label.compact && (
+                <span className="shrink-0 text-workspace-text-muted">
+                  {label.visibleNodeCount}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {hoveredNodeName && !sigmaSelectedNode && (
+        <div className="pointer-events-none absolute top-4 left-1/2 z-20 -translate-x-1/2 animate-fade-in rounded-lg border-[2px] border-workspace-border-default bg-workspace-surface/95 px-3 py-1.5 backdrop-blur-sm">
+          <span className="font-mono text-sm text-workspace-text-primary">{hoveredNodeName}</span>
+        </div>
+      )}
+
+      {sigmaSelectedNode && appSelectedNode && (
+        <div className="absolute top-4 left-1/2 z-20 flex -translate-x-1/2 animate-slide-up items-center gap-2 rounded-xl border-[2px] border-workspace-border-strong bg-workspace-surface px-4 py-2 backdrop-blur-sm">
+          <div className="h-2 w-2 animate-pulse rounded-full bg-workspace-border-strong" />
+          <span className="font-mono text-sm text-workspace-text-primary">
+            {appSelectedNode.properties.name}
+          </span>
+          <span className="text-xs text-workspace-text-secondary">({appSelectedNode.label})</span>
+          <button
+            onClick={handleClearSelection}
+            className="ml-2 rounded px-2 py-0.5 text-xs text-workspace-text-secondary transition-colors hover:bg-workspace-inset hover:text-workspace-text-primary"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
+      <div className="absolute right-4 bottom-4 z-10 flex flex-col gap-1">
+        <button
+          onClick={zoomIn}
+          className="workspace-outline-button flex h-9 w-9 items-center justify-center text-workspace-text-secondary hover:text-workspace-text-primary"
+          title="Zoom In"
+        >
+          <ZoomIn className="h-4 w-4" />
+        </button>
+        <button
+          onClick={zoomOut}
+          className="workspace-outline-button flex h-9 w-9 items-center justify-center text-workspace-text-secondary hover:text-workspace-text-primary"
+          title="Zoom Out"
+        >
+          <ZoomOut className="h-4 w-4" />
+        </button>
+        <button
+          onClick={resetZoom}
+          className="workspace-outline-button flex h-9 w-9 items-center justify-center text-workspace-text-secondary hover:text-workspace-text-primary"
+          title="Fit to Screen"
+        >
+          <Maximize2 className="h-4 w-4" />
+        </button>
+
+        <div className="my-1 h-px bg-workspace-border-subtle" />
+
+        {appSelectedNode && (
+          <button
+            onClick={handleFocusSelected}
+            className="workspace-outline-button flex h-9 w-9 items-center justify-center border-workspace-border-strong bg-workspace-surface text-workspace-text-primary"
+            title="Focus on Selected Node"
+          >
+            <Focus className="h-4 w-4" />
+          </button>
+        )}
+
+        {sigmaSelectedNode && (
+          <button
+            onClick={handleClearSelection}
+            className="workspace-outline-button flex h-9 w-9 items-center justify-center text-workspace-text-secondary hover:text-workspace-text-primary"
+            title="Clear Selection"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </button>
+        )}
+
+        <div className="my-1 h-px bg-workspace-border-subtle" />
+
+        <button
+          onClick={isLayoutRunning ? stopLayout : startLayout}
+          className={`flex h-9 w-9 items-center justify-center rounded-md border transition-all ${
+            isLayoutRunning
+              ? 'animate-pulse border-workspace-border-strong bg-workspace-surface text-workspace-text-primary'
+              : 'border-workspace-border-default bg-workspace-surface text-workspace-text-secondary hover:bg-workspace-inset hover:text-workspace-text-primary'
+          } `}
+          title={isLayoutRunning ? 'Stop Layout Optimization' : 'Optimize Layout'}
+          aria-label={isLayoutRunning ? 'Stop Layout Optimization' : 'Optimize Layout'}
+        >
+          {isLayoutRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </button>
+      </div>
+
+      {isLayoutRunning && (
+        <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 animate-fade-in items-center gap-2 rounded-full border-[2px] border-workspace-border-default bg-workspace-surface px-3 py-1.5 backdrop-blur-sm">
+          <div className="h-2 w-2 animate-ping rounded-full bg-workspace-border-strong" />
+          <span className="text-xs font-medium text-workspace-text-primary">
+            Layout optimizing...
+          </span>
+        </div>
+      )}
+
+      <QueryFAB />
+
+      <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={handleToggleAIHighlights}
+          className={
+            isAIHighlightsEnabled
+              ? 'flex h-10 w-10 items-center justify-center rounded-lg border-[2px] border-workspace-border-strong bg-workspace-surface text-workspace-text-primary transition-colors hover:bg-workspace-inset'
+              : 'flex h-10 w-10 items-center justify-center rounded-lg border-[2px] border-workspace-border-default bg-workspace-surface text-workspace-text-secondary transition-colors hover:bg-workspace-inset hover:text-workspace-text-primary'
+          }
+          title={
+            isAIHighlightsEnabled ? 'Turn off AI-driven highlights' : 'Turn on AI-driven highlights'
+          }
+          aria-label={
+            isAIHighlightsEnabled ? 'Turn off AI-driven highlights' : 'Turn on AI-driven highlights'
+          }
+          data-testid="ai-highlights-toggle"
+        >
+          {isAIHighlightsEnabled ? (
+            <Lightbulb className="h-4 w-4" />
+          ) : (
+            <LightbulbOff className="h-4 w-4" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={toggleGraphLinksVisible}
+          aria-pressed={areGraphLinksVisible}
+          className={
+            areGraphLinksVisible
+              ? 'flex h-10 w-10 items-center justify-center rounded-lg border-[2px] border-workspace-border-strong bg-workspace-surface text-workspace-text-primary transition-colors hover:bg-workspace-inset'
+              : 'flex h-10 w-10 items-center justify-center rounded-lg border-[2px] border-workspace-border-default bg-workspace-surface text-workspace-text-secondary transition-colors hover:bg-workspace-inset hover:text-workspace-text-primary'
+          }
+          title={areGraphLinksVisible ? 'Turn off all graph links' : 'Turn on all graph links'}
+          aria-label={areGraphLinksVisible ? 'Turn off all graph links' : 'Turn on all graph links'}
+          data-testid="graph-links-toggle"
+        >
+          <GitBranch className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+});
+
+GraphCanvas.displayName = 'GraphCanvas';

@@ -548,7 +548,7 @@ func TestSetupInstallsEmbeddedSkillsInsteadOfPackageRootSkills(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(skillsRoot, "flat-skill.md"), []byte("# Flat Test Skill\n"), 0o644); err != nil {
 		t.Fatalf("write flat skill: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(skillsRoot, "avmatrix-pr-review.md"), []byte("# Retired Package Root Skill\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(skillsRoot, "anvien-pr-review.md"), []byte("# Retired Package Root Skill\n"), 0o644); err != nil {
 		t.Fatalf("write retired package skill: %v", err)
 	}
 	if err := os.WriteFile(filepath.Join(skillsRoot, "dir-skill", "SKILL.md"), []byte("# Directory Test Skill\n"), 0o644); err != nil {
@@ -572,7 +572,7 @@ func TestSetupInstallsEmbeddedSkillsInsteadOfPackageRootSkills(t *testing.T) {
 		filepath.Join("flat-skill", "SKILL.md"),
 		filepath.Join("dir-skill", "SKILL.md"),
 		filepath.Join("dir-skill", "references", "note.md"),
-		filepath.Join("avmatrix-pr-review", "SKILL.md"),
+		filepath.Join("anvien-pr-review", "SKILL.md"),
 	} {
 		if _, err := os.Stat(filepath.Join(cursorSkillsRoot, rel)); !os.IsNotExist(err) {
 			t.Fatalf("package-root skill should not be installed %s: %v", rel, err)
@@ -596,7 +596,7 @@ func assertInstalledEmbeddedBaseSkills(t *testing.T, root string) {
 			t.Fatalf("installed skill %s does not match embedded content", path)
 		}
 	}
-	if _, err := os.Stat(filepath.Join(root, "avmatrix-pr-review", "SKILL.md")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(root, "anvien-pr-review", "SKILL.md")); !os.IsNotExist(err) {
 		t.Fatalf("retired package-root skill should not be installed: %v", err)
 	}
 }

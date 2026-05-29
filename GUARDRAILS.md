@@ -1,4 +1,4 @@
-# Guardrails - AVmatrix
+# Guardrails - Anvien
 
 Rules for **human contributors** and **AI agents**. Complements `AGENTS.md` (workflows) and `CONTRIBUTING.md` (PR process).
 
@@ -16,24 +16,24 @@ Maintainer may widen scope per task.
 ## Non-negotiables
 
 1. **Never commit secrets** — API keys, tokens, real `.env` values, private URLs, session cookies. Use `.env.example` with placeholders.
-2. **Never rename with find-and-replace** in avmatrix-indexed projects — use `rename` MCP tool with `dry_run: true` first, review `graph` vs `text_search` edits. No separate `avmatrix rename` CLI exists.
+2. **Never rename with find-and-replace** in anvien-indexed projects — use `rename` MCP tool with `dry_run: true` first, review `graph` vs `text_search` edits. No separate `anvien rename` CLI exists.
 3. **Run impact analysis before editing shared symbols when graph tools are available** — `impact` (upstream) for functions/classes/methods others call. Do not ignore HIGH/CRITICAL without maintainer sign-off.
 4. **Run `detect_changes` before commit when graph tools are available** — confirm diffs map to expected symbols/processes.
-5. **Preserve embeddings** — if `.avmatrix/meta.json` shows embeddings, use `avmatrix analyze --embeddings`; plain `analyze` drops them.
-6. **Keep AVmatrix local-first** — do not add an AVmatrix-hosted cloud service, required daemon, required Docker path, or managed workspace requirement to the default runtime.
+5. **Preserve embeddings** — if `.anvien/meta.json` shows embeddings, use `anvien analyze --embeddings`; plain `analyze` drops them.
+6. **Keep Anvien local-first** — do not add an Anvien-hosted cloud service, required daemon, required Docker path, or managed workspace requirement to the default runtime.
 7. **Keep repo context explicit** — Web/HTTP/MCP/CLI code should pass repo name/path/session explicitly. Do not reintroduce graph reads that depend on one mutable process-global active repo.
-8. **Keep the launcher optional** — `avmatrix serve` must remain the direct local backend entry point.
+8. **Keep the launcher optional** — `anvien serve` must remain the direct local backend entry point.
 
 ---
 
 ## Local Runtime Invariants
 
-- `avmatrix analyze` writes repo-local index data under `<repo>/.avmatrix/`.
-- `avmatrix mcp` exposes indexed repos over stdio for local agents.
-- `avmatrix serve` exposes the local HTTP backend on loopback for the Web UI.
-- `avmatrix-web/` is a thin client over the local backend; it must not become the owner of graph storage.
-- `avmatrix-launcher/` is a Windows convenience layer around the same backend and Web UI.
-- AVmatrix must not store AI provider API keys in browser storage or route chat through an AVmatrix cloud proxy.
+- `anvien analyze` writes repo-local index data under `<repo>/.anvien/`.
+- `anvien mcp` exposes indexed repos over stdio for local agents.
+- `anvien serve` exposes the local HTTP backend on loopback for the Web UI.
+- `anvien-web/` is a thin client over the local backend; it must not become the owner of graph storage.
+- `anvien-launcher/` is a Windows convenience layer around the same backend and Web UI.
+- Anvien must not store AI provider API keys in browser storage or route chat through an Anvien cloud proxy.
 - Current chat execution is through the Codex CLI adapter. `claude-code` is a shared provider identifier/UI slot until a backend adapter is implemented.
 
 ---
@@ -45,20 +45,20 @@ Format: **Trigger → Instruction → Reason**. Append new Signs when the same m
 ### Stale graph after edits
 
 - **Trigger:** MCP warns index is behind `HEAD`, or search doesn't match latest commit.
-- **Do:** `avmatrix analyze` (plus `--embeddings` if used).
+- **Do:** `anvien analyze` (plus `--embeddings` if used).
 - **Why:** Tools query LadybugDB from last analyze; git changes are invisible until re-indexed.
 
 ### Embeddings vanished after analyze
 
 - **Trigger:** Semantic search quality drops; `stats.embeddings` in `meta.json` is 0 after refresh.
-- **Do:** `avmatrix analyze --embeddings`, confirm `meta.json` reflects stored embeddings.
+- **Do:** `anvien analyze --embeddings`, confirm `meta.json` reflects stored embeddings.
 - **Why:** Embedding generation is opt-in; analyze without the flag does not preserve prior vectors.
 
 ### MCP lists no repos
 
 - **Trigger:** MCP stderr says no indexed repos.
-- **Do:** `avmatrix analyze` in the target repo; verify `avmatrix list` shows it.
-- **Why:** MCP discovers repos via `~/.avmatrix/registry.json`, populated by analyze.
+- **Do:** `anvien analyze` in the target repo; verify `anvien list` shows it.
+- **Why:** MCP discovers repos via `~/.anvien/registry.json`, populated by analyze.
 
 ### Wrong repo in multi-repo setups
 
@@ -69,7 +69,7 @@ Format: **Trigger → Instruction → Reason**. Append new Signs when the same m
 ### Web repo switch regresses
 
 - **Trigger:** Switching repos in the Web UI hangs, falls back to the previous repo, or graph nodes/links do not render.
-- **Do:** Verify `avmatrix serve` directly, then switch repo A -> B -> A with at least two indexed repos. Check `/api/graph?repo=...&stream=true`.
+- **Do:** Verify `anvien serve` directly, then switch repo A -> B -> A with at least two indexed repos. Check `/api/graph?repo=...&stream=true`.
 - **Why:** Web graph loading must stay repo-scoped. Reintroducing ambient active-repo state can make one repo's runtime affect another repo.
 
 ### Graph selection paths drift
@@ -80,21 +80,21 @@ Format: **Trigger → Instruction → Reason**. Append new Signs when the same m
 
 ### LadybugDB lock / "database busy"
 
-- **Trigger:** Errors opening `.avmatrix/lbug`, active job lock errors, or WAL/checksum errors.
-- **Do:** Stop launcher/backend/MCP sessions that may hold the repo, wait for analyze/embed/delete jobs to finish, then retry or rebuild with `avmatrix analyze . --force`.
+- **Trigger:** Errors opening `.anvien/lbug`, active job lock errors, or WAL/checksum errors.
+- **Do:** Stop launcher/backend/MCP sessions that may hold the repo, wait for analyze/embed/delete jobs to finish, then retry or rebuild with `anvien analyze . --force`.
 - **Why:** Analyze/embed/delete are repo write paths. Overlapping writers or killing a writer mid-flight can corrupt the repo-local LadybugDB store.
 
-### Launcher behavior diverges from `avmatrix serve`
+### Launcher behavior diverges from `anvien serve`
 
-- **Trigger:** Packaged launcher works differently from direct `avmatrix serve`, or reset/stop leaves stale runtime processes.
-- **Do:** Build with `avmatrix-launcher\build.ps1` and smoke-test start, reset, stop, and protocol registration.
+- **Trigger:** Packaged launcher works differently from direct `anvien serve`, or reset/stop leaves stale runtime processes.
+- **Do:** Build with `anvien-launcher\build.ps1` and smoke-test start, reset, stop, and protocol registration.
 - **Why:** The launcher is only a convenience wrapper. It must not change backend semantics.
 
 ### Chat settings imply cloud/provider config
 
-- **Trigger:** UI copy suggests AVmatrix stores API keys, configures model temperature/tokens for a cloud proxy, or fully supports Claude Code chat execution.
+- **Trigger:** UI copy suggests Anvien stores API keys, configures model temperature/tokens for a cloud proxy, or fully supports Claude Code chat execution.
 - **Do:** Describe the current local session bridge accurately: Codex CLI adapter implemented; `claude-code` reserved until its backend adapter exists.
-- **Why:** Misleading provider UI can make users think AVmatrix is an AI provider management layer instead of a local code-intelligence runtime.
+- **Why:** Misleading provider UI can make users think Anvien is an AI provider management layer instead of a local code-intelligence runtime.
 
 ---
 
@@ -102,9 +102,9 @@ Format: **Trigger → Instruction → Reason**. Append new Signs when the same m
 
 - Docs-only changes: `git diff --check` is usually enough.
 - Generated contract changes: run the Go contract generator/tests, then build affected CLI/Web packages.
-- CLI/MCP/backend/LadybugDB changes: build, typecheck, and run relevant `avmatrix/` tests.
-- Web graph/repo switching changes: run Web build/tests and manually verify repo A -> B -> A through `avmatrix serve`.
-- Launcher changes: run `avmatrix-launcher\build.ps1` and smoke-test packaged start/reset/stop.
+- CLI/MCP/backend/LadybugDB changes: build, typecheck, and run relevant `anvien/` tests.
+- Web graph/repo switching changes: run Web build/tests and manually verify repo A -> B -> A through `anvien serve`.
+- Launcher changes: run `anvien-launcher\build.ps1` and smoke-test packaged start/reset/stop.
 - Do not run full suites by habit when the change is docs-only or narrowly scoped; broaden validation when the touched code crosses runtime boundaries.
 
 ---

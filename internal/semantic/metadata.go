@@ -96,7 +96,7 @@ func semanticFieldStatus(g *graph.Graph, field string, sourceField string, unkno
 	if status.MissingNodes > 0 || status.MissingSourceNodes > 0 {
 		status.Status = StatusStaleIncomplete
 		status.StaleIncompleteSchemaEvidence = true
-		status.Message = "Graph semantic metadata is incomplete; run avmatrix analyze --force to refresh graph evidence."
+		status.Message = "Graph semantic metadata is incomplete; run anvien analyze --force to refresh graph evidence."
 	}
 	return status
 }

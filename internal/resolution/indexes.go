@@ -433,7 +433,7 @@ func looksLikeLocalGoPackageSuffix(suffix string) bool {
 		return true
 	case suffix == "internal", strings.HasPrefix(suffix, "internal/"):
 		return true
-	case suffix == "avmatrix-launcher", strings.HasPrefix(suffix, "avmatrix-launcher/"):
+	case suffix == "anvien-launcher", strings.HasPrefix(suffix, "anvien-launcher/"):
 		return true
 	default:
 		return false

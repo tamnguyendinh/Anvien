@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to avmatrix will be documented in this file.
+All notable changes to anvien will be documented in this file.
 
 ## [Unreleased]
 
@@ -21,7 +21,7 @@ All notable changes to avmatrix will be documented in this file.
 
 #### Fixed
 
-- Fixed stale `.avmatrix/analyze.lock` files blocking analyze after owner death, crash, or reboot.
+- Fixed stale `.anvien/analyze.lock` files blocking analyze after owner death, crash, or reboot.
 - Fixed lock release so an older owner cannot remove a lock acquired by a newer process.
 - Fixed dense Web graph node overlap by enforcing one rendered node diameter of empty edge-to-edge gap between rendered nodes.
 
@@ -31,15 +31,15 @@ All notable changes to avmatrix will be documented in this file.
 
 - Added user-facing documentation for semantic graph output: App Layer, Functional Area, source-site proof metadata, persisted ResolutionGap entities, Resolution Health, and diagnostic square nodes in the Web UI.
 - Documented the graph quality commands `query-health`, `resolution-inventory`, and `source-site-accuracy`.
-- Added expanded generated AVmatrix skill guidance for graph quality, API surface work, cross-repo workflows, runtime packaging, and generated AI context maintenance.
+- Added expanded generated Anvien skill guidance for graph quality, API surface work, cross-repo workflows, runtime packaging, and generated AI context maintenance.
 - Added graph orientation labels so Web graph macro rings and node-type islands identify their App Layer and node/filter groups directly on the canvas.
 
 #### Changed
 
 - Bumped the CLI package version from `1.2.1` to `1.2.2`.
 - Updated CLI/MCP documentation to describe semantic fields on `query`, `context`, `impact`, `detect-changes`, `route_map`, `shape_check`, and `api_impact`.
-- Reconciled generated AI context skill sources, package/setup skill distribution, and root `AGENTS.md` / `CLAUDE.md` guidance around the current AVmatrix command surface.
-- Standardized guidance around the canonical production executable path `avmatrix\bin\avmatrix.exe`.
+- Reconciled generated AI context skill sources, package/setup skill distribution, and root `AGENTS.md` / `CLAUDE.md` guidance around the current Anvien command surface.
+- Standardized guidance around the canonical production executable path `anvien\bin\anvien.exe`.
 
 ### 2026-05-22
 
@@ -64,13 +64,13 @@ All notable changes to avmatrix will be documented in this file.
 
 #### Changed
 
-- Moved the Windows launcher start surface into the Web UI served by the rebuilt `AVmatrixLauncher.exe`, making the exe the single packaged user entrypoint.
+- Moved the Windows launcher start surface into the Web UI served by the rebuilt `AnvienLauncher.exe`, making the exe the single packaged user entrypoint.
 - Removed the separate root HTML start-file flow from active launcher docs and validation expectations.
 - Kept the graph-shell Back action as an in-app navigation path back to the served start screen.
 
 #### Fixed
 
-- Fixed the packaged Start action entering the manual `avmatrix serve` bridge guide instead of the repository chooser/analyze surface.
+- Fixed the packaged Start action entering the manual `anvien serve` bridge guide instead of the repository chooser/analyze surface.
 - Fixed local folder picker UX so a pending native picker no longer traps the Analyze Repository screen or blocks manual path analysis.
 - Fixed reset/runtime helper process handling so reset does not rely on visible terminal windows in the packaged flow.
 - Fixed Graph Health `Unknown` semantics by separating topology status from unresolved-reference diagnostics.
@@ -79,8 +79,8 @@ All notable changes to avmatrix will be documented in this file.
 
 #### Added
 
-- Added default generation of non-empty root `AGENTS.md` and `CLAUDE.md` AVmatrix managed blocks from the Go implementation.
-- Added base AVmatrix skill installation during analyze and preserved generated community skills behind the explicit `--skills` path.
+- Added default generation of non-empty root `AGENTS.md` and `CLAUDE.md` Anvien managed blocks from the Go implementation.
+- Added base Anvien skill installation during analyze and preserved generated community skills behind the explicit `--skills` path.
 - Added the Graph Health connectivity lens taxonomy for connected, isolated, no-incoming, no-outgoing, detached-component, and unknown-connectivity states.
 - Added a dedicated Documentation display filter and centered documentation island in the Web graph layout.
 
@@ -119,14 +119,14 @@ All notable changes to avmatrix will be documented in this file.
 
 #### Fixed
 
-- Closed the Go graph-accuracy gate for the local AVmatrix graph, including TypeAlias, Variable, and direct `CALLS` recall targets.
+- Closed the Go graph-accuracy gate for the local Anvien graph, including TypeAlias, Variable, and direct `CALLS` recall targets.
 - Fixed Go graph extraction/resolution gaps that prevented measured local accuracy categories from reaching the plan target.
 
 ### 2026-05-14
 
 #### Changed
 
-- Completed the Go full-conversion cutover for non-Web AVmatrix runtime authority.
+- Completed the Go full-conversion cutover for non-Web Anvien runtime authority.
 - Kept TypeScript/React as the Web UI display/build surface while moving CLI, backend, analyzer, graph, MCP, setup, packaging, and runtime authority to Go.
 - Removed or replaced non-Web TypeScript/Node implementation authority after converted Go implementations and tests passed.
 
@@ -212,7 +212,7 @@ All notable changes to avmatrix will be documented in this file.
 #### Changed
 
 - Migrated `/api/graph`, `/api/query`, `/api/search`, and `/api/grep` away from the old process-global LadybugDB retargeting path for repo-switch graph-load scope.
-- Kept AVmatrix local-only: no cloud control plane, no managed workspace import model, and no required always-on daemon.
+- Kept Anvien local-only: no cloud control plane, no managed workspace import model, and no required always-on daemon.
 - Refreshed the repository list after analyzing a repository from the dropdown flow.
 - Reworked loading UI copy and removed the fake hard-coded graph download percentage.
 
@@ -231,12 +231,12 @@ All notable changes to avmatrix will be documented in this file.
 #### Added
 
 - Added the initial packaged launcher flow for Windows.
-- Added `AVmatrixLauncher.exe`, the Go launcher source, packaged Web UI output, backend server wrapper, and protocol registration for the original launcher start action.
+- Added `AnvienLauncher.exe`, the Go launcher source, packaged Web UI output, backend server wrapper, and protocol registration for the original launcher start action.
 - Added launcher reset/start/stop behavior around the same local backend runtime.
 
 #### Changed
 
-- Moved launcher sources and build output from hidden `.avmatrix-launcher/` to visible `avmatrix-launcher/`.
+- Moved launcher sources and build output from hidden `.anvien-launcher/` to visible `anvien-launcher/`.
 - Updated launcher path references, protocol registration, and build packaging after the directory move.
 
 #### Documented
@@ -278,7 +278,7 @@ All notable changes to avmatrix will be documented in this file.
 
 - Refined the Web UI shell and controls toward the `The Press` editorial design direction while keeping the graph workspace dark.
 - Switched the graph viewport to black and refined graph rendering/selection behavior.
-- Reordered graph guidance tools and aligned package metadata/docs with the current AVmatrix product surface.
+- Reordered graph guidance tools and aligned package metadata/docs with the current Anvien product surface.
 
 #### Fixed
 
@@ -301,7 +301,7 @@ All notable changes to avmatrix will be documented in this file.
 
 #### Changed
 
-- Updated AI context generation and README content for the local AVmatrix runtime direction.
+- Updated AI context generation and README content for the local Anvien runtime direction.
 
 #### Documented
 
@@ -316,7 +316,7 @@ All notable changes to avmatrix will be documented in this file.
 
 #### Changed
 
-- Completed the AVmatrix rename rollout across user-facing surfaces, CLI/package metadata, MCP integration, docs, setup, and active Web UI paths.
+- Completed the Anvien rename rollout across user-facing surfaces, CLI/package metadata, MCP integration, docs, setup, and active Web UI paths.
 - Removed SWE-bench, sponsor, eval-server, and remote/eval product surfaces from the active local tool.
 - Separated chat runtime state from graph state in the Web UI.
 - Retired the legacy Web agent build path.
@@ -332,7 +332,7 @@ All notable changes to avmatrix will be documented in this file.
 #### Documented
 
 - Added and refined the local-only runtime migration plan.
-- Added AVmatrix rename rollout planning.
+- Added Anvien rename rollout planning.
 - Added chat/graph separation reviews and supervisor review notes.
 - Restored license notice and refreshed agent context/guidance.
 

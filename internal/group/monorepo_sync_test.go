@@ -8,7 +8,7 @@ import (
 const testMonorepoGroupPath = "platform/monorepo"
 
 func TestMonorepoFixtureExtractsContractsWithServiceAssignments(t *testing.T) {
-	monorepoDir := filepath.Join("..", "..", "avmatrix", "test", "fixtures", "group", "test-monorepo")
+	monorepoDir := filepath.Join("..", "..", "anvien", "test", "fixtures", "group", "test-monorepo")
 	boundaries, err := DetectServiceBoundaries(monorepoDir)
 	if err != nil {
 		t.Fatalf("DetectServiceBoundaries() error = %v", err)
@@ -42,7 +42,7 @@ func TestMonorepoFixtureExtractsContractsWithServiceAssignments(t *testing.T) {
 }
 
 func TestMonorepoFixtureProducesIntraRepoCrossLinks(t *testing.T) {
-	monorepoDir := filepath.Join("..", "..", "avmatrix", "test", "fixtures", "group", "test-monorepo")
+	monorepoDir := filepath.Join("..", "..", "anvien", "test", "fixtures", "group", "test-monorepo")
 	boundaries, err := DetectServiceBoundaries(monorepoDir)
 	if err != nil {
 		t.Fatalf("DetectServiceBoundaries() error = %v", err)

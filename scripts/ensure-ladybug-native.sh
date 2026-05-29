@@ -27,7 +27,7 @@ resolve_latest_version_tag() {
   local response tag checked_at
   response="$(curl -fsSL \
     -H 'Accept: application/vnd.github+json' \
-    -H 'User-Agent: avmatrix-go-native-bootstrap' \
+    -H 'User-Agent: anvien-go-native-bootstrap' \
     https://api.github.com/repos/LadybugDB/ladybug/releases/latest)"
   tag="$(printf '%s\n' "$response" | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
   if [[ -z "$tag" ]]; then

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const NoGitignoreEnv = "AVMATRIX_NO_GITIGNORE"
+const NoGitignoreEnv = "ANVIEN_NO_GITIGNORE"
 
 type Options struct {
 	NoGitignore bool
@@ -24,9 +24,9 @@ type rule struct {
 }
 
 func Load(repoPath string, options Options) (Matcher, error) {
-	files := []string{".gitignore", ".avmatrixignore"}
+	files := []string{".gitignore", ".anvienignore"}
 	if options.NoGitignore || os.Getenv(NoGitignoreEnv) != "" {
-		files = []string{".avmatrixignore"}
+		files = []string{".anvienignore"}
 	}
 
 	var matcher Matcher

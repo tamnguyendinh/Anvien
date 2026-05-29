@@ -166,7 +166,7 @@ links:
 }
 
 func TestParseFixtureGroupConfig(t *testing.T) {
-	raw, err := os.ReadFile(filepath.Join("..", "..", "avmatrix", "test", "fixtures", "group", "group.yaml"))
+	raw, err := os.ReadFile(filepath.Join("..", "..", "anvien", "test", "fixtures", "group", "group.yaml"))
 	if err != nil {
 		t.Fatalf("read fixture group.yaml: %v", err)
 	}
