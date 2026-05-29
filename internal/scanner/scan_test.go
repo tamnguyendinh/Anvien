@@ -104,7 +104,7 @@ func TestWalkRepositoryPathsIncludesMainframeFiles(t *testing.T) {
 	}
 }
 
-func TestWalkRepositoryPathsAppliesGitignoreAvmatrixignoreAndEnv(t *testing.T) {
+func TestWalkRepositoryPathsAppliesGitignoreAnvienignoreAndEnv(t *testing.T) {
 	dir := t.TempDir()
 	writeScannerFile(t, dir, ".gitignore", "data/\n*.log\n")
 	writeScannerFile(t, dir, ".anvienignore", "vendor/\n")

@@ -68,7 +68,7 @@ func TestIsHardcodedIgnoredDirectory(t *testing.T) {
 	}
 }
 
-func TestMatcherCombinesGitignoreAndAvmatrixignore(t *testing.T) {
+func TestMatcherCombinesGitignoreAndAnvienignore(t *testing.T) {
 	dir := t.TempDir()
 	writeFile(t, dir, ".gitignore", "data/\n*.log\n")
 	writeFile(t, dir, ".anvienignore", "local/\n")
@@ -88,7 +88,7 @@ func TestMatcherCombinesGitignoreAndAvmatrixignore(t *testing.T) {
 	}
 }
 
-func TestNoGitignoreStillReadsAvmatrixignore(t *testing.T) {
+func TestNoGitignoreStillReadsAnvienignore(t *testing.T) {
 	dir := t.TempDir()
 	writeFile(t, dir, ".gitignore", "data/\n")
 	writeFile(t, dir, ".anvienignore", "local/\n")

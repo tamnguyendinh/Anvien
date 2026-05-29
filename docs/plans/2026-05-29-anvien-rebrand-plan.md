@@ -12,14 +12,14 @@ Companion files:
 
 ## Master Rules
 
-1. Use AVmatrix for codebase analysis and impact checks while working on this plan, including documentation planning when the plan depends on actual codebase surfaces.
+1. Use Anvien for codebase analysis and impact checks while working on this plan, including documentation planning when the plan depends on actual codebase surfaces.
 2. As each task is completed, update the corresponding checklist item immediately.
 3. Run a full build before testing; the test suite must include an e2e test if Web UI behavior changes.
 4. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, graph inventory counts, or rename inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.
 5. Record evidence as each evidenced task is completed.
-6. Before graph-based work, refresh the graph with `avmatrix analyze --force`.
-7. Before editing any function, class, method, exported symbol, API handler, graph builder, resolver, analyzer, or shared contract, run AVmatrix impact analysis and record blast radius.
-8. Before every implementation commit, run `avmatrix detect-changes --repo AVmatrix --scope all`.
+6. Before graph-based work, refresh the graph with `anvien analyze --force`.
+7. Before editing any function, class, method, exported symbol, API handler, graph builder, resolver, analyzer, or shared contract, run Anvien impact analysis and record blast radius.
+8. Before every implementation commit, run `anvien detect-changes --repo Anvien --scope all`.
 9. After each completed implementation slice, commit the work, then continue until the full plan is complete.
 
 ## Problem
@@ -218,14 +218,14 @@ Confirmed targets: GitHub URL `https://github.com/tamnguyendinh/Anvien`, Go/modu
 This phase covers work that must happen on GitHub itself, not only in local source files.
 
 - [x] [P2-A] Confirm the final GitHub owner and repository slug are available and approved. Record the exact final URL in the evidence ledger.
-- [ ] [P2-B] Put a short implementation freeze on release/publish activity before the GitHub rename so tags, package publishes, and workflow runs do not race the rename.
-- [ ] [P2-C] Rename the GitHub repository in repository Settings from the old AVmatrix slug to the approved Anvien slug.
+- [x] [P2-B] Put a short implementation freeze on release/publish activity before the GitHub rename so tags, package publishes, and workflow runs do not race the rename.
+- [x] [P2-C] Rename the GitHub repository in repository Settings from the old AVmatrix slug to the approved Anvien slug.
 - [ ] [P2-D] Update the GitHub repository display metadata: description, website/homepage field if any, topics, social preview, and pinned repository references.
 - [ ] [P2-E] Update GitHub branch protection and rulesets if any rule names, status-check names, path filters, or required checks include old `avmatrix` naming.
 - [ ] [P2-F] Audit and update GitHub Actions repository secrets, variables, and environments whose names or values contain `AVMATRIX`, `avmatrix`, old package names, old image names, old command paths, or old release artifact names.
 - [ ] [P2-G] Audit and update GitHub webhooks, deploy keys, GitHub Apps, Pages settings, environments, package permissions, and repository integrations that point at old repo URLs or old package/image names.
-- [ ] [P2-H] Update GitHub Releases and release-drafter configuration so generated release titles, notes, assets, and links use Anvien names.
-- [ ] [P2-I] Update GitHub issue templates, PR template, labels, CODEOWNERS if present, funding metadata, and support/security contact text that still says AVmatrix.
+- [x] [P2-H] Update GitHub Releases and release-drafter configuration so generated release titles, notes, assets, and links use Anvien names.
+- [x] [P2-I] Update GitHub issue templates, PR template, labels, CODEOWNERS if present, funding metadata, and support/security contact text that still says AVmatrix.
 - [x] [P2-J] Update `.github/actions/setup-avmatrix` to an Anvien action directory/name and update all workflow references to it.
 - [x] [P2-K] Update `.github/actions/setup-avmatrix-web` to an Anvien action directory/name and update all workflow references to it.
 - [x] [P2-L] Update `.github/workflows/**` path filters, working directories, cache dependency paths, artifact paths, test commands, build commands, workflow comments, and workflow env markers from old names to Anvien names.
@@ -233,12 +233,12 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 - [x] [P2-N] Update Docker/GHCR workflows from `avmatrix`/`avmatrix-web` image slugs to Anvien image slugs.
 - [x] [P2-O] Update GitHub automation scripts under `.github/scripts/**` that reference the old package directory or old constants.
 - [x] [P2-P] Update badges in README/docs to use the new repository slug and workflow names.
-- [ ] [P2-Q] Update local `origin` remote to the new GitHub URL and record `git remote -v`.
-- [ ] [P2-R] Verify a fresh clone from the new GitHub URL works.
-- [ ] [P2-S] Verify old GitHub URL behavior only as GitHub redirect evidence. Do not rely on the redirect as a supported runtime or documentation path.
-- [ ] [P2-T] After GitHub and `.github` updates, run the affected workflow-equivalent local commands where possible and record the validation evidence.
+- [x] [P2-Q] Update local `origin` remote to the new GitHub URL and record `git remote -v`.
+- [x] [P2-R] Verify a fresh clone from the new GitHub URL works.
+- [x] [P2-S] Verify old GitHub URL behavior only as GitHub redirect evidence. Do not rely on the redirect as a supported runtime or documentation path.
+- [x] [P2-T] After GitHub and `.github` updates, run the affected workflow-equivalent local commands where possible and record the validation evidence.
 
-GitHub status on 2026-05-29: connector read confirmed `tamnguyendinh/AVmatrix` exists, is public, default branch `master`, and this account has `admin` permission. Connector read for `tamnguyendinh/Anvien` returned 404, so the target slug is not currently an accessible repo. Actual repository rename remains pending because the available connector exposes repo reads but not repository PATCH/rename, `gh` is not installed locally, and no `GITHUB_TOKEN`/`GH_TOKEN` is available in the environment. Do not update local `origin` to the Anvien URL until the GitHub rename succeeds, otherwise push/fetch would point at a non-existent repository.
+GitHub status on 2026-05-29: repository read now confirms `tamnguyendinh/Anvien` exists, id `1225334469`, public, default branch `master`, and this account has `admin`, `maintain`, `push`, `pull`, and `triage` permissions. Local `origin` now points to `https://github.com/tamnguyendinh/Anvien.git`; `master` was pushed to commit `8b39b2ca07c4f7545fa781b8fa5689c089c01289`; a fresh clone from the new URL succeeded; and the old URL resolves to the same HEAD only as GitHub redirect evidence. Public metadata, topics, labels, and releases were checked for old names: description/topics/labels had no old-name matches and releases count is `0`. Branch protection returned HTTP `401`, and secrets, variables, webhooks, deploy keys, Apps, Pages, package permissions, social preview, and pinned repository references remain open because they require GitHub settings/API access not available in this session.
 
 ## Phase 2.5 - Module, Package, And Folder Names
 
@@ -348,7 +348,7 @@ Interim Phase 7 launcher validation completed binary/protocol/process/lifecycle 
 - [x] [P9-F] Run `avmatrix detect-changes --repo AVmatrix --scope all` before commits until the rename slice changes the command; then record and use the Anvien equivalent.
 - [x] [P9-G] Commit each completed implementation slice with evidence and benchmark ledgers updated.
 
-Final local validation passed on 2026-05-29: full build, Go cmd/internal tests, Web unit tests, onboarding e2e, package runtime build/ensure, MCP initialize, serve smoke, final old-name inventory, and final `anvien detect-changes --repo AVmatrix --scope all` with no changes detected. GitHub repository rename tasks in Phase 2 remain the only incomplete plan items because the available tooling cannot perform repository Settings rename in this session.
+Final local validation passed on 2026-05-29: full build, Go cmd/internal tests, Web unit tests, onboarding e2e, package runtime build/ensure, MCP initialize, serve smoke, final old-name inventory, and final `anvien detect-changes --repo Anvien --scope all` validation. GitHub repository rename, local remote update, push, fresh clone, and redirect checks are complete; the remaining open items are GitHub settings surfaces that require unavailable Settings/API access and the final top-level filesystem folder rename from `E:\AVmatrix-GO` to `E:\Anvien` after this workspace is no longer held open.
 
 ## Benchmark Requirements
 

@@ -1108,8 +1108,75 @@ Final local artifact sizes:
 
 Remaining external tasks:
 
-- Rename GitHub repository from `tamnguyendinh/AVmatrix` to `tamnguyendinh/Anvien`.
-- Update GitHub repository metadata/settings/secrets/rulesets/integrations/releases as needed.
-- Update local `origin` after the GitHub rename succeeds.
-- Fresh-clone verify the new URL and old redirect behavior.
+- Update GitHub branch protection, secrets, variables, webhooks, deploy keys, Apps, Pages, package permissions, social preview, and pinned repository references if any old names exist. These require GitHub Settings/API access not available in this session.
 - Rename the top-level local workspace folder from `E:\AVmatrix-GO` to `E:\Anvien` after closing processes that hold the current working directory.
+
+## E16 - Phase 2 GitHub Rename And Final Legacy Cleanup
+
+Date: 2026-05-29
+
+Status: recorded
+
+Scope:
+
+- Verified the GitHub repository is now `tamnguyendinh/Anvien`.
+- Updated local `origin` to the new repository URL.
+- Pushed all local rebrand commits to GitHub.
+- Verified fresh clone behavior, old URL redirect behavior, public metadata, local Anvien registry name, generated AI context, and the final test-name legacy cleanup.
+
+GitHub and remote evidence:
+
+| Command or check | Result |
+|---|---|
+| GitHub connector read for `https://github.com/tamnguyendinh/Anvien` | pass; repo id `1225334469`, name `Anvien`, full name `tamnguyendinh/Anvien`, public, default branch `master`, permissions include `admin`, `maintain`, `push`, `pull`, `triage`. |
+| `git remote -v` before update | `origin https://github.com/tamnguyendinh/AVmatrix.git` for fetch and push. |
+| `git remote set-url origin https://github.com/tamnguyendinh/Anvien.git` | pass. |
+| `git remote -v` after update | `origin https://github.com/tamnguyendinh/Anvien.git` for fetch and push. |
+| `git status -sb` before push | local `master` was ahead of `origin/master` by `14` commits. |
+| `git push origin master` | pass; pushed `3e37a3e..8b39b2c` to `master`. |
+| fresh clone from `https://github.com/tamnguyendinh/Anvien.git` | pass; clone HEAD `8b39b2ca07c4f7545fa781b8fa5689c089c01289`, `anvien\package.json` exists, old `avmatrix` package folder does not exist. |
+| `git ls-remote https://github.com/tamnguyendinh/Anvien.git HEAD` | `8b39b2ca07c4f7545fa781b8fa5689c089c01289`. |
+| `git ls-remote https://github.com/tamnguyendinh/AVmatrix.git HEAD` | `8b39b2ca07c4f7545fa781b8fa5689c089c01289`; recorded as GitHub redirect evidence only. |
+| final `git status -sb` after push | `## master...origin/master`; no ahead/behind state. |
+
+GitHub public metadata evidence:
+
+| Check | Result |
+|---|---|
+| Repository REST metadata | full name `tamnguyendinh/Anvien`, name `Anvien`, default branch `master`, visibility `public`. |
+| Description | no old-name match. |
+| Homepage | empty. |
+| Topics | `13` topics; no old-name match. |
+| Labels | `11` labels; no old-name match. |
+| Releases | `0` releases. |
+| Rulesets | `0` rulesets. |
+| Branch protection endpoint | blocked with HTTP `401 Requires authentication`. |
+| `gh` / token availability | `gh` is not installed; `GITHUB_TOKEN` and `GH_TOKEN` are not set. |
+
+Local registry and generated context evidence:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | pass; scanned `816`, parsed `584`, unsupported `232`, failed `0`; graph `91526` nodes and `124987` relationships. |
+| `.\anvien\bin\anvien.exe list` | pass; current repo is registered as `Anvien` at `E:\AVmatrix-GO`, commit `8b39b2c`. |
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` before final test-name cleanup | pass; no changes detected, risk `none`. |
+| old-name `rg` over `AGENTS.md`, `CLAUDE.md`, `.claude`, `.mcp.json`, `.grok` after local preamble cleanup | pass; `0` matches. |
+| active source/config old-name `rg` excluding rebrand ledger, `.anvien`, `.git`, and generated `anvien/bin` runtime metadata | pass; `0` matches. |
+
+Final test-name legacy cleanup evidence:
+
+| Check | Result |
+|---|---|
+| Impact: `TestMatcherCombinesGitignoreAndAvmatrixignore` | pass; risk `LOW`, impacted count `0`. |
+| Impact: `TestNoGitignoreStillReadsAvmatrixignore` | pass; risk `LOW`, impacted count `0`. |
+| Impact: `TestWalkRepositoryPathsAppliesGitignoreAvmatrixignoreAndEnv` | pass; risk `LOW`, impacted count `0`. |
+| Code change | renamed the three legacy test function names to `Anvienignore`; test data already used `.anvienignore`. |
+| `npm run build` in `anvien` | pass; package runtime built. |
+| `go test .\internal\ignore .\internal\scanner -count=1` | pass; both packages passed. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` after cleanup | pass; scanned `816`, parsed `584`, unsupported `232`, failed `0`; graph `91526` nodes and `124987` relationships. |
+| final `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | pass; risk `low`, changed files `5`, changed symbols `19`, affected count `0`; changed symbols are the backend test-name cleanup plus documentation ledger sections. |
+
+Remaining limitations:
+
+- GitHub branch protection, secrets, variables, environments, webhooks, deploy keys, Apps, Pages, package permissions, social preview, and pinned repository references still need Settings/API access.
+- `anvien\bin\anvien-runtime.json` is ignored build output and still records source path `E:/AVmatrix-GO` while the active workspace folder has that name. It will regenerate with `E:\Anvien` after the final top-level folder rename and package build.

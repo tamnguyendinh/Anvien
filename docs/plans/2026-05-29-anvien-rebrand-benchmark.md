@@ -353,3 +353,29 @@ Date: 2026-05-29
 | Final active old-name matches | final old-name `rg` excluding rebrand ledger, generated build/test output, `node_modules`, and `.git` | `0` | No active old runtime names. |
 | Final `.avmatrix` directory count | recursive directory search excluding `.git` | `0` | Old storage not recreated. |
 | Final detect changes | `anvien detect-changes --repo AVmatrix --scope all` | `0` | No changes detected; risk `none`. |
+
+## B14 - Phase 2 GitHub Rename And Legacy Cleanup Counts
+
+Status: recorded
+
+Date: 2026-05-29
+
+| Metric | Command | Latest | Note |
+|---|---|---:|---|
+| Local commits ahead before GitHub push | `git status -sb` | `14` | Rebrand commits pending push before updating GitHub remote. |
+| Local commits ahead after GitHub push | `git status -sb` | `0` | Local `master` matched `origin/master` after push. |
+| Pushed GitHub HEAD | `git rev-parse HEAD` / remote clone HEAD | `8b39b2ca07c4f7545fa781b8fa5689c089c01289` | New GitHub URL and fresh clone resolved this commit. |
+| Fresh clone new package folder | `Test-Path anvien\package.json` in temp clone | `1` | Fresh clone from `tamnguyendinh/Anvien` has the Anvien package folder. |
+| Fresh clone old package folder | `Test-Path avmatrix` in temp clone | `0` | Old package folder absent. |
+| Old GitHub URL redirect HEAD | `git ls-remote https://github.com/tamnguyendinh/AVmatrix.git HEAD` | `8b39b2ca07c4f7545fa781b8fa5689c089c01289` | Redirect evidence only, not a supported runtime or doc path. |
+| Repository labels | GitHub REST labels | `11` | No old-name matches. |
+| Repository topics | GitHub REST metadata topics | `13` | No old-name matches. |
+| Repository releases | GitHub REST releases | `0` | No release assets or titles to rename on GitHub. |
+| Repository rulesets | GitHub REST rulesets | `0` | No repository rulesets to rename. |
+| Branch protection endpoint | GitHub REST branch protection for `master` | `401` | Requires authentication beyond current session. |
+| Local registry old repo names | `anvien list` after `anvien analyze --force --name Anvien` | `0` | Current repo is registered as `Anvien`; old `AVmatrix` registry entry no longer appears for this path. |
+| Generated context old-name matches | old-name `rg` over `AGENTS.md`, `CLAUDE.md`, `.claude`, `.mcp.json`, `.grok` | `0` | Local ignored agent context preamble and generated Anvien block are clean. |
+| Active source/config old-name matches | active old-name `rg` excluding rebrand ledger, `.anvien`, `.git`, and `anvien/bin` build metadata | `0` | Covers source, config, package, GitHub automation, and local agent config surfaces. |
+| Final cleanup changed files | `anvien detect-changes --repo Anvien --scope all` | `5` | Includes `2` backend test files plus `3` rebrand ledger files. |
+| Final cleanup changed symbols | same detect-changes command | `19` | Backend test symbols, non-actionable `testing.T` resolution-gap entities, and documentation sections. |
+| Final cleanup affected count | same detect-changes command | `0` | No affected processes or downstream symbols. |
