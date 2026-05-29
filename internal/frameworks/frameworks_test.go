@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestDetectFromPathMatchesFrameworkConventions(t *testing.T) {

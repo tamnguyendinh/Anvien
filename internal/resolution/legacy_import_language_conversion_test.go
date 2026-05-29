@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestLegacyImportResolutionConversionCoversLanguageStrategies(t *testing.T) {
@@ -106,7 +106,7 @@ func TestLegacyImportPreprocessingConversionRejectsUnsafePaths(t *testing.T) {
 }
 
 func TestLegacyWildcardSynthesisConversionCoversGoFallbackAndTransitiveIncludes(t *testing.T) {
-	goRaw := "github.com/tamnguyendinh/avmatrix-go/internal/pkg"
+	goRaw := "github.com/tamnguyendinh/anvien/internal/pkg"
 	headerRaw := "include/a.h"
 	deepRaw := "include/b.h"
 	goModuleScope := "scope:cmd/app/main.go#1:0-4:1:Module"
@@ -169,7 +169,7 @@ func TestLegacyCrossFileBindingConversionResolvesCallsAcrossLanguageImports(t *t
 		{name: "rust", language: scanner.Rust, source: "src/main.rs", target: "src/helper.rs", raw: "crate::helper", local: "Helper", imported: "Helper", form: scopeir.CallFree},
 		{name: "python", language: scanner.Python, source: "src/pkg/app.py", target: "src/pkg/helper.py", raw: ".helper", local: "Helper", imported: "Helper", form: scopeir.CallFree},
 		{name: "ruby", language: scanner.Ruby, source: "lib/app.rb", target: "lib/helper.rb", raw: "./helper", local: "Helper", imported: "Helper", form: scopeir.CallFree},
-		{name: "go package receiver", language: scanner.Go, source: "cmd/app/main.go", target: "internal/pkg/helper.go", raw: "github.com/tamnguyendinh/avmatrix-go/internal/pkg", local: "pkg", imported: "pkg", receiver: "pkg", form: scopeir.CallMember},
+		{name: "go package receiver", language: scanner.Go, source: "cmd/app/main.go", target: "internal/pkg/helper.go", raw: "github.com/tamnguyendinh/anvien/internal/pkg", local: "pkg", imported: "pkg", receiver: "pkg", form: scopeir.CallMember},
 	}
 
 	for _, test := range tests {

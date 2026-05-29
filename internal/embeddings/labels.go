@@ -1,6 +1,6 @@
 package embeddings
 
-import "github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+import "github.com/tamnguyendinh/anvien/internal/scopeir"
 
 var chunkableLabels = map[scopeir.NodeLabel]bool{
 	scopeir.NodeFunction:    true,

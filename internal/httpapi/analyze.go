@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	analyzer "github.com/tamnguyendinh/avmatrix-go/internal/analyze"
-	"github.com/tamnguyendinh/avmatrix-go/internal/embeddings"
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugload"
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugnative"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	analyzer "github.com/tamnguyendinh/anvien/internal/analyze"
+	"github.com/tamnguyendinh/anvien/internal/embeddings"
+	"github.com/tamnguyendinh/anvien/internal/lbugload"
+	"github.com/tamnguyendinh/anvien/internal/lbugnative"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 const analyzeJobTimeout = 30 * time.Minute

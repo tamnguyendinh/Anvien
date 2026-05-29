@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugschema"
-	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/lbugschema"
+	"github.com/tamnguyendinh/anvien/internal/semantic"
 )
 
 const RelationshipCSVHeader = "from,to,type,confidence,reason,step,resolutionSource,evidence,fileHash,sourceSiteId,sourceSiteIds,sourceSiteCount,sourceSiteStatus,proofKind,targetRole,targetText,filePath,startLine,startCol,endLine,endCol"

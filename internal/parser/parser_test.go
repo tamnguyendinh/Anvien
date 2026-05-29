@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
 )
 
 func TestPoolParsesJavaScriptAndTypeScript(t *testing.T) {

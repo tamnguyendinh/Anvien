@@ -1,6 +1,6 @@
 package semantic
 
-import "github.com/tamnguyendinh/avmatrix-go/internal/graph"
+import "github.com/tamnguyendinh/anvien/internal/graph"
 
 const (
 	SchemaVersion = "semantic_app_functional_v1"

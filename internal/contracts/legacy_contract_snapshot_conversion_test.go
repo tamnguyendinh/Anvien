@@ -12,10 +12,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/cli"
-	"github.com/tamnguyendinh/avmatrix-go/internal/httpapi"
-	"github.com/tamnguyendinh/avmatrix-go/internal/mcp"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/cli"
+	"github.com/tamnguyendinh/anvien/internal/httpapi"
+	"github.com/tamnguyendinh/anvien/internal/mcp"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 func TestLegacyPhase1ContractSnapshotSurfacesAreGoOwned(t *testing.T) {

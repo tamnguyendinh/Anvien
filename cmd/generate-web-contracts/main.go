@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/contracts"
+	"github.com/tamnguyendinh/anvien/internal/contracts"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package lbugnative
 import (
 	"errors"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugruntime"
+	"github.com/tamnguyendinh/anvien/internal/lbugruntime"
 )
 
 var ErrUnavailable = errors.New("native LadybugDB runner is unavailable; build with -tags ladybugdb")

@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
-	"github.com/tamnguyendinh/avmatrix-go/internal/structure"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/structure"
 )
 
 func TestApplyEmitsFilesystemFrameworkAndFetchRouteEdges(t *testing.T) {

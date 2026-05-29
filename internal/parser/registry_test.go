@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
 )
 
 func TestDefaultRegistryResolvesSupportedLanguages(t *testing.T) {

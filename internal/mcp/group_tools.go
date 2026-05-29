@@ -3,7 +3,7 @@ package mcp
 import (
 	"strings"
 
-	groupcore "github.com/tamnguyendinh/avmatrix-go/internal/group"
+	groupcore "github.com/tamnguyendinh/anvien/internal/group"
 )
 
 func (s Server) groupListTool(args map[string]any) (map[string]any, error) {

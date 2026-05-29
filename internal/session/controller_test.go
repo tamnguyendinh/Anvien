@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 type fakeAdapter struct {

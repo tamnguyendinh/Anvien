@@ -4,9 +4,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
-	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/semantic"
 )
 
 type mcpSemanticFields struct {

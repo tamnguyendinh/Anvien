@@ -7,7 +7,7 @@ import (
 
 	sitter "github.com/tree-sitter/go-tree-sitter"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
 )
 
 var (

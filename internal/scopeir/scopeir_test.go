@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
 )
 
 func TestMarshalDeterministicMatchesGolden(t *testing.T) {

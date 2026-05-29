@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/parser"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/parser"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 type pipelineGraphSummary struct {

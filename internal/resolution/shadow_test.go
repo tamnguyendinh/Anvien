@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
 )
 
 func TestLegacyShadowDiffAgreementAndEvidenceDelta(t *testing.T) {

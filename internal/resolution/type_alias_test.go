@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/parser"
-	"github.com/tamnguyendinh/avmatrix-go/internal/providers/tsjs"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/parser"
+	"github.com/tamnguyendinh/anvien/internal/providers/tsjs"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestResolveImportedTypeAlias(t *testing.T) {

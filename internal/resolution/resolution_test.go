@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
-	"github.com/tamnguyendinh/avmatrix-go/internal/parser"
-	"github.com/tamnguyendinh/avmatrix-go/internal/providers/tsjs"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/graphhealth"
+	"github.com/tamnguyendinh/anvien/internal/parser"
+	"github.com/tamnguyendinh/anvien/internal/providers/tsjs"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestResolveTypeScriptGraphFixture(t *testing.T) {
@@ -205,7 +205,7 @@ func TestResolveMemberAccessRejectsCrossLanguageGlobalOwner(t *testing.T) {
 func TestResolveImportedConstSelectorDoesNotEmitAccess(t *testing.T) {
 	moduleScope := "scope:cmd/app/main.go:module"
 	functionScope := "scope:cmd/app/main.go:main"
-	targetRaw := "github.com/tamnguyendinh/avmatrix-go/internal/pkg"
+	targetRaw := "github.com/tamnguyendinh/anvien/internal/pkg"
 	source := scopeir.ScopeIR{
 		FilePath:    "cmd/app/main.go",
 		FileHash:    "hash-main",
@@ -411,7 +411,7 @@ func TestBuildCrossFileBindingFeedsResolveBoundInto(t *testing.T) {
 }
 
 func TestResolveExpandsGoPackageImportsToPackageFiles(t *testing.T) {
-	targetRaw := "github.com/tamnguyendinh/avmatrix-go/internal/pkg"
+	targetRaw := "github.com/tamnguyendinh/anvien/internal/pkg"
 	source := scopeir.ScopeIR{
 		FilePath:    "cmd/app/main.go",
 		Language:    scanner.Go,
@@ -773,7 +773,7 @@ func TestResolveGoSamePackageDirectCallAcrossFilesBeforeGlobalAmbiguity(t *testi
 }
 
 func TestResolveImportedPackageMemberCall(t *testing.T) {
-	targetRaw := "github.com/tamnguyendinh/avmatrix-go/internal/pkg"
+	targetRaw := "github.com/tamnguyendinh/anvien/internal/pkg"
 	moduleScope := "scope:cmd/app/main.go#1:0-5:1:Module"
 	functionScope := "scope:cmd/app/main.go#3:0-5:1:Function"
 	mainDef := scopeir.DefinitionFact{
@@ -837,7 +837,7 @@ func TestResolveImportedPackageMemberCall(t *testing.T) {
 }
 
 func TestResolveMemberCallThroughImportedCallReturnBinding(t *testing.T) {
-	targetRaw := "github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	targetRaw := "github.com/tamnguyendinh/anvien/internal/graph"
 	moduleScope := "scope:cmd/app/main.go#1:0-5:1:Module"
 	functionScope := "scope:cmd/app/main.go#2:0-5:1:Function"
 	mainDef := scopeir.DefinitionFact{

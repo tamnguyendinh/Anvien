@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/graph"
 )
 
 const (

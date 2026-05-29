@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"unsafe"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugruntime"
+	"github.com/tamnguyendinh/anvien/internal/lbugruntime"
 )
 
 type nativeDatabase struct {

@@ -3,8 +3,8 @@ package tsjs
 import (
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestExtractTypeScriptLegacyDerivedTypeBindingsAndMemberAccesses(t *testing.T) {

@@ -1,4 +1,4 @@
-module github.com/tamnguyendinh/avmatrix-go
+module github.com/tamnguyendinh/anvien
 
 go 1.26.3
 

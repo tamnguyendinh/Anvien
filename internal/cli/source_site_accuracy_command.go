@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy"
+	"github.com/tamnguyendinh/anvien/internal/graphaccuracy"
 )
 
 func newSourceSiteAccuracyCommand() *cobra.Command {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
+	"github.com/tamnguyendinh/anvien/internal/semantic"
 )
 
 const (

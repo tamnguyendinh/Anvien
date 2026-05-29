@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/session"
+	"github.com/tamnguyendinh/anvien/internal/session"
 )
 
 type fakeSessionRuntime struct {

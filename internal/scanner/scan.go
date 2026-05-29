@@ -10,7 +10,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/ignore"
+	"github.com/tamnguyendinh/anvien/internal/ignore"
 )
 
 const MaxFileSize int64 = 512 * 1024

@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 type ChatContext struct {

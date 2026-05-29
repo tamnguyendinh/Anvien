@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugruntime"
+	"github.com/tamnguyendinh/anvien/internal/lbugruntime"
 )
 
 func TestSemanticSearchQueriesVectorIndexDedupsChunksAndHydratesMetadata(t *testing.T) {

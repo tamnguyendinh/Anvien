@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 func Status(homeDir string, store repo.Store, name string) (StatusResult, error) {

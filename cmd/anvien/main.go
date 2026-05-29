@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/cli"
+	"github.com/tamnguyendinh/anvien/internal/cli"
 )
 
 func main() {

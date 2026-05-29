@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 const defaultQueryHealthSuitePath = "docs/query-health/2026-05-22-avmatrix-app-layer-resolution-gap-suite.json"

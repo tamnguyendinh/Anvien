@@ -15,13 +15,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/aicontext"
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
-	"github.com/tamnguyendinh/avmatrix-go/internal/httpapi"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
-	"github.com/tamnguyendinh/avmatrix-go/internal/version"
+	"github.com/tamnguyendinh/anvien/internal/aicontext"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/graphhealth"
+	"github.com/tamnguyendinh/anvien/internal/httpapi"
+	"github.com/tamnguyendinh/anvien/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/version"
 )
 
 func executeForTest(t *testing.T, args ...string) (string, string, error) {

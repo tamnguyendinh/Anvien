@@ -1,6 +1,6 @@
 package graphhealth
 
-import "github.com/tamnguyendinh/avmatrix-go/internal/graph"
+import "github.com/tamnguyendinh/anvien/internal/graph"
 
 // EdgePolicy defines which relationship types contribute to counted connectivity
 // for topology status (incoming/outgoing).

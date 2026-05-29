@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
 )
 
 func TestExtractHTMLScriptPrefersFirstInlineScriptAndPreservesLineOffset(t *testing.T) {

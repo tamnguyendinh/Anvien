@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/graphhealth"
+	"github.com/tamnguyendinh/anvien/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestDetectChangesToolReturnsSemanticSummaries(t *testing.T) {

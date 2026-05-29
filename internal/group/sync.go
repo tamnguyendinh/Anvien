@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 func Sync(homeDir string, store repo.Store, name string, options SyncOptions) (SyncResult, error) {

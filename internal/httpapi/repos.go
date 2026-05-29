@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 const repoHoldQueueTimeout = 10 * time.Minute

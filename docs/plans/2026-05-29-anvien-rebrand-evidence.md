@@ -829,7 +829,66 @@ Pre-commit change detection:
 - Resolution health impact: `0` degraded nodes and `0` nodes with gaps.
 - The CRITICAL summary is expected for this slice because root CLI/package runtime helpers and launcher startup/cleanup flows are changed intentionally.
 
-## E11 - Future Implementation Evidence
+## E11 - Phase 2.5 Go Module Path Slice
+
+Date: 2026-05-29
+
+Status: recorded
+
+Scope:
+
+- Changed `go.mod` module path from `github.com/tamnguyendinh/avmatrix-go` to `github.com/tamnguyendinh/anvien`.
+- Rewrote all active Go imports in `cmd/**` and `internal/**` to use `github.com/tamnguyendinh/anvien/...`.
+- Kept this as a hard rename with no `replace` directive, old import alias, or compatibility module path.
+- Assumption recorded: use lowercase `github.com/tamnguyendinh/anvien` for Go import stability while the GitHub rename phase still has the final display URL pending.
+
+Graph and impact evidence:
+
+- Fresh graph before module-path inventory and impact checks: `.\avmatrix\bin\anvien.exe analyze --force`; scanned `801`, parsed `583`, unsupported `218`, failed `0`; graph `91278` nodes, `124758` relationships.
+- AVmatrix query for Go module/import path surfaces found the CLI entrypoint, AI context generator import, analyzer/CLI/MCP/httpapi imports, and provider/test imports as affected import users.
+- `impact NewRootCommand --repo AVmatrix --direction upstream`: CRITICAL; direct upstream caller `cmd/anvien/main.go:main`; affected app layer `cli_launcher`; `11` affected processes through CLI startup flows.
+- Exact pre-edit inventory: `302` Go files and `695` Go import matches used the old module path, plus `1` `go.mod` module declaration.
+
+Implementation notes:
+
+- `cmd/anvien/main.go` now imports `github.com/tamnguyendinh/anvien/internal/cli`.
+- `internal/aicontext/aicontext.go` now imports `github.com/tamnguyendinh/anvien/internal/analyze`, removing the last old-name match from the AI context generator source.
+- Setup generator source no longer contains old-name matches from the deferred module import path.
+- MCP broad old-name source matches dropped to deferred folder-path heuristics only, such as `avmatrix-web/...` and `cmd/avmatrix/main.go`; those are handled by later folder/package/Web slices.
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass before tests; existing Vite dynamic-import and chunk-size warnings only. |
+| `go test .\cmd\... .\internal\... -count=1` | pass; packages now report `github.com/tamnguyendinh/anvien/...`; slowest packages included cli `32.207s`, mcp `14.410s`, analyze `10.276s`, httpapi `7.715s`. |
+| `go test . -count=1` in `avmatrix-launcher\src` | pass; `anvien-launcher` `3.462s`. |
+| `go test . -count=1` in `avmatrix-launcher\server-wrapper` | pass; `anvien-server-wrapper` `1.525s`. |
+| `npm run build` in `avmatrix` | pass; builds package runtime through `go run ../cmd/anvien package build-runtime`. |
+| `.\bin\anvien.exe package ensure-runtime` in `avmatrix` | pass; uses packaged Go runtime `windows/amd64`. |
+| `rg -o "github.com/tamnguyendinh/avmatrix-go" --glob "*.go" .` plus `go.mod` | `0` active Go/module matches. |
+| `rg -o "github.com/tamnguyendinh/anvien" --glob "*.go" .` plus `go.mod` | `696` active Go/module matches. |
+
+E2E status:
+
+- Not run for this slice because no Web UI behavior changed.
+
+Remaining old module-path mentions:
+
+- `git grep` outside this rebrand file set found old module path only in historical docs/reports: two previous `docs/plans/**` evidence files and one `reports/problem/**` audit report. They do not create runtime aliases and remain part of the later docs/report cleanup pass.
+
+Pre-commit change detection:
+
+- Command: `.\avmatrix\bin\anvien.exe detect-changes --repo AVmatrix --scope all`.
+- Result: pass; summary risk `low`.
+- Changed scope: `306` files, `38` changed symbols.
+- Changed app layers: `backend_test` `23`, `docs` `15`.
+- Changed functional areas: `documentation` `15`, `providers` `2`, `resolution` `21`.
+- Affected scope: `0` affected symbols/process nodes.
+- Resolution health impact: `0` degraded nodes and `0` nodes with gaps.
+- Resolution gap delta was limited to changed test literals after module import rewrites: `8` changed gap entities, all in backend tests; total resolution gap count remained `0`.
+
+## E12 - Future Implementation Evidence
 
 Date: pending
 

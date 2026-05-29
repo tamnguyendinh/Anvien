@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugschema"
+	"github.com/tamnguyendinh/anvien/internal/lbugschema"
 )
 
 const copyCSVOptions = `(HEADER=true, ESCAPE='"', DELIM=',', QUOTE='"', PARALLEL=false, auto_detect=false)`

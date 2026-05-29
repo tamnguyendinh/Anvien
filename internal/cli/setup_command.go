@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/tamnguyendinh/avmatrix-go/internal/aicontext"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/aicontext"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 const (

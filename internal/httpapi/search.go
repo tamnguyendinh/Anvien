@@ -13,9 +13,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/embeddings"
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugnative"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/embeddings"
+	"github.com/tamnguyendinh/anvien/internal/lbugnative"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 const (

@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	mcpserver "github.com/tamnguyendinh/avmatrix-go/internal/mcp"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	mcpserver "github.com/tamnguyendinh/anvien/internal/mcp"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 func newAugmentCommand() *cobra.Command {

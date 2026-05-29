@@ -3,9 +3,9 @@ package resolution
 import (
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestLegacyModelResolutionParityCoversTierPrecedenceAndRegistryRouting(t *testing.T) {
@@ -247,7 +247,7 @@ func TestLegacyImportFinalizeParityCoversDefaultNamespaceAliasUnresolvedAndGoPac
 	namespaceRaw := "./utils"
 	aliasRaw := "./repo"
 	missingRaw := "./missing"
-	goRaw := "github.com/tamnguyendinh/avmatrix-go/internal/pkg"
+	goRaw := "github.com/tamnguyendinh/anvien/internal/pkg"
 	moduleScope := "scope:src/service.ts#1:0-6:1:Module"
 	functionScope := "scope:src/service.ts#2:0-6:1:Function"
 	start := scopeir.DefinitionFact{

@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"runtime"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
-	"github.com/tamnguyendinh/avmatrix-go/internal/session"
-	"github.com/tamnguyendinh/avmatrix-go/internal/version"
+	"github.com/tamnguyendinh/anvien/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/session"
+	"github.com/tamnguyendinh/anvien/internal/version"
 )
 
 const (

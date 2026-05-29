@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graphaccuracy"
+	"github.com/tamnguyendinh/anvien/internal/graphaccuracy"
 )
 
 func main() {

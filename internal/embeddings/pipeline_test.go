@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugschema"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/lbugschema"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestRunEmbedsNewAndStaleNodesAndCreatesVectorIndex(t *testing.T) {

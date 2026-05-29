@@ -3,7 +3,7 @@ package mcp
 import (
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/graph"
 )
 
 type mcpRouteAnalysisRecord struct {

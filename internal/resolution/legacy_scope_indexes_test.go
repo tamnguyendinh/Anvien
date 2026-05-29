@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestLegacyScopeIndexParityBuildsWorkspaceLookupSurfaces(t *testing.T) {
@@ -173,7 +173,7 @@ func TestLegacyImportTargetAdapterParityUsesGoAndRelativeImportResolution(t *tes
 	if got := workspace.resolveImportFiles(scanner.TypeScript, "src/app.ts", "./models"); !reflect.DeepEqual(got, []string{"src/models.ts"}) {
 		t.Fatalf("TypeScript relative import files = %#v, want src/models.ts", got)
 	}
-	if got := workspace.resolveImportFiles(scanner.Go, "cmd/app/main.go", "github.com/tamnguyendinh/avmatrix-go/internal/pkg"); !reflect.DeepEqual(got, []string{"internal/pkg/a.go", "internal/pkg/b.go"}) {
+	if got := workspace.resolveImportFiles(scanner.Go, "cmd/app/main.go", "github.com/tamnguyendinh/anvien/internal/pkg"); !reflect.DeepEqual(got, []string{"internal/pkg/a.go", "internal/pkg/b.go"}) {
 		t.Fatalf("Go package import files = %#v, want sorted non-test package files", got)
 	}
 	if got := workspace.resolveImportFiles(scanner.TypeScript, "src/app.ts", "external-pkg"); got != nil {

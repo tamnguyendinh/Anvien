@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/analyze"
+	"github.com/tamnguyendinh/anvien/internal/analyze"
 )
 
 const (

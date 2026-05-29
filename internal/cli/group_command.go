@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	groupcore "github.com/tamnguyendinh/avmatrix-go/internal/group"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	groupcore "github.com/tamnguyendinh/anvien/internal/group"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 func newGroupCommand() *cobra.Command {

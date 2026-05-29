@@ -238,7 +238,7 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 
 ## Phase 2.5 - Module, Package, And Folder Names
 
-- [ ] [P2.5-A] Rename Go module path from the old `avmatrix-go` path to the approved Anvien path.
+- [x] [P2.5-A] Rename Go module path from the old `avmatrix-go` path to the approved Anvien path.
 - [x] [P2.5-B] Rename `cmd/avmatrix` to `cmd/anvien` and update all build scripts.
 - [ ] [P2.5-C] Rename package folder `avmatrix` to `anvien` if npm package layout is kept.
 - [ ] [P2.5-D] Rename `avmatrix-web` to `anvien-web` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
@@ -256,6 +256,8 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 - [x] [P3-G] Validate `anvien --help`, `anvien version`, `anvien analyze --help`, `anvien mcp`, `anvien serve --help`, `anvien setup --help`, and package lifecycle commands.
 
 Interim Phase 3 validation completed the command entrypoint, Cobra command name, package bin mapping, package runtime metadata, build/package scripts, help/version smoke, MCP initialize smoke through `anvien mcp`, and package `npm run build`/`package ensure-runtime`. Folder names such as `avmatrix`, `avmatrix-web`, and `avmatrix-launcher` remain open under Phase 2.5 and later slices, not as compatibility aliases.
+
+Interim Phase 2.5 module-path validation renamed the Go module and all active Go imports from `github.com/tamnguyendinh/avmatrix-go` to `github.com/tamnguyendinh/anvien`. The lowercase slug is the working module-path assumption until the GitHub rename phase records the final canonical repository URL. Exact old module-path matches in `*.go` and `go.mod` are now `0`; remaining old module-path mentions are historical docs/reports or this rebrand ledger.
 
 ## Phase 4 - MCP Hard Rename
 

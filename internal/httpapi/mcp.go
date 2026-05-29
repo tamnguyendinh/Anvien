@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	mcpserver "github.com/tamnguyendinh/avmatrix-go/internal/mcp"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	mcpserver "github.com/tamnguyendinh/anvien/internal/mcp"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 const mcpHTTPSessionTTL = 30 * time.Minute

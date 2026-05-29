@@ -4,10 +4,10 @@ import (
 	"path"
 	"sort"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/frameworks"
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/frameworks"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/graphhealth"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 type emitter struct {

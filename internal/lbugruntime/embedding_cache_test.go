@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugschema"
+	"github.com/tamnguyendinh/anvien/internal/lbugschema"
 )
 
 func TestFetchExistingEmbeddingHashesReadsCurrentSchema(t *testing.T) {

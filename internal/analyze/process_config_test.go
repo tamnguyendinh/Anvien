@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/processes"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/processes"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 func TestResolveConfiguredMaxProcessesCapDefaultsEnvAndSettings(t *testing.T) {

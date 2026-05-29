@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func contextNeighborhood(g *graph.Graph, node graph.Node) (map[string][]map[string]any, map[string][]map[string]any, []map[string]any) {

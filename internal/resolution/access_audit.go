@@ -3,7 +3,7 @@ package resolution
 import (
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 type AccessCandidateAuditOptions struct {

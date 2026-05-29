@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/graph"
 )
 
 type graphCountBaseline struct {

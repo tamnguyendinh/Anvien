@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestBindingAccumulatorLifecycle(t *testing.T) {

@@ -14,9 +14,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/embeddings"
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugnative"
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugruntime"
+	"github.com/tamnguyendinh/anvien/internal/embeddings"
+	"github.com/tamnguyendinh/anvien/internal/lbugnative"
+	"github.com/tamnguyendinh/anvien/internal/lbugruntime"
 )
 
 func TestSearchEndpointCallsSearchServiceAndReturnsResults(t *testing.T) {

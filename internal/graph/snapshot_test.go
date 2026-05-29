@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 type testGraphCorrectnessSnapshot struct {

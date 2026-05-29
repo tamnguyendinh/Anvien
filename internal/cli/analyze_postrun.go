@@ -3,9 +3,9 @@ package cli
 import (
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/aicontext"
-	"github.com/tamnguyendinh/avmatrix-go/internal/analyze"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/aicontext"
+	"github.com/tamnguyendinh/anvien/internal/analyze"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 type analyzeRegistration struct {

@@ -13,12 +13,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/embeddings"
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugnative"
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugruntime"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/embeddings"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/lbugnative"
+	"github.com/tamnguyendinh/anvien/internal/lbugruntime"
+	"github.com/tamnguyendinh/anvien/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestEmbedEndpointStartsJobAndCompletes(t *testing.T) {

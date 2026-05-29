@@ -4,7 +4,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/ignore"
+	"github.com/tamnguyendinh/anvien/internal/ignore"
 )
 
 func matchesSelection(relativePath string, options Options) bool {

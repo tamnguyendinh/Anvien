@@ -3,8 +3,8 @@ package resolution
 import (
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestAuditAccessCandidatesClassifiesReasons(t *testing.T) {
@@ -146,7 +146,7 @@ func TestAuditAccessCandidatesRejectsCrossLanguageGlobalOwner(t *testing.T) {
 func TestAuditAccessCandidatesRejectsImportedConstAsAccess(t *testing.T) {
 	moduleScope := "scope:cmd/app/main.go:module"
 	functionScope := "scope:cmd/app/main.go:main"
-	targetRaw := "github.com/tamnguyendinh/avmatrix-go/internal/pkg"
+	targetRaw := "github.com/tamnguyendinh/anvien/internal/pkg"
 	ir := scopeir.ScopeIR{
 		FilePath:    "cmd/app/main.go",
 		FileHash:    "hash-main",

@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 // Compute annotates the provided graph in-place with graph-health metadata

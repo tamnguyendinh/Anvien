@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
-	"github.com/tamnguyendinh/avmatrix-go/internal/graphhealth"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
-	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
+	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/graphhealth"
+	"github.com/tamnguyendinh/anvien/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/semantic"
 )
 
 var diffHunkPattern = regexp.MustCompile(`@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@`)

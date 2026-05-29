@@ -3,7 +3,7 @@ package lbugruntime
 import (
 	"fmt"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugschema"
+	"github.com/tamnguyendinh/anvien/internal/lbugschema"
 )
 
 type Row map[string]any

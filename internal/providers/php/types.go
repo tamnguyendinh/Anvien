@@ -3,7 +3,7 @@ package php
 import (
 	sitter "github.com/tree-sitter/go-tree-sitter"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func (c *collector) emitTypeBinding(node *sitter.Node) {

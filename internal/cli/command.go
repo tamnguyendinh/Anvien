@@ -12,17 +12,17 @@ import (
 	"runtime/pprof"
 
 	"github.com/spf13/cobra"
-	"github.com/tamnguyendinh/avmatrix-go/internal/analyze"
-	"github.com/tamnguyendinh/avmatrix-go/internal/embeddings"
-	"github.com/tamnguyendinh/avmatrix-go/internal/httpapi"
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugload"
-	"github.com/tamnguyendinh/avmatrix-go/internal/lbugnative"
-	"github.com/tamnguyendinh/avmatrix-go/internal/logging"
-	mcpserver "github.com/tamnguyendinh/avmatrix-go/internal/mcp"
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
-	"github.com/tamnguyendinh/avmatrix-go/internal/resolution"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
-	"github.com/tamnguyendinh/avmatrix-go/internal/version"
+	"github.com/tamnguyendinh/anvien/internal/analyze"
+	"github.com/tamnguyendinh/anvien/internal/embeddings"
+	"github.com/tamnguyendinh/anvien/internal/httpapi"
+	"github.com/tamnguyendinh/anvien/internal/lbugload"
+	"github.com/tamnguyendinh/anvien/internal/lbugnative"
+	"github.com/tamnguyendinh/anvien/internal/logging"
+	mcpserver "github.com/tamnguyendinh/anvien/internal/mcp"
+	"github.com/tamnguyendinh/anvien/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/resolution"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/version"
 )
 
 type Options struct {

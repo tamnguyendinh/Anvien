@@ -3,7 +3,7 @@ package tsjs
 import (
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 func TestScopeIDParityShapeAndDeterminism(t *testing.T) {

@@ -1,9 +1,9 @@
 package vue
 
 import (
-	"github.com/tamnguyendinh/avmatrix-go/internal/providers/sfc"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scanner"
-	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/providers/sfc"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 type Request = sfc.Request

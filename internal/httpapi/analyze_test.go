@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/repo"
+	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
 func TestAnalyzeRejectsInvalidRequests(t *testing.T) {

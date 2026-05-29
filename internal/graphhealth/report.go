@@ -3,7 +3,7 @@ package graphhealth
 import (
 	"sort"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/graph"
 )
 
 const (

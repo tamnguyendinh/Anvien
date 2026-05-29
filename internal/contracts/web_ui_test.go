@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/semantic"
+	"github.com/tamnguyendinh/anvien/internal/semantic"
 )
 
 func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {

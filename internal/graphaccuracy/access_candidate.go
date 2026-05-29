@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tamnguyendinh/avmatrix-go/internal/analyze"
-	"github.com/tamnguyendinh/avmatrix-go/internal/resolution"
+	"github.com/tamnguyendinh/anvien/internal/analyze"
+	"github.com/tamnguyendinh/anvien/internal/resolution"
 )
 
 type AccessCandidateAuditOptions struct {

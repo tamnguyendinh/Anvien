@@ -106,6 +106,7 @@ Status: baseline recorded
 | Old env var prefixes read | count | 1+ | 1+ | 0 | 0 |
 | Old package/bin names generated | count | 1+ | 0 | -1+ | 0 |
 | Old launcher protocol/executable names generated | count | 3+ | 0 | -3+ | 0 |
+| Old Go module path in active Go imports/module declaration | count | 696 | 0 | -696 | 0 |
 | Old generated skill namespace generated | count | 1 | 0 | -1 | 0 |
 
 ## B3.1 - GitHub Automation Old-Name Baseline
@@ -144,14 +145,14 @@ Status: recorded
 
 | Generator area | Unit | Baseline | Latest | Delta | Final target |
 |---|---:|---:|---:|---:|---:|
-| AI context generator and embedded skills | matches | 299 | 1 | -298 | 0 active |
-| AI context generator and embedded skills | files | 12 | 1 | -11 | 0 active |
-| Setup/editor config generator | matches | 8 | 2 | -6 | 0 active |
-| Setup/editor config generator | files | 1 | 1 | 0 | 0 active |
+| AI context generator and embedded skills | matches | 299 | 0 | -299 | 0 active |
+| AI context generator and embedded skills | files | 12 | 0 | -12 | 0 active |
+| Setup/editor config generator | matches | 8 | 0 | -8 | 0 active |
+| Setup/editor config generator | files | 1 | 0 | -1 | 0 active |
 | Repo/global storage generators | matches | 4 | 0 | -4 | 0 active |
 | Repo/global storage generators | files | 2 | 0 | -2 | 0 active |
-| MCP served setup/resources/prompts | matches | 59 | 14 | -45 | 0 active |
-| MCP served setup/resources/prompts | files | 3 | 3 | 0 | 0 active |
+| MCP served setup/resources/prompts | matches | 59 | 9 | -50 | 0 active |
+| MCP served setup/resources/prompts | files | 3 | 1 | -2 | 0 active |
 | Web contract generator | matches | 11 | 11 | 0 | 0 active |
 | Web contract generator | files | 2 | 2 | 0 | 0 active |
 | Group registry generators | matches | 13 | 13 | 0 | 0 active |
@@ -169,7 +170,7 @@ Status: pending implementation
 
 | Metric | Unit | Baseline | Latest | Delta | Target |
 |---|---:|---:|---:|---:|---:|
-| `anvien.exe` size | bytes | pending | 50495488 | recorded | record |
+| `anvien.exe` size | bytes | pending | 50512384 | recorded | record |
 | `AnvienLauncher.exe` size | bytes | pending | 6993408 | recorded | record |
 | npm package tarball size | bytes | pending | pending | pending | record |
 | CLI startup time | ms | pending | pending | pending | no unintended regression |
@@ -186,8 +187,8 @@ Date: 2026-05-29
 
 | Metric | Command | Latest | Note |
 |---|---|---:|---|
-| AI context generator old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" internal\aicontext` | `1` | Remaining match is the old Go module import path, deferred to the module rename slice. |
-| AI context generator files with old-name matches | same command, unique file count | `1` | `internal\aicontext\aicontext.go`. |
+| AI context generator old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" internal\aicontext` | `0` | Module rename slice removed the last deferred old import path from `internal\aicontext\aicontext.go`. |
+| AI context generator files with old-name matches | same command, unique file count | `0` | No old-name matches remain in AI context generator sources. |
 | Generated `.claude\skills\anvien` old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" .claude\skills\anvien` | `0` | Generated skill output is clean for this slice. |
 | Old generated skill namespace exists | `Test-Path .claude\skills\avmatrix` | `0` | `False`; analyze regeneration did not recreate the old skill namespace. |
 | Generated context old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" AGENTS.md CLAUDE.md .claude\skills\anvien` | `6` | All matches are outside generated skill files: top coding rules and indexed repo name still `AVmatrix` until repo/module rename. |
@@ -200,7 +201,7 @@ Date: 2026-05-29
 
 | Metric | Command | Latest | Note |
 |---|---|---:|---|
-| Setup generator old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" internal\cli\setup_command.go` | `2` | Both matches are old Go module import paths; active generated setup output uses Anvien names. |
+| Setup generator old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" internal\cli\setup_command.go` | `0` | Module rename slice removed the last deferred old import paths from setup generator source. |
 | Repo/global storage source old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" internal\repo\paths.go internal\repo\meta.go internal\repo\settings.go internal\repo\registry.go internal\repo\runtime_config.go internal\repo\lock.go` | `0` | Core storage generators no longer emit `.avmatrix` or `AVMATRIX_HOME`. |
 | Temp smoke required `.anvien` artifacts present | analyze smoke on temp repo with `ANVIEN_HOME` | `6` | `.anvien`, `graph.json`, `meta.json`, `settings.json`, `lbug`, and global `registry.json`. |
 | Temp smoke old `.avmatrix` artifact present | same smoke | `0` | `<repo>\.avmatrix` was `False`. |
@@ -215,8 +216,8 @@ Date: 2026-05-29
 | Metric | Command | Latest | Note |
 |---|---|---:|---|
 | MCP active old served names/schemes | `rg -n 'avmatrix://|AVmatrix|avmatrix analyze|avmatrix api|avmatrix rename|avmatrix setup|mcpServers.*avmatrix|\[mcp_servers\.avmatrix\]|"avmatrix"' internal\mcp\resources.go internal\mcp\prompts.go internal\mcp\server.go internal\mcp\tools.go internal\mcp\resources_parity_test.go internal\mcp\prompts_test.go internal\mcp\server_test.go internal\mcp\testdata\typescript_baseline_surface.json .mcp.json` | `0` | No old served MCP scheme, server key, command examples, or server name remains in the edited MCP surfaces. |
-| MCP broad old-name source matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" internal\mcp\resources.go internal\mcp\prompts.go internal\mcp\server.go internal\mcp\tools.go` | `14` | Remaining matches are old Go module import paths plus deferred folder-path heuristics for `avmatrix-web` and `cmd/avmatrix`. |
-| MCP broad old-name source files | same command, unique file count | `3` | `resources.go`, `server.go`, and `tools.go`. |
+| MCP broad old-name source matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" internal\mcp\resources.go internal\mcp\prompts.go internal\mcp\server.go internal\mcp\tools.go` | `9` | Remaining matches are deferred folder-path heuristics for `avmatrix-web` and `cmd/avmatrix`; module import paths are clean. |
+| MCP broad old-name source files | same command, unique file count | `1` | `tools.go`. |
 | Root `.mcp.json` old-name matches | same active old served-name search including `.mcp.json` | `0` | Root MCP config now uses key and command `anvien`. |
 | Tracked `.grok` config files | `git ls-files .grok .mcp.json` | `0` | `.grok/config.toml` is local-untracked in this workspace; P4-K remains open outside this commit. |
 | MCP protocol/resource/prompt smoke tests | targeted `go test .\internal\mcp -run ... -count=1 -v` | `11` | All targeted MCP protocol/resource/prompt tests passed. |
@@ -239,3 +240,18 @@ Date: 2026-05-29
 | `AnvienLauncher.exe` size | `Get-Item avmatrix-launcher\AnvienLauncher.exe` | `6993408` | Built by launcher build script. |
 | `anvien-server.exe` size | `Get-Item avmatrix-launcher\server-bundle\anvien-server.exe` | `2053632` | Built by launcher build script. |
 | MCP initialize smoke through `anvien mcp` | piped initialize frame to `.\avmatrix\bin\anvien.exe mcp` | `1` | Response had `serverInfo.name = "anvien"`. |
+
+## B9 - Phase 2.5 Go Module Path Counts
+
+Status: recorded
+
+Date: 2026-05-29
+
+| Metric | Command | Latest | Note |
+|---|---|---:|---|
+| Old Go module path matches in active Go imports and `go.mod` | `rg -o "github.com/tamnguyendinh/avmatrix-go" --glob "*.go" .` plus `go.mod` | `0` | No active Go import or module declaration uses the old path. |
+| New Go module path matches in active Go imports and `go.mod` | `rg -o "github.com/tamnguyendinh/anvien" --glob "*.go" .` plus `go.mod` | `696` | Includes `695` Go import matches and `1` module declaration. |
+| Go files changed by module import rewrite | `git diff --name-only` filtered to `*.go` before commit | `302` | Mechanical exact-string import rewrite plus `gofmt`. |
+| Historical old module-path matches outside this rebrand ledger | `git grep -n "github.com/tamnguyendinh/avmatrix-go" -- ':!docs/plans/2026-05-29-anvien-rebrand-*'` | `71` | Historical docs/reports only; no runtime alias. |
+| Package runtime `anvien.exe` size after module rename | `Get-Item avmatrix\bin\anvien.exe` | `50512384` | Rebuilt by `npm run build` after module rename. |
+| Package runtime metadata size after module rename | `Get-Item avmatrix\bin\anvien-runtime.json` | `136` | Rebuilt by package lifecycle. |
