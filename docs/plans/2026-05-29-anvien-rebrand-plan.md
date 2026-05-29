@@ -340,13 +340,15 @@ Interim Phase 7 launcher validation completed binary/protocol/process/lifecycle 
 
 ## Phase 9 - Validation And Commits
 
-- [ ] [P9-A] Run the full build gate before tests.
-- [ ] [P9-B] Run backend/CLI/MCP tests covering renamed command, setup, storage, resources, prompts, package, and generated context behavior.
-- [ ] [P9-C] Run Web unit tests and e2e tests for visible branding and launcher/onboarding behavior.
-- [ ] [P9-D] Run package/install/startup smoke tests for `anvien`, `anvien mcp`, and `anvien serve`.
-- [ ] [P9-E] Run final reference inventory and require zero active old runtime names.
-- [ ] [P9-F] Run `avmatrix detect-changes --repo AVmatrix --scope all` before commits until the rename slice changes the command; then record and use the Anvien equivalent.
-- [ ] [P9-G] Commit each completed implementation slice with evidence and benchmark ledgers updated.
+- [x] [P9-A] Run the full build gate before tests.
+- [x] [P9-B] Run backend/CLI/MCP tests covering renamed command, setup, storage, resources, prompts, package, and generated context behavior.
+- [x] [P9-C] Run Web unit tests and e2e tests for visible branding and launcher/onboarding behavior.
+- [x] [P9-D] Run package/install/startup smoke tests for `anvien`, `anvien mcp`, and `anvien serve`.
+- [x] [P9-E] Run final reference inventory and require zero active old runtime names.
+- [x] [P9-F] Run `avmatrix detect-changes --repo AVmatrix --scope all` before commits until the rename slice changes the command; then record and use the Anvien equivalent.
+- [x] [P9-G] Commit each completed implementation slice with evidence and benchmark ledgers updated.
+
+Final local validation passed on 2026-05-29: full build, Go cmd/internal tests, Web unit tests, onboarding e2e, package runtime build/ensure, MCP initialize, serve smoke, final old-name inventory, and final `anvien detect-changes --repo AVmatrix --scope all` with no changes detected. GitHub repository rename tasks in Phase 2 remain the only incomplete plan items because the available tooling cannot perform repository Settings rename in this session.
 
 ## Benchmark Requirements
 

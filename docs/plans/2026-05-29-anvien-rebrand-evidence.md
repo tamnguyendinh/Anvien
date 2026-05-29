@@ -1068,15 +1068,48 @@ Pre-commit change detection:
 
 - Not required for this doc-only evidence/plan update under the repository rule for doc-only commits.
 
-## E15 - Future Implementation Evidence
+## E15 - Phase 9 Final Local Validation
 
-Date: pending
+Date: 2026-05-29
 
-Status: pending
+Status: recorded
 
-Record during implementation:
+Scope:
 
-- GitHub repository/settings/remote rename evidence;
-- local workspace folder rename evidence;
-- final build/test/e2e/package/install/startup validation;
-- final old-name inventory and every remaining exception.
+- Ran final local build, backend/CLI/MCP tests, Web unit tests, onboarding e2e, package/runtime startup smoke, final inventory, and final Anvien detect-changes.
+- GitHub repository Settings rename tasks remain pending under Phase 2 because this session lacks a repo rename-capable GitHub tool.
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | pass; existing Vite dynamic-import and chunk-size warnings only. |
+| `go test .\cmd\... .\internal\... -count=1` | pass; cmd packages no tests, all internal packages pass. |
+| `npm run test` in `anvien-web` | pass; `50` test files and `401` tests. |
+| `npx playwright test e2e/onboarding.spec.ts --workers=1` in `anvien-web` with Vite dev server | pass; `10` passed, `3` skipped. |
+| `npm run build` in `anvien` | pass; builds packaged runtime. |
+| `.\bin\anvien.exe package ensure-runtime` in `anvien` | pass; uses packaged Go runtime for `windows/amd64`. |
+| `.\bin\anvien.exe --help` and `.\bin\anvien.exe version` | pass; help uses `anvien`, version `1.2.3`. |
+| MCP initialize frame piped to `.\bin\anvien.exe mcp` | pass; `serverInfo.name` is `anvien`, version `1.2.3`. |
+| `npm pack --dry-run --json --ignore-scripts` in `anvien` | pass; package filename `anvien-1.2.3.tgz`, size `21660689`, unpacked size `88866203`, entry count `6`. |
+| `.\bin\anvien.exe serve --host 127.0.0.1 --port 4898` then `/api/repos` | pass; HTTP `200`, process stopped after smoke. |
+| final old-name inventory outside the rebrand ledger, generated build/test output, `node_modules`, and `.git` | pass; `0` matches. |
+| recursive `.avmatrix` directory inventory excluding `.git` | pass; `0` directories. |
+| leftover process check for `node`, `cmd`, and `esbuild` under this workspace after e2e | pass; no matching processes. |
+| `.\anvien\bin\anvien.exe analyze --force` | pass; scanned `816`, parsed `584`, unsupported `232`, failed `0`; graph `91525` nodes and `124986` relationships. |
+| `.\anvien\bin\anvien.exe detect-changes --repo AVmatrix --scope all` | pass; `No changes detected`, risk `none`. |
+
+Final local artifact sizes:
+
+- `anvien\bin\anvien.exe`: `50478080` bytes.
+- `anvien\bin\anvien-runtime.json`: `136` bytes.
+- `anvien-launcher\AnvienLauncher.exe`: `6993408` bytes.
+- `anvien-launcher\server-bundle\anvien-server.exe`: `2053632` bytes.
+
+Remaining external tasks:
+
+- Rename GitHub repository from `tamnguyendinh/AVmatrix` to `tamnguyendinh/Anvien`.
+- Update GitHub repository metadata/settings/secrets/rulesets/integrations/releases as needed.
+- Update local `origin` after the GitHub rename succeeds.
+- Fresh-clone verify the new URL and old redirect behavior.
+- Rename the top-level local workspace folder from `E:\AVmatrix-GO` to `E:\Anvien` after closing processes that hold the current working directory.

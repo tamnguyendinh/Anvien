@@ -25,8 +25,8 @@ Status: recorded
 | Files parsed | files | 583 | 584 | +1 | `anvien analyze --force` after folder/Web/plugin slice |
 | Unsupported files | files | 217 | 232 | +15 | `anvien analyze --force` after folder/Web/plugin slice |
 | Failed files | files | 0 | 0 | 0 | `anvien analyze --force` after folder/Web/plugin slice |
-| Graph nodes | nodes | 91223 | 91523 | +300 | Fresh graph after config/docs artifact slice |
-| Graph relationships | relationships | 124702 | 124984 | +282 | Fresh graph after config/docs artifact slice |
+| Graph nodes | nodes | 91223 | 91525 | +302 | Final local validation graph |
+| Graph relationships | relationships | 124702 | 124986 | +284 | Final local validation graph |
 
 ## B1 - Old-Name Reference Baseline
 
@@ -178,7 +178,7 @@ Status: partially recorded
 | `anvien-runtime.json` size | bytes | pending | 136 | recorded | record |
 | `AnvienLauncher.exe` size | bytes | pending | 6993408 | recorded | record |
 | `anvien-server.exe` size | bytes | pending | 2053632 | recorded | record |
-| npm package tarball size | bytes | pending | pending | pending | record |
+| npm package tarball size | bytes | pending | 21660689 | recorded | record |
 | CLI startup time | ms | pending | pending | pending | no unintended regression |
 | MCP tools/list pass count | tests | pending | pending | pending | pass |
 | MCP resources/list pass count | tests | pending | pending | pending | pass |
@@ -330,3 +330,26 @@ Date: 2026-05-29
 | GitHub target repo read | connector `_get_repo tamnguyendinh/Anvien` | `404` | Target slug is not an accessible existing repo. |
 | Local GitHub CLI availability | `gh auth status` | `0` | `gh` executable not installed. |
 | GitHub token env vars present | `GITHUB_TOKEN`, `GH_TOKEN` boolean check | `0` | No token available for direct REST rename. |
+
+## B13 - Phase 9 Final Local Validation Counts
+
+Status: recorded
+
+Date: 2026-05-29
+
+| Metric | Command | Latest | Note |
+|---|---|---:|---|
+| Full launcher build | `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | `pass` | Existing Vite warnings only. |
+| Go package tests | `go test .\cmd\... .\internal\... -count=1` | `pass` | All cmd/internal packages passed. |
+| Web unit test files | `npm run test` in `anvien-web` | `50` | All passed. |
+| Web unit tests | same command | `401` | All passed. |
+| Web onboarding e2e | `npx playwright test e2e/onboarding.spec.ts --workers=1` | `10 pass / 3 skipped` | Exit `0`. |
+| Package runtime build | `npm run build` in `anvien` | `pass` | Built packaged runtime. |
+| Package ensure-runtime | `.\bin\anvien.exe package ensure-runtime` | `pass` | Packaged runtime accepted. |
+| MCP initialize server name | initialize frame to `.\bin\anvien.exe mcp` | `anvien` | Version `1.2.3`. |
+| Serve smoke HTTP status | `.\bin\anvien.exe serve --host 127.0.0.1 --port 4898` then `/api/repos` | `200` | Process stopped after validation. |
+| npm dry-run tarball size | `npm pack --dry-run --json --ignore-scripts` | `21660689` | Package file `anvien-1.2.3.tgz`. |
+| npm dry-run unpacked size | same command | `88866203` | Entry count `6`. |
+| Final active old-name matches | final old-name `rg` excluding rebrand ledger, generated build/test output, `node_modules`, and `.git` | `0` | No active old runtime names. |
+| Final `.avmatrix` directory count | recursive directory search excluding `.git` | `0` | Old storage not recreated. |
+| Final detect changes | `anvien detect-changes --repo AVmatrix --scope all` | `0` | No changes detected; risk `none`. |
