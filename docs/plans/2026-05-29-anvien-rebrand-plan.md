@@ -240,6 +240,8 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 
 GitHub status on 2026-05-29: repository read now confirms `tamnguyendinh/Anvien` exists, id `1225334469`, public, default branch `master`, and this account has `admin`, `maintain`, `push`, `pull`, and `triage` permissions. Local `origin` now points to `https://github.com/tamnguyendinh/Anvien.git`; `master` was pushed to commit `8b39b2ca07c4f7545fa781b8fa5689c089c01289`; a fresh clone from the new URL succeeded; and the old URL resolves to the same HEAD only as GitHub redirect evidence. Public metadata, topics, labels, and releases were checked for old names: description/topics/labels had no old-name matches and releases count is `0`. Branch protection returned HTTP `401`, and secrets, variables, webhooks, deploy keys, Apps, Pages, package permissions, social preview, and pinned repository references remain open because they require GitHub settings/API access not available in this session.
 
+P2-D is partially verified from public repository metadata only: repository name, description, homepage, and topics are clean. Keep P2-D open until social preview and pinned repository references are checked through GitHub Settings/profile access.
+
 ## Phase 2.5 - Module, Package, And Folder Names
 
 - [x] [P2.5-A] Rename Go module path from the old `avmatrix-go` path to the approved Anvien path.
@@ -349,6 +351,14 @@ Interim Phase 7 launcher validation completed binary/protocol/process/lifecycle 
 - [x] [P9-G] Commit each completed implementation slice with evidence and benchmark ledgers updated.
 
 Final local validation passed on 2026-05-29: full build, Go cmd/internal tests, Web unit tests, onboarding e2e, package runtime build/ensure, MCP initialize, serve smoke, final old-name inventory, and final `anvien detect-changes --repo Anvien --scope all` validation. GitHub repository rename, local remote update, push, fresh clone, and redirect checks are complete; the remaining open items are GitHub settings surfaces that require unavailable Settings/API access and the final top-level filesystem folder rename from `E:\AVmatrix-GO` to `E:\Anvien` after this workspace is no longer held open.
+
+## Phase 10 - Local Workspace Filesystem Rename
+
+- [ ] [P10-A] Close Codex, terminals, dev servers, and any process whose current working directory is `E:\AVmatrix-GO`.
+- [ ] [P10-B] Rename the top-level local workspace folder from `E:\AVmatrix-GO` to `E:\Anvien`.
+- [ ] [P10-C] Reopen the workspace from `E:\Anvien` and run `npm run build` in `anvien` so ignored package runtime metadata no longer records the old absolute source path.
+- [ ] [P10-D] Run `anvien analyze --force --name Anvien`, `anvien list`, and `anvien detect-changes --repo Anvien --scope all` from `E:\Anvien`.
+- [ ] [P10-E] Verify active old-name search for `AVmatrix-GO`, `AVmatrix`, `avmatrix`, `AVMATRIX`, `.avmatrix`, `avmatrix://`, and `avmatrix-` is `0` outside this rebrand ledger, `.git`, and approved historical release-note wording.
 
 ## Benchmark Requirements
 
