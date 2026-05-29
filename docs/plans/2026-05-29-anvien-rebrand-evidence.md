@@ -1230,3 +1230,36 @@ Pre-commit change detection:
 
 - The Phase 10 implementation validation ran `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` before the ledger update and returned no changes.
 - The final tracked changes for this slice are documentation ledger/checklist updates only.
+
+## E18 - Web UI Display-Case Title Follow-Up
+
+Date: 2026-05-29
+
+Status: recorded
+
+Scope:
+
+- Verified Web UI branding after the rebrand and found the browser document title still used lowercase `anvien`.
+- Updated `anvien-web\index.html` to use `<title>Anvien</title>`.
+- Added onboarding e2e coverage that asserts `page.title()` is `Anvien`.
+
+Validation:
+
+| Command | Result |
+|---|---|
+| active old-name search over `anvien-web` source/e2e and generated Web outputs | pass; no `AVmatrix`, `avmatrix`, `AVMATRIX`, `.avmatrix`, `avmatrix://`, or `avmatrix-` matches. |
+| title search over `anvien-web\index.html`, `anvien-web\dist\index.html`, and `anvien-launcher\web-dist\index.html` | pass; all three contain `<title>Anvien</title>`. |
+| first `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` after title edit | blocked because `anvien-launcher\server-bundle\anvien-server.exe` was held by a running launcher-owned runtime group. |
+| launcher runtime cleanup | stopped `AnvienLauncher.exe`, `anvien-server.exe`, and backend `anvien.exe` processes under `E:\Anvien`. |
+| retry `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | pass; existing Vite dynamic-import and chunk-size warnings only. |
+| first `npx playwright test e2e/onboarding.spec.ts --workers=1` | failed because no Vite dev server was listening on `127.0.0.1:5228`. |
+| retry with a temporary hidden Vite dev server | pass; `10` passed and `3` skipped. |
+| `anvien analyze --force --name Anvien` before ledger update | pass; scanned `816`, parsed `584`, unsupported `232`, failed `0`; graph `91533` nodes and `124994` relationships. |
+| `anvien detect-changes --repo Anvien --scope all` before ledger update | pass; risk `low`, changed files `2`, changed symbols `4`, affected count `0`; changed symbols are frontend test resolution-gap entities from the new Playwright title assertion. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` after ledger update | pass; scanned `816`, parsed `584`, unsupported `232`, failed `0`; graph `91535` nodes and `124996` relationships. |
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` after ledger update | pass; risk `low`, changed files `5`, changed symbols/sections `13`, affected count `0`; changed files are Web title source/test plus the rebrand plan, evidence, and benchmark ledgers. |
+
+Process cleanup:
+
+- The temporary Vite dev server was stopped after e2e.
+- A process check found no remaining `E:\Anvien` Web, launcher, or packaged runtime processes.

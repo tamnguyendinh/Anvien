@@ -330,6 +330,8 @@ Interim Phase 6 validation was first run with the temporary local binary path wh
 
 Interim Phase 7 launcher validation completed binary/protocol/process/lifecycle rename for the packaged launcher path. The folder/Web slice then completed visible Web UI source branding, rebuilt `anvien-launcher\web-dist`, and ran onboarding e2e with Anvien assertions passing.
 
+Follow-up Web UI title validation corrected the browser document title from lowercase `anvien` to display-case `Anvien`. The source `anvien-web\index.html`, built `anvien-web\dist\index.html`, and packaged `anvien-launcher\web-dist\index.html` now use `<title>Anvien</title>`, with focused onboarding e2e coverage asserting the page title.
+
 ## Phase 8 - Documentation, Baselines, And Reports
 
 - [x] [P8-A] Update README, ARCHITECTURE, RUNBOOK, TESTING, CONTRIBUTING, CHANGELOG current entries, Docker docs, install instructions, setup docs, and badges.

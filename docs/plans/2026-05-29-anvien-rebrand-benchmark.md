@@ -25,8 +25,8 @@ Status: recorded
 | Files parsed | files | 583 | 584 | +1 | Phase 10 `anvien analyze --force --name Anvien` from `E:\Anvien` |
 | Unsupported files | files | 217 | 232 | +15 | Phase 10 `anvien analyze --force --name Anvien` from `E:\Anvien` |
 | Failed files | files | 0 | 0 | 0 | Phase 10 `anvien analyze --force --name Anvien` from `E:\Anvien` |
-| Graph nodes | nodes | 91223 | 91529 | +306 | Phase 10 renamed-workspace graph |
-| Graph relationships | relationships | 124702 | 124990 | +288 | Phase 10 renamed-workspace graph |
+| Graph nodes | nodes | 91223 | 91535 | +312 | Web title follow-up graph after ledger update |
+| Graph relationships | relationships | 124702 | 124996 | +294 | Web title follow-up graph after ledger update |
 
 ## B1 - Old-Name Reference Baseline
 
@@ -402,3 +402,29 @@ Date: 2026-05-29
 | Active old-name content matches | final active `rg` excluding rebrand ledger, `.git`, `.anvien`, dependencies, and generated build/test output | `0` | Covers `AVmatrix-GO`, `AVmatrix`, `avmatrix`, `AVMATRIX`, `.avmatrix`, `avmatrix://`, and `avmatrix-`. |
 | Active old-name paths before local cleanup | path inventory with same exclusions | `7` | All were untracked local `.codex-tmp`, `.history`, or stale empty directory leftovers. |
 | Active old-name paths after local cleanup | same path inventory | `0` | No tracked files were removed. |
+
+## B16 - Web UI Display-Case Title Follow-Up Counts
+
+Status: recorded
+
+Date: 2026-05-29
+
+| Metric | Command | Latest | Note |
+|---|---|---:|---|
+| Source Web title matches | title `rg` over `anvien-web\index.html` | `1` | Source HTML contains `<title>Anvien</title>`. |
+| Built Web dist title matches | title `rg` over `anvien-web\dist\index.html` | `1` | Full launcher build rebuilt Web dist with display-case title. |
+| Packaged launcher Web title matches | title `rg` over `anvien-launcher\web-dist\index.html` | `1` | Packaged Web output contains `<title>Anvien</title>`. |
+| Old-name matches in Web UI title/source/output scan | active old-name `rg` over Web source/e2e and generated Web outputs | `0` | No `AVmatrix`, `avmatrix`, `AVMATRIX`, `.avmatrix`, `avmatrix://`, or `avmatrix-` matches in the focused Web scan. |
+| Full launcher build retry | `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | `pass` | First attempt was blocked by a running launcher-owned runtime; retry passed after cleanup. |
+| Web onboarding e2e | `npx playwright test e2e/onboarding.spec.ts --workers=1` | `10 pass / 3 skipped` | Retry used a temporary hidden Vite dev server. |
+| Web title e2e assertions | same onboarding e2e run | `1` | New `page` title assertion passed. |
+| Follow-up analyze scanned files | `anvien analyze --force --name Anvien` | `816` | Ran from `E:\Anvien`. |
+| Follow-up analyze parsed files | same command | `584` | Ran from `E:\Anvien`. |
+| Follow-up analyze unsupported files | same command | `232` | Ran from `E:\Anvien`. |
+| Follow-up analyze failed files | same command | `0` | Ran from `E:\Anvien`. |
+| Follow-up graph nodes | same command | `91535` | Graph path `E:\Anvien\.anvien\graph.json`. |
+| Follow-up graph relationships | same command | `124996` | Graph path `E:\Anvien\.anvien\graph.json`. |
+| Follow-up detect-changes risk | `anvien detect-changes --repo Anvien --scope all` | `low` | No affected flows or downstream symbols after ledger updates. |
+| Follow-up detect-changes changed files | same command | `5` | Frontend source/test files plus rebrand plan, evidence, and benchmark ledgers. |
+| Follow-up detect-changes changed symbols | same command | `13` | Frontend test resolution-gap entities plus documentation sections. |
+| Follow-up detect-changes affected count | same command | `0` | No downstream affected processes reported. |

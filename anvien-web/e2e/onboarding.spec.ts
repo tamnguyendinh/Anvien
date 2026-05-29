@@ -53,6 +53,7 @@ test.describe('Flow 1: Start screen and runtime connection', () => {
   test('shows the exe-served start screen first', async ({ page }) => {
     await page.goto('/');
 
+    await expect(page).toHaveTitle('Anvien');
     await expect(page.getByRole('heading', { name: 'Anvien' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start Anvien' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'RESET RUNTIME' })).toBeVisible();
