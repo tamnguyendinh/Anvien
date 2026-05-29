@@ -307,3 +307,26 @@ Date: 2026-05-29
 | `.env.example` old-name matches | old-name `rg` over `.env.example` | `0` | Docker image examples and container names use Anvien. |
 | `eslint.config.mjs` old-name matches | old-name `rg` over `eslint.config.mjs` | `0` | Ignore paths and React file glob use Anvien folders. |
 | Root ESLint validation | `npm run lint` | `0 errors / 164 warnings` | Existing warnings only; command exited `0`. |
+
+## B12 - Phase 2/5 GitHub And Storage Validation Counts
+
+Status: recorded
+
+Date: 2026-05-29
+
+| Metric | Command | Latest | Note |
+|---|---|---:|---|
+| Current repo `.avmatrix` directories | `Get-ChildItem -Directory -Recurse -Force -Filter .avmatrix` excluding `.git` | `0` | No old local storage directory remains in the workspace. |
+| Current repo `.anvien` directories | same search for `.anvien` | `1` | Workspace graph storage is under `.anvien`. |
+| Temp analyze scanned files | temp `anvien analyze --force` | `1` | Smoke repo contained one Go file. |
+| Temp analyze parsed files | temp `anvien analyze --force` | `1` | Graph generated successfully. |
+| Temp required repo storage files present | `Test-Path` for graph/meta/settings/lbug | `4` | All required repo storage paths present. |
+| Temp global registry present | `Test-Path <ANVIEN_HOME>\registry.json` | `1` | Registry generated in temporary Anvien home. |
+| Temp runtime config present | `anvien wiki-mode local` then `Test-Path <ANVIEN_HOME>\runtime.json` | `1` | Runtime config uses Anvien home. |
+| Temp group config present | `anvien group create smoke --force` then `Test-Path <ANVIEN_HOME>\groups\smoke\group.yaml` | `1` | Group storage uses Anvien home. |
+| Temp `.avmatrix` directories created | recursive `.avmatrix` count under temp repo and temp Anvien home | `0` | Command matrix did not recreate old storage. |
+| Serve smoke HTTP status | `anvien serve --host 127.0.0.1 --port 4899` then `/api/repos` | `200` | Serve process was stopped after validation. |
+| GitHub current repo read | connector `_get_repo tamnguyendinh/AVmatrix` | `1` | Exists; admin permission confirmed. |
+| GitHub target repo read | connector `_get_repo tamnguyendinh/Anvien` | `404` | Target slug is not an accessible existing repo. |
+| Local GitHub CLI availability | `gh auth status` | `0` | `gh` executable not installed. |
+| GitHub token env vars present | `GITHUB_TOKEN`, `GH_TOKEN` boolean check | `0` | No token available for direct REST rename. |

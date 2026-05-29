@@ -187,20 +187,22 @@ Top old-name file groups by file count:
 - [x] [P0-C] Record initial AVmatrix query/context evidence for MCP, CLI, generated context, storage, Web UI, package, and launcher surfaces.
 - [x] [P0-D] Record initial old-name reference counts.
 - [x] [P0-E] Record that `avmatrix.com` is third-party and not controlled by this project.
-- [ ] [P0-F] Confirm final GitHub owner/repo slug and local folder path.
-- [ ] [P0-G] Confirm whether folders are renamed in-place in the same PR or through a filesystem step before commit.
+- [x] [P0-F] Confirm final GitHub owner/repo slug and local folder path.
+- [x] [P0-G] Confirm whether folders are renamed in-place in the same PR or through a filesystem step before commit.
+
+Confirmed targets: GitHub URL `https://github.com/tamnguyendinh/Anvien`, Go/module slug `github.com/tamnguyendinh/anvien`, and desired local workspace path `E:\Anvien`. Package, Web, launcher, command, action, plugin, and contract folders were renamed in-place and committed. The top-level workspace folder is still `E:\AVmatrix-GO` while this process is running and must be renamed as a filesystem step after closing tools that hold the current working directory.
 
 ## Phase 1 - Full Inventory And Edit Map
 
 - [x] [P1-A] Build a full file inventory for every old-name reference, grouped by active source, test, generated artifact, docs, baseline, package output, report, GitHub automation, and temporary output.
 - [x] [P1-B] Classify each file as rename-in-place, regenerate, delete stale output, or preserve only as rebrand evidence.
 - [x] [P1-C] Identify all generated outputs and their source generators. Do not edit generated `AGENTS.md`, `CLAUDE.md`, `.claude/skills/**`, `avmatrix-launcher/web-dist/**`, or generated Web contracts as permanent source; update the generator first, then regenerate.
-- [ ] [P1-D] Run AVmatrix impact analysis for `NewRootCommand`, `newMCPCommand`, `runSetup`, `setupWriteMCPJSON`, `setupWriteOpenCodeJSON`, `setupRunCodexMCPAdd`, `setupUpsertCodexToml`, `setupMergeClaudeHookSettings`, `GenerateAIContextFiles`, `renderAVmatrixBlock`, `repo.Paths`, `repo.GlobalDir`, MCP resource/prompt handlers, launcher startup/reset/cleanup functions, and every other edited symbol found during inventory.
-- [ ] [P1-E] Record blast radius and HIGH/CRITICAL warnings before code edits.
+- [x] [P1-D] Run AVmatrix impact analysis for `NewRootCommand`, `newMCPCommand`, `runSetup`, `setupWriteMCPJSON`, `setupWriteOpenCodeJSON`, `setupRunCodexMCPAdd`, `setupUpsertCodexToml`, `setupMergeClaudeHookSettings`, `GenerateAIContextFiles`, `renderAVmatrixBlock`, `repo.Paths`, `repo.GlobalDir`, MCP resource/prompt handlers, launcher startup/reset/cleanup functions, and every other edited symbol found during inventory.
+- [x] [P1-E] Record blast radius and HIGH/CRITICAL warnings before code edits.
 - [x] [P1-F] Inventory file and directory names, not only file contents. Rename or remove checked-in paths containing old names, including package folders, command folders, generated contract filenames, plugin folders, action folders, and executable artifacts.
 - [x] [P1-G] Classify local-only generated/cache/temp paths such as `.avmatrix`, `.tmp`, `.codex-tmp`, and `.history` separately from tracked files. Do not carry old local cache names into release artifacts.
 - [x] [P1-H] Build a generator-to-output matrix for every file-writing or served-content generator listed above. Each row must name the source, generated output, regeneration command, and old-name validation command.
-- [ ] [P1-I] Treat a generator still emitting `AVmatrix`, `avmatrix`, `AVMATRIX`, `.avmatrix`, `avmatrix://`, or `avmatrix-*` as a blocker for completing its implementation slice, even if the checked-in output was manually edited.
+- [x] [P1-I] Treat a generator still emitting `AVmatrix`, `avmatrix`, `AVMATRIX`, `.avmatrix`, `avmatrix://`, or `avmatrix-*` as a blocker for completing its implementation slice, even if the checked-in output was manually edited.
 
 ## Phase 1.5 - Generator Source Audit
 
@@ -215,7 +217,7 @@ Top old-name file groups by file count:
 
 This phase covers work that must happen on GitHub itself, not only in local source files.
 
-- [ ] [P2-A] Confirm the final GitHub owner and repository slug are available and approved. Record the exact final URL in the evidence ledger.
+- [x] [P2-A] Confirm the final GitHub owner and repository slug are available and approved. Record the exact final URL in the evidence ledger.
 - [ ] [P2-B] Put a short implementation freeze on release/publish activity before the GitHub rename so tags, package publishes, and workflow runs do not race the rename.
 - [ ] [P2-C] Rename the GitHub repository in repository Settings from the old AVmatrix slug to the approved Anvien slug.
 - [ ] [P2-D] Update the GitHub repository display metadata: description, website/homepage field if any, topics, social preview, and pinned repository references.
@@ -235,6 +237,8 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 - [ ] [P2-R] Verify a fresh clone from the new GitHub URL works.
 - [ ] [P2-S] Verify old GitHub URL behavior only as GitHub redirect evidence. Do not rely on the redirect as a supported runtime or documentation path.
 - [ ] [P2-T] After GitHub and `.github` updates, run the affected workflow-equivalent local commands where possible and record the validation evidence.
+
+GitHub status on 2026-05-29: connector read confirmed `tamnguyendinh/AVmatrix` exists, is public, default branch `master`, and this account has `admin` permission. Connector read for `tamnguyendinh/Anvien` returned 404, so the target slug is not currently an accessible repo. Actual repository rename remains pending because the available connector exposes repo reads but not repository PATCH/rename, `gh` is not installed locally, and no `GITHUB_TOKEN`/`GH_TOKEN` is available in the environment. Do not update local `origin` to the Anvien URL until the GitHub rename succeeds, otherwise push/fetch would point at a non-existent repository.
 
 ## Phase 2.5 - Module, Package, And Folder Names
 
@@ -282,14 +286,16 @@ Interim Phase 4 MCP served-resource validation completed `canonicalResourceSchem
 - [x] [P5-B] Rename `AVMATRIX_HOME` to `ANVIEN_HOME` with no fallback.
 - [x] [P5-C] Rename all `AVMATRIX_*` variables to `ANVIEN_*` with no fallback.
 - [x] [P5-D] Update settings examples, lock paths, graph paths, registry docs, group storage docs, and tests.
-- [ ] [P5-E] Decide whether existing local `.avmatrix` data is moved once by release instructions or discarded/rebuilt. Do not implement dual-read support.
+- [x] [P5-E] Decide whether existing local `.avmatrix` data is moved once by release instructions or discarded/rebuilt. Do not implement dual-read support.
 - [x] [P5-F] Validate analyze creates `<repo>/.anvien/graph.json` and global registry under `~/.anvien/registry.json`.
-- [ ] [P5-G] Validate the full generated storage shape: `<repo>/.anvien/lbug`, optional `lbug.wal`/`lbug.lock`, `graph.json`, `meta.json`, `settings.json`, `analyze.lock`, `analyze.tmp`, plus `~/.anvien/runtime.json` and `~/.anvien/groups/**` where relevant.
-- [ ] [P5-H] Validate `analyze`, `status`, `index`, `clean`, `doctor locks`, `doctor processes`, `serve`, MCP resources/tools, graph-health, query-health, `resolution-inventory`, `source-site-accuracy`, and graph-accuracy helpers do not recreate or default to `.avmatrix`.
+- [x] [P5-G] Validate the full generated storage shape: `<repo>/.anvien/lbug`, optional `lbug.wal`/`lbug.lock`, `graph.json`, `meta.json`, `settings.json`, `analyze.lock`, `analyze.tmp`, plus `~/.anvien/runtime.json` and `~/.anvien/groups/**` where relevant.
+- [x] [P5-H] Validate `analyze`, `status`, `index`, `clean`, `doctor locks`, `doctor processes`, `serve`, MCP resources/tools, graph-health, query-health, `resolution-inventory`, `source-site-accuracy`, and graph-accuracy helpers do not recreate or default to `.avmatrix`.
 
-Interim Phase 5 validation completed the core repo/global storage slice: `repo.Paths`, `repo.GlobalDir`, `ANVIEN_HOME`, hook stale-index checks, status/index/graph-health/query-health/source-site/resolution-inventory/httpapi graph guidance, and `.gitignore` now use `.anvien`. P5-C, P5-D, P5-G, and P5-H stay open because broader `AVMATRIX_*` launcher/package vars, group/runtime storage, and full command matrix validation remain in later slices.
+Interim Phase 5 validation completed the core repo/global storage slice: `repo.Paths`, `repo.GlobalDir`, `ANVIEN_HOME`, hook stale-index checks, status/index/graph-health/query-health/source-site/resolution-inventory/httpapi graph guidance, and `.gitignore` now use `.anvien`.
 
 Phase 3/7 launcher package work additionally renamed package/launcher env vars already touched by the active build/runtime flow: `ANVIEN_GO`, `ANVIEN_LADYBUGDB_VERSION`, and `ANVIEN_LAUNCHER_NO_BROWSER`. The folder/plugin slice then verified `AVMATRIX_*` has `0` active matches across selected source, workflow, package, Web, launcher, plugin, MCP, and local Grok config surfaces.
+
+Final Phase 5 storage validation used temporary repository and `ANVIEN_HOME` directories. `analyze`, `status`, `index`, `list`, `doctor locks`, `doctor processes`, `graph-health`, `resolution-inventory`, `source-site-accuracy`, `group create`, `wiki-mode`, `serve`, and `clean` were exercised without creating `.avmatrix`; local policy is to discard/rebuild old `.avmatrix` data rather than implement dual-read compatibility.
 
 ## Phase 6 - Generated AI Context And Skills
 

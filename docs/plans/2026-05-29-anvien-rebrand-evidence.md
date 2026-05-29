@@ -1016,7 +1016,59 @@ Pre-commit change detection:
 - Changed functional areas: `documentation` `153`, `reporting` `126`.
 - Affected scope: `0` affected symbols/process nodes.
 
-## E14 - Future Implementation Evidence
+## E14 - Phase 0/2/5 Storage And GitHub Execution Status
+
+Date: 2026-05-29
+
+Status: recorded
+
+Scope:
+
+- Confirmed final target identifiers for the remaining external rename work:
+  - GitHub URL: `https://github.com/tamnguyendinh/Anvien`
+  - Go module path: `github.com/tamnguyendinh/anvien`
+  - Desired local workspace path after closing this session: `E:\Anvien`
+- Recorded that package/Web/launcher/command/action/plugin/contract folders were already renamed in-place and committed.
+- Recorded that the top-level workspace folder is still `E:\AVmatrix-GO` only because the active process holds the current working directory; it needs a filesystem rename after tools are closed.
+- Decided old `.avmatrix` local data is discarded/rebuilt, not migrated through dual-read compatibility.
+
+GitHub evidence:
+
+- Local remote before GitHub rename: `origin https://github.com/tamnguyendinh/AVmatrix.git` for fetch and push.
+- GitHub connector `_get_repo` for `tamnguyendinh/AVmatrix`: repo exists, id `1225334469`, public, default branch `master`, current account has `admin`, `maintain`, `push`, `pull`, and `triage`.
+- GitHub connector `_get_repo` for `tamnguyendinh/Anvien`: `404 Not Found`, so the target slug is not currently an accessible repo and appears available.
+- `gh` CLI is not installed in this workspace.
+- `GITHUB_TOKEN` and `GH_TOKEN` are not set.
+- Available GitHub connector tools expose repository reads and file/PR/issue writes, but not repository metadata PATCH/rename. Therefore P2-C through P2-I and P2-Q through P2-S remain pending until a GitHub UI/API path with repo rename capability is available.
+
+Storage validation:
+
+- Current workspace `.avmatrix` directory inventory, excluding `.git`: `0`.
+- Current workspace `.anvien` exists and contains generated graph data from `anvien analyze --force`.
+- Temp storage smoke used a temporary Git repo and temporary `ANVIEN_HOME`.
+- Temp `anvien analyze --force`: scanned `1`, parsed `1`, unsupported `0`, failed `0`; generated `<repo>\.anvien\graph.json`.
+- Temp storage files present before clean: `<repo>\.anvien\graph.json`, `meta.json`, `settings.json`, `lbug`, and `<ANVIEN_HOME>\registry.json`.
+- `anvien group create smoke --force` generated `<ANVIEN_HOME>\groups\smoke\group.yaml`.
+- `anvien wiki-mode local` generated `<ANVIEN_HOME>\runtime.json`.
+- `anvien serve --host 127.0.0.1 --port 4899` started successfully and `/api/repos` returned HTTP `200`; the process was stopped after validation.
+- Commands exercised in the storage matrix: `analyze`, `status`, `index`, `list`, `doctor locks --json`, `doctor processes --json`, `graph-health summary --json`, `resolution-inventory`, `source-site-accuracy`, `group create`, `wiki-mode`, `serve`, and `clean --force`.
+- Temp smoke old storage checks: old repo `.avmatrix` `False`, old home `.avmatrix` `False`, and recursive `.avmatrix` directory count `0`.
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `Get-ChildItem -Directory -Recurse -Force -Filter .avmatrix` excluding `.git` | pass; `0` directories. |
+| temp storage command matrix with temporary `ANVIEN_HOME` | pass; no `.avmatrix` created. |
+| GitHub connector read for current repo | pass; confirms admin access to current `tamnguyendinh/AVmatrix`. |
+| GitHub connector read for target repo | expected 404 for `tamnguyendinh/Anvien`. |
+| `gh auth status` / `gh repo view` | blocked; `gh` executable is not installed. |
+
+Pre-commit change detection:
+
+- Not required for this doc-only evidence/plan update under the repository rule for doc-only commits.
+
+## E15 - Future Implementation Evidence
 
 Date: pending
 
@@ -1024,9 +1076,7 @@ Status: pending
 
 Record during implementation:
 
-- impact outputs for every edited symbol;
-- changed files by slice;
-- build/test/e2e output;
 - GitHub repository/settings/remote rename evidence;
 - local workspace folder rename evidence;
+- final build/test/e2e/package/install/startup validation;
 - final old-name inventory and every remaining exception.
