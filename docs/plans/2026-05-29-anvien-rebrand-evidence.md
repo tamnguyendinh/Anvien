@@ -699,7 +699,72 @@ Pre-commit change detection:
 - Resolution health impact: `0` degraded nodes and `0` nodes with gaps.
 - The CRITICAL summary is expected for this slice because storage path constants and setup generator output sit under CLI/API startup and graph-loading flows.
 
-## E9 - Future Implementation Evidence
+## E9 - Phase 4 MCP Served Resource Slice
+
+Date: 2026-05-29
+
+Status: recorded
+
+Scope:
+
+- Updated root `.mcp.json` from server key/command `avmatrix` to `anvien`.
+- Updated `internal/mcp/resources.go` so `canonicalResourceScheme` and served resource URIs use `anvien://`.
+- Updated `internal/mcp/prompts.go`, `internal/mcp/server.go`, and `internal/mcp/tools.go` so served prompt text, next-step hints, `serverInfo.name`, tool descriptions, and stale-index guidance use Anvien names.
+- Updated MCP tests and TypeScript baseline surface testdata to expect `anvien://` and MCP server name `anvien`.
+
+Graph and impact evidence:
+
+- Fresh graph before MCP impact checks: `.\avmatrix\bin\avmatrix.exe analyze --force`.
+- Analyze result before impact checks: scanned `801`, parsed `583`, unsupported `218`, failed `0`; graph `91274` nodes, `124754` relationships.
+- Final graph refresh before change detection: scanned `801`, parsed `583`, unsupported `218`, failed `0`; graph `91276` nodes, `124756` relationships.
+- `impact canonicalResourceScheme --repo AVmatrix --direction upstream`: LOW; `0` affected processes.
+- `impact resourceDefinitions --repo AVmatrix --direction upstream`: CRITICAL; affected app layer `api`, functional area `mcp`, `9` affected processes through `Server.handle`.
+- `impact readResourceText --repo AVmatrix --direction upstream`: LOW; `0` affected processes.
+- `impact setupResource --repo AVmatrix --direction upstream`: LOW; `0` affected processes.
+- `impact promptDefinitions --repo AVmatrix --direction upstream`: CRITICAL; affected app layer `api`, functional area `mcp`, `9` affected processes through `Server.handle`.
+- `impact detectImpactPrompt --repo AVmatrix --direction upstream`: CRITICAL; affected app layer `api`, functional area `mcp`, `9` affected processes through `getPrompt` and `Server.handle`.
+- `impact generateMapPrompt --repo AVmatrix --direction upstream`: CRITICAL; affected app layer `api`, functional area `mcp`, `9` affected processes through `getPrompt` and `Server.handle`.
+- `impact nextStepHint --repo AVmatrix --direction upstream`: LOW; direct caller `Server.callTool`.
+- `impact mcpTools --repo AVmatrix --direction upstream`: CRITICAL; affected app layer `api`, functional area `mcp`, `9` affected processes through `Server.handle`.
+- `impact querySemanticWarning --repo AVmatrix --direction upstream`: CRITICAL; affected app layer `api`, functional area `mcp`, `37` affected processes across query/context/impact/API response flows.
+- `impact --uid "Method:internal/mcp/server.go:Server.initialize#1" --repo AVmatrix --direction upstream`: LOW; `0` affected processes.
+
+Implementation notes:
+
+- MCP `resources/list`, resource templates, and `resources/read` now expose `anvien://repos`, `anvien://setup`, and `anvien://repo/...`.
+- MCP prompt text now tells agents to read `anvien://repos` and Anvien repo resources.
+- MCP initialize response now reports `serverInfo.name = "anvien"`.
+- Root `.mcp.json` now uses server key `anvien`, command `anvien`, and args `["mcp"]`.
+- Remaining old-name matches in touched MCP source are Go module import paths and path heuristics for still-unrenamed folders such as `avmatrix-web` and `cmd/avmatrix`; they are deferred to package/module/folder rename slices, not served MCP aliases.
+- `.grok/config.toml` was not updated in this commit because `git ls-files .grok .mcp.json` showed only `.mcp.json` as tracked.
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | pass after MCP served-resource edits; existing Vite dynamic-import and chunk-size warnings only. |
+| `go test .\internal\mcp .\internal\httpapi .\internal\cli .\internal\aicontext -count=1` | pass; mcp `9.242s`, httpapi `4.098s`, cli `15.184s`, aicontext `1.061s`. |
+| `go test .\internal\mcp -run "TestServeHandlesInitializeAndToolsList|TestServeReadsRepoContextResource|TestServeReadsRepoClustersAndProcessesResources|TestServeReadsSchemaDetailResourcesAndPrompts|TestGenerateMapPrompt|TestDetectImpactPrompt|TestResourceDefinitionsAndTemplatesParity|TestReadResourceText" -count=1 -v` | pass; MCP protocol/resource/prompt smoke `3.459s`. |
+| `rg -n 'avmatrix://|AVmatrix|avmatrix analyze|avmatrix api|avmatrix rename|avmatrix setup|mcpServers.*avmatrix|\[mcp_servers\.avmatrix\]|"avmatrix"' internal\mcp\resources.go internal\mcp\prompts.go internal\mcp\server.go internal\mcp\tools.go internal\mcp\resources_parity_test.go internal\mcp\prompts_test.go internal\mcp\server_test.go internal\mcp\testdata\typescript_baseline_surface.json .mcp.json` | no matches. |
+| `rg -n "anvien://" internal\mcp\resources.go internal\mcp\prompts.go internal\mcp\server.go internal\mcp\tools.go internal\mcp\resources_parity_test.go internal\mcp\prompts_test.go internal\mcp\server_test.go internal\mcp\testdata\typescript_baseline_surface.json .mcp.json` | positive matches in MCP prompt tests, baseline testdata, server tests, resource tests, `prompts.go`, and `server.go`. |
+| `git ls-files .grok .mcp.json` | only `.mcp.json` is tracked. |
+
+E2E status:
+
+- Not run for this slice because no Web UI behavior changed.
+
+Pre-commit change detection:
+
+- Command: `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all`.
+- Result: pass; summary risk `high`.
+- Changed scope: `12` files, `106` changed symbols.
+- Changed app layers: `api` `28`, `api_test` `66`, `docs` `12`.
+- Changed functional areas: `mcp` `94`, `documentation` `12`.
+- Affected scope: `10` affected symbols/process nodes; affected app layers `api` `9`, `mixed` `1`; affected functional areas `mcp` `9`, `mixed` `1`.
+- Resolution health impact: `0` degraded nodes and `0` nodes with gaps.
+- The HIGH summary is expected for this slice because served MCP resources/prompts/tools flow through `Server.handle` and agent-facing MCP protocol responses.
+
+## E10 - Future Implementation Evidence
 
 Date: pending
 

@@ -263,12 +263,14 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 - [x] [P4-D] Update Codex setup command from `codex mcp add avmatrix -- avmatrix mcp` to `codex mcp add anvien -- anvien mcp`.
 - [x] [P4-E] Update Codex TOML output from `[mcp_servers.avmatrix]` to `[mcp_servers.anvien]`.
 - [x] [P4-F] Remove old hook matching that preserves `avmatrix-hook` or `avmatrix hook claude`; replace with Anvien-only hook cleanup/generation.
-- [ ] [P4-G] Change MCP `canonicalResourceScheme` from `avmatrix` to `anvien`.
-- [ ] [P4-H] Update all MCP next-step hints, setup resources, prompt text, tests, and snapshots from `avmatrix://...` to `anvien://...`.
-- [ ] [P4-I] Validate MCP stdio and HTTP bridge: `tools/list`, `resources/list`, `resources/read` for `anvien://repos` and `anvien://setup`, `prompts/list`, and representative tool calls.
-- [ ] [P4-J] Update checked-in root `.mcp.json` from server key/command `avmatrix` to `anvien`.
+- [x] [P4-G] Change MCP `canonicalResourceScheme` from `avmatrix` to `anvien`.
+- [x] [P4-H] Update all MCP next-step hints, setup resources, prompt text, tests, and snapshots from `avmatrix://...` to `anvien://...`.
+- [x] [P4-I] Validate MCP stdio and HTTP bridge: `tools/list`, `resources/list`, `resources/read` for `anvien://repos` and `anvien://setup`, `prompts/list`, and representative tool calls.
+- [x] [P4-J] Update checked-in root `.mcp.json` from server key/command `avmatrix` to `anvien`.
 - [ ] [P4-K] Update `.grok/config.toml` from `[mcp_servers.avmatrix]`, `cmd/avmatrix`, `avmatrix-stable`, and old examples to Anvien-only names.
 - [ ] [P4-L] Update every checked-in `mcp.json` under plugin or skill directories so no generated or packaged MCP config uses the old server name.
+
+Interim Phase 4 MCP served-resource validation completed `canonicalResourceScheme`, served resource URIs, prompt text, next-step hints, `serverInfo.name`, tests, MCP baseline testdata, and root `.mcp.json`. P4-K stays open because `.grok/config.toml` is local-untracked in this workspace, not a checked-in commit target. P4-L stays open because plugin/package MCP configs remain under the later plugin/package slice.
 
 ## Phase 5 - Storage, Registry, Env Vars, And Local Data
 

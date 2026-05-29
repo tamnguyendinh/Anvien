@@ -98,7 +98,7 @@ func mcpTools() []toolDefinition {
 	return []toolDefinition{
 		{
 			Name:        "list_repos",
-			Description: "List all indexed repositories available to AVmatrix.",
+			Description: "List all indexed repositories available to Anvien.",
 			InputSchema: map[string]any{
 				"type":       "object",
 				"properties": map[string]any{},
@@ -1027,7 +1027,7 @@ func addQueryNodeSemanticFields(row map[string]any, node graph.Node, gapSummary 
 
 func querySemanticWarning(status semantic.GraphStatus) string {
 	if status.AppLayer.Status == semantic.StatusStaleIncomplete || status.FunctionalArea.Status == semantic.StatusStaleIncomplete {
-		return "Graph semantic metadata is incomplete; run avmatrix analyze --force to refresh graph evidence."
+		return "Graph semantic metadata is incomplete; run anvien analyze --force to refresh graph evidence."
 	}
 	return ""
 }

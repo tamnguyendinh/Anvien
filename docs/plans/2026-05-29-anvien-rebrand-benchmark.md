@@ -21,12 +21,12 @@ Status: recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Notes |
 |---|---:|---:|---:|---:|---|
-| Files scanned | files | 800 | 801 | +1 | `avmatrix analyze --force` after setup/storage slice |
+| Files scanned | files | 800 | 801 | +1 | `avmatrix analyze --force` after MCP served-resource slice |
 | Files parsed | files | 583 | 583 | 0 | `avmatrix analyze --force` |
 | Unsupported files | files | 217 | 218 | +1 | `avmatrix analyze --force` after setup/storage slice |
 | Failed files | files | 0 | 0 | 0 | `avmatrix analyze --force` |
-| Graph nodes | nodes | 91223 | 91274 | +51 | Fresh graph after setup/storage slice |
-| Graph relationships | relationships | 124702 | 124754 | +52 | Fresh graph after setup/storage slice |
+| Graph nodes | nodes | 91223 | 91276 | +53 | Fresh graph after MCP served-resource slice |
+| Graph relationships | relationships | 124702 | 124756 | +54 | Fresh graph after MCP served-resource slice |
 
 ## B1 - Old-Name Reference Baseline
 
@@ -101,7 +101,7 @@ Status: baseline recorded
 |---|---:|---:|---:|---:|---:|
 | Old CLI command names accepted/generated | count | 1 | 1 | 0 | 0 |
 | Old MCP server names generated | count | 1 | 0 | -1 | 0 |
-| Old MCP resource schemes generated | count | 1 | 1 | 0 | 0 |
+| Old MCP resource schemes generated | count | 1 | 0 | -1 | 0 |
 | Old repo/global storage dirs generated | count | 2 | 0 | -2 | 0 |
 | Old env var prefixes read | count | 1+ | 1+ | 0 | 0 |
 | Old package/bin names generated | count | 1+ | 1+ | 0 | 0 |
@@ -127,8 +127,8 @@ Status: recorded
 
 | Area | Unit | Baseline | Latest | Delta | Final target |
 |---|---:|---:|---:|---:|---:|
-| `.mcp.json` old-name matches | matches | 2 | 2 | 0 | 0 |
-| `.mcp.json` files with old names | files | 1 | 1 | 0 | 0 |
+| `.mcp.json` old-name matches | matches | 2 | 0 | -2 | 0 |
+| `.mcp.json` files with old names | files | 1 | 0 | -1 | 0 |
 | `.grok` old-name matches | matches | 21 | 21 | 0 | 0 |
 | `.grok` files with old names | files | 1 | 1 | 0 | 0 |
 | `avmatrix-claude-plugin` old-name matches | matches | 113 | 113 | 0 | 0 active |
@@ -150,7 +150,7 @@ Status: recorded
 | Setup/editor config generator | files | 1 | 1 | 0 | 0 active |
 | Repo/global storage generators | matches | 4 | 0 | -4 | 0 active |
 | Repo/global storage generators | files | 2 | 0 | -2 | 0 active |
-| MCP served setup/resources/prompts | matches | 59 | 59 | 0 | 0 active |
+| MCP served setup/resources/prompts | matches | 59 | 14 | -45 | 0 active |
 | MCP served setup/resources/prompts | files | 3 | 3 | 0 | 0 active |
 | Web contract generator | matches | 11 | 11 | 0 | 0 active |
 | Web contract generator | files | 2 | 2 | 0 | 0 active |
@@ -205,3 +205,18 @@ Date: 2026-05-29
 | Temp smoke required `.anvien` artifacts present | analyze smoke on temp repo with `ANVIEN_HOME` | `6` | `.anvien`, `graph.json`, `meta.json`, `settings.json`, `lbug`, and global `registry.json`. |
 | Temp smoke old `.avmatrix` artifact present | same smoke | `0` | `<repo>\.avmatrix` was `False`. |
 | Local generated `.avmatrix` dirs removed | `Get-ChildItem -Directory -Recurse -Force -Filter .avmatrix` before cleanup | `478` | Verified no tracked files under `.avmatrix/` before removal. |
+
+## B7 - Phase 4 MCP Served Resource Counts
+
+Status: recorded
+
+Date: 2026-05-29
+
+| Metric | Command | Latest | Note |
+|---|---|---:|---|
+| MCP active old served names/schemes | `rg -n 'avmatrix://|AVmatrix|avmatrix analyze|avmatrix api|avmatrix rename|avmatrix setup|mcpServers.*avmatrix|\[mcp_servers\.avmatrix\]|"avmatrix"' internal\mcp\resources.go internal\mcp\prompts.go internal\mcp\server.go internal\mcp\tools.go internal\mcp\resources_parity_test.go internal\mcp\prompts_test.go internal\mcp\server_test.go internal\mcp\testdata\typescript_baseline_surface.json .mcp.json` | `0` | No old served MCP scheme, server key, command examples, or server name remains in the edited MCP surfaces. |
+| MCP broad old-name source matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" internal\mcp\resources.go internal\mcp\prompts.go internal\mcp\server.go internal\mcp\tools.go` | `14` | Remaining matches are old Go module import paths plus deferred folder-path heuristics for `avmatrix-web` and `cmd/avmatrix`. |
+| MCP broad old-name source files | same command, unique file count | `3` | `resources.go`, `server.go`, and `tools.go`. |
+| Root `.mcp.json` old-name matches | same active old served-name search including `.mcp.json` | `0` | Root MCP config now uses key and command `anvien`. |
+| Tracked `.grok` config files | `git ls-files .grok .mcp.json` | `0` | `.grok/config.toml` is local-untracked in this workspace; P4-K remains open outside this commit. |
+| MCP protocol/resource/prompt smoke tests | targeted `go test .\internal\mcp -run ... -count=1 -v` | `11` | All targeted MCP protocol/resource/prompt tests passed. |

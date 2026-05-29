@@ -16,7 +16,7 @@ import (
 	"github.com/tamnguyendinh/avmatrix-go/internal/scopeir"
 )
 
-const canonicalResourceScheme = "avmatrix"
+const canonicalResourceScheme = "anvien"
 
 type resourceDefinition struct {
 	URI         string `json:"uri"`
@@ -81,7 +81,7 @@ func resourceDefinitions() []resourceDefinition {
 		},
 		{
 			URI:         canonicalResourceScheme + "://setup",
-			Name:        "AVmatrix Setup Content",
+			Name:        "Anvien Setup Content",
 			Description: "Returns setup/onboarding, command-surface, AI-context, and skill guidance for indexed repos.",
 			MimeType:    "text/markdown",
 		},
@@ -280,13 +280,13 @@ func (s Server) contextResource(repoName string) (string, error) {
 		"  - list_repos: Discover all indexed repositories",
 		"",
 		"cli_equivalents:",
-		"  - rename: avmatrix rename <symbol> <newName> --repo <repo>",
-		"  - route_map: avmatrix api route-map [route] --repo <repo>",
-		"  - tool_map: avmatrix api tool-map [tool] --repo <repo>",
-		"  - shape_check: avmatrix api shape-check [route] --repo <repo>",
-		"  - api_impact: avmatrix api impact [route] --repo <repo>",
+		"  - rename: anvien rename <symbol> <newName> --repo <repo>",
+		"  - route_map: anvien api route-map [route] --repo <repo>",
+		"  - tool_map: anvien api tool-map [tool] --repo <repo>",
+		"  - shape_check: anvien api shape-check [route] --repo <repo>",
+		"  - api_impact: anvien api impact [route] --repo <repo>",
 		"",
-		"re_index: Run `avmatrix analyze` in terminal if data is stale",
+		"re_index: Run `anvien analyze` in terminal if data is stale",
 		"",
 		"resources_available:",
 		"  - "+canonicalResourceScheme+"://repos: All indexed repositories",
@@ -308,7 +308,7 @@ func (s Server) reposResource() (string, error) {
 		return "", err
 	}
 	if len(entries) == 0 {
-		return "repos: []\n# No repositories indexed. Run: avmatrix analyze", nil
+		return "repos: []\n# No repositories indexed. Run: anvien analyze", nil
 	}
 
 	lines := []string{"repos:"}
@@ -337,7 +337,7 @@ func (s Server) setupResource() (string, error) {
 		return "", err
 	}
 	if len(entries) == 0 {
-		return "# AVmatrix\n\nNo repositories indexed. Run: `avmatrix analyze` in a repository.", nil
+		return "# Anvien\n\nNo repositories indexed. Run: `anvien analyze` in a repository.", nil
 	}
 
 	sections := make([]string, 0, len(entries))
@@ -345,9 +345,9 @@ func (s Server) setupResource() (string, error) {
 		stats := entry.Stats
 		resourceName := url.PathEscape(entry.Name)
 		lines := []string{
-			"# AVmatrix MCP - " + entry.Name,
+			"# Anvien MCP - " + entry.Name,
 			"",
-			fmt.Sprintf("This project is indexed by AVmatrix as **%s** (%d symbols, %d relationships, %d execution flows).",
+			fmt.Sprintf("This project is indexed by Anvien as **%s** (%d symbols, %d relationships, %d execution flows).",
 				entry.Name,
 				statValue(stats, func(s *repo.Stats) *int { return s.Nodes }),
 				statValue(stats, func(s *repo.Stats) *int { return s.Edges }),
@@ -379,11 +379,11 @@ func (s Server) setupResource() (string, error) {
 			"",
 			"| CLI command | Equivalent surface |",
 			"|-------------|--------------------|",
-			"| `avmatrix rename <symbol> <newName> --repo <repo>` | MCP `rename` |",
-			"| `avmatrix api route-map [route] --repo <repo>` | MCP `route_map` |",
-			"| `avmatrix api tool-map [tool] --repo <repo>` | MCP `tool_map` |",
-			"| `avmatrix api shape-check [route] --repo <repo>` | MCP `shape_check` |",
-			"| `avmatrix api impact [route] --repo <repo>` | MCP `api_impact` |",
+			"| `anvien rename <symbol> <newName> --repo <repo>` | MCP `rename` |",
+			"| `anvien api route-map [route] --repo <repo>` | MCP `route_map` |",
+			"| `anvien api tool-map [tool] --repo <repo>` | MCP `tool_map` |",
+			"| `anvien api shape-check [route] --repo <repo>` | MCP `shape_check` |",
+			"| `anvien api impact [route] --repo <repo>` | MCP `api_impact` |",
 			"",
 			"## MCP Prompts",
 			"",
@@ -396,9 +396,9 @@ func (s Server) setupResource() (string, error) {
 			"",
 			"## AI Context And Skills",
 			"",
-			"- `avmatrix analyze --force` generates managed `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/avmatrix/**` from embedded `internal/aicontext/skills/*.md` source.",
-			"- `avmatrix setup` installs the same embedded base skill set into supported editor skill directories; package-root `skills/` is not a source of truth.",
-			"- Update embedded skill Markdown and generator code, then regenerate; do not edit generated root context or `.claude/skills/avmatrix/**` as source.",
+			"- `anvien analyze --force` generates managed `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` from embedded `internal/aicontext/skills/*.md` source.",
+			"- `anvien setup` installs the same embedded base skill set into supported editor skill directories; package-root `skills/` is not a source of truth.",
+			"- Update embedded skill Markdown and generator code, then regenerate; do not edit generated root context or `.claude/skills/anvien/**` as source.",
 			"",
 			"## Resources",
 			"",
@@ -413,7 +413,7 @@ func (s Server) setupResource() (string, error) {
 }
 
 func schemaResource() string {
-	return `# AVmatrix Graph Schema
+	return `# Anvien Graph Schema
 
 nodes:
   - File: Source code files
@@ -487,7 +487,7 @@ func (s Server) clustersResource(repoName string) (string, error) {
 	}
 	clusters := aggregateResourceClusters(resourceClusterItems(g), true)
 	if len(clusters) == 0 {
-		return "modules: []\n# No functional areas detected. Run: avmatrix analyze", nil
+		return "modules: []\n# No functional areas detected. Run: anvien analyze", nil
 	}
 
 	lines := []string{"modules:"}
@@ -542,7 +542,7 @@ func (s Server) processesResource(repoName string) (string, error) {
 	}
 	processes := resourceProcessItems(g)
 	if len(processes) == 0 {
-		return "processes: []\n# No processes detected. Run: avmatrix analyze", nil
+		return "processes: []\n# No processes detected. Run: anvien analyze", nil
 	}
 
 	lines := []string{"processes:"}
@@ -632,7 +632,7 @@ func (s Server) resolveResourceRepo(query string) (repo.RegistryEntry, error) {
 		if len(entries) == 1 {
 			return entries[0], nil
 		}
-		return repo.RegistryEntry{}, fmt.Errorf("Repository not found. Run: avmatrix analyze")
+		return repo.RegistryEntry{}, fmt.Errorf("Repository not found. Run: anvien analyze")
 	}
 	entry, err := repo.ResolveEntry(entries, query)
 	if err != nil {

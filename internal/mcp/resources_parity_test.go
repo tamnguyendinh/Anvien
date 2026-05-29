@@ -14,27 +14,27 @@ func TestResourceDefinitionsAndTemplatesParity(t *testing.T) {
 	if len(definitions) != 2 {
 		t.Fatalf("resourceDefinitions() length = %d, want 2", len(definitions))
 	}
-	assertResourceDefinition(t, definitions, "avmatrix://repos", "text/yaml")
-	assertResourceDefinition(t, definitions, "avmatrix://setup", "text/markdown")
+	assertResourceDefinition(t, definitions, "anvien://repos", "text/yaml")
+	assertResourceDefinition(t, definitions, "anvien://setup", "text/markdown")
 
 	templates := resourceTemplates()
 	if len(templates) != 6 {
 		t.Fatalf("resourceTemplates() length = %d, want 6", len(templates))
 	}
 	for _, want := range []string{
-		"avmatrix://repo/{name}/context",
-		"avmatrix://repo/{name}/clusters",
-		"avmatrix://repo/{name}/processes",
-		"avmatrix://repo/{name}/schema",
-		"avmatrix://repo/{name}/cluster/{clusterName}",
-		"avmatrix://repo/{name}/process/{processName}",
+		"anvien://repo/{name}/context",
+		"anvien://repo/{name}/clusters",
+		"anvien://repo/{name}/processes",
+		"anvien://repo/{name}/schema",
+		"anvien://repo/{name}/cluster/{clusterName}",
+		"anvien://repo/{name}/process/{processName}",
 	} {
 		assertResourceTemplate(t, templates, want, "text/yaml")
 	}
 }
 
 func TestParseRepoResourceURIDecodesRepoAndDetailNames(t *testing.T) {
-	request, ok, err := parseRepoResourceURI("avmatrix://repo/my%20project/context")
+	request, ok, err := parseRepoResourceURI("anvien://repo/my%20project/context")
 	if err != nil || !ok {
 		t.Fatalf("parse context uri ok=%v err=%v", ok, err)
 	}
@@ -42,7 +42,7 @@ func TestParseRepoResourceURIDecodesRepoAndDetailNames(t *testing.T) {
 		t.Fatalf("context request = %#v", request)
 	}
 
-	request, ok, err = parseRepoResourceURI("avmatrix://repo/my%20project/cluster/Auth%20Module")
+	request, ok, err = parseRepoResourceURI("anvien://repo/my%20project/cluster/Auth%20Module")
 	if err != nil || !ok {
 		t.Fatalf("parse cluster uri ok=%v err=%v", ok, err)
 	}
@@ -50,7 +50,7 @@ func TestParseRepoResourceURIDecodesRepoAndDetailNames(t *testing.T) {
 		t.Fatalf("cluster request = %#v", request)
 	}
 
-	if _, ok, err := parseRepoResourceURI("avmatrix://repo/test/nonexistent/extra"); err != nil || ok {
+	if _, ok, err := parseRepoResourceURI("anvien://repo/test/nonexistent/extra"); err != nil || ok {
 		t.Fatalf("invalid deep resource ok=%v err=%v", ok, err)
 	}
 }
@@ -59,7 +59,7 @@ func TestReadResourceTextStaticReposAndSetup(t *testing.T) {
 	store := repo.NewStore(t.TempDir())
 	server := NewServer(Config{Store: store})
 
-	text, mimeType, err := server.readResourceText("avmatrix://repos")
+	text, mimeType, err := server.readResourceText("anvien://repos")
 	if err != nil {
 		t.Fatalf("read repos: %v", err)
 	}
@@ -67,7 +67,7 @@ func TestReadResourceTextStaticReposAndSetup(t *testing.T) {
 		t.Fatalf("empty repos resource mime=%q text=\n%s", mimeType, text)
 	}
 
-	text, mimeType, err = server.readResourceText("avmatrix://setup")
+	text, mimeType, err = server.readResourceText("anvien://setup")
 	if err != nil {
 		t.Fatalf("read setup: %v", err)
 	}
@@ -96,7 +96,7 @@ func TestReadResourceTextStaticReposAndSetup(t *testing.T) {
 		t.Fatalf("write registry: %v", err)
 	}
 
-	text, mimeType, err = server.readResourceText("avmatrix://repos")
+	text, mimeType, err = server.readResourceText("anvien://repos")
 	if err != nil {
 		t.Fatalf("read populated repos: %v", err)
 	}
@@ -106,14 +106,14 @@ func TestReadResourceTextStaticReposAndSetup(t *testing.T) {
 		}
 	}
 
-	text, mimeType, err = server.readResourceText("avmatrix://setup")
+	text, mimeType, err = server.readResourceText("anvien://setup")
 	if err != nil {
 		t.Fatalf("read populated setup: %v", err)
 	}
 	if mimeType != "text/markdown" {
 		t.Fatalf("setup mimeType = %q, want text/markdown", mimeType)
 	}
-	for _, want := range []string{"AVmatrix MCP - my project", "50 symbols, 70 relationships, 5 execution flows", "avmatrix://repo/my%20project/context", "## CLI Equivalents", "avmatrix api route-map [route] --repo <repo>", "avmatrix rename <symbol> <newName> --repo <repo>", "## MCP Prompts", "`detect_impact`", "`generate_map`", "MCP prompts are templates for agents, not CLI commands", "## AI Context And Skills", "internal/aicontext/skills/*.md", "package-root `skills/` is not a source of truth"} {
+	for _, want := range []string{"Anvien MCP - my project", "50 symbols, 70 relationships, 5 execution flows", "anvien://repo/my%20project/context", "## CLI Equivalents", "anvien api route-map [route] --repo <repo>", "anvien rename <symbol> <newName> --repo <repo>", "## MCP Prompts", "`detect_impact`", "`generate_map`", "MCP prompts are templates for agents, not CLI commands", "## AI Context And Skills", "internal/aicontext/skills/*.md", "package-root `skills/` is not a source of truth"} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("setup resource missing %q:\n%s", want, text)
 		}
@@ -123,13 +123,13 @@ func TestReadResourceTextStaticReposAndSetup(t *testing.T) {
 func TestReadResourceTextRejectsUnknownResources(t *testing.T) {
 	server := NewServer(Config{Store: repo.NewStore(t.TempDir())})
 
-	if _, _, err := server.readResourceText("avmatrix://unknown"); err == nil || !strings.Contains(err.Error(), "Unknown resource URI") {
+	if _, _, err := server.readResourceText("anvien://unknown"); err == nil || !strings.Contains(err.Error(), "Unknown resource URI") {
 		t.Fatalf("unknown uri error = %v", err)
 	}
-	if _, _, err := server.readResourceText("avmatrix://repo/test/nonexistent"); err == nil || !strings.Contains(err.Error(), "Unknown resource") {
+	if _, _, err := server.readResourceText("anvien://repo/test/nonexistent"); err == nil || !strings.Contains(err.Error(), "Unknown resource") {
 		t.Fatalf("unknown repo-scoped resource error = %v", err)
 	}
-	if _, _, err := server.readResourceText("avmatrix://repo/%zz/context"); err == nil {
+	if _, _, err := server.readResourceText("anvien://repo/%zz/context"); err == nil {
 		t.Fatal("invalid URI escape unexpectedly succeeded")
 	}
 }

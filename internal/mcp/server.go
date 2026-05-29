@@ -237,7 +237,7 @@ func (s Server) initialize(raw json.RawMessage) map[string]any {
 			"prompts":   map[string]any{},
 		},
 		"serverInfo": map[string]string{
-			"name":    "avmatrix",
+			"name":    "anvien",
 			"version": version.Version,
 		},
 	}
@@ -394,16 +394,16 @@ func nextStepHint(toolName string, args map[string]any) string {
 
 	switch toolName {
 	case "list_repos":
-		return "\n\n---\n**Next:** READ avmatrix://repo/{name}/context for any repo above to get its overview and check staleness."
+		return "\n\n---\n**Next:** READ anvien://repo/{name}/context for any repo above to get its overview and check staleness."
 	case "query":
 		return "\n\n---\n**Next:** To understand a specific symbol in depth, use context({name: \"<symbol_name>\"" + repoParam + "}) to see categorized refs and process participation."
 	case "context":
 		target := firstNonEmptyString(stringArg(args, "name", ""), "<name>")
-		return "\n\n---\n**Next:** If planning changes, use impact({target: \"" + target + "\", direction: \"upstream\"" + repoParam + "}) to check blast radius. To see execution flows, READ avmatrix://repo/" + repoPath + "/processes."
+		return "\n\n---\n**Next:** If planning changes, use impact({target: \"" + target + "\", direction: \"upstream\"" + repoParam + "}) to check blast radius. To see execution flows, READ anvien://repo/" + repoPath + "/processes."
 	case "impact":
-		return "\n\n---\n**Next:** Review d=1 items first (WILL BREAK). To check affected execution flows, READ avmatrix://repo/" + repoPath + "/processes."
+		return "\n\n---\n**Next:** Review d=1 items first (WILL BREAK). To check affected execution flows, READ anvien://repo/" + repoPath + "/processes."
 	case "detect_changes":
-		return "\n\n---\n**Next:** Review affected processes. Use context() on high-risk changed symbols. READ avmatrix://repo/" + repoPath + "/process/{name} for full execution traces."
+		return "\n\n---\n**Next:** Review affected processes. Use context() on high-risk changed symbols. READ anvien://repo/" + repoPath + "/process/{name} for full execution traces."
 	case "rename":
 		return "\n\n---\n**Next:** Run detect_changes(" + renameHintRepoArg(repo) + ") to verify no unexpected side effects from the rename."
 	case "route_map":
@@ -425,7 +425,7 @@ func nextStepHint(toolName string, args map[string]any) string {
 	case "group_query":
 		return "\n\n---\n**Next:** Use group_contracts({name: \"<group>\"}) to inspect contracts and cross-links behind cross-repo results."
 	case "cypher":
-		return "\n\n---\n**Next:** To explore a result symbol, use context({name: \"<name>\"" + repoParam + "}). For schema reference, READ avmatrix://repo/" + repoPath + "/schema."
+		return "\n\n---\n**Next:** To explore a result symbol, use context({name: \"<name>\"" + repoParam + "}). For schema reference, READ anvien://repo/" + repoPath + "/schema."
 	default:
 		return ""
 	}

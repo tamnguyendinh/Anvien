@@ -61,7 +61,7 @@ func TestServeHandlesInitializeAndToolsList(t *testing.T) {
 		t.Fatalf("protocolVersion = %v, want %s", initResult["protocolVersion"], protocolVersion)
 	}
 	serverInfo := initResult["serverInfo"].(map[string]any)
-	if serverInfo["name"] != "avmatrix" || serverInfo["version"] != version.Version {
+	if serverInfo["name"] != "anvien" || serverInfo["version"] != version.Version {
 		t.Fatalf("serverInfo = %#v", serverInfo)
 	}
 
@@ -706,7 +706,7 @@ func TestServeCallToolListRepos(t *testing.T) {
 	if len(repos) != 1 || repos[0].Name != "fixture" || repos[0].Path != expectedPath {
 		t.Fatalf("list_repos parsed result = %#v, want fixture at %q", repos, expectedPath)
 	}
-	if !strings.Contains(text, "Next:") || !strings.Contains(text, "avmatrix://repo/{name}/context") {
+	if !strings.Contains(text, "Next:") || !strings.Contains(text, "anvien://repo/{name}/context") {
 		t.Fatalf("list_repos text missing next-step hint: %s", text)
 	}
 }
@@ -1634,7 +1634,7 @@ func TestServeReadsRepoContextResource(t *testing.T) {
 		t.Fatalf("register repo: %v", err)
 	}
 
-	contextURI := "avmatrix://repo/" + url.PathEscape("fixture repo") + "/context"
+	contextURI := "anvien://repo/" + url.PathEscape("fixture repo") + "/context"
 	input := bytes.Join([][]byte{
 		testFrame(t, map[string]any{
 			"jsonrpc": "2.0",
@@ -1663,7 +1663,7 @@ func TestServeReadsRepoContextResource(t *testing.T) {
 	var foundContext bool
 	for _, rawTemplate := range templates {
 		template := rawTemplate.(map[string]any)
-		foundContext = foundContext || template["uriTemplate"] == "avmatrix://repo/{name}/context"
+		foundContext = foundContext || template["uriTemplate"] == "anvien://repo/{name}/context"
 	}
 	if !foundContext {
 		t.Fatalf("resource templates = %#v", templatesResult)
@@ -1726,7 +1726,7 @@ func TestServeReadsRepoContextResourceWarnsWhenIndexIsStale(t *testing.T) {
 		"jsonrpc": "2.0",
 		"id":      1,
 		"method":  "resources/read",
-		"params":  map[string]any{"uri": "avmatrix://repo/fixture/context"},
+		"params":  map[string]any{"uri": "anvien://repo/fixture/context"},
 	})
 
 	var output bytes.Buffer
@@ -1770,13 +1770,13 @@ func TestServeReadsRepoClustersAndProcessesResources(t *testing.T) {
 			"jsonrpc": "2.0",
 			"id":      2,
 			"method":  "resources/read",
-			"params":  map[string]any{"uri": "avmatrix://repo/fixture/clusters"},
+			"params":  map[string]any{"uri": "anvien://repo/fixture/clusters"},
 		}),
 		testFrame(t, map[string]any{
 			"jsonrpc": "2.0",
 			"id":      3,
 			"method":  "resources/read",
-			"params":  map[string]any{"uri": "avmatrix://repo/fixture/processes"},
+			"params":  map[string]any{"uri": "anvien://repo/fixture/processes"},
 		}),
 	}, nil)
 
@@ -1794,8 +1794,8 @@ func TestServeReadsRepoClustersAndProcessesResources(t *testing.T) {
 	var foundClusters, foundProcesses bool
 	for _, rawTemplate := range templates {
 		template := rawTemplate.(map[string]any)
-		foundClusters = foundClusters || template["uriTemplate"] == "avmatrix://repo/{name}/clusters"
-		foundProcesses = foundProcesses || template["uriTemplate"] == "avmatrix://repo/{name}/processes"
+		foundClusters = foundClusters || template["uriTemplate"] == "anvien://repo/{name}/clusters"
+		foundProcesses = foundProcesses || template["uriTemplate"] == "anvien://repo/{name}/processes"
 	}
 	if !foundClusters || !foundProcesses {
 		t.Fatalf("resource templates missing clusters/processes: %#v", templatesResult)
@@ -1836,11 +1836,11 @@ func TestServeReadsSchemaDetailResourcesAndPrompts(t *testing.T) {
 	input := bytes.Join([][]byte{
 		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 1, "method": "resources/list"}),
 		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 2, "method": "resources/templates/list"}),
-		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 3, "method": "resources/read", "params": map[string]any{"uri": "avmatrix://repos"}}),
-		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 4, "method": "resources/read", "params": map[string]any{"uri": "avmatrix://setup"}}),
-		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 5, "method": "resources/read", "params": map[string]any{"uri": "avmatrix://repo/fixture/schema"}}),
-		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 6, "method": "resources/read", "params": map[string]any{"uri": "avmatrix://repo/fixture/cluster/Api"}}),
-		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 7, "method": "resources/read", "params": map[string]any{"uri": "avmatrix://repo/fixture/process/MainFlow"}}),
+		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 3, "method": "resources/read", "params": map[string]any{"uri": "anvien://repos"}}),
+		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 4, "method": "resources/read", "params": map[string]any{"uri": "anvien://setup"}}),
+		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 5, "method": "resources/read", "params": map[string]any{"uri": "anvien://repo/fixture/schema"}}),
+		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 6, "method": "resources/read", "params": map[string]any{"uri": "anvien://repo/fixture/cluster/Api"}}),
+		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 7, "method": "resources/read", "params": map[string]any{"uri": "anvien://repo/fixture/process/MainFlow"}}),
 		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 8, "method": "prompts/list"}),
 		testFrame(t, map[string]any{"jsonrpc": "2.0", "id": 9, "method": "prompts/get", "params": map[string]any{"name": "generate_map", "arguments": map[string]any{"repo": "fixture"}}}),
 	}, nil)
@@ -1859,7 +1859,7 @@ func TestServeReadsSchemaDetailResourcesAndPrompts(t *testing.T) {
 		t.Fatalf("resources/list = %#v", responses[0]["result"])
 	}
 	templates := responses[1]["result"].(map[string]any)["resourceTemplates"].([]any)
-	for _, want := range []string{"avmatrix://repo/{name}/schema", "avmatrix://repo/{name}/cluster/{clusterName}", "avmatrix://repo/{name}/process/{processName}"} {
+	for _, want := range []string{"anvien://repo/{name}/schema", "anvien://repo/{name}/cluster/{clusterName}", "anvien://repo/{name}/process/{processName}"} {
 		if !resourceTemplateExists(templates, want) {
 			t.Fatalf("resource templates missing %s: %#v", want, templates)
 		}
@@ -1867,7 +1867,7 @@ func TestServeReadsSchemaDetailResourcesAndPrompts(t *testing.T) {
 
 	for index, want := range map[int]string{
 		3: "repos:",
-		4: "AVmatrix MCP - fixture",
+		4: "Anvien MCP - fixture",
 		5: "INHERITS",
 		6: "members:",
 		7: "trace:",
@@ -1897,11 +1897,11 @@ func TestServeReadsSchemaDetailResourcesAndPrompts(t *testing.T) {
 	promptText := promptMessages[0].(map[string]any)["content"].(map[string]any)["text"].(string)
 	for _, want := range []string{
 		"Use the supplied repo name exactly as `fixture`",
-		"avmatrix://repo/fixture/context",
-		"avmatrix://repo/fixture/clusters",
-		"avmatrix://repo/fixture/processes",
-		"avmatrix://repo/fixture/process/<process-uri>",
-		"avmatrix analyze --force",
+		"anvien://repo/fixture/context",
+		"anvien://repo/fixture/clusters",
+		"anvien://repo/fixture/processes",
+		"anvien://repo/fixture/process/<process-uri>",
+		"anvien analyze --force",
 		"Do not invent Mermaid nodes, edges, dependencies, layers, or ownership.",
 	} {
 		if !strings.Contains(promptText, want) {

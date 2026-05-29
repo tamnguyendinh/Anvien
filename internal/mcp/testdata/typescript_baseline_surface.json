@@ -170,16 +170,16 @@
     }
   ],
   "resources": [
-    "avmatrix://repos",
-    "avmatrix://setup"
+    "anvien://repos",
+    "anvien://setup"
   ],
   "resourceTemplates": [
-    "avmatrix://repo/{name}/context",
-    "avmatrix://repo/{name}/clusters",
-    "avmatrix://repo/{name}/processes",
-    "avmatrix://repo/{name}/schema",
-    "avmatrix://repo/{name}/cluster/{clusterName}",
-    "avmatrix://repo/{name}/process/{processName}"
+    "anvien://repo/{name}/context",
+    "anvien://repo/{name}/clusters",
+    "anvien://repo/{name}/processes",
+    "anvien://repo/{name}/schema",
+    "anvien://repo/{name}/cluster/{clusterName}",
+    "anvien://repo/{name}/process/{processName}"
   ],
   "prompts": [
     {

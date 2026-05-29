@@ -12,11 +12,11 @@ func TestGenerateMapPromptWithRepoUsesEscapedResourcesAndEvidenceRules(t *testin
 
 	for _, want := range []string{
 		"Use the supplied repo name exactly as `my project`",
-		"avmatrix://repo/my%20project/context",
-		"avmatrix://repo/my%20project/clusters",
-		"avmatrix://repo/my%20project/processes",
-		"avmatrix://repo/my%20project/process/<process-uri>",
-		"avmatrix analyze --force",
+		"anvien://repo/my%20project/context",
+		"anvien://repo/my%20project/clusters",
+		"anvien://repo/my%20project/processes",
+		"anvien://repo/my%20project/process/<process-uri>",
+		"anvien analyze --force",
 		"Write architecture claims only from resources, MCP tools, CLI commands, or Web/API output you actually read.",
 		"Do not invent Mermaid nodes, edges, dependencies, layers, or ownership.",
 		"Choose up to 5 representative processes",
@@ -39,14 +39,14 @@ func TestGenerateMapPromptWithoutRepoRequiresDiscoveryAndAmbiguityStop(t *testin
 	}
 	text := promptTextFromResult(t, result)
 	for _, want := range []string{
-		"first READ `avmatrix://repos`",
+		"first READ `anvien://repos`",
 		"If exactly one repo is listed, use that repo name.",
 		"indexed path clearly matches the current workspace",
 		"stop and ask the user which repo to map",
 		"URL-escape the exact repo name",
 		"Never continue with a placeholder resource URI.",
-		"avmatrix://repo/<resolved-repo-uri>/context",
-		"avmatrix://repo/<resolved-repo-uri>/process/<process-uri>",
+		"anvien://repo/<resolved-repo-uri>/context",
+		"anvien://repo/<resolved-repo-uri>/process/<process-uri>",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("generate_map prompt without repo missing %q:\n%s", want, text)
@@ -64,8 +64,8 @@ func TestDetectImpactPromptUsesCurrentWorkflowLanguage(t *testing.T) {
 		"detect_changes(",
 		`"base_ref":"main"`,
 		`"scope":"compare"`,
-		"avmatrix analyze --force",
-		"avmatrix detect-changes --scope compare --base-ref main --repo <repo>",
+		"anvien analyze --force",
+		"anvien detect-changes --scope compare --base-ref main --repo <repo>",
 		"HIGH or CRITICAL is a blast-radius warning",
 		"not an edit ban",
 		"run detect-changes again before committing",

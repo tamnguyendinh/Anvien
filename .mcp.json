@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "avmatrix": {
+    "anvien": {
       "type": "stdio",
-      "command": "avmatrix",
+      "command": "anvien",
       "args": ["mcp"]
     }
   }
