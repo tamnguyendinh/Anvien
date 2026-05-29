@@ -579,7 +579,61 @@ Status: pending
 | Env prefix | `ANVIEN_` | derived from no-legacy rule |
 | Domain strategy | no action on third-party `avmatrix.com` | user clarification |
 
-## E7 - Future Implementation Evidence
+## E7 - Phase 6 AI Context Generator Slice
+
+Date: 2026-05-29
+
+Status: recorded
+
+Scope:
+
+- Updated the AI context generator source in `internal/aicontext/aicontext.go`.
+- Renamed embedded skill source files from `internal/aicontext/skills/avmatrix-*.md` to `internal/aicontext/skills/anvien-*.md`.
+- Updated generated-context tests in `internal/aicontext/aicontext_test.go`.
+
+Graph and impact evidence:
+
+- Fresh graph before validation: `.\avmatrix\bin\avmatrix.exe analyze --force`.
+- Analyze result after the final pre-commit refresh: scanned `801`, parsed `583`, unsupported `218`, failed `0`; graph `91263` nodes, `124743` relationships.
+- `impact GenerateAIContextFiles --repo AVmatrix --direction upstream`: CRITICAL; `4` impacted nodes, `23` affected processes, app layer `backend`, functional area mostly `cli`.
+- `impact renderAnvienBlock --repo AVmatrix --direction upstream`: CRITICAL; `4` impacted nodes, `12` affected processes.
+- `impact InstallBaseSkillsTo --repo AVmatrix --direction upstream`: CRITICAL; `10` impacted nodes, `9` affected processes, covers analyze and setup skill installation paths.
+- `impact BaseSkillFiles --repo AVmatrix --direction upstream`: HIGH; `5` impacted nodes, `3` affected processes.
+
+Implementation notes:
+
+- Used graph-guided rename for `renderAVmatrixBlock` to `renderAnvienBlock`.
+- Generated block markers are now `<!-- anvien:start -->` and `<!-- anvien:end -->`.
+- Generated command/resource examples now use `anvien`, `anvien://`, and `.anvien`.
+- Generated skill namespace is now `.claude/skills/anvien/**`.
+- Steady-state generated output no longer creates `.claude/skills/avmatrix/**`.
+- The implementation keeps only constructed cleanup strings for removing stale installed old skill directories. They are not a supported alias or active output.
+- One old-name source match remains in this slice: the Go module import path `github.com/tamnguyendinh/avmatrix-go/internal/analyze`; it belongs to the later module-path rename slice.
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File avmatrix-launcher\build.ps1` | first run failed while copying `avmatrix\bin\lbug_shared.dll` because two global `avmatrix.exe mcp` processes held runtime state; stopped PIDs `7436` and `12356`, then reran successfully. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test .\internal\aicontext -count=1` | pass; `1.038s`. |
+| `.\avmatrix\bin\avmatrix.exe analyze --force` | pass; regenerated AI context and local skill output. |
+| `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" internal\aicontext` | `1` match in `internal\aicontext\aicontext.go` for the old Go module import path only. |
+| `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" AGENTS.md CLAUDE.md .claude\skills\anvien` | `6` matches, all in `AGENTS.md`/`CLAUDE.md` outside generated skill files: the user-maintained top coding rules and the indexed repo name `AVmatrix`. Generated `.claude\skills\anvien` had no old-name matches. |
+| `Test-Path .claude\skills\avmatrix` | `False`. |
+
+E2E status:
+
+- Not run for this slice because it changed backend-generated AI context/skill files and no Web UI behavior.
+
+Pre-commit change detection:
+
+- Command: `.\avmatrix\bin\avmatrix.exe detect-changes --repo AVmatrix --scope all`.
+- Result: pass; summary risk `medium`.
+- Changed scope: `16` files, `161` changed symbols; app layers `backend` `100`, `backend_test` `48`, `docs` `13`.
+- Affected runtime processes: `3`, all in the analyze AI context flow: `NewAnalyzeCommand -> RemoveGeneratedSkills`, `NewAnalyzeCommand -> RenderAnvienBlock`, and `NewAnalyzeCommand -> UpsertSection`.
+- Resolution health impact: `0` degraded nodes and `0` nodes with gaps.
+
+## E8 - Future Implementation Evidence
 
 Date: pending
 

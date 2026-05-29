@@ -80,8 +80,8 @@ Source artifact: `docs/plans/2026-05-29-anvien-rebrand-inventory.csv`
 | `generator-source` | matches | 183 | 183 | 0 | 0 active old names |
 | `baseline` | files | 19 | 19 | 0 | regenerate/update active |
 | `baseline` | matches | 250 | 250 | 0 | regenerate/update active |
-| `generator-ai-context` | files | 13 | 13 | 0 | 0 active old names |
-| `generator-ai-context` | matches | 384 | 384 | 0 | 0 active old names |
+| `generator-ai-context` | files | 13 | 1 | -12 | 0 active old names |
+| `generator-ai-context` | matches | 384 | 1 | -383 | 0 active old names |
 | `launcher` | files | 6 | 6 | 0 | 0 active old names |
 | `launcher` | matches | 56 | 56 | 0 | 0 active old names |
 | `npm-package` | files | 5 | 5 | 0 | 0 active old names |
@@ -106,7 +106,7 @@ Status: baseline recorded
 | Old env var prefixes read | count | 1+ | 1+ | 0 | 0 |
 | Old package/bin names generated | count | 1+ | 1+ | 0 | 0 |
 | Old launcher protocol/executable names generated | count | 3+ | 3+ | 0 | 0 |
-| Old generated skill namespace generated | count | 1 | 1 | 0 | 0 |
+| Old generated skill namespace generated | count | 1 | 0 | -1 | 0 |
 
 ## B3.1 - GitHub Automation Old-Name Baseline
 
@@ -144,8 +144,8 @@ Status: recorded
 
 | Generator area | Unit | Baseline | Latest | Delta | Final target |
 |---|---:|---:|---:|---:|---:|
-| AI context generator and embedded skills | matches | 299 | 299 | 0 | 0 active |
-| AI context generator and embedded skills | files | 12 | 12 | 0 | 0 active |
+| AI context generator and embedded skills | matches | 299 | 1 | -298 | 0 active |
+| AI context generator and embedded skills | files | 12 | 1 | -11 | 0 active |
 | Setup/editor config generator | matches | 8 | 8 | 0 | 0 active |
 | Setup/editor config generator | files | 1 | 1 | 0 | 0 active |
 | Repo/global storage generators | matches | 4 | 4 | 0 | 0 active |
@@ -177,3 +177,17 @@ Status: pending implementation
 | MCP resources/list pass count | tests | pending | pending | pending | pass |
 | MCP `anvien://setup` smoke count | tests | pending | pending | pending | pass |
 | Web e2e Anvien branding checks | tests | pending | pending | pending | pass |
+
+## B5 - Phase 6 AI Context Generator Counts
+
+Status: recorded
+
+Date: 2026-05-29
+
+| Metric | Command | Latest | Note |
+|---|---|---:|---|
+| AI context generator old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" internal\aicontext` | `1` | Remaining match is the old Go module import path, deferred to the module rename slice. |
+| AI context generator files with old-name matches | same command, unique file count | `1` | `internal\aicontext\aicontext.go`. |
+| Generated `.claude\skills\anvien` old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" .claude\skills\anvien` | `0` | Generated skill output is clean for this slice. |
+| Old generated skill namespace exists | `Test-Path .claude\skills\avmatrix` | `0` | `False`; analyze regeneration did not recreate the old skill namespace. |
+| Generated context old-name matches | `rg -n "AVmatrix|avmatrix|AVMATRIX|\.avmatrix|avmatrix://|avmatrix-" AGENTS.md CLAUDE.md .claude\skills\anvien` | `6` | All matches are outside generated skill files: top coding rules and indexed repo name still `AVmatrix` until repo/module rename. |

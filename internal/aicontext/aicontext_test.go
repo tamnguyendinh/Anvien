@@ -9,17 +9,17 @@ import (
 
 func expectedBaseSkillIDs() []string {
 	return []string{
-		"avmatrix-exploring",
-		"avmatrix-impact-analysis",
-		"avmatrix-debugging",
-		"avmatrix-refactoring",
-		"avmatrix-guide",
-		"avmatrix-cli",
-		"avmatrix-graph-quality",
-		"avmatrix-api-surface",
-		"avmatrix-cross-repo",
-		"avmatrix-runtime-packaging",
-		"avmatrix-ai-context",
+		"anvien-exploring",
+		"anvien-impact-analysis",
+		"anvien-debugging",
+		"anvien-refactoring",
+		"anvien-guide",
+		"anvien-cli",
+		"anvien-graph-quality",
+		"anvien-api-surface",
+		"anvien-cross-repo",
+		"anvien-runtime-packaging",
+		"anvien-ai-context",
 	}
 }
 
@@ -34,12 +34,23 @@ func registeredBaseSkillIDs() []string {
 func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	dir := t.TempDir()
 	stats := Stats{Nodes: 50, Edges: 100, Processes: 5}
+	oldLower := "av" + "matrix"
+	oldDisplay := "AV" + "matrix"
+	oldUpper := "AV" + "MATRIX"
+
 	staleGenerated := filepath.Join(dir, ".claude", "skills", "generated", "legacy", "SKILL.md")
 	if err := os.MkdirAll(filepath.Dir(staleGenerated), 0o755); err != nil {
 		t.Fatalf("mkdir stale generated skill: %v", err)
 	}
 	if err := os.WriteFile(staleGenerated, []byte("# Legacy Generated Skill\n"), 0o644); err != nil {
 		t.Fatalf("write stale generated skill: %v", err)
+	}
+	staleOldNamespace := filepath.Join(dir, ".claude", "skills", oldLower, oldLower+"-cli", "SKILL.md")
+	if err := os.MkdirAll(filepath.Dir(staleOldNamespace), 0o755); err != nil {
+		t.Fatalf("mkdir stale old skill namespace: %v", err)
+	}
+	if err := os.WriteFile(staleOldNamespace, []byte("# Old Skill\n"), 0o644); err != nil {
+		t.Fatalf("write stale old skill namespace: %v", err)
 	}
 
 	files, installedBaseSkills, err := GenerateAIContextFiles(dir, "TestProject", stats, Options{})
@@ -67,49 +78,49 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		endMarker,
 		"TestProject",
 		"50 symbols, 100 relationships, 5 execution flows",
-		"AVmatrix is repo-agnostic",
+		"Anvien is repo-agnostic",
 		"## Core Rule",
-		"MCP tools are AVmatrix commands exposed to AI agents",
+		"MCP tools are Anvien commands exposed to AI agents",
 		"There is no single mandatory workflow",
 		"## Always Do",
-		"before using any AVmatrix CLI command, MCP tool, MCP resource, Web/API view",
+		"before using any Anvien CLI command, MCP tool, MCP resource, Web/API view",
 		"MCP `route_map`/`tool_map`/`shape_check`/`api_impact`, CLI `api route-map`",
 		"## Never Do",
 		"## Command Selection Guide",
-		"MCP `list_repos` or CLI `avmatrix list`",
-		"MCP `query` or CLI `avmatrix query \"<concept>\" --repo <repo>`",
-		"MCP `context` or CLI `avmatrix context \"<symbol>\" --repo <repo>`",
-		"MCP `cypher` or CLI `avmatrix cypher \"<query>\" --repo <repo>`",
-		"MCP `route_map` or CLI `avmatrix api route-map [route] --repo <repo>`",
-		"MCP `tool_map` or CLI `avmatrix api tool-map [tool] --repo <repo>`",
-		"MCP `shape_check` or CLI `avmatrix api shape-check [route] --repo <repo>`",
-		"MCP `api_impact` or CLI `avmatrix api impact [route] --repo <repo>`",
-		"MCP `impact` or CLI `avmatrix impact \"<symbol>\" --repo <repo> --direction upstream`",
-		"MCP `detect_changes` or CLI `avmatrix detect-changes --repo <repo> --scope all`",
-		"MCP `rename` or CLI `avmatrix rename <symbol> <newName> --repo <repo>`",
-		"`avmatrix graph-health summary --repo <repo> --json`",
-		"`avmatrix query-health --repo <repo>`",
-		"`avmatrix resolution-inventory --graph .avmatrix/graph.json`",
-		"`avmatrix source-site-accuracy --graph .avmatrix/graph.json`",
-		"`avmatrix doctor locks --repo <repo> --json`",
-		"`avmatrix completion <shell>`",
-		"MCP `group_query` or CLI `avmatrix group query <name> \"<query>\"`",
+		"MCP `list_repos` or CLI `anvien list`",
+		"MCP `query` or CLI `anvien query \"<concept>\" --repo <repo>`",
+		"MCP `context` or CLI `anvien context \"<symbol>\" --repo <repo>`",
+		"MCP `cypher` or CLI `anvien cypher \"<query>\" --repo <repo>`",
+		"MCP `route_map` or CLI `anvien api route-map [route] --repo <repo>`",
+		"MCP `tool_map` or CLI `anvien api tool-map [tool] --repo <repo>`",
+		"MCP `shape_check` or CLI `anvien api shape-check [route] --repo <repo>`",
+		"MCP `api_impact` or CLI `anvien api impact [route] --repo <repo>`",
+		"MCP `impact` or CLI `anvien impact \"<symbol>\" --repo <repo> --direction upstream`",
+		"MCP `detect_changes` or CLI `anvien detect-changes --repo <repo> --scope all`",
+		"MCP `rename` or CLI `anvien rename <symbol> <newName> --repo <repo>`",
+		"`anvien graph-health summary --repo <repo> --json`",
+		"`anvien query-health --repo <repo>`",
+		"`anvien resolution-inventory --graph .anvien/graph.json`",
+		"`anvien source-site-accuracy --graph .anvien/graph.json`",
+		"`anvien doctor locks --repo <repo> --json`",
+		"`anvien completion <shell>`",
+		"MCP `group_query` or CLI `anvien group query <name> \"<query>\"`",
 		"## Resources",
-		"avmatrix://repos",
-		"avmatrix://setup",
-		"avmatrix://repo/<repo>/schema",
-		"avmatrix://repo/<repo>/cluster/{name}",
+		"anvien://repos",
+		"anvien://setup",
+		"anvien://repo/<repo>/schema",
+		"anvien://repo/<repo>/cluster/{name}",
 		"## MCP Prompts",
 		"`detect_impact`",
 		"`generate_map`",
 		"MCP prompts are agent templates, not CLI commands.",
 		"## Skills",
-		"avmatrix-impact-analysis/SKILL.md",
-		"avmatrix-graph-quality/SKILL.md",
-		"avmatrix-api-surface/SKILL.md",
-		"avmatrix-cross-repo/SKILL.md",
-		"avmatrix-runtime-packaging/SKILL.md",
-		"avmatrix-ai-context/SKILL.md",
+		"anvien-impact-analysis/SKILL.md",
+		"anvien-graph-quality/SKILL.md",
+		"anvien-api-surface/SKILL.md",
+		"anvien-cross-repo/SKILL.md",
+		"anvien-runtime-packaging/SKILL.md",
+		"anvien-ai-context/SKILL.md",
 		"Graph health, query health, resolution inventory, and accuracy audits",
 		"API routes, MCP tools, shape checks, contracts, and consumers",
 		"Repository groups, cross-repo query, contracts, status, and sync",
@@ -126,6 +137,21 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "generated")); !os.IsNotExist(err) {
 		t.Fatalf("generated skills directory should not be created: %v", err)
 	}
+	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", oldLower)); !os.IsNotExist(err) {
+		t.Fatalf("old skill namespace should be removed: %v", err)
+	}
+	for _, forbidden := range []string{
+		oldDisplay,
+		oldLower,
+		oldUpper,
+		"." + oldLower,
+		oldLower + "://",
+		oldLower + "-",
+	} {
+		if strings.Contains(text, forbidden) {
+			t.Fatalf("AGENTS.md contains old generated name %q:\n%s", forbidden, text)
+		}
+	}
 	for _, retired := range []string{
 		"## Tools Quick Reference",
 		"## Impact Risk Levels",
@@ -136,14 +162,14 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"## MCP Tools",
 		"## CLI",
 		"## Practical Workflow",
-		"Use the AVmatrix MCP tools to understand code",
+		"Use the Anvien MCP tools to understand code",
 		"before using graph/query/impact/context/change-detection/cypher/accuracy commands",
-		"avmatrix://repo/TestProject/context",
-		"`avmatrix detect-changes --repo TestProject --scope all`",
-		"avmatrix_impact",
-		"avmatrix_detect_changes",
-		"avmatrix_query",
-		"avmatrix_context",
+		"anvien://repo/TestProject/context",
+		"`anvien detect-changes --repo TestProject --scope all`",
+		"anvien_impact",
+		"anvien_detect_changes",
+		"anvien_query",
+		"anvien_context",
 	} {
 		if strings.Contains(text, retired) {
 			t.Fatalf("AGENTS.md contains retired content %q:\n%s", retired, text)
@@ -161,12 +187,12 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read updated AGENTS.md: %v", err)
 	}
-	if count := strings.Count(string(updated), "avmatrix:start"); count != 1 {
+	if count := strings.Count(string(updated), "anvien:start"); count != 1 {
 		t.Fatalf("expected one managed section after update, got %d:\n%s", count, updated)
 	}
 
 	for _, skill := range baseSkills {
-		path := filepath.Join(dir, ".claude", "skills", "avmatrix", skill.Name, "SKILL.md")
+		path := filepath.Join(dir, ".claude", "skills", "anvien", skill.Name, "SKILL.md")
 		info, err := os.Stat(path)
 		if err != nil {
 			t.Fatalf("base skill %s was not installed: %v", skill.Name, err)
@@ -179,7 +205,7 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 			t.Fatalf("read base skill %s: %v", skill.Name, err)
 		}
 		skillText := string(raw)
-		if strings.Contains(skillText, "Use AVmatrix tools to accomplish this task.") {
+		if strings.Contains(skillText, "Use Anvien tools to accomplish this task.") {
 			t.Fatalf("base skill %s fell back to placeholder content:\n%s", skill.Name, skillText)
 		}
 		if !strings.Contains(skillText, "##") {
@@ -220,7 +246,7 @@ func TestBaseSkillRegistryAndSourceFrontmatter(t *testing.T) {
 		if !strings.Contains(content, "\ndescription: ") {
 			t.Fatalf("base skill %s missing description frontmatter:\n%s", skill.Name, content)
 		}
-		if strings.Contains(content, "Use AVmatrix tools to accomplish this task.") {
+		if strings.Contains(content, "Use Anvien tools to accomplish this task.") {
 			t.Fatalf("base skill %s uses fallback placeholder content:\n%s", skill.Name, content)
 		}
 	}
@@ -248,32 +274,32 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 	}
 
 	checks := map[string][]string{
-		"avmatrix-ai-context": {
+		"anvien-ai-context": {
 			"AGENTS.md",
 			"CLAUDE.md",
 			"internal/aicontext/skills/*.md",
 			"fallbackBaseSkillContent",
 		},
-		"avmatrix-api-surface": {
+		"anvien-api-surface": {
 			"route_map",
-			"avmatrix api route-map",
+			"anvien api route-map",
 			"api_impact",
 			"Do not invent CLI commands",
 		},
-		"avmatrix-cross-repo": {
+		"anvien-cross-repo": {
 			"group_query",
-			"avmatrix group query",
+			"anvien group query",
 			"group contracts",
 		},
-		"avmatrix-graph-quality": {
+		"anvien-graph-quality": {
 			"graph-health",
 			"query-health",
 			"resolution-inventory",
 			"source-site-accuracy",
 			"threshold and exact",
 		},
-		"avmatrix-runtime-packaging": {
-			"avmatrix\\bin\\avmatrix.exe",
+		"anvien-runtime-packaging": {
+			"anvien\\bin\\anvien.exe",
 			"serve",
 			"mcp",
 			"setup",
@@ -295,23 +321,23 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 		"multi-lane",
 		"candidate retrieval",
 		"context",
-		"`avmatrix query --lanes --json`",
-		"`avmatrix query-health`",
+		"`anvien query --lanes --json`",
+		"`anvien query-health`",
 		"`route_map`",
-		"`avmatrix api route-map",
-		"`avmatrix doctor processes --json`",
-		"`avmatrix completion <shell>`",
+		"`anvien api route-map",
+		"`anvien doctor processes --json`",
+		"`anvien completion <shell>`",
 	} {
 		if !strings.Contains(allGuidance, want) {
 			t.Fatalf("combined skill guidance missing %q", want)
 		}
 	}
 	for _, forbidden := range []string{
-		"avmatrix route_map",
-		"avmatrix tool_map",
-		"avmatrix shape_check",
-		"avmatrix api_impact",
-		"avmatrix query_health",
+		"anvien route_map",
+		"anvien tool_map",
+		"anvien shape_check",
+		"anvien api_impact",
+		"anvien query_health",
 	} {
 		if strings.Contains(allGuidance, forbidden) {
 			t.Fatalf("combined skill guidance contains invented CLI spelling %q", forbidden)
@@ -332,13 +358,15 @@ func TestGenerateAIContextFilesNoStatsOmitsVolatileCounts(t *testing.T) {
 	if strings.Contains(text, "50 symbols") || strings.Contains(text, "100 relationships") || strings.Contains(text, "5 execution flows") {
 		t.Fatalf("AGENTS.md contains volatile stats despite --no-stats:\n%s", text)
 	}
-	if !strings.Contains(text, "This project is indexed by AVmatrix as **TestProject**.") {
+	if !strings.Contains(text, "This project is indexed by Anvien as **TestProject**.") {
 		t.Fatalf("AGENTS.md missing no-stats project sentence:\n%s", text)
 	}
 }
 
 func TestGenerateAIContextFilesReplacesEmptyAndLegacyManagedContext(t *testing.T) {
 	dir := t.TempDir()
+	oldLower := "av" + "matrix"
+	oldDisplay := "AV" + "matrix"
 	for _, name := range []string{"AGENTS.md", "CLAUDE.md"} {
 		if err := os.WriteFile(filepath.Join(dir, name), nil, 0o644); err != nil {
 			t.Fatalf("write empty %s: %v", name, err)
@@ -356,7 +384,7 @@ func TestGenerateAIContextFilesReplacesEmptyAndLegacyManagedContext(t *testing.T
 		t.Fatalf("empty AGENTS.md was not replaced cleanly:\n%s", agents)
 	}
 
-	legacy := "# Manual\n\n<!-- avmatrix:start -->\n# AVmatrix - Code Intelligence\nold legacy body\n<!-- avmatrix:end -->\n\n# Tail\n"
+	legacy := "# Manual\n\n<!-- " + oldLower + ":start -->\n# " + oldDisplay + " - Code Intelligence\nold legacy body\n<!-- " + oldLower + ":end -->\n\n# Tail\n"
 	if err := os.WriteFile(filepath.Join(dir, "CLAUDE.md"), []byte(legacy), 0o644); err != nil {
 		t.Fatalf("write legacy CLAUDE.md: %v", err)
 	}
@@ -368,7 +396,7 @@ func TestGenerateAIContextFilesReplacesEmptyAndLegacyManagedContext(t *testing.T
 		t.Fatalf("read CLAUDE.md: %v", err)
 	}
 	text := string(claude)
-	for _, want := range []string{"# Manual", startMarker, "# AVmatrix - Code Intelligence", "# Tail"} {
+	for _, want := range []string{"# Manual", startMarker, "# Anvien - Code Intelligence", "# Tail"} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("legacy CLAUDE.md missing %q:\n%s", want, text)
 		}
@@ -387,17 +415,17 @@ func TestRenderCrossRepoGroupsSectionMentionsSupportedToolsAndCommands(t *testin
 		"`group_sync`",
 		"`group_contracts`",
 		"`group_query`",
-		"`avmatrix group list`",
-		"`avmatrix group status <name>`",
-		"`avmatrix group sync <name>`",
-		"`avmatrix group contracts <name>`",
-		"`avmatrix group query <name> \"<query>\"`",
+		"`anvien group list`",
+		"`anvien group status <name>`",
+		"`anvien group sync <name>`",
+		"`anvien group contracts <name>`",
+		"`anvien group query <name> \"<query>\"`",
 	} {
 		if !strings.Contains(section, want) {
 			t.Fatalf("cross-repo section missing %q:\n%s", want, section)
 		}
 	}
-	if strings.Contains(section, "group_impact") || strings.Contains(section, "avmatrix group impact") {
+	if strings.Contains(section, "group_impact") || strings.Contains(section, "anvien group impact") {
 		t.Fatalf("cross-repo section mentions retired group impact:\n%s", section)
 	}
 	if got := FormatCrossRepoGroupsSection(nil); got != "" {

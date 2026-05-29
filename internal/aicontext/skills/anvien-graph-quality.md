@@ -1,9 +1,9 @@
 ---
-name: avmatrix-graph-quality
+name: anvien-graph-quality
 description: "Use when the user needs graph-health, query-health, resolution inventory, source-site accuracy, or benchmark comparison evidence."
 ---
 
-# Graph Quality With AVmatrix
+# Graph Quality With Anvien
 
 Use this skill when the question is whether the graph itself is healthy, complete, fresh, explainable, or reliable enough for code navigation and impact work.
 
@@ -11,18 +11,18 @@ Use this skill when the question is whether the graph itself is healthy, complet
 
 | Need | Use |
 |---|---|
-| Topology and diagnostics | `avmatrix graph-health summary --repo <repo> --json` |
-| Prioritized health candidates | `avmatrix graph-health report --repo <repo> --limit <n> --json` |
-| Component inventory | `avmatrix graph-health components --repo <repo> --json` |
-| Node/component explanation | `avmatrix graph-health explain <node-or-name> --repo <repo> --json` |
-| Query retrieval benchmark | `avmatrix query-health --repo <repo> --suite <file>` |
-| ResolutionGap inventory | `avmatrix resolution-inventory --graph .avmatrix/graph.json` |
-| Source-site proof accuracy | `avmatrix source-site-accuracy --graph .avmatrix/graph.json` |
-| Analyze benchmark comparison | `avmatrix benchmark-compare <before> <after>` |
+| Topology and diagnostics | `anvien graph-health summary --repo <repo> --json` |
+| Prioritized health candidates | `anvien graph-health report --repo <repo> --limit <n> --json` |
+| Component inventory | `anvien graph-health components --repo <repo> --json` |
+| Node/component explanation | `anvien graph-health explain <node-or-name> --repo <repo> --json` |
+| Query retrieval benchmark | `anvien query-health --repo <repo> --suite <file>` |
+| ResolutionGap inventory | `anvien resolution-inventory --graph .anvien/graph.json` |
+| Source-site proof accuracy | `anvien source-site-accuracy --graph .anvien/graph.json` |
+| Analyze benchmark comparison | `anvien benchmark-compare <before> <after>` |
 
 ## Workflow
 
-1. Run `avmatrix analyze --force` first when graph freshness matters.
+1. Run `anvien analyze --force` first when graph freshness matters.
 2. Choose the quality command by failure type: topology, query retrieval, unresolved references, source-site proof, or performance/capacity.
 3. Keep threshold and exact query-health results separate. Threshold pass means usable navigation; exact pass means all expected targets were found.
 4. Preserve counts, samples, missed targets, and noise reasons in evidence. Do not compress away traceability.
@@ -32,7 +32,7 @@ Use this skill when the question is whether the graph itself is healthy, complet
 
 Broad `query` is a candidate discovery command with multiple lanes. It is not a proof that the first ranked result is the owner. For broad intent cases, verify candidates with `context`, exact file inspection, and query-health evidence. When an expected target is missed, record the miss even if threshold pass succeeds.
 
-For the AVmatrix skill-system upgrade suite, use the dedicated query-health suite under `docs/query-health/2026-05-23-avmatrix-skill-system-upgrade-suite.json` when validating AI-context, command-surface, graph-quality, API-surface, and cross-repo discovery.
+For the Anvien skill-system upgrade suite, use the dedicated query-health suite under `docs/query-health/2026-05-23-anvien-skill-system-upgrade-suite.json` when validating AI-context, command-surface, graph-quality, API-surface, and cross-repo discovery.
 
 ## Evidence To Record
 

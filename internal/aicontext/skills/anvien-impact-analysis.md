@@ -1,9 +1,9 @@
 ---
-name: avmatrix-impact-analysis
+name: anvien-impact-analysis
 description: "Use when the user wants to know what will break if they change something, or needs safety analysis before editing code."
 ---
 
-# Impact Analysis With AVmatrix
+# Impact Analysis With Anvien
 
 Use this skill before editing functions, classes, methods, exported symbols, API handlers, graph builders, resolvers, analyzers, shared contracts, or generated-context owners.
 
@@ -11,15 +11,15 @@ Use this skill before editing functions, classes, methods, exported symbols, API
 
 | Need | Use |
 |---|---|
-| Blast radius for one symbol | MCP `impact` or CLI `avmatrix impact "<symbol>" --repo <repo> --direction upstream` |
+| Blast radius for one symbol | MCP `impact` or CLI `anvien impact "<symbol>" --repo <repo> --direction upstream` |
 | Disambiguate a target | MCP/CLI `context` and `impact --uid <uid>` |
-| Route or contract impact | MCP `api_impact` or CLI `avmatrix api impact [route] --repo <repo>` |
-| Changed-scope review before commit | MCP `detect_changes` or CLI `avmatrix detect-changes --repo <repo> --scope all` |
+| Route or contract impact | MCP `api_impact` or CLI `anvien api impact [route] --repo <repo>` |
+| Changed-scope review before commit | MCP `detect_changes` or CLI `anvien detect-changes --repo <repo> --scope all` |
 | Resolution/topology risk context | `graph-health`, `resolution-inventory`, or `source-site-accuracy` when relevant |
 
 ## Workflow
 
-1. Run `avmatrix analyze --force` before graph-based impact work when required by repo rules.
+1. Run `anvien analyze --force` before graph-based impact work when required by repo rules.
 2. Identify the exact symbol. If impact returns candidates, use `context` or `--uid` to disambiguate.
 3. Run upstream impact before editing. Review direct depth-1 dependents first.
 4. Report affected files, App Layers, Functional Areas, execution flows, and risk.

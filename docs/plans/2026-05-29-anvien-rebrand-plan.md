@@ -2,7 +2,7 @@
 
 Date: 2026-05-29
 
-Status: Draft
+Status: In progress
 
 Companion files:
 
@@ -88,7 +88,7 @@ AVmatrix graph refresh for this planning update:
 
 - `avmatrix analyze --force`
 - scanned `800` files, parsed `583`, unsupported `217`, failed `0`
-- graph `91233` nodes, `124712` relationships after the post-commit generator review
+- graph `91263` nodes, `124743` relationships after the Phase 6 AI context generator slice validation
 
 AVmatrix query/context identified these owners before documentation rewrite:
 
@@ -209,7 +209,7 @@ Top old-name file groups by file count:
 - [x] [P1.5-C] Audit repo/global storage generators so `.anvien` output covers `lbug`, `graph.json`, `meta.json`, `settings.json`, `analyze.lock`, `analyze.tmp`, `registry.json`, `runtime.json`, and `groups/**`.
 - [x] [P1.5-D] Audit MCP served-content generators so `anvien://setup`, resources, prompts, tool descriptions, and next-step hints cannot regenerate old names.
 - [x] [P1.5-E] Audit Web contract and launcher/package generators before touching their generated outputs.
-- [ ] [P1.5-F] After each generator edit, run the generator or owning command and search the regenerated outputs for old names. Record results immediately in evidence and benchmark ledgers.
+- [x] [P1.5-F] After each generator edit, run the generator or owning command and search the regenerated outputs for old names. Record results immediately in evidence and benchmark ledgers. Satisfied for the AI context generator slice; repeat the same validation inside later generator-specific phases.
 
 ## Phase 2 - GitHub Repository Rename Execution
 
@@ -283,14 +283,16 @@ This phase covers work that must happen on GitHub itself, not only in local sour
 
 ## Phase 6 - Generated AI Context And Skills
 
-- [ ] [P6-A] Rename `renderAVmatrixBlock` and generated section names to Anvien equivalents.
-- [ ] [P6-B] Rename embedded skill files from `avmatrix-*.md` to `anvien-*.md`.
-- [ ] [P6-C] Rename generated skill output from `.claude/skills/avmatrix/**` to `.claude/skills/anvien/**`.
-- [ ] [P6-D] Update skill descriptions, command tables, MCP resource references, and setup instructions to Anvien names.
-- [ ] [P6-E] Regenerate `AGENTS.md`, `CLAUDE.md`, and generated skills from source.
-- [ ] [P6-F] Update generated-context tests to assert Anvien names and absence of active old names.
-- [ ] [P6-G] Replace generated markers from `<!-- avmatrix:start -->` / `<!-- avmatrix:end -->` to Anvien markers, remove old generated blocks during the rename slice, and do not leave steady-state old-marker compatibility.
+- [x] [P6-A] Rename `renderAVmatrixBlock` and generated section names to Anvien equivalents.
+- [x] [P6-B] Rename embedded skill files from `avmatrix-*.md` to `anvien-*.md`.
+- [x] [P6-C] Rename generated skill output from `.claude/skills/avmatrix/**` to `.claude/skills/anvien/**`.
+- [x] [P6-D] Update skill descriptions, command tables, MCP resource references, and setup instructions to Anvien names.
+- [x] [P6-E] Regenerate `AGENTS.md`, `CLAUDE.md`, and generated skills from source.
+- [x] [P6-F] Update generated-context tests to assert Anvien names and absence of active old names.
+- [x] [P6-G] Replace generated markers from `<!-- avmatrix:start -->` / `<!-- avmatrix:end -->` to Anvien markers, remove old generated blocks during the rename slice, and do not leave steady-state old-marker compatibility.
 - [ ] [P6-H] Verify a fresh `anvien analyze --force` regenerates `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` without recreating `.claude/skills/avmatrix/**` or `avmatrix-*` skill ids.
+
+Interim Phase 6 validation was run with the current local binary path `.\avmatrix\bin\avmatrix.exe analyze --force` because the CLI/module/package rename slices are not complete yet. Final P6-H stays open until the command itself is `anvien`.
 
 ## Phase 6.5 - Claude Plugin And Agent Integration Package
 

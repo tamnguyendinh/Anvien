@@ -1,9 +1,9 @@
 ---
-name: avmatrix-debugging
+name: anvien-debugging
 description: "Use when the user is debugging a bug, tracing an error, or asking why something fails."
 ---
 
-# Debugging With AVmatrix
+# Debugging With Anvien
 
 Use this skill to trace a bug from symptom to owner using graph facts, runtime evidence, source inspection, and tests.
 
@@ -11,18 +11,18 @@ Use this skill to trace a bug from symptom to owner using graph facts, runtime e
 
 | Need | Use |
 |---|---|
-| Find candidate owners from a symptom | MCP `query` or CLI `avmatrix query "<symptom>" --repo <repo>` |
+| Find candidate owners from a symptom | MCP `query` or CLI `anvien query "<symptom>" --repo <repo>` |
 | Inspect suspect symbol callers/callees | MCP/CLI `context` |
-| Trace a known flow | `avmatrix://repo/<repo>/process/{name}` |
-| Check topology or diagnostic candidates | CLI `avmatrix graph-health ...` |
-| Inspect unresolved references | CLI `avmatrix resolution-inventory --graph .avmatrix/graph.json` |
-| Check source-site proof quality | CLI `avmatrix source-site-accuracy --graph .avmatrix/graph.json` |
-| Measure query reliability for a bug class | CLI `avmatrix query-health --repo <repo> --suite <file>` |
+| Trace a known flow | `anvien://repo/<repo>/process/{name}` |
+| Check topology or diagnostic candidates | CLI `anvien graph-health ...` |
+| Inspect unresolved references | CLI `anvien resolution-inventory --graph .anvien/graph.json` |
+| Check source-site proof quality | CLI `anvien source-site-accuracy --graph .anvien/graph.json` |
+| Measure query reliability for a bug class | CLI `anvien query-health --repo <repo> --suite <file>` |
 
 ## Workflow
 
 1. Reproduce or capture the symptom first: command, input, log, screenshot, failing test, or runtime trace.
-2. Refresh graph evidence with `avmatrix analyze --force` before graph-based debugging when needed.
+2. Refresh graph evidence with `anvien analyze --force` before graph-based debugging when needed.
 3. Use `query` for broad symptom and domain discovery, then verify the candidate owner with `context` and source.
 4. Follow process resources when the failure sits in a route/tool/CLI/runtime flow.
 5. Use graph-quality commands when the bug may be missing topology, stale graph data, unresolved references, or poor query retrieval.
@@ -44,4 +44,4 @@ Broad `query` is useful but not proof. It has multiple lanes and can surface pla
 
 ## Current Limitations
 
-AVmatrix can identify likely owners and dependency paths, but it does not prove runtime state by itself. Confirm with tests, logs, browser/e2e evidence, or CLI smoke commands that exercise the failing behavior.
+Anvien can identify likely owners and dependency paths, but it does not prove runtime state by itself. Confirm with tests, logs, browser/e2e evidence, or CLI smoke commands that exercise the failing behavior.
