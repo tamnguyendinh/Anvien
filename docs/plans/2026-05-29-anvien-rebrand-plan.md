@@ -8,6 +8,7 @@ Companion files:
 
 - Evidence ledger: [2026-05-29-anvien-rebrand-evidence.md](2026-05-29-anvien-rebrand-evidence.md)
 - Benchmark ledger: [2026-05-29-anvien-rebrand-benchmark.md](2026-05-29-anvien-rebrand-benchmark.md)
+- Inventory ledger: [2026-05-29-anvien-rebrand-inventory.csv](2026-05-29-anvien-rebrand-inventory.csv)
 
 ## Master Rules
 
@@ -191,23 +192,23 @@ Top old-name file groups by file count:
 
 ## Phase 1 - Full Inventory And Edit Map
 
-- [ ] [P1-A] Build a full file inventory for every old-name reference, grouped by active source, test, generated artifact, docs, baseline, package output, report, GitHub automation, and temporary output.
-- [ ] [P1-B] Classify each file as rename-in-place, regenerate, delete stale output, or preserve only as rebrand evidence.
-- [ ] [P1-C] Identify all generated outputs and their source generators. Do not edit generated `AGENTS.md`, `CLAUDE.md`, `.claude/skills/**`, `avmatrix-launcher/web-dist/**`, or generated Web contracts as permanent source; update the generator first, then regenerate.
+- [x] [P1-A] Build a full file inventory for every old-name reference, grouped by active source, test, generated artifact, docs, baseline, package output, report, GitHub automation, and temporary output.
+- [x] [P1-B] Classify each file as rename-in-place, regenerate, delete stale output, or preserve only as rebrand evidence.
+- [x] [P1-C] Identify all generated outputs and their source generators. Do not edit generated `AGENTS.md`, `CLAUDE.md`, `.claude/skills/**`, `avmatrix-launcher/web-dist/**`, or generated Web contracts as permanent source; update the generator first, then regenerate.
 - [ ] [P1-D] Run AVmatrix impact analysis for `NewRootCommand`, `newMCPCommand`, `runSetup`, `setupWriteMCPJSON`, `setupWriteOpenCodeJSON`, `setupRunCodexMCPAdd`, `setupUpsertCodexToml`, `setupMergeClaudeHookSettings`, `GenerateAIContextFiles`, `renderAVmatrixBlock`, `repo.Paths`, `repo.GlobalDir`, MCP resource/prompt handlers, launcher startup/reset/cleanup functions, and every other edited symbol found during inventory.
 - [ ] [P1-E] Record blast radius and HIGH/CRITICAL warnings before code edits.
-- [ ] [P1-F] Inventory file and directory names, not only file contents. Rename or remove checked-in paths containing old names, including package folders, command folders, generated contract filenames, plugin folders, action folders, and executable artifacts.
-- [ ] [P1-G] Classify local-only generated/cache/temp paths such as `.avmatrix`, `.tmp`, `.codex-tmp`, and `.history` separately from tracked files. Do not carry old local cache names into release artifacts.
-- [ ] [P1-H] Build a generator-to-output matrix for every file-writing or served-content generator listed above. Each row must name the source, generated output, regeneration command, and old-name validation command.
+- [x] [P1-F] Inventory file and directory names, not only file contents. Rename or remove checked-in paths containing old names, including package folders, command folders, generated contract filenames, plugin folders, action folders, and executable artifacts.
+- [x] [P1-G] Classify local-only generated/cache/temp paths such as `.avmatrix`, `.tmp`, `.codex-tmp`, and `.history` separately from tracked files. Do not carry old local cache names into release artifacts.
+- [x] [P1-H] Build a generator-to-output matrix for every file-writing or served-content generator listed above. Each row must name the source, generated output, regeneration command, and old-name validation command.
 - [ ] [P1-I] Treat a generator still emitting `AVmatrix`, `avmatrix`, `AVMATRIX`, `.avmatrix`, `avmatrix://`, or `avmatrix-*` as a blocker for completing its implementation slice, even if the checked-in output was manually edited.
 
 ## Phase 1.5 - Generator Source Audit
 
-- [ ] [P1.5-A] Audit `internal/aicontext/aicontext.go` and `internal/aicontext/skills/*.md` as the source of truth for generated `AGENTS.md`, `CLAUDE.md`, `.claude/skills/**`, and editor-installed skills.
-- [ ] [P1.5-B] Audit `internal/cli/setup_command.go` as the source of truth for generated editor MCP configs, Codex TOML, Claude hooks, and skill installation paths.
-- [ ] [P1.5-C] Audit repo/global storage generators so `.anvien` output covers `lbug`, `graph.json`, `meta.json`, `settings.json`, `analyze.lock`, `analyze.tmp`, `registry.json`, `runtime.json`, and `groups/**`.
-- [ ] [P1.5-D] Audit MCP served-content generators so `anvien://setup`, resources, prompts, tool descriptions, and next-step hints cannot regenerate old names.
-- [ ] [P1.5-E] Audit Web contract and launcher/package generators before touching their generated outputs.
+- [x] [P1.5-A] Audit `internal/aicontext/aicontext.go` and `internal/aicontext/skills/*.md` as the source of truth for generated `AGENTS.md`, `CLAUDE.md`, `.claude/skills/**`, and editor-installed skills.
+- [x] [P1.5-B] Audit `internal/cli/setup_command.go` as the source of truth for generated editor MCP configs, Codex TOML, Claude hooks, and skill installation paths.
+- [x] [P1.5-C] Audit repo/global storage generators so `.anvien` output covers `lbug`, `graph.json`, `meta.json`, `settings.json`, `analyze.lock`, `analyze.tmp`, `registry.json`, `runtime.json`, and `groups/**`.
+- [x] [P1.5-D] Audit MCP served-content generators so `anvien://setup`, resources, prompts, tool descriptions, and next-step hints cannot regenerate old names.
+- [x] [P1.5-E] Audit Web contract and launcher/package generators before touching their generated outputs.
 - [ ] [P1.5-F] After each generator edit, run the generator or owning command and search the regenerated outputs for old names. Record results immediately in evidence and benchmark ledgers.
 
 ## Phase 2 - GitHub Repository Rename Execution

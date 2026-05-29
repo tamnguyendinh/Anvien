@@ -517,6 +517,48 @@ Plan amendments from this review:
 - Added generated marker validation for `AGENTS.md`, `CLAUDE.md`, and skill output so old markers and old skill ids do not remain as steady-state compatibility.
 - Added benchmark rows for old-name counts inside generator source areas.
 
+## E5.4 - Phase 1 Tracked File Inventory
+
+Date: 2026-05-29
+
+Status: recorded
+
+Inventory artifact:
+
+- `docs/plans/2026-05-29-anvien-rebrand-inventory.csv`
+
+Inventory command classifies tracked files with old-name matches, excluding this rebrand plan/evidence/benchmark/inventory file set:
+
+```powershell
+git ls-files | Select-String -Pattern 'AVmatrix|avmatrix|AVMATRIX|AVmatrix-GO|\.avmatrix|avmatrix://|avmatrix-'
+```
+
+Inventory summary:
+
+| Category | Files | Matches |
+|---|---:|---:|
+| `source-or-config` | 316 | 1546 |
+| `report` | 70 | 923 |
+| `web-ui` | 67 | 244 |
+| `docs` | 55 | 8094 |
+| `generator-source` | 31 | 183 |
+| `baseline` | 19 | 250 |
+| `generator-ai-context` | 13 | 384 |
+| `launcher` | 6 | 56 |
+| `npm-package` | 5 | 156 |
+| `cli-command` | 3 | 4 |
+| `generated-contract` | 2 | 5 |
+| `github-automation` | 1 | 17 |
+
+Phase/checklist impact:
+
+- P1-A completed: tracked file inventory exists as CSV.
+- P1-B completed: every inventory row has a classification such as `edit-generator`, `regenerate-from-generator`, `rename-in-place`, `hard-rename-or-remove`, `regenerate-or-update`, `preserve-or-delete-stale`, or `update-active-or-preserve-history`.
+- P1-C/P1-H completed from generator/source-of-truth matrix.
+- P1-F completed for tracked file paths because the CSV records paths containing old-name folder/file names.
+- P1-G completed for local generated/cache/temp classification from E5.3.
+- P1.5-A through P1.5-E completed from source reads and generator matrix evidence.
+
 ## E6 - Naming Decisions
 
 Date: pending

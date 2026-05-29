@@ -60,6 +60,39 @@ Status: recorded
 | `avmatrix` | files | 5 | 5 | 0 | rename package |
 | `cmd` | files | 5 | 5 | 0 | rename entrypoint/imports |
 
+## B2.1 - Tracked Inventory Classification Baseline
+
+Status: recorded
+
+Source artifact: `docs/plans/2026-05-29-anvien-rebrand-inventory.csv`
+
+| Category | Unit | Baseline | Latest | Delta | Final target |
+|---|---:|---:|---:|---:|---:|
+| `source-or-config` | files | 316 | 316 | 0 | 0 active old names |
+| `source-or-config` | matches | 1546 | 1546 | 0 | 0 active old names |
+| `report` | files | 70 | 70 | 0 | classify/delete/update |
+| `report` | matches | 923 | 923 | 0 | classify/delete/update |
+| `web-ui` | files | 67 | 67 | 0 | 0 active old names |
+| `web-ui` | matches | 244 | 244 | 0 | 0 active old names |
+| `docs` | files | 55 | 55 | 0 | update active or preserve historical |
+| `docs` | matches | 8094 | 8094 | 0 | update active or preserve historical |
+| `generator-source` | files | 31 | 31 | 0 | 0 active old names |
+| `generator-source` | matches | 183 | 183 | 0 | 0 active old names |
+| `baseline` | files | 19 | 19 | 0 | regenerate/update active |
+| `baseline` | matches | 250 | 250 | 0 | regenerate/update active |
+| `generator-ai-context` | files | 13 | 13 | 0 | 0 active old names |
+| `generator-ai-context` | matches | 384 | 384 | 0 | 0 active old names |
+| `launcher` | files | 6 | 6 | 0 | 0 active old names |
+| `launcher` | matches | 56 | 56 | 0 | 0 active old names |
+| `npm-package` | files | 5 | 5 | 0 | 0 active old names |
+| `npm-package` | matches | 156 | 156 | 0 | 0 active old names |
+| `cli-command` | files | 3 | 3 | 0 | 0 active old names |
+| `cli-command` | matches | 4 | 4 | 0 | 0 active old names |
+| `generated-contract` | files | 2 | 2 | 0 | regenerate from generator |
+| `generated-contract` | matches | 5 | 5 | 0 | regenerate from generator |
+| `github-automation` | files | 1 | 1 | 0 | 0 active old names |
+| `github-automation` | matches | 17 | 17 | 0 | 0 active old names |
+
 ## B3 - Active Legacy Surface Count
 
 Status: baseline recorded
