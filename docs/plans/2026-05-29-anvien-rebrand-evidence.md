@@ -306,6 +306,69 @@ Top groups:
 | `avmatrix` | 5 |
 | `cmd` | 5 |
 
+## E5.1 - GitHub Automation Inventory
+
+Date: 2026-05-29
+
+Status: recorded
+
+`.github` files present during plan update:
+
+- `.github/dependabot.yml`
+- `.github/FUNDING.yml`
+- `.github/PULL_REQUEST_TEMPLATE.md`
+- `.github/release-drafter.yml`
+- `.github/release.yml`
+- `.github/actions/setup-avmatrix/action.yml`
+- `.github/actions/setup-avmatrix-web/action.yml`
+- `.github/ISSUE_TEMPLATE/bug_report.yml`
+- `.github/ISSUE_TEMPLATE/config.yml`
+- `.github/ISSUE_TEMPLATE/feature_request.yml`
+- `.github/scripts/check-tree-sitter-upgrade-readiness.py`
+- `.github/scripts/check-workflow-concurrency.py`
+- `.github/scripts/triage/**`
+- `.github/workflows/ci-e2e.yml`
+- `.github/workflows/ci-quality.yml`
+- `.github/workflows/ci-report.yml`
+- `.github/workflows/ci-tests.yml`
+- `.github/workflows/ci.yml`
+- `.github/workflows/claude-code-review.yml`
+- `.github/workflows/claude.yml`
+- `.github/workflows/docker.yml`
+- `.github/workflows/pr-description-check.yml`
+- `.github/workflows/pr-labeler.yml`
+- `.github/workflows/publish.yml`
+- `.github/workflows/release-candidate.yml`
+- `.github/workflows/tree-sitter-upgrade-readiness.yml`
+- `.github/workflows/triage-sweep.yml`
+
+`.github` reference counts:
+
+| Pattern | Count |
+|---|---:|
+| `AVmatrix` | 4 |
+| `avmatrix` | 94 |
+| `AVMATRIX` | 7 |
+| `AVmatrix-GO` | 0 |
+| `setup-avmatrix` | 6 |
+| `github.com/tamnguyendinh/AVmatrix` | 0 |
+
+Observed `.github` rename surfaces:
+
+- composite action directories: `.github/actions/setup-avmatrix`, `.github/actions/setup-avmatrix-web`;
+- workflow references to those composite actions;
+- workflow working directories and cache paths for `avmatrix`, `avmatrix-web`, and `avmatrix-launcher`;
+- E2E workflow build path `.tmp/avmatrix`, `cmd/avmatrix`, `.avmatrix` index checks, and `avmatrix serve`;
+- Docker/GHCR workflow image slugs `avmatrix` and `avmatrix-web`;
+- publish and release-candidate workflows using package name/directory `avmatrix`;
+- issue and PR templates listing `avmatrix` and `avmatrix-web` components;
+- CI report heredoc marker `AVMATRIX_CI_REPORT_EOF_7f3a`;
+- scripts using `AVMATRIX_DIR = REPO_ROOT / "avmatrix"`.
+
+Plan amendment:
+
+- Phase 2 was expanded from a single GitHub rename item into a detailed GitHub execution checklist covering repo Settings, metadata, branch/ruleset checks, Actions secrets/variables/environments, integrations, release config, templates, `.github/actions`, `.github/workflows`, publish/Docker/GHCR, badges, local remote, fresh clone validation, and redirect evidence.
+
 ## E6 - Naming Decisions
 
 Date: pending

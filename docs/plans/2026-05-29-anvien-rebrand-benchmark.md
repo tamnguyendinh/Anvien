@@ -75,6 +75,19 @@ Status: baseline recorded
 | Old launcher protocol/executable names generated | count | 3+ | 3+ | 0 | 0 |
 | Old generated skill namespace generated | count | 1 | 1 | 0 | 0 |
 
+## B3.1 - GitHub Automation Old-Name Baseline
+
+Status: recorded
+
+| Pattern | Unit | Baseline | Latest | Delta | Final target |
+|---|---:|---:|---:|---:|---:|
+| `.github` `AVmatrix` references | matches | 4 | 4 | 0 | 0 active |
+| `.github` `avmatrix` references | matches | 94 | 94 | 0 | 0 active |
+| `.github` `AVMATRIX` references | matches | 7 | 7 | 0 | 0 active |
+| `.github` `AVmatrix-GO` references | matches | 0 | 0 | 0 | 0 |
+| `.github` `setup-avmatrix` references | matches | 6 | 6 | 0 | 0 active |
+| `.github` old GitHub URL references | matches | 0 | 0 | 0 | 0 |
+
 ## B4 - Future Runtime/Package Metrics
 
 Status: pending implementation

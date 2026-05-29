@@ -100,6 +100,7 @@ AVmatrix query/context identified these owners before documentation rewrite:
 - package metadata/runtime packaging: `avmatrix/package.json`, root `package.json`, package lifecycle commands
 - Web UI brand/onboarding: `avmatrix-web/index.html`, `avmatrix-web/src/components/LauncherStartScreen.tsx`, `avmatrix-web/src/components/AnalyzeOnboarding.tsx`
 - launcher/protocol/process names: `avmatrix-launcher/src/main.go`, `avmatrix-launcher/server-wrapper/main.go`, `avmatrix-launcher/build.ps1`
+- GitHub automation and repo metadata sources: `.github/workflows/*.yml`, `.github/actions/setup-avmatrix/action.yml`, `.github/actions/setup-avmatrix-web/action.yml`, `.github/ISSUE_TEMPLATE/*.yml`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/release-drafter.yml`, `.github/release.yml`, `.github/scripts/**`
 - tests and snapshots: `internal/mcp/*_test.go`, `internal/version/version_test.go`, `avmatrix-web/e2e/*.spec.ts`, launcher tests, baseline snapshots
 
 Initial exact-reference inventory excluding `node_modules` and this rebrand file set:
@@ -114,6 +115,17 @@ Initial exact-reference inventory excluding `node_modules` and this rebrand file
 | `.avmatrix` | 316 |
 | `AVMATRIX_` | 281 |
 | `mcpServers` | 9 |
+
+Initial `.github` reference inventory:
+
+| Pattern | Count |
+|---|---:|
+| `AVmatrix` | 4 |
+| `avmatrix` | 94 |
+| `AVMATRIX` | 7 |
+| `AVmatrix-GO` | 0 |
+| `setup-avmatrix` | 6 |
+| `github.com/tamnguyendinh/AVmatrix` | 0 |
 
 Top old-name file groups by file count:
 
@@ -153,22 +165,45 @@ Top old-name file groups by file count:
 
 ## Phase 1 - Full Inventory And Edit Map
 
-- [ ] [P1-A] Build a full file inventory for every old-name reference, grouped by active source, test, generated artifact, docs, baseline, package output, report, and temporary output.
+- [ ] [P1-A] Build a full file inventory for every old-name reference, grouped by active source, test, generated artifact, docs, baseline, package output, report, GitHub automation, and temporary output.
 - [ ] [P1-B] Classify each file as rename-in-place, regenerate, delete stale output, or preserve only as rebrand evidence.
 - [ ] [P1-C] Identify all generated outputs and their source generators. Do not edit generated `AGENTS.md`, `CLAUDE.md`, `.claude/skills/**`, `avmatrix-launcher/web-dist/**`, or generated Web contracts as permanent source.
 - [ ] [P1-D] Run AVmatrix impact analysis for `NewRootCommand`, `newMCPCommand`, `runSetup`, `setupWriteMCPJSON`, `setupWriteOpenCodeJSON`, `setupRunCodexMCPAdd`, `setupUpsertCodexToml`, `setupMergeClaudeHookSettings`, `GenerateAIContextFiles`, `renderAVmatrixBlock`, `repo.Paths`, `repo.GlobalDir`, MCP resource/prompt handlers, launcher startup/reset/cleanup functions, and every other edited symbol found during inventory.
 - [ ] [P1-E] Record blast radius and HIGH/CRITICAL warnings before code edits.
 
-## Phase 2 - Repository, Module, Package, And Folder Names
+## Phase 2 - GitHub Repository Rename Execution
 
-- [ ] [P2-A] Rename GitHub repository to the approved Anvien slug.
-- [ ] [P2-B] Update local `origin` remote to the new GitHub URL.
-- [ ] [P2-C] Rename Go module path from the old `avmatrix-go` path to the approved Anvien path.
-- [ ] [P2-D] Rename `cmd/avmatrix` to `cmd/anvien` and update all build scripts.
-- [ ] [P2-E] Rename package folder `avmatrix` to `anvien` if npm package layout is kept.
-- [ ] [P2-F] Rename `avmatrix-web` to `anvien-web` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
-- [ ] [P2-G] Rename `avmatrix-launcher` to `anvien-launcher` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
-- [ ] [P2-H] Update imports, workspace scripts, Docker files, compose files, deploy scripts, CI, release automation, package-lock, and docs links.
+This phase covers work that must happen on GitHub itself, not only in local source files.
+
+- [ ] [P2-A] Confirm the final GitHub owner and repository slug are available and approved. Record the exact final URL in the evidence ledger.
+- [ ] [P2-B] Put a short implementation freeze on release/publish activity before the GitHub rename so tags, package publishes, and workflow runs do not race the rename.
+- [ ] [P2-C] Rename the GitHub repository in repository Settings from the old AVmatrix slug to the approved Anvien slug.
+- [ ] [P2-D] Update the GitHub repository display metadata: description, website/homepage field if any, topics, social preview, and pinned repository references.
+- [ ] [P2-E] Update GitHub branch protection and rulesets if any rule names, status-check names, path filters, or required checks include old `avmatrix` naming.
+- [ ] [P2-F] Audit and update GitHub Actions repository secrets, variables, and environments whose names or values contain `AVMATRIX`, `avmatrix`, old package names, old image names, old command paths, or old release artifact names.
+- [ ] [P2-G] Audit and update GitHub webhooks, deploy keys, GitHub Apps, Pages settings, environments, package permissions, and repository integrations that point at old repo URLs or old package/image names.
+- [ ] [P2-H] Update GitHub Releases and release-drafter configuration so generated release titles, notes, assets, and links use Anvien names.
+- [ ] [P2-I] Update GitHub issue templates, PR template, labels, CODEOWNERS if present, funding metadata, and support/security contact text that still says AVmatrix.
+- [ ] [P2-J] Update `.github/actions/setup-avmatrix` to an Anvien action directory/name and update all workflow references to it.
+- [ ] [P2-K] Update `.github/actions/setup-avmatrix-web` to an Anvien action directory/name and update all workflow references to it.
+- [ ] [P2-L] Update `.github/workflows/**` path filters, working directories, cache dependency paths, artifact paths, test commands, build commands, workflow comments, and workflow env markers from old names to Anvien names.
+- [ ] [P2-M] Update publish workflows for npm package name, package directory, tarball names, release asset names, and authentication scopes.
+- [ ] [P2-N] Update Docker/GHCR workflows from `avmatrix`/`avmatrix-web` image slugs to Anvien image slugs.
+- [ ] [P2-O] Update GitHub automation scripts under `.github/scripts/**` that reference the old package directory or old constants.
+- [ ] [P2-P] Update badges in README/docs to use the new repository slug and workflow names.
+- [ ] [P2-Q] Update local `origin` remote to the new GitHub URL and record `git remote -v`.
+- [ ] [P2-R] Verify a fresh clone from the new GitHub URL works.
+- [ ] [P2-S] Verify old GitHub URL behavior only as GitHub redirect evidence. Do not rely on the redirect as a supported runtime or documentation path.
+- [ ] [P2-T] After GitHub and `.github` updates, run the affected workflow-equivalent local commands where possible and record the validation evidence.
+
+## Phase 2.5 - Module, Package, And Folder Names
+
+- [ ] [P2.5-A] Rename Go module path from the old `avmatrix-go` path to the approved Anvien path.
+- [ ] [P2.5-B] Rename `cmd/avmatrix` to `cmd/anvien` and update all build scripts.
+- [ ] [P2.5-C] Rename package folder `avmatrix` to `anvien` if npm package layout is kept.
+- [ ] [P2.5-D] Rename `avmatrix-web` to `anvien-web` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
+- [ ] [P2.5-E] Rename `avmatrix-launcher` to `anvien-launcher` or record an approved exception only if folder renaming is deferred for filesystem reasons, not for runtime compatibility.
+- [ ] [P2.5-F] Update imports, workspace scripts, Docker files, compose files, deploy scripts, CI, release automation, package-lock, and docs links.
 
 ## Phase 3 - CLI Hard Rename
 
