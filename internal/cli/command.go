@@ -80,6 +80,8 @@ func NewRootCommand(options Options) *cobra.Command {
 		newWikiModeCommand(),
 		newDoctorCommand(),
 		newAPICommand(),
+		newFileContextCommand(),
+		newFileHotspotsCommand(),
 		newAugmentCommand(),
 		newQueryCommand(),
 		newContextCommand(),

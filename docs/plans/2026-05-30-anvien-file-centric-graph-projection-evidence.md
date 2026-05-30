@@ -367,17 +367,78 @@ Detect changes:
 
 ## E5 - CLI Surface
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: completed
 
-Expected evidence:
+Scope:
 
-- Help output or command docs for `file-context` and `file-hotspots`.
-- Human output examples.
-- JSON output examples.
-- Missing file and invalid repo behavior.
-- CLI tests and smoke commands.
+- Add repo-agnostic CLI commands for file-centric graph projection.
+- Add `anvien file-context <path> --repo <repo>` with compact human output and full `--json`.
+- Add `anvien file-hotspots --repo <repo>` with sort/filter/limit options and `--json`.
+- Do not add MCP/API/Web surfaces in this slice.
+
+Repo-agnostic invariant:
+
+- Product code must not hardcode the `Anvien` repository name. `Anvien` is only the validation repo for this implementation plan.
+- P2-A commands resolve repositories through the normal registry store and `--repo` input using `repo.NewEnvStore()` and `repo.ResolveEntry`.
+- CLI tests register a temporary indexed repo named `fixture` and validate against that repo to prove the commands work for arbitrary indexed repositories.
+
+Impact / blast radius:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass before P2-A graph-based checks. `files: scanned=821 parsed=586 unsupported=235 failed=0`; `nodes=92652 relationships=126821`. |
+| `.\anvien\bin\anvien.exe query "CLI command registration cobra root command file context command" --repo Anvien` | Found CLI command owners under `internal/cli/*_command.go`; root registration is in `internal/cli/command.go`; child-command style examples are in `internal/cli/group_command.go` and `internal/cli/api_command.go`. |
+| `.\anvien\bin\anvien.exe impact "NewRootCommand" --repo Anvien --direction upstream` | CRITICAL, `impactedCount=1`, direct affected caller `cmd/anvien/main.go`, `processes_affected=11`. This slice makes an additive root command registration and preserves existing commands. |
+| `.\anvien\bin\anvien.exe impact "loadGraphHealthGraph" --repo Anvien --direction upstream` | CRITICAL, `impactedCount=6`, `processes_affected=40`. Existing graph-health helper was not edited; P2-A added a separate file-projection graph loader to avoid changing graph-health behavior. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/cli/command.go` | Registered `newFileContextCommand()` and `newFileHotspotsCommand()` on the root CLI. |
+| `internal/cli/file_context_command.go` | Added `file-context <path>` with repo registry resolution, stale-index guard, graph snapshot loading, shared `filecontext.Builder.BuildFileContext`, compact human output, and full JSON output. |
+| `internal/cli/file_context_command.go` | Added `file-hotspots` with sort, limit, offset, kind, app-layer, functional-area, API-only, unresolved-only, high fan-in, and high fan-out filters; implementation uses shared `filecontext.Builder.BuildFileList`. |
+| `internal/cli/file_context_command.go` | Default human output is bounded; JSON output preserves the full file context contract. |
+| `internal/cli/file_context_command_test.go` | Added tests for JSON and human `file-context`, JSON and human `file-hotspots`, missing-file errors, and repo-agnostic fixture registry behavior. |
+| `internal/cli/command_test.go` | Added root/help assertions so `file-context` and `file-hotspots` are discoverable and expose compatibility flags. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `go test ./internal/cli -run 'Test(FileContext|FileHotspots|DirectToolHelp|HelpCommand)' -count=1` | Pass before full build gate; `1.485s`. |
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass after P2-A code. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test ./internal/cli -count=1` | Pass after full build gate; `50.604s`. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass; all cmd/internal packages passed. |
+| `.\anvien\bin\anvien.exe file-context internal/cli/command.go --repo Anvien --json` | Pass. Smoke summary: repo `Anvien`, path `internal/cli/command.go`, symbols `51`, outbound `131`, unresolved `168`, symbol tree roots `51`. |
+| `.\anvien\bin\anvien.exe file-hotspots --repo Anvien --sort unresolved --limit 3 --json` | Pass. Smoke summary: total files `823`, returned `3`, first hotspot `internal/mcp/server_test.go` with unresolved `1422`. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien --benchmark-label file-centric-p2a-final --benchmark-json .tmp\file-centric-p2a-final-analyze-benchmark.json` | Pass after P2-A code and ledger updates. `files: scanned=823 parsed=588 unsupported=235 failed=0`; `nodes=93072 relationships=127394`. |
+| `.\anvien\bin\anvien.exe graph-health summary --repo Anvien --json` | Pass after P2-A code. `sourceBackedUnresolvedReferenceCount=67517`; `resolutionGapNodeCount=66613`; `resolvedReferenceCount=30625`. |
+
+Graph generation benchmark:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien --benchmark-label file-centric-p2a-final --benchmark-json .tmp\file-centric-p2a-final-analyze-benchmark.json` | Pass. Total graph generation time `38342.7 ms`; `823` scanned files; `93072` nodes; `127394` relationships. |
+
+Benchmark link:
+
+- See B0/B1/B2/B3/B4 for graph inventory after CLI surface changes.
+- See B6 for CLI response size metrics.
+- See B8/B10 for command/test counts.
+
+Failures / handling:
+
+- First response-size check showed unbounded human `file-context` output for a large CLI file: `225` lines and `13096` bytes. Default human output was bounded while keeping `--json` full, reducing the representative human output to `76` lines and `4465` bytes.
+- No validation failures were observed after bounding output.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | `risk_level=critical`; `changed_files=7`; `changed_count=409`; `affected_count=17`; changed app layers `backend`, `backend_test`, and `docs`; affected app layers `backend` and `mixed`; resolution gap changed entities `295`. CRITICAL is expected because root CLI command surface changed; behavior is additive and repo-agnostic. |
 
 ## E6 - Web/API Surface
 

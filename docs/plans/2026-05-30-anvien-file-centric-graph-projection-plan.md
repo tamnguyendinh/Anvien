@@ -101,6 +101,7 @@ In scope:
 10. One shared projection service must own file-level derivation; CLI, MCP, API, and Web surfaces must not reimplement separate derivation logic.
 11. One shared target resolver must own parent/child target disambiguation so file-vs-symbol behavior is consistent across command surfaces.
 12. Projection caches must invalidate when the underlying graph data, graph hash, graph mtime, repo path, or analyze freshness changes.
+13. Anvien command, MCP, API, and Web behavior must stay repo-agnostic. `Anvien` is only the validation repo name in this plan; product code must resolve any indexed repository through registry/path inputs such as `--repo`, MCP arguments, or Web/API repo selectors.
 
 ## Proposed Projection Shape
 
@@ -430,7 +431,7 @@ The plan is complete when:
 
   Acceptance: Projection cache tests prove warm reuse and invalidation, and benchmark entries record cold build, warm query, and invalidation behavior.
 
-- [ ] [P2-A] Add CLI command surfaces.
+- [x] [P2-A] Add CLI command surfaces.
 
   Goal: Let users inspect file context and file hotspots from the terminal.
 
