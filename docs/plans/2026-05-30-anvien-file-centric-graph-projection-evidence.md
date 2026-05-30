@@ -547,16 +547,74 @@ Validation:
 
 ## E8 - Linked Flows, Routes, MCP Tools, And Tests
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: completed
 
-Expected evidence:
+Scope:
 
-- How links are derived.
-- Trace samples for each link type.
-- Confidence/source metadata for partial links.
-- Tests for files with no links, multiple flows, API handlers, MCP tools, and indirect tests.
+- Add linked overlay counts and samples to the shared file context projection.
+- Derive flow links from `STEP_IN_PROCESS`, route links from `HANDLES_ROUTE`, MCP tool links from `HANDLES_TOOL`, and test links from test-file relationships into the target file.
+- Preserve sample limits while exposing full linked counts.
+- Keep the implementation repo-agnostic; `Anvien` is only the local validation repo name.
+
+Impact / blast radius:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass before P3-B impact checks. `files: scanned=825 parsed=590 unsupported=235 failed=0`; `nodes=93522 relationships=128035`. |
+| `.\anvien\bin\anvien.exe impact "BuildFileContext" --repo Anvien --direction upstream` | `risk=LOW`; `impactedCount=0`. |
+| `.\anvien\bin\anvien.exe impact "LinkedSummary" --repo Anvien --direction upstream` | `risk=CRITICAL`; `impactedCount=7`; affected app layers `api` and `backend`; `processes_affected=6`. Proceeded because the JSON shape change is additive and generated contract output was regenerated. |
+| `.\anvien\bin\anvien.exe impact "WebUIContractTypeScript" --repo Anvien --direction upstream` | `risk=CRITICAL`; `impactedCount=1`; `processes_affected=5`. Proceeded because the TypeScript contract field is additive. |
+| `.\anvien\bin\anvien.exe impact "buildFileSummaries" --repo Anvien --direction upstream` | `risk=LOW`; `impactedCount=1`; affected `BuildFileList`. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/filecontext/context.go` | Added `LinkedCounts` and populated `LinkedSummary.counts` so truncated samples do not hide total flow/route/tool/test counts. |
+| `internal/filecontext/context.go` | `BuildFileContext` now derives linked overlays through shared graph facts: `STEP_IN_PROCESS`, `HANDLES_ROUTE`, `HANDLES_TOOL`, and inbound test-file relationships. |
+| `internal/filecontext/context.go` | `BuildFileList` now aggregates linked flow/test counts per file for hotspot and File Map rows. |
+| `internal/filecontext/context.go` | Link samples include kind, source relationship type, confidence when present, and a trace string back to source/target graph node ids. |
+| `internal/filecontext/context_test.go` | Fixture coverage proves flow, route, MCP tool, and test links are emitted, and that sample limits preserve full counts. |
+| `internal/contracts/web_ui.go` | Added `FileLinkedCounts` to generated TypeScript contract source. |
+| `internal/contracts/web_ui_test.go` | Added contract generator expectation for `FileLinkedCounts`. |
+| `anvien-web/src/generated/anvien-contracts.ts` | Regenerated generated Web TypeScript contract output. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass after P3-B code. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test ./internal/filecontext ./internal/contracts ./internal/cli ./internal/httpapi -count=1` | Pass. |
+| `go run .\cmd\generate-web-contracts --check` | Pass; generated Web contracts match source. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass; all cmd/internal packages passed. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien --benchmark-label file-centric-p3b-linked-overlays --benchmark-json .tmp\file-centric-p3b-linked-overlays-analyze-benchmark.json` | Pass. `files: scanned=825 parsed=590 unsupported=235 failed=0`; `nodes=93728 relationships=128296`; total graph generation time `34530.4 ms`. |
+| `.\anvien\bin\anvien.exe graph-health summary --repo Anvien --json` | Pass after P3-B. `sourceBackedUnresolvedReferenceCount=68028`; `resolutionGapNodeCount=67120`; `resolvedReferenceCount=30896`. |
+| `.\anvien\bin\anvien.exe file-context internal\httpapi\file_context.go --repo Anvien --json` | Pass. Summary: `symbols=62`, `unresolved=144`, linked counts `flows=7 routes=0 mcpTools=0 tests=3`, samples `flows=5 tests=3`, `stale=false`. |
+| `.\anvien\bin\anvien.exe file-context internal\mcp\tools.go --repo Anvien --json --linked 10` | Pass. Summary: `symbols=152`, `unresolved=618`, linked counts `flows=18 routes=0 mcpTools=0 tests=2`, samples `flows=10 tests=2`, `stale=false`. |
+| `.\anvien\bin\anvien.exe file-hotspots --repo Anvien --json --limit 0` | Pass. `total=825`; files with linked flows `162`; files with linked tests `348`; top flow file `internal/httpapi/response.go` with `55`; top test-linked file `internal/scopeir/scope_tree.go` with `86`. |
+| `go test ./internal/filecontext -run '^$' -bench BenchmarkBuildFileListCurrentScale -benchmem -count=3` | Pass. Runs: `68.5 ms/op`, `58.7 ms/op`, `54.2 ms/op`; `490000 B/op`, `831 allocs/op`. |
+| `.\anvien\bin\anvien.exe api route-map --repo Anvien --json` | Returned no routes in the current validation graph. |
+| `.\anvien\bin\anvien.exe api tool-map context --repo Anvien --json` | Returned no matching tools in the current validation graph. |
+
+Failures / handling:
+
+- The current validation graph has no route/tool map facts available for runtime route/MCP tool samples, so real-repo `file-context` smoke shows `routes=0` and `mcpTools=0`.
+- P3-B still implements route/tool projection from `HANDLES_ROUTE` and `HANDLES_TOOL`, and fixture tests prove those links are emitted when the graph supplies the facts.
+- `linked.counts` was added to the contract because sample arrays are intentionally bounded; without full counts, a Web or CLI consumer could mistake a truncated linked sample list for total coverage.
+
+Benchmark link:
+
+- See B0A for graph generation speed.
+- See B1 for file inventory and linked flow/test coverage counts.
+- See B5 and B6 for projection timing and response-size metrics.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | `risk_level=high`; `changed_files=8`; `changed_count=234`; `affected_count=10`; changed app layers `api_contract`, `api_test`, `backend`, `backend_test`, and `docs`; affected app layer `backend`; resolution gap changed entities `175`. HIGH is expected because the shared projection contract, projection builder, generated Web contract, and tests changed; behavior remains additive and repo-agnostic. |
 
 ## E9 - Web UI File Map And File Detail
 

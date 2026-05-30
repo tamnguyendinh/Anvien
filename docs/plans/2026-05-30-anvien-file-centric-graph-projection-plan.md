@@ -219,6 +219,12 @@ All CLI `--json`, API, MCP, and Web consumers should use the same file-context e
     "groups": []
   },
   "linked": {
+    "counts": {
+      "flows": 0,
+      "routes": 0,
+      "mcpTools": 0,
+      "tests": 0
+    },
     "flows": [],
     "routes": [],
     "mcpTools": [],
@@ -484,7 +490,7 @@ The plan is complete when:
 
   Acceptance: File context shows enough unresolved detail to debug graph quality while preserving total counts and trace samples.
 
-- [ ] [P3-B] Add linked flows, routes, MCP tools, and tests.
+- [x] [P3-B] Add linked flows, routes, MCP tools, and tests.
 
   Goal: Connect file context to product workflows and validation coverage, not only code dependencies.
 

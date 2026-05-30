@@ -216,10 +216,18 @@ type UnresolvedSample struct {
 }
 
 type LinkedSummary struct {
+	Counts   LinkedCounts `json:"counts"`
 	Flows    []LinkedItem `json:"flows"`
 	Routes   []LinkedItem `json:"routes"`
 	MCPTools []LinkedItem `json:"mcpTools"`
 	Tests    []LinkedItem `json:"tests"`
+}
+
+type LinkedCounts struct {
+	Flows    int `json:"flows"`
+	Routes   int `json:"routes"`
+	MCPTools int `json:"mcpTools"`
+	Tests    int `json:"tests"`
 }
 
 type LinkedItem struct {
@@ -354,12 +362,7 @@ func (b *Builder) BuildFileContext(path string, options Options) (FileContext, b
 	unresolved := b.buildUnresolved(normalizedPath, limits.UnresolvedSamplesPerGroup)
 	symbolTree, symbolCount, exportedCount := b.buildSymbolTree(normalizedPath, unresolved)
 	quality := buildQuality(fileNode, unresolved)
-	linked := LinkedSummary{
-		Flows:    []LinkedItem{},
-		Routes:   []LinkedItem{},
-		MCPTools: []LinkedItem{},
-		Tests:    []LinkedItem{},
-	}
+	linked := b.buildLinked(normalizedPath, limits.LinkedSamplesPerKind)
 
 	summary := FileSummary{
 		Path:                      normalizedPath,
@@ -374,8 +377,8 @@ func (b *Builder) BuildFileContext(path string, options Options) (FileContext, b
 		OutboundRefCount:          relationships.Counts.Outbound,
 		LocalRelationshipCount:    relationships.Counts.Local,
 		UnresolvedSourceSiteCount: unresolved.Total,
-		LinkedFlowCount:           len(linked.Flows),
-		LinkedTestCount:           len(linked.Tests),
+		LinkedFlowCount:           linked.Counts.Flows,
+		LinkedTestCount:           linked.Counts.Tests,
 		Risk:                      riskFor(unresolved.Total),
 	}
 
@@ -477,6 +480,8 @@ func (b *Builder) buildIndexes() {
 
 func (b *Builder) buildFileSummaries() []FileSummary {
 	aggregates := make(map[string]*FileSummary, len(b.filesByPath))
+	linkedFlowsByFile := map[string]map[string]struct{}{}
+	linkedTestsByFile := map[string]map[string]struct{}{}
 	for path, node := range b.filesByPath {
 		summary := &FileSummary{
 			Path:           path,
@@ -512,6 +517,12 @@ func (b *Builder) buildFileSummaries() []FileSummary {
 		if sourceFile == "" {
 			sourceFile = normalizePath(relationship.FilePath)
 		}
+		if sourceFile != "" && relationship.Type == graph.RelStepInProcess && targetNode.Label == scopeir.NodeProcess {
+			addStringSet(linkedFlowsByFile, sourceFile, targetNode.ID)
+		}
+		if sourceFile != "" && targetFile != "" && sourceFile != targetFile && b.isTestFile(sourceFile) {
+			addStringSet(linkedTestsByFile, targetFile, sourceFile)
+		}
 		if sourceFile == "" || targetFile == "" {
 			continue
 		}
@@ -526,6 +537,16 @@ func (b *Builder) buildFileSummaries() []FileSummary {
 		}
 		if summary := aggregates[targetFile]; summary != nil {
 			summary.InboundRefCount++
+		}
+	}
+	for path, flows := range linkedFlowsByFile {
+		if summary := aggregates[path]; summary != nil {
+			summary.LinkedFlowCount = len(flows)
+		}
+	}
+	for path, tests := range linkedTestsByFile {
+		if summary := aggregates[path]; summary != nil {
+			summary.LinkedTestCount = len(tests)
 		}
 	}
 
@@ -762,6 +783,152 @@ func (b *Builder) buildUnresolved(path string, sampleLimit int) UnresolvedSummar
 		ByActionability:  compactCounts(byActionability),
 		Groups:           groups,
 	}
+}
+
+func (b *Builder) buildLinked(path string, sampleLimit int) LinkedSummary {
+	flows := map[string]LinkedItem{}
+	routes := map[string]LinkedItem{}
+	mcpTools := map[string]LinkedItem{}
+	tests := map[string]LinkedItem{}
+
+	for _, relationship := range b.g.Relationships {
+		sourceNode, sourceOK := b.nodesByID[relationship.SourceID]
+		targetNode, targetOK := b.nodesByID[relationship.TargetID]
+		if !sourceOK || !targetOK {
+			continue
+		}
+		sourceFile := b.nodeFilePath(sourceNode)
+		if sourceFile == "" {
+			sourceFile = normalizePath(relationship.FilePath)
+		}
+		targetFile := b.nodeFilePath(targetNode)
+		switch relationship.Type {
+		case graph.RelStepInProcess:
+			if sourceFile == path && targetNode.Label == scopeir.NodeProcess {
+				putLinkedItem(flows, targetNode.ID, linkedItem(targetNode, "flow", relationship, sourceNode, targetNode))
+			}
+		case graph.RelHandlesRoute:
+			if sourceFile == path || targetFile == path {
+				if item, ok := routeOrToolLinkedItem(sourceNode, targetNode, scopeir.NodeRoute, "route", relationship); ok {
+					putLinkedItem(routes, item.Name, item)
+				}
+			}
+		case graph.RelHandlesTool:
+			if sourceFile == path || targetFile == path {
+				if item, ok := routeOrToolLinkedItem(sourceNode, targetNode, scopeir.NodeTool, "mcp_tool", relationship); ok {
+					putLinkedItem(mcpTools, item.Name, item)
+				}
+			}
+		default:
+			if targetFile == path && sourceFile != "" && sourceFile != path && b.isTestFile(sourceFile) {
+				item := LinkedItem{
+					Name:       sourceFile,
+					Kind:       "test",
+					Source:     string(relationship.Type),
+					Confidence: relationshipConfidence(relationship),
+					Trace:      relationship.SourceID + " -> " + relationship.TargetID,
+				}
+				putLinkedItem(tests, sourceFile, item)
+			}
+		}
+	}
+
+	return LinkedSummary{
+		Counts: LinkedCounts{
+			Flows:    len(flows),
+			Routes:   len(routes),
+			MCPTools: len(mcpTools),
+			Tests:    len(tests),
+		},
+		Flows:    sortedLinkedItems(flows, sampleLimit),
+		Routes:   sortedLinkedItems(routes, sampleLimit),
+		MCPTools: sortedLinkedItems(mcpTools, sampleLimit),
+		Tests:    sortedLinkedItems(tests, sampleLimit),
+	}
+}
+
+func (b *Builder) isTestFile(path string) bool {
+	if node, ok := b.filesByPath[path]; ok {
+		return fileKind(node) == "test"
+	}
+	lower := strings.ToLower(path)
+	return strings.Contains(lower, "_test.") || strings.Contains(lower, ".test.") || strings.Contains(lower, ".spec.")
+}
+
+func routeOrToolLinkedItem(sourceNode graph.Node, targetNode graph.Node, linkedLabel scopeir.NodeLabel, kind string, relationship graph.Relationship) (LinkedItem, bool) {
+	switch {
+	case targetNode.Label == linkedLabel:
+		return linkedItem(targetNode, kind, relationship, sourceNode, targetNode), true
+	case sourceNode.Label == linkedLabel:
+		return linkedItem(sourceNode, kind, relationship, sourceNode, targetNode), true
+	default:
+		return LinkedItem{}, false
+	}
+}
+
+func linkedItem(node graph.Node, kind string, relationship graph.Relationship, sourceNode graph.Node, targetNode graph.Node) LinkedItem {
+	return LinkedItem{
+		Name:       nodeName(node),
+		Kind:       kind,
+		Source:     string(relationship.Type),
+		Confidence: relationshipConfidence(relationship),
+		Trace:      sourceNode.ID + " -> " + targetNode.ID,
+	}
+}
+
+func relationshipConfidence(relationship graph.Relationship) string {
+	if relationship.Confidence <= 0 {
+		return ""
+	}
+	return fmt.Sprintf("%.2f", relationship.Confidence)
+}
+
+func putLinkedItem(items map[string]LinkedItem, key string, item LinkedItem) {
+	if key == "" {
+		key = item.Name
+	}
+	if key == "" {
+		return
+	}
+	if _, exists := items[key]; exists {
+		return
+	}
+	items[key] = item
+}
+
+func addStringSet(groups map[string]map[string]struct{}, group string, value string) {
+	if group == "" || value == "" {
+		return
+	}
+	if groups[group] == nil {
+		groups[group] = map[string]struct{}{}
+	}
+	groups[group][value] = struct{}{}
+}
+
+func sortedLinkedItems(items map[string]LinkedItem, limit int) []LinkedItem {
+	keys := make([]string, 0, len(items))
+	for key := range items {
+		keys = append(keys, key)
+	}
+	sort.SliceStable(keys, func(i, j int) bool {
+		left, right := items[keys[i]], items[keys[j]]
+		if left.Kind != right.Kind {
+			return left.Kind < right.Kind
+		}
+		if left.Name != right.Name {
+			return left.Name < right.Name
+		}
+		return keys[i] < keys[j]
+	})
+	if limit >= 0 && limit < len(keys) {
+		keys = keys[:limit]
+	}
+	out := make([]LinkedItem, 0, len(keys))
+	for _, key := range keys {
+		out = append(out, items[key])
+	}
+	return out
 }
 
 func (b *Builder) symbolRelationshipCounts(path string, unresolvedCounts map[string]int) map[string]SymbolRelationshipCounts {

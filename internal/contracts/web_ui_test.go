@@ -99,6 +99,7 @@ func TestWebUIContractTypeScriptIsBrowserGeneratedGlue(t *testing.T) {
 		"export interface FileContextResponse",
 		"export interface FileHotspotsResponse",
 		"export interface FileSymbolTreeNode",
+		"export interface FileLinkedCounts",
 		"export interface FileUnresolvedSample",
 		"export const GRAPH_HEALTH_TOPOLOGY_STATUSES",
 		"export const GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATIONS",

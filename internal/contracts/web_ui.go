@@ -1395,7 +1395,15 @@ export interface FileLinkedItem {
   trace?: string;
 }
 
+export interface FileLinkedCounts {
+  flows: number;
+  routes: number;
+  mcpTools: number;
+  tests: number;
+}
+
 export interface FileLinkedSummary {
+  counts: FileLinkedCounts;
   flows: FileLinkedItem[];
   routes: FileLinkedItem[];
   mcpTools: FileLinkedItem[];

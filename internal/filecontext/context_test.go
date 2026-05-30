@@ -69,6 +69,24 @@ func TestBuildFileContextDerivesTreeRelationshipsAndUnresolved(t *testing.T) {
 	if len(context.Unresolved.Groups) != 1 || context.Unresolved.Groups[0].SourceSymbol != "Function:src/app.go:NewServer" {
 		t.Fatalf("unresolved groups = %#v, want NewServer group", context.Unresolved.Groups)
 	}
+	if context.Linked.Counts.Flows != 1 || context.Linked.Counts.Routes != 1 || context.Linked.Counts.MCPTools != 1 || context.Linked.Counts.Tests != 1 {
+		t.Fatalf("linked counts = %#v, want 1 flow/route/tool/test", context.Linked.Counts)
+	}
+	if context.Summary.LinkedFlowCount != 1 || context.Summary.LinkedTestCount != 1 {
+		t.Fatalf("summary linked counts = flows %d tests %d, want 1/1", context.Summary.LinkedFlowCount, context.Summary.LinkedTestCount)
+	}
+	if len(context.Linked.Flows) != 1 || context.Linked.Flows[0].Name != "MCP initialize" {
+		t.Fatalf("linked flows = %#v, want MCP initialize", context.Linked.Flows)
+	}
+	if len(context.Linked.Routes) != 1 || context.Linked.Routes[0].Name != "GET /api/app" {
+		t.Fatalf("linked routes = %#v, want GET /api/app", context.Linked.Routes)
+	}
+	if len(context.Linked.MCPTools) != 1 || context.Linked.MCPTools[0].Name != "context" {
+		t.Fatalf("linked tools = %#v, want context", context.Linked.MCPTools)
+	}
+	if len(context.Linked.Tests) != 1 || context.Linked.Tests[0].Name != "src/app_test.go" {
+		t.Fatalf("linked tests = %#v, want src/app_test.go", context.Linked.Tests)
+	}
 }
 
 func TestBuildFileContextReturnsFalseForMissingFile(t *testing.T) {
@@ -114,6 +132,9 @@ func TestBuildFileListSortsFiltersAndPaginates(t *testing.T) {
 	}
 	if list.Files[0].Path != "src/app.go" || list.Files[0].OutboundRefCount != 2 {
 		t.Fatalf("top fan-out file = %#v, want src/app.go outbound 2", list.Files[0])
+	}
+	if list.Files[0].LinkedFlowCount != 1 || list.Files[0].LinkedTestCount != 1 {
+		t.Fatalf("top fan-out linked counts = %#v, want flow/test 1/1", list.Files[0])
 	}
 
 	tests := NewBuilder(fileContextFixture(false)).BuildFileList(FileListOptions{
@@ -204,6 +225,29 @@ func TestBuildFileContextQualitySignalsAndUnresolvedBuckets(t *testing.T) {
 	}
 	if testFile.Summary.Kind != "test" || testFile.Quality.Generated {
 		t.Fatalf("test file quality = %#v summary=%#v, want test kind and not generated", testFile.Quality, testFile.Summary)
+	}
+}
+
+func TestBuildFileContextLimitsLinkedItemsAndPreservesCounts(t *testing.T) {
+	g := fileContextFixture(false)
+	g.AddNode(graph.Node{ID: "Process:secondary", Label: scopeir.NodeProcess, Properties: graph.NodeProperties{"name": "Secondary flow"}})
+	g.AddRelationship(graph.Relationship{
+		ID:         "rel:step:secondary",
+		SourceID:   "Function:src/app.go:NewServer",
+		TargetID:   "Process:secondary",
+		Type:       graph.RelStepInProcess,
+		Confidence: 0.7,
+	})
+
+	context, ok := NewBuilder(g).BuildFileContext("src/app.go", Options{LinkedSamplesPerKind: 1})
+	if !ok {
+		t.Fatalf("BuildFileContext() did not find file")
+	}
+	if context.Linked.Counts.Flows != 2 || len(context.Linked.Flows) != 1 {
+		t.Fatalf("linked flow count/samples = %d/%d, want 2/1", context.Linked.Counts.Flows, len(context.Linked.Flows))
+	}
+	if context.Summary.LinkedFlowCount != 2 {
+		t.Fatalf("summary linked flow count = %d, want 2", context.Summary.LinkedFlowCount)
 	}
 }
 
@@ -336,6 +380,9 @@ func fileContextFixture(reverseRelationships bool) *graph.Graph {
 		symbolNode("Function:src/store.go:Load", scopeir.NodeFunction, "Load", "src/store.go", 10, 1, 14, 1, ""),
 		symbolNode("Function:src/app_test.go:TestNewServer", scopeir.NodeFunction, "TestNewServer", "src/app_test.go", 9, 1, 20, 1, ""),
 		resolutionGapNode(),
+		{ID: "Process:mcp-initialize", Label: scopeir.NodeProcess, Properties: graph.NodeProperties{"name": "MCP initialize"}},
+		{ID: "Route:GET /api/app", Label: scopeir.NodeRoute, Properties: graph.NodeProperties{"name": "GET /api/app"}},
+		{ID: "Tool:context", Label: scopeir.NodeTool, Properties: graph.NodeProperties{"name": "context"}},
 	} {
 		g.AddNode(node)
 	}
@@ -357,6 +404,9 @@ func fileContextFixture(reverseRelationships bool) *graph.Graph {
 		call("rel:call:new-save", "Function:src/app.go:NewServer", "Function:src/store.go:Save", "src/app.go", 25, "site:new-save"),
 		call("rel:call:new-load", "Function:src/app.go:NewServer", "Function:src/store.go:Load", "src/app.go", 26, "site:new-load"),
 		call("rel:call:test-new", "Function:src/app_test.go:TestNewServer", "Function:src/app.go:NewServer", "src/app_test.go", 12, "site:test-new"),
+		{ID: "rel:step:mcp", SourceID: "Function:src/app.go:NewServer", TargetID: "Process:mcp-initialize", Type: graph.RelStepInProcess, Confidence: 0.9},
+		{ID: "rel:route:app", SourceID: "Function:src/app.go:NewServer", TargetID: "Route:GET /api/app", Type: graph.RelHandlesRoute, Confidence: 0.8},
+		{ID: "rel:tool:context", SourceID: "Function:src/app.go:NewServer", TargetID: "Tool:context", Type: graph.RelHandlesTool, Confidence: 0.85},
 	}
 	if reverseRelationships {
 		for left, right := 0, len(relationships)-1; left < right; left, right = left+1, right-1 {
