@@ -299,6 +299,72 @@ Detect changes:
 |---|---|
 | `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | `risk_level=medium`; `changed_files=5`; `changed_count=249`; `affected_count=2`; affected app layer `backend`; affected functional area `unknown`. |
 
+## E4A - Projection Cache, Index Reuse, And Invalidation
+
+Date: 2026-05-30
+
+Status: completed
+
+Scope:
+
+- Add reusable cache behavior for the shared file-context projection builder.
+- Keep the cache inside `internal/filecontext`; do not wire CLI/API/MCP/Web surfaces yet.
+- Preserve graph freshness by keying cache entries by repo identity, repo path, graph path, and graph hash/fingerprint.
+
+Impact / blast radius:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass before P1-C graph-based checks. `files: scanned=821 parsed=586 unsupported=235 failed=0`; `nodes=92559 relationships=126624`. |
+| `.\anvien\bin\anvien.exe impact "NewBuilder" --repo Anvien --direction upstream` | LOW. `impactedCount=0`; target `Function:internal/filecontext/context.go:NewBuilder#1`. |
+| `.\anvien\bin\anvien.exe impact "BuildFileList" --repo Anvien --direction upstream` | LOW. `impactedCount=0`; target `Method:internal/filecontext/context.go:Builder.BuildFileList#1`. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/filecontext/context.go` | Added `CacheKey` with repo, repo path, graph path, and graph hash fields. |
+| `internal/filecontext/context.go` | Added `BuilderCache` with mutex-protected `Get`, `Invalidate`, `Clear`, and `Len` methods. |
+| `internal/filecontext/context.go` | `Get` returns a warm cached `Builder` when key fields and graph freshness match; otherwise it creates and stores a new builder. |
+| `internal/filecontext/context.go` | Added `GraphFingerprint` fallback for callers that do not yet supply an explicit graph hash. |
+| `internal/filecontext/context.go` | `Invalidate` can remove exact entries or all entries matching repo/repo path/graph path so analyze refreshes and repo switches cannot reuse stale projection state. |
+| `internal/filecontext/context_test.go` | Added tests for cold miss, warm hit, graph-change miss, explicit invalidation, repo isolation, and explicit graph-hash isolation. |
+| `internal/filecontext/context_test.go` | Added benchmarks for file-list aggregation, cache warm hit, and cache cold build. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `go test ./internal/filecontext -count=1` | Pass before full build gate; `1.092s`. |
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass after P1-C code. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test ./internal/filecontext -count=1` | Pass after full build gate; `1.363s`. |
+| `go test ./internal/filecontext -run '^$' -bench 'Benchmark(BuildFileListCurrentScale|BuilderCacheHit|BuilderCacheColdBuild)$' -benchmem -count=3` | Pass. File-list median `131.3 ms/op`; cache warm-hit median `305.3 ns/op`, `0 B/op`, `0 allocs/op`; cache cold-build median `8.0 ms/op`, about `0.57 MB/op`. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass; all cmd/internal packages passed. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien --benchmark-label file-centric-p1c-final --benchmark-json .tmp\file-centric-p1c-final-analyze-benchmark.json` | Pass after P1-C code and ledger updates. `files: scanned=821 parsed=586 unsupported=235 failed=0`; `nodes=92652 relationships=126821`. |
+| `.\anvien\bin\anvien.exe graph-health summary --repo Anvien --json` | Pass after P1-C code. `sourceBackedUnresolvedReferenceCount=67223`; `resolutionGapNodeCount=66322`; `resolvedReferenceCount=30440`. |
+
+Graph generation benchmark:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien --benchmark-label file-centric-p1c-final --benchmark-json .tmp\file-centric-p1c-final-analyze-benchmark.json` | Pass. Total graph generation time `34839.3 ms`; `821` scanned files; `92652` nodes; `126821` relationships. |
+
+Benchmark link:
+
+- See B0A for graph generation speed.
+- See B5 for projection aggregation and cache performance.
+
+Failures / handling:
+
+- No code validation failure was observed in this slice.
+- Graph generation speed was missing from the ledger during the P1-C review. It was added with `anvien analyze --benchmark-json` before closure.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | `risk_level=low`; `changed_files=5`; `changed_count=114`; `affected_count=0`; changed app layers `backend`, `backend_test`, and `docs`; resolution gap changed entities `66`. |
+
 ## E5 - CLI Surface
 
 Date: pending

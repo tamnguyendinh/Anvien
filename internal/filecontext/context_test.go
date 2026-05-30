@@ -176,6 +176,89 @@ func BenchmarkBuildFileListCurrentScale(b *testing.B) {
 	}
 }
 
+func TestBuilderCacheHitsAndInvalidatesOnGraphChange(t *testing.T) {
+	cache := NewBuilderCache()
+	key := CacheKey{Repo: "Anvien", RepoPath: `E:\Anvien`, GraphPath: `.anvien\graph.json`}
+	g := fileContextFixture(false)
+
+	first, hit := cache.Get(key, g)
+	if hit {
+		t.Fatalf("first cache lookup hit")
+	}
+	second, hit := cache.Get(key, g)
+	if !hit || first != second {
+		t.Fatalf("second cache lookup = hit %v same %v, want hit same builder", hit, first == second)
+	}
+
+	g.AddNode(fileNode("File:src/new.go", "src/new.go", "go", "backend", "mcp"))
+	third, hit := cache.Get(key, g)
+	if hit || third == first {
+		t.Fatalf("graph-change cache lookup = hit %v same %v, want miss with new builder", hit, third == first)
+	}
+	if cache.Len() != 2 {
+		t.Fatalf("cache length = %d, want 2 fingerprinted builders", cache.Len())
+	}
+
+	cache.Invalidate(CacheKey{Repo: "Anvien", RepoPath: `E:\Anvien`, GraphPath: `.anvien\graph.json`})
+	if cache.Len() != 0 {
+		t.Fatalf("cache length after invalidate = %d, want 0", cache.Len())
+	}
+}
+
+func TestBuilderCacheIsolatesReposAndExplicitGraphHashes(t *testing.T) {
+	cache := NewBuilderCache()
+	g := fileContextFixture(false)
+	base := CacheKey{RepoPath: "repo", GraphPath: "graph.json", GraphHash: "v1"}
+
+	first, hit := cache.Get(CacheKey{Repo: "one", RepoPath: base.RepoPath, GraphPath: base.GraphPath, GraphHash: base.GraphHash}, g)
+	if hit {
+		t.Fatalf("first repo lookup hit")
+	}
+	second, hit := cache.Get(CacheKey{Repo: "one", RepoPath: base.RepoPath, GraphPath: base.GraphPath, GraphHash: base.GraphHash}, g)
+	if !hit || second != first {
+		t.Fatalf("same repo/hash lookup = hit %v same %v, want hit same", hit, second == first)
+	}
+	otherRepo, hit := cache.Get(CacheKey{Repo: "two", RepoPath: base.RepoPath, GraphPath: base.GraphPath, GraphHash: base.GraphHash}, g)
+	if hit || otherRepo == first {
+		t.Fatalf("other repo lookup = hit %v same %v, want miss", hit, otherRepo == first)
+	}
+	otherHash, hit := cache.Get(CacheKey{Repo: "one", RepoPath: base.RepoPath, GraphPath: base.GraphPath, GraphHash: "v2"}, g)
+	if hit || otherHash == first {
+		t.Fatalf("other hash lookup = hit %v same %v, want miss", hit, otherHash == first)
+	}
+}
+
+func BenchmarkBuilderCacheHit(b *testing.B) {
+	cache := NewBuilderCache()
+	g := fileListBenchmarkGraph(821, 126000)
+	key := CacheKey{Repo: "bench", RepoPath: "repo", GraphPath: "graph.json", GraphHash: "fixture-v1"}
+	if _, hit := cache.Get(key, g); hit {
+		b.Fatalf("first cache lookup hit")
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		builder, hit := cache.Get(key, g)
+		if !hit || builder == nil {
+			b.Fatalf("cache miss")
+		}
+	}
+}
+
+func BenchmarkBuilderCacheColdBuild(b *testing.B) {
+	g := fileListBenchmarkGraph(821, 126000)
+	key := CacheKey{Repo: "bench", RepoPath: "repo", GraphPath: "graph.json", GraphHash: "fixture-v1"}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		cache := NewBuilderCache()
+		builder, hit := cache.Get(key, g)
+		if hit || builder == nil {
+			b.Fatalf("cache cold build = hit %v builder nil %v, want miss with builder", hit, builder == nil)
+		}
+	}
+}
+
 func fileContextFixture(reverseRelationships bool) *graph.Graph {
 	g := graph.New()
 	for _, node := range []graph.Node{

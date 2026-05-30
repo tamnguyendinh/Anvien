@@ -26,14 +26,33 @@ Status: P0-A baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Files scanned | files | 819 | 821 | +2 | record | Latest after P1-A `anvien analyze --force --name Anvien`. |
-| Files parsed | files | 584 | 586 | +2 | record | Latest after P1-A `anvien analyze --force --name Anvien`. |
-| Unsupported files | files | 235 | 235 | 0 | record | Latest after P1-A `anvien analyze --force --name Anvien`. |
+| Files scanned | files | 819 | 821 | +2 | record | Latest after P1-C `anvien analyze --force --name Anvien --benchmark-json ...`. |
+| Files parsed | files | 584 | 586 | +2 | record | Latest after P1-C `anvien analyze --force --name Anvien --benchmark-json ...`. |
+| Unsupported files | files | 235 | 235 | 0 | record | Latest after P1-C `anvien analyze --force --name Anvien --benchmark-json ...`. |
 | Failed files | files | 0 | 0 | 0 | `0` | From readiness `anvien analyze --force --name Anvien`. |
-| Graph nodes | nodes | 91587 | 92559 | +972 | record | Current graph inventory after P1-B. |
-| Graph relationships | relationships | 125054 | 126624 | +1570 | record | Current graph inventory after P1-B. |
-| SourceSite count | distinct ids | 95433 | 96564 | +1131 | record | Distinct source-site ids from relationship trace fields. |
-| ResolutionGap count | nodes | 65652 | 66256 | +604 | record | Required for quality projection coverage. |
+| Graph nodes | nodes | 91587 | 92652 | +1065 | record | Current graph inventory after P1-C final analyze benchmark. |
+| Graph relationships | relationships | 125054 | 126821 | +1767 | record | Current graph inventory after P1-C final analyze benchmark. |
+| SourceSite count | distinct ids | 95433 | 96762 | +1329 | record | Distinct source-site ids from relationship trace fields. |
+| ResolutionGap count | nodes | 65652 | 66322 | +670 | record | Required for quality projection coverage. |
+
+## B0A - Graph Generation Speed
+
+Status: P1-C analyze benchmark recorded
+
+| Metric | Unit | Baseline | Latest | Delta | Target | Notes |
+|---|---:|---:|---:|---:|---:|---|
+| Analyze benchmark runs | runs | pending | 1 | pending | record | Final recorded run: `anvien analyze --force --name Anvien --benchmark-label file-centric-p1c-final --benchmark-json .tmp\file-centric-p1c-final-analyze-benchmark.json`. |
+| Total graph generation time | ms | pending | 34839.3 | pending | track | Includes scan, parse, resolution, semantic enrichment, and DB load. |
+| Scan phase time | ms | pending | 158.4 | pending | track | Benchmark phase `scan`. |
+| Parse phase time | ms | pending | 8779.1 | pending | track | Benchmark phase `parse`. |
+| Resolution phase time | ms | pending | 3743.7 | pending | track | Benchmark phase `resolution`. |
+| Semantic enrichment phase time | ms | pending | 774.5 | pending | track | Benchmark phase `semantic_enrichment`. |
+| DB load phase time | ms | pending | 13783.2 | pending | track | Benchmark phase `db_load`; largest recorded phase. |
+| Files processed per second | files/s | pending | 23.6 | pending | track | `821` scanned files / total duration. |
+| Nodes generated per second | nodes/s | pending | 2659.4 | pending | track | `92652` nodes / total duration. |
+| Relationships generated per second | relationships/s | pending | 3640.2 | pending | track | `126821` relationships / total duration. |
+| Analyze end heap allocation | MB | pending | 510.0 | pending | track | `memory.endAllocBytes`. |
+| Analyze max observed sys memory | MB | pending | 811.7 | pending | track | `memory.maxObservedSys`. |
 
 ## B1 - File Inventory Counts
 
@@ -58,9 +77,9 @@ Status: P0-A partial baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Declared symbols grouped by file | symbols | 21334 | 21714 | +380 | record | `DEFINES` relationships from `File` nodes. |
+| Declared symbols grouped by file | symbols | 21334 | 21746 | +412 | record | `DEFINES` relationships from `File` nodes. |
 | Top-level symbols | symbols | pending | pending | pending | record | Root nodes in symbol trees. |
-| Nested symbols/methods | relationships | 2641 | 2645 | +4 | record | Existing non-file `CONTAINS` relationships available for tree derivation. |
+| Nested symbols/methods | relationships | 2641 | 2647 | +6 | record | Existing non-file `CONTAINS` relationships available for tree derivation. |
 | Exported symbols | symbols | pending | pending | pending | record | Language-dependent export/public count. |
 | Symbols with line ranges | symbols | pending | pending | pending | maximize | Required for useful navigation. |
 | Symbols with signatures | symbols | pending | pending | pending | track | Useful but language-dependent. |
@@ -77,8 +96,8 @@ Status: P0-A partial baseline recorded
 | Inbound file relationships | relationships | pending | pending | pending | record | Other files depend on source file. |
 | Relationship samples retained per group | samples | pending | pending | pending | bounded | Default output limit. |
 | Relationship total counts preserved | percent | pending | pending | pending | 100 | Counts must not be truncated with samples. |
-| Source-site-backed relationships | relationships | 83143 | 84098 | +955 | record | Relationships carrying source-site/file trace fields. |
-| Resolved source-site-backed relationships | relationships | 17491 | 17842 | +351 | record | Relationships with resolved source-site status. |
+| Source-site-backed relationships | relationships | 83143 | 84237 | +1094 | record | Relationships carrying source-site/file trace fields. |
+| Resolved source-site-backed relationships | relationships | 17491 | 17915 | +424 | record | Relationships with resolved source-site status. |
 
 ## B4 - Unresolved And Quality Counts
 
@@ -86,11 +105,11 @@ Status: P0-A partial baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Unresolved source sites grouped by file | sites | 66555 | 67156 | +601 | record | Graph-health source-backed unresolved references. |
-| Unresolved calls | sites | 34959 | 35196 | +237 | record | Graph-health `resolutionGapFactFamilyCounts.call`. |
-| Unresolved refs | sites | 31596 | 31960 | +364 | record | Access + type-reference + heritage gap counts. |
+| Unresolved source sites grouped by file | sites | 66555 | 67223 | +668 | record | Graph-health source-backed unresolved references. |
+| Unresolved calls | sites | 34959 | 35242 | +283 | record | Graph-health `resolutionGapFactFamilyCounts.call`. |
+| Unresolved refs | sites | 31596 | 31981 | +385 | record | Access + type-reference + heritage gap counts. |
 | Unresolved imports | sites | pending | pending | pending | record | Gap kind count. |
-| Analyzer-gap classified sites | sites | 39535 | 39747 | +212 | record | Graph-health actionability bucket. |
+| Analyzer-gap classified sites | sites | 39535 | 39780 | +245 | record | Graph-health actionability bucket. |
 | External/dynamic classified sites | sites | 250 | 250 | 0 | record | Graph-health `external_library` classification bucket. |
 | Files with high unresolved count | files | pending | pending | pending | track | Hotspot metric. |
 
@@ -100,14 +119,16 @@ Status: pending
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Full file summary aggregation time | ms | pending | 123.6 | pending | no unacceptable regression | Median of 3 `BenchmarkBuildFileListCurrentScale` runs over 821 files and 126000 relationships. |
-| Projection cache cold build time | ms | pending | pending | pending | track | Shared projection indexes. |
-| Projection cache warm hit time | ms | pending | pending | pending | faster than cold | Shared projection indexes. |
-| Projection cache invalidation count | events | pending | pending | pending | record | Graph/repo/analyze freshness changes. |
+| Full file summary aggregation time | ms | pending | 131.3 | pending | no unacceptable regression | Median of 3 `BenchmarkBuildFileListCurrentScale` runs over 821 files and 126000 relationships. |
+| Projection cache cold build time | ms | pending | 8.0 | pending | track | Median of 3 `BenchmarkBuilderCacheColdBuild` runs. |
+| Projection cache warm hit time | ms | pending | 0.000305 | pending | faster than cold | Median of 3 `BenchmarkBuilderCacheHit` runs with explicit graph hash. |
+| Projection cache invalidation count | events | pending | 2 | pending | record | Unit tests cover graph-change miss and explicit repo/path invalidation. |
 | Single file context cold query time | ms | pending | pending | pending | responsive | Representative large source file. |
 | Single file context warm query time | ms | pending | pending | pending | responsive | Representative large source file. |
-| Hotspot list query time | ms | pending | 123.6 | pending | responsive | Median of 3 `BenchmarkBuildFileListCurrentScale` runs over 821 files and 126000 relationships. |
+| Hotspot list query time | ms | pending | 131.3 | pending | responsive | Median of 3 `BenchmarkBuildFileListCurrentScale` runs over 821 files and 126000 relationships. |
 | Peak memory during projection benchmark | MB | pending | 0.49 | pending | track | `490000 B/op` from `BenchmarkBuildFileListCurrentScale`. |
+| Projection cache cold build memory | MB | pending | 0.57 | pending | track | Median allocation from `BenchmarkBuilderCacheColdBuild`. |
+| Projection cache warm hit allocations | allocs/op | pending | 0 | pending | `0` | `BenchmarkBuilderCacheHit` reports zero allocations. |
 
 ## B6 - Response Size Metrics
 
@@ -176,14 +197,14 @@ Status: P1-A partial validation counts recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Projection unit tests | tests | 3 | 5 | +2 | pass | `internal/filecontext` tests through P1-B. |
+| Projection unit tests | tests | 3 | 7 | +4 | pass | `internal/filecontext` tests through P1-C. |
 | CLI tests | tests | pending | pending | pending | pass | Count of relevant tests. |
 | API tests | tests | pending | pending | pending | pass | Count of relevant tests. |
 | MCP surface snapshot tests | tests | pending | pending | pending | pass | If MCP output/schema changes. |
 | Contract generator checks | checks | pending | pending | pending | pass | Source and generated Web contracts in sync. |
 | AI context tests | tests | pending | pending | pending | pass | Generated guidance and embedded skill parity. |
-| Projection cache tests | tests | pending | pending | pending | pass | Cold/warm/invalidation coverage. |
+| Projection cache tests | tests | pending | 2 | pending | pass | Cold/warm, graph-change, repo-switch, explicit hash, and explicit invalidation coverage. |
 | Web unit tests | tests | pending | pending | pending | pass | Count if Web UI is implemented. |
 | Web e2e tests | tests | pending | pending | pending | pass | Count if Web UI is implemented. |
-| Detect-changes changed files | files | 5 | 5 | 0 | record | P1-A staged implementation scope. |
-| Detect-changes affected count | symbols/processes | 17 | 2 | -15 | record | Latest P1-B staged affected process/symbol count. |
+| Detect-changes changed files | files | 5 | 5 | 0 | record | Latest P1-C staged implementation scope. |
+| Detect-changes affected count | symbols/processes | 17 | 0 | -17 | record | Latest P1-C staged affected process/symbol count. |

@@ -413,7 +413,7 @@ The plan is complete when:
 
   Acceptance: A file hotspot/list function returns stable summaries, supports documented sort/filter modes, and has benchmark evidence for current repo scale.
 
-- [ ] [P1-C] Add projection cache, index reuse, and invalidation.
+- [x] [P1-C] Add projection cache, index reuse, and invalidation.
 
   Goal: Keep file-context, file-hotspot, existing-command, API, MCP, and Web views responsive without duplicating graph traversal.
 

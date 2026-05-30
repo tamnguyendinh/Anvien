@@ -2,8 +2,10 @@ package filecontext
 
 import (
 	"fmt"
+	"hash/fnv"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
@@ -38,6 +40,18 @@ type FileList struct {
 	Limit  int           `json:"limit"`
 	Sort   string        `json:"sort"`
 	Files  []FileSummary `json:"files"`
+}
+
+type CacheKey struct {
+	Repo      string
+	RepoPath  string
+	GraphPath string
+	GraphHash string
+}
+
+type BuilderCache struct {
+	mu       sync.Mutex
+	builders map[CacheKey]*Builder
 }
 
 type GraphInfo struct {
@@ -241,6 +255,80 @@ func NewBuilder(g *graph.Graph) *Builder {
 	builder := &Builder{g: g}
 	builder.buildIndexes()
 	return builder
+}
+
+func NewBuilderCache() *BuilderCache {
+	return &BuilderCache{builders: map[CacheKey]*Builder{}}
+}
+
+func (c *BuilderCache) Get(key CacheKey, g *graph.Graph) (*Builder, bool) {
+	if c == nil {
+		return NewBuilder(g), false
+	}
+	key = normalizeCacheKey(key, g)
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if builder, ok := c.builders[key]; ok {
+		return builder, true
+	}
+	builder := NewBuilder(g)
+	c.builders[key] = builder
+	return builder, false
+}
+
+func (c *BuilderCache) Invalidate(key CacheKey) {
+	if c == nil {
+		return
+	}
+	key = normalizeCacheKey(key, nil)
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for existing := range c.builders {
+		if cacheKeyMatches(key, existing) {
+			delete(c.builders, existing)
+		}
+	}
+}
+
+func (c *BuilderCache) Clear() {
+	if c == nil {
+		return
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.builders = map[CacheKey]*Builder{}
+}
+
+func (c *BuilderCache) Len() int {
+	if c == nil {
+		return 0
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return len(c.builders)
+}
+
+func GraphFingerprint(g *graph.Graph) string {
+	if g == nil {
+		return "nil"
+	}
+	hasher := fnv.New64a()
+	writeHash(hasher, fmt.Sprintf("nodes=%d;relationships=%d;", len(g.Nodes), len(g.Relationships)))
+	for _, node := range g.Nodes {
+		writeHash(hasher, node.ID)
+		writeHash(hasher, string(node.Label))
+		writeHash(hasher, stringProperty(node, "filePath"))
+		writeHash(hasher, stringProperty(node, "name"))
+	}
+	for _, relationship := range g.Relationships {
+		writeHash(hasher, relationship.ID)
+		writeHash(hasher, relationship.SourceID)
+		writeHash(hasher, relationship.TargetID)
+		writeHash(hasher, string(relationship.Type))
+		writeHash(hasher, relationship.SourceSiteID)
+		writeHash(hasher, relationship.FilePath)
+	}
+	return fmt.Sprintf("%016x", hasher.Sum64())
 }
 
 func (b *Builder) BuildFileContext(path string, options Options) (FileContext, bool) {
@@ -756,8 +844,44 @@ func normalizePath(path string) string {
 	return path
 }
 
+func normalizeCacheKey(key CacheKey, g *graph.Graph) CacheKey {
+	key.Repo = strings.TrimSpace(key.Repo)
+	key.RepoPath = normalizePath(key.RepoPath)
+	key.GraphPath = normalizePath(key.GraphPath)
+	key.GraphHash = strings.TrimSpace(key.GraphHash)
+	if key.GraphHash == "" && g != nil {
+		key.GraphHash = GraphFingerprint(g)
+	}
+	return key
+}
+
+func cacheKeyMatches(pattern CacheKey, existing CacheKey) bool {
+	if pattern.Repo != "" && pattern.Repo != existing.Repo {
+		return false
+	}
+	if pattern.RepoPath != "" && pattern.RepoPath != existing.RepoPath {
+		return false
+	}
+	if pattern.GraphPath != "" && pattern.GraphPath != existing.GraphPath {
+		return false
+	}
+	if pattern.GraphHash != "" && pattern.GraphHash != existing.GraphHash {
+		return false
+	}
+	return true
+}
+
 func normalizePathFromNodeID(id string) string {
 	return normalizePath(strings.TrimPrefix(id, "File:"))
+}
+
+type hashWriter interface {
+	Write([]byte) (int, error)
+}
+
+func writeHash(hasher hashWriter, value string) {
+	_, _ = hasher.Write([]byte(value))
+	_, _ = hasher.Write([]byte{0})
 }
 
 func isProjectionRelationship(relationshipType graph.RelationshipType) bool {
