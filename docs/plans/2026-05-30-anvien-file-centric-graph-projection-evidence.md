@@ -700,52 +700,114 @@ Commit:
 
 ## E10 - Parent/Child Command Hierarchy
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: P5-A completed
 
-Expected evidence:
+Scope:
 
-- Inventory of commands whose behavior depends on target type.
-- Parent command behavior for smart dispatch and backward compatibility.
-- Child command definitions for explicit file, symbol, route, tool, flow, API, and quality workflows where applicable.
-- Shared target resolver behavior, ambiguity candidate shape, confidence fields, and exact child-command suggestions.
-- Ambiguity handling examples and exact child-command suggestions.
-- Help text examples for parent and child commands.
-- JSON parity evidence between parent resolved output and explicit child output.
-- Commands intentionally left without child commands with reason.
+- Target-aware parent commands inventoried: `context`, `impact`, `query`, `detect-changes`, `graph-health`, `api route-map`, `api tool-map`, `api shape-check`, `api impact`, and `group query`.
+- Parent commands keep current usage. `context <target>` and `impact <target>` now pass `target_type=auto` for smart dispatch; `query <text>` remains broad multi-lane search; `detect-changes` remains broad changed-symbol/affected-flow output; `graph-health summary/report/components/explain` remain unchanged.
+- Child commands defined and implemented for target-specific views: `context symbol`, `context file`, `impact symbol`, `impact file`, `impact route`, `impact tool`, `query files`, `query symbols`, `query flows`, `query api`, `detect-changes files`, `detect-changes symbols`, `detect-changes flows`, and `graph-health files`.
+- Shared target semantics use the same field names across CLI/MCP payloads: `target_type`, `dispatch_mode`, `targetType`, `dispatchMode`, `selectedFile`, `selectedSymbol`, and explicit `suggestedCommand` values on ambiguity candidates.
+- Commands intentionally left without Phase 5 child commands: `analyze` remains repo/path oriented; `rename` remains symbol-first; `cypher` remains raw graph-query oriented; `resolution-inventory` remains graph-snapshot oriented while file quality rows are exposed through `graph-health files`; group commands remain group/repo oriented until cross-repo file projection is designed.
+
+Impact / blast radius:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass before P5 graph work. `files=827`, `nodes=94171`, `relationships=128835`. |
+| `.\anvien\bin\anvien.exe impact "newContextCommand" --repo Anvien --direction upstream` | `risk=CRITICAL`; direct dependent `NewRootCommand`, then CLI `main`; proceeded because syntax is additive and parent command still exists. |
+| `.\anvien\bin\anvien.exe impact "newImpactCommand" --repo Anvien --direction upstream` | `risk=CRITICAL`; same CLI root blast radius; additive child commands and JSON flag only. |
+| `.\anvien\bin\anvien.exe impact "newQueryCommand" --repo Anvien --direction upstream` | `risk=CRITICAL`; same CLI root blast radius; parent query remains broad. |
+| `.\anvien\bin\anvien.exe impact "newDetectChangesCommand" --repo Anvien --direction upstream` | `risk=CRITICAL`; same CLI root blast radius; parent detect output remains available. |
+| `.\anvien\bin\anvien.exe impact "newGraphHealthCommand" --repo Anvien --direction upstream` | `risk=CRITICAL`; same CLI root blast radius; existing graph-health subcommands unchanged. |
+| `.\anvien\bin\anvien.exe impact "contextToolInternal" --repo Anvien --direction upstream` | `risk=LOW`; no upstream impacted nodes reported. |
+| `.\anvien\bin\anvien.exe impact "impactToolInternal" --repo Anvien --direction upstream` | `risk=LOW`; no upstream impacted nodes reported. |
+| `.\anvien\bin\anvien.exe impact "queryTool" --repo Anvien --direction upstream` | `risk=LOW`; no upstream impacted nodes reported. |
+| `.\anvien\bin\anvien.exe impact "detectChangesTool" --repo Anvien --direction upstream` | `risk=LOW`; no upstream impacted nodes reported. |
+| `.\anvien\bin\anvien.exe impact --uid "Function:internal/mcp/tools.go:mcpTools#0" --repo Anvien --direction upstream` | `risk=CRITICAL`; direct dependent `Server.handle`; proceeded because MCP schema changes are additive optional fields. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/mcp/target_dispatch.go` | Added shared target constants, target/dispatch normalization, file context helpers, ambiguity suggestion helpers, file impact aggregation helpers, and query/detect target-type allowlists. |
+| `internal/cli/tool_command.go` | Added child commands and inherited flags for `query`, `context`, `impact`, and `detect-changes`; added `--json` stripping for parent/child MCP command output where needed. |
+| `internal/mcp/tools.go` | Added optional MCP schema fields `target_type` and `dispatch_mode` for `query`, `context`, `impact`, and `detect_changes`. |
+| `internal/mcp/testdata/typescript_baseline_surface.json` | Updated MCP surface snapshot to include optional target dispatch fields. |
+| `internal/mcp/surface_snapshot_test.go` | Added schema assertions for target dispatch fields. |
 
 ## E11 - Context And Impact Child Commands
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: P5-B completed
 
-Expected evidence:
+Scope:
 
-- `context <target>` remains backward-compatible.
-- `context symbol <symbol>` forces symbol context with containing file summary.
-- `context file <path>` forces full file context.
-- `impact <target>` remains backward-compatible.
-- `impact symbol <symbol>` forces symbol impact with file-layer blast radius.
-- `impact file <path>` aggregates contained-symbol impact.
-- `impact route <route>` and `impact tool <tool>` support target-specific output if implemented.
-- Tests for ambiguity suggestions, missing targets, JSON output, and parent/child parity.
+- `context symbol <symbol>` forces symbol lookup and adds `fileSummary`, `selectedFile`, and `selectedSymbol` to the MCP result.
+- `context file <path>` forces full file projection under `fileContext`, with `targetType=file` and `dispatchMode=explicit`.
+- Parent `context <target>` uses smart dispatch and returns an ambiguity payload with exact `anvien context file ...` and `anvien context symbol ...` suggestions when a target matches both layers.
+- `impact symbol <symbol>` keeps symbol blast radius and adds `affectedFiles` / file summary evidence.
+- `impact file <path>` aggregates impact across contained symbols and reports `containedSymbols`, `symbolImpacts`, `impacted`, `affectedFiles`, `affected_processes`, linked flow/test counts, and an aggregate risk.
+- `impact route <route>` delegates to existing API impact data with `targetType=route`.
+- `impact tool <tool>` reports matched MCP tool definitions and linked flow count with `targetType=tool`.
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/mcp/context.go` | Added `target_type=auto|symbol|file`, smart file-vs-symbol dispatch, explicit file context payloads, symbol file summaries, and ambiguity suggestions. |
+| `internal/mcp/impact.go` | Added `target_type=auto|symbol|file|route|tool`, file aggregate impact, route impact wrapping, tool impact summaries, symbol file summaries, and affected-file grouping. |
+| `internal/cli/target_command_test.go` | Added CLI tests for `context file`, `context symbol`, `impact file`, JSON output, file summaries, affected file evidence, and ambiguous parent suggestions. |
 
 ## E12 - Query, Change, And Quality Child Commands
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: P5-C/P5-D completed
 
-Expected evidence:
+Scope:
 
-- `query <text>` remains broad multi-lane search.
-- `query files`, `query symbols`, `query flows`, and `query api` behavior where implemented.
-- Decision for `detect-changes files/symbols/flows` as child commands or flags.
-- Decision for graph quality file/symbol child commands or flags.
-- Tests for parent output preservation, child narrowing, sorting/filtering, and JSON output.
-- Compatibility/golden tests for parent help, child help, ambiguous target errors, and existing flat command syntax.
+- `query <text>` remains the broad multi-lane parent behavior.
+- `query files <text>` returns file-first rows with `summary` and bounded `matchedSymbols`.
+- `query symbols <text>` returns symbol-first rows and adds containing `fileSummary`.
+- `query flows <text>` narrows output to execution-flow rows.
+- `query api <text>` narrows output to route-map and tool-map rows.
+- `detect-changes files|symbols|flows` was implemented as child commands rather than flags because the parent command already has scope/base-ref flags and the result layer changes the primary payload shape.
+- `graph-health files` was implemented as the file-level quality child command. `resolution-inventory` remains a graph snapshot inventory command; file-oriented quality triage belongs to `graph-health files` for this phase.
+- MCP/API/generated alignment: CLI and MCP use the same target names. Existing HTTP/API file projection routes already use file target semantics; no Web contract source shape changed in this slice.
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/mcp/tools.go` | Added target-specific query payloads for `files`, `symbols`, `flows`, and `api`; parent broad query payload remains intact. |
+| `internal/mcp/detect_changes.go` | Added target-specific changed `files`, `symbols`, and `flows` payloads with shared `targetType`/`dispatchMode` fields. |
+| `internal/cli/graph_health_command.go` | Added `graph-health files` with JSON and human output for file-level unresolved/fan-in/fan-out/risk rows. |
+| `internal/cli/target_command_test.go` | Added tests for `query files`, `query symbols`, `graph-health files`, and `detect-changes files`. |
+
+Validation so far:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass before final tests. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass after full build. |
+| `go run .\cmd\generate-web-contracts --check` | Pass; no Web generated contract drift from P5. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass after P5 implementation. Final P5 graph: `files=829`, `nodes=94838`, `relationships=129861`. |
+| Built binary smoke: `context file internal\cli\tool_command.go --repo Anvien --json` | Pass. Parsed summary: `targetType=file`, `dispatchMode=explicit`, `path=internal/cli/tool_command.go`, `symbols=69`. |
+| Built binary smoke: `query files "target dispatch" --repo Anvien --limit 3 --json` | Pass. Parsed summary: `targetType=files`, `total=3`, first row `internal/mcp/impact.go`. |
+| Built binary smoke: `impact file internal\cli\tool_command.go --repo Anvien --depth 1 --json` | Pass. Parsed summary: `targetType=file`, `impactedCount=21`, `affectedFiles=5`, `risk=CRITICAL`. CRITICAL is expected for CLI command-surface owners. |
+| Built binary smoke: `graph-health files --repo Anvien --limit 3 --json` | Pass. Parsed summary: `total=829`, `returned=3`, first row `internal/mcp/server_test.go`. |
+| Built binary smoke: `detect-changes files --repo Anvien --scope all --json` | Pass before final evidence edit. Parsed summary: `targetType=files`, `total=11`, `changed_count=539`, `affected_count=59`. |
+| Compatibility smoke: `query files --repo Anvien --limit 1 --json` | Pass. Missing child query argument falls back to parent broad query for `files`; parsed `query=files`, `targetType=null`, `definitions=1`. |
+
+Benchmark link:
+
+- See B0/B1 for P5 graph/file inventory counts.
+- See B8 for parent/child command hierarchy counts.
+- See B10 for validation test counts.
 
 ## E13 - Existing Command Integration Matrix
 

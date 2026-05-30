@@ -67,7 +67,13 @@ func (s Server) contextToolInternal(args map[string]any, collectProfile bool) (m
 
 	name := strings.TrimSpace(stringArg(args, "name", ""))
 	uid := strings.TrimSpace(stringArg(args, "uid", ""))
-	if name == "" && uid == "" {
+	filePathHint := stringArg(args, "file_path", "")
+	targetType := normalizedTargetType(args, targetTypeSymbol, contextTargetTypeAllowed())
+	dispatchMode := normalizedDispatchMode(args, targetType)
+	if targetType == targetTypeAuto {
+		dispatchMode = dispatchModeSmart
+	}
+	if name == "" && uid == "" && (targetType != targetTypeFile || strings.TrimSpace(filePathHint) == "") {
 		return map[string]any{"error": `Either "name" or "uid" parameter is required.`}, profile, nil
 	}
 
@@ -77,7 +83,33 @@ func (s Server) contextToolInternal(args map[string]any, collectProfile bool) (m
 	}
 	mark(&profile.RepoResolve)
 
-	candidates := contextCandidates(g, name, uid, stringArg(args, "file_path", ""), stringArg(args, "kind", ""))
+	if targetType == targetTypeFile {
+		payload := contextFilePayload(g, firstNonEmptyString(name, filePathHint), dispatchMode)
+		mark(&profile.TargetLookup)
+		return payload, profile, nil
+	}
+
+	if targetType == targetTypeAuto && uid == "" {
+		filePayload, fileFound := contextFilePayloadIfFound(g, firstNonEmptyString(name, filePathHint), dispatchMode)
+		candidates := contextCandidates(g, name, "", filePathHint, stringArg(args, "kind", ""))
+		if fileFound && len(candidates) > 0 {
+			mark(&profile.TargetLookup)
+			symbolCandidates := addContextCandidateSuggestions(contextCandidatePayloads(candidates), "context")
+			allCandidates := append([]map[string]any{contextFileCandidate(filePayload["file"].(map[string]any)["path"].(string), name)}, symbolCandidates...)
+			return map[string]any{
+				"status":     "ambiguous",
+				"targetType": targetTypeAuto,
+				"message":    fmt.Sprintf("Target %q matches both a file and %d symbol(s). Use an explicit child command.", name, len(candidates)),
+				"candidates": allCandidates,
+			}, profile, nil
+		}
+		if fileFound {
+			mark(&profile.TargetLookup)
+			return filePayload, profile, nil
+		}
+	}
+
+	candidates := contextCandidates(g, name, uid, filePathHint, stringArg(args, "kind", ""))
 	mark(&profile.TargetLookup)
 	if len(candidates) == 0 {
 		target := firstNonEmptyString(name, uid)
@@ -89,8 +121,9 @@ func (s Server) contextToolInternal(args map[string]any, collectProfile bool) (m
 	if len(candidates) > 1 {
 		return map[string]any{
 			"status":     "ambiguous",
+			"targetType": targetTypeSymbol,
 			"message":    fmt.Sprintf("Found %d symbols matching '%s'. Use uid, file_path, or kind to disambiguate.", len(candidates), name),
-			"candidates": contextCandidatePayloads(candidates),
+			"candidates": addContextCandidateSuggestions(contextCandidatePayloads(candidates), "context"),
 		}, profile, nil
 	}
 
@@ -98,6 +131,7 @@ func (s Server) contextToolInternal(args map[string]any, collectProfile bool) (m
 	incoming, outgoing, processes := contextNeighborhood(g, node)
 	mark(&profile.NeighborhoodRead)
 	symbol := contextSymbolPayload(node, boolArg(args, "include_content", false))
+	fileSummary, hasFileSummary := mcpFileSummaryForPath(g, resourceNodeString(node, "filePath"))
 	mark(&profile.SymbolPayload)
 	semanticStatus := semantic.GraphSemanticStatus(g)
 	payload := map[string]any{
@@ -108,6 +142,7 @@ func (s Server) contextToolInternal(args map[string]any, collectProfile bool) (m
 		"outgoing":       outgoing,
 		"processes":      processes,
 	}
+	addMCPSymbolTargetFields(payload, symbol, fileSummary, hasFileSummary, dispatchMode)
 	if warning := querySemanticWarning(semanticStatus); warning != "" {
 		payload["semanticWarning"] = warning
 	}
@@ -119,6 +154,36 @@ func (s Server) contextToolInternal(args map[string]any, collectProfile bool) (m
 	}
 	mark(&profile.Formatting)
 	return payload, profile, nil
+}
+
+func contextFilePayload(g *graph.Graph, path string, dispatchMode string) map[string]any {
+	payload, ok := contextFilePayloadIfFound(g, path, dispatchMode)
+	if ok {
+		return payload
+	}
+	return map[string]any{
+		"status":       "not_found",
+		"targetType":   targetTypeFile,
+		"dispatchMode": dispatchMode,
+		"error":        fmt.Sprintf("File '%s' not found", path),
+		"target":       map[string]any{"type": targetTypeFile, "input": path},
+	}
+}
+
+func contextFilePayloadIfFound(g *graph.Graph, path string, dispatchMode string) (map[string]any, bool) {
+	context, ok := mcpBuildFileContext(g, path, dispatchMode)
+	if !ok {
+		return nil, false
+	}
+	return map[string]any{
+		"status":       "found",
+		"targetType":   targetTypeFile,
+		"dispatchMode": dispatchMode,
+		"target":       context.Target,
+		"file":         map[string]any{"path": context.Summary.Path},
+		"summary":      context.Summary,
+		"fileContext":  context,
+	}, true
 }
 
 func contextCandidates(g *graph.Graph, name string, uid string, filePathHint string, kindHint string) []contextCandidate {

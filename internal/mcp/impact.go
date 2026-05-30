@@ -54,6 +54,8 @@ var (
 type impactOptions struct {
 	Target        string
 	TargetUID     string
+	TargetType    string
+	DispatchMode  string
 	Direction     string
 	FilePath      string
 	Kind          string
@@ -104,6 +106,29 @@ func (s Server) impactToolInternal(args map[string]any, collectProfile bool) (ma
 	}
 	mark(&profile.RepoResolve)
 
+	if options.TargetType == targetTypeFile {
+		payload := runFileImpact(g, options)
+		mark(&profile.TargetLookup)
+		return payload, profile, nil
+	}
+	if options.TargetType == targetTypeRoute {
+		payload, err := s.impactRoutePayload(args, options)
+		mark(&profile.TargetLookup)
+		return payload, profile, err
+	}
+	if options.TargetType == targetTypeTool {
+		payload := impactToolTargetPayload(g, options.Target, options.DispatchMode)
+		mark(&profile.TargetLookup)
+		return payload, profile, nil
+	}
+	if options.TargetType == targetTypeAuto && options.TargetUID == "" {
+		payload, ok, err := s.impactAutoPayload(g, args, options)
+		mark(&profile.TargetLookup)
+		if err != nil || ok {
+			return payload, profile, err
+		}
+	}
+
 	candidates := contextCandidates(g, options.Target, options.TargetUID, options.FilePath, options.Kind)
 	targetLabel := firstNonEmptyString(options.Target, options.TargetUID)
 	mark(&profile.TargetLookup)
@@ -122,16 +147,25 @@ func (s Server) impactToolInternal(args map[string]any, collectProfile bool) (ma
 	if len(candidates) > 1 {
 		return map[string]any{
 			"status":        "ambiguous",
+			"targetType":    targetTypeSymbol,
+			"dispatchMode":  options.DispatchMode,
 			"message":       fmt.Sprintf("Found %d symbols matching '%s'. Use target_uid, file_path, or kind to disambiguate.", len(candidates), targetLabel),
 			"target":        map[string]any{"name": targetLabel},
 			"direction":     options.Direction,
 			"impactedCount": 0,
 			"risk":          "UNKNOWN",
-			"candidates":    contextCandidatePayloads(candidates),
+			"candidates":    addContextCandidateSuggestions(contextCandidatePayloads(candidates), "impact"),
 		}, profile, nil
 	}
 
 	payload, runProfile := runImpactBFSProfiled(g, candidates[0].Node, options, collectProfile)
+	fileSummary, hasFileSummary := mcpFileSummaryForPath(g, resourceNodeString(candidates[0].Node, "filePath"))
+	if symbolPayload, ok := payload["target"].(map[string]any); ok {
+		addMCPSymbolTargetFields(payload, symbolPayload, fileSummary, hasFileSummary, options.DispatchMode)
+	}
+	if rows := impactRowsFromPayload(payload); len(rows) > 0 {
+		payload["affectedFiles"] = fileImpactAffectedFiles(rows)
+	}
 	profile.IndexBuild += runProfile.IndexBuild
 	profile.Traversal += runProfile.Traversal
 	profile.AffectedSummaries += runProfile.AffectedSummaries
@@ -140,9 +174,16 @@ func (s Server) impactToolInternal(args map[string]any, collectProfile bool) (ma
 }
 
 func parseImpactArgs(args map[string]any) (impactOptions, map[string]any) {
+	targetType := normalizedTargetType(args, targetTypeSymbol, impactTargetTypeAllowed())
+	dispatchMode := normalizedDispatchMode(args, targetType)
+	if targetType == targetTypeAuto {
+		dispatchMode = dispatchModeSmart
+	}
 	options := impactOptions{
 		Target:        strings.TrimSpace(stringArg(args, "target", "")),
 		TargetUID:     strings.TrimSpace(stringArg(args, "target_uid", "")),
+		TargetType:    targetType,
+		DispatchMode:  dispatchMode,
 		Direction:     strings.TrimSpace(stringArg(args, "direction", "")),
 		FilePath:      stringArg(args, "file_path", ""),
 		Kind:          stringArg(args, "kind", ""),
@@ -187,6 +228,239 @@ func parseImpactArgs(args map[string]any) (impactOptions, map[string]any) {
 		options.RelationTypes = dedupeStrings(types)
 	}
 	return options, nil
+}
+
+func (s Server) impactRoutePayload(args map[string]any, options impactOptions) (map[string]any, error) {
+	routeArgs := cloneMap(args)
+	routeArgs["route"] = options.Target
+	payload, err := s.apiImpactTool(routeArgs)
+	if err != nil {
+		return nil, err
+	}
+	addMCPDispatchFields(payload, targetTypeRoute, options.DispatchMode)
+	return payload, nil
+}
+
+func (s Server) impactAutoPayload(g *graph.Graph, args map[string]any, options impactOptions) (map[string]any, bool, error) {
+	target := strings.TrimSpace(options.Target)
+	if target == "" {
+		return nil, false, nil
+	}
+	candidates := make([]map[string]any, 0)
+	if context, ok := mcpBuildFileContext(g, target, dispatchModeSmart); ok {
+		candidates = append(candidates, contextFileCandidate(context.Summary.Path, target))
+	}
+	symbolCandidates := contextCandidates(g, options.Target, "", options.FilePath, options.Kind)
+	if len(symbolCandidates) > 0 {
+		candidates = append(candidates, addContextCandidateSuggestions(contextCandidatePayloads(symbolCandidates), "impact")...)
+	}
+	if strings.HasPrefix(target, "/") {
+		index := buildMCPRouteIndex(g)
+		if len(index.analysisRecords(target, "")) > 0 {
+			candidates = append(candidates, map[string]any{
+				"targetType":       targetTypeRoute,
+				"type":             targetTypeRoute,
+				"name":             target,
+				"confidence":       1.0,
+				"suggestedCommand": fmt.Sprintf("anvien impact route %q", target),
+			})
+		}
+	}
+	if tools := mcpToolMapItems(g, target); len(tools) > 0 {
+		for _, tool := range tools {
+			if !strings.EqualFold(tool.Name, target) {
+				continue
+			}
+			candidates = append(candidates, map[string]any{
+				"targetType":       targetTypeTool,
+				"type":             targetTypeTool,
+				"name":             tool.Name,
+				"filePath":         tool.FilePath,
+				"confidence":       1.0,
+				"suggestedCommand": fmt.Sprintf("anvien impact tool %q", tool.Name),
+			})
+		}
+	}
+	if len(candidates) > 1 {
+		return map[string]any{
+			"status":        "ambiguous",
+			"targetType":    targetTypeAuto,
+			"dispatchMode":  dispatchModeSmart,
+			"message":       fmt.Sprintf("Target %q matches multiple target types. Use an explicit child command.", target),
+			"target":        map[string]any{"name": target},
+			"direction":     options.Direction,
+			"impactedCount": 0,
+			"risk":          "UNKNOWN",
+			"candidates":    candidates,
+		}, true, nil
+	}
+	if len(candidates) == 0 {
+		return nil, false, nil
+	}
+	switch candidates[0]["targetType"] {
+	case targetTypeFile:
+		fileOptions := options
+		fileOptions.TargetType = targetTypeFile
+		fileOptions.DispatchMode = dispatchModeSmart
+		return runFileImpact(g, fileOptions), true, nil
+	case targetTypeRoute:
+		routeOptions := options
+		routeOptions.TargetType = targetTypeRoute
+		routeOptions.DispatchMode = dispatchModeSmart
+		payload, err := s.impactRoutePayload(args, routeOptions)
+		return payload, true, err
+	case targetTypeTool:
+		return impactToolTargetPayload(g, target, dispatchModeSmart), true, nil
+	default:
+		return nil, false, nil
+	}
+}
+
+func runFileImpact(g *graph.Graph, options impactOptions) map[string]any {
+	context, ok := mcpBuildFileContext(g, options.Target, options.DispatchMode)
+	if !ok {
+		return map[string]any{
+			"status":        "not_found",
+			"targetType":    targetTypeFile,
+			"dispatchMode":  options.DispatchMode,
+			"error":         fmt.Sprintf("File '%s' not found", options.Target),
+			"target":        map[string]any{"type": targetTypeFile, "input": options.Target},
+			"direction":     options.Direction,
+			"impactedCount": 0,
+			"risk":          "UNKNOWN",
+		}
+	}
+	nodes := nodeByID(g)
+	symbolRows := symbolRowsFromFileContext(context, nodes)
+	seenImpacted := map[string]map[string]any{}
+	symbolImpacts := make([]map[string]any, 0, len(symbolRows))
+	payloads := make([]map[string]any, 0, len(symbolRows))
+	for _, symbol := range symbolRows {
+		node, ok := nodes[fmt.Sprint(symbol["id"])]
+		if !ok {
+			continue
+		}
+		symbolOptions := options
+		symbolOptions.TargetType = targetTypeSymbol
+		payload := runImpactBFS(g, node, symbolOptions)
+		payloads = append(payloads, payload)
+		for _, row := range impactRowsFromPayload(payload) {
+			id := strings.TrimSpace(fmt.Sprint(row["id"]))
+			if id == "" || seenImpacted[id] != nil {
+				continue
+			}
+			seenImpacted[id] = row
+		}
+		symbolImpacts = append(symbolImpacts, map[string]any{
+			"symbol":        symbol,
+			"impactedCount": payload["impactedCount"],
+			"risk":          payload["risk"],
+			"summary":       payload["summary"],
+		})
+	}
+	impactedRows := make([]map[string]any, 0, len(seenImpacted))
+	for _, row := range seenImpacted {
+		impactedRows = append(impactedRows, row)
+	}
+	sort.Slice(impactedRows, func(i, j int) bool {
+		leftPath := fmt.Sprint(impactedRows[i]["filePath"])
+		rightPath := fmt.Sprint(impactedRows[j]["filePath"])
+		if leftPath != rightPath {
+			return leftPath < rightPath
+		}
+		return fmt.Sprint(impactedRows[i]["name"]) < fmt.Sprint(impactedRows[j]["name"])
+	})
+	affectedProcesses := combineImpactProcesses(payloads)
+	risk := impactRisk(impactDirectCount(impactedRows), len(affectedProcesses), len(fileImpactAffectedFiles(impactedRows)), len(impactedRows))
+	return map[string]any{
+		"status":             "found",
+		"targetType":         targetTypeFile,
+		"dispatchMode":       options.DispatchMode,
+		"target":             context.Target,
+		"direction":          options.Direction,
+		"file":               context.Summary,
+		"linked":             context.Linked,
+		"containedSymbols":   symbolRows,
+		"symbolImpacts":      symbolImpacts,
+		"impacted":           impactedRows,
+		"impactedCount":      len(impactedRows),
+		"affectedFiles":      fileImpactAffectedFiles(impactedRows),
+		"affected_processes": affectedProcesses,
+		"risk":               risk,
+		"summary": map[string]any{
+			"contained_symbols": len(symbolRows),
+			"direct":            impactDirectCount(impactedRows),
+			"files_affected":    len(fileImpactAffectedFiles(impactedRows)),
+			"flows_affected":    len(affectedProcesses),
+			"linked_flows":      context.Linked.Counts.Flows,
+			"linked_tests":      context.Linked.Counts.Tests,
+		},
+	}
+}
+
+func impactRowsFromPayload(payload map[string]any) []map[string]any {
+	grouped, _ := payload["byDepth"].(map[string][]map[string]any)
+	rows := make([]map[string]any, 0)
+	for _, depthRows := range grouped {
+		rows = append(rows, depthRows...)
+	}
+	if len(rows) > 0 {
+		return rows
+	}
+	if direct, ok := payload["impacted"].([]map[string]any); ok {
+		return direct
+	}
+	return nil
+}
+
+func impactDirectCount(rows []map[string]any) int {
+	count := 0
+	for _, row := range rows {
+		if impactIntValue(row["depth"]) == 1 {
+			count++
+		}
+	}
+	return count
+}
+
+func impactToolTargetPayload(g *graph.Graph, target string, dispatchMode string) map[string]any {
+	tools := mcpToolMapItems(g, target)
+	if len(tools) == 0 {
+		return map[string]any{
+			"status":        "not_found",
+			"targetType":    targetTypeTool,
+			"dispatchMode":  dispatchMode,
+			"error":         fmt.Sprintf("Tool '%s' not found", target),
+			"target":        map[string]any{"type": targetTypeTool, "name": target},
+			"impactedCount": 0,
+			"risk":          "UNKNOWN",
+		}
+	}
+	flowCount := 0
+	for _, tool := range tools {
+		flowCount += len(tool.Flows)
+	}
+	risk := "LOW"
+	if flowCount > 5 {
+		risk = "HIGH"
+	} else if flowCount > 0 {
+		risk = "MEDIUM"
+	}
+	return map[string]any{
+		"status":        "found",
+		"targetType":    targetTypeTool,
+		"dispatchMode":  dispatchMode,
+		"target":        map[string]any{"type": targetTypeTool, "name": target},
+		"tools":         tools,
+		"total":         len(tools),
+		"impactedCount": flowCount,
+		"risk":          risk,
+		"summary": map[string]any{
+			"matched_tools":  len(tools),
+			"linked_flows":   flowCount,
+			"impact_surface": "tool_map",
+		},
+	}
 }
 
 func impactValidationResult(args map[string]any, issue map[string]any) map[string]any {

@@ -72,33 +72,66 @@ func newQueryCommand() *cobra.Command {
 			if showLanes {
 				return printQueryCapabilityLanes(cmd, jsonOutput)
 			}
-			toolArgs := map[string]any{
-				"query":           args[0],
-				"repo":            emptyToNil(repoName),
-				"task_context":    emptyToNil(taskContext),
-				"goal":            emptyToNil(goal),
-				"include_content": includeContent,
-				"explain":         explain,
-			}
-			if limit != "" {
-				parsed, err := parsePositiveIntFlag("limit", limit)
-				if err != nil {
-					return err
-				}
-				toolArgs["limit"] = parsed
-			}
-			return printLocalMCPTool(cmd, "query", toolArgs)
+			return runQueryToolCommand(cmd, args[0], "", repoName, taskContext, goal, limit, includeContent, explain, jsonOutput)
 		},
 	}
-	cmd.Flags().StringVarP(&repoName, "repo", "r", "", "target repository (omit if only one indexed)")
-	cmd.Flags().StringVarP(&taskContext, "context", "c", "", "task context to improve ranking")
-	cmd.Flags().StringVarP(&goal, "goal", "g", "", "what you want to find")
-	cmd.Flags().StringVarP(&limit, "limit", "l", "", "max processes to return")
-	cmd.Flags().BoolVar(&includeContent, "content", false, "include full symbol source code")
+	cmd.PersistentFlags().StringVarP(&repoName, "repo", "r", "", "target repository (omit if only one indexed)")
+	cmd.PersistentFlags().StringVarP(&taskContext, "context", "c", "", "task context to improve ranking")
+	cmd.PersistentFlags().StringVarP(&goal, "goal", "g", "", "what you want to find")
+	cmd.PersistentFlags().StringVarP(&limit, "limit", "l", "", "max results to return")
+	cmd.PersistentFlags().BoolVar(&includeContent, "content", false, "include full symbol source code")
+	cmd.PersistentFlags().BoolVar(&explain, "explain", false, "include lane, rank, and match evidence in query output")
+	cmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "write only the JSON payload")
 	cmd.Flags().BoolVar(&showLanes, "lanes", false, "list query capability lanes")
-	cmd.Flags().BoolVar(&explain, "explain", false, "include lane, rank, and match evidence in query output")
-	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write JSON output where the selected query mode supports it")
+	cmd.AddCommand(
+		newQueryTargetCommand("files", "Search files first and include matched symbols and file summaries", &repoName, &taskContext, &goal, &limit, &includeContent, &explain, &jsonOutput),
+		newQueryTargetCommand("symbols", "Search symbols first and include containing file summaries", &repoName, &taskContext, &goal, &limit, &includeContent, &explain, &jsonOutput),
+		newQueryTargetCommand("flows", "Search execution flows only", &repoName, &taskContext, &goal, &limit, &includeContent, &explain, &jsonOutput),
+		newQueryTargetCommand("api", "Search API routes and MCP tools only", &repoName, &taskContext, &goal, &limit, &includeContent, &explain, &jsonOutput),
+	)
 	return cmd
+}
+
+func newQueryTargetCommand(targetType string, short string, repoName *string, taskContext *string, goal *string, limit *string, includeContent *bool, explain *bool, jsonOutput *bool) *cobra.Command {
+	return &cobra.Command{
+		Use:   targetType + " <search_query>",
+		Short: short,
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 1 {
+				return fmt.Errorf("usage: anvien query %s <search_query>", targetType)
+			}
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return runQueryToolCommand(cmd, targetType, "", *repoName, *taskContext, *goal, *limit, *includeContent, *explain, *jsonOutput)
+			}
+			return runQueryToolCommand(cmd, args[0], targetType, *repoName, *taskContext, *goal, *limit, *includeContent, *explain, *jsonOutput)
+		},
+	}
+}
+
+func runQueryToolCommand(cmd *cobra.Command, query string, targetType string, repoName string, taskContext string, goal string, limit string, includeContent bool, explain bool, jsonOutput bool) error {
+	toolArgs := map[string]any{
+		"query":           query,
+		"repo":            emptyToNil(repoName),
+		"task_context":    emptyToNil(taskContext),
+		"goal":            emptyToNil(goal),
+		"include_content": includeContent,
+		"explain":         explain,
+	}
+	if targetType != "" {
+		toolArgs["target_type"] = targetType
+		toolArgs["dispatch_mode"] = "explicit"
+	}
+	if limit != "" {
+		parsed, err := parsePositiveIntFlag("limit", limit)
+		if err != nil {
+			return err
+		}
+		toolArgs["limit"] = parsed
+	}
+	return printLocalMCPToolWithJSON(cmd, "query", toolArgs, jsonOutput)
 }
 
 func queryCommandLongDescription() string {
@@ -135,6 +168,7 @@ func newContextCommand() *cobra.Command {
 	var uid string
 	var filePath string
 	var includeContent bool
+	var jsonOutput bool
 
 	cmd := &cobra.Command{
 		Use:   "context [name]",
@@ -148,19 +182,81 @@ func newContextCommand() *cobra.Command {
 			if strings.TrimSpace(name) == "" && strings.TrimSpace(uid) == "" {
 				return fmt.Errorf("usage: anvien context <symbol_name> [--uid <uid>] [--file <path>]")
 			}
-			return printLocalMCPTool(cmd, "context", map[string]any{
+			targetType := "auto"
+			dispatchMode := "smart"
+			if strings.TrimSpace(uid) != "" {
+				targetType = "symbol"
+				dispatchMode = "explicit"
+			}
+			return printLocalMCPToolWithJSON(cmd, "context", map[string]any{
 				"name":            emptyToNil(name),
 				"uid":             emptyToNil(uid),
 				"file_path":       emptyToNil(filePath),
+				"target_type":     targetType,
+				"dispatch_mode":   dispatchMode,
 				"include_content": includeContent,
 				"repo":            emptyToNil(repoName),
-			})
+			}, jsonOutput)
 		},
 	}
-	cmd.Flags().StringVarP(&repoName, "repo", "r", "", "target repository")
-	cmd.Flags().StringVarP(&uid, "uid", "u", "", "direct symbol UID")
-	cmd.Flags().StringVarP(&filePath, "file", "f", "", "file path to disambiguate common names")
-	cmd.Flags().BoolVar(&includeContent, "content", false, "include full symbol source code")
+	cmd.PersistentFlags().StringVarP(&repoName, "repo", "r", "", "target repository")
+	cmd.PersistentFlags().StringVarP(&uid, "uid", "u", "", "direct symbol UID")
+	cmd.PersistentFlags().StringVarP(&filePath, "file", "f", "", "file path to disambiguate common names")
+	cmd.PersistentFlags().BoolVar(&includeContent, "content", false, "include full symbol source code")
+	cmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "write only the JSON payload")
+	cmd.AddCommand(
+		&cobra.Command{
+			Use:   "symbol <symbol>",
+			Short: "Force symbol context and include containing file summary",
+			Args:  cobra.MaximumNArgs(1),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return printLocalMCPToolWithJSON(cmd, "context", map[string]any{
+						"name":            "symbol",
+						"uid":             emptyToNil(uid),
+						"file_path":       emptyToNil(filePath),
+						"target_type":     "auto",
+						"dispatch_mode":   "smart",
+						"include_content": includeContent,
+						"repo":            emptyToNil(repoName),
+					}, jsonOutput)
+				}
+				return printLocalMCPToolWithJSON(cmd, "context", map[string]any{
+					"name":            args[0],
+					"uid":             emptyToNil(uid),
+					"file_path":       emptyToNil(filePath),
+					"target_type":     "symbol",
+					"dispatch_mode":   "explicit",
+					"include_content": includeContent,
+					"repo":            emptyToNil(repoName),
+				}, jsonOutput)
+			},
+		},
+		&cobra.Command{
+			Use:   "file <path>",
+			Short: "Force file context and avoid symbol ambiguity",
+			Args:  cobra.MaximumNArgs(1),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return printLocalMCPToolWithJSON(cmd, "context", map[string]any{
+						"name":            "file",
+						"uid":             emptyToNil(uid),
+						"file_path":       emptyToNil(filePath),
+						"target_type":     "auto",
+						"dispatch_mode":   "smart",
+						"include_content": includeContent,
+						"repo":            emptyToNil(repoName),
+					}, jsonOutput)
+				}
+				return printLocalMCPToolWithJSON(cmd, "context", map[string]any{
+					"name":          args[0],
+					"target_type":   "file",
+					"dispatch_mode": "explicit",
+					"repo":          emptyToNil(repoName),
+				}, jsonOutput)
+			},
+		},
+	)
 	return cmd
 }
 
@@ -170,6 +266,7 @@ func newImpactCommand() *cobra.Command {
 	var uid string
 	var depth string
 	var includeTests bool
+	var jsonOutput bool
 
 	cmd := &cobra.Command{
 		Use:   "impact [target]",
@@ -186,12 +283,20 @@ func newImpactCommand() *cobra.Command {
 			if direction != "upstream" && direction != "downstream" {
 				return fmt.Errorf("direction must be upstream or downstream")
 			}
+			targetType := "auto"
+			dispatchMode := "smart"
+			if strings.TrimSpace(uid) != "" {
+				targetType = "symbol"
+				dispatchMode = "explicit"
+			}
 			toolArgs := map[string]any{
-				"target":       emptyToNil(target),
-				"target_uid":   emptyToNil(uid),
-				"direction":    direction,
-				"includeTests": includeTests,
-				"repo":         emptyToNil(repoName),
+				"target":        emptyToNil(target),
+				"target_uid":    emptyToNil(uid),
+				"target_type":   targetType,
+				"dispatch_mode": dispatchMode,
+				"direction":     direction,
+				"includeTests":  includeTests,
+				"repo":          emptyToNil(repoName),
 			}
 			if depth != "" {
 				parsed, err := parsePositiveIntFlag("depth", depth)
@@ -200,15 +305,59 @@ func newImpactCommand() *cobra.Command {
 				}
 				toolArgs["maxDepth"] = parsed
 			}
-			return printLocalMCPTool(cmd, "impact", toolArgs)
+			return printLocalMCPToolWithJSON(cmd, "impact", toolArgs, jsonOutput)
 		},
 	}
-	cmd.Flags().StringVarP(&direction, "direction", "d", "upstream", "upstream or downstream")
-	cmd.Flags().StringVarP(&repoName, "repo", "r", "", "target repository")
-	cmd.Flags().StringVarP(&uid, "uid", "u", "", "direct symbol UID")
-	cmd.Flags().StringVar(&depth, "depth", "", "max relationship depth")
-	cmd.Flags().BoolVar(&includeTests, "include-tests", false, "include test files in results")
+	cmd.PersistentFlags().StringVarP(&direction, "direction", "d", "upstream", "upstream or downstream")
+	cmd.PersistentFlags().StringVarP(&repoName, "repo", "r", "", "target repository")
+	cmd.PersistentFlags().StringVarP(&uid, "uid", "u", "", "direct symbol UID")
+	cmd.PersistentFlags().StringVar(&depth, "depth", "", "max relationship depth")
+	cmd.PersistentFlags().BoolVar(&includeTests, "include-tests", false, "include test files in results")
+	cmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "write only the JSON payload")
+	cmd.AddCommand(
+		newImpactTargetCommand("symbol", "Force symbol blast radius with file-layer evidence", &direction, &repoName, &uid, &depth, &includeTests, &jsonOutput),
+		newImpactTargetCommand("file", "Aggregate blast radius from all symbols in one file", &direction, &repoName, &uid, &depth, &includeTests, &jsonOutput),
+		newImpactTargetCommand("route", "Inspect route handler, consumer, shape, and flow impact", &direction, &repoName, &uid, &depth, &includeTests, &jsonOutput),
+		newImpactTargetCommand("tool", "Inspect MCP tool definition and linked flow impact", &direction, &repoName, &uid, &depth, &includeTests, &jsonOutput),
+	)
 	return cmd
+}
+
+func newImpactTargetCommand(targetType string, short string, direction *string, repoName *string, uid *string, depth *string, includeTests *bool, jsonOutput *bool) *cobra.Command {
+	return &cobra.Command{
+		Use:   targetType + " <target>",
+		Short: short,
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return runImpactTargetCommand(cmd, targetType, "auto", *direction, *repoName, *uid, *depth, *includeTests, *jsonOutput)
+			}
+			return runImpactTargetCommand(cmd, args[0], targetType, *direction, *repoName, *uid, *depth, *includeTests, *jsonOutput)
+		},
+	}
+}
+
+func runImpactTargetCommand(cmd *cobra.Command, target string, targetType string, direction string, repoName string, uid string, depth string, includeTests bool, jsonOutput bool) error {
+	toolArgs := map[string]any{
+		"target":        target,
+		"target_uid":    emptyToNil(uid),
+		"target_type":   targetType,
+		"dispatch_mode": "explicit",
+		"direction":     direction,
+		"includeTests":  includeTests,
+		"repo":          emptyToNil(repoName),
+	}
+	if targetType == "auto" {
+		toolArgs["dispatch_mode"] = "smart"
+	}
+	if depth != "" {
+		parsed, err := parsePositiveIntFlag("depth", depth)
+		if err != nil {
+			return err
+		}
+		toolArgs["maxDepth"] = parsed
+	}
+	return printLocalMCPToolWithJSON(cmd, "impact", toolArgs, jsonOutput)
 }
 
 func newRenameCommand() *cobra.Command {
@@ -281,23 +430,47 @@ func newDetectChangesCommand() *cobra.Command {
 	var scope string
 	var baseRef string
 	var repoName string
+	var jsonOutput bool
 
 	cmd := &cobra.Command{
 		Use:   "detect-changes",
 		Short: "Analyze uncommitted git changes and find affected execution flows",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return printLocalMCPTool(cmd, "detect_changes", map[string]any{
+			return printLocalMCPToolWithJSON(cmd, "detect_changes", map[string]any{
 				"scope":    scope,
 				"base_ref": emptyToNil(baseRef),
 				"repo":     emptyToNil(repoName),
-			})
+			}, jsonOutput)
 		},
 	}
-	cmd.Flags().StringVarP(&scope, "scope", "s", "unstaged", "unstaged, staged, all, or compare")
-	cmd.Flags().StringVar(&baseRef, "base-ref", "", "branch/commit for compare scope")
-	cmd.Flags().StringVarP(&repoName, "repo", "r", "", "target repository")
+	cmd.PersistentFlags().StringVarP(&scope, "scope", "s", "unstaged", "unstaged, staged, all, or compare")
+	cmd.PersistentFlags().StringVar(&baseRef, "base-ref", "", "branch/commit for compare scope")
+	cmd.PersistentFlags().StringVarP(&repoName, "repo", "r", "", "target repository")
+	cmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "write only the JSON payload")
+	cmd.AddCommand(
+		newDetectChangesTargetCommand("files", "Show changed files only", &scope, &baseRef, &repoName, &jsonOutput),
+		newDetectChangesTargetCommand("symbols", "Show changed symbols only", &scope, &baseRef, &repoName, &jsonOutput),
+		newDetectChangesTargetCommand("flows", "Show affected flows only", &scope, &baseRef, &repoName, &jsonOutput),
+	)
 	return cmd
+}
+
+func newDetectChangesTargetCommand(targetType string, short string, scope *string, baseRef *string, repoName *string, jsonOutput *bool) *cobra.Command {
+	return &cobra.Command{
+		Use:   targetType,
+		Short: short,
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return printLocalMCPToolWithJSON(cmd, "detect_changes", map[string]any{
+				"scope":         *scope,
+				"base_ref":      emptyToNil(*baseRef),
+				"target_type":   targetType,
+				"dispatch_mode": "explicit",
+				"repo":          emptyToNil(*repoName),
+			}, *jsonOutput)
+		},
+	}
 }
 
 func printLocalMCPTool(cmd *cobra.Command, toolName string, args map[string]any) error {

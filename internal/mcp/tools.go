@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/tamnguyendinh/anvien/internal/filecontext"
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/lbugnative"
 	"github.com/tamnguyendinh/anvien/internal/lbugruntime"
@@ -116,6 +117,8 @@ func mcpTools() []toolDefinition {
 					"goal":            map[string]any{"type": "string", "description": "What you want to find. Helps ranking where supported."},
 					"limit":           map[string]any{"type": "number", "description": "Max processes to return", "default": 5},
 					"max_symbols":     map[string]any{"type": "number", "description": "Max symbols per process", "default": 10},
+					"target_type":     map[string]any{"type": "string", "description": "Optional explicit query view", "enum": []string{"files", "symbols", "flows", "api"}},
+					"dispatch_mode":   map[string]any{"type": "string", "description": "parent smart dispatch or explicit child command"},
 					"include_content": map[string]any{"type": "boolean", "description": "Include full symbol source code", "default": false},
 					"repo":            map[string]any{"type": "string", "description": "Repository name or path"},
 				},
@@ -144,6 +147,8 @@ func mcpTools() []toolDefinition {
 					"uid":             map[string]any{"type": "string", "description": "Direct symbol UID from prior tool results"},
 					"file_path":       map[string]any{"type": "string", "description": "File path to disambiguate common names"},
 					"kind":            map[string]any{"type": "string", "description": "Kind filter such as Function, Class, Method, Interface, or Constructor"},
+					"target_type":     map[string]any{"type": "string", "description": "Target resolver mode", "enum": []string{"auto", "symbol", "file"}, "default": "symbol"},
+					"dispatch_mode":   map[string]any{"type": "string", "description": "parent smart dispatch or explicit child command"},
 					"include_content": map[string]any{"type": "boolean", "description": "Include symbol source content", "default": false},
 					"repo":            map[string]any{"type": "string", "description": "Repository name or path"},
 				},
@@ -158,7 +163,13 @@ func mcpTools() []toolDefinition {
 				"properties": map[string]any{
 					"scope":    map[string]any{"type": "string", "description": "unstaged, staged, all, or compare", "enum": []string{"unstaged", "staged", "all", "compare"}, "default": "unstaged"},
 					"base_ref": map[string]any{"type": "string", "description": "Branch or commit for compare scope"},
-					"repo":     map[string]any{"type": "string", "description": "Repository name or path"},
+					"target_type": map[string]any{
+						"type":        "string",
+						"description": "Optional explicit changed target view",
+						"enum":        []string{"files", "symbols", "flows"},
+					},
+					"dispatch_mode": map[string]any{"type": "string", "description": "parent smart dispatch or explicit child command"},
+					"repo":          map[string]any{"type": "string", "description": "Repository name or path"},
 				},
 				"required": []string{},
 			},
@@ -187,6 +198,8 @@ func mcpTools() []toolDefinition {
 				"properties": map[string]any{
 					"target":        map[string]any{"type": "string", "description": "Name of function, class, or file to analyze"},
 					"target_uid":    map[string]any{"type": "string", "description": "Direct symbol UID from prior tool results"},
+					"target_type":   map[string]any{"type": "string", "description": "Target resolver mode", "enum": []string{"auto", "symbol", "file", "route", "tool"}, "default": "symbol"},
+					"dispatch_mode": map[string]any{"type": "string", "description": "parent smart dispatch or explicit child command"},
 					"direction":     map[string]any{"type": "string", "description": "upstream or downstream", "enum": []string{"upstream", "downstream"}, "default": "upstream"},
 					"file_path":     map[string]any{"type": "string", "description": "File path hint to disambiguate common names"},
 					"kind":          map[string]any{"type": "string", "description": "Kind filter such as Function, Class, Method, Interface, or Constructor"},
@@ -327,6 +340,11 @@ func (s Server) queryTool(args map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 	limit := intArg(args, "limit", 5, 1, 50)
+	targetType := normalizedTargetType(args, "", queryTargetTypeAllowed())
+	dispatchMode := normalizedDispatchMode(args, targetType)
+	if targetType != "" {
+		return queryTargetPayload(g, query, targetType, dispatchMode, limit), nil
+	}
 	processSteps := resourceProcessStepsByProcess(g)
 	matches := rankedProcessMatches(g, query, limit, processSteps)
 	nodeByID := resourceGraphNodesByID(g)
@@ -379,6 +397,138 @@ func (s Server) queryTool(args map[string]any) (map[string]any, error) {
 		payload["semanticWarning"] = warning
 	}
 	return payload, nil
+}
+
+func queryTargetPayload(g *graph.Graph, query string, targetType string, dispatchMode string, limit int) map[string]any {
+	tokens := querySearchTokens(query)
+	semanticStatus := semantic.GraphSemanticStatus(g)
+	payload := map[string]any{
+		"query":             query,
+		"targetType":        targetType,
+		"dispatchMode":      dispatchMode,
+		"queryCapabilities": queryCapabilityEvidence(tokens),
+		"semanticStatus":    semanticStatus,
+	}
+	switch targetType {
+	case targetTypeFiles:
+		files := queryFileRows(g, query, limit)
+		payload["files"] = files
+		payload["total"] = len(files)
+	case targetTypeSymbols:
+		gapSummaries := queryResolutionGapSummaries(g, resourceGraphNodesByID(g))
+		symbols := querySymbolRows(g, query, limit, gapSummaries)
+		payload["symbols"] = symbols
+		payload["total"] = len(symbols)
+	case targetTypeFlows:
+		processSteps := resourceProcessStepsByProcess(g)
+		flows := rankedProcessMatches(g, query, limit, processSteps)
+		payload["flows"] = flows
+		payload["processes"] = flows
+		payload["total"] = len(flows)
+	case targetTypeAPI:
+		routes := mcpRouteMapItems(g, query)
+		tools := mcpToolMapItems(g, query)
+		if len(routes) > limit {
+			routes = routes[:limit]
+		}
+		if len(tools) > limit {
+			tools = tools[:limit]
+		}
+		payload["routes"] = routes
+		payload["tools"] = tools
+		payload["total"] = len(routes) + len(tools)
+	}
+	if warning := querySemanticWarning(semanticStatus); warning != "" {
+		payload["semanticWarning"] = warning
+	}
+	return payload
+}
+
+func queryFileRows(g *graph.Graph, query string, limit int) []map[string]any {
+	tokens := querySearchTokens(query)
+	list := filecontext.NewBuilder(g).BuildFileList(filecontext.FileListOptions{Sort: "path", Limit: 0})
+	type scoredFile struct {
+		summary filecontext.FileSummary
+		score   int
+		symbols []map[string]any
+	}
+	byPath := make(map[string]*scoredFile, len(list.Files))
+	for _, summary := range list.Files {
+		score := queryTextScore(summary.Path, tokens)*6 +
+			queryTextScore(summary.AppLayer, tokens)*3 +
+			queryTextScore(summary.FunctionalArea, tokens)*3 +
+			queryTextScore(summary.Kind, tokens)
+		item := &scoredFile{summary: summary, score: score}
+		byPath[normalizeContextPath(summary.Path)] = item
+	}
+	for _, node := range g.Nodes {
+		path := normalizeContextPath(resourceNodeString(node, "filePath"))
+		item := byPath[path]
+		if item == nil || node.Label == scopeir.NodeFile {
+			continue
+		}
+		name := firstResourceNodeString(node, "name", "label", "heuristicLabel")
+		score := queryTextScore(name, tokens)*4 + queryTextScore(string(node.Label), tokens)
+		if score <= 0 {
+			continue
+		}
+		item.score += score
+		if len(item.symbols) < 5 {
+			item.symbols = append(item.symbols, map[string]any{
+				"id":   node.ID,
+				"name": name,
+				"type": string(node.Label),
+			})
+		}
+	}
+	items := make([]scoredFile, 0, len(byPath))
+	for _, item := range byPath {
+		if item.score > 0 {
+			items = append(items, *item)
+		}
+	}
+	if len(items) == 0 {
+		for _, summary := range list.Files[:minInt(len(list.Files), limit)] {
+			items = append(items, scoredFile{summary: summary})
+		}
+	}
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].score != items[j].score {
+			return items[i].score > items[j].score
+		}
+		return items[i].summary.Path < items[j].summary.Path
+	})
+	out := make([]map[string]any, 0, minInt(len(items), limit))
+	for index, item := range items[:minInt(len(items), limit)] {
+		row := map[string]any{
+			"rank":           index + 1,
+			"score":          item.score,
+			"summary":        item.summary,
+			"path":           item.summary.Path,
+			"matchedSymbols": item.symbols,
+		}
+		out = append(out, row)
+	}
+	return out
+}
+
+func querySymbolRows(g *graph.Graph, query string, limit int, gapSummaries map[string]queryResolutionGapSummary) []map[string]any {
+	rows := matchingDefinitionRows(g, query, limit*3, gapSummaries)
+	out := make([]map[string]any, 0, minInt(len(rows), limit))
+	for _, row := range rows {
+		label := scopeir.NodeLabel(fmt.Sprint(row["type"]))
+		if !graphDefinitionLabelsForSymbols(label) {
+			continue
+		}
+		if summary, ok := mcpFileSummaryForPath(g, fmt.Sprint(row["filePath"])); ok {
+			row["fileSummary"] = summary
+		}
+		out = append(out, row)
+		if len(out) >= limit {
+			break
+		}
+	}
+	return out
 }
 
 func (s Server) cypherTool(args map[string]any) (map[string]any, error) {

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/tamnguyendinh/anvien/internal/filecontext"
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/graphhealth"
 	"github.com/tamnguyendinh/anvien/internal/repo"
@@ -56,6 +57,14 @@ type graphHealthExplainResult struct {
 	graphhealth.ExplainResponse
 }
 
+type graphHealthFilesResult struct {
+	Inputs graphHealthCommandInputs  `json:"inputs"`
+	Totals graphHealthCommandTotals  `json:"totals"`
+	Sort   string                    `json:"sort"`
+	Total  int                       `json:"total"`
+	Files  []filecontext.FileSummary `json:"files"`
+}
+
 func newGraphHealthCommand() *cobra.Command {
 	var repoName string
 	cmd := &cobra.Command{
@@ -72,6 +81,7 @@ func newGraphHealthCommand() *cobra.Command {
 		newGraphHealthReportCommand(&repoName),
 		newGraphHealthComponentsCommand(&repoName),
 		newGraphHealthExplainCommand(&repoName),
+		newGraphHealthFilesCommand(&repoName),
 	)
 	return cmd
 }
@@ -242,6 +252,68 @@ func newGraphHealthExplainCommand(repoName *string) *cobra.Command {
 	}
 	cmd.Flags().StringVar(&componentID, "component", "", "component id to explain")
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write JSON graph-health explanation")
+	return cmd
+}
+
+func newGraphHealthFilesCommand(repoName *string) *cobra.Command {
+	var sortMode string
+	var limit int
+	var unresolvedOnly bool
+	var jsonOutput bool
+	cmd := &cobra.Command{
+		Use:   "files",
+		Short: "Print file-level graph-health signals",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if limit < 0 {
+				return fmt.Errorf("limit must be zero or positive")
+			}
+			inputs, g, err := loadGraphHealthGraph(*repoName)
+			if err != nil {
+				return err
+			}
+			list := filecontext.NewBuilder(g).BuildFileList(filecontext.FileListOptions{
+				Sort:           sortMode,
+				Limit:          limit,
+				UnresolvedOnly: unresolvedOnly,
+			})
+			result := graphHealthFilesResult{
+				Inputs: inputs,
+				Totals: graphHealthTotals(g),
+				Sort:   list.Sort,
+				Total:  list.Total,
+				Files:  list.Files,
+			}
+			if jsonOutput {
+				return writeGraphHealthJSON(cmd, result)
+			}
+			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "graphHealth.files total=%d returned=%d sort=%s\n", result.Total, len(result.Files), result.Sort); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Path\tLayer\tArea\tSymbols\tFanIn\tFanOut\tUnresolved\tRisk"); err != nil {
+				return err
+			}
+			for _, file := range result.Files {
+				if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s\t%d\t%d\t%d\t%d\t%s\n",
+					file.Path,
+					defaultString(file.AppLayer, "unknown"),
+					defaultString(file.FunctionalArea, "unknown"),
+					file.SymbolCount,
+					file.InboundRefCount,
+					file.OutboundRefCount,
+					file.UnresolvedSourceSiteCount,
+					defaultString(file.Risk, "unknown"),
+				); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&sortMode, "sort", "unresolved", "sort by path, unresolved, fan-in, fan-out, symbols, flows, or tests")
+	cmd.Flags().IntVar(&limit, "limit", 20, "maximum files to show; 0 means all")
+	cmd.Flags().BoolVar(&unresolvedOnly, "unresolved-only", false, "show only files with unresolved source sites")
+	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write JSON graph-health file rows")
 	return cmd
 }
 

@@ -26,14 +26,14 @@ Status: P0-A baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Files scanned | files | 819 | 827 | +8 | record | Latest after P4-A Web File Map analyze benchmark. |
-| Files parsed | files | 584 | 592 | +8 | record | Latest after P4-A Web File Map analyze benchmark. |
+| Files scanned | files | 819 | 829 | +10 | record | Latest after P5 parent/child command analyze refresh. |
+| Files parsed | files | 584 | 594 | +10 | record | Latest after P5 parent/child command analyze refresh. |
 | Unsupported files | files | 235 | 235 | 0 | record | Latest after P4-A Web File Map analyze benchmark. |
 | Failed files | files | 0 | 0 | 0 | `0` | From readiness `anvien analyze --force --name Anvien`. |
-| Graph nodes | nodes | 91587 | 94171 | +2584 | record | Current graph inventory after P4-A Web File Map analyze benchmark. |
-| Graph relationships | relationships | 125054 | 128835 | +3781 | record | Current graph inventory after P4-A Web File Map analyze benchmark. |
-| SourceSite count | distinct ids | 95433 | 98470 | +3037 | record | Distinct source-site ids from relationship trace fields. |
-| ResolutionGap count | nodes | 65652 | 67506 | +1854 | record | Required for quality projection coverage. |
+| Graph nodes | nodes | 91587 | 94838 | +3251 | record | Current graph inventory after final P5 parent/child command analyze refresh. |
+| Graph relationships | relationships | 125054 | 129861 | +4807 | record | Current graph inventory after final P5 parent/child command analyze refresh. |
+| SourceSite count | distinct ids | 95433 | 99292 | +3859 | record | Distinct source-site ids from relationship trace fields after final P5 refresh. |
+| ResolutionGap count | nodes | 65652 | 68035 | +2383 | record | Required for quality projection coverage after final P5 refresh. |
 
 ## B0A - Graph Generation Speed
 
@@ -60,14 +60,14 @@ Status: P0-A partial baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Indexed files | files | 819 | 827 | +8 | record | All files represented by projection. |
-| Source files | files | 368 | 398 | +30 | record | File kind count from `file-hotspots --repo Anvien --json --limit 0`. |
-| Test files | files | 231 | 235 | +4 | record | File kind count from `file-hotspots --repo Anvien --json --limit 0`. |
+| Indexed files | files | 819 | 829 | +10 | record | All files represented by projection after P5 refresh. |
+| Source files | files | 368 | 399 | +31 | record | File kind count from `file-hotspots --repo Anvien --json --limit 0`. |
+| Test files | files | 231 | 236 | +5 | record | File kind count from `file-hotspots --repo Anvien --json --limit 0`. |
 | Generated files | files | 2 | 2 | 0 | record | `generated_contract` app layer. |
 | Docs files | files | 178 | 178 | 0 | record | `docs` app layer. |
 | Config files | files | 14 | 14 | 0 | record | `config` app layer. |
-| Files with symbols | files | 575 | 583 | +8 | record | File summaries with `symbolCount > 0`. |
-| Files with unresolved source sites | files | 576 | 584 | +8 | track | File summaries with `unresolvedSourceSiteCount > 0`. |
+| Files with symbols | files | 575 | 585 | +10 | record | File summaries with `symbolCount > 0`. |
+| Files with unresolved source sites | files | 576 | 586 | +10 | track | File summaries with `unresolvedSourceSiteCount > 0`. |
 | Files linked to flows | files | pending | 161 | pending | track | File summaries with `linkedFlowCount > 0` from `file-hotspots --limit 0`. |
 | Files linked to tests | files | pending | 349 | pending | track | File summaries with `linkedTestCount > 0` from `file-hotspots --limit 0`. |
 
@@ -167,19 +167,19 @@ Status: P4-A File Map recorded
 
 ## B8 - Parent/Child Command Hierarchy Counts
 
-Status: pending
+Status: P5 parent/child command hierarchy recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Target-aware parent commands inventoried | commands | pending | pending | pending | record | Commands where target type can change behavior. |
-| Child commands proposed | commands | pending | pending | pending | record | Explicit file/symbol/route/tool/flow/API commands. |
-| Child commands implemented | commands | pending | 2 | pending | record | `file-context`, `file-hotspots`. |
-| Shared target resolver cases | cases | pending | pending | pending | record | File/symbol/route/tool/flow/API disambiguation cases. |
-| Parent commands kept backward-compatible | commands | pending | pending | pending | match affected parents | Existing syntax still works. |
-| Ambiguous target cases tested | cases | pending | pending | pending | record | Parent command ambiguity suggestions. |
-| Parent/child JSON parity tests | tests | pending | pending | pending | pass | Same resolved target has compatible JSON shape. |
-| Child command help entries | entries | pending | pending | pending | record | Help discoverability. |
-| Parent/child help golden tests | tests | pending | pending | pending | pass | Help and flat syntax compatibility. |
+| Target-aware parent commands inventoried | commands | pending | 10 | pending | record | `context`, `impact`, `query`, `detect-changes`, `graph-health`, `api route-map`, `api tool-map`, `api shape-check`, `api impact`, and `group query`. |
+| Child commands proposed | commands | pending | 16 | pending | record | Includes existing `file-context` and `file-hotspots`, plus P5 explicit child commands. |
+| Child commands implemented | commands | 2 | 16 | +14 | record | Added `context` 2, `impact` 4, `query` 4, `detect-changes` 3, and `graph-health` 1 child command. |
+| Shared target resolver cases | cases | pending | 11 | pending | record | `context` file/symbol/auto; `impact` file/symbol/route/tool/auto; `query` files/symbols/flows/api; `detect-changes` files/symbols/flows. |
+| Parent commands kept backward-compatible | commands | pending | 5 | pending | match affected parents | `context`, `impact`, `query`, `detect-changes`, and existing `graph-health` subcommands remain available. |
+| Ambiguous target cases tested | cases | pending | 1 | pending | record | Parent `context <target>` file-vs-symbol ambiguity suggestions. |
+| Parent/child JSON parity tests | tests | pending | 3 | pending | pass | `context file`, `context symbol`, and `impact file` JSON target fields. |
+| Child command help entries | entries | pending | 14 | pending | record | New P5 CLI child commands excluding existing `file-context` / `file-hotspots`. |
+| Parent/child help golden tests | tests | pending | 1 | pending | pass | MCP surface schema snapshot updated for optional target dispatch fields. |
 
 ## B9 - Existing Command File-Layer Coverage
 
@@ -209,9 +209,9 @@ Status: P1-A partial validation counts recorded
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
 | Projection unit tests | tests | 3 | 10 | +7 | pass | `internal/filecontext` tests through P4-A changed-file filter support. |
-| CLI tests | tests | pending | 5 | pending | pass | P2-A relevant tests: root help, command help, file-context JSON/human, file-hotspots JSON/human, missing file. |
+| CLI tests | tests | pending | 8 | pending | pass | P2-A relevant tests plus P5 target-command tests for context/impact/query/detect/graph-health child views. |
 | API tests | tests | pending | 3 | pending | pass | File-context success, hotspot/filter, and missing-file endpoint tests. |
-| MCP surface snapshot tests | tests | pending | pending | pending | pass | If MCP output/schema changes. |
+| MCP surface snapshot tests | tests | pending | 1 | pending | pass | MCP tool schema snapshot updated for optional target dispatch fields. |
 | Contract generator checks | checks | pending | 1 | pending | pass | `go run .\cmd\generate-web-contracts --check`. |
 | AI context tests | tests | pending | pending | pending | pass | Generated guidance and embedded skill parity. |
 | Projection cache tests | tests | pending | 2 | pending | pass | Cold/warm, graph-change, repo-switch, explicit hash, and explicit invalidation coverage. |

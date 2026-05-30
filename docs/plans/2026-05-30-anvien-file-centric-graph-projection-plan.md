@@ -543,7 +543,7 @@ The plan is complete when:
 
   Acceptance: File Detail is readable at current repo scale and exposes all contract sections without layout overlap.
 
-- [ ] [P5-A] Design the parent/child command hierarchy for target-aware file-layer usage.
+- [x] [P5-A] Design the parent/child command hierarchy for target-aware file-layer usage.
 
   Goal: Make command usage explicit and scriptable while keeping existing parent commands working.
 
@@ -563,7 +563,7 @@ The plan is complete when:
 
   Acceptance: The hierarchy document lists parent commands, child commands, unsupported child commands, shared resolver behavior, ambiguity rules, help behavior, and JSON parity requirements.
 
-- [ ] [P5-B] Implement explicit child commands for context and impact.
+- [x] [P5-B] Implement explicit child commands for context and impact.
 
   Goal: Make the two highest-value target-aware commands explicit for file and symbol workflows.
 
@@ -581,7 +581,7 @@ The plan is complete when:
 
   Acceptance: Users and agents can explicitly ask for symbol or file context/impact and get deterministic output with file-layer evidence.
 
-- [ ] [P5-C] Implement explicit child commands for query and change/quality workflows.
+- [x] [P5-C] Implement explicit child commands for query and change/quality workflows.
 
   Goal: Let users narrow discovery and diagnostics by target layer while preserving broad parent commands.
 
@@ -599,7 +599,7 @@ The plan is complete when:
 
   Acceptance: Users can start broad with parent commands or force a file/symbol/flow/API view with child commands, and both paths expose the file layer.
 
-- [ ] [P5-D] Align MCP/API/generated contracts with parent/child command semantics.
+- [x] [P5-D] Align MCP/API/generated contracts with parent/child command semantics.
 
   Goal: Keep agent/API contracts consistent with the CLI hierarchy.
 

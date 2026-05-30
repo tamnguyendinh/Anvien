@@ -115,11 +115,23 @@ func TestMCPToolSchemasKeepRuntimeContract(t *testing.T) {
 	assertContainsAll(t, schemaRequiredNames(toolsByName["query"].InputSchema), []string{"query"}, "query required")
 	assertContainsAll(t, schemaRequiredNames(toolsByName["cypher"].InputSchema), []string{"query"}, "cypher required")
 	assertContainsAll(t, schemaRequiredNames(toolsByName["rename"].InputSchema), []string{"new_name"}, "rename required")
+	queryProperties := schemaProperties(toolsByName["query"].InputSchema)
+	if queryProperties["target_type"] == nil || queryProperties["dispatch_mode"] == nil {
+		t.Fatalf("query target dispatch properties = %#v", queryProperties)
+	}
 	if required := schemaRequiredNames(toolsByName["context"].InputSchema); len(required) != 0 {
 		t.Fatalf("context required = %#v, want none", required)
 	}
+	contextProperties := schemaProperties(toolsByName["context"].InputSchema)
+	if contextProperties["target_type"] == nil || contextProperties["dispatch_mode"] == nil {
+		t.Fatalf("context target dispatch properties = %#v", contextProperties)
+	}
 	if required := schemaRequiredNames(toolsByName["detect_changes"].InputSchema); len(required) != 0 {
 		t.Fatalf("detect_changes required = %#v, want none", required)
+	}
+	detectProperties := schemaProperties(toolsByName["detect_changes"].InputSchema)
+	if detectProperties["target_type"] == nil || detectProperties["dispatch_mode"] == nil {
+		t.Fatalf("detect_changes target dispatch properties = %#v", detectProperties)
 	}
 	if properties := schemaProperties(toolsByName["list_repos"].InputSchema); len(properties) != 0 {
 		t.Fatalf("list_repos properties = %#v, want none", properties)
@@ -128,7 +140,7 @@ func TestMCPToolSchemasKeepRuntimeContract(t *testing.T) {
 	impact := toolsByName["impact"]
 	assertContainsAll(t, schemaRequiredNames(impact.InputSchema), []string{"direction"}, "impact required")
 	impactProperties := schemaProperties(impact.InputSchema)
-	if impactProperties["target"] == nil || impactProperties["target_uid"] == nil {
+	if impactProperties["target"] == nil || impactProperties["target_uid"] == nil || impactProperties["target_type"] == nil || impactProperties["dispatch_mode"] == nil {
 		t.Fatalf("impact target properties = %#v", impactProperties)
 	}
 	if oneOf, ok := impact.InputSchema["oneOf"].([]map[string]any); !ok || len(oneOf) != 2 {

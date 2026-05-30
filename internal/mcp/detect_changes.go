@@ -40,8 +40,10 @@ func (s Server) detectChangesTool(args map[string]any) (map[string]any, error) {
 		return map[string]any{"error": "Git diff failed: " + err.Error()}, nil
 	}
 	fileDiffs := parseDetectDiffHunks(diffOutput)
+	targetType := normalizedTargetType(args, "", detectChangesTargetTypeAllowed())
+	dispatchMode := normalizedDispatchMode(args, targetType)
 	if len(fileDiffs) == 0 {
-		return map[string]any{
+		result := map[string]any{
 			"summary": map[string]any{
 				"changed_count":  0,
 				"affected_count": 0,
@@ -50,7 +52,11 @@ func (s Server) detectChangesTool(args map[string]any) (map[string]any, error) {
 			},
 			"changed_symbols":    []map[string]any{},
 			"affected_processes": []map[string]any{},
-		}, nil
+		}
+		if targetType != "" {
+			return detectChangesTargetPayload(result, nil, targetType, dispatchMode), nil
+		}
+		return result, nil
 	}
 
 	g, err := loadResourceGraphSnapshot(filepath.Join(storagePathForEntry(entry), "graph.json"))
@@ -100,7 +106,75 @@ func (s Server) detectChangesTool(args map[string]any) (map[string]any, error) {
 	if warning := querySemanticWarning(semanticStatus); warning != "" {
 		result["semanticWarning"] = warning
 	}
+	if targetType != "" {
+		return detectChangesTargetPayload(result, detectChangedFileRows(g, fileDiffs), targetType, dispatchMode), nil
+	}
 	return result, nil
+}
+
+func detectChangesTargetPayload(result map[string]any, changedFiles []map[string]any, targetType string, dispatchMode string) map[string]any {
+	payload := map[string]any{
+		"summary":      result["summary"],
+		"targetType":   targetType,
+		"dispatchMode": dispatchMode,
+	}
+	for _, key := range []string{
+		"semanticStatus",
+		"semanticWarning",
+		"changedAppLayers",
+		"changedFunctionalAreas",
+		"affectedAppLayers",
+		"affectedFunctionalAreas",
+		"resolutionGapChanges",
+		"resolutionHealthImpact",
+	} {
+		if value, ok := result[key]; ok {
+			payload[key] = value
+		}
+	}
+	switch targetType {
+	case targetTypeFiles:
+		if changedFiles == nil {
+			changedFiles = []map[string]any{}
+		}
+		payload["changed_files"] = changedFiles
+		payload["total"] = len(changedFiles)
+	case targetTypeSymbols:
+		symbols, _ := result["changed_symbols"].([]map[string]any)
+		if symbols == nil {
+			symbols = []map[string]any{}
+		}
+		payload["changed_symbols"] = symbols
+		payload["total"] = len(symbols)
+	case targetTypeFlows:
+		flows, _ := result["affected_processes"].([]map[string]any)
+		if flows == nil {
+			flows = []map[string]any{}
+		}
+		payload["affected_processes"] = flows
+		payload["flows"] = flows
+		payload["total"] = len(flows)
+	}
+	return payload
+}
+
+func detectChangedFileRows(g *graph.Graph, fileDiffs []detectFileDiff) []map[string]any {
+	rows := make([]map[string]any, 0, len(fileDiffs))
+	for _, fileDiff := range fileDiffs {
+		row := map[string]any{
+			"path":    fileDiff.FilePath,
+			"deleted": fileDiff.Deleted,
+			"hunks":   fileDiff.Hunks,
+		}
+		if summary, ok := mcpFileSummaryForPath(g, fileDiff.FilePath); ok {
+			row["summary"] = summary
+		}
+		rows = append(rows, row)
+	}
+	sort.Slice(rows, func(i, j int) bool {
+		return fmt.Sprint(rows[i]["path"]) < fmt.Sprint(rows[j]["path"])
+	})
+	return rows
 }
 
 func gitDiffForDetectChanges(entry repo.RegistryEntry, args map[string]any) (string, error) {

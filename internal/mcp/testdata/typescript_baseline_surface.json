@@ -13,6 +13,8 @@
         "goal",
         "limit",
         "max_symbols",
+        "target_type",
+        "dispatch_mode",
         "include_content",
         "repo"
       ],
@@ -37,6 +39,8 @@
         "uid",
         "file_path",
         "kind",
+        "target_type",
+        "dispatch_mode",
         "include_content",
         "repo"
       ],
@@ -47,6 +51,8 @@
       "properties": [
         "scope",
         "base_ref",
+        "target_type",
+        "dispatch_mode",
         "repo"
       ],
       "required": []
@@ -70,6 +76,8 @@
       "properties": [
         "target",
         "target_uid",
+        "target_type",
+        "dispatch_mode",
         "direction",
         "file_path",
         "kind",
