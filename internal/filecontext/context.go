@@ -17,6 +17,29 @@ type Options struct {
 	LinkedSamplesPerKind        int
 }
 
+type FileListOptions struct {
+	Sort                string
+	Limit               int
+	Offset              int
+	Kinds               []string
+	AppLayer            string
+	FunctionalArea      string
+	APIOnly             bool
+	UnresolvedOnly      bool
+	HighFanInOnly       bool
+	HighFanOutOnly      bool
+	HighFanInThreshold  int
+	HighFanOutThreshold int
+}
+
+type FileList struct {
+	Total  int           `json:"total"`
+	Offset int           `json:"offset"`
+	Limit  int           `json:"limit"`
+	Sort   string        `json:"sort"`
+	Files  []FileSummary `json:"files"`
+}
+
 type GraphInfo struct {
 	Path          string `json:"path,omitempty"`
 	IndexedCommit string `json:"indexedCommit,omitempty"`
@@ -274,6 +297,34 @@ func (b *Builder) BuildFileContext(path string, options Options) (FileContext, b
 	}, true
 }
 
+func (b *Builder) BuildFileList(options FileListOptions) FileList {
+	summaries := b.buildFileSummaries()
+	summaries = filterSummaries(summaries, options)
+	sortSummaries(summaries, options.Sort)
+
+	total := len(summaries)
+	offset := options.Offset
+	if offset < 0 {
+		offset = 0
+	}
+	if offset > total {
+		offset = total
+	}
+	limit := options.Limit
+	end := total
+	if limit > 0 && offset+limit < end {
+		end = offset + limit
+	}
+
+	return FileList{
+		Total:  total,
+		Offset: offset,
+		Limit:  limit,
+		Sort:   normalizedSort(options.Sort),
+		Files:  append([]FileSummary(nil), summaries[offset:end]...),
+	}
+}
+
 func (b *Builder) buildIndexes() {
 	b.nodesByID = make(map[string]graph.Node, len(b.g.Nodes))
 	b.filesByPath = make(map[string]graph.Node)
@@ -323,6 +374,73 @@ func (b *Builder) buildIndexes() {
 			return compareUnresolvedNodes(b.unresolvedByFile[path][i], b.unresolvedByFile[path][j]) < 0
 		})
 	}
+}
+
+func (b *Builder) buildFileSummaries() []FileSummary {
+	aggregates := make(map[string]*FileSummary, len(b.filesByPath))
+	for path, node := range b.filesByPath {
+		summary := &FileSummary{
+			Path:           path,
+			Language:       stringProperty(node, "language"),
+			Kind:           fileKind(node),
+			AppLayer:       stringProperty(node, "appLayer"),
+			FunctionalArea: stringProperty(node, "functionalArea"),
+			ParseStatus:    parseStatus(node),
+			SymbolCount:    len(b.definesByFile[path]),
+			Risk:           "low",
+		}
+		for _, symbolID := range b.definesByFile[path] {
+			if exportedSymbol(b.nodesByID[symbolID]) {
+				summary.ExportedSymbolCount++
+			}
+		}
+		summary.UnresolvedSourceSiteCount = len(b.unresolvedByFile[path])
+		summary.Risk = riskFor(summary.UnresolvedSourceSiteCount)
+		aggregates[path] = summary
+	}
+
+	for _, relationship := range b.g.Relationships {
+		if !isProjectionRelationship(relationship.Type) {
+			continue
+		}
+		sourceNode, sourceOK := b.nodesByID[relationship.SourceID]
+		targetNode, targetOK := b.nodesByID[relationship.TargetID]
+		if !sourceOK || !targetOK {
+			continue
+		}
+		sourceFile := b.nodeFilePath(sourceNode)
+		targetFile := b.nodeFilePath(targetNode)
+		if sourceFile == "" {
+			sourceFile = normalizePath(relationship.FilePath)
+		}
+		if sourceFile == "" || targetFile == "" {
+			continue
+		}
+		if sourceFile == targetFile {
+			if summary := aggregates[sourceFile]; summary != nil {
+				summary.LocalRelationshipCount++
+			}
+			continue
+		}
+		if summary := aggregates[sourceFile]; summary != nil {
+			summary.OutboundRefCount++
+		}
+		if summary := aggregates[targetFile]; summary != nil {
+			summary.InboundRefCount++
+		}
+	}
+
+	paths := make([]string, 0, len(aggregates))
+	for path := range aggregates {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+
+	summaries := make([]FileSummary, 0, len(paths))
+	for _, path := range paths {
+		summaries = append(summaries, *aggregates[path])
+	}
+	return summaries
 }
 
 func (b *Builder) buildSymbolTree(path string, unresolved UnresolvedSummary) ([]SymbolTreeNode, int, int) {
@@ -793,6 +911,104 @@ func buildQuality(node graph.Node, unresolved UnresolvedSummary) QualitySignals 
 		UnresolvedImports:    imports,
 		Generated:            generated,
 	}
+}
+
+func filterSummaries(summaries []FileSummary, options FileListOptions) []FileSummary {
+	allowedKinds := map[string]struct{}{}
+	for _, kind := range options.Kinds {
+		kind = strings.ToLower(strings.TrimSpace(kind))
+		if kind != "" {
+			allowedKinds[kind] = struct{}{}
+		}
+	}
+	appLayer := strings.ToLower(strings.TrimSpace(options.AppLayer))
+	functionalArea := strings.ToLower(strings.TrimSpace(options.FunctionalArea))
+	fanInThreshold := options.HighFanInThreshold
+	if fanInThreshold <= 0 {
+		fanInThreshold = 10
+	}
+	fanOutThreshold := options.HighFanOutThreshold
+	if fanOutThreshold <= 0 {
+		fanOutThreshold = 10
+	}
+
+	filtered := summaries[:0]
+	for _, summary := range summaries {
+		if len(allowedKinds) > 0 {
+			if _, ok := allowedKinds[strings.ToLower(summary.Kind)]; !ok {
+				continue
+			}
+		}
+		if appLayer != "" && strings.ToLower(summary.AppLayer) != appLayer {
+			continue
+		}
+		if functionalArea != "" && strings.ToLower(summary.FunctionalArea) != functionalArea {
+			continue
+		}
+		if options.APIOnly && !isAPIFile(summary) {
+			continue
+		}
+		if options.UnresolvedOnly && summary.UnresolvedSourceSiteCount == 0 {
+			continue
+		}
+		if options.HighFanInOnly && summary.InboundRefCount < fanInThreshold {
+			continue
+		}
+		if options.HighFanOutOnly && summary.OutboundRefCount < fanOutThreshold {
+			continue
+		}
+		filtered = append(filtered, summary)
+	}
+	return append([]FileSummary(nil), filtered...)
+}
+
+func sortSummaries(summaries []FileSummary, sortMode string) {
+	mode := normalizedSort(sortMode)
+	sort.SliceStable(summaries, func(i, j int) bool {
+		left, right := summaries[i], summaries[j]
+		switch mode {
+		case "unresolved":
+			if left.UnresolvedSourceSiteCount != right.UnresolvedSourceSiteCount {
+				return left.UnresolvedSourceSiteCount > right.UnresolvedSourceSiteCount
+			}
+		case "fan-in":
+			if left.InboundRefCount != right.InboundRefCount {
+				return left.InboundRefCount > right.InboundRefCount
+			}
+		case "fan-out":
+			if left.OutboundRefCount != right.OutboundRefCount {
+				return left.OutboundRefCount > right.OutboundRefCount
+			}
+		case "symbols":
+			if left.SymbolCount != right.SymbolCount {
+				return left.SymbolCount > right.SymbolCount
+			}
+		case "flows":
+			if left.LinkedFlowCount != right.LinkedFlowCount {
+				return left.LinkedFlowCount > right.LinkedFlowCount
+			}
+		case "tests":
+			if left.LinkedTestCount != right.LinkedTestCount {
+				return left.LinkedTestCount > right.LinkedTestCount
+			}
+		}
+		return left.Path < right.Path
+	})
+}
+
+func normalizedSort(sortMode string) string {
+	switch strings.ToLower(strings.TrimSpace(sortMode)) {
+	case "unresolved", "fan-in", "fan-out", "symbols", "flows", "tests":
+		return strings.ToLower(strings.TrimSpace(sortMode))
+	default:
+		return "path"
+	}
+}
+
+func isAPIFile(summary FileSummary) bool {
+	layer := strings.ToLower(summary.AppLayer)
+	area := strings.ToLower(summary.FunctionalArea)
+	return strings.Contains(layer, "api") || strings.Contains(area, "api") || strings.Contains(area, "mcp")
 }
 
 func riskFor(unresolved int) string {

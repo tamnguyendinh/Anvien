@@ -244,18 +244,60 @@ Detect changes:
 
 ## E4 - File Hotspots And Aggregation
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: completed
 
-Expected evidence:
+Scope:
 
-- Repo-wide aggregation behavior.
-- Sort/filter behavior.
-- Pagination or limit behavior.
-- Representative hotspot command outputs.
-- Performance notes linked to benchmark entries.
-- Projection cache behavior for cold build, warm hit, graph-change invalidation, and repo-switch isolation.
+- Add repo-wide file list/hotspot aggregation to the shared `internal/filecontext` builder.
+- Do not add CLI/API/MCP/Web command surfaces yet.
+- Do not implement projection cache yet; cache and invalidation remain P1-C.
+
+Impact / blast radius:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass before P1-B graph-based checks. `files: scanned=821 parsed=586 unsupported=235 failed=0`; `nodes=92352 relationships=126299`. |
+| `.\anvien\bin\anvien.exe impact "BuildFileContext" --repo Anvien --direction upstream` | LOW. `impactedCount=0`, no affected modules or processes. |
+| `.\anvien\bin\anvien.exe context "Builder" --repo Anvien` | Ambiguous across many builder symbols; exact P1-B edits stayed inside `internal/filecontext`. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/filecontext/context.go` | Added `FileListOptions`, `FileList`, and `Builder.BuildFileList`. |
+| `internal/filecontext/context.go` | `BuildFileList` builds summaries from all `File` nodes and uses one relationship pass to aggregate local, inbound, and outbound counts. |
+| `internal/filecontext/context.go` | Added sort modes: `path`, `unresolved`, `fan-in`, `fan-out`, `symbols`, `flows`, and `tests`. |
+| `internal/filecontext/context.go` | Added filters for kind, app layer, functional area, API-related files, unresolved-only, high fan-in, and high fan-out. |
+| `internal/filecontext/context.go` | Added limit/offset pagination. |
+| `internal/filecontext/context_test.go` | Added tests for sorting, filtering, pagination, high fan-in, and high fan-out behavior. |
+| `internal/filecontext/context_test.go` | Added `BenchmarkBuildFileListCurrentScale` using `821` files and `126000` relationships. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass after P1-B code. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test ./internal/filecontext -count=1` | Pass; `1.578s`. |
+| `go test ./internal/filecontext -run '^$' -bench BenchmarkBuildFileListCurrentScale -benchmem -count=3` | Pass. Benchmark runs: `233345033 ns/op`, `106833581 ns/op`, `123577177 ns/op`; `490000 B/op`, `831 allocs/op`. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass; all cmd/internal packages passed. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass after P1-B code. `files: scanned=821 parsed=586 unsupported=235 failed=0`; `nodes=92559 relationships=126624`. |
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | MEDIUM risk reported for staged P1-B changes: `changed_files=5`, `changed_count=249`, `affected_count=2`; changed layers were `backend`, `backend_test`, and `docs`. |
+
+Benchmark link:
+
+- See B5 for file list aggregation timing and allocation metrics.
+
+Remaining:
+
+- Projection cache behavior remains pending for P1-C.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | `risk_level=medium`; `changed_files=5`; `changed_count=249`; `affected_count=2`; affected app layer `backend`; affected functional area `unknown`. |
 
 ## E5 - CLI Surface
 

@@ -101,6 +101,81 @@ func TestBuildFileContextIsDeterministicAcrossRelationshipOrder(t *testing.T) {
 	}
 }
 
+func TestBuildFileListSortsFiltersAndPaginates(t *testing.T) {
+	list := NewBuilder(fileContextFixture(false)).BuildFileList(FileListOptions{
+		Sort:  "fan-out",
+		Limit: 2,
+	})
+	if list.Total != 3 || len(list.Files) != 2 {
+		t.Fatalf("list size = total %d files %d, want 3/2", list.Total, len(list.Files))
+	}
+	if list.Sort != "fan-out" {
+		t.Fatalf("sort = %q, want fan-out", list.Sort)
+	}
+	if list.Files[0].Path != "src/app.go" || list.Files[0].OutboundRefCount != 2 {
+		t.Fatalf("top fan-out file = %#v, want src/app.go outbound 2", list.Files[0])
+	}
+
+	tests := NewBuilder(fileContextFixture(false)).BuildFileList(FileListOptions{
+		Kinds: []string{"test"},
+	})
+	if tests.Total != 1 || tests.Files[0].Path != "src/app_test.go" {
+		t.Fatalf("test filter = %#v, want src/app_test.go", tests)
+	}
+
+	unresolved := NewBuilder(fileContextFixture(false)).BuildFileList(FileListOptions{
+		Sort:           "unresolved",
+		UnresolvedOnly: true,
+	})
+	if unresolved.Total != 1 || unresolved.Files[0].Path != "src/app.go" || unresolved.Files[0].UnresolvedSourceSiteCount != 1 {
+		t.Fatalf("unresolved filter = %#v, want only src/app.go", unresolved)
+	}
+
+	secondPage := NewBuilder(fileContextFixture(false)).BuildFileList(FileListOptions{
+		Sort:   "path",
+		Offset: 1,
+		Limit:  1,
+	})
+	if secondPage.Total != 3 || len(secondPage.Files) != 1 || secondPage.Files[0].Path != "src/app_test.go" {
+		t.Fatalf("second page = %#v, want src/app_test.go", secondPage)
+	}
+}
+
+func TestBuildFileListHighFanFilters(t *testing.T) {
+	builder := NewBuilder(fileContextFixture(false))
+
+	highFanIn := builder.BuildFileList(FileListOptions{
+		HighFanInOnly:      true,
+		HighFanInThreshold: 1,
+	})
+	if highFanIn.Total != 2 {
+		t.Fatalf("high fan-in total = %d, want 2", highFanIn.Total)
+	}
+	if highFanIn.Files[0].Path != "src/app.go" && highFanIn.Files[1].Path != "src/app.go" {
+		t.Fatalf("high fan-in files = %#v, want src/app.go included", highFanIn.Files)
+	}
+
+	highFanOut := builder.BuildFileList(FileListOptions{
+		HighFanOutOnly:      true,
+		HighFanOutThreshold: 2,
+	})
+	if highFanOut.Total != 1 || highFanOut.Files[0].Path != "src/app.go" {
+		t.Fatalf("high fan-out = %#v, want src/app.go", highFanOut)
+	}
+}
+
+func BenchmarkBuildFileListCurrentScale(b *testing.B) {
+	builder := NewBuilder(fileListBenchmarkGraph(821, 126000))
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		list := builder.BuildFileList(FileListOptions{Sort: "fan-out", Limit: 50})
+		if len(list.Files) == 0 {
+			b.Fatalf("empty file list")
+		}
+	}
+}
+
 func fileContextFixture(reverseRelationships bool) *graph.Graph {
 	g := graph.New()
 	for _, node := range []graph.Node{
@@ -145,6 +220,72 @@ func fileContextFixture(reverseRelationships bool) *graph.Graph {
 		g.AddRelationship(relationship)
 	}
 	return g
+}
+
+func fileListBenchmarkGraph(fileCount int, relationshipCount int) *graph.Graph {
+	g := graph.New()
+	for i := 0; i < fileCount; i++ {
+		filePath := benchmarkFilePath(i)
+		fileID := "File:" + filePath
+		symbolID := benchmarkSymbolID(i)
+		g.AddNode(fileNode(fileID, filePath, "go", "backend", "benchmark"))
+		g.AddNode(symbolNode(symbolID, scopeir.NodeFunction, "fn", filePath, 1, 1, 2, 1, ""))
+		g.AddRelationship(defines(fileID, symbolID))
+		if i%7 == 0 {
+			g.AddNode(graph.Node{
+				ID:    "ResolutionGap:bench:" + symbolID,
+				Label: scopeir.NodeResolutionGap,
+				Properties: graph.NodeProperties{
+					"name":             "missing",
+					"filePath":         filePath,
+					"sourceNodeId":     symbolID,
+					"targetText":       "missing",
+					"gapKind":          "unresolved_call",
+					"classification":   "in_repo_unresolved",
+					"actionability":    "analyzer_gap",
+					"sourceSiteId":     "SourceSite:" + filePath,
+					"sourceSiteStatus": "unresolved_local_binding",
+					"startLine":        2,
+					"startCol":         1,
+				},
+			})
+		}
+	}
+	for i := 0; i < relationshipCount; i++ {
+		source := i % fileCount
+		target := (i*17 + 3) % fileCount
+		g.AddRelationship(call(
+			"rel:bench:"+itoa(i),
+			benchmarkSymbolID(source),
+			benchmarkSymbolID(target),
+			benchmarkFilePath(source),
+			i%100+1,
+			"site:bench",
+		))
+	}
+	return g
+}
+
+func benchmarkFilePath(index int) string {
+	return "src/bench/file" + itoa(index) + ".go"
+}
+
+func benchmarkSymbolID(index int) string {
+	return "Function:" + benchmarkFilePath(index) + ":fn"
+}
+
+func itoa(value int) string {
+	if value == 0 {
+		return "0"
+	}
+	digits := [20]byte{}
+	index := len(digits)
+	for value > 0 {
+		index--
+		digits[index] = byte('0' + value%10)
+		value /= 10
+	}
+	return string(digits[index:])
 }
 
 func fileNode(id string, filePath string, language string, appLayer string, functionalArea string) graph.Node {

@@ -396,7 +396,7 @@ The plan is complete when:
 
   Acceptance: Unit tests prove the shared builder returns deterministic file context for known fixtures, including counts and relationship samples; later CLI, MCP, API, and Web phases must consume this shared builder instead of deriving file context independently.
 
-- [ ] [P1-B] Add file-level dependency and hotspot aggregation.
+- [x] [P1-B] Add file-level dependency and hotspot aggregation.
 
   Goal: Add repo-wide aggregation for file list and hotspot views without loading every edge into default output.
 
