@@ -184,18 +184,63 @@ Contract evidence:
 
 ## E3 - Projection Builder
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: completed
 
-Expected evidence:
+Scope:
 
-- Impact analysis before editing graph/query/model code.
-- Files changed for projection structs and builder logic.
-- Shared projection service/package name and consumer list across CLI, MCP, API, and Web runtime code.
-- Fixture tests proving deterministic output.
-- Traceability proof from file-level derived edge back to symbol/source-site facts.
-- Guard evidence that command handlers do not reimplement separate projection derivation.
+- Add the first shared backend file-context projection package.
+- Do not connect CLI, MCP, API, or Web surfaces yet; those are later phases.
+- Do not edit existing graph core storage or analyzer logic.
+
+Impact / blast radius:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe impact "Graph" --repo Anvien --direction upstream` | Returned a broad ambiguous candidate set for `Graph`; treated as HIGH blast-radius signal for graph model changes. No existing `internal/graph` symbol was edited in this slice. |
+| `.\anvien\bin\anvien.exe impact "Struct:internal/graph/types.go:Graph" --repo Anvien --direction upstream` | Target UID was not resolved by the current impact command. Scope stayed additive in a new package. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/filecontext/context.go` | New shared `filecontext` package with `FileContext`, `FileSummary`, `SymbolTreeNode`, relationship grouping, unresolved grouping, linked/quality/limit structs, `Builder`, `NewBuilder`, and `BuildFileContext`. |
+| `internal/filecontext/context.go` | Builder derives file context from existing `graph.Graph` facts: `File` node properties, `DEFINES`, `CONTAINS`, canonical symbol relationships, and `ResolutionGap` nodes with source-site metadata. |
+| `internal/filecontext/context.go` | File-level local/outbound/inbound relationship groups preserve total counts while limiting samples. |
+| `internal/filecontext/context.go` | Unresolved groups preserve total counts, classification/actionability/kind counts, line/column, target text, proof kind, source-site id, and source-site status. |
+| `internal/filecontext/context_test.go` | Fixture tests cover path normalization, file summary, symbol tree nesting, relationship grouping, unresolved grouping, sample limits, missing-file behavior, and deterministic output across relationship insertion order. |
+
+Traceability evidence:
+
+| Projection field | Source fact |
+|---|---|
+| File summary path/language/layer/area | `File` node properties. |
+| Symbol tree | `DEFINES` from File to symbol and `CONTAINS` between symbols. |
+| Relationship groups | Canonical relationships such as `CALLS`, with source/target node file paths and source-site fields. |
+| Unresolved groups | `ResolutionGap` node properties including `sourceNodeId`, `sourceSiteId`, `sourceSiteStatus`, `targetText`, `classification`, and `actionability`. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test ./internal/filecontext -count=1` | Pass; `1.052s` after full build gate. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass; all cmd/internal packages passed, including new `internal/filecontext`. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass after P1-A code. `files: scanned=821 parsed=586 unsupported=235 failed=0`; `nodes=92352 relationships=126299`. |
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | CRITICAL risk reported for staged P1-A changes: `changed_files=5`, `changed_count=789`, `affected_count=17`; changed layers were `backend`, `backend_test`, and `docs`. |
+| `.\anvien\bin\anvien.exe context "BuildFileContext" --repo Anvien` | Found `Method:internal/filecontext/context.go:Builder.BuildFileContext#2`. Incoming edge is `HAS_METHOD` from `Builder`; outgoing edges are same-package projection helpers/structs. |
+
+Failures / handling:
+
+- Initial targeted `go test ./internal/filecontext` was run before the full build gate. The full build gate was then run, and the focused test plus full cmd/internal test batch were rerun after the gate.
+- `detect-changes` reported CRITICAL because this slice adds a new backend package with many new symbols and source-site gaps. The affected processes are generated around the new `internal/filecontext` package; the package is not wired into CLI/MCP/API/Web runtime behavior yet. Scope remains additive and tests passed.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | `risk_level=critical`; `changed_files=5`; `changed_count=789`; `affected_count=17`; affected app layer `backend`; affected functional area `unknown`; no existing runtime command surface was changed in this slice. |
 
 ## E4 - File Hotspots And Aggregation
 

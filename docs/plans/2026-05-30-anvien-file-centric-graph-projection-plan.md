@@ -375,7 +375,7 @@ The plan is complete when:
 
   Acceptance: A contract section or schema fixture exists and is referenced by evidence; every field has a source from existing graph data or a documented derivation.
 
-- [ ] [P1-A] Implement the projection model and builder.
+- [x] [P1-A] Implement the projection model and builder.
 
   Goal: Add a reusable backend projection builder that produces file context from the existing graph without changing symbol graph ownership.
 
@@ -394,7 +394,7 @@ The plan is complete when:
 
   Implementation Gate: Do not persist derived file edges as canonical graph facts unless baseline evidence proves current graph cannot support the projection efficiently.
 
-  Acceptance: Unit tests prove the shared builder returns deterministic file context for known fixtures, including counts and relationship samples, and every non-UI surface consumes that shared builder.
+  Acceptance: Unit tests prove the shared builder returns deterministic file context for known fixtures, including counts and relationship samples; later CLI, MCP, API, and Web phases must consume this shared builder instead of deriving file context independently.
 
 - [ ] [P1-B] Add file-level dependency and hotspot aggregation.
 

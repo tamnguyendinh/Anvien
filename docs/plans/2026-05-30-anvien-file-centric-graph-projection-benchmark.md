@@ -26,14 +26,14 @@ Status: P0-A baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Files scanned | files | 819 | 819 | 0 | record | From readiness `anvien analyze --force --name Anvien`. |
-| Files parsed | files | 584 | 584 | 0 | record | From readiness `anvien analyze --force --name Anvien`. |
-| Unsupported files | files | 235 | 235 | 0 | record | From readiness `anvien analyze --force --name Anvien`. |
+| Files scanned | files | 819 | 821 | +2 | record | Latest after P1-A `anvien analyze --force --name Anvien`. |
+| Files parsed | files | 584 | 586 | +2 | record | Latest after P1-A `anvien analyze --force --name Anvien`. |
+| Unsupported files | files | 235 | 235 | 0 | record | Latest after P1-A `anvien analyze --force --name Anvien`. |
 | Failed files | files | 0 | 0 | 0 | `0` | From readiness `anvien analyze --force --name Anvien`. |
-| Graph nodes | nodes | 91587 | 91587 | 0 | record | Current graph inventory. |
-| Graph relationships | relationships | 125054 | 125054 | 0 | record | Current graph inventory. |
-| SourceSite count | distinct ids | 95433 | 95433 | 0 | record | Distinct source-site ids from relationship trace fields. |
-| ResolutionGap count | nodes | 65652 | 65652 | 0 | record | Required for quality projection coverage. |
+| Graph nodes | nodes | 91587 | 92352 | +765 | record | Current graph inventory after P1-A. |
+| Graph relationships | relationships | 125054 | 126299 | +1245 | record | Current graph inventory after P1-A. |
+| SourceSite count | distinct ids | 95433 | 96300 | +867 | record | Distinct source-site ids from relationship trace fields. |
+| ResolutionGap count | nodes | 65652 | 66089 | +437 | record | Required for quality projection coverage. |
 
 ## B1 - File Inventory Counts
 
@@ -41,14 +41,14 @@ Status: P0-A partial baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Indexed files | files | 819 | 819 | 0 | record | All files represented by projection. |
-| Source files | files | 368 | 368 | 0 | record | `backend`, `api`, `frontend`, launcher/client/contract source app layers. |
-| Test files | files | 231 | 231 | 0 | record | `backend_test`, `api_test`, `frontend_test`. |
+| Indexed files | files | 819 | 821 | +2 | record | All files represented by projection. |
+| Source files | files | 368 | 369 | +1 | record | `backend`, `api`, `frontend`, launcher/client/contract source app layers. |
+| Test files | files | 231 | 232 | +1 | record | `backend_test`, `api_test`, `frontend_test`. |
 | Generated files | files | 2 | 2 | 0 | record | `generated_contract` app layer. |
 | Docs files | files | 178 | 178 | 0 | record | `docs` app layer. |
 | Config files | files | 14 | 14 | 0 | record | `config` app layer. |
-| Files with symbols | files | 575 | 575 | 0 | record | Distinct `File` nodes with outgoing `DEFINES`. |
-| Files with unresolved source sites | files | 576 | 576 | 0 | track | Distinct `ResolutionGap.filePath` values. |
+| Files with symbols | files | 575 | 577 | +2 | record | Distinct `File` nodes with outgoing `DEFINES`. |
+| Files with unresolved source sites | files | 576 | 578 | +2 | track | Distinct `ResolutionGap.filePath` values. |
 | Files linked to flows | files | pending | pending | pending | track | Flow overlay coverage. |
 | Files linked to tests | files | pending | pending | pending | track | Test overlay coverage. |
 
@@ -58,9 +58,9 @@ Status: P0-A partial baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Declared symbols grouped by file | symbols | 21334 | 21334 | 0 | record | `DEFINES` relationships from `File` nodes. |
+| Declared symbols grouped by file | symbols | 21334 | 21653 | +319 | record | `DEFINES` relationships from `File` nodes. |
 | Top-level symbols | symbols | pending | pending | pending | record | Root nodes in symbol trees. |
-| Nested symbols/methods | relationships | 2641 | 2641 | 0 | record | Existing non-file `CONTAINS` relationships available for tree derivation. |
+| Nested symbols/methods | relationships | 2641 | 2645 | +4 | record | Existing non-file `CONTAINS` relationships available for tree derivation. |
 | Exported symbols | symbols | pending | pending | pending | record | Language-dependent export/public count. |
 | Symbols with line ranges | symbols | pending | pending | pending | maximize | Required for useful navigation. |
 | Symbols with signatures | symbols | pending | pending | pending | track | Useful but language-dependent. |
@@ -77,8 +77,8 @@ Status: P0-A partial baseline recorded
 | Inbound file relationships | relationships | pending | pending | pending | record | Other files depend on source file. |
 | Relationship samples retained per group | samples | pending | pending | pending | bounded | Default output limit. |
 | Relationship total counts preserved | percent | pending | pending | pending | 100 | Counts must not be truncated with samples. |
-| Source-site-backed relationships | relationships | 83143 | 83143 | 0 | record | Relationships carrying source-site/file trace fields. |
-| Resolved source-site-backed relationships | relationships | 17491 | 17491 | 0 | record | Relationships with resolved source-site status. |
+| Source-site-backed relationships | relationships | 83143 | 83860 | +717 | record | Relationships carrying source-site/file trace fields. |
+| Resolved source-site-backed relationships | relationships | 17491 | 17771 | +280 | record | Relationships with resolved source-site status. |
 
 ## B4 - Unresolved And Quality Counts
 
@@ -86,11 +86,11 @@ Status: P0-A partial baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Unresolved source sites grouped by file | sites | 66555 | 66555 | 0 | record | Graph-health source-backed unresolved references. |
-| Unresolved calls | sites | 34959 | 34959 | 0 | record | Graph-health `resolutionGapFactFamilyCounts.call`. |
-| Unresolved refs | sites | 31596 | 31596 | 0 | record | Access + type-reference + heritage gap counts. |
+| Unresolved source sites grouped by file | sites | 66555 | 66988 | +433 | record | Graph-health source-backed unresolved references. |
+| Unresolved calls | sites | 34959 | 35122 | +163 | record | Graph-health `resolutionGapFactFamilyCounts.call`. |
+| Unresolved refs | sites | 31596 | 31866 | +270 | record | Access + type-reference + heritage gap counts. |
 | Unresolved imports | sites | pending | pending | pending | record | Gap kind count. |
-| Analyzer-gap classified sites | sites | 39535 | 39535 | 0 | record | Graph-health actionability bucket. |
+| Analyzer-gap classified sites | sites | 39535 | 39663 | +128 | record | Graph-health actionability bucket. |
 | External/dynamic classified sites | sites | 250 | 250 | 0 | record | Graph-health `external_library` classification bucket. |
 | Files with high unresolved count | files | pending | pending | pending | track | Hotspot metric. |
 
@@ -172,11 +172,11 @@ Status: pending
 
 ## B10 - Final Validation Counts
 
-Status: pending
+Status: P1-A partial validation counts recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Projection unit tests | tests | pending | pending | pending | pass | Count of relevant tests. |
+| Projection unit tests | tests | 3 | 3 | 0 | pass | `internal/filecontext` tests added in P1-A. |
 | CLI tests | tests | pending | pending | pending | pass | Count of relevant tests. |
 | API tests | tests | pending | pending | pending | pass | Count of relevant tests. |
 | MCP surface snapshot tests | tests | pending | pending | pending | pass | If MCP output/schema changes. |
@@ -185,5 +185,5 @@ Status: pending
 | Projection cache tests | tests | pending | pending | pending | pass | Cold/warm/invalidation coverage. |
 | Web unit tests | tests | pending | pending | pending | pass | Count if Web UI is implemented. |
 | Web e2e tests | tests | pending | pending | pending | pass | Count if Web UI is implemented. |
-| Detect-changes changed files | files | pending | pending | pending | record | Pre-commit scope. |
-| Detect-changes affected count | symbols/processes | pending | pending | pending | record | Pre-commit scope. |
+| Detect-changes changed files | files | 5 | 5 | 0 | record | P1-A staged implementation scope. |
+| Detect-changes affected count | symbols/processes | 17 | 17 | 0 | record | P1-A staged affected process/symbol count. |
