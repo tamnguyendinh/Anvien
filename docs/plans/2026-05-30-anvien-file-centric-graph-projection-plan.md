@@ -2,7 +2,7 @@
 
 Date: 2026-05-30
 
-Status: Draft
+Status: In progress
 
 Companion files:
 
@@ -156,6 +156,108 @@ The implementation should avoid spreading file projection logic across command h
 
 The shared service should also expose cache metrics or debug hooks for benchmark evidence. Cache behavior is part of the backend contract because file-list, hotspot, context, and command integration views will all depend on it at current repo scale.
 
+## File Context JSON Contract V0
+
+All CLI `--json`, API, MCP, and Web consumers should use the same file-context envelope. Human output can summarize this shape, but it must preserve the same counts and traceability.
+
+```json
+{
+  "repo": "Anvien",
+  "repoPath": "E:\\Anvien",
+  "graph": {
+    "path": ".anvien/graph.json",
+    "indexedCommit": "<hash>",
+    "currentCommit": "<hash>",
+    "stale": false,
+    "analyzedAt": "<timestamp-if-available>"
+  },
+  "target": {
+    "type": "file",
+    "input": "internal/mcp/server.go",
+    "normalizedPath": "internal/mcp/server.go",
+    "dispatchMode": "explicit",
+    "ambiguityCandidates": []
+  },
+  "summary": {
+    "path": "internal/mcp/server.go",
+    "language": "go",
+    "kind": "source",
+    "appLayer": "api",
+    "functionalArea": "mcp",
+    "parseStatus": "parsed",
+    "symbolCount": 0,
+    "exportedSymbolCount": 0,
+    "inboundRefCount": 0,
+    "outboundRefCount": 0,
+    "localRelationshipCount": 0,
+    "unresolvedSourceSiteCount": 0,
+    "linkedFlowCount": 0,
+    "linkedTestCount": 0,
+    "risk": "unknown"
+  },
+  "symbolTree": [],
+  "relationships": {
+    "counts": {
+      "local": 0,
+      "outbound": 0,
+      "inbound": 0,
+      "samplesReturned": 0
+    },
+    "local": {
+      "total": 0,
+      "samples": []
+    },
+    "outboundByFile": [],
+    "inboundByFile": []
+  },
+  "unresolved": {
+    "total": 0,
+    "byKind": {},
+    "byClassification": {},
+    "byActionability": {},
+    "groups": []
+  },
+  "linked": {
+    "flows": [],
+    "routes": [],
+    "mcpTools": [],
+    "tests": []
+  },
+  "quality": {
+    "parser": "parsed",
+    "resolutionConfidence": "unknown",
+    "unresolvedCalls": 0,
+    "unresolvedRefs": 0,
+    "unresolvedImports": 0,
+    "generated": false,
+    "stale": false,
+    "changedSinceAnalyze": false
+  },
+  "limits": {
+    "relationshipSamplesPerGroup": 10,
+    "unresolvedSamplesPerGroup": 10,
+    "linkedSamplesPerKind": 10
+  }
+}
+```
+
+Required sample shapes:
+
+- Symbol tree item: `id`, `name`, `kind`, `range`, `exported`, `signature`, `relationshipCounts`, `children`.
+- Relationship sample: `sourceFile`, `sourceSymbol`, `sourceRange`, `relationshipKind`, `targetFile`, `targetSymbol`, `targetRange`, `sourceSiteId`, `proofKind`, `sourceSiteStatus`.
+- File relationship group: `file`, `counts`, `samples`, where counts preserve total relationships even when samples are truncated.
+- Unresolved group/sample: `line`, `column`, `targetText`, `sourceSymbol`, `gapKind`, `classification`, `actionability`, `proofKind`, `sourceSiteId`, `sourceSiteStatus`.
+- Linked overlay item: `name`, `kind`, `source`, `confidence`, `trace`.
+
+Field source rules:
+
+- `summary.path`, `language`, `appLayer`, and `functionalArea` come from `File` node properties when available.
+- `symbolTree` is derived from `DEFINES`, `CONTAINS`, symbol ranges, symbol kind, and symbol metadata.
+- `relationships` is derived from canonical symbol/source-site relationships; file-level groups are not source-of-truth graph facts.
+- `unresolved` is derived from `ResolutionGap` nodes and `HAS_RESOLUTION_GAP` relationships with source-site metadata.
+- `linked` is derived from existing process, route, MCP tool, and test graph facts; incomplete links must expose source/confidence metadata.
+- `quality` is derived from parser/analyze status, graph-health resolution data, file classification, and git freshness data where available.
+
 ## Command Integration Direction
 
 The file projection is not only a pair of new commands. It is a new display and reasoning layer that existing Anvien commands should use when it improves traceability.
@@ -240,7 +342,7 @@ The plan is complete when:
 
 ## Phase Checklist
 
-- [ ] [P0-A] Baseline current graph schema and file/symbol facts.
+- [x] [P0-A] Baseline current graph schema and file/symbol facts.
 
   Goal: Prove what file, symbol, source-site, resolution-gap, flow, route, MCP tool, and test facts already exist before adding new code.
 
@@ -256,7 +358,7 @@ The plan is complete when:
 
   Acceptance: Evidence names the exact existing graph facts the projection can reuse, lists missing facts, and records baseline graph/file/symbol/source-site counts.
 
-- [ ] [P0-B] Freeze the file context JSON contract.
+- [x] [P0-B] Freeze the file context JSON contract.
 
   Goal: Define the JSON contract before implementation so CLI, API, MCP, and Web UI can share one shape.
 

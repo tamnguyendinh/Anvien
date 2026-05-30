@@ -2,7 +2,7 @@
 
 Date: 2026-05-30
 
-Status: Draft
+Status: In progress
 
 Companion files:
 
@@ -110,7 +110,7 @@ Planning evidence:
 
 Date: 2026-05-30
 
-Status: readiness review recorded; full implementation baseline still pending
+Status: completed
 
 Readiness review evidence:
 
@@ -124,6 +124,27 @@ Readiness review evidence:
 | Web contract ownership inspected | Web contract source is owned by `internal/contracts/web_ui.go` and generated through `cmd/generate-web-contracts`; generated TypeScript lives under `anvien-web/src/generated`. |
 | AI context ownership inspected | Generated guidance is owned by `internal/aicontext/aicontext.go` and embedded skill source files under `internal/aicontext/skills`. |
 
+P0-A graph refresh:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass. `files: scanned=819 parsed=584 unsupported=235 failed=0`; `nodes=91587 relationships=125054`; graph path `.anvien/graph.json`. |
+| `.\anvien\bin\anvien.exe graph-health summary --repo Anvien --json` | Pass. Indexed commit and current commit both `cdbd4af19b867b1ed4a3efc2d6c9779f25907ce3`; `resolutionGapNodeCount=65652`; `hasResolutionGapRelationshipCount=65652`; `sourceBackedUnresolvedReferenceCount=66555`; `unattributedUnresolvedReferenceCount=0`. |
+
+P0-A graph facts:
+
+| Fact | Evidence |
+|---|---|
+| File nodes exist | Graph contains `819` `File` nodes, all with `filePath`. |
+| File classification exists | File nodes include `appLayer`, `functionalArea`, language, extension, document kind, and binary metadata where available. |
+| File-to-symbol ownership exists | Graph contains `21334` `DEFINES` relationships from `File` nodes to symbol-like nodes. |
+| Symbol containment exists | Graph contains `2784` `CONTAINS` relationships; `143` from file nodes and `2641` from non-file nodes for nesting/ownership. |
+| Source-site trace fields exist | `83143` relationships carry `sourceSiteId`, `sourceSiteIds`, and `filePath`; distinct observed source-site ids: `95433`. |
+| ResolutionGap trace fields exist | `65652` `ResolutionGap` nodes carry `sourceSiteId` and `filePath`. |
+| Unresolved grouping by file is derivable | `576` files have unresolved source-site evidence through `ResolutionGap` file paths. |
+| Relationship types are sufficient for first projection | Existing relationship types include `DEFINES`, `CONTAINS`, `CALLS`, `USES`, `IMPORTS`, `ACCESSES`, `MEMBER_OF`, `HAS_PROPERTY`, `HAS_METHOD`, `STEP_IN_PROCESS`, `ENTRY_POINT_OF`, and `HAS_RESOLUTION_GAP`. |
+| Command surface owners are identifiable | CLI parent commands exist for `query`, `context`, `impact`, `detect-changes`, `graph-health`, `api`, and `group`; API and graph-health already use child command patterns. |
+
 Plan additions from review:
 
 - Add shared projection service/package as an explicit ownership boundary.
@@ -132,7 +153,7 @@ Plan additions from review:
 - Add exact Web/API route naming and generated-contract validation gates.
 - Add MCP surface snapshot/tool schema validation gates.
 
-Expected implementation evidence:
+Remaining implementation evidence:
 
 - Existing File/Symbol/SourceSite/ResolutionGap/Flow/API/MCP/test graph facts.
 - Current schema facts that support `File -> Symbol`, source-site ownership, symbol nesting, and relationship traceability.
@@ -141,17 +162,25 @@ Expected implementation evidence:
 
 ## E2 - File Context Contract
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: completed
 
-Expected evidence:
+Contract evidence:
 
-- Final JSON shape for file context.
-- Field-by-field source or derivation notes.
-- Human CLI output shape.
-- Default sample limits and total count behavior.
-- Compatibility notes for Web UI and API consumers.
+| Contract area | Result |
+|---|---|
+| Envelope | Added `File Context JSON Contract V0` to the plan. |
+| Required top-level fields | `repo`, `repoPath`, `graph`, `target`, `summary`, `symbolTree`, `relationships`, `unresolved`, `linked`, `quality`, and `limits`. |
+| Target dispatch fields | `type`, `input`, `normalizedPath`, `dispatchMode`, and `ambiguityCandidates`. |
+| Summary fields | Path, language, kind, app layer, functional area, parse status, symbol counts, relationship counts, unresolved count, linked counts, and risk. |
+| Relationship shape | `local`, `outboundByFile`, `inboundByFile`, total counts, samples, and trace fields. |
+| Unresolved shape | Total, grouped counts, line/column, target text, source symbol, gap kind, classification, actionability, proof kind, source-site id, and source-site status. |
+| Linked overlays | Flows, routes, MCP tools, and tests with source/confidence/trace metadata. |
+| Quality shape | Parser, resolution confidence, unresolved counts, generated/stale/changed-since-analyze flags. |
+| Sample limits | Relationship, unresolved, and linked samples have explicit limits; total counts must not be truncated. |
+| Source rules | Contract documents field derivation from `File`, `DEFINES`, `CONTAINS`, symbol relationships, `ResolutionGap`, graph-health, process/route/tool/test facts, and git freshness data. |
+| Compatibility | Contract is structured for CLI JSON, API, MCP, and Web; human output may summarize the same shape without changing counts. |
 
 ## E3 - Projection Builder
 
