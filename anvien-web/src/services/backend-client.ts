@@ -7,6 +7,7 @@
  */
 
 import type {
+  FileHotspotsResponse,
   GraphNode,
   GraphRelationship,
   GraphResponse,
@@ -57,6 +58,21 @@ export interface GrepResult {
   filePath: string;
   line: number;
   text: string;
+}
+
+export interface FetchFileHotspotsOptions {
+  repo?: string;
+  sort?: string;
+  limit?: number;
+  offset?: number;
+  kinds?: string[];
+  appLayer?: string;
+  functionalArea?: string;
+  apiOnly?: boolean;
+  changedOnly?: boolean;
+  unresolvedOnly?: boolean;
+  highFanIn?: boolean;
+  highFanOut?: boolean;
 }
 
 export interface JobProgress {
@@ -599,6 +615,31 @@ export const readFile = async (
   const response = await fetchFromBackend(`${_backendUrl}/api/file?${params}`);
   await assertOk(response);
   return response.json() as Promise<ReadFileResult>;
+};
+
+/** Fetch file-level graph summaries and hotspots. */
+export const fetchFileHotspots = async (
+  options: FetchFileHotspotsOptions = {},
+): Promise<FileHotspotsResponse> => {
+  const params = [
+    repoParam(options.repo),
+    options.sort ? `sort=${encodeURIComponent(options.sort)}` : '',
+    options.limit !== undefined ? `limit=${options.limit}` : '',
+    options.offset !== undefined ? `offset=${options.offset}` : '',
+    options.kinds?.length ? `kind=${encodeURIComponent(options.kinds.join(','))}` : '',
+    options.appLayer ? `appLayer=${encodeURIComponent(options.appLayer)}` : '',
+    options.functionalArea ? `functionalArea=${encodeURIComponent(options.functionalArea)}` : '',
+    options.apiOnly ? 'apiOnly=true' : '',
+    options.changedOnly ? 'changedOnly=true' : '',
+    options.unresolvedOnly ? 'unresolvedOnly=true' : '',
+    options.highFanIn ? 'highFanIn=true' : '',
+    options.highFanOut ? 'highFanOut=true' : '',
+  ]
+    .filter(Boolean)
+    .join('&');
+  const response = await fetchFromBackend(`${_backendUrl}/api/file-hotspots${params ? `?${params}` : ''}`);
+  await assertOk(response);
+  return response.json() as Promise<FileHotspotsResponse>;
 };
 
 /** Fetch all processes for a repo. */

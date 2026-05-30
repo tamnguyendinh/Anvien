@@ -618,17 +618,81 @@ Detect changes:
 
 ## E9 - Web UI File Map And File Detail
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: P4-A completed; P4-B pending
 
-Expected evidence:
+Scope:
 
-- File list UI behavior.
-- Sort/filter behavior.
-- File Detail sections: summary, symbol tree, relationships, unresolved, linked overlays, source-site samples.
-- Loading/empty/error/stale states.
-- Web unit tests and e2e validation.
+- Add the Web File Map list to the existing left dashboard navigation.
+- Keep Web behavior repo-agnostic by passing the selected repo name into `/api/file-hotspots`; `Anvien` is only the local validation repo.
+- Add typed Web client support for file hotspot queries.
+- Add changed-file support to the shared file list projection and HTTP API so the File Map can expose the full P4-A filter set.
+- Do not implement File Detail in this slice; P4-B remains pending.
+
+Impact / blast radius:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass before P4-A impact checks. Initial P4-A graph: `files=825`, `nodes=93728`, `relationships=128296`. |
+| `.\anvien\bin\anvien.exe impact "FileTreePanel" --repo Anvien --direction upstream` | `risk=LOW`; `impactedCount=2`; affected Web entry points `App.tsx` and `main.tsx`. |
+| `.\anvien\bin\anvien.exe impact --uid "Function:anvien-web/src/services/backend-client.ts:fetchGraph" --repo Anvien --direction upstream` | `risk=CRITICAL`; `impactedCount=31`; `processes_affected=46`. Proceeded because `fetchGraph` behavior was not changed; the shared client file only gained additive file-hotspot client code. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass before adding changed-file API support. `files=827`, `nodes=94053`, `relationships=128700`. |
+| `.\anvien\bin\anvien.exe impact "BuildFileList" --repo Anvien --direction upstream` | `risk=LOW`; `impactedCount=0`. |
+| `.\anvien\bin\anvien.exe impact "handleFileHotspots" --repo Anvien --direction upstream` | `risk=LOW`; `impactedCount=0`. |
+| `.\anvien\bin\anvien.exe impact --uid "Struct:internal/filecontext/context.go:FileListOptions" --repo Anvien --direction upstream` | `risk=LOW`; `impactedCount=2`; direct users are `BuildFileList` and `filterSummaries`. |
+| `.\anvien\bin\anvien.exe impact "WebUIContractTypeScript" --repo Anvien --direction upstream` | `risk=CRITICAL`; `impactedCount=1`; `processes_affected=5`. Proceeded because generated TypeScript contract changes are additive. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `anvien-web/src/components/FileMapPanel.tsx` | New File Map panel renders summary counts, search, sort, kind filters, changed/unresolved/API/high fan-in/high fan-out filters, loading/error/empty states, file rows, and changed-file row badges. |
+| `anvien-web/src/components/FileTreePanel.tsx` | Added `Map` tab and collapsed-panel icon; selecting a File Map row focuses the matching graph file node and opens the existing code panel. |
+| `anvien-web/src/services/backend-client.ts` | Added repo-parameterized `fetchFileHotspots` client. Query params include `repo`, `sort`, pagination, kind/layer filters, `changedOnly`, `unresolvedOnly`, `apiOnly`, `highFanIn`, and `highFanOut`. |
+| `internal/filecontext/context.go` | Added `ChangedOnly`, `ChangedPaths`, and `Stale` to `FileListOptions`; `FileSummary` now includes `stale` and `changedSinceAnalyze`. Filtering remains in the shared projection builder. |
+| `internal/httpapi/file_context.go` | `GET /api/file-hotspots` now accepts `changedOnly`; changed files are derived from the selected repo's git diff, including untracked files, and passed into the shared projection. |
+| `internal/contracts/web_ui.go` | Added `changedOnly` to `/api/file-hotspots` route metadata and added `stale`/`changedSinceAnalyze` to `FileSummary`. |
+| `contracts/web-ui/anvien-web-contract.schema.json` | Regenerated from contract source. |
+| `anvien-web/src/generated/anvien-contracts.ts` | Regenerated from contract source. |
+| `internal/filecontext/context_test.go` | Added changed-file filter and changed metadata test coverage. |
+| `anvien-web/test/unit/FileMapPanel.test.tsx` | Added File Map rendering, filter/sort request state, and row-open tests. |
+| `anvien-web/test/unit/server-connection.test.ts` | Added `fetchFileHotspots` URL/query-param test coverage. |
+| `anvien-web/e2e/shell-interactions.spec.ts` | Added File Map e2e smoke and repo-agnostic graph-ready timeout override for large local validation repos. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `go run .\cmd\generate-web-contracts` | Pass; regenerated Web schema and TypeScript contracts. |
+| `go run .\cmd\generate-web-contracts --check` | Pass. |
+| `go test ./internal/filecontext ./internal/httpapi ./internal/contracts -count=1` | Pass. |
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | First rerun failed because the previously started local `anvien serve` process held `anvien\bin\anvien.exe`; that launcher-owned serve process was stopped, then the build passed. Existing Vite dynamic-import and chunk-size warnings only. |
+| `npm --prefix anvien-web test -- FileMapPanel.test.tsx server-connection.test.ts` | Pass after final build; `2` files, `23` tests. |
+| `npm --prefix anvien-web run test:e2e -- shell-interactions.spec.ts -g "file map"` with `E2E_REPO_NAME=Anvien` | Pass after final build/runtime restart; `1` Chromium test, `2.9m`. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass; all cmd/internal packages passed after P4-A changes. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien --benchmark-label file-centric-p4a-web-file-map --benchmark-json .tmp\file-centric-p4a-web-file-map-analyze-benchmark.json` | Pass. `files=827`, `nodes=94171`, `relationships=128835`; total graph generation time `35958.2 ms`. |
+| `.\anvien\bin\anvien.exe graph-health summary --repo Anvien --json` | Pass after P4-A. `sourceBackedUnresolvedReferenceCount=68414`; `resolutionGapNodeCount=67506`; `resolvedReferenceCount=30964`. |
+| HTTP runtime smoke `GET /api/file-hotspots?repo=Anvien&changedOnly=true&limit=5` | Pass from restarted local binary. `status=200`; `total=11`; `rows=5`; first row `changedSinceAnalyze=true`; repo selector remains an input. |
+| Browser validation | In-app Browser control tool was not exposed after loading the Browser skill; standalone Playwright smoke was used as fallback. Manual smoke loaded File Map on `Anvien`, rendered `200` rows, toggled unresolved, and changed sort to `fan-out`. |
+
+Failures / handling:
+
+- Large local graph load for `Anvien` takes about `132s` before `status-ready` in headless Playwright. The File Map e2e now uses `test.slow()` and a repo-agnostic `E2E_GRAPH_READY_TIMEOUT` override, defaulting to `180s` only when `E2E_REPO_NAME` is explicitly set.
+- Build failed once because a local validation `anvien serve` process locked the binary output path. Only that launcher-owned serve process was stopped; editor-owned MCP processes were left alone.
+- The changed-file filter uses git diff for the selected repo path. It is repo-agnostic and does not special-case `Anvien`.
+
+Benchmark link:
+
+- See B0/B0A for P4-A graph inventory and graph generation speed.
+- See B6/B7 for Web/API response size and File Map UI metrics.
+- See B10 for validation counts.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | `risk_level=high`; `changed_files=13`; `changed_count=260`; `affected_count=14`; changed app layers `api`, `api_contract`, `backend`, `backend_test`, `docs`, `frontend`, `frontend_api_client`, and `frontend_test`; affected app layers `api`, `api_contract`, `backend`, and `mixed`; resolution gap changed entities `194`. HIGH is expected because the slice touches shared projection data, HTTP API, generated contracts, Web UI, Web client, and tests. |
 
 ## E10 - Parent/Child Command Hierarchy
 

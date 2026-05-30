@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   connectToServer,
+  fetchFileHotspots,
   fetchGraph,
   fetchRepoInfo,
   normalizeServerUrl,
@@ -254,6 +255,61 @@ describe('fetchGraph', () => {
     await expect(fetchGraph('big-repo')).rejects.toMatchObject({
       message: 'stream failed',
     });
+  });
+});
+
+describe('fetchFileHotspots', () => {
+  it('requests file projection hotspots with repo, sort, pagination, and filters', async () => {
+    setBackendUrl('http://127.0.0.1:4848');
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          repo: 'demo',
+          total: 1,
+          offset: 5,
+          limit: 50,
+          sort: 'fan-out',
+          graph: { path: '.anvien/graph.json', stale: false },
+          files: [],
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await fetchFileHotspots({
+      repo: 'demo',
+      sort: 'fan-out',
+      limit: 50,
+      offset: 5,
+      kinds: ['source', 'test'],
+      apiOnly: true,
+      changedOnly: true,
+      unresolvedOnly: true,
+      highFanIn: true,
+      highFanOut: true,
+    });
+
+    expect(result.total).toBe(1);
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/api/file-hotspots?'),
+      {},
+    );
+    const url = new URL(fetchMock.mock.calls[0][0] as string);
+    expect(url.searchParams.get('repo')).toBe('demo');
+    expect(url.searchParams.get('sort')).toBe('fan-out');
+    expect(url.searchParams.get('limit')).toBe('50');
+    expect(url.searchParams.get('offset')).toBe('5');
+    expect(url.searchParams.get('kind')).toBe('source,test');
+    expect(url.searchParams.get('apiOnly')).toBe('true');
+    expect(url.searchParams.get('changedOnly')).toBe('true');
+    expect(url.searchParams.get('unresolvedOnly')).toBe('true');
+    expect(url.searchParams.get('highFanIn')).toBe('true');
+    expect(url.searchParams.get('highFanOut')).toBe('true');
   });
 });
 

@@ -307,6 +307,7 @@ export const FILE_PROJECTION_API_ROUTES = [
       "appLayer",
       "functionalArea",
       "apiOnly",
+      "changedOnly",
       "unresolvedOnly",
       "highFanIn",
       "highFanOut",
@@ -4134,6 +4135,8 @@ export interface FileSummary {
   linkedFlowCount: number;
   linkedTestCount: number;
   risk?: string;
+  stale: boolean;
+  changedSinceAnalyze: boolean;
 }
 
 export interface FileSourceRange {

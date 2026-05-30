@@ -3,6 +3,11 @@ import { test, expect, type Page } from "@playwright/test";
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://127.0.0.1:4848";
 const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://127.0.0.1:5228";
 const TARGET_REPO_NAME = process.env.E2E_REPO_NAME ?? "Restaurant_manager";
+const GRAPH_READY_TIMEOUT = process.env.E2E_GRAPH_READY_TIMEOUT
+  ? Number(process.env.E2E_GRAPH_READY_TIMEOUT)
+  : process.env.E2E_REPO_NAME
+    ? 180_000
+    : 45_000;
 const ABSOLUTE_LOCAL_PATH =
   process.platform === "win32" ? "C:\\repos\\shell-check" : "/tmp/shell-check";
 
@@ -91,7 +96,7 @@ async function waitForGraphLoaded(page: Page) {
   );
 
   await expect(page.locator('[data-testid="status-ready"]')).toBeVisible({
-    timeout: 45_000,
+    timeout: GRAPH_READY_TIMEOUT,
   });
 }
 
@@ -232,6 +237,32 @@ test.describe("Shell interactions", () => {
     await expect(
       page.getByText("Select a node to apply depth filter"),
     ).not.toBeVisible();
+  });
+
+  test("displays the file map list and hotspot filters", async ({ page }) => {
+    test.slow();
+
+    await waitForGraphLoaded(page);
+
+    await page.getByTestId("file-map-tab").click();
+
+    await expect(page.getByTestId("file-map-panel")).toBeVisible();
+    await expect(page.getByText("File Map")).toBeVisible();
+    await expect(page.getByTestId("file-map-row").first()).toBeVisible({
+      timeout: 15_000,
+    });
+
+    const unresolvedFilter = page.getByTestId("file-map-filter-unresolved");
+    await unresolvedFilter.click();
+    await expect(unresolvedFilter).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("file-map-row").first()).toBeVisible({
+      timeout: 15_000,
+    });
+
+    await page.getByLabel("File map sort").selectOption("fan-out");
+    await expect(page.getByTestId("file-map-row").first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("opens settings, edits values, saves, then closes", async ({ page }) => {

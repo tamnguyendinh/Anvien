@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -128,11 +129,14 @@ func (s Server) handleFileHotspots(w http.ResponseWriter, r *http.Request) {
 		AppLayer:            strings.TrimSpace(r.URL.Query().Get("appLayer")),
 		FunctionalArea:      strings.TrimSpace(r.URL.Query().Get("functionalArea")),
 		APIOnly:             queryBool(r, "apiOnly"),
+		ChangedOnly:         queryBool(r, "changedOnly"),
 		UnresolvedOnly:      queryBool(r, "unresolvedOnly"),
 		HighFanInOnly:       queryBool(r, "highFanIn"),
 		HighFanOutOnly:      queryBool(r, "highFanOut"),
 		HighFanInThreshold:  boundedNonNegativeQueryInt(r.URL.Query().Get("highFanInThreshold"), 10, 1, 0),
 		HighFanOutThreshold: boundedNonNegativeQueryInt(r.URL.Query().Get("highFanOutThreshold"), 10, 1, 0),
+		ChangedPaths:        changedFilesSinceAnalyze(projection.repoPath, projection.graph.IndexedCommit),
+		Stale:               projection.graph.Stale,
 	})
 	writeJSON(w, http.StatusOK, fileHotspotsResponse{
 		Repo:     projection.repoName,
@@ -144,6 +148,36 @@ func (s Server) handleFileHotspots(w http.ResponseWriter, r *http.Request) {
 		Sort:     list.Sort,
 		Files:    list.Files,
 	})
+}
+
+func changedFilesSinceAnalyze(repoPath string, indexedCommit string) map[string]struct{} {
+	changed := map[string]struct{}{}
+	collectGitPathList(repoPath, changed, "diff", "--name-only", "HEAD", "--")
+	collectGitPathList(repoPath, changed, "ls-files", "--others", "--exclude-standard")
+	if strings.TrimSpace(indexedCommit) != "" {
+		collectGitPathList(repoPath, changed, "diff", "--name-only", indexedCommit, "HEAD", "--")
+	}
+	if len(changed) == 0 {
+		return nil
+	}
+	return changed
+}
+
+func collectGitPathList(repoPath string, out map[string]struct{}, args ...string) {
+	if strings.TrimSpace(repoPath) == "" || out == nil {
+		return
+	}
+	gitArgs := append([]string{"-C", repoPath}, args...)
+	output, err := exec.Command("git", gitArgs...).Output()
+	if err != nil {
+		return
+	}
+	for _, line := range strings.Split(string(output), "\n") {
+		path := strings.TrimSpace(strings.ReplaceAll(line, "\\", "/"))
+		if path != "" {
+			out[path] = struct{}{}
+		}
+	}
 }
 
 func (s Server) loadFileProjection(r *http.Request) (fileProjectionGraph, int, string, error) {

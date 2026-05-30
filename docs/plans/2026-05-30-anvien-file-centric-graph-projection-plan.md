@@ -507,7 +507,7 @@ The plan is complete when:
 
   Acceptance: File context can explain which workflows and tests touch a file, with clear totals and trace samples.
 
-- [ ] [P4-A] Build the Web UI File Map list.
+- [x] [P4-A] Build the Web UI File Map list.
 
   Goal: Add a scannable file list that helps users find suspicious or important files quickly.
 

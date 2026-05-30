@@ -162,6 +162,42 @@ func TestBuildFileListSortsFiltersAndPaginates(t *testing.T) {
 	}
 }
 
+func TestBuildFileListChangedFileFilter(t *testing.T) {
+	builder := NewBuilder(fileContextFixture(false))
+
+	changed := builder.BuildFileList(FileListOptions{
+		ChangedOnly: true,
+		ChangedPaths: map[string]struct{}{
+			"src/app.go": {},
+		},
+		Stale: true,
+	})
+	if changed.Total != 1 || len(changed.Files) != 1 || changed.Files[0].Path != "src/app.go" {
+		t.Fatalf("changed filter = %#v, want only src/app.go", changed)
+	}
+	if !changed.Files[0].ChangedSinceAnalyze || !changed.Files[0].Stale {
+		t.Fatalf("changed quality = stale %v changed %v, want both true", changed.Files[0].Stale, changed.Files[0].ChangedSinceAnalyze)
+	}
+
+	all := builder.BuildFileList(FileListOptions{
+		ChangedPaths: map[string]struct{}{
+			"src/app.go": {},
+		},
+	})
+	if all.Total != 3 {
+		t.Fatalf("all changed metadata total = %d, want 3", all.Total)
+	}
+	changedCount := 0
+	for _, file := range all.Files {
+		if file.ChangedSinceAnalyze {
+			changedCount++
+		}
+	}
+	if changedCount != 1 {
+		t.Fatalf("changed metadata count = %d, want 1", changedCount)
+	}
+}
+
 func TestBuildFileListHighFanFilters(t *testing.T) {
 	builder := NewBuilder(fileContextFixture(false))
 

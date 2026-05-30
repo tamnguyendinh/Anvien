@@ -29,6 +29,7 @@ import {
   Zap,
 } from "@/lib/lucide-icons";
 import { useAppState } from "../hooks/useAppState.local-runtime";
+import { FileMapPanel } from "./FileMapPanel";
 import {
   ALL_EDGE_TYPES,
   COMMUNITY_COLORS,
@@ -409,12 +410,13 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
     openCodePanel,
     depthFilter,
     setDepthFilter,
+    projectName,
   } = useAppState();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<"files" | "filters">("files");
+  const [activeTab, setActiveTab] = useState<"files" | "map" | "filters">("files");
   const [panelWidth, setPanelWidth] = useState(loadStoredLeftPanelWidth);
   const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
 
@@ -495,6 +497,22 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
       }
     },
     [setSelectedNode, openCodePanel, onFocusNode, selectedNode],
+  );
+
+  const handleFileMapOpen = useCallback(
+    (path: string) => {
+      const fileNode = graph?.nodes.find(
+        (node) => node.label === "File" && node.properties.filePath === path,
+      );
+      if (!fileNode) return;
+      const isSameNode = selectedNode?.id === fileNode.id;
+      setSelectedNode(fileNode);
+      openCodePanel();
+      if (!isSameNode) {
+        onFocusNode(fileNode.id);
+      }
+    },
+    [graph?.nodes, onFocusNode, openCodePanel, selectedNode?.id, setSelectedNode],
   );
 
   const handleResizePointerDown = useCallback(
@@ -737,6 +755,16 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
         <button
           onClick={() => {
             setIsCollapsed(false);
+            setActiveTab("map");
+          }}
+          className={`rounded p-2 transition-colors ${activeTab === "map" ? "bg-base text-text-primary" : "text-text-secondary hover:bg-base hover:text-text-primary"}`}
+          title="File Map"
+        >
+          <Table className="h-5 w-5" />
+        </button>
+        <button
+          onClick={() => {
+            setIsCollapsed(false);
             setActiveTab("filters");
           }}
           className={`rounded p-2 transition-colors ${activeTab === "filters" ? "bg-base text-text-primary" : "text-text-secondary hover:bg-base hover:text-text-primary"}`}
@@ -771,7 +799,18 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
                 : "text-text-secondary hover:bg-base hover:text-text-primary"
             }`}
           >
-            Explorer
+            Files
+          </button>
+          <button
+            onClick={() => setActiveTab("map")}
+            data-testid="file-map-tab"
+            className={`rounded px-2 py-1 font-mono text-xs transition-colors ${
+              activeTab === "map"
+                ? "bg-base text-text-primary"
+                : "text-text-secondary hover:bg-base hover:text-text-primary"
+            }`}
+          >
+            Map
           </button>
           <button
             onClick={() => setActiveTab("filters")}
@@ -831,6 +870,14 @@ export const FileTreePanel = ({ onFocusNode }: FileTreePanelProps) => {
             )}
           </div>
         </>
+      )}
+
+      {activeTab === "map" && (
+        <FileMapPanel
+          repoName={projectName || undefined}
+          selectedPath={selectedPath}
+          onOpenFile={handleFileMapOpen}
+        />
       )}
 
       {activeTab === "filters" && (

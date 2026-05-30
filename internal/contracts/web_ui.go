@@ -484,7 +484,7 @@ func WebUIContract() WebUIContractManifest {
 		{
 			Method:       "GET",
 			Path:         "/api/file-hotspots",
-			QueryParams:  []string{"repo", "sort", "limit", "offset", "kind", "appLayer", "functionalArea", "apiOnly", "unresolvedOnly", "highFanIn", "highFanOut", "highFanInThreshold", "highFanOutThreshold"},
+			QueryParams:  []string{"repo", "sort", "limit", "offset", "kind", "appLayer", "functionalArea", "apiOnly", "changedOnly", "unresolvedOnly", "highFanIn", "highFanOut", "highFanInThreshold", "highFanOutThreshold"},
 			ResponseType: "FileHotspotsResponse",
 			Description:  "Paginated file projection summary list for file map and hotspot views.",
 		},
@@ -1296,6 +1296,8 @@ export interface FileSummary {
   linkedFlowCount: number;
   linkedTestCount: number;
   risk?: string;
+  stale: boolean;
+  changedSinceAnalyze: boolean;
 }
 
 export interface FileSourceRange {

@@ -3736,6 +3736,7 @@
           "appLayer",
           "functionalArea",
           "apiOnly",
+          "changedOnly",
           "unresolvedOnly",
           "highFanIn",
           "highFanOut",

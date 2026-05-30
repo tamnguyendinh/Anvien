@@ -27,11 +27,14 @@ type FileListOptions struct {
 	AppLayer            string
 	FunctionalArea      string
 	APIOnly             bool
+	ChangedOnly         bool
 	UnresolvedOnly      bool
 	HighFanInOnly       bool
 	HighFanOutOnly      bool
 	HighFanInThreshold  int
 	HighFanOutThreshold int
+	ChangedPaths        map[string]struct{}
+	Stale               bool
 }
 
 type FileList struct {
@@ -121,6 +124,8 @@ type FileSummary struct {
 	LinkedFlowCount           int    `json:"linkedFlowCount"`
 	LinkedTestCount           int    `json:"linkedTestCount"`
 	Risk                      string `json:"risk,omitempty"`
+	Stale                     bool   `json:"stale"`
+	ChangedSinceAnalyze       bool   `json:"changedSinceAnalyze"`
 }
 
 type SourceRange struct {
@@ -401,6 +406,7 @@ func (b *Builder) BuildFileContext(path string, options Options) (FileContext, b
 
 func (b *Builder) BuildFileList(options FileListOptions) FileList {
 	summaries := b.buildFileSummaries()
+	attachFileListQuality(summaries, options)
 	summaries = filterSummaries(summaries, options)
 	sortSummaries(summaries, options.Sort)
 
@@ -1250,6 +1256,9 @@ func filterSummaries(summaries []FileSummary, options FileListOptions) []FileSum
 		if options.APIOnly && !isAPIFile(summary) {
 			continue
 		}
+		if options.ChangedOnly && !summary.ChangedSinceAnalyze {
+			continue
+		}
 		if options.UnresolvedOnly && summary.UnresolvedSourceSiteCount == 0 {
 			continue
 		}
@@ -1262,6 +1271,43 @@ func filterSummaries(summaries []FileSummary, options FileListOptions) []FileSum
 		filtered = append(filtered, summary)
 	}
 	return append([]FileSummary(nil), filtered...)
+}
+
+func attachFileListQuality(summaries []FileSummary, options FileListOptions) {
+	changedPaths := normalizeChangedPaths(options.ChangedPaths)
+	for i := range summaries {
+		summaries[i].Stale = options.Stale
+		summaries[i].ChangedSinceAnalyze = pathMatchesSet(summaries[i].Path, changedPaths)
+	}
+}
+
+func normalizeChangedPaths(paths map[string]struct{}) map[string]struct{} {
+	if len(paths) == 0 {
+		return nil
+	}
+	normalized := make(map[string]struct{}, len(paths))
+	for path := range paths {
+		if normalizedPath := normalizePath(path); normalizedPath != "" {
+			normalized[normalizedPath] = struct{}{}
+		}
+	}
+	return normalized
+}
+
+func pathMatchesSet(path string, paths map[string]struct{}) bool {
+	if len(paths) == 0 {
+		return false
+	}
+	normalized := normalizePath(path)
+	if _, ok := paths[normalized]; ok {
+		return true
+	}
+	for changedPath := range paths {
+		if strings.HasSuffix(normalized, "/"+changedPath) || strings.HasSuffix(changedPath, "/"+normalized) {
+			return true
+		}
+	}
+	return false
 }
 
 func sortSummaries(summaries []FileSummary, sortMode string) {
