@@ -694,6 +694,10 @@ Detect changes:
 |---|---|
 | `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | `risk_level=high`; `changed_files=13`; `changed_count=260`; `affected_count=14`; changed app layers `api`, `api_contract`, `backend`, `backend_test`, `docs`, `frontend`, `frontend_api_client`, and `frontend_test`; affected app layers `api`, `api_contract`, `backend`, and `mixed`; resolution gap changed entities `194`. HIGH is expected because the slice touches shared projection data, HTTP API, generated contracts, Web UI, Web client, and tests. |
 
+Commit:
+
+- `e4efd84 feat: add web file map list`
+
 ## E10 - Parent/Child Command Hierarchy
 
 Date: pending
