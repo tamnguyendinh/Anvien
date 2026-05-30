@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"runtime"
 
+	"github.com/tamnguyendinh/anvien/internal/filecontext"
 	"github.com/tamnguyendinh/anvien/internal/repo"
 	"github.com/tamnguyendinh/anvien/internal/session"
 	"github.com/tamnguyendinh/anvien/internal/version"
@@ -29,18 +30,20 @@ type Config struct {
 }
 
 type Server struct {
-	store          repo.Store
-	version        string
-	launchContext  string
-	runtimeVersion string
-	logger         *slog.Logger
-	searcher       Searcher
-	embedRunner    EmbedRunner
-	analyzeRunner  AnalyzeRunner
-	analyzeJobs    *JobManager
-	embedJobs      *JobManager
-	mcpSessions    *mcpHTTPSessions
-	sessionRuntime SessionRuntime
+	store           repo.Store
+	version         string
+	launchContext   string
+	runtimeVersion  string
+	logger          *slog.Logger
+	searcher        Searcher
+	embedRunner     EmbedRunner
+	analyzeRunner   AnalyzeRunner
+	analyzeJobs     *JobManager
+	embedJobs       *JobManager
+	fileContexts    *filecontext.BuilderCache
+	fileProjections *fileProjectionServerCache
+	mcpSessions     *mcpHTTPSessions
+	sessionRuntime  SessionRuntime
 }
 
 func NewHandler(config Config) http.Handler {
@@ -55,6 +58,8 @@ func NewHandler(config Config) http.Handler {
 	mux.HandleFunc("/api/graph", server.handleGraph)
 	mux.HandleFunc("/api/graph/explain", server.handleGraphHealthExplain)
 	mux.HandleFunc("/api/graph/report", server.handleGraphHealthReport)
+	mux.HandleFunc("/api/file-context", server.handleFileContext)
+	mux.HandleFunc("/api/file-hotspots", server.handleFileHotspots)
 	mux.HandleFunc("/api/file", server.handleFile)
 	mux.HandleFunc("/api/grep", server.handleGrep)
 	mux.HandleFunc("/api/query", server.handleQuery)
@@ -102,18 +107,20 @@ func newServer(config Config) Server {
 	}
 
 	return Server{
-		store:          config.Store,
-		version:        config.Version,
-		launchContext:  config.LaunchContext,
-		runtimeVersion: config.RuntimeVersion,
-		logger:         config.Logger,
-		searcher:       config.Searcher,
-		embedRunner:    config.EmbedRunner,
-		analyzeRunner:  config.AnalyzeRunner,
-		analyzeJobs:    NewJobManager(),
-		embedJobs:      NewJobManager(),
-		mcpSessions:    newMCPHTTPSessions(config.Store),
-		sessionRuntime: config.SessionRuntime,
+		store:           config.Store,
+		version:         config.Version,
+		launchContext:   config.LaunchContext,
+		runtimeVersion:  config.RuntimeVersion,
+		logger:          config.Logger,
+		searcher:        config.Searcher,
+		embedRunner:     config.EmbedRunner,
+		analyzeRunner:   config.AnalyzeRunner,
+		analyzeJobs:     NewJobManager(),
+		embedJobs:       NewJobManager(),
+		fileContexts:    filecontext.NewBuilderCache(),
+		fileProjections: newFileProjectionServerCache(),
+		mcpSessions:     newMCPHTTPSessions(config.Store),
+		sessionRuntime:  config.SessionRuntime,
 	}
 }
 

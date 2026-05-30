@@ -448,7 +448,7 @@ The plan is complete when:
 
   Acceptance: CLI commands pass tests, return useful errors for missing paths, and produce JSON that validates against the contract.
 
-- [ ] [P2-B] Add Web/API contract surfaces.
+- [x] [P2-B] Add Web/API contract surfaces.
 
   Goal: Expose file list and file context data through existing local Web/API runtime patterns.
 

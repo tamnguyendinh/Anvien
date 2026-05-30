@@ -281,6 +281,45 @@ export const RELATIONSHIP_DISPLAY_POLICY = [
 
 export type RelationshipDisplayPolicy = (typeof RELATIONSHIP_DISPLAY_POLICY)[number];
 
+export const FILE_PROJECTION_API_ROUTES = [
+  {
+    "method": "GET",
+    "path": "/api/file-context",
+    "queryParams": [
+      "repo",
+      "path",
+      "relationships",
+      "unresolved",
+      "linked"
+    ],
+    "responseType": "FileContextResponse",
+    "description": "File-first graph projection detail for one indexed repository file."
+  },
+  {
+    "method": "GET",
+    "path": "/api/file-hotspots",
+    "queryParams": [
+      "repo",
+      "sort",
+      "limit",
+      "offset",
+      "kind",
+      "appLayer",
+      "functionalArea",
+      "apiOnly",
+      "unresolvedOnly",
+      "highFanIn",
+      "highFanOut",
+      "highFanInThreshold",
+      "highFanOutThreshold"
+    ],
+    "responseType": "FileHotspotsResponse",
+    "description": "Paginated file projection summary list for file map and hotspot views."
+  }
+] as const;
+
+export type FileProjectionAPIRoute = (typeof FILE_PROJECTION_API_ROUTES)[number];
+
 export const REL_TABLE_NAME = "CodeRelation" as const;
 export const EMBEDDING_TABLE_NAME = "CodeEmbedding" as const;
 
@@ -4051,6 +4090,196 @@ export interface GraphHealthReportResponse {
   totalCandidates: number;
   returnedCandidates: number;
   candidates: GraphHealthReportCandidate[];
+}
+
+export interface FileProjectionGraphInfo {
+  path?: string;
+  indexedCommit?: string;
+  currentCommit?: string;
+  stale: boolean;
+  analyzedAt?: string;
+}
+
+export interface FileContextAmbiguityCandidate {
+  type: string;
+  id?: string;
+  name?: string;
+  file?: string;
+  line?: number;
+  confidence?: number;
+  command?: string;
+}
+
+export interface FileContextTarget {
+  type: string;
+  input: string;
+  normalizedPath?: string;
+  dispatchMode?: string;
+  ambiguityCandidates?: FileContextAmbiguityCandidate[];
+}
+
+export interface FileSummary {
+  path: string;
+  language?: SupportedLanguages | string;
+  kind?: string;
+  appLayer?: AppLayer | string;
+  functionalArea?: FunctionalArea | string;
+  parseStatus?: string;
+  symbolCount: number;
+  exportedSymbolCount: number;
+  inboundRefCount: number;
+  outboundRefCount: number;
+  localRelationshipCount: number;
+  unresolvedSourceSiteCount: number;
+  linkedFlowCount: number;
+  linkedTestCount: number;
+  risk?: string;
+}
+
+export interface FileSourceRange {
+  startLine?: number;
+  startColumn?: number;
+  endLine?: number;
+  endColumn?: number;
+}
+
+export interface FileSymbolRelationshipCounts {
+  local: number;
+  inbound: number;
+  outbound: number;
+  unresolved: number;
+}
+
+export interface FileSymbolTreeNode {
+  id: string;
+  name: string;
+  kind: string;
+  range: FileSourceRange;
+  exported: boolean;
+  signature?: string;
+  relationshipCounts: FileSymbolRelationshipCounts;
+  children?: FileSymbolTreeNode[];
+}
+
+export interface FileRelationshipSample {
+  sourceFile?: string;
+  sourceSymbol?: string;
+  sourceRange: FileSourceRange;
+  relationshipKind: RelationshipType | string;
+  targetFile?: string;
+  targetSymbol?: string;
+  targetRange: FileSourceRange;
+  sourceSiteId?: string;
+  proofKind?: string;
+  sourceSiteStatus?: string;
+}
+
+export interface FileRelationshipGroup {
+  total: number;
+  counts?: Record<string, number>;
+  samples: FileRelationshipSample[];
+}
+
+export interface FileRelationshipByFileGroup extends FileRelationshipGroup {
+  file: string;
+}
+
+export interface FileRelationshipCounts {
+  local: number;
+  outbound: number;
+  inbound: number;
+  samplesReturned: number;
+}
+
+export interface FileRelationshipSections {
+  counts: FileRelationshipCounts;
+  local: FileRelationshipGroup;
+  outboundByFile: FileRelationshipByFileGroup[];
+  inboundByFile: FileRelationshipByFileGroup[];
+}
+
+export interface FileUnresolvedSample {
+  line?: number;
+  column?: number;
+  targetText?: string;
+  sourceSymbol?: string;
+  gapKind?: string;
+  classification?: GraphHealthDiagnosticClassification | string;
+  actionability?: GraphHealthDiagnosticActionability | string;
+  proofKind?: string;
+  sourceSiteId?: string;
+  sourceSiteStatus?: string;
+}
+
+export interface FileUnresolvedGroup {
+  sourceSymbol?: string;
+  total: number;
+  samples: FileUnresolvedSample[];
+}
+
+export interface FileUnresolvedSummary {
+  total: number;
+  byKind?: Record<string, number>;
+  byClassification?: Record<string, number>;
+  byActionability?: Record<string, number>;
+  groups: FileUnresolvedGroup[];
+}
+
+export interface FileLinkedItem {
+  name: string;
+  kind?: string;
+  source?: string;
+  confidence?: string;
+  trace?: string;
+}
+
+export interface FileLinkedSummary {
+  flows: FileLinkedItem[];
+  routes: FileLinkedItem[];
+  mcpTools: FileLinkedItem[];
+  tests: FileLinkedItem[];
+}
+
+export interface FileQualitySignals {
+  parser?: string;
+  resolutionConfidence?: GraphHealthResolutionConfidence | string;
+  unresolvedCalls: number;
+  unresolvedRefs: number;
+  unresolvedImports: number;
+  generated: boolean;
+  stale: boolean;
+  changedSinceAnalyze: boolean;
+}
+
+export interface FileContextLimits {
+  relationshipSamplesPerGroup: number;
+  unresolvedSamplesPerGroup: number;
+  linkedSamplesPerKind: number;
+}
+
+export interface FileContextResponse {
+  repo?: string;
+  repoPath?: string;
+  graph: FileProjectionGraphInfo;
+  target: FileContextTarget;
+  summary: FileSummary;
+  symbolTree: FileSymbolTreeNode[];
+  relationships: FileRelationshipSections;
+  unresolved: FileUnresolvedSummary;
+  linked: FileLinkedSummary;
+  quality: FileQualitySignals;
+  limits: FileContextLimits;
+}
+
+export interface FileHotspotsResponse {
+  repo?: string;
+  repoPath?: string;
+  graph: FileProjectionGraphInfo;
+  total: number;
+  offset: number;
+  limit: number;
+  sort: string;
+  files: FileSummary[];
 }
 
 export const PIPELINE_PHASES = [

@@ -33,6 +33,14 @@ type RelationshipDisplayPolicy struct {
 	DisplayPolicy string `json:"displayPolicy"`
 }
 
+type APIRouteContract struct {
+	Method       string   `json:"method"`
+	Path         string   `json:"path"`
+	QueryParams  []string `json:"queryParams,omitempty"`
+	ResponseType string   `json:"responseType"`
+	Description  string   `json:"description,omitempty"`
+}
+
 type LanguageFactCoverage struct {
 	Family            string   `json:"family"`
 	Status            string   `json:"status"`
@@ -95,6 +103,9 @@ type WebUIContractManifest struct {
 	Pipeline struct {
 		Phases []string `json:"phases"`
 	} `json:"pipeline"`
+	API struct {
+		FileProjectionRoutes []APIRouteContract `json:"fileProjectionRoutes"`
+	} `json:"api"`
 	Session struct {
 		Providers           []string `json:"providers"`
 		Availability        []string `json:"availability"`
@@ -462,6 +473,22 @@ func WebUIContract() WebUIContractManifest {
 	manifest.Languages.AuxiliarySyntax = copyStringMap(auxiliarySyntax)
 	manifest.Languages.AuxiliaryBasenames = copyStringMap(auxiliaryBasenames)
 	manifest.Pipeline.Phases = append([]string(nil), pipelinePhases...)
+	manifest.API.FileProjectionRoutes = []APIRouteContract{
+		{
+			Method:       "GET",
+			Path:         "/api/file-context",
+			QueryParams:  []string{"repo", "path", "relationships", "unresolved", "linked"},
+			ResponseType: "FileContextResponse",
+			Description:  "File-first graph projection detail for one indexed repository file.",
+		},
+		{
+			Method:       "GET",
+			Path:         "/api/file-hotspots",
+			QueryParams:  []string{"repo", "sort", "limit", "offset", "kind", "appLayer", "functionalArea", "apiOnly", "unresolvedOnly", "highFanIn", "highFanOut", "highFanInThreshold", "highFanOutThreshold"},
+			ResponseType: "FileHotspotsResponse",
+			Description:  "Paginated file projection summary list for file map and hotspot views.",
+		},
+	}
 	manifest.Session.Providers = append([]string(nil), sessionProviders...)
 	manifest.Session.Availability = append([]string(nil), sessionAvailability...)
 	manifest.Session.ExecutionModes = append([]string(nil), sessionExecutionModes...)
@@ -495,6 +522,8 @@ func WebUIContractTypeScript() (string, error) {
 	b.WriteString("export type RelType = (typeof REL_TYPES)[number];\n\n")
 	writeConstObjectArray(&b, "RELATIONSHIP_DISPLAY_POLICY", manifest.Graph.RelationshipDisplayPolicy)
 	b.WriteString("export type RelationshipDisplayPolicy = (typeof RELATIONSHIP_DISPLAY_POLICY)[number];\n\n")
+	writeConstObjectArray(&b, "FILE_PROJECTION_API_ROUTES", manifest.API.FileProjectionRoutes)
+	b.WriteString("export type FileProjectionAPIRoute = (typeof FILE_PROJECTION_API_ROUTES)[number];\n\n")
 	writeConstString(&b, "REL_TABLE_NAME", manifest.Graph.RelationshipTableName)
 	writeConstString(&b, "EMBEDDING_TABLE_NAME", manifest.Graph.EmbeddingTableName)
 	b.WriteString("\n")
@@ -536,6 +565,7 @@ func WebUIContractTypeScript() (string, error) {
 	writeConstObjectArray(&b, "FUNCTIONAL_AREA_LABELS", manifest.Graph.FunctionalAreaLabels)
 	b.WriteString("export type FunctionalAreaLabel = (typeof FUNCTIONAL_AREA_LABELS)[number];\n\n")
 	b.WriteString(graphTypes)
+	b.WriteString(fileContextTypes)
 	writeConstArray(&b, "PIPELINE_PHASES", manifest.Pipeline.Phases)
 	b.WriteString("export type PipelinePhase = (typeof PIPELINE_PHASES)[number];\n\n")
 	b.WriteString(pipelineTypes)
@@ -1220,6 +1250,198 @@ export interface GraphHealthReportResponse {
   totalCandidates: number;
   returnedCandidates: number;
   candidates: GraphHealthReportCandidate[];
+}
+
+`
+
+const fileContextTypes = `export interface FileProjectionGraphInfo {
+  path?: string;
+  indexedCommit?: string;
+  currentCommit?: string;
+  stale: boolean;
+  analyzedAt?: string;
+}
+
+export interface FileContextAmbiguityCandidate {
+  type: string;
+  id?: string;
+  name?: string;
+  file?: string;
+  line?: number;
+  confidence?: number;
+  command?: string;
+}
+
+export interface FileContextTarget {
+  type: string;
+  input: string;
+  normalizedPath?: string;
+  dispatchMode?: string;
+  ambiguityCandidates?: FileContextAmbiguityCandidate[];
+}
+
+export interface FileSummary {
+  path: string;
+  language?: SupportedLanguages | string;
+  kind?: string;
+  appLayer?: AppLayer | string;
+  functionalArea?: FunctionalArea | string;
+  parseStatus?: string;
+  symbolCount: number;
+  exportedSymbolCount: number;
+  inboundRefCount: number;
+  outboundRefCount: number;
+  localRelationshipCount: number;
+  unresolvedSourceSiteCount: number;
+  linkedFlowCount: number;
+  linkedTestCount: number;
+  risk?: string;
+}
+
+export interface FileSourceRange {
+  startLine?: number;
+  startColumn?: number;
+  endLine?: number;
+  endColumn?: number;
+}
+
+export interface FileSymbolRelationshipCounts {
+  local: number;
+  inbound: number;
+  outbound: number;
+  unresolved: number;
+}
+
+export interface FileSymbolTreeNode {
+  id: string;
+  name: string;
+  kind: string;
+  range: FileSourceRange;
+  exported: boolean;
+  signature?: string;
+  relationshipCounts: FileSymbolRelationshipCounts;
+  children?: FileSymbolTreeNode[];
+}
+
+export interface FileRelationshipSample {
+  sourceFile?: string;
+  sourceSymbol?: string;
+  sourceRange: FileSourceRange;
+  relationshipKind: RelationshipType | string;
+  targetFile?: string;
+  targetSymbol?: string;
+  targetRange: FileSourceRange;
+  sourceSiteId?: string;
+  proofKind?: string;
+  sourceSiteStatus?: string;
+}
+
+export interface FileRelationshipGroup {
+  total: number;
+  counts?: Record<string, number>;
+  samples: FileRelationshipSample[];
+}
+
+export interface FileRelationshipByFileGroup extends FileRelationshipGroup {
+  file: string;
+}
+
+export interface FileRelationshipCounts {
+  local: number;
+  outbound: number;
+  inbound: number;
+  samplesReturned: number;
+}
+
+export interface FileRelationshipSections {
+  counts: FileRelationshipCounts;
+  local: FileRelationshipGroup;
+  outboundByFile: FileRelationshipByFileGroup[];
+  inboundByFile: FileRelationshipByFileGroup[];
+}
+
+export interface FileUnresolvedSample {
+  line?: number;
+  column?: number;
+  targetText?: string;
+  sourceSymbol?: string;
+  gapKind?: string;
+  classification?: GraphHealthDiagnosticClassification | string;
+  actionability?: GraphHealthDiagnosticActionability | string;
+  proofKind?: string;
+  sourceSiteId?: string;
+  sourceSiteStatus?: string;
+}
+
+export interface FileUnresolvedGroup {
+  sourceSymbol?: string;
+  total: number;
+  samples: FileUnresolvedSample[];
+}
+
+export interface FileUnresolvedSummary {
+  total: number;
+  byKind?: Record<string, number>;
+  byClassification?: Record<string, number>;
+  byActionability?: Record<string, number>;
+  groups: FileUnresolvedGroup[];
+}
+
+export interface FileLinkedItem {
+  name: string;
+  kind?: string;
+  source?: string;
+  confidence?: string;
+  trace?: string;
+}
+
+export interface FileLinkedSummary {
+  flows: FileLinkedItem[];
+  routes: FileLinkedItem[];
+  mcpTools: FileLinkedItem[];
+  tests: FileLinkedItem[];
+}
+
+export interface FileQualitySignals {
+  parser?: string;
+  resolutionConfidence?: GraphHealthResolutionConfidence | string;
+  unresolvedCalls: number;
+  unresolvedRefs: number;
+  unresolvedImports: number;
+  generated: boolean;
+  stale: boolean;
+  changedSinceAnalyze: boolean;
+}
+
+export interface FileContextLimits {
+  relationshipSamplesPerGroup: number;
+  unresolvedSamplesPerGroup: number;
+  linkedSamplesPerKind: number;
+}
+
+export interface FileContextResponse {
+  repo?: string;
+  repoPath?: string;
+  graph: FileProjectionGraphInfo;
+  target: FileContextTarget;
+  summary: FileSummary;
+  symbolTree: FileSymbolTreeNode[];
+  relationships: FileRelationshipSections;
+  unresolved: FileUnresolvedSummary;
+  linked: FileLinkedSummary;
+  quality: FileQualitySignals;
+  limits: FileContextLimits;
+}
+
+export interface FileHotspotsResponse {
+  repo?: string;
+  repoPath?: string;
+  graph: FileProjectionGraphInfo;
+  total: number;
+  offset: number;
+  limit: number;
+  sort: string;
+  files: FileSummary[];
 }
 
 `

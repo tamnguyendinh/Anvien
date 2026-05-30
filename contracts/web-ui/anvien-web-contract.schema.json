@@ -3709,6 +3709,44 @@
       "error"
     ]
   },
+  "api": {
+    "fileProjectionRoutes": [
+      {
+        "method": "GET",
+        "path": "/api/file-context",
+        "queryParams": [
+          "repo",
+          "path",
+          "relationships",
+          "unresolved",
+          "linked"
+        ],
+        "responseType": "FileContextResponse",
+        "description": "File-first graph projection detail for one indexed repository file."
+      },
+      {
+        "method": "GET",
+        "path": "/api/file-hotspots",
+        "queryParams": [
+          "repo",
+          "sort",
+          "limit",
+          "offset",
+          "kind",
+          "appLayer",
+          "functionalArea",
+          "apiOnly",
+          "unresolvedOnly",
+          "highFanIn",
+          "highFanOut",
+          "highFanInThreshold",
+          "highFanOutThreshold"
+        ],
+        "responseType": "FileHotspotsResponse",
+        "description": "Paginated file projection summary list for file map and hotspot views."
+      }
+    ]
+  },
   "session": {
     "providers": [
       "codex",

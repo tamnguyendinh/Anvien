@@ -442,19 +442,74 @@ Detect changes:
 
 ## E6 - Web/API Surface
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: completed
 
-Expected evidence:
+Route and contract decisions:
 
-- API impact analysis before route/contract edits.
-- Exact route names for file list/hotspots, file context detail, and file relationship expansion if implemented.
-- Route implementation evidence.
-- Generated Web contract regeneration evidence.
-- API tests and shape validation.
-- Web consumer integration evidence.
-- Generated contract source/output sync validation.
+| Decision | Evidence |
+|---|---|
+| Use `GET /api/file-context` for one file detail | Avoids changing the existing `GET /api/file` source-content endpoint. |
+| Use `GET /api/file-hotspots` for file list/hotspot rows | Keeps file projection list separate from raw file reads and graph dump routes. |
+| Do not add a separate relationship-expansion endpoint in P2-B | `FileContextResponse.relationships` already carries grouped local/inbound/outbound relationship samples with total counts; expansion can be added later if Web UI needs lazy detail. |
+| Keep routes repo-agnostic | Endpoints resolve `repo` through the existing registry resolver; `Anvien` is only the validation repo name. |
+
+API / contract impact:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass before impact work. `files: scanned=823 parsed=588 unsupported=235 failed=0`; `nodes=93072 relationships=127394`. |
+| `.\anvien\bin\anvien.exe impact "NewHandler" --repo Anvien --direction upstream` | `risk=CRITICAL`; `impactedCount=3`; direct `ListenAndServe`; `processes_affected=11`; affected app layers `api`, `backend`. Proceeded because route registration is additive. |
+| `.\anvien\bin\anvien.exe impact "WebUIContractTypeScript" --repo Anvien --direction upstream` | `risk=CRITICAL`; `impactedCount=1`; direct `cmd/generate-web-contracts/main.go`; `processes_affected=5`. Proceeded because generated TypeScript contract output is additive. |
+| `.\anvien\bin\anvien.exe impact "WebUIContractManifest" --repo Anvien --direction upstream` | `risk=CRITICAL`; `impactedCount=4`; `processes_affected=10`. Proceeded because manifest field is additive. |
+| `.\anvien\bin\anvien.exe impact "WebUIContract" --repo Anvien --direction upstream` | `risk=CRITICAL`; `impactedCount=3`; `processes_affected=10`. Proceeded because contract metadata population is additive. |
+| `.\anvien\bin\anvien.exe api route-map "/api/file" --repo Anvien --json` | Returned no matching routes even though source has `/api/file`; recorded as HTTP route extraction limitation for current graph. |
+| `.\anvien\bin\anvien.exe api route-map "/api/graph" --repo Anvien --json` | Returned no matching routes even though source has `/api/graph`; recorded as HTTP route extraction limitation for current graph. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/httpapi/server.go` | Registered `GET /api/file-context` and `GET /api/file-hotspots`; added server-side file projection caches. |
+| `internal/httpapi/file_context.go` | Added repo-registry based graph loading, file context response, hotspot/list response, filters, sort/limit/offset handling, stale graph metadata, and projection snapshot cache keyed by repo/path/graph mtime/size/commit. |
+| `internal/httpapi/file_context_test.go` | Added API tests for repo-name resolution, file context JSON shape, relationship/unresolved data, hotspot sorting/filtering, and missing-file errors. |
+| `internal/contracts/web_ui.go` | Added generated route metadata for file projection API endpoints and TypeScript response interfaces for file context/hotspots. |
+| `internal/contracts/web_ui_test.go` | Added assertions for route metadata and generated TypeScript file projection interfaces. |
+| `contracts/web-ui/anvien-web-contract.schema.json` | Regenerated from Go contract source; includes `/api/file-context` and `/api/file-hotspots` route metadata. |
+| `anvien-web/src/generated/anvien-contracts.ts` | Regenerated from Go contract source; includes `FILE_PROJECTION_API_ROUTES`, `FileContextResponse`, and `FileHotspotsResponse`. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `go run .\cmd\generate-web-contracts` | Pass; regenerated schema and TypeScript contracts from source. |
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass after P2-B code. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test ./internal/httpapi ./internal/contracts -count=1` | First run hit `TestEmbedEndpointRecoversStaleRepoLock` timing failure; focused rerun passed and package rerun passed. |
+| `go test ./internal/httpapi -run "TestFile(Context|Hotspots)|TestFileContextEndpoint|TestFileHotspotsEndpoint" -count=1 -v` | Pass; file projection endpoint tests passed. |
+| `go test ./internal/httpapi -run TestEmbedEndpointRecoversStaleRepoLock -count=1 -v` | Pass on rerun; confirms earlier package failure was unrelated timing behavior. |
+| `go test ./internal/httpapi ./internal/contracts -count=1` | Pass after rerun; `internal/httpapi` and `internal/contracts` passed. |
+| `go run .\cmd\generate-web-contracts --check` | Pass; generated contract output matches source. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass; all cmd/internal packages passed after P2-B implementation. |
+| HTTP runtime smoke via `.\anvien\bin\anvien.exe serve --host 127.0.0.1 --port <temp>` | Pass. `GET /api/file-context?repo=Anvien&path=internal/httpapi/file_context.go` returned `200`; `GET /api/file-hotspots?repo=Anvien&sort=unresolved&limit=5` returned `200`. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien --benchmark-label file-centric-p2b-final-cache --benchmark-json .tmp\file-centric-p2b-final-cache-analyze-benchmark.json` | Pass after P2-B cache edit. `files: scanned=825 parsed=590 unsupported=235 failed=0`; `nodes=93434 relationships=127940`. |
+| `.\anvien\bin\anvien.exe graph-health summary --repo Anvien --json` | Pass after P2-B. `sourceBackedUnresolvedReferenceCount=67790`; `resolutionGapNodeCount=66883`; `resolvedReferenceCount=30790`. |
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | `risk_level=high`; `changed_files=8`; `changed_count=83`; `affected_count=10`; changed app layers `api`, `api_contract`, `api_test`, and `docs`; affected app layers `api_contract` and `mixed`; resolution gap changed entities `31`. HIGH is expected because API route registration and generated Web contracts changed; behavior is additive and repo-agnostic. |
+
+Runtime benchmark evidence:
+
+| Endpoint | Round | Status | Bytes | Elapsed |
+|---|---:|---:|---:|---:|
+| `/api/file-context?repo=Anvien&path=internal/httpapi/file_context.go` | 1 | 200 | 57803 | `7017.5 ms` |
+| `/api/file-context?repo=Anvien&path=internal/httpapi/file_context.go` | 2 | 200 | 57803 | `107.7 ms` |
+| `/api/file-hotspots?repo=Anvien&sort=unresolved&limit=5` | 1 | 200 | 2086 | `97.6 ms` |
+| `/api/file-hotspots?repo=Anvien&sort=unresolved&limit=5` | 2 | 200 | 2086 | `93.7 ms` |
+
+Notes:
+
+- The cold file-context request includes graph JSON load and projection cache population.
+- The warm request validates the HTTP projection snapshot cache; the second file-context request dropped from `7017.5 ms` to `107.7 ms`.
+- The product behavior remains repo-agnostic: tests use fixture repo names `alpha`, `workspace`, and `beta`; runtime smoke uses repo `Anvien` only as the local validation target.
 
 ## E7 - Unresolved And Quality Signals
 
