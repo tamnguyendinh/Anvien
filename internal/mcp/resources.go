@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/tamnguyendinh/anvien/internal/filecontext"
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/repo"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
@@ -260,12 +261,39 @@ func (s Server) contextResource(repoName string) (string, error) {
 		fmt.Sprintf("  files: %d", statValue(stats, func(s *repo.Stats) *int { return s.Files })),
 		fmt.Sprintf("  symbols: %d", statValue(stats, func(s *repo.Stats) *int { return s.Nodes })),
 		fmt.Sprintf("  processes: %d", statValue(stats, func(s *repo.Stats) *int { return s.Processes })),
+	)
+	if g, graphErr := s.graphForResource(entry.Name); graphErr == nil {
+		builder := filecontext.NewBuilder(g)
+		list := builder.BuildFileList(filecontext.FileListOptions{Sort: "unresolved", Limit: 3})
+		all := builder.BuildFileList(filecontext.FileListOptions{Sort: "path", Limit: 0})
+		unresolvedFiles := 0
+		for _, file := range all.Files {
+			if file.UnresolvedSourceSiteCount > 0 {
+				unresolvedFiles++
+			}
+		}
+		lines = append(lines,
+			"",
+			"file_projection:",
+			fmt.Sprintf("  files: %d", list.Total),
+			fmt.Sprintf("  unresolved_files: %d", unresolvedFiles),
+			fmt.Sprintf("  derived_edges: %q", filecontext.DerivedFileEdgesNote),
+			"  top_hotspots:",
+		)
+		for _, file := range list.Files {
+			lines = append(lines, fmt.Sprintf("    - path: %q", file.Path))
+			lines = append(lines, fmt.Sprintf("      unresolved: %d", file.UnresolvedSourceSiteCount))
+			lines = append(lines, fmt.Sprintf("      fan_in: %d", file.InboundRefCount))
+			lines = append(lines, fmt.Sprintf("      fan_out: %d", file.OutboundRefCount))
+		}
+	}
+	lines = append(lines,
 		"",
 		"tools_available:",
-		"  - query: Process-grouped code intelligence (execution flows related to a concept)",
-		"  - context: 360-degree symbol view (categorized refs, process participation)",
-		"  - impact: Blast radius analysis (what breaks if you change a symbol)",
-		"  - detect_changes: Git-diff impact analysis (what do your changes affect)",
+		"  - query: Process, symbol, and file-layer code intelligence related to a concept",
+		"  - context: Symbol or file view with categorized refs, process participation, symbol tree, unresolved sites, and file relationships",
+		"  - impact: Symbol/file/route/tool blast radius with affected file groups",
+		"  - detect_changes: Git-diff impact grouped by changed symbols, files, and affected flows",
 		"  - rename: Multi-file coordinated rename with confidence tags",
 		"  - route_map: API route handlers and consumers",
 		"  - tool_map: MCP/RPC tool definitions and handler files",
@@ -280,6 +308,10 @@ func (s Server) contextResource(repoName string) (string, error) {
 		"  - list_repos: Discover all indexed repositories",
 		"",
 		"cli_equivalents:",
+		"  - query files: anvien query files <concept> --repo <repo>",
+		"  - context file: anvien context file <path> --repo <repo>",
+		"  - impact file: anvien impact file <path> --repo <repo>",
+		"  - detect_changes files: anvien detect-changes files --repo <repo> --scope all",
 		"  - rename: anvien rename <symbol> <newName> --repo <repo>",
 		"  - route_map: anvien api route-map [route] --repo <repo>",
 		"  - tool_map: anvien api tool-map [tool] --repo <repo>",
@@ -358,10 +390,10 @@ func (s Server) setupResource() (string, error) {
 			"",
 			"| Tool | What it gives you |",
 			"|------|-------------------|",
-			"| `query` | Process-grouped code intelligence - execution flows related to a concept |",
-			"| `context` | 360-degree symbol view - categorized refs, processes it participates in |",
-			"| `impact` | Symbol blast radius - what breaks at depth 1/2/3 with confidence |",
-			"| `detect_changes` | Git-diff impact - what do your current changes affect |",
+			"| `query` | Process, symbol, and file-layer code intelligence related to a concept |",
+			"| `context` | Symbol/file view with categorized refs, file summary, relationships, unresolved sites, linked flows/tests |",
+			"| `impact` | Symbol/file/route/tool blast radius with affected files and flows |",
+			"| `detect_changes` | Git-diff impact grouped by changed symbols, changed files, and affected flows |",
 			"| `rename` | Multi-file coordinated rename with confidence-tagged edits |",
 			"| `route_map` | API route handlers, consumers, and linked flows |",
 			"| `tool_map` | MCP/RPC tool definitions and handler files |",
@@ -379,6 +411,10 @@ func (s Server) setupResource() (string, error) {
 			"",
 			"| CLI command | Equivalent surface |",
 			"|-------------|--------------------|",
+			"| `anvien query files <concept> --repo <repo>` | MCP `query` with `target_type=files` |",
+			"| `anvien context file <path> --repo <repo>` | MCP `context` with `target_type=file` |",
+			"| `anvien impact file <path> --repo <repo>` | MCP `impact` with `target_type=file` |",
+			"| `anvien detect-changes files --repo <repo> --scope all` | MCP `detect_changes` with `target_type=files` |",
 			"| `anvien rename <symbol> <newName> --repo <repo>` | MCP `rename` |",
 			"| `anvien api route-map [route] --repo <repo>` | MCP `route_map` |",
 			"| `anvien api tool-map [tool] --repo <repo>` | MCP `tool_map` |",

@@ -30,14 +30,18 @@ type graphHealthCommandTotals struct {
 }
 
 type graphHealthSummaryResult struct {
-	Inputs  graphHealthCommandInputs `json:"inputs"`
-	Totals  graphHealthCommandTotals `json:"totals"`
-	Summary graphhealth.Summary      `json:"summary"`
+	Inputs       graphHealthCommandInputs  `json:"inputs"`
+	Totals       graphHealthCommandTotals  `json:"totals"`
+	Summary      graphhealth.Summary       `json:"summary"`
+	FileLayer    graphHealthFileLayer      `json:"fileLayer"`
+	FileHotspots []filecontext.FileSummary `json:"fileHotspots"`
 }
 
 type graphHealthReportResult struct {
-	Inputs graphHealthCommandInputs `json:"inputs"`
-	Totals graphHealthCommandTotals `json:"totals"`
+	Inputs       graphHealthCommandInputs  `json:"inputs"`
+	Totals       graphHealthCommandTotals  `json:"totals"`
+	FileLayer    graphHealthFileLayer      `json:"fileLayer"`
+	FileHotspots []filecontext.FileSummary `json:"fileHotspots"`
 	graphhealth.ReportResponse
 }
 
@@ -63,6 +67,16 @@ type graphHealthFilesResult struct {
 	Sort   string                    `json:"sort"`
 	Total  int                       `json:"total"`
 	Files  []filecontext.FileSummary `json:"files"`
+}
+
+type graphHealthFileLayer struct {
+	TotalFiles       int    `json:"totalFiles"`
+	UnresolvedFiles  int    `json:"unresolvedFiles"`
+	GeneratedFiles   int    `json:"generatedFiles"`
+	HighFanInFiles   int    `json:"highFanInFiles"`
+	HighFanOutFiles  int    `json:"highFanOutFiles"`
+	HotspotSort      string `json:"hotspotSort"`
+	DerivedEdgesNote string `json:"derivedEdgesNote"`
 }
 
 func newGraphHealthCommand() *cobra.Command {
@@ -98,9 +112,11 @@ func newGraphHealthSummaryCommand(repoName *string) *cobra.Command {
 				return err
 			}
 			result := graphHealthSummaryResult{
-				Inputs:  inputs,
-				Totals:  graphHealthTotals(g),
-				Summary: graphhealth.ComputeSummary(g),
+				Inputs:       inputs,
+				Totals:       graphHealthTotals(g),
+				Summary:      graphhealth.ComputeSummary(g),
+				FileLayer:    graphHealthFileLayerSummary(g),
+				FileHotspots: graphHealthTopFileHotspots(g, 5),
 			}
 			if jsonOutput {
 				return writeGraphHealthJSON(cmd, result)
@@ -131,8 +147,10 @@ func newGraphHealthReportCommand(repoName *string) *cobra.Command {
 				return err
 			}
 			result := graphHealthReportResult{
-				Inputs: inputs,
-				Totals: graphHealthTotals(g),
+				Inputs:       inputs,
+				Totals:       graphHealthTotals(g),
+				FileLayer:    graphHealthFileLayerSummary(g),
+				FileHotspots: graphHealthTopFileHotspots(g, 5),
 				ReportResponse: graphhealth.BuildReport(g, graphhealth.ReportOptions{
 					Limit:           limit,
 					IncludeExpected: includeExpected,
@@ -141,7 +159,7 @@ func newGraphHealthReportCommand(repoName *string) *cobra.Command {
 			if jsonOutput {
 				return writeGraphHealthJSON(cmd, result)
 			}
-			for _, line := range graphHealthReportLines(result.ReportResponse) {
+			for _, line := range graphHealthReportLines(result) {
 				if _, err := fmt.Fprintln(cmd.OutOrStdout(), line); err != nil {
 					return err
 				}
@@ -399,7 +417,7 @@ func resolveGraphHealthNodeSelector(g *graph.Graph, selector string) (string, er
 
 func graphHealthSummaryLines(result graphHealthSummaryResult) []string {
 	summary := result.Summary
-	return []string{
+	lines := []string{
 		fmt.Sprintf("graphHealth.repo=%q graph=%q nodes=%d relationships=%d countedRelationships=%d components=%d detachedComponents=%d rootNodes=%d",
 			result.Inputs.Repo,
 			result.Inputs.Graph,
@@ -422,9 +440,12 @@ func graphHealthSummaryLines(result graphHealthSummaryResult) []string {
 			summary.UnattributedUnresolvedReferenceCount,
 		),
 	}
+	lines = append(lines, graphHealthFileLayerLines(result.FileLayer, result.FileHotspots)...)
+	return lines
 }
 
-func graphHealthReportLines(report graphhealth.ReportResponse) []string {
+func graphHealthReportLines(result graphHealthReportResult) []string {
+	report := result.ReportResponse
 	lines := []string{
 		fmt.Sprintf("graphHealth.report totalCandidates=%d returnedCandidates=%d limit=%d includeExpected=%t",
 			report.TotalCandidates,
@@ -445,6 +466,61 @@ func graphHealthReportLines(report graphhealth.ReportResponse) []string {
 			candidate.ComponentID,
 			candidate.FilePath,
 			candidate.Name,
+		))
+	}
+	lines = append(lines, graphHealthFileLayerLines(result.FileLayer, result.FileHotspots)...)
+	return lines
+}
+
+func graphHealthFileLayerSummary(g *graph.Graph) graphHealthFileLayer {
+	list := filecontext.NewBuilder(g).BuildFileList(filecontext.FileListOptions{Sort: "path", Limit: 0})
+	summary := graphHealthFileLayer{
+		TotalFiles:       list.Total,
+		HotspotSort:      "unresolved",
+		DerivedEdgesNote: filecontext.DerivedFileEdgesNote,
+	}
+	for _, file := range list.Files {
+		if file.UnresolvedSourceSiteCount > 0 {
+			summary.UnresolvedFiles++
+		}
+		if file.Kind == "generated" {
+			summary.GeneratedFiles++
+		}
+		if file.InboundRefCount >= 25 {
+			summary.HighFanInFiles++
+		}
+		if file.OutboundRefCount >= 25 {
+			summary.HighFanOutFiles++
+		}
+	}
+	return summary
+}
+
+func graphHealthTopFileHotspots(g *graph.Graph, limit int) []filecontext.FileSummary {
+	return filecontext.NewBuilder(g).BuildFileList(filecontext.FileListOptions{
+		Sort:  "unresolved",
+		Limit: limit,
+	}).Files
+}
+
+func graphHealthFileLayerLines(summary graphHealthFileLayer, hotspots []filecontext.FileSummary) []string {
+	lines := []string{
+		fmt.Sprintf("graphHealth.fileLayer files=%d unresolvedFiles=%d generatedFiles=%d highFanInFiles=%d highFanOutFiles=%d derivedEdges=%q",
+			summary.TotalFiles,
+			summary.UnresolvedFiles,
+			summary.GeneratedFiles,
+			summary.HighFanInFiles,
+			summary.HighFanOutFiles,
+			summary.DerivedEdgesNote,
+		),
+	}
+	for _, file := range hotspots {
+		lines = append(lines, fmt.Sprintf("graphHealth.fileHotspot path=%q unresolved=%d fanIn=%d fanOut=%d risk=%s",
+			file.Path,
+			file.UnresolvedSourceSiteCount,
+			file.InboundRefCount,
+			file.OutboundRefCount,
+			defaultString(file.Risk, "unknown"),
 		))
 	}
 	return lines

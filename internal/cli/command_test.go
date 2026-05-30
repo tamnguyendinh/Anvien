@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/tamnguyendinh/anvien/internal/aicontext"
+	"github.com/tamnguyendinh/anvien/internal/filecontext"
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/graphhealth"
 	"github.com/tamnguyendinh/anvien/internal/httpapi"
@@ -189,9 +190,12 @@ func TestResolutionInventoryCommandOutputsJSON(t *testing.T) {
 	dir := t.TempDir()
 	graphPath := filepath.Join(dir, "graph.json")
 	g := graph.New()
+	g.AddNode(graph.Node{ID: "File:internal/resolution/resolve.go", Label: scopeir.NodeFile, Properties: graph.NodeProperties{"name": "resolve.go", "filePath": "internal/resolution/resolve.go", "appLayer": "backend", "functionalArea": "resolution"}})
 	g.AddNode(graph.Node{ID: "Function:main", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "main", "filePath": "cmd/app/main.go", "isExported": true}})
 	g.AddNode(graph.Node{ID: "Function:source", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "source", "filePath": "internal/resolution/resolve.go", "appLayer": "backend", "functionalArea": "resolution"}})
 	g.AddNode(graph.Node{ID: "Function:target", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "target", "filePath": "internal/resolution/resolve.go", "appLayer": "backend", "functionalArea": "resolution"}})
+	g.AddRelationship(graph.Relationship{ID: "r-file-source", SourceID: "File:internal/resolution/resolve.go", TargetID: "Function:source", Type: graph.RelDefines})
+	g.AddRelationship(graph.Relationship{ID: "r-file-target", SourceID: "File:internal/resolution/resolve.go", TargetID: "Function:target", Type: graph.RelDefines})
 	g.AddRelationship(graph.Relationship{ID: "r-main-source", SourceID: "Function:main", TargetID: "Function:source", Type: graph.RelCalls, SourceSiteCount: 1, SourceSiteStatus: "resolved", ProofKind: "scope-binding"})
 	g.AddRelationship(graph.Relationship{ID: "r-source-target", SourceID: "Function:source", TargetID: "Function:target", Type: graph.RelCalls, SourceSiteCount: 2, SourceSiteStatus: "resolved", ProofKind: "scope-binding"})
 	gapInput := graphhealth.ResolutionGapInput{
@@ -206,6 +210,8 @@ func TestResolutionInventoryCommandOutputsJSON(t *testing.T) {
 		ProofKind:            "global-fallback-low-confidence",
 		Classification:       graphhealth.DiagnosticClassificationInRepoUnresolved,
 		Actionability:        graphhealth.DiagnosticActionabilityAnalyzerGap,
+		FilePath:             "internal/resolution/resolve.go",
+		StartLine:            12,
 		Count:                3,
 	}
 	g.AddNode(gapInput.GraphNode())
@@ -222,6 +228,8 @@ func TestResolutionInventoryCommandOutputsJSON(t *testing.T) {
 			SourceSiteStatus:     "unresolved_external",
 			Classification:       graphhealth.DiagnosticClassificationBuiltin,
 			Actionability:        graphhealth.DiagnosticActionabilityNonActionable,
+			FilePath:             "internal/resolution/resolve.go",
+			StartLine:            20,
 			Count:                2,
 		},
 		{
@@ -235,6 +243,8 @@ func TestResolutionInventoryCommandOutputsJSON(t *testing.T) {
 			SourceSiteStatus:     "unresolved_external",
 			Classification:       graphhealth.DiagnosticClassificationStandardLibrary,
 			Actionability:        graphhealth.DiagnosticActionabilityNonActionable,
+			FilePath:             "internal/resolution/resolve.go",
+			StartLine:            21,
 			Count:                4,
 		},
 		{
@@ -248,6 +258,8 @@ func TestResolutionInventoryCommandOutputsJSON(t *testing.T) {
 			SourceSiteStatus:     "unresolved_external",
 			Classification:       graphhealth.DiagnosticClassificationTestFramework,
 			Actionability:        graphhealth.DiagnosticActionabilityNonActionable,
+			FilePath:             "internal/resolution/resolve.go",
+			StartLine:            22,
 			Count:                5,
 		},
 	} {
@@ -285,6 +297,8 @@ func TestResolutionInventoryCommandOutputsJSON(t *testing.T) {
 		`"test_framework": 5`,
 		`"unresolved_call_target": 14`,
 		`"resolutionGapTopologyStatusCounts"`,
+		`"fileGroups"`,
+		`"nearestSourceSymbols"`,
 	} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("resolution-inventory output missing %q:\n%s", want, out)
@@ -301,6 +315,9 @@ func TestResolutionInventoryCommandOutputsJSON(t *testing.T) {
 	if want := "resolutionHealth.unresolvedNonActionableBreakdown=builtin:2,standard_library:4,test_framework:5"; !strings.Contains(summaryOut, want) {
 		t.Fatalf("resolution-inventory summary missing %q:\n%s", want, summaryOut)
 	}
+	if want := "resolutionGap.file path=\"internal/resolution/resolve.go\""; !strings.Contains(summaryOut, want) {
+		t.Fatalf("resolution-inventory summary missing file group %q:\n%s", want, summaryOut)
+	}
 }
 
 func TestSourceSiteAccuracyCommandOutputsJSON(t *testing.T) {
@@ -308,11 +325,11 @@ func TestSourceSiteAccuracyCommandOutputsJSON(t *testing.T) {
 	graphPath := filepath.Join(dir, "graph.json")
 	raw := `{
   "nodes": [
-    {"id":"Function:main","label":"Function","properties":{"name":"main","graphHealthDiagnostics":[{"kind":"unresolved_reference","factFamily":"call","targetText":"missing","sourceSiteId":"site:missing","sourceSiteStatus":"unresolved_local_binding","proofKind":"global-fallback-low-confidence","targetRole":"callable","count":1}]}},
+    {"id":"Function:main","label":"Function","properties":{"name":"main","filePath":"src/main.go","graphHealthDiagnostics":[{"kind":"unresolved_reference","factFamily":"call","targetText":"missing","sourceSiteId":"site:missing","sourceSiteStatus":"unresolved_local_binding","proofKind":"global-fallback-low-confidence","targetRole":"callable","filePath":"src/main.go","startLine":9,"count":1}]}},
     {"id":"Function:target","label":"Function","properties":{"name":"target"}}
   ],
   "relationships": [
-    {"id":"calls:main-target","type":"CALLS","sourceId":"Function:main","targetId":"Function:target","sourceSiteId":"site:call","sourceSiteStatus":"resolved","proofKind":"scope-binding","targetRole":"callable","targetText":"target"}
+    {"id":"calls:main-target","type":"CALLS","sourceId":"Function:main","targetId":"Function:target","sourceSiteId":"site:call","sourceSiteStatus":"resolved","proofKind":"scope-binding","targetRole":"callable","targetText":"target","filePath":"src/main.go","startLine":4}
   ]
 }`
 	if err := os.WriteFile(graphPath, []byte(raw), 0o644); err != nil {
@@ -344,6 +361,8 @@ func TestSourceSiteAccuracyCommandOutputsJSON(t *testing.T) {
 		!strings.Contains(out, `"lowConfidenceGlobalFallbackOccurrences": 1`) ||
 		!strings.Contains(out, `"CALLS": 1`) ||
 		!strings.Contains(out, `"enabled": true`) ||
+		!strings.Contains(out, `"fileGroups"`) ||
+		!strings.Contains(out, `"filePath": "src/main.go"`) ||
 		!strings.Contains(out, `"silentMissingSourceSites": 1`) ||
 		!strings.Contains(out, `"falseResolvedEdges": 1`) {
 		t.Fatalf("source-site-accuracy output missing expected metrics:\n%s", out)
@@ -954,6 +973,7 @@ func TestAnalyzeHelpShowsEmbeddingsFlag(t *testing.T) {
 		"--name",
 		"--allow-duplicate-name",
 		"--verbose",
+		"--json",
 	} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("analyze help missing %q:\n%s", want, out)
@@ -1200,7 +1220,7 @@ export function main() {
 	if errOut != "" {
 		t.Fatalf("analyze wrote stderr: %q", errOut)
 	}
-	for _, want := range []string{"analyzed ", "files: scanned=1 parsed=1", "graph: nodes="} {
+	for _, want := range []string{"analyzed ", "files: scanned=1 parsed=1", "graph: nodes=", "fileProjection: status=built"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("analyze output missing %q:\n%s", want, out)
 		}
@@ -1220,6 +1240,45 @@ export function main() {
 	}
 	if _, err := os.Stat(filepath.Join(dir, ".anvien", "meta.json")); err != nil {
 		t.Fatalf("meta file missing: %v", err)
+	}
+
+	jsonOut, jsonErrOut, err := executeForTest(t, "analyze", dir, "--force", "--skip-git", "--json")
+	if err != nil {
+		t.Fatalf("analyze --json returned error: %v", err)
+	}
+	if jsonErrOut != "" {
+		t.Fatalf("analyze --json wrote stderr: %q", jsonErrOut)
+	}
+	var jsonPayload struct {
+		Files struct {
+			Scanned int `json:"scanned"`
+			Parsed  int `json:"parsed"`
+		} `json:"files"`
+		Graph struct {
+			Nodes         int `json:"nodes"`
+			Relationships int `json:"relationships"`
+		} `json:"graph"`
+		FileProjection struct {
+			Status           string                    `json:"status"`
+			Files            int                       `json:"files"`
+			DependencyEdges  int                       `json:"dependencyEdges"`
+			Hotspots         []filecontext.FileSummary `json:"hotspots"`
+			DerivedEdgesNote string                    `json:"derivedEdgesNote"`
+		} `json:"fileProjection"`
+	}
+	if err := json.Unmarshal([]byte(jsonOut), &jsonPayload); err != nil {
+		t.Fatalf("analyze --json output was not JSON: %v\n%s", err, jsonOut)
+	}
+	if jsonPayload.Files.Scanned < 1 || jsonPayload.Files.Parsed != 1 {
+		t.Fatalf("analyze --json files = scanned %d parsed %d, want scanned >= 1 and parsed 1", jsonPayload.Files.Scanned, jsonPayload.Files.Parsed)
+	}
+	if jsonPayload.Graph.Nodes == 0 || jsonPayload.Graph.Relationships == 0 {
+		t.Fatalf("analyze --json graph counts missing: %#v", jsonPayload.Graph)
+	}
+	if jsonPayload.FileProjection.Status != "built" ||
+		jsonPayload.FileProjection.Files < 1 ||
+		jsonPayload.FileProjection.DerivedEdgesNote == "" {
+		t.Fatalf("analyze --json file projection missing: %#v", jsonPayload.FileProjection)
 	}
 }
 

@@ -73,6 +73,52 @@ func mcpFileSummaryForPath(g *graph.Graph, path string) (filecontext.FileSummary
 	return context.Summary, true
 }
 
+func mcpFileLayerForPath(g *graph.Graph, path string, dispatchMode string) (map[string]any, bool) {
+	context, ok := mcpBuildFileContext(g, path, dispatchMode)
+	if !ok {
+		return nil, false
+	}
+	return mcpFileLayerFromContext(context), true
+}
+
+func mcpFileLayerFromContext(context filecontext.FileContext) map[string]any {
+	return map[string]any{
+		"path":               context.Summary.Path,
+		"summary":            context.Summary,
+		"symbolTree":         context.SymbolTree,
+		"relationshipCounts": context.Relationships.Counts,
+		"relationships": map[string]any{
+			"local":          context.Relationships.Local,
+			"outboundByFile": context.Relationships.OutboundByFile,
+			"inboundByFile":  context.Relationships.InboundByFile,
+		},
+		"unresolved": map[string]any{
+			"total":            context.Unresolved.Total,
+			"byKind":           context.Unresolved.ByKind,
+			"byClassification": context.Unresolved.ByClassification,
+			"byActionability":  context.Unresolved.ByActionability,
+			"groups":           context.Unresolved.Groups,
+		},
+		"linked":           context.Linked,
+		"quality":          context.Quality,
+		"limits":           context.Limits,
+		"derivedEdgesNote": filecontext.DerivedFileEdgesNote,
+	}
+}
+
+func mcpFileRelationshipHints(summary filecontext.FileSummary) map[string]any {
+	return map[string]any{
+		"inbound":          summary.InboundRefCount,
+		"outbound":         summary.OutboundRefCount,
+		"local":            summary.LocalRelationshipCount,
+		"unresolved":       summary.UnresolvedSourceSiteCount,
+		"linkedFlows":      summary.LinkedFlowCount,
+		"linkedTests":      summary.LinkedTestCount,
+		"risk":             summary.Risk,
+		"derivedEdgesNote": filecontext.DerivedFileEdgesNote,
+	}
+}
+
 func addMCPDispatchFields(payload map[string]any, targetType string, dispatchMode string) {
 	payload["targetType"] = targetType
 	payload["dispatchMode"] = dispatchMode
@@ -134,6 +180,13 @@ func cloneMap(input map[string]any) map[string]any {
 		out[key] = value
 	}
 	return out
+}
+
+func cloneMapAny(input map[string]any) map[string]any {
+	if len(input) == 0 {
+		return nil
+	}
+	return cloneMap(input)
 }
 
 func flattenFileSymbols(nodes []filecontext.SymbolTreeNode) []filecontext.SymbolTreeNode {

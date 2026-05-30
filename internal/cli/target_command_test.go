@@ -54,6 +54,10 @@ func TestContextAndImpactChildCommandsUseTargetTypes(t *testing.T) {
 	if fileSummary["path"] != "src/app.go" {
 		t.Fatalf("context symbol file summary = %#v", fileSummary)
 	}
+	fileLayer, _ := symbolContext["fileLayer"].(map[string]any)
+	if fileLayer["path"] != "src/app.go" || fileLayer["relationshipCounts"] == nil || fileLayer["unresolved"] == nil {
+		t.Fatalf("context symbol file layer = %#v", fileLayer)
+	}
 
 	out, errOut, err = executeForTest(t, "impact", "file", "src/app.go", "--repo", "fixture", "--direction", "downstream", "--depth", "1", "--json")
 	if err != nil {
@@ -71,6 +75,9 @@ func TestContextAndImpactChildCommandsUseTargetTypes(t *testing.T) {
 	}
 	if !strings.Contains(out, "src/store.go") {
 		t.Fatalf("impact file output missing affected file:\n%s", out)
+	}
+	if _, ok := fileImpact["fileLayer"].(map[string]any); !ok {
+		t.Fatalf("impact file output missing fileLayer: %#v", fileImpact)
 	}
 }
 
@@ -98,6 +105,23 @@ func TestQueryDetectChangesAndGraphHealthChildViews(t *testing.T) {
 	if fileQuery["targetType"] != "files" || !strings.Contains(out, "src/app.go") {
 		t.Fatalf("query files payload = %#v\n%s", fileQuery, out)
 	}
+	files, _ := fileQuery["files"].([]any)
+	firstFile, _ := files[0].(map[string]any)
+	if firstFile["relationshipHints"] == nil {
+		t.Fatalf("query files output missing relationship hints:\n%s", out)
+	}
+
+	out, errOut, err = executeForTest(t, "query", "app", "--repo", "fixture", "--json")
+	if err != nil {
+		t.Fatalf("parent query returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	var parentQuery map[string]any
+	if err := json.Unmarshal([]byte(out), &parentQuery); err != nil {
+		t.Fatalf("parse parent query JSON: %v\n%s", err, out)
+	}
+	if parentQuery["files"] == nil || parentQuery["definitions"] == nil || parentQuery["fileLayer"] == nil {
+		t.Fatalf("parent query missing additive file layer or existing details: %#v", parentQuery)
+	}
 
 	out, errOut, err = executeForTest(t, "query", "symbols", "NewServer", "--repo", "fixture", "--json")
 	if err != nil {
@@ -113,6 +137,14 @@ func TestQueryDetectChangesAndGraphHealthChildViews(t *testing.T) {
 	}
 	if !strings.Contains(out, `"files"`) || !strings.Contains(out, `"src/app.go"`) {
 		t.Fatalf("graph-health files output missing file rows:\n%s", out)
+	}
+
+	out, errOut, err = executeForTest(t, "graph-health", "summary", "--repo", "fixture", "--json")
+	if err != nil {
+		t.Fatalf("graph-health summary returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	if !strings.Contains(out, `"fileLayer"`) || !strings.Contains(out, `"fileHotspots"`) {
+		t.Fatalf("graph-health summary missing file-layer fields:\n%s", out)
 	}
 
 	appPath := filepath.Join(repoPath, "src", "app.go")
@@ -132,6 +164,14 @@ func TestQueryDetectChangesAndGraphHealthChildViews(t *testing.T) {
 	}
 	if !strings.Contains(out, `"targetType": "files"`) || !strings.Contains(out, `"changed_files"`) || !strings.Contains(out, `"src/app.go"`) {
 		t.Fatalf("detect-changes files output missing changed file view:\n%s", out)
+	}
+
+	out, errOut, err = executeForTest(t, "detect-changes", "--scope", "all", "--repo", "fixture", "--json")
+	if err != nil {
+		t.Fatalf("parent detect-changes returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	if !strings.Contains(out, `"changed_symbols"`) || !strings.Contains(out, `"changed_files"`) || !strings.Contains(out, `"affected_files"`) || !strings.Contains(out, `"fileLayer"`) {
+		t.Fatalf("parent detect-changes missing additive file layer or existing details:\n%s", out)
 	}
 }
 

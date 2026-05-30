@@ -24,9 +24,12 @@ Use this skill as the unified reference for Anvien command surfaces. CLI command
 | Refresh graph | `anvien analyze --force` | Run CLI from agent shell |
 | List repos | `anvien list` | `list_repos`, `anvien://repos` |
 | Broad discovery | `anvien query "<concept>" --repo <repo>` | `query` |
-| Exact symbol view | `anvien context "<symbol>" --repo <repo>` | `context` |
-| Blast radius | `anvien impact "<symbol>" --repo <repo> --direction upstream` | `impact` |
-| Changed-scope review | `anvien detect-changes --repo <repo> --scope all` | `detect_changes` |
+| File-first discovery | `anvien query files "<concept>" --repo <repo>` | `query` with `target_type=files` |
+| Exact symbol view | `anvien context symbol "<symbol>" --repo <repo>` | `context` with `target_type=symbol` |
+| Exact file view | `anvien context file <path> --repo <repo>` or `anvien file-context <path> --repo <repo>` | `context` with `target_type=file` |
+| Symbol blast radius | `anvien impact symbol "<symbol>" --repo <repo> --direction upstream` | `impact` with `target_type=symbol` |
+| File blast radius | `anvien impact file <path> --repo <repo> --direction upstream` | `impact` with `target_type=file` |
+| Changed-scope review | `anvien detect-changes --repo <repo> --scope all`; file view: `detect-changes files` | `detect_changes` |
 | Rename | `anvien rename <symbol> <newName> --repo <repo>` | `rename` |
 | API route map | `anvien api route-map [route] --repo <repo>` | `route_map` |
 | MCP/tool map | `anvien api tool-map [tool] --repo <repo>` | `tool_map` |
@@ -35,12 +38,15 @@ Use this skill as the unified reference for Anvien command surfaces. CLI command
 
 Do not invent CLI spellings for MCP-only names. The MCP tool is `route_map`; the CLI command is `anvien api route-map`. The MCP tool is `api_impact`; the CLI command is `anvien api impact`.
 
+File relationships are a projection from symbol/source-site graph facts. Use file-layer sections to navigate from overview to file to symbol to relationship/source-site samples, but keep canonical graph claims tied to the underlying symbol, route, tool, process, and source-site evidence.
+
 ## Graph Quality Commands
 
 - `anvien graph-health summary|report|components|explain` audits topology, diagnostics, component membership, confidence, and resolution-health overlays.
+- `anvien graph-health files` and `anvien file-hotspots` show file-level unresolved, fan-in, fan-out, linked flow/test, and risk signals.
 - `anvien query-health` measures retrieval quality with threshold and exact pass modes.
-- `anvien resolution-inventory` reports persisted ResolutionGap and Resolution Health inventory.
-- `anvien source-site-accuracy` audits proof/source-site accuracy and resolved-edge quality.
+- `anvien resolution-inventory` reports persisted ResolutionGap and Resolution Health inventory with file groups and nearest source symbols.
+- `anvien source-site-accuracy` audits proof/source-site accuracy and resolved-edge quality with file groups and trace samples.
 - `anvien benchmark-compare` compares analyze benchmark output files.
 
 ## Resources

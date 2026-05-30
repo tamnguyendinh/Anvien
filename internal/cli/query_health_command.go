@@ -87,6 +87,7 @@ type queryHealthCaseResult struct {
 	MissedTargetCount       int                       `json:"missedTargetCount"`
 	MatchedTargets          []queryHealthTargetMatch  `json:"matchedTargets,omitempty"`
 	MissedTargets           []queryHealthTargetMiss   `json:"missedTargets,omitempty"`
+	MissedClusters          *queryHealthMissClusters  `json:"missedClusters,omitempty"`
 	TopResults              []queryHealthActualResult `json:"topResults,omitempty"`
 	NoiseReason             string                    `json:"noiseReason"`
 }
@@ -113,6 +114,16 @@ type queryHealthTargetMiss struct {
 	Reason   string `json:"reason"`
 }
 
+type queryHealthMissClusters struct {
+	ByKind               map[string]int `json:"byKind,omitempty"`
+	TopReturnedFiles     []string       `json:"topReturnedFiles,omitempty"`
+	TopReturnedAppLayers map[string]int `json:"topReturnedAppLayers,omitempty"`
+	TopReturnedAreas     map[string]int `json:"topReturnedFunctionalAreas,omitempty"`
+	SymbolLayerMisses    int            `json:"symbolLayerMisses,omitempty"`
+	FileLayerMisses      int            `json:"fileLayerMisses,omitempty"`
+	ProcessLayerMisses   int            `json:"processLayerMisses,omitempty"`
+}
+
 type queryHealthActualResult struct {
 	Rank                    int            `json:"rank"`
 	GlobalRank              int            `json:"globalRank,omitempty"`
@@ -136,6 +147,7 @@ type queryHealthActualResult struct {
 type queryHealthQueryPayload struct {
 	Query             string           `json:"query"`
 	QueryCapabilities []map[string]any `json:"queryCapabilities,omitempty"`
+	Files             []map[string]any `json:"files,omitempty"`
 	Processes         []map[string]any `json:"processes"`
 	ProcessSymbols    []map[string]any `json:"process_symbols"`
 	Definitions       []map[string]any `json:"definitions"`
@@ -365,8 +377,28 @@ func queryHealthActualResults(payload queryHealthQueryPayload, limit int) []quer
 			}
 		}
 	}
-	results := make([]queryHealthActualResult, 0, len(payload.Processes)+len(payload.ProcessSymbols)+len(payload.Definitions))
+	results := make([]queryHealthActualResult, 0, len(payload.Files)+len(payload.Processes)+len(payload.ProcessSymbols)+len(payload.Definitions))
 	globalRank := 1
+	for index, file := range payload.Files {
+		rank := firstPositiveInt(mapInt(file, "rank", "Rank"), index+1)
+		summary, _ := file["summary"].(map[string]any)
+		results = append(results, queryHealthActualResult{
+			Rank:               rank,
+			GlobalRank:         globalRank,
+			SourceRank:         rank,
+			Source:             "file",
+			ID:                 firstNonEmptyMapString(file, "id", "ID", "path", "filePath"),
+			Name:               firstNonEmptyMapString(file, "name", "Name", "path", "filePath"),
+			Type:               "File",
+			FilePath:           firstNonEmptyMapString(file, "path", "filePath"),
+			AppLayer:           firstNonEmptyMapString(summary, "appLayer", "AppLayer"),
+			FunctionalArea:     firstNonEmptyMapString(summary, "functionalArea", "FunctionalArea"),
+			ResolutionGapCount: mapInt(summary, "unresolvedSourceSiteCount", "UnresolvedSourceSiteCount"),
+			QueryLanes:         mapStringSlice(file, "queryLanes", "QueryLanes"),
+			MatchReasons:       mapStringSlice(file, "matchReasons", "MatchReasons"),
+		})
+		globalRank++
+	}
 	for index, process := range payload.Processes {
 		rank := index + 1
 		label := firstNonEmptyMapString(process, "Label", "label", "name", "Name")
@@ -501,11 +533,56 @@ func scoreQueryHealthCase(testCase queryHealthCase, actual []queryHealthActualRe
 	}
 	result.MatchedTargetCount = len(result.MatchedTargets)
 	result.MissedTargetCount = len(result.MissedTargets)
+	if result.MissedTargetCount > 0 {
+		clusters := queryHealthMissClustersFor(result.MissedTargets, actual)
+		result.MissedClusters = &clusters
+	}
 	result.ThresholdPassed = result.HitAt5 >= testCase.HitAt5Threshold && result.HitAt10 >= testCase.HitAt10Threshold
 	result.Passed = result.ThresholdPassed
 	result.ExactPassed = result.MissedTargetCount == 0
 	result.NoiseReason = queryHealthNoiseReason(result, actual)
 	return result
+}
+
+func queryHealthMissClustersFor(misses []queryHealthTargetMiss, actual []queryHealthActualResult) queryHealthMissClusters {
+	if len(misses) == 0 {
+		return queryHealthMissClusters{}
+	}
+	clusters := queryHealthMissClusters{
+		ByKind:               map[string]int{},
+		TopReturnedFiles:     uniqueTopQueryHealthFiles(actual, 5),
+		TopReturnedAppLayers: map[string]int{},
+		TopReturnedAreas:     map[string]int{},
+	}
+	for _, miss := range misses {
+		clusters.ByKind[miss.Kind]++
+		switch miss.Kind {
+		case "file":
+			clusters.FileLayerMisses++
+		case "symbol":
+			clusters.SymbolLayerMisses++
+		case "process":
+			clusters.ProcessLayerMisses++
+		}
+	}
+	for _, item := range actual {
+		if item.Rank > 10 {
+			continue
+		}
+		if item.AppLayer != "" {
+			clusters.TopReturnedAppLayers[item.AppLayer]++
+		}
+		if item.FunctionalArea != "" {
+			clusters.TopReturnedAreas[item.FunctionalArea]++
+		}
+	}
+	if len(clusters.TopReturnedAppLayers) == 0 {
+		clusters.TopReturnedAppLayers = nil
+	}
+	if len(clusters.TopReturnedAreas) == 0 {
+		clusters.TopReturnedAreas = nil
+	}
+	return clusters
 }
 
 func findQueryHealthMatch(kind string, expected string, actual []queryHealthActualResult) (queryHealthTargetMatch, bool) {

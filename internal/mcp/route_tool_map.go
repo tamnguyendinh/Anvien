@@ -41,6 +41,7 @@ type mcpRouteMapItem struct {
 	mcpSemanticFields
 	Route       string             `json:"route"`
 	Handler     string             `json:"handler"`
+	HandlerFile map[string]any     `json:"handlerFile,omitempty"`
 	Middleware  []string           `json:"middleware"`
 	Consumers   []mcpRouteConsumer `json:"consumers"`
 	Flows       []string           `json:"flows"`
@@ -48,10 +49,11 @@ type mcpRouteMapItem struct {
 }
 
 type mcpToolMapItem struct {
-	Name        string   `json:"name"`
-	FilePath    string   `json:"filePath"`
-	Description string   `json:"description"`
-	Flows       []string `json:"flows"`
+	Name        string         `json:"name"`
+	FilePath    string         `json:"filePath"`
+	HandlerFile map[string]any `json:"handlerFile,omitempty"`
+	Description string         `json:"description"`
+	Flows       []string       `json:"flows"`
 }
 
 type mcpRouteIndex struct {
@@ -124,10 +126,12 @@ func buildMCPRouteIndex(g *graph.Graph) *mcpRouteIndex {
 		flowDetails := nonNilRouteFlows(flowMap[node.ID])
 		flows := nonNilStringSlice(mcpRouteFlowNames(flowDetails))
 		semanticFields := mcpSemanticFieldsFromNode(node)
+		handlerFile, _ := mcpFileLayerForPath(g, handler, dispatchModeSmart)
 		index.routes = append(index.routes, mcpRouteMapItem{
 			mcpSemanticFields: semanticFields,
 			Route:             route,
 			Handler:           handler,
+			HandlerFile:       handlerFile,
 			Middleware:        middleware,
 			Consumers:         nonNilRouteConsumers(consumers),
 			Flows:             flows,
@@ -138,6 +142,7 @@ func buildMCPRouteIndex(g *graph.Graph) *mcpRouteIndex {
 			ID:                node.ID,
 			Name:              route,
 			Handler:           handler,
+			HandlerFile:       handlerFile,
 			ResponseKeys:      resourceNodeStringSlice(node, "responseKeys"),
 			ErrorKeys:         resourceNodeStringSlice(node, "errorKeys"),
 			Middleware:        middleware,
@@ -194,6 +199,7 @@ func cloneMCPRouteMapItem(item mcpRouteMapItem) mcpRouteMapItem {
 		mcpSemanticFields: cloneMCPSemanticFields(item.mcpSemanticFields),
 		Route:             item.Route,
 		Handler:           item.Handler,
+		HandlerFile:       cloneMapAny(item.HandlerFile),
 		Middleware:        cloneNonNilStringSlice(item.Middleware),
 		Consumers:         cloneNonNilRouteConsumers(item.Consumers),
 		Flows:             cloneNonNilStringSlice(item.Flows),
@@ -207,6 +213,7 @@ func cloneMCPRouteAnalysisRecord(record mcpRouteAnalysisRecord) mcpRouteAnalysis
 		ID:                record.ID,
 		Name:              record.Name,
 		Handler:           record.Handler,
+		HandlerFile:       cloneMapAny(record.HandlerFile),
 		ResponseKeys:      cloneStringSlice(record.ResponseKeys),
 		ErrorKeys:         cloneStringSlice(record.ErrorKeys),
 		Middleware:        cloneNonNilStringSlice(record.Middleware),
@@ -254,9 +261,12 @@ func mcpToolMapItems(g *graph.Graph, filter string) []mcpToolMapItem {
 		if filter != "" && !strings.Contains(strings.ToLower(name), needle) {
 			continue
 		}
+		filePath := resourceNodeString(node, "filePath")
+		handlerFile, _ := mcpFileLayerForPath(g, filePath, dispatchModeSmart)
 		items = append(items, mcpToolMapItem{
 			Name:        name,
-			FilePath:    resourceNodeString(node, "filePath"),
+			FilePath:    filePath,
+			HandlerFile: handlerFile,
 			Description: trimMCPToolDescription(resourceNodeString(node, "description")),
 			Flows:       nonNilStringSlice(mcpRouteFlowNames(flowMap[node.ID])),
 		})

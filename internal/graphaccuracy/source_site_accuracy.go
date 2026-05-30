@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 )
@@ -52,6 +53,7 @@ type SourceSiteAccuracyResult struct {
 	AccessesTargets       SourceSiteAccessTargetMetrics    `json:"accessesTargets"`
 	Duplicates            SourceSiteDuplicateMetrics       `json:"duplicates"`
 	PolicyViolations      SourceSitePolicyViolationMetrics `json:"policyViolations"`
+	FileGroups            []SourceSiteFileGroup            `json:"fileGroups,omitempty"`
 	GoldenValidation      SourceSiteGoldenValidation       `json:"goldenValidation"`
 	Examples              SourceSiteAccuracyExamples       `json:"examples,omitempty"`
 	Notes                 []string                         `json:"notes"`
@@ -124,6 +126,13 @@ type SourceSitePolicyViolationMetrics struct {
 	NonPropertyAccessTargets         int `json:"nonPropertyAccessTargets"`
 	CoarseFileSourceCallEdges        int `json:"coarseFileSourceCallEdges"`
 	CoarseFileTargetCallEdges        int `json:"coarseFileTargetCallEdges"`
+}
+
+type SourceSiteFileGroup struct {
+	FilePath string                      `json:"filePath"`
+	Total    int                         `json:"total"`
+	Counts   map[string]int              `json:"counts,omitempty"`
+	Samples  []SourceSiteAccuracyExample `json:"samples,omitempty"`
 }
 
 type SourceSiteGoldenValidation struct {
@@ -297,6 +306,13 @@ func SourceSiteAccuracySummaryLines(result SourceSiteAccuracyResult) []string {
 			result.GoldenValidation.FalseResolvedEdges,
 		),
 	}
+	if len(result.FileGroups) > 0 {
+		lines = append(lines, fmt.Sprintf("sourceSites.fileGroups=%d topFile=%q topIssues=%d",
+			len(result.FileGroups),
+			result.FileGroups[0].FilePath,
+			result.FileGroups[0].Total,
+		))
+	}
 	return lines
 }
 
@@ -380,6 +396,7 @@ func buildSourceSiteAccuracy(graphPath string, graphFile GraphFile, maxExamples 
 			result.Duplicates.MaxDuplicate = count
 		}
 		addSourceSiteExample(&result.Duplicates.Examples, duplicateExamples[key], maxExamples)
+		recordSourceSiteFileIssue(&result, duplicateExamples[key], "duplicate_relationship", maxExamples)
 	}
 
 	for _, node := range graphFile.Nodes {
@@ -412,7 +429,9 @@ func buildSourceSiteAccuracy(graphPath string, graphFile GraphFile, maxExamples 
 			if diagnostic.ProofKind == sourceSiteProofGlobalFallbackLow {
 				result.UnresolvedDiagnostics.LowConfidenceGlobalFallbackOccurrences += occurrences
 			}
-			addSourceSiteExample(&result.Examples.UnresolvedDiagnostics, diagnosticSourceSiteExample(node, diagnostic), maxExamples)
+			example := diagnosticSourceSiteExample(node, diagnostic)
+			addSourceSiteExample(&result.Examples.UnresolvedDiagnostics, example, maxExamples)
+			recordSourceSiteFileIssue(&result, example, "unresolved_diagnostic", maxExamples)
 		}
 	}
 
@@ -433,6 +452,7 @@ func buildSourceSiteAccuracy(graphPath string, graphFile GraphFile, maxExamples 
 		"Policy violation counts are graph-inventory checks, not a replacement for golden corpus tests.",
 		"Golden validation is disabled unless --golden is provided.",
 	}
+	sortSourceSiteFileGroups(result.FileGroups)
 	return result
 }
 
@@ -502,35 +522,94 @@ func checkResolvedRelationshipPolicy(relationship GraphRelationship, nodesByID m
 		if targetLabel != sourceSiteAccessPropertyTarget {
 			result.AccessesTargets.NonPropertyTargetCount++
 			result.PolicyViolations.NonPropertyAccessTargets++
-			addSourceSiteExample(&result.Examples.NonPropertyAccessTargets, relationshipSourceSiteExample(relationship, nodesByID, "ACCESSES target is not Property"), maxExamples)
+			example := relationshipSourceSiteExample(relationship, nodesByID, "ACCESSES target is not Property")
+			addSourceSiteExample(&result.Examples.NonPropertyAccessTargets, example, maxExamples)
+			recordSourceSiteFileIssue(result, example, "non_property_access_target", maxExamples)
 		}
 	}
 	if normalizedProofKind(relationship.ProofKind) == sourceSiteProofMissing {
 		result.ResolvedEdges.EdgesWithoutProof++
 		result.PolicyViolations.ResolvedEdgesWithoutProof++
-		addSourceSiteExample(&result.Examples.ResolvedEdgesWithoutProof, relationshipSourceSiteExample(relationship, nodesByID, "resolved relationship has no proofKind"), maxExamples)
+		example := relationshipSourceSiteExample(relationship, nodesByID, "resolved relationship has no proofKind")
+		addSourceSiteExample(&result.Examples.ResolvedEdgesWithoutProof, example, maxExamples)
+		recordSourceSiteFileIssue(result, example, "resolved_edge_without_proof", maxExamples)
 	}
 	if !relationshipHasStableSourceSiteID(relationship) {
 		result.ResolvedEdges.EdgesWithoutSourceSiteID++
 		result.PolicyViolations.ResolvedEdgesWithoutSourceSiteID++
-		addSourceSiteExample(&result.Examples.ResolvedEdgesWithoutSourceSite, relationshipSourceSiteExample(relationship, nodesByID, "resolved relationship has no sourceSiteId/sourceSiteIds"), maxExamples)
+		example := relationshipSourceSiteExample(relationship, nodesByID, "resolved relationship has no sourceSiteId/sourceSiteIds")
+		addSourceSiteExample(&result.Examples.ResolvedEdgesWithoutSourceSite, example, maxExamples)
+		recordSourceSiteFileIssue(result, example, "resolved_edge_without_source_site", maxExamples)
 	}
 	if relationship.ProofKind == sourceSiteProofGlobalFallbackLow {
 		result.ResolvedEdges.LowConfidenceGlobalFallbackEdges++
 		result.PolicyViolations.LowConfidenceFallbackEdges++
-		addSourceSiteExample(&result.Examples.LowConfidenceFallbackEdges, relationshipSourceSiteExample(relationship, nodesByID, "resolved relationship uses low-confidence global fallback proof"), maxExamples)
+		example := relationshipSourceSiteExample(relationship, nodesByID, "resolved relationship uses low-confidence global fallback proof")
+		addSourceSiteExample(&result.Examples.LowConfidenceFallbackEdges, example, maxExamples)
+		recordSourceSiteFileIssue(result, example, "low_confidence_fallback_edge", maxExamples)
 	}
 	if relationship.Type == sourceSiteRelCalls {
 		if source.Label == "File" {
 			result.ResolvedEdges.CoarseFileSourceEdges++
 			result.PolicyViolations.CoarseFileSourceCallEdges++
-			addSourceSiteExample(&result.Examples.CoarseFileCallEdges, relationshipSourceSiteExample(relationship, nodesByID, "CALLS source is coarse File node"), maxExamples)
+			example := relationshipSourceSiteExample(relationship, nodesByID, "CALLS source is coarse File node")
+			addSourceSiteExample(&result.Examples.CoarseFileCallEdges, example, maxExamples)
+			recordSourceSiteFileIssue(result, example, "coarse_file_call_edge", maxExamples)
 		}
 		if target.Label == "File" {
 			result.ResolvedEdges.CoarseFileTargetEdges++
 			result.PolicyViolations.CoarseFileTargetCallEdges++
-			addSourceSiteExample(&result.Examples.CoarseFileCallEdges, relationshipSourceSiteExample(relationship, nodesByID, "CALLS target is coarse File node"), maxExamples)
+			example := relationshipSourceSiteExample(relationship, nodesByID, "CALLS target is coarse File node")
+			addSourceSiteExample(&result.Examples.CoarseFileCallEdges, example, maxExamples)
+			recordSourceSiteFileIssue(result, example, "coarse_file_call_edge", maxExamples)
 		}
+	}
+}
+
+func recordSourceSiteFileIssue(result *SourceSiteAccuracyResult, example SourceSiteAccuracyExample, issue string, maxExamples int) {
+	if result == nil {
+		return
+	}
+	filePath := filepath.ToSlash(strings.TrimSpace(example.FilePath))
+	if filePath == "" {
+		filePath = "unknown"
+	}
+	index := -1
+	for i := range result.FileGroups {
+		if result.FileGroups[i].FilePath == filePath {
+			index = i
+			break
+		}
+	}
+	if index == -1 {
+		result.FileGroups = append(result.FileGroups, SourceSiteFileGroup{
+			FilePath: filePath,
+			Counts:   map[string]int{},
+		})
+		index = len(result.FileGroups) - 1
+	}
+	group := &result.FileGroups[index]
+	group.Total++
+	addCount(group.Counts, issue, 1)
+	if maxExamples <= 0 || len(group.Samples) < maxExamples {
+		group.Samples = append(group.Samples, example)
+	}
+}
+
+func sortSourceSiteFileGroups(groups []SourceSiteFileGroup) {
+	sort.Slice(groups, func(i, j int) bool {
+		if groups[i].Total != groups[j].Total {
+			return groups[i].Total > groups[j].Total
+		}
+		return groups[i].FilePath < groups[j].FilePath
+	})
+	for i := range groups {
+		sort.SliceStable(groups[i].Samples, func(left, right int) bool {
+			if groups[i].Samples[left].StartLine != groups[i].Samples[right].StartLine {
+				return groups[i].Samples[left].StartLine < groups[i].Samples[right].StartLine
+			}
+			return groups[i].Samples[left].SourceSiteID < groups[i].Samples[right].SourceSiteID
+		})
 	}
 }
 

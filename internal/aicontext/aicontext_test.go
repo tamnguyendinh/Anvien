@@ -89,16 +89,20 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"## Command Selection Guide",
 		"MCP `list_repos` or CLI `anvien list`",
 		"MCP `query` or CLI `anvien query \"<concept>\" --repo <repo>`",
-		"MCP `context` or CLI `anvien context \"<symbol>\" --repo <repo>`",
+		"CLI `anvien query files \"<concept>\" --repo <repo>` or MCP `query` with `target_type=files`",
+		"CLI `anvien context file <path> --repo <repo>` or `anvien file-context <path> --repo <repo> --json`",
+		"MCP `context` or CLI `anvien context symbol \"<symbol>\" --repo <repo>`",
 		"MCP `cypher` or CLI `anvien cypher \"<query>\" --repo <repo>`",
 		"MCP `route_map` or CLI `anvien api route-map [route] --repo <repo>`",
 		"MCP `tool_map` or CLI `anvien api tool-map [tool] --repo <repo>`",
 		"MCP `shape_check` or CLI `anvien api shape-check [route] --repo <repo>`",
 		"MCP `api_impact` or CLI `anvien api impact [route] --repo <repo>`",
-		"MCP `impact` or CLI `anvien impact \"<symbol>\" --repo <repo> --direction upstream`",
-		"MCP `detect_changes` or CLI `anvien detect-changes --repo <repo> --scope all`",
+		"MCP `impact` or CLI `anvien impact symbol \"<symbol>\" --repo <repo> --direction upstream`",
+		"CLI `anvien impact file <path> --repo <repo> --direction upstream`",
+		"MCP `detect_changes` or CLI `anvien detect-changes --repo <repo> --scope all`; use `detect-changes files`",
 		"MCP `rename` or CLI `anvien rename <symbol> <newName> --repo <repo>`",
 		"`anvien graph-health summary --repo <repo> --json`",
+		"`anvien graph-health files --repo <repo> --json` or `anvien file-hotspots --repo <repo> --json`",
 		"`anvien query-health --repo <repo>`",
 		"`anvien resolution-inventory --graph .anvien/graph.json`",
 		"`anvien source-site-accuracy --graph .anvien/graph.json`",
@@ -126,6 +130,8 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"Repository groups, cross-repo query, contracts, status, and sync",
 		"Runtime, setup, launcher, package, and canonical executable workflows",
 		"Generated AGENTS.md, CLAUDE.md, embedded skills, and AI context validation",
+		"file-context",
+		"file-hotspots",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("AGENTS.md missing %q:\n%s", want, text)
@@ -210,6 +216,26 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		}
 		if !strings.Contains(skillText, "##") {
 			t.Fatalf("base skill %s missing rich sections:\n%s", skill.Name, skillText)
+		}
+	}
+
+	cliSkill, err := os.ReadFile(filepath.Join(dir, ".claude", "skills", "anvien", "anvien-cli", "SKILL.md"))
+	if err != nil {
+		t.Fatalf("read generated CLI skill: %v", err)
+	}
+	for _, want := range []string{"anvien query files", "anvien context file", "anvien impact file", "anvien detect-changes files", "anvien graph-health files"} {
+		if !strings.Contains(string(cliSkill), want) {
+			t.Fatalf("generated CLI skill missing %q:\n%s", want, cliSkill)
+		}
+	}
+
+	apiSkill, err := os.ReadFile(filepath.Join(dir, ".claude", "skills", "anvien", "anvien-api-surface", "SKILL.md"))
+	if err != nil {
+		t.Fatalf("read generated API skill: %v", err)
+	}
+	for _, want := range []string{"handlerFile", "anvien context file", "target_type=file"} {
+		if !strings.Contains(string(apiSkill), want) {
+			t.Fatalf("generated API skill missing %q:\n%s", want, apiSkill)
 		}
 	}
 }

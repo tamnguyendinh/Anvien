@@ -1131,6 +1131,9 @@ func TestServeCallToolRouteAndToolMaps(t *testing.T) {
 	if len(route.FlowDetails) != 1 || route.FlowDetails[0].Name != "MainFlow" || route.FlowDetails[0].AppLayer != "api" {
 		t.Fatalf("route_map flowDetails = %#v", route.FlowDetails)
 	}
+	if route.HandlerFile["path"] != "src/server.ts" || route.HandlerFile["relationshipCounts"] == nil {
+		t.Fatalf("route_map handler file layer = %#v", route.HandlerFile)
+	}
 
 	var shapePayload struct {
 		Routes     []mcpShapeRoute `json:"routes"`
@@ -1153,6 +1156,9 @@ func TestServeCallToolRouteAndToolMaps(t *testing.T) {
 	if shapePayload.Routes[0].AppLayer != "api" || shapePayload.Routes[0].Consumers[0].AppLayer != "frontend" {
 		t.Fatalf("shape_check semantic fields = %#v", shapePayload.Routes[0])
 	}
+	if shapePayload.Routes[0].HandlerFile["path"] != "src/server.ts" {
+		t.Fatalf("shape_check handler file layer = %#v", shapePayload.Routes[0].HandlerFile)
+	}
 
 	var apiPayload mcpAPIImpactRoute
 	apiText := toolTextFromResponse(t, responses[2])
@@ -1173,6 +1179,9 @@ func TestServeCallToolRouteAndToolMaps(t *testing.T) {
 	}
 	if len(apiPayload.ExecutionFlowDetails) != 1 || apiPayload.ExecutionFlowDetails[0].AppLayer != "api" {
 		t.Fatalf("api_impact executionFlowDetails = %#v", apiPayload.ExecutionFlowDetails)
+	}
+	if apiPayload.HandlerFile["path"] != "src/server.ts" || apiPayload.ImpactSummary["handlerFile"] == nil {
+		t.Fatalf("api_impact handler file layer = %#v summary=%#v", apiPayload.HandlerFile, apiPayload.ImpactSummary)
 	}
 	consumerLayers, _ := apiPayload.ImpactSummary["consumerAppLayers"].(map[string]any)
 	if consumerLayers["frontend"] != float64(1) {
@@ -1199,6 +1208,9 @@ func TestServeCallToolRouteAndToolMaps(t *testing.T) {
 	}
 	if len(tool.Flows) != 1 || tool.Flows[0] != "MainFlow" {
 		t.Fatalf("tool_map flows = %#v", tool)
+	}
+	if tool.HandlerFile["path"] != "src/tools.ts" {
+		t.Fatalf("tool_map handler file layer = %#v", tool.HandlerFile)
 	}
 }
 
@@ -2034,6 +2046,14 @@ func writeMCPResourceGraph(t *testing.T, repoPath string) {
 		"topologyStatus": string(graphhealth.TopologyConnected), "resolutionConfidence": graphhealth.ResolutionConfidenceDegraded, "resolutionGapCount": 1,
 		"resolutionHealthBuckets": map[string]int{string(graphhealth.ResolutionHealthUnresolvedCallTarget): 1},
 	}})
+	g.AddNode(graph.Node{ID: "File:src/server.ts", Label: scopeir.NodeFile, Properties: graph.NodeProperties{
+		"name": "server.ts", "filePath": "src/server.ts",
+		"appLayer": "api", "appLayerSource": "test_fixture", "functionalArea": "api", "functionalAreaSource": "test_fixture",
+	}})
+	g.AddNode(graph.Node{ID: "File:src/tools.ts", Label: scopeir.NodeFile, Properties: graph.NodeProperties{
+		"name": "tools.ts", "filePath": "src/tools.ts",
+		"appLayer": "api", "appLayerSource": "test_fixture", "functionalArea": "mcp", "functionalAreaSource": "test_fixture",
+	}})
 	g.AddNode(graph.Node{ID: "Function:main", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
 		"name": "main", "filePath": "src/app.ts", "startLine": 1, "endLine": 3,
 		"appLayer": "frontend", "appLayerSource": "test_fixture", "functionalArea": "web_graph_ui", "functionalAreaSource": "test_fixture",
@@ -2063,6 +2083,8 @@ func writeMCPResourceGraph(t *testing.T, repoPath string) {
 	mainStep := 1
 	helperStep := 2
 	g.AddRelationship(graph.Relationship{ID: "rel:main-process", SourceID: "Function:main", TargetID: "Process:main", Type: graph.RelStepInProcess, Step: &mainStep})
+	g.AddRelationship(graph.Relationship{ID: "rel:server-defines-route", SourceID: "File:src/server.ts", TargetID: "Route:/api/users", Type: graph.RelDefines})
+	g.AddRelationship(graph.Relationship{ID: "rel:tools-defines-tool", SourceID: "File:src/tools.ts", TargetID: "Tool:search", Type: graph.RelDefines})
 	g.AddRelationship(graph.Relationship{ID: "rel:helper-process", SourceID: "Function:helper", TargetID: "Process:main", Type: graph.RelStepInProcess, Step: &helperStep})
 	g.AddRelationship(graph.Relationship{ID: "rel:main-helper", SourceID: "Function:main", TargetID: "Function:helper", Type: graph.RelCalls, Confidence: 0.95, Reason: "fixture"})
 	g.AddRelationship(graph.Relationship{ID: "rel:main-member", SourceID: "Function:main", TargetID: "comm_api", Type: graph.RelMemberOf})

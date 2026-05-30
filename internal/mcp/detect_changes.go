@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/tamnguyendinh/anvien/internal/filecontext"
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/graphhealth"
 	"github.com/tamnguyendinh/anvien/internal/repo"
@@ -51,7 +52,14 @@ func (s Server) detectChangesTool(args map[string]any) (map[string]any, error) {
 				"message":        "No changes detected.",
 			},
 			"changed_symbols":    []map[string]any{},
+			"changed_files":      []map[string]any{},
+			"affected_files":     []map[string]any{},
 			"affected_processes": []map[string]any{},
+			"fileLayer": map[string]any{
+				"changedFiles":     0,
+				"affectedFiles":    0,
+				"derivedEdgesNote": filecontext.DerivedFileEdgesNote,
+			},
 		}
 		if targetType != "" {
 			return detectChangesTargetPayload(result, nil, targetType, dispatchMode), nil
@@ -65,12 +73,15 @@ func (s Server) detectChangesTool(args map[string]any) (map[string]any, error) {
 	}
 	changedSymbols := detectChangedSymbols(g, fileDiffs)
 	affectedProcesses := detectAffectedProcesses(g, changedSymbols)
+	changedFiles := detectChangedFileRows(g, fileDiffs, changedSymbols)
+	affectedFiles := detectAffectedFileRows(g, changedSymbols, affectedProcesses)
 	semanticStatus := semantic.GraphSemanticStatus(g)
 	semanticSummary := detectChangesSemanticSummary(changedSymbols, affectedProcesses)
 	summary := map[string]any{
 		"changed_count":  len(changedSymbols),
 		"affected_count": len(affectedProcesses),
 		"changed_files":  len(fileDiffs),
+		"affected_files": len(affectedFiles),
 		"risk_level":     detectRisk(len(affectedProcesses)),
 	}
 	if changedAppLayers := impactCountMapResult(semanticSummary, "changedAppLayers"); len(changedAppLayers) > 0 {
@@ -101,13 +112,21 @@ func (s Server) detectChangesTool(args map[string]any) (map[string]any, error) {
 		"resolutionGapChanges":    semanticSummary["resolutionGapChanges"],
 		"resolutionHealthImpact":  semanticSummary["resolutionHealthImpact"],
 		"changed_symbols":         changedSymbols,
+		"changed_files":           changedFiles,
+		"affected_files":          affectedFiles,
 		"affected_processes":      affectedProcesses,
+		"fileLayer": map[string]any{
+			"changedFiles":     len(changedFiles),
+			"affectedFiles":    len(affectedFiles),
+			"changedFileRisk":  detectFileRisk(changedFiles),
+			"derivedEdgesNote": filecontext.DerivedFileEdgesNote,
+		},
 	}
 	if warning := querySemanticWarning(semanticStatus); warning != "" {
 		result["semanticWarning"] = warning
 	}
 	if targetType != "" {
-		return detectChangesTargetPayload(result, detectChangedFileRows(g, fileDiffs), targetType, dispatchMode), nil
+		return detectChangesTargetPayload(result, changedFiles, targetType, dispatchMode), nil
 	}
 	return result, nil
 }
@@ -158,7 +177,8 @@ func detectChangesTargetPayload(result map[string]any, changedFiles []map[string
 	return payload
 }
 
-func detectChangedFileRows(g *graph.Graph, fileDiffs []detectFileDiff) []map[string]any {
+func detectChangedFileRows(g *graph.Graph, fileDiffs []detectFileDiff, changedSymbols []map[string]any) []map[string]any {
+	symbolsByFile := detectSymbolsByFile(changedSymbols)
 	rows := make([]map[string]any, 0, len(fileDiffs))
 	for _, fileDiff := range fileDiffs {
 		row := map[string]any{
@@ -168,13 +188,90 @@ func detectChangedFileRows(g *graph.Graph, fileDiffs []detectFileDiff) []map[str
 		}
 		if summary, ok := mcpFileSummaryForPath(g, fileDiff.FilePath); ok {
 			row["summary"] = summary
+			row["relationshipHints"] = mcpFileRelationshipHints(summary)
+			row["linkedFlows"] = summary.LinkedFlowCount
+			row["linkedTests"] = summary.LinkedTestCount
+			row["fileRisk"] = summary.Risk
 		}
+		symbols := symbolsByFile[normalizeContextPath(fileDiff.FilePath)]
+		if symbols == nil {
+			symbols = []map[string]any{}
+		}
+		row["changedSymbols"] = symbols
+		row["changedSymbolCount"] = len(symbols)
+		row["unresolvedDelta"] = detectChangedSymbolsResolutionGapCount(symbols)
 		rows = append(rows, row)
 	}
 	sort.Slice(rows, func(i, j int) bool {
 		return fmt.Sprint(rows[i]["path"]) < fmt.Sprint(rows[j]["path"])
 	})
 	return rows
+}
+
+func detectAffectedFileRows(g *graph.Graph, changedSymbols []map[string]any, affectedProcesses []map[string]any) []map[string]any {
+	counts := map[string]int{}
+	for _, symbol := range changedSymbols {
+		incrementQueryCount(counts, normalizeContextPath(impactStringValue(symbol["filePath"])), 1)
+	}
+	for _, process := range affectedProcesses {
+		steps, _ := process["changed_steps"].([]map[string]any)
+		for _, step := range steps {
+			incrementQueryCount(counts, normalizeContextPath(impactStringValue(step["filePath"])), 1)
+		}
+	}
+	paths := make([]string, 0, len(counts))
+	for path := range counts {
+		if strings.TrimSpace(path) != "" {
+			paths = append(paths, path)
+		}
+	}
+	sort.Strings(paths)
+	rows := make([]map[string]any, 0, len(paths))
+	for _, path := range paths {
+		row := map[string]any{"path": path, "affectedSymbols": counts[path]}
+		if summary, ok := mcpFileSummaryForPath(g, path); ok {
+			row["summary"] = summary
+			row["relationshipHints"] = mcpFileRelationshipHints(summary)
+			row["fileRisk"] = summary.Risk
+		}
+		rows = append(rows, row)
+	}
+	return rows
+}
+
+func detectSymbolsByFile(symbols []map[string]any) map[string][]map[string]any {
+	out := map[string][]map[string]any{}
+	for _, symbol := range symbols {
+		path := normalizeContextPath(impactStringValue(symbol["filePath"]))
+		if path == "" {
+			continue
+		}
+		out[path] = append(out[path], symbol)
+	}
+	return out
+}
+
+func detectChangedSymbolsResolutionGapCount(symbols []map[string]any) int {
+	total := 0
+	for _, symbol := range symbols {
+		total += impactIntValue(symbol["resolutionGapCount"])
+		if entity, _ := symbol["resolutionGapEntity"].(bool); entity {
+			total += maxDetectCount(impactIntValue(symbol["count"]), 1)
+		}
+	}
+	return total
+}
+
+func detectFileRisk(files []map[string]any) string {
+	riskOrder := map[string]int{"low": 1, "medium": 2, "high": 3, "critical": 4}
+	selected := "low"
+	for _, file := range files {
+		risk := strings.ToLower(strings.TrimSpace(impactStringValue(file["fileRisk"])))
+		if riskOrder[risk] > riskOrder[selected] {
+			selected = risk
+		}
+	}
+	return selected
 }
 
 func gitDiffForDetectChanges(entry repo.RegistryEntry, args map[string]any) (string, error) {

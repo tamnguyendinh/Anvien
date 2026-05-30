@@ -143,6 +143,9 @@ func (s Server) contextToolInternal(args map[string]any, collectProfile bool) (m
 		"processes":      processes,
 	}
 	addMCPSymbolTargetFields(payload, symbol, fileSummary, hasFileSummary, dispatchMode)
+	if fileLayer, ok := mcpFileLayerForPath(g, resourceNodeString(node, "filePath"), dispatchMode); ok {
+		payload["fileLayer"] = fileLayer
+	}
 	if warning := querySemanticWarning(semanticStatus); warning != "" {
 		payload["semanticWarning"] = warning
 	}

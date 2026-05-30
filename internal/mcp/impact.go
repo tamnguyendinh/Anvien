@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tamnguyendinh/anvien/internal/filecontext"
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/graphhealth"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
@@ -163,8 +164,22 @@ func (s Server) impactToolInternal(args map[string]any, collectProfile bool) (ma
 	if symbolPayload, ok := payload["target"].(map[string]any); ok {
 		addMCPSymbolTargetFields(payload, symbolPayload, fileSummary, hasFileSummary, options.DispatchMode)
 	}
+	affectedFiles := []map[string]any{}
 	if rows := impactRowsFromPayload(payload); len(rows) > 0 {
-		payload["affectedFiles"] = fileImpactAffectedFiles(rows)
+		affectedFiles = fileImpactAffectedFiles(rows)
+		payload["affectedFiles"] = affectedFiles
+	}
+	if fileLayer, ok := mcpFileLayerForPath(g, resourceNodeString(candidates[0].Node, "filePath"), options.DispatchMode); ok {
+		fileLayer["blastRadius"] = map[string]any{
+			"direction":          options.Direction,
+			"affectedFiles":      affectedFiles,
+			"affectedFileCount":  len(affectedFiles),
+			"impactedCount":      payload["impactedCount"],
+			"risk":               payload["risk"],
+			"derivedEdgesNote":   filecontext.DerivedFileEdgesNote,
+			"targetSymbolImpact": "symbol impact plus containing-file projection",
+		}
+		payload["fileLayer"] = fileLayer
 	}
 	profile.IndexBuild += runProfile.IndexBuild
 	profile.Traversal += runProfile.Traversal
@@ -371,7 +386,17 @@ func runFileImpact(g *graph.Graph, options impactOptions) map[string]any {
 		return fmt.Sprint(impactedRows[i]["name"]) < fmt.Sprint(impactedRows[j]["name"])
 	})
 	affectedProcesses := combineImpactProcesses(payloads)
-	risk := impactRisk(impactDirectCount(impactedRows), len(affectedProcesses), len(fileImpactAffectedFiles(impactedRows)), len(impactedRows))
+	affectedFiles := fileImpactAffectedFiles(impactedRows)
+	risk := impactRisk(impactDirectCount(impactedRows), len(affectedProcesses), len(affectedFiles), len(impactedRows))
+	fileLayer := mcpFileLayerFromContext(context)
+	fileLayer["blastRadius"] = map[string]any{
+		"direction":         options.Direction,
+		"affectedFiles":     affectedFiles,
+		"affectedFileCount": len(affectedFiles),
+		"impactedCount":     len(impactedRows),
+		"risk":              risk,
+		"derivedEdgesNote":  filecontext.DerivedFileEdgesNote,
+	}
 	return map[string]any{
 		"status":             "found",
 		"targetType":         targetTypeFile,
@@ -384,13 +409,14 @@ func runFileImpact(g *graph.Graph, options impactOptions) map[string]any {
 		"symbolImpacts":      symbolImpacts,
 		"impacted":           impactedRows,
 		"impactedCount":      len(impactedRows),
-		"affectedFiles":      fileImpactAffectedFiles(impactedRows),
+		"affectedFiles":      affectedFiles,
 		"affected_processes": affectedProcesses,
+		"fileLayer":          fileLayer,
 		"risk":               risk,
 		"summary": map[string]any{
 			"contained_symbols": len(symbolRows),
 			"direct":            impactDirectCount(impactedRows),
-			"files_affected":    len(fileImpactAffectedFiles(impactedRows)),
+			"files_affected":    len(affectedFiles),
 			"flows_affected":    len(affectedProcesses),
 			"linked_flows":      context.Linked.Counts.Flows,
 			"linked_tests":      context.Linked.Counts.Tests,
@@ -440,6 +466,18 @@ func impactToolTargetPayload(g *graph.Graph, target string, dispatchMode string)
 	for _, tool := range tools {
 		flowCount += len(tool.Flows)
 	}
+	affectedFiles := make([]map[string]any, 0, len(tools))
+	for _, tool := range tools {
+		if strings.TrimSpace(tool.FilePath) == "" {
+			continue
+		}
+		affectedFiles = append(affectedFiles, map[string]any{
+			"path":             tool.FilePath,
+			"linkedFlows":      len(tool.Flows),
+			"handlerFile":      tool.HandlerFile,
+			"derivedEdgesNote": filecontext.DerivedFileEdgesNote,
+		})
+	}
 	risk := "LOW"
 	if flowCount > 5 {
 		risk = "HIGH"
@@ -454,10 +492,12 @@ func impactToolTargetPayload(g *graph.Graph, target string, dispatchMode string)
 		"tools":         tools,
 		"total":         len(tools),
 		"impactedCount": flowCount,
+		"affectedFiles": affectedFiles,
 		"risk":          risk,
 		"summary": map[string]any{
 			"matched_tools":  len(tools),
 			"linked_flows":   flowCount,
+			"affected_files": len(affectedFiles),
 			"impact_surface": "tool_map",
 		},
 	}

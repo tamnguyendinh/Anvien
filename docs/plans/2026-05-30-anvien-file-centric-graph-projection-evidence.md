@@ -811,50 +811,104 @@ Benchmark link:
 
 ## E13 - Existing Command Integration Matrix
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: P6-A completed
 
-Expected evidence:
+Matrix:
 
-- Inventory of existing graph-related commands and MCP/API equivalents.
-- Classification of each command as `must add file layer`, `may add file layer`, or `no file layer`.
-- For each included command, the current output that must be preserved.
-- For each included command, the added file-layer section, JSON fields, sample limits, and total counts.
-- Evidence that file path inputs do not break symbol-name inputs.
-- Commands intentionally left unchanged with reason.
+| Command family | Classification | Preserved output | Added file-layer behavior |
+|---|---|---|---|
+| `analyze` | must add file layer | Scanned/parsed/unsupported/failed counts and graph node/relationship inventory. | Human `fileProjection` summary and top hotspots; `--json` now includes `fileProjection.status`, `files`, `dependencyEdges`, `unresolvedFiles`, `hotspots`, and `derivedEdgesNote`. |
+| `query` / `query files` | must add file layer | Existing definitions/processes/docs result lanes. | Parent JSON adds `files` and `fileLayer`; file rows include matched symbols and relationship hints. |
+| `context` / `context symbol` / `context file` | must add file layer | Existing symbol context, references, and target dispatch behavior. | File paths open full file context; symbol context includes `fileLayer` with containing file summary, relationship counts, unresolved counts, and linked evidence. |
+| `impact` / `impact symbol` / `impact file` / `impact route` / `impact tool` | must add file layer | Existing symbol blast radius, process/test impact, route/tool impact payloads. | Symbol/file output adds file-level blast radius; tool output adds handler file rows; route/tool impacts keep target-specific semantics. |
+| `detect-changes` / `detect-changes files` | must add file layer | Changed symbols, affected processes, semantic status, app-layer and functional-area summaries. | Parent JSON adds `changed_files`, `affected_files`, and `fileLayer`; file child rows include relationship hints, linked flows/tests, unresolved delta, changed symbols, and file risk. |
+| `graph-health summary/report/files` | must add file layer | Existing topology, resolution, source-site, and component diagnostics. | Summary/report add `fileLayer` and top `fileHotspots`; `graph-health files` remains the detailed file quality child command. |
+| `query-health` | must add file layer | Existing query case scoring, expected/matched/missed targets, threshold/exact checks. | Actual results include file rows; misses include `missedClusters` grouped by file, app layer, functional area, and target layer. |
+| `resolution-inventory` | must add file layer | Existing graph snapshot totals and gap buckets. | Adds top `fileGroups` with gap totals, buckets, nearest source symbols, and samples. |
+| `source-site-accuracy` | must add file layer | Existing source-site policy issues and summary lines. | Adds `fileGroups` with issue counts and source-site samples including `filePath` and `startLine`. |
+| `api route-map`, `api tool-map`, `api shape-check`, `api impact` | must add file layer | Existing route/tool/consumer/shape/impact details. | Route/tool records include `handlerFile`; shape and impact summaries propagate handler-file evidence. |
+| MCP `query`, `context`, `impact`, `detect_changes`, API map equivalents, resources | must add file layer | Existing tool schemas and result semantics. | Structured payloads now expose the same file-layer facts, handler files, and resource guidance. |
+| `status`, `list` | no file layer | Repository freshness and registry inventory. | Left unchanged because they do not answer graph-content questions. |
+| `rename` | no default file layer | Symbol rename edits and graph edits. | Left unchanged in P6 to avoid expanding mutation output; file-level impact remains available through `impact`. |
+| `augment`, `cypher` | no file layer | Raw/search augmentation and raw graph query behavior. | Left unchanged because reshaping raw results would hide caller-selected graph facts. |
+| Group commands | may add file layer later | Cross-repo group status/query/contracts. | Deferred until cross-repo file projection semantics are designed and labeled per repo. |
+
+Common wording:
+
+- All added file relationship output uses: `File relationship groups are projections derived from symbol and source-site graph facts; canonical graph relationships remain symbol/source-site facts.`
+- Parent commands keep broad discovery behavior. Child commands remain the exact target-specific path when scripts or agents need `target_type=file`, `target_type=symbol`, route, tool, flow, or quality-specific output.
 
 ## E14 - Existing Command File-Layer Behavior
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: P6-B/P6-C completed
 
-Expected evidence:
+Blast radius:
 
-- `analyze` output keeps current graph inventory and adds file projection build/count/hotspot evidence.
-- `query` output keeps current result lanes and adds relevant file hits with matched symbols and relationships.
-- `context` output keeps symbol context and adds file summary for symbols; file path input opens full file context.
-- `impact` output keeps symbol blast radius and adds impacted file/file-group/flow/test evidence.
-- `detect-changes` output keeps changed-symbol detail and groups changed/affected evidence by file.
-- Graph quality commands show file-level unresolved, confidence, source-site, and generated-file hotspots.
-- API/MCP map commands show handler files, symbol trees, file dependencies, linked tests, and unresolved handler sites.
-- Tests or snapshots prove old details are preserved and file-layer sections are additive.
+- Impact checks before edits reported CRITICAL blast radius for CLI root command owners (`newAnalyzeCommand`, graph-health/report, resolution inventory, source-site accuracy, query-health, generated AI context) because they are reachable from the root CLI and generated guidance.
+- MCP tool internals for `query`, `context`, `impact`, `detect_changes`, route/tool maps, shape check, and API impact were LOW to CRITICAL depending on shared helper reuse.
+- Changes were kept additive: existing symbol, route/tool, graph-quality, and changed-symbol payloads remain present while file-layer fields are appended.
+
+Implementation evidence:
+
+| Area | Files | Evidence |
+|---|---|---|
+| Analyze | `internal/cli/command.go`, `internal/cli/command_test.go` | Human output adds `fileProjection`; `analyze --json` adds machine-readable `fileProjection`. |
+| Query/context/impact/detect | `internal/mcp/tools.go`, `internal/mcp/context.go`, `internal/mcp/impact.go`, `internal/mcp/detect_changes.go`, `internal/mcp/target_dispatch.go`, `internal/cli/target_command_test.go` | Parent and child payloads expose file summaries, relationship hints, file-layer blast radius, changed files, and affected files. |
+| Graph quality | `internal/cli/graph_health_command.go`, `internal/cli/resolution_inventory_command.go`, `internal/graphaccuracy/source_site_accuracy.go`, `internal/cli/query_health_command.go`, related tests | Graph-health, resolution inventory, source-site accuracy, and query-health now include file-level grouping or miss clustering. |
+| API/MCP maps | `internal/mcp/route_tool_map.go`, `internal/mcp/route_shape_impact.go`, `internal/mcp/server_test.go` | Route/tool/shape/impact fixture tests assert `handlerFile` propagation. Live Anvien graph has no route/tool rows, so parity evidence uses fixture graph tests. |
+| MCP resources | `internal/mcp/resources.go` | `anvien://repo/<repo>/context` and setup guidance describe file projection, child commands, and graph-quality file outputs. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass after P6 code changes. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test ./... -count=1` | Expected fixture failure only: non-buildable analyzer fixtures under `anvien/test/fixtures` import local packages or include invalid examples. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass after full build and after adding `analyze --json`. |
+| `go run .\cmd\generate-web-contracts --check` | Pass; no generated Web contract drift from P6. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass. `files=829`, `parsed=594`, `nodes=95419`, `relationships=130701`, `dependencyEdges=15806`, `unresolvedFiles=586`, `hotspots=5`. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien --json` | Pass. Parsed summary: `fileProjection.files=829`, `dependencyEdges=15806`, `hotspots=5`, `graph.nodes=95419`. |
+| `query "target dispatch" --repo Anvien --limit 2 --json` | Pass. Existing definitions lane preserved (`definitions=2`), added `files=2`, `fileLayer=true`, first file `internal/mcp/impact.go`. |
+| `query files "target dispatch" --repo Anvien --limit 3 --json` | Pass. `files=3`, first file `internal/mcp/impact.go`, relationship hints returned. |
+| `context symbol "newAnalyzeCommand" --repo Anvien --json` | Pass. Symbol payload includes `fileLayer.path=internal/cli/command.go`, unresolved count `217`. |
+| `context file internal\cli\command.go --repo Anvien --json` | Pass. Full file context: `symbols=69`, `fanIn=6`, `fanOut=143`, `risk=high`. |
+| `impact symbol "newAnalyzeCommand" --repo Anvien --direction upstream --json` | Pass. Existing symbol risk remains `CRITICAL`; file-layer blast radius reports `affectedFiles=2`. |
+| `impact file internal\mcp\route_tool_map.go --repo Anvien --direction upstream --depth 1 --json` | Pass. `target.normalizedPath=internal/mcp/route_tool_map.go`, `risk=CRITICAL`, file-layer `affectedFiles=6`. |
+| `graph-health summary --repo Anvien --json` | Pass. `fileLayer.totalFiles=829`, `unresolvedFiles=586`, `highFanOutFiles=245`, `fileHotspots=5`. |
+| `graph-health files --repo Anvien --limit 3 --json` | Pass. `files=3`, first hotspot `internal/mcp/server_test.go`, `risk=high`. |
+| `resolution-inventory --graph .anvien\graph.json --json` | Pass. `fileGroups=20`, first file `internal/mcp/server_test.go`, first total `1445`. |
+| `source-site-accuracy --graph .anvien\graph.json --json` | Pass. `fileGroups=586`, first file `internal/mcp/server_test.go`, first total `1445`. |
+| `query-health --repo Anvien --json` | Pass at command level. Suite summary remains `cases=7`, `passed=6`, `failed=1`; file/layer `missedClusters` present. |
+| Final `detect-changes --repo Anvien --scope all --json` | Pass before commit. `changed_symbols=745`, `changed_files=31`, `affected_files=31`, summary `affected_count=117`, `risk_level=critical`, `fileLayer=true`. CRITICAL is expected because the slice touches CLI root output, MCP/API payloads, graph-quality commands, AI context generation, docs, and tests. |
 
 ## E15 - Generated Skills And AI Context
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: P6-D completed
 
-Expected evidence:
+Source-of-truth updates:
 
-- Inventory of embedded skill source files that need parent/child file-layer command workflow updates.
-- Generated context owners and source-of-truth files updated.
-- Generated `.claude/skills/anvien/**`, `AGENTS.md`, and `CLAUDE.md` regenerated through normal analyze/setup paths.
-- Workflow examples showing overview -> file -> symbol -> relationship/source-site -> impact/test/flow tracing.
-- Source-vs-generated parity validation.
-- Tests for skill ids, parent/child command spellings, resource URIs, guidance wording, and absence of placeholder/fallback content.
+| File | Evidence |
+|---|---|
+| `internal/aicontext/aicontext.go` | Generated AGENTS/CLAUDE command guidance now lists `file-context`, `file-hotspots`, `query files`, `context file`, `context symbol`, `impact file`, `impact symbol`, `detect-changes files`, and `graph-health files/file-hotspots`. |
+| `internal/aicontext/skills/anvien-cli.md` | CLI skill now documents parent/child file-layer commands and validation notes. |
+| `internal/aicontext/skills/anvien-exploring.md` | Exploration workflow now starts from query/analyze hotspots, then drills into file context, symbol tree, relationships, and source-site evidence. |
+| `internal/aicontext/skills/anvien-impact-analysis.md` | Impact workflow now distinguishes `impact symbol` and `impact file`, and uses `detect-changes files` for changed-scope evidence. |
+| `internal/aicontext/skills/anvien-graph-quality.md` | Graph quality workflow now routes unresolved/source-site issues through file groups and `graph-health files`. |
+| `internal/aicontext/skills/anvien-api-surface.md` | API surface workflow now checks handler files, `handlerFile`, route/tool maps, and `context file` before edits. |
+| `internal/aicontext/skills/anvien-debugging.md` | Debugging workflow now uses `query files`, `context file`, and `impact file` when failures are file-scoped. |
+| `internal/aicontext/skills/anvien-guide.md` and `internal/aicontext/skills/anvien-ai-context.md` | Unified guide and AI-context validation now include file-layer command spelling and source-vs-generated checks. |
+
+Regeneration / parity:
+
+- `.\anvien\bin\anvien.exe analyze --force --name Anvien` ran after generator-owned source updates, using the normal `generateAnalyzeAIContext` path. Generated root context files and `.claude/skills/anvien/**` are not tracked in this repository, so tracked diffs remain in generator-owned source and tests.
+- `internal/aicontext/aicontext_test.go` now asserts generated guidance for command spellings, generated skill content, `handlerFile`, `target_type=file`, and file-layer workflow text.
+- `go test ./internal/aicontext -count=1` passed as part of the full `go test ./cmd/... ./internal/... -count=1` run.
 
 ## E16 - Final Validation And Closure
 

@@ -11,6 +11,7 @@ type mcpRouteAnalysisRecord struct {
 	ID           string
 	Name         string
 	Handler      string
+	HandlerFile  map[string]any
 	ResponseKeys []string
 	ErrorKeys    []string
 	Middleware   []string
@@ -34,6 +35,7 @@ type mcpShapeRoute struct {
 	mcpSemanticFields
 	Route        string             `json:"route"`
 	Handler      string             `json:"handler"`
+	HandlerFile  map[string]any     `json:"handlerFile,omitempty"`
 	ResponseKeys []string           `json:"responseKeys,omitempty"`
 	ErrorKeys    []string           `json:"errorKeys,omitempty"`
 	Consumers    []mcpShapeConsumer `json:"consumers"`
@@ -61,6 +63,7 @@ type mcpAPIImpactRoute struct {
 	mcpSemanticFields
 	Route                string              `json:"route"`
 	Handler              string              `json:"handler"`
+	HandlerFile          map[string]any      `json:"handlerFile,omitempty"`
 	ResponseShape        map[string][]string `json:"responseShape"`
 	Middleware           []string            `json:"middleware"`
 	MiddlewareDetection  string              `json:"middlewareDetection,omitempty"`
@@ -92,6 +95,7 @@ func (s Server) shapeCheckTool(args map[string]any) (map[string]any, error) {
 			mcpSemanticFields: cloneMCPSemanticFields(record.mcpSemanticFields),
 			Route:             record.Name,
 			Handler:           record.Handler,
+			HandlerFile:       cloneMapAny(record.HandlerFile),
 			ResponseKeys:      record.ResponseKeys,
 			ErrorKeys:         record.ErrorKeys,
 			Consumers:         mcpShapeConsumers(record),
@@ -228,6 +232,9 @@ func mcpAPIImpactRecord(record mcpRouteAnalysisRecord, handlerRouteCount int) mc
 		"affectedFlows":   len(record.Flows),
 		"riskLevel":       riskLevel,
 	}
+	if len(record.HandlerFile) > 0 {
+		summary["handlerFile"] = cloneMapAny(record.HandlerFile)
+	}
 	mcpAddSemanticFieldsToMap(summary, record.mcpSemanticFields)
 	if appLayers := mcpSemanticCountByAppLayerFromConsumers(consumers); len(appLayers) > 0 {
 		summary["consumerAppLayers"] = appLayers
@@ -251,6 +258,7 @@ func mcpAPIImpactRecord(record mcpRouteAnalysisRecord, handlerRouteCount int) mc
 		mcpSemanticFields:    cloneMCPSemanticFields(record.mcpSemanticFields),
 		Route:                record.Name,
 		Handler:              record.Handler,
+		HandlerFile:          cloneMapAny(record.HandlerFile),
 		ResponseShape:        map[string][]string{"success": nonNilStringSlice(record.ResponseKeys), "error": nonNilStringSlice(record.ErrorKeys)},
 		Middleware:           nonNilStringSlice(record.Middleware),
 		Consumers:            nonNilAPIConsumers(consumers),
@@ -420,6 +428,9 @@ func structToMap(route mcpAPIImpactRoute) map[string]any {
 		"impactSummary":  route.ImpactSummary,
 	}
 	mcpAddSemanticFieldsToMap(out, route.mcpSemanticFields)
+	if len(route.HandlerFile) > 0 {
+		out["handlerFile"] = route.HandlerFile
+	}
 	if len(route.ExecutionFlowDetails) > 0 {
 		out["executionFlowDetails"] = route.ExecutionFlowDetails
 	}

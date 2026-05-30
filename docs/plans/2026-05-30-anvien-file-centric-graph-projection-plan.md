@@ -618,7 +618,7 @@ The plan is complete when:
 
   Acceptance: CLI, API, MCP, and generated contracts share the same parent/child target semantics and ambiguity behavior.
 
-- [ ] [P6-A] Define the existing-command file-layer integration matrix.
+- [x] [P6-A] Define the existing-command file-layer integration matrix.
 
   Goal: Decide exactly how every existing graph-related Anvien command should keep its current output and add the file layer.
 
@@ -636,7 +636,7 @@ The plan is complete when:
 
   Acceptance: The matrix states what every existing command and child command will display, what stays unchanged, and how the new file layer connects overview, file, symbol, relationship, and source-site evidence.
 
-- [ ] [P6-B] Add file-layer output to analyze, query, context, impact, and detect-changes.
+- [x] [P6-B] Add file-layer output to analyze, query, context, impact, and detect-changes.
 
   Goal: Make the main daily graph commands show file context directly inside their existing workflows.
 
@@ -654,7 +654,7 @@ The plan is complete when:
 
   Acceptance: A user can run the same existing command and immediately see the relevant file layer without losing the previous symbol-centric details.
 
-- [ ] [P6-C] Add file-layer output to graph quality and API/MCP command families.
+- [x] [P6-C] Add file-layer output to graph quality and API/MCP command families.
 
   Goal: Make graph quality, route, and tool diagnostics show where relationships are connected or broken at file level.
 
@@ -672,7 +672,7 @@ The plan is complete when:
 
   Acceptance: Quality/API/MCP commands show not only what symbol/route/tool is involved, but which files connect, which files have broken links, and where source-site evidence lives.
 
-- [ ] [P6-D] Update Anvien skills and generated agent context for parent/child file-layer command usage.
+- [x] [P6-D] Update Anvien skills and generated agent context for parent/child file-layer command usage.
 
   Goal: Teach agents to use parent and child Anvien commands with the new file layer, not to treat file-context as a disconnected feature.
 

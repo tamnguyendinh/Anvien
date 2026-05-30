@@ -26,14 +26,14 @@ Status: P0-A baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Files scanned | files | 819 | 829 | +10 | record | Latest after P5 parent/child command analyze refresh. |
-| Files parsed | files | 584 | 594 | +10 | record | Latest after P5 parent/child command analyze refresh. |
+| Files scanned | files | 819 | 829 | +10 | record | Latest after P6 existing-command file-layer analyze refresh. |
+| Files parsed | files | 584 | 594 | +10 | record | Latest after P6 existing-command file-layer analyze refresh. |
 | Unsupported files | files | 235 | 235 | 0 | record | Latest after P4-A Web File Map analyze benchmark. |
 | Failed files | files | 0 | 0 | 0 | `0` | From readiness `anvien analyze --force --name Anvien`. |
-| Graph nodes | nodes | 91587 | 94838 | +3251 | record | Current graph inventory after final P5 parent/child command analyze refresh. |
-| Graph relationships | relationships | 125054 | 129861 | +4807 | record | Current graph inventory after final P5 parent/child command analyze refresh. |
-| SourceSite count | distinct ids | 95433 | 99292 | +3859 | record | Distinct source-site ids from relationship trace fields after final P5 refresh. |
-| ResolutionGap count | nodes | 65652 | 68035 | +2383 | record | Required for quality projection coverage after final P5 refresh. |
+| Graph nodes | nodes | 91587 | 95419 | +3832 | record | Current graph inventory after final P6 analyze refresh. |
+| Graph relationships | relationships | 125054 | 130701 | +5647 | record | Current graph inventory after final P6 analyze refresh. |
+| SourceSite count | distinct ids | 95433 | 86846 | -8587 | record | Distinct `sourceSiteId` strings in `.anvien/graph.json`; method differs from earlier relationship-trace-only count. |
+| ResolutionGap count | nodes | 65652 | 68470 | +2818 | record | Required for quality projection coverage after final P6 refresh. |
 
 ## B0A - Graph Generation Speed
 
@@ -90,12 +90,12 @@ Status: P0-A partial baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Derived file dependency edges | edges | pending | pending | pending | record | `File -> File` derived from symbol/source-site relationships. |
+| Derived file dependency edges | edges | pending | 15806 | pending | record | `File -> File` projection count from final P6 `analyze` output. |
 | Local file relationships | relationships | pending | pending | pending | record | Source and target in same file. |
 | Outbound file relationships | relationships | pending | pending | pending | record | Source file depends on another file. |
 | Inbound file relationships | relationships | pending | pending | pending | record | Other files depend on source file. |
-| Relationship samples retained per group | samples | pending | pending | pending | bounded | Default output limit. |
-| Relationship total counts preserved | percent | pending | pending | pending | 100 | Counts must not be truncated with samples. |
+| Relationship samples retained per group | samples | pending | 5 | pending | bounded | Default command/API sample limit for file relationship groups. |
+| Relationship total counts preserved | percent | pending | 100 | pending | 100 | Counts are retained separately from bounded samples. |
 | Source-site-backed relationships | relationships | 83143 | 85312 | +2169 | record | Relationships carrying source-site/file trace fields. |
 | Resolved source-site-backed relationships | relationships | 17491 | 18192 | +701 | record | Relationships with resolved source-site status. |
 
@@ -183,24 +183,24 @@ Status: P5 parent/child command hierarchy recorded
 
 ## B9 - Existing Command File-Layer Coverage
 
-Status: pending
+Status: P6 existing-command file-layer coverage recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Existing graph commands inventoried | commands | pending | pending | pending | record | Command matrix coverage. |
-| Commands classified `must add file layer` | commands | pending | pending | pending | record | Required additive file sections. |
-| Commands classified `may add file layer` | commands | pending | pending | pending | record | Optional/contextual file sections. |
-| Commands classified `no file layer` | commands | pending | pending | pending | record | Must have evidence-backed reasons. |
-| Existing command outputs with old details preserved | commands | pending | pending | pending | match included commands | Regression guard. |
-| Existing command outputs with file sections added | commands | pending | pending | pending | match `must add` commands | Additive behavior guard. |
-| JSON command outputs with file-layer fields | commands | pending | pending | pending | record | Machine-readable parity. |
-| Shared projection service consumers | surfaces | pending | 3 | pending | CLI+MCP+API+Web runtime | CLI and HTTP API consume `internal/filecontext`; Web UI consumes the generated API contract; MCP pending. |
-| MCP/API equivalents with file-layer parity | surfaces | pending | 1 | pending | record | HTTP API exposes file context and hotspot equivalents. |
-| Embedded Anvien skills updated | skills | pending | pending | pending | record | Source-of-truth skill Markdown. |
-| Generated Anvien skills updated | skills | pending | pending | pending | match source | Generated output after analyze/setup path. |
-| Root generated context files updated | files | pending | pending | pending | record | `AGENTS.md`, `CLAUDE.md` if changed. |
-| Command integration tests | tests | pending | pending | pending | pass | Existing details preserved plus file layer added. |
-| Skill/context parity tests | tests | pending | pending | pending | pass | Source/generated guidance parity. |
+| Existing graph commands inventoried | commands | pending | 19 | pending | record | See E13 matrix. |
+| Commands classified `must add file layer` | commands | pending | 13 | pending | record | Analyze, query, context, impact, detect-changes, graph-health, query-health, resolution inventory, source-site accuracy, and 4 API map/impact commands. |
+| Commands classified `may add file layer` | commands | pending | 1 | pending | record | Group commands deferred to cross-repo file projection design. |
+| Commands classified `no file layer` | commands | pending | 5 | pending | record | `status`, `list`, `rename`, `augment`, and `cypher` intentionally unchanged. |
+| Existing command outputs with old details preserved | commands | pending | 13 | pending | match included commands | Tests and smokes preserve existing lanes/counts while adding file fields. |
+| Existing command outputs with file sections added | commands | pending | 13 | pending | match `must add` commands | Additive behavior guard. |
+| JSON command outputs with file-layer fields | commands | pending | 13 | pending | record | Includes new `analyze --json` file projection summary. |
+| Shared projection service consumers | surfaces | pending | 4 | pending | CLI+MCP+API+Web runtime | CLI, MCP helpers, HTTP API, and Web runtime/API client consume `internal/filecontext` data. |
+| MCP/API equivalents with file-layer parity | surfaces | pending | 9 | pending | record | MCP `query/context/impact/detect_changes`, MCP resources, and API route/tool/shape/impact map families. |
+| Embedded Anvien skills updated | skills | pending | 8 | pending | record | Source-of-truth skill Markdown updated under `internal/aicontext/skills`. |
+| Generated Anvien skills updated | skills | pending | 8 | pending | match source | Generated output validated by `internal/aicontext` tests; generated files are not tracked. |
+| Root generated context files updated | files | pending | 2 | pending | record | `AGENTS.md` and `CLAUDE.md` guidance validated through generator tests and final analyze path. |
+| Command integration tests | tests | pending | 5 | pending | pass | Focused test files: CLI target, CLI command, MCP server, query-health, source-site/resolution command fixtures. |
+| Skill/context parity tests | tests | pending | 1 | pending | pass | `internal/aicontext/aicontext_test.go` validates generated command spellings and guidance. |
 
 ## B10 - Final Validation Counts
 
@@ -213,11 +213,11 @@ Status: P1-A partial validation counts recorded
 | API tests | tests | pending | 3 | pending | pass | File-context success, hotspot/filter, and missing-file endpoint tests. |
 | MCP surface snapshot tests | tests | pending | 1 | pending | pass | MCP tool schema snapshot updated for optional target dispatch fields. |
 | Contract generator checks | checks | pending | 1 | pending | pass | `go run .\cmd\generate-web-contracts --check`. |
-| AI context tests | tests | pending | pending | pending | pass | Generated guidance and embedded skill parity. |
+| AI context tests | tests | pending | 1 | pending | pass | `internal/aicontext/aicontext_test.go` validates generated guidance and embedded skill parity. |
 | Projection cache tests | tests | pending | 2 | pending | pass | Cold/warm, graph-change, repo-switch, explicit hash, and explicit invalidation coverage. |
 | Web unit tests | tests | pending | 23 | pending | pass | `FileMapPanel.test.tsx` and `server-connection.test.ts` after P4-A. |
 | Web e2e tests | tests | pending | 1 | pending | pass | File Map e2e in `shell-interactions.spec.ts`. |
-| Detect-changes changed files | files | 5 | 13 | +8 | record | P4-A final detect-changes scope. |
-| Detect-changes affected count | symbols/processes | 17 | 14 | -3 | record | P4-A final affected process/symbol count; HIGH due shared projection/API/contract/Web UI surface. |
-| Detect-changes changed symbols | symbols | pending | 260 | pending | record | P4-A final detect-changes summary. |
-| Detect-changes resolution gap changed entities | entities | pending | 194 | pending | record | P4-A final detect-changes resolution gap summary. |
+| Detect-changes changed files | files | 5 | 31 | +26 | record | P6 final detect-changes scope. |
+| Detect-changes affected count | symbols/processes | 17 | 117 | +100 | record | P6 final affected process/symbol count; CRITICAL due shared CLI/MCP/API/quality/context surfaces. |
+| Detect-changes changed symbols | symbols | pending | 745 | pending | record | P6 final detect-changes summary. |
+| Detect-changes resolution gap changed entities | entities | pending | 484 | pending | record | P6 final detect-changes resolution gap summary. |

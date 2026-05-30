@@ -100,6 +100,9 @@ func TestQueryHealthScoringSeparatesThresholdAndExactPass(t *testing.T) {
 		!strings.Contains(result.NoiseReason, "symbol:missingExactSymbol") {
 		t.Fatalf("noise reason should distinguish exact miss: %s", result.NoiseReason)
 	}
+	if result.MissedClusters == nil || result.MissedClusters.SymbolLayerMisses != 1 || result.MissedClusters.ByKind["symbol"] != 1 {
+		t.Fatalf("missed clusters should identify symbol-layer miss: %#v", result.MissedClusters)
+	}
 }
 
 func TestQueryHealthScoringMatchesProcessTargets(t *testing.T) {
@@ -136,6 +139,15 @@ func TestQueryHealthScoringMatchesProcessTargets(t *testing.T) {
 
 func TestQueryHealthActualResultsIncludesProcessRows(t *testing.T) {
 	payload := queryHealthQueryPayload{
+		Files: []map[string]any{{
+			"rank": float64(1),
+			"path": "internal/group/query.go",
+			"summary": map[string]any{
+				"appLayer":                  "backend",
+				"functionalArea":            "groups",
+				"unresolvedSourceSiteCount": float64(2),
+			},
+		}},
 		Processes: []map[string]any{{
 			"ID":          "proc_190_query",
 			"Label":       "Query -> GroupProcess",
@@ -150,13 +162,16 @@ func TestQueryHealthActualResultsIncludesProcessRows(t *testing.T) {
 		}},
 	}
 	actual := queryHealthActualResults(payload, 10)
-	if len(actual) != 2 {
+	if len(actual) != 3 {
 		t.Fatalf("actual results = %#v", actual)
 	}
-	if actual[0].Source != "process" || actual[0].Process != "Query -> GroupProcess" || actual[0].ProcessRank != 1 {
+	if actual[0].Source != "file" || actual[0].FilePath != "internal/group/query.go" || actual[0].AppLayer != "backend" {
+		t.Fatalf("file row missing or malformed: %#v", actual)
+	}
+	if actual[1].Source != "process" || actual[1].Process != "Query -> GroupProcess" || actual[1].ProcessRank != 1 {
 		t.Fatalf("process row missing or malformed: %#v", actual)
 	}
-	if actual[1].Source != "process_symbol" || actual[1].ProcessRank != 1 {
+	if actual[2].Source != "process_symbol" || actual[2].ProcessRank != 1 {
 		t.Fatalf("process symbol rank should follow process label rank: %#v", actual)
 	}
 }
@@ -183,6 +198,9 @@ func TestQueryHealthScoringReportsMissingAndNoisyResults(t *testing.T) {
 	}
 	if len(result.MissedTargets) != 2 {
 		t.Fatalf("misses = %#v", result.MissedTargets)
+	}
+	if result.MissedClusters == nil || result.MissedClusters.FileLayerMisses != 1 || result.MissedClusters.SymbolLayerMisses != 1 {
+		t.Fatalf("missed clusters should classify file/symbol misses: %#v", result.MissedClusters)
 	}
 	if !strings.Contains(result.NoiseReason, "internal/resolution/resolve.go") ||
 		!strings.Contains(result.NoiseReason, "anvien-launcher/src/main.go") {
@@ -262,6 +280,9 @@ func TestQueryHealthCommandOutputsJSONTableAndFailsThreshold(t *testing.T) {
 	}
 	if !strings.Contains(out, `"passed": false`) || !strings.Contains(out, `"missedTargets"`) {
 		t.Fatalf("threshold failure did not include failure report:\n%s", out)
+	}
+	if !strings.Contains(out, `"missedClusters"`) || !strings.Contains(out, `"fileLayerMisses"`) {
+		t.Fatalf("threshold failure did not include miss cluster report:\n%s", out)
 	}
 
 	partialSuite := filepath.Join(dir, "partial-suite.json")

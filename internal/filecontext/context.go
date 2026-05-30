@@ -13,6 +13,8 @@ import (
 
 const defaultSampleLimit = 10
 
+const DerivedFileEdgesNote = "File relationship groups are projections derived from symbol and source-site graph facts; canonical graph relationships remain symbol/source-site facts."
+
 type Options struct {
 	RelationshipSamplesPerGroup int
 	UnresolvedSamplesPerGroup   int

@@ -383,6 +383,13 @@ func (s Server) queryTool(args map[string]any) (map[string]any, error) {
 		"process_symbols":   symbols,
 		"definitions":       matchingDefinitionRows(g, query, limit, gapSummaries),
 	}
+	files := queryFileRows(g, query, limit)
+	payload["files"] = files
+	payload["fileLayer"] = map[string]any{
+		"filesReturned":    len(files),
+		"sampleLimit":      limit,
+		"derivedEdgesNote": filecontext.DerivedFileEdgesNote,
+	}
 	if boolArg(args, "explain", false) {
 		payload["explain"] = map[string]any{
 			"rankFields": []string{"processRank", "sourceRank", "rank", "score"},
@@ -390,6 +397,8 @@ func (s Server) queryTool(args map[string]any) (map[string]any, error) {
 				"queryCapabilities",
 				"queryLanes",
 				"matchReasons",
+				"files",
+				"relationshipHints",
 			},
 		}
 	}
@@ -501,11 +510,12 @@ func queryFileRows(g *graph.Graph, query string, limit int) []map[string]any {
 	out := make([]map[string]any, 0, minInt(len(items), limit))
 	for index, item := range items[:minInt(len(items), limit)] {
 		row := map[string]any{
-			"rank":           index + 1,
-			"score":          item.score,
-			"summary":        item.summary,
-			"path":           item.summary.Path,
-			"matchedSymbols": item.symbols,
+			"rank":              index + 1,
+			"score":             item.score,
+			"summary":           item.summary,
+			"path":              item.summary.Path,
+			"matchedSymbols":    item.symbols,
+			"relationshipHints": mcpFileRelationshipHints(item.summary),
 		}
 		out = append(out, row)
 	}

@@ -32,7 +32,7 @@ Do not patch generated files as the permanent fix. Update source Markdown/genera
 1. Refresh graph evidence before graph-based work.
 2. Use `query` for broad AI-context discovery only as candidate retrieval; verify with `context` on exact owners such as `GenerateAIContextFiles`, `installBaseSkills`, `baseSkillContent`, and setup/package owners.
 3. Update embedded skill source and generator code, not generated `.claude` output.
-4. Add tests that assert final skill ids, generated file paths, Skills table links, frontmatter, command naming by surface, and no fallback placeholder content.
+4. Add tests that assert final skill ids, generated file paths, Skills table links, frontmatter, parent/child file-layer command naming by surface, resource URIs, and no fallback placeholder content.
 5. Regenerate through `anvien analyze --force` before final closure and compare source/generated inventories.
 
 ## Validation
@@ -42,7 +42,8 @@ Do not patch generated files as the permanent fix. Update source Markdown/genera
 - Generated `.claude/skills/anvien/<skill>/SKILL.md` files match the final skill set.
 - Generated root Skills table lists every final skill.
 - No final skill relies on `fallbackBaseSkillContent`.
-- CLI/MCP command names are surface-correct: CLI uses `query-health` and `api route-map`; MCP uses `route_map` and `api_impact`.
+- CLI/MCP command names are surface-correct: CLI uses `query-health`, `context file`, `impact file`, and `api route-map`; MCP uses `target_type=file`, `route_map`, and `api_impact`.
+- Generated guidance teaches overview -> file -> symbol -> relationship/source-site -> impact/test/flow tracing.
 
 ## Current Limitations
 

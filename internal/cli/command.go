@@ -14,6 +14,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tamnguyendinh/anvien/internal/analyze"
 	"github.com/tamnguyendinh/anvien/internal/embeddings"
+	"github.com/tamnguyendinh/anvien/internal/filecontext"
+	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/httpapi"
 	"github.com/tamnguyendinh/anvien/internal/lbugload"
 	"github.com/tamnguyendinh/anvien/internal/lbugnative"
@@ -164,6 +166,7 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 	var registryName string
 	var allowDuplicateName bool
 	var verbose bool
+	var jsonOutput bool
 
 	cmd := &cobra.Command{
 		Use:   "analyze [path]",
@@ -237,6 +240,24 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			fileProjection := buildAnalyzeFileProjection(result.Graph)
+			if jsonOutput {
+				return writeJSON(cmd, map[string]any{
+					"repoPath":  result.RepoPath,
+					"graphPath": result.GraphPath,
+					"files": map[string]int{
+						"scanned":     result.Metrics.Files.Scanned,
+						"parsed":      result.Metrics.Files.Parsed,
+						"unsupported": result.Metrics.Files.Unsupported,
+						"failed":      result.Metrics.Files.Failed,
+					},
+					"graph": map[string]int{
+						"nodes":         len(result.Graph.Nodes),
+						"relationships": len(result.Graph.Relationships),
+					},
+					"fileProjection": fileProjection,
+				})
+			}
 			_, err = fmt.Fprintf(
 				cmd.OutOrStdout(),
 				"analyzed %s\nfiles: scanned=%d parsed=%d unsupported=%d failed=%d\ngraph: nodes=%d relationships=%d path=%s\n",
@@ -251,6 +272,11 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 			)
 			if err != nil {
 				return err
+			}
+			for _, line := range analyzeFileProjectionLines(fileProjection) {
+				if _, err := fmt.Fprintln(cmd.OutOrStdout(), line); err != nil {
+					return err
+				}
 			}
 			return err
 		},
@@ -271,7 +297,61 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 	cmd.Flags().StringVar(&registryName, "name", "", "register this repo under a custom name in the global registry")
 	cmd.Flags().BoolVar(&allowDuplicateName, "allow-duplicate-name", false, "allow registering another repo with the same --name alias")
 	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose ingestion progress")
+	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write analyze summary JSON")
 	return cmd
+}
+
+type analyzeFileProjectionSummary struct {
+	Status           string                    `json:"status"`
+	Files            int                       `json:"files"`
+	DependencyEdges  int                       `json:"dependencyEdges"`
+	UnresolvedFiles  int                       `json:"unresolvedFiles"`
+	Hotspots         []filecontext.FileSummary `json:"hotspots"`
+	DerivedEdgesNote string                    `json:"derivedEdgesNote"`
+}
+
+func buildAnalyzeFileProjection(g *graph.Graph) analyzeFileProjectionSummary {
+	builder := filecontext.NewBuilder(g)
+	list := builder.BuildFileList(filecontext.FileListOptions{Sort: "path", Limit: 0})
+	hotspots := builder.BuildFileList(filecontext.FileListOptions{Sort: "unresolved", Limit: 5})
+	unresolvedFiles := 0
+	dependencyEdges := 0
+	for _, file := range list.Files {
+		if file.UnresolvedSourceSiteCount > 0 {
+			unresolvedFiles++
+		}
+		dependencyEdges += file.OutboundRefCount
+	}
+	return analyzeFileProjectionSummary{
+		Status:           "built",
+		Files:            list.Total,
+		DependencyEdges:  dependencyEdges,
+		UnresolvedFiles:  unresolvedFiles,
+		Hotspots:         hotspots.Files,
+		DerivedEdgesNote: filecontext.DerivedFileEdgesNote,
+	}
+}
+
+func analyzeFileProjectionLines(summary analyzeFileProjectionSummary) []string {
+	lines := []string{
+		fmt.Sprintf("fileProjection: status=built files=%d dependencyEdges=%d unresolvedFiles=%d hotspots=%d derivedEdges=%q",
+			summary.Files,
+			summary.DependencyEdges,
+			summary.UnresolvedFiles,
+			len(summary.Hotspots),
+			summary.DerivedEdgesNote,
+		),
+	}
+	for _, file := range summary.Hotspots {
+		lines = append(lines, fmt.Sprintf("fileProjection.hotspot path=%q unresolved=%d fanIn=%d fanOut=%d risk=%s",
+			file.Path,
+			file.UnresolvedSourceSiteCount,
+			file.InboundRefCount,
+			file.OutboundRefCount,
+			defaultString(file.Risk, "unknown"),
+		))
+	}
+	return lines
 }
 
 func startAnalyzeCPUProfile(path string) (func(), error) {

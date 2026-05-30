@@ -13,6 +13,7 @@ Use this skill when the question is whether the graph itself is healthy, complet
 |---|---|
 | Topology and diagnostics | `anvien graph-health summary --repo <repo> --json` |
 | Prioritized health candidates | `anvien graph-health report --repo <repo> --limit <n> --json` |
+| File-level hotspots | `anvien graph-health files --repo <repo> --json` or `anvien file-hotspots --repo <repo> --sort unresolved --json` |
 | Component inventory | `anvien graph-health components --repo <repo> --json` |
 | Node/component explanation | `anvien graph-health explain <node-or-name> --repo <repo> --json` |
 | Query retrieval benchmark | `anvien query-health --repo <repo> --suite <file>` |
@@ -23,10 +24,11 @@ Use this skill when the question is whether the graph itself is healthy, complet
 ## Workflow
 
 1. Run `anvien analyze --force` first when graph freshness matters.
-2. Choose the quality command by failure type: topology, query retrieval, unresolved references, source-site proof, or performance/capacity.
-3. Keep threshold and exact query-health results separate. Threshold pass means usable navigation; exact pass means all expected targets were found.
-4. Preserve counts, samples, missed targets, and noise reasons in evidence. Do not compress away traceability.
-5. If quality output affects an implementation decision, run impact before editing source.
+2. Choose the quality command by failure type: topology, file hotspots, query retrieval, unresolved references, source-site proof, or performance/capacity.
+3. Use file-layer output to locate the concrete file, then open it with `context file` to inspect symbol tree, derived relationships, unresolved source sites, and linked flows/tests.
+4. Keep threshold and exact query-health results separate. Threshold pass means usable navigation; exact pass means all expected targets were found.
+5. Preserve counts, samples, missed targets, file groups, and noise reasons in evidence. Do not compress away traceability.
+6. If quality output affects an implementation decision, run impact before editing source.
 
 ## Query Reliability Guidance
 
@@ -38,9 +40,9 @@ For the Anvien skill-system upgrade suite, use the dedicated query-health suite 
 
 - Fresh analyze counts before quality commands.
 - Query-health case id, expected targets, matched targets, missed targets, hit@5, hit@10, threshold pass, exact pass, and noise reason.
-- Graph-health component/candidate counts and representative explanations.
-- ResolutionGap classification/actionability counts and top target samples.
-- Source-site inventory counts, false-resolved candidates, missing proof counts, and golden fixture results when used.
+- Graph-health component/candidate counts, file hotspot counts, and representative explanations.
+- ResolutionGap classification/actionability counts, file groups, nearest source symbols, and top target samples.
+- Source-site inventory counts, false-resolved candidates, missing proof counts, file groups, trace samples, and golden fixture results when used.
 
 ## Current Limitations
 

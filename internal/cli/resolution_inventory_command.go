@@ -10,15 +10,17 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/tamnguyendinh/anvien/internal/filecontext"
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/graphhealth"
 )
 
 type resolutionInventoryResult struct {
-	GeneratedAt string                    `json:"generatedAt"`
-	Inputs      resolutionInventoryInputs `json:"inputs"`
-	Totals      resolutionInventoryTotals `json:"totals"`
-	GraphHealth graphhealth.Summary       `json:"graphHealth"`
+	GeneratedAt string                         `json:"generatedAt"`
+	Inputs      resolutionInventoryInputs      `json:"inputs"`
+	Totals      resolutionInventoryTotals      `json:"totals"`
+	GraphHealth graphhealth.Summary            `json:"graphHealth"`
+	FileGroups  []resolutionInventoryFileGroup `json:"fileGroups"`
 }
 
 type resolutionInventoryInputs struct {
@@ -28,6 +30,16 @@ type resolutionInventoryInputs struct {
 type resolutionInventoryTotals struct {
 	Nodes         int `json:"nodes"`
 	Relationships int `json:"relationships"`
+}
+
+type resolutionInventoryFileGroup struct {
+	Path                 string                         `json:"path"`
+	Total                int                            `json:"total"`
+	ByKind               map[string]int                 `json:"byKind,omitempty"`
+	ByClassification     map[string]int                 `json:"byClassification,omitempty"`
+	ByActionability      map[string]int                 `json:"byActionability,omitempty"`
+	NearestSourceSymbols []string                       `json:"nearestSourceSymbols,omitempty"`
+	Samples              []filecontext.UnresolvedSample `json:"samples,omitempty"`
 }
 
 func newResolutionInventoryCommand() *cobra.Command {
@@ -93,6 +105,7 @@ func runResolutionInventory(graphPath string) (resolutionInventoryResult, error)
 			Relationships: len(g.Relationships),
 		},
 		GraphHealth: summary,
+		FileGroups:  resolutionInventoryFileGroups(&g, 20),
 	}, nil
 }
 
@@ -161,7 +174,57 @@ func resolutionInventorySummaryLines(result resolutionInventoryResult) []string 
 		"resolutionGap.actionability=" + formatCountMap(summary.ResolutionGapActionabilityCounts),
 		"resolutionGap.topology=" + formatCountMap(summary.ResolutionGapTopologyStatusCounts),
 	}
+	lines = append(lines, fmt.Sprintf("resolutionGap.fileGroups=%d", len(result.FileGroups)))
+	for _, group := range result.FileGroups[:minInt(len(result.FileGroups), 5)] {
+		lines = append(lines, fmt.Sprintf("resolutionGap.file path=%q total=%d kinds=%s classifications=%s actionability=%s nearestSymbols=%s",
+			group.Path,
+			group.Total,
+			formatCountMap(group.ByKind),
+			formatCountMap(group.ByClassification),
+			formatCountMap(group.ByActionability),
+			strings.Join(group.NearestSourceSymbols, ","),
+		))
+	}
 	return lines
+}
+
+func resolutionInventoryFileGroups(g *graph.Graph, limit int) []resolutionInventoryFileGroup {
+	builder := filecontext.NewBuilder(g)
+	list := builder.BuildFileList(filecontext.FileListOptions{Sort: "unresolved", Limit: limit, UnresolvedOnly: true})
+	groups := make([]resolutionInventoryFileGroup, 0, len(list.Files))
+	for _, summary := range list.Files {
+		context, ok := builder.BuildFileContext(summary.Path, filecontext.Options{
+			UnresolvedSamplesPerGroup: 5,
+		})
+		if !ok || context.Unresolved.Total == 0 {
+			continue
+		}
+		group := resolutionInventoryFileGroup{
+			Path:             summary.Path,
+			Total:            context.Unresolved.Total,
+			ByKind:           context.Unresolved.ByKind,
+			ByClassification: context.Unresolved.ByClassification,
+			ByActionability:  context.Unresolved.ByActionability,
+		}
+		seenSymbols := map[string]bool{}
+		for _, unresolvedGroup := range context.Unresolved.Groups {
+			if unresolvedGroup.SourceSymbol != "" && !seenSymbols[unresolvedGroup.SourceSymbol] {
+				seenSymbols[unresolvedGroup.SourceSymbol] = true
+				group.NearestSourceSymbols = append(group.NearestSourceSymbols, unresolvedGroup.SourceSymbol)
+			}
+			for _, sample := range unresolvedGroup.Samples {
+				if len(group.Samples) >= 10 {
+					break
+				}
+				group.Samples = append(group.Samples, sample)
+			}
+		}
+		if len(group.NearestSourceSymbols) > 5 {
+			group.NearestSourceSymbols = group.NearestSourceSymbols[:5]
+		}
+		groups = append(groups, group)
+	}
+	return groups
 }
 
 func formatCountMap(counts map[string]int) string {
