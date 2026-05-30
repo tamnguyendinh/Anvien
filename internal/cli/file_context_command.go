@@ -208,9 +208,7 @@ func loadFileProjectionGraph(repoName string) (fileProjectionCommandInputs, *gra
 }
 
 func attachFileProjectionMetadata(context *filecontext.FileContext, inputs fileProjectionCommandInputs) {
-	context.Repo = inputs.Repo
-	context.RepoPath = inputs.RepoPath
-	context.Graph = fileProjectionGraphInfo(inputs)
+	filecontext.AttachMetadata(context, inputs.Repo, inputs.RepoPath, fileProjectionGraphInfo(inputs))
 }
 
 func fileProjectionGraphInfo(inputs fileProjectionCommandInputs) filecontext.GraphInfo {

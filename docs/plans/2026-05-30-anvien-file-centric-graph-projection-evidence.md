@@ -513,17 +513,37 @@ Notes:
 
 ## E7 - Unresolved And Quality Signals
 
-Date: pending
+Date: 2026-05-30
 
-Status: pending
+Status: completed
 
-Expected evidence:
+Impact:
 
-- ResolutionGap grouping by file and source symbol.
-- Counts by gap kind.
-- Classification/actionability/proof/source-site examples.
-- Quality fields for parsed/generated/stale/changed/resolution confidence.
-- Tests for dynamic, generated, test, and normal source files.
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass before P3-A impact checks. `files: scanned=825 parsed=590 unsupported=235 failed=0`; `nodes=93434 relationships=127940`. |
+| `.\anvien\bin\anvien.exe impact "buildQuality" --repo Anvien --direction upstream` | `risk=HIGH`; `impactedCount=1`; affected `BuildFileContext`; `processes_affected=4`. Proceeded because quality changes are additive and test-covered. |
+| `.\anvien\bin\anvien.exe impact "attachFileProjectionMetadata" --repo Anvien --direction upstream` | `risk=CRITICAL`; `impactedCount=3`; affected CLI root flow through `file-context`; `processes_affected=11`. Proceeded because behavior only centralizes metadata attachment. |
+| `.\anvien\bin\anvien.exe impact "handleFileContext" --repo Anvien --direction upstream` | `risk=LOW`; `impactedCount=0`. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/filecontext/context.go` | Added `AttachMetadata` helper so CLI/API attach repo, graph metadata, `quality.stale`, and `quality.changedSinceAnalyze` consistently. Existing builder already grouped ResolutionGap nodes by file/source symbol and carried kind/classification/actionability/proof/source-site fields. |
+| `internal/cli/file_context_command.go` | Uses shared metadata helper for `file-context` JSON/human output. |
+| `internal/httpapi/file_context.go` | Uses shared metadata helper for `GET /api/file-context`. |
+| `internal/filecontext/context_test.go` | Added coverage for unresolved call/import/type buckets, classification/actionability counts, stale/changed quality propagation, generated file quality, and test file classification. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass after P3-A code. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test ./internal/filecontext ./internal/cli ./internal/httpapi -count=1` | Pass. |
+| `go test ./internal/filecontext -run TestBuildFileContextQualitySignalsAndUnresolvedBuckets -count=1 -v` | Pass; new P3-A focused test passed. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass; all cmd/internal packages passed. |
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | `risk_level=medium`; `changed_files=7`; `changed_count=78`; `affected_count=2`. MEDIUM is expected because shared filecontext metadata and CLI/API consumers changed. |
 
 ## E8 - Linked Flows, Routes, MCP Tools, And Tests
 

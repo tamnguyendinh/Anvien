@@ -164,6 +164,49 @@ func TestBuildFileListHighFanFilters(t *testing.T) {
 	}
 }
 
+func TestBuildFileContextQualitySignalsAndUnresolvedBuckets(t *testing.T) {
+	builder := NewBuilder(qualitySignalFixture())
+
+	context, ok := builder.BuildFileContext("src/app.go", Options{})
+	if !ok {
+		t.Fatalf("BuildFileContext() did not find source file")
+	}
+	AttachMetadata(&context, "fixture", "/repo", GraphInfo{Path: "graph.json", Stale: true})
+
+	if !context.Quality.Stale || !context.Quality.ChangedSinceAnalyze {
+		t.Fatalf("quality stale fields = stale %v changed %v, want both true", context.Quality.Stale, context.Quality.ChangedSinceAnalyze)
+	}
+	if context.Quality.UnresolvedCalls != 1 || context.Quality.UnresolvedImports != 1 || context.Quality.UnresolvedRefs != 1 {
+		t.Fatalf("quality unresolved counts = calls %d imports %d refs %d, want 1/1/1",
+			context.Quality.UnresolvedCalls,
+			context.Quality.UnresolvedImports,
+			context.Quality.UnresolvedRefs,
+		)
+	}
+	if context.Unresolved.ByClassification["external_library"] != 1 || context.Unresolved.ByClassification["in_repo_unresolved"] != 2 {
+		t.Fatalf("classification counts = %#v, want external=1 in_repo=2", context.Unresolved.ByClassification)
+	}
+	if context.Unresolved.ByActionability["review"] != 1 || context.Unresolved.ByActionability["analyzer_gap"] != 2 {
+		t.Fatalf("actionability counts = %#v, want review=1 analyzer_gap=2", context.Unresolved.ByActionability)
+	}
+
+	generated, ok := builder.BuildFileContext("gen/client.ts", Options{})
+	if !ok {
+		t.Fatalf("BuildFileContext() did not find generated file")
+	}
+	if !generated.Quality.Generated || generated.Summary.Kind != "generated" {
+		t.Fatalf("generated quality = %#v summary=%#v, want generated kind and flag", generated.Quality, generated.Summary)
+	}
+
+	testFile, ok := builder.BuildFileContext("src/app_test.go", Options{})
+	if !ok {
+		t.Fatalf("BuildFileContext() did not find test file")
+	}
+	if testFile.Summary.Kind != "test" || testFile.Quality.Generated {
+		t.Fatalf("test file quality = %#v summary=%#v, want test kind and not generated", testFile.Quality, testFile.Summary)
+	}
+}
+
 func BenchmarkBuildFileListCurrentScale(b *testing.B) {
 	builder := NewBuilder(fileListBenchmarkGraph(821, 126000))
 	b.ReportAllocs()
@@ -259,6 +302,27 @@ func BenchmarkBuilderCacheColdBuild(b *testing.B) {
 	}
 }
 
+func qualitySignalFixture() *graph.Graph {
+	g := graph.New()
+	for _, node := range []graph.Node{
+		fileNode("File:src/app.go", "src/app.go", "go", "backend", "mcp"),
+		fileNode("File:gen/client.ts", "gen/client.ts", "typescript", "generated_contract", "contracts"),
+		fileNode("File:src/app_test.go", "src/app_test.go", "go", "backend_test", "mcp"),
+		symbolNode("Function:src/app.go:Run", scopeir.NodeFunction, "Run", "src/app.go", 2, 1, 10, 1, ""),
+		symbolNode("Function:gen/client.ts:GeneratedClient", scopeir.NodeFunction, "GeneratedClient", "gen/client.ts", 1, 1, 3, 1, ""),
+		symbolNode("Function:src/app_test.go:TestRun", scopeir.NodeFunction, "TestRun", "src/app_test.go", 2, 1, 8, 1, ""),
+		resolutionGap("ResolutionGap:src/app.go:call", "src/app.go", "Function:src/app.go:Run", "missingCall", "unresolved_call", "in_repo_unresolved", "analyzer_gap", 4),
+		resolutionGap("ResolutionGap:src/app.go:import", "src/app.go", "Function:src/app.go:Run", "external/pkg", "unresolved_import", "external_library", "review", 5),
+		resolutionGap("ResolutionGap:src/app.go:type", "src/app.go", "Function:src/app.go:Run", "MissingType", "unresolved_type_reference", "in_repo_unresolved", "analyzer_gap", 6),
+	} {
+		g.AddNode(node)
+	}
+	g.AddRelationship(defines("File:src/app.go", "Function:src/app.go:Run"))
+	g.AddRelationship(defines("File:gen/client.ts", "Function:gen/client.ts:GeneratedClient"))
+	g.AddRelationship(defines("File:src/app_test.go", "Function:src/app_test.go:TestRun"))
+	return g
+}
+
 func fileContextFixture(reverseRelationships bool) *graph.Graph {
 	g := graph.New()
 	for _, node := range []graph.Node{
@@ -303,6 +367,29 @@ func fileContextFixture(reverseRelationships bool) *graph.Graph {
 		g.AddRelationship(relationship)
 	}
 	return g
+}
+
+func resolutionGap(id string, filePath string, sourceNodeID string, targetText string, gapKind string, classification string, actionability string, line int) graph.Node {
+	return graph.Node{
+		ID:    id,
+		Label: scopeir.NodeResolutionGap,
+		Properties: graph.NodeProperties{
+			"name":             targetText,
+			"filePath":         filePath,
+			"sourceNodeId":     sourceNodeID,
+			"targetText":       targetText,
+			"gapKind":          gapKind,
+			"classification":   classification,
+			"actionability":    actionability,
+			"proofKind":        "none",
+			"sourceSiteId":     "SourceSite:" + id,
+			"sourceSiteStatus": "unresolved_local_binding",
+			"startLine":        line,
+			"startCol":         2,
+			"endLine":          line,
+			"endCol":           12,
+		},
+	}
 }
 
 func fileListBenchmarkGraph(fileCount int, relationshipCount int) *graph.Graph {

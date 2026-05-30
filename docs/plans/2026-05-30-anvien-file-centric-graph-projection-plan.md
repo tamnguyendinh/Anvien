@@ -467,7 +467,7 @@ The plan is complete when:
 
   Acceptance: API routes are tested, contracts are regenerated, and Web code can consume typed file context data.
 
-- [ ] [P3-A] Add unresolved source-site grouping and quality signals.
+- [x] [P3-A] Add unresolved source-site grouping and quality signals.
 
   Goal: Make file-level graph quality visible and actionable.
 

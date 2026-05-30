@@ -106,9 +106,7 @@ func (s Server) handleFileContext(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "File not found in graph")
 		return
 	}
-	context.Repo = projection.repoName
-	context.RepoPath = projection.repoPath
-	context.Graph = projection.graph
+	filecontext.AttachMetadata(&context, projection.repoName, projection.repoPath, projection.graph)
 	writeJSON(w, http.StatusOK, context)
 }
 

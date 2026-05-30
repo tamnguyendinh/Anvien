@@ -199,7 +199,7 @@ Status: P1-A partial validation counts recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Projection unit tests | tests | 3 | 7 | +4 | pass | `internal/filecontext` tests through P1-C. |
+| Projection unit tests | tests | 3 | 8 | +5 | pass | `internal/filecontext` tests through P3-A. |
 | CLI tests | tests | pending | 5 | pending | pass | P2-A relevant tests: root help, command help, file-context JSON/human, file-hotspots JSON/human, missing file. |
 | API tests | tests | pending | 3 | pending | pass | File-context success, hotspot/filter, and missing-file endpoint tests. |
 | MCP surface snapshot tests | tests | pending | pending | pending | pass | If MCP output/schema changes. |
@@ -208,5 +208,5 @@ Status: P1-A partial validation counts recorded
 | Projection cache tests | tests | pending | 2 | pending | pass | Cold/warm, graph-change, repo-switch, explicit hash, and explicit invalidation coverage. |
 | Web unit tests | tests | pending | pending | pending | pass | Count if Web UI is implemented. |
 | Web e2e tests | tests | pending | pending | pending | pass | Count if Web UI is implemented. |
-| Detect-changes changed files | files | 5 | 8 | +3 | record | Latest P2-B implementation scope. |
-| Detect-changes affected count | symbols/processes | 17 | 10 | -7 | record | Latest P2-B staged affected process/symbol count; HIGH due additive API route and generated contract surface changes. |
+| Detect-changes changed files | files | 5 | 7 | +2 | record | Latest P3-A implementation scope. |
+| Detect-changes affected count | symbols/processes | 17 | 2 | -15 | record | Latest P3-A staged affected process/symbol count; MEDIUM due shared filecontext metadata and CLI/API consumers. |

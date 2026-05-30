@@ -94,6 +94,17 @@ type FileContext struct {
 	Limits        Limits               `json:"limits"`
 }
 
+func AttachMetadata(context *FileContext, repoName string, repoPath string, graph GraphInfo) {
+	if context == nil {
+		return
+	}
+	context.Repo = repoName
+	context.RepoPath = repoPath
+	context.Graph = graph
+	context.Quality.Stale = graph.Stale
+	context.Quality.ChangedSinceAnalyze = graph.Stale
+}
+
 type FileSummary struct {
 	Path                      string `json:"path"`
 	Language                  string `json:"language,omitempty"`
