@@ -14,6 +14,8 @@ Evidence:
 
 On this Windows machine and these pinned commits, Anvien still wins cold full-repo graph generation across all three benchmark targets. The gap is largest on the Anvien target, still clear on GitNexus, and still clear but smaller on Restaurant_manager.
 
+Anvien also produces more graph nodes and relationships because its graph model is more detailed: it persists source-site-backed calls/accesses/type references, ResolutionGap diagnostics, document/section metadata, process steps, and richer semantic classifications. The higher graph count should not be read as duplicate inflation in this benchmark; source-site accuracy reported 0 false-resolved edge candidates and 0 resolved edges missing proof on all Anvien-generated rerun graphs.
+
 GitNexus remains strong and mature as an independent code-intelligence system. It is slower at full indexing in this rerun, but it remains faster for sampled direct lookup commands on the Anvien target and has concise runtime output, npm packaging, and explicit vector/FTS/native-runtime degradation messages.
 
 The practical split is unchanged:
@@ -57,7 +59,7 @@ Wall-clock speed ratio:
 | GitNexus | 2.13x faster |
 | Restaurant_manager | 1.87x faster |
 
-The large target confirms Anvien keeps a meaningful speed advantage at 6,198 files while producing more graph facts. The ratio is not purely file-count-driven: the Anvien target produced the largest relative gap, while Restaurant_manager produced the smallest of the three rerun gaps.
+The large target confirms Anvien keeps a meaningful speed advantage at 6,198 files while producing a more detailed graph. The ratio is not purely file-count-driven: the Anvien target produced the largest relative gap, while Restaurant_manager produced the smallest of the three rerun gaps.
 
 Compared with the previous run, Anvien improved on the Anvien self target despite scanning more files. The GitNexus and Restaurant_manager Anvien runs were slower than before while graph counts stayed stable. Treat that as a rerun measurement, not standalone proof of algorithmic regression, because workspace path and cold disk/cache state changed.
 
@@ -82,7 +84,7 @@ Graph inventory rerun:
 | GitNexus | GitNexus | 13 | 300 | not exposed |
 | GitNexus | Restaurant_manager | 9 | 300 | not exposed |
 
-Anvien source-site accuracy reported 0 false-resolved edge candidates and 0 resolved edges missing source-site proof on all three Anvien-generated graphs. GitNexus passed the earlier reduced deterministic sample audit, but no equivalent source-site accuracy or ResolutionGap inventory command was exposed.
+Anvien source-site accuracy reported 0 false-resolved edge candidates and 0 resolved edges missing source-site proof on all three Anvien-generated graphs. That matters for interpreting the larger graph: the extra count is primarily extra modeled detail and diagnostics, not evidence of duplicate relationship spam. GitNexus passed the earlier reduced deterministic sample audit, but no equivalent source-site accuracy or ResolutionGap inventory command was exposed.
 
 Anvien's visible weakness remains unresolved volume:
 
@@ -130,7 +132,7 @@ GitNexus has more raw core test files and CI workflows. Anvien has stronger grap
 - Benchmark runs were cold full rebuilds only.
 - Accuracy scoring was a deterministic reduced audit, not a complete golden corpus over every supported language.
 - GitNexus vector search was unavailable on this Windows platform in all rerun `meta.json` files; embeddings were 0.
-- Anvien graph size is not automatically better by itself; the stronger claim comes from source-site proof and diagnostics, not only count volume.
+- Larger Anvien graph size is meaningful here because it comes with source-site proof, ResolutionGap diagnostics, and false-positive audit output. Count volume alone would not be enough, but this rerun did not show evidence that Anvien's larger graph is due to duplicate inflation.
 - Rerun timing can be affected by disk/cache/workspace changes, so stable graph-count deltas are stronger evidence than single-run timing deltas.
 
 ## Actionable Lessons for Anvien

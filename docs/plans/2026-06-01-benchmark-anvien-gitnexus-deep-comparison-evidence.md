@@ -622,6 +622,7 @@ Lookup latency rerun on the Anvien target:
 Rerun interpretation:
 
 - Anvien remained faster on all three cold full-analyze targets: 3.09x on Anvien, 2.13x on GitNexus, and 1.87x on Restaurant_manager by wall-clock timing.
+- Anvien's larger graph count is explained by richer graph detail: source-site-backed relationships, ResolutionGap diagnostics, process steps, document/section metadata, and semantic classifications. The rerun did not show evidence that the larger graph is caused by duplicate inflation.
 - Anvien's new self-target run improved versus the previous Anvien self benchmark despite scanning more files: 37.99s versus 41.53s.
 - Anvien's GitNexus and Restaurant_manager runs were slower than the earlier run, while graph counts stayed stable. Treat this as a measured rerun result, not a pure algorithmic regression proof, because workspace location and cold disk/cache state also changed.
 - GitNexus remained faster for sampled query/context/impact lookup latency on the Anvien target.

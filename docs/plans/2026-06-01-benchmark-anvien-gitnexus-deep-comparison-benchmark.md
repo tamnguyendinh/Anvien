@@ -173,7 +173,7 @@ Status: completed
 | Category | Winner | Margin | Confidence | Notes |
 |---|---|---|---|---|
 | Analyze speed | Anvien | 37.99s vs 117.26s on Anvien; 100.93s vs 215.51s on GitNexus; 93.13s vs 173.75s on Restaurant_manager | high | Cold full rebuild wall-clock runs only. |
-| Graph completeness | Anvien | More nodes/relationships and exposes ResolutionGap/source-site inventory | medium | Higher graph volume is useful only with accuracy diagnostics, which Anvien exposes. |
+| Graph completeness | Anvien | More nodes/relationships because the graph model is more detailed, plus ResolutionGap/source-site inventory | high | The higher count is interpreted as richer modeled detail, not duplicate inflation, because Anvien also exposes source-site proof and false-positive audit output. |
 | Relationship accuracy | Anvien | Exhaustive source-site audit available; reduced sample tied at 100 percent | medium | GitNexus passed the reduced sample but lacks equivalent false-positive audit surface. |
 | Feature breadth | Anvien | Stronger graph-health, benchmark, source-site, file-context surfaces | high | GitNexus is still broad and close on CLI/Web/MCP/groups. |
 | Operational maturity | tie | Different strengths | medium | GitNexus has strong Node/npm/CI/runtime recovery; Anvien has faster build/analyze and stronger graph diagnostics. |
