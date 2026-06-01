@@ -29,6 +29,8 @@ The core product is still local code intelligence:
 - `anvien serve` exposes the same local runtime over HTTP for the browser UI.
 - `anvien-launcher/` packages the local backend and Web UI for a Windows `AnvienLauncher.exe` flow.
 
+`anvien analyze` now also prints `fileProjection` status, file inventory, dependency edges, unresolved-file count, and top file hotspots. The file commands below use that projection; the symbol graph remains canonical.
+
 No Anvien-hosted cloud service is involved in the active local runtime path.
 
 You do not need to put API keys into Anvien. Indexing, graph storage, repo switching, and graph queries run locally on your machine. For chat, Anvien uses the local Codex or Claude Code session/account you already use on this machine; Anvien does not store provider keys or route chat through an Anvien cloud service.
@@ -251,111 +253,111 @@ anvien completion <shell>        # Generate shell completion script
 Direct graph tools:
 
 ```bash
-anvien query <search_query>
-anvien query files <search_query>
-anvien query symbols <search_query>
-anvien query flows <search_query>
-anvien query api <search_query>
-anvien context [name]
-anvien context file <path>
-anvien context symbol <symbol>
-anvien impact [target]
-anvien impact file <path>
-anvien impact symbol <symbol>
-anvien impact route <route>
-anvien impact tool <tool>
-anvien rename <symbol> <newName>
-anvien cypher <query>
-anvien detect-changes
-anvien detect-changes files
-anvien detect-changes symbols
-anvien detect-changes flows
-anvien augment <pattern>
-anvien file-context <path>
-anvien file-hotspots
-anvien api route-map [route]
-anvien api tool-map [tool]
-anvien api shape-check [route]
-anvien api impact [route]
-anvien graph-health
-anvien query-health
-anvien resolution-inventory
-anvien source-site-accuracy
-anvien benchmark-compare <before> <after>
+anvien query <search_query>            # Search across graph lanes
+anvien query files <search_query>      # Search files first, with matched symbols and file summaries
+anvien query symbols <search_query>    # Search symbols first, with containing file summaries
+anvien query flows <search_query>      # Search execution flows
+anvien query api <search_query>        # Search API routes and MCP tools
+anvien context [name]                  # Smart symbol/file context
+anvien context file <path>             # Force File Detail context for one file
+anvien context symbol <symbol>         # Force symbol context
+anvien impact [target]                 # Smart blast-radius analysis
+anvien impact file <path>              # Aggregate blast radius from symbols in one file
+anvien impact symbol <symbol>          # Symbol blast radius with file-layer evidence
+anvien impact route <route>            # Route handler/consumer impact
+anvien impact tool <tool>              # MCP tool definition/flow impact
+anvien rename <symbol> <newName>       # Graph-assisted symbol rename
+anvien cypher <query>                  # Run an ad hoc graph query
+anvien detect-changes                  # Map git diffs to graph changes
+anvien detect-changes files            # Group changed/affected evidence by file
+anvien detect-changes symbols          # Group changed/affected evidence by symbol
+anvien detect-changes flows            # Group changed/affected evidence by flow
+anvien augment <pattern>               # Add graph context to a text search pattern
+anvien file-context <path>             # File summary, symbol tree, relationships, unresolved sites, linked flows/tests
+anvien file-hotspots                   # List file hotspots by unresolved, fan-in, fan-out, symbols, flows, or tests
+anvien api route-map [route]           # Route handler/consumer map
+anvien api tool-map [tool]             # MCP tool definition/handler map
+anvien api shape-check [route]         # API shape drift check
+anvien api impact [route]              # API route impact report
+anvien graph-health                    # Graph topology and diagnostic health
+anvien graph-health files              # File-level graph-health hotspots
+anvien query-health                    # Query retrieval health
+anvien resolution-inventory            # ResolutionGap inventory
+anvien source-site-accuracy            # Source-site proof accuracy
+anvien benchmark-compare <before> <after> # Compare analyze benchmark outputs
 ```
 
 AI context and skills:
 
-`anvien analyze` refreshes managed `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` from embedded source files under `internal/aicontext/skills/*.md`. `anvien setup` installs the same embedded base skill set into supported editor skill directories. Do not edit generated root context or `.claude/skills/anvien/**` as source; change the embedded skill source or generator and regenerate through analyze.
+```bash
+anvien analyze --no-stats        # Regenerate AGENTS.md/CLAUDE.md without volatile counts
+anvien setup                     # Install MCP/editor config and generated skills
+```
 
 Semantic graph diagnostics:
 
 ```bash
-anvien graph-health summary --repo <repo> --json
-anvien graph-health report --repo <repo> --limit 20 --json
-anvien graph-health components --repo <repo> --json
-anvien graph-health files --repo <repo> --limit 20 --json
-anvien query-health --repo <repo> --out .tmp/query-health.json
-anvien resolution-inventory --graph .anvien/graph.json --out .tmp/resolution-inventory.json
-anvien source-site-accuracy --graph .anvien/graph.json --out .tmp/source-site-accuracy.json
+anvien graph-health summary --repo <repo> --json                  # Graph health summary
+anvien graph-health report --repo <repo> --limit 20 --json        # Triage candidates
+anvien graph-health components --repo <repo> --json               # Component summaries
+anvien graph-health files --repo <repo> --limit 20 --json         # File hotspots
+anvien query-health --repo <repo> --out .tmp/query-health.json     # Query retrieval health
+anvien resolution-inventory --graph .anvien/graph.json --out .tmp/resolution-inventory.json # ResolutionGap inventory
+anvien source-site-accuracy --graph .anvien/graph.json --out .tmp/source-site-accuracy.json # Source-site accuracy
 ```
-
-These commands are for checking graph quality, not for replacing `analyze`. `analyze` remains the source of truth that refreshes the graph. `graph-health` audits computed topology health, diagnostics, component membership, confidence, resolution-health overlays, prioritized candidate reports, and file-level hotspots from the indexed repo graph. `query-health` measures query retrieval with two separate outcomes: threshold pass/fail for usable retrieval, and exact pass/fail for complete expected target coverage. Use `--fail-on-threshold` to fail when hit@5/hit@10 thresholds are missed, or `--fail-on-exact` to fail when any expected file/symbol is still missing. `resolution-inventory` reports persisted ResolutionGap and Resolution Health counts, including non-actionable breakdowns such as `builtin`, `standard_library`, and `test_framework`, with file grouping where available. `source-site-accuracy` reports proof-based CALLS/ACCESSES inventory, missing source-site IDs, false resolved edge candidates, and other graph accuracy gates.
-
-`anvien rename` and `anvien api ...` are CLI equivalents for the MCP `rename`, `route_map`, `tool_map`, `shape_check`, and `api_impact` tools. Use them for terminal workflows and smoke validation; they delegate to the same local MCP tool logic so API/rename semantics stay consistent across command surfaces.
 
 Repository groups:
 
 ```bash
-anvien group create <name>
-anvien group add <group> <groupPath> <registryName>
-anvien group remove <group> <path>
-anvien group list [name]
-anvien group sync <name>
-anvien group contracts <name>
-anvien group query <name> <query>
-anvien group status <name>
+anvien group create <name>                         # Create a repo group
+anvien group add <group> <groupPath> <registryName> # Add an indexed repo to a group
+anvien group remove <group> <path>                 # Remove a repo from a group
+anvien group list [name]                           # List groups or inspect one group
+anvien group sync <name>                           # Build the group contract registry
+anvien group contracts <name>                      # Inspect group contracts and cross-links
+anvien group query <name> <query>                  # Search execution flows across the group
+anvien group status <name>                         # Check group repo staleness
 ```
 
-Repo-local settings live in `.anvien/settings.json`. The current repo-local setting is `maxExecutionFlows`, which controls the cap used while materializing execution flows during `analyze`. `ANVIEN_MAX_PROCESSES` remains available as a temporary override.
+Repo-local settings live in `.anvien/settings.json`; `maxExecutionFlows` caps execution-flow materialization during `analyze`. `ANVIEN_MAX_PROCESSES` is a temporary override.
 
 ---
 
 ## MCP Tools And Resources
 
-Anvien exposes 16 MCP tools:
+MCP tools mirror the CLI graph workflows:
 
-| Tool | Purpose |
-|------|---------|
-| `list_repos` | Discover indexed repos |
-| `query` | Hybrid search over execution flows, symbols, and file-layer rows, with semantic App Layer, Functional Area, and Resolution Health fields when available |
-| `cypher` | Raw Cypher against the graph |
-| `context` | 360-degree symbol or file context, source-site proof/status metadata, File Detail sections, and related ResolutionGap rows |
-| `detect_changes` | Map git diffs to changed files/symbols/processes, changed App Layers, ResolutionGap changes, and resolution-health impact |
-| `rename` | Graph-assisted multi-file rename preview/application |
-| `impact` | Upstream/downstream blast radius with affected files, App Layers, Functional Areas, and resolution-health risks |
-| `route_map` | API route to handler/consumer mapping |
-| `tool_map` | MCP/RPC tool definition and handler mapping |
-| `shape_check` | API response shape vs consumer access checks |
-| `api_impact` | API route pre-change impact report |
-| `group_list` | List repo groups |
-| `group_sync` | Build cross-repo contract registry |
-| `group_contracts` | Inspect group contracts and cross-links |
-| `group_query` | Search across a repo group |
-| `group_status` | Check group/repo staleness |
+```text
+list_repos         # Discover indexed repos
+query              # Search graph lanes, including file rows
+cypher             # Raw graph query
+context            # Symbol/file context
+detect_changes     # Git-diff impact
+rename             # Graph-assisted rename
+impact             # Blast radius
+route_map          # API route map
+tool_map           # MCP/RPC tool map
+shape_check        # API shape drift
+api_impact         # API route impact
+group_list         # List repo groups
+group_sync         # Sync group contracts
+group_contracts    # Inspect group contracts
+group_query        # Search across a group
+group_status       # Check group staleness
+```
 
 Common resources:
 
-| Resource | Purpose |
-|----------|---------|
-| `anvien://repos` | All indexed repos |
-| `anvien://setup` | Generated setup/onboarding content |
-| `anvien://repo/{name}/context` | Repo overview and stats |
-| `anvien://repo/{name}/clusters` | Functional clusters |
-| `anvien://repo/{name}/cluster/{name}` | Cluster detail |
-| `anvien://repo/{name}/processes` | Execution flows |
-| `anvien://repo/{name}/process/{name}` | Process trace |
-| `anvien://repo/{name}/schema` | Graph schema |
+```text
+anvien://repos                  # Indexed repos
+anvien://setup                  # Setup/onboarding content
+anvien://repo/{name}/context    # Repo overview and stats
+anvien://repo/{name}/clusters   # Functional clusters
+anvien://repo/{name}/cluster/{name} # Cluster detail
+anvien://repo/{name}/processes  # Execution flows
+anvien://repo/{name}/process/{name} # Process trace
+anvien://repo/{name}/schema     # Graph schema
+```
 
 MCP prompts:
 
@@ -378,10 +380,12 @@ When only one repo is indexed, most repo-scoped tool calls can omit `repo`. With
 scan -> structure -> [markdown, cobol] -> parse -> [routes, tools, orm]
   -> crossFile -> mro -> communities -> processes
   -> semantic enrichment -> LadybugDB load -> FTS
-  -> optional embeddings -> metadata/registry/agent files
+  -> file projection -> optional embeddings -> metadata/registry/agent files
 ```
 
 The graph is stored in LadybugDB under `<repo>/.anvien/`.
+
+The file projection is built from the canonical graph after analyze. It derives file summaries, symbol trees, local/inbound/outbound relationship groups, unresolved source-site groups, linked flows/routes/tools/tests, and file quality signals from symbol and source-site facts.
 
 Semantic enrichment adds user-facing graph meaning on top of raw code symbols:
 
@@ -400,6 +404,7 @@ Storage:
   lbug
   lbug.wal
   lbug.lock
+  graph.json
   meta.json
   settings.json
 
@@ -411,8 +416,10 @@ Supported language detection currently covers:
 
 ```text
 JavaScript, TypeScript, Python, Java, C, C++, C#, Go, Ruby, Rust,
-PHP, Kotlin, Swift, Dart, Vue, COBOL
+PHP, Kotlin, Swift, Dart, Vue, Svelte, Astro, COBOL
 ```
+
+Document detection covers Markdown, PDF, Word, and spreadsheet files.
 
 COBOL/JCL is handled through the dedicated COBOL phase rather than the normal tree-sitter worker path.
 
@@ -442,7 +449,7 @@ The graph loading path uses:
 repo-resolver -> repo-read-executor -> graph-read-service -> graph-stream-http
 ```
 
-That is the replacement for the older process-global DB retargeting path used during Web repo switching.
+Repo selection stays explicit through this path, so Web graph reads do not depend on process-global active-repo state.
 
 ---
 
@@ -485,7 +492,7 @@ To make host repos visible to the container, set `WORKSPACE_DIR` to a local fold
 | `anvien-web/` | React/Vite Web UI and local runtime client |
 | `contracts/web-ui/` | Go-generated Web UI contract manifest |
 | `anvien-launcher/` | Windows launcher, server wrapper, packaged Web UI/backend assets |
-| `.claude/`, `anvien-claude-plugin/`, `anvien-cursor-integration/` | Generated agent context output and plugin metadata |
+| `.claude/`, `anvien-claude-plugin/` | Generated agent context output and plugin metadata |
 | `docs/plans/` | Implementation plans and investigation records |
 | `.github/` | CI workflows |
 
