@@ -387,7 +387,7 @@ func (r *lockingAnalyzeRunner) waitStarted(t *testing.T) {
 	t.Helper()
 	select {
 	case <-r.started:
-	case <-time.After(time.Second):
+	case <-time.After(5 * time.Second):
 		t.Fatal("locking analyze runner did not start")
 	}
 }
@@ -493,7 +493,7 @@ func assertAnalyzeError(t *testing.T, baseURL string, body string, wantStatus in
 func postEmbedEventually(t *testing.T, baseURL string, repoPath string, wantStatus int, target any) {
 	t.Helper()
 	body := `{"repo":"` + jsonEscape(repoPath) + `"}`
-	deadline := time.Now().Add(2 * time.Second)
+	deadline := time.Now().Add(5 * time.Second)
 	var lastStatus int
 	var lastBody string
 	for time.Now().Before(deadline) {

@@ -19,7 +19,6 @@ func expectedBaseSkillIDs() []string {
 		"anvien-api-surface",
 		"anvien-cross-repo",
 		"anvien-runtime-packaging",
-		"anvien-ai-context",
 	}
 }
 
@@ -124,12 +123,10 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"anvien-api-surface/SKILL.md",
 		"anvien-cross-repo/SKILL.md",
 		"anvien-runtime-packaging/SKILL.md",
-		"anvien-ai-context/SKILL.md",
 		"Graph health, query health, resolution inventory, and accuracy audits",
 		"API routes, MCP tools, shape checks, contracts, and consumers",
 		"Repository groups, cross-repo query, contracts, status, and sync",
 		"Runtime, setup, launcher, package, and canonical executable workflows",
-		"Generated AGENTS.md, CLAUDE.md, embedded skills, and AI context validation",
 		"file-context",
 		"file-hotspots",
 	} {
@@ -146,6 +143,9 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", oldLower)); !os.IsNotExist(err) {
 		t.Fatalf("old skill namespace should be removed: %v", err)
 	}
+	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "anvien", "anvien-ai-context")); !os.IsNotExist(err) {
+		t.Fatalf("self-referential AI context skill should not be installed: %v", err)
+	}
 	for _, forbidden := range []string{
 		oldDisplay,
 		oldLower,
@@ -153,6 +153,7 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"." + oldLower,
 		oldLower + "://",
 		oldLower + "-",
+		"anvien-ai-context",
 	} {
 		if strings.Contains(text, forbidden) {
 			t.Fatalf("AGENTS.md contains old generated name %q:\n%s", forbidden, text)
@@ -300,12 +301,6 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 	}
 
 	checks := map[string][]string{
-		"anvien-ai-context": {
-			"AGENTS.md",
-			"CLAUDE.md",
-			"internal/aicontext/skills/*.md",
-			"fallbackBaseSkillContent",
-		},
 		"anvien-api-surface": {
 			"route_map",
 			"anvien api route-map",

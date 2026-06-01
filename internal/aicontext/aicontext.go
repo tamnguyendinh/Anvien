@@ -294,7 +294,6 @@ var baseSkills = []baseSkill{
 	{Name: "anvien-api-surface", Description: `Use when the user needs to inspect API routes, MCP tools, contract shape drift, generated Web contracts, handlers, consumers, or route/tool impact.`, Task: `API routes, MCP tools, shape checks, contracts, and consumers`},
 	{Name: "anvien-cross-repo", Description: `Use when the user works across indexed repository groups, cross-repo query, contracts, status, sync, or multi-repo ownership.`, Task: `Repository groups, cross-repo query, contracts, status, and sync`},
 	{Name: "anvien-runtime-packaging", Description: `Use when the user needs serve, mcp, setup, doctor diagnostics, launcher, package runtime, canonical executable, startup, or process lifecycle validation.`, Task: `Runtime, setup, launcher, package, and canonical executable workflows`},
-	{Name: "anvien-ai-context", Description: `Use when the user changes generated AGENTS.md, CLAUDE.md, embedded Anvien skills, AI context generation, or source-vs-generated validation.`, Task: `Generated AGENTS.md, CLAUDE.md, embedded skills, and AI context validation`},
 }
 
 var retiredBaseSkillNames = []string{
@@ -311,6 +310,7 @@ var retiredBaseSkillNames = []string{
 	"av" + "matrix-cross-repo",
 	"av" + "matrix-runtime-packaging",
 	"av" + "matrix-ai-context",
+	"anvien-ai-context",
 }
 
 func BaseSkillFiles() ([]BaseSkillFile, error) {

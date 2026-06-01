@@ -902,7 +902,7 @@ Source-of-truth updates:
 | `internal/aicontext/skills/anvien-graph-quality.md` | Graph quality workflow now routes unresolved/source-site issues through file groups and `graph-health files`. |
 | `internal/aicontext/skills/anvien-api-surface.md` | API surface workflow now checks handler files, `handlerFile`, route/tool maps, and `context file` before edits. |
 | `internal/aicontext/skills/anvien-debugging.md` | Debugging workflow now uses `query files`, `context file`, and `impact file` when failures are file-scoped. |
-| `internal/aicontext/skills/anvien-guide.md` and `internal/aicontext/skills/anvien-ai-context.md` | Unified guide and AI-context validation now include file-layer command spelling and source-vs-generated checks. |
+| `internal/aicontext/skills/anvien-guide.md` | Unified guide now includes file-layer command spelling. The former self-referential `anvien-ai-context` skill is retired and is no longer part of the generated skill set. |
 
 Regeneration / parity:
 
@@ -1027,3 +1027,49 @@ Final detect changes:
 | Command | Result |
 |---|---|
 | `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all --json` | Pass. `risk_level=low`; `changed_count=108`; `changed_files=8`; `affected_count=0`; `affected_files=10`; file layer `changedFiles=8`, `affectedFiles=10`, `changedFileRisk=high`; resolution gap changed entities `71`. |
+
+## E17 - Retire Self-Referential AI Context Skill
+
+Date: 2026-06-01
+
+Status: completed
+
+Scope:
+
+- Remove only the self-referential `anvien-ai-context` skill from the embedded base skill registry.
+- Keep `.claude/skills/anvien/**` as generated output for the remaining Anvien skills.
+- Add cleanup coverage so stale generated `anvien-ai-context` directories are removed by normal analyze/setup generation.
+
+Impact / blast radius:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass before edits. `files=831`, `parsed=596`, `nodes=95887`, `relationships=131223`; file projection `dependencyEdges=15816`, `unresolvedFiles=588`. |
+| `.\anvien\bin\anvien.exe impact file "internal/aicontext/aicontext.go" --repo Anvien --direction upstream --include-tests` | HIGH/CRITICAL file-level blast radius through analyze/setup AI-context generation, so edits were scoped to the base skill registry, retired-skill cleanup, embedded source deletion, and tests. |
+| `.\anvien\bin\anvien.exe impact --uid "Variable:internal/aicontext/aicontext.go:baseSkills" --repo Anvien --direction upstream --include-tests` | LOW symbol impact, `impactedCount=0`; linked flows/tests still show the containing generator file participates in analyze AI-context flows. |
+| `.\anvien\bin\anvien.exe impact --uid "Variable:internal/aicontext/aicontext.go:retiredBaseSkillNames" --repo Anvien --direction upstream --include-tests` | LOW symbol impact, `impactedCount=0`. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/aicontext/aicontext.go` | Removed `anvien-ai-context` from `baseSkills` and added it to `retiredBaseSkillNames` so normal generation removes stale output while preserving all other generated Anvien skills. |
+| `internal/aicontext/skills/anvien-ai-context.md` | Deleted the embedded source of the self-referential skill. |
+| `internal/aicontext/aicontext_test.go` | Expected base skill inventory now has 10 skills, asserts the generated root Skills table omits `anvien-ai-context`, and asserts the self-referential skill directory is not installed. |
+| `internal/httpapi/analyze_test.go` | Hardened the existing analyze/embed lock lifecycle test timeout after full-suite Windows runs exposed a timing race while validating this slice. |
+
+Regeneration / validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Initial run was blocked by an existing `anvien\bin\anvien.exe` process holding the binary. After stopping the workspace process, rerun passed; existing Vite dynamic-import/chunk-size warnings only. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass with the rebuilt binary. `files=830`, `parsed=596`, `unsupported=234`, `failed=0`, `nodes=95885`, `relationships=131221`; file projection `dependencyEdges=15816`, `unresolvedFiles=588`. |
+| Generated output checks | Pass. `.claude/skills/anvien/anvien-ai-context` and its `SKILL.md` no longer exist; generated `AGENTS.md` and `CLAUDE.md` no longer reference `anvien-ai-context`. |
+| `go test ./internal/aicontext -count=1` | Pass. |
+| `go test ./internal/httpapi -run TestAnalyzeLockBlocksEmbedAndReleasesAfterCancel -count=1 -v` | Pass after timeout hardening. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass after rerun. |
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all --json` | Pass. `risk_level=low`; `changed_count=27`; `changed_files=6`; `affected_count=0`; file layer `changedFiles=6`, `affectedFiles=5`, `changedFileRisk=high`; resolution gap changed entities `11`. |
+
+Notes:
+
+- Web UI behavior did not change, so no Web e2e test was required for this slice.

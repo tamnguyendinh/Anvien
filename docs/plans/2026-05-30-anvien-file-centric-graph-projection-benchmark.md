@@ -26,14 +26,14 @@ Status: P0-A baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Files scanned | files | 819 | 831 | +12 | record | Latest after P4-B Web File Detail analyze refresh. |
+| Files scanned | files | 819 | 830 | +11 | record | Latest after retiring the self-referential AI context skill and refreshing analyze. |
 | Files parsed | files | 584 | 596 | +12 | record | Latest after P4-B Web File Detail analyze refresh. |
-| Unsupported files | files | 235 | 235 | 0 | record | Latest after P4-A Web File Map analyze benchmark. |
+| Unsupported files | files | 235 | 234 | -1 | record | Latest after retiring the self-referential AI context skill and refreshing analyze. |
 | Failed files | files | 0 | 0 | 0 | `0` | From readiness `anvien analyze --force --name Anvien`. |
-| Graph nodes | nodes | 91587 | 95887 | +4300 | record | Current graph inventory after final P4-B/P7 analyze refresh. |
-| Graph relationships | relationships | 125054 | 131223 | +6169 | record | Current graph inventory after final P4-B/P7 analyze refresh. |
-| SourceSite count | distinct ids | 95433 | 86846 | -8587 | record | Distinct `sourceSiteId` strings in `.anvien/graph.json`; method differs from earlier relationship-trace-only count. |
-| ResolutionGap count | nodes | 65652 | 68470 | +2818 | record | Required for quality projection coverage after final P6 refresh. |
+| Graph nodes | nodes | 91587 | 95885 | +4298 | record | Current graph inventory after retiring the self-referential AI context skill. |
+| Graph relationships | relationships | 125054 | 131221 | +6167 | record | Current graph inventory after retiring the self-referential AI context skill. |
+| SourceSite count | distinct ids | 95433 | 87259 | -8174 | record | Distinct `sourceSiteId` strings in `.anvien/graph.json`; method differs from earlier relationship-trace-only count. |
+| ResolutionGap count | nodes | 65652 | 68884 | +3232 | record | `graph-health summary` `resolutionGapNodeCount` after final E17 refresh. |
 
 ## B0A - Graph Generation Speed
 
@@ -60,11 +60,11 @@ Status: P0-A partial baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Indexed files | files | 819 | 831 | +12 | record | All files represented by projection after P4-B refresh. |
+| Indexed files | files | 819 | 830 | +11 | record | All files represented by projection after retiring the self-referential AI context skill. |
 | Source files | files | 368 | 400 | +32 | record | File kind count from `file-hotspots --repo Anvien --json --limit 0`. |
 | Test files | files | 231 | 237 | +6 | record | File kind count from `file-hotspots --repo Anvien --json --limit 0`. |
 | Generated files | files | 2 | 2 | 0 | record | `generated_contract` app layer. |
-| Docs files | files | 178 | 178 | 0 | record | `docs` app layer. |
+| Docs files | files | 178 | 177 | -1 | record | `docs` app layer after deleting `internal/aicontext/skills/anvien-ai-context.md`. |
 | Config files | files | 14 | 14 | 0 | record | `config` app layer. |
 | Files with symbols | files | 575 | 587 | +12 | record | File summaries with `symbolCount > 0`. |
 | Files with unresolved source sites | files | 576 | 588 | +12 | track | File summaries with `unresolvedSourceSiteCount > 0`. |
@@ -105,13 +105,13 @@ Status: P0-A partial baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Unresolved source sites grouped by file | sites | 66555 | 68028 | +1473 | record | Graph-health source-backed unresolved references. |
-| Unresolved calls | sites | 34959 | 35615 | +656 | record | Graph-health `resolutionGapFactFamilyCounts.call`. |
-| Unresolved refs | sites | 31596 | 32413 | +817 | record | Access + type-reference + heritage gap counts. |
+| Unresolved source sites grouped by file | sites | 66555 | 69807 | +3252 | record | Graph-health source-backed unresolved references after E17 refresh. |
+| Unresolved calls | sites | 34959 | 36570 | +1611 | record | Graph-health `unresolved_call_target` bucket after E17 refresh. |
+| Unresolved refs | sites | 31596 | 33237 | +1641 | record | Access + type-reference + heritage gap buckets after E17 refresh. |
 | Unresolved imports | sites | pending | 0 | pending | record | No import gap bucket in latest graph-health output. |
-| Analyzer-gap classified sites | sites | 39535 | 40140 | +605 | record | Graph-health actionability bucket. |
-| External/dynamic classified sites | sites | 250 | 266 | +16 | record | Graph-health `external_library` classification bucket. |
-| Files with high unresolved count | files | pending | 582 | pending | track | Files with unresolved source sites after P3-B linked overlay analyze. |
+| Analyzer-gap classified sites | sites | 39535 | 41091 | +1556 | record | Graph-health actionability bucket after E17 refresh. |
+| External/dynamic classified sites | sites | 250 | 294 | +44 | record | Graph-health `external_library` classification bucket after E17 refresh. |
+| Files with high unresolved count | files | pending | 588 | pending | track | Files with unresolved source sites after E17 refresh. |
 
 ## B5 - Projection Performance
 
@@ -197,8 +197,8 @@ Status: P6 existing-command file-layer coverage recorded
 | JSON command outputs with file-layer fields | commands | pending | 13 | pending | record | Includes new `analyze --json` file projection summary. |
 | Shared projection service consumers | surfaces | pending | 4 | pending | CLI+MCP+API+Web runtime | CLI, MCP helpers, HTTP API, and Web runtime/API client consume `internal/filecontext` data. |
 | MCP/API equivalents with file-layer parity | surfaces | pending | 9 | pending | record | MCP `query/context/impact/detect_changes`, MCP resources, and API route/tool/shape/impact map families. |
-| Embedded Anvien skills updated | skills | pending | 8 | pending | record | Source-of-truth skill Markdown updated under `internal/aicontext/skills`. |
-| Generated Anvien skills updated | skills | pending | 8 | pending | match source | Generated output validated by `internal/aicontext` tests; generated files are not tracked. |
+| Embedded Anvien skills updated | skills | pending | 7 | pending | record | Source-of-truth skill Markdown updated under `internal/aicontext/skills`; the self-referential `anvien-ai-context` skill is retired. |
+| Generated Anvien skills updated | skills | pending | 7 | pending | match source | Generated output validated by `internal/aicontext` tests; generated files are not tracked. |
 | Root generated context files updated | files | pending | 2 | pending | record | `AGENTS.md` and `CLAUDE.md` guidance validated through generator tests and final analyze path. |
 | Command integration tests | tests | pending | 5 | pending | pass | Focused test files: CLI target, CLI command, MCP server, query-health, source-site/resolution command fixtures. |
 | Skill/context parity tests | tests | pending | 1 | pending | pass | `internal/aicontext/aicontext_test.go` validates generated command spellings and guidance. |
@@ -218,8 +218,8 @@ Status: P1-A partial validation counts recorded
 | Projection cache tests | tests | pending | 2 | pending | pass | Cold/warm, graph-change, repo-switch, explicit hash, and explicit invalidation coverage. |
 | Web unit tests | tests | pending | 408 | pending | pass | Full `npm --prefix anvien-web test` suite after P4-B. Focused File Detail/File Map/API client run covered 27 tests. |
 | Web e2e tests | tests | pending | 1 | pending | pass | File Map e2e in `shell-interactions.spec.ts`. |
-| Detect-changes changed files | files | 5 | 8 | +3 | record | P4-B/P7 final detect-changes scope. |
+| Detect-changes changed files | files | 5 | 6 | +1 | record | E17 final detect-changes scope. |
 | Detect-changes affected count | symbols/processes | 17 | 0 | -17 | record | P4-B/P7 final affected symbol/process count; file-layer affected files are recorded separately. |
-| Detect-changes affected files | files | pending | 10 | pending | record | P4-B/P7 final file-layer affected file count. |
-| Detect-changes changed symbols | symbols | pending | 108 | pending | record | P4-B/P7 final detect-changes summary. |
-| Detect-changes resolution gap changed entities | entities | pending | 71 | pending | record | P4-B/P7 final detect-changes resolution gap summary. |
+| Detect-changes affected files | files | pending | 5 | pending | record | E17 final file-layer affected file count. |
+| Detect-changes changed symbols | symbols | pending | 27 | pending | record | E17 final detect-changes summary. |
+| Detect-changes resolution gap changed entities | entities | pending | 11 | pending | record | E17 final detect-changes resolution gap summary. |
