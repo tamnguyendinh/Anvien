@@ -16,13 +16,15 @@ Maintainer may widen scope per task.
 ## Non-negotiables
 
 1. **Never commit secrets** — API keys, tokens, real `.env` values, private URLs, session cookies. Use `.env.example` with placeholders.
-2. **Never rename with find-and-replace** in anvien-indexed projects — use `rename` MCP tool with `dry_run: true` first, review `graph` vs `text_search` edits. No separate `anvien rename` CLI exists.
+2. **Never rename with find-and-replace** in anvien-indexed projects — use the `rename` MCP tool or `anvien rename` CLI with a dry-run/review path first, then review graph-guided edits and text-search fallbacks.
 3. **Run impact analysis before editing shared symbols when graph tools are available** — `impact` (upstream) for functions/classes/methods others call. Do not ignore HIGH/CRITICAL without maintainer sign-off.
 4. **Run `detect_changes` before commit when graph tools are available** — confirm diffs map to expected symbols/processes.
 5. **Preserve embeddings** — if `.anvien/meta.json` shows embeddings, use `anvien analyze --embeddings`; plain `analyze` drops them.
 6. **Keep Anvien local-first** — do not add an Anvien-hosted cloud service, required daemon, required Docker path, or managed workspace requirement to the default runtime.
 7. **Keep repo context explicit** — Web/HTTP/MCP/CLI code should pass repo name/path/session explicitly. Do not reintroduce graph reads that depend on one mutable process-global active repo.
 8. **Keep the launcher optional** — `anvien serve` must remain the direct local backend entry point.
+9. **Keep generated AI context source-owned** — `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` are generated outputs. Update `internal/aicontext/aicontext.go` or `internal/aicontext/skills/*.md`, then regenerate.
+10. **Do not generate self-referential AI-context skills** — the generated Anvien skill set is task-facing only. It must not include `anvien-ai-context` or a skill that tells agents to modify its own generator.
 
 ---
 
@@ -32,6 +34,7 @@ Maintainer may widen scope per task.
 - `anvien mcp` exposes indexed repos over stdio for local agents.
 - `anvien serve` exposes the local HTTP backend on loopback for the Web UI.
 - `anvien-web/` is a thin client over the local backend; it must not become the owner of graph storage.
+- File Map/File Detail relationships are derived projections from symbol and source-site graph facts; the canonical graph remains symbol/source-site based.
 - `anvien-launcher/` is a Windows convenience layer around the same backend and Web UI.
 - Anvien must not store AI provider API keys in browser storage or route chat through an Anvien cloud proxy.
 - Current chat execution is through the Codex CLI adapter. `claude-code` is a shared provider identifier/UI slot until a backend adapter is implemented.
@@ -83,6 +86,12 @@ Format: **Trigger → Instruction → Reason**. Append new Signs when the same m
 - **Trigger:** Errors opening `.anvien/lbug`, active job lock errors, or WAL/checksum errors.
 - **Do:** Stop launcher/backend/MCP sessions that may hold the repo, wait for analyze/embed/delete jobs to finish, then retry or rebuild with `anvien analyze . --force`.
 - **Why:** Analyze/embed/delete are repo write paths. Overlapping writers or killing a writer mid-flight can corrupt the repo-local LadybugDB store.
+
+### Generated agent context drift
+
+- **Trigger:** `AGENTS.md`, `CLAUDE.md`, or `.claude/skills/anvien/**` disagrees with `internal/aicontext/` source, or a generated skill tries to own AI-context generator behavior.
+- **Do:** Fix `internal/aicontext/aicontext.go` or `internal/aicontext/skills/*.md`, regenerate via analyze/setup, and keep `anvien-ai-context` out of generated skills.
+- **Why:** Generated root context and skills are outputs. A self-referential AI-context skill makes generated guidance the source of truth for its own generator, which reverses ownership.
 
 ### Launcher behavior diverges from `anvien serve`
 

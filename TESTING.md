@@ -85,7 +85,7 @@ Run the smallest useful validation for the change.
 | ----------- | ------------------------- |
 | Docs only | `git diff --check` |
 | CLI command, MCP tool, graph query, ingestion, LadybugDB | Full launcher build first, then `go test ./cmd/... ./internal/... -count=1` |
-| Narrow core logic | `cd anvien && npm run test:unit` plus targeted integration tests if storage/MCP is involved. |
+| Narrow core logic | Target the owning Go package, for example `go test ./internal/<package> -count=1`, plus related package tests if storage/MCP is involved. |
 | Web UI component/state only | `cd anvien-web && npm run build && npx tsc -b --noEmit && npm test` |
 | Repo switching, graph loading, analyze from Web UI | Web build/tests plus manual or Playwright E2E against `anvien serve`. |
 | Session chat runtime | Web unit tests plus manual `/api/session/status` and one chat request with the local Codex CLI session. |
@@ -95,9 +95,9 @@ Avoid running the full test matrix for docs-only or copy-only changes. Prefer ta
 
 ## Pre-commit hook
 
-A husky pre-commit hook (`.husky/pre-commit`) runs automatically on every `git commit`.
+The root package includes Husky and lint-staged dependencies, but this repository currently does not commit a `.husky/pre-commit` hook. Do not rely on hooks as the only validation.
 
-The intended behavior for the current package layout is:
+If a hook is added later, the intended behavior for the current package layout is:
 
 1. **Formatting** — `lint-staged` runs prettier on staged files
 2. **`anvien-web/` files staged** → `tsc -b --noEmit`
@@ -105,14 +105,14 @@ The intended behavior for the current package layout is:
 
 Tests do **not** run in the pre-commit hook — they run in CI (`ci-tests.yml`) only.
 
-Skip with `git commit --no-verify` (use sparingly).
+Skip with `git commit --no-verify` only when a hook exists and the maintainer accepts the tradeoff.
 
 Maintenance note: if `.husky/pre-commit` is edited, keep it aligned with the current package paths: `anvien/`, `anvien-web/`, and Go runtime paths under `cmd/` and `internal/`.
 
 ## Test categories
 
 - **Unit** — Pure logic, parsers, graph/query helpers; fast; no network.
-- **Integration** — Real combinations (filesystem, MCP wiring, larger pipelines) as already organized under `anvien/test/integration`.
+- **Integration** — Real combinations such as filesystem, MCP wiring, HTTP handlers, analyze pipelines, and repo storage; keep them near the owning Go package or Web test surface.
 - **Eval-style / golden sets** — For agent- or classification-style behavior, keep labeled inputs and expected outputs (JSON or table-driven tests) and run them in CI when relevant.
 - **E2E (web)** — Critical user paths only; prefer `data-testid` attributes for stable selectors. Tests run against the real Go backend (`anvien serve`) and Vite dev server.
 - **Manual smoke** — Required for packaged launcher behavior, OS folder picker behavior, and any browser flow that depends on real local machine state.
@@ -168,7 +168,7 @@ cd anvien && npm run build && npm test
 cd ../anvien-web && npx tsc -b --noEmit && npm test
 ```
 
-The pre-commit hook is useful for formatting/typecheck feedback, but do not treat it as a replacement for package-specific validation.
+Hooks, when present, are useful for formatting/typecheck feedback, but do not treat them as a replacement for package-specific validation.
 
 ## User acceptance / beta (optional)
 

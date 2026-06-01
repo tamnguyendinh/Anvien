@@ -4,7 +4,7 @@ Anvien is a local-first code intelligence system. The backend, CLI, MCP server,
 analyzer, storage, contracts, and session bridge are implemented in Go under
 `cmd/` and `internal/`. The Web UI remains a thin React/Vite client under
 `anvien-web/`. The npm package under `anvien/` ships the Go runtime binary,
-package metadata, skills, and generated Go source fallback for install-time
+package metadata, and generated Go source fallback for install-time
 rebuilds.
 
 ## Repository Layout
@@ -17,13 +17,15 @@ rebuilds.
 | `internal/scanner/`, `internal/parser/`, `internal/providers/` | File scanning, parser readiness/pool, language-specific ScopeIR extraction. |
 | `internal/scopeir/`, `internal/resolution/` | Serialized scope facts, indexes, import/call/reference resolution, audited graph edge emission. |
 | `internal/graph/`, `internal/lbugschema/`, `internal/lbugload/`, `internal/lbugruntime/` | Graph model, LadybugDB schema, CSV/load path, query/runtime helpers. |
+| `internal/filecontext/` | File-centric graph projection builder for File Map, File Detail, hotspots, file relationships, quality signals, and source preview. |
 | `internal/httpapi/` | Local HTTP API used by the Web UI and launcher. |
 | `internal/mcp/` | MCP stdio server, tools, resources, prompts, impact, context, detect-changes, rename support. |
 | `internal/cli/` | Cobra CLI commands and hidden package lifecycle helpers. |
 | `internal/contracts/` | Go-owned contracts and generated Web UI TypeScript contract source. |
+| `internal/aicontext/` | Generated root agent context and task-facing Anvien skill source/registry; it must not generate a self-referential AI-context skill. |
 | `internal/session/` | Local session bridge and Codex CLI adapter. |
 | `internal/group/`, `internal/tools/`, `internal/routes/`, `internal/communities/`, `internal/processes/` | Higher-level graph enrichments and runtime views. |
-| `anvien/` | npm package metadata, packaged skills, built `bin/` runtime artifacts, and generated `go-src` only during package fallback workflows. |
+| `anvien/` | npm package metadata, built `bin/` runtime artifacts, and generated `go-src` only during package fallback workflows. |
 | `anvien-web/` | React/Vite Web UI. Runtime calls go through `anvien serve`. |
 | `contracts/web-ui/` | Go-generated contract manifest for browser glue. |
 | `anvien-launcher/` | Windows launcher, server wrapper, packaged Web assets, and backend bundle. |
@@ -48,6 +50,7 @@ rebuilds.
    - `internal/lbugschema` defines table and relationship constants.
    - `internal/lbugload` writes graph data to CSV/load paths.
    - `internal/lbugruntime` opens/query LadybugDB and handles compatibility/runtime helpers.
+   - `internal/filecontext` derives file-level projection data from symbol and source-site graph facts.
    - Repo metadata and registry state are managed by `internal/repo`.
 
 5. **Serve local interfaces**
@@ -67,6 +70,7 @@ does not introduce an Anvien-hosted cloud service.
 | `/api/repos`, `/api/repo` | List, resolve, select, and remove indexed repos. | `internal/httpapi/repos.go`, `internal/repo` |
 | `/api/graph` | Load or stream graph data for an explicit repo. | `internal/httpapi/graph.go`, `internal/graph`, `internal/lbugruntime` |
 | `/api/query`, `/api/search`, `/api/file`, `/api/grep`, `/api/process*`, `/api/cluster*` | Code search, file access, graph views. | `internal/httpapi/query.go`, `search.go`, `file.go`, `grep.go`, `panels.go` |
+| `/api/file-context`, `/api/file-hotspots` | File Detail and File Map projections with relationships, quality signals, unresolved source sites, linked flows/tests, and source preview. | `internal/httpapi/file_context.go`, `internal/filecontext` |
 | `/api/local/folder-picker` | Open an OS folder picker from the local backend. | `internal/httpapi/local_folder_picker.go` |
 | `/api/analyze`, `/api/embed` | Background indexing and embedding jobs. | `internal/httpapi/analyze.go`, `embed.go`, `jobs.go` |
 | `/api/mcp` | MCP-over-HTTP bridge for local clients. | `internal/httpapi/mcp.go`, `internal/mcp` |
@@ -169,9 +173,9 @@ direct backend entry point.
 | Tool | Purpose |
 |------|---------|
 | `list_repos` | Discover indexed repos. |
-| `query` | Hybrid text/vector search over indexed graph content. |
-| `context` | Callers, callees, files, and processes for one symbol. |
-| `impact` | Upstream/downstream blast radius with risk summary. |
+| `query` | Hybrid text/vector search over indexed graph content, including file-layer results when requested. |
+| `context` | Symbol or file context with source-site proof, derived file relationships, linked flows/tests, and quality signals. |
+| `impact` | Upstream/downstream blast radius with affected files and risk summary. |
 | `detect_changes` | Map git diffs to affected symbols and processes. |
 | `rename` | Graph-assisted multi-file rename with dry-run preview. |
 | `cypher` | Ad hoc graph query support. |
@@ -195,8 +199,10 @@ direct backend entry point.
 | MCP server/tools/resources | `internal/mcp/` |
 | Search and embeddings | `internal/embeddings/`, `internal/httpapi/search.go` |
 | Session bridge | `internal/session/`, `internal/httpapi/session.go` |
+| File projection, File Detail, File Map backend | `internal/filecontext/`, `internal/httpapi/file_context.go`, `internal/cli/file_context_command.go`, `internal/mcp/target_dispatch.go` |
 | Web UI | `anvien-web/src/` |
 | Generated Web contracts | `internal/contracts/`, `cmd/generate-web-contracts/`, `anvien-web/src/generated/` |
+| Generated root agent context and Anvien skill registry | `internal/aicontext/aicontext.go`, `internal/aicontext/skills/*.md` |
 | Launcher | `anvien-launcher/src/main.go`, `anvien-launcher/server-wrapper/main.go`, `anvien-launcher/build.ps1` |
 
 ## Known Constraints
@@ -208,3 +214,5 @@ direct backend entry point.
 - Web graph loading must stay repo-scoped by explicit repo path/name.
 - `anvien-web/` must remain a thin client over the local backend.
 - The launcher must remain a convenience layer over the same backend semantics.
+- File relationships are derived projections from symbol/source-site graph facts; the canonical graph remains symbol/source-site fact based.
+- Generated Anvien skills are task-facing guidance only. Do not reintroduce a generated `anvien-ai-context` skill or any generated skill that instructs agents to modify its own generator.

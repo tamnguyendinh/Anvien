@@ -286,7 +286,7 @@ anvien benchmark-compare <before> <after>
 
 AI context and skills:
 
-`anvien analyze` refreshes managed `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` from embedded source files under `internal/aicontext/skills/*.md`. `anvien setup` installs the same embedded base skill set into supported editor skill directories. Do not edit generated root context or `.claude/skills/anvien/**` as source; change the embedded skill source or generator and regenerate through analyze.
+`anvien analyze` refreshes managed `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` from the base skill registry in `internal/aicontext/aicontext.go` and embedded source files under `internal/aicontext/skills/*.md`. `anvien setup` installs the same embedded base skill set into supported editor skill directories. Do not edit generated root context or `.claude/skills/anvien/**` as source; change the embedded skill source or generator and regenerate through analyze. The generated skill set intentionally excludes a self-referential AI-context skill; AI context generator rules belong in generator code, tests, and docs, not in a generated skill that instructs agents to modify its own source.
 
 Semantic graph diagnostics:
 
@@ -485,7 +485,7 @@ To make host repos visible to the container, set `WORKSPACE_DIR` to a local fold
 | `anvien-web/` | React/Vite Web UI and local runtime client |
 | `contracts/web-ui/` | Go-generated Web UI contract manifest |
 | `anvien-launcher/` | Windows launcher, server wrapper, packaged Web UI/backend assets |
-| `.claude/`, `anvien-claude-plugin/`, `anvien-cursor-integration/` | Generated agent context output and plugin metadata |
+| `.claude/`, `anvien-claude-plugin/` | Generated agent context output and plugin metadata |
 | `docs/plans/` | Implementation plans and investigation records |
 | `.github/` | CI workflows |
 

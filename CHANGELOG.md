@@ -4,6 +4,21 @@ All notable changes to anvien will be documented in this file.
 
 ## [Unreleased]
 
+### 2026-06-01
+
+#### Added
+
+- Added file-centric graph projection documentation for File Map, File Detail, file-aware CLI commands, and `/api/file-context` / `/api/file-hotspots`.
+
+#### Changed
+
+- Retired the self-referential generated `anvien-ai-context` skill. Generated Anvien skills are now task-facing only; AI-context generator rules live in generator code, tests, and docs.
+- Refreshed project docs to align with the Go runtime, file projection surfaces, and the current generated skill set.
+
+#### Fixed
+
+- Hardened the analyze/embed lock lifecycle test wait window so full Windows Go suite runs do not fail while a cancelled analyze job is still releasing its repo lock.
+
 ### 2026-05-26
 
 #### Added
