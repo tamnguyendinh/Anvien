@@ -24,6 +24,7 @@ The core product is still local code intelligence:
 
 - `anvien analyze` builds a repo-local graph index in `<repo>/.anvien/`.
 - the graph stores semantic layers such as App Layer, Functional Area, source-site proof metadata, ResolutionGap entities, and Resolution Health summaries.
+- file-centric projection views expose file summaries, symbol trees, derived file relationships, unresolved source-site groups, linked flows/routes/tools/tests, and quality signals without replacing the symbol graph.
 - `anvien mcp` exposes indexed repos to MCP clients such as Claude Code, Codex, Cursor, and OpenCode.
 - `anvien serve` exposes the same local runtime over HTTP for the browser UI.
 - `anvien-launcher/` packages the local backend and Web UI for a Windows `AnvienLauncher.exe` flow.
@@ -185,6 +186,8 @@ From the Web UI you can:
 - remove a repo from the landing list
 - switch repos from the header dropdown
 - browse graph nodes, links, files, processes, and search results
+- open File Map to sort/filter files by unresolved sites, fan-in, fan-out, symbols, flows, tests, changed status, API scope, and file kind
+- click a file to inspect File Detail: summary, quality signals, symbol tree, local/inbound/outbound relationship groups, unresolved source-site samples, linked flows/routes/MCP tools/tests, and source preview
 - use the local session bridge for Codex/Claude Code style chat
 
 ---
@@ -249,12 +252,27 @@ Direct graph tools:
 
 ```bash
 anvien query <search_query>
+anvien query files <search_query>
+anvien query symbols <search_query>
+anvien query flows <search_query>
+anvien query api <search_query>
 anvien context [name]
+anvien context file <path>
+anvien context symbol <symbol>
 anvien impact [target]
+anvien impact file <path>
+anvien impact symbol <symbol>
+anvien impact route <route>
+anvien impact tool <tool>
 anvien rename <symbol> <newName>
 anvien cypher <query>
 anvien detect-changes
+anvien detect-changes files
+anvien detect-changes symbols
+anvien detect-changes flows
 anvien augment <pattern>
+anvien file-context <path>
+anvien file-hotspots
 anvien api route-map [route]
 anvien api tool-map [tool]
 anvien api shape-check [route]
@@ -276,12 +294,13 @@ Semantic graph diagnostics:
 anvien graph-health summary --repo <repo> --json
 anvien graph-health report --repo <repo> --limit 20 --json
 anvien graph-health components --repo <repo> --json
+anvien graph-health files --repo <repo> --limit 20 --json
 anvien query-health --repo <repo> --out .tmp/query-health.json
 anvien resolution-inventory --graph .anvien/graph.json --out .tmp/resolution-inventory.json
 anvien source-site-accuracy --graph .anvien/graph.json --out .tmp/source-site-accuracy.json
 ```
 
-These commands are for checking graph quality, not for replacing `analyze`. `analyze` remains the source of truth that refreshes the graph. `graph-health` audits computed topology health, diagnostics, component membership, confidence, resolution-health overlays, and prioritized candidate reports from the indexed repo graph. `query-health` measures query retrieval with two separate outcomes: threshold pass/fail for usable retrieval, and exact pass/fail for complete expected target coverage. Use `--fail-on-threshold` to fail when hit@5/hit@10 thresholds are missed, or `--fail-on-exact` to fail when any expected file/symbol is still missing. `resolution-inventory` reports persisted ResolutionGap and Resolution Health counts, including non-actionable breakdowns such as `builtin`, `standard_library`, and `test_framework`. `source-site-accuracy` reports proof-based CALLS/ACCESSES inventory, missing source-site IDs, false resolved edge candidates, and other graph accuracy gates.
+These commands are for checking graph quality, not for replacing `analyze`. `analyze` remains the source of truth that refreshes the graph. `graph-health` audits computed topology health, diagnostics, component membership, confidence, resolution-health overlays, prioritized candidate reports, and file-level hotspots from the indexed repo graph. `query-health` measures query retrieval with two separate outcomes: threshold pass/fail for usable retrieval, and exact pass/fail for complete expected target coverage. Use `--fail-on-threshold` to fail when hit@5/hit@10 thresholds are missed, or `--fail-on-exact` to fail when any expected file/symbol is still missing. `resolution-inventory` reports persisted ResolutionGap and Resolution Health counts, including non-actionable breakdowns such as `builtin`, `standard_library`, and `test_framework`, with file grouping where available. `source-site-accuracy` reports proof-based CALLS/ACCESSES inventory, missing source-site IDs, false resolved edge candidates, and other graph accuracy gates.
 
 `anvien rename` and `anvien api ...` are CLI equivalents for the MCP `rename`, `route_map`, `tool_map`, `shape_check`, and `api_impact` tools. Use them for terminal workflows and smoke validation; they delegate to the same local MCP tool logic so API/rename semantics stay consistent across command surfaces.
 
@@ -309,12 +328,12 @@ Anvien exposes 16 MCP tools:
 | Tool | Purpose |
 |------|---------|
 | `list_repos` | Discover indexed repos |
-| `query` | Hybrid search over execution flows and symbols, with semantic App Layer, Functional Area, and Resolution Health fields when available |
+| `query` | Hybrid search over execution flows, symbols, and file-layer rows, with semantic App Layer, Functional Area, and Resolution Health fields when available |
 | `cypher` | Raw Cypher against the graph |
-| `context` | 360-degree symbol context, source-site proof/status metadata, and related ResolutionGap rows |
-| `detect_changes` | Map git diffs to affected symbols/processes, changed App Layers, ResolutionGap changes, and resolution-health impact |
+| `context` | 360-degree symbol or file context, source-site proof/status metadata, File Detail sections, and related ResolutionGap rows |
+| `detect_changes` | Map git diffs to changed files/symbols/processes, changed App Layers, ResolutionGap changes, and resolution-health impact |
 | `rename` | Graph-assisted multi-file rename preview/application |
-| `impact` | Upstream/downstream blast radius with affected App Layers, Functional Areas, and resolution-health risks |
+| `impact` | Upstream/downstream blast radius with affected files, App Layers, Functional Areas, and resolution-health risks |
 | `route_map` | API route to handler/consumer mapping |
 | `tool_map` | MCP/RPC tool definition and handler mapping |
 | `shape_check` | API response shape vs consumer access checks |
@@ -410,6 +429,7 @@ COBOL/JCL is handled through the dedicated COBOL phase rather than the normal tr
 | `/api/repos`, `/api/repo` | List/select/remove indexed repos |
 | `/api/graph` | Repo-scoped graph load/stream |
 | `/api/query`, `/api/search`, `/api/file`, `/api/grep` | Repo-scoped read/search helpers |
+| `/api/file-context`, `/api/file-hotspots` | File-centric projection detail and hotspot/list data |
 | `/api/process*`, `/api/cluster*` | Derived graph views |
 | `/api/local/folder-picker` | Native local folder picker bridge |
 | `/api/analyze`, `/api/embed` | Background analyze/embed jobs |

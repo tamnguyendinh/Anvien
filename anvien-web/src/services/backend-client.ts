@@ -7,6 +7,7 @@
  */
 
 import type {
+  FileContextResponse,
   FileHotspotsResponse,
   GraphNode,
   GraphRelationship,
@@ -73,6 +74,13 @@ export interface FetchFileHotspotsOptions {
   unresolvedOnly?: boolean;
   highFanIn?: boolean;
   highFanOut?: boolean;
+}
+
+export interface FetchFileContextOptions {
+  repo?: string;
+  relationships?: number;
+  unresolved?: number;
+  linked?: number;
 }
 
 export interface JobProgress {
@@ -640,6 +648,25 @@ export const fetchFileHotspots = async (
   const response = await fetchFromBackend(`${_backendUrl}/api/file-hotspots${params ? `?${params}` : ''}`);
   await assertOk(response);
   return response.json() as Promise<FileHotspotsResponse>;
+};
+
+/** Fetch full file-level graph context for a selected file. */
+export const fetchFileContext = async (
+  filePath: string,
+  options: FetchFileContextOptions = {},
+): Promise<FileContextResponse> => {
+  const params = [
+    `path=${encodeURIComponent(filePath)}`,
+    repoParam(options.repo),
+    options.relationships !== undefined ? `relationships=${options.relationships}` : '',
+    options.unresolved !== undefined ? `unresolved=${options.unresolved}` : '',
+    options.linked !== undefined ? `linked=${options.linked}` : '',
+  ]
+    .filter(Boolean)
+    .join('&');
+  const response = await fetchFromBackend(`${_backendUrl}/api/file-context?${params}`);
+  await assertOk(response);
+  return response.json() as Promise<FileContextResponse>;
 };
 
 /** Fetch all processes for a repo. */

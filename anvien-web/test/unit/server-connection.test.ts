@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   connectToServer,
+  fetchFileContext,
   fetchFileHotspots,
   fetchGraph,
   fetchRepoInfo,
@@ -310,6 +311,84 @@ describe('fetchFileHotspots', () => {
     expect(url.searchParams.get('unresolvedOnly')).toBe('true');
     expect(url.searchParams.get('highFanIn')).toBe('true');
     expect(url.searchParams.get('highFanOut')).toBe('true');
+  });
+});
+
+describe('fetchFileContext', () => {
+  it('requests selected file projection detail with bounded sample limits', async () => {
+    setBackendUrl('http://127.0.0.1:4848');
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          repo: 'demo',
+          graph: { path: '.anvien/graph.json', stale: false },
+          target: { type: 'file', input: 'src/app.ts' },
+          summary: {
+            path: 'src/app.ts',
+            symbolCount: 0,
+            exportedSymbolCount: 0,
+            inboundRefCount: 0,
+            outboundRefCount: 0,
+            localRelationshipCount: 0,
+            unresolvedSourceSiteCount: 0,
+            linkedFlowCount: 0,
+            linkedTestCount: 0,
+            stale: false,
+            changedSinceAnalyze: false,
+          },
+          symbolTree: [],
+          relationships: {
+            counts: { local: 0, outbound: 0, inbound: 0, samplesReturned: 0 },
+            local: { total: 0, samples: [] },
+            outboundByFile: [],
+            inboundByFile: [],
+          },
+          unresolved: { total: 0, groups: [] },
+          linked: {
+            counts: { flows: 0, routes: 0, mcpTools: 0, tests: 0 },
+            flows: [],
+            routes: [],
+            mcpTools: [],
+            tests: [],
+          },
+          quality: {
+            unresolvedCalls: 0,
+            unresolvedRefs: 0,
+            unresolvedImports: 0,
+            generated: false,
+            stale: false,
+            changedSinceAnalyze: false,
+          },
+          limits: {
+            relationshipSamplesPerGroup: 5,
+            unresolvedSamplesPerGroup: 5,
+            linkedSamplesPerKind: 5,
+          },
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await fetchFileContext('src/app.ts', {
+      repo: 'demo',
+      relationships: 5,
+      unresolved: 4,
+      linked: 3,
+    });
+
+    expect(result.summary.path).toBe('src/app.ts');
+    const url = new URL(fetchMock.mock.calls[0][0] as string);
+    expect(url.pathname).toBe('/api/file-context');
+    expect(url.searchParams.get('path')).toBe('src/app.ts');
+    expect(url.searchParams.get('repo')).toBe('demo');
+    expect(url.searchParams.get('relationships')).toBe('5');
+    expect(url.searchParams.get('unresolved')).toBe('4');
+    expect(url.searchParams.get('linked')).toBe('3');
   });
 });
 

@@ -263,6 +263,16 @@ test.describe("Shell interactions", () => {
     await expect(page.getByTestId("file-map-row").first()).toBeVisible({
       timeout: 15_000,
     });
+
+    await page.getByTestId("file-map-row").first().locator("button").first().click();
+    await expect(page.getByTestId("file-detail-panel")).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(page.getByTestId("file-detail-section-summary")).toBeVisible();
+    await expect(page.getByTestId("file-detail-section-symbol-tree")).toBeVisible();
+    await expect(page.getByTestId("file-detail-section-relationships")).toBeVisible();
+    await expect(page.getByTestId("file-detail-section-unresolved")).toBeVisible();
+    await expect(page.getByTestId("file-detail-section-linked")).toBeVisible();
   });
 
   test("opens settings, edits values, saves, then closes", async ({ page }) => {

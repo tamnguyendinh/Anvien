@@ -524,7 +524,7 @@ The plan is complete when:
 
   Acceptance: Users can open the File Map, sort/filter files, and identify unresolved/high-dependency files without reading raw graph JSON.
 
-- [ ] [P4-B] Build the Web UI File Detail view.
+- [x] [P4-B] Build the Web UI File Detail view.
 
   Goal: Let users click a file and inspect summary, symbol tree, relationships, unresolved gaps, linked overlays, and raw source-site samples.
 
@@ -690,7 +690,7 @@ The plan is complete when:
 
   Acceptance: Skills teach agents to use parent commands for broad discovery and child commands for explicit file/symbol/route/tool workflows, so any trace can move from overview to file to symbol to source-site evidence.
 
-- [ ] [P7-A] Add validation, evidence, and benchmark coverage.
+- [x] [P7-A] Add validation, evidence, and benchmark coverage.
 
   Goal: Prove the projection is correct, performant enough, and does not degrade symbol graph behavior.
 
@@ -712,7 +712,7 @@ The plan is complete when:
 
   Acceptance: Evidence and benchmark ledgers are complete enough to explain what changed, how it was validated, and what scale/performance numbers were observed.
 
-- [ ] [P7-B] Close the implementation with docs and commits.
+- [x] [P7-B] Close the implementation with docs and commits.
 
   Goal: Finish the feature without leaving stale contracts, docs, or uncommitted implementation slices.
 

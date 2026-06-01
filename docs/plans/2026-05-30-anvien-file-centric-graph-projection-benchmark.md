@@ -26,12 +26,12 @@ Status: P0-A baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Files scanned | files | 819 | 829 | +10 | record | Latest after P6 existing-command file-layer analyze refresh. |
-| Files parsed | files | 584 | 594 | +10 | record | Latest after P6 existing-command file-layer analyze refresh. |
+| Files scanned | files | 819 | 831 | +12 | record | Latest after P4-B Web File Detail analyze refresh. |
+| Files parsed | files | 584 | 596 | +12 | record | Latest after P4-B Web File Detail analyze refresh. |
 | Unsupported files | files | 235 | 235 | 0 | record | Latest after P4-A Web File Map analyze benchmark. |
 | Failed files | files | 0 | 0 | 0 | `0` | From readiness `anvien analyze --force --name Anvien`. |
-| Graph nodes | nodes | 91587 | 95419 | +3832 | record | Current graph inventory after final P6 analyze refresh. |
-| Graph relationships | relationships | 125054 | 130701 | +5647 | record | Current graph inventory after final P6 analyze refresh. |
+| Graph nodes | nodes | 91587 | 95887 | +4300 | record | Current graph inventory after final P4-B/P7 analyze refresh. |
+| Graph relationships | relationships | 125054 | 131223 | +6169 | record | Current graph inventory after final P4-B/P7 analyze refresh. |
 | SourceSite count | distinct ids | 95433 | 86846 | -8587 | record | Distinct `sourceSiteId` strings in `.anvien/graph.json`; method differs from earlier relationship-trace-only count. |
 | ResolutionGap count | nodes | 65652 | 68470 | +2818 | record | Required for quality projection coverage after final P6 refresh. |
 
@@ -60,16 +60,16 @@ Status: P0-A partial baseline recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Indexed files | files | 819 | 829 | +10 | record | All files represented by projection after P5 refresh. |
-| Source files | files | 368 | 399 | +31 | record | File kind count from `file-hotspots --repo Anvien --json --limit 0`. |
-| Test files | files | 231 | 236 | +5 | record | File kind count from `file-hotspots --repo Anvien --json --limit 0`. |
+| Indexed files | files | 819 | 831 | +12 | record | All files represented by projection after P4-B refresh. |
+| Source files | files | 368 | 400 | +32 | record | File kind count from `file-hotspots --repo Anvien --json --limit 0`. |
+| Test files | files | 231 | 237 | +6 | record | File kind count from `file-hotspots --repo Anvien --json --limit 0`. |
 | Generated files | files | 2 | 2 | 0 | record | `generated_contract` app layer. |
 | Docs files | files | 178 | 178 | 0 | record | `docs` app layer. |
 | Config files | files | 14 | 14 | 0 | record | `config` app layer. |
-| Files with symbols | files | 575 | 585 | +10 | record | File summaries with `symbolCount > 0`. |
-| Files with unresolved source sites | files | 576 | 586 | +10 | track | File summaries with `unresolvedSourceSiteCount > 0`. |
-| Files linked to flows | files | pending | 161 | pending | track | File summaries with `linkedFlowCount > 0` from `file-hotspots --limit 0`. |
-| Files linked to tests | files | pending | 349 | pending | track | File summaries with `linkedTestCount > 0` from `file-hotspots --limit 0`. |
+| Files with symbols | files | 575 | 587 | +12 | record | File summaries with `symbolCount > 0`. |
+| Files with unresolved source sites | files | 576 | 588 | +12 | track | File summaries with `unresolvedSourceSiteCount > 0`. |
+| Files linked to flows | files | pending | 160 | pending | track | File summaries with `linkedFlowCount > 0` from `file-hotspots --limit 0`. |
+| Files linked to tests | files | pending | 352 | pending | track | File summaries with `linkedTestCount > 0` from `file-hotspots --limit 0`. |
 
 ## B2 - Symbol Tree Coverage
 
@@ -139,30 +139,31 @@ Status: pending
 | Compact human file-context output | lines | pending | 76 | pending | readable | `file-context internal/cli/command.go --repo Anvien`; bounded default human output. |
 | Full JSON file-context response | bytes | pending | 140289 | pending | bounded | `file-context internal/cli/command.go --repo Anvien --json`; full contract output. |
 | File hotspot JSON response | bytes | pending | 10099 | pending | bounded | `file-hotspots --repo Anvien --json`; default limit returns 20 rows from the then-current file set. |
-| Full file hotspot JSON response | bytes | pending | 399214 | pending | bounded | `file-hotspots --repo Anvien --json --limit 0`; returns all 825 file rows with linked flow/test counts. |
+| Full file hotspot JSON response | bytes | pending | 450342 | pending | bounded | `file-hotspots --repo Anvien --json --limit 0`; returns all 831 file rows with linked flow/test counts. |
 | Linked file-context JSON response | bytes | pending | 85584 | pending | bounded | `file-context internal/httpapi/file_context.go --repo Anvien --json`; includes linked counts and samples. |
 | Web file list response | bytes | pending | 2086 | pending | bounded | HTTP `GET /api/file-hotspots?repo=Anvien&sort=unresolved&limit=5`. |
-| Web file context response | bytes | pending | 57803 | pending | bounded | HTTP `GET /api/file-context?repo=Anvien&path=internal/httpapi/file_context.go`. |
-| Web File Map default response | bytes | pending | 79058 | pending | bounded | HTTP `GET /api/file-hotspots?repo=Anvien&sort=unresolved&limit=200`; `827` total, `200` rows. |
-| Web File Map changed response | bytes | pending | 2357 | pending | bounded | HTTP `GET /api/file-hotspots?repo=Anvien&changedOnly=true&limit=5`; `11` total, `5` rows. |
+| Web file context response | bytes | pending | 62589 | pending | bounded | HTTP `GET /api/file-context?repo=Anvien&path=internal/httpapi/file_context.go&relationships=5&unresolved=5&linked=5`. |
+| Web File Map default response | bytes | pending | 79081 | pending | bounded | HTTP `GET /api/file-hotspots?repo=Anvien&sort=unresolved&limit=200`; `831` total, `200` rows. |
+| Web File Map changed response | bytes | pending | 2368 | pending | bounded | HTTP `GET /api/file-hotspots?repo=Anvien&changedOnly=true&limit=5`; `11` total, `5` rows. |
 | Relationship samples per file default | samples | pending | 5 | pending | bounded | `file-context` default `--relationships 5`; counts preserve totals. |
 | Compact file-hotspots output | lines | pending | 5 | pending | readable | `file-hotspots --repo Anvien --sort unresolved --limit 3`. |
 
 ## B7 - Web UI Metrics
 
-Status: P4-A File Map recorded
+Status: P4-B File Detail recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
 | File Map rendered rows default | rows | pending | 200 | pending | usable | Default Web File Map API limit. |
 | File Map filters | count | pending | 11 | pending | record | `6` kind filters plus changed, unresolved, API, high fan-in, and high fan-out toggles. |
-| File Detail sections rendered | sections | pending | pending | pending | `6` | Summary, symbol tree, relationships, unresolved, linked overlays, source-site samples. |
+| File Detail sections rendered | sections | pending | 6 | pending | `6` | Summary, quality, symbol tree, relationships, unresolved/source-site samples, and linked overlays. |
 | File Map sort modes | modes | pending | 7 | pending | record | Unresolved, fan-in, fan-out, symbols, flows, tests, path. |
 | Changed File Map rows | rows | pending | 11 | pending | record | Runtime `changedOnly=true` total before P4-A commit. |
 | File Map cold API time | ms | pending | 7093.7 | pending | track | First `limit=200` request after serve restart includes graph snapshot load. |
-| File Map warm API time | ms | pending | 501.2 | pending | responsive | Second `limit=200` request after projection cache warmup. |
-| Changed File Map API time | ms | pending | 543.2 | pending | responsive | Warm `changedOnly=true&limit=5` request, includes git changed-file collection. |
-| E2E file-map assertions | assertions | pending | 8 | pending | record | Count only; pass/fail goes to evidence. |
+| File Map warm API time | ms | pending | 333.2 | pending | responsive | Warm `limit=200` request after projection cache warmup. |
+| Changed File Map API time | ms | pending | 351.6 | pending | responsive | Warm `changedOnly=true&limit=5` request, includes git changed-file collection. |
+| File Detail warm API time | ms | pending | 287.4 | pending | responsive | Warm `file-context` request for `internal/httpapi/file_context.go` with bounded samples. |
+| E2E file-map assertions | assertions | pending | 13 | pending | record | Count only; includes File Detail section assertions; pass/fail goes to evidence. |
 | Visual overlap failures | count | pending | 0 | pending | `0` | No overlap failures observed in Playwright e2e/manual smoke. |
 
 ## B8 - Parent/Child Command Hierarchy Counts
@@ -215,9 +216,10 @@ Status: P1-A partial validation counts recorded
 | Contract generator checks | checks | pending | 1 | pending | pass | `go run .\cmd\generate-web-contracts --check`. |
 | AI context tests | tests | pending | 1 | pending | pass | `internal/aicontext/aicontext_test.go` validates generated guidance and embedded skill parity. |
 | Projection cache tests | tests | pending | 2 | pending | pass | Cold/warm, graph-change, repo-switch, explicit hash, and explicit invalidation coverage. |
-| Web unit tests | tests | pending | 23 | pending | pass | `FileMapPanel.test.tsx` and `server-connection.test.ts` after P4-A. |
+| Web unit tests | tests | pending | 408 | pending | pass | Full `npm --prefix anvien-web test` suite after P4-B. Focused File Detail/File Map/API client run covered 27 tests. |
 | Web e2e tests | tests | pending | 1 | pending | pass | File Map e2e in `shell-interactions.spec.ts`. |
-| Detect-changes changed files | files | 5 | 31 | +26 | record | P6 final detect-changes scope. |
-| Detect-changes affected count | symbols/processes | 17 | 117 | +100 | record | P6 final affected process/symbol count; CRITICAL due shared CLI/MCP/API/quality/context surfaces. |
-| Detect-changes changed symbols | symbols | pending | 745 | pending | record | P6 final detect-changes summary. |
-| Detect-changes resolution gap changed entities | entities | pending | 484 | pending | record | P6 final detect-changes resolution gap summary. |
+| Detect-changes changed files | files | 5 | 8 | +3 | record | P4-B/P7 final detect-changes scope. |
+| Detect-changes affected count | symbols/processes | 17 | 0 | -17 | record | P4-B/P7 final affected symbol/process count; file-layer affected files are recorded separately. |
+| Detect-changes affected files | files | pending | 10 | pending | record | P4-B/P7 final file-layer affected file count. |
+| Detect-changes changed symbols | symbols | pending | 108 | pending | record | P4-B/P7 final detect-changes summary. |
+| Detect-changes resolution gap changed entities | entities | pending | 71 | pending | record | P4-B/P7 final detect-changes resolution gap summary. |

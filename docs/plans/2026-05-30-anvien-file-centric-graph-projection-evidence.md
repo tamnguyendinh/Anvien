@@ -910,23 +910,120 @@ Regeneration / parity:
 - `internal/aicontext/aicontext_test.go` now asserts generated guidance for command spellings, generated skill content, `handlerFile`, `target_type=file`, and file-layer workflow text.
 - `go test ./internal/aicontext -count=1` passed as part of the full `go test ./cmd/... ./internal/... -count=1` run.
 
+## E15A - Web File Detail View
+
+Date: 2026-06-01
+
+Status: P4-B completed
+
+Scope:
+
+- Add Web UI File Detail rendering for the existing `/api/file-context` contract.
+- Keep file projection semantics backend-owned; the frontend only fetches and renders typed contract sections.
+- Extend File Map e2e so clicking a file opens File Detail and verifies major sections.
+
+Impact / blast radius:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass before P4-B graph-based checks. `files=829`, `parsed=594`, `nodes=95419`, `relationships=130701`; file projection `dependencyEdges=15806`, `unresolvedFiles=586`. |
+| `.\anvien\bin\anvien.exe query "File Map File Detail web component file context" --repo Anvien --limit 8` | Relevant Web owners identified: `FileTreePanel`, `FileMapPanel`, `CodeReferencesPanel`, and `backend-client`. |
+| `.\anvien\bin\anvien.exe impact --uid "Function:anvien-web/src/components/FileTreePanel.tsx:FileTreePanel" --repo Anvien --direction upstream` | LOW; impacted `App.tsx` and `main.tsx`. |
+| `.\anvien\bin\anvien.exe impact --uid "Function:anvien-web/src/components/FileMapPanel.tsx:FileMapPanel" --repo Anvien --direction upstream` | LOW; impacted `FileTreePanel.tsx`, `App.tsx`, and `main.tsx`. |
+| `.\anvien\bin\anvien.exe impact --uid "Function:anvien-web/src/services/backend-client.ts:fetchFileHotspots" --repo Anvien --direction upstream` | LOW symbol impact; file-level note: shared API client has broad inbound Web usage, so edits stayed additive. |
+| `.\anvien\bin\anvien.exe impact --uid "Function:anvien-web/src/components/CodeReferencesPanel.tsx:CodeReferencesPanel" --repo Anvien --direction upstream` | LOW; impacted `App.tsx` and `main.tsx`. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `anvien-web/src/components/FileDetailPanel.tsx` | New File Detail component fetches `fetchFileContext`, renders summary, quality, expandable symbol tree, local/outbound/inbound relationship groups, unresolved source-site samples, linked flows/routes/MCP tools/tests, loading, error, empty states, and graph-focus buttons for symbol rows. |
+| `anvien-web/src/services/backend-client.ts` | Added typed `fetchFileContext(path, { repo, relationships, unresolved, linked })` for `GET /api/file-context`. |
+| `anvien-web/src/components/CodeReferencesPanel.tsx` | Renders File Detail inside the selected file viewer when the selected graph node is a `File`. |
+| `anvien-web/test/unit/FileDetailPanel.test.tsx` | Covers successful rendering of all major sections and symbol focus behavior, plus backend error state. |
+| `anvien-web/test/unit/server-connection.test.ts` | Covers `/api/file-context` URL/query construction and sample-limit params. |
+| `anvien-web/e2e/shell-interactions.spec.ts` | File Map e2e now opens the first file row through its path button and verifies File Detail summary, symbol tree, relationships, unresolved, and linked sections. |
+| `README.md` | User-facing docs now describe File Map/File Detail, file-aware CLI commands, graph-health files, MCP file-layer wording, and `/api/file-context` / `/api/file-hotspots`. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass. Existing Vite dynamic-import and chunk-size warnings only. |
+| `npm --prefix anvien-web test -- FileDetailPanel.test.tsx FileMapPanel.test.tsx server-connection.test.ts CodeReferencesPanel.graph-health.test.tsx` | Pass. 4 files, 27 tests. |
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass after P4-B implementation. `files=831`, `parsed=596`, `nodes=95884`, `relationships=131220`; file projection `dependencyEdges=15816`, `unresolvedFiles=588`. |
+| `npm --prefix anvien-web run test:e2e -- shell-interactions.spec.ts -g "file map"` with `E2E=1`, `E2E_REPO_NAME=Anvien` | Pass after selector fix. 1 Chromium test, 3.1m. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass. |
+| `go run .\cmd\generate-web-contracts --check` | Pass; no generated Web contract drift. |
+| `npm --prefix anvien-web test` | Pass. 52 files, 408 tests. |
+
+Command/API smoke evidence:
+
+| Command | Result |
+|---|---|
+| `file-context internal/httpapi/file_context.go --repo Anvien --json` | `symbols=68`, `in=9`, `out=34`, `unresolved=164`, `flows=6`, `tests=3`, `risk=high`. |
+| `file-context internal/httpapi/file_context_test.go --repo Anvien --json` | `symbols=14`, `out=57`, `unresolved=105`, `risk=high`. |
+| `file-context README.md --repo Anvien --json` | Docs/config-style smoke: `symbols=0`, `unresolved=0`, `risk=low`. |
+| `file-context contracts/web-ui/anvien-web-contract.schema.json --repo Anvien --json` | Generated file smoke: `kind=generated`, `appLayer=generated_contract`, `symbols=0`, `risk=low`. |
+| `file-context internal/mcp/server.go --repo Anvien --json` | API/MCP file smoke: `symbols=91`, `in=66`, `out=45`, `unresolved=206`, `flows=12`, `tests=13`, `risk=high`. |
+| `file-context internal/mcp/server_test.go --repo Anvien --json` | Unresolved-heavy file smoke: `symbols=238`, `out=197`, `unresolved=1445`, `tests=4`, `risk=high`. |
+| `file-hotspots --repo Anvien --sort unresolved|fan-in|fan-out|symbols|flows|tests|path --limit 3 --json` | Pass for all seven sort modes; total `831` files. |
+| `query files "file detail" --repo Anvien --limit 3 --json` | Pass. `targetType=files`, `total=3`, first row `internal/cli/command_test.go`. |
+| `context symbol BuildFileContext --repo Anvien --json` | Pass. Symbol context includes file-layer path `internal/filecontext/context.go`, unresolved `479`. |
+| `graph-health files --repo Anvien --limit 3 --json` | Pass. `total=831`, first hotspot `internal/mcp/server_test.go`. |
+
+Failures / handling:
+
+- First focused e2e attempt timed out waiting for File Map rows while the backend file projection endpoint was cold after server startup. A manual warm request returned the expected `831` files.
+- Second e2e attempt opened the file list but clicked the table row, while the UI action is attached to the path button. The e2e was corrected to click the row button directly and then passed.
+- Browser plugin navigation was requested through tool discovery, but only Figma/GitHub/Drive/Anvien deferred tools were exposed. Playwright e2e is the UI validation evidence for this slice.
+
+Benchmark link:
+
+- See B0/B1/B6/B7/B10 for updated graph inventory, file inventory, response size, Web UI, and validation counts.
+
 ## E16 - Final Validation And Closure
 
-Date: pending
+Date: 2026-06-01
 
-Status: pending
+Status: P7-A/P7-B completed
 
-Expected evidence:
+Scope:
 
-- Full build result.
-- Backend/CLI/API/MCP/contracts/AI context tests.
-- Generated Web contract check or generator diff validation.
-- MCP surface snapshot/tool schema validation if MCP output changes.
-- Web unit and e2e tests if applicable.
-- File-context smoke outputs for representative files.
-- File-hotspots smoke outputs for sort modes.
-- Parent/child command smoke checks proving file-layer sections appear without removing current details.
-- Projection cache validation smoke for cold build, warm hit, and graph-change invalidation if cache is implemented.
-- Command/MCP/resource/prompt/skill guidance validation.
-- Final `anvien detect-changes --repo Anvien --scope all`.
-- Commit hashes for completed slices.
+- Close the file-centric projection plan with README updates, P4-B Web UI evidence, validation, benchmark metrics, and final change detection.
+- Keep generated contracts unchanged; Web consumes the existing `FileContextResponse` contract.
+
+Docs evidence:
+
+| File | Evidence |
+|---|---|
+| `README.md` | Added File Map/File Detail capability notes, file-aware CLI command examples, `graph-health files`, MCP file-layer wording, and file projection HTTP endpoints. |
+| `docs/plans/2026-05-30-anvien-file-centric-graph-projection-plan.md` | Marked P4-B, P7-A, and P7-B complete. |
+| `docs/plans/2026-05-30-anvien-file-centric-graph-projection-evidence.md` | Added P4-B Web File Detail implementation, validation, failure handling, and closure evidence. |
+| `docs/plans/2026-05-30-anvien-file-centric-graph-projection-benchmark.md` | Updated graph/file inventory, response-size, Web UI, and final validation counts. |
+
+Final validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass after implementation code. Existing Vite dynamic-import and chunk-size warnings only. |
+| `go test ./cmd/... ./internal/... -count=1` | Pass. Covers backend, CLI, API, MCP, contracts, AI context, graph quality, and file-context packages. |
+| `go run .\cmd\generate-web-contracts --check` | Pass. |
+| `npm --prefix anvien-web test` | Pass. 52 files, 408 tests. |
+| `npm --prefix anvien-web run test:e2e -- shell-interactions.spec.ts -g "file map"` with `E2E=1`, `E2E_REPO_NAME=Anvien` | Pass. File Map opens File Detail and validates major sections. |
+| Final `.\anvien\bin\anvien.exe analyze --force --name Anvien` | Pass. `files=831`, `parsed=596`, `nodes=95887`, `relationships=131223`; file projection `dependencyEdges=15816`, `unresolvedFiles=588`. |
+| File-context representative smokes | Pass for source, test, docs/config-style, generated, API/MCP, and unresolved-heavy files. |
+| File-hotspots sort smokes | Pass for `unresolved`, `fan-in`, `fan-out`, `symbols`, `flows`, `tests`, and `path`. |
+| Parent/child command smokes | Pass for `query files`, `context symbol`, and `graph-health files`; file-aware command surfaces remain available. |
+
+Runtime/UI availability:
+
+- Backend was started at `http://127.0.0.1:4848` with `anvien serve`.
+- Vite Web UI was started at `http://127.0.0.1:5228`.
+- Browser plugin navigation was not exposed by tool discovery in this session; Playwright e2e is the recorded UI validation.
+
+Final detect changes:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all --json` | Pass. `risk_level=low`; `changed_count=108`; `changed_files=8`; `affected_count=0`; `affected_files=10`; file layer `changedFiles=8`, `affectedFiles=10`, `changedFileRisk=high`; resolution gap changed entities `71`. |

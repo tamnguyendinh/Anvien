@@ -36,6 +36,7 @@ import {
 } from "../lib/graph-health-filters";
 import { getAppLayerLabel } from "../lib/semantic-filters";
 import { readFile, type ReadFileResult } from "../services/backend-client";
+import { FileDetailPanel } from "./FileDetailPanel";
 
 const getSyntaxLanguage = (filePath: string | undefined): string => {
   if (!filePath) return "text";
@@ -782,6 +783,13 @@ export const CodeReferencesPanel = ({
               ref={selectedViewerRef}
               className="scrollbar-thin min-h-0 flex-1 overflow-auto"
             >
+              {selectedIsFile && selectedFilePath && (
+                <FileDetailPanel
+                  repoName={projectName || undefined}
+                  filePath={selectedFilePath}
+                  onFocusNode={onFocusNode}
+                />
+              )}
               {isLoadingFile ? (
                 <div className="flex items-center justify-center gap-2 py-8 text-workspace-text-secondary">
                   <Loader2 className="h-4 w-4 animate-spin" />
