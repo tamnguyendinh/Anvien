@@ -16,19 +16,22 @@ Use this skill when the question is whether the graph itself is healthy, complet
 | File-level hotspots | `anvien graph-health files --repo <repo> --json` or `anvien file-hotspots --repo <repo> --sort unresolved --json` |
 | Component inventory | `anvien graph-health components --repo <repo> --json` |
 | Node/component explanation | `anvien graph-health explain <node-or-name> --repo <repo> --json` |
-| Query retrieval benchmark | `anvien query-health --repo <repo> --suite <file>` |
-| ResolutionGap inventory | `anvien resolution-inventory --graph .anvien/graph.json` |
-| Source-site proof accuracy | `anvien source-site-accuracy --graph .anvien/graph.json` |
+| Query retrieval benchmark | `anvien query-health --repo <repo> --suite <file> --out <file> --json` |
+| Query retrieval gate | `anvien query-health --repo <repo> --fail-on-threshold` or `--fail-on-exact` |
+| ResolutionGap inventory | `anvien resolution-inventory --graph .anvien/graph.json --out <file>` |
+| Source-site proof accuracy | `anvien source-site-accuracy --graph .anvien/graph.json --out <file>` |
+| Golden source-site gate | `anvien source-site-accuracy --graph .anvien/graph.json --golden <file> --json` |
 | Analyze benchmark comparison | `anvien benchmark-compare <before> <after>` |
 
 ## Workflow
 
 1. Run `anvien analyze --force` first when graph freshness matters.
 2. Choose the quality command by failure type: topology, file hotspots, query retrieval, unresolved references, source-site proof, or performance/capacity.
-3. Use file-layer output to locate the concrete file, then open it with `context file` to inspect symbol tree, derived relationships, unresolved source sites, and linked flows/tests.
-4. Keep threshold and exact query-health results separate. Threshold pass means usable navigation; exact pass means all expected targets were found.
-5. Preserve counts, samples, missed targets, file groups, and noise reasons in evidence. Do not compress away traceability.
-6. If quality output affects an implementation decision, run impact before editing source.
+3. Use `graph-health files` or `file-hotspots --sort unresolved|fan-in|fan-out|symbols|flows|tests` to locate concrete files; filter with `--kind`, `--api-only`, `--app-layer`, or `--functional-area` when the investigation has a clear domain.
+4. Open the concrete file with `context file` or `file-context` to inspect symbol tree, derived relationships, unresolved source sites, linked flows/tests, and quality signals.
+5. Keep threshold and exact query-health results separate. Threshold pass means usable navigation; exact pass means all expected targets were found.
+6. Preserve counts, samples, missed targets, file groups, and noise reasons in evidence. Do not compress away traceability.
+7. If quality output affects an implementation decision, run impact before editing source.
 
 ## Query Reliability Guidance
 

@@ -11,10 +11,11 @@ Use this skill for behavior-preserving renames, extractions, moves, splits, and 
 
 | Need | Use |
 |---|---|
-| Understand current ownership | MCP/CLI `context` |
-| Check callers and flows before editing | MCP/CLI `impact --direction upstream` |
+| Understand current ownership | MCP/CLI `context`; prefer `context file` or `context symbol` once target type is known |
+| Check callers and flows before editing | MCP/CLI `impact --direction upstream`; prefer `impact file` or `impact symbol` once target type is known |
 | Rename a symbol | MCP `rename` or CLI `anvien rename <symbol> <newName> --repo <repo>` |
 | Check API route/contract consumers | MCP `api_impact` or CLI `anvien api impact [route] --repo <repo>` |
+| Check route/tool blast radius | `anvien impact route <route> --repo <repo>` or `anvien impact tool <tool> --repo <repo>` |
 | Verify changed scope before commit | MCP `detect_changes` or CLI `anvien detect-changes --repo <repo> --scope all` |
 
 ## Workflow
@@ -31,7 +32,7 @@ Use this skill for behavior-preserving renames, extractions, moves, splits, and 
 1. `anvien rename oldName newName --repo <repo> --json`
 2. Inspect files, edit counts, graph edits, text-search edits, and ambiguity warnings.
 3. Use `--uid` or `--file` if the dry run is ambiguous.
-4. Apply only when the edit list matches the intended scope.
+4. Apply with `--apply` only when the edit list matches the intended scope.
 
 ## Extract, Split, Or Move Flow
 

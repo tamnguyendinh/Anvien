@@ -11,6 +11,7 @@ Use this skill when a task spans multiple indexed repositories or a repository g
 
 | Need | CLI | MCP |
 |---|---|---|
+| Create a group | `anvien group create <name>` | CLI |
 | List/inspect groups | `anvien group list [name]` | `group_list` |
 | Add repo to a group | `anvien group add <group> <groupPath> <registryName>` | CLI |
 | Remove repo from a group | `anvien group remove <group> <path>` | CLI |
@@ -23,7 +24,7 @@ Use this skill when a task spans multiple indexed repositories or a repository g
 
 1. Confirm individual repo freshness with `anvien analyze --force` where needed.
 2. Use group status before relying on cross-repo evidence.
-3. Run group sync before contract checks when contracts may have changed.
+3. Run group sync before contract checks when contracts may have changed. Use MCP `group_sync` options such as `allowStale`, `exactOnly`, `skipEmbeddings`, and `verbose` only when the risk tradeoff is explicit.
 4. Use group query for cross-repo execution-flow discovery, then inspect exact repo/symbol context in the owning repo.
 5. Record which repo supplied each fact; do not collapse multi-repo evidence into a single local assumption.
 
@@ -36,7 +37,7 @@ Cross-repo query can return process and contract evidence from several repos. Tr
 - Group name and member repos recorded.
 - Status freshness recorded.
 - Contract sync output recorded when contracts matter.
-- Matched repo, file, symbol, and process evidence recorded for cross-repo decisions.
+- Matched repo, file, symbol, process, contract type, and cross-link evidence recorded for cross-repo decisions.
 - `detect-changes` still runs in the repo being edited.
 
 ## Current Limitations

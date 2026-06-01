@@ -17,6 +17,8 @@ Use this skill for local runtime startup, MCP server startup, editor setup, doct
 | Configure editor/agent integrations | `anvien setup` |
 | Inspect analyze lock state | `anvien doctor locks --repo <repo> --json` |
 | Inspect runtime processes | `anvien doctor processes --json` |
+| Generate shell completion | `anvien completion <shell>` |
+| Check wiki capability | `anvien wiki`, `anvien wiki-mode [off|local]` |
 | Verify package runtime | `anvien package ensure-runtime` |
 | Build package runtime | `anvien package build-runtime` |
 | Prepare/clean package source | `anvien package prepare-go-source`, `anvien package clean-go-source` |
@@ -28,17 +30,18 @@ In this repository, product validation should use the canonical executable path 
 
 1. Run the full build before runtime/package validation.
 2. Use explicit host/port for local server smoke checks.
-3. Use `anvien doctor processes --json` to inspect ownership before deciding whether a process is editor-owned, user-command-owned, or launcher-owned.
-4. Track started process ids and stop the exact process tree you started.
-5. For setup/package skill behavior, verify installed/generated skill inventories and content hashes from embedded skill source; package-root `skills/` files are not a source of truth.
-6. For lifecycle bugs, validate that browser close, app exit, failed analyze, and reset paths do not leave orphan backend/analyze processes.
+3. Use `anvien doctor processes --json` to inspect ownership before deciding whether a process is editor-owned, user-command-owned, launcher-owned, or diagnostic-command.
+4. Treat MCP `Auth: Unsupported` as normal for the local stdio server. Validate actual availability through the tool list and a smoke tool/resource call when the client supports it.
+5. Track started process ids and stop the exact process tree you started.
+6. For setup/package skill behavior, verify installed/generated skill inventories and content hashes from embedded `internal/aicontext/skills/*.md`; generated `.claude/skills/anvien/**` and package-root `skills/` files are not source of truth.
+7. For lifecycle bugs, validate that browser close, app exit, failed analyze, and reset paths do not leave orphan backend/analyze processes.
 
 ## Evidence To Record
 
 - Built executable path, size, and version.
 - Runtime command, host, port, pid, readiness output, and cleanup result.
 - Doctor lock/process output when diagnosing stuck analyze or orphan runtime behavior.
-- Setup/package target directories and file inventories.
+- Setup/package target directories, file inventories, and embedded-source-to-installed-skill hash checks when skills are involved.
 - Any process cleanup checks before and after validation.
 
 ## Current Limitations
