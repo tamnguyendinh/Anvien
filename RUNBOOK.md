@@ -13,10 +13,10 @@ Required for normal local development:
 - Node.js 20+
 - npm
 - Git
+
+Required only for the packaged Windows launcher:
+
 - Go
-
-Required for packaged Windows launcher work:
-
 - PowerShell
 
 Build and link the local CLI from source:
@@ -78,7 +78,6 @@ Index data is stored in the repo:
   lbug
   lbug.wal
   lbug.lock
-  graph.json
   meta.json
   settings.json
 ```
@@ -158,17 +157,11 @@ If multiple repos are indexed, pass `repo` explicitly in MCP tool calls or call 
 Start the HTTP backend:
 
 ```powershell
-go run ./cmd/anvien serve --host 127.0.0.1 --port 4848
-```
-
-Or through the package script:
-
-```powershell
 cd anvien
-npm run serve
+node dist\cli\index.js serve
 ```
 
-After `npm link`:
+Or, after `npm link`:
 
 ```powershell
 anvien serve
@@ -223,7 +216,8 @@ Invoke-WebRequest http://127.0.0.1:4848/api/info
 If the port is down, restart:
 
 ```powershell
-go run ./cmd/anvien serve --host 127.0.0.1 --port 4848
+cd anvien
+node dist\cli\index.js serve
 ```
 
 If port `4848` is already in use:
@@ -259,23 +253,6 @@ Invoke-WebRequest http://127.0.0.1:4848/api/repos
 ```
 
 If the repo exists in CLI but not the Web UI, refresh the browser. If needed, restart `anvien serve`.
-
-### File Map or File Detail is empty
-
-Check the file projection endpoints against an indexed repo:
-
-```powershell
-Invoke-WebRequest "http://127.0.0.1:4848/api/file-hotspots?repo=MyRepo&limit=5"
-Invoke-WebRequest "http://127.0.0.1:4848/api/file-context?repo=MyRepo&path=src%2Fapp.go"
-```
-
-If the responses report stale or missing graph data, rerun:
-
-```powershell
-anvien analyze --force
-```
-
-File relationship groups are derived projections from symbol and source-site graph facts. The canonical graph remains symbol/source-site based; stale or missing projection data usually means the repo graph needs a refresh or the requested file path is not in the indexed repo.
 
 ---
 
@@ -395,23 +372,6 @@ DELETE /api/embed/:jobId
 ```
 
 Analyze and embed jobs are locked per repo to avoid concurrent writes to the same LadybugDB store.
-
----
-
-## Generated Agent Context And Skills
-
-`anvien analyze` refreshes generated `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**`.
-
-Source of truth:
-
-```text
-internal\aicontext\aicontext.go
-internal\aicontext\skills\*.md
-```
-
-Do not edit generated root context or `.claude\skills\anvien\**` as the permanent source. Change the generator registry or embedded skill source, then regenerate through analyze/setup as appropriate.
-
-The generated Anvien skill set is task-facing only. It must not include `anvien-ai-context` or any generated skill that instructs agents to modify the AI-context generator itself.
 
 ---
 
