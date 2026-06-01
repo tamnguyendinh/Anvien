@@ -18,6 +18,60 @@ Companion files:
 5. Record failures and their handling.
 6. Record `anvien detect-changes --repo Anvien --scope all` before each implementation commit.
 
+## Evidence Template
+
+Use this template for implementation phases:
+
+```text
+## E<n> - <Phase/Task>
+
+Date:
+
+Status:
+
+Scope:
+
+- ...
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| ... | ... |
+
+Impact / blast radius:
+
+| Target | Result |
+|---|---|
+| ... | ... |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| ... | ... |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| ... | ... |
+
+Failures / handling:
+
+- ...
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `anvien detect-changes --repo Anvien --scope all` | ... |
+
+Commit:
+
+- `<hash> <subject>`
+```
+
 ## E0 - Baseline Analyze Refresh
 
 Date: 2026-06-01
@@ -238,3 +292,59 @@ Rationale:
 
 - The user-facing problem is a metric semantics problem.
 - The implementation must preserve parser-level unsupported language errors while removing misleading repo-level aggregate output.
+
+## E6 - Readiness Review And Plan Structure Correction
+
+Date: 2026-06-01
+
+Status: completed
+
+Scope:
+
+- Re-read the plan, evidence, and benchmark files against the required file roles.
+- Refresh Anvien after the planning commit so implementation readiness uses current graph evidence.
+- Check current code references that still consume `unsupported`.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien --json` | Pass. `files.scanned=813`, `files.parsed=596`, `files.unsupported=217`, `files.failed=0`; graph `95889` nodes and `131238` relationships; file projection `813` files and `15828` dependency edges. |
+| Current non-parsed inventory grouping from `.anvien/graph.json` | `111` Markdown docs, `1` spreadsheet document, `92` JSON, `3` `.mod`, `2` HTML, `2` PowerShell, and one each `.cli`, `.conf`, `.css`, `.sh`, `.web`, `.yaml`. |
+| `rg` for `FilesUnsupported`, `FileMetrics`, and output strings | Owners still include `internal/analyze/analyze.go`, `internal/cli/command.go`, `internal/cli/benchmark_command.go`, `internal/graphaccuracy/access_candidate.go`, and tests under `internal/analyze` / `internal/cli`. |
+| `git status -sb` | Branch is ahead of origin by one plan commit. Three unrelated GitNexus benchmark plan files are untracked and were not touched. |
+
+Decision:
+
+- The original plan direction was correct but not detailed enough to drive implementation.
+- The plan file has been rewritten so every checklist item is a mini-plan with Goal, Work Steps, Implementation Gate, and Acceptance.
+- Long inventory measurements belong in the benchmark ledger; command/results and readiness facts belong in this evidence ledger.
+
+Readiness result:
+
+- After the structure correction, the plan is ready to implement from `[P1-A]` if the user wants to proceed.
+- Implementation must start with fresh impact checks for the exact symbols/files edited, because `parseFiles` and `hasExtractor` are CRITICAL blast-radius targets.
+
+## E7 - Plan Re-Review Tightening
+
+Date: 2026-06-01
+
+Status: completed
+
+Scope:
+
+- Re-review the plan after applying the file-role rules.
+- Check whether known downstream surfaces outside CLI should be named before implementation.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| `rg` over analyze/CLI/graphaccuracy/httpapi/contracts for file metrics and unsupported references | Confirmed direct old aggregate consumers in `internal/analyze/analyze.go`, `internal/cli/command.go`, `internal/cli/benchmark_command.go`, `internal/graphaccuracy/access_candidate.go`, and tests. `internal/httpapi/analyze.go` uses total scanned files for repo stats but does not directly expose the old unsupported aggregate. `internal/contracts/web_ui.go` contains `scanned-not-extracted` language coverage metadata, which must be inspected before declaring Web/contracts unaffected. |
+
+Decision:
+
+- Add `[P0-B]` to the plan so readiness review is tracked in the checklist.
+- Add classification precedence so implementation cannot choose bucket order ad hoc.
+- Tighten JSON compatibility: legacy `files.unsupported`, if kept, must mean `unsupportedLanguage`, not old non-ScopeIR aggregate.
+- Expand `[P2-B]` to inspect HTTP/API and Web contract surfaces before deciding they are unaffected.

@@ -2,7 +2,7 @@
 
 Date: 2026-06-01
 
-Status: Planned
+Status: Ready for implementation
 
 Companion files:
 
@@ -13,210 +13,195 @@ Companion files:
 
 1. Use Anvien for graph/analyze discovery and impact checks before implementation edits.
 2. Refresh the graph before graph-based evidence collection.
-3. Do not treat docs, manifests, configs, reports, scripts, and static assets as parser failures.
-4. Reserve `unsupported` semantics for files or languages that are genuinely unsupported by the code analyzer.
-5. Keep every skipped-file count causal: each bucket must explain why a file was not parsed as ScopeIR.
-6. Preserve `failed` as real execution failure, such as read errors, parse failures, or extractor errors.
-7. Do not hide unknowns. If Anvien cannot classify a file, report it as `unknown` with sample paths.
-8. Keep JSON contracts explicit. If a compatibility field remains, mark it as legacy and do not use it in human-facing output.
-9. Run a full build before test validation.
-10. If Web UI output changes, add or update e2e coverage.
-11. Record evidence and benchmark data as each implementation slice completes.
-12. Run `anvien detect-changes --repo Anvien --scope all` before implementation commits.
+3. Do not treat docs, manifests, configs, reports, fixtures, scripts, and static assets as parser failures.
+4. Reserve user-facing `unsupported` semantics for analyzer inputs that are genuinely unsupported.
+5. Keep every non-parsed file count causal: each bucket must explain why the file was not parsed into ScopeIR.
+6. Preserve parser-level `ErrUnsupportedLanguage`; this plan changes repo-level analyze metrics, not parser error semantics.
+7. Preserve `failed` as real execution failure, such as read errors, parser failures, extractor failures, or pipeline errors.
+8. Do not hide unknowns. If Anvien cannot classify a scanned file, report it as `unknown` with sample paths.
+9. Keep JSON contracts explicit. If legacy compatibility fields remain, mark them as legacy and stop using them in human-facing output.
+10. Run a full build before test validation.
+11. If Web UI behavior changes, include Web build/test/e2e validation.
+12. Record evidence and benchmark data as each implementation slice completes.
+13. Run `anvien detect-changes --repo Anvien --scope all` before implementation commits.
 
 ## Goal
 
-Replace the current aggregate `unsupported` file metric with a causal file classification model so users can understand what Anvien did with every scanned file.
-
-The target analyze result should answer:
-
-- how many code files were parsed into ScopeIR;
-- how many document files were indexed as documents;
-- how many manifests, configs, reports, and fixtures were indexed as metadata-only files;
-- how many scripts or static assets were intentionally not parsed as code;
-- how many files are truly unsupported analyzer inputs;
-- how many files are unknown or unclassified;
-- how many files actually failed.
+Replace the current aggregate analyze file metric named `unsupported` with a causal file classification model. Users should be able to tell whether a scanned file was parsed as code, indexed as a document, kept as metadata/config/static inventory, skipped because no code extractor exists, unknown, or failed.
 
 ## Problem
 
-Current analyze output reports:
+Analyze currently reports a repo-level shape like:
 
 ```text
-files: scanned=807 parsed=596 unsupported=211 failed=0
+files: scanned=<n> parsed=<n> unsupported=<n> failed=<n>
 ```
 
-This is technically produced by the parse phase, but it is not a useful product-level classification. The current `unsupported=211` combines recognized documents, structured metadata, configs, fixtures, reports, scripts, and static files with truly unsupported parser inputs.
+The `unsupported` number is not a true product classification. It is a parse-phase skip bucket exposed as repo-level truth. As a result, recognized Markdown docs, JSON manifests, report files, golden fixtures, config files, scripts, and static assets can appear as "unsupported" even though they are expected non-ScopeIR inputs.
 
-That makes the output look like Anvien failed to understand 211 files. The graph evidence shows that is not true. Most of those files are known non-code or metadata files that should not be parsed through ScopeIR at all.
-
-## Root Cause
-
-The root cause is metric ownership, not dead code.
-
-Current behavior:
-
-```text
-scan phase: finds every repo file that should be indexed
-document phase: enriches markdown/spreadsheet-like files as document metadata
-parse phase: only parses languages with ScopeIR extractors
-metrics/output: reports every file not parsed by ScopeIR as unsupported
-```
-
-The bad join happens because parse-phase skip counts are surfaced as repo-level file truth.
-
-## Current Baseline
-
-Fresh Anvien evidence from this repo:
-
-```text
-807 scanned
-596 parsed
-211 currently reported as unsupported
-0 failed
-```
-
-Breakdown of the 211 files:
-
-| Bucket | Count | Meaning |
-|---|---:|---|
-| `document:markdown` | 105 | Markdown docs recognized by document indexing |
-| `document:spreadsheet` | 1 | Spreadsheet-like document metadata |
-| `.json` | 92 | Reports, manifests, contracts, fixtures, configs, and test data |
-| `.mod` | 3 | Go module manifests in repo/tooling folders |
-| `.html` | 2 | Static Web/report pages |
-| `.ps1` | 2 | PowerShell scripts |
-| `.cli` | 1 | Dockerfile-style descriptor |
-| `.conf` | 1 | Server/runtime config |
-| `.css` | 1 | Static Web asset |
-| `.sh` | 1 | Shell script |
-| `.web` | 1 | Dockerfile-style descriptor |
-| `.yaml` | 1 | YAML config |
-
-Expected target interpretation for the same inventory:
-
-| Target bucket | Count |
-|---|---:|
-| Parsed code files | 596 |
-| Document files | 106 |
-| Metadata/config/report/fixture files | 99 |
-| Script files without ScopeIR extractor | 3 |
-| Static Web/assets | 3 |
-| True unsupported analyzer inputs | 0 |
-| Unknown/unclassified files | 0 |
-| Failed files | 0 |
+This makes a healthy analyze run look like Anvien failed to understand a large part of the repo.
 
 ## Scope
 
 In scope:
 
-- Add a shared file classification model for analyze metrics.
-- Reconcile scan, document, parse, and file projection classifications.
-- Replace human-facing `unsupported` aggregate output with causal buckets.
-- Add JSON fields for the new bucketed metrics.
-- Update CLI analyze output and any machine-readable analyze/benchmark surfaces that consume file metrics.
-- Update graph accuracy and benchmark comparison consumers that read `FilesUnsupported`.
-- Add tests proving documents/configs are not counted as unsupported analyzer failures.
-- Add evidence and benchmark ledger updates after each implementation slice.
-- Update user-facing docs after implementation is complete.
+- analyze file metric contract;
+- file classification buckets for scanned files;
+- parse-phase and repo-level metric reconciliation;
+- CLI analyze human output;
+- CLI analyze JSON output;
+- analyze benchmark JSON comparison code;
+- graph accuracy code that records analyze file counts;
+- tests for docs/config/static/script/unknown/true-unsupported/failure cases;
+- README/RUNBOOK/TESTING/CHANGELOG updates after implementation behavior is proven.
 
 Out of scope:
 
-- Adding new language parsers.
-- Changing which files the scanner includes.
-- Removing document indexing.
-- Removing parser-level `ErrUnsupportedLanguage`; true parser unsupported still exists as a lower-level error.
-- Treating `ResolutionGap` unsupported syntax diagnostics as file parse unsupported metrics.
+- adding new language parsers;
+- changing scanner inclusion rules;
+- removing document indexing;
+- changing `ResolutionGap` unsupported syntax diagnostics;
+- treating unsupported parser language errors as execution failures;
+- Web UI changes unless the analyze result is surfaced there by existing contracts.
 
-## Classification Contract V1
+## Requirements
 
-Every scanned file should land in one primary classification bucket:
+1. `parsedCode` must count files that produced ScopeIR.
+2. `documents` must count files handled by document classification, including Markdown and metadata-only document formats.
+3. `metadataOnly` must count manifests, configs, reports, schemas, query-health suites, generated JSON fixtures, golden files, and similar structured non-code inputs.
+4. `scriptNoExtractor` must count recognized script-like files without ScopeIR extraction.
+5. `staticAssets` must count HTML/CSS/static report or Web assets that are indexed but not parsed as code.
+6. `unsupportedLanguage` must count only recognized code-like language inputs that are not supported by a ScopeIR extractor.
+7. `unknown` must count files that no classifier can explain.
+8. `failed` must count real processing failures and stay separate from all classification buckets.
+9. Human output must not present an aggregate `unsupported=<large number>` as the primary truth.
+10. JSON output must expose causal fields. If `files.unsupported` remains for compatibility, it must mean `unsupportedLanguage`, not the old aggregate of every non-ScopeIR file.
+11. Machine-readable output must expose bounded samples or grouped detail for non-zero non-parsed buckets so users can verify why files landed there.
+12. The sum of primary classification buckets plus failures must reconcile to `scanned`.
+13. Evidence and benchmark ledgers must be updated at the end of each completed implementation phase.
 
-| Field | Meaning |
-|---|---|
-| `scanned` | Total files accepted by the scanner |
-| `parsedCode` | Files parsed into ScopeIR by a language extractor |
-| `documents` | Files indexed by document handling, including markdown and binary document metadata |
-| `metadataOnly` | Structured metadata, manifests, configs, reports, contracts, fixtures, and test data |
-| `scriptNoExtractor` | Script-like files that are recognized but not ScopeIR parsed |
-| `staticAssets` | Static UI/report assets that are indexed as files but not parsed as code |
-| `unsupportedLanguage` | Recognized code language with no ScopeIR extractor |
-| `unknown` | Scanned file that no classifier can explain |
-| `failed` | File that hit an actual read/parse/extraction failure |
+## Invariants
 
-Human-facing output should prefer grouped language:
+1. Parser-level metrics remain available for parser internals.
+2. Repo-level analyze metrics describe repo file inventory, not only parse-loop behavior.
+3. Classification is deterministic for the same file path, scanner language, document kind, and parser outcome.
+4. A file belongs to one primary repo-level bucket.
+5. Adding docs to the repo may increase `documents`, but must not increase user-facing unsupported analyzer inputs.
+6. Adding JSON fixtures may increase `metadataOnly`, but must not increase user-facing unsupported analyzer inputs.
+7. Real parser/extractor errors must still fail or report `failed` according to existing pipeline semantics.
+
+## Technical Direction
+
+Add a small shared classifier near the analyze layer. It should accept enough facts to classify a scanned file without duplicating document or parser logic:
 
 ```text
-files: scanned=807 parsed_code=596 failed=0
-indexed: documents=106 metadata=99 scripts=3 static=3
-gaps: unsupported_language=0 unknown=0
+scanner.File
+document kind
+has code extractor
+file extension/path traits
+parse result or parser unsupported error
 ```
 
-JSON output may keep a legacy field during migration, but the legacy aggregate must not be the primary displayed truth.
+The classifier should produce a stable bucket enum/string and optional reason. Analyze should aggregate those buckets into `FileClassificationMetrics`. CLI, benchmark comparison, and graph accuracy summaries should consume the same metrics instead of reconstructing their own counts.
 
-## Implementation Plan
+Classification precedence:
 
-- [x] [P0] Capture baseline evidence with fresh Anvien analyze, Anvien owner discovery, graph-health summary, and graph snapshot classification.
-- [ ] [P1] Define `FileClassificationMetrics` and bucket names in the analyze layer.
-- [ ] [P2] Add a shared classifier that maps `scanner.File`, document kind, language support, extension, and parser result into one causal bucket.
-- [ ] [P3] Rework `parseFiles` and analyze metric assembly so ScopeIR parser skips no longer become repo-level `unsupported` truth.
-- [ ] [P4] Update CLI analyze human output and JSON output to show causal buckets.
-- [ ] [P5] Update benchmark comparison and graph accuracy consumers that currently read `unsupported`.
-- [ ] [P6] Add tests for docs, JSON/config/testdata, scripts, static assets, true unsupported language, unknown file, and real failure cases.
-- [ ] [P7] Run full build, targeted tests, analyze smoke, graph-health summary, and detect-changes.
-- [ ] [P8] Update README/RUNBOOK/TESTING/CHANGELOG only with final user-facing behavior after the implementation is complete.
+1. `failed` for real read, parse, extraction, or pipeline failures.
+2. `parsedCode` for files that produced ScopeIR.
+3. `documents` for files recognized by document handling.
+4. `metadataOnly` for structured non-code files such as manifests, configs, reports, schemas, query suites, and golden fixtures.
+5. `scriptNoExtractor` for recognized script files without ScopeIR extraction.
+6. `staticAssets` for HTML, CSS, static report, or Web asset files.
+7. `unsupportedLanguage` for recognized code-like language inputs with no ScopeIR extractor.
+8. `unknown` for the remaining scanned files that no classifier explains.
 
-## Implementation Ownership
+Expected compact human shape:
 
-| Area | Owner |
-|---|---|
-| Analyze metrics contract | `internal/analyze/analyze.go` |
-| Parser-level unsupported language error | `internal/parser` |
-| Document classification | `internal/documents/documents.go` |
-| CLI analyze output | `internal/cli/command.go` |
-| Analyze benchmark comparison | `internal/cli/benchmark_command.go` |
-| Graph accuracy summaries | `internal/graphaccuracy/access_candidate.go` |
-| Analyze tests | `internal/analyze/analyze_test.go` |
-| Parser unsupported tests | `internal/parser/*_test.go` |
-
-## Validation Plan
-
-- Full build:
-
-```bash
-powershell -ExecutionPolicy Bypass -File anvien-launcher/build.ps1
+```text
+files: scanned=<n> parsed_code=<n> failed=<n>
+indexed: documents=<n> metadata=<n> scripts=<n> static=<n>
+gaps: unsupported_language=<n> unknown=<n>
 ```
 
-- Targeted tests:
+## Definition Of Done
 
-```bash
-go test ./internal/analyze ./internal/parser ./internal/documents ./internal/cli ./internal/graphaccuracy -count=1
-```
+The plan is complete when:
 
-- Smoke analyze:
+1. analyze human output shows causal file buckets instead of a misleading primary `unsupported` aggregate;
+2. analyze JSON output exposes the causal bucket fields;
+3. existing parser unsupported-language tests still pass;
+4. new analyze tests prove docs/config/static/script/fixture files do not inflate unsupported analyzer inputs;
+5. current Anvien repo analyze can explain all scanned non-parsed files through causal buckets;
+6. build, targeted tests, analyze smoke, graph-health summary, and detect-changes evidence are recorded;
+7. benchmark ledger records before/after inventory counts;
+8. user-facing docs are updated only after behavior is proven.
 
-```bash
-.\anvien\bin\anvien.exe analyze --force --name Anvien --json
-```
+## Phase Checklist
 
-- Graph quality:
+- [x] [P0-A] Establish baseline and owner evidence.
+  - Goal: prove the current `unsupported` number is a metric semantics problem and identify the code owners before implementation.
+  - Work Steps: refresh Anvien graph; inspect analyze output; use Anvien `query` and `context` for `parseFiles`, `hasExtractor`, and `FileMetrics`; classify current non-parsed inventory from `.anvien/graph.json`; record impact seed for the main owners.
+  - Implementation Gate: no code edits in this phase; only plan/evidence/benchmark docs may change.
+  - Acceptance: evidence records analyze counts, owner files, current bucket breakdown, and impact seed; benchmark records inventory counts.
 
-```bash
-.\anvien\bin\anvien.exe graph-health summary --repo Anvien --json
-```
+- [x] [P0-B] Review plan readiness against file-role rules.
+  - Goal: make the plan usable as the work controller rather than a loose discussion note.
+  - Work Steps: re-read plan/evidence/benchmark roles; move command results and inventory metrics out of the plan; rewrite checklist items as mini-plans with Goal, Work Steps, Implementation Gate, and Acceptance; verify current graph counts after the planning commit; re-check known `unsupported` consumers.
+  - Implementation Gate: do not start code changes until this review is complete.
+  - Acceptance: plan status is ready for implementation; evidence records readiness review; benchmark records initial and latest inventory snapshots.
 
-- Pre-commit impact/change evidence:
+- [ ] [P1-A] Define the repo-level file classification contract.
+  - Goal: create the exact output model before changing parse behavior.
+  - Work Steps: add a `FileClassificationMetrics` or equivalent struct in the analyze package; define bucket names and JSON names; decide which legacy fields remain; document reconciliation rules in tests; keep parser-level `parser.Metrics.Unsupported` separate.
+  - Implementation Gate: run impact for `FileMetrics` and any new exported/shared metric type before editing.
+  - Acceptance: compile-time contract exists, JSON field names are stable, bucket sum rules are represented in tests or helper assertions, and no CLI output changes are made before the contract is covered.
 
-```bash
-.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all
-```
+- [ ] [P1-B] Implement the shared file classifier.
+  - Goal: centralize the answer to "what kind of scanned file is this?" so CLI, analyze, and later reporting do not invent separate classifications.
+  - Work Steps: implement a classifier function using scanner language, extractor support, document kind, extension/path traits, and parser outcome; add table tests for Markdown, spreadsheet, JSON manifest, JSON golden fixture, Go module, YAML config, PowerShell, shell script, HTML, CSS, true unsupported code-like input, unknown extension, and failure.
+  - Implementation Gate: run impact for `hasExtractor`, `documentKind`, and any classifier owner before editing; do not change scanner inclusion behavior.
+  - Acceptance: every current non-parsed Anvien file class maps to a causal bucket; unknown is reachable only through an explicit fallback; true unsupported language is test-covered separately from docs/config.
 
-## Success Criteria
+- [ ] [P2-A] Reconcile parse-phase and repo-level metrics.
+  - Goal: stop using parse-loop skips as the repo-level unsupported truth.
+  - Work Steps: aggregate classification metrics from scanned files; update `parseFiles` or its caller so parser skips and parser `ErrUnsupportedLanguage` feed the right repo-level bucket; keep `failed` semantics unchanged; preserve parser pool metrics for parser internals.
+  - Implementation Gate: run impact for `parseFiles` before editing and treat CRITICAL impact as a scoping warning.
+  - Acceptance: analyze result can report parsed code, documents, metadata-only, scripts, static assets, unsupported language, unknown, and failed; current repo docs/config additions no longer raise user-facing unsupported analyzer input count.
 
-1. Recognized docs/configs/reports/fixtures no longer inflate user-facing `unsupported`.
-2. Every non-parsed file count has a causal bucket and representative sample paths.
-3. Current Anvien repo baseline can be explained without an aggregate `unsupported=211`.
-4. True unsupported language remains visible when it actually exists.
-5. `failed=0` still means no analyze execution failure.
-6. JSON, benchmark, and graph accuracy consumers use the new explicit fields or explicitly marked legacy fields.
-7. Tests prevent Markdown, JSON, config, and static files from regressing back into generic unsupported counts.
+- [ ] [P2-B] Update analyze CLI output and JSON output.
+  - Goal: make terminal and machine-readable analyze output match the new contract.
+  - Work Steps: update `internal/cli/command.go` human format; update `--json` `files` object; inspect `internal/httpapi/analyze.go`, `internal/contracts/web_ui.go`, and generated Web contracts before deciding whether Web/API surfaces are unaffected; if legacy `unsupported` remains, make it an alias of `unsupportedLanguage` only; update CLI tests that assert analyze output.
+  - Implementation Gate: inspect `internal/cli/command_test.go`, `internal/httpapi/analyze.go`, `internal/contracts/web_ui.go`, and existing benchmark comparison assumptions before editing output strings or JSON shape.
+  - Acceptance: human output groups parsed/failed, indexed buckets, and gaps; JSON includes causal fields and bounded bucket detail; tests assert the new output and prevent the old primary `unsupported=<large>` line from returning.
+
+- [ ] [P3-A] Update downstream metric consumers.
+  - Goal: prevent old aggregate semantics from leaking through benchmark and graph accuracy surfaces.
+  - Work Steps: update `internal/cli/benchmark_command.go` to compare new fields; update `internal/graphaccuracy/access_candidate.go` away from `FilesUnsupported` or mark it legacy; update any structs/tests that serialize analyze file counts.
+  - Implementation Gate: run impact for each consumer symbol before editing and preserve backwards compatibility only where needed.
+  - Acceptance: benchmark comparison can read new analyze JSON; graph accuracy summaries expose causal fields or clearly marked legacy fields; no consumer silently treats docs/config as unsupported code.
+
+- [ ] [P3-B] Add focused regression tests.
+  - Goal: lock the behavior that caused this plan so it cannot regress.
+  - Work Steps: add analyze tests with mixed repo fixtures; include docs, JSON configs, testdata/golden JSON, scripts, static assets, true unsupported code-like input, unknown input, and real failure simulation where practical; update parser tests only if parser-level semantics require explicit preservation.
+  - Implementation Gate: keep fixtures small and deterministic; do not broaden tests into unrelated scanner or graph projection behavior.
+  - Acceptance: targeted tests fail on the old aggregate behavior and pass with causal classification; parser unsupported-language tests still prove parser internals work.
+
+- [ ] [P4-A] Validate implementation and record evidence.
+  - Goal: prove the implementation works in the real repo and did not break analyze or graph quality.
+  - Work Steps: run full build; run targeted Go tests; run analyze smoke with local binary; run graph-health summary; run detect-changes before commit; record pass/fail and notable failures in evidence.
+  - Implementation Gate: do not commit implementation work until build/tests/analyze smoke/detect-changes evidence is recorded.
+  - Acceptance: evidence ledger contains validation commands and results, failures and handling if any, detect-changes output, and commit hash after commit.
+
+- [ ] [P4-B] Record benchmark before/after and update user docs.
+  - Goal: close the plan with synchronized metrics and user-facing documentation.
+  - Work Steps: update benchmark ledger with latest/final bucket counts and deltas; update README/RUNBOOK/TESTING/CHANGELOG only for the final user-facing behavior; avoid copying implementation discussion into docs; mark plan complete when all acceptance criteria are met.
+  - Implementation Gate: docs updates happen after behavior is validated, not before.
+  - Acceptance: benchmark ledger shows before/after classification counts; docs explain analyze output accurately; plan status and checklist reflect completion.
+
+## Risk Notes
+
+- `parseFiles` and `hasExtractor` sit in the analyze pipeline and have CRITICAL impact in the baseline evidence. Edits must be narrow.
+- CLI output changes can break tests, scripts, and user expectations. JSON compatibility needs an explicit decision.
+- Benchmark comparison currently expects `scanned`, `parsed`, `unsupported`, and `failed`; it must not silently lose comparison coverage.
+- Graph accuracy summaries currently include `FilesUnsupported`; this must be renamed, split, or clearly marked legacy.
+- The working tree may contain untracked docs. Analyze scans working-tree files, so readiness counts can differ from the initial baseline.

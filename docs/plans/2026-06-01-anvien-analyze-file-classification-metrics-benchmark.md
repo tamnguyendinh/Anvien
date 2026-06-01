@@ -22,25 +22,21 @@ Companion files:
 
 Status: recorded
 
-Source command:
+Source evidence: E0 and E6.
 
-```bash
-.\anvien\bin\anvien.exe analyze --force --name Anvien --json
-```
+| Metric | Unit | Initial | Latest | Delta | Target |
+|---|---:|---:|---:|---:|---:|
+| Files scanned | files | 807 | 813 | +6 | record |
+| Files parsed | files | 596 | 596 | 0 | no unintended decrease |
+| Current aggregate unsupported | files | 211 | 217 | +6 | 0 user-facing aggregate |
+| Files failed | files | 0 | 0 | 0 | 0 |
+| Graph nodes | nodes | 95814 | 95889 | +75 | record |
+| Graph relationships | relationships | 131151 | 131238 | +87 | record |
+| File projection files | files | 807 | 813 | +6 | record |
+| File projection dependency edges | edges | 15816 | 15828 | +12 | record |
+| File projection unresolved files | files | 588 | 588 | 0 | record |
 
-| Metric | Unit | Current | Target | Notes |
-|---|---:|---:|---:|---|
-| Files scanned | files | 807 | record | Total scanner inventory. |
-| Files parsed | files | 596 | record | Current ScopeIR parsed files. |
-| Current aggregate unsupported | files | 211 | 0 user-facing aggregate | This aggregate is the problem to remove from primary output. |
-| Files failed | files | 0 | 0 | Real failures must remain separate. |
-| Graph nodes | nodes | 95814 | no regression target | Current graph inventory. |
-| Graph relationships | relationships | 131151 | no regression target | Current graph inventory. |
-| File projection files | files | 807 | record | Projection total matches scanned. |
-| File projection dependency edges | edges | 15816 | record | Existing projection count. |
-| File projection unresolved files | files | 588 | record | Existing projection count. |
-
-## B1 - Current 211-File Bucket Baseline
+## B1 - Initial 211-File Bucket Baseline
 
 Status: recorded
 
@@ -60,23 +56,43 @@ Status: recorded
 | `.yaml` | files | 1 |
 | Total | files | 211 |
 
-## B2 - Target Classification Baseline For Same Inventory
+## B2 - Latest 217-File Bucket Snapshot
+
+Status: recorded
+
+| Current bucket | Unit | Count |
+|---|---:|---:|
+| `document:markdown` | files | 111 |
+| `document:spreadsheet` | files | 1 |
+| `.json` | files | 92 |
+| `.mod` | files | 3 |
+| `.html` | files | 2 |
+| `.ps1` | files | 2 |
+| `.cli` | files | 1 |
+| `.conf` | files | 1 |
+| `.css` | files | 1 |
+| `.sh` | files | 1 |
+| `.web` | files | 1 |
+| `.yaml` | files | 1 |
+| Total | files | 217 |
+
+## B3 - Target Classification Baseline For Latest Inventory
 
 Status: target defined
 
-| Target bucket | Unit | Current equivalent | Target after implementation |
+| Target bucket | Unit | Latest equivalent | Target after implementation |
 |---|---:|---:|---:|
 | Parsed code files | files | 596 | 596 |
-| Document files | files | 106 | 106 |
+| Document files | files | 112 | 112 |
 | Metadata/config/report/fixture files | files | 99 | 99 |
 | Script files without ScopeIR extractor | files | 3 | 3 |
 | Static Web/assets | files | 3 | 3 |
-| True unsupported analyzer inputs | files | unknown in current aggregate | 0 for current repo baseline unless new unsupported code inputs exist |
-| Unknown/unclassified files | files | unknown in current aggregate | 0 for current repo baseline |
+| True unsupported analyzer inputs | files | not separated | 0 unless real unsupported code inputs exist |
+| Unknown/unclassified files | files | not separated | 0 for current repo baseline |
 | Failed files | files | 0 | 0 |
-| Sum | files | 807 | 807 |
+| Sum | files | 813 | 813 |
 
-## B3 - Directory Concentration Baseline
+## B4 - Initial Directory Concentration Baseline
 
 Status: recorded
 
@@ -93,7 +109,7 @@ Status: recorded
 | remaining root/singleton paths | files | 13 |
 | Total | files | 211 |
 
-## B4 - Implementation Measurement Targets
+## B5 - Implementation Measurement Targets
 
 Status: pending
 
@@ -105,10 +121,10 @@ Status: pending
 | Unknown/unclassified current repo files | files | not separated | pending | 0 |
 | True unsupported current repo files | files | not separated | pending | 0 unless real unsupported code inputs are found |
 | Failed files | files | 0 | pending | 0 |
-| Analyze scanned files | files | 807 | pending | record |
+| Analyze scanned files | files | 813 | pending | record |
 | Analyze parsed code files | files | 596 | pending | no unintended decrease |
 
-## B5 - Validation Runs
+## B6 - Validation Runs
 
 Status: pending
 
