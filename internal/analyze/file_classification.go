@@ -16,6 +16,7 @@ const (
 	FileBucketParsedCode          FileClassificationBucket = "parsedCode"
 	FileBucketDocuments           FileClassificationBucket = "documents"
 	FileBucketMetadataOnly        FileClassificationBucket = "metadataOnly"
+	FileBucketDedicatedAnalyzer   FileClassificationBucket = "dedicatedAnalyzer"
 	FileBucketScriptNoExtractor   FileClassificationBucket = "scriptNoExtractor"
 	FileBucketStaticAssets        FileClassificationBucket = "staticAssets"
 	FileBucketUnsupportedLanguage FileClassificationBucket = "unsupportedLanguage"
@@ -63,6 +64,8 @@ func classifyFile(file scanner.File, outcome fileClassificationOutcome) (FileCla
 		return FileBucketDocuments, "document indexing phase"
 	case metadataOnlyFile(normalizedPath):
 		return FileBucketMetadataOnly, "metadata or structured non-code input"
+	case dedicatedAnalyzerFile(file):
+		return FileBucketDedicatedAnalyzer, "dedicated analyzer phase"
 	case scriptNoExtractorFile(normalizedPath):
 		return FileBucketScriptNoExtractor, "script-like file without ScopeIR extractor"
 	case staticAssetFile(normalizedPath):
@@ -84,6 +87,8 @@ func (metrics *FileMetrics) add(bucket FileClassificationBucket) {
 		metrics.Documents++
 	case FileBucketMetadataOnly:
 		metrics.MetadataOnly++
+	case FileBucketDedicatedAnalyzer:
+		metrics.DedicatedAnalyzer++
 	case FileBucketScriptNoExtractor:
 		metrics.ScriptNoExtractor++
 	case FileBucketStaticAssets:
@@ -101,6 +106,7 @@ func (metrics FileMetrics) ClassifiedTotal() int {
 	return metrics.ParsedCode +
 		metrics.Documents +
 		metrics.MetadataOnly +
+		metrics.DedicatedAnalyzer +
 		metrics.ScriptNoExtractor +
 		metrics.StaticAssets +
 		metrics.UnsupportedLanguage +
@@ -169,6 +175,10 @@ func metadataOnlyFile(filePath string) bool {
 	default:
 		return false
 	}
+}
+
+func dedicatedAnalyzerFile(file scanner.File) bool {
+	return file.Language == scanner.Cobol
 }
 
 func scriptNoExtractorFile(filePath string) bool {

@@ -80,7 +80,8 @@ export function main() {
 		result.Metrics.Files.ParsedCode != 5 ||
 		result.Metrics.Files.Parsed != result.Metrics.Files.ParsedCode ||
 		result.Metrics.Files.Documents != 4 ||
-		result.Metrics.Files.UnsupportedLanguage != 3 ||
+		result.Metrics.Files.DedicatedAnalyzer != 3 ||
+		result.Metrics.Files.UnsupportedLanguage != 0 ||
 		result.Metrics.Files.Unsupported != result.Metrics.Files.UnsupportedLanguage ||
 		result.Metrics.Files.ClassifiedTotal() != result.Metrics.Files.Scanned {
 		t.Fatalf("file metrics = %#v", result.Metrics.Files)
@@ -166,7 +167,11 @@ export function main() {
 	if err := json.Unmarshal(raw, &metrics); err != nil {
 		t.Fatalf("benchmark artifact is not metrics JSON: %v", err)
 	}
-	if metrics.Files.ParsedCode != 5 || metrics.Files.Parsed != metrics.Files.ParsedCode || metrics.Files.Documents != 4 || metrics.Files.UnsupportedLanguage != 3 {
+	if metrics.Files.ParsedCode != 5 ||
+		metrics.Files.Parsed != metrics.Files.ParsedCode ||
+		metrics.Files.Documents != 4 ||
+		metrics.Files.DedicatedAnalyzer != 3 ||
+		metrics.Files.UnsupportedLanguage != 0 {
 		t.Fatalf("benchmark metrics files = %#v", metrics.Files)
 	}
 	if metrics.TotalDuration <= 0 || metrics.Memory.EndAllocBytes == 0 {

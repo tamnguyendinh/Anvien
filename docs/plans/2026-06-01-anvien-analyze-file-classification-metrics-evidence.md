@@ -452,3 +452,83 @@ Detect changes:
 Commit:
 
 - `a979152 feat: classify analyze file metrics`
+
+## E12 - Reopen Finding: Dedicated Analyzer Inputs Were Misclassified
+
+Date: 2026-06-01
+
+Status: completed
+
+Problem evidence:
+
+| Check | Result |
+|---|---|
+| Source inspection: `internal/scanner/language.go` | `.cbl`, `.cob`, `.cpy`, `.cobol`, `.copybook`, `.jcl`, `.job`, and `.proc` map to `scanner.Cobol`. |
+| Source inspection: `internal/contracts/web_ui.go` | COBOL is documented as `dedicated-analyzer-phase`; ScopeIR provider facts are explicitly `scanned-not-extracted`. |
+| Source inspection: `internal/cobol` tests | COBOL and JCL graph facts are emitted by the dedicated COBOL analyzer. |
+| Source inspection: `internal/analyze/file_classification.go` before correction | Any recognized language without a ScopeIR extractor fell through to `unsupportedLanguage`, so `scanner.Cobol` was incorrectly classified as unsupported. |
+
+Impact / blast radius:
+
+| Command | Result |
+|---|---|
+| `.tmp\anvien-reopen.exe context "classifyFile" --repo Anvien --json` | Target resolved to `classifyFile` in `internal/analyze/file_classification.go`. |
+| `.tmp\anvien-reopen.exe impact symbol "classifyFile" --repo Anvien --direction upstream --json` | CRITICAL. `4` affected files, `4` affected modules, `26` affected processes. Affected areas: analyzer, CLI, graph_health. |
+
+Decision:
+
+- Add a first-class `dedicatedAnalyzer` file bucket instead of treating COBOL/JCL as unsupported.
+- Keep `unsupportedLanguage` only for recognized code-like inputs with neither ScopeIR extraction nor a dedicated analyzer phase.
+
+## E13 - Dedicated Analyzer Correction Implementation And Validation
+
+Date: 2026-06-01
+
+Status: completed
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/analyze/analyze.go` | Added `FileMetrics.DedicatedAnalyzer` with JSON field `dedicatedAnalyzer`. |
+| `internal/analyze/file_classification.go` | Added `FileBucketDedicatedAnalyzer`; classifies `scanner.Cobol` before script/static/unsupported fallbacks; reconciliation includes the new bucket. |
+| `internal/cli/command.go` | Human analyze output now prints `analyzers=<n>` in the indexed bucket line. |
+| `internal/cli/benchmark_command.go` | Benchmark comparison reads `files.dedicatedAnalyzer`. |
+| `internal/graphaccuracy/access_candidate.go` | Access candidate audit summary exposes `filesDedicatedAnalyzer`. |
+| `internal/analyze/file_classification_test.go` | COBOL fixture now asserts `dedicatedAnalyzer=1`; synthetic `scanner.Language("elixir")` preserves true unsupported-language coverage. |
+| `internal/analyze/analyze_test.go` | COBOL/JCL mixed analyze fixture now expects `dedicatedAnalyzer=3` and `unsupportedLanguage=0`. |
+| `internal/cli/command_test.go` | CLI output and benchmark-compare assertions include `analyzers` / `dedicatedAnalyzer`. |
+| `README.md`, `RUNBOOK.md`, `GUARDRAILS.md`, `ARCHITECTURE.md`, `TESTING.md`, `CHANGELOG.md` | User docs now describe dedicated analyzer inputs separately from unsupported language gaps. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `go build ./cmd/... ./internal/...` | Pass. |
+| `go test ./internal/analyze ./internal/cli ./internal/graphaccuracy -count=1` | Pass. |
+| `go build -trimpath -o .tmp\anvien-reopen.exe .\cmd\anvien` | Pass. |
+| `.tmp\anvien-reopen.exe analyze .tmp\reopen-dedicated-fixture --force --skip-git --json > .tmp\reopen-dedicated-fixture-analyze.json` | Pass. Fixture JSON counts: scanned `7`, parsedCode `1`, documents `1`, metadataOnly `1`, dedicatedAnalyzer `2`, scriptNoExtractor `1`, staticAssets `1`, unsupportedLanguage `0`, unknown `0`, failed `0`. |
+| `.tmp\anvien-reopen.exe analyze .tmp\reopen-dedicated-fixture --force --skip-git` | Pass. Human output includes `indexed: documents=3 metadata=1 analyzers=2 scripts=1 static=1`; generated `AGENTS.md`/`CLAUDE.md` in the temp fixture explain the document increase from JSON smoke `7` to human smoke `9`. |
+| `.tmp\anvien-reopen.exe clean --force` from the temp fixture, then safe remove of `.tmp\reopen-dedicated-fixture` | Pass. Temp fixture index and files removed after smoke validation. |
+| `.tmp\anvien-reopen.exe analyze --force --name Anvien --json > .tmp\reopen-correction-analyze.json` | Pass. Current repo counts: scanned `816`, parsedCode `598`, documents `113`, metadataOnly `99`, dedicatedAnalyzer `0`, scriptNoExtractor `3`, staticAssets `3`, unsupportedLanguage `0`, unknown `0`, failed `0`; graph `96207` nodes and `131680` relationships. |
+| `.tmp\anvien-reopen.exe graph-health summary --repo Anvien --json > .tmp\reopen-correction-graph-health.json` | Pass. Graph totals: `96207` nodes and `131680` relationships; file layer `816` files and `590` unresolved files. |
+
+Failures / handling:
+
+- An earlier refresh attempt during reopen review failed because `.anvien\graph.json` was held by another Anvien runtime process. The later refresh with `.tmp\anvien-reopen.exe` succeeded, so closure evidence uses the successful refreshed graph.
+
+## E14 - Reopen Detect Changes And Commit
+
+Date: 2026-06-01
+
+Status: detect-changes completed; commit pending
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `.tmp\anvien-reopen.exe detect-changes --repo Anvien --scope all --json > .tmp\reopen-detect-changes.json` | Pass. `changed_files=17`, `affected_files=17`, `changed_count=102`, `affected_count=27`, `risk_level=critical`, `changedGapEntities=46`. Changed areas include analyzer, CLI, documentation, and graph_health. |
+
+Commit:
+
+- Pending.

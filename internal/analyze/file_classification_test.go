@@ -26,6 +26,7 @@ func TestClassifyFileMetricsUsesCausalBuckets(t *testing.T) {
 		{Path: "web/index.html"},
 		{Path: "web/index.css"},
 		{Path: "mainframe/program.cob", Language: scanner.Cobol},
+		{Path: "src/app.ex", Language: scanner.Language("elixir")},
 		{Path: "notes/blob.weird"},
 		{Path: "broken/input.ts", Language: scanner.TypeScript},
 	}
@@ -42,6 +43,7 @@ func TestClassifyFileMetricsUsesCausalBuckets(t *testing.T) {
 	assertFileMetric(t, "parsed legacy alias", metrics.Parsed, metrics.ParsedCode)
 	assertFileMetric(t, "documents", metrics.Documents, 2)
 	assertFileMetric(t, "metadataOnly", metrics.MetadataOnly, 4)
+	assertFileMetric(t, "dedicatedAnalyzer", metrics.DedicatedAnalyzer, 1)
 	assertFileMetric(t, "scriptNoExtractor", metrics.ScriptNoExtractor, 2)
 	assertFileMetric(t, "staticAssets", metrics.StaticAssets, 2)
 	assertFileMetric(t, "unsupportedLanguage", metrics.UnsupportedLanguage, 1)
@@ -50,22 +52,24 @@ func TestClassifyFileMetricsUsesCausalBuckets(t *testing.T) {
 	assertFileMetric(t, "failed", metrics.Failed, 1)
 	requireSample(t, metrics, FileBucketDocuments, "README.md")
 	requireSample(t, metrics, FileBucketMetadataOnly, "package.json")
+	requireSample(t, metrics, FileBucketDedicatedAnalyzer, "mainframe/program.cob")
 	requireSample(t, metrics, FileBucketScriptNoExtractor, "scripts/build.ps1")
 	requireSample(t, metrics, FileBucketStaticAssets, "web/index.html")
-	requireSample(t, metrics, FileBucketUnsupportedLanguage, "mainframe/program.cob")
+	requireSample(t, metrics, FileBucketUnsupportedLanguage, "src/app.ex")
 	requireSample(t, metrics, FileBucketUnknown, "notes/blob.weird")
 	requireSample(t, metrics, FileBucketFailed, "broken/input.ts")
 }
 
 func TestFileMetricsJSONContract(t *testing.T) {
 	metrics := FileMetrics{
-		Scanned:             2,
+		Scanned:             3,
 		Parsed:              1,
 		ParsedCode:          1,
+		DedicatedAnalyzer:   1,
 		Unsupported:         1,
 		UnsupportedLanguage: 1,
 		ClassificationSamples: []FileClassificationSample{
-			{Bucket: FileBucketUnsupportedLanguage, Path: "mainframe/program.cob", Language: string(scanner.Cobol), Reason: "recognized language has no ScopeIR extractor"},
+			{Bucket: FileBucketDedicatedAnalyzer, Path: "mainframe/program.cob", Language: string(scanner.Cobol), Reason: "dedicated analyzer phase"},
 		},
 	}
 	raw, err := json.Marshal(metrics)
@@ -76,7 +80,7 @@ func TestFileMetricsJSONContract(t *testing.T) {
 	if err := json.Unmarshal(raw, &payload); err != nil {
 		t.Fatalf("Unmarshal() error = %v", err)
 	}
-	for _, key := range []string{"scanned", "parsed", "parsedCode", "unsupported", "unsupportedLanguage", "classificationSamples"} {
+	for _, key := range []string{"scanned", "parsed", "parsedCode", "dedicatedAnalyzer", "unsupported", "unsupportedLanguage", "classificationSamples"} {
 		if _, ok := payload[key]; !ok {
 			t.Fatalf("JSON missing %q: %s", key, raw)
 		}

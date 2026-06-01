@@ -85,6 +85,7 @@ Status: target defined
 | Parsed code files | files | 596 | 596 |
 | Document files | files | 112 | 112 |
 | Metadata/config/report/fixture files | files | 99 | 99 |
+| Dedicated analyzer inputs | files | not separated | 0 for current repo baseline |
 | Script files without ScopeIR extractor | files | 3 | 3 |
 | Static Web/assets | files | 3 | 3 |
 | True unsupported analyzer inputs | files | not separated | 0 unless real unsupported code inputs exist |
@@ -116,8 +117,8 @@ Status: recorded
 | Metric | Unit | Baseline | Latest | Target |
 |---|---:|---:|---:|---:|
 | Human analyze output aggregate `unsupported` | occurrences | 1 | 0 | 0 |
-| Human analyze output causal file buckets | buckets | 0 | 8 | at least 6 |
-| JSON causal file bucket fields | fields | 0 | 10 | at least 7 |
+| Human analyze output causal file buckets | buckets | 0 | 9 | at least 7 |
+| JSON causal file bucket fields | fields | 0 | 11 | at least 8 |
 | Unknown/unclassified current repo files | files | not separated | 0 | 0 |
 | True unsupported current repo files | files | not separated | 0 | 0 unless real unsupported code inputs are found |
 | Failed files | files | 0 | 0 | 0 |
@@ -151,6 +152,7 @@ Source: `.tmp/analyze-file-classification-final.json`.
 | Parsed code | files | 598 |
 | Documents | files | 113 |
 | Metadata-only | files | 99 |
+| Dedicated analyzer inputs | files | 0 |
 | Scripts without ScopeIR extractor | files | 3 |
 | Static assets | files | 3 |
 | Unsupported language | files | 0 |
@@ -161,3 +163,37 @@ Source: `.tmp/analyze-file-classification-final.json`.
 | Graph relationships | relationships | 131644 |
 | File projection files | files | 816 |
 | File projection unresolved files | files | 590 |
+
+## B8 - Reopen Correction Snapshot
+
+Status: recorded
+
+| Scope | Metric | Unit | Latest |
+|---|---|---:|---:|
+| Current repo | Files scanned | files | 816 |
+| Current repo | Parsed code | files | 598 |
+| Current repo | Documents | files | 113 |
+| Current repo | Metadata-only | files | 99 |
+| Current repo | Dedicated analyzer inputs | files | 0 |
+| Current repo | Scripts without ScopeIR extractor | files | 3 |
+| Current repo | Static assets | files | 3 |
+| Current repo | Unsupported language | files | 0 |
+| Current repo | Unknown | files | 0 |
+| Current repo | Failed | files | 0 |
+| Current repo | Graph nodes | nodes | 96207 |
+| Current repo | Graph relationships | relationships | 131680 |
+| Dedicated fixture JSON smoke | Files scanned | files | 7 |
+| Dedicated fixture JSON smoke | Parsed code | files | 1 |
+| Dedicated fixture JSON smoke | Documents | files | 1 |
+| Dedicated fixture JSON smoke | Metadata-only | files | 1 |
+| Dedicated fixture JSON smoke | Dedicated analyzer inputs | files | 2 |
+| Dedicated fixture JSON smoke | Scripts without ScopeIR extractor | files | 1 |
+| Dedicated fixture JSON smoke | Static assets | files | 1 |
+| Dedicated fixture JSON smoke | Unsupported language | files | 0 |
+| Dedicated fixture JSON smoke | Unknown | files | 0 |
+| Dedicated fixture JSON smoke | Failed | files | 0 |
+| Dedicated fixture human smoke after generated context | Files scanned | files | 9 |
+| Dedicated fixture human smoke after generated context | Documents | files | 3 |
+| Dedicated fixture human smoke after generated context | Dedicated analyzer inputs | files | 2 |
+| Dedicated fixture human smoke after generated context | Graph nodes | nodes | 35 |
+| Dedicated fixture human smoke after generated context | Graph relationships | relationships | 28 |

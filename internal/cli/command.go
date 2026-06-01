@@ -255,13 +255,14 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 			}
 			_, err = fmt.Fprintf(
 				cmd.OutOrStdout(),
-				"analyzed %s\nfiles: scanned=%d parsed_code=%d failed=%d\nindexed: documents=%d metadata=%d scripts=%d static=%d\ngaps: unsupported_language=%d unknown=%d\ngraph: nodes=%d relationships=%d path=%s\n",
+				"analyzed %s\nfiles: scanned=%d parsed_code=%d failed=%d\nindexed: documents=%d metadata=%d analyzers=%d scripts=%d static=%d\ngaps: unsupported_language=%d unknown=%d\ngraph: nodes=%d relationships=%d path=%s\n",
 				result.RepoPath,
 				result.Metrics.Files.Scanned,
 				result.Metrics.Files.ParsedCode,
 				result.Metrics.Files.Failed,
 				result.Metrics.Files.Documents,
 				result.Metrics.Files.MetadataOnly,
+				result.Metrics.Files.DedicatedAnalyzer,
 				result.Metrics.Files.ScriptNoExtractor,
 				result.Metrics.Files.StaticAssets,
 				result.Metrics.Files.UnsupportedLanguage,

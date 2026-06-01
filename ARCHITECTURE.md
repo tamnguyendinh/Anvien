@@ -128,7 +128,7 @@ scan -> structure/documents/cobol -> parse/providers + file classification
 | Structure/documents | `internal/structure`, `internal/documents` | File/folder/section nodes and containment. |
 | COBOL/JCL | `internal/cobol` | COBOL program, paragraph, section, copybook, and JCL facts. |
 | Parse/providers | `internal/parser`, `internal/providers/*` | ScopeIR definitions, imports, references, routes/tools/ORM facts. |
-| File classification | `internal/analyze` | Repo-level file buckets for parsed code, documents, metadata-only inputs, scripts, static assets, unsupported languages, unknowns, and failures. |
+| File classification | `internal/analyze` | Repo-level file buckets for parsed code, documents, metadata-only inputs, dedicated analyzer inputs, scripts, static assets, unsupported languages, unknowns, and failures. |
 | Resolution | `internal/scopeir`, `internal/resolution` | Audited CALLS, ACCESSES, USES, INHERITS, IMPORTS, and compatibility edges. |
 | MRO | `internal/mro`, `internal/resolution` | METHOD_OVERRIDES and METHOD_IMPLEMENTS style graph edges. |
 | Communities/processes | `internal/communities`, `internal/processes` | Community nodes and execution-flow process nodes. |

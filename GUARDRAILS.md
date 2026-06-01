@@ -54,7 +54,7 @@ Format: **Trigger → Instruction → Reason**. Append new Signs when the same m
 ### Analyze file counts look unsupported
 
 - **Trigger:** Analyze reports many scanned files that did not become parsed code.
-- **Do:** Read the causal buckets: `documents`, `metadata`, `scripts`, and `static` are expected indexed inputs; investigate `failed`, `unknown`, or `unsupported_language`.
+- **Do:** Read the causal buckets: `documents`, `metadata`, `analyzers`, `scripts`, and `static` are expected indexed inputs; investigate `failed`, `unknown`, or `unsupported_language`.
 - **Why:** Repo-level file metrics describe why each scanned file did or did not produce ScopeIR. Docs/configs/fixtures/static assets must not be treated as unsupported code.
 
 ### Embeddings vanished after analyze

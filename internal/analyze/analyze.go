@@ -156,6 +156,7 @@ type FileMetrics struct {
 	ParsedCode            int                        `json:"parsedCode"`
 	Documents             int                        `json:"documents"`
 	MetadataOnly          int                        `json:"metadataOnly"`
+	DedicatedAnalyzer     int                        `json:"dedicatedAnalyzer"`
 	ScriptNoExtractor     int                        `json:"scriptNoExtractor"`
 	StaticAssets          int                        `json:"staticAssets"`
 	Unsupported           int                        `json:"unsupported"`

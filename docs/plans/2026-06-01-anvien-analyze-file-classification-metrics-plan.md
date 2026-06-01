@@ -2,7 +2,7 @@
 
 Date: 2026-06-01
 
-Status: Complete
+Status: Reopened for correction
 
 Companion files:
 
@@ -27,7 +27,7 @@ Companion files:
 
 ## Goal
 
-Replace the current aggregate analyze file metric named `unsupported` with a causal file classification model. Users should be able to tell whether a scanned file was parsed as code, indexed as a document, kept as metadata/config/static inventory, skipped because no code extractor exists, unknown, or failed.
+Replace the current aggregate analyze file metric named `unsupported` with a causal file classification model. Users should be able to tell whether a scanned file was parsed as code, indexed as a document, kept as metadata/config/static inventory, handled by a dedicated analyzer phase, skipped because no code extractor exists, unknown, or failed.
 
 ## Problem
 
@@ -52,7 +52,7 @@ In scope:
 - CLI analyze JSON output;
 - analyze benchmark JSON comparison code;
 - graph accuracy code that records analyze file counts;
-- tests for docs/config/static/script/unknown/true-unsupported/failure cases;
+- tests for docs/config/static/dedicated-analyzer/script/unknown/true-unsupported/failure cases;
 - README/RUNBOOK/TESTING/CHANGELOG updates after implementation behavior is proven.
 
 Out of scope:
@@ -69,16 +69,17 @@ Out of scope:
 1. `parsedCode` must count files that produced ScopeIR.
 2. `documents` must count files handled by document classification, including Markdown and metadata-only document formats.
 3. `metadataOnly` must count manifests, configs, reports, schemas, query-health suites, generated JSON fixtures, golden files, and similar structured non-code inputs.
-4. `scriptNoExtractor` must count recognized script-like files without ScopeIR extraction.
-5. `staticAssets` must count HTML/CSS/static report or Web assets that are indexed but not parsed as code.
-6. `unsupportedLanguage` must count only recognized code-like language inputs that are not supported by a ScopeIR extractor.
-7. `unknown` must count files that no classifier can explain.
-8. `failed` must count real processing failures and stay separate from all classification buckets.
-9. Human output must not present an aggregate `unsupported=<large number>` as the primary truth.
-10. JSON output must expose causal fields. If `files.unsupported` remains for compatibility, it must mean `unsupportedLanguage`, not the old aggregate of every non-ScopeIR file.
-11. Machine-readable output must expose bounded samples or grouped detail for non-zero non-parsed buckets so users can verify why files landed there.
-12. The sum of primary classification buckets plus failures must reconcile to `scanned`.
-13. Evidence and benchmark ledgers must be updated at the end of each completed implementation phase.
+4. `dedicatedAnalyzer` must count scanned inputs handled by non-ScopeIR analyzer phases, currently COBOL/JCL handled by `internal/cobol`.
+5. `scriptNoExtractor` must count recognized script-like files without ScopeIR extraction.
+6. `staticAssets` must count HTML/CSS/static report or Web assets that are indexed but not parsed as code.
+7. `unsupportedLanguage` must count only recognized code-like language inputs that are not supported by a ScopeIR extractor or a dedicated analyzer phase.
+8. `unknown` must count files that no classifier can explain.
+9. `failed` must count real processing failures and stay separate from all classification buckets.
+10. Human output must not present an aggregate `unsupported=<large number>` as the primary truth.
+11. JSON output must expose causal fields. If `files.unsupported` remains for compatibility, it must mean `unsupportedLanguage`, not the old aggregate of every non-ScopeIR file.
+12. Machine-readable output must expose bounded samples or grouped detail for non-zero non-parsed buckets so users can verify why files landed there.
+13. The sum of primary classification buckets plus failures must reconcile to `scanned`.
+14. Evidence and benchmark ledgers must be updated at the end of each completed implementation phase.
 
 ## Invariants
 
@@ -88,7 +89,8 @@ Out of scope:
 4. A file belongs to one primary repo-level bucket.
 5. Adding docs to the repo may increase `documents`, but must not increase user-facing unsupported analyzer inputs.
 6. Adding JSON fixtures may increase `metadataOnly`, but must not increase user-facing unsupported analyzer inputs.
-7. Real parser/extractor errors must still fail or report `failed` according to existing pipeline semantics.
+7. Adding COBOL/JCL inputs may increase `dedicatedAnalyzer`, but must not increase user-facing unsupported analyzer inputs.
+8. Real parser/extractor errors must still fail or report `failed` according to existing pipeline semantics.
 
 ## Technical Direction
 
@@ -110,16 +112,17 @@ Classification precedence:
 2. `parsedCode` for files that produced ScopeIR.
 3. `documents` for files recognized by document handling.
 4. `metadataOnly` for structured non-code files such as manifests, configs, reports, schemas, query suites, and golden fixtures.
-5. `scriptNoExtractor` for recognized script files without ScopeIR extraction.
-6. `staticAssets` for HTML, CSS, static report, or Web asset files.
-7. `unsupportedLanguage` for recognized code-like language inputs with no ScopeIR extractor.
-8. `unknown` for the remaining scanned files that no classifier explains.
+5. `dedicatedAnalyzer` for scanned inputs handled by a dedicated analyzer phase instead of ScopeIR providers.
+6. `scriptNoExtractor` for recognized script files without ScopeIR extraction.
+7. `staticAssets` for HTML, CSS, static report, or Web asset files.
+8. `unsupportedLanguage` for recognized code-like language inputs with no ScopeIR extractor or dedicated analyzer phase.
+9. `unknown` for the remaining scanned files that no classifier explains.
 
 Expected compact human shape:
 
 ```text
 files: scanned=<n> parsed_code=<n> failed=<n>
-indexed: documents=<n> metadata=<n> scripts=<n> static=<n>
+indexed: documents=<n> metadata=<n> analyzers=<n> scripts=<n> static=<n>
 gaps: unsupported_language=<n> unknown=<n>
 ```
 
@@ -130,7 +133,7 @@ The plan is complete when:
 1. analyze human output shows causal file buckets instead of a misleading primary `unsupported` aggregate;
 2. analyze JSON output exposes the causal bucket fields;
 3. existing parser unsupported-language tests still pass;
-4. new analyze tests prove docs/config/static/script/fixture files do not inflate unsupported analyzer inputs;
+4. new analyze tests prove docs/config/static/dedicated-analyzer/script/fixture files do not inflate unsupported analyzer inputs;
 5. current Anvien repo analyze can explain all scanned non-parsed files through causal buckets;
 6. build, targeted tests, analyze smoke, graph-health summary, and detect-changes evidence are recorded;
 7. benchmark ledger records before/after inventory counts;
@@ -198,9 +201,21 @@ The plan is complete when:
   - Implementation Gate: docs updates happen after behavior is validated, not before.
   - Acceptance: benchmark ledger shows before/after classification counts; docs explain analyze output accurately; plan status and checklist reflect completion.
 
+- [x] [P5-A] Correct dedicated analyzer classification.
+  - Goal: fix the reopened zero-trust finding that COBOL/JCL inputs were still counted as `unsupportedLanguage` even though the architecture and Web contract identify them as a dedicated analyzer phase.
+  - Work Steps: verify current COBOL/JCL ownership in `internal/scanner`, `internal/contracts/web_ui.go`, and `internal/cobol`; add a `dedicatedAnalyzer` file metric and bucket; classify `scanner.Cobol` before `unsupportedLanguage`; update CLI human output, benchmark comparison, graphaccuracy summaries, and tests; keep `unsupportedLanguage` covered by a synthetic recognized code-like language with no extractor.
+  - Implementation Gate: use current graph/impact evidence for `classifyFile` and related metric consumers; do not change scanner inclusion, parser registry, COBOL analyzer behavior, or Web contracts.
+  - Acceptance: COBOL/JCL fixture files increment `dedicatedAnalyzer`; `unsupportedLanguage` remains zero for COBOL/JCL and still non-zero for a true unsupported code-like language; CLI output exposes `analyzers=<n>`.
+
+- [ ] [P5-B] Revalidate and re-close the plan.
+  - Goal: close the plan only after the correction is proven in code, command output, benchmark counts, and user docs.
+  - Work Steps: run product build, targeted tests, standalone CLI build, fixture analyze smoke, graph-health where the current repo graph can be read, detect-changes before commit, then update evidence and benchmark ledgers with the correction and closure status.
+  - Implementation Gate: if current repo analyze is blocked by active runtime locks, record the blocker and use a temp fixture analyze smoke plus current graph-health freshness as the minimum closure evidence.
+  - Acceptance: plan/evidence/benchmark all state the corrected final contract; docs mention `analyzers`; implementation commit and closure evidence are recorded.
+
 ## Risk Notes
 
-- `parseFiles` and `hasExtractor` sit in the analyze pipeline and have CRITICAL impact in the baseline evidence. Edits must be narrow.
+- `parseFiles`, `hasExtractor`, and `classifyFile` sit in the analyze pipeline and have CRITICAL impact in the baseline/reopen evidence. Edits must be narrow.
 - CLI output changes can break tests, scripts, and user expectations. JSON compatibility needs an explicit decision.
 - Benchmark comparison currently expects `scanned`, `parsed`, `unsupported`, and `failed`; it must not silently lose comparison coverage.
 - Graph accuracy summaries currently include `FilesUnsupported`; this must be renamed, split, or clearly marked legacy.

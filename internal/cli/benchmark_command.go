@@ -125,6 +125,7 @@ func readBenchmarkMetrics(path string) (benchmarkMetrics, error) {
 			"parsedCode",
 			"documents",
 			"metadataOnly",
+			"dedicatedAnalyzer",
 			"scriptNoExtractor",
 			"staticAssets",
 			"unsupported",

@@ -1223,7 +1223,7 @@ export function main() {
 	for _, want := range []string{
 		"analyzed ",
 		"files: scanned=1 parsed_code=1 failed=0",
-		"indexed: documents=0 metadata=0 scripts=0 static=0",
+		"indexed: documents=0 metadata=0 analyzers=0 scripts=0 static=0",
 		"gaps: unsupported_language=0 unknown=0",
 		"graph: nodes=",
 		"fileProjection: status=built",
@@ -1261,6 +1261,7 @@ export function main() {
 			Scanned             int `json:"scanned"`
 			Parsed              int `json:"parsed"`
 			ParsedCode          int `json:"parsedCode"`
+			DedicatedAnalyzer   int `json:"dedicatedAnalyzer"`
 			Unsupported         int `json:"unsupported"`
 			UnsupportedLanguage int `json:"unsupportedLanguage"`
 		} `json:"files"`
@@ -1681,7 +1682,7 @@ func TestBenchmarkCompareReportsDeltas(t *testing.T) {
   "label": "before",
   "totalDuration": 1000000000,
   "phases": [{"name":"scan","duration":100000000}],
-  "files": {"scanned": 2, "parsedCode": 1, "documents": 1, "unsupportedLanguage": 0},
+  "files": {"scanned": 2, "parsedCode": 1, "documents": 1, "dedicatedAnalyzer": 0, "unsupportedLanguage": 0},
   "dbLoad": {"nodeRows": 3}
 }`), 0o644); err != nil {
 		t.Fatalf("write before: %v", err)
@@ -1690,7 +1691,7 @@ func TestBenchmarkCompareReportsDeltas(t *testing.T) {
   "label": "after",
   "totalDuration": 1500000000,
   "phases": [{"name":"scan","duration":250000000}],
-  "files": {"scanned": 5, "parsedCode": 2, "documents": 2, "unsupportedLanguage": 1},
+  "files": {"scanned": 5, "parsedCode": 2, "documents": 2, "dedicatedAnalyzer": 1, "unsupportedLanguage": 1},
   "dbLoad": {"nodeRows": 8}
 }`), 0o644); err != nil {
 		t.Fatalf("write after: %v", err)
@@ -1706,6 +1707,7 @@ func TestBenchmarkCompareReportsDeltas(t *testing.T) {
 		"wall: 1000 -> 1500 (+500, +50%)",
 		"scan: 100 -> 250 (+150, +150%)",
 		"files.documents: 1 -> 2 (+1, +100%)",
+		"files.dedicatedAnalyzer: 0 -> 1 (+1)",
 		"files.parsedCode: 1 -> 2 (+1, +100%)",
 		"files.scanned: 2 -> 5 (+3, +150%)",
 		"files.unsupportedLanguage: 0 -> 1 (+1)",

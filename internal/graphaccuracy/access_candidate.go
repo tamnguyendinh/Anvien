@@ -39,6 +39,7 @@ type AccessCandidateAnalyzeSummary struct {
 	FilesParsedCode          int   `json:"filesParsedCode"`
 	FilesDocuments           int   `json:"filesDocuments"`
 	FilesMetadataOnly        int   `json:"filesMetadataOnly"`
+	FilesDedicatedAnalyzer   int   `json:"filesDedicatedAnalyzer"`
 	FilesScriptNoExtractor   int   `json:"filesScriptNoExtractor"`
 	FilesStaticAssets        int   `json:"filesStaticAssets"`
 	FilesUnsupported         int   `json:"filesUnsupported"`
@@ -86,6 +87,7 @@ func RunAccessCandidateAudit(ctx context.Context, options AccessCandidateAuditOp
 			FilesParsedCode:          analyzeResult.Metrics.Files.ParsedCode,
 			FilesDocuments:           analyzeResult.Metrics.Files.Documents,
 			FilesMetadataOnly:        analyzeResult.Metrics.Files.MetadataOnly,
+			FilesDedicatedAnalyzer:   analyzeResult.Metrics.Files.DedicatedAnalyzer,
 			FilesScriptNoExtractor:   analyzeResult.Metrics.Files.ScriptNoExtractor,
 			FilesStaticAssets:        analyzeResult.Metrics.Files.StaticAssets,
 			FilesUnsupported:         analyzeResult.Metrics.Files.Unsupported,
