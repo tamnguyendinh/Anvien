@@ -31,7 +31,7 @@ Maintainer may widen scope per task.
 ## Local Runtime Invariants
 
 - `anvien analyze` writes repo-local index data under `<repo>/.anvien/`.
-- `anvien analyze` builds both canonical graph facts and the derived file projection inventory; the symbol/source-site graph remains canonical.
+- `anvien analyze` builds canonical graph facts, causal file classification metrics, and the derived file projection inventory; the symbol/source-site graph remains canonical.
 - `anvien mcp` exposes indexed repos over stdio for local agents.
 - `anvien serve` exposes the local HTTP backend on loopback for the Web UI.
 - `anvien-web/` is a thin client over the local backend; it must not become the owner of graph storage.
@@ -50,6 +50,12 @@ Format: **Trigger → Instruction → Reason**. Append new Signs when the same m
 - **Trigger:** MCP warns index is behind `HEAD`, or search doesn't match latest commit.
 - **Do:** `anvien analyze` (plus `--embeddings` if used).
 - **Why:** Tools query LadybugDB from last analyze; git changes are invisible until re-indexed.
+
+### Analyze file counts look unsupported
+
+- **Trigger:** Analyze reports many scanned files that did not become parsed code.
+- **Do:** Read the causal buckets: `documents`, `metadata`, `scripts`, and `static` are expected indexed inputs; investigate `failed`, `unknown`, or `unsupported_language`.
+- **Why:** Repo-level file metrics describe why each scanned file did or did not produce ScopeIR. Docs/configs/fixtures/static assets must not be treated as unsupported code.
 
 ### Embeddings vanished after analyze
 

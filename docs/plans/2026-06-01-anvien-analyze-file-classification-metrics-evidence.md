@@ -348,3 +348,91 @@ Decision:
 - Add classification precedence so implementation cannot choose bucket order ad hoc.
 - Tighten JSON compatibility: legacy `files.unsupported`, if kept, must mean `unsupportedLanguage`, not old non-ScopeIR aggregate.
 - Expand `[P2-B]` to inspect HTTP/API and Web contract surfaces before deciding they are unaffected.
+
+## E8 - Implementation Impact And Scope
+
+Date: 2026-06-01
+
+Status: completed
+
+Scope:
+
+- Run fresh graph/analyze evidence before editing.
+- Run impact checks for the symbols that own the metric contract, parse skip behavior, and document classification reuse.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force --name Anvien --json` | Pass. `files.scanned=814`, `files.parsed=596`, `files.unsupported=218`, `files.failed=0`; graph `95904` nodes and `131259` relationships. |
+| Anvien query for analyze metric owners | Confirmed `internal/analyze/analyze.go`, `internal/cli/command.go`, `internal/cli/benchmark_command.go`, `internal/graphaccuracy/access_candidate.go`, and tests as direct owners/consumers. |
+| `internal/httpapi/analyze.go` inspection | HTTP analyze repo stats use total scanned files and do not expose the old unsupported aggregate. |
+| `internal/contracts/web_ui.go` inspection | Web contract language coverage metadata is separate from analyze file metrics; no generated Web contract change needed. |
+
+Impact / blast radius:
+
+| Target | Result |
+|---|---|
+| `parseFiles` | CRITICAL; 5 impacted symbols, 4 affected files, 39 affected processes. |
+| `hasExtractor` | CRITICAL; 4 impacted symbols, 3 affected files, 26 affected processes. |
+| `FileMetrics` | LOW; 1 impacted symbol, 1 affected file, 0 affected processes. |
+| `documentKind` | CRITICAL through `documents.Apply -> analyze.Run -> CLI/graphaccuracy`; scoped to adding shared `documents.Kind` without changing document selection semantics. |
+
+Implementation boundary:
+
+- Keep edits narrow to analyze metrics, classifier, CLI output, benchmark comparison, graphaccuracy summary, and focused tests.
+- Do not change scanner inclusion behavior, document indexing behavior, parser registry behavior, or Web UI behavior.
+
+## E9 - Classification Contract And Consumer Implementation
+
+Date: 2026-06-01
+
+Status: completed
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/analyze/file_classification.go` | Added shared deterministic classifier, bucket constants, bounded samples, and reconciliation helper. |
+| `internal/analyze/analyze.go` | Expanded `FileMetrics`; repo-level metrics now aggregate scanned files from parse outcome plus document/path/language classification; `files.unsupported` is a legacy alias of `unsupportedLanguage`. |
+| `internal/documents/documents.go` | Added exported `documents.Kind` wrapper so analyze classification reuses document logic instead of duplicating it. |
+| `internal/cli/command.go` | Human output now prints `parsed_code`, indexed buckets, and gap buckets; JSON output emits the full causal `FileMetrics` object. |
+| `internal/cli/benchmark_command.go` | Benchmark comparison reads new causal file metric fields while still reading legacy fields. |
+| `internal/graphaccuracy/access_candidate.go` | Analyze summary exposes causal fields and keeps legacy parsed/unsupported aliases. |
+| `internal/analyze/file_classification_test.go` | Added regression coverage for docs, spreadsheets, JSON manifests/golden files, Go modules, YAML, PowerShell, shell, HTML, CSS, unsupported code-like input, unknown input, and failed precedence. |
+| `internal/analyze/analyze_test.go`, `internal/cli/command_test.go` | Updated pipeline, benchmark, CLI human output, JSON output, and benchmark-compare assertions. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `go test ./internal/analyze ./internal/documents ./internal/cli ./internal/graphaccuracy` | Pass. |
+| `go test ./internal/analyze ./internal/documents ./internal/cli ./internal/graphaccuracy -count=1` | Pass after applicable build. |
+
+Failures / handling:
+
+- None in the focused implementation tests.
+
+## E10 - Build, Analyze Smoke, And Graph Health Validation
+
+Date: 2026-06-01
+
+Status: completed
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `go build ./...` | Failed on existing intentionally non-buildable fixture packages under `anvien/test/fixtures/...` and C fixture files; not caused by this change. |
+| `go build ./cmd/... ./internal/...` | Pass. |
+| `npm --prefix anvien run build` | Failed because `anvien\bin\lbug_shared.dll` was held by another running process; did not indicate compile failure. |
+| `go build -trimpath -o .tmp\anvien-classification.exe .\cmd\anvien` | Pass, with existing tree-sitter Swift C warning only. |
+| `.tmp\anvien-classification.exe analyze --force --name Anvien --json --benchmark-json .tmp\analyze-file-classification-final.json` | Pass. `files.scanned=816`, `parsedCode=598`, `documents=113`, `metadataOnly=99`, `scriptNoExtractor=3`, `staticAssets=3`, `unsupportedLanguage=0`, `unknown=0`, `failed=0`; graph `96159` nodes and `131644` relationships. |
+| `.tmp\anvien-classification.exe graph-health summary --repo Anvien --json` | Pass. Graph is fresh at commit `81adef9`; graph `96159` nodes and `131644` relationships; file layer `816` files and `590` unresolved files. |
+| `go test ./cmd/... ./internal/... -count=1` | Failed only in `internal/lbugschema` because `baseline/phase-1-contract-freeze/ladybugdb-graph-contract.json` is missing. All other packages in the run passed. |
+| `$packages = go list ./cmd/... ./internal/... \| Where-Object { $_ -ne 'github.com/tamnguyendinh/anvien/internal/lbugschema' }; go test $packages -count=1` | Pass. |
+
+Failures / handling:
+
+- Root `go build ./...` remains unsuitable as product build validation because it includes analysis fixtures that are intentionally not buildable as packages.
+- Package runtime build was blocked by an active process holding `lbug_shared.dll`; a separate `.tmp` binary was built and used for analyze smoke without stopping user/editor-owned runtime processes.

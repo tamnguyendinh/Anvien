@@ -241,6 +241,11 @@ func skipLink(href string) bool {
 }
 
 func documentKind(filePath string) string {
+	return Kind(filePath)
+}
+
+// Kind returns the document class handled by the document indexing phase.
+func Kind(filePath string) string {
 	switch strings.ToLower(path.Ext(filePath)) {
 	case ".md", ".mdx":
 		return "markdown"

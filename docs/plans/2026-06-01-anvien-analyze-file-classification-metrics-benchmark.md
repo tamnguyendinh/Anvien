@@ -111,27 +111,53 @@ Status: recorded
 
 ## B5 - Implementation Measurement Targets
 
-Status: pending
+Status: recorded
 
 | Metric | Unit | Baseline | Latest | Target |
 |---|---:|---:|---:|---:|
-| Human analyze output aggregate `unsupported` | occurrences | 1 | pending | 0 |
-| Human analyze output causal file buckets | buckets | 0 | pending | at least 6 |
-| JSON causal file bucket fields | fields | 0 | pending | at least 7 |
-| Unknown/unclassified current repo files | files | not separated | pending | 0 |
-| True unsupported current repo files | files | not separated | pending | 0 unless real unsupported code inputs are found |
-| Failed files | files | 0 | pending | 0 |
-| Analyze scanned files | files | 813 | pending | record |
-| Analyze parsed code files | files | 596 | pending | no unintended decrease |
+| Human analyze output aggregate `unsupported` | occurrences | 1 | 0 | 0 |
+| Human analyze output causal file buckets | buckets | 0 | 8 | at least 6 |
+| JSON causal file bucket fields | fields | 0 | 10 | at least 7 |
+| Unknown/unclassified current repo files | files | not separated | 0 | 0 |
+| True unsupported current repo files | files | not separated | 0 | 0 unless real unsupported code inputs are found |
+| Failed files | files | 0 | 0 | 0 |
+| Analyze scanned files | files | 813 | 816 | record |
+| Analyze parsed code files | files | 596 | 598 | no unintended decrease |
 
 ## B6 - Validation Runs
 
-Status: pending
+Status: recorded
 
 | Run | Unit | Latest | Target |
 |---|---:|---:|---:|
-| Full build | result | pending | pass |
-| Targeted Go tests | result | pending | pass |
-| Analyze smoke | result | pending | pass |
-| Graph-health summary | result | pending | pass |
+| Product Go build `go build ./cmd/... ./internal/...` | result | pass | pass |
+| Standalone CLI binary build | result | pass | pass |
+| Package runtime build | result | blocked by active `lbug_shared.dll` handle | pass or recorded blocker |
+| Targeted Go tests | result | pass | pass |
+| Applicable cmd/internal suite excluding missing lbugschema baseline | result | pass | pass |
+| Analyze smoke | result | pass | pass |
+| Graph-health summary | result | pass | pass |
 | Detect changes | result | pending | recorded before implementation commit |
+
+## B7 - Final Causal File Classification Snapshot
+
+Status: recorded
+
+Source: `.tmp/analyze-file-classification-final.json`.
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| Files scanned | files | 816 |
+| Parsed code | files | 598 |
+| Documents | files | 113 |
+| Metadata-only | files | 99 |
+| Scripts without ScopeIR extractor | files | 3 |
+| Static assets | files | 3 |
+| Unsupported language | files | 0 |
+| Unknown | files | 0 |
+| Failed | files | 0 |
+| Bucket sum | files | 816 |
+| Graph nodes | nodes | 96159 |
+| Graph relationships | relationships | 131644 |
+| File projection files | files | 816 |
+| File projection unresolved files | files | 590 |

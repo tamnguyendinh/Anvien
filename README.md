@@ -29,7 +29,7 @@ The core product is still local code intelligence:
 - `anvien serve` exposes the same local runtime over HTTP for the browser UI.
 - `anvien-launcher/` packages the local backend and Web UI for a Windows `AnvienLauncher.exe` flow.
 
-`anvien analyze` now also prints `fileProjection` status, file inventory, dependency edges, unresolved-file count, and top file hotspots. The file commands below use that projection; the symbol graph remains canonical.
+`anvien analyze` now also prints causal file classification counts, `fileProjection` status, file inventory, dependency edges, unresolved-file count, and top file hotspots. The file commands below use that projection; the symbol graph remains canonical.
 
 No Anvien-hosted cloud service is involved in the active local runtime path.
 
@@ -249,6 +249,16 @@ anvien wiki                      # Show wiki capability status
 anvien wiki-mode [off|local]     # Show or set local wiki capability mode
 anvien completion <shell>        # Generate shell completion script
 ```
+
+Analyze output separates code parsing from indexed non-code inputs:
+
+```text
+files: scanned=<n> parsed_code=<n> failed=<n>
+indexed: documents=<n> metadata=<n> scripts=<n> static=<n>
+gaps: unsupported_language=<n> unknown=<n>
+```
+
+`unsupported_language` is reserved for recognized code-like inputs with no ScopeIR extractor. Documents, configs, reports, fixtures, scripts, and static assets are counted in their own buckets.
 
 Direct graph tools:
 

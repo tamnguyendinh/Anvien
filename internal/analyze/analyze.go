@@ -151,10 +151,18 @@ type PhaseMetric struct {
 }
 
 type FileMetrics struct {
-	Scanned     int `json:"scanned"`
-	Parsed      int `json:"parsed"`
-	Unsupported int `json:"unsupported"`
-	Failed      int `json:"failed"`
+	Scanned               int                        `json:"scanned"`
+	Parsed                int                        `json:"parsed"`
+	ParsedCode            int                        `json:"parsedCode"`
+	Documents             int                        `json:"documents"`
+	MetadataOnly          int                        `json:"metadataOnly"`
+	ScriptNoExtractor     int                        `json:"scriptNoExtractor"`
+	StaticAssets          int                        `json:"staticAssets"`
+	Unsupported           int                        `json:"unsupported"`
+	UnsupportedLanguage   int                        `json:"unsupportedLanguage"`
+	Unknown               int                        `json:"unknown"`
+	Failed                int                        `json:"failed"`
+	ClassificationSamples []FileClassificationSample `json:"classificationSamples,omitempty"`
 }
 
 type MemoryMetrics struct {
@@ -277,9 +285,11 @@ func Run(ctx context.Context, repoPath string, options Options) (result Result, 
 	}
 	result.ScopeIRs = parsedFiles.IRs
 	result.Metrics.Parser = parsedFiles.Metrics.Parser
-	result.Metrics.Files.Parsed = parsedFiles.Metrics.Parsed
-	result.Metrics.Files.Unsupported = parsedFiles.Metrics.Unsupported
-	result.Metrics.Files.Failed = parsedFiles.Metrics.Failed
+	result.Metrics.Files = classifyFileMetrics(scan.Files, fileClassificationOutcome{
+		Parsed:              parsedFiles.Metrics.ParsedPaths,
+		Failed:              parsedFiles.Metrics.FailedPaths,
+		UnsupportedLanguage: parsedFiles.Metrics.UnsupportedLanguagePaths,
+	})
 
 	routesResult, err := runPhase(ctx, &result.Metrics, options.OnEvent, PhaseRoutes, func() (routes.Result, error) {
 		if err := ctx.Err(); err != nil {
@@ -771,10 +781,13 @@ func WriteBenchmark(path string, result Result) error {
 }
 
 type parseResult struct {
-	Parser      parser.Metrics
-	Parsed      int
-	Unsupported int
-	Failed      int
+	Parser                   parser.Metrics
+	Parsed                   int
+	Unsupported              int
+	Failed                   int
+	ParsedPaths              map[string]struct{}
+	UnsupportedLanguagePaths map[string]struct{}
+	FailedPaths              map[string]struct{}
 }
 
 type parseRunResult struct {
@@ -787,13 +800,16 @@ func parseFiles(ctx context.Context, repoPath string, files []scanner.File, opti
 	defer pool.Close()
 
 	irs := make([]scopeir.ScopeIR, 0, len(files))
-	metrics := parseResult{}
+	metrics := parseResult{
+		ParsedPaths:              map[string]struct{}{},
+		UnsupportedLanguagePaths: map[string]struct{}{},
+		FailedPaths:              map[string]struct{}{},
+	}
 	for index, file := range files {
 		if err := ctx.Err(); err != nil {
 			return parseRunResult{IRs: irs, Metrics: metrics}, err
 		}
 		if !hasExtractor(file.Language) {
-			metrics.Unsupported++
 			continue
 		}
 		emit(options.OnEvent, Event{Kind: EventProgress, Phase: PhaseParse, Current: index + 1, Total: len(files), File: file.Path})
@@ -801,27 +817,32 @@ func parseFiles(ctx context.Context, repoPath string, files []scanner.File, opti
 		source, err := os.ReadFile(filepath.Join(repoPath, filepath.FromSlash(file.Path)))
 		if err != nil {
 			metrics.Failed++
+			addClassificationPath(metrics.FailedPaths, file.Path)
 			return parseRunResult{IRs: irs, Metrics: metrics}, err
 		}
 		if isScriptContainer(file.Language) {
 			ir, err := extractScriptContainerScopeIR(file, source)
 			if err != nil {
 				metrics.Failed++
+				addClassificationPath(metrics.FailedPaths, file.Path)
 				return parseRunResult{IRs: irs, Metrics: metrics}, err
 			}
 			ir = frameworks.AnnotateScopeIR(ir, source)
 			irs = append(irs, ir)
 			metrics.Parsed++
+			addClassificationPath(metrics.ParsedPaths, file.Path)
 			continue
 		}
 
 		parsed, err := pool.Parse(ctx, parser.Request{FilePath: file.Path, Language: file.Language, Source: source})
 		if err != nil {
-			metrics.Failed++
 			if errors.Is(err, parser.ErrUnsupportedLanguage) {
 				metrics.Unsupported++
+				addClassificationPath(metrics.UnsupportedLanguagePaths, file.Path)
 				continue
 			}
+			metrics.Failed++
+			addClassificationPath(metrics.FailedPaths, file.Path)
 			return parseRunResult{IRs: irs, Metrics: metrics}, err
 		}
 
@@ -829,11 +850,13 @@ func parseFiles(ctx context.Context, repoPath string, files []scanner.File, opti
 		parsed.Close()
 		if err != nil {
 			metrics.Failed++
+			addClassificationPath(metrics.FailedPaths, file.Path)
 			return parseRunResult{IRs: irs, Metrics: metrics}, err
 		}
 		ir = frameworks.AnnotateScopeIR(ir, source)
 		irs = append(irs, ir)
 		metrics.Parsed++
+		addClassificationPath(metrics.ParsedPaths, file.Path)
 	}
 	metrics.Parser = pool.SnapshotMetrics()
 	return parseRunResult{IRs: irs, Metrics: metrics}, nil

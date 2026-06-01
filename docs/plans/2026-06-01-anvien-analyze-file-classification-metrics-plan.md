@@ -2,7 +2,7 @@
 
 Date: 2026-06-01
 
-Status: Ready for implementation
+Status: Implementation validation in progress
 
 Companion files:
 
@@ -150,37 +150,37 @@ The plan is complete when:
   - Implementation Gate: do not start code changes until this review is complete.
   - Acceptance: plan status is ready for implementation; evidence records readiness review; benchmark records initial and latest inventory snapshots.
 
-- [ ] [P1-A] Define the repo-level file classification contract.
+- [x] [P1-A] Define the repo-level file classification contract.
   - Goal: create the exact output model before changing parse behavior.
   - Work Steps: add a `FileClassificationMetrics` or equivalent struct in the analyze package; define bucket names and JSON names; decide which legacy fields remain; document reconciliation rules in tests; keep parser-level `parser.Metrics.Unsupported` separate.
   - Implementation Gate: run impact for `FileMetrics` and any new exported/shared metric type before editing.
   - Acceptance: compile-time contract exists, JSON field names are stable, bucket sum rules are represented in tests or helper assertions, and no CLI output changes are made before the contract is covered.
 
-- [ ] [P1-B] Implement the shared file classifier.
+- [x] [P1-B] Implement the shared file classifier.
   - Goal: centralize the answer to "what kind of scanned file is this?" so CLI, analyze, and later reporting do not invent separate classifications.
   - Work Steps: implement a classifier function using scanner language, extractor support, document kind, extension/path traits, and parser outcome; add table tests for Markdown, spreadsheet, JSON manifest, JSON golden fixture, Go module, YAML config, PowerShell, shell script, HTML, CSS, true unsupported code-like input, unknown extension, and failure.
   - Implementation Gate: run impact for `hasExtractor`, `documentKind`, and any classifier owner before editing; do not change scanner inclusion behavior.
   - Acceptance: every current non-parsed Anvien file class maps to a causal bucket; unknown is reachable only through an explicit fallback; true unsupported language is test-covered separately from docs/config.
 
-- [ ] [P2-A] Reconcile parse-phase and repo-level metrics.
+- [x] [P2-A] Reconcile parse-phase and repo-level metrics.
   - Goal: stop using parse-loop skips as the repo-level unsupported truth.
   - Work Steps: aggregate classification metrics from scanned files; update `parseFiles` or its caller so parser skips and parser `ErrUnsupportedLanguage` feed the right repo-level bucket; keep `failed` semantics unchanged; preserve parser pool metrics for parser internals.
   - Implementation Gate: run impact for `parseFiles` before editing and treat CRITICAL impact as a scoping warning.
   - Acceptance: analyze result can report parsed code, documents, metadata-only, scripts, static assets, unsupported language, unknown, and failed; current repo docs/config additions no longer raise user-facing unsupported analyzer input count.
 
-- [ ] [P2-B] Update analyze CLI output and JSON output.
+- [x] [P2-B] Update analyze CLI output and JSON output.
   - Goal: make terminal and machine-readable analyze output match the new contract.
   - Work Steps: update `internal/cli/command.go` human format; update `--json` `files` object; inspect `internal/httpapi/analyze.go`, `internal/contracts/web_ui.go`, and generated Web contracts before deciding whether Web/API surfaces are unaffected; if legacy `unsupported` remains, make it an alias of `unsupportedLanguage` only; update CLI tests that assert analyze output.
   - Implementation Gate: inspect `internal/cli/command_test.go`, `internal/httpapi/analyze.go`, `internal/contracts/web_ui.go`, and existing benchmark comparison assumptions before editing output strings or JSON shape.
   - Acceptance: human output groups parsed/failed, indexed buckets, and gaps; JSON includes causal fields and bounded bucket detail; tests assert the new output and prevent the old primary `unsupported=<large>` line from returning.
 
-- [ ] [P3-A] Update downstream metric consumers.
+- [x] [P3-A] Update downstream metric consumers.
   - Goal: prevent old aggregate semantics from leaking through benchmark and graph accuracy surfaces.
   - Work Steps: update `internal/cli/benchmark_command.go` to compare new fields; update `internal/graphaccuracy/access_candidate.go` away from `FilesUnsupported` or mark it legacy; update any structs/tests that serialize analyze file counts.
   - Implementation Gate: run impact for each consumer symbol before editing and preserve backwards compatibility only where needed.
   - Acceptance: benchmark comparison can read new analyze JSON; graph accuracy summaries expose causal fields or clearly marked legacy fields; no consumer silently treats docs/config as unsupported code.
 
-- [ ] [P3-B] Add focused regression tests.
+- [x] [P3-B] Add focused regression tests.
   - Goal: lock the behavior that caused this plan so it cannot regress.
   - Work Steps: add analyze tests with mixed repo fixtures; include docs, JSON configs, testdata/golden JSON, scripts, static assets, true unsupported code-like input, unknown input, and real failure simulation where practical; update parser tests only if parser-level semantics require explicit preservation.
   - Implementation Gate: keep fixtures small and deterministic; do not broaden tests into unrelated scanner or graph projection behavior.

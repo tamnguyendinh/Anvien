@@ -14,9 +14,14 @@ All notable changes to anvien will be documented in this file.
 
 #### Changed
 
+- Replaced the repo-level analyze `unsupported` aggregate with causal file classification buckets for parsed code, documents, metadata-only inputs, scripts without extractors, static assets, unsupported languages, unknowns, and failures.
 - Made `anvien analyze` build and report file projection inventory while keeping symbol/source-site graph facts as the canonical source of truth.
 - Bumped the CLI package version from `1.2.3` to `1.2.4`.
 - Retired the self-referential generated AI-context skill; generated root context and Anvien skill content now remain sourced from `internal/aicontext`.
+
+#### Fixed
+
+- Fixed healthy docs, manifests, reports, fixtures, scripts, and static assets being presented as one misleading analyze `unsupported` count.
 
 ### 2026-05-26
 

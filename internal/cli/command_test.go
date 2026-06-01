@@ -1220,7 +1220,14 @@ export function main() {
 	if errOut != "" {
 		t.Fatalf("analyze wrote stderr: %q", errOut)
 	}
-	for _, want := range []string{"analyzed ", "files: scanned=1 parsed=1", "graph: nodes=", "fileProjection: status=built"} {
+	for _, want := range []string{
+		"analyzed ",
+		"files: scanned=1 parsed_code=1 failed=0",
+		"indexed: documents=0 metadata=0 scripts=0 static=0",
+		"gaps: unsupported_language=0 unknown=0",
+		"graph: nodes=",
+		"fileProjection: status=built",
+	} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("analyze output missing %q:\n%s", want, out)
 		}
@@ -1251,8 +1258,11 @@ export function main() {
 	}
 	var jsonPayload struct {
 		Files struct {
-			Scanned int `json:"scanned"`
-			Parsed  int `json:"parsed"`
+			Scanned             int `json:"scanned"`
+			Parsed              int `json:"parsed"`
+			ParsedCode          int `json:"parsedCode"`
+			Unsupported         int `json:"unsupported"`
+			UnsupportedLanguage int `json:"unsupportedLanguage"`
 		} `json:"files"`
 		Graph struct {
 			Nodes         int `json:"nodes"`
@@ -1269,8 +1279,11 @@ export function main() {
 	if err := json.Unmarshal([]byte(jsonOut), &jsonPayload); err != nil {
 		t.Fatalf("analyze --json output was not JSON: %v\n%s", err, jsonOut)
 	}
-	if jsonPayload.Files.Scanned < 1 || jsonPayload.Files.Parsed != 1 {
-		t.Fatalf("analyze --json files = scanned %d parsed %d, want scanned >= 1 and parsed 1", jsonPayload.Files.Scanned, jsonPayload.Files.Parsed)
+	if jsonPayload.Files.Scanned < 1 ||
+		jsonPayload.Files.Parsed != 1 ||
+		jsonPayload.Files.ParsedCode != 1 ||
+		jsonPayload.Files.Unsupported != jsonPayload.Files.UnsupportedLanguage {
+		t.Fatalf("analyze --json files = %#v, want scanned >= 1 and parsed/parsedCode 1", jsonPayload.Files)
 	}
 	if jsonPayload.Graph.Nodes == 0 || jsonPayload.Graph.Relationships == 0 {
 		t.Fatalf("analyze --json graph counts missing: %#v", jsonPayload.Graph)
@@ -1668,7 +1681,7 @@ func TestBenchmarkCompareReportsDeltas(t *testing.T) {
   "label": "before",
   "totalDuration": 1000000000,
   "phases": [{"name":"scan","duration":100000000}],
-  "files": {"scanned": 2},
+  "files": {"scanned": 2, "parsedCode": 1, "documents": 1, "unsupportedLanguage": 0},
   "dbLoad": {"nodeRows": 3}
 }`), 0o644); err != nil {
 		t.Fatalf("write before: %v", err)
@@ -1677,7 +1690,7 @@ func TestBenchmarkCompareReportsDeltas(t *testing.T) {
   "label": "after",
   "totalDuration": 1500000000,
   "phases": [{"name":"scan","duration":250000000}],
-  "files": {"scanned": 5},
+  "files": {"scanned": 5, "parsedCode": 2, "documents": 2, "unsupportedLanguage": 1},
   "dbLoad": {"nodeRows": 8}
 }`), 0o644); err != nil {
 		t.Fatalf("write after: %v", err)
@@ -1692,7 +1705,10 @@ func TestBenchmarkCompareReportsDeltas(t *testing.T) {
 		"labels: before -> after",
 		"wall: 1000 -> 1500 (+500, +50%)",
 		"scan: 100 -> 250 (+150, +150%)",
+		"files.documents: 1 -> 2 (+1, +100%)",
+		"files.parsedCode: 1 -> 2 (+1, +100%)",
 		"files.scanned: 2 -> 5 (+3, +150%)",
+		"files.unsupportedLanguage: 0 -> 1 (+1)",
 		"dbLoad.nodeRows: 3 -> 8 (+5, +166.7%)",
 	} {
 		if !strings.Contains(out, want) {

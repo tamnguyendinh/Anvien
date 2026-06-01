@@ -33,16 +33,24 @@ type AccessCandidateAuditInputs struct {
 }
 
 type AccessCandidateAnalyzeSummary struct {
-	FilesScanned         int   `json:"filesScanned"`
-	FilesParsed          int   `json:"filesParsed"`
-	FilesUnsupported     int   `json:"filesUnsupported"`
-	FilesFailed          int   `json:"filesFailed"`
-	TotalDurationMillis  int64 `json:"totalDurationMillis"`
-	ResolvedAccesses     int   `json:"resolvedAccesses"`
-	UnresolvedReferences int   `json:"unresolvedReferences"`
-	GraphNodes           int   `json:"graphNodes"`
-	GraphRelationships   int   `json:"graphRelationships"`
-	ScopeIRsRetained     int   `json:"scopeIRsRetained"`
+	FilesScanned int `json:"filesScanned"`
+	// FilesParsed and FilesUnsupported are legacy aliases for parsedCode and unsupportedLanguage.
+	FilesParsed              int   `json:"filesParsed"`
+	FilesParsedCode          int   `json:"filesParsedCode"`
+	FilesDocuments           int   `json:"filesDocuments"`
+	FilesMetadataOnly        int   `json:"filesMetadataOnly"`
+	FilesScriptNoExtractor   int   `json:"filesScriptNoExtractor"`
+	FilesStaticAssets        int   `json:"filesStaticAssets"`
+	FilesUnsupported         int   `json:"filesUnsupported"`
+	FilesUnsupportedLanguage int   `json:"filesUnsupportedLanguage"`
+	FilesUnknown             int   `json:"filesUnknown"`
+	FilesFailed              int   `json:"filesFailed"`
+	TotalDurationMillis      int64 `json:"totalDurationMillis"`
+	ResolvedAccesses         int   `json:"resolvedAccesses"`
+	UnresolvedReferences     int   `json:"unresolvedReferences"`
+	GraphNodes               int   `json:"graphNodes"`
+	GraphRelationships       int   `json:"graphRelationships"`
+	ScopeIRsRetained         int   `json:"scopeIRsRetained"`
 }
 
 func RunAccessCandidateAudit(ctx context.Context, options AccessCandidateAuditOptions) (AccessCandidateAuditResult, error) {
@@ -73,16 +81,23 @@ func RunAccessCandidateAudit(ctx context.Context, options AccessCandidateAuditOp
 			Repo: repoAbs,
 		},
 		Analyze: AccessCandidateAnalyzeSummary{
-			FilesScanned:         analyzeResult.Metrics.Files.Scanned,
-			FilesParsed:          analyzeResult.Metrics.Files.Parsed,
-			FilesUnsupported:     analyzeResult.Metrics.Files.Unsupported,
-			FilesFailed:          analyzeResult.Metrics.Files.Failed,
-			TotalDurationMillis:  analyzeResult.Metrics.TotalDuration.Milliseconds(),
-			ResolvedAccesses:     analyzeResult.Metrics.Resolution.ResolvedAccesses,
-			UnresolvedReferences: analyzeResult.Metrics.Resolution.UnresolvedReferences,
-			GraphNodes:           len(analyzeResult.Graph.Nodes),
-			GraphRelationships:   len(analyzeResult.Graph.Relationships),
-			ScopeIRsRetained:     len(analyzeResult.ScopeIRs),
+			FilesScanned:             analyzeResult.Metrics.Files.Scanned,
+			FilesParsed:              analyzeResult.Metrics.Files.Parsed,
+			FilesParsedCode:          analyzeResult.Metrics.Files.ParsedCode,
+			FilesDocuments:           analyzeResult.Metrics.Files.Documents,
+			FilesMetadataOnly:        analyzeResult.Metrics.Files.MetadataOnly,
+			FilesScriptNoExtractor:   analyzeResult.Metrics.Files.ScriptNoExtractor,
+			FilesStaticAssets:        analyzeResult.Metrics.Files.StaticAssets,
+			FilesUnsupported:         analyzeResult.Metrics.Files.Unsupported,
+			FilesUnsupportedLanguage: analyzeResult.Metrics.Files.UnsupportedLanguage,
+			FilesUnknown:             analyzeResult.Metrics.Files.Unknown,
+			FilesFailed:              analyzeResult.Metrics.Files.Failed,
+			TotalDurationMillis:      analyzeResult.Metrics.TotalDuration.Milliseconds(),
+			ResolvedAccesses:         analyzeResult.Metrics.Resolution.ResolvedAccesses,
+			UnresolvedReferences:     analyzeResult.Metrics.Resolution.UnresolvedReferences,
+			GraphNodes:               len(analyzeResult.Graph.Nodes),
+			GraphRelationships:       len(analyzeResult.Graph.Relationships),
+			ScopeIRsRetained:         len(analyzeResult.ScopeIRs),
 		},
 		Audit: audit,
 		Notes: []string{

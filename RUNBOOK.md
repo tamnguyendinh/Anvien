@@ -64,6 +64,16 @@ Register the repo under a custom name:
 anvien analyze C:\path\to\repo --name MyRepo
 ```
 
+Read the file inventory:
+
+```text
+files: scanned=<n> parsed_code=<n> failed=<n>
+indexed: documents=<n> metadata=<n> scripts=<n> static=<n>
+gaps: unsupported_language=<n> unknown=<n>
+```
+
+`documents`, `metadata`, `scripts`, and `static` are expected indexed inputs that do not produce ScopeIR. Investigate only `failed`, `unknown`, or non-zero `unsupported_language`.
+
 Check what Anvien knows:
 
 ```powershell

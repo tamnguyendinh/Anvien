@@ -119,7 +119,19 @@ func readBenchmarkMetrics(path string) (benchmarkMetrics, error) {
 		}
 	}
 	if files, ok := root["files"].(map[string]any); ok {
-		for _, key := range []string{"scanned", "parsed", "unsupported", "failed"} {
+		for _, key := range []string{
+			"scanned",
+			"parsed",
+			"parsedCode",
+			"documents",
+			"metadataOnly",
+			"scriptNoExtractor",
+			"staticAssets",
+			"unsupported",
+			"unsupportedLanguage",
+			"unknown",
+			"failed",
+		} {
 			addOptionalCount(metrics.Counts, "files."+key, optionalFloat(files, key))
 		}
 	}

@@ -93,6 +93,7 @@ Run the smallest useful validation for the change.
 | Docs only | `git diff --check` |
 | Docs describing current behavior | Source or Anvien evidence for the claim, then `git diff --check` |
 | CLI command, MCP tool, graph query, ingestion, LadybugDB | `go test ./cmd/... ./internal/... -count=1`, plus package build when command packaging changed. |
+| Analyze file classification metrics | `go test ./internal/analyze ./internal/cli ./internal/graphaccuracy -count=1`, plus an analyze smoke that checks `parsedCode`, `documents`, `metadataOnly`, `scriptNoExtractor`, `staticAssets`, `unsupportedLanguage`, `unknown`, and `failed`. |
 | File projection, File Map/File Detail API, file-aware MCP/CLI | `go test ./internal/filecontext ./internal/cli ./internal/httpapi ./internal/mcp -count=1`, contract check, and Web tests if browser behavior changed. |
 | Narrow core logic | Targeted Go package test, for example `go test ./internal/<pkg> -run <TestName> -count=1`; broaden if storage/MCP/API wiring is involved. |
 | Web UI component/state only | `cd anvien-web && npm run build && npx tsc -b --noEmit && npm test` |

@@ -76,7 +76,13 @@ export function main() {
 	if result.Graph == nil || len(result.Graph.Nodes) == 0 || len(result.Graph.Relationships) == 0 {
 		t.Fatalf("Run() did not produce a graph: %#v", result.Graph)
 	}
-	if result.Metrics.Files.Scanned != 12 || result.Metrics.Files.Parsed != 5 || result.Metrics.Files.Unsupported != 7 {
+	if result.Metrics.Files.Scanned != 12 ||
+		result.Metrics.Files.ParsedCode != 5 ||
+		result.Metrics.Files.Parsed != result.Metrics.Files.ParsedCode ||
+		result.Metrics.Files.Documents != 4 ||
+		result.Metrics.Files.UnsupportedLanguage != 3 ||
+		result.Metrics.Files.Unsupported != result.Metrics.Files.UnsupportedLanguage ||
+		result.Metrics.Files.ClassifiedTotal() != result.Metrics.Files.Scanned {
 		t.Fatalf("file metrics = %#v", result.Metrics.Files)
 	}
 	if len(result.Metrics.Phases) != 15 {
@@ -160,7 +166,7 @@ export function main() {
 	if err := json.Unmarshal(raw, &metrics); err != nil {
 		t.Fatalf("benchmark artifact is not metrics JSON: %v", err)
 	}
-	if metrics.Files.Parsed != 5 {
+	if metrics.Files.ParsedCode != 5 || metrics.Files.Parsed != metrics.Files.ParsedCode || metrics.Files.Documents != 4 || metrics.Files.UnsupportedLanguage != 3 {
 		t.Fatalf("benchmark metrics files = %#v", metrics.Files)
 	}
 	if metrics.TotalDuration <= 0 || metrics.Memory.EndAllocBytes == 0 {
