@@ -538,3 +538,100 @@ Interpretation:
 - On this large target, Anvien was about 1.96x faster than GitNexus while producing 2.79x as many nodes and 1.76x as many relationships.
 - The larger target confirms Anvien's cold analyze speed advantage, but it also shows the speed gap is workload-sensitive: GitNexus was 2.66x slower on the GitNexus target and 1.96x slower on Restaurant_manager.
 - GitNexus produced more relationships than on the smaller GitNexus target and stayed below Anvien's graph volume.
+
+## E13 - Rerun After Anvien Code Update
+
+Date: 2026-06-01
+
+Status: completed
+
+Reason:
+
+- Previous report output was deleted because Anvien changed after the earlier benchmark.
+- The benchmark plan was rerun on the same three targets: Anvien, GitNexus, and Restaurant_manager.
+- Temporary work was kept outside `E:\Anvien` in `E:\avgn-rerun`.
+
+Pinned inputs:
+
+| Input | Value |
+|---|---|
+| Anvien source commit | `97a45525820c609410796b1f11fa38239e31cbfa` |
+| GitNexus source/tool commit | `ce7f45e18d8dceedbcecffad83e5ae23ca105149` |
+| Restaurant_manager source commit | `fdfacba78e5445522dd09cca98fa27d39e0e22c8` |
+| Temp workspace | `E:\avgn-rerun` |
+| Clean Anvien targets | `E:\avgn-rerun\targets\anvien-a`, `E:\avgn-rerun\targets\anvien-g` |
+| Clean GitNexus targets | `E:\avgn-rerun\targets\gitnexus-a`, `E:\avgn-rerun\targets\gitnexus-g` |
+| Clean Restaurant_manager targets | `E:\avgn-rerun\targets\rm-a`, `E:\avgn-rerun\targets\rm-g` |
+
+Build/setup:
+
+| Tool | Command | Seconds | Result |
+|---|---|---:|---|
+| Anvien | `powershell -ExecutionPolicy Bypass -File .\anvien-launcher\build.ps1` | 42.996 | pass |
+| GitNexus shared | `npm ci` in `E:\avgn-rerun\tools\GitNexus\gitnexus-shared` | 3.230302 | pass |
+| GitNexus core | `npm ci` in `E:\avgn-rerun\tools\GitNexus\gitnexus` | 179.394383 | pass |
+
+Anvien benchmark command shape:
+
+```powershell
+E:\Anvien\anvien\bin\anvien.exe analyze <target> --force --name <repo-name> --allow-duplicate-name --json --benchmark-json <json-output>
+E:\Anvien\anvien\bin\anvien.exe graph-health summary --repo <repo-name> --json
+E:\Anvien\anvien\bin\anvien.exe source-site-accuracy --graph <target>\.anvien\graph.json
+```
+
+GitNexus benchmark command shape:
+
+```powershell
+node E:\avgn-rerun\tools\GitNexus\gitnexus\dist\cli\index.js analyze <target> --force --index-only --skip-agents-md --skip-skills --name <repo-name> --allow-duplicate-name
+```
+
+Cold full analyze rerun:
+
+| Tool | Target | Wall seconds | Tool-reported seconds | Files | Parsed/indexed | Nodes | Relationships/edges | Output/index bytes |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Anvien | Anvien | 37.985012 | 37.238526 | 816 | 598 | 96211 | 131684 | 327984313 |
+| GitNexus | Anvien | 117.262267 | 113.8 | 815 | 815 | 23264 | 60687 | 240978915 |
+| Anvien | GitNexus | 100.934158 | 99.7532442 | 1339 | 1221 | 225455 | 245957 | 823484355 |
+| GitNexus | GitNexus | 215.510712 | 210.3 | 1339 | 1339 | 31622 | 50171 | 339209809 |
+| Anvien | Restaurant_manager | 93.133052 | 91.4707017 | 6198 | 1228 | 202810 | 253342 | 657873587 |
+| GitNexus | Restaurant_manager | 173.754737 | 171.6 | 6198 | 6198 | 72792 | 143910 | 641866383 |
+
+Graph quality rerun:
+
+| Tool | Target | Relationship types | Flows/processes | Unresolved/gaps | Resolved refs | False-resolved edge candidates | Resolved edges without proof |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Anvien | Anvien | 14 | 700 | 69988 | 31713 | 0 | 0 |
+| Anvien | GitNexus | 21 | 381 | 191224 | 35247 | 0 | 0 |
+| Anvien | Restaurant_manager | 15 | 508 | 129135 | 44493 | 0 | 0 |
+| GitNexus | Anvien | 10 | 300 | not exposed | not exposed | not exposed | not exposed |
+| GitNexus | GitNexus | 13 | 300 | not exposed | not exposed | not exposed | not exposed |
+| GitNexus | Restaurant_manager | 9 | 300 | not exposed | not exposed | not exposed | not exposed |
+
+Lookup latency rerun on the Anvien target:
+
+| Tool | Operation | Seconds | Command |
+|---|---|---:|---|
+| Anvien | graph health | 7.9293809 | `graph-health summary --repo BenchRerunAnvienTarget --json` |
+| Anvien | concept query | 7.5428505 | `query "analyze pipeline" --repo BenchRerunAnvienTarget --json` |
+| Anvien | symbol context | 7.8183634 | `context symbol "Run" --uid Function:internal/analyze/analyze.go:Run#3 --repo BenchRerunAnvienTarget --json` |
+| Anvien | impact analysis | 10.8241073 | `impact symbol "Run" --uid Function:internal/analyze/analyze.go:Run#3 --repo BenchRerunAnvienTarget --direction upstream --json` |
+| GitNexus | concept query | 4.73722 | `query "analyze pipeline" --repo BenchRerunGitNexusOnAnvien --limit 5` |
+| GitNexus | symbol context | 2.9433826 | `context Run --repo BenchRerunGitNexusOnAnvien --file internal/analyze/analyze.go` |
+| GitNexus | impact analysis | 2.3872532 | `impact Run --repo BenchRerunGitNexusOnAnvien --file internal/analyze/analyze.go --summary-only` |
+
+Rerun interpretation:
+
+- Anvien remained faster on all three cold full-analyze targets: 3.09x on Anvien, 2.13x on GitNexus, and 1.87x on Restaurant_manager by wall-clock timing.
+- Anvien's new self-target run improved versus the previous Anvien self benchmark despite scanning more files: 37.99s versus 41.53s.
+- Anvien's GitNexus and Restaurant_manager runs were slower than the earlier run, while graph counts stayed stable. Treat this as a measured rerun result, not a pure algorithmic regression proof, because workspace location and cold disk/cache state also changed.
+- GitNexus remained faster for sampled query/context/impact lookup latency on the Anvien target.
+- GitNexus still did not expose an equivalent source-site accuracy or ResolutionGap inventory command.
+
+Cleanup:
+
+| Item | Result |
+|---|---|
+| Anvien temp indexes | Ran `anvien clean --force` in `E:\avgn-rerun\targets\anvien-a`, `E:\avgn-rerun\targets\gitnexus-a`, and `E:\avgn-rerun\targets\rm-a`. |
+| GitNexus registry entries | Removed `BenchRerunGitNexusOnAnvien`, `BenchRerunGitNexusOnGitNexus`, and `BenchRerunGitNexusOnRestaurantManager`; final `~\.gitnexus\registry.json` content is `[]`. |
+| Temp workspace | Removed `E:\avgn-rerun`; exists after cleanup: false. |
+| Anvien registry check | `anvien list` shows only `Website` and `Anvien`; no rerun temp repos remain. |

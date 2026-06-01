@@ -2,7 +2,7 @@
 
 Date: 2026-06-01
 
-Status: completed
+Status: rerun completed after Anvien update
 
 Companion files:
 
@@ -29,9 +29,10 @@ Status: completed
 |---|---:|---:|
 | CPU logical processors | count | 8 |
 | Physical memory | bytes | 33238466560 |
-| Anvien commit | SHA | `7b4d48d9bf44b5aa0c6f394861a7d356929521cb` |
+| Anvien commit | SHA | `97a45525820c609410796b1f11fa38239e31cbfa` |
 | GitNexus commit | SHA | `ce7f45e18d8dceedbcecffad83e5ae23ca105149` |
-| Anvien build artifact size | bytes | 50882560 |
+| Restaurant_manager commit | SHA | `fdfacba78e5445522dd09cca98fa27d39e0e22c8` |
+| Anvien build artifact size | bytes | 50898432 |
 | GitNexus CLI entry artifact size | bytes | 12153 |
 | GitNexus `dist` artifact size | bytes | 6884862 |
 
@@ -41,11 +42,9 @@ Status: completed
 
 | Tool | Command | Cold/warm | Elapsed seconds | Artifact size bytes | Result |
 |---|---|---|---:|---:|---|
-| Anvien | `powershell -ExecutionPolicy Bypass -File .\anvien-launcher\build.ps1` | cold | 49.5 observed wall time from command output/session | 50882560 | pass |
-| GitNexus shared | `npm ci` in `gitnexus-shared` | cold | 2.1135874 | n/a | pass |
-| GitNexus core | `npm ci` in `gitnexus` | cold | 211.2149352 | 6884862 | pass |
-| GitNexus shared | `npm ci` in `C:\rmbench\GitNexus\gitnexus-shared` | cold rerun for Restaurant_manager benchmark | 2.59429 | n/a | pass |
-| GitNexus core | `npm ci` in `C:\rmbench\GitNexus\gitnexus` | cold rerun for Restaurant_manager benchmark | 187.4168997 | n/a | pass |
+| Anvien | `powershell -ExecutionPolicy Bypass -File .\anvien-launcher\build.ps1` | cold | 42.996 | 50898432 | pass |
+| GitNexus shared | `npm ci` in `E:\avgn-rerun\tools\GitNexus\gitnexus-shared` | cold | 3.230302 | n/a | pass |
+| GitNexus core | `npm ci` in `E:\avgn-rerun\tools\GitNexus\gitnexus` | cold | 179.394383 | 6884862 | pass |
 
 ## B2 - Analyze Performance Matrix
 
@@ -53,16 +52,16 @@ Status: completed
 
 | Tool | Target repo | Run | Elapsed seconds | Files scanned | Files parsed/indexed | Nodes | Relationships | Output size bytes | Result |
 |---|---|---|---:|---:|---:|---:|---:|---:|---|
-| Anvien | Anvien | cold | 41.5269639 | 810 | 596 | 95845 | 131188 | 326917002 | measured on clean temp target |
+| Anvien | Anvien | cold | 37.985012 | 816 | 598 | 96211 | 131684 | 327984313 | measured on clean target `E:\avgn-rerun\targets\anvien-a`; benchmark JSON totalDuration 37.238526s |
 | Anvien | Anvien | warm | n/a | n/a | n/a | n/a | n/a | n/a | not run |
-| Anvien | GitNexus | cold | 85.377302 | 1339 | 1221 | 225455 | 245957 | 823484355 | measured |
+| Anvien | GitNexus | cold | 100.934158 | 1339 | 1221 | 225455 | 245957 | 823484355 | measured on clean target `E:\avgn-rerun\targets\gitnexus-a`; benchmark JSON totalDuration 99.7532442s |
 | Anvien | GitNexus | warm | n/a | n/a | n/a | n/a | n/a | n/a | not run |
-| GitNexus | Anvien | cold | 69.3610866 | 809 | 809 | 23121 | 60428 | 240083880 | measured on clean temp target |
+| GitNexus | Anvien | cold | 117.262267 | 815 | 815 | 23264 | 60687 | 240978915 | measured on clean target `E:\avgn-rerun\targets\anvien-g`; CLI reported 113.8s |
 | GitNexus | Anvien | warm | n/a | n/a | n/a | n/a | n/a | n/a | not run |
-| GitNexus | GitNexus | cold | 227.4896233 | 1339 | 1339 | 31622 | 50171 | 339238569 | measured on clean temp target |
+| GitNexus | GitNexus | cold | 215.510712 | 1339 | 1339 | 31622 | 50171 | 339209809 | measured on clean target `E:\avgn-rerun\targets\gitnexus-g`; CLI reported 210.3s |
 | GitNexus | GitNexus | warm | n/a | n/a | n/a | n/a | n/a | n/a | not run |
-| Anvien | Restaurant_manager | cold | 79.8917692 | 6198 | 1228 | 202810 | 253342 | 657873587 | measured on clean target `C:\rmbench\rm-a` |
-| GitNexus | Restaurant_manager | cold | 156.9328417 | 6198 | 6198 | 72792 | 143910 | 643298557 | measured on clean target `C:\rmbench\rm-g` |
+| Anvien | Restaurant_manager | cold | 93.133052 | 6198 | 1228 | 202810 | 253342 | 657873587 | measured on clean target `E:\avgn-rerun\targets\rm-a`; benchmark JSON totalDuration 91.4707017s |
+| GitNexus | Restaurant_manager | cold | 173.754737 | 6198 | 6198 | 72792 | 143910 | 641866383 | measured on clean target `E:\avgn-rerun\targets\rm-g`; CLI reported 171.6s |
 
 ## B3 - Graph Inventory Comparison
 
@@ -70,9 +69,9 @@ Status: completed
 
 | Tool | Target repo | Files | Symbols | Relationships | Relationship types | Unresolved/gaps | Execution flows | Languages | Notes |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| Anvien | Anvien | 810 | 95845 nodes | 131188 | 14 | 69807 | 700 | see B6 | Clean target. Relationship types led by HAS_RESOLUTION_GAP, DEFINES, CALLS, USES, MEMBER_OF, IMPORTS. |
+| Anvien | Anvien | 816 | 96211 nodes | 131684 | 14 | 69988 | 700 | see B6 | Clean target. Source-site accuracy: 31713 graph-health resolved refs, 0 false-resolved candidates, 0 resolved edges without source-site proof. |
 | Anvien | GitNexus | 1339 | 225455 nodes | 245957 | 21 | 191224 | 381 | see B6 | Source-site accuracy: 35247 resolved refs, 0 false-resolved candidates, 0 resolved edges without source-site proof. |
-| GitNexus | Anvien | 809 | 23121 nodes | 60428 | 10 | not exposed | 300 | see B6 | 598 clusters; embeddings 0; vector search unavailable on this platform. |
+| GitNexus | Anvien | 815 | 23264 nodes | 60687 | 10 | not exposed | 300 | see B6 | 600 clusters; embeddings 0; vector search unavailable on this platform. |
 | GitNexus | GitNexus | 1339 | 31622 nodes | 50171 | 13 | not exposed | 300 | see B6 | 1167 clusters; embeddings 0; vector search unavailable on this platform. |
 | Anvien | Restaurant_manager | 6198 | 202810 nodes | 253342 | 15 | 129135 | 508 | see B6 | Source-site accuracy: 44493 resolved refs, 0 false-resolved candidates, 0 resolved edges without source-site proof. |
 | GitNexus | Restaurant_manager | 6198 | 72792 nodes | 143910 | 9 | not exposed | 300 | see B6 | 1105 clusters; embeddings 0; vector search unavailable on this platform. |
@@ -83,14 +82,14 @@ Status: completed
 
 | Tool | Target repo | Operation | Query/command | Elapsed seconds | Result count | Result |
 |---|---|---|---|---:|---:|---|
-| Anvien | Anvien | graph health | `graph-health summary --repo AnvienTargetBenchmark --json` | 7.9661617 | 95845 nodes / 69807 unresolved refs | measured |
-| Anvien | Anvien | concept query | `query "analyze pipeline" --repo AnvienTargetBenchmark --json` | 7.6748876 | 5 files, 5 processes, ranked definitions | measured |
-| Anvien | Anvien | symbol context | `context symbol "Run" --uid Function:internal/analyze/analyze.go:Run#3` | 7.8181696 | 16 flows, 5 linked tests in sample output | measured |
-| Anvien | Anvien | impact analysis | `impact symbol "Run" --uid Function:internal/analyze/analyze.go:Run#3 --direction upstream` | 7.5394923 | 4 affected files in sample output | measured |
+| Anvien | Anvien | graph health | `graph-health summary --repo BenchRerunAnvienTarget --json` | 7.9293809 | 96211 nodes / 69988 unresolved refs | measured |
+| Anvien | Anvien | concept query | `query "analyze pipeline" --repo BenchRerunAnvienTarget --json` | 7.5428505 | JSON query result | measured |
+| Anvien | Anvien | symbol context | `context symbol "Run" --uid Function:internal/analyze/analyze.go:Run#3` | 7.8183634 | JSON context result | measured |
+| Anvien | Anvien | impact analysis | `impact symbol "Run" --uid Function:internal/analyze/analyze.go:Run#3 --direction upstream` | 10.8241073 | JSON impact result | measured |
 | GitNexus | Anvien | equivalent graph health | no equivalent graph-health/source-site command | n/a | n/a | not exposed |
-| GitNexus | Anvien | concept query | `query "analyze pipeline" -r GitNexusBenchAnvien --limit 5` | 4.1021882 | 5 processes plus definitions | measured |
-| GitNexus | Anvien | symbol context | `context Run -r GitNexusBenchAnvien -f internal/analyze/analyze.go` | 2.6881255 | 1 symbol with incoming/outgoing calls | measured |
-| GitNexus | Anvien | impact analysis | `impact Run -r GitNexusBenchAnvien -f internal/analyze/analyze.go --summary-only` | 2.9984849 | impactedCount 5, risk LOW | measured |
+| GitNexus | Anvien | concept query | `query "analyze pipeline" -r BenchRerunGitNexusOnAnvien --limit 5` | 4.73722 | text query result | measured |
+| GitNexus | Anvien | symbol context | `context Run -r BenchRerunGitNexusOnAnvien -f internal/analyze/analyze.go` | 2.9433826 | 1 symbol with incoming/outgoing calls | measured |
+| GitNexus | Anvien | impact analysis | `impact Run -r BenchRerunGitNexusOnAnvien -f internal/analyze/analyze.go --summary-only` | 2.3872532 | summary output | measured |
 
 ## B5 - Accuracy Audit Scores
 
@@ -173,7 +172,7 @@ Status: completed
 
 | Category | Winner | Margin | Confidence | Notes |
 |---|---|---|---|---|
-| Analyze speed | Anvien | 41.53s vs 69.36s on Anvien; 85.38s vs 227.49s on GitNexus; 79.89s vs 156.93s on Restaurant_manager | high | Cold full rebuilds only. |
+| Analyze speed | Anvien | 37.99s vs 117.26s on Anvien; 100.93s vs 215.51s on GitNexus; 93.13s vs 173.75s on Restaurant_manager | high | Cold full rebuild wall-clock runs only. |
 | Graph completeness | Anvien | More nodes/relationships and exposes ResolutionGap/source-site inventory | medium | Higher graph volume is useful only with accuracy diagnostics, which Anvien exposes. |
 | Relationship accuracy | Anvien | Exhaustive source-site audit available; reduced sample tied at 100 percent | medium | GitNexus passed the reduced sample but lacks equivalent false-positive audit surface. |
 | Feature breadth | Anvien | Stronger graph-health, benchmark, source-site, file-context surfaces | high | GitNexus is still broad and close on CLI/Web/MCP/groups. |

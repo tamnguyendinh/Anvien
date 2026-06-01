@@ -2,7 +2,7 @@
 
 Date: 2026-06-01
 
-Status: completed
+Status: rerun completed after Anvien update
 
 Companion files:
 
@@ -100,6 +100,7 @@ Primary corpus:
 |---|---|
 | Anvien repo | Large, known local graph system; validates behavior on this project's real workload. |
 | GitNexus repo | Lets both tools analyze the comparison target. |
+| Restaurant_manager repo | Larger local workload used to stress scaling behavior across a 6,198-file target. |
 
 Optional neutral corpus, only if needed for fairness:
 
@@ -178,6 +179,9 @@ Maturity metrics:
 - [x] [P14] Compare maturity using build/test evidence, architecture reading, error handling, persistence, packaging, docs, and repeated-run behavior.
 - [x] [P15] Clean up the temporary GitNexus clone and record cleanup evidence.
 - [x] [P16] Write the final comparison report with conclusions separated by category: performance, accuracy, functionality, maturity, risks, and actionable lessons for Anvien.
+- [x] [P17] Delete stale benchmark report output after Anvien code changed.
+- [x] [P18] Rerun build, analyze, graph-quality, and lookup-latency benchmarks on Anvien, GitNexus, and Restaurant_manager clean targets outside `E:\Anvien`.
+- [x] [P19] Regenerate benchmark, evidence, and final report from the rerun data and clean up temporary benchmark clones.
 
 ## Evidence Collection Plan
 
