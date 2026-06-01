@@ -442,7 +442,8 @@ Result:
 | Existed before cleanup | true |
 | Exists after cleanup | false |
 | Outside `E:\Anvien` | true |
-| GitNexus registry cleanup | Removed `GitNexusBenchSelf` and `GitNexusBenchAnvien`; left `Restaurant_manager-gitnexus-bench` intact. |
+| GitNexus registry cleanup | Removed benchmark-only entries `GitNexusBenchSelf`, `GitNexusBenchAnvien`, and `RestaurantManagerGitNexusBench`; final `~\.gitnexus\registry.json` content is `[]`. |
+| Restaurant_manager temp cleanup | Removed `C:\rmbench`; removed GitNexus registry entry `RestaurantManagerGitNexusBench`; `C:\rmbench` exists after cleanup: false. |
 
 ## E11 - Final Report Evidence Map
 
@@ -459,3 +460,81 @@ Status: completed
 | Functionality | E3, E4, E8 | B6 |
 | Maturity | E3, E4, E8, E9 | B7 |
 | Cleanup | E10 | none |
+
+## E12 - Restaurant_manager Large Target Benchmark
+
+Date: 2026-06-01
+
+Status: completed
+
+Target:
+
+| Field | Value |
+|---|---|
+| Source repo | `E:\Restaurant_manager` |
+| Commit | `fdfacba78e5445522dd09cca98fa27d39e0e22c8` |
+| `rg --files` count | 6517 |
+| Clean Anvien target | `C:\rmbench\rm-a` |
+| Clean GitNexus target | `C:\rmbench\rm-g` |
+| Clone safety | `C:\rmbench` is outside `E:\Anvien` and outside `E:\Restaurant_manager` |
+| Windows path-length handling | First `%TEMP%` clone hit `Filename too long`; retry succeeded at short path `C:\rmbench` with command-local `core.longpaths=true`. |
+
+Anvien command:
+
+```powershell
+E:\Anvien\anvien\bin\anvien.exe analyze C:\rmbench\rm-a --force --name RestaurantManagerAnvienBench --allow-duplicate-name --json --benchmark-json C:\rmbench\anvien-restaurant-manager-analyze.json
+E:\Anvien\anvien\bin\anvien.exe graph-health summary --repo RestaurantManagerAnvienBench --json
+E:\Anvien\anvien\bin\anvien.exe source-site-accuracy --graph C:\rmbench\rm-a\.anvien\graph.json
+```
+
+Anvien result:
+
+| Field | Value |
+|---|---:|
+| Elapsed seconds | 79.8917692 |
+| Files scanned | 6198 |
+| Files parsed | 1228 |
+| Files failed | 0 |
+| Unsupported files | 4970 |
+| Graph nodes | 202810 |
+| Graph relationships | 253342 |
+| Relationship types | 15 |
+| Execution flows | 508 |
+| Resolved references | 44493 |
+| Unresolved references | 129135 |
+| In-repo analyzer gaps | 80306 |
+| False-resolved edge candidates | 0 |
+| Resolved edges without source-site proof | 0 |
+| Graph snapshot size | 657873587 bytes |
+| `.anvien` directory size | 883305432 bytes |
+
+GitNexus setup and command:
+
+```powershell
+git clone https://github.com/abhigyanpatwari/GitNexus C:\rmbench\GitNexus
+npm ci # in C:\rmbench\GitNexus\gitnexus-shared, 2.59429s
+npm ci # in C:\rmbench\GitNexus\gitnexus, 187.4168997s
+node C:\rmbench\GitNexus\gitnexus\dist\cli\index.js analyze C:\rmbench\rm-g --force --index-only --skip-agents-md --skip-skills --name RestaurantManagerGitNexusBench --allow-duplicate-name
+```
+
+GitNexus result:
+
+| Field | Value |
+|---|---:|
+| Elapsed seconds | 156.9328417 |
+| CLI reported seconds | 155.7 |
+| Files | 6198 |
+| Nodes | 72792 |
+| Edges | 143910 |
+| Relationship types | 9 |
+| Clusters | 1105 |
+| Processes | 300 |
+| Embeddings | 0 |
+| Vector search | unavailable |
+| `.gitnexus` index size | 643298557 bytes |
+
+Interpretation:
+
+- On this large target, Anvien was about 1.96x faster than GitNexus while producing 2.79x as many nodes and 1.76x as many relationships.
+- The larger target confirms Anvien's cold analyze speed advantage, but it also shows the speed gap is workload-sensitive: GitNexus was 2.66x slower on the GitNexus target and 1.96x slower on Restaurant_manager.
+- GitNexus produced more relationships than on the smaller GitNexus target and stayed below Anvien's graph volume.

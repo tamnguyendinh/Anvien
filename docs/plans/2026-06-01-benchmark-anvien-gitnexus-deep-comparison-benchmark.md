@@ -44,6 +44,8 @@ Status: completed
 | Anvien | `powershell -ExecutionPolicy Bypass -File .\anvien-launcher\build.ps1` | cold | 49.5 observed wall time from command output/session | 50882560 | pass |
 | GitNexus shared | `npm ci` in `gitnexus-shared` | cold | 2.1135874 | n/a | pass |
 | GitNexus core | `npm ci` in `gitnexus` | cold | 211.2149352 | 6884862 | pass |
+| GitNexus shared | `npm ci` in `C:\rmbench\GitNexus\gitnexus-shared` | cold rerun for Restaurant_manager benchmark | 2.59429 | n/a | pass |
+| GitNexus core | `npm ci` in `C:\rmbench\GitNexus\gitnexus` | cold rerun for Restaurant_manager benchmark | 187.4168997 | n/a | pass |
 
 ## B2 - Analyze Performance Matrix
 
@@ -59,6 +61,8 @@ Status: completed
 | GitNexus | Anvien | warm | n/a | n/a | n/a | n/a | n/a | n/a | not run |
 | GitNexus | GitNexus | cold | 227.4896233 | 1339 | 1339 | 31622 | 50171 | 339238569 | measured on clean temp target |
 | GitNexus | GitNexus | warm | n/a | n/a | n/a | n/a | n/a | n/a | not run |
+| Anvien | Restaurant_manager | cold | 79.8917692 | 6198 | 1228 | 202810 | 253342 | 657873587 | measured on clean target `C:\rmbench\rm-a` |
+| GitNexus | Restaurant_manager | cold | 156.9328417 | 6198 | 6198 | 72792 | 143910 | 643298557 | measured on clean target `C:\rmbench\rm-g` |
 
 ## B3 - Graph Inventory Comparison
 
@@ -70,6 +74,8 @@ Status: completed
 | Anvien | GitNexus | 1339 | 225455 nodes | 245957 | 21 | 191224 | 381 | see B6 | Source-site accuracy: 35247 resolved refs, 0 false-resolved candidates, 0 resolved edges without source-site proof. |
 | GitNexus | Anvien | 809 | 23121 nodes | 60428 | 10 | not exposed | 300 | see B6 | 598 clusters; embeddings 0; vector search unavailable on this platform. |
 | GitNexus | GitNexus | 1339 | 31622 nodes | 50171 | 13 | not exposed | 300 | see B6 | 1167 clusters; embeddings 0; vector search unavailable on this platform. |
+| Anvien | Restaurant_manager | 6198 | 202810 nodes | 253342 | 15 | 129135 | 508 | see B6 | Source-site accuracy: 44493 resolved refs, 0 false-resolved candidates, 0 resolved edges without source-site proof. |
+| GitNexus | Restaurant_manager | 6198 | 72792 nodes | 143910 | 9 | not exposed | 300 | see B6 | 1105 clusters; embeddings 0; vector search unavailable on this platform. |
 
 ## B4 - Query and Diagnostic Performance
 
@@ -167,7 +173,7 @@ Status: completed
 
 | Category | Winner | Margin | Confidence | Notes |
 |---|---|---|---|---|
-| Analyze speed | Anvien | 41.53s vs 69.36s on Anvien; 85.38s vs 227.49s on GitNexus | high | Cold full rebuilds only. |
+| Analyze speed | Anvien | 41.53s vs 69.36s on Anvien; 85.38s vs 227.49s on GitNexus; 79.89s vs 156.93s on Restaurant_manager | high | Cold full rebuilds only. |
 | Graph completeness | Anvien | More nodes/relationships and exposes ResolutionGap/source-site inventory | medium | Higher graph volume is useful only with accuracy diagnostics, which Anvien exposes. |
 | Relationship accuracy | Anvien | Exhaustive source-site audit available; reduced sample tied at 100 percent | medium | GitNexus passed the reduced sample but lacks equivalent false-positive audit surface. |
 | Feature breadth | Anvien | Stronger graph-health, benchmark, source-site, file-context surfaces | high | GitNexus is still broad and close on CLI/Web/MCP/groups. |

@@ -29,7 +29,7 @@ Pinned commits:
 | Anvien | `7b4d48d9bf44b5aa0c6f394861a7d356929521cb` |
 | GitNexus | `ce7f45e18d8dceedbcecffad83e5ae23ca105149` |
 
-All GitNexus work and clean benchmark targets were kept under `%TEMP%\anvien-gitnexus-comparison`, outside `E:\Anvien`.
+Initial GitNexus work and clean benchmark targets were kept under `%TEMP%\anvien-gitnexus-comparison`, outside `E:\Anvien`. The later Restaurant_manager large-target benchmark used `C:\rmbench` to avoid Windows path-length checkout failures; this folder was also outside `E:\Anvien` and outside `E:\Restaurant_manager`.
 
 ## Performance
 
@@ -41,8 +41,12 @@ Cold full analysis:
 | GitNexus | Anvien | 69.3610866 | 809 | 23121 | 60428 | 240083880 |
 | Anvien | GitNexus | 85.377302 | 1339 | 225455 | 245957 | 823484355 |
 | GitNexus | GitNexus | 227.4896233 | 1339 | 31622 | 50171 | 339238569 |
+| Anvien | Restaurant_manager | 79.8917692 | 6198 | 202810 | 253342 | 657873587 |
+| GitNexus | Restaurant_manager | 156.9328417 | 6198 | 72792 | 143910 | 643298557 |
 
-Anvien was about 1.67x faster on the Anvien target and about 2.66x faster on the GitNexus target. Warm/incremental runs were not mixed into this table because the two tools expose different no-op/incremental semantics.
+Anvien was about 1.67x faster on the Anvien target, about 2.66x faster on the GitNexus target, and about 1.96x faster on the larger Restaurant_manager target. Warm/incremental runs were not mixed into this table because the two tools expose different no-op/incremental semantics.
+
+The Restaurant_manager result confirms that Anvien keeps a speed advantage on a larger 6,198-file target while producing a larger graph. It also shows the gap is workload-sensitive rather than purely file-count-driven: GitNexus was slowest relative to Anvien on its own source tree.
 
 Sample query/runtime latency on the Anvien target favored GitNexus for direct context and impact:
 
@@ -62,13 +66,15 @@ Anvien produced larger graphs and more relationship categories:
 | Anvien | GitNexus | 21 | 381 | 191224 |
 | GitNexus | Anvien | 10 | 300 | not exposed |
 | GitNexus | GitNexus | 13 | 300 | not exposed |
+| Anvien | Restaurant_manager | 15 | 508 | 129135 |
+| GitNexus | Restaurant_manager | 9 | 300 | not exposed |
 
 The reduced deterministic audit used shared Anvien source facts for file nodes, symbol declarations, methods/functions, imports/dependencies, and calls/references. Both tools scored 100 percent on the sampled facts. The important difference is auditability:
 
 - Anvien reported 0 false-resolved edge candidates and 0 resolved edges missing source-site proof in source-site accuracy output.
 - GitNexus passed the sampled facts, but no equivalent source-site accuracy or ResolutionGap inventory command was exposed.
 
-Anvien's weakness is visible too: unresolved volume is high. On clean Anvien, Anvien reported 69,807 unresolved references, including 41,091 in-repo analyzer gaps. On GitNexus, it reported 191,224 unresolved references, including 178,924 in-repo analyzer gaps.
+Anvien's weakness is visible too: unresolved volume is high. On clean Anvien, Anvien reported 69,807 unresolved references, including 41,091 in-repo analyzer gaps. On GitNexus, it reported 191,224 unresolved references, including 178,924 in-repo analyzer gaps. On Restaurant_manager, it reported 129,135 unresolved references, including 80,306 in-repo analyzer gaps.
 
 ## Functionality
 
