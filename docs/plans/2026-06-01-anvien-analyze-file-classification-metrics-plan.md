@@ -2,7 +2,7 @@
 
 Date: 2026-06-01
 
-Status: Reopened for correction
+Status: Complete
 
 Companion files:
 
@@ -207,7 +207,7 @@ The plan is complete when:
   - Implementation Gate: use current graph/impact evidence for `classifyFile` and related metric consumers; do not change scanner inclusion, parser registry, COBOL analyzer behavior, or Web contracts.
   - Acceptance: COBOL/JCL fixture files increment `dedicatedAnalyzer`; `unsupportedLanguage` remains zero for COBOL/JCL and still non-zero for a true unsupported code-like language; CLI output exposes `analyzers=<n>`.
 
-- [ ] [P5-B] Revalidate and re-close the plan.
+- [x] [P5-B] Revalidate and re-close the plan.
   - Goal: close the plan only after the correction is proven in code, command output, benchmark counts, and user docs.
   - Work Steps: run product build, targeted tests, standalone CLI build, fixture analyze smoke, graph-health where the current repo graph can be read, detect-changes before commit, then update evidence and benchmark ledgers with the correction and closure status.
   - Implementation Gate: if current repo analyze is blocked by active runtime locks, record the blocker and use a temp fixture analyze smoke plus current graph-health freshness as the minimum closure evidence.

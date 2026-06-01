@@ -521,7 +521,7 @@ Failures / handling:
 
 Date: 2026-06-01
 
-Status: detect-changes completed; commit pending
+Status: completed
 
 Detect changes:
 
@@ -531,4 +531,4 @@ Detect changes:
 
 Commit:
 
-- Pending.
+- `ecaf9be fix: classify dedicated analyzer files`
