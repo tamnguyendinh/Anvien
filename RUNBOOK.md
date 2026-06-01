@@ -2,7 +2,7 @@
 
 Copy-paste operations for the current local Anvien runtime: CLI, MCP, Web UI, packaged launcher, repo indexes, and recovery.
 
-Current CLI package version: `1.2.3` (`anvien/package.json`).
+Current CLI package version: `1.2.4` (`anvien/package.json`).
 
 ---
 
@@ -10,13 +10,13 @@ Current CLI package version: `1.2.3` (`anvien/package.json`).
 
 Required for normal local development:
 
+- Go
 - Node.js 20+
 - npm
 - Git
 
 Required only for the packaged Windows launcher:
 
-- Go
 - PowerShell
 
 Build and link the local CLI from source:
@@ -75,6 +75,7 @@ Index data is stored in the repo:
 
 ```text
 <repo>\.anvien\
+  graph.json
   lbug
   lbug.wal
   lbug.lock
@@ -158,7 +159,7 @@ Start the HTTP backend:
 
 ```powershell
 cd anvien
-node dist\cli\index.js serve
+npm run serve
 ```
 
 Or, after `npm link`:
@@ -178,6 +179,15 @@ Health checks:
 ```powershell
 Invoke-WebRequest http://127.0.0.1:4848/api/info
 Invoke-WebRequest http://127.0.0.1:4848/api/repos
+```
+
+File projection smoke checks:
+
+```powershell
+anvien file-hotspots --repo Anvien --limit 5
+anvien file-context internal/httpapi/file_context.go --repo Anvien
+Invoke-WebRequest "http://127.0.0.1:4848/api/file-hotspots?repo=Anvien&sort=unresolved&limit=5"
+Invoke-WebRequest "http://127.0.0.1:4848/api/file-context?repo=Anvien&path=internal/httpapi/file_context.go"
 ```
 
 Start the Web UI dev server:
@@ -217,7 +227,7 @@ If the port is down, restart:
 
 ```powershell
 cd anvien
-node dist\cli\index.js serve
+npm run serve
 ```
 
 If port `4848` is already in use:
@@ -253,6 +263,33 @@ Invoke-WebRequest http://127.0.0.1:4848/api/repos
 ```
 
 If the repo exists in CLI but not the Web UI, refresh the browser. If needed, restart `anvien serve`.
+
+### File Map or File Detail is empty
+
+Check that the repo is indexed and fresh:
+
+```powershell
+anvien status
+anvien analyze . --force
+```
+
+Check file projection from the CLI before debugging the browser:
+
+```powershell
+anvien file-hotspots --repo Anvien --limit 5
+anvien file-context internal/httpapi/file_context.go --repo Anvien
+```
+
+Check the backend endpoints:
+
+```powershell
+Invoke-WebRequest "http://127.0.0.1:4848/api/file-hotspots?repo=Anvien&sort=unresolved&limit=5"
+Invoke-WebRequest "http://127.0.0.1:4848/api/file-context?repo=Anvien&path=internal/httpapi/file_context.go"
+```
+
+If `file-context` reports the graph is stale, run `anvien analyze . --force`.
+If it returns `File not found in graph`, confirm the path is repo-relative and
+uses forward slashes.
 
 ---
 
@@ -434,9 +471,14 @@ Useful when debugging without an editor:
 ```powershell
 anvien query "authentication flow" --repo MyRepo
 anvien context SomeSymbol --repo MyRepo
+anvien context file <repo-relative-path> --repo MyRepo
 anvien impact SomeSymbol --direction upstream --repo MyRepo
+anvien impact file <repo-relative-path> --direction upstream --repo MyRepo
 anvien cypher "MATCH (n) RETURN count(n) LIMIT 1" --repo MyRepo
 anvien detect-changes --repo MyRepo
+anvien detect-changes files --repo MyRepo
+anvien file-hotspots --repo MyRepo --limit 5
+anvien file-context <repo-relative-path> --repo MyRepo
 ```
 
 ---
@@ -493,10 +535,11 @@ To analyze host repos inside Docker, set `WORKSPACE_DIR` to a local folder that 
 Core:
 
 ```powershell
+go test ./cmd/... ./internal/...
+
 cd anvien
 npm run build
 npm test
-npx tsc --noEmit
 ```
 
 Web:

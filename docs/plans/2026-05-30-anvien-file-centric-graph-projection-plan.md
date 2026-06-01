@@ -2,7 +2,11 @@
 
 Date: 2026-05-30
 
-Status: In progress
+Status: Completed
+
+Closed: 2026-06-01 after file projection, File Map, File Detail, file-aware
+command surfaces, generated guidance cleanup, validation, evidence, and
+benchmark ledgers were recorded.
 
 Companion files:
 

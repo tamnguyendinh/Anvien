@@ -1,6 +1,6 @@
 {
   "name": "anvien",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Anvien graph-powered code intelligence for AI agents. Index any codebase, query via MCP or CLI.",
   "author": "Abhigyan Patwari",
   "license": "PolyForm-Noncommercial-1.0.0",

@@ -6,9 +6,9 @@ How we structure tests and which commands to run locally and in CI.
 
 | Package | Path | Runner | Notes |
 | ------- | ---- | ------ | ----- |
-| Root tooling | `/` | Prettier / ESLint / Husky | Formatting, lint-staged, repository automation checks. |
-| CLI + MCP + HTTP backend | `cmd/`, `internal/`, `anvien/` | Go test + package build | Primary core/runtime test surface. Includes ingestion, MCP, LadybugDB, repo runtime, embeddings, and server helpers. |
-| Web UI unit/component | `anvien-web/` | Vitest + jsdom | Graph UI, repo picker/analyze flows, local runtime settings, chat UI/client behavior. |
+| Root tooling | `/` | Prettier / ESLint / lint-staged | Formatting and repository automation checks. No `.husky/` hook is currently committed. |
+| CLI + MCP + HTTP backend | `cmd/`, `internal/`, `anvien/` | Go test + package build | Primary core/runtime test surface. Includes ingestion, MCP, LadybugDB, repo runtime, file projection, API contracts, embeddings, and server helpers. |
+| Web UI unit/component | `anvien-web/` | Vitest + jsdom | Graph UI, File Map, File Detail, repo picker/analyze flows, local runtime settings, chat UI/client behavior. |
 | Web UI E2E | `anvien-web/` | Playwright | Browser flows against real `anvien serve` and Vite dev server. |
 | Windows launcher | `anvien-launcher/` | Build/manual smoke | Build script produces launcher exe, backend wrapper, bundled web dist, and protocol registration. |
 
@@ -33,6 +33,13 @@ cd anvien
 npm install
 npm run build               # package runtime build
 npm test                    # reminder: Go tests own the runtime now
+```
+
+**File projection / contract focus**
+
+```bash
+go test ./internal/filecontext ./internal/cli ./internal/httpapi ./internal/mcp -count=1
+go run ./cmd/generate-web-contracts --check
 ```
 
 **`anvien-web`**
@@ -84,8 +91,10 @@ Run the smallest useful validation for the change.
 | Change area | Minimum useful validation |
 | ----------- | ------------------------- |
 | Docs only | `git diff --check` |
-| CLI command, MCP tool, graph query, ingestion, LadybugDB | Full launcher build first, then `go test ./cmd/... ./internal/... -count=1` |
-| Narrow core logic | `cd anvien && npm run test:unit` plus targeted integration tests if storage/MCP is involved. |
+| Docs describing current behavior | Source or Anvien evidence for the claim, then `git diff --check` |
+| CLI command, MCP tool, graph query, ingestion, LadybugDB | `go test ./cmd/... ./internal/... -count=1`, plus package build when command packaging changed. |
+| File projection, File Map/File Detail API, file-aware MCP/CLI | `go test ./internal/filecontext ./internal/cli ./internal/httpapi ./internal/mcp -count=1`, contract check, and Web tests if browser behavior changed. |
+| Narrow core logic | Targeted Go package test, for example `go test ./internal/<pkg> -run <TestName> -count=1`; broaden if storage/MCP/API wiring is involved. |
 | Web UI component/state only | `cd anvien-web && npm run build && npx tsc -b --noEmit && npm test` |
 | Repo switching, graph loading, analyze from Web UI | Web build/tests plus manual or Playwright E2E against `anvien serve`. |
 | Session chat runtime | Web unit tests plus manual `/api/session/status` and one chat request with the local Codex CLI session. |
@@ -95,24 +104,22 @@ Avoid running the full test matrix for docs-only or copy-only changes. Prefer ta
 
 ## Pre-commit hook
 
-A husky pre-commit hook (`.husky/pre-commit`) runs automatically on every `git commit`.
+This repository currently does not contain a committed `.husky/pre-commit` hook.
+The root package includes Husky and lint-staged dependencies for optional local
+hook work, but hooks are not the validation source of truth.
 
-The intended behavior for the current package layout is:
+If a hook is added later, the intended behavior for the current package layout is:
 
 1. **Formatting** — `lint-staged` runs prettier on staged files
 2. **`anvien-web/` files staged** → `tsc -b --noEmit`
 3. **Go runtime files staged** → run targeted Go validation before commit
-
-Tests do **not** run in the pre-commit hook — they run in CI (`ci-tests.yml`) only.
-
-Skip with `git commit --no-verify` (use sparingly).
 
 Maintenance note: if `.husky/pre-commit` is edited, keep it aligned with the current package paths: `anvien/`, `anvien-web/`, and Go runtime paths under `cmd/` and `internal/`.
 
 ## Test categories
 
 - **Unit** — Pure logic, parsers, graph/query helpers; fast; no network.
-- **Integration** — Real combinations (filesystem, MCP wiring, larger pipelines) as already organized under `anvien/test/integration`.
+- **Integration** — Real combinations such as filesystem, MCP wiring, HTTP handlers, graph load/query, and larger pipelines as Go package tests under `internal/**` and browser E2E under `anvien-web/e2e/`.
 - **Eval-style / golden sets** — For agent- or classification-style behavior, keep labeled inputs and expected outputs (JSON or table-driven tests) and run them in CI when relevant.
 - **E2E (web)** — Critical user paths only; prefer `data-testid` attributes for stable selectors. Tests run against the real Go backend (`anvien serve`) and Vite dev server.
 - **Manual smoke** — Required for packaged launcher behavior, OS folder picker behavior, and any browser flow that depends on real local machine state.
@@ -123,8 +130,8 @@ Set targets to match team expectations, then tune to this repo’s CI reality:
 
 | Metric | Target (initial) | Notes |
 | ------ | ---------------- | ----- |
-| Unit coverage | Align with CI | CI runs Vitest with coverage in `anvien`. |
-| Unit wall time | Fast PR feedback | Use `vitest run test/unit` for tight loop. |
+| Unit coverage | Align with CI | Use Go package coverage where useful and Web Vitest coverage when browser behavior changes. |
+| Unit wall time | Fast PR feedback | Use targeted Go package tests or focused Web Vitest files for tight loops. |
 | Integration duration | &lt; few minutes | Guard heavy tests with env flags if needed. |
 | Web graph interaction | No visible UI stall after graph load | Manually verify when graph loading, selection, or filtering changes. |
 | Repo switching | Stable across repeated repo A -> B -> A switches | Required for backend/Web repo-runtime changes. |
@@ -136,6 +143,7 @@ Re-run the full relevant suite when:
 - Prompt or agent-behavior documentation changes (if tests encode behavior)
 - Model or embedding-related code paths change
 - Graph schema, query contracts, or MCP tool shapes change
+- File projection, file-aware command output, File Map, or File Detail changes
 - Dependencies with parsing or runtime impact upgrade
 - Repo registry, repo resolver, graph streaming, or Web repo switching changes
 - Session bridge, Codex adapter, or chat cancellation changes
@@ -147,17 +155,18 @@ Manual regression matrix for local runtime changes:
 2. Start `anvien serve` directly, without the launcher.
 3. Start `anvien-web` and switch repo A -> B -> A from the dropdown.
 4. Confirm graph loads through `/api/graph?repo=...&stream=true` and the UI does not fall back to the previous repo after a successful load.
-5. Click a graph node, a dashboard file, and a search result; each should use the same visible graph selection path.
-6. Start analyze from the Web UI and confirm the repo list/dropdown refreshes after success.
-7. If chat changed, confirm `/api/session/status` reflects the local Codex CLI session and no Anvien API key is required.
-8. If launcher changed, build the launcher and smoke-test start, reset, stop, and protocol registration.
+5. Open File Map and File Detail; confirm `/api/file-hotspots` and `/api/file-context` return file projection data for the selected repo.
+6. Click a graph node, a dashboard file, and a search result; each should use the same visible graph selection path.
+7. Start analyze from the Web UI and confirm the repo list/dropdown refreshes after success.
+8. If chat changed, confirm `/api/session/status` reflects the local Codex CLI session and no Anvien API key is required.
+9. If launcher changed, build the launcher and smoke-test start, reset, stop, and protocol registration.
 
 ## CI integration
 
 GitHub Actions (`.github/workflows/ci.yml`) orchestrate:
 
-- **`ci-quality.yml`** — prettier format check, eslint lint, `tsc --noEmit` for `anvien/`, `tsc -b --noEmit` for `anvien-web/`
-- **`ci-tests.yml`** — `vitest run` with coverage (ubuntu) + cross-platform (macOS, Windows)
+- **`ci-quality.yml`** — prettier format check, eslint lint, package typecheck, Web typecheck, and workflow-convention checks
+- **`ci-tests.yml`** — package/Web tests, coverage artifacts where configured, Docker nginx validation, and cross-platform package sanity
 - **`ci-e2e.yml`** — Playwright E2E tests, gated on `anvien-web/**` changes
 
 Local checks before pushing:

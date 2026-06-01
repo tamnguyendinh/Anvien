@@ -2,7 +2,21 @@
 
 All notable changes to anvien will be documented in this file.
 
-## [Unreleased]
+## [1.2.4] - 2026-06-01
+
+### 2026-06-01
+
+#### Added
+
+- Added a file-centric graph projection shared by CLI, MCP, API, and Web surfaces for file summaries, symbol trees, file relationship groups, unresolved source-site groups, linked flows/tests, quality signals, and hotspots.
+- Added Web File Map and File Detail views backed by the same file projection contract used by backend command and API surfaces.
+- Added target-aware command paths and file-layer output for existing graph workflows while preserving symbol, API, route, tool, and quality details.
+
+#### Changed
+
+- Made `anvien analyze` build and report file projection inventory while keeping symbol/source-site graph facts as the canonical source of truth.
+- Bumped the CLI package version from `1.2.3` to `1.2.4`.
+- Retired the self-referential generated AI-context skill; generated root context and Anvien skill content now remain sourced from `internal/aicontext`.
 
 ### 2026-05-26
 

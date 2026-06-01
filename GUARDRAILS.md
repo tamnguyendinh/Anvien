@@ -16,19 +16,22 @@ Maintainer may widen scope per task.
 ## Non-negotiables
 
 1. **Never commit secrets** — API keys, tokens, real `.env` values, private URLs, session cookies. Use `.env.example` with placeholders.
-2. **Never rename with find-and-replace** in anvien-indexed projects — use `rename` MCP tool with `dry_run: true` first, review `graph` vs `text_search` edits. No separate `anvien rename` CLI exists.
+2. **Never rename with find-and-replace** in anvien-indexed projects — use the MCP `rename` tool with `dry_run: true` or CLI `anvien rename <symbol> <newName> --repo <repo>` first. Review graph vs text-search edits before applying with `--apply`.
 3. **Run impact analysis before editing shared symbols when graph tools are available** — `impact` (upstream) for functions/classes/methods others call. Do not ignore HIGH/CRITICAL without maintainer sign-off.
 4. **Run `detect_changes` before commit when graph tools are available** — confirm diffs map to expected symbols/processes.
 5. **Preserve embeddings** — if `.anvien/meta.json` shows embeddings, use `anvien analyze --embeddings`; plain `analyze` drops them.
 6. **Keep Anvien local-first** — do not add an Anvien-hosted cloud service, required daemon, required Docker path, or managed workspace requirement to the default runtime.
 7. **Keep repo context explicit** — Web/HTTP/MCP/CLI code should pass repo name/path/session explicitly. Do not reintroduce graph reads that depend on one mutable process-global active repo.
-8. **Keep the launcher optional** — `anvien serve` must remain the direct local backend entry point.
+8. **Keep file projection derived** — file-level dependencies, hotspots, File Map, and File Detail must be derived from symbol/source-site graph facts. Do not make `File -> File` storage the canonical graph model or the source of truth for impact/rename.
+9. **Keep generated AI context source-owned** — do not edit generated `AGENTS.md`, `CLAUDE.md`, or generated `.claude/skills/anvien/**` as permanent source. Update `internal/aicontext/aicontext.go` or `internal/aicontext/skills/*.md`, then regenerate.
+10. **Keep the launcher optional** — `anvien serve` must remain the direct local backend entry point.
 
 ---
 
 ## Local Runtime Invariants
 
 - `anvien analyze` writes repo-local index data under `<repo>/.anvien/`.
+- `anvien analyze` builds both canonical graph facts and the derived file projection inventory; the symbol/source-site graph remains canonical.
 - `anvien mcp` exposes indexed repos over stdio for local agents.
 - `anvien serve` exposes the local HTTP backend on loopback for the Web UI.
 - `anvien-web/` is a thin client over the local backend; it must not become the owner of graph storage.
@@ -78,6 +81,18 @@ Format: **Trigger → Instruction → Reason**. Append new Signs when the same m
 - **Do:** Reuse the same visible graph selection path for graph nodes, dashboard files, and search results.
 - **Why:** Separate selection paths can hide graph links or apply stale/invisible filters.
 
+### File projection becomes graph authority
+
+- **Trigger:** A change adds stored `File -> File` relationships as the source of truth, or Web/CLI/MCP/API code derives file semantics independently instead of using the shared projection.
+- **Do:** Keep file relationships in `internal/filecontext` as deterministic projection rows from symbol/source-site facts, with traceable counts and samples.
+- **Why:** Impact, rename, context, and source-site accuracy depend on symbol/source-site graph truth. File views are navigation and diagnostic projections.
+
+### Generated AI context drift
+
+- **Trigger:** Root `AGENTS.md`, `CLAUDE.md`, or `.claude/skills/anvien/**` is edited directly and the change is meant to persist.
+- **Do:** Move the intended change into `internal/aicontext/aicontext.go` or `internal/aicontext/skills/*.md`, then run analyze/setup as appropriate.
+- **Why:** Generated context files are outputs. Editing outputs as source causes the next generation pass to erase or contradict the change.
+
 ### LadybugDB lock / "database busy"
 
 - **Trigger:** Errors opening `.anvien/lbug`, active job lock errors, or WAL/checksum errors.
@@ -100,9 +115,9 @@ Format: **Trigger → Instruction → Reason**. Append new Signs when the same m
 
 ## Validation Guardrails
 
-- Docs-only changes: `git diff --check` is usually enough.
+- Docs-only final validation: `git diff --check` is usually enough. When docs describe current behavior, use source or Anvien evidence during authoring before the final doc-only gate.
 - Generated contract changes: run the Go contract generator/tests, then build affected CLI/Web packages.
-- CLI/MCP/backend/LadybugDB changes: build, typecheck, and run relevant `anvien/` tests.
+- CLI/MCP/backend/LadybugDB changes: build, typecheck, and run relevant Go tests.
 - Web graph/repo switching changes: run Web build/tests and manually verify repo A -> B -> A through `anvien serve`.
 - Launcher changes: run `anvien-launcher\build.ps1` and smoke-test packaged start/reset/stop.
 - Do not run full suites by habit when the change is docs-only or narrowly scoped; broaden validation when the touched code crosses runtime boundaries.

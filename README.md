@@ -1,4 +1,4 @@
-# Anvien (version: `1.2.3`)
+# Anvien (version: `1.2.4`)
 
 ```md
 ## **Anvien is a code map for AI coding agents.**

@@ -2,7 +2,7 @@
 
 Date: 2026-05-30
 
-Status: In progress
+Status: Completed
 
 Companion files:
 
@@ -132,7 +132,7 @@ Status: P3-B projection benchmark recorded
 
 ## B6 - Response Size Metrics
 
-Status: pending
+Status: response size metrics recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
@@ -205,7 +205,7 @@ Status: P6 existing-command file-layer coverage recorded
 
 ## B10 - Final Validation Counts
 
-Status: P1-A partial validation counts recorded
+Status: final validation counts recorded
 
 | Metric | Unit | Baseline | Latest | Delta | Target | Notes |
 |---|---:|---:|---:|---:|---:|---|
