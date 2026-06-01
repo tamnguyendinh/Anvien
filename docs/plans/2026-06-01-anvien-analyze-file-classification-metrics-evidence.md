@@ -2,7 +2,7 @@
 
 Date: 2026-06-01
 
-Status: Planned
+Status: Completed
 
 Companion files:
 
@@ -436,3 +436,19 @@ Failures / handling:
 
 - Root `go build ./...` remains unsuitable as product build validation because it includes analysis fixtures that are intentionally not buildable as packages.
 - Package runtime build was blocked by an active process holding `lbug_shared.dll`; a separate `.tmp` binary was built and used for analyze smoke without stopping user/editor-owned runtime processes.
+
+## E11 - Detect Changes And Implementation Commit
+
+Date: 2026-06-01
+
+Status: completed
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `git add -N internal\analyze\file_classification.go internal\analyze\file_classification_test.go; .tmp\anvien-classification.exe detect-changes --repo Anvien --scope all --json > .tmp\detect-changes-file-classification.json` | Pass. `changed_files=18`, `affected_files=18`, `changed_count=420`, `affected_count=27`, `risk_level=critical`, `changedGapEntities=278`. The diff includes the new classifier source/test files after intent-to-add. |
+
+Commit:
+
+- `a979152 feat: classify analyze file metrics`

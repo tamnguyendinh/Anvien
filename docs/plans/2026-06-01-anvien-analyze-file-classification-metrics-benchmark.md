@@ -2,7 +2,7 @@
 
 Date: 2026-06-01
 
-Status: Planned
+Status: Completed
 
 Companion files:
 
@@ -137,7 +137,7 @@ Status: recorded
 | Applicable cmd/internal suite excluding missing lbugschema baseline | result | pass | pass |
 | Analyze smoke | result | pass | pass |
 | Graph-health summary | result | pass | pass |
-| Detect changes | result | pending | recorded before implementation commit |
+| Detect changes | result | recorded | recorded before implementation commit |
 
 ## B7 - Final Causal File Classification Snapshot
 

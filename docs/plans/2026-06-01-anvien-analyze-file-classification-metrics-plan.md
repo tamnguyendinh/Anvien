@@ -2,7 +2,7 @@
 
 Date: 2026-06-01
 
-Status: Implementation validation in progress
+Status: Complete
 
 Companion files:
 
@@ -186,13 +186,13 @@ The plan is complete when:
   - Implementation Gate: keep fixtures small and deterministic; do not broaden tests into unrelated scanner or graph projection behavior.
   - Acceptance: targeted tests fail on the old aggregate behavior and pass with causal classification; parser unsupported-language tests still prove parser internals work.
 
-- [ ] [P4-A] Validate implementation and record evidence.
+- [x] [P4-A] Validate implementation and record evidence.
   - Goal: prove the implementation works in the real repo and did not break analyze or graph quality.
   - Work Steps: run full build; run targeted Go tests; run analyze smoke with local binary; run graph-health summary; run detect-changes before commit; record pass/fail and notable failures in evidence.
   - Implementation Gate: do not commit implementation work until build/tests/analyze smoke/detect-changes evidence is recorded.
   - Acceptance: evidence ledger contains validation commands and results, failures and handling if any, detect-changes output, and commit hash after commit.
 
-- [ ] [P4-B] Record benchmark before/after and update user docs.
+- [x] [P4-B] Record benchmark before/after and update user docs.
   - Goal: close the plan with synchronized metrics and user-facing documentation.
   - Work Steps: update benchmark ledger with latest/final bucket counts and deltas; update README/RUNBOOK/TESTING/CHANGELOG only for the final user-facing behavior; avoid copying implementation discussion into docs; mark plan complete when all acceptance criteria are met.
   - Implementation Gate: docs updates happen after behavior is validated, not before.
