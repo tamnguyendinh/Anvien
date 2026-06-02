@@ -752,6 +752,7 @@ func TestDirectToolHelpShowsCompatibilityFlags(t *testing.T) {
 		{[]string{"query-health", "--help"}, []string{"anvien query-health", "--suite", "--repo", "--out", "--json", "--fail-on-threshold", "--fail-on-exact"}},
 		{[]string{"graph-health", "--help"}, []string{"anvien graph-health", "summary", "report", "components", "explain", "--repo"}},
 		{[]string{"graph-health", "report", "--help"}, []string{"anvien graph-health report", "--limit", "--include-expected", "--json", "--repo"}},
+		{[]string{"graph-health", "files", "--help"}, []string{"anvien graph-health files", "Use \"anvien file-hotspots\"", "--kind", "--app-layer", "--functional-area"}},
 		{[]string{"context", "--help"}, []string{"anvien context [name]", "--repo", "--uid", "--file", "--content"}},
 		{[]string{"impact", "--help"}, []string{"--direction", "--repo", "--uid", "--depth", "--include-tests"}},
 		{[]string{"cypher", "--help"}, []string{"--repo"}},

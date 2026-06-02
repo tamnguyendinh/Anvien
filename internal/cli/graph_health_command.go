@@ -275,6 +275,8 @@ func newGraphHealthExplainCommand(repoName *string) *cobra.Command {
 	return cmd
 }
 
+// graph-health files is a graph-health triage view. Keep file projection
+// filters on file-hotspots so the two commands do not become duplicate routers.
 func newGraphHealthFilesCommand(repoName *string) *cobra.Command {
 	var sortMode string
 	var limit int
@@ -283,7 +285,11 @@ func newGraphHealthFilesCommand(repoName *string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "files",
 		Short: "Print file-level graph-health signals",
-		Args:  cobra.NoArgs,
+		Long: strings.TrimSpace(`Print file-level graph-health rows for graph-quality triage.
+
+This command intentionally keeps the filter surface small. Use "anvien file-hotspots"
+when you need file projection filters such as --kind, --app-layer, or --functional-area.`),
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if limit < 0 {
 				return fmt.Errorf("limit must be zero or positive")

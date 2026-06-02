@@ -290,7 +290,7 @@ anvien api tool-map [tool]             # MCP tool definition/handler map
 anvien api shape-check [route]         # API shape drift check
 anvien api impact [route]              # API route impact report
 anvien graph-health                    # Graph topology and diagnostic health
-anvien graph-health files              # File-level graph-health hotspots
+anvien graph-health files              # File-level graph-health rows; use file-hotspots for file filters
 anvien query-health                    # Query retrieval health
 anvien resolution-inventory            # ResolutionGap inventory
 anvien source-site-accuracy            # Source-site proof accuracy
@@ -324,7 +324,7 @@ Semantic graph diagnostics:
 anvien graph-health summary --repo <repo> --json                  # Graph health summary
 anvien graph-health report --repo <repo> --limit 20 --json        # Triage candidates
 anvien graph-health components --repo <repo> --json               # Component summaries
-anvien graph-health files --repo <repo> --limit 20 --json         # File hotspots
+anvien graph-health files --repo <repo> --limit 20 --json         # File health rows; use file-hotspots for --kind/app-layer filters
 anvien query-health --repo <repo> --out .tmp/query-health.json     # Query retrieval health
 anvien resolution-inventory --graph .anvien/graph.json --out .tmp/resolution-inventory.json # ResolutionGap inventory
 anvien source-site-accuracy --graph .anvien/graph.json --out .tmp/source-site-accuracy.json # Source-site accuracy
