@@ -480,4 +480,4 @@ Detect changes:
 
 Commit:
 
-- Pending until detect-changes passes.
+- `0f02bd7 feat: add explicit test unresolved drilldown`
