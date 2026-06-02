@@ -2,24 +2,30 @@
 
 Date: 2026-06-02
 
-Status: Not started
+Status: reset; not started
 
 Companion files:
 
 - Plan: [2026-06-02-anvien-deadcode-agent-token-benchmark-plan.md](2026-06-02-anvien-deadcode-agent-token-benchmark-plan.md)
 - Benchmark ledger: [2026-06-02-anvien-deadcode-agent-token-benchmark-benchmark.md](2026-06-02-anvien-deadcode-agent-token-benchmark-benchmark.md)
 
+## Reset Notice
+
+Old evidence from the invalidated benchmark run has been removed. This ledger starts clean for the rerun.
+
 ## Evidence Rules
 
-1. Record commands, source reads, and candidate evidence as they happen.
+1. Record commands, source reads, token-accountant observations, and candidate evidence as they happen.
 2. Keep quantitative metric tables in the benchmark ledger.
-3. Keep discovery phases separate until union verification.
-4. Native-search evidence must not include Anvien commands, outputs, resources, generated context, or graph artifacts.
+3. Keep native-search and Anvien-guided discovery separate until union verification.
+4. Native-search evidence must not include Anvien commands, outputs, resources, generated context, graph artifacts, or prior Anvien reports.
 5. Anvien-guided evidence must record graph freshness before graph-based commands.
-6. Record failures, retries, and abandoned paths because they consume agent work.
-7. Record candidate verification from source-backed facts, not intuition.
-8. Do not record deadcode deletion or cleanup patches because this benchmark only finds candidates.
-9. For token evidence, count only output/content that entered the agent context. Do not count Anvien internal processing, graph files on disk, redirected artifacts, or command output files unless the agent reads them.
+6. Token evidence must record only context actually visible to the main agent.
+7. Record every visible Anvien command output when Anvien is used.
+8. Record hidden, redirected, capture-only, and truncated output as non-counted or partially counted with the reason.
+9. Record failures, retries, and abandoned paths because they consume agent work.
+10. Record candidate verification from source-backed facts, not intuition.
+11. Do not record deadcode deletion or cleanup patches because this benchmark only finds candidates.
 
 ## Evidence Template
 
@@ -38,9 +44,9 @@ Scope:
 
 Commands / reads:
 
-| Step | Command or file | Purpose | Output artifact | Notes |
-|---|---|---|---|---|
-| ... | ... | ... | ... | ... |
+| Step | Command or file | Purpose | Visible to main agent? | Token-accountant note | Result |
+|---|---|---|---|---|---|
+| ... | ... | ... | ... | ... | ... |
 
 Candidate evidence:
 
@@ -51,6 +57,17 @@ Candidate evidence:
 Failures / retries:
 
 - ...
+
+Completion:
+
+| Item | Result |
+|---|---|
+| Declared procedure recorded before discovery | pending |
+| Token accountant active | pending |
+| Completion condition met | pending |
+| Open leads remaining | pending |
+| Blocker or incomplete reason | pending |
+| Confidence | pending |
 ```
 
 ## E0 - Baseline
@@ -72,7 +89,26 @@ Required evidence:
 | OS / CPU / RAM | pending |
 | Go / Node / npm / Git versions if used | pending |
 
-## E1 - Native-Search Discovery Without Anvien
+## E1 - Token Accountant Setup
+
+Date:
+
+Status: pending
+
+Required evidence:
+
+| Item | Result |
+|---|---|
+| Accountant identity/mechanism | pending |
+| Can observe main-agent visible tool results | pending |
+| Can distinguish full stdout proxy vs visible output | pending |
+| Can record tool-call argument text | pending |
+| Can record source/file reads | pending |
+| Can record agent response text | pending |
+| Truncation handling rule | pending |
+| Blocker if exact visible-context accounting is unavailable | pending |
+
+## E2 - Native-Search Discovery Without Anvien
 
 Date:
 
@@ -81,14 +117,14 @@ Status: pending
 Rules for this section:
 
 - Do not use Anvien.
-- Record every command and every source file read.
+- Record every visible command output and source file read.
 - Record candidates before any Anvien-guided work starts.
 
 Native command/read log:
 
-| Step | Command or file | Purpose | Output artifact | Notes |
-|---|---|---|---|---|
-| pending | pending | pending | pending | pending |
+| Step | Command or file | Purpose | Visible to main agent? | Token-accountant note | Result |
+|---|---|---|---|---|---|
+| pending | pending | pending | pending | pending | pending |
 
 Native candidates:
 
@@ -96,11 +132,18 @@ Native candidates:
 |---|---|---|---|---|---|
 | pending | pending | pending | pending | pending | pending |
 
-Native stop condition:
+Native completion:
 
-- pending
+| Item | Result |
+|---|---|
+| Declared native procedure recorded before first search | pending |
+| Token accountant closed native phase | pending |
+| Completion condition met | pending |
+| Open native leads remaining | pending |
+| Blocker or incomplete reason | pending |
+| Confidence | pending |
 
-## E2 - Native-Search Discovery Report
+## E3 - Native-Search Discovery Report
 
 Date:
 
@@ -113,10 +156,11 @@ Required evidence:
 | Native candidate count | pending |
 | Native unique files read | pending |
 | Native command/search count | pending |
-| Native estimated token total | pending |
+| Native agent-visible token total | pending |
+| Native completion status | pending |
 | Native unresolved questions | pending |
 
-## E3 - Anvien-Guided Discovery
+## E4 - Anvien-Guided Discovery
 
 Date:
 
@@ -124,24 +168,26 @@ Status: pending
 
 Rules for this section:
 
-- Record graph freshness before Anvien graph use.
+- Record graph freshness before graph-based work.
 - Do not seed discovery from the native candidate list.
-- Record every Anvien command/output and every source file read.
+- Record every Anvien command and every visible Anvien output.
+- Record source reads after Anvien narrows candidate leads.
 
 Graph freshness:
 
 | Check | Result |
 |---|---|
 | Analyze command | pending |
+| Analyze output visible to main agent | pending |
 | Indexed commit | pending |
 | Current commit | pending |
 | Fresh/stale result | pending |
 
 Anvien command/read log:
 
-| Step | Command or file | Purpose | Output artifact | Notes |
-|---|---|---|---|---|
-| pending | pending | pending | pending | pending |
+| Step | Command or file | Purpose | Visible to main agent? | Token-accountant note | Result |
+|---|---|---|---|---|---|
+| pending | pending | pending | pending | pending | pending |
 
 Anvien candidates:
 
@@ -149,11 +195,18 @@ Anvien candidates:
 |---|---|---|---|---|---|
 | pending | pending | pending | pending | pending | pending |
 
-Anvien stop condition:
+Anvien completion:
 
-- pending
+| Item | Result |
+|---|---|
+| Declared Anvien procedure recorded before first graph command | pending |
+| Token accountant closed Anvien phase | pending |
+| Completion condition met | pending |
+| Open Anvien leads remaining | pending |
+| Blocker or incomplete reason | pending |
+| Confidence | pending |
 
-## E4 - Anvien-Guided Discovery Report
+## E5 - Anvien-Guided Discovery Report
 
 Date:
 
@@ -167,10 +220,11 @@ Required evidence:
 | Anvien unique files read | pending |
 | Anvien command count | pending |
 | Anvien follow-up native search count | pending |
-| Anvien estimated token total | pending |
+| Anvien agent-visible token total | pending |
+| Anvien completion status | pending |
 | Anvien unresolved questions | pending |
 
-## E5 - Candidate Union And Verification
+## E6 - Candidate Union And Verification
 
 Date:
 
@@ -200,7 +254,7 @@ Uncertain candidates:
 |---|---|---|---|
 | pending | pending | pending | pending |
 
-## E6 - Final Comparison Evidence
+## E7 - Final Comparison Evidence
 
 Date:
 
@@ -210,41 +264,48 @@ Required comparison facts:
 
 | Question | Evidence |
 |---|---|
-| Which method used fewer estimated tokens? | pending |
+| Which method used fewer agent-visible tokens? | pending |
 | Which method read fewer files? | pending |
+| Which method used fewer search/tool calls? | pending |
 | Which method found more confirmed/likely deadcode? | pending |
 | Which method produced fewer false positives? | pending |
-| Which token bucket dominated native-search cost? | pending |
-| Which token bucket dominated Anvien-guided cost? | pending |
-| Was graph tool output cost offset by fewer file reads/search outputs? | pending |
-| Did validation prove or disprove the discovered candidates? | pending |
-| Were redirected Anvien artifacts excluded until read by the agent? | pending |
+| Which candidates were found by both/native-only/Anvien-only? | pending |
+| Was the token accountant able to measure exact visible context? | pending |
+| Were hidden/internal/redirected/capture-only outputs excluded? | pending |
 
 Required summary shape:
 
 ```text
 Native search:
-- total tokens:
+- agent-visible total tokens:
+- task prompt:
+- tool call arguments:
 - search output:
-- file read:
-- graph tool output: 0
+- file reads:
 - agent response:
-- validation/retry:
+- retry/error:
 - files read:
-- correct:
+- candidates:
 
 Anvien-guided:
-- total tokens:
-- search output:
-- file read:
-- graph tool output:
+- agent-visible total tokens:
+- task prompt:
+- tool call arguments:
+- Anvien visible output:
+- follow-up search output:
+- file reads:
 - agent response:
-- validation/retry:
+- retry/error:
 - files read:
-- correct:
+- candidates:
+
+Shared verification:
+- agent-visible total tokens:
+- candidates verified:
+- confirmed/likely/uncertain/false-positive:
 ```
 
-## E7 - Closure
+## E8 - Closure
 
 Date:
 
@@ -255,6 +316,7 @@ Closure checks:
 | Check | Result |
 |---|---|
 | No deadcode deletion/edit was made | pending |
+| Token accountant ledger complete | pending |
 | Plan checklist updated | pending |
 | Benchmark ledger complete | pending |
 | Final comparison written | pending |
