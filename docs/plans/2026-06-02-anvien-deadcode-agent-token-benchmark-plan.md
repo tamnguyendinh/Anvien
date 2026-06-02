@@ -13,7 +13,7 @@ Companion files:
 
 The previous benchmark run is discarded for token-comparison purposes. Its old evidence and benchmark values must not be reused.
 
-Reason: the old run confused full command-output potential size with the context actually received by the agent. A rerun is required with a dedicated token accountant that measures only agent-visible input/output context.
+Reason: the old run confused full command-output potential size with the context actually observed entering or leaving the main agent. A rerun is required with a dedicated token accountant that measures only observed main-agent context.
 
 ## Master Rules
 
@@ -29,14 +29,15 @@ Reason: the old run confused full command-output potential size with the context
 10. Every candidate must be verified after both discovery phases using source-backed evidence.
 11. Candidate verification must classify each candidate as `confirmed_deadcode`, `likely_deadcode`, `uncertain`, or `false_positive`.
 12. Verification may use any appropriate source reads and commands; its cost is shared and is not counted as either discovery method's discovery cost.
-13. Count only context actually received or emitted by the agent. Tool internal work, graph files, redirected output, capture-only output, and disk artifacts are not agent tokens unless their content is returned to or read by the agent.
-14. Any command output from any Anvien command that is returned to the agent is agent-visible context and must be counted. This includes `analyze`, `query`, `context`, `impact`, `cypher`, `graph-health`, `query-health`, `resolution-inventory`, `source-site-accuracy`, `detect-changes`, `api ...`, `group ...`, and any other Anvien command.
-15. Anvien internal graph/index/cache work is not agent-visible context and must not be counted as agent token cost.
-16. If the token accountant cannot determine exact agent-visible context for a phase, that phase cannot claim a token winner.
-17. Do not impose artificial elapsed-time, command/tool-call, file-read, source-byte, or token limits on either method. These are measured outcomes, not stop gates.
-18. End a discovery phase only when its declared procedure is complete, or when a blocker is recorded and the run is marked incomplete.
-19. Record evidence immediately after each phase and quantitative measurements immediately in the benchmark ledger.
-20. No benchmark result is accepted without the token accountant's ledger.
+13. Token accounting is observation-based, not source-category-based. Count what the token accountant observes the main agent actually receives, reads, or emits.
+14. Do not predeclare any Anvien output, graph artifact, redirected file, cache, index, or command result as counted or uncounted by type. If the main agent reads or receives it, the accountant records and counts the observed content. If the accountant does not observe it entering main-agent context, the accountant records it as unobserved and excludes it from token-total claims.
+15. Any output from any Anvien command that the main agent receives through a tool result is observed context and must be counted. This includes `analyze`, `query`, `context`, `impact`, `cypher`, `graph-health`, `query-health`, `resolution-inventory`, `source-site-accuracy`, `detect-changes`, `api ...`, `group ...`, and any other Anvien command.
+16. If the main agent explicitly reads `.anvien/graph.json`, an Anvien output file, a cache/index artifact, or any generated artifact, the observed content must be counted.
+17. If the token accountant cannot determine exact observed main-agent context for a phase, that phase cannot claim a token winner.
+18. Do not impose artificial elapsed-time, command/tool-call, file-read, source-byte, or token limits on either method. These are measured outcomes, not stop gates.
+19. End a discovery phase only when its declared procedure is complete, or when a blocker is recorded and the run is marked incomplete.
+20. Record evidence immediately after each phase and quantitative measurements immediately in the benchmark ledger.
+21. No benchmark result is accepted without the token accountant's ledger.
 
 ## Goal
 
@@ -48,8 +49,8 @@ The final comparison must answer:
 - Which deadcode candidates did Anvien-guided search find?
 - Which candidates were found by both, native-only, or Anvien-only?
 - Which candidates are confirmed, likely, uncertain, or false positives?
-- How much agent-visible context did each method consume and emit?
-- Did Anvien reduce file reads, search calls, or total agent-visible tokens?
+- How much observed context did each method consume and emit?
+- Did Anvien reduce file reads, search calls, or total observed-context tokens?
 - Did Anvien improve, match, or reduce correctness?
 
 ## Fixed Task Prompt
@@ -62,10 +63,10 @@ Find deadcode currently present in this repository. Do not edit, delete, rename,
 
 ## Core Token Model
 
-The benchmark measures agent workflow cost, not tool internal computation.
+The benchmark measures the main agent workflow context observed by the token accountant.
 
 ```text
-agent_visible_total_tokens
+observed_context_total_tokens
 = task_prompt_tokens
 + tool_call_argument_tokens
 + tool_result_tokens
@@ -78,17 +79,17 @@ agent_visible_total_tokens
 For Anvien-guided discovery:
 
 ```text
-anvien_visible_tokens
-= visible stdout/stderr/tool-result text from every Anvien command the agent calls
+anvien_observed_tokens
+= all Anvien-related context that the token accountant observes the main agent receive or read
 ```
 
-Do not count:
+Observation rule:
 
-- Anvien graph/index/cache data generated internally;
-- `.anvien/graph.json` unless the agent reads its content;
-- full command output redirected to a file and never read;
-- output captured into a variable where only a count/summary is printed;
-- output hidden by truncation beyond the part actually visible to the agent.
+- If the main agent sees stdout/stderr/tool-result text from any Anvien command, count that observed text.
+- If the main agent reads an Anvien-generated file, graph file, cache/index artifact, or redirected output file, count the observed file content.
+- If a command writes output somewhere and the token accountant does not observe the main agent receive or read that content, record that content as unobserved and exclude it from the token total.
+- If a wrapper prints only a summary/count and hides the full body, count only the observed summary/count text.
+- If output is truncated, count only the observed portion if measurable; otherwise mark token comparison invalid.
 
 If the agent sees this text:
 
@@ -96,9 +97,9 @@ If the agent sees this text:
 full_stdout_proxy_tokens: 228504
 ```
 
-then only that visible text is counted, not `228504` tokens.
+then only that observed text is counted, not `228504` tokens.
 
-If the agent receives the full output of an Anvien command through a tool result, that full visible output is counted.
+If the main agent receives the full output of an Anvien command through a tool result, that full observed output is counted.
 
 ## Token Accountant
 
@@ -106,12 +107,12 @@ A dedicated token accountant must run for this benchmark.
 
 Token accountant responsibility:
 
-1. Observe the main agent's visible context for each phase.
+1. Observe the main agent's received/read/emitted context for each phase.
 2. Record every tool call that the main agent makes.
-3. Record which tool outputs were visible to the main agent.
-4. Count visible characters and estimated tokens per bucket.
-5. Mark any truncated, hidden, redirected, or capture-only output explicitly.
-6. State whether exact agent-visible token accounting is valid for the phase.
+3. Record which tool outputs, files, artifacts, summaries, and agent responses entered main-agent context.
+4. Count observed characters and estimated tokens per bucket.
+5. Mark any unobserved, redirected, capture-only, or truncated content explicitly.
+6. State whether exact observed-context token accounting is valid for the phase.
 
 Token accountant non-goals:
 
@@ -123,7 +124,7 @@ Token accountant non-goals:
 Implementation gate:
 
 - Before P1 discovery starts, create or assign the token accountant.
-- If no mechanism exists for the accountant to measure agent-visible context, stop and record the blocker instead of running an invalid token benchmark.
+- If no mechanism exists for the accountant to measure observed main-agent context, stop and record the blocker instead of running an invalid token benchmark.
 
 ## Deadcode Candidate Definition
 
@@ -166,22 +167,22 @@ Verification verdicts:
 8. Reject leads with evidence when they are referenced, generated, test fixtures, public contracts, runtime hooks, CLI/API/MCP entrypoints, or intentionally retained surfaces.
 9. Record unresolved leads when dynamic use, reflection, external contract use, or generated references cannot be ruled out.
 10. Close native discovery only after every lead is classified as candidate, rejected, or unresolved and every planned source surface has been checked.
-11. Token accountant closes native phase and records visible-context totals.
+11. Token accountant closes native phase and records observed-context totals.
 
 ### Anvien-Guided Procedure
 
 1. Token accountant starts Anvien-guided phase.
 2. Main agent receives the fixed task prompt.
-3. Refresh graph evidence with `anvien analyze --force` and record visible stdout/stderr.
+3. Refresh graph evidence with `anvien analyze --force` and record the accountant observation for stdout/stderr.
 4. Use Anvien graph commands before broad source reads. Candidate-finding commands may include any Anvien CLI/MCP/resource command appropriate to deadcode discovery.
-5. Count every visible Anvien command result as agent-visible context.
-6. Do not count Anvien internal graph/index/cache work.
+5. Token accountant counts every Anvien command result, file artifact, graph artifact, summary, or error that the main agent actually receives or reads.
+6. Token accountant does not count any Anvien output, graph artifact, cache/index artifact, or redirected content that it does not observe entering main-agent context.
 7. For each graph lead, inspect Anvien output first, then read source only where needed to classify the lead.
 8. Run native follow-up reference searches only for graph-surfaced candidates or dynamic/public-risk checks; record this cost inside the Anvien-guided phase.
 9. Reject graph leads with evidence when they are referenced, generated, test fixtures, public contracts, runtime hooks, CLI/API/MCP entrypoints, or intentionally retained surfaces.
 10. Record unresolved leads when graph evidence is insufficient or dynamic/external use cannot be ruled out.
 11. Close Anvien-guided discovery only after every graph/source lead is classified as candidate, rejected, or unresolved and every planned graph/source surface has been checked.
-12. Token accountant closes Anvien-guided phase and records visible-context totals.
+12. Token accountant closes Anvien-guided phase and records observed-context totals.
 
 ### Shared Verification Procedure
 
@@ -189,7 +190,7 @@ Verification verdicts:
 2. Assign stable candidate ids.
 3. Check references, dynamic entrypoint risk, public API risk, generated-code status, tests/build/runtime hooks, and external contract hints.
 4. Classify each candidate as `confirmed_deadcode`, `likely_deadcode`, `uncertain`, or `false_positive`.
-5. Token accountant records shared verification visible-context totals separately.
+5. Token accountant records shared verification observed-context totals separately.
 
 ## Discovery Isolation Protocol
 
@@ -207,7 +208,7 @@ Invalid cases:
 - Native-search discovery uses Anvien commands, graph artifacts, resources, generated context, or Anvien output.
 - Anvien-guided discovery reads native candidates before its discovery report is closed.
 - Either method receives a different task prompt, procedure, or completion standard.
-- Token accountant cannot distinguish visible output from hidden/capture-only/internal output.
+- Token accountant cannot determine what actually entered main-agent context.
 
 ## Definition Of Done
 
@@ -215,10 +216,10 @@ This benchmark is complete when:
 
 1. baseline commit and worktree state are recorded;
 2. token accountant is assigned before discovery;
-3. native-search discovery report is recorded with candidate list and visible-context cost breakdown;
-4. Anvien-guided discovery report is recorded with candidate list and visible-context cost breakdown;
+3. native-search discovery report is recorded with candidate list and observed-context cost breakdown;
+4. Anvien-guided discovery report is recorded with candidate list and observed-context cost breakdown;
 5. the union of candidates is verified and classified;
-6. benchmark ledger contains per-phase agent-visible token/read/time/candidate metrics;
+6. benchmark ledger contains per-phase observed-context token/read/time/candidate metrics;
 7. final comparison states token result, file-read result, search/tool-call result, and correctness result;
 8. no deadcode is deleted or modified.
 
@@ -231,32 +232,32 @@ This benchmark is complete when:
   - Acceptance: evidence contains commit hash and worktree status; benchmark ledger contains baseline environment rows.
 
 - [ ] [P0-B] Start token accountant.
-  - Goal: guarantee the run measures agent-visible context, not tool internal output.
-  - Work Steps: create/assign token accountant; define how visible tool outputs, tool-call arguments, source reads, search outputs, Anvien outputs, truncation, and agent responses will be counted; record the counting method before discovery.
-  - Implementation Gate: if visible-context accounting cannot be measured, stop and record blocker.
+  - Goal: guarantee the run measures what the main agent actually receives, reads, and emits.
+  - Work Steps: create/assign token accountant; define how observed tool outputs, tool-call arguments, source reads, search outputs, Anvien outputs, artifact reads, truncation, and agent responses will be counted; record the counting method before discovery.
+  - Implementation Gate: if observed-context accounting cannot be measured, stop and record blocker.
   - Acceptance: evidence contains token accountant setup; benchmark ledger contains token-accounting method row.
 
 - [ ] [P1-A] Run native-search deadcode discovery without Anvien.
-  - Goal: measure visible context and result quality for native agentic deadcode discovery.
+  - Goal: measure observed context and result quality for native agentic deadcode discovery.
   - Work Steps: run the Native-Search Procedure; keep Anvien fully excluded; record commands, outputs, reads, rejected leads, unresolved leads, and candidates as observed by token accountant.
   - Implementation Gate: no Anvien command, resource, generated context, graph artifact, or Anvien report may be used.
-  - Acceptance: evidence records native procedure, command/read log, candidate list, and completion condition; benchmark ledger records native visible-context metrics.
+  - Acceptance: evidence records native procedure, command/read log, candidate list, and completion condition; benchmark ledger records native observed-context metrics.
 
 - [ ] [P1-B] Close native-search discovery report.
   - Goal: freeze native output before Anvien-guided discovery starts.
-  - Work Steps: write native candidate table, unresolved questions, rejected-lead summary, visible-token buckets, file reads, search calls, and confidence notes.
+  - Work Steps: write native candidate table, unresolved questions, rejected-lead summary, observed-token buckets, file reads, search calls, and confidence notes.
   - Implementation Gate: do not start Anvien-guided phase until native report and accountant ledger are closed.
   - Acceptance: native report is complete in evidence and benchmark ledger.
 
 - [ ] [P2-A] Run Anvien-guided deadcode discovery.
-  - Goal: measure visible context and result quality when Anvien guides the agent.
-  - Work Steps: run the Anvien-Guided Procedure; run `anvien analyze --force`; use Anvien commands to surface candidates; read source only where needed; record all visible Anvien output and follow-up source/search output through the token accountant.
+  - Goal: measure observed context and result quality when Anvien guides the agent.
+  - Work Steps: run the Anvien-Guided Procedure; run `anvien analyze --force`; use Anvien commands to surface candidates; read source only where needed; record all Anvien output, artifact reads, follow-up source reads, and search output observed by the token accountant.
   - Implementation Gate: graph freshness must be recorded before graph-based work; native candidates must not be read as input.
-  - Acceptance: evidence records Anvien command/read log, candidate list, rejected leads, unresolved leads, and completion condition; benchmark ledger records Anvien visible-context metrics.
+  - Acceptance: evidence records Anvien command/read log, candidate list, rejected leads, unresolved leads, and completion condition; benchmark ledger records Anvien observed-context metrics.
 
 - [ ] [P2-B] Close Anvien-guided discovery report.
   - Goal: freeze Anvien-guided output before shared verification.
-  - Work Steps: write Anvien candidate table, unresolved questions, rejected-lead summary, visible-token buckets, file reads, Anvien command count, follow-up search count, and confidence notes.
+  - Work Steps: write Anvien candidate table, unresolved questions, rejected-lead summary, observed-token buckets, file reads, Anvien command count, follow-up search count, and confidence notes.
   - Implementation Gate: do not start union verification until Anvien report and accountant ledger are closed.
   - Acceptance: Anvien report is complete in evidence and benchmark ledger.
 
@@ -268,7 +269,7 @@ This benchmark is complete when:
 
 - [ ] [P4-A] Compare native-search vs Anvien-guided discovery.
   - Goal: answer whether Anvien reduces token/read/search cost without reducing correctness.
-  - Work Steps: compare agent-visible tokens, file reads, source bytes, search calls, Anvien calls, elapsed time, candidates found, confirmed/likely/uncertain/false-positive counts, and method-only finds.
+  - Work Steps: compare observed-context tokens, file reads, source bytes, search calls, Anvien calls, elapsed time, candidates found, confirmed/likely/uncertain/false-positive counts, and method-only finds.
   - Implementation Gate: comparison cannot be written until every candidate has a verification verdict and the token accountant has closed all phases.
   - Acceptance: final comparison states winner/tie/invalid per axis with numeric support.
 
@@ -282,7 +283,7 @@ This benchmark is complete when:
 
 - Deadcode detection is false-positive-prone because dynamic calls, CLI entrypoints, tests, reflection, generated code, and external contracts can hide usage.
 - Native and Anvien phases can contaminate each other if candidate lists are reused before comparison.
-- Token accounting is invalid if it counts tool internal work or full-output proxies that the agent did not receive.
-- Token accounting is invalid if visible output is truncated and the visible character count is not captured.
+- Token accounting is invalid if it counts content the accountant did not observe the main agent receive/read/emit.
+- Token accounting is invalid if observed output is truncated and the observed character count is not captured.
 - A method that reads fewer tokens but finds fewer true candidates is not better.
 - A method that finds more candidates but produces many false positives may increase verification cost.

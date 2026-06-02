@@ -20,9 +20,9 @@ Old evidence from the invalidated benchmark run has been removed. This ledger st
 3. Keep native-search and Anvien-guided discovery separate until union verification.
 4. Native-search evidence must not include Anvien commands, outputs, resources, generated context, graph artifacts, or prior Anvien reports.
 5. Anvien-guided evidence must record graph freshness before graph-based commands.
-6. Token evidence must record only context actually visible to the main agent.
-7. Record every visible Anvien command output when Anvien is used.
-8. Record hidden, redirected, capture-only, and truncated output as non-counted or partially counted with the reason.
+6. Token evidence must record only context the token accountant observes the main agent receive, read, or emit.
+7. Record every Anvien command output, artifact read, summary, and error that the accountant observes during Anvien-guided work.
+8. Record unobserved, redirected, capture-only, and truncated content with the accountant's observation status instead of assuming it is counted or uncounted by type.
 9. Record failures, retries, and abandoned paths because they consume agent work.
 10. Record candidate verification from source-backed facts, not intuition.
 11. Do not record deadcode deletion or cleanup patches because this benchmark only finds candidates.
@@ -44,7 +44,7 @@ Scope:
 
 Commands / reads:
 
-| Step | Command or file | Purpose | Visible to main agent? | Token-accountant note | Result |
+| Step | Command or file | Purpose | Accountant observation | Token-accountant note | Result |
 |---|---|---|---|---|---|
 | ... | ... | ... | ... | ... | ... |
 
@@ -100,13 +100,13 @@ Required evidence:
 | Item | Result |
 |---|---|
 | Accountant identity/mechanism | pending |
-| Can observe main-agent visible tool results | pending |
-| Can distinguish full stdout proxy vs visible output | pending |
+| Can observe main-agent tool results | pending |
+| Can distinguish observed context from unobserved full-output proxy | pending |
 | Can record tool-call argument text | pending |
 | Can record source/file reads | pending |
 | Can record agent response text | pending |
 | Truncation handling rule | pending |
-| Blocker if exact visible-context accounting is unavailable | pending |
+| Blocker if exact observed-context accounting is unavailable | pending |
 
 ## E2 - Native-Search Discovery Without Anvien
 
@@ -117,12 +117,12 @@ Status: pending
 Rules for this section:
 
 - Do not use Anvien.
-- Record every visible command output and source file read.
+- Record every command output and source file read observed by the token accountant.
 - Record candidates before any Anvien-guided work starts.
 
 Native command/read log:
 
-| Step | Command or file | Purpose | Visible to main agent? | Token-accountant note | Result |
+| Step | Command or file | Purpose | Accountant observation | Token-accountant note | Result |
 |---|---|---|---|---|---|
 | pending | pending | pending | pending | pending | pending |
 
@@ -156,7 +156,7 @@ Required evidence:
 | Native candidate count | pending |
 | Native unique files read | pending |
 | Native command/search count | pending |
-| Native agent-visible token total | pending |
+| Native observed-context token total | pending |
 | Native completion status | pending |
 | Native unresolved questions | pending |
 
@@ -170,7 +170,7 @@ Rules for this section:
 
 - Record graph freshness before graph-based work.
 - Do not seed discovery from the native candidate list.
-- Record every Anvien command and every visible Anvien output.
+- Record every Anvien command and every Anvien-related context observed by the token accountant.
 - Record source reads after Anvien narrows candidate leads.
 
 Graph freshness:
@@ -178,14 +178,14 @@ Graph freshness:
 | Check | Result |
 |---|---|
 | Analyze command | pending |
-| Analyze output visible to main agent | pending |
+| Analyze output accountant observation | pending |
 | Indexed commit | pending |
 | Current commit | pending |
 | Fresh/stale result | pending |
 
 Anvien command/read log:
 
-| Step | Command or file | Purpose | Visible to main agent? | Token-accountant note | Result |
+| Step | Command or file | Purpose | Accountant observation | Token-accountant note | Result |
 |---|---|---|---|---|---|
 | pending | pending | pending | pending | pending | pending |
 
@@ -220,7 +220,7 @@ Required evidence:
 | Anvien unique files read | pending |
 | Anvien command count | pending |
 | Anvien follow-up native search count | pending |
-| Anvien agent-visible token total | pending |
+| Anvien observed-context token total | pending |
 | Anvien completion status | pending |
 | Anvien unresolved questions | pending |
 
@@ -264,20 +264,20 @@ Required comparison facts:
 
 | Question | Evidence |
 |---|---|
-| Which method used fewer agent-visible tokens? | pending |
+| Which method used fewer observed-context tokens? | pending |
 | Which method read fewer files? | pending |
 | Which method used fewer search/tool calls? | pending |
 | Which method found more confirmed/likely deadcode? | pending |
 | Which method produced fewer false positives? | pending |
 | Which candidates were found by both/native-only/Anvien-only? | pending |
-| Was the token accountant able to measure exact visible context? | pending |
-| Were hidden/internal/redirected/capture-only outputs excluded? | pending |
+| Was the token accountant able to measure exact observed context? | pending |
+| Were unobserved/redirected/capture-only/truncated contents handled by observation status? | pending |
 
 Required summary shape:
 
 ```text
 Native search:
-- agent-visible total tokens:
+- observed-context total tokens:
 - task prompt:
 - tool call arguments:
 - search output:
@@ -288,10 +288,10 @@ Native search:
 - candidates:
 
 Anvien-guided:
-- agent-visible total tokens:
+- observed-context total tokens:
 - task prompt:
 - tool call arguments:
-- Anvien visible output:
+- Anvien observed context:
 - follow-up search output:
 - file reads:
 - agent response:
@@ -300,7 +300,7 @@ Anvien-guided:
 - candidates:
 
 Shared verification:
-- agent-visible total tokens:
+- observed-context total tokens:
 - candidates verified:
 - confirmed/likely/uncertain/false-positive:
 ```
