@@ -38,9 +38,17 @@ const fileContext: FileContextResponse = {
     outboundRefCount: 7,
     localRelationshipCount: 3,
     unresolvedSourceSiteCount: 1,
+    rawUnresolvedSourceSiteCount: 1,
+    productionUnresolvedSourceSiteCount: 1,
+    testUnresolvedSourceSiteCount: 0,
+    nonActionableUnresolvedSourceSiteCount: 0,
+    unknownUnresolvedSourceSiteCount: 0,
+    defaultVisibleUnresolvedSourceSiteCount: 1,
     linkedFlowCount: 1,
     linkedTestCount: 1,
     risk: "medium",
+    rawRisk: "medium",
+    defaultVisibleRisk: "medium",
     stale: false,
     changedSinceAnalyze: true,
   },
@@ -199,6 +207,97 @@ const fileContext: FileContextResponse = {
   },
 };
 
+const testFileContext: FileContextResponse = {
+  ...fileContext,
+  target: {
+    ...fileContext.target,
+    input: "src/app.test.ts",
+    normalizedPath: "src/app.test.ts",
+  },
+  summary: {
+    ...fileContext.summary,
+    path: "src/app.test.ts",
+    kind: "test",
+    appLayer: "api_test",
+    unresolvedSourceSiteCount: 3,
+    rawUnresolvedSourceSiteCount: 3,
+    productionUnresolvedSourceSiteCount: 0,
+    testUnresolvedSourceSiteCount: 3,
+    nonActionableUnresolvedSourceSiteCount: 0,
+    unknownUnresolvedSourceSiteCount: 0,
+    defaultVisibleUnresolvedSourceSiteCount: 0,
+    linkedTestCount: 0,
+    risk: "low",
+    rawRisk: "high",
+    defaultVisibleRisk: "low",
+  },
+  relationships: {
+    ...fileContext.relationships,
+    outboundByFile: [
+      {
+        file: "src/app.ts",
+        total: 1,
+        counts: { CALLS: 1 },
+        samples: [
+          {
+            sourceFile: "src/app.test.ts",
+            sourceSymbol: "testMain",
+            sourceRange: { startLine: 9 },
+            relationshipKind: "CALLS",
+            targetFile: "src/app.ts",
+            targetSymbol: "main",
+            targetRange: { startLine: 3 },
+            sourceSiteId: "site-tested-target",
+            proofKind: "source-site",
+            sourceSiteStatus: "resolved",
+          },
+        ],
+      },
+    ],
+    inboundByFile: [],
+  },
+  unresolved: {
+    total: 3,
+    byKind: { unresolved_call: 3 },
+    byClassification: { test_framework: 3 },
+    byActionability: { non_actionable: 3 },
+    groups: [
+      {
+        sourceSymbol: "testMain",
+        total: 3,
+        samples: [
+          {
+            line: 11,
+            column: 4,
+            targetText: "expectSomething",
+            sourceSymbol: "testMain",
+            gapKind: "unresolved_call",
+            classification: "test_framework",
+            actionability: "non_actionable",
+            proofKind: "none",
+            sourceSiteId: "site-test-gap",
+            sourceSiteStatus: "unresolved_local_binding",
+          },
+        ],
+      },
+    ],
+  },
+  linked: {
+    ...fileContext.linked,
+    counts: {
+      ...fileContext.linked.counts,
+      tests: 0,
+    },
+    tests: [],
+  },
+  quality: {
+    ...fileContext.quality,
+    unresolvedCalls: 3,
+    unresolvedRefs: 0,
+    unresolvedImports: 0,
+  },
+};
+
 describe("FileDetailPanel", () => {
   beforeEach(() => {
     fetchFileContext.mockReset();
@@ -246,5 +345,20 @@ describe("FileDetailPanel", () => {
     render(<FileDetailPanel repoName="demo" filePath="src/missing.ts" />);
 
     expect(await screen.findByText("file context missing")).toBeInTheDocument();
+  });
+
+  it("renders test file identity without default unresolved samples", async () => {
+    fetchFileContext.mockResolvedValueOnce(testFileContext);
+
+    render(<FileDetailPanel repoName="demo" filePath="src/app.test.ts" />);
+
+    expect(await screen.findByText("src/app.test.ts")).toBeInTheDocument();
+    expect(screen.getByText("Test File")).toBeInTheDocument();
+
+    const unresolved = screen.getByTestId("file-detail-section-unresolved");
+    expect(unresolved).toHaveTextContent("0 sites");
+    expect(unresolved).toHaveTextContent("No default unresolved source-site samples.");
+    expect(unresolved).not.toHaveTextContent("expectSomething");
+    expect(screen.getByTestId("file-detail-section-relationships")).toHaveTextContent("src/app.ts");
   });
 });

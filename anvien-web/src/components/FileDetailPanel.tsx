@@ -13,11 +13,13 @@ import {
 } from "@/lib/lucide-icons";
 import type {
   FileContextResponse,
+  FileSummary,
   FileLinkedItem,
   FileRelationshipByFileGroup,
   FileRelationshipGroup,
   FileRelationshipSample,
   FileSymbolTreeNode,
+  FileUnresolvedGroup,
   FileUnresolvedSample,
 } from "@/generated/anvien-contracts";
 import { fetchFileContext } from "../services/backend-client";
@@ -49,6 +51,43 @@ const countEntries = (counts: Record<string, number> | undefined) =>
   Object.entries(counts ?? {})
     .filter(([, count]) => count > 0)
     .sort((left, right) => right[1] - left[1]);
+
+const defaultUnresolvedCount = (summary: FileSummary): number =>
+  summary.defaultVisibleUnresolvedSourceSiteCount ?? summary.unresolvedSourceSiteCount ?? 0;
+
+const isTestFile = (summary: FileSummary): boolean => summary.kind === "test";
+
+const isDefaultVisibleUnresolvedSample = (sample: FileUnresolvedSample): boolean =>
+  sample.actionability !== "non_actionable";
+
+const defaultVisibleUnresolvedGroups = (
+  groups: FileUnresolvedGroup[],
+  testFile: boolean,
+): FileUnresolvedGroup[] => {
+  if (testFile) return [];
+  return groups
+    .map((group) => {
+      const samples = group.samples.filter(isDefaultVisibleUnresolvedSample);
+      if (samples.length === 0) return null;
+      return {
+        ...group,
+        total: samples.length,
+        samples,
+      };
+    })
+    .filter((group): group is FileUnresolvedGroup => group !== null);
+};
+
+const unresolvedKindCounts = (groups: FileUnresolvedGroup[]): Record<string, number> => {
+  const counts: Record<string, number> = {};
+  for (const group of groups) {
+    for (const sample of group.samples) {
+      const key = sample.gapKind || "unknown";
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+  }
+  return counts;
+};
 
 const sampleLocation = (sample: FileUnresolvedSample): string => {
   const parts = [
@@ -517,6 +556,10 @@ export const FileDetailPanel = ({
 
   const summary = context.summary;
   const quality = context.quality;
+  const testFile = isTestFile(summary);
+  const defaultUnresolved = defaultUnresolvedCount(summary);
+  const unresolvedGroups = defaultVisibleUnresolvedGroups(context.unresolved.groups, testFile);
+  const unresolvedKinds = unresolvedKindCounts(unresolvedGroups);
 
   return (
     <div
@@ -537,13 +580,13 @@ export const FileDetailPanel = ({
           <Stat label="In" value={compactCount(summary.inboundRefCount)} />
           <Stat label="Out" value={compactCount(summary.outboundRefCount)} />
           <Stat label="Local" value={compactCount(summary.localRelationshipCount)} />
-          <Stat label="Unresolved" value={compactCount(summary.unresolvedSourceSiteCount)} />
+          <Stat label="Unresolved" value={compactCount(defaultUnresolved)} />
           <Stat label="Tests" value={compactCount(summary.linkedTestCount)} />
         </div>
         <div className="mt-2 flex flex-wrap gap-1">
           <Pill label="Layer" value={formatKey(summary.appLayer)} />
           <Pill label="Area" value={formatKey(summary.functionalArea)} />
-          <Pill label="Kind" value={formatKey(summary.kind)} />
+          <Pill label="Kind" value={testFile ? "Test File" : formatKey(summary.kind)} />
           <Pill label="Lang" value={summary.language ?? "unknown"} />
         </div>
       </Section>
@@ -564,9 +607,13 @@ export const FileDetailPanel = ({
             value={formatKey(quality.resolutionConfidence)}
             tone={quality.resolutionConfidence === "degraded" ? "warning" : "neutral"}
           />
-          <Pill label="Calls" value={quality.unresolvedCalls} />
-          <Pill label="Refs" value={quality.unresolvedRefs} />
-          <Pill label="Imports" value={quality.unresolvedImports} />
+          {!testFile && (
+            <>
+              <Pill label="Calls" value={quality.unresolvedCalls} />
+              <Pill label="Refs" value={quality.unresolvedRefs} />
+              <Pill label="Imports" value={quality.unresolvedImports} />
+            </>
+          )}
           <Pill label="Generated" value={quality.generated} />
           <Pill label="Stale" value={quality.stale} tone={quality.stale ? "warning" : "neutral"} />
           <Pill
@@ -629,21 +676,21 @@ export const FileDetailPanel = ({
       <Section
         icon={<AlertTriangle className="h-3.5 w-3.5" />}
         title="Unresolved"
-        meta={`${compactCount(context.unresolved.total)} sites`}
+        meta={`${compactCount(defaultUnresolved)} sites`}
         testId="file-detail-section-unresolved"
       >
         <div className="mb-2 flex flex-wrap gap-1">
-          {countEntries(context.unresolved.byKind)
+          {countEntries(unresolvedKinds)
             .slice(0, 6)
             .map(([kind, count]) => (
               <Pill key={kind} label={formatKey(kind)} value={count} />
             ))}
         </div>
-        {context.unresolved.groups.length === 0 ? (
-          <EmptyLine>No unresolved source-site samples.</EmptyLine>
+        {unresolvedGroups.length === 0 ? (
+          <EmptyLine>No default unresolved source-site samples.</EmptyLine>
         ) : (
           <div className="space-y-1.5">
-            {context.unresolved.groups.slice(0, 6).map((group, index) => (
+            {unresolvedGroups.slice(0, 6).map((group, index) => (
               <div
                 key={`${group.sourceSymbol ?? "unknown"}-${index}`}
                 className="rounded border border-workspace-border-default bg-workspace-surface px-2 py-2"

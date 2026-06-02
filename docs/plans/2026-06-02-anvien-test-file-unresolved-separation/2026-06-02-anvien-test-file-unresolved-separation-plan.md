@@ -195,7 +195,7 @@ The plan is complete when:
   - Implementation Gate: raw unresolved count must remain available somewhere for audit.
   - Acceptance: default top hotspots and default risk/warning signals are ranked by production/actionable unresolved; test files can still appear in a test-specific or raw-unresolved view.
 
-- [ ] [P2-A] Update Web file map and graph default display.
+- [x] [P2-A] Update Web file map and graph default display.
   - Goal: make test files visible as test files without expanding unresolved child detail by default.
   - Work Steps: update `FileMapPanel`, `FileDetailPanel`, and any graph node adapter/view that uses file unresolved counts; use backend-provided `kind`, app layer, default-visible counts, and risk fields; add UI treatment for test file nodes/rows using existing visual language; hide/collapse test unresolved child nodes in default graph view; ensure test file -> tested target relationships remain visible; keep text short and avoid explanatory UI copy.
   - Implementation Gate: if API fields needed by UI are missing, return to P1-B/P1-C instead of hard-coding path checks in UI.

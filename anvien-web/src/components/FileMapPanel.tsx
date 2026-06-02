@@ -63,6 +63,17 @@ const compactCount = (value: number): string => {
   return String(value);
 };
 
+const defaultUnresolvedCount = (file: FileSummary): number =>
+  file.defaultVisibleUnresolvedSourceSiteCount ?? file.unresolvedSourceSiteCount ?? 0;
+
+const rawUnresolvedCount = (file: FileSummary): number =>
+  file.rawUnresolvedSourceSiteCount ?? file.unresolvedSourceSiteCount ?? 0;
+
+const testUnresolvedCount = (file: FileSummary): number =>
+  file.testUnresolvedSourceSiteCount ?? 0;
+
+const isTestFile = (file: FileSummary): boolean => file.kind === "test";
+
 const riskClassName = (risk?: string): string => {
   switch (risk) {
     case "high":
@@ -156,7 +167,7 @@ export const FileMapPanel = ({
   const totals = useMemo(() => {
     const rows = data?.files ?? [];
     return {
-      unresolved: rows.filter((file) => file.unresolvedSourceSiteCount > 0).length,
+      unresolved: rows.filter((file) => defaultUnresolvedCount(file) > 0).length,
       changed: rows.filter((file) => file.changedSinceAnalyze).length,
       flows: rows.filter((file) => file.linkedFlowCount > 0).length,
       tests: rows.filter((file) => file.linkedTestCount > 0).length,
@@ -338,6 +349,9 @@ interface FileMapRowProps {
 
 const FileMapRow = ({ file, selected, onOpenFile }: FileMapRowProps) => {
   const linkCount = file.linkedFlowCount + file.linkedTestCount;
+  const defaultUnresolved = defaultUnresolvedCount(file);
+  const rawUnresolved = rawUnresolvedCount(file);
+  const testUnresolved = testUnresolvedCount(file);
   return (
     <tr
       data-testid="file-map-row"
@@ -352,7 +366,7 @@ const FileMapRow = ({ file, selected, onOpenFile }: FileMapRowProps) => {
           title={file.path}
           className="flex w-full min-w-0 items-center gap-2 text-left"
         >
-          {file.unresolvedSourceSiteCount > 0 ? (
+          {defaultUnresolved > 0 ? (
             <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning" />
           ) : (
             <FileCode className="h-3.5 w-3.5 shrink-0 text-text-muted" />
@@ -363,6 +377,11 @@ const FileMapRow = ({ file, selected, onOpenFile }: FileMapRowProps) => {
           {file.changedSinceAnalyze && (
             <span className="shrink-0 rounded border border-border-subtle px-1 font-mono text-[9px] text-text-muted">
               changed
+            </span>
+          )}
+          {isTestFile(file) && (
+            <span className="shrink-0 rounded border border-border-subtle px-1 font-mono text-[9px] text-text-muted">
+              Test File
             </span>
           )}
         </button>
@@ -387,11 +406,11 @@ const FileMapRow = ({ file, selected, onOpenFile }: FileMapRowProps) => {
         {compactCount(file.outboundRefCount)}
       </td>
       <td className="px-1 py-2 text-right font-mono text-[10px] text-text-secondary">
-        {compactCount(file.unresolvedSourceSiteCount)}
+        {compactCount(defaultUnresolved)}
       </td>
       <td className="px-2 py-2 text-right">
         <span
-          title={`flows ${file.linkedFlowCount}, tests ${file.linkedTestCount}, risk ${file.risk ?? "unknown"}, changed ${file.changedSinceAnalyze ? "yes" : "no"}`}
+          title={`flows ${file.linkedFlowCount}, tests ${file.linkedTestCount}, unresolved ${defaultUnresolved}, raw ${rawUnresolved}, test ${testUnresolved}, risk ${file.risk ?? "unknown"}, changed ${file.changedSinceAnalyze ? "yes" : "no"}`}
           className={`inline-flex min-w-8 items-center justify-end gap-1 rounded border px-1.5 py-0.5 font-mono text-[10px] ${riskClassName(file.risk)}`}
         >
           <GitBranch className="h-3 w-3" />

@@ -350,3 +350,72 @@ Detect changes:
 Commit:
 
 - `6c0a7f7 feat: rank unresolved hotspots by default-visible bucket`
+
+## E5 - P2-A Web File Map And Graph Default Display
+
+Date: 2026-06-02
+
+Status: implemented
+
+Scope:
+
+- Updated Web file map and file detail defaults to use backend-provided `kind`, `defaultVisibleUnresolvedSourceSiteCount`, and risk fields instead of raw unresolved.
+- Rendered test file identity as `Test File` in file map/detail.
+- Prevented raw test unresolved samples from expanding in file detail by default.
+- Updated graph semantic defaults so test/non-actionable ResolutionGap nodes are hidden by default while test file nodes remain visible.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| `anvien analyze --force` | Pass before P2-A inspection and again after implementation. Latest graph had 819 files scanned, 599 parsed code files, 0 failed parses, 96,771 nodes, 132,391 relationships, 591 raw unresolved files, and 335 default-visible unresolved files. |
+| `anvien query files "Web file map unresolved defaultVisibleUnresolved file detail graph test file" --repo Anvien` | Confirmed Web surfaces still had raw/test unresolved evidence and file summaries expose `kind=test`, raw, test, and default-visible bucket fields. |
+| `anvien query files "FileMapPanel FileDetailPanel unresolvedSourceSiteCount defaultVisibleRisk" --repo Anvien` | Confirmed `FileMapPanel` and `FileDetailPanel` were direct owners for raw unresolved display. |
+| `anvien query files "Web graph ResolutionGap node filter test unresolved default visibility" --repo Anvien` | Confirmed graph default visibility is governed by semantic filters and graph filtering, not by file map code. |
+| Source inspection | `FileMapPanel` used `unresolvedSourceSiteCount` for totals, warning icon, and `Unres` column; `FileDetailPanel` used raw summary and raw unresolved groups; `semantic-filters.ts` defaulted ResolutionGap actionability/source app-layer filters to all values. |
+
+Impact / blast radius:
+
+| Target | Result |
+|---|---|
+| `anvien impact file anvien-web/src/components/FileMapPanel.tsx --repo Anvien --direction upstream` | HIGH blast radius. Affected files include `App.tsx`, `FileTreePanel.tsx`, `main.tsx`, and the component tests. |
+| `anvien impact file anvien-web/src/components/FileDetailPanel.tsx --repo Anvien --direction upstream` | HIGH blast radius. Affected files include `App.tsx`, `CodeReferencesPanel.tsx`, `main.tsx`, and the component tests. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `anvien-web/src/components/FileMapPanel.tsx` | Default unresolved totals, warning icon, and `Unres` column now use `defaultVisibleUnresolvedSourceSiteCount`; test rows show a `Test File` badge; raw/test counts remain only in row metadata title. |
+| `anvien-web/src/components/FileDetailPanel.tsx` | Summary unresolved count uses default-visible unresolved; test files show `Kind: Test File`; test-file raw unresolved call/ref/import quality pills and raw unresolved sample groups are not rendered by default. |
+| `anvien-web/src/lib/semantic-filters.ts` | Default ResolutionGap semantic filters exclude `non_actionable` gaps and `*_test` source app layers; normal test file nodes stay visible because app-layer visibility still includes test layers. |
+| `anvien-web/test/unit/FileMapPanel.test.tsx` | Fixture now includes raw/test/default-visible bucket fields and asserts `Test File` identity while default unresolved totals ignore test raw unresolved. |
+| `anvien-web/test/unit/FileDetailPanel.test.tsx` | Added test-file fixture proving raw test unresolved sample text is not rendered by default while tested-target relationship remains visible. |
+| `anvien-web/test/unit/semantic-filters.test.ts` | Added graph filter test proving test file nodes stay visible, source analyzer gaps stay visible, and test/non-actionable ResolutionGap nodes are hidden by default but can be re-enabled explicitly. |
+| `anvien-web/e2e/file-map-test-unresolved.spec.ts` | Added mocked Playwright e2e for file map/detail default behavior with source and test file fixtures. |
+| Plan | Marked P2-A complete. |
+| Benchmark ledger | Added P2-A UI/default-visibility metrics. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `npm --prefix anvien-web test -- FileMapPanel FileDetailPanel` | Pass before graph-filter change; 2 files, 6 tests. |
+| `npm --prefix anvien-web test -- semantic-filters FileMapPanel FileDetailPanel` | Pass after graph-filter change; 3 files, 10 tests. |
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass; Vite emitted existing chunk-size/dynamic-import warnings. |
+| `npm --prefix anvien-web test` | Pass; 52 files, 410 tests. |
+| `npm --prefix anvien-web run test:e2e -- file-map-test-unresolved.spec.ts` | Pass; 1 Chromium e2e. |
+
+Failures / handling:
+
+- First e2e attempt failed because `page.getByText("src/app.test.ts").click()` resolved a hidden text node; selector was scoped to the visible `file-map-row` and the spec passed.
+- Vite dev server was started at `http://127.0.0.1:5228` for e2e validation.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `anvien detect-changes --repo Anvien --scope all` | Pass after final graph refresh. Scope contained 9 changed/affected files across Web graph UI, frontend tests, and ledger files; summary risk was low, file-layer changed risk was high from the touched Web UI files, and no affected processes were reported. |
+
+Commit:
+
+- Pending until detect-changes passes.

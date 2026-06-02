@@ -115,6 +115,75 @@ describe("semantic filters", () => {
     ).toBe(true);
   });
 
+  it("keeps test files visible while hiding test and non-actionable ResolutionGap nodes by default", () => {
+    const testFile = getSemanticFilterableFromNode(
+      makeNode("test-file", { appLayer: "backend_test" }, "File"),
+    );
+    const sourceGap = getSemanticFilterableFromNode(
+      makeNode(
+        "source-gap",
+        {
+          appLayer: "backend",
+          sourceAppLayer: "backend",
+          factFamily: "call",
+          targetRole: "callable",
+          classification: "in_repo_unresolved",
+          actionability: "analyzer_gap",
+          targetText: "missingCall",
+        },
+        "ResolutionGap",
+      ),
+    );
+    const testGap = getSemanticFilterableFromNode(
+      makeNode(
+        "test-gap",
+        {
+          appLayer: "backend_test",
+          sourceAppLayer: "backend_test",
+          factFamily: "call",
+          targetRole: "callable",
+          classification: "test_framework",
+          actionability: "non_actionable",
+          targetText: "t.Fatalf",
+        },
+        "ResolutionGap",
+      ),
+    );
+    const builtinGap = getSemanticFilterableFromNode(
+      makeNode(
+        "builtin-gap",
+        {
+          appLayer: "backend",
+          sourceAppLayer: "backend",
+          factFamily: "call",
+          targetRole: "callable",
+          classification: "builtin",
+          actionability: "non_actionable",
+          targetText: "len",
+        },
+        "ResolutionGap",
+      ),
+    );
+
+    expect(semanticMatchesFilters(testFile, DEFAULT_SEMANTIC_FILTERS)).toBe(true);
+    expect(semanticMatchesFilters(sourceGap, DEFAULT_SEMANTIC_FILTERS)).toBe(true);
+    expect(semanticMatchesFilters(testGap, DEFAULT_SEMANTIC_FILTERS)).toBe(false);
+    expect(semanticMatchesFilters(builtinGap, DEFAULT_SEMANTIC_FILTERS)).toBe(false);
+    expect(
+      semanticMatchesFilters(testGap, {
+        ...DEFAULT_SEMANTIC_FILTERS,
+        visibleResolutionGapActionabilities: [
+          ...DEFAULT_SEMANTIC_FILTERS.visibleResolutionGapActionabilities,
+          "non_actionable",
+        ],
+        visibleResolutionGapSourceAppLayers: [
+          ...DEFAULT_SEMANTIC_FILTERS.visibleResolutionGapSourceAppLayers,
+          "backend_test",
+        ],
+      }),
+    ).toBe(true);
+  });
+
   it("builds the required resolution lens rows from persisted gap fields", () => {
     const rows = getResolutionLensRows([
       makeNode(

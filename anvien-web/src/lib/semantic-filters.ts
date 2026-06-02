@@ -78,6 +78,15 @@ export interface SemanticLensRow {
   detail?: string;
 }
 
+const DEFAULT_VISIBLE_RESOLUTION_GAP_ACTIONABILITIES =
+  GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES.filter(
+    (actionability) => actionability !== "non_actionable",
+  );
+
+const DEFAULT_VISIBLE_RESOLUTION_GAP_SOURCE_APP_LAYERS = APP_LAYERS.filter(
+  (layer) => !layer.endsWith("_test"),
+);
+
 export const DEFAULT_SEMANTIC_FILTERS: SemanticFilterState = {
   visibleAppLayers: [...APP_LAYERS],
   showNodesMissingAppLayer: true,
@@ -86,8 +95,12 @@ export const DEFAULT_SEMANTIC_FILTERS: SemanticFilterState = {
   visibleResolutionGapFactFamilies: [...RESOLUTION_GAP_FACT_FAMILIES],
   visibleResolutionGapTargetRoles: [...RESOLUTION_GAP_TARGET_ROLES],
   visibleResolutionGapClassifications: [...GRAPH_HEALTH_DIAGNOSTIC_CLASSIFICATIONS],
-  visibleResolutionGapActionabilities: [...GRAPH_HEALTH_DIAGNOSTIC_ACTIONABILITIES],
-  visibleResolutionGapSourceAppLayers: [...APP_LAYERS],
+  visibleResolutionGapActionabilities: [
+    ...DEFAULT_VISIBLE_RESOLUTION_GAP_ACTIONABILITIES,
+  ],
+  visibleResolutionGapSourceAppLayers: [
+    ...DEFAULT_VISIBLE_RESOLUTION_GAP_SOURCE_APP_LAYERS,
+  ],
   visibleResolutionGapTargetTexts: [],
 };
 

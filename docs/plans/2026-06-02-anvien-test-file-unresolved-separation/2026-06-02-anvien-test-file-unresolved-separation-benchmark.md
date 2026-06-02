@@ -157,7 +157,24 @@ P1-C raw/test top hotspots:
 | 4 | `internal/resolution/resolution_test.go` | test | 0 | 934 | low |
 | 5 | `anvien-web/e2e/graph-orientation-labels.spec.ts` | e2e test | 0 | 856 | low |
 
-## B4 - Final Metrics
+## B4 - P2-A Web Default Visibility Metrics
+
+Status: recorded
+
+Source evidence: E5.
+
+| Metric | Unit | Latest | Target | Result |
+|---|---:|---:|---:|---|
+| File map default unresolved count uses default-visible bucket | available | 1 | 1 | pass |
+| File detail default unresolved count uses default-visible bucket | available | 1 | 1 | pass |
+| Test file identity visible in Web file map/detail | available | 1 | 1 | pass |
+| Raw test unresolved samples rendered by default in file detail | enabled_by_default | 0 | 0 | pass |
+| Test file tested-target relationship visible in file detail | available | 1 | 1 | pass |
+| Test/non-actionable ResolutionGap nodes visible in graph semantic defaults | enabled_by_default | 0 | 0 | pass |
+| Explicit graph filter path can re-enable hidden test/non-actionable gaps | available | 1 | 1 | pass |
+| Mocked browser e2e covering file map/detail default behavior | tests | 1 | 1 | pass |
+
+## B5 - Final Metrics
 
 Status: pending
 
