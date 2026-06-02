@@ -9,12 +9,7 @@ anvien/bin/
 *.tsbuildinfo
 
 # IDE
-.cursor/
 .github/
-.husky/
-.sisyphus/
-.vscode/
-.idea/
 *.swp
 *.swo
 
@@ -23,6 +18,9 @@ anvien/bin/
 Thumbs.db
 
 .claude/settings.local.json
+anvien-launcher/web-dist/
+anvien-launcher/AnvienLauncher.exe
+anvien-launcher/server-bundle/anvien-server.exe
 
 # Environment variables
 .env
@@ -39,29 +37,14 @@ coverage/
 
 # Misc
 *.local
-HANDOFF.md
-HANDOFF*.md
 
 .vercel
-
 
 .env*.local
 .anvien/
 .codex/
-.claude/settings.local.json
+.claude/
 .grok/
-
-# Claude Code worktrees
-.claude/worktrees/
-
-# Claude code skills
-.claude/skills/generated/
-
-# Assets (screenshots, images)
-assets/
-
-# Generated files (should not be indexed)
-repomix-output*
 
 # Playwright artifacts
 anvien-web/playwright-report/
@@ -69,14 +52,12 @@ anvien-web/test-results/
 
 # Design docs (local only)
 
-
 anvien/test/fixtures/mini-repo/*.md
 anvien/test/fixtures/mini-repo/.claude
 anvien/test/fixtures/mini-repo/.gitignore
 
-# Ignore csharp generated obj and bin folders
-anvien/test/fixtures/lang-resolution/**/obj
-anvien/test/fixtures/lang-resolution/**/bin
+# test
+anvien/test/
 anvien.sln
 # Git worktrees
 .worktrees/
@@ -110,8 +91,32 @@ anvien/undefined/
 undefined/
 
 # Local Anvien launcher generated artifacts
-anvien-launcher/AnvienLauncher.exe
-anvien-launcher/AnvienLauncher.exe~
 anvien-launcher/logs/
-anvien-launcher/server-bundle/
+
+# anvien:start
+# Anvien local index and generated AI context
+.gitignore
+.anvien/
+AGENTS.md
+CLAUDE.md
+
+# Agent/editor local state used by Anvien integrations
+.claude/
+.codex/
+.agents/
+.grok/
+.claude-flow/
+.claude-plugin/
+.history/
+.swarm/
+.codex-tmp/
+.tmp/
+undefined/
+local_docs/
+
+# Local Anvien launcher/runtime generated artifacts
 anvien-launcher/web-dist/
+anvien-launcher/AnvienLauncher.exe
+anvien-launcher/server-bundle/
+anvien-launcher/logs/
+# anvien:end
