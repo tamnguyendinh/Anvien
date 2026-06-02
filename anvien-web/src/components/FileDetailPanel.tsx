@@ -55,9 +55,6 @@ const countEntries = (counts: Record<string, number> | undefined) =>
 const defaultUnresolvedCount = (summary: FileSummary): number =>
   summary.defaultVisibleUnresolvedSourceSiteCount ?? summary.unresolvedSourceSiteCount ?? 0;
 
-const rawUnresolvedCount = (summary: FileSummary): number =>
-  summary.rawUnresolvedSourceSiteCount ?? summary.unresolvedSourceSiteCount ?? 0;
-
 const isTestFile = (summary: FileSummary): boolean => summary.kind === "test";
 
 const isDefaultVisibleUnresolvedSample = (sample: FileUnresolvedSample): boolean =>
@@ -99,9 +96,6 @@ const sampleLocation = (sample: FileUnresolvedSample): string => {
   ].filter(Boolean);
   return parts.length > 0 ? parts.join(":") : "No range";
 };
-
-const sampleSourceSiteLabel = (sample: FileUnresolvedSample): string | undefined =>
-  sample.sourceSiteId || sample.sourceSiteStatus;
 
 const relationshipSampleLabel = (sample: FileRelationshipSample): string => {
   const left = sample.sourceSymbol || sample.sourceFile || "source";
@@ -375,14 +369,6 @@ const UnresolvedSamples = ({ samples }: { samples: FileUnresolvedSample[] }) => 
             .map(formatKey)
             .join(" / ")}
         </div>
-        {sampleSourceSiteLabel(sample) && (
-          <div
-            className="mt-0.5 truncate font-mono text-[9px]"
-            title={sampleSourceSiteLabel(sample)}
-          >
-            {sampleSourceSiteLabel(sample)}
-          </div>
-        )}
       </div>
     ))}
   </div>
@@ -437,14 +423,12 @@ export const FileDetailPanel = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedNodeIds, setExpandedNodeIds] = useState<Set<string>>(new Set());
-  const [showRawUnresolved, setShowRawUnresolved] = useState(false);
 
   useEffect(() => {
     if (!filePath) {
       setContext(null);
       setError(null);
       setIsLoading(false);
-      setShowRawUnresolved(false);
       return;
     }
 
@@ -452,7 +436,6 @@ export const FileDetailPanel = ({
     setIsLoading(true);
     setError(null);
     setContext(null);
-    setShowRawUnresolved(false);
 
     fetchFileContext(filePath, {
       repo: repoName,
@@ -575,12 +558,7 @@ export const FileDetailPanel = ({
   const quality = context.quality;
   const testFile = isTestFile(summary);
   const defaultUnresolved = defaultUnresolvedCount(summary);
-  const rawUnresolved = rawUnresolvedCount(summary);
-  const canShowRawUnresolved = rawUnresolved > defaultUnresolved;
-  const unresolvedGroups = showRawUnresolved
-    ? context.unresolved.groups
-    : defaultVisibleUnresolvedGroups(context.unresolved.groups, testFile);
-  const unresolvedSiteCount = showRawUnresolved ? rawUnresolved : defaultUnresolved;
+  const unresolvedGroups = defaultVisibleUnresolvedGroups(context.unresolved.groups, testFile);
   const unresolvedKinds = unresolvedKindCounts(unresolvedGroups);
 
   return (
@@ -629,7 +607,7 @@ export const FileDetailPanel = ({
             value={formatKey(quality.resolutionConfidence)}
             tone={quality.resolutionConfidence === "degraded" ? "warning" : "neutral"}
           />
-          {(!testFile || showRawUnresolved) && (
+          {!testFile && (
             <>
               <Pill label="Calls" value={quality.unresolvedCalls} />
               <Pill label="Refs" value={quality.unresolvedRefs} />
@@ -698,39 +676,18 @@ export const FileDetailPanel = ({
       <Section
         icon={<AlertTriangle className="h-3.5 w-3.5" />}
         title="Unresolved"
-        meta={`${compactCount(unresolvedSiteCount)} sites`}
+        meta={`${compactCount(defaultUnresolved)} sites`}
         testId="file-detail-section-unresolved"
       >
-        <div className="mb-2 flex items-start justify-between gap-2">
-          <div className="flex min-w-0 flex-wrap gap-1">
-            {countEntries(unresolvedKinds)
-              .slice(0, 6)
-              .map(([kind, count]) => (
-                <Pill key={kind} label={formatKey(kind)} value={count} />
-              ))}
-          </div>
-          {canShowRawUnresolved && (
-            <button
-              type="button"
-              aria-pressed={showRawUnresolved}
-              data-testid="file-detail-toggle-raw-unresolved"
-              onClick={() => setShowRawUnresolved((value) => !value)}
-              className={`shrink-0 rounded border px-2 py-1 font-mono text-[10px] transition-colors ${
-                showRawUnresolved
-                  ? "border-workspace-border-strong bg-workspace-inset text-workspace-text-primary"
-                  : "border-workspace-border-default text-workspace-text-secondary hover:bg-workspace-inset hover:text-workspace-text-primary"
-              }`}
-            >
-              Raw
-            </button>
-          )}
+        <div className="mb-2 flex flex-wrap gap-1">
+          {countEntries(unresolvedKinds)
+            .slice(0, 6)
+            .map(([kind, count]) => (
+              <Pill key={kind} label={formatKey(kind)} value={count} />
+            ))}
         </div>
         {unresolvedGroups.length === 0 ? (
-          <EmptyLine>
-            {showRawUnresolved
-              ? "No raw unresolved source-site samples."
-              : "No default unresolved source-site samples."}
-          </EmptyLine>
+          <EmptyLine>No default unresolved source-site samples.</EmptyLine>
         ) : (
           <div className="space-y-1.5">
             {unresolvedGroups.slice(0, 6).map((group, index) => (

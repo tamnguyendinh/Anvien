@@ -238,3 +238,13 @@ The plan is complete when:
 - UI-only path checks would drift from backend truth; prefer backend/file-projection classification fields.
 - Test files sometimes expose real production graph issues through imports or tested-target edges; keep test-to-target relationships visible.
 - Existing counts may appear to drop in default views; benchmark must explain raw versus default-visible counts clearly.
+
+## Post-Closure Correction
+
+Date: 2026-06-02
+
+User direction after closure clarified that Web production views should not expose raw/test unresolved controls at all. The corrected product rule is:
+
+- Web production views show test files as `Test File` and show relationships to tested files/symbols.
+- Web production views do not expose `raw-unresolved`, `test-unresolved`, or a raw unresolved detail toggle.
+- Raw/test unresolved command/API diagnostics may remain available for internal graph debugging, but they are not product UI controls.

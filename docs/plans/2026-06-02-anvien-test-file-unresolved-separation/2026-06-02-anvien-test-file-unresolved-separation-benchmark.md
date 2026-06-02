@@ -176,7 +176,7 @@ Source evidence: E5.
 
 ## B5 - P2-B Explicit Test Unresolved Access Metrics
 
-Status: recorded
+Status: superseded for Web production UI by B7
 
 Source evidence: E6.
 
@@ -209,7 +209,8 @@ Status: recorded
 | Default top 5 hotspots that are production/source files | files | 5 | measured | pass |
 | Raw/test top 5 hotspots that remain test/e2e files | files | 5 | traceable | pass |
 | Default graph expansion of test unresolved child nodes | enabled_by_default | 0 | 0 | pass |
-| Explicit test unresolved drill-down/filter | available | 1 | 1 | pass |
+| CLI/API explicit test unresolved diagnostic access | available | 1 | 1 | pass |
+| Web production raw/test unresolved controls visible | controls | 0 | 0 | pass |
 
 Final graph inventory:
 
@@ -244,3 +245,19 @@ Final raw/test top hotspots:
 | 3 | `internal/analyze/analyze_test.go` | test | 0 | 1052 | 1052 | low |
 | 4 | `internal/resolution/resolution_test.go` | test | 0 | 934 | 934 | low |
 | 5 | `anvien-web/e2e/graph-orientation-labels.spec.ts` | test | 0 | 856 | 856 | low |
+
+## B7 - Post-Closure Web Production Surface Metrics
+
+Status: recorded
+
+Source evidence: E10.
+
+| Metric | Unit | Latest | Target | Result |
+|---|---:|---:|---:|---|
+| Web file map `raw-unresolved` sort option visible | options | 0 | 0 | pass |
+| Web file map `test-unresolved` sort option visible | options | 0 | 0 | pass |
+| Web file detail raw unresolved toggle visible for test files | controls | 0 | 0 | pass |
+| Raw test unresolved samples rendered in Web test file detail | enabled_by_default | 0 | 0 | pass |
+| Test file identity visible in Web file map/detail | available | 1 | 1 | pass |
+| Test file tested-target relationship visible in Web file detail | available | 1 | 1 | pass |
+| CLI/API raw/test unresolved diagnostics retained outside production Web UI | available | 1 | 1 | pass |

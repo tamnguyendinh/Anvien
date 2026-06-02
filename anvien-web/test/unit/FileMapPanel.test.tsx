@@ -102,6 +102,8 @@ describe("FileMapPanel", () => {
     expect(screen.getByText("1 flows")).toBeInTheDocument();
     expect(screen.getByText("2 tests")).toBeInTheDocument();
     expect(screen.getByText("Test File")).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Raw unresolved" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Test unresolved" })).not.toBeInTheDocument();
     expect(screen.getAllByTestId("file-map-row")).toHaveLength(2);
   });
 
@@ -115,7 +117,7 @@ describe("FileMapPanel", () => {
     );
 
     await screen.findByText("internal/mcp/server.go");
-    await userEvent.selectOptions(screen.getByLabelText("File map sort"), "test-unresolved");
+    await userEvent.selectOptions(screen.getByLabelText("File map sort"), "fan-out");
     await userEvent.click(screen.getByRole("button", { name: "Test" }));
     await userEvent.click(screen.getByTestId("file-map-filter-changed"));
     await userEvent.click(screen.getByTestId("file-map-filter-unresolved"));
@@ -125,7 +127,7 @@ describe("FileMapPanel", () => {
       expect(fetchFileHotspots).toHaveBeenLastCalledWith(
         expect.objectContaining({
           repo: "demo",
-          sort: "test-unresolved",
+          sort: "fan-out",
           limit: 200,
           kinds: ["test"],
           changedOnly: true,

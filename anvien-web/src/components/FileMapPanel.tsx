@@ -17,8 +17,6 @@ import {
 
 type FileMapSort =
   | "unresolved"
-  | "raw-unresolved"
-  | "test-unresolved"
   | "fan-in"
   | "fan-out"
   | "symbols"
@@ -36,8 +34,6 @@ interface FileMapPanelProps {
 
 const SORT_OPTIONS: Array<{ value: FileMapSort; label: string }> = [
   { value: "unresolved", label: "Unresolved" },
-  { value: "raw-unresolved", label: "Raw unresolved" },
-  { value: "test-unresolved", label: "Test unresolved" },
   { value: "fan-in", label: "Fan in" },
   { value: "fan-out", label: "Fan out" },
   { value: "symbols", label: "Symbols" },
@@ -69,12 +65,6 @@ const compactCount = (value: number): string => {
 
 const defaultUnresolvedCount = (file: FileSummary): number =>
   file.defaultVisibleUnresolvedSourceSiteCount ?? file.unresolvedSourceSiteCount ?? 0;
-
-const rawUnresolvedCount = (file: FileSummary): number =>
-  file.rawUnresolvedSourceSiteCount ?? file.unresolvedSourceSiteCount ?? 0;
-
-const testUnresolvedCount = (file: FileSummary): number =>
-  file.testUnresolvedSourceSiteCount ?? 0;
 
 const isTestFile = (file: FileSummary): boolean => file.kind === "test";
 
@@ -354,8 +344,6 @@ interface FileMapRowProps {
 const FileMapRow = ({ file, selected, onOpenFile }: FileMapRowProps) => {
   const linkCount = file.linkedFlowCount + file.linkedTestCount;
   const defaultUnresolved = defaultUnresolvedCount(file);
-  const rawUnresolved = rawUnresolvedCount(file);
-  const testUnresolved = testUnresolvedCount(file);
   return (
     <tr
       data-testid="file-map-row"
@@ -414,7 +402,7 @@ const FileMapRow = ({ file, selected, onOpenFile }: FileMapRowProps) => {
       </td>
       <td className="px-2 py-2 text-right">
         <span
-          title={`flows ${file.linkedFlowCount}, tests ${file.linkedTestCount}, unresolved ${defaultUnresolved}, raw ${rawUnresolved}, test ${testUnresolved}, risk ${file.risk ?? "unknown"}, changed ${file.changedSinceAnalyze ? "yes" : "no"}`}
+          title={`flows ${file.linkedFlowCount}, tests ${file.linkedTestCount}, unresolved ${defaultUnresolved}, risk ${file.risk ?? "unknown"}, changed ${file.changedSinceAnalyze ? "yes" : "no"}`}
           className={`inline-flex min-w-8 items-center justify-end gap-1 rounded border px-1.5 py-0.5 font-mono text-[10px] ${riskClassName(file.risk)}`}
         >
           <GitBranch className="h-3 w-3" />

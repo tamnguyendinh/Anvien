@@ -131,11 +131,7 @@ const testFileSummary = {
 };
 
 test.describe("file map test unresolved defaults", () => {
-  let fileHotspotSortRequests: string[];
-
   test.beforeEach(async ({ page }) => {
-    fileHotspotSortRequests = [];
-
     await page.route(`${BACKEND_URL}/api/repos`, (route) =>
       route.fulfill({
         json: [{ name: "test-files-demo", path: "/tmp/test-files-demo" }],
@@ -153,12 +149,8 @@ test.describe("file map test unresolved defaults", () => {
     await page.route(`${BACKEND_URL}/api/graph**`, (route) =>
       route.fulfill({ json: graph }),
     );
-    await page.route(`${BACKEND_URL}/api/file-hotspots**`, (route) => {
-      const url = new URL(route.request().url());
-      const sort = url.searchParams.get("sort") ?? "unresolved";
-      fileHotspotSortRequests.push(sort);
-
-      return route.fulfill({
+    await page.route(`${BACKEND_URL}/api/file-hotspots**`, (route) =>
+      route.fulfill({
         json: {
           repo: "test-files-demo",
           repoPath: "/tmp/test-files-demo",
@@ -166,14 +158,11 @@ test.describe("file map test unresolved defaults", () => {
           total: 2,
           offset: 0,
           limit: 200,
-          sort,
-          files:
-            sort === "test-unresolved"
-              ? [testFileSummary, sourceFileSummary]
-              : [sourceFileSummary, testFileSummary],
+          sort: "unresolved",
+          files: [sourceFileSummary, testFileSummary],
         },
-      });
-    });
+      }),
+    );
     await page.route(`${BACKEND_URL}/api/file-context**`, (route) =>
       route.fulfill({
         json: {
@@ -332,8 +321,12 @@ test.describe("file map test unresolved defaults", () => {
     await expect(page.getByTestId("file-map-panel")).toBeVisible();
     await expect(page.getByText("1 unresolved")).toBeVisible();
     await expect(page.getByText("Test File")).toBeVisible();
-    await page.getByLabel("File map sort").selectOption("test-unresolved");
-    await expect.poll(() => fileHotspotSortRequests.includes("test-unresolved")).toBeTruthy();
+    await expect(
+      page.getByLabel("File map sort").locator("option", { hasText: "Raw unresolved" }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByLabel("File map sort").locator("option", { hasText: "Test unresolved" }),
+    ).toHaveCount(0);
 
     await page
       .getByTestId("file-map-row")
@@ -347,12 +340,6 @@ test.describe("file map test unresolved defaults", () => {
       "expectSomething",
     );
     await expect(page.getByTestId("file-detail-section-relationships")).toContainText("src/app.ts");
-
-    await page.getByTestId("file-detail-toggle-raw-unresolved").click();
-    await expect(page.getByTestId("file-detail-section-unresolved")).toContainText("3 sites");
-    await expect(page.getByTestId("file-detail-section-unresolved")).toContainText(
-      "expectSomething",
-    );
-    await expect(page.getByTestId("file-detail-section-unresolved")).toContainText("site-test-gap");
+    await expect(page.getByTestId("file-detail-toggle-raw-unresolved")).toHaveCount(0);
   });
 });

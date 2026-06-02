@@ -597,3 +597,62 @@ Closure evidence:
 Commit:
 
 - `a8cbbc4 docs: close test unresolved separation plan`
+
+## E10 - Post-Closure Web Production Surface Reduction
+
+Date: 2026-06-02
+
+Status: implemented
+
+Scope:
+
+- Removed raw/test unresolved controls from Web production views after user clarified that test files only need identity and tested-target relationships.
+- Kept backend/CLI diagnostic data intact; this slice only removes product UI affordances that made raw/test unresolved look like normal production analysis.
+
+Source / command evidence:
+
+| Command | Result |
+|---|---|
+| `anvien analyze --force` | Pass before impact checks and again before detect-changes. Latest graph had 819 files scanned, 599 parsed code files, 0 failed parses, 96,790 nodes, 132,418 relationships, 591 raw unresolved files, and 335 default-visible unresolved files. |
+| `rg -n "raw-unresolved|test-unresolved|showRawUnresolved|Raw|sourceSiteId" ...` | Confirmed raw/test controls lived in `FileMapPanel`, `FileDetailPanel`, unit tests, and the file-map e2e spec. |
+
+Impact / blast radius:
+
+| Target | Result |
+|---|---|
+| `anvien impact file anvien-web/src/components/FileMapPanel.tsx --repo Anvien --direction upstream` | HIGH blast radius at file level. Affected files include `App.tsx`, `FileTreePanel.tsx`, `main.tsx`, and `FileMapPanel` tests; no affected processes were reported. |
+| `anvien impact file anvien-web/src/components/FileDetailPanel.tsx --repo Anvien --direction upstream` | HIGH blast radius at file level. Affected files include `App.tsx`, `CodeReferencesPanel.tsx`, `main.tsx`, and `FileDetailPanel` tests; no affected processes were reported. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `anvien-web/src/components/FileMapPanel.tsx` | Removed `raw-unresolved` and `test-unresolved` sort options from the Web file map; removed raw/test unresolved counts from row tooltip. |
+| `anvien-web/src/components/FileDetailPanel.tsx` | Removed raw unresolved toggle and raw unresolved group rendering path; test files now show default unresolved `0 sites`, no raw samples, and no test raw quality pills. |
+| `anvien-web/test/unit/FileMapPanel.test.tsx` | Asserts raw/test unresolved options are absent from the Web sort selector. |
+| `anvien-web/test/unit/FileDetailPanel.test.tsx` | Asserts raw toggle is absent, raw test sample remains hidden, and test relationships remain visible. |
+| `anvien-web/e2e/file-map-test-unresolved.spec.ts` | Asserts raw/test sort options and raw toggle are absent in the browser flow. |
+| Plan / benchmark | Added post-closure correction and current Web production surface metrics. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `npm --prefix anvien-web test -- FileMapPanel FileDetailPanel` | Pass as a pre-build smoke check; 2 files, 6 tests. |
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass; Vite emitted existing chunk-size/dynamic-import warnings. |
+| `npm --prefix anvien-web test -- FileMapPanel FileDetailPanel` | Pass after full build; 2 files, 6 tests. |
+| `npm --prefix anvien-web run test:e2e -- file-map-test-unresolved.spec.ts` | Pass after full build; 1 Chromium e2e. |
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `anvien detect-changes --repo Anvien --scope all` | Pass. Scope contained 8 changed/affected files across Web graph UI, frontend tests, and plan ledgers; summary risk low, file-layer changed risk low, affected count 0, and no affected processes. |
+
+Failures / handling:
+
+- No implementation or validation failures. Existing Vite warnings remain unrelated to this slice.
+
+Commit:
+
+- Pending commit.
