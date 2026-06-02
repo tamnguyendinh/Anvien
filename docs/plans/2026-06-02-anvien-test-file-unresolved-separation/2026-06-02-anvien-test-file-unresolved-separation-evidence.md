@@ -349,4 +349,4 @@ Detect changes:
 
 Commit:
 
-- Pending until detect-changes passes.
+- `6c0a7f7 feat: rank unresolved hotspots by default-visible bucket`
