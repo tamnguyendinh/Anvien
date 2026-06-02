@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: Active
+Status: Complete
 
 Companion files:
 
@@ -230,7 +230,7 @@ The plan is complete when:
   - Implementation Gate: do not edit README before generated behavior is implemented and validated; do not copy phase evidence, benchmark tables, or internal implementation details into README.
   - Acceptance: README accurately describes the final generated skill set and guide separation; evidence records the README sections reviewed and changed; README does not mention removed broad/router skills as active generated skills.
 
-- [ ] [P3-C] Detect changes, record benchmark deltas, and commit.
+- [x] [P3-C] Detect changes, record benchmark deltas, and commit.
   - Goal: close the implementation slice with synchronized plan/evidence/benchmark state.
   - Work Steps: update evidence with build/test/regeneration results; update benchmark with before/after inventory counts; run `anvien detect-changes --repo Anvien --scope all`; commit the completed slice.
   - Implementation Gate: do not commit until detect-changes and ledger updates are recorded.

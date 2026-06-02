@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: Active
+Status: Complete
 
 Companion files:
 
@@ -294,3 +294,7 @@ Impact / blast radius:
 Failures / handling:
 
 - None from detect-changes.
+
+Commit:
+
+- `6ed6fb4 feat: reduce generated Anvien workflow skills`
