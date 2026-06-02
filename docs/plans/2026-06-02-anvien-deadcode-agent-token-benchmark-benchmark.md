@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: complete
+Status: measurement harness ready; benchmark baseline pending
 
 Companion files:
 
@@ -11,200 +11,200 @@ Companion files:
 
 ## Reset Notice
 
-Old benchmark numbers from the invalidated run have been removed. This ledger starts clean for the rerun.
+All prior benchmark numbers from the invalid run are discarded.
+
+Reason: the old run did not produce a valid `agent_session_tokens` value for Anvien mode and incorrectly treated output-volume diagnostics as if they could answer the token question.
+
+Do not reuse old token totals, reconstructed output volumes, file-read counts, candidate counts, or ratios.
 
 ## Benchmark Rules
 
 1. Record quantitative data only.
-2. Put command details, reasoning, token-accountant notes, and candidate proof in the evidence ledger.
-3. Use `estimated_tokens = ceil(characters / 4)` when exact model tokenizer accounting is unavailable.
-4. Separate discovery cost from shared verification cost.
-5. Separate native-search and Anvien-guided metrics.
-6. Record both totals and token-source breakdowns.
-7. Do not count shared verification cost as a discovery win for either method.
-8. Token accounting is observation-based: count only context the token accountant observes the main agent receive, read, or emit.
-9. Do not include or exclude content by source category alone. Anvien command output, graph files, redirected files, cache/index artifacts, summaries, and source files are counted only when the accountant observes them entering main-agent context.
-10. Count observed output from every Anvien command called by the main agent.
-11. If observed character counts cannot be measured for a phase, mark that phase's token comparison invalid.
+2. Put command details, reasoning, token-measurement notes, and candidate proof in the evidence ledger.
+3. The primary score is `agent_session_tokens`.
+4. If runtime/model telemetry is unavailable, use `agent_session_token_proxy` only when the delivered transcript is exact and measurable.
+5. Do not use Anvien output volume, graph size, cache size, index size, or redirected command body size as token score.
+6. Separate discovery cost from shared verification cost.
+7. Separate native and Anvien mode metrics.
+8. Do not count shared verification cost as a discovery win for either mode.
+9. If token usage cannot be measured for either mode, mark token comparison invalid before writing ratios.
 
 ## Metric Definitions
 
 | Metric | Unit | Definition |
 |---|---:|---|
-| `observed_characters` | chars | Characters the token accountant observes entering or leaving main-agent context. |
-| `estimated_tokens` | tokens | `ceil(observed_characters / 4)` unless exact tokenizer data is available. |
-| `tool_call_argument_tokens` | tokens | Estimated tokens for command/tool-call text emitted by the main agent. |
-| `tool_result_tokens` | tokens | Estimated tokens for observed stdout/stderr/tool-result text received by the main agent. |
-| `anvien_observed_tokens` | tokens | Observed Anvien-related context in the Anvien-guided phase. |
-| `search_output_tokens` | tokens | Observed output tokens from native list/search commands. |
-| `source_read_tokens` | tokens | Observed source/file content tokens read by the main agent. |
-| `agent_response_tokens` | tokens | Main-agent text output tokens for reports/conclusions. |
-| `retry_error_tokens` | tokens | Observed failed command/error/retry output tokens. |
-| `unique_files_read` | files | Unique source/doc files opened into main-agent context during a phase. |
-| `file_bytes_read` | bytes | Bytes for file content read into main-agent context. |
+| `agent_session_tokens` | tokens | Actual model input + model output tokens spent by the AI agent during the phase. |
+| `agent_session_token_proxy` | tokens | Exact delivered-transcript proxy when telemetry is unavailable. |
+| `token_measurement_valid` | yes/no | Whether token usage for the phase is valid for comparison. |
+| `task_prompt_tokens` | tokens | Fixed task prompt delivered to the agent. |
+| `tool_call_argument_tokens` | tokens | Tool-call command/argument text emitted by the agent. |
+| `delivered_tool_result_tokens` | tokens | Tool result text delivered back into the agent session. |
+| `delivered_file_content_tokens` | tokens | File content read into the agent session. |
+| `agent_response_tokens` | tokens | Agent-visible response/report text for the phase. |
+| `retry_error_tokens` | tokens | Error/retry text delivered into the agent session. |
+| `local_tool_output_volume` | chars/bytes | Diagnostic only; local command data not necessarily delivered to the agent and not token score. |
+| `unique_files_read` | files | Unique source/doc files opened into agent context during a phase. |
+| `file_bytes_read` | bytes | Bytes for file content read into agent context. |
 | `search_calls` | calls | Native list/search commands such as `rg`, `rg --files`, `Get-ChildItem`, or equivalent. |
-| `anvien_calls` | calls | Anvien CLI/MCP/tool/resource calls used in Anvien-guided discovery. |
+| `anvien_calls` | calls | Anvien CLI/MCP/tool/resource calls used in Anvien mode. |
 | `elapsed_seconds` | seconds | Wall-clock time for the phase. |
-| `candidate_count` | candidates | Candidates reported by that discovery method before shared verification. |
+| `candidate_count` | candidates | Candidates reported by that discovery mode before shared verification. |
 | `confirmed_deadcode` | candidates | Candidates verified as confirmed deadcode. |
 | `likely_deadcode` | candidates | Candidates verified as likely deadcode. |
 | `uncertain` | candidates | Candidates with insufficient proof or material dynamic/public risk. |
 | `false_positive` | candidates | Candidates disproven during verification. |
 
-## Token Observation Rules
-
-| Data source | Count tokens? | Rule |
-|---|---|---|
-| Task prompt shown to main agent | observed => yes | Count fixed prompt text once per discovery method when the accountant observes it. |
-| Tool-call command/argument text emitted by main agent | observed => yes | Count command/tool arguments when the accountant observes them. |
-| Native `rg`/list/search output | observed => yes | Count stdout/stderr text observed by the accountant. |
-| Source file content | observed => yes | Count file content the accountant observes the main agent read. |
-| Any Anvien command stdout/stderr/tool result | observed => yes | Count observed output from every Anvien command. |
-| Anvien graph file, output file, cache/index artifact, or generated artifact | observed => yes | Count it if the accountant observes the main agent read/receive it; otherwise record it as unobserved and exclude it from token totals. |
-| Output redirected to `.tmp/*.json` | observed => yes | The accountant records observed redirected content when the main agent receives/reads it; unobserved redirected bodies are recorded as unobserved and excluded from token totals. |
-| Captured command body where only a summary/count is printed | summary observed => summary only | Count the observed summary/count text; count the captured body only if the accountant observes it entering main-agent context. |
-| Tool output truncated by environment | observed portion only | Count the observed portion if measurable; otherwise mark token comparison invalid. |
-| Agent-written report/final answer | observed => yes | Count main-agent response text for the phase. |
-
 ## B0 - Baseline Metrics
 
-Status: complete
+Status: superseded by measurement-harness implementation; final benchmark baseline pending
 
 | Metric | Unit | Value |
 |---|---:|---:|
-| Baseline commit | SHA | `6564d7d5f5f7d53767a4afbc1028cda26535b977` |
-| Discovery start commit | SHA | `e0b2f336b37a7d65eec6ddf5d6f20ac7dfd40900` |
+| Baseline commit | SHA | `b5568094184b92618e2627460c5a2f22b120a497` pre-harness; final pending |
 | Dirty source files at baseline | files | 0 |
-| Dirty benchmark docs/reports at baseline | files | 0 |
+| Dirty benchmark docs/reports at baseline | files | 3 |
 | CPU logical processors | count | 8 |
 | Physical memory | bytes | 33238466560 |
-| Git version | version | 2.54.0.windows.1 |
-| Go version | version | 1.26.3 windows/amd64 |
-| Node version | version | v24.15.0 |
-| npm version | version | 11.12.1 |
+| Git version | version | `2.54.0.windows.1` |
+| Go version | version | `go1.26.3 windows/amd64` |
+| Node version | version | `v24.15.0` |
+| npm version | version | `11.12.1` |
 
-## B1 - Token Accountant Setup Metrics
+## B1 - Token Measurement Setup Metrics
 
 Status: complete
 
 | Metric | Unit | Value |
 |---|---:|---:|
-| Token accountant active before native phase | yes/no | yes |
-| Token accountant active before Anvien phase | yes/no | yes |
-| Exact observed output counting available | yes/no | yes |
-| Truncated-output handling valid | yes/no | yes |
-| Token comparison valid | yes/no | no |
+| Measurement mechanism | name | `codex_exec_json_usage` primary; `tiktoken_transcript_proxy` fallback |
+| Runtime token telemetry available | yes/no | yes |
+| Exact transcript proxy available | yes/no | yes |
+| Native token measurement eligible | yes/no | yes |
+| Anvien token measurement eligible | yes/no | yes |
+| Token comparison eligible before discovery | yes/no | yes |
 
 ## B2 - Discovery Cost Summary
 
-Status: complete
+Status: pending
 
-| Method | elapsed_seconds | observed_total_tokens | observed_characters | unique_files_read | file_bytes_read | search_calls | anvien_calls | candidate_count |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Native-search | 174 | 27088 | 108350 | 10 | 10300 | 29 | 0 | 8 |
-| Anvien-guided | 180 approx | invalid; reconstructed >=215431 | invalid; reconstructed >=861723 | 11 | 6160 | 17 | 24 | 14 |
+| Method | elapsed_seconds | token_measurement_valid | agent_session_tokens | agent_session_token_proxy | unique_files_read | file_bytes_read | search_calls | anvien_calls | candidate_count |
+|---|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| Native mode | pending | pending | pending | pending | pending | pending | pending | 0 | pending |
+| Anvien mode | pending | pending | pending | pending | pending | pending | pending | pending | pending |
 
-## B3 - Native-Search Token Breakdown
+## B3 - Native Mode Token Breakdown
 
-Status: complete
+Status: pending
 
-| Token source | observed_characters | estimated_tokens | Notes |
-|---|---:|---:|---|
-| Task prompt | included in total | included in total | fixed task prompt |
-| Tool call arguments | 15900 | 3975 | native command/tool text |
-| Search/list command output | 23800 | 5950 | native search only |
-| File reads | 10300 | 2575 | source/config files visibly read |
-| Anvien observed output | 0 | 0 | prohibited in native phase |
-| Agent response | 6200 | 1550 | native conclusion/report text |
-| Retry/error output | 2650 | 663 | failed commands or detours |
-| Other command stdout/stderr | 49500 | 12375 | command output not separately bucketed as source/search |
-| Total | 108350 | 27088 | native self-accountant ledger |
+| Token source | tokens | Notes |
+|---|---:|---|
+| Task prompt | pending | fixed task prompt |
+| Tool-call arguments | pending | native command/tool text |
+| Delivered tool/search results | pending | native command output delivered to agent |
+| Delivered file content | pending | source/doc files read into agent context |
+| Agent response | pending | native conclusion/report text |
+| Retry/error output | pending | failed commands or detours delivered to agent |
+| Total `agent_session_tokens` or proxy | pending | primary native score |
+| Token measurement valid | pending | yes/no |
 
-## B4 - Anvien-Guided Token Breakdown
+## B4 - Anvien Mode Token Breakdown
 
-Status: complete; invalid token axis
+Status: pending
 
-| Token source | observed_characters | estimated_tokens | Notes |
-|---|---:|---:|---|
-| Task prompt | invalid | invalid | included in phase but exact total invalid |
-| Tool call arguments | invalid | invalid | not exact after transcript truncation |
-| Anvien observed context | 777694 reconstructed | 194424 reconstructed | large `context` outputs were transcript-truncated |
-| Follow-up search/list output | 77869 reconstructed | 19468 reconstructed | one broad native search output was transcript-truncated |
-| File reads | 6160 | 1540 | source snippets visibly read |
-| Agent response | invalid | invalid | not exact after transcript truncation |
-| Retry/error output | included in reconstructed categories | included in reconstructed categories | 6 failed/retry calls |
-| Total | invalid; >=861723 reconstructed | invalid; >=215431 reconstructed | no token winner may be claimed |
+| Token source | tokens | Notes |
+|---|---:|---|
+| Task prompt | pending | fixed task prompt |
+| Tool-call arguments | pending | Anvien and follow-up command/tool text |
+| Delivered Anvien tool results | pending | only Anvien output delivered into agent session |
+| Delivered follow-up search results | pending | native search after Anvien guidance |
+| Delivered file content | pending | source/doc files read into agent context |
+| Agent response | pending | Anvien-mode conclusion/report text |
+| Retry/error output | pending | failed commands or detours delivered to agent |
+| Total `agent_session_tokens` or proxy | pending | primary Anvien-mode score |
+| Token measurement valid | pending | yes/no |
 
-## B5 - File Read And Command Counts
+## B5 - Local Tool Output Diagnostics
 
-Status: complete
+Status: pending
+
+These metrics are diagnostic only. They are not token score unless the content was delivered into the agent session and counted in B3/B4.
+
+| Method | diagnostic | unit | value | Counted as token score? |
+|---|---|---:|---:|---|
+| Native mode | local command output volume not delivered to agent | chars/bytes | pending | no |
+| Anvien mode | Anvien local output/graph/cache/index volume not delivered to agent | chars/bytes | pending | no |
+
+## B6 - File Read And Command Counts
+
+Status: pending
 
 | Method | unique_files_read | file_bytes_read | source_files_read | docs_read | search_calls | anvien_calls | failed_or_retry_calls |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Native-search | 10 | 10300 | 10 | 0 | 29 | 0 | 4 |
-| Anvien-guided | 11 | 6160 | 11 | 0 | 17 | 24 | 6 |
-| Shared verification | 19 approx | 27500 approx | 17 approx | 0 | 7 approx | 0 | 2 |
+| Native mode | pending | pending | pending | pending | pending | 0 | pending |
+| Anvien mode | pending | pending | pending | pending | pending | pending | pending |
+| Shared verification | pending | pending | pending | pending | pending | pending | pending |
 
-## B6 - Candidate Discovery Counts
+## B7 - Candidate Discovery Counts
 
-Status: complete
+Status: pending
 
 | Method | candidate_count | symbol_level | file_level | package_or_module_level | route_or_tool_surface | other |
 |---|---:|---:|---:|---:|---:|---:|
-| Native-search | 8 | 6 | 0 | 0 | 0 | 2 |
-| Anvien-guided | 14 | 14 | 0 | 0 | 0 | 0 |
-| Union | 21 | 19 | 0 | 0 | 0 | 2 |
+| Native mode | pending | pending | pending | pending | pending | pending |
+| Anvien mode | pending | pending | pending | pending | pending | pending |
+| Union | pending | pending | pending | pending | pending | pending |
 
-## B7 - Candidate Verification Counts
+## B8 - Candidate Verification Counts
 
-Status: complete
+Status: pending
 
 | Method source | candidates | confirmed_deadcode | likely_deadcode | uncertain | false_positive |
 |---|---:|---:|---:|---:|---:|
-| Native-search | 8 | 4 | 4 | 0 | 0 |
-| Anvien-guided | 14 | 13 | 1 | 0 | 0 |
-| Found by both | 1 | 0 | 1 | 0 | 0 |
-| Native only | 7 | 4 | 3 | 0 | 0 |
-| Anvien only | 13 | 13 | 0 | 0 | 0 |
-| Union | 21 | 17 | 4 | 0 | 0 |
+| Native mode | pending | pending | pending | pending | pending |
+| Anvien mode | pending | pending | pending | pending | pending |
+| Found by both | pending | pending | pending | pending | pending |
+| Native only | pending | pending | pending | pending | pending |
+| Anvien only | pending | pending | pending | pending | pending |
+| Union | pending | pending | pending | pending | pending |
 
-## B8 - Efficiency Ratios
+## B9 - Efficiency Ratios
 
-Status: complete
+Status: pending
 
 | Metric | Formula | Value |
 |---|---|---:|
-| Token reduction from Anvien | `(native_observed_total_tokens - anvien_observed_total_tokens) / native_observed_total_tokens` | invalid |
-| File-read reduction from Anvien | `(native_unique_files - anvien_unique_files) / native_unique_files` | -10.0% |
-| Search-call reduction from Anvien | `(native_search_calls - anvien_search_calls) / native_search_calls` | 41.4% native follow-up search reduction; total tool calls increased |
-| True-candidate delta | `(anvien_confirmed + anvien_likely) - (native_confirmed + native_likely)` | +6 |
-| False-positive delta | `anvien_false_positive - native_false_positive` | 0 |
-| Verification burden delta | `anvien_uncertain - native_uncertain` | 0 |
+| Token delta | `anvien_agent_session_tokens - native_agent_session_tokens` | pending |
+| Token reduction from Anvien | `(native_agent_session_tokens - anvien_agent_session_tokens) / native_agent_session_tokens` | pending |
+| File-read reduction from Anvien | `(native_unique_files - anvien_unique_files) / native_unique_files` | pending |
+| Search-call reduction from Anvien | `(native_search_calls - anvien_search_calls) / native_search_calls` | pending |
+| True-candidate delta | `(anvien_confirmed + anvien_likely) - (native_confirmed + native_likely)` | pending |
+| False-positive delta | `anvien_false_positive - native_false_positive` | pending |
+| Verification burden delta | `anvien_uncertain - native_uncertain` | pending |
 
-## B9 - Final Outcome Matrix
+## B10 - Final Outcome Matrix
 
-Status: complete
+Status: pending
 
 | Question | Result | Numeric support |
 |---|---|---|
-| Did Anvien-guided discovery use fewer observed-context tokens? | invalid | native 27,088 valid; Anvien reconstructed >=215,431 but exact invalid due truncation |
-| Did Anvien-guided discovery read fewer files? | no | native 10; Anvien 11 |
-| Did Anvien-guided discovery use fewer native search calls? | yes for native follow-up only; no for total calls | native 29; Anvien follow-up 17 plus 24 Anvien calls |
-| Did Anvien-guided discovery find at least as many confirmed/likely candidates? | yes | native 8; Anvien 14 |
-| Did Anvien-guided discovery avoid increasing false positives? | yes | native 0; Anvien 0 |
-| Was token comparison valid? | no | Anvien phase had transcript-truncated outputs |
-| Overall result | correctness favors Anvien; token winner invalid; file-read count favors native | union 21 candidates; Anvien-only 13 confirmed |
+| Did Anvien mode spend fewer AI-agent tokens? | pending | pending |
+| Did Anvien mode read fewer files? | pending | pending |
+| Did Anvien mode use fewer native search calls? | pending | pending |
+| Did Anvien mode find at least as many confirmed/likely candidates? | pending | pending |
+| Did Anvien mode avoid increasing false positives? | pending | pending |
+| Was token comparison valid? | pending | pending |
+| Overall result | pending | pending |
 
-## B10 - Shared Verification Token Shape
+## B11 - Shared Verification Token Shape
 
-Status: complete
+Status: pending
 
-| Metric | tokens | observed_characters | Notes |
-|---|---:|---:|---|
-| Verification prompt/context | approx 250 | approx 1000 | shared across union candidates |
-| Verification tool call arguments | approx 900 | approx 3600 | verification commands/tools |
-| Verification search output | approx 2500 | approx 10000 | source-backed checks |
-| Verification file reads | approx 3400 | approx 13600 | source/config files read for proof |
-| Verification agent response | not finalized here | not finalized here | verdict narrative lives in evidence ledger |
-| Verification retry/error output | approx 250 | approx 1000 | failed commands or detours |
-| Shared verification total | approx 7300 plus evidence text | approx 29200 plus evidence text | not counted as either discovery method cost |
+| Metric | tokens | Notes |
+|---|---:|---|
+| Verification prompt/context | pending | shared across union candidates |
+| Verification tool-call arguments | pending | verification commands/tools |
+| Verification delivered tool/search results | pending | source-backed checks |
+| Verification delivered file content | pending | source/doc files read for proof |
+| Verification agent response | pending | verdict narrative |
+| Verification retry/error output | pending | failed commands or detours |
+| Shared verification total | pending | not counted as either discovery mode cost |

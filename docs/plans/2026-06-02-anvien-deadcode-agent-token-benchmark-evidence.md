@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: complete
+Status: measurement harness ready; benchmark baseline pending
 
 Companion files:
 
@@ -11,21 +11,24 @@ Companion files:
 
 ## Reset Notice
 
-Old evidence from the invalidated benchmark run has been removed. This ledger starts clean for the rerun.
+All prior evidence from the invalid run is discarded.
+
+Reason: the old run did not correctly measure AI-agent token spend in Anvien mode. Anvien local output volume is not the same thing as agent token usage.
+
+Do not reuse old command logs, old candidate lists, old token totals, old verification tables, or old conclusions.
 
 ## Evidence Rules
 
-1. Record commands, source reads, token-accountant observations, and candidate evidence as they happen.
+1. Evidence explains why the benchmark result is valid.
 2. Keep quantitative metric tables in the benchmark ledger.
-3. Keep native-search and Anvien-guided discovery separate until union verification.
-4. Native-search evidence must not include Anvien commands, outputs, resources, generated context, graph artifacts, or prior Anvien reports.
-5. Anvien-guided evidence must record graph freshness before graph-based commands.
-6. Token evidence must record only context the token accountant observes the main agent receive, read, or emit.
-7. Record every Anvien command output, artifact read, summary, and error that the accountant observes during Anvien-guided work.
-8. Record unobserved, redirected, capture-only, and truncated content with the accountant's observation status instead of assuming it is counted or uncounted by type.
-9. Record failures, retries, and abandoned paths because they consume agent work.
-10. Record candidate verification from source-backed facts, not intuition.
-11. Do not record deadcode deletion or cleanup patches because this benchmark only finds candidates.
+3. Native mode evidence must not include Anvien commands, outputs, resources, generated context, graph artifacts, or prior Anvien reports.
+4. Anvien mode evidence must record graph freshness before graph-based commands.
+5. Token evidence must prove the AI agent's token usage measurement mechanism, not Anvien output size.
+6. Record delivered tool results and file reads only when they enter the AI agent session or exact transcript proxy.
+7. Record unobserved local tool artifacts as unobserved; do not turn them into token usage.
+8. Record failures, retries, and abandoned paths because they can consume agent tokens when delivered to the agent.
+9. Record candidate verification from source-backed facts, not intuition.
+10. Do not record deadcode deletion or cleanup patches because this benchmark only finds candidates.
 
 ## Evidence Template
 
@@ -44,7 +47,7 @@ Scope:
 
 Commands / reads:
 
-| Step | Command or file | Purpose | Accountant observation | Token-accountant note | Result |
+| Step | Command or file | Purpose | Delivered to agent? | Token-measurement note | Result |
 |---|---|---|---|---|---|
 | ... | ... | ... | ... | ... | ... |
 
@@ -63,7 +66,7 @@ Completion:
 | Item | Result |
 |---|---|
 | Declared procedure recorded before discovery | pending |
-| Token accountant active | pending |
+| Token measurement active | pending |
 | Completion condition met | pending |
 | Open leads remaining | pending |
 | Blocker or incomplete reason | pending |
@@ -72,31 +75,42 @@ Completion:
 
 ## E0 - Baseline
 
-Date:
+Date: 2026-06-02T13:06:24.1784982+07:00
 
-Date: 2026-06-02 11:19:24 +07:00
-
-Status: complete
+Status: superseded by measurement-harness implementation; final benchmark baseline pending
 
 Required evidence:
 
 | Check | Result |
 |---|---|
-| Baseline commit | `6564d7d5f5f7d53767a4afbc1028cda26535b977` |
-| Discovery start commit | `e0b2f336b37a7d65eec6ddf5d6f20ac7dfd40900`; source code unchanged from baseline, P0 docs only were committed before discovery |
+| Baseline commit | `b5568094184b92618e2627460c5a2f22b120a497` pre-harness baseline; not the final benchmark discovery baseline. |
 | Branch | `master` |
-| Worktree status | clean at baseline (`git status --short` produced no output) |
-| Source-code dirty state | 0 dirty source files at baseline |
-| Benchmark docs/reports dirty state | 0 dirty benchmark docs/reports at baseline |
+| Worktree status | Dirty only in benchmark docs at pre-harness baseline: `M docs/plans/2026-06-02-anvien-deadcode-agent-token-benchmark-benchmark.md`, `M docs/plans/2026-06-02-anvien-deadcode-agent-token-benchmark-evidence.md`, `M docs/plans/2026-06-02-anvien-deadcode-agent-token-benchmark-plan.md` |
+| Source-code dirty state | Clean at pre-harness baseline. Final benchmark baseline must be captured after committing the measurement harness. |
+| Benchmark docs/reports dirty state | 3 dirty benchmark docs/reports at pre-harness baseline. |
 | Shell | PowerShell 7.6.2 |
-| OS / CPU / RAM | Microsoft Windows 10 Pro 10.0.19045 64-bit; Intel(R) Core(TM) i7-3770 CPU @ 3.40GHz; 4 cores / 8 logical processors; 33,238,466,560 bytes visible memory |
-| Go / Node / npm / Git versions if used | Go 1.26.3 windows/amd64; Node v24.15.0; npm 11.12.1; Git 2.54.0.windows.1 |
+| OS / CPU / RAM | Microsoft Windows 10 Pro 10.0.19045 64-bit; Intel(R) Core(TM) i7-3770 CPU @ 3.40GHz; 4 cores / 8 logical processors; 32,459,440 KiB visible memory. |
+| Go / Node / npm / Git versions if used | `go version go1.26.3 windows/amd64`; `node v24.15.0`; `npm 11.12.1`; `git version 2.54.0.windows.1` |
 
-## E1 - Token Accountant Setup
+Commands / reads:
 
-Date:
+| Step | Command or file | Purpose | Delivered to agent? | Token-measurement note | Result |
+|---|---|---|---|---|---|
+| E0-1 | `git rev-parse HEAD` | Record baseline commit. | yes | Baseline evidence only; discovery not started. | `b5568094184b92618e2627460c5a2f22b120a497` |
+| E0-2 | `git branch --show-current` | Record branch. | yes | Baseline evidence only; discovery not started. | `master` |
+| E0-3 | `git status --porcelain=v1` | Record dirty state. | yes | Baseline evidence only; discovery not started. | Three modified benchmark docs; no dirty source files. |
+| E0-4 | `git --version` | Record tool version. | yes | Baseline evidence only; discovery not started. | `git version 2.54.0.windows.1` |
+| E0-5 | `go version` | Record tool version. | yes | Baseline evidence only; discovery not started. | `go version go1.26.3 windows/amd64` |
+| E0-6 | `node --version` | Record tool version. | yes | Baseline evidence only; discovery not started. | `v24.15.0` |
+| E0-7 | `npm --version` | Record tool version. | yes | Baseline evidence only; discovery not started. | `11.12.1` |
+| E0-8 | `$PSVersionTable.PSVersion.ToString()` | Record shell version. | yes | Baseline evidence only; discovery not started. | `7.6.2` |
+| E0-9 | `Get-Date -Format o` | Record local timestamp. | yes | Baseline evidence only; discovery not started. | `2026-06-02T13:06:24.1784982+07:00` |
+| E0-10 | `Get-CimInstance Win32_OperatingSystem ...` | Record OS/RAM. | yes | Baseline evidence only; discovery not started. | Windows 10 Pro 10.0.19045 64-bit; 32,459,440 KiB visible memory. |
+| E0-11 | `Get-CimInstance Win32_Processor ...` | Record CPU. | yes | Baseline evidence only; discovery not started. | Intel(R) Core(TM) i7-3770 CPU @ 3.40GHz; 4 cores / 8 logical processors. |
 
-Date: 2026-06-02 11:19:24 +07:00
+## E1 - Token Measurement Setup
+
+Date: 2026-06-02
 
 Status: complete
 
@@ -104,164 +118,164 @@ Required evidence:
 
 | Item | Result |
 |---|---|
-| Accountant identity/mechanism | Main-agent self-observation ledger. `tool_search` exposed sub-agent tools, but no passive observer can automatically see future main-agent tool results unless the main agent forwards them, so the benchmark uses explicit self-tracking of observed context. |
-| Can observe main-agent tool results | Yes, for tool outputs that appear in this transcript. Each phase records command/tool text and the observed stdout/stderr/result text the main agent actually receives. |
-| Can distinguish observed context from unobserved full-output proxy | Yes. A proxy line such as `full_stdout_proxy_tokens: 228504` is counted only as that observed line, not as the hidden body it describes. Hidden redirected bodies are unobserved until explicitly read. |
-| Can record tool-call argument text | Yes. Every shell command, Anvien command, and other tool-call argument used during discovery is recorded as observed emitted context for its phase. |
-| Can record source/file reads | Yes. File content is counted only when opened into the main-agent transcript; separate byte/character summaries are not treated as the hidden file body unless the body is also read. |
-| Can record agent response text | Yes. Phase reports written into evidence/benchmark ledgers are counted as agent-emitted context for the phase. |
-| Truncation handling rule | If a tool output is truncated and the observed portion cannot be measured, token comparison for that phase is invalid. If the output is summarized intentionally, only the summary that entered context is counted. |
-| Blocker if exact observed-context accounting is unavailable | No current blocker for P1 start; validity remains conditional on recording each phase without unmeasured truncation. |
+| Measurement mechanism | Primary: isolated `codex exec --json` sessions, using `turn.completed.usage.input_tokens + turn.completed.usage.output_tokens` as `agent_session_tokens`. Fallback/audit: `scripts/measure-agent-token-proxy.ps1` transcript proxy with Python `tiktoken` using `o200k_base` unless overridden. |
+| Exact model/runtime token telemetry available | Yes for Codex CLI sessions. Probe output included `usage.input_tokens`, `usage.cached_input_tokens`, `usage.output_tokens`, and `usage.reasoning_output_tokens`. |
+| Exact transcript proxy available if telemetry is not available | Yes as a fallback for harnessed commands/files/responses: `scripts/measure-agent-token-proxy.ps1` records NDJSON events and counts delivered content through `tiktoken`. It is not used to infer hidden model telemetry. |
+| Can measure native mode with this mechanism | Yes, by running native discovery in its own `codex exec --json` session and parsing the usage event. |
+| Can measure Anvien mode with this mechanism | Yes, by running Anvien-guided discovery in a separate `codex exec --json` session and parsing the usage event. |
+| Can distinguish agent-session tokens from Anvien local output volume | Yes. Codex CLI usage is runtime model usage, and the proxy script marks undelivered/local output separately from delivered transcript content. |
+| Can exclude hidden graph/cache/index/output not delivered to agent | Yes. Hidden local artifacts are not part of Codex CLI model usage unless the measured agent reads/receives them; the proxy script records undelivered output under `local_tool_output_volume`. |
+| Blocker if token measurement is unavailable | No current blocker. Discovery has not started because the harness must be committed and the final benchmark baseline recaptured first. |
 
-## E2 - Native-Search Discovery Without Anvien
+Commands / reads:
 
-Date: 2026-06-02
+| Step | Command or file | Purpose | Delivered to agent? | Token-measurement note | Result |
+|---|---|---|---|---|---|
+| E1-1 | `get_goal` tool | Check whether the active runtime exposes goal/token usage telemetry. | yes | This confirmed no usable runtime token telemetry for the benchmark phases. | `goal: null`; `remainingTokens: null`; `completionBudgetReport: null` |
+| E1-2 | `codex exec --json --cd E:\Anvien --sandbox danger-full-access "Reply with exactly: TOKEN_PROBE_OK"` | Check isolated Codex CLI usage telemetry. | yes | Primary benchmark mechanism; measured usage belongs to the isolated Codex CLI session. | `input_tokens=17510`, `cached_input_tokens=3456`, `output_tokens=26`, `reasoning_output_tokens=16`. |
+| E1-3 | `python -m pip install --target .tmp\tokenizer-python tiktoken` | Install tokenizer for transcript proxy fallback. | yes | Enables exact proxy counts for delivered transcript text. | Installed `tiktoken 0.13.0` plus dependencies under `.tmp\tokenizer-python`. |
+| E1-4 | `scripts\measure-agent-token-proxy.ps1` smoke sequence | Verify transcript proxy with `tiktoken`. | yes | Fallback/audit mechanism produced exact token counts. | Smoke summary reported `agent_session_token_proxy=56` and `token_measurement_valid=true`. |
 
-Status: complete
+Completion:
+
+| Item | Result |
+|---|---|
+| Declared procedure recorded before discovery | yes |
+| Token measurement active | yes, for future isolated Codex CLI discovery sessions |
+| Completion condition met | yes |
+| Open leads remaining | not applicable; discovery did not start |
+| Blocker or incomplete reason | none for token measurement; final benchmark baseline still pending after harness commit |
+| Confidence | high |
+
+## E2 - Native Discovery Without Anvien
+
+Date:
+
+Status: pending
 
 Rules for this section:
 
 - Do not use Anvien.
-- Record every command output and source file read observed by the token accountant.
-- Record candidates before any Anvien-guided work starts.
+- Record every delivered command result and source file read that enters the agent session/proxy.
+- Record candidates before any Anvien-mode work starts.
 
 Native command/read log:
 
-| Step | Command or file | Purpose | Accountant observation | Token-accountant note | Result |
+| Step | Command or file | Purpose | Delivered to agent? | Token-measurement note | Result |
 |---|---|---|---|---|---|
-| N1 | `rg --files` inventory and manifest reads | identify source surface without Anvien | observed summaries and selected manifest content | no Anvien surface used | complete |
-| N2 | keyword/declaration/reference scans | find unused/deadcode leads | 29 native command/read groups, 108,350 observed chars total | one timeout/retries counted; no truncation reported by native agent | complete |
-| N3 | targeted source reads | classify native leads | 10 files visibly read | large internal scans were not counted as file content unless printed/read | complete |
+| pending | pending | pending | pending | pending | pending |
 
 Native candidates:
 
 | Candidate id | Path | Symbol/name | Kind | Discovery evidence | Notes |
 |---|---|---|---|---|---|
-| N1 | `internal/cli/setup_command.go` | `setupMCPEntry` | Go private type | exact native search found only declaration | low dynamic risk |
-| N2 | `internal/session/controller.go` | `NewControllerWithResolver` | Go exported constructor under `internal` | exact native search found only declaration | medium public/internal API risk |
-| N3 | `internal/session/controller.go` | `(*Controller).GetSession` | Go exported method under `internal` | exact native search found only declaration | medium public/internal API risk |
-| N4 | `anvien-web/src/components/DropZone.tsx` | `data` | unused callback parameter | targeted ESLint reported unused parameter at line 228 | low risk |
-| N5 | `anvien-web/e2e/graph-orientation-labels.spec.ts` | `_error` | unused catch binding | targeted ESLint reported unused binding at line 443 | low risk |
-| N6 | `anvien-web/test/unit/GraphCanvas.selection-performance.test.tsx` | `sigmaOnSpy`, `sigmaOffSpy`, `cameraOnSpy`, `cameraOffSpy` | unused test locals | targeted ESLint reported all four locals unused at lines 14-17 | may indicate missing assertions |
-| N7 | `anvien-web/src/generated/anvien-contracts.ts` | file-level `/* eslint-disable */` | stale generated directive | targeted ESLint reported unused eslint-disable at line 1 | generated source-of-truth risk |
-| N8 | `anvien-web/src/lib/lucide-icons.tsx` | `EyeOff`, `FileArchive`, `FlaskConical`, `Github`, `Heart`, `Upload` | unused local icon re-exports | exact search found each icon name only in the barrel export block | medium public barrel risk |
+| pending | pending | pending | pending | pending | pending |
 
 Native completion:
 
 | Item | Result |
 |---|---|
-| Declared native procedure recorded before first search | yes |
-| Token accountant closed native phase | yes |
-| Completion condition met | yes |
-| Open native leads remaining | none reported |
-| Blocker or incomplete reason | none |
-| Confidence | valid native discovery ledger; no Anvien use |
+| Declared native procedure recorded before first search | pending |
+| Token measurement closed native phase | pending |
+| Completion condition met | pending |
+| Open native leads remaining | pending |
+| Blocker or incomplete reason | pending |
+| Confidence | pending |
 
-## E3 - Native-Search Discovery Report
+## E3 - Native Discovery Report
 
-Date: 2026-06-02
+Date:
 
-Status: complete
+Status: pending
 
 Required evidence:
 
 | Item | Result |
 |---|---|
-| Native candidate count | 8 |
-| Native unique files read | 10 |
-| Native command/search count | 29 shell/read/static-analysis groups |
-| Native observed-context token total | 27,088 estimated tokens from 108,350 observed chars |
-| Native completion status | complete; no Anvien surface used |
-| Native unresolved questions | icon barrel public-use risk; generated directive source-of-truth risk; exported `internal/session` API intent |
+| Native candidate count | pending |
+| Native unique files read | pending |
+| Native command/search count | pending |
+| Native `agent_session_tokens` or exact proxy tokens | pending |
+| Native token validity | pending |
+| Native completion status | pending |
+| Native unresolved questions | pending |
 
 ## E4 - Anvien-Guided Discovery
 
-Date: 2026-06-02
+Date:
 
-Status: complete; token accounting invalid
+Status: pending
 
 Rules for this section:
 
 - Record graph freshness before graph-based work.
 - Do not seed discovery from the native candidate list.
-- Record every Anvien command and every Anvien-related context observed by the token accountant.
+- Record delivered Anvien command output separately from Anvien local output volume.
+- Do not count Anvien graph/cache/index/output unless delivered into the agent session/proxy.
 - Record source reads after Anvien narrows candidate leads.
 
 Graph freshness:
 
 | Check | Result |
 |---|---|
-| Analyze command | `anvien\bin\anvien.exe analyze --force` |
-| Analyze output accountant observation | 1,063 observed stdout/stderr chars |
-| Indexed commit | graph refreshed during phase; command succeeded |
-| Current commit | benchmark baseline was `6564d7d5f5f7d53767a4afbc1028cda26535b977`; P0 doc commit existed before discovery docs were written |
-| Fresh/stale result | fresh after analyze; no worktree changes left by analyze |
+| Analyze command | pending |
+| Analyze local-output token status | local tool work; not agent tokens unless delivered |
+| Delivered analyze output to agent | pending |
+| Indexed commit | pending |
+| Current commit | pending |
+| Fresh/stale result | pending |
 
 Anvien command/read log:
 
-| Step | Command or file | Purpose | Accountant observation | Token-accountant note | Result |
+| Step | Command or file | Purpose | Delivered to agent? | Token-measurement note | Result |
 |---|---|---|---|---|---|
-| A1 | `anvien analyze --force`, `query`, `cypher`, `context`, `graph-health` | surface graph leads before broad source reads | 24 Anvien calls; reconstructed 777,694 Anvien stdout/stderr chars | multiple large `context` outputs were transcript-truncated | complete but token invalid |
-| A2 | follow-up exact native searches | confirm graph-surfaced leads and reject dynamic/public leads | 17 shell invocations / 40 `rg` executions; 77,869 observed chars | one broad native search output was transcript-truncated | complete but token invalid |
-| A3 | targeted source snippets | classify graph leads | 12 snippets, 11 unique files, 6,160 chars | source reads were small and targeted | complete |
+| pending | pending | pending | pending | pending | pending |
 
 Anvien candidates:
 
 | Candidate id | Path | Symbol/name | Kind | Discovery evidence | Notes |
 |---|---|---|---|---|---|
-| A1 | `internal/mcp/context.go` | `contextCategorizedRefs` | Go private function | Anvien zero-inbound lead; exact search found only declaration in `internal/mcp` | high confidence |
-| A2 | `internal/mcp/context.go` | `contextClassLikeIncomingRefs` | Go private function | Anvien zero-inbound lead; exact search found only declaration in `internal/mcp` | superseded by set-based helper |
-| A3 | `internal/mcp/context.go` | `contextProcessParticipation` | Go private function | Anvien zero-inbound lead; exact search found only declaration in `internal/mcp` | high confidence |
-| A4 | `internal/mcp/tools.go` | `containsScore` | Go private function | Anvien zero-inbound lead; exact search found only declaration | high confidence |
-| A5 | `internal/mcp/route_shape_impact.go` | `mcpRouteAnalysisRecords` | Go private function | Anvien zero-inbound lead; exact search found only declaration in `internal/mcp` | high confidence |
-| A6 | `internal/mcp/server.go` | `writeMessage` | Go private function | Anvien zero-inbound lead; exact search found only declaration | high confidence |
-| A7 | `internal/providers/tsjs/nodes.go` | `isFunctionScopeNode` | Go private function | Anvien zero-inbound lead; exact search found only declaration in TSJS provider | high confidence |
-| A8 | `internal/providers/golang/definitions.go` | `goTypeSpecLabel` | Go private function | Anvien zero-inbound lead; exact search found only declaration in Go provider | high confidence |
-| A9 | `internal/providers/golang/nodes.go` | `descendantsOfType` | Go private function | Anvien zero-inbound lead; scoped package search found only declaration | high confidence |
-| A10 | `internal/providers/rust/nodes.go` | `directChildOfKind` | Go private function | Anvien zero-inbound lead; scoped Rust provider search found only declaration | high confidence |
-| A11 | `internal/providers/rust/nodes.go` | `directChildrenOfKind` | Go private function | Anvien zero-inbound lead; scoped Rust provider search found only declaration | high confidence |
-| A12 | `internal/providers/java/nodes.go` | `firstNamedChildOfType` | Go private function | Anvien zero-inbound lead; scoped Java provider search found only declaration | high confidence |
-| A13 | `internal/providers/python/nodes.go` | `namedChildrenOfType` | Go private function | Anvien zero-inbound lead; scoped Python provider search found only declaration | high confidence |
-| A14 | `internal/session/controller.go` | `NewControllerWithResolver` | Go exported constructor under `internal` | Anvien zero-inbound lead; exact search found only declaration | also found by native |
+| pending | pending | pending | pending | pending | pending |
 
 Anvien completion:
 
 | Item | Result |
 |---|---|
-| Declared Anvien procedure recorded before first graph command | yes |
-| Token accountant closed Anvien phase | yes |
-| Completion condition met | yes for candidate discovery |
-| Open Anvien leads remaining | none reported |
-| Blocker or incomplete reason | token comparison invalid because observed output was truncated |
-| Confidence | candidate discovery usable; token-cost comparison unusable |
+| Declared Anvien procedure recorded before first graph command | pending |
+| Token measurement closed Anvien phase | pending |
+| Completion condition met | pending |
+| Open Anvien leads remaining | pending |
+| Blocker or incomplete reason | pending |
+| Confidence | pending |
 
-## E5 - Anvien-Guided Discovery Report
+## E5 - Anvien Discovery Report
 
-Date: 2026-06-02
+Date:
 
-Status: complete; token accounting invalid
+Status: pending
 
 Required evidence:
 
 | Item | Result |
 |---|---|
-| Anvien candidate count | 14 |
-| Anvien unique files read | 11 |
-| Anvien command count | 24 |
-| Anvien follow-up native search count | 17 shell invocations / 40 `rg` executions |
-| Anvien observed-context token total | invalid; reconstructed observed categories were 861,723 chars / 215,431 estimated tokens, but transcript truncation prevents exact accounting |
-| Anvien completion status | complete for candidate discovery; invalid for token winner |
-| Anvien unresolved questions | large Anvien `context` output must be controlled in a rerun before token reduction can be claimed |
+| Anvien candidate count | pending |
+| Anvien unique files read | pending |
+| Anvien command count | pending |
+| Anvien follow-up native search count | pending |
+| Anvien `agent_session_tokens` or exact proxy tokens | pending |
+| Anvien token validity | pending |
+| Anvien completion status | pending |
+| Anvien unresolved questions | pending |
 
 ## E6 - Candidate Union And Verification
 
-Date: 2026-06-02
+Date:
 
-Status: complete
+Status: pending
 
 Verification rules:
 
-- Verify the union of candidates from both methods.
+- Verify the union of candidates from both modes.
 - Check static references, dynamic/public entrypoint risk, generated-code status, test/build/runtime hooks, and external contract hints.
 - Do not delete or edit candidate code.
 
@@ -269,104 +283,77 @@ Candidate verdicts:
 
 | Candidate id | Found by native | Found by Anvien | Path | Symbol/name | Verdict | Verification evidence | Dynamic/public risk |
 |---|---|---|---|---|---|---|---|
-| D01 | yes | no | `internal/cli/setup_command.go` | `setupMCPEntry` | `confirmed_deadcode` | exact search found only declaration; snippet shows private struct declaration | low |
-| D02 | yes | yes | `internal/session/controller.go` | `NewControllerWithResolver` | `likely_deadcode` | exact search found only declaration | medium: exported under Go `internal` package |
-| D03 | yes | no | `internal/session/controller.go` | `GetSession` | `likely_deadcode` | exact search found only declaration | medium: exported method under Go `internal` package |
-| D04 | yes | no | `anvien-web/src/components/DropZone.tsx` | `data` | `confirmed_deadcode` | targeted ESLint reported unused parameter at line 228; snippet shows callback body ignores it | low |
-| D05 | yes | no | `anvien-web/e2e/graph-orientation-labels.spec.ts` | `_error` | `confirmed_deadcode` | targeted ESLint reported unused catch binding at line 443 | low |
-| D06 | yes | no | `anvien-web/test/unit/GraphCanvas.selection-performance.test.tsx` | `sigmaOnSpy`, `sigmaOffSpy`, `cameraOnSpy`, `cameraOffSpy` | `confirmed_deadcode` | targeted ESLint reported all four assigned but unused at lines 14-17 | low for liveness; medium test-quality risk |
-| D07 | yes | no | `anvien-web/src/generated/anvien-contracts.ts` | `/* eslint-disable */` | `likely_deadcode` | targeted ESLint reported unused directive at line 1 | medium: generated file; generator is source of truth |
-| D08 | yes | no | `anvien-web/src/lib/lucide-icons.tsx` | `EyeOff`, `FileArchive`, `FlaskConical`, `Github`, `Heart`, `Upload` | `likely_deadcode` | exact search found each icon only in barrel export block | medium: public local barrel risk |
-| D09 | no | yes | `internal/mcp/context.go` | `contextCategorizedRefs` | `confirmed_deadcode` | scoped search in `internal/mcp` found only declaration | low |
-| D10 | no | yes | `internal/mcp/context.go` | `contextClassLikeIncomingRefs` | `confirmed_deadcode` | scoped search in `internal/mcp` found only declaration; newer set-based helper is used instead | low |
-| D11 | no | yes | `internal/mcp/context.go` | `contextProcessParticipation` | `confirmed_deadcode` | scoped search in `internal/mcp` found only declaration | low |
-| D12 | no | yes | `internal/mcp/tools.go` | `containsScore` | `confirmed_deadcode` | exact search found only declaration | low |
-| D13 | no | yes | `internal/mcp/route_shape_impact.go` | `mcpRouteAnalysisRecords` | `confirmed_deadcode` | scoped search in `internal/mcp` found only declaration | low |
-| D14 | no | yes | `internal/mcp/server.go` | `writeMessage` | `confirmed_deadcode` | exact search found only declaration; lower-level `writeRawMessage` path remains | low |
-| D15 | no | yes | `internal/providers/tsjs/nodes.go` | `isFunctionScopeNode` | `confirmed_deadcode` | scoped TSJS provider search found only declaration | low |
-| D16 | no | yes | `internal/providers/golang/definitions.go` | `goTypeSpecLabel` | `confirmed_deadcode` | scoped Go provider search found only declaration; callers use `goTypeSpecLabelForKind` | low |
-| D17 | no | yes | `internal/providers/golang/nodes.go` | `descendantsOfType` | `confirmed_deadcode` | scoped Go provider search found only declaration | low |
-| D18 | no | yes | `internal/providers/rust/nodes.go` | `directChildOfKind` | `confirmed_deadcode` | scoped Rust provider search found only declaration | low |
-| D19 | no | yes | `internal/providers/rust/nodes.go` | `directChildrenOfKind` | `confirmed_deadcode` | scoped Rust provider search found only declaration | low |
-| D20 | no | yes | `internal/providers/java/nodes.go` | `firstNamedChildOfType` | `confirmed_deadcode` | scoped Java provider search found only declaration | low |
-| D21 | no | yes | `internal/providers/python/nodes.go` | `namedChildrenOfType` | `confirmed_deadcode` | scoped Python provider search found only declaration | low |
+| pending | pending | pending | pending | pending | pending | pending | pending |
 
 False positives:
 
 | Candidate id | Method source | Reason |
 |---|---|---|
-| none | both | no false positives found in this static verification pass |
+| pending | pending | pending |
 
 Uncertain candidates:
 
 | Candidate id | Method source | Uncertainty reason | Follow-up needed |
 |---|---|---|---|
-| none | both | no candidate required `uncertain`; public/generated risks were classified as `likely_deadcode` instead of confirmed | if cleanup is planned, inspect intended public/generator contract first |
+| pending | pending | pending | pending |
 
 ## E7 - Final Comparison Evidence
 
-Date: 2026-06-02
+Date:
 
-Status: complete
+Status: pending
 
 Required comparison facts:
 
 | Question | Evidence |
 |---|---|
-| Which method used fewer observed-context tokens? | invalid. Native was measured at 27,088 estimated tokens; Anvien phase had at least reconstructed 215,431 estimated tokens in observed categories, but exact accounting is invalid due transcript truncation. |
-| Which method read fewer files? | native read fewer files: 10 vs Anvien 11. |
-| Which method used fewer search/tool calls? | Anvien used fewer native follow-up shell invocations, 17 vs 29, but more total discovery calls when 24 Anvien calls are included. |
-| Which method found more confirmed/likely deadcode? | Anvien-guided found 14 confirmed/likely candidates; native found 8. |
-| Which method produced fewer false positives? | tie: 0 false positives in this static verification pass. |
-| Which candidates were found by both/native-only/Anvien-only? | both: D02; native-only: D01, D03-D08; Anvien-only: D09-D21. |
-| Was the token accountant able to measure exact observed context? | native yes; Anvien no because several observed outputs were truncated. |
-| Were unobserved/redirected/capture-only/truncated contents handled by observation status? | yes. Truncated Anvien outputs caused invalid token result instead of a false winner. |
+| How many tokens did the agent spend without Anvien? | pending |
+| How many tokens did the agent spend with Anvien? | pending |
+| Which mode used fewer agent-session tokens? | pending |
+| Which mode read fewer files? | pending |
+| Which mode used fewer search/tool calls? | pending |
+| Which mode found more confirmed/likely deadcode? | pending |
+| Which mode produced fewer false positives? | pending |
+| Which candidates were found by both/native-only/Anvien-only? | pending |
+| Was token measurement valid for both modes? | pending |
 
 Required summary shape:
 
 ```text
-Native search:
-- observed-context total tokens: 27,088 valid estimated tokens
-- task prompt: included in native self-ledger
-- tool call arguments: 3,975 estimated tokens
-- search output: 5,950 estimated tokens
-- file reads: 2,575 estimated tokens
-- agent response: 1,550 estimated tokens
-- retry/error: 663 estimated tokens
-- files read: 10
-- candidates: 8
+Native mode:
+- agent_session_tokens or proxy:
+- token validity:
+- search/tool calls:
+- file reads:
+- candidates:
 
-Anvien-guided:
-- observed-context total tokens: invalid; reconstructed category floor 215,431 estimated tokens
-- task prompt: included in Anvien phase self-ledger
-- tool call arguments: not exact after truncation
-- Anvien observed context: reconstructed 777,694 chars, but exact token accounting invalid
-- follow-up search output: reconstructed 77,869 chars
-- file reads: 6,160 chars
-- agent response: not exact after truncation
-- retry/error: 6 failed/retry calls
-- files read: 11
-- candidates: 14
+Anvien mode:
+- agent_session_tokens or proxy:
+- token validity:
+- Anvien calls:
+- follow-up search/tool calls:
+- file reads:
+- candidates:
 
 Shared verification:
-- observed-context total tokens: shared verification cost recorded separately and not used as either discovery method's discovery cost
-- candidates verified: 21
-- confirmed/likely/uncertain/false-positive: 17 / 4 / 0 / 0
+- candidates verified:
+- confirmed/likely/uncertain/false-positive:
 ```
 
 ## E8 - Closure
 
-Date: 2026-06-02
+Date:
 
-Status: complete
+Status: pending
 
 Closure checks:
 
 | Check | Result |
 |---|---|
-| No deadcode deletion/edit was made | yes |
-| Token accountant ledger complete | complete enough to invalidate token axis honestly; native exact, Anvien invalid due truncation |
-| Plan checklist updated | yes |
-| Benchmark ledger complete | yes |
-| Final comparison written | yes |
-| Commit hash for documentation update, if committed | not embedded because a commit cannot contain its own final hash; final response records the documentation commit hash |
+| No deadcode deletion/edit was made | pending |
+| Token measurement valid for native mode | pending |
+| Token measurement valid for Anvien mode | pending |
+| Plan checklist updated | pending |
+| Benchmark ledger complete | pending |
+| Final comparison written | pending |
+| Commit hash for documentation update, if committed | pending |
