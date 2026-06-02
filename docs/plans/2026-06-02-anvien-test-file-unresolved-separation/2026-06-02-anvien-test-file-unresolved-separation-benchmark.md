@@ -261,3 +261,52 @@ Source evidence: E10.
 | Test file identity visible in Web file map/detail | available | 1 | 1 | pass |
 | Test file tested-target relationship visible in Web file detail | available | 1 | 1 | pass |
 | CLI/API raw/test unresolved diagnostics retained outside production Web UI | available | 1 | 1 | pass |
+
+## B8 - Post-Closure Semantic Test Gap Suppression Metrics
+
+Status: recorded
+
+Source evidence: E11.
+
+| Metric | Unit | Before E11 | Latest | Result |
+|---|---:|---:|---:|---|
+| Graph nodes | nodes | 96,790 | 60,878 | pass |
+| Graph relationships | relationships | 132,418 | 96,510 | pass |
+| Raw unresolved files | files | 591 | 352 | pass |
+| Default-visible unresolved files | files | 335 | 335 | pass |
+| Explicit `test-unresolved` files | files | 239 | 0 | pass |
+| Test files returned by `--kind test` | files | 239 | 239 | pass |
+| Sampled test-file unresolved buckets | counts | nonzero before semantic suppression | 0 | pass |
+| Default top 5 hotspots that are source files | files | 5 | 5 | pass |
+| Source-file linked test relationship signal | available | 1 | 1 | pass |
+
+Semantic persistence metrics from benchmark JSON:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| Resolution gap inputs | inputs | 69,553 |
+| Resolution gap nodes persisted | nodes | 33,579 |
+| Resolution gap relationships persisted | relationships | 33,579 |
+| Test-source resolution gap inputs skipped | inputs | 35,974 |
+
+Latest graph/file projection inventory:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| Files scanned | files | 819 |
+| Parsed code files | files | 599 |
+| Failed parses | files | 0 |
+| File projection files | files | 819 |
+| File projection dependency edges | edges | 15,939 |
+| Raw unresolved files | files | 352 |
+| Default-visible unresolved files | files | 335 |
+
+Latest default top hotspots:
+
+| Rank | File | Kind | Default-visible unresolved | Raw unresolved | Test unresolved | Risk |
+|---:|---|---|---:|---:|---:|---|
+| 1 | `anvien-web/src/hooks/useAppState.local-runtime.tsx` | source | 537 | 548 | 0 | high |
+| 2 | `anvien-web/src/components/GraphCanvas.tsx` | source | 451 | 451 | 0 | high |
+| 3 | `internal/contracts/web_ui.go` | source | 440 | 624 | 0 | high |
+| 4 | `anvien-web/src/components/FileTreePanel.tsx` | source | 424 | 435 | 0 | high |
+| 5 | `anvien-web/src/hooks/useSigma.ts` | source | 407 | 431 | 0 | high |

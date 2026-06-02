@@ -248,3 +248,17 @@ User direction after closure clarified that Web production views should not expo
 - Web production views show test files as `Test File` and show relationships to tested files/symbols.
 - Web production views do not expose `raw-unresolved`, `test-unresolved`, or a raw unresolved detail toggle.
 - Raw/test unresolved command/API diagnostics may remain available for internal graph debugging, but they are not product UI controls.
+
+## Post-Closure Semantic Correction
+
+Date: 2026-06-02
+
+User direction after the Web correction further clarified that test-file unresolved should not be generated as graph detail at all. This supersedes earlier plan language that preserved raw test unresolved as explicit graph drill-down data.
+
+Corrected product rule:
+
+- test files remain visible as `Test File` / `kind=test` / `*_test` app-layer files;
+- relationships from test files to tested files/symbols remain visible;
+- unresolved diagnostics whose source node belongs to `backend_test`, `api_test`, or `frontend_test` must not persist `ResolutionGap` nodes or `HAS_RESOLUTION_GAP` relationships;
+- unresolved diagnostics from non-test source files must remain unchanged;
+- raw/test unresolved UI and graph concepts are not product surfaces for test files.

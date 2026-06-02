@@ -656,3 +656,59 @@ Failures / handling:
 Commit:
 
 - `e388977 feat: remove raw test unresolved from web UI`
+
+## E11 - Post-Closure Semantic Test Gap Suppression
+
+Date: 2026-06-02
+
+Status: implemented
+
+Scope:
+
+- Applied the user's corrected rule that test-file unresolved should not be persisted as graph detail at all.
+- Kept non-test unresolved persistence intact by checking the source node app layer before creating `ResolutionGap` nodes and `HAS_RESOLUTION_GAP` relationships.
+
+Impact / blast radius:
+
+| Target | Result |
+|---|---|
+| `anvien impact file internal/semantic/app_layer.go --repo Anvien --direction upstream` | CRITICAL blast radius because semantic enrichment feeds analyze, graph snapshots, CLI/API/MCP, graph-health, and Web contracts. Patch was kept to the `persistResolutionGaps` path and uses exact test app-layer constants. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/semantic/app_layer.go` | Added `resolutionGapInputFromTestSource` and `isTestAppLayer`; `persistResolutionGaps` now skips inputs from `backend_test`, `api_test`, or `frontend_test` source nodes before adding `ResolutionGap` node/edge. |
+| `internal/semantic/app_layer.go` | Added `resolutionGapSkippedTestInputs` semantic metric so skipped test inputs remain measurable without graph node persistence. |
+| `internal/semantic/app_layer_test.go` | Added `TestApplySkipsResolutionGapPersistenceForTestFileSources`, proving one production unresolved persists while one test-file unresolved is skipped. |
+| Plan | Added post-closure semantic correction that supersedes earlier raw test unresolved drill-down language. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `go test ./internal/semantic` | Pass before full build as focused smoke check. |
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass; Vite emitted existing chunk-size/dynamic-import warnings. |
+| `go test ./internal/semantic ./internal/filecontext ./internal/cli ./internal/httpapi ./internal/graphhealth ./internal/analyze` | Pass after full build. |
+| `anvien analyze --force` | Pass. Graph now has 60,878 nodes, 96,510 relationships, 352 raw unresolved files, and 335 default-visible unresolved files. |
+| `anvien analyze --force --benchmark-json <temp>` | Pass. Semantic metrics recorded 69,553 resolution gap inputs, 33,579 persisted nodes, 33,579 persisted relationships, and 35,974 skipped test inputs. |
+| `anvien file-hotspots --repo Anvien --sort test-unresolved --unresolved-only --limit 5 --json` | Pass. Returned `total=0`. |
+| `anvien file-hotspots --repo Anvien --sort raw-unresolved --unresolved-only --limit 5 --json` | Pass. Returned 352 files; top rows are source files with `testUnresolvedSourceSiteCount=0`. |
+| `anvien file-hotspots --repo Anvien --sort unresolved --limit 5 --json` | Pass. Default top 5 remain source files. |
+| `anvien file-hotspots --repo Anvien --kind test --limit 5 --json` | Pass. Returned 239 test files; sampled rows all had raw/test/default unresolved counts of 0. |
+| `anvien file-context internal/semantic/app_layer_test.go --repo Anvien --json` | Pass. File summary reports `kind=test`, `appLayer=backend_test`, unresolved buckets all 0, and outbound relationships to source files remain. |
+| `anvien file-context internal/semantic/app_layer.go --repo Anvien --json` | Pass. Source file keeps production unresolved buckets and `linkedTestCount=7`. |
+
+Failures / handling:
+
+- `anvien file-hotspots --repo Anvien --kinds test --limit 5 --json` failed with `unknown flag: --kinds`; corrected command is `--kind test`.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `anvien detect-changes --repo Anvien --scope all` | Pass. Scope contained 5 changed files: 3 docs files, `internal/semantic/app_layer.go`, and `internal/semantic/app_layer_test.go`. Summary risk was high because `persistResolutionGaps` is a semantic graph-generation path. Affected process evidence is limited to `persistResolutionGaps` paths; changed test file is `kind=test` with unresolved buckets all 0. |
+
+Commit:
+
+- `a4ef2aa feat: suppress test file resolution gaps`

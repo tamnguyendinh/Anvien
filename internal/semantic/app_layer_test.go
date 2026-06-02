@@ -254,6 +254,99 @@ func TestApplyPersistsSourceBackedResolutionGaps(t *testing.T) {
 	}
 }
 
+func TestApplySkipsResolutionGapPersistenceForTestFileSources(t *testing.T) {
+	g := graph.New()
+	productionID := "Function:resolve"
+	testID := "Function:TestResolve"
+	productionSourceSiteID := "SourceSite:resolve.go#call#missingProduction#10#4#10#21"
+	testSourceSiteID := "SourceSite:resolve_test.go#call#require.NoError#12#2#12#17"
+	g.AddNode(graph.Node{
+		ID:    productionID,
+		Label: scopeir.NodeFunction,
+		Properties: graph.NodeProperties{
+			"name":     "resolve",
+			"filePath": "internal/resolution/resolve.go",
+			graphhealth.DiagnosticPropertyKey: []graphhealth.Diagnostic{
+				{
+					Kind:             graphhealth.DiagnosticUnresolvedReference,
+					FactFamily:       "call",
+					SourceNodeID:     productionID,
+					TargetText:       "missingProduction",
+					SourceSiteID:     productionSourceSiteID,
+					SourceSiteStatus: "unresolved_local_binding",
+					ProofKind:        "none",
+					Classification:   graphhealth.DiagnosticClassificationInRepoUnresolved,
+					Actionability:    graphhealth.DiagnosticActionabilityAnalyzerGap,
+					ResolutionSource: "scope-resolution",
+					FilePath:         "internal/resolution/resolve.go",
+					StartLine:        10,
+					StartCol:         4,
+					EndLine:          10,
+					EndCol:           21,
+					Count:            1,
+				},
+			},
+		},
+	})
+	g.AddNode(graph.Node{
+		ID:    testID,
+		Label: scopeir.NodeFunction,
+		Properties: graph.NodeProperties{
+			"name":     "TestResolve",
+			"filePath": "internal/resolution/resolve_test.go",
+			graphhealth.DiagnosticPropertyKey: []graphhealth.Diagnostic{
+				{
+					Kind:             graphhealth.DiagnosticUnresolvedReference,
+					FactFamily:       "call",
+					SourceNodeID:     testID,
+					TargetText:       "require.NoError",
+					SourceSiteID:     testSourceSiteID,
+					SourceSiteStatus: "unresolved_external",
+					ProofKind:        "none",
+					Classification:   graphhealth.DiagnosticClassificationTestFramework,
+					Actionability:    graphhealth.DiagnosticActionabilityNonActionable,
+					ResolutionSource: "scope-resolution",
+					FilePath:         "internal/resolution/resolve_test.go",
+					StartLine:        12,
+					StartCol:         2,
+					EndLine:          12,
+					EndCol:           17,
+					Count:            1,
+				},
+			},
+		},
+	})
+
+	result, err := Apply(g)
+	if err != nil {
+		t.Fatalf("Apply() error = %v", err)
+	}
+	if result.Metrics.ResolutionGapInputs != 2 ||
+		result.Metrics.ResolutionGapNodes != 1 ||
+		result.Metrics.ResolutionGapRelationships != 1 ||
+		result.Metrics.ResolutionGapSkippedTestInputs != 1 {
+		t.Fatalf("resolution gap metrics = %#v, want one production gap and one skipped test input", result.Metrics)
+	}
+	if _, ok := g.GetNode(graphhealth.ResolutionGapNodeID(productionSourceSiteID)); !ok {
+		t.Fatalf("missing production resolution gap for %q", productionSourceSiteID)
+	}
+	if _, ok := g.GetNode(graphhealth.ResolutionGapNodeID(testSourceSiteID)); ok {
+		t.Fatalf("test-file unresolved was incorrectly persisted as ResolutionGap %q", testSourceSiteID)
+	}
+	testNode, ok := g.GetNode(testID)
+	if !ok {
+		t.Fatal("missing test source node")
+	}
+	if got := testNode.Properties[AppLayerProperty]; got != string(AppLayerBackendTest) {
+		t.Fatalf("test source app layer = %v, want %s", got, AppLayerBackendTest)
+	}
+	for _, relationship := range g.Relationships {
+		if relationship.Type == graph.RelHasResolutionGap && relationship.SourceID == testID {
+			t.Fatalf("test-file unresolved relationship was incorrectly persisted: %#v", relationship)
+		}
+	}
+}
+
 func TestApplyPersistsResolutionGapRolesClassificationsAndOccurrences(t *testing.T) {
 	g := graph.New()
 	g.AddNode(graph.Node{

@@ -81,6 +81,7 @@ type Metrics struct {
 	ResolutionGapInputs            int            `json:"resolutionGapInputs"`
 	ResolutionGapNodes             int            `json:"resolutionGapNodes"`
 	ResolutionGapRelationships     int            `json:"resolutionGapRelationships"`
+	ResolutionGapSkippedTestInputs int            `json:"resolutionGapSkippedTestInputs"`
 }
 
 func AppLayerStrings() []string {
@@ -162,6 +163,7 @@ func Apply(g *graph.Graph) (Result, error) {
 	result.Metrics.ResolutionGapInputs = gapMetrics.Inputs
 	result.Metrics.ResolutionGapNodes = gapMetrics.Nodes
 	result.Metrics.ResolutionGapRelationships = gapMetrics.Relationships
+	result.Metrics.ResolutionGapSkippedTestInputs = gapMetrics.SkippedTestInputs
 	result.Metrics.NodesVisited += gapMetrics.Nodes
 	result.Metrics.NodesWithFilePath += gapMetrics.NodesWithFilePath
 	result.Metrics.RelationshipsScanned = len(g.Relationships)
@@ -191,6 +193,7 @@ type resolutionGapPersistMetrics struct {
 	Nodes             int
 	Relationships     int
 	NodesWithFilePath int
+	SkippedTestInputs int
 }
 
 func persistResolutionGaps(g *graph.Graph, nodeLayers map[string]AppLayer, nodeAreas map[string]FunctionalArea) resolutionGapPersistMetrics {
@@ -209,6 +212,10 @@ func persistResolutionGaps(g *graph.Graph, nodeLayers map[string]AppLayer, nodeA
 		}
 		if area := nodeAreas[input.SourceNodeID]; area != "" {
 			input.SourceFunctionalArea = string(area)
+		}
+		if resolutionGapInputFromTestSource(input, appLayerFromString(input.SourceAppLayer)) {
+			metrics.SkippedTestInputs++
+			continue
 		}
 		gapNode := input.GraphNode()
 		_, existingNode := g.GetNode(gapNode.ID)
@@ -230,6 +237,26 @@ func persistResolutionGaps(g *graph.Graph, nodeLayers map[string]AppLayer, nodeA
 		}
 	}
 	return metrics
+}
+
+func resolutionGapInputFromTestSource(input graphhealth.ResolutionGapInput, sourceLayer AppLayer) bool {
+	if isTestAppLayer(sourceLayer) {
+		return true
+	}
+	if sourceLayer != "" && sourceLayer != AppLayerUnknown {
+		return false
+	}
+	classification := ClassifyAppLayer(input.FilePath)
+	return isTestAppLayer(classification.Layer)
+}
+
+func isTestAppLayer(layer AppLayer) bool {
+	switch layer {
+	case AppLayerBackendTest, AppLayerFrontendTest, AppLayerAPITest:
+		return true
+	default:
+		return false
+	}
 }
 
 func appLayerFromString(value string) AppLayer {
