@@ -1,11 +1,13 @@
 ---
 name: anvien-api-surface
-description: "Use when the user needs to inspect API routes, MCP tools, contract shape drift, generated Web contracts, handlers, consumers, or route/tool impact."
+description: "Use when the user needs to inspect API routes, MCP tools, contracts, response shapes, or consumers."
 ---
 
 # API Surface With Anvien
 
 Use this skill for route handlers, MCP/RPC tool handlers, generated contracts, response shape drift, route consumers, and API-impact decisions.
+
+This skill is a workflow gate for API-surface work. It is not a command router. When a concrete Anvien command is needed, choose it directly from the generated Command Selection Guide.
 
 ## Command Choices
 

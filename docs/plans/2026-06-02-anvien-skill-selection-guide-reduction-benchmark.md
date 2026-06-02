@@ -21,7 +21,7 @@ Companion files:
 
 Status: recorded
 
-Source evidence: E0.
+Source evidence: E0, E1.
 
 | Metric | Unit | Baseline | Target | Delta |
 |---|---:|---:|---:|---:|
@@ -52,13 +52,32 @@ Removed skill target:
 | `anvien-impact-analysis` | removed | 1 |
 | `anvien-runtime-packaging` | removed | 1 |
 
-## B1 - Final Inventory Snapshot
+## B1 - Source Inventory After P2
 
-Status: pending
+Status: recorded
+
+Source evidence: E2.
+
+| Metric | Unit | Latest | Target | Result |
+|---|---:|---:|---:|---|
+| Embedded Anvien source skills | files | 4 | 4 | pass |
+| Registered Anvien workflow skills | skills | 4 | 4 | pass |
+| Removed broad/router embedded source skills | files | 0 | 0 | pass |
+| Planner embedded source skill | files | 1 | 1 | pass |
+
+## B2 - Final Inventory Snapshot
+
+Status: recorded
+
+Source evidence: E3.
 
 | Metric | Unit | Final | Target | Result |
 |---|---:|---:|---:|---|
-| Embedded Anvien source skills | files | pending | 4 | pending |
-| Generated Anvien skill directories | directories | pending | 4 | pending |
-| Generated `Skill Selection Guide` rows | rows | pending | 4 | pending |
-| Removed skill references in generated current output | matches | pending | 0 | pending |
+| Embedded Anvien source skills | files | 4 | 4 | pass |
+| Generated Anvien skill directories | directories | 4 | 4 | pass |
+| Generated `Skill Selection Guide` rows | rows | 4 | 4 | pass |
+| Removed skill references in generated current output | matches | 0 | 0 | pass |
+| Removed broad/router embedded source skill files | files | 0 | 0 | pass |
+| Post-regeneration graph nodes | nodes | 96,204 | measured | recorded |
+| Post-regeneration graph relationships | relationships | 131,703 | measured | recorded |
+| Post-regeneration scanned files | files | 815 | measured | recorded |

@@ -9,15 +9,21 @@ import (
 
 func expectedBaseSkillIDs() []string {
 	return []string{
-		"anvien-exploring",
-		"anvien-impact-analysis",
-		"anvien-debugging",
-		"anvien-refactoring",
-		"anvien-guide",
-		"anvien-cli",
-		"anvien-graph-quality",
 		"anvien-api-surface",
+		"anvien-refactoring",
+		"anvien-debugging",
+		"anvien-planner",
+	}
+}
+
+func removedBaseSkillIDs() []string {
+	return []string{
+		"anvien-cli",
 		"anvien-cross-repo",
+		"anvien-exploring",
+		"anvien-graph-quality",
+		"anvien-guide",
+		"anvien-impact-analysis",
 		"anvien-runtime-packaging",
 	}
 }
@@ -117,16 +123,17 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"`detect_impact`",
 		"`generate_map`",
 		"MCP prompts are agent templates, not CLI commands.",
-		"## Skills",
-		"anvien-impact-analysis/SKILL.md",
-		"anvien-graph-quality/SKILL.md",
+		"## Skill Selection Guide",
+		"Use Anvien workflow skills only for the retained domains below.",
+		"choose concrete Anvien CLI/MCP commands from the Command Selection Guide",
+		"| Inspect API routes, MCP tools, contracts, response shapes, or consumers | `.claude/skills/anvien/anvien-api-surface/SKILL.md` |",
+		"| Rename, extract, split, move, or restructure code | `.claude/skills/anvien/anvien-refactoring/SKILL.md` |",
+		"| Debug bugs, failures, diagnostics, or failure traces | `.claude/skills/anvien/anvien-debugging/SKILL.md` |",
+		"| Create or review `docs/plans` plan, evidence, or benchmark work | `.claude/skills/anvien/anvien-planner/SKILL.md` |",
 		"anvien-api-surface/SKILL.md",
-		"anvien-cross-repo/SKILL.md",
-		"anvien-runtime-packaging/SKILL.md",
-		"Graph health, query health, resolution inventory, and accuracy audits",
-		"API routes, MCP tools, shape checks, contracts, and consumers",
-		"Repository groups, cross-repo query, contracts, status, and sync",
-		"Runtime, setup, launcher, package, and canonical executable workflows",
+		"anvien-refactoring/SKILL.md",
+		"anvien-debugging/SKILL.md",
+		"anvien-planner/SKILL.md",
 		"file-context",
 		"file-hotspots",
 	} {
@@ -145,6 +152,11 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "anvien", "anvien-ai-context")); !os.IsNotExist(err) {
 		t.Fatalf("self-referential AI context skill should not be installed: %v", err)
+	}
+	for _, removed := range removedBaseSkillIDs() {
+		if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "anvien", removed, "SKILL.md")); !os.IsNotExist(err) {
+			t.Fatalf("removed base skill %s should not be installed: %v", removed, err)
+		}
 	}
 	for _, forbidden := range []string{
 		oldDisplay,
@@ -177,9 +189,21 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"anvien_detect_changes",
 		"anvien_query",
 		"anvien_context",
+		"anvien-cli/SKILL.md",
+		"anvien-cross-repo/SKILL.md",
+		"anvien-exploring/SKILL.md",
+		"anvien-graph-quality/SKILL.md",
+		"anvien-guide/SKILL.md",
+		"anvien-impact-analysis/SKILL.md",
+		"anvien-runtime-packaging/SKILL.md",
 	} {
 		if strings.Contains(text, retired) {
 			t.Fatalf("AGENTS.md contains retired content %q:\n%s", retired, text)
+		}
+	}
+	for _, retired := range removedBaseSkillIDs() {
+		if strings.Contains(text, ".claude/skills/anvien/"+retired+"/SKILL.md") {
+			t.Fatalf("AGENTS.md contains removed skill path %q:\n%s", retired, text)
 		}
 	}
 	forbiddenFlag := "--skip-" + "agents-md"
@@ -220,13 +244,13 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		}
 	}
 
-	cliSkill, err := os.ReadFile(filepath.Join(dir, ".claude", "skills", "anvien", "anvien-cli", "SKILL.md"))
+	plannerSkill, err := os.ReadFile(filepath.Join(dir, ".claude", "skills", "anvien", "anvien-planner", "SKILL.md"))
 	if err != nil {
-		t.Fatalf("read generated CLI skill: %v", err)
+		t.Fatalf("read generated planner skill: %v", err)
 	}
-	for _, want := range []string{"anvien query files", "anvien context file", "anvien impact file", "anvien detect-changes files", "anvien graph-health files"} {
-		if !strings.Contains(string(cliSkill), want) {
-			t.Fatalf("generated CLI skill missing %q:\n%s", want, cliSkill)
+	for _, want := range []string{"Standard Plan Set", "YYYY-MM-DD-<slug>", "Evidence Ledger", "Benchmark Ledger", "mini-plan"} {
+		if !strings.Contains(string(plannerSkill), want) {
+			t.Fatalf("generated planner skill missing %q:\n%s", want, plannerSkill)
 		}
 	}
 
@@ -307,25 +331,23 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 			"api_impact",
 			"Do not invent CLI commands",
 		},
-		"anvien-cross-repo": {
-			"group_query",
-			"anvien group query",
-			"group contracts",
+		"anvien-refactoring": {
+			"behavior-preserving",
+			"impact",
+			"detect-changes",
+			"graph-guided dry run",
 		},
-		"anvien-graph-quality": {
+		"anvien-debugging": {
+			"Reproduce or capture the symptom",
 			"graph-health",
-			"query-health",
 			"resolution-inventory",
-			"source-site-accuracy",
-			"threshold and exact",
+			"Query Reliability Rule",
 		},
-		"anvien-runtime-packaging": {
-			"anvien\\bin\\anvien.exe",
-			"serve",
-			"mcp",
-			"setup",
-			"doctor",
-			"package",
+		"anvien-planner": {
+			"Standard Plan Set",
+			"YYYY-MM-DD-<slug>",
+			"Evidence Ledger",
+			"Benchmark Ledger",
 		},
 	}
 	for skillName, fragments := range checks {
@@ -339,21 +361,25 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 
 	allGuidance := combined.String()
 	for _, want := range []string{
-		"multi-lane",
-		"candidate retrieval",
-		"context",
-		"`anvien query --lanes --json`",
-		"`anvien query-health`",
+		"not a command router",
+		"generated Command Selection Guide",
 		"`route_map`",
 		"`anvien api route-map",
-		"`anvien doctor processes --json`",
-		"`anvien completion <shell>`",
+		"`anvien detect-changes --repo <repo> --scope all`",
+		"docs/plans/YYYY-MM-DD-<slug>/",
 	} {
 		if !strings.Contains(allGuidance, want) {
 			t.Fatalf("combined skill guidance missing %q", want)
 		}
 	}
 	for _, forbidden := range []string{
+		"name: anvien-cli",
+		"name: anvien-cross-repo",
+		"name: anvien-exploring",
+		"name: anvien-graph-quality",
+		"name: anvien-guide",
+		"name: anvien-impact-analysis",
+		"name: anvien-runtime-packaging",
 		"anvien route_map",
 		"anvien tool_map",
 		"anvien shape_check",

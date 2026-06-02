@@ -1,11 +1,13 @@
 ---
 name: anvien-debugging
-description: "Use when the user is debugging a bug, tracing an error, or asking why something fails."
+description: "Use when the user is debugging bugs, failures, diagnostics, or failure traces."
 ---
 
 # Debugging With Anvien
 
 Use this skill to trace a bug from symptom to owner using graph facts, runtime evidence, source inspection, and tests.
+
+This skill is a workflow gate for debugging work. It is not a command router. When a concrete Anvien command is needed, choose it directly from the generated Command Selection Guide.
 
 ## Command Choices
 

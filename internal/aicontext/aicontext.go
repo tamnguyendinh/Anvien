@@ -205,9 +205,10 @@ func renderAnvienBlock(projectName string, stats Stats, noStats bool) string {
 	builder.WriteString("| `detect_impact` | Pre-commit impact workflow using `detect_changes`, `context`, and `impact`; HIGH/CRITICAL are blast-radius warnings, not edit bans. |\n")
 	builder.WriteString("| `generate_map` | Evidence-backed architecture map workflow; resolves the repo through `anvien://repos` when needed and uses only resources/tools/command output actually read. |\n\n")
 	builder.WriteString("MCP prompts are agent templates, not CLI commands. They guide tool/resource use and must still follow repository rules for freshness, impact-before-edit, and detect-changes before commit.\n\n")
-	builder.WriteString("## Skills\n\n")
-	builder.WriteString("| Task | Read this skill file |\n")
-	builder.WriteString("|------|---------------------|\n")
+	builder.WriteString("## Skill Selection Guide\n\n")
+	builder.WriteString("Use Anvien workflow skills only for the retained domains below. These skills guide the workflow; choose concrete Anvien CLI/MCP commands from the Command Selection Guide.\n\n")
+	builder.WriteString("| When you need to... | Use |\n")
+	builder.WriteString("|---------------------|-----|\n")
 	for _, skill := range baseSkills {
 		fmt.Fprintf(&builder, "| %s | `.claude/skills/anvien/%s/SKILL.md` |\n", skill.Task, skill.Name)
 	}
@@ -284,19 +285,20 @@ type baseSkill struct {
 }
 
 var baseSkills = []baseSkill{
-	{Name: "anvien-exploring", Description: `Use when the user asks how code works, wants to understand architecture, trace execution flows, or explore unfamiliar parts of the codebase.`, Task: `Understand architecture, ownership, and execution flows`},
-	{Name: "anvien-impact-analysis", Description: `Use when the user wants to know what will break if they change something, or needs safety analysis before editing code.`, Task: `Blast radius, HIGH/CRITICAL warnings, and changed-scope checks`},
-	{Name: "anvien-debugging", Description: `Use when the user is debugging a bug, tracing an error, or asking why something fails.`, Task: `Trace bugs, failures, diagnostics, and graph-quality evidence`},
-	{Name: "anvien-refactoring", Description: `Use when the user wants to rename, extract, split, move, or restructure code safely.`, Task: `Rename, extract, split, move, or restructure code safely`},
-	{Name: "anvien-guide", Description: `Use when the user asks about Anvien itself, available tools, MCP resources, graph schema, prompts, or workflow reference.`, Task: `Unified CLI, MCP, resource, prompt, and Web/API reference`},
-	{Name: "anvien-cli", Description: `Use when the user needs to run Anvien CLI commands for analysis, query, graph quality, API parity, groups, setup, runtime diagnostics, completion, package, wiki, hook, or version workflows.`, Task: `Terminal command guide for Anvien CLI surfaces`},
-	{Name: "anvien-graph-quality", Description: `Use when the user needs graph-health, query-health, resolution inventory, source-site accuracy, or benchmark comparison evidence.`, Task: `Graph health, query health, resolution inventory, and accuracy audits`},
-	{Name: "anvien-api-surface", Description: `Use when the user needs to inspect API routes, MCP tools, contract shape drift, generated Web contracts, handlers, consumers, or route/tool impact.`, Task: `API routes, MCP tools, shape checks, contracts, and consumers`},
-	{Name: "anvien-cross-repo", Description: `Use when the user works across indexed repository groups, cross-repo query, contracts, status, sync, or multi-repo ownership.`, Task: `Repository groups, cross-repo query, contracts, status, and sync`},
-	{Name: "anvien-runtime-packaging", Description: `Use when the user needs serve, mcp, setup, doctor diagnostics, launcher, package runtime, canonical executable, startup, or process lifecycle validation.`, Task: `Runtime, setup, launcher, package, and canonical executable workflows`},
+	{Name: "anvien-api-surface", Description: `Use when the user needs to inspect API routes, MCP tools, contracts, response shapes, or consumers.`, Task: `Inspect API routes, MCP tools, contracts, response shapes, or consumers`},
+	{Name: "anvien-refactoring", Description: `Use when the user wants to rename, extract, split, move, or restructure code.`, Task: `Rename, extract, split, move, or restructure code`},
+	{Name: "anvien-debugging", Description: `Use when the user is debugging bugs, failures, diagnostics, or failure traces.`, Task: `Debug bugs, failures, diagnostics, or failure traces`},
+	{Name: "anvien-planner", Description: `Use when the user needs to create or review docs/plans plan, evidence, or benchmark work.`, Task: `Create or review ` + "`docs/plans`" + ` plan, evidence, or benchmark work`},
 }
 
 var retiredBaseSkillNames = []string{
+	"anvien-cli",
+	"anvien-cross-repo",
+	"anvien-exploring",
+	"anvien-graph-quality",
+	"anvien-guide",
+	"anvien-impact-analysis",
+	"anvien-runtime-packaging",
 	"anvien-pr-review",
 	"av" + "matrix-pr-review",
 	"av" + "matrix-exploring",

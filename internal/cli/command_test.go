@@ -617,8 +617,19 @@ func assertInstalledEmbeddedBaseSkills(t *testing.T, root string) {
 			t.Fatalf("installed skill %s does not match embedded content", path)
 		}
 	}
-	if _, err := os.Stat(filepath.Join(root, "anvien-pr-review", "SKILL.md")); !os.IsNotExist(err) {
-		t.Fatalf("retired package-root skill should not be installed: %v", err)
+	for _, removed := range []string{
+		"anvien-cli",
+		"anvien-cross-repo",
+		"anvien-exploring",
+		"anvien-graph-quality",
+		"anvien-guide",
+		"anvien-impact-analysis",
+		"anvien-runtime-packaging",
+		"anvien-pr-review",
+	} {
+		if _, err := os.Stat(filepath.Join(root, removed, "SKILL.md")); !os.IsNotExist(err) {
+			t.Fatalf("retired package-root skill %s should not be installed: %v", removed, err)
+		}
 	}
 }
 
@@ -1419,7 +1430,7 @@ export function beta() {
 	for _, rel := range []string{
 		"AGENTS.md",
 		"CLAUDE.md",
-		filepath.Join(".claude", "skills", "anvien", "anvien-cli", "SKILL.md"),
+		filepath.Join(".claude", "skills", "anvien", "anvien-planner", "SKILL.md"),
 		filepath.Join(".anvien", "meta.json"),
 	} {
 		if _, err := os.Stat(filepath.Join(dir, rel)); err != nil {
@@ -1431,7 +1442,9 @@ export function beta() {
 		t.Fatalf("read AGENTS.md: %v", err)
 	}
 	if !strings.Contains(string(agents), "<!-- anvien:start -->") ||
-		!strings.Contains(string(agents), ".claude/skills/anvien/anvien-cli/SKILL.md") {
+		!strings.Contains(string(agents), "## Skill Selection Guide") ||
+		!strings.Contains(string(agents), ".claude/skills/anvien/anvien-planner/SKILL.md") ||
+		strings.Contains(string(agents), ".claude/skills/anvien/anvien-cli/SKILL.md") {
 		t.Fatalf("AGENTS.md missing Anvien context:\n%s", agents)
 	}
 	assertInstalledEmbeddedBaseSkills(t, filepath.Join(dir, ".claude", "skills", "anvien"))

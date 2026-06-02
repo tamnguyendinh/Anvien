@@ -1,11 +1,13 @@
 ---
 name: anvien-refactoring
-description: "Use when the user wants to rename, extract, split, move, or restructure code safely."
+description: "Use when the user wants to rename, extract, split, move, or restructure code."
 ---
 
 # Refactoring With Anvien
 
 Use this skill for behavior-preserving renames, extractions, moves, splits, and shared-code cleanup.
+
+This skill is a workflow gate for refactoring work. It is not a command router. When a concrete Anvien command is needed, choose it directly from the generated Command Selection Guide.
 
 ## Command Choices
 

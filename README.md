@@ -304,6 +304,20 @@ anvien analyze --no-stats        # Regenerate AGENTS.md/CLAUDE.md without volati
 anvien setup                     # Install MCP/editor config and generated skills
 ```
 
+`anvien analyze` writes a managed Anvien section into `AGENTS.md` and `CLAUDE.md`. That section keeps command selection and skill selection separate:
+
+- `Command Selection Guide` maps tasks directly to Anvien CLI/MCP commands such as `query`, `context`, `impact`, `detect-changes`, API commands, graph-health commands, runtime commands, and group commands.
+- `Skill Selection Guide` points only to retained workflow skills when the task needs a domain workflow.
+
+Generated Anvien workflow skills are intentionally limited to:
+
+- `.claude/skills/anvien/anvien-api-surface/SKILL.md`
+- `.claude/skills/anvien/anvien-refactoring/SKILL.md`
+- `.claude/skills/anvien/anvien-debugging/SKILL.md`
+- `.claude/skills/anvien/anvien-planner/SKILL.md`
+
+Concrete command execution should still come from the generated `Command Selection Guide`; the retained skills guide API-surface work, refactoring, debugging, and `docs/plans` plan/evidence/benchmark work.
+
 Semantic graph diagnostics:
 
 ```bash
