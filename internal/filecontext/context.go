@@ -597,7 +597,7 @@ func applyUnresolvedBuckets(summary *FileSummary, counts unresolvedBucketCounts)
 	summary.DefaultVisibleUnresolvedSourceSiteCount = counts.DefaultVisible
 	summary.RawRisk = riskFor(counts.Raw)
 	summary.DefaultVisibleRisk = riskFor(counts.DefaultVisible)
-	summary.Risk = summary.RawRisk
+	summary.Risk = summary.DefaultVisibleRisk
 }
 
 func (b *Builder) unresolvedBucketCounts(path string, kind string) unresolvedBucketCounts {
@@ -1329,7 +1329,7 @@ func filterSummaries(summaries []FileSummary, options FileListOptions) []FileSum
 		if options.ChangedOnly && !summary.ChangedSinceAnalyze {
 			continue
 		}
-		if options.UnresolvedOnly && summary.UnresolvedSourceSiteCount == 0 {
+		if options.UnresolvedOnly && unresolvedFilterCount(summary, normalizedSort(options.Sort)) == 0 {
 			continue
 		}
 		if options.HighFanInOnly && summary.InboundRefCount < fanInThreshold {
@@ -1385,9 +1385,14 @@ func sortSummaries(summaries []FileSummary, sortMode string) {
 	sort.SliceStable(summaries, func(i, j int) bool {
 		left, right := summaries[i], summaries[j]
 		switch mode {
-		case "unresolved":
-			if left.UnresolvedSourceSiteCount != right.UnresolvedSourceSiteCount {
-				return left.UnresolvedSourceSiteCount > right.UnresolvedSourceSiteCount
+		case "unresolved", "raw-unresolved", "production-unresolved", "test-unresolved":
+			leftCount := unresolvedSortCount(left, mode)
+			rightCount := unresolvedSortCount(right, mode)
+			if leftCount != rightCount {
+				return leftCount > rightCount
+			}
+			if left.RawUnresolvedSourceSiteCount != right.RawUnresolvedSourceSiteCount {
+				return left.RawUnresolvedSourceSiteCount > right.RawUnresolvedSourceSiteCount
 			}
 		case "fan-in":
 			if left.InboundRefCount != right.InboundRefCount {
@@ -1414,9 +1419,39 @@ func sortSummaries(summaries []FileSummary, sortMode string) {
 	})
 }
 
+func unresolvedFilterCount(summary FileSummary, sortMode string) int {
+	switch sortMode {
+	case "raw-unresolved", "production-unresolved", "test-unresolved":
+		return unresolvedSortCount(summary, sortMode)
+	default:
+		return summary.DefaultVisibleUnresolvedSourceSiteCount
+	}
+}
+
+func unresolvedSortCount(summary FileSummary, sortMode string) int {
+	switch sortMode {
+	case "raw-unresolved":
+		return summary.RawUnresolvedSourceSiteCount
+	case "production-unresolved":
+		return summary.ProductionUnresolvedSourceSiteCount
+	case "test-unresolved":
+		return summary.TestUnresolvedSourceSiteCount
+	default:
+		return summary.DefaultVisibleUnresolvedSourceSiteCount
+	}
+}
+
 func normalizedSort(sortMode string) string {
 	switch strings.ToLower(strings.TrimSpace(sortMode)) {
-	case "unresolved", "fan-in", "fan-out", "symbols", "flows", "tests":
+	case "unresolved", "default-unresolved", "default-visible-unresolved":
+		return "unresolved"
+	case "raw", "raw-unresolved":
+		return "raw-unresolved"
+	case "production-unresolved", "actionable-unresolved":
+		return "production-unresolved"
+	case "test-unresolved", "tests-unresolved":
+		return "test-unresolved"
+	case "fan-in", "fan-out", "symbols", "flows", "tests":
 		return strings.ToLower(strings.TrimSpace(sortMode))
 	default:
 		return "path"

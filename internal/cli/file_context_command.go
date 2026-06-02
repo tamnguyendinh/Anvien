@@ -143,7 +143,7 @@ func newFileHotspotsCommand() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&repoName, "repo", "r", "", "target repository")
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write file hotspot JSON")
-	cmd.Flags().StringVar(&sortMode, "sort", "unresolved", "sort by path, unresolved, fan-in, fan-out, symbols, flows, or tests")
+	cmd.Flags().StringVar(&sortMode, "sort", "unresolved", "sort by path, unresolved, raw-unresolved, production-unresolved, test-unresolved, fan-in, fan-out, symbols, flows, or tests")
 	cmd.Flags().IntVar(&limit, "limit", 20, "maximum files to show; 0 means all")
 	cmd.Flags().IntVar(&offset, "offset", 0, "files to skip before returning results")
 	cmd.Flags().StringSliceVar(&kinds, "kind", nil, "filter by file kind; repeat or comma-separate values")
@@ -293,11 +293,11 @@ func renderFileHotspots(cmd *cobra.Command, payload fileHotspotsPayload) error {
 	); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintln(out, "Path\tLayer\tArea\tSymbols\tIn\tOut\tLocal\tUnresolved\tRisk"); err != nil {
+	if _, err := fmt.Fprintln(out, "Path\tLayer\tArea\tSymbols\tIn\tOut\tLocal\tUnresolved\tRaw\tRisk"); err != nil {
 		return err
 	}
 	for _, file := range payload.Files {
-		if _, err := fmt.Fprintf(out, "%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n",
+		if _, err := fmt.Fprintf(out, "%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n",
 			file.Path,
 			defaultString(file.AppLayer, "-"),
 			defaultString(file.FunctionalArea, "-"),
@@ -305,7 +305,8 @@ func renderFileHotspots(cmd *cobra.Command, payload fileHotspotsPayload) error {
 			file.InboundRefCount,
 			file.OutboundRefCount,
 			file.LocalRelationshipCount,
-			file.UnresolvedSourceSiteCount,
+			file.DefaultVisibleUnresolvedSourceSiteCount,
+			file.RawUnresolvedSourceSiteCount,
 			defaultString(file.Risk, "-"),
 		); err != nil {
 			return err

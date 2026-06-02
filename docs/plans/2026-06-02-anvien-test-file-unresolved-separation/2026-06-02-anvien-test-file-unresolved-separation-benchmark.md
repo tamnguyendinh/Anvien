@@ -107,7 +107,57 @@ P1-B graph inventory after implementation:
 | Files with unresolved | files | 590 |
 | Default top 5 hotspots that are test/e2e files | files | 5 |
 
-## B3 - Final Metrics
+## B3 - P1-C Hotspot Ranking Metrics
+
+Status: recorded
+
+Source evidence: E4.
+
+P1-C graph inventory:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| Files scanned | files | 818 |
+| Parsed code files | files | 598 |
+| Failed parses | files | 0 |
+| Graph nodes | nodes | 96,594 |
+| Graph relationships | relationships | 132,208 |
+| File projection files | files | 818 |
+| File projection dependency edges | edges | 15,929 |
+| Raw unresolved files | files | 590 |
+| Default-visible unresolved files | files | 335 |
+| Test-unresolved files from explicit `test-unresolved` view | files | 238 |
+
+P1-C hotspot composition:
+
+| Metric | Unit | Baseline | Latest | Target | Result |
+|---|---:|---:|---:|---:|---|
+| Default top 5 hotspots that are test/e2e files | files | 5 | 0 | 0 | pass |
+| Default top 5 hotspots that are non-test files | files | 0 | 5 | measured | pass |
+| Raw top 5 hotspots that are test/e2e files | files | 5 | 5 | traceable | pass |
+| Explicit raw/test unresolved view available in command/API sort mode | available | 0 | 1 | 1 | pass |
+
+P1-C default top hotspots:
+
+| Rank | File | Kind | Default-visible unresolved | Raw unresolved | Risk |
+|---:|---|---|---:|---:|---|
+| 1 | `anvien-web/src/hooks/useAppState.local-runtime.tsx` | source | 537 | 548 | high |
+| 2 | `anvien-web/src/components/GraphCanvas.tsx` | source | 451 | 451 | high |
+| 3 | `internal/contracts/web_ui.go` | source | 440 | 624 | high |
+| 4 | `anvien-web/src/components/FileTreePanel.tsx` | source | 424 | 435 | high |
+| 5 | `anvien-web/src/hooks/useSigma.ts` | source | 407 | 431 | high |
+
+P1-C raw/test top hotspots:
+
+| Rank | File | Kind | Default-visible unresolved | Raw unresolved | Risk |
+|---:|---|---|---:|---:|---|
+| 1 | `internal/mcp/server_test.go` | test | 0 | 1445 | low |
+| 2 | `internal/cli/command_test.go` | test | 0 | 1121 | low |
+| 3 | `internal/analyze/analyze_test.go` | test | 0 | 1052 | low |
+| 4 | `internal/resolution/resolution_test.go` | test | 0 | 934 | low |
+| 5 | `anvien-web/e2e/graph-orientation-labels.spec.ts` | e2e test | 0 | 856 | low |
+
+## B4 - Final Metrics
 
 Status: pending
 

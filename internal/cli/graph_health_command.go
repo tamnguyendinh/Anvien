@@ -70,13 +70,15 @@ type graphHealthFilesResult struct {
 }
 
 type graphHealthFileLayer struct {
-	TotalFiles       int    `json:"totalFiles"`
-	UnresolvedFiles  int    `json:"unresolvedFiles"`
-	GeneratedFiles   int    `json:"generatedFiles"`
-	HighFanInFiles   int    `json:"highFanInFiles"`
-	HighFanOutFiles  int    `json:"highFanOutFiles"`
-	HotspotSort      string `json:"hotspotSort"`
-	DerivedEdgesNote string `json:"derivedEdgesNote"`
+	TotalFiles                    int    `json:"totalFiles"`
+	UnresolvedFiles               int    `json:"unresolvedFiles"`
+	RawUnresolvedFiles            int    `json:"rawUnresolvedFiles"`
+	DefaultVisibleUnresolvedFiles int    `json:"defaultVisibleUnresolvedFiles"`
+	GeneratedFiles                int    `json:"generatedFiles"`
+	HighFanInFiles                int    `json:"highFanInFiles"`
+	HighFanOutFiles               int    `json:"highFanOutFiles"`
+	HotspotSort                   string `json:"hotspotSort"`
+	DerivedEdgesNote              string `json:"derivedEdgesNote"`
 }
 
 func newGraphHealthCommand() *cobra.Command {
@@ -308,18 +310,19 @@ func newGraphHealthFilesCommand(repoName *string) *cobra.Command {
 			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "graphHealth.files total=%d returned=%d sort=%s\n", result.Total, len(result.Files), result.Sort); err != nil {
 				return err
 			}
-			if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Path\tLayer\tArea\tSymbols\tFanIn\tFanOut\tUnresolved\tRisk"); err != nil {
+			if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Path\tLayer\tArea\tSymbols\tFanIn\tFanOut\tUnresolved\tRaw\tRisk"); err != nil {
 				return err
 			}
 			for _, file := range result.Files {
-				if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s\t%d\t%d\t%d\t%d\t%s\n",
+				if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n",
 					file.Path,
 					defaultString(file.AppLayer, "unknown"),
 					defaultString(file.FunctionalArea, "unknown"),
 					file.SymbolCount,
 					file.InboundRefCount,
 					file.OutboundRefCount,
-					file.UnresolvedSourceSiteCount,
+					file.DefaultVisibleUnresolvedSourceSiteCount,
+					file.RawUnresolvedSourceSiteCount,
 					defaultString(file.Risk, "unknown"),
 				); err != nil {
 					return err
@@ -328,7 +331,7 @@ func newGraphHealthFilesCommand(repoName *string) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&sortMode, "sort", "unresolved", "sort by path, unresolved, fan-in, fan-out, symbols, flows, or tests")
+	cmd.Flags().StringVar(&sortMode, "sort", "unresolved", "sort by path, unresolved, raw-unresolved, production-unresolved, test-unresolved, fan-in, fan-out, symbols, flows, or tests")
 	cmd.Flags().IntVar(&limit, "limit", 20, "maximum files to show; 0 means all")
 	cmd.Flags().BoolVar(&unresolvedOnly, "unresolved-only", false, "show only files with unresolved source sites")
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write JSON graph-health file rows")
@@ -480,8 +483,12 @@ func graphHealthFileLayerSummary(g *graph.Graph) graphHealthFileLayer {
 		DerivedEdgesNote: filecontext.DerivedFileEdgesNote,
 	}
 	for _, file := range list.Files {
-		if file.UnresolvedSourceSiteCount > 0 {
+		if file.RawUnresolvedSourceSiteCount > 0 {
+			summary.RawUnresolvedFiles++
+		}
+		if file.DefaultVisibleUnresolvedSourceSiteCount > 0 {
 			summary.UnresolvedFiles++
+			summary.DefaultVisibleUnresolvedFiles++
 		}
 		if file.Kind == "generated" {
 			summary.GeneratedFiles++
@@ -505,9 +512,11 @@ func graphHealthTopFileHotspots(g *graph.Graph, limit int) []filecontext.FileSum
 
 func graphHealthFileLayerLines(summary graphHealthFileLayer, hotspots []filecontext.FileSummary) []string {
 	lines := []string{
-		fmt.Sprintf("graphHealth.fileLayer files=%d unresolvedFiles=%d generatedFiles=%d highFanInFiles=%d highFanOutFiles=%d derivedEdges=%q",
+		fmt.Sprintf("graphHealth.fileLayer files=%d unresolvedFiles=%d rawUnresolvedFiles=%d defaultVisibleUnresolvedFiles=%d generatedFiles=%d highFanInFiles=%d highFanOutFiles=%d derivedEdges=%q",
 			summary.TotalFiles,
 			summary.UnresolvedFiles,
+			summary.RawUnresolvedFiles,
+			summary.DefaultVisibleUnresolvedFiles,
 			summary.GeneratedFiles,
 			summary.HighFanInFiles,
 			summary.HighFanOutFiles,
@@ -515,9 +524,10 @@ func graphHealthFileLayerLines(summary graphHealthFileLayer, hotspots []filecont
 		),
 	}
 	for _, file := range hotspots {
-		lines = append(lines, fmt.Sprintf("graphHealth.fileHotspot path=%q unresolved=%d fanIn=%d fanOut=%d risk=%s",
+		lines = append(lines, fmt.Sprintf("graphHealth.fileHotspot path=%q unresolved=%d rawUnresolved=%d fanIn=%d fanOut=%d risk=%s",
 			file.Path,
-			file.UnresolvedSourceSiteCount,
+			file.DefaultVisibleUnresolvedSourceSiteCount,
+			file.RawUnresolvedSourceSiteCount,
 			file.InboundRefCount,
 			file.OutboundRefCount,
 			defaultString(file.Risk, "unknown"),

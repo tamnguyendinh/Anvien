@@ -303,50 +303,61 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 }
 
 type analyzeFileProjectionSummary struct {
-	Status           string                    `json:"status"`
-	Files            int                       `json:"files"`
-	DependencyEdges  int                       `json:"dependencyEdges"`
-	UnresolvedFiles  int                       `json:"unresolvedFiles"`
-	Hotspots         []filecontext.FileSummary `json:"hotspots"`
-	DerivedEdgesNote string                    `json:"derivedEdgesNote"`
+	Status                        string                    `json:"status"`
+	Files                         int                       `json:"files"`
+	DependencyEdges               int                       `json:"dependencyEdges"`
+	UnresolvedFiles               int                       `json:"unresolvedFiles"`
+	RawUnresolvedFiles            int                       `json:"rawUnresolvedFiles"`
+	DefaultVisibleUnresolvedFiles int                       `json:"defaultVisibleUnresolvedFiles"`
+	Hotspots                      []filecontext.FileSummary `json:"hotspots"`
+	DerivedEdgesNote              string                    `json:"derivedEdgesNote"`
 }
 
 func buildAnalyzeFileProjection(g *graph.Graph) analyzeFileProjectionSummary {
 	builder := filecontext.NewBuilder(g)
 	list := builder.BuildFileList(filecontext.FileListOptions{Sort: "path", Limit: 0})
 	hotspots := builder.BuildFileList(filecontext.FileListOptions{Sort: "unresolved", Limit: 5})
-	unresolvedFiles := 0
+	rawUnresolvedFiles := 0
+	defaultVisibleUnresolvedFiles := 0
 	dependencyEdges := 0
 	for _, file := range list.Files {
-		if file.UnresolvedSourceSiteCount > 0 {
-			unresolvedFiles++
+		if file.RawUnresolvedSourceSiteCount > 0 {
+			rawUnresolvedFiles++
+		}
+		if file.DefaultVisibleUnresolvedSourceSiteCount > 0 {
+			defaultVisibleUnresolvedFiles++
 		}
 		dependencyEdges += file.OutboundRefCount
 	}
 	return analyzeFileProjectionSummary{
-		Status:           "built",
-		Files:            list.Total,
-		DependencyEdges:  dependencyEdges,
-		UnresolvedFiles:  unresolvedFiles,
-		Hotspots:         hotspots.Files,
-		DerivedEdgesNote: filecontext.DerivedFileEdgesNote,
+		Status:                        "built",
+		Files:                         list.Total,
+		DependencyEdges:               dependencyEdges,
+		UnresolvedFiles:               defaultVisibleUnresolvedFiles,
+		RawUnresolvedFiles:            rawUnresolvedFiles,
+		DefaultVisibleUnresolvedFiles: defaultVisibleUnresolvedFiles,
+		Hotspots:                      hotspots.Files,
+		DerivedEdgesNote:              filecontext.DerivedFileEdgesNote,
 	}
 }
 
 func analyzeFileProjectionLines(summary analyzeFileProjectionSummary) []string {
 	lines := []string{
-		fmt.Sprintf("fileProjection: status=built files=%d dependencyEdges=%d unresolvedFiles=%d hotspots=%d derivedEdges=%q",
+		fmt.Sprintf("fileProjection: status=built files=%d dependencyEdges=%d unresolvedFiles=%d rawUnresolvedFiles=%d defaultVisibleUnresolvedFiles=%d hotspots=%d derivedEdges=%q",
 			summary.Files,
 			summary.DependencyEdges,
 			summary.UnresolvedFiles,
+			summary.RawUnresolvedFiles,
+			summary.DefaultVisibleUnresolvedFiles,
 			len(summary.Hotspots),
 			summary.DerivedEdgesNote,
 		),
 	}
 	for _, file := range summary.Hotspots {
-		lines = append(lines, fmt.Sprintf("fileProjection.hotspot path=%q unresolved=%d fanIn=%d fanOut=%d risk=%s",
+		lines = append(lines, fmt.Sprintf("fileProjection.hotspot path=%q unresolved=%d rawUnresolved=%d fanIn=%d fanOut=%d risk=%s",
 			file.Path,
-			file.UnresolvedSourceSiteCount,
+			file.DefaultVisibleUnresolvedSourceSiteCount,
+			file.RawUnresolvedSourceSiteCount,
 			file.InboundRefCount,
 			file.OutboundRefCount,
 			defaultString(file.Risk, "unknown"),

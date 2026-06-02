@@ -189,7 +189,7 @@ The plan is complete when:
   - Implementation Gate: do not hide data in UI until the API/projection contract can represent both raw and separated counts.
   - Acceptance: JSON/API/file summaries expose separated unresolved metrics, raw counts remain traceable, and tests prove test unresolved is not counted as production/default-visible unresolved.
 
-- [ ] [P1-C] Change hotspot ranking to actionable default signal.
+- [x] [P1-C] Change hotspot ranking to actionable default signal.
   - Goal: stop test files from dominating default unresolved hotspot lists.
   - Work Steps: update `filecontext` sort/filter/risk logic and analyze/file-hotspot/graph-health callers to use production/actionable/default-visible unresolved for default hotspot lists; keep optional raw/test ranking mode if current command/UI supports sorting by raw unresolved; update CLI/API tests and benchmark outputs.
   - Implementation Gate: raw unresolved count must remain available somewhere for audit.

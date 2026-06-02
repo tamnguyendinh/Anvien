@@ -271,4 +271,82 @@ Detect changes:
 
 Commit:
 
-- Pending at ledger update time; Git commit hash will be reported after commit.
+- `06e9c2f feat: expose unresolved bucket metrics`
+
+## E4 - P1-C Change Hotspot Ranking To Actionable Default Signal
+
+Date: 2026-06-02
+
+Status: implemented
+
+Scope:
+
+- Changed default unresolved sorting, filtering, risk, analyze summary, file-hotspots, graph-health, MCP context resource, and MCP target payloads to use default-visible unresolved.
+- Kept raw unresolved diagnostics available through `raw-unresolved` sorting and preserved explicit resolution inventory as raw.
+- Added `production-unresolved` and `test-unresolved` sort modes for targeted investigation.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| `anvien analyze --force` | Pass before P1-C work. Graph had 818 files scanned, 598 parsed code files, 0 failed parses, 96,521 nodes, 132,071 relationships, 590 raw unresolved files, and default hotspots still test-dominated before ranking change. |
+| `anvien query files "file hotspot unresolved ranking graph health file context" --repo Anvien` | Confirmed owners in file projection, file-hotspots, graph-health, analyze projection, MCP resources, and resolution inventory. |
+| `anvien query files "unresolvedSourceSiteCount sort unresolved FileSummary graph health hotspots" --repo Anvien` | Confirmed P1-B bucket fields existed, but callers still used raw/default legacy ranking before P1-C. |
+| Source inspection | Confirmed `resolution_inventory_command.go` is explicit raw diagnostic output and must not inherit default-visible filtering. |
+
+Impact / blast radius:
+
+| Target | Result |
+|---|---|
+| `internal/filecontext/context.go` | HIGH/CRITICAL file projection surface; affects list/detail summaries, sorting, filtering, risk, CLI/API/MCP/Web consumers. |
+| `internal/cli/command.go` | CRITICAL analyze output surface; changed fileProjection summary and hotspot lines. |
+| `internal/cli/file_context_command.go` | CRITICAL command surface; changed default unresolved display and added raw column/sort modes. |
+| `internal/cli/graph_health_command.go` | CRITICAL graph-health surface; changed file-layer unresolved summary and hotspot rendering. |
+| `internal/cli/resolution_inventory_command.go` | CRITICAL diagnostic surface; intentionally kept explicit inventory raw via `raw-unresolved`. |
+| `internal/mcp/resources.go` and `internal/mcp/target_dispatch.go` | CRITICAL MCP resource/target payload surface; default `unresolved` now means default-visible and raw fields remain explicit. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/filecontext/context.go` | `risk` now follows `defaultVisibleRisk`; default `unresolved` sort/filter uses `defaultVisibleUnresolvedSourceSiteCount`; added `raw-unresolved`, `production-unresolved`, and `test-unresolved` sort/filter modes. |
+| `internal/cli/command.go` | Analyze file projection now reports `unresolvedFiles` as default-visible and adds `rawUnresolvedFiles` plus `defaultVisibleUnresolvedFiles`; hotspot lines include raw unresolved separately. |
+| `internal/cli/file_context_command.go` | File hotspot output now displays default unresolved and raw unresolved separately; help lists raw/production/test unresolved sort modes. |
+| `internal/cli/graph_health_command.go` | Graph-health file output now separates default-visible and raw unresolved file counts and hotspot counts. |
+| `internal/cli/resolution_inventory_command.go` | Resolution inventory now explicitly requests `raw-unresolved` so diagnostic inventory still includes test/raw unresolved. |
+| `internal/mcp/resources.go` | Repo context resource now reports `unresolved_files`, `raw_unresolved_files`, and `default_visible_unresolved_files`; top hotspots use default-visible unresolved plus raw side channel. |
+| `internal/mcp/target_dispatch.go` | MCP selected-file relationship hints now expose default unresolved, raw unresolved, bucket counts, raw risk, and default-visible risk. |
+| `internal/filecontext/context_test.go` | Added ranking/filter assertions proving default unresolved excludes test-file unresolved while raw/test/production sort modes expose the correct bucket. |
+| `internal/cli/file_context_command_test.go` and `internal/httpapi/file_context_test.go` | Added fixtures with test-file unresolved; default unresolved-only hides the test file, while `test-unresolved` returns it with raw/test counts and low risk. |
+| Plan | Marked P1-C complete. |
+| Benchmark ledger | Added P1-C ranking and inventory metrics. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `go test ./internal/filecontext ./internal/cli ./internal/httpapi ./internal/mcp` | Pass. |
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass; Vite emitted existing chunk-size/dynamic-import warnings. |
+| `go run ./cmd/generate-web-contracts --check` | Pass. |
+| `go test ./cmd/... ./internal/filecontext ./internal/cli ./internal/httpapi ./internal/mcp ./internal/contracts` | Pass. |
+| `go test ./...` | Fails for existing repo-wide fixture/baseline issues outside this slice: invalid fixture packages under `anvien/test/fixtures`, C source fixture without cgo, deliberate type/pointer assertion failures, and missing `baseline/phase-1-contract-freeze/ladybugdb-graph-contract.json` for `internal/lbugschema`. Relevant package tests above pass. |
+| `anvien analyze --force` | Pass after implementation. Graph had 818 files scanned, 598 parsed code files, 0 failed parses, 96,594 nodes, 132,208 relationships, 15,929 dependency edges, 590 raw unresolved files, and 335 default-visible unresolved files. Default top 5 hotspots are no longer test/e2e files. |
+| `anvien file-hotspots --repo Anvien --sort unresolved --limit 5` | Pass. Top 5 default hotspots are `useAppState.local-runtime.tsx`, `GraphCanvas.tsx`, `internal/contracts/web_ui.go`, `FileTreePanel.tsx`, and `useSigma.ts`; none are test/e2e files. |
+| `anvien file-hotspots --repo Anvien --sort raw-unresolved --limit 5` | Pass. Raw view still exposes the previous test/e2e hotspots with raw counts 1445, 1121, 1052, 934, and 856; default unresolved for those rows is 0 and risk is low. |
+| `anvien file-hotspots --repo Anvien --sort test-unresolved --unresolved-only --limit 5` | Pass. Explicit test view reports 238 test-unresolved files and the same top raw test/e2e files. |
+| `anvien graph-health files --repo Anvien --sort unresolved --limit 5 --json` | Pass. JSON rows expose raw, production, test, non-actionable, unknown, and default-visible counts; default rows are non-test. |
+
+Failures / handling:
+
+- `go test ./...` remains unsuitable as a repo-wide validation command because it includes intentionally invalid fixture packages and a missing frozen baseline file. This slice records the failure and uses full build plus affected package tests as validation.
+- No Web UI source was changed in P1-C, so browser/e2e validation remains for P2/P3-B.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `anvien detect-changes --repo Anvien --scope all` | Pass. Summary risk `critical`; changed files: 13; affected files: 13; changed count: 216; affected count: 36; changed app layers: `api`, `api_test`, `backend`, `backend_test`, `docs`; affected app layers: `api`, `backend`, `mixed`; changed functional areas: `api`, `cli`, `documentation`, `mcp`, `unknown`; affected functional areas: `cli`, `mcp`, `mixed`, `unknown`; changed ResolutionGap entities: 157. Critical blast radius is expected because the slice changes central file projection, CLI, graph-health, MCP payloads, and tests/docs. |
+
+Commit:
+
+- Pending until detect-changes passes.

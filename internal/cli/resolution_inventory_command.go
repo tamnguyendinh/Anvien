@@ -190,7 +190,7 @@ func resolutionInventorySummaryLines(result resolutionInventoryResult) []string 
 
 func resolutionInventoryFileGroups(g *graph.Graph, limit int) []resolutionInventoryFileGroup {
 	builder := filecontext.NewBuilder(g)
-	list := builder.BuildFileList(filecontext.FileListOptions{Sort: "unresolved", Limit: limit, UnresolvedOnly: true})
+	list := builder.BuildFileList(filecontext.FileListOptions{Sort: "raw-unresolved", Limit: limit, UnresolvedOnly: true})
 	groups := make([]resolutionInventoryFileGroup, 0, len(list.Files))
 	for _, summary := range list.Files {
 		context, ok := builder.BuildFileContext(summary.Path, filecontext.Options{
