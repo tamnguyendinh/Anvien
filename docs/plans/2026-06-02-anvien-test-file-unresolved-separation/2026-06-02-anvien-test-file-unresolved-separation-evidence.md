@@ -418,4 +418,4 @@ Detect changes:
 
 Commit:
 
-- Pending until detect-changes passes.
+- `f7de70d feat: hide test unresolved in web defaults`
