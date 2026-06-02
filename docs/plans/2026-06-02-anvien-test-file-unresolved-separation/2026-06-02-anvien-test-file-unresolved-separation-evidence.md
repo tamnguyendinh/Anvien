@@ -519,4 +519,4 @@ Failures / handling:
 
 Commit:
 
-- Pending doc-only commit.
+- `6981dfe docs: record p3 unresolved validation`
