@@ -207,13 +207,13 @@ The plan is complete when:
   - Implementation Gate: do not make the toggle affect production unresolved visibility.
   - Acceptance: a user can intentionally inspect test unresolved details, but default graph/hotspot views remain production-focused.
 
-- [ ] [P3-A] Update API/contract and unit tests.
+- [x] [P3-A] Update API/contract and unit tests.
   - Goal: prevent drift across backend projection, API output, and Web consumers.
   - Work Steps: update `internal/contracts/web_ui.go` and regenerated `anvien-web/src/generated/anvien-contracts.ts` if response shapes change; add backend tests for separated counts, risk, and ranking; add HTTP/CLI tests for new fields and compatibility; add Web/client tests for display defaults; update existing snapshots or fixtures only when behavior changed intentionally.
   - Implementation Gate: run full build before tests.
   - Acceptance: affected package tests pass and prove old behavior would fail.
 
-- [ ] [P3-B] Run Web/e2e validation for UI behavior.
+- [x] [P3-B] Run Web/e2e validation for UI behavior.
   - Goal: verify the visible graph/file behavior if Web UI changes.
   - Work Steps: run the relevant Web build/test/e2e path; use browser or Playwright validation if a local UI change is present; capture screenshot or trace evidence when layout/visibility changes.
   - Implementation Gate: if no Web UI behavior changes are made, record that this phase is not applicable and why.

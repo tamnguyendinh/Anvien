@@ -481,3 +481,42 @@ Detect changes:
 Commit:
 
 - `0f02bd7 feat: add explicit test unresolved drilldown`
+
+## E7 - P3 Contract, Unit, And Web Validation
+
+Date: 2026-06-02
+
+Status: validated
+
+Scope:
+
+- Validated that Web contract output stayed synchronized after unresolved bucket and Web display changes.
+- Re-ran backend/API/CLI tests for file projection, HTTP output, contract shape, and CLI sort compatibility.
+- Re-ran Web unit and e2e tests covering default hiding and explicit raw/test unresolved access.
+
+Implementation evidence:
+
+| Area | Evidence |
+|---|---|
+| Contract | No new response-shape change was required in P2-B; generated Web contracts remained in sync. |
+| Backend/API/CLI | Existing P1-B/P1-C tests cover separated bucket fields, default-visible risk/counts, raw/test sort modes, HTTP payloads, and CLI output compatibility. |
+| Web | Existing P2-A/P2-B tests cover default display, graph semantic defaults, explicit raw/test sort, raw toggle behavior, and source-site trace display. |
+| Benchmark | No new benchmarkable product/runtime metric was introduced by this validation-only phase. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass; Vite emitted existing chunk-size/dynamic-import warnings. |
+| `go run ./cmd/generate-web-contracts --check` | Pass. |
+| `go test ./internal/filecontext ./internal/contracts ./internal/httpapi ./internal/cli` | Pass. |
+| `npm --prefix anvien-web test -- semantic-filters FileMapPanel FileDetailPanel` | Pass; 3 files, 10 tests. |
+| `npm --prefix anvien-web run test:e2e -- file-map-test-unresolved.spec.ts` | Pass; 1 Chromium e2e. |
+
+Failures / handling:
+
+- No P3 validation failures. The Vite warnings are existing build warnings about chunk size and static/dynamic import overlap.
+
+Commit:
+
+- Pending doc-only commit.
