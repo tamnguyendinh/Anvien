@@ -103,7 +103,7 @@ Validation:
 
 | Command | Result |
 |---|---|
-| `git status --short` | Shows the new plan/evidence/benchmark docs as uncommitted doc-only work. |
+| `git status --short` | Shows only `docs/plans` doc-only planning files changed for this work. |
 
 Failures / handling:
 

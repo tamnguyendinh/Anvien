@@ -25,11 +25,11 @@ Source evidence: E0.
 
 | Metric | Unit | Baseline | Target | Delta |
 |---|---:|---:|---:|---:|
-| Embedded Anvien source skills | files | 10 | 3 | -7 |
-| Generated Anvien skill directories | directories | 10 | 3 | -7 |
-| Retained Anvien workflow skills | skills | 3 | 3 | 0 |
+| Embedded Anvien source skills | files | 10 | 4 | -6 |
+| Generated Anvien skill directories | directories | 10 | 4 | -6 |
+| Retained Anvien workflow skills | skills | 3 | 4 | +1 |
 | Removed broad/router Anvien skills | skills | 7 | 0 | -7 |
-| Generated `Skill Selection Guide` rows | rows | 0 | 3 | +3 |
+| Generated `Skill Selection Guide` rows | rows | 0 | 4 | +4 |
 
 Retained skill target:
 
@@ -38,6 +38,7 @@ Retained skill target:
 | `anvien-api-surface` | retained | 1 |
 | `anvien-refactoring` | retained | 1 |
 | `anvien-debugging` | retained | 1 |
+| `anvien-planner` | retained | 1 |
 
 Removed skill target:
 
@@ -57,7 +58,7 @@ Status: pending
 
 | Metric | Unit | Final | Target | Result |
 |---|---:|---:|---:|---|
-| Embedded Anvien source skills | files | pending | 3 | pending |
-| Generated Anvien skill directories | directories | pending | 3 | pending |
-| Generated `Skill Selection Guide` rows | rows | pending | 3 | pending |
+| Embedded Anvien source skills | files | pending | 4 | pending |
+| Generated Anvien skill directories | directories | pending | 4 | pending |
+| Generated `Skill Selection Guide` rows | rows | pending | 4 | pending |
 | Removed skill references in generated current output | matches | pending | 0 | pending |

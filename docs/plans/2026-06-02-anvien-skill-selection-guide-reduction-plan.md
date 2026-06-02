@@ -27,13 +27,14 @@ Companion files:
 
 ## Goal
 
-Reduce the generated Anvien skill set to three mandatory domain workflow skills and add a separate generated `Skill Selection Guide` that routes agents to those skills by task. Concrete Anvien CLI/MCP command selection must remain in the generated `Command Selection Guide`.
+Reduce the generated Anvien skill set to four mandatory domain workflow skills and add a separate generated `Skill Selection Guide` that routes agents to those skills by task. Concrete Anvien CLI/MCP command selection must remain in the generated `Command Selection Guide`.
 
 Retained skills:
 
 - `anvien-api-surface`
 - `anvien-refactoring`
 - `anvien-debugging`
+- `anvien-planner`
 
 ## Problem
 
@@ -51,16 +52,17 @@ Skills should answer a different question:
 When you need this workflow... -> Use this Anvien workflow skill
 ```
 
-Keeping many broad skills makes the skill layer look like a universal command router. Removing all skills would also be wrong because three workflows are useful as mandatory domain gates:
+Keeping many broad skills makes the skill layer look like a universal command router. Removing all skills would also be wrong because four workflows are useful as mandatory domain gates:
 
 - API surface work needs a focused API route/tool/contract workflow.
 - Refactoring work needs a focused rename/extract/move/split workflow.
 - Debugging work needs a focused bug/failure/diagnostics workflow.
+- Plan authoring needs a focused `docs/plans` plan/evidence/benchmark workflow.
 
 The product fix is to generate both tables from source-owned AI-context generation:
 
 - `Command Selection Guide` for direct Anvien commands.
-- `Skill Selection Guide` for exactly the three retained workflow skills.
+- `Skill Selection Guide` for exactly the four retained workflow skills.
 
 ## Scope
 
@@ -78,16 +80,17 @@ Out of scope:
 - Removing or changing Anvien commands such as `query`, `context`, `impact`, `graph-health`, `query-health`, `resolution-inventory`, `source-site-accuracy`, `benchmark-compare`, or `detect-changes`.
 - Changing graph-health, query-health, impact, refactoring, debugging, or API-surface command behavior.
 - Editing generated `AGENTS.md`, `CLAUDE.md`, or `.claude/skills/anvien/**` directly as the source of truth.
-- Adding new workflow skills beyond the three retained skills.
+- Adding new workflow skills beyond the four retained skills.
 - Reworking non-Anvien plugin or Codex global skill behavior.
 
 ## Requirements
 
-1. `internal/aicontext/aicontext.go` must register exactly three generated Anvien skills: `anvien-api-surface`, `anvien-refactoring`, and `anvien-debugging`.
-2. `internal/aicontext/skills` must keep exactly three Anvien embedded source skill files:
+1. `internal/aicontext/aicontext.go` must register exactly four generated Anvien skills: `anvien-api-surface`, `anvien-refactoring`, `anvien-debugging`, and `anvien-planner`.
+2. `internal/aicontext/skills` must keep exactly four Anvien embedded source skill files:
    - `anvien-api-surface.md`
    - `anvien-refactoring.md`
    - `anvien-debugging.md`
+   - `anvien-planner.md`
 3. The following embedded source skill files must be deleted:
    - `anvien-cli.md`
    - `anvien-cross-repo.md`
@@ -100,6 +103,7 @@ Out of scope:
    - `.claude/skills/anvien/anvien-api-surface/SKILL.md`
    - `.claude/skills/anvien/anvien-refactoring/SKILL.md`
    - `.claude/skills/anvien/anvien-debugging/SKILL.md`
+   - `.claude/skills/anvien/anvien-planner/SKILL.md`
 5. Generated AI context must include a `Skill Selection Guide` table separate from the `Command Selection Guide`.
 6. The `Skill Selection Guide` must contain these rows:
 
@@ -108,11 +112,12 @@ Out of scope:
 | Inspect API routes, MCP tools, contracts, response shapes, or consumers | `.claude/skills/anvien/anvien-api-surface/SKILL.md` |
 | Rename, extract, split, move, or restructure code | `.claude/skills/anvien/anvien-refactoring/SKILL.md` |
 | Debug bugs, failures, diagnostics, or failure traces | `.claude/skills/anvien/anvien-debugging/SKILL.md` |
+| Create or review `docs/plans` plan, evidence, or benchmark work | `.claude/skills/anvien/anvien-planner/SKILL.md` |
 
 7. The generated `Command Selection Guide` must continue to route directly to CLI/MCP commands, not to skill files.
 8. Retained skill descriptions must be domain-specific workflow triggers, not generic command routers.
 9. After a retained skill is selected, concrete Anvien commands still come from the generated `Command Selection Guide`.
-10. Generated root Skills tables, if present, must list only the three retained Anvien skills.
+10. Generated root Skills tables, if present, must list only the four retained Anvien skills.
 11. Tests must prove the source skill inventory, generated skill inventory, and generated table content cannot drift.
 12. The normal generation path must recreate the final outputs without manual patching generated files.
 
@@ -124,7 +129,7 @@ Out of scope:
 4. Removed skills do not remove command capability.
 5. Generated outputs are validation artifacts, not source of truth.
 6. Embedded source skill Markdown and `aicontext.go` registry must remain in sync.
-7. The three retained skills must remain useful as mandatory project workflow gates.
+7. The four retained skills must remain useful as mandatory project workflow gates.
 8. AI-context guidance must remain repo-agnostic and must not hard-code Anvien as the only possible indexed repo name.
 
 ## Technical Direction
@@ -153,21 +158,22 @@ Use Anvien workflow skills only for the retained domains below.
 | Inspect API routes, MCP tools, contracts, response shapes, or consumers | `.claude/skills/anvien/anvien-api-surface/SKILL.md` |
 | Rename, extract, split, move, or restructure code | `.claude/skills/anvien/anvien-refactoring/SKILL.md` |
 | Debug bugs, failures, diagnostics, or failure traces | `.claude/skills/anvien/anvien-debugging/SKILL.md` |
+| Create or review `docs/plans` plan, evidence, or benchmark work | `.claude/skills/anvien/anvien-planner/SKILL.md` |
 ```
 
 Implementation should prefer one shared table writer or one shared source data structure for retained skill rows so `AGENTS.md`, `CLAUDE.md`, generated Skills tables, and tests do not drift. If current generator code intentionally emits different sections per output, the implementation must document that difference in evidence and still validate each generated output that should contain the `Skill Selection Guide`.
 
-The three retained skill files should keep normal skill frontmatter with `name` and `description`. Their body should describe workflow steps for that domain and then point back to direct Anvien commands from the generated command table. They must not contain broad "use this skill whenever using Anvien" language.
+The four retained skill files should keep normal skill frontmatter with `name` and `description`. Their body should describe workflow steps for that domain and then point back to direct Anvien commands from the generated command table when commands are needed. They must not contain broad "use this skill whenever using Anvien" language.
 
 ## Definition Of Done
 
 The plan is complete when:
 
-1. embedded source Anvien skill inventory is reduced from 10 to exactly 3;
-2. generated `.claude/skills/anvien/**` inventory is reduced from 10 to exactly 3;
+1. embedded source Anvien skill inventory is reduced from 10 existing broad skills to exactly 4 retained workflow skills;
+2. generated `.claude/skills/anvien/**` inventory is reduced from 10 existing broad skills to exactly 4 retained workflow skills;
 3. `anvien-graph-quality` and the other six removed skills are absent from source registration and generated output;
 4. generated AI-context outputs include a separate `Skill Selection Guide`;
-5. generated `Skill Selection Guide` rows point to the three retained generated skill paths;
+5. generated `Skill Selection Guide` rows point to the four retained generated skill paths;
 6. generated `Command Selection Guide` still routes directly to commands;
 7. retained skills are mandatory workflow triggers for their domains and not generic command routers;
 8. build, focused tests, regeneration, source/generated inventory checks, and detect-changes evidence are recorded;
@@ -183,28 +189,34 @@ The plan is complete when:
   - Acceptance: evidence records owner files and current inventory; benchmark records baseline embedded/generated skill counts.
 
 - [ ] [P1-A] Reduce the embedded skill set.
-  - Goal: make source skill inventory match the retained set.
-  - Work Steps: run impact for `aicontext.go` registry/generator owners before editing; delete the seven removed embedded skill Markdown files; update `baseSkills` or equivalent registry to exactly the three retained skills.
+  - Goal: remove broad command-router skills from the current embedded source set while keeping the three existing retained workflow skills.
+  - Work Steps: run impact for `aicontext.go` registry/generator owners before editing; delete the seven removed embedded skill Markdown files; update `baseSkills` or equivalent registry to the retained workflow skill set.
   - Implementation Gate: do not edit generated `.claude/skills/anvien/**`, `AGENTS.md`, or `CLAUDE.md` directly.
-  - Acceptance: source inventory contains only three Anvien skill Markdown files; registry references only the three retained skills.
+  - Acceptance: source inventory contains only `anvien-api-surface.md`, `anvien-refactoring.md`, and `anvien-debugging.md` after removal; registry references only those three until P2-B adds `anvien-planner`.
 
 - [ ] [P1-B] Add the generated Skill Selection Guide.
   - Goal: route workflow skill selection through a separate generated table instead of mixing skills into command selection.
-  - Work Steps: update `internal/aicontext/aicontext.go` table generation to emit `Skill Selection Guide`; keep `Command Selection Guide` command-only; add exact rows for API surface, refactoring, and debugging skill paths.
+  - Work Steps: update `internal/aicontext/aicontext.go` table generation to emit `Skill Selection Guide`; keep `Command Selection Guide` command-only; add exact rows for the three existing retained workflow skills: API surface, refactoring, and debugging.
   - Implementation Gate: if generator emits different root contexts for different agents, validate each expected output instead of assuming one file covers all.
   - Acceptance: generated AI context can contain both guides, with commands in `Command Selection Guide` and skill paths in `Skill Selection Guide`.
 
 - [ ] [P1-C] Tighten retained skill wording.
-  - Goal: keep the three retained skills useful as mandatory domain workflows without turning them into a generic Anvien router.
-  - Work Steps: review and edit `anvien-api-surface.md`, `anvien-refactoring.md`, and `anvien-debugging.md`; remove broad command-router language; preserve direct-command guidance inside each workflow.
-  - Implementation Gate: do not add new retained skills while editing wording.
-  - Acceptance: retained skills trigger only for their domain workflows and tell agents to use direct Anvien commands for execution.
+  - Goal: keep the three existing retained skills useful as mandatory domain workflows without turning them into a generic Anvien router.
+  - Work Steps: review and edit `anvien-api-surface.md`, `anvien-refactoring.md`, and `anvien-debugging.md`; remove broad command-router language; preserve direct-command guidance inside each workflow when commands are needed.
+  - Implementation Gate: do not add extra retained skills while editing wording.
+  - Acceptance: the three existing retained skills trigger only for their domain workflows and tell agents to use direct Anvien commands for execution.
 
-- [ ] [P2-A] Update tests for final inventory and generated guidance.
+- [ ] [P2-A] Update tests for reduced inventory and generated guidance.
   - Goal: prevent source/generator/generated output drift.
-  - Work Steps: update or add AI-context tests for exact retained source inventory, exact registry inventory, generated skill file inventory, generated root Skills table, `Command Selection Guide`, and `Skill Selection Guide`.
+  - Work Steps: update or add AI-context tests for the reduced three-skill source inventory after removed skills are deleted, exact registry inventory, generated skill file inventory, generated root Skills table, `Command Selection Guide`, and `Skill Selection Guide`.
   - Implementation Gate: tests must assert absence of removed skills, not only presence of retained skills.
-  - Acceptance: focused tests fail on the old 10-skill inventory and pass with the 3-skill inventory plus separate skill guide.
+  - Acceptance: focused tests fail on the old 10-skill inventory and pass with the reduced three-skill inventory plus separate skill guide; P2-B then extends the retained set to the final four-skill inventory.
+
+- [ ] [P2-B] Add the Anvien planner workflow skill.
+  - Goal: make plan/evidence/benchmark authoring a first-class retained workflow skill so agents follow the repository `docs/plans` convention instead of inventing ad hoc plan files.
+  - Work Steps: create embedded source skill `internal/aicontext/skills/anvien-planner.md` with valid frontmatter and the canonical `docs/plans/YYYY-MM-DD-<slug>/` three-file convention; update `internal/aicontext/aicontext.go` so `anvien-planner` is registered with the retained skill set; add a `Skill Selection Guide` row for creating or reviewing plan/evidence/benchmark work that points to `.claude/skills/anvien/anvien-planner/SKILL.md`; update tests and benchmark inventory expectations from the P2-A reduced three-skill state to the final four-skill retained state.
+  - Implementation Gate: do not create `.claude/skills/anvien/anvien-planner/SKILL.md`, `AGENTS.md`, or `CLAUDE.md` manually; the generated planner skill and guide rows must come only from the normal AI-context generation path.
+  - Acceptance: source inventory includes `anvien-planner.md`; generated output includes `.claude/skills/anvien/anvien-planner/SKILL.md`; generated `Skill Selection Guide` includes the planner row; tests prove the planner skill content is embedded and not fallback-generated; evidence records generated output checks and benchmark records the retained skill count change.
 
 - [ ] [P3-A] Regenerate and validate generated outputs.
   - Goal: prove the normal generation path creates the final AI context.
@@ -212,7 +224,13 @@ The plan is complete when:
   - Implementation Gate: if generation changes Web UI behavior, add Web validation; otherwise record that this is AI-context output only.
   - Acceptance: regenerated output contains only retained skill files and includes separate `Command Selection Guide` and `Skill Selection Guide`.
 
-- [ ] [P3-B] Detect changes, record benchmark deltas, and commit.
+- [ ] [P3-B] Read and update README guidance.
+  - Goal: keep user-facing README guidance aligned with the new AI-context skill model without turning README into a duplicate implementation log.
+  - Work Steps: read `README.md` end to end before editing; identify the README sections that explain AI context generation, generated skills, command guidance, setup, or agent workflow; update only the user-facing guidance needed to explain the separate `Command Selection Guide` and `Skill Selection Guide`, the four retained Anvien workflow skills, and the rule that concrete CLI/MCP commands are still selected directly from the command table.
+  - Implementation Gate: do not edit README before generated behavior is implemented and validated; do not copy phase evidence, benchmark tables, or internal implementation details into README.
+  - Acceptance: README accurately describes the final generated skill set and guide separation; evidence records the README sections reviewed and changed; README does not mention removed broad/router skills as active generated skills.
+
+- [ ] [P3-C] Detect changes, record benchmark deltas, and commit.
   - Goal: close the implementation slice with synchronized plan/evidence/benchmark state.
   - Work Steps: update evidence with build/test/regeneration results; update benchmark with before/after inventory counts; run `anvien detect-changes --repo Anvien --scope all`; commit the completed slice.
   - Implementation Gate: do not commit until detect-changes and ledger updates are recorded.
