@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: reopened; not started
+Status: in progress; P0 complete
 
 Companion files:
 
@@ -225,13 +225,13 @@ This benchmark is complete when:
 
 ## Phase Checklist
 
-- [ ] [P0-A] Establish benchmark baseline.
+- [x] [P0-A] Establish benchmark baseline.
   - Goal: freeze the repo state used for both discovery methods.
   - Work Steps: record `git rev-parse HEAD`; record branch and worktree status; record source-code dirty state; record benchmark docs/reports dirty state; record current date, machine, shell, and tool versions needed for the benchmark.
   - Implementation Gate: do not start discovery until baseline is recorded in evidence and benchmark ledgers.
   - Acceptance: evidence contains commit hash and worktree status; benchmark ledger contains baseline environment rows.
 
-- [ ] [P0-B] Start token accountant.
+- [x] [P0-B] Start token accountant.
   - Goal: guarantee the run measures what the main agent actually receives, reads, and emits.
   - Work Steps: create/assign token accountant; define how observed tool outputs, tool-call arguments, source reads, search outputs, Anvien outputs, artifact reads, truncation, and agent responses will be counted; record the counting method before discovery.
   - Implementation Gate: if observed-context accounting cannot be measured, stop and record blocker.

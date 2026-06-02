@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: reset; not started
+Status: in progress; P0 complete
 
 Companion files:
 
@@ -68,30 +68,30 @@ Old benchmark numbers from the invalidated run have been removed. This ledger st
 
 ## B0 - Baseline Metrics
 
-Status: pending
+Status: complete
 
 | Metric | Unit | Value |
 |---|---:|---:|
-| Baseline commit | SHA | pending |
-| Dirty source files at baseline | files | pending |
-| Dirty benchmark docs/reports at baseline | files | pending |
-| CPU logical processors | count | pending |
-| Physical memory | bytes | pending |
-| Git version | version | pending |
-| Go version | version | pending |
-| Node version | version | pending |
-| npm version | version | pending |
+| Baseline commit | SHA | `6564d7d5f5f7d53767a4afbc1028cda26535b977` |
+| Dirty source files at baseline | files | 0 |
+| Dirty benchmark docs/reports at baseline | files | 0 |
+| CPU logical processors | count | 8 |
+| Physical memory | bytes | 33238466560 |
+| Git version | version | 2.54.0.windows.1 |
+| Go version | version | 1.26.3 windows/amd64 |
+| Node version | version | v24.15.0 |
+| npm version | version | 11.12.1 |
 
 ## B1 - Token Accountant Setup Metrics
 
-Status: pending
+Status: active
 
 | Metric | Unit | Value |
 |---|---:|---:|
-| Token accountant active before native phase | yes/no | pending |
+| Token accountant active before native phase | yes/no | yes |
 | Token accountant active before Anvien phase | yes/no | pending |
-| Exact observed output counting available | yes/no | pending |
-| Truncated-output handling valid | yes/no | pending |
+| Exact observed output counting available | yes/no | yes |
+| Truncated-output handling valid | yes/no | yes |
 | Token comparison valid | yes/no | pending |
 
 ## B2 - Discovery Cost Summary

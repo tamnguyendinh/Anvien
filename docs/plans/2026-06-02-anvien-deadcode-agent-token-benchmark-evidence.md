@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: reset; not started
+Status: in progress; P0 complete
 
 Companion files:
 
@@ -74,39 +74,43 @@ Completion:
 
 Date:
 
-Status: pending
+Date: 2026-06-02 11:19:24 +07:00
+
+Status: complete
 
 Required evidence:
 
 | Check | Result |
 |---|---|
-| Baseline commit | pending |
-| Branch | pending |
-| Worktree status | pending |
-| Source-code dirty state | pending |
-| Benchmark docs/reports dirty state | pending |
-| Shell | pending |
-| OS / CPU / RAM | pending |
-| Go / Node / npm / Git versions if used | pending |
+| Baseline commit | `6564d7d5f5f7d53767a4afbc1028cda26535b977` |
+| Branch | `master` |
+| Worktree status | clean at baseline (`git status --short` produced no output) |
+| Source-code dirty state | 0 dirty source files at baseline |
+| Benchmark docs/reports dirty state | 0 dirty benchmark docs/reports at baseline |
+| Shell | PowerShell 7.6.2 |
+| OS / CPU / RAM | Microsoft Windows 10 Pro 10.0.19045 64-bit; Intel(R) Core(TM) i7-3770 CPU @ 3.40GHz; 4 cores / 8 logical processors; 33,238,466,560 bytes visible memory |
+| Go / Node / npm / Git versions if used | Go 1.26.3 windows/amd64; Node v24.15.0; npm 11.12.1; Git 2.54.0.windows.1 |
 
 ## E1 - Token Accountant Setup
 
 Date:
 
-Status: pending
+Date: 2026-06-02 11:19:24 +07:00
+
+Status: complete
 
 Required evidence:
 
 | Item | Result |
 |---|---|
-| Accountant identity/mechanism | pending |
-| Can observe main-agent tool results | pending |
-| Can distinguish observed context from unobserved full-output proxy | pending |
-| Can record tool-call argument text | pending |
-| Can record source/file reads | pending |
-| Can record agent response text | pending |
-| Truncation handling rule | pending |
-| Blocker if exact observed-context accounting is unavailable | pending |
+| Accountant identity/mechanism | Main-agent self-observation ledger. `tool_search` exposed sub-agent tools, but no passive observer can automatically see future main-agent tool results unless the main agent forwards them, so the benchmark uses explicit self-tracking of observed context. |
+| Can observe main-agent tool results | Yes, for tool outputs that appear in this transcript. Each phase records command/tool text and the observed stdout/stderr/result text the main agent actually receives. |
+| Can distinguish observed context from unobserved full-output proxy | Yes. A proxy line such as `full_stdout_proxy_tokens: 228504` is counted only as that observed line, not as the hidden body it describes. Hidden redirected bodies are unobserved until explicitly read. |
+| Can record tool-call argument text | Yes. Every shell command, Anvien command, and other tool-call argument used during discovery is recorded as observed emitted context for its phase. |
+| Can record source/file reads | Yes. File content is counted only when opened into the main-agent transcript; separate byte/character summaries are not treated as the hidden file body unless the body is also read. |
+| Can record agent response text | Yes. Phase reports written into evidence/benchmark ledgers are counted as agent-emitted context for the phase. |
+| Truncation handling rule | If a tool output is truncated and the observed portion cannot be measured, token comparison for that phase is invalid. If the output is summarized intentionally, only the summary that entered context is counted. |
+| Blocker if exact observed-context accounting is unavailable | No current blocker for P1 start; validity remains conditional on recording each phase without unmeasured truncation. |
 
 ## E2 - Native-Search Discovery Without Anvien
 
