@@ -121,8 +121,14 @@ func (s Server) handleFileHotspots(w http.ResponseWriter, r *http.Request) {
 		writeError(w, status, message)
 		return
 	}
+	sortMode := strings.TrimSpace(r.URL.Query().Get("sort"))
+	if !filecontext.IsSupportedFileListSort(sortMode) {
+		writeError(w, http.StatusBadRequest, `Unsupported "sort" query parameter`)
+		return
+	}
+	sortMode = filecontext.NormalizeFileListSort(sortMode)
 	list := projection.builder.BuildFileList(filecontext.FileListOptions{
-		Sort:                strings.TrimSpace(r.URL.Query().Get("sort")),
+		Sort:                sortMode,
 		Limit:               boundedNonNegativeQueryInt(r.URL.Query().Get("limit"), fileHotspotsDefaultLimit, 0, fileHotspotsMaxLimit),
 		Offset:              boundedNonNegativeQueryInt(r.URL.Query().Get("offset"), 0, 0, 0),
 		Kinds:               queryStringList(r, "kind"),

@@ -712,3 +712,61 @@ Detect changes:
 Commit:
 
 - `8668d26 feat: suppress test file resolution gaps`
+
+## E12 - Retire Test-Unresolved Projection Surface
+
+Date: 2026-06-02
+
+Status: implemented
+
+Scope:
+
+- Removed the remaining `testUnresolvedSourceSiteCount` field from file projection, MCP hints, Web contract generation, generated TypeScript contract, and Web fixtures.
+- Removed the `test-unresolved` sort mode from CLI/API projection behavior.
+- Added explicit sort validation so retired sort strings are rejected instead of silently falling back to another sort.
+- Kept non-test unresolved buckets and `raw-unresolved` / `production-unresolved` diagnostics intact.
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/filecontext/context.go` | `FileSummary` no longer has `testUnresolvedSourceSiteCount`; `unresolvedBucketCounts` no longer has a test bucket; supported sort validation rejects retired test unresolved aliases. |
+| `internal/cli/file_context_command.go` | `file-hotspots --sort` help no longer lists `test-unresolved`; unsupported sort values now return an error. |
+| `internal/cli/graph_health_command.go` | `graph-health files --sort` help no longer lists `test-unresolved`; unsupported sort values now return an error. |
+| `internal/httpapi/file_context.go` | `/api/file-hotspots` rejects unsupported `sort` query values with HTTP 400. |
+| `internal/mcp/target_dispatch.go` | MCP file relationship hints no longer include `testUnresolved`. |
+| `internal/contracts/web_ui.go` and `anvien-web/src/generated/anvien-contracts.ts` | Web `FileSummary` contract no longer exposes `testUnresolvedSourceSiteCount`. |
+| Backend/Web tests | Fixtures no longer synthesize test-file unresolved counts; negative tests assert `test-unresolved` is rejected. |
+| Plan | Updated rules and checklist so the current target is no test-unresolved graph/API/CLI/Web surface. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass; existing Vite chunk-size/dynamic-import warnings remain. |
+| `go test ./internal/filecontext ./internal/cli ./internal/httpapi ./internal/contracts ./internal/mcp` | Pass. |
+| `go run ./cmd/generate-web-contracts --check` | Pass. |
+| `npm --prefix anvien-web test -- FileMapPanel FileDetailPanel` | Pass; 2 files, 6 tests. |
+| `npm --prefix anvien-web run test:e2e -- file-map-test-unresolved.spec.ts` | Pass; 1 Chromium e2e. |
+| `anvien analyze --force` | Pass. Graph has 60,911 nodes, 96,559 relationships, 335 unresolved files, 352 raw unresolved files, and 335 default-visible unresolved files. |
+| `anvien graph-health summary --repo Anvien --json` | Pass. `resolutionGapNodeCount=33585`, `hasResolutionGapRelationshipCount=33585`, `resolutionGapCount=34218`, `unresolvedReferenceCount=70447`. |
+| `anvien file-hotspots --repo Anvien --kind test --limit 5 --json` | Pass. Returned 239 test files; sampled rows all had unresolved/raw/default-visible counts of 0 and `risk=low`. |
+| `rg -n "testUnresolvedSourceSiteCount\|TestUnresolvedSourceSiteCount\|test-unresolved\|tests-unresolved" internal anvien-web ...` excluding test files | Pass. No production code, contract, or fixture matches. |
+| `anvien file-hotspots --help` | Pass. Help lists `raw-unresolved` and `production-unresolved`; it does not list `test-unresolved`. |
+| `anvien file-hotspots --repo Anvien --sort test-unresolved --json` | Pass. Command is rejected with `unsupported sort "test-unresolved"`. |
+| `anvien graph-health files --repo Anvien --sort test-unresolved --json` | Pass. Command is rejected with `unsupported sort "test-unresolved"`. |
+
+Failures / handling:
+
+- `anvien graph-health files --repo Anvien --kind test --limit 1 --json` failed because `graph-health files` has no `--kind` flag. Correct validation used `anvien file-hotspots --repo Anvien --kind test --limit 5 --json`.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `anvien detect-changes --repo Anvien --scope all` | Pass. Scope contained 15 changed files and 14 affected files; summary risk was high because this slice changes shared file projection, CLI, and HTTP file-hotspot surfaces. Changed test files remained `kind=test` with unresolved/raw/default-visible counts of 0. |
+| `anvien impact file internal/httpapi/file_context.go --repo Anvien --direction upstream` | HIGH file-level blast radius. Affected files included `internal/httpapi/file_context.go`, `internal/httpapi/listen.go`, and `internal/httpapi/server.go`; affected process included `HandleFileHotspots -> CollectGitPathList`. The patch is scoped to validating `/api/file-hotspots` sort before `BuildFileList`. |
+
+Commit:
+
+- Pending.

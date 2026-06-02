@@ -125,7 +125,6 @@ type FileSummary struct {
 	UnresolvedSourceSiteCount               int    `json:"unresolvedSourceSiteCount"`
 	RawUnresolvedSourceSiteCount            int    `json:"rawUnresolvedSourceSiteCount"`
 	ProductionUnresolvedSourceSiteCount     int    `json:"productionUnresolvedSourceSiteCount"`
-	TestUnresolvedSourceSiteCount           int    `json:"testUnresolvedSourceSiteCount"`
 	NonActionableUnresolvedSourceSiteCount  int    `json:"nonActionableUnresolvedSourceSiteCount"`
 	UnknownUnresolvedSourceSiteCount        int    `json:"unknownUnresolvedSourceSiteCount"`
 	DefaultVisibleUnresolvedSourceSiteCount int    `json:"defaultVisibleUnresolvedSourceSiteCount"`
@@ -141,7 +140,6 @@ type FileSummary struct {
 type unresolvedBucketCounts struct {
 	Raw            int
 	Production     int
-	Test           int
 	NonActionable  int
 	Unknown        int
 	DefaultVisible int
@@ -591,7 +589,6 @@ func applyUnresolvedBuckets(summary *FileSummary, counts unresolvedBucketCounts)
 	summary.UnresolvedSourceSiteCount = counts.Raw
 	summary.RawUnresolvedSourceSiteCount = counts.Raw
 	summary.ProductionUnresolvedSourceSiteCount = counts.Production
-	summary.TestUnresolvedSourceSiteCount = counts.Test
 	summary.NonActionableUnresolvedSourceSiteCount = counts.NonActionable
 	summary.UnknownUnresolvedSourceSiteCount = counts.Unknown
 	summary.DefaultVisibleUnresolvedSourceSiteCount = counts.DefaultVisible
@@ -607,7 +604,6 @@ func (b *Builder) unresolvedBucketCounts(path string, kind string) unresolvedBuc
 		return counts
 	}
 	if kind == "test" {
-		counts.Test = counts.Raw
 		return counts
 	}
 	for _, node := range nodes {
@@ -1385,7 +1381,7 @@ func sortSummaries(summaries []FileSummary, sortMode string) {
 	sort.SliceStable(summaries, func(i, j int) bool {
 		left, right := summaries[i], summaries[j]
 		switch mode {
-		case "unresolved", "raw-unresolved", "production-unresolved", "test-unresolved":
+		case "unresolved", "raw-unresolved", "production-unresolved":
 			leftCount := unresolvedSortCount(left, mode)
 			rightCount := unresolvedSortCount(right, mode)
 			if leftCount != rightCount {
@@ -1421,7 +1417,7 @@ func sortSummaries(summaries []FileSummary, sortMode string) {
 
 func unresolvedFilterCount(summary FileSummary, sortMode string) int {
 	switch sortMode {
-	case "raw-unresolved", "production-unresolved", "test-unresolved":
+	case "raw-unresolved", "production-unresolved":
 		return unresolvedSortCount(summary, sortMode)
 	default:
 		return summary.DefaultVisibleUnresolvedSourceSiteCount
@@ -1434,14 +1430,15 @@ func unresolvedSortCount(summary FileSummary, sortMode string) int {
 		return summary.RawUnresolvedSourceSiteCount
 	case "production-unresolved":
 		return summary.ProductionUnresolvedSourceSiteCount
-	case "test-unresolved":
-		return summary.TestUnresolvedSourceSiteCount
 	default:
 		return summary.DefaultVisibleUnresolvedSourceSiteCount
 	}
 }
 
 func normalizedSort(sortMode string) string {
+	if !isSupportedSort(sortMode) {
+		return "path"
+	}
 	switch strings.ToLower(strings.TrimSpace(sortMode)) {
 	case "unresolved", "default-unresolved", "default-visible-unresolved":
 		return "unresolved"
@@ -1449,12 +1446,31 @@ func normalizedSort(sortMode string) string {
 		return "raw-unresolved"
 	case "production-unresolved", "actionable-unresolved":
 		return "production-unresolved"
-	case "test-unresolved", "tests-unresolved":
-		return "test-unresolved"
 	case "fan-in", "fan-out", "symbols", "flows", "tests":
 		return strings.ToLower(strings.TrimSpace(sortMode))
 	default:
 		return "path"
+	}
+}
+
+func NormalizeFileListSort(sortMode string) string {
+	return normalizedSort(sortMode)
+}
+
+func IsSupportedFileListSort(sortMode string) bool {
+	return isSupportedSort(sortMode)
+}
+
+func SupportedFileListSorts() []string {
+	return []string{"path", "unresolved", "raw-unresolved", "production-unresolved", "fan-in", "fan-out", "symbols", "flows", "tests"}
+}
+
+func isSupportedSort(sortMode string) bool {
+	switch strings.ToLower(strings.TrimSpace(sortMode)) {
+	case "", "path", "unresolved", "default-unresolved", "default-visible-unresolved", "raw", "raw-unresolved", "production-unresolved", "actionable-unresolved", "fan-in", "fan-out", "symbols", "flows", "tests":
+		return true
+	default:
+		return false
 	}
 }
 

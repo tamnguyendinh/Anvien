@@ -139,6 +139,14 @@ func TestQueryDetectChangesAndGraphHealthChildViews(t *testing.T) {
 		t.Fatalf("graph-health files output missing file rows:\n%s", out)
 	}
 
+	out, errOut, err = executeForTest(t, "graph-health", "files", "--repo", "fixture", "--sort", "test-unresolved", "--json")
+	if err == nil {
+		t.Fatalf("graph-health files accepted retired test-unresolved sort\nstdout:\n%s\nstderr:\n%s", out, errOut)
+	}
+	if !strings.Contains(err.Error(), `unsupported sort "test-unresolved"`) {
+		t.Fatalf("graph-health files retired sort error = %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+
 	out, errOut, err = executeForTest(t, "graph-health", "summary", "--repo", "fixture", "--json")
 	if err != nil {
 		t.Fatalf("graph-health summary returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)

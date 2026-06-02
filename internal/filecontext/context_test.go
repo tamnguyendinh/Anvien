@@ -96,6 +96,18 @@ func TestBuildFileContextReturnsFalseForMissingFile(t *testing.T) {
 	}
 }
 
+func TestFileListSortSupportRejectsRetiredTestUnresolvedSort(t *testing.T) {
+	if IsSupportedFileListSort("test-unresolved") || IsSupportedFileListSort("tests-unresolved") {
+		t.Fatalf("retired test unresolved sort aliases must not be supported")
+	}
+	if !IsSupportedFileListSort("raw-unresolved") || NormalizeFileListSort("raw") != "raw-unresolved" {
+		t.Fatalf("raw unresolved sort support regressed")
+	}
+	if NormalizeFileListSort("test-unresolved") != "path" {
+		t.Fatalf("unsupported sort normalization should fall back to path")
+	}
+}
+
 func TestBuildFileContextIsDeterministicAcrossRelationshipOrder(t *testing.T) {
 	first, ok := NewBuilder(fileContextFixture(false)).BuildFileContext("src/app.go", Options{})
 	if !ok {
@@ -213,7 +225,6 @@ func TestBuildFileSummariesSeparateUnresolvedBuckets(t *testing.T) {
 		resolutionGap("ResolutionGap:src/app.go:call", "src/app.go", "Function:src/app.go:Run", "missingCall", "unresolved_call", "in_repo_unresolved", "analyzer_gap", 4),
 		resolutionGap("ResolutionGap:src/app.go:builtin", "src/app.go", "Function:src/app.go:Run", "println", "unresolved_call", "builtin", "non_actionable", 5),
 		resolutionGap("ResolutionGap:src/app.go:unknown", "src/app.go", "Function:src/app.go:Run", "mystery", "unresolved_reference", "", "", 6),
-		resolutionGap("ResolutionGap:src/app_test.go:assert", "src/app_test.go", "Function:src/app_test.go:TestRun", "assertEqual", "unresolved_call", "test_framework", "non_actionable", 3),
 	} {
 		g.AddNode(node)
 	}
@@ -238,25 +249,19 @@ func TestBuildFileSummariesSeparateUnresolvedBuckets(t *testing.T) {
 			source.UnknownUnresolvedSourceSiteCount,
 		)
 	}
-	if source.TestUnresolvedSourceSiteCount != 0 || source.DefaultVisibleUnresolvedSourceSiteCount != 2 {
-		t.Fatalf("source visible/test buckets = default %d test %d, want 2/0",
-			source.DefaultVisibleUnresolvedSourceSiteCount,
-			source.TestUnresolvedSourceSiteCount,
-		)
+	if source.DefaultVisibleUnresolvedSourceSiteCount != 2 {
+		t.Fatalf("source default-visible bucket = %d, want 2", source.DefaultVisibleUnresolvedSourceSiteCount)
 	}
 	if source.Risk != "medium" || source.RawRisk != "medium" || source.DefaultVisibleRisk != "medium" {
 		t.Fatalf("source risks = risk %q raw %q default %q, want medium/medium/medium", source.Risk, source.RawRisk, source.DefaultVisibleRisk)
 	}
 
 	testFile := byPath["src/app_test.go"]
-	if testFile.Kind != "test" || testFile.UnresolvedSourceSiteCount != 1 || testFile.RawUnresolvedSourceSiteCount != 1 {
-		t.Fatalf("test file raw summary = %#v, want kind=test raw=1", testFile)
+	if testFile.Kind != "test" || testFile.UnresolvedSourceSiteCount != 0 || testFile.RawUnresolvedSourceSiteCount != 0 {
+		t.Fatalf("test file raw summary = %#v, want kind=test raw=0", testFile)
 	}
-	if testFile.TestUnresolvedSourceSiteCount != 1 || testFile.DefaultVisibleUnresolvedSourceSiteCount != 0 {
-		t.Fatalf("test buckets = test %d default %d, want 1/0",
-			testFile.TestUnresolvedSourceSiteCount,
-			testFile.DefaultVisibleUnresolvedSourceSiteCount,
-		)
+	if testFile.DefaultVisibleUnresolvedSourceSiteCount != 0 {
+		t.Fatalf("test default-visible bucket = %d, want 0", testFile.DefaultVisibleUnresolvedSourceSiteCount)
 	}
 	if testFile.ProductionUnresolvedSourceSiteCount != 0 || testFile.NonActionableUnresolvedSourceSiteCount != 0 || testFile.UnknownUnresolvedSourceSiteCount != 0 {
 		t.Fatalf("test production buckets = production %d non-actionable %d unknown %d, want 0/0/0",
@@ -265,8 +270,8 @@ func TestBuildFileSummariesSeparateUnresolvedBuckets(t *testing.T) {
 			testFile.UnknownUnresolvedSourceSiteCount,
 		)
 	}
-	if testFile.Risk != "low" || testFile.RawRisk != "medium" || testFile.DefaultVisibleRisk != "low" {
-		t.Fatalf("test risks = risk %q raw %q default %q, want low/medium/low", testFile.Risk, testFile.RawRisk, testFile.DefaultVisibleRisk)
+	if testFile.Risk != "low" || testFile.RawRisk != "low" || testFile.DefaultVisibleRisk != "low" {
+		t.Fatalf("test risks = risk %q raw %q default %q, want low/low/low", testFile.Risk, testFile.RawRisk, testFile.DefaultVisibleRisk)
 	}
 
 	defaultUnresolved := builder.BuildFileList(FileListOptions{Sort: "unresolved", UnresolvedOnly: true, Limit: 0})
@@ -274,12 +279,8 @@ func TestBuildFileSummariesSeparateUnresolvedBuckets(t *testing.T) {
 		t.Fatalf("default unresolved filter = %#v, want only source file", defaultUnresolved)
 	}
 	rawUnresolved := builder.BuildFileList(FileListOptions{Sort: "raw-unresolved", UnresolvedOnly: true, Limit: 0})
-	if rawUnresolved.Total != 2 || rawUnresolved.Files[0].Path != "src/app.go" || rawUnresolved.Files[1].Path != "src/app_test.go" {
-		t.Fatalf("raw unresolved filter = %#v, want source then test file", rawUnresolved)
-	}
-	testUnresolved := builder.BuildFileList(FileListOptions{Sort: "test-unresolved", UnresolvedOnly: true, Limit: 0})
-	if testUnresolved.Total != 1 || testUnresolved.Files[0].Path != "src/app_test.go" {
-		t.Fatalf("test unresolved filter = %#v, want only test file", testUnresolved)
+	if rawUnresolved.Total != 1 || rawUnresolved.Files[0].Path != "src/app.go" {
+		t.Fatalf("raw unresolved filter = %#v, want only source file", rawUnresolved)
 	}
 	productionUnresolved := builder.BuildFileList(FileListOptions{Sort: "production-unresolved", UnresolvedOnly: true, Limit: 0})
 	if productionUnresolved.Total != 1 || productionUnresolved.Files[0].Path != "src/app.go" {
@@ -299,7 +300,7 @@ func TestBuildFileSummariesSeparateUnresolvedBuckets(t *testing.T) {
 	if !ok {
 		t.Fatalf("BuildFileContext() did not find test file")
 	}
-	if testContext.Summary.TestUnresolvedSourceSiteCount != testFile.TestUnresolvedSourceSiteCount ||
+	if testContext.Summary.RawUnresolvedSourceSiteCount != testFile.RawUnresolvedSourceSiteCount ||
 		testContext.Summary.DefaultVisibleUnresolvedSourceSiteCount != testFile.DefaultVisibleUnresolvedSourceSiteCount {
 		t.Fatalf("test detail buckets = %#v, want list buckets %#v", testContext.Summary, testFile)
 	}

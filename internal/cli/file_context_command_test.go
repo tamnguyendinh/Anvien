@@ -103,28 +103,12 @@ func TestFileHotspotsCommandOutputsSortedProjection(t *testing.T) {
 		t.Fatalf("default unresolved-only output exposed test unresolved file:\n%s", out)
 	}
 
-	out, errOut, err = executeForTest(t, "file-hotspots", "--repo", "fixture", "--sort", "test-unresolved", "--unresolved-only", "--limit", "1", "--json")
-	if err != nil {
-		t.Fatalf("file-hotspots test-unresolved returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	out, errOut, err = executeForTest(t, "file-hotspots", "--repo", "fixture", "--sort", "test-unresolved", "--json")
+	if err == nil {
+		t.Fatalf("file-hotspots accepted retired test-unresolved sort\nstdout:\n%s\nstderr:\n%s", out, errOut)
 	}
-	if errOut != "" {
-		t.Fatalf("file-hotspots test-unresolved wrote stderr: %q", errOut)
-	}
-	payload = struct {
-		Repo  string                    `json:"repo"`
-		Total int                       `json:"total"`
-		Files []filecontext.FileSummary `json:"files"`
-	}{}
-	if err := json.Unmarshal([]byte(out), &payload); err != nil {
-		t.Fatalf("parse test-unresolved JSON: %v\n%s", err, out)
-	}
-	if payload.Total != 1 || len(payload.Files) != 1 ||
-		payload.Files[0].Path != "src/app_test.go" ||
-		payload.Files[0].TestUnresolvedSourceSiteCount != 2 ||
-		payload.Files[0].DefaultVisibleUnresolvedSourceSiteCount != 0 ||
-		payload.Files[0].RawUnresolvedSourceSiteCount != 2 ||
-		payload.Files[0].Risk != "low" {
-		t.Fatalf("test-unresolved payload = %#v, want only test file with raw/test=2 default=0 risk=low", payload)
+	if !strings.Contains(err.Error(), `unsupported sort "test-unresolved"`) {
+		t.Fatalf("retired sort error = %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
 	}
 }
 
@@ -173,18 +157,6 @@ func writeFileProjectionCommandGraph(t *testing.T, repoPath string) {
 		"targetText": "missingCall", "gapKind": "unresolved_call", "classification": "in_repo_unresolved",
 		"actionability": "analyzer_gap", "sourceSiteId": "SourceSite:src/app.go#call#missingCall#12#2#12#13",
 		"sourceSiteStatus": "unresolved_local_binding", "startLine": 12, "startCol": 2,
-	}})
-	g.AddNode(graph.Node{ID: "ResolutionGap:src/app_test.go:assert", Label: scopeir.NodeResolutionGap, Properties: graph.NodeProperties{
-		"name": "assertEqual", "filePath": "src/app_test.go", "sourceNodeId": "Function:src/app_test.go:TestNewServer",
-		"targetText": "assertEqual", "gapKind": "unresolved_call", "classification": "test_framework",
-		"actionability": "non_actionable", "sourceSiteId": "SourceSite:src/app_test.go#call#assertEqual#8#2#8#13",
-		"sourceSiteStatus": "unresolved_local_binding", "startLine": 8, "startCol": 2,
-	}})
-	g.AddNode(graph.Node{ID: "ResolutionGap:src/app_test.go:require", Label: scopeir.NodeResolutionGap, Properties: graph.NodeProperties{
-		"name": "requireNoError", "filePath": "src/app_test.go", "sourceNodeId": "Function:src/app_test.go:TestNewServer",
-		"targetText": "requireNoError", "gapKind": "unresolved_call", "classification": "test_framework",
-		"actionability": "non_actionable", "sourceSiteId": "SourceSite:src/app_test.go#call#requireNoError#9#2#9#16",
-		"sourceSiteStatus": "unresolved_local_binding", "startLine": 9, "startCol": 2,
 	}})
 	g.AddRelationship(graph.Relationship{ID: "rel:def-app-server", SourceID: "File:src/app.go", TargetID: "Struct:src/app.go:Server", Type: graph.RelDefines})
 	g.AddRelationship(graph.Relationship{ID: "rel:def-app-new", SourceID: "File:src/app.go", TargetID: "Function:src/app.go:NewServer", Type: graph.RelDefines})

@@ -114,7 +114,6 @@ func mcpFileRelationshipHints(summary filecontext.FileSummary) map[string]any {
 		"unresolved":               summary.DefaultVisibleUnresolvedSourceSiteCount,
 		"rawUnresolved":            summary.RawUnresolvedSourceSiteCount,
 		"productionUnresolved":     summary.ProductionUnresolvedSourceSiteCount,
-		"testUnresolved":           summary.TestUnresolvedSourceSiteCount,
 		"nonActionableUnresolved":  summary.NonActionableUnresolvedSourceSiteCount,
 		"unknownUnresolved":        summary.UnknownUnresolvedSourceSiteCount,
 		"defaultVisibleUnresolved": summary.DefaultVisibleUnresolvedSourceSiteCount,
@@ -147,7 +146,6 @@ func addMCPSymbolTargetFields(payload map[string]any, symbol map[string]any, sum
 			"symbolCount":    summary.SymbolCount,
 			"unresolved":     summary.DefaultVisibleUnresolvedSourceSiteCount,
 			"rawUnresolved":  summary.RawUnresolvedSourceSiteCount,
-			"testUnresolved": summary.TestUnresolvedSourceSiteCount,
 			"fanIn":          summary.InboundRefCount,
 			"fanOut":         summary.OutboundRefCount,
 		}

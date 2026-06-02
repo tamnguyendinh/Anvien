@@ -1295,7 +1295,6 @@ export interface FileSummary {
   unresolvedSourceSiteCount: number;
   rawUnresolvedSourceSiteCount: number;
   productionUnresolvedSourceSiteCount: number;
-  testUnresolvedSourceSiteCount: number;
   nonActionableUnresolvedSourceSiteCount: number;
   unknownUnresolvedSourceSiteCount: number;
   defaultVisibleUnresolvedSourceSiteCount: number;

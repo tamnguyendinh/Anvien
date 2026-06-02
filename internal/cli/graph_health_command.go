@@ -288,6 +288,10 @@ func newGraphHealthFilesCommand(repoName *string) *cobra.Command {
 			if limit < 0 {
 				return fmt.Errorf("limit must be zero or positive")
 			}
+			if !filecontext.IsSupportedFileListSort(sortMode) {
+				return fmt.Errorf("unsupported sort %q; supported sorts: %s", sortMode, strings.Join(filecontext.SupportedFileListSorts(), ", "))
+			}
+			sortMode = filecontext.NormalizeFileListSort(sortMode)
 			inputs, g, err := loadGraphHealthGraph(*repoName)
 			if err != nil {
 				return err
@@ -331,7 +335,7 @@ func newGraphHealthFilesCommand(repoName *string) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&sortMode, "sort", "unresolved", "sort by path, unresolved, raw-unresolved, production-unresolved, test-unresolved, fan-in, fan-out, symbols, flows, or tests")
+	cmd.Flags().StringVar(&sortMode, "sort", "unresolved", "sort by path, unresolved, raw-unresolved, production-unresolved, fan-in, fan-out, symbols, flows, or tests")
 	cmd.Flags().IntVar(&limit, "limit", 20, "maximum files to show; 0 means all")
 	cmd.Flags().BoolVar(&unresolvedOnly, "unresolved-only", false, "show only files with unresolved source sites")
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write JSON graph-health file rows")

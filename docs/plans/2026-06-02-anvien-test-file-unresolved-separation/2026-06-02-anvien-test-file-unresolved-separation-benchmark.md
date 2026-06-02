@@ -310,3 +310,48 @@ Latest default top hotspots:
 | 3 | `internal/contracts/web_ui.go` | source | 440 | 624 | 0 | high |
 | 4 | `anvien-web/src/components/FileTreePanel.tsx` | source | 424 | 435 | 0 | high |
 | 5 | `anvien-web/src/hooks/useSigma.ts` | source | 407 | 431 | 0 | high |
+
+## B9 - Retired Test-Unresolved Surface Metrics
+
+Status: recorded
+
+Source evidence: E12.
+
+| Metric | Unit | Before E12 | Latest | Result |
+|---|---:|---:|---:|---|
+| `testUnresolvedSourceSiteCount` in Web contract | fields | 1 | 0 | pass |
+| `test-unresolved` production code/contract/fixture matches | matches | present | 0 | pass |
+| `test-unresolved` CLI help entries | entries | 1 | 0 | pass |
+| `file-hotspots --sort test-unresolved` accepted | accepted | 1 | 0 | pass |
+| `graph-health files --sort test-unresolved` accepted | accepted | 1 | 0 | pass |
+| Test files returned by `--kind test` | files | 239 | 239 | pass |
+| Sampled test-file unresolved/raw/default-visible counts | counts | 0 | 0 | pass |
+| Default-visible unresolved files | files | 335 | 335 | pass |
+| Raw unresolved files | files | 352 | 352 | pass |
+| Production/default top 5 hotspots that are source files | files | 5 | 5 | pass |
+
+Latest graph/file projection inventory:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| Files scanned | files | 821 |
+| Parsed code files | files | 599 |
+| Failed parses | files | 0 |
+| Graph nodes | nodes | 60,911 |
+| Graph relationships | relationships | 96,559 |
+| ResolutionGap nodes | nodes | 33,585 |
+| HAS_RESOLUTION_GAP relationships | relationships | 33,585 |
+| ResolutionGap source-site count | sites | 34,218 |
+| File projection dependency edges | edges | 15,947 |
+| Raw unresolved files | files | 352 |
+| Default-visible unresolved files | files | 335 |
+
+Latest sampled test files:
+
+| File | Kind | Raw unresolved | Default-visible unresolved | Risk |
+|---|---|---:|---:|---|
+| `anvien-launcher/server-wrapper/main_test.go` | test | 0 | 0 | low |
+| `anvien-launcher/src/main_test.go` | test | 0 | 0 | low |
+| `anvien-web/e2e/debug-issues.spec.ts` | test | 0 | 0 | low |
+| `anvien-web/e2e/file-map-test-unresolved.spec.ts` | test | 0 | 0 | low |
+| `anvien-web/e2e/graph-health-ui.spec.ts` | test | 0 | 0 | low |

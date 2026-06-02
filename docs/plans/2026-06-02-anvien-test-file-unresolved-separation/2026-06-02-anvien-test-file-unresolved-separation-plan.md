@@ -16,7 +16,7 @@ Companion files:
 3. Use direct Anvien commands when writing or reviewing this code/graph plan, and for implementation slices that inspect code ownership, graph impact, file projection behavior, graph-health behavior, or Web UI impact.
 4. Refresh graph evidence with `anvien analyze --force` before graph-based plan evidence or implementation evidence.
 5. Run impact analysis before editing graph builders, file projection logic, resolution metrics, API handlers/contracts, Web graph views, or shared test classification code.
-6. Do not delete unresolved/ResolutionGap facts just to reduce counts; preserve raw diagnostic data and change default classification, ranking, and display behavior.
+6. Do not delete non-test unresolved/ResolutionGap facts just to reduce counts; test-source unresolved detail is intentionally not generated as product graph data.
 7. Treat generated `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` as generated output only.
 8. Run the full build before testing. For this repo the full build gate is `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1`.
 9. If Web UI behavior changes, include relevant Web/e2e validation or record why no browser validation is required.
@@ -34,12 +34,11 @@ The target behavior is:
 - test files are visible as their own `Test File` region/node type;
 - default graph/file hotspot views show that a file is a test file;
 - default views show the file/symbol/API/flow relationships that the test covers;
-- default views do not expand unresolved details inside test files;
-- raw test unresolved data remains available through explicit drill-down or filter when debugging tests.
+- graph/API/CLI/Web product surfaces do not generate or expose unresolved details inside test files.
 
 ## Problem
 
-Current analyze output shows unresolved hotspots are dominated by test surfaces instead of production surfaces.
+Baseline analyze output showed unresolved hotspots were dominated by test surfaces instead of production surfaces.
 
 Latest observed hotspots after `anvien analyze --force` on 2026-06-02:
 
@@ -54,7 +53,7 @@ Latest observed hotspots after `anvien analyze --force` on 2026-06-02:
 That means the current default unresolved signal is mixing fundamentally different things:
 
 - production unresolved that can indicate graph/analyzer/product issues;
-- test unresolved caused by assertions, mocks, fixtures, intentionally invalid inputs, test helpers, and test frameworks;
+- test-source unresolved caused by assertions, mocks, fixtures, intentionally invalid inputs, test helpers, and test frameworks;
 - non-actionable unresolved such as builtins and standard library calls;
 - unknown unresolved that still needs investigation.
 
@@ -68,13 +67,13 @@ In scope:
 - unresolved and ResolutionGap count aggregation by file kind/app layer;
 - default hotspot ranking and default graph visibility;
 - Web UI display behavior for test files and unresolved/ResolutionGap nodes;
-- optional explicit drill-down/filter for test unresolved;
+- removal of explicit test-unresolved graph/API/CLI/Web surfaces;
 - CLI/API contracts used by Web file map/detail/graph views;
 - tests and benchmarks proving default unresolved signal is no longer dominated by test files.
 
 Out of scope:
 
-- removing ResolutionGap nodes from the canonical graph;
+- removing non-test ResolutionGap nodes from the canonical graph;
 - hiding production unresolved references;
 - changing parser/source-site resolution semantics for production files;
 - changing test execution behavior;
@@ -88,13 +87,13 @@ Out of scope:
 3. Default graph/file views must collapse or hide unresolved details inside test files.
 4. Test file nodes must remain visible and identifiable as `Test File`.
 5. Test file relationships to tested targets must remain visible when available.
-6. Raw test unresolved data must remain accessible through explicit drill-down, debug view, JSON field, or filter.
+6. Test-file unresolved detail must not be generated as file graph/API/CLI/Web surface data.
 7. Metrics must separate at least:
    - production/actionable unresolved;
-   - test unresolved;
    - non-actionable unresolved;
-   - unknown unresolved.
-8. Existing unresolved raw counts must remain traceable for audit and benchmark comparison.
+   - unknown unresolved;
+   - aggregate skipped test-source gap inputs when benchmarking analyze internals.
+8. Existing non-test unresolved raw counts must remain traceable for audit and benchmark comparison.
 9. API/Web contract changes must be additive where possible and covered by tests.
 10. Generated output or docs must not claim unresolved was "fixed" by deletion; the behavior change is classification and default visibility.
 11. Default risk/warning fields must not mark a test file high-risk solely because of raw test unresolved detail.
@@ -104,11 +103,11 @@ Out of scope:
 
 1. Canonical symbol/source-site graph facts remain the source of truth.
 2. File projection can derive display/ranking groups from canonical facts, but must not rewrite canonical truth.
-3. Test unresolved is diagnostic data, not the default production graph signal.
+3. Test-source unresolved detail is not a product graph signal and must not be emitted as file-level unresolved surface data.
 4. `Test File` visibility is more important in default views than every unresolved child detail.
-5. A user debugging tests must still be able to find raw unresolved evidence.
+5. A user debugging tests should inspect test file identity and tested-target relationships, not generated unresolved detail from the test file.
 6. Default hotspot ranking must optimize for actionable production investigation.
-7. Benchmark totals must distinguish raw unresolved from default-visible unresolved.
+7. Benchmark totals must distinguish non-test raw unresolved from default-visible unresolved, and may record aggregate skipped test-source gap inputs.
 8. Test-to-target relationships are product signal and must remain visible even when test unresolved details are collapsed.
 
 ## Technical Direction
@@ -127,13 +126,13 @@ Preferred model:
 ```text
 rawUnresolvedCount
 productionUnresolvedCount
-testUnresolvedCount
 nonActionableUnresolvedCount
 unknownUnresolvedCount
 defaultVisibleUnresolvedCount
 rawRisk
 defaultVisibleRisk
 testedTargetCount
+testSourceGapInputsSkipped
 ```
 
 Default hotspot ranking and default warning/risk display should use `defaultVisibleUnresolvedCount`, `productionUnresolvedCount`, or an equivalent actionable bucket, not raw unresolved count. Test files should still be findable by a file kind/app layer filter or test-specific view.
@@ -144,28 +143,29 @@ For Web graph display:
 Test file node/region
   -> tested file/symbol/API/flow edges
   -> no default unresolved child expansion
-  -> explicit "show test unresolved" drill-down/filter when needed
+  -> no test unresolved graph/API/CLI/Web surface
 ```
 
 For CLI/API output, prefer additive fields over breaking existing fields:
 
 - keep existing `unresolvedSourceSiteCount` as raw count if clients depend on it;
-- add separated counts for default ranking/display;
+- add separated non-test counts for default ranking/display;
 - add `isTestFile` or reuse existing `kind=test`/`appLayer=backend_test|api_test|frontend_test`;
 - add clear default-visible/actionable count and risk fields if Web UI needs them;
 - add tested-target relationship fields or counts if current linked-test data only exposes the reverse relationship;
+- do not expose `testUnresolvedSourceSiteCount`, `test-unresolved`, or equivalent test-file unresolved product surfaces;
 - do not silently change existing `risk` semantics without contract tests; prefer additive `rawRisk`/`defaultRisk` style fields first.
 
 ## Definition Of Done
 
 The plan is complete when:
 
-1. analyze/file projection records separated unresolved counts for test and production files;
+1. analyze/file projection records separated unresolved counts for non-test files and does not expose a test-unresolved file bucket;
 2. default hotspot ranking no longer lists test/e2e files as top unresolved hotspots solely because of test unresolved detail;
 3. Web UI default graph/file views render test files as `Test File` and do not expand test unresolved detail by default;
-4. raw test unresolved remains available through explicit drill-down or filter;
+4. test-file unresolved detail is absent from graph/API/CLI/Web product surfaces, while test file identity and tested-target relationships remain visible;
 5. tests cover classification, metric separation, hotspot ranking, and Web/API behavior affected by the change;
-6. before/after benchmarks record raw unresolved count, default-visible unresolved count, test unresolved count, production unresolved count, and top hotspot composition;
+6. before/after benchmarks record raw unresolved count, default-visible unresolved count, production unresolved count, aggregate skipped test-source gap inputs where available, and top hotspot composition;
 7. full build, focused tests, any required Web/e2e validation, analyze regeneration, and detect-changes evidence are recorded;
 8. implementation work is committed after evidence and benchmark ledgers are updated.
 
@@ -184,16 +184,16 @@ The plan is complete when:
   - Acceptance: production/test/e2e distinction comes from backend/file-projection classification, and Web changes do not need path-pattern inference.
 
 - [x] [P1-B] Separate unresolved metric buckets.
-  - Goal: preserve raw unresolved data while creating metrics that distinguish production/test/non-actionable/unknown unresolved.
-  - Work Steps: update file projection aggregation to compute raw unresolved plus separated buckets; classify ResolutionGap rows by file classification and existing actionability/classification metadata; keep old fields if compatibility requires; add default-visible/actionable count fields and additive raw/default risk fields if needed; add tests proving raw totals stay traceable while production/test buckets split correctly.
+  - Goal: preserve non-test raw unresolved data while creating metrics that distinguish production/non-actionable/unknown unresolved and keep test-source gap detail out of file-level product surfaces.
+  - Work Steps: update file projection aggregation to compute raw unresolved plus separated non-test buckets; classify ResolutionGap rows by file classification and existing actionability/classification metadata; keep old fields if compatibility requires; add default-visible/actionable count fields and additive raw/default risk fields if needed; add tests proving non-test raw totals stay traceable while test-file summaries do not expose unresolved buckets.
   - Implementation Gate: do not hide data in UI until the API/projection contract can represent both raw and separated counts.
-  - Acceptance: JSON/API/file summaries expose separated unresolved metrics, raw counts remain traceable, and tests prove test unresolved is not counted as production/default-visible unresolved.
+  - Acceptance: JSON/API/file summaries expose separated non-test unresolved metrics, raw counts remain traceable for non-test files, and tests prove test files do not expose unresolved graph buckets.
 
 - [x] [P1-C] Change hotspot ranking to actionable default signal.
   - Goal: stop test files from dominating default unresolved hotspot lists.
-  - Work Steps: update `filecontext` sort/filter/risk logic and analyze/file-hotspot/graph-health callers to use production/actionable/default-visible unresolved for default hotspot lists; keep optional raw/test ranking mode if current command/UI supports sorting by raw unresolved; update CLI/API tests and benchmark outputs.
+  - Work Steps: update `filecontext` sort/filter/risk logic and analyze/file-hotspot/graph-health callers to use production/actionable/default-visible unresolved for default hotspot lists; keep raw unresolved only as a non-test diagnostic mode; remove test-unresolved ranking/sort mode; update CLI/API tests and benchmark outputs.
   - Implementation Gate: raw unresolved count must remain available somewhere for audit.
-  - Acceptance: default top hotspots and default risk/warning signals are ranked by production/actionable unresolved; test files can still appear in a test-specific or raw-unresolved view.
+  - Acceptance: default top hotspots and default risk/warning signals are ranked by production/actionable unresolved; test files can still appear by file kind but not through a test-unresolved graph bucket.
 
 - [x] [P2-A] Update Web file map and graph default display.
   - Goal: make test files visible as test files without expanding unresolved child detail by default.
@@ -201,11 +201,11 @@ The plan is complete when:
   - Implementation Gate: if API fields needed by UI are missing, return to P1-B/P1-C instead of hard-coding path checks in UI.
   - Acceptance: default Web view shows `Test File` identity and linked tested targets, while test unresolved detail is not rendered as default graph clutter.
 
-- [x] [P2-B] Add explicit test unresolved drill-down/filter.
-  - Goal: preserve access to raw test unresolved for debugging without polluting the default view.
-  - Work Steps: define what counts as explicit access: opening file detail, enabling a `show test unresolved` toggle/filter, or choosing a raw/test unresolved sort; make default file map/hotspot/graph views production-focused; display bucket counts and samples only after explicit user action; keep raw evidence traceable to source-site/ResolutionGap IDs.
-  - Implementation Gate: do not make the toggle affect production unresolved visibility.
-  - Acceptance: a user can intentionally inspect test unresolved details, but default graph/hotspot views remain production-focused.
+- [x] [P2-B] Remove explicit test unresolved graph surface.
+  - Goal: avoid creating a separate `test-unresolved` product concept after test files are already represented by file identity and tested-target relationships.
+  - Work Steps: remove `test-unresolved` sort/filter/API/contract fields; remove `testUnresolvedSourceSiteCount` from generated contracts and fixtures; keep `kind=test` and outbound relationships to tested targets visible; keep non-test raw/production unresolved behavior unchanged.
+  - Implementation Gate: do not remove or weaken unresolved handling for non-test files.
+  - Acceptance: code/contract search finds no `testUnresolvedSourceSiteCount` or `test-unresolved` surface, test files still render as test files, and non-test unresolved counts remain available.
 
 - [x] [P3-A] Update API/contract and unit tests.
   - Goal: prevent drift across backend projection, API output, and Web consumers.
@@ -217,13 +217,13 @@ The plan is complete when:
   - Goal: verify the visible graph/file behavior if Web UI changes.
   - Work Steps: run the relevant Web build/test/e2e path; use browser or Playwright validation if a local UI change is present; capture screenshot or trace evidence when layout/visibility changes.
   - Implementation Gate: if no Web UI behavior changes are made, record that this phase is not applicable and why.
-  - Acceptance: evidence proves test unresolved is hidden/collapsed by default and visible only through explicit action.
+  - Acceptance: evidence proves test files keep identity and tested-target relationships while test unresolved detail is not exposed as a Web surface.
 
 - [x] [P4-A] Analyze, benchmark, and compare before/after.
   - Goal: prove the metric/ranking behavior improved without deleting data.
   - Work Steps: run `anvien analyze --force`; record raw graph counts, raw unresolved counts, separated unresolved buckets, default-visible unresolved count, raw/default risk counts, top hotspot composition, and generated file projection stats; compare against B0 baseline.
   - Implementation Gate: do not mark complete if raw unresolved disappears without a traceable replacement.
-  - Acceptance: benchmark shows raw unresolved remains measurable, test unresolved is separated, and default hotspots are no longer dominated by test files.
+  - Acceptance: benchmark shows non-test raw unresolved remains measurable, test-source gap detail is not exposed as a file surface, and default hotspots are no longer dominated by test files.
 
 - [x] [P4-B] Detect changes, record closure evidence, and commit.
   - Goal: close the implementation slice with synchronized plan/evidence/benchmark state.
@@ -233,8 +233,8 @@ The plan is complete when:
 
 ## Risk Notes
 
-- Hiding test unresolved by deleting ResolutionGap facts would make graph diagnostics less honest; this plan requires classification and default visibility changes instead.
-- Ranking changes can break users who rely on raw unresolved sorting; keep raw/test-specific access where practical.
+- Removing non-test ResolutionGap facts would make graph diagnostics less honest; this plan only suppresses test-source gap detail as product graph data.
+- Ranking changes can break users who rely on raw unresolved sorting; keep non-test raw access where practical and remove test-specific unresolved access.
 - UI-only path checks would drift from backend truth; prefer backend/file-projection classification fields.
 - Test files sometimes expose real production graph issues through imports or tested-target edges; keep test-to-target relationships visible.
 - Existing counts may appear to drop in default views; benchmark must explain raw versus default-visible counts clearly.
@@ -247,7 +247,7 @@ User direction after closure clarified that Web production views should not expo
 
 - Web production views show test files as `Test File` and show relationships to tested files/symbols.
 - Web production views do not expose `raw-unresolved`, `test-unresolved`, or a raw unresolved detail toggle.
-- Raw/test unresolved command/API diagnostics may remain available for internal graph debugging, but they are not product UI controls.
+- Raw unresolved command/API diagnostics remain available for non-test graph debugging, but test-unresolved diagnostics are not product UI controls.
 
 ## Post-Closure Semantic Correction
 

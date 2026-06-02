@@ -107,6 +107,10 @@ func newFileHotspotsCommand() *cobra.Command {
 			if offset < 0 {
 				return fmt.Errorf("offset must be zero or positive")
 			}
+			if !filecontext.IsSupportedFileListSort(sortMode) {
+				return fmt.Errorf("unsupported sort %q; supported sorts: %s", sortMode, strings.Join(filecontext.SupportedFileListSorts(), ", "))
+			}
+			sortMode = filecontext.NormalizeFileListSort(sortMode)
 			inputs, g, err := loadFileProjectionGraph(repoName)
 			if err != nil {
 				return err
@@ -143,7 +147,7 @@ func newFileHotspotsCommand() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&repoName, "repo", "r", "", "target repository")
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write file hotspot JSON")
-	cmd.Flags().StringVar(&sortMode, "sort", "unresolved", "sort by path, unresolved, raw-unresolved, production-unresolved, test-unresolved, fan-in, fan-out, symbols, flows, or tests")
+	cmd.Flags().StringVar(&sortMode, "sort", "unresolved", "sort by path, unresolved, raw-unresolved, production-unresolved, fan-in, fan-out, symbols, flows, or tests")
 	cmd.Flags().IntVar(&limit, "limit", 20, "maximum files to show; 0 means all")
 	cmd.Flags().IntVar(&offset, "offset", 0, "files to skip before returning results")
 	cmd.Flags().StringSliceVar(&kinds, "kind", nil, "filter by file kind; repeat or comma-separate values")
