@@ -359,6 +359,18 @@ describe("FileDetailPanel", () => {
     expect(unresolved).toHaveTextContent("0 sites");
     expect(unresolved).toHaveTextContent("No default unresolved source-site samples.");
     expect(unresolved).not.toHaveTextContent("expectSomething");
+    expect(unresolved).not.toHaveTextContent("site-test-gap");
     expect(screen.getByTestId("file-detail-section-relationships")).toHaveTextContent("src/app.ts");
+
+    const rawToggle = screen.getByTestId("file-detail-toggle-raw-unresolved");
+    expect(rawToggle).toHaveAttribute("aria-pressed", "false");
+
+    await userEvent.click(rawToggle);
+
+    expect(rawToggle).toHaveAttribute("aria-pressed", "true");
+    expect(unresolved).toHaveTextContent("3 sites");
+    expect(unresolved).toHaveTextContent("expectSomething");
+    expect(unresolved).toHaveTextContent("site-test-gap");
+    expect(screen.getByTestId("file-detail-section-quality")).toHaveTextContent("Calls");
   });
 });

@@ -419,3 +419,65 @@ Detect changes:
 Commit:
 
 - `f7de70d feat: hide test unresolved in web defaults`
+
+## E6 - P2-B Explicit Test Unresolved Drill-Down
+
+Date: 2026-06-02
+
+Status: implemented
+
+Scope:
+
+- Added explicit Web access to raw/test unresolved without changing default production-focused visibility.
+- Added file map sort choices for raw unresolved and test unresolved.
+- Added a file detail raw unresolved toggle that is off by default and resets when the selected file changes.
+- Exposed unresolved sample `sourceSiteId` in file detail sample rows for traceability.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| `anvien analyze --force` | Pass after P2-A commits and again after P2-B implementation. Latest graph had 819 files scanned, 599 parsed code files, 0 failed parses, 96,857 nodes, 132,459 relationships, 591 raw unresolved files, and 335 default-visible unresolved files. |
+| Source inspection | `FileMapPanel` already passed sort strings directly to `/api/file-hotspots`; backend already supports `raw-unresolved` and `test-unresolved`. `FileDetailPanel` had raw unresolved groups in the response but rendered only default-visible groups after P2-A. |
+
+Impact / blast radius:
+
+| Target | Result |
+|---|---|
+| `anvien impact file anvien-web/src/components/FileMapPanel.tsx --repo Anvien --direction upstream` | HIGH blast radius. Affected files include `App.tsx`, `FileTreePanel.tsx`, `main.tsx`, and `FileMapPanel` tests; no affected processes were reported. |
+| `anvien impact file anvien-web/src/components/FileDetailPanel.tsx --repo Anvien --direction upstream` | HIGH blast radius. Affected files include `App.tsx`, `CodeReferencesPanel.tsx`, `main.tsx`, and `FileDetailPanel` tests; no affected processes were reported. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `anvien-web/src/components/FileMapPanel.tsx` | Added explicit `raw-unresolved` and `test-unresolved` sort options; default sort remains `unresolved`. |
+| `anvien-web/src/components/FileDetailPanel.tsx` | Added a default-off `Raw` toggle for raw unresolved groups; raw test quality counts and raw samples only render after the toggle is pressed; sample rows now show `sourceSiteId` when present. |
+| `anvien-web/test/unit/FileMapPanel.test.tsx` | Asserts selecting `test-unresolved` passes that exact sort to the backend request. |
+| `anvien-web/test/unit/FileDetailPanel.test.tsx` | Asserts test-file raw sample and source-site ID are hidden by default, then visible after pressing the raw unresolved toggle. |
+| `anvien-web/e2e/file-map-test-unresolved.spec.ts` | Extended mocked browser flow to select `test-unresolved`, open a test file, verify default hiding, then press Raw and verify raw sample and `sourceSiteId`. |
+| Plan | Marked P2-B complete. |
+| Benchmark ledger | Added P2-B explicit access metrics. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `npm --prefix anvien-web test -- FileMapPanel FileDetailPanel` | Pass as a pre-build smoke check; 2 files, 6 tests. |
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass; Vite emitted existing chunk-size/dynamic-import warnings. |
+| `npm --prefix anvien-web test -- FileMapPanel FileDetailPanel` | Pass after full build; 2 files, 6 tests. |
+| `npm --prefix anvien-web run test:e2e -- file-map-test-unresolved.spec.ts` | Pass after full build; 1 Chromium e2e. |
+
+Failures / handling:
+
+- No failure after final P2-B implementation. The first unit run was treated as a smoke check because the repository rule requires the formal validation sequence to run after the full build.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `anvien detect-changes --repo Anvien --scope all` | Pass after final graph refresh. Scope contained 8 changed/affected files across Web graph UI, frontend tests, and ledger files; summary risk was low, file-layer changed risk was low, and no affected processes were reported. |
+
+Commit:
+
+- Pending until detect-changes passes.

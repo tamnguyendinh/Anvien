@@ -17,6 +17,8 @@ import {
 
 type FileMapSort =
   | "unresolved"
+  | "raw-unresolved"
+  | "test-unresolved"
   | "fan-in"
   | "fan-out"
   | "symbols"
@@ -34,6 +36,8 @@ interface FileMapPanelProps {
 
 const SORT_OPTIONS: Array<{ value: FileMapSort; label: string }> = [
   { value: "unresolved", label: "Unresolved" },
+  { value: "raw-unresolved", label: "Raw unresolved" },
+  { value: "test-unresolved", label: "Test unresolved" },
   { value: "fan-in", label: "Fan in" },
   { value: "fan-out", label: "Fan out" },
   { value: "symbols", label: "Symbols" },

@@ -201,7 +201,7 @@ The plan is complete when:
   - Implementation Gate: if API fields needed by UI are missing, return to P1-B/P1-C instead of hard-coding path checks in UI.
   - Acceptance: default Web view shows `Test File` identity and linked tested targets, while test unresolved detail is not rendered as default graph clutter.
 
-- [ ] [P2-B] Add explicit test unresolved drill-down/filter.
+- [x] [P2-B] Add explicit test unresolved drill-down/filter.
   - Goal: preserve access to raw test unresolved for debugging without polluting the default view.
   - Work Steps: define what counts as explicit access: opening file detail, enabling a `show test unresolved` toggle/filter, or choosing a raw/test unresolved sort; make default file map/hotspot/graph views production-focused; display bucket counts and samples only after explicit user action; keep raw evidence traceable to source-site/ResolutionGap IDs.
   - Implementation Gate: do not make the toggle affect production unresolved visibility.

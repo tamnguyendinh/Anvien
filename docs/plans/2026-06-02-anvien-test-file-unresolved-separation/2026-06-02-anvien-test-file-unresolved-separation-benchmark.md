@@ -174,7 +174,23 @@ Source evidence: E5.
 | Explicit graph filter path can re-enable hidden test/non-actionable gaps | available | 1 | 1 | pass |
 | Mocked browser e2e covering file map/detail default behavior | tests | 1 | 1 | pass |
 
-## B5 - Final Metrics
+## B5 - P2-B Explicit Test Unresolved Access Metrics
+
+Status: recorded
+
+Source evidence: E6.
+
+| Metric | Unit | Latest | Target | Result |
+|---|---:|---:|---:|---|
+| File map explicit unresolved sort options added for raw/test buckets | options | 2 | 2 | pass |
+| File map default sort remains production/default-visible unresolved | available | 1 | 1 | pass |
+| File detail raw unresolved toggle enabled by default | enabled_by_default | 0 | 0 | pass |
+| File detail raw unresolved toggle path | available | 1 | 1 | pass |
+| Raw test unresolved sample visible after explicit toggle | available | 1 | 1 | pass |
+| Raw test unresolved `sourceSiteId` visible after explicit toggle | available | 1 | 1 | pass |
+| Mocked browser e2e covering explicit raw/test drill-down | tests | 1 | 1 | pass |
+
+## B6 - Final Metrics
 
 Status: pending
 
