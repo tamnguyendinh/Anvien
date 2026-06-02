@@ -22,17 +22,17 @@ Companion files:
 
 Status: recorded
 
-Source evidence: E0.
+Source evidence: E1.
 
 | Metric | Unit | Baseline |
 |---|---:|---:|
-| Files scanned | files | 815 |
+| Files scanned | files | 818 |
 | Parsed code files | files | 598 |
 | Failed parses | files | 0 |
-| Graph nodes | nodes | 96,206 |
-| Graph relationships | relationships | 131,705 |
-| File projection files | files | 815 |
-| File projection dependency edges | edges | 15,898 |
+| Graph nodes | nodes | 96,340 |
+| Graph relationships | relationships | 131,828 |
+| File projection files | files | 818 |
+| File projection dependency edges | edges | 15,902 |
 | Files with unresolved | files | 590 |
 | Top 5 hotspots that are test/e2e files | files | 5 |
 | Top 5 hotspots that are production files | files | 0 |
@@ -42,7 +42,7 @@ Baseline top hotspots:
 | Rank | File | Kind | Unresolved | Risk |
 |---:|---|---|---:|---|
 | 1 | `internal/mcp/server_test.go` | test | 1445 | high |
-| 2 | `internal/cli/command_test.go` | test | 1119 | high |
+| 2 | `internal/cli/command_test.go` | test | 1121 | high |
 | 3 | `internal/analyze/analyze_test.go` | test | 1052 | high |
 | 4 | `internal/resolution/resolution_test.go` | test | 934 | high |
 | 5 | `anvien-web/e2e/graph-orientation-labels.spec.ts` | e2e test | 856 | high |
@@ -58,6 +58,7 @@ Status: planned
 | Separated test unresolved count | available | 1 |
 | Separated non-actionable unresolved count | available | 1 |
 | Separated unknown unresolved count | available | 1 |
+| Raw/default-visible risk separation | available | 1 |
 | Default top 5 hotspots dominated by test/e2e files | files | 0 |
 | Default graph expansion of test unresolved child nodes | enabled_by_default | 0 |
 | Explicit test unresolved drill-down/filter | available | 1 |
@@ -73,6 +74,7 @@ Status: pending
 | Test unresolved count | available | pending | 1 | pending |
 | Non-actionable unresolved count | available | pending | 1 | pending |
 | Unknown unresolved count | available | pending | 1 | pending |
+| Raw/default-visible risk separation | available | pending | 1 | pending |
 | Default top 5 hotspots that are test/e2e files | files | pending | 0 | pending |
 | Default top 5 hotspots that are production files | files | pending | measured | pending |
 | Default graph expansion of test unresolved child nodes | enabled_by_default | pending | 0 | pending |

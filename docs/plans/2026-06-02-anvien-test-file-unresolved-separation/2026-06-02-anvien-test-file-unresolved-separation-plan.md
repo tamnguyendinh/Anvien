@@ -12,9 +12,9 @@ Companion files:
 ## Master Rules
 
 1. Follow active workspace and repository instructions, including generated `AGENTS.md`; this plan records product work and validation, it does not replace repository rules.
-2. Do not use Anvien for doc-only commits.
-3. Use Anvien for implementation slices that inspect code ownership, graph impact, file projection behavior, graph-health behavior, or Web UI impact.
-4. Refresh graph evidence with `anvien analyze --force` before graph-based implementation evidence.
+2. Do not run Anvien only for doc-only commit ceremony.
+3. Use direct Anvien commands when writing or reviewing this code/graph plan, and for implementation slices that inspect code ownership, graph impact, file projection behavior, graph-health behavior, or Web UI impact.
+4. Refresh graph evidence with `anvien analyze --force` before graph-based plan evidence or implementation evidence.
 5. Run impact analysis before editing graph builders, file projection logic, resolution metrics, API handlers/contracts, Web graph views, or shared test classification code.
 6. Do not delete unresolved/ResolutionGap facts just to reduce counts; preserve raw diagnostic data and change default classification, ranking, and display behavior.
 7. Treat generated `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` as generated output only.
@@ -41,12 +41,12 @@ The target behavior is:
 
 Current analyze output shows unresolved hotspots are dominated by test surfaces instead of production surfaces.
 
-Latest observed hotspots:
+Latest observed hotspots after `anvien analyze --force` on 2026-06-02:
 
 | File | Unresolved | Risk |
 |---|---:|---|
 | `internal/mcp/server_test.go` | 1445 | high |
-| `internal/cli/command_test.go` | 1119 | high |
+| `internal/cli/command_test.go` | 1121 | high |
 | `internal/analyze/analyze_test.go` | 1052 | high |
 | `internal/resolution/resolution_test.go` | 934 | high |
 | `anvien-web/e2e/graph-orientation-labels.spec.ts` | 856 | high |
@@ -97,6 +97,8 @@ Out of scope:
 8. Existing unresolved raw counts must remain traceable for audit and benchmark comparison.
 9. API/Web contract changes must be additive where possible and covered by tests.
 10. Generated output or docs must not claim unresolved was "fixed" by deletion; the behavior change is classification and default visibility.
+11. Default risk/warning fields must not mark a test file high-risk solely because of raw test unresolved detail.
+12. Web UI must use backend-provided file classification and unresolved buckets, not path-pattern checks, for default display decisions.
 
 ## Invariants
 
@@ -107,10 +109,18 @@ Out of scope:
 5. A user debugging tests must still be able to find raw unresolved evidence.
 6. Default hotspot ranking must optimize for actionable production investigation.
 7. Benchmark totals must distinguish raw unresolved from default-visible unresolved.
+8. Test-to-target relationships are product signal and must remain visible even when test unresolved details are collapsed.
 
 ## Technical Direction
 
-Implementation should first find the actual owners before editing. Likely ownership areas include file projection, graph-health/file-hotspot aggregation, HTTP/API response shape for file detail, and Web graph/file map rendering. Do not assume the exact owner names before source inspection.
+Implementation should first find the actual owners before editing. Current owner evidence from plan review:
+
+- file classification already exists in graph/file summaries through `kind=test` and `appLayer=backend_test|api_test|frontend_test`;
+- `internal/semantic/app_layer.go` owns app-layer classification for test/e2e paths;
+- `internal/filecontext/context.go` owns file summaries, file detail unresolved aggregation, file list filtering, hotspot sorting, risk, and test-link counts;
+- `internal/cli/command.go`, `internal/cli/file_context_command.go`, `internal/cli/graph_health_command.go`, `internal/httpapi/file_context.go`, MCP resources/target dispatch, Web generated contracts, `FileMapPanel`, and `FileDetailPanel` consume those file-summary fields.
+
+Do not invent a new test-file detector unless source inspection proves the existing classification cannot express a required case. Prefer reusing and exporting the existing backend truth.
 
 Preferred model:
 
@@ -121,9 +131,12 @@ testUnresolvedCount
 nonActionableUnresolvedCount
 unknownUnresolvedCount
 defaultVisibleUnresolvedCount
+rawRisk
+defaultVisibleRisk
+testedTargetCount
 ```
 
-Default hotspot ranking should use `defaultVisibleUnresolvedCount` or `productionUnresolvedCount`, not raw unresolved count. Test files should still be findable by a file kind/app layer filter.
+Default hotspot ranking and default warning/risk display should use `defaultVisibleUnresolvedCount`, `productionUnresolvedCount`, or an equivalent actionable bucket, not raw unresolved count. Test files should still be findable by a file kind/app layer filter or test-specific view.
 
 For Web graph display:
 
@@ -136,10 +149,12 @@ Test file node/region
 
 For CLI/API output, prefer additive fields over breaking existing fields:
 
-- keep existing `unresolved` raw count if clients depend on it;
+- keep existing `unresolvedSourceSiteCount` as raw count if clients depend on it;
 - add separated counts for default ranking/display;
 - add `isTestFile` or reuse existing `kind=test`/`appLayer=backend_test|api_test|frontend_test`;
-- add a clear visibility/ranking field if Web UI needs it.
+- add clear default-visible/actionable count and risk fields if Web UI needs them;
+- add tested-target relationship fields or counts if current linked-test data only exposes the reverse relationship;
+- do not silently change existing `risk` semantics without contract tests; prefer additive `rawRisk`/`defaultRisk` style fields first.
 
 ## Definition Of Done
 
@@ -156,45 +171,45 @@ The plan is complete when:
 
 ## Phase Checklist
 
-- [ ] [P0-A] Establish baseline and owner evidence.
+- [x] [P0-A] Establish baseline and owner evidence.
   - Goal: record the current unresolved hotspot problem and identify source owners before edits.
-  - Work Steps: run `anvien analyze --force`; record file counts, graph counts, unresolvedFiles, top hotspot list, and whether each hotspot is test/e2e; use direct Anvien command selection to inspect likely owners for file projection, graph-health/file-hotspots, HTTP file detail, and Web graph/file map rendering; inspect source manually after owner discovery.
+  - Work Steps: run `anvien analyze --force`; record file counts, graph counts, unresolvedFiles, top hotspot list, and whether each hotspot is test/e2e; use direct Anvien command selection to inspect likely owners for file projection, graph-health/file-hotspots, HTTP file detail, and Web graph/file map rendering; inspect source manually after owner discovery; update plan direction if source facts contradict assumptions.
   - Implementation Gate: no code edits in this phase.
-  - Acceptance: evidence records current hotspot composition and owner files; benchmark records baseline raw unresolved and hotspot composition.
+  - Acceptance: evidence records current hotspot composition and owner files; benchmark records baseline raw unresolved and hotspot composition; plan no longer asks implementation to recreate existing classification.
 
-- [ ] [P1-A] Define test-file classification source of truth.
-  - Goal: make test-file detection stable and shared by projection/ranking/UI.
-  - Work Steps: inspect existing file kind, appLayer, path-pattern, and provider classification fields; decide whether to reuse `kind=test`/test app layers or add a small helper; cover Go `_test.go`, TS/JS `.spec`/`.test`, e2e paths, and current backend/api/frontend test app layers; add unit tests for classification boundaries.
-  - Implementation Gate: do not change unresolved counts yet; only establish reliable classification.
-  - Acceptance: source has one clear classification path that can tell production files from test/e2e files without ad hoc UI-only checks.
+- [ ] [P1-A] Reuse and harden test-file classification truth.
+  - Goal: make existing test-file classification reliably reusable by projection/ranking/API/UI without adding ad hoc UI path checks.
+  - Work Steps: inspect `internal/semantic/app_layer.go`, `internal/filecontext/context.go:fileKind`, and current generated file summaries; confirm Go `_test.go`, TS/JS `.spec`/`.test`, e2e paths, and backend/api/frontend test app layers already map to `kind=test`; add or adjust focused tests only for missing boundary cases; expose `kind=test`/test app layer as the API/UI source of truth.
+  - Implementation Gate: do not change unresolved counts or ranking yet; only confirm or harden classification.
+  - Acceptance: production/test/e2e distinction comes from backend/file-projection classification, and Web changes do not need path-pattern inference.
 
 - [ ] [P1-B] Separate unresolved metric buckets.
   - Goal: preserve raw unresolved data while creating metrics that distinguish production/test/non-actionable/unknown unresolved.
-  - Work Steps: update file projection aggregation to compute raw unresolved plus separated buckets; classify ResolutionGap rows by file classification and existing actionability/classification metadata; keep old fields if compatibility requires; add tests proving raw totals stay traceable while production/test buckets split correctly.
+  - Work Steps: update file projection aggregation to compute raw unresolved plus separated buckets; classify ResolutionGap rows by file classification and existing actionability/classification metadata; keep old fields if compatibility requires; add default-visible/actionable count fields and additive raw/default risk fields if needed; add tests proving raw totals stay traceable while production/test buckets split correctly.
   - Implementation Gate: do not hide data in UI until the API/projection contract can represent both raw and separated counts.
-  - Acceptance: JSON/API/file summaries expose separated unresolved metrics, and tests prove test unresolved is not counted as production unresolved.
+  - Acceptance: JSON/API/file summaries expose separated unresolved metrics, raw counts remain traceable, and tests prove test unresolved is not counted as production/default-visible unresolved.
 
 - [ ] [P1-C] Change hotspot ranking to actionable default signal.
   - Goal: stop test files from dominating default unresolved hotspot lists.
-  - Work Steps: find current hotspot ranking logic; switch default unresolved ranking to production/actionable/default-visible unresolved; keep optional raw/test ranking mode if current command/UI supports sorting by raw unresolved; update CLI/API tests and benchmark outputs.
+  - Work Steps: update `filecontext` sort/filter/risk logic and analyze/file-hotspot/graph-health callers to use production/actionable/default-visible unresolved for default hotspot lists; keep optional raw/test ranking mode if current command/UI supports sorting by raw unresolved; update CLI/API tests and benchmark outputs.
   - Implementation Gate: raw unresolved count must remain available somewhere for audit.
-  - Acceptance: default top hotspots are ranked by production/actionable unresolved; test files can still appear in a test-specific or raw-unresolved view.
+  - Acceptance: default top hotspots and default risk/warning signals are ranked by production/actionable unresolved; test files can still appear in a test-specific or raw-unresolved view.
 
 - [ ] [P2-A] Update Web file map and graph default display.
   - Goal: make test files visible as test files without expanding unresolved child detail by default.
-  - Work Steps: inspect Web graph/file map components; add UI treatment for test file nodes/rows using existing visual language; hide/collapse test unresolved child nodes in default graph view; ensure test file -> tested target relationships remain visible; keep text short and avoid explanatory UI copy.
+  - Work Steps: update `FileMapPanel`, `FileDetailPanel`, and any graph node adapter/view that uses file unresolved counts; use backend-provided `kind`, app layer, default-visible counts, and risk fields; add UI treatment for test file nodes/rows using existing visual language; hide/collapse test unresolved child nodes in default graph view; ensure test file -> tested target relationships remain visible; keep text short and avoid explanatory UI copy.
   - Implementation Gate: if API fields needed by UI are missing, return to P1-B/P1-C instead of hard-coding path checks in UI.
   - Acceptance: default Web view shows `Test File` identity and linked tested targets, while test unresolved detail is not rendered as default graph clutter.
 
 - [ ] [P2-B] Add explicit test unresolved drill-down/filter.
   - Goal: preserve access to raw test unresolved for debugging without polluting the default view.
-  - Work Steps: add or reuse a filter/toggle/detail section for test unresolved; make it off by default; display bucket counts and samples only after explicit user action; keep raw evidence traceable to source-site/ResolutionGap IDs.
+  - Work Steps: define what counts as explicit access: opening file detail, enabling a `show test unresolved` toggle/filter, or choosing a raw/test unresolved sort; make default file map/hotspot/graph views production-focused; display bucket counts and samples only after explicit user action; keep raw evidence traceable to source-site/ResolutionGap IDs.
   - Implementation Gate: do not make the toggle affect production unresolved visibility.
   - Acceptance: a user can intentionally inspect test unresolved details, but default graph/hotspot views remain production-focused.
 
 - [ ] [P3-A] Update API/contract and unit tests.
   - Goal: prevent drift across backend projection, API output, and Web consumers.
-  - Work Steps: update generated Web contracts if necessary; add backend tests for separated counts and ranking; add Web/client tests for display defaults; update existing snapshots or fixtures only when behavior changed intentionally.
+  - Work Steps: update `internal/contracts/web_ui.go` and regenerated `anvien-web/src/generated/anvien-contracts.ts` if response shapes change; add backend tests for separated counts, risk, and ranking; add HTTP/CLI tests for new fields and compatibility; add Web/client tests for display defaults; update existing snapshots or fixtures only when behavior changed intentionally.
   - Implementation Gate: run full build before tests.
   - Acceptance: affected package tests pass and prove old behavior would fail.
 
@@ -206,7 +221,7 @@ The plan is complete when:
 
 - [ ] [P4-A] Analyze, benchmark, and compare before/after.
   - Goal: prove the metric/ranking behavior improved without deleting data.
-  - Work Steps: run `anvien analyze --force`; record raw graph counts, raw unresolved counts, separated unresolved buckets, default-visible unresolved count, top hotspot composition, and generated file projection stats; compare against B0 baseline.
+  - Work Steps: run `anvien analyze --force`; record raw graph counts, raw unresolved counts, separated unresolved buckets, default-visible unresolved count, raw/default risk counts, top hotspot composition, and generated file projection stats; compare against B0 baseline.
   - Implementation Gate: do not mark complete if raw unresolved disappears without a traceable replacement.
   - Acceptance: benchmark shows raw unresolved remains measurable, test unresolved is separated, and default hotspots are no longer dominated by test files.
 
