@@ -1,6 +1,6 @@
 ---
 name: anvien-planner
-description: "Use when the user needs to create or review docs/plans plan, evidence, or benchmark work."
+description: "Use when the user needs to create or review docs/plans plan, evidence, benchmark, or checklist mini-plan work."
 ---
 
 # Planner With Anvien
@@ -46,10 +46,12 @@ It should contain:
 - risk notes;
 - task state through checkboxes.
 
-Each checklist item must be a mini-plan. It needs:
+Every checklist item must be a complete mini-plan by itself. Do not write generic checklist items. The plan must state what to do, in what order, and what condition proves the item is done.
+
+Each checklist item must include:
 
 - Goal: what the phase achieves.
-- Work Steps: concrete ordered work.
+- Work Steps: concrete ordered work, including the implementation sequence.
 - Implementation Gate: the condition that must be true before editing or moving forward.
 - Acceptance: the condition that proves the phase is done.
 

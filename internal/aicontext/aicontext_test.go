@@ -16,15 +16,10 @@ func expectedBaseSkillIDs() []string {
 	}
 }
 
-func removedBaseSkillIDs() []string {
+func staleGeneratedBaseSkillIDs() []string {
 	return []string{
-		"anvien-cli",
-		"anvien-cross-repo",
-		"anvien-exploring",
-		"anvien-graph-quality",
-		"anvien-guide",
-		"anvien-impact-analysis",
-		"anvien-runtime-packaging",
+		"anvien-stale",
+		"av" + "matrix-stale",
 	}
 }
 
@@ -56,6 +51,15 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	}
 	if err := os.WriteFile(staleOldNamespace, []byte("# Old Skill\n"), 0o644); err != nil {
 		t.Fatalf("write stale old skill namespace: %v", err)
+	}
+	for _, stale := range staleGeneratedBaseSkillIDs() {
+		stalePath := filepath.Join(dir, ".claude", "skills", "anvien", stale, "SKILL.md")
+		if err := os.MkdirAll(filepath.Dir(stalePath), 0o755); err != nil {
+			t.Fatalf("mkdir stale base skill: %v", err)
+		}
+		if err := os.WriteFile(stalePath, []byte("---\nname: "+stale+"\ndescription: stale generated skill\n---\n# Stale\n"), 0o644); err != nil {
+			t.Fatalf("write stale base skill: %v", err)
+		}
 	}
 
 	files, installedBaseSkills, err := GenerateAIContextFiles(dir, "TestProject", stats, Options{})
@@ -129,7 +133,7 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"| Inspect API routes, MCP tools, contracts, response shapes, or consumers | `.claude/skills/anvien/anvien-api-surface/SKILL.md` |",
 		"| Rename, extract, split, move, or restructure code | `.claude/skills/anvien/anvien-refactoring/SKILL.md` |",
 		"| Debug bugs, failures, diagnostics, or failure traces | `.claude/skills/anvien/anvien-debugging/SKILL.md` |",
-		"| Create or review `docs/plans` plan, evidence, or benchmark work | `.claude/skills/anvien/anvien-planner/SKILL.md` |",
+		"| Create or review `docs/plans` plan, evidence, benchmark, or checklist mini-plan work | `.claude/skills/anvien/anvien-planner/SKILL.md` |",
 		"anvien-api-surface/SKILL.md",
 		"anvien-refactoring/SKILL.md",
 		"anvien-debugging/SKILL.md",
@@ -150,12 +154,9 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", oldLower)); !os.IsNotExist(err) {
 		t.Fatalf("old skill namespace should be removed: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "anvien", "anvien-ai-context")); !os.IsNotExist(err) {
-		t.Fatalf("self-referential AI context skill should not be installed: %v", err)
-	}
-	for _, removed := range removedBaseSkillIDs() {
-		if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "anvien", removed, "SKILL.md")); !os.IsNotExist(err) {
-			t.Fatalf("removed base skill %s should not be installed: %v", removed, err)
+	for _, stale := range staleGeneratedBaseSkillIDs() {
+		if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "anvien", stale, "SKILL.md")); !os.IsNotExist(err) {
+			t.Fatalf("stale generated base skill %s should not be installed: %v", stale, err)
 		}
 	}
 	for _, forbidden := range []string{
@@ -165,7 +166,6 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"." + oldLower,
 		oldLower + "://",
 		oldLower + "-",
-		"anvien-ai-context",
 	} {
 		if strings.Contains(text, forbidden) {
 			t.Fatalf("AGENTS.md contains old generated name %q:\n%s", forbidden, text)
@@ -189,21 +189,9 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"anvien_detect_changes",
 		"anvien_query",
 		"anvien_context",
-		"anvien-cli/SKILL.md",
-		"anvien-cross-repo/SKILL.md",
-		"anvien-exploring/SKILL.md",
-		"anvien-graph-quality/SKILL.md",
-		"anvien-guide/SKILL.md",
-		"anvien-impact-analysis/SKILL.md",
-		"anvien-runtime-packaging/SKILL.md",
 	} {
 		if strings.Contains(text, retired) {
 			t.Fatalf("AGENTS.md contains retired content %q:\n%s", retired, text)
-		}
-	}
-	for _, retired := range removedBaseSkillIDs() {
-		if strings.Contains(text, ".claude/skills/anvien/"+retired+"/SKILL.md") {
-			t.Fatalf("AGENTS.md contains removed skill path %q:\n%s", retired, text)
 		}
 	}
 	forbiddenFlag := "--skip-" + "agents-md"
@@ -248,7 +236,15 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read generated planner skill: %v", err)
 	}
-	for _, want := range []string{"Standard Plan Set", "YYYY-MM-DD-<slug>", "Evidence Ledger", "Benchmark Ledger", "mini-plan"} {
+	for _, want := range []string{
+		"Standard Plan Set",
+		"YYYY-MM-DD-<slug>",
+		"Evidence Ledger",
+		"Benchmark Ledger",
+		"Every checklist item must be a complete mini-plan by itself",
+		"Do not write generic checklist items",
+		"what to do, in what order",
+	} {
 		if !strings.Contains(string(plannerSkill), want) {
 			t.Fatalf("generated planner skill missing %q:\n%s", want, plannerSkill)
 		}
@@ -262,6 +258,38 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		if !strings.Contains(string(apiSkill), want) {
 			t.Fatalf("generated API skill missing %q:\n%s", want, apiSkill)
 		}
+	}
+}
+
+func TestInstallBaseSkillsToRemovesInactiveGeneratedAnvienSkills(t *testing.T) {
+	dir := t.TempDir()
+	for _, stale := range staleGeneratedBaseSkillIDs() {
+		path := filepath.Join(dir, stale, "SKILL.md")
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatalf("mkdir stale generated skill: %v", err)
+		}
+		if err := os.WriteFile(path, []byte("---\nname: "+stale+"\ndescription: stale generated skill\n---\n# Stale\n"), 0o644); err != nil {
+			t.Fatalf("write stale generated skill: %v", err)
+		}
+	}
+	customPath := filepath.Join(dir, "custom-skill", "SKILL.md")
+	if err := os.MkdirAll(filepath.Dir(customPath), 0o755); err != nil {
+		t.Fatalf("mkdir custom skill: %v", err)
+	}
+	if err := os.WriteFile(customPath, []byte("---\nname: custom-skill\ndescription: user skill\n---\n# Custom\n"), 0o644); err != nil {
+		t.Fatalf("write custom skill: %v", err)
+	}
+
+	if _, err := InstallBaseSkillsTo(dir); err != nil {
+		t.Fatalf("InstallBaseSkillsTo: %v", err)
+	}
+	for _, stale := range staleGeneratedBaseSkillIDs() {
+		if _, err := os.Stat(filepath.Join(dir, stale, "SKILL.md")); !os.IsNotExist(err) {
+			t.Fatalf("stale generated skill %s should be removed: %v", stale, err)
+		}
+	}
+	if _, err := os.Stat(customPath); err != nil {
+		t.Fatalf("custom non-Anvien skill should be preserved: %v", err)
 	}
 }
 
@@ -348,6 +376,8 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 			"YYYY-MM-DD-<slug>",
 			"Evidence Ledger",
 			"Benchmark Ledger",
+			"Every checklist item must be a complete mini-plan by itself",
+			"Do not write generic checklist items",
 		},
 	}
 	for skillName, fragments := range checks {
@@ -373,13 +403,6 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 		}
 	}
 	for _, forbidden := range []string{
-		"name: anvien-cli",
-		"name: anvien-cross-repo",
-		"name: anvien-exploring",
-		"name: anvien-graph-quality",
-		"name: anvien-guide",
-		"name: anvien-impact-analysis",
-		"name: anvien-runtime-packaging",
 		"anvien route_map",
 		"anvien tool_map",
 		"anvien shape_check",

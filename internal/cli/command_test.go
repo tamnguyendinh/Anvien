@@ -563,14 +563,22 @@ func TestSetupInstallsEmbeddedSkillsInsteadOfPackageRootSkills(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(home, ".cursor"), 0o755); err != nil {
 		t.Fatalf("mkdir .cursor: %v", err)
 	}
+	cursorSkillsRoot := filepath.Join(home, ".cursor", "skills")
+	staleTargetSkill := filepath.Join(cursorSkillsRoot, "anvien-stale", "SKILL.md")
+	if err := os.MkdirAll(filepath.Dir(staleTargetSkill), 0o755); err != nil {
+		t.Fatalf("mkdir stale target skill: %v", err)
+	}
+	if err := os.WriteFile(staleTargetSkill, []byte("---\nname: anvien-stale\ndescription: stale generated skill\n---\n# Stale\n"), 0o644); err != nil {
+		t.Fatalf("write stale target skill: %v", err)
+	}
 	if err := os.MkdirAll(filepath.Join(skillsRoot, "dir-skill", "references"), 0o755); err != nil {
 		t.Fatalf("mkdir dir skill: %v", err)
 	}
 	if err := os.WriteFile(filepath.Join(skillsRoot, "flat-skill.md"), []byte("# Flat Test Skill\n"), 0o644); err != nil {
 		t.Fatalf("write flat skill: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(skillsRoot, "anvien-pr-review.md"), []byte("# Retired Package Root Skill\n"), 0o644); err != nil {
-		t.Fatalf("write retired package skill: %v", err)
+	if err := os.WriteFile(filepath.Join(skillsRoot, "package-root-only.md"), []byte("# Package Root Skill\n"), 0o644); err != nil {
+		t.Fatalf("write package-root skill: %v", err)
 	}
 	if err := os.WriteFile(filepath.Join(skillsRoot, "dir-skill", "SKILL.md"), []byte("# Directory Test Skill\n"), 0o644); err != nil {
 		t.Fatalf("write dir skill: %v", err)
@@ -587,13 +595,15 @@ func TestSetupInstallsEmbeddedSkillsInsteadOfPackageRootSkills(t *testing.T) {
 		}
 	})
 
-	cursorSkillsRoot := filepath.Join(home, ".cursor", "skills")
 	assertInstalledEmbeddedBaseSkills(t, cursorSkillsRoot)
+	if _, err := os.Stat(staleTargetSkill); !os.IsNotExist(err) {
+		t.Fatalf("stale generated target skill should be removed: %v", err)
+	}
 	for _, rel := range []string{
 		filepath.Join("flat-skill", "SKILL.md"),
 		filepath.Join("dir-skill", "SKILL.md"),
 		filepath.Join("dir-skill", "references", "note.md"),
-		filepath.Join("anvien-pr-review", "SKILL.md"),
+		filepath.Join("package-root-only", "SKILL.md"),
 	} {
 		if _, err := os.Stat(filepath.Join(cursorSkillsRoot, rel)); !os.IsNotExist(err) {
 			t.Fatalf("package-root skill should not be installed %s: %v", rel, err)
@@ -615,20 +625,6 @@ func assertInstalledEmbeddedBaseSkills(t *testing.T, root string) {
 		}
 		if string(raw) != skill.Content {
 			t.Fatalf("installed skill %s does not match embedded content", path)
-		}
-	}
-	for _, removed := range []string{
-		"anvien-cli",
-		"anvien-cross-repo",
-		"anvien-exploring",
-		"anvien-graph-quality",
-		"anvien-guide",
-		"anvien-impact-analysis",
-		"anvien-runtime-packaging",
-		"anvien-pr-review",
-	} {
-		if _, err := os.Stat(filepath.Join(root, removed, "SKILL.md")); !os.IsNotExist(err) {
-			t.Fatalf("retired package-root skill %s should not be installed: %v", removed, err)
 		}
 	}
 }
@@ -1443,8 +1439,7 @@ export function beta() {
 	}
 	if !strings.Contains(string(agents), "<!-- anvien:start -->") ||
 		!strings.Contains(string(agents), "## Skill Selection Guide") ||
-		!strings.Contains(string(agents), ".claude/skills/anvien/anvien-planner/SKILL.md") ||
-		strings.Contains(string(agents), ".claude/skills/anvien/anvien-cli/SKILL.md") {
+		!strings.Contains(string(agents), ".claude/skills/anvien/anvien-planner/SKILL.md") {
 		t.Fatalf("AGENTS.md missing Anvien context:\n%s", agents)
 	}
 	assertInstalledEmbeddedBaseSkills(t, filepath.Join(dir, ".claude", "skills", "anvien"))

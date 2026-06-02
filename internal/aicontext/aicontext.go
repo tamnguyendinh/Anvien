@@ -288,31 +288,7 @@ var baseSkills = []baseSkill{
 	{Name: "anvien-api-surface", Description: `Use when the user needs to inspect API routes, MCP tools, contracts, response shapes, or consumers.`, Task: `Inspect API routes, MCP tools, contracts, response shapes, or consumers`},
 	{Name: "anvien-refactoring", Description: `Use when the user wants to rename, extract, split, move, or restructure code.`, Task: `Rename, extract, split, move, or restructure code`},
 	{Name: "anvien-debugging", Description: `Use when the user is debugging bugs, failures, diagnostics, or failure traces.`, Task: `Debug bugs, failures, diagnostics, or failure traces`},
-	{Name: "anvien-planner", Description: `Use when the user needs to create or review docs/plans plan, evidence, or benchmark work.`, Task: `Create or review ` + "`docs/plans`" + ` plan, evidence, or benchmark work`},
-}
-
-var retiredBaseSkillNames = []string{
-	"anvien-cli",
-	"anvien-cross-repo",
-	"anvien-exploring",
-	"anvien-graph-quality",
-	"anvien-guide",
-	"anvien-impact-analysis",
-	"anvien-runtime-packaging",
-	"anvien-pr-review",
-	"av" + "matrix-pr-review",
-	"av" + "matrix-exploring",
-	"av" + "matrix-impact-analysis",
-	"av" + "matrix-debugging",
-	"av" + "matrix-refactoring",
-	"av" + "matrix-guide",
-	"av" + "matrix-cli",
-	"av" + "matrix-graph-quality",
-	"av" + "matrix-api-surface",
-	"av" + "matrix-cross-repo",
-	"av" + "matrix-runtime-packaging",
-	"av" + "matrix-ai-context",
-	"anvien-ai-context",
+	{Name: "anvien-planner", Description: `Use when the user needs to create or review docs/plans plan, evidence, benchmark, or checklist mini-plan work.`, Task: `Create or review ` + "`docs/plans`" + ` plan, evidence, benchmark, or checklist mini-plan work`},
 }
 
 func BaseSkillFiles() ([]BaseSkillFile, error) {
@@ -340,10 +316,9 @@ func InstallBaseSkillsTo(targetDir string) ([]string, error) {
 	if err := os.MkdirAll(targetDir, 0o755); err != nil {
 		return nil, err
 	}
-	for _, retired := range retiredBaseSkillNames {
-		if err := os.RemoveAll(filepath.Join(targetDir, retired)); err != nil {
-			return nil, err
-		}
+	active := activeBaseSkillNames(files)
+	if err := removeInactiveGeneratedBaseSkills(targetDir, active); err != nil {
+		return nil, err
 	}
 	installed := make([]string, 0, len(files))
 	for _, file := range files {
@@ -360,6 +335,70 @@ func InstallBaseSkillsTo(targetDir string) ([]string, error) {
 		installed = append(installed, file.Name)
 	}
 	return installed, nil
+}
+
+func activeBaseSkillNames(files []BaseSkillFile) map[string]struct{} {
+	active := make(map[string]struct{}, len(files))
+	for _, file := range files {
+		active[file.Name] = struct{}{}
+	}
+	return active
+}
+
+func removeInactiveGeneratedBaseSkills(targetDir string, active map[string]struct{}) error {
+	entries, err := os.ReadDir(targetDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		if _, ok := active[name]; ok {
+			continue
+		}
+		dir := filepath.Join(targetDir, name)
+		raw, err := os.ReadFile(filepath.Join(dir, "SKILL.md"))
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return err
+		}
+		if isGeneratedAnvienSkill(raw) {
+			if err := os.RemoveAll(dir); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func isGeneratedAnvienSkill(raw []byte) bool {
+	name := skillFrontmatterName(string(raw))
+	return strings.HasPrefix(name, "anvien-") || strings.HasPrefix(name, "av"+"matrix-")
+}
+
+func skillFrontmatterName(content string) string {
+	content = strings.ReplaceAll(content, "\r\n", "\n")
+	if !strings.HasPrefix(content, "---\n") {
+		return ""
+	}
+	end := strings.Index(content[4:], "\n---")
+	if end < 0 {
+		return ""
+	}
+	for _, line := range strings.Split(content[4:4+end], "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "name:") {
+			return strings.Trim(strings.TrimSpace(strings.TrimPrefix(line, "name:")), `"'`)
+		}
+	}
+	return ""
 }
 
 func installBaseSkills(repoPath string) ([]string, error) {
