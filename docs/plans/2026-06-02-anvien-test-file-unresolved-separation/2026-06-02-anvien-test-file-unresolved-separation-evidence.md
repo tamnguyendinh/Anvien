@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: Active
+Status: Complete
 
 Companion files:
 
@@ -520,3 +520,80 @@ Failures / handling:
 Commit:
 
 - `6981dfe docs: record p3 unresolved validation`
+
+## E8 - P4-A Final Analyze And Benchmark Comparison
+
+Date: 2026-06-02
+
+Status: recorded
+
+Scope:
+
+- Ran final graph refresh and hotspot inventory after P1/P2/P3 completion.
+- Compared final default hotspot composition against B0 baseline.
+- Verified raw/test unresolved evidence remains available through explicit raw/test views.
+
+Command evidence:
+
+| Command | Result |
+|---|---|
+| `anvien analyze --force` | Pass. Graph had 819 files scanned, 599 parsed code files, 0 failed parses, 96,858 nodes, 132,460 relationships, 15,932 dependency edges, 591 raw unresolved files, and 335 default-visible unresolved files. |
+| `anvien file-hotspots --repo Anvien --sort unresolved --limit 5 --json` | Pass. Top 5 default hotspots are all source files and use default-visible unresolved counts. |
+| `anvien file-hotspots --repo Anvien --sort raw-unresolved --limit 5 --json` | Pass. Raw view still exposes the previous test/e2e hotspot files with default-visible unresolved count 0 and low default risk. |
+| `anvien file-hotspots --repo Anvien --sort test-unresolved --unresolved-only --limit 5 --json` | Pass. Explicit test view reports 239 test-unresolved files and the top 5 raw test files remain traceable. |
+| `anvien graph-health files --repo Anvien --sort unresolved --limit 5 --json` | Pass. Graph-health file rows expose raw, production, test, non-actionable, unknown, and default-visible bucket counts. |
+
+Comparison:
+
+| Metric | Baseline | Final | Result |
+|---|---:|---:|---|
+| Default top 5 hotspots that are test/e2e files | 5 | 0 | pass |
+| Default top 5 hotspots that are production/source files | 0 | 5 | pass |
+| Raw/test top 5 hotspot traceability | 5 | 5 | pass |
+| Raw unresolved files | 590 | 591 | pass |
+| Default-visible unresolved files | n/a | 335 | pass |
+| Explicit test-unresolved files | n/a | 239 | pass |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| Benchmark ledger | B6 final metrics, final graph inventory, default hotspot table, and raw/test hotspot table were updated. |
+| Plan | Marked P4-A complete. |
+
+Failures / handling:
+
+- No P4-A command failures.
+
+## E9 - P4-B Closure
+
+Date: 2026-06-02
+
+Status: complete
+
+Scope:
+
+- Ran final graph refresh and detect-changes after benchmark/evidence updates.
+- Closed plan, evidence, and benchmark ledger status.
+- Verified closure diff was documentation-only.
+
+Command evidence:
+
+| Command | Result |
+|---|---|
+| `anvien analyze --force` | Pass. Graph had 819 files scanned, 599 parsed code files, 0 failed parses, 96,859 nodes, 132,461 relationships, 591 raw unresolved files, and 335 default-visible unresolved files. |
+| `anvien detect-changes --repo Anvien --scope all` | Pass. Scope contained 3 changed/affected doc files, 7 changed doc sections/symbols, summary risk low, file-layer changed risk low, affected count 0, and no affected processes. |
+
+Closure evidence:
+
+| Item | Result |
+|---|---|
+| Plan checklist | P0-A through P4-B complete. |
+| Final benchmark | B6 final metrics recorded. |
+| Default hotspot goal | Default top 5 test/e2e files reduced from 5 to 0. |
+| Raw/test traceability | Raw/test top 5 hotspot files remain visible through explicit raw/test views. |
+| Build/test/e2e | Full build, contract check, backend/API/CLI tests, Web unit tests, and Playwright e2e passed in P3. |
+
+Commit:
+
+- Pending closure commit.

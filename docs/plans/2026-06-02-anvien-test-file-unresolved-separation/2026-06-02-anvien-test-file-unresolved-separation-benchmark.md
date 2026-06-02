@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: Active
+Status: Complete
 
 Companion files:
 
@@ -192,17 +192,55 @@ Source evidence: E6.
 
 ## B6 - Final Metrics
 
-Status: pending
+Status: recorded
 
 | Metric | Unit | Final | Target | Result |
 |---|---:|---:|---:|---|
-| Raw unresolved traceability | available | pending | 1 | pending |
-| Production/actionable unresolved count | available | pending | 1 | pending |
-| Test unresolved count | available | pending | 1 | pending |
-| Non-actionable unresolved count | available | pending | 1 | pending |
-| Unknown unresolved count | available | pending | 1 | pending |
-| Raw/default-visible risk separation | available | pending | 1 | pending |
-| Default top 5 hotspots that are test/e2e files | files | pending | 0 | pending |
-| Default top 5 hotspots that are production files | files | pending | measured | pending |
-| Default graph expansion of test unresolved child nodes | enabled_by_default | pending | 0 | pending |
-| Explicit test unresolved drill-down/filter | available | pending | 1 | pending |
+| Raw unresolved traceability | available | 1 | 1 | pass |
+| Production/actionable unresolved count | available | 1 | 1 | pass |
+| Test unresolved count | available | 1 | 1 | pass |
+| Non-actionable unresolved count | available | 1 | 1 | pass |
+| Unknown unresolved count | available | 1 | 1 | pass |
+| Raw/default-visible risk separation | available | 1 | 1 | pass |
+| Raw unresolved files | files | 591 | measured | pass |
+| Default-visible unresolved files | files | 335 | measured | pass |
+| Explicit test-unresolved files | files | 239 | measured | pass |
+| Default top 5 hotspots that are test/e2e files | files | 0 | 0 | pass |
+| Default top 5 hotspots that are production/source files | files | 5 | measured | pass |
+| Raw/test top 5 hotspots that remain test/e2e files | files | 5 | traceable | pass |
+| Default graph expansion of test unresolved child nodes | enabled_by_default | 0 | 0 | pass |
+| Explicit test unresolved drill-down/filter | available | 1 | 1 | pass |
+
+Final graph inventory:
+
+| Metric | Unit | Final |
+|---|---:|---:|
+| Files scanned | files | 819 |
+| Parsed code files | files | 599 |
+| Failed parses | files | 0 |
+| Graph nodes | nodes | 96,858 |
+| Graph relationships | relationships | 132,460 |
+| File projection files | files | 819 |
+| File projection dependency edges | edges | 15,932 |
+| Raw unresolved files | files | 591 |
+| Default-visible unresolved files | files | 335 |
+
+Final default top hotspots:
+
+| Rank | File | Kind | Default-visible unresolved | Raw unresolved | Risk |
+|---:|---|---|---:|---:|---|
+| 1 | `anvien-web/src/hooks/useAppState.local-runtime.tsx` | source | 537 | 548 | high |
+| 2 | `anvien-web/src/components/GraphCanvas.tsx` | source | 451 | 451 | high |
+| 3 | `internal/contracts/web_ui.go` | source | 440 | 624 | high |
+| 4 | `anvien-web/src/components/FileTreePanel.tsx` | source | 424 | 435 | high |
+| 5 | `anvien-web/src/hooks/useSigma.ts` | source | 407 | 431 | high |
+
+Final raw/test top hotspots:
+
+| Rank | File | Kind | Default-visible unresolved | Raw unresolved | Test unresolved | Risk |
+|---:|---|---|---:|---:|---:|---|
+| 1 | `internal/mcp/server_test.go` | test | 0 | 1445 | 1445 | low |
+| 2 | `internal/cli/command_test.go` | test | 0 | 1121 | 1121 | low |
+| 3 | `internal/analyze/analyze_test.go` | test | 0 | 1052 | 1052 | low |
+| 4 | `internal/resolution/resolution_test.go` | test | 0 | 934 | 934 | low |
+| 5 | `anvien-web/e2e/graph-orientation-labels.spec.ts` | test | 0 | 856 | 856 | low |

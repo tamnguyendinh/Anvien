@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: Active
+Status: Complete
 
 Companion files:
 
@@ -219,13 +219,13 @@ The plan is complete when:
   - Implementation Gate: if no Web UI behavior changes are made, record that this phase is not applicable and why.
   - Acceptance: evidence proves test unresolved is hidden/collapsed by default and visible only through explicit action.
 
-- [ ] [P4-A] Analyze, benchmark, and compare before/after.
+- [x] [P4-A] Analyze, benchmark, and compare before/after.
   - Goal: prove the metric/ranking behavior improved without deleting data.
   - Work Steps: run `anvien analyze --force`; record raw graph counts, raw unresolved counts, separated unresolved buckets, default-visible unresolved count, raw/default risk counts, top hotspot composition, and generated file projection stats; compare against B0 baseline.
   - Implementation Gate: do not mark complete if raw unresolved disappears without a traceable replacement.
   - Acceptance: benchmark shows raw unresolved remains measurable, test unresolved is separated, and default hotspots are no longer dominated by test files.
 
-- [ ] [P4-B] Detect changes, record closure evidence, and commit.
+- [x] [P4-B] Detect changes, record closure evidence, and commit.
   - Goal: close the implementation slice with synchronized plan/evidence/benchmark state.
   - Work Steps: update evidence and benchmark ledgers; run `anvien detect-changes --repo Anvien --scope all`; review affected processes and high-risk files; commit the completed implementation slice.
   - Implementation Gate: do not commit until detect-changes and ledgers are updated.
