@@ -111,23 +111,40 @@ func AttachMetadata(context *FileContext, repoName string, repoPath string, grap
 }
 
 type FileSummary struct {
-	Path                      string `json:"path"`
-	Language                  string `json:"language,omitempty"`
-	Kind                      string `json:"kind,omitempty"`
-	AppLayer                  string `json:"appLayer,omitempty"`
-	FunctionalArea            string `json:"functionalArea,omitempty"`
-	ParseStatus               string `json:"parseStatus,omitempty"`
-	SymbolCount               int    `json:"symbolCount"`
-	ExportedSymbolCount       int    `json:"exportedSymbolCount"`
-	InboundRefCount           int    `json:"inboundRefCount"`
-	OutboundRefCount          int    `json:"outboundRefCount"`
-	LocalRelationshipCount    int    `json:"localRelationshipCount"`
-	UnresolvedSourceSiteCount int    `json:"unresolvedSourceSiteCount"`
-	LinkedFlowCount           int    `json:"linkedFlowCount"`
-	LinkedTestCount           int    `json:"linkedTestCount"`
-	Risk                      string `json:"risk,omitempty"`
-	Stale                     bool   `json:"stale"`
-	ChangedSinceAnalyze       bool   `json:"changedSinceAnalyze"`
+	Path                                    string `json:"path"`
+	Language                                string `json:"language,omitempty"`
+	Kind                                    string `json:"kind,omitempty"`
+	AppLayer                                string `json:"appLayer,omitempty"`
+	FunctionalArea                          string `json:"functionalArea,omitempty"`
+	ParseStatus                             string `json:"parseStatus,omitempty"`
+	SymbolCount                             int    `json:"symbolCount"`
+	ExportedSymbolCount                     int    `json:"exportedSymbolCount"`
+	InboundRefCount                         int    `json:"inboundRefCount"`
+	OutboundRefCount                        int    `json:"outboundRefCount"`
+	LocalRelationshipCount                  int    `json:"localRelationshipCount"`
+	UnresolvedSourceSiteCount               int    `json:"unresolvedSourceSiteCount"`
+	RawUnresolvedSourceSiteCount            int    `json:"rawUnresolvedSourceSiteCount"`
+	ProductionUnresolvedSourceSiteCount     int    `json:"productionUnresolvedSourceSiteCount"`
+	TestUnresolvedSourceSiteCount           int    `json:"testUnresolvedSourceSiteCount"`
+	NonActionableUnresolvedSourceSiteCount  int    `json:"nonActionableUnresolvedSourceSiteCount"`
+	UnknownUnresolvedSourceSiteCount        int    `json:"unknownUnresolvedSourceSiteCount"`
+	DefaultVisibleUnresolvedSourceSiteCount int    `json:"defaultVisibleUnresolvedSourceSiteCount"`
+	LinkedFlowCount                         int    `json:"linkedFlowCount"`
+	LinkedTestCount                         int    `json:"linkedTestCount"`
+	Risk                                    string `json:"risk,omitempty"`
+	RawRisk                                 string `json:"rawRisk,omitempty"`
+	DefaultVisibleRisk                      string `json:"defaultVisibleRisk,omitempty"`
+	Stale                                   bool   `json:"stale"`
+	ChangedSinceAnalyze                     bool   `json:"changedSinceAnalyze"`
+}
+
+type unresolvedBucketCounts struct {
+	Raw            int
+	Production     int
+	Test           int
+	NonActionable  int
+	Unknown        int
+	DefaultVisible int
 }
 
 type SourceRange struct {
@@ -370,24 +387,24 @@ func (b *Builder) BuildFileContext(path string, options Options) (FileContext, b
 	symbolTree, symbolCount, exportedCount := b.buildSymbolTree(normalizedPath, unresolved)
 	quality := buildQuality(fileNode, unresolved)
 	linked := b.buildLinked(normalizedPath, limits.LinkedSamplesPerKind)
+	kind := fileKind(fileNode)
 
 	summary := FileSummary{
-		Path:                      normalizedPath,
-		Language:                  stringProperty(fileNode, "language"),
-		Kind:                      fileKind(fileNode),
-		AppLayer:                  stringProperty(fileNode, "appLayer"),
-		FunctionalArea:            stringProperty(fileNode, "functionalArea"),
-		ParseStatus:               parseStatus(fileNode),
-		SymbolCount:               symbolCount,
-		ExportedSymbolCount:       exportedCount,
-		InboundRefCount:           relationships.Counts.Inbound,
-		OutboundRefCount:          relationships.Counts.Outbound,
-		LocalRelationshipCount:    relationships.Counts.Local,
-		UnresolvedSourceSiteCount: unresolved.Total,
-		LinkedFlowCount:           linked.Counts.Flows,
-		LinkedTestCount:           linked.Counts.Tests,
-		Risk:                      riskFor(unresolved.Total),
+		Path:                   normalizedPath,
+		Language:               stringProperty(fileNode, "language"),
+		Kind:                   kind,
+		AppLayer:               stringProperty(fileNode, "appLayer"),
+		FunctionalArea:         stringProperty(fileNode, "functionalArea"),
+		ParseStatus:            parseStatus(fileNode),
+		SymbolCount:            symbolCount,
+		ExportedSymbolCount:    exportedCount,
+		InboundRefCount:        relationships.Counts.Inbound,
+		OutboundRefCount:       relationships.Counts.Outbound,
+		LocalRelationshipCount: relationships.Counts.Local,
+		LinkedFlowCount:        linked.Counts.Flows,
+		LinkedTestCount:        linked.Counts.Tests,
 	}
+	applyUnresolvedBuckets(&summary, b.unresolvedBucketCounts(normalizedPath, kind))
 
 	return FileContext{
 		Target: Target{
@@ -491,23 +508,22 @@ func (b *Builder) buildFileSummaries() []FileSummary {
 	linkedFlowsByFile := map[string]map[string]struct{}{}
 	linkedTestsByFile := map[string]map[string]struct{}{}
 	for path, node := range b.filesByPath {
+		kind := fileKind(node)
 		summary := &FileSummary{
 			Path:           path,
 			Language:       stringProperty(node, "language"),
-			Kind:           fileKind(node),
+			Kind:           kind,
 			AppLayer:       stringProperty(node, "appLayer"),
 			FunctionalArea: stringProperty(node, "functionalArea"),
 			ParseStatus:    parseStatus(node),
 			SymbolCount:    len(b.definesByFile[path]),
-			Risk:           "low",
 		}
 		for _, symbolID := range b.definesByFile[path] {
 			if exportedSymbol(b.nodesByID[symbolID]) {
 				summary.ExportedSymbolCount++
 			}
 		}
-		summary.UnresolvedSourceSiteCount = len(b.unresolvedByFile[path])
-		summary.Risk = riskFor(summary.UnresolvedSourceSiteCount)
+		applyUnresolvedBuckets(summary, b.unresolvedBucketCounts(path, kind))
 		aggregates[path] = summary
 	}
 
@@ -569,6 +585,58 @@ func (b *Builder) buildFileSummaries() []FileSummary {
 		summaries = append(summaries, *aggregates[path])
 	}
 	return summaries
+}
+
+func applyUnresolvedBuckets(summary *FileSummary, counts unresolvedBucketCounts) {
+	summary.UnresolvedSourceSiteCount = counts.Raw
+	summary.RawUnresolvedSourceSiteCount = counts.Raw
+	summary.ProductionUnresolvedSourceSiteCount = counts.Production
+	summary.TestUnresolvedSourceSiteCount = counts.Test
+	summary.NonActionableUnresolvedSourceSiteCount = counts.NonActionable
+	summary.UnknownUnresolvedSourceSiteCount = counts.Unknown
+	summary.DefaultVisibleUnresolvedSourceSiteCount = counts.DefaultVisible
+	summary.RawRisk = riskFor(counts.Raw)
+	summary.DefaultVisibleRisk = riskFor(counts.DefaultVisible)
+	summary.Risk = summary.RawRisk
+}
+
+func (b *Builder) unresolvedBucketCounts(path string, kind string) unresolvedBucketCounts {
+	nodes := b.unresolvedByFile[path]
+	counts := unresolvedBucketCounts{Raw: len(nodes)}
+	if counts.Raw == 0 {
+		return counts
+	}
+	if kind == "test" {
+		counts.Test = counts.Raw
+		return counts
+	}
+	for _, node := range nodes {
+		switch {
+		case isNonActionableUnresolved(node):
+			counts.NonActionable++
+		case isUnknownUnresolved(node):
+			counts.Unknown++
+			counts.DefaultVisible++
+		default:
+			counts.Production++
+			counts.DefaultVisible++
+		}
+	}
+	return counts
+}
+
+func isNonActionableUnresolved(node graph.Node) bool {
+	return normalizedUnresolvedProperty(node, "actionability") == "non_actionable"
+}
+
+func isUnknownUnresolved(node graph.Node) bool {
+	actionability := normalizedUnresolvedProperty(node, "actionability")
+	classification := normalizedUnresolvedProperty(node, "classification")
+	return actionability == "" || actionability == "unknown" || classification == "" || classification == "unknown"
+}
+
+func normalizedUnresolvedProperty(node graph.Node, key string) string {
+	return strings.ToLower(strings.TrimSpace(stringProperty(node, key)))
 }
 
 func (b *Builder) buildSymbolTree(path string, unresolved UnresolvedSummary) ([]SymbolTreeNode, int, int) {

@@ -63,7 +63,51 @@ Status: planned
 | Default graph expansion of test unresolved child nodes | enabled_by_default | 0 |
 | Explicit test unresolved drill-down/filter | available | 1 |
 
-## B2 - Final Metrics
+## B2 - P1-B Bucket Field Availability
+
+Status: recorded
+
+Source evidence: E3.
+
+| Metric | Unit | Latest | Target | Result |
+|---|---:|---:|---:|---|
+| Raw unresolved traceability | available | 1 | 1 | pass |
+| Production/actionable unresolved count | available | 1 | 1 | pass |
+| Test unresolved count | available | 1 | 1 | pass |
+| Non-actionable unresolved count | available | 1 | 1 | pass |
+| Unknown unresolved count | available | 1 | 1 | pass |
+| Default-visible unresolved count | available | 1 | 1 | pass |
+| Raw/default-visible risk separation | available | 1 | 1 | pass |
+
+P1-B field inventory:
+
+| Field | Surface |
+|---|---|
+| `unresolvedSourceSiteCount` | raw compatibility count |
+| `rawUnresolvedSourceSiteCount` | raw traceability count |
+| `productionUnresolvedSourceSiteCount` | production/actionable bucket |
+| `testUnresolvedSourceSiteCount` | test-file bucket |
+| `nonActionableUnresolvedSourceSiteCount` | non-actionable bucket |
+| `unknownUnresolvedSourceSiteCount` | unknown metadata bucket |
+| `defaultVisibleUnresolvedSourceSiteCount` | default-visible bucket |
+| `rawRisk` | raw risk |
+| `defaultVisibleRisk` | default-visible risk |
+
+P1-B graph inventory after implementation:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| Files scanned | files | 818 |
+| Parsed code files | files | 598 |
+| Failed parses | files | 0 |
+| Graph nodes | nodes | 96,521 |
+| Graph relationships | relationships | 132,071 |
+| File projection files | files | 818 |
+| File projection dependency edges | edges | 15,918 |
+| Files with unresolved | files | 590 |
+| Default top 5 hotspots that are test/e2e files | files | 5 |
+
+## B3 - Final Metrics
 
 Status: pending
 

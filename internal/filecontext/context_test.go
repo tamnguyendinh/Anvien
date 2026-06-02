@@ -203,6 +203,91 @@ func TestBuildFileListUsesAppLayerAsTestClassificationTruth(t *testing.T) {
 	}
 }
 
+func TestBuildFileSummariesSeparateUnresolvedBuckets(t *testing.T) {
+	g := graph.New()
+	for _, node := range []graph.Node{
+		fileNode("File:src/app.go", "src/app.go", "go", "backend", "mcp"),
+		fileNode("File:src/app_test.go", "src/app_test.go", "go", "backend_test", "mcp"),
+		symbolNode("Function:src/app.go:Run", scopeir.NodeFunction, "Run", "src/app.go", 2, 1, 10, 1, ""),
+		symbolNode("Function:src/app_test.go:TestRun", scopeir.NodeFunction, "TestRun", "src/app_test.go", 2, 1, 8, 1, ""),
+		resolutionGap("ResolutionGap:src/app.go:call", "src/app.go", "Function:src/app.go:Run", "missingCall", "unresolved_call", "in_repo_unresolved", "analyzer_gap", 4),
+		resolutionGap("ResolutionGap:src/app.go:builtin", "src/app.go", "Function:src/app.go:Run", "println", "unresolved_call", "builtin", "non_actionable", 5),
+		resolutionGap("ResolutionGap:src/app.go:unknown", "src/app.go", "Function:src/app.go:Run", "mystery", "unresolved_reference", "", "", 6),
+		resolutionGap("ResolutionGap:src/app_test.go:assert", "src/app_test.go", "Function:src/app_test.go:TestRun", "assertEqual", "unresolved_call", "test_framework", "non_actionable", 3),
+	} {
+		g.AddNode(node)
+	}
+	g.AddRelationship(defines("File:src/app.go", "Function:src/app.go:Run"))
+	g.AddRelationship(defines("File:src/app_test.go", "Function:src/app_test.go:TestRun"))
+
+	builder := NewBuilder(g)
+	list := builder.BuildFileList(FileListOptions{Sort: "path", Limit: 0})
+	byPath := map[string]FileSummary{}
+	for _, file := range list.Files {
+		byPath[file.Path] = file
+	}
+
+	source := byPath["src/app.go"]
+	if source.UnresolvedSourceSiteCount != 3 || source.RawUnresolvedSourceSiteCount != 3 {
+		t.Fatalf("source raw unresolved = legacy %d raw %d, want 3/3", source.UnresolvedSourceSiteCount, source.RawUnresolvedSourceSiteCount)
+	}
+	if source.ProductionUnresolvedSourceSiteCount != 1 || source.NonActionableUnresolvedSourceSiteCount != 1 || source.UnknownUnresolvedSourceSiteCount != 1 {
+		t.Fatalf("source buckets = production %d non-actionable %d unknown %d, want 1/1/1",
+			source.ProductionUnresolvedSourceSiteCount,
+			source.NonActionableUnresolvedSourceSiteCount,
+			source.UnknownUnresolvedSourceSiteCount,
+		)
+	}
+	if source.TestUnresolvedSourceSiteCount != 0 || source.DefaultVisibleUnresolvedSourceSiteCount != 2 {
+		t.Fatalf("source visible/test buckets = default %d test %d, want 2/0",
+			source.DefaultVisibleUnresolvedSourceSiteCount,
+			source.TestUnresolvedSourceSiteCount,
+		)
+	}
+	if source.Risk != "medium" || source.RawRisk != "medium" || source.DefaultVisibleRisk != "medium" {
+		t.Fatalf("source risks = risk %q raw %q default %q, want medium/medium/medium", source.Risk, source.RawRisk, source.DefaultVisibleRisk)
+	}
+
+	testFile := byPath["src/app_test.go"]
+	if testFile.Kind != "test" || testFile.UnresolvedSourceSiteCount != 1 || testFile.RawUnresolvedSourceSiteCount != 1 {
+		t.Fatalf("test file raw summary = %#v, want kind=test raw=1", testFile)
+	}
+	if testFile.TestUnresolvedSourceSiteCount != 1 || testFile.DefaultVisibleUnresolvedSourceSiteCount != 0 {
+		t.Fatalf("test buckets = test %d default %d, want 1/0",
+			testFile.TestUnresolvedSourceSiteCount,
+			testFile.DefaultVisibleUnresolvedSourceSiteCount,
+		)
+	}
+	if testFile.ProductionUnresolvedSourceSiteCount != 0 || testFile.NonActionableUnresolvedSourceSiteCount != 0 || testFile.UnknownUnresolvedSourceSiteCount != 0 {
+		t.Fatalf("test production buckets = production %d non-actionable %d unknown %d, want 0/0/0",
+			testFile.ProductionUnresolvedSourceSiteCount,
+			testFile.NonActionableUnresolvedSourceSiteCount,
+			testFile.UnknownUnresolvedSourceSiteCount,
+		)
+	}
+	if testFile.Risk != "medium" || testFile.RawRisk != "medium" || testFile.DefaultVisibleRisk != "low" {
+		t.Fatalf("test risks = risk %q raw %q default %q, want medium/medium/low", testFile.Risk, testFile.RawRisk, testFile.DefaultVisibleRisk)
+	}
+
+	sourceContext, ok := builder.BuildFileContext("src/app.go", Options{})
+	if !ok {
+		t.Fatalf("BuildFileContext() did not find source file")
+	}
+	if sourceContext.Summary.RawUnresolvedSourceSiteCount != source.RawUnresolvedSourceSiteCount ||
+		sourceContext.Summary.DefaultVisibleUnresolvedSourceSiteCount != source.DefaultVisibleUnresolvedSourceSiteCount {
+		t.Fatalf("source detail buckets = %#v, want list buckets %#v", sourceContext.Summary, source)
+	}
+
+	testContext, ok := builder.BuildFileContext("src/app_test.go", Options{})
+	if !ok {
+		t.Fatalf("BuildFileContext() did not find test file")
+	}
+	if testContext.Summary.TestUnresolvedSourceSiteCount != testFile.TestUnresolvedSourceSiteCount ||
+		testContext.Summary.DefaultVisibleUnresolvedSourceSiteCount != testFile.DefaultVisibleUnresolvedSourceSiteCount {
+		t.Fatalf("test detail buckets = %#v, want list buckets %#v", testContext.Summary, testFile)
+	}
+}
+
 func TestBuildFileListChangedFileFilter(t *testing.T) {
 	builder := NewBuilder(fileContextFixture(false))
 

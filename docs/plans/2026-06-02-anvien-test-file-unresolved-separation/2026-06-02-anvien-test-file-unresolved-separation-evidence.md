@@ -213,4 +213,62 @@ Detect changes:
 
 Commit:
 
+- `9e42f3f test: lock test file classification truth`
+
+## E3 - P1-B Separate Unresolved Metric Buckets
+
+Date: 2026-06-02
+
+Status: implemented
+
+Scope:
+
+- Added additive unresolved bucket fields to file summaries.
+- Kept `unresolvedSourceSiteCount` as the raw compatibility count for this phase.
+- Added raw/default-visible risk fields without changing the legacy `risk` field yet.
+- Regenerated the Web TypeScript contract from the source contract.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| `anvien analyze --force` | Pass. Graph refreshed before P1-B work; pre-edit graph had 818 files scanned, 598 parsed code files, 0 failed parses, 96,363 nodes, 131,889 relationships, and 590 files with unresolved. |
+| `anvien impact file internal/filecontext/context.go --repo Anvien --direction upstream` | HIGH/CRITICAL blast radius across file projection, CLI/API, MCP, Web contracts, and file map/detail consumers. |
+| `anvien impact file internal/contracts/web_ui.go --repo Anvien --direction upstream` | Generated-contract blast radius across `cmd/generate-web-contracts` and Web contract output. |
+| Contract source inspection | `go run ./cmd/generate-web-contracts` emits TypeScript from `internal/contracts/web_ui.go`; the generated file did not change until the source contract interface was updated. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/filecontext/context.go` | Added raw, production/actionable, test, non-actionable, unknown, and default-visible unresolved counts to `FileSummary`; added `rawRisk` and `defaultVisibleRisk`; list and detail summaries now use the same bucket helper. |
+| `internal/filecontext/context.go` | Bucket rule: test files put all raw unresolved into the test bucket; non-test files split `non_actionable`, unknown/blank metadata, and production/actionable; default-visible currently equals production/actionable plus unknown. |
+| `internal/filecontext/context_test.go` | Added `TestBuildFileSummariesSeparateUnresolvedBuckets`, proving raw counts remain traceable and test unresolved does not count as production/default-visible for both list and detail summaries. |
+| `internal/contracts/web_ui.go` | Added the new fields to the Web `FileSummary` contract source. |
+| `anvien-web/src/generated/anvien-contracts.ts` | Regenerated TypeScript contract now exposes the new `FileSummary` fields. |
+| Plan | Marked P1-B complete. |
+| Benchmark ledger | Recorded P1-B bucket field availability. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `go run ./cmd/generate-web-contracts --check` | Pass. Generated Web contract is current. |
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass; Vite emitted existing chunk-size/dynamic-import warnings. |
+| `go test ./internal/filecontext ./internal/contracts ./internal/httpapi ./internal/cli` | Pass. |
+| `anvien analyze --force` | Pass before detect-changes. Post-edit graph had 818 files scanned, 598 parsed code files, 0 failed parses, 96,521 nodes, 132,071 relationships, and 590 files with unresolved. Default top hotspots remain test files because P1-C has not changed ranking yet. |
+
+Failures / handling:
+
+- The first generator run made no changes because `internal/contracts/web_ui.go` is the source of the generated TypeScript interface; updated the source contract and regenerated.
+- P1-B intentionally did not change default sort/filter/risk behavior; P1-C owns that behavior change.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `anvien detect-changes --repo Anvien --scope all` | Pass. Summary risk `high`; changed files: 7; affected files: 6; affected processes: 8; changed app layers: `api_contract`, `backend`, `backend_test`, `docs`; generated summaries include the new raw/default-visible bucket fields. |
+
+Commit:
+
 - Pending at ledger update time; Git commit hash will be reported after commit.

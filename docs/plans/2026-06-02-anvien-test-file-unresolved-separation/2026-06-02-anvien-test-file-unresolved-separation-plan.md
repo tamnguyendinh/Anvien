@@ -183,7 +183,7 @@ The plan is complete when:
   - Implementation Gate: do not change unresolved counts or ranking yet; only confirm or harden classification.
   - Acceptance: production/test/e2e distinction comes from backend/file-projection classification, and Web changes do not need path-pattern inference.
 
-- [ ] [P1-B] Separate unresolved metric buckets.
+- [x] [P1-B] Separate unresolved metric buckets.
   - Goal: preserve raw unresolved data while creating metrics that distinguish production/test/non-actionable/unknown unresolved.
   - Work Steps: update file projection aggregation to compute raw unresolved plus separated buckets; classify ResolutionGap rows by file classification and existing actionability/classification metadata; keep old fields if compatibility requires; add default-visible/actionable count fields and additive raw/default risk fields if needed; add tests proving raw totals stay traceable while production/test buckets split correctly.
   - Implementation Gate: do not hide data in UI until the API/projection contract can represent both raw and separated counts.

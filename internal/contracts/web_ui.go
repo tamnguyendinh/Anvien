@@ -1293,9 +1293,17 @@ export interface FileSummary {
   outboundRefCount: number;
   localRelationshipCount: number;
   unresolvedSourceSiteCount: number;
+  rawUnresolvedSourceSiteCount: number;
+  productionUnresolvedSourceSiteCount: number;
+  testUnresolvedSourceSiteCount: number;
+  nonActionableUnresolvedSourceSiteCount: number;
+  unknownUnresolvedSourceSiteCount: number;
+  defaultVisibleUnresolvedSourceSiteCount: number;
   linkedFlowCount: number;
   linkedTestCount: number;
   risk?: string;
+  rawRisk?: string;
+  defaultVisibleRisk?: string;
   stale: boolean;
   changedSinceAnalyze: boolean;
 }
