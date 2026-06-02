@@ -162,6 +162,47 @@ func TestBuildFileListSortsFiltersAndPaginates(t *testing.T) {
 	}
 }
 
+func TestBuildFileListUsesAppLayerAsTestClassificationTruth(t *testing.T) {
+	g := graph.New()
+	for _, node := range []graph.Node{
+		fileNode("File:internal/analyze/analyze.go", "internal/analyze/analyze.go", "go", "backend", "analyzer"),
+		fileNode("File:internal/mcp/server_test.go", "internal/mcp/server_test.go", "go", "api_test", "mcp"),
+		fileNode("File:internal/resolution/resolution_test.go", "internal/resolution/resolution_test.go", "go", "backend_test", "resolution"),
+		fileNode("File:anvien-web/e2e/graph.spec.ts", "anvien-web/e2e/graph.spec.ts", "typescript", "frontend_test", "web_graph_ui"),
+	} {
+		g.AddNode(node)
+	}
+
+	list := NewBuilder(g).BuildFileList(FileListOptions{Sort: "path", Limit: 0})
+	byPath := map[string]FileSummary{}
+	for _, file := range list.Files {
+		byPath[file.Path] = file
+	}
+
+	for _, path := range []string{
+		"anvien-web/e2e/graph.spec.ts",
+		"internal/mcp/server_test.go",
+		"internal/resolution/resolution_test.go",
+	} {
+		if byPath[path].Kind != "test" {
+			t.Fatalf("summary %s kind = %q appLayer=%q, want test", path, byPath[path].Kind, byPath[path].AppLayer)
+		}
+	}
+	if byPath["internal/analyze/analyze.go"].Kind != "source" {
+		t.Fatalf("source summary kind = %q, want source", byPath["internal/analyze/analyze.go"].Kind)
+	}
+
+	tests := NewBuilder(g).BuildFileList(FileListOptions{Kinds: []string{"test"}, Sort: "path", Limit: 0})
+	if tests.Total != 3 || len(tests.Files) != 3 {
+		t.Fatalf("test file filter total/files = %d/%d, want 3/3: %#v", tests.Total, len(tests.Files), tests.Files)
+	}
+	for _, file := range tests.Files {
+		if file.Kind != "test" || file.AppLayer == "" {
+			t.Fatalf("test file summary = %#v, want kind=test with appLayer", file)
+		}
+	}
+}
+
 func TestBuildFileListChangedFileFilter(t *testing.T) {
 	builder := NewBuilder(fileContextFixture(false))
 

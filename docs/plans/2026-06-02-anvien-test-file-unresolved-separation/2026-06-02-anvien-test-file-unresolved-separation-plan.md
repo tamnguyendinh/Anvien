@@ -177,7 +177,7 @@ The plan is complete when:
   - Implementation Gate: no code edits in this phase.
   - Acceptance: evidence records current hotspot composition and owner files; benchmark records baseline raw unresolved and hotspot composition; plan no longer asks implementation to recreate existing classification.
 
-- [ ] [P1-A] Reuse and harden test-file classification truth.
+- [x] [P1-A] Reuse and harden test-file classification truth.
   - Goal: make existing test-file classification reliably reusable by projection/ranking/API/UI without adding ad hoc UI path checks.
   - Work Steps: inspect `internal/semantic/app_layer.go`, `internal/filecontext/context.go:fileKind`, and current generated file summaries; confirm Go `_test.go`, TS/JS `.spec`/`.test`, e2e paths, and backend/api/frontend test app layers already map to `kind=test`; add or adjust focused tests only for missing boundary cases; expose `kind=test`/test app layer as the API/UI source of truth.
   - Implementation Gate: do not change unresolved counts or ranking yet; only confirm or harden classification.

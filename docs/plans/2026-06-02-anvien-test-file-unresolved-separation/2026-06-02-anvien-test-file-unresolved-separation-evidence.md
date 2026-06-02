@@ -157,3 +157,60 @@ Failures / handling:
 
 - Initial review found baseline drift from the first plan draft; B0 was refreshed.
 - Initial review found P1-A was too broad because classification already exists; P1-A was narrowed to reuse and harden existing backend truth.
+
+## E2 - P1-A Reuse And Harden Test-File Classification Truth
+
+Date: 2026-06-02
+
+Status: implemented
+
+Scope:
+
+- Reused existing backend app-layer classification as test-file truth.
+- Added focused tests only; no runtime classification behavior was changed.
+- Covered frontend e2e/spec/test paths, API test paths, backend test paths, and file summary `kind=test` output from app layers.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| `anvien analyze --force` | Pass. Graph refreshed before graph-based work. Baseline top unresolved hotspots remain test/e2e files. |
+| Source inspection | `internal/semantic/app_layer.go` maps test/e2e paths to `backend_test`, `api_test`, and `frontend_test`; `internal/filecontext/context.go:fileKind` maps test app layers to `kind=test`. |
+
+Impact / blast radius:
+
+| Target | Result |
+|---|---|
+| `anvien impact file internal/semantic/app_layer.go --repo Anvien --direction upstream` | HIGH/CRITICAL blast radius across analyze, contracts, CLI, MCP, semantic metadata, and Web consumers. P1-A avoided runtime source edits and added tests only. |
+| `anvien impact file internal/filecontext/context.go --repo Anvien --direction upstream` | HIGH/CRITICAL blast radius across file projection, CLI/API, MCP resources, Web contracts, `FileMapPanel`, and `FileDetailPanel`. P1-A avoided runtime source edits and added tests only. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/semantic/app_layer_test.go` | Added `TestClassifyAppLayerMapsTestPathBoundaries` for frontend e2e/unit/co-located tests, API tests, backend tests, fixture paths, and non-test source boundaries. |
+| `internal/filecontext/context_test.go` | Added `TestBuildFileListUsesAppLayerAsTestClassificationTruth` proving `api_test`, `backend_test`, and `frontend_test` summaries expose `kind=test` while backend source remains `kind=source`. |
+| Plan | Marked P1-A complete. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass; Vite emitted existing chunk-size/dynamic-import warnings. |
+| `go test ./internal/semantic` | Pass. |
+| `go test ./internal/filecontext` | Pass. |
+
+Failures / handling:
+
+- No runtime source change was needed for P1-A because classification truth already existed.
+- No benchmark ledger update was required for P1-A because this slice added test coverage and did not change product/runtime/graph metrics.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `anvien detect-changes --repo Anvien --scope all` | Pass. Summary risk `low`; affected files: 4; changed files: 4; affected processes: 0; changed app layers: `backend_test`, `docs`. |
+
+Commit:
+
+- Pending at ledger update time; Git commit hash will be reported after commit.

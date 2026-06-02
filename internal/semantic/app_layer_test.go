@@ -42,6 +42,34 @@ func TestClassifyAppLayerUsesPrimaryNonOverlappingCategories(t *testing.T) {
 	}
 }
 
+func TestClassifyAppLayerMapsTestPathBoundaries(t *testing.T) {
+	tests := []struct {
+		name string
+		path string
+		want AppLayer
+	}{
+		{name: "frontend e2e spec", path: "anvien-web/e2e/graph-orientation-labels.spec.ts", want: AppLayerFrontendTest},
+		{name: "frontend unit test directory", path: "anvien-web/test/unit/graph-adapter.edge-geometry.test.ts", want: AppLayerFrontendTest},
+		{name: "frontend colocated test filename", path: "anvien-web/src/components/FileMapPanel.test.tsx", want: AppLayerFrontendTest},
+		{name: "api http test", path: "internal/httpapi/file_context_test.go", want: AppLayerAPITest},
+		{name: "api mcp test", path: "internal/mcp/server_test.go", want: AppLayerAPITest},
+		{name: "contract generator test", path: "cmd/generate-web-contracts/main_test.go", want: AppLayerAPITest},
+		{name: "backend test", path: "internal/resolution/resolution_test.go", want: AppLayerBackendTest},
+		{name: "backend fixture path", path: "internal/providers/test/fixtures/sample.ts", want: AppLayerBackendTest},
+		{name: "non test frontend source", path: "anvien-web/src/components/FileMapPanel.tsx", want: AppLayerFrontend},
+		{name: "non test backend source", path: "internal/resolution/resolve.go", want: AppLayerBackend},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ClassifyAppLayer(tt.path)
+			if got.Layer != tt.want {
+				t.Fatalf("ClassifyAppLayer(%q) = %q source %q, want %q", tt.path, got.Layer, got.Source, tt.want)
+			}
+		})
+	}
+}
+
 func TestClassifyFunctionalAreaUsesHighConfidencePathRules(t *testing.T) {
 	tests := []struct {
 		name string
