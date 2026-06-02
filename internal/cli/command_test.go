@@ -1410,6 +1410,8 @@ export function beta() {
   return 1;
 }
 `)
+	writeCLITestFile(t, dir, "AGENTS.md", "# stale generated context\n")
+	writeCLITestFile(t, dir, "CLAUDE.md", "# stale generated context\n")
 
 	out, errOut, err := executeForTest(t, "analyze", dir, "--force")
 	if err != nil {
@@ -1421,10 +1423,15 @@ export function beta() {
 	if !strings.Contains(out, "analyzed ") {
 		t.Fatalf("analyze output missing success:\n%s", out)
 	}
+	if !strings.Contains(out, "files: scanned=2 parsed_code=1 failed=0") ||
+		!strings.Contains(out, "indexed: documents=1 metadata=0 analyzers=0 scripts=0 static=0") {
+		t.Fatalf("analyze should ignore pre-existing generated context files before scan:\n%s", out)
+	}
 	if strings.Contains(out, "skills: generated=") {
 		t.Fatalf("default analyze should not report generated skills:\n%s", out)
 	}
 	for _, rel := range []string{
+		".gitignore",
 		"AGENTS.md",
 		"CLAUDE.md",
 		filepath.Join(".claude", "skills", "anvien", "anvien-planner", "SKILL.md"),
@@ -1442,6 +1449,23 @@ export function beta() {
 		!strings.Contains(string(agents), "## Skill Selection Guide") ||
 		!strings.Contains(string(agents), ".claude/skills/anvien/anvien-planner/SKILL.md") {
 		t.Fatalf("AGENTS.md missing Anvien context:\n%s", agents)
+	}
+	gitignore, err := os.ReadFile(filepath.Join(dir, ".gitignore"))
+	if err != nil {
+		t.Fatalf("read .gitignore: %v", err)
+	}
+	for _, want := range []string{
+		"# anvien:start",
+		".anvien/",
+		"AGENTS.md",
+		"CLAUDE.md",
+		".claude/",
+		"anvien-launcher/web-dist/",
+		"# anvien:end",
+	} {
+		if !strings.Contains(string(gitignore), want) {
+			t.Fatalf(".gitignore missing %q:\n%s", want, gitignore)
+		}
 	}
 	assertInstalledEmbeddedBaseSkills(t, filepath.Join(dir, ".claude", "skills", "anvien"))
 	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "generated")); !os.IsNotExist(err) {
@@ -1585,8 +1609,10 @@ func TestIndexRegistersExistingIndex(t *testing.T) {
 	if err != nil {
 		t.Fatalf("gitignore missing: %v", err)
 	}
-	if !strings.Contains(string(gitignore), ".anvien/") {
-		t.Fatalf("gitignore missing .anvien entry:\n%s", gitignore)
+	for _, want := range []string{"# anvien:start", ".anvien/", "AGENTS.md", "CLAUDE.md", "# anvien:end"} {
+		if !strings.Contains(string(gitignore), want) {
+			t.Fatalf("gitignore missing %q:\n%s", want, gitignore)
+		}
 	}
 }
 

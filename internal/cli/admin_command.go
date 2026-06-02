@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	managedgitignore "github.com/tamnguyendinh/anvien/internal/gitignore"
 	"github.com/tamnguyendinh/anvien/internal/repo"
 )
 
@@ -179,7 +180,9 @@ func newIndexCommand() *cobra.Command {
 				return err
 			}
 			if repo.IsGitRepo(repoPath) {
-				_ = ensureGitignoreEntry(repoPath, repo.StorageDirName+"/")
+				if _, err := managedgitignore.Ensure(repoPath); err != nil {
+					return err
+				}
 			}
 			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "Repository registered: %s\n", name); err != nil {
 				return err
@@ -233,29 +236,6 @@ func resolveIndexPath(args []string, allowNonGit bool) (string, error) {
 		return "", fmt.Errorf("not a git repository: %s; use --allow-non-git to register an existing %s index anyway", resolved, repo.StorageDirName)
 	}
 	return resolved, nil
-}
-
-func ensureGitignoreEntry(repoPath string, entry string) error {
-	gitignorePath := filepath.Join(repoPath, ".gitignore")
-	raw, err := os.ReadFile(gitignorePath)
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return err
-	}
-	if strings.Contains("\n"+string(raw)+"\n", "\n"+entry+"\n") {
-		return nil
-	}
-	file, err := os.OpenFile(gitignorePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	if len(raw) > 0 && !strings.HasSuffix(string(raw), "\n") {
-		if _, err := file.WriteString("\n"); err != nil {
-			return err
-		}
-	}
-	_, err = file.WriteString(entry + "\n")
-	return err
 }
 
 func formatIndexStats(stats *repo.Stats) string {

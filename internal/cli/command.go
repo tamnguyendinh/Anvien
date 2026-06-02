@@ -15,6 +15,7 @@ import (
 	"github.com/tamnguyendinh/anvien/internal/analyze"
 	"github.com/tamnguyendinh/anvien/internal/embeddings"
 	"github.com/tamnguyendinh/anvien/internal/filecontext"
+	managedgitignore "github.com/tamnguyendinh/anvien/internal/gitignore"
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/httpapi"
 	"github.com/tamnguyendinh/anvien/internal/lbugload"
@@ -176,6 +177,11 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 			target, err := resolveAnalyzeArgument(args, skipGit)
 			if err != nil {
 				return err
+			}
+			if !noGitignore && repo.IsGitRepo(target) {
+				if _, err := managedgitignore.Ensure(target); err != nil {
+					return err
+				}
 			}
 			logger.Info("starting analyze", "path", target)
 
