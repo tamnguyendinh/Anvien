@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: in progress; P0 complete
+Status: complete
 
 Companion files:
 
@@ -73,6 +73,7 @@ Status: complete
 | Metric | Unit | Value |
 |---|---:|---:|
 | Baseline commit | SHA | `6564d7d5f5f7d53767a4afbc1028cda26535b977` |
+| Discovery start commit | SHA | `e0b2f336b37a7d65eec6ddf5d6f20ac7dfd40900` |
 | Dirty source files at baseline | files | 0 |
 | Dirty benchmark docs/reports at baseline | files | 0 |
 | CPU logical processors | count | 8 |
@@ -84,125 +85,126 @@ Status: complete
 
 ## B1 - Token Accountant Setup Metrics
 
-Status: active
+Status: complete
 
 | Metric | Unit | Value |
 |---|---:|---:|
 | Token accountant active before native phase | yes/no | yes |
-| Token accountant active before Anvien phase | yes/no | pending |
+| Token accountant active before Anvien phase | yes/no | yes |
 | Exact observed output counting available | yes/no | yes |
 | Truncated-output handling valid | yes/no | yes |
-| Token comparison valid | yes/no | pending |
+| Token comparison valid | yes/no | no |
 
 ## B2 - Discovery Cost Summary
 
-Status: pending
+Status: complete
 
 | Method | elapsed_seconds | observed_total_tokens | observed_characters | unique_files_read | file_bytes_read | search_calls | anvien_calls | candidate_count |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Native-search | pending | pending | pending | pending | pending | pending | 0 | pending |
-| Anvien-guided | pending | pending | pending | pending | pending | pending | pending | pending |
+| Native-search | 174 | 27088 | 108350 | 10 | 10300 | 29 | 0 | 8 |
+| Anvien-guided | 180 approx | invalid; reconstructed >=215431 | invalid; reconstructed >=861723 | 11 | 6160 | 17 | 24 | 14 |
 
 ## B3 - Native-Search Token Breakdown
 
-Status: pending
+Status: complete
 
 | Token source | observed_characters | estimated_tokens | Notes |
 |---|---:|---:|---|
-| Task prompt | pending | pending | fixed task prompt |
-| Tool call arguments | pending | pending | native command/tool text |
-| Search/list command output | pending | pending | native search only |
-| File reads | pending | pending | source/doc files read |
+| Task prompt | included in total | included in total | fixed task prompt |
+| Tool call arguments | 15900 | 3975 | native command/tool text |
+| Search/list command output | 23800 | 5950 | native search only |
+| File reads | 10300 | 2575 | source/config files visibly read |
 | Anvien observed output | 0 | 0 | prohibited in native phase |
-| Agent response | pending | pending | native conclusion/report text |
-| Retry/error output | pending | pending | failed commands or detours |
-| Total | pending | pending | sum |
+| Agent response | 6200 | 1550 | native conclusion/report text |
+| Retry/error output | 2650 | 663 | failed commands or detours |
+| Other command stdout/stderr | 49500 | 12375 | command output not separately bucketed as source/search |
+| Total | 108350 | 27088 | native self-accountant ledger |
 
 ## B4 - Anvien-Guided Token Breakdown
 
-Status: pending
+Status: complete; invalid token axis
 
 | Token source | observed_characters | estimated_tokens | Notes |
 |---|---:|---:|---|
-| Task prompt | pending | pending | fixed task prompt |
-| Tool call arguments | pending | pending | Anvien and follow-up command/tool text |
-| Anvien observed context | pending | pending | all observed output/artifact content from Anvien work |
-| Follow-up search/list output | pending | pending | native search after Anvien guidance |
-| File reads | pending | pending | source/doc files read |
-| Agent response | pending | pending | Anvien-guided conclusion/report text |
-| Retry/error output | pending | pending | failed commands or detours |
-| Total | pending | pending | sum |
+| Task prompt | invalid | invalid | included in phase but exact total invalid |
+| Tool call arguments | invalid | invalid | not exact after transcript truncation |
+| Anvien observed context | 777694 reconstructed | 194424 reconstructed | large `context` outputs were transcript-truncated |
+| Follow-up search/list output | 77869 reconstructed | 19468 reconstructed | one broad native search output was transcript-truncated |
+| File reads | 6160 | 1540 | source snippets visibly read |
+| Agent response | invalid | invalid | not exact after transcript truncation |
+| Retry/error output | included in reconstructed categories | included in reconstructed categories | 6 failed/retry calls |
+| Total | invalid; >=861723 reconstructed | invalid; >=215431 reconstructed | no token winner may be claimed |
 
 ## B5 - File Read And Command Counts
 
-Status: pending
+Status: complete
 
 | Method | unique_files_read | file_bytes_read | source_files_read | docs_read | search_calls | anvien_calls | failed_or_retry_calls |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Native-search | pending | pending | pending | pending | pending | 0 | pending |
-| Anvien-guided | pending | pending | pending | pending | pending | pending | pending |
-| Shared verification | pending | pending | pending | pending | pending | pending | pending |
+| Native-search | 10 | 10300 | 10 | 0 | 29 | 0 | 4 |
+| Anvien-guided | 11 | 6160 | 11 | 0 | 17 | 24 | 6 |
+| Shared verification | 19 approx | 27500 approx | 17 approx | 0 | 7 approx | 0 | 2 |
 
 ## B6 - Candidate Discovery Counts
 
-Status: pending
+Status: complete
 
 | Method | candidate_count | symbol_level | file_level | package_or_module_level | route_or_tool_surface | other |
 |---|---:|---:|---:|---:|---:|---:|
-| Native-search | pending | pending | pending | pending | pending | pending |
-| Anvien-guided | pending | pending | pending | pending | pending | pending |
-| Union | pending | pending | pending | pending | pending | pending |
+| Native-search | 8 | 6 | 0 | 0 | 0 | 2 |
+| Anvien-guided | 14 | 14 | 0 | 0 | 0 | 0 |
+| Union | 21 | 19 | 0 | 0 | 0 | 2 |
 
 ## B7 - Candidate Verification Counts
 
-Status: pending
+Status: complete
 
 | Method source | candidates | confirmed_deadcode | likely_deadcode | uncertain | false_positive |
 |---|---:|---:|---:|---:|---:|
-| Native-search | pending | pending | pending | pending | pending |
-| Anvien-guided | pending | pending | pending | pending | pending |
-| Found by both | pending | pending | pending | pending | pending |
-| Native only | pending | pending | pending | pending | pending |
-| Anvien only | pending | pending | pending | pending | pending |
-| Union | pending | pending | pending | pending | pending |
+| Native-search | 8 | 4 | 4 | 0 | 0 |
+| Anvien-guided | 14 | 13 | 1 | 0 | 0 |
+| Found by both | 1 | 0 | 1 | 0 | 0 |
+| Native only | 7 | 4 | 3 | 0 | 0 |
+| Anvien only | 13 | 13 | 0 | 0 | 0 |
+| Union | 21 | 17 | 4 | 0 | 0 |
 
 ## B8 - Efficiency Ratios
 
-Status: pending
+Status: complete
 
 | Metric | Formula | Value |
 |---|---|---:|
-| Token reduction from Anvien | `(native_observed_total_tokens - anvien_observed_total_tokens) / native_observed_total_tokens` | pending |
-| File-read reduction from Anvien | `(native_unique_files - anvien_unique_files) / native_unique_files` | pending |
-| Search-call reduction from Anvien | `(native_search_calls - anvien_search_calls) / native_search_calls` | pending |
-| True-candidate delta | `(anvien_confirmed + anvien_likely) - (native_confirmed + native_likely)` | pending |
-| False-positive delta | `anvien_false_positive - native_false_positive` | pending |
-| Verification burden delta | `anvien_uncertain - native_uncertain` | pending |
+| Token reduction from Anvien | `(native_observed_total_tokens - anvien_observed_total_tokens) / native_observed_total_tokens` | invalid |
+| File-read reduction from Anvien | `(native_unique_files - anvien_unique_files) / native_unique_files` | -10.0% |
+| Search-call reduction from Anvien | `(native_search_calls - anvien_search_calls) / native_search_calls` | 41.4% native follow-up search reduction; total tool calls increased |
+| True-candidate delta | `(anvien_confirmed + anvien_likely) - (native_confirmed + native_likely)` | +6 |
+| False-positive delta | `anvien_false_positive - native_false_positive` | 0 |
+| Verification burden delta | `anvien_uncertain - native_uncertain` | 0 |
 
 ## B9 - Final Outcome Matrix
 
-Status: pending
+Status: complete
 
 | Question | Result | Numeric support |
 |---|---|---|
-| Did Anvien-guided discovery use fewer observed-context tokens? | pending | pending |
-| Did Anvien-guided discovery read fewer files? | pending | pending |
-| Did Anvien-guided discovery use fewer native search calls? | pending | pending |
-| Did Anvien-guided discovery find at least as many confirmed/likely candidates? | pending | pending |
-| Did Anvien-guided discovery avoid increasing false positives? | pending | pending |
-| Was token comparison valid? | pending | pending |
-| Overall result | pending | pending |
+| Did Anvien-guided discovery use fewer observed-context tokens? | invalid | native 27,088 valid; Anvien reconstructed >=215,431 but exact invalid due truncation |
+| Did Anvien-guided discovery read fewer files? | no | native 10; Anvien 11 |
+| Did Anvien-guided discovery use fewer native search calls? | yes for native follow-up only; no for total calls | native 29; Anvien follow-up 17 plus 24 Anvien calls |
+| Did Anvien-guided discovery find at least as many confirmed/likely candidates? | yes | native 8; Anvien 14 |
+| Did Anvien-guided discovery avoid increasing false positives? | yes | native 0; Anvien 0 |
+| Was token comparison valid? | no | Anvien phase had transcript-truncated outputs |
+| Overall result | correctness favors Anvien; token winner invalid; file-read count favors native | union 21 candidates; Anvien-only 13 confirmed |
 
 ## B10 - Shared Verification Token Shape
 
-Status: pending
+Status: complete
 
 | Metric | tokens | observed_characters | Notes |
 |---|---:|---:|---|
-| Verification prompt/context | pending | pending | shared across union candidates |
-| Verification tool call arguments | pending | pending | verification commands/tools |
-| Verification search output | pending | pending | source-backed checks |
-| Verification file reads | pending | pending | source/doc files read for proof |
-| Verification agent response | pending | pending | verdict narrative |
-| Verification retry/error output | pending | pending | failed commands or detours |
-| Shared verification total | pending | pending | not counted as either discovery method cost |
+| Verification prompt/context | approx 250 | approx 1000 | shared across union candidates |
+| Verification tool call arguments | approx 900 | approx 3600 | verification commands/tools |
+| Verification search output | approx 2500 | approx 10000 | source-backed checks |
+| Verification file reads | approx 3400 | approx 13600 | source/config files read for proof |
+| Verification agent response | not finalized here | not finalized here | verdict narrative lives in evidence ledger |
+| Verification retry/error output | approx 250 | approx 1000 | failed commands or detours |
+| Shared verification total | approx 7300 plus evidence text | approx 29200 plus evidence text | not counted as either discovery method cost |

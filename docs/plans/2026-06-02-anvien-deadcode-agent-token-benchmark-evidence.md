@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: in progress; P0 complete
+Status: complete
 
 Companion files:
 
@@ -83,6 +83,7 @@ Required evidence:
 | Check | Result |
 |---|---|
 | Baseline commit | `6564d7d5f5f7d53767a4afbc1028cda26535b977` |
+| Discovery start commit | `e0b2f336b37a7d65eec6ddf5d6f20ac7dfd40900`; source code unchanged from baseline, P0 docs only were committed before discovery |
 | Branch | `master` |
 | Worktree status | clean at baseline (`git status --short` produced no output) |
 | Source-code dirty state | 0 dirty source files at baseline |
@@ -114,9 +115,9 @@ Required evidence:
 
 ## E2 - Native-Search Discovery Without Anvien
 
-Date:
+Date: 2026-06-02
 
-Status: pending
+Status: complete
 
 Rules for this section:
 
@@ -128,47 +129,56 @@ Native command/read log:
 
 | Step | Command or file | Purpose | Accountant observation | Token-accountant note | Result |
 |---|---|---|---|---|---|
-| pending | pending | pending | pending | pending | pending |
+| N1 | `rg --files` inventory and manifest reads | identify source surface without Anvien | observed summaries and selected manifest content | no Anvien surface used | complete |
+| N2 | keyword/declaration/reference scans | find unused/deadcode leads | 29 native command/read groups, 108,350 observed chars total | one timeout/retries counted; no truncation reported by native agent | complete |
+| N3 | targeted source reads | classify native leads | 10 files visibly read | large internal scans were not counted as file content unless printed/read | complete |
 
 Native candidates:
 
 | Candidate id | Path | Symbol/name | Kind | Discovery evidence | Notes |
 |---|---|---|---|---|---|
-| pending | pending | pending | pending | pending | pending |
+| N1 | `internal/cli/setup_command.go` | `setupMCPEntry` | Go private type | exact native search found only declaration | low dynamic risk |
+| N2 | `internal/session/controller.go` | `NewControllerWithResolver` | Go exported constructor under `internal` | exact native search found only declaration | medium public/internal API risk |
+| N3 | `internal/session/controller.go` | `(*Controller).GetSession` | Go exported method under `internal` | exact native search found only declaration | medium public/internal API risk |
+| N4 | `anvien-web/src/components/DropZone.tsx` | `data` | unused callback parameter | targeted ESLint reported unused parameter at line 228 | low risk |
+| N5 | `anvien-web/e2e/graph-orientation-labels.spec.ts` | `_error` | unused catch binding | targeted ESLint reported unused binding at line 443 | low risk |
+| N6 | `anvien-web/test/unit/GraphCanvas.selection-performance.test.tsx` | `sigmaOnSpy`, `sigmaOffSpy`, `cameraOnSpy`, `cameraOffSpy` | unused test locals | targeted ESLint reported all four locals unused at lines 14-17 | may indicate missing assertions |
+| N7 | `anvien-web/src/generated/anvien-contracts.ts` | file-level `/* eslint-disable */` | stale generated directive | targeted ESLint reported unused eslint-disable at line 1 | generated source-of-truth risk |
+| N8 | `anvien-web/src/lib/lucide-icons.tsx` | `EyeOff`, `FileArchive`, `FlaskConical`, `Github`, `Heart`, `Upload` | unused local icon re-exports | exact search found each icon name only in the barrel export block | medium public barrel risk |
 
 Native completion:
 
 | Item | Result |
 |---|---|
-| Declared native procedure recorded before first search | pending |
-| Token accountant closed native phase | pending |
-| Completion condition met | pending |
-| Open native leads remaining | pending |
-| Blocker or incomplete reason | pending |
-| Confidence | pending |
+| Declared native procedure recorded before first search | yes |
+| Token accountant closed native phase | yes |
+| Completion condition met | yes |
+| Open native leads remaining | none reported |
+| Blocker or incomplete reason | none |
+| Confidence | valid native discovery ledger; no Anvien use |
 
 ## E3 - Native-Search Discovery Report
 
-Date:
+Date: 2026-06-02
 
-Status: pending
+Status: complete
 
 Required evidence:
 
 | Item | Result |
 |---|---|
-| Native candidate count | pending |
-| Native unique files read | pending |
-| Native command/search count | pending |
-| Native observed-context token total | pending |
-| Native completion status | pending |
-| Native unresolved questions | pending |
+| Native candidate count | 8 |
+| Native unique files read | 10 |
+| Native command/search count | 29 shell/read/static-analysis groups |
+| Native observed-context token total | 27,088 estimated tokens from 108,350 observed chars |
+| Native completion status | complete; no Anvien surface used |
+| Native unresolved questions | icon barrel public-use risk; generated directive source-of-truth risk; exported `internal/session` API intent |
 
 ## E4 - Anvien-Guided Discovery
 
-Date:
+Date: 2026-06-02
 
-Status: pending
+Status: complete; token accounting invalid
 
 Rules for this section:
 
@@ -181,58 +191,73 @@ Graph freshness:
 
 | Check | Result |
 |---|---|
-| Analyze command | pending |
-| Analyze output accountant observation | pending |
-| Indexed commit | pending |
-| Current commit | pending |
-| Fresh/stale result | pending |
+| Analyze command | `anvien\bin\anvien.exe analyze --force` |
+| Analyze output accountant observation | 1,063 observed stdout/stderr chars |
+| Indexed commit | graph refreshed during phase; command succeeded |
+| Current commit | benchmark baseline was `6564d7d5f5f7d53767a4afbc1028cda26535b977`; P0 doc commit existed before discovery docs were written |
+| Fresh/stale result | fresh after analyze; no worktree changes left by analyze |
 
 Anvien command/read log:
 
 | Step | Command or file | Purpose | Accountant observation | Token-accountant note | Result |
 |---|---|---|---|---|---|
-| pending | pending | pending | pending | pending | pending |
+| A1 | `anvien analyze --force`, `query`, `cypher`, `context`, `graph-health` | surface graph leads before broad source reads | 24 Anvien calls; reconstructed 777,694 Anvien stdout/stderr chars | multiple large `context` outputs were transcript-truncated | complete but token invalid |
+| A2 | follow-up exact native searches | confirm graph-surfaced leads and reject dynamic/public leads | 17 shell invocations / 40 `rg` executions; 77,869 observed chars | one broad native search output was transcript-truncated | complete but token invalid |
+| A3 | targeted source snippets | classify graph leads | 12 snippets, 11 unique files, 6,160 chars | source reads were small and targeted | complete |
 
 Anvien candidates:
 
 | Candidate id | Path | Symbol/name | Kind | Discovery evidence | Notes |
 |---|---|---|---|---|---|
-| pending | pending | pending | pending | pending | pending |
+| A1 | `internal/mcp/context.go` | `contextCategorizedRefs` | Go private function | Anvien zero-inbound lead; exact search found only declaration in `internal/mcp` | high confidence |
+| A2 | `internal/mcp/context.go` | `contextClassLikeIncomingRefs` | Go private function | Anvien zero-inbound lead; exact search found only declaration in `internal/mcp` | superseded by set-based helper |
+| A3 | `internal/mcp/context.go` | `contextProcessParticipation` | Go private function | Anvien zero-inbound lead; exact search found only declaration in `internal/mcp` | high confidence |
+| A4 | `internal/mcp/tools.go` | `containsScore` | Go private function | Anvien zero-inbound lead; exact search found only declaration | high confidence |
+| A5 | `internal/mcp/route_shape_impact.go` | `mcpRouteAnalysisRecords` | Go private function | Anvien zero-inbound lead; exact search found only declaration in `internal/mcp` | high confidence |
+| A6 | `internal/mcp/server.go` | `writeMessage` | Go private function | Anvien zero-inbound lead; exact search found only declaration | high confidence |
+| A7 | `internal/providers/tsjs/nodes.go` | `isFunctionScopeNode` | Go private function | Anvien zero-inbound lead; exact search found only declaration in TSJS provider | high confidence |
+| A8 | `internal/providers/golang/definitions.go` | `goTypeSpecLabel` | Go private function | Anvien zero-inbound lead; exact search found only declaration in Go provider | high confidence |
+| A9 | `internal/providers/golang/nodes.go` | `descendantsOfType` | Go private function | Anvien zero-inbound lead; scoped package search found only declaration | high confidence |
+| A10 | `internal/providers/rust/nodes.go` | `directChildOfKind` | Go private function | Anvien zero-inbound lead; scoped Rust provider search found only declaration | high confidence |
+| A11 | `internal/providers/rust/nodes.go` | `directChildrenOfKind` | Go private function | Anvien zero-inbound lead; scoped Rust provider search found only declaration | high confidence |
+| A12 | `internal/providers/java/nodes.go` | `firstNamedChildOfType` | Go private function | Anvien zero-inbound lead; scoped Java provider search found only declaration | high confidence |
+| A13 | `internal/providers/python/nodes.go` | `namedChildrenOfType` | Go private function | Anvien zero-inbound lead; scoped Python provider search found only declaration | high confidence |
+| A14 | `internal/session/controller.go` | `NewControllerWithResolver` | Go exported constructor under `internal` | Anvien zero-inbound lead; exact search found only declaration | also found by native |
 
 Anvien completion:
 
 | Item | Result |
 |---|---|
-| Declared Anvien procedure recorded before first graph command | pending |
-| Token accountant closed Anvien phase | pending |
-| Completion condition met | pending |
-| Open Anvien leads remaining | pending |
-| Blocker or incomplete reason | pending |
-| Confidence | pending |
+| Declared Anvien procedure recorded before first graph command | yes |
+| Token accountant closed Anvien phase | yes |
+| Completion condition met | yes for candidate discovery |
+| Open Anvien leads remaining | none reported |
+| Blocker or incomplete reason | token comparison invalid because observed output was truncated |
+| Confidence | candidate discovery usable; token-cost comparison unusable |
 
 ## E5 - Anvien-Guided Discovery Report
 
-Date:
+Date: 2026-06-02
 
-Status: pending
+Status: complete; token accounting invalid
 
 Required evidence:
 
 | Item | Result |
 |---|---|
-| Anvien candidate count | pending |
-| Anvien unique files read | pending |
-| Anvien command count | pending |
-| Anvien follow-up native search count | pending |
-| Anvien observed-context token total | pending |
-| Anvien completion status | pending |
-| Anvien unresolved questions | pending |
+| Anvien candidate count | 14 |
+| Anvien unique files read | 11 |
+| Anvien command count | 24 |
+| Anvien follow-up native search count | 17 shell invocations / 40 `rg` executions |
+| Anvien observed-context token total | invalid; reconstructed observed categories were 861,723 chars / 215,431 estimated tokens, but transcript truncation prevents exact accounting |
+| Anvien completion status | complete for candidate discovery; invalid for token winner |
+| Anvien unresolved questions | large Anvien `context` output must be controlled in a rerun before token reduction can be claimed |
 
 ## E6 - Candidate Union And Verification
 
-Date:
+Date: 2026-06-02
 
-Status: pending
+Status: complete
 
 Verification rules:
 
@@ -244,84 +269,104 @@ Candidate verdicts:
 
 | Candidate id | Found by native | Found by Anvien | Path | Symbol/name | Verdict | Verification evidence | Dynamic/public risk |
 |---|---|---|---|---|---|---|---|
-| pending | pending | pending | pending | pending | pending | pending | pending |
+| D01 | yes | no | `internal/cli/setup_command.go` | `setupMCPEntry` | `confirmed_deadcode` | exact search found only declaration; snippet shows private struct declaration | low |
+| D02 | yes | yes | `internal/session/controller.go` | `NewControllerWithResolver` | `likely_deadcode` | exact search found only declaration | medium: exported under Go `internal` package |
+| D03 | yes | no | `internal/session/controller.go` | `GetSession` | `likely_deadcode` | exact search found only declaration | medium: exported method under Go `internal` package |
+| D04 | yes | no | `anvien-web/src/components/DropZone.tsx` | `data` | `confirmed_deadcode` | targeted ESLint reported unused parameter at line 228; snippet shows callback body ignores it | low |
+| D05 | yes | no | `anvien-web/e2e/graph-orientation-labels.spec.ts` | `_error` | `confirmed_deadcode` | targeted ESLint reported unused catch binding at line 443 | low |
+| D06 | yes | no | `anvien-web/test/unit/GraphCanvas.selection-performance.test.tsx` | `sigmaOnSpy`, `sigmaOffSpy`, `cameraOnSpy`, `cameraOffSpy` | `confirmed_deadcode` | targeted ESLint reported all four assigned but unused at lines 14-17 | low for liveness; medium test-quality risk |
+| D07 | yes | no | `anvien-web/src/generated/anvien-contracts.ts` | `/* eslint-disable */` | `likely_deadcode` | targeted ESLint reported unused directive at line 1 | medium: generated file; generator is source of truth |
+| D08 | yes | no | `anvien-web/src/lib/lucide-icons.tsx` | `EyeOff`, `FileArchive`, `FlaskConical`, `Github`, `Heart`, `Upload` | `likely_deadcode` | exact search found each icon only in barrel export block | medium: public local barrel risk |
+| D09 | no | yes | `internal/mcp/context.go` | `contextCategorizedRefs` | `confirmed_deadcode` | scoped search in `internal/mcp` found only declaration | low |
+| D10 | no | yes | `internal/mcp/context.go` | `contextClassLikeIncomingRefs` | `confirmed_deadcode` | scoped search in `internal/mcp` found only declaration; newer set-based helper is used instead | low |
+| D11 | no | yes | `internal/mcp/context.go` | `contextProcessParticipation` | `confirmed_deadcode` | scoped search in `internal/mcp` found only declaration | low |
+| D12 | no | yes | `internal/mcp/tools.go` | `containsScore` | `confirmed_deadcode` | exact search found only declaration | low |
+| D13 | no | yes | `internal/mcp/route_shape_impact.go` | `mcpRouteAnalysisRecords` | `confirmed_deadcode` | scoped search in `internal/mcp` found only declaration | low |
+| D14 | no | yes | `internal/mcp/server.go` | `writeMessage` | `confirmed_deadcode` | exact search found only declaration; lower-level `writeRawMessage` path remains | low |
+| D15 | no | yes | `internal/providers/tsjs/nodes.go` | `isFunctionScopeNode` | `confirmed_deadcode` | scoped TSJS provider search found only declaration | low |
+| D16 | no | yes | `internal/providers/golang/definitions.go` | `goTypeSpecLabel` | `confirmed_deadcode` | scoped Go provider search found only declaration; callers use `goTypeSpecLabelForKind` | low |
+| D17 | no | yes | `internal/providers/golang/nodes.go` | `descendantsOfType` | `confirmed_deadcode` | scoped Go provider search found only declaration | low |
+| D18 | no | yes | `internal/providers/rust/nodes.go` | `directChildOfKind` | `confirmed_deadcode` | scoped Rust provider search found only declaration | low |
+| D19 | no | yes | `internal/providers/rust/nodes.go` | `directChildrenOfKind` | `confirmed_deadcode` | scoped Rust provider search found only declaration | low |
+| D20 | no | yes | `internal/providers/java/nodes.go` | `firstNamedChildOfType` | `confirmed_deadcode` | scoped Java provider search found only declaration | low |
+| D21 | no | yes | `internal/providers/python/nodes.go` | `namedChildrenOfType` | `confirmed_deadcode` | scoped Python provider search found only declaration | low |
 
 False positives:
 
 | Candidate id | Method source | Reason |
 |---|---|---|
-| pending | pending | pending |
+| none | both | no false positives found in this static verification pass |
 
 Uncertain candidates:
 
 | Candidate id | Method source | Uncertainty reason | Follow-up needed |
 |---|---|---|---|
-| pending | pending | pending | pending |
+| none | both | no candidate required `uncertain`; public/generated risks were classified as `likely_deadcode` instead of confirmed | if cleanup is planned, inspect intended public/generator contract first |
 
 ## E7 - Final Comparison Evidence
 
-Date:
+Date: 2026-06-02
 
-Status: pending
+Status: complete
 
 Required comparison facts:
 
 | Question | Evidence |
 |---|---|
-| Which method used fewer observed-context tokens? | pending |
-| Which method read fewer files? | pending |
-| Which method used fewer search/tool calls? | pending |
-| Which method found more confirmed/likely deadcode? | pending |
-| Which method produced fewer false positives? | pending |
-| Which candidates were found by both/native-only/Anvien-only? | pending |
-| Was the token accountant able to measure exact observed context? | pending |
-| Were unobserved/redirected/capture-only/truncated contents handled by observation status? | pending |
+| Which method used fewer observed-context tokens? | invalid. Native was measured at 27,088 estimated tokens; Anvien phase had at least reconstructed 215,431 estimated tokens in observed categories, but exact accounting is invalid due transcript truncation. |
+| Which method read fewer files? | native read fewer files: 10 vs Anvien 11. |
+| Which method used fewer search/tool calls? | Anvien used fewer native follow-up shell invocations, 17 vs 29, but more total discovery calls when 24 Anvien calls are included. |
+| Which method found more confirmed/likely deadcode? | Anvien-guided found 14 confirmed/likely candidates; native found 8. |
+| Which method produced fewer false positives? | tie: 0 false positives in this static verification pass. |
+| Which candidates were found by both/native-only/Anvien-only? | both: D02; native-only: D01, D03-D08; Anvien-only: D09-D21. |
+| Was the token accountant able to measure exact observed context? | native yes; Anvien no because several observed outputs were truncated. |
+| Were unobserved/redirected/capture-only/truncated contents handled by observation status? | yes. Truncated Anvien outputs caused invalid token result instead of a false winner. |
 
 Required summary shape:
 
 ```text
 Native search:
-- observed-context total tokens:
-- task prompt:
-- tool call arguments:
-- search output:
-- file reads:
-- agent response:
-- retry/error:
-- files read:
-- candidates:
+- observed-context total tokens: 27,088 valid estimated tokens
+- task prompt: included in native self-ledger
+- tool call arguments: 3,975 estimated tokens
+- search output: 5,950 estimated tokens
+- file reads: 2,575 estimated tokens
+- agent response: 1,550 estimated tokens
+- retry/error: 663 estimated tokens
+- files read: 10
+- candidates: 8
 
 Anvien-guided:
-- observed-context total tokens:
-- task prompt:
-- tool call arguments:
-- Anvien observed context:
-- follow-up search output:
-- file reads:
-- agent response:
-- retry/error:
-- files read:
-- candidates:
+- observed-context total tokens: invalid; reconstructed category floor 215,431 estimated tokens
+- task prompt: included in Anvien phase self-ledger
+- tool call arguments: not exact after truncation
+- Anvien observed context: reconstructed 777,694 chars, but exact token accounting invalid
+- follow-up search output: reconstructed 77,869 chars
+- file reads: 6,160 chars
+- agent response: not exact after truncation
+- retry/error: 6 failed/retry calls
+- files read: 11
+- candidates: 14
 
 Shared verification:
-- observed-context total tokens:
-- candidates verified:
-- confirmed/likely/uncertain/false-positive:
+- observed-context total tokens: shared verification cost recorded separately and not used as either discovery method's discovery cost
+- candidates verified: 21
+- confirmed/likely/uncertain/false-positive: 17 / 4 / 0 / 0
 ```
 
 ## E8 - Closure
 
-Date:
+Date: 2026-06-02
 
-Status: pending
+Status: complete
 
 Closure checks:
 
 | Check | Result |
 |---|---|
-| No deadcode deletion/edit was made | pending |
-| Token accountant ledger complete | pending |
-| Plan checklist updated | pending |
-| Benchmark ledger complete | pending |
-| Final comparison written | pending |
-| Commit hash for documentation update, if committed | pending |
+| No deadcode deletion/edit was made | yes |
+| Token accountant ledger complete | complete enough to invalidate token axis honestly; native exact, Anvien invalid due truncation |
+| Plan checklist updated | yes |
+| Benchmark ledger complete | yes |
+| Final comparison written | yes |
+| Commit hash for documentation update, if committed | not embedded because a commit cannot contain its own final hash; final response records the documentation commit hash |

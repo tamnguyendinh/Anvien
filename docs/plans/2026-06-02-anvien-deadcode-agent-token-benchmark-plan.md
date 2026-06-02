@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: in progress; P0 complete
+Status: complete; token axis invalid because Anvien phase output was truncated
 
 Companion files:
 
@@ -237,43 +237,43 @@ This benchmark is complete when:
   - Implementation Gate: if observed-context accounting cannot be measured, stop and record blocker.
   - Acceptance: evidence contains token accountant setup; benchmark ledger contains token-accounting method row.
 
-- [ ] [P1-A] Run native-search deadcode discovery without Anvien.
+- [x] [P1-A] Run native-search deadcode discovery without Anvien.
   - Goal: measure observed context and result quality for native agentic deadcode discovery.
   - Work Steps: run the Native-Search Procedure; keep Anvien fully excluded; record commands, outputs, reads, rejected leads, unresolved leads, and candidates as observed by token accountant.
   - Implementation Gate: no Anvien command, resource, generated context, graph artifact, or Anvien report may be used.
   - Acceptance: evidence records native procedure, command/read log, candidate list, and completion condition; benchmark ledger records native observed-context metrics.
 
-- [ ] [P1-B] Close native-search discovery report.
+- [x] [P1-B] Close native-search discovery report.
   - Goal: freeze native output before Anvien-guided discovery starts.
   - Work Steps: write native candidate table, unresolved questions, rejected-lead summary, observed-token buckets, file reads, search calls, and confidence notes.
   - Implementation Gate: do not start Anvien-guided phase until native report and accountant ledger are closed.
   - Acceptance: native report is complete in evidence and benchmark ledger.
 
-- [ ] [P2-A] Run Anvien-guided deadcode discovery.
+- [x] [P2-A] Run Anvien-guided deadcode discovery.
   - Goal: measure observed context and result quality when Anvien guides the agent.
   - Work Steps: run the Anvien-Guided Procedure; run `anvien analyze --force`; use Anvien commands to surface candidates; read source only where needed; record all Anvien output, artifact reads, follow-up source reads, and search output observed by the token accountant.
   - Implementation Gate: graph freshness must be recorded before graph-based work; native candidates must not be read as input.
   - Acceptance: evidence records Anvien command/read log, candidate list, rejected leads, unresolved leads, and completion condition; benchmark ledger records Anvien observed-context metrics.
 
-- [ ] [P2-B] Close Anvien-guided discovery report.
+- [x] [P2-B] Close Anvien-guided discovery report.
   - Goal: freeze Anvien-guided output before shared verification.
   - Work Steps: write Anvien candidate table, unresolved questions, rejected-lead summary, observed-token buckets, file reads, Anvien command count, follow-up search count, and confidence notes.
   - Implementation Gate: do not start union verification until Anvien report and accountant ledger are closed.
   - Acceptance: Anvien report is complete in evidence and benchmark ledger.
 
-- [ ] [P3-A] Verify the union of candidates.
+- [x] [P3-A] Verify the union of candidates.
   - Goal: determine true/likely/uncertain/false-positive outcomes for all candidates.
   - Work Steps: merge both candidate lists; dedupe; assign stable ids; check references, public/dynamic risk, generated-code status, tests/build/runtime hooks, and external contract hints; classify every candidate.
   - Implementation Gate: verification cost is shared and must not be assigned to either discovery method.
   - Acceptance: evidence contains verdict and proof for every candidate; benchmark ledger contains correctness counts by method.
 
-- [ ] [P4-A] Compare native-search vs Anvien-guided discovery.
+- [x] [P4-A] Compare native-search vs Anvien-guided discovery.
   - Goal: answer whether Anvien reduces token/read/search cost without reducing correctness.
   - Work Steps: compare observed-context tokens, file reads, source bytes, search calls, Anvien calls, elapsed time, candidates found, confirmed/likely/uncertain/false-positive counts, and method-only finds.
   - Implementation Gate: comparison cannot be written until every candidate has a verification verdict and the token accountant has closed all phases.
   - Acceptance: final comparison states winner/tie/invalid per axis with numeric support.
 
-- [ ] [P5-A] Close benchmark docs.
+- [x] [P5-A] Close benchmark docs.
   - Goal: keep plan, evidence, and benchmark ledgers synchronized after execution.
   - Work Steps: update checklist statuses; ensure benchmark tables contain quantitative data only; ensure evidence contains command facts and interpretations; record final summary.
   - Implementation Gate: no deadcode edits were made; token accountant ledger is complete.
