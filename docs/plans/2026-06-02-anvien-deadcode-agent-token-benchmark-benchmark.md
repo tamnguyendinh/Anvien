@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Status: measurement harness ready; benchmark baseline pending
+Status: complete
 
 Companion files:
 
@@ -56,13 +56,13 @@ Do not reuse old token totals, reconstructed output volumes, file-read counts, c
 
 ## B0 - Baseline Metrics
 
-Status: superseded by measurement-harness implementation; final benchmark baseline pending
+Status: complete
 
 | Metric | Unit | Value |
 |---|---:|---:|
-| Baseline commit | SHA | `b5568094184b92618e2627460c5a2f22b120a497` pre-harness; final pending |
+| Baseline commit | SHA | `6516020c323b54c74583fbaa2caf81dad4475036` |
 | Dirty source files at baseline | files | 0 |
-| Dirty benchmark docs/reports at baseline | files | 3 |
+| Dirty benchmark docs/reports at baseline | files | 0 |
 | CPU logical processors | count | 8 |
 | Physical memory | bytes | 33238466560 |
 | Git version | version | `2.54.0.windows.1` |
@@ -85,126 +85,127 @@ Status: complete
 
 ## B2 - Discovery Cost Summary
 
-Status: pending
+Status: discovery complete; verification pending
 
 | Method | elapsed_seconds | token_measurement_valid | agent_session_tokens | agent_session_token_proxy | unique_files_read | file_bytes_read | search_calls | anvien_calls | candidate_count |
 |---|---:|---|---:|---:|---:|---:|---:|---:|---:|
-| Native mode | pending | pending | pending | pending | pending | pending | pending | 0 | pending |
-| Anvien mode | pending | pending | pending | pending | pending | pending | pending | pending | pending |
+| Native mode | 391 | yes | 856990 | n/a | 10 | 55619 | 39 | 0 | 12 |
+| Anvien mode | 429 | yes | 1524993 | n/a | 11 | 69934 | 11 | 30 | 6 |
 
 ## B3 - Native Mode Token Breakdown
 
-Status: pending
+Status: complete
 
 | Token source | tokens | Notes |
 |---|---:|---|
-| Task prompt | pending | fixed task prompt |
-| Tool-call arguments | pending | native command/tool text |
-| Delivered tool/search results | pending | native command output delivered to agent |
-| Delivered file content | pending | source/doc files read into agent context |
-| Agent response | pending | native conclusion/report text |
-| Retry/error output | pending | failed commands or detours delivered to agent |
-| Total `agent_session_tokens` or proxy | pending | primary native score |
-| Token measurement valid | pending | yes/no |
+| Task prompt | included in runtime total | fixed prompt plus native mode envelope; Codex CLI telemetry does not split this bucket |
+| Tool-call arguments | included in runtime total | 39 completed command executions; bucket not split by runtime telemetry |
+| Delivered tool/search results | included in runtime total | command outputs delivered inside measured Codex CLI session |
+| Delivered file content | included in runtime total | 10 targeted file reads, 55,619 bytes |
+| Agent response | included in runtime total | final native candidate report, 6,347 chars |
+| Retry/error output | included in runtime total | 9 nonzero command exits/no-match searches |
+| Total `agent_session_tokens` or proxy | 856990 | `input_tokens=850171` + `output_tokens=6819` |
+| Token measurement valid | yes | Codex CLI `turn.completed.usage` telemetry |
 
 ## B4 - Anvien Mode Token Breakdown
 
-Status: pending
+Status: complete
 
 | Token source | tokens | Notes |
 |---|---:|---|
-| Task prompt | pending | fixed task prompt |
-| Tool-call arguments | pending | Anvien and follow-up command/tool text |
-| Delivered Anvien tool results | pending | only Anvien output delivered into agent session |
-| Delivered follow-up search results | pending | native search after Anvien guidance |
-| Delivered file content | pending | source/doc files read into agent context |
-| Agent response | pending | Anvien-mode conclusion/report text |
-| Retry/error output | pending | failed commands or detours delivered to agent |
-| Total `agent_session_tokens` or proxy | pending | primary Anvien-mode score |
-| Token measurement valid | pending | yes/no |
+| Task prompt | included in runtime total | fixed prompt plus Anvien mode envelope; Codex CLI telemetry does not split this bucket |
+| Tool-call arguments | included in runtime total | 41 completed total commands, including 30 Anvien commands |
+| Delivered Anvien tool results | included in runtime total | Anvien command output delivered inside measured Codex CLI session |
+| Delivered follow-up search results | included in runtime total | 11 non-Anvien completed commands after graph guidance |
+| Delivered file content | included in runtime total | 11 targeted repo file reads, 69,934 bytes |
+| Agent response | included in runtime total | final Anvien candidate report, 3,558 chars |
+| Retry/error output | included in runtime total | 6 failed/retry commands plus one pre-discovery Codex CLI usage-limit attempt recorded separately in evidence |
+| Total `agent_session_tokens` or proxy | 1524993 | `input_tokens=1519088` + `output_tokens=5905` |
+| Token measurement valid | yes | Codex CLI `turn.completed.usage` telemetry |
 
 ## B5 - Local Tool Output Diagnostics
 
-Status: pending
+Status: complete
 
 These metrics are diagnostic only. They are not token score unless the content was delivered into the agent session and counted in B3/B4.
 
 | Method | diagnostic | unit | value | Counted as token score? |
 |---|---|---:|---:|---|
-| Native mode | local command output volume not delivered to agent | chars/bytes | pending | no |
-| Anvien mode | Anvien local output/graph/cache/index volume not delivered to agent | chars/bytes | pending | no |
+| Native mode | delivered command output observed by Codex CLI session | chars | 1196125 | yes, through runtime telemetry rather than as separate proxy score |
+| Anvien mode | delivered command output observed by Codex CLI session | chars | 2541841 | yes, through runtime telemetry rather than as separate proxy score |
+| Anvien mode | clean-worktree `.anvien/graph.json` local artifact size | bytes | 328064552 | no |
 
 ## B6 - File Read And Command Counts
 
-Status: pending
+Status: discovery complete; verification pending
 
 | Method | unique_files_read | file_bytes_read | source_files_read | docs_read | search_calls | anvien_calls | failed_or_retry_calls |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Native mode | pending | pending | pending | pending | pending | 0 | pending |
-| Anvien mode | pending | pending | pending | pending | pending | pending | pending |
+| Native mode | 10 | 55619 | 10 | 0 | 39 | 0 | 9 |
+| Anvien mode | 11 | 69934 | 11 | 0 | 11 | 30 | 6 |
 | Shared verification | pending | pending | pending | pending | pending | pending | pending |
 
 ## B7 - Candidate Discovery Counts
 
-Status: pending
+Status: discovery complete; verification pending
 
 | Method | candidate_count | symbol_level | file_level | package_or_module_level | route_or_tool_surface | other |
 |---|---:|---:|---:|---:|---:|---:|
-| Native mode | pending | pending | pending | pending | pending | pending |
-| Anvien mode | pending | pending | pending | pending | pending | pending |
-| Union | pending | pending | pending | pending | pending | pending |
+| Native mode | 12 | 8 | 1 | 2 | 0 | 1 |
+| Anvien mode | 6 | 5 | 1 | 0 | 0 | 0 |
+| Union | 18 | 13 | 2 | 2 | 0 | 1 |
 
 ## B8 - Candidate Verification Counts
 
-Status: pending
+Status: complete
 
 | Method source | candidates | confirmed_deadcode | likely_deadcode | uncertain | false_positive |
 |---|---:|---:|---:|---:|---:|
-| Native mode | pending | pending | pending | pending | pending |
-| Anvien mode | pending | pending | pending | pending | pending |
-| Found by both | pending | pending | pending | pending | pending |
-| Native only | pending | pending | pending | pending | pending |
-| Anvien only | pending | pending | pending | pending | pending |
-| Union | pending | pending | pending | pending | pending |
+| Native mode | 12 | 5 | 7 | 0 | 0 |
+| Anvien mode | 6 | 2 | 3 | 0 | 1 |
+| Found by both | 0 | 0 | 0 | 0 | 0 |
+| Native only | 12 | 5 | 7 | 0 | 0 |
+| Anvien only | 6 | 2 | 3 | 0 | 1 |
+| Union | 18 | 7 | 10 | 0 | 1 |
 
 ## B9 - Efficiency Ratios
 
-Status: pending
+Status: complete
 
 | Metric | Formula | Value |
 |---|---|---:|
-| Token delta | `anvien_agent_session_tokens - native_agent_session_tokens` | pending |
-| Token reduction from Anvien | `(native_agent_session_tokens - anvien_agent_session_tokens) / native_agent_session_tokens` | pending |
-| File-read reduction from Anvien | `(native_unique_files - anvien_unique_files) / native_unique_files` | pending |
-| Search-call reduction from Anvien | `(native_search_calls - anvien_search_calls) / native_search_calls` | pending |
-| True-candidate delta | `(anvien_confirmed + anvien_likely) - (native_confirmed + native_likely)` | pending |
-| False-positive delta | `anvien_false_positive - native_false_positive` | pending |
-| Verification burden delta | `anvien_uncertain - native_uncertain` | pending |
+| Token delta | `anvien_agent_session_tokens - native_agent_session_tokens` | 668003 |
+| Token reduction from Anvien | `(native_agent_session_tokens - anvien_agent_session_tokens) / native_agent_session_tokens` | -77.95% |
+| File-read reduction from Anvien | `(native_unique_files - anvien_unique_files) / native_unique_files` | -10.00% |
+| Search-call reduction from Anvien | `(native_search_calls - anvien_search_calls) / native_search_calls` | 71.79% native follow-up search reduction; total Anvien-mode completed commands were 41 vs native 39 |
+| True-candidate delta | `(anvien_confirmed + anvien_likely) - (native_confirmed + native_likely)` | -7 |
+| False-positive delta | `anvien_false_positive - native_false_positive` | 1 |
+| Verification burden delta | `anvien_uncertain - native_uncertain` | 0 |
 
 ## B10 - Final Outcome Matrix
 
-Status: pending
+Status: complete
 
 | Question | Result | Numeric support |
 |---|---|---|
-| Did Anvien mode spend fewer AI-agent tokens? | pending | pending |
-| Did Anvien mode read fewer files? | pending | pending |
-| Did Anvien mode use fewer native search calls? | pending | pending |
-| Did Anvien mode find at least as many confirmed/likely candidates? | pending | pending |
-| Did Anvien mode avoid increasing false positives? | pending | pending |
-| Was token comparison valid? | pending | pending |
-| Overall result | pending | pending |
+| Did Anvien mode spend fewer AI-agent tokens? | no | native 856,990; Anvien 1,524,993; Anvien spent 668,003 more |
+| Did Anvien mode read fewer files? | no | native 10; Anvien 11 |
+| Did Anvien mode use fewer native search calls? | yes for native follow-up searches only; no for total commands | native search/commands 39; Anvien follow-up native commands 11 plus 30 Anvien commands |
+| Did Anvien mode find at least as many confirmed/likely candidates? | no | native 12 confirmed/likely; Anvien 5 confirmed/likely |
+| Did Anvien mode avoid increasing false positives? | no | native 0; Anvien 1 |
+| Was token comparison valid? | yes | both modes used Codex CLI `turn.completed.usage` telemetry |
+| Overall result | native wins this run on token spend, file reads, confirmed/likely candidates, and false positives | Anvien spent 77.95% more tokens and found 7 fewer confirmed/likely candidates |
 
 ## B11 - Shared Verification Token Shape
 
-Status: pending
+Status: not token-scored; excluded from discovery comparison
 
 | Metric | tokens | Notes |
 |---|---:|---|
-| Verification prompt/context | pending | shared across union candidates |
-| Verification tool-call arguments | pending | verification commands/tools |
-| Verification delivered tool/search results | pending | source-backed checks |
-| Verification delivered file content | pending | source/doc files read for proof |
-| Verification agent response | pending | verdict narrative |
-| Verification retry/error output | pending | failed commands or detours |
-| Shared verification total | pending | not counted as either discovery mode cost |
+| Verification prompt/context | n/a | shared verification was performed after both discovery reports closed and was not assigned to either mode |
+| Verification tool-call arguments | n/a | verification commands are recorded in evidence, not as discovery cost |
+| Verification delivered tool/search results | n/a | source-backed checks are recorded in E6 |
+| Verification delivered file content | n/a | source/doc proof is recorded in E6 |
+| Verification agent response | n/a | verdict narrative is recorded in E6/E7 |
+| Verification retry/error output | n/a | no verification blocker; one malformed PowerShell search was rerun with corrected quoting |
+| Shared verification total | n/a | not counted as either discovery mode cost |
