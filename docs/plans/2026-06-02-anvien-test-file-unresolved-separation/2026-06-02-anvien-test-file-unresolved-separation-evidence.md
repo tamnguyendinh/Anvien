@@ -596,4 +596,4 @@ Closure evidence:
 
 Commit:
 
-- Pending closure commit.
+- `a8cbbc4 docs: close test unresolved separation plan`
