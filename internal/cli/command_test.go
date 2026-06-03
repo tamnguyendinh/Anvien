@@ -41,6 +41,51 @@ func executeForTest(t *testing.T, args ...string) (string, string, error) {
 	return out.String(), errOut.String(), err
 }
 
+func firstLineWithPrefix(t *testing.T, text string, prefix string) string {
+	t.Helper()
+	for _, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(line, prefix) {
+			return line
+		}
+	}
+	t.Fatalf("missing line prefix %q:\n%s", prefix, text)
+	return ""
+}
+
+func assertLineKeySet(t *testing.T, line string, want []string) {
+	t.Helper()
+	got := map[string]struct{}{}
+	for _, field := range strings.Fields(line) {
+		index := strings.Index(field, "=")
+		if index <= 0 {
+			continue
+		}
+		got[field[:index]] = struct{}{}
+	}
+	assertStringSet(t, got, want, line)
+}
+
+func assertMapKeySet(t *testing.T, object map[string]any, want []string) {
+	t.Helper()
+	got := map[string]struct{}{}
+	for key := range object {
+		got[key] = struct{}{}
+	}
+	assertStringSet(t, got, want, object)
+}
+
+func assertStringSet(t *testing.T, got map[string]struct{}, want []string, context any) {
+	t.Helper()
+	if len(got) != len(want) {
+		t.Fatalf("key set length = %d, want %d: got=%v context=%v", len(got), len(want), got, context)
+	}
+	for _, key := range want {
+		if _, ok := got[key]; !ok {
+			t.Fatalf("key set missing %q: got=%v context=%v", key, got, context)
+		}
+	}
+}
+
 func TestVersionCommandPrintsVersion(t *testing.T) {
 	out, errOut, err := executeForTest(t, "version")
 	if err != nil {
@@ -1235,11 +1280,22 @@ export function main() {
 		"gaps: unsupported_language=0 unknown=0",
 		"graph: nodes=",
 		"fileProjection: status=built",
+		"unresolvedFiles=",
+		"rawUnresolvedFiles=",
 	} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("analyze output missing %q:\n%s", want, out)
 		}
 	}
+	assertLineKeySet(t, firstLineWithPrefix(t, out, "fileProjection:"), []string{
+		"status",
+		"files",
+		"dependencyEdges",
+		"unresolvedFiles",
+		"rawUnresolvedFiles",
+		"hotspots",
+		"derivedEdges",
+	})
 	if _, err := os.Stat(benchmarkPath); err != nil {
 		t.Fatalf("benchmark JSON missing: %v", err)
 	}
@@ -1281,6 +1337,8 @@ export function main() {
 			Status           string                    `json:"status"`
 			Files            int                       `json:"files"`
 			DependencyEdges  int                       `json:"dependencyEdges"`
+			UnresolvedFiles  int                       `json:"unresolvedFiles"`
+			RawUnresolved    int                       `json:"rawUnresolvedFiles"`
 			Hotspots         []filecontext.FileSummary `json:"hotspots"`
 			DerivedEdgesNote string                    `json:"derivedEdgesNote"`
 		} `json:"fileProjection"`
@@ -1302,6 +1360,20 @@ export function main() {
 		jsonPayload.FileProjection.DerivedEdgesNote == "" {
 		t.Fatalf("analyze --json file projection missing: %#v", jsonPayload.FileProjection)
 	}
+	var jsonRoot map[string]any
+	if err := json.Unmarshal([]byte(jsonOut), &jsonRoot); err != nil {
+		t.Fatalf("analyze --json output map parse failed: %v\n%s", err, jsonOut)
+	}
+	fileProjection, _ := jsonRoot["fileProjection"].(map[string]any)
+	assertMapKeySet(t, fileProjection, []string{
+		"status",
+		"files",
+		"dependencyEdges",
+		"unresolvedFiles",
+		"rawUnresolvedFiles",
+		"hotspots",
+		"derivedEdgesNote",
+	})
 }
 
 func TestAnalyzeNameCollisionRequiresExplicitDuplicateBypass(t *testing.T) {

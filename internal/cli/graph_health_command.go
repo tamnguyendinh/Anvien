@@ -70,15 +70,14 @@ type graphHealthFilesResult struct {
 }
 
 type graphHealthFileLayer struct {
-	TotalFiles                    int    `json:"totalFiles"`
-	UnresolvedFiles               int    `json:"unresolvedFiles"`
-	RawUnresolvedFiles            int    `json:"rawUnresolvedFiles"`
-	DefaultVisibleUnresolvedFiles int    `json:"defaultVisibleUnresolvedFiles"`
-	GeneratedFiles                int    `json:"generatedFiles"`
-	HighFanInFiles                int    `json:"highFanInFiles"`
-	HighFanOutFiles               int    `json:"highFanOutFiles"`
-	HotspotSort                   string `json:"hotspotSort"`
-	DerivedEdgesNote              string `json:"derivedEdgesNote"`
+	TotalFiles         int    `json:"totalFiles"`
+	UnresolvedFiles    int    `json:"unresolvedFiles"`
+	RawUnresolvedFiles int    `json:"rawUnresolvedFiles"`
+	GeneratedFiles     int    `json:"generatedFiles"`
+	HighFanInFiles     int    `json:"highFanInFiles"`
+	HighFanOutFiles    int    `json:"highFanOutFiles"`
+	HotspotSort        string `json:"hotspotSort"`
+	DerivedEdgesNote   string `json:"derivedEdgesNote"`
 }
 
 func newGraphHealthCommand() *cobra.Command {
@@ -498,7 +497,6 @@ func graphHealthFileLayerSummary(g *graph.Graph) graphHealthFileLayer {
 		}
 		if file.DefaultVisibleUnresolvedSourceSiteCount > 0 {
 			summary.UnresolvedFiles++
-			summary.DefaultVisibleUnresolvedFiles++
 		}
 		if file.Kind == "generated" {
 			summary.GeneratedFiles++
@@ -522,11 +520,10 @@ func graphHealthTopFileHotspots(g *graph.Graph, limit int) []filecontext.FileSum
 
 func graphHealthFileLayerLines(summary graphHealthFileLayer, hotspots []filecontext.FileSummary) []string {
 	lines := []string{
-		fmt.Sprintf("graphHealth.fileLayer files=%d unresolvedFiles=%d rawUnresolvedFiles=%d defaultVisibleUnresolvedFiles=%d generatedFiles=%d highFanInFiles=%d highFanOutFiles=%d derivedEdges=%q",
+		fmt.Sprintf("graphHealth.fileLayer files=%d unresolvedFiles=%d rawUnresolvedFiles=%d generatedFiles=%d highFanInFiles=%d highFanOutFiles=%d derivedEdges=%q",
 			summary.TotalFiles,
 			summary.UnresolvedFiles,
 			summary.RawUnresolvedFiles,
-			summary.DefaultVisibleUnresolvedFiles,
 			summary.GeneratedFiles,
 			summary.HighFanInFiles,
 			summary.HighFanOutFiles,

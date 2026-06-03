@@ -267,22 +267,21 @@ func (s Server) contextResource(repoName string) (string, error) {
 		list := builder.BuildFileList(filecontext.FileListOptions{Sort: "unresolved", Limit: 3})
 		all := builder.BuildFileList(filecontext.FileListOptions{Sort: "path", Limit: 0})
 		rawUnresolvedFiles := 0
-		defaultVisibleUnresolvedFiles := 0
+		unresolvedFiles := 0
 		for _, file := range all.Files {
 			if file.RawUnresolvedSourceSiteCount > 0 {
 				rawUnresolvedFiles++
 			}
 			if file.DefaultVisibleUnresolvedSourceSiteCount > 0 {
-				defaultVisibleUnresolvedFiles++
+				unresolvedFiles++
 			}
 		}
 		lines = append(lines,
 			"",
 			"file_projection:",
 			fmt.Sprintf("  files: %d", list.Total),
-			fmt.Sprintf("  unresolved_files: %d", defaultVisibleUnresolvedFiles),
+			fmt.Sprintf("  unresolved_files: %d", unresolvedFiles),
 			fmt.Sprintf("  raw_unresolved_files: %d", rawUnresolvedFiles),
-			fmt.Sprintf("  default_visible_unresolved_files: %d", defaultVisibleUnresolvedFiles),
 			fmt.Sprintf("  derived_edges: %q", filecontext.DerivedFileEdgesNote),
 			"  top_hotspots:",
 		)

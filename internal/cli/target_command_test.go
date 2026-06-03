@@ -154,6 +154,21 @@ func TestQueryDetectChangesAndGraphHealthChildViews(t *testing.T) {
 	if !strings.Contains(out, `"fileLayer"`) || !strings.Contains(out, `"fileHotspots"`) {
 		t.Fatalf("graph-health summary missing file-layer fields:\n%s", out)
 	}
+	var graphHealthSummary map[string]any
+	if err := json.Unmarshal([]byte(out), &graphHealthSummary); err != nil {
+		t.Fatalf("graph-health summary output is not JSON: %v\n%s", err, out)
+	}
+	fileLayerSummary, _ := graphHealthSummary["fileLayer"].(map[string]any)
+	assertMapKeySet(t, fileLayerSummary, []string{
+		"totalFiles",
+		"unresolvedFiles",
+		"rawUnresolvedFiles",
+		"generatedFiles",
+		"highFanInFiles",
+		"highFanOutFiles",
+		"hotspotSort",
+		"derivedEdgesNote",
+	})
 
 	appPath := filepath.Join(repoPath, "src", "app.go")
 	raw, err := os.ReadFile(appPath)

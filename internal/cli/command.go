@@ -309,14 +309,13 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 }
 
 type analyzeFileProjectionSummary struct {
-	Status                        string                    `json:"status"`
-	Files                         int                       `json:"files"`
-	DependencyEdges               int                       `json:"dependencyEdges"`
-	UnresolvedFiles               int                       `json:"unresolvedFiles"`
-	RawUnresolvedFiles            int                       `json:"rawUnresolvedFiles"`
-	DefaultVisibleUnresolvedFiles int                       `json:"defaultVisibleUnresolvedFiles"`
-	Hotspots                      []filecontext.FileSummary `json:"hotspots"`
-	DerivedEdgesNote              string                    `json:"derivedEdgesNote"`
+	Status             string                    `json:"status"`
+	Files              int                       `json:"files"`
+	DependencyEdges    int                       `json:"dependencyEdges"`
+	UnresolvedFiles    int                       `json:"unresolvedFiles"`
+	RawUnresolvedFiles int                       `json:"rawUnresolvedFiles"`
+	Hotspots           []filecontext.FileSummary `json:"hotspots"`
+	DerivedEdgesNote   string                    `json:"derivedEdgesNote"`
 }
 
 func buildAnalyzeFileProjection(g *graph.Graph) analyzeFileProjectionSummary {
@@ -324,37 +323,35 @@ func buildAnalyzeFileProjection(g *graph.Graph) analyzeFileProjectionSummary {
 	list := builder.BuildFileList(filecontext.FileListOptions{Sort: "path", Limit: 0})
 	hotspots := builder.BuildFileList(filecontext.FileListOptions{Sort: "unresolved", Limit: 5})
 	rawUnresolvedFiles := 0
-	defaultVisibleUnresolvedFiles := 0
+	unresolvedFiles := 0
 	dependencyEdges := 0
 	for _, file := range list.Files {
 		if file.RawUnresolvedSourceSiteCount > 0 {
 			rawUnresolvedFiles++
 		}
 		if file.DefaultVisibleUnresolvedSourceSiteCount > 0 {
-			defaultVisibleUnresolvedFiles++
+			unresolvedFiles++
 		}
 		dependencyEdges += file.OutboundRefCount
 	}
 	return analyzeFileProjectionSummary{
-		Status:                        "built",
-		Files:                         list.Total,
-		DependencyEdges:               dependencyEdges,
-		UnresolvedFiles:               defaultVisibleUnresolvedFiles,
-		RawUnresolvedFiles:            rawUnresolvedFiles,
-		DefaultVisibleUnresolvedFiles: defaultVisibleUnresolvedFiles,
-		Hotspots:                      hotspots.Files,
-		DerivedEdgesNote:              filecontext.DerivedFileEdgesNote,
+		Status:             "built",
+		Files:              list.Total,
+		DependencyEdges:    dependencyEdges,
+		UnresolvedFiles:    unresolvedFiles,
+		RawUnresolvedFiles: rawUnresolvedFiles,
+		Hotspots:           hotspots.Files,
+		DerivedEdgesNote:   filecontext.DerivedFileEdgesNote,
 	}
 }
 
 func analyzeFileProjectionLines(summary analyzeFileProjectionSummary) []string {
 	lines := []string{
-		fmt.Sprintf("fileProjection: status=built files=%d dependencyEdges=%d unresolvedFiles=%d rawUnresolvedFiles=%d defaultVisibleUnresolvedFiles=%d hotspots=%d derivedEdges=%q",
+		fmt.Sprintf("fileProjection: status=built files=%d dependencyEdges=%d unresolvedFiles=%d rawUnresolvedFiles=%d hotspots=%d derivedEdges=%q",
 			summary.Files,
 			summary.DependencyEdges,
 			summary.UnresolvedFiles,
 			summary.RawUnresolvedFiles,
-			summary.DefaultVisibleUnresolvedFiles,
 			len(summary.Hotspots),
 			summary.DerivedEdgesNote,
 		),

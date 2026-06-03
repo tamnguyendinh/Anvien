@@ -1628,6 +1628,7 @@ links: []
 func TestServeReadsRepoContextResource(t *testing.T) {
 	store := repo.NewStore(t.TempDir())
 	repoPath := t.TempDir()
+	writeMCPResourceGraph(t, repoPath)
 	files, nodes, processes := 7, 11, 13
 	meta := repo.Meta{
 		RepoPath:   repoPath,
@@ -1689,6 +1690,11 @@ func TestServeReadsRepoContextResource(t *testing.T) {
 	}
 	text := content["text"].(string)
 	for _, want := range []string{"project: fixture repo", "files: 7", "symbols: 11", "processes: 13", "commit: abcdef1", "list_repos"} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("context resource missing %q:\n%s", want, text)
+		}
+	}
+	for _, want := range []string{"file_projection:", "unresolved_files:", "raw_unresolved_files:"} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("context resource missing %q:\n%s", want, text)
 		}

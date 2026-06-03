@@ -34,6 +34,21 @@ func TestGraphHealthCommandSummaryReportComponentsAndExplain(t *testing.T) {
 	if summary.Summary.NodeCount != 5 || summary.Summary.CountedRelationshipCount != 3 || summary.Summary.ComponentCount != 3 {
 		t.Fatalf("unexpected summary counts: %#v", summary.Summary)
 	}
+	var summaryRoot map[string]any
+	if err := json.Unmarshal([]byte(out), &summaryRoot); err != nil {
+		t.Fatalf("summary output map parse failed: %v\n%s", err, out)
+	}
+	fileLayer, _ := summaryRoot["fileLayer"].(map[string]any)
+	assertMapKeySet(t, fileLayer, []string{
+		"totalFiles",
+		"unresolvedFiles",
+		"rawUnresolvedFiles",
+		"generatedFiles",
+		"highFanInFiles",
+		"highFanOutFiles",
+		"hotspotSort",
+		"derivedEdgesNote",
+	})
 
 	out, errOut, err = executeForTest(t, "graph-health", "summary", "--repo", "fixture")
 	if err != nil {
@@ -42,6 +57,15 @@ func TestGraphHealthCommandSummaryReportComponentsAndExplain(t *testing.T) {
 	if !strings.Contains(out, "graphHealth.repo=") || !strings.Contains(out, "countedRelationships=3") {
 		t.Fatalf("summary table missing expected fields:\n%s", out)
 	}
+	assertLineKeySet(t, firstLineWithPrefix(t, out, "graphHealth.fileLayer"), []string{
+		"files",
+		"unresolvedFiles",
+		"rawUnresolvedFiles",
+		"generatedFiles",
+		"highFanInFiles",
+		"highFanOutFiles",
+		"derivedEdges",
+	})
 
 	out, errOut, err = executeForTest(t, "graph-health", "report", "--repo", "fixture", "--limit", "1", "--json")
 	if err != nil {
