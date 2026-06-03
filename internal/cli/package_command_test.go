@@ -117,7 +117,7 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 	writePackageTestFile(t, parent, "cmd/anvien/main.go", "package main\n")
 	writePackageTestFile(t, parent, "cmd/anvien/main_test.go", "package main\n")
 	writePackageTestFile(t, parent, "internal/aicontext/aicontext.go", "package aicontext\n")
-	writePackageTestFile(t, parent, "internal/aicontext/skills/anvien-planner.md", "# Anvien Planner\n")
+	writePackageTestFile(t, parent, "internal/aicontext/skills/anvien-planner/SKILL.md", "# Anvien Planner\n")
 	writePackageTestFile(t, parent, "internal/cli/command.go", "package cli\n")
 	writePackageTestFile(t, parent, "internal/cli/command_test.go", "package cli\n")
 	writePackageTestFile(t, parent, "scripts/ensure-ladybug-native.ps1", "Write-Output native\n")
@@ -135,7 +135,7 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 		"go.sum",
 		"cmd/anvien/main.go",
 		"internal/aicontext/aicontext.go",
-		"internal/aicontext/skills/anvien-planner.md",
+		"internal/aicontext/skills/anvien-planner/SKILL.md",
 		"internal/cli/command.go",
 		"scripts/ensure-ladybug-native.ps1",
 		"scripts/ensure-ladybug-native.sh",

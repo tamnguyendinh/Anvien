@@ -434,7 +434,7 @@ func (s Server) setupResource() (string, error) {
 			"",
 			"## AI Context And Skills",
 			"",
-			"- `anvien analyze --force` generates managed `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` from embedded `internal/aicontext/skills/*.md` source.",
+			"- `anvien analyze --force` generates managed `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` from embedded `internal/aicontext/skills/<skill>/SKILL.md` source.",
 			"- `anvien setup` installs the same embedded base skill set into supported editor skill directories; package-root `skills/` is not a source of truth.",
 			"- Update embedded skill Markdown and generator code, then regenerate; do not edit generated root context or `.claude/skills/anvien/**` as source.",
 			"",

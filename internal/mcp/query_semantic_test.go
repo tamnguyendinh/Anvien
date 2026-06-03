@@ -163,9 +163,9 @@ func TestQueryToolRanksAIContextOwnersAndExplainsLanes(t *testing.T) {
 		semantic.FunctionalAreaProperty:       string(semantic.FunctionalAreaCLI),
 		semantic.FunctionalAreaSourceProperty: "path_rule",
 	}})
-	g.AddNode(graph.Node{ID: "File:internal/aicontext/skills/anvien-planner.md", Label: scopeir.NodeFile, Properties: graph.NodeProperties{
-		"name":                                "anvien-planner.md",
-		"filePath":                            "internal/aicontext/skills/anvien-planner.md",
+	g.AddNode(graph.Node{ID: "File:internal/aicontext/skills/anvien-planner/SKILL.md", Label: scopeir.NodeFile, Properties: graph.NodeProperties{
+		"name":                                "SKILL.md",
+		"filePath":                            "internal/aicontext/skills/anvien-planner/SKILL.md",
 		semantic.AppLayerProperty:             string(semantic.AppLayerBackend),
 		semantic.AppLayerSourceProperty:       "path_rule",
 		semantic.FunctionalAreaProperty:       string(semantic.FunctionalAreaCLI),

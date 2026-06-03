@@ -18,7 +18,10 @@ const (
 
 var managedSectionPattern = regexp.MustCompile(`(?is)<!--\s*[a-z0-9-]+:start\s*-->.*?#\s+[^\n]*Code Intelligence.*?<!--\s*[a-z0-9-]+:end\s*-->`)
 
-//go:embed skills/*.md
+//go:embed skills/anvien-api-surface/SKILL.md
+//go:embed skills/anvien-debugging/SKILL.md
+//go:embed skills/anvien-planner/SKILL.md
+//go:embed skills/anvien-refactoring/SKILL.md
 var baseSkillFiles embed.FS
 
 type Options struct {
@@ -415,7 +418,7 @@ func installBaseSkills(repoPath string) ([]string, error) {
 }
 
 func baseSkillContent(skill baseSkill) (string, error) {
-	content, err := baseSkillFiles.ReadFile("skills/" + skill.Name + ".md")
+	content, err := baseSkillFiles.ReadFile("skills/" + skill.Name + "/SKILL.md")
 	if err != nil {
 		return "", err
 	}

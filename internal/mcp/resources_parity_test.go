@@ -113,7 +113,7 @@ func TestReadResourceTextStaticReposAndSetup(t *testing.T) {
 	if mimeType != "text/markdown" {
 		t.Fatalf("setup mimeType = %q, want text/markdown", mimeType)
 	}
-	for _, want := range []string{"Anvien MCP - my project", "50 symbols, 70 relationships, 5 execution flows", "anvien://repo/my%20project/context", "## CLI Equivalents", "anvien api route-map [route] --repo <repo>", "anvien rename <symbol> <newName> --repo <repo>", "## MCP Prompts", "`detect_impact`", "`generate_map`", "MCP prompts are templates for agents, not CLI commands", "## AI Context And Skills", "internal/aicontext/skills/*.md", "package-root `skills/` is not a source of truth"} {
+	for _, want := range []string{"Anvien MCP - my project", "50 symbols, 70 relationships, 5 execution flows", "anvien://repo/my%20project/context", "## CLI Equivalents", "anvien api route-map [route] --repo <repo>", "anvien rename <symbol> <newName> --repo <repo>", "## MCP Prompts", "`detect_impact`", "`generate_map`", "MCP prompts are templates for agents, not CLI commands", "## AI Context And Skills", "internal/aicontext/skills/<skill>/SKILL.md", "package-root `skills/` is not a source of truth"} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("setup resource missing %q:\n%s", want, text)
 		}
