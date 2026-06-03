@@ -20,9 +20,7 @@ const (
 	skillManifestOwner    = "anvien"
 )
 
-//go:embed skills
-//go:embed skills/*/.env.example
-//go:embed skills/*/*/.env.example
+//go:embed all:skills
 var skillSourceFS embed.FS
 
 type SkillPackage struct {
@@ -159,9 +157,6 @@ func discoverSkillPackages(source fs.FS) ([]SkillPackage, error) {
 			continue
 		}
 		name := entry.Name()
-		if shouldSkipSkillPackagePath(name) {
-			continue
-		}
 		pkg, err := readSkillPackage(source, name)
 		if err != nil {
 			return nil, err
@@ -191,15 +186,9 @@ func readSkillPackage(source fs.FS, name string) (SkillPackage, error) {
 		}
 		rel := strings.TrimPrefix(filePath, sourceRoot+"/")
 		if entry.IsDir() {
-			if shouldSkipSkillPackagePath(entry.Name()) {
-				return fs.SkipDir
-			}
 			return nil
 		}
 		if !entry.Type().IsRegular() {
-			return nil
-		}
-		if shouldSkipSkillPackagePath(entry.Name()) {
 			return nil
 		}
 		raw, err := fs.ReadFile(source, filePath)
@@ -693,15 +682,6 @@ func cleanFrontmatterValue(value string) string {
 	value = strings.TrimSpace(value)
 	value = strings.Trim(value, `"'`)
 	return strings.TrimSpace(value)
-}
-
-func shouldSkipSkillPackagePath(name string) bool {
-	switch name {
-	case ".git", ".hg", ".svn", ".pytest_cache", "__pycache__", "node_modules", "dist", "build", "coverage", ".next":
-		return true
-	default:
-		return false
-	}
 }
 
 func skillGuideEntries(pkg SkillPackage) string {

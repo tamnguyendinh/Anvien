@@ -344,11 +344,11 @@ skill packages: discovered=35 installed=3 updated=1 skipped=31 stale=0 preserved
   - Implementation Gate: bootstrap must prefer preserve/report over overwrite when ownership is uncertain.
   - Acceptance: legacy Anvien-installed skills become manifest-owned, exact matches are adopted without rewrites, and unknown same-path targets are preserved with a collision report.
 
-- [x] [P3-A] Sync full skill package payload with artifact policy.
-  - Goal: copy each package root's required `SKILL.md`, scripts, references, templates, assets, licenses, and dependency manifests without copying obvious generated artifacts.
-  - Work Steps: define payload traversal; include source files under each top-level package root; exclude known generated/cache artifacts such as `.coverage`, `__pycache__`, `.pytest_cache`, `node_modules`, `dist`, and `build`; test with `ui-styling` and the multi-entry `document-skills` package scripts/references and artifact exclusions.
+- [x] [P3-A] Sync full skill package payload.
+  - Goal: copy every file under each package root, including `SKILL.md`, scripts, references, templates, assets, licenses, dependency manifests, dotfiles, and package-local artifacts.
+  - Work Steps: define payload traversal; include every source file under each top-level package root; do not classify or exclude package children by name; test with `ui-styling` and the multi-entry `document-skills` package scripts/references/dotfiles.
   - Implementation Gate: script files are copied but never executed during analyze/setup.
-  - Acceptance: installed package payload includes expected script/reference/template files and excludes known generated artifacts.
+  - Acceptance: installed package payload includes expected script/reference/template/dotfile files and manifest file counts match the copied package payload.
 
 - [x] [P3-B] Update generated AI-context guidance.
   - Goal: teach agents where recursive skill packages are installed and how to resolve script/reference paths without listing every skill inline.

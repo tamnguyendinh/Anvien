@@ -19,7 +19,7 @@ func expectedSkillPackageIDs(t *testing.T) []string {
 	}
 	ids := make([]string, 0, len(entries))
 	for _, entry := range entries {
-		if entry.IsDir() && !shouldSkipSkillPackagePath(entry.Name()) {
+		if entry.IsDir() {
 			ids = append(ids, entry.Name())
 		}
 	}
@@ -92,6 +92,9 @@ func TestSkillPackageCatalogDiscoversTopLevelPackagesAndNestedEntries(t *testing
 	uiStyling := findSkillPackage(t, packages, "ui-styling")
 	if !packageHasFile(uiStyling, "scripts/shadcn_add.py") {
 		t.Fatalf("ui-styling package missing script payload")
+	}
+	if !packageHasFile(uiStyling, "scripts/.coverage") {
+		t.Fatalf("ui-styling package should include dotfile payload")
 	}
 	if !strings.HasPrefix(uiStyling.Hash, "sha256:") {
 		t.Fatalf("ui-styling package hash missing sha256 prefix: %s", uiStyling.Hash)
@@ -237,6 +240,7 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 	for _, want := range []string{
 		filepath.Join(dir, ".claude", "skills", "anvien", "debugging", "root-cause-tracing", "find-polluter.sh"),
 		filepath.Join(dir, ".claude", "skills", "anvien", "ui-styling", "scripts", "shadcn_add.py"),
+		filepath.Join(dir, ".claude", "skills", "anvien", "ui-styling", "scripts", ".coverage"),
 		filepath.Join(dir, ".claude", "skills", "anvien", "ui-styling", "canvas-fonts", "ArsenalSC-Regular.ttf"),
 	} {
 		if info, err := os.Stat(want); err != nil || info.IsDir() {

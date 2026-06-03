@@ -145,8 +145,8 @@ Source: package catalog and installer tests after implementation.
 | P2-B | Rejected unmanaged same-name collisions | 0 | 1 | 1 | count | Test fixture rejects unmanifested `ui-styling` collision. |
 | P2-C | Adopted legacy Anvien package | 0 | 1 | 1 | count | Test fixture adopts old `anvien-planner` output by frontmatter name. |
 | P2-C | Stale managed package entries marked | 0 | 1 | 1 | count | Test fixture marks `old-managed` stale without deleting payload. |
-| P3-A | Installed package payload files | 4 old `SKILL.md` files | 597 | 597 | files | Full source payload minus excluded `.coverage` artifacts is copied, including scripts/assets. |
-| P3-A | Installed package payload bytes | 13854 | 10778635 | 10778635 | bytes | Latest excludes ten `.coverage` artifacts from package payload. |
+| P3-A | Installed package payload files | 4 old `SKILL.md` files | 607 | 607 | files | Full source package payload is copied, including dotfiles/scripts/assets. |
+| P3-A | Installed package payload bytes | 13854 | 11311115 | 11311115 | bytes | Full source package payload is hashed/copied without child-name exclusions. |
 | P3-A | Installed package script files | 0 | 150 | 150 | files | Scripts are copied but not executed. |
 | P4-A | Setup/analyze package report counters | 1 count only | 8 counters | 8 counters | fields | `discovered`, `installed`, `updated`, `skipped`, `adopted`, `stale`, `preserved`, `collisions`. |
 

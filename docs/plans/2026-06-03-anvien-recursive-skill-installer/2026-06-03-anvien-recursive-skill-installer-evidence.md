@@ -304,11 +304,12 @@ ui-styling/canvas-fonts/ArsenalSC-Regular.ttf
 
 The installer copies scripts/assets as files only; analyze/setup do not execute skill scripts.
 
-Generated/cache artifacts named `.coverage` are excluded from package payload and were not staged for this implementation commit. Final measured payload after that exclusion:
+Package payload is copied as a whole folder. Dotfiles and package-local artifacts are included and hashed like any other package file; the installer does not classify package children by name.
 
 ```text
-payloadFiles=597
-payloadBytes=10778635
+payloadFiles=607
+payloadBytes=11311115
+dotfileCoverageArtifacts=10
 ```
 
 ### Validation Evidence
@@ -436,6 +437,58 @@ new internal/aicontext/skills/** package payload files
 ```
 
 This matches the intended blast radius: generated AI-context output, setup skill installation, and the newly added package payload tree. The critical risk level is expected because this slice intentionally stages hundreds of skill payload files, including scripts and references, and the analyzer reports unresolved sites inside those copied payloads.
+
+## E2 - Whole Package Payload Correction
+
+Status: Complete
+
+The package copy rule was corrected after review: a skill package is the whole top-level folder under `internal/aicontext/skills/`, and Anvien must not classify or exclude any package child path.
+
+Implementation facts:
+
+```text
+source package boundary: internal/aicontext/skills/<package>/
+embedded source: //go:embed all:skills
+package payload: every regular file under the package root
+package hash input: sorted package-relative file paths and file hashes
+generated target: .claude/skills/anvien/<package>/
+```
+
+Validation added:
+
+```text
+ui-styling/scripts/.coverage is cataloged as package payload
+ui-styling/scripts/.coverage is installed into .claude/skills/anvien/ui-styling/scripts/.coverage
+manifest file counts include dotfile payloads
+```
+
+Measured source payload after including all package files:
+
+```text
+payloadFiles=607
+payloadBytes=11311115
+dotfileCoverageArtifacts=10
+scriptFiles=150
+```
+
+Commands:
+
+```powershell
+.\anvien-launcher\build.ps1
+go test ./internal/aicontext
+go test ./internal/aicontext ./internal/cli ./internal/mcp ./internal/gitignore ./internal/contracts
+anvien analyze --force
+anvien detect-changes --repo Anvien --scope all
+```
+
+Results:
+
+```text
+full build: pass
+focused tests: pass
+analyze: files=1353 parsed_code=703 failed=0 nodes=84166 relationships=122890 dependencyEdges=16727 unresolved=449 hotspots=5
+detect-changes: changed_files=8 changed_count=12 affected_files=4 affected_count=0 risk_level=low
+```
 
 Commit:
 
