@@ -1,8 +1,8 @@
-# Anvien File Role Classification Gap Benchmark Ledger
+# Anvien File Group Classification Benchmark Ledger
 
 Date: 2026-06-03
 
-Status: Complete
+Status: Reopened - corrected file group targets defined
 
 Companion files:
 
@@ -15,7 +15,7 @@ Companion files:
 2. Put command interpretation in the evidence ledger.
 3. Preserve current, target, and delta where useful.
 4. Track analyze inventory counts after every implementation slice.
-5. Track file-role coverage counts after every implementation slice.
+5. Track file-role and file-group coverage counts after every implementation slice.
 6. Build/test pass/fail belongs in the evidence ledger unless timing/count/size is the measured target.
 
 ## B0 - Analyze And File Projection Baseline
@@ -29,13 +29,13 @@ Source evidence: E0.
 | Files scanned | files | 821 | 826 | record |
 | Parsed code files | files | 601 | 603 | no unintended decrease |
 | Failed files | files | 0 | 0 | 0 |
-| Graph nodes | nodes | 60974 | 61130 | record |
-| Graph relationships | relationships | 96624 | 96891 | record |
+| Graph nodes | nodes | 60974 | 61132 | record |
+| Graph relationships | relationships | 96624 | 96893 | record |
 | File projection files | files | 821 | 826 | record |
 | File projection dependency edges | edges | 15965 | 16039 | record |
 | Default-visible unresolved files | files | 336 | 337 | preserve unless separate behavior changes |
 | Raw unresolved files | files | 353 | 354 | preserve unless separate behavior changes |
-| Raw-only unresolved files | files | 17 | 17 | 17 recognized, 0 unknown role |
+| Raw-only unresolved files | files | 17 | 17 | 17 sample files recognized, 0 unknown role, 17 sample files assigned file group after corrected implementation |
 
 ## B1 - Raw-Only Source-Site Baseline
 
@@ -89,9 +89,9 @@ Status: recorded
 | `internal/lbugnative/runner.go` | 1 | no first-class file role | `adapter` |
 | `internal/lbugnative/runner_default.go` | 1 | no first-class file role | `fallback_adapter` |
 
-## B4 - Role Coverage Target
+## B4 - Role Coverage Foundation
 
-Status: met
+Status: met as taxonomy foundation, not file-group closure
 
 Source evidence: E8.
 
@@ -106,7 +106,7 @@ Source evidence: E8.
 
 ## B5 - Web UI Consumer Coverage Target
 
-Status: met
+Status: met for role display, pending group display
 
 Source evidence: E5.
 
@@ -120,3 +120,36 @@ Source evidence: E5.
 | Web tests for missing/unknown role behavior | test cases | 0 | 2 | at least 1 |
 | Web/e2e test coverage when visible UI changes | e2e test record | 0 | 1 | at least 1 |
 | Browser or screenshot validation for visible UI changes | validation record | 0 | 1 | supplemental |
+
+## B6 - Backend Support/Model/Helper File Group Target
+
+Status: target defined
+
+Source evidence: E10.
+
+| Metric | Unit | Baseline before corrected group implementation | Latest before corrected group implementation | Target after corrected implementation |
+|---|---:|---:|---:|---:|
+| `backend_support_model_helper` full group files | files | 0 | 0 | measured from backend identity rules |
+| Anchor sample files assigned `backend_support_model_helper` | files | 0 | 0 | 17 |
+| Anchor sample files missing `backend_support_model_helper` | files | 17 | 17 | 0 |
+| Anchor sample default unresolved source sites | source sites | 0 | 0 | 0 |
+| Anchor sample raw unresolved source sites | source sites | 376 | 376 | 376 |
+| Analyze direct group line coverage | output line | 0 | 0 | 1 |
+| CLI/API group summary coverage | covered surface | 0 | 0 | at least 1 |
+| Web group label coverage | covered surface | 0 | 0 | at least 2 |
+| Web path-pattern group inference sites | sites | 0 | 0 | 0 |
+
+Anchor sample role breakdown target:
+
+| File role | Unit | Baseline assigned to group | Latest assigned to group | Target assigned to group |
+|---|---:|---:|---:|---:|
+| `analyzer_helper` | files | 0 | 0 | 2 |
+| `helper` | files | 0 | 0 | 3 |
+| `contract_model` | files | 0 | 0 | 1 |
+| `storage_helper` | files | 0 | 0 | 1 |
+| `test_helper` | files | 0 | 0 | 1 |
+| `config` | files | 0 | 0 | 2 |
+| `parser_model` | files | 0 | 0 | 3 |
+| `runtime_model` | files | 0 | 0 | 2 |
+| `adapter` | files | 0 | 0 | 1 |
+| `fallback_adapter` | files | 0 | 0 | 1 |

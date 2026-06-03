@@ -1,8 +1,8 @@
-# Anvien File Role Classification Gap Evidence Ledger
+# Anvien File Group Classification Evidence Ledger
 
 Date: 2026-06-03
 
-Status: Complete
+Status: Reopened - corrected file group implementation pending
 
 Companion files:
 
@@ -14,7 +14,7 @@ Companion files:
 1. Record Anvien commands used to discover the owner and baseline.
 2. Keep quantitative benchmark tables in the benchmark ledger.
 3. For code changes, record impact/blast-radius before edits.
-4. Preserve the distinction between raw unresolved, default-visible unresolved, and file-role classification.
+4. Preserve the distinction between raw unresolved, default-visible unresolved, file-role classification, and first-class file-group classification.
 5. Record failures and their handling.
 6. Record `anvien detect-changes --repo Anvien --scope all` before each implementation commit.
 
@@ -429,11 +429,11 @@ Commit:
 
 - `444dcdd feat: add file role classification`
 
-## E9 - Commit Closure
+## E9 - Legacy File Role Commit Closure
 
 Date: 2026-06-03
 
-Status: completed
+Status: superseded by corrected file group plan
 
 Scope:
 
@@ -446,8 +446,88 @@ Source / command evidence:
 |---|---|
 | Implementation commit | `444dcdd feat: add file role classification` |
 | Detect changes | Recorded in E8 before the implementation commit. |
-| Remaining plan work | None. |
+| Remaining plan work | The `fileRole` implementation is useful taxonomy foundation, but it does not close the corrected `fileGroup` requirement. The plan was reopened to create and surface `fileGroup=backend_support_model_helper`. |
 
 Commit:
 
 - `444dcdd feat: add file role classification`
+
+## E10 - Corrected File Group Plan Reopen
+
+Date: 2026-06-03
+
+Status: completed
+
+Scope:
+
+- Reopen the plan around first-class file grouping, not only file role labeling.
+- Confirm planner compliance before product-code implementation starts.
+- Re-record current graph inventory and the 17-file anchor sample.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| Planner skill read | `.claude/skills/anvien/anvien-planner/SKILL.md` read. The skill requires a standard three-file plan set and checklist items that are complete mini-plans. |
+| Plan file structure | Pass. The plan has metadata, rules, goal, problem, scope, requirements, invariants, technical direction, definition of done, phase checklist, and risk notes. |
+| Checklist mini-plan audit | Pass. 11 checklist items (`G0-A` through `G10-A`) include Goal, Work Steps, Implementation Gate, and Acceptance. |
+| `.\anvien\bin\anvien.exe analyze --force` | Pass. `files.scanned=826`, `parsed_code=603`, `failed=0`, `nodes=61132`, `relationships=96893`, `dependencyEdges=16039`, `unresolvedFiles=337`, `rawUnresolvedFiles=354`. |
+| `.\anvien\bin\anvien.exe file-hotspots --repo Anvien --json --limit 0 --sort path` | Used to record current sample axes after analyze refresh. |
+
+Corrected problem statement:
+
+| Item | Evidence |
+|---|---|
+| Product issue | Files that Anvien can identify as backend support/model/helper files are still not placed into a concrete file group users can read directly. |
+| Prior implementation status | `444dcdd feat: add file role classification` added `fileRole`; it did not create `fileGroup`. |
+| Correct target field | `fileGroup` |
+| Correct target key | `backend_support_model_helper` |
+| Correct target label | `Backend support/model/helper files` |
+| Role relationship | `fileRole` remains a subcategory inside the file group. |
+| Count rule | The 17 files are the required current anchor sample. The full group total must be measured from backend identity rules after implementation and must not be inferred from `rawUnresolvedFiles - unresolvedFiles`. |
+
+Current 17-file anchor sample:
+
+| File | Kind | App layer | Functional area | File role | Default unresolved | Raw unresolved |
+|---|---|---|---|---|---:|---:|
+| `internal/cli/exit_error.go` | `source` | `backend` | `cli` | `helper` | 0 | 2 |
+| `internal/cobol/copy_expander.go` | `source` | `backend` | `analyzer` | `analyzer_helper` | 0 | 9 |
+| `internal/frameworks/frameworks.go` | `source` | `backend` | `analyzer` | `analyzer_helper` | 0 | 209 |
+| `internal/group/types.go` | `source` | `backend` | `query` | `contract_model` | 0 | 16 |
+| `internal/lbugnative/runner_default.go` | `source` | `backend` | `storage` | `fallback_adapter` | 0 | 1 |
+| `internal/lbugnative/runner.go` | `source` | `backend` | `storage` | `adapter` | 0 | 1 |
+| `internal/parser/metrics.go` | `source` | `backend` | `providers` | `parser_model` | 0 | 8 |
+| `internal/repo/paths.go` | `source` | `backend` | `storage` | `storage_helper` | 0 | 13 |
+| `internal/repo/runtime_config.go` | `source` | `backend` | `storage` | `config` | 0 | 10 |
+| `internal/repo/settings.go` | `source` | `backend` | `storage` | `config` | 0 | 11 |
+| `internal/resolution/source_site.go` | `source` | `backend` | `resolution` | `helper` | 0 | 4 |
+| `internal/scopeir/facts.go` | `source` | `backend` | `providers` | `parser_model` | 0 | 4 |
+| `internal/scopeir/range.go` | `source` | `backend` | `providers` | `parser_model` | 0 | 4 |
+| `internal/scopeir/sort_keys.go` | `source` | `backend` | `providers` | `helper` | 0 | 63 |
+| `internal/session/error.go` | `source` | `backend` | `session` | `runtime_model` | 0 | 6 |
+| `internal/session/types.go` | `source` | `backend` | `session` | `runtime_model` | 0 | 3 |
+| `internal/testutil/path.go` | `source` | `backend` | `unknown` | `test_helper` | 0 | 12 |
+
+Sample summary:
+
+| Metric | Value |
+|---|---:|
+| Anchor sample files | 17 |
+| Anchor sample files with `kind=source` | 17 |
+| Anchor sample files with `appLayer=backend` | 17 |
+| Anchor sample files with non-unknown `fileRole` | 17 |
+| Anchor sample default unresolved source sites | 0 |
+| Anchor sample raw unresolved source sites | 376 |
+
+Plan update evidence:
+
+| File | Evidence |
+|---|---|
+| Plan | Status changed to ready for implementation; `G0-A` and `G1-A` marked complete; group aggregation wording corrected so 17 is the required anchor sample, not a forced full-group total. |
+| Evidence | Reopened ledger around file group classification and recorded current planner/analyze/sample evidence. |
+| Benchmark | Reopened ledger around file group metrics and added file-group target measurements. |
+
+Readiness conclusion:
+
+- The corrected plan is ready for implementation after this update.
+- Product-code implementation still requires Anvien impact checks before editing shared classifiers, file summaries, contracts, CLI/API output, graph/file projection behavior, or Web file views.

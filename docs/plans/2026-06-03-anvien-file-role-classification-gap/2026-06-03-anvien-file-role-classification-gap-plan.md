@@ -2,7 +2,7 @@
 
 Date: 2026-06-03
 
-Status: Reopened - corrected plan ready for review
+Status: Ready for implementation - corrected file group plan
 
 Companion files:
 
@@ -148,7 +148,7 @@ The corrected plan is complete when:
 
 ## Phase Checklist
 
-- [ ] [G0-A] Audit planner compliance and current plan state.
+- [x] [G0-A] Audit planner compliance and current plan state.
   - Goal: make sure the plan itself follows the Anvien planner skill before implementation starts.
   - Work Steps:
     1. Read `.claude/skills/anvien/anvien-planner/SKILL.md`.
@@ -158,7 +158,7 @@ The corrected plan is complete when:
   - Implementation Gate: do not edit product code until this checklist audit passes.
   - Acceptance: evidence records the planner skill path read and confirms checklist items are complete mini-plans.
 
-- [ ] [G1-A] Audit current Anvien classification axes and target sample.
+- [x] [G1-A] Audit current Anvien classification axes and target sample.
   - Goal: ground the file group name and membership rule in existing Anvien classification axes instead of inventing vague buckets.
   - Work Steps:
     1. Run `.\anvien\bin\anvien.exe analyze --force`.
@@ -254,7 +254,9 @@ The corrected plan is complete when:
        fileGroup = backend_support_model_helper | unknown/empty
        ```
     4. Add `fileGroup` to `FileSummary`.
-    5. If analyze writes semantic properties to File graph nodes, add `fileGroup` there too. If not possible in this slice, record the reason in evidence before proceeding.
+    5. Inspect the graph File-node enrichment path and record exactly one outcome in evidence:
+       - File nodes already receive semantic identity properties during analyze: add `fileGroup` to that same path.
+       - File nodes do not yet receive semantic identity properties during analyze: keep `fileGroup` authoritative in shared backend `FileSummary` and file projection for this slice, record the graph-node follow-up explicitly, and do not replace it with Web-only or display-only grouping.
     6. Ensure CLI/API/Web consumers read `FileSummary.fileGroup` and do not reimplement path checks.
   - Implementation Gate: impact output must be recorded before editing shared backend or contract symbols.
   - Acceptance: backend file summaries for the 17 sample files include `fileGroup=backend_support_model_helper`.
@@ -294,15 +296,14 @@ The corrected plan is complete when:
        functionalAreas
        sampleFiles
        ```
-    3. For the current sample, assert:
+    3. For the current 17-file anchor sample, assert:
        ```text
-       key="backend_support_model_helper"
-       label="Backend support/model/helper files"
-       files=17
-       defaultUnresolved=0
-       rawUnresolved=376
+       sampleFiles=17
+       sampleDefaultUnresolved=0
+       sampleRawUnresolved=376
        ```
-    4. Assert role breakdown:
+    4. Record the full group totals from backend identity rules after implementation. Do not force the full group total to equal 17 unless the identity rules genuinely return only the current 17-file anchor sample.
+    5. Assert sample role breakdown:
        ```text
        analyzer_helper=2
        helper=3
@@ -316,14 +317,14 @@ The corrected plan is complete when:
        fallback_adapter=1
        ```
   - Implementation Gate: group membership must be computed before aggregation.
-  - Acceptance: group summary is computed from `fileGroup` membership directly, not from count subtraction.
+  - Acceptance: group summary is computed from `fileGroup` membership directly, the 17-file sample is fully covered, and no count is derived from `rawUnresolvedFiles - unresolvedFiles`.
 
 - [ ] [G7-A] Surface the group in analyze, CLI, API, and graph-health outputs.
   - Goal: make command output name the group directly.
   - Work Steps:
     1. Add analyze output line:
        ```text
-       fileProjection.group key="backend_support_model_helper" label="Backend support/model/helper files" files=17 defaultUnresolved=0 rawUnresolved=376
+       fileProjection.group key="backend_support_model_helper" label="Backend support/model/helper files" files=<measured_total> defaultUnresolved=<measured_total_default> rawUnresolved=<measured_total_raw>
        ```
     2. Add `Group` to file-hotspots human rows:
        ```text
@@ -368,10 +369,10 @@ The corrected plan is complete when:
        .\anvien\bin\anvien.exe graph-health summary --repo Anvien --json
        ```
     5. Verify:
-       - `backend_support_model_helper.files=17`.
+       - The `backend_support_model_helper` full group total is measured and recorded.
        - All 17 required files have `fileGroup=backend_support_model_helper`.
-       - `backend_support_model_helper.defaultUnresolved=0`.
-       - `backend_support_model_helper.rawUnresolved=376`.
+       - The 17-file sample has `sampleDefaultUnresolved=0`.
+       - The 17-file sample has `sampleRawUnresolved=376`.
        - Analyze output prints the direct `fileProjection.group` line.
        - Web shows the group label directly.
   - Implementation Gate: all relevant implementation tests must pass before graph/UI validation is accepted.
