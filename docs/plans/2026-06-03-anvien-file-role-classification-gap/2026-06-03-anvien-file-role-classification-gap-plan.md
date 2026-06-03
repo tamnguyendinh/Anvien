@@ -2,7 +2,7 @@
 
 Date: 2026-06-03
 
-Status: Detect-changes complete; pending commit closure
+Status: Complete
 
 Companion files:
 
@@ -240,7 +240,7 @@ The plan is complete when:
   - Implementation Gate: no commit until validation and benchmark ledgers are updated.
   - Acceptance: role coverage target is met, raw/default unresolved counts remain explainable, Web role display is validated when touched, and validation passes or failures are recorded with handling.
 
-- [ ] [P4-A] Detect changes, commit, and close.
+- [x] [P4-A] Detect changes, commit, and close.
   - Goal: close the implementation slice with traceable scope.
   - Work Steps: run `anvien detect-changes --repo Anvien --scope all`; review affected files/flows; record detect-changes evidence; commit the completed slice; update plan status/checklist/evidence/benchmark with final hash and closure state.
   - Implementation Gate: detect-changes must match intended classification/API/UI scope.

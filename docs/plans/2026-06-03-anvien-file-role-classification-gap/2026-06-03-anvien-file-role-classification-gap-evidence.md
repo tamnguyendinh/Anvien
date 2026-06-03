@@ -2,7 +2,7 @@
 
 Date: 2026-06-03
 
-Status: Detect-changes complete; pending commit closure
+Status: Complete
 
 Companion files:
 
@@ -427,4 +427,27 @@ Detect changes:
 
 Commit:
 
-- Pending P4-A.
+- `444dcdd feat: add file role classification`
+
+## E9 - Commit Closure
+
+Date: 2026-06-03
+
+Status: completed
+
+Scope:
+
+- Close P4-A after implementation commit.
+- Record the implementation commit hash in the plan artifact.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| Implementation commit | `444dcdd feat: add file role classification` |
+| Detect changes | Recorded in E8 before the implementation commit. |
+| Remaining plan work | None. |
+
+Commit:
+
+- `444dcdd feat: add file role classification`
