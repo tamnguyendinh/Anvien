@@ -34,10 +34,9 @@ Rules:
 The plan file controls the work.
 
 It should contain:
-
 - metadata: title, date, status, and companion files;
-- rules, master rules, or rules of plan;
 - goal;
+- rules, master rules, or rules of plan;
 - problem;
 - scope, scope boundary, and non-goals;
 - requirements, invariants, and technical direction when needed;
