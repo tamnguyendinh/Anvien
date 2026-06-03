@@ -46,7 +46,7 @@ It should contain:
 - risk notes;
 - task state through checkboxes.
 
-Every checklist item must be a complete mini-plan by itself. Do not write generic checklist items. The plan must state what to do, in what order, and what condition proves the item is done.
+Every checklist item must be a complete mini-plan by itself. Do not write generic checklist items. The plan must state what to do, in what order, and what condition proves the item is done, don't hide the logic in the outer section.
 
 Each checklist item must include:
 

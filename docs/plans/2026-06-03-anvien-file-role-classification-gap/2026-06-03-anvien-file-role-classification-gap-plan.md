@@ -1,253 +1,309 @@
-# Anvien File Role Classification Gap Plan
+# Anvien File Group Classification Plan
 
 Date: 2026-06-03
 
-Status: Complete
+Status: Reopened - file group classification required
 
 Companion files:
 
 - Evidence ledger: [2026-06-03-anvien-file-role-classification-gap-evidence.md](2026-06-03-anvien-file-role-classification-gap-evidence.md)
 - Benchmark ledger: [2026-06-03-anvien-file-role-classification-gap-benchmark.md](2026-06-03-anvien-file-role-classification-gap-benchmark.md)
 
-## Master Rules
+## Checklist
 
-1. Follow active workspace and repository instructions, including generated `AGENTS.md`; this plan records product work and validation, it does not replace repository rules.
-2. Use Anvien for codebase analysis and impact checks before implementation edits.
-3. Refresh graph evidence with `anvien analyze --force` before graph-based plan evidence or implementation evidence.
-4. Run impact analysis before editing semantic classifiers, file projection summaries, graph-health/file-hotspot output, API contracts, or Web file views.
-5. Treat HIGH/CRITICAL Anvien impact as blast-radius evidence, not an automatic edit ban.
-6. This plan fixes classification semantics, not source-site resolution. Do not hide or delete raw unresolved facts just to reduce counts.
-7. Keep generated `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` as generated output only.
-8. Run the full build before testing: `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1`.
-9. If Web UI behavior changes, include a relevant Web/e2e test; browser or screenshot validation can supplement e2e evidence but cannot replace it.
-10. Record evidence as each evidenced task completes.
-11. Record benchmarkable inventory/count changes as each benchmarkable task completes.
-12. Run `anvien detect-changes --repo Anvien --scope all` before implementation commits.
-13. Update the corresponding phase checklist item immediately as each implementation slice completes.
-14. Commit each completed implementation slice after evidence and benchmark ledgers are updated.
+- [ ] [G0] Planner contract and corrected target.
+  - This checklist is the source of truth for the corrected plan.
+  - Every checklist item must be a mini-plan with enough information to execute that item without reading hidden context from another section.
+  - Do not move naming rules, membership rules, output rules, validation gates, or acceptance criteria outside checklist items.
+  - This corrected plan replaces the earlier narrow "add a fileRole label" plan.
+  - The previous implementation commit `444dcdd feat: add file role classification` added `fileRole`, but that was only role metadata.
+  - The product bug is:
+    ```text
+    Files Anvien can identify by real file type are not placed into a concrete file group that users can read directly.
+    ```
+  - The implementation target is:
+    ```text
+    fileGroup: backend_support_model_helper
+    label: Backend support/model/helper files
+    ```
+  - The group must be visible directly in graph/file projection/API/CLI/Web outputs.
+  - The group must not require a user to infer meaning from `rawUnresolvedFiles - unresolvedFiles`.
+  - Acceptance:
+    - This plan has no required implementation rules outside checklist items.
+    - Future implementation work updates checklist items as work completes.
+    - Reading only checklist items gives the full task, naming rule, target fields, target output, validation, and commit gate.
 
-## Goal
+- [ ] [G1] Audit current Anvien classification axes before naming any new group.
+  - Run `.\anvien\bin\anvien.exe analyze --force`.
+  - Record current file classification axes from file projection:
+    - `kind`: examples are `source`, `test`, `docs`, `config`, `generated`.
+    - `appLayer`: examples are `backend`, `backend_test`, `frontend`, `frontend_test`, `api`, `docs`, `config`, `generated_contract`.
+    - `functionalArea`: examples are `providers`, `storage`, `analyzer`, `cli`, `query`, `resolution`, `session`, `mcp`, `web_graph_ui`.
+    - `fileRole`: examples are `helper`, `config`, `parser_model`, `runtime_model`, `adapter`, `fallback_adapter`, `test_helper`, `analyzer_helper`, `contract_model`, `storage_helper`, `model`, `unknown`.
+  - Record current graph node classification axes only as naming reference, not as the target group:
+    - `label`: examples are `File`, `Function`, `Method`, `Struct`, `ResolutionGap`, `Process`, `Community`.
+    - node `appLayer`.
+    - node `functionalArea`.
+  - Record current ResolutionGap axes only as reference for source-site diagnostics, not as the file group:
+    - `classification`: examples are `builtin`, `standard_library`, `test_framework`, `in_repo_unresolved`, `external_library`.
+    - `actionability`: examples are `analyzer_gap`, `non_actionable`, `review`.
+  - Acceptance:
+    - Evidence shows the current naming style uses lower snake case for machine keys.
+    - Evidence shows file grouping must start from file axes, not from ResolutionGap axes.
+    - Evidence includes the current 17 target files with `kind=source`, `appLayer=backend`, their `functionalArea`, their `fileRole`, default unresolved count, and raw count.
 
-Add a clear file-role classification layer so files that are already recognizable as backend support/model/helper/config/adapter code are labeled that way in graph/file outputs.
+- [ ] [G2] Define the file group naming procedure and apply it to the target group.
+  - Naming procedure must be followed in this order:
+    1. Identify the object being grouped.
+       - For this plan the object is `File`.
+       - Therefore the group field is `fileGroup`.
+    2. Identify the application side from file `appLayer`.
+       - For the target sample the side is `backend`.
+       - Do not start the name from unresolved/source-site words because the group is a file group.
+    3. Identify the file purpose family from `fileRole`.
+       - For the target sample the purpose family is `support_model_helper`.
+       - This family covers support files, helper files, config files, parser/runtime model files, adapter files, and contract model files.
+    4. Compose the machine key as:
+       ```text
+       <app_side>_<purpose_family>
+       ```
+    5. Compose the display label as:
+       ```text
+       <App Side> <purpose family words> files
+       ```
+  - Required key:
+    ```text
+    backend_support_model_helper
+    ```
+  - Required display label:
+    ```text
+    Backend support/model/helper files
+    ```
+  - Required metadata contract:
+    ```text
+    fileGroup = "backend_support_model_helper"
+    fileGroupLabel = "Backend support/model/helper files"
+    ```
+  - Acceptance:
+    - Contract tests assert the exact key `backend_support_model_helper`.
+    - Contract tests assert the exact label `Backend support/model/helper files`.
+    - The plan evidence records why the name starts with `backend`: all 17 current target files are backend files.
+    - The plan evidence records why the purpose family is `support_model_helper`: the current roles are support/helper/config/model/adapter roles.
 
-The target behavior is:
+- [ ] [G3] Define membership rules for `backend_support_model_helper`.
+  - A file enters this group only when all required conditions are true:
+    ```text
+    kind == source
+    appLayer == backend
+    fileRole is in the allowed role set
+    ```
+  - Allowed role set:
+    ```text
+    helper
+    storage_helper
+    config
+    adapter
+    fallback_adapter
+    test_helper
+    analyzer_helper
+    parser_model
+    runtime_model
+    contract_model
+    model
+    ```
+  - `functionalArea` is supporting evidence but not part of the group key for this slice.
+    - Example: `storage`, `providers`, `analyzer`, `session`, `query`, `cli`, and `resolution` can all still be part of the same backend support/model/helper group if the file role matches.
+  - Boundary rules:
+    - `fileRole=unknown` does not enter this group.
+    - `appLayer=frontend` does not enter this group.
+    - `appLayer=frontend_test` does not enter this group.
+    - `kind=docs`, `kind=config`, and `kind=generated` do not enter this group in this slice.
+    - A backend source file with `fileRole=test_helper` can enter this group when it is backend support code such as `internal/testutil/path.go`.
+  - Required current sample membership:
+    - `internal/frameworks/frameworks.go`
+    - `internal/scopeir/sort_keys.go`
+    - `internal/group/types.go`
+    - `internal/repo/paths.go`
+    - `internal/testutil/path.go`
+    - `internal/repo/settings.go`
+    - `internal/repo/runtime_config.go`
+    - `internal/cobol/copy_expander.go`
+    - `internal/parser/metrics.go`
+    - `internal/session/error.go`
+    - `internal/resolution/source_site.go`
+    - `internal/scopeir/facts.go`
+    - `internal/scopeir/range.go`
+    - `internal/session/types.go`
+    - `internal/cli/exit_error.go`
+    - `internal/lbugnative/runner.go`
+    - `internal/lbugnative/runner_default.go`
+  - Acceptance:
+    - Unit tests assert all 17 files enter `backend_support_model_helper`.
+    - Unit tests assert frontend/source files do not enter it.
+    - Unit tests assert unknown-role backend source files do not enter it.
+    - Unit tests assert docs/config/generated files do not enter it for this slice.
 
-- Anvien can explain the 17 raw-only unresolved files as recognized backend support/model/helper files;
-- users do not interpret those files as "unknown" or "not understood";
-- raw unresolved counts remain available for audit;
-- default unresolved/actionable counts remain separate from non-actionable builtin/stdlib raw unresolved;
-- CLI/API/Web surfaces can show concise role labels when file role is relevant.
+- [ ] [G4] Put `fileGroup` into the graph/file classification layer, not only into display labels.
+  - Use Anvien impact before editing the owner functions.
+  - Inspect and identify the exact source locations where `File` metadata is assembled:
+    - where `kind` is set;
+    - where `appLayer` is set;
+    - where `functionalArea` is set;
+    - where the current `fileRole` is calculated or copied into `FileSummary`;
+    - where `FileSummary` is built for file-context/file-hotspots.
+  - Add group classification as a real file classification step:
+    ```text
+    File metadata -> kind/appLayer/functionalArea/fileRole -> fileGroup
+    ```
+  - Required storage behavior:
+    - `FileSummary.fileGroup` must exist.
+    - `FileSummary.fileGroupLabel` may exist if labels are not supplied through metadata tables.
+    - If Anvien writes semantic properties to `File` graph nodes during analyze, add `fileGroup` there too.
+    - If File node storage cannot be updated in this slice, record that as a blocker before implementation; do not silently keep the group only as Web/UI display text.
+  - Acceptance:
+    - The implementation has one shared classifier for file groups.
+    - CLI/API/Web do not reimplement path checks.
+    - `fileGroup` is produced before output rendering.
 
-## Problem
+- [ ] [G5] Define group metadata in contracts and semantic definitions.
+  - Add a semantic contract for file groups:
+    ```text
+    FILE_GROUPS = ["backend_support_model_helper", ...]
+    FILE_GROUP_LABELS includes:
+      key: backend_support_model_helper
+      displayLabel: Backend support/model/helper files
+      cliLabel: backend-support-model-helper
+      webLabel: Backend support/model/helper files
+    ```
+  - Add generated Web type support:
+    ```text
+    FileGroup
+    FileGroupLabel
+    FileSummary.fileGroup
+    ```
+  - Keep `fileRole` as a subcategory inside the group.
+  - Acceptance:
+    - Go contract tests assert `FILE_GROUPS`.
+    - Generated TypeScript includes `FileSummary.fileGroup`.
+    - No component invents group names locally.
 
-Current analyze/file projection output separates:
+- [ ] [G6] Add group aggregation to file projection.
+  - Add a file projection group summary keyed by `fileGroup`.
+  - Required aggregate for each group:
+    ```text
+    key
+    label
+    files
+    defaultUnresolved
+    rawUnresolved
+    roles
+    appLayers
+    functionalAreas
+    sampleFiles
+    ```
+  - Required current target aggregate:
+    ```text
+    key="backend_support_model_helper"
+    label="Backend support/model/helper files"
+    files=17
+    defaultUnresolved=0
+    rawUnresolved=376
+    ```
+  - Role breakdown for current target aggregate must include:
+    ```text
+    analyzer_helper=2
+    helper=3
+    contract_model=1
+    storage_helper=1
+    test_helper=1
+    config=2
+    parser_model=3
+    runtime_model=2
+    adapter=1
+    fallback_adapter=1
+    ```
+  - Acceptance:
+    - Group summary is computed directly from file group membership.
+    - The 17-file group is not discovered by subtracting `unresolvedFiles` from `rawUnresolvedFiles`.
 
-```text
-unresolvedFiles=336
-rawUnresolvedFiles=353
-```
+- [ ] [G7] Make analyze and CLI output show the group directly.
+  - Analyze output must include a direct group line:
+    ```text
+    fileProjection.group key="backend_support_model_helper" label="Backend support/model/helper files" files=17 defaultUnresolved=0 rawUnresolved=376
+    ```
+  - File hotspot human output should include `Group`:
+    ```text
+    Path    Group    Role    Layer    Area    ...
+    ```
+  - Graph-health file output should include `Group` where file rows are printed.
+  - JSON output should include `fileGroup` on each file summary and group summaries where file projection summaries are returned.
+  - Acceptance:
+    - CLI tests assert the group line.
+    - CLI tests assert the `Group` column.
+    - JSON tests assert `backend_support_model_helper` without requiring subtraction math.
 
-The 17-file difference is not a resolution failure for product code. Those files are recognized Go source files with `productionUnresolvedSourceSiteCount=0`; their raw unresolved sites are non-actionable builtins, standard library calls, or test-framework references.
+- [ ] [G8] Make Web UI show the file group as the main file identity group.
+  - File Map:
+    - show `Backend support/model/helper files` as group metadata or group/filter surface;
+    - keep `fileRole` visible as a subcategory;
+    - do not replace the group with only `Role`.
+  - File Detail:
+    - show:
+      ```text
+      Group: Backend support/model/helper files
+      Role: <role label>
+      Layer: Backend
+      Area: <functional area label>
+      ```
+  - File Tree:
+    - inspect whether it renders file summary or semantic file filters;
+    - if it does, include the file group in the same file metadata/filter layer.
+  - Acceptance:
+    - Web unit tests assert the group label.
+    - Web/e2e tests assert File Map or File Detail renders `Backend support/model/helper files`.
+    - No Web code derives group from path.
 
-The gap is semantic:
+- [ ] [G9] Validate that the corrected model solves the actual display problem.
+  - Run full build before tests:
+    ```powershell
+    powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1
+    ```
+  - Run focused Go tests for semantic, filecontext, contracts, CLI, HTTP/API, and MCP consumers.
+  - Run Web unit tests and e2e tests if Web display changes.
+  - Run:
+    ```powershell
+    .\anvien\bin\anvien.exe analyze --force
+    .\anvien\bin\anvien.exe file-hotspots --repo Anvien --json --sort path --limit 0
+    .\anvien\bin\anvien.exe graph-health summary --repo Anvien --json
+    ```
+  - Required validation facts:
+    - `backend_support_model_helper.files=17`.
+    - All 17 required sample files have `fileGroup=backend_support_model_helper`.
+    - `backend_support_model_helper.defaultUnresolved=0`.
+    - `backend_support_model_helper.rawUnresolved=376`.
+    - Analyze output prints the direct `fileProjection.group` line.
+    - UI shows the group label directly.
+  - Acceptance:
+    - Evidence and benchmark ledgers record group count, role breakdown, and output proof.
+    - A user can see the group by name without computing any delta.
 
-- the files have concrete identities and roles;
-- current metadata has `kind`, `appLayer`, and `functionalArea`;
-- there is no first-class role field that says `model`, `helper`, `config`, `storage_helper`, `adapter`, `fallback`, `test_helper`, or `analyzer_helper`;
-- user-facing output can therefore make the files look less understood than they are.
-
-## Scope
-
-In scope:
-
-- backend file-role taxonomy and classification rules;
-- file summary fields and file-hotspot/file-context/graph-health output;
-- semantic metadata/contract updates needed to carry role labels;
-- Web file tree/map/detail display when role labels are added to `FileSummary`;
-- tests proving the 17-file raw-only set is classified as known support/model/helper roles;
-- benchmark tables tracking raw-only files, role coverage, and unknown-role count.
-
-Out of scope:
-
-- resolving Go builtins or standard library calls into real repo symbols;
-- changing source-site resolution or ResolutionGap generation semantics;
-- reducing raw unresolved counts by deleting graph facts;
-- changing default unresolved ranking beyond role labeling;
-- broad UI redesign or graph layout work;
-- adding language parsers.
-
-## Requirements
-
-1. Add or expose a stable role classification for file summaries, preferably `fileRole`.
-2. Preserve existing `kind`, `appLayer`, and `functionalArea` fields.
-3. Classify the current 17 raw-only unresolved files into explicit roles with no `unknown` role remaining for that set.
-4. Keep raw unresolved counts and default-visible unresolved counts separate.
-5. Do not mark non-actionable builtin/stdlib raw-only files as production unresolved.
-6. Role labels must be deterministic from path, package, symbol shape, and existing semantic metadata.
-7. Role labels must be compact and API-safe strings, not prose.
-8. If a role cannot be determined, use `unknown` and record count/sample evidence.
-9. Add tests for role classification boundaries and the current file-role inventory.
-10. If contracts change, regenerate Web contracts and update consumers/tests.
-11. If `FileSummary` gains `fileRole`, Web UI must consume that backend-provided value; do not add path-pattern role detection in Web.
-12. Web file views must show role without replacing existing `kind`, `appLayer`, `functionalArea`, raw unresolved, or default-visible unresolved signals.
-13. Web file map rows must keep compact metadata and avoid layout shift when role labels are long.
-14. Web file detail must show role near existing Layer/Area metadata and preserve raw/default unresolved bucket display.
-15. Benchmark role coverage before and after each implementation slice.
-
-## Invariants
-
-1. Canonical symbol/source-site graph facts remain the source of truth.
-2. File role is a semantic classification layer, not a replacement for graph relationships.
-3. Raw unresolved is still raw unresolved, even when all sites are non-actionable.
-4. Default-visible unresolved remains the actionable investigation signal.
-5. File role must explain what the file is for; it must not claim unresolved references are fixed.
-6. Existing app-layer/functional-area classifications remain valid and additive.
-7. Generated contract changes must match backend source-of-truth fields.
-
-## Technical Direction
-
-Owner evidence points to these likely implementation areas:
-
-- `internal/semantic/app_layer.go` owns existing app-layer classification and semantic application.
-- `internal/semantic/functional_area.go` owns existing functional-area classification.
-- `internal/filecontext/context.go` owns `FileSummary`, file-context aggregation, hotspot sorting fields, and unresolved bucket display counts.
-- `internal/cli/command.go`, graph-health/file-hotspot commands, HTTP/MCP file summary surfaces, and Web contracts consume file summary fields.
-- `internal/contracts/web_ui.go` and `anvien-web/src/generated/anvien-contracts.ts` define the Web file summary contract.
-- `anvien-web/src/components/FileMapPanel.tsx` renders `FileSummary` row metadata and currently shows `kind`, `appLayer`, and `functionalArea`.
-- `anvien-web/src/components/FileDetailPanel.tsx` renders `FileSummary` detail metadata and currently shows Layer and Area pills.
-- `anvien-web/src/components/FileTreePanel.tsx` is a Web graph/file discovery owner from Anvien query; inspect it during implementation and update only if its data source includes file summary metadata or a file-role filter.
-
-Prefer a small, shared role classifier near `internal/semantic` or `internal/filecontext` instead of scattering path checks across CLI/API/Web. Candidate role values:
-
-```text
-model
-contract_model
-helper
-storage_helper
-config
-adapter
-fallback_adapter
-test_helper
-analyzer_helper
-parser_model
-runtime_model
-unknown
-```
-
-Target mapping for the current 17-file raw-only set:
-
-| File | Target role |
-|---|---|
-| `internal/frameworks/frameworks.go` | `analyzer_helper` |
-| `internal/scopeir/sort_keys.go` | `helper` |
-| `internal/group/types.go` | `contract_model` |
-| `internal/repo/paths.go` | `storage_helper` |
-| `internal/testutil/path.go` | `test_helper` |
-| `internal/repo/settings.go` | `config` |
-| `internal/repo/runtime_config.go` | `config` |
-| `internal/cobol/copy_expander.go` | `analyzer_helper` |
-| `internal/parser/metrics.go` | `parser_model` |
-| `internal/session/error.go` | `runtime_model` |
-| `internal/resolution/source_site.go` | `helper` |
-| `internal/scopeir/facts.go` | `parser_model` |
-| `internal/scopeir/range.go` | `parser_model` |
-| `internal/session/types.go` | `runtime_model` |
-| `internal/cli/exit_error.go` | `helper` |
-| `internal/lbugnative/runner.go` | `adapter` |
-| `internal/lbugnative/runner_default.go` | `fallback_adapter` |
-
-P1-A may rename role strings only if it records the compatibility decision in evidence and updates the benchmark target table in the same implementation slice.
-
-## Web UI Direction
-
-When `fileRole` is added to `FileSummary`, Web work is required rather than optional.
-
-The intended UI change is a compact role signal, not a redesign:
-
-- File Map rows: show role beside existing Kind/Layer/Area metadata, using backend-provided `fileRole`.
-- File Detail panel: add a `Role` pill near existing `Layer` and `Area` pills.
-- File Tree panel: inspect whether file summaries or file semantic filters are rendered there; if so, include role in the same compact metadata/filter pattern.
-- Generated contracts: regenerate `anvien-web/src/generated/anvien-contracts.ts` from `internal/contracts/web_ui.go` so Web TypeScript types include the role field.
-- Display labels: centralize Web labels in the existing semantic formatting layer or a small role-label helper; do not hard-code path-derived role decisions in components.
-- Layout: role labels must fit in existing metadata rows without expanding cards, overlapping text, or causing file paths/counts to shift incoherently.
-- Empty/unknown role: hide only empty values; show `unknown` as a real backend classification when the backend returns it.
-
-Expected role label examples:
-
-| Role | Suggested Web label |
-|---|---|
-| `contract_model` | Contract Model |
-| `storage_helper` | Storage Helper |
-| `fallback_adapter` | Fallback Adapter |
-| `analyzer_helper` | Analyzer Helper |
-| `parser_model` | Parser Model |
-| `runtime_model` | Runtime Model |
-
-## Definition Of Done
-
-The plan is complete when:
-
-1. file summaries expose a stable role field or equivalent backend-owned classification;
-2. the 17 raw-only unresolved files are classified as known backend support/model/helper roles;
-3. raw-only unresolved output can be explained as non-actionable stdlib/builtin/test-framework sites plus file role, not "unknown file";
-4. CLI/API/Web contract behavior is updated and covered by tests when `fileRole` is added to file summaries;
-5. Web file map/detail views show backend role labels without path-pattern inference or metadata layout regressions;
-6. role coverage benchmarks show the raw-only 17-file set has zero unknown roles;
-7. full build, focused tests, Web tests/e2e when UI changes, analyze smoke, graph-health/file-hotspot validation, and detect-changes evidence are recorded;
-8. implementation work is committed after evidence and benchmark ledgers are updated.
-
-## Phase Checklist
-
-- [x] [P0-A] Establish baseline and owner evidence.
-  - Goal: prove the issue is a classification gap rather than a resolution failure and identify likely code owners.
-  - Work Steps: run `anvien analyze --force`; inspect current `unresolvedFiles` and `rawUnresolvedFiles`; enumerate raw-only files; inspect file-context samples for representative raw-only files; run Anvien query/context/impact for semantic classifier owners.
-  - Implementation Gate: no product code edits in this phase.
-  - Acceptance: evidence records current counts, raw-only file list summary, source-site classification, owner files, and CRITICAL impact warnings for classifier edits.
-
-- [x] [P1-A] Define the file-role contract.
-  - Goal: decide the exact field name, role enum, JSON shape, and compatibility strategy before implementation.
-  - Work Steps: inspect `FileSummary`, graph-health/file-hotspot JSON, HTTP/MCP file summary payloads, Web generated contracts, and semantic definitions; choose whether role belongs in `internal/semantic` or `internal/filecontext`; define role values and labels; write tests that encode role strings and unknown fallback.
-  - Implementation Gate: run impact for `FileSummary` and any new/exported role type before editing.
-  - Acceptance: a stable backend role contract exists, old fields are preserved, and tests prove invalid/unknown role fallback.
-
-- [x] [P1-B] Implement backend file-role classification.
-  - Goal: classify known backend support/model/helper/config/adapter files without changing unresolved semantics.
-  - Work Steps: implement a shared classifier using path, package, file name, symbol shape, and existing semantic metadata; add table tests for the 17 raw-only files plus boundary examples; keep the classifier deterministic and scoped; do not change raw/default unresolved bucket calculations.
-  - Implementation Gate: no CLI/API/Web output changes until backend classification tests pass.
-  - Acceptance: the current 17-file raw-only set maps to non-unknown roles, and role classification does not alter raw/default unresolved counts.
-
-- [x] [P2-A] Surface role classification through file summaries and CLI/graph quality output.
-  - Goal: make CLI and graph-quality command users see file role where file identity is discussed.
-  - Work Steps: add role fields to backend `FileSummary`; update file-hotspots, file-context, graph-health, and analyze file projection output only where useful; update CLI tests and JSON tests; ensure raw-only files can be listed with role and non-actionable counts.
-  - Implementation Gate: preserve existing JSON fields unless an explicit compatibility decision is recorded.
-  - Acceptance: command output can report raw-only files with role labels, and tests cover the new field in JSON/human output where emitted.
-
-- [x] [P2-B] Update API contracts and generated Web types.
-  - Goal: make backend file-role metadata available to Web through the same contract as other file summary fields.
-  - Work Steps: update `internal/contracts/web_ui.go` so `FileSummary` includes the role field and any role enum/label metadata if needed; regenerate `anvien-web/src/generated/anvien-contracts.ts`; inspect `anvien-web/src/services/backend-client.ts` for pass-through or query parameter changes; update backend/contract tests that assert file summary shape.
-  - Implementation Gate: backend file-role tests from P1-B must pass before contract changes; preserve existing `kind`, `appLayer`, `functionalArea`, and unresolved fields.
-  - Acceptance: generated TypeScript exposes the role field, backend contract tests pass, and no Web component uses an untyped ad hoc role value.
-
-- [x] [P2-C] Update Web file-role display.
-  - Goal: make the Web UI explain raw-only support/model/helper files with a compact backend-owned role label.
-  - Work Steps: update `FileMapPanel` row metadata to include role near existing kind/layer/area labels; update `FileDetailPanel` to add a `Role` pill near `Layer` and `Area`; inspect `FileTreePanel` and update it only if it displays file summary metadata or semantic file filters; add or update a Web role-label helper instead of adding path-pattern checks; ensure long labels like `Fallback Adapter` and `Analyzer Helper` fit without overlap; keep raw/default unresolved counts visible and unchanged.
-  - Implementation Gate: do not start UI edits until generated contracts include the role field; do not infer roles in Web from path, extension, or unresolved count.
-  - Acceptance: Web unit tests cover role display, missing/unknown role behavior, and unchanged unresolved counts; if visible UI changes ship, Web/e2e tests cover file map/detail role rendering and browser/screenshot evidence is recorded as supplemental validation.
-
-- [x] [P3-A] Validate role coverage, raw unresolved semantics, and Web display.
-  - Goal: prove the change solves the classification gap without hiding graph-quality evidence.
-  - Work Steps: run full build; run focused Go tests; run Web unit tests when Web code changes; run Web/e2e tests when visible UI changes; run browser/screenshot validation as supplemental evidence for visible UI changes; run `anvien analyze --force`; run `file-hotspots --sort raw-unresolved --unresolved-only --limit 0 --json`; verify raw-only file count, role coverage, and raw/default unresolved counts; run graph-health summary; record role coverage, Web consumer coverage, and validation results in evidence and benchmark ledgers.
-  - Implementation Gate: no commit until validation and benchmark ledgers are updated.
-  - Acceptance: role coverage target is met, raw/default unresolved counts remain explainable, Web role display is validated when touched, and validation passes or failures are recorded with handling.
-
-- [x] [P4-A] Detect changes, commit, and close.
-  - Goal: close the implementation slice with traceable scope.
-  - Work Steps: run `anvien detect-changes --repo Anvien --scope all`; review affected files/flows; record detect-changes evidence; commit the completed slice; update plan status/checklist/evidence/benchmark with final hash and closure state.
-  - Implementation Gate: detect-changes must match intended classification/API/UI scope.
-  - Acceptance: implementation commit exists, plan artifacts record closure evidence, and no required follow-up remains for this plan.
-
-## Risk Notes
-
-- `ClassifyAppLayer` and `ClassifyFunctionalArea` have CRITICAL upstream impact through analyze, CLI, graphaccuracy, and semantic application flows. Edits must be narrow and test-backed.
-- Adding fields to `FileSummary` can touch CLI, MCP, HTTP/API, generated contracts, and Web consumers.
-- The fix must not conflate file-role classification with source-site resolution. Builtins and stdlib calls may remain raw unresolved unless a separate resolution plan changes that behavior.
+- [ ] [G10] Run impact, detect changes, update ledgers, and commit.
+  - Before implementation edits, run impact for:
+    - file group classifier;
+    - `FileSummary`;
+    - file projection aggregation;
+    - Web contract generator;
+    - Web File Map/File Detail if edited.
+  - Before commit, run:
+    ```powershell
+    .\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all
+    ```
+  - Update:
+    - evidence ledger with commands, impact, validation, failures, and handling;
+    - benchmark ledger with group counts and role breakdown;
+    - this checklist item when complete.
+  - Commit after evidence is updated.
+  - Acceptance:
+    - Implementation commit exists.
+    - Plan artifacts record the commit hash.
+    - No required work remains for this corrected plan.
