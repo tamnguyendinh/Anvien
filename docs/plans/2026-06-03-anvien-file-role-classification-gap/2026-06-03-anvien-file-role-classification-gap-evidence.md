@@ -228,3 +228,86 @@ Implementation evidence:
 
 - No product code was edited in P0-A.
 - Plan status is ready for implementation.
+
+## E5 - Web UI Scope Refinement
+
+Date: 2026-06-03
+
+Status: completed
+
+User report:
+
+- The file-role classification gap affects Web UI display and needs explicit handling in the plan.
+
+Commands:
+
+```powershell
+.\anvien\bin\anvien.exe analyze --force
+.\anvien\bin\anvien.exe query "Web UI file role FileMapPanel FileDetailPanel FileTreePanel file summary display" --repo Anvien
+rg -n 'FileSummary|file\.kind|file\.appLayer|file\.functionalArea|summary\.appLayer|summary\.functionalArea' anvien-web/src/components anvien-web/test -S
+rg -n 'FileSummary|fileHotspots|file-context|file context|FileHotspotsResponse' internal/contracts/web_ui.go anvien-web/src/generated/anvien-contracts.ts -S
+```
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| Analyze refresh | Pass. `files.scanned=824`, `parsed_code=601`, `failed=0`, `nodes=61005`, `relationships=96661`, `unresolvedFiles=336`, `rawUnresolvedFiles=353`. |
+| Anvien Web owner query | Identified `FileTreePanel`, `FileDetailPanel`, and `FileMapPanel` as Web UI/file summary display owners. |
+| `FileMapPanel` search | Uses `FileSummary`; displays `file.kind`, `file.appLayer`, and `file.functionalArea`. |
+| `FileDetailPanel` search | Uses `FileSummary`; displays Layer and Area pills from `summary.appLayer` and `summary.functionalArea`. |
+| Contract search | `internal/contracts/web_ui.go` defines `FileSummary`; generated Web contract mirrors it in `anvien-web/src/generated/anvien-contracts.ts`. |
+
+Plan update evidence:
+
+| File | Evidence |
+|---|---|
+| Plan | Added `Web UI Direction`; replaced conditional Web phase with explicit API/generated-type phase and Web display phase. |
+| Evidence | Added this Web UI refinement evidence. |
+| Benchmark | Added Web UI consumer coverage and refreshed latest analyze inventory counts. |
+
+Implementation evidence:
+
+- No product code was edited.
+- The plan now requires Web contract and Web display handling when `fileRole` is added to `FileSummary`.
+
+## E6 - Plan Readiness Review
+
+Date: 2026-06-03
+
+Status: completed
+
+Scope:
+
+- Re-read plan/evidence/benchmark after Web UI refinement.
+- Check for contradictions between requirements, phase gates, Definition of Done, evidence, and benchmark targets.
+
+Commands:
+
+```powershell
+.\anvien\bin\anvien.exe analyze --force
+Get-Content docs\plans\2026-06-03-anvien-file-role-classification-gap\2026-06-03-anvien-file-role-classification-gap-plan.md
+Get-Content docs\plans\2026-06-03-anvien-file-role-classification-gap\2026-06-03-anvien-file-role-classification-gap-evidence.md
+Get-Content docs\plans\2026-06-03-anvien-file-role-classification-gap\2026-06-03-anvien-file-role-classification-gap-benchmark.md
+```
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| Analyze refresh | Pass. `files.scanned=824`, `parsed_code=601`, `failed=0`, `nodes=61008`, `relationships=96664`, `unresolvedFiles=336`, `rawUnresolvedFiles=353`. |
+| Plan consistency | Found that the role mapping table was incomplete and still had ambiguous `model or parser_model` targets while the benchmark table had concrete targets. |
+| Web validation rule | Found that the Web validation wording allowed browser evidence to look interchangeable with e2e coverage; this was tightened to require Web/e2e tests when visible UI behavior changes. |
+| Phase overlap | Clarified P2-A as CLI/graph-quality command output and P2-B as API/generated Web contract work. |
+
+Plan update evidence:
+
+| File | Evidence |
+|---|---|
+| Plan | Added checklist-update master rule; replaced the partial mapping table with all 17 raw-only files; tightened Web/e2e validation language; clarified P2-A/P2-B responsibility split. |
+| Benchmark | Updated latest analyze graph node/relationship counts to the readiness-review analyze output. |
+
+Readiness conclusion:
+
+- The plan is ready for implementation after this review.
+- Remaining risks are normal implementation risks: CRITICAL classifier blast radius, additive `FileSummary` contract propagation, and Web role display validation.

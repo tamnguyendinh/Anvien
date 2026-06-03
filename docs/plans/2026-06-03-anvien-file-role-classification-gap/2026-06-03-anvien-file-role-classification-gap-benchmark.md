@@ -26,13 +26,13 @@ Source evidence: E0.
 
 | Metric | Unit | Baseline | Latest | Target |
 |---|---:|---:|---:|---:|
-| Files scanned | files | 821 | 821 | record |
+| Files scanned | files | 821 | 824 | record |
 | Parsed code files | files | 601 | 601 | no unintended decrease |
 | Failed files | files | 0 | 0 | 0 |
-| Graph nodes | nodes | 60974 | 60974 | record |
-| Graph relationships | relationships | 96624 | 96624 | record |
-| File projection files | files | 821 | 821 | record |
-| File projection dependency edges | edges | 15965 | 15965 | record |
+| Graph nodes | nodes | 60974 | 61008 | record |
+| Graph relationships | relationships | 96624 | 96664 | record |
+| File projection files | files | 821 | 824 | record |
+| File projection dependency edges | edges | 15965 | 15971 | record |
 | Default-visible unresolved files | files | 336 | 336 | preserve unless separate behavior changes |
 | Raw unresolved files | files | 353 | 353 | preserve unless separate behavior changes |
 | Raw-only unresolved files | files | 17 | 17 | 17 recognized, 0 unknown role |
@@ -99,3 +99,20 @@ Status: target defined
 | Raw-only files with unknown first-class role | files | 17 | 0 |
 | Raw-only files preserving raw/default unresolved separation | files | 17 | 17 |
 | Raw-only files incorrectly counted as production unresolved | files | 0 | 0 |
+
+## B5 - Web UI Consumer Coverage Target
+
+Status: target defined
+
+Source evidence: E5.
+
+| Web surface | Unit | Baseline role support | Target after implementation |
+|---|---:|---:|---:|
+| `FileMapPanel` role display | covered surface | 0 | 1 |
+| `FileDetailPanel` role display | covered surface | 0 | 1 |
+| `FileTreePanel` inspected for role impact | inspected surface | 0 | 1 |
+| Generated Web `FileSummary` includes role field | generated contract | 0 | 1 |
+| Web path-pattern role inference sites | sites | 0 | 0 |
+| Web tests for missing/unknown role behavior | test cases | 0 | at least 1 |
+| Web/e2e test coverage when visible UI changes | e2e test record | 0 | at least 1 if UI changes |
+| Browser or screenshot validation for visible UI changes | validation record | 0 | supplemental when UI changes |
