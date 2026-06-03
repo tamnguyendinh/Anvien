@@ -37,17 +37,10 @@ const response: FileHotspotsResponse = {
       inboundRefCount: 14,
       outboundRefCount: 52,
       localRelationshipCount: 31,
-      unresolvedSourceSiteCount: 2,
-      rawUnresolvedSourceSiteCount: 2,
-      productionUnresolvedSourceSiteCount: 2,
-      nonActionableUnresolvedSourceSiteCount: 0,
-      unknownUnresolvedSourceSiteCount: 0,
-      defaultVisibleUnresolvedSourceSiteCount: 2,
+      unresolved: 2,
       linkedFlowCount: 4,
       linkedTestCount: 3,
       risk: "medium",
-      rawRisk: "medium",
-      defaultVisibleRisk: "medium",
       stale: false,
       changedSinceAnalyze: true,
     },
@@ -64,17 +57,10 @@ const response: FileHotspotsResponse = {
       inboundRefCount: 1,
       outboundRefCount: 12,
       localRelationshipCount: 8,
-      unresolvedSourceSiteCount: 0,
-      rawUnresolvedSourceSiteCount: 0,
-      productionUnresolvedSourceSiteCount: 0,
-      nonActionableUnresolvedSourceSiteCount: 0,
-      unknownUnresolvedSourceSiteCount: 0,
-      defaultVisibleUnresolvedSourceSiteCount: 0,
+      unresolved: 0,
       linkedFlowCount: 0,
       linkedTestCount: 1,
       risk: "low",
-      rawRisk: "low",
-      defaultVisibleRisk: "low",
       stale: false,
       changedSinceAnalyze: false,
     },
@@ -106,8 +92,6 @@ describe("FileMapPanel", () => {
     expect(screen.getByText("Runtime Model")).toBeInTheDocument();
     expect(screen.getByText("Test Helper")).toBeInTheDocument();
     expect(screen.getByText("Test File")).toBeInTheDocument();
-    expect(screen.queryByRole("option", { name: "Raw unresolved" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("option", { name: "Test unresolved" })).not.toBeInTheDocument();
     expect(screen.getAllByTestId("file-map-row")).toHaveLength(2);
   });
 

@@ -88,17 +88,10 @@ const sourceFileSummary = {
   inboundRefCount: 1,
   outboundRefCount: 0,
   localRelationshipCount: 1,
-  unresolvedSourceSiteCount: 1,
-  rawUnresolvedSourceSiteCount: 1,
-  productionUnresolvedSourceSiteCount: 1,
-  nonActionableUnresolvedSourceSiteCount: 0,
-  unknownUnresolvedSourceSiteCount: 0,
-  defaultVisibleUnresolvedSourceSiteCount: 1,
+  unresolved: 1,
   linkedFlowCount: 0,
   linkedTestCount: 1,
   risk: "medium",
-  rawRisk: "medium",
-  defaultVisibleRisk: "medium",
   stale: false,
   changedSinceAnalyze: false,
 };
@@ -116,17 +109,10 @@ const testFileSummary = {
   inboundRefCount: 0,
   outboundRefCount: 1,
   localRelationshipCount: 1,
-  unresolvedSourceSiteCount: 0,
-  rawUnresolvedSourceSiteCount: 0,
-  productionUnresolvedSourceSiteCount: 0,
-  nonActionableUnresolvedSourceSiteCount: 0,
-  unknownUnresolvedSourceSiteCount: 0,
-  defaultVisibleUnresolvedSourceSiteCount: 0,
+  unresolved: 1,
   linkedFlowCount: 0,
   linkedTestCount: 0,
-  risk: "low",
-  rawRisk: "low",
-  defaultVisibleRisk: "low",
+  risk: "medium",
   stale: false,
   changedSinceAnalyze: false,
 };
@@ -189,7 +175,7 @@ test.describe("file map test unresolved defaults", () => {
                 local: 1,
                 inbound: 0,
                 outbound: 1,
-                unresolved: 0,
+                unresolved: 1,
               },
               children: [],
             },
@@ -240,11 +226,30 @@ test.describe("file map test unresolved defaults", () => {
             inboundByFile: [],
           },
           unresolved: {
-            total: 0,
-            byKind: {},
-            byClassification: {},
-            byActionability: {},
-            groups: [],
+            total: 1,
+            byKind: { unresolved_reference: 1 },
+            byClassification: { in_repo_unresolved: 1 },
+            byActionability: { analyzer_gap: 1 },
+            groups: [
+              {
+                sourceSymbol: "testMain",
+                total: 1,
+                samples: [
+                  {
+                    line: 12,
+                    column: 3,
+                    targetText: "expectSomething",
+                    sourceSymbol: "testMain",
+                    gapKind: "unresolved_reference",
+                    classification: "in_repo_unresolved",
+                    actionability: "analyzer_gap",
+                    proofKind: "none",
+                    sourceSiteId: "site-test-expect",
+                    sourceSiteStatus: "unresolved_local_binding",
+                  },
+                ],
+              },
+            ],
           },
           linked: {
             counts: {
@@ -262,7 +267,7 @@ test.describe("file map test unresolved defaults", () => {
             parser: "parsed",
             resolutionConfidence: "clear",
             unresolvedCalls: 0,
-            unresolvedRefs: 0,
+            unresolvedRefs: 1,
             unresolvedImports: 0,
             generated: false,
             stale: false,
@@ -288,7 +293,7 @@ test.describe("file map test unresolved defaults", () => {
     );
   });
 
-  test("shows test file identity while hiding raw test unresolved samples by default", async ({
+  test("shows test file identity and canonical unresolved samples", async ({
     page,
   }) => {
     await page.goto(
@@ -301,16 +306,10 @@ test.describe("file map test unresolved defaults", () => {
 
     await page.getByTestId("file-map-tab").click();
     await expect(page.getByTestId("file-map-panel")).toBeVisible();
-    await expect(page.getByText("1 unresolved")).toBeVisible();
+    await expect(page.getByText("2 unresolved")).toBeVisible();
     await expect(page.getByText("Backend support/model/helper files")).toBeVisible();
     await expect(page.getByText("Test File")).toBeVisible();
     await expect(page.getByText("Test Helper")).toBeVisible();
-    await expect(
-      page.getByLabel("File map sort").locator("option", { hasText: "Raw unresolved" }),
-    ).toHaveCount(0);
-    await expect(
-      page.getByLabel("File map sort").locator("option", { hasText: "Test unresolved" }),
-    ).toHaveCount(0);
 
     await page
       .getByTestId("file-map-row")
@@ -320,11 +319,10 @@ test.describe("file map test unresolved defaults", () => {
       .click();
     await expect(page.getByTestId("file-detail-section-summary")).toContainText("Test File");
     await expect(page.getByTestId("file-detail-section-summary")).toContainText("Test Helper");
-    await expect(page.getByTestId("file-detail-section-unresolved")).toContainText("0 sites");
-    await expect(page.getByTestId("file-detail-section-unresolved")).not.toContainText(
+    await expect(page.getByTestId("file-detail-section-unresolved")).toContainText("1 sites");
+    await expect(page.getByTestId("file-detail-section-unresolved")).toContainText(
       "expectSomething",
     );
     await expect(page.getByTestId("file-detail-section-relationships")).toContainText("src/app.ts");
-    await expect(page.getByTestId("file-detail-toggle-raw-unresolved")).toHaveCount(0);
   });
 });

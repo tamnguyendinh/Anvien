@@ -42,8 +42,7 @@ func TestGraphHealthCommandSummaryReportComponentsAndExplain(t *testing.T) {
 	fileLayer, _ := summaryRoot["fileLayer"].(map[string]any)
 	assertMapKeySet(t, fileLayer, []string{
 		"totalFiles",
-		"unresolvedFiles",
-		"rawUnresolvedFiles",
+		"unresolved",
 		"generatedFiles",
 		"highFanInFiles",
 		"highFanOutFiles",
@@ -60,8 +59,7 @@ func TestGraphHealthCommandSummaryReportComponentsAndExplain(t *testing.T) {
 	}
 	assertLineKeySet(t, firstLineWithPrefix(t, out, "graphHealth.fileLayer"), []string{
 		"files",
-		"unresolvedFiles",
-		"rawUnresolvedFiles",
+		"unresolved",
 		"generatedFiles",
 		"highFanInFiles",
 		"highFanOutFiles",
@@ -155,19 +153,17 @@ func TestGraphHealthCommandSummaryReportComponentsAndExplain(t *testing.T) {
 func TestGraphHealthFileLayerLinesIncludesFileGroups(t *testing.T) {
 	lines := graphHealthFileLayerLines(
 		graphHealthFileLayer{
-			TotalFiles:         17,
-			UnresolvedFiles:    0,
-			RawUnresolvedFiles: 17,
-			DerivedEdgesNote:   filecontext.DerivedFileEdgesNote,
+			TotalFiles:       17,
+			Unresolved:       17,
+			DerivedEdgesNote: filecontext.DerivedFileEdgesNote,
 		},
 		[]filecontext.FileGroupSummary{
 			{
-				Key:               "backend_support_model_helper",
-				Label:             "Backend support/model/helper files",
-				Files:             17,
-				DefaultUnresolved: 0,
-				RawUnresolved:     376,
-				Roles:             map[string]int{"helper": 3},
+				Key:        "backend_support_model_helper",
+				Label:      "Backend support/model/helper files",
+				Files:      17,
+				Unresolved: 376,
+				Roles:      map[string]int{"helper": 3},
 			},
 		},
 		nil,
@@ -178,8 +174,7 @@ func TestGraphHealthFileLayerLinesIncludesFileGroups(t *testing.T) {
 		`key="backend_support_model_helper"`,
 		`label="Backend support/model/helper files"`,
 		"files=17",
-		"defaultUnresolved=0",
-		"rawUnresolved=376",
+		"unresolved=376",
 		`roles="helper:3"`,
 	} {
 		if !strings.Contains(groupLine, want) {

@@ -113,52 +113,36 @@ func AttachMetadata(context *FileContext, repoName string, repoPath string, grap
 }
 
 type FileSummary struct {
-	Path                                    string `json:"path"`
-	Language                                string `json:"language,omitempty"`
-	Kind                                    string `json:"kind,omitempty"`
-	FileRole                                string `json:"fileRole,omitempty"`
-	FileGroup                               string `json:"fileGroup,omitempty"`
-	AppLayer                                string `json:"appLayer,omitempty"`
-	FunctionalArea                          string `json:"functionalArea,omitempty"`
-	ParseStatus                             string `json:"parseStatus,omitempty"`
-	SymbolCount                             int    `json:"symbolCount"`
-	ExportedSymbolCount                     int    `json:"exportedSymbolCount"`
-	InboundRefCount                         int    `json:"inboundRefCount"`
-	OutboundRefCount                        int    `json:"outboundRefCount"`
-	LocalRelationshipCount                  int    `json:"localRelationshipCount"`
-	UnresolvedSourceSiteCount               int    `json:"unresolvedSourceSiteCount"`
-	RawUnresolvedSourceSiteCount            int    `json:"rawUnresolvedSourceSiteCount"`
-	ProductionUnresolvedSourceSiteCount     int    `json:"productionUnresolvedSourceSiteCount"`
-	NonActionableUnresolvedSourceSiteCount  int    `json:"nonActionableUnresolvedSourceSiteCount"`
-	UnknownUnresolvedSourceSiteCount        int    `json:"unknownUnresolvedSourceSiteCount"`
-	DefaultVisibleUnresolvedSourceSiteCount int    `json:"defaultVisibleUnresolvedSourceSiteCount"`
-	LinkedFlowCount                         int    `json:"linkedFlowCount"`
-	LinkedTestCount                         int    `json:"linkedTestCount"`
-	Risk                                    string `json:"risk,omitempty"`
-	RawRisk                                 string `json:"rawRisk,omitempty"`
-	DefaultVisibleRisk                      string `json:"defaultVisibleRisk,omitempty"`
-	Stale                                   bool   `json:"stale"`
-	ChangedSinceAnalyze                     bool   `json:"changedSinceAnalyze"`
+	Path                   string `json:"path"`
+	Language               string `json:"language,omitempty"`
+	Kind                   string `json:"kind,omitempty"`
+	FileRole               string `json:"fileRole,omitempty"`
+	FileGroup              string `json:"fileGroup,omitempty"`
+	AppLayer               string `json:"appLayer,omitempty"`
+	FunctionalArea         string `json:"functionalArea,omitempty"`
+	ParseStatus            string `json:"parseStatus,omitempty"`
+	SymbolCount            int    `json:"symbolCount"`
+	ExportedSymbolCount    int    `json:"exportedSymbolCount"`
+	InboundRefCount        int    `json:"inboundRefCount"`
+	OutboundRefCount       int    `json:"outboundRefCount"`
+	LocalRelationshipCount int    `json:"localRelationshipCount"`
+	Unresolved             int    `json:"unresolved"`
+	LinkedFlowCount        int    `json:"linkedFlowCount"`
+	LinkedTestCount        int    `json:"linkedTestCount"`
+	Risk                   string `json:"risk,omitempty"`
+	Stale                  bool   `json:"stale"`
+	ChangedSinceAnalyze    bool   `json:"changedSinceAnalyze"`
 }
 
 type FileGroupSummary struct {
-	Key               string         `json:"key"`
-	Label             string         `json:"label"`
-	Files             int            `json:"files"`
-	DefaultUnresolved int            `json:"defaultUnresolved"`
-	RawUnresolved     int            `json:"rawUnresolved"`
-	Roles             map[string]int `json:"roles,omitempty"`
-	AppLayers         map[string]int `json:"appLayers,omitempty"`
-	FunctionalAreas   map[string]int `json:"functionalAreas,omitempty"`
-	SampleFiles       []string       `json:"sampleFiles,omitempty"`
-}
-
-type unresolvedBucketCounts struct {
-	Raw            int
-	Production     int
-	NonActionable  int
-	Unknown        int
-	DefaultVisible int
+	Key             string         `json:"key"`
+	Label           string         `json:"label"`
+	Files           int            `json:"files"`
+	Unresolved      int            `json:"unresolved"`
+	Roles           map[string]int `json:"roles,omitempty"`
+	AppLayers       map[string]int `json:"appLayers,omitempty"`
+	FunctionalAreas map[string]int `json:"functionalAreas,omitempty"`
+	SampleFiles     []string       `json:"sampleFiles,omitempty"`
 }
 
 type SourceRange struct {
@@ -424,7 +408,7 @@ func (b *Builder) BuildFileContext(path string, options Options) (FileContext, b
 		LinkedFlowCount:        linked.Counts.Flows,
 		LinkedTestCount:        linked.Counts.Tests,
 	}
-	applyUnresolvedBuckets(&summary, b.unresolvedBucketCounts(normalizedPath, kind))
+	applyUnresolvedCount(&summary, b.unresolvedCount(normalizedPath))
 
 	return FileContext{
 		Target: Target{
@@ -551,7 +535,7 @@ func (b *Builder) buildFileSummaries() []FileSummary {
 				summary.ExportedSymbolCount++
 			}
 		}
-		applyUnresolvedBuckets(summary, b.unresolvedBucketCounts(path, kind))
+		applyUnresolvedCount(summary, b.unresolvedCount(path))
 		aggregates[path] = summary
 	}
 
@@ -634,8 +618,7 @@ func buildFileGroupSummaries(summaries []FileSummary) []FileGroupSummary {
 			byKey[key] = group
 		}
 		group.Files++
-		group.DefaultUnresolved += file.DefaultVisibleUnresolvedSourceSiteCount
-		group.RawUnresolved += file.RawUnresolvedSourceSiteCount
+		group.Unresolved += file.Unresolved
 		incrementCount(group.Roles, file.FileRole)
 		incrementCount(group.AppLayers, file.AppLayer)
 		incrementCount(group.FunctionalAreas, file.FunctionalArea)
@@ -670,54 +653,13 @@ func incrementCount(counts map[string]int, key string) {
 	counts[key]++
 }
 
-func applyUnresolvedBuckets(summary *FileSummary, counts unresolvedBucketCounts) {
-	summary.UnresolvedSourceSiteCount = counts.Raw
-	summary.RawUnresolvedSourceSiteCount = counts.Raw
-	summary.ProductionUnresolvedSourceSiteCount = counts.Production
-	summary.NonActionableUnresolvedSourceSiteCount = counts.NonActionable
-	summary.UnknownUnresolvedSourceSiteCount = counts.Unknown
-	summary.DefaultVisibleUnresolvedSourceSiteCount = counts.DefaultVisible
-	summary.RawRisk = riskFor(counts.Raw)
-	summary.DefaultVisibleRisk = riskFor(counts.DefaultVisible)
-	summary.Risk = summary.DefaultVisibleRisk
+func applyUnresolvedCount(summary *FileSummary, unresolved int) {
+	summary.Unresolved = unresolved
+	summary.Risk = riskFor(unresolved)
 }
 
-func (b *Builder) unresolvedBucketCounts(path string, kind string) unresolvedBucketCounts {
-	nodes := b.unresolvedByFile[path]
-	counts := unresolvedBucketCounts{Raw: len(nodes)}
-	if counts.Raw == 0 {
-		return counts
-	}
-	if kind == "test" {
-		return counts
-	}
-	for _, node := range nodes {
-		switch {
-		case isNonActionableUnresolved(node):
-			counts.NonActionable++
-		case isUnknownUnresolved(node):
-			counts.Unknown++
-			counts.DefaultVisible++
-		default:
-			counts.Production++
-			counts.DefaultVisible++
-		}
-	}
-	return counts
-}
-
-func isNonActionableUnresolved(node graph.Node) bool {
-	return normalizedUnresolvedProperty(node, "actionability") == "non_actionable"
-}
-
-func isUnknownUnresolved(node graph.Node) bool {
-	actionability := normalizedUnresolvedProperty(node, "actionability")
-	classification := normalizedUnresolvedProperty(node, "classification")
-	return actionability == "" || actionability == "unknown" || classification == "" || classification == "unknown"
-}
-
-func normalizedUnresolvedProperty(node graph.Node, key string) string {
-	return strings.ToLower(strings.TrimSpace(stringProperty(node, key)))
+func (b *Builder) unresolvedCount(path string) int {
+	return len(b.unresolvedByFile[path])
 }
 
 func (b *Builder) buildSymbolTree(path string, unresolved UnresolvedSummary) ([]SymbolTreeNode, int, int) {
@@ -1466,14 +1408,9 @@ func sortSummaries(summaries []FileSummary, sortMode string) {
 	sort.SliceStable(summaries, func(i, j int) bool {
 		left, right := summaries[i], summaries[j]
 		switch mode {
-		case "unresolved", "raw-unresolved", "production-unresolved":
-			leftCount := unresolvedSortCount(left, mode)
-			rightCount := unresolvedSortCount(right, mode)
-			if leftCount != rightCount {
-				return leftCount > rightCount
-			}
-			if left.RawUnresolvedSourceSiteCount != right.RawUnresolvedSourceSiteCount {
-				return left.RawUnresolvedSourceSiteCount > right.RawUnresolvedSourceSiteCount
+		case "unresolved":
+			if left.Unresolved != right.Unresolved {
+				return left.Unresolved > right.Unresolved
 			}
 		case "fan-in":
 			if left.InboundRefCount != right.InboundRefCount {
@@ -1501,23 +1438,7 @@ func sortSummaries(summaries []FileSummary, sortMode string) {
 }
 
 func unresolvedFilterCount(summary FileSummary, sortMode string) int {
-	switch sortMode {
-	case "raw-unresolved", "production-unresolved":
-		return unresolvedSortCount(summary, sortMode)
-	default:
-		return summary.DefaultVisibleUnresolvedSourceSiteCount
-	}
-}
-
-func unresolvedSortCount(summary FileSummary, sortMode string) int {
-	switch sortMode {
-	case "raw-unresolved":
-		return summary.RawUnresolvedSourceSiteCount
-	case "production-unresolved":
-		return summary.ProductionUnresolvedSourceSiteCount
-	default:
-		return summary.DefaultVisibleUnresolvedSourceSiteCount
-	}
+	return summary.Unresolved
 }
 
 func normalizedSort(sortMode string) string {
@@ -1525,12 +1446,8 @@ func normalizedSort(sortMode string) string {
 		return "path"
 	}
 	switch strings.ToLower(strings.TrimSpace(sortMode)) {
-	case "unresolved", "default-unresolved", "default-visible-unresolved":
+	case "unresolved":
 		return "unresolved"
-	case "raw", "raw-unresolved":
-		return "raw-unresolved"
-	case "production-unresolved", "actionable-unresolved":
-		return "production-unresolved"
 	case "fan-in", "fan-out", "symbols", "flows", "tests":
 		return strings.ToLower(strings.TrimSpace(sortMode))
 	default:
@@ -1547,12 +1464,12 @@ func IsSupportedFileListSort(sortMode string) bool {
 }
 
 func SupportedFileListSorts() []string {
-	return []string{"path", "unresolved", "raw-unresolved", "production-unresolved", "fan-in", "fan-out", "symbols", "flows", "tests"}
+	return []string{"path", "unresolved", "fan-in", "fan-out", "symbols", "flows", "tests"}
 }
 
 func isSupportedSort(sortMode string) bool {
 	switch strings.ToLower(strings.TrimSpace(sortMode)) {
-	case "", "path", "unresolved", "default-unresolved", "default-visible-unresolved", "raw", "raw-unresolved", "production-unresolved", "actionable-unresolved", "fan-in", "fan-out", "symbols", "flows", "tests":
+	case "", "path", "unresolved", "fan-in", "fan-out", "symbols", "flows", "tests":
 		return true
 	default:
 		return false

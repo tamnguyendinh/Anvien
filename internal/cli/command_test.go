@@ -1280,8 +1280,7 @@ export function main() {
 		"gaps: unsupported_language=0 unknown=0",
 		"graph: nodes=",
 		"fileProjection: status=built",
-		"unresolvedFiles=",
-		"rawUnresolvedFiles=",
+		"unresolved=",
 	} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("analyze output missing %q:\n%s", want, out)
@@ -1291,8 +1290,7 @@ export function main() {
 		"status",
 		"files",
 		"dependencyEdges",
-		"unresolvedFiles",
-		"rawUnresolvedFiles",
+		"unresolved",
 		"hotspots",
 		"derivedEdges",
 	})
@@ -1337,8 +1335,7 @@ export function main() {
 			Status           string                    `json:"status"`
 			Files            int                       `json:"files"`
 			DependencyEdges  int                       `json:"dependencyEdges"`
-			UnresolvedFiles  int                       `json:"unresolvedFiles"`
-			RawUnresolved    int                       `json:"rawUnresolvedFiles"`
+			Unresolved       int                       `json:"unresolved"`
 			Hotspots         []filecontext.FileSummary `json:"hotspots"`
 			DerivedEdgesNote string                    `json:"derivedEdgesNote"`
 		} `json:"fileProjection"`
@@ -1369,8 +1366,7 @@ export function main() {
 		"status",
 		"files",
 		"dependencyEdges",
-		"unresolvedFiles",
-		"rawUnresolvedFiles",
+		"unresolved",
 		"hotspots",
 		"derivedEdgesNote",
 	})
@@ -1440,18 +1436,16 @@ func assertRegisteredRepoNames(t *testing.T, home string, want []string) {
 
 func TestAnalyzeFileProjectionLinesIncludesFileGroups(t *testing.T) {
 	lines := analyzeFileProjectionLines(analyzeFileProjectionSummary{
-		Status:             "built",
-		Files:              17,
-		DependencyEdges:    10,
-		UnresolvedFiles:    0,
-		RawUnresolvedFiles: 17,
+		Status:          "built",
+		Files:           17,
+		DependencyEdges: 10,
+		Unresolved:      17,
 		FileGroups: []filecontext.FileGroupSummary{
 			{
-				Key:               "backend_support_model_helper",
-				Label:             "Backend support/model/helper files",
-				Files:             17,
-				DefaultUnresolved: 0,
-				RawUnresolved:     376,
+				Key:        "backend_support_model_helper",
+				Label:      "Backend support/model/helper files",
+				Files:      17,
+				Unresolved: 376,
 				Roles: map[string]int{
 					"analyzer_helper": 2,
 					"helper":          3,
@@ -1469,8 +1463,7 @@ func TestAnalyzeFileProjectionLinesIncludesFileGroups(t *testing.T) {
 		`key="backend_support_model_helper"`,
 		`label="Backend support/model/helper files"`,
 		"files=17",
-		"defaultUnresolved=0",
-		"rawUnresolved=376",
+		"unresolved=376",
 		`roles="analyzer_helper:2,helper:3"`,
 	} {
 		if !strings.Contains(groupLine, want) {

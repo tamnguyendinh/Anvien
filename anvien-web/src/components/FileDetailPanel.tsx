@@ -62,31 +62,9 @@ const countEntries = (counts: Record<string, number> | undefined) =>
     .filter(([, count]) => count > 0)
     .sort((left, right) => right[1] - left[1]);
 
-const defaultUnresolvedCount = (summary: FileSummary): number =>
-  summary.defaultVisibleUnresolvedSourceSiteCount ?? summary.unresolvedSourceSiteCount ?? 0;
+const unresolvedCount = (summary: FileSummary): number => summary.unresolved ?? 0;
 
 const isTestFile = (summary: FileSummary): boolean => summary.kind === "test";
-
-const isDefaultVisibleUnresolvedSample = (sample: FileUnresolvedSample): boolean =>
-  sample.actionability !== "non_actionable";
-
-const defaultVisibleUnresolvedGroups = (
-  groups: FileUnresolvedGroup[],
-  testFile: boolean,
-): FileUnresolvedGroup[] => {
-  if (testFile) return [];
-  return groups
-    .map((group) => {
-      const samples = group.samples.filter(isDefaultVisibleUnresolvedSample);
-      if (samples.length === 0) return null;
-      return {
-        ...group,
-        total: samples.length,
-        samples,
-      };
-    })
-    .filter((group): group is FileUnresolvedGroup => group !== null);
-};
 
 const unresolvedKindCounts = (groups: FileUnresolvedGroup[]): Record<string, number> => {
   const counts: Record<string, number> = {};
@@ -567,8 +545,8 @@ export const FileDetailPanel = ({
   const summary = context.summary;
   const quality = context.quality;
   const testFile = isTestFile(summary);
-  const defaultUnresolved = defaultUnresolvedCount(summary);
-  const unresolvedGroups = defaultVisibleUnresolvedGroups(context.unresolved.groups, testFile);
+  const unresolved = unresolvedCount(summary);
+  const unresolvedGroups = context.unresolved.groups;
   const unresolvedKinds = unresolvedKindCounts(unresolvedGroups);
 
   return (
@@ -590,7 +568,7 @@ export const FileDetailPanel = ({
           <Stat label="In" value={compactCount(summary.inboundRefCount)} />
           <Stat label="Out" value={compactCount(summary.outboundRefCount)} />
           <Stat label="Local" value={compactCount(summary.localRelationshipCount)} />
-          <Stat label="Unresolved" value={compactCount(defaultUnresolved)} />
+          <Stat label="Unresolved" value={compactCount(unresolved)} />
           <Stat label="Tests" value={compactCount(summary.linkedTestCount)} />
         </div>
         <div className="mt-2 flex flex-wrap gap-1">
@@ -619,13 +597,9 @@ export const FileDetailPanel = ({
             value={formatKey(quality.resolutionConfidence)}
             tone={quality.resolutionConfidence === "degraded" ? "warning" : "neutral"}
           />
-          {!testFile && (
-            <>
-              <Pill label="Calls" value={quality.unresolvedCalls} />
-              <Pill label="Refs" value={quality.unresolvedRefs} />
-              <Pill label="Imports" value={quality.unresolvedImports} />
-            </>
-          )}
+          <Pill label="Calls" value={quality.unresolvedCalls} />
+          <Pill label="Refs" value={quality.unresolvedRefs} />
+          <Pill label="Imports" value={quality.unresolvedImports} />
           <Pill label="Generated" value={quality.generated} />
           <Pill label="Stale" value={quality.stale} tone={quality.stale ? "warning" : "neutral"} />
           <Pill
@@ -688,7 +662,7 @@ export const FileDetailPanel = ({
       <Section
         icon={<AlertTriangle className="h-3.5 w-3.5" />}
         title="Unresolved"
-        meta={`${compactCount(defaultUnresolved)} sites`}
+        meta={`${compactCount(unresolved)} sites`}
         testId="file-detail-section-unresolved"
       >
         <div className="mb-2 flex flex-wrap gap-1">

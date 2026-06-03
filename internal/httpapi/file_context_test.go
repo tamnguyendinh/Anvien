@@ -30,7 +30,7 @@ func TestFileContextEndpointReturnsProjectionForRegisteredRepo(t *testing.T) {
 	}
 	if payload.Summary.Path != "src/app.go" || payload.Summary.SymbolCount != 2 ||
 		payload.Summary.OutboundRefCount != 1 || payload.Summary.InboundRefCount != 1 ||
-		payload.Summary.UnresolvedSourceSiteCount != 1 {
+		payload.Summary.Unresolved != 1 {
 		t.Fatalf("summary = %#v, want file counts from projection graph", payload.Summary)
 	}
 	if len(payload.SymbolTree) != 2 || payload.SymbolTree[0].Name != "Server" || payload.SymbolTree[1].Name != "NewServer" {
@@ -57,10 +57,9 @@ func TestFileHotspotsEndpointReturnsSortedProjection(t *testing.T) {
 		t.Fatalf("hotspots payload = %#v", payload)
 	}
 	if payload.Files[0].Path != "src/app.go" ||
-		payload.Files[0].DefaultVisibleUnresolvedSourceSiteCount != 1 ||
-		payload.Files[0].RawUnresolvedSourceSiteCount != 1 ||
+		payload.Files[0].Unresolved != 1 ||
 		payload.Files[0].Risk != "medium" {
-		t.Fatalf("top hotspot = %#v, want src/app.go default/raw unresolved=1 risk=medium", payload.Files[0])
+		t.Fatalf("top hotspot = %#v, want src/app.go unresolved=1 risk=medium", payload.Files[0])
 	}
 	if len(payload.FileGroups) != 1 ||
 		payload.FileGroups[0].Key != "backend_support_model_helper" ||
@@ -78,7 +77,7 @@ func TestFileHotspotsEndpointReturnsSortedProjection(t *testing.T) {
 	}
 
 	var errorPayload map[string]string
-	getJSON(t, server.URL+"/api/file-hotspots?repo=workspace&sort=test-unresolved", http.StatusBadRequest, &errorPayload)
+	getJSON(t, server.URL+"/api/file-hotspots?repo=workspace&sort=bad-sort", http.StatusBadRequest, &errorPayload)
 	if errorPayload["error"] != `Unsupported "sort" query parameter` {
 		t.Fatalf("retired sort error = %#v", errorPayload)
 	}

@@ -34,7 +34,7 @@ func TestFileContextCommandOutputsFileProjection(t *testing.T) {
 	if payload.Repo != "fixture" || payload.Summary.Path != "src/app.go" {
 		t.Fatalf("payload repo/path = %q/%q", payload.Repo, payload.Summary.Path)
 	}
-	if payload.Summary.SymbolCount != 2 || payload.Summary.OutboundRefCount != 1 || payload.Summary.UnresolvedSourceSiteCount != 1 {
+	if payload.Summary.SymbolCount != 2 || payload.Summary.OutboundRefCount != 1 || payload.Summary.Unresolved != 1 {
 		t.Fatalf("summary = %#v, want symbols=2 outbound=1 unresolved=1", payload.Summary)
 	}
 	if len(payload.SymbolTree) != 2 || payload.SymbolTree[0].Name != "Server" || payload.SymbolTree[1].Name != "NewServer" {
@@ -81,10 +81,9 @@ func TestFileHotspotsCommandOutputsSortedProjection(t *testing.T) {
 		t.Fatalf("hotspots payload = %#v", payload)
 	}
 	if payload.Files[0].Path != "src/app.go" ||
-		payload.Files[0].DefaultVisibleUnresolvedSourceSiteCount != 1 ||
-		payload.Files[0].RawUnresolvedSourceSiteCount != 1 ||
+		payload.Files[0].Unresolved != 1 ||
 		payload.Files[0].Risk != "medium" {
-		t.Fatalf("top hotspot = %#v, want src/app.go default/raw unresolved=1 risk=medium", payload.Files[0])
+		t.Fatalf("top hotspot = %#v, want src/app.go unresolved=1 risk=medium", payload.Files[0])
 	}
 
 	out, errOut, err = executeForTest(t, "file-hotspots", "--repo", "fixture", "--unresolved-only")
@@ -103,11 +102,11 @@ func TestFileHotspotsCommandOutputsSortedProjection(t *testing.T) {
 		t.Fatalf("default unresolved-only output exposed test unresolved file:\n%s", out)
 	}
 
-	out, errOut, err = executeForTest(t, "file-hotspots", "--repo", "fixture", "--sort", "test-unresolved", "--json")
+	out, errOut, err = executeForTest(t, "file-hotspots", "--repo", "fixture", "--sort", "bad-sort", "--json")
 	if err == nil {
-		t.Fatalf("file-hotspots accepted retired test-unresolved sort\nstdout:\n%s\nstderr:\n%s", out, errOut)
+		t.Fatalf("file-hotspots accepted unsupported sort\nstdout:\n%s\nstderr:\n%s", out, errOut)
 	}
-	if !strings.Contains(err.Error(), `unsupported sort "test-unresolved"`) {
+	if !strings.Contains(err.Error(), `unsupported sort "bad-sort"`) {
 		t.Fatalf("retired sort error = %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
 	}
 }

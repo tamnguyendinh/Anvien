@@ -143,9 +143,9 @@ func TestQueryHealthActualResultsIncludesProcessRows(t *testing.T) {
 			"rank": float64(1),
 			"path": "internal/group/query.go",
 			"summary": map[string]any{
-				"appLayer":                  "backend",
-				"functionalArea":            "groups",
-				"unresolvedSourceSiteCount": float64(2),
+				"appLayer":       "backend",
+				"functionalArea": "groups",
+				"unresolved":     float64(2),
 			},
 		}},
 		Processes: []map[string]any{{

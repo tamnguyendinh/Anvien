@@ -39,17 +39,10 @@ const fileContext: FileContextResponse = {
     inboundRefCount: 4,
     outboundRefCount: 7,
     localRelationshipCount: 3,
-    unresolvedSourceSiteCount: 1,
-    rawUnresolvedSourceSiteCount: 1,
-    productionUnresolvedSourceSiteCount: 1,
-    nonActionableUnresolvedSourceSiteCount: 0,
-    unknownUnresolvedSourceSiteCount: 0,
-    defaultVisibleUnresolvedSourceSiteCount: 1,
+    unresolved: 1,
     linkedFlowCount: 1,
     linkedTestCount: 1,
     risk: "medium",
-    rawRisk: "medium",
-    defaultVisibleRisk: "medium",
     stale: false,
     changedSinceAnalyze: true,
   },
@@ -222,16 +215,9 @@ const testFileContext: FileContextResponse = {
     fileGroup: undefined,
     fileRole: "test_helper",
     appLayer: "api_test",
-    unresolvedSourceSiteCount: 0,
-    rawUnresolvedSourceSiteCount: 0,
-    productionUnresolvedSourceSiteCount: 0,
-    nonActionableUnresolvedSourceSiteCount: 0,
-    unknownUnresolvedSourceSiteCount: 0,
-    defaultVisibleUnresolvedSourceSiteCount: 0,
+    unresolved: 1,
     linkedTestCount: 0,
-    risk: "low",
-    rawRisk: "low",
-    defaultVisibleRisk: "low",
+    risk: "medium",
   },
   relationships: {
     ...fileContext.relationships,
@@ -259,11 +245,30 @@ const testFileContext: FileContextResponse = {
     inboundByFile: [],
   },
   unresolved: {
-    total: 0,
-    byKind: {},
-    byClassification: {},
-    byActionability: {},
-    groups: [],
+    total: 1,
+    byKind: { unresolved_reference: 1 },
+    byClassification: { in_repo_unresolved: 1 },
+    byActionability: { analyzer_gap: 1 },
+    groups: [
+      {
+        sourceSymbol: "testMain",
+        total: 1,
+        samples: [
+          {
+            line: 12,
+            column: 3,
+            targetText: "expectSomething",
+            sourceSymbol: "testMain",
+            gapKind: "unresolved_reference",
+            classification: "in_repo_unresolved",
+            actionability: "analyzer_gap",
+            proofKind: "none",
+            sourceSiteId: "site-test-gap",
+            sourceSiteStatus: "unresolved_local_binding",
+          },
+        ],
+      },
+    ],
   },
   linked: {
     ...fileContext.linked,
@@ -277,7 +282,7 @@ const testFileContext: FileContextResponse = {
     ...fileContext.quality,
     resolutionConfidence: "clear",
     unresolvedCalls: 0,
-    unresolvedRefs: 0,
+    unresolvedRefs: 1,
     unresolvedImports: 0,
   },
 };
@@ -351,7 +356,7 @@ describe("FileDetailPanel", () => {
     expect(screen.getByTestId("file-detail-section-summary")).toHaveTextContent("Unknown");
   });
 
-  it("renders test file identity without default unresolved samples", async () => {
+  it("renders test file identity with canonical unresolved samples", async () => {
     fetchFileContext.mockResolvedValueOnce(testFileContext);
 
     render(<FileDetailPanel repoName="demo" filePath="src/app.test.ts" />);
@@ -361,12 +366,9 @@ describe("FileDetailPanel", () => {
     expect(screen.getByText("Test Helper")).toBeInTheDocument();
 
     const unresolved = screen.getByTestId("file-detail-section-unresolved");
-    expect(unresolved).toHaveTextContent("0 sites");
-    expect(unresolved).toHaveTextContent("No default unresolved source-site samples.");
-    expect(unresolved).not.toHaveTextContent("expectSomething");
-    expect(unresolved).not.toHaveTextContent("site-test-gap");
+    expect(unresolved).toHaveTextContent("1 sites");
+    expect(unresolved).toHaveTextContent("expectSomething");
     expect(screen.getByTestId("file-detail-section-relationships")).toHaveTextContent("src/app.ts");
-    expect(screen.queryByTestId("file-detail-toggle-raw-unresolved")).not.toBeInTheDocument();
-    expect(screen.getByTestId("file-detail-section-quality")).not.toHaveTextContent("Calls");
+    expect(screen.getByTestId("file-detail-section-quality")).toHaveTextContent("Refs");
   });
 });

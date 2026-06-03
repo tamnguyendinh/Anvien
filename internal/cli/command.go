@@ -310,62 +310,54 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 }
 
 type analyzeFileProjectionSummary struct {
-	Status             string                         `json:"status"`
-	Files              int                            `json:"files"`
-	DependencyEdges    int                            `json:"dependencyEdges"`
-	UnresolvedFiles    int                            `json:"unresolvedFiles"`
-	RawUnresolvedFiles int                            `json:"rawUnresolvedFiles"`
-	FileGroups         []filecontext.FileGroupSummary `json:"fileGroups,omitempty"`
-	Hotspots           []filecontext.FileSummary      `json:"hotspots"`
-	DerivedEdgesNote   string                         `json:"derivedEdgesNote"`
+	Status           string                         `json:"status"`
+	Files            int                            `json:"files"`
+	DependencyEdges  int                            `json:"dependencyEdges"`
+	Unresolved       int                            `json:"unresolved"`
+	FileGroups       []filecontext.FileGroupSummary `json:"fileGroups,omitempty"`
+	Hotspots         []filecontext.FileSummary      `json:"hotspots"`
+	DerivedEdgesNote string                         `json:"derivedEdgesNote"`
 }
 
 func buildAnalyzeFileProjection(g *graph.Graph) analyzeFileProjectionSummary {
 	builder := filecontext.NewBuilder(g)
 	list := builder.BuildFileList(filecontext.FileListOptions{Sort: "path", Limit: 0})
 	hotspots := builder.BuildFileList(filecontext.FileListOptions{Sort: "unresolved", Limit: 5})
-	rawUnresolvedFiles := 0
-	unresolvedFiles := 0
+	unresolved := 0
 	dependencyEdges := 0
 	for _, file := range list.Files {
-		if file.RawUnresolvedSourceSiteCount > 0 {
-			rawUnresolvedFiles++
-		}
-		if file.DefaultVisibleUnresolvedSourceSiteCount > 0 {
-			unresolvedFiles++
+		if file.Unresolved > 0 {
+			unresolved++
 		}
 		dependencyEdges += file.OutboundRefCount
 	}
 	return analyzeFileProjectionSummary{
-		Status:             "built",
-		Files:              list.Total,
-		DependencyEdges:    dependencyEdges,
-		UnresolvedFiles:    unresolvedFiles,
-		RawUnresolvedFiles: rawUnresolvedFiles,
-		FileGroups:         list.FileGroups,
-		Hotspots:           hotspots.Files,
-		DerivedEdgesNote:   filecontext.DerivedFileEdgesNote,
+		Status:           "built",
+		Files:            list.Total,
+		DependencyEdges:  dependencyEdges,
+		Unresolved:       unresolved,
+		FileGroups:       list.FileGroups,
+		Hotspots:         hotspots.Files,
+		DerivedEdgesNote: filecontext.DerivedFileEdgesNote,
 	}
 }
 
 func analyzeFileProjectionLines(summary analyzeFileProjectionSummary) []string {
 	lines := []string{
-		fmt.Sprintf("fileProjection: status=built files=%d dependencyEdges=%d unresolvedFiles=%d rawUnresolvedFiles=%d hotspots=%d derivedEdges=%q",
+		fmt.Sprintf("fileProjection: status=built files=%d dependencyEdges=%d unresolved=%d hotspots=%d derivedEdges=%q",
 			summary.Files,
 			summary.DependencyEdges,
-			summary.UnresolvedFiles,
-			summary.RawUnresolvedFiles,
+			summary.Unresolved,
 			len(summary.Hotspots),
 			summary.DerivedEdgesNote,
 		),
 	}
 	for _, group := range summary.FileGroups {
-		lines = append(lines, fmt.Sprintf("fileProjection.group key=%q label=%q files=%d defaultUnresolved=%d rawUnresolved=%d roles=%q appLayers=%q functionalAreas=%q samples=%q",
+		lines = append(lines, fmt.Sprintf("fileProjection.group key=%q label=%q files=%d unresolved=%d roles=%q appLayers=%q functionalAreas=%q samples=%q",
 			group.Key,
 			group.Label,
 			group.Files,
-			group.DefaultUnresolved,
-			group.RawUnresolved,
+			group.Unresolved,
 			formatCountMap(group.Roles),
 			formatCountMap(group.AppLayers),
 			formatCountMap(group.FunctionalAreas),
@@ -373,12 +365,11 @@ func analyzeFileProjectionLines(summary analyzeFileProjectionSummary) []string {
 		))
 	}
 	for _, file := range summary.Hotspots {
-		lines = append(lines, fmt.Sprintf("fileProjection.hotspot path=%q group=%s role=%s unresolved=%d rawUnresolved=%d fanIn=%d fanOut=%d risk=%s",
+		lines = append(lines, fmt.Sprintf("fileProjection.hotspot path=%q group=%s role=%s unresolved=%d fanIn=%d fanOut=%d risk=%s",
 			file.Path,
 			defaultString(file.FileGroup, "none"),
 			defaultString(file.FileRole, "unknown"),
-			file.DefaultVisibleUnresolvedSourceSiteCount,
-			file.RawUnresolvedSourceSiteCount,
+			file.Unresolved,
 			file.InboundRefCount,
 			file.OutboundRefCount,
 			defaultString(file.Risk, "unknown"),

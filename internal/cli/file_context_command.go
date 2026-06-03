@@ -149,7 +149,7 @@ func newFileHotspotsCommand() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&repoName, "repo", "r", "", "target repository")
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write file hotspot JSON")
-	cmd.Flags().StringVar(&sortMode, "sort", "unresolved", "sort by path, unresolved, raw-unresolved, production-unresolved, fan-in, fan-out, symbols, flows, or tests")
+	cmd.Flags().StringVar(&sortMode, "sort", "unresolved", "sort by path, unresolved, fan-in, fan-out, symbols, flows, or tests")
 	cmd.Flags().IntVar(&limit, "limit", 20, "maximum files to show; 0 means all")
 	cmd.Flags().IntVar(&offset, "offset", 0, "files to skip before returning results")
 	cmd.Flags().StringSliceVar(&kinds, "kind", nil, "filter by file kind; repeat or comma-separate values")
@@ -254,7 +254,7 @@ func renderFileContext(cmd *cobra.Command, context filecontext.FileContext) erro
 		summary.LocalRelationshipCount,
 		summary.InboundRefCount,
 		summary.OutboundRefCount,
-		summary.UnresolvedSourceSiteCount,
+		summary.Unresolved,
 	); err != nil {
 		return err
 	}
@@ -306,23 +306,22 @@ func renderFileHotspots(cmd *cobra.Command, payload fileHotspotsPayload) error {
 			return err
 		}
 		for _, group := range payload.FileGroups {
-			if _, err := fmt.Fprintf(out, "  %s (%s) files=%d defaultUnresolved=%d rawUnresolved=%d roles=%s\n",
+			if _, err := fmt.Fprintf(out, "  %s (%s) files=%d unresolved=%d roles=%s\n",
 				group.Label,
 				group.Key,
 				group.Files,
-				group.DefaultUnresolved,
-				group.RawUnresolved,
+				group.Unresolved,
 				formatCountMap(group.Roles),
 			); err != nil {
 				return err
 			}
 		}
 	}
-	if _, err := fmt.Fprintln(out, "Path\tGroup\tRole\tLayer\tArea\tSymbols\tIn\tOut\tLocal\tUnresolved\tRaw\tRisk"); err != nil {
+	if _, err := fmt.Fprintln(out, "Path\tGroup\tRole\tLayer\tArea\tSymbols\tIn\tOut\tLocal\tUnresolved\tRisk"); err != nil {
 		return err
 	}
 	for _, file := range payload.Files {
-		if _, err := fmt.Fprintf(out, "%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n",
+		if _, err := fmt.Fprintf(out, "%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n",
 			file.Path,
 			defaultString(file.FileGroup, "-"),
 			defaultString(file.FileRole, "-"),
@@ -332,8 +331,7 @@ func renderFileHotspots(cmd *cobra.Command, payload fileHotspotsPayload) error {
 			file.InboundRefCount,
 			file.OutboundRefCount,
 			file.LocalRelationshipCount,
-			file.DefaultVisibleUnresolvedSourceSiteCount,
-			file.RawUnresolvedSourceSiteCount,
+			file.Unresolved,
 			defaultString(file.Risk, "-"),
 		); err != nil {
 			return err

@@ -4271,17 +4271,10 @@ export interface FileSummary {
   inboundRefCount: number;
   outboundRefCount: number;
   localRelationshipCount: number;
-  unresolvedSourceSiteCount: number;
-  rawUnresolvedSourceSiteCount: number;
-  productionUnresolvedSourceSiteCount: number;
-  nonActionableUnresolvedSourceSiteCount: number;
-  unknownUnresolvedSourceSiteCount: number;
-  defaultVisibleUnresolvedSourceSiteCount: number;
+  unresolved: number;
   linkedFlowCount: number;
   linkedTestCount: number;
   risk?: string;
-  rawRisk?: string;
-  defaultVisibleRisk?: string;
   stale: boolean;
   changedSinceAnalyze: boolean;
 }
@@ -4290,8 +4283,7 @@ export interface FileGroupSummary {
   key: FileGroup | string;
   label: string;
   files: number;
-  defaultUnresolved: number;
-  rawUnresolved: number;
+  unresolved: number;
   roles?: Record<string, number>;
   appLayers?: Record<string, number>;
   functionalAreas?: Record<string, number>;

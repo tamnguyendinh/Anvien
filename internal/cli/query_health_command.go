@@ -393,7 +393,7 @@ func queryHealthActualResults(payload queryHealthQueryPayload, limit int) []quer
 			FilePath:           firstNonEmptyMapString(file, "path", "filePath"),
 			AppLayer:           firstNonEmptyMapString(summary, "appLayer", "AppLayer"),
 			FunctionalArea:     firstNonEmptyMapString(summary, "functionalArea", "FunctionalArea"),
-			ResolutionGapCount: mapInt(summary, "unresolvedSourceSiteCount", "UnresolvedSourceSiteCount"),
+			ResolutionGapCount: mapInt(summary, "unresolved", "Unresolved"),
 			QueryLanes:         mapStringSlice(file, "queryLanes", "QueryLanes"),
 			MatchReasons:       mapStringSlice(file, "matchReasons", "MatchReasons"),
 		})

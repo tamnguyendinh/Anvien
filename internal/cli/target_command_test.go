@@ -161,8 +161,7 @@ func TestQueryDetectChangesAndGraphHealthChildViews(t *testing.T) {
 	fileLayerSummary, _ := graphHealthSummary["fileLayer"].(map[string]any)
 	assertMapKeySet(t, fileLayerSummary, []string{
 		"totalFiles",
-		"unresolvedFiles",
-		"rawUnresolvedFiles",
+		"unresolved",
 		"generatedFiles",
 		"highFanInFiles",
 		"highFanOutFiles",

@@ -266,22 +266,17 @@ func (s Server) contextResource(repoName string) (string, error) {
 		builder := filecontext.NewBuilder(g)
 		list := builder.BuildFileList(filecontext.FileListOptions{Sort: "unresolved", Limit: 3})
 		all := builder.BuildFileList(filecontext.FileListOptions{Sort: "path", Limit: 0})
-		rawUnresolvedFiles := 0
-		unresolvedFiles := 0
+		unresolved := 0
 		for _, file := range all.Files {
-			if file.RawUnresolvedSourceSiteCount > 0 {
-				rawUnresolvedFiles++
-			}
-			if file.DefaultVisibleUnresolvedSourceSiteCount > 0 {
-				unresolvedFiles++
+			if file.Unresolved > 0 {
+				unresolved++
 			}
 		}
 		lines = append(lines,
 			"",
 			"file_projection:",
 			fmt.Sprintf("  files: %d", list.Total),
-			fmt.Sprintf("  unresolved_files: %d", unresolvedFiles),
-			fmt.Sprintf("  raw_unresolved_files: %d", rawUnresolvedFiles),
+			fmt.Sprintf("  unresolved: %d", unresolved),
 			fmt.Sprintf("  derived_edges: %q", filecontext.DerivedFileEdgesNote),
 			"  top_hotspots:",
 		)
@@ -289,8 +284,7 @@ func (s Server) contextResource(repoName string) (string, error) {
 			lines = append(lines, fmt.Sprintf("    - path: %q", file.Path))
 			lines = append(lines, fmt.Sprintf("      group: %s", firstNonEmptyString(file.FileGroup, "none")))
 			lines = append(lines, fmt.Sprintf("      role: %s", firstNonEmptyString(file.FileRole, "unknown")))
-			lines = append(lines, fmt.Sprintf("      unresolved: %d", file.DefaultVisibleUnresolvedSourceSiteCount))
-			lines = append(lines, fmt.Sprintf("      raw_unresolved: %d", file.RawUnresolvedSourceSiteCount))
+			lines = append(lines, fmt.Sprintf("      unresolved: %d", file.Unresolved))
 			lines = append(lines, fmt.Sprintf("      fan_in: %d", file.InboundRefCount))
 			lines = append(lines, fmt.Sprintf("      fan_out: %d", file.OutboundRefCount))
 		}

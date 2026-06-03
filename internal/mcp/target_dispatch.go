@@ -108,23 +108,16 @@ func mcpFileLayerFromContext(context filecontext.FileContext) map[string]any {
 
 func mcpFileRelationshipHints(summary filecontext.FileSummary) map[string]any {
 	return map[string]any{
-		"inbound":                  summary.InboundRefCount,
-		"outbound":                 summary.OutboundRefCount,
-		"local":                    summary.LocalRelationshipCount,
-		"unresolved":               summary.DefaultVisibleUnresolvedSourceSiteCount,
-		"rawUnresolved":            summary.RawUnresolvedSourceSiteCount,
-		"productionUnresolved":     summary.ProductionUnresolvedSourceSiteCount,
-		"nonActionableUnresolved":  summary.NonActionableUnresolvedSourceSiteCount,
-		"unknownUnresolved":        summary.UnknownUnresolvedSourceSiteCount,
-		"defaultVisibleUnresolved": summary.DefaultVisibleUnresolvedSourceSiteCount,
-		"linkedFlows":              summary.LinkedFlowCount,
-		"linkedTests":              summary.LinkedTestCount,
-		"risk":                     summary.Risk,
-		"rawRisk":                  summary.RawRisk,
-		"defaultVisibleRisk":       summary.DefaultVisibleRisk,
-		"fileGroup":                summary.FileGroup,
-		"fileRole":                 summary.FileRole,
-		"derivedEdgesNote":         filecontext.DerivedFileEdgesNote,
+		"inbound":          summary.InboundRefCount,
+		"outbound":         summary.OutboundRefCount,
+		"local":            summary.LocalRelationshipCount,
+		"unresolved":       summary.Unresolved,
+		"linkedFlows":      summary.LinkedFlowCount,
+		"linkedTests":      summary.LinkedTestCount,
+		"risk":             summary.Risk,
+		"fileGroup":        summary.FileGroup,
+		"fileRole":         summary.FileRole,
+		"derivedEdgesNote": filecontext.DerivedFileEdgesNote,
 	}
 }
 
@@ -145,11 +138,8 @@ func addMCPSymbolTargetFields(payload map[string]any, symbol map[string]any, sum
 			"appLayer":       summary.AppLayer,
 			"functionalArea": summary.FunctionalArea,
 			"risk":           summary.Risk,
-			"rawRisk":        summary.RawRisk,
-			"defaultRisk":    summary.DefaultVisibleRisk,
 			"symbolCount":    summary.SymbolCount,
-			"unresolved":     summary.DefaultVisibleUnresolvedSourceSiteCount,
-			"rawUnresolved":  summary.RawUnresolvedSourceSiteCount,
+			"unresolved":     summary.Unresolved,
 			"fanIn":          summary.InboundRefCount,
 			"fanOut":         summary.OutboundRefCount,
 		}

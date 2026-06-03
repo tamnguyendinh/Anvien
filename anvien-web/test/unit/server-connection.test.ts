@@ -331,7 +331,7 @@ describe('fetchFileContext', () => {
             inboundRefCount: 0,
             outboundRefCount: 0,
             localRelationshipCount: 0,
-            unresolvedSourceSiteCount: 0,
+            unresolved: 0,
             linkedFlowCount: 0,
             linkedTestCount: 0,
             stale: false,

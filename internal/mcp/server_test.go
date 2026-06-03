@@ -1694,7 +1694,7 @@ func TestServeReadsRepoContextResource(t *testing.T) {
 			t.Fatalf("context resource missing %q:\n%s", want, text)
 		}
 	}
-	for _, want := range []string{"file_projection:", "unresolved_files:", "raw_unresolved_files:"} {
+	for _, want := range []string{"file_projection:", "unresolved:"} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("context resource missing %q:\n%s", want, text)
 		}
