@@ -49,6 +49,7 @@ coverage/
 # Playwright artifacts
 anvien-web/playwright-report/
 anvien-web/test-results/
+.browser-endpoint
 
 # Design docs (local only)
 
