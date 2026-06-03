@@ -159,10 +159,6 @@ Development flow:
 # terminal 1, from the repo root
 go run ./cmd/anvien serve --host 127.0.0.1 --port 4848
 
-# or build the local Go CLI once, then run it
-go build -trimpath -o .tmp/anvien.exe ./cmd/anvien
-.\.tmp\anvien.exe serve --host 127.0.0.1 --port 4848
-
 # terminal 2, from the repo root
 cd anvien-web
 npm install
