@@ -2,7 +2,7 @@
 
 Date: 2026-06-03
 
-Status: Reopened - corrected file group implementation pending
+Status: Detect-changes complete - implementation commit pending
 
 Companion files:
 
@@ -531,3 +531,104 @@ Readiness conclusion:
 
 - The corrected plan is ready for implementation after this update.
 - Product-code implementation still requires Anvien impact checks before editing shared classifiers, file summaries, contracts, CLI/API output, graph/file projection behavior, or Web file views.
+
+## E11 - Corrected File Group Implementation And Validation
+
+Date: 2026-06-03
+
+Status: implementation validated; detect-changes complete; commit pending
+
+Scope:
+
+- Add first-class `fileGroup=backend_support_model_helper`.
+- Keep `fileRole` as the subcategory under the group.
+- Surface the group through backend file projection, CLI/API/MCP, generated Web contracts, and Web file views.
+- Prove the 17-file anchor sample belongs to the group without deriving membership from `rawUnresolvedFiles - unresolvedFiles`.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| Planner skill read | `.claude/skills/anvien/anvien-planner/SKILL.md` read before updating plan/evidence/benchmark. |
+| `.\anvien\bin\anvien.exe analyze --force` before implementation work | Pass. `files.scanned=828`, `parsed_code=605`, `failed=0`, `nodes=61337`, `relationships=97219`, `unresolvedFiles=338`, `rawUnresolvedFiles=355`. |
+| Anvien owner queries | Confirmed owners in `internal/semantic`, `internal/filecontext/context.go`, CLI output files, `internal/contracts/web_ui.go`, HTTP API, MCP hints/resources, and Web `FileMapPanel`/`FileDetailPanel`. |
+| `.\anvien\bin\anvien.exe analyze --force` after implementation build and ledger updates | Pass. `files.scanned=828`, `parsed_code=605`, `failed=0`, `nodes=61340`, `relationships=97225`, `dependencyEdges=16099`, `unresolvedFiles=338`, `rawUnresolvedFiles=355`. |
+
+Impact / blast radius:
+
+| Target | Result |
+|---|---|
+| `FileSummary` | CRITICAL. Broad API/backend/frontend consumer blast radius; file-summary contract change kept additive. |
+| `FileList` | CRITICAL. File list consumers affected by new `fileGroups` aggregation; output shape kept additive. |
+| `BuildFileContext` | LOW. Direct detail summary construction updated to attach `fileGroup`. |
+| `BuildFileList` / `buildFileSummaries` | CRITICAL. Shared file projection path updated once so CLI/API/Web consume backend-owned group. |
+| `SemanticTermDefinitions` | CRITICAL. Metadata taxonomy extended with `file_group`. |
+| `WebUIContract` / `WebUIContractTypeScript` | CRITICAL. Generated Web contract updated and regenerated. |
+| `buildAnalyzeFileProjection` / `analyzeFileProjectionLines` | CRITICAL. Analyze output now emits direct group lines and group field on hotspots. |
+| `renderFileHotspots` / `graphHealthFileLayerLines` | CRITICAL. Human and machine CLI output now includes group identity. |
+| `handleFileHotspots` | LOW. API response shape now includes `fileGroups`. |
+| `mcpFileRelationshipHints` / `addMCPSymbolTargetFields` / context resource | CRITICAL/LOW mixed. MCP file payloads include backend group where `FileSummary` is available. |
+| `FileMapPanel` / `FileDetailPanel` | LOW. Web display reads generated group labels and backend `fileGroup`; no Web path inference added. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/semantic/file_group.go` | Added `FileGroupBackendSupportModelHelper`, exact key/label metadata, deterministic classifier, and boundary source strings. |
+| `internal/semantic/file_group_test.go` | Freezes key/label, proves all 17 anchor files enter the group, and proves unknown role/frontend/test-kind/docs/config-kind/generated/missing-path boundaries stay out. |
+| `internal/semantic/metadata.go` | Added `file_group` semantic term. |
+| `internal/filecontext/context.go` | Added `FileSummary.FileGroup`, `FileList.FileGroups`, `FileGroupSummary`, shared group classification, and group aggregation from backend summaries. |
+| `internal/filecontext/context_test.go` | Proves anchor sample `fileGroup=backend_support_model_helper`, sample default unresolved `0`, sample raw unresolved `376`, and role breakdown. |
+| `internal/contracts/web_ui.go`, generated schema, generated TypeScript | Added `FILE_GROUPS`, `FILE_GROUP_LABELS`, `FileGroup`, `FileGroupLabel`, `FileSummary.fileGroup`, and `FileHotspotsResponse.fileGroups`. |
+| `internal/cli/command.go`, `internal/cli/file_context_command.go`, `internal/cli/graph_health_command.go` | Analyze/file-hotspots/graph-health output now surfaces group lines and group columns. |
+| `internal/httpapi/file_context.go` | `/api/file-hotspots` includes backend-computed `fileGroups`. |
+| `internal/mcp/target_dispatch.go`, `internal/mcp/resources.go` | MCP file hints and repo context hotspot lines include `fileGroup`. |
+| `anvien-web/src/components/FileMapPanel.tsx` | File rows show group label first, then role, then layer/area. |
+| `anvien-web/src/components/FileDetailPanel.tsx` | File detail summary shows `Group` before `Role`, `Layer`, and `Area`. |
+| `anvien-web/e2e/file-map-test-unresolved.spec.ts` | E2E fixture and assertion prove the Web shows `Backend support/model/helper files`. |
+
+Graph File-node enrichment outcome:
+
+- Current analyze File nodes already carry `appLayer` and `functionalArea`.
+- `fileRole` and `fileGroup` are authoritative in the shared backend `FileSummary` / file projection path for this slice.
+- CLI/API/Web/MCP read the backend summary field; no Web-only or display-only path classifier was added.
+- Direct graph-node `fileGroup` property enrichment remains a follow-up only if the graph model later requires file identity fields as persisted node properties.
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | First run failed on TypeScript literal map key type; fixed with `Map<string, string>`. Second run passed. Vite reported existing chunk-size/dynamic-import warnings. |
+| `go test ./internal/semantic ./internal/filecontext ./internal/contracts ./internal/cli ./internal/httpapi ./internal/mcp` | Pass. |
+| `npm test -- FileMapPanel.test.tsx FileDetailPanel.test.tsx` | First run failed because the updated UI has two legitimate `Unknown` labels in the unknown-group/unknown-role test; test was corrected. Second run passed: 2 files, 8 tests. |
+| `npm run test:e2e -- file-map-test-unresolved.spec.ts` | Pass. 1 Chromium test passed with Vite dev server started temporarily for the run. |
+| `.\anvien\bin\anvien.exe analyze --force` | Pass. `files.scanned=828`, `parsed_code=605`, `failed=0`, `nodes=61340`, `relationships=97225`. Analyze output includes direct `fileProjection.group key="backend_support_model_helper" label="Backend support/model/helper files" files=42 defaultUnresolved=1073 rawUnresolved=2087 ...`. |
+| `.\anvien\bin\anvien.exe file-hotspots --repo Anvien --json --sort path --limit 0` | Pass. `fileGroups[backend_support_model_helper]` reports `files=42`, `defaultUnresolved=1073`, `rawUnresolved=2087`; anchor missing count is `0`. |
+| `.\anvien\bin\anvien.exe graph-health summary --repo Anvien --json` | Pass. `fileLayer.totalFiles=828`, `unresolvedFiles=338`, `rawUnresolvedFiles=355`, `fileGroups.Count=1`, target group files `42`. |
+| `.\anvien\bin\anvien.exe file-context internal/repo/runtime_config.go --repo Anvien --json` | Pass. Summary has `kind=source`, `appLayer=backend`, `functionalArea=storage`, `fileRole=config`, `fileGroup=backend_support_model_helper`, default unresolved `0`, raw unresolved `10`. |
+
+Measured group coverage:
+
+| Metric | Result |
+|---|---:|
+| Full group files from backend identity rules | 42 |
+| Full group default-visible unresolved source sites | 1073 |
+| Full group raw unresolved source sites | 2087 |
+| Anchor sample files missing from group | 0 |
+| Anchor sample default-visible unresolved source sites | 0 |
+| Anchor sample raw unresolved source sites | 376 |
+
+Failures / handling:
+
+- TypeScript build initially rejected `Map.get(value)` because generated `FILE_GROUP_LABELS` inferred the literal group key; fixed by widening the label map to `Map<string, string>`.
+- Web unit test for unknown role initially assumed only one `Unknown` label; corrected to expect both unknown group and unknown role labels.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | Pass. Summary risk `critical`; `affected_count=57`, `affected_files=23`, `changed_count=324`, `changed_files=25`. Affected app layers: `api=2`, `api_contract=5`, `backend=37`, `mixed=13`. Affected functional areas: `api=2`, `cli=19`, `contracts=10`, `mcp=7`, `mixed=11`, `unknown=8`. File layer changed risk `high`; `affectedFiles=23`, `changedFiles=25`. Resolution gap change inventory: `changedGapEntities=176`, `analyzer_gap=106`, `non_actionable=66`, `review=4`. Semantic app-layer and functional-area status remained complete. |
+
+Commit:
+
+- Pending implementation commit.

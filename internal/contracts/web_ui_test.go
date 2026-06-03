@@ -59,6 +59,12 @@ func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {
 	if label := termDefinition(manifest.Graph.FileRoleLabels, "analyzer_helper"); label.DisplayLabel != "Analyzer Helper" {
 		t.Fatalf("analyzer_helper file role label = %#v", label)
 	}
+	if !contains(manifest.Graph.FileGroups, "backend_support_model_helper") {
+		t.Fatalf("file group contract metadata missing: %#v", manifest.Graph.FileGroups)
+	}
+	if label := termDefinition(manifest.Graph.FileGroupLabels, "backend_support_model_helper"); label.DisplayLabel != "Backend support/model/helper files" {
+		t.Fatalf("backend_support_model_helper file group label = %#v", label)
+	}
 	if policy := relationshipPolicy(manifest, "INHERITS"); policy.SemanticGroup != "normalized-heritage" {
 		t.Fatalf("INHERITS policy = %#v", policy)
 	}
@@ -121,10 +127,15 @@ func TestWebUIContractTypeScriptIsBrowserGeneratedGlue(t *testing.T) {
 		"export type FunctionalArea",
 		"export const FILE_ROLES",
 		"export type FileRole",
+		"export const FILE_GROUPS",
+		"export type FileGroup",
 		"export type AppLayer",
 		"appLayer?: AppLayer",
 		"functionalArea?: FunctionalArea",
+		"fileGroup?: FileGroup",
 		"fileRole?: FileRole",
+		"export interface FileGroupSummary",
+		"fileGroups?: FileGroupSummary[]",
 		"semanticStatus?: GraphSemanticStatus",
 		"diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>",
 		"triageDimension: GraphHealthReportTriageDimension",

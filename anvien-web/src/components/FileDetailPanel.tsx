@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { FILE_GROUP_LABELS } from "@/generated/anvien-contracts";
 import {
   AlertTriangle,
   Braces,
@@ -43,6 +44,15 @@ const formatKey = (value: string | undefined): string =>
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join(" ")
     : "Unknown";
+
+const fileGroupLabelByKey = new Map<string, string>(
+  FILE_GROUP_LABELS.map((label) => [label.key, label.webLabel || label.displayLabel]),
+);
+
+const formatFileGroup = (value: string | undefined): string => {
+  if (!value) return "Unknown";
+  return fileGroupLabelByKey.get(value) ?? formatKey(value);
+};
 
 const compactCount = (value: number | undefined): string =>
   new Intl.NumberFormat("en", { notation: "compact" }).format(value ?? 0);
@@ -584,6 +594,7 @@ export const FileDetailPanel = ({
           <Stat label="Tests" value={compactCount(summary.linkedTestCount)} />
         </div>
         <div className="mt-2 flex flex-wrap gap-1">
+          <Pill label="Group" value={formatFileGroup(summary.fileGroup)} />
           <Pill label="Role" value={formatKey(summary.fileRole)} />
           <Pill label="Layer" value={formatKey(summary.appLayer)} />
           <Pill label="Area" value={formatKey(summary.functionalArea)} />

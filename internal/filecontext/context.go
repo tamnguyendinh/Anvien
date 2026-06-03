@@ -41,11 +41,12 @@ type FileListOptions struct {
 }
 
 type FileList struct {
-	Total  int           `json:"total"`
-	Offset int           `json:"offset"`
-	Limit  int           `json:"limit"`
-	Sort   string        `json:"sort"`
-	Files  []FileSummary `json:"files"`
+	Total      int                `json:"total"`
+	Offset     int                `json:"offset"`
+	Limit      int                `json:"limit"`
+	Sort       string             `json:"sort"`
+	FileGroups []FileGroupSummary `json:"fileGroups,omitempty"`
+	Files      []FileSummary      `json:"files"`
 }
 
 type CacheKey struct {
@@ -116,6 +117,7 @@ type FileSummary struct {
 	Language                                string `json:"language,omitempty"`
 	Kind                                    string `json:"kind,omitempty"`
 	FileRole                                string `json:"fileRole,omitempty"`
+	FileGroup                               string `json:"fileGroup,omitempty"`
 	AppLayer                                string `json:"appLayer,omitempty"`
 	FunctionalArea                          string `json:"functionalArea,omitempty"`
 	ParseStatus                             string `json:"parseStatus,omitempty"`
@@ -137,6 +139,18 @@ type FileSummary struct {
 	DefaultVisibleRisk                      string `json:"defaultVisibleRisk,omitempty"`
 	Stale                                   bool   `json:"stale"`
 	ChangedSinceAnalyze                     bool   `json:"changedSinceAnalyze"`
+}
+
+type FileGroupSummary struct {
+	Key               string         `json:"key"`
+	Label             string         `json:"label"`
+	Files             int            `json:"files"`
+	DefaultUnresolved int            `json:"defaultUnresolved"`
+	RawUnresolved     int            `json:"rawUnresolved"`
+	Roles             map[string]int `json:"roles,omitempty"`
+	AppLayers         map[string]int `json:"appLayers,omitempty"`
+	FunctionalAreas   map[string]int `json:"functionalAreas,omitempty"`
+	SampleFiles       []string       `json:"sampleFiles,omitempty"`
 }
 
 type unresolvedBucketCounts struct {
@@ -391,12 +405,14 @@ func (b *Builder) BuildFileContext(path string, options Options) (FileContext, b
 	appLayer := stringProperty(fileNode, "appLayer")
 	functionalArea := stringProperty(fileNode, "functionalArea")
 	fileRole := semantic.ClassifyFileRole(normalizedPath, kind, appLayer, functionalArea)
+	fileGroup := semantic.ClassifyFileGroup(normalizedPath, kind, appLayer, string(fileRole.Role))
 
 	summary := FileSummary{
 		Path:                   normalizedPath,
 		Language:               stringProperty(fileNode, "language"),
 		Kind:                   kind,
 		FileRole:               string(fileRole.Role),
+		FileGroup:              string(fileGroup.Group),
 		AppLayer:               appLayer,
 		FunctionalArea:         functionalArea,
 		ParseStatus:            parseStatus(fileNode),
@@ -432,6 +448,7 @@ func (b *Builder) BuildFileList(options FileListOptions) FileList {
 	attachFileListQuality(summaries, options)
 	summaries = filterSummaries(summaries, options)
 	sortSummaries(summaries, options.Sort)
+	fileGroups := buildFileGroupSummaries(summaries)
 
 	total := len(summaries)
 	offset := options.Offset
@@ -448,11 +465,12 @@ func (b *Builder) BuildFileList(options FileListOptions) FileList {
 	}
 
 	return FileList{
-		Total:  total,
-		Offset: offset,
-		Limit:  limit,
-		Sort:   normalizedSort(options.Sort),
-		Files:  append([]FileSummary(nil), summaries[offset:end]...),
+		Total:      total,
+		Offset:     offset,
+		Limit:      limit,
+		Sort:       normalizedSort(options.Sort),
+		FileGroups: fileGroups,
+		Files:      append([]FileSummary(nil), summaries[offset:end]...),
 	}
 }
 
@@ -516,11 +534,13 @@ func (b *Builder) buildFileSummaries() []FileSummary {
 		appLayer := stringProperty(node, "appLayer")
 		functionalArea := stringProperty(node, "functionalArea")
 		fileRole := semantic.ClassifyFileRole(path, kind, appLayer, functionalArea)
+		fileGroup := semantic.ClassifyFileGroup(path, kind, appLayer, string(fileRole.Role))
 		summary := &FileSummary{
 			Path:           path,
 			Language:       stringProperty(node, "language"),
 			Kind:           kind,
 			FileRole:       string(fileRole.Role),
+			FileGroup:      string(fileGroup.Group),
 			AppLayer:       appLayer,
 			FunctionalArea: functionalArea,
 			ParseStatus:    parseStatus(node),
@@ -593,6 +613,61 @@ func (b *Builder) buildFileSummaries() []FileSummary {
 		summaries = append(summaries, *aggregates[path])
 	}
 	return summaries
+}
+
+func buildFileGroupSummaries(summaries []FileSummary) []FileGroupSummary {
+	byKey := map[string]*FileGroupSummary{}
+	for _, file := range summaries {
+		key := strings.TrimSpace(file.FileGroup)
+		if key == "" {
+			continue
+		}
+		group := byKey[key]
+		if group == nil {
+			group = &FileGroupSummary{
+				Key:             key,
+				Label:           semantic.FileGroupLabel(key),
+				Roles:           map[string]int{},
+				AppLayers:       map[string]int{},
+				FunctionalAreas: map[string]int{},
+			}
+			byKey[key] = group
+		}
+		group.Files++
+		group.DefaultUnresolved += file.DefaultVisibleUnresolvedSourceSiteCount
+		group.RawUnresolved += file.RawUnresolvedSourceSiteCount
+		incrementCount(group.Roles, file.FileRole)
+		incrementCount(group.AppLayers, file.AppLayer)
+		incrementCount(group.FunctionalAreas, file.FunctionalArea)
+		if len(group.SampleFiles) < defaultSampleLimit {
+			group.SampleFiles = append(group.SampleFiles, file.Path)
+		}
+	}
+
+	keys := make([]string, 0, len(byKey))
+	for key := range byKey {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	groups := make([]FileGroupSummary, 0, len(keys))
+	for _, key := range keys {
+		group := *byKey[key]
+		sort.Strings(group.SampleFiles)
+		if group.Label == "" {
+			group.Label = key
+		}
+		groups = append(groups, group)
+	}
+	return groups
+}
+
+func incrementCount(counts map[string]int, key string) {
+	key = strings.TrimSpace(key)
+	if key == "" {
+		key = "unknown"
+	}
+	counts[key]++
 }
 
 func applyUnresolvedBuckets(summary *FileSummary, counts unresolvedBucketCounts) {

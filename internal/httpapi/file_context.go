@@ -22,14 +22,15 @@ const (
 )
 
 type fileHotspotsResponse struct {
-	Repo     string                    `json:"repo,omitempty"`
-	RepoPath string                    `json:"repoPath,omitempty"`
-	Graph    filecontext.GraphInfo     `json:"graph"`
-	Total    int                       `json:"total"`
-	Offset   int                       `json:"offset"`
-	Limit    int                       `json:"limit"`
-	Sort     string                    `json:"sort"`
-	Files    []filecontext.FileSummary `json:"files"`
+	Repo       string                         `json:"repo,omitempty"`
+	RepoPath   string                         `json:"repoPath,omitempty"`
+	Graph      filecontext.GraphInfo          `json:"graph"`
+	Total      int                            `json:"total"`
+	Offset     int                            `json:"offset"`
+	Limit      int                            `json:"limit"`
+	Sort       string                         `json:"sort"`
+	FileGroups []filecontext.FileGroupSummary `json:"fileGroups,omitempty"`
+	Files      []filecontext.FileSummary      `json:"files"`
 }
 
 type fileProjectionGraph struct {
@@ -145,14 +146,15 @@ func (s Server) handleFileHotspots(w http.ResponseWriter, r *http.Request) {
 		Stale:               projection.graph.Stale,
 	})
 	writeJSON(w, http.StatusOK, fileHotspotsResponse{
-		Repo:     projection.repoName,
-		RepoPath: projection.repoPath,
-		Graph:    projection.graph,
-		Total:    list.Total,
-		Offset:   list.Offset,
-		Limit:    list.Limit,
-		Sort:     list.Sort,
-		Files:    list.Files,
+		Repo:       projection.repoName,
+		RepoPath:   projection.repoPath,
+		Graph:      projection.graph,
+		Total:      list.Total,
+		Offset:     list.Offset,
+		Limit:      list.Limit,
+		Sort:       list.Sort,
+		FileGroups: list.FileGroups,
+		Files:      list.Files,
 	})
 }
 

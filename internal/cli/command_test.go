@@ -1438,6 +1438,47 @@ func assertRegisteredRepoNames(t *testing.T, home string, want []string) {
 	}
 }
 
+func TestAnalyzeFileProjectionLinesIncludesFileGroups(t *testing.T) {
+	lines := analyzeFileProjectionLines(analyzeFileProjectionSummary{
+		Status:             "built",
+		Files:              17,
+		DependencyEdges:    10,
+		UnresolvedFiles:    0,
+		RawUnresolvedFiles: 17,
+		FileGroups: []filecontext.FileGroupSummary{
+			{
+				Key:               "backend_support_model_helper",
+				Label:             "Backend support/model/helper files",
+				Files:             17,
+				DefaultUnresolved: 0,
+				RawUnresolved:     376,
+				Roles: map[string]int{
+					"analyzer_helper": 2,
+					"helper":          3,
+				},
+				AppLayers:       map[string]int{"backend": 17},
+				FunctionalAreas: map[string]int{"analyzer": 2, "providers": 6},
+				SampleFiles:     []string{"internal/frameworks/frameworks.go"},
+			},
+		},
+		DerivedEdgesNote: filecontext.DerivedFileEdgesNote,
+	})
+
+	groupLine := firstLineWithPrefix(t, strings.Join(lines, "\n"), "fileProjection.group")
+	for _, want := range []string{
+		`key="backend_support_model_helper"`,
+		`label="Backend support/model/helper files"`,
+		"files=17",
+		"defaultUnresolved=0",
+		"rawUnresolved=376",
+		`roles="analyzer_helper:2,helper:3"`,
+	} {
+		if !strings.Contains(groupLine, want) {
+			t.Fatalf("group line missing %q:\n%s", want, groupLine)
+		}
+	}
+}
+
 func TestAnalyzeCommandWritesPprofProfiles(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv(repo.HomeEnvName, t.TempDir())

@@ -128,6 +128,7 @@ func SemanticTermDefinitions() []TermDefinition {
 		{Key: "app_layer", DisplayLabel: "App Layer", CLILabel: "app-layer", WebLabel: "App Layer", Description: "Primary product layer assigned to each graph node."},
 		{Key: "functional_area", DisplayLabel: "Functional Area", CLILabel: "functional-area", WebLabel: "Functional Area", Description: "High-confidence functional ownership under an App Layer."},
 		{Key: "file_role", DisplayLabel: "File Role", CLILabel: "file-role", WebLabel: "File Role", Description: "Backend-owned semantic role for file summary and file projection surfaces."},
+		{Key: "file_group", DisplayLabel: "File Group", CLILabel: "file-group", WebLabel: "File Group", Description: "Backend-owned semantic group for file identity and file projection surfaces."},
 		{Key: "api_layer", DisplayLabel: "API Layer", CLILabel: "api-layer", WebLabel: "API Layer", Description: "Server-facing API handlers and API protocol surface."},
 		{Key: "api_contract", DisplayLabel: "API Contract", CLILabel: "api-contract", WebLabel: "API Contract", Description: "Schema or generated contract shared by API consumers."},
 		{Key: "frontend_api_client", DisplayLabel: "Frontend API Client", CLILabel: "frontend-api-client", WebLabel: "Frontend API Client", Description: "Frontend client surface that calls backend APIs."},

@@ -122,6 +122,7 @@ func mcpFileRelationshipHints(summary filecontext.FileSummary) map[string]any {
 		"risk":                     summary.Risk,
 		"rawRisk":                  summary.RawRisk,
 		"defaultVisibleRisk":       summary.DefaultVisibleRisk,
+		"fileGroup":                summary.FileGroup,
 		"fileRole":                 summary.FileRole,
 		"derivedEdgesNote":         filecontext.DerivedFileEdgesNote,
 	}
@@ -139,6 +140,7 @@ func addMCPSymbolTargetFields(payload map[string]any, symbol map[string]any, sum
 		payload["selectedFile"] = map[string]any{
 			"path":           summary.Path,
 			"kind":           summary.Kind,
+			"fileGroup":      summary.FileGroup,
 			"fileRole":       summary.FileRole,
 			"appLayer":       summary.AppLayer,
 			"functionalArea": summary.FunctionalArea,

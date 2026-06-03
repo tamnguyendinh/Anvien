@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { FILE_GROUP_LABELS } from "@/generated/anvien-contracts";
 import type { FileHotspotsResponse, FileSummary } from "@/generated/anvien-contracts";
 import {
   AlertTriangle,
@@ -57,6 +58,15 @@ const formatSemanticKey = (value?: string): string =>
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+
+const fileGroupLabelByKey = new Map<string, string>(
+  FILE_GROUP_LABELS.map((label) => [label.key, label.webLabel || label.displayLabel]),
+);
+
+const formatFileGroup = (value?: string): string => {
+  if (!value) return "Unknown";
+  return fileGroupLabelByKey.get(value) ?? formatSemanticKey(value);
+};
 
 const compactCount = (value: number): string => {
   if (value >= 1000) return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}k`;
@@ -381,13 +391,13 @@ const FileMapRow = ({ file, selected, onOpenFile }: FileMapRowProps) => {
       <td className="min-w-0 px-2 py-2">
         <div className="min-w-0">
           <div className="truncate text-[11px] text-text-secondary">
+            {formatFileGroup(file.fileGroup)}
+          </div>
+          <div className="truncate font-mono text-[9px] text-text-muted">
             {formatSemanticKey(file.fileRole)}
           </div>
           <div className="truncate font-mono text-[9px] text-text-muted">
-            {formatSemanticKey(file.appLayer)}
-          </div>
-          <div className="truncate font-mono text-[9px] text-text-muted">
-            {formatSemanticKey(file.functionalArea)}
+            {formatSemanticKey(file.appLayer)} / {formatSemanticKey(file.functionalArea)}
           </div>
         </div>
       </td>

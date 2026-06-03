@@ -2,7 +2,7 @@
 
 Date: 2026-06-03
 
-Status: Ready for implementation - corrected file group plan
+Status: Detect-changes complete - implementation commit pending
 
 Companion files:
 
@@ -175,7 +175,7 @@ The corrected plan is complete when:
   - Implementation Gate: do not choose or change a file group name until this inventory is recorded.
   - Acceptance: evidence proves all 17 target files are `kind=source`, `appLayer=backend`, and have non-unknown `fileRole` values.
 
-- [ ] [G2-A] Define and freeze the file group naming rule.
+- [x] [G2-A] Define and freeze the file group naming rule.
   - Goal: define an exact naming rule that matches current Anvien naming style and yields a concrete group name.
   - Work Steps:
     1. Identify the object being grouped:
@@ -206,7 +206,7 @@ The corrected plan is complete when:
   - Implementation Gate: do not implement group assignment until the key and label are frozen in tests.
   - Acceptance: tests assert `backend_support_model_helper` and `Backend support/model/helper files` exactly.
 
-- [ ] [G3-A] Define membership rules and boundary rules.
+- [x] [G3-A] Define membership rules and boundary rules.
   - Goal: make group membership deterministic from file axes, not from unresolved count math.
   - Work Steps:
     1. Define required membership conditions:
@@ -240,7 +240,7 @@ The corrected plan is complete when:
   - Implementation Gate: do not surface `fileGroup` until membership and boundary tests exist.
   - Acceptance: tests prove the 17-file sample enters the group and boundary fixtures do not.
 
-- [ ] [G4-A] Implement shared backend file group classification.
+- [x] [G4-A] Implement shared backend file group classification.
   - Goal: produce `fileGroup` once in backend classification logic before CLI/API/Web rendering.
   - Work Steps:
     1. Run impact checks for the exact symbols/files to edit:
@@ -261,7 +261,7 @@ The corrected plan is complete when:
   - Implementation Gate: impact output must be recorded before editing shared backend or contract symbols.
   - Acceptance: backend file summaries for the 17 sample files include `fileGroup=backend_support_model_helper`.
 
-- [ ] [G5-A] Add file group metadata and generated contract support.
+- [x] [G5-A] Add file group metadata and generated contract support.
   - Goal: make group names and labels stable API/Web contract data.
   - Work Steps:
     1. Add semantic metadata for file groups:
@@ -280,7 +280,7 @@ The corrected plan is complete when:
   - Implementation Gate: backend group classifier tests must pass before generated contract changes are accepted.
   - Acceptance: generated Web contract includes the group field and metadata; no Web component hard-codes the group key or label.
 
-- [ ] [G6-A] Add file projection group aggregation.
+- [x] [G6-A] Add file projection group aggregation.
   - Goal: make Anvien report the file group directly instead of relying on `rawUnresolvedFiles - unresolvedFiles`.
   - Work Steps:
     1. Add a file projection group summary keyed by `fileGroup`.
@@ -319,7 +319,7 @@ The corrected plan is complete when:
   - Implementation Gate: group membership must be computed before aggregation.
   - Acceptance: group summary is computed from `fileGroup` membership directly, the 17-file sample is fully covered, and no count is derived from `rawUnresolvedFiles - unresolvedFiles`.
 
-- [ ] [G7-A] Surface the group in analyze, CLI, API, and graph-health outputs.
+- [x] [G7-A] Surface the group in analyze, CLI, API, and graph-health outputs.
   - Goal: make command output name the group directly.
   - Work Steps:
     1. Add analyze output line:
@@ -336,7 +336,7 @@ The corrected plan is complete when:
   - Implementation Gate: file projection group aggregation must exist before output formatting.
   - Acceptance: users can see `Backend support/model/helper files` directly in command/API output.
 
-- [ ] [G8-A] Surface the group in Web file views.
+- [x] [G8-A] Surface the group in Web file views.
   - Goal: make Web UI show the file group as the main file identity group, with role as a subcategory.
   - Work Steps:
     1. Update File Map to display `Backend support/model/helper files` where file identity metadata is shown.
@@ -353,7 +353,7 @@ The corrected plan is complete when:
   - Implementation Gate: generated Web contracts must include `FileSummary.fileGroup` before Web component edits.
   - Acceptance: Web renders the backend group label from backend data and does not infer group from path.
 
-- [ ] [G9-A] Validate the corrected model.
+- [x] [G9-A] Validate the corrected model.
   - Goal: prove the group exists, is visible, and solves the display problem directly.
   - Work Steps:
     1. Run full build before tests:

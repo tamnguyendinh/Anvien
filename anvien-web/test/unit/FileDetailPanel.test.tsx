@@ -29,8 +29,9 @@ const fileContext: FileContextResponse = {
     path: "src/app.ts",
     language: "typescript",
     kind: "source",
+    fileGroup: "backend_support_model_helper",
     fileRole: "runtime_model",
-    appLayer: "api",
+    appLayer: "backend",
     functionalArea: "mcp",
     parseStatus: "parsed",
     symbolCount: 2,
@@ -218,6 +219,7 @@ const testFileContext: FileContextResponse = {
     ...fileContext.summary,
     path: "src/app.test.ts",
     kind: "test",
+    fileGroup: undefined,
     fileRole: "test_helper",
     appLayer: "api_test",
     unresolvedSourceSiteCount: 0,
@@ -310,6 +312,9 @@ describe("FileDetailPanel", () => {
 
     expect(screen.getByTestId("file-detail-section-summary")).toHaveTextContent("Symbols");
     expect(screen.getByTestId("file-detail-section-summary")).toHaveTextContent("Runtime Model");
+    expect(screen.getByTestId("file-detail-section-summary")).toHaveTextContent(
+      "Backend support/model/helper files",
+    );
     expect(screen.getByTestId("file-detail-section-quality")).toHaveTextContent("Resolution");
     expect(screen.getByTestId("file-detail-section-symbol-tree")).toHaveTextContent("main");
     expect(screen.getByTestId("file-detail-section-symbol-tree")).toHaveTextContent("helper");
@@ -335,6 +340,7 @@ describe("FileDetailPanel", () => {
       ...fileContext,
       summary: {
         ...fileContext.summary,
+        fileGroup: undefined,
         fileRole: "unknown",
       },
     });

@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/tamnguyendinh/anvien/internal/analyze"
@@ -309,13 +310,14 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 }
 
 type analyzeFileProjectionSummary struct {
-	Status             string                    `json:"status"`
-	Files              int                       `json:"files"`
-	DependencyEdges    int                       `json:"dependencyEdges"`
-	UnresolvedFiles    int                       `json:"unresolvedFiles"`
-	RawUnresolvedFiles int                       `json:"rawUnresolvedFiles"`
-	Hotspots           []filecontext.FileSummary `json:"hotspots"`
-	DerivedEdgesNote   string                    `json:"derivedEdgesNote"`
+	Status             string                         `json:"status"`
+	Files              int                            `json:"files"`
+	DependencyEdges    int                            `json:"dependencyEdges"`
+	UnresolvedFiles    int                            `json:"unresolvedFiles"`
+	RawUnresolvedFiles int                            `json:"rawUnresolvedFiles"`
+	FileGroups         []filecontext.FileGroupSummary `json:"fileGroups,omitempty"`
+	Hotspots           []filecontext.FileSummary      `json:"hotspots"`
+	DerivedEdgesNote   string                         `json:"derivedEdgesNote"`
 }
 
 func buildAnalyzeFileProjection(g *graph.Graph) analyzeFileProjectionSummary {
@@ -340,6 +342,7 @@ func buildAnalyzeFileProjection(g *graph.Graph) analyzeFileProjectionSummary {
 		DependencyEdges:    dependencyEdges,
 		UnresolvedFiles:    unresolvedFiles,
 		RawUnresolvedFiles: rawUnresolvedFiles,
+		FileGroups:         list.FileGroups,
 		Hotspots:           hotspots.Files,
 		DerivedEdgesNote:   filecontext.DerivedFileEdgesNote,
 	}
@@ -356,9 +359,23 @@ func analyzeFileProjectionLines(summary analyzeFileProjectionSummary) []string {
 			summary.DerivedEdgesNote,
 		),
 	}
+	for _, group := range summary.FileGroups {
+		lines = append(lines, fmt.Sprintf("fileProjection.group key=%q label=%q files=%d defaultUnresolved=%d rawUnresolved=%d roles=%q appLayers=%q functionalAreas=%q samples=%q",
+			group.Key,
+			group.Label,
+			group.Files,
+			group.DefaultUnresolved,
+			group.RawUnresolved,
+			formatCountMap(group.Roles),
+			formatCountMap(group.AppLayers),
+			formatCountMap(group.FunctionalAreas),
+			strings.Join(group.SampleFiles, ","),
+		))
+	}
 	for _, file := range summary.Hotspots {
-		lines = append(lines, fmt.Sprintf("fileProjection.hotspot path=%q role=%s unresolved=%d rawUnresolved=%d fanIn=%d fanOut=%d risk=%s",
+		lines = append(lines, fmt.Sprintf("fileProjection.hotspot path=%q group=%s role=%s unresolved=%d rawUnresolved=%d fanIn=%d fanOut=%d risk=%s",
 			file.Path,
+			defaultString(file.FileGroup, "none"),
 			defaultString(file.FileRole, "unknown"),
 			file.DefaultVisibleUnresolvedSourceSiteCount,
 			file.RawUnresolvedSourceSiteCount,

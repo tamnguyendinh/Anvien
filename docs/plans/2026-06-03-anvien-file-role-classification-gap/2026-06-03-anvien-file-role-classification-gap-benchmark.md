@@ -2,7 +2,7 @@
 
 Date: 2026-06-03
 
-Status: Reopened - corrected file group targets defined
+Status: Detect-changes complete - implementation commit pending
 
 Companion files:
 
@@ -26,15 +26,15 @@ Source evidence: E0.
 
 | Metric | Unit | Baseline | Latest | Target |
 |---|---:|---:|---:|---:|
-| Files scanned | files | 821 | 826 | record |
-| Parsed code files | files | 601 | 603 | no unintended decrease |
+| Files scanned | files | 821 | 828 | record |
+| Parsed code files | files | 601 | 605 | no unintended decrease |
 | Failed files | files | 0 | 0 | 0 |
-| Graph nodes | nodes | 60974 | 61132 | record |
-| Graph relationships | relationships | 96624 | 96893 | record |
-| File projection files | files | 821 | 826 | record |
-| File projection dependency edges | edges | 15965 | 16039 | record |
-| Default-visible unresolved files | files | 336 | 337 | preserve unless separate behavior changes |
-| Raw unresolved files | files | 353 | 354 | preserve unless separate behavior changes |
+| Graph nodes | nodes | 60974 | 61340 | record |
+| Graph relationships | relationships | 96624 | 97225 | record |
+| File projection files | files | 821 | 828 | record |
+| File projection dependency edges | edges | 15965 | 16099 | record |
+| Default-visible unresolved files | files | 336 | 338 | preserve unless separate behavior changes |
+| Raw unresolved files | files | 353 | 355 | preserve unless separate behavior changes |
 | Raw-only unresolved files | files | 17 | 17 | 17 sample files recognized, 0 unknown role, 17 sample files assigned file group after corrected implementation |
 
 ## B1 - Raw-Only Source-Site Baseline
@@ -106,7 +106,7 @@ Source evidence: E8.
 
 ## B5 - Web UI Consumer Coverage Target
 
-Status: met for role display, pending group display
+Status: met for role and group display
 
 Source evidence: E5.
 
@@ -116,40 +116,44 @@ Source evidence: E5.
 | `FileDetailPanel` role display | covered surface | 0 | 1 | 1 |
 | `FileTreePanel` inspected for role impact | inspected surface | 0 | 1 | 1 |
 | Generated Web `FileSummary` includes role field | generated contract | 0 | 1 | 1 |
+| Generated Web `FileSummary` includes group field | generated contract | 0 | 1 | 1 |
 | Web path-pattern role inference sites | sites | 0 | 0 | 0 |
+| Web path-pattern group inference sites | sites | 0 | 0 | 0 |
 | Web tests for missing/unknown role behavior | test cases | 0 | 2 | at least 1 |
 | Web/e2e test coverage when visible UI changes | e2e test record | 0 | 1 | at least 1 |
 | Browser or screenshot validation for visible UI changes | validation record | 0 | 1 | supplemental |
 
 ## B6 - Backend Support/Model/Helper File Group Target
 
-Status: target defined
+Status: measured after corrected implementation
 
 Source evidence: E10.
 
 | Metric | Unit | Baseline before corrected group implementation | Latest before corrected group implementation | Target after corrected implementation |
 |---|---:|---:|---:|---:|
-| `backend_support_model_helper` full group files | files | 0 | 0 | measured from backend identity rules |
-| Anchor sample files assigned `backend_support_model_helper` | files | 0 | 0 | 17 |
-| Anchor sample files missing `backend_support_model_helper` | files | 17 | 17 | 0 |
+| `backend_support_model_helper` full group files | files | 0 | 42 | measured from backend identity rules |
+| `backend_support_model_helper` full group default unresolved source sites | source sites | 0 | 1073 | measured from backend identity rules |
+| `backend_support_model_helper` full group raw unresolved source sites | source sites | 0 | 2087 | measured from backend identity rules |
+| Anchor sample files assigned `backend_support_model_helper` | files | 0 | 17 | 17 |
+| Anchor sample files missing `backend_support_model_helper` | files | 17 | 0 | 0 |
 | Anchor sample default unresolved source sites | source sites | 0 | 0 | 0 |
 | Anchor sample raw unresolved source sites | source sites | 376 | 376 | 376 |
-| Analyze direct group line coverage | output line | 0 | 0 | 1 |
-| CLI/API group summary coverage | covered surface | 0 | 0 | at least 1 |
-| Web group label coverage | covered surface | 0 | 0 | at least 2 |
+| Analyze direct group line coverage | output line | 0 | 1 | 1 |
+| CLI/API group summary coverage | covered surface | 0 | 3 | at least 1 |
+| Web group label coverage | covered surface | 0 | 2 | at least 2 |
 | Web path-pattern group inference sites | sites | 0 | 0 | 0 |
 
 Anchor sample role breakdown target:
 
 | File role | Unit | Baseline assigned to group | Latest assigned to group | Target assigned to group |
 |---|---:|---:|---:|---:|
-| `analyzer_helper` | files | 0 | 0 | 2 |
-| `helper` | files | 0 | 0 | 3 |
-| `contract_model` | files | 0 | 0 | 1 |
-| `storage_helper` | files | 0 | 0 | 1 |
-| `test_helper` | files | 0 | 0 | 1 |
-| `config` | files | 0 | 0 | 2 |
-| `parser_model` | files | 0 | 0 | 3 |
-| `runtime_model` | files | 0 | 0 | 2 |
-| `adapter` | files | 0 | 0 | 1 |
-| `fallback_adapter` | files | 0 | 0 | 1 |
+| `analyzer_helper` | files | 0 | 2 | 2 |
+| `helper` | files | 0 | 3 | 3 |
+| `contract_model` | files | 0 | 1 | 1 |
+| `storage_helper` | files | 0 | 1 | 1 |
+| `test_helper` | files | 0 | 1 | 1 |
+| `config` | files | 0 | 2 | 2 |
+| `parser_model` | files | 0 | 3 | 3 |
+| `runtime_model` | files | 0 | 2 | 2 |
+| `adapter` | files | 0 | 1 | 1 |
+| `fallback_adapter` | files | 0 | 1 | 1 |

@@ -287,6 +287,7 @@ func (s Server) contextResource(repoName string) (string, error) {
 		)
 		for _, file := range list.Files {
 			lines = append(lines, fmt.Sprintf("    - path: %q", file.Path))
+			lines = append(lines, fmt.Sprintf("      group: %s", firstNonEmptyString(file.FileGroup, "none")))
 			lines = append(lines, fmt.Sprintf("      role: %s", firstNonEmptyString(file.FileRole, "unknown")))
 			lines = append(lines, fmt.Sprintf("      unresolved: %d", file.DefaultVisibleUnresolvedSourceSiteCount))
 			lines = append(lines, fmt.Sprintf("      raw_unresolved: %d", file.RawUnresolvedSourceSiteCount))

@@ -27,8 +27,9 @@ const response: FileHotspotsResponse = {
       path: "internal/mcp/server.go",
       language: "go",
       kind: "source",
+      fileGroup: "backend_support_model_helper",
       fileRole: "runtime_model",
-      appLayer: "api",
+      appLayer: "backend",
       functionalArea: "mcp",
       parseStatus: "parsed",
       symbolCount: 20,
@@ -101,6 +102,7 @@ describe("FileMapPanel", () => {
     expect(screen.getByText("1 unresolved")).toBeInTheDocument();
     expect(screen.getByText("1 flows")).toBeInTheDocument();
     expect(screen.getByText("2 tests")).toBeInTheDocument();
+    expect(screen.getByText("Backend support/model/helper files")).toBeInTheDocument();
     expect(screen.getByText("Runtime Model")).toBeInTheDocument();
     expect(screen.getByText("Test Helper")).toBeInTheDocument();
     expect(screen.getByText("Test File")).toBeInTheDocument();
@@ -115,6 +117,7 @@ describe("FileMapPanel", () => {
       files: [
         {
           ...response.files[0],
+          fileGroup: undefined,
           fileRole: "unknown",
         },
       ],
@@ -129,7 +132,7 @@ describe("FileMapPanel", () => {
       />,
     );
 
-    expect(await screen.findByText("Unknown")).toBeInTheDocument();
+    expect(await screen.findAllByText("Unknown")).toHaveLength(2);
     expect(screen.getByText("internal/mcp/server.go")).toBeInTheDocument();
   });
 

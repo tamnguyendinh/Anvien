@@ -226,27 +226,40 @@ func TestBuildFileListClassifiesRawOnlySupportFileRoles(t *testing.T) {
 		appLayer       string
 		functionalArea string
 		want           semantic.FileRole
+		rawSites       int
 	}{
-		{"internal/frameworks/frameworks.go", "backend", "analyzer", semantic.FileRoleAnalyzerHelper},
-		{"internal/scopeir/sort_keys.go", "backend", "providers", semantic.FileRoleHelper},
-		{"internal/group/types.go", "backend", "query", semantic.FileRoleContractModel},
-		{"internal/repo/paths.go", "backend", "storage", semantic.FileRoleStorageHelper},
-		{"internal/testutil/path.go", "backend", "unknown", semantic.FileRoleTestHelper},
-		{"internal/repo/settings.go", "backend", "storage", semantic.FileRoleConfig},
-		{"internal/repo/runtime_config.go", "backend", "storage", semantic.FileRoleConfig},
-		{"internal/cobol/copy_expander.go", "backend", "analyzer", semantic.FileRoleAnalyzerHelper},
-		{"internal/parser/metrics.go", "backend", "providers", semantic.FileRoleParserModel},
-		{"internal/session/error.go", "backend", "session", semantic.FileRoleRuntimeModel},
-		{"internal/resolution/source_site.go", "backend", "resolution", semantic.FileRoleHelper},
-		{"internal/scopeir/facts.go", "backend", "providers", semantic.FileRoleParserModel},
-		{"internal/scopeir/range.go", "backend", "providers", semantic.FileRoleParserModel},
-		{"internal/session/types.go", "backend", "session", semantic.FileRoleRuntimeModel},
-		{"internal/cli/exit_error.go", "backend", "cli", semantic.FileRoleHelper},
-		{"internal/lbugnative/runner.go", "backend", "storage", semantic.FileRoleAdapter},
-		{"internal/lbugnative/runner_default.go", "backend", "storage", semantic.FileRoleFallbackAdapter},
+		{"internal/frameworks/frameworks.go", "backend", "analyzer", semantic.FileRoleAnalyzerHelper, 209},
+		{"internal/scopeir/sort_keys.go", "backend", "providers", semantic.FileRoleHelper, 63},
+		{"internal/group/types.go", "backend", "query", semantic.FileRoleContractModel, 16},
+		{"internal/repo/paths.go", "backend", "storage", semantic.FileRoleStorageHelper, 13},
+		{"internal/testutil/path.go", "backend", "unknown", semantic.FileRoleTestHelper, 12},
+		{"internal/repo/settings.go", "backend", "storage", semantic.FileRoleConfig, 11},
+		{"internal/repo/runtime_config.go", "backend", "storage", semantic.FileRoleConfig, 10},
+		{"internal/cobol/copy_expander.go", "backend", "analyzer", semantic.FileRoleAnalyzerHelper, 9},
+		{"internal/parser/metrics.go", "backend", "providers", semantic.FileRoleParserModel, 8},
+		{"internal/session/error.go", "backend", "session", semantic.FileRoleRuntimeModel, 6},
+		{"internal/resolution/source_site.go", "backend", "resolution", semantic.FileRoleHelper, 4},
+		{"internal/scopeir/facts.go", "backend", "providers", semantic.FileRoleParserModel, 4},
+		{"internal/scopeir/range.go", "backend", "providers", semantic.FileRoleParserModel, 4},
+		{"internal/session/types.go", "backend", "session", semantic.FileRoleRuntimeModel, 3},
+		{"internal/cli/exit_error.go", "backend", "cli", semantic.FileRoleHelper, 2},
+		{"internal/lbugnative/runner.go", "backend", "storage", semantic.FileRoleAdapter, 1},
+		{"internal/lbugnative/runner_default.go", "backend", "storage", semantic.FileRoleFallbackAdapter, 1},
 	}
 	for _, fixture := range fixtures {
 		g.AddNode(fileNode("File:"+fixture.path, fixture.path, "go", fixture.appLayer, fixture.functionalArea))
+		for i := 0; i < fixture.rawSites; i++ {
+			g.AddNode(resolutionGap(
+				"ResolutionGap:"+fixture.path+":raw:"+itoa(i),
+				fixture.path,
+				"File:"+fixture.path,
+				"builtin",
+				"unresolved_call",
+				"builtin",
+				"non_actionable",
+				i+1,
+			))
+		}
 	}
 
 	list := NewBuilder(g).BuildFileList(FileListOptions{Sort: "path", Limit: 0})
@@ -262,6 +275,9 @@ func TestBuildFileListClassifiesRawOnlySupportFileRoles(t *testing.T) {
 		if summary.FileRole != string(fixture.want) {
 			t.Fatalf("%s fileRole = %q, want %q", fixture.path, summary.FileRole, fixture.want)
 		}
+		if summary.FileGroup != string(semantic.FileGroupBackendSupportModelHelper) {
+			t.Fatalf("%s fileGroup = %q, want %q", fixture.path, summary.FileGroup, semantic.FileGroupBackendSupportModelHelper)
+		}
 	}
 
 	detail, ok := NewBuilder(g).BuildFileContext("internal/repo/runtime_config.go", Options{})
@@ -270,6 +286,37 @@ func TestBuildFileListClassifiesRawOnlySupportFileRoles(t *testing.T) {
 	}
 	if detail.Summary.FileRole != string(semantic.FileRoleConfig) {
 		t.Fatalf("detail fileRole = %q, want %q", detail.Summary.FileRole, semantic.FileRoleConfig)
+	}
+	if detail.Summary.FileGroup != string(semantic.FileGroupBackendSupportModelHelper) {
+		t.Fatalf("detail fileGroup = %q, want %q", detail.Summary.FileGroup, semantic.FileGroupBackendSupportModelHelper)
+	}
+
+	if len(list.FileGroups) != 1 {
+		t.Fatalf("file groups = %#v, want one backend support group", list.FileGroups)
+	}
+	group := list.FileGroups[0]
+	if group.Key != string(semantic.FileGroupBackendSupportModelHelper) || group.Label != "Backend support/model/helper files" {
+		t.Fatalf("file group identity = %#v, want backend support/model/helper", group)
+	}
+	if group.Files != 17 || group.DefaultUnresolved != 0 || group.RawUnresolved != 376 {
+		t.Fatalf("file group counts = files %d default %d raw %d, want 17/0/376", group.Files, group.DefaultUnresolved, group.RawUnresolved)
+	}
+	wantRoles := map[string]int{
+		string(semantic.FileRoleAnalyzerHelper):  2,
+		string(semantic.FileRoleHelper):          3,
+		string(semantic.FileRoleContractModel):   1,
+		string(semantic.FileRoleStorageHelper):   1,
+		string(semantic.FileRoleTestHelper):      1,
+		string(semantic.FileRoleConfig):          2,
+		string(semantic.FileRoleParserModel):     3,
+		string(semantic.FileRoleRuntimeModel):    2,
+		string(semantic.FileRoleAdapter):         1,
+		string(semantic.FileRoleFallbackAdapter): 1,
+	}
+	for role, want := range wantRoles {
+		if group.Roles[role] != want {
+			t.Fatalf("file group role %s = %d, want %d in %#v", role, group.Roles[role], want, group.Roles)
+		}
 	}
 }
 

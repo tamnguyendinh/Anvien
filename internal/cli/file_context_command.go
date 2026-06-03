@@ -31,14 +31,15 @@ type fileProjectionCommandInputs struct {
 }
 
 type fileHotspotsPayload struct {
-	Repo     string                    `json:"repo,omitempty"`
-	RepoPath string                    `json:"repoPath,omitempty"`
-	Graph    filecontext.GraphInfo     `json:"graph"`
-	Total    int                       `json:"total"`
-	Offset   int                       `json:"offset"`
-	Limit    int                       `json:"limit"`
-	Sort     string                    `json:"sort"`
-	Files    []filecontext.FileSummary `json:"files"`
+	Repo       string                         `json:"repo,omitempty"`
+	RepoPath   string                         `json:"repoPath,omitempty"`
+	Graph      filecontext.GraphInfo          `json:"graph"`
+	Total      int                            `json:"total"`
+	Offset     int                            `json:"offset"`
+	Limit      int                            `json:"limit"`
+	Sort       string                         `json:"sort"`
+	FileGroups []filecontext.FileGroupSummary `json:"fileGroups,omitempty"`
+	Files      []filecontext.FileSummary      `json:"files"`
 }
 
 func newFileContextCommand() *cobra.Command {
@@ -130,14 +131,15 @@ func newFileHotspotsCommand() *cobra.Command {
 				HighFanOutThreshold: highFanOutThreshold,
 			})
 			payload := fileHotspotsPayload{
-				Repo:     inputs.Repo,
-				RepoPath: inputs.RepoPath,
-				Graph:    fileProjectionGraphInfo(inputs),
-				Total:    list.Total,
-				Offset:   list.Offset,
-				Limit:    list.Limit,
-				Sort:     list.Sort,
-				Files:    list.Files,
+				Repo:       inputs.Repo,
+				RepoPath:   inputs.RepoPath,
+				Graph:      fileProjectionGraphInfo(inputs),
+				Total:      list.Total,
+				Offset:     list.Offset,
+				Limit:      list.Limit,
+				Sort:       list.Sort,
+				FileGroups: list.FileGroups,
+				Files:      list.Files,
 			}
 			if jsonOutput {
 				return writeJSON(cmd, payload)
@@ -234,9 +236,11 @@ func renderFileContext(cmd *cobra.Command, context filecontext.FileContext) erro
 	if _, err := fmt.Fprintf(out, "Repo: %s\n", context.Repo); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintf(out, "Language: %s  Kind: %s  Layer: %s  Area: %s  Risk: %s\n",
+	if _, err := fmt.Fprintf(out, "Language: %s  Kind: %s  Group: %s  Role: %s  Layer: %s  Area: %s  Risk: %s\n",
 		defaultString(summary.Language, "unknown"),
 		defaultString(summary.Kind, "unknown"),
+		defaultString(summary.FileGroup, "none"),
+		defaultString(summary.FileRole, "unknown"),
 		defaultString(summary.AppLayer, "unknown"),
 		defaultString(summary.FunctionalArea, "unknown"),
 		defaultString(summary.Risk, "unknown"),
@@ -297,12 +301,30 @@ func renderFileHotspots(cmd *cobra.Command, payload fileHotspotsPayload) error {
 	); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintln(out, "Path\tRole\tLayer\tArea\tSymbols\tIn\tOut\tLocal\tUnresolved\tRaw\tRisk"); err != nil {
+	if len(payload.FileGroups) > 0 {
+		if _, err := fmt.Fprintln(out, "Groups:"); err != nil {
+			return err
+		}
+		for _, group := range payload.FileGroups {
+			if _, err := fmt.Fprintf(out, "  %s (%s) files=%d defaultUnresolved=%d rawUnresolved=%d roles=%s\n",
+				group.Label,
+				group.Key,
+				group.Files,
+				group.DefaultUnresolved,
+				group.RawUnresolved,
+				formatCountMap(group.Roles),
+			); err != nil {
+				return err
+			}
+		}
+	}
+	if _, err := fmt.Fprintln(out, "Path\tGroup\tRole\tLayer\tArea\tSymbols\tIn\tOut\tLocal\tUnresolved\tRaw\tRisk"); err != nil {
 		return err
 	}
 	for _, file := range payload.Files {
-		if _, err := fmt.Fprintf(out, "%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n",
+		if _, err := fmt.Fprintf(out, "%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n",
 			file.Path,
+			defaultString(file.FileGroup, "-"),
 			defaultString(file.FileRole, "-"),
 			defaultString(file.AppLayer, "-"),
 			defaultString(file.FunctionalArea, "-"),

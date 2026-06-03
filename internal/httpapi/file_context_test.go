@@ -62,6 +62,15 @@ func TestFileHotspotsEndpointReturnsSortedProjection(t *testing.T) {
 		payload.Files[0].Risk != "medium" {
 		t.Fatalf("top hotspot = %#v, want src/app.go default/raw unresolved=1 risk=medium", payload.Files[0])
 	}
+	if len(payload.FileGroups) != 1 ||
+		payload.FileGroups[0].Key != "backend_support_model_helper" ||
+		payload.FileGroups[0].Label != "Backend support/model/helper files" ||
+		payload.FileGroups[0].Files != 1 ||
+		payload.FileGroups[0].Roles["storage_helper"] != 1 ||
+		len(payload.FileGroups[0].SampleFiles) != 1 ||
+		payload.FileGroups[0].SampleFiles[0] != "src/store.go" {
+		t.Fatalf("fileGroups = %#v, want backend support/model/helper summary for src/store.go", payload.FileGroups)
+	}
 
 	getJSON(t, server.URL+"/api/file-hotspots?repo=workspace&unresolvedOnly=true", http.StatusOK, &payload)
 	if payload.Total != 1 || len(payload.Files) != 1 || payload.Files[0].Path != "src/app.go" {

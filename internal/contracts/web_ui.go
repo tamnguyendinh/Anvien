@@ -90,6 +90,8 @@ type WebUIContractManifest struct {
 		SemanticSchemaVersion                string                      `json:"semanticSchemaVersion"`
 		FunctionalAreas                      []string                    `json:"functionalAreas"`
 		FunctionalAreaLabels                 []semantic.TermDefinition   `json:"functionalAreaLabels"`
+		FileGroups                           []string                    `json:"fileGroups"`
+		FileGroupLabels                      []semantic.TermDefinition   `json:"fileGroupLabels"`
 		FileRoles                            []string                    `json:"fileRoles"`
 		FileRoleLabels                       []semantic.TermDefinition   `json:"fileRoleLabels"`
 		RelationshipTableName                string                      `json:"relationshipTableName"`
@@ -467,6 +469,8 @@ func WebUIContract() WebUIContractManifest {
 	manifest.Graph.SemanticSchemaVersion = semantic.SchemaVersion
 	manifest.Graph.FunctionalAreas = semantic.FunctionalAreaStrings()
 	manifest.Graph.FunctionalAreaLabels = semantic.FunctionalAreaDefinitions()
+	manifest.Graph.FileGroups = semantic.FileGroupStrings()
+	manifest.Graph.FileGroupLabels = semantic.FileGroupDefinitions()
 	manifest.Graph.FileRoles = semantic.FileRoleStrings()
 	manifest.Graph.FileRoleLabels = semantic.FileRoleDefinitions()
 	manifest.Graph.RelationshipTableName = lbugschema.RelTableName
@@ -568,6 +572,10 @@ func WebUIContractTypeScript() (string, error) {
 	b.WriteString("export type FunctionalArea = (typeof FUNCTIONAL_AREAS)[number];\n\n")
 	writeConstObjectArray(&b, "FUNCTIONAL_AREA_LABELS", manifest.Graph.FunctionalAreaLabels)
 	b.WriteString("export type FunctionalAreaLabel = (typeof FUNCTIONAL_AREA_LABELS)[number];\n\n")
+	writeConstArray(&b, "FILE_GROUPS", manifest.Graph.FileGroups)
+	b.WriteString("export type FileGroup = (typeof FILE_GROUPS)[number];\n\n")
+	writeConstObjectArray(&b, "FILE_GROUP_LABELS", manifest.Graph.FileGroupLabels)
+	b.WriteString("export type FileGroupLabel = (typeof FILE_GROUP_LABELS)[number];\n\n")
 	writeConstArray(&b, "FILE_ROLES", manifest.Graph.FileRoles)
 	b.WriteString("export type FileRole = (typeof FILE_ROLES)[number];\n\n")
 	writeConstObjectArray(&b, "FILE_ROLE_LABELS", manifest.Graph.FileRoleLabels)
@@ -1292,6 +1300,7 @@ export interface FileSummary {
   path: string;
   language?: SupportedLanguages | string;
   kind?: string;
+  fileGroup?: FileGroup | string;
   fileRole?: FileRole | string;
   appLayer?: AppLayer | string;
   functionalArea?: FunctionalArea | string;
@@ -1314,6 +1323,18 @@ export interface FileSummary {
   defaultVisibleRisk?: string;
   stale: boolean;
   changedSinceAnalyze: boolean;
+}
+
+export interface FileGroupSummary {
+  key: FileGroup | string;
+  label: string;
+  files: number;
+  defaultUnresolved: number;
+  rawUnresolved: number;
+  roles?: Record<string, number>;
+  appLayers?: Record<string, number>;
+  functionalAreas?: Record<string, number>;
+  sampleFiles?: string[];
 }
 
 export interface FileSourceRange {
@@ -1467,6 +1488,7 @@ export interface FileHotspotsResponse {
   offset: number;
   limit: number;
   sort: string;
+  fileGroups?: FileGroupSummary[];
   files: FileSummary[];
 }
 

@@ -11,7 +11,7 @@ const graph = {
       properties: {
         name: "app.ts",
         filePath: "src/app.ts",
-        appLayer: "api",
+        appLayer: "backend",
         functionalArea: "mcp",
       },
     },
@@ -78,8 +78,9 @@ const sourceFileSummary = {
   path: "src/app.ts",
   language: "typescript",
   kind: "source",
+  fileGroup: "backend_support_model_helper",
   fileRole: "runtime_model",
-  appLayer: "api",
+  appLayer: "backend",
   functionalArea: "mcp",
   parseStatus: "parsed",
   symbolCount: 2,
@@ -301,6 +302,7 @@ test.describe("file map test unresolved defaults", () => {
     await page.getByTestId("file-map-tab").click();
     await expect(page.getByTestId("file-map-panel")).toBeVisible();
     await expect(page.getByText("1 unresolved")).toBeVisible();
+    await expect(page.getByText("Backend support/model/helper files")).toBeVisible();
     await expect(page.getByText("Test File")).toBeVisible();
     await expect(page.getByText("Test Helper")).toBeVisible();
     await expect(

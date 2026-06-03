@@ -466,6 +466,13 @@
         "description": "Backend-owned semantic role for file summary and file projection surfaces."
       },
       {
+        "key": "file_group",
+        "displayLabel": "File Group",
+        "cliLabel": "file-group",
+        "webLabel": "File Group",
+        "description": "Backend-owned semantic group for file identity and file projection surfaces."
+      },
+      {
         "key": "api_layer",
         "displayLabel": "API Layer",
         "cliLabel": "api-layer",
@@ -697,6 +704,18 @@
         "cliLabel": "unknown",
         "webLabel": "Unknown",
         "description": "Insufficient evidence for a stable Functional Area."
+      }
+    ],
+    "fileGroups": [
+      "backend_support_model_helper"
+    ],
+    "fileGroupLabels": [
+      {
+        "key": "backend_support_model_helper",
+        "displayLabel": "Backend support/model/helper files",
+        "cliLabel": "backend-support-model-helper",
+        "webLabel": "Backend support/model/helper files",
+        "description": "Backend source files whose role is support, model, helper, adapter, config, runtime, parser, contract, analyzer, storage, or test utility."
       }
     ],
     "fileRoles": [

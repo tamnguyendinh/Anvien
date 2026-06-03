@@ -30,18 +30,20 @@ type graphHealthCommandTotals struct {
 }
 
 type graphHealthSummaryResult struct {
-	Inputs       graphHealthCommandInputs  `json:"inputs"`
-	Totals       graphHealthCommandTotals  `json:"totals"`
-	Summary      graphhealth.Summary       `json:"summary"`
-	FileLayer    graphHealthFileLayer      `json:"fileLayer"`
-	FileHotspots []filecontext.FileSummary `json:"fileHotspots"`
+	Inputs       graphHealthCommandInputs       `json:"inputs"`
+	Totals       graphHealthCommandTotals       `json:"totals"`
+	Summary      graphhealth.Summary            `json:"summary"`
+	FileLayer    graphHealthFileLayer           `json:"fileLayer"`
+	FileGroups   []filecontext.FileGroupSummary `json:"fileGroups,omitempty"`
+	FileHotspots []filecontext.FileSummary      `json:"fileHotspots"`
 }
 
 type graphHealthReportResult struct {
-	Inputs       graphHealthCommandInputs  `json:"inputs"`
-	Totals       graphHealthCommandTotals  `json:"totals"`
-	FileLayer    graphHealthFileLayer      `json:"fileLayer"`
-	FileHotspots []filecontext.FileSummary `json:"fileHotspots"`
+	Inputs       graphHealthCommandInputs       `json:"inputs"`
+	Totals       graphHealthCommandTotals       `json:"totals"`
+	FileLayer    graphHealthFileLayer           `json:"fileLayer"`
+	FileGroups   []filecontext.FileGroupSummary `json:"fileGroups,omitempty"`
+	FileHotspots []filecontext.FileSummary      `json:"fileHotspots"`
 	graphhealth.ReportResponse
 }
 
@@ -62,11 +64,12 @@ type graphHealthExplainResult struct {
 }
 
 type graphHealthFilesResult struct {
-	Inputs graphHealthCommandInputs  `json:"inputs"`
-	Totals graphHealthCommandTotals  `json:"totals"`
-	Sort   string                    `json:"sort"`
-	Total  int                       `json:"total"`
-	Files  []filecontext.FileSummary `json:"files"`
+	Inputs     graphHealthCommandInputs       `json:"inputs"`
+	Totals     graphHealthCommandTotals       `json:"totals"`
+	Sort       string                         `json:"sort"`
+	Total      int                            `json:"total"`
+	FileGroups []filecontext.FileGroupSummary `json:"fileGroups,omitempty"`
+	Files      []filecontext.FileSummary      `json:"files"`
 }
 
 type graphHealthFileLayer struct {
@@ -117,6 +120,7 @@ func newGraphHealthSummaryCommand(repoName *string) *cobra.Command {
 				Totals:       graphHealthTotals(g),
 				Summary:      graphhealth.ComputeSummary(g),
 				FileLayer:    graphHealthFileLayerSummary(g),
+				FileGroups:   graphHealthFileGroups(g),
 				FileHotspots: graphHealthTopFileHotspots(g, 5),
 			}
 			if jsonOutput {
@@ -151,6 +155,7 @@ func newGraphHealthReportCommand(repoName *string) *cobra.Command {
 				Inputs:       inputs,
 				Totals:       graphHealthTotals(g),
 				FileLayer:    graphHealthFileLayerSummary(g),
+				FileGroups:   graphHealthFileGroups(g),
 				FileHotspots: graphHealthTopFileHotspots(g, 5),
 				ReportResponse: graphhealth.BuildReport(g, graphhealth.ReportOptions{
 					Limit:           limit,
@@ -307,11 +312,12 @@ when you need file projection filters such as --kind, --app-layer, or --function
 				UnresolvedOnly: unresolvedOnly,
 			})
 			result := graphHealthFilesResult{
-				Inputs: inputs,
-				Totals: graphHealthTotals(g),
-				Sort:   list.Sort,
-				Total:  list.Total,
-				Files:  list.Files,
+				Inputs:     inputs,
+				Totals:     graphHealthTotals(g),
+				Sort:       list.Sort,
+				Total:      list.Total,
+				FileGroups: list.FileGroups,
+				Files:      list.Files,
 			}
 			if jsonOutput {
 				return writeGraphHealthJSON(cmd, result)
@@ -319,12 +325,13 @@ when you need file projection filters such as --kind, --app-layer, or --function
 			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "graphHealth.files total=%d returned=%d sort=%s\n", result.Total, len(result.Files), result.Sort); err != nil {
 				return err
 			}
-			if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Path\tRole\tLayer\tArea\tSymbols\tFanIn\tFanOut\tUnresolved\tRaw\tRisk"); err != nil {
+			if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Path\tGroup\tRole\tLayer\tArea\tSymbols\tFanIn\tFanOut\tUnresolved\tRaw\tRisk"); err != nil {
 				return err
 			}
 			for _, file := range result.Files {
-				if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n",
+				if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n",
 					file.Path,
+					defaultString(file.FileGroup, "none"),
 					defaultString(file.FileRole, "unknown"),
 					defaultString(file.AppLayer, "unknown"),
 					defaultString(file.FunctionalArea, "unknown"),
@@ -453,7 +460,7 @@ func graphHealthSummaryLines(result graphHealthSummaryResult) []string {
 			summary.UnattributedUnresolvedReferenceCount,
 		),
 	}
-	lines = append(lines, graphHealthFileLayerLines(result.FileLayer, result.FileHotspots)...)
+	lines = append(lines, graphHealthFileLayerLines(result.FileLayer, result.FileGroups, result.FileHotspots)...)
 	return lines
 }
 
@@ -481,7 +488,7 @@ func graphHealthReportLines(result graphHealthReportResult) []string {
 			candidate.Name,
 		))
 	}
-	lines = append(lines, graphHealthFileLayerLines(result.FileLayer, result.FileHotspots)...)
+	lines = append(lines, graphHealthFileLayerLines(result.FileLayer, result.FileGroups, result.FileHotspots)...)
 	return lines
 }
 
@@ -519,7 +526,11 @@ func graphHealthTopFileHotspots(g *graph.Graph, limit int) []filecontext.FileSum
 	}).Files
 }
 
-func graphHealthFileLayerLines(summary graphHealthFileLayer, hotspots []filecontext.FileSummary) []string {
+func graphHealthFileGroups(g *graph.Graph) []filecontext.FileGroupSummary {
+	return filecontext.NewBuilder(g).BuildFileList(filecontext.FileListOptions{Sort: "path", Limit: 0}).FileGroups
+}
+
+func graphHealthFileLayerLines(summary graphHealthFileLayer, groups []filecontext.FileGroupSummary, hotspots []filecontext.FileSummary) []string {
 	lines := []string{
 		fmt.Sprintf("graphHealth.fileLayer files=%d unresolvedFiles=%d rawUnresolvedFiles=%d generatedFiles=%d highFanInFiles=%d highFanOutFiles=%d derivedEdges=%q",
 			summary.TotalFiles,
@@ -531,9 +542,21 @@ func graphHealthFileLayerLines(summary graphHealthFileLayer, hotspots []filecont
 			summary.DerivedEdgesNote,
 		),
 	}
+	for _, group := range groups {
+		lines = append(lines, fmt.Sprintf("graphHealth.fileGroup key=%q label=%q files=%d defaultUnresolved=%d rawUnresolved=%d roles=%q",
+			group.Key,
+			group.Label,
+			group.Files,
+			group.DefaultUnresolved,
+			group.RawUnresolved,
+			formatCountMap(group.Roles),
+		))
+	}
 	for _, file := range hotspots {
-		lines = append(lines, fmt.Sprintf("graphHealth.fileHotspot path=%q unresolved=%d rawUnresolved=%d fanIn=%d fanOut=%d risk=%s",
+		lines = append(lines, fmt.Sprintf("graphHealth.fileHotspot path=%q group=%s role=%s unresolved=%d rawUnresolved=%d fanIn=%d fanOut=%d risk=%s",
 			file.Path,
+			defaultString(file.FileGroup, "none"),
+			defaultString(file.FileRole, "unknown"),
 			file.DefaultVisibleUnresolvedSourceSiteCount,
 			file.RawUnresolvedSourceSiteCount,
 			file.InboundRefCount,

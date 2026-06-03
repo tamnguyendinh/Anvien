@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/tamnguyendinh/anvien/internal/filecontext"
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/graphhealth"
 	"github.com/tamnguyendinh/anvien/internal/repo"
@@ -148,6 +149,42 @@ func TestGraphHealthCommandSummaryReportComponentsAndExplain(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "graph node not found") {
 		t.Fatalf("missing node error = %v", err)
+	}
+}
+
+func TestGraphHealthFileLayerLinesIncludesFileGroups(t *testing.T) {
+	lines := graphHealthFileLayerLines(
+		graphHealthFileLayer{
+			TotalFiles:         17,
+			UnresolvedFiles:    0,
+			RawUnresolvedFiles: 17,
+			DerivedEdgesNote:   filecontext.DerivedFileEdgesNote,
+		},
+		[]filecontext.FileGroupSummary{
+			{
+				Key:               "backend_support_model_helper",
+				Label:             "Backend support/model/helper files",
+				Files:             17,
+				DefaultUnresolved: 0,
+				RawUnresolved:     376,
+				Roles:             map[string]int{"helper": 3},
+			},
+		},
+		nil,
+	)
+
+	groupLine := firstLineWithPrefix(t, strings.Join(lines, "\n"), "graphHealth.fileGroup")
+	for _, want := range []string{
+		`key="backend_support_model_helper"`,
+		`label="Backend support/model/helper files"`,
+		"files=17",
+		"defaultUnresolved=0",
+		"rawUnresolved=376",
+		`roles="helper:3"`,
+	} {
+		if !strings.Contains(groupLine, want) {
+			t.Fatalf("graph-health group line missing %q:\n%s", want, groupLine)
+		}
 	}
 }
 

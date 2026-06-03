@@ -3562,6 +3562,13 @@ export const SEMANTIC_TERMS = [
     "description": "Backend-owned semantic role for file summary and file projection surfaces."
   },
   {
+    "key": "file_group",
+    "displayLabel": "File Group",
+    "cliLabel": "file-group",
+    "webLabel": "File Group",
+    "description": "Backend-owned semantic group for file identity and file projection surfaces."
+  },
+  {
     "key": "api_layer",
     "displayLabel": "API Layer",
     "cliLabel": "api-layer",
@@ -3807,6 +3814,24 @@ export const FUNCTIONAL_AREA_LABELS = [
 ] as const;
 
 export type FunctionalAreaLabel = (typeof FUNCTIONAL_AREA_LABELS)[number];
+
+export const FILE_GROUPS = [
+  "backend_support_model_helper"
+] as const;
+
+export type FileGroup = (typeof FILE_GROUPS)[number];
+
+export const FILE_GROUP_LABELS = [
+  {
+    "key": "backend_support_model_helper",
+    "displayLabel": "Backend support/model/helper files",
+    "cliLabel": "backend-support-model-helper",
+    "webLabel": "Backend support/model/helper files",
+    "description": "Backend source files whose role is support, model, helper, adapter, config, runtime, parser, contract, analyzer, storage, or test utility."
+  }
+] as const;
+
+export type FileGroupLabel = (typeof FILE_GROUP_LABELS)[number];
 
 export const FILE_ROLES = [
   "model",
@@ -4236,6 +4261,7 @@ export interface FileSummary {
   path: string;
   language?: SupportedLanguages | string;
   kind?: string;
+  fileGroup?: FileGroup | string;
   fileRole?: FileRole | string;
   appLayer?: AppLayer | string;
   functionalArea?: FunctionalArea | string;
@@ -4258,6 +4284,18 @@ export interface FileSummary {
   defaultVisibleRisk?: string;
   stale: boolean;
   changedSinceAnalyze: boolean;
+}
+
+export interface FileGroupSummary {
+  key: FileGroup | string;
+  label: string;
+  files: number;
+  defaultUnresolved: number;
+  rawUnresolved: number;
+  roles?: Record<string, number>;
+  appLayers?: Record<string, number>;
+  functionalAreas?: Record<string, number>;
+  sampleFiles?: string[];
 }
 
 export interface FileSourceRange {
@@ -4411,6 +4449,7 @@ export interface FileHotspotsResponse {
   offset: number;
   limit: number;
   sort: string;
+  fileGroups?: FileGroupSummary[];
   files: FileSummary[];
 }
 
