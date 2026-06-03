@@ -3555,6 +3555,13 @@ export const SEMANTIC_TERMS = [
     "description": "High-confidence functional ownership under an App Layer."
   },
   {
+    "key": "file_role",
+    "displayLabel": "File Role",
+    "cliLabel": "file-role",
+    "webLabel": "File Role",
+    "description": "Backend-owned semantic role for file summary and file projection surfaces."
+  },
+  {
     "key": "api_layer",
     "displayLabel": "API Layer",
     "cliLabel": "api-layer",
@@ -3800,6 +3807,112 @@ export const FUNCTIONAL_AREA_LABELS = [
 ] as const;
 
 export type FunctionalAreaLabel = (typeof FUNCTIONAL_AREA_LABELS)[number];
+
+export const FILE_ROLES = [
+  "model",
+  "contract_model",
+  "helper",
+  "storage_helper",
+  "config",
+  "adapter",
+  "fallback_adapter",
+  "test_helper",
+  "analyzer_helper",
+  "parser_model",
+  "runtime_model",
+  "unknown"
+] as const;
+
+export type FileRole = (typeof FILE_ROLES)[number];
+
+export const FILE_ROLE_LABELS = [
+  {
+    "key": "model",
+    "displayLabel": "Model",
+    "cliLabel": "model",
+    "webLabel": "Model",
+    "description": "General data model or value object file."
+  },
+  {
+    "key": "contract_model",
+    "displayLabel": "Contract Model",
+    "cliLabel": "contract-model",
+    "webLabel": "Contract Model",
+    "description": "Data model used to carry API, group, or cross-surface contracts."
+  },
+  {
+    "key": "helper",
+    "displayLabel": "Helper",
+    "cliLabel": "helper",
+    "webLabel": "Helper",
+    "description": "Support code with small reusable helpers."
+  },
+  {
+    "key": "storage_helper",
+    "displayLabel": "Storage Helper",
+    "cliLabel": "storage-helper",
+    "webLabel": "Storage Helper",
+    "description": "Repository, path, or storage support helper."
+  },
+  {
+    "key": "config",
+    "displayLabel": "Config",
+    "cliLabel": "config",
+    "webLabel": "Config",
+    "description": "Runtime or repository configuration model."
+  },
+  {
+    "key": "adapter",
+    "displayLabel": "Adapter",
+    "cliLabel": "adapter",
+    "webLabel": "Adapter",
+    "description": "Adapter between Anvien and an external/runtime backend."
+  },
+  {
+    "key": "fallback_adapter",
+    "displayLabel": "Fallback Adapter",
+    "cliLabel": "fallback-adapter",
+    "webLabel": "Fallback Adapter",
+    "description": "Fallback adapter used when a primary runtime backend is unavailable."
+  },
+  {
+    "key": "test_helper",
+    "displayLabel": "Test Helper",
+    "cliLabel": "test-helper",
+    "webLabel": "Test Helper",
+    "description": "Test utility or fixture helper file."
+  },
+  {
+    "key": "analyzer_helper",
+    "displayLabel": "Analyzer Helper",
+    "cliLabel": "analyzer-helper",
+    "webLabel": "Analyzer Helper",
+    "description": "Analyzer support helper for detection, expansion, or framework metadata."
+  },
+  {
+    "key": "parser_model",
+    "displayLabel": "Parser Model",
+    "cliLabel": "parser-model",
+    "webLabel": "Parser Model",
+    "description": "Parser, ScopeIR, range, fact, or metric model file."
+  },
+  {
+    "key": "runtime_model",
+    "displayLabel": "Runtime Model",
+    "cliLabel": "runtime-model",
+    "webLabel": "Runtime Model",
+    "description": "Runtime/session type, error, or state model file."
+  },
+  {
+    "key": "unknown",
+    "displayLabel": "Unknown",
+    "cliLabel": "unknown",
+    "webLabel": "Unknown",
+    "description": "Insufficient evidence for a stable file role."
+  }
+] as const;
+
+export type FileRoleLabel = (typeof FILE_ROLE_LABELS)[number];
 
 export interface GraphHealthDiagnostic {
   kind: string;
@@ -4123,6 +4236,7 @@ export interface FileSummary {
   path: string;
   language?: SupportedLanguages | string;
   kind?: string;
+  fileRole?: FileRole | string;
   appLayer?: AppLayer | string;
   functionalArea?: FunctionalArea | string;
   parseStatus?: string;

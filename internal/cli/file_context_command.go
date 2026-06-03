@@ -297,12 +297,13 @@ func renderFileHotspots(cmd *cobra.Command, payload fileHotspotsPayload) error {
 	); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintln(out, "Path\tLayer\tArea\tSymbols\tIn\tOut\tLocal\tUnresolved\tRaw\tRisk"); err != nil {
+	if _, err := fmt.Fprintln(out, "Path\tRole\tLayer\tArea\tSymbols\tIn\tOut\tLocal\tUnresolved\tRaw\tRisk"); err != nil {
 		return err
 	}
 	for _, file := range payload.Files {
-		if _, err := fmt.Fprintf(out, "%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n",
+		if _, err := fmt.Fprintf(out, "%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n",
 			file.Path,
+			defaultString(file.FileRole, "-"),
 			defaultString(file.AppLayer, "-"),
 			defaultString(file.FunctionalArea, "-"),
 			file.SymbolCount,

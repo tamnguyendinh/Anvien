@@ -319,12 +319,13 @@ when you need file projection filters such as --kind, --app-layer, or --function
 			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "graphHealth.files total=%d returned=%d sort=%s\n", result.Total, len(result.Files), result.Sort); err != nil {
 				return err
 			}
-			if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Path\tLayer\tArea\tSymbols\tFanIn\tFanOut\tUnresolved\tRaw\tRisk"); err != nil {
+			if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Path\tRole\tLayer\tArea\tSymbols\tFanIn\tFanOut\tUnresolved\tRaw\tRisk"); err != nil {
 				return err
 			}
 			for _, file := range result.Files {
-				if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n",
+				if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n",
 					file.Path,
+					defaultString(file.FileRole, "unknown"),
 					defaultString(file.AppLayer, "unknown"),
 					defaultString(file.FunctionalArea, "unknown"),
 					file.SymbolCount,

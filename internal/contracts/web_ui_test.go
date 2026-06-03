@@ -53,6 +53,12 @@ func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {
 	if label := termDefinition(manifest.Graph.FunctionalAreaLabels, "resolution"); label.DisplayLabel != "Resolution" {
 		t.Fatalf("resolution functional area label = %#v", label)
 	}
+	if !contains(manifest.Graph.FileRoles, "analyzer_helper") || !contains(manifest.Graph.FileRoles, "runtime_model") {
+		t.Fatalf("file role contract metadata missing: %#v", manifest.Graph.FileRoles)
+	}
+	if label := termDefinition(manifest.Graph.FileRoleLabels, "analyzer_helper"); label.DisplayLabel != "Analyzer Helper" {
+		t.Fatalf("analyzer_helper file role label = %#v", label)
+	}
 	if policy := relationshipPolicy(manifest, "INHERITS"); policy.SemanticGroup != "normalized-heritage" {
 		t.Fatalf("INHERITS policy = %#v", policy)
 	}
@@ -113,9 +119,12 @@ func TestWebUIContractTypeScriptIsBrowserGeneratedGlue(t *testing.T) {
 		"export interface GraphSemanticStatus",
 		"export const FUNCTIONAL_AREAS",
 		"export type FunctionalArea",
+		"export const FILE_ROLES",
+		"export type FileRole",
 		"export type AppLayer",
 		"appLayer?: AppLayer",
 		"functionalArea?: FunctionalArea",
+		"fileRole?: FileRole",
 		"semanticStatus?: GraphSemanticStatus",
 		"diagnosticClassificationCounts: Partial<Record<GraphHealthDiagnosticClassification, number>>",
 		"triageDimension: GraphHealthReportTriageDimension",

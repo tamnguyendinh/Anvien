@@ -504,14 +504,22 @@ func TestSemanticTermDefinitionsAreStableAndNonOverlapping(t *testing.T) {
 		t.Fatalf("functional area definitions = %d, want %d", len(functionalAreaDefinitions), len(FunctionalAreas))
 	}
 	requireUniqueTermKeys(t, functionalAreaDefinitions)
+	fileRoleDefinitions := FileRoleDefinitions()
+	if len(fileRoleDefinitions) != len(FileRoles) {
+		t.Fatalf("file role definitions = %d, want %d", len(fileRoleDefinitions), len(FileRoles))
+	}
+	requireUniqueTermKeys(t, fileRoleDefinitions)
 	terms := SemanticTermDefinitions()
 	requireUniqueTermKeys(t, terms)
+	requireTerm(t, terms, "file_role", "File Role")
 	requireTerm(t, terms, "resolution_gap", "Resolution Gap")
 	requireTerm(t, terms, "non_actionable_reference", "Non-actionable Reference")
 	requireTerm(t, appLayerDefinitions, string(AppLayerAPI), "API Layer")
 	requireTerm(t, appLayerDefinitions, string(AppLayerFrontendAPIClient), "Frontend API Client")
 	requireTerm(t, functionalAreaDefinitions, string(FunctionalAreaResolution), "Resolution")
 	requireTerm(t, functionalAreaDefinitions, string(FunctionalAreaGraphHealth), "Graph Health")
+	requireTerm(t, fileRoleDefinitions, string(FileRoleAnalyzerHelper), "Analyzer Helper")
+	requireTerm(t, fileRoleDefinitions, string(FileRoleFallbackAdapter), "Fallback Adapter")
 }
 
 func requireUniqueTermKeys(t *testing.T, terms []TermDefinition) {

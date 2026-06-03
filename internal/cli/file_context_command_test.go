@@ -94,7 +94,7 @@ func TestFileHotspotsCommandOutputsSortedProjection(t *testing.T) {
 	if errOut != "" {
 		t.Fatalf("file-hotspots human wrote stderr: %q", errOut)
 	}
-	for _, want := range []string{"File hotspots for fixture: total=1", "Path\tLayer\tArea", "src/app.go"} {
+	for _, want := range []string{"File hotspots for fixture: total=1", "Path\tRole\tLayer\tArea", "src/app.go"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("file-hotspots human output missing %q:\n%s", want, out)
 		}

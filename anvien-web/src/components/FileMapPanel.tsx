@@ -305,7 +305,7 @@ export const FileMapPanel = ({
           <thead className="sticky top-0 z-10 bg-surface">
             <tr className="border-b border-border-subtle font-mono text-[10px] text-text-muted">
               <th className="w-[46%] px-3 py-2 font-medium">Path</th>
-              <th className="w-[17%] px-2 py-2 font-medium">Layer</th>
+              <th className="w-[17%] px-2 py-2 font-medium">Role</th>
               <th className="w-[9%] px-1 py-2 text-right font-medium">Sym</th>
               <th className="w-[7%] px-1 py-2 text-right font-medium">In</th>
               <th className="w-[7%] px-1 py-2 text-right font-medium">Out</th>
@@ -381,6 +381,9 @@ const FileMapRow = ({ file, selected, onOpenFile }: FileMapRowProps) => {
       <td className="min-w-0 px-2 py-2">
         <div className="min-w-0">
           <div className="truncate text-[11px] text-text-secondary">
+            {formatSemanticKey(file.fileRole)}
+          </div>
+          <div className="truncate font-mono text-[9px] text-text-muted">
             {formatSemanticKey(file.appLayer)}
           </div>
           <div className="truncate font-mono text-[9px] text-text-muted">

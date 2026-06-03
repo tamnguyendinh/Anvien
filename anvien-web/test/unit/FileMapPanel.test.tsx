@@ -27,6 +27,7 @@ const response: FileHotspotsResponse = {
       path: "internal/mcp/server.go",
       language: "go",
       kind: "source",
+      fileRole: "runtime_model",
       appLayer: "api",
       functionalArea: "mcp",
       parseStatus: "parsed",
@@ -53,6 +54,7 @@ const response: FileHotspotsResponse = {
       path: "internal/mcp/server_test.go",
       language: "go",
       kind: "test",
+      fileRole: "test_helper",
       appLayer: "api_test",
       functionalArea: "mcp",
       parseStatus: "parsed",
@@ -99,10 +101,36 @@ describe("FileMapPanel", () => {
     expect(screen.getByText("1 unresolved")).toBeInTheDocument();
     expect(screen.getByText("1 flows")).toBeInTheDocument();
     expect(screen.getByText("2 tests")).toBeInTheDocument();
+    expect(screen.getByText("Runtime Model")).toBeInTheDocument();
+    expect(screen.getByText("Test Helper")).toBeInTheDocument();
     expect(screen.getByText("Test File")).toBeInTheDocument();
     expect(screen.queryByRole("option", { name: "Raw unresolved" })).not.toBeInTheDocument();
     expect(screen.queryByRole("option", { name: "Test unresolved" })).not.toBeInTheDocument();
     expect(screen.getAllByTestId("file-map-row")).toHaveLength(2);
+  });
+
+  it("renders backend unknown role without path inference", async () => {
+    fetchFileHotspots.mockResolvedValueOnce({
+      ...response,
+      files: [
+        {
+          ...response.files[0],
+          fileRole: "unknown",
+        },
+      ],
+      total: 1,
+    });
+
+    render(
+      <FileMapPanel
+        repoName="demo"
+        selectedPath={null}
+        onOpenFile={vi.fn()}
+      />,
+    );
+
+    expect(await screen.findByText("Unknown")).toBeInTheDocument();
+    expect(screen.getByText("internal/mcp/server.go")).toBeInTheDocument();
   });
 
   it("passes sort and filter state to the backend request", async () => {

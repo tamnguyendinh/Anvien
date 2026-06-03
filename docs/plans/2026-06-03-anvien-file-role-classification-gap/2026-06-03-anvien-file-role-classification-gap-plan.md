@@ -2,7 +2,7 @@
 
 Date: 2026-06-03
 
-Status: Ready for implementation
+Status: Detect-changes complete; pending commit closure
 
 Companion files:
 
@@ -204,37 +204,37 @@ The plan is complete when:
   - Implementation Gate: no product code edits in this phase.
   - Acceptance: evidence records current counts, raw-only file list summary, source-site classification, owner files, and CRITICAL impact warnings for classifier edits.
 
-- [ ] [P1-A] Define the file-role contract.
+- [x] [P1-A] Define the file-role contract.
   - Goal: decide the exact field name, role enum, JSON shape, and compatibility strategy before implementation.
   - Work Steps: inspect `FileSummary`, graph-health/file-hotspot JSON, HTTP/MCP file summary payloads, Web generated contracts, and semantic definitions; choose whether role belongs in `internal/semantic` or `internal/filecontext`; define role values and labels; write tests that encode role strings and unknown fallback.
   - Implementation Gate: run impact for `FileSummary` and any new/exported role type before editing.
   - Acceptance: a stable backend role contract exists, old fields are preserved, and tests prove invalid/unknown role fallback.
 
-- [ ] [P1-B] Implement backend file-role classification.
+- [x] [P1-B] Implement backend file-role classification.
   - Goal: classify known backend support/model/helper/config/adapter files without changing unresolved semantics.
   - Work Steps: implement a shared classifier using path, package, file name, symbol shape, and existing semantic metadata; add table tests for the 17 raw-only files plus boundary examples; keep the classifier deterministic and scoped; do not change raw/default unresolved bucket calculations.
   - Implementation Gate: no CLI/API/Web output changes until backend classification tests pass.
   - Acceptance: the current 17-file raw-only set maps to non-unknown roles, and role classification does not alter raw/default unresolved counts.
 
-- [ ] [P2-A] Surface role classification through file summaries and CLI/graph quality output.
+- [x] [P2-A] Surface role classification through file summaries and CLI/graph quality output.
   - Goal: make CLI and graph-quality command users see file role where file identity is discussed.
   - Work Steps: add role fields to backend `FileSummary`; update file-hotspots, file-context, graph-health, and analyze file projection output only where useful; update CLI tests and JSON tests; ensure raw-only files can be listed with role and non-actionable counts.
   - Implementation Gate: preserve existing JSON fields unless an explicit compatibility decision is recorded.
   - Acceptance: command output can report raw-only files with role labels, and tests cover the new field in JSON/human output where emitted.
 
-- [ ] [P2-B] Update API contracts and generated Web types.
+- [x] [P2-B] Update API contracts and generated Web types.
   - Goal: make backend file-role metadata available to Web through the same contract as other file summary fields.
   - Work Steps: update `internal/contracts/web_ui.go` so `FileSummary` includes the role field and any role enum/label metadata if needed; regenerate `anvien-web/src/generated/anvien-contracts.ts`; inspect `anvien-web/src/services/backend-client.ts` for pass-through or query parameter changes; update backend/contract tests that assert file summary shape.
   - Implementation Gate: backend file-role tests from P1-B must pass before contract changes; preserve existing `kind`, `appLayer`, `functionalArea`, and unresolved fields.
   - Acceptance: generated TypeScript exposes the role field, backend contract tests pass, and no Web component uses an untyped ad hoc role value.
 
-- [ ] [P2-C] Update Web file-role display.
+- [x] [P2-C] Update Web file-role display.
   - Goal: make the Web UI explain raw-only support/model/helper files with a compact backend-owned role label.
   - Work Steps: update `FileMapPanel` row metadata to include role near existing kind/layer/area labels; update `FileDetailPanel` to add a `Role` pill near `Layer` and `Area`; inspect `FileTreePanel` and update it only if it displays file summary metadata or semantic file filters; add or update a Web role-label helper instead of adding path-pattern checks; ensure long labels like `Fallback Adapter` and `Analyzer Helper` fit without overlap; keep raw/default unresolved counts visible and unchanged.
   - Implementation Gate: do not start UI edits until generated contracts include the role field; do not infer roles in Web from path, extension, or unresolved count.
   - Acceptance: Web unit tests cover role display, missing/unknown role behavior, and unchanged unresolved counts; if visible UI changes ship, Web/e2e tests cover file map/detail role rendering and browser/screenshot evidence is recorded as supplemental validation.
 
-- [ ] [P3-A] Validate role coverage, raw unresolved semantics, and Web display.
+- [x] [P3-A] Validate role coverage, raw unresolved semantics, and Web display.
   - Goal: prove the change solves the classification gap without hiding graph-quality evidence.
   - Work Steps: run full build; run focused Go tests; run Web unit tests when Web code changes; run Web/e2e tests when visible UI changes; run browser/screenshot validation as supplemental evidence for visible UI changes; run `anvien analyze --force`; run `file-hotspots --sort raw-unresolved --unresolved-only --limit 0 --json`; verify raw-only file count, role coverage, and raw/default unresolved counts; run graph-health summary; record role coverage, Web consumer coverage, and validation results in evidence and benchmark ledgers.
   - Implementation Gate: no commit until validation and benchmark ledgers are updated.

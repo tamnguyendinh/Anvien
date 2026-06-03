@@ -90,6 +90,8 @@ type WebUIContractManifest struct {
 		SemanticSchemaVersion                string                      `json:"semanticSchemaVersion"`
 		FunctionalAreas                      []string                    `json:"functionalAreas"`
 		FunctionalAreaLabels                 []semantic.TermDefinition   `json:"functionalAreaLabels"`
+		FileRoles                            []string                    `json:"fileRoles"`
+		FileRoleLabels                       []semantic.TermDefinition   `json:"fileRoleLabels"`
 		RelationshipTableName                string                      `json:"relationshipTableName"`
 		EmbeddingTableName                   string                      `json:"embeddingTableName"`
 	} `json:"graph"`
@@ -465,6 +467,8 @@ func WebUIContract() WebUIContractManifest {
 	manifest.Graph.SemanticSchemaVersion = semantic.SchemaVersion
 	manifest.Graph.FunctionalAreas = semantic.FunctionalAreaStrings()
 	manifest.Graph.FunctionalAreaLabels = semantic.FunctionalAreaDefinitions()
+	manifest.Graph.FileRoles = semantic.FileRoleStrings()
+	manifest.Graph.FileRoleLabels = semantic.FileRoleDefinitions()
 	manifest.Graph.RelationshipTableName = lbugschema.RelTableName
 	manifest.Graph.EmbeddingTableName = lbugschema.EmbeddingTableName
 	manifest.Languages.CodeLanguages = append([]LanguageContract(nil), codeLanguages...)
@@ -564,6 +568,10 @@ func WebUIContractTypeScript() (string, error) {
 	b.WriteString("export type FunctionalArea = (typeof FUNCTIONAL_AREAS)[number];\n\n")
 	writeConstObjectArray(&b, "FUNCTIONAL_AREA_LABELS", manifest.Graph.FunctionalAreaLabels)
 	b.WriteString("export type FunctionalAreaLabel = (typeof FUNCTIONAL_AREA_LABELS)[number];\n\n")
+	writeConstArray(&b, "FILE_ROLES", manifest.Graph.FileRoles)
+	b.WriteString("export type FileRole = (typeof FILE_ROLES)[number];\n\n")
+	writeConstObjectArray(&b, "FILE_ROLE_LABELS", manifest.Graph.FileRoleLabels)
+	b.WriteString("export type FileRoleLabel = (typeof FILE_ROLE_LABELS)[number];\n\n")
 	b.WriteString(graphTypes)
 	b.WriteString(fileContextTypes)
 	writeConstArray(&b, "PIPELINE_PHASES", manifest.Pipeline.Phases)
@@ -1284,6 +1292,7 @@ export interface FileSummary {
   path: string;
   language?: SupportedLanguages | string;
   kind?: string;
+  fileRole?: FileRole | string;
   appLayer?: AppLayer | string;
   functionalArea?: FunctionalArea | string;
   parseStatus?: string;

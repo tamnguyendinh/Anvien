@@ -6,6 +6,7 @@ import (
 
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/semantic"
 )
 
 func TestBuildFileContextDerivesTreeRelationshipsAndUnresolved(t *testing.T) {
@@ -18,6 +19,9 @@ func TestBuildFileContextDerivesTreeRelationshipsAndUnresolved(t *testing.T) {
 
 	if context.Summary.Path != "src/app.go" {
 		t.Fatalf("summary path = %q, want src/app.go", context.Summary.Path)
+	}
+	if context.Summary.FileRole != string(semantic.FileRoleUnknown) {
+		t.Fatalf("summary fileRole = %q, want unknown", context.Summary.FileRole)
 	}
 	if context.Summary.SymbolCount != 3 {
 		t.Fatalf("symbol count = %d, want 3", context.Summary.SymbolCount)
@@ -212,6 +216,60 @@ func TestBuildFileListUsesAppLayerAsTestClassificationTruth(t *testing.T) {
 		if file.Kind != "test" || file.AppLayer == "" {
 			t.Fatalf("test file summary = %#v, want kind=test with appLayer", file)
 		}
+	}
+}
+
+func TestBuildFileListClassifiesRawOnlySupportFileRoles(t *testing.T) {
+	g := graph.New()
+	fixtures := []struct {
+		path           string
+		appLayer       string
+		functionalArea string
+		want           semantic.FileRole
+	}{
+		{"internal/frameworks/frameworks.go", "backend", "analyzer", semantic.FileRoleAnalyzerHelper},
+		{"internal/scopeir/sort_keys.go", "backend", "providers", semantic.FileRoleHelper},
+		{"internal/group/types.go", "backend", "query", semantic.FileRoleContractModel},
+		{"internal/repo/paths.go", "backend", "storage", semantic.FileRoleStorageHelper},
+		{"internal/testutil/path.go", "backend", "unknown", semantic.FileRoleTestHelper},
+		{"internal/repo/settings.go", "backend", "storage", semantic.FileRoleConfig},
+		{"internal/repo/runtime_config.go", "backend", "storage", semantic.FileRoleConfig},
+		{"internal/cobol/copy_expander.go", "backend", "analyzer", semantic.FileRoleAnalyzerHelper},
+		{"internal/parser/metrics.go", "backend", "providers", semantic.FileRoleParserModel},
+		{"internal/session/error.go", "backend", "session", semantic.FileRoleRuntimeModel},
+		{"internal/resolution/source_site.go", "backend", "resolution", semantic.FileRoleHelper},
+		{"internal/scopeir/facts.go", "backend", "providers", semantic.FileRoleParserModel},
+		{"internal/scopeir/range.go", "backend", "providers", semantic.FileRoleParserModel},
+		{"internal/session/types.go", "backend", "session", semantic.FileRoleRuntimeModel},
+		{"internal/cli/exit_error.go", "backend", "cli", semantic.FileRoleHelper},
+		{"internal/lbugnative/runner.go", "backend", "storage", semantic.FileRoleAdapter},
+		{"internal/lbugnative/runner_default.go", "backend", "storage", semantic.FileRoleFallbackAdapter},
+	}
+	for _, fixture := range fixtures {
+		g.AddNode(fileNode("File:"+fixture.path, fixture.path, "go", fixture.appLayer, fixture.functionalArea))
+	}
+
+	list := NewBuilder(g).BuildFileList(FileListOptions{Sort: "path", Limit: 0})
+	byPath := map[string]FileSummary{}
+	for _, file := range list.Files {
+		byPath[file.Path] = file
+	}
+	for _, fixture := range fixtures {
+		summary, ok := byPath[fixture.path]
+		if !ok {
+			t.Fatalf("missing summary for %s", fixture.path)
+		}
+		if summary.FileRole != string(fixture.want) {
+			t.Fatalf("%s fileRole = %q, want %q", fixture.path, summary.FileRole, fixture.want)
+		}
+	}
+
+	detail, ok := NewBuilder(g).BuildFileContext("internal/repo/runtime_config.go", Options{})
+	if !ok {
+		t.Fatalf("BuildFileContext() did not find runtime_config.go")
+	}
+	if detail.Summary.FileRole != string(semantic.FileRoleConfig) {
+		t.Fatalf("detail fileRole = %q, want %q", detail.Summary.FileRole, semantic.FileRoleConfig)
 	}
 }
 

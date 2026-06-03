@@ -584,6 +584,7 @@ export const FileDetailPanel = ({
           <Stat label="Tests" value={compactCount(summary.linkedTestCount)} />
         </div>
         <div className="mt-2 flex flex-wrap gap-1">
+          <Pill label="Role" value={formatKey(summary.fileRole)} />
           <Pill label="Layer" value={formatKey(summary.appLayer)} />
           <Pill label="Area" value={formatKey(summary.functionalArea)} />
           <Pill label="Kind" value={testFile ? "Test File" : formatKey(summary.kind)} />

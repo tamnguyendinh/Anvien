@@ -2,7 +2,7 @@
 
 Date: 2026-06-03
 
-Status: Open
+Status: Detect-changes complete; pending commit closure
 
 Companion files:
 
@@ -311,3 +311,120 @@ Readiness conclusion:
 
 - The plan is ready for implementation after this review.
 - Remaining risks are normal implementation risks: CRITICAL classifier blast radius, additive `FileSummary` contract propagation, and Web role display validation.
+
+## E7 - Implementation Impact And Scope
+
+Date: 2026-06-03
+
+Status: completed
+
+Scope:
+
+- Add backend-owned `fileRole` classification for file summaries.
+- Surface role labels through CLI/MCP/file projection output and generated Web contracts.
+- Update Web file map/detail display and tests.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe analyze --force` | Pass before graph-based implementation work. `files.scanned=824`, `parsed_code=601`, `failed=0`, `nodes=61009`, `relationships=96665`, `unresolvedFiles=336`, `rawUnresolvedFiles=353`. |
+| Anvien query for file role owners | Identified `internal/filecontext/context.go`, `internal/contracts/web_ui.go`, `FileMapPanel`, and `FileDetailPanel` as direct owners. |
+| `anvien api shape-check --repo Anvien --json` | No routes with both response shapes and consumers found for this contract check. |
+| `anvien api impact --repo Anvien --json` | Command requires a route or file; no broad route impact was available from the no-target invocation. |
+
+Impact / blast radius:
+
+| Target | Result |
+|---|---|
+| `Struct:internal/filecontext/context.go:FileSummary` | CRITICAL. Impacted count 62; affected app layers included `api=23`, `backend=37`, `frontend=2`; affected areas included CLI, MCP, API, and Web graph UI consumers. |
+| `Method:internal/filecontext/context.go:Builder.BuildFileContext#2` | LOW. Direct file-context summary construction path. |
+| `Method:internal/filecontext/context.go:Builder.buildFileSummaries#0` | CRITICAL. Shared file list/file-hotspots summary path. |
+| `Function:internal/semantic/metadata.go:SemanticTermDefinitions#0` | CRITICAL. Generated semantic metadata contract path. |
+| `Function:internal/contracts/web_ui.go:WebUIContract#0` | CRITICAL. Generated Web manifest contract path. |
+| `Function:internal/contracts/web_ui.go:WebUIContractTypeScript#0` | CRITICAL. Generated Web TypeScript contract path. |
+| `Function:anvien-web/src/components/FileMapPanel.tsx:FileMapPanel` | LOW. Web row display; direct affected files included `App.tsx`, `FileTreePanel.tsx`, and unit tests. |
+| `Function:anvien-web/src/components/FileDetailPanel.tsx:FileDetailPanel` | LOW. Web detail display; direct affected files included `CodeReferencesPanel.tsx`, `App.tsx`, and unit tests. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/semantic/file_role.go` | Added deterministic role taxonomy and classifier with `model`, `contract_model`, `helper`, `storage_helper`, `config`, `adapter`, `fallback_adapter`, `test_helper`, `analyzer_helper`, `parser_model`, `runtime_model`, and `unknown`. |
+| `internal/semantic/file_role_test.go` | Encodes all 17 raw-only target mappings and boundary behavior, including unknown fallback for analyzer area alone. |
+| `internal/filecontext/context.go` | Added `FileSummary.FileRole` and classification in file-context detail/list builders without changing unresolved bucket calculations. |
+| `internal/cli/command.go`, `internal/cli/file_context_command.go`, `internal/cli/graph_health_command.go` | Added role display in analyze/file-hotspots/graph-health file projection output. |
+| `internal/mcp/target_dispatch.go`, `internal/mcp/resources.go` | Added role to file summary hints/selected file payloads and repo resource hotspot lines when a `FileSummary` exists. |
+| `internal/contracts/web_ui.go`, `contracts/web-ui/anvien-web-contract.schema.json`, `anvien-web/src/generated/anvien-contracts.ts` | Added file role enum/labels and `FileSummary.fileRole` generated contract shape. |
+| `anvien-web/src/components/FileMapPanel.tsx` | Shows backend-provided role in the compact metadata column; no Web path-pattern classification added. |
+| `anvien-web/src/components/FileDetailPanel.tsx` | Adds `Role` pill near Layer/Area/Kind. |
+| `anvien-web/src/components/FileTreePanel.tsx` | Inspected. It embeds `FileMapPanel` and does not directly render `FileSummary` role metadata, so no direct edit was needed. |
+
+Failures / handling:
+
+- Avoided a broad `analyzer_helper` rule that would classify all analyzer-area files as helper files. The classifier now requires analyzer area plus framework/COBOL helper paths for that role.
+
+## E8 - Validation And Role Coverage
+
+Date: 2026-06-03
+
+Status: completed
+
+Validation:
+
+| Command | Result |
+|---|---|
+| `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1` | Pass. Go build and Web `tsc -b && vite build` completed. Vite reported existing chunk-size/dynamic-import warnings. |
+| `go test ./internal/semantic ./internal/filecontext ./internal/contracts ./internal/cli ./internal/httpapi ./internal/mcp` | Pass. All 6 focused packages passed. |
+| `npm test -- FileMapPanel.test.tsx FileDetailPanel.test.tsx` in `anvien-web` | Pass. 2 files, 8 tests passed. |
+| `npm run test:e2e -- file-map-test-unresolved.spec.ts` in `anvien-web` | Pass. Command returned exit code 0. |
+| Playwright screenshot smoke | Pass after scoping duplicate text locator. Saved `.tmp/file-role-web-validation.png`; confirmed File Map and File Detail showed `Test Helper`/`Test File`. |
+| `.\anvien\bin\anvien.exe analyze --force` | Pass after implementation. `files.scanned=826`, `parsed_code=603`, `failed=0`, `nodes=61130`, `relationships=96891`, `unresolvedFiles=337`, `rawUnresolvedFiles=354`. |
+| `.\anvien\bin\anvien.exe file-hotspots --repo Anvien --sort raw-unresolved --limit 5` | Pass. Human output includes `Path Role Layer Area ...`; analyze hotspot lines include `role=...`. |
+| `.\anvien\bin\anvien.exe graph-health summary --repo Anvien --json` | Pass. `summary.nodeCount=61130`, `fileLayer.totalFiles=826`, `fileLayer.unresolvedFiles=337`, `fileLayer.rawUnresolvedFiles=354`, `summary.resolutionGapCount=34271`. |
+
+Role coverage:
+
+| Metric | Result |
+|---|---:|
+| Raw-only files | 17 |
+| Raw-only files with unknown or empty role | 0 |
+| Raw-only production unresolved files | 0 |
+| Raw-only raw source sites | 376 |
+| Raw-only non-actionable source sites | 376 |
+
+Raw-only file role inventory:
+
+| File | Role | Raw sites |
+|---|---|---:|
+| `internal/cli/exit_error.go` | `helper` | 2 |
+| `internal/cobol/copy_expander.go` | `analyzer_helper` | 9 |
+| `internal/frameworks/frameworks.go` | `analyzer_helper` | 209 |
+| `internal/group/types.go` | `contract_model` | 16 |
+| `internal/lbugnative/runner_default.go` | `fallback_adapter` | 1 |
+| `internal/lbugnative/runner.go` | `adapter` | 1 |
+| `internal/parser/metrics.go` | `parser_model` | 8 |
+| `internal/repo/paths.go` | `storage_helper` | 13 |
+| `internal/repo/runtime_config.go` | `config` | 10 |
+| `internal/repo/settings.go` | `config` | 11 |
+| `internal/resolution/source_site.go` | `helper` | 4 |
+| `internal/scopeir/facts.go` | `parser_model` | 4 |
+| `internal/scopeir/range.go` | `parser_model` | 4 |
+| `internal/scopeir/sort_keys.go` | `helper` | 63 |
+| `internal/session/error.go` | `runtime_model` | 6 |
+| `internal/session/types.go` | `runtime_model` | 3 |
+| `internal/testutil/path.go` | `test_helper` | 12 |
+
+Failures / handling:
+
+- First Playwright screenshot smoke failed because `getByText("Test File")` matched both the file row and detail pill. Reran with the locator scoped to `file-detail-section-summary`; validation passed.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `.\anvien\bin\anvien.exe detect-changes --repo Anvien --scope all` | Pass. Summary risk `critical`, affected_count 34, affected_files 20, changed_count 86, changed_files 22. Affected app layers: `api=1`, `api_contract=5`, `backend=16`, `mixed=12`. Affected functional areas: `cli=4`, `contracts=10`, `mcp=7`, `mixed=5`, `unknown=8`. File layer risk `high`; semantic status complete for app layer and functional area. |
+
+Commit:
+
+- Pending P4-A.

@@ -29,6 +29,7 @@ const fileContext: FileContextResponse = {
     path: "src/app.ts",
     language: "typescript",
     kind: "source",
+    fileRole: "runtime_model",
     appLayer: "api",
     functionalArea: "mcp",
     parseStatus: "parsed",
@@ -217,6 +218,7 @@ const testFileContext: FileContextResponse = {
     ...fileContext.summary,
     path: "src/app.test.ts",
     kind: "test",
+    fileRole: "test_helper",
     appLayer: "api_test",
     unresolvedSourceSiteCount: 0,
     rawUnresolvedSourceSiteCount: 0,
@@ -307,6 +309,7 @@ describe("FileDetailPanel", () => {
     });
 
     expect(screen.getByTestId("file-detail-section-summary")).toHaveTextContent("Symbols");
+    expect(screen.getByTestId("file-detail-section-summary")).toHaveTextContent("Runtime Model");
     expect(screen.getByTestId("file-detail-section-quality")).toHaveTextContent("Resolution");
     expect(screen.getByTestId("file-detail-section-symbol-tree")).toHaveTextContent("main");
     expect(screen.getByTestId("file-detail-section-symbol-tree")).toHaveTextContent("helper");
@@ -327,6 +330,21 @@ describe("FileDetailPanel", () => {
     expect(await screen.findByText("file context missing")).toBeInTheDocument();
   });
 
+  it("renders unknown backend role without path inference", async () => {
+    fetchFileContext.mockResolvedValueOnce({
+      ...fileContext,
+      summary: {
+        ...fileContext.summary,
+        fileRole: "unknown",
+      },
+    });
+
+    render(<FileDetailPanel repoName="demo" filePath="src/app.ts" />);
+
+    expect(await screen.findByText("src/app.ts")).toBeInTheDocument();
+    expect(screen.getByTestId("file-detail-section-summary")).toHaveTextContent("Unknown");
+  });
+
   it("renders test file identity without default unresolved samples", async () => {
     fetchFileContext.mockResolvedValueOnce(testFileContext);
 
@@ -334,6 +352,7 @@ describe("FileDetailPanel", () => {
 
     expect(await screen.findByText("src/app.test.ts")).toBeInTheDocument();
     expect(screen.getByText("Test File")).toBeInTheDocument();
+    expect(screen.getByText("Test Helper")).toBeInTheDocument();
 
     const unresolved = screen.getByTestId("file-detail-section-unresolved");
     expect(unresolved).toHaveTextContent("0 sites");

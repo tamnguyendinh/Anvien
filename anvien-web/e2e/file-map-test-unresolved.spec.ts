@@ -78,6 +78,7 @@ const sourceFileSummary = {
   path: "src/app.ts",
   language: "typescript",
   kind: "source",
+  fileRole: "runtime_model",
   appLayer: "api",
   functionalArea: "mcp",
   parseStatus: "parsed",
@@ -105,6 +106,7 @@ const testFileSummary = {
   path: "src/app.test.ts",
   language: "typescript",
   kind: "test",
+  fileRole: "test_helper",
   appLayer: "api_test",
   functionalArea: "mcp",
   parseStatus: "parsed",
@@ -300,6 +302,7 @@ test.describe("file map test unresolved defaults", () => {
     await expect(page.getByTestId("file-map-panel")).toBeVisible();
     await expect(page.getByText("1 unresolved")).toBeVisible();
     await expect(page.getByText("Test File")).toBeVisible();
+    await expect(page.getByText("Test Helper")).toBeVisible();
     await expect(
       page.getByLabel("File map sort").locator("option", { hasText: "Raw unresolved" }),
     ).toHaveCount(0);
@@ -314,6 +317,7 @@ test.describe("file map test unresolved defaults", () => {
       .first()
       .click();
     await expect(page.getByTestId("file-detail-section-summary")).toContainText("Test File");
+    await expect(page.getByTestId("file-detail-section-summary")).toContainText("Test Helper");
     await expect(page.getByTestId("file-detail-section-unresolved")).toContainText("0 sites");
     await expect(page.getByTestId("file-detail-section-unresolved")).not.toContainText(
       "expectSomething",

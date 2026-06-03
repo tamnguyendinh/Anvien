@@ -357,8 +357,9 @@ func analyzeFileProjectionLines(summary analyzeFileProjectionSummary) []string {
 		),
 	}
 	for _, file := range summary.Hotspots {
-		lines = append(lines, fmt.Sprintf("fileProjection.hotspot path=%q unresolved=%d rawUnresolved=%d fanIn=%d fanOut=%d risk=%s",
+		lines = append(lines, fmt.Sprintf("fileProjection.hotspot path=%q role=%s unresolved=%d rawUnresolved=%d fanIn=%d fanOut=%d risk=%s",
 			file.Path,
+			defaultString(file.FileRole, "unknown"),
 			file.DefaultVisibleUnresolvedSourceSiteCount,
 			file.RawUnresolvedSourceSiteCount,
 			file.InboundRefCount,

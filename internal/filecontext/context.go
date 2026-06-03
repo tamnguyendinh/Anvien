@@ -9,6 +9,7 @@ import (
 
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/semantic"
 )
 
 const defaultSampleLimit = 10
@@ -114,6 +115,7 @@ type FileSummary struct {
 	Path                                    string `json:"path"`
 	Language                                string `json:"language,omitempty"`
 	Kind                                    string `json:"kind,omitempty"`
+	FileRole                                string `json:"fileRole,omitempty"`
 	AppLayer                                string `json:"appLayer,omitempty"`
 	FunctionalArea                          string `json:"functionalArea,omitempty"`
 	ParseStatus                             string `json:"parseStatus,omitempty"`
@@ -386,13 +388,17 @@ func (b *Builder) BuildFileContext(path string, options Options) (FileContext, b
 	quality := buildQuality(fileNode, unresolved)
 	linked := b.buildLinked(normalizedPath, limits.LinkedSamplesPerKind)
 	kind := fileKind(fileNode)
+	appLayer := stringProperty(fileNode, "appLayer")
+	functionalArea := stringProperty(fileNode, "functionalArea")
+	fileRole := semantic.ClassifyFileRole(normalizedPath, kind, appLayer, functionalArea)
 
 	summary := FileSummary{
 		Path:                   normalizedPath,
 		Language:               stringProperty(fileNode, "language"),
 		Kind:                   kind,
-		AppLayer:               stringProperty(fileNode, "appLayer"),
-		FunctionalArea:         stringProperty(fileNode, "functionalArea"),
+		FileRole:               string(fileRole.Role),
+		AppLayer:               appLayer,
+		FunctionalArea:         functionalArea,
 		ParseStatus:            parseStatus(fileNode),
 		SymbolCount:            symbolCount,
 		ExportedSymbolCount:    exportedCount,
@@ -507,12 +513,16 @@ func (b *Builder) buildFileSummaries() []FileSummary {
 	linkedTestsByFile := map[string]map[string]struct{}{}
 	for path, node := range b.filesByPath {
 		kind := fileKind(node)
+		appLayer := stringProperty(node, "appLayer")
+		functionalArea := stringProperty(node, "functionalArea")
+		fileRole := semantic.ClassifyFileRole(path, kind, appLayer, functionalArea)
 		summary := &FileSummary{
 			Path:           path,
 			Language:       stringProperty(node, "language"),
 			Kind:           kind,
-			AppLayer:       stringProperty(node, "appLayer"),
-			FunctionalArea: stringProperty(node, "functionalArea"),
+			FileRole:       string(fileRole.Role),
+			AppLayer:       appLayer,
+			FunctionalArea: functionalArea,
 			ParseStatus:    parseStatus(node),
 			SymbolCount:    len(b.definesByFile[path]),
 		}
