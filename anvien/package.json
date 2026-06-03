@@ -1,9 +1,9 @@
 {
   "name": "anvien",
   "version": "1.2.4",
-  "description": "Anvien graph-powered code intelligence for AI agents. Index any codebase, query via MCP or CLI.",
-  "author": "Abhigyan Patwari",
-  "license": "PolyForm-Noncommercial-1.0.0",
+  "description": "Anvien is a code map for AI coding agents. Anvien builds one of the fastest and most accurate code intelligence graphs for large repositories, query via MCP or CLI.",
+  "author": "Tam Nguyen Dinh <halotam@gmail.com>",
+  "license": "MIT",
   "homepage": "https://github.com/tamnguyendinh/Anvien#readme",
   "repository": {
     "type": "git",
@@ -18,13 +18,17 @@
     "model-context-protocol",
     "code-intelligence",
     "knowledge-graph",
-    "cursor",
+    "graph-visualization",
+    "graph-database",
+    "developer-tools",
     "claude",
     "codex",
     "ai-agent",
+    "software-architecture",
     "anvien",
     "static-analysis",
-    "codebase-indexing"
+    "codebase-indexing",
+    "dead-code-detection"
   ],
   "type": "module",
   "bin": {
