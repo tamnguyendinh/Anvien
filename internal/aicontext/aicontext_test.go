@@ -130,6 +130,84 @@ func TestSkillPackageCatalogRejectsPackageWithoutSkillEntry(t *testing.T) {
 	}
 }
 
+func TestSkillPackagesForRepoPrefersRuntimeFilesystemSource(t *testing.T) {
+	dir := t.TempDir()
+	skillPath := filepath.Join(dir, filepath.FromSlash("internal/aicontext/skills/runtime-only/SKILL.md"))
+	payloadPath := filepath.Join(dir, filepath.FromSlash("internal/aicontext/skills/runtime-only/scripts/.marker"))
+	if err := os.MkdirAll(filepath.Dir(skillPath), 0o755); err != nil {
+		t.Fatalf("mkdir runtime skill: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(payloadPath), 0o755); err != nil {
+		t.Fatalf("mkdir runtime payload: %v", err)
+	}
+	if err := os.WriteFile(skillPath, []byte("---\nname: runtime-only\ndescription: Runtime filesystem skill\n---\n# Runtime Skill\n"), 0o644); err != nil {
+		t.Fatalf("write runtime skill: %v", err)
+	}
+	if err := os.WriteFile(payloadPath, []byte("one\n"), 0o644); err != nil {
+		t.Fatalf("write runtime payload: %v", err)
+	}
+
+	packages, err := SkillPackagesForRepo(dir)
+	if err != nil {
+		t.Fatalf("SkillPackagesForRepo: %v", err)
+	}
+	if got := strings.Join(skillPackageIDs(packages), ","); got != "runtime-only" {
+		t.Fatalf("runtime package ids mismatch: %s", got)
+	}
+	runtimeSkill := findSkillPackage(t, packages, "runtime-only")
+	if runtimeSkill.SourceRoot != "internal/aicontext/skills/runtime-only" {
+		t.Fatalf("unexpected runtime source root: %s", runtimeSkill.SourceRoot)
+	}
+	if !packageHasFile(runtimeSkill, "scripts/.marker") {
+		t.Fatalf("runtime package missing dotfile payload")
+	}
+	firstHash := runtimeSkill.Hash
+
+	files, err := BaseSkillFilesForRepo(dir)
+	if err != nil {
+		t.Fatalf("BaseSkillFilesForRepo: %v", err)
+	}
+	if len(files) != 1 || files[0].InstallPath != "runtime-only/SKILL.md" || !strings.Contains(files[0].Content, "Runtime Skill") {
+		t.Fatalf("unexpected runtime base skill files: %#v", files)
+	}
+
+	if err := os.WriteFile(payloadPath, []byte("two\n"), 0o644); err != nil {
+		t.Fatalf("update runtime payload: %v", err)
+	}
+	updatedPackages, err := SkillPackagesForRepo(dir)
+	if err != nil {
+		t.Fatalf("SkillPackagesForRepo after update: %v", err)
+	}
+	updatedSkill := findSkillPackage(t, updatedPackages, "runtime-only")
+	if updatedSkill.Hash == firstHash {
+		t.Fatalf("runtime package hash did not change after payload update: %s", firstHash)
+	}
+
+	_, installedPackages, err := GenerateAIContextFiles(dir, "RuntimeRepo", Stats{Nodes: 1}, Options{})
+	if err != nil {
+		t.Fatalf("GenerateAIContextFiles: %v", err)
+	}
+	if got := strings.Join(installedPackages, ","); got != "runtime-only" {
+		t.Fatalf("installed runtime package ids mismatch: %s", got)
+	}
+	installedPayload := filepath.Join(dir, ".claude", "skills", "anvien", "runtime-only", "scripts", ".marker")
+	raw, err := os.ReadFile(installedPayload)
+	if err != nil {
+		t.Fatalf("read installed runtime payload: %v", err)
+	}
+	if string(raw) != "two\n" {
+		t.Fatalf("installed payload not updated from runtime source: %q", raw)
+	}
+	manifest, err := loadSkillManifest(filepath.Join(dir, ".claude", "skills", "anvien"))
+	if err != nil {
+		t.Fatalf("load runtime manifest: %v", err)
+	}
+	entry, ok := manifest.Skills["runtime-only"]
+	if !ok || entry.SourceRoot != "internal/aicontext/skills/runtime-only" || entry.Hash != updatedSkill.Hash {
+		t.Fatalf("unexpected runtime manifest entry: %#v", entry)
+	}
+}
+
 func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.T) {
 	dir := t.TempDir()
 	stats := Stats{Nodes: 50, Edges: 100, Processes: 5}
@@ -194,7 +272,7 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		"## MCP Prompts",
 		"`detect_impact`",
 		"## Skill Selection Guide",
-		"Anvien installs every top-level package discovered under its embedded `internal/aicontext/skills/` catalog.",
+		"Anvien installs every top-level package discovered under `internal/aicontext/skills/` when that source folder exists for the repo; otherwise it uses the embedded skill catalog.",
 		"| `debugging` | `.claude/skills/anvien/debugging/debugging-parent-skill/SKILL.md`<br>`.claude/skills/anvien/debugging/defense-in-depth/SKILL.md`",
 		"root-cause-tracing/SKILL.md",
 		"`.claude/skills/anvien/debugging/`",

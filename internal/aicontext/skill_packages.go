@@ -15,13 +15,21 @@ import (
 )
 
 const (
-	skillManifestFileName = ".anvien-skill-manifest.json"
-	skillManifestVersion  = 1
-	skillManifestOwner    = "anvien"
+	skillManifestFileName   = ".anvien-skill-manifest.json"
+	skillManifestVersion    = 1
+	skillManifestOwner      = "anvien"
+	embeddedSkillSourceRoot = "skills"
+	runtimeSkillSourceRoot  = "internal/aicontext/skills"
 )
 
 //go:embed all:skills
 var skillSourceFS embed.FS
+
+type skillPackageSource struct {
+	filesystem fs.FS
+	readRoot   string
+	sourceRoot string
+}
 
 type SkillPackage struct {
 	Name        string
@@ -93,11 +101,34 @@ func SkillPackages() ([]SkillPackage, error) {
 	return discoverSkillPackages(skillSourceFS)
 }
 
+func SkillPackagesForRepo(repoPath string) ([]SkillPackage, error) {
+	source, ok, err := runtimeSkillPackageSource(repoPath)
+	if err != nil {
+		return nil, err
+	}
+	if ok {
+		return discoverSkillPackagesFrom(source)
+	}
+	return SkillPackages()
+}
+
 func BaseSkillFiles() ([]BaseSkillFile, error) {
 	packages, err := SkillPackages()
 	if err != nil {
 		return nil, err
 	}
+	return baseSkillFilesFromPackages(packages), nil
+}
+
+func BaseSkillFilesForRepo(repoPath string) ([]BaseSkillFile, error) {
+	packages, err := SkillPackagesForRepo(repoPath)
+	if err != nil {
+		return nil, err
+	}
+	return baseSkillFilesFromPackages(packages), nil
+}
+
+func baseSkillFilesFromPackages(packages []SkillPackage) []BaseSkillFile {
 	files := make([]BaseSkillFile, 0)
 	for _, pkg := range packages {
 		contents := make(map[string]string, len(pkg.Files))
@@ -116,7 +147,7 @@ func BaseSkillFiles() ([]BaseSkillFile, error) {
 			})
 		}
 	}
-	return files, nil
+	return files
 }
 
 func InstallBaseSkillsTo(targetDir string) ([]string, error) {
@@ -126,6 +157,14 @@ func InstallBaseSkillsTo(targetDir string) ([]string, error) {
 
 func InstallSkillPackagesTo(targetDir string) (SkillInstallResult, error) {
 	packages, err := SkillPackages()
+	if err != nil {
+		return SkillInstallResult{}, err
+	}
+	return installSkillPackagesTo(targetDir, packages)
+}
+
+func InstallSkillPackagesForRepoTo(targetDir string, repoPath string) (SkillInstallResult, error) {
+	packages, err := SkillPackagesForRepo(repoPath)
 	if err != nil {
 		return SkillInstallResult{}, err
 	}
@@ -147,7 +186,15 @@ func (result SkillInstallResult) Summary() string {
 }
 
 func discoverSkillPackages(source fs.FS) ([]SkillPackage, error) {
-	entries, err := fs.ReadDir(source, "skills")
+	return discoverSkillPackagesFrom(skillPackageSource{
+		filesystem: source,
+		readRoot:   embeddedSkillSourceRoot,
+		sourceRoot: embeddedSkillSourceRoot,
+	})
+}
+
+func discoverSkillPackagesFrom(source skillPackageSource) ([]SkillPackage, error) {
+	entries, err := fs.ReadDir(source.filesystem, source.readRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -169,29 +216,56 @@ func discoverSkillPackages(source fs.FS) ([]SkillPackage, error) {
 	return packages, nil
 }
 
-func readSkillPackage(source fs.FS, name string) (SkillPackage, error) {
-	sourceRoot := path.Join("skills", name)
+func runtimeSkillPackageSource(repoPath string) (skillPackageSource, bool, error) {
+	if strings.TrimSpace(repoPath) == "" {
+		return skillPackageSource{}, false, nil
+	}
+	repoRoot, err := filepath.Abs(repoPath)
+	if err != nil {
+		return skillPackageSource{}, false, err
+	}
+	skillsDir := filepath.Join(repoRoot, filepath.FromSlash(runtimeSkillSourceRoot))
+	info, err := os.Stat(skillsDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return skillPackageSource{}, false, nil
+		}
+		return skillPackageSource{}, false, err
+	}
+	if !info.IsDir() {
+		return skillPackageSource{}, false, fmt.Errorf("runtime skill source %s is not a directory", skillsDir)
+	}
+	return skillPackageSource{
+		filesystem: os.DirFS(repoRoot),
+		readRoot:   runtimeSkillSourceRoot,
+		sourceRoot: runtimeSkillSourceRoot,
+	}, true, nil
+}
+
+func readSkillPackage(source skillPackageSource, name string) (SkillPackage, error) {
+	readRoot := path.Join(source.readRoot, name)
+	sourceRoot := path.Join(source.sourceRoot, name)
 	pkg := SkillPackage{
 		Name:        name,
 		SourceRoot:  sourceRoot,
 		InstallRoot: name,
 	}
 
-	err := fs.WalkDir(source, sourceRoot, func(filePath string, entry fs.DirEntry, walkErr error) error {
+	err := fs.WalkDir(source.filesystem, readRoot, func(filePath string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
 		}
-		if filePath == sourceRoot {
+		if filePath == readRoot {
 			return nil
 		}
-		rel := strings.TrimPrefix(filePath, sourceRoot+"/")
+		rel := strings.TrimPrefix(filePath, readRoot+"/")
 		if entry.IsDir() {
 			return nil
 		}
 		if !entry.Type().IsRegular() {
 			return nil
 		}
-		raw, err := fs.ReadFile(source, filePath)
+		raw, err := fs.ReadFile(source.filesystem, filePath)
 		if err != nil {
 			return err
 		}
