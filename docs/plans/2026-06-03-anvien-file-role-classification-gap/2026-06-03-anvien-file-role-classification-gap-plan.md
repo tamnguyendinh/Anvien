@@ -2,7 +2,7 @@
 
 Date: 2026-06-03
 
-Status: Detect-changes complete - implementation commit pending
+Status: completed
 
 Companion files:
 
@@ -378,7 +378,7 @@ The corrected plan is complete when:
   - Implementation Gate: all relevant implementation tests must pass before graph/UI validation is accepted.
   - Acceptance: evidence and benchmark ledgers record group count, role breakdown, command output proof, and UI proof.
 
-- [ ] [G10-A] Run detect-changes, update ledgers, and commit.
+- [x] [G10-A] Run detect-changes, update ledgers, and commit.
   - Goal: close the corrected implementation with traceable evidence.
   - Work Steps:
     1. Run:
@@ -398,6 +398,11 @@ The corrected plan is complete when:
     6. Record the commit hash in plan/evidence.
   - Implementation Gate: do not commit before detect-changes and ledger updates.
   - Acceptance: commit exists, plan artifacts record closure, and no required checklist item remains open.
+
+## Closure
+
+- Implementation commit: `c063bcb feat: add backend file group classification`
+- All checklist items are complete.
 
 ## Risk Notes
 

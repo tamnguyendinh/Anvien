@@ -2,7 +2,7 @@
 
 Date: 2026-06-03
 
-Status: Detect-changes complete - implementation commit pending
+Status: completed
 
 Companion files:
 

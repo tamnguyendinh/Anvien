@@ -2,7 +2,7 @@
 
 Date: 2026-06-03
 
-Status: Detect-changes complete - implementation commit pending
+Status: completed
 
 Companion files:
 
@@ -536,7 +536,7 @@ Readiness conclusion:
 
 Date: 2026-06-03
 
-Status: implementation validated; detect-changes complete; commit pending
+Status: completed
 
 Scope:
 
@@ -631,4 +631,4 @@ Detect changes:
 
 Commit:
 
-- Pending implementation commit.
+- `c063bcb feat: add backend file group classification`
