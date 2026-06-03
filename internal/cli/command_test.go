@@ -641,8 +641,8 @@ func TestSetupInstallsEmbeddedSkillsInsteadOfPackageRootSkills(t *testing.T) {
 	})
 
 	assertInstalledEmbeddedBaseSkills(t, cursorSkillsRoot)
-	if _, err := os.Stat(staleTargetSkill); !os.IsNotExist(err) {
-		t.Fatalf("stale generated target skill should be removed: %v", err)
+	if _, err := os.Stat(staleTargetSkill); err != nil {
+		t.Fatalf("unmanifested target skill should be preserved: %v", err)
 	}
 	for _, rel := range []string{
 		filepath.Join("flat-skill", "SKILL.md"),
@@ -658,19 +658,24 @@ func TestSetupInstallsEmbeddedSkillsInsteadOfPackageRootSkills(t *testing.T) {
 
 func assertInstalledEmbeddedBaseSkills(t *testing.T, root string) {
 	t.Helper()
-	files, err := aicontext.BaseSkillFiles()
+	packages, err := aicontext.SkillPackages()
 	if err != nil {
-		t.Fatalf("load embedded base skills: %v", err)
+		t.Fatalf("load embedded skill packages: %v", err)
 	}
-	for _, skill := range files {
-		path := filepath.Join(root, skill.Name, "SKILL.md")
-		raw, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatalf("read installed skill %s: %v", path, err)
+	for _, pkg := range packages {
+		for _, file := range pkg.Files {
+			path := filepath.Join(root, filepath.FromSlash(file.InstallPath))
+			raw, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatalf("read installed skill package file %s: %v", path, err)
+			}
+			if !bytes.Equal(raw, file.Content) {
+				t.Fatalf("installed skill package file %s does not match embedded content", path)
+			}
 		}
-		if string(raw) != skill.Content {
-			t.Fatalf("installed skill %s does not match embedded content", path)
-		}
+	}
+	if _, err := os.Stat(filepath.Join(root, ".anvien-skill-manifest.json")); err != nil {
+		t.Fatalf("skill manifest was not installed: %v", err)
 	}
 }
 

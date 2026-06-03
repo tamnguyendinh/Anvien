@@ -1,7 +1,6 @@
 package aicontext
 
 import (
-	"embed"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,12 +17,6 @@ const (
 
 var managedSectionPattern = regexp.MustCompile(`(?is)<!--\s*[a-z0-9-]+:start\s*-->.*?#\s+[^\n]*Code Intelligence.*?<!--\s*[a-z0-9-]+:end\s*-->`)
 
-//go:embed skills/anvien-api-surface/SKILL.md
-//go:embed skills/anvien-debugging/SKILL.md
-//go:embed skills/anvien-planner/SKILL.md
-//go:embed skills/anvien-refactoring/SKILL.md
-var baseSkillFiles embed.FS
-
 type Options struct {
 	NoStats bool
 }
@@ -39,13 +32,6 @@ type Stats struct {
 type Result struct {
 	Files        []string
 	BaseSkillIDs []string
-}
-
-type BaseSkillFile struct {
-	Name        string
-	Description string
-	Task        string
-	Content     string
 }
 
 func Generate(repoPath string, projectName string, run analyze.Result, options Options) (Result, error) {
@@ -73,7 +59,11 @@ func statsFromRun(run analyze.Result) Stats {
 }
 
 func GenerateAIContextFiles(repoPath string, projectName string, stats Stats, options Options) ([]string, []string, error) {
-	content := renderAnvienBlock(projectName, stats, options.NoStats)
+	packages, err := SkillPackages()
+	if err != nil {
+		return nil, nil, err
+	}
+	content := renderAnvienBlock(projectName, stats, options.NoStats, packages)
 	created := make([]string, 0, 3)
 
 	agentsResult, err := upsertSection(filepath.Join(repoPath, "AGENTS.md"), content)
@@ -86,12 +76,13 @@ func GenerateAIContextFiles(repoPath string, projectName string, stats Stats, op
 	}
 	created = append(created, "AGENTS.md ("+agentsResult+")", "CLAUDE.md ("+claudeResult+")")
 
-	baseSkills, err := installBaseSkills(repoPath)
+	installResult, err := installBaseSkills(repoPath, packages)
 	if err != nil {
 		return nil, nil, err
 	}
+	baseSkills := installResult.PackageIDs
 	if len(baseSkills) > 0 {
-		created = append(created, fmt.Sprintf(".claude/skills/anvien/ (%d skills)", len(baseSkills)))
+		created = append(created, fmt.Sprintf(".claude/skills/anvien/ (%s)", installResult.Summary()))
 	}
 	if err := removeGeneratedSkills(repoPath); err != nil {
 		return nil, nil, err
@@ -99,7 +90,7 @@ func GenerateAIContextFiles(repoPath string, projectName string, stats Stats, op
 	return created, baseSkills, nil
 }
 
-func renderAnvienBlock(projectName string, stats Stats, noStats bool) string {
+func renderAnvienBlock(projectName string, stats Stats, noStats bool, packages []SkillPackage) string {
 	statsText := ""
 	if !noStats {
 		statsText = fmt.Sprintf(" (%d symbols, %d relationships, %d execution flows)", stats.Nodes, stats.Edges, stats.Processes)
@@ -210,11 +201,11 @@ func renderAnvienBlock(projectName string, stats Stats, noStats bool) string {
 	builder.WriteString("| `generate_map` | Evidence-backed architecture map workflow; resolves the repo through `anvien://repos` when needed and uses only resources/tools/command output actually read. |\n\n")
 	builder.WriteString("MCP prompts are agent templates, not CLI commands. They guide tool/resource use and must still follow repository rules for freshness, impact-before-edit, and detect-changes before commit.\n\n")
 	builder.WriteString("## Skill Selection Guide\n\n")
-	builder.WriteString("Use Anvien workflow skills only for the retained domains below. These skills guide the workflow; choose concrete Anvien CLI/MCP commands from the Command Selection Guide.\n\n")
-	builder.WriteString("| When you need to... | Use |\n")
-	builder.WriteString("|---------------------|-----|\n")
-	for _, skill := range baseSkills {
-		fmt.Fprintf(&builder, "| %s | `.claude/skills/anvien/%s/SKILL.md` |\n", skill.Task, skill.Name)
+	builder.WriteString("Anvien installs every top-level package discovered under its embedded `internal/aicontext/skills/` catalog. A package may contain one or more `SKILL.md` entries plus scripts, references, assets, or templates; resolve those files relative to the package root.\n\n")
+	builder.WriteString("| Package | Entries | Use |\n")
+	builder.WriteString("|---------|---------|-----|\n")
+	for _, pkg := range packages {
+		fmt.Fprintf(&builder, "| `%s` | %s | %s |\n", pkg.Name, skillGuideEntries(pkg), skillGuideUse(pkg))
 	}
 	builder.WriteString("\n" + endMarker)
 	return builder.String()
@@ -282,154 +273,14 @@ func upsertSection(path string, content string) (string, error) {
 	return "appended", nil
 }
 
-type baseSkill struct {
-	Name        string
-	Description string
-	Task        string
-}
-
-var baseSkills = []baseSkill{
-	{Name: "anvien-api-surface", Description: `Use when the user needs to inspect API routes, MCP tools, contracts, response shapes, or consumers.`, Task: `Inspect API routes, MCP tools, contracts, response shapes, or consumers`},
-	{Name: "anvien-refactoring", Description: `Use when the user wants to rename, extract, split, move, or restructure code.`, Task: `Rename, extract, split, move, or restructure code`},
-	{Name: "anvien-debugging", Description: `Use when the user is debugging bugs, failures, diagnostics, or failure traces.`, Task: `Debug bugs, failures, diagnostics, or failure traces`},
-	{Name: "anvien-planner", Description: `Use when the user needs to create or review docs/plans plan, evidence, benchmark, or checklist mini-plan work.`, Task: `Create or review ` + "`docs/plans`" + ` plan, evidence, benchmark, or checklist mini-plan work`},
-}
-
-func BaseSkillFiles() ([]BaseSkillFile, error) {
-	files := make([]BaseSkillFile, 0, len(baseSkills))
-	for _, skill := range baseSkills {
-		content, err := baseSkillContent(skill)
-		if err != nil {
-			return nil, err
-		}
-		files = append(files, BaseSkillFile{
-			Name:        skill.Name,
-			Description: skill.Description,
-			Task:        skill.Task,
-			Content:     content,
-		})
-	}
-	return files, nil
-}
-
-func InstallBaseSkillsTo(targetDir string) ([]string, error) {
-	files, err := BaseSkillFiles()
-	if err != nil {
-		return nil, err
-	}
-	if err := os.MkdirAll(targetDir, 0o755); err != nil {
-		return nil, err
-	}
-	active := activeBaseSkillNames(files)
-	if err := removeInactiveGeneratedBaseSkills(targetDir, active); err != nil {
-		return nil, err
-	}
-	installed := make([]string, 0, len(files))
-	for _, file := range files {
-		dir := filepath.Join(targetDir, file.Name)
-		if err := os.RemoveAll(dir); err != nil {
-			return installed, err
-		}
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return installed, err
-		}
-		if err := os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte(file.Content), 0o644); err != nil {
-			return installed, err
-		}
-		installed = append(installed, file.Name)
-	}
-	return installed, nil
-}
-
-func activeBaseSkillNames(files []BaseSkillFile) map[string]struct{} {
-	active := make(map[string]struct{}, len(files))
-	for _, file := range files {
-		active[file.Name] = struct{}{}
-	}
-	return active
-}
-
-func removeInactiveGeneratedBaseSkills(targetDir string, active map[string]struct{}) error {
-	entries, err := os.ReadDir(targetDir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		return err
-	}
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
-		}
-		name := entry.Name()
-		if _, ok := active[name]; ok {
-			continue
-		}
-		dir := filepath.Join(targetDir, name)
-		raw, err := os.ReadFile(filepath.Join(dir, "SKILL.md"))
-		if err != nil {
-			if os.IsNotExist(err) {
-				continue
-			}
-			return err
-		}
-		if isGeneratedAnvienSkill(raw) {
-			if err := os.RemoveAll(dir); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func isGeneratedAnvienSkill(raw []byte) bool {
-	name := skillFrontmatterName(string(raw))
-	return strings.HasPrefix(name, "anvien-") || strings.HasPrefix(name, "av"+"matrix-")
-}
-
-func skillFrontmatterName(content string) string {
-	content = strings.ReplaceAll(content, "\r\n", "\n")
-	if !strings.HasPrefix(content, "---\n") {
-		return ""
-	}
-	end := strings.Index(content[4:], "\n---")
-	if end < 0 {
-		return ""
-	}
-	for _, line := range strings.Split(content[4:4+end], "\n") {
-		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "name:") {
-			return strings.Trim(strings.TrimSpace(strings.TrimPrefix(line, "name:")), `"'`)
-		}
-	}
-	return ""
-}
-
-func installBaseSkills(repoPath string) ([]string, error) {
+func installBaseSkills(repoPath string, packages []SkillPackage) (SkillInstallResult, error) {
 	skillsRoot := filepath.Join(repoPath, ".claude", "skills")
 	skillsDir := filepath.Join(skillsRoot, "anvien")
 	legacySkillsDir := filepath.Join(skillsRoot, "av"+"matrix")
-	for _, dir := range []string{skillsDir, legacySkillsDir} {
-		if err := os.RemoveAll(dir); err != nil {
-			return nil, err
-		}
+	if err := os.RemoveAll(legacySkillsDir); err != nil {
+		return SkillInstallResult{}, err
 	}
-	return InstallBaseSkillsTo(skillsDir)
-}
-
-func baseSkillContent(skill baseSkill) (string, error) {
-	content, err := baseSkillFiles.ReadFile("skills/" + skill.Name + "/SKILL.md")
-	if err != nil {
-		return "", err
-	}
-	if strings.TrimSpace(string(content)) == "" {
-		return fallbackBaseSkillContent(skill), nil
-	}
-	return string(content), nil
-}
-
-func fallbackBaseSkillContent(skill baseSkill) string {
-	return fmt.Sprintf("---\nname: %s\ndescription: \"%s\"\n---\n\n# %s\n\n%s\n\nUse Anvien tools to accomplish this task.\n", skill.Name, skill.Description, skill.Name, skill.Description)
+	return installSkillPackagesTo(skillsDir, packages)
 }
 
 func removeGeneratedSkills(repoPath string) error {

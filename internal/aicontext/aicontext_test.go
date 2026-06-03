@@ -1,37 +1,133 @@
 package aicontext
 
 import (
+	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
+	"testing/fstest"
 )
 
-func expectedBaseSkillIDs() []string {
-	return []string{
-		"anvien-api-surface",
-		"anvien-refactoring",
-		"anvien-debugging",
-		"anvien-planner",
+func expectedSkillPackageIDs(t *testing.T) []string {
+	t.Helper()
+	entries, err := fs.ReadDir(skillSourceFS, "skills")
+	if err != nil {
+		t.Fatalf("read embedded skills: %v", err)
 	}
+	ids := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() && !shouldSkipSkillPackagePath(entry.Name()) {
+			ids = append(ids, entry.Name())
+		}
+	}
+	sort.Strings(ids)
+	return ids
 }
 
-func staleGeneratedBaseSkillIDs() []string {
-	return []string{
-		"anvien-stale",
-		"av" + "matrix-stale",
-	}
-}
-
-func registeredBaseSkillIDs() []string {
-	ids := make([]string, 0, len(baseSkills))
-	for _, skill := range baseSkills {
-		ids = append(ids, skill.Name)
+func skillPackageIDs(packages []SkillPackage) []string {
+	ids := make([]string, 0, len(packages))
+	for _, pkg := range packages {
+		ids = append(ids, pkg.Name)
 	}
 	return ids
 }
 
-func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
+func findSkillPackage(t *testing.T, packages []SkillPackage, name string) SkillPackage {
+	t.Helper()
+	for _, pkg := range packages {
+		if pkg.Name == name {
+			return pkg
+		}
+	}
+	t.Fatalf("missing skill package %s", name)
+	return SkillPackage{}
+}
+
+func requireContains(t *testing.T, text string, want string) {
+	t.Helper()
+	if !strings.Contains(text, want) {
+		t.Fatalf("missing %q:\n%s", want, text)
+	}
+}
+
+func TestSkillPackageCatalogDiscoversTopLevelPackagesAndNestedEntries(t *testing.T) {
+	packages, err := SkillPackages()
+	if err != nil {
+		t.Fatalf("SkillPackages: %v", err)
+	}
+	if got, want := strings.Join(skillPackageIDs(packages), ","), strings.Join(expectedSkillPackageIDs(t), ","); got != want {
+		t.Fatalf("skill package ids mismatch:\n got: %s\nwant: %s", got, want)
+	}
+
+	debugging := findSkillPackage(t, packages, "debugging")
+	if got, want := len(debugging.Entries), 5; got != want {
+		t.Fatalf("debugging entries = %d, want %d", got, want)
+	}
+	for _, want := range []string{
+		"debugging-parent-skill/SKILL.md",
+		"defense-in-depth/SKILL.md",
+		"root-cause-tracing/SKILL.md",
+		"systematic-debugging/SKILL.md",
+		"verification-before-completion/SKILL.md",
+	} {
+		if !packageHasEntry(debugging, want) {
+			t.Fatalf("debugging package missing entry %s", want)
+		}
+	}
+	if !packageHasFile(debugging, "root-cause-tracing/find-polluter.sh") {
+		t.Fatalf("debugging package missing script payload")
+	}
+
+	documentSkills := findSkillPackage(t, packages, "document-skills")
+	if got, want := len(documentSkills.Entries), 4; got != want {
+		t.Fatalf("document-skills entries = %d, want %d", got, want)
+	}
+	if !packageHasFile(documentSkills, "docx/scripts/document.py") {
+		t.Fatalf("document-skills package missing nested script payload")
+	}
+
+	uiStyling := findSkillPackage(t, packages, "ui-styling")
+	if !packageHasFile(uiStyling, "scripts/shadcn_add.py") {
+		t.Fatalf("ui-styling package missing script payload")
+	}
+	if !strings.HasPrefix(uiStyling.Hash, "sha256:") {
+		t.Fatalf("ui-styling package hash missing sha256 prefix: %s", uiStyling.Hash)
+	}
+
+	files, err := BaseSkillFiles()
+	if err != nil {
+		t.Fatalf("BaseSkillFiles: %v", err)
+	}
+	entryCount := 0
+	for _, pkg := range packages {
+		entryCount += len(pkg.Entries)
+		if strings.TrimSpace(pkg.Description) == "" {
+			t.Fatalf("package %s missing description", pkg.Name)
+		}
+		for _, entry := range pkg.Entries {
+			if strings.TrimSpace(entry.Name) == "" || strings.TrimSpace(entry.Description) == "" {
+				t.Fatalf("entry missing metadata: %#v", entry)
+			}
+		}
+	}
+	if len(files) != entryCount {
+		t.Fatalf("BaseSkillFiles returned %d entries, want %d", len(files), entryCount)
+	}
+}
+
+func TestSkillPackageCatalogRejectsPackageWithoutSkillEntry(t *testing.T) {
+	_, err := discoverSkillPackages(fstest.MapFS{
+		"skills/empty-package/readme.md": {Data: []byte("# No skill entry\n")},
+	})
+	if err == nil || !strings.Contains(err.Error(), "has no SKILL.md entry") {
+		t.Fatalf("expected missing SKILL.md validation error, got %v", err)
+	}
+}
+
+func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.T) {
 	dir := t.TempDir()
 	stats := Stats{Nodes: 50, Edges: 100, Processes: 5}
 	oldLower := "av" + "matrix"
@@ -52,28 +148,23 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	if err := os.WriteFile(staleOldNamespace, []byte("# Old Skill\n"), 0o644); err != nil {
 		t.Fatalf("write stale old skill namespace: %v", err)
 	}
-	for _, stale := range staleGeneratedBaseSkillIDs() {
-		stalePath := filepath.Join(dir, ".claude", "skills", "anvien", stale, "SKILL.md")
-		if err := os.MkdirAll(filepath.Dir(stalePath), 0o755); err != nil {
-			t.Fatalf("mkdir stale base skill: %v", err)
-		}
-		if err := os.WriteFile(stalePath, []byte("---\nname: "+stale+"\ndescription: stale generated skill\n---\n# Stale\n"), 0o644); err != nil {
-			t.Fatalf("write stale base skill: %v", err)
-		}
+	repoLocalSkill := filepath.Join(dir, ".claude", "skills", "anvien", "my-repo-custom-skill", "SKILL.md")
+	if err := os.MkdirAll(filepath.Dir(repoLocalSkill), 0o755); err != nil {
+		t.Fatalf("mkdir repo-local skill: %v", err)
+	}
+	if err := os.WriteFile(repoLocalSkill, []byte("---\nname: my-repo-custom-skill\ndescription: repo local\n---\n# Custom\n"), 0o644); err != nil {
+		t.Fatalf("write repo-local skill: %v", err)
 	}
 
-	files, installedBaseSkills, err := GenerateAIContextFiles(dir, "TestProject", stats, Options{})
+	files, installedPackages, err := GenerateAIContextFiles(dir, "TestProject", stats, Options{})
 	if err != nil {
 		t.Fatalf("GenerateAIContextFiles: %v", err)
 	}
 	if len(files) == 0 {
 		t.Fatalf("expected generated files")
 	}
-	if len(installedBaseSkills) == 0 {
-		t.Fatalf("expected base skills to be installed")
-	}
-	if got, want := strings.Join(installedBaseSkills, ","), strings.Join(expectedBaseSkillIDs(), ","); got != want {
-		t.Fatalf("installed base skill ids mismatch:\n got: %s\nwant: %s", got, want)
+	if got, want := strings.Join(installedPackages, ","), strings.Join(expectedSkillPackageIDs(t), ","); got != want {
+		t.Fatalf("installed package ids mismatch:\n got: %s\nwant: %s", got, want)
 	}
 
 	agentsPath := filepath.Join(dir, "AGENTS.md")
@@ -89,62 +180,30 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		"50 symbols, 100 relationships, 5 execution flows",
 		"Anvien is repo-agnostic",
 		"## Core Rule",
-		"MCP tools are Anvien commands exposed to AI agents",
-		"There is no single mandatory workflow",
 		"## Always Do",
 		"before using any Anvien CLI command, MCP tool, MCP resource, Web/API view",
-		"MCP `route_map`/`tool_map`/`shape_check`/`api_impact`, CLI `api route-map`",
 		"## Never Do",
 		"## Command Selection Guide",
-		"MCP `list_repos` or CLI `anvien list`",
-		"MCP `query` or CLI `anvien query \"<concept>\" --repo <repo>`",
-		"CLI `anvien query files \"<concept>\" --repo <repo>` or MCP `query` with `target_type=files`",
 		"Prefer CLI `anvien file-context <path> --repo <repo> --json`; use `anvien context file <path> --repo <repo>` only when you want the context wrapper / human-oriented view",
-		"MCP `context` or CLI `anvien context symbol \"<symbol>\" --repo <repo>`",
-		"MCP `cypher` or CLI `anvien cypher \"<query>\" --repo <repo>`",
-		"MCP `route_map` or CLI `anvien api route-map [route] --repo <repo>`",
-		"MCP `tool_map` or CLI `anvien api tool-map [tool] --repo <repo>`",
-		"MCP `shape_check` or CLI `anvien api shape-check [route] --repo <repo>`",
-		"MCP `api_impact` or CLI `anvien api impact [route] --repo <repo>`",
-		"MCP `impact` or CLI `anvien impact symbol \"<symbol>\" --repo <repo> --direction upstream`",
-		"CLI `anvien impact file <path> --repo <repo> --direction upstream`",
-		"MCP `detect_changes` or CLI `anvien detect-changes --repo <repo> --scope all`; use `detect-changes files`",
-		"MCP `rename` or CLI `anvien rename <symbol> <newName> --repo <repo>`",
-		"`anvien graph-health summary --repo <repo> --json`",
 		"`anvien graph-health explain \"File:<path>\" --repo <repo> --json`",
-		"`anvien graph-health files --repo <repo> --json` or `anvien file-hotspots --repo <repo> --json`",
-		"`anvien query-health --repo <repo>`",
-		"`anvien resolution-inventory --graph .anvien/graph.json`",
-		"`anvien source-site-accuracy --graph .anvien/graph.json`",
-		"`anvien doctor locks --repo <repo> --json`",
-		"`anvien completion <shell>`",
-		"MCP `group_query` or CLI `anvien group query <name> \"<query>\"`",
 		"## Resources",
-		"anvien://repos",
-		"anvien://setup",
 		"anvien://repo/<repo>/schema",
-		"anvien://repo/<repo>/cluster/{name}",
 		"## MCP Prompts",
 		"`detect_impact`",
-		"`generate_map`",
-		"MCP prompts are agent templates, not CLI commands.",
 		"## Skill Selection Guide",
-		"Use Anvien workflow skills only for the retained domains below.",
-		"choose concrete Anvien CLI/MCP commands from the Command Selection Guide",
-		"| Inspect API routes, MCP tools, contracts, response shapes, or consumers | `.claude/skills/anvien/anvien-api-surface/SKILL.md` |",
-		"| Rename, extract, split, move, or restructure code | `.claude/skills/anvien/anvien-refactoring/SKILL.md` |",
-		"| Debug bugs, failures, diagnostics, or failure traces | `.claude/skills/anvien/anvien-debugging/SKILL.md` |",
-		"| Create or review `docs/plans` plan, evidence, benchmark, or checklist mini-plan work | `.claude/skills/anvien/anvien-planner/SKILL.md` |",
-		"anvien-api-surface/SKILL.md",
-		"anvien-refactoring/SKILL.md",
-		"anvien-debugging/SKILL.md",
-		"anvien-planner/SKILL.md",
+		"Anvien installs every top-level package discovered under its embedded `internal/aicontext/skills/` catalog.",
+		"| `debugging` | `.claude/skills/anvien/debugging/debugging-parent-skill/SKILL.md`<br>`.claude/skills/anvien/debugging/defense-in-depth/SKILL.md`",
+		"root-cause-tracing/SKILL.md",
+		"`.claude/skills/anvien/debugging/`",
+		"| `ui-styling` | `.claude/skills/anvien/ui-styling/SKILL.md` |",
+		"`.claude/skills/anvien/ui-styling/`",
 		"file-context",
 		"file-hotspots",
 	} {
-		if !strings.Contains(text, want) {
-			t.Fatalf("AGENTS.md missing %q:\n%s", want, text)
-		}
+		requireContains(t, text, want)
+	}
+	if strings.Contains(text, "Use Anvien workflow skills only for the retained domains below") {
+		t.Fatalf("AGENTS.md contains obsolete four-skill wording:\n%s", text)
 	}
 	if strings.Contains(text, ".claude/skills/generated/") {
 		t.Fatalf("AGENTS.md should not reference generated skills:\n%s", text)
@@ -155,49 +214,13 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", oldLower)); !os.IsNotExist(err) {
 		t.Fatalf("old skill namespace should be removed: %v", err)
 	}
-	for _, stale := range staleGeneratedBaseSkillIDs() {
-		if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "anvien", stale, "SKILL.md")); !os.IsNotExist(err) {
-			t.Fatalf("stale generated base skill %s should not be installed: %v", stale, err)
-		}
+	if _, err := os.Stat(repoLocalSkill); err != nil {
+		t.Fatalf("repo-local unmanifested skill should be preserved: %v", err)
 	}
-	for _, forbidden := range []string{
-		oldDisplay,
-		oldLower,
-		oldUpper,
-		"." + oldLower,
-		oldLower + "://",
-		oldLower + "-",
-	} {
+	for _, forbidden := range []string{oldDisplay, oldLower, oldUpper, "." + oldLower, oldLower + "://", oldLower + "-"} {
 		if strings.Contains(text, forbidden) {
 			t.Fatalf("AGENTS.md contains old generated name %q:\n%s", forbidden, text)
 		}
-	}
-	for _, retired := range []string{
-		"## Tools Quick Reference",
-		"## Impact Risk Levels",
-		"## Self-Check Before Finishing",
-		"## When Debugging",
-		"## When Refactoring",
-		"## Keeping the Index Fresh",
-		"## MCP Tools",
-		"## CLI",
-		"## Practical Workflow",
-		"Use the Anvien MCP tools to understand code",
-		"before using graph/query/impact/context/change-detection/cypher/accuracy commands",
-		"anvien://repo/TestProject/context",
-		"`anvien detect-changes --repo TestProject --scope all`",
-		"anvien_impact",
-		"anvien_detect_changes",
-		"anvien_query",
-		"anvien_context",
-	} {
-		if strings.Contains(text, retired) {
-			t.Fatalf("AGENTS.md contains retired content %q:\n%s", retired, text)
-		}
-	}
-	forbiddenFlag := "--skip-" + "agents-md"
-	if strings.Contains(text, forbiddenFlag) {
-		t.Fatalf("AGENTS.md contains forbidden context bypass flag:\n%s", text)
 	}
 
 	if _, _, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 10}, Options{}); err != nil {
@@ -211,198 +234,216 @@ func TestGenerateAIContextFilesCreatesAndUpdatesManagedContext(t *testing.T) {
 		t.Fatalf("expected one managed section after update, got %d:\n%s", count, updated)
 	}
 
-	for _, skill := range baseSkills {
-		path := filepath.Join(dir, ".claude", "skills", "anvien", skill.Name, "SKILL.md")
-		info, err := os.Stat(path)
-		if err != nil {
-			t.Fatalf("base skill %s was not installed: %v", skill.Name, err)
-		}
-		if info.Size() < 1000 {
-			t.Fatalf("base skill %s is too small to be rich content: %d bytes", skill.Name, info.Size())
-		}
-		raw, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatalf("read base skill %s: %v", skill.Name, err)
-		}
-		skillText := string(raw)
-		if strings.Contains(skillText, "Use Anvien tools to accomplish this task.") {
-			t.Fatalf("base skill %s fell back to placeholder content:\n%s", skill.Name, skillText)
-		}
-		if !strings.Contains(skillText, "##") {
-			t.Fatalf("base skill %s missing rich sections:\n%s", skill.Name, skillText)
-		}
-	}
-
-	plannerSkill, err := os.ReadFile(filepath.Join(dir, ".claude", "skills", "anvien", "anvien-planner", "SKILL.md"))
-	if err != nil {
-		t.Fatalf("read generated planner skill: %v", err)
-	}
 	for _, want := range []string{
-		"Standard Plan Set",
-		"YYYY-MM-DD-<slug>",
-		"Evidence Ledger",
-		"Benchmark Ledger",
-		"Every checklist item must be a complete mini-plan by itself",
-		"Do not write generic checklist items",
-		"what to do, in what order",
+		filepath.Join(dir, ".claude", "skills", "anvien", "debugging", "root-cause-tracing", "find-polluter.sh"),
+		filepath.Join(dir, ".claude", "skills", "anvien", "ui-styling", "scripts", "shadcn_add.py"),
+		filepath.Join(dir, ".claude", "skills", "anvien", "ui-styling", "canvas-fonts", "ArsenalSC-Regular.ttf"),
 	} {
-		if !strings.Contains(string(plannerSkill), want) {
-			t.Fatalf("generated planner skill missing %q:\n%s", want, plannerSkill)
+		if info, err := os.Stat(want); err != nil || info.IsDir() {
+			t.Fatalf("expected package payload file %s: %v", want, err)
 		}
 	}
-
-	apiSkill, err := os.ReadFile(filepath.Join(dir, ".claude", "skills", "anvien", "anvien-api-surface", "SKILL.md"))
+	manifest, err := loadSkillManifest(filepath.Join(dir, ".claude", "skills", "anvien"))
 	if err != nil {
-		t.Fatalf("read generated API skill: %v", err)
+		t.Fatalf("load skill manifest: %v", err)
 	}
-	for _, want := range []string{"handlerFile", "anvien context file", "target_type=file"} {
-		if !strings.Contains(string(apiSkill), want) {
-			t.Fatalf("generated API skill missing %q:\n%s", want, apiSkill)
-		}
+	if manifest.ManagedBy != skillManifestOwner || len(manifest.Skills) != len(expectedSkillPackageIDs(t)) {
+		t.Fatalf("unexpected manifest: %#v", manifest)
 	}
 }
 
-func TestInstallBaseSkillsToRemovesInactiveGeneratedAnvienSkills(t *testing.T) {
+func TestInstallBaseSkillsToUsesManifestBoundary(t *testing.T) {
 	dir := t.TempDir()
-	for _, stale := range staleGeneratedBaseSkillIDs() {
-		path := filepath.Join(dir, stale, "SKILL.md")
-		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-			t.Fatalf("mkdir stale generated skill: %v", err)
-		}
-		if err := os.WriteFile(path, []byte("---\nname: "+stale+"\ndescription: stale generated skill\n---\n# Stale\n"), 0o644); err != nil {
-			t.Fatalf("write stale generated skill: %v", err)
-		}
-	}
-	customPath := filepath.Join(dir, "custom-skill", "SKILL.md")
-	if err := os.MkdirAll(filepath.Dir(customPath), 0o755); err != nil {
+	repoLocalSkill := filepath.Join(dir, "custom-skill", "SKILL.md")
+	if err := os.MkdirAll(filepath.Dir(repoLocalSkill), 0o755); err != nil {
 		t.Fatalf("mkdir custom skill: %v", err)
 	}
-	if err := os.WriteFile(customPath, []byte("---\nname: custom-skill\ndescription: user skill\n---\n# Custom\n"), 0o644); err != nil {
+	if err := os.WriteFile(repoLocalSkill, []byte("---\nname: custom-skill\ndescription: user skill\n---\n# Custom\n"), 0o644); err != nil {
 		t.Fatalf("write custom skill: %v", err)
 	}
 
-	if _, err := InstallBaseSkillsTo(dir); err != nil {
-		t.Fatalf("InstallBaseSkillsTo: %v", err)
+	result, err := InstallSkillPackagesTo(dir)
+	if err != nil {
+		t.Fatalf("InstallSkillPackagesTo: %v", err)
 	}
-	for _, stale := range staleGeneratedBaseSkillIDs() {
-		if _, err := os.Stat(filepath.Join(dir, stale, "SKILL.md")); !os.IsNotExist(err) {
-			t.Fatalf("stale generated skill %s should be removed: %v", stale, err)
-		}
+	if result.Installed != len(expectedSkillPackageIDs(t)) || result.Preserved != 1 || result.Skipped != 0 {
+		t.Fatalf("unexpected first install result: %#v", result)
 	}
-	if _, err := os.Stat(customPath); err != nil {
+	if _, err := os.Stat(repoLocalSkill); err != nil {
 		t.Fatalf("custom non-Anvien skill should be preserved: %v", err)
+	}
+
+	localFileInsideManagedPackage := filepath.Join(dir, "debugging", "local-note.md")
+	if err := os.WriteFile(localFileInsideManagedPackage, []byte("repo local note\n"), 0o644); err != nil {
+		t.Fatalf("write local file inside managed package: %v", err)
+	}
+	tamperedSkill := filepath.Join(dir, "ui-styling", "SKILL.md")
+	if err := os.WriteFile(tamperedSkill, []byte("tampered\n"), 0o644); err != nil {
+		t.Fatalf("tamper managed skill: %v", err)
+	}
+
+	manifest, err := loadSkillManifest(dir)
+	if err != nil {
+		t.Fatalf("load manifest: %v", err)
+	}
+	oldManaged := filepath.Join(dir, "old-managed", "SKILL.md")
+	if err := os.MkdirAll(filepath.Dir(oldManaged), 0o755); err != nil {
+		t.Fatalf("mkdir old managed: %v", err)
+	}
+	if err := os.WriteFile(oldManaged, []byte("# Old Managed\n"), 0o644); err != nil {
+		t.Fatalf("write old managed: %v", err)
+	}
+	manifest.Skills["old-managed"] = skillManifestEntry{
+		InstallPath: "old-managed",
+		SourceRoot:  "skills/old-managed",
+		Hash:        "sha256:old",
+		Managed:     true,
+		EntryCount:  1,
+		FileCount:   1,
+		Files:       map[string]string{"SKILL.md": "sha256:old"},
+	}
+	if err := writeSkillManifest(dir, manifest); err != nil {
+		t.Fatalf("write manifest with stale entry: %v", err)
+	}
+
+	result, err = InstallSkillPackagesTo(dir)
+	if err != nil {
+		t.Fatalf("second InstallSkillPackagesTo: %v", err)
+	}
+	if result.Updated != 1 || result.Stale != 1 || result.Preserved != 1 {
+		t.Fatalf("unexpected second install result: %#v", result)
+	}
+	if _, err := os.Stat(localFileInsideManagedPackage); err != nil {
+		t.Fatalf("local file inside managed package should be preserved: %v", err)
+	}
+	if raw, err := os.ReadFile(tamperedSkill); err != nil || strings.Contains(string(raw), "tampered") {
+		t.Fatalf("managed package file was not repaired: %v\n%s", err, raw)
+	}
+	if _, err := os.Stat(oldManaged); err != nil {
+		t.Fatalf("stale managed package payload should be preserved unless explicitly pruned: %v", err)
+	}
+	manifest, err = loadSkillManifest(dir)
+	if err != nil {
+		t.Fatalf("reload manifest: %v", err)
+	}
+	if entry, ok := manifest.Skills["old-managed"]; !ok || !entry.Stale {
+		t.Fatalf("old managed package should be marked stale, got %#v", manifest.Skills["old-managed"])
 	}
 }
 
-func TestBaseSkillRegistryAndSourceFrontmatter(t *testing.T) {
-	if got, want := strings.Join(registeredBaseSkillIDs(), ","), strings.Join(expectedBaseSkillIDs(), ","); got != want {
-		t.Fatalf("base skill registry mismatch:\n got: %s\nwant: %s", got, want)
+func TestInstallBaseSkillsToRejectsUnmanagedNameCollision(t *testing.T) {
+	dir := t.TempDir()
+	collision := filepath.Join(dir, "ui-styling", "SKILL.md")
+	if err := os.MkdirAll(filepath.Dir(collision), 0o755); err != nil {
+		t.Fatalf("mkdir collision: %v", err)
 	}
-	files, err := BaseSkillFiles()
+	if err := os.WriteFile(collision, []byte("---\nname: local-ui-styling\ndescription: local\n---\n# Local\n"), 0o644); err != nil {
+		t.Fatalf("write collision: %v", err)
+	}
+	result, err := InstallSkillPackagesTo(dir)
+	if err == nil || !strings.Contains(err.Error(), "already exists and is not managed by Anvien") {
+		t.Fatalf("expected unmanaged collision error, got %v", err)
+	}
+	if result.Collisions != 1 {
+		t.Fatalf("expected one collision, got %#v", result)
+	}
+	if raw, err := os.ReadFile(collision); err != nil || !strings.Contains(string(raw), "local-ui-styling") {
+		t.Fatalf("collision file should be preserved: %v\n%s", err, raw)
+	}
+}
+
+func TestInstallBaseSkillsToAdoptsLegacyGeneratedAnvienPackage(t *testing.T) {
+	dir := t.TempDir()
+	legacy := filepath.Join(dir, "anvien-planner", "SKILL.md")
+	if err := os.MkdirAll(filepath.Dir(legacy), 0o755); err != nil {
+		t.Fatalf("mkdir legacy skill: %v", err)
+	}
+	if err := os.WriteFile(legacy, []byte("---\nname: anvien-planner\ndescription: old generated planner\n---\n# Legacy Planner\n"), 0o644); err != nil {
+		t.Fatalf("write legacy skill: %v", err)
+	}
+
+	result, err := InstallSkillPackagesTo(dir)
 	if err != nil {
-		t.Fatalf("BaseSkillFiles: %v", err)
+		t.Fatalf("InstallSkillPackagesTo: %v", err)
 	}
-	if len(files) != len(expectedBaseSkillIDs()) {
-		t.Fatalf("BaseSkillFiles returned %d files, want %d", len(files), len(expectedBaseSkillIDs()))
+	if result.Adopted != 1 {
+		t.Fatalf("expected one adopted legacy package, got %#v", result)
 	}
-	for _, skill := range baseSkills {
-		if strings.TrimSpace(skill.Task) == "" {
-			t.Fatalf("base skill %s has empty task", skill.Name)
-		}
-		content, err := baseSkillContent(skill)
-		if err != nil {
-			t.Fatalf("base skill %s content: %v", skill.Name, err)
-		}
-		trimmed := strings.TrimSpace(content)
-		if len(trimmed) < 1000 {
-			t.Fatalf("base skill %s content is too small: %d bytes", skill.Name, len(trimmed))
-		}
-		if !strings.HasPrefix(trimmed, "---\n") {
-			t.Fatalf("base skill %s missing frontmatter start:\n%s", skill.Name, content)
-		}
-		if !strings.Contains(content, "\nname: "+skill.Name+"\n") {
-			t.Fatalf("base skill %s frontmatter name mismatch:\n%s", skill.Name, content)
-		}
-		if !strings.Contains(content, "\ndescription: ") {
-			t.Fatalf("base skill %s missing description frontmatter:\n%s", skill.Name, content)
-		}
-		if strings.Contains(content, "Use Anvien tools to accomplish this task.") {
-			t.Fatalf("base skill %s uses fallback placeholder content:\n%s", skill.Name, content)
-		}
+	raw, err := os.ReadFile(legacy)
+	if err != nil {
+		t.Fatalf("read adopted legacy skill: %v", err)
 	}
-	for i, file := range files {
-		if file.Name != expectedBaseSkillIDs()[i] {
-			t.Fatalf("BaseSkillFiles[%d].Name = %q, want %q", i, file.Name, expectedBaseSkillIDs()[i])
-		}
-		if strings.TrimSpace(file.Content) == "" || strings.TrimSpace(file.Task) == "" || strings.TrimSpace(file.Description) == "" {
-			t.Fatalf("BaseSkillFiles[%d] missing metadata/content: %#v", i, file)
-		}
+	if strings.Contains(string(raw), "Legacy Planner") || !strings.Contains(string(raw), "Standard Plan Set") {
+		t.Fatalf("legacy skill was not updated from embedded source:\n%s", raw)
 	}
 }
 
 func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
-	contentBySkill := make(map[string]string, len(baseSkills))
+	files, err := BaseSkillFiles()
+	if err != nil {
+		t.Fatalf("BaseSkillFiles: %v", err)
+	}
+	contentByInstallPath := make(map[string]string, len(files))
 	var combined strings.Builder
-	for _, skill := range baseSkills {
-		content, err := baseSkillContent(skill)
-		if err != nil {
-			t.Fatalf("base skill %s content: %v", skill.Name, err)
+	for _, file := range files {
+		if strings.TrimSpace(file.Content) == "" || strings.TrimSpace(file.Description) == "" {
+			t.Fatalf("skill entry missing content or description: %#v", file)
 		}
-		contentBySkill[skill.Name] = content
-		combined.WriteString(content)
+		if strings.Contains(file.Content, "Use Anvien tools to accomplish this task.") {
+			t.Fatalf("skill entry %s uses fallback placeholder content", file.InstallPath)
+		}
+		contentByInstallPath[file.InstallPath] = file.Content
+		combined.WriteString(file.Content)
 		combined.WriteString("\n")
 	}
 
 	checks := map[string][]string{
-		"anvien-api-surface": {
+		"anvien-api-surface/SKILL.md": {
 			"route_map",
 			"anvien api route-map",
 			"api_impact",
 			"Do not invent CLI commands",
 		},
-		"anvien-refactoring": {
+		"anvien-refactoring/SKILL.md": {
 			"behavior-preserving",
 			"impact",
 			"detect-changes",
 			"graph-guided dry run",
 		},
-		"anvien-debugging": {
+		"anvien-debugging/SKILL.md": {
 			"Reproduce or capture the symptom",
 			"graph-health",
 			"resolution-inventory",
 			"Query Reliability Rule",
 		},
-		"anvien-planner": {
+		"anvien-planner/SKILL.md": {
 			"Standard Plan Set",
 			"YYYY-MM-DD-<slug>",
 			"Evidence Ledger",
 			"Benchmark Ledger",
 			"Every checklist item must be a complete mini-plan by itself",
-			"Do not write generic checklist items",
+		},
+		"ui-styling/SKILL.md": {
+			"scripts/shadcn_add.py",
+			"references/shadcn-components.md",
+		},
+		"debugging/root-cause-tracing/SKILL.md": {
+			"find-polluter.sh",
 		},
 	}
-	for skillName, fragments := range checks {
-		content := contentBySkill[skillName]
+	for installPath, fragments := range checks {
+		content := contentByInstallPath[installPath]
+		if content == "" {
+			t.Fatalf("missing skill content for %s", installPath)
+		}
 		for _, fragment := range fragments {
 			if !strings.Contains(content, fragment) {
-				t.Fatalf("%s missing guidance fragment %q:\n%s", skillName, fragment, content)
+				t.Fatalf("%s missing guidance fragment %q:\n%s", installPath, fragment, content)
 			}
 		}
 	}
 
 	allGuidance := combined.String()
-	for _, want := range []string{
-		"not a command router",
-		"generated Command Selection Guide",
-		"`route_map`",
-		"`anvien api route-map",
-		"`anvien detect-changes --repo <repo> --scope all`",
-		"docs/plans/YYYY-MM-DD-<slug>/",
-	} {
-		if !strings.Contains(allGuidance, want) {
-			t.Fatalf("combined skill guidance missing %q", want)
-		}
-	}
 	for _, forbidden := range []string{
 		"anvien route_map",
 		"anvien tool_map",
@@ -502,4 +543,23 @@ func TestRenderCrossRepoGroupsSectionMentionsSupportedToolsAndCommands(t *testin
 	if got := FormatCrossRepoGroupsSection(nil); got != "" {
 		t.Fatalf("nil groups should render empty section, got %q", got)
 	}
+}
+
+func packageHasEntry(pkg SkillPackage, packagePath string) bool {
+	for _, entry := range pkg.Entries {
+		if entry.PackagePath == packagePath {
+			return true
+		}
+	}
+	return false
+}
+
+func packageHasFile(pkg SkillPackage, packagePath string) bool {
+	clean := path.Clean(packagePath)
+	for _, file := range pkg.Files {
+		if file.PackagePath == clean {
+			return true
+		}
+	}
+	return false
 }

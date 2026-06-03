@@ -295,13 +295,13 @@ func setupInstallEditorSkills(result *setupResult, editor string, targetDir stri
 		result.Errors = append(result.Errors, editor+" skills: "+err.Error())
 		return
 	}
-	if len(installed) > 0 {
-		result.Configured = append(result.Configured, fmt.Sprintf("%s skills (%d skills -> %s)", editor, len(installed), setupDisplayHomePath(targetDir)))
+	if len(installed.PackageIDs) > 0 {
+		result.Configured = append(result.Configured, fmt.Sprintf("%s skills (%s -> %s)", editor, installed.Summary(), setupDisplayHomePath(targetDir)))
 	}
 }
 
-func setupInstallSkillsTo(targetDir string) ([]string, error) {
-	return aicontext.InstallBaseSkillsTo(targetDir)
+func setupInstallSkillsTo(targetDir string) (aicontext.SkillInstallResult, error) {
+	return aicontext.InstallSkillPackagesTo(targetDir)
 }
 
 func setupInstallClaudeHooks(result *setupResult, claudeDir string) {
