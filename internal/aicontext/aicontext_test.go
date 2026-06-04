@@ -279,13 +279,18 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		"## Skill Selection Guide",
 		"Anvien installs every top-level package discovered under `internal/aicontext/skills/` when that source folder exists for the repo; otherwise it uses the embedded skill catalog.",
 		"Generated `.claude/skills/anvien/**` output mirrors that source snapshot; put custom skills outside that generated namespace.",
+		"| When you need to... | Use |",
+		"|---------------------|-----|",
 		"file-context",
 		"file-hotspots",
 	} {
 		requireContains(t, text, want)
 	}
-	requireContains(t, text, "| `"+packages[0].Name+"` |")
+	requireContains(t, text, "Package `"+packages[0].Name+"`")
 	requireContains(t, text, "`.claude/skills/anvien/"+packages[0].InstallRoot+"/`")
+	if strings.Contains(text, "| Package | Entries | Use |") {
+		t.Fatalf("Skill Selection Guide should use When/Use table form, got old package table:\n%s", text)
+	}
 	if strings.Contains(text, "Use Anvien workflow skills only for the retained domains below") {
 		t.Fatalf("AGENTS.md contains obsolete four-skill wording:\n%s", text)
 	}
