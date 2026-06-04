@@ -1,0 +1,132 @@
+# Evidence Ledger
+
+Title: AI Context Skill Description Trigger Shortening
+
+Date: 2026-06-04
+
+Status: Draft - awaiting implementation
+
+Companion files:
+
+- Plan: [2026-06-04-aicontext-skill-description-triggers-plan.md](2026-06-04-aicontext-skill-description-triggers-plan.md)
+- Benchmark ledger: [2026-06-04-aicontext-skill-description-triggers-benchmark.md](2026-06-04-aicontext-skill-description-triggers-benchmark.md)
+
+## Evidence Rules
+
+1. Evidence records facts read or commands run.
+2. Generated `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**` are validation output, not source of truth.
+3. Tests validate behavior after source changes; tests do not define the desired description text.
+4. Record failures and process corrections, including accidental pre-plan edits.
+5. Build/test pass-fail belongs here; measured counts and sizes belong in the benchmark ledger.
+
+## E0 - User Report
+
+Status: recorded
+
+The user identified that generated skill descriptions are too long and should be trigger-only. The clearest stated example:
+
+```text
+Use when the user asks to debug.
+```
+
+The user also clarified that a request to write a plan is a continuation of the current planning task and must activate `anvien-planner` to create a plan artifact, not merely print a plan in chat.
+
+The user further clarified that these skills are for every repository that uses Anvien, not only for fixing or operating the Anvien product repository. The plan must therefore treat descriptions as target-repo task triggers. Any wording that reads like "this skill is for working on Anvien itself" is wrong unless the task is specifically about Anvien product code.
+
+During plan review, the user rejected `ai-multimodal` and requested complete removal:
+
+```text
+Remove this skill completely; it is not necessary and has no value.
+```
+
+## E1 - Planner Skill Loaded
+
+Status: recorded
+
+`anvien-planner` was loaded from:
+
+```text
+.claude/skills/anvien/anvien-planner/SKILL.md
+```
+
+Relevant planner requirements read:
+
+- standard three-file plan set under `docs/plans/YYYY-MM-DD-<slug>/`;
+- plan file controls work;
+- evidence file explains why work is known correct;
+- benchmark file records measured numbers;
+- checklist items must be complete mini-plans.
+
+## E2 - Nearby Plan Inspection
+
+Status: recorded
+
+Nearby plans inspected:
+
+```text
+docs/plans/2026-06-02-anvien-skill-selection-guide-reduction/2026-06-02-anvien-skill-selection-guide-reduction-plan.md
+docs/plans/2026-06-04-anvien-skill-mirror-incremental-sync/2026-06-04-anvien-skill-mirror-incremental-sync-plan.md
+```
+
+Finding:
+
+- The 2026-06-02 plan reduced Anvien workflow skills too narrowly for the current catalog.
+- The current plan keeps the current skill catalog and changes description shape only.
+- The 2026-06-04 mirror-sync plan confirms `internal/aicontext/skills/**` is source of truth and `.claude/skills/anvien/**` is generated output.
+
+## E3 - Anvien Graph And Query Evidence
+
+Status: recorded
+
+Commands run before creating this plan:
+
+```text
+anvien analyze --force
+anvien query files "skill description Skill Selection Guide aicontext generated AGENTS CLAUDE" --repo Anvien
+```
+
+`--repo Anvien` is used here because this implementation changes the bundled catalog in the Anvien product repository. It is not part of the generated skill trigger contract for target repositories.
+
+Observed relevant files from query:
+
+- `internal/aicontext/skill_packages.go`
+- `internal/aicontext/aicontext_test.go`
+
+Source inspection confirmed:
+
+- `readSkillPackage` reads `description` from `SKILL.md` frontmatter.
+- `pkg.Description` is set from `primarySkillEntry(pkg).Description`.
+- `skillGuideNeed(pkg)` renders the package description into the generated `Skill Selection Guide`.
+- `skillGuideUse(pkg)` renders generated skill entry paths.
+
+## E4 - Current Process Correction
+
+Status: recorded
+
+Before this plan artifact was written, two source description edits were made prematurely:
+
+```text
+internal/aicontext/skills/anvien-planner/SKILL.md
+internal/aicontext/skills/anvien-debugging/SKILL.md
+```
+
+Current required correction:
+
+- do not commit these edits before the plan is approved;
+- reconcile them in P0-A;
+- if accepted, treat them as the first two implementation slices and validate normally;
+- if rejected, revert only these agent-created edits before proceeding.
+
+## E5 - Pending Validation
+
+Status: pending
+
+To be filled during implementation:
+
+- per-skill source diff;
+- generated row verification in `AGENTS.md` and `CLAUDE.md`;
+- generated mirror verification under `.claude/skills/anvien/**`;
+- full build result;
+- focused AI-context test result;
+- final `anvien detect-changes --repo Anvien --scope all`;
+- commit hashes.
