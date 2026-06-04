@@ -240,7 +240,7 @@ For each skill slice:
   - Implementation Gate: QA retains the no-code-fix rule, repo-bootstrap remains repo-type-aware, and docs-seeker keeps current-doc search workflow in the body.
   - Acceptance: generated guide routes these workflows with trigger-only descriptions.
 
-- [ ] [P2-E] Update `document-skills` multi-entry package trigger.
+- [x] [P2-E] Update `document-skills` multi-entry package trigger.
   - Goal: shorten document-work routing without dropping nested DOCX/PDF/PPTX/XLSX entries.
   - Work Steps: inspect which nested `SKILL.md` descriptions control the package row; set the package-row controlling description to `Use when the user asks to create, edit, or analyze documents.`; keep nested entry descriptions concise and type-aware if they are edited; regenerate once; verify all document skill paths remain listed.
   - Implementation Gate: multi-entry package behavior is confirmed before editing.

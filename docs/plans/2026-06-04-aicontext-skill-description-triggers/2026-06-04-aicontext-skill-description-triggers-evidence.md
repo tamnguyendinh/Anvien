@@ -239,8 +239,56 @@ Detect changes:
 - Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
 - `risk_level`: `low`
 - `changed_files`: 7
+- `affected_files`: 6
+- `affected_count`: 0
+
+Detect changes:
+
+- Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
+- `risk_level`: `low`
+- `changed_files`: 7
 - `affected_files`: 4
 - `affected_count`: 0
+
+## E15 - P2-E Document Skills Multi-Entry Package
+
+Status: recorded
+
+Source changes:
+
+- Updated frontmatter `description` for `document-skills/docx`, `document-skills/pdf`, `document-skills/pptx`, and `document-skills/xlsx`.
+- `docx` controls the generated package row, so it was set to the generic package trigger: `Use when the user asks to create, edit, or analyze documents.`
+- `pdf`, `pptx`, and `xlsx` were shortened with type-aware triggers.
+
+Impact:
+
+- Command pattern: `go run ./cmd/anvien impact file internal/aicontext/skills/document-skills/<entry>/SKILL.md --repo Anvien --direction upstream`
+- All 4 files reported `LOW`.
+- All 4 files reported 0 affected files and 0 affected flows.
+
+Generated-row verification after regeneration:
+
+```text
+document-skills -> Use when the user asks to create, edit, or analyze documents.
+paths -> docx/SKILL.md, pdf/SKILL.md, pptx/SKILL.md, xlsx/SKILL.md
+```
+
+- Each nested source description matched the generated `.claude/skills/anvien/document-skills/<entry>/SKILL.md` mirror.
+
+Validation:
+
+```text
+go run ./cmd/anvien analyze --force
+go build ./cmd/... ./internal/...
+go test ./internal/aicontext -count=1
+go test ./internal/cli -run "TestAnalyzeCommand|AIContext|Aicontext" -count=1
+```
+
+Results:
+
+- Analyze/regeneration passed.
+- Full product build passed.
+- Focused AI-context and CLI tests passed.
 
 Detect changes:
 

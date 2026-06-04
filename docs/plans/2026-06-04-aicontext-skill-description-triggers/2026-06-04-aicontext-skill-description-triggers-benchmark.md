@@ -187,3 +187,18 @@ Measured after P2-D updated 4 workflow/role descriptions and AI context was rege
 | Rough token estimate at 3 chars/token | tokens | 5,794 |
 | Generated skill package rows | rows | 34 |
 | Updated trigger descriptions | descriptions | 21 |
+
+## B11 - P2-E Document Skills Snapshot
+
+Status: recorded
+
+Measured after P2-E updated the document multi-entry package and AI context was regenerated from source:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| `AGENTS.md` total lines | lines | 175 |
+| `AGENTS.md` total words | words | 2,306 |
+| `AGENTS.md` total characters | chars | 17,080 |
+| Rough token estimate at 3 chars/token | tokens | 5,693 |
+| Generated skill package rows | rows | 34 |
+| Document skill generated entry paths | paths | 4 |
