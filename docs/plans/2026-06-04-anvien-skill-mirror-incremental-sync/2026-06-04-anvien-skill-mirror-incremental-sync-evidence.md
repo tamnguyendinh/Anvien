@@ -2,7 +2,7 @@
 
 Date: 2026-06-04
 
-Status: Implementation in progress
+Status: Complete
 
 Companion files:
 
@@ -215,9 +215,8 @@ Result:
 - affected processes include `InstallSkillPackagesTo -> CleanSkillInstallPath`, `InstallSkillPackagesTo -> HashBytes`, `InstallSkillPackagesTo -> RemoveEmptyDirsUpTo`, `InstallSkillPackagesTo -> RemoveEmptySkillDirs`, `InstallSkillPackagesTo -> SafeJoin`, and `InstallSkillPackagesTo -> SkillFileSnapshot`;
 - HIGH risk is expected for this installer change and was handled with scoped implementation, full build, focused tests, manual synthetic validation, and real repo mirror inventory validation.
 
-Commit evidence pending.
+Commit evidence:
 
-Expected final entry:
-
-- commit hash;
-- closure summary.
+- implementation commit: `b4ebc76` (`fix: mirror generated Anvien skills`);
+- closure summary: PA4 exact generated mirror sync is implemented, validated, benchmarked, and committed;
+- doc-only closure commit follows this evidence update.

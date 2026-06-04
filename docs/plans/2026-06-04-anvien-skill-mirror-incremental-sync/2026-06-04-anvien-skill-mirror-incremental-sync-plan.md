@@ -2,7 +2,7 @@
 
 Date: 2026-06-04
 
-Status: Implementation in progress
+Status: Complete
 
 Companion files:
 
@@ -216,7 +216,7 @@ Use a snapshot-diff-apply model:
   - Implementation Gate: build and focused tests pass or failures are explicitly resolved.
   - Acceptance: benchmark ledger records source package count, generated output file count, and sync operation counters.
 
-- [ ] [P4-A] Final evidence, benchmark, detect-changes, and commit.
+- [x] [P4-A] Final evidence, benchmark, detect-changes, and commit.
   - Goal: close the implementation slice with traceable proof.
   - Work Steps: update evidence ledger; update benchmark ledger; run `anvien detect-changes --repo Anvien --scope all`; inspect risk output; commit scoped implementation and docs changes.
   - Implementation Gate: all acceptance criteria are met or explicitly documented as blocked before commit.
