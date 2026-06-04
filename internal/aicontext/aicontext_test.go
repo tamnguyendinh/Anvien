@@ -277,8 +277,7 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		"## MCP Prompts",
 		"`detect_impact`",
 		"## Skill Selection Guide",
-		"Anvien installs every top-level package discovered under `internal/aicontext/skills/` when that source folder exists for the repo; otherwise it uses the embedded skill catalog.",
-		"Generated `.claude/skills/anvien/**` output mirrors that source snapshot; put custom skills outside that generated namespace.",
+		"AI agent chooses the skill that fits the work.",
 		"| When you need to... | Use |",
 		"|---------------------|-----|",
 		"file-context",
@@ -287,6 +286,26 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		requireContains(t, text, want)
 	}
 	requireContains(t, text, "`.claude/skills/anvien/"+packages[0].Entries[0].InstallPath+"`")
+	foundProblemSolving := false
+	for _, pkg := range packages {
+		if pkg.Name != "problem-solving" {
+			continue
+		}
+		foundProblemSolving = true
+		entry := primarySkillEntry(pkg)
+		requireContains(t, text, "Use when the user asks to solve a hard problem.")
+		requireContains(t, text, "`.claude/skills/anvien/"+entry.InstallPath+"`")
+		if strings.Contains(text, "`.claude/skills/anvien/problem-solving/collision-zone-thinking/SKILL.md`") {
+			t.Fatalf("Skill Selection Guide should show only the primary problem-solving entry:\n%s", text)
+		}
+		break
+	}
+	if !foundProblemSolving {
+		t.Fatalf("expected problem-solving skill package in catalog")
+	}
+	if strings.Contains(text, "Anvien installs every top-level package discovered") {
+		t.Fatalf("Skill Selection Guide should not include generated namespace explanation:\n%s", text)
+	}
 	if strings.Contains(text, "Package `"+packages[0].Name+"`") {
 		t.Fatalf("Skill Selection Guide should not include package labels in Use column:\n%s", text)
 	}

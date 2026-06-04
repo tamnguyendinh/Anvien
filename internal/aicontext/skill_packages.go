@@ -865,7 +865,8 @@ func skillGuideNeed(pkg SkillPackage) string {
 }
 
 func skillGuideUse(pkg SkillPackage) string {
-	return skillGuideEntries(pkg)
+	entry := primarySkillEntry(pkg)
+	return "`.claude/skills/anvien/" + escapeTableCell(entry.InstallPath) + "`"
 }
 
 func escapeTableCell(value string) string {
