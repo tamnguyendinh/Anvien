@@ -258,13 +258,13 @@ For each skill slice:
   - Implementation Gate: multi-entry package behavior is confirmed before editing.
   - Acceptance: generated guide is concise and all problem-solving entries remain reachable.
 
-- [ ] [P4-A] Final regeneration, validation, and inventory check.
+- [x] [P4-A] Final regeneration, validation, and inventory check.
   - Goal: prove all generated outputs reflect source and no old long descriptions remain.
   - Work Steps: regenerate with the approved current source command; check `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/anvien/**`; run full build; run focused AI-context tests; measure final guide length and description totals.
   - Implementation Gate: all per-skill slices are complete and evidence is updated.
   - Acceptance: final generated guide matches the target matrix and validation passes.
 
-- [ ] [P4-B] Detect changes and commit closure.
+- [x] [P4-B] Detect changes and commit closure.
   - Goal: close the plan with traceable change evidence.
   - Work Steps: run `anvien detect-changes --repo Anvien --scope all`; record affected files and risk; commit approved completed slices; record commit hashes in evidence.
   - Implementation Gate: validation has passed and user approval scope is clear.

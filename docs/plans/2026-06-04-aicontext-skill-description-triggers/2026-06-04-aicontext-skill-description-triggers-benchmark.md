@@ -69,19 +69,19 @@ Status: recorded
 
 ## B3 - Final Measurements
 
-Status: pending
+Status: recorded
 
-To be recorded after implementation:
+Measured after final regeneration and validation:
 
 | Metric | Unit | Final | Delta |
 |---|---:|---:|---:|
-| `AGENTS.md` total characters | chars | pending | pending |
-| `AGENTS.md` rough token estimate at 3 chars/token | tokens | pending | pending |
-| Sum of generated skill descriptions | chars | pending | pending |
-| Longest generated skill description | chars | pending | pending |
-| Generated skill package rows | rows | pending | pending |
-| Generated stale package/root path matches in `Use` column | matches | pending | pending |
-| `ai-multimodal` generated references | matches | pending | pending |
+| `AGENTS.md` total characters | chars | 15,490 | -10,944 |
+| `AGENTS.md` rough token estimate at 3 chars/token | tokens | 5,163 | -3,648 |
+| Sum of generated skill descriptions | chars | 1,806 | n/a |
+| Longest generated skill description | chars | 75 | n/a |
+| Generated skill package rows | rows | 34 | -1 |
+| Generated stale package/root path matches in `Use` column | matches | 0 | n/a |
+| `ai-multimodal` generated references | matches | 0 | absent |
 
 ## B4 - P1 Generated Context Snapshot
 
@@ -216,7 +216,7 @@ Measured after P3-A updated 11 concise single-entry descriptions and AI context 
 | `AGENTS.md` total characters | chars | 15,592 |
 | Rough token estimate at 3 chars/token | tokens | 5,197 |
 | Generated skill package rows | rows | 34 |
-| Updated trigger descriptions | descriptions | 32 |
+| Updated trigger descriptions | descriptions | 33 |
 
 ## B13 - P3-B Problem Solving Snapshot
 
@@ -232,3 +232,4 @@ Measured after P3-B updated the problem-solving multi-entry package and AI conte
 | Rough token estimate at 3 chars/token | tokens | 5,163 |
 | Generated skill package rows | rows | 34 |
 | Problem-solving generated entry paths | paths | 7 |
+| Updated generated row trigger descriptions | descriptions | 34 |

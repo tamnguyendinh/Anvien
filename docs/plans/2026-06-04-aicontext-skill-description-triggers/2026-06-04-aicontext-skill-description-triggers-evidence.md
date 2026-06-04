@@ -242,6 +242,70 @@ Detect changes:
 - `affected_files`: 3
 - `affected_count`: 0
 
+## E18 - P4-A Final Regeneration And Inventory
+
+Status: recorded
+
+Final validation:
+
+```text
+go run ./cmd/anvien analyze --force
+go build ./cmd/... ./internal/...
+go test ./internal/aicontext -count=1
+go test ./internal/cli -run "TestAnalyzeCommand|AIContext|Aicontext" -count=1
+```
+
+Results:
+
+- Analyze/regeneration passed: graph nodes 82959, relationships 121602.
+- Full product build passed.
+- Focused AI-context and CLI tests passed.
+
+Final generated inventory:
+
+```text
+AGENTS.md lines: 175
+AGENTS.md words: 2145
+AGENTS.md chars: 15490
+Rough 3 chars/token estimate: 5163
+Generated skill rows: 34
+Sum of generated skill description chars: 1806
+Longest generated skill description chars: 75
+Package/root-only Use column matches: 0
+Package-word row matches: 0
+ai-multimodal matches in source/generated/context: 0
+```
+
+Final generated-output checks:
+
+- `AGENTS.md` and `CLAUDE.md` use the `| When you need to... | Use |` skill guide shape.
+- Every generated skill guide `Use` cell points to concrete `SKILL.md` entries, not package root directories.
+- `ai-multimodal` is absent from source skills, generated `.claude/skills/anvien`, `AGENTS.md`, and `CLAUDE.md`.
+
+## E19 - P4-B Closure Detect Changes
+
+Status: recorded
+
+Detect changes:
+
+- Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
+- `risk_level`: `low`
+- `changed_files`: 3
+- `affected_files`: 3
+- `affected_count`: 0
+
+Implementation commits before closure:
+
+```text
+51902cb chore: shorten aesthetic skill trigger
+0524c5b chore: remove ai multimodal skill package
+bd0c625 chore: shorten long skill triggers
+14306d0 chore: shorten workflow skill triggers
+f9c3d6f chore: shorten document skill triggers
+cbdc502 chore: normalize concise skill triggers
+c24285d chore: shorten problem solving skill trigger
+```
+
 Detect changes:
 
 - Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
