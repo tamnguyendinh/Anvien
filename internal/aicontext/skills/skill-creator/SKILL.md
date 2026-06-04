@@ -1,6 +1,6 @@
 ---
 name: skill-creator
-description: Create or update Claude skills. Use for new skills, skill references, skill scripts, optimizing existing skills, extending Claude's capabilities.
+description: Use when the user asks to create or update a skill.
 license: Complete terms in LICENSE.txt
 version: 2.0.0
 ---

@@ -246,7 +246,7 @@ For each skill slice:
   - Implementation Gate: multi-entry package behavior is confirmed before editing.
   - Acceptance: generated guide routes document work without a long DOCX/PDF/PPTX/XLSX capability summary.
 
-- [ ] [P3-A] Normalize concise single-entry triggers as one group.
+- [x] [P3-A] Normalize concise single-entry triggers as one group.
   - Goal: make the remaining single-entry package descriptions use the same trigger-only style.
   - Work Steps: run file impact for each touched `SKILL.md`; set descriptions to these exact values: `anvien-api-surface` -> `Use when the user asks to inspect API or MCP surfaces.`, `anvien-refactoring` -> `Use when the user asks to refactor code.`, `chrome-devtools` -> `Use when the user asks to automate or inspect a browser.`, `devops` -> `Use when the user asks to deploy or operate infrastructure.`, `frontend-design` -> `Use when the user asks to design a frontend UI.`, `mcp-builder` -> `Use when the user asks to build an MCP server.`, `payment-integration` -> `Use when the user asks to integrate payments.`, `sequential-thinking` -> `Use when the user asks to reason step by step.`, `skill-creator` -> `Use when the user asks to create or update a skill.`, `threejs` -> `Use when the user asks to build 3D web experiences with Three.js.`, `web-testing` -> `Use when the user asks to test web behavior.`; regenerate once; verify generated rows and mirror output for all skills in this group.
   - Implementation Gate: each source body keeps its detailed workflow and payment routing remains explicit.

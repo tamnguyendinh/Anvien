@@ -238,9 +238,66 @@ Detect changes:
 
 - Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
 - `risk_level`: `low`
+- `changed_files`: 14
+- `affected_files`: 5
+- `affected_count`: 0
+
+Detect changes:
+
+- Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
+- `risk_level`: `low`
 - `changed_files`: 7
 - `affected_files`: 6
 - `affected_count`: 0
+
+## E16 - P3-A Concise Single-Entry Group
+
+Status: recorded
+
+Source changes:
+
+- Updated frontmatter `description` only for 11 packages:
+  `anvien-api-surface`, `anvien-refactoring`, `chrome-devtools`, `devops`, `frontend-design`, `mcp-builder`, `payment-integration`, `sequential-thinking`, `skill-creator`, `threejs`, and `web-testing`.
+- Skill bodies were not changed.
+
+Impact:
+
+- Command pattern: `go run ./cmd/anvien impact file internal/aicontext/skills/<skill>/SKILL.md --repo Anvien --direction upstream`
+- All 11 files reported `LOW`.
+- All 11 files reported 0 affected files and 0 affected flows.
+
+Generated-row verification after regeneration:
+
+```text
+anvien-api-surface -> Use when the user asks to inspect API or MCP surfaces.
+anvien-refactoring -> Use when the user asks to refactor code.
+chrome-devtools -> Use when the user asks to automate or inspect a browser.
+devops -> Use when the user asks to deploy or operate infrastructure.
+frontend-design -> Use when the user asks to design a frontend UI.
+mcp-builder -> Use when the user asks to build an MCP server.
+payment-integration -> Use when the user asks to integrate payments.
+sequential-thinking -> Use when the user asks to reason step by step.
+skill-creator -> Use when the user asks to create or update a skill.
+threejs -> Use when the user asks to build 3D web experiences with Three.js.
+web-testing -> Use when the user asks to test web behavior.
+```
+
+- Each source description matched the generated `.claude/skills/anvien/<skill>/SKILL.md` mirror.
+
+Validation:
+
+```text
+go run ./cmd/anvien analyze --force
+go build ./cmd/... ./internal/...
+go test ./internal/aicontext -count=1
+go test ./internal/cli -run "TestAnalyzeCommand|AIContext|Aicontext" -count=1
+```
+
+Results:
+
+- Analyze/regeneration passed.
+- Full product build passed.
+- Focused AI-context and CLI tests passed.
 
 Detect changes:
 

@@ -1,6 +1,6 @@
 ---
 name: anvien-refactoring
-description: "Use when the user wants to rename, extract, split, move, or restructure code."
+description: Use when the user asks to refactor code.
 ---
 
 # Refactoring With Anvien

@@ -202,3 +202,18 @@ Measured after P2-E updated the document multi-entry package and AI context was 
 | Rough token estimate at 3 chars/token | tokens | 5,693 |
 | Generated skill package rows | rows | 34 |
 | Document skill generated entry paths | paths | 4 |
+
+## B12 - P3-A Concise Single-Entry Group Snapshot
+
+Status: recorded
+
+Measured after P3-A updated 11 concise single-entry descriptions and AI context was regenerated from source:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| `AGENTS.md` total lines | lines | 175 |
+| `AGENTS.md` total words | words | 2,151 |
+| `AGENTS.md` total characters | chars | 15,592 |
+| Rough token estimate at 3 chars/token | tokens | 5,197 |
+| Generated skill package rows | rows | 34 |
+| Updated trigger descriptions | descriptions | 32 |

@@ -1,6 +1,6 @@
 ---
 name: anvien-api-surface
-description: "Use when the user needs to inspect API routes, MCP tools, contracts, response shapes, or consumers."
+description: Use when the user asks to inspect API or MCP surfaces.
 ---
 
 # API Surface With Anvien

@@ -1,6 +1,6 @@
 ---
 name: threejs
-description: Build 3D web apps with Three.js (WebGL/WebGPU). Use for 3D scenes, animations, custom shaders, PBR materials, VR/XR experiences, games, data visualizations, product configurators.
+description: Use when the user asks to build 3D web experiences with Three.js.
 license: MIT
 version: 2.0.0
 ---
