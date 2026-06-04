@@ -69,15 +69,35 @@ type BaseSkillFile struct {
 }
 
 type SkillInstallResult struct {
-	PackageIDs []string
-	Discovered int
-	Installed  int
-	Updated    int
-	Skipped    int
-	Adopted    int
-	Stale      int
-	Preserved  int
-	Collisions int
+	PackageIDs   []string
+	Discovered   int
+	Installed    int
+	Updated      int
+	Skipped      int
+	Adopted      int
+	Stale        int
+	Preserved    int
+	Collisions   int
+	Written      int
+	Overwritten  int
+	Deleted      int
+	SkippedFiles int
+	Unsafe       int
+}
+
+type skillFileSnapshot struct {
+	Path        string
+	Hash        string
+	Content     []byte
+	PackageName string
+	PackagePath string
+}
+
+type skillSyncPlan struct {
+	Writes     []skillFileSnapshot
+	Overwrites []skillFileSnapshot
+	Deletes    []skillFileSnapshot
+	Skips      []skillFileSnapshot
 }
 
 type skillManifest struct {
@@ -174,13 +194,15 @@ func InstallSkillPackagesForRepoTo(targetDir string, repoPath string) (SkillInst
 func (result SkillInstallResult) Summary() string {
 	parts := []string{
 		fmt.Sprintf("discovered=%d", result.Discovered),
-		fmt.Sprintf("installed=%d", result.Installed),
-		fmt.Sprintf("updated=%d", result.Updated),
-		fmt.Sprintf("skipped=%d", result.Skipped),
-		fmt.Sprintf("adopted=%d", result.Adopted),
-		fmt.Sprintf("stale=%d", result.Stale),
-		fmt.Sprintf("preserved=%d", result.Preserved),
+		fmt.Sprintf("packages_installed=%d", result.Installed),
+		fmt.Sprintf("packages_updated=%d", result.Updated),
+		fmt.Sprintf("packages_skipped=%d", result.Skipped),
+		fmt.Sprintf("files_written=%d", result.Written),
+		fmt.Sprintf("files_overwritten=%d", result.Overwritten),
+		fmt.Sprintf("files_deleted=%d", result.Deleted),
+		fmt.Sprintf("files_skipped=%d", result.SkippedFiles),
 		fmt.Sprintf("collisions=%d", result.Collisions),
+		fmt.Sprintf("unsafe=%d", result.Unsafe),
 	}
 	return strings.Join(parts, " ")
 }
@@ -328,88 +350,51 @@ func installSkillPackagesTo(targetDir string, packages []SkillPackage) (SkillIns
 	if err != nil {
 		return result, err
 	}
-	next := newSkillManifest()
-	sourceNames := make(map[string]struct{}, len(packages))
-
-	for _, pkg := range packages {
-		sourceNames[pkg.Name] = struct{}{}
+	desired, collisions, err := desiredSkillSnapshot(packages)
+	result.Collisions += collisions
+	if err != nil {
+		return result, err
 	}
-	result.Preserved = countPreservedSkillTargets(targetDir, manifest, sourceNames)
+	actual, unsafe, err := actualSkillSnapshot(targetDir)
+	result.Unsafe += unsafe
+	if err != nil {
+		return result, err
+	}
+	plan := diffSkillSnapshots(desired, actual)
+	result.Written = len(plan.Writes)
+	result.Overwritten = len(plan.Overwrites)
+	result.Deleted = len(plan.Deletes)
+	result.SkippedFiles = len(plan.Skips)
 
 	for _, pkg := range packages {
+		result.PackageIDs = append(result.PackageIDs, pkg.InstallRoot)
 		oldEntry, hadManifest := manifest.Skills[pkg.Name]
-		targetPkg, err := safeJoin(targetDir, pkg.InstallRoot)
-		if err != nil {
-			return result, err
-		}
-
-		if !hadManifest && pathExists(targetPkg) {
-			matches, err := targetMatchesPackage(targetPkg, pkg)
-			if err != nil {
-				return result, err
-			}
-			if !matches {
-				legacy, err := isLegacyGeneratedAnvienPackage(targetPkg, pkg)
-				if err != nil {
-					return result, err
-				}
-				if legacy {
-					if err := writeSkillPackage(targetDir, pkg); err != nil {
-						return result, err
-					}
-					next.Skills[pkg.Name] = manifestEntryForPackage(pkg, false)
-					result.PackageIDs = append(result.PackageIDs, pkg.InstallRoot)
-					result.Adopted++
-					continue
-				}
-				result.Collisions++
-				return result, fmt.Errorf("skill package target %s already exists and is not managed by Anvien; preserving existing files", targetPkg)
-			}
-			next.Skills[pkg.Name] = manifestEntryForPackage(pkg, false)
-			result.PackageIDs = append(result.PackageIDs, pkg.InstallRoot)
-			result.Adopted++
+		if !hadManifest {
+			result.Installed++
 			continue
 		}
-
-		if hadManifest && oldEntry.Hash == pkg.Hash {
-			matches, err := packageFilesMatch(targetPkg, pkg)
-			if err != nil {
-				return result, err
-			}
-			if matches {
-				next.Skills[pkg.Name] = manifestEntryForPackage(pkg, false)
-				result.PackageIDs = append(result.PackageIDs, pkg.InstallRoot)
-				result.Skipped++
-				continue
-			}
-		}
-
-		if hadManifest {
-			if err := removeRetiredManagedFiles(targetDir, oldEntry, pkg); err != nil {
-				return result, err
-			}
-		}
-		if err := writeSkillPackage(targetDir, pkg); err != nil {
-			return result, err
-		}
-		next.Skills[pkg.Name] = manifestEntryForPackage(pkg, false)
-		result.PackageIDs = append(result.PackageIDs, pkg.InstallRoot)
-		if hadManifest {
+		if oldEntry.Stale || oldEntry.Hash != pkg.Hash || skillSyncPlanTouchesPackage(plan, pkg.InstallRoot) {
 			result.Updated++
 		} else {
-			result.Installed++
+			result.Skipped++
 		}
 	}
 
-	for name, entry := range manifest.Skills {
-		if _, ok := sourceNames[name]; ok {
-			continue
-		}
-		if entry.Managed {
-			entry.Stale = true
-			result.Stale++
-		}
-		next.Skills[name] = entry
+	if err := applySkillSyncPlan(targetDir, plan); err != nil {
+		return result, err
+	}
+	verified, unsafe, err := actualSkillSnapshot(targetDir)
+	result.Unsafe += unsafe
+	if err != nil {
+		return result, err
+	}
+	if err := verifySkillSnapshot(desired, verified); err != nil {
+		return result, err
+	}
+
+	next := newSkillManifest()
+	for _, pkg := range packages {
+		next.Skills[pkg.Name] = manifestEntryForPackage(pkg, false)
 	}
 	if err := writeSkillManifest(targetDir, next); err != nil {
 		return result, err
@@ -417,100 +402,265 @@ func installSkillPackagesTo(targetDir string, packages []SkillPackage) (SkillIns
 	return result, nil
 }
 
-func writeSkillPackage(targetDir string, pkg SkillPackage) error {
-	for _, file := range pkg.Files {
-		target, err := safeJoin(targetDir, file.InstallPath)
+func desiredSkillSnapshot(packages []SkillPackage) (map[string]skillFileSnapshot, int, error) {
+	snapshot := make(map[string]skillFileSnapshot)
+	collisions := 0
+	for _, pkg := range packages {
+		for _, file := range pkg.Files {
+			rel, err := cleanSkillInstallPath(file.InstallPath)
+			if err != nil {
+				return snapshot, collisions, fmt.Errorf("skill package %s has invalid install path %q: %w", pkg.Name, file.InstallPath, err)
+			}
+			if previous, ok := snapshot[rel]; ok {
+				collisions++
+				return snapshot, collisions, fmt.Errorf("duplicate generated skill path %s from packages %s and %s", rel, previous.PackageName, pkg.Name)
+			}
+			snapshot[rel] = skillFileSnapshot{
+				Path:        rel,
+				Hash:        file.Hash,
+				Content:     file.Content,
+				PackageName: pkg.Name,
+				PackagePath: file.PackagePath,
+			}
+		}
+	}
+	return snapshot, collisions, nil
+}
+
+func actualSkillSnapshot(targetDir string) (map[string]skillFileSnapshot, int, error) {
+	snapshot := make(map[string]skillFileSnapshot)
+	unsafe := 0
+	err := filepath.WalkDir(targetDir, func(filePath string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if filePath == targetDir || entry.IsDir() {
+			return nil
+		}
+		info, err := entry.Info()
 		if err != nil {
 			return err
 		}
-		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+		if !info.Mode().IsRegular() {
+			unsafe++
+			return fmt.Errorf("non-regular skill output exists at %s", filePath)
+		}
+		rel, err := filepath.Rel(targetDir, filePath)
+		if err != nil {
 			return err
 		}
-		if err := os.WriteFile(target, file.Content, 0o644); err != nil {
+		rel, err = cleanSkillInstallPath(rel)
+		if err != nil {
+			return fmt.Errorf("invalid skill output path %s: %w", filePath, err)
+		}
+		if rel == skillManifestFileName {
+			return nil
+		}
+		raw, err := os.ReadFile(filePath)
+		if err != nil {
 			return err
 		}
+		snapshot[rel] = skillFileSnapshot{
+			Path: rel,
+			Hash: hashBytes(raw),
+		}
+		return nil
+	})
+	if err != nil {
+		if os.IsNotExist(err) {
+			return snapshot, unsafe, nil
+		}
+		return snapshot, unsafe, err
+	}
+	return snapshot, unsafe, nil
+}
+
+func diffSkillSnapshots(desired map[string]skillFileSnapshot, actual map[string]skillFileSnapshot) skillSyncPlan {
+	plan := skillSyncPlan{}
+	desiredPaths := sortedSkillSnapshotPaths(desired)
+	for _, rel := range desiredPaths {
+		desiredFile := desired[rel]
+		actualFile, ok := actual[rel]
+		if !ok {
+			plan.Writes = append(plan.Writes, desiredFile)
+			continue
+		}
+		if actualFile.Hash != desiredFile.Hash {
+			plan.Overwrites = append(plan.Overwrites, desiredFile)
+			continue
+		}
+		plan.Skips = append(plan.Skips, desiredFile)
+	}
+	for _, rel := range sortedSkillSnapshotPaths(actual) {
+		if _, ok := desired[rel]; !ok {
+			plan.Deletes = append(plan.Deletes, actual[rel])
+		}
+	}
+	return plan
+}
+
+func applySkillSyncPlan(targetDir string, plan skillSyncPlan) error {
+	for _, file := range plan.Deletes {
+		if err := deleteSkillSnapshotFile(targetDir, file.Path); err != nil {
+			return err
+		}
+	}
+	for _, file := range plan.Writes {
+		if err := writeSkillSnapshotFile(targetDir, file); err != nil {
+			return err
+		}
+	}
+	for _, file := range plan.Overwrites {
+		if err := writeSkillSnapshotFile(targetDir, file); err != nil {
+			return err
+		}
+	}
+	return removeEmptySkillDirs(targetDir)
+}
+
+func writeSkillSnapshotFile(targetDir string, file skillFileSnapshot) error {
+	target, err := safeJoin(targetDir, file.Path)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+		return err
+	}
+	if err := os.WriteFile(target, file.Content, 0o644); err != nil {
+		return err
 	}
 	return nil
 }
 
-func removeRetiredManagedFiles(targetDir string, oldEntry skillManifestEntry, pkg SkillPackage) error {
-	if oldEntry.InstallPath == "" {
-		oldEntry.InstallPath = pkg.InstallRoot
+func deleteSkillSnapshotFile(targetDir string, rel string) error {
+	target, err := safeJoin(targetDir, rel)
+	if err != nil {
+		return err
 	}
-	currentFiles := make(map[string]struct{}, len(pkg.Files))
-	for _, file := range pkg.Files {
-		currentFiles[file.PackagePath] = struct{}{}
+	info, err := os.Lstat(target)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
 	}
-	for rel := range oldEntry.Files {
-		if _, ok := currentFiles[rel]; ok {
-			continue
+	if info.IsDir() || !info.Mode().IsRegular() {
+		return fmt.Errorf("refusing to delete non-regular skill output %s", target)
+	}
+	if err := os.Remove(target); err != nil {
+		return err
+	}
+	removeEmptyDirsUpTo(targetDir, filepath.Dir(target))
+	return nil
+}
+
+func removeEmptySkillDirs(targetDir string) error {
+	dirs := make([]string, 0)
+	err := filepath.WalkDir(targetDir, func(filePath string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
 		}
-		target, err := safeJoin(targetDir, path.Join(oldEntry.InstallPath, rel))
-		if err != nil {
-			return err
+		if filePath != targetDir && entry.IsDir() {
+			dirs = append(dirs, filePath)
 		}
-		info, err := os.Lstat(target)
+		return nil
+	})
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	sort.Slice(dirs, func(i, j int) bool {
+		return len(dirs[i]) > len(dirs[j])
+	})
+	for _, dir := range dirs {
+		entries, err := os.ReadDir(dir)
 		if err != nil {
 			if os.IsNotExist(err) {
 				continue
 			}
 			return err
 		}
-		if info.IsDir() {
-			continue
+		if len(entries) == 0 {
+			if err := os.Remove(dir); err != nil && !os.IsNotExist(err) {
+				return err
+			}
 		}
-		if err := os.Remove(target); err != nil {
-			return err
-		}
-		removeEmptyDirsUpTo(targetDir, filepath.Dir(target))
 	}
 	return nil
 }
 
-func countPreservedSkillTargets(targetDir string, manifest skillManifest, sourceNames map[string]struct{}) int {
-	entries, err := os.ReadDir(targetDir)
-	if err != nil {
-		return 0
+func verifySkillSnapshot(desired map[string]skillFileSnapshot, actual map[string]skillFileSnapshot) error {
+	if len(desired) != len(actual) {
+		return fmt.Errorf("skill output file count mismatch: desired=%d actual=%d", len(desired), len(actual))
 	}
-	count := 0
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
+	for _, rel := range sortedSkillSnapshotPaths(desired) {
+		desiredFile := desired[rel]
+		actualFile, ok := actual[rel]
+		if !ok {
+			return fmt.Errorf("skill output missing desired file %s", rel)
 		}
-		name := entry.Name()
-		if _, ok := manifest.Skills[name]; ok {
-			continue
+		if actualFile.Hash != desiredFile.Hash {
+			return fmt.Errorf("skill output hash mismatch for %s: desired=%s actual=%s", rel, desiredFile.Hash, actualFile.Hash)
 		}
-		if _, ok := sourceNames[name]; ok {
-			continue
-		}
-		count++
 	}
-	return count
+	for _, rel := range sortedSkillSnapshotPaths(actual) {
+		if _, ok := desired[rel]; !ok {
+			return fmt.Errorf("skill output contains obsolete file %s", rel)
+		}
+	}
+	return nil
 }
 
-func isLegacyGeneratedAnvienPackage(targetPkg string, pkg SkillPackage) (bool, error) {
-	if !legacyGeneratedAnvienPackageNames()[pkg.Name] {
-		return false, nil
+func sortedSkillSnapshotPaths(snapshot map[string]skillFileSnapshot) []string {
+	paths := make([]string, 0, len(snapshot))
+	for rel := range snapshot {
+		paths = append(paths, rel)
 	}
-	raw, err := os.ReadFile(filepath.Join(targetPkg, "SKILL.md"))
-	if err != nil {
-		if os.IsNotExist(err) {
-			return false, nil
-		}
-		return false, err
-	}
-	frontmatter := parseSkillFrontmatter(string(raw))
-	return frontmatter["name"] == pkg.Name, nil
+	sort.Strings(paths)
+	return paths
 }
 
-func legacyGeneratedAnvienPackageNames() map[string]bool {
-	return map[string]bool{
-		"anvien-api-surface": true,
-		"anvien-debugging":   true,
-		"anvien-planner":     true,
-		"anvien-refactoring": true,
+func skillSyncPlanTouchesPackage(plan skillSyncPlan, installRoot string) bool {
+	for _, file := range plan.Writes {
+		if skillPathInPackage(file.Path, installRoot) {
+			return true
+		}
 	}
+	for _, file := range plan.Overwrites {
+		if skillPathInPackage(file.Path, installRoot) {
+			return true
+		}
+	}
+	for _, file := range plan.Deletes {
+		if skillPathInPackage(file.Path, installRoot) {
+			return true
+		}
+	}
+	return false
+}
+
+func skillPathInPackage(rel string, installRoot string) bool {
+	root, err := cleanSkillInstallPath(installRoot)
+	if err != nil {
+		return false
+	}
+	return rel == root || strings.HasPrefix(rel, root+"/")
+}
+
+func cleanSkillInstallPath(rel string) (string, error) {
+	if strings.TrimSpace(rel) == "" {
+		return "", fmt.Errorf("empty path")
+	}
+	if filepath.IsAbs(rel) {
+		return "", fmt.Errorf("absolute path")
+	}
+	clean := path.Clean(filepath.ToSlash(rel))
+	if clean == "." || clean == ".." || strings.HasPrefix(clean, "../") || strings.HasPrefix(clean, "/") {
+		return "", fmt.Errorf("path escapes target root")
+	}
+	return clean, nil
 }
 
 func loadSkillManifest(targetDir string) (skillManifest, error) {
@@ -576,61 +726,6 @@ func manifestEntryForPackage(pkg SkillPackage, stale bool) skillManifestEntry {
 	}
 }
 
-func packageFilesMatch(targetPkg string, pkg SkillPackage) (bool, error) {
-	for _, file := range pkg.Files {
-		target := filepath.Join(targetPkg, filepath.FromSlash(file.PackagePath))
-		raw, err := os.ReadFile(target)
-		if err != nil {
-			if os.IsNotExist(err) {
-				return false, nil
-			}
-			return false, err
-		}
-		if hashBytes(raw) != file.Hash {
-			return false, nil
-		}
-	}
-	return true, nil
-}
-
-func targetMatchesPackage(targetPkg string, pkg SkillPackage) (bool, error) {
-	matches, err := packageFilesMatch(targetPkg, pkg)
-	if err != nil || !matches {
-		return matches, err
-	}
-	expected := make(map[string]struct{}, len(pkg.Files))
-	for _, file := range pkg.Files {
-		expected[filepath.ToSlash(file.PackagePath)] = struct{}{}
-	}
-	err = filepath.WalkDir(targetPkg, func(filePath string, entry fs.DirEntry, walkErr error) error {
-		if walkErr != nil {
-			return walkErr
-		}
-		if entry.IsDir() {
-			return nil
-		}
-		info, err := entry.Info()
-		if err != nil {
-			return err
-		}
-		if !info.Mode().IsRegular() {
-			return fmt.Errorf("non-regular file exists at %s", filePath)
-		}
-		rel, err := filepath.Rel(targetPkg, filePath)
-		if err != nil {
-			return err
-		}
-		if _, ok := expected[filepath.ToSlash(rel)]; !ok {
-			return fmt.Errorf("extra file exists at %s", filePath)
-		}
-		return nil
-	})
-	if err != nil {
-		return false, nil
-	}
-	return true, nil
-}
-
 func safeJoin(base string, rel string) (string, error) {
 	target := filepath.Join(base, filepath.FromSlash(rel))
 	absBase, err := filepath.Abs(base)
@@ -647,11 +742,6 @@ func safeJoin(base string, rel string) (string, error) {
 		return "", fmt.Errorf("path %s escapes target root %s", cleanTarget, cleanBase)
 	}
 	return target, nil
-}
-
-func pathExists(filePath string) bool {
-	_, err := os.Stat(filePath)
-	return err == nil
 }
 
 func removeEmptyDirsUpTo(root string, dir string) {

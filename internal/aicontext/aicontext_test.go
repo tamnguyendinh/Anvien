@@ -61,43 +61,8 @@ func TestSkillPackageCatalogDiscoversTopLevelPackagesAndNestedEntries(t *testing
 	if got, want := strings.Join(skillPackageIDs(packages), ","), strings.Join(expectedSkillPackageIDs(t), ","); got != want {
 		t.Fatalf("skill package ids mismatch:\n got: %s\nwant: %s", got, want)
 	}
-
-	debugging := findSkillPackage(t, packages, "debugging")
-	if got, want := len(debugging.Entries), 5; got != want {
-		t.Fatalf("debugging entries = %d, want %d", got, want)
-	}
-	for _, want := range []string{
-		"debugging-parent-skill/SKILL.md",
-		"defense-in-depth/SKILL.md",
-		"root-cause-tracing/SKILL.md",
-		"systematic-debugging/SKILL.md",
-		"verification-before-completion/SKILL.md",
-	} {
-		if !packageHasEntry(debugging, want) {
-			t.Fatalf("debugging package missing entry %s", want)
-		}
-	}
-	if !packageHasFile(debugging, "root-cause-tracing/find-polluter.sh") {
-		t.Fatalf("debugging package missing script payload")
-	}
-
-	documentSkills := findSkillPackage(t, packages, "document-skills")
-	if got, want := len(documentSkills.Entries), 4; got != want {
-		t.Fatalf("document-skills entries = %d, want %d", got, want)
-	}
-	if !packageHasFile(documentSkills, "docx/scripts/document.py") {
-		t.Fatalf("document-skills package missing nested script payload")
-	}
-
-	uiStyling := findSkillPackage(t, packages, "ui-styling")
-	if !packageHasFile(uiStyling, "scripts/shadcn_add.py") {
-		t.Fatalf("ui-styling package missing script payload")
-	}
-	if !packageHasFile(uiStyling, "scripts/.coverage") {
-		t.Fatalf("ui-styling package should include dotfile payload")
-	}
-	if !strings.HasPrefix(uiStyling.Hash, "sha256:") {
-		t.Fatalf("ui-styling package hash missing sha256 prefix: %s", uiStyling.Hash)
+	if len(packages) == 0 {
+		t.Fatalf("expected at least one embedded skill package")
 	}
 
 	files, err := BaseSkillFiles()
@@ -107,6 +72,12 @@ func TestSkillPackageCatalogDiscoversTopLevelPackagesAndNestedEntries(t *testing
 	entryCount := 0
 	for _, pkg := range packages {
 		entryCount += len(pkg.Entries)
+		if len(pkg.Files) == 0 {
+			t.Fatalf("package %s has no payload files", pkg.Name)
+		}
+		if !strings.HasPrefix(pkg.Hash, "sha256:") {
+			t.Fatalf("package %s hash missing sha256 prefix: %s", pkg.Name, pkg.Hash)
+		}
 		if strings.TrimSpace(pkg.Description) == "" {
 			t.Fatalf("package %s missing description", pkg.Name)
 		}
@@ -118,6 +89,33 @@ func TestSkillPackageCatalogDiscoversTopLevelPackagesAndNestedEntries(t *testing
 	}
 	if len(files) != entryCount {
 		t.Fatalf("BaseSkillFiles returned %d entries, want %d", len(files), entryCount)
+	}
+}
+
+func TestSkillPackageCatalogDiscoversSyntheticNestedEntriesAndPayloads(t *testing.T) {
+	packages, err := discoverSkillPackages(fstest.MapFS{
+		"skills/multi/SKILL.md":                 {Data: []byte("---\nname: multi\ndescription: Multi skill\n---\n# Multi\n")},
+		"skills/multi/child/SKILL.md":           {Data: []byte("---\nname: child\ndescription: Child skill\n---\n# Child\n")},
+		"skills/multi/scripts/.marker":          {Data: []byte("marker\n")},
+		"skills/multi/references/example.md":    {Data: []byte("# Reference\n")},
+		"skills/second/SKILL.md":                {Data: []byte("---\nname: second\ndescription: Second skill\n---\n# Second\n")},
+		"skills/second/assets/template-file.md": {Data: []byte("# Template\n")},
+	})
+	if err != nil {
+		t.Fatalf("discoverSkillPackages synthetic: %v", err)
+	}
+	if got, want := strings.Join(skillPackageIDs(packages), ","), "multi,second"; got != want {
+		t.Fatalf("synthetic package ids mismatch:\n got: %s\nwant: %s", got, want)
+	}
+	multi := findSkillPackage(t, packages, "multi")
+	if got, want := len(multi.Entries), 2; got != want {
+		t.Fatalf("multi entries = %d, want %d", got, want)
+	}
+	if !packageHasEntry(multi, "child/SKILL.md") {
+		t.Fatalf("multi package missing nested entry")
+	}
+	if !packageHasFile(multi, "scripts/.marker") || !packageHasFile(multi, "references/example.md") {
+		t.Fatalf("multi package missing nested payloads: %#v", multi.Files)
 	}
 }
 
@@ -247,6 +245,13 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 	if got, want := strings.Join(installedPackages, ","), strings.Join(expectedSkillPackageIDs(t), ","); got != want {
 		t.Fatalf("installed package ids mismatch:\n got: %s\nwant: %s", got, want)
 	}
+	packages, err := SkillPackages()
+	if err != nil {
+		t.Fatalf("SkillPackages: %v", err)
+	}
+	if len(packages) == 0 {
+		t.Fatalf("expected at least one skill package")
+	}
 
 	agentsPath := filepath.Join(dir, "AGENTS.md")
 	content, err := os.ReadFile(agentsPath)
@@ -273,16 +278,14 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		"`detect_impact`",
 		"## Skill Selection Guide",
 		"Anvien installs every top-level package discovered under `internal/aicontext/skills/` when that source folder exists for the repo; otherwise it uses the embedded skill catalog.",
-		"| `debugging` | `.claude/skills/anvien/debugging/debugging-parent-skill/SKILL.md`<br>`.claude/skills/anvien/debugging/defense-in-depth/SKILL.md`",
-		"root-cause-tracing/SKILL.md",
-		"`.claude/skills/anvien/debugging/`",
-		"| `ui-styling` | `.claude/skills/anvien/ui-styling/SKILL.md` |",
-		"`.claude/skills/anvien/ui-styling/`",
+		"Generated `.claude/skills/anvien/**` output mirrors that source snapshot; put custom skills outside that generated namespace.",
 		"file-context",
 		"file-hotspots",
 	} {
 		requireContains(t, text, want)
 	}
+	requireContains(t, text, "| `"+packages[0].Name+"` |")
+	requireContains(t, text, "`.claude/skills/anvien/"+packages[0].InstallRoot+"/`")
 	if strings.Contains(text, "Use Anvien workflow skills only for the retained domains below") {
 		t.Fatalf("AGENTS.md contains obsolete four-skill wording:\n%s", text)
 	}
@@ -295,8 +298,8 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", oldLower)); !os.IsNotExist(err) {
 		t.Fatalf("old skill namespace should be removed: %v", err)
 	}
-	if _, err := os.Stat(repoLocalSkill); err != nil {
-		t.Fatalf("repo-local unmanifested skill should be preserved: %v", err)
+	if _, err := os.Stat(repoLocalSkill); !os.IsNotExist(err) {
+		t.Fatalf("repo-local skill inside generated Anvien namespace should be removed: %v", err)
 	}
 	for _, forbidden := range []string{oldDisplay, oldLower, oldUpper, "." + oldLower, oldLower + "://", oldLower + "-"} {
 		if strings.Contains(text, forbidden) {
@@ -315,14 +318,12 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		t.Fatalf("expected one managed section after update, got %d:\n%s", count, updated)
 	}
 
-	for _, want := range []string{
-		filepath.Join(dir, ".claude", "skills", "anvien", "debugging", "root-cause-tracing", "find-polluter.sh"),
-		filepath.Join(dir, ".claude", "skills", "anvien", "ui-styling", "scripts", "shadcn_add.py"),
-		filepath.Join(dir, ".claude", "skills", "anvien", "ui-styling", "scripts", ".coverage"),
-		filepath.Join(dir, ".claude", "skills", "anvien", "ui-styling", "canvas-fonts", "ArsenalSC-Regular.ttf"),
-	} {
-		if info, err := os.Stat(want); err != nil || info.IsDir() {
-			t.Fatalf("expected package payload file %s: %v", want, err)
+	for _, pkg := range packages {
+		for _, file := range pkg.Files {
+			want := filepath.Join(dir, ".claude", "skills", "anvien", filepath.FromSlash(file.InstallPath))
+			if info, err := os.Stat(want); err != nil || info.IsDir() {
+				t.Fatalf("expected package payload file %s: %v", want, err)
+			}
 		}
 	}
 	manifest, err := loadSkillManifest(filepath.Join(dir, ".claude", "skills", "anvien"))
@@ -334,130 +335,92 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 	}
 }
 
-func TestInstallBaseSkillsToUsesManifestBoundary(t *testing.T) {
+func TestInstallSkillPackagesToMirrorsSyntheticSourceSnapshot(t *testing.T) {
 	dir := t.TempDir()
-	repoLocalSkill := filepath.Join(dir, "custom-skill", "SKILL.md")
-	if err := os.MkdirAll(filepath.Dir(repoLocalSkill), 0o755); err != nil {
-		t.Fatalf("mkdir custom skill: %v", err)
+	customTarget := filepath.Join(dir, "custom-skill", "SKILL.md")
+	if err := os.MkdirAll(filepath.Dir(customTarget), 0o755); err != nil {
+		t.Fatalf("mkdir custom target: %v", err)
 	}
-	if err := os.WriteFile(repoLocalSkill, []byte("---\nname: custom-skill\ndescription: user skill\n---\n# Custom\n"), 0o644); err != nil {
-		t.Fatalf("write custom skill: %v", err)
+	if err := os.WriteFile(customTarget, []byte("# Custom\n"), 0o644); err != nil {
+		t.Fatalf("write custom target: %v", err)
 	}
 
-	result, err := InstallSkillPackagesTo(dir)
+	alpha := testSkillPackage("alpha", map[string]string{
+		"SKILL.md":         "---\nname: alpha\ndescription: Alpha skill\n---\n# Alpha\n",
+		"scripts/note.txt": "one\n",
+	})
+	result, err := installSkillPackagesTo(dir, []SkillPackage{alpha})
 	if err != nil {
-		t.Fatalf("InstallSkillPackagesTo: %v", err)
+		t.Fatalf("installSkillPackagesTo first sync: %v", err)
 	}
-	if result.Installed != len(expectedSkillPackageIDs(t)) || result.Preserved != 1 || result.Skipped != 0 {
-		t.Fatalf("unexpected first install result: %#v", result)
+	if result.Installed != 1 || result.Written != 2 || result.Deleted != 1 || result.Preserved != 0 || result.Stale != 0 {
+		t.Fatalf("unexpected first sync result: %#v", result)
 	}
-	if _, err := os.Stat(repoLocalSkill); err != nil {
-		t.Fatalf("custom non-Anvien skill should be preserved: %v", err)
-	}
+	assertFileContent(t, filepath.Join(dir, "alpha", "scripts", "note.txt"), "one\n")
+	assertNotExists(t, customTarget)
+	assertManifestPackageNames(t, dir, []string{"alpha"})
 
-	localFileInsideManagedPackage := filepath.Join(dir, "debugging", "local-note.md")
-	if err := os.WriteFile(localFileInsideManagedPackage, []byte("repo local note\n"), 0o644); err != nil {
-		t.Fatalf("write local file inside managed package: %v", err)
+	if err := os.Remove(filepath.Join(dir, "alpha", "scripts", "note.txt")); err != nil {
+		t.Fatalf("remove generated payload: %v", err)
 	}
-	tamperedSkill := filepath.Join(dir, "ui-styling", "SKILL.md")
-	if err := os.WriteFile(tamperedSkill, []byte("tampered\n"), 0o644); err != nil {
-		t.Fatalf("tamper managed skill: %v", err)
+	if err := os.WriteFile(filepath.Join(dir, "alpha", "SKILL.md"), []byte("tampered\n"), 0o644); err != nil {
+		t.Fatalf("tamper generated skill: %v", err)
 	}
-
-	manifest, err := loadSkillManifest(dir)
-	if err != nil {
-		t.Fatalf("load manifest: %v", err)
+	extraInsidePackage := filepath.Join(dir, "alpha", "local-note.md")
+	if err := os.WriteFile(extraInsidePackage, []byte("repo local note\n"), 0o644); err != nil {
+		t.Fatalf("write extra generated-root file: %v", err)
 	}
-	oldManaged := filepath.Join(dir, "old-managed", "SKILL.md")
+	oldManaged := filepath.Join(dir, "old", "SKILL.md")
 	if err := os.MkdirAll(filepath.Dir(oldManaged), 0o755); err != nil {
 		t.Fatalf("mkdir old managed: %v", err)
 	}
 	if err := os.WriteFile(oldManaged, []byte("# Old Managed\n"), 0o644); err != nil {
 		t.Fatalf("write old managed: %v", err)
 	}
-	manifest.Skills["old-managed"] = skillManifestEntry{
-		InstallPath: "old-managed",
-		SourceRoot:  "skills/old-managed",
-		Hash:        "sha256:old",
-		Managed:     true,
-		EntryCount:  1,
-		FileCount:   1,
-		Files:       map[string]string{"SKILL.md": "sha256:old"},
-	}
-	if err := writeSkillManifest(dir, manifest); err != nil {
-		t.Fatalf("write manifest with stale entry: %v", err)
-	}
 
-	result, err = InstallSkillPackagesTo(dir)
+	alpha = testSkillPackage("alpha", map[string]string{
+		"SKILL.md":          "---\nname: alpha\ndescription: Alpha skill\n---\n# Alpha v2\n",
+		"scripts/note.txt":  "two\n",
+		"references/new.md": "new\n",
+	})
+	result, err = installSkillPackagesTo(dir, []SkillPackage{alpha})
 	if err != nil {
-		t.Fatalf("second InstallSkillPackagesTo: %v", err)
+		t.Fatalf("installSkillPackagesTo repair sync: %v", err)
 	}
-	if result.Updated != 1 || result.Stale != 1 || result.Preserved != 1 {
-		t.Fatalf("unexpected second install result: %#v", result)
+	if result.Updated != 1 || result.Written != 2 || result.Overwritten != 1 || result.Deleted != 2 || result.Stale != 0 || result.Preserved != 0 {
+		t.Fatalf("unexpected repair sync result: %#v", result)
 	}
-	if _, err := os.Stat(localFileInsideManagedPackage); err != nil {
-		t.Fatalf("local file inside managed package should be preserved: %v", err)
-	}
-	if raw, err := os.ReadFile(tamperedSkill); err != nil || strings.Contains(string(raw), "tampered") {
-		t.Fatalf("managed package file was not repaired: %v\n%s", err, raw)
-	}
-	if _, err := os.Stat(oldManaged); err != nil {
-		t.Fatalf("stale managed package payload should be preserved unless explicitly pruned: %v", err)
-	}
-	manifest, err = loadSkillManifest(dir)
-	if err != nil {
-		t.Fatalf("reload manifest: %v", err)
-	}
-	if entry, ok := manifest.Skills["old-managed"]; !ok || !entry.Stale {
-		t.Fatalf("old managed package should be marked stale, got %#v", manifest.Skills["old-managed"])
-	}
-}
+	assertFileContent(t, filepath.Join(dir, "alpha", "SKILL.md"), "---\nname: alpha\ndescription: Alpha skill\n---\n# Alpha v2\n")
+	assertFileContent(t, filepath.Join(dir, "alpha", "scripts", "note.txt"), "two\n")
+	assertFileContent(t, filepath.Join(dir, "alpha", "references", "new.md"), "new\n")
+	assertNotExists(t, extraInsidePackage)
+	assertNotExists(t, oldManaged)
+	assertManifestPackageNames(t, dir, []string{"alpha"})
 
-func TestInstallBaseSkillsToRejectsUnmanagedNameCollision(t *testing.T) {
-	dir := t.TempDir()
-	collision := filepath.Join(dir, "ui-styling", "SKILL.md")
-	if err := os.MkdirAll(filepath.Dir(collision), 0o755); err != nil {
-		t.Fatalf("mkdir collision: %v", err)
-	}
-	if err := os.WriteFile(collision, []byte("---\nname: local-ui-styling\ndescription: local\n---\n# Local\n"), 0o644); err != nil {
-		t.Fatalf("write collision: %v", err)
-	}
-	result, err := InstallSkillPackagesTo(dir)
-	if err == nil || !strings.Contains(err.Error(), "already exists and is not managed by Anvien") {
-		t.Fatalf("expected unmanaged collision error, got %v", err)
-	}
-	if result.Collisions != 1 {
-		t.Fatalf("expected one collision, got %#v", result)
-	}
-	if raw, err := os.ReadFile(collision); err != nil || !strings.Contains(string(raw), "local-ui-styling") {
-		t.Fatalf("collision file should be preserved: %v\n%s", err, raw)
-	}
-}
-
-func TestInstallBaseSkillsToAdoptsLegacyGeneratedAnvienPackage(t *testing.T) {
-	dir := t.TempDir()
-	legacy := filepath.Join(dir, "anvien-planner", "SKILL.md")
-	if err := os.MkdirAll(filepath.Dir(legacy), 0o755); err != nil {
-		t.Fatalf("mkdir legacy skill: %v", err)
-	}
-	if err := os.WriteFile(legacy, []byte("---\nname: anvien-planner\ndescription: old generated planner\n---\n# Legacy Planner\n"), 0o644); err != nil {
-		t.Fatalf("write legacy skill: %v", err)
-	}
-
-	result, err := InstallSkillPackagesTo(dir)
+	alpha = testSkillPackage("alpha", map[string]string{
+		"SKILL.md":              "---\nname: alpha\ndescription: Alpha skill\n---\n# Alpha v2\n",
+		"scripts/note.txt":      "two\n",
+		"references/renamed.md": "renamed\n",
+	})
+	result, err = installSkillPackagesTo(dir, []SkillPackage{alpha})
 	if err != nil {
-		t.Fatalf("InstallSkillPackagesTo: %v", err)
+		t.Fatalf("installSkillPackagesTo rename sync: %v", err)
 	}
-	if result.Adopted != 1 {
-		t.Fatalf("expected one adopted legacy package, got %#v", result)
+	if result.Updated != 1 || result.Written != 1 || result.Deleted != 1 || result.SkippedFiles != 2 {
+		t.Fatalf("unexpected rename sync result: %#v", result)
 	}
-	raw, err := os.ReadFile(legacy)
+	assertNotExists(t, filepath.Join(dir, "alpha", "references", "new.md"))
+	assertFileContent(t, filepath.Join(dir, "alpha", "references", "renamed.md"), "renamed\n")
+
+	result, err = installSkillPackagesTo(dir, nil)
 	if err != nil {
-		t.Fatalf("read adopted legacy skill: %v", err)
+		t.Fatalf("installSkillPackagesTo delete package sync: %v", err)
 	}
-	if strings.Contains(string(raw), "Legacy Planner") || !strings.Contains(string(raw), "Standard Plan Set") {
-		t.Fatalf("legacy skill was not updated from embedded source:\n%s", raw)
+	if result.Discovered != 0 || result.Deleted != 3 || result.Stale != 0 || result.Preserved != 0 {
+		t.Fatalf("unexpected delete package sync result: %#v", result)
 	}
+	assertNotExists(t, filepath.Join(dir, "alpha"))
+	assertManifestPackageNames(t, dir, nil)
 }
 
 func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
@@ -510,9 +473,6 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 		"ui-styling/SKILL.md": {
 			"scripts/shadcn_add.py",
 			"references/shadcn-components.md",
-		},
-		"debugging/root-cause-tracing/SKILL.md": {
-			"find-polluter.sh",
 		},
 	}
 	for installPath, fragments := range checks {
@@ -626,6 +586,81 @@ func TestRenderCrossRepoGroupsSectionMentionsSupportedToolsAndCommands(t *testin
 	}
 	if got := FormatCrossRepoGroupsSection(nil); got != "" {
 		t.Fatalf("nil groups should render empty section, got %q", got)
+	}
+}
+
+func testSkillPackage(name string, files map[string]string) SkillPackage {
+	pkg := SkillPackage{
+		Name:        name,
+		Description: name + " test skill",
+		SourceRoot:  path.Join("skills", name),
+		InstallRoot: name,
+	}
+	packagePaths := make([]string, 0, len(files))
+	for packagePath := range files {
+		packagePaths = append(packagePaths, packagePath)
+	}
+	sort.Strings(packagePaths)
+	for _, packagePath := range packagePaths {
+		raw := []byte(files[packagePath])
+		file := SkillPackageFile{
+			SourcePath:  path.Join("skills", name, packagePath),
+			PackagePath: packagePath,
+			InstallPath: path.Join(name, packagePath),
+			Hash:        hashBytes(raw),
+			SizeBytes:   int64(len(raw)),
+			Content:     raw,
+		}
+		pkg.Files = append(pkg.Files, file)
+		if path.Base(packagePath) == "SKILL.md" {
+			pkg.Entries = append(pkg.Entries, SkillEntry{
+				Name:        name,
+				Description: pkg.Description,
+				SourcePath:  file.SourcePath,
+				PackagePath: file.PackagePath,
+				InstallPath: file.InstallPath,
+			})
+		}
+	}
+	pkg.Hash = packageHash(pkg.Files)
+	return pkg
+}
+
+func assertFileContent(t *testing.T, filePath string, want string) {
+	t.Helper()
+	raw, err := os.ReadFile(filePath)
+	if err != nil {
+		t.Fatalf("read %s: %v", filePath, err)
+	}
+	if string(raw) != want {
+		t.Fatalf("%s content mismatch:\n got: %q\nwant: %q", filePath, raw, want)
+	}
+}
+
+func assertNotExists(t *testing.T, filePath string) {
+	t.Helper()
+	if _, err := os.Stat(filePath); !os.IsNotExist(err) {
+		t.Fatalf("%s should not exist: %v", filePath, err)
+	}
+}
+
+func assertManifestPackageNames(t *testing.T, targetDir string, want []string) {
+	t.Helper()
+	manifest, err := loadSkillManifest(targetDir)
+	if err != nil {
+		t.Fatalf("load manifest: %v", err)
+	}
+	got := make([]string, 0, len(manifest.Skills))
+	for name, entry := range manifest.Skills {
+		if entry.Stale {
+			t.Fatalf("manifest package %s should not be stale: %#v", name, entry)
+		}
+		got = append(got, name)
+	}
+	sort.Strings(got)
+	sort.Strings(want)
+	if strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Fatalf("manifest package names mismatch:\n got: %s\nwant: %s", strings.Join(got, ","), strings.Join(want, ","))
 	}
 }
 

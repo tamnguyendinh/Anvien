@@ -641,8 +641,8 @@ func TestSetupInstallsEmbeddedSkillsInsteadOfPackageRootSkills(t *testing.T) {
 	})
 
 	assertInstalledEmbeddedBaseSkills(t, cursorSkillsRoot)
-	if _, err := os.Stat(staleTargetSkill); err != nil {
-		t.Fatalf("unmanifested target skill should be preserved: %v", err)
+	if _, err := os.Stat(staleTargetSkill); !os.IsNotExist(err) {
+		t.Fatalf("unmanifested target skill should be removed by generated mirror sync: %v", err)
 	}
 	for _, rel := range []string{
 		filepath.Join("flat-skill", "SKILL.md"),

@@ -201,7 +201,7 @@ func renderAnvienBlock(projectName string, stats Stats, noStats bool, packages [
 	builder.WriteString("| `generate_map` | Evidence-backed architecture map workflow; resolves the repo through `anvien://repos` when needed and uses only resources/tools/command output actually read. |\n\n")
 	builder.WriteString("MCP prompts are agent templates, not CLI commands. They guide tool/resource use and must still follow repository rules for freshness, impact-before-edit, and detect-changes before commit.\n\n")
 	builder.WriteString("## Skill Selection Guide\n\n")
-	builder.WriteString("Anvien installs every top-level package discovered under `internal/aicontext/skills/` when that source folder exists for the repo; otherwise it uses the embedded skill catalog. A package may contain one or more `SKILL.md` entries plus scripts, references, assets, or templates; resolve those files relative to the package root.\n\n")
+	builder.WriteString("Anvien installs every top-level package discovered under `internal/aicontext/skills/` when that source folder exists for the repo; otherwise it uses the embedded skill catalog. Generated `.claude/skills/anvien/**` output mirrors that source snapshot; put custom skills outside that generated namespace. A package may contain one or more `SKILL.md` entries plus scripts, references, assets, or templates; resolve those files relative to the package root.\n\n")
 	builder.WriteString("| Package | Entries | Use |\n")
 	builder.WriteString("|---------|---------|-----|\n")
 	for _, pkg := range packages {

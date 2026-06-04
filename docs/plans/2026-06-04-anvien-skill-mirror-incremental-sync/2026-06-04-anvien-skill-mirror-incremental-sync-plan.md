@@ -2,7 +2,7 @@
 
 Date: 2026-06-04
 
-Status: Approved - implementation pending
+Status: Implementation in progress
 
 Companion files:
 
@@ -132,85 +132,85 @@ Use a snapshot-diff-apply model:
 
 ## Phase Checklist
 
-- [ ] [P0-A] Confirm plan approval and worktree hygiene.
+- [x] [P0-A] Confirm plan approval and worktree hygiene.
   - Goal: ensure implementation starts only after this plan is approved and no accidental implementation patch remains.
   - Work Steps: confirm user approval; run `git status --short`; inspect any modified source files; revert only agent-created accidental implementation changes if present and approved by ownership history; leave unrelated user changes untouched.
   - Implementation Gate: user has explicitly approved this plan and worktree state is understood.
   - Acceptance: evidence ledger records approval and worktree status before implementation.
 
-- [ ] [P0-B] Refresh graph and map blast radius.
+- [x] [P0-B] Refresh graph and map blast radius.
   - Goal: establish fresh Anvien graph evidence and affected paths before code edits.
   - Work Steps: run `anvien analyze --force`; run impact for `installSkillPackagesTo`, `InstallSkillPackagesTo`, `InstallSkillPackagesForRepoTo`, `GenerateAIContextFiles`, and setup/analyze callers as needed; summarize affected files, flows, tests, and risk.
   - Implementation Gate: graph is fresh and impact output has been reviewed.
   - Acceptance: evidence ledger records impact risk, affected files, and that HIGH/CRITICAL is treated as a warning, not a blocker.
 
-- [ ] [P1-A] Define source and output snapshot structures.
+- [x] [P1-A] Define source and output snapshot structures.
   - Goal: create explicit data structures for desired source state and actual generated output state.
   - Work Steps: inspect existing `SkillPackage`, `SkillPackageFile`, manifest structs, and hash helpers; design minimal structs or helpers for file snapshots; keep package discovery as the source snapshot input; avoid catalog-name-specific logic.
   - Implementation Gate: impact for edited symbols is complete and the design preserves the package boundary rule.
   - Acceptance: code can represent desired and actual file paths with hashes independent of the current real skill catalog.
 
-- [ ] [P1-B] Build desired snapshot from source packages.
+- [x] [P1-B] Build desired snapshot from source packages.
   - Goal: convert discovered source packages into the exact generated file set that should exist.
   - Work Steps: walk each `SkillPackage.Files`; map `file.InstallPath` to desired output path; include file content and hash; build package manifest metadata from the same source data; detect duplicate desired paths and fail explicitly.
   - Implementation Gate: source package discovery behavior remains unchanged except for snapshot projection.
   - Acceptance: desired snapshot contains every source payload file exactly once and exposes package metadata needed for the manifest.
 
-- [ ] [P1-C] Build actual snapshot from generated output.
+- [x] [P1-C] Build actual snapshot from generated output.
   - Goal: inspect `.claude/skills/anvien/**` as the current output state.
   - Work Steps: walk target root recursively; skip directories; skip `.anvien-skill-manifest.json`; hash regular files; reject or handle non-regular filesystem entries safely; normalize paths with slash separators.
   - Implementation Gate: target root is resolved through existing safe path logic and cannot escape the generated output root.
   - Acceptance: actual snapshot reports every current generated-output file path and hash without using manifest as source truth.
 
-- [ ] [P1-D] Implement file-level diff classification.
+- [x] [P1-D] Implement file-level diff classification.
   - Goal: classify required operations without applying them yet.
   - Work Steps: compare desired and actual snapshots; classify writes, overwrites, deletes, and skips; count operations; ensure source deletion is represented as output delete; ensure source rename becomes delete old plus write new.
   - Implementation Gate: diff code has no side effects and can be validated with synthetic snapshots.
   - Acceptance: diff output is deterministic and covers edit, add, delete, rename, tamper, missing-output, and unchanged cases.
 
-- [ ] [P1-E] Apply sync operations safely.
+- [x] [P1-E] Apply sync operations safely.
   - Goal: apply the diff so target output becomes the desired mirror.
   - Work Steps: create parent directories for writes; write new/changed files; delete obsolete actual files; prune empty dirs under target root; write manifest last; surface errors with target paths.
   - Implementation Gate: operation list has been produced and target paths pass safe join checks.
   - Acceptance: after apply, rescanning actual output matches desired snapshot by path and hash.
 
-- [ ] [P1-F] Replace stale manifest behavior.
+- [x] [P1-F] Replace stale manifest behavior.
   - Goal: remove stale-preservation semantics from generated Anvien skill output.
   - Work Steps: remove or bypass `entry.Stale = true` behavior for deleted source packages; rewrite manifest from desired snapshot only; keep stale fields only if retained for backward-compatible decoding, not for preserving deleted packages.
   - Implementation Gate: snapshot diff/apply handles deleted source packages and files.
   - Acceptance: deleted source packages do not remain in manifest and their output files are gone after sync.
 
-- [ ] [P2-A] Wire PA4 sync into analyze/setup install paths.
+- [x] [P2-A] Wire PA4 sync into analyze/setup install paths.
   - Goal: ensure both `anvien analyze` and `anvien setup` use the same sync behavior.
   - Work Steps: route `InstallSkillPackagesTo`, `InstallSkillPackagesForRepoTo`, and internal analyze generation through the snapshot-diff installer; update `SkillInstallResult` or its `Summary()` output to report discovered packages plus write, overwrite, delete, skip, and collision counters; document any backward-compatible interpretation of existing fields.
   - Implementation Gate: call path impact has been reviewed and result-summary compatibility has an explicit decision before editing callers.
   - Acceptance: analyze and setup both produce exact generated mirror output for their selected skill source and report sync counters that match benchmark evidence.
 
-- [ ] [P2-B] Update generated guidance policy.
+- [x] [P2-B] Update generated guidance policy.
   - Goal: make docs/guidance state that `.claude/skills/anvien/**` is generated mirror output.
   - Work Steps: update source guidance generator text if it currently promises preservation inside `.claude/skills/anvien`; clarify that custom skills belong outside this generated namespace; do not edit generated `AGENTS.md` or `CLAUDE.md` directly.
   - Implementation Gate: source text location is identified and generated output is not used as source.
   - Acceptance: regenerated guidance no longer describes stale preservation in the generated Anvien namespace.
 
-- [ ] [P3-A] Add synthetic behavior tests after implementation is correct.
+- [x] [P3-A] Add synthetic behavior tests after implementation is correct.
   - Goal: verify behavior without hardcoding the current real skill catalog.
   - Work Steps: create temp repo source under `internal/aicontext/skills/**`; run install/generation; mutate synthetic source for edit, add, delete, rename, tamper, and missing-output cases; assert generated output mirrors synthetic source after sync.
   - Implementation Gate: code behavior has been manually verified with synthetic inputs before tests are written.
   - Acceptance: tests fail against stale-preservation behavior and pass with PA4 sync behavior.
 
-- [ ] [P3-B] Run full build before tests.
+- [x] [P3-B] Run full build before tests.
   - Goal: satisfy repository build gate before validation tests.
   - Work Steps: run `powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1`; record result; only then run focused tests.
   - Implementation Gate: implementation code compiles far enough to attempt full build.
   - Acceptance: evidence ledger records build pass/fail and any failure handling.
 
-- [ ] [P3-C] Run focused validation.
+- [x] [P3-C] Run focused validation.
   - Goal: validate aicontext and CLI integration paths.
   - Work Steps: run focused Go tests for `internal/aicontext`; run relevant CLI tests for analyze/setup skill installation; add e2e only if Web UI behavior changes, which is not expected.
   - Implementation Gate: full build has completed.
   - Acceptance: evidence ledger records focused validation results and no Web UI e2e is required unless scope changes.
 
-- [ ] [P3-D] Validate current repository generated output.
+- [x] [P3-D] Validate current repository generated output.
   - Goal: prove real repo output syncs with the current real source catalog.
   - Work Steps: run `anvien analyze --force`; inspect `.claude/skills/anvien/**`; confirm removed source packages/files are absent; confirm manifest package/file counts match source snapshot; confirm the target root contains no non-manifest generated payload file outside the desired snapshot; record sync counters and inventory counts.
   - Implementation Gate: build and focused tests pass or failures are explicitly resolved.
