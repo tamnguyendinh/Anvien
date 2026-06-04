@@ -216,7 +216,7 @@ For each skill slice:
   - Implementation Gate: source file confirms the skill is ADK-specific.
   - Acceptance: generated guide explains when to use the skill without a generic label.
 
-- [ ] [P2-A] Update `aesthetic`.
+- [x] [P2-A] Update `aesthetic`.
   - Goal: shorten visual-aesthetics routing.
   - Work Steps: set the description to `Use when the user asks to improve UI aesthetics.`; regenerate; verify generated rows and mirror output.
   - Implementation Gate: source body keeps detailed aesthetic workflow.

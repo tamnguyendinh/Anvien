@@ -242,14 +242,6 @@ Detect changes:
 - `affected_files`: 4
 - `affected_count`: 0
 
-Detect changes:
-
-- Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
-- `risk_level`: `low`
-- `changed_files`: 4
-- `affected_files`: 3
-- `affected_count`: 0
-
 ## E10 - P1-D Google ADK Python
 
 Status: recorded
@@ -289,3 +281,51 @@ Results:
 - Analyze/regeneration passed.
 - Full product build passed.
 - Focused AI-context and CLI tests passed.
+
+## E11 - P2-A Aesthetic
+
+Status: recorded
+
+Source change:
+
+- `internal/aicontext/skills/aesthetic/SKILL.md`
+- Replaced long capability-summary description with `Use when the user asks to improve UI aesthetics.`
+- Body references to `ai-multimodal` remain for P2-B removal dependency review.
+
+Impact:
+
+- `anvien impact file internal/aicontext/skills/aesthetic/SKILL.md --repo Anvien --direction upstream`
+- Risk: `LOW`
+- Affected files: 0
+- Affected processes: 0
+
+Generated-row verification after regeneration:
+
+```text
+AGENTS.md: aesthetic -> Use when the user asks to improve UI aesthetics.
+CLAUDE.md: aesthetic -> Use when the user asks to improve UI aesthetics.
+.claude/skills/anvien/aesthetic/SKILL.md mirrors source description.
+```
+
+Validation:
+
+```text
+go run ./cmd/anvien analyze --force
+go build ./cmd/... ./internal/...
+go test ./internal/aicontext -count=1
+go test ./internal/cli -run "TestAnalyzeCommand|AIContext|Aicontext" -count=1
+```
+
+Results:
+
+- Analyze/regeneration passed.
+- Full product build passed.
+- Focused AI-context and CLI tests passed.
+
+Detect changes:
+
+- Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
+- `risk_level`: `low`
+- `changed_files`: 4
+- `affected_files`: 3
+- `affected_count`: 0
