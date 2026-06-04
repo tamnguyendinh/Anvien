@@ -239,5 +239,53 @@ Detect changes:
 - Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
 - `risk_level`: `low`
 - `changed_files`: 4
+- `affected_files`: 4
+- `affected_count`: 0
+
+Detect changes:
+
+- Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
+- `risk_level`: `low`
+- `changed_files`: 4
 - `affected_files`: 3
 - `affected_count`: 0
+
+## E10 - P1-D Google ADK Python
+
+Status: recorded
+
+Source change:
+
+- `internal/aicontext/skills/google-adk-python/SKILL.md`
+- Added standard `name` and `description` frontmatter because the file previously had no YAML frontmatter and generated the vague row `Google ADK Python Skill`.
+- New description: `Use when the user asks to build Python agents with Google ADK.`
+
+Impact:
+
+- `anvien impact file internal/aicontext/skills/google-adk-python/SKILL.md --repo Anvien --direction upstream`
+- Risk: `LOW`
+- Affected files: 0
+- Affected processes: 0
+
+Generated-row verification after regeneration:
+
+```text
+AGENTS.md: google-adk-python -> Use when the user asks to build Python agents with Google ADK.
+CLAUDE.md: google-adk-python -> Use when the user asks to build Python agents with Google ADK.
+.claude/skills/anvien/google-adk-python/SKILL.md mirrors source frontmatter.
+```
+
+Validation:
+
+```text
+go run ./cmd/anvien analyze --force
+go build ./cmd/... ./internal/...
+go test ./internal/aicontext -count=1
+go test ./internal/cli -run "TestAnalyzeCommand|AIContext|Aicontext" -count=1
+```
+
+Results:
+
+- Analyze/regeneration passed.
+- Full product build passed.
+- Focused AI-context and CLI tests passed.

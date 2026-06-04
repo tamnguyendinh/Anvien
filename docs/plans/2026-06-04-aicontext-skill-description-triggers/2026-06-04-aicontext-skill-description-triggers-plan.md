@@ -210,7 +210,7 @@ For each skill slice:
   - Implementation Gate: source file is inspected and no unrelated body edits are needed.
   - Acceptance: generated guide no longer contains `>-`.
 
-- [ ] [P1-D] Update `google-adk-python`.
+- [x] [P1-D] Update `google-adk-python`.
   - Goal: replace vague description with a Google ADK trigger.
   - Work Steps: set the description to `Use when the user asks to build Python agents with Google ADK.`; regenerate; verify generated rows and mirror output.
   - Implementation Gate: source file confirms the skill is ADK-specific.

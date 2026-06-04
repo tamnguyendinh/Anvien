@@ -112,3 +112,18 @@ Measured after P1-C was applied and AI context was regenerated from source:
 | Rough token estimate at 3 chars/token | tokens | 8,754 |
 | Generated skill package rows | rows | 35 |
 | Updated trigger descriptions | descriptions | 3 |
+
+## B6 - P1-D Generated Context Snapshot
+
+Status: recorded
+
+Measured after P1-D was applied and AI context was regenerated from source:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| `AGENTS.md` total lines | lines | 176 |
+| `AGENTS.md` total words | words | 3,360 |
+| `AGENTS.md` total characters | chars | 26,301 |
+| Rough token estimate at 3 chars/token | tokens | 8,767 |
+| Generated skill package rows | rows | 35 |
+| Updated trigger descriptions | descriptions | 4 |
