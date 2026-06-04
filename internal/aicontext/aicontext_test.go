@@ -493,10 +493,12 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 			"graph-guided dry run",
 		},
 		"anvien-debugging/SKILL.md": {
-			"Reproduce or capture the symptom",
-			"graph-health",
-			"resolution-inventory",
-			"Query Reliability Rule",
+			"MUST understand the root cause before fixing.",
+			"MUST write a plan before fixing.",
+			"MUST run a full build before testing when active repository rules require it.",
+			"anvien file-context <path> --repo <repo> --json",
+			"anvien graph-health explain \"File:<path>\" --repo <repo> --json",
+			"anvien detect-changes --repo <repo> --scope all",
 		},
 		"anvien-planner/SKILL.md": {
 			"Standard Plan Set",
