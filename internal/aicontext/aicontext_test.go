@@ -286,8 +286,13 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 	} {
 		requireContains(t, text, want)
 	}
-	requireContains(t, text, "Package `"+packages[0].Name+"`")
-	requireContains(t, text, "`.claude/skills/anvien/"+packages[0].InstallRoot+"/`")
+	requireContains(t, text, "`.claude/skills/anvien/"+packages[0].Entries[0].InstallPath+"`")
+	if strings.Contains(text, "Package `"+packages[0].Name+"`") {
+		t.Fatalf("Skill Selection Guide should not include package labels in Use column:\n%s", text)
+	}
+	if strings.Contains(text, "`.claude/skills/anvien/"+packages[0].InstallRoot+"/`") {
+		t.Fatalf("Skill Selection Guide should not include package root directories in Use column:\n%s", text)
+	}
 	if strings.Contains(text, "| Package | Entries | Use |") {
 		t.Fatalf("Skill Selection Guide should use When/Use table form, got old package table:\n%s", text)
 	}

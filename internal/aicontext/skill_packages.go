@@ -865,13 +865,7 @@ func skillGuideNeed(pkg SkillPackage) string {
 }
 
 func skillGuideUse(pkg SkillPackage) string {
-	parts := []string{"Package `" + escapeTableCell(pkg.Name) + "`"}
-	if entries := skillGuideEntries(pkg); entries != "" {
-		parts = append(parts, entries)
-	}
-	root := "`.claude/skills/anvien/" + escapeTableCell(pkg.InstallRoot) + "/`"
-	parts = append(parts, root)
-	return strings.Join(parts, "<br>")
+	return skillGuideEntries(pkg)
 }
 
 func escapeTableCell(value string) string {
