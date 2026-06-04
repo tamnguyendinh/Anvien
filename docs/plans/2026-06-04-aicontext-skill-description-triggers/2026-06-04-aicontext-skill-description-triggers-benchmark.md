@@ -172,3 +172,18 @@ Measured after P2-C updated 12 long single-entry descriptions and AI context was
 | Rough token estimate at 3 chars/token | tokens | 6,254 |
 | Generated skill package rows | rows | 34 |
 | Updated trigger descriptions | descriptions | 17 |
+
+## B10 - P2-D Workflow And Role Group Snapshot
+
+Status: recorded
+
+Measured after P2-D updated 4 workflow/role descriptions and AI context was regenerated from source:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| `AGENTS.md` total lines | lines | 175 |
+| `AGENTS.md` total words | words | 2,345 |
+| `AGENTS.md` total characters | chars | 17,381 |
+| Rough token estimate at 3 chars/token | tokens | 5,794 |
+| Generated skill package rows | rows | 34 |
+| Updated trigger descriptions | descriptions | 21 |

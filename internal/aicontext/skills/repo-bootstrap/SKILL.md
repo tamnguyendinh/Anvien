@@ -1,6 +1,6 @@
 ---
 name: repo-bootstrap
-description: Prepare foundational documents and decisions before coding a new repository or project. Use when the user wants to bootstrap a repo, start a new project, write technical specs for an AI coding agent or dev team, define architecture, choose tooling, prepare handoff docs, or set up a repo before implementation. This skill is repo-type-aware: first classify the repository, then produce only the core and conditional sections that apply.
+description: Use when the user asks to bootstrap a new repo or project.
 ---
 
 # Repo Bootstrap

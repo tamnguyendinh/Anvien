@@ -234,7 +234,7 @@ For each skill slice:
   - Implementation Gate: each source body remains intact and only frontmatter description is edited.
   - Acceptance: generated guide no longer contains the long capability catalog text for any skill in this group.
 
-- [ ] [P2-D] Update workflow and role-specific single-entry triggers as one group.
+- [x] [P2-D] Update workflow and role-specific single-entry triggers as one group.
   - Goal: shorten routing for repo setup, QA, frontend development, and documentation search while keeping each body-specific workflow intact.
   - Work Steps: run file impact for each touched `SKILL.md`; set descriptions to these exact values: `repo-bootstrap` -> `Use when the user asks to bootstrap a new repo or project.`, `anvien-qa` -> `Use when the user asks to run QA without fixing code.`, `frontend-development` -> `Use when the user asks to build or change frontend code.`, `docs-seeker` -> `Use when the user asks to find current technical documentation.`; regenerate once; verify generated rows and mirror output for all skills in this group.
   - Implementation Gate: QA retains the no-code-fix rule, repo-bootstrap remains repo-type-aware, and docs-seeker keeps current-doc search workflow in the body.

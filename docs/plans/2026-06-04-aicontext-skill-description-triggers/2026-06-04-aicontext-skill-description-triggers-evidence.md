@@ -238,9 +238,59 @@ Detect changes:
 
 - Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
 - `risk_level`: `low`
+- `changed_files`: 7
+- `affected_files`: 4
+- `affected_count`: 0
+
+Detect changes:
+
+- Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
+- `risk_level`: `low`
 - `changed_files`: 15
 - `affected_files`: 4
 - `affected_count`: 0
+
+## E14 - P2-D Workflow And Role Group
+
+Status: recorded
+
+Source changes:
+
+- Updated frontmatter `description` only for 4 packages:
+  `repo-bootstrap`, `anvien-qa`, `frontend-development`, and `docs-seeker`.
+- Skill bodies were not changed.
+
+Impact:
+
+- Command pattern: `go run ./cmd/anvien impact file internal/aicontext/skills/<skill>/SKILL.md --repo Anvien --direction upstream`
+- All 4 files reported `LOW`.
+- All 4 files reported 0 affected files and 0 affected flows.
+
+Generated-row verification after regeneration:
+
+```text
+repo-bootstrap -> Use when the user asks to bootstrap a new repo or project.
+anvien-qa -> Use when the user asks to run QA without fixing code.
+frontend-development -> Use when the user asks to build or change frontend code.
+docs-seeker -> Use when the user asks to find current technical documentation.
+```
+
+- Each source description matched the generated `.claude/skills/anvien/<skill>/SKILL.md` mirror.
+
+Validation:
+
+```text
+go run ./cmd/anvien analyze --force
+go build ./cmd/... ./internal/...
+go test ./internal/aicontext -count=1
+go test ./internal/cli -run "TestAnalyzeCommand|AIContext|Aicontext" -count=1
+```
+
+Results:
+
+- Analyze/regeneration passed.
+- Full product build passed.
+- Focused AI-context and CLI tests passed.
 
 Detect changes:
 
