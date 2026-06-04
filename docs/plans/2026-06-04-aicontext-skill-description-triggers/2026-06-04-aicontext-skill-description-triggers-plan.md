@@ -204,7 +204,7 @@ For each skill slice:
   - Implementation Gate: P0-A is resolved and pending edits are accepted or reapplied cleanly.
   - Acceptance: asking to write a plan clearly routes to `anvien-planner`.
 
-- [ ] [P1-C] Update `context-engineering`.
+- [x] [P1-C] Update `context-engineering`.
   - Goal: replace invalid `>-` description with a meaningful trigger.
   - Work Steps: set the description to `Use when the user asks to design or improve AI-agent context.`; regenerate; verify generated rows and mirror output.
   - Implementation Gate: source file is inspected and no unrelated body edits are needed.

@@ -194,3 +194,50 @@ Result summary:
 - `affected_count`: 0
 - `resolutionHealthImpact.degradedNodes`: 0
 - changed source skill paths were reported as `internal/aicontext/skills/anvien-debugging/skill.md` and `internal/aicontext/skills/anvien-planner/skill.md` due to path case normalization in the detector output.
+
+## E9 - P1-C Context Engineering
+
+Status: recorded
+
+Source change:
+
+- `internal/aicontext/skills/context-engineering/SKILL.md`
+- Replaced folded capability-summary description with `Use when the user asks to design or improve AI-agent context.`
+
+Impact:
+
+- `anvien impact file internal/aicontext/skills/context-engineering/SKILL.md --repo Anvien --direction upstream`
+- Risk: `LOW`
+- Affected files: 0
+- Affected processes: 0
+
+Generated-row verification after regeneration:
+
+```text
+AGENTS.md: context-engineering -> Use when the user asks to design or improve AI-agent context.
+CLAUDE.md: context-engineering -> Use when the user asks to design or improve AI-agent context.
+.claude/skills/anvien/context-engineering/SKILL.md mirrors source description.
+```
+
+Validation:
+
+```text
+go run ./cmd/anvien analyze --force
+go build ./cmd/... ./internal/...
+go test ./internal/aicontext -count=1
+go test ./internal/cli -run "TestAnalyzeCommand|AIContext|Aicontext" -count=1
+```
+
+Results:
+
+- Analyze/regeneration passed.
+- Full product build passed.
+- Focused AI-context and CLI tests passed.
+
+Detect changes:
+
+- Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
+- `risk_level`: `low`
+- `changed_files`: 4
+- `affected_files`: 3
+- `affected_count`: 0
