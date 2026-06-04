@@ -238,9 +238,57 @@ Detect changes:
 
 - Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
 - `risk_level`: `low`
+- `changed_files`: 4
+- `affected_files`: 3
+- `affected_count`: 0
+
+Detect changes:
+
+- Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
+- `risk_level`: `low`
 - `changed_files`: 14
 - `affected_files`: 5
 - `affected_count`: 0
+
+## E17 - P3-B Problem Solving Multi-Entry Package
+
+Status: recorded
+
+Source change:
+
+- Updated `internal/aicontext/skills/problem-solving/problem-solving-parent-skill/SKILL.md` frontmatter `description`.
+- Nested technique descriptions were left unchanged because they are already short and technique-specific.
+
+Impact:
+
+- `anvien impact file internal/aicontext/skills/problem-solving/problem-solving-parent-skill/SKILL.md --repo Anvien --direction upstream`
+- Risk: `LOW`
+- Affected files: 0
+- Affected flows: 0
+
+Generated-row verification after regeneration:
+
+```text
+problem-solving -> Use when the user asks to solve a hard problem.
+paths -> collision-zone-thinking, inversion-exercise, meta-pattern-recognition, problem-solving-parent-skill, scale-game, simplification-cascades, when-stuck
+```
+
+- Source description matched the generated `.claude/skills/anvien/problem-solving/problem-solving-parent-skill/SKILL.md` mirror.
+
+Validation:
+
+```text
+go run ./cmd/anvien analyze --force
+go build ./cmd/... ./internal/...
+go test ./internal/aicontext -count=1
+go test ./internal/cli -run "TestAnalyzeCommand|AIContext|Aicontext" -count=1
+```
+
+Results:
+
+- Analyze/regeneration passed.
+- Full product build passed.
+- Focused AI-context and CLI tests passed.
 
 Detect changes:
 

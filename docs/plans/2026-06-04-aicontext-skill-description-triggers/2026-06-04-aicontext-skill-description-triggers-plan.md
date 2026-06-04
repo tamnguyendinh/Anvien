@@ -252,7 +252,7 @@ For each skill slice:
   - Implementation Gate: each source body keeps its detailed workflow and payment routing remains explicit.
   - Acceptance: generated guide uses concise trigger-only descriptions for all skills in this group.
 
-- [ ] [P3-B] Update `problem-solving` multi-entry package trigger.
+- [x] [P3-B] Update `problem-solving` multi-entry package trigger.
   - Goal: normalize problem-solving routing without dropping nested problem-solving entries.
   - Work Steps: inspect the multi-entry package primary description; set the generated package trigger to `Use when the user asks to solve a hard problem.`; regenerate once; verify all problem-solving entry paths remain listed.
   - Implementation Gate: multi-entry package behavior is confirmed before editing.

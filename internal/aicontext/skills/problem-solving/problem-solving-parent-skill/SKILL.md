@@ -1,6 +1,6 @@
 ---
 name: problem-solving
-description: Creative problem-solving techniques for breaking through stuck points - includes collision-zone thinking, inversion, pattern recognition, and simplification
+description: Use when the user asks to solve a hard problem.
 when_to_use: when stuck on a problem, need innovation beyond conventional approaches, or want to find elegant solutions
 version: 1.0.0
 ---

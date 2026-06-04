@@ -217,3 +217,18 @@ Measured after P3-A updated 11 concise single-entry descriptions and AI context 
 | Rough token estimate at 3 chars/token | tokens | 5,197 |
 | Generated skill package rows | rows | 34 |
 | Updated trigger descriptions | descriptions | 32 |
+
+## B13 - P3-B Problem Solving Snapshot
+
+Status: recorded
+
+Measured after P3-B updated the problem-solving multi-entry package and AI context was regenerated from source:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| `AGENTS.md` total lines | lines | 175 |
+| `AGENTS.md` total words | words | 2,145 |
+| `AGENTS.md` total characters | chars | 15,490 |
+| Rough token estimate at 3 chars/token | tokens | 5,163 |
+| Generated skill package rows | rows | 34 |
+| Problem-solving generated entry paths | paths | 7 |
