@@ -22,7 +22,7 @@ Search pattern: "Figma Design System + [style name]"
 ## AI Tools for Design
 
 ### Generation
-- **Gemini**: Image generation via ai-multimodal skill
+- Image generation via the current approved image-generation workflow
 - **Claude**: Design variations, component code
 
 ### Prompt Structure

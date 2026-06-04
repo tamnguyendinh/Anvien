@@ -49,7 +49,7 @@ Elevate with narrative elements—parallax effects, particle systems, thematic c
 **Steps**:
 1. Browse inspiration sites (Dribbble, Mobbin, Behance, Awwwards)
 2. Use **chrome-devtools** skill to capture full-screen screenshots (not full page)
-3. Use **ai-multimodal** skill to analyze screenshots and extract:
+3. Analyze screenshots and extract:
    - Design style (Minimalism, Glassmorphism, Neo-brutalism, etc.)
    - Layout structure & grid systems
    - Typography system & hierarchy
@@ -68,12 +68,12 @@ Elevate with narrative elements—parallax effects, particle systems, thematic c
 
 **Steps**:
 1. Define design prompt with: style, colors, typography, audience, animation specs
-2. Use **ai-multimodal** skill to generate design images with Gemini API
-3. Use **ai-multimodal** skill to analyze output images and evaluate aesthetic quality
+2. Generate design images with the current approved image-generation workflow
+3. Analyze output images and evaluate aesthetic quality
 4. If score < 7/10 or fails professional standards:
    - Identify specific weaknesses (color, typography, layout, spacing, hierarchy)
    - Refine prompt with improvements
-   - Regenerate with **ai-multimodal** or use **media-processing** skill to modify outputs (resize, crop, filters, composition)
+   - Regenerate with the same image-generation workflow or use **media-processing** skill to modify outputs (resize, crop, filters, composition)
 5. Repeat until aesthetic standards met (score ≥ 7/10)
 6. Document final design decisions using templates
 
@@ -102,7 +102,6 @@ Save in project `./docs/design-story.md`.
 ## Resources & Integration
 
 ### Related Skills
-- **ai-multimodal**: Analyze documents, screenshots & videos, generate design images, edit generated images, evaluate aesthetic quality using Gemini API
 - **chrome-devtools**: Capture full-screen screenshots from inspiration websites, navigate between pages, interact with elements, read console logs & network requests
 - **media-processing**: Refine generated images (FFmpeg for video, ImageMagick for images)
 - **ui-styling**: Implement designs with shadcn/ui components + Tailwind CSS utility-first styling

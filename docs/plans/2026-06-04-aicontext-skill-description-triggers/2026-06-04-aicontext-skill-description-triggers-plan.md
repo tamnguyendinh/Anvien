@@ -222,9 +222,9 @@ For each skill slice:
   - Implementation Gate: source body keeps detailed aesthetic workflow.
   - Acceptance: long design workflow summary is absent from the generated guide.
 
-- [ ] [P2-B] Remove `ai-multimodal`.
+- [x] [P2-B] Remove `ai-multimodal`.
   - Goal: remove the rejected package from the generated skill catalog.
-  - Work Steps: inspect `internal/aicontext/skills/ai-multimodal/**`; confirm no other retained package depends on its package root; remove only the `ai-multimodal` source package; regenerate; verify `AGENTS.md`, `CLAUDE.md`, `.claude/skills/anvien/**`, and the generated manifest contain no `ai-multimodal` entry.
+  - Work Steps: inspect `internal/aicontext/skills/ai-multimodal/**`; remove direct retained-package references to the rejected package; remove the `ai-multimodal` source package; regenerate; verify `AGENTS.md`, `CLAUDE.md`, `.claude/skills/anvien/**`, and the generated manifest contain no `ai-multimodal` entry.
   - Implementation Gate: user approval for this plan includes removal of `ai-multimodal`.
   - Acceptance: `ai-multimodal` is absent from source and generated output, while all retained packages remain present.
 

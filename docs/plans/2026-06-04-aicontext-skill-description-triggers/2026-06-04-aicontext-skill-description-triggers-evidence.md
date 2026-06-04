@@ -329,3 +329,67 @@ Detect changes:
 - `changed_files`: 4
 - `affected_files`: 3
 - `affected_count`: 0
+
+## E12 - P2-B Remove AI Multimodal
+
+Status: recorded
+
+Source change:
+
+- Removed `internal/aicontext/skills/ai-multimodal/**`.
+- Removal included hidden package-local files `.env.example` and `scripts/tests/.coverage`.
+- Removed retained-package references from `internal/aicontext/skills/aesthetic/SKILL.md`.
+- Removed retained-package reference from `internal/aicontext/skills/aesthetic/references/design-resources.md`.
+- The direct `aesthetic` cleanup is part of P2-B because generated output would otherwise still contain the rejected package name.
+
+Impact:
+
+- `anvien impact file internal/aicontext/skills/ai-multimodal/SKILL.md --repo Anvien --direction upstream`: `LOW`, 0 affected files, 0 affected flows.
+- Package impact loop covered all 13 non-hidden package files before deletion: every file was `LOW`, 0 affected flows; the three Python scripts each reported 1 affected file and no affected flows.
+- Hidden package-local `.env.example` and `scripts/tests/.coverage` were removed as non-code package artifacts.
+- `anvien impact file internal/aicontext/skills/aesthetic/SKILL.md --repo Anvien --direction upstream`: `LOW`, 0 affected files, 0 affected flows.
+
+Regeneration and sync verification:
+
+```text
+go run ./cmd/anvien analyze --force
+```
+
+- First regeneration attempt failed because the empty source directory still existed without `SKILL.md`: `skill package "ai-multimodal" has no SKILL.md entry`.
+- Removed the empty `internal/aicontext/skills/ai-multimodal` directory with a workspace path guard.
+- Second regeneration passed: files scanned 1342, parsed code 697, graph nodes 82948, relationships 121591.
+
+Generated-output verification after regeneration:
+
+```text
+rg -n "ai-multimodal" internal/aicontext/skills .claude/skills/anvien AGENTS.md CLAUDE.md
+Test-Path .claude/skills/anvien/ai-multimodal -> False
+Test-Path internal/aicontext/skills/ai-multimodal -> False
+```
+
+Results:
+
+- No `ai-multimodal` matches remain in source skills, generated `.claude/skills/anvien`, `AGENTS.md`, or `CLAUDE.md`.
+- `.claude/skills/anvien/.anvien-skill-manifest.json` no longer lists the package.
+- Generated `Skill Selection Guide` rows decreased from 35 to 34.
+
+Validation:
+
+```text
+go build ./cmd/... ./internal/...
+go test ./internal/aicontext -count=1
+go test ./internal/cli -run "TestAnalyzeCommand|AIContext|Aicontext" -count=1
+```
+
+Results:
+
+- Full product build passed.
+- Focused AI-context and CLI tests passed.
+
+Detect changes:
+
+- Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
+- `risk_level`: `low`
+- `changed_files`: 19
+- `affected_files`: 5
+- `affected_count`: 0

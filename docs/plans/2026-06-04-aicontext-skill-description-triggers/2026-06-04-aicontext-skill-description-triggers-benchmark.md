@@ -142,3 +142,18 @@ Measured after P2-A was applied and AI context was regenerated from source:
 | Rough token estimate at 3 chars/token | tokens | 8,527 |
 | Generated skill package rows | rows | 35 |
 | Updated trigger descriptions | descriptions | 5 |
+
+## B8 - P2-B Removal Snapshot
+
+Status: recorded
+
+Measured after P2-B removed `ai-multimodal` and AI context was regenerated from source:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| `AGENTS.md` total lines | lines | 175 |
+| `AGENTS.md` total words | words | 3,181 |
+| `AGENTS.md` total characters | chars | 24,710 |
+| Rough token estimate at 3 chars/token | tokens | 8,237 |
+| Generated skill package rows | rows | 34 |
+| `ai-multimodal` source/generated/context matches | matches | 0 |
