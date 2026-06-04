@@ -1,6 +1,6 @@
 ---
 name: anvien-planner
-description: "Use when the user needs to create or review docs/plans plan, evidence, benchmark, or checklist mini-plan work."
+description: "Use when the user asks to create, write, or review a docs/plans plan."
 ---
 
 # Planner With Anvien

@@ -82,3 +82,18 @@ To be recorded after implementation:
 | Generated skill package rows | rows | pending | pending |
 | Generated stale package/root path matches in `Use` column | matches | pending | pending |
 | `ai-multimodal` generated references | matches | pending | pending |
+
+## B4 - P1 Generated Context Snapshot
+
+Status: recorded
+
+Measured after P1-A and P1-B were applied and AI context was regenerated from source:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| `AGENTS.md` total lines | lines | 176 |
+| `AGENTS.md` total words | words | 3,342 |
+| `AGENTS.md` total characters | chars | 26,203 |
+| Rough token estimate at 3 chars/token | tokens | 8,734 |
+| Generated skill package rows | rows | 35 |
+| Updated trigger descriptions | descriptions | 2 |

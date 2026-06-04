@@ -130,3 +130,67 @@ To be filled during implementation:
 - focused AI-context test result;
 - final `anvien detect-changes --repo Anvien --scope all`;
 - commit hashes.
+
+## E6 - P0-A Reconcile Pre-Plan Source Edits
+
+Status: recorded
+
+Decision:
+
+- Keep the pre-plan edits to `internal/aicontext/skills/anvien-debugging/SKILL.md` and `internal/aicontext/skills/anvien-planner/SKILL.md`.
+- Treat them as the first two implementation slices because both match the approved target descriptions in the plan.
+
+Source diffs:
+
+- `anvien-debugging`: description changed to `Use when the user asks to debug.`
+- `anvien-planner`: description changed to `Use when the user asks to create, write, or review a docs/plans plan.`
+
+Generated-row verification after regeneration:
+
+```text
+AGENTS.md: anvien-debugging -> Use when the user asks to debug.
+AGENTS.md: anvien-planner -> Use when the user asks to create, write, or review a docs/plans plan.
+CLAUDE.md: anvien-debugging -> Use when the user asks to debug.
+CLAUDE.md: anvien-planner -> Use when the user asks to create, write, or review a docs/plans plan.
+.claude/skills/anvien/anvien-debugging/SKILL.md mirrors source description.
+.claude/skills/anvien/anvien-planner/SKILL.md mirrors source description.
+```
+
+## E7 - P0-B Baseline And P1 Validation
+
+Status: recorded
+
+Commands run:
+
+```text
+go run ./cmd/anvien analyze --force
+go build ./cmd/... ./internal/...
+go test ./internal/aicontext -count=1
+go test ./internal/cli -run "TestAnalyzeCommand|AIContext|Aicontext" -count=1
+```
+
+Results:
+
+- Analyze passed and regenerated AI context from current source.
+- Full product build passed.
+- `internal/aicontext` focused tests passed.
+- `internal/cli` focused analyze/AI-context tests passed.
+
+## E8 - P1 Detect Changes
+
+Status: recorded
+
+Command run before P1 commit:
+
+```text
+go run ./cmd/anvien detect-changes --repo Anvien --scope all
+```
+
+Result summary:
+
+- `risk_level`: `low`
+- `changed_files`: 5
+- `affected_files`: 3
+- `affected_count`: 0
+- `resolutionHealthImpact.degradedNodes`: 0
+- changed source skill paths were reported as `internal/aicontext/skills/anvien-debugging/skill.md` and `internal/aicontext/skills/anvien-planner/skill.md` due to path case normalization in the detector output.

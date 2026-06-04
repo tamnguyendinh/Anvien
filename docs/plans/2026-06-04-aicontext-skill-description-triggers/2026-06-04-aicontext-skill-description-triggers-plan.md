@@ -180,25 +180,25 @@ For each skill slice:
 
 ## Phase Checklist
 
-- [ ] [P0-A] Reconcile pre-plan source edits.
+- [x] [P0-A] Reconcile pre-plan source edits.
   - Goal: restore process integrity before implementation continues.
   - Work Steps: inspect the current diff for `anvien-planner` and `anvien-debugging`; decide whether to keep them as the first approved slices or revert them; do not commit them until the plan is approved; record the decision in evidence.
   - Implementation Gate: user approval confirms whether the pending edits are accepted as part of this plan.
   - Acceptance: worktree state is documented and no accidental edit is committed outside the approved plan.
 
-- [ ] [P0-B] Record baseline generated guide size and row inventory.
+- [x] [P0-B] Record baseline generated guide size and row inventory.
   - Goal: measure current token/character pressure before shortening descriptions.
   - Work Steps: count generated `Skill Selection Guide` rows; measure `AGENTS.md` total characters and words; measure description character totals; record current generated rows with long-description examples.
   - Implementation Gate: graph has been refreshed and current generated files are understood as validation output, not source.
   - Acceptance: benchmark ledger contains baseline guide size, row count, and top long descriptions.
 
-- [ ] [P1-A] Update `anvien-debugging`.
+- [x] [P1-A] Update `anvien-debugging`.
   - Goal: make debugging trigger concise.
   - Work Steps: set the description to `Use when the user asks to debug.`; regenerate; verify `AGENTS.md`, `CLAUDE.md`, and generated skill mirror.
   - Implementation Gate: P0-A is resolved and the source path is confirmed.
   - Acceptance: generated row exactly matches the target description.
 
-- [ ] [P1-B] Update `anvien-planner`.
+- [x] [P1-B] Update `anvien-planner`.
   - Goal: make plan-writing trigger concise and artifact-specific.
   - Work Steps: set the description to `Use when the user asks to create, write, or review a docs/plans plan.`; regenerate; verify generated rows and mirror output.
   - Implementation Gate: P0-A is resolved and pending edits are accepted or reapplied cleanly.

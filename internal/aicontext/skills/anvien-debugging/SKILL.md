@@ -1,6 +1,6 @@
 ---
 name: anvien-debugging
-description: Systematic debugging in Anvien-indexed repositories, from symptom to verified fix, including root-cause tracing, fix planning, defense-in-depth, graph evidence, impact checks, full-build gates, and completion verification.
+description: Use when the user asks to debug.
 when_to_use: when debugging bugs, test failures, unexpected behavior, regressions, broken flows, production failures, diagnostics, graph/index/query issues, or any fix that must be traced and verified in a repository with Anvien rules
 version: 2.0.0
 languages: all
