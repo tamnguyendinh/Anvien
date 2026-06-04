@@ -228,179 +228,35 @@ For each skill slice:
   - Implementation Gate: user approval for this plan includes removal of `ai-multimodal`.
   - Acceptance: `ai-multimodal` is absent from source and generated output, while all retained packages remain present.
 
-- [ ] [P2-C] Update `media-processing`.
-  - Goal: shorten media-processing routing.
-  - Work Steps: set the description to `Use when the user asks to process media files.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps FFmpeg/ImageMagick details.
-  - Acceptance: generated guide no longer lists codecs, thumbnails, filters, and pipelines.
+- [x] [P2-C] Update long single-entry package triggers as one group.
+  - Goal: shorten the highest-token single-entry skill descriptions without changing skill bodies.
+  - Work Steps: run file impact for each touched `SKILL.md`; set descriptions to these exact values: `media-processing` -> `Use when the user asks to process media files.`, `shopify` -> `Use when the user asks to build Shopify apps, themes, or extensions.`, `backend-development` -> `Use when the user asks to build or change backend code.`, `better-auth` -> `Use when the user asks to implement Better Auth.`, `repomix` -> `Use when the user asks to package a repository with Repomix.`, `web-frameworks` -> `Use when the user asks to build with Next.js, Turborepo, or web frameworks.`, `code-review` -> `Use when the user asks to review code or handle review feedback.`, `databases` -> `Use when the user asks to work with databases.`, `ui-styling` -> `Use when the user asks to style UI.`, `mermaidjs-v11` -> `Use when the user asks to create Mermaid diagrams.`, `mcp-management` -> `Use when the user asks to manage MCP integrations.`, `bunny` -> `Use when the user asks to integrate Bunny.net.`; regenerate once; verify generated rows and mirror output for all skills in this group.
+  - Implementation Gate: each source body remains intact and only frontmatter description is edited.
+  - Acceptance: generated guide no longer contains the long capability catalog text for any skill in this group.
 
-- [ ] [P2-D] Update `shopify`.
-  - Goal: shorten Shopify routing.
-  - Work Steps: set the description to `Use when the user asks to build Shopify apps, themes, or extensions.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps Shopify API and extension details.
-  - Acceptance: generated guide no longer lists every Shopify surface.
+- [ ] [P2-D] Update workflow and role-specific single-entry triggers as one group.
+  - Goal: shorten routing for repo setup, QA, frontend development, and documentation search while keeping each body-specific workflow intact.
+  - Work Steps: run file impact for each touched `SKILL.md`; set descriptions to these exact values: `repo-bootstrap` -> `Use when the user asks to bootstrap a new repo or project.`, `anvien-qa` -> `Use when the user asks to run QA without fixing code.`, `frontend-development` -> `Use when the user asks to build or change frontend code.`, `docs-seeker` -> `Use when the user asks to find current technical documentation.`; regenerate once; verify generated rows and mirror output for all skills in this group.
+  - Implementation Gate: QA retains the no-code-fix rule, repo-bootstrap remains repo-type-aware, and docs-seeker keeps current-doc search workflow in the body.
+  - Acceptance: generated guide routes these workflows with trigger-only descriptions.
 
-- [ ] [P2-E] Update `backend-development`.
-  - Goal: shorten backend routing.
-  - Work Steps: set the description to `Use when the user asks to build or change backend code.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps backend stack and security details.
-  - Acceptance: generated guide no longer lists broad backend technologies.
-
-- [ ] [P2-F] Update `better-auth`.
-  - Goal: shorten Better Auth routing.
-  - Work Steps: set the description to `Use when the user asks to implement Better Auth.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps auth feature details.
-  - Acceptance: generated guide routes Better Auth work without feature catalog bloat.
-
-- [ ] [P2-G] Update `repomix`.
-  - Goal: shorten Repomix routing.
-  - Work Steps: set the description to `Use when the user asks to package a repository with Repomix.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps output format and filtering details.
-  - Acceptance: generated guide no longer lists all Repomix capabilities.
-
-- [ ] [P2-H] Update `web-frameworks`.
-  - Goal: shorten web-framework routing.
-  - Work Steps: set the description to `Use when the user asks to build with Next.js, Turborepo, or web frameworks.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps framework-specific guidance.
-  - Acceptance: generated guide remains clear without App Router and rendering-mode catalog text.
-
-- [ ] [P2-I] Update `code-review`.
-  - Goal: shorten code-review routing.
-  - Work Steps: set the description to `Use when the user asks to review code or handle review feedback.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps verification and subagent-review details.
-  - Acceptance: generated guide has a direct review trigger.
-
-- [ ] [P2-J] Update `databases`.
-  - Goal: shorten database routing.
-  - Work Steps: set the description to `Use when the user asks to work with databases.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps MongoDB/PostgreSQL details.
-  - Acceptance: generated guide no longer lists every DB operation.
-
-- [ ] [P2-K] Update `ui-styling`.
-  - Goal: shorten UI styling routing.
-  - Work Steps: set the description to `Use when the user asks to style UI.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps shadcn, Radix, Tailwind, and design-system details.
-  - Acceptance: generated guide contains only the trigger.
-
-- [ ] [P2-L] Update `mermaidjs-v11`.
-  - Goal: shorten Mermaid routing.
-  - Work Steps: set the description to `Use when the user asks to create Mermaid diagrams.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps diagram type details.
-  - Acceptance: generated guide no longer lists all diagram families.
-
-- [ ] [P2-M] Update `mcp-management`.
-  - Goal: shorten MCP management routing.
-  - Work Steps: set the description to `Use when the user asks to manage MCP integrations.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps tool, prompt, and resource workflows.
-  - Acceptance: generated guide has a short MCP management trigger.
-
-- [ ] [P2-N] Update `bunny`.
-  - Goal: shorten Bunny.net routing.
-  - Work Steps: set the description to `Use when the user asks to integrate Bunny.net.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps service-specific details.
-  - Acceptance: generated guide no longer lists all Bunny services.
-
-- [ ] [P2-O] Update `repo-bootstrap`.
-  - Goal: shorten repo bootstrap routing.
-  - Work Steps: set the description to `Use when the user asks to bootstrap a new repo or project.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps repo-type-aware workflow.
-  - Acceptance: generated guide routes bootstrap work without listing setup docs and architecture details.
-
-- [ ] [P2-P] Update `anvien-qa`.
-  - Goal: shorten QA routing while preserving no-fix meaning.
-  - Work Steps: set the description to `Use when the user asks to run QA without fixing code.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps visible-browser and data-flow QA rules.
-  - Acceptance: generated guide clearly separates QA from implementation.
-
-- [ ] [P2-Q] Update `frontend-development`.
-  - Goal: shorten frontend development routing.
-  - Work Steps: set the description to `Use when the user asks to build or change frontend code.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps React/TypeScript details.
-  - Acceptance: generated guide no longer lists every frontend pattern.
-
-- [ ] [P2-R] Update `docs-seeker`.
-  - Goal: shorten documentation-search routing.
-  - Work Steps: set the description to `Use when the user asks to find current technical documentation.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps llms.txt and GitHub doc-search details.
-  - Acceptance: generated guide has a direct current-docs trigger.
-
-- [ ] [P2-S] Update `document-skills`.
-  - Goal: shorten document-work routing.
-  - Work Steps: inspect which nested `SKILL.md` controls the package row; set the package-row controlling description to `Use when the user asks to create, edit, or analyze documents.`; keep nested entry descriptions concise and type-aware if they are edited; regenerate; verify all document skill paths remain listed.
+- [ ] [P2-E] Update `document-skills` multi-entry package trigger.
+  - Goal: shorten document-work routing without dropping nested DOCX/PDF/PPTX/XLSX entries.
+  - Work Steps: inspect which nested `SKILL.md` descriptions control the package row; set the package-row controlling description to `Use when the user asks to create, edit, or analyze documents.`; keep nested entry descriptions concise and type-aware if they are edited; regenerate once; verify all document skill paths remain listed.
   - Implementation Gate: multi-entry package behavior is confirmed before editing.
   - Acceptance: generated guide routes document work without a long DOCX/PDF/PPTX/XLSX capability summary.
 
-- [ ] [P3-A] Update `anvien-api-surface`.
-  - Goal: normalize an already short trigger to the approved style.
-  - Work Steps: set the description to `Use when the user asks to inspect API or MCP surfaces.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps route/tool/contract details.
-  - Acceptance: generated guide uses the same trigger-only phrase style.
+- [ ] [P3-A] Normalize concise single-entry triggers as one group.
+  - Goal: make the remaining single-entry package descriptions use the same trigger-only style.
+  - Work Steps: run file impact for each touched `SKILL.md`; set descriptions to these exact values: `anvien-api-surface` -> `Use when the user asks to inspect API or MCP surfaces.`, `anvien-refactoring` -> `Use when the user asks to refactor code.`, `chrome-devtools` -> `Use when the user asks to automate or inspect a browser.`, `devops` -> `Use when the user asks to deploy or operate infrastructure.`, `frontend-design` -> `Use when the user asks to design a frontend UI.`, `mcp-builder` -> `Use when the user asks to build an MCP server.`, `payment-integration` -> `Use when the user asks to integrate payments.`, `sequential-thinking` -> `Use when the user asks to reason step by step.`, `skill-creator` -> `Use when the user asks to create or update a skill.`, `threejs` -> `Use when the user asks to build 3D web experiences with Three.js.`, `web-testing` -> `Use when the user asks to test web behavior.`; regenerate once; verify generated rows and mirror output for all skills in this group.
+  - Implementation Gate: each source body keeps its detailed workflow and payment routing remains explicit.
+  - Acceptance: generated guide uses concise trigger-only descriptions for all skills in this group.
 
-- [ ] [P3-B] Update `anvien-refactoring`.
-  - Goal: normalize refactoring trigger.
-  - Work Steps: set the description to `Use when the user asks to refactor code.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps rename/extract/move guidance.
-  - Acceptance: generated guide stays concise and clear.
-
-- [ ] [P3-C] Update `chrome-devtools`.
-  - Goal: normalize browser automation trigger.
-  - Work Steps: set the description to `Use when the user asks to automate or inspect a browser.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps Puppeteer and performance details.
-  - Acceptance: generated guide routes browser automation without long tooling summary.
-
-- [ ] [P3-D] Update `devops`.
-  - Goal: normalize deployment and ops trigger.
-  - Work Steps: set the description to `Use when the user asks to deploy or operate infrastructure.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps provider and platform details.
-  - Acceptance: generated guide keeps only the trigger.
-
-- [ ] [P3-E] Update `frontend-design`.
-  - Goal: normalize frontend design trigger.
-  - Work Steps: set the description to `Use when the user asks to design a frontend UI.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps visual quality rules.
-  - Acceptance: generated guide has a direct design trigger.
-
-- [ ] [P3-F] Update `mcp-builder`.
-  - Goal: normalize MCP builder trigger.
-  - Work Steps: set the description to `Use when the user asks to build an MCP server.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps SDK and server-quality guidance.
-  - Acceptance: generated guide has a short MCP server trigger.
-
-- [ ] [P3-G] Update `payment-integration`.
-  - Goal: normalize payment trigger without losing payment routing.
-  - Work Steps: set the description to `Use when the user asks to integrate payments.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps provider-specific payment details.
-  - Acceptance: generated guide still clearly routes payment work.
-
-- [ ] [P3-H] Update `problem-solving`.
-  - Goal: normalize problem-solving trigger.
-  - Work Steps: inspect the multi-entry package primary description; set the generated package trigger to `Use when the user asks to solve a hard problem.`; regenerate; verify all problem-solving entry paths remain listed.
+- [ ] [P3-B] Update `problem-solving` multi-entry package trigger.
+  - Goal: normalize problem-solving routing without dropping nested problem-solving entries.
+  - Work Steps: inspect the multi-entry package primary description; set the generated package trigger to `Use when the user asks to solve a hard problem.`; regenerate once; verify all problem-solving entry paths remain listed.
   - Implementation Gate: multi-entry package behavior is confirmed before editing.
   - Acceptance: generated guide is concise and all problem-solving entries remain reachable.
-
-- [ ] [P3-I] Update `sequential-thinking`.
-  - Goal: normalize sequential reasoning trigger.
-  - Work Steps: set the description to `Use when the user asks to reason step by step.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps dynamic reasoning workflow.
-  - Acceptance: generated guide keeps the trigger without extra explanation.
-
-- [ ] [P3-J] Update `skill-creator`.
-  - Goal: normalize skill authoring trigger.
-  - Work Steps: set the description to `Use when the user asks to create or update a skill.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps skill creation workflow.
-  - Acceptance: generated guide routes skill work directly.
-
-- [ ] [P3-K] Update `threejs`.
-  - Goal: normalize Three.js trigger.
-  - Work Steps: set the description to `Use when the user asks to build 3D web experiences with Three.js.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps Three.js implementation details.
-  - Acceptance: generated guide has a direct 3D web trigger.
-
-- [ ] [P3-L] Update `web-testing`.
-  - Goal: normalize web testing trigger.
-  - Work Steps: set the description to `Use when the user asks to test web behavior.`; regenerate; verify generated rows and mirror output.
-  - Implementation Gate: source body keeps Playwright, Vitest, and k6 details.
-  - Acceptance: generated guide has a short test trigger.
 
 - [ ] [P4-A] Final regeneration, validation, and inventory check.
   - Goal: prove all generated outputs reflect source and no old long descriptions remain.

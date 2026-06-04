@@ -238,6 +238,14 @@ Detect changes:
 
 - Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
 - `risk_level`: `low`
+- `changed_files`: 15
+- `affected_files`: 4
+- `affected_count`: 0
+
+Detect changes:
+
+- Command: `go run ./cmd/anvien detect-changes --repo Anvien --scope all`
+- `risk_level`: `low`
 - `changed_files`: 4
 - `affected_files`: 4
 - `affected_count`: 0
@@ -393,3 +401,58 @@ Detect changes:
 - `changed_files`: 19
 - `affected_files`: 5
 - `affected_count`: 0
+
+## E13 - P2-C Long Single-Entry Group
+
+Status: recorded
+
+Process correction:
+
+- User directed grouping remaining description edits by skill clusters instead of one commit per skill.
+- Updated the plan checklist from per-skill pending items to grouped items before continuing implementation.
+
+Source changes:
+
+- Updated frontmatter `description` only for 12 single-entry packages:
+  `media-processing`, `shopify`, `backend-development`, `better-auth`, `repomix`, `web-frameworks`, `code-review`, `databases`, `ui-styling`, `mermaidjs-v11`, `mcp-management`, and `bunny`.
+- Skill bodies were not changed.
+
+Impact:
+
+- Command pattern: `go run ./cmd/anvien impact file internal/aicontext/skills/<skill>/SKILL.md --repo Anvien --direction upstream`
+- All 12 files reported `LOW`.
+- All 12 files reported 0 affected files and 0 affected flows.
+
+Generated-row verification after regeneration:
+
+```text
+media-processing -> Use when the user asks to process media files.
+shopify -> Use when the user asks to build Shopify apps, themes, or extensions.
+backend-development -> Use when the user asks to build or change backend code.
+better-auth -> Use when the user asks to implement Better Auth.
+repomix -> Use when the user asks to package a repository with Repomix.
+web-frameworks -> Use when the user asks to build with Next.js, Turborepo, or web frameworks.
+code-review -> Use when the user asks to review code or handle review feedback.
+databases -> Use when the user asks to work with databases.
+ui-styling -> Use when the user asks to style UI.
+mermaidjs-v11 -> Use when the user asks to create Mermaid diagrams.
+mcp-management -> Use when the user asks to manage MCP integrations.
+bunny -> Use when the user asks to integrate Bunny.net.
+```
+
+- Each source description matched the generated `.claude/skills/anvien/<skill>/SKILL.md` mirror.
+
+Validation:
+
+```text
+go run ./cmd/anvien analyze --force
+go build ./cmd/... ./internal/...
+go test ./internal/aicontext -count=1
+go test ./internal/cli -run "TestAnalyzeCommand|AIContext|Aicontext" -count=1
+```
+
+Results:
+
+- Analyze/regeneration passed.
+- Full product build passed.
+- Focused AI-context and CLI tests passed.

@@ -157,3 +157,18 @@ Measured after P2-B removed `ai-multimodal` and AI context was regenerated from 
 | Rough token estimate at 3 chars/token | tokens | 8,237 |
 | Generated skill package rows | rows | 34 |
 | `ai-multimodal` source/generated/context matches | matches | 0 |
+
+## B9 - P2-C Long Single-Entry Group Snapshot
+
+Status: recorded
+
+Measured after P2-C updated 12 long single-entry descriptions and AI context was regenerated from source:
+
+| Metric | Unit | Latest |
+|---|---:|---:|
+| `AGENTS.md` total lines | lines | 175 |
+| `AGENTS.md` total words | words | 2,515 |
+| `AGENTS.md` total characters | chars | 18,763 |
+| Rough token estimate at 3 chars/token | tokens | 6,254 |
+| Generated skill package rows | rows | 34 |
+| Updated trigger descriptions | descriptions | 17 |

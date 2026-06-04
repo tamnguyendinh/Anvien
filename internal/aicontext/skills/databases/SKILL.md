@@ -1,26 +1,12 @@
 ---
 name: databases
-description: Work with MongoDB (document database, BSON documents, aggregation pipelines, Atlas cloud) and PostgreSQL (relational database, SQL queries, psql CLI, pgAdmin). Use when designing database schemas, writing queries and aggregations, optimizing indexes for performance, performing database migrations, configuring replication and sharding, implementing backup and restore strategies, managing database users and permissions, analyzing query performance, or administering production databases.
+description: Use when the user asks to work with databases.
 license: MIT
 ---
 
 # Databases Skill
 
 Unified guide for working with MongoDB (document-oriented) and PostgreSQL (relational) databases. Choose the right database for your use case and master both systems.
-
-## When to Use This Skill
-
-Use when:
-- Designing database schemas and data models
-- Writing queries (SQL or MongoDB query language)
-- Building aggregation pipelines or complex joins
-- Optimizing indexes and query performance
-- Implementing database migrations
-- Setting up replication, sharding, or clustering
-- Configuring backups and disaster recovery
-- Managing database users and permissions
-- Analyzing slow queries and performance issues
-- Administering production database deployments
 
 ## Database Selection Guide
 

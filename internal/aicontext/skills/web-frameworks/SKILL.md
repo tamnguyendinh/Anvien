@@ -1,6 +1,6 @@
 ---
 name: web-frameworks
-description: Build modern full-stack web applications with Next.js (App Router, Server Components, RSC, PPR, SSR, SSG, ISR), Turborepo (monorepo management, task pipelines, remote caching, parallel execution), and RemixIcon (3100+ SVG icons in outlined/filled styles). Use when creating React applications, implementing server-side rendering, setting up monorepos with multiple packages, optimizing build performance and caching strategies, adding icon libraries, managing shared dependencies, or working with TypeScript full-stack projects.
+description: Use when the user asks to build with Next.js, Turborepo, or web frameworks.
 license: MIT
 version: 1.0.0
 ---
