@@ -1,18 +1,20 @@
 # Anvien (version: `1.2.4`)
 
-```md
-## (2 in 1) — Intelligence Graph Knowledge Map + Skill-Kit for AI.
-```
+> ## (2 in 1 tool) — Intelligence Graph Knowledge Map + Skill-Kit for AI.
 
-```md
+---
+
 ## Why Use Anvien?
+
+<p align="center">
+  <img src="./ai_intelligence_graph_knowledge_map_skill_kit.svg" alt="Anvien intelligence graph knowledge map and skill kit" width="900">
+</p>
 
 > Anvien builds one of the fastest and most accurate code intelligence graphs for large repositories.
 
 > When you vibe code with AI, the context window is always limited. The longer a session runs, the easier it is for the agent to lose track of information it already read, trace the same code again, or misunderstand how files, functions, and modules relate to each other.
 
 > Anvien solves this by building a connected map of your codebase: which files relate to which files, which functions call each other, and which modules belong to each execution flow. This helps AI agents understand the project structure faster, navigate relationships across the codebase, and spend less time rediscovering context.
-```
 
 ---
 
