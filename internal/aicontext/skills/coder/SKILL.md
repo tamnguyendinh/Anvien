@@ -66,7 +66,7 @@ You own closure of the invariant family behind the assigned scope, not only the 
   follow-up.
   6. If unclear scope can be resolved by reading authority docs,
   resolve it. If authority docs are missing/conflicting, create a
-  blocker report and stop.
+  problem report and continue with other assigned work; do not self-decide.
   7. If supervisor or architect determines that authority docs conflict
   or need a new standard, do not self-decide; escalate to architect.
   8. If supervisor concludes process deviation, correct the working
@@ -80,10 +80,9 @@ You own closure of the invariant family behind the assigned scope, not only the 
 
 ## Work Flow
 1. Receive the current scope.
-2. Before any other work, scan all open Supervisor reports assigned to coder. If any exist, they become the highest-priority active scope.
-3. Resolve the exact authority docs and current assigned scope.
-4. Build the `Invariant Family Map`.
-5. Implement, verify, report, hand off, commit, and continue strictly from the current scope.
+2. Resolve the exact authority docs and current assigned scope.
+3. Build the `Invariant Family Map`.
+4. Implement, verify, report, hand off, commit, and continue strictly from the current scope.
 
 ## Shared Precheck
 - Mandatory reads: `AGENTS.md`,`Docs/SPEC/ 
@@ -99,10 +98,10 @@ You own closure of the invariant family behind the assigned scope, not only the 
   + stale tests/helpers/plans that may still encode the old contract
   + verify matrix for primary path, alternate path, fallback path, isolation/race path (when relevant), and helper/E2E path
 - State assumptions explicitly before coding when scope, contract, or runtime behavior is not self-evident.
-- If multiple plausible interpretations exist, list them briefly and choose only with authority evidence; if authority is missing, stop and raise a blocker.
+- If multiple plausible interpretations exist, list them briefly and choose only with authority evidence.
 - Prefer the simplest implementation that closes the current invariant family; do not add speculative flexibility, configuration, or abstraction.
 - Convert the scope into explicit success criteria before coding. If coder cannot name the observable verify checks, stop and clarify instead of patching blindly.
-- If coder cannot build the `Invariant Family Map` from the assigned scope, stop and raise a blocker instead of patching the first symptom.
+
 
 ## Anti-Repeat-Reject Rules (MANDATORY)
 > Root causes of repeated reject loops: build-pass mindset, report mismatch, late stop, boundary drift, and missing checkpoints.
@@ -125,7 +124,6 @@ You own closure of the invariant family behind the assigned scope, not only the 
 - **Read the current scope BEFORE coding**: read the exact `Docs/SPEC/*` family plus incident/runtime/worktree scope to resolve owner, boundary, verification contract, and forbidden patterns. Do not code before reading.
 - **Check boundary before editing code**: confirm correct ownership, a live runtime path, no dead code, and no pushing implementation outside the assigned scope.
 - **`Invariant Family Map` is mandatory**: scope, SSOT, authority source, sibling surfaces, forbidden fallback, stale artifacts, and verify matrix must be explicit before coding.
-- Do not silently pick one interpretation when the scope still allows multiple valid readings; record the chosen interpretation with authority evidence or stop and raise a blocker.
 - Define concrete success criteria for the current scope before editing code.
 
 ### 4. IMPLEMENT THE TASK
@@ -182,7 +180,7 @@ You own closure of the invariant family behind the assigned scope, not only the 
 - Risks/open points:
 - Create reports using the exact readme template:
   + Coder report -> `reports/coder/`
-  + Problem report -> `reports/problem/` (when there is a blocker/incident)
+  + Problem report -> `reports/problem/` 
 - **The report must match the current scope verification contract**: if scope verification says `go test ./...`, the report must contain `go test` output. If the scope requires happy/failure path tests, the report must list test name, file path, and result.
 
 ### 8. RECORD EVIDENCE
@@ -202,10 +200,7 @@ You own closure of the invariant family behind the assigned scope, not only the 
 - If rejection explicitly says `Return to coder for process compliance`, coder must correct the execution process back to the agreed workflow before continuing.
 - **Pause before moving to another scope if the current scope still has REJECT state**: fully fix the current reject first. Do not jump to unrelated work. Then continue to the next work.
 
-### 11. BLOCKER
-- If blocked, stop immediately and write blocker + owner + ETA into today's `Docs/notes_decisions_log/notes_decisions_log_YYYYMMDD.md`.
-
-### 12. GIT CHECKPOINT (mandatory)
+### 11. GIT CHECKPOINT (mandatory)
 - After every verified small batch: commit immediately with one small, clear commit.
 - After every review/fix round: create a separate commit; do not fold it into the previous commit.
 - The commit must include evidence: <commit_author> + current scope/incident + primary verify command + short result summary.
@@ -246,6 +241,6 @@ E2E Verification:
 - Legacy filenames may remain as-is; do not mass-rename old reports just to fit the new rule.
 
 ## Shared Report Gates
-- If there is a blocker, there must be a `pb_coder_<YYMMDD>_<HHMMSS>_by_<model_slug>_<scope>.md.md` and its link must be written into today's `Docs/notes_decisions_log/notes_decisions_log_YYYYMMDD.md`.
+- If there is a problem, there must be a `pb_coder_<YYMMDD>_<HHMMSS>_by_<model_slug>_<scope>.md.md` and its link must be written into today's `Docs/notes_decisions_log/notes_decisions_log_YYYYMMDD.md`.
 - Every coder report must contain a clear git reference so supervisor can map that report to the corresponding code boundary.
 - Before handing off the current scope, the report must contain the `Invariant Family Map`, `Sibling surfaces checked`, `Legacy fallback status`, and `Residual unverified surfaces: none`.
