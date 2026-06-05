@@ -298,7 +298,8 @@ anvien benchmark-compare <before> <after> # Compare analyze benchmark outputs
 AI context and skills:
 
 ```bash
-anvien analyze --no-stats        # Regenerate AGENTS.md/CLAUDE.md without volatile counts
+anvien analyze                   # Regenerate AGENTS.md/CLAUDE.md and repo skills
+anvien analyze --no-stats        # Accepted compatibility no-op; generated context has no volatile counts
 anvien setup                     # Install MCP/editor config and generated skills
 ```
 
@@ -307,14 +308,15 @@ anvien setup                     # Install MCP/editor config and generated skill
 - `Command Selection Guide` maps tasks directly to Anvien CLI/MCP commands such as `query`, `context`, `impact`, `detect-changes`, API commands, graph-health commands, runtime commands, and group commands.
 - `Skill Selection Guide` points only to retained workflow skills when the task needs a domain workflow.
 
-Generated Anvien workflow skills are intentionally limited to:
+Generated Anvien workflow skill examples include direct package roots:
 
-- `.claude/skills/anvien/anvien-api-surface/SKILL.md`
-- `.claude/skills/anvien/anvien-refactoring/SKILL.md`
-- `.claude/skills/anvien/anvien-debugging/SKILL.md`
-- `.claude/skills/anvien/anvien-planner/SKILL.md`
+- `.agents/skills/api-surface/SKILL.md` / `.claude/skills/api-surface/SKILL.md`
+- `.agents/skills/refactoring/SKILL.md` / `.claude/skills/refactoring/SKILL.md`
+- `.agents/skills/debugging/SKILL.md` / `.claude/skills/debugging/SKILL.md`
+- `.agents/skills/planner/SKILL.md` / `.claude/skills/planner/SKILL.md`
+- `.agents/skills/qa/SKILL.md` / `.claude/skills/qa/SKILL.md`
 
-Concrete command execution should still come from the generated `Command Selection Guide`; the retained skills guide API-surface work, refactoring, debugging, and `docs/plans` plan/evidence/benchmark work.
+Concrete command execution should still come from the generated `Command Selection Guide`; skills guide API-surface work, refactoring, debugging, QA, and `docs/plans` plan/evidence/benchmark work.
 
 Semantic graph diagnostics:
 

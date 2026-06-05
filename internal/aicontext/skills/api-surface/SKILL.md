@@ -1,5 +1,5 @@
 ---
-name: anvien-api-surface
+name: api-surface
 description: Use when the user asks to inspect API or MCP surfaces.
 ---
 

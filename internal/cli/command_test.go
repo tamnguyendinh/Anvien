@@ -1554,8 +1554,8 @@ export function beta() {
 		".gitignore",
 		"AGENTS.md",
 		"CLAUDE.md",
-		filepath.Join(".agents", "skills", "anvien-planner", "SKILL.md"),
-		filepath.Join(".claude", "skills", "anvien-planner", "SKILL.md"),
+		filepath.Join(".agents", "skills", "planner", "SKILL.md"),
+		filepath.Join(".claude", "skills", "planner", "SKILL.md"),
 		filepath.Join(".anvien", "meta.json"),
 	} {
 		if _, err := os.Stat(filepath.Join(dir, rel)); err != nil {
@@ -1568,7 +1568,7 @@ export function beta() {
 	}
 	if !strings.Contains(string(agents), "<!-- anvien:start -->") ||
 		!strings.Contains(string(agents), "## Skill Selection Guide") ||
-		!strings.Contains(string(agents), ".agents/skills/anvien-planner/SKILL.md") {
+		!strings.Contains(string(agents), ".agents/skills/planner/SKILL.md") {
 		t.Fatalf("AGENTS.md missing Anvien context:\n%s", agents)
 	}
 	if strings.Contains(string(agents), ".claude/skills/") || strings.Contains(string(agents), "This project is indexed by Anvien") {

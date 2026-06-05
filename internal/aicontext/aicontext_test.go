@@ -592,19 +592,19 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 	}
 
 	checks := map[string][]string{
-		"anvien-api-surface/SKILL.md": {
+		"api-surface/SKILL.md": {
 			"route_map",
 			"anvien api route-map",
 			"api_impact",
 			"Do not invent CLI commands",
 		},
-		"anvien-refactoring/SKILL.md": {
+		"refactoring/SKILL.md": {
 			"behavior-preserving",
 			"impact",
 			"detect-changes",
 			"graph-guided dry run",
 		},
-		"anvien-debugging/SKILL.md": {
+		"debugging/SKILL.md": {
 			"MUST understand the root cause before fixing.",
 			"MUST write a plan before fixing.",
 			"MUST run a full build before testing when active repository rules require it.",
@@ -612,7 +612,7 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 			"anvien graph-health explain \"File:<path>\" --repo <repo> --json",
 			"anvien detect-changes --repo <repo> --scope all",
 		},
-		"anvien-planner/SKILL.md": {
+		"planner/SKILL.md": {
 			"Standard Plan Set",
 			"YYYY-MM-DD-<slug>",
 			"Evidence Ledger",

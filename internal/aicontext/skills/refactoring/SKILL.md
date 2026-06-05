@@ -1,5 +1,5 @@
 ---
-name: anvien-refactoring
+name: refactoring
 description: Use when the user asks to refactor code.
 ---
 

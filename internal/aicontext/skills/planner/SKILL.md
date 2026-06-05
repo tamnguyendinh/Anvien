@@ -1,5 +1,5 @@
 ---
-name: anvien-planner
+name: planner
 description: "Use when the user asks to create, write, or review a docs/plans plan."
 ---
 

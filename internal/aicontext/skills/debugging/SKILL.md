@@ -1,5 +1,5 @@
 ---
-name: anvien-debugging
+name: debugging
 description: Use when the user asks to debug.
 when_to_use: when debugging bugs, test failures, unexpected behavior, regressions, broken flows, production failures, diagnostics, graph/index/query issues, or any fix that must be traced and verified in a repository with Anvien rules
 version: 2.0.0

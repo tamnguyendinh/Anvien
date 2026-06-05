@@ -1,5 +1,5 @@
 ---
-name: anvien-qa
+name: qa
 description: Use when the user asks to run QA without fixing code.
 when_to_use: when performing quality assurance on mounted runtime behavior, visible user flows, browser-visible app execution, data/source-of-truth checks, action/state coverage, route/control inventories, or QA report generation in a repository where Anvien can support discovery
 version: 1.0.0
