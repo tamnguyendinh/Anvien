@@ -1125,42 +1125,6 @@ func skillGuideNeed(pkg SkillPackage) string {
 	return escapeTableCell(description)
 }
 
-func skillGuideCommand(pkg SkillPackage) string {
-	entry := primarySkillEntry(pkg)
-	command := normalizeSkillCommandName(entry.Name)
-	if command == "" {
-		command = normalizeSkillCommandName(pkg.Name)
-	}
-	return "`/" + escapeTableCell(command) + "`"
-}
-
-func normalizeSkillCommandName(value string) string {
-	value = strings.ToLower(strings.TrimSpace(value))
-	var builder strings.Builder
-	lastSeparator := false
-	for _, r := range value {
-		switch {
-		case r >= 'a' && r <= 'z':
-			builder.WriteRune(r)
-			lastSeparator = false
-		case r >= '0' && r <= '9':
-			builder.WriteRune(r)
-			lastSeparator = false
-		case r == '-' || r == '_' || r == ' ' || r == '\t' || r == '\n' || r == '\r':
-			if builder.Len() > 0 && !lastSeparator {
-				builder.WriteByte('-')
-				lastSeparator = true
-			}
-		default:
-			if builder.Len() > 0 && !lastSeparator {
-				builder.WriteByte('-')
-				lastSeparator = true
-			}
-		}
-	}
-	return strings.Trim(builder.String(), "-")
-}
-
 func skillGuideUse(pkg SkillPackage, skillPathPrefix string) string {
 	entry := primarySkillEntry(pkg)
 	return "`" + escapeTableCell(skillPathPrefix+entry.InstallPath) + "`"

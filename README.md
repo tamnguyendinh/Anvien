@@ -303,24 +303,20 @@ anvien analyze --no-stats        # Accepted compatibility no-op; generated conte
 anvien setup                     # Install MCP/editor config and generated skills
 ```
 
-`anvien analyze` writes a managed Anvien section into `AGENTS.md` and `CLAUDE.md`. That section keeps Anvien command selection and skill selection separate:
+`anvien analyze` writes a managed Anvien section into `AGENTS.md` and `CLAUDE.md`. That section keeps command selection and skill selection separate:
 
 - `Command Selection Guide` maps tasks directly to Anvien CLI/MCP commands such as `query`, `context`, `impact`, `detect-changes`, API commands, graph-health commands, runtime commands, and group commands.
-- `Skill Selection Guide` maps domain workflow tasks to a generated skill command alias and the generated skill path. The alias is derived from the current skill metadata, so removed or renamed skills disappear or change on the next analyze.
+- `Skill Selection Guide` points only to retained workflow skills when the task needs a domain workflow.
 
-Generated Anvien workflow skill examples include command aliases and direct package roots:
+Generated Anvien workflow skill examples include direct package roots:
 
-| Skill command | AGENTS path | CLAUDE path |
-|---|---|---|
-| `/api-surface` | `.agents/skills/api-surface/SKILL.md` | `.claude/skills/api-surface/SKILL.md` |
-| `/refactoring` | `.agents/skills/refactoring/SKILL.md` | `.claude/skills/refactoring/SKILL.md` |
-| `/debugging` | `.agents/skills/debugging/SKILL.md` | `.claude/skills/debugging/SKILL.md` |
-| `/planner` | `.agents/skills/planner/SKILL.md` | `.claude/skills/planner/SKILL.md` |
-| `/qa` | `.agents/skills/qa/SKILL.md` | `.claude/skills/qa/SKILL.md` |
+- `.agents/skills/api-surface/SKILL.md` / `.claude/skills/api-surface/SKILL.md`
+- `.agents/skills/refactoring/SKILL.md` / `.claude/skills/refactoring/SKILL.md`
+- `.agents/skills/debugging/SKILL.md` / `.claude/skills/debugging/SKILL.md`
+- `.agents/skills/planner/SKILL.md` / `.claude/skills/planner/SKILL.md`
+- `.agents/skills/qa/SKILL.md` / `.claude/skills/qa/SKILL.md`
 
-These are examples only. The generated guide includes many more skills from the current `internal/aicontext/skills/**` source tree.
-
-Concrete Anvien CLI execution should still come from the generated `Command Selection Guide`; slash commands in `Skill Selection Guide` select workflow skills for API-surface work, refactoring, debugging, QA, and `docs/plans` plan/evidence/benchmark work.
+Concrete command execution should still come from the generated `Command Selection Guide`; skills guide API-surface work, refactoring, debugging, QA, and `docs/plans` plan/evidence/benchmark work.
 
 Semantic graph diagnostics:
 

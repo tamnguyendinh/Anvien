@@ -45,12 +45,12 @@ Current generated header:
 
 ## B2 - Target Generated Guide Inventory
 
-Measured after implementation and normal regeneration.
+To measure after implementation and normal regeneration.
 
 | File | Skill guide rows | Command column | Command alias cells | Duplicate aliases |
 |---|---:|---:|---:|---:|
-| `AGENTS.md` | 37 | 1 | 37 | 0 |
-| `CLAUDE.md` | 37 | 1 | 37 | 0 |
+| `AGENTS.md` | TBD | 1 | TBD | 0 |
+| `CLAUDE.md` | TBD | 1 | TBD | 0 |
 
 Expected invariant:
 
@@ -88,20 +88,12 @@ To measure after implementation.
 
 ## B6 - Final Inventory Template
 
-Measured after implementation:
+Fill after implementation:
 
 | Metric | Baseline | Final | Delta |
 |---|---:|---:|---:|
-| `AGENTS.md` skill guide rows | 37 | 37 | 0 |
-| `AGENTS.md` command alias cells | 0 | 37 | +37 |
-| `CLAUDE.md` skill guide rows | 37 | 37 | 0 |
-| `CLAUDE.md` command alias cells | 0 | 37 | +37 |
-| duplicate generated command aliases | 0 | 0 | 0 |
-
-Final generated guide facts:
-
-| Fact | `AGENTS.md` | `CLAUDE.md` |
-|---|---:|---:|
-| Has `/architect-review` | yes | yes |
-| Has `/problem-solving` | yes | yes |
-| Has `/collision-zone-thinking` in main guide | no | no |
+| `AGENTS.md` skill guide rows | 37 | TBD | TBD |
+| `AGENTS.md` command alias cells | 0 | TBD | TBD |
+| `CLAUDE.md` skill guide rows | TBD | TBD | TBD |
+| `CLAUDE.md` command alias cells | 0 | TBD | TBD |
+| duplicate generated command aliases | TBD | 0 | TBD |

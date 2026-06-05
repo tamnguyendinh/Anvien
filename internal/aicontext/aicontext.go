@@ -197,10 +197,10 @@ func renderAnvienBlock(skillPathPrefix string, packages []SkillPackage) string {
 	builder.WriteString("MCP prompts are agent templates, not CLI commands. They guide tool/resource use and must still follow repository rules for freshness, impact-before-edit, and detect-changes before commit.\n\n")
 	builder.WriteString("## Skill Selection Guide\n\n")
 	builder.WriteString("AI agent chooses the skill that fits the work.\n\n")
-	builder.WriteString("| When you need to... | Command | Use |\n")
-	builder.WriteString("|---------------------|---------|-----|\n")
+	builder.WriteString("| When you need to... | Use |\n")
+	builder.WriteString("|---------------------|-----|\n")
 	for _, pkg := range packages {
-		fmt.Fprintf(&builder, "| %s | %s | %s |\n", skillGuideNeed(pkg), skillGuideCommand(pkg), skillGuideUse(pkg, skillPathPrefix))
+		fmt.Fprintf(&builder, "| %s | %s |\n", skillGuideNeed(pkg), skillGuideUse(pkg, skillPathPrefix))
 	}
 	builder.WriteString("\n" + endMarker)
 	return builder.String()
