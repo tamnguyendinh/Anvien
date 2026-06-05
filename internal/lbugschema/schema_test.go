@@ -1,33 +1,31 @@
 package lbugschema
 
 import (
-	"encoding/json"
-	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
 )
 
 func TestSchemaConstantsMatchFrozenContract(t *testing.T) {
-	contract := readFrozenContract(t)
-
-	if !reflect.DeepEqual(NodeTables, contract.LadybugDB.NodeTables) {
-		t.Fatalf("NodeTables drift\nwant %#v\ngot  %#v", contract.LadybugDB.NodeTables, NodeTables)
+	wantNodeTables := expectedFrozenNodeTables()
+	if !reflect.DeepEqual(NodeTables, wantNodeTables) {
+		t.Fatalf("NodeTables drift\nwant %#v\ngot  %#v", wantNodeTables, NodeTables)
 	}
-	if !reflect.DeepEqual(RelationshipTypes, contract.SchemaConstants.RelationshipTypes) {
-		t.Fatalf("RelationshipTypes drift\nwant %#v\ngot  %#v", contract.SchemaConstants.RelationshipTypes, RelationshipTypes)
+	wantRelationshipTypes := expectedFrozenRelationshipTypes()
+	if !reflect.DeepEqual(RelationshipTypes, wantRelationshipTypes) {
+		t.Fatalf("RelationshipTypes drift\nwant %#v\ngot  %#v", wantRelationshipTypes, RelationshipTypes)
 	}
-	if RelTableName != contract.LadybugDB.RelationshipTable.Name {
-		t.Fatalf("RelTableName = %q, want %q", RelTableName, contract.LadybugDB.RelationshipTable.Name)
+	if RelTableName != "CodeRelation" {
+		t.Fatalf("RelTableName = %q, want CodeRelation", RelTableName)
 	}
 
 	gotColumns := map[string]string{}
 	for _, col := range relationColumns() {
 		gotColumns[col.Name] = col.Type
 	}
-	if !reflect.DeepEqual(gotColumns, contract.LadybugDB.RelationshipTable.Columns) {
-		t.Fatalf("relation columns drift\nwant %#v\ngot  %#v", contract.LadybugDB.RelationshipTable.Columns, gotColumns)
+	wantColumns := expectedFrozenRelationshipColumns()
+	if !reflect.DeepEqual(gotColumns, wantColumns) {
+		t.Fatalf("relation columns drift\nwant %#v\ngot  %#v", wantColumns, gotColumns)
 	}
 }
 
@@ -203,33 +201,6 @@ func TestEmbeddingAndIndexQueries(t *testing.T) {
 	}
 }
 
-type frozenContract struct {
-	LadybugDB struct {
-		NodeTables        []string `json:"nodeTables"`
-		RelationshipTable struct {
-			Name    string            `json:"name"`
-			Columns map[string]string `json:"columns"`
-		} `json:"relationshipTable"`
-	} `json:"ladybugdb"`
-	SchemaConstants struct {
-		RelationshipTypes []string `json:"relationshipTypes"`
-	} `json:"schemaConstants"`
-}
-
-func readFrozenContract(t *testing.T) frozenContract {
-	t.Helper()
-	path := filepath.FromSlash("../../baseline/phase-1-contract-freeze/ladybugdb-graph-contract.json")
-	raw, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("read frozen contract: %v", err)
-	}
-	var contract frozenContract
-	if err := json.Unmarshal(raw, &contract); err != nil {
-		t.Fatalf("decode frozen contract: %v", err)
-	}
-	return contract
-}
-
 func indexOfQuery(queries []string, query string) int {
 	for index, candidate := range queries {
 		if candidate == query {
@@ -246,4 +217,94 @@ func containsString(values []string, want string) bool {
 		}
 	}
 	return false
+}
+
+func expectedFrozenNodeTables() []string {
+	return []string{
+		"File",
+		"Folder",
+		"Function",
+		"Class",
+		"Interface",
+		"Method",
+		"CodeElement",
+		"Community",
+		"Process",
+		"Package",
+		"Section",
+		"Struct",
+		"Enum",
+		"Macro",
+		"Typedef",
+		"Union",
+		"Namespace",
+		"Trait",
+		"Impl",
+		"TypeAlias",
+		"Const",
+		"Static",
+		"Variable",
+		"Property",
+		"Record",
+		"Delegate",
+		"Annotation",
+		"Constructor",
+		"Template",
+		"Module",
+		"Route",
+		"Tool",
+		"ResolutionGap",
+	}
+}
+
+func expectedFrozenRelationshipTypes() []string {
+	return []string{
+		"CONTAINS",
+		"DEFINES",
+		"IMPORTS",
+		"CALLS",
+		"USES",
+		"INHERITS",
+		"EXTENDS",
+		"IMPLEMENTS",
+		"HAS_METHOD",
+		"HAS_PROPERTY",
+		"ACCESSES",
+		"METHOD_OVERRIDES",
+		"OVERRIDES",
+		"METHOD_IMPLEMENTS",
+		"MEMBER_OF",
+		"STEP_IN_PROCESS",
+		"HANDLES_ROUTE",
+		"FETCHES",
+		"HANDLES_TOOL",
+		"ENTRY_POINT_OF",
+		"WRAPS",
+		"QUERIES",
+		"HAS_RESOLUTION_GAP",
+	}
+}
+
+func expectedFrozenRelationshipColumns() map[string]string {
+	return map[string]string{
+		"type":             "STRING",
+		"confidence":       "DOUBLE",
+		"reason":           "STRING",
+		"step":             "INT32",
+		"resolutionSource": "STRING",
+		"evidence":         "STRING",
+		"fileHash":         "STRING",
+		"sourceSiteId":     "STRING",
+		"sourceSiteIds":    "STRING",
+		"sourceSiteCount":  "INT32",
+		"sourceSiteStatus": "STRING",
+		"proofKind":        "STRING",
+		"targetRole":       "STRING",
+		"targetText":       "STRING",
+		"filePath":         "STRING",
+		"startLine":        "INT64",
+		"startCol":         "INT64",
+		"endLine":          "INT64",
+		"endCol":           "INT64",
+	}
 }
