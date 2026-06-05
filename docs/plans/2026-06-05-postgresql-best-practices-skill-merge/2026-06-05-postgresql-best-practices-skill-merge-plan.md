@@ -4,7 +4,7 @@ Title: PostgreSQL Best Practices Skill Merge
 
 Date: 2026-06-05
 
-Status: Planned
+Status: Complete
 
 Companion files:
 
@@ -175,7 +175,7 @@ Out of scope:
   - Implementation Gate: content validation from P2-A is complete.
   - Acceptance: evidence ledger records all commands and outcomes; benchmark ledger records updated inventory counts.
 
-- [ ] [P3-A] Commit the implementation slice.
+- [x] [P3-A] Commit the implementation slice.
   - Goal: close the completed merge with a traceable commit.
   - Work Steps: inspect `git diff`; stage only files for this slice; commit with a concise message; record the commit hash; confirm post-commit worktree state.
   - Implementation Gate: P2-B validation and detect-changes are complete.

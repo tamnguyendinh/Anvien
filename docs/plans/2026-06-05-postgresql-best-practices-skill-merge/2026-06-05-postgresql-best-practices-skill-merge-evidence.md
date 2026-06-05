@@ -4,7 +4,7 @@ Title: PostgreSQL Best Practices Skill Merge
 
 Date: 2026-06-05
 
-Status: Planned
+Status: Complete
 
 Companion files:
 
@@ -262,3 +262,16 @@ Result:
 - Risk level: low.
 - Changed app layer: docs.
 - Changed functional area: documentation.
+
+P3-A implementation commit:
+
+```text
+f58cb70 docs: merge postgres best practices into database skill
+```
+
+Closure notes:
+
+- Implementation files were staged explicitly by path.
+- Unrelated untracked skill directories under `internal/aicontext/skills` were not staged.
+- Temporary validation worktree `E:\Anvien\.tmp\postgresql-best-practices-skill-merge-worktree` was removed after validation.
+- Closure evidence is recorded in a separate doc-only commit after the implementation commit because a commit cannot accurately contain its own final hash.

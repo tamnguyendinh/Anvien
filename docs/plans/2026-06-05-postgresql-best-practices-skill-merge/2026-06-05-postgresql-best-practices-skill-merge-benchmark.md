@@ -4,7 +4,7 @@ Title: PostgreSQL Best Practices Skill Merge
 
 Date: 2026-06-05
 
-Status: Planned
+Status: Complete
 
 Companion files:
 
@@ -65,7 +65,7 @@ Record these after implementation completes.
 | `SKILL.md` links to new reference | 1 | boolean | content search |
 | New reference benchmark tables present | 3 | count | content search |
 | `anvien detect-changes` changed files | 5 | files | detect-changes output |
-| Commit hash recorded | pending | boolean | git output |
+| Commit hash recorded | 1 | boolean | git output |
 
 ## B4 - Validation Analyze Inventory
 
