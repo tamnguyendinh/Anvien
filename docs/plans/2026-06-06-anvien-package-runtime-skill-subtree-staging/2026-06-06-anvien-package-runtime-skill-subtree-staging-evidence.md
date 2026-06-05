@@ -145,4 +145,4 @@ Required before implementation:
 
 ## E6 - Commit Evidence
 
-Pending until git checkpoint is created.
+- Implementation checkpoint: `fc6f0c2 fix(package): stage skill subtree in runtime source`.

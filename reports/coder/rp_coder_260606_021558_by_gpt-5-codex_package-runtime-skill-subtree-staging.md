@@ -8,7 +8,7 @@ Status: READY FOR SUPERVISOR REVIEW
 - Coder: gpt-5-codex
 - Scope: implement `docs/plans/2026-06-06-anvien-package-runtime-skill-subtree-staging/2026-06-06-anvien-package-runtime-skill-subtree-staging-plan.md`
 - Authority: `AGENTS.md`, `.agents/skills/coder/SKILL.md`, package-runtime source staging evidence, current repo evidence
-- Implementation checkpoint: pending until git checkpoint is created.
+- Implementation checkpoint: `fc6f0c2 fix(package): stage skill subtree in runtime source`.
 
 ## Invariant Family Map
 - Family name: package runtime Go-source fallback staging for bundled Anvien runtime.
