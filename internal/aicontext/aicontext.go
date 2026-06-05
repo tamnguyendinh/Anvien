@@ -94,6 +94,7 @@ func GenerateAIContextFiles(repoPath string, projectName string, stats Stats, op
 func renderAnvienBlock(skillPathPrefix string, packages []SkillPackage) string {
 	var builder strings.Builder
 	builder.WriteString(startMarker + "\n")
+	builder.WriteString(renderMasterRulesBlock())
 	builder.WriteString("# Anvien - Code Intelligence\n\n")
 	builder.WriteString("Anvien is repo-agnostic: the same command surface works for any indexed repository. Use a repository name/path from `anvien list`, wherever examples refer to `<repo>`.\n\n")
 	builder.WriteString("> If any Anvien command or MCP tool warns that the index is stale, run `anvien analyze --force` from the repository root first.\n\n")
@@ -204,6 +205,26 @@ func renderAnvienBlock(skillPathPrefix string, packages []SkillPackage) string {
 	}
 	builder.WriteString("\n" + endMarker)
 	return builder.String()
+}
+
+func renderMasterRulesBlock() string {
+	return `# Master iron rules
+**Temporary directories created by AI — such as .tmp\ or similar — must be located inside the working repo. Creating temporary directories directly on the C: drive is strictly prohibited.**
+
+# AGENTS Rules
+0. Anvien is a tool. Skills are the instruments of the tool. The tool serves the work of other repos/projects.
+1. Use Anvien for codebase analysis and impact checks while working on implementation slices in plan.
+2. As each task is completed, update the corresponding checklist item immediately.
+3. Anvien Blast-radius **CRITICAL/HIGH** is only a scope warning that the work must be handled carefully; it is **not** a prohibition against editing code.
+4. **Write plan before coding.**
+5. **Code first**; tests should only be updated after the behavior has been correctly implemented in code.
+6. Run a full build before testing; the test suite must include Playwright e2e tests for any UI behavior changes.
+7. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, or graph inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.
+8. Record evidence as each evidenced task is completed.
+9. For "doc commits" only, do not use Anvien. When write/edit "doc plan" must use Anvien.
+10. After each completed implementation slice, commit the work, then continue until the full plan is complete.
+
+`
 }
 
 func FormatCrossRepoGroupsSection(groupNames []string) string {

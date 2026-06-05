@@ -53,6 +53,30 @@ func requireContains(t *testing.T, text string, want string) {
 	}
 }
 
+func requireGeneratedMasterRules(t *testing.T, text string, fileName string) {
+	t.Helper()
+	for _, want := range []string{
+		"# Master iron rules",
+		"**Temporary directories created by AI — such as .tmp\\ or similar — must be located inside the working repo. Creating temporary directories directly on the C: drive is strictly prohibited.**",
+		"# AGENTS Rules",
+		"0. Anvien is a tool. Skills are the instruments of the tool. The tool serves the work of other repos/projects.",
+		"1. Use Anvien for codebase analysis and impact checks while working on implementation slices in plan.",
+		"2. As each task is completed, update the corresponding checklist item immediately.",
+		"3. Anvien Blast-radius **CRITICAL/HIGH** is only a scope warning that the work must be handled carefully; it is **not** a prohibition against editing code.",
+		"4. **Write plan before coding.**",
+		"5. **Code first**; tests should only be updated after the behavior has been correctly implemented in code.",
+		"6. Run a full build before testing; the test suite must include Playwright e2e tests for any UI behavior changes.",
+		"7. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, or graph inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.",
+		"8. Record evidence as each evidenced task is completed.",
+		"9. For \"doc commits\" only, do not use Anvien. When write/edit \"doc plan\" must use Anvien.",
+		"10. After each completed implementation slice, commit the work, then continue until the full plan is complete.",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("%s missing generated master rule %q:\n%s", fileName, want, text)
+		}
+	}
+}
+
 func TestSkillPackageCatalogDiscoversTopLevelPackagesAndNestedEntries(t *testing.T) {
 	packages, err := SkillPackages()
 	if err != nil {
@@ -287,6 +311,7 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		t.Fatalf("read AGENTS.md: %v", err)
 	}
 	text := string(content)
+	requireGeneratedMasterRules(t, text, "AGENTS.md")
 	for _, want := range []string{
 		startMarker,
 		endMarker,
@@ -385,6 +410,7 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		t.Fatalf("read CLAUDE.md: %v", err)
 	}
 	claudeText := string(claudeContent)
+	requireGeneratedMasterRules(t, claudeText, "CLAUDE.md")
 	requireContains(t, claudeText, "`.claude/skills/"+packages[0].Entries[0].InstallPath+"`")
 	if strings.Contains(claudeText, ".agents/skills/") || strings.Contains(claudeText, ".claude/skills/anvien/") {
 		t.Fatalf("CLAUDE.md uses the wrong skill surface:\n%s", claudeText)
