@@ -1,6 +1,6 @@
 ---
 name: supervisor-review
-description: Use whenever reviewing completion claims, fixes, diffs, plans, reports, screenshots, or artifacts for acceptance; verify repo/project reality with Anvien evidence.
+description: Use whenever reviewing completion claims, fixes, diffs, plans, reports, screenshots, or artifacts for acceptance; verify repo/project reality with Anvien evidence. Always use this skill before accepting any agent output, closing any task, or merging any result.
 ---
 
 # Supervisor Review
@@ -89,7 +89,7 @@ Before judging, convert the input into a review claim:
 - Which repo/project surfaces can prove or disprove it?
 - What evidence would be enough for PASS?
 
-If the claim cannot be reconstructed, REJECT with the missing information needed to make it reviewable.
+If the claim cannot be reconstructed, REJECT (unactionable - claim unclear, cannot proceed) with the missing information needed to make it reviewable.
 
 ## Source Inspection Gate
 
@@ -285,7 +285,6 @@ Failed:
 
 Not run:
 - <evidence not gathered and why>
-- Verification freshness: <fresh/current/stale/not run> - <what proves this>
 
 ## Invariant Closure
 - affected invariant: <runtime contract, data rule, API shape, process rule, etc.>
