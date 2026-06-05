@@ -3,8 +3,6 @@ name: ui-be-binding-skill
 description: Use when binding backend/API data into an already-approved frontend UI without changing approved layout, copy, visual design, component hierarchy, or interaction states.
 ---
 
-# Skill: UI-BE Binding / Approved UI Data Binding
-
 ## Mission
 
 Bind backend data into an already-approved frontend/UI without changing the approved visual output, layout, copy, component hierarchy, interaction contract, or brand presentation.
@@ -20,6 +18,16 @@ The approved prototype is the visual authority. Backend integration is only allo
 Backend integration must not become UI redesign.
 
 The agent must treat the frontend as a locked product surface. The backend may provide values, URLs, lists, flags, and actions, but it may not cause new visible UI text, new layout blocks, new explanation panels, new helper notes, new MVP/demo labels, or unapproved states to appear.
+
+---
+
+## Execution Rules
+
+1. Write the UI-BE Binding Plan before coding.
+2. Use Anvien as the primary code-intelligence tool when working in an Anvien-indexed repo.
+   - Choose the Anvien command that fits the task: query, context, file-context, impact, route-map, tool-map, shape-check, api impact, graph-health, file-hotspots, detect-changes, or other relevant commands.
+   - Minimum required use: refresh/analyze before graph-based work, impact before editing shared/runtime surfaces, and detect-changes before handoff or commit.
+3. Code only after the approved UI slots, backend fields, fallback behavior, and forbidden states are mapped.
 
 ---
 
