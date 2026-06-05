@@ -2,6 +2,39 @@
 
 All notable changes to anvien will be documented in this file.
 
+## [1.2.5] - 2026-06-05
+
+### Added
+
+- Added recursive, namespace-preserving AI-context skill package installation so top-level packages under `internal/aicontext/skills/**` can include nested `SKILL.md` entries, scripts, references, templates, and assets without flattening or dropping package payload.
+- Added deterministic skill package hashing, manifest ownership, and incremental file-level sync for generated skill output, including edit/add/delete/rename propagation, tamper repair, missing-output repair, stale-output deletion, and sync counters.
+- Added surface-specific generated skill layouts for Codex and Claude Code: `AGENTS.md` now points to `.agents/skills/<package>/...`, `CLAUDE.md` points to `.claude/skills/<package>/...`, and analyze installs both generated skill surfaces.
+- Added scoped generated-skill ownership handling for direct skill roots so Anvien-managed package roots can sync while unrelated repo-local custom skills remain protected.
+- Added first-class file group metadata for backend support/model/helper files, including the `backend_support_model_helper` group key and `Backend support/model/helper files` label across file projection, CLI/API output, contracts, and Web file views.
+- Added a PostgreSQL best-practices database skill reference covering foreign-key indexes, JOIN support indexes, partial indexes, benchmark examples, and production guardrails.
+
+### Changed
+
+- Bumped the CLI package version from `1.2.4` to `1.2.5`.
+- Separated generated Anvien command routing from generated skill routing by keeping direct CLI/MCP command selection in the `Command Selection Guide` and routing workflow skills through a concise `Skill Selection Guide`.
+- Shortened generated skill descriptions to trigger-only wording, removed the rejected `ai-multimodal` package from the generated catalog, and normalized multi-entry package routing for document and problem-solving skills.
+- Made generated `.agents/skills/**` and `.claude/skills/**` output an exact projection of `internal/aicontext/skills/**` for Anvien-managed packages while removing the old generated `skills/anvien/` namespace layer.
+- Removed the volatile indexed-project inventory sentence from generated agent context so ordinary `AGENTS.md` and `CLAUDE.md` output remains stable and repo-agnostic.
+- Updated default unresolved, hotspot, risk, and Web file-display behavior so test files remain visible as test files with tested-target relationships while test-source unresolved details no longer dominate default product signals.
+
+### Fixed
+
+- Fixed generated skill installation missing nested skill entries and associated scripts/resources from multi-entry packages.
+- Fixed stale generated skill output surviving after source package or file deletion.
+- Fixed Codex-facing generated guidance pointing to Claude-shaped skill paths.
+- Fixed default unresolved hotspot lists being dominated by test and e2e source unresolved details.
+- Fixed backend support/model/helper files being identifiable only by unresolved-count differences instead of by a direct file group label.
+
+### Documented
+
+- Recorded an evidence-backed Anvien versus GitNexus deep comparison with benchmark, accuracy, feature, and maturity findings.
+- Recorded benchmark ledgers for skill inventory reduction, recursive package installation, incremental skill mirror sync, generated skill layout split, file group counts, test-file unresolved separation, and PostgreSQL reference inventory.
+
 ## [1.2.4] - 2026-06-01
 
 ### 2026-06-01
