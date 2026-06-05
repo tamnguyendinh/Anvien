@@ -2,5 +2,5 @@ package version
 
 const (
 	CommandName = "anvien"
-	Version     = "1.2.4"
+	Version     = "1.2.5"
 )

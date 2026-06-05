@@ -137,3 +137,91 @@ Required evidence entries:
 - P3-A focused tests added/updated.
 - P4-A build/test/analyze/detect-changes output.
 - Commit hash for each completed implementation slice.
+
+## E7 - Implementation Evidence
+
+Implementation files changed:
+
+- `README.md`
+- `internal/aicontext/aicontext.go`
+- `internal/aicontext/skill_packages.go`
+- `internal/aicontext/aicontext_test.go`
+- `internal/version/version.go`
+
+Implementation summary:
+
+- Added generated `Command` column to `Skill Selection Guide`.
+- Added `skillGuideCommand(pkg SkillPackage)` and deterministic command-name normalization.
+- Kept command aliases surface-independent; only the `Use` path prefix differs between AGENTS and CLAUDE.
+- Added tests for command normalization, `/architect-review`, `/problem-solving`, and nested child command exclusion.
+- Updated README skill documentation so it describes generated skill command aliases separately from Anvien CLI command selection.
+- Corrected Go CLI source version from `1.2.4` to `1.2.5` so validation output matches `anvien/package.json`.
+
+Impact evidence during implementation:
+
+| Target | Result |
+|---|---|
+| `renderAnvienBlock` | CRITICAL blast-radius warning; scoped to generated guide table rendering |
+| `skillGuideNeed` | HIGH blast-radius warning; behavior unchanged |
+| `skillGuideUse` | HIGH blast-radius warning; behavior unchanged except table placement |
+| `primarySkillEntry` | LOW direct impact; reused as command alias source |
+| `internal/version/version.go:Version` | LOW impact; linked CLI/MCP version tests |
+
+## E8 - Validation Evidence
+
+Full build sequence requested by user:
+
+```text
+cd .\anvien
+npm install
+npm run build
+npm install -g .
+Get-Command anvien
+anvien version
+cd ..
+powershell -ExecutionPolicy Bypass -File .\anvien-launcher\build.ps1
+anvien version
+anvien analyze . --force
+```
+
+Results:
+
+| Command | Result |
+|---|---|
+| `npm install` in `anvien` | Passed after stopping stale Anvien MCP process that held `lbug_shared.dll` |
+| `npm run build` in `anvien` | Passed; rebuilt `anvien\bin\anvien.exe` |
+| `npm install -g .` in `anvien` | Passed |
+| `Get-Command anvien` | Resolved global `anvien.ps1` |
+| `anvien version` in `anvien` | `1.2.5` |
+| `powershell -ExecutionPolicy Bypass -File .\anvien-launcher\build.ps1` | Passed; Vite reported existing chunk-size warnings only |
+| `anvien version` at repo root | `1.2.5` |
+| `anvien analyze . --force` | Passed: files scanned 1385, parsed code 682, failed 0, graph nodes 84214, relationships 122686 |
+
+Tests:
+
+| Command | Result |
+|---|---|
+| `go test ./internal/version ./internal/cli ./internal/mcp -count=1` | Passed |
+| `go test ./internal/aicontext -count=1` | Passed |
+| `go test ./cmd/... ./internal/... -count=1` | Passed |
+
+Generated output inspection:
+
+| File | Result |
+|---|---|
+| `AGENTS.md` | Contains `| When you need to... | Command | Use |` |
+| `CLAUDE.md` | Contains `| When you need to... | Command | Use |` |
+
+Change detection:
+
+```text
+anvien detect-changes --repo Anvien --scope all
+```
+
+Result summary:
+
+- changed files: 6
+- affected files: 6
+- risk level: low
+- version source file risk: low
+- aicontext renderer/helper files appear as high file-risk because they are generated-output surfaces; implementation remained scoped.

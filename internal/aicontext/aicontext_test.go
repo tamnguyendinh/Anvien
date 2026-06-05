@@ -92,6 +92,73 @@ func TestSkillPackageCatalogDiscoversTopLevelPackagesAndNestedEntries(t *testing
 	}
 }
 
+func TestSkillGuideCommandUsesPrimaryEntryName(t *testing.T) {
+	tests := []struct {
+		name    string
+		pkg     SkillPackage
+		command string
+	}{
+		{
+			name: "lowercase hyphenated name",
+			pkg: SkillPackage{
+				Name: "Architect-review",
+				Entries: []SkillEntry{
+					{Name: "architect-review", PackagePath: "SKILL.md", InstallPath: "Architect-review/SKILL.md"},
+				},
+			},
+			command: "`/architect-review`",
+		},
+		{
+			name: "mixed case name",
+			pkg: SkillPackage{
+				Name: "System-Architect",
+				Entries: []SkillEntry{
+					{Name: "System-architect", PackagePath: "SKILL.md", InstallPath: "System-Architect/SKILL.md"},
+				},
+			},
+			command: "`/system-architect`",
+		},
+		{
+			name: "underscores and spaces",
+			pkg: SkillPackage{
+				Name: "folder-name",
+				Entries: []SkillEntry{
+					{Name: "UI_taste skill", PackagePath: "SKILL.md", InstallPath: "folder-name/SKILL.md"},
+				},
+			},
+			command: "`/ui-taste-skill`",
+		},
+		{
+			name: "punctuation separators",
+			pkg: SkillPackage{
+				Name: "when-stuck",
+				Entries: []SkillEntry{
+					{Name: "When Stuck - Problem-Solving Dispatch", PackagePath: "SKILL.md", InstallPath: "when-stuck/SKILL.md"},
+				},
+			},
+			command: "`/when-stuck-problem-solving-dispatch`",
+		},
+		{
+			name: "package fallback",
+			pkg: SkillPackage{
+				Name: "Fallback Skill",
+				Entries: []SkillEntry{
+					{Name: "!!!", PackagePath: "SKILL.md", InstallPath: "fallback/SKILL.md"},
+				},
+			},
+			command: "`/fallback-skill`",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := skillGuideCommand(test.pkg); got != test.command {
+				t.Fatalf("skillGuideCommand() = %s, want %s", got, test.command)
+			}
+		})
+	}
+}
+
 func TestSkillPackageCatalogDiscoversSyntheticNestedEntriesAndPayloads(t *testing.T) {
 	packages, err := discoverSkillPackages(fstest.MapFS{
 		"skills/multi/SKILL.md":                 {Data: []byte("---\nname: multi\ndescription: Multi skill\n---\n# Multi\n")},
@@ -304,8 +371,8 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		"`detect_impact`",
 		"## Skill Selection Guide",
 		"AI agent chooses the skill that fits the work.",
-		"| When you need to... | Use |",
-		"|---------------------|-----|",
+		"| When you need to... | Command | Use |",
+		"|---------------------|---------|-----|",
 		"file-context",
 		"file-hotspots",
 	} {
@@ -325,6 +392,7 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		}
 	}
 	requireContains(t, text, "`.agents/skills/"+packages[0].Entries[0].InstallPath+"`")
+	requireContains(t, text, "| use when user ask to review spec | `/architect-review` | `.agents/skills/Architect-review/SKILL.md` |")
 	foundProblemSolving := false
 	for _, pkg := range packages {
 		if pkg.Name != "problem-solving" {
@@ -333,7 +401,11 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		foundProblemSolving = true
 		entry := primarySkillEntry(pkg)
 		requireContains(t, text, "Use when the user asks to solve a hard problem.")
+		requireContains(t, text, "`/problem-solving`")
 		requireContains(t, text, "`.agents/skills/"+entry.InstallPath+"`")
+		if strings.Contains(text, "`/collision-zone-thinking`") {
+			t.Fatalf("Skill Selection Guide should not expose nested problem-solving child commands:\n%s", text)
+		}
 		if strings.Contains(text, "`.agents/skills/problem-solving/collision-zone-thinking/SKILL.md`") {
 			t.Fatalf("Skill Selection Guide should show only the primary problem-solving entry:\n%s", text)
 		}
@@ -352,7 +424,7 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		t.Fatalf("Skill Selection Guide should not include package root directories in Use column:\n%s", text)
 	}
 	if strings.Contains(text, "| Package | Entries | Use |") {
-		t.Fatalf("Skill Selection Guide should use When/Use table form, got old package table:\n%s", text)
+		t.Fatalf("Skill Selection Guide should use When/Command/Use table form, got old package table:\n%s", text)
 	}
 	if strings.Contains(text, "Use Anvien workflow skills only for the retained domains below") {
 		t.Fatalf("AGENTS.md contains obsolete four-skill wording:\n%s", text)
@@ -386,6 +458,8 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 	}
 	claudeText := string(claudeContent)
 	requireContains(t, claudeText, "`.claude/skills/"+packages[0].Entries[0].InstallPath+"`")
+	requireContains(t, claudeText, "| use when user ask to review spec | `/architect-review` | `.claude/skills/Architect-review/SKILL.md` |")
+	requireContains(t, claudeText, "`/problem-solving`")
 	if strings.Contains(claudeText, ".agents/skills/") || strings.Contains(claudeText, ".claude/skills/anvien/") {
 		t.Fatalf("CLAUDE.md uses the wrong skill surface:\n%s", claudeText)
 	}

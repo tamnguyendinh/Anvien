@@ -4,7 +4,7 @@ Title: Skill Guide Command Alias Column
 
 Date: 2026-06-05
 
-Status: Planned
+Status: Complete
 
 Companion files:
 
@@ -176,7 +176,7 @@ Risk handling:
 
 ## Phase Checklist
 
-- [ ] P0-A: Confirm codebase facts and impact before editing.
+- [x] P0-A: Confirm codebase facts and impact before editing.
   - Goal: establish exact source surfaces and blast radius.
   - Work Steps:
     1. Run `anvien analyze --force`.
@@ -185,7 +185,7 @@ Risk handling:
   - Implementation Gate: impact evidence is recorded in the evidence ledger.
   - Acceptance: plan evidence names the touched source files, linked tests, and risk level.
 
-- [ ] P1-A: Add deterministic command alias generation.
+- [x] P1-A: Add deterministic command alias generation.
   - Goal: derive a command alias from current primary skill entry name.
   - Work Steps:
     1. Add `skillGuideCommand(pkg SkillPackage) string`.
@@ -195,7 +195,7 @@ Risk handling:
   - Implementation Gate: no package discovery or install code is changed.
   - Acceptance: normalization examples pass in focused tests.
 
-- [ ] P2-A: Add the `Command` column to generated guide rendering.
+- [x] P2-A: Add the `Command` column to generated guide rendering.
   - Goal: render `When you need to... | Command | Use` for both `AGENTS.md` and `CLAUDE.md`.
   - Work Steps:
     1. Update the generated table header.
@@ -205,7 +205,7 @@ Risk handling:
   - Implementation Gate: `skillGuideNeed` and `skillGuideUse` behavior remains unchanged except for table placement.
   - Acceptance: generated blocks contain the three-column table with one command per package row.
 
-- [ ] P3-A: Update focused tests for shape, aliases, and primary-entry behavior.
+- [x] P3-A: Update focused tests for shape, aliases, and primary-entry behavior.
   - Goal: prevent drift between skill source, command alias, and generated output.
   - Work Steps:
     1. Update existing generated guide assertions.
@@ -216,7 +216,7 @@ Risk handling:
   - Implementation Gate: tests must not hardcode all current skill rows as the behavioral source of truth.
   - Acceptance: focused tests fail before the implementation and pass after it.
 
-- [ ] P4-A: Validate generated output and command alias inventory.
+- [x] P4-A: Validate generated output and command alias inventory.
   - Goal: prove normal generation produces correct `AGENTS.md` and `CLAUDE.md` content.
   - Work Steps:
     1. Run full build before tests.
