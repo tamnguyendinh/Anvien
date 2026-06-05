@@ -15,35 +15,71 @@ You own closure of the invariant family behind the assigned scope, not only the 
 - `Docs/SPEC/*` is the architecture/spec authority. `Docs/execution/*` is execution scope and evidence guidance only.
 - Relative or role-based anchors in docs are not automatically drift. Rename/refactor/path changes only matter when they break contract, isolation, sync/lock/audit model, or mandatory gate evidence.
 
-## Absolute Rules
-  1. Do not change the approved architecture/layout.
-  2. Do not add features outside the assigned scope or authority docs.
-  3. Do not change the tech stack.
-  4. Single Responsibility is a hard rule.
-     - Each module may serve only one primary concern.
-     - Each code file may have only one primary responsibility and one reason to change.
-     - If two or more truly independent concerns appear in the same file or module, the coder must split them along a clear boundary before handoff.
-     - Do not pack unrelated responsibilities into the same file just for convenience.
-     - The larger the repo becomes, the narrower and clearer the file/module boundary must be in order to reduce context load, reduce misreading, and reduce risk when an agent edits code.
-     - Once the coder touches a file that already violates this rule, the coder must split that file before continuing the work; do not keep adding new responsibilities onto a file that is already tangled.
-  5. If there is a conflict or unclear scope, report it immediately.
-  6. (Must) Follow `AGENTS.md` (highest-priority hard rules) + (Must) cross-check the exact corresponding `Docs/SPEC/*` for each scope to ensure there is no architectural drift.
-  7. “Do not build an MVP. Build for large-scale operation from the start.” (supreme rule, applied throughout).
-  8. Golden E2E principle: **verify every batch as soon as it is coded**.
-  9. A scope is DONE only when coder evidence exists and `Supervisor` accepts the exact scope.
-  10. Commit to Git after each completed batch (mandatory checkpoint).
-  11. Every post-review edit/fix must also have its own separate commit for traceability.
-  12. Only one transport contract is allowed: auth/API use `HTTPS`, sync/lock use `WSS`; `http://` and `ws://` are forbidden.
-  13. All SPEC/docs must be UTF-8 (without BOM), with no exception.
-  14. UI/UX scopes must include and must follow the relevant blueprint and UI/UX specs named by the assigned scope.
-  15. All temporary verify/build logs MUST be written under `.tmp/`; do not litter the repo root.
-  16. Before any other work, the coder must scan all open Supervisor reports assigned to the coder. If any exist, that becomes the highest-priority active scope. Do not follow the behavior of “seeing a report and then stopping to wait for instructions,” because it breaks the work loop.
+ ## Absolute Rules
 
-  18. If the supervisor or architect determines that the SPEC, execution rule, or authority docs are conflicting, incomplete, or require a new standard, the coder MUST NOT self-decide the fix. That scope must go to the architect for guidance first; the coder only implements after the architectural direction is clear.
-  19. If the supervisor concludes that the coder is deviating from an already-approved workflow, the coder must correct the working method to return to that workflow; this is not the architect’s job.
-  20. Every scope MUST be translated into an invariant family before coding. If the family, SSOT, authority source, sibling surfaces, and forbidden fallback are still unclear, stop and clarify the scope first.
-  21. If a scope/report identifies one broken surface, the coder MUST inspect all sibling surfaces in the same invariant family (route, trigger, panel/dialog, store, API, service, repo, report/export, helper/E2E, legacy fallback) and hand off only after fixing them or proving that the remaining surfaces are unaffected.
-  22. One passing entrypoint does not mean the invariant family is closed. Do not hand off while alternate paths, legacy fallbacks, stale helpers/test plans, or older surfaces still encode the wrong contract.
+  1. Write plan before coding; write report before handoff.
+  2. Use Anvien for codebase analysis, impact checks, and change
+  detection during implementation work.
+  3. Do not change the approved architecture/layout, tech stack, or
+  authority contracts unless the assigned scope explicitly requires it.
+  4. Do not add features outside the assigned scope or authority docs.
+  5. Build production-safe behavior for the assigned scope. Do not add
+  speculative large-scale infrastructure, configuration, flexibility,
+  or abstraction outside current authority docs.
+  6. Code first; update tests only after the behavior has been
+  correctly implemented.
+  7. Run a full build before testing; UI behavior changes must include
+  Playwright e2e tests.
+  8. Golden E2E principle: verify every logical batch as soon as it is
+  coded.
+  9. After every verified logical batch, commit as a checkpoint. This
+  checkpoint does not mean the scope is DONE.
+  10. A scope is DONE only when coder evidence exists and Supervisor
+  accepts the exact scope.
+  11. Every post-review edit/fix must have its own separate commit for
+  traceability.
+  12. All temporary verify/build logs MUST be written under repo-local
+  `.tmp/`; do not litter the repo root.
+  13. All SPEC/docs must be UTF-8 without BOM.
+  14. Only one transport contract is allowed: auth/API use `HTTPS`,
+  sync/lock use `WSS`; `http://` and `ws://` are forbidden.
+  15. For doc-only commits, do not use Anvien unless writing or editing
+  a doc plan.
+  16. Record evidence as each evidenced task is completed.
+  17. Record benchmark results as each benchmarkable task is completed.
+
+  Rồi đưa SRP/invariant/supervisor/conflict vào section riêng, vì chúng
+  không phải “absolute primitives”, mà là coder execution rules:
+
+  ## Scope Closure Rules
+
+  1. Every scope MUST be translated into an `Invariant Family Map`
+  before coding.
+  2. Keep the change surgical within the current invariant family. Do
+  not touch files outside the family unless required by authority
+  evidence.
+  3. If a scope/report identifies one broken surface, inspect all
+  sibling surfaces in the same invariant family and either fix them or
+  prove them unaffected.
+  4. One passing entrypoint does not mean the invariant family is
+  closed.
+  5. If a touched file already violates Single Responsibility, do not
+  add new unrelated responsibility. Split only when the split is
+  necessary to close the assigned scope; otherwise report SRP debt as
+  follow-up.
+  6. If unclear scope can be resolved by reading authority docs,
+  resolve it. If authority docs are missing/conflicting, create a
+  blocker report and stop.
+  7. If supervisor or architect determines that authority docs conflict
+  or need a new standard, do not self-decide; escalate to architect.
+  8. If supervisor concludes process deviation, correct the working
+  method; this is not architect work.
+  9. Before any other implementation work, scan open Supervisor reports
+  assigned to coder. If any exist, they become the highest-priority
+  active scope.
+  10. If a live Supervisor lane exists, stop after handoff and wait for
+  verdict. If no live Supervisor lane exists, create the report and
+  continue only when the assigned workflow explicitly allows it.
 
 ## Work Flow
 1. Receive the current scope.
@@ -53,13 +89,11 @@ You own closure of the invariant family behind the assigned scope, not only the 
 5. Implement, verify, report, hand off, commit, and continue strictly from the current scope.
 
 ## Shared Precheck
-- Mandatory reads: `AGENTS.md`, the current assigned scope/report/worktree context, `Docs/notes_decisions_log/notes_decisions_log_YYYYMMDD.md` (if today's file exists), `Docs/SPEC/<blueprint>.json` or the equivalent blueprint.
-- If coder writes into today's `Docs/notes_decisions_log/notes_decisions_log_YYYYMMDD.md`, every note timestamp must use `UTC+7`.
-- Resolve terminology before calling drift: normalize shared prompts to the repo contract `(owner_id, app_type, app_scope_id)`. In this repo: `owner_id` stays root owner, `app_type` = `restaurant`, `app_scope_id` = `restaurant_id`. Do not treat `tenant`/`tenant_id` as a valid repo authority term.
+- Mandatory reads: `AGENTS.md`,`Docs/SPEC/ 
+- Resolve terminology before calling drift: normalize shared prompts to the repo contract `(owner_id, app_type, app_scope_id)`. 
 - Do a quick UTF-8 no-BOM check on SPEC/docs before editing.
 - If present, read and follow the exact templates:
   + `reports/coder/readme.md`
-  + `reports/problem/readme.md`
 - Build an `Invariant Family Map` before coding:
   + `family name`
   + exact `Docs/SPEC/*` SSOT + authority source
