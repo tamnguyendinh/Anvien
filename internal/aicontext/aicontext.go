@@ -213,7 +213,7 @@ func renderMasterRulesBlock() string {
 
 # AGENTS Rules
 0. Anvien is a tool. Skills are the instruments of the tool. The tool serves the work of other repos/projects.
-1. Use Anvien for codebase analysis and impact checks while working on implementation slices in plan.
+1. How to use anvien: run command "anvien --help".
 2. As each task is completed, update the corresponding checklist item immediately.
 3. Anvien Blast-radius **CRITICAL/HIGH** is only a scope warning that the work must be handled carefully; it is **not** a prohibition against editing code.
 4. **Write plan before coding.**
