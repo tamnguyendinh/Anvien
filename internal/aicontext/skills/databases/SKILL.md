@@ -157,6 +157,7 @@ CREATE INDEX idx_users_status_created ON users(status, created_at DESC);
 - **[mongodb-atlas.md](references/mongodb-atlas.md)** - Atlas cloud setup, clusters, monitoring, search
 
 ### PostgreSQL References
+- **[postgresql-best-practices.md](references/postgresql-best-practices.md)** - Rule-based performance checks: FK indexes, JOIN support indexes, partial indexes
 - **[postgresql-queries.md](references/postgresql-queries.md)** - SELECT, JOINs, subqueries, CTEs, window functions
 - **[postgresql-psql-cli.md](references/postgresql-psql-cli.md)** - psql commands, meta-commands, scripting
 - **[postgresql-performance.md](references/postgresql-performance.md)** - EXPLAIN, query optimization, vacuum, indexes
