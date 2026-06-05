@@ -4,7 +4,7 @@ Title: Codex And Claude Skill Layout Split
 
 Date: 2026-06-05
 
-Status: Implementation validation recorded; detect-changes and commit pending
+Status: Complete
 
 Companion files:
 
@@ -210,9 +210,11 @@ Result:
 - high-risk changed source files included `internal/aicontext/aicontext.go`, `internal/aicontext/skill_packages.go`, `internal/cli/command.go`, and `internal/mcp/resources.go`;
 - output also reported pre-existing/user README/readme changes, which were not staged for this implementation slice.
 
-Pending evidence:
+Implementation commit:
 
-- implementation commit hash
+```text
+45f109d Split Codex and Claude skill layouts
+```
 
 ## E6 - Plan Review On 2026-06-05
 

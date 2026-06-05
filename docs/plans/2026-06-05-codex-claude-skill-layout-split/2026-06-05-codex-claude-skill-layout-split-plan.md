@@ -4,7 +4,7 @@ Title: Codex And Claude Skill Layout Split
 
 Date: 2026-06-05
 
-Status: In Progress - implementation validation complete; detect-changes and commit pending
+Status: Complete
 
 Companion files:
 
@@ -414,7 +414,7 @@ This is not a source-of-truth change for skills. It is a consistency update so M
   - Implementation Gate: build has passed before validation tests.
   - Acceptance: evidence and benchmark ledgers record generated output inventory.
 
-- [ ] [P3-B] Build, test, detect changes, and commit.
+- [x] [P3-B] Build, test, detect changes, and commit.
   - Goal: close the approved implementation slice safely.
   - Work Steps: run full build; run focused tests; run broader relevant Go tests; run `anvien detect-changes --repo Anvien --scope all`; record failures and fixes; commit only after validation passes.
   - Implementation Gate: all prior phases are complete.

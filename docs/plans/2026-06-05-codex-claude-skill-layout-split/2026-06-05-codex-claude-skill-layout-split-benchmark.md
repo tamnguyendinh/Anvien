@@ -4,7 +4,7 @@ Title: Codex And Claude Skill Layout Split
 
 Date: 2026-06-05
 
-Status: Implementation measurements recorded; commit pending
+Status: Complete
 
 Companion files:
 
