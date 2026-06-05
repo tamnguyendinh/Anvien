@@ -1,22 +1,22 @@
 # Anvien (version: `1.2.4`)
 
 ```md
-## **Anvien is a code map for AI coding agents.**
+## (2 in 1) — Intelligence Graph Knowledge Map + Skill-Kit for AI.
 ```
 
-## Why Use Anvien?
 ```md
-> **Anvien builds one of the fastest and most accurate code intelligence graphs for large repositories.**
+## Why Use Anvien?
+
+> Anvien builds one of the fastest and most accurate code intelligence graphs for large repositories.
+
+> When you vibe code with AI, the context window is always limited. The longer a session runs, the easier it is for the agent to lose track of information it already read, trace the same code again, or misunderstand how files, functions, and modules relate to each other.
+
+> Anvien solves this by building a connected map of your codebase: which files relate to which files, which functions call each other, and which modules belong to each execution flow. This helps AI agents understand the project structure faster, navigate relationships across the codebase, and spend less time rediscovering context.
 ```
-
-When you vibe code with AI, the context window is always limited. The longer a session runs, the easier it is for the agent to lose track of information it already read, trace the same code again, or misunderstand how files, functions, and modules relate to each other.
-
-Anvien solves this by building a connected map of your codebase: which files relate to which files, which functions call each other, and which modules belong to each execution flow. This helps AI agents understand the project structure faster, navigate relationships across the codebase, and spend less time rediscovering context.
-
 
 ---
 
-## Important notice: **Anvien has no official cryptocurrency, token, or coin. Any token/coin using the Anvien name is not affiliated with, endorsed by, or created by this project or its maintainers.**
+## Important notice: *Anvien has no official cryptocurrency, token, or coin. Any token/coin using the Anvien name is not affiliated with, endorsed by, or created by this project or its maintainers.*
 
 Anvien indexes a local codebase into a knowledge graph, then exposes that graph to AI coding agents, CLI commands, and a local Web UI.
 
