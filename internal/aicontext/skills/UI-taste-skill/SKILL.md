@@ -1,6 +1,6 @@
 ---
-name: taste-skill-index
-description: Use when the user asks to choose a Taste Skill workflow.
+name: UI-taste-skill
+description: Use when the user asks for frontend visual taste, UI redesign, image-to-code UI work, design image generation, brand kit direction, or anti-generic AI UI output.
 ---
 
 # Skill Selection Guide
