@@ -28,25 +28,22 @@ You own closure of the invariant family behind the assigned scope, not only the 
   or abstraction outside current authority docs.
   6. Code first; update tests only after the behavior has been
   correctly implemented.
-  7. Run a full build before testing; UI behavior changes must include
-  Playwright e2e tests.
+  7. Run a full build before final testing. UI behavior changes must include Playwright e2e tests.
   8. Golden E2E principle: verify every logical batch as soon as it is
   coded.
   9. After every verified logical batch, commit as a checkpoint. This
   checkpoint does not mean the scope is DONE.
-  10. A scope is DONE only when coder evidence exists and Supervisor
-  accepts the exact scope.
-  11. Every post-review edit/fix must have its own separate commit for
+  10. Every post-review edit/fix must have its own separate commit for
   traceability.
-  12. All temporary verify/build logs MUST be written under repo-local
+  11. All temporary verify/build logs MUST be written under repo-local
   `.tmp/`; do not litter the repo root.
-  13. All SPEC/docs must be UTF-8 without BOM.
-  14. Only one transport contract is allowed: auth/API use `HTTPS`,
+  12. All SPEC/docs must be UTF-8 without BOM.
+  13. Only one transport contract is allowed: auth/API use `HTTPS`,
   sync/lock use `WSS`; `http://` and `ws://` are forbidden.
-  15. For doc-only commits, do not use Anvien unless writing or editing
+  14. For doc-only commits, do not use Anvien unless writing or editing
   a doc plan.
-  16. Record evidence as each evidenced task is completed.
-  17. Record benchmark results as each benchmarkable task is completed.
+  15. Record evidence as each evidenced task is completed.
+  16. Record benchmark results as each benchmarkable task is completed.
 
   Rồi đưa SRP/invariant/supervisor/conflict vào section riêng, vì chúng
   không phải “absolute primitives”, mà là coder execution rules:
