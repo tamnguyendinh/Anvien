@@ -8,7 +8,7 @@ Status: READY FOR SUPERVISOR REVIEW
 - Coder: gpt-5-codex
 - Scope: implement `docs/plans/2026-06-06-aicontext-rule1-help-wording/2026-06-06-aicontext-rule1-help-wording-plan.md`
 - Authority: `AGENTS.md`, `.agents/skills/coder/SKILL.md`, user-provided rule-1 replacement wording
-- Implementation checkpoint: pending until git checkpoint is created.
+- Implementation checkpoint: `8aa2493 fix(aicontext): update generated rule help wording`.
 
 ## Invariant Family Map
 - Family name: generated AI context master rule wording.

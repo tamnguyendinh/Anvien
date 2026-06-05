@@ -62,4 +62,4 @@ Status: Completed
   Affected processes: none reported in final detect output.
 
 - Implementation checkpoint:
-  Pending until git checkpoint is created.
+  `8aa2493 fix(aicontext): update generated rule help wording`.
