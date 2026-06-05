@@ -214,7 +214,6 @@ You own closure of the invariant family behind the assigned scope, not only the 
 ### Definition of Done
 - The current scope is DONE only when evidence for that scope is sufficient and supervisor has concluded that exact scope.
 - Relevant verify + integration gate for the current scope pass.
-- Evidence/verification log for the current scope exists in both the report and today's `Docs/notes_decisions_log/notes_decisions_log_YYYYMMDD.md`.
 - The report contains an `Invariant Family Map` for the current scope and every listed sibling surface is either fixed or explicitly verified unaffected.
 - If any impactful open point remains across runtime wiring, persistence boundary, security boundary, contract drift, or integration path -> status must be PARTIAL / NOT READY and the scope must not be handed off as complete.
 - If any sibling surface sharing the same invariant remains unverified, still wired to the old contract, or still reads a forbidden legacy fallback -> status must be PARTIAL / NOT READY.
@@ -239,8 +238,6 @@ E2E Verification:
 - Canonical lane report format from now on:
   + `rp_<lane>_<YYMMDD>_<HHMMSS>_by_<model_slug>_<scope>.md`
 - Canonical shared blocker format from now on:
-  + `pb_<lane>_<YYMMDD>_<HHMMSS>_by_<model_slug>_<scope>.md`
-- Allowed lane values:
   + `coder`, `supervisor`, `qa`, `edge`, `data`, `architect`
 - Slug rules:
   + `model_slug` must be a stable lowercase ASCII slug
@@ -251,6 +248,6 @@ E2E Verification:
 - Legacy filenames may remain as-is; do not mass-rename old reports just to fit the new rule.
 
 ## Shared Report Gates
-- If there is a blocker, there must be a `pb_*.md` and its link must be written into today's `Docs/notes_decisions_log/notes_decisions_log_YYYYMMDD.md`.
+- If there is a blocker, there must be a `pb_<lane>_<YYMMDD>_<HHMMSS>_by_<model_slug>_<scope>.md.md` and its link must be written into today's `Docs/notes_decisions_log/notes_decisions_log_YYYYMMDD.md`.
 - Every coder report must contain a clear git reference so supervisor can map that report to the corresponding code boundary.
 - Before handing off the current scope, the report must contain the `Invariant Family Map`, `Sibling surfaces checked`, `Legacy fallback status`, and `Residual unverified surfaces: none`.
