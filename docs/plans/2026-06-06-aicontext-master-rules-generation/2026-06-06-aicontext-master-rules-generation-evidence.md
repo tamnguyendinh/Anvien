@@ -72,4 +72,4 @@ Benchmark: docs/plans/2026-06-06-aicontext-master-rules-generation/2026-06-06-ai
 
 ## E4 - Commit Evidence
 
-Pending until git checkpoint is created.
+- Implementation checkpoint: `31c1e5b fix(aicontext): generate master rules`.

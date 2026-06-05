@@ -8,7 +8,7 @@ Status: READY FOR SUPERVISOR REVIEW
 - Coder: gpt-5-codex
 - Scope: implement `docs/plans/2026-06-06-aicontext-master-rules-generation/2026-06-06-aicontext-master-rules-generation-plan.md`
 - Authority: `AGENTS.md`, `.agents/skills/coder/SKILL.md`, user-provided master rules block, current repo evidence
-- Implementation checkpoint: pending until git checkpoint is created.
+- Implementation checkpoint: `31c1e5b fix(aicontext): generate master rules`.
 
 ## Invariant Family Map
 - Family name: AI context generated repository rules.

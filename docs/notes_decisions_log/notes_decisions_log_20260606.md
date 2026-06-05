@@ -11,6 +11,7 @@
 ## AI Context Master Rules Generation
 - Report: `reports/coder/rp_coder_260606_023426_by_gpt-5-codex_aicontext-master-rules-generation.md`.
 - Plan: `docs/plans/2026-06-06-aicontext-master-rules-generation/2026-06-06-aicontext-master-rules-generation-plan.md`.
+- Commit: `31c1e5b fix(aicontext): generate master rules`.
 - Decision: the repository master rule block must be emitted by `internal/aicontext/aicontext.go` into generated `AGENTS.md` and `CLAUDE.md`, not maintained only as hand-written repo text.
 - Evidence: full build sequence passed, `go test ./internal/aicontext ./internal/cli -count=1` passed, generated output contains `# Master iron rules`, `# AGENTS Rules`, and rules 0 through 10 in both target files, and `anvien detect-changes --repo Anvien --scope all` passed with risk `low`.
 - Residual unverified surfaces: none.
