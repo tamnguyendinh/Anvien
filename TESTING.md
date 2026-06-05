@@ -35,6 +35,21 @@ npm run build               # package runtime build
 npm test                    # reminder: Go tests own the runtime now
 ```
 
+**Anvien full build for global CLI/MCP behavior**
+
+When the change affects commands, analyze output, MCP behavior, generated AI context, skill installation, package runtime behavior, or anything users/agents execute through the global `anvien` command, a local package build is not enough. Full build means the globally invoked runtime must be updated and verified.
+
+```powershell
+cd E:\Anvien\anvien
+npm install
+npm run build
+npm install -g .
+Get-Command anvien
+anvien version
+```
+
+If `anvien mcp` is already running, stop and restart that MCP process after `npm install -g .`; otherwise the agent may keep using the stale global runtime. Verification evidence for these changes must use the global `anvien` command after reinstall, not only `go run` or `anvien\bin\anvien.exe`.
+
 **File projection / contract focus**
 
 ```bash
@@ -92,7 +107,8 @@ Run the smallest useful validation for the change.
 | ----------- | ------------------------- |
 | Docs only | `git diff --check` |
 | Docs describing current behavior | Source or Anvien evidence for the claim, then `git diff --check` |
-| CLI command, MCP tool, graph query, ingestion, LadybugDB | `go test ./cmd/... ./internal/... -count=1`, plus package build when command packaging changed. |
+| CLI command, MCP tool, graph query, ingestion, LadybugDB | `go test ./cmd/... ./internal/... -count=1`, plus package build when command packaging changed; use the global CLI/MCP full build above when behavior is exercised through `anvien` or `anvien mcp`. |
+| Analyze output, generated `AGENTS.md` / `CLAUDE.md`, repo skill installation, or setup skill layout | Global CLI/MCP full build above, restart any running `anvien mcp`, then run analyze/setup smoke with the global `anvien` command on the real target repo. |
 | Analyze file classification metrics | `go test ./internal/analyze ./internal/cli ./internal/graphaccuracy -count=1`, plus an analyze smoke that checks `parsedCode`, `documents`, `metadataOnly`, `dedicatedAnalyzer`, `scriptNoExtractor`, `staticAssets`, `unsupportedLanguage`, `unknown`, and `failed`. |
 | File projection, File Map/File Detail API, file-aware MCP/CLI | `go test ./internal/filecontext ./internal/cli ./internal/httpapi ./internal/mcp -count=1`, contract check, and Web tests if browser behavior changed. |
 | Narrow core logic | Targeted Go package test, for example `go test ./internal/<pkg> -run <TestName> -count=1`; broaden if storage/MCP/API wiring is involved. |
@@ -176,6 +192,15 @@ Local checks before pushing:
 go test ./cmd/... ./internal/... -count=1
 cd anvien && npm run build && npm test
 cd ../anvien-web && npx tsc -b --noEmit && npm test
+```
+
+For command/runtime behavior that users or agents consume through the installed tool, replace the package-build-only line with the global full build flow:
+
+```powershell
+cd E:\Anvien\anvien
+npm run build
+npm install -g .
+anvien version
 ```
 
 The pre-commit hook is useful for formatting/typecheck feedback, but do not treat it as a replacement for package-specific validation.
