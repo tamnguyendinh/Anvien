@@ -19,7 +19,7 @@ Required only for the packaged Windows launcher:
 
 - PowerShell
 
-Build and link the local CLI from source:
+Build and link the local CLI from source for development:
 
 ```powershell
 cd anvien
@@ -30,10 +30,31 @@ npm link
 anvien --version
 ```
 
+For production-like validation of Anvien as the tool used by agents and users, run the full build instead of only building the local package binary.
+
 If you are using Codex CLI or Claude Code inside this repository, you can also ask the agent:
 
 ```text
 Install Anvien from this repository and configure its MCP integration.
+```
+
+---
+
+## Full Build
+
+Full build means run the whole command sequence below from the repository root.
+
+```powershell
+cd .\anvien
+npm install
+npm run build
+npm install -g .
+Get-Command anvien
+anvien version
+cd ..
+powershell -ExecutionPolicy Bypass -File .\anvien-launcher\build.ps1
+anvien version
+anvien analyze . --force
 ```
 
 ---
@@ -542,6 +563,8 @@ To analyze host repos inside Docker, set `WORKSPACE_DIR` to a local folder that 
 
 ## Build And Validation Commands
 
+For full build, use [Full Build](#full-build). Do not replace it with a subset of these commands.
+
 Core:
 
 ```powershell
@@ -585,4 +608,3 @@ powershell -ExecutionPolicy Bypass -File anvien-launcher\build.ps1
 - [README.md](README.md)
 - [CHANGELOG.md](CHANGELOG.md)
 - [GUARDRAILS.md](GUARDRAILS.md)
-- [TESTING.md](TESTING.md)
