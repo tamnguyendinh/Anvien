@@ -641,8 +641,8 @@ func TestSetupInstallsEmbeddedSkillsInsteadOfPackageRootSkills(t *testing.T) {
 	})
 
 	assertInstalledEmbeddedBaseSkills(t, cursorSkillsRoot)
-	if _, err := os.Stat(staleTargetSkill); !os.IsNotExist(err) {
-		t.Fatalf("unmanifested target skill should be removed by generated mirror sync: %v", err)
+	if _, err := os.Stat(staleTargetSkill); err != nil {
+		t.Fatalf("unmanifested custom target skill should be preserved by scoped sync: %v", err)
 	}
 	for _, rel := range []string{
 		filepath.Join("flat-skill", "SKILL.md"),
@@ -674,7 +674,16 @@ func assertInstalledEmbeddedBaseSkills(t *testing.T, root string) {
 			}
 		}
 	}
-	if _, err := os.Stat(filepath.Join(root, ".anvien-skill-manifest.json")); err != nil {
+	manifestName := ".anvien-skill-manifest.json"
+	if filepath.Base(root) == "skills" {
+		switch filepath.Base(filepath.Dir(root)) {
+		case ".agents":
+			manifestName = ".agents-skill-manifest.json"
+		case ".claude":
+			manifestName = ".claude-skill-manifest.json"
+		}
+	}
+	if _, err := os.Stat(filepath.Join(root, manifestName)); err != nil {
 		t.Fatalf("skill manifest was not installed: %v", err)
 	}
 }
@@ -1545,7 +1554,8 @@ export function beta() {
 		".gitignore",
 		"AGENTS.md",
 		"CLAUDE.md",
-		filepath.Join(".claude", "skills", "anvien", "anvien-planner", "SKILL.md"),
+		filepath.Join(".agents", "skills", "anvien-planner", "SKILL.md"),
+		filepath.Join(".claude", "skills", "anvien-planner", "SKILL.md"),
 		filepath.Join(".anvien", "meta.json"),
 	} {
 		if _, err := os.Stat(filepath.Join(dir, rel)); err != nil {
@@ -1558,8 +1568,11 @@ export function beta() {
 	}
 	if !strings.Contains(string(agents), "<!-- anvien:start -->") ||
 		!strings.Contains(string(agents), "## Skill Selection Guide") ||
-		!strings.Contains(string(agents), ".claude/skills/anvien/anvien-planner/SKILL.md") {
+		!strings.Contains(string(agents), ".agents/skills/anvien-planner/SKILL.md") {
 		t.Fatalf("AGENTS.md missing Anvien context:\n%s", agents)
+	}
+	if strings.Contains(string(agents), ".claude/skills/") || strings.Contains(string(agents), "This project is indexed by Anvien") {
+		t.Fatalf("AGENTS.md contains stale surface or volatile project text:\n%s", agents)
 	}
 	gitignore, err := os.ReadFile(filepath.Join(dir, ".gitignore"))
 	if err != nil {
@@ -1578,7 +1591,8 @@ export function beta() {
 			t.Fatalf(".gitignore missing %q:\n%s", want, gitignore)
 		}
 	}
-	assertInstalledEmbeddedBaseSkills(t, filepath.Join(dir, ".claude", "skills", "anvien"))
+	assertInstalledEmbeddedBaseSkills(t, filepath.Join(dir, ".agents", "skills"))
+	assertInstalledEmbeddedBaseSkills(t, filepath.Join(dir, ".claude", "skills"))
 	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", "generated")); !os.IsNotExist(err) {
 		t.Fatalf("default analyze should not create generated skills dir: %v", err)
 	}

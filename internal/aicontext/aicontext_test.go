@@ -188,15 +188,20 @@ func TestSkillPackagesForRepoPrefersRuntimeFilesystemSource(t *testing.T) {
 	if got := strings.Join(installedPackages, ","); got != "runtime-only" {
 		t.Fatalf("installed runtime package ids mismatch: %s", got)
 	}
-	installedPayload := filepath.Join(dir, ".claude", "skills", "anvien", "runtime-only", "scripts", ".marker")
-	raw, err := os.ReadFile(installedPayload)
-	if err != nil {
-		t.Fatalf("read installed runtime payload: %v", err)
+	for _, root := range []string{
+		filepath.Join(dir, ".agents", "skills"),
+		filepath.Join(dir, ".claude", "skills"),
+	} {
+		installedPayload := filepath.Join(root, "runtime-only", "scripts", ".marker")
+		raw, err := os.ReadFile(installedPayload)
+		if err != nil {
+			t.Fatalf("read installed runtime payload %s: %v", installedPayload, err)
+		}
+		if string(raw) != "two\n" {
+			t.Fatalf("installed payload %s not updated from runtime source: %q", installedPayload, raw)
+		}
 	}
-	if string(raw) != "two\n" {
-		t.Fatalf("installed payload not updated from runtime source: %q", raw)
-	}
-	manifest, err := loadSkillManifest(filepath.Join(dir, ".claude", "skills", "anvien"))
+	manifest, _, err := loadSkillManifestFile(filepath.Join(dir, ".agents", "skills"), codexSkillManifestFileName)
 	if err != nil {
 		t.Fatalf("load runtime manifest: %v", err)
 	}
@@ -227,12 +232,35 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 	if err := os.WriteFile(staleOldNamespace, []byte("# Old Skill\n"), 0o644); err != nil {
 		t.Fatalf("write stale old skill namespace: %v", err)
 	}
-	repoLocalSkill := filepath.Join(dir, ".claude", "skills", "anvien", "my-repo-custom-skill", "SKILL.md")
-	if err := os.MkdirAll(filepath.Dir(repoLocalSkill), 0o755); err != nil {
-		t.Fatalf("mkdir repo-local skill: %v", err)
+	legacyAnvienRoot := filepath.Join(dir, ".claude", "skills", "anvien")
+	legacyManagedSkill := filepath.Join(legacyAnvienRoot, "legacy-managed", "SKILL.md")
+	if err := os.MkdirAll(filepath.Dir(legacyManagedSkill), 0o755); err != nil {
+		t.Fatalf("mkdir legacy Anvien skill: %v", err)
 	}
-	if err := os.WriteFile(repoLocalSkill, []byte("---\nname: my-repo-custom-skill\ndescription: repo local\n---\n# Custom\n"), 0o644); err != nil {
-		t.Fatalf("write repo-local skill: %v", err)
+	if err := os.WriteFile(legacyManagedSkill, []byte("# Legacy Managed\n"), 0o644); err != nil {
+		t.Fatalf("write legacy Anvien skill: %v", err)
+	}
+	legacyManifest := newSkillManifest()
+	legacyManifest.Skills["legacy-managed"] = skillManifestEntry{
+		InstallPath: "legacy-managed",
+		SourceRoot:  "skills/legacy-managed",
+		Hash:        "sha256:legacy",
+		Managed:     true,
+		EntryCount:  1,
+		FileCount:   1,
+	}
+	if err := writeSkillManifest(legacyAnvienRoot, skillManifestFileName, legacyManifest); err != nil {
+		t.Fatalf("write legacy Anvien manifest: %v", err)
+	}
+	codexCustomSkill := filepath.Join(dir, ".agents", "skills", "my-repo-custom-skill", "SKILL.md")
+	claudeCustomSkill := filepath.Join(dir, ".claude", "skills", "my-repo-custom-skill", "SKILL.md")
+	for _, customSkill := range []string{codexCustomSkill, claudeCustomSkill} {
+		if err := os.MkdirAll(filepath.Dir(customSkill), 0o755); err != nil {
+			t.Fatalf("mkdir repo-local skill: %v", err)
+		}
+		if err := os.WriteFile(customSkill, []byte("---\nname: my-repo-custom-skill\ndescription: repo local\n---\n# Custom\n"), 0o644); err != nil {
+			t.Fatalf("write repo-local skill: %v", err)
+		}
 	}
 
 	files, installedPackages, err := GenerateAIContextFiles(dir, "TestProject", stats, Options{})
@@ -262,8 +290,6 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 	for _, want := range []string{
 		startMarker,
 		endMarker,
-		"TestProject",
-		"50 symbols, 100 relationships, 5 execution flows",
 		"Anvien is repo-agnostic",
 		"## Core Rule",
 		"## Always Do",
@@ -285,7 +311,20 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 	} {
 		requireContains(t, text, want)
 	}
-	requireContains(t, text, "`.claude/skills/anvien/"+packages[0].Entries[0].InstallPath+"`")
+	for _, forbidden := range []string{
+		"TestProject",
+		"This project is indexed by Anvien",
+		"50 symbols",
+		"100 relationships",
+		"5 execution flows",
+		".claude/skills/anvien/",
+		".agents/skills/anvien/",
+	} {
+		if strings.Contains(text, forbidden) {
+			t.Fatalf("AGENTS.md contains forbidden fragment %q:\n%s", forbidden, text)
+		}
+	}
+	requireContains(t, text, "`.agents/skills/"+packages[0].Entries[0].InstallPath+"`")
 	foundProblemSolving := false
 	for _, pkg := range packages {
 		if pkg.Name != "problem-solving" {
@@ -294,8 +333,8 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 		foundProblemSolving = true
 		entry := primarySkillEntry(pkg)
 		requireContains(t, text, "Use when the user asks to solve a hard problem.")
-		requireContains(t, text, "`.claude/skills/anvien/"+entry.InstallPath+"`")
-		if strings.Contains(text, "`.claude/skills/anvien/problem-solving/collision-zone-thinking/SKILL.md`") {
+		requireContains(t, text, "`.agents/skills/"+entry.InstallPath+"`")
+		if strings.Contains(text, "`.agents/skills/problem-solving/collision-zone-thinking/SKILL.md`") {
 			t.Fatalf("Skill Selection Guide should show only the primary problem-solving entry:\n%s", text)
 		}
 		break
@@ -309,7 +348,7 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 	if strings.Contains(text, "Package `"+packages[0].Name+"`") {
 		t.Fatalf("Skill Selection Guide should not include package labels in Use column:\n%s", text)
 	}
-	if strings.Contains(text, "`.claude/skills/anvien/"+packages[0].InstallRoot+"/`") {
+	if strings.Contains(text, "`.agents/skills/"+packages[0].InstallRoot+"/`") {
 		t.Fatalf("Skill Selection Guide should not include package root directories in Use column:\n%s", text)
 	}
 	if strings.Contains(text, "| Package | Entries | Use |") {
@@ -327,13 +366,34 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 	if _, err := os.Stat(filepath.Join(dir, ".claude", "skills", oldLower)); !os.IsNotExist(err) {
 		t.Fatalf("old skill namespace should be removed: %v", err)
 	}
-	if _, err := os.Stat(repoLocalSkill); !os.IsNotExist(err) {
-		t.Fatalf("repo-local skill inside generated Anvien namespace should be removed: %v", err)
+	if _, err := os.Stat(legacyAnvienRoot); !os.IsNotExist(err) {
+		t.Fatalf("legacy managed Anvien namespace should be removed: %v", err)
+	}
+	for _, customSkill := range []string{codexCustomSkill, claudeCustomSkill} {
+		if _, err := os.Stat(customSkill); err != nil {
+			t.Fatalf("repo-local custom skill should be preserved at %s: %v", customSkill, err)
+		}
 	}
 	for _, forbidden := range []string{oldDisplay, oldLower, oldUpper, "." + oldLower, oldLower + "://", oldLower + "-"} {
 		if strings.Contains(text, forbidden) {
 			t.Fatalf("AGENTS.md contains old generated name %q:\n%s", forbidden, text)
 		}
+	}
+
+	claudeContent, err := os.ReadFile(filepath.Join(dir, "CLAUDE.md"))
+	if err != nil {
+		t.Fatalf("read CLAUDE.md: %v", err)
+	}
+	claudeText := string(claudeContent)
+	requireContains(t, claudeText, "`.claude/skills/"+packages[0].Entries[0].InstallPath+"`")
+	if strings.Contains(claudeText, ".agents/skills/") || strings.Contains(claudeText, ".claude/skills/anvien/") {
+		t.Fatalf("CLAUDE.md uses the wrong skill surface:\n%s", claudeText)
+	}
+	if strings.Contains(claudeText, "This project is indexed by Anvien") ||
+		strings.Contains(claudeText, "50 symbols") ||
+		strings.Contains(claudeText, "100 relationships") ||
+		strings.Contains(claudeText, "5 execution flows") {
+		t.Fatalf("CLAUDE.md contains volatile indexed-project sentence:\n%s", claudeText)
 	}
 
 	if _, _, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 10}, Options{}); err != nil {
@@ -349,22 +409,35 @@ func TestGenerateAIContextFilesCreatesManagedContextAndSkillPackages(t *testing.
 
 	for _, pkg := range packages {
 		for _, file := range pkg.Files {
-			want := filepath.Join(dir, ".claude", "skills", "anvien", filepath.FromSlash(file.InstallPath))
-			if info, err := os.Stat(want); err != nil || info.IsDir() {
-				t.Fatalf("expected package payload file %s: %v", want, err)
+			for _, root := range []string{
+				filepath.Join(dir, ".agents", "skills"),
+				filepath.Join(dir, ".claude", "skills"),
+			} {
+				want := filepath.Join(root, filepath.FromSlash(file.InstallPath))
+				if info, err := os.Stat(want); err != nil || info.IsDir() {
+					t.Fatalf("expected package payload file %s: %v", want, err)
+				}
 			}
 		}
 	}
-	manifest, err := loadSkillManifest(filepath.Join(dir, ".claude", "skills", "anvien"))
-	if err != nil {
-		t.Fatalf("load skill manifest: %v", err)
-	}
-	if manifest.ManagedBy != skillManifestOwner || len(manifest.Skills) != len(expectedSkillPackageIDs(t)) {
-		t.Fatalf("unexpected manifest: %#v", manifest)
+	for _, manifestSpec := range []struct {
+		root string
+		name string
+	}{
+		{filepath.Join(dir, ".agents", "skills"), codexSkillManifestFileName},
+		{filepath.Join(dir, ".claude", "skills"), claudeSkillManifestFileName},
+	} {
+		manifest, _, err := loadSkillManifestFile(manifestSpec.root, manifestSpec.name)
+		if err != nil {
+			t.Fatalf("load skill manifest: %v", err)
+		}
+		if manifest.ManagedBy != skillManifestOwner || len(manifest.Skills) != len(expectedSkillPackageIDs(t)) {
+			t.Fatalf("unexpected manifest at %s: %#v", filepath.Join(manifestSpec.root, manifestSpec.name), manifest)
+		}
 	}
 }
 
-func TestInstallSkillPackagesToMirrorsSyntheticSourceSnapshot(t *testing.T) {
+func TestInstallSkillPackagesToSyncsManagedRootsAndPreservesCustomRoots(t *testing.T) {
 	dir := t.TempDir()
 	customTarget := filepath.Join(dir, "custom-skill", "SKILL.md")
 	if err := os.MkdirAll(filepath.Dir(customTarget), 0o755); err != nil {
@@ -378,16 +451,19 @@ func TestInstallSkillPackagesToMirrorsSyntheticSourceSnapshot(t *testing.T) {
 		"SKILL.md":         "---\nname: alpha\ndescription: Alpha skill\n---\n# Alpha\n",
 		"scripts/note.txt": "one\n",
 	})
-	result, err := installSkillPackagesTo(dir, []SkillPackage{alpha})
+	old := testSkillPackage("old", map[string]string{
+		"SKILL.md": "---\nname: old\ndescription: Old managed skill\n---\n# Old\n",
+	})
+	result, err := installSkillPackagesTo(dir, []SkillPackage{alpha, old})
 	if err != nil {
 		t.Fatalf("installSkillPackagesTo first sync: %v", err)
 	}
-	if result.Installed != 1 || result.Written != 2 || result.Deleted != 1 || result.Preserved != 0 || result.Stale != 0 {
+	if result.Installed != 2 || result.Written != 3 || result.Deleted != 0 || result.Preserved != 0 || result.Stale != 0 {
 		t.Fatalf("unexpected first sync result: %#v", result)
 	}
 	assertFileContent(t, filepath.Join(dir, "alpha", "scripts", "note.txt"), "one\n")
-	assertNotExists(t, customTarget)
-	assertManifestPackageNames(t, dir, []string{"alpha"})
+	assertFileContent(t, customTarget, "# Custom\n")
+	assertManifestPackageNames(t, dir, []string{"alpha", "old"})
 
 	if err := os.Remove(filepath.Join(dir, "alpha", "scripts", "note.txt")); err != nil {
 		t.Fatalf("remove generated payload: %v", err)
@@ -399,14 +475,6 @@ func TestInstallSkillPackagesToMirrorsSyntheticSourceSnapshot(t *testing.T) {
 	if err := os.WriteFile(extraInsidePackage, []byte("repo local note\n"), 0o644); err != nil {
 		t.Fatalf("write extra generated-root file: %v", err)
 	}
-	oldManaged := filepath.Join(dir, "old", "SKILL.md")
-	if err := os.MkdirAll(filepath.Dir(oldManaged), 0o755); err != nil {
-		t.Fatalf("mkdir old managed: %v", err)
-	}
-	if err := os.WriteFile(oldManaged, []byte("# Old Managed\n"), 0o644); err != nil {
-		t.Fatalf("write old managed: %v", err)
-	}
-
 	alpha = testSkillPackage("alpha", map[string]string{
 		"SKILL.md":          "---\nname: alpha\ndescription: Alpha skill\n---\n# Alpha v2\n",
 		"scripts/note.txt":  "two\n",
@@ -423,7 +491,8 @@ func TestInstallSkillPackagesToMirrorsSyntheticSourceSnapshot(t *testing.T) {
 	assertFileContent(t, filepath.Join(dir, "alpha", "scripts", "note.txt"), "two\n")
 	assertFileContent(t, filepath.Join(dir, "alpha", "references", "new.md"), "new\n")
 	assertNotExists(t, extraInsidePackage)
-	assertNotExists(t, oldManaged)
+	assertNotExists(t, filepath.Join(dir, "old", "SKILL.md"))
+	assertFileContent(t, customTarget, "# Custom\n")
 	assertManifestPackageNames(t, dir, []string{"alpha"})
 
 	alpha = testSkillPackage("alpha", map[string]string{
@@ -449,7 +518,58 @@ func TestInstallSkillPackagesToMirrorsSyntheticSourceSnapshot(t *testing.T) {
 		t.Fatalf("unexpected delete package sync result: %#v", result)
 	}
 	assertNotExists(t, filepath.Join(dir, "alpha"))
+	assertFileContent(t, customTarget, "# Custom\n")
 	assertManifestPackageNames(t, dir, nil)
+}
+
+func TestInstallSkillPackagesToRejectsForeignSameNameRootAndAdoptsExactMatch(t *testing.T) {
+	alpha := testSkillPackage("alpha", map[string]string{
+		"SKILL.md":         "---\nname: alpha\ndescription: Alpha skill\n---\n# Alpha\n",
+		"scripts/note.txt": "one\n",
+	})
+
+	collisionDir := t.TempDir()
+	foreignSkill := filepath.Join(collisionDir, "alpha", "SKILL.md")
+	if err := os.MkdirAll(filepath.Dir(foreignSkill), 0o755); err != nil {
+		t.Fatalf("mkdir foreign skill: %v", err)
+	}
+	if err := os.WriteFile(foreignSkill, []byte("# Foreign Alpha\n"), 0o644); err != nil {
+		t.Fatalf("write foreign skill: %v", err)
+	}
+	result, err := installSkillPackagesTo(collisionDir, []SkillPackage{alpha})
+	if err == nil || !strings.Contains(err.Error(), "skill package root collision") {
+		t.Fatalf("expected foreign root collision, got result=%#v err=%v", result, err)
+	}
+	if result.Collisions != 1 {
+		t.Fatalf("collision count = %d, want 1", result.Collisions)
+	}
+	assertFileContent(t, foreignSkill, "# Foreign Alpha\n")
+
+	adoptionDir := t.TempDir()
+	writeSkillPackageFilesWithoutManifest(t, adoptionDir, alpha)
+	result, err = installSkillPackagesTo(adoptionDir, []SkillPackage{alpha})
+	if err != nil {
+		t.Fatalf("installSkillPackagesTo exact adoption: %v", err)
+	}
+	if result.Adopted != 1 || result.Written != 0 || result.Overwritten != 0 || result.Deleted != 0 || result.Collisions != 0 {
+		t.Fatalf("unexpected adoption result: %#v", result)
+	}
+	assertManifestPackageNames(t, adoptionDir, []string{"alpha"})
+
+	extraDir := t.TempDir()
+	writeSkillPackageFilesWithoutManifest(t, extraDir, alpha)
+	extraFile := filepath.Join(extraDir, "alpha", "extra.md")
+	if err := os.WriteFile(extraFile, []byte("extra\n"), 0o644); err != nil {
+		t.Fatalf("write extra file: %v", err)
+	}
+	result, err = installSkillPackagesTo(extraDir, []SkillPackage{alpha})
+	if err == nil || !strings.Contains(err.Error(), "skill package root collision") {
+		t.Fatalf("expected extra-file collision, got result=%#v err=%v", result, err)
+	}
+	if result.Collisions != 1 {
+		t.Fatalf("extra-file collision count = %d, want 1", result.Collisions)
+	}
+	assertFileContent(t, extraFile, "extra\n")
 }
 
 func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
@@ -530,7 +650,7 @@ func TestSkillGuidanceProtectsExpandedCommandSurface(t *testing.T) {
 	}
 }
 
-func TestGenerateAIContextFilesNoStatsOmitsVolatileCounts(t *testing.T) {
+func TestGenerateAIContextFilesAlwaysOmitsVolatileIndexedProjectSentence(t *testing.T) {
 	dir := t.TempDir()
 	if _, _, err := GenerateAIContextFiles(dir, "TestProject", Stats{Nodes: 50, Edges: 100, Processes: 5}, Options{NoStats: true}); err != nil {
 		t.Fatalf("GenerateAIContextFiles: %v", err)
@@ -541,10 +661,10 @@ func TestGenerateAIContextFilesNoStatsOmitsVolatileCounts(t *testing.T) {
 	}
 	text := string(content)
 	if strings.Contains(text, "50 symbols") || strings.Contains(text, "100 relationships") || strings.Contains(text, "5 execution flows") {
-		t.Fatalf("AGENTS.md contains volatile stats despite --no-stats:\n%s", text)
+		t.Fatalf("AGENTS.md contains volatile stats:\n%s", text)
 	}
-	if !strings.Contains(text, "This project is indexed by Anvien as **TestProject**.") {
-		t.Fatalf("AGENTS.md missing no-stats project sentence:\n%s", text)
+	if strings.Contains(text, "This project is indexed by Anvien") || strings.Contains(text, "TestProject") {
+		t.Fatalf("AGENTS.md contains obsolete indexed-project sentence:\n%s", text)
 	}
 }
 
@@ -690,6 +810,19 @@ func assertManifestPackageNames(t *testing.T, targetDir string, want []string) {
 	sort.Strings(want)
 	if strings.Join(got, ",") != strings.Join(want, ",") {
 		t.Fatalf("manifest package names mismatch:\n got: %s\nwant: %s", strings.Join(got, ","), strings.Join(want, ","))
+	}
+}
+
+func writeSkillPackageFilesWithoutManifest(t *testing.T, targetDir string, pkg SkillPackage) {
+	t.Helper()
+	for _, file := range pkg.Files {
+		target := filepath.Join(targetDir, filepath.FromSlash(file.InstallPath))
+		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+			t.Fatalf("mkdir package file %s: %v", target, err)
+		}
+		if err := os.WriteFile(target, file.Content, 0o644); err != nil {
+			t.Fatalf("write package file %s: %v", target, err)
+		}
 	}
 }
 

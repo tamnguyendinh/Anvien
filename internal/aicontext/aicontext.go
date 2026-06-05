@@ -63,14 +63,15 @@ func GenerateAIContextFiles(repoPath string, projectName string, stats Stats, op
 	if err != nil {
 		return nil, nil, err
 	}
-	content := renderAnvienBlock(projectName, stats, options.NoStats, packages)
-	created := make([]string, 0, 3)
+	agentsContent := renderAnvienBlock(".agents/skills/", packages)
+	claudeContent := renderAnvienBlock(".claude/skills/", packages)
+	created := make([]string, 0, 4)
 
-	agentsResult, err := upsertSection(filepath.Join(repoPath, "AGENTS.md"), content)
+	agentsResult, err := upsertSection(filepath.Join(repoPath, "AGENTS.md"), agentsContent)
 	if err != nil {
 		return nil, nil, err
 	}
-	claudeResult, err := upsertSection(filepath.Join(repoPath, "CLAUDE.md"), content)
+	claudeResult, err := upsertSection(filepath.Join(repoPath, "CLAUDE.md"), claudeContent)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -82,7 +83,7 @@ func GenerateAIContextFiles(repoPath string, projectName string, stats Stats, op
 	}
 	baseSkills := installResult.PackageIDs
 	if len(baseSkills) > 0 {
-		created = append(created, fmt.Sprintf(".claude/skills/anvien/ (%s)", installResult.Summary()))
+		created = append(created, installResult.Summaries...)
 	}
 	if err := removeGeneratedSkills(repoPath); err != nil {
 		return nil, nil, err
@@ -90,17 +91,11 @@ func GenerateAIContextFiles(repoPath string, projectName string, stats Stats, op
 	return created, baseSkills, nil
 }
 
-func renderAnvienBlock(projectName string, stats Stats, noStats bool, packages []SkillPackage) string {
-	statsText := ""
-	if !noStats {
-		statsText = fmt.Sprintf(" (%d symbols, %d relationships, %d execution flows)", stats.Nodes, stats.Edges, stats.Processes)
-	}
-
+func renderAnvienBlock(skillPathPrefix string, packages []SkillPackage) string {
 	var builder strings.Builder
 	builder.WriteString(startMarker + "\n")
 	builder.WriteString("# Anvien - Code Intelligence\n\n")
-	fmt.Fprintf(&builder, "This project is indexed by Anvien as **%s**%s. Use Anvien to understand code, assess impact, navigate, audit graph quality, inspect resolution gaps, run query/accuracy benchmarks, and manage local/indexed repository intelligence.\n\n", projectName, statsText)
-	builder.WriteString("Anvien is repo-agnostic: the same command surface works for any indexed repository. Use the indexed repository name shown above, or a repository name/path from `anvien list`, wherever examples refer to `<repo>`.\n\n")
+	builder.WriteString("Anvien is repo-agnostic: the same command surface works for any indexed repository. Use a repository name/path from `anvien list`, wherever examples refer to `<repo>`.\n\n")
 	builder.WriteString("> If any Anvien command or MCP tool warns that the index is stale, run `anvien analyze --force` from the repository root first.\n\n")
 	builder.WriteString("## Core Rule\n\n")
 	builder.WriteString("Anvien has multiple command surfaces, but they are one tool:\n\n")
@@ -205,7 +200,7 @@ func renderAnvienBlock(projectName string, stats Stats, noStats bool, packages [
 	builder.WriteString("| When you need to... | Use |\n")
 	builder.WriteString("|---------------------|-----|\n")
 	for _, pkg := range packages {
-		fmt.Fprintf(&builder, "| %s | %s |\n", skillGuideNeed(pkg), skillGuideUse(pkg))
+		fmt.Fprintf(&builder, "| %s | %s |\n", skillGuideNeed(pkg), skillGuideUse(pkg, skillPathPrefix))
 	}
 	builder.WriteString("\n" + endMarker)
 	return builder.String()
@@ -273,14 +268,49 @@ func upsertSection(path string, content string) (string, error) {
 	return "appended", nil
 }
 
-func installBaseSkills(repoPath string, packages []SkillPackage) (SkillInstallResult, error) {
-	skillsRoot := filepath.Join(repoPath, ".claude", "skills")
-	skillsDir := filepath.Join(skillsRoot, "anvien")
-	legacySkillsDir := filepath.Join(skillsRoot, "av"+"matrix")
-	if err := os.RemoveAll(legacySkillsDir); err != nil {
-		return SkillInstallResult{}, err
+type baseSkillInstallResult struct {
+	PackageIDs []string
+	Summaries  []string
+}
+
+func installBaseSkills(repoPath string, packages []SkillPackage) (baseSkillInstallResult, error) {
+	codexRoot := filepath.Join(repoPath, ".agents", "skills")
+	claudeRoot := filepath.Join(repoPath, ".claude", "skills")
+	oldLower := "av" + "matrix"
+	for _, legacySkillsDir := range []string{
+		filepath.Join(codexRoot, oldLower),
+		filepath.Join(claudeRoot, oldLower),
+	} {
+		if err := os.RemoveAll(legacySkillsDir); err != nil {
+			return baseSkillInstallResult{}, err
+		}
 	}
-	return installSkillPackagesTo(skillsDir, packages)
+
+	codexResult, err := installSkillPackagesTo(codexRoot, packages)
+	if err != nil {
+		return baseSkillInstallResult{}, err
+	}
+	claudeResult, err := installSkillPackagesTo(claudeRoot, packages)
+	if err != nil {
+		return baseSkillInstallResult{}, err
+	}
+
+	if !skillPackageInstallRootExists(packages, "anvien") {
+		if _, err := removeLegacyManagedSkillRoot(codexRoot, "anvien"); err != nil {
+			return baseSkillInstallResult{}, err
+		}
+		if _, err := removeLegacyManagedSkillRoot(claudeRoot, "anvien"); err != nil {
+			return baseSkillInstallResult{}, err
+		}
+	}
+
+	return baseSkillInstallResult{
+		PackageIDs: codexResult.PackageIDs,
+		Summaries: []string{
+			fmt.Sprintf(".agents/skills/ (%s)", codexResult.Summary()),
+			fmt.Sprintf(".claude/skills/ (%s)", claudeResult.Summary()),
+		},
+	}, nil
 }
 
 func removeGeneratedSkills(repoPath string) error {

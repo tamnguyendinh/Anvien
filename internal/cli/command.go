@@ -299,7 +299,7 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 	cmd.Flags().BoolVar(&progress, "progress", false, "write phase progress to stderr")
 	cmd.Flags().BoolVar(&force, "force", false, "remove previous index output before analyze")
 	cmd.Flags().BoolVar(&enableEmbeddings, "embeddings", false, "enable embedding generation for semantic search")
-	cmd.Flags().BoolVar(&noStats, "no-stats", false, "omit volatile file/symbol counts from AGENTS.md and CLAUDE.md")
+	cmd.Flags().BoolVar(&noStats, "no-stats", false, "deprecated no-op; AGENTS.md and CLAUDE.md no longer include volatile stats")
 	cmd.Flags().BoolVar(&skipGit, "skip-git", false, "index a folder without requiring a .git directory")
 	cmd.Flags().BoolVar(&skipCompatibilityCrossFile, "skip-compatibility-cross-file", false, "diagnostic benchmark mode: skip compatibility cross-file work")
 	cmd.Flags().StringVar(&registryName, "name", "", "register this repo under a custom name in the global registry")
