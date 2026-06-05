@@ -590,9 +590,9 @@ Implementation evidence:
 Graph File-node enrichment outcome:
 
 - Current analyze File nodes already carry `appLayer` and `functionalArea`.
-- `fileRole` and `fileGroup` are authoritative in the shared backend `FileSummary` / file projection path for this slice.
-- CLI/API/Web/MCP read the backend summary field; no Web-only or display-only path classifier was added.
-- Direct graph-node `fileGroup` property enrichment remains a follow-up only if the graph model later requires file identity fields as persisted node properties.
+- E11 originally kept `fileRole` and `fileGroup` authoritative in the shared backend `FileSummary` / file projection path only.
+- Post-review E12 supersedes that outcome: graph `File` nodes now persist `fileRole` and `fileGroup` in the same semantic enrichment path that already persists `appLayer` and `functionalArea`.
+- CLI/API/Web/MCP still read backend-owned fields; no Web-only or display-only path classifier was added.
 
 Validation:
 
@@ -632,3 +632,74 @@ Detect changes:
 Commit:
 
 - `c063bcb feat: add backend file group classification`
+
+## E12 - Supervisor Reject Follow-Up: E2E Reproducibility And Graph File-Node Group
+
+Date: 2026-06-05
+
+Status: completed
+
+Scope:
+
+- Close Supervisor report `reports/Supervisor/rp_supervisor_260605_232104_by_gpt-5-codex_file-role-classification-gap-review.md`.
+- Make `npm run test:e2e -- file-map-test-unresolved.spec.ts` self-contained by letting Playwright start the Vite frontend server.
+- Persist `fileRole` and `fileGroup` on graph `File` nodes during semantic enrichment.
+- Refresh current file-group benchmark evidence after later repo growth changed the full group count from `42` to `47`.
+
+Source / command evidence:
+
+| Check | Result |
+|---|---|
+| Supervisor report | REJECT with three findings: non-reproducible e2e command, graph File-node `fileGroup` missing, stale current benchmark count. |
+| `anvien analyze . --force` before post-review work | Pass in the current workspace before fix work. |
+| `anvien impact symbol "Apply" --uid "Function:internal/semantic/app_layer.go:Apply#1" --repo Anvien --direction upstream` | CRITICAL. `impactedCount=5`; affected files include `internal/analyze/analyze.go`, `internal/cli/command.go`, `internal/graphaccuracy/access_candidate.go`, and `cmd/access-candidate-audit/main.go`. Blast radius is a safety warning, not a prohibition. |
+| `anvien impact file internal\semantic\app_layer.go --repo Anvien --direction upstream` | CRITICAL file-level impact across semantic enrichment consumers. The code change was kept to File-node identity properties only. |
+
+Implementation evidence:
+
+| File | Evidence |
+|---|---|
+| `internal/semantic/app_layer.go` | Added `setFileIdentityGroup` in `semantic.Apply` for graph nodes whose label is `File`. It derives the same file identity group from `filePath`, `appLayer`, `functionalArea`, and `fileRole`; it does not reimplement Web/path display logic. |
+| `internal/semantic/app_layer_test.go` | Added `TestApplyPersistsFileGroupOnFileNodes`, proving `internal/repo/runtime_config.go` gets `fileRole=config` and `fileGroup=backend_support_model_helper`, while docs files do not enter the group. |
+| `anvien-web/playwright.config.ts` | Added Playwright `webServer` so `npm run test:e2e -- file-map-test-unresolved.spec.ts` starts `npm run dev` on `127.0.0.1:5228` instead of depending on a pre-existing server. |
+
+Validation:
+
+| Command | Result |
+|---|---|
+| Full build sequence from repo root (`cd .\anvien`, `npm install`, `npm run build`, `npm install -g .`, `Get-Command anvien`, `anvien version`, `cd ..`, `powershell -ExecutionPolicy Bypass -File .\anvien-launcher\build.ps1`, `anvien version`, `anvien analyze . --force`) | Pass. Version remained `1.2.5`. Analyze after build: `files.scanned=1383`, `parsed_code=682`, `failed=0`, `nodes=84192`, `relationships=122663`, `dependencyEdges=16569`, file projection files `1383`, unresolved `428`. |
+| `go test ./internal/semantic ./internal/filecontext ./internal/contracts ./internal/cli ./internal/httpapi ./internal/mcp -count=1` | Pass. |
+| `npm test -- FileMapPanel.test.tsx FileDetailPanel.test.tsx` | Pass. 2 files, 8 tests. |
+| `npm run test:e2e -- file-map-test-unresolved.spec.ts` | Pass. 1 Chromium test passed; Playwright started the frontend server through `webServer`. |
+| `anvien file-context internal/repo/runtime_config.go --repo Anvien --json` | Pass. Summary has `kind=source`, `appLayer=backend`, `functionalArea=storage`, `fileRole=config`, `fileGroup=backend_support_model_helper`, unresolved `10`. |
+| `.anvien/graph.json` direct inspection | Pass. `File:internal/repo/runtime_config.go` now has `fileGroup=backend_support_model_helper` and `fileRole=config` on the graph File node. |
+| `anvien file-hotspots --repo Anvien --json --sort path --limit 0` | Pass. `fileGroups[backend_support_model_helper]` reports `files=47`, `unresolved=2531`, `roles=adapter:4, analyzer_helper:5, config:6, contract_model:1, fallback_adapter:1, helper:7, model:3, parser_model:15, runtime_model:2, storage_helper:2, test_helper:1`, `appLayers=backend:47`. |
+| 17-file anchor sample check from `file-hotspots` JSON | Pass. Missing from group `0`; assigned roles match the original target breakdown. Current file-hotspots JSON exposes file `unresolved` as the runtime count; the previous closure-time raw/default split remains historical E11 evidence. |
+
+Measured current group coverage:
+
+| Metric | Result |
+|---|---:|
+| Full group files from backend identity rules | 47 |
+| Full group unresolved source sites shown by current file projection | 2531 |
+| Anchor sample files assigned `backend_support_model_helper` | 17 |
+| Anchor sample files missing `backend_support_model_helper` | 0 |
+| Analyze direct group line coverage | 1 |
+| Graph File node `fileGroup` coverage for `internal/repo/runtime_config.go` | 1 |
+| Self-contained Web e2e command coverage | 1 |
+
+Failures / handling:
+
+- Initial Supervisor review found `npm run test:e2e -- file-map-test-unresolved.spec.ts` failed without a running Vite server. The command now passes through Playwright `webServer`.
+- Initial Supervisor review found graph File nodes lacked `fileGroup`. `semantic.Apply` now persists graph File-node `fileRole` and `fileGroup`.
+- Full group count changed from closure-time `42` to current `47` because the repo grew after the original implementation. The benchmark ledger now separates historical closure-time count from current post-review count.
+
+Detect changes:
+
+| Command | Result |
+|---|---|
+| `anvien detect-changes --repo Anvien --scope all` | Pass. Summary risk `low`; `affected_files=6`, `changed_files=6`, `changed_count=33`. Changed app layers: `backend=21`, `backend_test=3`, `config=3`, `docs=6`. Changed functional areas: `configuration=3`, `documentation=6`, `unknown=24`. File layer changed risk `high`; resolution gap changes: `changedGapEntities=18`, `changedGapOccurrenceCount=18`, `analyzer_gap=11`, `non_actionable=7`. Affected files are limited to `internal/semantic/app_layer.go`, `internal/semantic/app_layer_test.go`, `anvien-web/playwright.config.ts`, and the three file-role plan ledgers. |
+
+Commit:
+
+- Post-review fix checkpoint to be created after this report is written; commit hash will be recorded in the plan/evidence ledger after the checkpoint exists.

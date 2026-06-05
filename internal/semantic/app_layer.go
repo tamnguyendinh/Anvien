@@ -133,6 +133,9 @@ func Apply(g *graph.Graph) (Result, error) {
 		}
 		setFunctionalArea(node, functionalClassification)
 		nodeAreas[node.ID] = functionalClassification.Area
+		if node.Label == scopeir.NodeFile {
+			setFileIdentityGroup(node, filePath, classification.Layer, functionalClassification.Area)
+		}
 	}
 
 	result.Metrics.FilePathCacheEntries = len(pathCache)
@@ -385,6 +388,36 @@ func setFunctionalArea(node *graph.Node, classification FunctionalAreaClassifica
 	}
 	node.Properties[FunctionalAreaProperty] = string(classification.Area)
 	node.Properties[FunctionalAreaSourceProperty] = classification.Source
+}
+
+func setFileIdentityGroup(node *graph.Node, filePath string, layer AppLayer, area FunctionalArea) {
+	kind := fileIdentityKind(layer)
+	role := ClassifyFileRole(filePath, kind, string(layer), string(area))
+	node.Properties[FileRoleProperty] = string(role.Role)
+
+	group := ClassifyFileGroup(filePath, kind, string(layer), string(role.Role))
+	if group.Group == "" {
+		delete(node.Properties, FileGroupProperty)
+		return
+	}
+	node.Properties[FileGroupProperty] = string(group.Group)
+}
+
+func fileIdentityKind(layer AppLayer) string {
+	switch {
+	case isTestAppLayer(layer):
+		return "test"
+	case layer == AppLayerGenerated || layer == AppLayerGeneratedContract:
+		return "generated"
+	case layer == AppLayerDocs:
+		return "docs"
+	case layer == AppLayerConfig:
+		return "config"
+	case layer == "" || layer == AppLayerUnknown:
+		return "unknown"
+	default:
+		return "source"
+	}
 }
 
 func inferRelationBackedFunctionalAreas(g *graph.Graph, nodeIndex map[string]int, nodeAreas map[string]FunctionalArea) map[string]FunctionalAreaClassification {

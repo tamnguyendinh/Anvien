@@ -402,6 +402,7 @@ The corrected plan is complete when:
 ## Closure
 
 - Implementation commit: `c063bcb feat: add backend file group classification`
+- Post-review fix: E12 closes Supervisor report `rp_supervisor_260605_232104_by_gpt-5-codex_file-role-classification-gap-review.md`; commit hash to be recorded after commit creation.
 - All checklist items are complete.
 
 ## Risk Notes

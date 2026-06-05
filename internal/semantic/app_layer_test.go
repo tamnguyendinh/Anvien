@@ -141,6 +141,35 @@ func TestApplyPersistsAppLayerAndInfersProcessLayer(t *testing.T) {
 	}
 }
 
+func TestApplyPersistsFileGroupOnFileNodes(t *testing.T) {
+	g := graph.New()
+	g.AddNode(graph.Node{ID: "File:internal/repo/runtime_config.go", Label: scopeir.NodeFile, Properties: graph.NodeProperties{"name": "runtime_config.go", "filePath": "internal/repo/runtime_config.go"}})
+	g.AddNode(graph.Node{ID: "File:docs/guide.md", Label: scopeir.NodeFile, Properties: graph.NodeProperties{"name": "guide.md", "filePath": "docs/guide.md"}})
+
+	if _, err := Apply(g); err != nil {
+		t.Fatalf("Apply() error = %v", err)
+	}
+
+	sourceNode, ok := g.GetNode("File:internal/repo/runtime_config.go")
+	if !ok {
+		t.Fatal("missing source file node")
+	}
+	if got := sourceNode.Properties[FileRoleProperty]; got != string(FileRoleConfig) {
+		t.Fatalf("source file role = %v, want %s", got, FileRoleConfig)
+	}
+	if got := sourceNode.Properties[FileGroupProperty]; got != string(FileGroupBackendSupportModelHelper) {
+		t.Fatalf("source file group = %v, want %s", got, FileGroupBackendSupportModelHelper)
+	}
+
+	docsNode, ok := g.GetNode("File:docs/guide.md")
+	if !ok {
+		t.Fatal("missing docs file node")
+	}
+	if got := docsNode.Properties[FileGroupProperty]; got != nil {
+		t.Fatalf("docs file group = %v, want no group", got)
+	}
+}
+
 func TestApplyUsesMixedForRelationshipBackedMultiLayerNodes(t *testing.T) {
 	g := graph.New()
 	g.AddNode(graph.Node{ID: "Function:backend", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{"name": "backend", "filePath": "internal/analyze/analyze.go"}})

@@ -125,23 +125,26 @@ Source evidence: E5.
 
 ## B6 - Backend Support/Model/Helper File Group Target
 
-Status: measured after corrected implementation
+Status: measured after corrected implementation and refreshed after post-review fix
 
-Source evidence: E10.
+Source evidence: E10, E11, E12.
 
-| Metric | Unit | Baseline before corrected group implementation | Latest before corrected group implementation | Target after corrected implementation |
-|---|---:|---:|---:|---:|
-| `backend_support_model_helper` full group files | files | 0 | 42 | measured from backend identity rules |
-| `backend_support_model_helper` full group default unresolved source sites | source sites | 0 | 1073 | measured from backend identity rules |
-| `backend_support_model_helper` full group raw unresolved source sites | source sites | 0 | 2087 | measured from backend identity rules |
-| Anchor sample files assigned `backend_support_model_helper` | files | 0 | 17 | 17 |
-| Anchor sample files missing `backend_support_model_helper` | files | 17 | 0 | 0 |
-| Anchor sample default unresolved source sites | source sites | 0 | 0 | 0 |
-| Anchor sample raw unresolved source sites | source sites | 376 | 376 | 376 |
-| Analyze direct group line coverage | output line | 0 | 1 | 1 |
-| CLI/API group summary coverage | covered surface | 0 | 3 | at least 1 |
-| Web group label coverage | covered surface | 0 | 2 | at least 2 |
-| Web path-pattern group inference sites | sites | 0 | 0 | 0 |
+| Metric | Unit | Baseline before corrected group implementation | E11 closure-time latest | E12 current latest | Target after corrected implementation |
+|---|---:|---:|---:|---:|---:|
+| `backend_support_model_helper` full group files | files | 0 | 42 | 47 | measured from backend identity rules |
+| `backend_support_model_helper` current file-projection unresolved source sites | source sites | 0 | n/a | 2531 | measured from current backend identity rules |
+| `backend_support_model_helper` closure-time default unresolved source sites | source sites | 0 | 1073 | historical | measured at E11 closure time |
+| `backend_support_model_helper` closure-time raw unresolved source sites | source sites | 0 | 2087 | historical | measured at E11 closure time |
+| Anchor sample files assigned `backend_support_model_helper` | files | 0 | 17 | 17 | 17 |
+| Anchor sample files missing `backend_support_model_helper` | files | 17 | 0 | 0 | 0 |
+| Anchor sample default unresolved source sites | source sites | 0 | 0 | historical | 0 |
+| Anchor sample raw unresolved source sites | source sites | 376 | 376 | historical | 376 |
+| Analyze direct group line coverage | output line | 0 | 1 | 1 | 1 |
+| CLI/API group summary coverage | covered surface | 0 | 3 | 3 | at least 1 |
+| Web group label coverage | covered surface | 0 | 2 | 2 | at least 2 |
+| Graph File-node `fileGroup` coverage for `internal/repo/runtime_config.go` | graph property | 0 | 0 | 1 | 1 |
+| Self-contained e2e command coverage | e2e command | 0 | 0 | 1 | 1 |
+| Web path-pattern group inference sites | sites | 0 | 0 | 0 | 0 |
 
 Anchor sample role breakdown target:
 
