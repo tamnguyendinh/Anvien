@@ -236,9 +236,7 @@ E2E Verification:
 
 ## Report Filename Convention (Mandatory)
 - Canonical lane report format from now on:
-  + `rp_<lane>_<YYMMDD>_<HHMMSS>_by_<model_slug>_<scope>.md`
-- Canonical shared blocker format from now on:
-  + `coder`, `supervisor`, `qa`, `edge`, `data`, `architect`
+  + `rp_coder_<YYMMDD>_<HHMMSS>_by_<model_slug>_<scope>.md`
 - Slug rules:
   + `model_slug` must be a stable lowercase ASCII slug
   + use `-` if needed
@@ -248,6 +246,6 @@ E2E Verification:
 - Legacy filenames may remain as-is; do not mass-rename old reports just to fit the new rule.
 
 ## Shared Report Gates
-- If there is a blocker, there must be a `pb_<lane>_<YYMMDD>_<HHMMSS>_by_<model_slug>_<scope>.md.md` and its link must be written into today's `Docs/notes_decisions_log/notes_decisions_log_YYYYMMDD.md`.
+- If there is a blocker, there must be a `pb_coder_<YYMMDD>_<HHMMSS>_by_<model_slug>_<scope>.md.md` and its link must be written into today's `Docs/notes_decisions_log/notes_decisions_log_YYYYMMDD.md`.
 - Every coder report must contain a clear git reference so supervisor can map that report to the corresponding code boundary.
 - Before handing off the current scope, the report must contain the `Invariant Family Map`, `Sibling surfaces checked`, `Legacy fallback status`, and `Residual unverified surfaces: none`.
