@@ -8,7 +8,7 @@ Status: READY FOR SUPERVISOR REVIEW
 - Coder: gpt-5-codex
 - Scope: close Supervisor report `reports/Supervisor/rp_supervisor_260605_232104_by_gpt-5-codex_file-role-classification-gap-review.md`
 - Authority: `AGENTS.md`, `.agents/skills/coder/SKILL.md`, `docs/plans/2026-06-03-anvien-file-role-classification-gap/*`, current repo evidence
-- Implementation checkpoint: to be created after this report; hash will be recorded in a follow-up ledger entry
+- Implementation checkpoint: `e64aaab fix(file-group): close post-review graph and e2e gaps`
 
 ## Invariant Family Map
 - Family name: first-class backend file identity group `backend_support_model_helper`.

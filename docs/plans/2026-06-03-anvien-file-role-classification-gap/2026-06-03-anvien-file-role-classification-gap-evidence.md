@@ -702,4 +702,4 @@ Detect changes:
 
 Commit:
 
-- Post-review fix checkpoint to be created after this report is written; commit hash will be recorded in the plan/evidence ledger after the checkpoint exists.
+- Post-review fix checkpoint: `e64aaab fix(file-group): close post-review graph and e2e gaps`.
