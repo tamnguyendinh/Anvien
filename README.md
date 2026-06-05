@@ -1,4 +1,4 @@
-# Anvien (version: `1.2.4`)
+# Anvien (version: `1.2.5`)
 
 > ## (2 in 1 tool) — Intelligence Graph Knowledge Map + Skill-Kit for AI.
 
