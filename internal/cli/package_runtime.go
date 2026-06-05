@@ -150,9 +150,12 @@ func prepareGoSourcePackage(packageRoot string, output io.Writer) error {
 		}
 	}
 	for _, rel := range []string{"cmd", "internal"} {
-		if err := copyPackageGoDir(repoRoot, rel, outputRoot, &copied); err != nil {
+		if err := copyPackageGoDir(repoRoot, rel, outputRoot, &copied, "internal/aicontext/skills"); err != nil {
 			return err
 		}
+	}
+	if err := copyPackageSubtree(repoRoot, "internal/aicontext/skills", outputRoot, &copied); err != nil {
+		return err
 	}
 	for _, rel := range []string{"scripts/ensure-ladybug-native.ps1", "scripts/ensure-ladybug-native.sh"} {
 		if err := copyPackageFile(filepath.Join(repoRoot, rel), filepath.Join(outputRoot, rel), outputRoot, &copied); err != nil {
@@ -167,6 +170,7 @@ func prepareGoSourcePackage(packageRoot string, output io.Writer) error {
 		"generatedBy": "anvien package prepare-go-source",
 		"source":      "repo-root",
 		"files":       len(copied),
+		"paths":       copied,
 	}
 	raw, err := json.MarshalIndent(manifest, "", "  ")
 	if err != nil {
@@ -304,6 +308,9 @@ func copyPackageFileIfExists(source, destination string) error {
 	if err != nil {
 		return err
 	}
+	if existing, err := os.ReadFile(destination); err == nil && bytes.Equal(existing, raw) {
+		return nil
+	}
 	if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
 		return err
 	}
@@ -313,7 +320,7 @@ func copyPackageFileIfExists(source, destination string) error {
 	return os.Chmod(destination, 0o755)
 }
 
-func copyPackageGoDir(repoRoot, relativeDir, outputRoot string, copied *[]string) error {
+func copyPackageGoDir(repoRoot, relativeDir, outputRoot string, copied *[]string, excludedDirs ...string) error {
 	sourceDir := filepath.Join(repoRoot, relativeDir)
 	if stat, err := os.Stat(sourceDir); err != nil || !stat.IsDir() {
 		return fmt.Errorf("missing required source directory: %s", sourceDir)
@@ -330,6 +337,13 @@ func copyPackageGoDir(repoRoot, relativeDir, outputRoot string, copied *[]string
 		for _, entry := range entries {
 			source := filepath.Join(current, entry.Name())
 			if entry.IsDir() {
+				skip, err := isPackageExcludedDir(repoRoot, source, excludedDirs)
+				if err != nil {
+					return err
+				}
+				if skip {
+					continue
+				}
 				stack = append(stack, source)
 				continue
 			}
@@ -337,11 +351,52 @@ func copyPackageGoDir(repoRoot, relativeDir, outputRoot string, copied *[]string
 			if err != nil {
 				return err
 			}
-			relSlash := filepath.ToSlash(rel)
 			goSource := strings.HasSuffix(entry.Name(), ".go") && !strings.HasSuffix(entry.Name(), "_test.go")
-			embeddedSkillSource := strings.HasPrefix(relSlash, "internal/aicontext/skills/") && strings.HasSuffix(entry.Name(), ".md")
-			if !entry.Type().IsRegular() || (!goSource && !embeddedSkillSource) {
+			if !entry.Type().IsRegular() || !goSource {
 				continue
+			}
+			if err := copyPackageFile(source, filepath.Join(outputRoot, rel), outputRoot, copied); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func copyPackageSubtree(repoRoot, relativeDir, outputRoot string, copied *[]string) error {
+	sourceDir := filepath.Join(repoRoot, relativeDir)
+	stat, err := os.Stat(sourceDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	if !stat.IsDir() {
+		return fmt.Errorf("package subtree is not a directory: %s", sourceDir)
+	}
+
+	stack := []string{sourceDir}
+	for len(stack) > 0 {
+		current := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		entries, err := os.ReadDir(current)
+		if err != nil {
+			return err
+		}
+		sort.Slice(entries, func(i, j int) bool { return entries[i].Name() > entries[j].Name() })
+		for _, entry := range entries {
+			source := filepath.Join(current, entry.Name())
+			if entry.IsDir() {
+				stack = append(stack, source)
+				continue
+			}
+			if !entry.Type().IsRegular() {
+				continue
+			}
+			rel, err := filepath.Rel(repoRoot, source)
+			if err != nil {
+				return err
 			}
 			if err := copyPackageFile(source, filepath.Join(outputRoot, rel), outputRoot, copied); err != nil {
 				return err
@@ -375,6 +430,21 @@ func copyPackageFile(source, destination, outputRoot string, copied *[]string) e
 	}
 	*copied = append(*copied, filepath.ToSlash(rel))
 	return nil
+}
+
+func isPackageExcludedDir(repoRoot, source string, excludedDirs []string) (bool, error) {
+	rel, err := filepath.Rel(repoRoot, source)
+	if err != nil {
+		return false, err
+	}
+	relSlash := filepath.ToSlash(rel)
+	for _, excluded := range excludedDirs {
+		excludedSlash := filepath.ToSlash(filepath.Clean(excluded))
+		if relSlash == excludedSlash || strings.HasPrefix(relSlash, excludedSlash+"/") {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func assertPackageChild(parent, child string) error {

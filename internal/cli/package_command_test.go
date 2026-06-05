@@ -118,6 +118,7 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 	writePackageTestFile(t, parent, "cmd/anvien/main_test.go", "package main\n")
 	writePackageTestFile(t, parent, "internal/aicontext/aicontext.go", "package aicontext\n")
 	writePackageTestFile(t, parent, "internal/aicontext/skills/planner/SKILL.md", "# Planner\n")
+	writePackageTestFile(t, parent, "internal/aicontext/skills/planner/assets/config.json", `{"mode":"plan"}`+"\n")
 	writePackageTestFile(t, parent, "internal/cli/command.go", "package cli\n")
 	writePackageTestFile(t, parent, "internal/cli/command_test.go", "package cli\n")
 	writePackageTestFile(t, parent, "scripts/ensure-ladybug-native.ps1", "Write-Output native\n")
@@ -136,6 +137,7 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 		"cmd/anvien/main.go",
 		"internal/aicontext/aicontext.go",
 		"internal/aicontext/skills/planner/SKILL.md",
+		"internal/aicontext/skills/planner/assets/config.json",
 		"internal/cli/command.go",
 		"scripts/ensure-ladybug-native.ps1",
 		"scripts/ensure-ladybug-native.sh",
@@ -150,8 +152,68 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 			t.Fatalf("prepared source retained excluded path %s: %v", rel, err)
 		}
 	}
-	if !strings.Contains(out.String(), "[prepare-go-source-package] copied 8 files") {
+	var manifest struct {
+		Files int      `json:"files"`
+		Paths []string `json:"paths"`
+	}
+	raw, err := os.ReadFile(filepath.Join(packageRoot, "go-src", "anvien-go-source.json"))
+	if err != nil {
+		t.Fatalf("read source manifest: %v", err)
+	}
+	if err := json.Unmarshal(raw, &manifest); err != nil {
+		t.Fatalf("parse source manifest: %v", err)
+	}
+	if manifest.Files != 9 {
+		t.Fatalf("manifest files = %d, want 9", manifest.Files)
+	}
+	for _, rel := range []string{
+		"internal/aicontext/skills/planner/SKILL.md",
+		"internal/aicontext/skills/planner/assets/config.json",
+	} {
+		if !containsString(manifest.Paths, rel) {
+			t.Fatalf("manifest paths missing staged skill path %s: %#v", rel, manifest.Paths)
+		}
+	}
+	for _, rel := range []string{"cmd/anvien/main_test.go", "internal/cli/command_test.go"} {
+		if containsString(manifest.Paths, rel) {
+			t.Fatalf("manifest paths retained excluded path %s: %#v", rel, manifest.Paths)
+		}
+	}
+	if !strings.Contains(out.String(), "[prepare-go-source-package] copied 9 files") {
 		t.Fatalf("prepare output missing copied count: %q", out.String())
+	}
+}
+
+func TestCopyPackageFileIfExistsSkipsIdenticalDestination(t *testing.T) {
+	root := t.TempDir()
+	source := filepath.Join(root, "native", "lbug_shared.dll")
+	destination := filepath.Join(root, "bin", "lbug_shared.dll")
+	raw := []byte("native-runtime")
+	if err := os.MkdirAll(filepath.Dir(source), 0o755); err != nil {
+		t.Fatalf("mkdir source dir: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
+		t.Fatalf("mkdir destination dir: %v", err)
+	}
+	if err := os.WriteFile(source, raw, 0o644); err != nil {
+		t.Fatalf("write source: %v", err)
+	}
+	if err := os.WriteFile(destination, raw, 0o444); err != nil {
+		t.Fatalf("write destination: %v", err)
+	}
+	t.Cleanup(func() {
+		_ = os.Chmod(destination, 0o644)
+	})
+
+	if err := copyPackageFileIfExists(source, destination); err != nil {
+		t.Fatalf("copyPackageFileIfExists returned error: %v", err)
+	}
+	got, err := os.ReadFile(destination)
+	if err != nil {
+		t.Fatalf("read destination: %v", err)
+	}
+	if !bytes.Equal(got, raw) {
+		t.Fatalf("destination content changed: %q", got)
 	}
 }
 
