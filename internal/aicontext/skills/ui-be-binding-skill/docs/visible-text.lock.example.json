@@ -1,0 +1,59 @@
+{
+  "global": {
+    "allowedExact": [
+      "AV Cheap Apps",
+      "Always have what you need"
+    ],
+    "forbiddenContains": [
+      "MVP",
+      "Demo",
+      "Sample",
+      "Placeholder",
+      "Mock data",
+      "Coming soon",
+      "TODO",
+      "No data available",
+      "Failed to load",
+      "Loading...",
+      "Backend",
+      "API",
+      "For testing only",
+      "This is a demo",
+      "Please configure",
+      "Example",
+      "Test data",
+      "Development only",
+      "Work in progress",
+      "Under construction",
+      "Beta",
+      "Alpha"
+    ]
+  },
+  "pages": {
+    "home": {
+      "allowedExact": [
+        "AV Cheap Apps",
+        "Always have what you need",
+        "$3/month",
+        "30-day free trial",
+        "Download"
+      ],
+      "dynamicSlots": [
+        "pricing.priceLabel",
+        "pricing.trialLabel",
+        "appList.items.title",
+        "appList.items.shortDescription"
+      ]
+    },
+    "pricing": {
+      "allowedExact": [
+        "$3/month",
+        "30-day free trial"
+      ],
+      "dynamicSlots": [
+        "pricing.priceLabel",
+        "pricing.trialLabel"
+      ]
+    }
+  }
+}
