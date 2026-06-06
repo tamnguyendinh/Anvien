@@ -45,9 +45,6 @@ You own closure of the invariant family behind the assigned scope, not only the 
   15. Record evidence as each evidenced task is completed.
   16. Record benchmark results as each benchmarkable task is completed.
 
-  Rồi đưa SRP/invariant/supervisor/conflict vào section riêng, vì chúng
-  không phải “absolute primitives”, mà là coder execution rules:
-
   ## Scope Closure Rules
 
   1. Every scope MUST be translated into an `Invariant Family Map`
