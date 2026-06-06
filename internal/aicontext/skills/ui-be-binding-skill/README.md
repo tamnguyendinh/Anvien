@@ -36,18 +36,19 @@ This skill pack prevents that by forcing backend data to enter only approved UI 
 ## Recommended Usage
 
 1. Copy this folder into your repo under `.claude/skills/ui-be-binding/`, `.codex/skills/ui-be-binding/`, or `docs/skills/ui-be-binding/`.
-2. Copy the template docs into your project `docs/` folder and rename them:
-   - `docs/ui-authority.md`
-   - `docs/actual-wiring-status.md`
-   - `docs/ui-slot-map.md`
-   - `docs/state-map.md`
-   - `docs/backend-contract-map.md`
-   - `docs/visible-text.lock.json`
-3. Fill `docs/actual-wiring-status.md` for the target surface before writing implementation steps.
-4. Fill the slot map before backend integration.
-5. Add the Playwright tests and adjust routes/selectors to match the app.
-6. Give Codex the prompt in `prompts/codex-ui-be-binding-task.md`.
-7. Reject any handoff that does not include current-wiring audit, build/test/screenshot/text-lock evidence.
+2. Create or use the active plan directory: `<active-plan-dir> = docs/plans/YYYY-MM-DD-<plan-name>`.
+3. Copy the template docs into `<active-plan-dir>` and rename them:
+   - `<active-plan-dir>/YYYY-MM-DD-ui-authority.md`
+   - `<active-plan-dir>/YYYY-MM-DD-actual-wiring-status.md`
+   - `<active-plan-dir>/YYYY-MM-DD-ui-slot-map.md`
+   - `<active-plan-dir>/YYYY-MM-DD-state-map.md`
+   - `<active-plan-dir>/YYYY-MM-DD-backend-contract-map.md`
+   - `<active-plan-dir>/YYYY-MM-DD-visible-text.lock.json`
+4. Fill `<active-plan-dir>/YYYY-MM-DD-actual-wiring-status.md` for the target surface before writing implementation steps.
+5. Fill the slot map before backend integration.
+6. Add the Playwright tests and adjust routes/selectors to match the app.
+7. Give AI Agent the prompt in `prompts/codex-ui-be-binding-task.md`.
+8. Reject any handoff that does not include current-wiring audit, build/test/screenshot/text-lock evidence.
 
 ## Command Discipline
 

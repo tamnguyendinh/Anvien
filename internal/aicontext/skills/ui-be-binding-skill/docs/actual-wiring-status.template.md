@@ -10,11 +10,11 @@
 | Status | Draft / P0 Audit Required / P0 Complete / Blocked |
 | Owner | {{owner-or-agent-name}} |
 | Companion plan | {{path/to/plan.md}} |
-| Companion UI authority | {{path/to/ui-authority.md}} |
-| Companion slot map | {{path/to/ui-slot-map.md}} |
-| Companion state map | {{path/to/state-map.md}} |
-| Companion backend contract map | {{path/to/backend-contract-map.md}} |
-| Companion visible text lock | {{path/to/visible-text.lock.json}} |
+| Companion UI authority | {{active-plan-dir}}/{{YYYY-MM-DD}}-ui-authority.md |
+| Companion slot map | {{active-plan-dir}}/{{YYYY-MM-DD}}-ui-slot-map.md |
+| Companion state map | {{active-plan-dir}}/{{YYYY-MM-DD}}-state-map.md |
+| Companion backend contract map | {{active-plan-dir}}/{{YYYY-MM-DD}}-backend-contract-map.md |
+| Companion visible text lock | {{active-plan-dir}}/{{YYYY-MM-DD}}-visible-text.lock.json |
 
 ---
 

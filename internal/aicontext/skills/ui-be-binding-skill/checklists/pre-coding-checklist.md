@@ -2,11 +2,12 @@
 
 Before coding, confirm:
 
-- [ ] I read `docs/ui-authority.md`.
-- [ ] I read or created `docs/actual-wiring-status.md`.
-- [ ] I read `docs/ui-slot-map.md`.
-- [ ] I read `docs/state-map.md`.
-- [ ] I read `docs/visible-text.lock.json`.
+- [ ] I identified `<active-plan-dir>` for this scope.
+- [ ] I read `<active-plan-dir>/YYYY-MM-DD-ui-authority.md`.
+- [ ] I read or created `<active-plan-dir>/YYYY-MM-DD-actual-wiring-status.md`.
+- [ ] I read `<active-plan-dir>/YYYY-MM-DD-ui-slot-map.md`.
+- [ ] I read `<active-plan-dir>/YYYY-MM-DD-state-map.md`.
+- [ ] I read `<active-plan-dir>/YYYY-MM-DD-visible-text.lock.json`.
 - [ ] I added the target surface to the actual wiring audit matrix.
 - [ ] I classified the surface as `bound-correct`, `partial`, `wrong-fake-data`, `unbound`, `no-real-data`, or `blocked`.
 - [ ] I identified the real production source for visible dynamic values.

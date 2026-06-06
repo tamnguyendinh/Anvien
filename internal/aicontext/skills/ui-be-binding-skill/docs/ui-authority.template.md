@@ -18,7 +18,7 @@ Approved sources:
 - Do not add visible text unless explicitly approved.
 - Do not rewrite copy unless explicitly approved.
 - Do not add helper text, demo labels, MVP labels, placeholder notes, backend/API explanations, or technical UI messages.
-- Do not add loading, empty, error, setup, maintenance, beta, or coming-soon states unless approved in `state-map.md`.
+- Do not add loading, empty, error, setup, maintenance, beta, or coming-soon states unless approved in the active plan's `YYYY-MM-DD-state-map.md`.
 - Do not create nested website UI inside website UI.
 
 ## Allowed During UI-BE Binding

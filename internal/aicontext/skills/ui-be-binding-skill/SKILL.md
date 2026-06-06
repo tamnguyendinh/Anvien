@@ -33,15 +33,18 @@ The agent must treat the frontend as a locked product surface. The backend may p
 
 ## Authority Order
 
+In this skill, `<active-plan-dir>` means `docs/plans/YYYY-MM-DD-<plan-name>`.
+Plan-owned authority artifacts live in that directory and use `YYYY-MM-DD-*` names.
+
 When instructions conflict, follow this order:
 
 1. Direct user instruction for the current task
-2. `docs/ui-authority.md`
+2. `<active-plan-dir>/YYYY-MM-DD-ui-authority.md`
 3. Approved prototype HTML / approved screenshot / approved design source
-4. `docs/actual-wiring-status.md`
-5. `docs/ui-slot-map.md`
-6. `docs/state-map.md`
-7. `docs/visible-text.lock.json`
+4. `<active-plan-dir>/YYYY-MM-DD-actual-wiring-status.md`
+5. `<active-plan-dir>/YYYY-MM-DD-ui-slot-map.md`
+6. `<active-plan-dir>/YYYY-MM-DD-state-map.md`
+7. `<active-plan-dir>/YYYY-MM-DD-visible-text.lock.json`
 8. Backend API contract / OpenAPI / schema
 9. Existing frontend architecture
 10. Existing backend architecture
@@ -88,17 +91,17 @@ This skill is not for:
 
 Before coding, read and cite internally in the work plan:
 
-- `docs/ui-authority.md`
-- `docs/actual-wiring-status.md`
-- `docs/ui-slot-map.md`
-- `docs/state-map.md`
-- `docs/visible-text.lock.json`
-- `docs/backend-contract-map.md` or backend API contract/schema, if available
+- `<active-plan-dir>/YYYY-MM-DD-ui-authority.md`
+- `<active-plan-dir>/YYYY-MM-DD-actual-wiring-status.md`
+- `<active-plan-dir>/YYYY-MM-DD-ui-slot-map.md`
+- `<active-plan-dir>/YYYY-MM-DD-state-map.md`
+- `<active-plan-dir>/YYYY-MM-DD-visible-text.lock.json`
+- `<active-plan-dir>/YYYY-MM-DD-backend-contract-map.md` or backend API contract/schema, if available
 - Existing frontend page/component files
 - Existing API client/service layer
 - Existing Playwright tests
 
-If one of these project files is missing, create a minimal version from this skill pack's `docs/*.template.md` files before implementation, unless the current scope explicitly forbids adding docs.
+If one of these project files is missing, create a minimal version in `<active-plan-dir>` from this skill pack's `docs/*.template.md` files before implementation, unless the current scope explicitly forbids adding docs.
 
 ---
 
@@ -108,12 +111,12 @@ Resolve these files relative to this `SKILL.md`. Load only the asset needed for 
 
 - `checklists/pre-coding-checklist.md`: use before writing the binding plan or editing code.
 - `checklists/final-verification-checklist.md`: use before handoff.
-- `docs/ui-authority.template.md`: create missing `docs/ui-authority.md`.
-- `docs/actual-wiring-status.template.md`: create missing `docs/actual-wiring-status.md`; complete target surface audit before implementation.
-- `docs/ui-slot-map.template.md`: create missing `docs/ui-slot-map.md`.
-- `docs/state-map.template.md`: create missing `docs/state-map.md`.
-- `docs/backend-contract-map.template.md`: create missing `docs/backend-contract-map.md`.
-- `docs/visible-text.lock.example.json`: create missing `docs/visible-text.lock.json`.
+- `docs/ui-authority.template.md`: create missing `<active-plan-dir>/YYYY-MM-DD-ui-authority.md`.
+- `docs/actual-wiring-status.template.md`: create missing `<active-plan-dir>/YYYY-MM-DD-actual-wiring-status.md`; complete target surface audit before implementation.
+- `docs/ui-slot-map.template.md`: create missing `<active-plan-dir>/YYYY-MM-DD-ui-slot-map.md`.
+- `docs/state-map.template.md`: create missing `<active-plan-dir>/YYYY-MM-DD-state-map.md`.
+- `docs/backend-contract-map.template.md`: create missing `<active-plan-dir>/YYYY-MM-DD-backend-contract-map.md`.
+- `docs/visible-text.lock.example.json`: create missing `<active-plan-dir>/YYYY-MM-DD-visible-text.lock.json`.
 - `tests/playwright/approved-ui.guard.spec.ts`: template for screenshot, visible-text, forbidden-text, and shell-preservation guards.
 - `tests/playwright/slot-binding.guard.spec.ts`: template for approved-slot binding guards.
 - `reports/ui-be-binding-report.template.md`: final report template.
@@ -168,7 +171,7 @@ The agent may:
 
 ## Binding Rule
 
-Backend data may only replace values inside approved slots listed in `docs/ui-slot-map.md`.
+Backend data may only replace values inside approved slots listed in `<active-plan-dir>/YYYY-MM-DD-ui-slot-map.md`.
 
 Allowed:
 
@@ -191,7 +194,7 @@ Forbidden:
 {isLoading ? <p>Loading pricing...</p> : <PriceCard />}
 ```
 
-unless `Loading pricing...` and the loading state are explicitly approved in `docs/state-map.md`.
+unless `Loading pricing...` and the loading state are explicitly approved in `<active-plan-dir>/YYYY-MM-DD-state-map.md`.
 
 ---
 
@@ -199,7 +202,7 @@ unless `Loading pricing...` and the loading state are explicitly approved in `do
 
 If backend data is missing, malformed, late, or unavailable:
 
-1. Preserve approved prototype text or approved fallback from `ui-slot-map.md`.
+1. Preserve approved prototype text or approved fallback from `<active-plan-dir>/YYYY-MM-DD-ui-slot-map.md`.
 2. Do not show technical errors.
 3. Do not show API status messages.
 4. Do not create a new empty state.
@@ -210,7 +213,7 @@ If backend data is missing, malformed, late, or unavailable:
 
 ## State Rule
 
-Use `docs/state-map.md`.
+Use `<active-plan-dir>/YYYY-MM-DD-state-map.md`.
 
 If a state is not explicitly approved, it does not exist.
 
@@ -231,8 +234,8 @@ The agent must follow this order:
 
 1. Run `checklists/pre-coding-checklist.md`.
 2. Read authority files.
-3. Create missing authority docs from this skill pack's `docs/*.template.md`.
-4. Complete `docs/actual-wiring-status.md` for the target surface before writing implementation steps.
+3. Create missing authority docs in `<active-plan-dir>` from this skill pack's `docs/*.template.md`.
+4. Complete `<active-plan-dir>/YYYY-MM-DD-actual-wiring-status.md` for the target surface before writing implementation steps.
 5. Classify the target surface as `bound-correct`, `partial`, `wrong-fake-data`, `unbound`, `no-real-data`, or `blocked`.
 6. Rewrite the implementation phase from the audit result: preserve-only, bind missing slots only, remove fake display, implement source binding, render approved truthful state, or block.
 7. Identify approved pages in scope.
@@ -243,7 +246,7 @@ The agent must follow this order:
 12. Add or update backend DTO types.
 13. Add adapter from backend DTO to UI view model.
 14. Bind view model into existing approved UI slots only.
-15. Preserve fallback text from `ui-slot-map.md`.
+15. Preserve fallback text from `<active-plan-dir>/YYYY-MM-DD-ui-slot-map.md`.
 16. Do not alter JSX/HTML structure unless technically necessary.
 17. Do not alter CSS unless technically necessary.
 18. Run full build before tests.
@@ -266,16 +269,17 @@ Before coding, produce a short plan with this structure:
 ## UI-BE Binding Plan
 
 ### Scope
+- Active plan dir:
 - Page(s):
 - Backend endpoint(s):
 - Approved slot(s):
 
 ### Authority Files Read
-- docs/ui-authority.md
-- docs/actual-wiring-status.md
-- docs/ui-slot-map.md
-- docs/state-map.md
-- docs/visible-text.lock.json
+- <active-plan-dir>/YYYY-MM-DD-ui-authority.md
+- <active-plan-dir>/YYYY-MM-DD-actual-wiring-status.md
+- <active-plan-dir>/YYYY-MM-DD-ui-slot-map.md
+- <active-plan-dir>/YYYY-MM-DD-state-map.md
+- <active-plan-dir>/YYYY-MM-DD-visible-text.lock.json
 
 ### Actual Wiring Status
 - Status file:
@@ -397,7 +401,7 @@ Use this default list unless project authority provides a stricter list:
 - Beta
 - Alpha
 
-A forbidden term may appear only if explicitly approved in `visible-text.lock.json` or `ui-slot-map.md`.
+A forbidden term may appear only if explicitly approved in `<active-plan-dir>/YYYY-MM-DD-visible-text.lock.json` or `<active-plan-dir>/YYYY-MM-DD-ui-slot-map.md`.
 
 ---
 
@@ -454,9 +458,9 @@ export function mapPricingDtoToViewModel(dto: PricingDto | null): PricingViewMod
 Stop and report instead of improvising if:
 
 - A backend field does not map to any approved UI slot
-- A required UI state is missing from `state-map.md`
+- A required UI state is missing from `<active-plan-dir>/YYYY-MM-DD-state-map.md`
 - The backend contract conflicts with approved copy
-- The implementation requires adding visible text not in `visible-text.lock.json`
+- The implementation requires adding visible text not in `<active-plan-dir>/YYYY-MM-DD-visible-text.lock.json`
 - Screenshot diff becomes large after a binding change
 - The agent cannot preserve layout while integrating backend
 

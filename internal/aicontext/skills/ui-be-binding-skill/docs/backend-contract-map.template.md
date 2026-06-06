@@ -4,7 +4,7 @@ Map backend endpoints to approved UI slots.
 
 Do not render backend fields that are not mapped to approved slots.
 
-This file maps backend capability to approved slots. It does not prove the current UI already uses those sources. Record current wiring evidence in `docs/actual-wiring-status.md` before implementation.
+This file maps backend capability to approved slots. It does not prove the current UI already uses those sources. Record current wiring evidence in the active plan's `YYYY-MM-DD-actual-wiring-status.md` before implementation.
 
 ---
 

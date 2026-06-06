@@ -51,7 +51,7 @@ Not approved:
 - Demo
 - API status
 
-Backend may update only approved slots in `ui-slot-map.md`.
+Backend may update only approved slots in the active plan's `YYYY-MM-DD-ui-slot-map.md`.
 
 ---
 

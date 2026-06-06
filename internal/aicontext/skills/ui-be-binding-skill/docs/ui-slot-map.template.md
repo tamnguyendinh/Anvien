@@ -4,7 +4,7 @@ This file defines exactly where backend data may appear in the approved UI.
 
 If a backend field is not mapped here, it must not be rendered.
 
-This file defines approved slots. It does not prove the current code is already wired correctly. Use `docs/actual-wiring-status.md` to record current code reality before implementation.
+This file defines approved slots. It does not prove the current code is already wired correctly. Use the active plan's `YYYY-MM-DD-actual-wiring-status.md` to record current code reality before implementation.
 
 ---
 
@@ -167,7 +167,7 @@ Rules:
 - Do not add helper descriptions.
 - Do not show internal IDs.
 - Do not show API status.
-- Do not show “No data available” unless approved in state-map.md.
+- Do not show “No data available” unless approved in the active plan's `YYYY-MM-DD-state-map.md`.
 
 ---
 

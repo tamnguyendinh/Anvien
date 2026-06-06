@@ -8,13 +8,15 @@ Bind backend data into the approved frontend UI without visual, textual, layout,
 
 ## Authority Files
 
+In this prompt, `<active-plan-dir>` means `docs/plans/YYYY-MM-DD-<plan-name>`.
+
 Read before coding:
 
-- `docs/ui-authority.md`
-- `docs/actual-wiring-status.md`
-- `docs/ui-slot-map.md`
-- `docs/state-map.md`
-- `docs/visible-text.lock.json`
+- `<active-plan-dir>/YYYY-MM-DD-ui-authority.md`
+- `<active-plan-dir>/YYYY-MM-DD-actual-wiring-status.md`
+- `<active-plan-dir>/YYYY-MM-DD-ui-slot-map.md`
+- `<active-plan-dir>/YYYY-MM-DD-state-map.md`
+- `<active-plan-dir>/YYYY-MM-DD-visible-text.lock.json`
 - Backend API contract/schema
 - Existing frontend architecture
 - Existing API client/service layer
@@ -38,7 +40,7 @@ Forbidden:
 - Do not add visible text outside approved slots.
 - Do not rewrite approved copy.
 - Do not add helper text, demo labels, MVP labels, placeholder notes, backend/API explanations, or technical UI messages.
-- Do not add loading, empty, error, setup, maintenance, beta, or coming-soon states unless approved in `state-map.md`.
+- Do not add loading, empty, error, setup, maintenance, beta, or coming-soon states unless approved in `<active-plan-dir>/YYYY-MM-DD-state-map.md`.
 - Do not create nested website UI inside website UI.
 
 ## Required Plan Before Coding
@@ -49,6 +51,7 @@ Create this plan first:
 ## UI-BE Binding Plan
 
 ### Scope
+- Active plan dir:
 - Page(s):
 - Backend endpoint(s):
 - Approved slot(s):
@@ -87,7 +90,7 @@ Do not start coding until the binding table is complete.
 ## Implementation Order
 
 1. Read authority files.
-2. Complete `docs/actual-wiring-status.md` for the target surface.
+2. Complete `<active-plan-dir>/YYYY-MM-DD-actual-wiring-status.md` for the target surface.
 3. Classify current wiring.
 4. Rewrite the implementation steps from the classification.
 5. Identify approved slots.
