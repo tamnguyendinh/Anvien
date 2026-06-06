@@ -2,7 +2,7 @@
 
 Title: File Detail Command And Planner Rule
 Date: 2026-06-06
-Status: Ready for Implementation
+Status: Completed
 Companion evidence: `docs/plans/2026-06-06-file-detail-command-and-planner-rule/2026-06-06-file-detail-command-and-planner-rule-evidence.md`
 Companion benchmark: `docs/plans/2026-06-06-file-detail-command-and-planner-rule/2026-06-06-file-detail-command-and-planner-rule-benchmark.md`
 
@@ -100,7 +100,7 @@ When the user asks to "write/create a plan", the AI agent must immediately use t
   Implementation Gate: full build must pass before final testing evidence is accepted.
   Acceptance: validation evidence shows `file-detail` works, `file-context` is gone from active command/API guidance, generated files are updated from source, and full build passes.
 
-- [ ] P7-A: Run final Anvien change detection and commit.
+- [x] P7-A: Run final Anvien change detection and commit.
   Goal: close the implementation slice with graph-aware change evidence.
   Work Steps: run `anvien analyze --force`; run `anvien detect-changes --repo Anvien --scope all`; review dirty files; stage only scope files; commit with evidence in the commit body.
   Implementation Gate: do not commit implementation work until detect-changes has completed.

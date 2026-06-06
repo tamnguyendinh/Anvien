@@ -182,4 +182,5 @@ When the user asks to "write/create a plan", the AI agent must immediately use t
 - `anvien detect-changes --repo Anvien --scope all`
   Result: completed with `risk_level=critical`, `changed_files=25`, `affected_files=18`, `changed_count=49`, `affected_count=16`. CRITICAL is expected because the slice intentionally touches CLI root registration, HTTP route registration, Web contract metadata, AI-context generator output, and the Web backend client.
 - High-risk changed files reported by detect-changes include `anvien-web/src/services/backend-client.ts`, `internal/aicontext/aicontext.go`, `internal/cli/command.go`, `internal/contracts/web_ui.go`, and `internal/httpapi/server.go`.
-- Implementation commit: pending.
+- Implementation commit: `793d49b25d18a572ec3a5651682c821d70c0661f` (`feat: rename file-context to file-detail`).
+- P7-A completed with implementation work committed.
