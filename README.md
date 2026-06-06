@@ -126,6 +126,25 @@ command = "anvien"
 args = ["mcp"]
 ```
 
+### Full build: 
+
+Full build means run the whole command sequence below from the repository root.
+
+```powershell
+cd .\anvien
+npm install
+npm run build
+npm install -g .
+Get-Command anvien
+anvien version
+cd ..
+powershell -ExecutionPolicy Bypass -File .\anvien-launcher\build.ps1
+anvien version
+anvien analyze . --force
+```
+
+or run script: scripts\full-build.ps1
+
 ### Grok (xAI)
 
 This repository provides a **Grok-only** MCP configuration at `.grok/config.toml`.

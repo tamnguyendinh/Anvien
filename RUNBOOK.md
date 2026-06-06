@@ -57,6 +57,8 @@ anvien version
 anvien analyze . --force
 ```
 
+or run script: scripts\full-build.ps1
+
 ---
 
 ## Index A Repo
