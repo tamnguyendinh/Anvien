@@ -58,43 +58,43 @@ When the user asks to "write/create a plan", the AI agent must immediately use t
 
 ## Checklist
 
-- [ ] P0-A: Confirm source owners and baseline.
+- [x] P0-A: Confirm source owners and baseline.
   Goal: establish the exact source-of-truth files before editing.
   Work Steps: run `anvien analyze --force`; query the command and AI-context generator surfaces; inspect `internal/cli/file_context_command.go`, `internal/cli/command.go`, `internal/aicontext/aicontext.go`, active API route/contract/client files, active docs, and active skill files that mention `file-context`.
   Implementation Gate: do not edit until evidence records the current owners, baseline `file-context` active-reference count, and generated-file source-of-truth rule.
   Acceptance: evidence lists each active surface to change and separates active references from historical reports/plans.
 
-- [ ] P1-A: Run impact before touching command, API, and generator symbols.
+- [x] P1-A: Run impact before touching command, API, and generator symbols.
   Goal: make the blast radius explicit before code changes.
   Work Steps: run Anvien impact for the CLI command constructor, root command registration, file detail API handler or route registration, Web contract generator when touched, and `renderMasterRulesBlock` / command-guide generation symbols.
   Implementation Gate: do not edit any function, class, method, exported symbol, API handler, graph builder, resolver, analyzer, or shared contract before its impact evidence is recorded.
   Acceptance: evidence records risk level, affected files, affected flows/tests, and the scoped reason for proceeding.
 
-- [ ] P2-A: Rename the CLI command surface from `file-context` to `file-detail`.
+- [x] P2-A: Rename the CLI command surface from `file-context` to `file-detail`.
   Goal: make `anvien file-detail` the only CLI command for structured file details.
   Work Steps: rename the command use string/help/examples; rename command constructor/test names where they carry active command naming; update root help tests; remove all command registration for `file-context`; update CLI tests from `file-context` to `file-detail`.
   Implementation Gate: no alias or compatibility command may be registered.
   Acceptance: `anvien file-detail --help` works, `anvien file-detail <path> --repo Anvien --json` returns structured file data, and `anvien file-context --help` fails as an unknown command.
 
-- [ ] P3-A: Rename active API/Web/contract surfaces if they expose `file-context`.
+- [x] P3-A: Rename active API/Web/contract surfaces if they expose `file-context`.
   Goal: remove active non-CLI `file-context` surfaces that would keep the old name alive.
   Work Steps: inspect and rename `/api/file-context` route metadata, server registration, API tests, generated Web contract metadata, Web backend client references, and active Web tests to `/api/file-detail` where applicable.
   Implementation Gate: only rename active route/contract/client surfaces; do not rewrite historical plan/report evidence.
   Acceptance: `/api/file-detail` returns the same file detail contract, `/api/file-context` is not registered, contract tests pass, and Web/API callers use the new route.
 
-- [ ] P4-A: Update AI-context generator wording and generated planner rules.
+- [x] P4-A: Update AI-context generator wording and generated planner rules.
   Goal: generate the approved guidance into both `AGENTS.md` and `CLAUDE.md`.
   Work Steps: update `internal/aicontext/aicontext.go` so the Command Selection Guide row uses the approved wording and `file-detail`; add the approved Master iron rule; update `# AGENTS Rules` rule 4 to `**Write plan (use planner skill) before coding.**`; update generator tests after source behavior is changed.
   Implementation Gate: do not manually edit generated managed sections as permanent source.
   Acceptance: regenerated `AGENTS.md` and `CLAUDE.md` contain the approved wording, the new Master iron rule, rule 4 wording, and no active `file-context` command guidance.
 
-- [ ] P5-A: Update active docs and skill guidance.
+- [x] P5-A: Update active docs and skill guidance.
   Goal: keep active user/agent guidance aligned with the renamed command.
   Work Steps: update `README.md`, `RUNBOOK.md`, active skill files, and active templates that instruct agents to run `file-context`; update `CHANGELOG.md` with the rename and planner-rule change; leave historical reports and old plan evidence untouched.
   Implementation Gate: every active doc edit must be traceable to current command/rule guidance, not historical cleanup.
   Acceptance: active docs/skills reference `file-detail`; `rg "file-context"` returns only historical reports/plans or intentionally named source files that cannot be renamed without breaking package semantics, with each residual justified in evidence.
 
-- [ ] P6-A: Regenerate and validate.
+- [x] P6-A: Regenerate and validate.
   Goal: prove runtime behavior and generated output match the plan.
   Work Steps: run formatting for touched code; run targeted Go tests for CLI, HTTP API, contracts, AI context, and any touched Web client tests; run command smokes for `file-detail`; run API smoke for `/api/file-detail` if route is renamed; run `npm run full-build`.
   Implementation Gate: full build must pass before final testing evidence is accepted.

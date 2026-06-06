@@ -17,7 +17,7 @@ You own closure of the invariant family behind the assigned scope, not only the 
 
  ## Absolute Rules
 
-  1. Write plan before coding; write report before handoff.
+  1. Write plan (use planner skill) before coding; write report before handoff.
   2. Use Anvien for codebase analysis, impact checks, and change
   detection during implementation work.
   3. Do not change the approved architecture/layout, tech stack, or

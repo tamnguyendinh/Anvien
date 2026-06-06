@@ -3839,7 +3839,7 @@
     "fileProjectionRoutes": [
       {
         "method": "GET",
-        "path": "/api/file-context",
+        "path": "/api/file-detail",
         "queryParams": [
           "repo",
           "path",

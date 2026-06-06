@@ -25,7 +25,7 @@ The agent must treat the frontend as a locked product surface. The backend may p
 
 1. Write the UI-BE Binding Plan before coding.
 2. Use Anvien as the primary code-intelligence tool when working in an Anvien-indexed repo.
-   - Choose the Anvien command that fits the task: query, context, file-context, impact, route-map, tool-map, shape-check, api impact, graph-health, file-hotspots, detect-changes, or other relevant commands.
+   - Choose the Anvien command that fits the task: query, context, file-detail, impact, route-map, tool-map, shape-check, api impact, graph-health, file-hotspots, detect-changes, or other relevant commands.
    - Minimum required use: refresh/analyze before graph-based work, impact before editing shared/runtime surfaces, and detect-changes before handoff or commit.
 3. Code only after the approved UI slots, backend fields, fallback behavior, and forbidden states are mapped.
 

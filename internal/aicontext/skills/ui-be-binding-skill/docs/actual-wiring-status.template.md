@@ -201,7 +201,7 @@ Every matrix row must cite at least one evidence ID.
 
 | ID | Source | Evidence | Notes |
 |---|---|---|---|
-| `P0-ANV-001` | `{{anvien command / code search / file-context}}` | {{What this proved}} | {{Notes}} |
+| `P0-ANV-001` | `{{anvien command / code search / file-detail}}` | {{What this proved}} | {{Notes}} |
 | `P0-RAW-001` | `{{manual source inspection path/range}}` | {{What this proved}} | {{Notes}} |
 | `P0-RG-001` | `{{rg/search command}}` | {{What this found or ruled out}} | {{Notes}} |
 | `P0-TEST-001` | `{{test command / current test}}` | {{What this proved}} | {{Notes}} |

@@ -13,6 +13,8 @@ All notable changes to anvien will be documented in this file.
 ### Changed
 
 - Generated master rules now include the Skill Selection Guide alongside the command selection guidance, keeping CLI help and generated agent context aligned.
+- Renamed the active structured file-detail command and local API route from `file-context` to `file-detail` without keeping a legacy alias.
+- Generated agent context now includes the planner-skill rule for real `docs/plans` plan creation and clarifies rule 4 as `Write plan (use planner skill) before coding`.
 - Updated Coder workflow/reporting guidance for clearer process adherence and evidence expectations.
 - Bumped the CLI package version from `1.2.5` to `1.2.6`.
 

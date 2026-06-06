@@ -484,7 +484,7 @@ func WebUIContract() WebUIContractManifest {
 	manifest.API.FileProjectionRoutes = []APIRouteContract{
 		{
 			Method:       "GET",
-			Path:         "/api/file-context",
+			Path:         "/api/file-detail",
 			QueryParams:  []string{"repo", "path", "relationships", "unresolved", "linked"},
 			ResponseType: "FileContextResponse",
 			Description:  "File-first graph projection detail for one indexed repository file.",

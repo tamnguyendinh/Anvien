@@ -106,7 +106,7 @@ func renderAnvienBlock(skillPathPrefix string, packages []SkillPackage) string {
 	builder.WriteString("Use the surface that fits the current environment. Do not treat MCP tools and CLI commands as separate capabilities.\n\n")
 	builder.WriteString("There is no single mandatory workflow beyond freshness, impact-before-edit, and change detection before commit. Anvien commands are selected by task. Use the full command set when it gives better evidence.\n\n")
 	builder.WriteString("## Always Do\n\n")
-	builder.WriteString("- **MUST refresh the graph before graph-based work.** Run `anvien analyze --force` before using any Anvien CLI command, MCP tool, MCP resource, Web/API view, or accuracy/benchmark command that reads, queries, validates, mutates, or reports on the semantic graph. This includes `query`, `context`, `impact`, `detect-changes`, `cypher`, `rename`, `file-context`, `file-hotspots`, MCP `route_map`/`tool_map`/`shape_check`/`api_impact`, CLI `api route-map`/`api tool-map`/`api shape-check`/`api impact`, `augment`, `graph-health`, `query-health`, `resolution-inventory`, `source-site-accuracy`, and `benchmark-compare`.\n")
+	builder.WriteString("- **MUST refresh the graph before graph-based work.** Run `anvien analyze --force` before using any Anvien CLI command, MCP tool, MCP resource, Web/API view, or accuracy/benchmark command that reads, queries, validates, mutates, or reports on the semantic graph. This includes `query`, `context`, `impact`, `detect-changes`, `cypher`, `rename`, `file-detail`, `file-hotspots`, MCP `route_map`/`tool_map`/`shape_check`/`api_impact`, CLI `api route-map`/`api tool-map`/`api shape-check`/`api impact`, `augment`, `graph-health`, `query-health`, `resolution-inventory`, `source-site-accuracy`, and `benchmark-compare`.\n")
 	builder.WriteString("- **MUST run impact analysis before editing any function, class, method, exported symbol, API handler, graph builder, resolver, analyzer, or shared contract.**\n")
 	builder.WriteString("- **MUST report blast radius.** HIGH or CRITICAL impact means warn clearly and proceed carefully; it is not an automatic ban on editing.\n")
 	builder.WriteString("- **MUST run change detection before committing implementation work.** Use MCP `detect_changes` or CLI `anvien detect-changes --repo <repo> --scope all`.\n")
@@ -138,7 +138,7 @@ func renderAnvienBlock(skillPathPrefix string, packages []SkillPackage) string {
 	writeCommandRow("Find where a concept, behavior, or bug lives", "MCP `query` or CLI `anvien query \"<concept>\" --repo <repo>`")
 	writeCommandRow("Find files relevant to a concept", "CLI `anvien query files \"<concept>\" --repo <repo>` or MCP `query` with `target_type=files`")
 	writeCommandRow("Inspect one symbol deeply", "MCP `context` or CLI `anvien context symbol \"<symbol>\" --repo <repo>`")
-	writeCommandRow("Inspect one file deeply as structured file-level data", "Prefer CLI `anvien file-context <path> --repo <repo> --json`; use `anvien context file <path> --repo <repo>` only when you want the context wrapper / human-oriented view")
+	writeCommandRow("Read detailed information about a file and its relationships with other files.", "Prefer CLI `anvien file-detail <path> --repo <repo> --json`; use `anvien context file <path> --repo <repo>` only when you want the context wrapper / human-oriented view")
 	writeCommandRow("Ask structured graph questions", "MCP `cypher` or CLI `anvien cypher \"<query>\" --repo <repo>`")
 	writeCommandRow("Inspect API route handlers, consumers, and linked flows", "MCP `route_map` or CLI `anvien api route-map [route] --repo <repo>`")
 	writeCommandRow("Inspect tool handlers and tool-related graph paths", "MCP `tool_map` or CLI `anvien api tool-map [tool] --repo <repo>`")
@@ -226,12 +226,14 @@ func renderMasterRulesBlock() string {
 	return `# Master iron rules
 **Temporary directories created by AI — such as .tmp\ or similar — must be located inside the working repo. Creating temporary directories directly on the C: drive is strictly prohibited.**
 
+**When the user asks to "write/create a plan", the AI agent must immediately use the planner skill and create a real docs/plans plan.**
+
 # AGENTS Rules
 0. Anvien is a tool. Skills are the instruments of the tool. The tool serves the work of other repos/projects.
 1. How to use anvien: run command "anvien --help".
 2. As each task is completed, update the corresponding checklist item immediately.
 3. Anvien Blast-radius **CRITICAL/HIGH** is only a scope warning that the work must be handled carefully; it is **not** a prohibition against editing code.
-4. **Write plan before coding.**
+4. **Write plan (use planner skill) before coding.**
 5. **Code first**; tests should only be updated after the behavior has been correctly implemented in code.
 6. Run a full build before testing; the test suite must include Playwright e2e tests for any UI behavior changes.
 7. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, or graph inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.

@@ -58,7 +58,7 @@ func NewHandler(config Config) http.Handler {
 	mux.HandleFunc("/api/graph", server.handleGraph)
 	mux.HandleFunc("/api/graph/explain", server.handleGraphHealthExplain)
 	mux.HandleFunc("/api/graph/report", server.handleGraphHealthReport)
-	mux.HandleFunc("/api/file-context", server.handleFileContext)
+	mux.HandleFunc("/api/file-detail", server.handleFileContext)
 	mux.HandleFunc("/api/file-hotspots", server.handleFileHotspots)
 	mux.HandleFunc("/api/file", server.handleFile)
 	mux.HandleFunc("/api/grep", server.handleGrep)

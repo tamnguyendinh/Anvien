@@ -42,7 +42,7 @@ type fileHotspotsPayload struct {
 	Files      []filecontext.FileSummary      `json:"files"`
 }
 
-func newFileContextCommand() *cobra.Command {
+func newFileDetailCommand() *cobra.Command {
 	var repoName string
 	var jsonOutput bool
 	var relationshipSamples int
@@ -50,8 +50,8 @@ func newFileContextCommand() *cobra.Command {
 	var linkedSamples int
 
 	cmd := &cobra.Command{
-		Use:   "file-context <path>",
-		Short: "Show file-first graph context for one indexed file",
+		Use:   "file-detail <path>",
+		Short: "Show detailed graph data for one indexed file",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inputs, g, err := loadFileProjectionGraph(repoName)
@@ -74,7 +74,7 @@ func newFileContextCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&repoName, "repo", "r", "", "target repository")
-	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write full file context JSON")
+	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write full file detail JSON")
 	cmd.Flags().IntVar(&relationshipSamples, "relationships", 5, "relationship samples per group")
 	cmd.Flags().IntVar(&unresolvedSamples, "unresolved", 5, "unresolved source-site samples per group")
 	cmd.Flags().IntVar(&linkedSamples, "linked", 5, "linked overlay samples per kind")

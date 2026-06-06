@@ -43,7 +43,7 @@ When active repository rules require Anvien:
 - Run `anvien analyze --force` before graph-based investigation.
 - Unknown owner: `anvien query "<symptom>" --repo <repo>`
 - Candidate files: `anvien query files "<symptom>" --repo <repo>`
-- Suspect file: `anvien file-context <path> --repo <repo> --json`
+- Suspect file: `anvien file-detail <path> --repo <repo> --json`
 - Suspect symbol: `anvien context symbol "<symbol>" --repo <repo>`
 - Ambiguous symbol: `anvien context symbol "<symbol>" --file <path> --repo <repo>`
 - Route, tool, consumer, or contract behavior: `anvien query api`, `anvien api route-map`, `anvien api tool-map`, `anvien api shape-check`, or `anvien api impact`
@@ -74,7 +74,7 @@ For deep stack failures:
 
 When active repository rules require Anvien, use graph context to support tracing:
 - known symbol: `anvien context symbol "<symbol>" --repo <repo>`
-- known file: `anvien file-context <path> --repo <repo> --json`
+- known file: `anvien file-detail <path> --repo <repo> --json`
 - known execution flow: read `anvien://repo/<repo>/process/{name}`
 
 Runtime stack traces, logs, and tests remain the proof. If graph evidence conflicts with runtime evidence, trust runtime evidence and record the graph-quality gap if relevant.
@@ -121,7 +121,7 @@ Consider:
 - debug instrumentation
 - tests that prove bypass paths are blocked
 
-When active repository rules require Anvien, use `file-context`, `context symbol`, graph-health, or resolution inventory to find missed paths, callers, callees, isolation, or unresolved-reference signals. Use that evidence to choose validation checkpoints; do not replace tests with graph evidence.
+When active repository rules require Anvien, use `file-detail`, `context symbol`, graph-health, or resolution inventory to find missed paths, callers, callees, isolation, or unresolved-reference signals. Use that evidence to choose validation checkpoints; do not replace tests with graph evidence.
 
 ## Phase 9: Verify
 

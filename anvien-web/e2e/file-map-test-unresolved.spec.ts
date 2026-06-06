@@ -150,7 +150,7 @@ test.describe("file map test unresolved defaults", () => {
         },
       }),
     );
-    await page.route(`${BACKEND_URL}/api/file-context**`, (route) =>
+    await page.route(`${BACKEND_URL}/api/file-detail**`, (route) =>
       route.fulfill({
         json: {
           repo: "test-files-demo",

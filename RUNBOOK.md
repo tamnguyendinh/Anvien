@@ -218,9 +218,9 @@ File projection smoke checks:
 
 ```powershell
 anvien file-hotspots --repo Anvien --limit 5
-anvien file-context internal/httpapi/file_context.go --repo Anvien
+anvien file-detail internal/httpapi/file_context.go --repo Anvien
 Invoke-WebRequest "http://127.0.0.1:4848/api/file-hotspots?repo=Anvien&sort=unresolved&limit=5"
-Invoke-WebRequest "http://127.0.0.1:4848/api/file-context?repo=Anvien&path=internal/httpapi/file_context.go"
+Invoke-WebRequest "http://127.0.0.1:4848/api/file-detail?repo=Anvien&path=internal/httpapi/file_context.go"
 ```
 
 Start the Web UI dev server:
@@ -310,17 +310,17 @@ Check file projection from the CLI before debugging the browser:
 
 ```powershell
 anvien file-hotspots --repo Anvien --limit 5
-anvien file-context internal/httpapi/file_context.go --repo Anvien
+anvien file-detail internal/httpapi/file_context.go --repo Anvien
 ```
 
 Check the backend endpoints:
 
 ```powershell
 Invoke-WebRequest "http://127.0.0.1:4848/api/file-hotspots?repo=Anvien&sort=unresolved&limit=5"
-Invoke-WebRequest "http://127.0.0.1:4848/api/file-context?repo=Anvien&path=internal/httpapi/file_context.go"
+Invoke-WebRequest "http://127.0.0.1:4848/api/file-detail?repo=Anvien&path=internal/httpapi/file_context.go"
 ```
 
-If `file-context` reports the graph is stale, run `anvien analyze . --force`.
+If `file-detail` reports the graph is stale, run `anvien analyze . --force`.
 If it returns `File not found in graph`, confirm the path is repo-relative and
 uses forward slashes.
 
@@ -511,7 +511,7 @@ anvien cypher "MATCH (n) RETURN count(n) LIMIT 1" --repo MyRepo
 anvien detect-changes --repo MyRepo
 anvien detect-changes files --repo MyRepo
 anvien file-hotspots --repo MyRepo --limit 5
-anvien file-context <repo-relative-path> --repo MyRepo
+anvien file-detail <repo-relative-path> --repo MyRepo
 ```
 
 ---

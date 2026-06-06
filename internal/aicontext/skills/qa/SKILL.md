@@ -71,7 +71,7 @@ Useful Anvien choices:
 | --- | --- |
 | Find route, page, component, behavior, or risk owner | `anvien query "<concept>" --repo <repo>` |
 | Find candidate files for a behavior | `anvien query files "<concept>" --repo <repo>` |
-| Inspect one file deeply | `anvien file-context <path> --repo <repo> --json` |
+| Inspect one file deeply | `anvien file-detail <path> --repo <repo> --json` |
 | Inspect route handlers and consumers | `anvien api route-map [route] --repo <repo>` |
 | Inspect response shape drift against consumers | `anvien api shape-check [route] --repo <repo>` |
 | Inspect tool/IPC paths | `anvien api tool-map [tool] --repo <repo>` |

@@ -664,7 +664,7 @@ export const fetchFileContext = async (
   ]
     .filter(Boolean)
     .join('&');
-  const response = await fetchFromBackend(`${_backendUrl}/api/file-context?${params}`);
+  const response = await fetchFromBackend(`${_backendUrl}/api/file-detail?${params}`);
   await assertOk(response);
   return response.json() as Promise<FileContextResponse>;
 };

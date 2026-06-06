@@ -14,13 +14,13 @@ import (
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
-func TestFileContextEndpointReturnsProjectionForRegisteredRepo(t *testing.T) {
+func TestFileDetailEndpointReturnsProjectionForRegisteredRepo(t *testing.T) {
 	server, fixtures := newRepoServer(t, []repoFixture{{name: "alpha"}})
 	defer server.Close()
 	writeHTTPFileProjectionGraph(t, fixtures[0].path)
 
 	var payload filecontext.FileContext
-	getJSON(t, server.URL+"/api/file-context?repo=alpha&path=src%2Fapp.go", http.StatusOK, &payload)
+	getJSON(t, server.URL+"/api/file-detail?repo=alpha&path=src%2Fapp.go", http.StatusOK, &payload)
 
 	if payload.Repo != "alpha" || payload.RepoPath != fixtures[0].path {
 		t.Fatalf("payload repo binding = %q/%q", payload.Repo, payload.RepoPath)
@@ -83,16 +83,30 @@ func TestFileHotspotsEndpointReturnsSortedProjection(t *testing.T) {
 	}
 }
 
-func TestFileContextEndpointReportsMissingFile(t *testing.T) {
+func TestFileDetailEndpointReportsMissingFile(t *testing.T) {
 	server, fixtures := newRepoServer(t, []repoFixture{{name: "beta"}})
 	defer server.Close()
 	writeHTTPFileProjectionGraph(t, fixtures[0].path)
 
 	var payload map[string]string
-	getJSON(t, server.URL+"/api/file-context?repo="+url.QueryEscape("beta")+"&path=src%2Fmissing.go", http.StatusNotFound, &payload)
+	getJSON(t, server.URL+"/api/file-detail?repo="+url.QueryEscape("beta")+"&path=src%2Fmissing.go", http.StatusNotFound, &payload)
 
 	if payload["error"] != "File not found in graph" {
 		t.Fatalf("missing file error = %#v", payload)
+	}
+}
+
+func TestFileContextEndpointIsNotRegistered(t *testing.T) {
+	server, _ := newRepoServer(t, []repoFixture{{name: "legacy"}})
+	defer server.Close()
+
+	response, err := http.Get(server.URL + "/api/file-context?repo=legacy&path=src%2Fapp.go")
+	if err != nil {
+		t.Fatalf("GET legacy file-context endpoint: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusNotFound {
+		t.Fatalf("legacy file-context endpoint status = %d, want 404", response.StatusCode)
 	}
 }
 

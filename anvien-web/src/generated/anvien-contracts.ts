@@ -284,7 +284,7 @@ export type RelationshipDisplayPolicy = (typeof RELATIONSHIP_DISPLAY_POLICY)[num
 export const FILE_PROJECTION_API_ROUTES = [
   {
     "method": "GET",
-    "path": "/api/file-context",
+    "path": "/api/file-detail",
     "queryParams": [
       "repo",
       "path",

@@ -383,7 +383,7 @@ describe('fetchFileContext', () => {
 
     expect(result.summary.path).toBe('src/app.ts');
     const url = new URL(fetchMock.mock.calls[0][0] as string);
-    expect(url.pathname).toBe('/api/file-context');
+    expect(url.pathname).toBe('/api/file-detail');
     expect(url.searchParams.get('path')).toBe('src/app.ts');
     expect(url.searchParams.get('repo')).toBe('demo');
     expect(url.searchParams.get('relationships')).toBe('5');

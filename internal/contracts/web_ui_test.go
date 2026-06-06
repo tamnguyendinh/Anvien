@@ -74,7 +74,7 @@ func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {
 	if len(manifest.Languages.GraphCoverage) != len(manifest.Languages.CodeLanguages) {
 		t.Fatalf("language graph coverage count mismatch: %#v", manifest.Languages.GraphCoverage)
 	}
-	if !containsRoute(manifest.API.FileProjectionRoutes, "GET", "/api/file-context", "FileContextResponse") ||
+	if !containsRoute(manifest.API.FileProjectionRoutes, "GET", "/api/file-detail", "FileContextResponse") ||
 		!containsRoute(manifest.API.FileProjectionRoutes, "GET", "/api/file-hotspots", "FileHotspotsResponse") {
 		t.Fatalf("file projection API route contracts missing: %#v", manifest.API.FileProjectionRoutes)
 	}

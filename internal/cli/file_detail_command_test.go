@@ -13,23 +13,23 @@ import (
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
-func TestFileContextCommandOutputsFileProjection(t *testing.T) {
+func TestFileDetailCommandOutputsFileProjection(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv(repo.HomeEnvName, home)
 	repoPath := t.TempDir()
 	registerDirectToolCommandRepo(t, repo.NewStore(home), repoPath, "fixture")
 	writeFileProjectionCommandGraph(t, repoPath)
 
-	out, errOut, err := executeForTest(t, "file-context", "src/app.go", "--repo", "fixture", "--json")
+	out, errOut, err := executeForTest(t, "file-detail", "src/app.go", "--repo", "fixture", "--json")
 	if err != nil {
-		t.Fatalf("file-context returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+		t.Fatalf("file-detail returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
 	}
 	if errOut != "" {
-		t.Fatalf("file-context wrote stderr: %q", errOut)
+		t.Fatalf("file-detail wrote stderr: %q", errOut)
 	}
 	var payload filecontext.FileContext
 	if err := json.Unmarshal([]byte(out), &payload); err != nil {
-		t.Fatalf("parse file-context JSON: %v\n%s", err, out)
+		t.Fatalf("parse file-detail JSON: %v\n%s", err, out)
 	}
 	if payload.Repo != "fixture" || payload.Summary.Path != "src/app.go" {
 		t.Fatalf("payload repo/path = %q/%q", payload.Repo, payload.Summary.Path)
@@ -41,16 +41,16 @@ func TestFileContextCommandOutputsFileProjection(t *testing.T) {
 		t.Fatalf("symbol tree = %#v", payload.SymbolTree)
 	}
 
-	out, errOut, err = executeForTest(t, "file-context", "src/app.go", "--repo", "fixture")
+	out, errOut, err = executeForTest(t, "file-detail", "src/app.go", "--repo", "fixture")
 	if err != nil {
-		t.Fatalf("file-context human returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+		t.Fatalf("file-detail human returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
 	}
 	if errOut != "" {
-		t.Fatalf("file-context human wrote stderr: %q", errOut)
+		t.Fatalf("file-detail human wrote stderr: %q", errOut)
 	}
 	for _, want := range []string{"File: src/app.go", "Symbols: 2 exported=1", "Outbound files:", "src/store.go", "Unresolved source sites: total=1"} {
 		if !strings.Contains(out, want) {
-			t.Fatalf("file-context human output missing %q:\n%s", want, out)
+			t.Fatalf("file-detail human output missing %q:\n%s", want, out)
 		}
 	}
 }
@@ -111,19 +111,29 @@ func TestFileHotspotsCommandOutputsSortedProjection(t *testing.T) {
 	}
 }
 
-func TestFileContextCommandReportsMissingFile(t *testing.T) {
+func TestFileDetailCommandReportsMissingFile(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv(repo.HomeEnvName, home)
 	repoPath := t.TempDir()
 	registerDirectToolCommandRepo(t, repo.NewStore(home), repoPath, "fixture")
 	writeFileProjectionCommandGraph(t, repoPath)
 
-	out, errOut, err := executeForTest(t, "file-context", "src/missing.go", "--repo", "fixture")
+	out, errOut, err := executeForTest(t, "file-detail", "src/missing.go", "--repo", "fixture")
 	if err == nil {
-		t.Fatalf("file-context missing file succeeded\nstdout:\n%s\nstderr:\n%s", out, errOut)
+		t.Fatalf("file-detail missing file succeeded\nstdout:\n%s\nstderr:\n%s", out, errOut)
 	}
 	if !strings.Contains(err.Error(), `file "src/missing.go" not found`) {
 		t.Fatalf("missing file error = %v", err)
+	}
+}
+
+func TestFileContextCommandIsNotRegistered(t *testing.T) {
+	out, errOut, err := executeForTest(t, "file-context", "--help")
+	if err == nil {
+		t.Fatalf("file-context alias unexpectedly succeeded\nstdout:\n%s\nstderr:\n%s", out, errOut)
+	}
+	if !strings.Contains(err.Error(), `unknown command "file-context"`) {
+		t.Fatalf("file-context error = %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
 	}
 }
 
