@@ -5,6 +5,10 @@ Before handoff, confirm:
 - [ ] Full build passed.
 - [ ] Unit/integration tests passed.
 - [ ] Playwright tests passed.
+- [ ] Actual wiring status was completed or updated for the target surface.
+- [ ] Final surface classification and evidence IDs are recorded.
+- [ ] Preserve-only files/symbols were not rewritten.
+- [ ] Fake/prototype/demo leakage was removed or explicitly blocked by authority.
 - [ ] Screenshot comparison passed or approved diff is documented.
 - [ ] Visible text snapshot passed.
 - [ ] Forbidden text guard passed.

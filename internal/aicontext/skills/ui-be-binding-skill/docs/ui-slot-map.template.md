@@ -4,6 +4,8 @@ This file defines exactly where backend data may appear in the approved UI.
 
 If a backend field is not mapped here, it must not be rendered.
 
+This file defines approved slots. It does not prove the current code is already wired correctly. Use `docs/actual-wiring-status.md` to record current code reality before implementation.
+
 ---
 
 ## Page: Home

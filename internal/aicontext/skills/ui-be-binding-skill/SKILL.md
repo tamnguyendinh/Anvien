@@ -38,13 +38,14 @@ When instructions conflict, follow this order:
 1. Direct user instruction for the current task
 2. `docs/ui-authority.md`
 3. Approved prototype HTML / approved screenshot / approved design source
-4. `docs/ui-slot-map.md`
-5. `docs/state-map.md`
-6. `docs/visible-text.lock.json`
-7. Backend API contract / OpenAPI / schema
-8. Existing frontend architecture
-9. Existing backend architecture
-10. Agent implementation judgment
+4. `docs/actual-wiring-status.md`
+5. `docs/ui-slot-map.md`
+6. `docs/state-map.md`
+7. `docs/visible-text.lock.json`
+8. Backend API contract / OpenAPI / schema
+9. Existing frontend architecture
+10. Existing backend architecture
+11. Agent implementation judgment
 
 Agent judgment is last. It is not allowed to override UI authority.
 
@@ -88,6 +89,7 @@ This skill is not for:
 Before coding, read and cite internally in the work plan:
 
 - `docs/ui-authority.md`
+- `docs/actual-wiring-status.md`
 - `docs/ui-slot-map.md`
 - `docs/state-map.md`
 - `docs/visible-text.lock.json`
@@ -107,6 +109,7 @@ Resolve these files relative to this `SKILL.md`. Load only the asset needed for 
 - `checklists/pre-coding-checklist.md`: use before writing the binding plan or editing code.
 - `checklists/final-verification-checklist.md`: use before handoff.
 - `docs/ui-authority.template.md`: create missing `docs/ui-authority.md`.
+- `docs/actual-wiring-status.template.md`: create missing `docs/actual-wiring-status.md`; complete target surface audit before implementation.
 - `docs/ui-slot-map.template.md`: create missing `docs/ui-slot-map.md`.
 - `docs/state-map.template.md`: create missing `docs/state-map.md`.
 - `docs/backend-contract-map.template.md`: create missing `docs/backend-contract-map.md`.
@@ -229,26 +232,29 @@ The agent must follow this order:
 1. Run `checklists/pre-coding-checklist.md`.
 2. Read authority files.
 3. Create missing authority docs from this skill pack's `docs/*.template.md`.
-4. Identify approved pages in scope.
-5. Identify approved UI slots.
-6. Identify backend fields required for those slots.
-7. Create a mapping table before coding.
-8. Reuse existing API/client architecture when available.
-9. Add or update backend DTO types.
-10. Add adapter from backend DTO to UI view model.
-11. Bind view model into existing approved UI slots only.
-12. Preserve fallback text from `ui-slot-map.md`.
-13. Do not alter JSX/HTML structure unless technically necessary.
-14. Do not alter CSS unless technically necessary.
-15. Run full build before tests.
-16. Run unit/integration tests.
-17. Add or adapt guard tests from `tests/playwright/*.spec.ts` when the project lacks equivalent guards.
-18. Run Playwright behavior tests.
-19. Run screenshot comparison.
-20. Run visible text snapshot.
-21. Run forbidden text guard.
-22. Run `checklists/final-verification-checklist.md`.
-23. Produce final report with `reports/ui-be-binding-report.template.md`.
+4. Complete `docs/actual-wiring-status.md` for the target surface before writing implementation steps.
+5. Classify the target surface as `bound-correct`, `partial`, `wrong-fake-data`, `unbound`, `no-real-data`, or `blocked`.
+6. Rewrite the implementation phase from the audit result: preserve-only, bind missing slots only, remove fake display, implement source binding, render approved truthful state, or block.
+7. Identify approved pages in scope.
+8. Identify approved UI slots.
+9. Identify backend fields required for those slots.
+10. Create a mapping table before coding.
+11. Reuse existing API/client architecture when available.
+12. Add or update backend DTO types.
+13. Add adapter from backend DTO to UI view model.
+14. Bind view model into existing approved UI slots only.
+15. Preserve fallback text from `ui-slot-map.md`.
+16. Do not alter JSX/HTML structure unless technically necessary.
+17. Do not alter CSS unless technically necessary.
+18. Run full build before tests.
+19. Run unit/integration tests.
+20. Add or adapt guard tests from `tests/playwright/*.spec.ts` when the project lacks equivalent guards.
+21. Run Playwright behavior tests.
+22. Run screenshot comparison.
+23. Run visible text snapshot.
+24. Run forbidden text guard.
+25. Run `checklists/final-verification-checklist.md`.
+26. Produce final report with `reports/ui-be-binding-report.template.md`.
 
 ---
 
@@ -266,9 +272,19 @@ Before coding, produce a short plan with this structure:
 
 ### Authority Files Read
 - docs/ui-authority.md
+- docs/actual-wiring-status.md
 - docs/ui-slot-map.md
 - docs/state-map.md
 - docs/visible-text.lock.json
+
+### Actual Wiring Status
+- Status file:
+- Target surface row:
+- Classification:
+- Real production source:
+- Allowed next action:
+- Preserve-only files/symbols:
+- Fake/prototype/demo leakage findings:
 
 ### Binding Table
 | UI Slot | Existing Approved Text | Backend Source | Fallback | UI Change Allowed |
@@ -300,6 +316,12 @@ After implementation, produce:
 ## UI-BE Binding Report
 
 ### Summary
+
+### Actual Wiring Status
+- Status file:
+- Target surface classification:
+- Evidence IDs:
+- Decision:
 
 ### Files Changed
 - 
@@ -447,6 +469,7 @@ Do not “solve” these by redesigning.
 The task is DONE only when:
 
 - Backend data is bound only to approved slots
+- Actual wiring status is complete for the target surface
 - No approved layout/copy/visual structure is changed outside slots
 - Full build passes
 - Tests pass

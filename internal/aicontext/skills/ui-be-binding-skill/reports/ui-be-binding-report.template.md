@@ -3,6 +3,13 @@
 ## Summary
 
 
+## Actual Wiring Status
+
+- Status file:
+- Target surface classification:
+- Evidence IDs:
+- Decision:
+
 ## Files Changed
 
 - 
@@ -13,9 +20,9 @@
 
 ## UI Slots Bound
 
-| UI Slot | Backend Field | Fallback Preserved | Notes |
-|---|---|---|---|
-|  |  |  |  |
+| UI Slot | Audit Status Before Work | Backend Field | Fallback Preserved | Notes |
+|---|---|---|---|---|
+|  |  |  |  |  |
 
 ## Backend Fields Explicitly Not Rendered
 

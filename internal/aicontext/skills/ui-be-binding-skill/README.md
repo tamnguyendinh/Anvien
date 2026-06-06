@@ -20,6 +20,7 @@ This skill pack prevents that by forcing backend data to enter only approved UI 
 
 - `SKILL.md` — main skill definition
 - `docs/ui-authority.template.md` — UI authority template
+- `docs/actual-wiring-status.template.md` — P0 current-wiring audit template
 - `docs/ui-slot-map.template.md` — approved data binding slot map
 - `docs/state-map.template.md` — approved loading/empty/error state map
 - `docs/backend-contract-map.template.md` — endpoint-to-slot map
@@ -37,14 +38,16 @@ This skill pack prevents that by forcing backend data to enter only approved UI 
 1. Copy this folder into your repo under `.claude/skills/ui-be-binding/`, `.codex/skills/ui-be-binding/`, or `docs/skills/ui-be-binding/`.
 2. Copy the template docs into your project `docs/` folder and rename them:
    - `docs/ui-authority.md`
+   - `docs/actual-wiring-status.md`
    - `docs/ui-slot-map.md`
    - `docs/state-map.md`
    - `docs/backend-contract-map.md`
    - `docs/visible-text.lock.json`
-3. Fill the slot map before backend integration.
-4. Add the Playwright tests and adjust routes/selectors to match the app.
-5. Give Codex the prompt in `prompts/codex-ui-be-binding-task.md`.
-6. Reject any handoff that does not include build/test/screenshot/text-lock evidence.
+3. Fill `docs/actual-wiring-status.md` for the target surface before writing implementation steps.
+4. Fill the slot map before backend integration.
+5. Add the Playwright tests and adjust routes/selectors to match the app.
+6. Give Codex the prompt in `prompts/codex-ui-be-binding-task.md`.
+7. Reject any handoff that does not include current-wiring audit, build/test/screenshot/text-lock evidence.
 
 ## Command Discipline
 
@@ -59,6 +62,7 @@ Use:
 ```text
 Use the UI-BE Binding Skill.
 Bind only these approved slots: ...
+Complete actual wiring status first.
 No new visible text. No new states. No redesign.
 Run build, Playwright screenshot, visible text snapshot, and forbidden text guard.
 ```

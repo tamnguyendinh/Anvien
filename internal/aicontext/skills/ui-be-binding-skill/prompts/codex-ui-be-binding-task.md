@@ -11,6 +11,7 @@ Bind backend data into the approved frontend UI without visual, textual, layout,
 Read before coding:
 
 - `docs/ui-authority.md`
+- `docs/actual-wiring-status.md`
 - `docs/ui-slot-map.md`
 - `docs/state-map.md`
 - `docs/visible-text.lock.json`
@@ -55,6 +56,15 @@ Create this plan first:
 ### Authority Files Read
 - 
 
+### Actual Wiring Audit
+- Status file:
+- Target surface row:
+- Classification:
+- Real production source:
+- Allowed next action:
+- Preserve-only files/symbols:
+- Fake/prototype/demo leakage findings:
+
 ### Binding Table
 | UI Slot | Existing Approved Text | Backend Source | Fallback | UI Change Allowed |
 |---|---|---|---|---|
@@ -77,21 +87,25 @@ Do not start coding until the binding table is complete.
 ## Implementation Order
 
 1. Read authority files.
-2. Identify approved slots.
-3. Identify backend fields.
-4. Create DTO/view model mapping.
-5. Bind only into approved slots.
-6. Preserve fallback text.
-7. Run full build.
-8. Run tests.
-9. Run Playwright guards.
-10. Produce final report.
+2. Complete `docs/actual-wiring-status.md` for the target surface.
+3. Classify current wiring.
+4. Rewrite the implementation steps from the classification.
+5. Identify approved slots.
+6. Identify backend fields.
+7. Create DTO/view model mapping.
+8. Bind only into approved slots.
+9. Preserve fallback text.
+10. Run full build.
+11. Run tests.
+12. Run Playwright guards.
+13. Produce final report.
 
 ## Done Criteria
 
 DONE only when:
 
 - Full build passes.
+- Actual wiring status is complete for the target surface.
 - Tests pass.
 - Playwright screenshot comparison passes or approved diff is documented.
 - Visible text snapshot passes.
