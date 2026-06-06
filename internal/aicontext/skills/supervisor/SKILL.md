@@ -1,6 +1,6 @@
 ---
 name: supervisor
-description: Use whenever reviewing completion claims, fixes, diffs, plans, reports, screenshots, or artifacts for acceptance; verify repo/project reality with Anvien evidence. Always use this skill before accepting any agent output, closing any task, or merging any result.
+description: Use whenever reviewing completion claims, fixes, diffs, reports, screenshots, or artifacts for acceptance; verify repo/project reality with Anvien evidence. Always use this skill before accepting any agent output, closing any task, or merging any result.
 ---
 
 # Supervisor Review
