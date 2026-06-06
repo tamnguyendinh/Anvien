@@ -1,6 +1,6 @@
 {
   "name": "anvien",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Anvien is a code map for AI coding agents. Anvien builds one of the fastest and most accurate code intelligence graphs for large repositories, query via MCP or CLI.",
   "author": "Tam Nguyen Dinh <halotam@gmail.com>",
   "license": "MIT",

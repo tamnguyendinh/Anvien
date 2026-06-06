@@ -2,6 +2,34 @@
 
 All notable changes to anvien will be documented in this file.
 
+## [1.2.6] - 2026-06-06
+
+### Added
+
+- Added the UI backend-binding skill package and expanded its execution rules for binding backend/API data into approved UI without changing approved layout, copy, visual design, component hierarchy, or interaction states.
+- Added `anvien skill --help` so agents can read the generated Skill Selection Guide from the CLI, matching the generated `AGENTS.md` and `CLAUDE.md` skill routing content.
+- Added a root `npm run full-build` script that runs the repository full-build sequence from `RUNBOOK.md`.
+
+### Changed
+
+- Generated master rules now include the Skill Selection Guide alongside the command selection guidance, keeping CLI help and generated agent context aligned.
+- Updated Coder workflow/reporting guidance for clearer process adherence and evidence expectations.
+- Bumped the CLI package version from `1.2.5` to `1.2.6`.
+
+### Fixed
+
+- Fixed package runtime source staging so the skill subtree is included in the packaged runtime source fallback.
+- Fixed generated rule help wording for the Anvien usage guidance.
+
+### Removed
+
+- Removed Repomix usage-pattern documentation and associated scripts from the generated skill surface.
+
+### Documented
+
+- Updated full-build instructions in `README.md` and `RUNBOOK.md`, including the new `scripts\full-build.ps1` entrypoint.
+- Recorded UI backend-binding wiring audit and plan alignment notes for the new skill package.
+
 ## [1.2.5] - 2026-06-05
 
 ### Added
