@@ -1,0 +1,135 @@
+# {{TITLE}} Actual Status
+
+Title: {{TITLE}}
+Date: {{YYYY-MM-DD}}
+Status: Draft / P0 Complete / Blocked
+Companion plan: `{{PLAN_PATH}}`
+Companion evidence: `{{EVIDENCE_PATH}}`
+Companion benchmark: `{{BENCHMARK_PATH}}`
+
+## Purpose
+
+This file records the real current state before implementation.
+
+Implementation must not start until the target scope has a completed status row, evidence IDs, and a downstream plan decision.
+
+This file does not replace `evidence.md`. It classifies current state from evidence.
+
+## Scope
+
+Target scope:
+
+- {{TARGET_SCOPE}}
+
+Out of scope:
+
+- {{OUT_OF_SCOPE}}
+
+## Relationship / Impact Evidence
+
+For each target file, prefer:
+
+```text
+anvien file-detail <path> --repo <repo> --json
+```
+
+Record how many files the target is related to before deciding touch mode. A file with many relationships may still be editable, but the plan must narrow the exact phase, touch mode, and validation needed.
+
+| Unit / File / Surface | File Detail Evidence | Related File Count | Relationship Summary | Impact Note |
+|-----------------------|----------------------|--------------------|----------------------|-------------|
+| {{UNIT}} | E1 | {{RELATED_FILE_COUNT}} | {{RELATIONSHIP_SUMMARY}} | low / medium / high / critical scope warning |
+
+## Status Rules
+
+| Status | Meaning | Allowed next action |
+|--------|---------|---------------------|
+| `correct` | Already behaves as required. | Preserve. Add evidence or tests only if needed. |
+| `partial` | Some required behavior exists, but gaps remain. | Change only the missing parts. Preserve correct parts. |
+| `wrong` | Current behavior, source, or contract is incorrect. | Replace with required behavior. Record the exact reason. |
+| `missing` | Required behavior, source, or contract does not exist. | Implement the missing piece only. |
+| `unbound` | Surface exists but is not wired to the real source, flow, or contract. | Bind to the real source only. Preserve approved surface. |
+| `fake-or-stub` | Prototype, demo, mock, fallback, or placeholder data is being used as real behavior. | Remove fake behavior or replace it with an approved truthful state. |
+| `blocked` | Source, authority, contract, or required evidence is unclear. | Stop. Do not implement until resolved. |
+
+## Current Status Matrix
+
+| Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
+|------|---------------|----------------|--------|--------------------|----------|--------------------|
+| {{UNIT}} | {{CURRENT_STATE}} | {{REQUIRED_STATE}} | correct/partial/wrong/missing/unbound/fake-or-stub/blocked | {{RELATED_FILE_COUNT}} related files | E1, E2 | preserve / edit P1-A / rewrite P2-B / block |
+
+## Phase Touch Map
+
+Use this map to prevent accidental edits. A related file is not automatically editable.
+
+| Unit / File / Surface | Relationship to Target | Related File Count | Plan Item | Touch Mode | Evidence | Constraint |
+|-----------------------|------------------------|--------------------|-----------|------------|----------|------------|
+| {{UNIT}} | source-of-truth / consumer / generated output / test / config / dependency | {{RELATED_FILE_COUNT}} | P1-A | preserve-only / inspect-only / edit / regenerate / validate-only / block / do-not-touch | E1 | {{CONSTRAINT}} |
+
+## Detailed Findings
+
+### {{UNIT_NAME}}
+
+Current state:
+
+{{CURRENT_STATE_FACTS}}
+
+Required state:
+
+```text
+{{REQUIRED_STATE_TEXT}}
+```
+
+Evidence:
+
+- E1: {{EVIDENCE_1}}
+- E2: {{EVIDENCE_2}}
+
+Relationship and impact:
+
+- Related file count: {{RELATED_FILE_COUNT}}
+- Relationship summary: {{RELATIONSHIP_SUMMARY}}
+- Impact note: {{IMPACT_NOTE}}
+
+Classification:
+
+{{STATUS}}
+
+Allowed next action:
+
+{{ALLOWED_NEXT_ACTION}}
+
+Forbidden next action:
+
+{{FORBIDDEN_NEXT_ACTION}}
+
+## Rewrite Decisions
+
+| Original Plan Item | Actual Status Finding | Required Rewrite |
+|--------------------|-----------------------|------------------|
+| P1-A | {{FINDING}} | keep / change / remove / block |
+
+## Implementation Gate
+
+- [ ] Target scope is listed in Current Status Matrix.
+- [ ] Each target unit has a status.
+- [ ] Each status has evidence IDs.
+- [ ] Each target file has relationship count evidence from `file-detail` when applicable.
+- [ ] Phase Touch Map defines touch mode for every related unit that may be affected.
+- [ ] Correct parts are marked preserve-only.
+- [ ] Partial, missing, wrong, unbound, and fake-or-stub parts have exact next actions.
+- [ ] Blockers are recorded, if any.
+- [ ] Main plan has been rewritten from this status file.
+
+## Final P0 Decision
+
+Choose one:
+
+- [ ] P0 actual-status incomplete. Implementation is blocked.
+- [ ] P0 complete. Main plan can proceed unchanged.
+- [ ] P0 complete. Main plan must be rewritten before implementation.
+- [ ] P0 complete. Target scope is preserve-only.
+- [ ] P0 complete. Implementation is blocked by missing authority or evidence.
+
+Decision note:
+
+{{DECISION_NOTE}}
