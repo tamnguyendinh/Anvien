@@ -117,6 +117,20 @@ When Playwright is used for visible QA:
 - Screenshots, videos, traces, and Playwright reports are evidence of the visible run, not replacements for it.
 - Headless Playwright may support diagnostics or preflight, but cannot be the approval source for visible QA.
 
+## Playwright Control Sweep
+
+When Playwright is used for QA, build a per-page/per-tab/per-locale control inventory before verdict.
+For every in-scope page, tab, dialog, drawer, dropdown, menu, form, table row action, and navigation surface:
+  - Inventory every reachable user control by role/name/locator, visible state, enabled/disabled state, locale, route, tab, persona/context, and expected outcome.
+  - Exercise every reachable enabled control through real user interaction: click, type, select, submit, keyboard navigation, close, back, refresh, redirect, retry, and reopen paths when applicable.
+  - Do not force-click hidden or disabled controls as pass/fail proof. For hidden/disabled controls, verify they are correctly unreachable, correctly disabled, expose the expected reason/state, and do not trigger forbidden behavior.
+  - For dropdowns, menus, listboxes, comboboxes, and selects, open the control, verify available options, select applicable options, test close/escape/outside-click behavior, and verify resulting state/navigation.
+  - For forms, cover pristine, dirty, invalid, valid, submitting, success, error, cancel, reopen, and validation-message states.
+  - For navigation controls, cover links, tabs, sub-tabs, deep links, redirects, browser back/forward, reload, selected nav state, and destination correctness.
+  - For i18n scope, repeat the inventory and action ledger for every supported locale in the declared scope; verify copy, validation, errors, empty/blocked states, dropdown options, navigation preservation, and no unintended mixed-language UI.
+  - Record the sweep in the Action Ledger; a control/state combination without a ledger row is not covered.
+  - If the full cross-product of locale/state/persona/tab/control cannot be completed, mark the missing combinations explicitly as `Blocked`, `Out of scope`, or `Unverified`; never imply full coverage.
+
 ## Inventory Before Verdict
 
 Before claiming coverage, build an inventory for the declared scope.
@@ -376,8 +390,6 @@ Report template:
 # QA Report
 
 Scope:
-Mode:
-QA lanes:
 Runtime:
 Browser:
 Build evidence:
