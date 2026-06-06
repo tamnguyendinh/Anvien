@@ -1,7 +1,6 @@
 ---
 name: qa
-description: Use when the user asks to run QA without fixing code.
-when_to_use: when performing quality assurance on mounted runtime behavior, visible user flows, browser-visible app execution, data/source-of-truth checks, action/state coverage, route/control inventories, or QA report generation in a repository where Anvien can support discovery
+description:Use when the user asks to run QA without fixing code, including mounted runtime behavior, visible user flows, browser-visible app execution, source-of-truth checks, action/state coverage, route/control inventories, Playwright control sweeps, or QA report generation in repositories where Anvien can support.
 version: 1.0.0
 languages: all
 ---
@@ -33,27 +32,26 @@ Use the first available applicable authority, in this order:
 3. Active execution plan, QA plan, or SPEC family.
 4. Visible-browser plan when final visible QA is requested or the plan is in scope.
 5. This skill's QA protocol.
-6. Lane-specific checks selected below.
+6. Coverage model, inventory requirements, and control/state protocols below.
 7. Anvien graph evidence as mapping support only.
 8. Automated tests as verification evidence only.
 
 If authorities conflict, state the conflict and follow the higher authority. Never use a test expectation to override real required product behavior.
 
-## Mode Dispatch
+  ## Coverage Model
 
-Choose one QA mode and run only that mode.
+  QA coverage is scope-driven, not lane-driven.
 
-| Mode | Use When | Anchor |
-| --- | --- | --- |
-| Phase/Job QA | A phase/job in execution docs still needs QA review. | Declared phase/job plus exact SPEC family and mounted runtime path. |
-| Post-Completion QA | Backlog review is exhausted, or user asks for bug hunt, follow-up, reject/resubmit, current worktree, or post-completion review. | Current scope plus exact SPEC family and mounted runtime path. |
-| Supplement-Plan QA | Backlog is exhausted and a usable QA supplement/edge-case plan exists. | Current cluster/part plus SPEC family and mounted runtime path. |
-| Direct Runtime QA | User gives a direct app/site/flow QA request without repo phase docs. | User scope, active repo rules, and real mounted runtime path. |
+  For the declared scope, build and execute these inventories:
 
-Fresh rerun rule:
-- Build conclusions from current head, current scope, current runtime, and current evidence.
-- Do not use old reports as checklists, hints, seeds, or templates.
-- In supplement-plan mode, prior QA reports may be read only for sequential progress marks, not for current findings.
+  - Runtime surface inventory: pages, routes, tabs, dialogs, drawers, menus, mounted entry points.
+  - Control inventory: every reachable user control by role/name/locator and expected outcome.
+  - State matrix: visible, hidden, enabled, disabled, loading, empty, error, success, blocked, stale, validation, submitting.
+  - Context matrix: persona, role, owner/app scope, session, permission, subscription, viewport, locale.
+  - Navigation matrix: links, tabs, redirects, deep links, back/forward, reload, selected nav state.
+  - Data/source-of-truth map: displayed values, mutations, APIs, DB/read-model/source checks when relevant.
+
+  A declared scope is not complete until every required inventory item has a verdict or an explicit `Blocked`, `Out of scope`, or `Unverified` mark.
 
 ## Anvien Use In QA
 
@@ -92,7 +90,7 @@ Do not mark anything passed because Anvien found it. Pass/fail requires runtime 
 
 Before runtime QA:
 
-1. Confirm scope, mode, selected lanes, and no-fix boundary.
+1. Confirm scope, scope mode, required inventories, runtime target, and no-fix boundary.
 2. Read active repo rules and the expected-behavior docs for the declared scope.
 3. Run the full build required by repo or plan before QA testing.
 4. Start the real runtime or production-like runtime.
@@ -120,21 +118,6 @@ When Playwright is used for visible QA:
 - Clicks, typing, submits, navigation, redirects, reloads, dialogs, and state changes must occur in that visible browser session.
 - Screenshots, videos, traces, and Playwright reports are evidence of the visible run, not replacements for it.
 - Headless Playwright may support diagnostics or preflight, but cannot be the approval source for visible QA.
-
-## Lane Selection
-
-Select every lane needed by the declared scope.
-
-| When You Need To QA... | Use Lane |
-| --- | --- |
-| Shell routes, tabs, sub-tabs, breadcrumbs, launchers, redirects, default landings, deep links, selected nav state | Route Mount And Navigation |
-| Tables, lists, card grids, rows, toolbar actions, bulk actions, menus, search, sort, filter, pagination, selection | Table List And Row Actions |
-| Dialogs, drawers, modals, forms, fields, validation, dirty state, submit, cancel, close, discard, reopen, retry | Dialogs Forms And Submits |
-| Summaries, counters, badges, chips, read-only fields, timestamps, placeholders, loading/empty/error/success/blocked/stale states | Displayed Data And View States |
-| Whole tasks crossing multiple surfaces, handoffs, terminal states, recovery branches, usability friction | End-To-End User Flows And Usability Friction |
-| Layout, hierarchy, spacing, alignment, containment, clipping, wrapping, overflow, resize, visual state presentation | Visual Fidelity And Layout |
-| Owner/app/scope/role/shift/session/subscription switching, stale context, disabled actions, blocked explanations | Context Switch And Blocked UX |
-| Broad app behavior | General Runtime QA plus all relevant lanes above |
 
 ## Inventory Before Verdict
 
@@ -387,8 +370,6 @@ Typical QA report path:
 
 ```text
 reports/QA/rp_qa_<YYMMDD>_<HHMMSS>_by_<model_slug>_<scope>.md
-```
-
 ```
 
 Report template:
