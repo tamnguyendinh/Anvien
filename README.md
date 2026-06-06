@@ -300,7 +300,7 @@ anvien detect-changes files            # Group changed/affected evidence by file
 anvien detect-changes symbols          # Group changed/affected evidence by symbol
 anvien detect-changes flows            # Group changed/affected evidence by flow
 anvien augment <pattern>               # Add graph context to a text search pattern
-anvien file-context <path>             # File summary, symbol tree, relationships, unresolved sites, linked flows/tests
+anvien file-detail <path>              # File detail, summary, symbol tree, relationships, unresolved sites, linked flows/tests
 anvien file-hotspots                   # List file hotspots by unresolved, fan-in, fan-out, symbols, flows, or tests
 anvien api route-map [route]           # Route handler/consumer map
 anvien api tool-map [tool]             # MCP tool definition/handler map
@@ -479,7 +479,7 @@ COBOL/JCL is handled through the dedicated COBOL phase rather than the normal tr
 | `/api/repos`, `/api/repo` | List/select/remove indexed repos |
 | `/api/graph` | Repo-scoped graph load/stream |
 | `/api/query`, `/api/search`, `/api/file`, `/api/grep` | Repo-scoped read/search helpers |
-| `/api/file-context`, `/api/file-hotspots` | File-centric projection detail and hotspot/list data |
+| `/api/file-detail`, `/api/file-hotspots` | File-centric projection detail and hotspot/list data |
 | `/api/process*`, `/api/cluster*` | Derived graph views |
 | `/api/local/folder-picker` | Native local folder picker bridge |
 | `/api/analyze`, `/api/embed` | Background analyze/embed jobs |
