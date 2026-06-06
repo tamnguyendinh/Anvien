@@ -53,6 +53,35 @@
   - Work Steps: {{PHASE_1_WORK_STEPS}}
   - Implementation Gate: {{PHASE_1_GATE}}
   - Acceptance: {{PHASE_1_ACCEPTANCE}}
+- [ ] Pn-A: Call supervisor for the implemented-plan acceptance loop.
+  - Goal: verify the completed plan work against the accepted plan, actual-status decisions, evidence, benchmark, changed files, generated output, and validation results before closure.
+  - Work Steps:
+    1. Call the supervisor skill to review the full completed plan work.
+    2. If supervisor fails the work, return to the responsible implementation workflow/skill for the failed scope only.
+    3. Re-run supervisor review after the fix.
+    4. Repeat until supervisor passes or records a blocker.
+  - Implementation Gate: all planned implementation phases must be completed or explicitly blocked before this review.
+  - Acceptance: supervisor review passes, or the plan records a blocker with evidence and no closure is performed.
+- [ ] Pn-B: Remove dead work created during this plan.
+  - Goal: ensure the final diff contains only artifacts that still serve the accepted plan.
+  - Work Steps:
+    1. Review files, sections, generated output, tests, temp files, and plan artifacts created or modified during this plan.
+    2. Remove or rewrite any artifact made obsolete by actual-status findings, user corrections, failed approaches, or phase rewrites.
+    3. Verify no rejected approach, stale placeholder, unused generated output, or dead helper artifact remains in the final diff.
+    4. Call supervisor to review the dead-work cleanup.
+    5. If supervisor fails the cleanup, return to the responsible implementation workflow/skill for the failed cleanup scope only, then re-run supervisor review.
+  - Implementation Gate: only remove artifacts created by this plan unless the user explicitly approves broader cleanup.
+  - Acceptance: final `git diff/status` contains no dead plan-created artifacts, supervisor passes the cleanup, and evidence records what was removed or preserved.
+- [ ] Pn-C: Close the plan.
+  - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
+  - Work Steps:
+    1. Run the required final validation for the accepted scope.
+    2. Regenerate generated outputs if source-of-truth changes require it.
+    3. Run Anvien detect-changes before commit when implementation work was performed.
+    4. Record final validation, detect-changes, benchmark, and commit evidence.
+    5. Commit the completed scope and verify the worktree state.
+  - Implementation Gate: Pn-A and Pn-B must pass or record blockers.
+  - Acceptance: final evidence is recorded, required commits exist, and the worktree state is known.
 
 ## Risk Notes
 
