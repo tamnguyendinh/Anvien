@@ -61,11 +61,26 @@ function Reset-Directory($Path) {
   New-Item -ItemType Directory -Path $Path -Force | Out-Null
 }
 
+function Get-Sha256Hash($Path) {
+  $Stream = [System.IO.File]::OpenRead($Path)
+  try {
+    $Sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+      $HashBytes = $Sha256.ComputeHash($Stream)
+      return -join ($HashBytes | ForEach-Object { $_.ToString("x2") })
+    } finally {
+      $Sha256.Dispose()
+    }
+  } finally {
+    $Stream.Dispose()
+  }
+}
+
 function Copy-FileIfChanged($Source, $DestinationDirectory) {
   $Destination = Join-Path $DestinationDirectory (Split-Path -Leaf $Source)
   if (Test-Path -LiteralPath $Destination) {
-    $SourceHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $Source).Hash
-    $DestinationHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $Destination).Hash
+    $SourceHash = Get-Sha256Hash $Source
+    $DestinationHash = Get-Sha256Hash $Destination
     if ($SourceHash -eq $DestinationHash) {
       Write-Host "[build] up to date: $Destination"
       return

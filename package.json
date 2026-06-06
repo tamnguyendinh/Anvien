@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "prepare": "husky",
+    "full-build": "powershell -ExecutionPolicy Bypass -File .\\scripts\\full-build.ps1",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
