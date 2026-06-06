@@ -196,6 +196,21 @@ func renderAnvienBlock(skillPathPrefix string, packages []SkillPackage) string {
 	builder.WriteString("| `detect_impact` | Pre-commit impact workflow using `detect_changes`, `context`, and `impact`; HIGH/CRITICAL are blast-radius warnings, not edit bans. |\n")
 	builder.WriteString("| `generate_map` | Evidence-backed architecture map workflow; resolves the repo through `anvien://repos` when needed and uses only resources/tools/command output actually read. |\n\n")
 	builder.WriteString("MCP prompts are agent templates, not CLI commands. They guide tool/resource use and must still follow repository rules for freshness, impact-before-edit, and detect-changes before commit.\n\n")
+	builder.WriteString(RenderSkillSelectionGuide(skillPathPrefix, packages))
+	builder.WriteString(endMarker)
+	return builder.String()
+}
+
+func RenderSkillSelectionGuideForRepo(repoPath string, skillPathPrefix string) (string, error) {
+	packages, err := SkillPackagesForRepo(repoPath)
+	if err != nil {
+		return "", err
+	}
+	return RenderSkillSelectionGuide(skillPathPrefix, packages), nil
+}
+
+func RenderSkillSelectionGuide(skillPathPrefix string, packages []SkillPackage) string {
+	var builder strings.Builder
 	builder.WriteString("## Skill Selection Guide\n\n")
 	builder.WriteString("AI agent chooses the skill that fits the work.\n\n")
 	builder.WriteString("| When you need to... | Use |\n")
@@ -203,7 +218,7 @@ func renderAnvienBlock(skillPathPrefix string, packages []SkillPackage) string {
 	for _, pkg := range packages {
 		fmt.Fprintf(&builder, "| %s | %s |\n", skillGuideNeed(pkg), skillGuideUse(pkg, skillPathPrefix))
 	}
-	builder.WriteString("\n" + endMarker)
+	builder.WriteString("\n")
 	return builder.String()
 }
 

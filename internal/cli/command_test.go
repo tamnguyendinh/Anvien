@@ -142,6 +142,8 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 		"resolution-inventory",
 		"serve",
 		"setup",
+		"skill",
+		"Show available AI agent skills",
 		"source-site-accuracy",
 		"status",
 		"version",
@@ -157,6 +159,38 @@ func TestHelpCommandPrintsStubHelp(t *testing.T) {
 	}
 	if strings.Contains(out, "eval-server") {
 		t.Fatalf("root help still exposes eval-server:\n%s", out)
+	}
+}
+
+func TestSkillHelpPrintsGeneratedSkillSelectionGuide(t *testing.T) {
+	packages, err := aicontext.SkillPackages()
+	if err != nil {
+		t.Fatalf("SkillPackages: %v", err)
+	}
+	want := aicontext.RenderSkillSelectionGuide(".agents/skills/", packages)
+
+	out, errOut, err := executeForTest(t, "skill", "--help")
+	if err != nil {
+		t.Fatalf("skill help returned error: %v", err)
+	}
+	if errOut != "" {
+		t.Fatalf("skill help wrote stderr: %q", errOut)
+	}
+	if out != want {
+		t.Fatalf("skill help output mismatch:\n got:\n%s\nwant:\n%s", out, want)
+	}
+	for _, mustContain := range []string{
+		"## Skill Selection Guide",
+		"AI agent chooses the skill that fits the work.",
+		"| When you need to... | Use |",
+		"`.agents/skills/planner/SKILL.md`",
+	} {
+		if !strings.Contains(out, mustContain) {
+			t.Fatalf("skill help missing %q:\n%s", mustContain, out)
+		}
+	}
+	if strings.Contains(out, ".claude/skills/") {
+		t.Fatalf("skill help should use AGENTS skill paths:\n%s", out)
 	}
 }
 
