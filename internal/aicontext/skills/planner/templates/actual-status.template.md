@@ -57,11 +57,9 @@ anvien file-detail <path> --repo <repo> --json
 
 Record how many files the target is related to before deciding touch mode. A file with many relationships may still be editable, but the plan must narrow the exact phase, touch mode, and validation needed.
 
-`Plan-Relevant Relationship Files` lists only relationship files that can directly affect or be affected by the planned phase or slice. Do not list every related file from `file-detail`. If `file-detail` shows 100 related files but only 5 can matter for the current plan slice, list only those 5 and point to the evidence ID for the full relationship inventory.
-
-| Unit / File / Surface | File Detail Evidence | Related File Count | Relationship Summary | Plan-Relevant Relationship Files | Impact Note |
-|-----------------------|----------------------|--------------------|----------------------|----------------------------------|-------------|
-| {{UNIT}} | {{EVIDENCE_ID}} | {{RELATED_FILE_COUNT}} | {{RELATIONSHIP_SUMMARY}} | {{PLAN_RELEVANT_RELATIONSHIP_FILES}} | low / medium / high / critical scope warning |
+| Unit / File / Surface | File Detail Evidence | Related File Count | Relationship Summary | Impact Note |
+|-----------------------|----------------------|--------------------|----------------------|-------------|
+| {{UNIT}} | {{EVIDENCE_ID}} | {{RELATED_FILE_COUNT}} | {{RELATIONSHIP_SUMMARY}} | low / medium / high / critical scope warning |
 
 ## Status Rules
 
@@ -92,9 +90,11 @@ Record how many files the target is related to before deciding touch mode. A fil
 
 Use this map to prevent accidental edits. A related file is not automatically editable.
 
-| Unit / File / Surface | Relationship to Target | Related File Count | Plan Item | Touch Mode | Evidence | Constraint |
-|-----------------------|------------------------|--------------------|-----------|------------|----------|------------|
-| {{UNIT}} | source-of-truth / consumer / generated output / test / config / dependency | {{RELATED_FILE_COUNT}} | P1-A | preserve-only / inspect-only / edit / regenerate / validate-only / block / do-not-touch | {{EVIDENCE_IDS}} | {{CONSTRAINT}} |
+`Plan-Relevant Relationship File` lists only a relationship file that can directly affect or be affected by the planned phase or slice. Do not copy the full `file-detail` relationship inventory into this map. Include only files whose relationship can affect the phase/slice decision, touch mode, or validation.
+
+| Unit / File / Surface | Plan-Relevant Relationship File | Relationship to Target | Plan Item | Touch Mode | Evidence | Constraint |
+|-----------------------|---------------------------------|------------------------|-----------|------------|----------|------------|
+| {{UNIT}} | {{PLAN_RELEVANT_RELATIONSHIP_FILE}} | source-of-truth / consumer / generated output / test / config / dependency | P1-A | preserve-only / inspect-only / edit / regenerate / validate-only / block / do-not-touch | {{EVIDENCE_IDS}} | {{CONSTRAINT}} |
 
 ## Detailed Findings
 
@@ -119,7 +119,6 @@ Relationship and impact:
 
 - Related file count: {{RELATED_FILE_COUNT}}
 - Relationship summary: {{RELATIONSHIP_SUMMARY}}
-- Plan-relevant relationship files: {{PLAN_RELEVANT_RELATIONSHIP_FILES}}
 - Impact note: {{IMPACT_NOTE}}
 
 Classification:
@@ -146,8 +145,8 @@ Forbidden next action:
 - [ ] Each target unit has a status.
 - [ ] Each status has evidence IDs.
 - [ ] Each target file has relationship count evidence from `file-detail` when applicable.
-- [ ] Plan-relevant relationship files are listed for each target file when relationship evidence shows direct phase/slice impact.
-- [ ] Phase Touch Map defines touch mode for every related unit that may be affected.
+- [ ] Phase Touch Map lists plan-relevant relationship files that can affect the current phase/slice.
+- [ ] Phase Touch Map defines touch mode for every plan-relevant relationship unit that may be affected.
 - [ ] Correct parts are marked preserve-only.
 - [ ] Partial, missing, wrong, unbound, and fake-or-stub parts have exact next actions.
 - [ ] Blockers are recorded, if any.
