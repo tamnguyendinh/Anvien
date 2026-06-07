@@ -237,18 +237,8 @@ Detailed validation criteria for evaluating skills:
 - **Progressive disclosure and token budget**: `references/progressive-disclosure-token-budget.md`
 - **Folder structure**: `references/skill-folder-structure.md`
 
-## Plugin Marketplaces
-
-For distributing skills as plugins via marketplaces, see:
-- **Setup overview**: `references/plugin-marketplace-setup-overview.md`
-- **JSON schema**: `references/plugin-marketplace-json-schema.md`
-- **Source types**: `references/plugin-marketplace-source-types.md`
-- **Hosting and distribution**: `references/plugin-marketplace-hosting-distribution.md`
-- **Errors and fixes**: `references/plugin-marketplace-errors-and-fixes.md`
-
 ## References
 - [Agent Skills](https://docs.claude.com/en/docs/claude-code/skills.md)
 - [Agent Skills Spec](../agent_skills_spec.md)
 - [Agent Skills Overview](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview.md)
 - [Best Practices](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices.md)
-- [Plugin Marketplaces](https://code.claude.com/docs/en/plugin-marketplaces.md)
