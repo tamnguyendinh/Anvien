@@ -15,6 +15,8 @@ Implementation must not start until the target scope has a completed status row,
 
 This file does not replace `evidence.md`. It classifies current state from evidence.
 
+Use exact evidence IDs from `evidence.md`, such as `E0-P0A-SRC1`, not broad section IDs such as `E0` or `E1`.
+
 ## Freshness / Refresh Rules
 
 This actual-status file is a living current-state record, not a one-time P0 snapshot.
@@ -57,7 +59,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 
 | Unit / File / Surface | File Detail Evidence | Related File Count | Relationship Summary | Impact Note |
 |-----------------------|----------------------|--------------------|----------------------|-------------|
-| {{UNIT}} | E1 | {{RELATED_FILE_COUNT}} | {{RELATIONSHIP_SUMMARY}} | low / medium / high / critical scope warning |
+| {{UNIT}} | {{EVIDENCE_ID}} | {{RELATED_FILE_COUNT}} | {{RELATIONSHIP_SUMMARY}} | low / medium / high / critical scope warning |
 
 ## Status Rules
 
@@ -75,13 +77,13 @@ Record how many files the target is related to before deciding touch mode. A fil
 
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|--------------------|----------|--------------------|
-| {{UNIT}} | {{CURRENT_STATE}} | {{REQUIRED_STATE}} | correct/partial/wrong/missing/unbound/fake-or-stub/blocked | {{RELATED_FILE_COUNT}} related files | E1, E2 | preserve / edit P1-A / update P2-B status / block |
+| {{UNIT}} | {{CURRENT_STATE}} | {{REQUIRED_STATE}} | correct/partial/wrong/missing/unbound/fake-or-stub/blocked | {{RELATED_FILE_COUNT}} related files | {{EVIDENCE_IDS}} | preserve / edit P1-A / update P2-B status / block |
 
 ## Status Refresh Log
 
 | Refresh | Date | Repo Basis | Changed Scope | Status Changes | Evidence | Next Phase Update |
 |---------|------|------------|----------------|----------------|----------|-------------------|
-| R0 | {{YYYY-MM-DD}} | baseline before P0 | {{TARGET_SCOPE}} | initial classification | E1 | {{NEXT_PHASE_STATUS_UPDATE}} |
+| R0 | {{YYYY-MM-DD}} | baseline before P0 | {{TARGET_SCOPE}} | initial classification | {{EVIDENCE_IDS}} | {{NEXT_PHASE_STATUS_UPDATE}} |
 | R1 | {{YYYY-MM-DD}} | after {{COMPLETED_PLAN_ITEM_OR_COMMIT}} | {{CHANGED_SCOPE}} | {{STATUS_TRANSITION}} | {{EVIDENCE_IDS}} | {{NEXT_PHASE_UPDATE}} |
 
 ## Phase Touch Map
@@ -90,7 +92,7 @@ Use this map to prevent accidental edits. A related file is not automatically ed
 
 | Unit / File / Surface | Relationship to Target | Related File Count | Plan Item | Touch Mode | Evidence | Constraint |
 |-----------------------|------------------------|--------------------|-----------|------------|----------|------------|
-| {{UNIT}} | source-of-truth / consumer / generated output / test / config / dependency | {{RELATED_FILE_COUNT}} | P1-A | preserve-only / inspect-only / edit / regenerate / validate-only / block / do-not-touch | E1 | {{CONSTRAINT}} |
+| {{UNIT}} | source-of-truth / consumer / generated output / test / config / dependency | {{RELATED_FILE_COUNT}} | P1-A | preserve-only / inspect-only / edit / regenerate / validate-only / block / do-not-touch | {{EVIDENCE_IDS}} | {{CONSTRAINT}} |
 
 ## Detailed Findings
 
@@ -108,8 +110,8 @@ Required state:
 
 Evidence:
 
-- E1: {{EVIDENCE_1}}
-- E2: {{EVIDENCE_2}}
+- {{EVIDENCE_ID_1}}: {{EVIDENCE_1}}
+- {{EVIDENCE_ID_2}}: {{EVIDENCE_2}}
 
 Relationship and impact:
 

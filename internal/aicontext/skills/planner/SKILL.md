@@ -142,6 +142,34 @@ It should contain:
 
 Evidence can reference short metric traces, but long metric tables belong in the benchmark file.
 
+Evidence IDs must be exact and stable so `plan.md`, `actual-status.md`, `benchmark.md`, and later agents can reference proof without ambiguity.
+
+Use this format:
+
+```text
+E<phase>-<item>-<kind><n>
+```
+
+Rules:
+
+- `E<phase>` matches the plan phase number: `E0` for `P0`, `E1` for `P1`, `E2` for `P2`, and so on.
+- `<item>` matches the checklist item without the dash: `P0A`, `P1A`, `P2B`.
+- `<kind>` is plan-local. Choose a short uppercase token that is meaningful for the current repo and plan.
+- `<n>` is a 1-based sequence number within that phase item and kind.
+- Keep the same `<kind>` meaning stable inside one plan.
+- Do not reuse an evidence ID for different facts.
+- Reference exact evidence IDs from `actual-status.md` and `benchmark.md`; avoid referencing only broad section IDs such as `E1`.
+- Use ranges such as `E0-P0A-FD1..E0-P0A-FD17` only for compact inventory summaries; use exact IDs when a specific status decision depends on a specific fact.
+- If nearby plans already use a clear local evidence naming style, follow that style instead of inventing a new one.
+
+Examples only:
+
+- `E0-P0A-SRC1`
+- `E0-P0A-GRAPH1`
+- `E1-P1A-ROUTE1`
+- `E2-P2B-KEYBOARD1`
+- `E2-P2B-DETECT1`
+
 ## Benchmark File
 
 The benchmark file records measurements.
