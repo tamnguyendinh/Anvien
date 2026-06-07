@@ -19,7 +19,7 @@
 - Update each checklist item immediately when it is completed.
 - Record evidence as work completes.
 - Record benchmarkable counts or measurements when they are taken.
-- Rewrite later phases when actual-status evidence changes the scope.
+- Update later phase status assumptions, next actions, and work steps when actual-status evidence changes the repo state.
 
 ## Problem
 
@@ -45,7 +45,7 @@
 
 - [ ] P0-A: Complete actual status before implementation work.
   - Goal: establish the real current state.
-  - Work Steps: inspect source-of-truth files, classify each surface, record blocked or missing pieces, and rewrite later phases from evidence.
+  - Work Steps: inspect source-of-truth files, classify each surface, record blocked or missing pieces, and update later phase status assumptions, next actions, and work steps from evidence.
   - Implementation Gate: no implementation or editing starts until `{{ACTUAL_STATUS_PATH}}` has a final P0 decision.
   - Acceptance: actual status identifies correct, partial, missing/unbound, fake-or-stub, and blocked surfaces for this scope.
 - [ ] P1-A: {{PHASE_1_TITLE}}
@@ -66,7 +66,7 @@
   - Goal: ensure the final diff contains only artifacts that still serve the accepted plan.
   - Work Steps:
     1. Review files, sections, generated output, tests, temp files, and plan artifacts created or modified during this plan.
-    2. Remove or rewrite any artifact made obsolete by actual-status findings, user corrections, failed approaches, or phase rewrites.
+    2. Remove or rewrite any artifact made obsolete by actual-status findings, user corrections, failed approaches, or phase status updates.
     3. Verify no rejected approach, stale placeholder, unused generated output, or dead helper artifact remains in the final diff.
     4. Call supervisor to review the dead-work cleanup.
     5. If supervisor fails the cleanup, return to the responsible implementation workflow/skill for the failed cleanup scope only, then re-run supervisor review.
