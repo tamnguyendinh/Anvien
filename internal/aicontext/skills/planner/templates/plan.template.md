@@ -20,6 +20,7 @@
 - Record evidence as work completes.
 - Record benchmarkable counts or measurements when they are taken.
 - Update later phase status assumptions, next actions, and work steps when actual-status evidence changes the repo state.
+ - After completing a phase or implementation slice and refreshing `actual- status.md`, update the next affected phase's work steps as needed to match the latest repo reality, while preserving that phase's original goal, scope,  acceptance criteria, and major phase order.
 
 ## Problem
 
@@ -48,7 +49,7 @@
   - Work Steps: inspect source-of-truth files, classify each surface, record blocked or missing pieces, and update later phase status assumptions, next actions, and work steps from evidence.
   - Implementation Gate: no implementation or editing starts until `{{ACTUAL_STATUS_PATH}}` has a final P0 decision.
   - Acceptance: actual status identifies correct, partial, missing/unbound, fake-or-stub, and blocked surfaces for this scope.
-- [ ] P1-A: {{PHASE_1_TITLE}}
+ - [ ] P1-A: {{PHASE_1_TITLE}}
   - Goal: {{PHASE_1_GOAL}}
   - Work Steps: {{PHASE_1_WORK_STEPS}}
   - Implementation Gate: {{PHASE_1_GATE}}

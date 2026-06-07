@@ -67,8 +67,9 @@ For implementation plans, the first phase must be P0 actual status:
 - create and fill `YYYY-MM-DD-<slug>-actual-status.md`;
 - classify current reality before implementation work;
 - update later phase status assumptions, next actions, and work steps from that evidence before implementation starts.
+- After completing a phase or implementation slice and refreshing `actual- status.md`, update the next affected phase's work steps as needed to match the latest repo reality, while preserving that phase's original goal, scope,  acceptance criteria, and major phase order.
 
-Every checklist item must be a complete mini-plan by itself. Do not write generic checklist items. The plan must state what to do, in what order, and what condition proves the item is done, don't hide the logic in the outer section.
+Every checklist item must be a complete mini-plan by itself. Do not write generic checklist items. The plan must state what to do, in what order, and what condition proves the item is done, don't hide the logic in the outer section.**
 
 Each checklist item must include:
 
