@@ -66,7 +66,7 @@ For implementation plans, the first phase must be P0 actual status:
 
 - create and fill `YYYY-MM-DD-<slug>-actual-status.md`;
 - classify current reality before implementation work;
-- rewrite later phases from that evidence before implementation starts.
+- update later phase status assumptions, next actions, and work steps from that evidence before implementation starts.
 
 Every checklist item must be a complete mini-plan by itself. Do not write generic checklist items. The plan must state what to do, in what order, and what condition proves the item is done, don't hide the logic in the outer section.
 
@@ -83,6 +83,19 @@ Do not use the plan file as a command log, benchmark ledger, changelog, or place
 
 The actual-status file records the true current state before implementation work. It prevents planning from assumptions.
 
+Do not treat P0 actual status as frozen after implementation begins. Keep it as a living current-state record:
+
+- P0 records the baseline before implementation.
+- After each completed implementation slice, update the affected status matrix rows to match the new repo reality.
+- Before starting the next phase, check whether completed work or repo changes made previous current-state classifications stale.
+- If actual status changes, update the next phase's status assumptions, next action, and work steps before implementation continues.
+- Keep detailed proof in `evidence.md`; actual-status stores classification, evidence IDs, touch mode, and plan consequences.
+
+The file has two layers:
+
+- `Current Status Matrix`: the latest known state that the next agent should trust.
+- `Status Refresh Log`: a short history of refreshes, status changes, evidence IDs, and next-phase updates.
+
 It must answer:
 
 - What is the real current state?
@@ -93,7 +106,7 @@ It must answer:
 - What is blocked?
 - For file targets, how many related files does `anvien file-detail <path> --repo <repo> --json` report?
 - Which related files/surfaces are preserve-only, inspect-only, editable, generated, validation-only, blocked, or out of scope?
-- From that evidence, how must the next plan phases be rewritten?
+- From that evidence, what status, next-action, or work-step updates are needed for the next phase?
 
 Use clear status labels:
 
@@ -104,7 +117,9 @@ Use clear status labels:
 - `fake-or-stub`: demo-only, placeholder, or fake behavior.
 - `blocked`: cannot proceed without external input or unavailable dependency.
 
-If actual status finds `correct`/`bound-correct`, `partial`, `missing`/`unbound`, `fake-or-stub`, or `blocked`, update the plan phases before implementation work. Do not execute a stale plan after actual-status evidence changes the work.
+If actual status finds `correct`/`bound-correct`, `partial`, `missing`/`unbound`, `fake-or-stub`, or `blocked`, update the affected next-phase status assumptions, next actions, and work steps before implementation work. Do not execute a stale phase after actual-status evidence changes the work.
+
+After implementation begins, use status transitions such as `missing -> correct`, `partial -> correct`, `fake-or-stub -> removed`, or `unbound -> bound-correct` when evidence proves the new state. Append a refresh-log row instead of deleting the history.
 
 ## Evidence File
 
@@ -153,9 +168,11 @@ Benchmark records measured numbers only. Do not put command logs, design decisio
 2. Read nearby plan files only for active local conventions, not as the source of the standard format.
 3. Confirm the date, slug, directory layout, and companion file links.
 4. Create all four standard files before implementation work.
-5. Complete `actual-status.md` as P0 before implementation work and rewrite later plan phases from its evidence.
+5. Complete `actual-status.md` as P0 before implementation work and update later phase status assumptions, next actions, and work steps from its evidence.
 6. Keep phase checklists specific enough that another agent can implement them in order.
-7. Update the matching checklist item as soon as a phase is completed.
-8. Record implementation evidence in the evidence file as the work completes.
-9. Record benchmarkable inventory or performance counts in the benchmark file as the measurements are taken.
-10. Keep generated output evidence separate from source-of-truth source changes.
+7. Record implementation evidence in the evidence file as the work completes.
+8. Record benchmarkable inventory or performance counts in the benchmark file as the measurements are taken.
+9. After each completed implementation slice, refresh affected rows in `actual-status.md` and append a `Status Refresh Log` row.
+10. Before starting the next phase, compare the latest actual-status classifications with the next plan item; update only its stale status assumptions, next action, or work steps if repo reality changed.
+11. Update the matching checklist item as soon as a phase is completed.
+12. Keep generated output evidence separate from source-of-truth source changes.

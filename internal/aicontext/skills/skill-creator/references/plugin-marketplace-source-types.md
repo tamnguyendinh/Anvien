@@ -1,4 +1,4 @@
-# Plugin Marketplace Sources
+# Plugin Marketplace Source Types
 
 ## Source Types
 
@@ -81,15 +81,6 @@ Pin to specific branch, tag, or commit:
     "./commands/enterprise/"
   ],
   "agents": ["./agents/security-reviewer.md"],
-  "hooks": {
-    "PostToolUse": [{
-      "matcher": "Write|Edit",
-      "hooks": [{
-        "type": "command",
-        "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh"
-      }]
-    }]
-  },
   "mcpServers": {
     "enterprise-db": {
       "command": "${CLAUDE_PLUGIN_ROOT}/servers/db-server",

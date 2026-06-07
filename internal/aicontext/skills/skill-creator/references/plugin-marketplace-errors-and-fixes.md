@@ -1,4 +1,4 @@
-# Plugin Marketplace Troubleshooting
+# Plugin Marketplace Errors and Fixes
 
 ## Marketplace Not Loading
 

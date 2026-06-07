@@ -1,4 +1,4 @@
-# Token Efficiency Criteria
+# Progressive Disclosure and Token Budget
 
 Skills use progressive disclosure to minimize context window usage.
 
@@ -6,7 +6,7 @@ Skills use progressive disclosure to minimize context window usage.
 
 1. **Metadata** - Always loaded (~200 chars)
 2. **SKILL.md body** - Loaded when skill triggers (<150 lines)
-3. **Bundled resources** - Loaded as needed (unlimited for scripts)
+3. **Bundled resources** - Loaded or used only when needed
 
 ## Size Limits
 
@@ -15,7 +15,6 @@ Skills use progressive disclosure to minimize context window usage.
 | Description | <200 chars | In YAML frontmatter |
 | SKILL.md | <150 lines | Core instructions only |
 | Each reference file | <150 lines | Split if larger |
-| Scripts | No limit | Executed, not loaded into context |
 
 ## SKILL.md Content Strategy
 
@@ -23,7 +22,7 @@ Skills use progressive disclosure to minimize context window usage.
 - Purpose (2-3 sentences)
 - When to use (trigger conditions)
 - Quick reference for common workflows
-- Pointers to resources (scripts, references, assets)
+- Pointers to resources (references and assets)
 
 **Move to references/:**
 - Detailed documentation
@@ -61,14 +60,3 @@ Include grep patterns in SKILL.md for discoverability:
 - Users: `references/api-endpoints-users.md`
 - Payments: `references/api-endpoints-payments.md`
 ```
-
-## Scripts: Best Token Efficiency
-
-Scripts execute without loading into context.
-
-**When to use scripts:**
-- Repetitive code patterns
-- Deterministic operations
-- Complex transformations
-
-**Example:** PDF rotation via `scripts/rotate_pdf.py` vs rewriting rotation code each time.

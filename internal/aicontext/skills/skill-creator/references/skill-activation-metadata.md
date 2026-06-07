@@ -1,4 +1,4 @@
-# Metadata Quality Criteria
+# Skill Activation Metadata
 
 Metadata determines when Claude activates the skill. Poor metadata = wrong activation or missed activation.
 
@@ -64,13 +64,10 @@ Include these trigger phrases/actions in description.
 
 ## Validation
 
-Check with packaging script:
+Inspect the frontmatter directly.
 
-```bash
-scripts/package_skill.py <skill-path>
-```
-
-Fails if:
+Reject if:
 - Missing name or description
 - Description exceeds 200 characters
+- Description is generic or educational
 - Invalid YAML syntax

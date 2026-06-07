@@ -1,4 +1,4 @@
-# Plugin Marketplace Hosting & Distribution
+# Plugin Marketplace Hosting and Distribution
 
 ## GitHub (Recommended)
 

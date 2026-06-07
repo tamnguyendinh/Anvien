@@ -1,4 +1,4 @@
-# Plugin Marketplace Schema
+# Plugin Marketplace JSON Schema
 
 ## Marketplace JSON Structure
 

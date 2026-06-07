@@ -1,6 +1,6 @@
-# Skill Validation Checklist
+# Skill Acceptance Checklist
 
-Quick validation before packaging. Run `scripts/package_skill.py` for automated checks.
+Manual validation checklist before distributing or accepting a skill.
 
 ## Critical (Must Pass)
 
@@ -17,14 +17,6 @@ Quick validation before packaging. Run `scripts/package_skill.py` for automated 
 - [ ] SKILL.md exists with valid YAML frontmatter
 - [ ] Unused example files deleted
 - [ ] File names: kebab-case, self-documenting
-
-## Scripts (If Applicable)
-
-- [ ] Tests exist and pass
-- [ ] Cross-platform (Node.js/Python preferred)
-- [ ] Env vars: respects hierarchy `process.env` > `$HOME/.claude/skills/${SKILL}/.env` (global) > `$HOME/.claude/skills/.env` (global) > `$HOME/.claude/.env` (global) > `./.claude/skills/${SKILL}/.env` (cwd) > `./.claude/skills/.env` (cwd) > `./.claude/.env` (cwd)
-- [ ] Dependencies documented (requirements.txt, .env.example)
-- [ ] Manually tested with real use cases
 
 ## Quality
 
@@ -44,20 +36,17 @@ Quick validation before packaging. Run `scripts/package_skill.py` for automated 
 - [ ] Related topics consolidated (e.g., cloudflare + docker → devops)
 - [ ] Composable with other skills
 
-## Automated Validation
+## Validation Gate
 
-Run packaging script to validate:
+Inspect the actual skill files before accepting the result. Do not treat a shallow structural check as proof that the skill is correct.
 
-```bash
-scripts/package_skill.py <path/to/skill-folder>
-```
-
-Checks performed:
-- YAML frontmatter format
-- Required fields present
-- Description length (<200 chars)
-- Directory structure
-- File organization
+Required checks:
+- YAML frontmatter exists and required fields are present
+- Description is specific and under 200 characters
+- SKILL.md and references stay within line limits
+- All referenced files exist
+- No unused placeholder files remain
+- No sentence is only mostly correct
 
 Fix all errors before distributing.
 

@@ -1,219 +1,102 @@
 ---
 name: databases
-description: Use when the user asks to work with databases.
+description: Use when creating, changing, or reviewing MongoDB/PostgreSQL database work in a real repository, including schema, models, migrations, queries, indexes, transactions, connection config, backup/restore assumptions, or performance; follow repo-native tooling and meet the production database bar unless the user explicitly asks for a prototype.
 license: MIT
 ---
 
 # Databases Skill
 
-Unified guide for working with MongoDB (document-oriented) and PostgreSQL (relational) databases. Choose the right database for your use case and master both systems.
+Repo-first guidance for creating, changing, and reviewing MongoDB or PostgreSQL database work in real repositories.
 
-## Database Selection Guide
+## Purpose
 
-### Choose MongoDB When:
-- Schema flexibility: frequent structure changes, heterogeneous data
-- Document-centric: natural JSON/BSON data model
-- Horizontal scaling: need to shard across multiple servers
-- High write throughput: IoT, logging, real-time analytics
-- Nested/hierarchical data: embedded documents preferred
-- Rapid prototyping: schema evolution without migrations
+Use this skill when the task involves database schema, models, migrations, queries, indexes, transactions, seed data, connection config, backup/restore assumptions, or database performance.
 
-**Best for:** Content management, catalogs, IoT time series, real-time analytics, mobile apps, user profiles
+The goal is not to teach basic database syntax. The goal is to help the agent produce database work that is correct, production-ready, and consistent with the target repository.
 
-### Choose PostgreSQL When:
-- Strong consistency: ACID transactions critical
-- Complex relationships: many-to-many joins, referential integrity
-- SQL requirement: team expertise, reporting tools, BI systems
-- Data integrity: strict schema validation, constraints
-- Mature ecosystem: extensive tooling, extensions
-- Complex queries: window functions, CTEs, analytical workloads
+## Core Rule
 
-**Best for:** Financial systems, e-commerce transactions, ERP, CRM, data warehousing, analytics
+Follow the user's requested action.
 
-### Both Support:
-- JSON/JSONB storage and querying
-- Full-text search capabilities
-- Geospatial queries and indexing
-- Replication and high availability
-- ACID transactions (MongoDB 4.0+)
-- Strong security features
+If the user asks for review, review. If the user asks for a plan, plan. If the user asks for implementation, implementation is allowed.
 
-## Quick Start
+In every mode, database work must meet the production database bar unless the user explicitly asks for a throwaway prototype.
 
-### MongoDB Setup
+## Repo-First Rule
 
-```bash
-# Atlas (Cloud) - Recommended
-# 1. Sign up at mongodb.com/atlas
-# 2. Create M0 free cluster
-# 3. Get connection string
+Before proposing or editing database work, inspect the target repository first:
+- Database engine and version
+- ORM, query builder, or data-access layer
+- Migration framework and migration conventions
+- Existing schema, model, index, and query patterns
+- Connection config and environment conventions
+- Tests, seed data, fixtures, and deployment assumptions
 
-# Connection
-mongodb+srv://user:pass@cluster.mongodb.net/db
+Follow repo-native tooling and patterns unless there is a clear reason not to.
 
-# Shell
-mongosh "mongodb+srv://cluster.mongodb.net/mydb"
+## Production Database Bar
 
-# Basic operations
-db.users.insertOne({ name: "Alice", age: 30 })
-db.users.find({ age: { $gte: 18 } })
-db.users.updateOne({ name: "Alice" }, { $set: { age: 31 } })
-db.users.deleteOne({ name: "Alice" })
-```
+Production-ready database work must account for:
+- Correctness: constraints, nullability, uniqueness, referential rules, validation, and ownership boundaries.
+- Migration safety: forward path, rollback or mitigation path, deploy order, locking risk, data volume, and backfill behavior.
+- Performance: expected queries, indexes, cardinality, pagination, aggregation cost, and query plans where relevant.
+- Concurrency: transaction boundaries, isolation assumptions, duplicate writes, retries, and out-of-order events.
+- Security: least privilege, secret handling, PII, encryption assumptions, and auditability.
+- Operations: backup/restore assumptions, monitoring, slow-query visibility, retention, and failure recovery.
+- Repo fit: existing ORM, migration framework, naming, config, and test patterns.
 
-### PostgreSQL Setup
+Do not produce demo-only database work unless the user explicitly requests it.
 
-```bash
-# Ubuntu/Debian
-sudo apt-get install postgresql postgresql-contrib
+## Implementation Rule
 
-# Start service
-sudo systemctl start postgresql
+When implementation is requested, create the production-safe version directly.
 
-# Connect
-psql -U postgres -d mydb
+Do not leave integrity, migration safety, indexing, transaction behavior, or operational checks as vague future hardening unless the user explicitly scopes them out.
 
-# Basic operations
-CREATE TABLE users (id SERIAL PRIMARY KEY, name TEXT, age INT);
-INSERT INTO users (name, age) VALUES ('Alice', 30);
-SELECT * FROM users WHERE age >= 18;
-UPDATE users SET age = 31 WHERE name = 'Alice';
-DELETE FROM users WHERE name = 'Alice';
-```
+Keep edits scoped to the requested database behavior and the repository's established database layer.
 
-## Common Operations
+## Evidence Rule
 
-### Create/Insert
-```javascript
-// MongoDB
-db.users.insertOne({ name: "Bob", email: "bob@example.com" })
-db.users.insertMany([{ name: "Alice" }, { name: "Charlie" }])
-```
+Database recommendations need evidence appropriate to the risk.
 
-```sql
--- PostgreSQL
-INSERT INTO users (name, email) VALUES ('Bob', 'bob@example.com');
-INSERT INTO users (name, email) VALUES ('Alice', NULL), ('Charlie', NULL);
-```
+For performance work, prefer real query evidence: `EXPLAIN (ANALYZE, BUFFERS)`, `pg_stat_statements`, MongoDB explain/profiler output, row counts, index usage, and before/after measurements.
 
-### Read/Query
-```javascript
-// MongoDB
-db.users.find({ age: { $gte: 18 } })
-db.users.findOne({ email: "bob@example.com" })
-```
+For migrations, identify affected data, lock risk, deployment order, rollback or mitigation path, and verification queries.
 
-```sql
--- PostgreSQL
-SELECT * FROM users WHERE age >= 18;
-SELECT * FROM users WHERE email = 'bob@example.com' LIMIT 1;
-```
+For schema changes, trace callers and consumers before changing shared data shapes.
 
-### Update
-```javascript
-// MongoDB
-db.users.updateOne({ name: "Bob" }, { $set: { age: 25 } })
-db.users.updateMany({ status: "pending" }, { $set: { status: "active" } })
-```
+## Tooling Boundary
 
-```sql
--- PostgreSQL
-UPDATE users SET age = 25 WHERE name = 'Bob';
-UPDATE users SET status = 'active' WHERE status = 'pending';
-```
+This skill defines the production-quality bar for database work.
 
-### Delete
-```javascript
-// MongoDB
-db.users.deleteOne({ name: "Bob" })
-db.users.deleteMany({ status: "deleted" })
-```
+It does not replace the repository's ORM, migration framework, backup system, restore process, deployment process, or observability stack.
 
-```sql
--- PostgreSQL
-DELETE FROM users WHERE name = 'Bob';
-DELETE FROM users WHERE status = 'deleted';
-```
+Use the repository's own tooling first.
 
-### Indexing
-```javascript
-// MongoDB
-db.users.createIndex({ email: 1 })
-db.users.createIndex({ status: 1, createdAt: -1 })
-```
+## Prototype Exception
 
-```sql
--- PostgreSQL
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_status_created ON users(status, created_at DESC);
-```
+If the user explicitly asks for a prototype, demo, spike, or throwaway implementation, the work may be lighter.
+
+Even then, clearly mark which production concerns are intentionally omitted.
+
+## Task Routing
+
+- Database selection: evaluate domain shape, consistency needs, query workload, operations, and team tooling.
+- Schema/model change: inspect models, migrations, constraints, indexes, serializers, API consumers, and tests.
+- Migration: use repo-native migration tooling; check data volume, locks, rollback/mitigation, and deploy order.
+- Query/index performance: inspect query shape, current indexes, table/collection size, cardinality, and plan evidence.
+- Backup/restore: inspect existing operational procedures; do not invent a generic production backup process.
+- Analytics/reporting SQL: if the task is BI/reporting/dashboard analysis rather than application database engineering, prefer a data-analysis skill.
 
 ## Reference Navigation
 
-### MongoDB References
-- **[mongodb-crud.md](references/mongodb-crud.md)** - CRUD operations, query operators, atomic updates
-- **[mongodb-aggregation.md](references/mongodb-aggregation.md)** - Aggregation pipeline, stages, operators, patterns
-- **[mongodb-indexing.md](references/mongodb-indexing.md)** - Index types, compound indexes, performance optimization
-- **[mongodb-atlas.md](references/mongodb-atlas.md)** - Atlas cloud setup, clusters, monitoring, search
-
-### PostgreSQL References
-- **[postgresql-best-practices.md](references/postgresql-best-practices.md)** - Rule-based performance checks: FK indexes, JOIN support indexes, partial indexes
-- **[postgresql-queries.md](references/postgresql-queries.md)** - SELECT, JOINs, subqueries, CTEs, window functions
-- **[postgresql-psql-cli.md](references/postgresql-psql-cli.md)** - psql commands, meta-commands, scripting
-- **[postgresql-performance.md](references/postgresql-performance.md)** - EXPLAIN, query optimization, vacuum, indexes
-- **[postgresql-administration.md](references/postgresql-administration.md)** - User management, backups, replication, maintenance
-
-## Python Utilities
-
-Database utility scripts in `scripts/`:
-- **db_migrate.py** - Generate and apply migrations for both databases
-- **db_backup.py** - Backup and restore MongoDB and PostgreSQL
-- **db_performance_check.py** - Analyze slow queries and recommend indexes
-
-```bash
-# Generate migration
-python scripts/db_migrate.py --db mongodb --generate "add_user_index"
-
-# Run backup
-python scripts/db_backup.py --db postgres --output /backups/
-
-# Check performance
-python scripts/db_performance_check.py --db mongodb --threshold 100ms
-```
-
-## Key Differences Summary
-
-| Feature | MongoDB | PostgreSQL |
-|---------|---------|------------|
-| Data Model | Document (JSON/BSON) | Relational (Tables/Rows) |
-| Schema | Flexible, dynamic | Strict, predefined |
-| Query Language | MongoDB Query Language | SQL |
-| Joins | $lookup (limited) | Native, optimized |
-| Transactions | Multi-document (4.0+) | Native ACID |
-| Scaling | Horizontal (sharding) | Vertical (primary), Horizontal (extensions) |
-| Indexes | Single, compound, text, geo, etc | B-tree, hash, GiST, GIN, etc |
-
-## Best Practices
-
-**MongoDB:**
-- Use embedded documents for 1-to-few relationships
-- Reference documents for 1-to-many or many-to-many
-- Index frequently queried fields
-- Use aggregation pipeline for complex transformations
-- Enable authentication and TLS in production
-- Use Atlas for managed hosting
-
-**PostgreSQL:**
-- Normalize schema to 3NF, denormalize for performance
-- Use foreign keys for referential integrity
-- Index foreign keys and frequently filtered columns
-- Use EXPLAIN ANALYZE to optimize queries
-- Regular VACUUM and ANALYZE maintenance
-- Connection pooling (pgBouncer) for web apps
-
-## Resources
-
-- MongoDB: https://www.mongodb.com/docs/
-- PostgreSQL: https://www.postgresql.org/docs/
-- MongoDB University: https://learn.mongodb.com/
-- PostgreSQL Tutorial: https://www.postgresqltutorial.com/
+- [database-selection.md](references/database-selection.md) - MongoDB vs PostgreSQL selection and tradeoffs.
+- [mongodb-crud.md](references/mongodb-crud.md) - MongoDB CRUD, query operators, atomic updates.
+- [mongodb-aggregation.md](references/mongodb-aggregation.md) - MongoDB aggregation pipeline patterns.
+- [mongodb-indexing.md](references/mongodb-indexing.md) - MongoDB index design and optimization.
+- [mongodb-atlas.md](references/mongodb-atlas.md) - MongoDB Atlas setup, monitoring, and operational reference.
+- [postgresql-best-practices.md](references/postgresql-best-practices.md) - PostgreSQL FK indexes, join indexes, partial indexes.
+- [postgresql-queries.md](references/postgresql-queries.md) - PostgreSQL query patterns.
+- [postgresql-performance.md](references/postgresql-performance.md) - PostgreSQL EXPLAIN and performance workflow.
+- [postgresql-psql-cli.md](references/postgresql-psql-cli.md) - psql commands and scripting reference.
+- [postgresql-administration.md](references/postgresql-administration.md) - PostgreSQL administration, backup, replication, and maintenance.

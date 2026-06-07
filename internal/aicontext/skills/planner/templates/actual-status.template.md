@@ -15,6 +15,26 @@ Implementation must not start until the target scope has a completed status row,
 
 This file does not replace `evidence.md`. It classifies current state from evidence.
 
+## Freshness / Refresh Rules
+
+This actual-status file is a living current-state record, not a one-time P0 snapshot.
+
+P0 records the baseline before implementation. After implementation begins, keep the Current Status Matrix updated so the next agent can trust it as the latest repo reality.
+
+Update this file:
+
+- after each completed implementation slice;
+- before starting the next phase if repo state changed;
+- whenever evidence changes a current-state classification;
+- whenever the next phase's status assumptions, next action, or work steps need updating because reality differs from the previous status.
+
+When refreshing status:
+
+- update only the rows affected by the completed work or new evidence;
+- use explicit transitions such as `missing -> correct`, `partial -> correct`, `fake-or-stub -> removed`, or `unbound -> bound-correct`;
+- append a Status Refresh Log row instead of deleting history;
+- keep detailed proof in `evidence.md`; store only classifications, evidence IDs, touch mode, and plan consequences here.
+
 ## Scope
 
 Target scope:
@@ -55,7 +75,14 @@ Record how many files the target is related to before deciding touch mode. A fil
 
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|--------------------|----------|--------------------|
-| {{UNIT}} | {{CURRENT_STATE}} | {{REQUIRED_STATE}} | correct/partial/wrong/missing/unbound/fake-or-stub/blocked | {{RELATED_FILE_COUNT}} related files | E1, E2 | preserve / edit P1-A / rewrite P2-B / block |
+| {{UNIT}} | {{CURRENT_STATE}} | {{REQUIRED_STATE}} | correct/partial/wrong/missing/unbound/fake-or-stub/blocked | {{RELATED_FILE_COUNT}} related files | E1, E2 | preserve / edit P1-A / update P2-B status / block |
+
+## Status Refresh Log
+
+| Refresh | Date | Repo Basis | Changed Scope | Status Changes | Evidence | Next Phase Update |
+|---------|------|------------|----------------|----------------|----------|-------------------|
+| R0 | {{YYYY-MM-DD}} | baseline before P0 | {{TARGET_SCOPE}} | initial classification | E1 | {{NEXT_PHASE_STATUS_UPDATE}} |
+| R1 | {{YYYY-MM-DD}} | after {{COMPLETED_PLAN_ITEM_OR_COMMIT}} | {{CHANGED_SCOPE}} | {{STATUS_TRANSITION}} | {{EVIDENCE_IDS}} | {{NEXT_PHASE_UPDATE}} |
 
 ## Phase Touch Map
 
@@ -102,10 +129,10 @@ Forbidden next action:
 
 {{FORBIDDEN_NEXT_ACTION}}
 
-## Rewrite Decisions
+## Next Phase Status Decisions
 
-| Original Plan Item | Actual Status Finding | Required Rewrite |
-|--------------------|-----------------------|------------------|
+| Plan Item | Actual Status Finding | Required Status / Next-Action Update |
+|-----------|-----------------------|--------------------------------------|
 | P1-A | {{FINDING}} | keep / change / remove / block |
 
 ## Implementation Gate
@@ -118,15 +145,18 @@ Forbidden next action:
 - [ ] Correct parts are marked preserve-only.
 - [ ] Partial, missing, wrong, unbound, and fake-or-stub parts have exact next actions.
 - [ ] Blockers are recorded, if any.
-- [ ] Main plan has been rewritten from this status file.
+- [ ] Next phase status assumptions, next action, and work steps have been updated from this status file when needed.
+- [ ] Status Refresh Log has an R0 baseline row.
+- [ ] If implementation has started, affected Current Status Matrix rows have been refreshed from latest evidence.
+- [ ] If refreshed statuses changed next work, only the stale next-phase status assumptions, next action, or work steps have been updated before the next phase.
 
 ## Final P0 Decision
 
 Choose one:
 
 - [ ] P0 actual-status incomplete. Implementation is blocked.
-- [ ] P0 complete. Main plan can proceed unchanged.
-- [ ] P0 complete. Main plan must be rewritten before implementation.
+- [ ] P0 complete. Next phase can proceed unchanged.
+- [ ] P0 complete. Next phase status, next action, or work steps must be updated before implementation.
 - [ ] P0 complete. Target scope is preserve-only.
 - [ ] P0 complete. Implementation is blocked by missing authority or evidence.
 

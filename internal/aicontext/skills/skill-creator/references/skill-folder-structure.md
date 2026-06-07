@@ -1,4 +1,4 @@
-# Structure & Organization Criteria
+# Skill Folder Structure
 
 Proper structure enables discovery and maintainability.
 
@@ -8,7 +8,6 @@ Proper structure enables discovery and maintainability.
 .claude/skills/
 └── skill-name/
     ├── SKILL.md          # Required, uppercase
-    ├── scripts/          # Optional: executable code
     ├── references/       # Optional: documentation
     └── assets/           # Optional: output resources
 ```
@@ -29,19 +28,6 @@ version: Optional
 ```
 
 ## Resource Directories
-
-### scripts/
-Executable code for deterministic tasks.
-
-```
-scripts/
-├── main_operation.py
-├── helper_utils.py
-├── requirements.txt
-├── .env.example
-└── tests/
-    └── test_main_operation.py
-```
 
 ### references/
 Documentation loaded into context as needed.
@@ -70,7 +56,6 @@ assets/
 **Good:**
 - `api-endpoints-authentication.md`
 - `database-schema-users.md`
-- `rotate-pdf-script.py`
 
 **Bad:**
 - `docs.md` - not descriptive
@@ -79,11 +64,10 @@ assets/
 
 ## Cleanup
 
-After initialization, delete unused example files:
+Before finalizing, delete unused example files:
 
 ```bash
 # Remove if not needed
-rm -rf scripts/example_script.py
 rm -rf references/example_reference.md
 rm -rf assets/example_asset.txt
 ```
@@ -102,13 +86,8 @@ Related topics should be combined into single skill:
 
 ## Validation
 
-Run packaging script to check structure:
-
-```bash
-scripts/package_skill.py <skill-path>
-```
-
-Checks:
+Inspect structure directly before accepting the skill:
 - SKILL.md exists
-- Valid frontmatter
-- Proper directory structure
+- YAML frontmatter is valid
+- Referenced files exist
+- Optional resource directories contain only needed files

@@ -1,4 +1,4 @@
-# Plugin Marketplace Overview
+# Plugin Marketplace Setup Overview
 
 Build and host plugin marketplaces to distribute Claude Code extensions across teams and communities.
 
@@ -45,10 +45,10 @@ Create `.claude-plugin/marketplace.json` in repository root.
 
 ## Related References
 
-- Schema details: `references/plugin-marketplace-schema.md`
-- Plugin sources: `references/plugin-marketplace-sources.md`
-- Hosting & distribution: `references/plugin-marketplace-hosting.md`
-- Troubleshooting: `references/plugin-marketplace-troubleshooting.md`
+- Schema details: `references/plugin-marketplace-json-schema.md`
+- Plugin source types: `references/plugin-marketplace-source-types.md`
+- Hosting and distribution: `references/plugin-marketplace-hosting-distribution.md`
+- Errors and fixes: `references/plugin-marketplace-errors-and-fixes.md`
 
 ## Official Documentation
 
