@@ -2,6 +2,19 @@
 
 All notable changes to anvien will be documented in this file.
 
+## [1.2.7] - 2026-06-14
+
+### Added
+
+- Added a light source-backed Anvien architecture image that shows the repo state, graph evidence engine, skill system, command surfaces, and AI coding loop in one visual.
+- Added reusable payment-integration templates so provider examples can stay detailed without hardcoding one application or repository.
+
+### Changed
+
+- Refreshed the payment-integration skill guidance for Polar, SePay, multi-provider order management, implementation workflows, and generalized app usage.
+- Improved payment skill entrypoint documentation so the skill remains broadly reusable across app types while preserving provider-specific detail.
+- Bumped the CLI package version from `1.2.6` to `1.2.7`.
+
 ## [1.2.6] - 2026-06-06
 
 ### Added

@@ -1,4 +1,4 @@
-# Anvien (version: `1.2.6`)
+# Anvien (version: `1.2.7`)
 
 > ## 2-in-1 tool for AI coding: code intelligence graphs + Powerful agent skills.
 
