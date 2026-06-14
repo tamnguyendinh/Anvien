@@ -1,13 +1,15 @@
 ---
 name: payment-integration
-description: Use when the user asks to integrate payments.
-version: 2.2.0
+description: Use for payments, subscriptions, webhooks, refunds, entitlements, or multi-provider orders with SePay, Polar, Stripe, Paddle, or Creem.
+version: 2.2.1
 license: MIT
 ---
 
 # Payment Integration
 
-Production-proven payment processing with SePay (Vietnamese banks), Polar (global SaaS), Stripe (global infrastructure), Paddle (MoR subscriptions), and Creem.io (MoR + licensing).
+Repo-agnostic payment integration guidance for target apps using SePay, Polar, Stripe, Paddle, Creem.io, or multiple providers.
+
+Do not assume this skill is for integrating payments into the current repository. Apply provider and template guidance to the target app's domain model.
 
 ## When to Use
 
@@ -95,7 +97,7 @@ Production-proven payment processing with SePay (Vietnamese banks), Polar (globa
 ### Scripts
 - `scripts/sepay-webhook-verify.js` - SePay webhook verification
 - `scripts/polar-webhook-verify.js` - Polar webhook verification
-- `scripts/checkout-helper.js` - Checkout session generator
+- `scripts/checkout-helper.js` - Legacy checkout helper examples; prefer provider references for new API work
 
 ## Key Capabilities
 
@@ -111,5 +113,7 @@ Production-proven payment processing with SePay (Vietnamese banks), Polar (globa
 ## Implementation
 
 See `references/implementation-workflows.md` for step-by-step guides per platform.
+
+For multi-provider work, load `references/multi-provider-order-management-patterns.md` first, then load only the focused template needed for the current slice.
 
 **General flow:** auth -> products/prices -> checkout/payment instruction -> webhooks/IPN -> orders/refunds/entitlements -> reconciliation

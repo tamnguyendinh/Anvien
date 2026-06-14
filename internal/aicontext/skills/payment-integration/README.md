@@ -1,266 +1,103 @@
 # Payment Integration Skill
 
-Comprehensive payment integration skill for SePay, Polar, Stripe, Paddle, Creem.io, and multi-provider payment/order management.
+Repo-agnostic skill for implementing payments, subscriptions, webhooks, refunds, entitlements, reporting, and multi-provider order management in any target app.
 
-## Features
+This skill is not a payment implementation for this repository. Use it as reusable guidance for target apps that need SePay, Polar, Stripe, Paddle, Creem.io, or a combination of providers.
 
-### SePay Integration
-- Vietnamese payment gateway with VietQR, NAPAS, bank transfers, and cards
-- 44+ supported banks
-- Webhook verification with API Key/OAuth2 authentication
-- QR code generation API
-- Order-based virtual accounts
-- SDK support for Node.js, PHP, and Laravel
+## Supported Providers
 
-### Polar Integration
-- Global SaaS monetization platform
-- Merchant of Record (handles global tax compliance)
-- Subscription management with trials, upgrades, downgrades
-- Usage-based billing with events and meters
-- Automated benefit delivery (GitHub repos, Discord roles, license keys, files)
-- Customer self-service portal
-- Multi-language SDKs (TypeScript, Python, PHP, Go)
-- Framework adapters (Next.js, Laravel, Remix, etc.)
+### SePay
+- Vietnamese bank payments, VietQR, NAPAS/cards, bank-account webhooks, Payment Gateway, Order VAs, and reconciliation.
+- Start with `references/sepay/overview.md`, then load API, webhook, payment gateway, QR, SDK, or best-practice references as needed.
 
-### Stripe Integration
-- Global payment infrastructure
-- CheckoutSessions, PaymentIntents, SetupIntents APIs
-- Billing and subscriptions at scale
-- Connect for marketplaces and platforms
-- Payment Element for custom checkout experiences
-- Multi-language SDKs (Node.js, Python, Ruby, PHP, Java, Go, .NET)
-- Best practices for integration design and API version upgrades
+### Polar
+- Global SaaS monetization, Merchant of Record, subscriptions, usage-based billing, benefits, customer portal, customer state, orders, refunds, and discounts.
+- Start with `references/polar/overview.md`, then load products, checkouts, subscriptions, webhooks, benefits, usage billing, customer portal/state, orders/refunds/discounts, SDK, or best-practice references as needed.
 
-### Paddle Integration
-- Merchant of Record subscriptions and transactions
-- Overlay and inline Paddle.js checkout
-- Trials, upgrades, pause/resume, cancellation
-- Webhook signature verification and SDK usage
+### Stripe
+- Global payment infrastructure, Checkout Sessions, Payment Element, Billing, Connect, CLI testing, SDKs, and API version upgrades.
+- Start with `references/stripe/stripe-best-practices.md`, then load SDK, Stripe.js, CLI, or upgrade references as needed.
 
-### Creem.io Integration
-- Merchant of Record checkout and subscriptions
-- Software licensing and device activation
-- Revenue splits and no-code checkout surfaces
-- Framework adapters and webhook handling
+### Paddle
+- Merchant of Record subscriptions and transactions, Paddle.js checkout, lifecycle changes, webhook verification, SDK usage, and production readiness.
+- Start with `references/paddle/overview.md`, then load API, Paddle.js, subscriptions, webhooks, SDK, or best-practice references as needed.
 
-### Multi-Provider Order Management
-- Provider-neutral local order, event, refund, entitlement, and campaign patterns
-- Reusable template files for schemas, checkout factories, webhooks, fulfillment, refunds, revenue, reconciliation, admin, and app variants
+### Creem.io
+- Merchant of Record checkout, subscriptions, licensing, revenue splits, no-code checkout, framework adapters, and webhook handling.
+- Start with `references/creem/overview.md`, then load API, checkouts, subscriptions, licensing, webhooks, or SDK references as needed.
+
+## Multi-Provider Templates
+
+For apps that combine providers, load `references/multi-provider-order-management-patterns.md` first, then load the focused template for the slice being implemented:
+
+| Need | Template |
+|------|----------|
+| Local schemas and ownership boundaries | `references/multi-provider/templates/local-data-model-template.md` |
+| Webhook verification, event ledger, dispatcher, retries | `references/multi-provider/templates/webhook-processing-template.md` |
+| Provider-neutral checkout command and provider builders | `references/multi-provider/templates/checkout-factory-template.md` |
+| Paid handlers, local fulfillment, entitlement grants | `references/multi-provider/templates/fulfillment-entitlements-template.md` |
+| Refunds, disputes, access consequences, campaigns | `references/multi-provider/templates/refunds-disputes-campaigns-template.md` |
+| FX, reporting, commissions, reconciliation | `references/multi-provider/templates/revenue-commissions-reconciliation-template.md` |
+| Admin views, support actions, app variants | `references/multi-provider/templates/admin-support-app-variants-template.md` |
+
+Template placeholders such as `productKey`, `entitlementKey`, `campaignId`, and `providerObjectId` are intentionally generic. Replace them with the target app's domain terms.
 
 ## Structure
 
-```
+```text
 payment-integration/
-├── SKILL.md                      # Main skill definition
-├── README.md                     # This file
-├── references/                   # Progressive disclosure documentation
-│   ├── sepay/                   # SePay integration guides
-│   │   ├── overview.md          # Auth, capabilities, environments
-│   │   ├── api.md               # API endpoints and operations
-│   │   ├── webhooks.md          # Webhook setup and handling
-│   │   ├── sdk.md               # SDK usage (Node.js, PHP, Laravel)
-│   │   ├── qr-codes.md          # VietQR generation
-│   │   └── best-practices.md    # Security, patterns, monitoring
-│   ├── polar/                   # Polar integration guides
-│   │   ├── overview.md          # Auth, MoR concept, environments
-│   │   ├── products.md          # Products, pricing, currencies, tax
-│   │   ├── checkouts.md         # Checkout flows and embedded checkout
-│   │   ├── subscriptions.md     # Lifecycle, upgrades, trials
-│   │   ├── webhooks.md          # Event handling and verification
-│   │   ├── benefits.md          # Automated benefit delivery
-│   │   ├── usage-based-billing.md # Events, meters, credits
-│   │   ├── customer-portal.md   # Customer sessions and self-service
-│   │   ├── customer-state.md    # Entitlement and meter balance sync
-│   │   ├── orders-refunds-discounts.md # Orders, refunds, discounts
-│   │   ├── sdk.md               # Multi-language SDK usage
-│   │   └── best-practices.md    # Security, patterns, monitoring
-│   ├── stripe/                  # Stripe integration guides
-│   │   ├── stripe-best-practices.md  # Integration design, API selection
-│   │   └── stripe-upgrade.md         # API versions, SDK upgrades
-│   ├── paddle/                  # Paddle integration guides
-│   ├── creem/                   # Creem.io integration guides
+├── SKILL.md
+├── README.md
+├── references/
+│   ├── implementation-workflows.md
 │   ├── multi-provider-order-management-patterns.md
-│   └── multi-provider/
-│       └── templates/           # Detailed reusable multi-provider templates
-└── scripts/                      # Integration helper scripts
-    ├── sepay-webhook-verify.js   # SePay webhook verification
-    ├── polar-webhook-verify.js   # Polar webhook verification
-    ├── checkout-helper.js        # Checkout session generation
-    ├── test-scripts.js           # Test suite for all scripts
-    ├── package.json              # Node.js package configuration
-    └── .env.example              # Environment variable template
+│   ├── multi-provider/templates/
+│   ├── sepay/
+│   ├── polar/
+│   ├── stripe/
+│   ├── paddle/
+│   └── creem/
+└── scripts/
+    ├── sepay-webhook-verify.js
+    ├── polar-webhook-verify.js
+    ├── checkout-helper.js
+    ├── test-scripts.js
+    ├── package.json
+    └── .env.example
 ```
 
 ## Usage
 
-### Activate the Skill
+1. Read `SKILL.md` for activation and quick routing.
+2. Read `references/implementation-workflows.md` for the provider workflow.
+3. Load only the provider references needed for the target app.
+4. For multi-provider work, load the pattern file and the focused template.
+5. Treat scripts as helper examples, not as provider API authority.
 
-Claude Code will automatically activate this skill when you mention payment integration, subscriptions, webhooks, multi-provider orders, or platform-specific terms (SePay, Polar, Stripe, Paddle, Creem.io).
+## Script Helpers
 
-### Manual Activation
+Scripts are optional helpers for inspection and local validation:
 
-In conversations, simply reference the platforms:
-- "Implement SePay payment integration"
-- "Set up Polar subscriptions with usage-based billing"
-- "Create webhook handler for payment notifications"
-- "Design a unified order model for Stripe + Paddle"
+- `scripts/sepay-webhook-verify.js` verifies supported SePay webhook auth modes.
+- `scripts/polar-webhook-verify.js` verifies Polar webhook signatures.
+- `scripts/checkout-helper.js` contains legacy helper examples; for new Polar checkout work, prefer `references/polar/checkouts.md` and the official SDK/API shape with `products: [productId]`.
 
-### Using Scripts
+Run script tests from the skill directory only when changing scripts:
 
-**SePay Webhook Verification:**
 ```bash
-cd $HOME/.claude/skills/payment-integration/scripts
-node sepay-webhook-verify.js '{"id":12345,"gateway":"Vietcombank",...}'
-```
-
-**Polar Webhook Verification:**
-```bash
-node polar-webhook-verify.js '{"type":"order.paid","data":{...}}' base64secret
-```
-
-**Checkout Helper:**
-```bash
-# SePay
-node checkout-helper.js sepay '{"orderInvoiceNumber":"ORD001","orderAmount":100000,...}'
-```
-
-For new Polar checkout work, load `references/polar/checkouts.md` and use the official SDK/API shape with `products: [productId]`. The legacy Polar checkout helper is inspect-only until it is updated under a separate script-change scope.
-
-**Run Tests:**
-```bash
+cd scripts
 npm test
 ```
 
-## Environment Variables
+## Selection Guide
 
-Copy `.env.example` to `.env` and configure:
-
-```env
-# SePay
-SEPAY_MERCHANT_ID=SP-TEST-XXXXXXX
-SEPAY_SECRET_KEY=spsk_test_xxxxxxxxxxxxx
-SEPAY_ENV=sandbox
-SEPAY_WEBHOOK_API_KEY=your_key
-
-# Polar
-POLAR_ACCESS_TOKEN=polar_xxxxxxxxxxxxxxxx
-POLAR_SERVER=sandbox
-POLAR_WEBHOOK_SECRET=base64_secret
-```
-
-## Progressive Disclosure
-
-The skill uses progressive disclosure to minimize context usage:
-1. **SKILL.md** - Overview and quick reference
-2. **references/** - Detailed guides loaded as needed
-3. **references/multi-provider/templates/** - Focused multi-provider example templates
-4. **scripts/** - Executable helpers with embedded examples
-
-Load only the references you need for your current task.
-
-## Platform Selection Guide
-
-**Choose SePay for:**
-- Vietnamese market targeting
-- Bank transfer automation
-- Local payment methods
-- QR code payments (VietQR/NAPAS)
-- Direct bank monitoring
-
-**Choose Polar for:**
-- Global market
-- SaaS/subscription business
-- Usage-based billing
-- Automated benefit delivery
-- Tax compliance (Merchant of Record)
-- Customer self-service
-
-**Choose Stripe for:**
-- Global payment infrastructure
-- Enterprise-grade payment processing
-- Connect platforms (marketplaces)
-- Billing/subscriptions at scale
-- Custom checkout experiences (Payment Element)
-- Maximum payment method coverage
-
-**Choose Paddle for:**
-- Merchant of Record subscriptions
-- Global tax handling with checkout overlay/inline flows
-- Subscription lifecycle and churn workflows
-
-**Choose Creem.io for:**
-- Merchant of Record checkout plus software licensing
-- Revenue splits and creator/software products
-- No-code checkout surfaces with app-owned access state
-
-**Use Multi-Provider patterns for:**
-- Apps that combine local bank payments with global card/subscription providers
-- Unified refunds, entitlements, campaigns, reporting, commissions, and reconciliation
-
-## Examples
-
-### SePay Payment Flow
-1. Load `references/sepay/overview.md` for authentication
-2. Load `references/sepay/sdk.md` for integration
-3. Use `checkout-helper.js` to generate payment form
-4. Load `references/sepay/webhooks.md` for notifications
-5. Use `sepay-webhook-verify.js` to verify authenticity
-
-### Polar Subscription Flow
-1. Load `references/polar/overview.md` for setup
-2. Load `references/polar/products.md` for pricing
-3. Load `references/polar/checkouts.md` for payment
-4. Load `references/polar/subscriptions.md` for lifecycle
-5. Load `references/polar/webhooks.md` for events
-6. Load `references/polar/customer-state.md` for entitlement sync
-7. Load `references/polar/customer-portal.md` for self-service
-8. Load `references/polar/benefits.md` for automation
-9. Load `references/polar/usage-based-billing.md` for events, meters, and credits
-
-### Stripe Integration Flow
-1. Load `references/stripe/stripe-best-practices.md` for integration design
-2. Choose: Checkout (hosted/embedded) or Payment Element
-3. Use CheckoutSessions API for most use cases
-4. Load `references/stripe/stripe-upgrade.md` when upgrading API versions
-
-### Multi-Provider Flow
-1. Load `references/multi-provider-order-management-patterns.md`
-2. Load the relevant provider references
-3. Load the focused template under `references/multi-provider/templates/`
-4. Adapt placeholders such as `productKey`, `entitlementKey`, `campaignId`, and `providerObjectId` to the target app domain
-
-## Testing
-
-All scripts include comprehensive test coverage:
-- SePay webhook verification (with/without authentication)
-- Polar webhook signature validation
-- Checkout configuration generation
-- Error handling and edge cases
-
-Run `npm test` in the scripts directory to verify functionality.
-
-## Support
-
-### SePay
-- Docs: https://developer.sepay.vn/en
-- Email: info@sepay.vn
-- Hotline: 02873059589
-
-### Polar
-- Docs: https://polar.sh/docs
-- API Reference: https://polar.sh/docs/api-reference
-- GitHub: https://github.com/polarsource/polar
-
-### Stripe
-- Docs: https://docs.stripe.com
-- API Reference: https://docs.stripe.com/api
-- Changelog: https://docs.stripe.com/changelog
-- Go Live Checklist: https://docs.stripe.com/get-started/checklist/go-live
-
-## License
-
-MIT
+- Use SePay for Vietnamese bank payments, VietQR, local transfer flows, or VN payment gateway needs.
+- Use Polar for SaaS monetization, subscriptions, benefits, customer portal, and Merchant of Record flows.
+- Use Stripe for custom global payment infrastructure, Checkout Sessions, Payment Element, Billing, or Connect.
+- Use Paddle for Merchant of Record subscription businesses with Paddle checkout and lifecycle workflows.
+- Use Creem.io for Merchant of Record software products, licensing, checkout, subscriptions, and revenue splits.
+- Use multi-provider patterns when one app needs unified orders, provider events, refunds, entitlements, campaigns, reporting, commissions, or reconciliation across providers.
 
 ## Version
 
-1.1.0
+2.2.1
