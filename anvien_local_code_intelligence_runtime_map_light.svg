@@ -3,135 +3,132 @@
   <desc id="desc">A light source-backed architecture map of Anvien: repository state, graph evidence engine, AI skill system, shared command surfaces, and the AI coding loop they support.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M2 2.5L9.5 6L2 9.5" stroke="#6F7A86" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M2 2.5L9.5 6L2 9.5" stroke="#5F6D7C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
     <style>
       .font{font-family:"SF Pro Display","Helvetica Neue",Arial,sans-serif}
       .mono{font-family:"SF Mono","Geist Mono",Consolas,monospace}
-      .title{font-size:34px;font-weight:760;letter-spacing:-0.02em;fill:#1F2933}
-      .subtitle{font-size:15px;fill:#5F6B7A}
-      .h2{font-size:18px;font-weight:720;fill:#1F2933}
-      .h3{font-size:14px;font-weight:700;fill:#243244}
-      .body{font-size:13px;fill:#516070}
-      .small{font-size:12px;fill:#667382}
-      .tiny{font-size:11px;fill:#738091}
-      .card{fill:#FFFFFF;stroke:#E6E1DA;stroke-width:1}
-      .soft{fill:#FBFBFA;stroke:#E6E1DA;stroke-width:1}
+      .title{font-size:40px;font-weight:780;letter-spacing:-0.02em;fill:#17202B}
+      .subtitle{font-size:18px;fill:#2F3B4A}
+      .h2{font-size:22px;font-weight:740;fill:#17202B}
+      .h3{font-size:18px;font-weight:720;fill:#1E2938}
+      .body{font-size:16px;fill:#263343}
+      .small{font-size:14px;fill:#3C4858}
+      .tiny{font-size:13.2px;fill:#344252}
+      .note{font-size:14.5px;fill:#263343}
+      .marker{font-size:14px;fill:#17202B}
+      .chipText{font-size:14px;fill:#1F2937}
+      .card{fill:#FFFFFF;stroke:#DED8CE;stroke-width:1}
+      .soft{fill:#FBFBFA;stroke:#DED8CE;stroke-width:1}
       .blue{fill:#E1F3FE;stroke:#B9DEF3}
       .green{fill:#EDF3EC;stroke:#D2E3D0}
       .yellow{fill:#FBF3DB;stroke:#E8DBAE}
       .red{fill:#FDEBEC;stroke:#F0C9CB}
-      .inkBlue{fill:#1F6C9F}
-      .inkGreen{fill:#346538}
-      .inkYellow{fill:#956400}
-      .inkRed{fill:#9F2F2D}
-      .chipText{font-size:12px;fill:#334155}
-      .edge{stroke:#8B96A3;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
-      .softEdge{stroke:#D8D2C9;stroke-width:1;stroke-linecap:round}
+      .edge{stroke:#5F6D7C;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
+      .softEdge{stroke:#CCC4B8;stroke-width:1.2;stroke-linecap:round}
     </style>
   </defs>
 
   <rect width="1200" height="720" fill="#FBFBFA"/>
-  <rect x="28" y="28" width="1144" height="664" rx="20" fill="#FFFFFF" stroke="#ECE7DE"/>
+  <rect x="22" y="22" width="1156" height="676" rx="20" fill="#FFFFFF" stroke="#ECE7DE"/>
 
-  <text x="70" y="78" class="font title">Anvien</text>
-  <text x="70" y="106" class="font subtitle">Local code intelligence and skill system for AI coding work</text>
-  <text x="764" y="74" class="font small">Source-backed areas read</text>
-  <text x="764" y="96" class="mono tiny">internal/analyze + internal/aicontext + internal/cli</text>
-  <text x="764" y="113" class="mono tiny">internal/mcp + internal/httpapi + anvien-web + launcher</text>
+  <text x="50" y="74" class="font title">Anvien</text>
+  <text x="50" y="106" class="font subtitle">Local code intelligence and skill system for AI coding work</text>
+  <text x="734" y="72" class="font small">Source-backed areas read</text>
+  <text x="734" y="96" class="mono tiny">internal/analyze + internal/aicontext + internal/cli</text>
+  <text x="734" y="116" class="mono tiny">internal/mcp + internal/httpapi + anvien-web + launcher</text>
 
   <!-- Repo and state -->
-  <rect x="70" y="150" width="230" height="380" rx="14" class="soft"/>
-  <circle cx="95" cy="176" r="13" class="blue"/>
-  <text x="91" y="181" class="font small inkBlue">1</text>
-  <text x="112" y="183" class="font h2">Repo state</text>
-  <text x="94" y="214" class="font body">Anvien works against local</text>
-  <text x="94" y="234" class="font body">repositories and indexes.</text>
+  <rect x="50" y="134" width="268" height="404" rx="14" class="soft"/>
+  <circle cx="76" cy="164" r="14" class="blue"/>
+  <text x="72" y="169" class="font marker">1</text>
+  <text x="100" y="171" class="font h2">Repo state</text>
+  <text x="80" y="208" class="font body">Anvien indexes local repos</text>
+  <text x="80" y="231" class="font body">and keeps evidence near code.</text>
 
-  <rect x="94" y="268" width="182" height="34" rx="8" class="card"/>
-  <text x="114" y="290" class="mono chipText">target repo files</text>
-  <rect x="94" y="314" width="182" height="34" rx="8" class="card"/>
-  <text x="114" y="336" class="mono chipText">.anvien storage</text>
-  <rect x="94" y="360" width="182" height="34" rx="8" class="card"/>
-  <text x="114" y="382" class="mono chipText">global registry</text>
-  <rect x="94" y="406" width="182" height="34" rx="8" class="card"/>
-  <text x="114" y="428" class="mono chipText">repo groups</text>
+  <rect x="80" y="266" width="218" height="42" rx="8" class="card"/>
+  <text x="104" y="293" class="mono chipText">target repo files</text>
+  <rect x="80" y="320" width="218" height="42" rx="8" class="card"/>
+  <text x="104" y="347" class="mono chipText">.anvien storage</text>
+  <rect x="80" y="374" width="218" height="42" rx="8" class="card"/>
+  <text x="104" y="401" class="mono chipText">global registry</text>
+  <rect x="80" y="428" width="218" height="42" rx="8" class="card"/>
+  <text x="104" y="455" class="mono chipText">repo groups</text>
 
-  <line x1="94" y1="476" x2="276" y2="476" class="softEdge"/>
-  <text x="94" y="501" class="font tiny">Single repo or cross-repo group</text>
-  <text x="94" y="518" class="font tiny">remains grounded in local indexes.</text>
+  <line x1="80" y1="500" x2="298" y2="500" class="softEdge"/>
+  <text x="80" y="525" class="font note">Single repo or cross-repo group</text>
 
   <!-- Core runtime -->
-  <rect x="340" y="150" width="500" height="380" rx="14" class="soft"/>
-  <circle cx="365" cy="176" r="13" class="green"/>
-  <text x="361" y="181" class="font small inkGreen">2</text>
-  <text x="382" y="183" class="font h2">Anvien core runtime</text>
-  <text x="364" y="214" class="font body">Two engines feed the agent: evidence and working method.</text>
+  <rect x="336" y="134" width="528" height="404" rx="14" class="soft"/>
+  <circle cx="362" cy="164" r="14" class="green"/>
+  <text x="358" y="169" class="font marker">2</text>
+  <text x="386" y="171" class="font h2">Anvien core runtime</text>
+  <text x="362" y="208" class="font body">Two engines work together:</text>
+  <text x="362" y="231" class="font body">graph facts plus task-specific skills.</text>
 
-  <rect x="364" y="246" width="452" height="124" rx="10" class="card"/>
-  <text x="386" y="272" class="font h3">Graph evidence engine</text>
-  <text x="386" y="294" class="font tiny">analyze pipeline: scan / parse / resolve / routes / tools / ORM / flows</text>
-  <rect x="386" y="312" width="112" height="30" rx="8" class="yellow"/>
-  <text x="406" y="331" class="mono chipText">graph.json</text>
-  <rect x="512" y="312" width="104" height="30" rx="8" class="yellow"/>
-  <text x="536" y="331" class="mono chipText">lbug DB</text>
-  <rect x="630" y="312" width="104" height="30" rx="8" class="yellow"/>
-  <text x="649" y="331" class="mono chipText">embeds</text>
-  <text x="386" y="356" class="font tiny">context, impact, maps, shape checks, graph health, change detection</text>
+  <rect x="362" y="254" width="476" height="132" rx="10" class="card"/>
+  <text x="386" y="282" class="font h3">Graph evidence engine</text>
+  <text x="386" y="306" class="font tiny">scan / parse / resolve / routes / tools / ORM / flows</text>
+  <rect x="386" y="324" width="124" height="34" rx="8" class="yellow"/>
+  <text x="408" y="346" class="mono chipText">graph.json</text>
+  <rect x="526" y="324" width="116" height="34" rx="8" class="yellow"/>
+  <text x="550" y="346" class="mono chipText">lbug DB</text>
+  <rect x="658" y="324" width="116" height="34" rx="8" class="yellow"/>
+  <text x="683" y="346" class="mono chipText">embeds</text>
+  <text x="386" y="374" class="font tiny">context, impact, API maps, shape checks, health, changes</text>
 
-  <rect x="364" y="386" width="452" height="124" rx="10" class="card"/>
-  <text x="386" y="412" class="font h3">Skill system</text>
-  <text x="386" y="434" class="font tiny">discovers SKILL.md packages and renders agent guidance</text>
-  <rect x="386" y="452" width="138" height="30" rx="8" class="blue"/>
-  <text x="404" y="471" class="mono chipText">.agents/skills</text>
-  <rect x="538" y="452" width="138" height="30" rx="8" class="blue"/>
-  <text x="556" y="471" class="mono chipText">.claude/skills</text>
-  <rect x="690" y="452" width="104" height="30" rx="8" class="blue"/>
-  <text x="711" y="471" class="mono chipText">AGENTS</text>
-  <text x="386" y="496" class="font tiny">planner, coder, QA, domain skills, setup hooks, skill manifests</text>
+  <rect x="362" y="404" width="476" height="112" rx="10" class="card"/>
+  <text x="386" y="432" class="font h3">Skill system</text>
+  <text x="386" y="456" class="font tiny">discovers SKILL.md packages and renders agent guidance</text>
+  <rect x="386" y="474" width="142" height="34" rx="8" class="blue"/>
+  <text x="402" y="496" class="mono chipText">.agents/skills</text>
+  <rect x="544" y="474" width="142" height="34" rx="8" class="blue"/>
+  <text x="560" y="496" class="mono chipText">.claude/skills</text>
+  <rect x="702" y="474" width="106" height="34" rx="8" class="blue"/>
+  <text x="724" y="496" class="mono chipText">AGENTS</text>
 
   <!-- Surfaces -->
-  <rect x="890" y="150" width="240" height="380" rx="14" class="soft"/>
-  <circle cx="915" cy="176" r="13" class="red"/>
-  <text x="911" y="181" class="font small inkRed">3</text>
-  <text x="932" y="183" class="font h2">Command surfaces</text>
-  <text x="914" y="214" class="font body">One Anvien capability set,</text>
-  <text x="914" y="234" class="font body">exposed in several ways.</text>
+  <rect x="882" y="134" width="268" height="404" rx="14" class="soft"/>
+  <circle cx="908" cy="164" r="14" class="red"/>
+  <text x="904" y="169" class="font marker">3</text>
+  <text x="932" y="171" class="font h2">Command surfaces</text>
+  <text x="912" y="208" class="font body">Same capability set,</text>
+  <text x="912" y="231" class="font body">through agent, terminal, UI.</text>
 
-  <rect x="914" y="268" width="192" height="36" rx="8" class="card"/>
-  <text x="934" y="291" class="mono chipText">CLI commands</text>
-  <rect x="914" y="316" width="192" height="36" rx="8" class="card"/>
-  <text x="934" y="339" class="mono chipText">MCP tools/resources</text>
-  <rect x="914" y="364" width="192" height="36" rx="8" class="card"/>
-  <text x="934" y="387" class="mono chipText">local HTTP API</text>
-  <rect x="914" y="412" width="192" height="36" rx="8" class="card"/>
-  <text x="934" y="435" class="mono chipText">Web UI + sessions</text>
-  <rect x="914" y="460" width="192" height="36" rx="8" class="card"/>
-  <text x="934" y="483" class="mono chipText">setup + launcher</text>
+  <rect x="912" y="266" width="210" height="42" rx="8" class="card"/>
+  <text x="934" y="293" class="mono chipText">CLI commands</text>
+  <rect x="912" y="320" width="210" height="42" rx="8" class="card"/>
+  <text x="934" y="347" class="mono chipText">MCP tools/resources</text>
+  <rect x="912" y="374" width="210" height="42" rx="8" class="card"/>
+  <text x="934" y="401" class="mono chipText">local HTTP API</text>
+  <rect x="912" y="428" width="210" height="42" rx="8" class="card"/>
+  <text x="934" y="455" class="mono chipText">Web UI + sessions</text>
+  <rect x="912" y="482" width="210" height="42" rx="8" class="card"/>
+  <text x="934" y="509" class="mono chipText">setup + launcher</text>
 
   <!-- Flow arrows -->
-  <path d="M300 310H340" class="edge"/>
-  <path d="M300 452H340" class="edge"/>
-  <path d="M840 310H890" class="edge"/>
-  <path d="M840 452H890" class="edge"/>
+  <path d="M318 324H336" class="edge"/>
+  <path d="M318 470H336" class="edge"/>
+  <path d="M864 324H882" class="edge"/>
+  <path d="M864 470H882" class="edge"/>
 
   <!-- AI coding loop -->
-  <rect x="70" y="566" width="1060" height="92" rx="14" fill="#F7F6F3" stroke="#E6E1DA"/>
-  <circle cx="95" cy="592" r="13" class="yellow"/>
-  <text x="91" y="597" class="font small inkYellow">4</text>
-  <text x="112" y="599" class="font h2">AI coding loop supported by Anvien</text>
-  <text x="94" y="629" class="font small">choose skill</text>
-  <path d="M170 625H220" class="edge"/>
-  <text x="236" y="629" class="font small">find evidence</text>
-  <path d="M322 625H372" class="edge"/>
-  <text x="388" y="629" class="font small">plan impact</text>
-  <path d="M466 625H516" class="edge"/>
-  <text x="532" y="629" class="font small">change code</text>
-  <path d="M616 625H666" class="edge"/>
-  <text x="682" y="629" class="font small">validate</text>
-  <path d="M738 625H788" class="edge"/>
-  <text x="804" y="629" class="font small">detect changes</text>
-  <path d="M912 625H962" class="edge"/>
-  <text x="978" y="629" class="font small">commit / handoff</text>
-  <text x="94" y="648" class="font tiny">The graph tells the agent what is true in the repo. Skills tell the agent how to work for the task. Both are part of Anvien.</text>
+  <rect x="50" y="564" width="1100" height="112" rx="14" fill="#F7F6F3" stroke="#DED8CE"/>
+  <circle cx="76" cy="594" r="14" class="yellow"/>
+  <text x="72" y="599" class="font marker">4</text>
+  <text x="100" y="601" class="font h2">AI coding loop supported by Anvien</text>
+  <text x="80" y="636" class="font small">skill</text>
+  <path d="M128 632H180" class="edge"/>
+  <text x="198" y="636" class="font small">evidence</text>
+  <path d="M284 632H336" class="edge"/>
+  <text x="354" y="636" class="font small">impact</text>
+  <path d="M430 632H482" class="edge"/>
+  <text x="500" y="636" class="font small">code</text>
+  <path d="M555 632H607" class="edge"/>
+  <text x="625" y="636" class="font small">validate</text>
+  <path d="M705 632H757" class="edge"/>
+  <text x="775" y="636" class="font small">detect</text>
+  <path d="M842 632H894" class="edge"/>
+  <text x="912" y="636" class="font small">handoff</text>
+  <text x="80" y="660" class="font note">Graph evidence tells the agent what is true in the repo. Skills tell the agent how to work for the task.</text>
 </svg>
