@@ -1,6 +1,6 @@
 # Anvien (version: `1.2.6`)
 
-> ## (2 in 1 tool) — Intelligence Graph Knowledge Map + Skill-Kit for AI.
+> ## 2-in-1 tool for AI coding: code intelligence graphs + Powerful agent skills.
 
 ---
 
