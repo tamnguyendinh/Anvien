@@ -1,340 +1,230 @@
 # Polar Subscriptions
 
-Subscription lifecycle, upgrades, downgrades, and trial management.
+Current guidance for subscription lifecycle, plan changes, proration, trials, cancellation, revoke, renewals, and Customer Portal boundaries.
 
-## Lifecycle States
+## Source Links
 
-- `created` - New subscription, payment pending
-- `active` - Payment successful, benefits granted
-- `canceled` - Scheduled cancellation at period end
-- `revoked` - Billing stopped, benefits revoked immediately
-- `past_due` - Payment failed, in dunning period
+- Manage subscriptions: https://polar.sh/docs/features/subscriptions/manage
+- Update subscription API: https://polar.sh/docs/api-reference/subscriptions/update
+- Revoke subscription API: https://polar.sh/docs/api-reference/subscriptions/revoke
+- Webhook events: https://polar.sh/docs/integrate/webhooks/events
+- Customer Portal: https://polar.sh/docs/features/customer-portal/introduction
 
-## API Operations
+## Current Status Values
 
-### List Subscriptions
+Subscription objects can use these statuses:
+
+- `incomplete`
+- `incomplete_expired`
+- `trialing`
+- `active`
+- `past_due`
+- `canceled`
+- `unpaid`
+
+Also watch these fields:
+
+- `cancel_at_period_end`
+- `canceled_at`
+- `started_at`
+- `ends_at`
+- `ended_at`
+- `current_period_start`
+- `current_period_end`
+- `trial_start`
+- `trial_end`
+- `product_id`
+- `discount_id`
+- `seats`
+- `meters`
+- `pending_update`
+
+## Listing and Reading
+
 ```typescript
 const subscriptions = await polar.subscriptions.list({
-  organization_id: "org_xxx",
-  product_id: "prod_xxx",
-  customer_id: "cust_xxx",
-  status: "active"
+  customerId: "customer_id",
+  productId: "product_id",
+  status: "active",
+});
+
+const subscription = await polar.subscriptions.get({
+  id: subscriptionId,
 });
 ```
 
-### Get Subscription
-```typescript
-const subscription = await polar.subscriptions.get(subscriptionId);
-```
+Use `external_customer_id`/`externalCustomerId` where supported by the endpoint, or resolve the Polar customer from your own user ID first.
 
-### Update Subscription
+## Changing Plans
+
+Update to another product with `product_id` / `productId`.
+
 ```typescript
-const updated = await polar.subscriptions.update(subscriptionId, {
-  product_price_id: "newPriceId",
-  discount_id: "discount_xxx",
-  metadata: { plan: "pro" }
+await polar.subscriptions.update({
+  id: subscriptionId,
+  subscriptionUpdate: {
+    productId: newProductId,
+    prorationBehavior: "prorate",
+  },
 });
 ```
 
-## Upgrades & Downgrades
+REST shape:
 
-### Proration Options
-
-**Next Invoice (default):**
-- Credit/charge applied to upcoming invoice
-- Subscription updates immediately
-- Customer billed at next cycle
-
-**Invoice Immediately:**
-- Credit/charge processed right away
-- Subscription updates immediately
-- New invoice generated
-
-```typescript
-await polar.subscriptions.update(subscriptionId, {
-  product_price_id: "higher_tier_price",
-  proration: "invoice_immediately" // or "next_invoice"
-});
-```
-
-### Customer-Initiated Changes
-
-**Enable in Product Settings:**
-- Toggle "Allow price change"
-- Customer can upgrade/downgrade via portal
-- Admin-only changes if disabled
-
-**Implementation:**
-```typescript
-// Check if changes allowed
-const product = await polar.products.get(productId);
-if (product.allow_price_change) {
-  // Customer can change via portal
+```json
+{
+  "product_id": "new_product_id",
+  "proration_behavior": "prorate"
 }
 ```
 
-## Trials
+Do not use `product_price_id` for current plan changes.
 
-### Configuration
+## Proration Behavior
 
-**Product-level:**
-```typescript
-const product = await polar.products.create({
-  name: "Pro Plan",
-  prices: [{
-    trial_period_days: 14
-  }]
-});
-```
+Current options:
 
-**Checkout-level:**
-```typescript
-const session = await polar.checkouts.create({
-  product_price_id: "price_xxx",
-  trial_period_days: 7 // Overrides product setting
-});
-```
+| Value | Meaning |
+|-------|---------|
+| `invoice` | Invoice immediately for the change. |
+| `prorate` | Apply prorated credit/charge according to Polar behavior. |
+| `next_period` | Schedule the change for the next period. |
+| `reset` | Reset billing period where applicable. |
 
-### Trial Behavior
-- Customer not charged during trial
-- Benefits granted immediately
-- Can cancel anytime during trial
-- Charged at trial end if not canceled
-
-### Trial Events
-```typescript
-// Listen to webhooks
-subscription.created // Trial starts
-subscription.active // Trial ends, first charge
-subscription.canceled // Trial canceled
-```
-
-## Cancellations
-
-### Cancel at Period End
-```typescript
-await polar.subscriptions.update(subscriptionId, {
-  cancel_at_period_end: true
-});
-// Subscription remains active
-// Benefits continue until period end
-// Webhooks: subscription.updated, subscription.canceled
-```
-
-### Immediate Revocation
-```typescript
-// Happens automatically at period end
-// Or manually via API (future feature)
-// Status changes to "revoked"
-// Billing stops, benefits revoked
-// Webhooks: subscription.updated, subscription.revoked
-```
-
-### Reactivate Canceled
-```typescript
-await polar.subscriptions.update(subscriptionId, {
-  cancel_at_period_end: false
-});
-// Removes cancellation
-// Subscription continues normally
-```
-
-## Renewals
-
-### Listening to Renewals
-```typescript
-app.post('/webhook/polar', async (req, res) => {
-  const event = validateEvent(req.body, req.headers, secret);
-
-  if (event.type === 'order.created') {
-    const order = event.data;
-
-    if (order.billing_reason === 'subscription_cycle') {
-      // This is a renewal
-      await handleRenewal(order.subscription_id);
-    }
-  }
-
-  res.json({ received: true });
-});
-```
-
-### Failed Renewals
-- `subscription.past_due` webhook fired
-- Dunning process initiated
-- Customer notified via email
-- Multiple retry attempts
-- Eventually revoked if payment fails
+If omitted, Polar uses the organization default.
 
 ## Discounts
 
-### Apply Discount
 ```typescript
-await polar.subscriptions.update(subscriptionId, {
-  discount_id: "discount_xxx"
+await polar.subscriptions.update({
+  id: subscriptionId,
+  subscriptionUpdate: {
+    discountId: discountId,
+  },
+});
+
+await polar.subscriptions.update({
+  id: subscriptionId,
+  subscriptionUpdate: {
+    discountId: null,
+  },
 });
 ```
 
-### Remove Discount
-```typescript
-await polar.subscriptions.update(subscriptionId, {
-  discount_id: null
-});
+Discount removal or change may apply on the next billing cycle. Verify exact product behavior in sandbox.
+
+## Trials
+
+Products can define trials. Checkout can also override or disable trials.
+
+Subscription update can set or extend `trial_end`; using `now` ends the trial immediately.
+
+```json
+{
+  "trial_end": "now"
+}
 ```
 
-### Discount Types
-- Percentage off: 20% off
-- Fixed amount: $5 off
-- Duration: once, forever, repeating
+Handle:
 
-## Customer Portal
+- `subscription.created`: subscription object created.
+- `subscription.active`: subscription becomes active.
+- `subscription.past_due`: payment failed.
+- `order.paid`: paid invoice/order.
 
-### Generate Portal Access
-```typescript
-const session = await polar.customerSessions.create({
-  customer_id: "cust_xxx"
-});
+## Cancellation vs Revoke
 
-// Redirect to: session.url
+### Cancel at Period End
+
+Customer portal cancellation and merchant scheduled cancellation preserve access until the current period ends.
+
+Expected event sequence:
+
+1. `subscription.updated`
+2. `subscription.canceled`
+3. At period end: `subscription.updated`
+4. `subscription.revoked`
+
+During the waiting period, `cancel_at_period_end` is true and status can still be active.
+
+### Immediate Revoke
+
+Immediate revoke cancels now and stops access now.
+
+REST:
+
+```http
+DELETE /v1/subscriptions/{id}
 ```
 
-### Portal Features
-- View subscriptions
-- Upgrade/downgrade plans
-- Cancel subscriptions
-- Update billing info
-- View invoices
-- Access benefits
+SDKs expose this as a revoke operation, for example `polar.subscriptions.revoke(...)`.
 
-### Pre-authenticated Links
-```typescript
-// From your app, create session and redirect
-app.get('/portal', async (req, res) => {
-  const session = await polar.customerSessions.create({
-    external_customer_id: req.user.id
-  });
+Expected event sequence:
 
-  res.redirect(session.url);
-});
-```
+1. `subscription.updated`
+2. `subscription.canceled`
+3. `subscription.revoked`
 
-## Metadata
+## Renewal Handling
 
-### Update Subscription Metadata
-```typescript
-await polar.subscriptions.update(subscriptionId, {
-  metadata: {
-    internal_id: "sub_123",
-    tier: "pro",
-    source: "web"
-  }
-});
-```
+Renewal sequence:
 
-### Query by Metadata
-```typescript
-const subscriptions = await polar.subscriptions.list({
-  organization_id: "org_xxx",
-  metadata: { tier: "pro" }
-});
-```
+1. `subscription.updated`
+2. `order.created` with `billing_reason = subscription_cycle`
+3. `order.updated`
+4. `order.paid`
+
+`order.created` can be pending. Record it for reconciliation, but grant paid-period entitlements on `order.paid` or from Customer State after payment.
+
+## Failed Payments
+
+Handle `subscription.past_due`.
+
+Recommended app behavior:
+
+- Keep a local grace policy explicit.
+- Notify the user.
+- Send the user to Customer Portal to update payment method.
+- Sync final access from `customer.state_changed` or `subscription.revoked`.
+
+## Customer Portal Boundary
+
+Use Customer Portal for customer self-service:
+
+- Cancel subscription.
+- Update payment method.
+- View invoices and receipts.
+- Manage benefits.
+- Manage seats when enabled.
+- View metered usage if enabled.
+
+Do not build privileged Core API endpoints for ordinary user self-service when a Customer Portal session is sufficient. Load `customer-portal.md`.
+
+## Local Data Model
+
+Store:
+
+- Polar subscription ID.
+- Polar customer ID.
+- external customer ID.
+- product ID.
+- status.
+- current period start/end.
+- trial start/end.
+- cancel-at-period-end flag.
+- discount ID.
+- seats.
+- latest order ID for renewal if needed.
+- last synced event ID.
+
+For entitlement decisions, prefer Customer State or benefit grants over locally inferred subscription-only logic when benefits are attached.
 
 ## Best Practices
 
-1. **Lifecycle Management:**
-   - Listen to all subscription webhooks
-   - Handle each state appropriately
-   - Sync state to your database
-   - Grant/revoke access based on state
-
-2. **Upgrades/Downgrades:**
-   - Use proration for fair billing
-   - Communicate changes clearly
-   - Preview invoice before change
-   - Allow customer self-service
-
-3. **Trials:**
-   - Set appropriate trial duration
-   - Notify before trial ends
-   - Easy cancellation during trial
-   - Clear trial end date in UI
-
-4. **Cancellations:**
-   - Make cancellation easy
-   - Offer alternatives (pause, downgrade)
-   - Collect feedback
-   - Keep benefits until period end
-   - Send confirmation email
-
-5. **Failed Payments:**
-   - Handle `past_due` webhook
-   - Notify customer promptly
-   - Provide retry mechanism
-   - Grace period before revocation
-   - Clear reactivation path
-
-6. **Customer Communication:**
-   - Renewal reminders
-   - Payment confirmations
-   - Failed payment notifications
-   - Upgrade/downgrade confirmations
-   - Cancellation confirmations
-
-7. **Analytics:**
-   - Track churn reasons
-   - Monitor upgrade/downgrade patterns
-   - Analyze trial conversion
-   - Measure payment failure rates
-   - Lifetime value calculations
-
-## Common Patterns
-
-### Subscription Status Check
-```typescript
-async function hasActiveSubscription(userId) {
-  const subscriptions = await polar.subscriptions.list({
-    external_customer_id: userId,
-    status: "active"
-  });
-
-  return subscriptions.items.length > 0;
-}
-```
-
-### Grace Period Handler
-```typescript
-app.post('/webhook/polar', async (req, res) => {
-  const event = validateEvent(req.body, req.headers, secret);
-
-  if (event.type === 'subscription.past_due') {
-    const subscription = event.data;
-
-    // Grant 3-day grace period
-    await grantGracePeriod(subscription.customer_id, 3);
-
-    // Notify customer
-    await sendPaymentFailedEmail(subscription.customer_id);
-  }
-
-  res.json({ received: true });
-});
-```
-
-### Upgrade Path
-```typescript
-async function upgradeSubscription(subscriptionId, newPriceId) {
-  // Preview invoice
-  const preview = await polar.subscriptions.previewUpdate(subscriptionId, {
-    product_price_id: newPriceId,
-    proration: "invoice_immediately"
-  });
-
-  // Show customer preview
-  if (await confirmUpgrade(preview)) {
-    await polar.subscriptions.update(subscriptionId, {
-      product_price_id: newPriceId,
-      proration: "invoice_immediately"
-    });
-  }
-}
-```
+- Use product IDs for plan changes.
+- Use `proration_behavior`, not stale proration names.
+- Distinguish scheduled cancellation from immediate revoke.
+- Treat `order.created` as not-yet-paid unless status says otherwise.
+- Fulfill renewal/payment access on `order.paid` or Customer State.
+- Let Customer Portal handle user payment method recovery and subscription self-service.
+- Reconcile periodically against API for critical access or revenue state.

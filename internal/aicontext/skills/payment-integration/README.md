@@ -47,11 +47,15 @@ payment-integration/
 │   │   └── best-practices.md    # Security, patterns, monitoring
 │   ├── polar/                   # Polar integration guides
 │   │   ├── overview.md          # Auth, MoR concept, environments
-│   │   ├── products.md          # Products, pricing, usage-based billing
+│   │   ├── products.md          # Products, pricing, currencies, tax
 │   │   ├── checkouts.md         # Checkout flows and embedded checkout
 │   │   ├── subscriptions.md     # Lifecycle, upgrades, trials
 │   │   ├── webhooks.md          # Event handling and verification
 │   │   ├── benefits.md          # Automated benefit delivery
+│   │   ├── usage-based-billing.md # Events, meters, credits
+│   │   ├── customer-portal.md   # Customer sessions and self-service
+│   │   ├── customer-state.md    # Entitlement and meter balance sync
+│   │   ├── orders-refunds-discounts.md # Orders, refunds, discounts
 │   │   ├── sdk.md               # Multi-language SDK usage
 │   │   └── best-practices.md    # Security, patterns, monitoring
 │   └── stripe/                  # Stripe integration guides
@@ -96,10 +100,9 @@ node polar-webhook-verify.js '{"type":"order.paid","data":{...}}' base64secret
 ```bash
 # SePay
 node checkout-helper.js sepay '{"orderInvoiceNumber":"ORD001","orderAmount":100000,...}'
-
-# Polar
-node checkout-helper.js polar '{"productPriceId":"price_xxx","successUrl":"https://..."}'
 ```
+
+For new Polar checkout work, load `references/polar/checkouts.md` and use the official SDK/API shape with `products: [productId]`. The legacy Polar checkout helper is inspect-only until it is updated under a separate script-change scope.
 
 **Run Tests:**
 ```bash
@@ -172,7 +175,10 @@ Load only the references you need for your current task.
 3. Load `references/polar/checkouts.md` for payment
 4. Load `references/polar/subscriptions.md` for lifecycle
 5. Load `references/polar/webhooks.md` for events
-6. Load `references/polar/benefits.md` for automation
+6. Load `references/polar/customer-state.md` for entitlement sync
+7. Load `references/polar/customer-portal.md` for self-service
+8. Load `references/polar/benefits.md` for automation
+9. Load `references/polar/usage-based-billing.md` for events, meters, and credits
 
 ### Stripe Integration Flow
 1. Load `references/stripe/stripe-best-practices.md` for integration design

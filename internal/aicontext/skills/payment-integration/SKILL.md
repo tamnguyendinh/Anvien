@@ -42,11 +42,15 @@ Production-proven payment processing with SePay (Vietnamese banks), Polar (globa
 
 ### Polar
 - `references/polar/overview.md` - Auth, MoR concept
-- `references/polar/products.md` - Pricing models
-- `references/polar/checkouts.md` - Checkout flows
+- `references/polar/products.md` - Product model, pricing, currencies, tax
+- `references/polar/checkouts.md` - Checkout sessions, links, embedded checkout
 - `references/polar/subscriptions.md` - Lifecycle management
 - `references/polar/webhooks.md` - Event handling
 - `references/polar/benefits.md` - Automated delivery
+- `references/polar/usage-based-billing.md` - Events, meters, credits
+- `references/polar/customer-portal.md` - Customer sessions and self-service
+- `references/polar/customer-state.md` - Entitlement state and access sync
+- `references/polar/orders-refunds-discounts.md` - Orders, refunds, discounts
 - `references/polar/sdk.md` - Multi-language SDKs
 - `references/polar/best-practices.md` - Production patterns
 
@@ -91,7 +95,7 @@ Production-proven payment processing with SePay (Vietnamese banks), Polar (globa
 | Platform | Highlights |
 |----------|------------|
 | **SePay** | API v2, QR/bank/cards, VN banks, webhooks, gateway IPN |
-| **Polar** | MoR, subscriptions, usage billing, benefits, 300 req/min |
+| **Polar** | MoR, subscriptions, usage billing, benefits, customer portal |
 | **Stripe** | CheckoutSessions, Billing, Connect, Payment Element |
 | **Paddle** | MoR, overlay/inline checkout, Retain (churn prevention), tax |
 | **Creem.io** | MoR, licensing, revenue splits, no-code checkout |

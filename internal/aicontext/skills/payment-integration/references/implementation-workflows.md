@@ -10,13 +10,18 @@
 7. Load `references/sepay/best-practices.md` for production readiness.
 
 ## Polar Implementation
-1. Load `references/polar/overview.md` for auth and concepts
-2. Load `references/polar/products.md` for product setup
-3. Load `references/polar/checkouts.md` for payment flows
-4. Load `references/polar/webhooks.md` for event handling
-5. Use `scripts/polar-webhook-verify.js` for webhook verification
-6. Load `references/polar/benefits.md` if automating delivery
-7. Load `references/polar/best-practices.md` for production readiness
+1. Load `references/polar/overview.md` first and choose the Polar surface.
+2. For catalog setup, pricing, currencies, tax behavior, or custom fields, load `references/polar/products.md`.
+3. For checkout sessions, checkout links, embedded checkout, discounts, or checkout identity, load `references/polar/checkouts.md`.
+4. For recurring billing, trials, plan changes, proration, cancellation, or revoke, load `references/polar/subscriptions.md`.
+5. For webhook delivery, event taxonomy, idempotency, fulfillment, or entitlement sync, load `references/polar/webhooks.md`; prefer official SDK/adapters over `scripts/polar-webhook-verify.js` for new production webhook work.
+6. For automated entitlements, license keys, feature flags, credits, GitHub/Discord, files, or custom benefits, load `references/polar/benefits.md`.
+7. For event ingestion, meters, metered prices, credits, customer meter balances, or usage gates, load `references/polar/usage-based-billing.md`.
+8. For self-service billing, customer sessions, portal links, payment method updates, invoices, or portal API boundaries, load `references/polar/customer-portal.md`.
+9. For entitlement state, active subscriptions, granted benefits, meter balances, or one-call access sync, load `references/polar/customer-state.md`.
+10. For paid order state, invoices, receipts, refunds, benefit revocation, or discounts, load `references/polar/orders-refunds-discounts.md`.
+11. For TypeScript SDK, framework adapters, Next.js, Express, BetterAuth, Laravel, or embedded checkout/payment-method packages, load `references/polar/sdk.md`.
+12. Load `references/polar/best-practices.md` for production readiness, fees, retries, reconciliation, and data-model patterns.
 
 ## Stripe Implementation
 1. Load `references/stripe/stripe-best-practices.md` for integration design

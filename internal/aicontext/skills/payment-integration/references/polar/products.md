@@ -1,244 +1,188 @@
-# Polar Products & Pricing
+# Polar Products and Pricing
 
-Product management, pricing models, and usage-based billing.
+Current guidance for Polar product catalog design, billing cycles, pricing models, currencies, tax behavior, custom fields, media, and lifecycle constraints.
 
-## Billing Cycles
+## Source Links
 
-**Options:**
-- One-time: Charged once, forever access
-- Monthly: Charged every month
-- Yearly: Charged every year
+- Products guide: https://polar.sh/docs/features/products
+- Create product API: https://polar.sh/docs/api-reference/products/create
+- Usage-based billing: https://polar.sh/docs/features/usage-based-billing/introduction
+- Seat-based pricing: https://polar.sh/docs/features/seat-based-pricing
+- Custom fields: https://polar.sh/docs/features/custom-fields
+- Tax inclusive pricing: https://polar.sh/docs/features/tax-inclusive-pricing
 
-**Important:** Cannot change after product creation
+## Product Model
 
-## Pricing Types
+Polar uses products for both one-time purchases and subscriptions. Do not model one-time products and subscription plans as unrelated concepts in your app; they are different product configurations in the same Polar catalog.
 
-**Fixed Price:** Set amount
-**Pay What You Want:** Customer decides (optional minimum)
-**Free:** No charge
+## Billing Cycle
 
-**Important:** Cannot change after product creation
+Products are either:
 
-## Advanced Pricing Models
+- One-time: charged once; access can be lifetime or benefit-defined.
+- Recurring: billed on an interval.
 
-### Seat-Based Pricing
-- Team access with assignable seats
-- Works for recurring or one-time
-- Tiered pricing structures
-- Customer manages seat assignments
+Recurring intervals:
 
-**Configuration:**
+- `day`
+- `week`
+- `month`
+- `year`
+
+`recurring_interval_count` supports patterns like every 2 weeks or every 3 months.
+
+Billing cycle and recurring interval are locked at creation. Create a new product if they need to change.
+
+## Pricing Models
+
+| Model | Use For | Notes |
+|-------|---------|-------|
+| Fixed | Standard price | Fixed amount can be changed for new customers. |
+| Custom / Pay What You Want | Customer chooses amount | Can set minimum/default amount. |
+| Free | Lead magnets, free tiers, sign-up gated benefits | May still grant benefits. |
+| Metered | Usage-based billing | Recurring products only; load `usage-based-billing.md`. |
+| Seat-based | Team seats with optional volume tiers | Load official seat-based docs before implementation. |
+
+Pricing type is locked at creation. For fixed prices, existing subscribers keep the price they started with; new purchases see the changed price.
+
+## Metered Prices
+
+Metered prices can stack with other recurring price components. This supports plans such as:
+
+- Base fee plus API-call overage.
+- Base fee plus token usage.
+- Multiple meters on one product, such as API calls and storage.
+
+Usage-based billing requires events, meters, and metered prices. Load `usage-based-billing.md` before implementing.
+
+## Multiple Currencies
+
+Products can have prices in multiple currencies. Polar chooses a checkout currency from customer geolocation and falls back to the organization default if no matching product currency is enabled.
+
+Important:
+
+- The price structure must match across enabled currencies.
+- When creating checkout sessions server-side, pass `customer_ip_address` / `customerIpAddress` so Polar can infer customer geolocation instead of your server IP.
+
+## Tax Behavior
+
+Tax behavior controls whether displayed price includes tax or tax is added on top. Polar defaults by customer country conventions, but organization settings can override defaults.
+
+For customer-facing calculators:
+
+- Do not assume gross/net amount until checkout or tax calculation data is available.
+- Include customer country and tax ID handling where relevant.
+- Treat fee estimates separately from tax estimates.
+
+## Product Creation Shape
+
+REST uses `snake_case`; TypeScript SDK uses `camelCase`.
+
+TypeScript example:
+
 ```typescript
-const product = await polar.products.create({
-  name: "Team Plan",
-  prices: [{
-    type: "recurring",
-    recurring_interval: "month",
-    price_amount: 5000, // per seat
-    pricing_type: "fixed"
-  }],
-  is_seat_based: true,
-  max_seats: 100
-});
-```
-
-### Usage-Based Billing
-
-**Architecture:** Events → Meters → Metered Prices
-
-**1. Events:** Usage data from your application
-```typescript
-await polar.events.create({
-  external_customer_id: "user_123",
-  event_name: "api_call",
-  properties: {
-    tokens: 1000,
-    model: "gpt-4"
-  }
-});
-```
-
-**2. Meters:** Filter & aggregate events
-```typescript
-const meter = await polar.meters.create({
-  name: "API Tokens",
-  slug: "api_tokens",
-  event_name: "api_call",
-  aggregation: {
-    type: "sum",
-    property: "tokens"
-  }
-});
-```
-
-**3. Metered Prices:** Billing based on usage
-```typescript
-const price = await polar.products.createPrice(productId, {
-  type: "metered",
-  meter_id: meter.id,
-  price_per_unit: 10, // 10 cents per 1000 tokens
-  billing_interval: "month"
-});
-```
-
-**Credits System:**
-- Pre-purchased usage credits
-- Credit customer's meter balance
-- Use as subscription benefit
-- Balance tracking API
-
-**Ingestion Strategies:**
-- LLM Strategy: AI/ML tracking
-- S3 Strategy: Bulk import
-- Stream Strategy: Real-time
-- Delta Time Strategy: Time-based
-
-## Product Features
-
-### Metadata
-```typescript
-const product = await polar.products.create({
-  name: "Pro Plan",
-  metadata: {
-    feature_x: "enabled",
-    tier: "pro",
-    custom_field: "value"
-  }
-});
-```
-
-### Custom Fields
-```typescript
-const product = await polar.products.create({
-  name: "Enterprise Plan",
-  custom_fields: [
+await polar.products.create({
+  organizationId: process.env.POLAR_ORGANIZATION_ID!,
+  name: "Pro Monthly",
+  description: "Full product access",
+  recurringInterval: "month",
+  recurringIntervalCount: 1,
+  prices: [
     {
-      slug: "company_name",
-      label: "Company Name",
-      type: "text",
-      required: true
+      amountType: "fixed",
+      priceAmount: 2000,
+      priceCurrency: "usd",
     },
+  ],
+  metadata: {
+    tier: "pro",
+  },
+});
+```
+
+REST example:
+
+```json
+{
+  "organization_id": "org_id",
+  "name": "Pro Monthly",
+  "description": "Full product access",
+  "recurring_interval": "month",
+  "recurring_interval_count": 1,
+  "prices": [
     {
-      slug: "employees",
-      label: "Number of Employees",
-      type: "number"
+      "amount_type": "fixed",
+      "price_amount": 2000,
+      "price_currency": "usd"
     }
   ]
-});
+}
 ```
 
-Data collected at checkout, accessible via Orders/Subscriptions API in `custom_field_data`.
+## Product Media and Checkout Page
 
-### Trials
-- Set on recurring products
-- Customer not charged during trial
-- Benefits granted immediately
-- Configure at product or checkout level
+Products can include checkout copy and media. Product media helps customers inspect what they are buying.
 
-```typescript
-const product = await polar.products.create({
-  name: "Pro Plan",
-  prices: [{
-    type: "recurring",
-    recurring_interval: "month",
-    price_amount: 2000,
-    trial_period_days: 14
-  }]
-});
-```
+Use product media for:
 
-## Product Operations
+- Digital asset previews.
+- Screenshots.
+- Course/package thumbnails.
+- Product-specific trust material.
 
-### Create Product
-```typescript
-const product = await polar.products.create({
-  organization_id: "org_xxx",
-  name: "Pro Plan",
-  description: "Professional features",
-  prices: [{
-    type: "recurring",
-    recurring_interval: "month",
-    price_amount: 2000,
-    pricing_type: "fixed"
-  }]
-});
-```
+Keep checkout description and media product-specific. Put broad marketing pages in the app, not in Polar metadata.
 
-### List Products
-```typescript
-const products = await polar.products.list({
-  organization_id: "org_xxx",
-  is_archived: false
-});
-```
+## Custom Fields
 
-### Update Product
-```typescript
-const product = await polar.products.update(productId, {
-  name: "Pro Plan Updated",
-  description: "New description"
-});
-```
+Custom fields collect customer-provided data at checkout. Supported field types include text, number, date, checkbox, and select.
 
-### Archive Product
-```typescript
-await polar.products.archive(productId);
-// Products can be unarchived later
-// Cannot be deleted (maintains order history)
-```
+Use custom fields for:
 
-### Update Benefits
-```typescript
-await polar.products.updateBenefits(productId, {
-  benefits: [benefitId1, benefitId2]
-});
-```
+- Billing or fulfillment details not otherwise captured.
+- Legal checkbox confirmations.
+- Project setup data needed after purchase.
 
-## Important Constraints
+Do not collect secrets or unnecessary personal data. Values appear on resulting orders or subscriptions.
 
-1. **Cannot change after creation:**
-   - Billing cycle (one-time, monthly, yearly)
-   - Pricing type (fixed, pay-what-you-want, free)
+## Benefits
 
-2. **Price changes don't affect existing subscribers:**
-   - Current subscribers keep their original price
-   - New subscribers get new price
-   - Use separate products for significant changes
+Benefits are attached to products and grant what customers receive:
 
-3. **Products cannot be deleted:**
-   - Archive instead
-   - Maintains order history integrity
-   - Archived products not shown to new customers
+- Credits
+- License Keys
+- Feature Flags
+- File Downloads
+- GitHub Repository Access
+- Discord Access
+- Custom benefits
 
-4. **Metadata vs Custom Fields:**
-   - Metadata: For internal use, not shown to customers
-   - Custom Fields: Collected from customers at checkout
+Load `benefits.md` before using benefits as entitlements.
 
-## Best Practices
+## Product Updates
 
-1. **Product Strategy:**
-   - Plan billing cycle carefully before creation
-   - Use separate products for different tiers
-   - Archive unused products rather than delete
+Editable after creation:
 
-2. **Pricing Changes:**
-   - Create new product for major changes
-   - Grandfather existing customers
-   - Communicate changes clearly
+- Name and description.
+- Product media.
+- Metadata.
+- Benefits.
+- Fixed price amount for new customers.
+- Archive/unarchive state.
 
-3. **Usage-Based:**
-   - Define clear meter aggregations
-   - Set appropriate billing intervals
-   - Monitor usage patterns
-   - Provide usage dashboards to customers
+Locked or effectively immutable:
 
-4. **Custom Fields:**
-   - Collect only necessary information
-   - Validate on frontend before checkout
-   - Use for personalization and support
+- Billing cycle.
+- Recurring interval.
+- Pricing type.
+- Historical orders and subscriptions.
 
-5. **Trials:**
-   - Set appropriate trial duration
-   - Communicate trial end clearly
-   - Notify before trial expires
-   - Easy cancellation during trial
+Products are archived rather than permanently deleted. Existing customers keep their access according to subscription/order/benefit state.
+
+## Design Recommendations
+
+- Use separate products for materially different billing cycles or pricing models.
+- Use multiple products in checkout for monthly/yearly/lifetime choice.
+- Use metadata for internal identifiers, not customer-visible data.
+- Use custom fields for customer-provided checkout data.
+- Treat product IDs as current checkout inputs.
+- Treat price IDs as legacy/deprecated unless an official current endpoint specifically asks for them.

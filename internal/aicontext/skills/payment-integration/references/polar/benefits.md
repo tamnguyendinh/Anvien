@@ -1,396 +1,145 @@
 # Polar Benefits
 
-Automated benefit delivery system for digital products.
+Current guidance for Polar automated benefits, benefit grants, license keys, credits, feature flags, file downloads, GitHub/Discord access, custom benefits, and entitlement sync.
 
-## Philosophy
+## Source Links
 
-Configure once, automatic delivery. Polar handles granting and revoking based on subscription state.
+- Benefits introduction: https://polar.sh/docs/features/benefits/introduction
+- Credits: https://polar.sh/docs/features/usage-based-billing/credits
+- Feature Flags: https://polar.sh/docs/features/benefits/feature-flags
+- License Keys: https://polar.sh/docs/features/benefits/license-keys
+- Customer State: https://polar.sh/docs/integrate/customer-state
 
 ## Benefit Types
 
-### 1. License Keys
+| Benefit | Use For | Key Integration Point |
+|---------|---------|-----------------------|
+| Credits | Prepaid usage units for a meter | Usage billing and Customer State meter balance |
+| License Keys | Software/API access keys | Customer Portal license key endpoints |
+| Feature Flags | Simple app-side entitlement flags | Customer State or `customer.state_changed` |
+| File Downloads | Secure digital downloads | Customer Portal |
+| GitHub Access | Private repository access | Polar-managed GitHub invitation/revocation |
+| Discord Access | Discord invite/roles | Polar-managed Discord invite/role handling |
+| Custom | Manual or app-specific fulfillment | App logic plus benefit grant events |
 
-**Auto-generate unique keys with customizable branding.**
-
-**Create:**
-```typescript
-const benefit = await polar.benefits.create({
-  type: "license_keys",
-  organization_id: "org_xxx",
-  description: "Software License",
-  properties: {
-    prefix: "MYAPP",
-    expires: false,
-    activations: 1,
-    limit_usage: false
-  }
-});
-```
-
-**Validation API (unauthenticated):**
-```typescript
-const validation = await polar.licenses.validate({
-  key: "MYAPP-XXXX-XXXX-XXXX",
-  organization_id: "org_xxx"
-});
-
-if (validation.valid) {
-  // Grant access
-}
-```
-
-**Activation/Deactivation:**
-```typescript
-await polar.licenses.activate(licenseKey, {
-  label: "User's MacBook Pro"
-});
-
-await polar.licenses.deactivate(activationId);
-```
-
-**Auto-revoke:** On subscription cancellation or refund
-
-### 2. GitHub Repository Access
-
-**Auto-invite to private repos with permission management.**
-
-**Create:**
-```typescript
-const benefit = await polar.benefits.create({
-  type: "github_repository",
-  organization_id: "org_xxx",
-  description: "Access to private repo",
-  properties: {
-    repository_owner: "myorg",
-    repository_name: "private-repo",
-    permission: "pull" // or "push", "admin"
-  }
-});
-```
-
-**Multiple Repos:**
-```typescript
-{
-  properties: {
-    repositories: [
-      { owner: "myorg", name: "repo1", permission: "pull" },
-      { owner: "myorg", name: "repo2", permission: "push" }
-    ]
-  }
-}
-```
-
-**Behavior:**
-- Auto-invite on subscription activation
-- Permission managed by Polar
-- Auto-revoke on cancellation
-
-### 3. Discord Access
-
-**Server invites and role assignment.**
-
-**Create:**
-```typescript
-const benefit = await polar.benefits.create({
-  type: "discord",
-  organization_id: "org_xxx",
-  description: "Premium Discord role",
-  properties: {
-    guild_id: "123456789",
-    role_id: "987654321"
-  }
-});
-```
-
-**Multiple Roles:**
-```typescript
-{
-  properties: {
-    guild_id: "123456789",
-    roles: [
-      { role_id: "role1", name: "Premium" },
-      { role_id: "role2", name: "Supporter" }
-    ]
-  }
-}
-```
-
-**Requirements:**
-- Polar Discord app must be added to server
-- Configure in Polar dashboard
-
-**Behavior:**
-- Auto-invite to server
-- Assign roles automatically
-- Remove roles on cancellation
-
-### 4. Downloadable Files
-
-**Secure file delivery up to 10GB each.**
-
-**Create:**
-```typescript
-const benefit = await polar.benefits.create({
-  type: "downloadable",
-  organization_id: "org_xxx",
-  description: "Premium templates",
-  properties: {
-    files: [
-      { name: "template1.zip", size: 5000000 },
-      { name: "template2.psd", size: 10000000 }
-    ]
-  }
-});
-```
-
-**Upload Files:**
-- Via Polar dashboard
-- Secure storage
-- Access control
-
-**Customer Access:**
-- Download links in customer portal
-- Secure, time-limited URLs
-- Multiple files supported
-
-### 5. Meter Credits
-
-**Pre-purchased usage for usage-based billing.**
-
-**Create:**
-```typescript
-const benefit = await polar.benefits.create({
-  type: "custom",
-  organization_id: "org_xxx",
-  description: "10,000 API credits",
-  properties: {
-    meter_id: "meter_xxx",
-    credits: 10000
-  }
-});
-```
-
-**Automatic Application:**
-- Credits added on subscription start
-- Balance tracked via API
-- Depletes with usage
-
-**Balance Check:**
-```typescript
-const balance = await polar.meters.getBalance({
-  customer_id: "cust_xxx",
-  meter_id: "meter_xxx"
-});
-```
-
-### 6. Custom Benefits
-
-**Flexible placeholder for manual fulfillment.**
-
-**Create:**
-```typescript
-const benefit = await polar.benefits.create({
-  type: "custom",
-  organization_id: "org_xxx",
-  description: "Priority support via email",
-  properties: {
-    note: "Email support@example.com with your order ID for priority support"
-  }
-});
-```
-
-**Use Cases:**
-- Cal.com booking links
-- Email support access
-- Community forum access
-- Manual onboarding
+Benefits are standalone resources attached to products. A single benefit can be attached to multiple products.
 
 ## Benefit Grants
 
-**Link between customer and benefit.**
+Benefit grants represent a customer receiving a benefit. They are created, updated, and revoked as purchases, renewals, refunds, cancellations, and product changes happen.
 
-### States
-- `created` - Grant created
-- `active` - Benefit delivered
-- `revoked` - Access removed
+Webhook events:
 
-### Webhooks
-- `benefit_grant.created` - Grant created
-- `benefit_grant.updated` - Status changed
-- `benefit_grant.revoked` - Access revoked
+- `benefit_grant.created`
+- `benefit_grant.updated`
+- `benefit_grant.revoked`
+- `customer.state_changed`
 
-### Auto-revoke Triggers
-- Subscription canceled
-- Subscription revoked
-- Refund processed
-- Product changed (if benefit not on new product)
+Use `customer.state_changed` when you want one entitlement sync event that includes active subscriptions, granted benefits, and meter balances.
 
-### Querying Grants
-```typescript
-const grants = await polar.benefitGrants.list({
-  customer_id: "cust_xxx",
-  benefit_id: "benefit_xxx",
-  is_granted: true
-});
-```
+## Credits Benefit
 
-## Attaching Benefits to Products
+Credits are the official way to prepay usage units for a meter.
 
-### Via API
-```typescript
-await polar.products.updateBenefits(productId, {
-  benefits: [benefitId1, benefitId2, benefitId3]
-});
-```
+Behavior:
 
-### Via Dashboard
-1. Navigate to product
-2. Benefits tab
-3. Select benefits to attach
-4. Save
+- Subscription products credit the customer's meter balance at the beginning of each subscription cycle.
+- One-time products credit the customer once at purchase.
+- Credits are consumed before overage charges.
+- If you want credits-only spending without overage invoices, do not attach a metered price for that meter.
+- Polar does not block usage when credits run out; your app must enforce usage gates.
 
-### Order
-- Benefits granted in order attached
-- Customers see in that order
-- Reorder via dashboard or API
+Load `usage-based-billing.md` for event ingestion and customer meter balance checks.
 
-## Customer Experience
+## Feature Flag Benefit
 
-### Viewing Benefits
-- Customer portal shows all active benefits
-- Clear instructions for each type
-- Download links for files
-- License keys displayed
+Feature Flag benefits are lightweight entitlement flags. If the customer has an active grant for the benefit, the feature is available.
 
-### Accessing Benefits
-```typescript
-// Generate customer portal link
-const session = await polar.customerSessions.create({
-  external_customer_id: userId
-});
+Use cases:
 
-// Customer sees:
-// - Active subscriptions
-// - Granted benefits
-// - Download links
-// - License keys
-// - Instructions
-```
+- Premium feature gates.
+- Beta access.
+- Tier-specific limits.
+- API quota tiers.
 
-## Implementation Patterns
+Recommended access check:
 
-### License Key Validation
-```typescript
-// In your application
-async function validateLicense(key) {
-  try {
-    const result = await polar.licenses.validate({
-      key: key,
-      organization_id: process.env.POLAR_ORG_ID
-    });
+1. Fetch Customer State or handle `customer.state_changed`.
+2. Find the active benefit grant for the feature flag benefit ID.
+3. Apply app-side access or quota based on the benefit metadata.
 
-    if (!result.valid) {
-      return { valid: false, reason: 'Invalid license' };
-    }
+## License Keys
 
-    if (result.limit_usage && result.usage >= result.limit_usage) {
-      return { valid: false, reason: 'Usage limit exceeded' };
-    }
+License key benefits support:
 
-    return { valid: true, customer: result.customer };
-  } catch (error) {
-    console.error('License validation failed:', error);
-    return { valid: false, reason: 'Validation error' };
-  }
-}
-```
+- Brandable prefixes.
+- Automatic expiration.
+- Activation limits.
+- Custom validation conditions.
+- Usage quota increments.
+- Automatic revocation when subscriptions are canceled or benefits are revoked.
 
-### GitHub Access Check
-```typescript
-// Listen to benefit grant webhook
-app.post('/webhook/polar', async (req, res) => {
-  const event = validateEvent(req.body, req.headers, secret);
+Validation guidance:
 
-  if (event.type === 'benefit_grant.created') {
-    const grant = event.data;
+- Validate using organization ID.
+- If activation limits are enabled, activate before validation and pass activation ID.
+- If multiple license-key benefits exist in one organization, validate the returned `benefit_id` so a key for one product cannot unlock another product.
+- If using usage limits, increment usage during validation only for real billable usage.
 
-    if (grant.benefit.type === 'github_repository') {
-      // Update user's GitHub access in your system
-      await updateGitHubAccess(grant.customer.external_id, true);
-    }
-  }
+## File Downloads
 
-  res.json({ received: true });
-});
-```
+Use file download benefits for downloadable digital files. Customers access downloads through the Customer Portal. Keep fulfillment instructions clear and include versioning notes in the product/customer communication.
 
-### Discord Role Sync
-```typescript
-// Monitor benefit grants
-if (event.type === 'benefit_grant.created') {
-  const grant = event.data;
+## GitHub Access
 
-  if (grant.benefit.type === 'discord') {
-    // Notify user to connect Discord
-    await sendDiscordInvite(grant.customer.email);
-  }
-}
+GitHub access benefits can invite customers to private repositories and revoke access automatically when entitlement ends.
 
-if (event.type === 'benefit_grant.revoked') {
-  const grant = event.data;
+Implementation notes:
 
-  if (grant.benefit.type === 'discord') {
-    // Roles removed automatically by Polar
-    await notifyRoleRemoval(grant.customer.external_id);
-  }
-}
-```
+- Keep required permissions minimal.
+- Use separate benefits for distinct access tiers.
+- Still listen to grants/customer state if your app mirrors repository access locally.
 
-## Best Practices
+## Discord Access
 
-1. **Benefit Selection:**
-   - Choose appropriate benefit types
-   - Consider automation capabilities
-   - Plan for revocation scenarios
+Discord benefits can invite customers and grant roles.
 
-2. **License Keys:**
-   - Set appropriate activation limits
-   - Monitor usage patterns
-   - Provide clear validation errors
-   - Allow customers to manage activations
+Implementation notes:
 
-3. **GitHub Access:**
-   - Set minimum required permissions
-   - Use separate repos for different tiers
-   - Monitor repository access
-   - Communicate access removal
+- Ensure the Polar Discord app is configured.
+- Design role hierarchy before attaching products.
+- Do not duplicate role revocation logic if Polar is authoritative.
 
-4. **Discord Roles:**
-   - Clear role hierarchy
-   - Meaningful role names
-   - Separate roles per product tier
-   - Welcome messages for new members
+## Custom Benefits
 
-5. **Files:**
-   - Organize files clearly
-   - Provide README/instructions
-   - Keep files updated
-   - Version control important files
+Use Custom benefits for manual or app-specific fulfillment that Polar does not automate.
 
-6. **Credits:**
-   - Clear credit value communication
-   - Usage tracking and display
-   - Alerts near depletion
-   - Easy credit top-up
+Examples:
 
-7. **Custom Benefits:**
-   - Clear, actionable instructions
-   - Provide contact information
-   - Set expectations for timing
-   - Track manual fulfillment
+- Priority support.
+- Manual onboarding.
+- Private community not supported by a built-in integration.
+- A Cal.com link or service credit handled by your own backend.
 
-8. **Customer Communication:**
-   - Welcome email with benefit access info
-   - Instructions for each benefit type
-   - Support contact for issues
-   - Revocation warnings before cancellation
+Custom benefit grants still emit grant events and appear in Customer State.
+
+## Product Attachment
+
+Benefits can be attached from the dashboard or API. When benefits change:
+
+- Existing eligible customers may receive newly attached benefits.
+- Removed benefits can be revoked.
+- Webhooks/customer state should be used to sync local entitlement state.
+
+## Entitlement Strategy
+
+For most SaaS apps:
+
+1. Attach benefits to products in Polar.
+2. Set `external_customer_id` on checkout/customer creation.
+3. Listen to `customer.state_changed`.
+4. Store the latest Customer State snapshot or normalized entitlement rows.
+5. Gate features from local state for request-time speed.
+6. Periodically reconcile critical access from Polar.
+
+Avoid inferring entitlements only from subscription status when benefits are attached. Customer State is usually more complete.
