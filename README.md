@@ -573,7 +573,6 @@ Useful docs:
 - [RUNBOOK.md](RUNBOOK.md)
 - [GUARDRAILS.md](GUARDRAILS.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
-- [TESTING.md](TESTING.md)
 
 ---
 
