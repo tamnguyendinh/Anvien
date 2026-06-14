@@ -4,7 +4,7 @@
 
 - Title: `SePay Skill Refresh`
 - Date: `2026-06-14`
-- Status: `P0 complete; ready for implementation`
+- Status: `Complete; final commit executed in this turn`
 - Plan: `docs/plans/2026-06-14-sepay-skill-refresh/2026-06-14-sepay-skill-refresh-plan.md`
 - Evidence: `docs/plans/2026-06-14-sepay-skill-refresh/2026-06-14-sepay-skill-refresh-evidence.md`
 - Benchmark: `docs/plans/2026-06-14-sepay-skill-refresh/2026-06-14-sepay-skill-refresh-benchmark.md`
@@ -88,7 +88,7 @@ Refresh the SePay references in the `payment-integration` skill so future agents
     5. Update later phase status assumptions, next actions, and work steps from the P0 evidence.
   - Implementation Gate: no SePay reference editing starts until `2026-06-14-sepay-skill-refresh-actual-status.md` has a final P0 decision.
   - Acceptance: actual status identifies stale, partial, missing, generated-output, and inspect-only surfaces for this scope.
-- [ ] P1-A: Update SePay surface map and reference routing.
+- [x] P1-A: Update SePay surface map and reference routing.
   - Goal: make the skill route agents to the right SePay surface before they read detailed API examples.
   - Work Steps:
     1. Update `overview.md` to define SePay product surfaces: API v2, bank-account Webhooks, Payment Gateway/IPN, QR utility, Order VAs, and optional Bank Hub/OAuth2/eInvoice/SoundBox.
@@ -98,7 +98,7 @@ Refresh the SePay references in the `payment-integration` skill so future agents
     5. Update `SKILL.md` and `references/implementation-workflows.md` only enough to make `payment-gateway.md` discoverable.
   - Implementation Gate: P0 status confirms `overview.md`, `SKILL.md`, and `implementation-workflows.md` are editable/routing surfaces and generated output is not edited as source.
   - Acceptance: a future agent can choose API v2 vs Webhooks vs Payment Gateway/IPN vs QR/Order VA before reading implementation details.
-- [ ] P2-A: Refresh API v2 and Order VA guidance.
+- [x] P2-A: Refresh API v2 and Order VA guidance.
   - Goal: make `api.md` current for proactive lookup, reconciliation, bank account/VA/order management, and legacy migration.
   - Work Steps:
     1. Rewrite the API base/auth/rate-limit section around API v2 production/sandbox base URLs and Bearer token auth.
@@ -108,7 +108,7 @@ Refresh the SePay references in the `payment-integration` skill so future agents
     5. Cross-link to `webhooks.md`, `qr-codes.md`, and `payment-gateway.md` only where the integration surface changes.
   - Implementation Gate: P1-A routing is in place or actual-status has been refreshed with an alternate route that preserves the phase goal.
   - Acceptance: `api.md` no longer teaches legacy v1 as the default and includes the Order VA bank-specific constraints from the report.
-- [ ] P3-A: Refresh bank-account webhook security and operations.
+- [x] P3-A: Refresh bank-account webhook security and operations.
   - Goal: make `webhooks.md` safe for production bank-transaction notifications without mixing it with gateway IPN.
   - Work Steps:
     1. Update webhook setup and auth methods to include None for testing, API Key, HMAC-SHA256 recommended, and OAuth2.
@@ -120,7 +120,7 @@ Refresh the SePay references in the `payment-integration` skill so future agents
     7. Keep `scripts/sepay-webhook-verify.js` inspect-only/follow-up unless the user expands scope.
   - Implementation Gate: P2-A has not changed the webhook payload assumptions; if it has, refresh actual-status and update only this phase's stale work steps.
   - Acceptance: `webhooks.md` documents current bank-account webhook behavior and clearly says Payment Gateway IPN is a separate surface.
-- [ ] P4-A: Refresh Payment Gateway, IPN, and SDK guidance.
+- [x] P4-A: Refresh Payment Gateway, IPN, and SDK guidance.
   - Goal: make hosted checkout/IPN and SDK usage current and separate from bank-account webhook reconciliation.
   - Work Steps:
     1. Fill `payment-gateway.md` with current gateway base URLs, Basic Auth, checkout init, IPN URL/acknowledgement, `X-Secret-Key`, payload shape, notification types, idempotency, and order reconciliation.
@@ -129,7 +129,7 @@ Refresh the SePay references in the `payment-integration` skill so future agents
     4. Cross-link gateway/IPN guidance from `overview.md` and `implementation-workflows.md`.
   - Implementation Gate: P1-A has created or confirmed the gateway reference location; if not, update this phase's work steps from actual-status without changing the phase goal.
   - Acceptance: hosted checkout agents no longer need to infer gateway/IPN rules from webhook docs or stale SDK endpoint examples.
-- [ ] P5-A: Refresh QR generation and repo-agnostic best practices.
+- [x] P5-A: Refresh QR generation and repo-agnostic best practices.
   - Goal: make QR, bank-specific matching, and production patterns current without project-specific examples.
   - Work Steps:
     1. Update `qr-codes.md` with `showinfo`, `fullacc`, `holder`, `store`, `standee`, bank identifier options, and cache/error guidance.
@@ -138,7 +138,7 @@ Refresh the SePay references in the `payment-integration` skill so future agents
     4. Remove or rewrite `CLAUDEKIT`, Polar, GitHub, coupon/referral, and other project-specific examples unless they are explicitly framed as non-general examples.
   - Implementation Gate: P3-A and P4-A have established the correct webhook/IPN separation so best practices can reference the right surface names.
   - Acceptance: `qr-codes.md` and `best-practices.md` are current, repo-agnostic SePay guidance and do not teach a single application's memo/order model as the default.
-- [ ] P6-A: Validate source skill, generated outputs, and graph change evidence.
+- [x] P6-A: Validate source skill, generated outputs, and graph change evidence.
   - Goal: prove the SePay skill refresh is internally consistent and generated agent surfaces can consume it.
   - Work Steps:
     1. Read back every changed SePay reference file and route file.
@@ -149,7 +149,7 @@ Refresh the SePay references in the `payment-integration` skill so future agents
     6. Run `anvien detect-changes --repo Anvien --scope all` before commit.
   - Implementation Gate: implementation phases P1-A through P5-A are complete or explicitly blocked.
   - Acceptance: validation evidence records what each command proves, generated output is not used as source of truth, and detect-changes is recorded before commit.
-- [ ] Pn-A: Call supervisor for the implemented-plan acceptance loop.
+- [x] Pn-A: Call supervisor for the implemented-plan acceptance loop.
   - Goal: verify the completed plan work against the accepted plan, actual-status decisions, evidence, benchmark, changed files, generated output, and validation results before closure.
   - Work Steps:
     1. Call the supervisor skill to review the full completed plan work.
@@ -158,7 +158,7 @@ Refresh the SePay references in the `payment-integration` skill so future agents
     4. Repeat until supervisor passes or records a blocker.
   - Implementation Gate: all planned implementation phases must be completed or explicitly blocked before this review.
   - Acceptance: supervisor review passes, or the plan records a blocker with evidence and no closure is performed.
-- [ ] Pn-B: Remove dead work created during this plan.
+- [x] Pn-B: Remove dead work created during this plan.
   - Goal: ensure the final diff contains only artifacts that still serve the accepted plan.
   - Work Steps:
     1. Review files, sections, generated output, tests, temp files, and plan artifacts created or modified during this plan.
@@ -168,7 +168,7 @@ Refresh the SePay references in the `payment-integration` skill so future agents
     5. If supervisor fails the cleanup, return to the responsible implementation workflow/skill for the failed cleanup scope only, then re-run supervisor review.
   - Implementation Gate: only remove artifacts created by this plan unless the user explicitly approves broader cleanup.
   - Acceptance: final `git diff/status` contains no dead plan-created artifacts, supervisor passes the cleanup, and evidence records what was removed or preserved.
-- [ ] Pn-C: Close the plan.
+- [x] Pn-C: Close the plan.
   - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
   - Work Steps:
     1. Run the required final validation for the accepted scope.

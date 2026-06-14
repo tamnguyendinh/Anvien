@@ -32,12 +32,13 @@ Production-proven payment processing with SePay (Vietnamese banks), Polar (globa
 ## Quick Reference
 
 ### SePay
-- `references/sepay/overview.md` - Auth, supported banks
-- `references/sepay/api.md` - Endpoints, transactions
-- `references/sepay/webhooks.md` - Setup, verification
-- `references/sepay/sdk.md` - Node.js, PHP, Laravel
-- `references/sepay/qr-codes.md` - VietQR generation
-- `references/sepay/best-practices.md` - Production patterns
+- `references/sepay/overview.md` - Surface selection, environments, safety rules
+- `references/sepay/api.md` - API v2, transactions, reconciliation, Order VAs
+- `references/sepay/webhooks.md` - Bank-account webhook setup, HMAC, replay safety
+- `references/sepay/payment-gateway.md` - Hosted checkout, gateway API, IPN
+- `references/sepay/sdk.md` - Official Payment Gateway Node.js/PHP SDKs
+- `references/sepay/qr-codes.md` - VietQR generation and bank-specific rules
+- `references/sepay/best-practices.md` - Repo-agnostic production patterns
 
 ### Polar
 - `references/polar/overview.md` - Auth, MoR concept
@@ -89,7 +90,7 @@ Production-proven payment processing with SePay (Vietnamese banks), Polar (globa
 
 | Platform | Highlights |
 |----------|------------|
-| **SePay** | QR/bank/cards, 44+ VN banks, webhooks, 2 req/s |
+| **SePay** | API v2, QR/bank/cards, VN banks, webhooks, gateway IPN |
 | **Polar** | MoR, subscriptions, usage billing, benefits, 300 req/min |
 | **Stripe** | CheckoutSessions, Billing, Connect, Payment Element |
 | **Paddle** | MoR, overlay/inline checkout, Retain (churn prevention), tax |

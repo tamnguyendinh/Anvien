@@ -1,11 +1,13 @@
 # Implementation Workflows
 
 ## SePay Implementation
-1. Load `references/sepay/overview.md` for auth setup
-2. Load `references/sepay/api.md` or `references/sepay/sdk.md` for integration
-3. Load `references/sepay/webhooks.md` for payment notifications
-4. Use `scripts/sepay-webhook-verify.js` for webhook verification
-5. Load `references/sepay/best-practices.md` for production readiness
+1. Load `references/sepay/overview.md` first and choose the SePay surface.
+2. For proactive lookup, reconciliation, bank-account lookup, or Order VAs, load `references/sepay/api.md`.
+3. For real-time bank-account transaction events, load `references/sepay/webhooks.md`.
+4. For hosted checkout, cards/NAPAS, gateway order lifecycle, or Payment Gateway IPN, load `references/sepay/payment-gateway.md`; then load `references/sepay/sdk.md` if using the official SDK.
+5. For manually rendered VietQR transfer instructions, load `references/sepay/qr-codes.md`.
+6. Use `scripts/sepay-webhook-verify.js` only as an inspectable helper for its currently supported auth modes; prefer the HMAC guidance in `references/sepay/webhooks.md` for new production webhook work.
+7. Load `references/sepay/best-practices.md` for production readiness.
 
 ## Polar Implementation
 1. Load `references/polar/overview.md` for auth and concepts

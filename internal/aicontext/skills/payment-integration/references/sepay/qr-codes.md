@@ -1,228 +1,143 @@
 # SePay VietQR Generation
 
-Dynamic QR code generation service compatible with VietQR standard (NAPAS).
+Use this reference to render VietQR images for bank-transfer instructions. QR generation does not confirm payment; pair it with Webhooks and API v2 reconciliation, or use Payment Gateway if you need hosted checkout.
 
-## API Endpoint
+Official docs checked: 2026-06-14.
 
+## Endpoint
+
+```text
+https://qr.sepay.vn/img
 ```
-https://qr.sepay.vn/img?acc={ACCOUNT}&bank={BANK}&amount={AMOUNT}&des={DESCRIPTION}
+
+Example:
+
+```text
+https://qr.sepay.vn/img?acc=0123456789&bank=Vietcombank&amount=100000&des=ORDER123
 ```
 
 ## Parameters
 
-**Required:**
-- `acc` - Bank account number
-- `bank` - Bank code or short name
+Required:
 
-**Optional:**
-- `amount` - Transfer amount (omit for flexible amount)
-- `des` - Transfer description/content (URL encoded)
-- `template` - QR image template (empty/compact/qronly)
-- `download` - Set to "true" to download image
+| Parameter | Meaning |
+|-----------|---------|
+| `acc` | Account number or VA value, depending on the bank/VA model |
+| `bank` | Bank identifier |
 
-## Examples
+Common optional parameters:
 
-### Complete QR (Fixed Amount)
-```
-https://qr.sepay.vn/img?
-  acc=0010000000355&
-  bank=Vietcombank&
-  amount=100000&
-  des=ung%20ho%20quy%20bao%20tro%20tre%20em
-```
+| Parameter | Meaning |
+|-----------|---------|
+| `amount` | VND amount; omit only when the customer may choose the amount |
+| `des` | Transfer memo/content |
+| `template` | Image template such as default, compact, qronly, or standee where supported |
+| `download` | `true` to download the image |
+| `showinfo` | Controls whether extra transfer information is shown |
+| `fullacc` | Shows full account information where supported |
+| `holder` | Account holder display value |
+| `store` | Store/merchant display value |
 
-### Flexible QR (Customer Enters Amount)
-```
-https://qr.sepay.vn/img?acc=0010000000355&bank=Vietcombank
-```
+`bank` can use supported short name, alias, code, or BIN. For dynamic apps, fetch and cache the bank list rather than hardcoding a stale list:
 
-### QR Only Template
-```
-https://qr.sepay.vn/img?
-  acc=0010000000355&
-  bank=Vietcombank&
-  amount=100000&
-  template=qronly
+```text
+GET https://qr.sepay.vn/banks.json
 ```
 
-## Integration
+## QR Construction
 
-### HTML
-```html
-<img src="https://qr.sepay.vn/img?acc=0010000000355&bank=Vietcombank&amount=100000"
-     alt="Payment QR Code" />
-```
-
-### JavaScript (Dynamic)
 ```javascript
-function generatePaymentQR(account, bank, amount, description) {
-  const params = new URLSearchParams({
-    acc: account,
-    bank: bank,
-    amount: amount,
-    des: description
-  });
-  return `https://qr.sepay.vn/img?${params}`;
+export function buildSePayQrUrl({ account, bank, amount, description, template }) {
+  const url = new URL('https://qr.sepay.vn/img');
+  url.searchParams.set('acc', account);
+  url.searchParams.set('bank', bank);
+  if (amount != null) url.searchParams.set('amount', String(amount));
+  if (description) url.searchParams.set('des', description);
+  if (template) url.searchParams.set('template', template);
+  return url.toString();
 }
-
-// Usage
-const qrUrl = generatePaymentQR(
-  '0010000000355',
-  'Vietcombank',
-  100000,
-  'Order #12345'
-);
-
-document.getElementById('qr-code').src = qrUrl;
 ```
 
-### PHP (Dynamic)
-```php
-<?php
-function generatePaymentQR($account, $bank, $amount, $description) {
-    return 'https://qr.sepay.vn/img?' . http_build_query([
-        'acc' => $account,
-        'bank' => $bank,
-        'amount' => $amount,
-        'des' => $description
-    ]);
-}
+Rules:
 
-// Usage
-$qrUrl = generatePaymentQR(
-    '0010000000355',
-    'Vietcombank',
-    100000,
-    'Order #' . $orderId
-);
+- URL-encode descriptions through `URLSearchParams` or a framework equivalent.
+- Use integer VND amounts.
+- Do not trust a displayed QR as payment evidence.
+- Show manual transfer details next to the QR so customers can recover if the QR fails.
+- Add cache-control around generated URLs only if the account, amount, and memo are immutable for that order.
 
-echo "<img src='{$qrUrl}' alt='Payment QR' />";
-?>
+## Bank And VA Rules
+
+### Official VA Required
+
+Some banks require an official VA for automatic matching. In that case:
+
+- `acc` should be the official VA value from SePay/bank.
+- `des` should include the order code or required memo.
+- Do not substitute the source bank account number if the bank requires a VA.
+
+Example:
+
+```text
+https://qr.sepay.vn/img?acc=VQRQ12345678&bank=OCB&amount=100000&des=DH001%20thanh%20toan
 ```
 
-### Node.js (Express)
-```javascript
-app.get('/payment/:orderId/qr', async (req, res) => {
-  const order = await Order.findById(req.params.orderId);
+### Memo-Based VA
 
-  const qrUrl = new URL('https://qr.sepay.vn/img');
-  qrUrl.searchParams.set('acc', process.env.SEPAY_ACCOUNT);
-  qrUrl.searchParams.set('bank', process.env.SEPAY_BANK);
-  qrUrl.searchParams.set('amount', order.total);
-  qrUrl.searchParams.set('des', `Order ${order.id}`);
+Memo-based VAs require the transfer memo to contain `TKP` plus the VA code.
 
-  res.render('payment', { qrUrl: qrUrl.toString() });
-});
+Example for VA `001`:
+
+```text
+https://qr.sepay.vn/img?acc=0987654321&bank=TPBank&amount=200000&des=TKP001%20DH001
 ```
 
-### React Component
-```jsx
-function PaymentQR({ account, bank, amount, description }) {
-  const qrUrl = useMemo(() => {
-    const params = new URLSearchParams({
-      acc: account,
-      bank: bank,
-      amount: amount,
-      des: description
-    });
-    return `https://qr.sepay.vn/img?${params}`;
-  }, [account, bank, amount, description]);
+### No VA / Memo-Only Matching
 
-  return (
-    <div className="payment-qr">
-      <img src={qrUrl} alt="Payment QR Code" />
-      <p>Scan to pay {amount.toLocaleString('vi-VN')} VND</p>
-    </div>
-  );
-}
+If the integration uses a normal bank account and payment-code recognition:
+
+- `acc` is the linked account number.
+- `des` should contain the configured payment code.
+- Prefer a concise, bank-safe code over long natural-language memos.
+- Use Webhooks `code` when SePay extracts the payment code.
+
+Example:
+
+```text
+https://qr.sepay.vn/img?acc=0123456789&bank=Vietcombank&amount=150000&des=ORD12345
+```
+
+### VietinBank `SEVQR`
+
+For VietinBank personal and household-business accounts, the transfer memo must contain `SEVQR` or transaction notifications may not be pushed to SePay.
+
+Example:
+
+```text
+https://qr.sepay.vn/img?acc=0123456789&bank=VietinBank&amount=100000&des=SEVQR%20DH001
 ```
 
 ## Templates
 
-**Default:**
-- Full QR with bank logo
-- Account information displayed
-- Branded with bank colors
+Common template choices:
 
-**Compact:**
-- Smaller version
-- Minimal branding
-- More space-efficient
+- default/full QR with bank and account information
+- compact
+- `qronly`
+- `standee`
 
-**QR Only:**
-- Pure QR code
-- No decorations
-- For custom layouts
+Choose based on display surface. For invoices, emails, and receipts, prefer stable dimensions and alt text. For kiosk or print flows, test the actual scanner path.
 
-## Bank Codes
+## Error And Fallback Handling
 
-**Get Bank List:**
-```
-GET https://qr.sepay.vn/banks.json
-```
+- Keep bank transfer text instructions visible when the image fails.
+- Provide copy buttons for account, bank, amount, and memo.
+- Treat missing QR image as a UI/display failure, not as a payment failure.
+- Monitor QR image errors separately from payment confirmation errors.
+- Do not retry payment confirmation from the QR endpoint; confirm through Webhooks/API v2 or Payment Gateway IPN/order APIs.
 
-**Common Banks:**
-- Vietcombank (VCB)
-- VPBank
-- BIDV
-- Techcombank (TCB)
-- ACB
-- MB Bank
-- Sacombank
-- VietinBank
-- And 40+ others
+## Cross-Surface Links
 
-**Cache Bank List:**
-```javascript
-// Fetch once and cache
-const banks = await fetch('https://qr.sepay.vn/banks.json')
-  .then(res => res.json());
-
-// Store in memory or Redis
-cache.set('sepay_banks', banks, 86400); // 24 hours
-```
-
-## Best Practices
-
-1. **Cache Bank List:** Avoid repeated API calls
-2. **URL Encode Descriptions:** Use `encodeURIComponent()` or `http_build_query()`
-3. **Error Handling:** Provide fallback for QR generation failures
-4. **Amount Validation:** Ensure amount is positive integer
-5. **Flexible vs Fixed:** Use flexible QR for varying amounts
-6. **Template Selection:** Choose based on UI design
-7. **Responsive Design:** Scale QR code for mobile devices
-8. **Alt Text:** Always provide descriptive alt text
-9. **Loading State:** Show placeholder while QR loads
-10. **Print Support:** Ensure QR codes are print-friendly
-
-## Integration Patterns
-
-### Checkout Page
-```html
-<div class="payment-methods">
-  <h3>Pay via Bank Transfer</h3>
-  <img src="[QR_URL]" alt="Payment QR Code" class="qr-code" />
-  <p>Scan this QR code with your banking app</p>
-  <div class="payment-details">
-    <p><strong>Account:</strong> 0010000000355</p>
-    <p><strong>Bank:</strong> Vietcombank</p>
-    <p><strong>Amount:</strong> 100,000 VND</p>
-    <p><strong>Content:</strong> Order #12345</p>
-  </div>
-</div>
-```
-
-### Email Receipt
-```html
-<table>
-  <tr>
-    <td align="center">
-      <img src="[QR_URL]" alt="Payment QR Code" width="200" />
-      <p>Scan to pay for your order</p>
-    </td>
-  </tr>
-</table>
-```
-
-### PDF Invoice
-Use QR URL in PDF generation libraries (wkhtmltopdf, Puppeteer, etc.)
+- `webhooks.md`: confirm bank-account transfers in real time.
+- `api.md`: reconcile missed or ambiguous bank transactions and manage Order VAs.
+- `payment-gateway.md`: use hosted checkout instead of manually displaying bank-transfer QR.

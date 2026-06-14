@@ -1,140 +1,175 @@
-# SePay API Reference
+# SePay API v2 Reference
 
-Base URL: `https://my.sepay.vn/userapi/`
-Rate Limit: 2 calls/second
+Use API v2 by default for new SePay API integrations. The old `userapi/*` endpoints are legacy/migration-only.
 
-## Transaction API
+Official docs checked: 2026-06-14.
 
-### List Transactions
+## Base URLs
+
+| Environment | Base URL | Notes |
+|-------------|----------|-------|
+| Production | `https://userapi.sepay.vn/v2` | Live bank data and Live API tokens |
+| Sandbox/Test mode | `https://userapi-sandbox.sepay.vn/v2` | Isolated Test mode data and Test mode API tokens |
+
+Order VA APIs are Production-only.
+
+## Authentication
+
+```http
+Authorization: Bearer <API_TOKEN>
+Content-Type: application/json
 ```
-GET /userapi/transactions/list
-```
 
-**Parameters:**
-- `account_number` (string) - Bank account ID
-- `transaction_date_min/max` (yyyy-mm-dd) - Date range
-- `since_id` (integer) - Start from ID
-- `limit` (integer) - Max 5000 per request
-- `reference_number` (string) - Transaction reference
-- `amount_in` (number) - Incoming amount
-- `amount_out` (number) - Outgoing amount
+Rules:
 
-**Response:**
-```json
-{
-  "status": 200,
-  "transactions": [{
-    "id": 92704,
-    "gateway": "Vietcombank",
-    "transaction_date": "2023-03-25 14:02:37",
-    "account_number": "0123499999",
-    "content": "payment content",
-    "transfer_type": "in",
-    "transfer_amount": 2277000,
-    "accumulated": 19077000,
-    "reference_number": "MBVCB.3278907687",
-    "bank_account_id": 123
-  }]
+- Create Live tokens from API Access while in Live mode.
+- Create Test tokens from API Access while in Test mode.
+- Do not reuse tokens across environments.
+- Keep tokens server-side only.
+
+## Rate Limit
+
+- Maximum: 3 requests per second per IP.
+- On excess: HTTP 429.
+- Retry based on `Retry-After`.
+- Track `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset`.
+
+```javascript
+if (response.status === 429) {
+  const retryAfter = Number(response.headers.get('Retry-After') || '1');
+  await sleep(retryAfter * 1000);
 }
 ```
 
-### Transaction Details
-```
-GET /userapi/transactions/details/{transaction_id}
-```
+## Response Shape
 
-### Count Transactions
-```
-GET /userapi/transactions/count
-```
+List endpoints use a `data` array and `meta.pagination` object.
 
-## Bank Account API
-
-### List Bank Accounts
-```
-GET /userapi/bankaccounts/list
-```
-
-**Parameters:**
-- `short_name` - Bank identifier
-- `last_transaction_date_min/max` - Date range
-- `since_id` - Starting account ID
-- `limit` - Results per page (default 100)
-- `accumulated_min/max` - Balance range
-
-**Response:**
 ```json
 {
-  "id": 123,
-  "account_holder_name": "NGUYEN VAN A",
-  "account_number": "0123456789",
-  "accumulated": 50000000,
-  "last_transaction": "2025-01-13 10:30:00",
-  "bank_short_name": "VCB",
-  "active": 1
+  "status": "success",
+  "data": [],
+  "meta": {
+    "pagination": {
+      "total": 0,
+      "per_page": 20,
+      "current_page": 1,
+      "last_page": 1,
+      "has_more": false
+    }
+  }
 }
 ```
 
-### Account Details
+Detail endpoints return `data` as an object. Identifiers are UUIDs. Money fields are integer VND unless a specific endpoint documents another format.
+
+## Main API Groups
+
+### Transactions
+
+Use transactions for lookup, backfill, customer-facing history, admin dashboards, and reconciliation.
+
+Common paths:
+
+```http
+GET /transactions
+GET /transactions/{transaction_uuid}
 ```
-GET /userapi/bankaccounts/details/{bank_account_id}
+
+Common filters:
+
+- bank account
+- date range
+- amount range
+- transaction content search
+- transfer type
+- `since_id` polling cursor
+
+Webhook payloads and transaction API responses are related but not interchangeable. Webhooks are real-time delivery; API v2 is the source to query when a delivery is missed, delayed, or ambiguous.
+
+### Bank Accounts
+
+Use bank-account endpoints to list and inspect linked SePay bank accounts.
+
+```http
+GET /bank-accounts
+GET /bank-accounts/{bank_account_uuid}
 ```
 
-### Count Accounts
+Cache account lists carefully and refresh when SePay dashboard configuration changes.
+
+### Virtual Accounts
+
+Use VA endpoints to look up existing virtual accounts across supported banks.
+
+```http
+GET /virtual-accounts
+GET /virtual-accounts/{va_uuid}
 ```
-GET /userapi/bankaccounts/count
-```
 
-## Order-Based Virtual Account API
+Do not assume every bank supports the same VA type or memo rule. Coordinate display instructions with `qr-codes.md`.
 
-**Concept:** Each order gets unique VA with exact amount matching for automated confirmation.
+## Order VAs
 
-**Flow:**
-1. Create order → API generates unique VA
-2. Display VA + QR to customer
-3. Customer transfers to VA
-4. Bank notifies SePay on success
-5. SePay triggers webhook
-6. Update order status
+Use Order VAs when each order should receive a bank-specific VA or bank-specific VA/memo rule instead of a generic transfer memo.
 
-**Advantages:**
-- Precision: VA accepts only exact amounts
-- Independence: Each order has own VA (no content parsing)
-- Security: VAs auto-cancel after success/expiration
-- Integration: RESTful API
+Supported official Order VA families:
 
-**Supported Banks:** BIDV and others (check docs for full list)
+| Bank / Account Type | Key Rules |
+|---------------------|-----------|
+| BIDV enterprise | Supports Order VA flow; amount can be optional where the account capability allows it; custom VA holder name only when enabled. |
+| Sacombank personal / household business | Requires `va_prefix`; exact amount required; partial payment is not supported. |
+| Vietcombank enterprise / household business | Requires raw `tid` from terminals; exact amount required; partial payment is not supported. |
+
+Implementation rules:
+
+- Treat bank-specific request fields as required for that bank even when another bank does not need them.
+- Validate `order_code` length and character constraints against the selected bank's endpoint docs.
+- Keep amount policy explicit: exact-only, optional, overpayment, and partial-payment behavior vary by bank/account product.
+- Show generated VA/QR instructions only after the API response confirms the order/VA state.
+- Use API v2 reconciliation and bank Webhooks to confirm actual incoming transactions.
 
 ## Error Handling
 
-**HTTP Status Codes:**
-- 200 OK - Successful
-- 201 Created - Resource created
-- 400 Bad Request - Invalid parameters
-- 401 Unauthorized - Invalid/missing auth
-- 403 Forbidden - Insufficient permissions
-- 404 Not Found - Resource not found
-- 429 Too Many Requests - Rate limit exceeded
-- 500 Internal Server Error - Server error
-- 503 Service Unavailable - Temporarily unavailable
+Use HTTP status codes, not the legacy v1 `status` field, as the first failure signal.
 
-**Rate Limit Response:**
-```json
-{
-  "status": 429,
-  "error": "rate_limit_exceeded",
-  "message": "Too many requests"
-}
-```
+| Status | Meaning |
+|--------|---------|
+| 200 | Success |
+| 201 | Created |
+| 400 | Bad request |
+| 401 | Missing or invalid token |
+| 403 | Forbidden |
+| 404 | Resource not found |
+| 422 | Validation failed |
+| 429 | Rate limited |
+| 500 / 503 | SePay or upstream service issue |
 
-Check `x-sepay-userapi-retry-after` header for retry timing.
+Log:
 
-## Best Practices
+- request path and environment
+- correlation/order ID
+- status code
+- SePay error body
+- retry headers when present
 
-1. **Pagination:** Use `limit` and `since_id` for large datasets
-2. **Date Ranges:** Query specific periods to reduce response size
-3. **Rate Limiting:** Implement exponential backoff
-4. **Error Handling:** Log all errors with context
-5. **Caching:** Cache bank account lists
-6. **Monitoring:** Track API response times and error rates
-7. **Reconciliation:** Regular transaction matching
+## Legacy v1 Migration Notes
+
+Legacy v1 endpoints such as `https://my.sepay.vn/userapi/transactions/list` may exist in older integrations. Do not use them as the default for new work.
+
+| Legacy Habit | Current Guidance |
+|--------------|------------------|
+| Numeric transaction IDs | Use API v2 UUID identifiers. |
+| `limit` / `since_id` v1 pagination | Use API v2 `page` / `per_page` and documented filters. |
+| 2 calls/second guidance | Use API v2 3 requests/second per IP and standard rate-limit headers. |
+| `x-sepay-userapi-retry-after` only | Prefer standard `Retry-After` for API v2. |
+| v1 response fields as canonical | Map to API v2 `data` / `meta` shape and current field names. |
+
+When migrating, keep the old endpoint in a clearly isolated adapter until all callers are moved, then remove it. Do not mix v1 and v2 response shapes in the same downstream contract.
+
+## Cross-Surface Links
+
+- Use `webhooks.md` for real-time bank-account transaction delivery.
+- Use `payment-gateway.md` for hosted checkout and Payment Gateway IPN.
+- Use `qr-codes.md` for QR display parameters and bank-specific memo/VA display rules.
+- Use `best-practices.md` for idempotency, reconciliation, and production rollout.

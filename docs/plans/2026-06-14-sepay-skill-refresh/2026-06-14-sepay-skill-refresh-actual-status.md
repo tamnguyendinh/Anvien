@@ -2,7 +2,7 @@
 
 Title: SePay Skill Refresh
 Date: 2026-06-14
-Status: P0 Complete
+Status: Complete; final commit executed in this turn
 Companion plan: `docs/plans/2026-06-14-sepay-skill-refresh/2026-06-14-sepay-skill-refresh-plan.md`
 Companion evidence: `docs/plans/2026-06-14-sepay-skill-refresh/2026-06-14-sepay-skill-refresh-evidence.md`
 Companion benchmark: `docs/plans/2026-06-14-sepay-skill-refresh/2026-06-14-sepay-skill-refresh-benchmark.md`
@@ -95,15 +95,15 @@ Record how many files the target is related to before deciding touch mode. A fil
 
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|--------------------|----------|--------------------|
-| `overview.md` | Defines SePay broadly but mixes product surfaces and includes stale gateway endpoints and rate limit. | Surface router with current API v2, Webhook, Payment Gateway/IPN, QR, Order VA, Test Mode, and official-doc link guidance. | wrong | 0 related files | `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-REPORT1` | edit P1-A |
-| `api.md` | Uses legacy `https://my.sepay.vn/userapi/` and v1 transaction/account examples as default. | API v2 default, v1 legacy/migration, current rate limit, response envelope, pagination, and Order VA bank rules. | wrong | 0 related files | `E0-P0A-SRC2`, `E0-P0A-FD2`, `E0-P0A-REPORT1` | edit P2-A |
-| `webhooks.md` | Covers basic webhook setup, payload, API Key/OAuth2/none, 200 success, and duplicate prevention, but misses HMAC/payment code/monitoring/replay and has stale retry timing. | Current bank-account webhook guidance with HMAC, raw body, retry correction, payment code, monitoring, replay, IP allowlist, and explicit IPN separation. | wrong | 0 related files | `E0-P0A-SRC3`, `E0-P0A-FD3`, `E0-P0A-REPORT1` | edit P3-A |
-| `sdk.md` | Uses old Node install source, stale gateway endpoints, limited SDK/gateway lifecycle details, and ambiguous Laravel officialness. | Current Node/PHP SDK guidance, gateway base URLs/auth, payment methods, form field order, order detail/status/cancel/void, and accurate Laravel classification. | wrong | 0 related files | `E0-P0A-SRC4`, `E0-P0A-FD4`, `E0-P0A-REPORT1` | edit P4-A |
-| `qr-codes.md` | Provides working basic QR parameter guidance and examples, but misses newer parameters and bank-specific VA/memo rules. | Current QR utility guidance with missing parameters, bank identifiers, official VA, memo-based VA, no VA, and VietinBank `SEVQR` examples. | partial | 0 related files | `E0-P0A-SRC5`, `E0-P0A-FD5`, `E0-P0A-REPORT1` | edit P5-A |
-| `best-practices.md` | Contains many project-specific patterns (`CLAUDEKIT`, Polar, GitHub, discounts, product pricing) as if they are general SePay guidance. | Repo-agnostic SePay production patterns for surface choice, HMAC, payment code, idempotency, replay, reconciliation, Test Mode/Live, IP allowlisting, and amount policy. | wrong | 0 related files | `E0-P0A-SRC6`, `E0-P0A-FD6`, `E0-P0A-REPORT1` | edit P5-A |
-| `payment-gateway.md` | Missing. Hosted checkout/IPN details are underrepresented and mixed into overview/sdk/webhook context. | Dedicated Payment Gateway/IPN reference under `references/sepay`. | missing | not applicable until file exists | `E0-P0A-REPORT1`, `E0-P0A-ROUTE1` | create P1-A, fill P4-A |
-| `SKILL.md` SePay quick reference | Lists six SePay reference files, no dedicated gateway/IPN reference. | If `payment-gateway.md` is added, list it so agents can discover hosted checkout/IPN guidance. | partial | 0 related files | `E0-P0A-ROUTE1`, `E0-P0A-FD7` | edit P1-A only for routing |
-| `implementation-workflows.md` SePay workflow | Routes SePay agents to overview, API/SDK, webhooks, verifier script, and best practices; no gateway/IPN decision point. | If `payment-gateway.md` is added, route hosted checkout/IPN work to it before SDK/webhook details. | partial | 0 related files | `E0-P0A-ROUTE1`, `E0-P0A-FD8` | edit P1-A only for routing |
+| `overview.md` | Surface map now separates API v2, bank-account Webhooks, Payment Gateway/IPN, QR utility, Order VAs, Test Mode, and production safety rules. | Surface router with current API v2, Webhook, Payment Gateway/IPN, QR, Order VA, Test Mode, and official-doc link guidance. | correct | 0 related files | `E1-P1A-IMPL1`, `E1-P1A-SRC1` | preserve; validate P6-A |
+| `api.md` | API v2 is the default; legacy v1 appears only as migration guidance; Order VA bank rules are represented. | API v2 default, v1 legacy/migration, current rate limit, response envelope, pagination, and Order VA bank rules. | correct | 0 related files | `E2-P2A-IMPL1`, `E2-P2A-SRC1`, `E2-P2A-SRC2`, `E2-P2A-SRC3` | preserve; validate P6-A |
+| `webhooks.md` | Bank-account webhook doc now includes HMAC, raw body, retry correction, payment code, monitoring, replay, IP allowlist, reconciliation, and explicit IPN separation. | Current bank-account webhook guidance with HMAC, raw body, retry correction, payment code, monitoring, replay, IP allowlist, and explicit IPN separation. | correct | 0 related files | `E3-P3A-IMPL1`, `E3-P3A-SRC1`, `E3-P3A-SRC2`, `E3-P3A-SRC3` | preserve; validate P6-A |
+| `sdk.md` | SDK doc now uses official Node/PHP install paths, current gateway lifecycle topics, payment methods, field-order warning, and Laravel package caution. | Current Node/PHP SDK guidance, gateway base URLs/auth, payment methods, form field order, order detail/status/cancel/void, and accurate Laravel classification. | correct | 0 related files | `E4-P4A-IMPL2`, `E4-P4A-SRC2`, `E4-P4A-SRC3` | preserve; validate P6-A |
+| `qr-codes.md` | QR doc now includes current parameters and bank-specific VA/memo rules, including `TKP` and `SEVQR`. | Current QR utility guidance with missing parameters, bank identifiers, official VA, memo-based VA, no VA, and VietinBank `SEVQR` examples. | correct | 0 related files | `E5-P5A-IMPL1`, `E5-P5A-SRC1` | preserve; validate P6-A |
+| `best-practices.md` | Best practices are repo-agnostic and summarize surface selection, security, idempotency, reconciliation, Test Mode/Live, allowlisting, and amount policy. | Repo-agnostic SePay production patterns for surface choice, HMAC, payment code, idempotency, replay, reconciliation, Test Mode/Live, IP allowlisting, and amount policy. | correct | 0 related files | `E5-P5A-IMPL2`, `E5-P5A-SRC2`, `E5-P5A-SRC3` | preserve; validate P6-A |
+| `payment-gateway.md` | Dedicated Payment Gateway/IPN reference exists and covers hosted checkout, gateway API, IPN, order APIs, idempotency, and reconciliation. | Dedicated Payment Gateway/IPN reference under `references/sepay`. | correct | 0 related files | `E1-P1A-IMPL2`, `E4-P4A-IMPL1`, `E4-P4A-SRC1`, `E6-P6A-FD1` | preserve |
+| `SKILL.md` SePay quick reference | Lists seven SePay reference files, including dedicated Payment Gateway/IPN reference. | If `payment-gateway.md` is added, list it so agents can discover hosted checkout/IPN guidance. | correct | 0 related files | `E1-P1A-ROUTE1`, `E1-P1A-SRC2` | preserve; validate P6-A |
+| `implementation-workflows.md` SePay workflow | Routes SePay agents to surface selection first, then API v2, Webhooks, Payment Gateway/IPN, SDK, QR, helper caveat, and best practices. | If `payment-gateway.md` is added, route hosted checkout/IPN work to it before SDK/webhook details. | correct | 0 related files | `E1-P1A-ROUTE2`, `E1-P1A-SRC2` | preserve; validate P6-A |
 | `scripts/sepay-webhook-verify.js` | Helper supports API Key/OAuth2/none and payload validation, but no HMAC raw-body signature path. | Out of current implementation scope; should remain inspect-only/follow-up unless user expands scope. | partial | 1 inbound related file plus local symbol relationships | `E0-P0A-SRC7`, `E0-P0A-FD9` | inspect-only / do not edit |
 
 ## Status Refresh Log
@@ -111,6 +111,10 @@ Record how many files the target is related to before deciding touch mode. A fil
 | Refresh | Date | Repo Basis | Changed Scope | Status Changes | Evidence | Next Phase Update |
 |---------|------|------------|----------------|----------------|----------|-------------------|
 | R0 | 2026-06-14 | baseline before implementation | SePay reference files and direct routing/helper surfaces | initial classification | `E0-P0A-GRAPH1`, `E0-P0A-REPORT1`, `E0-P0A-SRC1..E0-P0A-SRC7`, `E0-P0A-FD1..E0-P0A-FD9` | P1-A creates surface map and gateway route; P2-A through P5-A keep goals but use latest status rows. |
+| R1 | 2026-06-14 | source-doc implementation before final validation | SePay reference docs and direct routing files | `overview.md`, `api.md`, `webhooks.md`, `sdk.md`, `qr-codes.md`, `best-practices.md`, `payment-gateway.md`, `SKILL.md`, and `implementation-workflows.md` moved to correct; script remains inspect-only | `E1-P1A-*`, `E2-P2A-*`, `E3-P3A-*`, `E4-P4A-*`, `E5-P5A-*` | P6-A validation can proceed; no P1-P5 source-doc work remains. |
+| R2 | 2026-06-14 | post-build validation and graph refresh | P6 validation | full build passed; graph refreshed; new gateway file has 0 related files and low risk; repo-generated `.agents`/`.claude` payment-integration outputs smoke-pass; home-level installed skill not regenerated; `checkout-helper.js` stale URLs recorded as out-of-scope follow-up | `E6-P6A-VAL1`, `E6-P6A-VAL2`, `E6-P6A-GRAPH1`, `E6-P6A-FD1`, `E6-P6A-GEN1`, `E6-P6A-GEN2`, `E6-P6A-GEN3`, `E6-P6A-DETECT1`, `E6-P6A-SCOPE1` | Pn-A supervisor review can proceed. |
+| R3 | 2026-06-14 | supervisor and dead-work cleanup review | Pn-A/Pn-B closure | supervisor PASS recorded; no plan-created dead work found; stale helper script remains documented out-of-scope follow-up | `E7-PNA-SUP1`, `E8-PNB-CLEAN1`, `E8-PNB-SUP1` | Pn-C final validation/detect/commit can proceed. |
+| R4 | 2026-06-14 | final graph refresh and detect-changes | Pn-C closure | final analyze and detect-changes passed; final commit executed after evidence recording | `E9-PNC-GRAPH1`, `E9-PNC-DETECT1`, `E9-PNC-COMMIT1` | plan complete. |
 
 ## Phase Touch Map
 
@@ -130,6 +134,7 @@ Use this map to prevent accidental edits. A related file is not automatically ed
 | `sdk.md` | `payment-gateway.md` | gateway SDK depends on hosted checkout/IPN contract | P4-A | edit | `E0-P0A-SRC4`, `E0-P0A-REPORT1` | Keep SDK examples separate from webhook reconciliation. |
 | `best-practices.md` | all SePay reference docs | cross-surface production summary | P5-A | edit after P2-P4 content exists | `E0-P0A-SRC1..E0-P0A-SRC6` | Best practices must not introduce facts missing from detailed docs. |
 | generated `.agents/.claude` payment-integration output | internal source skill files | generated output | P6-A | validate-only / regenerate if commanded by repo tooling | `E0-P0A-GRAPH1` | Never edit generated output as source. |
+| `internal/aicontext/skills/payment-integration/scripts/checkout-helper.js` | gateway docs now supersede old helper endpoint guidance | script helper outside docs-only scope | follow-up | do-not-touch in this plan | `E6-P6A-SCOPE1` | Stale gateway URLs found during validation; requires a separate code/script plan if user expands scope. |
 
 ## Detailed Findings
 
@@ -137,7 +142,7 @@ Use this map to prevent accidental edits. A related file is not automatically ed
 
 Current state:
 
-`overview.md` contains useful high-level SePay context, but its environment and rate-limit guidance are stale and it does not clearly route agents between API v2, Webhooks, Payment Gateway/IPN, QR utility, and Order VA.
+`overview.md` now acts as a surface-selection map. It separates API v2, bank-account Webhooks, Payment Gateway/IPN, QR utility, Order VAs, optional SePay products, Test Mode, and production safety guidance.
 
 Required state:
 
@@ -147,9 +152,9 @@ Overview must be a surface-selection map. It should prevent agents from starting
 
 Evidence:
 
-- `E0-P0A-SRC1`: local source read.
-- `E0-P0A-FD1`: file-detail evidence.
-- `E0-P0A-REPORT1`: report findings 1, 2, 5, 6, 7, 13, 14.
+- `E1-P1A-IMPL1`
+- `E1-P1A-SRC1`
+- `E1-P1A-OFFICIAL1`
 
 Relationship and impact:
 
@@ -159,11 +164,11 @@ Relationship and impact:
 
 Classification:
 
-wrong
+correct
 
 Allowed next action:
 
-Edit P1-A.
+Preserve and validate in P6-A.
 
 Forbidden next action:
 
@@ -173,7 +178,7 @@ Do not bury Payment Gateway/IPN under webhook wording.
 
 Current state:
 
-`api.md` teaches legacy v1 `userapi/*` as default and has stale rate-limit behavior.
+`api.md` now teaches API v2 as the default, keeps legacy v1 only under migration notes, documents API v2 rate limits/response shape/pagination, and adds bank-specific Order VA guidance.
 
 Required state:
 
@@ -183,9 +188,10 @@ API v2 is default for new work. v1 is legacy/migration-only. Order VA is bank-sp
 
 Evidence:
 
-- `E0-P0A-SRC2`
-- `E0-P0A-FD2`
-- `E0-P0A-REPORT1`
+- `E2-P2A-IMPL1`
+- `E2-P2A-SRC1`
+- `E2-P2A-SRC2`
+- `E2-P2A-SRC3`
 
 Relationship and impact:
 
@@ -195,11 +201,11 @@ Relationship and impact:
 
 Classification:
 
-wrong
+correct
 
 Allowed next action:
 
-Edit P2-A.
+Preserve and validate in P6-A.
 
 Forbidden next action:
 
@@ -209,7 +215,7 @@ Do not retain legacy v1 as the first/default API path.
 
 Current state:
 
-`webhooks.md` has basic webhook setup and idempotency ideas but lacks current HMAC, payment-code, retry, replay, monitoring, incident, and allowlist details. It also needs stronger IPN separation.
+`webhooks.md` now documents bank-account Webhooks with HMAC-SHA256, raw-body signature verification, payment-code recognition, retry/replay behavior, monitoring, incidents, reconciliation, IP allowlisting, and explicit Payment Gateway IPN separation.
 
 Required state:
 
@@ -219,9 +225,11 @@ Bank-account webhooks must be documented as their own surface with current auth,
 
 Evidence:
 
-- `E0-P0A-SRC3`
-- `E0-P0A-FD3`
-- `E0-P0A-REPORT1`
+- `E3-P3A-IMPL1`
+- `E3-P3A-SRC1`
+- `E3-P3A-SRC2`
+- `E3-P3A-SRC3`
+- `E3-P3A-SCOPE1`
 
 Relationship and impact:
 
@@ -231,11 +239,11 @@ Relationship and impact:
 
 Classification:
 
-wrong
+correct
 
 Allowed next action:
 
-Edit P3-A.
+Preserve and validate in P6-A.
 
 Forbidden next action:
 
@@ -245,7 +253,7 @@ Do not edit `scripts/sepay-webhook-verify.js` unless the user expands scope.
 
 Current state:
 
-`sdk.md` includes stale install/endpoint details and does not fully describe current gateway/IPN/order lifecycle behavior. A dedicated gateway reference is missing.
+`sdk.md` now documents official Node/PHP Payment Gateway SDK use, payment methods, field-order signature warning, order lifecycle methods, and Laravel package caution. `payment-gateway.md` now exists and covers hosted checkout, gateway API, IPN, idempotency, and reconciliation.
 
 Required state:
 
@@ -255,26 +263,28 @@ Hosted checkout/IPN should be discoverable as a separate Payment Gateway surface
 
 Evidence:
 
-- `E0-P0A-SRC4`
-- `E0-P0A-FD4`
-- `E0-P0A-ROUTE1`
-- `E0-P0A-REPORT1`
+- `E1-P1A-IMPL2`
+- `E4-P4A-IMPL1`
+- `E4-P4A-IMPL2`
+- `E4-P4A-SRC1`
+- `E4-P4A-SRC2`
+- `E4-P4A-SRC3`
 
 Relationship and impact:
 
-- Related file count: 0 for `sdk.md`; new `payment-gateway.md` missing.
-- Relationship summary: route files need minimal updates if new file is added.
+- Related file count: 0 for `sdk.md`; new `payment-gateway.md` will receive graph relationship evidence after P6-A analyze refresh.
+- Relationship summary: route files now mention the new gateway reference.
 - Impact note: low graph risk, high product-surface risk.
 
 Classification:
 
-`sdk.md`: wrong
+`sdk.md`: correct
 
-`payment-gateway.md`: missing
+`payment-gateway.md`: correct
 
 Allowed next action:
 
-Create/fill P1-A/P4-A and update routing minimally.
+Preserve and validate in P6-A.
 
 Forbidden next action:
 
@@ -284,7 +294,7 @@ Do not leave a new gateway doc undiscoverable from the skill entrypoint.
 
 Current state:
 
-`qr-codes.md` is partial and `best-practices.md` is wrong for a reusable skill because it teaches one application's implementation as general SePay practice.
+`qr-codes.md` now covers current QR parameters and bank-specific VA/memo rules. `best-practices.md` is repo-agnostic and no longer teaches one application model as general SePay practice.
 
 Required state:
 
@@ -294,11 +304,11 @@ QR docs must cover current parameters and bank rules. Best practices must be rep
 
 Evidence:
 
-- `E0-P0A-SRC5`
-- `E0-P0A-SRC6`
-- `E0-P0A-FD5`
-- `E0-P0A-FD6`
-- `E0-P0A-REPORT1`
+- `E5-P5A-IMPL1`
+- `E5-P5A-IMPL2`
+- `E5-P5A-SRC1`
+- `E5-P5A-SRC2`
+- `E5-P5A-SRC3`
 
 Relationship and impact:
 
@@ -308,13 +318,13 @@ Relationship and impact:
 
 Classification:
 
-`qr-codes.md`: partial
+`qr-codes.md`: correct
 
-`best-practices.md`: wrong
+`best-practices.md`: correct
 
 Allowed next action:
 
-Edit P5-A after P2-A through P4-A establish current detailed facts.
+Preserve and validate in P6-A.
 
 Forbidden next action:
 
@@ -324,12 +334,12 @@ Do not preserve project-specific examples as if they are general SePay defaults.
 
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
-| P1-A | `overview.md` is wrong and gateway/IPN reference is missing. | keep P1-A goal; create surface map and gateway route before detailed phases. |
-| P2-A | `api.md` is wrong and v1-default. | keep P2-A goal; rewrite around API v2 default and legacy v1 section. |
-| P3-A | `webhooks.md` is wrong and script verifier is partial/high-risk but out of current scope. | keep P3-A goal; update docs only and record script as follow-up unless scope expands. |
-| P4-A | `sdk.md` is wrong and gateway/IPN doc is missing. | keep P4-A goal; fill dedicated gateway/IPN doc and refresh SDK. |
-| P5-A | QR is partial and best practices are wrong/project-specific. | keep P5-A goal; update after earlier phases to avoid stale summary. |
-| P6-A | Source skill changes may regenerate agent skill output. | keep P6-A goal; validate source, generated output, full build, and detect-changes. |
+| P1-A | Surface map and gateway routing are complete. | preserve; P6-A readback and generated-output smoke must confirm discoverability. |
+| P2-A | API v2 guidance is default and v1 is legacy-only. | preserve; P6-A validation must confirm no stale v1 default remains. |
+| P3-A | Bank-account webhook guidance is current and IPN is separated; verifier script remains out of scope. | preserve; record script/helper stale endpoint observations only as follow-up unless scope expands. |
+| P4-A | Dedicated Payment Gateway/IPN guidance and SDK guidance are complete. | preserve; P6-A validation must include the new file and routing surfaces. |
+| P5-A | QR and best practices are refreshed and repo-agnostic. | preserve; P6-A validation must confirm project-specific SePay reference examples are gone. |
+| P6-A | Source skill docs changed and plan files were refreshed; validation completed. | preserve evidence; proceed to supervisor/dead-work/closure steps. |
 
 ## Implementation Gate
 
