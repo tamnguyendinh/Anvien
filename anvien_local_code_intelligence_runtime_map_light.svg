@@ -1,0 +1,151 @@
+<svg width="1200" height="720" viewBox="0 0 1200 720" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Anvien local code intelligence runtime map</title>
+  <desc id="desc">A light, source-backed architecture diagram showing how Anvien analyzes a local repository into a repo-local graph index and exposes the result through CLI, MCP, local HTTP API, Web UI, and Windows launcher surfaces.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M2 2.5L9.5 6L2 9.5" stroke="#6F7A86" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .font{font-family:"SF Pro Display","Helvetica Neue",Arial,sans-serif}
+      .mono{font-family:"SF Mono","Geist Mono",Consolas,monospace}
+      .title{font-size:34px;font-weight:760;letter-spacing:-0.03em;fill:#1F2933}
+      .subtitle{font-size:15px;fill:#6B7280}
+      .sectionTitle{font-size:18px;font-weight:700;fill:#1F2933}
+      .body{font-size:13px;fill:#5B6470}
+      .small{font-size:12px;fill:#697481}
+      .tiny{font-size:11px;fill:#7B8490}
+      .card{fill:#FFFFFF;stroke:#E6E1DA;stroke-width:1}
+      .softCard{fill:#FBFBFA;stroke:#E6E1DA;stroke-width:1}
+      .chip{fill:#F7F6F3;stroke:#E6E1DA;stroke-width:1}
+      .chipText{font-size:12px;fill:#334155}
+      .edge{stroke:#8B96A3;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
+      .softEdge{stroke:#D8D2C9;stroke-width:1;stroke-linecap:round}
+    </style>
+  </defs>
+
+  <rect width="1200" height="720" fill="#FBFBFA"/>
+  <rect x="28" y="28" width="1144" height="664" rx="20" fill="#FFFFFF" stroke="#ECE7DE"/>
+
+  <text x="70" y="78" class="font title">Anvien</text>
+  <text x="70" y="106" class="font subtitle">Local code intelligence graph for AI coding agents</text>
+  <text x="802" y="76" class="font small">Evidence from codebase</text>
+  <text x="802" y="99" class="mono tiny">cmd/anvien · internal/analyze</text>
+  <text x="802" y="116" class="mono tiny">internal/mcp · internal/httpapi · launcher</text>
+
+  <!-- Column frames -->
+  <rect x="70" y="150" width="230" height="430" rx="14" class="softCard"/>
+  <rect x="350" y="150" width="230" height="430" rx="14" class="softCard"/>
+  <rect x="630" y="150" width="230" height="430" rx="14" class="softCard"/>
+  <rect x="910" y="150" width="220" height="430" rx="14" class="softCard"/>
+
+  <!-- Step markers -->
+  <circle cx="95" cy="176" r="13" fill="#E1F3FE" stroke="#B9DEF3"/>
+  <text x="91" y="181" class="font small" fill="#1F6C9F">1</text>
+  <circle cx="375" cy="176" r="13" fill="#EDF3EC" stroke="#D2E3D0"/>
+  <text x="371" y="181" class="font small" fill="#346538">2</text>
+  <circle cx="655" cy="176" r="13" fill="#FBF3DB" stroke="#E8DBAE"/>
+  <text x="651" y="181" class="font small" fill="#956400">3</text>
+  <circle cx="935" cy="176" r="13" fill="#FDEBEC" stroke="#F0C9CB"/>
+  <text x="931" y="181" class="font small" fill="#9F2F2D">4</text>
+
+  <!-- Local repo -->
+  <text x="112" y="183" class="font sectionTitle">Local repo</text>
+  <text x="94" y="214" class="font body">Reads the target repository.</text>
+  <text x="94" y="234" class="font body">Keeps the index local.</text>
+
+  <rect x="94" y="270" width="182" height="36" rx="8" class="card"/>
+  <text x="114" y="293" class="mono chipText">source files</text>
+  <rect x="94" y="318" width="182" height="36" rx="8" class="card"/>
+  <text x="114" y="341" class="mono chipText">docs and configs</text>
+  <rect x="94" y="366" width="182" height="36" rx="8" class="card"/>
+  <text x="114" y="389" class="mono chipText">routes and tools</text>
+  <rect x="94" y="414" width="182" height="36" rx="8" class="card"/>
+  <text x="114" y="437" class="mono chipText">tests and scripts</text>
+
+  <line x1="94" y1="506" x2="276" y2="506" class="softEdge"/>
+  <text x="94" y="532" class="mono small">anvien analyze --force</text>
+  <text x="94" y="552" class="font tiny">Active path stays local</text>
+
+  <!-- Analyze pipeline -->
+  <text x="392" y="183" class="font sectionTitle">Analyze pipeline</text>
+  <text x="374" y="214" class="font body">Extracts structure and symbols.</text>
+  <text x="374" y="234" class="font body">Links source sites and flows.</text>
+
+  <rect x="374" y="268" width="82" height="34" rx="8" class="chip"/>
+  <text x="401" y="290" class="font chipText">scan</text>
+  <rect x="474" y="268" width="82" height="34" rx="8" class="chip"/>
+  <text x="500" y="290" class="font chipText">parse</text>
+  <rect x="374" y="318" width="82" height="34" rx="8" class="chip"/>
+  <text x="393" y="340" class="font chipText">resolve</text>
+  <rect x="474" y="318" width="82" height="34" rx="8" class="chip"/>
+  <text x="489" y="340" class="font chipText">routes</text>
+  <rect x="374" y="368" width="82" height="34" rx="8" class="chip"/>
+  <text x="398" y="390" class="font chipText">tools</text>
+  <rect x="474" y="368" width="82" height="34" rx="8" class="chip"/>
+  <text x="500" y="390" class="font chipText">ORM</text>
+  <rect x="374" y="418" width="182" height="34" rx="8" class="chip"/>
+  <text x="402" y="440" class="font chipText">semantic enrichment</text>
+  <rect x="374" y="468" width="182" height="34" rx="8" class="chip"/>
+  <text x="407" y="490" class="font chipText">file projection</text>
+
+  <line x1="456" y1="285" x2="474" y2="285" class="softEdge"/>
+  <line x1="456" y1="335" x2="474" y2="335" class="softEdge"/>
+  <line x1="456" y1="385" x2="474" y2="385" class="softEdge"/>
+
+  <!-- Graph index -->
+  <text x="672" y="183" class="font sectionTitle">Graph index</text>
+  <text x="654" y="214" class="font body">The repo-local graph stores code</text>
+  <text x="654" y="234" class="font body">facts and audit evidence.</text>
+
+  <circle cx="745" cy="330" r="62" fill="#FFFFFF" stroke="#DAD5CC" stroke-width="1.2"/>
+  <circle cx="745" cy="330" r="7" fill="#956400"/>
+  <circle cx="704" cy="302" r="6" fill="#1F6C9F"/>
+  <circle cx="785" cy="302" r="6" fill="#346538"/>
+  <circle cx="704" cy="358" r="6" fill="#346538"/>
+  <circle cx="785" cy="358" r="6" fill="#9F2F2D"/>
+  <line x1="745" y1="330" x2="704" y2="302" stroke="#9BA8B5"/>
+  <line x1="745" y1="330" x2="785" y2="302" stroke="#9BA8B5"/>
+  <line x1="745" y1="330" x2="704" y2="358" stroke="#9BA8B5"/>
+  <line x1="745" y1="330" x2="785" y2="358" stroke="#9BA8B5"/>
+  <line x1="704" y1="302" x2="704" y2="358" stroke="#D0D7DE"/>
+  <line x1="785" y1="302" x2="785" y2="358" stroke="#D0D7DE"/>
+  <line x1="704" y1="302" x2="785" y2="358" stroke="#D0D7DE"/>
+
+  <rect x="654" y="422" width="182" height="36" rx="8" class="card"/>
+  <text x="676" y="445" class="mono chipText">.anvien/lbug</text>
+  <rect x="654" y="470" width="182" height="36" rx="8" class="card"/>
+  <text x="676" y="493" class="mono chipText">graph.json · meta.json</text>
+  <text x="654" y="536" class="font tiny">symbols · calls · imports</text>
+  <text x="654" y="554" class="font tiny">source sites · flows · gaps</text>
+
+  <!-- Surfaces -->
+  <text x="952" y="183" class="font sectionTitle">Surfaces</text>
+  <text x="934" y="214" class="font body">All entrypoints read the same</text>
+  <text x="934" y="234" class="font body">local graph evidence.</text>
+
+  <rect x="934" y="270" width="172" height="42" rx="8" class="card"/>
+  <text x="954" y="288" class="mono chipText">CLI</text>
+  <text x="954" y="304" class="font tiny">query · context</text>
+  <rect x="934" y="326" width="172" height="42" rx="8" class="card"/>
+  <text x="954" y="344" class="mono chipText">MCP stdio</text>
+  <text x="954" y="360" class="font tiny">tools · resources</text>
+  <rect x="934" y="382" width="172" height="42" rx="8" class="card"/>
+  <text x="954" y="400" class="mono chipText">Local HTTP API</text>
+  <text x="954" y="416" class="font tiny">/api/graph · query</text>
+  <rect x="934" y="438" width="172" height="42" rx="8" class="card"/>
+  <text x="954" y="456" class="mono chipText">Web UI</text>
+  <text x="954" y="472" class="font tiny">graph · chat</text>
+  <rect x="934" y="494" width="172" height="42" rx="8" class="card"/>
+  <text x="954" y="512" class="mono chipText">Launcher</text>
+  <text x="954" y="528" class="font tiny">Windows app</text>
+
+  <!-- Main flow arrows -->
+  <path d="M300 365H350" class="edge"/>
+  <path d="M580 365H630" class="edge"/>
+  <path d="M860 365H910" class="edge"/>
+
+  <!-- Bottom evidence band -->
+  <rect x="70" y="614" width="1060" height="58" rx="10" fill="#F7F6F3" stroke="#E6E1DA"/>
+  <text x="94" y="640" class="font small">AI agents use Anvien for repo-grounded evidence: file context, symbol links, API/tool maps, impact, and graph health.</text>
+  <text x="94" y="658" class="font small">Change detection closes the loop before coding decisions or commits.</text>
+</svg>
