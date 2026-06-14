@@ -10,17 +10,12 @@
   <img src="./anvien_local_code_intelligence_runtime_map_light.svg" alt="Anvien intelligence graph knowledge map and skill kit" width="900">
 </p>
 
-> Anvien builds one of the fastest and most accurate code intelligence graphs for large repositories.
+## Important notice:
+> Anvien builds one of the fastest and most accurate code intelligence graphs for large repositories, along with a suite of powerful AI agent skills for coding.
 
-> When you vibe code with AI, the context window is always limited. The longer a session runs, the easier it is for the agent to lose track of information it already read, trace the same code again, or misunderstand how files, functions, and modules relate to each other.
+> Anvien solves this by building a connected map of your codebase: which files relate to which files, which functions call each other, and which symbols, routes, tools, and processes belong to each execution flow. This helps AI agents understand the project structure faster, navigate relationships across the codebase, and spend less time rediscovering context.
 
-> Anvien solves this by building a connected map of your codebase: which files relate to which files, which functions call each other, and which modules belong to each execution flow. This helps AI agents understand the project structure faster, navigate relationships across the codebase, and spend less time rediscovering context.
-
----
-
-## Important notice: *Anvien has no official cryptocurrency, token, or coin. Any token/coin using the Anvien name is not affiliated with, endorsed by, or created by this project or its maintainers.*
-
-Anvien indexes a local codebase into a knowledge graph, then exposes that graph to AI coding agents, CLI commands, and a local Web UI.
+> Anvien indexes a local codebase into a knowledge graph, then exposes that graph to AI coding agents, CLI commands, and a local Web UI.
 
 The core product is still local code intelligence:
 
