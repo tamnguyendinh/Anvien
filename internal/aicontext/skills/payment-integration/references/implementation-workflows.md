@@ -54,14 +54,15 @@
 ## Multi-Provider Order Management
 1. Load `references/multi-provider-order-management-patterns.md` when the target app uses more than one payment provider or needs unified orders, refunds, revenue, commissions, entitlements, or reconciliation.
 2. Load each provider-specific reference before implementing provider API calls. The multi-provider reference defines local app data ownership; provider references define API authority.
-3. Model local orders, provider payment references, provider events, refunds, disputes, and entitlements separately.
-4. Fulfill from provider paid signals, not customer redirects.
-5. Keep provider raw statuses and local normalized statuses side by side for support and reconciliation.
+3. Load the focused template under `references/multi-provider/templates/` for the slice being implemented: data model, webhook processing, checkout factory, fulfillment/entitlements, refunds/campaigns, revenue/reconciliation, or admin/support.
+4. Model local orders, provider payment references, provider events, refunds, disputes, and entitlements separately.
+5. Fulfill from provider paid signals, not customer redirects.
+6. Keep provider raw statuses and local normalized statuses side by side for support and reconciliation.
 
 ## General Workflow
 1. Identify platform: Vietnamese bank payments -> SePay; SaaS/MoR -> Polar, Paddle, or Creem.io; custom global payment infrastructure -> Stripe.
 2. Load relevant references progressively
-3. If using multiple providers, load `references/multi-provider-order-management-patterns.md` before designing shared order/refund/reporting tables.
+3. If using multiple providers, load `references/multi-provider-order-management-patterns.md`, then the needed template file before designing shared order/refund/reporting tables.
 4. Implement: auth -> products/prices -> checkout/payment instruction -> webhooks/IPN -> orders/refunds/entitlements -> reconciliation.
 5. Test in sandbox/test mode, then production.
 6. Load only needed references to maintain context efficiency.

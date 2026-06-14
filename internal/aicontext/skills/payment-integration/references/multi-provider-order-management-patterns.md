@@ -4,6 +4,8 @@ Provider-neutral order, payment, refund, entitlement, revenue, and reconciliatio
 
 Use this reference when an app mixes providers such as SePay, Polar, Stripe, Paddle, or Creem.io. Always load the provider-specific references too; this file defines local data ownership and cross-provider patterns, not provider API authority.
 
+Detailed examples are intentionally split into templates. The templates use placeholders such as `productKey`, `entitlementKey`, `campaignId`, and `providerObjectId`; replace them with the target app's domain terms.
+
 ## When to Use
 
 Load this file when the app needs any of these:
@@ -23,11 +25,25 @@ Do not use this file as a replacement for provider docs:
 - Paddle: load `references/paddle/overview.md`, `api.md`, `paddle-js.md`, `subscriptions.md`, `webhooks.md`, and `sdk.md` as needed.
 - Creem.io: load `references/creem/overview.md`, `api.md`, `checkouts.md`, `subscriptions.md`, `licensing.md`, `webhooks.md`, and `sdk.md` as needed.
 
+## Template Routing
+
+Load only the template needed for the implementation slice:
+
+| Need | Template |
+|------|----------|
+| Local order, provider reference, event, refund, entitlement, campaign tables | `references/multi-provider/templates/local-data-model-template.md` |
+| Webhook verification, event ledger, dispatcher, idempotent processing | `references/multi-provider/templates/webhook-processing-template.md` |
+| Provider-neutral checkout command and provider-specific checkout builders | `references/multi-provider/templates/checkout-factory-template.md` |
+| Paid-order handling, local fulfillment, entitlement grants | `references/multi-provider/templates/fulfillment-entitlements-template.md` |
+| Refunds, disputes, access consequences, cross-provider campaigns | `references/multi-provider/templates/refunds-disputes-campaigns-template.md` |
+| Currency reporting, commissions, revenue splits, reconciliation jobs | `references/multi-provider/templates/revenue-commissions-reconciliation-template.md` |
+| Admin/support APIs, manual actions, example app variants | `references/multi-provider/templates/admin-support-app-variants-template.md` |
+
 ## Core Design Rule
 
 Keep provider facts and local business facts separate.
 
-Provider facts are the raw external records: checkout sessions, orders, transactions, subscriptions, refunds, events, customer IDs, and license IDs. Local business facts are your app decisions: access granted, commission approved, refund policy, reporting currency, and support notes.
+Provider facts are the raw external records: checkout sessions, orders, transactions, subscriptions, refunds, events, customer IDs, and license IDs. Local business facts are app decisions: access granted, commission approved, refund policy, reporting currency, and support notes.
 
 Do not collapse every provider state into one vague `completed` value. Store:
 
@@ -75,391 +91,23 @@ Refund and dispute events must map separately from paid events:
 - Paddle and Stripe: use their webhook/API refund and dispute surfaces.
 - SePay bank transfers: usually require manual refund/reconciliation unless the gateway surface provides a refund operation.
 
-## Recommended Tables
+## Data Ownership
 
-### Orders
+Model these local records independently:
 
-Orders represent the local commercial intent. They should survive provider retries, checkout recreation, or provider migration.
+- `orders`: local commercial intent, status, amount, currency, product key, buyer.
+- `provider_payment_references`: provider IDs such as checkout, order, transaction, subscription, payment intent, refund, license, customer.
+- `provider_events`: raw verified webhook/IPN events with idempotency and processing status.
+- `refunds`: refund intent, provider refund state, access and commission consequences.
+- `entitlements`: current access state sourced from order, subscription, benefit, license, or manual support action.
+- `campaign_redemptions`: cross-provider discount/campaign reservations and redemptions.
 
-```typescript
-type PaymentProvider = "sepay" | "polar" | "stripe" | "paddle" | "creem";
-type ProviderEnvironment = "sandbox" | "test" | "production";
+Use `local-data-model-template.md` for concrete interface and schema examples.
 
-type LocalOrderStatus =
-  | "draft"
-  | "checkout_created"
-  | "awaiting_payment"
-  | "paid"
-  | "partially_refunded"
-  | "refunded"
-  | "failed"
-  | "expired"
-  | "cancelled"
-  | "disputed";
+## Processing Rules
 
-interface LocalOrder {
-  id: string;
-  userId?: string;
-  buyerEmail?: string;
-
-  provider: PaymentProvider;
-  providerEnvironment: ProviderEnvironment;
-
-  localStatus: LocalOrderStatus;
-  providerStatus?: string;
-
-  amountMinor: number;
-  currency: string;
-  taxAmountMinor?: number;
-  discountAmountMinor?: number;
-
-  reportingAmountUsdMinor?: number;
-  reportingFxRate?: string;
-  reportingFxSource?: "native" | "provider" | "api" | "cached" | "manual";
-  reportingFxCapturedAt?: string;
-
-  productKey?: string;
-  quantity?: number;
-
-  createdAt: string;
-  updatedAt: string;
-  paidAt?: string;
-  expiresAt?: string;
-}
-```
-
-### Provider Payment References
-
-Store provider IDs in a separate table or structured object. Different providers name the same concept differently.
-
-```typescript
-interface ProviderPaymentReference {
-  orderId: string;
-  provider: PaymentProvider;
-  providerEnvironment: ProviderEnvironment;
-
-  providerCustomerId?: string;
-  providerCheckoutId?: string;
-  providerCheckoutUrl?: string;
-  providerOrderId?: string;
-  providerTransactionId?: string;
-  providerPaymentIntentId?: string;
-  providerSubscriptionId?: string;
-  providerProductId?: string;
-  providerPriceId?: string;
-  providerRefundId?: string;
-  providerLicenseId?: string;
-
-  providerRawStatus?: string;
-  metadata?: Record<string, unknown>;
-}
-```
-
-Examples:
-
-- Polar checkout session ID is not the same as Polar order ID.
-- Paddle transaction ID is not the same as Paddle subscription ID.
-- Stripe Checkout Session ID is not the same as PaymentIntent ID.
-- SePay bank transaction ID is not the same as a local order ID.
-- Creem checkout, payment, subscription, and license IDs should be tracked separately.
-
-### Provider Events
-
-Every webhook/IPN event should be recorded before business processing.
-
-```typescript
-interface ProviderEvent {
-  id: string;
-  provider: PaymentProvider;
-  providerEnvironment: ProviderEnvironment;
-
-  providerEventId: string;
-  eventType: string;
-  eventCreatedAt?: string;
-
-  orderId?: string;
-  providerObjectId?: string;
-
-  rawPayload: string;
-  signatureVerified: boolean;
-  processingStatus: "received" | "queued" | "processed" | "ignored" | "failed";
-  processingError?: string;
-
-  receivedAt: string;
-  processedAt?: string;
-}
-```
-
-Use a unique key such as `(provider, providerEnvironment, providerEventId)`. If a provider surface does not supply a stable event ID, derive a deterministic fingerprint from provider, environment, event type, object ID, event timestamp, and raw payload hash.
-
-## Webhook Processing Pattern
-
-Do not "always return 200" before authentication. First verify the webhook/IPN signature or configured auth. Then record or queue the event. Then acknowledge quickly.
-
-```typescript
-async function handleProviderWebhook(input: {
-  provider: PaymentProvider;
-  environment: ProviderEnvironment;
-  rawBody: string;
-  headers: Headers;
-}) {
-  const verification = await verifyProviderWebhook(input);
-
-  if (!verification.ok) {
-    return { status: 400, body: "invalid webhook" };
-  }
-
-  const event = await parseProviderEvent(input.provider, input.rawBody);
-
-  await insertProviderEventOnce({
-    provider: input.provider,
-    providerEnvironment: input.environment,
-    providerEventId: event.id,
-    eventType: event.type,
-    rawPayload: input.rawBody,
-    signatureVerified: true,
-    processingStatus: "received",
-  });
-
-  await enqueueProviderEvent(event.id);
-
-  return { status: 200, body: "ok" };
-}
-```
-
-Processing should be idempotent:
-
-- Ignore duplicate event IDs after confirming the original event was recorded.
-- Handle out-of-order events by fetching the provider object before making final access or revenue decisions.
-- Persist failures and retry from your local event table.
-- Keep raw payloads for support and audit, with PII retention rules appropriate for the app.
-
-## Checkout and Payment Attempt Pattern
-
-Create a local order before redirecting to a provider. Store local order ID in provider metadata when the provider supports metadata.
-
-```typescript
-async function startCheckout(params: {
-  provider: PaymentProvider;
-  userId: string;
-  productKey: string;
-  amountMinor: number;
-  currency: string;
-}) {
-  const order = await createLocalOrder({
-    provider: params.provider,
-    userId: params.userId,
-    productKey: params.productKey,
-    amountMinor: params.amountMinor,
-    currency: params.currency,
-    localStatus: "draft",
-  });
-
-  const checkout = await createProviderCheckout({
-    provider: params.provider,
-    localOrderId: order.id,
-    productKey: params.productKey,
-    amountMinor: params.amountMinor,
-    currency: params.currency,
-  });
-
-  await storeProviderPaymentReference(order.id, checkout);
-  await markOrderStatus(order.id, "checkout_created");
-
-  return checkout.redirectUrl;
-}
-```
-
-Provider notes:
-
-- Polar: create checkouts with product IDs through `products`; do not use `product_price_id` as the default create field.
-- SePay: if using bank transfer/VietQR, payment instructions may be local plus bank webhook reconciliation; if using Payment Gateway, store gateway order/IPN IDs.
-- Stripe: Checkout Session is usually the simplest web checkout surface.
-- Paddle: transaction checkout state and subscription lifecycle must be tracked separately.
-- Creem.io: checkout, subscription, license, and revenue-split IDs can all matter.
-
-## Entitlement Pattern
-
-Access state is not the same thing as order state.
-
-Create a local entitlement table or access snapshot:
-
-```typescript
-interface LocalEntitlement {
-  userId: string;
-  orderId?: string;
-  provider: PaymentProvider;
-  sourceObjectType: "order" | "subscription" | "benefit" | "license" | "manual";
-  sourceObjectId: string;
-  entitlementKey: string;
-  status: "active" | "inactive" | "revoked" | "expired";
-  quantity?: number;
-  startsAt?: string;
-  endsAt?: string;
-  updatedAt: string;
-}
-```
-
-Provider notes:
-
-- Polar: use Customer State for current access and `order.paid` for paid-order accounting.
-- Creem.io: license activation/deactivation events can be an access source.
-- Stripe/Paddle: subscription active/cancelled/past-due state should drive subscription entitlements.
-- SePay: access is usually app-owned after verified bank/gateway payment.
-
-## Refunds, Disputes, and Access
-
-Model refunds separately from orders.
-
-```typescript
-interface LocalRefund {
-  id: string;
-  orderId: string;
-  provider: PaymentProvider;
-  providerRefundId?: string;
-  amountMinor: number;
-  currency: string;
-  reason?: string;
-  status: "requested" | "succeeded" | "failed" | "cancelled";
-  accessAction: "keep_access" | "revoke_access" | "manual_review";
-  createdAt: string;
-  completedAt?: string;
-}
-```
-
-Rules:
-
-- Do not treat a refund as subscription cancellation unless the provider or app policy explicitly cancels/revokes the subscription too.
-- Decide whether full or partial refunds revoke access per product type.
-- Reverse or hold commissions when refund risk remains.
-- Store provider refund status and local access policy separately.
-- For MoR providers, tax and fee behavior can differ by plan/provider; record provider-reported amounts instead of recomputing from hard-coded formulas.
-
-## Discounts and Cross-Provider Campaigns
-
-Prefer a local campaign/redemption ledger when the same promotion can be used across providers.
-
-```typescript
-interface CampaignRedemption {
-  id: string;
-  campaignId: string;
-  provider: PaymentProvider;
-  orderId: string;
-  providerDiscountId?: string;
-  code?: string;
-  amountMinor: number;
-  currency: string;
-  status: "reserved" | "redeemed" | "released" | "failed";
-  redeemedAt?: string;
-}
-```
-
-Avoid decrementing or deleting a provider-native discount from another provider's checkout unless:
-
-- the app owns that cross-provider campaign;
-- the provider API supports the intended operation;
-- local idempotency and rollback behavior are defined;
-- reconciliation can recover from partial sync failures.
-
-For Polar discounts, load `references/polar/orders-refunds-discounts.md` and `references/polar/checkouts.md`. Use provider-native discounts for provider-native checkout behavior, and use the local campaign ledger for cross-provider limits.
-
-## Currency and Revenue Reporting
-
-Store money in the provider's currency and minor unit. Normalize only for reporting.
-
-Recommended fields:
-
-- `amount_minor`
-- `currency`
-- `tax_amount_minor`
-- `discount_amount_minor`
-- `provider_fee_minor`
-- `net_amount_minor`
-- `reporting_currency`
-- `reporting_amount_minor`
-- `fx_rate`
-- `fx_source`
-- `fx_captured_at`
-
-Rules:
-
-- Do not hard-code provider fees as universal truth. Fee schedules and plans change.
-- Use provider-reported fees/net amounts when available.
-- If provider fee data is not available, mark the value as estimated and keep the formula/version used.
-- For MoR providers, separate tax, fee, gross revenue, net payout, and refund amounts.
-- For bank transfer providers, record bank amount and any manual operational fee separately.
-
-## Commissions and Revenue Splits
-
-Commission systems should depend on stable local facts, not transient checkout state.
-
-Recommended pattern:
-
-1. Create commission in `pending` state after local order becomes `paid`.
-2. Approve commission after refund/dispute risk window or provider payout rules allow it.
-3. Reverse or reduce commission on full/partial refunds.
-4. Recalculate tier/revenue metrics from immutable paid/refund facts, not by incrementing counters only.
-5. Keep provider-native revenue splits separate from local affiliate commissions.
-
-For Creem.io revenue splits, load `references/creem/overview.md` and provider-specific API docs before modeling payout ownership.
-
-## Reconciliation Jobs
-
-Run scheduled reconciliation. Webhooks are necessary but not sufficient.
-
-Useful checks:
-
-- Local `checkout_created` orders older than the expected checkout/session lifetime.
-- Local `awaiting_payment` orders with a provider paid object.
-- Provider paid orders missing local fulfillment.
-- Refunds or disputes missing local access/commission updates.
-- Subscription states that changed while webhook delivery was down.
-- Unprocessed provider events older than the normal queue latency.
-- Amount/currency mismatches between local order and provider object.
-
-Reconciliation should fetch provider object state and update local records through the same idempotent handlers used by webhooks.
-
-## Admin and Support API Pattern
-
-Expose provider details to admins without forcing every caller to understand every provider.
-
-```typescript
-interface AdminOrderView {
-  id: string;
-  provider: PaymentProvider;
-  localStatus: LocalOrderStatus;
-  providerStatus?: string;
-  amountMinor: number;
-  currency: string;
-  reportingAmountUsdMinor?: number;
-  providerReferenceSummary: {
-    customerId?: string;
-    checkoutId?: string;
-    orderId?: string;
-    transactionId?: string;
-    subscriptionId?: string;
-    refundId?: string;
-  };
-  lastProviderEvent?: {
-    type: string;
-    receivedAt: string;
-    processingStatus: string;
-  };
-}
-```
-
-Support tools should allow:
-
-- filter by provider, environment, local status, provider status, user, email, or provider object ID;
-- view raw provider IDs and event history;
-- replay failed local processing after fixing app errors;
-- trigger read-only provider reconciliation;
-- record manual refund or access decisions with audit notes.
-
-## Best Practices Summary
-
-1. Create local orders before provider checkout.
-2. Store provider IDs separately and precisely.
+1. Create local orders before provider checkout or payment instruction.
+2. Store local order ID in provider metadata/custom data when supported.
 3. Verify webhooks/IPNs before acknowledging them.
 4. Record every provider event before business processing.
 5. Fulfill from provider paid signals, not customer redirects.
@@ -468,3 +116,22 @@ Support tools should allow:
 8. Use provider-reported fees/net amounts when possible.
 9. Use a local campaign ledger for cross-provider discounts.
 10. Reconcile provider state on a schedule and after webhook outages.
+
+## Implementation Checklist
+
+Before shipping a multi-provider payment implementation, verify:
+
+- Provider-specific docs were loaded for every provider in use.
+- Local order ID is stored in provider metadata where supported.
+- Every provider event is signature/auth verified before ACK.
+- Event table has a uniqueness rule for idempotency.
+- Paid handler is idempotent and does not depend on success redirects.
+- Refunds and disputes update local order, entitlement, and commission state.
+- Subscription state is separate from one-time order state.
+- Entitlements have a source object and can be reconciled.
+- Cross-provider campaigns use local reservations and releases.
+- Revenue reports preserve provider currency and reporting currency separately.
+- Fee/net amount fields are provider-reported or clearly marked estimated.
+- Reconciliation jobs cover stale checkout, paid-without-fulfillment, refund, dispute, subscription, and failed-event cases.
+- Admin tools can search by provider object IDs.
+- Manual support actions write audit logs.

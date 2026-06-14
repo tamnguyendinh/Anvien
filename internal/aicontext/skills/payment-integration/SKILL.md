@@ -83,7 +83,14 @@ Production-proven payment processing with SePay (Vietnamese banks), Polar (globa
 - External: https://docs.creem.io/llms.txt
 
 ### Multi-Provider
-- `references/multi-provider-order-management-patterns.md` - Provider-neutral orders, refunds, events, entitlements, revenue, reconciliation
+- `references/multi-provider-order-management-patterns.md` - Provider-neutral design rules and template routing
+- `references/multi-provider/templates/local-data-model-template.md` - Orders, provider IDs, events, refunds, entitlements, campaigns
+- `references/multi-provider/templates/webhook-processing-template.md` - Verification, event ledger, dispatcher, retries
+- `references/multi-provider/templates/checkout-factory-template.md` - Provider-neutral checkout command and provider builders
+- `references/multi-provider/templates/fulfillment-entitlements-template.md` - Paid handlers and entitlement grants
+- `references/multi-provider/templates/refunds-disputes-campaigns-template.md` - Refunds, disputes, access consequences, campaigns
+- `references/multi-provider/templates/revenue-commissions-reconciliation-template.md` - FX, reporting, commissions, reconciliation
+- `references/multi-provider/templates/admin-support-app-variants-template.md` - Admin views, support actions, app variants
 
 ### Scripts
 - `scripts/sepay-webhook-verify.js` - SePay webhook verification
@@ -99,7 +106,7 @@ Production-proven payment processing with SePay (Vietnamese banks), Polar (globa
 | **Stripe** | CheckoutSessions, Billing, Connect, Payment Element |
 | **Paddle** | MoR, overlay/inline checkout, Retain (churn prevention), tax |
 | **Creem.io** | MoR, licensing, revenue splits, no-code checkout |
-| **Multi-Provider** | Unified local order state, provider event ledgers, refunds, entitlements, reporting |
+| **Multi-Provider** | Unified order state, provider event ledgers, refunds, entitlements, reporting, reusable templates |
 
 ## Implementation
 
