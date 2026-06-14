@@ -17,6 +17,8 @@
 
 > Anvien indexes a local codebase into a knowledge graph, then exposes that graph to AI coding agents, CLI commands, and a local Web UI.
 
+---
+
 The core product is still local code intelligence:
 
 - `anvien analyze` builds a repo-local graph index in `<repo>/.anvien/`.
