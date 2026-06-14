@@ -194,6 +194,93 @@ PHP SDK `composer require sepay/sepay-pg` remains aligned with official Payment 
 
 Laravel package guidance should be reviewed and possibly labeled as Laravel/webhook/community package unless it is confirmed as the official Payment Gateway SDK path.
 
+### 11. Payment code recognition should be first-class in webhook guidance
+
+Official webhook docs now describe configurable payment-code recognition instead of leaving each integration to parse transfer content ad hoc.
+
+The configuration includes:
+
+- company-level enable/disable for payment-code recognition
+- one or more code templates
+- prefix length rules
+- min/max suffix length rules
+- suffix character type: numeric or alphanumeric
+- active/inactive template status
+- matching order across active templates
+
+When a transaction description matches a configured template, SePay attaches the matched value to the webhook payload `code` field. Webhook filters such as "only send when a payment code is present" and "filter by payment code" depend on this field.
+
+The skill should teach agents to prefer SePay's `code` field when available, and only fall back to custom memo parsing when the integration deliberately does not use SePay payment-code recognition.
+
+### 12. Webhook operations need monitoring, replay, and incident coverage
+
+Official webhook docs include operational controls that are missing from the local skill:
+
+- delivery logs with request/response details
+- dashboard metrics such as success rate, failures, timeouts, average response, and P95 response
+- alert channels for Telegram, Slack, and Discord
+- incident records for repeated failures
+- manual replay for failed or successful deliveries
+- replay limits and replay labels
+
+Manual replay can deliver the same payload again, so the skill should make idempotency and deduplication mandatory for replay-safe endpoints. This is separate from automatic retries: replay is an operator action and must not create duplicate order/payment effects.
+
+### 13. IP allowlisting should reference SePay's official current IP page
+
+Official docs list public SePay outbound IPs for Webhooks, Payment Gateway IPN, Bank Hub IPN, and other callbacks. They also warn that the list may be updated.
+
+The skill should:
+
+- link to the official IP address page instead of treating any copied list as permanent
+- explain that allowlisting is optional infrastructure hardening, not a replacement for webhook/IPN authentication
+- mention that HTTPS is required for production callback URLs
+- avoid baking current IP values into reusable skill guidance unless the source and access date are recorded
+
+### 14. Test Mode needs quotas and live-difference details
+
+Current local guidance says to separate sandbox/live, but it misses concrete Test Mode constraints.
+
+Official Test Mode quota docs list hard per-company limits:
+
+- 500 simulated transactions per day, reset at 00:00 Vietnam time
+- 50 bank accounts
+- 100 virtual accounts per bank account
+- 50 webhooks
+- 50 API Access tokens
+
+Official Test Mode webhook docs also say Test Mode accepts HTTP and self-signed certificates, while Live requires a valid HTTPS certificate. Test Mode webhook creation omits the Live alert step and only allows Test Mode accounts.
+
+The skill should make these differences explicit so agents do not overinterpret a Test Mode success as production readiness.
+
+### 15. Payment Gateway IPN contract needs explicit handling
+
+Payment Gateway IPN is not the same as SePay bank-transaction Webhooks.
+
+Current official IPN docs show:
+
+- merchant-configured IPN URL under Payment Gateway configuration
+- HTTPS URL requirement
+- endpoint must return HTTP 200 to acknowledge receipt
+- optional `X-Secret-Key` header when merchant auth type is `SECRET_KEY`
+- JSON payload with `timestamp`, `notification_type`, `order`, `transaction`, and `customer`
+- notification types including `ORDER_PAID` and `TRANSACTION_VOID`
+
+The skill should add a clear IPN contract section for hosted checkout integrations, including idempotency by order/invoice/transaction identifiers and a warning not to apply bank-webhook HMAC assumptions to Payment Gateway IPN unless that surface explicitly supports them.
+
+### 16. Payment Gateway SDK and order lifecycle rules need coverage
+
+Current SDK guidance only updates the package install command. The official Node SDK docs also include operational details that affect implementation correctness:
+
+- supported `payment_method` values: `CARD`, `BANK_TRANSFER`, `NAPAS_BANK_TRANSFER`
+- the SDK builds one-time payment form fields and checkout URL
+- custom HTML form/signature generation must preserve SePay's required field order
+- SDK methods cover order list, order detail, card transaction void, and QR order cancel
+- order-detail responses include order status, authentication status, and transaction history
+- documented order statuses include `CAPTURED`, `CANCELLED`, and `AUTHENTICATION_NOT_NEEDED`
+- cancel order applies to `BANK_TRANSFER` or `NAPAS_BANK_TRANSFER` orders that are not already captured/canceled
+
+The skill should distinguish gateway order lifecycle behavior from API v2 transaction lookup and from bank-account webhook reconciliation.
+
 ## Recommended Skill Update Shape
 
 ### `overview.md`
@@ -207,7 +294,7 @@ Restructure around product surfaces:
 - Order VAs: bank-specific VA order flow
 - Bank Hub / OAuth2 / eInvoice / SoundBox: optional, load only for specific use cases
 
-Also update rate limits, Test Mode, and surface-selection rules.
+Also update rate limits, Test Mode quotas/live differences, IP allowlisting, payment-code recognition, and surface-selection rules.
 
 ### `api.md`
 
@@ -235,6 +322,10 @@ Update with:
 - retry schedule
 - diagnostics
 - monitoring/replay/reconciliation guidance
+- payment-code recognition and the webhook `code` field
+- delivery logs, dashboard metrics, alerts, incidents, and manual replay
+- replay-safe idempotency/deduplication rules
+- IP allowlist guidance pointing to SePay's official current IP page
 
 Also explicitly separate Webhooks from Payment Gateway IPN.
 
@@ -256,8 +347,25 @@ Update:
 - Basic Auth
 - checkout init endpoint
 - current Node/PHP SDK split
+- supported gateway `payment_method` values
+- one-time payment form/signature field-order warning
+- order list/detail, card transaction void, and QR order cancel APIs
+- order status/authentication status handling
 
 Review Laravel package accuracy before presenting it as official.
+
+### Payment Gateway IPN reference
+
+Either add a dedicated `payment-gateway.md` / `ipn.md` reference or add a clearly separated IPN section to the current SePay references.
+
+Cover:
+
+- HTTPS IPN URL requirement
+- HTTP 200 acknowledgement
+- `X-Secret-Key` validation when configured
+- payload shape and notification types
+- order/transaction/customer mapping
+- idempotency and reconciliation after IPN failures
 
 ### `best-practices.md`
 
@@ -265,12 +373,16 @@ Replace project-specific examples with more general SePay patterns:
 
 - choose integration surface first
 - HMAC first for webhook security
+- use SePay payment-code recognition and `code` field when available
 - idempotency by transaction ID / IPN event
+- replay-safe processing for manual webhook replay
 - enqueue heavy work after fast 200
 - API v2 reconciliation backup
 - exact amount/content/VA matching
 - bank memo transformations
 - Test Mode/Live token separation
+- Test Mode quota and Live HTTPS differences
+- IP allowlisting as defense-in-depth
 - underpayment/overpayment policy per product
 
 ### `scripts/sepay-webhook-verify.js`
@@ -286,11 +398,11 @@ Future code update should support:
 
 ## Suggested Update Priority
 
-1. `webhooks.md` and `scripts/sepay-webhook-verify.js`: highest production-risk area because webhook spoofing or duplicate processing directly affects money movement.
+1. `webhooks.md` and `scripts/sepay-webhook-verify.js`: highest production-risk area because webhook spoofing, weak payment-code matching, replay duplication, or missed failures directly affects money movement.
 2. `api.md`: API v2 should become the default for new reconciliation/order-VA work.
-3. `overview.md`: prevent agents from choosing the wrong SePay surface.
-4. `qr-codes.md`: bank-specific QR/VA rules affect whether transactions are detected correctly.
-5. `sdk.md`: align install commands and Payment Gateway base URLs.
+3. Payment Gateway IPN / SDK coverage: hosted checkout integrations need a separate IPN contract and gateway order lifecycle rules.
+4. `overview.md`: prevent agents from choosing the wrong SePay surface.
+5. `qr-codes.md`: bank-specific QR/VA rules affect whether transactions are detected correctly.
 6. `best-practices.md`: generalize and de-stale implementation patterns.
 
 ## Sources Checked
@@ -304,6 +416,14 @@ Future code update should support:
 - Payment Gateway overview: https://developer.sepay.vn/en/cong-thanh-toan/gioi-thieu
 - Payment Gateway API overview: https://developer.sepay.vn/en/cong-thanh-toan/API/tong-quan
 - Create payment order API: https://developer.sepay.vn/en/cong-thanh-toan/API/don-hang/form-thanh-toan
+- Payment Gateway IPN: https://developer.sepay.vn/en/cong-thanh-toan/IPN
+- Payment Gateway Node.js SDK: https://developer.sepay.vn/en/cong-thanh-toan/sdk/nodejs
+- Payment Gateway order details: https://developer.sepay.vn/en/cong-thanh-toan/API/don-hang/chi-tiet-don-hang
+- Payment Gateway cancel order: https://developer.sepay.vn/en/cong-thanh-toan/API/don-hang/huy-don-hang
 - VietQR generation: https://developer.sepay.vn/en/tien-ich-khac/tao-qr-code
+- Webhook payment code structure: https://developer.sepay.vn/en/sepay-webhooks/cau-hinh-ma-thanh-toan
+- Webhook monitoring: https://developer.sepay.vn/en/sepay-webhooks/giam-sat
+- SePay public IP addresses: https://developer.sepay.vn/en/dia-chi-ip
+- Test Mode quotas: https://developer.sepay.vn/en/tien-ich-khac/test-mode/han-muc
+- Test Mode webhook creation: https://developer.sepay.vn/en/tien-ich-khac/test-mode/tao-webhook
 - PHP SDK package: https://packagist.org/packages/sepay/sepay-pg
-
