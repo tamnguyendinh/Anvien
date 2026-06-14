@@ -7,7 +7,7 @@
 ## Why Use Anvien?
 
 <p align="center">
-  <img src="./ai_intelligence_graph_knowledge_map_skill_kit.svg" alt="Anvien intelligence graph knowledge map and skill kit" width="900">
+  <img src="./anvien_local_code_intelligence_runtime_map_light.svg" alt="Anvien intelligence graph knowledge map and skill kit" width="900">
 </p>
 
 > Anvien builds one of the fastest and most accurate code intelligence graphs for large repositories.
