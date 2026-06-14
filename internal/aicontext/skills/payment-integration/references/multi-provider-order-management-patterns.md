@@ -1,821 +1,470 @@
 # Multi-Provider Order Management Patterns
 
-Production patterns for managing orders across multiple payment providers (Polar + SePay), currency handling, commission systems, and revenue tracking.
+Provider-neutral order, payment, refund, entitlement, revenue, and reconciliation patterns for apps that use more than one payment provider.
 
-## Order Schema Design
+Use this reference when an app mixes providers such as SePay, Polar, Stripe, Paddle, or Creem.io. Always load the provider-specific references too; this file defines local data ownership and cross-provider patterns, not provider API authority.
 
-### Unified Orders Table
+## When to Use
+
+Load this file when the app needs any of these:
+
+- One local order table across multiple providers.
+- Cross-provider revenue reporting or currency normalization.
+- Unified refunds, chargebacks, disputes, and commission reversal.
+- Separate checkout state from paid order state.
+- Entitlement sync across subscriptions, license keys, benefits, or manual bank payments.
+- Reconciliation after webhook outages or manual support actions.
+
+Do not use this file as a replacement for provider docs:
+
+- SePay: load `references/sepay/overview.md`, then `api.md`, `webhooks.md`, `payment-gateway.md`, or `qr-codes.md` as needed.
+- Polar: load `references/polar/overview.md`, then `orders-refunds-discounts.md`, `customer-state.md`, `customer-portal.md`, `usage-based-billing.md`, and related refs as needed.
+- Stripe: load `references/stripe/stripe-best-practices.md` first.
+- Paddle: load `references/paddle/overview.md`, `api.md`, `paddle-js.md`, `subscriptions.md`, `webhooks.md`, and `sdk.md` as needed.
+- Creem.io: load `references/creem/overview.md`, `api.md`, `checkouts.md`, `subscriptions.md`, `licensing.md`, `webhooks.md`, and `sdk.md` as needed.
+
+## Core Design Rule
+
+Keep provider facts and local business facts separate.
+
+Provider facts are the raw external records: checkout sessions, orders, transactions, subscriptions, refunds, events, customer IDs, and license IDs. Local business facts are your app decisions: access granted, commission approved, refund policy, reporting currency, and support notes.
+
+Do not collapse every provider state into one vague `completed` value. Store:
+
+- local normalized status for app workflows;
+- provider raw status for audit and debugging;
+- provider event history for replay and reconciliation;
+- separate entitlement state for access decisions.
+
+## Local Status Model
+
+Use a small normalized status set locally and map provider events into it.
+
+| Local Status | Meaning |
+|--------------|---------|
+| `draft` | Local order exists before checkout or payment instruction is created. |
+| `checkout_created` | Provider checkout/session/transaction/payment instruction exists. |
+| `awaiting_payment` | Customer has not produced a confirmed paid signal yet. |
+| `paid` | Provider paid signal has been verified. Fulfillment may proceed. |
+| `partially_refunded` | Some money has been refunded; access policy is app-specific. |
+| `refunded` | Fully refunded; access and commission reversal depend on policy/provider. |
+| `failed` | Payment failed or provider rejected the attempt. |
+| `expired` | Checkout or bank-payment instruction expired. |
+| `cancelled` | Customer or merchant cancelled before payment or ended a subscription. |
+| `disputed` | Chargeback/dispute opened; fulfillment and payout risk need review. |
+
+Keep subscription lifecycle separate from one-time order state. A subscription can be `active` while an individual renewal order is `paid`, `failed`, or `refunded`.
+
+## Provider State Mapping
+
+Use provider-specific paid signals as the authority for money received.
+
+| Provider | Local Paid Signal | Notes |
+|----------|-------------------|-------|
+| SePay bank webhook | Verified bank-account webhook transaction matched to the local order and amount policy. | HMAC/API-key/OAuth rules depend on the SePay surface. Load `sepay/webhooks.md`. |
+| SePay Payment Gateway | Verified IPN or gateway order state such as `ORDER_PAID`. | Load `sepay/payment-gateway.md`; gateway IPN is not the same surface as bank-account webhooks. |
+| Polar | `order.paid` or verified API lookup showing paid order state. | `order.created` is not enough for fulfillment. Customer State is best for current access, not revenue recognition. |
+| Stripe | Checkout Session or PaymentIntent/Invoice paid state according to the chosen Stripe integration. | Use Checkout Sessions/Billing/PaymentIntents guidance; do not use Charges as the default. |
+| Paddle | `transaction.completed` for successful payment; subscription events for recurring lifecycle. | Load `paddle/webhooks.md` and `paddle/subscriptions.md`. |
+| Creem.io | `checkout.completed` or `payment.succeeded`; subscription/license events for lifecycle and access. | Load `creem/webhooks.md`, `creem/subscriptions.md`, and `creem/licensing.md`. |
+
+Refund and dispute events must map separately from paid events:
+
+- Polar: `order.refunded` and refund API state.
+- Creem.io: `refund.created`, `chargeback.created`.
+- Paddle and Stripe: use their webhook/API refund and dispute surfaces.
+- SePay bank transfers: usually require manual refund/reconciliation unless the gateway surface provides a refund operation.
+
+## Recommended Tables
+
+### Orders
+
+Orders represent the local commercial intent. They should survive provider retries, checkout recreation, or provider migration.
+
 ```typescript
-// db/schema/orders.ts
-import { pgTable, uuid, text, integer, numeric, timestamp, boolean } from 'drizzle-orm/pg-core';
+type PaymentProvider = "sepay" | "polar" | "stripe" | "paddle" | "creem";
+type ProviderEnvironment = "sandbox" | "test" | "production";
 
-export const orders = pgTable('orders', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id),
-  email: text('email').notNull(),
+type LocalOrderStatus =
+  | "draft"
+  | "checkout_created"
+  | "awaiting_payment"
+  | "paid"
+  | "partially_refunded"
+  | "refunded"
+  | "failed"
+  | "expired"
+  | "cancelled"
+  | "disputed";
 
-  // Product info
-  productType: text('product_type').notNull(), // 'engineer_kit', 'marketing_kit', 'combo', 'team_*'
-  quantity: integer('quantity').default(1),
+interface LocalOrder {
+  id: string;
+  userId?: string;
+  buyerEmail?: string;
 
-  // Pricing (stored in provider's currency)
-  amount: integer('amount').notNull(),           // Final amount after discounts
-  originalAmount: integer('original_amount'),    // Before any discounts
-  currency: text('currency').default('USD'),     // 'USD' or 'VND'
+  provider: PaymentProvider;
+  providerEnvironment: ProviderEnvironment;
 
-  // Status
-  status: text('status').default('pending'),     // pending, completed, failed, refunded
+  localStatus: LocalOrderStatus;
+  providerStatus?: string;
 
-  // Provider info
-  paymentProvider: text('payment_provider').notNull(), // 'polar' or 'sepay'
-  paymentId: text('payment_id'),                 // External payment/transaction ID
+  amountMinor: number;
+  currency: string;
+  taxAmountMinor?: number;
+  discountAmountMinor?: number;
 
-  // Referral tracking
-  referredBy: uuid('referred_by').references(() => users.id),
-  discountAmount: integer('discount_amount').default(0),
-  discountRate: numeric('discount_rate', { precision: 5, scale: 2 }),
+  reportingAmountUsdMinor?: number;
+  reportingFxRate?: string;
+  reportingFxSource?: "native" | "provider" | "api" | "cached" | "manual";
+  reportingFxCapturedAt?: string;
 
-  // Audit trail (JSON)
-  metadata: text('metadata'),
+  productKey?: string;
+  quantity?: number;
 
-  // Timestamps
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
-});
-```
-
-### Provider-Specific Metadata
-```typescript
-// Polar order metadata
-interface PolarOrderMetadata {
-  originalAmount: number;
-  couponCode?: string;
-  couponDiscountAmount?: number;
-  referralCode?: string;
-  referralDiscountAmount?: number;
-  referrerId?: string;
-  githubUsername: string;
-  polarDiscountId?: string;
-  polarDiscountSynced?: boolean;
-  polarDiscountSyncAction?: 'decremented' | 'deleted' | 'already_deleted';
-  polarDiscountSyncedAt?: string;
-  isTeamPurchase?: boolean;
-  teamId?: string;
-}
-
-// SePay order metadata
-interface SepayOrderMetadata {
-  originalAmount: number;
-  couponCode?: string;
-  couponDiscountAmount?: number;
-  couponId?: string;              // For Polar discount sync
-  referralCode?: string;
-  referralDiscountAmount?: number;
-  referrerId?: string;
-  githubUsername: string;
-  vatInvoiceRequested?: boolean;
-  encryptedTaxId?: string;
-  // Added by webhook
-  gateway?: string;
-  transactionDate?: string;
-  transactionId?: number;
-  transferAmount?: number;
-  matchMethod?: string;
-  content?: string;
-}
-```
-
-## Currency Conversion
-
-### Multi-Layer Fallback Architecture
-```typescript
-// lib/currency.ts
-const EXCHANGE_RATE_CACHE_TTL = 60 * 60 * 1000; // 1 hour
-const FALLBACK_RATES = {
-  VND_TO_USD: 24500,  // Conservative estimate
-  USD_TO_VND: 24500,
-};
-
-interface ExchangeRateCache {
-  rates: { VND: number; USD: number };
-  timestamp: number;
-  source: 'api' | 'cached' | 'expired' | 'fallback';
-}
-
-let rateCache: ExchangeRateCache | null = null;
-
-export async function getExchangeRates(): Promise<ExchangeRateCache> {
-  const now = Date.now();
-
-  // Layer 1: Fresh cache (< 1 hour)
-  if (rateCache && now - rateCache.timestamp < EXCHANGE_RATE_CACHE_TTL) {
-    return { ...rateCache, source: 'cached' };
-  }
-
-  // Layer 2: Live API
-  try {
-    const response = await fetch(
-      'https://api.exchangerate-api.com/v4/latest/USD',
-      { signal: AbortSignal.timeout(5000) }
-    );
-    const data = await response.json();
-
-    rateCache = {
-      rates: { VND: data.rates.VND, USD: 1 },
-      timestamp: now,
-      source: 'api',
-    };
-    return rateCache;
-
-  } catch (error) {
-    console.warn('Exchange rate API failed:', error);
-
-    // Layer 3: Expired cache (better than nothing)
-    if (rateCache) {
-      return { ...rateCache, source: 'expired' };
-    }
-
-    // Layer 4: Hardcoded fallback
-    return {
-      rates: { VND: FALLBACK_RATES.VND_TO_USD, USD: 1 },
-      timestamp: now,
-      source: 'fallback',
-    };
-  }
-}
-
-export async function convertVndToUsd(vndAmount: number): Promise<{
-  usdCents: number;
-  rate: number;
-  source: string;
-}> {
-  const { rates, source } = await getExchangeRates();
-  const usdCents = Math.round((vndAmount / rates.VND) * 100);
-  return { usdCents, rate: rates.VND, source };
-}
-
-export async function convertUsdToVnd(usdCents: number): Promise<{
-  vndAmount: number;
-  rate: number;
-  source: string;
-}> {
-  const { rates, source } = await getExchangeRates();
-  const vndAmount = Math.round((usdCents / 100) * rates.VND);
-  return { vndAmount, rate: rates.VND, source };
+  createdAt: string;
+  updatedAt: string;
+  paidAt?: string;
+  expiresAt?: string;
 }
 ```
 
-### Normalizing Revenue to USD
+### Provider Payment References
+
+Store provider IDs in a separate table or structured object. Different providers name the same concept differently.
+
 ```typescript
-// For reporting/dashboard - normalize all revenue to USD cents
-export async function normalizeOrderToUsd(order: Order): Promise<{
-  amountUsdCents: number;
-  originalAmountUsdCents: number;
-  conversionSource: string;
-}> {
-  if (order.currency === 'USD') {
-    return {
-      amountUsdCents: order.amount,
-      originalAmountUsdCents: order.originalAmount || order.amount,
-      conversionSource: 'native',
-    };
-  }
-
-  // VND order
-  const conversion = await convertVndToUsd(order.amount);
-  const originalConversion = order.originalAmount
-    ? await convertVndToUsd(order.originalAmount)
-    : conversion;
-
-  return {
-    amountUsdCents: conversion.usdCents,
-    originalAmountUsdCents: originalConversion.usdCents,
-    conversionSource: conversion.source,
-  };
-}
-```
-
-## Commission System
-
-### Commission Schema
-```typescript
-// db/schema/commissions.ts
-export const commissions = pgTable('commissions', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  orderId: uuid('order_id').references(() => orders.id).notNull(),
-  referrerId: uuid('referrer_id').references(() => users.id).notNull(),
-  referredUserId: uuid('referred_user_id').references(() => users.id).notNull(),
-  referralCodeId: uuid('referral_code_id').references(() => referralCodes.id),
-
-  // Amount in original currency
-  orderAmount: integer('order_amount').notNull(),      // Base amount for commission
-  orderCurrency: text('order_currency').notNull(),     // 'USD' or 'VND'
-
-  // Commission calculation
-  commissionRate: numeric('commission_rate', { precision: 5, scale: 4 }).default('0.20'), // 20%
-  commissionAmount: integer('commission_amount').notNull(),
-  commissionCurrency: text('commission_currency').notNull(),
-
-  // Normalized USD (for tier tracking)
-  orderAmountUsdCents: integer('order_amount_usd_cents'),
-  commissionAmountUsdCents: integer('commission_amount_usd_cents'),
-  exchangeRateSource: text('exchange_rate_source'),
-
-  // Status
-  status: text('status').default('pending'),  // pending, approved, paid, cancelled
-
-  // Timestamps
-  createdAt: timestamp('created_at').defaultNow(),
-  approvedAt: timestamp('approved_at'),
-  paidAt: timestamp('paid_at'),
-  cancelledAt: timestamp('cancelled_at'),
-});
-```
-
-### Creating Commission (Multi-Currency)
-```typescript
-// lib/commissions.ts
-export async function createCommission(params: {
+interface ProviderPaymentReference {
   orderId: string;
-  referrerId: string;
-  referredUserId: string;
-  referralCodeId: string;
-  orderAmount: number;
-  orderCurrency: 'USD' | 'VND';
-  commissionRate?: number;
-}): Promise<Commission> {
-  const rate = params.commissionRate || 0.20; // Default 20%
+  provider: PaymentProvider;
+  providerEnvironment: ProviderEnvironment;
 
-  // Calculate commission in original currency
-  const commissionAmount = Math.round(params.orderAmount * rate);
+  providerCustomerId?: string;
+  providerCheckoutId?: string;
+  providerCheckoutUrl?: string;
+  providerOrderId?: string;
+  providerTransactionId?: string;
+  providerPaymentIntentId?: string;
+  providerSubscriptionId?: string;
+  providerProductId?: string;
+  providerPriceId?: string;
+  providerRefundId?: string;
+  providerLicenseId?: string;
 
-  // Convert to USD for tier tracking
-  let orderAmountUsdCents: number;
-  let commissionAmountUsdCents: number;
-  let exchangeRateSource: string;
-
-  if (params.orderCurrency === 'USD') {
-    orderAmountUsdCents = params.orderAmount;
-    commissionAmountUsdCents = commissionAmount;
-    exchangeRateSource = 'native';
-  } else {
-    const conversion = await convertVndToUsd(params.orderAmount);
-    orderAmountUsdCents = conversion.usdCents;
-    commissionAmountUsdCents = Math.round(conversion.usdCents * rate);
-    exchangeRateSource = conversion.source;
-  }
-
-  const [commission] = await db.insert(commissions).values({
-    orderId: params.orderId,
-    referrerId: params.referrerId,
-    referredUserId: params.referredUserId,
-    referralCodeId: params.referralCodeId,
-    orderAmount: params.orderAmount,
-    orderCurrency: params.orderCurrency,
-    commissionRate: String(rate),
-    commissionAmount,
-    commissionCurrency: params.orderCurrency,
-    orderAmountUsdCents,
-    commissionAmountUsdCents,
-    exchangeRateSource,
-    status: 'pending',
-  }).returning();
-
-  // Update referrer's tier based on USD revenue
-  await updateReferrerTier(params.referrerId, orderAmountUsdCents);
-
-  return commission;
+  providerRawStatus?: string;
+  metadata?: Record<string, unknown>;
 }
 ```
 
-### Referrer Tier System
+Examples:
+
+- Polar checkout session ID is not the same as Polar order ID.
+- Paddle transaction ID is not the same as Paddle subscription ID.
+- Stripe Checkout Session ID is not the same as PaymentIntent ID.
+- SePay bank transaction ID is not the same as a local order ID.
+- Creem checkout, payment, subscription, and license IDs should be tracked separately.
+
+### Provider Events
+
+Every webhook/IPN event should be recorded before business processing.
+
 ```typescript
-// lib/referrals.ts
-const TIER_THRESHOLDS = [
-  { tier: 'bronze', minRevenue: 0, commissionRate: 0.20 },
-  { tier: 'silver', minRevenue: 50000, commissionRate: 0.25 },     // $500
-  { tier: 'gold', minRevenue: 150000, commissionRate: 0.30 },      // $1,500
-  { tier: 'platinum', minRevenue: 500000, commissionRate: 0.35 },  // $5,000
-];
+interface ProviderEvent {
+  id: string;
+  provider: PaymentProvider;
+  providerEnvironment: ProviderEnvironment;
 
-export async function updateReferrerTier(
-  referrerId: string,
-  newRevenueUsdCents: number
-): Promise<void> {
-  const referrer = await db.select()
-    .from(users)
-    .where(eq(users.id, referrerId))
-    .limit(1);
+  providerEventId: string;
+  eventType: string;
+  eventCreatedAt?: string;
 
-  if (!referrer[0]) return;
+  orderId?: string;
+  providerObjectId?: string;
 
-  const currentRevenue = referrer[0].referralRevenueUsdCents || 0;
-  const totalRevenue = currentRevenue + newRevenueUsdCents;
+  rawPayload: string;
+  signatureVerified: boolean;
+  processingStatus: "received" | "queued" | "processed" | "ignored" | "failed";
+  processingError?: string;
 
-  // Determine new tier
-  let newTier = 'bronze';
-  let newRate = 0.20;
-
-  for (const threshold of TIER_THRESHOLDS) {
-    if (totalRevenue >= threshold.minRevenue) {
-      newTier = threshold.tier;
-      newRate = threshold.commissionRate;
-    }
-  }
-
-  // Update if tier changed
-  if (referrer[0].referralTier !== newTier) {
-    await db.update(users)
-      .set({
-        referralTier: newTier,
-        referralCommissionRate: String(newRate),
-        referralRevenueUsdCents: totalRevenue,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, referrerId));
-
-    // Send tier upgrade notification
-    if (TIER_THRESHOLDS.findIndex(t => t.tier === newTier) >
-        TIER_THRESHOLDS.findIndex(t => t.tier === referrer[0].referralTier)) {
-      await sendTierUpgradeEmail(referrerId, newTier, newRate);
-    }
-  } else {
-    // Just update revenue
-    await db.update(users)
-      .set({
-        referralRevenueUsdCents: totalRevenue,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, referrerId));
-  }
+  receivedAt: string;
+  processedAt?: string;
 }
 ```
 
-## Revenue Tracking
+Use a unique key such as `(provider, providerEnvironment, providerEventId)`. If a provider surface does not supply a stable event ID, derive a deterministic fingerprint from provider, environment, event type, object ID, event timestamp, and raw payload hash.
 
-### Combined Provider Revenue
+## Webhook Processing Pattern
+
+Do not "always return 200" before authentication. First verify the webhook/IPN signature or configured auth. Then record or queue the event. Then acknowledge quickly.
+
 ```typescript
-// lib/revenue.ts
-export async function getTotalRevenue(options?: {
-  startDate?: Date;
-  endDate?: Date;
-}): Promise<{
-  totalUsdCents: number;
-  byProvider: { polar: number; sepay: number };
-  orderCount: number;
-  averageOrderValueCents: number;
-}> {
-  let query = db.select()
-    .from(orders)
-    .where(eq(orders.status, 'completed'));
+async function handleProviderWebhook(input: {
+  provider: PaymentProvider;
+  environment: ProviderEnvironment;
+  rawBody: string;
+  headers: Headers;
+}) {
+  const verification = await verifyProviderWebhook(input);
 
-  if (options?.startDate) {
-    query = query.where(gte(orders.createdAt, options.startDate));
-  }
-  if (options?.endDate) {
-    query = query.where(lte(orders.createdAt, options.endDate));
+  if (!verification.ok) {
+    return { status: 400, body: "invalid webhook" };
   }
 
-  const completedOrders = await query;
+  const event = await parseProviderEvent(input.provider, input.rawBody);
 
-  let totalUsdCents = 0;
-  let polarUsdCents = 0;
-  let sepayUsdCents = 0;
+  await insertProviderEventOnce({
+    provider: input.provider,
+    providerEnvironment: input.environment,
+    providerEventId: event.id,
+    eventType: event.type,
+    rawPayload: input.rawBody,
+    signatureVerified: true,
+    processingStatus: "received",
+  });
 
-  for (const order of completedOrders) {
-    const normalized = await normalizeOrderToUsd(order);
+  await enqueueProviderEvent(event.id);
 
-    totalUsdCents += normalized.amountUsdCents;
+  return { status: 200, body: "ok" };
+}
+```
 
-    if (order.paymentProvider === 'polar') {
-      polarUsdCents += normalized.amountUsdCents;
-    } else {
-      sepayUsdCents += normalized.amountUsdCents;
-    }
-  }
+Processing should be idempotent:
 
-  return {
-    totalUsdCents,
-    byProvider: { polar: polarUsdCents, sepay: sepayUsdCents },
-    orderCount: completedOrders.length,
-    averageOrderValueCents: completedOrders.length > 0
-      ? Math.round(totalUsdCents / completedOrders.length)
-      : 0,
+- Ignore duplicate event IDs after confirming the original event was recorded.
+- Handle out-of-order events by fetching the provider object before making final access or revenue decisions.
+- Persist failures and retry from your local event table.
+- Keep raw payloads for support and audit, with PII retention rules appropriate for the app.
+
+## Checkout and Payment Attempt Pattern
+
+Create a local order before redirecting to a provider. Store local order ID in provider metadata when the provider supports metadata.
+
+```typescript
+async function startCheckout(params: {
+  provider: PaymentProvider;
+  userId: string;
+  productKey: string;
+  amountMinor: number;
+  currency: string;
+}) {
+  const order = await createLocalOrder({
+    provider: params.provider,
+    userId: params.userId,
+    productKey: params.productKey,
+    amountMinor: params.amountMinor,
+    currency: params.currency,
+    localStatus: "draft",
+  });
+
+  const checkout = await createProviderCheckout({
+    provider: params.provider,
+    localOrderId: order.id,
+    productKey: params.productKey,
+    amountMinor: params.amountMinor,
+    currency: params.currency,
+  });
+
+  await storeProviderPaymentReference(order.id, checkout);
+  await markOrderStatus(order.id, "checkout_created");
+
+  return checkout.redirectUrl;
+}
+```
+
+Provider notes:
+
+- Polar: create checkouts with product IDs through `products`; do not use `product_price_id` as the default create field.
+- SePay: if using bank transfer/VietQR, payment instructions may be local plus bank webhook reconciliation; if using Payment Gateway, store gateway order/IPN IDs.
+- Stripe: Checkout Session is usually the simplest web checkout surface.
+- Paddle: transaction checkout state and subscription lifecycle must be tracked separately.
+- Creem.io: checkout, subscription, license, and revenue-split IDs can all matter.
+
+## Entitlement Pattern
+
+Access state is not the same thing as order state.
+
+Create a local entitlement table or access snapshot:
+
+```typescript
+interface LocalEntitlement {
+  userId: string;
+  orderId?: string;
+  provider: PaymentProvider;
+  sourceObjectType: "order" | "subscription" | "benefit" | "license" | "manual";
+  sourceObjectId: string;
+  entitlementKey: string;
+  status: "active" | "inactive" | "revoked" | "expired";
+  quantity?: number;
+  startsAt?: string;
+  endsAt?: string;
+  updatedAt: string;
+}
+```
+
+Provider notes:
+
+- Polar: use Customer State for current access and `order.paid` for paid-order accounting.
+- Creem.io: license activation/deactivation events can be an access source.
+- Stripe/Paddle: subscription active/cancelled/past-due state should drive subscription entitlements.
+- SePay: access is usually app-owned after verified bank/gateway payment.
+
+## Refunds, Disputes, and Access
+
+Model refunds separately from orders.
+
+```typescript
+interface LocalRefund {
+  id: string;
+  orderId: string;
+  provider: PaymentProvider;
+  providerRefundId?: string;
+  amountMinor: number;
+  currency: string;
+  reason?: string;
+  status: "requested" | "succeeded" | "failed" | "cancelled";
+  accessAction: "keep_access" | "revoke_access" | "manual_review";
+  createdAt: string;
+  completedAt?: string;
+}
+```
+
+Rules:
+
+- Do not treat a refund as subscription cancellation unless the provider or app policy explicitly cancels/revokes the subscription too.
+- Decide whether full or partial refunds revoke access per product type.
+- Reverse or hold commissions when refund risk remains.
+- Store provider refund status and local access policy separately.
+- For MoR providers, tax and fee behavior can differ by plan/provider; record provider-reported amounts instead of recomputing from hard-coded formulas.
+
+## Discounts and Cross-Provider Campaigns
+
+Prefer a local campaign/redemption ledger when the same promotion can be used across providers.
+
+```typescript
+interface CampaignRedemption {
+  id: string;
+  campaignId: string;
+  provider: PaymentProvider;
+  orderId: string;
+  providerDiscountId?: string;
+  code?: string;
+  amountMinor: number;
+  currency: string;
+  status: "reserved" | "redeemed" | "released" | "failed";
+  redeemedAt?: string;
+}
+```
+
+Avoid decrementing or deleting a provider-native discount from another provider's checkout unless:
+
+- the app owns that cross-provider campaign;
+- the provider API supports the intended operation;
+- local idempotency and rollback behavior are defined;
+- reconciliation can recover from partial sync failures.
+
+For Polar discounts, load `references/polar/orders-refunds-discounts.md` and `references/polar/checkouts.md`. Use provider-native discounts for provider-native checkout behavior, and use the local campaign ledger for cross-provider limits.
+
+## Currency and Revenue Reporting
+
+Store money in the provider's currency and minor unit. Normalize only for reporting.
+
+Recommended fields:
+
+- `amount_minor`
+- `currency`
+- `tax_amount_minor`
+- `discount_amount_minor`
+- `provider_fee_minor`
+- `net_amount_minor`
+- `reporting_currency`
+- `reporting_amount_minor`
+- `fx_rate`
+- `fx_source`
+- `fx_captured_at`
+
+Rules:
+
+- Do not hard-code provider fees as universal truth. Fee schedules and plans change.
+- Use provider-reported fees/net amounts when available.
+- If provider fee data is not available, mark the value as estimated and keep the formula/version used.
+- For MoR providers, separate tax, fee, gross revenue, net payout, and refund amounts.
+- For bank transfer providers, record bank amount and any manual operational fee separately.
+
+## Commissions and Revenue Splits
+
+Commission systems should depend on stable local facts, not transient checkout state.
+
+Recommended pattern:
+
+1. Create commission in `pending` state after local order becomes `paid`.
+2. Approve commission after refund/dispute risk window or provider payout rules allow it.
+3. Reverse or reduce commission on full/partial refunds.
+4. Recalculate tier/revenue metrics from immutable paid/refund facts, not by incrementing counters only.
+5. Keep provider-native revenue splits separate from local affiliate commissions.
+
+For Creem.io revenue splits, load `references/creem/overview.md` and provider-specific API docs before modeling payout ownership.
+
+## Reconciliation Jobs
+
+Run scheduled reconciliation. Webhooks are necessary but not sufficient.
+
+Useful checks:
+
+- Local `checkout_created` orders older than the expected checkout/session lifetime.
+- Local `awaiting_payment` orders with a provider paid object.
+- Provider paid orders missing local fulfillment.
+- Refunds or disputes missing local access/commission updates.
+- Subscription states that changed while webhook delivery was down.
+- Unprocessed provider events older than the normal queue latency.
+- Amount/currency mismatches between local order and provider object.
+
+Reconciliation should fetch provider object state and update local records through the same idempotent handlers used by webhooks.
+
+## Admin and Support API Pattern
+
+Expose provider details to admins without forcing every caller to understand every provider.
+
+```typescript
+interface AdminOrderView {
+  id: string;
+  provider: PaymentProvider;
+  localStatus: LocalOrderStatus;
+  providerStatus?: string;
+  amountMinor: number;
+  currency: string;
+  reportingAmountUsdMinor?: number;
+  providerReferenceSummary: {
+    customerId?: string;
+    checkoutId?: string;
+    orderId?: string;
+    transactionId?: string;
+    subscriptionId?: string;
+    refundId?: string;
+  };
+  lastProviderEvent?: {
+    type: string;
+    receivedAt: string;
+    processingStatus: string;
   };
 }
 ```
 
-### Maintainer Revenue Calculation
-```typescript
-// lib/maintainer-revenue.ts
-// Calculate actual payout after fees and costs
+Support tools should allow:
 
-interface MaintainerRevenue {
-  grossRevenue: number;      // Total received
-  platformFees: number;      // Polar/Stripe fees
-  operatingCosts: number;    // Proportional costs
-  taxDeduction: number;      // 17% tax
-  netPayout: number;         // Final amount
-  currency: 'USD';
-}
-
-export async function calculateMaintainerRevenue(
-  productIds: string[],
-  dateRange: { start: Date; end: Date }
-): Promise<MaintainerRevenue> {
-  // Get orders for these products
-  const orders = await db.select()
-    .from(orders)
-    .where(and(
-      eq(orders.status, 'completed'),
-      inArray(orders.productType, productIds),
-      gte(orders.createdAt, dateRange.start),
-      lte(orders.createdAt, dateRange.end)
-    ));
-
-  let grossRevenue = 0;
-  let platformFees = 0;
-
-  for (const order of orders) {
-    const normalized = await normalizeOrderToUsd(order);
-    grossRevenue += normalized.amountUsdCents;
-
-    if (order.paymentProvider === 'polar') {
-      const fees = calculatePolarFees(normalized.amountUsdCents);
-      platformFees += fees.totalFee;
-    }
-    // SePay has no platform fees (direct bank transfer)
-  }
-
-  // Proportional operating costs (hosting, services, etc.)
-  const monthlyOperatingCosts = 50000; // $500/month in cents
-  const totalMonthlyRevenue = await getTotalRevenue({
-    startDate: dateRange.start,
-    endDate: dateRange.end,
-  });
-  const costRatio = grossRevenue / (totalMonthlyRevenue.totalUsdCents || 1);
-  const operatingCosts = Math.round(monthlyOperatingCosts * costRatio);
-
-  // Tax deduction (17%)
-  const afterCosts = grossRevenue - platformFees - operatingCosts;
-  const taxDeduction = Math.round(afterCosts * 0.17);
-
-  const netPayout = afterCosts - taxDeduction;
-
-  return {
-    grossRevenue,
-    platformFees,
-    operatingCosts,
-    taxDeduction,
-    netPayout,
-    currency: 'USD',
-  };
-}
-```
-
-## Refund Handling
-
-### Unified Refund Flow
-```typescript
-// lib/refunds.ts
-export async function processRefund(
-  orderId: string,
-  options: { keepAccess?: boolean; reason?: string }
-): Promise<{ success: boolean; error?: string }> {
-  const order = await db.select()
-    .from(orders)
-    .where(eq(orders.id, orderId))
-    .limit(1);
-
-  if (!order[0]) {
-    return { success: false, error: 'Order not found' };
-  }
-
-  if (order[0].status !== 'completed') {
-    return { success: false, error: 'Order not refundable' };
-  }
-
-  try {
-    // 1. Process refund with payment provider
-    if (order[0].paymentProvider === 'polar') {
-      await polar.orders.refund({ id: order[0].paymentId! });
-    } else {
-      // SePay: Manual bank transfer refund required
-      // Just mark order, admin handles bank transfer
-      console.log(`Manual refund needed for SePay order ${orderId}`);
-    }
-
-    // 2. Update order status
-    await db.update(orders)
-      .set({
-        status: 'refunded',
-        metadata: JSON.stringify({
-          ...JSON.parse(order[0].metadata || '{}'),
-          refundedAt: new Date().toISOString(),
-          refundReason: options.reason,
-          keepAccess: options.keepAccess,
-        }),
-        updatedAt: new Date(),
-      })
-      .where(eq(orders.id, orderId));
-
-    // 3. Cancel commission (if any)
-    if (order[0].referredBy) {
-      await db.update(commissions)
-        .set({
-          status: 'cancelled',
-          cancelledAt: new Date(),
-        })
-        .where(eq(commissions.orderId, orderId));
-
-      // Recalculate referrer tier
-      await recalculateReferrerTier(order[0].referredBy);
-    }
-
-    // 4. Revoke access (unless keepAccess)
-    if (!options.keepAccess) {
-      const metadata = JSON.parse(order[0].metadata || '{}');
-      if (metadata.githubUsername) {
-        await revokeGitHubAccess(metadata.githubUsername, order[0].productType);
-      }
-
-      await db.update(licenses)
-        .set({ isActive: false, revokedAt: new Date() })
-        .where(eq(licenses.orderId, orderId));
-    }
-
-    return { success: true };
-
-  } catch (error) {
-    console.error('Refund failed:', error);
-    return { success: false, error: error instanceof Error ? error.message : 'Refund failed' };
-  }
-}
-```
-
-## Webhook Event Tracking
-
-### Unified Webhook Events Table
-```typescript
-// db/schema/webhook-events.ts
-export const webhookEvents = pgTable('webhook_events', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  provider: text('provider').notNull(),          // 'polar' or 'sepay'
-  eventType: text('event_type').notNull(),       // Event type/name
-  eventId: text('event_id').notNull().unique(),  // Idempotency key
-  payload: text('payload').notNull(),            // Raw JSON payload
-  processed: boolean('processed').default(false),
-  processedAt: timestamp('processed_at'),
-  error: text('error'),                          // Error message if failed
-  createdAt: timestamp('created_at').defaultNow(),
-});
-
-// Partial index for unprocessed events
-// CREATE INDEX idx_webhook_events_unprocessed ON webhook_events (created_at)
-//   WHERE processed = false;
-```
-
-### Idempotent Webhook Processing
-```typescript
-// lib/webhooks.ts
-export async function processWebhookIdempotently<T>(
-  provider: 'polar' | 'sepay',
-  eventId: string,
-  eventType: string,
-  payload: string,
-  handler: () => Promise<T>
-): Promise<{ processed: boolean; result?: T; error?: string }> {
-  // Check for duplicate
-  const existing = await db.select()
-    .from(webhookEvents)
-    .where(eq(webhookEvents.eventId, eventId))
-    .limit(1);
-
-  if (existing.length > 0) {
-    return { processed: false }; // Already processed
-  }
-
-  // Record event BEFORE processing
-  await db.insert(webhookEvents).values({
-    id: crypto.randomUUID(),
-    provider,
-    eventType,
-    eventId,
-    payload,
-    processed: false,
-  });
-
-  try {
-    const result = await handler();
-
-    await db.update(webhookEvents)
-      .set({ processed: true, processedAt: new Date() })
-      .where(eq(webhookEvents.eventId, eventId));
-
-    return { processed: true, result };
-
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-    await db.update(webhookEvents)
-      .set({
-        processed: true,
-        processedAt: new Date(),
-        error: errorMessage,
-      })
-      .where(eq(webhookEvents.eventId, eventId));
-
-    return { processed: true, error: errorMessage };
-  }
-}
-```
-
-## Discount Cross-Provider Sync
-
-### Syncing SePay Usage to Polar
-```typescript
-// lib/polar-discount-sync.ts
-// When a Polar discount is used via SePay, decrement Polar's redemption count
-
-export async function syncDiscountRedemptionToPolar(
-  orderId: string,
-  discountId: string,
-  discountCode: string
-): Promise<{ success: boolean; action: string }> {
-  const order = await db.select()
-    .from(orders)
-    .where(eq(orders.id, orderId))
-    .limit(1);
-
-  if (!order[0]) {
-    return { success: false, action: 'order_not_found' };
-  }
-
-  const metadata = order[0].metadata ? JSON.parse(order[0].metadata) : {};
-
-  // Idempotency check
-  if (metadata.polarDiscountSynced) {
-    return { success: true, action: 'already_synced' };
-  }
-
-  const polar = getPolar();
-
-  try {
-    const discount = await polar.discounts.get({ id: discountId });
-
-    // Skip if unlimited redemptions
-    if (discount.maxRedemptions === null) {
-      await markSynced(orderId, 'skipped_unlimited');
-      return { success: true, action: 'skipped_unlimited' };
-    }
-
-    const currentMax = discount.maxRedemptions;
-
-    if (currentMax <= 1) {
-      // Delete discount if this was last use
-      await polar.discounts.delete({ id: discountId });
-      await markSynced(orderId, 'deleted');
-      return { success: true, action: 'deleted' };
-    } else {
-      // Decrement max redemptions
-      await polar.discounts.update({
-        id: discountId,
-        discountUpdate: { maxRedemptions: currentMax - 1 },
-      });
-      await markSynced(orderId, 'decremented');
-      return { success: true, action: 'decremented' };
-    }
-
-  } catch (error: any) {
-    if (error.statusCode === 404) {
-      await markSynced(orderId, 'already_deleted');
-      return { success: true, action: 'already_deleted' };
-    }
-    throw error;
-  }
-}
-
-async function markSynced(orderId: string, action: string) {
-  const order = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
-  const metadata = order[0].metadata ? JSON.parse(order[0].metadata) : {};
-
-  await db.update(orders)
-    .set({
-      metadata: JSON.stringify({
-        ...metadata,
-        polarDiscountSynced: true,
-        polarDiscountSyncAction: action,
-        polarDiscountSyncedAt: new Date().toISOString(),
-      }),
-    })
-    .where(eq(orders.id, orderId));
-}
-
-// Retry wrapper with exponential backoff
-export async function syncWithRetry(
-  orderId: string,
-  discountId: string,
-  discountCode: string,
-  attempt: number = 1
-): Promise<{ success: boolean; action: string }> {
-  const MAX_ATTEMPTS = 3;
-
-  try {
-    return await syncDiscountRedemptionToPolar(orderId, discountId, discountCode);
-  } catch (error) {
-    if (attempt < MAX_ATTEMPTS) {
-      const delay = Math.pow(2, attempt) * 1000; // 2s, 4s
-      await sleep(delay);
-      return syncWithRetry(orderId, discountId, discountCode, attempt + 1);
-    }
-    throw error;
-  }
-}
-```
-
-## Admin Order Management API
-
-### Order Listing with Provider Info
-```typescript
-// app/api/admin/orders/route.ts
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '50');
-  const provider = searchParams.get('provider'); // 'polar' | 'sepay' | null
-  const status = searchParams.get('status');
-
-  let query = db.select()
-    .from(orders)
-    .orderBy(desc(orders.createdAt));
-
-  if (provider) {
-    query = query.where(eq(orders.paymentProvider, provider));
-  }
-  if (status) {
-    query = query.where(eq(orders.status, status));
-  }
-
-  const results = await query
-    .limit(limit)
-    .offset((page - 1) * limit);
-
-  // Normalize amounts to USD for display
-  const ordersWithNormalized = await Promise.all(
-    results.map(async (order) => {
-      const normalized = await normalizeOrderToUsd(order);
-      return {
-        ...order,
-        amountUsdCents: normalized.amountUsdCents,
-        displayAmount: order.currency === 'VND'
-          ? formatVND(order.amount)
-          : formatUSD(order.amount),
-      };
-    })
-  );
-
-  return NextResponse.json({
-    orders: ordersWithNormalized,
-    pagination: {
-      page,
-      limit,
-      hasMore: results.length === limit,
-    },
-  });
-}
-```
+- filter by provider, environment, local status, provider status, user, email, or provider object ID;
+- view raw provider IDs and event history;
+- replay failed local processing after fixing app errors;
+- trigger read-only provider reconciliation;
+- record manual refund or access decisions with audit notes.
 
 ## Best Practices Summary
 
-### 1. Currency Handling
-- Store amounts in original currency (USD or VND)
-- Always store currency code with amount
-- Use multi-layer fallback for exchange rates
-- Convert to USD for reporting/comparison
-
-### 2. Order Management
-- Use unified orders table for both providers
-- Store provider-specific data in metadata JSON
-- Normalize to USD for tier calculations
-
-### 3. Commission System
-- Store original currency and USD equivalent
-- Calculate tier based on USD values
-- Handle currency conversion in commission creation
-
-### 4. Webhook Processing
-- Use idempotency keys for deduplication
-- Record event before processing
-- Always return 200 to prevent retry loops
-- Log errors in event record for debugging
-
-### 5. Cross-Provider Sync
-- Sync discount redemptions from SePay to Polar
-- Use retry with exponential backoff
-- Mark orders as synced to prevent duplicates
-
-### 6. Refund Handling
-- Check order status before processing
-- Cancel related commissions
-- Recalculate referrer tier after cancellation
-- Optionally keep access (goodwill refunds)
+1. Create local orders before provider checkout.
+2. Store provider IDs separately and precisely.
+3. Verify webhooks/IPNs before acknowledging them.
+4. Record every provider event before business processing.
+5. Fulfill from provider paid signals, not customer redirects.
+6. Keep order, subscription, refund, dispute, and entitlement state separate.
+7. Normalize currency for reporting only; keep original provider amounts.
+8. Use provider-reported fees/net amounts when possible.
+9. Use a local campaign ledger for cross-provider discounts.
+10. Reconcile provider state on a schedule and after webhook outages.

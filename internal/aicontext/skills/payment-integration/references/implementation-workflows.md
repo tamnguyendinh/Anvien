@@ -33,6 +33,15 @@
 7. Use Billing APIs for subscriptions (combine with Checkout)
 8. Load `references/stripe/stripe-upgrade.md` when upgrading API versions
 
+## Paddle Implementation
+1. Load `references/paddle/overview.md` first for MoR concepts, environments, entity IDs, and SDK installation.
+2. Load `references/paddle/api.md` for products, prices, transactions, customers, subscriptions, response format, and errors.
+3. Load `references/paddle/paddle-js.md` for checkout overlay, inline checkout, and client integration.
+4. Load `references/paddle/subscriptions.md` for trials, upgrades, pause/resume, cancellation, and subscription lifecycle.
+5. Load `references/paddle/webhooks.md` for `Paddle-Signature` verification, event taxonomy, and idempotency.
+6. Load `references/paddle/sdk.md` for Node.js, Python, PHP, and Go SDK usage.
+7. Load `references/paddle/best-practices.md` for production readiness.
+
 ## Creem.io Implementation
 1. Load `references/creem/overview.md` for auth and MoR concepts
 2. Load `references/creem/api.md` for products and checkout sessions
@@ -42,9 +51,17 @@
 6. Load `references/creem/licensing.md` if implementing device activation
 7. Load `references/creem/sdk.md` for framework-specific adapters
 
+## Multi-Provider Order Management
+1. Load `references/multi-provider-order-management-patterns.md` when the target app uses more than one payment provider or needs unified orders, refunds, revenue, commissions, entitlements, or reconciliation.
+2. Load each provider-specific reference before implementing provider API calls. The multi-provider reference defines local app data ownership; provider references define API authority.
+3. Model local orders, provider payment references, provider events, refunds, disputes, and entitlements separately.
+4. Fulfill from provider paid signals, not customer redirects.
+5. Keep provider raw statuses and local normalized statuses side by side for support and reconciliation.
+
 ## General Workflow
-1. Identify platform (Vietnamese → SePay, global SaaS → Polar/Stripe/Creem.io)
+1. Identify platform: Vietnamese bank payments -> SePay; SaaS/MoR -> Polar, Paddle, or Creem.io; custom global payment infrastructure -> Stripe.
 2. Load relevant references progressively
-3. Implement: auth → products → checkout → webhooks → events
-4. Test in sandbox, then production
-5. Load only needed references to maintain context efficiency
+3. If using multiple providers, load `references/multi-provider-order-management-patterns.md` before designing shared order/refund/reporting tables.
+4. Implement: auth -> products/prices -> checkout/payment instruction -> webhooks/IPN -> orders/refunds/entitlements -> reconciliation.
+5. Test in sandbox/test mode, then production.
+6. Load only needed references to maintain context efficiency.

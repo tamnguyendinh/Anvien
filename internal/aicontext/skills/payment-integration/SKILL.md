@@ -83,7 +83,7 @@ Production-proven payment processing with SePay (Vietnamese banks), Polar (globa
 - External: https://docs.creem.io/llms.txt
 
 ### Multi-Provider
-- `references/multi-provider-order-management-patterns.md` - Unified orders, currency conversion
+- `references/multi-provider-order-management-patterns.md` - Provider-neutral orders, refunds, events, entitlements, revenue, reconciliation
 
 ### Scripts
 - `scripts/sepay-webhook-verify.js` - SePay webhook verification
@@ -99,9 +99,10 @@ Production-proven payment processing with SePay (Vietnamese banks), Polar (globa
 | **Stripe** | CheckoutSessions, Billing, Connect, Payment Element |
 | **Paddle** | MoR, overlay/inline checkout, Retain (churn prevention), tax |
 | **Creem.io** | MoR, licensing, revenue splits, no-code checkout |
+| **Multi-Provider** | Unified local order state, provider event ledgers, refunds, entitlements, reporting |
 
 ## Implementation
 
 See `references/implementation-workflows.md` for step-by-step guides per platform.
 
-**General flow:** auth → products → checkout → webhooks → events
+**General flow:** auth -> products/prices -> checkout/payment instruction -> webhooks/IPN -> orders/refunds/entitlements -> reconciliation
