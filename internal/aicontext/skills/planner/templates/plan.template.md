@@ -22,9 +22,9 @@
 - Update later phase status assumptions, next actions, and work steps when actual-status evidence changes the repo state.
 - After completing a phase or implementation slice and refreshing `actual-status.md`, update the next affected phase's work steps as needed to match the latest repo reality, while preserving that phase's original goal, scope, acceptance criteria, and major phase order.
 - Keep the standard planner structure. These detail rules only make phase checklist items concrete enough to implement safely.
-- Every phase must be decomposed into one or more implementation slices. A phase is a grouping and ordering container; a slice is the executable implementation unit.
+- Every implementation phase must be decomposed into multiple implementation slices that are as small as practical. A phase is a grouping and ordering container; a slice is the executable implementation unit.
 - Do not implement a phase directly. Work starts from a slice ID such as `P1-A`, `P1-B`, or `P2-C`.
-- If a phase is small, still represent it as one slice.
+- Prefer many narrow slices over one broad slice. A single-slice implementation phase is allowed only when the plan explicitly states why the phase cannot be split further without creating empty or non-executable slices.
 - Each slice must include Goal, Scope Boundary, Non-Goals when useful, Pre-flight Questions, Work Steps, Implementation Gate, Acceptance, Evidence Targets, Actual-status Update, and Commit Boundary.
 - Split planned work into separate slices when it contains more than one primary user-visible behavior, user trigger, render location, permission or visibility rule, DB write target, DB state transition, API/CLI/MCP contract, async/event/webhook flow, external side effect, cleanup/quarantine domain, behavior test target, independent acceptance gate, or independent commit boundary.
 - If a planned item uses wording such as `and`, `also`, `then wire`, `plus update`, `both`, or `handle all`, check whether it is actually multiple slices.
