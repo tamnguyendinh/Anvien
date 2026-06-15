@@ -21,12 +21,16 @@
 - Record benchmarkable counts or measurements when they are taken.
 - Update later phase status assumptions, next actions, and work steps when actual-status evidence changes the repo state.
 - After completing a phase or implementation slice and refreshing `actual-status.md`, update the next affected phase's work steps as needed to match the latest repo reality, while preserving that phase's original goal, scope, acceptance criteria, and major phase order.
+- Run Anvien detect-changes before every implementation-slice commit when implementation work was performed.
+- For public runtime or UI-facing changes, validate the real user-visible runtime with browser or Playwright evidence.
 - Keep the standard planner structure. These detail rules only make phase checklist items concrete enough to implement safely.
 - Every implementation phase must be decomposed into multiple implementation slices that are as small as practical. A phase is a grouping and ordering container; a slice is the executable implementation unit.
 - Do not implement a phase directly. Work starts from a slice ID such as `P1-A`, `P1-B`, or `P2-C`.
 - Prefer many narrow slices over one broad slice. A single-slice implementation phase is allowed only when the plan explicitly states why the phase cannot be split further without creating empty or non-executable slices.
 - Each slice must include Goal, Scope Boundary, Non-Goals when useful, Pre-flight Questions, Work Steps, Implementation Gate, Acceptance, Evidence Targets, Actual-status Update, and Commit Boundary.
 - Split planned work into separate slices when it contains more than one primary user-visible behavior, user trigger, render location, permission or visibility rule, DB write target, DB state transition, API/CLI/MCP contract, async/event/webhook flow, external side effect, cleanup/quarantine domain, behavior test target, independent acceptance gate, or independent commit boundary.
+- When touching DB-backed content, verify the full loop when applicable: UI input -> submit action -> DB write -> DB read after reload/new request -> correct UI render or omission. If there is no UI, replace UI steps with the real caller/consumer flow.
+- Tests must prove product behavior. Delete or replace tests that only assert implementation details, helper output, static DOM existence, or mocked plumbing without proving trigger -> process -> observable result.
 - If a planned item uses wording such as `and`, `also`, `then wire`, `plus update`, `both`, or `handle all`, check whether it is actually multiple slices.
 - Do not write broad actionable items such as `Implement checkout, webhook, entitlement update, and billing UI`; split them into narrow slices such as `Create checkout session request`, `Persist checkout session state`, `Handle provider webhook`, `Update entitlement from webhook event`, and `Render billing status from entitlement`.
 - Each slice work step must include UI flow, DB/data flow, render location, and evidence target checks. Use `N/A` with a reason when a check does not apply.
@@ -102,7 +106,9 @@
        - DB/data flow check: {{SLICE_1_STEP_2_DB_FLOW_CHECK}}
        - Render location check: {{SLICE_1_STEP_2_RENDER_LOCATION_CHECK}}
        - Evidence target: {{SLICE_1_STEP_2_EVIDENCE_TARGET}}
-  - Implementation Gate: {{SLICE_1_GATE}}
+  - Implementation Gate:
+    - Before editing target files, run the relevant Anvien impact/file-detail command for files, symbols, routes, tools, or contracts touched by this slice, and record the evidence IDs.
+    - {{SLICE_1_GATE}}
   - Acceptance:
     - Source: {{SLICE_1_ACCEPTANCE_SOURCE}}
     - Runtime/UI: {{SLICE_1_ACCEPTANCE_RUNTIME_UI}}
@@ -136,11 +142,13 @@
 - [ ] Pn-C: Close the plan.
   - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
   - Work Steps:
-    1. Run the required final validation for the accepted scope.
-    2. Regenerate generated outputs if source-of-truth changes require it.
-    3. Run Anvien detect-changes before commit when implementation work was performed.
-    4. Record final validation, detect-changes, benchmark, and commit evidence.
-    5. Commit the completed scope and verify the worktree state.
+    1. Run the required final validation for the accepted scope, including full build before final runtime validation.
+    2. Include Docker build/validation when Docker packaging, deployment, container runtime, Dockerfiles, compose files, or deployment artifacts are in scope; otherwise record why Docker is out of scope.
+    3. Validate public runtime or UI-facing changes with browser or Playwright evidence.
+    4. Regenerate generated outputs if source-of-truth changes require it.
+    5. Run Anvien detect-changes before commit when implementation work was performed.
+    6. Record final validation, detect-changes, benchmark, and commit evidence.
+    7. Commit the completed scope and verify the worktree state.
   - Implementation Gate: Pn-A and Pn-B must pass or record blockers.
   - Acceptance: final evidence is recorded, required commits exist, and the worktree state is known.
 
