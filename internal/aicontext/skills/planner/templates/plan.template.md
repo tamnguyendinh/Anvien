@@ -23,6 +23,10 @@
 - After completing a phase or implementation slice and refreshing `actual-status.md`, update the next affected phase's work steps as needed to match the latest repo reality, while preserving that phase's original goal, scope, acceptance criteria, and major phase order.
 - Run Anvien detect-changes before every implementation-slice commit when implementation work was performed.
 - For public runtime or UI-facing changes, validate the real user-visible runtime with browser or Playwright evidence.
+- For app/runtime validation, full build must include Docker image/container build. If Docker is missing or not run, full build is incomplete.
+- Any Playwright validation must target the real built Docker/container runtime. Running Playwright against a host dev server, framework dev mode, mocked server, or source-run shortcut is not valid runtime evidence.
+- If the Docker runtime cannot be built or started, the slice/plan is blocked; do not replace it with dev-server Playwright evidence.
+- Playwright evidence must record the Docker build/run or compose command, container/service name, exposed URL, Playwright command, and screenshot/trace/result.
 - Keep the standard planner structure. These detail rules only make phase checklist items concrete enough to implement safely.
 - Every implementation phase must be decomposed into multiple implementation slices that are as small as practical. A phase is a grouping and ordering container; a slice is the executable implementation unit.
 - Do not implement a phase directly. Work starts from a slice ID such as `P1-A`, `P1-B`, or `P2-C`.
@@ -102,6 +106,8 @@
     - DB write flow: {{SLICE_1_DB_WRITE_FLOW}}
     - Render location: {{SLICE_1_RENDER_LOCATION}}
     - UI behavior flow: {{SLICE_1_UI_BEHAVIOR_FLOW}}
+    - Docker runtime: {{SLICE_1_DOCKER_RUNTIME}}
+    - Playwright target: {{SLICE_1_PLAYWRIGHT_TARGET}}
     - Behavior test: {{SLICE_1_BEHAVIOR_TEST}}
     - Cleanup/quarantine: {{SLICE_1_CLEANUP_OR_QUARANTINE}}
     - External side effects: {{SLICE_1_EXTERNAL_SIDE_EFFECTS}}
@@ -153,9 +159,9 @@
 - [ ] Pn-C: Close the plan.
   - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
   - Work Steps:
-    1. Run the required final validation for the accepted scope, including full build before final runtime validation.
-    2. Include Docker build/validation when Docker packaging, deployment, container runtime, Dockerfiles, compose files, or deployment artifacts are in scope; otherwise record why Docker is out of scope.
-    3. Validate public runtime or UI-facing changes with browser or Playwright evidence.
+    1. Run the required final validation for the accepted scope, including full build before final runtime validation. For app/runtime scopes, full build must include Docker image/container build.
+    2. Start the real built Docker/container runtime for app/runtime validation. If Docker cannot be built or started, record the blocker and do not substitute a host dev server.
+    3. Validate public runtime or UI-facing changes with browser or Playwright evidence against the real built Docker/container runtime. Playwright evidence must include Docker build/run or compose command, container/service name, exposed URL, Playwright command, and screenshot/trace/result.
     4. Regenerate generated outputs if source-of-truth changes require it.
     5. Run Anvien detect-changes before commit when implementation work was performed.
     6. Record final validation, detect-changes, benchmark, and commit evidence.
