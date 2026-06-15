@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-06-15`
-- Status: `in_progress`
+- Status: `complete`
 - Plan: `docs/plans/2026-06-15-file-classification-plain-text-xsd/2026-06-15-file-classification-plain-text-xsd-plan.md`
 - Evidence: `docs/plans/2026-06-15-file-classification-plain-text-xsd/2026-06-15-file-classification-plain-text-xsd-evidence.md`
 - Benchmark: `docs/plans/2026-06-15-file-classification-plain-text-xsd/2026-06-15-file-classification-plain-text-xsd-benchmark.md`
@@ -126,7 +126,7 @@ Classify repo-agnostic `.txt` files as `document/plain_text` and `.xsd` files as
   - Actual-status Update: mark `.txt` behavior implemented and verified.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] P1-B: Classify XML schema files.
+- [x] P1-B: Classify XML schema files.
   - Goal: `.xsd` files classify as `schema/xml_schema`.
   - Scope Boundary:
     - Editable: `internal/documents/documents.go`, relevant tests, plan evidence.
@@ -170,7 +170,7 @@ Classify repo-agnostic `.txt` files as `document/plain_text` and `.xsd` files as
   - Actual-status Update: mark `.xsd` behavior implemented and verified.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] Pn-A: Close the plan.
+- [x] Pn-A: Close the plan.
   - Goal: final evidence, benchmark statement, detect-changes, commit, and known worktree state.
   - Work Steps:
     1. Verify final status and evidence files.

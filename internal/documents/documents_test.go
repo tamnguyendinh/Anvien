@@ -95,9 +95,17 @@ func TestApplySkipsExternalAndMissingLinks(t *testing.T) {
 	}
 }
 
-func TestKindClassifiesPlainText(t *testing.T) {
-	if got := Kind("docs/notes.txt"); got != "plain_text" {
-		t.Fatalf("Kind(.txt) = %q, want plain_text", got)
+func TestKindClassifiesPlainTextAndXMLSchema(t *testing.T) {
+	cases := map[string]string{
+		"docs/notes.txt":      "plain_text",
+		"schemas/example.xsd": "xml_schema",
+		"schemas/example.xml": "",
+		"docs/unknown.custom": "",
+	}
+	for filePath, want := range cases {
+		if got := Kind(filePath); got != want {
+			t.Fatalf("Kind(%s) = %q, want %q", filePath, got, want)
+		}
 	}
 }
 

@@ -31,12 +31,29 @@
   - Interpretation: 38 `.txt` files moved out of unknown; 78 `.xsd` remain.
 - `E-P1A-DETECT`: `anvien detect-changes --repo E:\Anvien --scope all`
   - Result: changed files `internal/documents/documents.go`, `internal/documents/documents_test.go`, `internal/analyze/file_classification_test.go`; summary risk `low`; `documents.go` file risk remains `high`.
-- `E-P1A-COMMIT`: pending.
+- `E-P1A-COMMIT`: `8dd1179 classify plain text documents`.
 
 ## P1-B XML Schema
 
-- Pending.
+- `E-P1B-IMPACT-KIND`: `anvien impact symbol "Kind" --uid "Function:internal/documents/documents.go:Kind#1" --repo E:\Anvien --direction upstream --json`
+  - Result: risk `CRITICAL`; impacted count `5`; affected files `internal/analyze/analyze.go`, `internal/analyze/file_classification.go`, `internal/documents/documents.go`.
+- `E-P1B-SOURCE`: Added `.xsd` to `documents.Kind` as `xml_schema`.
+- `E-P1B-TEST`: `go test ./internal/documents ./internal/analyze`
+  - Result: pass.
+- `E-P1B-ANALYZE-SOURCE`: `go run ./cmd/anvien analyze --force`
+  - Result: `files: scanned=1417 parsed_code=673 failed=0`; `indexed: documents=623 metadata=112 analyzers=0 scripts=6 static=3`; `gaps: unsupported_language=0 unknown=0`.
+- `E-P1B-BUILD`: `npm run full-build`
+  - First attempt: failed at final launcher build because `anvien\bin\anvien.exe` was locked by stale `anvien analyze` and editor-owned `anvien mcp` processes.
+  - Cleanup: stopped only the locking Anvien process tree PIDs.
+  - Retry result: pass.
+  - Included final binary validation: `anvien analyze . --force` reported `unknown=0`.
+- `E-P1B-DETECT`: `anvien detect-changes --repo E:\Anvien --scope all`
+  - Result: changed files `internal/documents/documents.go`, `internal/documents/documents_test.go`, `internal/analyze/file_classification_test.go`; summary risk `low`; `documents.go` file risk remains `high`.
 
 ## Final Validation
 
-- Pending.
+- Relevant Go tests: pass.
+- Full build: pass.
+- Final analyzer inventory: `unknown=0`.
+- UI/browser validation: N/A; no UI behavior changed.
+- Docker validation: N/A; no Docker, container, deployment, or packaging source files changed.

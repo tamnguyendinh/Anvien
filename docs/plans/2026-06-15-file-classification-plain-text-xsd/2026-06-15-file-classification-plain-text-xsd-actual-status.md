@@ -20,14 +20,20 @@
 - Current truth: `.txt` maps to `plain_text`.
 - Evidence: `go test ./internal/documents ./internal/analyze` passed.
 - Analyze evidence: source-current `go run ./cmd/anvien analyze --force` reports `unknown=78`, leaving only `.xsd` unknown files from the original inventory.
-- Next action: commit P1-A, then add `.xsd` mapping and tests.
+- Commit: `8dd1179 classify plain text documents`.
 
 ## P1-B XML Schema
 
-- Status: pending.
-- Current truth: `.xsd` is still unknown after P1-A.
-- Next action: add `.xsd` mapping and tests after P1-A.
+- Status: complete.
+- Current truth: `.xsd` maps to `xml_schema`.
+- Evidence: `go test ./internal/documents ./internal/analyze` passed.
+- Analyze evidence: source-current analyze and post-build binary analyze both report `unknown=0`.
+- Next action: commit P1-B.
 
 ## Final
 
-- Status: pending.
+- Status: complete.
+- Final build: `npm run full-build` passed after clearing stale Anvien binary lock processes.
+- Final count: `unknown=0`.
+- UI/browser validation: N/A; no UI changed.
+- Docker validation: N/A; no Docker/container source changed.

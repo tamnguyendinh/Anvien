@@ -251,6 +251,8 @@ func Kind(filePath string) string {
 		return "markdown"
 	case ".txt":
 		return "plain_text"
+	case ".xsd":
+		return "xml_schema"
 	case ".doc", ".docx", ".odt", ".rtf":
 		return "word"
 	case ".pdf":
