@@ -28,6 +28,7 @@
 - Each slice must include Goal, Scope Boundary, Non-Goals when useful, Pre-flight Questions, Work Steps, Implementation Gate, Acceptance, Evidence Targets, Actual-status Update, and Commit Boundary.
 - Split planned work into separate slices when it contains more than one primary user-visible behavior, user trigger, render location, permission or visibility rule, DB write target, DB state transition, API/CLI/MCP contract, async/event/webhook flow, external side effect, cleanup/quarantine domain, behavior test target, independent acceptance gate, or independent commit boundary.
 - If a planned item uses wording such as `and`, `also`, `then wire`, `plus update`, `both`, or `handle all`, check whether it is actually multiple slices.
+- Do not write broad actionable items such as `Implement checkout, webhook, entitlement update, and billing UI`; split them into narrow slices such as `Create checkout session request`, `Persist checkout session state`, `Handle provider webhook`, `Update entitlement from webhook event`, and `Render billing status from entitlement`.
 - Each slice work step must include UI flow, DB/data flow, render location, and evidence target checks. Use `N/A` with a reason when a check does not apply.
 - If tests write DB rows, app state, files, queues, provider state, or other persistent data, the slice must define cleanup or quarantine before implementation.
 
@@ -66,6 +67,7 @@
   - In scope: {{PHASE_1_IN_SCOPE}}
   - Out of scope: {{PHASE_1_OUT_OF_SCOPE}}
   - Dependencies: {{PHASE_1_DEPENDENCIES}}
+- Phase Implementation Rule: do not implement `P1` directly. Implement `P1-A`, verify it, record evidence, refresh actual-status, commit when required, then continue to `P1-B`.
 - Ordered Slice List:
   - P1-A: {{SLICE_1_TITLE}}
   - P1-B: {{SLICE_2_TITLE_OR_REMOVE}}
