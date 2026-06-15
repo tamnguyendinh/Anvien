@@ -16,6 +16,7 @@ func TestClassifyFileMetricsUsesCausalBuckets(t *testing.T) {
 	files := []scanner.File{
 		{Path: "src/main.go", Language: scanner.Go},
 		{Path: "README.md", Language: scanner.Markdown},
+		{Path: "docs/notes.txt"},
 		{Path: "data/sheet.csv", Language: scanner.Spreadsheet},
 		{Path: "package.json"},
 		{Path: "testdata/golden/response.json"},
@@ -41,7 +42,7 @@ func TestClassifyFileMetricsUsesCausalBuckets(t *testing.T) {
 	}
 	assertFileMetric(t, "parsedCode", metrics.ParsedCode, 1)
 	assertFileMetric(t, "parsed legacy alias", metrics.Parsed, metrics.ParsedCode)
-	assertFileMetric(t, "documents", metrics.Documents, 2)
+	assertFileMetric(t, "documents", metrics.Documents, 3)
 	assertFileMetric(t, "metadataOnly", metrics.MetadataOnly, 4)
 	assertFileMetric(t, "dedicatedAnalyzer", metrics.DedicatedAnalyzer, 1)
 	assertFileMetric(t, "scriptNoExtractor", metrics.ScriptNoExtractor, 2)
@@ -51,6 +52,7 @@ func TestClassifyFileMetricsUsesCausalBuckets(t *testing.T) {
 	assertFileMetric(t, "unknown", metrics.Unknown, 1)
 	assertFileMetric(t, "failed", metrics.Failed, 1)
 	requireSample(t, metrics, FileBucketDocuments, "README.md")
+	requireSample(t, metrics, FileBucketDocuments, "docs/notes.txt")
 	requireSample(t, metrics, FileBucketMetadataOnly, "package.json")
 	requireSample(t, metrics, FileBucketDedicatedAnalyzer, "mainframe/program.cob")
 	requireSample(t, metrics, FileBucketScriptNoExtractor, "scripts/build.ps1")

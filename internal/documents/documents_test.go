@@ -95,6 +95,12 @@ func TestApplySkipsExternalAndMissingLinks(t *testing.T) {
 	}
 }
 
+func TestKindClassifiesPlainText(t *testing.T) {
+	if got := Kind("docs/notes.txt"); got != "plain_text" {
+		t.Fatalf("Kind(.txt) = %q, want plain_text", got)
+	}
+}
+
 func addFileNode(g *graph.Graph, filePath string) {
 	g.AddNode(graph.Node{
 		ID:    graph.GenerateID(string(scopeir.NodeFile), filePath),

@@ -249,6 +249,8 @@ func Kind(filePath string) string {
 	switch strings.ToLower(path.Ext(filePath)) {
 	case ".md", ".mdx":
 		return "markdown"
+	case ".txt":
+		return "plain_text"
 	case ".doc", ".docx", ".odt", ".rtf":
 		return "word"
 	case ".pdf":
