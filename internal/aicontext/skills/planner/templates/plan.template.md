@@ -27,7 +27,17 @@
 - Every implementation phase must be decomposed into multiple implementation slices that are as small as practical. A phase is a grouping and ordering container; a slice is the executable implementation unit.
 - Do not implement a phase directly. Work starts from a slice ID such as `P1-A`, `P1-B`, or `P2-C`.
 - Prefer many narrow slices over one broad slice. A single-slice implementation phase is allowed only when the plan explicitly states why the phase cannot be split further without creating empty or non-executable slices.
-- Each slice must include Goal, Scope Boundary, Non-Goals when useful, Pre-flight Questions, Work Steps, Implementation Gate, Acceptance, Evidence Targets, Actual-status Update, and Commit Boundary.
+- Each implementation slice must include:
+  + Goal
+  + Scope Boundary
+  + Non-Goals when useful
+  + Pre-flight Questions
+  + Work Steps
+  + Implementation Gate
+  + Acceptance
+  + Evidence Targets
+  + Actual-status Update
+  + Commit Boundary
 - Split planned work into separate slices when it contains more than one primary user-visible behavior, user trigger, render location, permission or visibility rule, DB write target, DB state transition, API/CLI/MCP contract, async/event/webhook flow, external side effect, cleanup/quarantine domain, behavior test target, independent acceptance gate, or independent commit boundary.
 - When touching DB-backed content, verify the full loop when applicable: UI input -> submit action -> DB write -> DB read after reload/new request -> correct UI render or omission. If there is no UI, replace UI steps with the real caller/consumer flow.
 - Tests must prove product behavior. Delete or replace tests that only assert implementation details, helper output, static DOM existence, or mocked plumbing without proving trigger -> process -> observable result.
