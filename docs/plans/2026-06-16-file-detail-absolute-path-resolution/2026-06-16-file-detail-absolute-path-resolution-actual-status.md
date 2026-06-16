@@ -1,0 +1,195 @@
+# File Detail Absolute Path Resolution Actual Status
+
+Title: File Detail Absolute Path Resolution
+Date: 2026-06-16
+Status: P0 Complete
+Companion plan: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-plan.md`
+Companion evidence: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-evidence.md`
+Companion benchmark: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-benchmark.md`
+
+## Purpose
+
+This file records the real current state before implementation. Implementation must not start until the target scope has a completed status row, evidence IDs, and downstream plan decisions.
+
+## Freshness / Refresh Rules
+
+- Refresh after each completed implementation slice.
+- Append to the Status Refresh Log; do not delete P0 baseline rows.
+- If status changes alter the next work, update only the affected next-phase work steps before continuing.
+- Keep detailed proof in the evidence ledger and store classification here.
+
+## Scope
+
+Target scope:
+
+- CLI `anvien file-detail`.
+- HTTP `/api/file-detail`.
+- MCP file context dispatch.
+- Shared file lookup normalization.
+- Focused tests for these surfaces.
+
+Out of scope:
+
+- Analyzer graph schema or graph `filePath` storage.
+- Fuzzy matching, basename matching, or repo guessing.
+- UI redesign or unrelated Web state changes.
+
+## Relationship / Impact Evidence
+
+Relationship count is `localRelationshipCount + inboundRefCount + outboundRefCount` from `anvien file-detail`.
+
+| Unit / File / Surface | File Detail Evidence | Related File Count | Relationship Summary | Impact Note |
+|-----------------------|----------------------|--------------------|----------------------|-------------|
+| `internal/filecontext/context.go` | `E0-P0A-FD1` | 882 | local 555, inbound 239, outbound 88, unresolved 529, linked flows 50, tests 7 | high scope warning |
+| `internal/cli/file_detail_command.go` | `E0-P0A-FD2` | 129 | local 54, inbound 9, outbound 66, unresolved 195, linked flows 10, tests 1 | high scope warning |
+| `internal/httpapi/file_context.go` | `E0-P0A-FD3` | 102 | local 55, inbound 10, outbound 37, unresolved 166, linked flows 7, tests 3 | high scope warning |
+| `internal/mcp/target_dispatch.go` | `E0-P0A-FD4` | 134 | local 7, inbound 51, outbound 76, unresolved 101, linked flows 1, tests 1 | high scope warning |
+| `internal/mcp/context.go` | `E0-P0A-FD5` | 207 | local 48, inbound 48, outbound 111, unresolved 253, linked flows 41, tests 2 | high scope warning |
+| `internal/filecontext/context_test.go` | `E0-P0A-FD6` | 128 | local 40, inbound 0, outbound 88, unresolved 0 | low risk test target |
+| `internal/cli/file_detail_command_test.go` | `E0-P0A-FD7` | 53 | local 3, inbound 2, outbound 48, unresolved 0, linked tests 1 | low risk test target |
+| `internal/httpapi/file_context_test.go` | `E0-P0A-FD8` | 62 | local 3, inbound 0, outbound 59, unresolved 0 | low risk test target |
+
+## Status Rules
+
+| Status | Meaning | Allowed next action |
+|--------|---------|---------------------|
+| `correct` | Already behaves as required. | Preserve. |
+| `partial` | Some required behavior exists, but gaps remain. | Change only missing parts. |
+| `wrong` | Current behavior conflicts with requirement. | Replace with required behavior. |
+| `missing` | Required behavior or coverage does not exist. | Implement missing piece only. |
+| `blocked` | Required evidence or authority is missing. | Stop until resolved. |
+
+## Current Status Matrix
+
+| Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
+|------|---------------|----------------|--------|--------------------|----------|--------------------|
+| Graph file node storage | Graph contains repo-relative `File:internal/mcp/tools.go`; absolute graph path returns no row. | Preserve repo-relative graph storage. | correct | N/A | `E0-P0A-CYPHER1`, `E0-P0A-CYPHER2` | preserve |
+| `BuildFileContext` lookup | Looks up `b.filesByPath[normalizedPath]` after lightweight normalization only. | Keep repo-relative lookup but add repo-aware pre-normalization at boundaries or shared helper. | partial | 882 on owner file | `E0-P0A-SRC2`, `E0-P0A-FD1` | edit P1-A |
+| CLI `file-detail` | Relative path succeeds; absolute in-repo path fails. CLI passes `args[0]` directly to builder. | Normalize `args[0]` against resolved `RepoPath` before lookup; reject outside-repo absolute paths clearly. | wrong | 129 | `E0-P0A-REPRO1`, `E0-P0A-REPRO2`, `E0-P0A-SRC1`, `E0-P0A-FD2` | edit P1-B |
+| HTTP `/api/file-detail` | Query `path` is passed directly to builder. | Normalize query `path` against resolved `projection.repoPath` before lookup. | wrong | 102 | `E0-P0A-SRC3`, `E0-P0A-FD3` | edit P1-C |
+| MCP file context dispatch | `mcpBuildFileContext` passes `path` directly to builder and currently lacks repo-root normalization. | Thread repo root into file context lookup and apply shared helper. | wrong | 134 and 207 on direct MCP files | `E0-P0A-SRC4`, `E0-P0A-FD4`, `E0-P0A-FD5` | edit P1-D |
+| Existing focused tests | Current tests pass for repo-relative behavior but do not prove absolute path resolution. | Preserve existing tests and add absolute in-repo and outside-repo cases. | partial | 128, 53, 62 on current test files | `E0-P0A-TEST1`, `E0-P0A-TEST2`, `E0-P0A-TEST3`, `E0-P0A-FD6..E0-P0A-FD8` | update in P1-A through P1-D |
+
+## Status Refresh Log
+
+| Refresh | Date | Repo Basis | Changed Scope | Status Changes | Evidence | Next Phase Update |
+|---------|------|------------|----------------|----------------|----------|-------------------|
+| R0 | 2026-06-16 | baseline before implementation, graph refreshed with `anvien analyze --force` | file-detail absolute path resolution | initial classification: graph storage correct; CLI/API/MCP wrong for absolute path; tests partial | `E0-P0A-ANALYZE1`, `E0-P0A-REPRO1`, `E0-P0A-REPRO2`, `E0-P0A-SRC1..E0-P0A-SRC4`, `E0-P0A-FD1..E0-P0A-FD8`, `E0-P0A-TEST1..E0-P0A-TEST3` | P1 split into shared helper, CLI, HTTP, MCP slices |
+
+## Phase Touch Map
+
+| Unit / File / Surface | Plan-Relevant Relationship File | Relationship to Target | Plan Item | Touch Mode | Evidence | Constraint |
+|-----------------------|---------------------------------|------------------------|-----------|------------|----------|------------|
+| `internal/filecontext/context.go` | `internal/filecontext/context_test.go` | helper owner and tests | P1-A | edit | `E0-P0A-FD1`, `E0-P0A-FD6` | keep graph lookup repo-relative |
+| `internal/cli/file_detail_command.go` | `internal/cli/file_detail_command_test.go` | CLI boundary and tests | P1-B | edit | `E0-P0A-FD2`, `E0-P0A-FD7` | use resolved `RepoPath`, not raw `--repo` |
+| `internal/httpapi/file_context.go` | `internal/httpapi/file_context_test.go` | HTTP boundary and tests | P1-C | edit | `E0-P0A-FD3`, `E0-P0A-FD8` | preserve API route and success payload shape |
+| `internal/mcp/target_dispatch.go` | `internal/mcp/context.go` | MCP helper and caller surface | P1-D | edit or inspect as needed | `E0-P0A-FD4`, `E0-P0A-FD5` | preserve non-file target dispatch |
+| Graph file nodes | `.anvien/graph.json` | source evidence only | P1 all | preserve-only | `E0-P0A-ANALYZE1`, `E0-P0A-CYPHER1` | do not edit generated graph as source of truth |
+
+## Detailed Findings
+
+### Graph File Node Storage
+
+Current state:
+
+Graph contains `internal/mcp/tools.go` as a repo-relative file path. It does not contain `E:/Anvien/internal/mcp/tools.go`.
+
+Required state:
+
+```text
+Preserve repo-relative graph file paths. Fix input normalization before lookup.
+```
+
+Evidence:
+
+- `E0-P0A-CYPHER1`: repo-relative graph lookup returned one row.
+- `E0-P0A-CYPHER2`: absolute graph lookup returned no rows.
+
+Classification:
+
+`correct`
+
+Allowed next action:
+
+Preserve graph storage.
+
+Forbidden next action:
+
+Do not change analyzer output to store absolute paths.
+
+### File Detail Input Normalization
+
+Current state:
+
+`BuildFileContext` only normalizes separators and `./`, then looks up `filesByPath`. Command surfaces pass raw user paths into this lookup.
+
+Required state:
+
+```text
+Boundary input should be normalized against the resolved repo root before graph lookup.
+Successful lookup paths should remain repo-relative.
+Outside-repo absolute paths should fail explicitly.
+```
+
+Evidence:
+
+- `E0-P0A-SRC1`: CLI passes `args[0]` directly.
+- `E0-P0A-SRC2`: builder normalizes lightly and looks up `filesByPath`.
+- `E0-P0A-SRC3`: HTTP route passes query `path` directly.
+- `E0-P0A-SRC4`: MCP helper passes `path` directly.
+- `E0-P0A-REPRO2`: absolute in-repo path fails even though graph contains the file.
+
+Relationship and impact:
+
+- Related file count: 882 for `internal/filecontext/context.go`, 129 CLI, 102 HTTP, 134/207 MCP.
+- Impact note: high scope warning; keep edits narrow and test each surface.
+
+Classification:
+
+`wrong` for CLI, HTTP, and MCP; `partial` for shared lookup support.
+
+Allowed next action:
+
+Implement P1-A through P1-D in order.
+
+Forbidden next action:
+
+Do not add fuzzy matching, basename fallback, or repo guessing.
+
+## Next Phase Status Decisions
+
+| Plan Item | Actual Status Finding | Required Status / Next-Action Update |
+|-----------|-----------------------|--------------------------------------|
+| P1-A | Shared normalization is partial/missing for repo-aware absolute paths. | Implement helper first so CLI/API/MCP do not duplicate path logic. |
+| P1-B | CLI is wrong for absolute in-repo paths. | Normalize against `inputs.RepoPath` before `BuildFileContext`. |
+| P1-C | HTTP is wrong for absolute in-repo paths. | Normalize against `projection.repoPath` before `BuildFileContext`. |
+| P1-D | MCP is wrong for absolute in-repo paths and may need repo-root threading. | Inspect callers, thread repo root for file targets only, preserve non-file dispatch. |
+| P2-A | Current tests pass but do not prove the new behavior. | Add focused behavior tests and final boundary commands. |
+
+## Implementation Gate
+
+- [x] Target scope is listed in Current Status Matrix.
+- [x] Each target unit has a status.
+- [x] Each status has evidence IDs.
+- [x] Each target file has relationship count evidence from `file-detail` when applicable.
+- [x] Phase Touch Map lists plan-relevant relationship files that can affect the current phase/slice.
+- [x] Phase Touch Map defines touch mode for every plan-relevant relationship unit that may be affected.
+- [x] Correct parts are marked preserve-only.
+- [x] Partial and wrong parts have exact next actions.
+- [x] Blockers are recorded, if any.
+- [x] Next phase status assumptions, next action, and work steps have been updated from this status file.
+- [x] Status Refresh Log has an R0 baseline row.
+- [x] If implementation has started, affected rows will be refreshed from latest evidence.
+- [x] If refreshed statuses change next work, only stale next-phase status assumptions, next action, or work steps will be updated before the next phase.
+
+## Final P0 Decision
+
+- [ ] P0 actual-status incomplete. Implementation is blocked.
+- [ ] P0 complete. Next phase can proceed unchanged.
+- [x] P0 complete. Next phase status, next action, or work steps must be updated before implementation.
+- [ ] P0 complete. Target scope is preserve-only.
+- [ ] P0 complete. Implementation is blocked by missing authority or evidence.
+
+Decision note:
+
+P0 is complete. Implementation should start with P1-A shared helper, then wire CLI, HTTP, and MCP separately. The plan was updated to avoid duplicated path normalization and to preserve repo-relative graph storage.
