@@ -76,23 +76,10 @@ func Apply(g *graph.Graph) Result {
 		Modularity:      partitionModularity(partitions, index),
 	}}
 	for partitionIndex, members := range partitions {
-		communityID := "comm_" + strconv.Itoa(partitionIndex)
-		for _, memberID := range members {
-			membership := Membership{NodeID: memberID, CommunityID: communityID}
-			result.Memberships = append(result.Memberships, membership)
-			g.AddRelationship(graph.Relationship{
-				ID:               graph.GenerateID(string(graph.RelMemberOf), memberID+"->"+communityID),
-				SourceID:         memberID,
-				TargetID:         communityID,
-				Type:             graph.RelMemberOf,
-				Confidence:       1,
-				Reason:           "leiden-algorithm",
-				ResolutionSource: "community-detection",
-			})
-		}
 		if len(members) < 2 {
 			continue
 		}
+		communityID := "comm_" + strconv.Itoa(partitionIndex)
 		community := Community{
 			ID:             communityID,
 			HeuristicLabel: heuristicLabel(members, g),
@@ -114,6 +101,19 @@ func Apply(g *graph.Graph) Result {
 				"symbolCount":    community.SymbolCount,
 			},
 		})
+		for _, memberID := range members {
+			membership := Membership{NodeID: memberID, CommunityID: communityID}
+			result.Memberships = append(result.Memberships, membership)
+			g.AddRelationship(graph.Relationship{
+				ID:               graph.GenerateID(string(graph.RelMemberOf), memberID+"->"+communityID),
+				SourceID:         memberID,
+				TargetID:         communityID,
+				Type:             graph.RelMemberOf,
+				Confidence:       1,
+				Reason:           "leiden-algorithm",
+				ResolutionSource: "community-detection",
+			})
+		}
 	}
 	result.Metrics.CommunitiesEmitted = len(result.Communities)
 	result.Metrics.MembershipsEmitted = len(result.Memberships)

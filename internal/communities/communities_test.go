@@ -116,6 +116,16 @@ func TestApplySkipsSingletonCommunities(t *testing.T) {
 	if result.Metrics.CommunitiesEmitted != 0 || result.Metrics.MembershipsEmitted != 0 {
 		t.Fatalf("metrics = %#v, want no singleton community", result.Metrics)
 	}
+	for _, relationship := range g.Relationships {
+		if relationship.Type == graph.RelMemberOf {
+			t.Fatalf("singleton emitted dangling membership relationship: %#v", relationship)
+		}
+	}
+	for _, node := range g.Nodes {
+		if node.Label == scopeir.NodeCommunity {
+			t.Fatalf("singleton emitted community node: %#v", node)
+		}
+	}
 }
 
 func TestApplyProducesDeterministicCommunityOutput(t *testing.T) {
