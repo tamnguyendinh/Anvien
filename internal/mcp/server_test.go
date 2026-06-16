@@ -16,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tamnguyendinh/anvien/internal/filecontext"
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/graphhealth"
 	"github.com/tamnguyendinh/anvien/internal/lbugnative"
@@ -873,6 +874,148 @@ func TestServeCallToolsQueryAndCypher(t *testing.T) {
 	errPayload := responses[4]["error"].(map[string]any)
 	if errPayload["code"] != float64(-32602) || !strings.Contains(errPayload["message"].(string), "write operations are not allowed") {
 		t.Fatalf("write query error = %#v", errPayload)
+	}
+}
+
+func TestServeCallToolContextAndImpactResolveAbsoluteFileTargets(t *testing.T) {
+	store := repo.NewStore(t.TempDir())
+	repoPath := t.TempDir()
+	meta := repo.Meta{
+		RepoPath:   repoPath,
+		IndexedAt:  "2026-05-12T00:00:00Z",
+		LastCommit: "abc123",
+		Stats:      &repo.Stats{},
+	}
+	if err := repo.SaveMeta(repo.StoragePath(repoPath), meta); err != nil {
+		t.Fatalf("save meta: %v", err)
+	}
+	if _, err := store.Register(repoPath, meta, repo.RegisterOptions{Name: "fixture"}); err != nil {
+		t.Fatalf("register repo: %v", err)
+	}
+	writeMCPResourceGraph(t, repoPath)
+
+	absolutePath := filepath.Join(repoPath, "src", "app.ts")
+	outsidePath := filepath.Join(t.TempDir(), "src", "app.ts")
+	input := bytes.Join([][]byte{
+		testFrame(t, map[string]any{
+			"jsonrpc": "2.0",
+			"id":      1,
+			"method":  "tools/call",
+			"params": map[string]any{
+				"name":      "context",
+				"arguments": map[string]any{"repo": "fixture", "target_type": "file", "name": absolutePath},
+			},
+		}),
+		testFrame(t, map[string]any{
+			"jsonrpc": "2.0",
+			"id":      2,
+			"method":  "tools/call",
+			"params": map[string]any{
+				"name":      "context",
+				"arguments": map[string]any{"repo": "fixture", "target_type": "file", "name": outsidePath},
+			},
+		}),
+		testFrame(t, map[string]any{
+			"jsonrpc": "2.0",
+			"id":      3,
+			"method":  "tools/call",
+			"params": map[string]any{
+				"name":      "impact",
+				"arguments": map[string]any{"repo": "fixture", "target_type": "file", "target": absolutePath, "direction": "upstream"},
+			},
+		}),
+		testFrame(t, map[string]any{
+			"jsonrpc": "2.0",
+			"id":      4,
+			"method":  "tools/call",
+			"params": map[string]any{
+				"name":      "impact",
+				"arguments": map[string]any{"repo": "fixture", "target_type": "file", "target": outsidePath, "direction": "upstream"},
+			},
+		}),
+	}, nil)
+
+	var output bytes.Buffer
+	if err := Serve(context.Background(), bytes.NewReader(input), &output, Config{Store: store}); err != nil {
+		t.Fatalf("Serve() error = %v", err)
+	}
+	responses := readTestFrames(t, output.Bytes())
+	if len(responses) != 4 {
+		t.Fatalf("response count = %d, want 4", len(responses))
+	}
+
+	var contextPayload struct {
+		Status string `json:"status"`
+		Target struct {
+			Input          string `json:"input"`
+			NormalizedPath string `json:"normalizedPath"`
+		} `json:"target"`
+		File struct {
+			Path string `json:"path"`
+		} `json:"file"`
+	}
+	if err := json.Unmarshal([]byte(toolJSONTextFromResponse(t, responses[0])), &contextPayload); err != nil {
+		t.Fatalf("parse absolute context JSON: %v", err)
+	}
+	if contextPayload.Status != "found" || contextPayload.File.Path != "src/app.ts" || contextPayload.Target.NormalizedPath != "src/app.ts" {
+		t.Fatalf("absolute context payload = %#v", contextPayload)
+	}
+	if contextPayload.Target.Input != absolutePath {
+		t.Fatalf("absolute context input = %q, want %q", contextPayload.Target.Input, absolutePath)
+	}
+
+	var contextErrPayload struct {
+		Status string `json:"status"`
+		Error  string `json:"error"`
+		Target struct {
+			Input string `json:"input"`
+		} `json:"target"`
+	}
+	if err := json.Unmarshal([]byte(toolJSONTextFromResponse(t, responses[1])), &contextErrPayload); err != nil {
+		t.Fatalf("parse outside context JSON: %v", err)
+	}
+	if contextErrPayload.Status != "error" || !strings.Contains(contextErrPayload.Error, filecontext.ErrFilePathOutsideRepo.Error()) {
+		t.Fatalf("outside context payload = %#v", contextErrPayload)
+	}
+	if contextErrPayload.Target.Input != outsidePath {
+		t.Fatalf("outside context input = %q, want %q", contextErrPayload.Target.Input, outsidePath)
+	}
+
+	var impactPayload struct {
+		Status string `json:"status"`
+		Target struct {
+			Input          string `json:"input"`
+			NormalizedPath string `json:"normalizedPath"`
+		} `json:"target"`
+		File struct {
+			Path string `json:"path"`
+		} `json:"file"`
+	}
+	if err := json.Unmarshal([]byte(toolJSONTextFromResponse(t, responses[2])), &impactPayload); err != nil {
+		t.Fatalf("parse absolute impact JSON: %v", err)
+	}
+	if impactPayload.Status != "found" || impactPayload.File.Path != "src/app.ts" || impactPayload.Target.NormalizedPath != "src/app.ts" {
+		t.Fatalf("absolute impact payload = %#v", impactPayload)
+	}
+	if impactPayload.Target.Input != absolutePath {
+		t.Fatalf("absolute impact input = %q, want %q", impactPayload.Target.Input, absolutePath)
+	}
+
+	var impactErrPayload struct {
+		Status string `json:"status"`
+		Error  string `json:"error"`
+		Target struct {
+			Input string `json:"input"`
+		} `json:"target"`
+	}
+	if err := json.Unmarshal([]byte(toolJSONTextFromResponse(t, responses[3])), &impactErrPayload); err != nil {
+		t.Fatalf("parse outside impact JSON: %v", err)
+	}
+	if impactErrPayload.Status != "error" || !strings.Contains(impactErrPayload.Error, filecontext.ErrFilePathOutsideRepo.Error()) {
+		t.Fatalf("outside impact payload = %#v", impactErrPayload)
+	}
+	if impactErrPayload.Target.Input != outsidePath {
+		t.Fatalf("outside impact input = %q, want %q", impactErrPayload.Target.Input, outsidePath)
 	}
 }
 

@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-06-16`
-- Status: `p1-c-complete`
+- Status: `p1-d-complete`
 - Plan: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-plan.md`
 - Evidence: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-benchmark.md`
@@ -241,7 +241,7 @@ The graph stores file nodes by repo-relative `filePath` values such as `internal
   - Actual-status Update: refresh HTTP row.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] P1-D: Wire MCP file context dispatch.
+- [x] P1-D: Wire MCP file context dispatch.
   - Goal: make MCP file target payloads resolve absolute in-repo paths with the same helper and reject outside-repo absolute paths clearly.
   - Scope Boundary:
     - Editable: `internal/mcp/target_dispatch.go`, direct callers that must pass repo path, and focused MCP tests.

@@ -74,7 +74,14 @@ Matching plan item(s): `P1-A`, `P1-B`, `P1-C`, `P1-D`
 
 ### P1-D - MCP file context dispatch
 
-- Pending.
+- `E1-P1D-IMPACT1`: `anvien impact file internal/mcp/target_dispatch.go --repo Anvien --direction upstream`, `anvien impact file internal/mcp/context.go --repo Anvien --direction upstream`, and `anvien impact file internal/mcp/impact.go --repo Anvien --direction upstream` completed before editing. Blast radius was CRITICAL/HIGH because MCP file dispatch is shared by context, impact, and file summary/layer paths. `anvien impact file internal/mcp/server_test.go --repo Anvien --direction upstream` reported LOW test-file risk. The implementation stayed limited to file target normalization and preserved symbol/route/tool dispatch.
+- `E1-P1D-SRC1`: Added `mcpBuildRepoFileContext` at `internal/mcp/target_dispatch.go:63`, which applies `filecontext.NormalizeRepoFilePath(inputPath, repoRoot)` before `BuildFileContext`, preserves original `target.input`, and leaves the existing `mcpBuildFileContext` wrapper available for graph-relative internal callers.
+- `E1-P1D-SRC2`: Updated `contextToolInternal` at `internal/mcp/context.go:81` and `impactToolInternal` at `internal/mcp/impact.go:105` to resolve the repo entry, pass `entry.Path` into file target lookup, and return explicit MCP payload errors for outside-repo absolute paths through `contextFileErrorPayload` and `fileImpactErrorPayload`.
+- `E1-P1D-TEST1`: Added `TestServeCallToolContextAndImpactResolveAbsoluteFileTargets` at `internal/mcp/server_test.go:880`. The test calls MCP `context` and `impact` through `Serve`, verifies absolute in-repo `src/app.ts` resolves with repo-relative `target.normalizedPath`, and verifies outside-repo absolute paths return `status: error` with `ErrFilePathOutsideRepo`.
+- `E1-P1D-TEST2`: `go test ./internal/mcp -run TestServeCallToolContextAndImpactResolveAbsoluteFileTargets -count=1` passed: `ok github.com/tamnguyendinh/anvien/internal/mcp 0.049s`.
+- `E1-P1D-TEST3`: `go test ./internal/mcp -run "TestServeCallToolsQueryAndCypher|TestServeCallToolContextExpandsClassIncomingRefs" -count=1` passed: `ok github.com/tamnguyendinh/anvien/internal/mcp 0.086s`.
+- `E1-P1D-ANALYZE1`: `anvien analyze --force` after P1-D implementation succeeded. Output included `files: scanned=1422 parsed_code=673 failed=0`, `graph: nodes=82738 relationships=120864`, and `fileProjection: status=built files=1422 dependencyEdges=16508 unresolved=419`.
+- `E1-P1D-DETECT1`: `anvien detect-changes --repo Anvien --scope all` after P1-D implementation succeeded. It reported 4 changed files: `internal/mcp/context.go`, `internal/mcp/impact.go`, and `internal/mcp/target_dispatch.go` with high file risk, plus `internal/mcp/server_test.go` with low file risk. Summary included `changed_count=70`, `changed_files=4`, `affected_count=20`, `affected_files=4`, and `risk_level=critical`; affected processes were expected MCP context/impact flows including `ContextToolInternal`, `ImpactAutoPayload`, and `ImpactToolInternal`.
 
 ## E2 - P2 Evidence
 

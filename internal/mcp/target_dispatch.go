@@ -53,16 +53,29 @@ func normalizedDispatchMode(args map[string]any, targetType string) string {
 }
 
 func mcpBuildFileContext(g *graph.Graph, path string, dispatchMode string) (filecontext.FileContext, bool) {
-	context, ok := filecontext.NewBuilder(g).BuildFileContext(path, filecontext.Options{
+	context, ok, err := mcpBuildRepoFileContext(g, path, "", dispatchMode)
+	if err != nil {
+		return filecontext.FileContext{}, false
+	}
+	return context, ok
+}
+
+func mcpBuildRepoFileContext(g *graph.Graph, inputPath string, repoRoot string, dispatchMode string) (filecontext.FileContext, bool, error) {
+	lookupPath, err := filecontext.NormalizeRepoFilePath(inputPath, repoRoot)
+	if err != nil {
+		return filecontext.FileContext{}, false, err
+	}
+	context, ok := filecontext.NewBuilder(g).BuildFileContext(lookupPath, filecontext.Options{
 		RelationshipSamplesPerGroup: 5,
 		UnresolvedSamplesPerGroup:   5,
 		LinkedSamplesPerKind:        5,
 	})
 	if !ok {
-		return filecontext.FileContext{}, false
+		return filecontext.FileContext{}, false, nil
 	}
+	context.Target.Input = inputPath
 	context.Target.DispatchMode = dispatchMode
-	return context, true
+	return context, true, nil
 }
 
 func mcpFileSummaryForPath(g *graph.Graph, path string) (filecontext.FileSummary, bool) {

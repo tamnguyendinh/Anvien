@@ -2,7 +2,7 @@
 
 Title: File Detail Absolute Path Resolution
 Date: 2026-06-16
-Status: P1-C Complete
+Status: P1-D Complete
 Companion plan: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-plan.md`
 Companion evidence: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-evidence.md`
 Companion benchmark: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-benchmark.md`
@@ -64,11 +64,11 @@ Relationship count is `localRelationshipCount + inboundRefCount + outboundRefCou
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|--------------------|----------|--------------------|
 | Graph file node storage | Graph contains repo-relative `File:internal/mcp/tools.go`; absolute graph path returns no row. | Preserve repo-relative graph storage. | correct | N/A | `E0-P0A-CYPHER1`, `E0-P0A-CYPHER2` | preserve |
-| `BuildFileContext` lookup and shared helper | `BuildFileContext` still looks up repo-relative graph paths. Shared `NormalizeRepoFilePath` now exists for boundary pre-normalization. | Keep repo-relative lookup and use the shared helper from CLI/API/MCP boundaries. | partial | 882 on owner file | `E0-P0A-SRC2`, `E0-P0A-FD1`, `E1-P1A-SRC1`, `E1-P1A-TEST1..E1-P1A-TEST3` | preserve helper; edit P1-B/P1-C/P1-D |
+| `BuildFileContext` lookup and shared helper | `BuildFileContext` still looks up repo-relative graph paths. Shared `NormalizeRepoFilePath` is now wired at CLI, HTTP, and MCP boundaries. | Keep repo-relative lookup and use the shared helper from command boundaries. | correct | 882 on owner file | `E0-P0A-SRC2`, `E0-P0A-FD1`, `E1-P1A-SRC1`, `E1-P1A-TEST1..E1-P1A-TEST3`, `E1-P1B-SRC1`, `E1-P1C-SRC1`, `E1-P1D-SRC1..E1-P1D-SRC2` | preserve in P2 |
 | CLI `file-detail` | Relative and absolute in-repo paths now resolve to the same repo-relative graph file; outside-repo absolute paths fail before lookup. | Normalize `args[0]` against resolved `RepoPath` before lookup; reject outside-repo absolute paths clearly. | correct | 130 after P1-B analyze | `E0-P0A-REPRO1`, `E0-P0A-REPRO2`, `E0-P0A-SRC1`, `E0-P0A-FD2`, `E1-P1B-SRC1`, `E1-P1B-TEST1..E1-P1B-TEST2` | preserve in P1-C/P1-D |
 | HTTP `/api/file-detail` | Query `path` now normalizes against `projection.repoPath`; absolute in-repo paths resolve and outside-repo absolute paths return HTTP 400 JSON error. | Normalize query `path` against resolved `projection.repoPath` before lookup. | correct | 103 after P1-C analyze | `E0-P0A-SRC3`, `E0-P0A-FD3`, `E1-P1C-SRC1`, `E1-P1C-TEST1..E1-P1C-TEST2` | preserve in P1-D |
-| MCP file context dispatch | `mcpBuildFileContext` passes `path` directly to builder and currently lacks repo-root normalization. | Thread repo root into file context lookup and apply shared helper. | wrong | 134 and 207 on direct MCP files | `E0-P0A-SRC4`, `E0-P0A-FD4`, `E0-P0A-FD5` | edit P1-D |
-| Existing focused tests | Helper, CLI, and HTTP now cover absolute in-repo and outside-repo behavior; MCP still needs boundary coverage. | Preserve existing tests and add absolute in-repo and outside-repo cases. | partial | 128 helper, 60 CLI test after P1-B, 68 HTTP test after P1-C | `E0-P0A-TEST1`, `E0-P0A-TEST2`, `E0-P0A-TEST3`, `E0-P0A-FD6..E0-P0A-FD8`, `E1-P1A-TEST1..E1-P1A-TEST3`, `E1-P1B-TEST1..E1-P1B-TEST2`, `E1-P1C-TEST1..E1-P1C-TEST2` | update MCP in P1-D |
+| MCP file context dispatch | MCP `context` and `impact` file targets now normalize against the resolved repo path and reject outside-repo absolute paths with explicit payload errors. Internal repo-relative summary/layer callers still use the compatibility wrapper. | Thread repo root into file context lookup and apply shared helper. | correct | 138 target dispatch, 209 context, 290 impact after P1-D analyze | `E0-P0A-SRC4`, `E0-P0A-FD4`, `E0-P0A-FD5`, `E1-P1D-SRC1..E1-P1D-SRC2`, `E1-P1D-TEST1..E1-P1D-TEST3` | preserve in P2 |
+| Existing focused tests | Helper, CLI, HTTP, and MCP now cover absolute in-repo and outside-repo behavior at command/API/MCP boundaries. | Preserve existing tests and add final validation. | correct | 128 helper, 60 CLI test after P1-B, 68 HTTP test after P1-C, 342 MCP test after P1-D | `E0-P0A-TEST1`, `E0-P0A-TEST2`, `E0-P0A-TEST3`, `E0-P0A-FD6..E0-P0A-FD8`, `E1-P1A-TEST1..E1-P1A-TEST3`, `E1-P1B-TEST1..E1-P1B-TEST2`, `E1-P1C-TEST1..E1-P1C-TEST2`, `E1-P1D-TEST1..E1-P1D-TEST3` | proceed to P2 |
 
 ## Status Refresh Log
 
@@ -78,6 +78,7 @@ Relationship count is `localRelationshipCount + inboundRefCount + outboundRefCou
 | R1 | 2026-06-16 | after P1-A source, tests, graph refresh, and detect-changes | shared file path helper | shared helper capability `missing -> correct`; boundary surfaces remain wrong until wired | `E1-P1A-SRC1`, `E1-P1A-TEST1..E1-P1A-TEST3`, `E1-P1A-ANALYZE1`, `E1-P1A-DETECT1` | proceed to P1-B CLI wiring |
 | R2 | 2026-06-16 | after P1-B source, CLI tests, graph refresh, and detect-changes | CLI `file-detail` boundary | CLI row `wrong -> correct`; HTTP and MCP remain wrong until wired | `E1-P1B-SRC1`, `E1-P1B-TEST1..E1-P1B-TEST2`, `E1-P1B-ANALYZE1`, `E1-P1B-DETECT1` | proceed to P1-C HTTP wiring |
 | R3 | 2026-06-16 | after P1-C source, HTTP endpoint tests, graph refresh, and detect-changes | HTTP `/api/file-detail` boundary | HTTP row `wrong -> correct`; MCP remains wrong until wired | `E1-P1C-SRC1`, `E1-P1C-TEST1..E1-P1C-TEST2`, `E1-P1C-ANALYZE1`, `E1-P1C-DETECT1` | proceed to P1-D MCP wiring |
+| R4 | 2026-06-16 | after P1-D source, MCP boundary tests, graph refresh, and detect-changes | MCP file context dispatch | MCP row `wrong -> correct`; all P1 command surfaces now use shared normalization | `E1-P1D-SRC1..E1-P1D-SRC2`, `E1-P1D-TEST1..E1-P1D-TEST3`, `E1-P1D-ANALYZE1`, `E1-P1D-DETECT1` | proceed to P2 validation |
 
 ## Phase Touch Map
 
@@ -86,7 +87,7 @@ Relationship count is `localRelationshipCount + inboundRefCount + outboundRefCou
 | `internal/filecontext/context.go` | `internal/filecontext/context_test.go` | helper owner and tests | P1-A | edit | `E0-P0A-FD1`, `E0-P0A-FD6` | keep graph lookup repo-relative |
 | `internal/cli/file_detail_command.go` | `internal/cli/file_detail_command_test.go` | CLI boundary and tests | P1-B | edit | `E0-P0A-FD2`, `E0-P0A-FD7` | use resolved `RepoPath`, not raw `--repo` |
 | `internal/httpapi/file_context.go` | `internal/httpapi/file_context_test.go` | HTTP boundary and tests | P1-C | edit | `E0-P0A-FD3`, `E0-P0A-FD8` | preserve API route and success payload shape |
-| `internal/mcp/target_dispatch.go` | `internal/mcp/context.go` | MCP helper and caller surface | P1-D | edit or inspect as needed | `E0-P0A-FD4`, `E0-P0A-FD5` | preserve non-file target dispatch |
+| `internal/mcp/target_dispatch.go` | `internal/mcp/context.go`, `internal/mcp/impact.go`, `internal/mcp/server_test.go` | MCP helper, context/impact caller surfaces, and tests | P1-D | edit | `E0-P0A-FD4`, `E0-P0A-FD5`, `E1-P1D-IMPACT1` | preserve non-file target dispatch |
 | Graph file nodes | `.anvien/graph.json` | source evidence only | P1 all | preserve-only | `E0-P0A-ANALYZE1`, `E0-P0A-CYPHER1` | do not edit generated graph as source of truth |
 
 ## Detailed Findings
@@ -166,8 +167,8 @@ Do not add fuzzy matching, basename fallback, or repo guessing.
 | P1-A | Shared normalization is partial/missing for repo-aware absolute paths. | Implement helper first so CLI/API/MCP do not duplicate path logic. |
 | P1-B | Shared helper is wired into CLI and focused CLI boundary tests pass. | Preserve CLI behavior while wiring HTTP/MCP siblings. |
 | P1-C | HTTP endpoint now uses the shared helper and focused endpoint tests pass. | Preserve HTTP behavior while wiring MCP sibling. |
-| P1-D | MCP is wrong for absolute in-repo paths and may need repo-root threading. | Inspect callers, thread repo root for file targets only, preserve non-file dispatch. |
-| P2-A | Current tests pass but do not prove the new behavior. | Add focused behavior tests and final boundary commands. |
+| P1-D | MCP file target dispatch now resolves absolute in-repo paths and rejects outside-repo absolute paths. | Preserve behavior during P2 validation. |
+| P2-A | Focused behavior tests now cover helper, CLI, HTTP, and MCP. | Run full build, focused tests, and real CLI boundary commands. |
 
 ## Implementation Gate
 

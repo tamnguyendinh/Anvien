@@ -77,20 +77,29 @@ func (s Server) contextToolInternal(args map[string]any, collectProfile bool) (m
 		return map[string]any{"error": `Either "name" or "uid" parameter is required.`}, profile, nil
 	}
 
-	g, err := s.graphForResource(stringArg(args, "repo", ""))
+	repoName := stringArg(args, "repo", "")
+	entry, err := s.resolveResourceRepo(repoName)
+	if err != nil {
+		return nil, profile, err
+	}
+	g, err := s.graphForResource(repoName)
 	if err != nil {
 		return nil, profile, err
 	}
 	mark(&profile.RepoResolve)
 
 	if targetType == targetTypeFile {
-		payload := contextFilePayload(g, firstNonEmptyString(name, filePathHint), dispatchMode)
+		payload := contextFilePayload(g, firstNonEmptyString(name, filePathHint), entry.Path, dispatchMode)
 		mark(&profile.TargetLookup)
 		return payload, profile, nil
 	}
 
 	if targetType == targetTypeAuto && uid == "" {
-		filePayload, fileFound := contextFilePayloadIfFound(g, firstNonEmptyString(name, filePathHint), dispatchMode)
+		filePayload, fileFound, fileErr := contextFilePayloadIfFound(g, firstNonEmptyString(name, filePathHint), entry.Path, dispatchMode)
+		if fileErr != nil {
+			mark(&profile.TargetLookup)
+			return contextFileErrorPayload(firstNonEmptyString(name, filePathHint), dispatchMode, fileErr), profile, nil
+		}
 		candidates := contextCandidates(g, name, "", filePathHint, stringArg(args, "kind", ""))
 		if fileFound && len(candidates) > 0 {
 			mark(&profile.TargetLookup)
@@ -159,8 +168,11 @@ func (s Server) contextToolInternal(args map[string]any, collectProfile bool) (m
 	return payload, profile, nil
 }
 
-func contextFilePayload(g *graph.Graph, path string, dispatchMode string) map[string]any {
-	payload, ok := contextFilePayloadIfFound(g, path, dispatchMode)
+func contextFilePayload(g *graph.Graph, path string, repoRoot string, dispatchMode string) map[string]any {
+	payload, ok, err := contextFilePayloadIfFound(g, path, repoRoot, dispatchMode)
+	if err != nil {
+		return contextFileErrorPayload(path, dispatchMode, err)
+	}
 	if ok {
 		return payload
 	}
@@ -173,10 +185,13 @@ func contextFilePayload(g *graph.Graph, path string, dispatchMode string) map[st
 	}
 }
 
-func contextFilePayloadIfFound(g *graph.Graph, path string, dispatchMode string) (map[string]any, bool) {
-	context, ok := mcpBuildFileContext(g, path, dispatchMode)
+func contextFilePayloadIfFound(g *graph.Graph, path string, repoRoot string, dispatchMode string) (map[string]any, bool, error) {
+	context, ok, err := mcpBuildRepoFileContext(g, path, repoRoot, dispatchMode)
+	if err != nil {
+		return nil, false, err
+	}
 	if !ok {
-		return nil, false
+		return nil, false, nil
 	}
 	return map[string]any{
 		"status":       "found",
@@ -186,7 +201,17 @@ func contextFilePayloadIfFound(g *graph.Graph, path string, dispatchMode string)
 		"file":         map[string]any{"path": context.Summary.Path},
 		"summary":      context.Summary,
 		"fileContext":  context,
-	}, true
+	}, true, nil
+}
+
+func contextFileErrorPayload(path string, dispatchMode string, err error) map[string]any {
+	return map[string]any{
+		"status":       "error",
+		"targetType":   targetTypeFile,
+		"dispatchMode": dispatchMode,
+		"error":        err.Error(),
+		"target":       map[string]any{"type": targetTypeFile, "input": path},
+	}
 }
 
 func contextCandidates(g *graph.Graph, name string, uid string, filePathHint string, kindHint string) []contextCandidate {

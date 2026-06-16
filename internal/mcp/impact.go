@@ -101,14 +101,19 @@ func (s Server) impactToolInternal(args map[string]any, collectProfile bool) (ma
 		return impactValidationResult(args, validation), profile, nil
 	}
 
-	g, err := s.graphForResource(stringArg(args, "repo", ""))
+	repoName := stringArg(args, "repo", "")
+	entry, err := s.resolveResourceRepo(repoName)
+	if err != nil {
+		return nil, profile, err
+	}
+	g, err := s.graphForResource(repoName)
 	if err != nil {
 		return nil, profile, err
 	}
 	mark(&profile.RepoResolve)
 
 	if options.TargetType == targetTypeFile {
-		payload := runFileImpact(g, options)
+		payload := runFileImpact(g, options, entry.Path)
 		mark(&profile.TargetLookup)
 		return payload, profile, nil
 	}
@@ -123,7 +128,7 @@ func (s Server) impactToolInternal(args map[string]any, collectProfile bool) (ma
 		return payload, profile, nil
 	}
 	if options.TargetType == targetTypeAuto && options.TargetUID == "" {
-		payload, ok, err := s.impactAutoPayload(g, args, options)
+		payload, ok, err := s.impactAutoPayload(g, args, options, entry.Path)
 		mark(&profile.TargetLookup)
 		if err != nil || ok {
 			return payload, profile, err
@@ -256,13 +261,18 @@ func (s Server) impactRoutePayload(args map[string]any, options impactOptions) (
 	return payload, nil
 }
 
-func (s Server) impactAutoPayload(g *graph.Graph, args map[string]any, options impactOptions) (map[string]any, bool, error) {
+func (s Server) impactAutoPayload(g *graph.Graph, args map[string]any, options impactOptions, repoRoot string) (map[string]any, bool, error) {
 	target := strings.TrimSpace(options.Target)
 	if target == "" {
 		return nil, false, nil
 	}
 	candidates := make([]map[string]any, 0)
-	if context, ok := mcpBuildFileContext(g, target, dispatchModeSmart); ok {
+	fileContext, fileFound, fileErr := mcpBuildRepoFileContext(g, target, repoRoot, dispatchModeSmart)
+	if fileErr != nil {
+		return fileImpactErrorPayload(options, fileErr), true, nil
+	}
+	if fileFound {
+		context := fileContext
 		candidates = append(candidates, contextFileCandidate(context.Summary.Path, target))
 	}
 	symbolCandidates := contextCandidates(g, options.Target, "", options.FilePath, options.Kind)
@@ -317,7 +327,7 @@ func (s Server) impactAutoPayload(g *graph.Graph, args map[string]any, options i
 		fileOptions := options
 		fileOptions.TargetType = targetTypeFile
 		fileOptions.DispatchMode = dispatchModeSmart
-		return runFileImpact(g, fileOptions), true, nil
+		return runFileImpact(g, fileOptions, repoRoot), true, nil
 	case targetTypeRoute:
 		routeOptions := options
 		routeOptions.TargetType = targetTypeRoute
@@ -331,8 +341,11 @@ func (s Server) impactAutoPayload(g *graph.Graph, args map[string]any, options i
 	}
 }
 
-func runFileImpact(g *graph.Graph, options impactOptions) map[string]any {
-	context, ok := mcpBuildFileContext(g, options.Target, options.DispatchMode)
+func runFileImpact(g *graph.Graph, options impactOptions, repoRoot string) map[string]any {
+	context, ok, err := mcpBuildRepoFileContext(g, options.Target, repoRoot, options.DispatchMode)
+	if err != nil {
+		return fileImpactErrorPayload(options, err)
+	}
 	if !ok {
 		return map[string]any{
 			"status":        "not_found",
@@ -421,6 +434,19 @@ func runFileImpact(g *graph.Graph, options impactOptions) map[string]any {
 			"linked_flows":      context.Linked.Counts.Flows,
 			"linked_tests":      context.Linked.Counts.Tests,
 		},
+	}
+}
+
+func fileImpactErrorPayload(options impactOptions, err error) map[string]any {
+	return map[string]any{
+		"status":        "error",
+		"targetType":    targetTypeFile,
+		"dispatchMode":  options.DispatchMode,
+		"error":         err.Error(),
+		"target":        map[string]any{"type": targetTypeFile, "input": options.Target},
+		"direction":     options.Direction,
+		"impactedCount": 0,
+		"risk":          "UNKNOWN",
 	}
 }
 
