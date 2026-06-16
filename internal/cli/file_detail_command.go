@@ -58,7 +58,11 @@ func newFileDetailCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			context, ok := filecontext.NewBuilder(g).BuildFileContext(args[0], filecontext.Options{
+			lookupPath, err := filecontext.NormalizeRepoFilePath(args[0], inputs.RepoPath)
+			if err != nil {
+				return err
+			}
+			context, ok := filecontext.NewBuilder(g).BuildFileContext(lookupPath, filecontext.Options{
 				RelationshipSamplesPerGroup: relationshipSamples,
 				UnresolvedSamplesPerGroup:   unresolvedSamples,
 				LinkedSamplesPerKind:        linkedSamples,
@@ -66,6 +70,7 @@ func newFileDetailCommand() *cobra.Command {
 			if !ok {
 				return fmt.Errorf("file %q not found in repo %s", args[0], inputs.Repo)
 			}
+			context.Target.Input = args[0]
 			attachFileProjectionMetadata(&context, inputs)
 			if jsonOutput {
 				return writeJSON(cmd, context)

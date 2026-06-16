@@ -2,7 +2,7 @@
 
 Title: File Detail Absolute Path Resolution
 Date: 2026-06-16
-Status: P0 Complete
+Status: P1-B Complete
 Companion plan: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-plan.md`
 Companion evidence: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-evidence.md`
 Companion benchmark: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-benchmark.md`
@@ -65,10 +65,10 @@ Relationship count is `localRelationshipCount + inboundRefCount + outboundRefCou
 |------|---------------|----------------|--------|--------------------|----------|--------------------|
 | Graph file node storage | Graph contains repo-relative `File:internal/mcp/tools.go`; absolute graph path returns no row. | Preserve repo-relative graph storage. | correct | N/A | `E0-P0A-CYPHER1`, `E0-P0A-CYPHER2` | preserve |
 | `BuildFileContext` lookup and shared helper | `BuildFileContext` still looks up repo-relative graph paths. Shared `NormalizeRepoFilePath` now exists for boundary pre-normalization. | Keep repo-relative lookup and use the shared helper from CLI/API/MCP boundaries. | partial | 882 on owner file | `E0-P0A-SRC2`, `E0-P0A-FD1`, `E1-P1A-SRC1`, `E1-P1A-TEST1..E1-P1A-TEST3` | preserve helper; edit P1-B/P1-C/P1-D |
-| CLI `file-detail` | Relative path succeeds; absolute in-repo path fails. CLI passes `args[0]` directly to builder. | Normalize `args[0]` against resolved `RepoPath` before lookup; reject outside-repo absolute paths clearly. | wrong | 129 | `E0-P0A-REPRO1`, `E0-P0A-REPRO2`, `E0-P0A-SRC1`, `E0-P0A-FD2` | edit P1-B |
+| CLI `file-detail` | Relative and absolute in-repo paths now resolve to the same repo-relative graph file; outside-repo absolute paths fail before lookup. | Normalize `args[0]` against resolved `RepoPath` before lookup; reject outside-repo absolute paths clearly. | correct | 130 after P1-B analyze | `E0-P0A-REPRO1`, `E0-P0A-REPRO2`, `E0-P0A-SRC1`, `E0-P0A-FD2`, `E1-P1B-SRC1`, `E1-P1B-TEST1..E1-P1B-TEST2` | preserve in P1-C/P1-D |
 | HTTP `/api/file-detail` | Query `path` is passed directly to builder. | Normalize query `path` against resolved `projection.repoPath` before lookup. | wrong | 102 | `E0-P0A-SRC3`, `E0-P0A-FD3` | edit P1-C |
 | MCP file context dispatch | `mcpBuildFileContext` passes `path` directly to builder and currently lacks repo-root normalization. | Thread repo root into file context lookup and apply shared helper. | wrong | 134 and 207 on direct MCP files | `E0-P0A-SRC4`, `E0-P0A-FD4`, `E0-P0A-FD5` | edit P1-D |
-| Existing focused tests | Current tests pass for repo-relative behavior but do not prove absolute path resolution. | Preserve existing tests and add absolute in-repo and outside-repo cases. | partial | 128, 53, 62 on current test files | `E0-P0A-TEST1`, `E0-P0A-TEST2`, `E0-P0A-TEST3`, `E0-P0A-FD6..E0-P0A-FD8` | update in P1-A through P1-D |
+| Existing focused tests | Helper and CLI now cover absolute in-repo and outside-repo behavior; HTTP and MCP still need boundary coverage. | Preserve existing tests and add absolute in-repo and outside-repo cases. | partial | 128 helper, 60 CLI test after P1-B, 62 HTTP test baseline | `E0-P0A-TEST1`, `E0-P0A-TEST2`, `E0-P0A-TEST3`, `E0-P0A-FD6..E0-P0A-FD8`, `E1-P1A-TEST1..E1-P1A-TEST3`, `E1-P1B-TEST1..E1-P1B-TEST2` | update HTTP/MCP in P1-C through P1-D |
 
 ## Status Refresh Log
 
@@ -76,6 +76,7 @@ Relationship count is `localRelationshipCount + inboundRefCount + outboundRefCou
 |---------|------|------------|----------------|----------------|----------|-------------------|
 | R0 | 2026-06-16 | baseline before implementation, graph refreshed with `anvien analyze --force` | file-detail absolute path resolution | initial classification: graph storage correct; CLI/API/MCP wrong for absolute path; tests partial | `E0-P0A-ANALYZE1`, `E0-P0A-REPRO1`, `E0-P0A-REPRO2`, `E0-P0A-SRC1..E0-P0A-SRC4`, `E0-P0A-FD1..E0-P0A-FD8`, `E0-P0A-TEST1..E0-P0A-TEST3` | P1 split into shared helper, CLI, HTTP, MCP slices |
 | R1 | 2026-06-16 | after P1-A source, tests, graph refresh, and detect-changes | shared file path helper | shared helper capability `missing -> correct`; boundary surfaces remain wrong until wired | `E1-P1A-SRC1`, `E1-P1A-TEST1..E1-P1A-TEST3`, `E1-P1A-ANALYZE1`, `E1-P1A-DETECT1` | proceed to P1-B CLI wiring |
+| R2 | 2026-06-16 | after P1-B source, CLI tests, graph refresh, and detect-changes | CLI `file-detail` boundary | CLI row `wrong -> correct`; HTTP and MCP remain wrong until wired | `E1-P1B-SRC1`, `E1-P1B-TEST1..E1-P1B-TEST2`, `E1-P1B-ANALYZE1`, `E1-P1B-DETECT1` | proceed to P1-C HTTP wiring |
 
 ## Phase Touch Map
 
@@ -162,7 +163,7 @@ Do not add fuzzy matching, basename fallback, or repo guessing.
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
 | P1-A | Shared normalization is partial/missing for repo-aware absolute paths. | Implement helper first so CLI/API/MCP do not duplicate path logic. |
-| P1-B | Shared helper now exists; CLI is still wrong for absolute in-repo paths. | Normalize against `inputs.RepoPath` before `BuildFileContext` using `NormalizeRepoFilePath`. |
+| P1-B | Shared helper is wired into CLI and focused CLI boundary tests pass. | Preserve CLI behavior while wiring HTTP/MCP siblings. |
 | P1-C | HTTP is wrong for absolute in-repo paths. | Normalize against `projection.repoPath` before `BuildFileContext`. |
 | P1-D | MCP is wrong for absolute in-repo paths and may need repo-root threading. | Inspect callers, thread repo root for file targets only, preserve non-file dispatch. |
 | P2-A | Current tests pass but do not prove the new behavior. | Add focused behavior tests and final boundary commands. |

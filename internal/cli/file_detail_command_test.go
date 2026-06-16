@@ -34,11 +34,33 @@ func TestFileDetailCommandOutputsFileProjection(t *testing.T) {
 	if payload.Repo != "fixture" || payload.Summary.Path != "src/app.go" {
 		t.Fatalf("payload repo/path = %q/%q", payload.Repo, payload.Summary.Path)
 	}
+	if payload.Target.NormalizedPath != "src/app.go" {
+		t.Fatalf("payload normalized path = %q, want src/app.go", payload.Target.NormalizedPath)
+	}
 	if payload.Summary.SymbolCount != 2 || payload.Summary.OutboundRefCount != 1 || payload.Summary.Unresolved != 1 {
 		t.Fatalf("summary = %#v, want symbols=2 outbound=1 unresolved=1", payload.Summary)
 	}
 	if len(payload.SymbolTree) != 2 || payload.SymbolTree[0].Name != "Server" || payload.SymbolTree[1].Name != "NewServer" {
 		t.Fatalf("symbol tree = %#v", payload.SymbolTree)
+	}
+
+	absolutePath := filepath.Join(repoPath, "src", "app.go")
+	out, errOut, err = executeForTest(t, "file-detail", absolutePath, "--repo", "fixture", "--json")
+	if err != nil {
+		t.Fatalf("file-detail absolute path returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	if errOut != "" {
+		t.Fatalf("file-detail absolute path wrote stderr: %q", errOut)
+	}
+	var absolutePayload filecontext.FileContext
+	if err := json.Unmarshal([]byte(out), &absolutePayload); err != nil {
+		t.Fatalf("parse absolute file-detail JSON: %v\n%s", err, out)
+	}
+	if absolutePayload.Summary.Path != "src/app.go" || absolutePayload.Target.NormalizedPath != "src/app.go" {
+		t.Fatalf("absolute payload path/normalized = %q/%q, want src/app.go/src/app.go", absolutePayload.Summary.Path, absolutePayload.Target.NormalizedPath)
+	}
+	if absolutePayload.Target.Input != absolutePath {
+		t.Fatalf("absolute payload input = %q, want %q", absolutePayload.Target.Input, absolutePath)
 	}
 
 	out, errOut, err = executeForTest(t, "file-detail", "src/app.go", "--repo", "fixture")
@@ -124,6 +146,22 @@ func TestFileDetailCommandReportsMissingFile(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), `file "src/missing.go" not found`) {
 		t.Fatalf("missing file error = %v", err)
+	}
+}
+
+func TestFileDetailCommandRejectsOutsideRepoAbsolutePath(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv(repo.HomeEnvName, home)
+	repoPath := t.TempDir()
+	registerDirectToolCommandRepo(t, repo.NewStore(home), repoPath, "fixture")
+	writeFileProjectionCommandGraph(t, repoPath)
+
+	out, errOut, err := executeForTest(t, "file-detail", filepath.Join(filepath.Dir(repoPath), "outside", "src", "app.go"), "--repo", "fixture")
+	if err == nil {
+		t.Fatalf("file-detail outside absolute path succeeded\nstdout:\n%s\nstderr:\n%s", out, errOut)
+	}
+	if !strings.Contains(err.Error(), filecontext.ErrFilePathOutsideRepo.Error()) {
+		t.Fatalf("outside repo error = %v", err)
 	}
 }
 

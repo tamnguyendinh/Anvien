@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-06-16`
-- Status: `p0-complete`
+- Status: `p1-b-complete`
 - Plan: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-plan.md`
 - Evidence: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-benchmark.md`
@@ -137,7 +137,7 @@ The graph stores file nodes by repo-relative `filePath` values such as `internal
   - Actual-status Update: refresh filecontext row after tests pass.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] P1-B: Wire CLI `file-detail`.
+- [x] P1-B: Wire CLI `file-detail`.
   - Goal: make `anvien file-detail <absolute-in-repo-path> --repo Anvien` resolve to the same graph file as the repo-relative path.
   - Scope Boundary:
     - Editable: `internal/cli/file_detail_command.go`, `internal/cli/file_detail_command_test.go`.

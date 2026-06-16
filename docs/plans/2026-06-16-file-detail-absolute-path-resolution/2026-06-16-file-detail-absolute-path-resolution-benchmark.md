@@ -44,6 +44,12 @@
 | P1-A | Graph nodes after helper | nodes | 82623 | 82684 | Pending | Expected source/test symbol increase only | +61 | `E1-P1A-ANALYZE1` |
 | P1-A | Graph relationships after helper | relationships | 120703 | 120762 | Pending | Expected source/test relationship increase only | +59 | `E1-P1A-ANALYZE1` |
 | P1-A | File projection dependency edges after helper | edges | 16484 | 16485 | Pending | No unexplained drop | +1 | `E1-P1A-ANALYZE1` |
+| P1-B | Scanned files after CLI wiring | files | 1422 | 1422 | Pending | No regression | 0 from P1-A | `E1-P1B-ANALYZE1` |
+| P1-B | Parsed code files after CLI wiring | files | 673 | 673 | Pending | No regression | 0 | `E1-P1B-ANALYZE1` |
+| P1-B | Analyze failures after CLI wiring | files | 0 | 0 | Pending | 0 | 0 | `E1-P1B-ANALYZE1` |
+| P1-B | Graph nodes after CLI wiring | nodes | 82684 | 82682 | Pending | No unexplained drop | -2 | `E1-P1B-ANALYZE1` |
+| P1-B | Graph relationships after CLI wiring | relationships | 120762 | 120782 | Pending | Expected CLI/test relationship update only | +20 | `E1-P1B-ANALYZE1` |
+| P1-B | File projection dependency edges after CLI wiring | edges | 16485 | 16492 | Pending | No unexplained drop | +7 | `E1-P1B-ANALYZE1` |
 
 ## B2 - P2 Benchmarks
 

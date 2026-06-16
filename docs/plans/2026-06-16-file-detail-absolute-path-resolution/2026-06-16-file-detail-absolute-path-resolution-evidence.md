@@ -56,7 +56,12 @@ Matching plan item(s): `P1-A`, `P1-B`, `P1-C`, `P1-D`
 
 ### P1-B - CLI file-detail wiring
 
-- Pending.
+- `E1-P1B-IMPACT1`: `anvien impact file internal/cli/file_detail_command.go --repo Anvien --direction upstream` completed before editing. Blast radius was CRITICAL/HIGH because `newFileDetailCommand` participates in CLI registration, file projection, and rendering flows, including `NewFileDetailCommand -> AbsClean`. `anvien impact file internal/cli/file_detail_command_test.go --repo Anvien --direction upstream` reported LOW test-file risk. The implementation stayed limited to CLI file-detail lookup and focused CLI tests.
+- `E1-P1B-SRC1`: Updated `internal/cli/file_detail_command.go` so `newFileDetailCommand` calls `filecontext.NormalizeRepoFilePath(args[0], inputs.RepoPath)` before `BuildFileContext`. Successful payloads keep `target.normalizedPath` repo-relative while `target.input` preserves the original CLI argument.
+- `E1-P1B-TEST1`: Updated `TestFileDetailCommandOutputsFileProjection` in `internal/cli/file_detail_command_test.go` to assert repo-relative normalized output and absolute in-repo lookup. Added `TestFileDetailCommandRejectsOutsideRepoAbsolutePath` for outside-repo absolute failure.
+- `E1-P1B-TEST2`: `go test ./internal/cli -run TestFileDetailCommand -count=1` passed: `ok github.com/tamnguyendinh/anvien/internal/cli 1.989s`.
+- `E1-P1B-ANALYZE1`: `anvien analyze --force` after P1-B implementation succeeded. Output included `files: scanned=1422 parsed_code=673 failed=0`, `graph: nodes=82682 relationships=120782`, and `fileProjection: status=built files=1422 dependencyEdges=16492 unresolved=419`.
+- `E1-P1B-DETECT1`: Final `anvien detect-changes --repo Anvien --scope all` before the P1-B commit succeeded. It reported 6 changed files: four plan/evidence/status docs with low file risk, `internal/cli/file_detail_command.go` with high file risk, and `internal/cli/file_detail_command_test.go` with low file risk. Summary included `changed_count=29`, `changed_files=6`, `affected_count=11`, `affected_files=6`, and `risk_level=high`; the affected processes were expected `NewFileDetailCommand` CLI flows.
 
 ### P1-C - HTTP file-detail wiring
 
