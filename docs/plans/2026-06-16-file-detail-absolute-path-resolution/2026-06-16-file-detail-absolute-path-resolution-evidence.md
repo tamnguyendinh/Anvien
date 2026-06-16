@@ -44,7 +44,27 @@ Matching plan item(s): `P0-A`
 
 Matching plan item(s): `P1-A`, `P1-B`, `P1-C`, `P1-D`
 
-- Pending. Record impact, source, tests, manual command/API/MCP validation, detect-changes, and commit evidence per P1 slice.
+### P1-A - Shared repo-aware file lookup normalization
+
+- `E1-P1A-IMPACT1`: `anvien impact file internal/filecontext/context.go --repo Anvien --direction upstream` completed before editing. Blast radius was CRITICAL/HIGH at file level, including CLI, HTTP, MCP, web contract, and FileDetail/FileMap consumers. The implementation was intentionally limited to a pure helper and tests. `anvien impact file internal/filecontext/context_test.go --repo Anvien --direction upstream` reported LOW test-file risk.
+- `E1-P1A-SRC1`: Added `ErrFilePathOutsideRepo` at `internal/filecontext/context.go:21` and `NormalizeRepoFilePath(inputPath, repoRoot)` at `internal/filecontext/context.go:1128`. The helper preserves repo-relative inputs, converts in-repo absolute paths to repo-relative lookup paths, and returns a wrapped outside-repo error instead of guessing.
+- `E1-P1A-TEST1`: Added `TestNormalizeRepoFilePath` at `internal/filecontext/context_test.go:104`, covering repo-relative, dot-relative, Windows absolute in repo, slash absolute in repo, case-insensitive Windows root, outside-repo absolute, sibling-prefix outside-repo absolute, blank path, and no-repo-root preservation.
+- `E1-P1A-TEST2`: `go test ./internal/filecontext -run TestNormalizeRepoFilePath -count=1` passed: `ok github.com/tamnguyendinh/anvien/internal/filecontext 0.021s`.
+- `E1-P1A-TEST3`: `go test ./internal/filecontext -count=1` passed: `ok github.com/tamnguyendinh/anvien/internal/filecontext 0.020s`.
+- `E1-P1A-ANALYZE1`: `anvien analyze --force` after P1-A implementation succeeded. Output included `files: scanned=1422 parsed_code=673 failed=0`, `graph: nodes=82684 relationships=120762`, and `fileProjection: status=built files=1422 dependencyEdges=16485 unresolved=419`.
+- `E1-P1A-DETECT1`: `anvien detect-changes --repo Anvien --scope all` after P1-A implementation succeeded. It reported 5 changed files: the plan, evidence, actual-status docs, `internal/filecontext/context.go` with high file risk, and `internal/filecontext/context_test.go` with low file risk. Summary included `changed_count=48`, `changed_files=5`, `affected_files=5`, `risk_level=low`, and no affected processes.
+
+### P1-B - CLI file-detail wiring
+
+- Pending.
+
+### P1-C - HTTP file-detail wiring
+
+- Pending.
+
+### P1-D - MCP file context dispatch
+
+- Pending.
 
 ## E2 - P2 Evidence
 

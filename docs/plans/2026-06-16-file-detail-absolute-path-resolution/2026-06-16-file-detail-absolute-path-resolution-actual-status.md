@@ -64,7 +64,7 @@ Relationship count is `localRelationshipCount + inboundRefCount + outboundRefCou
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|--------------------|----------|--------------------|
 | Graph file node storage | Graph contains repo-relative `File:internal/mcp/tools.go`; absolute graph path returns no row. | Preserve repo-relative graph storage. | correct | N/A | `E0-P0A-CYPHER1`, `E0-P0A-CYPHER2` | preserve |
-| `BuildFileContext` lookup | Looks up `b.filesByPath[normalizedPath]` after lightweight normalization only. | Keep repo-relative lookup but add repo-aware pre-normalization at boundaries or shared helper. | partial | 882 on owner file | `E0-P0A-SRC2`, `E0-P0A-FD1` | edit P1-A |
+| `BuildFileContext` lookup and shared helper | `BuildFileContext` still looks up repo-relative graph paths. Shared `NormalizeRepoFilePath` now exists for boundary pre-normalization. | Keep repo-relative lookup and use the shared helper from CLI/API/MCP boundaries. | partial | 882 on owner file | `E0-P0A-SRC2`, `E0-P0A-FD1`, `E1-P1A-SRC1`, `E1-P1A-TEST1..E1-P1A-TEST3` | preserve helper; edit P1-B/P1-C/P1-D |
 | CLI `file-detail` | Relative path succeeds; absolute in-repo path fails. CLI passes `args[0]` directly to builder. | Normalize `args[0]` against resolved `RepoPath` before lookup; reject outside-repo absolute paths clearly. | wrong | 129 | `E0-P0A-REPRO1`, `E0-P0A-REPRO2`, `E0-P0A-SRC1`, `E0-P0A-FD2` | edit P1-B |
 | HTTP `/api/file-detail` | Query `path` is passed directly to builder. | Normalize query `path` against resolved `projection.repoPath` before lookup. | wrong | 102 | `E0-P0A-SRC3`, `E0-P0A-FD3` | edit P1-C |
 | MCP file context dispatch | `mcpBuildFileContext` passes `path` directly to builder and currently lacks repo-root normalization. | Thread repo root into file context lookup and apply shared helper. | wrong | 134 and 207 on direct MCP files | `E0-P0A-SRC4`, `E0-P0A-FD4`, `E0-P0A-FD5` | edit P1-D |
@@ -75,6 +75,7 @@ Relationship count is `localRelationshipCount + inboundRefCount + outboundRefCou
 | Refresh | Date | Repo Basis | Changed Scope | Status Changes | Evidence | Next Phase Update |
 |---------|------|------------|----------------|----------------|----------|-------------------|
 | R0 | 2026-06-16 | baseline before implementation, graph refreshed with `anvien analyze --force` | file-detail absolute path resolution | initial classification: graph storage correct; CLI/API/MCP wrong for absolute path; tests partial | `E0-P0A-ANALYZE1`, `E0-P0A-REPRO1`, `E0-P0A-REPRO2`, `E0-P0A-SRC1..E0-P0A-SRC4`, `E0-P0A-FD1..E0-P0A-FD8`, `E0-P0A-TEST1..E0-P0A-TEST3` | P1 split into shared helper, CLI, HTTP, MCP slices |
+| R1 | 2026-06-16 | after P1-A source, tests, graph refresh, and detect-changes | shared file path helper | shared helper capability `missing -> correct`; boundary surfaces remain wrong until wired | `E1-P1A-SRC1`, `E1-P1A-TEST1..E1-P1A-TEST3`, `E1-P1A-ANALYZE1`, `E1-P1A-DETECT1` | proceed to P1-B CLI wiring |
 
 ## Phase Touch Map
 
@@ -161,7 +162,7 @@ Do not add fuzzy matching, basename fallback, or repo guessing.
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
 | P1-A | Shared normalization is partial/missing for repo-aware absolute paths. | Implement helper first so CLI/API/MCP do not duplicate path logic. |
-| P1-B | CLI is wrong for absolute in-repo paths. | Normalize against `inputs.RepoPath` before `BuildFileContext`. |
+| P1-B | Shared helper now exists; CLI is still wrong for absolute in-repo paths. | Normalize against `inputs.RepoPath` before `BuildFileContext` using `NormalizeRepoFilePath`. |
 | P1-C | HTTP is wrong for absolute in-repo paths. | Normalize against `projection.repoPath` before `BuildFileContext`. |
 | P1-D | MCP is wrong for absolute in-repo paths and may need repo-root threading. | Inspect callers, thread repo root for file targets only, preserve non-file dispatch. |
 | P2-A | Current tests pass but do not prove the new behavior. | Add focused behavior tests and final boundary commands. |

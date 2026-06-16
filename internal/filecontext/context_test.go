@@ -2,6 +2,7 @@ package filecontext
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
 	"github.com/tamnguyendinh/anvien/internal/graph"
@@ -97,6 +98,89 @@ func TestBuildFileContextReturnsFalseForMissingFile(t *testing.T) {
 	_, ok := NewBuilder(fileContextFixture(false)).BuildFileContext("src/missing.go", Options{})
 	if ok {
 		t.Fatalf("BuildFileContext() found missing file")
+	}
+}
+
+func TestNormalizeRepoFilePath(t *testing.T) {
+	tests := []struct {
+		name      string
+		inputPath string
+		repoRoot  string
+		want      string
+		wantErr   bool
+	}{
+		{
+			name:      "repo relative",
+			inputPath: "src/app.go",
+			repoRoot:  `E:\Anvien`,
+			want:      "src/app.go",
+		},
+		{
+			name:      "dot relative windows separators",
+			inputPath: `.\src\app.go`,
+			repoRoot:  `E:\Anvien`,
+			want:      "src/app.go",
+		},
+		{
+			name:      "windows absolute inside repo",
+			inputPath: `E:\Anvien\src\app.go`,
+			repoRoot:  `E:\Anvien`,
+			want:      "src/app.go",
+		},
+		{
+			name:      "slash absolute inside repo",
+			inputPath: "E:/Anvien/src/app.go",
+			repoRoot:  `E:\Anvien`,
+			want:      "src/app.go",
+		},
+		{
+			name:      "windows absolute uses case insensitive root",
+			inputPath: `e:\anvien\src\app.go`,
+			repoRoot:  `E:\Anvien`,
+			want:      "src/app.go",
+		},
+		{
+			name:      "absolute outside repo",
+			inputPath: `E:\Other\src\app.go`,
+			repoRoot:  `E:\Anvien`,
+			wantErr:   true,
+		},
+		{
+			name:      "absolute sibling prefix is outside repo",
+			inputPath: `E:\AnvienOther\src\app.go`,
+			repoRoot:  `E:\Anvien`,
+			wantErr:   true,
+		},
+		{
+			name:      "blank path",
+			inputPath: "  ",
+			repoRoot:  `E:\Anvien`,
+			want:      "",
+		},
+		{
+			name:      "absolute path without repo root preserves lookup",
+			inputPath: `E:\Anvien\src\app.go`,
+			repoRoot:  "",
+			want:      "E:/Anvien/src/app.go",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := NormalizeRepoFilePath(test.inputPath, test.repoRoot)
+			if test.wantErr {
+				if !errors.Is(err, ErrFilePathOutsideRepo) {
+					t.Fatalf("NormalizeRepoFilePath() err = %v, want ErrFilePathOutsideRepo", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("NormalizeRepoFilePath() err = %v", err)
+			}
+			if got != test.want {
+				t.Fatalf("NormalizeRepoFilePath() = %q, want %q", got, test.want)
+			}
+		})
 	}
 }
 

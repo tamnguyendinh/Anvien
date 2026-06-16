@@ -1,8 +1,10 @@
 package filecontext
 
 import (
+	"errors"
 	"fmt"
 	"hash/fnv"
+	"path"
 	"sort"
 	"strings"
 	"sync"
@@ -15,6 +17,8 @@ import (
 const defaultSampleLimit = 10
 
 const DerivedFileEdgesNote = "File relationship groups are projections derived from symbol and source-site graph facts; canonical graph relationships remain symbol/source-site facts."
+
+var ErrFilePathOutsideRepo = errors.New("file path is outside repository")
 
 type Options struct {
 	RelationshipSamplesPerGroup int
@@ -1119,6 +1123,79 @@ func normalizePath(path string) string {
 	path = strings.TrimSpace(strings.ReplaceAll(path, "\\", "/"))
 	path = strings.TrimPrefix(path, "./")
 	return path
+}
+
+func NormalizeRepoFilePath(inputPath string, repoRoot string) (string, error) {
+	normalizedInput := cleanFileLookupPath(inputPath)
+	if normalizedInput == "" || !isAbsoluteFilePath(normalizedInput) {
+		return normalizedInput, nil
+	}
+
+	normalizedRoot := cleanFileLookupPath(repoRoot)
+	if normalizedRoot == "" || !isAbsoluteFilePath(normalizedRoot) {
+		return normalizedInput, nil
+	}
+
+	relative, ok := trimRepoRoot(normalizedInput, normalizedRoot)
+	if !ok {
+		return "", fmt.Errorf("%w: %s", ErrFilePathOutsideRepo, inputPath)
+	}
+	return relative, nil
+}
+
+func cleanFileLookupPath(value string) string {
+	normalized := normalizePath(value)
+	if normalized == "" {
+		return ""
+	}
+	cleaned := path.Clean(normalized)
+	if cleaned == "." {
+		return "."
+	}
+	return strings.TrimPrefix(cleaned, "./")
+}
+
+func trimRepoRoot(filePath string, repoRoot string) (string, bool) {
+	repoRoot = strings.TrimSuffix(repoRoot, "/")
+	if sameFilePath(filePath, repoRoot) {
+		return "", true
+	}
+	prefix := repoRoot + "/"
+	if filePathHasPrefix(filePath, prefix) {
+		return filePath[len(prefix):], true
+	}
+	return "", false
+}
+
+func isAbsoluteFilePath(value string) bool {
+	return strings.HasPrefix(value, "/") || hasWindowsDrivePrefix(value)
+}
+
+func sameFilePath(left string, right string) bool {
+	if shouldFoldPath(left, right) {
+		return strings.EqualFold(left, right)
+	}
+	return left == right
+}
+
+func filePathHasPrefix(value string, prefix string) bool {
+	if shouldFoldPath(value, prefix) {
+		return strings.HasPrefix(strings.ToLower(value), strings.ToLower(prefix))
+	}
+	return strings.HasPrefix(value, prefix)
+}
+
+func shouldFoldPath(left string, right string) bool {
+	return hasWindowsDrivePrefix(left) || hasWindowsDrivePrefix(right)
+}
+
+func hasWindowsDrivePrefix(value string) bool {
+	if len(value) < 3 {
+		return false
+	}
+	letter := value[0]
+	return ((letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z')) &&
+		value[1] == ':' && value[2] == '/'
 }
 
 func normalizeCacheKey(key CacheKey, g *graph.Graph) CacheKey {

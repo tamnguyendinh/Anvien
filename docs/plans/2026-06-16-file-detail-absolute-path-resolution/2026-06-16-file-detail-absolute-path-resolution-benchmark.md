@@ -36,7 +36,14 @@
 
 ## B1 - P1 Benchmarks
 
-Pending. Add only if implementation changes benchmarkable inventory, runtime performance, package size, graph counts, or command-surface counts.
+| Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
+|-------|--------|------|----------|--------|-------|--------|-------|----------|
+| P1-A | Scanned files after helper | files | 1422 | 1422 | Pending | No regression | 0 from P0 post-plan baseline | `E1-P1A-ANALYZE1` |
+| P1-A | Parsed code files after helper | files | 673 | 673 | Pending | No regression | 0 | `E1-P1A-ANALYZE1` |
+| P1-A | Analyze failures after helper | files | 0 | 0 | Pending | 0 | 0 | `E1-P1A-ANALYZE1` |
+| P1-A | Graph nodes after helper | nodes | 82623 | 82684 | Pending | Expected source/test symbol increase only | +61 | `E1-P1A-ANALYZE1` |
+| P1-A | Graph relationships after helper | relationships | 120703 | 120762 | Pending | Expected source/test relationship increase only | +59 | `E1-P1A-ANALYZE1` |
+| P1-A | File projection dependency edges after helper | edges | 16484 | 16485 | Pending | No unexplained drop | +1 | `E1-P1A-ANALYZE1` |
 
 ## B2 - P2 Benchmarks
 

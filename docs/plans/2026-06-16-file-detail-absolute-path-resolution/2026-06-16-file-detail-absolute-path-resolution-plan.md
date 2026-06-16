@@ -85,7 +85,7 @@ The graph stores file nodes by repo-relative `filePath` values such as `internal
   - P1-C: Wire HTTP `/api/file-detail`.
   - P1-D: Wire MCP file context dispatch.
 
-- [ ] P1-A: Add shared repo-aware file lookup normalization.
+- [x] P1-A: Add shared repo-aware file lookup normalization.
   - Goal: create one source-of-truth helper that converts user input plus repo root into the repo-relative graph lookup path.
   - Scope Boundary:
     - Editable: `internal/filecontext/context.go`, `internal/filecontext/context_test.go`, or a new narrow file in `internal/filecontext`.
