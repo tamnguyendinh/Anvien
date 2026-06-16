@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-06-16`
-- Status: `p1-d-complete`
+- Status: `closed`
 - Plan: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-plan.md`
 - Evidence: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-benchmark.md`
@@ -306,7 +306,7 @@ The graph stores file nodes by repo-relative `filePath` values such as `internal
   - P2-B: Supervisor review and dead-work cleanup.
   - P2-C: Close plan.
 
-- [ ] P2-A: Full validation and detect-changes.
+- [x] P2-A: Full validation and detect-changes.
   - Goal: prove the implemented behavior at the nearest real boundaries.
   - Work Steps:
     1. Run `anvien analyze --force` after implementation if graph-related source changed and record evidence.
@@ -318,7 +318,7 @@ The graph stores file nodes by repo-relative `filePath` values such as `internal
   - Implementation Gate: P1-A through P1-D are complete or blocked with evidence.
   - Acceptance: build, tests, real command checks, and detect-changes evidence are recorded.
 
-- [ ] P2-B: Supervisor review and dead-work cleanup.
+- [x] P2-B: Supervisor review and dead-work cleanup.
   - Goal: verify the completed plan work and remove artifacts created by failed or obsolete approaches.
   - Work Steps:
     1. Run supervisor review over plan, actual-status, evidence, benchmark, diff, tests, and command results.
@@ -328,7 +328,7 @@ The graph stores file nodes by repo-relative `filePath` values such as `internal
   - Implementation Gate: P2-A evidence exists.
   - Acceptance: supervisor passes or records a blocker; no dead plan-created artifacts remain.
 
-- [ ] P2-C: Close plan.
+- [x] P2-C: Close plan.
   - Goal: finish ledgers, commit state, and closure notes.
   - Work Steps:
     1. Update evidence, benchmark, and actual-status with final validation and status transitions.

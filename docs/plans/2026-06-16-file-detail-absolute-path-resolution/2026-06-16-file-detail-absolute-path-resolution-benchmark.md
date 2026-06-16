@@ -65,7 +65,20 @@
 
 ## B2 - P2 Benchmarks
 
-Pending. Final graph and relationship counts may be repeated if implementation affects graph indexing behavior or file projection inventory.
+| Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
+|-------|--------|------|----------|--------|-------|--------|-------|----------|
+| P2-A | Validation scanned files before closure reports | files | 1422 | 1422 | 1422 | No regression | 0 from P1-D | `E2-P2A-ANALYZE1` |
+| P2-A | Validation parsed code files before closure reports | files | 673 | 673 | 673 | No regression | 0 | `E2-P2A-ANALYZE1` |
+| P2-A | Validation analyze failures before closure reports | files | 0 | 0 | 0 | 0 | 0 | `E2-P2A-ANALYZE1` |
+| P2-A | Validation graph nodes before closure reports | nodes | 82738 | 82738 | 82738 | No unexplained drop | 0 from P1-D | `E2-P2A-ANALYZE1` |
+| P2-A | Validation graph relationships before closure reports | relationships | 120864 | 120864 | 120864 | No unexplained drop | 0 | `E2-P2A-ANALYZE1` |
+| P2-A | Validation file projection dependency edges before closure reports | edges | 16508 | 16508 | 16508 | No unexplained drop | 0 | `E2-P2A-ANALYZE1` |
+| P2-C | Closure scanned files after reports | files | 1422 | 1425 | 1425 | Docs/report increase only | +3 from P2-A | `E2-P2C-ANALYZE1` |
+| P2-C | Closure parsed code files after reports | files | 673 | 673 | 673 | No code-count regression | 0 | `E2-P2C-ANALYZE1` |
+| P2-C | Closure analyze failures after reports | files | 0 | 0 | 0 | 0 | 0 | `E2-P2C-ANALYZE1` |
+| P2-C | Closure graph nodes after reports | nodes | 82738 | 82760 | 82760 | Docs/report increase only | +22 from P2-A | `E2-P2C-ANALYZE1` |
+| P2-C | Closure graph relationships after reports | relationships | 120864 | 120886 | 120886 | Docs/report increase only | +22 from P2-A | `E2-P2C-ANALYZE1` |
+| P2-C | Closure file projection dependency edges after reports | edges | 16508 | 16508 | 16508 | No code dependency-edge change | 0 | `E2-P2C-ANALYZE1` |
 
 ## Non-Benchmarkable Notes
 

@@ -2,7 +2,7 @@
 
 Title: File Detail Absolute Path Resolution
 Date: 2026-06-16
-Status: P1-D Complete
+Status: Closed
 Companion plan: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-plan.md`
 Companion evidence: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-evidence.md`
 Companion benchmark: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-benchmark.md`
@@ -79,6 +79,8 @@ Relationship count is `localRelationshipCount + inboundRefCount + outboundRefCou
 | R2 | 2026-06-16 | after P1-B source, CLI tests, graph refresh, and detect-changes | CLI `file-detail` boundary | CLI row `wrong -> correct`; HTTP and MCP remain wrong until wired | `E1-P1B-SRC1`, `E1-P1B-TEST1..E1-P1B-TEST2`, `E1-P1B-ANALYZE1`, `E1-P1B-DETECT1` | proceed to P1-C HTTP wiring |
 | R3 | 2026-06-16 | after P1-C source, HTTP endpoint tests, graph refresh, and detect-changes | HTTP `/api/file-detail` boundary | HTTP row `wrong -> correct`; MCP remains wrong until wired | `E1-P1C-SRC1`, `E1-P1C-TEST1..E1-P1C-TEST2`, `E1-P1C-ANALYZE1`, `E1-P1C-DETECT1` | proceed to P1-D MCP wiring |
 | R4 | 2026-06-16 | after P1-D source, MCP boundary tests, graph refresh, and detect-changes | MCP file context dispatch | MCP row `wrong -> correct`; all P1 command surfaces now use shared normalization | `E1-P1D-SRC1..E1-P1D-SRC2`, `E1-P1D-TEST1..E1-P1D-TEST3`, `E1-P1D-ANALYZE1`, `E1-P1D-DETECT1` | proceed to P2 validation |
+| R5 | 2026-06-16 | after P2 build/test/manual CLI validation and clean detect-changes | full validation | applicable build/test suite and manual CLI checks pass; repo-wide `go build ./...` remains blocked by known fixture input packages | `E2-P2A-ANALYZE1`, `E2-P2A-BUILD1..E2-P2A-BUILD2`, `E2-P2A-TEST1..E2-P2A-TEST2`, `E2-P2A-CLI1..E2-P2A-CLI2`, `E2-P2A-DETECT1` | proceed to supervisor review |
+| R6 | 2026-06-16 | after supervisor review and closure report creation | closure | supervisor PASS; plan ledgers and reports prepared for final closure commit | `E2-P2B-SUPERVISOR1`, `E2-P2C-REPORT1..E2-P2C-STATUS1` | close plan |
 
 ## Phase Touch Map
 

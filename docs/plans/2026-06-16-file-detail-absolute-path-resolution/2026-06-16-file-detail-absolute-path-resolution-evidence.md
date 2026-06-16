@@ -87,8 +87,33 @@ Matching plan item(s): `P1-A`, `P1-B`, `P1-C`, `P1-D`
 
 Matching plan item(s): `P2-A`, `P2-B`, `P2-C`
 
-- Pending. Record full build, final validation, supervisor review, cleanup, detect-changes, final commits, and worktree status.
+### P2-A - Full validation and detect-changes
+
+- `E2-P2A-ANALYZE1`: `anvien analyze --force` after P1 implementation succeeded. Output included `files: scanned=1422 parsed_code=673 failed=0`, `graph: nodes=82738 relationships=120864`, and `fileProjection: status=built files=1422 dependencyEdges=16508 unresolved=419`.
+- `E2-P2A-BUILD1`: `go build ./...` was attempted before behavior validation and failed on existing non-buildable analyzer fixtures under `anvien/test/fixtures`: missing fixture imports `models` and `animal`, mixed fixture packages in `go-method-enrichment`, and C source `simple.c` in `sample-code`. This is a known repo-wide build blocker recorded in prior plans and is outside this slice.
+- `E2-P2A-BUILD2`: Applicable product build `go build ./cmd/... ./internal/...` passed.
+- `E2-P2A-TEST1`: Focused tests passed: `go test ./internal/filecontext -count=1` (`0.047s`), `go test ./internal/cli -run TestFileDetailCommand -count=1` (`2.008s`), `go test ./internal/httpapi -run TestFileDetailEndpoint -count=1` (`2.619s`), and `go test ./internal/mcp -run TestServeCallToolContextAndImpactResolveAbsoluteFileTargets -count=1` (`0.058s`).
+- `E2-P2A-TEST2`: Applicable Go suite `go test ./cmd/... ./internal/... -count=1` passed. Notable package timings included `internal/aicontext 53.337s`, `internal/cli 128.166s`, `internal/httpapi 14.235s`, and `internal/mcp 19.245s`.
+- `E2-P2A-CLI1`: Source-built `.tmp\anvien-p2.exe` manual CLI validation compared relative and absolute file-detail lookups for `internal\mcp\tools.go`. Both returned `target.normalizedPath="internal/mcp/tools.go"`, `summary.symbolCount=169`, `SameNormalized=true`, and `SameSymbols=true`.
+- `E2-P2A-CLI2`: Manual outside-repo absolute validation with `.tmp\anvien-p2.exe file-detail <outside path> --repo Anvien --json` exited `1` and printed `file path is outside repository`.
+- `E2-P2A-CLEANUP1`: Removed validation artifact `.tmp\anvien-p2.exe`. A transient empty directory `internal/aicontext/skills/cyber` appeared during validation and caused `anvien analyze --force` to fail with `skill package "cyber" has no SKILL.md entry`; it contained only an empty `skill_domain_map` folder, was not tracked by Git, was removed after confirming the resolved path stayed under `E:\Anvien`, and `anvien analyze --force` passed again with the same P2 counts.
+- `E2-P2A-DETECT1`: Final P2 `anvien detect-changes --repo Anvien --scope all` after validation and cleanup reported no changes: `changed_count=0`, `affected_count=0`, `risk_level=none`.
+
+### P2-B - Supervisor review and dead-work cleanup
+
+- `E2-P2B-SUPERVISOR1`: Supervisor report `reports/Supervisor/rp_supervisor_260616_140659_by_gpt-5-codex_file-detail-absolute-path-resolution.md` returned `Verdict: PASS`. The review inspected source, tests, manual CLI evidence, Anvien analyze/detect evidence, and accepted the helper/CLI/HTTP/MCP invariant closure.
+- `E2-P2B-CLEANUP1`: `git status --short` after validation showed no source/test artifacts left from build or manual CLI validation. The only remaining changes are closure docs/reports added after validation.
+
+### P2-C - Close plan
+
+- `E2-P2C-REPORT1`: Coder report created at `reports/coder/rp_coder_260616_140522_by_gpt-5-codex_file-detail-absolute-path-resolution.md`.
+- `E2-P2C-NOTES1`: Notes/decisions log created at `docs/notes_decisions_log/notes_decisions_log_20260616.md`.
+- `E2-P2C-STATUS1`: Plan, evidence, benchmark, and actual-status ledgers updated through P2 closure. Final closure commit will contain only docs/report artifacts after the P1 implementation commits.
+- `E2-P2C-ANALYZE1`: Final closure `anvien analyze --force` after docs/report artifacts succeeded. Output included `files: scanned=1425 parsed_code=673 failed=0`, `graph: nodes=82760 relationships=120886`, and `fileProjection: status=built files=1425 dependencyEdges=16508 unresolved=419`.
+- `E2-P2C-DETECT1`: Final pre-commit `anvien detect-changes --repo Anvien --scope all` after closure docs reported docs-only graph changes with `changed_count=14`, `changed_files=4`, `affected_count=0`, and `risk_level=low`.
 
 ## Closure Evidence
 
-- Pending until implementation and validation complete.
+- Implementation commits: `9a27930`, `8499041`, `783c809`, `09aa58c`.
+- Validation: applicable product build/test suite passed; manual CLI relative/absolute and outside-repo checks passed; final pre-report P2 detect was clean; final closure detect was docs-only low risk.
+- Supervisor: PASS in `reports/Supervisor/rp_supervisor_260616_140659_by_gpt-5-codex_file-detail-absolute-path-resolution.md`.
