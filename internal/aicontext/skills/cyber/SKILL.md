@@ -1,8 +1,7 @@
 ---
 name: cybersecurity-skill-domain-selector
-description: >-
-  A general cybersecurity skill-selection map for choosing one of the 26
-  official security domains before opening a specific cybersecurity skill.
+description: >- 
+ A general security skill-selection map for choosing one of the 26 official security domains before opening a specific security skill.
 domain: cybersecurity
 subdomain: soc-operations
 tags:
