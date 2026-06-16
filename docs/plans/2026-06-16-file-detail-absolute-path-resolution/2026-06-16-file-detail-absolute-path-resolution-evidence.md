@@ -65,7 +65,12 @@ Matching plan item(s): `P1-A`, `P1-B`, `P1-C`, `P1-D`
 
 ### P1-C - HTTP file-detail wiring
 
-- Pending.
+- `E1-P1C-IMPACT1`: `anvien impact file internal/httpapi/file_context.go --repo Anvien --direction upstream` completed before editing. Blast radius was high at the API handler file, with affected HTTP server files and handler processes; `anvien impact file internal/httpapi/file_context_test.go --repo Anvien --direction upstream` reported LOW test-file risk. The implementation stayed limited to `handleFileContext` lookup and endpoint tests.
+- `E1-P1C-SRC1`: Updated `internal/httpapi/file_context.go` so `Server.handleFileContext` calls `filecontext.NormalizeRepoFilePath(path, projection.repoPath)` before `BuildFileContext`, returns HTTP 400 JSON errors for outside-repo absolute paths, and preserves the original query `path` in `target.input`.
+- `E1-P1C-TEST1`: Updated `TestFileDetailEndpointReturnsProjectionForRegisteredRepo` in `internal/httpapi/file_context_test.go` to assert repo-relative normalized output and absolute in-repo lookup. Added `TestFileDetailEndpointRejectsOutsideRepoAbsolutePath` for outside-repo absolute failure.
+- `E1-P1C-TEST2`: `go test ./internal/httpapi -run TestFileDetailEndpoint -count=1` passed: `ok github.com/tamnguyendinh/anvien/internal/httpapi 0.410s`.
+- `E1-P1C-ANALYZE1`: `anvien analyze --force` after P1-C implementation succeeded. Output included `files: scanned=1422 parsed_code=673 failed=0`, `graph: nodes=82694 relationships=120808`, and `fileProjection: status=built files=1422 dependencyEdges=16498 unresolved=419`.
+- `E1-P1C-DETECT1`: Final `anvien detect-changes --repo Anvien --scope all` before the P1-C commit succeeded. It reported 6 changed files: four plan/evidence/status docs with low file risk, `internal/httpapi/file_context.go` with high file risk, and `internal/httpapi/file_context_test.go` with low file risk. Summary included `changed_count=35`, `changed_files=6`, `affected_count=4`, `affected_files=6`, and `risk_level=medium`; the affected processes were expected `HandleFileContext` API flows.
 
 ### P1-D - MCP file context dispatch
 

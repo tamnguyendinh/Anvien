@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-06-16`
-- Status: `p1-b-complete`
+- Status: `p1-c-complete`
 - Plan: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-plan.md`
 - Evidence: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-06-16-file-detail-absolute-path-resolution/2026-06-16-file-detail-absolute-path-resolution-benchmark.md`
@@ -189,7 +189,7 @@ The graph stores file nodes by repo-relative `filePath` values such as `internal
   - Actual-status Update: refresh CLI row.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] P1-C: Wire HTTP `/api/file-detail`.
+- [x] P1-C: Wire HTTP `/api/file-detail`.
   - Goal: make the Web/API runtime resolve absolute in-repo file paths consistently with CLI.
   - Scope Boundary:
     - Editable: `internal/httpapi/file_context.go`, `internal/httpapi/file_context_test.go`.

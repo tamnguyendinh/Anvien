@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/tamnguyendinh/anvien/internal/filecontext"
@@ -33,6 +34,9 @@ func TestFileDetailEndpointReturnsProjectionForRegisteredRepo(t *testing.T) {
 		payload.Summary.Unresolved != 1 {
 		t.Fatalf("summary = %#v, want file counts from projection graph", payload.Summary)
 	}
+	if payload.Target.NormalizedPath != "src/app.go" {
+		t.Fatalf("normalized path = %q, want src/app.go", payload.Target.NormalizedPath)
+	}
 	if len(payload.SymbolTree) != 2 || payload.SymbolTree[0].Name != "Server" || payload.SymbolTree[1].Name != "NewServer" {
 		t.Fatalf("symbol tree = %#v", payload.SymbolTree)
 	}
@@ -42,6 +46,16 @@ func TestFileDetailEndpointReturnsProjectionForRegisteredRepo(t *testing.T) {
 	if payload.Unresolved.Total != 1 || len(payload.Unresolved.Groups) != 1 ||
 		payload.Unresolved.Groups[0].Samples[0].TargetText != "missingCall" {
 		t.Fatalf("unresolved = %#v", payload.Unresolved)
+	}
+
+	absolutePath := filepath.Join(fixtures[0].path, "src", "app.go")
+	var absolutePayload filecontext.FileContext
+	getJSON(t, server.URL+"/api/file-detail?repo=alpha&path="+url.QueryEscape(absolutePath), http.StatusOK, &absolutePayload)
+	if absolutePayload.Summary.Path != "src/app.go" || absolutePayload.Target.NormalizedPath != "src/app.go" {
+		t.Fatalf("absolute payload path/normalized = %q/%q, want src/app.go/src/app.go", absolutePayload.Summary.Path, absolutePayload.Target.NormalizedPath)
+	}
+	if absolutePayload.Target.Input != absolutePath {
+		t.Fatalf("absolute payload input = %q, want %q", absolutePayload.Target.Input, absolutePath)
 	}
 }
 
@@ -93,6 +107,20 @@ func TestFileDetailEndpointReportsMissingFile(t *testing.T) {
 
 	if payload["error"] != "File not found in graph" {
 		t.Fatalf("missing file error = %#v", payload)
+	}
+}
+
+func TestFileDetailEndpointRejectsOutsideRepoAbsolutePath(t *testing.T) {
+	server, fixtures := newRepoServer(t, []repoFixture{{name: "outside"}})
+	defer server.Close()
+	writeHTTPFileProjectionGraph(t, fixtures[0].path)
+
+	outsidePath := filepath.Join(filepath.Dir(fixtures[0].path), "other-repo", "src", "app.go")
+	var payload map[string]string
+	getJSON(t, server.URL+"/api/file-detail?repo=outside&path="+url.QueryEscape(outsidePath), http.StatusBadRequest, &payload)
+
+	if !strings.Contains(payload["error"], filecontext.ErrFilePathOutsideRepo.Error()) {
+		t.Fatalf("outside repo error = %#v", payload)
 	}
 }
 

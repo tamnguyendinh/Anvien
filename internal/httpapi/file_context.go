@@ -99,7 +99,16 @@ func (s Server) handleFileContext(w http.ResponseWriter, r *http.Request) {
 		writeError(w, status, message)
 		return
 	}
-	context, ok := projection.builder.BuildFileContext(path, filecontext.Options{
+	lookupPath, err := filecontext.NormalizeRepoFilePath(path, projection.repoPath)
+	if err != nil {
+		if errors.Is(err, filecontext.ErrFilePathOutsideRepo) {
+			writeError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	context, ok := projection.builder.BuildFileContext(lookupPath, filecontext.Options{
 		RelationshipSamplesPerGroup: boundedNonNegativeQueryInt(r.URL.Query().Get("relationships"), fileContextDefaultSampleLimit, 1, fileContextMaxSampleLimit),
 		UnresolvedSamplesPerGroup:   boundedNonNegativeQueryInt(r.URL.Query().Get("unresolved"), fileContextDefaultSampleLimit, 1, fileContextMaxSampleLimit),
 		LinkedSamplesPerKind:        boundedNonNegativeQueryInt(r.URL.Query().Get("linked"), fileContextDefaultSampleLimit, 1, fileContextMaxSampleLimit),
@@ -108,6 +117,7 @@ func (s Server) handleFileContext(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "File not found in graph")
 		return
 	}
+	context.Target.Input = path
 	filecontext.AttachMetadata(&context, projection.repoName, projection.repoPath, projection.graph)
 	writeJSON(w, http.StatusOK, context)
 }
