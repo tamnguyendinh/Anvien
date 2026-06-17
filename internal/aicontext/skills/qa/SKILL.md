@@ -131,6 +131,10 @@ For every in-scope page, tab, dialog, drawer, dropdown, menu, form, table row ac
   - Record the sweep in the Action Ledger; a control/state combination without a ledger row is not covered.
   - If the full cross-product of locale/state/persona/tab/control cannot be completed, mark the missing combinations explicitly as `Blocked`, `Out of scope`, or `Unverified`; never imply full coverage.
 
+Screenshot evidence rule:
+  - When Playwright is used for QA, screenshots must be captured. Do not use the "final screenshot after failure" as the main evidence. Instead, capture screenshots at each small action step: before entering data, after each field, before clicking, after clicking, and after the UI responds or settles.
+  - After the run finishes, the screenshots must be opened and visually inspected to determine exactly which step first introduced the issue.
+
 ## Inventory Before Verdict
 
 Before claiming coverage, build an inventory for the declared scope.
