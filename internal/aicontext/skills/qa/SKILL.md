@@ -112,6 +112,15 @@ When Playwright is used for visible QA:
 - Screenshots, videos, traces, and Playwright reports are evidence of the visible run, not replacements for it.
 - Headless Playwright may support diagnostics or preflight, but cannot be the approval source for visible QA.
 
+### Screenshot Evidence Rule
+
+- When Playwright is used for QA, screenshots must be captured. Do not use the "final screenshot after failure" as the main evidence. Instead, capture screenshots at each small action step: before entering data, after each field, before clicking, after clicking, and after the UI responds or settles.
+- After the run finishes, the screenshots must be opened and visually inspected to determine exactly which step first introduced the issue.
+- Bugs can belong to many different categories, such as: buttons that do not respond when clicked, inputs that do not accept data, actions that produce incorrect results, overlapping cards/text, broken fonts, overflowing text, overflowing layouts, zoom causing elements to disappear or shift, and so on.
+  - These are examples only; in practice, any abnormal behavior or visual rendering issue must be treated as a potential bug.
+  - When analyzing screenshots, do not check only for the originally reported bug. Review the entire screen to identify any additional issues, including bugs B/C/D that were not described in the request.
+
+
 ## Coverage, Inventory, And Action Ledger
 
 ### Coverage Model
@@ -142,14 +151,6 @@ For every in-scope page, tab, dialog, drawer, dropdown, menu, form, table row ac
   - For i18n scope, repeat the inventory and action ledger for every supported locale in the declared scope; verify copy, validation, errors, empty/blocked states, dropdown options, navigation preservation, and no unintended mixed-language UI.
   - Record the sweep in the Action Ledger; a control/state combination without a ledger row is not covered.
   - If the full cross-product of locale/state/persona/tab/control cannot be completed, mark the missing combinations explicitly as `Blocked`, `Out of scope`, or `Unverified`; never imply full coverage.
-
-### Screenshot Evidence Rule
-
-- When Playwright is used for QA, screenshots must be captured. Do not use the "final screenshot after failure" as the main evidence. Instead, capture screenshots at each small action step: before entering data, after each field, before clicking, after clicking, and after the UI responds or settles.
-- After the run finishes, the screenshots must be opened and visually inspected to determine exactly which step first introduced the issue.
-- Bugs can belong to many different categories, such as: buttons that do not respond when clicked, inputs that do not accept data, actions that produce incorrect results, overlapping cards/text, broken fonts, overflowing text, overflowing layouts, zoom causing elements to disappear or shift, and so on.
-  - These are examples only; in practice, any abnormal behavior or visual rendering issue must be treated as a potential bug.
-  - When analyzing screenshots, do not check only for the originally reported bug. Review the entire screen to identify any additional issues, including bugs B/C/D that were not described in the request.
 
 ### Inventory Before Verdict
 
