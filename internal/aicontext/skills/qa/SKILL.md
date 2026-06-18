@@ -134,6 +134,9 @@ For every in-scope page, tab, dialog, drawer, dropdown, menu, form, table row ac
 Screenshot evidence rule:
   - When Playwright is used for QA, screenshots must be captured. Do not use the "final screenshot after failure" as the main evidence. Instead, capture screenshots at each small action step: before entering data, after each field, before clicking, after clicking, and after the UI responds or settles.
   - After the run finishes, the screenshots must be opened and visually inspected to determine exactly which step first introduced the issue.
+  - Bugs can belong to many different categories, such as: buttons that do not respond when clicked, inputs that do not accept data, actions that produce incorrect results, overlapping cards/text, broken fonts, overflowing text, overflowing layouts, zoom causing elements to disappear or shift, and so on.
+    + These are examples only; in practice, any abnormal behavior or visual rendering issue must be treated as a potential bug.
+    + When analyzing screenshots, do not check only for the originally reported bug. Review the entire screen to identify any additional issues, including bugs B/C/D that were not described in the request.
 
 ## Inventory Before Verdict
 
