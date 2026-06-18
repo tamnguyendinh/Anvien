@@ -36,21 +36,6 @@ Use the first available applicable authority, in this order:
 
 If authorities conflict, state the conflict and follow the higher authority. Never use a test expectation to override real required product behavior.
 
-  ## Coverage Model
-
-  QA coverage is scope-driven, not lane-driven.
-
-  For the declared scope, build and execute these inventories:
-
-  - Runtime surface inventory: pages, routes, tabs, dialogs, drawers, menus, mounted entry points.
-  - Control inventory: every reachable user control by role/name/locator and expected outcome.
-  - State matrix: visible, hidden, enabled, disabled, loading, empty, error, success, blocked, stale, validation, submitting.
-  - Context matrix: persona, role, owner/app scope, session, permission, subscription, viewport, locale.
-  - Navigation matrix: links, tabs, redirects, deep links, back/forward, reload, selected nav state.
-  - Data/source-of-truth map: displayed values, mutations, APIs, DB/read-model/source checks when relevant.
-
-  A declared scope is not complete until every required inventory item has a verdict or an explicit `Blocked`, `Out of scope`, or `Unverified` mark.
-
 ## Anvien Use In QA
 
 Use Anvien to avoid missing scope and to understand data flow. Do not use Anvien as a substitute for runtime interaction.
@@ -84,7 +69,9 @@ Record Anvien evidence as scope-mapping evidence:
 
 Do not mark anything passed because Anvien found it. Pass/fail requires runtime evidence.
 
-## Preflight Gates
+## Runtime, Build, And Visible Browser Rules
+
+### Preflight Gates
 
 Before runtime QA:
 
@@ -100,7 +87,7 @@ Production rule:
 - Do not approve production behavior from a dev server, test-only route, stale container, or unrebuilt artifact.
 - Verify on the URL and UI that users actually use.
 
-## Visible Browser And Playwright rules
+### Visible Browser And Playwright Rules
 
 For final visible QA:
 
@@ -114,39 +101,35 @@ When Playwright is used for visible QA:
 - Drive the real app/runtime URL, not a synthetic component harness unless the scope explicitly allows it.
 - Attach to or launch the real visible browser session that the user can observe.
 - For websites:
-  - Playwright QA must run against the latest freshly built Docker
-  runtime.
-  - Do not use a dev server such as Vite dev, Next dev, `npm run
-  dev`, or any equivalent development runtime as QA evidence.
-  - The QA flow must start from a real browser visible on this PC:
-  open the browser, enter the target URL in the address bar, load
-  the website, then use Playwright only to perform the user
-  actions and collect evidence.
-
+  - Playwright QA must run against the latest freshly built Docker runtime.
+  - Do not use a dev server such as Vite dev, Next dev, `npm run dev`, or any equivalent development runtime as QA evidence.
+  - The QA flow must start from a real browser visible on this PC: open the browser, enter the target URL in the address bar, load the website, then use Playwright only to perform the user actions and collect evidence.
 - For apps:
-  - Before QA, run the full build, build the Docker server/
-  runtime, and build the distributable artifact.
-  - Playwright QA must run against the generated artifact, not
-  against source code, a dev runner, or an unbuilt workspace
-  state.
-  - The artifact must be opened the same way a user would open it.
-  Playwright is only the automation arm for interacting with the
-  real artifact and capturing evidence; it is not a substitute for
-  running the real built product.
-  
+  - Before QA, run the full build, build the Docker server/runtime, and build the distributable artifact.
+  - Playwright QA must run against the generated artifact, not against source code, a dev runner, or an unbuilt workspace state.
+  - The artifact must be opened the same way a user would open it. Playwright is only the automation arm for interacting with the real artifact and capturing evidence; it is not a substitute for running the real built product.
 - Clicks, typing, submits, navigation, redirects, reloads, dialogs, and state changes must occur in that visible browser session.
 - Screenshots, videos, traces, and Playwright reports are evidence of the visible run, not replacements for it.
-
-- Screenshot evidence rule
-  - When Playwright is used for QA, screenshots must be captured. Do not use the "final screenshot after failure" as the main evidence. Instead, capture screenshots at each small action step: before entering data, after each field, before clicking, after clicking, and after the UI responds or settles.
-  - After the run finishes, the screenshots must be opened and visually inspected to determine exactly which step first introduced the issue.
-  - Bugs can belong to many different categories, such as: buttons that do not respond when clicked, inputs that do not accept data, actions that produce incorrect results, overlapping cards/text, broken fonts, overflowing text, overflowing layouts, zoom causing elements to disappear or shift, and so on.
-    + These are examples only; in practice, any abnormal behavior or visual rendering issue must be treated as a potential bug.
-    + When analyzing screenshots, do not check only for the originally reported bug. Review the entire screen to identify any additional issues, including bugs B/C/D that were not described in the request.
-
 - Headless Playwright may support diagnostics or preflight, but cannot be the approval source for visible QA.
 
-## Playwright Control Sweep
+## Coverage, Inventory, And Action Ledger
+
+### Coverage Model
+
+QA coverage is scope-driven, not lane-driven.
+
+For the declared scope, build and execute these inventories:
+
+- Runtime surface inventory: pages, routes, tabs, dialogs, drawers, menus, mounted entry points.
+- Control inventory: every reachable user control by role/name/locator and expected outcome.
+- State matrix: visible, hidden, enabled, disabled, loading, empty, error, success, blocked, stale, validation, submitting.
+- Context matrix: persona, role, owner/app scope, session, permission, subscription, viewport, locale.
+- Navigation matrix: links, tabs, redirects, deep links, back/forward, reload, selected nav state.
+- Data/source-of-truth map: displayed values, mutations, APIs, DB/read-model/source checks when relevant.
+
+A declared scope is not complete until every required inventory item has a verdict or an explicit `Blocked`, `Out of scope`, or `Unverified` mark.
+
+### Playwright Control Sweep
 
 When Playwright is used for QA, build a per-page/per-tab/per-locale control inventory before verdict.
 For every in-scope page, tab, dialog, drawer, dropdown, menu, form, table row action, and navigation surface:
@@ -160,7 +143,15 @@ For every in-scope page, tab, dialog, drawer, dropdown, menu, form, table row ac
   - Record the sweep in the Action Ledger; a control/state combination without a ledger row is not covered.
   - If the full cross-product of locale/state/persona/tab/control cannot be completed, mark the missing combinations explicitly as `Blocked`, `Out of scope`, or `Unverified`; never imply full coverage.
 
-## Inventory Before Verdict
+### Screenshot Evidence Rule
+
+- When Playwright is used for QA, screenshots must be captured. Do not use the "final screenshot after failure" as the main evidence. Instead, capture screenshots at each small action step: before entering data, after each field, before clicking, after clicking, and after the UI responds or settles.
+- After the run finishes, the screenshots must be opened and visually inspected to determine exactly which step first introduced the issue.
+- Bugs can belong to many different categories, such as: buttons that do not respond when clicked, inputs that do not accept data, actions that produce incorrect results, overlapping cards/text, broken fonts, overflowing text, overflowing layouts, zoom causing elements to disappear or shift, and so on.
+  - These are examples only; in practice, any abnormal behavior or visual rendering issue must be treated as a potential bug.
+  - When analyzing screenshots, do not check only for the originally reported bug. Review the entire screen to identify any additional issues, including bugs B/C/D that were not described in the request.
+
+### Inventory Before Verdict
 
 Before claiming coverage, build an inventory for the declared scope.
 
@@ -197,24 +188,7 @@ Rules:
 - A screen is not covered if child dialogs, menus, row actions, forms, or state variants were never inventoried.
 - If the ledger is incomplete, QA is incomplete.
 
-## Mounted Runtime Map
-
-For each inventoried item, record the runtime map:
-
-- runtime entry point
-- user trigger
-- owner, app, tenant, or active scope
-- persona and role
-- shift state
-- session/subscription state
-- locale and viewport when relevant
-- dataset or fixture
-- data source, store, API, DB, or read-model
-- expected visible actions
-- expected blocked actions
-- expected next destination
-
-## No-Step-Skipped Flow Rule
+### No-Step-Skipped Flow Rule
 
 In each in-scope flow, account for every step:
 
@@ -236,7 +210,7 @@ In each in-scope flow, account for every step:
 
 If a step exists in scope but was not observed or ledgered, that flow is not fully covered.
 
-## State And Action Matrix
+### State And Action Matrix
 
 For each inventoried surface, test every applicable state:
 
@@ -272,7 +246,26 @@ For every visible action, verify:
 
 Exploratory clicks are additive. They never replace the required state/action matrix.
 
-## Field And Button Data Flow
+## Runtime Map, Data Flow, And Source-Of-Truth
+
+### Mounted Runtime Map
+
+For each inventoried item, record the runtime map:
+
+- runtime entry point
+- user trigger
+- owner, app, tenant, or active scope
+- persona and role
+- shift state
+- session/subscription state
+- locale and viewport when relevant
+- dataset or fixture
+- data source, store, API, DB, or read-model
+- expected visible actions
+- expected blocked actions
+- expected next destination
+
+### Field And Button Data Flow
 
 For each relevant field, button, submit, mutation, money-sensitive action, source-of-truth value, or DB-backed result, understand and record when applicable:
 
@@ -289,7 +282,7 @@ For each relevant field, button, submit, mutation, money-sensitive action, sourc
 
 Use Anvien to map this data flow when useful. Verify it with runtime UI and source-of-truth evidence.
 
-## Source-Of-Truth Data
+### Source-Of-Truth Data
 
 Treat runtime data as production state, not demo decoration.
 
