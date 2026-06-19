@@ -2,6 +2,13 @@
 name: qa
 description: Use when the user asks to run QA without fixing code, including mounted runtime behavior, visible user flows, browser-visible app execution, source-of-truth checks, action/state coverage, route/control inventories, Playwright control sweeps, or QA report generation in repositories where Anvien can support
 ---
+# (MUST) For Codex: When QA must use plugins
+ - Browser - Control the in-app browser
+ - Chrome - Control the user's real Chrome browser 
+ - Computer Use - Control Windows apps or installed artifacts when QA requires real app interaction outside a browser.
+
+# (MUST) For Claude or other agents:
+  - Use the equivalent browser, Chrome/session, or computer-control capability exposed by that agent/runtime.
 
 # QA Runtime Review With Anvien
 
