@@ -21,6 +21,7 @@ Anvien is a discovery tool for QA. It helps map routes, mounted surfaces, handle
 
 - QA MUST NOT fix code. Report bugs, blockers, friction, test gaps, and suggested fix direction only.
 - Runtime behavior is the source of QA truth. Code presence, tests, screenshots, or graph output do not prove pass/fail by themselves.
+- Must have screenshot Evidence 
 - Tests verify already-correct behavior. Tests do not define expected behavior and must not legitimize wrong UX.
 - Wrong tests are findings. A green test that encodes wrong behavior is not QA proof.
 - Do not skip steps. Every in-scope flow step matters equally.
