@@ -117,11 +117,27 @@
        - UI flow check: {{SLICE_1_STEP_1_UI_FLOW_CHECK}}
        - DB/data flow check: {{SLICE_1_STEP_1_DB_FLOW_CHECK}}
        - Render location check: {{SLICE_1_STEP_1_RENDER_LOCATION_CHECK}}
+       - Mini QA for each completed implementation slice (MUST) 
+          For Codex: When Mini QA must use plugins
+            - Browser: Control the in-app browser
+            - Chrome: Control the user's real Chrome browser
+            - Computer Use: Control Windows apps or installed artifacts when mini QA requires real app interaction outside a browser.
+            - Playwright: use as an automation arm for browser actions, control sweeps, screenshots, videos, traces, and reports.
+          For Claude or other agents:
+            - Use the equivalent browser, Chrome/session, or computer-control capability exposed by that agent/runtime or Playwright-like capability available in that environment.
        - Evidence target: {{SLICE_1_STEP_1_EVIDENCE_TARGET}}
     2. {{SLICE_1_WORK_STEP_2}}
        - UI flow check: {{SLICE_1_STEP_2_UI_FLOW_CHECK}}
        - DB/data flow check: {{SLICE_1_STEP_2_DB_FLOW_CHECK}}
        - Render location check: {{SLICE_1_STEP_2_RENDER_LOCATION_CHECK}}
+       - Mini QA for each completed implementation slice (MUST) 
+          For Codex: When Mini QA must use plugins
+            - Browser: Control the in-app browser
+            - Chrome: Control the user's real Chrome browser
+            - Computer Use: Control Windows apps or installed artifacts when mini QA requires real app interaction outside a browser.
+            - Playwright: use as an automation arm for browser actions, control sweeps, screenshots, videos, traces, and reports.
+          For Claude or other agents:
+            - Use the equivalent browser, Chrome/session, or computer-control capability exposed by that agent/runtime or Playwright-like capability available in that environment.
        - Evidence target: {{SLICE_1_STEP_2_EVIDENCE_TARGET}}
   - Implementation Gate:
     - Before editing target files, run the relevant Anvien impact/file-detail command for files, symbols, routes, tools, or contracts touched by this slice, and record the evidence IDs.
