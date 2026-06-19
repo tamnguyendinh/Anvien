@@ -6,9 +6,11 @@ description: Use when the user asks to run QA without fixing code, including mou
  - Browser - Control the in-app browser
  - Chrome - Control the user's real Chrome browser 
  - Computer Use - Control Windows apps or installed artifacts when QA requires real app interaction outside a browser.
+ - Playwright: use as an automation arm for browser actions,
+  control sweeps, screenshots, videos, traces, and reports.
 
 # (MUST) For Claude or other agents:
-  - Use the equivalent browser, Chrome/session, or computer-control capability exposed by that agent/runtime.
+  - Use the equivalent browser, Chrome/session, or computer-control capability exposed by that agent/runtime or Playwright-like capability available in that environment.
 
 # QA Runtime Review With Anvien
 
@@ -94,70 +96,62 @@ Production rule:
 - Do not approve production behavior from a dev server, test-only route, stale container, or unrebuilt artifact.
 - Verify on the URL and UI that users actually use.
 
-### Visible Browser And Playwright Rules
+### Visible Runtime And Automation Rules
 
-For final visible QA:
+  For final visible QA:
 
-- Use installed Chrome or Edge, or another explicitly approved real browser.
-- The browser window must be visible, normal, and observable on the user's physical PC.
-- Headless, hidden, minimized, offscreen, screenshot-only, sandbox-only, or CI-only execution cannot approve final visible QA.
-- If a visible browser cannot be opened or observed, stop and report a blocker.
+  - Use the real runtime or generated artifact that a user would actually open.
+  - Use an installed Chrome or Edge browser for browser-based visible QA, or the real desktop app/window for app QA.
+  - The browser or app window must be visible, normal, and observable on the user's physical PC.
+  - Headless, hidden, minimized, offscreen, screenshot-only, sandbox-only, or CI-only execution cannot approve final visible QA.
+  - If the required visible runtime cannot be opened or observed, stop and report a blocker.
 
-When Playwright is used for visible QA:
+### Websites
 
-- Drive the real app/runtime URL, not a synthetic component harness unless the scope explicitly allows it.
-- Attach to or launch the real visible browser session that the user can observe.
-- For websites:
-  - Playwright QA must run against the latest freshly built Docker runtime.
-  - Do not use a dev server such as Vite dev, Next dev, `npm run dev`, or any equivalent development runtime as QA evidence.
-  - The QA flow must start from a real browser visible on this PC: open the browser, enter the target URL in the address bar, load the website, then use Playwright only to perform the user actions and collect evidence.
-- For apps:
-  - Before QA, run the full build, build the Docker server/runtime, and build the distributable artifact.
-  - Playwright QA must run against the generated artifact, not against source code, a dev runner, or an unbuilt workspace state.
-  - The artifact must be opened the same way a user would open it. Playwright is only the automation arm for interacting with the real artifact and capturing evidence; it is not a substitute for running the real built product.
-- Clicks, typing, submits, navigation, redirects, reloads, dialogs, and state changes must occur in that visible browser session.
-- Screenshots, videos, traces, and Playwright reports are evidence of the visible run, not replacements for it.
-- Headless Playwright may support diagnostics or preflight, but cannot be the approval source for visible QA.
+  Website QA must run against the latest freshly built production-
+  like runtime.
 
-### Screenshot Evidence Rule
+  - Prefer the repo-defined production runtime: Docker/container if the repo uses Docker, otherwise the built static/preview/server artifact.
+  - Do not use a dev server such as Vite dev, Next dev, `npm run dev`, or any equivalent development runtime as final QA evidence.
+  - The QA flow must start from the real target URL in a visible browser when final visible QA is required.
+  - Browser automation may drive user actions and collect screenshots/traces, but it does not replace the requirement to run the real built runtime.
+  - Clicks, typing, submits, navigation, redirects, reloads, dialogs, and state changes must occur in the real visible browser session.
 
-- When Playwright is used for QA, screenshots must be captured. Do not use the "final screenshot after failure" as the main evidence. Instead, capture screenshots at each small action step: before entering data, after each field, before clicking, after clicking, and after the UI responds or settles.
-- After the run finishes, the screenshots must be opened and visually inspected to determine exactly which step first introduced the issue.
-- Bugs can belong to many different categories, such as: buttons that do not respond when clicked, inputs that do not accept data, actions that produce incorrect results, overlapping cards/text, broken fonts, overflowing text, overflowing layouts, zoom causing elements to disappear or shift, and so on.
-  - These are examples only; in practice, any abnormal behavior or visual rendering issue must be treated as a potential bug.
-  - When analyzing screenshots, do not check only for the originally reported bug. Review the entire screen to identify any additional issues, including bugs B/C/D that were not described in the request.
+### Apps
 
+  App QA must run against the generated artifact opened the same way a user would open it.
 
-## Coverage, Inventory, And Action Ledger
+  - Before QA, run the full build and build any required server/runtime.
+  - If the app ships as an installer, executable, desktop bundle, or packaged artifact, QA that artifact instead of source code or a dev runner.
+  - Use Computer Use or an equivalent desktop-control capability when the app is outside the browser.
+  - Use Chrome, Browser, or Playwright only for browser-based app surfaces.
+  - Automation is only the interaction and evidence layer; the built artifact/runtime remains the QA source of truth.
 
-### Coverage Model
+  ### Screenshot Evidence Rule
 
-QA coverage is scope-driven, not lane-driven.
+  - When browser or desktop automation is used for QA, screenshots must be captured.
+  - Do not use the final screenshot after failure as the main evidence.
+  - Capture screenshots at each small action step: before entering data, after each field, before clicking, after clicking, and after the UI responds or settles.
+  - After the run finishes, open and visually inspect the screenshots to determine exactly which step first introduced the issue.
+  - Bugs are not necessarily blockers. If a bug is found, report it in the report/evidence section, but continue testing if a valid path remains.
+  - Review the whole screen for additional issues, including controls that do not respond, inputs that reject data, incorrect results, overlapping text/cards, broken fonts, overflow, disappearing elements, or layout shifts.
 
-For the declared scope, build and execute these inventories:
+  ### Automated Control Sweep
 
-- Runtime surface inventory: pages, routes, tabs, dialogs, drawers, menus, mounted entry points.
-- Control inventory: every reachable user control by role/name/locator and expected outcome.
-- State matrix: visible, hidden, enabled, disabled, loading, empty, error, success, blocked, stale, validation, submitting.
-- Context matrix: persona, role, owner/app scope, session, permission, subscription, viewport, locale.
-- Navigation matrix: links, tabs, redirects, deep links, back/forward, reload, selected nav state.
-- Data/source-of-truth map: displayed values, mutations, APIs, DB/read-model/source checks when relevant.
+  When browser or desktop automation is used for QA, build a per-page/per-tab/per-locale control inventory before verdict.
 
-A declared scope is not complete until every required inventory item has a verdict or an explicit `Blocked`, `Out of scope`, or `Unverified` mark.
+  For every in-scope page, tab, dialog, drawer, dropdown, menu, form, table row action, and navigation surface:
 
-### Playwright Control Sweep
-
-When Playwright is used for QA, build a per-page/per-tab/per-locale control inventory before verdict.
-For every in-scope page, tab, dialog, drawer, dropdown, menu, form, table row action, and navigation surface:
   - Inventory every reachable user control by role/name/locator, visible state, enabled/disabled state, locale, route, tab, persona/context, and expected outcome.
   - Exercise every reachable enabled control through real user interaction: click, type, select, submit, keyboard navigation, close, back, refresh, redirect, retry, and reopen paths when applicable.
-  - Do not force-click hidden or disabled controls as pass/fail proof. For hidden/disabled controls, verify they are correctly unreachable, correctly disabled, expose the expected reason/state, and do not trigger forbidden behavior.
-  - For dropdowns, menus, listboxes, comboboxes, and selects, open the control, verify available options, select applicable options, test close/escape/outside-click behavior, and verify resulting state/navigation.
+  - Do not force-click hidden or disabled controls as pass/fail proof.
+  - For hidden or disabled controls, verify they are correctly unreachable or disabled, expose the expected reason/state, and do not trigger forbidden behavior.
+  - For dropdowns, menus, listboxes, comboboxes, and selects, open the control, verify options, select applicable options, test close/escape/outside-click behavior, and verify resulting state/navigation.
   - For forms, cover pristine, dirty, invalid, valid, submitting, success, error, cancel, reopen, and validation-message states.
   - For navigation controls, cover links, tabs, sub-tabs, deep links, redirects, browser back/forward, reload, selected nav state, and destination correctness.
-  - For i18n scope, repeat the inventory and action ledger for every supported locale in the declared scope; verify copy, validation, errors, empty/blocked states, dropdown options, navigation preservation, and no unintended mixed-language UI.
+  - For i18n scope, repeat the inventory and action ledger for every supported locale in scope.
   - Record the sweep in the Action Ledger; a control/state combination without a ledger row is not covered.
-  - If the full cross-product of locale/state/persona/tab/control cannot be completed, mark the missing combinations explicitly as `Blocked`, `Out of scope`, or `Unverified`; never imply full coverage.
+  - If the full cross-product cannot be completed, mark missing combinations explicitly as `Blocked`, `Out of scope`, or `Unverified`.
 
 ### Inventory Before Verdict
 
