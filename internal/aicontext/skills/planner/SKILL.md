@@ -27,6 +27,7 @@ Rules:
 - Use ISO date format: `YYYY-MM-DD`.
 - Use lowercase ASCII kebab-case for the slug.
 - Keep the same slug in all four standard files; only the suffix changes.
+- When writing a plan, you must follow the template exactly 100% (planner\templates\actual-status.template.md, planner\templates\benchmark.template.md, planner\templates\evidence.template.md, planner\templates\plan.template.md).
 - Use the matching H1: `Plan`, `Evidence Ledger`, `Benchmark Ledger`, or `Actual Status`.
 - Auxiliary files such as `*-remaining-files.md` can exist, but they are not part of the standard four-file set.
 
