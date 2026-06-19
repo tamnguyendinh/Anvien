@@ -3,14 +3,13 @@ name: qa
 description: Use when the user asks to run QA without fixing code, including mounted runtime behavior, visible user flows, browser-visible app execution, source-of-truth checks, action/state coverage, route/control inventories, Playwright control sweeps, or QA report generation in repositories where Anvien can support
 ---
 # (MUST) For Codex: When QA must use plugins
- - Browser - Control the in-app browser
- - Chrome - Control the user's real Chrome browser 
- - Computer Use - Control Windows apps or installed artifacts when QA requires real app interaction outside a browser.
- - Playwright: use as an automation arm for browser actions,
-  control sweeps, screenshots, videos, traces, and reports.
+- Browser - Control the in-app browser
+- Chrome - Control the user's real Chrome browser
+- Computer Use - Control Windows apps or installed artifacts when QA requires real app interaction outside a browser.
+- Playwright: use as an automation arm for browser actions, control sweeps, screenshots, videos, traces, and reports.
 
 # (MUST) For Claude or other agents:
-  - Use the equivalent browser, Chrome/session, or computer-control capability exposed by that agent/runtime or Playwright-like capability available in that environment.
+- Use the equivalent browser, Chrome/session, or computer-control capability exposed by that agent/runtime or Playwright-like capability available in that environment.
 
 # QA Runtime Review With Anvien
 
@@ -28,7 +27,7 @@ Anvien is a discovery tool for QA. It helps map routes, mounted surfaces, handle
 - Every in-scope surface, action, state, data path, and blocker needs an explicit verdict or out-of-scope mark.
 - An incomplete inventory or action ledger means QA is incomplete.
 - If a blocker prevents downstream verification, downstream scope is `Blocked`, not passed.
-- For final visible QA, use a real app/runtime in a browser window visible to the user. Headless or hidden execution cannot approve final visible QA.
+- For final visible QA, open the real built website, runtime, or generated app artifact the same way a user would open it, in a visible browser or app window on the user's physical PC. Headless, hidden, source-only, test-only, or screenshot-only execution cannot approve final visible QA.
 
 ## Source Of Expected Behavior
 
@@ -98,60 +97,88 @@ Production rule:
 
 ### Visible Runtime And Automation Rules
 
-  For final visible QA:
+Final visible QA must start from the real user entry point, not from source code, component previews, test harnesses, or direct internal URLs unless the scope explicitly defines that URL as the user entry point.
 
-  - Use the real runtime or generated artifact that a user would actually open.
-  - Use an installed Chrome or Edge browser for browser-based visible QA, or the real desktop app/window for app QA.
-  - The browser or app window must be visible, normal, and observable on the user's physical PC.
-  - Headless, hidden, minimized, offscreen, screenshot-only, sandbox-only, or CI-only execution cannot approve final visible QA.
-  - If the required visible runtime cannot be opened or observed, stop and report a blocker.
+For browser-based website QA:
+
+1. Run the repo-required full build first, then build the Docker/VPS runtime or repo-defined production runtime required for the website.
+2. Start that freshly built runtime exactly as the repo or deployment plan defines it.
+3. Open a real visible Chrome or Edge window on the user's physical PC.
+4. Click the browser address bar.
+5. Type or paste the target user URL into the address bar.
+6. Press Enter and wait for the page to load.
+7. Perform QA by interacting with the visible page: click controls, type into fields, submit forms, navigate links, reload, go back/forward, and observe UI state changes.
+8. Use Browser, Chrome, Playwright, or equivalent automation only to drive and record those real visible-browser interactions; automation must not replace opening the real built runtime in a visible browser.
+
+For app or desktop artifact QA:
+
+1. Run the full build, build the distributable artifact, and build any Docker/container/VPS runtime required by the app first.
+2. If the app uses Docker/container/VPS runtime, start that freshly built runtime exactly as the repo or deployment plan defines it.
+3. Click or open that post-full-build artifact runtime on this visible PC the same way a user would open it: installer, executable, packaged desktop app, or documented launch entry.
+4. Use the visible app window on the user's physical PC as the QA surface.
+5. Use Computer Use or equivalent desktop-control capability to click, type, navigate, and capture evidence in that real app window.
+6. Do not approve app QA from source code, a dev runner, a component harness, or an unbuilt workspace state.
+
+For Codex runtime control, choose the capability by target:
+
+- Chrome: use for final visible website QA, existing login/session/cookies, or user-observable browser state.
+- Browser: use for in-app browser inspection or local runtime diagnostics when a user-visible real browser is not required by the QA scope.
+- Computer Use: use for desktop apps, installers, generated artifacts, Windows UI, or flows outside a browser.
+- Playwright: use as browser automation for actions, control sweeps, screenshots, videos, traces, and reports against the real visible browser/runtime.
+
+For Claude or other agents:
+
+- Use the equivalent visible browser, session-aware browser, desktop-control, or Playwright-like capability available in that environment.
+- If no equivalent visible runtime-control capability is available, mark visible runtime QA as blocked instead of approving from source code, tests, screenshots, or headless-only checks.
 
 ### Websites
 
-  Website QA must run against the latest freshly built production-
-  like runtime.
+Website QA must run after the full build and against the latest freshly built Docker/VPS runtime or repo-defined production runtime.
 
-  - Prefer the repo-defined production runtime: Docker/container if the repo uses Docker, otherwise the built static/preview/server artifact.
-  - Do not use a dev server such as Vite dev, Next dev, `npm run dev`, or any equivalent development runtime as final QA evidence.
-  - The QA flow must start from the real target URL in a visible browser when final visible QA is required.
-  - Browser automation may drive user actions and collect screenshots/traces, but it does not replace the requirement to run the real built runtime.
-  - Clicks, typing, submits, navigation, redirects, reloads, dialogs, and state changes must occur in the real visible browser session.
+- Build and run the real runtime lifecycle target: Docker/container/VPS runtime when the repo or deployment uses it, otherwise the repo-defined production server or served static artifact.
+- Do not use a dev server such as Vite dev, Next dev, `npm run dev`, or any equivalent development runtime as final QA evidence.
+- Do not use dev test, component preview, fixture-only routes, or Playwright test-server output as final QA evidence.
+- Do not click or inspect built files directly as website QA. The built website must be served by the expected runtime and opened through a real browser URL.
+- The QA flow must start by opening a visible browser on the user's PC, entering the target URL in the address bar, loading the page, and then interacting with the loaded page.
+- Browser automation may drive clicks, typing, submits, navigation, reloads, screenshots, traces, and reports only after the real visible browser has loaded the real target URL.
+- All user actions must occur in the real visible browser session.
 
 ### Apps
 
-  App QA must run against the generated artifact opened the same way a user would open it.
+App QA must run against the post-full-build built/generated artifact clicked or opened on this visible PC the same way a user would open it.
 
-  - Before QA, run the full build and build any required server/runtime.
-  - If the app ships as an installer, executable, desktop bundle, or packaged artifact, QA that artifact instead of source code or a dev runner.
-  - Use Computer Use or an equivalent desktop-control capability when the app is outside the browser.
-  - Use Chrome, Browser, or Playwright only for browser-based app surfaces.
-  - Automation is only the interaction and evidence layer; the built artifact/runtime remains the QA source of truth.
+- Before QA, run the full build, build the app artifact, build any required server/runtime, and build a fresh Docker/container/VPS runtime when the app uses one.
+- If the app uses Docker/container/VPS runtime, run the freshly built runtime during QA; do not QA against a stale container or previously running runtime.
+- If the app ships as an installer, executable, desktop bundle, or packaged artifact, QA that post-full-build built artifact by clicking or opening it on this visible PC instead of source code, a dev runner, or dev test output.
+- Use Computer Use or an equivalent desktop-control capability when the app is outside the browser.
+- Use Chrome, Browser, or Playwright only for browser-based app surfaces.
+- Automation is only the interaction and evidence layer; the built artifact/runtime remains the QA source of truth.
 
-  ### Screenshot Evidence Rule
+### Screenshot Evidence Rule
 
-  - When browser or desktop automation is used for QA, screenshots must be captured.
-  - Do not use the final screenshot after failure as the main evidence.
-  - Capture screenshots at each small action step: before entering data, after each field, before clicking, after clicking, and after the UI responds or settles.
-  - After the run finishes, open and visually inspect the screenshots to determine exactly which step first introduced the issue.
-  - Bugs are not necessarily blockers. If a bug is found, report it in the report/evidence section, but continue testing if a valid path remains.
-  - Review the whole screen for additional issues, including controls that do not respond, inputs that reject data, incorrect results, overlapping text/cards, broken fonts, overflow, disappearing elements, or layout shifts.
+- When browser or desktop automation is used for QA, screenshots must be captured.
+- Do not use the final screenshot after failure as the main evidence.
+- Capture screenshots at each small action step: before entering data, after each field, before clicking, after clicking, and after the UI responds or settles.
+- After the run finishes, open and visually inspect the screenshots to determine exactly which step first introduced the issue.
+- Bugs are not necessarily blockers. If a bug is found, report it in the report/evidence section, but continue testing if a valid path remains.
+- Review the whole screen for additional issues, including controls that do not respond, inputs that reject data, incorrect results, overlapping text/cards, broken fonts, overflow, disappearing elements, or layout shifts.
 
-  ### Automated Control Sweep
+### Automated Control Sweep
 
-  When browser or desktop automation is used for QA, build a per-page/per-tab/per-locale control inventory before verdict.
+When browser or desktop automation is used for QA, build a per-page/per-tab/per-locale control inventory before verdict.
 
-  For every in-scope page, tab, dialog, drawer, dropdown, menu, form, table row action, and navigation surface:
+For every in-scope page, tab, dialog, drawer, dropdown, menu, form, table row action, and navigation surface:
 
-  - Inventory every reachable user control by role/name/locator, visible state, enabled/disabled state, locale, route, tab, persona/context, and expected outcome.
-  - Exercise every reachable enabled control through real user interaction: click, type, select, submit, keyboard navigation, close, back, refresh, redirect, retry, and reopen paths when applicable.
-  - Do not force-click hidden or disabled controls as pass/fail proof.
-  - For hidden or disabled controls, verify they are correctly unreachable or disabled, expose the expected reason/state, and do not trigger forbidden behavior.
-  - For dropdowns, menus, listboxes, comboboxes, and selects, open the control, verify options, select applicable options, test close/escape/outside-click behavior, and verify resulting state/navigation.
-  - For forms, cover pristine, dirty, invalid, valid, submitting, success, error, cancel, reopen, and validation-message states.
-  - For navigation controls, cover links, tabs, sub-tabs, deep links, redirects, browser back/forward, reload, selected nav state, and destination correctness.
-  - For i18n scope, repeat the inventory and action ledger for every supported locale in scope.
-  - Record the sweep in the Action Ledger; a control/state combination without a ledger row is not covered.
-  - If the full cross-product cannot be completed, mark missing combinations explicitly as `Blocked`, `Out of scope`, or `Unverified`.
+- Inventory every reachable user control by role/name/locator, visible state, enabled/disabled state, locale, route, tab, persona/context, and expected outcome.
+- Exercise every reachable enabled control through real user interaction in the real visible browser or app window: click, type, select, submit, keyboard navigation, close, back, refresh, redirect, retry, and reopen paths when applicable.
+- Do not force-click hidden or disabled controls as pass/fail proof.
+- For hidden or disabled controls, verify they are correctly unreachable or disabled, expose the expected reason/state, and do not trigger forbidden behavior.
+- For dropdowns, menus, listboxes, comboboxes, and selects, open the control, verify options, select applicable options, test close/escape/outside-click behavior, and verify resulting state/navigation.
+- For forms, cover pristine, dirty, invalid, valid, submitting, success, error, cancel, reopen, and validation-message states.
+- For navigation controls, cover links, tabs, sub-tabs, deep links, redirects, browser back/forward, reload, selected nav state, and destination correctness.
+- For i18n scope, repeat the inventory and action ledger for every supported locale in scope.
+- Record the sweep in the Action Ledger; a control/state combination without a ledger row is not covered.
+- If the full cross-product cannot be completed, mark missing combinations explicitly as `Blocked`, `Out of scope`, or `Unverified`.
 
 ### Inventory Before Verdict
 
