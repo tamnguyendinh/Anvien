@@ -23,6 +23,8 @@ This skill does not create decorative diagrams. It creates a semantic visual map
 
 The SVG must help humans and coding agents decide whether the spec is clear enough for safe implementation.
 
+The SVG must render the source as written, not the implementation that the agent thinks the system should have.
+
 ## Detail Completeness Objective
 
 Generate a flow map that is more detailed than any existing source diagram or reference artifact provided for the same scope.
@@ -92,15 +94,67 @@ Use lowercase kebab-case for `<feature-name>` unless the project already has a s
 12. Build source-union coverage before drawing implementation logic.
 13. Render implementation logic flow-by-flow, not from one bulk summary pass.
 14. Do not collapse named implementation details into generic nodes.
-15. If the map cannot be completed safely, stop and report why.
+15. Do not improve, repair, normalize, or connect flows beyond what the source actually states.
+16. If the map cannot be completed safely, stop and report why.
 
 If the map contains any unresolved node with type `SPEC_GAP`, `UNDEFINED_BEHAVIOR`, or `OWNER_DECISION_REQUIRED`, set implementation status to `BLOCKED`.
 
 If `missing_source_items` is not empty, set implementation status to `BLOCKED`.
 
+## As-Described Fidelity Rule
+
+Draw the spec exactly as the source artifacts describe it, even when the description is incomplete, wrong, disconnected, inconsistent, or unsafe.
+
+Do not draw the ideal lifecycle, expected architecture, likely implementation order, or missing runtime handoff unless a source artifact explicitly states it.
+
+If the source describes disconnected flows, draw disconnected flows. A connected lifecycle graph is required only when the source describes those connections.
+
+If the source says flow A leads to flow B, draw that relationship with the source reference.
+
+If the source does not say flow A leads to flow B, do not connect them. If that missing relation blocks safe implementation, create a visible gap node such as `UNDEFINED_HANDOFF`, `SPEC_GAP`, or `OWNER_DECISION_REQUIRED`.
+
+If the source describes a wrong order, unsafe branch, missing denial path, or broken recovery path, preserve that wrong or broken shape in the SVG and mark the defect as a gap or risk. Do not silently correct it.
+
+Every implementation-logic node, edge, junction, terminal, and gap must trace to a source reference or to an explicit missing-source/gap record. Unreferenced implementation logic is treated as speculation and fails the run.
+
+Layout groups, legends, lane labels, and navigation anchors may be derived, but they must not add implementation meaning.
+
+## Pre-Render Source-Described Flow Manifest Gate
+
+After building the source union inventory and before drawing any SVG implementation logic, create a source-described flow manifest from the inventory.
+
+The manifest is not a design plan. It is a list of flows, subflows, and roads explicitly described by the source artifacts.
+
+For each manifest item, record:
+
+```text
+flow_id
+source_name
+category: flow | subflow | road
+source_refs
+described_entry
+described_exit_or_terminal
+described_handoffs
+missing_handoffs_or_unknown_relations
+mapping_status: PENDING | MAPPED | MAPPED_AS_GAP | INTENTIONALLY_OUT_OF_SCOPE | MISSING
+planned_or_actual_svg_group_id
+```
+
+Rules:
+
+1. Every source-described flow, subflow, and road must appear in the manifest before it is drawn.
+2. Do not add expected flows that are not described by the source. If an expected flow is necessary but absent, add a gap item, not a real flow.
+3. Do not draw a flow that is not in the manifest.
+4. If a new source-described flow is discovered while drawing, stop drawing, update the source union inventory and manifest, then resume flow-by-flow rendering.
+5. A manifest item is complete only when it maps to visible SVG ids, a visible gap, or an intentional out-of-scope record.
+6. Fail the run if a source-described flow is absent from the manifest.
+7. Fail the run if a visible implementation flow exists without a manifest item.
+
 ## Source Union Inventory Gate
 
 Before drawing, build a source union inventory from all input artifacts.
+
+Do not treat document titles, section titles, or broad flow IDs as sufficient inventory. Each implementation-relevant command, guard, store, cursor, terminal state, recovery path, invariant, negative rule, and described relation must be inventoried as its own source item.
 
 Inventory these categories:
 
@@ -358,6 +412,20 @@ The metadata must include graph content and source coverage:
       "source_ref": "spec.md#auth-login"
     }
   ],
+  "flow_manifest": [
+    {
+      "flow_id": "AUTH_FLOW",
+      "source_name": "Auth login",
+      "category": "flow",
+      "source_refs": ["spec.md#auth-login"],
+      "described_entry": "User submits login",
+      "described_exit_or_terminal": "AUTH_SUCCESS or AUTH_DENIED",
+      "described_handoffs": ["AUTH_SUCCESS -> LICENSE_CHECK"],
+      "missing_handoffs_or_unknown_relations": [],
+      "mapping_status": "MAPPED",
+      "planned_or_actual_svg_group_id": "flow-auth-flow"
+    }
+  ],
   "source_inventory": [
     {
       "source_item": "sync_cursor.last_pulled_relay_id",
@@ -574,27 +642,31 @@ Do not represent a pipeline handoff only as crossing arrows.
 2. Read source spec and related authority docs.
 3. Read existing/reference SVGs, flow maps, verification reports, UI maps, state maps, API maps, and contract maps when present.
 4. Build the source union inventory.
-5. Identify named flows and subflows.
-6. Create a global lane/layout plan only; do not draw implementation logic yet.
-7. For each named flow, repeat:
+5. Build the source-described flow manifest from inventory items that are explicitly present in the sources.
+6. Identify named flows and subflows from the manifest.
+7. Create a global lane/layout plan only; do not draw implementation logic yet.
+8. For each named flow, repeat:
 
 ```text
 re-read relevant source sections
 extract flow-local inventory
+confirm the flow is already present in the source-described flow manifest
 draw that flow only
 write visible nodes/edges/junctions/terminals/gaps
 write matching metadata
 verify source coverage for that flow
 mark mapped source inventory items
+mark the manifest item with mapped SVG ids or gap ids
 ```
 
-8. After all flows are drawn, run global consistency verification.
-9. Check for missing source items.
-10. Check for collapse violations.
-11. Check reference SVG delta.
-12. Parse SVG as XML.
-13. Verify metadata/visible node round-trip.
-14. Set implementation status.
+9. After all flows are drawn, run global consistency verification.
+10. Check for missing source items.
+11. Check for flow manifest omissions or unmanifested visible flows.
+12. Check for collapse violations.
+13. Check reference SVG delta.
+14. Parse SVG as XML.
+15. Verify metadata/visible node round-trip.
+16. Set implementation status.
 
 Create `docs/flow-maps/<feature-name>.flow.svg` as semantic XML.
 
@@ -605,6 +677,7 @@ Feature Name
 Source Spec
 Reference Artifacts
 Source Union Inventory
+Source-Described Flow Manifest
 Flow List
 Lane List
 Node Table
@@ -647,6 +720,10 @@ Verify:
 - Every metadata node exists as visible SVG content.
 - Every visible node exists in metadata.
 - Every edge has `from`, `to`, `condition`, `data-edge-type`, `flow`, and `data-source-ref`.
+- Every implementation-logic node, edge, junction, terminal, and gap has a source reference or an explicit gap source record.
+- Every source-described flow appears in the flow manifest before it appears in visible SVG content.
+- Every visible implementation flow has a matching flow manifest item.
+- Missing source-described relations are represented as gaps, not invented edges.
 - Every decision node has explicit branches.
 - Every junction connects at least two pipeline segments.
 - Every gap node appears in the verification report.
@@ -676,6 +753,7 @@ Use this structure in `docs/flow-maps/<feature-name>.flow-verification.md`:
 
 ## Summary
 - Total flows:
+- Flow manifest items:
 - Total nodes:
 - Total edges:
 - Source inventory items:
@@ -695,6 +773,10 @@ BLOCKED or READY_FOR_OWNER_REVIEW
 ## Source Union Inventory Coverage
 | Source Item | Category | Source Ref | Mapping Status | Mapped SVG IDs |
 |---|---|---|---|---|
+
+## Source-Described Flow Manifest
+| Flow ID | Source Name | Category | Source Refs | Described Entry | Described Exit/Terminal | Described Handoffs | Missing Handoffs/Unknown Relations | Mapping Status | SVG Group/Gap IDs |
+|---|---|---|---|---|---|---|---|---|---|
 
 ## Flow-By-Flow Coverage
 | Flow | Source Sections Re-read | Nodes | Edges | Terminals | Gaps | Status |
@@ -755,11 +837,15 @@ The skill run succeeds only when:
 9. Every unresolved ambiguity is marked as a gap.
 10. Every implementation-relevant source inventory item is mapped or represented as a gap.
 11. Every flow is rendered through the Flow-By-Flow Rendering Rule.
-12. Every generic/index node has a legitimate purpose and fans out to details.
-13. The SVG contains a visible end legend that explains node boxes/shapes, colors, line styles, arrow types, and special markers.
-14. The visible end legend is the last visible SVG group and is referenced from metadata.
-15. No production code was modified.
-16. Final status is `BLOCKED` or `READY_FOR_OWNER_REVIEW`.
+12. Every source-described flow appears in the pre-render flow manifest before visible SVG implementation logic is drawn.
+13. Every visible implementation flow has a matching manifest item.
+14. Every implementation-logic node, edge, junction, terminal, and gap is source-referenced or gap-recorded.
+15. The SVG preserves source-described wrong, missing, disconnected, or contradictory flow shapes instead of correcting them by inference.
+16. Every generic/index node has a legitimate purpose and fans out to details.
+17. The SVG contains a visible end legend that explains node boxes/shapes, colors, line styles, arrow types, and special markers.
+18. The visible end legend is the last visible SVG group and is referenced from metadata.
+19. No production code was modified.
+20. Final status is `BLOCKED` or `READY_FOR_OWNER_REVIEW`.
 
 Fail the run if any of those conditions are false.
 
@@ -777,6 +863,11 @@ Fail the run if:
 8. A flow was marked complete before its source inventory items were mapped.
 9. An agent hides a spec gap or claims the spec is clear while unresolved gap nodes remain.
 10. The SVG lacks a readable visible legend at the end, or the legend does not explain the meaning of node boxes, colors, line styles, and arrow types.
+11. A source-described flow, subflow, or road is drawn before it appears in the flow manifest.
+12. A visible implementation flow exists without a flow manifest item.
+13. An edge, junction, or lifecycle handoff is added because it is expected or architecturally desirable but not source-described.
+14. A missing relation is drawn as a real edge instead of a visible gap.
+15. The agent corrects, normalizes, or reconnects a flawed source flow instead of rendering the flaw and marking it as a gap or risk.
 
 ## Final Handoff Format
 
