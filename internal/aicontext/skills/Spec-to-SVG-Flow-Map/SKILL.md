@@ -377,7 +377,12 @@ The metadata must include graph content and source coverage:
   "gaps": [],
   "terminal_states": [],
   "junctions": [],
-  "legend": {}
+  "legend": {
+    "visible_legend_id": "legend-end",
+    "shape_meaning": {},
+    "color_meaning": {},
+    "arrow_meaning": {}
+  }
 }
 </metadata>
 ```
@@ -491,6 +496,36 @@ Double line = sync / bidirectional data exchange
 
 Do not change color meanings per diagram.
 
+## Visible End Legend Requirement
+
+Every generated SVG must end with a visible, human-readable legend section.
+
+Place the legend as the last visible SVG group before `</svg>`:
+
+```xml
+<g
+  id="legend-end"
+  data-type="legend"
+  data-position="end"
+>
+  <title>Legend</title>
+  <desc>Explains node shapes, colors, line styles, and arrow types used in this SVG.</desc>
+  ...
+</g>
+```
+
+The legend must be readable without opening the markdown report. It must explain:
+
+1. What each node shape/box means.
+2. What each color means.
+3. What each line style means.
+4. What each arrow type means.
+5. What error, recovery, gap, owner-decision, out-of-scope, terminal, junction, async, sync, data-flow, and control-flow markers mean.
+
+The legend is required even when the SVG is large or split into multiple visual regions.
+
+Do not put the legend only in metadata. The metadata must reference the visible legend id, but the SVG canvas itself must contain the readable legend.
+
 ## Gap Detection
 
 Create a gap node when:
@@ -586,6 +621,8 @@ Generic Node Fan-Out Audit
 
 Create `docs/flow-maps/<feature-name>.flow-verification.md`.
 
+Before closing the SVG, add the visible end legend as the last visible group and ensure its id matches `metadata.legend.visible_legend_id`.
+
 Set final implementation status:
 
 ```text
@@ -618,6 +655,8 @@ Verify:
 - Every reference SVG/detail delta is represented as a mapped id or gap.
 - Every generic/index node has allowed purpose and fan-out.
 - Every flow records which source sections were re-read before rendering.
+- The visible end legend exists as the last visible SVG group, is readable, and explains shapes, colors, line styles, and arrow types.
+- The metadata `legend.visible_legend_id` matches the visible end legend group id.
 - No important logic exists only in geometry.
 - SVG parses as XML when a parser is available.
 
@@ -716,8 +755,10 @@ The skill run succeeds only when:
 10. Every implementation-relevant source inventory item is mapped or represented as a gap.
 11. Every flow is rendered through the Flow-By-Flow Rendering Rule.
 12. Every generic/index node has a legitimate purpose and fans out to details.
-13. No production code was modified.
-14. Final status is `BLOCKED` or `READY_FOR_OWNER_REVIEW`.
+13. The SVG contains a visible end legend that explains node boxes/shapes, colors, line styles, arrow types, and special markers.
+14. The visible end legend is the last visible SVG group and is referenced from metadata.
+15. No production code was modified.
+16. Final status is `BLOCKED` or `READY_FOR_OWNER_REVIEW`.
 
 Fail the run if any of those conditions are false.
 
@@ -734,6 +775,7 @@ Fail the run if:
 7. A flow was rendered without recording which source sections were re-read for that flow.
 8. A flow was marked complete before its source inventory items were mapped.
 9. An agent hides a spec gap or claims the spec is clear while unresolved gap nodes remain.
+10. The SVG lacks a readable visible legend at the end, or the legend does not explain the meaning of node boxes, colors, line styles, and arrow types.
 
 ## Final Handoff Format
 
