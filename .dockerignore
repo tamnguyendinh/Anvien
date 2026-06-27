@@ -4,9 +4,16 @@
 
 node_modules
 **/node_modules
+.pnpm-store
 
 dist
 **/dist
+build
+**/build
+.next
+**/.next
+out
+**/out
 coverage
 **/coverage
 
@@ -15,5 +22,13 @@ coverage
 .env.*.local
 
 .anvien
+.codex
+.codex-tmp
+.agents
+.claude
+.tmp
+reports
 anvien-web/playwright-report
 anvien-web/test-results
+**/playwright-report
+**/test-results
