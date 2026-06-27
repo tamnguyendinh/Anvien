@@ -52,13 +52,14 @@ Out of scope:
 
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|--------------------|----------|--------------------|
-| `SKILL.md` | Has skill instructions and some prior condensation, but frontmatter lacks `---`, output paths are inconsistent, and acceptance/failure sections repeat. | Valid skill frontmatter, one `docs/flow-maps/` output contract, concise body preserving semantic SVG and gap-detection rules. | partial | 0 related files | `E0-P0A-REQ1`, `E0-P0A-FD1`, `E0-P0A-SRC1` | edit P1-A |
+| `SKILL.md` | Valid skill frontmatter, unified `docs/flow-maps/` output contract, expanded detail-completeness/source-union/flow-by-flow/no-collapse rules, source-coverage metadata, verification additions, and no stale path/status patterns. | Valid special-purpose skill preserving semantic SVG, source coverage, gap detection, no-collapse, and owner-review requirements without a 500-line cap. | correct | 0 related files | `E1-P1A-VAL1`, `E1-P1A-VAL2`, `E1-P1A-SRC1`, `E1-P1A-SRC2`, `E1-P1A-BUILD1`, `E1-P1A-DETECT1` | preserve / close P1-A |
 
 ## Status Refresh Log
 
 | Refresh | Date | Repo Basis | Changed Scope | Status Changes | Evidence | Next Phase Update |
 |---------|------|------------|----------------|----------------|----------|-------------------|
 | R0 | 2026-06-27 | baseline before P0 | target skill file | initial classification: `partial` | `E0-P0A-REQ1`, `E0-P0A-FD1`, `E0-P0A-SRC1` | P1-A may proceed with a narrow docs-only edit |
+| R1 | 2026-06-27 | after P1-A implementation and full build | target skill file plus plan evidence | `partial -> correct` | `E1-P1A-VAL1`, `E1-P1A-VAL2`, `E1-P1A-SRC1`, `E1-P1A-SRC2`, `E1-P1A-BUILD1`, `E1-P1A-DETECT1` | P1-A complete; proceed to closure review |
 
 ## Phase Touch Map
 
@@ -127,7 +128,7 @@ Do not edit app source code, unrelated skill files, generated AGENTS content, or
 - [x] Blockers are recorded, if any.
 - [x] Next phase status assumptions, next action, and work steps have been updated from this status file when needed.
 - [x] Status Refresh Log has an R0 baseline row.
-- [ ] If implementation has started, affected Current Status Matrix rows have been refreshed from latest evidence.
+- [x] If implementation has started, affected Current Status Matrix rows have been refreshed from latest evidence.
 - [x] If refreshed statuses changed next work, only the stale next-phase status assumptions, next action, or work steps have been updated before the next phase.
 
 ## Final P0 Decision

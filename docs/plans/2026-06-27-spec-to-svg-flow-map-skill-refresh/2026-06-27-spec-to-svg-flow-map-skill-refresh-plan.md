@@ -11,7 +11,7 @@
 
 ## Goal
 
-Refresh `internal/aicontext/skills/Spec-to-SVG-Flow-Map/SKILL.md` by adding valid skill frontmatter, standardizing generated output paths, and reducing repeated instruction blocks while preserving the skill's semantic SVG and gap-detection contract.
+Refresh `internal/aicontext/skills/Spec-to-SVG-Flow-Map/SKILL.md` by adding valid skill frontmatter, standardizing generated output paths, and expanding the skill with detail-completeness, source-union inventory, flow-by-flow rendering, no-bulk-drawing, no-collapse, source-coverage metadata, and verification additions while preserving the semantic SVG and gap-detection contract.
 
 ## Rules
 
@@ -28,7 +28,7 @@ Refresh `internal/aicontext/skills/Spec-to-SVG-Flow-Map/SKILL.md` by adding vali
 
 ## Problem
 
-The current skill has frontmatter-like lines without YAML delimiters, inconsistent output path references, and repeated acceptance/failure rules that make the skill longer than necessary.
+The current skill needs a valid skill contract plus stricter completeness rules so generated SVG flow maps cannot be overview-only, less detailed than reference diagrams, or missing source inventory coverage.
 
 ## Scope
 
@@ -51,13 +51,15 @@ The current skill has frontmatter-like lines without YAML delimiters, inconsiste
 - Keep required output files as `<feature-name>.flow.svg`, `<feature-name>.flow-map.md`, and `<feature-name>.flow-verification.md`.
 - Keep the semantic SVG node/edge metadata requirements.
 - Keep explicit gap, decision, junction, terminal state, and owner review rules.
-- Remove duplicated failure/acceptance wording where it does not add new instructions.
+- Add detail-completeness, source-union inventory, flow-by-flow rendering, no-bulk-drawing, no-collapse, minimum-detail, domain-detail, source-coverage metadata, and verification additions.
+- Do not limit this special skill to fewer than 500 lines; preserve the full required instruction set.
 
 ## Acceptance Criteria
 
 - `SKILL.md` begins with valid YAML frontmatter delimiters.
 - All output path examples use `docs/flow-maps/`.
-- Repeated sections are reduced without removing required contracts.
+- The new detail-completeness and source-coverage contracts are present.
+- The special skill is allowed to exceed 500 lines when needed to preserve required behavior.
 - Validation evidence records source inspection and a parse/check result.
 - Anvien detect-changes is run before commit.
 - The final commit includes only the plan set and the skill refresh unless pre-existing unrelated work remains outside the commit.
@@ -79,10 +81,10 @@ The current skill has frontmatter-like lines without YAML delimiters, inconsiste
   - Dependencies: P0 actual status and user request.
 - Phase Implementation Rule: do not implement `P1` directly. Implement `P1-A`, verify it, record evidence, refresh actual-status, commit when required, then close.
 - Ordered Slice List:
-  - P1-A: Refresh `SKILL.md` frontmatter, output paths, and duplicated sections.
+  - P1-A: Refresh `SKILL.md` frontmatter, output paths, and detail-completeness coverage rules.
 
-- [ ] P1-A: Refresh `SKILL.md` frontmatter, output paths, and duplicated sections.
-  - Goal: produce a concise, valid skill file matching the requested changes.
+- [x] P1-A: Refresh `SKILL.md` frontmatter, output paths, and detail-completeness coverage rules.
+  - Goal: produce a valid special-purpose skill file matching the requested expanded coverage rules, without imposing a 500-line cap.
   - Scope Boundary:
     - Editable: `internal/aicontext/skills/Spec-to-SVG-Flow-Map/SKILL.md`.
     - Inspect-only: this plan set, existing git status, Anvien file-detail evidence.
@@ -103,7 +105,7 @@ The current skill has frontmatter-like lines without YAML delimiters, inconsiste
     - External side effects: git commit only after validation.
     - N/A notes: this is a markdown skill refresh, not production code.
   - Work Steps:
-    1. Rewrite the target skill with valid frontmatter, one output path contract, and compact non-duplicated sections.
+    1. Rewrite the target skill with valid frontmatter, one output path contract, and the requested detail-completeness/source-union/flow-by-flow/no-collapse sections.
        - UI flow check: N/A, no UI.
        - DB/data flow check: N/A, markdown-only.
        - Render location check: N/A, markdown-only.
@@ -119,7 +121,7 @@ The current skill has frontmatter-like lines without YAML delimiters, inconsiste
     - Before editing target files, record Anvien file-detail evidence for the target file.
     - P0 actual-status marks the target editable and low risk.
   - Acceptance:
-    - Source: `SKILL.md` has valid YAML delimiters, a concise body, and unified `docs/flow-maps/` outputs.
+    - Source: `SKILL.md` has valid YAML delimiters, unified `docs/flow-maps/` outputs, and the requested detail-completeness/source-union/flow-by-flow/no-collapse contracts.
     - Runtime/UI: N/A, docs-only skill change.
     - DB/data: N/A, docs-only skill change.
     - Behavior test: validation commands pass.
@@ -130,14 +132,14 @@ The current skill has frontmatter-like lines without YAML delimiters, inconsiste
   - Actual-status Update: refresh the target row after validation.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] Pn-A: Call supervisor for the implemented-plan acceptance loop.
+- [x] Pn-A: Call supervisor for the implemented-plan acceptance loop.
   - Goal: verify the completed plan work against the accepted plan, actual-status decisions, evidence, benchmark, changed files, generated output, and validation results before closure.
   - Work Steps:
     1. Review the completed plan work against the requested scope and evidence.
     2. If review fails, fix only the failed scope and re-review.
   - Implementation Gate: P1-A must be completed or explicitly blocked.
   - Acceptance: review passes, or the plan records a blocker with evidence and no closure is performed.
-- [ ] Pn-B: Remove dead work created during this plan.
+- [x] Pn-B: Remove dead work created during this plan.
   - Goal: ensure the final diff contains only artifacts that still serve the accepted plan.
   - Work Steps:
     1. Review files and sections created or modified during this plan.
@@ -145,7 +147,7 @@ The current skill has frontmatter-like lines without YAML delimiters, inconsiste
     3. Verify final diff/status contains no dead plan-created artifacts.
   - Implementation Gate: only remove artifacts created by this plan unless the user explicitly approves broader cleanup.
   - Acceptance: final `git diff/status` contains no dead plan-created artifacts, and evidence records what was preserved.
-- [ ] Pn-C: Close the plan.
+- [x] Pn-C: Close the plan.
   - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
   - Work Steps:
     1. Record final validation. Full app build is N/A because the slice changes only markdown skill instructions.

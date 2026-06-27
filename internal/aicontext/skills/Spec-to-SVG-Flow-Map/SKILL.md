@@ -1,6 +1,6 @@
 ---
 name: spec-to-svg-flow-map
-description: Convert product, feature, UI, backend, auth, sync, lifecycle, external-contract, or multi-branch specs into semantic SVG flow maps with machine-readable metadata, gap detection, verification reports, and BLOCKED/READY_FOR_OWNER_REVIEW status. Use when the user asks to turn a spec into a visual flow map, audit spec completeness before coding, expose undefined behavior, or identify owner decisions before implementation.
+description: Convert product, feature, UI, backend, auth, sync, lifecycle, external-contract, or multi-branch specs into detailed semantic SVG flow maps with machine-readable metadata, source-union coverage, flow-by-flow rendering, no-collapse checks, gap detection, verification reports, and BLOCKED/READY_FOR_OWNER_REVIEW status. Use when the user asks to turn a spec into a visual flow map, audit spec completeness before coding, compare against reference diagrams, expose undefined behavior, or identify owner decisions before implementation.
 ---
 
 # Spec to SVG Flow Map
@@ -22,6 +22,23 @@ This skill does not create decorative diagrams. It creates a semantic visual map
 
 The SVG must help humans and coding agents decide whether the spec is clear enough for safe implementation.
 
+## Detail Completeness Objective
+
+Generate a flow map that is more detailed than any existing source diagram or reference artifact provided for the same scope.
+
+Do not create an overview-only map when the source contains implementation roads, command families, lifecycle states, storage checkpoints, guards, cursors, locks, receipts, versions, hash chains, terminal states, or recovery paths.
+
+The output must preserve the union of:
+
+- source spec details
+- related authority docs
+- existing flow maps or SVGs
+- verification reports
+- UI/state/API/contract maps
+- explicitly named invariants and negative rules
+
+If a prior/reference SVG contains a named flow, branch, state, store, cursor, command, invariant, or terminal state that is not represented in the new SVG, the run fails.
+
 ## Scope And Non-Goals
 
 - Use this skill only to create or update flow-map artifacts from a spec.
@@ -36,11 +53,13 @@ Read the available authority for the requested spec slice:
 
 1. Source spec.
 2. Related authority docs.
-3. UI prototype or UI slot map, if present.
-4. State/source map, if present.
-5. Backend contract map, if present.
-6. Actual wiring status, if present.
-7. Project rules.
+3. Existing/reference SVGs and flow maps, if present.
+4. Existing verification reports, if present.
+5. UI prototype or UI slot map, if present.
+6. State/source map, if present.
+7. Backend/API/contract map, if present.
+8. Actual wiring status, if present.
+9. Project rules.
 
 If required input is missing, do not invent behavior. Mark it as a gap in the SVG and in the verification report.
 
@@ -69,9 +88,165 @@ Use lowercase kebab-case for `<feature-name>` unless the project already has a s
 9. Represent every pipeline handoff with a real junction node.
 10. Give every terminal state an explicit node.
 11. Mark every unresolved ambiguity as a gap node.
-12. If the map cannot be completed safely, stop and report why.
+12. Build source-union coverage before drawing implementation logic.
+13. Render implementation logic flow-by-flow, not from one bulk summary pass.
+14. Do not collapse named implementation details into generic nodes.
+15. If the map cannot be completed safely, stop and report why.
 
 If the map contains any unresolved node with type `SPEC_GAP`, `UNDEFINED_BEHAVIOR`, or `OWNER_DECISION_REQUIRED`, set implementation status to `BLOCKED`.
+
+If `missing_source_items` is not empty, set implementation status to `BLOCKED`.
+
+## Source Union Inventory Gate
+
+Before drawing, build a source union inventory from all input artifacts.
+
+Inventory these categories:
+
+```text
+flows
+subflows
+roads
+actors
+roles
+scopes
+screens
+UI commands
+runtime commands
+backend/API commands
+IPC commands
+permissions
+guards
+branch conditions
+deny conditions
+stores
+caches
+files
+DBs
+table families
+queues
+outboxes
+projections
+snapshots
+cursors
+checkpoints
+receipts
+versions
+locks
+hash chains
+coverage markers
+lifecycle states
+retry rules
+rollback rules
+terminal states
+recovery paths
+invariants
+negative rules
+out-of-scope boundaries
+```
+
+For each inventory item, assign one mapping status:
+
+```text
+MAPPED_AS_NODE
+MAPPED_AS_EDGE
+MAPPED_AS_JUNCTION
+MAPPED_AS_TERMINAL
+MAPPED_AS_GAP
+INTENTIONALLY_OUT_OF_SCOPE
+MISSING
+```
+
+Fail the run if any implementation-relevant item is `MISSING`.
+
+Record the mapped SVG ids for every item that is not intentionally out of scope.
+
+## Flow-By-Flow Rendering Rule
+
+Do not draw all flows in one batch.
+
+Use this loop:
+
+1. Select exactly one named flow or subflow from the source union inventory.
+2. Re-read the source spec sections and reference artifacts for that flow.
+3. Extract that flow's actors, entry points, preconditions, commands, guards, branches, state/data reads, writes, side effects, terminal states, recovery paths, handoffs, and invariants.
+4. Draw only that flow.
+5. Add that flow's visible SVG nodes, edges, junctions, terminals, and gaps.
+6. Add matching metadata for that flow.
+7. Verify that flow against the source inventory before moving to the next flow.
+8. Mark each covered source item with its mapped node/edge/junction/terminal/gap id.
+9. Only then continue to the next flow.
+
+Do not rely on memory from earlier reading when rendering a later flow. Re-open or re-read the relevant source sections before each flow.
+
+The final SVG may contain all flows, but the construction process must be flow-by-flow.
+
+## No Bulk Drawing Rule
+
+Never render multiple independent pipelines from a single high-level summary pass.
+
+A bulk drawing pass is allowed only for:
+
+- the legend
+- global lane layout
+- cross-flow index
+- high-level navigation anchors
+- final consistency cleanup
+
+It is not allowed for implementation logic.
+
+Implementation logic must be added through the Flow-By-Flow Rendering Rule.
+
+## No Collapse Rule
+
+Do not collapse named details into generic nodes.
+
+A node such as `BUSINESS_OPS`, `SYNC_ENGINE`, `AUTH_FLOW`, `REPORTS`, `SETTINGS`, or `LOCAL_COMMAND` is allowed only as an index, grouping label, or junction. It is not sufficient coverage for detailed source behavior.
+
+If the source names roads such as POS order, pay/refund, move/merge/split, shift/cash, inventory, owner setup, report coverage, local print, snapshot bootstrap, manual sync, lifecycle reconnect, or recovery, each road must be represented separately.
+
+Every generic/index node must fan out to detailed nodes or detail sheets.
+
+Fail the run if a generic node replaces a named implementation road.
+
+## Minimum Detail Per Flow
+
+For every named flow or subflow, include at least:
+
+1. Entry trigger.
+2. Actor, role, device, and scope preconditions.
+3. UI, external, runtime, IPC, or backend command source.
+4. Authority or permission gate.
+5. State/data reads.
+6. Decision branches.
+7. Write/apply target.
+8. Side effects.
+9. Async, outbox, background, or transport behavior.
+10. Success terminal state.
+11. Failure, denied, blocked, pending, or rollback terminal state.
+12. Recovery or retry path.
+13. Pipeline handoff junctions.
+14. Source-of-truth boundary.
+15. Explicit invariants and "must not" rules.
+
+If any required item is not defined by the source, create a visible gap node.
+
+## Required Domain Detail Checklist
+
+When relevant, explicitly model these domains instead of grouping them:
+
+- Auth/session/device/entitlement restore, login handoff, cache, keyring, expiry, logout, denied states.
+- Restaurant/scope selection, visible/bound scopes, DB mount, hydrated/not-hydrated states.
+- Permission/local command gate, renderer boundary, Go/backend authority, command guards.
+- Owner/app setup, setup outbox, setup version, setup receipt, convergence state.
+- Business runtime: POS order, pay/refund, move/merge/split, shift/cash, inventory/stocktake.
+- Sync transport: LAN/WSS/VPS, relay, delta, dedupe, ack, cursor, hash verify, gap, repair.
+- Snapshot/bootstrap/manual sync: baselines, manifest, anchors, allowlist apply, rollback, catchup.
+- Reports/coverage: aggregate/detail split, retention, source coverage, export/print gating.
+- Local print/export: printer config, preview, spooler result, local-only boundary.
+- Lifecycle/reconnect: active/idle/sleep/offline/resume, missed relay, auth refresh, cursor catchup.
+- Local settings/device-only behavior.
+- External/backend contracts and denied/error responses.
 
 ## Semantic SVG Contract
 
@@ -142,9 +317,11 @@ Good:
 </g>
 ```
 
-## SVG Metadata
+## SVG Metadata And Source Coverage Metadata
 
-Every SVG must include one machine-readable metadata block:
+Every SVG must include one machine-readable metadata block.
+
+The metadata must include graph content and source coverage:
 
 ```xml
 <metadata id="spec-flow-map">
@@ -152,6 +329,13 @@ Every SVG must include one machine-readable metadata block:
   "feature": "<feature-name>",
   "source_spec": "<source-spec-path>",
   "version": "draft",
+  "reference_artifacts": [
+    {
+      "path": "docs/flow-maps/reference.flow.svg",
+      "type": "reference_svg",
+      "scope": "<scope>"
+    }
+  ],
   "nodes": [
     {
       "id": "AUTH_LOGIN",
@@ -173,6 +357,23 @@ Every SVG must include one machine-readable metadata block:
       "source_ref": "spec.md#auth-login"
     }
   ],
+  "source_inventory": [
+    {
+      "source_item": "sync_cursor.last_pulled_relay_id",
+      "category": "cursor",
+      "source_ref": "spec.md#sync-reconnect",
+      "mapping_status": "MAPPED_AS_NODE",
+      "mapped_ids": ["node-sync-cursor-last-pulled-relay-id"]
+    }
+  ],
+  "coverage_summary": {
+    "total_source_items": 0,
+    "mapped_items": 0,
+    "missing_items": 0,
+    "collapse_violations": 0
+  },
+  "missing_source_items": [],
+  "collapse_violations": [],
   "gaps": [],
   "terminal_states": [],
   "junctions": [],
@@ -182,6 +383,8 @@ Every SVG must include one machine-readable metadata block:
 ```
 
 Metadata must match the visible SVG nodes and edges.
+
+If `missing_source_items` is not empty, set implementation status to `BLOCKED`.
 
 ## Lanes, Nodes, Edges
 
@@ -304,6 +507,9 @@ Create a gap node when:
 10. A terminal state is vague.
 11. A flow crosses into another pipeline without a junction.
 12. A background job can fail but has no retry/failure rule.
+13. A source union inventory item is implementation-relevant but lacks a mapped SVG id.
+14. A reference artifact contains a named detail that is absent from the new map.
+15. A flow lacks a required minimum detail item and the source does not define it.
 
 Every gap node must be visible in the SVG and listed in the verification report.
 
@@ -326,54 +532,75 @@ AUTH_SUCCESS_JUNCTION -> LICENSE_CHECK
 
 Do not represent a pipeline handoff only as crossing arrows.
 
-## Workflow
+## Updated Workflow
 
-1. Extract from the spec:
-
-```text
-actors, lanes, entry points, screens, states, actions, decisions, branch conditions, data stores, external systems, background jobs, terminal states, errors, recovery paths, manual steps, automation points, unknowns
-```
-
-2. Build a node inventory:
-
-```text
-Flow ID, Node ID, Node Type, Lane, Label, Description, Source Spec Reference, Risk Level
-```
-
-3. Build an edge inventory:
+1. Read project rules and requested scope.
+2. Read source spec and related authority docs.
+3. Read existing/reference SVGs, flow maps, verification reports, UI maps, state maps, API maps, and contract maps when present.
+4. Build the source union inventory.
+5. Identify named flows and subflows.
+6. Create a global lane/layout plan only; do not draw implementation logic yet.
+7. For each named flow, repeat:
 
 ```text
-Edge ID, From Node, To Node, Edge Type, Condition, Flow ID, Source Spec Reference
+re-read relevant source sections
+extract flow-local inventory
+draw that flow only
+write visible nodes/edges/junctions/terminals/gaps
+write matching metadata
+verify source coverage for that flow
+mark mapped source inventory items
 ```
 
-4. List gaps before writing SVG:
+8. After all flows are drawn, run global consistency verification.
+9. Check for missing source items.
+10. Check for collapse violations.
+11. Check reference SVG delta.
+12. Parse SVG as XML.
+13. Verify metadata/visible node round-trip.
+14. Set implementation status.
+
+Create `docs/flow-maps/<feature-name>.flow.svg` as semantic XML.
+
+Create `docs/flow-maps/<feature-name>.flow-map.md` with:
 
 ```text
-missing branches, undefined conditions, missing states, unclear ownership, missing recovery path, missing data source, unclear terminal state
+Feature Name
+Source Spec
+Reference Artifacts
+Source Union Inventory
+Flow List
+Lane List
+Node Table
+Edge Table
+Decision Table
+Junction Table
+Terminal State Table
+Gap Table
+Risk Table
+Out-of-Scope Table
+Reference SVG Delta
+Collapse Violation Table
+Generic Node Fan-Out Audit
 ```
 
-5. Create `docs/SPEC/flow-maps/Spec-to-SVG-Flow-Map.svg` as semantic XML.
-6. Create `docs/SPEC/flow-maps/<feature-name>.flow-map.md` with flow, lane, node, edge, decision, junction, terminal, gap, risk, and out-of-scope tables.
-7. Create `docs/SPEC/flow-maps/<feature-name>.flow-verification.md`.
-8. Parse the generated SVG as XML when tooling is available, then verify round-trip consistency.
-9. Set final implementation status:
+Create `docs/flow-maps/<feature-name>.flow-verification.md`.
+
+Set final implementation status:
 
 ```text
 BLOCKED
 ```
 
-when unresolved gap/undefined/owner-decision nodes remain.
+when unresolved gaps, undefined behavior, owner decisions, missing source items, collapse violations, or failed reference deltas remain.
 
 ```text
 READY_FOR_OWNER_REVIEW
 ```
 
-only when no unresolved `SPEC_GAP`, `UNDEFINED_BEHAVIOR`, or `OWNER_DECISION_REQUIRED` nodes remain.
+only when no unresolved `SPEC_GAP`, `UNDEFINED_BEHAVIOR`, `OWNER_DECISION_REQUIRED`, source coverage, collapse, or reference-delta blockers remain.
 
-```text
-APPROVED
-```
-after the Owner reviews and approves the SVG flow map.
+Only the Owner can approve implementation after reviewing the generated flow map.
 
 ## Round-Trip Verification
 
@@ -386,6 +613,11 @@ Verify:
 - Every junction connects at least two pipeline segments.
 - Every gap node appears in the verification report.
 - Every terminal state is explicit.
+- Every source inventory item has a final mapping status.
+- Every implementation-relevant source inventory item has mapped SVG ids or a visible gap.
+- Every reference SVG/detail delta is represented as a mapped id or gap.
+- Every generic/index node has allowed purpose and fan-out.
+- Every flow records which source sections were re-read before rendering.
 - No important logic exists only in geometry.
 - SVG parses as XML when a parser is available.
 
@@ -399,12 +631,17 @@ Use this structure in `docs/flow-maps/<feature-name>.flow-verification.md`:
 ## Source
 - Spec:
 - Related docs:
+- Reference artifacts:
 - Generated SVG:
 
 ## Summary
 - Total flows:
 - Total nodes:
 - Total edges:
+- Source inventory items:
+- Mapped source items:
+- Missing source items:
+- Collapse violations:
 - Decision nodes:
 - Junction nodes:
 - Terminal states:
@@ -414,6 +651,30 @@ Use this structure in `docs/flow-maps/<feature-name>.flow-verification.md`:
 
 ## Implementation Status
 BLOCKED or READY_FOR_OWNER_REVIEW
+
+## Source Union Inventory Coverage
+| Source Item | Category | Source Ref | Mapping Status | Mapped SVG IDs |
+|---|---|---|---|---|
+
+## Flow-By-Flow Coverage
+| Flow | Source Sections Re-read | Nodes | Edges | Terminals | Gaps | Status |
+|---|---|---:|---:|---:|---:|---|
+
+## Missing Source Items
+| Source Item | Category | Source Ref | Why It Matters | Required Fix |
+|---|---|---|---|---|
+
+## Collapse Violations
+| Generic Node | Missing Detail | Source Ref | Required Split |
+|---|---|---|---|
+
+## Reference SVG Delta
+| Reference Artifact | Item Present In Reference | Present In New SVG | Mapped ID / Gap |
+|---|---|---|---|
+
+## Generic Node Fan-Out Audit
+| Generic Node | Allowed Purpose | Fan-Out Nodes | Status |
+|---|---|---|---|
 
 ## Critical Gaps
 | Gap ID | Type | Location | Why It Blocks Coding | Required Spec Fix |
@@ -445,16 +706,34 @@ The skill run succeeds only when:
 
 1. The SVG is valid XML.
 2. The SVG has machine-readable metadata for nodes and edges.
-3. The flow-map markdown matches the SVG.
-4. The verification report is complete.
-5. Every decision has explicit branches.
-6. Every pipeline handoff uses a junction node.
-7. Every terminal state is explicit.
-8. Every unresolved ambiguity is marked as a gap.
-9. No production code was modified.
-10. Final status is `BLOCKED` or `READY_FOR_OWNER_REVIEW`.
+3. The SVG metadata includes source coverage fields.
+4. The flow-map markdown matches the SVG.
+5. The verification report is complete.
+6. Every decision has explicit branches.
+7. Every pipeline handoff uses a junction node.
+8. Every terminal state is explicit.
+9. Every unresolved ambiguity is marked as a gap.
+10. Every implementation-relevant source inventory item is mapped or represented as a gap.
+11. Every flow is rendered through the Flow-By-Flow Rendering Rule.
+12. Every generic/index node has a legitimate purpose and fans out to details.
+13. No production code was modified.
+14. Final status is `BLOCKED` or `READY_FOR_OWNER_REVIEW`.
 
-Fail the run if any of those conditions are false, especially if an agent hides a spec gap or claims the spec is clear while unresolved gap nodes remain.
+Fail the run if any of those conditions are false.
+
+## Acceptance Criteria Additions
+
+Fail the run if:
+
+1. A reference/source SVG contains a named flow or detail missing from the new SVG.
+2. A generic node replaces a named implementation road.
+3. A source inventory item is marked `MISSING`.
+4. A decision branch, denial state, recovery path, cursor/checkpoint, or source-of-truth boundary is only described in prose and not represented in SVG metadata.
+5. The new SVG is less detailed than any existing diagram for the same scope.
+6. Multiple independent implementation pipelines were drawn in one batch without flow-by-flow re-reading and verification.
+7. A flow was rendered without recording which source sections were re-read for that flow.
+8. A flow was marked complete before its source inventory items were mapped.
+9. An agent hides a spec gap or claims the spec is clear while unresolved gap nodes remain.
 
 ## Final Handoff Format
 
@@ -477,6 +756,6 @@ BLOCKED or READY_FOR_OWNER_REVIEW
 3.
 
 ## Owner Action Required
-- If BLOCKED: list the exact spec sections that need clarification.
+- If BLOCKED: list the exact spec sections, source inventory items, reference deltas, or collapse violations that need clarification.
 - If READY_FOR_OWNER_REVIEW: ask Owner to review and approve the SVG flow map before implementation.
 ```

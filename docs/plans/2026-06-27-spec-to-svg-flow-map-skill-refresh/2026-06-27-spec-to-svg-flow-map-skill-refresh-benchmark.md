@@ -21,7 +21,11 @@ The benchmark file records measured product/runtime performance, capacity, packa
 
 ## B1 - P1 Benchmarks
 
-No product/runtime benchmark is expected for the markdown skill refresh. If a line-count or path inventory is measured during validation, record it here.
+| Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
+|-------|--------|------|----------|--------|-------|--------|-------|----------|
+| P1 | Skill line count | lines | N/A | 761 | 761 | record only; no max cap | N/A | `E1-P1A-SRC2` |
+
+No product/runtime benchmark is expected for the markdown skill refresh. The line count is recorded only as generated-output inventory, not as a limit.
 
 ## B2 - Closure Benchmarks
 
