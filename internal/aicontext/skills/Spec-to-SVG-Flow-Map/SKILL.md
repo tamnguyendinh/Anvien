@@ -19,6 +19,7 @@ This skill does not create decorative diagrams. It creates a semantic visual map
 - error/recovery/background job/runtime command flow
 - decisions, branches, pipeline handoffs, terminal states, and out-of-scope references
 - spec gaps, undefined behavior, owner decisions, missing data, bottlenecks, and risk areas
+- legend
 
 The SVG must help humans and coding agents decide whether the spec is clear enough for safe implementation.
 
