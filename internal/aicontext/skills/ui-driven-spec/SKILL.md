@@ -1,14 +1,6 @@
 ---
 name: ui-driven-spec
-description: >
-  Workflow phát triển phần mềm UI-first cho AI agent. Dùng skill này khi người
-  dùng muốn: xây app mới theo hướng UI trước BE, extract spec từ prototype đã
-  có, chuẩn bị handoff BE implementation từ FE đã code, hoặc nói các cụm như
-  "làm UI trước", "prototype rồi mới spec", "UI-driven", "FE trước BE",
-  "extract contract từ UI", "slot map", "state map", "backend contract map",
-  "chuyển giao kiến trúc sư duyệt". Trigger khi user có HTML prototype hoặc
-  FE components và cần chuyển sang BE. Đây là flow ngược truyền thống —
-  UI là bản đồ thao tác, Spec là luật tối cao, human phải duyệt trước khi implement.
+description: Workflow phát triển phần mềm UI-first cho AI agent. Dùng skill này khi người dùng muốn: xây app mới theo hướng UI trước BE, extract spec từ prototype đã có, chuẩn bị handoff BE implementation từ FE đã code, hoặc nói các cụm như "làm UI trước", "prototype rồi mới spec", "UI-driven", "FE trước BE", "extract contract từ UI", "slot map", "state map", "backend contract map", "chuyển giao kiến trúc sư duyệt". Trigger khi user có HTML prototype hoặc FE components và cần chuyển sang BE. Đây là flow ngược truyền thống — UI là bản đồ thao tác, Spec là luật tối cao, human phải duyệt trước khi implement.
 ---
 
 # UI-Driven Spec — FE-First Development Workflow
