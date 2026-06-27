@@ -352,9 +352,9 @@ Edge ID, From Node, To Node, Edge Type, Condition, Flow ID, Source Spec Referenc
 missing branches, undefined conditions, missing states, unclear ownership, missing recovery path, missing data source, unclear terminal state
 ```
 
-5. Create `docs/DOCS/flow-maps/Spec-to-SVG-Flow-Map.svg` as semantic XML.
-6. Create `docs/DOCS/flow-maps/<feature-name>.flow-map.md` with flow, lane, node, edge, decision, junction, terminal, gap, risk, and out-of-scope tables.
-7. Create `docs/DOCS/flow-maps/<feature-name>.flow-verification.md`.
+5. Create `docs/SPEC/flow-maps/Spec-to-SVG-Flow-Map.svg` as semantic XML.
+6. Create `docs/SPEC/flow-maps/<feature-name>.flow-map.md` with flow, lane, node, edge, decision, junction, terminal, gap, risk, and out-of-scope tables.
+7. Create `docs/SPEC/flow-maps/<feature-name>.flow-verification.md`.
 8. Parse the generated SVG as XML when tooling is available, then verify round-trip consistency.
 9. Set final implementation status:
 
@@ -373,6 +373,7 @@ only when no unresolved `SPEC_GAP`, `UNDEFINED_BEHAVIOR`, or `OWNER_DECISION_REQ
 ```text
 APPROVED
 ```
+after the Owner reviews and approves the SVG flow map.
 
 ## Round-Trip Verification
 
