@@ -1,0 +1,3 @@
+interface:
+  display_name: "Thảo Luận Kiến Trúc SPEC"
+  short_description: "Đọc hết SPEC liên quan trước khi thảo luận invariant, boundary, pipeline và điểm chưa rõ."
