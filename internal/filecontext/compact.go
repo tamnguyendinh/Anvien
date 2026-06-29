@@ -113,7 +113,7 @@ func CompactFileContextFromExpanded(context FileContext) CompactFileContext {
 }
 
 func (b *Builder) BuildCompactFileContext(path string, options Options) (CompactFileContext, bool) {
-	context, ok := b.BuildFileContext(path, options)
+	context, ok := b.BuildFileContext(path, compactDefaultOptions(options))
 	if !ok {
 		return CompactFileContext{}, false
 	}
@@ -151,6 +151,19 @@ func compactFileContextFromExpanded(context FileContext, fileMetadata *Builder) 
 		Quality:  context.Quality,
 		Limits:   context.Limits,
 	}
+}
+
+func compactDefaultOptions(options Options) Options {
+	if options.RelationshipSamplesPerGroup == 0 {
+		options.RelationshipSamplesPerGroup = FullDetailSampleLimit
+	}
+	if options.UnresolvedSamplesPerGroup == 0 {
+		options.UnresolvedSamplesPerGroup = FullDetailSampleLimit
+	}
+	if options.LinkedSamplesPerKind == 0 {
+		options.LinkedSamplesPerKind = FullDetailSampleLimit
+	}
+	return options
 }
 
 func defaultCompactFileContextSchema() CompactFileContextSchema {

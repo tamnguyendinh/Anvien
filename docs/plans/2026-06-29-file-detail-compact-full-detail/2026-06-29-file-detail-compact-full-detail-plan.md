@@ -259,7 +259,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
   - Actual-status Update: mark related-file metadata `missing -> correct` when tests and smoke pass.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] P1-C: Prove compact facts preserve expanded facts.
+- [x] P1-C: Prove compact facts preserve expanded facts.
   - Goal: add tests that prevent compact output from becoming a lossy summary.
   - Scope Boundary:
     - Editable: `internal/filecontext/context_test.go`.

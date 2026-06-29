@@ -235,6 +235,85 @@ func TestBuildCompactFileContextAddsRelatedFileMetadata(t *testing.T) {
 	}
 }
 
+func TestBuildCompactFileContextDefaultsToFullRows(t *testing.T) {
+	builder := NewBuilder(fileContextFixture(false))
+
+	expanded, ok := builder.BuildFileContext("src/app.go", Options{})
+	if !ok {
+		t.Fatalf("BuildFileContext() did not find file")
+	}
+	if expanded.Limits.RelationshipSamplesPerGroup != defaultSampleLimit {
+		t.Fatalf("expanded default relationship limit = %d, want %d", expanded.Limits.RelationshipSamplesPerGroup, defaultSampleLimit)
+	}
+
+	compact, ok := builder.BuildCompactFileContext("src/app.go", Options{})
+	if !ok {
+		t.Fatalf("BuildCompactFileContext() did not find file")
+	}
+	if compact.Limits.RelationshipSamplesPerGroup != FullDetailSampleLimit ||
+		compact.Limits.UnresolvedSamplesPerGroup != FullDetailSampleLimit ||
+		compact.Limits.LinkedSamplesPerKind != FullDetailSampleLimit {
+		t.Fatalf("compact default limits = %#v, want full-detail sentinel", compact.Limits)
+	}
+	outbound := compact.Tables.Relationships.OutboundByFile[0]
+	if outbound.Total != 2 || outbound.Rows.Returned != 2 || outbound.Rows.Omitted != 0 {
+		t.Fatalf("compact default outbound rows = total %d rows %#v, want all two rows", outbound.Total, outbound.Rows)
+	}
+	if compact.Tables.Relationships.Counts.SamplesReturned != 4 {
+		t.Fatalf("compact samples returned = %d, want all relationship rows 4", compact.Tables.Relationships.Counts.SamplesReturned)
+	}
+
+	unresolvedBuilder := NewBuilder(qualitySignalFixture())
+	unresolved, ok := unresolvedBuilder.BuildCompactFileContext("src/app.go", Options{})
+	if !ok {
+		t.Fatalf("BuildCompactFileContext() did not find quality fixture file")
+	}
+	if len(unresolved.Tables.Unresolved.Groups) != 1 || unresolved.Tables.Unresolved.Groups[0].Rows.Returned != 3 || unresolved.Tables.Unresolved.Groups[0].Rows.Omitted != 0 {
+		t.Fatalf("compact default unresolved groups = %#v, want all three rows", unresolved.Tables.Unresolved.Groups)
+	}
+}
+
+func TestBuildCompactFileContextExplicitLimitsExposeOmittedRows(t *testing.T) {
+	g := qualitySignalFixture()
+	g.AddNode(graph.Node{ID: "Process:primary", Label: scopeir.NodeProcess, Properties: graph.NodeProperties{"name": "Primary flow"}})
+	g.AddNode(graph.Node{ID: "Process:secondary", Label: scopeir.NodeProcess, Properties: graph.NodeProperties{"name": "Secondary flow"}})
+	g.AddRelationship(graph.Relationship{
+		ID:         "rel:step:primary",
+		SourceID:   "Function:src/app.go:Run",
+		TargetID:   "Process:primary",
+		Type:       graph.RelStepInProcess,
+		Confidence: 0.9,
+	})
+	g.AddRelationship(graph.Relationship{
+		ID:         "rel:step:secondary",
+		SourceID:   "Function:src/app.go:Run",
+		TargetID:   "Process:secondary",
+		Type:       graph.RelStepInProcess,
+		Confidence: 0.8,
+	})
+
+	compact, ok := NewBuilder(g).BuildCompactFileContext("src/app.go", Options{
+		UnresolvedSamplesPerGroup: 1,
+		LinkedSamplesPerKind:      1,
+	})
+	if !ok {
+		t.Fatalf("BuildCompactFileContext() did not find file")
+	}
+	if compact.Limits.RelationshipSamplesPerGroup != FullDetailSampleLimit {
+		t.Fatalf("unspecified compact relationship limit = %d, want full sentinel", compact.Limits.RelationshipSamplesPerGroup)
+	}
+	if compact.Tables.Unresolved.Groups[0].Rows.Total != 3 ||
+		compact.Tables.Unresolved.Groups[0].Rows.Returned != 1 ||
+		compact.Tables.Unresolved.Groups[0].Rows.Omitted != 2 {
+		t.Fatalf("limited unresolved rows = %#v, want total/returned/omitted 3/1/2", compact.Tables.Unresolved.Groups[0].Rows)
+	}
+	if compact.Tables.Linked.Flows.Total != 2 ||
+		compact.Tables.Linked.Flows.Returned != 1 ||
+		compact.Tables.Linked.Flows.Omitted != 1 {
+		t.Fatalf("limited linked flows = %#v, want total/returned/omitted 2/1/1", compact.Tables.Linked.Flows)
+	}
+}
+
 func TestBuildFileContextReturnsFalseForMissingFile(t *testing.T) {
 	_, ok := NewBuilder(fileContextFixture(false)).BuildFileContext("src/missing.go", Options{})
 	if ok {

@@ -83,10 +83,10 @@ Record how many files the target is related to before deciding touch mode. A fil
 
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|--------------------|----------|--------------------|
-| Builder expanded file detail | `BuildFileContext` returns full expanded `FileContext` with summary, symbol tree, relationships, unresolved, linked, quality, and limits | Preserve expanded facts while adding compact full-detail representation | partial | 42 related files for builder source | `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1` | edit P1-A/P1-C; preserve expanded fields |
-| Compact representation | Compact DTO/schema/row table and conversion helper exist, but related-file metadata and full parity/limit tests remain in P1-B/P1-C | Compact full-detail DTO with schema, dictionaries, tables, row references, tuple ranges, and explicit version/format | partial | 42 related files for builder source | `E0-P0A-SRC1`, `E0-P0A-FD1`, `E1-P1A-SRC1`, `E1-P1A-TEST1` | continue P1-B/P1-C before surface wiring |
-| Compact limit/default contract | Current sample flags limit per-group samples, but compact full-detail default/omitted-count semantics do not exist | Default compact machine output is full-row unless explicit limits are supplied; limited output exposes total, returned, and omitted counts | missing | N/A | `E0-P0A-DISCUSS1`, `E0-P0A-REVIEW1` | implement P1-C limit tests and P2 surface help/contracts |
-| Related-file metadata | Compact builder-aware output now exposes `relatedFiles` rows with graph-derived file metadata, direction flags, totals, and relationship-kind counts | `relatedFiles` table with file metadata, direction flags, counts, kind counts, and stable refs | correct | 42 related files for builder source still pending real compact CLI/API measurement | `E0-P0A-DISCUSS1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E1-P1B-SRC1`, `E1-P1B-TEST1` | preserve in P1-C/P2 surface wiring |
+| Builder expanded file detail | `BuildFileContext` still returns expanded `FileContext`; tests prove `Options{}` keeps the existing default sample limit while explicit negative full-detail limits are honored | Preserve expanded facts while adding compact full-detail representation | correct | 42 baseline related files for builder source | `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1`, `E1-P1C-SRC1`, `E1-P1C-TEST1` | preserve expanded fields while wiring P2 surfaces |
+| Compact representation | Compact DTO/schema/row tables, related-file metadata, full-default behavior, limited-output metadata, and real graph size/count measurements now exist | Compact full-detail DTO with schema, dictionaries, tables, row references, tuple ranges, and explicit version/format | correct | 43 current compact related-file rows after P1 graph changes | `E0-P0A-SRC1`, `E0-P0A-FD1`, `E1-P1A-SRC1`, `E1-P1A-TEST1`, `E1-P1B-SRC1`, `E1-P1B-TEST1`, `E1-P1C-TEST1`, `E1-P1C-MEASURE1` | start P2-A surface wiring |
+| Compact limit/default contract | Builder-level compact output defaults unspecified relationship, unresolved, and linked limits to full-detail `-1`; explicit limits expose total, returned, and omitted counts | Default compact machine output is full-row unless explicit limits are supplied; limited output exposes total, returned, and omitted counts | correct | N/A | `E0-P0A-DISCUSS1`, `E0-P0A-REVIEW1`, `E1-P1C-SRC1`, `E1-P1C-LIMIT1` | preserve in P2 surface help/contracts |
+| Related-file metadata | Compact builder-aware output exposes `relatedFiles` rows with graph-derived file metadata, direction flags, totals, and relationship-kind counts; current graph measurement reports 43 rows | `relatedFiles` table with file metadata, direction flags, counts, kind counts, and stable refs | correct | 43 current compact related-file rows after P1 graph changes | `E0-P0A-DISCUSS1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E1-P1B-SRC1`, `E1-P1B-TEST1`, `E1-P1C-MEASURE1` | preserve in P2 surface wiring |
 | CLI JSON surface | `--json` writes expanded `FileContext`; sample flags only limit samples per group | CLI supports compact full-detail and explicit expanded access with documented format behavior | partial | 19 related files for CLI source | `E0-P0A-SRC2`, `E0-P0A-FD2`, `E0-P0A-IMPACT2` | edit P2-A |
 | HTTP `/api/file-detail` surface | Endpoint writes expanded `FileContext`; query params bound sample counts only | Endpoint supports compact/expanded format selection and validates invalid format visibly | partial | 20 related files for HTTP source | `E0-P0A-SRC3`, `E0-P0A-FD3`, `E0-P0A-IMPACT3` | edit P2-B |
 | Web/API contract source | Contract declares one `FileContextResponse` shape for `/api/file-detail` | Contract declares compact response shape and format query behavior while preserving expanded compatibility | partial | 31 related files for contract source | `E0-P0A-SRC4`, `E0-P0A-FD6` | edit P2-C; regenerate outputs |
@@ -105,6 +105,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 | R1 | 2026-06-29 | readiness review supplement before implementation | MCP/agent surface, limit contract, docs surface | added missing surfaces and clarified compact full-detail default/limit contract | `E0-P0A-REVIEW1`, `E0-P0A-GRAPH2`, `E0-P0A-SRC6`, `E0-P0A-SRC7`, `E0-P0A-FD8..E0-P0A-FD10`, `E0-P0A-IMPACT5` | P2 expanded with P2-D/P2-E; P1-C must include limit semantics tests before surface wiring |
 | R2 | 2026-06-29 | P1-A implementation | compact DTO and converter | compact representation `missing -> partial` | `E1-P1A-IMPACT1`, `E1-P1A-SRC1`, `E1-P1A-TEST1`, `E1-P1A-BUILD1` | continue P1-B to add related-file metadata table |
 | R3 | 2026-06-29 | P1-B implementation | related-file metadata inventory | related-file metadata `partial -> correct` for builder-aware compact output | `E1-P1B-IMPACT1`, `E1-P1B-SRC1`, `E1-P1B-TEST1`, `E1-P1B-BUILD1` | continue P1-C to prove full parity and explicit limit semantics |
+| R4 | 2026-06-29 | P1-C implementation | compact fact parity, full-default limits, limited-output metadata, and real graph measurement | builder expanded file detail `partial -> correct`; compact representation `partial -> correct`; compact limit/default contract `missing -> correct` | `E1-P1C-IMPACT1`, `E1-P1C-SRC1`, `E1-P1C-TEST1`, `E1-P1C-LIMIT1`, `E1-P1C-BUILD1`, `E1-P1C-MEASURE1`, `E1-P1C-DETECT1` | P1 complete; start P2-A CLI format selection |
 
 ## Phase Touch Map
 
@@ -387,8 +388,8 @@ Do not add hidden expanded fallback that masks compact parse failures.
 |-----------|-----------------------|--------------------------------------|
 | P1-A | Compact representation now has DTO/schema/conversion, but later facts are still pending | P1-A complete; preserve converter while continuing P1-B/P1-C |
 | P1-B | Builder-aware compact output now includes related-file metadata table | P1-B complete; preserve `relatedFiles` in P1-C/P2 |
-| P1-C | No parity proof exists for compact facts, and compact limit/default semantics are missing | keep P1-C and add fact-preservation tests plus explicit full-default/limited-output tests |
-| P2-A | CLI JSON is expanded-only | keep P2-A after P1 completion |
+| P1-C | Builder-level compact parity, full-default semantics, explicit limit metadata, build, and real graph measurements now exist | P1-C complete; preserve builder behavior while wiring command/API/MCP surfaces |
+| P2-A | CLI JSON is expanded-only | start P2-A after P1-C commit |
 | P2-B | HTTP response is expanded-only | keep P2-B after P1 completion |
 | P2-C | Contract is expanded-only and generated artifacts are downstream | keep P2-C after P2-B; regenerate only from source |
 | P2-D | MCP/agent file-context consumers share `BuildFileContext` but had no planned surface decision | add P2-D; preserve expanded MCP compatibility or add explicit compact/expanded MCP contract with tests |
@@ -410,8 +411,8 @@ Do not add hidden expanded fallback that masks compact parse failures.
 - [x] Blockers are recorded, if any.
 - [x] Next phase status assumptions, next action, and work steps have been updated from this status file when needed.
 - [x] Status Refresh Log has R0 baseline and R1 readiness-supplement rows.
-- [ ] If implementation has started, affected Current Status Matrix rows have been refreshed from latest evidence.
-- [ ] If refreshed statuses changed next work, only the stale next-phase status assumptions, next action, or work steps have been updated before the next phase.
+- [x] If implementation has started, affected Current Status Matrix rows have been refreshed from latest evidence.
+- [x] If refreshed statuses changed next work, only the stale next-phase status assumptions, next action, or work steps have been updated before the next phase.
 
 ## Final P0 Decision
 

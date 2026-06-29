@@ -60,12 +60,12 @@ Benchmark sections must follow the plan phases:
 
 | Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
-| P1 | Compact model size for `internal/filecontext/context.go` | characters | 253168 | pending | pending | materially smaller while preserving facts | pending | `B1-P1C-SIZE1` |
-| P1 | Compact related-file rows for `internal/filecontext/context.go` | rows | 0 | pending | pending | 42 | pending | `B1-P1B-SIZE1` |
+| P1 | Compact model size for `internal/filecontext/context.go` versus expanded full-detail equivalent | characters | 849155 | 281704 | pending | materially smaller while preserving facts | -567451 | `E1-P1C-MEASURE1` |
+| P1 | Compact related-file rows for `internal/filecontext/context.go` | rows | 0 | 43 | pending | 43 current graph rows | +43 | `E1-P1C-MEASURE1` |
 | P1 | Fixture compact related-file rows for `src/app.go` | rows | 0 | 2 | pending | outbound and inbound fixture files represented | +2 | `E1-P1B-TEST1` |
-| P1 | Compact symbol row count for `internal/filecontext/context.go` | rows | 0 | pending | pending | 429 | pending | `B1-P1C-SIZE1` |
-| P1 | Compact unresolved row count for `internal/filecontext/context.go` | rows | 0 | pending | pending | 542 or requested full-scope count | pending | `B1-P1C-SIZE1` |
-| P1 | Limited compact output omitted-count fields | fields | 0 | pending | pending | total, returned, and omitted counts represented for limited sections | pending | `E1-P1C-LIMIT1` |
+| P1 | Compact symbol row count for `internal/filecontext/context.go` | rows | 0 | 429 | pending | 429 | +429 | `E1-P1C-MEASURE1` |
+| P1 | Compact unresolved row count for `internal/filecontext/context.go` | rows | 0 | 542 | pending | 542 | +542 | `E1-P1C-MEASURE1` |
+| P1 | Limited compact output omitted-count fields | fields | 0 | 3 | pending | total, returned, and omitted counts represented for limited sections | +3 | `E1-P1C-LIMIT1` |
 
 ## B2 - P2 Benchmarks
 

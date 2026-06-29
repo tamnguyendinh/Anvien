@@ -16,6 +16,8 @@ import (
 
 const defaultSampleLimit = 10
 
+const FullDetailSampleLimit = -1
+
 const DerivedFileEdgesNote = "File relationship groups are projections derived from symbol and source-site graph facts; canonical graph relationships remain symbol/source-site facts."
 
 var ErrFilePathOutsideRepo = errors.New("file path is outside repository")
@@ -1101,15 +1103,15 @@ func (b *Builder) sourceSymbolName(node graph.Node) string {
 
 func normalizeLimits(options Options) Limits {
 	relationshipLimit := options.RelationshipSamplesPerGroup
-	if relationshipLimit <= 0 {
+	if relationshipLimit == 0 {
 		relationshipLimit = defaultSampleLimit
 	}
 	unresolvedLimit := options.UnresolvedSamplesPerGroup
-	if unresolvedLimit <= 0 {
+	if unresolvedLimit == 0 {
 		unresolvedLimit = defaultSampleLimit
 	}
 	linkedLimit := options.LinkedSamplesPerKind
-	if linkedLimit <= 0 {
+	if linkedLimit == 0 {
 		linkedLimit = defaultSampleLimit
 	}
 	return Limits{
