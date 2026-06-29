@@ -833,7 +833,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
   - Actual-status Update: mark runtime UI validation `missing -> correct` or blocked.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] Pn-A: Call supervisor for the implemented-plan acceptance loop.
+- [x] Pn-A: Call supervisor for the implemented-plan acceptance loop.
   - Goal: verify the completed plan work against the accepted plan, actual-status decisions, evidence, benchmark, changed files, generated output, and validation results before closure.
   - Work Steps:
     1. Call the supervisor skill to review the full completed plan work.
@@ -842,7 +842,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
     4. Repeat until supervisor passes or records a blocker.
   - Implementation Gate: all planned implementation phases must be completed or explicitly blocked before this review.
   - Acceptance: supervisor review passes, or the plan records a blocker with evidence and no closure is performed.
-- [ ] Pn-B: Remove dead work created during this plan.
+- [x] Pn-B: Remove dead work created during this plan.
   - Goal: ensure the final diff contains only artifacts that still serve the accepted plan.
   - Work Steps:
     1. Review files, sections, generated output, tests, temp files, and plan artifacts created or modified during this plan.
@@ -852,7 +852,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
     5. If supervisor fails the cleanup, return to the responsible implementation workflow/skill for the failed cleanup scope only, then re-run supervisor review.
   - Implementation Gate: only remove artifacts created by this plan unless the user explicitly approves broader cleanup.
   - Acceptance: final `git diff/status` contains no dead plan-created artifacts, supervisor passes the cleanup, and evidence records what was removed or preserved.
-- [ ] Pn-C: Close the plan.
+- [x] Pn-C: Close the plan.
   - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
   - Work Steps:
     1. Run the required final validation for the accepted scope, including full build before final runtime validation. For app/runtime scopes, full build must include Docker image/container build.

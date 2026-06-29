@@ -115,6 +115,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 | R11 | 2026-06-29 | P3-B implementation | Web panel related-file render | Web panel render `partial -> correct` for related-file metadata while preserving existing sections | `E3-P3B-IMPACT1`, `E3-P3B-SRC1`, `E3-P3B-TEST1`, `E3-P3B-BUILD1`, `E3-P3B-DETECT1` | start P3-C built runtime validation |
 | R12 | 2026-06-29 | P3-C build-blocker fix | Docker server image Linux build and Web image build | Runtime/browser validation `missing -> partial`; Docker images build, runtime endpoint/browser validation still pending | `E3-P3C-IMPACT1`, `E3-P3C-SRC1`, `E3-P3C-TEST1`, `E3-P3C-BUILD1`, `E3-P3C-DETECT1` | start built containers and run endpoint/browser validation |
 | R13 | 2026-06-29 | P3-C runtime validation | Docker container runtime endpoint and browser UI validation | Runtime/browser validation `partial -> correct` for compact endpoint and visible related-file rows | `E3-P3C-RUNTIME1`, `E3-P3C-CLEANUP1` | start supervisor acceptance |
+| R14 | 2026-06-29 | closure | supervisor acceptance and dead-work cleanup | Plan closure accepted by supervisor; temporary Playwright spec/config removed; runtime artifacts preserved | `EC-PNA-SUPERVISOR1`, `EC-PNB-CLEANUP1`, `EC-PNC-TEST1` | final detect and closure commit |
 
 ## Phase Touch Map
 

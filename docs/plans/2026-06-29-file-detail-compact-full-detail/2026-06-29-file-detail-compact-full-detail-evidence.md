@@ -179,4 +179,7 @@ Matching plan item(s): `P3-A`, `P3-B`, `P3-C`
 
 Use this section for final detect-changes, commit hash, and closure evidence when the plan reaches completion.
 
-- Pending closure evidence.
+- `EC-PNA-SUPERVISOR1`: Supervisor report `reports/Supervisor/rp_supervisor_260629_182229_by_gpt-5-codex_file-detail-compact-runtime.md` recorded verdict PASS for commits `9d9e76ae` through `70f12d38`, source clearance, focused test evidence, runtime artifact evidence, cleanup evidence, and invariant closure.
+- `EC-PNB-CLEANUP1`: Removed temporary Playwright validation spec/config directory `anvien-web/.tmp/p3c-runtime` after preserving durable runtime artifacts under ignored evidence paths: `anvien-web/test-results/p3c-runtime/file-detail-related-files.png`, `anvien-web/test-results/p3c-runtime/file-detail-runtime-built--10547-l-and-renders-related-files/trace.zip`, and `anvien-web/playwright-report/p3c-runtime/index.html`. The remaining untracked file `internal/aicontext/skills/Spec-to-SVG-Flow-Map/spec-to-svg-flow-map.vi.md` is unrelated and was not created by this plan.
+- `EC-PNC-TEST1`: Final focused verification before closure: `go test ./internal/filecontext ./internal/httpapi ./internal/contracts ./internal/cli` passed, and `npm run test -- test/unit/FileDetailPanel.test.tsx test/unit/server-connection.test.ts` passed with `2` files and `26` tests.
+- `EC-PNC-DETECT1`: Final closure detect after refreshing the graph and staging closure docs/report reported `5` changed files, `5` affected files, changed-file risk `low`, overall risk `low`, and `0` affected processes. Changed files were the four plan ledgers plus `reports/Supervisor/rp_supervisor_260629_182229_by_gpt-5-codex_file-detail-compact-runtime.md`.
