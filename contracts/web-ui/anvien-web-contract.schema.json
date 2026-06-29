@@ -3843,12 +3843,13 @@
         "queryParams": [
           "repo",
           "path",
+          "format",
           "relationships",
           "unresolved",
           "linked"
         ],
-        "responseType": "FileContextResponse",
-        "description": "File-first graph projection detail for one indexed repository file."
+        "responseType": "FileDetailResponse",
+        "description": "File-first graph projection detail for one indexed repository file; compact by default, expanded when format=expanded."
       },
       {
         "method": "GET",

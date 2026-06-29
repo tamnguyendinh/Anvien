@@ -469,7 +469,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
   - Actual-status Update: mark HTTP format surface `missing -> correct`.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] P2-C: Update Web/API contracts and generated types.
+- [x] P2-C: Update Web/API contracts and generated types.
   - Goal: publish the compact file-detail contract and regenerate generated Web types.
   - Scope Boundary:
     - Editable: `internal/contracts/web_ui.go`, `internal/contracts/web_ui_test.go`, contract generation source, generated contract artifacts through the repo-native generator.

@@ -74,9 +74,12 @@ func TestWebUIContractManifestUsesGoRuntimeConstants(t *testing.T) {
 	if len(manifest.Languages.GraphCoverage) != len(manifest.Languages.CodeLanguages) {
 		t.Fatalf("language graph coverage count mismatch: %#v", manifest.Languages.GraphCoverage)
 	}
-	if !containsRoute(manifest.API.FileProjectionRoutes, "GET", "/api/file-detail", "FileContextResponse") ||
+	if !containsRoute(manifest.API.FileProjectionRoutes, "GET", "/api/file-detail", "FileDetailResponse") ||
 		!containsRoute(manifest.API.FileProjectionRoutes, "GET", "/api/file-hotspots", "FileHotspotsResponse") {
 		t.Fatalf("file projection API route contracts missing: %#v", manifest.API.FileProjectionRoutes)
+	}
+	if route := findRoute(manifest.API.FileProjectionRoutes, "GET", "/api/file-detail"); !contains(route.QueryParams, "format") {
+		t.Fatalf("file-detail route missing format query param: %#v", route)
 	}
 	if coverage := findLanguageCoverage(manifest, "cobol"); coverage.ExtractorStatus != "dedicated-analyzer-phase" {
 		t.Fatalf("COBOL coverage = %#v", coverage)
@@ -109,6 +112,9 @@ func TestWebUIContractTypeScriptIsBrowserGeneratedGlue(t *testing.T) {
 		"export const LANGUAGE_GRAPH_COVERAGE",
 		"export interface GraphNode",
 		"export interface FileContextResponse",
+		"export interface CompactFileContextResponse",
+		"export type FileDetailResponse",
+		"relatedFiles: CompactRow[]",
 		"export interface FileHotspotsResponse",
 		"export interface FileSymbolTreeNode",
 		"export interface FileLinkedCounts",
@@ -178,6 +184,15 @@ func containsRoute(routes []APIRouteContract, method string, path string, respon
 		}
 	}
 	return false
+}
+
+func findRoute(routes []APIRouteContract, method string, path string) APIRouteContract {
+	for _, route := range routes {
+		if route.Method == method && route.Path == path {
+			return route
+		}
+	}
+	return APIRouteContract{}
 }
 
 func termDefinition(terms []semantic.TermDefinition, key string) semantic.TermDefinition {

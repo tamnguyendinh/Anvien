@@ -485,9 +485,9 @@ func WebUIContract() WebUIContractManifest {
 		{
 			Method:       "GET",
 			Path:         "/api/file-detail",
-			QueryParams:  []string{"repo", "path", "relationships", "unresolved", "linked"},
-			ResponseType: "FileContextResponse",
-			Description:  "File-first graph projection detail for one indexed repository file.",
+			QueryParams:  []string{"repo", "path", "format", "relationships", "unresolved", "linked"},
+			ResponseType: "FileDetailResponse",
+			Description:  "File-first graph projection detail for one indexed repository file; compact by default, expanded when format=expanded.",
 		},
 		{
 			Method:       "GET",
@@ -1458,6 +1458,99 @@ export interface FileContextLimits {
   linkedSamplesPerKind: number;
 }
 
+export interface CompactFileContextSchema {
+  rangeTuple: string[];
+  symbolRow: string[];
+  relatedFileRow: string[];
+  relationshipRow: string[];
+  unresolvedRow: string[];
+  linkedRow: string[];
+}
+
+export interface CompactFileContextDictionaries {
+  files: string[];
+  symbols: string[];
+  sourceSites: string[];
+  relationshipKinds: string[];
+  gapKinds: string[];
+  classifications: string[];
+  actionabilities: string[];
+  proofKinds: string[];
+  sourceSiteStatuses: string[];
+  linkedKinds: string[];
+}
+
+export type CompactRow = unknown[];
+
+export interface CompactRows {
+  total: number;
+  returned: number;
+  omitted: number;
+  items: CompactRow[];
+}
+
+export interface CompactRelationshipGroup {
+  total: number;
+  counts?: Record<string, number>;
+  rows: CompactRows;
+}
+
+export interface CompactFileRelationshipGroup extends CompactRelationshipGroup {
+  file: number;
+}
+
+export interface CompactRelationshipSections {
+  counts: FileRelationshipCounts;
+  local: CompactRelationshipGroup;
+  outboundByFile: CompactFileRelationshipGroup[];
+  inboundByFile: CompactFileRelationshipGroup[];
+}
+
+export interface CompactUnresolvedGroup {
+  sourceSymbol?: number | null;
+  total: number;
+  rows: CompactRows;
+}
+
+export interface CompactUnresolvedSummary {
+  total: number;
+  byKind?: Record<string, number>;
+  byClassification?: Record<string, number>;
+  byActionability?: Record<string, number>;
+  groups: CompactUnresolvedGroup[];
+}
+
+export interface CompactLinkedSummary {
+  counts: FileLinkedCounts;
+  flows: CompactRows;
+  routes: CompactRows;
+  mcpTools: CompactRows;
+  tests: CompactRows;
+}
+
+export interface CompactFileContextTables {
+  symbols: CompactRow[];
+  relatedFiles: CompactRow[];
+  relationships: CompactRelationshipSections;
+  unresolved: CompactUnresolvedSummary;
+  linked: CompactLinkedSummary;
+}
+
+export interface CompactFileContextResponse {
+  format: 'file-detail.compact';
+  version: number;
+  repo?: string;
+  repoPath?: string;
+  graph: FileProjectionGraphInfo;
+  target: FileContextTarget;
+  schema: CompactFileContextSchema;
+  summary: FileSummary;
+  dict: CompactFileContextDictionaries;
+  tables: CompactFileContextTables;
+  quality: FileQualitySignals;
+  limits: FileContextLimits;
+}
+
 export interface FileContextResponse {
   repo?: string;
   repoPath?: string;
@@ -1471,6 +1564,8 @@ export interface FileContextResponse {
   quality: FileQualitySignals;
   limits: FileContextLimits;
 }
+
+export type FileDetailResponse = CompactFileContextResponse | FileContextResponse;
 
 export interface FileHotspotsResponse {
   repo?: string;
