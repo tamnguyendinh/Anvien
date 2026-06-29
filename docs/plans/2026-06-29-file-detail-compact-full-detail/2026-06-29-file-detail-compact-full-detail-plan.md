@@ -644,7 +644,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
   - P3-B: Render related-file detail and preserve existing sections.
   - P3-C: Validate built runtime file-detail flow.
 
-- [ ] P3-A: Update Web client and adapter.
+- [x] P3-A: Update Web client and adapter.
   - Goal: fetch compact file-detail data and adapt it into a stable view model for the existing panel.
   - Scope Boundary:
     - Editable: `anvien-web/src/services/backend-client.ts`, new or existing Web adapter/test files.
@@ -701,7 +701,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
     - DB/data: N/A.
     - Behavior test: Web unit tests pass for client/adapter.
     - Cleanup/quarantine: no persistent browser state.
-    - Evidence IDs: `E3-P3A-IMPACT1`, `E3-P3A-TEST1`.
+    - Evidence IDs: `E3-P3A-IMPACT1`, `E3-P3A-SRC1`, `E3-P3A-TEST1`, `E3-P3A-BUILD1`, `E3-P3A-DETECT1`.
     - Actual-status rows refreshed: Web client.
   - Evidence Targets: impact, unit tests.
   - Actual-status Update: mark Web client compact binding `missing -> correct`.

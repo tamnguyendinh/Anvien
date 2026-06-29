@@ -7,7 +7,6 @@
  */
 
 import type {
-  FileContextResponse,
   FileHotspotsResponse,
   GraphNode,
   GraphRelationship,
@@ -15,9 +14,16 @@ import type {
   GraphSemanticStatus,
 } from '@/generated/anvien-contracts';
 import {
+  adaptCompactFileContextResponse,
+  type FileDetailContext,
+  type FileDetailRelatedFile,
+} from './file-detail-adapter';
+import {
   recordHeartbeatConnect,
   recordHeartbeatReconnect,
 } from '../lib/runtime-diagnostics';
+
+export type { FileDetailContext, FileDetailRelatedFile };
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -650,13 +656,14 @@ export const fetchFileHotspots = async (
   return response.json() as Promise<FileHotspotsResponse>;
 };
 
-/** Fetch full file-level graph context for a selected file. */
+/** Fetch compact file-level graph context for a selected file and adapt it for rendering. */
 export const fetchFileContext = async (
   filePath: string,
   options: FetchFileContextOptions = {},
-): Promise<FileContextResponse> => {
+): Promise<FileDetailContext> => {
   const params = [
     `path=${encodeURIComponent(filePath)}`,
+    'format=compact',
     repoParam(options.repo),
     options.relationships !== undefined ? `relationships=${options.relationships}` : '',
     options.unresolved !== undefined ? `unresolved=${options.unresolved}` : '',
@@ -666,7 +673,7 @@ export const fetchFileContext = async (
     .join('&');
   const response = await fetchFromBackend(`${_backendUrl}/api/file-detail?${params}`);
   await assertOk(response);
-  return response.json() as Promise<FileContextResponse>;
+  return adaptCompactFileContextResponse(await response.json());
 };
 
 /** Fetch all processes for a repo. */

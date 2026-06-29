@@ -8,6 +8,7 @@ import {
   normalizeServerUrl,
   setBackendUrl,
 } from '../../src/services/backend-client';
+import { adaptCompactFileContextResponse } from '../../src/services/file-detail-adapter';
 
 describe('normalizeServerUrl', () => {
   it('canonicalizes localhost to 127.0.0.1', () => {
@@ -315,62 +316,203 @@ describe('fetchFileHotspots', () => {
 });
 
 describe('fetchFileContext', () => {
-  it('requests selected file projection detail with bounded sample limits', async () => {
+  const compactFileDetailPayload = () => ({
+    format: 'file-detail.compact',
+    version: 1,
+    repo: 'demo',
+    graph: { path: '.anvien/graph.json', stale: false },
+    target: {
+      type: 'file',
+      input: 'src/app.ts',
+      normalizedPath: 'src/app.ts',
+      dispatchMode: 'explicit',
+    },
+    summary: {
+      path: 'src/app.ts',
+      language: 'typescript',
+      kind: 'source',
+      symbolCount: 2,
+      exportedSymbolCount: 1,
+      inboundRefCount: 1,
+      outboundRefCount: 1,
+      localRelationshipCount: 1,
+      unresolved: 1,
+      linkedFlowCount: 1,
+      linkedTestCount: 1,
+      risk: 'medium',
+      stale: false,
+      changedSinceAnalyze: false,
+    },
+    dict: {
+      files: ['src/app.ts', 'src/router.ts', 'src/app.test.ts'],
+      symbols: [
+        'Function:src/app.ts:main',
+        'Function:src/app.ts:helper',
+        'Function:src/router.ts:createRouter',
+        'Function:src/app.test.ts:testMain',
+      ],
+      sourceSites: ['site-local', 'site-out', 'site-in', 'site-gap'],
+      relationshipKinds: ['CALLS', 'USES'],
+      gapKinds: ['unresolved_call'],
+      classifications: ['in_repo_unresolved'],
+      actionabilities: ['analyzer_gap'],
+      proofKinds: ['source-site', 'none'],
+      sourceSiteStatuses: ['resolved', 'unresolved_local_binding'],
+      linkedKinds: ['flow', 'route', 'tool', 'test'],
+    },
+    tables: {
+      symbols: [
+        [0, null, 'main', 'function', [3, 0, 12, 0], true, 'function main()', 1, 1, 1, 1],
+        [1, 0, 'helper', 'function', [6, 0, 8, 0], false, '', 1, 0, 1, 0],
+      ],
+      relatedFiles: [
+        [
+          1,
+          'typescript',
+          'source',
+          'runtime_model',
+          'backend_support_model_helper',
+          'backend',
+          'mcp',
+          'parsed',
+          4,
+          0,
+          'medium',
+          true,
+          false,
+          false,
+          1,
+          { USES: 1 },
+        ],
+        [
+          2,
+          'typescript',
+          'test',
+          'test_helper',
+          '',
+          'api_test',
+          'unknown',
+          'parsed',
+          2,
+          0,
+          'low',
+          false,
+          true,
+          false,
+          1,
+          { CALLS: 1 },
+        ],
+      ],
+      relationships: {
+        counts: { local: 1, outbound: 1, inbound: 1, samplesReturned: 3 },
+        local: {
+          total: 1,
+          counts: { CALLS: 1 },
+          rows: {
+            total: 1,
+            returned: 1,
+            omitted: 0,
+            items: [[0, 0, [3, 0, 3, 10], 0, 0, 1, [6, 0, 6, 10], 0, 0, 0]],
+          },
+        },
+        outboundByFile: [
+          {
+            file: 1,
+            total: 1,
+            counts: { USES: 1 },
+            rows: {
+              total: 1,
+              returned: 1,
+              omitted: 0,
+              items: [[0, 0, [4, 0, 4, 10], 1, 1, 2, [1, 0, 1, 12], 1, 0, 0]],
+            },
+          },
+        ],
+        inboundByFile: [
+          {
+            file: 2,
+            total: 1,
+            counts: { CALLS: 1 },
+            rows: {
+              total: 1,
+              returned: 1,
+              omitted: 0,
+              items: [[2, 3, [9, 0, 9, 10], 0, 0, 0, [3, 0, 3, 10], 2, 0, 0]],
+            },
+          },
+        ],
+      },
+      unresolved: {
+        total: 1,
+        byKind: { unresolved_call: 1 },
+        byClassification: { in_repo_unresolved: 1 },
+        byActionability: { analyzer_gap: 1 },
+        groups: [
+          {
+            sourceSymbol: 0,
+            total: 1,
+            rows: {
+              total: 1,
+              returned: 1,
+              omitted: 0,
+              items: [[11, 4, 'missingCall', 0, 0, 0, 0, 1, 3, 1]],
+            },
+          },
+        ],
+      },
+      linked: {
+        counts: { flows: 1, routes: 1, mcpTools: 1, tests: 1 },
+        flows: {
+          total: 1,
+          returned: 1,
+          omitted: 0,
+          items: [['MCP initialize', 0, 'process', 'high', 'trace-flow']],
+        },
+        routes: {
+          total: 1,
+          returned: 1,
+          omitted: 0,
+          items: [['GET /api/app', 1, 'route-map', 'high', 'trace-route']],
+        },
+        mcpTools: {
+          total: 1,
+          returned: 1,
+          omitted: 0,
+          items: [['context', 2, 'tool-map', 'high', 'trace-tool']],
+        },
+        tests: {
+          total: 1,
+          returned: 1,
+          omitted: 0,
+          items: [['src/app.test.ts', 3, 'relationship', 'high', 'trace-test']],
+        },
+      },
+    },
+    quality: {
+      parser: 'parsed',
+      resolutionConfidence: 'clear',
+      unresolvedCalls: 1,
+      unresolvedRefs: 0,
+      unresolvedImports: 0,
+      generated: false,
+      stale: false,
+      changedSinceAnalyze: false,
+    },
+    limits: {
+      relationshipSamplesPerGroup: 5,
+      unresolvedSamplesPerGroup: 4,
+      linkedSamplesPerKind: 3,
+    },
+  });
+
+  it('requests compact selected file projection detail and adapts rows for rendering', async () => {
     setBackendUrl('http://127.0.0.1:4848');
 
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          repo: 'demo',
-          graph: { path: '.anvien/graph.json', stale: false },
-          target: { type: 'file', input: 'src/app.ts' },
-          summary: {
-            path: 'src/app.ts',
-            symbolCount: 0,
-            exportedSymbolCount: 0,
-            inboundRefCount: 0,
-            outboundRefCount: 0,
-            localRelationshipCount: 0,
-            unresolved: 0,
-            linkedFlowCount: 0,
-            linkedTestCount: 0,
-            stale: false,
-            changedSinceAnalyze: false,
-          },
-          symbolTree: [],
-          relationships: {
-            counts: { local: 0, outbound: 0, inbound: 0, samplesReturned: 0 },
-            local: { total: 0, samples: [] },
-            outboundByFile: [],
-            inboundByFile: [],
-          },
-          unresolved: { total: 0, groups: [] },
-          linked: {
-            counts: { flows: 0, routes: 0, mcpTools: 0, tests: 0 },
-            flows: [],
-            routes: [],
-            mcpTools: [],
-            tests: [],
-          },
-          quality: {
-            unresolvedCalls: 0,
-            unresolvedRefs: 0,
-            unresolvedImports: 0,
-            generated: false,
-            stale: false,
-            changedSinceAnalyze: false,
-          },
-          limits: {
-            relationshipSamplesPerGroup: 5,
-            unresolvedSamplesPerGroup: 5,
-            linkedSamplesPerKind: 5,
-          },
-        }),
-        {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      ),
+      new Response(JSON.stringify(compactFileDetailPayload()), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
     );
     vi.stubGlobal('fetch', fetchMock);
 
@@ -385,10 +527,37 @@ describe('fetchFileContext', () => {
     const url = new URL(fetchMock.mock.calls[0][0] as string);
     expect(url.pathname).toBe('/api/file-detail');
     expect(url.searchParams.get('path')).toBe('src/app.ts');
+    expect(url.searchParams.get('format')).toBe('compact');
     expect(url.searchParams.get('repo')).toBe('demo');
     expect(url.searchParams.get('relationships')).toBe('5');
     expect(url.searchParams.get('unresolved')).toBe('4');
     expect(url.searchParams.get('linked')).toBe('3');
+
+    expect(result.sourceFormat).toBe('compact');
+    expect(result.symbolTree[0].name).toBe('main');
+    expect(result.symbolTree[0].children?.[0].name).toBe('helper');
+    expect(result.relationships.local.samples[0].relationshipKind).toBe('CALLS');
+    expect(result.relationships.outboundByFile[0].file).toBe('src/router.ts');
+    expect(result.relationships.inboundByFile[0].file).toBe('src/app.test.ts');
+    expect(result.unresolved.groups[0].samples[0].targetText).toBe('missingCall');
+    expect(result.linked.flows[0].name).toBe('MCP initialize');
+    expect(result.relatedFiles).toHaveLength(2);
+    expect(result.relatedFiles[0]).toMatchObject({
+      file: 'src/router.ts',
+      outbound: true,
+      inbound: false,
+      relationshipTotal: 1,
+      relationshipCounts: { USES: 1 },
+    });
+  });
+
+  it('fails visibly on malformed compact file-detail rows', () => {
+    const malformed = compactFileDetailPayload();
+    malformed.tables.relationships.local.rows.items = [[0, 0, null, 0, 0, 1, [6, 0, 6, 10], 0, 0, 0]];
+
+    expect(() => adaptCompactFileContextResponse(malformed)).toThrow(
+      /Malformed compact file-detail response/i,
+    );
   });
 });
 
