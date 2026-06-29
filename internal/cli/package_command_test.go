@@ -103,6 +103,33 @@ func TestEnsurePackagedRuntimeAcceptsCurrentPlatformMetadata(t *testing.T) {
 	}
 }
 
+func TestPackageRuntimePlatformAndArchAliases(t *testing.T) {
+	if !platformMatches(runtime.GOOS) {
+		t.Fatalf("platformMatches(%q) returned false", runtime.GOOS)
+	}
+	for value, goos := range map[string]string{
+		"win32":  "windows",
+		"darwin": "darwin",
+		"linux":  "linux",
+	} {
+		if got, want := platformMatches(value), runtime.GOOS == goos; got != want {
+			t.Fatalf("platformMatches(%q) = %v, want %v for %s", value, got, want, runtime.GOOS)
+		}
+	}
+
+	if !archMatches(runtime.GOARCH) {
+		t.Fatalf("archMatches(%q) returned false", runtime.GOARCH)
+	}
+	for value, goarch := range map[string]string{
+		"x64":   "amd64",
+		"arm64": "arm64",
+	} {
+		if got, want := archMatches(value), runtime.GOARCH == goarch; got != want {
+			t.Fatalf("archMatches(%q) = %v, want %v for %s", value, got, want, runtime.GOARCH)
+		}
+	}
+}
+
 func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 	parent := t.TempDir()
 	packageRoot := filepath.Join(parent, "anvien")

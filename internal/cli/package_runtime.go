@@ -479,28 +479,16 @@ func setEnv(env []string, key, value string) []string {
 
 func platformMatches(value string) bool {
 	switch value {
-	case runtime.GOOS:
-		return true
 	case "win32":
-		return runtime.GOOS == "windows"
-	case "darwin":
-		return runtime.GOOS == "darwin"
-	case "linux":
-		return runtime.GOOS == "linux"
-	default:
-		return false
+		value = "windows"
 	}
+	return value == runtime.GOOS
 }
 
 func archMatches(value string) bool {
 	switch value {
-	case runtime.GOARCH:
-		return true
 	case "x64":
-		return runtime.GOARCH == "amd64"
-	case "arm64":
-		return runtime.GOARCH == "arm64"
-	default:
-		return false
+		value = "amd64"
 	}
+	return value == runtime.GOARCH
 }

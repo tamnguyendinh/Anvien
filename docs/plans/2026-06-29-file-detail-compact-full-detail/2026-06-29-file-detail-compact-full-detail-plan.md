@@ -827,7 +827,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
     - DB/data: compact endpoint returns expected payload.
     - Behavior test: runtime trace/screenshot/result recorded.
     - Cleanup/quarantine: runtime stopped or container state recorded.
-    - Evidence IDs: `E3-P3C-BUILD1`, `E3-P3C-RUNTIME1`.
+    - Evidence IDs: `E3-P3C-IMPACT1`, `E3-P3C-SRC1`, `E3-P3C-TEST1`, `E3-P3C-BUILD1`, `E3-P3C-DETECT1`, `E3-P3C-RUNTIME1`.
     - Actual-status rows refreshed: final Web/runtime status.
   - Evidence Targets: full build, Docker runtime, browser/Playwright evidence.
   - Actual-status Update: mark runtime UI validation `missing -> correct` or blocked.

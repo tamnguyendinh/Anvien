@@ -88,4 +88,5 @@ Benchmark sections must follow the plan phases:
 ## Non-Benchmarkable Notes
 
 - Build/test pass-fail belongs in evidence, not this benchmark ledger, unless timing or size is explicitly measured.
+- P3-C Docker build pass/fail is validation evidence, not a benchmark, because this slice did not intentionally change build performance or image size.
 - Supervisor review and dead-work cleanup are acceptance gates, not benchmarkable metrics.

@@ -95,7 +95,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 | User-facing command docs | README/RUNBOOK now document compact default machine output, expanded compatibility, full-row compact defaults, explicit limit metadata, and MCP expanded compatibility | Docs reflect final CLI/API/MCP behavior for compact/expanded/default and limit semantics | correct | N/A | `E0-P0A-SRC7`, `E0-P0A-REVIEW1`, `E2-P2E-DOC1`, `E2-P2E-DOC2`, `E2-P2E-SMOKE1` | P2 docs complete; start P3-A Web client |
 | Web client | `fetchFileContext` now requests `format=compact`, adapts compact row tables into an expanded-compatible `FileDetailContext`, preserves compact `relatedFiles`, and fails visibly on malformed compact rows | Client requests compact format and adapts compact payload without hidden fallback | correct | 22 related files for client source | `E0-P0A-SRC5`, `E0-P0A-FD5`, `E3-P3A-IMPACT1`, `E3-P3A-SRC1`, `E3-P3A-TEST1`, `E3-P3A-BUILD1` | preserve adapter; edit FileDetailPanel in P3-B |
 | Web panel render | Panel now renders compact-backed related-file metadata and preserves summary, quality, symbol tree, relationships, unresolved, and linked sections | Panel renders compact-backed sections and related-file metadata while preserving existing section semantics | correct | 4 related files for panel source | `E0-P0A-SRC5`, `E0-P0A-FD4`, `E0-P0A-IMPACT4`, `E3-P3B-IMPACT1`, `E3-P3B-SRC1`, `E3-P3B-TEST1`, `E3-P3B-BUILD1`, `E3-P3B-DETECT1` | preserve render; execute P3-C runtime validation |
-| Runtime/browser validation | Not yet run for compact behavior | Built runtime validates compact endpoint and visible file detail UI | missing | N/A | `E0-P0A-SRC5` | execute P3-C |
+| Runtime/browser validation | Docker server and web images now build successfully for built-runtime validation; runtime endpoint/UI validation is not yet run | Built runtime validates compact endpoint and visible file detail UI | partial | N/A | `E0-P0A-SRC5`, `E3-P3C-IMPACT1`, `E3-P3C-SRC1`, `E3-P3C-TEST1`, `E3-P3C-BUILD1`, `E3-P3C-DETECT1` | start built containers and run endpoint/browser validation |
 
 ## Status Refresh Log
 
@@ -113,6 +113,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 | R9 | 2026-06-29 | P2-E docs update | README/RUNBOOK command and operator examples | User-facing command docs `partial -> correct` | `E2-P2E-DOC1`, `E2-P2E-DOC2`, `E2-P2E-SMOKE1`, `E2-P2E-DETECT1` | P2 complete; start P3-A Web client adapter |
 | R10 | 2026-06-29 | P3-A implementation | Web client compact adapter | Web client `partial -> correct` for compact request and adapter conversion | `E3-P3A-IMPACT1`, `E3-P3A-SRC1`, `E3-P3A-TEST1`, `E3-P3A-BUILD1`, `E3-P3A-DETECT1` | start P3-B related-file render |
 | R11 | 2026-06-29 | P3-B implementation | Web panel related-file render | Web panel render `partial -> correct` for related-file metadata while preserving existing sections | `E3-P3B-IMPACT1`, `E3-P3B-SRC1`, `E3-P3B-TEST1`, `E3-P3B-BUILD1`, `E3-P3B-DETECT1` | start P3-C built runtime validation |
+| R12 | 2026-06-29 | P3-C build-blocker fix | Docker server image Linux build and Web image build | Runtime/browser validation `missing -> partial`; Docker images build, runtime endpoint/browser validation still pending | `E3-P3C-IMPACT1`, `E3-P3C-SRC1`, `E3-P3C-TEST1`, `E3-P3C-BUILD1`, `E3-P3C-DETECT1` | start built containers and run endpoint/browser validation |
 
 ## Phase Touch Map
 
@@ -403,7 +404,7 @@ Do not add hidden expanded fallback that masks compact parse failures.
 | P2-E | README/RUNBOOK now document compact default, expanded compatibility, full-row compact defaults, explicit limit metadata, and MCP expanded compatibility | P2-E complete; preserve docs during P3 |
 | P3-A | Web client now requests compact file-detail and adapts compact rows into `FileDetailContext` | P3-A complete; preserve adapter and start P3-B render work |
 | P3-B | Panel renders related-file metadata from compact adapter and preserves existing sections | P3-B complete; start P3-C runtime validation |
-| P3-C | Runtime validation is missing | keep P3-C as final Web/runtime validation |
+| P3-C | Docker images build; runtime endpoint/browser validation still pending | keep P3-C as final Web/runtime validation |
 
 ## Implementation Gate
 
