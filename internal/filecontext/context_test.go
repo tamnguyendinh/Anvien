@@ -94,11 +94,118 @@ func TestBuildFileContextDerivesTreeRelationshipsAndUnresolved(t *testing.T) {
 	}
 }
 
+func TestCompactFileContextFromExpandedInternsRowsAndPreservesCounts(t *testing.T) {
+	builder := NewBuilder(fileContextFixture(false))
+	context, ok := builder.BuildFileContext("src/app.go", Options{RelationshipSamplesPerGroup: 1})
+	if !ok {
+		t.Fatalf("BuildFileContext() did not find file")
+	}
+	AttachMetadata(&context, "fixture", "/repo", GraphInfo{Path: "graph.json", Stale: true})
+
+	compact := CompactFileContextFromExpanded(context)
+	if compact.Format != CompactFileContextFormat || compact.Version != CompactFileContextVersion {
+		t.Fatalf("compact identity = %s/%d", compact.Format, compact.Version)
+	}
+	if compact.Repo != "fixture" || compact.RepoPath != "/repo" || !compact.Graph.Stale {
+		t.Fatalf("compact metadata = repo %q repoPath %q graph %#v", compact.Repo, compact.RepoPath, compact.Graph)
+	}
+	if len(compact.Schema.RelationshipRow) == 0 || len(compact.Schema.SymbolRow) == 0 || len(compact.Schema.RangeTuple) != 4 {
+		t.Fatalf("compact schema incomplete: %#v", compact.Schema)
+	}
+	if compact.Summary.Path != context.Summary.Path || compact.Quality != context.Quality || compact.Limits != context.Limits {
+		t.Fatalf("compact top-level facts differ from expanded context")
+	}
+
+	serverRef := compactDictIndex(t, compact.Dict.Symbols, "Struct:src/app.go:Server")
+	startRef := compactDictIndex(t, compact.Dict.Symbols, "Method:src/app.go:Server.Start")
+	newServerRef := compactDictIndex(t, compact.Dict.Symbols, "Function:src/app.go:NewServer")
+	if len(compact.Tables.Symbols) != 3 {
+		t.Fatalf("compact symbol rows = %d, want 3", len(compact.Tables.Symbols))
+	}
+	if compactRowInt(t, compact.Tables.Symbols[0][0]) != serverRef {
+		t.Fatalf("first symbol row = %#v, want server ref %d", compact.Tables.Symbols[0], serverRef)
+	}
+	if compactRowInt(t, compact.Tables.Symbols[1][0]) != startRef || compactRowInt(t, compact.Tables.Symbols[1][1]) != serverRef {
+		t.Fatalf("child symbol row = %#v, want start ref parent server ref", compact.Tables.Symbols[1])
+	}
+	if compactRowInt(t, compact.Tables.Symbols[2][0]) != newServerRef {
+		t.Fatalf("third symbol row = %#v, want NewServer ref", compact.Tables.Symbols[2])
+	}
+
+	if compact.Tables.Relationships.Counts != context.Relationships.Counts {
+		t.Fatalf("relationship counts = %#v, want %#v", compact.Tables.Relationships.Counts, context.Relationships.Counts)
+	}
+	if compact.Tables.Relationships.Local.Rows.Total != 1 || compact.Tables.Relationships.Local.Rows.Returned != 1 || compact.Tables.Relationships.Local.Rows.Omitted != 0 {
+		t.Fatalf("local relationship rows = %#v, want total/returned/omitted 1/1/0", compact.Tables.Relationships.Local.Rows)
+	}
+	if len(compact.Tables.Relationships.OutboundByFile) != 1 {
+		t.Fatalf("outbound groups = %#v, want one", compact.Tables.Relationships.OutboundByFile)
+	}
+	outbound := compact.Tables.Relationships.OutboundByFile[0]
+	if compact.Dict.Files[outbound.File] != "src/store.go" {
+		t.Fatalf("outbound file ref = %d -> %q, want src/store.go", outbound.File, compact.Dict.Files[outbound.File])
+	}
+	if outbound.Total != 2 || outbound.Rows.Returned != 1 || outbound.Rows.Omitted != 1 {
+		t.Fatalf("outbound row limit metadata = %#v total=%d, want total 2 returned 1 omitted 1", outbound.Rows, outbound.Total)
+	}
+	outboundRow := outbound.Rows.Items[0]
+	if compact.Dict.Files[compactRowInt(t, outboundRow[0])] != "src/app.go" || compact.Dict.Files[compactRowInt(t, outboundRow[4])] != "src/store.go" {
+		t.Fatalf("outbound row file refs = %#v files=%#v", outboundRow, compact.Dict.Files)
+	}
+	if compact.Dict.SourceSites[compactRowInt(t, outboundRow[7])] != "site:new-save" {
+		t.Fatalf("outbound source site = %#v sites=%#v", outboundRow[7], compact.Dict.SourceSites)
+	}
+
+	if compact.Tables.Unresolved.Total != context.Unresolved.Total || len(compact.Tables.Unresolved.Groups) != 1 {
+		t.Fatalf("unresolved compact = %#v, want total %d one group", compact.Tables.Unresolved, context.Unresolved.Total)
+	}
+	unresolved := compact.Tables.Unresolved.Groups[0]
+	if compactRowInt(t, unresolved.SourceSymbol) != newServerRef || unresolved.Rows.Total != 1 || unresolved.Rows.Returned != 1 || unresolved.Rows.Omitted != 0 {
+		t.Fatalf("unresolved group = %#v, want NewServer and 1/1/0 rows", unresolved)
+	}
+
+	if compact.Tables.Linked.Counts != context.Linked.Counts {
+		t.Fatalf("linked counts = %#v, want %#v", compact.Tables.Linked.Counts, context.Linked.Counts)
+	}
+	if compact.Tables.Linked.Flows.Total != 1 || compact.Tables.Linked.Routes.Total != 1 || compact.Tables.Linked.MCPTools.Total != 1 || compact.Tables.Linked.Tests.Total != 1 {
+		t.Fatalf("linked row totals = flows %#v routes %#v tools %#v tests %#v",
+			compact.Tables.Linked.Flows,
+			compact.Tables.Linked.Routes,
+			compact.Tables.Linked.MCPTools,
+			compact.Tables.Linked.Tests,
+		)
+	}
+
+	if _, err := json.Marshal(compact); err != nil {
+		t.Fatalf("marshal compact context: %v", err)
+	}
+}
+
 func TestBuildFileContextReturnsFalseForMissingFile(t *testing.T) {
 	_, ok := NewBuilder(fileContextFixture(false)).BuildFileContext("src/missing.go", Options{})
 	if ok {
 		t.Fatalf("BuildFileContext() found missing file")
 	}
+}
+
+func compactDictIndex(t *testing.T, values []string, want string) int {
+	t.Helper()
+	for index, value := range values {
+		if value == want {
+			return index
+		}
+	}
+	t.Fatalf("dictionary missing %q in %#v", want, values)
+	return -1
+}
+
+func compactRowInt(t *testing.T, value any) int {
+	t.Helper()
+	got, ok := value.(int)
+	if !ok {
+		t.Fatalf("compact row value %T(%#v), want int", value, value)
+	}
+	return got
 }
 
 func TestNormalizeRepoFilePath(t *testing.T) {
