@@ -584,7 +584,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
   - Actual-status Update: mark MCP/agent file-context surface `partial -> correct`.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] P2-E: Update command docs and examples.
+- [x] P2-E: Update command docs and examples.
   - Goal: keep user-facing `file-detail`, `context file`, and `/api/file-detail` documentation aligned with the final compact/expanded/default behavior.
   - Scope Boundary:
     - Editable: `README.md`, `RUNBOOK.md`, and source-of-truth docs that own generated agent command guidance if a generated doc update is required.
@@ -625,7 +625,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
     - DB/data: N/A.
     - Behavior test: smoke command/API examples are valid or documented no-change evidence is recorded.
     - Cleanup/quarantine: no generated doc drift.
-    - Evidence IDs: `E2-P2E-DOC1`, `E2-P2E-DOC2`.
+    - Evidence IDs: `E2-P2E-DOC1`, `E2-P2E-DOC2`, `E2-P2E-SMOKE1`, `E2-P2E-DETECT1`.
     - Actual-status rows refreshed: docs surface.
   - Evidence Targets: docs source inspection, docs diff or no-change decision, optional command/API smoke.
   - Actual-status Update: mark docs surface `partial -> correct`.

@@ -297,7 +297,8 @@ anvien detect-changes files            # Group changed/affected evidence by file
 anvien detect-changes symbols          # Group changed/affected evidence by symbol
 anvien detect-changes flows            # Group changed/affected evidence by flow
 anvien augment <pattern>               # Add graph context to a text search pattern
-anvien file-detail <path>              # File detail, summary, symbol tree, relationships, unresolved sites, linked flows/tests
+anvien file-detail <path>              # Human file detail view for one indexed file
+anvien file-detail <path> --json       # Compact full-detail JSON; use --format expanded for legacy expanded JSON
 anvien file-hotspots                   # List file hotspots by unresolved, fan-in, fan-out, symbols, flows, or tests
 anvien api route-map [route]           # Route handler/consumer map
 anvien api tool-map [tool]             # MCP tool definition/handler map
@@ -427,6 +428,10 @@ The graph is stored in LadybugDB under `<repo>/.anvien/`.
 
 The file projection is built from the canonical graph after analyze. It derives file summaries, symbol trees, local/inbound/outbound relationship groups, unresolved source-site groups, linked flows/routes/tools/tests, and file quality signals from symbol and source-site facts.
 
+For machine output, `anvien file-detail <path> --json` and `/api/file-detail` return compact full-detail data by default. Use `--format expanded` on the CLI or `format=expanded` in the HTTP query to get the legacy expanded shape. Compact output is full-row unless explicit relationship, unresolved, or linked limits are supplied; limited sections include total, returned, and omitted counts.
+
+MCP `context file` and file-target `impact` keep the expanded file-context payload for agent compatibility.
+
 Semantic enrichment adds user-facing graph meaning on top of raw code symbols:
 
 - **App Layer**: backend, frontend, API, shared contract, docs, tests, config, generated contract, mixed, or unknown.
@@ -476,7 +481,7 @@ COBOL/JCL is handled through the dedicated COBOL phase rather than the normal tr
 | `/api/repos`, `/api/repo` | List/select/remove indexed repos |
 | `/api/graph` | Repo-scoped graph load/stream |
 | `/api/query`, `/api/search`, `/api/file`, `/api/grep` | Repo-scoped read/search helpers |
-| `/api/file-detail`, `/api/file-hotspots` | File-centric projection detail and hotspot/list data |
+| `/api/file-detail`, `/api/file-hotspots` | File-centric projection detail and hotspot/list data; file-detail supports `format=compact` default and `format=expanded` |
 | `/api/process*`, `/api/cluster*` | Derived graph views |
 | `/api/local/folder-picker` | Native local folder picker bridge |
 | `/api/analyze`, `/api/embed` | Background analyze/embed jobs |
