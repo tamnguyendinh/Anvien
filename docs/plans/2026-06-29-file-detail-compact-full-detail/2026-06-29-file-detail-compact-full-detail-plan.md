@@ -343,7 +343,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
   - P2-D: Close MCP and agent file-context surfaces.
   - P2-E: Update command docs and examples.
 
-- [ ] P2-A: Wire CLI format selection.
+- [x] P2-A: Wire CLI format selection.
   - Goal: make `anvien file-detail` emit compact full-detail JSON through a clear CLI contract while preserving expanded output access.
   - Scope Boundary:
     - Editable: `internal/cli/file_detail_command.go`, `internal/cli/file_detail_command_test.go`, `internal/cli/command_test.go`.

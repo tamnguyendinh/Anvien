@@ -125,7 +125,12 @@ Matching plan item(s): `P1-A`, `P1-B`, `P1-C`
 
 Matching plan item(s): `P2-A`, `P2-B`, `P2-C`, `P2-D`, `P2-E`
 
-- Pending implementation evidence.
+- `E2-P2A-IMPACT1`: Before P2-A edits, `anvien analyze --force` was rerun. `anvien impact file internal/cli/file_detail_command.go --repo Anvien --direction upstream` showed 5 affected files and process `NewFileDetailCommand -> FileProjectionGraphInfo`; `anvien impact symbol newFileDetailCommand --repo Anvien --direction upstream` and `anvien impact symbol renderFileContext --repo Anvien --direction upstream` showed CLI launcher/main command blast radius. `anvien impact symbol writeJSON --repo Anvien --direction upstream` was ambiguous across CLI and HTTP helpers, so P2-A did not edit the existing helper and added a compact-only CLI JSON writer instead.
+- `E2-P2A-SRC1`: `anvien file-detail` now accepts `--format compact|expanded` for JSON output. `--json` defaults to compact full-detail output through `BuildCompactFileContext`; `--json --format expanded` preserves the legacy expanded `FileContext` shape. Compact JSON uses compact encoding rather than pretty JSON, while expanded JSON still uses the existing pretty writer. `--format` without `--json` fails visibly, and explicit `--relationships`, `--unresolved`, and `--linked` flags are passed to compact output only when the caller supplies that flag.
+- `E2-P2A-TEST1`: `go test ./internal/cli -run 'TestFileDetailCommand|TestDirectToolHelpShowsCompatibilityFlags' -count=1` passed, then `go test ./internal/cli -count=1` passed. Tests cover compact default JSON, absolute path compact JSON, explicit expanded JSON, explicit compact relationship limit with total/returned/omitted `2/1/1`, unsupported format, `--format` without `--json`, and CLI help exposing `--format`.
+- `E2-P2A-BUILD1`: `go build ./cmd/... ./internal/...` passed after P2-A changes.
+- `E2-P2A-SMOKE1`: `go run .\cmd\anvien file-detail internal/filecontext/context.go --repo Anvien --json` returned compact JSON with `format=file-detail.compact`, `relationshipSamplesPerGroup=-1`, `relatedFiles=43`, and `282588` characters. The expanded equivalent smoke `--format expanded --relationships -1 --unresolved -1 --linked -1` returned `1282361` characters.
+- `E2-P2A-DETECT1`: `anvien detect-changes --repo Anvien --scope all` ran before the P2-A commit. It reported `7` changed files, changed-file risk `high`, overall risk `high`, and affected processes rooted at `NewFileDetailCommand`, including `NewFileDetailCommand -> FileProjectionGraphInfo`. The high risk is a CLI-surface blast-radius warning; focused CLI tests, full CLI package tests, smoke command, and build evidence passed.
 
 ## E3 - P3 Evidence
 

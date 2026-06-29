@@ -27,9 +27,12 @@ func TestFileDetailCommandOutputsFileProjection(t *testing.T) {
 	if errOut != "" {
 		t.Fatalf("file-detail wrote stderr: %q", errOut)
 	}
-	var payload filecontext.FileContext
+	var payload filecontext.CompactFileContext
 	if err := json.Unmarshal([]byte(out), &payload); err != nil {
 		t.Fatalf("parse file-detail JSON: %v\n%s", err, out)
+	}
+	if payload.Format != filecontext.CompactFileContextFormat {
+		t.Fatalf("payload format = %q, want compact format", payload.Format)
 	}
 	if payload.Repo != "fixture" || payload.Summary.Path != "src/app.go" {
 		t.Fatalf("payload repo/path = %q/%q", payload.Repo, payload.Summary.Path)
@@ -37,11 +40,26 @@ func TestFileDetailCommandOutputsFileProjection(t *testing.T) {
 	if payload.Target.NormalizedPath != "src/app.go" {
 		t.Fatalf("payload normalized path = %q, want src/app.go", payload.Target.NormalizedPath)
 	}
-	if payload.Summary.SymbolCount != 2 || payload.Summary.OutboundRefCount != 1 || payload.Summary.Unresolved != 1 {
-		t.Fatalf("summary = %#v, want symbols=2 outbound=1 unresolved=1", payload.Summary)
+	if payload.Summary.SymbolCount != 2 || payload.Summary.OutboundRefCount != 2 || payload.Summary.Unresolved != 1 {
+		t.Fatalf("summary = %#v, want symbols=2 outbound=2 unresolved=1", payload.Summary)
 	}
-	if len(payload.SymbolTree) != 2 || payload.SymbolTree[0].Name != "Server" || payload.SymbolTree[1].Name != "NewServer" {
-		t.Fatalf("symbol tree = %#v", payload.SymbolTree)
+	if payload.Limits.RelationshipSamplesPerGroup != filecontext.FullDetailSampleLimit ||
+		payload.Limits.UnresolvedSamplesPerGroup != filecontext.FullDetailSampleLimit ||
+		payload.Limits.LinkedSamplesPerKind != filecontext.FullDetailSampleLimit {
+		t.Fatalf("compact default limits = %#v, want full-detail sentinel", payload.Limits)
+	}
+	if len(payload.Tables.Symbols) != 2 {
+		t.Fatalf("compact symbol rows = %#v, want two symbols", payload.Tables.Symbols)
+	}
+	if len(payload.Tables.RelatedFiles) != 2 {
+		t.Fatalf("compact related-file rows = %#v, want store and test files", payload.Tables.RelatedFiles)
+	}
+	if len(payload.Tables.Relationships.OutboundByFile) != 1 {
+		t.Fatalf("compact outbound groups = %#v", payload.Tables.Relationships.OutboundByFile)
+	}
+	outboundRows := payload.Tables.Relationships.OutboundByFile[0].Rows
+	if outboundRows.Total != 2 || outboundRows.Returned != 2 || outboundRows.Omitted != 0 {
+		t.Fatalf("compact default outbound rows = %#v, want full two-row group", outboundRows)
 	}
 
 	absolutePath := filepath.Join(repoPath, "src", "app.go")
@@ -52,15 +70,55 @@ func TestFileDetailCommandOutputsFileProjection(t *testing.T) {
 	if errOut != "" {
 		t.Fatalf("file-detail absolute path wrote stderr: %q", errOut)
 	}
-	var absolutePayload filecontext.FileContext
+	var absolutePayload filecontext.CompactFileContext
 	if err := json.Unmarshal([]byte(out), &absolutePayload); err != nil {
 		t.Fatalf("parse absolute file-detail JSON: %v\n%s", err, out)
+	}
+	if absolutePayload.Format != filecontext.CompactFileContextFormat {
+		t.Fatalf("absolute payload format = %q, want compact format", absolutePayload.Format)
 	}
 	if absolutePayload.Summary.Path != "src/app.go" || absolutePayload.Target.NormalizedPath != "src/app.go" {
 		t.Fatalf("absolute payload path/normalized = %q/%q, want src/app.go/src/app.go", absolutePayload.Summary.Path, absolutePayload.Target.NormalizedPath)
 	}
 	if absolutePayload.Target.Input != absolutePath {
 		t.Fatalf("absolute payload input = %q, want %q", absolutePayload.Target.Input, absolutePath)
+	}
+
+	out, errOut, err = executeForTest(t, "file-detail", "src/app.go", "--repo", "fixture", "--json", "--format", "expanded")
+	if err != nil {
+		t.Fatalf("file-detail expanded JSON returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	if errOut != "" {
+		t.Fatalf("file-detail expanded JSON wrote stderr: %q", errOut)
+	}
+	var expandedPayload filecontext.FileContext
+	if err := json.Unmarshal([]byte(out), &expandedPayload); err != nil {
+		t.Fatalf("parse expanded file-detail JSON: %v\n%s", err, out)
+	}
+	if expandedPayload.Repo != "fixture" || expandedPayload.Summary.Path != "src/app.go" {
+		t.Fatalf("expanded payload repo/path = %q/%q", expandedPayload.Repo, expandedPayload.Summary.Path)
+	}
+	if expandedPayload.Limits.RelationshipSamplesPerGroup != 5 {
+		t.Fatalf("expanded default relationship limit = %d, want 5", expandedPayload.Limits.RelationshipSamplesPerGroup)
+	}
+	if len(expandedPayload.SymbolTree) != 2 || expandedPayload.SymbolTree[0].Name != "Server" || expandedPayload.SymbolTree[1].Name != "NewServer" {
+		t.Fatalf("expanded symbol tree = %#v", expandedPayload.SymbolTree)
+	}
+
+	out, errOut, err = executeForTest(t, "file-detail", "src/app.go", "--repo", "fixture", "--json", "--relationships", "1")
+	if err != nil {
+		t.Fatalf("file-detail compact limited JSON returned error: %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+	var limitedPayload filecontext.CompactFileContext
+	if err := json.Unmarshal([]byte(out), &limitedPayload); err != nil {
+		t.Fatalf("parse limited compact file-detail JSON: %v\n%s", err, out)
+	}
+	if limitedPayload.Limits.RelationshipSamplesPerGroup != 1 {
+		t.Fatalf("limited relationship limit = %d, want 1", limitedPayload.Limits.RelationshipSamplesPerGroup)
+	}
+	limitedRows := limitedPayload.Tables.Relationships.OutboundByFile[0].Rows
+	if limitedRows.Total != 2 || limitedRows.Returned != 1 || limitedRows.Omitted != 1 {
+		t.Fatalf("limited compact outbound rows = %#v, want total/returned/omitted 2/1/1", limitedRows)
 	}
 
 	out, errOut, err = executeForTest(t, "file-detail", "src/app.go", "--repo", "fixture")
@@ -74,6 +132,30 @@ func TestFileDetailCommandOutputsFileProjection(t *testing.T) {
 		if !strings.Contains(out, want) {
 			t.Fatalf("file-detail human output missing %q:\n%s", want, out)
 		}
+	}
+}
+
+func TestFileDetailCommandRejectsUnsupportedFormat(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv(repo.HomeEnvName, home)
+	repoPath := t.TempDir()
+	registerDirectToolCommandRepo(t, repo.NewStore(home), repoPath, "fixture")
+	writeFileProjectionCommandGraph(t, repoPath)
+
+	out, errOut, err := executeForTest(t, "file-detail", "src/app.go", "--repo", "fixture", "--json", "--format", "summary")
+	if err == nil {
+		t.Fatalf("file-detail accepted unsupported format\nstdout:\n%s\nstderr:\n%s", out, errOut)
+	}
+	if !strings.Contains(err.Error(), `unsupported file-detail format "summary"`) {
+		t.Fatalf("unsupported format error = %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
+	}
+
+	out, errOut, err = executeForTest(t, "file-detail", "src/app.go", "--repo", "fixture", "--format", "compact")
+	if err == nil {
+		t.Fatalf("file-detail accepted --format without --json\nstdout:\n%s\nstderr:\n%s", out, errOut)
+	}
+	if !strings.Contains(err.Error(), "--format requires --json") {
+		t.Fatalf("format without json error = %v\nstdout:\n%s\nstderr:\n%s", err, out, errOut)
 	}
 }
 
@@ -212,6 +294,10 @@ func writeFileProjectionCommandGraph(t *testing.T, repoPath string) {
 	g.AddRelationship(graph.Relationship{
 		ID: "rel:call-new-save", SourceID: "Function:src/app.go:NewServer", TargetID: "Function:src/store.go:Save", Type: graph.RelCalls,
 		FilePath: "src/app.go", SourceSiteID: "SourceSite:src/app.go#call#Save#13#2#13#8", SourceSiteStatus: "resolved", ProofKind: "scope-binding",
+	})
+	g.AddRelationship(graph.Relationship{
+		ID: "rel:call-server-save", SourceID: "Struct:src/app.go:Server", TargetID: "Function:src/store.go:Save", Type: graph.RelCalls,
+		FilePath: "src/app.go", SourceSiteID: "SourceSite:src/app.go#call#Save#7#2#7#8", SourceSiteStatus: "resolved", ProofKind: "scope-binding",
 	})
 	g.AddRelationship(graph.Relationship{
 		ID: "rel:call-test-new", SourceID: "Function:src/app_test.go:TestNewServer", TargetID: "Function:src/app.go:NewServer", Type: graph.RelCalls,

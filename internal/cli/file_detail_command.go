@@ -19,6 +19,8 @@ const (
 	defaultHumanSymbolRoots        = 20
 	defaultHumanRelationshipGroups = 10
 	defaultHumanUnresolvedGroups   = 5
+	fileDetailFormatCompact        = "compact"
+	fileDetailFormatExpanded       = "expanded"
 )
 
 type fileProjectionCommandInputs struct {
@@ -48,12 +50,20 @@ func newFileDetailCommand() *cobra.Command {
 	var relationshipSamples int
 	var unresolvedSamples int
 	var linkedSamples int
+	var outputFormat string
 
 	cmd := &cobra.Command{
 		Use:   "file-detail <path>",
 		Short: "Show detailed graph data for one indexed file",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			format, err := normalizeFileDetailFormat(outputFormat)
+			if err != nil {
+				return err
+			}
+			if !jsonOutput && cmd.Flags().Changed("format") {
+				return fmt.Errorf("--format requires --json")
+			}
 			inputs, g, err := loadFileProjectionGraph(repoName)
 			if err != nil {
 				return err
@@ -62,11 +72,22 @@ func newFileDetailCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			context, ok := filecontext.NewBuilder(g).BuildFileContext(lookupPath, filecontext.Options{
+			builder := filecontext.NewBuilder(g)
+			expandedOptions := filecontext.Options{
 				RelationshipSamplesPerGroup: relationshipSamples,
 				UnresolvedSamplesPerGroup:   unresolvedSamples,
 				LinkedSamplesPerKind:        linkedSamples,
-			})
+			}
+			if jsonOutput && format == fileDetailFormatCompact {
+				context, ok := builder.BuildCompactFileContext(lookupPath, compactFileDetailOptions(cmd, expandedOptions))
+				if !ok {
+					return fmt.Errorf("file %q not found in repo %s", args[0], inputs.Repo)
+				}
+				context.Target.Input = args[0]
+				attachCompactFileProjectionMetadata(&context, inputs)
+				return writeCompactJSON(cmd, context)
+			}
+			context, ok := builder.BuildFileContext(lookupPath, expandedOptions)
 			if !ok {
 				return fmt.Errorf("file %q not found in repo %s", args[0], inputs.Repo)
 			}
@@ -79,11 +100,38 @@ func newFileDetailCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&repoName, "repo", "r", "", "target repository")
-	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write full file detail JSON")
-	cmd.Flags().IntVar(&relationshipSamples, "relationships", 5, "relationship samples per group")
-	cmd.Flags().IntVar(&unresolvedSamples, "unresolved", 5, "unresolved source-site samples per group")
-	cmd.Flags().IntVar(&linkedSamples, "linked", 5, "linked overlay samples per kind")
+	cmd.Flags().BoolVar(&jsonOutput, "json", false, "write file detail JSON; compact by default")
+	cmd.Flags().StringVar(&outputFormat, "format", fileDetailFormatCompact, "JSON output format: compact or expanded")
+	cmd.Flags().IntVar(&relationshipSamples, "relationships", 5, "relationship samples per group; compact JSON is full-row unless this flag is set")
+	cmd.Flags().IntVar(&unresolvedSamples, "unresolved", 5, "unresolved source-site samples per group; compact JSON is full-row unless this flag is set")
+	cmd.Flags().IntVar(&linkedSamples, "linked", 5, "linked overlay samples per kind; compact JSON is full-row unless this flag is set")
 	return cmd
+}
+
+func normalizeFileDetailFormat(value string) (string, error) {
+	format := strings.ToLower(strings.TrimSpace(value))
+	switch format {
+	case "", fileDetailFormatCompact:
+		return fileDetailFormatCompact, nil
+	case fileDetailFormatExpanded:
+		return fileDetailFormatExpanded, nil
+	default:
+		return "", fmt.Errorf("unsupported file-detail format %q; supported formats: %s, %s", value, fileDetailFormatCompact, fileDetailFormatExpanded)
+	}
+}
+
+func compactFileDetailOptions(cmd *cobra.Command, expandedOptions filecontext.Options) filecontext.Options {
+	var options filecontext.Options
+	if cmd.Flags().Changed("relationships") {
+		options.RelationshipSamplesPerGroup = expandedOptions.RelationshipSamplesPerGroup
+	}
+	if cmd.Flags().Changed("unresolved") {
+		options.UnresolvedSamplesPerGroup = expandedOptions.UnresolvedSamplesPerGroup
+	}
+	if cmd.Flags().Changed("linked") {
+		options.LinkedSamplesPerKind = expandedOptions.LinkedSamplesPerKind
+	}
+	return options
 }
 
 func newFileHotspotsCommand() *cobra.Command {
@@ -220,6 +268,12 @@ func loadFileProjectionGraph(repoName string) (fileProjectionCommandInputs, *gra
 
 func attachFileProjectionMetadata(context *filecontext.FileContext, inputs fileProjectionCommandInputs) {
 	filecontext.AttachMetadata(context, inputs.Repo, inputs.RepoPath, fileProjectionGraphInfo(inputs))
+}
+
+func attachCompactFileProjectionMetadata(context *filecontext.CompactFileContext, inputs fileProjectionCommandInputs) {
+	context.Repo = inputs.Repo
+	context.RepoPath = inputs.RepoPath
+	context.Graph = fileProjectionGraphInfo(inputs)
 }
 
 func fileProjectionGraphInfo(inputs fileProjectionCommandInputs) filecontext.GraphInfo {
@@ -431,6 +485,15 @@ func renderUnresolvedGroups(out io.Writer, unresolved filecontext.UnresolvedSumm
 
 func writeJSON(cmd *cobra.Command, payload any) error {
 	raw, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprintf(cmd.OutOrStdout(), "%s\n", raw)
+	return err
+}
+
+func writeCompactJSON(cmd *cobra.Command, payload any) error {
+	raw, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}

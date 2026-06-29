@@ -852,7 +852,7 @@ func TestDirectToolHelpShowsCompatibilityFlags(t *testing.T) {
 		{[]string{"detect-changes", "--help"}, []string{"Analyze uncommitted git changes", "--scope", "--base-ref", "--repo"}},
 		{[]string{"doctor", "locks", "--help"}, []string{"Inspect repository analyze lock state", "--repo", "--json"}},
 		{[]string{"doctor", "processes", "--help"}, []string{"Inspect Anvien runtime processes", "--json"}},
-		{[]string{"file-detail", "--help"}, []string{"anvien file-detail <path>", "--repo", "--json", "--relationships", "--unresolved", "--linked"}},
+		{[]string{"file-detail", "--help"}, []string{"anvien file-detail <path>", "--repo", "--json", "--format", "--relationships", "--unresolved", "--linked"}},
 		{[]string{"file-hotspots", "--help"}, []string{"anvien file-hotspots", "--repo", "--json", "--sort", "--limit", "--unresolved-only", "--high-fan-in", "--high-fan-out"}},
 		{[]string{"rename", "--help"}, []string{"anvien rename", "--uid", "--file", "--apply", "--json", "--repo"}},
 		{[]string{"api", "--help"}, []string{"anvien api", "route-map", "tool-map", "shape-check", "impact", "--repo"}},
