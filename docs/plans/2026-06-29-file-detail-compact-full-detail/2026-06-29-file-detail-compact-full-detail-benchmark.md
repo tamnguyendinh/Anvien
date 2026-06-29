@@ -83,7 +83,7 @@ Benchmark sections must follow the plan phases:
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
 | P3 | Web adapter compact related-file rows preserved in fixture | rows | 0 | 2 | pending | adapter preserves compact related-file rows for P3-B render | +2 | `E3-P3A-TEST1` |
 | P3 | Web file-detail related-file rows rendered in fixture | rows | 0 | 2 | pending | fixture-specific expected count | +2 | `E3-P3B-TEST1` |
-| P3 | Runtime compact endpoint response size for selected smoke file | characters | pending | pending | pending | record final | pending | `E3-P3C-RUNTIME1` |
+| P3 | Runtime compact endpoint response size for selected smoke file | characters | pending | 60946 | 60946 | record final | N/A | `E3-P3C-RUNTIME1` |
 
 ## Non-Benchmarkable Notes
 

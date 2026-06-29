@@ -770,7 +770,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
   - Actual-status Update: mark Web render surface `partial -> correct`.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] P3-C: Validate built runtime file-detail flow.
+- [x] P3-C: Validate built runtime file-detail flow.
   - Goal: prove the real built local runtime serves compact file-detail and the Web UI renders it.
   - Scope Boundary:
     - Editable: tests only if missing a real behavior assertion.
