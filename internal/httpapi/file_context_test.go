@@ -20,9 +20,12 @@ func TestFileDetailEndpointReturnsProjectionForRegisteredRepo(t *testing.T) {
 	defer server.Close()
 	writeHTTPFileProjectionGraph(t, fixtures[0].path)
 
-	var payload filecontext.FileContext
+	var payload filecontext.CompactFileContext
 	getJSON(t, server.URL+"/api/file-detail?repo=alpha&path=src%2Fapp.go", http.StatusOK, &payload)
 
+	if payload.Format != filecontext.CompactFileContextFormat {
+		t.Fatalf("payload format = %q, want compact format", payload.Format)
+	}
 	if payload.Repo != "alpha" || payload.RepoPath != fixtures[0].path {
 		t.Fatalf("payload repo binding = %q/%q", payload.Repo, payload.RepoPath)
 	}
@@ -30,32 +33,75 @@ func TestFileDetailEndpointReturnsProjectionForRegisteredRepo(t *testing.T) {
 		t.Fatalf("payload graph metadata = %#v", payload.Graph)
 	}
 	if payload.Summary.Path != "src/app.go" || payload.Summary.SymbolCount != 2 ||
-		payload.Summary.OutboundRefCount != 1 || payload.Summary.InboundRefCount != 1 ||
+		payload.Summary.OutboundRefCount != 2 || payload.Summary.InboundRefCount != 1 ||
 		payload.Summary.Unresolved != 1 {
 		t.Fatalf("summary = %#v, want file counts from projection graph", payload.Summary)
+	}
+	if payload.Limits.RelationshipSamplesPerGroup != filecontext.FullDetailSampleLimit ||
+		payload.Limits.UnresolvedSamplesPerGroup != filecontext.FullDetailSampleLimit ||
+		payload.Limits.LinkedSamplesPerKind != filecontext.FullDetailSampleLimit {
+		t.Fatalf("compact default limits = %#v, want full-detail sentinel", payload.Limits)
 	}
 	if payload.Target.NormalizedPath != "src/app.go" {
 		t.Fatalf("normalized path = %q, want src/app.go", payload.Target.NormalizedPath)
 	}
-	if len(payload.SymbolTree) != 2 || payload.SymbolTree[0].Name != "Server" || payload.SymbolTree[1].Name != "NewServer" {
-		t.Fatalf("symbol tree = %#v", payload.SymbolTree)
+	if len(payload.Tables.Symbols) != 2 {
+		t.Fatalf("compact symbol rows = %#v, want two symbols", payload.Tables.Symbols)
 	}
-	if len(payload.Relationships.OutboundByFile) != 1 || payload.Relationships.OutboundByFile[0].File != "src/store.go" {
-		t.Fatalf("outbound relationships = %#v", payload.Relationships.OutboundByFile)
+	if len(payload.Tables.RelatedFiles) != 2 {
+		t.Fatalf("compact related-file rows = %#v, want store and test files", payload.Tables.RelatedFiles)
 	}
-	if payload.Unresolved.Total != 1 || len(payload.Unresolved.Groups) != 1 ||
-		payload.Unresolved.Groups[0].Samples[0].TargetText != "missingCall" {
-		t.Fatalf("unresolved = %#v", payload.Unresolved)
+	if len(payload.Tables.Relationships.OutboundByFile) != 1 {
+		t.Fatalf("compact outbound groups = %#v", payload.Tables.Relationships.OutboundByFile)
+	}
+	outboundRows := payload.Tables.Relationships.OutboundByFile[0].Rows
+	if outboundRows.Total != 2 || outboundRows.Returned != 2 || outboundRows.Omitted != 0 {
+		t.Fatalf("compact default outbound rows = %#v, want full two-row group", outboundRows)
+	}
+	if payload.Tables.Unresolved.Total != 1 || len(payload.Tables.Unresolved.Groups) != 1 ||
+		payload.Tables.Unresolved.Groups[0].Rows.Returned != 1 {
+		t.Fatalf("compact unresolved = %#v", payload.Tables.Unresolved)
 	}
 
 	absolutePath := filepath.Join(fixtures[0].path, "src", "app.go")
-	var absolutePayload filecontext.FileContext
+	var absolutePayload filecontext.CompactFileContext
 	getJSON(t, server.URL+"/api/file-detail?repo=alpha&path="+url.QueryEscape(absolutePath), http.StatusOK, &absolutePayload)
+	if absolutePayload.Format != filecontext.CompactFileContextFormat {
+		t.Fatalf("absolute payload format = %q, want compact format", absolutePayload.Format)
+	}
 	if absolutePayload.Summary.Path != "src/app.go" || absolutePayload.Target.NormalizedPath != "src/app.go" {
 		t.Fatalf("absolute payload path/normalized = %q/%q, want src/app.go/src/app.go", absolutePayload.Summary.Path, absolutePayload.Target.NormalizedPath)
 	}
 	if absolutePayload.Target.Input != absolutePath {
 		t.Fatalf("absolute payload input = %q, want %q", absolutePayload.Target.Input, absolutePath)
+	}
+
+	var expandedPayload filecontext.FileContext
+	getJSON(t, server.URL+"/api/file-detail?repo=alpha&path=src%2Fapp.go&format=expanded", http.StatusOK, &expandedPayload)
+	if expandedPayload.Repo != "alpha" || expandedPayload.Summary.Path != "src/app.go" {
+		t.Fatalf("expanded payload repo/path = %q/%q", expandedPayload.Repo, expandedPayload.Summary.Path)
+	}
+	if expandedPayload.Limits.RelationshipSamplesPerGroup != fileContextDefaultSampleLimit {
+		t.Fatalf("expanded default relationship limit = %d, want %d", expandedPayload.Limits.RelationshipSamplesPerGroup, fileContextDefaultSampleLimit)
+	}
+	if len(expandedPayload.SymbolTree) != 2 || expandedPayload.SymbolTree[0].Name != "Server" || expandedPayload.SymbolTree[1].Name != "NewServer" {
+		t.Fatalf("expanded symbol tree = %#v", expandedPayload.SymbolTree)
+	}
+
+	var limitedPayload filecontext.CompactFileContext
+	getJSON(t, server.URL+"/api/file-detail?repo=alpha&path=src%2Fapp.go&relationships=1", http.StatusOK, &limitedPayload)
+	if limitedPayload.Limits.RelationshipSamplesPerGroup != 1 {
+		t.Fatalf("limited relationship limit = %d, want 1", limitedPayload.Limits.RelationshipSamplesPerGroup)
+	}
+	limitedRows := limitedPayload.Tables.Relationships.OutboundByFile[0].Rows
+	if limitedRows.Total != 2 || limitedRows.Returned != 1 || limitedRows.Omitted != 1 {
+		t.Fatalf("limited compact outbound rows = %#v, want total/returned/omitted 2/1/1", limitedRows)
+	}
+
+	var formatError map[string]string
+	getJSON(t, server.URL+"/api/file-detail?repo=alpha&path=src%2Fapp.go&format=summary", http.StatusBadRequest, &formatError)
+	if formatError["error"] != `Unsupported "format" query parameter` {
+		t.Fatalf("unsupported format error = %#v", formatError)
 	}
 }
 
@@ -185,6 +231,10 @@ func writeHTTPFileProjectionGraph(t *testing.T, repoPath string) {
 	g.AddRelationship(graph.Relationship{
 		ID: "rel:call-new-save", SourceID: "Function:src/app.go:NewServer", TargetID: "Function:src/store.go:Save", Type: graph.RelCalls,
 		FilePath: "src/app.go", SourceSiteID: "SourceSite:src/app.go#call#Save#13#2#13#8", SourceSiteStatus: "resolved", ProofKind: "scope-binding",
+	})
+	g.AddRelationship(graph.Relationship{
+		ID: "rel:call-server-save", SourceID: "Struct:src/app.go:Server", TargetID: "Function:src/store.go:Save", Type: graph.RelCalls,
+		FilePath: "src/app.go", SourceSiteID: "SourceSite:src/app.go#call#Save#7#2#7#8", SourceSiteStatus: "resolved", ProofKind: "scope-binding",
 	})
 	g.AddRelationship(graph.Relationship{
 		ID: "rel:call-test-new", SourceID: "Function:src/app_test.go:TestNewServer", TargetID: "Function:src/app.go:NewServer", Type: graph.RelCalls,

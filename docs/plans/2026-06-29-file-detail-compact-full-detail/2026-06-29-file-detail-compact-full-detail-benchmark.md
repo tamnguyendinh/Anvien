@@ -72,7 +72,7 @@ Benchmark sections must follow the plan phases:
 | Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
 | P2 | CLI compact JSON size for `internal/filecontext/context.go` versus expanded full-detail equivalent | characters | 1282361 | 282588 | pending | materially smaller than expanded equivalent | -999773 | `E2-P2A-SMOKE1` |
-| P2 | HTTP compact JSON size for `internal/filecontext/context.go` | characters | 253168 | pending | pending | materially smaller than expanded equivalent | pending | `B2-P2B-SIZE1` |
+| P2 | HTTP compact JSON size for `internal/filecontext/context.go` versus max-limited expanded response | characters | 615355 | 282949 | pending | compact full-detail response smaller than expanded bounded response | -332406 | `E2-P2B-SMOKE1` |
 | P2 | Contract file-detail response variants | variants | 1 | pending | pending | compact and expanded represented | pending | `E2-P2C-CONTRACT1` |
 | P2 | MCP file-context response behavior variants | variants | 1 | pending | pending | expanded preserved or compact/expanded explicitly represented | pending | `E2-P2D-SRC1` |
 | P2 | README/RUNBOOK file-detail docs decision | doc surfaces | 2 | pending | pending | updated or no-change decision recorded for both | pending | `E2-P2E-DOC2` |

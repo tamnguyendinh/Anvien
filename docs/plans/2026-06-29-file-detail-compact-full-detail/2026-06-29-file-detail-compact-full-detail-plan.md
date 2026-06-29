@@ -406,7 +406,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
   - Actual-status Update: mark CLI format surface `missing -> correct`.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] P2-B: Wire HTTP format selection.
+- [x] P2-B: Wire HTTP format selection.
   - Goal: expose compact full-detail over `/api/file-detail` with an explicit query contract.
   - Scope Boundary:
     - Editable: `internal/httpapi/file_context.go`, `internal/httpapi/file_context_test.go`.

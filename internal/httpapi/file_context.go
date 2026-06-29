@@ -3,6 +3,7 @@ package httpapi
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,6 +18,8 @@ import (
 const (
 	fileContextDefaultSampleLimit = 10
 	fileContextMaxSampleLimit     = 100
+	fileContextFormatCompact      = "compact"
+	fileContextFormatExpanded     = "expanded"
 	fileHotspotsDefaultLimit      = 20
 	fileHotspotsMaxLimit          = 500
 )
@@ -93,6 +96,12 @@ func (s Server) handleFileContext(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, `Missing "path" query parameter`)
 		return
 	}
+	query := r.URL.Query()
+	format, ok := normalizeFileContextFormat(query.Get("format"))
+	if !ok {
+		writeError(w, http.StatusBadRequest, `Unsupported "format" query parameter`)
+		return
+	}
 
 	projection, status, message, err := s.loadFileProjection(r)
 	if err != nil {
@@ -108,11 +117,18 @@ func (s Server) handleFileContext(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	context, ok := projection.builder.BuildFileContext(lookupPath, filecontext.Options{
-		RelationshipSamplesPerGroup: boundedNonNegativeQueryInt(r.URL.Query().Get("relationships"), fileContextDefaultSampleLimit, 1, fileContextMaxSampleLimit),
-		UnresolvedSamplesPerGroup:   boundedNonNegativeQueryInt(r.URL.Query().Get("unresolved"), fileContextDefaultSampleLimit, 1, fileContextMaxSampleLimit),
-		LinkedSamplesPerKind:        boundedNonNegativeQueryInt(r.URL.Query().Get("linked"), fileContextDefaultSampleLimit, 1, fileContextMaxSampleLimit),
-	})
+	if format == fileContextFormatCompact {
+		context, ok := projection.builder.BuildCompactFileContext(lookupPath, compactFileContextOptionsFromQuery(query))
+		if !ok {
+			writeError(w, http.StatusNotFound, "File not found in graph")
+			return
+		}
+		context.Target.Input = path
+		attachCompactFileContextMetadata(&context, projection)
+		writeJSON(w, http.StatusOK, context)
+		return
+	}
+	context, ok := projection.builder.BuildFileContext(lookupPath, expandedFileContextOptionsFromQuery(query))
 	if !ok {
 		writeError(w, http.StatusNotFound, "File not found in graph")
 		return
@@ -120,6 +136,46 @@ func (s Server) handleFileContext(w http.ResponseWriter, r *http.Request) {
 	context.Target.Input = path
 	filecontext.AttachMetadata(&context, projection.repoName, projection.repoPath, projection.graph)
 	writeJSON(w, http.StatusOK, context)
+}
+
+func normalizeFileContextFormat(value string) (string, bool) {
+	format := strings.ToLower(strings.TrimSpace(value))
+	switch format {
+	case "", fileContextFormatCompact:
+		return fileContextFormatCompact, true
+	case fileContextFormatExpanded:
+		return fileContextFormatExpanded, true
+	default:
+		return "", false
+	}
+}
+
+func expandedFileContextOptionsFromQuery(query url.Values) filecontext.Options {
+	return filecontext.Options{
+		RelationshipSamplesPerGroup: boundedNonNegativeQueryInt(query.Get("relationships"), fileContextDefaultSampleLimit, 1, fileContextMaxSampleLimit),
+		UnresolvedSamplesPerGroup:   boundedNonNegativeQueryInt(query.Get("unresolved"), fileContextDefaultSampleLimit, 1, fileContextMaxSampleLimit),
+		LinkedSamplesPerKind:        boundedNonNegativeQueryInt(query.Get("linked"), fileContextDefaultSampleLimit, 1, fileContextMaxSampleLimit),
+	}
+}
+
+func compactFileContextOptionsFromQuery(query url.Values) filecontext.Options {
+	var options filecontext.Options
+	if _, ok := query["relationships"]; ok {
+		options.RelationshipSamplesPerGroup = boundedNonNegativeQueryInt(query.Get("relationships"), fileContextDefaultSampleLimit, 1, fileContextMaxSampleLimit)
+	}
+	if _, ok := query["unresolved"]; ok {
+		options.UnresolvedSamplesPerGroup = boundedNonNegativeQueryInt(query.Get("unresolved"), fileContextDefaultSampleLimit, 1, fileContextMaxSampleLimit)
+	}
+	if _, ok := query["linked"]; ok {
+		options.LinkedSamplesPerKind = boundedNonNegativeQueryInt(query.Get("linked"), fileContextDefaultSampleLimit, 1, fileContextMaxSampleLimit)
+	}
+	return options
+}
+
+func attachCompactFileContextMetadata(context *filecontext.CompactFileContext, projection fileProjectionGraph) {
+	context.Repo = projection.repoName
+	context.RepoPath = projection.repoPath
+	context.Graph = projection.graph
 }
 
 func (s Server) handleFileHotspots(w http.ResponseWriter, r *http.Request) {
