@@ -196,7 +196,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
   - Actual-status Update: mark builder compact model `missing -> partial` or `correct` based on tests.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] P1-B: Add related-file metadata inventory.
+- [x] P1-B: Add related-file metadata inventory.
   - Goal: add a compact `relatedFiles` table with metadata for every unique related file.
   - Scope Boundary:
     - Editable: `internal/filecontext/context.go`, `internal/filecontext/context_test.go`.

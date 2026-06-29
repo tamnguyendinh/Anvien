@@ -181,6 +181,60 @@ func TestCompactFileContextFromExpandedInternsRowsAndPreservesCounts(t *testing.
 	}
 }
 
+func TestBuildCompactFileContextAddsRelatedFileMetadata(t *testing.T) {
+	builder := NewBuilder(fileContextFixture(false))
+	compact, ok := builder.BuildCompactFileContext("src/app.go", Options{RelationshipSamplesPerGroup: 1})
+	if !ok {
+		t.Fatalf("BuildCompactFileContext() did not find file")
+	}
+
+	if len(compact.Schema.RelatedFileRow) == 0 {
+		t.Fatalf("related file schema is empty")
+	}
+	if len(compact.Tables.RelatedFiles) != 2 {
+		t.Fatalf("related file rows = %#v, want store and test", compact.Tables.RelatedFiles)
+	}
+
+	rows := map[string]CompactRow{}
+	for _, row := range compact.Tables.RelatedFiles {
+		file := compact.Dict.Files[compactRowInt(t, row[0])]
+		rows[file] = row
+	}
+
+	store := rows["src/store.go"]
+	if store == nil {
+		t.Fatalf("missing store related row: %#v", rows)
+	}
+	if store[1] != "go" || store[2] != "source" || store[5] != "backend" || store[6] != "storage" {
+		t.Fatalf("store metadata = %#v, want go/source/backend/storage", store)
+	}
+	if store[8] != 2 || store[9] != 0 || store[10] != "low" {
+		t.Fatalf("store inventory = %#v, want 2 symbols, 0 unresolved, low risk", store)
+	}
+	if store[11] != true || store[12] != false || store[13] != false || store[14] != 2 {
+		t.Fatalf("store direction/totals = %#v, want outbound only total 2", store)
+	}
+	storeCounts, ok := store[15].(map[string]int)
+	if !ok || storeCounts["CALLS"] != 2 {
+		t.Fatalf("store relationship counts = %#v, want CALLS=2", store[15])
+	}
+
+	testFile := rows["src/app_test.go"]
+	if testFile == nil {
+		t.Fatalf("missing test related row: %#v", rows)
+	}
+	if testFile[2] != "test" || testFile[5] != "backend_test" {
+		t.Fatalf("test metadata = %#v, want test/backend_test", testFile)
+	}
+	if testFile[11] != false || testFile[12] != true || testFile[14] != 1 {
+		t.Fatalf("test direction/totals = %#v, want inbound only total 1", testFile)
+	}
+	testCounts, ok := testFile[15].(map[string]int)
+	if !ok || testCounts["CALLS"] != 1 {
+		t.Fatalf("test relationship counts = %#v, want CALLS=1", testFile[15])
+	}
+}
+
 func TestBuildFileContextReturnsFalseForMissingFile(t *testing.T) {
 	_, ok := NewBuilder(fileContextFixture(false)).BuildFileContext("src/missing.go", Options{})
 	if ok {

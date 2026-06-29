@@ -1,5 +1,11 @@
 package filecontext
 
+import (
+	"sort"
+
+	"github.com/tamnguyendinh/anvien/internal/semantic"
+)
+
 const (
 	CompactFileContextFormat  = "file-detail.compact"
 	CompactFileContextVersion = 1
@@ -23,6 +29,7 @@ type CompactFileContext struct {
 type CompactFileContextSchema struct {
 	RangeTuple      []string `json:"rangeTuple"`
 	SymbolRow       []string `json:"symbolRow"`
+	RelatedFileRow  []string `json:"relatedFileRow"`
 	RelationshipRow []string `json:"relationshipRow"`
 	UnresolvedRow   []string `json:"unresolvedRow"`
 	LinkedRow       []string `json:"linkedRow"`
@@ -43,6 +50,7 @@ type CompactDictionaries struct {
 
 type CompactTables struct {
 	Symbols       []CompactRow                `json:"symbols"`
+	RelatedFiles  []CompactRow                `json:"relatedFiles"`
 	Relationships CompactRelationshipSections `json:"relationships"`
 	Unresolved    CompactUnresolvedSummary    `json:"unresolved"`
 	Linked        CompactLinkedSummary        `json:"linked"`
@@ -101,12 +109,29 @@ type CompactRow []any
 type CompactRange [4]int
 
 func CompactFileContextFromExpanded(context FileContext) CompactFileContext {
+	return compactFileContextFromExpanded(context, nil)
+}
+
+func (b *Builder) BuildCompactFileContext(path string, options Options) (CompactFileContext, bool) {
+	context, ok := b.BuildFileContext(path, options)
+	if !ok {
+		return CompactFileContext{}, false
+	}
+	return b.CompactFileContextFromExpanded(context), true
+}
+
+func (b *Builder) CompactFileContextFromExpanded(context FileContext) CompactFileContext {
+	return compactFileContextFromExpanded(context, b)
+}
+
+func compactFileContextFromExpanded(context FileContext, fileMetadata *Builder) CompactFileContext {
 	builder := newCompactContextBuilder()
 	builder.file(context.Summary.Path)
 	builder.file(context.Target.NormalizedPath)
 
 	tables := CompactTables{
 		Symbols:       builder.symbolRows(context.SymbolTree, nil),
+		RelatedFiles:  builder.relatedFileRows(context.Relationships, fileMetadata),
 		Relationships: builder.relationshipSections(context.Relationships),
 		Unresolved:    builder.unresolvedSummary(context.Unresolved),
 		Linked:        builder.linkedSummary(context.Linked),
@@ -134,6 +159,11 @@ func defaultCompactFileContextSchema() CompactFileContextSchema {
 		SymbolRow: []string{
 			"symbol", "parent", "name", "kind", "range", "exported", "signature",
 			"local", "inbound", "outbound", "unresolved",
+		},
+		RelatedFileRow: []string{
+			"file", "language", "kind", "fileRole", "fileGroup", "appLayer",
+			"functionalArea", "parseStatus", "symbolCount", "unresolved", "risk",
+			"outbound", "inbound", "local", "relationshipTotal", "relationshipCounts",
 		},
 		RelationshipRow: []string{
 			"sourceFile", "sourceSymbol", "sourceRange", "relationshipKind",
@@ -262,6 +292,113 @@ func countSymbolTreeNodes(nodes []SymbolTreeNode) int {
 		count += countSymbolTreeNodes(node.Children)
 	}
 	return count
+}
+
+func (b *compactContextBuilder) relatedFileRows(sections RelationshipSections, metadata *Builder) []CompactRow {
+	aggregates := map[string]*compactRelatedFile{}
+	for _, group := range sections.OutboundByFile {
+		related := compactRelatedFileFor(aggregates, group.File)
+		related.Outbound = true
+		related.Total += group.Total
+		addCompactRelationshipCounts(related.Counts, group.Counts)
+	}
+	for _, group := range sections.InboundByFile {
+		related := compactRelatedFileFor(aggregates, group.File)
+		related.Inbound = true
+		related.Total += group.Total
+		addCompactRelationshipCounts(related.Counts, group.Counts)
+	}
+
+	files := make([]string, 0, len(aggregates))
+	for file := range aggregates {
+		files = append(files, file)
+	}
+	sort.Strings(files)
+
+	rows := make([]CompactRow, 0, len(files))
+	for _, file := range files {
+		related := aggregates[file]
+		summary := FileSummary{Path: file}
+		if metadata != nil {
+			summary = metadata.fileSummaryForPath(file)
+		}
+		rows = append(rows, CompactRow{
+			b.file(file),
+			summary.Language,
+			summary.Kind,
+			summary.FileRole,
+			summary.FileGroup,
+			summary.AppLayer,
+			summary.FunctionalArea,
+			summary.ParseStatus,
+			summary.SymbolCount,
+			summary.Unresolved,
+			summary.Risk,
+			related.Outbound,
+			related.Inbound,
+			related.Local,
+			related.Total,
+			compactCounts(related.Counts),
+		})
+	}
+	return rows
+}
+
+type compactRelatedFile struct {
+	Outbound bool
+	Inbound  bool
+	Local    bool
+	Total    int
+	Counts   map[string]int
+}
+
+func compactRelatedFileFor(aggregates map[string]*compactRelatedFile, file string) *compactRelatedFile {
+	related := aggregates[file]
+	if related == nil {
+		related = &compactRelatedFile{Counts: map[string]int{}}
+		aggregates[file] = related
+	}
+	return related
+}
+
+func addCompactRelationshipCounts(target map[string]int, source map[string]int) {
+	for key, count := range source {
+		target[key] += count
+	}
+}
+
+func (b *Builder) fileSummaryForPath(path string) FileSummary {
+	node, ok := b.filesByPath[path]
+	summary := FileSummary{Path: path}
+	if !ok {
+		applyUnresolvedCount(&summary, 0)
+		return summary
+	}
+
+	kind := fileKind(node)
+	appLayer := stringProperty(node, "appLayer")
+	functionalArea := stringProperty(node, "functionalArea")
+	fileRole := semantic.ClassifyFileRole(path, kind, appLayer, functionalArea)
+	fileGroup := semantic.ClassifyFileGroup(path, kind, appLayer, string(fileRole.Role))
+
+	summary = FileSummary{
+		Path:           path,
+		Language:       stringProperty(node, "language"),
+		Kind:           kind,
+		FileRole:       string(fileRole.Role),
+		FileGroup:      string(fileGroup.Group),
+		AppLayer:       appLayer,
+		FunctionalArea: functionalArea,
+		ParseStatus:    parseStatus(node),
+		SymbolCount:    len(b.definesByFile[path]),
+	}
+	for _, symbolID := range b.definesByFile[path] {
+		if exportedSymbol(b.nodesByID[symbolID]) {
+			summary.ExportedSymbolCount++
+		}
+	}
+	applyUnresolvedCount(&summary, b.unresolvedCount(path))
+	return summary
 }
 
 func (b *compactContextBuilder) relationshipSections(sections RelationshipSections) CompactRelationshipSections {
