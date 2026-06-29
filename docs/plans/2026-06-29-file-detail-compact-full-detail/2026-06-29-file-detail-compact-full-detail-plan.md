@@ -532,7 +532,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
   - Actual-status Update: mark contract surface `partial -> correct`.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] P2-D: Close MCP and agent file-context surfaces.
+- [x] P2-D: Close MCP and agent file-context surfaces.
   - Goal: keep Anvien MCP/agent file-context behavior correct after shared compact file-detail model changes.
   - Scope Boundary:
     - Editable: `internal/mcp/target_dispatch.go`, `internal/mcp/context.go`, `internal/mcp/impact.go`, focused MCP tests only if the chosen contract requires changes.

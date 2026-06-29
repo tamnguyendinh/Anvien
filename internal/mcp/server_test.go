@@ -953,6 +953,13 @@ func TestServeCallToolContextAndImpactResolveAbsoluteFileTargets(t *testing.T) {
 		File struct {
 			Path string `json:"path"`
 		} `json:"file"`
+		FileContext struct {
+			Format        string             `json:"format"`
+			SymbolTree    []map[string]any   `json:"symbolTree"`
+			Relationships map[string]any     `json:"relationships"`
+			Tables        map[string]any     `json:"tables"`
+			Limits        filecontext.Limits `json:"limits"`
+		} `json:"fileContext"`
 	}
 	if err := json.Unmarshal([]byte(toolJSONTextFromResponse(t, responses[0])), &contextPayload); err != nil {
 		t.Fatalf("parse absolute context JSON: %v", err)
@@ -962,6 +969,12 @@ func TestServeCallToolContextAndImpactResolveAbsoluteFileTargets(t *testing.T) {
 	}
 	if contextPayload.Target.Input != absolutePath {
 		t.Fatalf("absolute context input = %q, want %q", contextPayload.Target.Input, absolutePath)
+	}
+	if contextPayload.FileContext.Format != "" || contextPayload.FileContext.Tables != nil {
+		t.Fatalf("MCP context file payload unexpectedly compact: %#v", contextPayload.FileContext)
+	}
+	if contextPayload.FileContext.Relationships == nil || contextPayload.FileContext.Limits.RelationshipSamplesPerGroup != 5 {
+		t.Fatalf("MCP context file expanded context = %#v", contextPayload.FileContext)
 	}
 
 	var contextErrPayload struct {
@@ -990,6 +1003,12 @@ func TestServeCallToolContextAndImpactResolveAbsoluteFileTargets(t *testing.T) {
 		File struct {
 			Path string `json:"path"`
 		} `json:"file"`
+		FileLayer struct {
+			SymbolTree         []map[string]any   `json:"symbolTree"`
+			RelationshipCounts map[string]any     `json:"relationshipCounts"`
+			Tables             map[string]any     `json:"tables"`
+			Limits             filecontext.Limits `json:"limits"`
+		} `json:"fileLayer"`
 	}
 	if err := json.Unmarshal([]byte(toolJSONTextFromResponse(t, responses[2])), &impactPayload); err != nil {
 		t.Fatalf("parse absolute impact JSON: %v", err)
@@ -999,6 +1018,12 @@ func TestServeCallToolContextAndImpactResolveAbsoluteFileTargets(t *testing.T) {
 	}
 	if impactPayload.Target.Input != absolutePath {
 		t.Fatalf("absolute impact input = %q, want %q", impactPayload.Target.Input, absolutePath)
+	}
+	if impactPayload.FileLayer.Tables != nil {
+		t.Fatalf("MCP file impact layer unexpectedly compact: %#v", impactPayload.FileLayer)
+	}
+	if impactPayload.FileLayer.RelationshipCounts == nil || impactPayload.FileLayer.Limits.RelationshipSamplesPerGroup != 5 {
+		t.Fatalf("MCP file impact expanded layer = %#v", impactPayload.FileLayer)
 	}
 
 	var impactErrPayload struct {
