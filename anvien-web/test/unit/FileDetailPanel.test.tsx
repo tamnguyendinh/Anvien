@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { FileContextResponse } from "../../src/generated/anvien-contracts";
+import type { FileDetailContext } from "../../src/services/backend-client";
 
 const fetchFileContext = vi.fn();
 
@@ -11,7 +11,8 @@ vi.mock("../../src/services/backend-client", () => ({
 
 import { FileDetailPanel } from "../../src/components/FileDetailPanel";
 
-const fileContext: FileContextResponse = {
+const fileContext: FileDetailContext = {
+  sourceFormat: "compact",
   repo: "demo",
   repoPath: "F:/demo",
   graph: {
@@ -199,9 +200,46 @@ const fileContext: FileContextResponse = {
     unresolvedSamplesPerGroup: 5,
     linkedSamplesPerKind: 5,
   },
+  relatedFiles: [
+    {
+      file: "src/router.ts",
+      language: "typescript",
+      kind: "source",
+      fileRole: "runtime_model",
+      fileGroup: "backend_support_model_helper",
+      appLayer: "backend",
+      functionalArea: "mcp",
+      parseStatus: "parsed",
+      symbolCount: 4,
+      unresolved: 0,
+      risk: "medium",
+      outbound: true,
+      inbound: false,
+      local: false,
+      relationshipTotal: 1,
+      relationshipCounts: { USES: 1 },
+    },
+    {
+      file: "src/app.test.ts",
+      language: "typescript",
+      kind: "test",
+      fileRole: "test_helper",
+      appLayer: "api_test",
+      functionalArea: "unknown",
+      parseStatus: "parsed",
+      symbolCount: 2,
+      unresolved: 0,
+      risk: "low",
+      outbound: false,
+      inbound: true,
+      local: false,
+      relationshipTotal: 1,
+      relationshipCounts: { CALLS: 1 },
+    },
+  ],
 };
 
-const testFileContext: FileContextResponse = {
+const testFileContext: FileDetailContext = {
   ...fileContext,
   target: {
     ...fileContext.target,
@@ -285,6 +323,25 @@ const testFileContext: FileContextResponse = {
     unresolvedRefs: 1,
     unresolvedImports: 0,
   },
+  relatedFiles: [
+    {
+      file: "src/app.ts",
+      language: "typescript",
+      kind: "source",
+      fileRole: "runtime_model",
+      appLayer: "backend",
+      functionalArea: "mcp",
+      parseStatus: "parsed",
+      symbolCount: 2,
+      unresolved: 1,
+      risk: "medium",
+      outbound: true,
+      inbound: false,
+      local: false,
+      relationshipTotal: 1,
+      relationshipCounts: { CALLS: 1 },
+    },
+  ],
 };
 
 describe("FileDetailPanel", () => {
@@ -321,6 +378,11 @@ describe("FileDetailPanel", () => {
       "Backend support/model/helper files",
     );
     expect(screen.getByTestId("file-detail-section-quality")).toHaveTextContent("Resolution");
+    const related = screen.getByTestId("file-detail-section-related-files");
+    expect(related).toHaveTextContent("src/router.ts");
+    expect(related).toHaveTextContent("Out");
+    expect(related).toHaveTextContent("Medium");
+    expect(related).toHaveTextContent("USES 1");
     expect(screen.getByTestId("file-detail-section-symbol-tree")).toHaveTextContent("main");
     expect(screen.getByTestId("file-detail-section-symbol-tree")).toHaveTextContent("helper");
     expect(screen.getByTestId("file-detail-section-relationships")).toHaveTextContent("src/router.ts");

@@ -94,7 +94,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 | MCP/agent file-context surface | MCP `context file`, file layer, and file impact flows intentionally preserve expanded `FileContext`/`fileLayer` compatibility with tests guarding against accidental compact payloads | Preserve expanded MCP compatibility or add an explicit compact/expanded MCP contract with tests/smoke evidence | correct | 21/28/40 baseline related files for target dispatch/context/impact sources | `E0-P0A-SRC6`, `E0-P0A-FD8`, `E0-P0A-FD9`, `E0-P0A-FD10`, `E0-P0A-IMPACT5`, `E2-P2D-IMPACT1`, `E2-P2D-SRC1`, `E2-P2D-TEST1` | preserve expanded MCP compatibility; continue P2-E docs |
 | User-facing command docs | README/RUNBOOK now document compact default machine output, expanded compatibility, full-row compact defaults, explicit limit metadata, and MCP expanded compatibility | Docs reflect final CLI/API/MCP behavior for compact/expanded/default and limit semantics | correct | N/A | `E0-P0A-SRC7`, `E0-P0A-REVIEW1`, `E2-P2E-DOC1`, `E2-P2E-DOC2`, `E2-P2E-SMOKE1` | P2 docs complete; start P3-A Web client |
 | Web client | `fetchFileContext` now requests `format=compact`, adapts compact row tables into an expanded-compatible `FileDetailContext`, preserves compact `relatedFiles`, and fails visibly on malformed compact rows | Client requests compact format and adapts compact payload without hidden fallback | correct | 22 related files for client source | `E0-P0A-SRC5`, `E0-P0A-FD5`, `E3-P3A-IMPACT1`, `E3-P3A-SRC1`, `E3-P3A-TEST1`, `E3-P3A-BUILD1` | preserve adapter; edit FileDetailPanel in P3-B |
-| Web panel render | Panel renders expanded major sections and slices some visible groups | Panel renders compact-backed sections and related-file metadata while preserving existing section semantics | partial | 4 related files for panel source | `E0-P0A-SRC5`, `E0-P0A-FD4`, `E0-P0A-IMPACT4` | edit P3-B |
+| Web panel render | Panel now renders compact-backed related-file metadata and preserves summary, quality, symbol tree, relationships, unresolved, and linked sections | Panel renders compact-backed sections and related-file metadata while preserving existing section semantics | correct | 4 related files for panel source | `E0-P0A-SRC5`, `E0-P0A-FD4`, `E0-P0A-IMPACT4`, `E3-P3B-IMPACT1`, `E3-P3B-SRC1`, `E3-P3B-TEST1`, `E3-P3B-BUILD1`, `E3-P3B-DETECT1` | preserve render; execute P3-C runtime validation |
 | Runtime/browser validation | Not yet run for compact behavior | Built runtime validates compact endpoint and visible file detail UI | missing | N/A | `E0-P0A-SRC5` | execute P3-C |
 
 ## Status Refresh Log
@@ -112,6 +112,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 | R8 | 2026-06-29 | P2-D implementation | MCP/agent file-context compatibility | MCP/agent file-context surface `partial -> correct` with expanded compatibility preserved | `E2-P2D-IMPACT1`, `E2-P2D-SRC1`, `E2-P2D-TEST1`, `E2-P2D-BUILD1`, `E2-P2D-DETECT1` | start P2-E README/RUNBOOK docs |
 | R9 | 2026-06-29 | P2-E docs update | README/RUNBOOK command and operator examples | User-facing command docs `partial -> correct` | `E2-P2E-DOC1`, `E2-P2E-DOC2`, `E2-P2E-SMOKE1`, `E2-P2E-DETECT1` | P2 complete; start P3-A Web client adapter |
 | R10 | 2026-06-29 | P3-A implementation | Web client compact adapter | Web client `partial -> correct` for compact request and adapter conversion | `E3-P3A-IMPACT1`, `E3-P3A-SRC1`, `E3-P3A-TEST1`, `E3-P3A-BUILD1`, `E3-P3A-DETECT1` | start P3-B related-file render |
+| R11 | 2026-06-29 | P3-B implementation | Web panel related-file render | Web panel render `partial -> correct` for related-file metadata while preserving existing sections | `E3-P3B-IMPACT1`, `E3-P3B-SRC1`, `E3-P3B-TEST1`, `E3-P3B-BUILD1`, `E3-P3B-DETECT1` | start P3-C built runtime validation |
 
 ## Phase Touch Map
 
@@ -401,7 +402,7 @@ Do not add hidden expanded fallback that masks compact parse failures.
 | P2-D | MCP/agent file-context consumers intentionally preserve expanded payload compatibility with tests guarding `context file` and file impact shapes | P2-D complete; preserve expanded MCP behavior |
 | P2-E | README/RUNBOOK now document compact default, expanded compatibility, full-row compact defaults, explicit limit metadata, and MCP expanded compatibility | P2-E complete; preserve docs during P3 |
 | P3-A | Web client now requests compact file-detail and adapts compact rows into `FileDetailContext` | P3-A complete; preserve adapter and start P3-B render work |
-| P3-B | Panel lacks related-file metadata render | keep P3-B after compact adapter exists |
+| P3-B | Panel renders related-file metadata from compact adapter and preserves existing sections | P3-B complete; start P3-C runtime validation |
 | P3-C | Runtime validation is missing | keep P3-C as final Web/runtime validation |
 
 ## Implementation Gate

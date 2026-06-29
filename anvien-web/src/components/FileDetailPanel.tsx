@@ -10,10 +10,10 @@ import {
   Layers,
   List,
   Loader2,
+  Table,
   Target,
 } from "@/lib/lucide-icons";
 import type {
-  FileContextResponse,
   FileSummary,
   FileLinkedItem,
   FileRelationshipByFileGroup,
@@ -23,7 +23,11 @@ import type {
   FileUnresolvedGroup,
   FileUnresolvedSample,
 } from "@/generated/anvien-contracts";
-import { fetchFileContext } from "../services/backend-client";
+import {
+  fetchFileContext,
+  type FileDetailContext,
+  type FileDetailRelatedFile,
+} from "../services/backend-client";
 
 interface FileDetailPanelProps {
   repoName?: string;
@@ -89,6 +93,15 @@ const relationshipSampleLabel = (sample: FileRelationshipSample): string => {
   const left = sample.sourceSymbol || sample.sourceFile || "source";
   const right = sample.targetSymbol || sample.targetFile || "target";
   return `${left} -> ${right}`;
+};
+
+const relatedFileDirection = (file: FileDetailRelatedFile): string => {
+  const labels = [
+    file.outbound ? "Out" : "",
+    file.inbound ? "In" : "",
+    file.local ? "Local" : "",
+  ].filter(Boolean);
+  return labels.length > 0 ? labels.join(" / ") : "Related";
 };
 
 const Section = ({
@@ -336,6 +349,49 @@ const RelationshipSection = ({
   </div>
 );
 
+const RelatedFileBlock = ({ file }: { file: FileDetailRelatedFile }) => {
+  const entries = countEntries(file.relationshipCounts);
+  return (
+    <div className="min-w-0 rounded border border-workspace-border-default bg-workspace-surface px-2 py-2">
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="min-w-0 flex-1 truncate font-mono text-xs text-workspace-text-primary" title={file.file}>
+          {file.file}
+        </span>
+        <span className="rounded bg-workspace-inset px-1.5 py-0.5 font-mono text-[10px] text-workspace-text-secondary">
+          {compactCount(file.relationshipTotal)}
+        </span>
+      </div>
+      <div className="mt-1 flex flex-wrap gap-1">
+        <Pill label="Dir" value={relatedFileDirection(file)} />
+        <Pill
+          label="Risk"
+          value={formatKey(file.risk)}
+          tone={file.risk === "high" || file.risk === "critical" ? "warning" : "neutral"}
+        />
+        <Pill label="Role" value={formatKey(file.fileRole)} />
+        <Pill label="Layer" value={formatKey(file.appLayer)} />
+        <Pill label="Symbols" value={compactCount(file.symbolCount)} />
+        <Pill label="Unresolved" value={compactCount(file.unresolved)} />
+      </div>
+      {entries.length > 0 && (
+        <div className="mt-1 flex flex-wrap gap-1">
+          {entries.slice(0, 5).map(([kind, count]) => (
+            <span
+              key={kind}
+              className="rounded bg-workspace-inset px-1.5 py-0.5 text-[10px] text-workspace-text-secondary"
+            >
+              {formatKey(kind)} {count}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const relatedFilesMeta = (count: number): string =>
+  count === 1 ? "1 file" : `${compactCount(count)} files`;
+
 const UnresolvedSamples = ({ samples }: { samples: FileUnresolvedSample[] }) => (
   <div className="mt-1 space-y-1">
     {samples.slice(0, SAMPLE_LIMIT).map((sample, index) => (
@@ -407,7 +463,7 @@ export const FileDetailPanel = ({
   filePath,
   onFocusNode,
 }: FileDetailPanelProps) => {
-  const [context, setContext] = useState<FileContextResponse | null>(null);
+  const [context, setContext] = useState<FileDetailContext | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedNodeIds, setExpandedNodeIds] = useState<Set<string>>(new Set());
@@ -548,6 +604,7 @@ export const FileDetailPanel = ({
   const unresolved = unresolvedCount(summary);
   const unresolvedGroups = context.unresolved.groups;
   const unresolvedKinds = unresolvedKindCounts(unresolvedGroups);
+  const relatedFiles = context.relatedFiles ?? [];
 
   return (
     <div
@@ -608,6 +665,26 @@ export const FileDetailPanel = ({
             tone={quality.changedSinceAnalyze ? "warning" : "neutral"}
           />
         </div>
+      </Section>
+
+      <Section
+        icon={<Table className="h-3.5 w-3.5" />}
+        title="Related Files"
+        meta={relatedFilesMeta(relatedFiles.length)}
+        testId="file-detail-section-related-files"
+      >
+        {relatedFiles.length === 0 ? (
+          <EmptyLine>No related file metadata returned.</EmptyLine>
+        ) : (
+          <div className="space-y-1.5">
+            {relatedFiles.slice(0, 8).map((file) => (
+              <RelatedFileBlock
+                key={`${file.file}-${relatedFileDirection(file)}`}
+                file={file}
+              />
+            ))}
+          </div>
+        )}
       </Section>
 
       <Section

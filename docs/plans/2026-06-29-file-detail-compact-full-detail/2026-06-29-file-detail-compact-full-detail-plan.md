@@ -707,7 +707,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
   - Actual-status Update: mark Web client compact binding `missing -> correct`.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] P3-B: Render related-file detail and preserve existing sections.
+- [x] P3-B: Render related-file detail and preserve existing sections.
   - Goal: update `FileDetailPanel` so compact data renders summary, quality, symbols, relationships, unresolved, linked, and related-file metadata.
   - Scope Boundary:
     - Editable: `anvien-web/src/components/FileDetailPanel.tsx`, `anvien-web/test/unit/FileDetailPanel.test.tsx`.
@@ -764,7 +764,7 @@ The accepted direction from discussion is not to reduce `file-detail` into a sum
     - DB/data: N/A.
     - Behavior test: Web unit tests prove compact payload render.
     - Cleanup/quarantine: no persistent state.
-    - Evidence IDs: `E3-P3B-IMPACT1`, `E3-P3B-TEST1`.
+    - Evidence IDs: `E3-P3B-IMPACT1`, `E3-P3B-SRC1`, `E3-P3B-TEST1`, `E3-P3B-BUILD1`, `E3-P3B-DETECT1`.
     - Actual-status rows refreshed: FileDetailPanel.
   - Evidence Targets: impact, unit tests, screenshots if useful.
   - Actual-status Update: mark Web render surface `partial -> correct`.
