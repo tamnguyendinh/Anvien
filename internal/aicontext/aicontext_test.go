@@ -71,13 +71,14 @@ func requireGeneratedMasterRules(t *testing.T, text string, fileName string) {
 		"3. Anvien Blast-radius **CRITICAL/HIGH** is only a scope warning that the work must be handled carefully; it is **not** a prohibition against editing code.",
 		"4. **Write plan (use planner skill) before coding.**",
 		"5. **Code first**; tests should only be updated after the behavior has been correctly implemented in code.",
-		"6. Run a full build before validation.",
+		"6. Playwright scripts must be reusable under `playwright/`, not one-off temp files; official QA evidence must go to `Reports/qa/playwright/...` as both `.json` and `.md`, while `.tmp` is debug-only.",
+		"7. Run a full build before validation.",
 		"   - For non-UI changes, validate the changed behavior or contract at its nearest real boundary, record what each command proves, and do not count unrelated, stale, broken, or pass-by-default tests as evidence.",
 		"   - For UI behavior changes, open the real user-visible runtime first: the web app in the user's browser or the desktop app on the user's PC. Then record browser or Playwright evidence for the changed behavior.",
-		"7. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, or graph inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.",
-		"8. Record evidence as each evidenced task is completed.",
-		"9. For \"doc commits\" only, do not use Anvien. When write/edit \"doc plan\" must use Anvien.",
-		"10. After each completed implementation slice, commit the work, then continue until the full plan is complete.",
+		"8. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, or graph inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.",
+		"9. Record evidence as each evidenced task is completed.",
+		"10. For \"doc commits\" only, do not use Anvien. When write/edit \"doc plan\" must use Anvien.",
+		"11. After each completed implementation slice, commit the work, then continue until the full plan is complete.",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("%s missing generated master rule %q:\n%s", fileName, want, text)
