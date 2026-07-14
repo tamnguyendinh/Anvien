@@ -1,13 +1,13 @@
 ---
 name: ui-animation-design
-description: Điều phối bộ skill UI animation/design gồm tra thuật ngữ animation, tư vấn Apple-style fluid interaction, tư vấn Emil-style design engineering, review animation code/diff, và audit/cải thiện animation toàn codebase. Dùng khi user hỏi về UI animation, motion design, gesture, transition, animation review, polish UI, hoặc cải thiện cảm giác chuyển động của app.
+description: Dùng khi user hỏi về UI animation, motion design, gesture, transition, animation review, polish UI, hoặc cải thiện cảm giác chuyển động của app. 
 ---
 
 # UI Animation Design
 
 ## Mục Đích
 
-Skill này là router điều phối cho bộ skill UI animation/design.
+Skill này là router điều phối cho bộ skill UI animation/design gồm tra thuật ngữ animation, tư vấn Apple-style fluid interaction, tư vấn Emil-style design engineering, review animation code/diff, và audit/cải thiện animation toàn codebase. 
 
 Không dùng file này để thay thế các skill con. Dùng nó để chọn đúng skill con, đọc `SKILL.md` của skill con đó, rồi làm theo workflow của skill con.
 

@@ -1,6 +1,6 @@
 ---
 name: ui-taste-skill
-description: Điều phối bộ UI taste cho frontend premium, redesign, image-to-code, imagegen web/mobile, brandkit, Stitch DESIGN.md, style variants và full-output.
+description: Sử dụng khi cần nâng cấp UI UI hiện có, làm UI bớt generic, bớt AI slop, frontend premium, redesign, image-to-code, imagegen web/mobile, brandkit, style variants và full-output.
 version: 1.0.0
 ---
 
