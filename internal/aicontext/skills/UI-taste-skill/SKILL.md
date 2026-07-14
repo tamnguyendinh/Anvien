@@ -36,16 +36,16 @@ Không dùng làm skill chính cho backend, database, API, infra, bug fix logic,
 
 | Trường hợp | Primary route |
 |---|---|
-| Landing page, portfolio, marketing site, hero, frontend visual implementation mới | `skills/taste-skill/SKILL.md` |
-| Cần hành vi v1 cũ, user gọi v1, hoặc workflow đang pin v1 | `skills/taste-skill-v1/SKILL.md` |
-| Muốn taste rất gắt kiểu Awwwards/Codex/GPT, motion mạnh, GSAP/anti-slop nghiêm | `skills/gpt-tasteskill/SKILL.md` |
-| Website cần image-first: sinh ảnh trước, phân tích ảnh sâu, rồi code bám ảnh | `skills/image-to-code-skill/SKILL.md` |
-| Dự án/site/app đã tồn tại cần redesign hoặc polish mà không phá chức năng | `skills/redesign-skill/SKILL.md` |
-| Sinh ảnh tham chiếu website/landing/product comp, không code | `skills/imagegen-frontend-web/SKILL.md` |
-| Sinh ảnh mobile app screens/flows, không code | `skills/imagegen-frontend-mobile/SKILL.md` |
-| Sinh brand guidelines board, logo system, identity deck, visual world | `skills/brandkit/SKILL.md` |
-| Tạo design-system `DESIGN.md` cho Google Stitch | `skills/stitch-skill/SKILL.md` |
-| Output bắt buộc đầy đủ, không `...`, không TODO, không placeholder | `skills/output-skill/SKILL.md` |
+| Landing page, portfolio, marketing site, hero, frontend visual implementation mới | `skills/UI-taste-skill/skills/taste-skill/SKILL.md` |
+| Cần hành vi v1 cũ, user gọi v1, hoặc workflow đang pin v1 | `skills/UI-taste-skill/skills/taste-skill-v1/SKILL.md` |
+| Muốn taste rất gắt kiểu Awwwards/Codex/GPT, motion mạnh, GSAP/anti-slop nghiêm | `skills/UI-taste-skill/skills/gpt-tasteskill/SKILL.md` |
+| Website cần image-first: sinh ảnh trước, phân tích ảnh sâu, rồi code bám ảnh | `skills/UI-taste-skill/skills/image-to-code-skill/SKILL.md` |
+| Dự án/site/app đã tồn tại cần redesign hoặc polish mà không phá chức năng | `skills/UI-taste-skill/skills/redesign-skill/SKILL.md` |
+| Sinh ảnh tham chiếu website/landing/product comp, không code | `skills/UI-taste-skill/skills/imagegen-frontend-web/SKILL.md` |
+| Sinh ảnh mobile app screens/flows, không code | `skills/UI-taste-skill/skills/imagegen-frontend-mobile/SKILL.md` |
+| Sinh brand guidelines board, logo system, identity deck, visual world | `skills/UI-taste-skill/skills/brandkit/SKILL.md` |
+| Tạo design-system `DESIGN.md` cho Google Stitch | `skills/UI-taste-skill/skills/stitch-skill/SKILL.md` |
+| Output bắt buộc đầy đủ, không `...`, không TODO, không placeholder | `skills/UI-taste-skill/skills/output-skill/SKILL.md` |
 
 ## Route Phong Cách
 
@@ -53,9 +53,9 @@ Các skill dưới đây thường là support route, không thay thế primary 
 
 | Hướng thẩm mỹ | Skill |
 |---|---|
-| High-end agency, mềm, cinematic, whitespace lớn, micro-interaction tinh | `skills/soft-skill/SKILL.md` |
-| Minimal editorial, warm monochrome, bento phẳng, ít shadow, không gradient | `skills/minimalist-skill/SKILL.md` |
-| Industrial brutalist, Swiss print, tactical terminal, grid cứng, data dày | `skills/brutalist-skill/SKILL.md` |
+| High-end agency, mềm, cinematic, whitespace lớn, micro-interaction tinh | `skills/UI-taste-skill/skills/soft-skill/SKILL.md` |
+| Minimal editorial, warm monochrome, bento phẳng, ít shadow, không gradient | `skills/UI-taste-skill/skills/minimalist-skill/SKILL.md` |
+| Industrial brutalist, Swiss print, tactical terminal, grid cứng, data dày | `skills/UI-taste-skill/skills/brutalist-skill/SKILL.md` |
 
 Chỉ kết hợp nhiều style route khi user yêu cầu hybrid rõ ràng. Nếu không, chọn một hướng và giữ nhất quán.
 
@@ -66,7 +66,7 @@ Chỉ kết hợp nhiều style route khi user yêu cầu hybrid rõ ràng. Nế
 - Image-only web comp: dùng `imagegen-frontend-web`; không viết code.
 - Image-only mobile app: dùng `imagegen-frontend-mobile`; không viết code.
 - Brand identity board: dùng `brandkit`; không biến nó thành UI implementation.
-- Google Stitch: dùng `stitch-skill`; nếu cần template chuẩn, đọc thêm `skills/stitch-skill/DESIGN.md`.
+- Google Stitch: dùng `stitch-skill`; nếu cần template chuẩn, đọc thêm `skills/UI-taste-skill/skills/stitch-skill/DESIGN.md`.
 - Full output: dùng `output-skill` như add-on cho route chính, không dùng nó làm luật thiết kế.
 - Dashboard/admin/data table/product workflow: không tự ép `taste-skill`; chỉ dùng style/taste khi user đang yêu cầu visual polish, còn workflow phải theo skill frontend/product phù hợp.
 
