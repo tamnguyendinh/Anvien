@@ -99,8 +99,8 @@ func renderAnvienBlock(skillPathPrefix string, packages []SkillPackage) string {
 	builder.WriteString("Anvien is repo-agnostic: the same command surface works for any indexed repository. Use a repository name/path from `anvien list`, wherever examples refer to `<repo>`.\n\n")
 	builder.WriteString("> If any Anvien command or MCP tool warns that the index is stale, run `anvien analyze --force` from the repository root first.\n\n")
 	builder.WriteString("## Always Do\n\n")
-	builder.WriteString("- **MUST refresh the graph before graph-based work.** Run `anvien analyze --force` before using any Anvien CLI command, MCP tool, MCP resource, Web/API view, or accuracy/benchmark command that reads, queries, validates, mutates, or reports on the semantic graph. This includes `query`, `context`, `impact`, `detect-changes`, `cypher`, `rename`, `file-detail`, `file-hotspots`, MCP `route_map`/`tool_map`/`shape_check`/`api_impact`, CLI `api route-map`/`api tool-map`/`api shape-check`/`api impact`, `augment`, `graph-health`, `query-health`, `resolution-inventory`, `source-site-accuracy`, and `benchmark-compare`.\n")
-	builder.WriteString("- **MUST run impact analysis before editing any function, class, method, exported symbol, API handler, graph builder, resolver, analyzer, or shared contract.**\n")
+	builder.WriteString("- **MUST refresh the graph before graph-based work.** Run `anvien analyze --force` before using any Anvien CLI command, MCP tool, MCP resource, Web/API view, or accuracy/benchmark command that reads, queries, validates, mutates, or reports on the semantic graph. This includes `file-detail`, `query`, `context`, `impact`, `detect-changes`, `cypher`, `rename`, `file-hotspots`, MCP `route_map`/`tool_map`/`shape_check`/`api_impact`, CLI `api route-map`/`api tool-map`/`api shape-check`/`api impact`, `augment`, `graph-health`, `query-health`, `resolution-inventory`, `source-site-accuracy`, and `benchmark-compare`.\n")
+	builder.WriteString("- **MUST run `file-detail` + impact analysis before editing any function, class, method, exported symbol, API handler, graph builder, resolver, analyzer, or shared contract.**\n")
 	builder.WriteString("- **MUST report blast radius.** HIGH or CRITICAL impact means warn clearly and proceed carefully; it is not an automatic ban on editing.\n")
 	builder.WriteString("- **MUST run change detection before committing implementation work.** Use MCP `detect_changes` or CLI `anvien detect-changes --repo <repo> --scope all`.\n")
 	builder.WriteString("- When exploring unfamiliar code, start with the Anvien command that matches the task instead of defaulting to grep.\n")
@@ -222,9 +222,9 @@ func renderMasterRulesBlock() string {
 **When the user asks to "write/create a plan", the AI agent must immediately use the planner skill and create a real docs/plans plan.**
 
 # AGENTS Rules
-0. Anvien is one tool with multiple command surfaces; do not treat MCP tools, CLI commands, and Web/API commands as separate capabilities.
+0. Anvien is a code-intelligence tool — a broad command system that allows an agent, inside a huge repository, to do almost everything needed for repo work: build graph maps -> identify the right problem -> find the right file/symbol -> verify the right flow -> measure impact scope -> refactor safely -> check API contracts -> audit health, all quickly and accurately.
    - MCP tools are Anvien commands exposed to AI agents.
-   - CLI commands are Anvien commands exposed through terminal.
+   - CLI commands are Anvien commands exposed through the terminal.
    - Web/API commands are Anvien runtime commands exposed through the local server.
    - Anvien commands are selected by task. Use the full command set when it gives better evidence.
    - Skills are instruments used with Anvien. Anvien serves the work of other repos/projects.

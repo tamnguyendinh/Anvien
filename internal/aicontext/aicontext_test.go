@@ -60,9 +60,9 @@ func requireGeneratedMasterRules(t *testing.T, text string, fileName string) {
 		"**Temporary directories created by AI — such as .tmp\\ or similar — must be located inside the working repo. Creating temporary directories directly on the C: drive is strictly prohibited.**",
 		"**When the user asks to \"write/create a plan\", the AI agent must immediately use the planner skill and create a real docs/plans plan.**",
 		"# AGENTS Rules",
-		"0. Anvien is one tool with multiple command surfaces; do not treat MCP tools, CLI commands, and Web/API commands as separate capabilities.",
+		"0. Anvien is a code-intelligence tool — a broad command system that allows an agent, inside a huge repository, to do almost everything needed for repo work: build graph maps -> identify the right problem -> find the right file/symbol -> verify the right flow -> measure impact scope -> refactor safely -> check API contracts -> audit health, all quickly and accurately.",
 		"   - MCP tools are Anvien commands exposed to AI agents.",
-		"   - CLI commands are Anvien commands exposed through terminal.",
+		"   - CLI commands are Anvien commands exposed through the terminal.",
 		"   - Web/API commands are Anvien runtime commands exposed through the local server.",
 		"   - Anvien commands are selected by task. Use the full command set when it gives better evidence.",
 		"   - Skills are instruments used with Anvien. Anvien serves the work of other repos/projects.",
@@ -80,6 +80,8 @@ func requireGeneratedMasterRules(t *testing.T, text string, fileName string) {
 		"10. Record evidence as each evidenced task is completed.",
 		"11. For \"doc commits\" only, do not use Anvien. When write/edit \"doc plan\" must use Anvien.",
 		"12. After each completed implementation slice, commit the work, then continue until the full plan is complete.",
+		"- **MUST refresh the graph before graph-based work.** Run `anvien analyze --force` before using any Anvien CLI command, MCP tool, MCP resource, Web/API view, or accuracy/benchmark command that reads, queries, validates, mutates, or reports on the semantic graph. This includes `file-detail`, `query`, `context`, `impact`, `detect-changes`, `cypher`, `rename`, `file-hotspots`, MCP `route_map`/`tool_map`/`shape_check`/`api_impact`, CLI `api route-map`/`api tool-map`/`api shape-check`/`api impact`, `augment`, `graph-health`, `query-health`, `resolution-inventory`, `source-site-accuracy`, and `benchmark-compare`.",
+		"- **MUST run `file-detail` + impact analysis before editing any function, class, method, exported symbol, API handler, graph builder, resolver, analyzer, or shared contract.**",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("%s missing generated master rule %q:\n%s", fileName, want, text)
