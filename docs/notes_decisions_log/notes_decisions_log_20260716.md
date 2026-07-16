@@ -15,3 +15,5 @@
 - Decision: current release metadata must stay aligned across `anvien/package.json`, `anvien/package-lock.json`, `internal/version/version.go`, `README.md`, and `RUNBOOK.md`.
 - Evidence: `npm run full-build` passed and printed `anvien version` as `1.2.8`; `go test ./internal/version ./internal/cli ./internal/mcp` passed; `anvien detect-changes --repo Anvien --scope all` reported `risk_level=low`.
 - Coder report: `reports/coder/rp_coder_260716_151122_by_gpt-5-codex_release-version-1-2-8.md`.
+- Supervisor report: `reports/Supervisor/rp_supervisor_260716_151512_by_gpt-5-codex_release-version-1-2-8.md`.
+- Implementation commit: `73612979fd9300fbc36ff47731099c8110962dab`.
