@@ -8,7 +8,7 @@ Verdict: PASS
 - Review time: `260716 144532 +07:00`
 - Reviewer: `gpt-5-codex`
 - Repo/project: `E:\Anvien`
-- Scope reviewed: current worktree implementation for `docs/plans/2026-07-16-tree-sitter-go-module-drift`
+- Scope reviewed: current worktree implementation for `docs/plans/2026-07-16-tree-sitter-go-module-drift`; committed as `22fee7030dae322f0589907000ca45f067383e05`
 - Claim reviewed: the Tree-sitter drift checker has been repaired to follow Go module source of truth, workflow/dependabot config has been aligned, and runtime behavior remains healthy.
 - Authority used: latest user request, `AGENTS.md`, active plan, source files, command evidence.
 - Related artifacts: `reports/coder/rp_coder_260716_144412_by_gpt-5-codex_tree-sitter-go-module-drift.md`; plan/evidence/benchmark/actual-status under `docs/plans/2026-07-16-tree-sitter-go-module-drift/`.

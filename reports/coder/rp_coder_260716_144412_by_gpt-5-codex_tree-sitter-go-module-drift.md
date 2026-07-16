@@ -9,7 +9,7 @@ Status: READY FOR SUPERVISOR REVIEW
 - Coder: `gpt-5-codex`
 - Repo: `E:\Anvien`
 - Scope: implement `docs/plans/2026-07-16-tree-sitter-go-module-drift`
-- Git reference: base commit `46e7e2e6a8aecadad5eee75b6be38c59e147190a`; implementation in current worktree pending final commit
+- Git reference: implementation commit `22fee7030dae322f0589907000ca45f067383e05`; base commit `46e7e2e6a8aecadad5eee75b6be38c59e147190a`
 - Plan: `docs/plans/2026-07-16-tree-sitter-go-module-drift/2026-07-16-tree-sitter-go-module-drift-plan.md`
 - Evidence: `docs/plans/2026-07-16-tree-sitter-go-module-drift/2026-07-16-tree-sitter-go-module-drift-evidence.md`
 

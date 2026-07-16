@@ -91,4 +91,5 @@ Matching plan item(s): `P3-A`
 
 - `ECLOSE-PNA-SUP1`: Supervisor report `reports/Supervisor/rp_supervisor_260716_144532_by_gpt-5-codex_tree-sitter-go-module-drift.md` recorded `Verdict: PASS`.
 - `ECLOSE-PNB-CLEAN1`: Dead-work cleanup removed `.github/scripts/__pycache__/`; `.gitignore` now ignores `__pycache__/`.
-- `ECLOSE-PNC-PENDING1`: Commit hash and final worktree state will be recorded after commit.
+- `ECLOSE-PNC-COMMIT1`: Implementation commit `22fee7030dae322f0589907000ca45f067383e05` created with message `fix(ci): track tree-sitter go module drift`.
+- `ECLOSE-PNC-STATUS1`: After implementation commit, remaining untracked `.github` files are outside this plan scope and were intentionally not staged.

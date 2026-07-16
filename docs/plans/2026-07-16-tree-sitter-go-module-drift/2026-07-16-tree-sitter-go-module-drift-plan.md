@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-16`
-- Status: `implementation complete - pending supervisor/commit closure`
+- Status: `complete`
 - Plan: `docs/plans/2026-07-16-tree-sitter-go-module-drift/2026-07-16-tree-sitter-go-module-drift-plan.md`
 - Evidence: `docs/plans/2026-07-16-tree-sitter-go-module-drift/2026-07-16-tree-sitter-go-module-drift-evidence.md`
 - Benchmark: `docs/plans/2026-07-16-tree-sitter-go-module-drift/2026-07-16-tree-sitter-go-module-drift-benchmark.md`
@@ -422,7 +422,7 @@ This is a maintenance/CI dependency monitoring bug, not a runtime parser failure
     5. If supervisor fails the cleanup, return to the responsible implementation workflow/skill for the failed cleanup scope only, then re-run supervisor review.
   - Implementation Gate: only remove artifacts created by this plan unless the user explicitly approves broader cleanup.
   - Acceptance: final `git diff/status` contains no dead plan-created artifacts, supervisor passes the cleanup, and evidence records what was removed or preserved.
-- [ ] Pn-C: Close the plan.
+- [x] Pn-C: Close the plan.
   - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
   - Work Steps:
     1. Confirm final validation evidence exists for checker tests, live checker run, full build, analyze, and detect-changes.

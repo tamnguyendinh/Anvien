@@ -7,3 +7,4 @@
 - Evidence: `docs/plans/2026-07-16-tree-sitter-go-module-drift/2026-07-16-tree-sitter-go-module-drift-evidence.md`.
 - Coder report: `reports/coder/rp_coder_260716_144412_by_gpt-5-codex_tree-sitter-go-module-drift.md`.
 - Supervisor report: `reports/Supervisor/rp_supervisor_260716_144532_by_gpt-5-codex_tree-sitter-go-module-drift.md`.
+- Implementation commit: `22fee7030dae322f0589907000ca45f067383e05`.
