@@ -12,12 +12,6 @@ anvien/bin/
 *.swp
 *.swo
 __pycache__/
-.github/ISSUE_TEMPLATE
-.github/workflows
-.github/FUNDING.yml
-.github/PULL_REQUEST_TEMPLATE.md
-.github/release-drafter.yml
-.github/release.yml
 
 # OS
 .DS_Store
