@@ -8,3 +8,10 @@
 - Coder report: `reports/coder/rp_coder_260716_144412_by_gpt-5-codex_tree-sitter-go-module-drift.md`.
 - Supervisor report: `reports/Supervisor/rp_supervisor_260716_144532_by_gpt-5-codex_tree-sitter-go-module-drift.md`.
 - Implementation commit: `22fee7030dae322f0589907000ca45f067383e05`.
+
+## Release Version 1.2.8
+
+- Scope: bumped Anvien CLI/runtime package version from `1.2.7` to `1.2.8` and updated root changelog.
+- Decision: current release metadata must stay aligned across `anvien/package.json`, `anvien/package-lock.json`, `internal/version/version.go`, `README.md`, and `RUNBOOK.md`.
+- Evidence: `npm run full-build` passed and printed `anvien version` as `1.2.8`; `go test ./internal/version ./internal/cli ./internal/mcp` passed; `anvien detect-changes --repo Anvien --scope all` reported `risk_level=low`.
+- Coder report: `reports/coder/rp_coder_260716_151122_by_gpt-5-codex_release-version-1-2-8.md`.

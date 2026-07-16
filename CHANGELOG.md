@@ -2,6 +2,17 @@
 
 All notable changes to anvien will be documented in this file.
 
+## [1.2.8] - 2026-07-16
+
+### Fixed
+
+- Fixed Tree-sitter upgrade readiness tracking so it follows the active Go module parser dependencies instead of the retired npm `tree-sitter` package assumption.
+- Added CI/readiness evidence for Go parser module drift, including `go.mod` update detection, lockfile staleness detection, and workflow/Dependabot coverage.
+
+### Changed
+
+- Bumped the CLI package version from `1.2.7` to `1.2.8`.
+
 ## [1.2.7] - 2026-06-14
 
 ### Added

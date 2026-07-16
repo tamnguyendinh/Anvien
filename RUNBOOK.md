@@ -2,7 +2,7 @@
 
 Copy-paste operations for the current local Anvien runtime: CLI, MCP, Web UI, packaged launcher, repo indexes, and recovery.
 
-Current CLI package version: `1.2.7` (`anvien/package.json`).
+Current CLI package version: `1.2.8` (`anvien/package.json`).
 
 ---
 
