@@ -1,0 +1,69 @@
+version: 2
+updates:
+  # Keep third-party Actions SHA pins current. See CONTRIBUTING.md — when
+  # reviewing these bumps, verify the SHA corresponds to the claimed tag by
+  # running `gh api repos/<owner>/<action>/git/refs/tags/<tag>` before merge.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    labels:
+      - dependencies
+      - ci
+    ignore:
+      # Dependabot currently errors on this pinned action; update it manually
+      # so one opaque updater failure does not block other Actions bumps.
+      - dependency-name: anthropics/claude-code-action
+
+  # Anvien Go runtime deps. Tree-sitter parser bindings and grammars now
+  # live in go.mod, so Go module updates are monitored here. The daily
+  # drift workflow reports actionable Tree-sitter module lag separately.
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: chore(deps)
+      include: scope
+    labels:
+      - dependencies
+      - go
+    groups:
+      tree-sitter-go-modules:
+        patterns:
+          - github.com/tree-sitter/*
+          - github.com/tree-sitter-grammars/*
+          - github.com/UserNobody14/tree-sitter-dart
+          - github.com/flamingoosesoftwareinc/tree-sitter-swift
+          - github.com/smacker/go-tree-sitter
+
+  # Anvien npm package wrapper. It currently has no runtime npm dependency
+  # ownership for Tree-sitter; keep this entry for future package deps.
+  - package-ecosystem: npm
+    directory: /anvien
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: chore(deps)
+      include: scope
+    labels:
+      - dependencies
+
+  # anvien-web (thin frontend client).
+  - package-ecosystem: npm
+    directory: /anvien-web
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+      include: scope
+    labels:
+      - dependencies
+      - frontend

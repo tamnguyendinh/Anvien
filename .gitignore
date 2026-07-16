@@ -9,9 +9,9 @@ anvien/bin/
 *.tsbuildinfo
 
 # IDE
-.github/
 *.swp
 *.swo
+__pycache__/
 
 # OS
 .DS_Store
