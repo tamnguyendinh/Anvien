@@ -1,0 +1,367 @@
+{
+  "label": "p1b_ts_identity",
+  "totalDuration": 50030129000,
+  "phases": [
+    {
+      "name": "scan",
+      "duration": 8224338500
+    },
+    {
+      "name": "structure",
+      "duration": 7295800
+    },
+    {
+      "name": "documents",
+      "duration": 131206800
+    },
+    {
+      "name": "cobol",
+      "duration": 534900
+    },
+    {
+      "name": "parse",
+      "duration": 9006084100
+    },
+    {
+      "name": "routes",
+      "duration": 1648573200
+    },
+    {
+      "name": "tools",
+      "duration": 672518300
+    },
+    {
+      "name": "orm",
+      "duration": 111951500
+    },
+    {
+      "name": "cross_file_binding",
+      "duration": 296447400
+    },
+    {
+      "name": "resolution",
+      "duration": 2654981200
+    },
+    {
+      "name": "mro",
+      "duration": 0
+    },
+    {
+      "name": "communities",
+      "duration": 41564700
+    },
+    {
+      "name": "processes",
+      "duration": 164256500
+    },
+    {
+      "name": "semantic_enrichment",
+      "duration": 1123075400
+    },
+    {
+      "name": "db_load",
+      "duration": 18411840000
+    }
+  ],
+  "scanner": {
+    "visited": 2266,
+    "included": 1359,
+    "skippedIgnored": 925,
+    "skippedLarge": 0,
+    "skippedErrored": 0
+  },
+  "structure": {
+    "fileNodesSeen": 1359,
+    "folderNodesAdded": 383,
+    "containsEmitted": 4679
+  },
+  "documents": {
+    "markdownFiles": 313,
+    "sections": 5425,
+    "links": 279,
+    "metadataFileNodes": 314
+  },
+  "cobol": {},
+  "routes": {
+    "filesScanned": 887,
+    "routesEmitted": 58,
+    "handlesEmitted": 58,
+    "fetchesEmitted": 7
+  },
+  "tools": {
+    "filesScanned": 887
+  },
+  "orm": {
+    "filesScanned": 887
+  },
+  "crossFileBinding": {
+    "DefinitionsIndexed": 18889,
+    "ImportsResolved": 4985,
+    "ImportUsesEmitted": 0,
+    "ResolvedReferences": 0,
+    "UnresolvedReferences": 7,
+    "UnresolvedReferenceDiagnostics": 0,
+    "UnattributedUnresolvedReferences": 0,
+    "ResolvedCalls": 0,
+    "ResolvedAccesses": 0,
+    "ResolvedTypeReferences": 0,
+    "HeritageFactsIndexed": 7,
+    "ResolvedInheritance": 0,
+    "UnresolvedInheritance": 7,
+    "DuplicateEdgesMerged": 0,
+    "MethodOverridesEmitted": 0,
+    "MethodImplementsEmitted": 0,
+    "FinalizedImportsEmitted": 0,
+    "CrossFileFilesReprocessed": 0,
+    "CrossFileSkipped": true,
+    "CrossFileSkipReason": "covered-by-scopeir-single-pass-resolution",
+    "BindingAccumulatorFiles": 508,
+    "BindingAccumulatorEntries": 7330,
+    "BindingAccumulatorFinalized": true,
+    "BindingAccumulatorDisposed": false,
+    "GraphNodesEmitted": 0,
+    "GraphRelationshipsEmitted": 0
+  },
+  "mro": {},
+  "parser": {
+    "total": 887,
+    "succeeded": 887,
+    "failed": 0,
+    "unsupported": 0,
+    "timedOut": 0,
+    "createdParsers": 3,
+    "totalBytes": 5430581,
+    "totalDuration": 4310336000
+  },
+  "resolution": {
+    "DefinitionsIndexed": 18889,
+    "ImportsResolved": 4985,
+    "ImportUsesEmitted": 3345,
+    "ResolvedReferences": 21956,
+    "UnresolvedReferences": 60861,
+    "UnresolvedReferenceDiagnostics": 60861,
+    "UnattributedUnresolvedReferences": 0,
+    "ResolvedCalls": 5544,
+    "ResolvedAccesses": 5431,
+    "ResolvedTypeReferences": 10981,
+    "HeritageFactsIndexed": 7,
+    "ResolvedInheritance": 0,
+    "UnresolvedInheritance": 7,
+    "DuplicateEdgesMerged": 14975,
+    "MethodOverridesEmitted": 0,
+    "MethodImplementsEmitted": 0,
+    "FinalizedImportsEmitted": 4985,
+    "CrossFileFilesReprocessed": 0,
+    "CrossFileSkipped": true,
+    "CrossFileSkipReason": "covered-by-scopeir-single-pass-resolution",
+    "BindingAccumulatorFiles": 508,
+    "BindingAccumulatorEntries": 7330,
+    "BindingAccumulatorFinalized": true,
+    "BindingAccumulatorDisposed": true,
+    "GraphNodesEmitted": 24747,
+    "GraphRelationshipsEmitted": 49170
+  },
+  "communities": {
+    "communitiesEmitted": 810,
+    "membershipsEmitted": 2686,
+    "nodesConsidered": 2686,
+    "edgesConsidered": 3306,
+    "modularity": 0.6432894014036699
+  },
+  "processes": {
+    "processesEmitted": 662,
+    "stepsEmitted": 2761,
+    "entryPointsFound": 200,
+    "crossCommunity": 616,
+    "averageStepCount": 4.170694864048339,
+    "callsEdgesConsidered": 3771,
+    "entryResourcesLinked": 258
+  },
+  "semantic": {
+    "nodesVisited": 84807,
+    "nodesWithFilePath": 83335,
+    "nodesClassified": 5910,
+    "nodesUnknown": 78897,
+    "nodesInferredFromRelationships": 0,
+    "filePathCacheEntries": 1743,
+    "functionalPathCacheEntries": 1743,
+    "relationshipsScanned": 114125,
+    "appLayerCounts": {
+      "config": 18,
+      "docs": 5892,
+      "unknown": 78897
+    },
+    "functionalNodesClassified": 5910,
+    "functionalNodesUnknown": 78897,
+    "functionalAreaCounts": {
+      "configuration": 18,
+      "documentation": 5420,
+      "reporting": 472,
+      "unknown": 78897
+    },
+    "resolutionGapInputs": 58588,
+    "resolutionGapNodes": 58588,
+    "resolutionGapRelationships": 58588,
+    "resolutionGapSkippedTestInputs": 0
+  },
+  "dbLoad": {
+    "nodeCopyCount": 15,
+    "relationshipCopyCount": 54,
+    "fallbackInsertCount": 0,
+    "fallbackInsertFailures": 0,
+    "skippedRelationships": 0,
+    "nodeRows": 84807,
+    "relationshipRows": 114125
+  },
+  "embeddings": {},
+  "files": {
+    "scanned": 1359,
+    "parsed": 887,
+    "parsedCode": 887,
+    "documents": 314,
+    "metadataOnly": 63,
+    "dedicatedAnalyzer": 0,
+    "scriptNoExtractor": 27,
+    "staticAssets": 52,
+    "unsupported": 0,
+    "unsupportedLanguage": 0,
+    "unknown": 16,
+    "failed": 0,
+    "classificationSamples": [
+      {
+        "bucket": "metadataOnly",
+        "path": "DOCS/Evidence/landing-page-refactor/browser-qa-real-runtime-2026-05-12.json",
+        "reason": "metadata or structured non-code input"
+      },
+      {
+        "bucket": "documents",
+        "path": "DOCS/Evidence/landing-page-refactor/browser-qa-real-runtime-2026-05-12.md",
+        "language": "markdown",
+        "reason": "document indexing phase"
+      },
+      {
+        "bucket": "documents",
+        "path": "DOCS/Images/landing-page-assets-manifest.md",
+        "language": "markdown",
+        "reason": "document indexing phase"
+      },
+      {
+        "bucket": "documents",
+        "path": "DOCS/SPEC/UI-UX-Design/README.txt",
+        "reason": "document indexing phase"
+      },
+      {
+        "bucket": "staticAssets",
+        "path": "DOCS/SPEC/UI-UX-Design/account-dashboard.html",
+        "reason": "static asset or Web artifact"
+      },
+      {
+        "bucket": "staticAssets",
+        "path": "DOCS/SPEC/UI-UX-Design/admin-app-registry.html",
+        "reason": "static asset or Web artifact"
+      },
+      {
+        "bucket": "staticAssets",
+        "path": "DOCS/SPEC/UI-UX-Design/admin-config.html",
+        "reason": "static asset or Web artifact"
+      },
+      {
+        "bucket": "staticAssets",
+        "path": "DOCS/SPEC/UI-UX-Design/admin-dashboard.html",
+        "reason": "static asset or Web artifact"
+      },
+      {
+        "bucket": "staticAssets",
+        "path": "DOCS/SPEC/UI-UX-Design/admin-lookup.html",
+        "reason": "static asset or Web artifact"
+      },
+      {
+        "bucket": "documents",
+        "path": "DOCS/SPEC/platform/PLATFORM-APP-CATALOG-SPEC.md",
+        "language": "markdown",
+        "reason": "document indexing phase"
+      },
+      {
+        "bucket": "documents",
+        "path": "DOCS/SPEC/platform/PLATFORM-APP-INTEGRATION-CONTRACT.md",
+        "language": "markdown",
+        "reason": "document indexing phase"
+      },
+      {
+        "bucket": "metadataOnly",
+        "path": "DOCS/plans/2026-06-06-website-ui-be-binding/2026-06-06-website-ui-be-binding-visible-text.lock.json",
+        "reason": "metadata or structured non-code input"
+      },
+      {
+        "bucket": "metadataOnly",
+        "path": "DOCS/plans/2026-06-07-website-ui-taste-remediation/screenshots/accessibility/P9-A/_inventory/route-inventory.json",
+        "reason": "metadata or structured non-code input"
+      },
+      {
+        "bucket": "unknown",
+        "path": "DOCS/plans/2026-06-07-website-ui-taste-remediation/screenshots/accessibility/P9-A/_inventory/server.log",
+        "reason": "no classifier matched"
+      },
+      {
+        "bucket": "metadataOnly",
+        "path": "DOCS/plans/2026-06-07-website-ui-taste-remediation/screenshots/accessibility/P9-A/_inventory/summary.json",
+        "reason": "metadata or structured non-code input"
+      },
+      {
+        "bucket": "metadataOnly",
+        "path": "DOCS/plans/2026-06-07-website-ui-taste-remediation/screenshots/baseline/P1-A/_inventory/route-inventory.json",
+        "reason": "metadata or structured non-code input"
+      },
+      {
+        "bucket": "unknown",
+        "path": "DOCS/plans/2026-06-07-website-ui-taste-remediation/screenshots/baseline/P1-A/_inventory/server.log",
+        "reason": "no classifier matched"
+      },
+      {
+        "bucket": "unknown",
+        "path": "DOCS/plans/2026-06-07-website-ui-taste-remediation/screenshots/final/P10-A/_inventory/server.log",
+        "reason": "no classifier matched"
+      },
+      {
+        "bucket": "unknown",
+        "path": "DOCS/plans/2026-06-07-website-ui-taste-remediation/screenshots/validation/P2-A/_inventory/server.log",
+        "reason": "no classifier matched"
+      },
+      {
+        "bucket": "unknown",
+        "path": "DOCS/plans/2026-06-07-website-ui-taste-remediation/screenshots/validation/P2-B/_header-keyboard/server.log",
+        "reason": "no classifier matched"
+      },
+      {
+        "bucket": "scriptNoExtractor",
+        "path": "docker/postgres/init/01-init.sql",
+        "reason": "script-like file without ScopeIR extractor"
+      },
+      {
+        "bucket": "scriptNoExtractor",
+        "path": "lib/db/migrations/0000_late_mephisto.sql",
+        "reason": "script-like file without ScopeIR extractor"
+      },
+      {
+        "bucket": "scriptNoExtractor",
+        "path": "lib/db/migrations/0001_phase5_accounts_owner_links_schema.sql",
+        "reason": "script-like file without ScopeIR extractor"
+      },
+      {
+        "bucket": "scriptNoExtractor",
+        "path": "lib/db/migrations/0002_phase5_app_registry_core_platform_schema.sql",
+        "reason": "script-like file without ScopeIR extractor"
+      },
+      {
+        "bucket": "scriptNoExtractor",
+        "path": "lib/db/migrations/0003_phase5_core_indexes_constraints_and_migration_safety.sql",
+        "reason": "script-like file without ScopeIR extractor"
+      }
+    ]
+  },
+  "memory": {
+    "startAllocBytes": 1397048,
+    "endAllocBytes": 301399376,
+    "maxObservedSys": 728285432
+  }
+}
