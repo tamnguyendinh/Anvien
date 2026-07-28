@@ -91,9 +91,11 @@ Benchmark sections must follow the plan phases:
 | P2-A1 | Standard authoring files in authoring root | files | 0 | 4 | 4 | 4 | +4 | `E2-P2A1-STRUCT1` |
 | P2-A1 | Roadmaps in separate multi-plan root | files | 0 | 1 | 1 | 1 | +1 | `E2-P2A1-STRUCT1` |
 | P2-A1 | Broken active-plan links after move | links | not measured pre-move | 0 | 0 | 0 | N/A | `E2-P2A1-LINK1` |
-| P2-B | Child 02 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2B-FILES1` |
-| P2-B | Child 02 mapped slices | slices | 0 | 0 | — | 42 | 0 | `E2-P2B-MAP1` |
-| P2-B | `index-reader-matrix.md` mutation owners | owners | 0 assigned | 0 assigned | — | 1 | 0 | `E2-P2B-MATRIX1` |
+| P2-B | Child 02 standard files | files | 0 | 4 | 4 | 4 | +4 | `E2-P2B-FILES1`, `E2-P2B-SUP1` |
+| P2-B | Child 02 mapped slices | slices | 0 | 42 | 42 | 42 | +42 | `E2-P2B-MAP1`, `E2-P2B-SUP1` |
+| P2-B | `index-reader-matrix.md` mutation owners | owners | 0 assigned | 1 assigned | 1 | 1 | +1 | `E2-P2B-MATRIX1`, `E2-P2B-SUP1` |
+| P2-B | Authored child plans with explicit successor-freshness Rules/Pn-C gates | plans | 0 | 2 | 2 | 2 of 2 authored | +2 | `E2-P2B-HANDOFFRULE1`, `E2-P2B-SUP1` |
+| P2-B | Authored child closure rows reserving `E2-PNC-NEXTSTATUS1` | rows | 0 | 2 | 2 | 2 of 2 authored | +2 | `E2-P2B-HANDOFFRULE1`, `E2-P2B-SUP1` |
 | P2-C | Child 03 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2C-FILES1` |
 | P2-C | Child 03 mapped slices | slices | 0 | 0 | — | 17 | 0 | `E2-P2C-MAP1` |
 | P2-D | Child 04 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2D-FILES1` |
@@ -105,11 +107,11 @@ Benchmark sections must follow the plan phases:
 | P2-G | Child 07 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2G-FILES1` |
 | P2-G | Child 07 mapped slices | slices | 0 | 0 | — | 3 | 0 | `E2-P2G-MAP1` |
 | P2 | Complete child plan sets | plan sets | 0 | 1 | — | 7 | +1 | `E2-P2A-FILES1` |
-| P2 | Standard child files | files | 0 | 4 | — | 28 | +4 | `E2-P2A-FILES1` |
-| P2 | Child P0 lifecycle sections | sections | 0 | 1 | — | 7 | +1 | `E2-P2A-STRUCT1` |
-| P2 | Child local implementation phases | phases | 0 | 1 | — | 7 | +1 | `E2-P2A-STRUCT1` |
-| P2 | Child Pn-A/Pn-B/Pn-C sets | closure sets | 0 | 1 | — | 7 | +1 | `E2-P2A-STRUCT1` |
-| P2 | Cumulative mapped destination slices | slices | 0 | 11 | — | 98 | +11 | `E2-P2A-MAP1` |
+| P2 | Standard child files | files | 0 | 8 | — | 28 | +8 | `E2-P2A-FILES1`, `E2-P2B-FILES1` |
+| P2 | Child P0 lifecycle sections | sections | 0 | 2 | — | 7 | +2 | `E2-P2A-STRUCT1`, `E2-P2B-STRUCT1` |
+| P2 | Child local implementation phases | phases | 0 | 2 | — | 7 | +2 | `E2-P2A-STRUCT1`, `E2-P2B-STRUCT1` |
+| P2 | Child Pn-A/Pn-B/Pn-C sets | closure sets | 0 | 2 | — | 7 | +2 | `E2-P2A-STRUCT1`, `E2-P2B-STRUCT1` |
+| P2 | Cumulative mapped destination slices | slices | 0 | 53 | — | 98 | +53 | `E2-P2A-MAP1`, `E2-P2B-MAP1` |
 
 ## B3 - P3 Benchmarks
 

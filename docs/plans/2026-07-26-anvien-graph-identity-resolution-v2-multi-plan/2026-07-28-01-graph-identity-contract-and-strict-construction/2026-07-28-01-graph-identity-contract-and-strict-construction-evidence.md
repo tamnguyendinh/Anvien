@@ -201,7 +201,7 @@ Matching plan item(s): `Pn-A`, `Pn-B`, `Pn-C`
 |--------------|-------------------|--------|
 | Pn-A | `E2-PNA-SUP1` | pending |
 | Pn-B | `E2-PNB-CLEAN1` | pending |
-| Pn-C | `E2-PNC-BUILD1`, `E2-PNC-RUNTIME1`, `E2-PNC-DETECT1`, `E2-PNC-COMMIT1`, `E2-PNC-HANDOFF1` | pending |
+| Pn-C | `E2-PNC-BUILD1`, `E2-PNC-RUNTIME1`, `E2-PNC-DETECT1`, `E2-PNC-NEXTSTATUS1`, `E2-PNC-COMMIT1`, `E2-PNC-HANDOFF1` | pending |
 
 ## Closure Evidence
 

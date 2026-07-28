@@ -23,6 +23,7 @@ Establish the accepted, versioned Declaration/Symbol/source-site identity model 
 - Record benchmarkable counts or measurements when they are taken.
 - Update later phase status assumptions, next actions, and work steps when actual-status evidence changes the repo state.
 - After completing a phase or implementation slice and refreshing `actual-status.md`, update the next affected phase's work steps as needed to match the latest repo reality, while preserving that phase's original goal, scope, acceptance criteria, and major phase order.
+- Pn-C cannot close or hand off until child 02's `actual-status.md` is refreshed from the latest accepted repo/runtime/evidence state, its refresh log and affected next actions/work steps are updated, and qualified proof is recorded as `E2-PNC-NEXTSTATUS1`. A missing or stale successor actual-status update blocks closure.
 - Run Anvien detect-changes before every implementation-slice commit when implementation work was performed.
 - For public runtime or UI-facing changes, validate the real user-visible runtime with browser or Playwright evidence.
 - For app/runtime validation, full build must include Docker image/container build. If Docker is missing or not run, full build is incomplete.
@@ -843,10 +844,11 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     1. Run full build and nearest real graph/emitter/shadow boundary; Docker/Playwright are N/A unless this child unexpectedly changes a public UI/runtime surface.
     2. Refresh child actual-status and record final evidence/benchmark values.
     3. Run Anvien detect-changes before each implementation commit and record exact changed/affected scope.
-    4. Commit accepted child scope, verify worktree state, update the roadmap, and refresh the next child P0 or return closure control to the roadmap.
-    5. Record handoff `E2-PNC-HANDOFF1`: Child 02 receives accepted child-01 local P1-A authority, local P1-E shadow PASS/commit, exact graph-expansion metrics, and no active-v1 drift.
-  - Implementation Gate: Pn-A and Pn-B pass; every required runtime/build/target gate for this child is current.
-  - Acceptance: child-local closure evidence `E2-PNC-BUILD1`, `E2-PNC-RUNTIME1`, `E2-PNC-DETECT1`, `E2-PNC-COMMIT1`, and `E2-PNC-HANDOFF1` is complete; campaign closure is not implied.
+    4. Refresh child 02's `actual-status.md` from the latest accepted child-01 repo/runtime/evidence state, append its refresh-log row, update affected status assumptions/next actions/work steps, and record qualified proof as `E2-PNC-NEXTSTATUS1`.
+    5. Commit accepted child scope plus the successor-status refresh, verify worktree state, and update the roadmap.
+    6. Record handoff `E2-PNC-HANDOFF1`: Child 02 receives accepted child-01 local P1-A authority, local P1-E shadow PASS/commit, exact graph-expansion metrics, no active-v1 drift, and the qualified `2026-07-28-01-graph-identity-contract-and-strict-construction::E2-PNC-NEXTSTATUS1` freshness proof.
+  - Implementation Gate: Pn-A and Pn-B pass; every required runtime/build/target gate for this child is current; child 02's actual-status refresh is ready to be committed with closure.
+  - Acceptance: child-local closure evidence `E2-PNC-BUILD1`, `E2-PNC-RUNTIME1`, `E2-PNC-DETECT1`, `E2-PNC-NEXTSTATUS1`, `E2-PNC-COMMIT1`, and `E2-PNC-HANDOFF1` is complete; child 02's actual-status reflects the latest accepted evidence; campaign closure is not implied.
 
 ## Risk Notes
 

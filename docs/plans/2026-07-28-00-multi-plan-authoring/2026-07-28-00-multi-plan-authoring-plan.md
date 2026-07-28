@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0 complete / P1 complete / P2-A complete / P2-A1 accepted / commit pending / P2-B ready-after-commit`
+- Status: `active / P0 complete / P1 complete / P2-A complete / P2-A1 complete and committed 55bf021f / P2-B complete / authoring accepted / commit pending`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -21,6 +21,7 @@ Convert the existing oversized `2026-07-26-anvien-graph-identity-resolution-v2` 
 - Record benchmarkable counts or measurements when they are taken.
 - Update later phase status assumptions, next actions, and work steps when actual-status evidence changes the repo state.
 - After completing a phase or implementation slice and refreshing `actual-status.md`, update the next affected phase's work steps as needed to match the latest repo reality, while preserving that phase's original goal, scope, acceptance criteria, and major phase order.
+- Every non-terminal child plan must state in its own `Rules` that Pn-C cannot close or hand off until the next child plan's `actual-status.md` is refreshed from the latest accepted repo/runtime/evidence state, the refresh log and affected next actions/work steps are updated, and qualified evidence for that refresh is recorded. The terminal child must state that no successor exists and refresh the roadmap/campaign closure status instead.
 - Run Anvien detect-changes before every implementation-slice commit when implementation work was performed.
 - For public runtime or UI-facing changes, validate the real user-visible runtime with browser or Playwright evidence.
 - For app/runtime validation, full build must include Docker image/container build. If Docker is missing or not run, full build is incomplete.
@@ -144,7 +145,8 @@ In scope:
 - Every child actual-status ledger contains a real baseline classification, relationship evidence or a truthful docs/graph limitation, a touch map, a refresh log, downstream decisions, and a final P0 decision. Later execution must refresh P0 before opening that child if prior children changed repo reality.
 - Every child evidence ledger uses child-local stable evidence IDs. Cross-child references are qualified by child slug and exact evidence ID.
 - Every child benchmark ledger owns only measurements relevant to that child. Campaign totals belong in the roadmap or authoring benchmark, not duplicated as mutable child totals.
-- Every child Pn-C records its own validation, detect-changes, commit, worktree state, and roadmap handoff. Finishing a child does not silently close the campaign.
+- Every child plan repeats the successor-freshness invariant in its own `Rules`; every non-terminal Pn-C updates the next child `actual-status.md` from the latest accepted evidence, appends its refresh-log row, updates affected next actions/work steps, and reserves a child-local proof such as `E2-PNC-NEXTSTATUS1`. A stale or missing successor actual-status update blocks closure. Child 07 records the no-successor terminal case and refreshes roadmap/campaign closure status instead.
+- Every child Pn-C records its own validation, detect-changes, commit, worktree state, successor actual-status refresh (or terminal no-successor proof), and roadmap handoff. Finishing a child does not silently close the campaign.
 
 ### Authority and ownership contract
 
@@ -169,6 +171,7 @@ In scope:
 - Every mapped slice preserves its source semantics and complete planner field structure; only ownership paths, local prefixes, qualified references, dependency handoffs, and stale status assumptions change.
 - Legacy P8 produces closure sections in all seven children and does not produce an eighth implementation child.
 - Child evidence, benchmark, and actual-status ledgers are independently usable and contain no unqualified cross-child evidence references.
+- Every child plan contains the successor actual-status freshness rule in `Rules`, and every Pn-C reserves/accepts exact evidence proving the next child's actual-status refresh before handoff; child 07 records the terminal no-successor case and refreshes campaign closure status.
 - `index-reader-matrix.md` has exactly one mutation owner, child 02.
 - Roadmap and companion links resolve; no placeholder tokens, stale active-authority claims, or broken child dependencies remain.
 - Supervisor passes the complete multi-plan set before authority cutover.
@@ -410,14 +413,14 @@ In scope:
   - Actual-status Update: directory ownership `wrong -> correct`; P2-B `paused -> ready` only after acceptance/commit.
   - Commit Boundary: commit this structural correction separately; exclude the unaccepted child-02 four-file draft content from the commit, then resume P2-B.
 
-- [ ] P2-B: Author child 02 for legacy P2.
+- [x] P2-B: Author child 02 for legacy P2.
   - Goal: create the complete persistence/cutover child plan set with all 42 legacy P2 slices and sole mutation ownership of `index-reader-matrix.md`.
   - Scope Boundary:
-    - Editable: the four child-02 files under the separate multi-plan root, roadmap status, authoring ledgers, and matrix ownership metadata/reference only; matrix content remains unchanged during authoring.
+    - Editable: the four child-02 files under the separate multi-plan root, roadmap status, authoring ledgers, matrix ownership metadata/reference only, and only the user-required successor-actual-status `Rules`/Pn-C/reserved-evidence correction in the already accepted child-01 plan/evidence files; matrix content remains unchanged during authoring.
     - Inspect-only: legacy P2, source ledgers, `index-reader-matrix.md`, child-01 handoff, templates, and roadmap.
-    - Preserve-only: legacy bodies, child 01, children 03-07, production/tests/runtime, graph outputs, and target.
+    - Preserve-only: legacy bodies; all child-01 content except the exact successor-actual-status `Rules`/Pn-C/reserved-evidence correction; children 03-07; production/tests/runtime; graph outputs; and target.
     - Out of scope: executing persistence/cutover or duplicating the reader matrix.
-  - Non-Goals: do not collapse the 42 slices or give another child mutation ownership of the matrix.
+  - Non-Goals: do not collapse the 42 slices, give another child mutation ownership of the matrix, or use the successor-freshness correction to reopen child-01 technical semantics.
   - Pre-flight Questions:
     - Data source: legacy P2 blocks, P2 ledger facts, reader matrix, and child-01 dependency contract.
     - Display permission: N/A — docs-only.
@@ -432,13 +435,19 @@ In scope:
     - External side effects: four Markdown files plus roadmap/authoring ledger updates.
     - N/A notes: runtime checks are deferred to future execution of child 02.
   - Work Steps:
-    1. Create and populate all four child-02 files with P0, one local P1 containing 42 mapped slices, independent ledgers, and tailored Pn closure/handoff.
+    1. Encode the user-required successor-freshness invariant in the campaign contract and in the `Rules`, Pn-C gate/acceptance, and reserved closure evidence of every currently authored child; require future children to inherit the same rule, with an explicit terminal-child no-successor case.
+       - UI flow check: N/A — docs-only.
+       - DB/data flow check: a non-terminal child cannot close until the next child actual-status, refresh log, affected next actions/work steps, and qualified proof are current.
+       - Render location check: authoring contract, roadmap, child-01 plan/evidence, and child-02 plan/evidence only.
+       - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; validate exact rule/gate/evidence markers and confirm no child-01 technical slice text changed.
+       - Evidence target: `E2-P2B-USER2` and `E2-P2B-HANDOFFRULE1`.
+    2. Create and populate all four child-02 files with P0, one local P1 containing 42 mapped slices, independent ledgers, and tailored Pn closure/handoff.
        - UI flow check: N/A — docs-only.
        - DB/data flow check: assign persistence/cutover and matrix ownership only to child 02.
        - Render location check: exactly four files in child 02; the matrix remains single at `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/index-reader-matrix.md` in the preserved legacy root.
        - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; run template/field checks.
        - Evidence target: `E2-P2B-FILES1` and `E2-P2B-STRUCT1`.
-    2. Map the complete P2 inventory in original order, qualify child-01 dependency and later handoffs, prove 42 unique destinations, and update roadmap/authoring ledgers.
+    3. Map the complete P2 inventory in original order, qualify child-01 dependency and later handoffs, prove 42 unique destinations, and update roadmap/authoring ledgers.
        - UI flow check: N/A — docs-only.
        - DB/data flow check: verify group counts A=16, B=5, C=7, D=3, E=3, F=7, G=1, total 42.
        - Render location check: child plan owns slice bodies; roadmap owns coordination; matrix has one owner.
@@ -451,13 +460,13 @@ In scope:
     - Source: four standard child files exist; legacy and matrix contents remain unchanged.
     - Runtime/UI: N/A — no runtime/UI change.
     - DB/data: 42/42 slices map once; matrix has exactly one mutation owner.
-    - Behavior test: child completeness, source-order mapping, qualified dependency, and link checks pass.
+    - Behavior test: child completeness, source-order mapping, qualified dependency, link checks, and successor-actual-status rule/gate/evidence checks pass; child-01 technical semantics remain unchanged.
     - Cleanup/quarantine: no duplicate matrix or partial child-02 artifact exists.
-    - Evidence IDs: `E2-P2B-FILES1`, `E2-P2B-STRUCT1`, `E2-P2B-MAP1`, `E2-P2B-MATRIX1`.
+    - Evidence IDs: `E2-P2B-USER2`, `E2-P2B-HANDOFFRULE1`, `E2-P2B-FILES1`, `E2-P2B-STRUCT1`, `E2-P2B-MAP1`, `E2-P2B-MATRIX1`, `E2-P2B-GRAPH1`, `E2-P2B-FD1`, `E2-P2B-VALIDATION3`, `E2-P2B-REDTEAM1`, `E2-P2B-REDTEAM2`, `E2-P2B-SUP1`.
     - Actual-status rows refreshed: child 02, matrix ownership, cumulative mapped count, and child-03 dependency.
-  - Evidence Targets: four-file inventory, 42-row mapping, group totals, matrix single-owner proof, and field completeness.
-  - Actual-status Update: mark child 02 `missing -> correct`; set child 03 next action to consume child-02 cutover handoff without duplicating its contracts.
-  - Commit Boundary: commit only child 02 plus roadmap/authoring ledger updates after acceptance and Supervisor review when authorized.
+  - Evidence Targets: successor-freshness rule/gate/evidence proof for authored children, four-file inventory, 42-row mapping, group totals, matrix single-owner proof, and field completeness.
+  - Actual-status Update: mark the cross-child freshness contract `partial -> correct`; mark child 02 `missing -> correct`; set child 03 next action to receive a latest-evidence actual-status refresh before consuming child-02 cutover handoff without duplicating its contracts.
+  - Commit Boundary: commit child 02, the exact child-01 successor-freshness plan/evidence correction, and roadmap/authoring ledger updates only after acceptance and Supervisor review.
 
 - [ ] P2-C: Author child 03 for legacy P3.
   - Goal: create the complete TypeScript binding-pattern child plan set with all 17 legacy P3 slices.
@@ -738,7 +747,7 @@ In scope:
     - External side effects: read-only validation plus ledger/roadmap status updates.
     - N/A notes: source/destination document equivalence is the nearest real boundary.
   - Work Steps:
-    1. Validate 1 roadmap, 7 child folders, 28 standard files, matching slugs/H1/metadata, 7 P0 sections, 7 local P1 phases, 7 Pn-A/B/C sets, required slice fields, and all links.
+    1. Validate 1 roadmap, 7 child folders, 28 standard files, matching slugs/H1/metadata, 7 P0 sections, 7 local P1 phases, 7 Pn-A/B/C sets, the successor-actual-status rule in every child `Rules`, corresponding Pn-C gates/reserved evidence including the child-07 terminal case, required slice fields, and all links.
        - UI flow check: N/A — no UI.
        - DB/data flow check: validate document inventory and ownership graph.
        - Render location check: results in authoring evidence and benchmark only.
@@ -757,7 +766,7 @@ In scope:
     - Source: legacy source remains unchanged and candidate hashes/inventory are recorded.
     - Runtime/UI: N/A — no runtime/UI change.
     - DB/data: 98/98 bijection with zero mismatch and one owner per mutable artifact.
-    - Behavior test: all structural, field, link, ordering, evidence-reference, and diff-boundary checks pass.
+    - Behavior test: all structural, successor-freshness, field, link, ordering, evidence-reference, and diff-boundary checks pass.
     - Cleanup/quarantine: validation creates no persistent artifact outside approved plan ledgers.
     - Evidence IDs: `E3-P3A-STRUCT1`, `E3-P3A-LINK1`, `E3-P3A-OWNER1`, `E3-P3A-MAP1`, `E3-P3A-FIELDS1`, `E3-P3A-DIFF1`.
     - Actual-status rows refreshed: roadmap candidate, seven child sets, 98-slice mapping, ownership, and cutover readiness.
