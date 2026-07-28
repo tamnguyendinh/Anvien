@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D committed 2de220bb / P2-E authoring active / P2-F-P2-G blocked / implementation unauthorized`
+- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D committed 2de220bb / P2-E exact-copy Supervisor PASS / commit pending / P2-F-P2-G blocked / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -570,7 +570,7 @@ In scope:
   - Commit Boundary: commit only child 04 plus roadmap/authoring ledger updates after acceptance and Supervisor review when authorized.
 
 - [ ] P2-E: Author child 05 for legacy P5.
-  - Current Status: authoring active after accepted Child 04 exact-copy commit `2de220bb`; implementation remains unauthorized.
+  - Current Status: exact-copy four-file candidate created after Child 04 commit `2de220bb`; deterministic source-block, graph, independent checks, and Supervisor review PASS; commit pending and implementation remains unauthorized.
   - Goal: create the complete module export-table and barrel/re-export resolution child plan set with all four legacy P5 slices.
   - Scope Boundary:
     - Editable: child-05 four-file set, roadmap status, and authoring ledgers.
@@ -613,7 +613,7 @@ In scope:
     - DB/data: 4/4 slices map exactly once and vector ownership is singular.
     - Behavior test: lifecycle, fields, order, vector content, and links pass.
     - Cleanup/quarantine: no duplicate semantic-vector contract or partial child file remains.
-    - Evidence IDs: `E2-P2E-FILES1`, `E2-P2E-STRUCT1`, `E2-P2E-VECTOR1`, `E2-P2E-MAP1`.
+    - Evidence IDs: `E2-P2E-FILES1`, `E2-P2E-STRUCT1`, `E2-P2E-VECTOR1`, `E2-P2E-MAP1`, `E2-P2E-VALID1`, `E2-P2E-CHECK1`, `E2-P2E-GRAPH1`, `E2-P2E-FD1`, `E2-P2E-SUP1`.
     - Actual-status rows refreshed: child 05, cumulative mapped count, and child-06 dependency.
   - Evidence Targets: four-file inventory, four-row mapping, semantic-vector provenance, and qualified handoffs.
   - Actual-status Update: mark child 05 `missing -> correct`; set child 06 to consume its resolver-table handoff.

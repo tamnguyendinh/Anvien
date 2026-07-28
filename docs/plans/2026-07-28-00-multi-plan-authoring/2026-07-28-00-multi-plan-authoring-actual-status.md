@@ -2,7 +2,7 @@
 
 Title: Anvien Graph Identity Resolution v2 Multi-Plan Authoring
 Date: 2026-07-28
-Status: P0 Complete / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D committed 2de220bb / P2-E authoring active / later children not authored / implementation unauthorized
+Status: P0 Complete / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D committed 2de220bb / P2-E exact-copy candidate validation active / later children not authored / implementation unauthorized
 Companion plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 Companion evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 Companion benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -96,23 +96,23 @@ Record how many files the target is related to before deciding touch mode. A fil
 | Phase-to-child boundary | Seven source implementation phases are measurable | One source phase per numbered child, P1->01 through P7->07 | correct | 7 phases | `E0-P0A-STRUCT1`, `E0-P0A-DECISION1` | preserve exact boundary in P1-A/P1-B |
 | Source slice inventory | All source IDs and per-phase counts are known | 98 source slices mapped exactly once in original order | correct | 98 slices | `E0-P0A-SLICE1`, `E0-P0A-SLICE2`, `E0-P0A-SLICE3`, `E0-P0A-SLICE4`, `E0-P0A-SLICE5`, `E0-P0A-SLICE6`, `E0-P0A-SLICE7`, `E0-P0A-TOTAL1` | freeze in P1-A; validate again in P3-A |
 | Frozen transformation crosswalk | all 98 source rows now retain the same destination phase/slice ID and child owner | preserve every source phase/slice ID unchanged and prove exact copy boundaries | correct | 98/98 source IDs equal destination IDs | `E1-P1A-MAP1`, `E1-P1A-MAP2`, `E1-P1A-MAP3`, `E2-P2A-REBUILD1` | consume sequentially from P2-B through P2-G; never reintroduce remapping |
-| Legacy P8 closure | three source closure roles exist; children 01-04 have Pn-A/Pn-B/Pn-C | each of seven children has Pn-A/Pn-B/Pn-C; no child 08 | partial | 3 source closure items / 4 of 7 child closure sets | `E0-P0A-TOTAL1`, `E0-P0A-DECISION1`, `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-STRUCT1`, `E2-P2D-STRUCT1` | distribute only when each later child is mechanically copied |
-| Campaign roadmap | candidate roadmap links the four committed files for each of children 01-04; fresh graph reports 16 outbound imports and zero unresolved | one roadmap owns order, status, dependencies, handoffs, and active authority index | correct candidate | 1 file / 16 outbound child-ledger relationships | `E1-P1B-ROADMAP1`, `E2-P2A-REBUILD1`, `E2-P2B-RCOMMIT1`, `E2-P2C-COMMIT1`, `E2-P2D-COMMIT1`, `E2-P2D-GRAPH1`, `E2-P2D-FD1` | preserve legacy authority; open Child 05 authoring only |
+| Legacy P8 closure | three source closure roles exist; children 01-05 have Pn-A/Pn-B/Pn-C | each of seven children has Pn-A/Pn-B/Pn-C; no child 08 | partial | 3 source closure items / 5 of 7 child closure sets | `E0-P0A-TOTAL1`, `E0-P0A-DECISION1`, `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-STRUCT1`, `E2-P2D-STRUCT1`, `E2-P2E-STRUCT1` | distribute only when each later child is mechanically copied |
+| Campaign roadmap | candidate roadmap links the four files for each of children 01-05; fresh graph reports 20 outbound imports and zero unresolved | one roadmap owns order, status, dependencies, handoffs, and active authority index | correct candidate | 1 file / 20 outbound child-ledger relationships | `E1-P1B-ROADMAP1`, `E2-P2A-REBUILD1`, `E2-P2B-RCOMMIT1`, `E2-P2C-COMMIT1`, `E2-P2D-COMMIT1`, `E2-P2E-FILES1`, `E2-P2E-GRAPH1`, `E2-P2E-FD1` | preserve legacy authority; validate Child 05 only |
 | Child standard-file inventory | Roadmap names 28 unique planned standard files across seven children | Create exactly those 28 files without extra child sets | correct | 28 planned names | `E1-P1B-INVENTORY1` | consume sequentially in P2-A through P2-G |
 | Child 01 plan set | four rebuilt standard files mechanically copy the relevant source blocks; exact comparisons and bounded Supervisor review pass; commit `ce82a341` is durable | four-file complete child under the separate multi-plan root with unchanged source P1 IDs/content | correct candidate / committed | 4 files / 11 slices / 1 inbound roadmap relationship per ledger | `E2-P2A-REBUILD1`, `E2-P2A-SUP2`, `E2-P2A-GRAPH2`, `E2-P2A-FD2`, `E2-P2A-COMMIT2` | preserve; implementation remains unauthorized |
 | Child 02 plan set | four replacement files copy P2/E2/B2 and selected source status exactly without ID remap; deterministic validation, red-team closure, graph/file-detail, Supervisor PASS, and commit `a1c66865` are durable | four-file complete child with unchanged source P2 IDs/content plus P0/Pn | correct candidate / committed | 4 files / 42 slices / 1 inbound roadmap relationship per file | `E2-P2B-RFILES1`, `E2-P2B-RSTRUCT1`, `E2-P2B-RMAP1`, `E2-P2B-RVALID1`, `E2-P2B-RGRAPH1`, `E2-P2B-RFD1`, `E2-P2B-RREDTEAM1`, `E2-P2B-RSUP1`, `E2-P2B-RCOMMIT1` | preserve; implementation remains unauthorized |
-| Successor actual-status freshness | children 01-04 each contain one exact operational rule; no successor actual-status update has been executed because implementation has not occurred | every child owns the rule; successor actual-status is updated only at child closure from latest evidence | partial / authoring rule complete for 4 children | 4 authored children / 4 explicit rules / 0 executed successor updates | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-STRUCT1`, `E2-P2D-STRUCT1` | preserve rule in future children; do not fabricate successor status now |
+| Successor actual-status freshness | children 01-05 each contain one exact operational rule; no successor actual-status update has been executed because implementation has not occurred | every child owns the rule; successor actual-status is updated only at child closure from latest evidence | partial / authoring rule complete for 5 children | 5 authored children / 5 explicit rules / 0 executed successor updates | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-STRUCT1`, `E2-P2D-STRUCT1`, `E2-P2E-STRUCT1` | preserve rule in future children; do not fabricate successor status now |
 | Child 03 plan set | four files mechanically copy P3/E3/B3 and selected source status with unchanged IDs; deterministic validation, fresh graph/file-detail, red-team, Supervisor PASS, and commit `35a0611c` are durable | Four-file complete child for legacy P3 with P0/preserved source P3/Pn | correct candidate / committed | 4 files / 17 slices / 1 inbound roadmap relationship per file / zero unresolved | `E2-P2C-FILES1`, `E2-P2C-STRUCT1`, `E2-P2C-MAP1`, `E2-P2C-VALID1`, `E2-P2C-GRAPH1`, `E2-P2C-FD1`, `E2-P2C-REDTEAM1`, `E2-P2C-SUP1`, `E2-P2C-COMMIT1` | preserve; implementation remains unauthorized |
 | Child 04 plan set | four files mechanically copy P4/E4/B4 and selected source status with unchanged IDs; deterministic/independent validation, fresh graph/file-detail, Supervisor PASS, and commit `2de220bb` are durable | Four-file complete child for legacy P4 with P0/preserved source P4/Pn | correct candidate / committed | 4 files / 15 slices / 1 inbound roadmap relationship per file / zero unresolved | `E2-P2D-FILES1`, `E2-P2D-STRUCT1`, `E2-P2D-MAP1`, `E2-P2D-VALID1`, `E2-P2D-CHECK1`, `E2-P2D-GRAPH1`, `E2-P2D-FD1`, `E2-P2D-SUP1`, `E2-P2D-COMMIT1` | preserve; Child 05 authoring may proceed |
-| Child 05 plan set | Does not exist | Four-file complete child for legacy P5 with P0/preserved source P5/Pn | missing | 0 files | `E0-P0A-SRC2`, `E0-P0A-SLICE5` | create only after prior child handoff and exact-copy contract |
+| Child 05 plan set | four files mechanically copy P5/E5/B5, the semantic-vector material, and selected source status with unchanged IDs; deterministic/independent validation, fresh graph/file-detail, and Supervisor PASS | Four-file complete child for legacy P5 with P0/preserved source P5/Pn | correct candidate / Supervisor PASS / commit pending | 4 files / 4 slices / 1 inbound roadmap relationship per file / zero unresolved | `E2-P2E-FILES1`, `E2-P2E-STRUCT1`, `E2-P2E-MAP1`, `E2-P2E-VALID1`, `E2-P2E-CHECK1`, `E2-P2E-GRAPH1`, `E2-P2E-FD1`, `E2-P2E-SUP1` | commit Child 05 in isolation before Child 06 |
 | Child 06 plan set | Does not exist | Four-file complete child for legacy P6 with P0/preserved source P6/Pn | missing | 0 files | `E0-P0A-SRC2`, `E0-P0A-SLICE6` | create only after prior child handoff and exact-copy contract |
 | Child 07 plan set | Does not exist | Four-file complete child for legacy P7 with P0/preserved source P7/Pn | missing | 0 files | `E0-P0A-SRC2`, `E0-P0A-SLICE7` | create only after prior child handoff and exact-copy contract |
-| Child-independent ledgers | legacy ledgers remain historical; children 01-04 each own committed phase-scoped evidence, benchmark, and actual-status ledgers | each child owns a complete phase-scoped ledger set and qualified cross-plan references | partial | 3 legacy ledgers / 12 of 21 child ledger files | `E0-P0A-SRC2`, `E0-P0A-DECISION2`, `E2-P2A-REBUILD1`, `E2-P2B-RFILES1`, `E2-P2C-COMMIT1`, `E2-P2D-COMMIT1` | author Child 05 ledgers, then continue sequentially through children 06-07 |
+| Child-independent ledgers | legacy ledgers remain historical; children 01-05 each own phase-scoped evidence, benchmark, and actual-status ledgers | each child owns a complete phase-scoped ledger set and qualified cross-plan references | partial | 3 legacy ledgers / 15 of 21 child ledger files | `E0-P0A-SRC2`, `E0-P0A-DECISION2`, `E2-P2A-REBUILD1`, `E2-P2B-RFILES1`, `E2-P2C-COMMIT1`, `E2-P2D-COMMIT1`, `E2-P2E-FILES1` | validate Child 05, then author children 06-07 sequentially |
 | Reader matrix ownership | one byte-identical matrix exists in the legacy source root; Child 02 candidate carries sole future mutation ownership | Child 02 is sole future mutation owner; other children link inspect-only | correct candidate | 1 file / 1 candidate mutation owner | `E0-P0A-SRC2`, `E0-P0A-OWNER1`, `E2-P2B-RMAP1` | preserve matrix unchanged during authoring; validate ownership before acceptance |
-| Multi-plan authority | separate multi-plan root contains roadmap plus committed sets for children 01-04; legacy remains active | separate multi-plan root becomes sole active campaign index after all seven children and P3-B PASS | partial | 17 committed candidate files of 29 | `E1-P1B-ROADMAP1`, `E2-P2A-REBUILD1`, `E2-P2B-RCOMMIT1`, `E2-P2C-COMMIT1`, `E2-P2D-COMMIT1`, `E0-P0A-AUTH1` | author Child 05 next |
+| Multi-plan authority | separate multi-plan root contains roadmap plus committed sets for children 01-04 and the Child 05 candidate; legacy remains active | separate multi-plan root becomes sole active campaign index after all seven children and P3-B PASS | partial | 21 candidate files of 29 | `E1-P1B-ROADMAP1`, `E2-P2A-REBUILD1`, `E2-P2B-RCOMMIT1`, `E2-P2C-COMMIT1`, `E2-P2D-COMMIT1`, `E2-P2E-FILES1`, `E0-P0A-AUTH1` | validate/accept/commit Child 05 before Child 06 |
 | Fake/stub planning output | No roadmap or child placeholder is being treated as implemented | No placeholder or draft may be treated as active authority | correct | 0 fake child outputs | `E0-P0A-SRC2` | preserve; structural check must reject placeholder tokens |
 | Target boundary | Target is a separate repository and not an authoring location | No target write/copy/move/read-as-source for this split | correct | out of scope | `E0-P0A-BOUNDARY1`, `E0-P0A-SCOPE1` | do-not-touch in every phase |
-| Execution authorization | user ordered docs-only multi-plan authoring through Child 07; Child 04 is committed and Child 05 authoring is open; no production implementation is authorized | author children sequentially; child implementation requires separate owner direction and child gates | correct | N/A | `E1-P1A-AUTH1`, `E2-P2A-COMMIT2`, `E2-P2B-RCOMMIT1`, `E2-P2C-COMMIT1`, `E2-P2D-COMMIT1` | author Child 05 only; do not open Child 06 before its accepted commit |
+| Execution authorization | user ordered docs-only multi-plan authoring through Child 07; Child 05 has Supervisor PASS and awaits isolated commit; no production implementation is authorized | author children sequentially; child implementation requires separate owner direction and child gates | correct | N/A | `E1-P1A-AUTH1`, `E2-P2A-COMMIT2`, `E2-P2B-RCOMMIT1`, `E2-P2C-COMMIT1`, `E2-P2D-COMMIT1`, `E2-P2E-SUP1` | commit Child 05 only; do not open Child 06 before that commit |
 
 ## Status Refresh Log
 
@@ -142,6 +142,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 | R21 | 2026-07-28 | `master` commit `35a0611c`; Child 03 Supervisor PASS and isolated authoring commit complete | Child 03 four-file set, 17 preserved source IDs, Supervisor report, and commit boundary | Child 03 `Supervisor PASS / commit pending -> committed`; P2-D `blocked -> authoring active`; implementation remains unauthorized | `E2-P2C-SUP1`, `E2-P2C-COMMIT1` | author Child 04 only; preserve children 01-03 and do not open Child 05 before Child 04 acceptance/commit |
 | R22 | 2026-07-28 | `master` at `4b8f7e98`; exact-copy Child 04 worktree | Child 04 four-file set, 15 source-ID-preserved slices, phase ledgers, and one successor rule | Child 04 `missing -> correct candidate / validation active`; cumulative authored children `3 -> 4`; implementation remains unauthorized | `E2-P2D-FILES1`, `E2-P2D-STRUCT1`, `E2-P2D-MAP1`, `E2-P2D-VALID1` | gather fresh graph/link evidence, bounded red-team, and Supervisor PASS; commit before Child 05 |
 | R23 | 2026-07-28 | `master` commit `2de220bb`; Child 04 Supervisor PASS and isolated authoring commit complete | Child 04 four-file set, 15 preserved source IDs, Supervisor report, and commit boundary | Child 04 `Supervisor PASS / commit pending -> committed`; P2-E `blocked -> authoring active`; implementation remains unauthorized | `E2-P2D-SUP1`, `E2-P2D-COMMIT1` | author Child 05 only; preserve children 01-04 and do not open Child 06 before Child 05 acceptance/commit |
+| R24 | 2026-07-28 | `master` at `9532d525`; exact-copy Child 05 worktree | Child 05 four-file set, 4 source-ID-preserved slices, semantic-vector contract material, phase ledgers, and one successor rule | Child 05 `missing -> correct candidate / validation active`; cumulative authored children `4 -> 5`; implementation remains unauthorized | `E2-P2E-FILES1`, `E2-P2E-STRUCT1`, `E2-P2E-MAP1`, `E2-P2E-VALID1` | gather fresh graph/link evidence, independent checks, and Supervisor PASS; commit before Child 06 |
 
 ## Phase Touch Map
 
@@ -163,7 +164,7 @@ Use this map to prevent accidental edits. A related file is not automatically ed
 | Child 02 standard set | legacy P2, child-01 handoff, matrix | persistence/cutover plan authority | P2-A1/P2-B | preserve committed authoring files; implementation remains blocked | `E0-P0A-SLICE2`, `E2-P2B-RFILES1`, `E2-P2B-RMAP1`, `E2-P2B-RSUP1`, `E2-P2B-RCOMMIT1` | exactly four committed candidate files at the correct multi-plan root |
 | Child 03 standard set | legacy P3 and child-02 handoff | binding-pattern plan authority | P2-C | preserve committed authoring files; implementation blocked | `E0-P0A-SLICE3`, `E2-P2C-MAP1`, `E2-P2C-SUP1`, `E2-P2C-COMMIT1` | exactly four committed candidate files and 17 unchanged source-ID slices |
 | Child 04 standard set | legacy P4 and child-03 handoff | export-semantics plan authority | P2-D | preserve committed authoring files; implementation blocked | `E0-P0A-SLICE4`, `E2-P2D-MAP1`, `E2-P2D-SUP1`, `E2-P2D-COMMIT1` | exactly four committed candidate files and 15 unchanged source-ID slices |
-| Child 05 standard set | legacy P5 and child-04 handoff | module/re-export plan authority | P2-E | edit authoring candidate only; implementation blocked | `E0-P0A-SLICE5`, `E2-P2D-COMMIT1` | exactly four standard files and 4 unchanged source-ID slices |
+| Child 05 standard set | legacy P5 and child-04 handoff | module/re-export plan authority | P2-E | edit candidate files only during validation; implementation blocked | `E0-P0A-SLICE5`, `E2-P2D-COMMIT1`, `E2-P2E-FILES1`, `E2-P2E-MAP1` | exactly four candidate files and 4 unchanged source-ID slices; Supervisor PASS still required |
 | Child 06 standard set | legacy P6 and child-05 handoff | ambient/external diagnostics plan authority | P2-F | edit | `E0-P0A-SLICE6` | exactly four standard files and 6 slices |
 | Child 07 standard set | legacy P7 and children 01-06 handoffs | campaign acceptance plan authority | P2-G | edit | `E0-P0A-SLICE7` | exactly four standard files and 3 slices; target remains do-not-touch during authoring |
 | Planner templates | `.agents/skills/planner/templates/*.template.md` | structure authority | P1-P3 | inspect-only | `E0-P0A-TEMPLATE1` | do not edit templates for this campaign |
@@ -213,7 +214,7 @@ Do not edit technical body, delete it, mark it superseded early, or implement fr
 
 Current state:
 
-The candidate roadmap and complete four-file plan sets for children 01-04 exist as accepted, committed authoring artifacts. Child 04 preserves all 15 P4 slices and is committed at `2de220bb`. Implementation remains unauthorized, children 05-07 remain missing, and Child 05 is the only open authoring slice. The `00-multi-plan-authoring` control set is in its own sibling root, while the roadmap and four existing children are in the separate multi-plan root. The legacy root retains only its four standard source files plus `index-reader-matrix.md` and has no directory.
+The candidate roadmap and complete four-file plan sets for children 01-05 exist. Children 01-04 are accepted and committed; Child 05 preserves all four P5 slices plus semantic-vector contract material and is under validation. Implementation remains unauthorized, children 06-07 remain missing, and Child 05 is the only open authoring slice. The `00-multi-plan-authoring` control set is in its own sibling root, while the roadmap and five existing children are in the separate multi-plan root. The legacy root retains only its four standard source files plus `index-reader-matrix.md` and has no directory.
 
 Required state:
 
@@ -230,8 +231,8 @@ Evidence:
 
 Relationship and impact:
 
-- Related file count: 17 accepted, committed candidate output files and 12 missing child files for children 05-07.
-- Relationship summary: roadmap coordinates seven children; Child 01 owns source P1 and four accepted files; Child 02 owns source P2, four accepted files, and sole future reader-matrix mutation; children 03-04 each own their source phase and four accepted files; children 05-07 remain absent.
+- Related file count: 17 accepted, committed candidate output files, 4 Child 05 candidate files, and 8 missing child files for children 06-07.
+- Relationship summary: roadmap coordinates seven children; Child 01 owns source P1 and four accepted files; Child 02 owns source P2, four accepted files, and sole future reader-matrix mutation; children 03-04 each own their source phase and four accepted files; Child 05 owns source P5 and four validation-active files; children 06-07 remain absent.
 - Impact note: high completeness and authority risk, no runtime impact.
 
 Classification:
@@ -240,7 +241,7 @@ Classification:
 
 Allowed next action:
 
-Author Child 05 by mechanical source P5/E5/B5/status copy, validate it independently, obtain Supervisor PASS, and commit it before opening P2-F. Production implementation remains unauthorized.
+Finish Child 05 graph/independent/Supervisor validation and commit it before opening P2-F. Production implementation remains unauthorized.
 
 Forbidden next action:
 
@@ -266,7 +267,7 @@ Evidence:
 
 Relationship and impact:
 
-- Related file count: four legacy companion/auxiliary files, 12 authored child-01/child-02/child-03/child-04 ledgers, and 9 future child ledger files.
+- Related file count: four legacy companion/auxiliary files, 15 authored child-01 through child-05 ledgers, and 6 future child ledger files.
 - Relationship summary: source ledgers are inspect-only history; child 01-02 ledgers are accepted committed candidate truth; remaining child ledgers are missing.
 - Impact note: medium evidence-collision and stale-status risk.
 
@@ -329,7 +330,7 @@ Do not write, copy, move, stage, inspect as split source, or create any artifact
 | P2-B | Child 02 exact-copy four-file set, 42 slices, validation, Supervisor PASS, and commit `a1c66865` are complete | complete/committed; preserve |
 | P2-C | Child 03 exact-copy candidate has four files, 17 source-ID-preserved slices, fresh graph/file-detail PASS, red-team PASS, Supervisor PASS, and commit `35a0611c` | complete/committed; preserve |
 | P2-D | Child 04 exact-copy candidate has four files, 15 source-ID-preserved slices, independent checks, fresh graph/file-detail PASS, Supervisor PASS, and commit `2de220bb` | complete/committed; preserve |
-| P2-E | Child 05 is missing; legacy P5 has four slices and Child 04 authoring is committed | authoring active; mechanically copy P5/E5/B5/selected status, then validate/Supervisor/commit before Child 06 |
+| P2-E | Child 05 exact-copy candidate has four files, four source-ID-preserved slices, semantic-vector material, independent checks, fresh graph/file-detail PASS, and Supervisor PASS | commit pending; commit in isolation before opening Child 06 |
 | P2-F | Child 06 is missing; legacy P6 has six slices and a status matrix | keep; preserve status contract with owning child |
 | P2-G | Child 07 is missing; legacy P7 has three slices and depends on P1-P6 outcomes | keep; require six qualified handoffs and preserve target boundary |
 | P3-A | No candidate exists yet | keep blocked until 1 roadmap, 7 children, 28 files, and 98 mappings exist |
@@ -349,7 +350,7 @@ Do not write, copy, move, stage, inspect as split source, or create any artifact
 - [x] Next phase status assumptions, next action, and work steps have been updated from this status file when needed.
 - [x] Status Refresh Log has an R0 baseline row.
 - [x] Docs-only authoring has started; R1-R3 record every completed authoring-slice transition through P2-A.
-- [x] P2-A1 structural acceptance/commit remains complete at `55bf021f`; rebuilt P2-A is committed at `ce82a341`; P2-B is committed at `a1c66865`; P2-C is committed at `35a0611c`; P2-D is committed at `2de220bb`; P2-E authoring is open while later authoring and all implementation remain blocked.
+- [x] P2-A1 structural acceptance/commit remains complete at `55bf021f`; rebuilt P2-A is committed at `ce82a341`; P2-B is committed at `a1c66865`; P2-C is committed at `35a0611c`; P2-D is committed at `2de220bb`; P2-E candidate validation is active while later authoring and all implementation remain blocked.
 
 ## Final P0 Decision
 
@@ -363,4 +364,4 @@ Choose one:
 
 Decision note:
 
-P0 remains complete for the three-root structure. Children 01-04 are committed at `ce82a341`, `a1c66865`, `35a0611c`, and `2de220bb`; the corrected crosswalk preserves all 98 source IDs. Child 05 authoring is open; later children remain blocked by sequential acceptance/commit gates. No child implementation, target access, matrix-content mutation, or authority cutover is authorized.
+P0 remains complete for the three-root structure. Children 01-04 are committed at `ce82a341`, `a1c66865`, `35a0611c`, and `2de220bb`; the corrected crosswalk preserves all 98 source IDs. Child 05 exists as an exact-copy candidate under validation; later children remain blocked by sequential acceptance/commit gates. No child implementation, target access, matrix-content mutation, or authority cutover is authorized.
