@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0 complete / P1 complete / P2-A rebuilt by exact copy/paste and committed ce82a341 / P2-B reset and blocked / later children not authored / implementation unauthorized`
+- Status: `active / P2-A committed ce82a341 / P2-B exact-copy Supervisor PASS / commit pending / P2-C-P2-G blocked / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -414,7 +414,7 @@ In scope:
   - Commit Boundary: commit this structural correction separately; exclude the unaccepted child-02 four-file draft content from the commit, then resume P2-B.
 
 - [ ] P2-B: Author child 02 for legacy P2.
-  - Current Status: not authored. The prior rewritten/remapped candidate was removed and its historical evidence cannot accept a replacement candidate.
+  - Current Status: exact-copy candidate created from committed Child 01 and the corrected source-ID-preserving crosswalk; deterministic validation/red-team/Supervisor PASS; commit pending. Historical candidate evidence does not accept this replacement candidate.
   - Goal: create the complete persistence/cutover child plan set with all 42 legacy P2 slices and sole mutation ownership of `index-reader-matrix.md`.
   - Scope Boundary:
     - Editable: the four child-02 files under the separate multi-plan root, roadmap status, authoring ledgers, and matrix ownership metadata/reference only; matrix content remains unchanged during authoring.
@@ -463,7 +463,7 @@ In scope:
     - DB/data: 42/42 source slices copy once with unchanged IDs; matrix has exactly one mutation owner.
     - Behavior test: child completeness, exact source-block equality, source order, qualified dependency, link checks, and the one-line successor rule pass; child-01 content remains unchanged.
     - Cleanup/quarantine: no duplicate matrix or partial child-02 artifact exists.
-    - Evidence IDs: `E2-P2B-RESET1`, then fresh replacement evidence IDs defined before P2-B authoring; historical `E2-P2B-*` candidate evidence is not acceptance proof for a rebuilt child.
+    - Evidence IDs: `E2-P2B-RESET1`, `E2-P2B-RFILES1`, `E2-P2B-RSTRUCT1`, `E2-P2B-RMAP1`, `E2-P2B-RVALID1`, `E2-P2B-RGRAPH1`, `E2-P2B-RFD1`, `E2-P2B-RREDTEAM1`, `E2-P2B-RSUP1`; historical `E2-P2B-*` candidate evidence is not acceptance proof for this rebuilt child.
     - Actual-status rows refreshed: child 02, matrix ownership, cumulative mapped count, and child-03 dependency.
   - Evidence Targets: successor-freshness rule/gate/evidence proof for authored children, four-file inventory, 42-row mapping, group totals, matrix single-owner proof, and field completeness.
   - Actual-status Update: mark the cross-child freshness contract `partial -> correct`; mark child 02 `missing -> correct`; set child 03 next action to receive a latest-evidence actual-status refresh before consuming child-02 cutover handoff without duplicating its contracts.
