@@ -247,9 +247,10 @@ Matching plan item(s): `P1-A`, `P1-B`
 
 Matching plan item(s): `P2-A`, `P2-B`, `P2-C`, `P2-D`, `P2-E`, `P2-F`, `P2-G`
 
-Status: P2-A through P2-G are complete; Child 07 committed as `4f1c94e5`; full-campaign closure audit is open; legacy authority remains active and implementation remains unauthorized.
+Status: P2-A through P2-G are complete; Child 07 committed as `4f1c94e5`; P3-A bounded closure is complete; legacy authority remains active and implementation remains unauthorized.
 
 - `E2-P2A-FILES1`: Child 01 contains exactly four standard files. Accepted SHA-256 values after relationship/dependency refresh and final whitespace hygiene: plan `2804538FE1412C91D92891CF469AD4FB9A39EECDA4E92AED7CDF3FA6B878B343`; evidence `08EB245ECA3D7BA968FFD6F31F6E831600E0BED08422DC209493B844F28B626B`; benchmark `9889791A0F47E25BBD0E1F8B8CB3C8FC322E00CE82BD9BF1D5C429A60794842A`; actual status `C079F5CFE3702D16C502E79E0741184CE22C09E642939C2B4FF0EDEA0333E925`.
+- Historical-status note: `E2-P2A-FILES1` and the earlier `E2-P2A-SUP1` describe the rejected pre-rebuild Child 01 candidate and remain immutable history. They are not current artifact hashes. The current Child 01 authority for this authoring campaign is `E2-P2A-REBUILD1`, `E2-P2A-SUP2`, and `E2-P2A-COMMIT2`; its rebuilt hashes are recorded there.
 - `E2-P2A-STRUCT1`: Child 01 has P0 complete, one local P1, 11 implementation blocks with all required planner fields, 11 source-slice provenance fields, tailored Pn-A/Pn-B/Pn-C, a preserved architecture/decision/one-file owner annex, zero placeholders, and zero trailing whitespace.
 - `E2-P2A-MAP1`: Exact mapping is 11 source IDs -> 11 unique local IDs in source order. All 78 source-required P1 evidence IDs exist in the child evidence ledger, appear in local slice acceptance, and have 11 preserved traceability rows. No production, legacy, matrix, or target content changed.
 - `E2-P2A-FD1`: After a fresh Anvien analyze, child-01 plan file-detail reports parsed Markdown/docs, low risk, one related file through the roadmap's inbound `IMPORTS` relationship, zero unresolved, and a current index at `c444e8c4`.
@@ -347,26 +348,28 @@ Status: P2-A through P2-G are complete; Child 07 committed as `4f1c94e5`; full-c
 
 Matching plan item(s): `P3-A`, `P3-B`
 
-Status: not started. Authority remains with the legacy plan until every required P3-B evidence item exists and records PASS.
+Status: `P3-A complete for the seven-child authoring closure`; `P3-B blocked / not authorized`. The legacy plan remains the active authority. No authority cutover, implementation, or target validation is claimed.
 
-- `E3-P3A-STRUCT1`: future 1-roadmap/7-folder/28-file/P0/P1/Pn/required-field validation.
-- `E3-P3A-LINK1`: future local and cross-plan link validation.
-- `E3-P3A-OWNER1`: future one-primary-responsibility and single mutable-owner validation.
-- `E3-P3A-MAP1`: future exact `98 -> 98` bijection proof with zero missing/duplicate/extra mappings.
-- `E3-P3A-FIELDS1`: future source/destination field and semantic-preservation proof.
-- `E3-P3A-DIFF1`: future Git scope proof showing docs-only candidate output.
-- `E3-P3B-SUPERVISOR1`: future unconditional Supervisor verdict against frozen candidate hashes.
-- `E3-P3B-CUTOVER1`: future one-active-authority pre/post assertion and exact legacy metadata/pointer diff.
-- `E3-P3B-DIFF1`: future final scoped Git diff evidence.
-- `E3-P3B-DETECT1`: future Anvien detect-changes result before an authorized cutover commit.
+- `E3-P3A-STRUCT1`: Fresh disk audit found exactly 1 roadmap, 7 child folders, and 28 standard child files (29 campaign files total). Every child has exactly its plan/evidence/benchmark/actual-status set, one P0, its preserved source phase, and one Pn-A/Pn-B/Pn-C set. There are no extra child folders, Child 08, non-Markdown files, sentinel files, or generator artifacts. The frozen campaign manifest SHA-256 is `05D9DC4F6BED47470983817182B59534172181EBE028F05B99D8D3C5C75ED66E`.
+- `E3-P3A-LINK1`: Read-only Markdown-link audit checked 35 local links under the multi-plan root and found 0 broken destinations.
+- `E3-P3A-OWNER1`: The seven children expose the four standard single-responsibility file roles (plan, evidence, benchmark, actual-status) with role-matching H1/companion metadata. The roadmap remains the sole campaign coordination/status owner; the reader matrix ownership row names Child 02 as the only mutation owner. No competing matrix owner was found.
+- `E3-P3A-MAP1`: Full crosswalk audit found 98 source rows, 98 destination rows, 98 unique IDs, source ID equal to destination ID for 98/98 rows, and zero missing, duplicate, or extra mappings. Source titles/order and destination titles/order match across P1-P7; the P3-A/P3-B/P3-C closure roles are excluded from the implementation crosswalk as required.
+- `E3-P3A-FIELDS1`: For every child, the complete source plan phase block, evidence phase block, and benchmark phase block occurs exactly once and is exact-equivalent after line-ending normalization to its legacy source block. All 98 destination slices contain the required Goal, Scope Boundary, Non-Goals, Pre-flight Questions, Work Steps, Implementation Gate, Acceptance, Evidence Targets, Actual-status Update, and Commit Boundary fields. Lifecycle audit reports 7/7 P0 sections, 7/7 preserved source phases, 7/7 Pn-A/B/Pn-C sets, six successor rules, and one terminal roadmap-refresh rule.
+- `E3-P3A-GRAPH1`: Fresh `anvien analyze --force --json` at indexed/current commit `bf3d76198b102db400c68f71b33f046d4ea0e9db` reports 1,555 scanned files, 676 parsed code files, 755 documents, 0 failed files, 85,112 graph nodes, and 123,980 relationships. Roadmap `file-detail` remains parsed/low-risk with 28 outbound `IMPORTS` and 0 unresolved references; all four authoring files are parsed/low-risk with 0 unresolved references.
+- `E3-P3A-DIFF1`: The final pre-commit worktree contains only the five approved roadmap/authoring-ledger edits, the approved Supervisor report, and the preserved unrelated user problem artifact. No production/test/runtime file, graph output, repository-root artifact, or `E:\cheapapp.org` path is in scope; the unrelated artifact is excluded from staging. `git diff --check` passes for the approved closure files.
+- `E3-P3A-SUPERVISOR1`: The independent Supervisor review for the bounded claim “seven-child multi-plan authoring closure” is recorded in `reports/Supervisor/rp_supervisor_260728_212033_by_gpt-5-6-sol_seven_child_multiplan_authoring_closure.md`. It reviews the current disk audit, source preservation, ownership, links, hashes, graph freshness, Git boundary, and target do-not-touch rule. It does not authorize P3-B authority cutover.
+- `E3-P3B-SUPERVISOR1`: Reserved. No P3-B authority-cutover review has been executed.
+- `E3-P3B-CUTOVER1`: Reserved. No roadmap activation or legacy metadata/pointer edit has been executed.
+- `E3-P3B-DIFF1`: Reserved. No P3-B cutover diff exists.
+- `E3-P3B-DETECT1`: Reserved. No implementation/cutover detect-changes run is claimed for this docs-only, not-authorized boundary.
 
 ## Closure Evidence
 
 Use this section for final detect-changes, commit hash, and closure evidence when the plan reaches completion.
 
-Status: not started. No multi-plan conversion, authority cutover, implementation commit, build, Docker run, browser session, Playwright run, or target-repository action is claimed by the creation of this authoring plan.
+Status: bounded seven-child authoring closure complete; authority cutover and implementation remain not authorized. No build, Docker run, browser session, Playwright run, or target-repository action is claimed.
 
-Required closure evidence during authorized execution:
+Required closure evidence during authorized execution or a later P3-B resumption:
 
 - final Supervisor PASS after Pn-A;
 - dead-work review and cleanup result after Pn-B;
@@ -375,3 +378,9 @@ Required closure evidence during authorized execution:
 - docs-only Git diff/status and Anvien detect-changes result;
 - authorized commit hash or an explicit record that commit authorization was not granted;
 - confirmation that `E:\cheapapp.org`, production source, tests, runtime files, graph output, and repository root contain no plan-created changes.
+
+Current bounded closure record:
+
+- P3-A structural/link/crosswalk/field/ownership/graph checks are PASS under `E3-P3A-STRUCT1`, `E3-P3A-LINK1`, `E3-P3A-MAP1`, `E3-P3A-FIELDS1`, `E3-P3A-OWNER1`, and `E3-P3A-GRAPH1`.
+- The seven child authoring commits are `ce82a341`, `a1c66865`, `35a0611c`, `2de220bb`, `b19256e6`, `e0582469`, and `4f1c94e5`; the closure-ledger commit is recorded after the final authorized docs commit.
+- P3-B remains `blocked / not authorized`; preserve the legacy plan as active and do not edit its authority metadata or pointer until a separate owner instruction opens that slice.

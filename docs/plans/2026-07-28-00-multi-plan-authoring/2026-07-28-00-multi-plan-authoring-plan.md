@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P2-A through P2-G complete / Child 07 committed 4f1c94e5 / full-campaign closure audit open / legacy authority preserved / implementation unauthorized`
+- Status: `active / P2-A through P2-G complete / P3-A closure audit complete / P3-B authority cutover not authorized / legacy authority preserved / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -727,11 +727,12 @@ In scope:
   - Out of scope: implementation of any child, rewriting legacy history, target access, production/test/runtime changes, and technical re-audit.
   - Dependencies: P2-A through P2-G accepted with 28 standard child files present.
 - Phase Implementation Rule: do not implement `P3` directly. Complete P3-A and record a frozen candidate hash/inventory; then P3-B may request Supervisor review and perform the conditional authority cutover.
+- Current execution status: `P3-A complete`; `P3-B blocked / not authorized`. The user-authorized scope covered mechanical authoring of all seven children and its closure audit. No instruction authorizes roadmap activation or legacy metadata/pointer edits, so the legacy plan remains active.
 - Ordered Slice List:
   - P3-A: Prove cross-plan completeness, traceability, and ownership.
   - P3-B: Obtain Supervisor PASS and switch authority atomically.
 
-- [ ] P3-A: Prove cross-plan completeness, traceability, and ownership.
+- [x] P3-A: Prove cross-plan completeness, traceability, and ownership.
   - Goal: produce deterministic proof that the candidate multi-plan set is complete, non-overlapping, correctly linked, and structurally executable.
   - Scope Boundary:
     - Editable: roadmap validation/status fields and this authoring plan's ledgers.
@@ -774,13 +775,14 @@ In scope:
     - DB/data: 98/98 bijection with zero mismatch and one owner per mutable artifact.
     - Behavior test: all structural, successor-freshness, field, link, ordering, evidence-reference, and diff-boundary checks pass.
     - Cleanup/quarantine: validation creates no persistent artifact outside approved plan ledgers.
-    - Evidence IDs: `E3-P3A-STRUCT1`, `E3-P3A-LINK1`, `E3-P3A-OWNER1`, `E3-P3A-MAP1`, `E3-P3A-FIELDS1`, `E3-P3A-DIFF1`.
+     - Evidence IDs: `E3-P3A-STRUCT1`, `E3-P3A-LINK1`, `E3-P3A-OWNER1`, `E3-P3A-MAP1`, `E3-P3A-FIELDS1`, `E3-P3A-DIFF1`, `E3-P3A-GRAPH1`, and bounded Supervisor review `E3-P3A-SUPERVISOR1`.
     - Actual-status rows refreshed: roadmap candidate, seven child sets, 98-slice mapping, ownership, and cutover readiness.
   - Evidence Targets: complete candidate hashes, exact inventories, structural results, crosswalk results, link results, ownership check, and scoped Git diff.
   - Actual-status Update: mark campaign candidate `partial -> correct` only when every acceptance check is green; otherwise record exact failed child/slice and block cutover.
   - Commit Boundary: commit the validation-ledger/roadmap readiness update after acceptance and Supervisor review when authorized; do not change legacy authority in this commit.
 
 - [ ] P3-B: Obtain Supervisor PASS and switch authority atomically.
+   - Execution status: `blocked / not authorized`. This slice is reserved for a later explicit owner instruction; do not edit the roadmap authority block or legacy plan metadata/pointer in the current scope.
   - Goal: make the verified roadmap and child plans authoritative without a period of missing or dual active authority.
   - Scope Boundary:
     - Editable: roadmap authority/status block, legacy plan metadata/pointer block, and authoring ledgers.

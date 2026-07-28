@@ -1,7 +1,7 @@
 # Anvien Graph Identity and TypeScript Resolution Correctness v2 Roadmap
 
 Date: 2026-07-28
-Status: candidate / all seven child plan sets authored and committed / child 07 committed `4f1c94e5` / full-campaign closure audit open / legacy plan remains active / production implementation not authorized
+Status: candidate / P3-A seven-child authoring closure PASS / all seven child plan sets authored and committed / child 07 committed `4f1c94e5` / P3-B authority cutover not authorized / legacy plan remains active / production implementation not authorized
 Source plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-26-anvien-graph-identity-resolution-v2-plan.md`
 Plan-set authoring plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 Multi-plan root: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/`
@@ -17,6 +17,7 @@ Coordinate the graph-identity and TypeScript-resolution remediation as seven com
 - Candidate authority: this roadmap plus seven numbered child plan sets after all are authored and verified.
 - Partial child output is draft-only and does not authorize production implementation.
 - Authority cutover occurs only after the authoring plan's P3-A deterministic checks and P3-B unconditional Supervisor PASS.
+- Current authoring closure: P3-A deterministic checks and the bounded seven-child Supervisor review pass, but this does not activate the roadmap. P3-B authority cutover is not authorized in the current scope; preserve the legacy plan as active.
 - During cutover, preserve the legacy technical body and companion ledgers. Change only its status/pointer to `superseded / reference-only`.
 - After cutover, this roadmap is the sole campaign-order/status index and each child plan is the sole execution authority for its mapped legacy phase.
 - Multi-plan authoring does not authorize production implementation. Opening an implementation child still requires explicit owner direction under that child's gate.
@@ -183,6 +184,9 @@ Status history:
 | 2026-07-28 | Child 07 four-file candidate created by exact P7/E7/B7/source-status copy with three unchanged source IDs and terminal closure rule | legacy remains active; Child 07 Supervisor review pending; implementation remains unauthorized | `2026-07-28-00-multi-plan-authoring::E2-P2G-FILES1`, `2026-07-28-00-multi-plan-authoring::E2-P2G-MAP1`, `2026-07-28-00-multi-plan-authoring::E2-P2G-CLOSURE1` |
 | 2026-07-28 | Child 07 exact-copy candidate passed independent checks and Supervisor review | legacy remains active; Child 07 commit is pending; production implementation remains unauthorized | `2026-07-28-00-multi-plan-authoring::E2-P2G-SUP1` |
 | 2026-07-28 | Child 07 exact-copy authoring set committed as `4f1c94e5`; terminal child refreshed roadmap/campaign status | legacy remains active; all seven child sets are durable; full-campaign closure audit opens; production implementation remains unauthorized | `2026-07-28-00-multi-plan-authoring::E2-P2G-COMMIT1` |
+| 2026-07-28 | P3-A full seven-child closure audit passed: 7 folders, 28 standard files, 98/98 source IDs, 35/0 links, exact P/E/B blocks, lifecycle/ownership checks, and current graph evidence | legacy remains active; bounded authoring closure is accepted; P3-B authority cutover and production implementation remain not authorized | `2026-07-28-00-multi-plan-authoring::E3-P3A-STRUCT1`, `2026-07-28-00-multi-plan-authoring::E3-P3A-LINK1`, `2026-07-28-00-multi-plan-authoring::E3-P3A-OWNER1`, `2026-07-28-00-multi-plan-authoring::E3-P3A-MAP1`, `2026-07-28-00-multi-plan-authoring::E3-P3A-FIELDS1`, `2026-07-28-00-multi-plan-authoring::E3-P3A-GRAPH1`, `2026-07-28-00-multi-plan-authoring::E3-P3A-SUPERVISOR1` |
+
+Historical-status note: the earlier history rows describing the rejected/remapped Child 01 and pre-reset Child 02 candidate are preserved as audit history. Current Child 01 authority begins at `E2-P2A-REBUILD1`/`E2-P2A-SUP2`/`E2-P2A-COMMIT2`; those historical candidate hashes must not be read as current artifact hashes.
 
 ## Candidate Acceptance Gate
 
