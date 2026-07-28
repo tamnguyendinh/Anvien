@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0 complete / P1-A complete`
+- Status: `active / P0 complete / P1 complete / P2-A ready`
 - Plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -242,7 +242,7 @@ In scope:
   - Actual-status Update: append a refresh row and change transformation contract from `partial` to `correct` only after all checks pass.
   - Commit Boundary: commit only this docs-only snapshot/contract slice after acceptance and Supervisor review when execution and commit are authorized.
 
-- [ ] P1-B: Author the campaign roadmap and exact child inventory.
+- [x] P1-B: Author the campaign roadmap and exact child inventory.
   - Goal: create the single coordination document that fixes child order, ownership, dependencies, handoffs, status, and authority without duplicating implementation bodies.
   - Scope Boundary:
     - Editable: `2026-07-26-anvien-graph-identity-resolution-v2-roadmap.md` and this authoring plan's ledgers.

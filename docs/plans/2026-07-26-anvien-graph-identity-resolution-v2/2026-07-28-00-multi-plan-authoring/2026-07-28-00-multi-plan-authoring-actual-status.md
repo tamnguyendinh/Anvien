@@ -2,7 +2,7 @@
 
 Title: Anvien Graph Identity Resolution v2 Multi-Plan Authoring
 Date: 2026-07-28
-Status: P0 Complete / P1-A complete / execution active
+Status: P0 Complete / P1 complete / P2-A ready
 Companion plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -95,7 +95,8 @@ Record how many files the target is related to before deciding touch mode. A fil
 | Source slice inventory | All source IDs and per-phase counts are known | 98 source slices mapped exactly once in original order | correct | 98 slices | `E0-P0A-SLICE1`, `E0-P0A-SLICE2`, `E0-P0A-SLICE3`, `E0-P0A-SLICE4`, `E0-P0A-SLICE5`, `E0-P0A-SLICE6`, `E0-P0A-SLICE7`, `E0-P0A-TOTAL1` | freeze in P1-A; validate again in P3-A |
 | Frozen transformation crosswalk | 98 source IDs now have explicit child/local destinations | Preserve a bijective 98-row source-to-child contract through P3 | correct | 98 rows | `E1-P1A-MAP1`, `E1-P1A-MAP2` | preserve; consume in P1-B/P2 and revalidate in P3-A |
 | Legacy P8 closure | Three closure items exist only in the giant plan | Each of seven children has tailored Pn-A/Pn-B/Pn-C; no child 08 | partial | 3 source closure items / 0 child closure sets | `E0-P0A-TOTAL1`, `E0-P0A-DECISION1` | distribute during P2-A through P2-G |
-| Campaign roadmap | No roadmap exists | One roadmap owns order, status, dependencies, handoffs, and active authority index | missing | 0 files | `E0-P0A-SRC2`, `E0-P0A-DECISION2` | create in P1-B only |
+| Campaign roadmap | Candidate roadmap exists with seven-child inventory, authority gate, dependencies, ownership, and handoffs | One roadmap owns order, status, dependencies, handoffs, and active authority index | correct | 1 file / 0 graph relationships until refresh | `E1-P1B-ROADMAP1`, `E1-P1B-INVENTORY1`, `E1-P1B-LINK1` | preserve coordination responsibility; update status/link after each P2 slice |
+| Child standard-file inventory | Roadmap names 28 unique planned standard files across seven children | Create exactly those 28 files without extra child sets | correct | 28 planned names | `E1-P1B-INVENTORY1` | consume sequentially in P2-A through P2-G |
 | Child 01 plan set | Does not exist | Four-file complete child for legacy P1 with P0/local P1/Pn | missing | 0 files | `E0-P0A-SRC2`, `E0-P0A-SLICE1` | create in P2-A |
 | Child 02 plan set | Does not exist | Four-file complete child for legacy P2 with P0/local P1/Pn | missing | 0 files | `E0-P0A-SRC2`, `E0-P0A-SLICE2` | create in P2-B |
 | Child 03 plan set | Does not exist | Four-file complete child for legacy P3 with P0/local P1/Pn | missing | 0 files | `E0-P0A-SRC2`, `E0-P0A-SLICE3` | create in P2-C |
@@ -105,7 +106,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 | Child 07 plan set | Does not exist | Four-file complete child for legacy P7 with P0/local P1/Pn | missing | 0 files | `E0-P0A-SRC2`, `E0-P0A-SLICE7` | create in P2-G |
 | Child-independent ledgers | Evidence, benchmark, and current status are centralized in the legacy set | Each child owns a complete, phase-scoped ledger set and qualified cross-plan references | partial | 3 legacy ledgers / 0 child ledgers | `E0-P0A-SRC2`, `E0-P0A-DECISION2` | split ownership in each P2 slice; validate in P3-A |
 | Reader matrix ownership | One matrix exists at campaign root but no child exists to own it | Child 02 is sole mutation owner; other children link inspect-only | unbound | 1 file | `E0-P0A-SRC2`, `E0-P0A-OWNER1` | bind ownership in P2-B; do not duplicate/move by default |
-| Multi-plan authority | Candidate set does not exist | Roadmap becomes sole active campaign index after PASS | missing | 0 candidate files | `E0-P0A-SRC2`, `E0-P0A-AUTH1` | create/verify P1-P3; cut over only in P3-B |
+| Multi-plan authority | Roadmap exists as candidate; seven child sets do not yet exist; legacy remains active | Roadmap becomes sole active campaign index after PASS | partial | 1 of 29 candidate output files | `E1-P1B-ROADMAP1`, `E1-P1B-LINK1`, `E0-P0A-AUTH1` | author P2-A through P2-G; cut over only in P3-B |
 | Fake/stub planning output | No roadmap or child placeholder is being treated as implemented | No placeholder or draft may be treated as active authority | correct | 0 fake child outputs | `E0-P0A-SRC2` | preserve; structural check must reject placeholder tokens |
 | Target boundary | Target is a separate repository and not an authoring location | No target write/copy/move/read-as-source for this split | correct | out of scope | `E0-P0A-BOUNDARY1`, `E0-P0A-SCOPE1` | do-not-touch in every phase |
 | Execution authorization | User explicitly ordered execution of the accepted authoring plan | P1-Pn may proceed within the accepted docs-only scope | correct | N/A | `E1-P1A-AUTH1` | proceed to P1-B after P1-A acceptance/commit |
@@ -116,6 +117,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 |---------|------|------------|----------------|----------------|----------|-------------------|
 | R0 | 2026-07-28 | `master` at `68811c1643b604573e70551c7d4becb46e6ebbd8`; worktree clean before this authoring plan set; fresh Anvien index at the same commit | legacy five-artifact source set, phase/slice inventory, sample structure, future roadmap/child gap, target boundary | initial classification; P0 complete; execution blocked pending explicit instruction | `E0-P0A-GIT1`, `E0-P0A-GRAPH1`, `E0-P0A-STATUS1`, `E0-P0A-SRC1`, `E0-P0A-SRC2`, `E0-P0A-TOTAL1`, `E0-P0A-DECISION1` | keep P1-A blocked until explicit execution authority; do not create roadmap or children merely because this plan exists |
 | R1 | 2026-07-28 | `master` at `7b6c8e575a8f4fced05900cc8d42faebab234987`; clean after guide-plan commit; fresh Anvien index | execution authority, source snapshot, graph/docs boundary, and 98-row transformation crosswalk | execution `blocked -> active`; transformation contract `partial -> correct`; legacy source unchanged | `E1-P1A-AUTH1`, `E1-P1A-GIT1`, `E1-P1A-SNAPSHOT1`, `E1-P1A-GRAPH1`, `E1-P1A-FD1`, `E1-P1A-FD2`, `E1-P1A-MAP1`, `E1-P1A-MAP2` | P1-B may create the roadmap after P1-A review/commit |
+| R2 | 2026-07-28 | `master` at `87bb6262`; clean after P1-A commit | candidate roadmap, seven-child inventory, 28 planned standard filenames, dependency/handoff and hazard contract | roadmap `missing -> correct candidate`; child-file inventory `missing -> planned`; campaign authority remains partial/legacy-active | `E1-P1B-ROADMAP1`, `E1-P1B-INVENTORY1`, `E1-P1B-LINK1`, `E1-P1B-REDTEAM1`, `E1-P1B-SCOPE1` | P2-A may author child 01 after P1-B acceptance/commit |
 
 ## Phase Touch Map
 
@@ -295,8 +297,8 @@ Do not write, copy, move, stage, inspect as split source, or create any artifact
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
 | P1-A | Source hash is unchanged; 98-row crosswalk is exact; execution is authorized | complete P1-A and preserve its frozen contract |
-| P1-B | Roadmap is missing and seven-child inventory is known | ready after P1-A acceptance/commit; create exactly one coordination roadmap |
-| P2-A | Child 01 is missing; legacy P1 has 11 slices | keep; author one complete four-file child with 11 mappings |
+| P1-B | Candidate roadmap exists with exact inventory and legacy-active gate | complete P1-B; preserve roadmap as coordination-only |
+| P2-A | Child 01 is missing; legacy P1 has 11 slices | ready after P1-B acceptance/commit; author one complete four-file child with 11 mappings |
 | P2-B | Child 02 is missing; legacy P2 has 42 slices; matrix owner is unbound | keep; author complete child and bind sole matrix ownership |
 | P2-C | Child 03 is missing; legacy P3 has 17 slices | keep; require child-02 handoff |
 | P2-D | Child 04 is missing; legacy P4 has 15 slices | keep; require child-03 handoff |

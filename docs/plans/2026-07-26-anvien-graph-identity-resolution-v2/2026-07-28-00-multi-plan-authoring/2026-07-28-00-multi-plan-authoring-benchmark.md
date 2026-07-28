@@ -74,10 +74,10 @@ Benchmark sections must follow the plan phases:
 | P1-A | Source slice crosswalk rows | rows | 0 | 98 | 98 | 98 | +98 | `E1-P1A-MAP1` |
 | P1-A | Unmapped source slices | slices | 98 | 0 | 0 | 0 | -98 | `E1-P1A-MAP1` |
 | P1-A | Duplicate source mappings | mappings | 0 | 0 | 0 | 0 | 0 | `E1-P1A-MAP2` |
-| P1-B | Campaign roadmaps | files | 0 | 0 | — | 1 | 0 | `E1-P1B-ROADMAP1` |
-| P1-B | Roadmap child records | rows | 0 | 0 | — | 7 | 0 | `E1-P1B-INVENTORY1` |
-| P1-B | Roadmap planned standard child files | files | 0 | 0 | — | 28 | 0 | `E1-P1B-INVENTORY1` |
-| P1-B | Broken roadmap links | links | 0 | 0 | — | 0 | 0 | `E1-P1B-LINK1` |
+| P1-B | Campaign roadmaps | files | 0 | 1 | 1 | 1 | +1 | `E1-P1B-ROADMAP1` |
+| P1-B | Roadmap child records | rows | 0 | 7 | 7 | 7 | +7 | `E1-P1B-INVENTORY1` |
+| P1-B | Roadmap planned standard child files | files | 0 | 28 | 28 | 28 | +28 | `E1-P1B-INVENTORY1` |
+| P1-B | Broken roadmap links | links | 0 | 0 | 0 | 0 | 0 | `E1-P1B-LINK1` |
 
 ## B2 - P2 Benchmarks
 

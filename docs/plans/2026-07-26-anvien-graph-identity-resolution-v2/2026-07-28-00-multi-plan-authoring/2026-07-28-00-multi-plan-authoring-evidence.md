@@ -236,11 +236,11 @@ Matching plan item(s): `P1-A`, `P1-B`
 
 ### P1-B - Roadmap authoring
 
-Status: not started. The following IDs remain reserved until the roadmap exists.
-
-- `E1-P1B-ROADMAP1`: future roadmap path/hash and required-section evidence.
-- `E1-P1B-INVENTORY1`: future seven-child/28-file inventory contract evidence.
-- `E1-P1B-LINK1`: future roadmap link and slug validation evidence.
+- `E1-P1B-ROADMAP1`: Created `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-26-anvien-graph-identity-resolution-v2-roadmap.md`; SHA-256 `889F6231B327A30D3FCD8B891CDA0F6CFE2F70209FE26C23139383AB5908AA23`, 16,923 bytes, 180 lines. It owns campaign coordination only: authority, invariants, inventory, order, handoffs, shared ownership, target boundary, status protocol, and acceptance gates.
+- `E1-P1B-INVENTORY1`: The roadmap declares exactly seven implementation children, counts `11/42/17/15/4/6/3 = 98`, seven future P0/local-P1/Pn lifecycles, and 28 unique standard child filenames. No child 08 is inventoried.
+- `E1-P1B-LINK1`: Existing source-plan, authoring-plan, and exact-crosswalk paths resolve on disk. Future child paths are deliberately code-form planned paths while their status is `not authored`, so the candidate roadmap contains no false live child link. Roadmap authority remains candidate and the legacy plan remains active.
+- `E1-P1B-REDTEAM1`: Three bounded read-only red-team audits independently confirmed P1/P2, P3/P4, and P5-P7/P8 counts, order, ledger ownership, and handoffs. The roadmap records their migration hazards, including P3-B2A gate normalization, the P3-C1 title alias, P4's cross-child P1-A authority, nonnumeric S0-S11 adapter order, P5/P6 out-of-slice manifests, and validation-only P7.
+- `E1-P1B-SCOPE1`: P1-B created only the campaign-root roadmap and updated the authoring ledgers. It created no child folder, did not edit the legacy plan, production/tests/runtime/graph output, and did not access `E:\cheapapp.org`.
 
 ## E2 - P2 Evidence
 
