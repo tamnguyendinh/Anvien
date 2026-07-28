@@ -3,10 +3,10 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
-- Evidence: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
-- Benchmark: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
-- Actual status: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-actual-status.md`
+- Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
+- Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
+- Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
+- Actual status: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-actual-status.md`
 
 ## Benchmark Rules
 
@@ -85,6 +85,12 @@ Benchmark sections must follow the plan phases:
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
 | P2-A | Child 01 standard files | files | 0 | 4 | 4 | 4 | +4 | `E2-P2A-FILES1` |
 | P2-A | Child 01 mapped slices | slices | 0 | 11 | 11 | 11 | +11 | `E2-P2A-MAP1` |
+| P2-A1 | Independent sibling plan roots | roots | 1 mixed legacy/container root | 3 | 3 | 3 | +2 | `E2-P2A1-STRUCT1` |
+| P2-A1 | Misplaced immediate campaign entries in legacy root | entries | 4 (roadmap + 3 directories) | 0 | 0 | 0 | -4 | `E2-P2A1-INVENTORY1`, `E2-P2A1-MOVE1` |
+| P2-A1 | Files in structural move set | files | 13 | 13 | 13 | 13 at single destinations | 0 | `E2-P2A1-INVENTORY1`, `E2-P2A1-MOVE1` |
+| P2-A1 | Standard authoring files in authoring root | files | 0 | 4 | 4 | 4 | +4 | `E2-P2A1-STRUCT1` |
+| P2-A1 | Roadmaps in separate multi-plan root | files | 0 | 1 | 1 | 1 | +1 | `E2-P2A1-STRUCT1` |
+| P2-A1 | Broken active-plan links after move | links | not measured pre-move | 0 | 0 | 0 | N/A | `E2-P2A1-LINK1` |
 | P2-B | Child 02 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2B-FILES1` |
 | P2-B | Child 02 mapped slices | slices | 0 | 0 | — | 42 | 0 | `E2-P2B-MAP1` |
 | P2-B | `index-reader-matrix.md` mutation owners | owners | 0 assigned | 0 assigned | — | 1 | 0 | `E2-P2B-MATRIX1` |

@@ -3,15 +3,15 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0 complete / P1 complete / P2-A complete / P2-B ready`
-- Plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
-- Evidence: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
-- Benchmark: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
-- Actual status: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-actual-status.md`
+- Status: `active / P0 complete / P1 complete / P2-A complete / P2-A1 accepted / commit pending / P2-B ready-after-commit`
+- Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
+- Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
+- Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
+- Actual status: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-actual-status.md`
 
 ## Goal
 
-Convert the existing oversized `2026-07-26-anvien-graph-identity-resolution-v2` plan into a controlled multi-plan campaign without changing its technical intent: one parent roadmap plus seven complete implementation child plan sets, one child for each legacy implementation phase P1-P7. Preserve all 98 legacy implementation slices exactly once, give every child its own P0 and Pn-A/Pn-B/Pn-C lifecycle, and switch authority away from the legacy plan only after deterministic cross-plan checks and Supervisor acceptance pass.
+Convert the existing oversized `2026-07-26-anvien-graph-identity-resolution-v2` plan into a controlled multi-plan campaign without changing its technical intent. Keep three independent sibling roots under `docs/plans/`: the preserved legacy plan, this split-authoring plan, and a separate multi-plan campaign containing one roadmap plus seven complete implementation child plan sets. Preserve all 98 legacy implementation slices exactly once, give every child its own P0 and Pn-A/Pn-B/Pn-C lifecycle, and switch authority away from the legacy plan only after deterministic cross-plan checks and Supervisor acceptance pass.
 
 ## Rules
 
@@ -52,7 +52,7 @@ Convert the existing oversized `2026-07-26-anvien-graph-identity-resolution-v2` 
 - If tests write DB rows, app state, files, queues, provider state, or other persistent data, the slice must define cleanup or quarantine before implementation.
 - This is a documentation-only authoring plan. Its execution may edit only the campaign roadmap, the seven child plan sets, this authoring plan set, and the legacy plan's authority marker after acceptance; it must not edit production code, tests, runtime configuration, generated graph data, or target-repository content.
 - `E:\cheapapp.org` is out of scope and must not be written, copied, moved, staged, or used as storage. No file from it may be copied into `E:\Anvien`.
-- Do not create any plan, fixture, report, temporary directory, or other artifact at the Anvien repository root. All authoring outputs belong under `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/`; any debug-only temporary material belongs under `E:\Anvien\.tmp\`.
+- Do not create any plan, fixture, report, temporary directory, or other artifact at the Anvien repository root. The legacy plan remains at `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/`; this authoring plan belongs at `docs/plans/2026-07-28-00-multi-plan-authoring/`; the roadmap and all child plans belong at `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/`. These three plan roots are siblings and must never be nested inside one another. Debug-only temporary material belongs under `E:\Anvien\.tmp\`.
 - The legacy plan and its ledgers remain the active authority until P3-B receives Supervisor PASS. Partial child-plan output is draft-only and cannot authorize implementation.
 - The legacy implementation phases map one-to-one: P1 through P7 become child plans `01` through `07`. Legacy P8 is closure material and must be distributed into each child's Pn-A/Pn-B/Pn-C; it must not become child plan `08`.
 - Every child is a complete standard four-file plan set. A roadmap entry or a link to the legacy plan cannot replace a child's P0, implementation phase, evidence ledger, benchmark ledger, actual-status ledger, or Pn closure.
@@ -80,8 +80,8 @@ Authority must remain unambiguous throughout the migration. If the legacy plan i
 In scope:
 
 - Freeze the legacy plan at SHA-256 `365E17A7F7CD539426568A2874A1AD1231D120C5391BFE3D8B875D5F760A45FB` as the transformation input, or stop and re-baseline if an authorized later edit changes it before execution.
-- Create one parent roadmap at `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-26-anvien-graph-identity-resolution-v2-roadmap.md`.
-- Create exactly seven implementation child plan folders under the existing campaign folder:
+- Create one parent roadmap at `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-26-anvien-graph-identity-resolution-v2-roadmap.md`.
+- Create exactly seven implementation child plan folders under `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/`:
   - `2026-07-28-01-graph-identity-contract-and-strict-construction`
   - `2026-07-28-02-versioned-persistence-and-v2-cutover`
   - `2026-07-28-03-typescript-binding-pattern-extraction`
@@ -90,6 +90,7 @@ In scope:
   - `2026-07-28-06-ambient-external-resolution-and-diagnostics`
   - `2026-07-28-07-cross-surface-acceptance-and-target-validation`
 - Create the four standard planner files in each child folder with matching date and slug.
+- Keep the four-file authoring plan set in its own sibling root `docs/plans/2026-07-28-00-multi-plan-authoring/`; it is not a child of either the legacy plan or the resulting multi-plan.
 - Map legacy P1-P7 to child `01`-`07`, respectively, and map all 98 implementation slices exactly once into each child's local P1.
 - Give each child a populated P0, one local implementation phase containing the complete source-phase slice set, and tailored Pn-A/Pn-B/Pn-C closure.
 - Split current status, evidence, benchmarks, dependencies, acceptance, and handoff ownership so each child can be executed and closed independently without relying on chat history.
@@ -148,6 +149,7 @@ In scope:
 ### Authority and ownership contract
 
 - The authoring plan set is control material for producing the campaign and is not counted among the seven implementation children.
+- Directory ownership is exact: the legacy root owns the frozen source four-file set plus its existing `index-reader-matrix.md` auxiliary artifact; the authoring root owns only this standard four-file control plan; the multi-plan root owns the roadmap and numbered child plan folders. `index-reader-matrix.md` is not moved or duplicated by the structural correction; future mutation remains owned only by child 02.
 - The roadmap is the sole campaign-order and active-authority index after cutover.
 - A child plan is the sole execution authority for its mapped source phase after cutover.
 - The legacy plan remains active until all seven children, all 28 standard child files, the roadmap, and the 98-row crosswalk pass checks and Supervisor review.
@@ -158,6 +160,7 @@ In scope:
 ## Acceptance Criteria
 
 - Exactly one roadmap exists at the specified campaign-root path.
+- Exactly three independent sibling plan roots exist at the specified paths; the legacy root contains no authoring-plan directory, roadmap, or numbered child-plan directory.
 - Exactly seven implementation child folders exist with the specified slugs and order.
 - Exactly 28 standard child files exist: four per child, with matching filenames, metadata links, and H1 type.
 - All seven children contain a completed P0 structure, one local P1, and Pn-A/Pn-B/Pn-C.
@@ -298,9 +301,10 @@ In scope:
   - In scope: seven named child folders, 28 standard files, phase-specific P0/evidence/benchmark/Pn content, local-ID remapping, and roadmap status/handoffs.
   - Out of scope: implementing any child, modifying production/tests/runtime, changing technical scope, or switching legacy authority.
   - Dependencies: P1-A and P1-B accepted; children are authored in numeric/source-phase order.
-- Phase Implementation Rule: do not implement `P2` directly. Complete P2-A through P2-G one child at a time; after each child, verify it, record evidence, refresh actual-status and roadmap, and commit the docs-only slice when authorized before opening the next child.
+- Phase Implementation Rule: do not implement `P2` directly. Complete P2-A, the user-required structural correction P2-A1, then P2-B through P2-G in order. After each slice, verify it, record evidence, refresh actual-status and roadmap, and commit the docs-only scope when authorized before opening the next slice.
 - Ordered Slice List:
   - P2-A: Author child 01 for legacy P1.
+  - P2-A1: Rebase authored artifacts into three independent sibling plan roots.
   - P2-B: Author child 02 for legacy P2.
   - P2-C: Author child 03 for legacy P3.
   - P2-D: Author child 04 for legacy P4.
@@ -357,10 +361,59 @@ In scope:
   - Actual-status Update: mark child 01 `missing -> correct`; keep child 02 blocked on accepted child-01 authoring handoff.
   - Commit Boundary: commit only child 01 plus its roadmap/authoring ledger updates after acceptance and Supervisor review when authorized.
 
+- [x] P2-A1: Rebase authored artifacts into three independent sibling plan roots.
+  - Goal: correct the campaign directory ownership so the legacy plan, split-authoring plan, and resulting multi-plan are three independent sibling plans before child 02 authoring continues.
+  - Scope Boundary:
+    - Editable: this authoring four-file set and its path references; the roadmap; child-01 four-file set; path-only references in the unaccepted child-02 draft; Git move metadata for those artifacts.
+    - Inspect-only: the legacy four-file source set, `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/index-reader-matrix.md`, existing Supervisor reports, Git history, and planner templates.
+    - Preserve-only: legacy plan/ledger contents and hashes, matrix content/path, child slice semantics/evidence IDs, production source, tests, runtime, graph outputs, and `E:\cheapapp.org`.
+    - Out of scope: accepting child 02, authoring children 03-07, changing implementation contracts, moving/duplicating the reader matrix, or switching authority.
+  - Non-Goals: do not solve the hierarchy by nesting one plan inside another, copying files, leaving compatibility duplicates, or treating a filesystem move as implementation acceptance.
+  - Pre-flight Questions:
+    - Data source: the user's three-root directory contract, commit `b760d156`, current disk inventory, and frozen legacy hash.
+    - Display permission: N/A — documentation structure only.
+    - DB read flow: N/A — no database.
+    - DB write flow: N/A — no database.
+    - Render location: three sibling roots under `docs/plans/` and their Markdown links.
+    - UI behavior flow: N/A — no UI.
+    - Docker runtime: N/A — no executable change.
+    - Playwright target: N/A — no runtime surface.
+    - Behavior test: exact path inventory, Git rename/copy detection, companion-link resolution, relative roadmap links, legacy-root contamination count, hashes, placeholders, and scoped diff.
+    - Cleanup/quarantine: remove only superseded nested directories after every file is proven present at its single destination; create no temporary plan copy.
+    - External side effects: docs-only filesystem moves and path-reference edits inside `E:\Anvien`.
+    - N/A notes: disk/Git/Markdown validation is the nearest real boundary.
+  - Work Steps:
+    1. Freeze the pre-move inventory/hashes and rebase the committed authoring set to `docs/plans/2026-07-28-00-multi-plan-authoring/`; create `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/`; move the roadmap and child 01 into it; relocate the unaccepted child-02 draft there without marking P2-B complete.
+       - UI flow check: N/A — docs-only.
+       - DB/data flow check: each source file has exactly one destination; no copy/duplicate remains.
+       - Render location check: legacy, authoring, and multi-plan roots are siblings directly under `docs/plans/`.
+       - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; inspect the exact disk tree and Git rename state.
+       - Evidence target: `E2-P2A1-USER1`, `E2-P2A1-INVENTORY1`, `E2-P2A1-MOVE1`, `E2-P2A1-GRAPH1`, `E2-P2A1-FD1`.
+    2. Update companion/source/roadmap links without changing slice semantics, run deterministic structure/link/hash/Git-scope checks, call Supervisor, and keep P2-B paused until this correction is accepted and committed.
+       - UI flow check: N/A — docs-only.
+       - DB/data flow check: legacy root retains only its source four-file set plus matrix; authoring root has exactly four files; multi-plan root has one roadmap and the authored/draft child folders at their single locations.
+       - Render location check: every companion and roadmap link resolves from the corrected roots.
+       - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; render/read Markdown and validate links from disk.
+       - Evidence target: `E2-P2A1-STRUCT1`, `E2-P2A1-LINK1`, `E2-P2A1-DIFF1`, `E2-P2A1-SUP1`.
+  - Implementation Gate:
+    - User correction explicitly requires three sibling plan roots; P2-A is committed at `b760d156` and P2-B is not accepted.
+    - Legacy source hash must remain `365E17A7F7CD539426568A2874A1AD1231D120C5391BFE3D8B875D5F760A45FB`; the matrix must remain byte-identical at its legacy-root path.
+  - Acceptance:
+    - Source: three sibling roots exist exactly once; the legacy four-file body and matrix are unchanged.
+    - Runtime/UI: N/A — no executable/runtime/UI change.
+    - DB/data: authoring root owns four standard files; multi-plan root owns one roadmap plus child folders; legacy root owns no nested authoring/multi-plan output.
+    - Behavior test: all companion/roadmap/source links resolve, Git shows moves rather than duplicates where applicable, and no stale old path remains in active plan artifacts.
+    - Cleanup/quarantine: no copied duplicate, empty obsolete nested directory, repository-root artifact, or target artifact remains.
+    - Evidence IDs: `E2-P2A1-USER1`, `E2-P2A1-INVENTORY1`, `E2-P2A1-MOVE1`, `E2-P2A1-GRAPH1`, `E2-P2A1-FD1`, `E2-P2A1-STRUCT1`, `E2-P2A1-LINK1`, `E2-P2A1-DIFF1`, `E2-P2A1-SUP1`.
+    - Actual-status rows refreshed: three-root ownership, roadmap location, child-01 location, child-02 draft location, and P2-B readiness.
+  - Evidence Targets: before/after tree, hashes, fresh Anvien/file-detail state, Git rename state, zero nested plan roots, resolved links, scoped diff, and unconditional Supervisor PASS.
+  - Actual-status Update: directory ownership `wrong -> correct`; P2-B `paused -> ready` only after acceptance/commit.
+  - Commit Boundary: commit this structural correction separately; exclude the unaccepted child-02 four-file draft content from the commit, then resume P2-B.
+
 - [ ] P2-B: Author child 02 for legacy P2.
   - Goal: create the complete persistence/cutover child plan set with all 42 legacy P2 slices and sole mutation ownership of `index-reader-matrix.md`.
   - Scope Boundary:
-    - Editable: the four child-02 files, roadmap status, authoring ledgers, and matrix ownership metadata/reference only; matrix content remains unchanged during authoring.
+    - Editable: the four child-02 files under the separate multi-plan root, roadmap status, authoring ledgers, and matrix ownership metadata/reference only; matrix content remains unchanged during authoring.
     - Inspect-only: legacy P2, source ledgers, `index-reader-matrix.md`, child-01 handoff, templates, and roadmap.
     - Preserve-only: legacy bodies, child 01, children 03-07, production/tests/runtime, graph outputs, and target.
     - Out of scope: executing persistence/cutover or duplicating the reader matrix.
@@ -382,7 +435,7 @@ In scope:
     1. Create and populate all four child-02 files with P0, one local P1 containing 42 mapped slices, independent ledgers, and tailored Pn closure/handoff.
        - UI flow check: N/A — docs-only.
        - DB/data flow check: assign persistence/cutover and matrix ownership only to child 02.
-       - Render location check: exactly four files in child 02; matrix remains single at campaign root.
+       - Render location check: exactly four files in child 02; the matrix remains single at `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/index-reader-matrix.md` in the preserved legacy root.
        - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; run template/field checks.
        - Evidence target: `E2-P2B-FILES1` and `E2-P2B-STRUCT1`.
     2. Map the complete P2 inventory in original order, qualify child-01 dependency and later handoffs, prove 42 unique destinations, and update roadmap/authoring ledgers.
@@ -393,7 +446,7 @@ In scope:
        - Evidence target: `E2-P2B-MAP1`, `E2-P2B-MATRIX1`, and `B-P2-B`.
   - Implementation Gate:
     - Record Anvien freshness and docs relationship limitation before edits.
-    - P2-A must pass; the full 42-ID P2 inventory and matrix path must match the frozen contract.
+    - P2-A1 must pass and be committed after P2-A; the full 42-ID P2 inventory and exact matrix path must match the frozen contract.
   - Acceptance:
     - Source: four standard child files exist; legacy and matrix contents remain unchanged.
     - Runtime/UI: N/A — no runtime/UI change.

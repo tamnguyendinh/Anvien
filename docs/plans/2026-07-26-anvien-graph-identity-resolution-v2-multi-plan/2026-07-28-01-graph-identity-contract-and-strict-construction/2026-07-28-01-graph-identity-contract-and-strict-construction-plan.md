@@ -4,11 +4,11 @@
 
 - Date: `2026-07-28`
 - Status: `candidate / P0 complete / implementation not authorized`
-- Plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
-- Evidence: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
-- Benchmark: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
-- Actual status: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-actual-status.md`
-- Roadmap: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-26-anvien-graph-identity-resolution-v2-roadmap.md`
+- Plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
+- Evidence: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
+- Benchmark: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
+- Actual status: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-actual-status.md`
+- Roadmap: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-26-anvien-graph-identity-resolution-v2-roadmap.md`
 - Source phase: legacy `P1`
 
 ## Goal
@@ -216,7 +216,7 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
 - [x] P0-A: Complete actual status before implementation work.
   - Goal: establish this child's real current state, source provenance, relationship scope, campaign-authority gate, and implementation authorization.
   - Work Steps: verify the legacy phase/hash and local slice inventory, confirm no production drift since the accepted baseline, classify the child-owned behavior and related files, record target/scanner boundaries, and update local P1 assumptions from evidence.
-  - Implementation Gate: no production implementation begins until campaign authority has cut over, `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-actual-status.md` is refreshed, and explicit owner authorization opens this child and local P1-A. No upstream-child handoff applies.
+  - Implementation Gate: no production implementation begins until campaign authority has cut over, `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-actual-status.md` is refreshed, and explicit owner authorization opens this child and local P1-A. No upstream-child handoff applies.
   - Acceptance: actual status contains exact local evidence IDs, relationship counts or truthful bounded inventories, preserve/edit/validate modes, blockers, and an R0 baseline.
 
 ### P1: Graph identity contract and strict graph construction
