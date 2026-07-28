@@ -1,7 +1,7 @@
 # Anvien Graph Identity and TypeScript Resolution Correctness v2 Roadmap
 
 Date: 2026-07-28
-Status: candidate / child plans not yet authored / legacy plan remains active
+Status: candidate / child 01 authoring accepted / children 02-07 not yet authored / legacy plan remains active
 Source plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-26-anvien-graph-identity-resolution-v2-plan.md`
 Plan-set authoring plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 Exact crosswalk: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md#e1-p1a-map1---exact-source-to-child-crosswalk`
@@ -53,7 +53,7 @@ Legacy P8 contains three closure roles. It is excluded from the 98-row implement
 
 | No. | Plan folder | Primary responsibility | Source | Slices | Status | Depends on / handoff |
 |-----|-------------|------------------------|--------|-------:|--------|----------------------|
-| 01 | `2026-07-28-01-graph-identity-contract-and-strict-construction` | Identity contract, lossless declaration/source-site identity, strict graph construction, shadow-v2 proof | P1 | 11 | not authored | Accepted authoring roadmap/P0 |
+| 01 | [2026-07-28-01-graph-identity-contract-and-strict-construction](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | Identity contract, lossless declaration/source-site identity, strict graph construction, shadow-v2 proof | P1 | 11 | candidate / authoring accepted / P0 complete / implementation not authorized | Accepted authoring roadmap/P0 |
 | 02 | `2026-07-28-02-versioned-persistence-and-v2-cutover` | Compatibility manifest, opaque readers, S0-S11 parity, atomic generations, v2 cutover | P2 | 42 | not authored | Child 01 accepted/committed; owns reader matrix |
 | 03 | `2026-07-28-03-typescript-binding-pattern-extraction` | Recursive binding facts, declaration contexts, graph and adapter projection | P3 | 17 | not authored | Child 02 identity-v2 cutover handoff |
 | 04 | `2026-07-28-04-typescript-export-semantics` | ExportFact semantics, export syntax extraction, graph and adapter projection | P4 | 15 | not authored | Child 03; child 01 decision authority; child 02 matrix inspect-only |
@@ -67,7 +67,7 @@ Every row below represents four required files inside its plan folder. Planned p
 
 | Child | Plan | Evidence | Benchmark | Actual status |
 |-------|------|----------|-----------|---------------|
-| 01 | `2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md` | `2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md` | `2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md` | `2026-07-28-01-graph-identity-contract-and-strict-construction-actual-status.md` |
+| 01 | [plan](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | [evidence](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md) | [benchmark](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md) | [actual status](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-actual-status.md) |
 | 02 | `2026-07-28-02-versioned-persistence-and-v2-cutover-plan.md` | `2026-07-28-02-versioned-persistence-and-v2-cutover-evidence.md` | `2026-07-28-02-versioned-persistence-and-v2-cutover-benchmark.md` | `2026-07-28-02-versioned-persistence-and-v2-cutover-actual-status.md` |
 | 03 | `2026-07-28-03-typescript-binding-pattern-extraction-plan.md` | `2026-07-28-03-typescript-binding-pattern-extraction-evidence.md` | `2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md` | `2026-07-28-03-typescript-binding-pattern-extraction-actual-status.md` |
 | 04 | `2026-07-28-04-typescript-export-semantics-plan.md` | `2026-07-28-04-typescript-export-semantics-evidence.md` | `2026-07-28-04-typescript-export-semantics-benchmark.md` | `2026-07-28-04-typescript-export-semantics-actual-status.md` |
@@ -152,6 +152,8 @@ Status history:
 |------|-------|------------------|----------|
 | 2026-07-28 | P1-A froze legacy hash and 98-row crosswalk | legacy remains active | authoring `E1-P1A-SNAPSHOT1`, `E1-P1A-MAP1`, `E1-P1A-MAP2` |
 | 2026-07-28 | P1-B created candidate roadmap and seven-child inventory | legacy remains active; children not authored | authoring `E1-P1B-ROADMAP1`, `E1-P1B-INVENTORY1`, `E1-P1B-LINK1` |
+| 2026-07-28 | P2-A authored child 01 with 11 mapped slices and 78 exact implementation evidence IDs | legacy remains active; child 01 is candidate and awaits authoring Supervisor | authoring `E2-P2A-FILES1`, `E2-P2A-STRUCT1`, `E2-P2A-MAP1` |
+| 2026-07-28 | P2-A Supervisor PASS accepted child 01 after closing the false-upstream wording blocker | legacy remains active; child 01 authoring accepted; implementation remains unauthorized | authoring `E2-P2A-SUP1` |
 
 ## Candidate Acceptance Gate
 

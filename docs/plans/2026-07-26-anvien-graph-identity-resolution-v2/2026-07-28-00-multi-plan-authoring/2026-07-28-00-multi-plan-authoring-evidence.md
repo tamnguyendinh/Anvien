@@ -246,9 +246,13 @@ Matching plan item(s): `P1-A`, `P1-B`
 
 Matching plan item(s): `P2-A`, `P2-B`, `P2-C`, `P2-D`, `P2-E`, `P2-F`, `P2-G`
 
-Status: not started. Each child authoring slice must replace its reserved entries with exact files, hashes, structural results, mapping results, qualified dependencies, and roadmap/actual-status updates.
+Status: P2-A complete; P2-B ready. Each later child authoring slice must replace its reserved entries with exact files, hashes, structural results, mapping results, qualified dependencies, and roadmap/actual-status updates.
 
-- `E2-P2A-FILES1`, `E2-P2A-STRUCT1`, `E2-P2A-MAP1`: future child-01 four-file, completeness, and 11-slice mapping evidence.
+- `E2-P2A-FILES1`: Child 01 contains exactly four standard files. Accepted SHA-256 values after relationship/dependency refresh and final whitespace hygiene: plan `2804538FE1412C91D92891CF469AD4FB9A39EECDA4E92AED7CDF3FA6B878B343`; evidence `08EB245ECA3D7BA968FFD6F31F6E831600E0BED08422DC209493B844F28B626B`; benchmark `9889791A0F47E25BBD0E1F8B8CB3C8FC322E00CE82BD9BF1D5C429A60794842A`; actual status `C079F5CFE3702D16C502E79E0741184CE22C09E642939C2B4FF0EDEA0333E925`.
+- `E2-P2A-STRUCT1`: Child 01 has P0 complete, one local P1, 11 implementation blocks with all required planner fields, 11 source-slice provenance fields, tailored Pn-A/Pn-B/Pn-C, a preserved architecture/decision/one-file owner annex, zero placeholders, and zero trailing whitespace.
+- `E2-P2A-MAP1`: Exact mapping is 11 source IDs -> 11 unique local IDs in source order. All 78 source-required P1 evidence IDs exist in the child evidence ledger, appear in local slice acceptance, and have 11 preserved traceability rows. No production, legacy, matrix, or target content changed.
+- `E2-P2A-FD1`: After a fresh Anvien analyze, child-01 plan file-detail reports parsed Markdown/docs, low risk, one related file through the roadmap's inbound `IMPORTS` relationship, zero unresolved, and a current index at `c444e8c4`.
+- `E2-P2A-SUP1`: `reports/Supervisor/rp_supervisor_260728_131205_by_gpt-5-codex_multi_plan_p2a_child_01.md` records unconditional PASS after deterministic checks and a red-team rejection/resubmission cycle closed the false-upstream dependency invariant.
 - `E2-P2B-FILES1`, `E2-P2B-STRUCT1`, `E2-P2B-MAP1`, `E2-P2B-MATRIX1`: future child-02 four-file, completeness, 42-slice mapping, and single matrix-owner evidence.
 - `E2-P2C-FILES1`, `E2-P2C-STRUCT1`, `E2-P2C-MAP1`: future child-03 four-file, completeness, and 17-slice mapping evidence.
 - `E2-P2D-FILES1`, `E2-P2D-STRUCT1`, `E2-P2D-MAP1`: future child-04 four-file, completeness, and 15-slice mapping evidence.

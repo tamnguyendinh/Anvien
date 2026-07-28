@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0 complete / P1 complete / P2-A ready`
+- Status: `active / P0 complete / P1 complete / P2-A complete / P2-B ready`
 - Plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -308,7 +308,7 @@ In scope:
   - P2-F: Author child 06 for legacy P6.
   - P2-G: Author child 07 for legacy P7.
 
-- [ ] P2-A: Author child 01 for legacy P1.
+- [x] P2-A: Author child 01 for legacy P1.
   - Goal: create the complete graph-identity/strict-construction child plan set with all 11 legacy P1 slices.
   - Scope Boundary:
     - Editable: the four files under `2026-07-28-01-graph-identity-contract-and-strict-construction/`, roadmap status, and authoring ledgers.
@@ -351,7 +351,7 @@ In scope:
     - DB/data: 11/11 source slices map once in original order.
     - Behavior test: child structure, required fields, links, P0, P1, and Pn all pass.
     - Cleanup/quarantine: no duplicate or partial child-01 file remains.
-    - Evidence IDs: `E2-P2A-FILES1`, `E2-P2A-STRUCT1`, `E2-P2A-MAP1`.
+    - Evidence IDs: `E2-P2A-FILES1`, `E2-P2A-STRUCT1`, `E2-P2A-MAP1`, `E2-P2A-FD1`, `E2-P2A-SUP1`.
     - Actual-status rows refreshed: child 01, roadmap status, mapped-slice total, and next-child dependency.
   - Evidence Targets: four-file inventory, 11-row mapping, field completeness, local evidence ownership, and link validation.
   - Actual-status Update: mark child 01 `missing -> correct`; keep child 02 blocked on accepted child-01 authoring handoff.

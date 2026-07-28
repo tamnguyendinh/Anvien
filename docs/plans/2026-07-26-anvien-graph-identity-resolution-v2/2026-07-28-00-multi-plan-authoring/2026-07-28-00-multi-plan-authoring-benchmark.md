@@ -83,8 +83,8 @@ Benchmark sections must follow the plan phases:
 
 | Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
-| P2-A | Child 01 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2A-FILES1` |
-| P2-A | Child 01 mapped slices | slices | 0 | 0 | — | 11 | 0 | `E2-P2A-MAP1` |
+| P2-A | Child 01 standard files | files | 0 | 4 | 4 | 4 | +4 | `E2-P2A-FILES1` |
+| P2-A | Child 01 mapped slices | slices | 0 | 11 | 11 | 11 | +11 | `E2-P2A-MAP1` |
 | P2-B | Child 02 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2B-FILES1` |
 | P2-B | Child 02 mapped slices | slices | 0 | 0 | — | 42 | 0 | `E2-P2B-MAP1` |
 | P2-B | `index-reader-matrix.md` mutation owners | owners | 0 assigned | 0 assigned | — | 1 | 0 | `E2-P2B-MATRIX1` |
@@ -98,12 +98,12 @@ Benchmark sections must follow the plan phases:
 | P2-F | Child 06 mapped slices | slices | 0 | 0 | — | 6 | 0 | `E2-P2F-MAP1` |
 | P2-G | Child 07 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2G-FILES1` |
 | P2-G | Child 07 mapped slices | slices | 0 | 0 | — | 3 | 0 | `E2-P2G-MAP1` |
-| P2 | Complete child plan sets | plan sets | 0 | 0 | — | 7 | 0 | `E2-P2G-FILES1` |
-| P2 | Standard child files | files | 0 | 0 | — | 28 | 0 | `E2-P2G-FILES1` |
-| P2 | Child P0 lifecycle sections | sections | 0 | 0 | — | 7 | 0 | `E2-P2G-STRUCT1` |
-| P2 | Child local implementation phases | phases | 0 | 0 | — | 7 | 0 | `E2-P2G-STRUCT1` |
-| P2 | Child Pn-A/Pn-B/Pn-C sets | closure sets | 0 | 0 | — | 7 | 0 | `E2-P2G-CLOSURE1` |
-| P2 | Cumulative mapped destination slices | slices | 0 | 0 | — | 98 | 0 | `E2-P2G-MAP1` |
+| P2 | Complete child plan sets | plan sets | 0 | 1 | — | 7 | +1 | `E2-P2A-FILES1` |
+| P2 | Standard child files | files | 0 | 4 | — | 28 | +4 | `E2-P2A-FILES1` |
+| P2 | Child P0 lifecycle sections | sections | 0 | 1 | — | 7 | +1 | `E2-P2A-STRUCT1` |
+| P2 | Child local implementation phases | phases | 0 | 1 | — | 7 | +1 | `E2-P2A-STRUCT1` |
+| P2 | Child Pn-A/Pn-B/Pn-C sets | closure sets | 0 | 1 | — | 7 | +1 | `E2-P2A-STRUCT1` |
+| P2 | Cumulative mapped destination slices | slices | 0 | 11 | — | 98 | +11 | `E2-P2A-MAP1` |
 
 ## B3 - P3 Benchmarks
 
