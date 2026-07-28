@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C authoring active / P2-D-P2-G blocked / implementation unauthorized`
+- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C exact-copy Supervisor PASS / commit pending / P2-D-P2-G blocked / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -470,7 +470,7 @@ In scope:
   - Commit Boundary: commit child 02, the exact child-01 successor-freshness plan/evidence correction, and roadmap/authoring ledger updates only after acceptance and Supervisor review.
 
 - [ ] P2-C: Author child 03 for legacy P3.
-  - Current Status: authoring active after the accepted Child 02 exact-copy set was committed at `a1c66865`; implementation remains unauthorized.
+  - Current Status: exact-copy four-file candidate created after Child 02 commit `a1c66865`; deterministic source-block, graph, red-team, and Supervisor review PASS; commit pending and implementation remains unauthorized.
   - Goal: create the complete TypeScript binding-pattern child plan set with all 17 legacy P3 slices.
   - Scope Boundary:
     - Editable: child-03 four-file set, roadmap status, and authoring ledgers.
@@ -513,7 +513,7 @@ In scope:
     - DB/data: 17/17 slices map exactly once.
     - Behavior test: child lifecycle, complete fields, source order, and links pass.
     - Cleanup/quarantine: no partial child-03 artifact remains.
-    - Evidence IDs: `E2-P2C-FILES1`, `E2-P2C-STRUCT1`, `E2-P2C-MAP1`.
+    - Evidence IDs: `E2-P2C-FILES1`, `E2-P2C-STRUCT1`, `E2-P2C-MAP1`, `E2-P2C-VALID1`, `E2-P2C-GRAPH1`, `E2-P2C-FD1`, `E2-P2C-REDTEAM1`, `E2-P2C-SUP1`.
     - Actual-status rows refreshed: child 03, cumulative mapped count, and child-04 dependency.
   - Evidence Targets: four-file inventory, 17-row mapping, context/adapter coverage, and qualified evidence links.
   - Actual-status Update: mark child 03 `missing -> correct`; keep child 04 pending child-03 handoff.

@@ -96,8 +96,13 @@ Benchmark sections must follow the plan phases:
 | P2-B | `index-reader-matrix.md` mutation owners | owners | 0 assigned | 1 assigned | 1 | 1 | +1 | `E2-P2B-MATRIX1`, `E2-P2B-SUP1` |
 | P2-B | Authored child plans with the exact successor-freshness rule | plans | 0 | 2 | 2 committed | 2 of 2 authored | +2 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2B-RCOMMIT1` |
 | P2-B | Authored successor actual-status updates executed | updates | 0 | 0 | pending implementation closure | 0 before implementation | 0 | `E2-P2A-REBUILD1` |
-| P2-C | Child 03 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2C-FILES1` |
-| P2-C | Child 03 mapped slices | slices | 0 | 0 | — | 17 | 0 | `E2-P2C-MAP1` |
+| P2-C | Child 03 standard files | files | 0 | 4 | Supervisor PASS / commit pending | 4 | +4 | `E2-P2C-FILES1`, `E2-P2C-VALID1`, `E2-P2C-SUP1` |
+| P2-C | Child 03 source-ID-preserved slices | slices | 0 | 17 | Supervisor PASS / commit pending | 17 | +17 | `E2-P2C-MAP1`, `E2-P2C-VALID1`, `E2-P2C-SUP1` |
+| P2-C | Authored child plans with the exact successor-freshness rule | plans | 2 | 3 | 3 authored / Supervisor PASS / commit pending | 3 of 3 authored | +1 | `E2-P2C-STRUCT1`, `E2-P2C-SUP1` |
+| P2-C | Fresh Anvien scanned files | files | — | 1,534 | — | informational | — | `E2-P2C-GRAPH1` |
+| P2-C | Fresh Anvien parsed code files | files | — | 676 | — | informational | — | `E2-P2C-GRAPH1` |
+| P2-C | Fresh Anvien graph nodes | nodes | — | 84,865 | — | informational | — | `E2-P2C-GRAPH1` |
+| P2-C | Fresh Anvien graph relationships | relationships | — | 123,717 | — | informational | — | `E2-P2C-GRAPH1` |
 | P2-D | Child 04 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2D-FILES1` |
 | P2-D | Child 04 mapped slices | slices | 0 | 0 | — | 15 | 0 | `E2-P2D-MAP1` |
 | P2-E | Child 05 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2E-FILES1` |
@@ -106,12 +111,12 @@ Benchmark sections must follow the plan phases:
 | P2-F | Child 06 mapped slices | slices | 0 | 0 | — | 6 | 0 | `E2-P2F-MAP1` |
 | P2-G | Child 07 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2G-FILES1` |
 | P2-G | Child 07 mapped slices | slices | 0 | 0 | — | 3 | 0 | `E2-P2G-MAP1` |
-| P2 | Complete child plan sets | plan sets | 0 | 1 | — | 7 | +1 | `E2-P2A-REBUILD1`, `E2-P2A-SUP2` |
-| P2 | Standard child files | files | 0 | 8 | — | 28 | +8 | `E2-P2A-REBUILD1`, `E2-P2B-RFILES1` |
-| P2 | Child P0 lifecycle sections | sections | 0 | 2 | — | 7 | +2 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1` |
-| P2 | Preserved source implementation phases | phases | 0 | 2 | — | 7 | +2 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1` |
-| P2 | Child Pn-A/Pn-B/Pn-C sets | closure sets | 0 | 2 | — | 7 | +2 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1` |
-| P2 | Cumulative source-ID-preserved slices | slices | 0 | 53 | — | 98 | +53 | `E2-P2A-REBUILD1`, `E2-P2B-RMAP1` |
+| P2 | Complete child plan sets | plan sets | 0 | 2 | — | 7 | +2 | `E2-P2A-REBUILD1`, `E2-P2B-RFILES1`, `E2-P2C-FILES1` |
+| P2 | Standard child files | files | 0 | 12 | — | 28 | +12 | `E2-P2A-REBUILD1`, `E2-P2B-RFILES1`, `E2-P2C-FILES1` |
+| P2 | Child P0 lifecycle sections | sections | 0 | 3 | — | 7 | +3 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-STRUCT1` |
+| P2 | Preserved source implementation phases | phases | 0 | 3 | — | 7 | +3 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-STRUCT1` |
+| P2 | Child Pn-A/Pn-B/Pn-C sets | closure sets | 0 | 3 | — | 7 | +3 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-STRUCT1` |
+| P2 | Cumulative source-ID-preserved slices | slices | 0 | 70 | — | 98 | +70 | `E2-P2A-REBUILD1`, `E2-P2B-RMAP1`, `E2-P2C-MAP1` |
 
 ## B3 - P3 Benchmarks
 
