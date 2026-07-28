@@ -247,7 +247,7 @@ Matching plan item(s): `P1-A`, `P1-B`
 
 Matching plan item(s): `P2-A`, `P2-B`, `P2-C`, `P2-D`, `P2-E`, `P2-F`, `P2-G`
 
-Status: P2-A committed as `ce82a341`; source-ID crosswalk corrected; P2-B exact-copy candidate has red-team closure and Supervisor PASS with commit pending; later children are not authored; implementation remains unauthorized.
+Status: P2-A committed as `ce82a341`; source-ID crosswalk corrected; P2-B exact-copy candidate committed as `a1c66865`; P2-C authoring is active; later children are not authored; implementation remains unauthorized.
 
 - `E2-P2A-FILES1`: Child 01 contains exactly four standard files. Accepted SHA-256 values after relationship/dependency refresh and final whitespace hygiene: plan `2804538FE1412C91D92891CF469AD4FB9A39EECDA4E92AED7CDF3FA6B878B343`; evidence `08EB245ECA3D7BA968FFD6F31F6E831600E0BED08422DC209493B844F28B626B`; benchmark `9889791A0F47E25BBD0E1F8B8CB3C8FC322E00CE82BD9BF1D5C429A60794842A`; actual status `C079F5CFE3702D16C502E79E0741184CE22C09E642939C2B4FF0EDEA0333E925`.
 - `E2-P2A-STRUCT1`: Child 01 has P0 complete, one local P1, 11 implementation blocks with all required planner fields, 11 source-slice provenance fields, tailored Pn-A/Pn-B/Pn-C, a preserved architecture/decision/one-file owner annex, zero placeholders, and zero trailing whitespace.
@@ -292,6 +292,7 @@ Status: P2-A committed as `ce82a341`; source-ID crosswalk corrected; P2-B exact-
 - `E2-P2B-RFD1`: Fresh non-stale `file-detail` reports all four Child 02 files parsed as low-risk Markdown, each with one inbound roadmap relationship and zero unresolved references. The roadmap has exactly `8` outbound child-ledger relationships and zero unresolved references.
 - `E2-P2B-RREDTEAM1`: Two bounded independent red-team slices were consumed. The lifecycle/boundary reviewer passed the four-file/P0/P2/Pn/rule/crosswalk/roadmap/Child-03 boundary. The literal-copy reviewer rejected one missing trailing blank from source lines 2889-2890; the main agent added exactly that blank line, after which full generated-content validation returned PASS and the exact P2 block is preserved. No red-team agent edited files or accessed the target.
 - `E2-P2B-RSUP1`: `reports/Supervisor/rp_supervisor_260728_190409_by_gpt-5-6-sol_child02_exact_copy.md` records PASS for the rebuilt Child 02 exact-copy authoring scope, including prior-remap closure, trailing-blank closure, current graph/link evidence, Child 03 absence, and docs-only boundaries.
+- `E2-P2B-RCOMMIT1`: Commit `a1c66865` (`docs(plan): author child 02 by exact source copy`) contains the accepted Child 02 four-file exact-copy set, roadmap/authoring tracking, and its Supervisor PASS report. The unrelated untracked problem report remains excluded, and Child 03 was not included in this commit.
 - `E2-P2C-FILES1`, `E2-P2C-STRUCT1`, `E2-P2C-MAP1`: future child-03 four-file, completeness, and 17-slice mapping evidence.
 - `E2-P2D-FILES1`, `E2-P2D-STRUCT1`, `E2-P2D-MAP1`: future child-04 four-file, completeness, and 15-slice mapping evidence.
 - `E2-P2E-FILES1`, `E2-P2E-STRUCT1`, `E2-P2E-VECTOR1`, `E2-P2E-MAP1`: future child-05 four-file, completeness, semantic-vector ownership, and four-slice mapping evidence.

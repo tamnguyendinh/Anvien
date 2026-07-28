@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P2-A committed ce82a341 / P2-B exact-copy Supervisor PASS / commit pending / P2-C-P2-G blocked / implementation unauthorized`
+- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C authoring active / P2-D-P2-G blocked / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -413,8 +413,8 @@ In scope:
   - Actual-status Update: directory ownership `wrong -> correct`; P2-B `paused -> ready` only after acceptance/commit.
   - Commit Boundary: commit this structural correction separately; exclude the unaccepted child-02 four-file draft content from the commit, then resume P2-B.
 
-- [ ] P2-B: Author child 02 for legacy P2.
-  - Current Status: exact-copy candidate created from committed Child 01 and the corrected source-ID-preserving crosswalk; deterministic validation/red-team/Supervisor PASS; commit pending. Historical candidate evidence does not accept this replacement candidate.
+- [x] P2-B: Author child 02 for legacy P2.
+  - Current Status: exact-copy candidate created from committed Child 01 and the corrected source-ID-preserving crosswalk; deterministic validation/red-team/Supervisor PASS; committed at `a1c66865`. Historical candidate evidence does not accept this replacement candidate.
   - Goal: create the complete persistence/cutover child plan set with all 42 legacy P2 slices and sole mutation ownership of `index-reader-matrix.md`.
   - Scope Boundary:
     - Editable: the four child-02 files under the separate multi-plan root, roadmap status, authoring ledgers, and matrix ownership metadata/reference only; matrix content remains unchanged during authoring.
@@ -470,6 +470,7 @@ In scope:
   - Commit Boundary: commit child 02, the exact child-01 successor-freshness plan/evidence correction, and roadmap/authoring ledger updates only after acceptance and Supervisor review.
 
 - [ ] P2-C: Author child 03 for legacy P3.
+  - Current Status: authoring active after the accepted Child 02 exact-copy set was committed at `a1c66865`; implementation remains unauthorized.
   - Goal: create the complete TypeScript binding-pattern child plan set with all 17 legacy P3 slices.
   - Scope Boundary:
     - Editable: child-03 four-file set, roadmap status, and authoring ledgers.

@@ -91,10 +91,10 @@ Benchmark sections must follow the plan phases:
 | P2-A1 | Standard authoring files in authoring root | files | 0 | 4 | 4 | 4 | +4 | `E2-P2A1-STRUCT1` |
 | P2-A1 | Roadmaps in separate multi-plan root | files | 0 | 1 | 1 | 1 | +1 | `E2-P2A1-STRUCT1` |
 | P2-A1 | Broken active-plan links after move | links | not measured pre-move | 0 | 0 | 0 | N/A | `E2-P2A1-LINK1` |
-| P2-B | Child 02 standard files | files | 0 | 4 | pending Supervisor | 4 | +4 | `E2-P2B-RFILES1`, `E2-P2B-RVALID1` |
-| P2-B | Child 02 source-ID-preserved slices | slices | 0 | 42 | pending Supervisor | 42 | +42 | `E2-P2B-RMAP1`, `E2-P2B-RVALID1` |
+| P2-B | Child 02 standard files | files | 0 | 4 | 4 committed | 4 | +4 | `E2-P2B-RFILES1`, `E2-P2B-RVALID1`, `E2-P2B-RCOMMIT1` |
+| P2-B | Child 02 source-ID-preserved slices | slices | 0 | 42 | 42 committed | 42 | +42 | `E2-P2B-RMAP1`, `E2-P2B-RVALID1`, `E2-P2B-RCOMMIT1` |
 | P2-B | `index-reader-matrix.md` mutation owners | owners | 0 assigned | 1 assigned | 1 | 1 | +1 | `E2-P2B-MATRIX1`, `E2-P2B-SUP1` |
-| P2-B | Authored child plans with the exact successor-freshness rule | plans | 0 | 2 | pending Supervisor | 2 of 2 authored | +2 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1` |
+| P2-B | Authored child plans with the exact successor-freshness rule | plans | 0 | 2 | 2 committed | 2 of 2 authored | +2 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2B-RCOMMIT1` |
 | P2-B | Authored successor actual-status updates executed | updates | 0 | 0 | pending implementation closure | 0 before implementation | 0 | `E2-P2A-REBUILD1` |
 | P2-C | Child 03 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2C-FILES1` |
 | P2-C | Child 03 mapped slices | slices | 0 | 0 | — | 17 | 0 | `E2-P2C-MAP1` |
