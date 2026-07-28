@@ -103,8 +103,13 @@ Benchmark sections must follow the plan phases:
 | P2-C | Fresh Anvien parsed code files | files | — | 676 | — | informational | — | `E2-P2C-GRAPH1` |
 | P2-C | Fresh Anvien graph nodes | nodes | — | 84,865 | — | informational | — | `E2-P2C-GRAPH1` |
 | P2-C | Fresh Anvien graph relationships | relationships | — | 123,717 | — | informational | — | `E2-P2C-GRAPH1` |
-| P2-D | Child 04 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2D-FILES1` |
-| P2-D | Child 04 mapped slices | slices | 0 | 0 | — | 15 | 0 | `E2-P2D-MAP1` |
+| P2-D | Child 04 standard files | files | 0 | 4 | Supervisor PASS / commit pending | 4 | +4 | `E2-P2D-FILES1`, `E2-P2D-VALID1`, `E2-P2D-SUP1` |
+| P2-D | Child 04 source-ID-preserved slices | slices | 0 | 15 | Supervisor PASS / commit pending | 15 | +15 | `E2-P2D-MAP1`, `E2-P2D-VALID1`, `E2-P2D-SUP1` |
+| P2-D | Authored child plans with the exact successor-freshness rule | plans | 3 | 4 | 4 authored / Supervisor PASS / commit pending | 4 of 4 authored | +1 | `E2-P2D-STRUCT1`, `E2-P2D-SUP1` |
+| P2-D | Fresh Anvien scanned files | files | — | 1,539 | — | informational | — | `E2-P2D-GRAPH1` |
+| P2-D | Fresh Anvien parsed code files | files | — | 676 | — | informational | — | `E2-P2D-GRAPH1` |
+| P2-D | Fresh Anvien graph nodes | nodes | — | 84,923 | — | informational | — | `E2-P2D-GRAPH1` |
+| P2-D | Fresh Anvien graph relationships | relationships | — | 123,779 | — | informational | — | `E2-P2D-GRAPH1` |
 | P2-E | Child 05 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2E-FILES1` |
 | P2-E | Child 05 mapped slices | slices | 0 | 0 | — | 4 | 0 | `E2-P2E-MAP1` |
 | P2-F | Child 06 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2F-FILES1` |
@@ -112,11 +117,11 @@ Benchmark sections must follow the plan phases:
 | P2-G | Child 07 standard files | files | 0 | 0 | — | 4 | 0 | `E2-P2G-FILES1` |
 | P2-G | Child 07 mapped slices | slices | 0 | 0 | — | 3 | 0 | `E2-P2G-MAP1` |
 | P2 | Complete child plan sets | plan sets | 0 | 3 | — | 7 | +3 | `E2-P2A-REBUILD1`, `E2-P2B-RFILES1`, `E2-P2C-COMMIT1` |
-| P2 | Standard child files | files | 0 | 12 | — | 28 | +12 | `E2-P2A-REBUILD1`, `E2-P2B-RFILES1`, `E2-P2C-COMMIT1` |
-| P2 | Child P0 lifecycle sections | sections | 0 | 3 | — | 7 | +3 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-COMMIT1` |
-| P2 | Preserved source implementation phases | phases | 0 | 3 | — | 7 | +3 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-COMMIT1` |
-| P2 | Child Pn-A/Pn-B/Pn-C sets | closure sets | 0 | 3 | — | 7 | +3 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-COMMIT1` |
-| P2 | Cumulative source-ID-preserved slices | slices | 0 | 70 | — | 98 | +70 | `E2-P2A-REBUILD1`, `E2-P2B-RMAP1`, `E2-P2C-MAP1` |
+| P2 | Standard child files | files | 0 | 16 | — | 28 | +16 | `E2-P2A-REBUILD1`, `E2-P2B-RFILES1`, `E2-P2C-COMMIT1`, `E2-P2D-FILES1` |
+| P2 | Child P0 lifecycle sections | sections | 0 | 4 | — | 7 | +4 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-COMMIT1`, `E2-P2D-STRUCT1` |
+| P2 | Preserved source implementation phases | phases | 0 | 4 | — | 7 | +4 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-COMMIT1`, `E2-P2D-STRUCT1` |
+| P2 | Child Pn-A/Pn-B/Pn-C sets | closure sets | 0 | 4 | — | 7 | +4 | `E2-P2A-REBUILD1`, `E2-P2B-RSTRUCT1`, `E2-P2C-COMMIT1`, `E2-P2D-STRUCT1` |
+| P2 | Cumulative source-ID-preserved slices | slices | 0 | 85 | — | 98 | +85 | `E2-P2A-REBUILD1`, `E2-P2B-RMAP1`, `E2-P2C-MAP1`, `E2-P2D-MAP1` |
 
 ## B3 - P3 Benchmarks
 

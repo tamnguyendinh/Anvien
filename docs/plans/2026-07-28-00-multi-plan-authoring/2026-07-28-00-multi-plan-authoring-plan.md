@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D authoring active / P2-E-P2-G blocked / implementation unauthorized`
+- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D exact-copy Supervisor PASS / commit pending / P2-E-P2-G blocked / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -520,7 +520,7 @@ In scope:
   - Commit Boundary: commit only child 03 plus roadmap/authoring ledger updates after acceptance and Supervisor review when authorized.
 
 - [ ] P2-D: Author child 04 for legacy P4.
-  - Current Status: authoring active after accepted Child 03 exact-copy commit `35a0611c`; implementation remains unauthorized.
+  - Current Status: exact-copy four-file candidate created after Child 03 commit `35a0611c`; deterministic source-block, graph, independent checks, and Supervisor review PASS; commit pending and implementation remains unauthorized.
   - Goal: create the complete TypeScript export-semantics child plan set with all 15 legacy P4 slices.
   - Scope Boundary:
     - Editable: child-04 four-file set, roadmap status, and authoring ledgers.
@@ -563,7 +563,7 @@ In scope:
     - DB/data: 15/15 slices map once without semantic collapse.
     - Behavior test: child lifecycle, field completeness, source order, and links pass.
     - Cleanup/quarantine: no partial child-04 artifact remains.
-    - Evidence IDs: `E2-P2D-FILES1`, `E2-P2D-STRUCT1`, `E2-P2D-MAP1`.
+    - Evidence IDs: `E2-P2D-FILES1`, `E2-P2D-STRUCT1`, `E2-P2D-MAP1`, `E2-P2D-VALID1`, `E2-P2D-CHECK1`, `E2-P2D-GRAPH1`, `E2-P2D-FD1`, `E2-P2D-SUP1`.
     - Actual-status rows refreshed: child 04, cumulative mapped count, and child-05 dependency.
   - Evidence Targets: four-file inventory, 15-row mapping, semantic-lane preservation, and independent ledger checks.
   - Actual-status Update: mark child 04 `missing -> correct`; set child 05 to consume the export-semantics handoff.
