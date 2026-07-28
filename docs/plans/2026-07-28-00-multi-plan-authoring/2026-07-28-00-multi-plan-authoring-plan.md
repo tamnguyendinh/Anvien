@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D exact-copy Supervisor PASS / commit pending / P2-E-P2-G blocked / implementation unauthorized`
+- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D committed 2de220bb / P2-E authoring active / P2-F-P2-G blocked / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -519,8 +519,8 @@ In scope:
   - Actual-status Update: mark child 03 `missing -> correct`; keep child 04 pending child-03 handoff.
   - Commit Boundary: commit only child 03 plus roadmap/authoring ledger updates after acceptance and Supervisor review when authorized.
 
-- [ ] P2-D: Author child 04 for legacy P4.
-  - Current Status: exact-copy four-file candidate created after Child 03 commit `35a0611c`; deterministic source-block, graph, independent checks, and Supervisor review PASS; commit pending and implementation remains unauthorized.
+- [x] P2-D: Author child 04 for legacy P4.
+  - Current Status: exact-copy four-file candidate created after Child 03 commit `35a0611c`; deterministic source-block, graph, independent checks, and Supervisor review PASS; committed at `2de220bb`; implementation remains unauthorized.
   - Goal: create the complete TypeScript export-semantics child plan set with all 15 legacy P4 slices.
   - Scope Boundary:
     - Editable: child-04 four-file set, roadmap status, and authoring ledgers.
@@ -570,6 +570,7 @@ In scope:
   - Commit Boundary: commit only child 04 plus roadmap/authoring ledger updates after acceptance and Supervisor review when authorized.
 
 - [ ] P2-E: Author child 05 for legacy P5.
+  - Current Status: authoring active after accepted Child 04 exact-copy commit `2de220bb`; implementation remains unauthorized.
   - Goal: create the complete module export-table and barrel/re-export resolution child plan set with all four legacy P5 slices.
   - Scope Boundary:
     - Editable: child-05 four-file set, roadmap status, and authoring ledgers.
