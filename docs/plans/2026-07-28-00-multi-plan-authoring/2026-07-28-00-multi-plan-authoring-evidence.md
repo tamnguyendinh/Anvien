@@ -247,7 +247,7 @@ Matching plan item(s): `P1-A`, `P1-B`
 
 Matching plan item(s): `P2-A`, `P2-B`, `P2-C`, `P2-D`, `P2-E`, `P2-F`, `P2-G`
 
-Status: P2-A committed as `ce82a341`; source-ID crosswalk corrected; P2-B exact-copy candidate committed as `a1c66865`; P2-C exact-copy candidate is under validation; later children are not authored; implementation remains unauthorized.
+Status: P2-A committed as `ce82a341`; source-ID crosswalk corrected; P2-B committed as `a1c66865`; P2-C committed as `35a0611c`; P2-D authoring is active; later children are not authored; implementation remains unauthorized.
 
 - `E2-P2A-FILES1`: Child 01 contains exactly four standard files. Accepted SHA-256 values after relationship/dependency refresh and final whitespace hygiene: plan `2804538FE1412C91D92891CF469AD4FB9A39EECDA4E92AED7CDF3FA6B878B343`; evidence `08EB245ECA3D7BA968FFD6F31F6E831600E0BED08422DC209493B844F28B626B`; benchmark `9889791A0F47E25BBD0E1F8B8CB3C8FC322E00CE82BD9BF1D5C429A60794842A`; actual status `C079F5CFE3702D16C502E79E0741184CE22C09E642939C2B4FF0EDEA0333E925`.
 - `E2-P2A-STRUCT1`: Child 01 has P0 complete, one local P1, 11 implementation blocks with all required planner fields, 11 source-slice provenance fields, tailored Pn-A/Pn-B/Pn-C, a preserved architecture/decision/one-file owner annex, zero placeholders, and zero trailing whitespace.
@@ -301,6 +301,7 @@ Status: P2-A committed as `ce82a341`; source-ID crosswalk corrected; P2-B exact-
 - `E2-P2C-FD1`: Fresh non-stale `file-detail` reports all four Child 03 files as parsed low-risk Markdown with one inbound roadmap `IMPORTS` relationship and zero unresolved references each. The roadmap reports `12` outbound child-ledger `IMPORTS` relationships and zero unresolved references; the graph indexed/current commit is `a2c1a3d1`.
 - `E2-P2C-REDTEAM1`: The bounded `redteam_p1_p2` preflight independently passed the Child 03 exact-copy boundary without editing files or accessing `E:\cheapapp.org`. It confirmed the P3 2891–3702, E3 333–365, and B3 129–147 hashes, 17/17 source IDs/titles/order and source blocks, four-file inventory, one successor rule, fresh Anvien/file-detail results, unchanged legacy hashes, and no Child 04 opening. This is advisory input; it does not replace the Supervisor verdict.
 - `E2-P2C-SUP1`: `reports/Supervisor/rp_supervisor_260728_192900_by_gpt-5-6-sol_child03_exact_copy.md` records PASS for the complete Child 03 exact-copy authoring scope, prior-source preservation, current graph/link evidence, crosswalk, target boundary, and docs-only limitation. Child 03 is accepted for an isolated commit; Child 04 remains closed until that commit is recorded.
+- `E2-P2C-COMMIT1`: Commit `35a0611c` (`docs(plan): author child 03 by exact source copy`) contains the accepted Child 03 four-file set, roadmap/authoring tracking, and its Supervisor PASS report. The unrelated untracked problem report remains excluded, and Child 04 was not included in this commit.
 - `E2-P2C-FILES1`, `E2-P2C-STRUCT1`, `E2-P2C-MAP1`: future child-03 four-file, completeness, and 17-slice mapping evidence.
 - `E2-P2D-FILES1`, `E2-P2D-STRUCT1`, `E2-P2D-MAP1`: future child-04 four-file, completeness, and 15-slice mapping evidence.
 - `E2-P2E-FILES1`, `E2-P2E-STRUCT1`, `E2-P2E-VECTOR1`, `E2-P2E-MAP1`: future child-05 four-file, completeness, semantic-vector ownership, and four-slice mapping evidence.

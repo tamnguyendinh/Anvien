@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C exact-copy Supervisor PASS / commit pending / P2-D-P2-G blocked / implementation unauthorized`
+- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D authoring active / P2-E-P2-G blocked / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -469,8 +469,8 @@ In scope:
   - Actual-status Update: mark the cross-child freshness contract `partial -> correct`; mark child 02 `missing -> correct`; set child 03 next action to receive a latest-evidence actual-status refresh before consuming child-02 cutover handoff without duplicating its contracts.
   - Commit Boundary: commit child 02, the exact child-01 successor-freshness plan/evidence correction, and roadmap/authoring ledger updates only after acceptance and Supervisor review.
 
-- [ ] P2-C: Author child 03 for legacy P3.
-  - Current Status: exact-copy four-file candidate created after Child 02 commit `a1c66865`; deterministic source-block, graph, red-team, and Supervisor review PASS; commit pending and implementation remains unauthorized.
+- [x] P2-C: Author child 03 for legacy P3.
+  - Current Status: exact-copy four-file candidate created after Child 02 commit `a1c66865`; deterministic source-block, graph, red-team, and Supervisor review PASS; committed at `35a0611c`; implementation remains unauthorized.
   - Goal: create the complete TypeScript binding-pattern child plan set with all 17 legacy P3 slices.
   - Scope Boundary:
     - Editable: child-03 four-file set, roadmap status, and authoring ledgers.
@@ -520,6 +520,7 @@ In scope:
   - Commit Boundary: commit only child 03 plus roadmap/authoring ledger updates after acceptance and Supervisor review when authorized.
 
 - [ ] P2-D: Author child 04 for legacy P4.
+  - Current Status: authoring active after accepted Child 03 exact-copy commit `35a0611c`; implementation remains unauthorized.
   - Goal: create the complete TypeScript export-semantics child plan set with all 15 legacy P4 slices.
   - Scope Boundary:
     - Editable: child-04 four-file set, roadmap status, and authoring ledgers.
