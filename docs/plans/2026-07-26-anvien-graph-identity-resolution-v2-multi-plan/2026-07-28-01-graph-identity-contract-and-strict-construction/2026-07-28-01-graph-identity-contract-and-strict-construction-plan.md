@@ -1,19 +1,21 @@
-# Graph Identity Contract and Strict Graph Construction Plan
+# Anvien Graph Identity Contract and Strict Graph Construction Plan
 
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `candidate / P0 complete / implementation not authorized`
+- Status: `draft / P0 complete / implementation not yet authorized`
 - Plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
 - Actual status: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-actual-status.md`
-- Roadmap: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-26-anvien-graph-identity-resolution-v2-roadmap.md`
-- Source phase: legacy `P1`
+- Source plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-26-anvien-graph-identity-resolution-v2-plan.md`
+- Multi-plan roadmap: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-26-anvien-graph-identity-resolution-v2-roadmap.md`
+- Predecessor child: `none — first child`
+- Successor child: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-02-versioned-persistence-and-v2-cutover/2026-07-28-02-versioned-persistence-and-v2-cutover-plan.md`
 
 ## Goal
 
-Establish the accepted, versioned Declaration/Symbol/source-site identity model and strict graph mutation contract, then prove a lossless deterministic shadow-v2 graph while the active v1 path remains byte/hash preserving.
+ratify and implement the Declaration/Symbol identity foundation without activating v2 for readers.
 
 ## Rules
 
@@ -23,7 +25,6 @@ Establish the accepted, versioned Declaration/Symbol/source-site identity model 
 - Record benchmarkable counts or measurements when they are taken.
 - Update later phase status assumptions, next actions, and work steps when actual-status evidence changes the repo state.
 - After completing a phase or implementation slice and refreshing `actual-status.md`, update the next affected phase's work steps as needed to match the latest repo reality, while preserving that phase's original goal, scope, acceptance criteria, and major phase order.
-- Pn-C cannot close or hand off until child 02's `actual-status.md` is refreshed from the latest accepted repo/runtime/evidence state, its refresh log and affected next actions/work steps are updated, and qualified proof is recorded as `E2-PNC-NEXTSTATUS1`. A missing or stale successor actual-status update blocks closure.
 - Run Anvien detect-changes before every implementation-slice commit when implementation work was performed.
 - For public runtime or UI-facing changes, validate the real user-visible runtime with browser or Playwright evidence.
 - For app/runtime validation, full build must include Docker image/container build. If Docker is missing or not run, full build is incomplete.
@@ -32,7 +33,7 @@ Establish the accepted, versioned Declaration/Symbol/source-site identity model 
 - Playwright evidence must record the Docker build/run or compose command, container/service name, exposed URL, Playwright command, and screenshot/trace/result.
 - Keep the standard planner structure. These detail rules only make phase checklist items concrete enough to implement safely.
 - Every implementation phase must be decomposed into multiple implementation slices that are as small as practical. A phase is a grouping and ordering container; a slice is the executable implementation unit.
-- Do not implement a phase directly. Work starts from a slice ID such as `P1-A`, `P1-B`, or `2026-07-28-02-versioned-persistence-and-v2-cutover::P1-C (source P2-C)`.
+- Do not implement a phase directly. Work starts from a slice ID such as `P1-A`, `P1-B`, or `P2-C`.
 - Prefer many narrow slices over one broad slice. A single-slice implementation phase is allowed only when the plan explicitly states why the phase cannot be split further without creating empty or non-executable slices.
 - Each implementation slice must include:
   + Goal
@@ -69,46 +70,59 @@ Establish the accepted, versioned Declaration/Symbol/source-site identity model 
 - Synthetic fixtures must be independently authored from the language contract. Do not copy `cheapapp.org` source into Anvien testdata and do not create fixtures at repository root.
 - No runtime network access, package installation, package scripts, Node/TypeScript execution, or declaration borrowing from another repository may be used by the production analyzer. A pinned TypeScript compiler may be used only as a test oracle.
 - Unsupported, missing, stale, or mixed index versions must fail visibly with `INDEX_VERSION_MISMATCH`; no empty-success, implicit downgrade, or version inference from ID strings.
-- Until 2026-07-28-02-versioned-persistence-and-v2-cutover::P1-G (source P2-G), the active v1 path is protected by an explicit compatibility adapter and byte/hash preservation gate. Strict/lossless occurrence, RelationshipID, and v2 producer behavior is exercised on the shadow-v2 path; it must not silently alter the active v1 graph before cutover.
+- Until P2-G, the active v1 path is protected by an explicit compatibility adapter and byte/hash preservation gate. Strict/lossless occurrence, RelationshipID, and v2 producer behavior is exercised on the shadow-v2 path; it must not silently alter the active v1 graph before cutover.
 - Before each implementation commit: update actual-status/evidence/benchmark, remove superseded plan-created artifacts, obtain Supervisor PASS, run `anvien detect-changes --repo E:\Anvien --scope all`, and commit only the active slice.
-- This child is the sole execution authority for legacy P1 only after campaign cutover; until then it is candidate documentation.
-- Source provenance is the legacy plan at SHA-256 `365E17A7F7CD539426568A2874A1AD1231D120C5391BFE3D8B875D5F760A45FB` and authoring crosswalk `2026-07-28-00-multi-plan-authoring::E1-P1A-MAP1`.
-- Every local slice records its legacy source slice; do not merge, omit, invent, or reorder slices.
-- Cross-child references require the child slug and exact evidence ID; bare local IDs are invalid outside this child.
-- Complete or refresh this child P0. No upstream implementation child applies; local P1-A must ratify architecture authority before production slices, and production implementation still requires explicit owner direction.
-- Production implementation remains blocked until explicit owner direction opens the child and then opens each slice.
-- Each touched/new production or test file owns one primary semantic responsibility; links to many modules are allowed only in service of that responsibility.
-- This plan, its reports, probes, QA, and Supervisor artifacts remain in `E:\Anvien`; never copy target source into Anvien or use `E:\cheapapp.org` as artifact storage.
+- When this child ends, update the next child plan's actual-status and latest evidence before handoff.
 
 ## Problem
 
-Current graph identity omits lexical owner and source range, collapses distinct same-name declarations, permits implicit replacement, and loses declaration/source-site occurrences. The identity foundation must be corrected before any persistence cutover or TypeScript semantic fix.
+The accepted bounded investigation proves five independent defects after file discovery:
+
+1. TypeScript array binding patterns are rejected before a `DefinitionFact` is created.
+2. graph definition identity omits scope/range, so distinct same-name locals collide and `Graph.AddNode` overwrites one occurrence;
+3. TypeScript module export semantics are not represented in `DefinitionFact`, and persistence consumers disagree between `visibility` and `isExported`;
+4. import resolution stops at physical definitions in a barrel and does not traverse re-export bindings to the terminal declaration;
+5. the resolver workspace has no TypeScript ambient/lib declaration universe, while graph-health guesses classifications from unresolved target strings instead of consuming structured resolver outcomes.
+
+These defects cannot be safely fixed as five local patches. Identity changes propagate into relationship endpoints, process references, resolution gaps, embeddings, groups, rename, MCP, HTTP, Web, persistence order, and derived IDs. The current analyze lifecycle deletes live artifacts before rebuild and does not atomically publish graph, Ladybug, metadata, embeddings, and cache generation. A partial Node-ID-v2 cutover would therefore create silent mixed-version or mixed-generation results.
+
+No relevant `SPEC-MAP.md` or approved `Docs/SPEC` authority exists in the current repository. This plan records the recommended contract as a proposed owner decision. Production implementation remains blocked until the owner accepts this plan or the equivalent contract is recorded in an approved ADR/SPEC; no implementation agent may silently choose a different identity/export/external contract.
 
 ## Scope
 
-- Identity/ownership authority and one-file owner map.
-- Range, DeclarationID, SymbolID, SymbolRef, RelationshipID, and lossless occurrence contracts.
-- Strict insert/enrich/replace/decode/closure behavior and producer migration.
-- Deterministic in-memory shadow-v2 emission and bounded target oracle without active-v1 mutation.
+In scope:
+
+- versioned `DeclarationID`, `SymbolID`, source range, selection range, meaning, and graph-generation contracts;
+- explicit graph insert, enrich/update, replace, decode, collision, and closure validation behavior;
+- full v2 reindex, version-aware readers, opaque-ID consumers, legacy ambiguity behavior, generation staging, atomic publication, and rollback;
+- recursive TypeScript binding-pattern extraction for declarations, parameters, catch bindings, and `for-of` declarations;
+- first-class TypeScript module export facts, direct/default/alias/type-only/re-export semantics, and projection compatibility;
+- TypeScript module request resolution, per-module export tables, barrel/re-export traversal, alias proofs, cycles, ambiguity, and meaning lanes;
+- a versioned declaration universe for TypeScript standard libraries and locally installed package declarations, with structured resolution outcomes;
+- graph-health projection from resolver outcomes;
+- JSON/Ladybug/CLI/MCP/HTTP/Web parity, deterministic output, target integration, performance/capacity measurement, and fault-injection rollback proof.
+
+Boundary:
+
+- Anvien source and tests are changed only in `E:\Anvien`.
+- The target `E:\cheapapp.org` is a read-only integration subject except for Anvien's normal repo-local `.anvien` operational output.
+- Each phase changes only its named contract and adapters. Language providers other than TS/JS are regression surfaces unless an identity API migration requires a narrow adapter.
 
 ## Non-Goals
 
-- No active-v2 cutover or reader migration; child 02 owns that work.
-- No TypeScript binding/export/barrel/ambient implementation.
-- No target source copy or target v2 artifact.
+- No fix for scanner treatment of nested `env`, `target`, or `logs` directories.
+- No claim of complete TypeScript compiler conformance.
+- No materialization of all `node_modules` or all `.d.ts` declarations as repository File/Definition nodes.
+- No network download, runtime `tsc`/Node invocation, package-script execution, or dependency installation by analyze.
+- No redesign of product Features, Architectural Boundaries, Processes, communities, or app-layer semantics beyond keeping them generation-consistent and ID-opaque.
+- No target-source edit, target copy, target fixture, or report stored in `E:\cheapapp.org`.
+- No rewrite of v1 graph data in place; lost declarations must be recovered by reparsing source.
+- No dual-active v1/v2 graph that lets readers silently combine versions.
+- No unrelated refactor of scanner, UI design, database scalar/nullability contracts, or other language semantics.
 
 ## Requirements
 
-- DeclarationID and SymbolID remain distinct typed identities; ranges and position encoding are explicit.
-- Same-name locals separate by lexical owner; overload/merge occurs only with provider semantic evidence.
-- RelationshipID and source-site aggregation conserve every occurrence and provenance path.
-- Duplicate/conflicting IDs fail closed; explicit operations replace generic upsert behavior.
-- Active v1 remains byte/hash preserving until child 02 local P1-G; this child emits shadow v2 only.
-- Every touched/new file owns one semantic responsibility.
-
-### Preserved source contract annex
-
-#### Architecture / contract rules
+### Architecture / contract rules
 
 The production graph model is:
 
@@ -137,7 +151,7 @@ SourceSite --ResolutionOutcome--> InternalSymbol | ExternalSymbol | Gap
 - The active-generation manifest is the compatibility authority and contains `protocolVersion`, `minReaderProtocol`, `minReaderBuild`, `graphSchemaVersion`, `identitySchemaVersion`, `scopeIrVersion`, `generation`, `configHash`, and `catalogHash`. A reader must validate all of them before opening JSON, Ladybug, native Cypher, fallback Cypher, a cache, a group contract, an embedding row, or an HTTP/Web stream.
 - v2 storage uses a non-overlapping generation/protocol path. The legacy root compatibility path either remains an older supported generation or returns `INDEX_VERSION_MISMATCH`; it must never expose v2 records to a v1 binary/client that ignores unknown fields. CLI startup/status/index/file-detail/graph-health, MCP resources/tools/rename/detect-changes, HTTP, Web, native/fallback Cypher, caches, groups, embeddings, and global registry all participate in the old-reader matrix.
 - Cutover is a protocol negotiation, not a tolerant JSON-field rollout: v2 is published only beneath a versioned media/layout namespace, every reader sends `readerProtocolVersion`/`readerBuild`, the manifest returns `minReaderProtocol`/`minReaderBuild`, and the body is unopened until the handshake passes. An old binary/client fixture must fail closed with `INDEX_VERSION_MISMATCH`; no unaware v1 path may open, cache, stream, or register v2 data.
-- Until 2026-07-28-02-versioned-persistence-and-v2-cutover::P1-G (source P2-G), the active v1 adapter remains byte/hash-preserving and is never fed strict v2 mutation results. Strict/lossless occurrence and RelationshipID behavior runs on the isolated in-memory/shadow-v2 adapter; a compatibility adapter may reproduce the historical v1 projection only behind an explicit version flag. 2026-07-28-02-versioned-persistence-and-v2-cutover::P1-G (source P2-G) is the first slice allowed to select v2 for a newly published generation.
+- Until P2-G, the active v1 adapter remains byte/hash-preserving and is never fed strict v2 mutation results. Strict/lossless occurrence and RelationshipID behavior runs on the isolated in-memory/shadow-v2 adapter; a compatibility adapter may reproduce the historical v1 projection only behind an explicit version flag. P2-G is the first slice allowed to select v2 for a newly published generation.
 - The canonical parity record for a Node includes `id`, label, repo-relative file path, name, DeclarationID, SymbolID, range, selectionRange, position encoding, meaning mask, access visibility, direct export fact, generation, and provenance. The canonical parity record for a Relationship includes `id`, type, source/target refs, step, confidence, meaning, resolution status, proof hops, generation, and provenance. Parity counts field-level differences, not only IDs/endpoints.
 - The exact public parity surface matrix is fixed and reused by P4/P6/P7 ledgers: `S0` Graph JSON; `S1` Ladybug native Cypher; `S2` Go/fallback Cypher; `S3` the exact union of every `index-reader-matrix.md` row tagged `S3`; `S4` the exact union of every row tagged `S4`; `S5` the exact union of every row tagged `S5`; `S6` the exact union of every row tagged `S6`; `S7` the exact union of every row tagged `S7`; `S8` the exact union of every row tagged `S8`; `S9` the exact union of every row tagged `S9`; `S10` the exact union of every row tagged `S10`; and `S11` the exact union of every row tagged `S11`. The matrix row tags, not a prose category list, are authoritative for every reader/cache/registry/derived-surface denominator. A surface is PASS only when its canonical records and orphan/reference checks are zero-difference; no plan slice may invent a smaller “six surface” denominator.
 - The handshake wire contract is authoritative and reused verbatim by the reader matrix: request `{readerProtocolVersion, readerBuild, supportedGraphSchemaVersions[], supportedIdentitySchemaVersions[], supportedScopeIrVersions[]}`; manifest `{protocolVersion, minReaderProtocol, minReaderBuild, graphSchemaVersion, identitySchemaVersion, scopeIrVersion, generation, configHash, catalogHash}`; failure envelope `{code:"INDEX_VERSION_MISMATCH", expected:{...}, actual:{...}, retryable:false}`. S0/S1/S2 return the typed loader/driver error before body/query rows; S3 returns the same code on stderr with nonzero exit; S4 returns a JSON-RPC error whose `data.code` is the same string; S5 returns HTTP `409` with the envelope before a stream body; S6 renders the mismatch state without parsing records; S7/S8 treat it as a cache miss/error and never return stale rows; S9/S10/S11 return the typed error and no projection. No reader may downgrade or infer a version from an opaque ID.
@@ -151,7 +165,7 @@ SourceSite --ResolutionOutcome--> InternalSymbol | ExternalSymbol | Gap
 - Publication includes repo-local graph/Ladybug/meta/embedding/cache namespaces plus the global repo registry and every group contract registry. Immutable generation-qualified copies are staged, validated, and fsynced; a compare-and-swap active epoch/manifest is the only publication pointer. Readers pin a generation lease, and GC cannot remove an old generation until all leases (including registry/group/cache readers) are released. A crash at any artifact write, registry/group write, cache publication, active-pointer switch, restart, or GC boundary must leave the previous epoch queryable.
 - Every S10 group snapshot is `{groupEpoch, memberRepoGenerationVector:[{repoKey, graphGeneration, graphSchemaVersion, identitySchemaVersion}]}`. Group sync pins all member generations, CASes that vector with the active group pointer, and returns `INDEX_VERSION_MISMATCH` on any member-generation conflict; it retains the previous group snapshot. Global-repo publication and group-contract publication are separate fault/parity rows, while both obey the same lease/GC rules. Every external pointer and S7–S10 cache key carries the selected repo generation and, for groups, the member vector hash.
 
-#### Proposed decisions requiring owner acceptance before P1-B
+### Proposed decisions requiring owner acceptance before P1-B
 
 | Decision | Recommended choice | Rejected shortcut |
 |----------|--------------------|-------------------|
@@ -167,7 +181,7 @@ SourceSite --ResolutionOutcome--> InternalSymbol | ExternalSymbol | Gap
 | Declaration stability matrix | body/comment/blank-line edit: SymbolID same, DeclarationID follows selection anchor; local rename/owner/module move: new IDs plus evidence-backed legacy candidate; added overload/merge: existing SymbolID same, new DeclarationID; anonymous/default expression: snapshot stability tier only; unverified merge: separate Symbols | silently rebind an occurrence after a structural change |
 | Export authority | direct export facts, default/alias/type-only/star/namespace forms, anonymous/default expressions, package public API, and transitive barrel reachability each have separate fields and expected values | infer all forms from one `isExported` boolean |
 
-#### One-file / one-responsibility ownership rule
+### One-file / one-responsibility ownership rule
 
 The following names are implementation suggestions, not architecture authority. Pre-flight may choose an equivalent existing owner, but the responsibility boundary is mandatory and the plan must be updated before editing if the file map changes.
 
@@ -205,24 +219,40 @@ The following names are implementation suggestions, not architecture authority. 
 
 Every corresponding test file owns one behavior matrix. Existing broad files such as `internal/scopeir/facts.go`, `internal/resolution/indexes.go`, `internal/resolution/resolve.go`, and `internal/graph/types.go` may retain only their current coordinating responsibility; new semantic logic must be extracted into the dedicated owner above. Adapters left in those files must be thin delegation only.
 
+### Slice execution protocol
+
+Every implementation slice follows this order:
+
+1. refresh the Anvien self-graph and actual-status row;
+2. record file-detail and symbol/file impact for the exact editable owner;
+3. implement production behavior only;
+4. after production behavior is complete, add focused behavior tests and reusable package `testdata`;
+5. run the repository full build before validation;
+6. validate the nearest real CLI/MCP/HTTP/Web/Ladybug boundary and record benchmarks;
+7. refresh all four ledgers, remove superseded slice artifacts, and obtain Supervisor PASS;
+8. run detect-changes, commit only that slice, and verify the worktree before another slice opens.
+
 ## Acceptance Criteria
 
-- All 11 source P1 slices exist locally in source order with complete fields and evidence bindings.
-- Identity, mutation, occurrence, RelationshipID, and shadow contracts retain the legacy semantics.
-- The in-memory target time/now oracle remains 4/4 and creates no target v2 artifact.
-- Pn closes only child 01 and hands accepted authority/shadow/budget evidence to child 02.
+- Graph JSON and every persisted/read projection contain `0` duplicate Node IDs, `0` duplicate Relationship IDs, `0` missing endpoints, `0` orphan Process/ResolutionGap/embedding references, and no mixed generation.
+- Five force-analyzes of identical source/config/analyzer inputs produce identical canonical node-ID and relationship-ID sets; worker/scan order does not alter the result.
+- Conflicting identity injection fails closed with structured evidence. Identical idempotent insertion works only through its explicit operation.
+- Both `time` declarations and both `now` declarations in the bounded target remain distinct and traceable; no source occurrence is overwritten.
+- The target's known scanner baseline remains quarantined at the same exact eight omissions unless a separate scanner plan is authorized; this plan creates `0` new File-node omissions.
+- No source, fixture, report, probe, or temporary investigation artifact is written into or copied from `E:\cheapapp.org`; operational graph/index output remains under `E:\cheapapp.org\.anvien`.
+- Before identity cutover, at least five measured v1 runs on the same commit-bound corpus/config/build/machine/cache policy establish analyze median, Ladybug-load median, native-query p95, fallback-query p95, graph size, and peak RSS. Final medians and p95 values regress by no more than `10%`, peak RSS by no more than `15%`, unless the owner accepts a measured exception with both baseline and final values before cutover.
+- Every touched/new source and test file passes the one-file/one-responsibility review; `0` new catch-all files and `0` unrelated responsibility additions.
+- Every slice has a separate commit after full build, boundary validation, ledger update, Supervisor PASS, and detect-changes.
 
 ## Checklist
 
 - [x] P0-A: Complete actual status before implementation work.
-  - Goal: establish this child's real current state, source provenance, relationship scope, campaign-authority gate, and implementation authorization.
-  - Work Steps: verify the legacy phase/hash and local slice inventory, confirm no production drift since the accepted baseline, classify the child-owned behavior and related files, record target/scanner boundaries, and update local P1 assumptions from evidence.
-  - Implementation Gate: no production implementation begins until campaign authority has cut over, `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-actual-status.md` is refreshed, and explicit owner authorization opens this child and local P1-A. No upstream-child handoff applies.
-  - Acceptance: actual status contains exact local evidence IDs, relationship counts or truthful bounded inventories, preserve/edit/validate modes, blockers, and an R0 baseline.
+  - Goal: establish the real current state.
+  - Work Steps: inspect source-of-truth files, classify each surface, record blocked or missing pieces, and update later phase status assumptions, next actions, and work steps from evidence.
+  - Implementation Gate: no implementation or editing starts until `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-actual-status.md` has a final P0 decision.
+  - Acceptance: actual status identifies correct, partial, missing/unbound, fake-or-stub, and blocked surfaces for this scope.
 
 ### P1: Graph identity contract and strict graph construction
-
-- Source phase: legacy `P1` — Graph identity contract and strict graph construction.
 
 - Phase Goal: ratify and implement the Declaration/Symbol identity foundation without activating v2 for readers.
 - Phase Boundary:
@@ -244,7 +274,6 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
   - P1-E: Emit and validate shadow identity v2.
 
 - [ ] P1-A: Ratify graph identity and ownership contract.
-  - Source slice: `P1-A`.
   - Goal: convert the proposed decisions in this plan into explicit owner-approved authority before production code.
   - Scope Boundary:
     - Editable: plan/ADR or approved contract documentation under `E:\Anvien` only.
@@ -293,14 +322,13 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     - DB/data: identity, persistence, and rollback contracts are explicit.
     - Behavior test: authority cross-reference has no contradiction.
     - Cleanup/quarantine: no draft duplicate authority remains.
-    - Evidence IDs: `E1-P1A-CONTRACT1`, `E1-P1A-REVIEW1`, `E1-P1A-COMMIT1`
+    - Evidence IDs: `E1-P1A-CONTRACT1`, `E1-P1A-REVIEW1`, `E1-P1A-COMMIT1`.
     - Actual-status rows refreshed: architecture authority and P1-B assumptions.
   - Evidence Targets: accepted decision table, ownership map, Supervisor verdict.
   - Actual-status Update: `architecture authority missing -> correct` or record a blocker.
   - Commit Boundary: commit the contract-only slice and record `E1-P1A-COMMIT1`; no Anvien detect-changes is required for a documentation-only commit.
 
 - [ ] P1-B: Introduce range, DeclarationID, SymbolID, and SymbolRef types.
-  - Source slice: `P1-B`.
   - Goal: add versioned, non-interchangeable identity and position types in single-responsibility owners without changing active graph IDs.
   - Scope Boundary:
     - Editable: graph-identity and declaration/range owner files plus narrow serialization adapters.
@@ -349,14 +377,13 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     - DB/data: deterministic serialization and v1 preservation pass.
     - Behavior test: full position matrix passes.
     - Cleanup/quarantine: no root fixture or catch-all helper.
-    - Evidence IDs: `E1-P1B-IMPACT1`, `E1-P1B-SRC1`, `E1-P1B-BUILD1`, `E1-P1B-TEST1`, `E1-P1B-REVIEW1`, `E1-P1B-DETECT1`, `E1-P1B-COMMIT1`
+    - Evidence IDs: `E1-P1B-IMPACT1`, `E1-P1B-SRC1`, `E1-P1B-BUILD1`, `E1-P1B-TEST1`, `E1-P1B-REVIEW1`.
     - Actual-status rows refreshed: range/identity types.
   - Evidence Targets: source diff, full build, range/type tests, Supervisor, detect-changes, commit.
-  - Actual-status Update: `identity types missing -> correct`; keep active graph identity wrong until 2026-07-28-02-versioned-persistence-and-v2-cutover::P1-G (source P2-G).
+  - Actual-status Update: `identity types missing -> correct`; keep active graph identity wrong until P2-G.
   - Commit Boundary: commit after this slice when acceptance passes.
 
 - [ ] P1-C0: Preserve lossless declaration occurrences.
-  - Source slice: `P1-C0`.
   - Goal: remove first-wins/last-wins loss of declaration occurrences before Declaration-to-Symbol mapping.
   - Scope Boundary:
     - Editable: dedicated occurrence-index owner and shadow-v2 compatibility adapter.
@@ -378,7 +405,7 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     - External side effects: None.
     - N/A notes: The shadow path is deliberately non-active and unavailable to readers.
   - Work Steps:
-    1. Implement only the lossless Declaration occurrence index and shadow-v2 adapter; keep the active v1 adapter byte/hash-preserving until 2026-07-28-02-versioned-persistence-and-v2-cutover::P1-G (source P2-G).
+    1. Implement only the lossless Declaration occurrence index and shadow-v2 adapter; keep the active v1 adapter byte/hash-preserving until P2-G.
        - UI flow check: N/A — this work step has no browser-visible or installed-app behavior; Mini-QA exercises the named nearest non-UI boundary.
        - DB/data flow check: occurrence counts survive the v2 shadow path while v1 output remains byte/hash-identical.
        - Render location check: structured validation error only.
@@ -405,14 +432,13 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     - DB/data: `0` silently dropped v2 declarations; conflicting payloads fail closed; v1 hash remains unchanged.
     - Behavior test: declaration collision, overload, merge-evidence, and empty/subset occurrence matrix passes; relationship/decode failures are tested only in their named slices.
     - Cleanup/quarantine: old first/last-wins occurrence helpers are removed or isolated behind explicit compatibility code.
-    - Evidence IDs: `E1-P1C0-IMPACT1`, `E1-P1C0-SRC1`, `E1-P1C0-BUILD1`, `E1-P1C0-TEST1`, `E1-P1C0-REVIEW1`, `E1-P1C0-DETECT1`, `E1-P1C0-COMMIT1`
+    - Evidence IDs: `E1-P1C0-IMPACT1`, `E1-P1C0-SRC1`, `E1-P1C0-BUILD1`, `E1-P1C0-TEST1`, `E1-P1C0-REVIEW1`.
     - Actual-status rows refreshed: occurrence index and v1 compatibility adapter.
   - Evidence Targets: producer inventory, source diff, v1 hash gate, full build, conservation/fault tests, Supervisor, detect-changes, commit.
   - Actual-status Update: declaration occurrence preservation `missing/wrong -> correct`; unlock P1-C0A and P1-C0B.
   - Commit Boundary: commit after this slice when acceptance passes.
 
 - [ ] P1-C0A: Define RelationshipID and lossless source-site aggregation.
-  - Source slice: `P1-C0A`.
   - Goal: give each relationship occurrence a deterministic identity and make aggregation explicitly retain all source-site IDs.
   - Scope Boundary:
     - Editable: `internal/graph/relationship_identity.go` and one aggregation adapter.
@@ -451,14 +477,13 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     - DB/data: The data/contract condition is: same-endpoint occurrences remain distinct or losslessly aggregated.
     - Behavior test: The behavior gate is: same-endpoint occurrences remain distinct or losslessly aggregated.
     - Cleanup/quarantine: N/A — no separate cleanup/quarantine condition is stated in the compact acceptance; the existing Scope Boundary, Non-Goals, and work-step cleanup checks remain authoritative.
-    - Evidence IDs: `E1-P1C0A-IMPACT1`, `E1-P1C0A-SRC1`, `E1-P1C0A-BUILD1`, `E1-P1C0A-TEST1`, `E1-P1C0A-REVIEW1`, `E1-P1C0A-DETECT1`, `E1-P1C0A-COMMIT1`
+    - Evidence IDs: `E1-P1C0A-IMPACT1`, `E1-P1C0A-SRC1`, `E1-P1C0A-BUILD1`, `E1-P1C0A-TEST1`, `E1-P1C0A-REVIEW1`
     - Actual-status rows refreshed: RelationshipID/aggregation `missing -> correct`.
   - Evidence Targets: tuple/conservation source/tests/build/Supervisor/detect/commit.
   - Actual-status Update: RelationshipID/aggregation `missing -> correct`.
   - Commit Boundary: commit after this slice when acceptance passes.
 
 - [ ] P1-C0B: Validate lossless graph decode and closure.
-  - Source slice: `P1-C0B`.
   - Goal: reject duplicate/conflicting IDs, missing endpoints, and empty/subset graph snapshots before any v2 shadow publication.
   - Scope Boundary:
     - Editable: graph decode/validation owner.
@@ -497,14 +522,13 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     - DB/data: The data/contract condition is: duplicate/conflict/endpoint/subset matrix fails closed.
     - Behavior test: The behavior gate is: duplicate/conflict/endpoint/subset matrix fails closed.
     - Cleanup/quarantine: N/A — no separate cleanup/quarantine condition is stated in the compact acceptance; the existing Scope Boundary, Non-Goals, and work-step cleanup checks remain authoritative.
-    - Evidence IDs: `E1-P1C0B-IMPACT1`, `E1-P1C0B-SRC1`, `E1-P1C0B-BUILD1`, `E1-P1C0B-TEST1`, `E1-P1C0B-REVIEW1`, `E1-P1C0B-DETECT1`, `E1-P1C0B-COMMIT1`
+    - Evidence IDs: `E1-P1C0B-IMPACT1`, `E1-P1C0B-SRC1`, `E1-P1C0B-BUILD1`, `E1-P1C0B-TEST1`, `E1-P1C0B-REVIEW1`
     - Actual-status rows refreshed: decode closure `wrong -> correct`.
   - Evidence Targets: decode/closure source/tests/build/Supervisor/detect/commit.
   - Actual-status Update: decode closure `wrong -> correct`.
   - Commit Boundary: commit after this slice when acceptance passes.
 
 - [ ] P1-C: Build declaration-to-symbol identity mapping.
-  - Source slice: `P1-C`.
   - Goal: deterministically map every declaration occurrence to one DeclarationID and an evidence-backed logical SymbolID.
   - Scope Boundary:
     - Editable: declaration/symbol identity owners and narrow ScopeIR/provider adapters.
@@ -553,14 +577,13 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     - DB/data: deterministic sets and explicit ambiguous/unverified merges.
     - Behavior test: complete identity matrix passes.
     - Cleanup/quarantine: no target-derived fixture.
-    - Evidence IDs: `E1-P1C-IMPACT1`, `E1-P1C-SRC1`, `E1-P1C-BUILD1`, `E1-P1C-TEST1`, `E1-P1C-REVIEW1`, `E1-P1C-DETECT1`, `E1-P1C-COMMIT1`
+    - Evidence IDs: `E1-P1C-IMPACT1`, `E1-P1C-SRC1`, `E1-P1C-BUILD1`, `E1-P1C-TEST1`, `E1-P1C-REVIEW1`.
     - Actual-status rows refreshed: declaration/symbol mapping.
   - Evidence Targets: canonical tuple diff, determinism runs, full build, Supervisor, detect-changes, commit.
   - Actual-status Update: mapping `missing -> correct`; graph projection remains unbound.
   - Commit Boundary: commit after this slice when acceptance passes.
 
 - [ ] P1-D: Introduce strict graph mutation operations and validation.
-  - Source slice: `P1-D`.
   - Goal: make insert, idempotent enrich/update, replace, and decode behavior explicit and fail closed on conflicting identities before producer migration.
   - Scope Boundary:
     - Editable: graph mutation/validation owners only.
@@ -609,14 +632,13 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     - DB/data: `0` silent duplicate/endpoint failures; structured build failure.
     - Behavior test: full negative matrix passes.
     - Cleanup/quarantine: no obsolete compatibility helper remains.
-    - Evidence IDs: `E1-P1D-IMPACT1`, `E1-P1D-MAP1`, `E1-P1D-SRC1`, `E1-P1D-BUILD1`, `E1-P1D-TEST1`, `E1-P1D-REVIEW1`, `E1-P1D-DETECT1`, `E1-P1D-COMMIT1`
+    - Evidence IDs: `E1-P1D-IMPACT1`, `E1-P1D-MAP1`, `E1-P1D-SRC1`, `E1-P1D-BUILD1`, `E1-P1D-TEST1`, `E1-P1D-REVIEW1`.
     - Actual-status rows refreshed: mutation/decode strictness.
   - Evidence Targets: producer map, source diff, full build, fault tests, Supervisor, detect-changes, commit.
   - Actual-status Update: duplicate behavior `wrong -> correct`; active IDs remain v1 and the strict API is reachable only through the shadow-v2 adapter.
   - Commit Boundary: commit after this slice when acceptance passes.
 
 - [ ] P1-D1: Migrate core graph producers to explicit operations.
-  - Source slice: `P1-D1`.
   - Goal: migrate only the core node/relationship producers named in the P1-D inventory.
   - Scope Boundary:
     - Editable: exact core producer allowlist.
@@ -655,14 +677,13 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     - DB/data: The data/contract condition is: all core producers use explicit operations, no unrelated caller changes, evidence `E1-P1D1-IMPACT1`, `E1-P1D1-SRC1`, `E1-P1D1-BUILD1`, `E1-P1D1-TEST1`, `E1-P1D1-REVIEW1`, and actual-status refresh.
     - Behavior test: The behavior gate is: all core producers use explicit operations, no unrelated caller changes, evidence `E1-P1D1-IMPACT1`, `E1-P1D1-SRC1`, `E1-P1D1-BUILD1`, `E1-P1D1-TEST1`, `E1-P1D1-REVIEW1`, and actual-status refresh.
     - Cleanup/quarantine: N/A — no separate cleanup/quarantine condition is stated in the compact acceptance; the existing Scope Boundary, Non-Goals, and work-step cleanup checks remain authoritative.
-    - Evidence IDs: `E1-P1D1-IMPACT1`, `E1-P1D1-SRC1`, `E1-P1D1-BUILD1`, `E1-P1D1-TEST1`, `E1-P1D1-REVIEW1`, `E1-P1D1-DETECT1`, `E1-P1D1-COMMIT1`
+    - Evidence IDs: `E1-P1D1-IMPACT1`, `E1-P1D1-SRC1`, `E1-P1D1-BUILD1`, `E1-P1D1-TEST1`, `E1-P1D1-REVIEW1`
     - Actual-status rows refreshed: core producer migration `unbound -> bound-correct`.
   - Evidence Targets: allowlist, source/build/tests, Supervisor, detect-changes, commit.
   - Actual-status Update: core producer migration `unbound -> bound-correct`.
   - Commit Boundary: commit after this slice when acceptance passes.
 
 - [ ] P1-D2: Migrate resolution/projection producers to explicit operations.
-  - Source slice: `P1-D2`.
   - Goal: migrate only resolver, emitter, health, and persistence producers named in the P1-D inventory.
   - Scope Boundary:
     - Editable: exact resolution/projection allowlist.
@@ -701,14 +722,13 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     - DB/data: The data/contract condition is: allowlisted producers use explicit operations and parity is unchanged, evidence `E1-P1D2-IMPACT1`, `E1-P1D2-SRC1`, `E1-P1D2-BUILD1`, `E1-P1D2-TEST1`, `E1-P1D2-REVIEW1`, and actual-status refresh.
     - Behavior test: The behavior gate is: allowlisted producers use explicit operations and parity is unchanged, evidence `E1-P1D2-IMPACT1`, `E1-P1D2-SRC1`, `E1-P1D2-BUILD1`, `E1-P1D2-TEST1`, `E1-P1D2-REVIEW1`, and actual-status refresh.
     - Cleanup/quarantine: The boundary/cleanup condition is: allowlisted producers use explicit operations and parity is unchanged, evidence `E1-P1D2-IMPACT1`, `E1-P1D2-SRC1`, `E1-P1D2-BUILD1`, `E1-P1D2-TEST1`, `E1-P1D2-REVIEW1`, and actual-status refresh.
-    - Evidence IDs: `E1-P1D2-IMPACT1`, `E1-P1D2-SRC1`, `E1-P1D2-BUILD1`, `E1-P1D2-TEST1`, `E1-P1D2-REVIEW1`, `E1-P1D2-DETECT1`, `E1-P1D2-COMMIT1`
+    - Evidence IDs: `E1-P1D2-IMPACT1`, `E1-P1D2-SRC1`, `E1-P1D2-BUILD1`, `E1-P1D2-TEST1`, `E1-P1D2-REVIEW1`
     - Actual-status rows refreshed: resolution/projection migration `unbound -> bound-correct`.
   - Evidence Targets: allowlist, source/build/tests/parity, Supervisor, detect-changes, commit.
   - Actual-status Update: resolution/projection migration `unbound -> bound-correct`.
   - Commit Boundary: commit after this slice when acceptance passes.
 
 - [ ] P1-D3: Migrate ancillary/document/semantic producers to explicit operations.
-  - Source slice: `P1-D3`.
   - Goal: migrate only remaining document, COBOL, semantic, and diagnostic producers named in the inventory.
   - Scope Boundary:
     - Editable: exact ancillary allowlist.
@@ -747,14 +767,13 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     - DB/data: The data/contract condition is: all remaining producers use explicit operations, no new responsibility or skipped row, evidence `E1-P1D3-IMPACT1`, `E1-P1D3-SRC1`, `E1-P1D3-BUILD1`, `E1-P1D3-TEST1`, `E1-P1D3-REVIEW1`, and actual-status refresh.
     - Behavior test: The behavior gate is: all remaining producers use explicit operations, no new responsibility or skipped row, evidence `E1-P1D3-IMPACT1`, `E1-P1D3-SRC1`, `E1-P1D3-BUILD1`, `E1-P1D3-TEST1`, `E1-P1D3-REVIEW1`, and actual-status refresh.
     - Cleanup/quarantine: N/A — no separate cleanup/quarantine condition is stated in the compact acceptance; the existing Scope Boundary, Non-Goals, and work-step cleanup checks remain authoritative.
-    - Evidence IDs: `E1-P1D3-IMPACT1`, `E1-P1D3-SRC1`, `E1-P1D3-BUILD1`, `E1-P1D3-TEST1`, `E1-P1D3-REVIEW1`, `E1-P1D3-DETECT1`, `E1-P1D3-COMMIT1`
+    - Evidence IDs: `E1-P1D3-IMPACT1`, `E1-P1D3-SRC1`, `E1-P1D3-BUILD1`, `E1-P1D3-TEST1`, `E1-P1D3-REVIEW1`
     - Actual-status rows refreshed: ancillary migration `unbound -> bound-correct`.
   - Evidence Targets: allowlist, source/build/tests, Supervisor, detect-changes, commit.
   - Actual-status Update: ancillary migration `unbound -> bound-correct`.
   - Commit Boundary: commit after this slice when acceptance passes.
 
 - [ ] P1-E: Emit and validate shadow identity v2.
-  - Source slice: `P1-E`.
   - Goal: produce a non-active v2 graph signature beside v1 so identity correctness and size can be measured before reader migration.
   - Scope Boundary:
     - Editable: v2 emitter/shadow comparison owner and narrow analyze hook.
@@ -796,7 +815,7 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
          - Other agents: use the equivalent browser/session/computer-control or Playwright-like capability exposed by that runtime.
          - Evidence: record the command, target runtime or boundary, observed result, visual inspection when applicable, and exact evidence ID.
        - Evidence target: `E1-P1E-BUILD1`, `E1-P1E-BENCH1`.
-    3. Before 2026-07-28-02-versioned-persistence-and-v2-cutover::P1-G (source P2-G) is eligible, capture the target's active-v1 pre-state/hash and run an in-memory v2 shadow from the real `E:\cheapapp.org` source/ScopeIR without writing v2 artifacts to the target. The `4/4` gate is an independent source/TS-oracle comparison of the v2 shadow (two `time` and two `now` occurrences, ranges/scopes, and relationship provenance); it is not an assertion that the known v1 graph already contains `4/4`. Capture target post-state, graph hash/generation, ignored-guidance timestamp caveat, and contamination manifest.
+    3. Before P2-G is eligible, capture the target's active-v1 pre-state/hash and run an in-memory v2 shadow from the real `E:\cheapapp.org` source/ScopeIR without writing v2 artifacts to the target. The `4/4` gate is an independent source/TS-oracle comparison of the v2 shadow (two `time` and two `now` occurrences, ranges/scopes, and relationship provenance); it is not an assertion that the known v1 graph already contains `4/4`. Capture target post-state, graph hash/generation, ignored-guidance timestamp caveat, and contamination manifest.
        - UI flow check: N/A unless the existing graph UI is used as a parity read.
        - DB/data flow check: active v1 graph remains unchanged under `E:\cheapapp.org\.anvien`; v2 shadow exists only in memory/Anvien evidence and is never published to the target.
        - Render location check: oracle/report artifacts remain under `E:\Anvien`.
@@ -813,48 +832,55 @@ Every corresponding test file owns one behavior matrix. Existing broad files suc
     - DB/data: five identical signatures, no duplicate/orphan, active-v1 hash unchanged, and every shadow source occurrence/source-site relationship is conserved with endpoint/provenance.
     - Behavior test: shadow comparison, conservation, subset/empty, and failure cases pass.
     - Cleanup/quarantine: debug shadows removed after ledger capture.
-    - Evidence IDs: `E1-P1E-IMPACT1`, `E1-P1E-SRC1`, `E1-P1E-SHADOW1`, `E1-P1E-BUILD1`, `E1-P1E-BENCH1`, `E1-P1E-TARGET1`, `E1-P1E-ORACLE1`, `E1-P1E-BOUNDARY1`, `E1-P1E-REVIEW1`, `E1-P1E-DETECT1`, `E1-P1E-COMMIT1`
+    - Evidence IDs: `E1-P1E-IMPACT1`, `E1-P1E-SRC1`, `E1-P1E-SHADOW1`, `E1-P1E-TARGET1`, `E1-P1E-ORACLE1`, `E1-P1E-BOUNDARY1`, `E1-P1E-BUILD1`, `E1-P1E-BENCH1`, `E1-P1E-REVIEW1`.
     - Actual-status rows refreshed: v2 projection `unbound -> partial`.
   - Evidence Targets: shadow signatures, graph counts/size/RSS, build/tests, Supervisor, detect-changes, commit.
   - Actual-status Update: record measured migration expansion and update P2 budgets.
   - Commit Boundary: commit after this slice when acceptance passes.
 
-- [ ] Pn-A: Review and accept this child plan's implemented scope.
-  - Source closure role: legacy `P8-A`, tailored to child 01 only.
-  - Goal: verify this child's mapped slices, current P0, campaign-authority input, evidence, benchmarks, changed files, runtime boundaries, and handoff.
+- [ ] Pn-A: Call supervisor for the implemented-plan acceptance loop.
+  - Goal: verify the completed plan work against the accepted plan, actual-status decisions, evidence, benchmark, changed files, generated output, and validation results before closure.
   - Work Steps:
-    1. Call the Supervisor skill against this child plan and exact source-slice mapping.
-    2. Route a local failure to the responsible local slice; route a campaign-authority failure to the roadmap blocker. Child 01 has no upstream implementation child.
-    3. Re-run review until PASS or a proven blocker is recorded.
-  - Implementation Gate: every local P1 slice is complete/committed or explicitly blocked with evidence.
-  - Acceptance: Supervisor PASS is recorded as `E2-PNA-SUP1`; no whole-campaign closure is claimed.
-- [ ] Pn-B: Remove dead work created by this child.
-  - Source closure role: legacy `P8-B`, tailored to child 01 only.
-  - Goal: leave only artifacts that serve this child's accepted responsibility.
+    1. Call the supervisor skill to review the full completed plan work.
+    2. If supervisor fails the work, return to the responsible implementation workflow/skill for the failed scope only.
+    3. Re-run supervisor review after the fix.
+    4. Repeat until supervisor passes or records a blocker.
+  - Implementation Gate: all planned implementation phases must be completed or explicitly blocked before this review.
+  - Acceptance: supervisor review passes, or the plan records a blocker with evidence and no closure is performed.
+- [ ] Pn-B: Remove dead work created during this plan.
+  - Goal: ensure the final diff contains only artifacts that still serve the accepted plan.
   - Work Steps:
-    1. Review this child's code, tests, generated output, temp/debug material, reports, and ledgers.
-    2. Remove/rewrite only dead work created by this child; never delete another child's artifacts, target material, or unrelated existing work.
-    3. Call Supervisor for cleanup acceptance and record `E2-PNB-CLEAN1`.
-  - Implementation Gate: Pn-A passed; broader cleanup requires explicit owner approval.
-  - Acceptance: no stale placeholder, rejected approach, duplicate owner, or child-created temp artifact remains.
-- [ ] Pn-C: Close this child and hand off.
-  - Source closure role: legacy `P8-C`, tailored to child 01 only.
-  - Goal: finish child-local validation, evidence, benchmark, detect-changes, commits, worktree proof, roadmap update, and next-child handoff.
+    1. Review files, sections, generated output, tests, temp files, and plan artifacts created or modified during this plan.
+    2. Remove or rewrite any artifact made obsolete by actual-status findings, user corrections, failed approaches, or phase status updates.
+    3. Verify no rejected approach, stale placeholder, unused generated output, or dead helper artifact remains in the final diff.
+    4. Call supervisor to review the dead-work cleanup.
+    5. If supervisor fails the cleanup, return to the responsible implementation workflow/skill for the failed cleanup scope only, then re-run supervisor review.
+  - Implementation Gate: only remove artifacts created by this plan unless the user explicitly approves broader cleanup.
+  - Acceptance: final `git diff/status` contains no dead plan-created artifacts, supervisor passes the cleanup, and evidence records what was removed or preserved.
+- [ ] Pn-C: Close the plan.
+  - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
   - Work Steps:
-    1. Run full build and nearest real graph/emitter/shadow boundary; Docker/Playwright are N/A unless this child unexpectedly changes a public UI/runtime surface.
-    2. Refresh child actual-status and record final evidence/benchmark values.
-    3. Run Anvien detect-changes before each implementation commit and record exact changed/affected scope.
-    4. Refresh child 02's `actual-status.md` from the latest accepted child-01 repo/runtime/evidence state, append its refresh-log row, update affected status assumptions/next actions/work steps, and record qualified proof as `E2-PNC-NEXTSTATUS1`.
-    5. Commit accepted child scope plus the successor-status refresh, verify worktree state, and update the roadmap.
-    6. Record handoff `E2-PNC-HANDOFF1`: Child 02 receives accepted child-01 local P1-A authority, local P1-E shadow PASS/commit, exact graph-expansion metrics, no active-v1 drift, and the qualified `2026-07-28-01-graph-identity-contract-and-strict-construction::E2-PNC-NEXTSTATUS1` freshness proof.
-  - Implementation Gate: Pn-A and Pn-B pass; every required runtime/build/target gate for this child is current; child 02's actual-status refresh is ready to be committed with closure.
-  - Acceptance: child-local closure evidence `E2-PNC-BUILD1`, `E2-PNC-RUNTIME1`, `E2-PNC-DETECT1`, `E2-PNC-NEXTSTATUS1`, `E2-PNC-COMMIT1`, and `E2-PNC-HANDOFF1` is complete; child 02's actual-status reflects the latest accepted evidence; campaign closure is not implied.
+    1. Run the required final validation for the accepted scope, including full build before final runtime validation. For app/runtime scopes, full build must include Docker image/container build.
+    2. Start the real built Docker/container runtime for app/runtime validation. If Docker cannot be built or started, record the blocker and do not substitute a host dev server.
+    3. Validate public runtime or UI-facing changes with browser or Playwright evidence against the real built Docker/container runtime. Playwright evidence must include Docker build/run or compose command, container/service name, exposed URL, Playwright command, and screenshot/trace/result.
+    4. Regenerate generated outputs if source-of-truth changes require it.
+    5. Run Anvien detect-changes before commit when implementation work was performed.
+    6. Record final validation, detect-changes, benchmark, and commit evidence.
+    7. Commit the completed scope and verify the worktree state.
+  - Implementation Gate: Pn-A and Pn-B must pass or record blockers.
+  - Acceptance: final evidence is recorded, required commits exist, and the worktree state is known.
 
 ## Risk Notes
 
-- Cross-child ID collision: qualify every external plan/evidence reference with its child slug.
-- Source drift: recheck the frozen legacy hash and local slice crosswalk before implementation.
-- Stale P0: refresh this child's actual-status after campaign authority cutover and before opening local P1.
-- Scope drift: this child owns only declaration/symbol identity and strict graph construction.
-- Target contamination: no target source copy and no report/probe/fixture/temp artifact in `E:\cheapapp.org`.
-- One-file responsibility: do not append a second semantic responsibility to a mixed owner; split the owner first in the responsible slice.
+- Identity v2 is CRITICAL blast radius: relationship endpoints, ResolutionGap, Process, embeddings, group registry, rename, MCP, HTTP/Web, sorting, communities, and caches all depend on current IDs.
+- Adding range to old IDs alone prevents some collisions but creates widespread churn after line edits and still fails logical symbol/overload semantics.
+- A strict `AddNode` change without explicit producer classification can break legitimate enrichment and still allow ignored errors.
+- Declaration nodes may materially increase graph size, Ladybug load time, RSS, and query cost; P1 shadow and P7 benchmarks are release gates.
+- Case normalization and path canonicalization can drift between Windows and Linux; determinism tests must cover both packaged platform policies where supported.
+- TypeScript declaration merging cannot be inferred safely from name equality or Tree-sitter shape alone; ambiguous/unverified facts must remain separate.
+- Star exports and cycles can cause combinatorial work; bounded memoization must return `budget_exceeded`, never silently truncate or choose a candidate.
+- Embedded declaration data has provenance, license, version, integrity, binary-size, and regeneration risks; these must be explicit before catalog acceptance.
+- Generation atomicity cannot be achieved by renaming graph.json alone; all readers must bind to the active manifest and one generation.
+- Old binaries ignore unknown JSON fields. The cutover must prevent unsupported binaries/clients from reading v2 rather than assuming metadata alone protects them.
+- The target has pre-existing changes. Every target run must capture and preserve the boundary; do not reset, clean, copy, or repair target state.
+- The missing approved architecture SPEC means this draft is not implementation authority until the owner accepts its decision table or an equivalent approved contract is recorded.

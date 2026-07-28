@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0 complete / P1 complete / P2-A complete / P2-A1 complete and committed 55bf021f / P2-B complete / authoring accepted / commit pending`
+- Status: `active / P0 complete / P1 complete / P2-A rebuilt by exact copy/paste / Supervisor PASS / commit pending / P2-B reset and blocked / later children not authored / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -57,9 +57,9 @@ Convert the existing oversized `2026-07-26-anvien-graph-identity-resolution-v2` 
 - The legacy plan and its ledgers remain the active authority until P3-B receives Supervisor PASS. Partial child-plan output is draft-only and cannot authorize implementation.
 - The legacy implementation phases map one-to-one: P1 through P7 become child plans `01` through `07`. Legacy P8 is closure material and must be distributed into each child's Pn-A/Pn-B/Pn-C; it must not become child plan `08`.
 - Every child is a complete standard four-file plan set. A roadmap entry or a link to the legacy plan cannot replace a child's P0, implementation phase, evidence ledger, benchmark ledger, actual-status ledger, or Pn closure.
-- Every child has one local implementation phase named P1. Legacy slice prefixes are remapped from `P<source>-<suffix>` to child-local `P1-<suffix>` while retaining an explicit `Source slice` field so order and provenance remain auditable.
-- Preserve every legacy slice's goal, scope boundary, non-goals, pre-flight questions, work-step sequence, implementation gate, acceptance fields, evidence targets, actual-status update, and commit boundary. Changes are limited to path ownership, local phase IDs, cross-plan dependencies, and stale references made necessary by the split.
-- All 98 legacy implementation slices must map exactly once. Missing, duplicate, merged, invented, or silently dropped slices block authority cutover.
+- Every child preserves its source implementation phase name and every source slice ID. Mechanical copy/paste does not remap `P<source>-<suffix>` to a child-local prefix.
+- Preserve every legacy slice's goal, scope boundary, non-goals, pre-flight questions, work-step sequence, implementation gate, acceptance fields, evidence targets, actual-status update, and commit boundary verbatim. Only standalone metadata, companion paths, P0/Pn structure, predecessor/successor links, and explicitly missing handoff structure may be added.
+- All 98 legacy implementation slices must be copied exactly once with their original IDs and order. Missing, duplicate, merged, invented, normalized, or silently dropped slices block authority cutover.
 - Each child ledger is independent. Cross-plan evidence references must include both the child slug and the exact evidence ID; a bare `E1` or an unqualified `E1-P1A-*` reference is invalid across child boundaries.
 - `index-reader-matrix.md` has one primary responsibility and one owning child: child `02-versioned-persistence-and-v2-cutover`. Other children may link to it as inspect-only evidence but may not duplicate or independently mutate its contract.
 - Every authored file must own one primary planning responsibility. A file may link to many modules, plans, or files when those links serve that one responsibility; catch-all or duplicated ledgers are forbidden.
@@ -92,8 +92,8 @@ In scope:
   - `2026-07-28-07-cross-surface-acceptance-and-target-validation`
 - Create the four standard planner files in each child folder with matching date and slug.
 - Keep the four-file authoring plan set in its own sibling root `docs/plans/2026-07-28-00-multi-plan-authoring/`; it is not a child of either the legacy plan or the resulting multi-plan.
-- Map legacy P1-P7 to child `01`-`07`, respectively, and map all 98 implementation slices exactly once into each child's local P1.
-- Give each child a populated P0, one local implementation phase containing the complete source-phase slice set, and tailored Pn-A/Pn-B/Pn-C closure.
+- Map legacy P1-P7 to child `01`-`07`, respectively, and copy each complete source phase into its child without changing phase or slice IDs.
+- Give each child a populated P0, its preserved source implementation phase containing the complete source-phase slice set, and tailored Pn-A/Pn-B/Pn-C closure.
 - Split current status, evidence, benchmarks, dependencies, acceptance, and handoff ownership so each child can be executed and closed independently without relying on chat history.
 - Validate roadmap links, companion links, slice traceability, evidence qualification, file responsibility, dependency order, and lifecycle completeness.
 - After Supervisor acceptance only, mark the giant legacy plan `superseded / reference-only` and point it to the roadmap.
@@ -140,7 +140,7 @@ In scope:
 
 - Every child folder contains `*-plan.md`, `*-evidence.md`, `*-benchmark.md`, and `*-actual-status.md` with the exact same child slug.
 - Every child plan follows the current planner template and contains metadata, goal, rules, problem, scope, non-goals, requirements, acceptance criteria, checklist, and risk notes.
-- Every child plan contains `P0-A`, one local P1 with every mapped legacy slice in original order, and Pn-A/Pn-B/Pn-C.
+- Every child plan contains `P0-A`, its preserved source implementation phase with every source slice in original order, and Pn-A/Pn-B/Pn-C.
 - Every mapped slice includes all required Scope Boundary fields, all 12 Pre-flight fields, ordered Work Steps with UI/data/render/Mini-QA/evidence checks, Implementation Gate, all seven Acceptance fields, Evidence Targets, Actual-status Update, and Commit Boundary.
 - Every child actual-status ledger contains a real baseline classification, relationship evidence or a truthful docs/graph limitation, a touch map, a refresh log, downstream decisions, and a final P0 decision. Later execution must refresh P0 before opening that child if prior children changed repo reality.
 - Every child evidence ledger uses child-local stable evidence IDs. Cross-child references are qualified by child slug and exact evidence ID.
@@ -163,12 +163,12 @@ In scope:
 
 - Exactly one roadmap exists at the specified campaign-root path.
 - Exactly three independent sibling plan roots exist at the specified paths; the legacy root contains no authoring-plan directory, roadmap, or numbered child-plan directory.
-- Exactly seven implementation child folders exist with the specified slugs and order.
+- Exactly seven implementation child folders exist with the specified slugs and order when authoring is complete; unstarted children remain absent and explicitly not authored.
 - Exactly 28 standard child files exist: four per child, with matching filenames, metadata links, and H1 type.
-- All seven children contain a completed P0 structure, one local P1, and Pn-A/Pn-B/Pn-C.
-- The crosswalk contains exactly 98 source slices and 98 unique child-local destinations, with zero missing, duplicate, merged, invented, or out-of-order mappings.
+- All authored children contain a completed P0 structure, the preserved source implementation phase, and Pn-A/Pn-B/Pn-C.
+- The crosswalk contains exactly 98 source slices and 98 unchanged source-ID destinations, with zero missing, duplicate, merged, invented, normalized, or out-of-order mappings.
 - Source-phase counts reproduce `11 + 42 + 17 + 15 + 4 + 6 + 3 = 98`.
-- Every mapped slice preserves its source semantics and complete planner field structure; only ownership paths, local prefixes, qualified references, dependency handoffs, and stale status assumptions change.
+- Every copied slice preserves its source text, semantics, IDs, order, and complete planner field structure; only the standalone child metadata/paths and explicitly missing handoff structure may be added.
 - Legacy P8 produces closure sections in all seven children and does not produce an eighth implementation child.
 - Child evidence, benchmark, and actual-status ledgers are independently usable and contain no unqualified cross-child evidence references.
 - Every child plan contains the successor actual-status freshness rule in `Rules`, and every Pn-C reserves/accepts exact evidence proving the next child's actual-status refresh before handoff; child 07 records the terminal no-successor case and refreshes campaign closure status.
@@ -227,7 +227,7 @@ In scope:
        - Render location check: evidence and benchmark ledgers only.
        - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; run the nearest real boundary, the deterministic disk/Markdown inventory checks.
        - Evidence target: `E1-P1A-SNAPSHOT1`, `E1-P1A-GIT1`, and `B-P1-A`.
-    2. Materialize the source-to-child transformation contract in the authoring evidence, including seven phase owners, all 98 source IDs, local-ID remap rules, P8-to-Pn distribution, and authority-cutover conditions.
+    2. Materialize the source-to-child transformation contract in the authoring evidence, including seven phase owners, all 98 unchanged source IDs, exact copy boundaries, P8-to-Pn distribution, and authority-cutover conditions.
        - UI flow check: N/A — no UI flow.
        - DB/data flow check: prove one source phase per child and one destination per source slice.
        - Render location check: authoring evidence and actual-status only; no roadmap yet.
@@ -301,7 +301,7 @@ In scope:
 
 - Phase Goal: author one complete, independent standard plan set for each legacy implementation phase while preserving every source slice and lifecycle contract.
 - Phase Boundary:
-  - In scope: seven named child folders, 28 standard files, phase-specific P0/evidence/benchmark/Pn content, local-ID remapping, and roadmap status/handoffs.
+  - In scope: seven named child folders, 28 standard files, phase-specific P0/evidence/benchmark/Pn content, exact source-ID copy/paste, and roadmap status/handoffs.
   - Out of scope: implementing any child, modifying production/tests/runtime, changing technical scope, or switching legacy authority.
   - Dependencies: P1-A and P1-B accepted; children are authored in numeric/source-phase order.
 - Phase Implementation Rule: do not implement `P2` directly. Complete P2-A, the user-required structural correction P2-A1, then P2-B through P2-G in order. After each slice, verify it, record evidence, refresh actual-status and roadmap, and commit the docs-only scope when authorized before opening the next slice.
@@ -315,7 +315,7 @@ In scope:
   - P2-F: Author child 06 for legacy P6.
   - P2-G: Author child 07 for legacy P7.
 
-- [x] P2-A: Author child 01 for legacy P1.
+- [x] P2-A: Author child 01 for legacy P1 by exact source-block copy/paste.
   - Goal: create the complete graph-identity/strict-construction child plan set with all 11 legacy P1 slices.
   - Scope Boundary:
     - Editable: the four files under `2026-07-28-01-graph-identity-contract-and-strict-construction/`, roadmap status, and authoring ledgers.
@@ -337,15 +337,15 @@ In scope:
     - External side effects: four child Markdown files plus roadmap/authoring ledger updates.
     - N/A notes: runtime fields are inapplicable to docs authoring; future child content retains its own applicable validation rules.
   - Work Steps:
-    1. Create child 01's plan, evidence, benchmark, and actual-status files from current templates; populate P0, local P1, and tailored Pn-A/Pn-B/Pn-C.
+    1. Create child 01's plan, evidence, benchmark, and actual-status files from current templates; copy the complete source P1 blocks verbatim and add P0/Pn-A/Pn-B/Pn-C.
        - UI flow check: N/A — docs-only.
-       - DB/data flow check: migrate only P1-scoped facts and ownership.
+       - DB/data flow check: copy only P1-scoped facts and ownership; do not alter source IDs.
        - Render location check: exactly four files in the child-01 folder.
        - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; validate Markdown structure.
        - Evidence target: `E2-P2A-FILES1` and `E2-P2A-STRUCT1`.
-    2. Map `P1-A`, `P1-B`, `P1-C0`, `P1-C0A`, `P1-C0B`, `P1-C`, `P1-D`, `P1-D1`, `P1-D2`, `P1-D3`, and `P1-E` in order, qualify dependencies/evidence, then update roadmap and ledgers.
+    2. Copy `P1-A`, `P1-B`, `P1-C0`, `P1-C0A`, `P1-C0B`, `P1-C`, `P1-D`, `P1-D1`, `P1-D2`, `P1-D3`, and `P1-E` in order without changing IDs, then add only missing standalone metadata/handoff fields and update roadmap/ledgers.
        - UI flow check: N/A — docs-only.
-       - DB/data flow check: 11 source IDs map to 11 unique local P1 IDs.
+       - DB/data flow check: 11 source IDs copy to the same 11 source IDs in the child.
        - Render location check: child plan owns slice bodies; roadmap owns status only.
        - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; compare source/destination fields and ordering.
        - Evidence target: `E2-P2A-MAP1` and `B-P2-A`.
@@ -358,7 +358,7 @@ In scope:
     - DB/data: 11/11 source slices map once in original order.
     - Behavior test: child structure, required fields, links, P0, P1, and Pn all pass.
     - Cleanup/quarantine: no duplicate or partial child-01 file remains.
-    - Evidence IDs: `E2-P2A-FILES1`, `E2-P2A-STRUCT1`, `E2-P2A-MAP1`, `E2-P2A-FD1`, `E2-P2A-SUP1`.
+    - Evidence IDs: `E2-P2A-FILES1`, `E2-P2A-STRUCT1`, `E2-P2A-MAP1`, `E2-P2A-FD1`, `E2-P2A-SUP1`, `E2-P2A-REBUILD1`, `E2-P2A-SUP2`.
     - Actual-status rows refreshed: child 01, roadmap status, mapped-slice total, and next-child dependency.
   - Evidence Targets: four-file inventory, 11-row mapping, field completeness, local evidence ownership, and link validation.
   - Actual-status Update: mark child 01 `missing -> correct`; keep child 02 blocked on accepted child-01 authoring handoff.
@@ -413,14 +413,15 @@ In scope:
   - Actual-status Update: directory ownership `wrong -> correct`; P2-B `paused -> ready` only after acceptance/commit.
   - Commit Boundary: commit this structural correction separately; exclude the unaccepted child-02 four-file draft content from the commit, then resume P2-B.
 
-- [x] P2-B: Author child 02 for legacy P2.
+- [ ] P2-B: Author child 02 for legacy P2.
+  - Current Status: not authored. The prior rewritten/remapped candidate was removed and its historical evidence cannot accept a replacement candidate.
   - Goal: create the complete persistence/cutover child plan set with all 42 legacy P2 slices and sole mutation ownership of `index-reader-matrix.md`.
   - Scope Boundary:
-    - Editable: the four child-02 files under the separate multi-plan root, roadmap status, authoring ledgers, matrix ownership metadata/reference only, and only the user-required successor-actual-status `Rules`/Pn-C/reserved-evidence correction in the already accepted child-01 plan/evidence files; matrix content remains unchanged during authoring.
+    - Editable: the four child-02 files under the separate multi-plan root, roadmap status, authoring ledgers, and matrix ownership metadata/reference only; matrix content remains unchanged during authoring.
     - Inspect-only: legacy P2, source ledgers, `index-reader-matrix.md`, child-01 handoff, templates, and roadmap.
-    - Preserve-only: legacy bodies; all child-01 content except the exact successor-actual-status `Rules`/Pn-C/reserved-evidence correction; children 03-07; production/tests/runtime; graph outputs; and target.
+    - Preserve-only: legacy bodies; all accepted child-01 content; children 03-07; production/tests/runtime; graph outputs; and target.
     - Out of scope: executing persistence/cutover or duplicating the reader matrix.
-  - Non-Goals: do not collapse the 42 slices, give another child mutation ownership of the matrix, or use the successor-freshness correction to reopen child-01 technical semantics.
+  - Non-Goals: do not collapse or remap the 42 slices, give another child mutation ownership of the matrix, or reopen child-01 technical semantics.
   - Pre-flight Questions:
     - Data source: legacy P2 blocks, P2 ledger facts, reader matrix, and child-01 dependency contract.
     - Display permission: N/A — docs-only.
@@ -435,19 +436,19 @@ In scope:
     - External side effects: four Markdown files plus roadmap/authoring ledger updates.
     - N/A notes: runtime checks are deferred to future execution of child 02.
   - Work Steps:
-    1. Encode the user-required successor-freshness invariant in the campaign contract and in the `Rules`, Pn-C gate/acceptance, and reserved closure evidence of every currently authored child; require future children to inherit the same rule, with an explicit terminal-child no-successor case.
+    1. Verify the user-required successor-freshness rule remains exactly once in child 01 and add the same one-line operational rule to child 02 without rewriting copied source content.
        - UI flow check: N/A — docs-only.
        - DB/data flow check: a non-terminal child cannot close until the next child actual-status, refresh log, affected next actions/work steps, and qualified proof are current.
-       - Render location check: authoring contract, roadmap, child-01 plan/evidence, and child-02 plan/evidence only.
-       - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; validate exact rule/gate/evidence markers and confirm no child-01 technical slice text changed.
+       - Render location check: authoring contract, roadmap, child-01 plan, and child-02 plan only.
+       - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; validate the exact one-line rule and confirm no child-01 technical text changed.
        - Evidence target: `E2-P2B-USER2` and `E2-P2B-HANDOFFRULE1`.
-    2. Create and populate all four child-02 files with P0, one local P1 containing 42 mapped slices, independent ledgers, and tailored Pn closure/handoff.
+    2. Create and populate all four child-02 files with P0, the unchanged source P2 phase containing all 42 source slices, independent ledgers, and tailored Pn closure/handoff.
        - UI flow check: N/A — docs-only.
        - DB/data flow check: assign persistence/cutover and matrix ownership only to child 02.
        - Render location check: exactly four files in child 02; the matrix remains single at `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/index-reader-matrix.md` in the preserved legacy root.
        - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; run template/field checks.
        - Evidence target: `E2-P2B-FILES1` and `E2-P2B-STRUCT1`.
-    3. Map the complete P2 inventory in original order, qualify child-01 dependency and later handoffs, prove 42 unique destinations, and update roadmap/authoring ledgers.
+    3. Copy the complete P2 inventory in original order without changing IDs, qualify child-01 dependency and later handoffs, prove 42/42 exact source-block matches, and update roadmap/authoring ledgers.
        - UI flow check: N/A — docs-only.
        - DB/data flow check: verify group counts A=16, B=5, C=7, D=3, E=3, F=7, G=1, total 42.
        - Render location check: child plan owns slice bodies; roadmap owns coordination; matrix has one owner.
@@ -455,14 +456,14 @@ In scope:
        - Evidence target: `E2-P2B-MAP1`, `E2-P2B-MATRIX1`, and `B-P2-B`.
   - Implementation Gate:
     - Record Anvien freshness and docs relationship limitation before edits.
-    - P2-A1 must pass and be committed after P2-A; the full 42-ID P2 inventory and exact matrix path must match the frozen contract.
+    - Rebuilt P2-A must be committed; the authoring crosswalk must be corrected to preserve source IDs; the full 42-ID P2 inventory and exact matrix path must match the frozen contract.
   - Acceptance:
     - Source: four standard child files exist; legacy and matrix contents remain unchanged.
     - Runtime/UI: N/A — no runtime/UI change.
-    - DB/data: 42/42 slices map once; matrix has exactly one mutation owner.
-    - Behavior test: child completeness, source-order mapping, qualified dependency, link checks, and successor-actual-status rule/gate/evidence checks pass; child-01 technical semantics remain unchanged.
+    - DB/data: 42/42 source slices copy once with unchanged IDs; matrix has exactly one mutation owner.
+    - Behavior test: child completeness, exact source-block equality, source order, qualified dependency, link checks, and the one-line successor rule pass; child-01 content remains unchanged.
     - Cleanup/quarantine: no duplicate matrix or partial child-02 artifact exists.
-    - Evidence IDs: `E2-P2B-USER2`, `E2-P2B-HANDOFFRULE1`, `E2-P2B-FILES1`, `E2-P2B-STRUCT1`, `E2-P2B-MAP1`, `E2-P2B-MATRIX1`, `E2-P2B-GRAPH1`, `E2-P2B-FD1`, `E2-P2B-VALIDATION3`, `E2-P2B-REDTEAM1`, `E2-P2B-REDTEAM2`, `E2-P2B-SUP1`.
+    - Evidence IDs: `E2-P2B-RESET1`, then fresh replacement evidence IDs defined before P2-B authoring; historical `E2-P2B-*` candidate evidence is not acceptance proof for a rebuilt child.
     - Actual-status rows refreshed: child 02, matrix ownership, cumulative mapped count, and child-03 dependency.
   - Evidence Targets: successor-freshness rule/gate/evidence proof for authored children, four-file inventory, 42-row mapping, group totals, matrix single-owner proof, and field completeness.
   - Actual-status Update: mark the cross-child freshness contract `partial -> correct`; mark child 02 `missing -> correct`; set child 03 next action to receive a latest-evidence actual-status refresh before consuming child-02 cutover handoff without duplicating its contracts.
@@ -490,7 +491,7 @@ In scope:
     - External side effects: four docs plus roadmap/ledger updates.
     - N/A notes: future CLI/MCP/HTTP/Web validation remains inside mapped child content, not this authoring slice.
   - Work Steps:
-    1. Create the four child-03 files and populate P0, local P1, independent ledgers, and Pn closure from P3-scoped source material.
+    1. Create the four child-03 files and populate P0, the unchanged source P3 phase, independent ledgers, and Pn closure from P3-scoped source material.
        - UI flow check: N/A — docs-only.
        - DB/data flow check: no source facts outside P3 become owned here.
        - Render location check: child-03 folder only.
@@ -498,7 +499,7 @@ In scope:
        - Evidence target: `E2-P2C-FILES1` and `E2-P2C-STRUCT1`.
     2. Map P3's 17 slices in order, including parameter/catch/loop contexts and all projection adapters, then update roadmap and ledgers.
        - UI flow check: N/A — docs-only.
-       - DB/data flow check: 17 unique source IDs map to 17 unique local IDs.
+       - DB/data flow check: 17 source IDs copy to the same 17 source IDs.
        - Render location check: slice bodies stay in child 03; roadmap stores only status/handoff.
        - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; compare titles, fields, order, and references.
        - Evidence target: `E2-P2C-MAP1` and `B-P2-C`.
@@ -539,7 +540,7 @@ In scope:
     - External side effects: four docs plus roadmap/ledger updates.
     - N/A notes: future projection/runtime checks remain requirements inside the child plan.
   - Work Steps:
-    1. Create the four child-04 files with P0, local P1, phase-owned ledgers, and tailored Pn closure.
+    1. Create the four child-04 files with P0, the unchanged source P4 phase, phase-owned ledgers, and tailored Pn closure.
        - UI flow check: N/A — docs-only.
        - DB/data flow check: retain direct/default/alias/type-only/star/namespace/re-export distinctions.
        - Render location check: child-04 folder only.
@@ -547,7 +548,7 @@ In scope:
        - Evidence target: `E2-P2D-FILES1` and `E2-P2D-STRUCT1`.
     2. Map all 15 P4 slices in order, preserve export semantic distinctions and adapter boundaries, then update roadmap and ledgers.
        - UI flow check: N/A — docs-only.
-       - DB/data flow check: 15 unique source IDs map to 15 unique local IDs.
+       - DB/data flow check: 15 source IDs copy to the same 15 source IDs.
        - Render location check: child plan owns implementation detail; roadmap owns handoff only.
        - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; compare source/destination semantics and links.
        - Evidence target: `E2-P2D-MAP1` and `B-P2-D`.
@@ -596,7 +597,7 @@ In scope:
        - Evidence target: `E2-P2E-FILES1`, `E2-P2E-STRUCT1`, and `E2-P2E-VECTOR1`.
     2. Map `P5-A` through `P5-D` in order, qualify child-04/child-06 handoffs, and update roadmap/authoring ledgers.
        - UI flow check: N/A — docs-only.
-       - DB/data flow check: four source IDs map to four unique local IDs.
+       - DB/data flow check: four source IDs copy to the same four source IDs.
        - Render location check: implementation detail stays in child 05.
        - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; compare source/destination content and references.
        - Evidence target: `E2-P2E-MAP1` and `B-P2-E`.
@@ -645,7 +646,7 @@ In scope:
        - Evidence target: `E2-P2F-FILES1`, `E2-P2F-STRUCT1`, and `E2-P2F-STATUS1`.
     2. Map `P6-A`, `P6-B`, `P6-C1`, `P6-C2`, `P6-C3`, and `P6-D` in order, qualify handoffs, and update roadmap/authoring ledgers.
        - UI flow check: N/A — docs-only.
-       - DB/data flow check: six source IDs map to six unique local IDs.
+       - DB/data flow check: six source IDs copy to the same six source IDs.
        - Render location check: detailed resolution outcomes remain in child 06.
        - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; compare source/destination fields and status rows.
        - Evidence target: `E2-P2F-MAP1` and `B-P2-F`.
@@ -686,7 +687,7 @@ In scope:
     - External side effects: four docs plus roadmap/ledger updates inside Anvien only.
     - N/A notes: target/runtime validation is planned content, not an action authorized by this authoring slice.
   - Work Steps:
-    1. Create the four child-07 files with P0, local P1, independent ledgers, Pn closure, all six upstream handoffs, and the unchanged in-place target boundary.
+    1. Create the four child-07 files with P0, the unchanged source P7 phase, independent ledgers, Pn closure, all six upstream handoffs, and the unchanged in-place target boundary.
        - UI flow check: N/A — docs-only.
        - DB/data flow check: acceptance consumes qualified upstream evidence without duplicating ownership.
        - Render location check: child-07 folder; roadmap stores campaign status only.
@@ -694,7 +695,7 @@ In scope:
        - Evidence target: `E2-P2G-FILES1`, `E2-P2G-STRUCT1`, and `E2-P2G-DEPENDENCY1`.
     2. Map `P7-A`, `P7-B`, and `P7-C` in order, preserve exact validation/performance boundaries, distribute legacy P8 into tailored Pn, then update roadmap and ledgers.
        - UI flow check: N/A — authoring only; future runtime instructions remain intact.
-       - DB/data flow check: three source IDs map to three unique local IDs and consume six qualified handoffs.
+       - DB/data flow check: three source IDs copy to the same three source IDs and consume six qualified handoffs.
        - Render location check: implementation/acceptance detail stays in child 07.
        - Mini QA for each completed implementation slice (MUST): N/A for browser plugins; compare source/destination semantics and lifecycle.
        - Evidence target: `E2-P2G-MAP1`, `E2-P2G-CLOSURE1`, and `B-P2-G`.
@@ -747,7 +748,7 @@ In scope:
     - External side effects: read-only validation plus ledger/roadmap status updates.
     - N/A notes: source/destination document equivalence is the nearest real boundary.
   - Work Steps:
-    1. Validate 1 roadmap, 7 child folders, 28 standard files, matching slugs/H1/metadata, 7 P0 sections, 7 local P1 phases, 7 Pn-A/B/C sets, the successor-actual-status rule in every child `Rules`, corresponding Pn-C gates/reserved evidence including the child-07 terminal case, required slice fields, and all links.
+    1. Validate 1 roadmap, 7 child folders, 28 standard files, matching slugs/H1/metadata, 7 P0 sections, preserved source phases P1-P7, 7 Pn-A/B/C sets, the successor-actual-status rule in every child `Rules`, required slice fields, and all links.
        - UI flow check: N/A — no UI.
        - DB/data flow check: validate document inventory and ownership graph.
        - Render location check: results in authoring evidence and benchmark only.
@@ -861,10 +862,10 @@ In scope:
 
 - Source drift: the legacy plan may change after this plan is written. Any hash mismatch requires a new baseline and slice inventory before authoring continues.
 - Silent loss: manual copying can omit nested IDs such as `P1-C0A`, `P3-B2A`, or `P4-C1I`; exact-ID parsing and bijection checks are mandatory.
-- Semantic drift: rewriting prose for style can alter technical contracts. Preserve source semantics and restrict edits to ownership/local-ID/reference changes required by the split.
+- Semantic drift: rewriting or normalizing prose can alter technical contracts. Copy source phase blocks verbatim and restrict additions to the minimum standalone child structure.
 - Dual authority: marking both legacy and roadmap active creates conflicting execution truth. Cutover is conditional and atomic after Supervisor PASS.
-- Incomplete children: a child folder or roadmap entry is not a complete child plan. Each child must have four populated files, P0, local P1 slices, and Pn-A/B/C.
-- Ledger collisions: child-local evidence IDs can repeat across files; every cross-child reference must therefore include the child slug and exact ID.
+- Incomplete children: a child folder or roadmap entry is not a complete child plan. Each child must have four populated files, P0, its unchanged source phase/slices, and Pn-A/B/C.
+- Ledger collisions: source evidence IDs may repeat across child ledgers only as copied source facts; every cross-child reference must include the child slug and exact ID.
 - Shared-file ambiguity: `index-reader-matrix.md` may be referenced broadly, but only child 02 owns mutation.
 - One-file responsibility erosion: do not turn the roadmap or authoring ledger into a catch-all implementation plan; links across modules are allowed only in service of the file's single coordination/evidence/status responsibility.
 - Scope contamination: `E:\cheapapp.org`, production code, tests, graph data, and repository-root paths remain untouched throughout plan authoring.

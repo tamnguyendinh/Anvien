@@ -1,13 +1,15 @@
-# Graph Identity Contract and Strict Graph Construction Actual Status
+# Anvien Graph Identity Contract and Strict Graph Construction Actual Status
 
-Title: Graph Identity Contract and Strict Graph Construction
+Title: Anvien Graph Identity Contract and Strict Graph Construction
 Date: 2026-07-28
-Status: P0 Complete / implementation blocked
+Status: P0 Complete / implementation blocked pending owner contract acceptance
 Companion plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
-Roadmap: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-26-anvien-graph-identity-resolution-v2-roadmap.md`
-Source phase: legacy `P1`
+Source actual status: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-26-anvien-graph-identity-resolution-v2-actual-status.md`
+Multi-plan roadmap: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-26-anvien-graph-identity-resolution-v2-roadmap.md`
+Predecessor child: `none — first child`
+Successor child: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-02-versioned-persistence-and-v2-cutover/2026-07-28-02-versioned-persistence-and-v2-cutover-plan.md`
 
 ## Purpose
 
@@ -17,28 +19,43 @@ Implementation must not start until the target scope has a completed status row,
 
 This file does not replace `evidence.md`. It classifies current state from evidence.
 
-Use exact evidence IDs from `evidence.md`, such as `E0-P0A-SOURCE1`, not broad section IDs.
+Use exact evidence IDs from `evidence.md`, such as `E0-P0A-SRC1`, not broad section IDs such as `E0` or `E1`.
 
 ## Freshness / Refresh Rules
 
 This actual-status file is a living current-state record, not a one-time P0 snapshot.
 
-Update it after each completed local slice, before the next slice/phase if repo reality changed, whenever classifications change, and after campaign-authority input changes. Child 01 has no upstream implementation-child handoff. Append refresh rows; do not delete history. Update only stale next-action/work-step assumptions while preserving the accepted goal, scope, acceptance, and order.
+P0 records the baseline before implementation. After implementation begins, keep the Current Status Matrix updated so the next agent can trust it as the latest repo reality.
+
+Update this file:
+
+- after each completed implementation slice;
+- before starting the next phase if repo state changed;
+- whenever evidence changes a current-state classification;
+- whenever the next phase's status assumptions, next action, or work steps need updating because reality differs from the previous status.
+
+When refreshing status:
+
+- update only the rows affected by the completed work or new evidence;
+- use explicit transitions such as `missing -> correct`, `partial -> correct`, `fake-or-stub -> removed`, or `unbound -> bound-correct`;
+- append a Status Refresh Log row instead of deleting history;
+- keep detailed proof in `evidence.md`; store only classifications, evidence IDs, touch mode, and plan consequences here.
 
 ## Scope
 
 Target scope:
 
-- Declaration/Symbol identity and strict graph construction.
-- 11 local implementation slices mapped exactly from legacy P1.
-- This child's independent evidence, benchmark, current-status, closure, and roadmap handoff.
+- graph Declaration/Symbol identity, range, meaning, strict mutation, persistence version, active generation, and opaque consumer contracts in `E:\Anvien`;
+- TypeScript binding patterns, export facts, module/re-export resolution, ambient/external declarations, and structured diagnostic outcomes;
+- in-place acceptance against `E:\cheapapp.org` with operational output under `E:\cheapapp.org\.anvien`;
+- cross-surface JSON, Ladybug, CLI, MCP, HTTP, Web, cache, group, process, community, and embedding consistency where identity/generation affects them.
 
 Out of scope:
 
-- No active-v2 cutover or reader migration; child 02 owns that work.
-- No TypeScript binding/export/barrel/ambient implementation.
-- No target source copy or target v2 artifact.
-- Multi-plan authoring itself does not authorize production or target execution.
+- scanner pruning for nested directories named `env`, `target`, or `logs`;
+- target source edits, target copies, target fixtures, or investigation artifacts in `E:\cheapapp.org`;
+- full TypeScript compiler conformance, product process semantics, and unrelated refactors;
+- runtime network/package install/scripts or graphing all declarations from `node_modules`.
 
 ## Relationship / Impact Evidence
 
@@ -48,123 +65,186 @@ For each target file, prefer:
 anvien file-detail <path> --repo <repo> --json
 ```
 
-Inherited counts below remain valid because no production path changed after the source P0. Refresh file-detail plus upstream impact immediately before the exact implementation slice edits a file.
+Record how many files the target is related to before deciding touch mode. A file with many relationships may still be editable, but the plan must narrow the exact phase, touch mode, and validation needed.
 
 | Unit / File / Surface | File Detail Evidence | Related File Count | Relationship Summary | Impact Note |
 |-----------------------|----------------------|--------------------|----------------------|-------------|
-| `internal/graph/types.go` | `E0-P0A-FD1` | 238 | central node/relationship storage and indexing | high; Graph.AddNode/Graph.init CRITICAL |
-| `internal/scopeir/facts.go` | `E0-P0A-FD2` | 231 | mixed ScopeIR fact contracts | medium; dedicated owner extraction required |
-| `internal/scopeir/range.go` | `E0-P0A-FD3` | 227 | shared position/range contract | medium; all providers depend on encoding |
-| `internal/scopeir/definition_index.go` | `E0-P0A-FD4` | 225 | definition identity index | medium; currently hides duplicates |
-| `internal/resolution/indexes.go` | `E0-P0A-FD5` | 46 | identity construction and resolution indexes | high; several CRITICAL symbols |
-| `internal/resolution/emit.go` | `E0-P0A-FD6` | 42 | graph projection | high identity parity scope |
-| `internal/lbugload/csv.go` | `E0-P0A-FD7` | 19 | persistence projection boundary | high duplicate/closure risk |
-| This child plan set | `E0-P0A-PLAN1`, `E0-P0A-FDPLAN1` | 4 docs / plan has 1 related file | plan/evidence/benchmark/status; roadmap imports child plan | low code impact; high execution-authority importance |
-| `E:\cheapapp.org` | `E0-P0A-BOUNDARY1` | validation-only when explicitly opened | separate target repository | critical do-not-contaminate boundary |
+| `internal/graph/types.go` | `E0-P0A-FD1` | 238 | central node/relationship storage and indexing | high file scope; `Graph.AddNode`/`Graph.init` CRITICAL |
+| `internal/scopeir/facts.go` | `E0-P0A-FD2` | 231 | mixed ScopeIR fact contracts used across providers/resolver | medium file scope; dedicated owner extraction required |
+| `internal/scopeir/range.go` | `E0-P0A-FD3` | 227 | shared position/range contract | medium file scope; encoding contract affects all providers |
+| `internal/scopeir/definition_index.go` | `E0-P0A-FD4` | 225 | definition identity index | medium file scope; currently hides duplicates |
+| `internal/resolution/indexes.go` | `E0-P0A-FD5` | 46 | workspace, import binding, graph ID construction | high file scope; several CRITICAL symbols |
+| `internal/resolution/resolve.go` | `E0-P0A-FD6` | 50 | call/type/member resolution | high file scope; CRITICAL call/type paths |
+| `internal/resolution/emit.go` | `E0-P0A-FD7` | 42 | graph projection | high file scope; identity/export parity |
+| `internal/providers/tsjs/definitions.go` | `E0-P0A-FD8` | 16 | TS definition extraction | high file scope; array binding/export loss |
+| `internal/providers/tsjs/imports.go` | `E0-P0A-FD9` | 15 | TS import/re-export syntax facts | high file scope |
+| `internal/resolution/import_resolution.go` | `E0-P0A-FD10` | 33 | language/path import strategies | high file scope |
+| `internal/graphhealth/diagnostics.go` | `E0-P0A-FD11` | 29 | diagnostic classification | high file scope; classifier HIGH impact |
+| `internal/analyze/analyze.go` | `E0-P0A-FD12` | 182 | analyze/build/load/snapshot orchestration | high file scope; publication CRITICAL |
+| `internal/repo/types.go` | `E0-P0A-FD13` | 72 | persisted repository metadata | high file scope; version fields missing |
+| `internal/lbugload/csv.go` | `E0-P0A-FD14` | 19 | graph-to-Ladybug CSV projection | high file scope; duplicate/export parity risk |
+| `internal/httpapi/graph.go` | `E0-P0A-FD15` | 22 | graph HTTP response | high file scope; metadata omitted |
+| `anvien-web/src/services/backend-client.ts` | `E0-P0A-FD16` | 24 | Web graph stream parsing | high file scope; version/generation absent |
+| `internal/repo/registry.go` / `internal/group/sync.go` / `internal/group/storage.go` | source inventory required in P2-A1 | bounded | global registry and group contract publication | high generation scope; outside repo-local graph |
+| `internal/mcp/resource_cache.go` / `internal/filecontext/*` / embedding stores | source inventory required in P2-A1 | bounded | cache/embedding readers and invalidation | high generation scope; stale refs possible |
+| native and fallback Cypher readers | source inventory required in P2-A1 | bounded | alternate persistence/query backends | high parity scope; separate gates required |
 
 ## Status Rules
 
 | Status | Meaning | Allowed next action |
 |--------|---------|---------------------|
-| `correct` | Already behaves as required. | Preserve. Add evidence/tests only if needed. |
-| `partial` | Some required behavior exists, but gaps remain. | Change only missing parts. Preserve correct parts. |
-| `wrong` | Current behavior/source/contract conflicts with requirement. | Replace only through the mapped slice. |
-| `missing` | Required behavior/source/contract does not exist. | Implement the missing piece only. |
-| `unbound` | Surface exists but is not wired to the real source/flow/contract. | Bind to the real source only. |
-| `fake-or-stub` | Prototype/mock/fallback is presented as real. | Remove or replace with an approved truthful state. |
-| `blocked` | Authority, dependency, or evidence is unavailable. | Stop until resolved. |
+| `correct` | Already behaves as required. | Preserve. Add evidence or tests only if needed. |
+| `partial` | Some required behavior exists, but gaps remain. | Change only the missing parts. Preserve correct parts. |
+| `wrong` | Current behavior, source, or contract is incorrect. | Replace with required behavior. Record the exact reason. |
+| `missing` | Required behavior, source, or contract does not exist. | Implement the missing piece only. |
+| `unbound` | Surface exists but is not wired to the real source, flow, or contract. | Bind to the real source only. Preserve approved surface. |
+| `fake-or-stub` | Prototype, demo, mock, fallback, or placeholder data is being used as real behavior. | Remove fake behavior or replace it with an approved truthful state. |
+| `blocked` | Source, authority, contract, or required evidence is unclear. | Stop. Do not implement until resolved. |
 
 ## Current Status Matrix
 
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|--------------------|----------|--------------------|
-| Declaration/Symbol identity and strict graph construction | Graph IDs omit scope/range, duplicate nodes can overwrite, and occurrence/source-site conservation is not guaranteed. | Versioned, deterministic, collision-safe Declaration/Symbol/Relationship identity with strict fail-closed mutation and lossless shadow-v2 proof. | wrong | 19-238 | `E0-P0A-STATUS1`, `E0-P0A-SOURCE1` | implement only through ordered local P1 after unblock |
-| Child plan structure | four standard files and 11 mapped slices authored | complete independent P0/P1/Pn plan set | correct | 4 docs / 11 slices | `E0-P0A-PLAN1`, `E0-P0A-SOURCE1` | preserve and keep ledgers current |
-| Upstream dependency | No upstream implementation child applies to child 01 | no upstream handoff required | correct | N/A | `E0-P0A-DEPENDENCY1` | preserve; local P1-A owns architecture ratification |
-| Implementation authorization | multi-plan authoring is authorized; campaign cutover and production implementation are not | campaign authority cutover plus explicit owner direction for this child and each slice | blocked | N/A | `E0-P0A-DEPENDENCY1` | wait for campaign cutover and owner direction; no upstream handoff applies |
-| Target boundary | target remains separate and untouched by authoring | in-place validation only in explicitly mapped slice | correct | validation-only | `E0-P0A-BOUNDARY1` | preserve |
-| Scanner omission | exact eight omissions remain | zero additional omissions; repair out of scope | wrong | 8 omitted / 0 new | `E0-P0A-SCANNER1` | quarantine; do not fix here |
+| Architecture authority | no relevant approved SPEC/ADR; accepted reports diagnose but do not authorize remediation | owner-accepted identity/export/external/generation contract | blocked | N/A | `E0-P0A-SPEC1`, `E0-P0A-REPORT2` | open P1-A only; no production code |
+| Plan slice template structure | first frozen snapshot had compact Scope Boundary/Acceptance blocks; B1 remediation expanded all eligible slices into auditable fields without changing semantics | every eligible slice has machine-readable ownership and seven-part acceptance gates | correct | 99 eligible slices | `E0-P0A-TEMPLATE4` | request Supervisor re-review; keep implementation blocked until owner authority |
+| One-file responsibility | several current owner files mix multiple fact/index/orchestration concerns | each touched/new file owns one semantic responsibility; mixed owners are split before additions | partial | 15-238 per file | `E0-P0A-FD1..E0-P0A-FD16`, `E0-P0A-USER2` | enforce ownership map in every slice |
+| Declaration/Symbol identity | one graph ID derived from file/name/arity; scope/range omitted; duplicate nodes overwrite | separate DeclarationID/SymbolID, exact ranges, deterministic collision-safe mapping | wrong | 46/225/238 | `E0-P0A-SRC1`, `E0-P0A-SRC2`, `E0-P0A-IMPACT1..E0-P0A-IMPACT3` | P1 then P2 |
+| Strict graph mutation/decode | implicit replacement and silent duplicate suppression exist before and during graph/persistence load | explicit insert/enrich/replace plus fail-closed validation | wrong | 19-238 | `E0-P0A-SRC1..E0-P0A-SRC3` | P1-D |
+| Target boundary | target is analyzed in place; graph stays in target `.anvien`; reports stay in Anvien; supported analyze may timestamp ignored generated guidance files | preserve exact ownership with no contamination/copy and record tool-boundary side effects | correct | 114,125 target relationships | `E0-P0A-BOUNDARY1`, `E0-P0A-BOUNDARY2` | preserve-only except operational analyze and documented ignored-file timestamp caveat |
+| Scanner omission | exact eight TS/JS paths omitted because of ignored segments | no additional omissions from this plan; scanner repair separate | wrong but out of scope | 8 missing / 0 extra | `E0-P0A-REPORT1`, `E0-P0A-BOUNDARY2` | do-not-touch; quarantine baseline |
 
 ## Status Refresh Log
 
 | Refresh | Date | Repo Basis | Changed Scope | Status Changes | Evidence | Next Phase Update |
 |---------|------|------------|----------------|----------------|----------|-------------------|
-| R0 | 2026-07-28 | `master` at roadmap commit `c444e8c4`; no production diff since `1932359b` | child 01 plan set and inherited P1 baseline | initial child classification; P0 complete; implementation blocked by campaign authority/owner authorization | `E0-P0A-PLAN1`, `E0-P0A-SOURCE1`, `E0-P0A-STATUS1`, `E0-P0A-DEPENDENCY1`, `E0-P0A-BOUNDARY1` | refresh after campaign cutover and explicit owner direction before local P1; no upstream handoff applies |
-| R1 | 2026-07-28 | same HEAD after child authoring; fresh Anvien graph includes roadmap and child docs | child-plan document relationship | plan relationship `not indexed -> correct`: one roadmap inbound link, low risk, zero unresolved | `E0-P0A-FDPLAN1` | preserve candidate; no implementation gate changed |
+| R0 | 2026-07-26 | `master` at `1932359bee5d78fd8e6167ef94e7974f33e85bd0`; fresh Anvien self-graph | full plan scope | initial classifications recorded; P0 complete; architecture authority remains blocked | `E0-P0A-GIT1`, `E0-P0A-GRAPH1`, `E0-P0A-STATUS1` | only P1-A may open after owner direction; no production code |
+| R1 | 2026-07-26 | same HEAD after plan artifacts were added; fresh `anvien analyze E:\Anvien --force --json` | P0 graph/document baseline and reader-matrix planning artifact | self graph refreshed to 1,505 scanned Files / 676 parsed code / 84,558 nodes / 123,398 relationships; no production source changed; architecture authority remains blocked | `E0-P0A-GRAPH1`, `E0-P0A-STATUS1` | preserve the refreshed baseline; only P1-A may open after owner direction |
+| R2 | 2026-07-26 | same HEAD after matrix/ledger/slice revisions; fresh `anvien analyze E:\Anvien --force --json` | reader seed, surface unions, P3/P4 adapter slices, P6 outcome split | self graph reproduced 1,505 scanned Files / 676 parsed code / 84,558 nodes / 123,398 relationships; 153 matrix anchors exist; no production source changed; architecture authority remains blocked | `E0-P0A-GRAPH2`, `E0-P0A-STATUS1` | preserve current plan snapshot; only P1-A may open after owner direction |
+| R3 | 2026-07-26 | same HEAD after reader-row range synchronization; fresh `anvien analyze E:\Anvien --force --json` | final P0 graph/document baseline and matrix continuity | self graph reproduced 1,505 scanned Files / 676 parsed code / 84,558 nodes / 123,398 relationships; matrix rows R01-R153 are contiguous; no production source changed; architecture authority remains blocked | `E0-P0A-GRAPH3`, `E0-P0A-STATUS1` | preserve current plan snapshot; only P1-A may open after owner direction |
+| R4 | 2026-07-26 | same HEAD after Web/dispatcher/backend matrix corrections and per-slice Mini-QA normalization; fresh `anvien analyze E:\Anvien --force --json` | final P0 graph/document baseline, reader denominator, and template structure | self graph reproduced 1,505 scanned Files / 676 parsed code / 84,558 nodes / 123,398 relationships; matrix rows R01-R195 are contiguous with all current anchors present; 64 implementation/closure slices carry explicit per-work-step Mini-QA contracts; no production source changed; architecture authority remains blocked | `E0-P0A-GRAPH4`, `E0-P0A-MATRIX3`, `E0-P0A-TEMPLATE2`, `E0-P0A-STATUS1` | preserve current plan snapshot; only P1-A may open after owner direction |
+| R5 | 2026-07-26 | same HEAD after the expanded P2 slice set, template corrections, and final plan-text cleanup; fresh `anvien analyze E:\Anvien --force --json` | current five-artifact plan set, template structure, reader matrix, and self-graph baseline | current self graph is 1,504 scanned Files / 676 parsed code / 84,532 nodes / 123,372 relationships; this differs from and does not claim reproduction of the historical 1,505 / 84,558 / 123,398 snapshot. The current plan has 102 checklist items, 99 eligible slices, 132 eligible numbered work steps, 101 unique trace rows, and 796 non-meta evidence references with 0 missing declarations; matrix rows R01-R195 and all 195 source anchors pass; no production source changed; architecture authority remains blocked | `E0-P0A-GRAPH5`, `E0-P0A-TEMPLATE3`, `E0-P0A-MATRIX4`, `E0-P0A-STATUS1` | freeze the current plan set for independent Supervisor review; only P1-A may open after owner direction |
+| R6 | 2026-07-27 | same HEAD; plan-only B1 template remediation and fresh structural audit | Scope Boundary and Acceptance structure | 99/99 eligible slices now have all required Scope Boundary and Acceptance fields with reasoned N/A values; compact eligible blocks and field-indentation failures are 0; no production source or target artifact changed; architecture authority remains blocked | `E0-P0A-TEMPLATE4` | request independent Supervisor re-review; only P1-A may open after owner direction |
+| R7 | 2026-07-27 | same HEAD after B1 ledger refresh and first Supervisor report; fresh `anvien analyze E:\Anvien --force --json` | current five-artifact plan set plus review evidence | current self graph is 1,505 scanned Files / 676 parsed code / 84,540 nodes / 123,380 relationships with 0 failed/unsupported/unknown; graph SHA-256 is recorded; `internal/` remains unchanged and target remains untouched; architecture authority remains blocked | `E0-P0A-GRAPH6`, `E0-P0A-TEMPLATE4` | freeze the corrected five-artifact set for Supervisor re-review; only P1-A may open after owner direction |
 
 ## Phase Touch Map
 
+Use this map to prevent accidental edits. A related file is not automatically editable.
+
+`Plan-Relevant Relationship File` lists only a relationship file that can directly affect or be affected by the planned phase or slice. Do not copy the full `file-detail` relationship inventory into this map. Include only files whose relationship can affect the phase/slice decision, touch mode, or validation.
+
 | Unit / File / Surface | Plan-Relevant Relationship File | Relationship to Target | Plan Item | Touch Mode | Evidence | Constraint |
 |-----------------------|---------------------------------|------------------------|-----------|------------|----------|------------|
-| `internal/graph/types.go` | legacy P1 slice owner set | production source / consumer | P1 | inspect-only until exact slice opens; then scoped edit | `E0-P0A-FD1` | refresh file-detail + upstream impact before edit; HIGH/CRITICAL warns scope but does not ban work |
-| `internal/scopeir/facts.go` | legacy P1 slice owner set | production source / consumer | P1 | inspect-only until exact slice opens; then scoped edit | `E0-P0A-FD2` | refresh file-detail + upstream impact before edit; HIGH/CRITICAL warns scope but does not ban work |
-| `internal/scopeir/range.go` | legacy P1 slice owner set | production source / consumer | P1 | inspect-only until exact slice opens; then scoped edit | `E0-P0A-FD3` | refresh file-detail + upstream impact before edit; HIGH/CRITICAL warns scope but does not ban work |
-| `internal/scopeir/definition_index.go` | legacy P1 slice owner set | production source / consumer | P1 | inspect-only until exact slice opens; then scoped edit | `E0-P0A-FD4` | refresh file-detail + upstream impact before edit; HIGH/CRITICAL warns scope but does not ban work |
-| `internal/resolution/indexes.go` | legacy P1 slice owner set | production source / consumer | P1 | inspect-only until exact slice opens; then scoped edit | `E0-P0A-FD5` | refresh file-detail + upstream impact before edit; HIGH/CRITICAL warns scope but does not ban work |
-| `internal/resolution/emit.go` | legacy P1 slice owner set | production source / consumer | P1 | inspect-only until exact slice opens; then scoped edit | `E0-P0A-FD6` | refresh file-detail + upstream impact before edit; HIGH/CRITICAL warns scope but does not ban work |
-| `internal/lbugload/csv.go` | legacy P1 slice owner set | production source / consumer | P1 | inspect-only until exact slice opens; then scoped edit | `E0-P0A-FD7` | refresh file-detail + upstream impact before edit; HIGH/CRITICAL warns scope but does not ban work |
-| This child standard set | roadmap and legacy source phase | plan authority/ledgers | P0-Pn | edit docs | `E0-P0A-PLAN1` | one primary responsibility per file |
-| `E:\cheapapp.org` | mapped target-validation slice only | validation subject | P1 | do-not-touch until explicitly opened; then validate-only/normal .anvien output | `E0-P0A-BOUNDARY1` | no source/report/probe/fixture/temp write |
+| contract/owner map | plan plus future ADR/SPEC | architecture authority | P1-A | edit docs only | `E0-P0A-SPEC1` | no production edit until accepted |
+| `internal/scopeir/facts.go` | proposed dedicated fact files | source-of-truth contract | P1-B/P3-A/P4-A | split then thin adapter | `E0-P0A-FD2` | do not append another fact responsibility |
+| `internal/scopeir/range.go` | graphidentity declaration owner | shared range input | P1-B | edit/split | `E0-P0A-FD3` | explicit byte/line/column encoding |
+| `internal/scopeir/definition_index.go` | graph identity/validation | duplicate suppression | P1-C/P1-D | edit | `E0-P0A-FD4`, `E0-P0A-SRC1` | no silent duplicate |
+| `internal/graph/types.go` | graph mutation/validation owners | storage/index adapter | P1-D | split then thin adapter | `E0-P0A-FD1`, `E0-P0A-IMPACT2..E0-P0A-IMPACT3` | CRITICAL; explicit producer migration |
+| `internal/resolution/indexes.go` | identity, export table, re-export owners | current mixed coordinator | P1-C/P5-B/P5-C | split then thin adapter | `E0-P0A-FD5` | no new semantic algorithm in coordinator |
+| `internal/resolution/resolve.go` | outcome/external owners | call/type/member coordinator | P5-D/P6-C1/P6-C2 | thin adapter | `E0-P0A-FD6` | CRITICAL; no fallback |
+| `internal/resolution/emit.go` | narrow projection owners | graph projection | P1-E/P3-C/P4-C/P5-D/P6-D | thin adapter/edit | `E0-P0A-FD7` | one outcome; property parity |
+| `E:\cheapapp.org` source/worktree | `E:\cheapapp.org\.anvien` | integration source / operational output | P3-C2/P4-C2/P5-D/P6-D/P7-B | source preserve; analyze/read graph | `E0-P0A-BOUNDARY1` | no copy/report/fixture/temp artifact |
+| scanner owners | target File-node inventory | excluded defect | all phases | do-not-touch | `E0-P0A-BOUNDARY2` | exact eight omissions quarantined |
 
 ## Detailed Findings
 
-### Declaration/Symbol identity and strict graph construction
+### Graph identity and graph construction
 
 Current state:
 
-Graph IDs omit scope/range, duplicate nodes can overwrite, and occurrence/source-site conservation is not guaranteed.
+ScopeIR can preserve distinct source facts, but graph identity based on file/name/arity collapses same-name locals. Duplicate suppression or replacement exists in DefinitionIndex, Graph mutation/init, and Ladybug CSV. Range/selection range, semantic meaning, logical symbol, schema version, and generation are not a coherent persisted contract.
 
 Required state:
 
 ```text
-Versioned, deterministic, collision-safe Declaration/Symbol/Relationship identity with strict fail-closed mutation and lossless shadow-v2 proof.
+One Declaration per source occurrence -> one evidence-backed logical Symbol.
+All IDs are deterministic, opaque, versioned, generation-qualified, and collision-safe.
+Every graph producer chooses an explicit mutation operation; conflict and closure failures abort publication.
 ```
 
 Evidence:
 
-- `E0-P0A-SOURCE1`: exact source phase and slice mapping.
-- `E0-P0A-STATUS1`: inherited production status remains current because production diff is empty.
-- `E0-P0A-DEPENDENCY1`: campaign-authority and owner-authorization gates; no upstream implementation child applies.
+- `E0-P0A-IMPACT1..E0-P0A-IMPACT3`: CRITICAL identity/storage blast radius.
+- `E0-P0A-SRC1..E0-P0A-SRC3`: three current silent duplicate-loss boundaries.
 
 Relationship and impact:
 
-- Related file count: 19-238.
-- Relationship summary: see the scoped relationship table and local slice boundaries.
-- Impact note: HIGH/CRITICAL values are blast-radius warnings; they require narrow edits and strong validation, not an edit ban.
+- Related file count: 46-238 across current identity/storage owners.
+- Relationship summary: ScopeIR -> workspace -> graph -> persistence -> all consumers.
+- Impact note: CRITICAL; local patching is unsafe.
 
 Classification:
 
-`wrong` for product behavior; `blocked` for implementation start.
+`wrong`
 
 Allowed next action:
 
-After campaign authority cutover, refresh P0, obtain explicit owner direction, and open local P1-A only. No upstream-child handoff is required.
+P1-A authority first, then P1-B through P2-G in order.
 
 Forbidden next action:
 
-Do not implement from candidate status, skip/reorder slices, use unqualified cross-child evidence, mutate another child's owner, or contaminate the target.
+Adding range to the old UID, changing only `Graph.AddNode`, or activating v2 for a subset of readers.
+
+### Target and scanner boundary
+
+Current state:
+
+`E:\cheapapp.org` is the accepted real target and owns its `.anvien`. Eight File omissions caused by scanner segment names are confirmed but explicitly excluded by the user.
+
+Required state:
+
+```text
+Analyze the target in place.
+Keep operational index output under target .anvien.
+Keep all plan/report/probe/test artifacts in Anvien.
+Preserve exactly the excluded scanner baseline unless a separate plan opens it.
+```
+
+Evidence:
+
+- `E0-P0A-BOUNDARY1`: exact target/graph identity.
+- `E0-P0A-BOUNDARY2`: user ownership and scanner exclusion.
+
+Relationship and impact:
+
+- Related file count: target graph has 114,125 relationships at baseline.
+- Relationship summary: external integration boundary only.
+- Impact note: contamination invalidates acceptance.
+
+Classification:
+
+`correct` boundary; scanner behavior `wrong but out of scope`.
+
+Allowed next action:
+
+Read/analyze target in place only during named validation slices.
+
+Forbidden next action:
+
+Copying target, creating a root fixture, writing reports/probes there, or silently adding scanner remediation.
 
 ## Next Phase Status Decisions
 
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
-| P1-A | child structure is correct; no upstream handoff applies; product behavior is wrong; campaign cutover/owner authorization is blocked | keep goal/scope/order; refresh evidence and unblock only after campaign cutover plus explicit owner direction |
-| P1-B..last | source slices are mapped but unopened | preserve order; update only stale assumptions after each prior slice |
-| Pn | no implementation exists to close | remain pending; review/cleanup/close this child only |
+| P1-A | architecture decisions are proposed but not owner-approved | first and only openable slice; ratify or record blocker |
+| P1-B..P1-E | identity foundation is wrong/missing and CRITICAL | remain blocked until P1-A PASS; preserve active v1 until shadow acceptance |
+| P2-A..P2-F6 and P2-G | reader/version/storage/consumer/publication migration is incomplete | preserve the expanded ordered slice list; each owner boundary commits independently; P2-E2 validates all surfaces; cutover stays last |
 
 ## Implementation Gate
 
 - [x] Target scope is listed in Current Status Matrix.
-- [x] Each target unit has a status and exact local evidence IDs.
-- [x] Relationship counts or truthful bounded inventories are recorded.
-- [x] Phase Touch Map lists relevant files and touch modes.
-- [x] Correct parts and target boundaries are preserve-only.
-- [x] Wrong/missing/partial/unbound behavior has the exact ordered local P1 action.
-- [x] Dependency and implementation-authorization blockers are recorded.
-- [x] R0 baseline exists and later refresh obligations are explicit.
-- [x] Upstream dependency is N/A for child 01; no qualified upstream handoff is required.
-- [ ] Explicit owner direction authorizes this child implementation.
-- [ ] Fresh Anvien analyze, file-detail, and impact evidence exists for the first edited production owner.
+- [x] Each target unit has a status.
+- [x] Each status has evidence IDs.
+- [x] Each target file has relationship count evidence from `file-detail` when applicable.
+- [x] Phase Touch Map lists plan-relevant relationship files that can affect the current phase/slice.
+- [x] Phase Touch Map defines touch mode for every plan-relevant relationship unit that may be affected.
+- [x] Correct parts are marked preserve-only.
+- [x] Partial, missing, wrong, unbound, and fake-or-stub parts have exact next actions.
+- [x] Blockers are recorded: owner acceptance of the proposed architecture contract is required before production code.
+- [x] Next phase status assumptions, next action, and work steps have been updated from this status file.
+- [x] Status Refresh Log has an R0 baseline row.
+- [x] Implementation has not started; post-slice refresh conditions are not yet applicable.
+- [x] Scanner exclusion and target-boundary constraints are reflected in every downstream phase.
 
 ## Final P0 Decision
 
@@ -178,4 +258,4 @@ Choose one:
 
 Decision note:
 
-P0 is complete for candidate plan authoring. Local P1 remains blocked until campaign authority cuts over, this status is refreshed from current repo reality, and the owner explicitly authorizes implementation. No upstream implementation child applies. Multi-plan authoring is not production authorization.
+P0 is complete for planning. The plan is ready for owner review, but no production slice is authorized. The only next permitted slice is P1-A, which must record owner acceptance or changes to the proposed identity/export/external/generation decisions. Scanner remediation remains excluded.

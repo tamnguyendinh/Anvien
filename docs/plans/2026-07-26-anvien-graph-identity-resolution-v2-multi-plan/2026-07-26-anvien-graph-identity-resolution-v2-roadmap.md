@@ -1,7 +1,7 @@
 # Anvien Graph Identity and TypeScript Resolution Correctness v2 Roadmap
 
 Date: 2026-07-28
-Status: candidate / three-root structural correction committed `55bf021f` / children 01-02 authoring accepted / child 02 commit pending / children 03-07 not authored / legacy plan remains active
+Status: candidate / three-root structural correction committed `55bf021f` / child 01 mechanical copy conversion Supervisor PASS / commit pending / children 02-07 not authored / legacy plan remains active
 Source plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-26-anvien-graph-identity-resolution-v2-plan.md`
 Plan-set authoring plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 Multi-plan root: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/`
@@ -27,7 +27,7 @@ Coordinate the graph-identity and TypeScript-resolution remediation as seven com
 - Legacy P1-P7 map one-to-one to children 01-07.
 - Legacy P8 is closure, not implementation. Its A/B/C roles become every child's Pn-A/Pn-B/Pn-C; no child 08 exists.
 - Every child is a complete four-file standard plan set with populated P0, one local implementation phase P1, all mapped slices, and tailored Pn closure.
-- Every source slice maps exactly once. Child-local IDs remap `P<source>-<suffix>` to `P1-<suffix>` and every slice records `Source slice: P<source>-<suffix>`.
+- Every source phase and slice ID is preserved unchanged in its child. Conversion is mechanical copy/paste; phase IDs, slice IDs, order, wording, scope, gates, acceptance, and evidence IDs are not remapped or rewritten.
 - Preserve source order, goals, scope, pre-flight fields, work-step order, gates, acceptance, evidence targets, actual-status transitions, and commit boundaries.
 - Cross-child references always include the child slug plus the exact evidence ID. Bare local IDs are not valid cross-child evidence.
 - After each implementation slice, update its child checklist/ledgers, run required validation/Supervisor/detect-changes, commit, and only then open the next slice when authorized.
@@ -56,8 +56,8 @@ Legacy P8 contains three closure roles. It is excluded from the 98-row implement
 
 | No. | Plan folder | Primary responsibility | Source | Slices | Status | Depends on / handoff |
 |-----|-------------|------------------------|--------|-------:|--------|----------------------|
-| 01 | [2026-07-28-01-graph-identity-contract-and-strict-construction](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | Identity contract, lossless declaration/source-site identity, strict graph construction, shadow-v2 proof | P1 | 11 | candidate / authoring accepted / P0 complete / implementation not authorized | Accepted authoring roadmap/P0; no implementation-child predecessor |
-| 02 | [2026-07-28-02-versioned-persistence-and-v2-cutover](2026-07-28-02-versioned-persistence-and-v2-cutover/2026-07-28-02-versioned-persistence-and-v2-cutover-plan.md) | Compatibility manifest, opaque readers, S0-S11 parity, atomic generations, v2 cutover | P2 | 42 | candidate / P0 complete / authoring accepted / commit pending / implementation not authorized | Authoring basis committed; implementation requires `2026-07-28-01-graph-identity-contract-and-strict-construction::E2-PNC-HANDOFF1` (source `P8-C`, local `Pn-C`); sole reader-matrix mutation owner |
+| 01 | [2026-07-28-01-graph-identity-contract-and-strict-construction](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | Identity contract, lossless declaration/source-site identity, strict graph construction, shadow-v2 proof | P1 | 11 | candidate / mechanical copy conversion PASS / P0 complete / commit pending / implementation not authorized | No predecessor; closure must update the planned child-02 actual-status from latest evidence before handoff |
+| 02 | `2026-07-28-02-versioned-persistence-and-v2-cutover` | Compatibility manifest, opaque readers, S0-S11 parity, atomic generations, v2 cutover | P2 | 42 | not authored | Requires child-01 accepted handoff; preserve source P2 IDs/content unchanged; sole future reader-matrix mutation owner |
 | 03 | `2026-07-28-03-typescript-binding-pattern-extraction` | Recursive binding facts, declaration contexts, graph and adapter projection | P3 | 17 | not authored | Requires `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-HANDOFF1` (source `P8-C`, local `Pn-C`), including identity-v2 plus S0-S11/reader-matrix inspect-only baseline |
 | 04 | `2026-07-28-04-typescript-export-semantics` | ExportFact semantics, export syntax extraction, graph and adapter projection | P4 | 15 | not authored | Requires `2026-07-28-03-typescript-binding-pattern-extraction::E2-PNC-HANDOFF1` (source `P8-C`, local `Pn-C`); consumes `2026-07-28-01-graph-identity-contract-and-strict-construction::E1-P1A-CONTRACT1` (source/local `P1-A`) and `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-HANDOFF1` inspect-only |
 | 05 | `2026-07-28-05-module-export-and-reexport-resolution` | Module export tables, aliases, cycles, ambiguity, terminal barrel resolution | P5 | 4 | not authored | Requires `2026-07-28-04-typescript-export-semantics::E2-PNC-HANDOFF1` (source `P8-C`, local `Pn-C`) |
@@ -71,14 +71,14 @@ Every row below represents four required files inside its plan folder. Planned p
 | Child | Plan | Evidence | Benchmark | Actual status |
 |-------|------|----------|-----------|---------------|
 | 01 | [plan](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | [evidence](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md) | [benchmark](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md) | [actual status](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-actual-status.md) |
-| 02 | [plan](2026-07-28-02-versioned-persistence-and-v2-cutover/2026-07-28-02-versioned-persistence-and-v2-cutover-plan.md) | [evidence](2026-07-28-02-versioned-persistence-and-v2-cutover/2026-07-28-02-versioned-persistence-and-v2-cutover-evidence.md) | [benchmark](2026-07-28-02-versioned-persistence-and-v2-cutover/2026-07-28-02-versioned-persistence-and-v2-cutover-benchmark.md) | [actual status](2026-07-28-02-versioned-persistence-and-v2-cutover/2026-07-28-02-versioned-persistence-and-v2-cutover-actual-status.md) |
+| 02 | `2026-07-28-02-versioned-persistence-and-v2-cutover-plan.md` | `2026-07-28-02-versioned-persistence-and-v2-cutover-evidence.md` | `2026-07-28-02-versioned-persistence-and-v2-cutover-benchmark.md` | `2026-07-28-02-versioned-persistence-and-v2-cutover-actual-status.md` |
 | 03 | `2026-07-28-03-typescript-binding-pattern-extraction-plan.md` | `2026-07-28-03-typescript-binding-pattern-extraction-evidence.md` | `2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md` | `2026-07-28-03-typescript-binding-pattern-extraction-actual-status.md` |
 | 04 | `2026-07-28-04-typescript-export-semantics-plan.md` | `2026-07-28-04-typescript-export-semantics-evidence.md` | `2026-07-28-04-typescript-export-semantics-benchmark.md` | `2026-07-28-04-typescript-export-semantics-actual-status.md` |
 | 05 | `2026-07-28-05-module-export-and-reexport-resolution-plan.md` | `2026-07-28-05-module-export-and-reexport-resolution-evidence.md` | `2026-07-28-05-module-export-and-reexport-resolution-benchmark.md` | `2026-07-28-05-module-export-and-reexport-resolution-actual-status.md` |
 | 06 | `2026-07-28-06-ambient-external-resolution-and-diagnostics-plan.md` | `2026-07-28-06-ambient-external-resolution-and-diagnostics-evidence.md` | `2026-07-28-06-ambient-external-resolution-and-diagnostics-benchmark.md` | `2026-07-28-06-ambient-external-resolution-and-diagnostics-actual-status.md` |
 | 07 | `2026-07-28-07-cross-surface-acceptance-and-target-validation-plan.md` | `2026-07-28-07-cross-surface-acceptance-and-target-validation-evidence.md` | `2026-07-28-07-cross-surface-acceptance-and-target-validation-benchmark.md` | `2026-07-28-07-cross-surface-acceptance-and-target-validation-actual-status.md` |
 
-Target inventory: 7 plan folders, 28 standard child files, 7 P0 sections, 7 local P1 phases, 98 mapped implementation slices, and 7 Pn-A/Pn-B/Pn-C closure sets.
+Target inventory: 7 plan folders, 28 standard child files, 7 P0 sections, preserved source phases P1-P7, 98 source-ID-preserved implementation slices, and 7 Pn-A/Pn-B/Pn-C closure sets.
 
 ## Execution Order And Handoffs
 
@@ -104,9 +104,9 @@ Each non-terminal child Pn-C must update this roadmap and refresh the next child
 
 - `2026-07-28-01-graph-identity-contract-and-strict-construction` keeps the strict source chain A -> B -> C0 -> C0A -> C0B -> C -> D -> D1 -> D2 -> D3 -> E. Shadow-v2 must not mutate the active v1 path.
 - `2026-07-28-02-versioned-persistence-and-v2-cutover` remains serial across all 42 slices even when an individual legacy gate names only a subset of earlier work. The reader matrix is a source seed; it is not runtime completion evidence.
-- Legacy P3-C omits immediately preceding P3-B2A from its written gate even though ordered execution and consumed binding facts require it. `2026-07-28-03-typescript-binding-pattern-extraction` must explicitly include local P1-B2A before P1-C and record this source normalization.
+- Legacy P3-C omits immediately preceding P3-B2A from its written gate. Conversion must copy that source block unchanged; authoring must not normalize it. Any technical correction requires a separate authorized plan edit after the mechanical split.
 - Legacy P3-C1 has an ordered-list title different from its executable checklist heading. `2026-07-28-03-typescript-binding-pattern-extraction` uses the checklist title `Project binding JSON/Ladybug persistence adapters` and records the ordered-list alias as provenance.
-- Legacy P4-A references `P1-A authority`; after remap this is `2026-07-28-01-graph-identity-contract-and-strict-construction::E1-P1A-CONTRACT1` (source/local `P1-A`), not child 04's own local P1-A.
+- Legacy P4-A references `P1-A authority`. Preserve that source text unchanged and add any required qualified child-01 dependency outside the copied phase block; do not rewrite the source reference during conversion.
 - `2026-07-28-03-typescript-binding-pattern-extraction` and `2026-07-28-04-typescript-export-semantics` preserve the source adapter order S0-S2, S3, S4, S7, S5, S8, S6, S9, S10, S11. Do not reorder numerically or merge independently committed surfaces.
 - `2026-07-28-05-module-export-and-reexport-resolution` retains the full P5 semantic-vector manifest and publishes it through `2026-07-28-05-module-export-and-reexport-resolution::E2-PNC-HANDOFF1` (source `P8-C`, local `Pn-C`) even though the manifest sits outside the four slice bodies.
 - `2026-07-28-06-ambient-external-resolution-and-diagnostics` retains the full P6 authoritative status matrix and publishes it through `2026-07-28-06-ambient-external-resolution-and-diagnostics::E2-PNC-HANDOFF1` (source `P8-C`, local `Pn-C`) even though the matrix sits after its slice bodies.
@@ -163,13 +163,14 @@ Status history:
 | 2026-07-28 | P2-B authored the four-file child-02 candidate with 42 mapped slices and sole reader-matrix mutation ownership | legacy remains active; child 02 is linked as a candidate and awaits authoring Supervisor; implementation remains unauthorized | `2026-07-28-00-multi-plan-authoring::E2-P2B-FILES1`, `2026-07-28-00-multi-plan-authoring::E2-P2B-STRUCT1`, `2026-07-28-00-multi-plan-authoring::E2-P2B-MAP1`, `2026-07-28-00-multi-plan-authoring::E2-P2B-MATRIX1` |
 | 2026-07-28 | User required every child to refresh the next child actual-status from latest evidence before closure; authored children and campaign contracts now carry the rule, Pn-C gate, and `NEXTSTATUS1` proof | legacy remains active; corrected P2-B candidate awaits successor-rule red-team and authoring Supervisor; implementation remains unauthorized | `2026-07-28-00-multi-plan-authoring::E2-P2B-USER2`, `2026-07-28-00-multi-plan-authoring::E2-P2B-HANDOFFRULE1`, `2026-07-28-00-multi-plan-authoring::E2-P2B-VALIDATION3` |
 | 2026-07-28 | P2-B independent Supervisor PASS accepted child 02 and the successor-freshness correction | legacy remains active; child 02 authoring is accepted/commit pending; P2-C and implementation remain unauthorized until their gates open | `2026-07-28-00-multi-plan-authoring::E2-P2B-SUP1` |
+| 2026-07-28 | Owner rejected the rewritten/remapped child output; child 01 was deleted and rebuilt by exact source-block copy/paste, while child 02 and later artifacts were removed/reset | legacy remains active; only rebuilt child 01 is accepted for the bounded conversion scope; child 02-07 are not authored and implementation remains unauthorized | `2026-07-28-00-multi-plan-authoring::E2-P2A-REBUILD1`, `2026-07-28-00-multi-plan-authoring::E2-P2A-SUP2`, `2026-07-28-00-multi-plan-authoring::E2-P2B-RESET1` |
 
 ## Candidate Acceptance Gate
 
 This roadmap may become active only when:
 
 - all seven child folders and all 28 standard files exist;
-- every child has populated P0, one local P1, all mapped source slices, and tailored Pn-A/Pn-B/Pn-C;
+- every child has populated P0, its preserved source phase and source IDs, and tailored Pn-A/Pn-B/Pn-C;
 - deterministic validation proves 98 source slices, 98 unique destinations, zero missing, zero duplicate, zero extra, and preserved order/required fields;
 - all companion and cross-plan links resolve;
 - every mutable artifact has one owner and `index-reader-matrix.md` belongs only to child 02;
