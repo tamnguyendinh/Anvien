@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D committed 2de220bb / P2-E committed b19256e6 / P2-F committed e0582469 / P2-G exact-copy Supervisor PASS / commit pending / P3 blocked / implementation unauthorized`
+- Status: `active / P2-A through P2-G complete / Child 07 committed 4f1c94e5 / full-campaign closure audit open / legacy authority preserved / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -669,8 +669,8 @@ In scope:
   - Actual-status Update: mark child 06 `missing -> correct`; allow child 07 authoring to consume all implementation-child acceptance contracts.
   - Commit Boundary: commit only child 06 plus roadmap/authoring ledger updates after acceptance and Supervisor review when authorized.
 
-- [ ] P2-G: Author child 07 for legacy P7.
-  - Current Status: exact-copy four-file candidate created from committed Child 06 basis `e0582469`; generator validation, fresh graph/file-detail, and dependency/terminal checks pass; Supervisor review is pending; implementation and target access remain unauthorized.
+- [x] P2-G: Author child 07 for legacy P7.
+  - Current Status: exact-copy four-file candidate created from committed Child 06 basis `e0582469`; generator validation, fresh graph/file-detail, dependency/terminal checks, and Supervisor review passed; committed as `4f1c94e5`; implementation and target access remain unauthorized.
   - Goal: create the complete cross-surface acceptance/target-validation child plan set with all three legacy P7 slices and explicit dependencies on children 01-06.
   - Scope Boundary:
     - Editable: child-07 four-file set, roadmap status, and authoring ledgers.
@@ -713,7 +713,7 @@ In scope:
     - DB/data: 3/3 source slices map once; all six upstream dependencies are qualified.
     - Behavior test: lifecycle, fields, order, target boundary, Pn distribution, and links pass.
     - Cleanup/quarantine: no target artifact, duplicate closure child, or partial child-07 file remains.
-    - Evidence IDs: `E2-P2G-FILES1`, `E2-P2G-STRUCT1`, `E2-P2G-DEPENDENCY1`, `E2-P2G-MAP1`, `E2-P2G-CLOSURE1`, `E2-P2G-GRAPH1`, `E2-P2G-FD1`, `E2-P2G-SUP1`.
+    - Evidence IDs: `E2-P2G-FILES1`, `E2-P2G-STRUCT1`, `E2-P2G-DEPENDENCY1`, `E2-P2G-MAP1`, `E2-P2G-CLOSURE1`, `E2-P2G-GRAPH1`, `E2-P2G-FD1`, `E2-P2G-SUP1`, `E2-P2G-COMMIT1`.
     - Actual-status rows refreshed: child 07, cumulative mapped total, seven-child lifecycle count, and P3 readiness.
   - Evidence Targets: four-file inventory, three-row mapping, six handoffs, target do-not-touch proof, and seven distributed Pn sets.
   - Actual-status Update: mark child 07 `missing -> correct`; set cross-plan validation ready only if cumulative mapping equals 98.
