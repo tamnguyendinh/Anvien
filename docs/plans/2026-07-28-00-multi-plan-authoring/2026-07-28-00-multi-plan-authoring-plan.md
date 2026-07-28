@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D committed 2de220bb / P2-E committed b19256e6 / P2-F authoring active / P2-G blocked / implementation unauthorized`
+- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D committed 2de220bb / P2-E committed b19256e6 / P2-F exact-copy Supervisor PASS / commit pending / P2-G blocked / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -620,7 +620,7 @@ In scope:
   - Commit Boundary: commit only child 05 plus roadmap/authoring ledger updates after acceptance and Supervisor review when authorized.
 
 - [ ] P2-F: Author child 06 for legacy P6.
-  - Current Status: authoring active after accepted Child 05 exact-copy commit `b19256e6`; implementation remains unauthorized.
+  - Current Status: exact-copy four-file candidate created after Child 05 commit `b19256e6`; deterministic source-block, graph, independent checks, and Supervisor review PASS; commit pending and implementation remains unauthorized.
   - Goal: create the complete ambient/external declaration and truthful-diagnostics child plan set with all six legacy P6 slices.
   - Scope Boundary:
     - Editable: child-06 four-file set, roadmap status, and authoring ledgers.
@@ -663,7 +663,7 @@ In scope:
     - DB/data: 6/6 slices map once and status semantics remain exhaustive.
     - Behavior test: lifecycle, fields, order, status contract, and links pass.
     - Cleanup/quarantine: no duplicate status contract or partial child-06 artifact remains.
-    - Evidence IDs: `E2-P2F-FILES1`, `E2-P2F-STRUCT1`, `E2-P2F-STATUS1`, `E2-P2F-MAP1`.
+    - Evidence IDs: `E2-P2F-FILES1`, `E2-P2F-STRUCT1`, `E2-P2F-STATUS1`, `E2-P2F-MAP1`, `E2-P2F-VALID1`, `E2-P2F-CHECK1`, `E2-P2F-GRAPH1`, `E2-P2F-FD1`, `E2-P2F-SUP1`.
     - Actual-status rows refreshed: child 06, cumulative mapped count, and child-07 dependency.
   - Evidence Targets: four-file inventory, six-row mapping, outcome/status preservation, and qualified handoffs.
   - Actual-status Update: mark child 06 `missing -> correct`; allow child 07 authoring to consume all implementation-child acceptance contracts.
