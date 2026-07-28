@@ -11,7 +11,7 @@ Verdict: PASS
 - Scope reviewed: seven-child multi-plan authoring closure, campaign roadmap, authoring ledgers, frozen legacy source, current graph snapshot, and worktree boundary
 - Claim reviewed: the seven child plans and their 28 standard files form a complete mechanical copy/paste multi-plan for legacy P1-P7, with lossless source IDs/order, complete lifecycle rules, valid links/ownership, and no target contamination.
 - Authority used: latest user instruction to continue all children through the multi-plan; `E:\Anvien\AGENTS.md`; planner and Supervisor skills; active authoring plan; frozen legacy source/ledgers; campaign roadmap
-- Related artifacts: `E3-P3A-STRUCT1`, `E3-P3A-LINK1`, `E3-P3A-OWNER1`, `E3-P3A-MAP1`, `E3-P3A-FIELDS1`, `E3-P3A-GRAPH1`, and the seven child Supervisor reports
+- Related artifacts: `E3-P3A-STRUCT1`, `E3-P3A-LINK1`, `E3-P3A-OWNER1`, `E3-P3A-MAP1`, `E3-P3A-FIELDS1`, `E3-P3A-GRAPH1`, `E3-P3A-COMMIT1`, commit `49e63eb4`, and the seven child Supervisor reports
 
 ## Executive Summary
 
@@ -45,7 +45,8 @@ Passed:
 - Candidate campaign manifest SHA-256: `05D9DC4F6BED47470983817182B59534172181EBE028F05B99D8D3C5C75ED66E`.
 - Fresh `anvien analyze --force --json`: 1,555 scanned files, 676 parsed code files, 755 documents, 0 failed files, 85,112 nodes, 123,980 relationships.
 - Fresh `file-detail`: roadmap parsed/low-risk, 28 outbound `IMPORTS`, 0 unresolved; all four authoring ledgers parsed/low-risk, 0 unresolved.
-- `git diff --check`: passed. Current tracked edits are limited to the roadmap and four authoring ledgers; the unrelated untracked problem artifact remains excluded.
+- `git diff --check`: passed. The reviewed pre-commit tracked edits were limited to the roadmap and four authoring ledgers; the unrelated untracked problem artifact remained excluded.
+- Closure commit: `49e63eb4` contains exactly the five approved roadmap/authoring-ledger files and this report; the unrelated problem artifact was not staged.
 - Verification freshness: fresh/current for the reviewed worktree and current indexed commit `bf3d7619`.
 
 Failed:

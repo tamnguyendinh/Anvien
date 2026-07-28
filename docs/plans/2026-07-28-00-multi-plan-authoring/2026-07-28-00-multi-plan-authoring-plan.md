@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P2-A through P2-G complete / P3-A closure audit complete / P3-B authority cutover not authorized / legacy authority preserved / implementation unauthorized`
+- Status: `active / P2-A through P2-G complete / P3-A closure audit complete / closure commit 49e63eb4 / P3-B authority cutover not authorized / legacy authority preserved / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -779,7 +779,7 @@ In scope:
     - Actual-status rows refreshed: roadmap candidate, seven child sets, 98-slice mapping, ownership, and cutover readiness.
   - Evidence Targets: complete candidate hashes, exact inventories, structural results, crosswalk results, link results, ownership check, and scoped Git diff.
   - Actual-status Update: mark campaign candidate `partial -> correct` only when every acceptance check is green; otherwise record exact failed child/slice and block cutover.
-  - Commit Boundary: commit the validation-ledger/roadmap readiness update after acceptance and Supervisor review when authorized; do not change legacy authority in this commit.
+   - Commit Boundary: closure validation/roadmap readiness commit `49e63eb4` contains only the approved docs/report scope; do not change legacy authority in this commit.
 
 - [ ] P3-B: Obtain Supervisor PASS and switch authority atomically.
    - Execution status: `blocked / not authorized`. This slice is reserved for a later explicit owner instruction; do not edit the roadmap authority block or legacy plan metadata/pointer in the current scope.
