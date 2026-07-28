@@ -1,7 +1,7 @@
 # Anvien Graph Identity and TypeScript Resolution Correctness v2 Roadmap
 
 Date: 2026-07-28
-Status: candidate / three-root structural correction committed `55bf021f` / child 01 mechanical copy conversion Supervisor PASS / commit pending / children 02-07 not authored / legacy plan remains active
+Status: candidate / three-root structural correction committed `55bf021f` / child 01 mechanical copy conversion committed `ce82a341` / children 02-07 not authored / legacy plan remains active
 Source plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-26-anvien-graph-identity-resolution-v2-plan.md`
 Plan-set authoring plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 Multi-plan root: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/`
@@ -56,7 +56,7 @@ Legacy P8 contains three closure roles. It is excluded from the 98-row implement
 
 | No. | Plan folder | Primary responsibility | Source | Slices | Status | Depends on / handoff |
 |-----|-------------|------------------------|--------|-------:|--------|----------------------|
-| 01 | [2026-07-28-01-graph-identity-contract-and-strict-construction](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | Identity contract, lossless declaration/source-site identity, strict graph construction, shadow-v2 proof | P1 | 11 | candidate / mechanical copy conversion PASS / P0 complete / commit pending / implementation not authorized | No predecessor; closure must update the planned child-02 actual-status from latest evidence before handoff |
+| 01 | [2026-07-28-01-graph-identity-contract-and-strict-construction](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | Identity contract, lossless declaration/source-site identity, strict graph construction, shadow-v2 proof | P1 | 11 | candidate / mechanical copy conversion committed `ce82a341` / P0 complete / implementation not authorized | No predecessor; closure must update the planned child-02 actual-status from latest evidence before handoff |
 | 02 | `2026-07-28-02-versioned-persistence-and-v2-cutover` | Compatibility manifest, opaque readers, S0-S11 parity, atomic generations, v2 cutover | P2 | 42 | not authored | Requires child-01 accepted handoff; preserve source P2 IDs/content unchanged; sole future reader-matrix mutation owner |
 | 03 | `2026-07-28-03-typescript-binding-pattern-extraction` | Recursive binding facts, declaration contexts, graph and adapter projection | P3 | 17 | not authored | Requires `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-HANDOFF1` (source `P8-C`, local `Pn-C`), including identity-v2 plus S0-S11/reader-matrix inspect-only baseline |
 | 04 | `2026-07-28-04-typescript-export-semantics` | ExportFact semantics, export syntax extraction, graph and adapter projection | P4 | 15 | not authored | Requires `2026-07-28-03-typescript-binding-pattern-extraction::E2-PNC-HANDOFF1` (source `P8-C`, local `Pn-C`); consumes `2026-07-28-01-graph-identity-contract-and-strict-construction::E1-P1A-CONTRACT1` (source/local `P1-A`) and `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-HANDOFF1` inspect-only |
@@ -164,6 +164,7 @@ Status history:
 | 2026-07-28 | User required every child to refresh the next child actual-status from latest evidence before closure; authored children and campaign contracts now carry the rule, Pn-C gate, and `NEXTSTATUS1` proof | legacy remains active; corrected P2-B candidate awaits successor-rule red-team and authoring Supervisor; implementation remains unauthorized | `2026-07-28-00-multi-plan-authoring::E2-P2B-USER2`, `2026-07-28-00-multi-plan-authoring::E2-P2B-HANDOFFRULE1`, `2026-07-28-00-multi-plan-authoring::E2-P2B-VALIDATION3` |
 | 2026-07-28 | P2-B independent Supervisor PASS accepted child 02 and the successor-freshness correction | legacy remains active; child 02 authoring is accepted/commit pending; P2-C and implementation remain unauthorized until their gates open | `2026-07-28-00-multi-plan-authoring::E2-P2B-SUP1` |
 | 2026-07-28 | Owner rejected the rewritten/remapped child output; child 01 was deleted and rebuilt by exact source-block copy/paste, while child 02 and later artifacts were removed/reset | legacy remains active; only rebuilt child 01 is accepted for the bounded conversion scope; child 02-07 are not authored and implementation remains unauthorized | `2026-07-28-00-multi-plan-authoring::E2-P2A-REBUILD1`, `2026-07-28-00-multi-plan-authoring::E2-P2A-SUP2`, `2026-07-28-00-multi-plan-authoring::E2-P2B-RESET1` |
+| 2026-07-28 | Rebuilt Child 01, later-child reset, current roadmap/authoring tracking, and both Supervisor reports committed as `ce82a341` | legacy remains active; Child 01 authoring milestone is durable; Child 02 stays blocked/not authored and implementation remains unauthorized | `2026-07-28-00-multi-plan-authoring::E2-P2A-COMMIT2` |
 
 ## Candidate Acceptance Gate
 

@@ -2,7 +2,7 @@
 
 Title: Anvien Graph Identity Resolution v2 Multi-Plan Authoring
 Date: 2026-07-28
-Status: P0 Complete / P1 complete / P2-A rebuilt by exact copy-paste / Supervisor PASS / commit pending / P2-B reset and blocked / later children not authored / implementation unauthorized
+Status: P0 Complete / P1 complete / P2-A rebuilt by exact copy-paste and committed ce82a341 / P2-B reset and blocked / later children not authored / implementation unauthorized
 Companion plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 Companion evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 Companion benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -99,7 +99,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 | Legacy P8 closure | three source closure roles exist; rebuilt child 01 has Pn-A/Pn-B/Pn-C | each of seven children has Pn-A/Pn-B/Pn-C; no child 08 | partial | 3 source closure items / 1 of 7 child closure sets | `E0-P0A-TOTAL1`, `E0-P0A-DECISION1`, `E2-P2A-REBUILD1` | distribute only when each later child is mechanically copied |
 | Campaign roadmap | candidate roadmap links only the rebuilt child-01 four-file set; legacy authority remains explicit | one roadmap owns order, status, dependencies, handoffs, and active authority index | correct candidate | 1 file / 4 outbound child-ledger relationships | `E1-P1B-ROADMAP1`, `E2-P2A-REBUILD1`, `E2-P2A-FD2` | preserve legacy authority; keep child 02-07 code-form/not authored |
 | Child standard-file inventory | Roadmap names 28 unique planned standard files across seven children | Create exactly those 28 files without extra child sets | correct | 28 planned names | `E1-P1B-INVENTORY1` | consume sequentially in P2-A through P2-G |
-| Child 01 plan set | four rebuilt standard files mechanically copy the relevant source blocks; exact comparisons and bounded Supervisor review pass | four-file complete child under the separate multi-plan root with unchanged source P1 IDs/content | correct candidate / Supervisor PASS / commit pending | 4 files / 11 slices / 1 inbound roadmap relationship per ledger | `E2-P2A-REBUILD1`, `E2-P2A-SUP2`, `E2-P2A-GRAPH2`, `E2-P2A-FD2` | commit rebuilt child 01 and tracking artifacts only; implementation remains unauthorized |
+| Child 01 plan set | four rebuilt standard files mechanically copy the relevant source blocks; exact comparisons and bounded Supervisor review pass; commit `ce82a341` is durable | four-file complete child under the separate multi-plan root with unchanged source P1 IDs/content | correct candidate / committed | 4 files / 11 slices / 1 inbound roadmap relationship per ledger | `E2-P2A-REBUILD1`, `E2-P2A-SUP2`, `E2-P2A-GRAPH2`, `E2-P2A-FD2`, `E2-P2A-COMMIT2` | preserve; implementation remains unauthorized; P2-B still blocked on crosswalk correction |
 | Child 02 plan set | prior rewritten/remapped candidate removed; no replacement files exist | four-file complete child with unchanged source P2 IDs/content plus P0/Pn | missing | 0 files / 0 accepted slices | `E2-P2B-RESET1` | keep P2-B blocked until Child 01 commit/handoff and source-ID crosswalk correction |
 | Successor actual-status freshness | rebuilt child 01 contains the exact one-line operational rule; no successor actual-status update has been executed because implementation has not occurred and child 02 is not authored | every child owns the rule; successor actual-status is updated only at child closure from latest evidence | partial / rule present, execution not applicable yet | 1 authored child / 1 explicit rule / 0 executed successor updates | `E2-P2A-REBUILD1`, `E2-P2A-SUP2` | add the same rule to future children; do not fabricate successor status now |
 | Child 03 plan set | Does not exist | Four-file complete child for legacy P3 with P0/preserved source P3/Pn | missing | 0 files | `E0-P0A-SRC2`, `E0-P0A-SLICE3` | create only after prior child handoff and exact-copy contract |
@@ -134,6 +134,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 | R13 | 2026-07-28 | `master` at `55bf021f`; bounded successor-rule red-team findings reconciled against current files | child-01 preservation, child-02 cross-child qualification, authoring evidence/status/hash freshness | all named successor-rule red-team blockers `open -> closed by current evidence`; P2-B remains `Supervisor pending`; implementation remains unauthorized | `E2-P2B-REDTEAM2`, `E2-P2B-HANDOFFRULE1`, `E2-P2B-FILES1`, `E2-P2B-VALIDATION3` | call independent Supervisor; only unconditional PASS may complete/commit P2-B |
 | R14 | 2026-07-28 | `master` at `55bf021f`; fresh graph/file-detail at `2026-07-28T09:02:28Z`; independent Supervisor report `rp_supervisor_260728_160453_by_gpt-5-6-sol_multi_plan_p2b_child02_successor_freshness.md` | full P2-B candidate, prior findings, successor freshness, child-01 preservation, child-02 mapping/hashes, links, and Git scope | P2-B `Supervisor pending -> PASS / complete / commit pending`; implementation remains unauthorized | `E2-P2B-SUP1` | check P2-B, finalize benchmark/status, revalidate, and commit P2-B in isolation; do not open P2-C before commit |
 | R15 | 2026-07-28 | `master` at `dbf6fd66`; owner rejected rewritten/remapped child output; rebuilt Child 01 worktree plus bounded Supervisor PASS | Child 01 exact source-block copy/paste, four-file structure, one-line successor rule, Child 02 removal/reset, source-ID preservation contract | Child 01 `previous candidate -> rebuilt correct candidate / PASS / commit pending`; Child 02 `previous candidate -> missing/reset`; transformation crosswalk `correct -> wrong pending source-ID correction`; implementation remains unauthorized | `E2-P2A-REBUILD1`, `E2-P2A-SUP2`, `E2-P2B-RESET1` | commit rebuilt Child 01 and tracking evidence; do not create or update Child 02 actual-status now |
+| R16 | 2026-07-28 | `master` commit `ce82a341` | rebuilt Child 01, invalid Child 02 removal, roadmap/authoring tracking, Supervisor reports | Child 01 `PASS / commit pending -> committed`; Child 02 remains missing/reset; implementation remains unauthorized | `E2-P2A-COMMIT2` | preserve committed Child 01; correct the historical remap crosswalk before any P2-B authoring |
 
 ## Phase Touch Map
 
@@ -341,7 +342,7 @@ Do not write, copy, move, stage, inspect as split source, or create any artifact
 - [x] Next phase status assumptions, next action, and work steps have been updated from this status file when needed.
 - [x] Status Refresh Log has an R0 baseline row.
 - [x] Docs-only authoring has started; R1-R3 record every completed authoring-slice transition through P2-A.
-- [x] P2-A1 structural acceptance/commit remains complete at `55bf021f`; rebuilt P2-A is Supervisor PASS/commit pending; P2-B and later authoring plus all implementation remain blocked.
+- [x] P2-A1 structural acceptance/commit remains complete at `55bf021f`; rebuilt P2-A is committed at `ce82a341`; P2-B and later authoring plus all implementation remain blocked.
 
 ## Final P0 Decision
 
@@ -355,4 +356,4 @@ Choose one:
 
 Decision note:
 
-P0 remains complete for the three-root structure. The owner rejected rewritten/remapped child output. Child 01 has been rebuilt by exact source-block copy/paste and passed bounded Supervisor review; its commit is pending. Child 02 and later children are not authored, no successor actual-status has been fabricated, and the historical remap crosswalk must be corrected before P2-B opens. No child implementation, target access, matrix-content mutation, or authority cutover is authorized.
+P0 remains complete for the three-root structure. The owner rejected rewritten/remapped child output. Child 01 was rebuilt by exact source-block copy/paste and committed at `ce82a341`. Child 02 and later children are not authored, no successor actual-status was fabricated, and the historical remap crosswalk must be corrected before P2-B opens. No child implementation, target access, matrix-content mutation, or authority cutover is authorized.

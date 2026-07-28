@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0 complete / P1 complete / P2-A rebuilt by exact copy/paste / Supervisor PASS / commit pending / P2-B reset and blocked / later children not authored / implementation unauthorized`
+- Status: `active / P0 complete / P1 complete / P2-A rebuilt by exact copy/paste and committed ce82a341 / P2-B reset and blocked / later children not authored / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
