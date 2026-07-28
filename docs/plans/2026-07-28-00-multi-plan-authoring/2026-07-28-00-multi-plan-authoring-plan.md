@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D committed 2de220bb / P2-E exact-copy Supervisor PASS / commit pending / P2-F-P2-G blocked / implementation unauthorized`
+- Status: `active / P2-A committed ce82a341 / P2-B committed a1c66865 / P2-C committed 35a0611c / P2-D committed 2de220bb / P2-E committed b19256e6 / P2-F authoring active / P2-G blocked / implementation unauthorized`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -569,8 +569,8 @@ In scope:
   - Actual-status Update: mark child 04 `missing -> correct`; set child 05 to consume the export-semantics handoff.
   - Commit Boundary: commit only child 04 plus roadmap/authoring ledger updates after acceptance and Supervisor review when authorized.
 
-- [ ] P2-E: Author child 05 for legacy P5.
-  - Current Status: exact-copy four-file candidate created after Child 04 commit `2de220bb`; deterministic source-block, graph, independent checks, and Supervisor review PASS; commit pending and implementation remains unauthorized.
+- [x] P2-E: Author child 05 for legacy P5.
+  - Current Status: exact-copy four-file candidate created after Child 04 commit `2de220bb`; deterministic source-block, graph, independent checks, and Supervisor review PASS; committed at `b19256e6`; implementation remains unauthorized.
   - Goal: create the complete module export-table and barrel/re-export resolution child plan set with all four legacy P5 slices.
   - Scope Boundary:
     - Editable: child-05 four-file set, roadmap status, and authoring ledgers.
@@ -620,6 +620,7 @@ In scope:
   - Commit Boundary: commit only child 05 plus roadmap/authoring ledger updates after acceptance and Supervisor review when authorized.
 
 - [ ] P2-F: Author child 06 for legacy P6.
+  - Current Status: authoring active after accepted Child 05 exact-copy commit `b19256e6`; implementation remains unauthorized.
   - Goal: create the complete ambient/external declaration and truthful-diagnostics child plan set with all six legacy P6 slices.
   - Scope Boundary:
     - Editable: child-06 four-file set, roadmap status, and authoring ledgers.
