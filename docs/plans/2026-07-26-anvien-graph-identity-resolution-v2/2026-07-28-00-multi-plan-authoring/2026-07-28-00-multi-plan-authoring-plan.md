@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `draft / P0 complete / execution not yet authorized`
+- Status: `active / P0 complete / P1-A complete`
 - Plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -193,7 +193,7 @@ In scope:
   - P1-A: Freeze the legacy source snapshot and transformation contract.
   - P1-B: Author the campaign roadmap and exact child inventory.
 
-- [ ] P1-A: Freeze the legacy source snapshot and transformation contract.
+- [x] P1-A: Freeze the legacy source snapshot and transformation contract.
   - Goal: establish a deterministic, lossless input contract so later authoring cannot silently omit, merge, invent, or reorder work.
   - Scope Boundary:
     - Editable: this authoring plan's evidence, benchmark, and actual-status ledgers.

@@ -120,12 +120,124 @@ Matching plan item(s): `P0-A`
 
 Matching plan item(s): `P1-A`, `P1-B`
 
-Status: not started. These IDs are reserved for evidence recorded during authorized execution; they do not assert that the roadmap or transformation snapshot has been produced.
+### P1-A - Frozen source snapshot and transformation contract
 
-- `E1-P1A-SNAPSHOT1`: future source hash, path, line/count, and five-artifact snapshot verification.
-- `E1-P1A-GIT1`: future execution-start Git basis and scope state.
-- `E1-P1A-MAP1`: future seven-phase and 98-source-ID transformation manifest.
-- `E1-P1A-MAP2`: future proof of local-ID remap and P8-to-Pn distribution rules.
+- `E1-P1A-AUTH1`: The user explicitly ordered execution of the accepted authoring plan on 2026-07-28. This opens P1-A while preserving every docs-only and target do-not-touch boundary.
+- `E1-P1A-GIT1`: Execution began from clean commit `7b6c8e575a8f4fced05900cc8d42faebab234987` after the guide plan and its initial Supervisor PASS report were committed.
+- `E1-P1A-SNAPSHOT1`: The legacy plan still has SHA-256 `365E17A7F7CD539426568A2874A1AD1231D120C5391BFE3D8B875D5F760A45FB`, with 98 unique implementation slices distributed `11/42/17/15/4/6/3`; no source drift occurred.
+- `E1-P1A-GRAPH1`: Fresh `anvien analyze E:\\Anvien --force --json` completed at commit `7b6c8e57` with 1,511 files, 676 parsed code files, 0 failed/unsupported/unknown code files, 84,617 nodes, and 123,457 relationships.
+- `E1-P1A-FD1`: Fresh `file-detail` for this authoring plan reports a parsed Markdown docs file, low risk, zero related files, zero relationships, and no unresolved references.
+- `E1-P1A-FD2`: Fresh `file-detail` still cannot locate the 567,584-byte legacy plan. The size-specific documentation-index limitation is recorded; source hash, line structure, and exact Markdown parsing remain the valid transformation boundary.
+
+#### E1-P1A-MAP1 - Exact source-to-child crosswalk
+
+| Source slice | Child slug | Local slice | Source line | Source title |
+|--------------|------------|-------------|------------:|--------------|
+| `P1-A` | `2026-07-28-01-graph-identity-contract-and-strict-construction` | `P1-A` | 334 | Ratify graph identity and ownership contract |
+| `P1-B` | `2026-07-28-01-graph-identity-contract-and-strict-construction` | `P1-B` | 389 | Introduce range, DeclarationID, SymbolID, and SymbolRef types |
+| `P1-C0` | `2026-07-28-01-graph-identity-contract-and-strict-construction` | `P1-C0` | 444 | Preserve lossless declaration occurrences |
+| `P1-C0A` | `2026-07-28-01-graph-identity-contract-and-strict-construction` | `P1-C0A` | 499 | Define RelationshipID and lossless source-site aggregation |
+| `P1-C0B` | `2026-07-28-01-graph-identity-contract-and-strict-construction` | `P1-C0B` | 544 | Validate lossless graph decode and closure |
+| `P1-C` | `2026-07-28-01-graph-identity-contract-and-strict-construction` | `P1-C` | 589 | Build declaration-to-symbol identity mapping |
+| `P1-D` | `2026-07-28-01-graph-identity-contract-and-strict-construction` | `P1-D` | 644 | Introduce strict graph mutation operations and validation |
+| `P1-D1` | `2026-07-28-01-graph-identity-contract-and-strict-construction` | `P1-D1` | 699 | Migrate core graph producers to explicit operations |
+| `P1-D2` | `2026-07-28-01-graph-identity-contract-and-strict-construction` | `P1-D2` | 744 | Migrate resolution/projection producers to explicit operations |
+| `P1-D3` | `2026-07-28-01-graph-identity-contract-and-strict-construction` | `P1-D3` | 789 | Migrate ancillary/document/semantic producers to explicit operations |
+| `P1-E` | `2026-07-28-01-graph-identity-contract-and-strict-construction` | `P1-E` | 834 | Emit and validate shadow identity v2 |
+| `P2-A` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A` | 950 | Define the index compatibility manifest and failure contract |
+| `P2-A1` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A1` | 1005 | Freeze the source-derived reader inventory and owner assignments |
+| `P2-A2` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A2` | 1060 | Guard Graph JSON and repository-metadata readers |
+| `P2-A3` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A3` | 1105 | Guard native Ladybug readers |
+| `P2-A4` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A4` | 1150 | Guard Go/fallback Cypher readers |
+| `P2-A5` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A5` | 1195 | Guard CLI readers and dispatch boundaries |
+| `P2-A6` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A6` | 1240 | Guard MCP resources and tools |
+| `P2-A7` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A7` | 1285 | Guard HTTP handlers and streams |
+| `P2-A8` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A8` | 1330 | Guard Web readers, streams, and lifecycle clients |
+| `P2-A9` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A9` | 1375 | Guard file-context cache readers |
+| `P2-A10` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A10` | 1420 | Guard HTTP/MCP resource-cache readers |
+| `P2-A11` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A11` | 1465 | Guard embedding readers and jobs |
+| `P2-A12` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A12` | 1510 | Guard global repository-registry readers |
+| `P2-A13` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A13` | 1555 | Guard group registry and contract readers |
+| `P2-A14` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A14` | 1600 | Guard process projection readers |
+| `P2-A15` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-A15` | 1645 | Guard community and cluster projection readers |
+| `P2-B` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-B` | 1690 | Make Graph JSON v2 codec and decode closure-safe |
+| `P2-B1` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-B1` | 1735 | Write the Ladybug v2 schema and CSV export deterministically |
+| `P2-B2` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-B2` | 1780 | Load Ladybug v2 transactionally and fail closed |
+| `P2-B3` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-B3` | 1825 | Project canonical v2 records through native Ladybug queries |
+| `P2-B4` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-B4` | 1870 | Project canonical v2 records through the Go fallback query path |
+| `P2-C` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-C` | 1915 | Remove semantic ID parsing from CLI readers |
+| `P2-C1` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-C1` | 1960 | Remove semantic ID parsing from MCP resources and tools |
+| `P2-C2` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-C2` | 2005 | Make file-context projections use explicit canonical fields |
+| `P2-C3` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-C3` | 2050 | Make file-context cache records generation/config/catalog-bound |
+| `P2-C4` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-C4` | 2095 | Make rename use source anchors instead of parsed IDs |
+| `P2-C5` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-C5` | 2140 | Make the shared HTTP/MCP resource cache preserve canonical records |
+| `P2-C6` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-C6` | 2185 | Make embedding references generation-qualified and ID-opaque |
+| `P2-D` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-D` | 2230 | Make group contracts use generation-qualified opaque references |
+| `P2-D1` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-D1` | 2275 | Make process projections source-anchored and ID-opaque |
+| `P2-D2` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-D2` | 2320 | Make community projections source-anchored and ID-opaque |
+| `P2-E` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-E` | 2365 | Expose version/generation and canonical fields through HTTP |
+| `P2-E1` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-E1` | 2410 | Negotiate and render version/generation truthfully in Web |
+| `P2-E2` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-E2` | 2455 | Freeze the pre-cutover S0-S11 canonical baseline |
+| `P2-F` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-F` | 2500 | Stage immutable repo-local generation artifacts |
+| `P2-F1` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-F1` | 2545 | Publish the repo-local active generation atomically |
+| `P2-F2` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-F2` | 2590 | Publish cache and embedding namespaces by generation |
+| `P2-F3` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-F3` | 2635 | Publish the global repository registry atomically |
+| `P2-F4` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-F4` | 2680 | Publish group snapshots and member-generation vectors atomically |
+| `P2-F5` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-F5` | 2725 | Enforce reader leases and lease-safe generation garbage collection |
+| `P2-F6` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-F6` | 2770 | Run the complete publication failure-atomicity matrix |
+| `P2-G` | `2026-07-28-02-versioned-persistence-and-v2-cutover` | `P1-G` | 2815 | Cut over to identity v2 and enforce legacy ambiguity |
+| `P3-A` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-A` | 2918 | Add recursive binding-pattern facts and walker |
+| `P3-B` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-B` | 2973 | Integrate variable-declaration binding contexts |
+| `P3-B1` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-B1` | 3028 | Integrate parameter binding contexts |
+| `P3-B2` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-B2` | 3073 | Integrate catch binding contexts |
+| `P3-B2A` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-B2A` | 3118 | Integrate for-of/for-in binding contexts |
+| `P3-C` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-C` | 3163 | Project binding occurrences into the graph |
+| `P3-C1` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-C1` | 3208 | Project binding JSON/Ladybug persistence adapters |
+| `P3-C1A` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-C1A` | 3253 | Project binding CLI adapters |
+| `P3-C1B` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-C1B` | 3298 | Project binding MCP adapters |
+| `P3-C1C` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-C1C` | 3343 | Project binding file-context cache records |
+| `P3-C1D` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-C1D` | 3388 | Project binding HTTP adapters |
+| `P3-C1E` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-C1E` | 3433 | Project binding HTTP/MCP resource-cache records |
+| `P3-C1F` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-C1F` | 3478 | Project binding Web adapters |
+| `P3-C1G` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-C1G` | 3523 | Project binding embedding references |
+| `P3-C1H` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-C1H` | 3568 | Project binding registry/group references |
+| `P3-C1I` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-C1I` | 3613 | Project binding process/community references |
+| `P3-C2` | `2026-07-28-03-typescript-binding-pattern-extraction` | `P1-C2` | 3658 | Validate bindings against the real target |
+| `P4-A` | `2026-07-28-04-typescript-export-semantics` | `P1-A` | 3728 | Add ExportFact and meaning contracts |
+| `P4-B` | `2026-07-28-04-typescript-export-semantics` | `P1-B` | 3783 | Extract direct/default/alias/type-only export facts |
+| `P4-B1` | `2026-07-28-04-typescript-export-semantics` | `P1-B1` | 3838 | Extract star/namespace/re-export syntax facts |
+| `P4-C` | `2026-07-28-04-typescript-export-semantics` | `P1-C` | 3883 | Project export edge/schema records |
+| `P4-C1` | `2026-07-28-04-typescript-export-semantics` | `P1-C1` | 3938 | Project export persistence/read adapters |
+| `P4-C1A` | `2026-07-28-04-typescript-export-semantics` | `P1-C1A` | 3983 | Project export CLI adapters |
+| `P4-C1B` | `2026-07-28-04-typescript-export-semantics` | `P1-C1B` | 4028 | Project export MCP adapters |
+| `P4-C1C` | `2026-07-28-04-typescript-export-semantics` | `P1-C1C` | 4073 | Project export file-context cache records |
+| `P4-C1D` | `2026-07-28-04-typescript-export-semantics` | `P1-C1D` | 4118 | Project export HTTP adapters |
+| `P4-C1E` | `2026-07-28-04-typescript-export-semantics` | `P1-C1E` | 4163 | Project export HTTP/MCP resource-cache records |
+| `P4-C1F` | `2026-07-28-04-typescript-export-semantics` | `P1-C1F` | 4208 | Project export Web adapters |
+| `P4-C1G` | `2026-07-28-04-typescript-export-semantics` | `P1-C1G` | 4253 | Project export embedding references |
+| `P4-C1H` | `2026-07-28-04-typescript-export-semantics` | `P1-C1H` | 4298 | Project export registry/group references |
+| `P4-C1I` | `2026-07-28-04-typescript-export-semantics` | `P1-C1I` | 4343 | Project export process/community references |
+| `P4-C2` | `2026-07-28-04-typescript-export-semantics` | `P1-C2` | 4388 | Validate exports against the real target |
+| `P5-A` | `2026-07-28-05-module-export-and-reexport-resolution` | `P1-A` | 4469 | Build hash-bound TypeScript project/module request inputs |
+| `P5-B` | `2026-07-28-05-module-export-and-reexport-resolution` | `P1-B` | 4524 | Build deterministic per-module export tables |
+| `P5-C` | `2026-07-28-05-module-export-and-reexport-resolution` | `P1-C` | 4579 | Resolve re-exports, cycles, ambiguity, aliases, and meanings |
+| `P5-D` | `2026-07-28-05-module-export-and-reexport-resolution` | `P1-D` | 4634 | Emit terminal edges/proofs and validate barrel consumers |
+| `P6-A` | `2026-07-28-06-ambient-external-resolution-and-diagnostics` | `P1-A` | 4705 | Add declaration-universe and project-profile boundary |
+| `P6-B` | `2026-07-28-06-ambient-external-resolution-and-diagnostics` | `P1-B` | 4760 | Build and verify the embedded TypeScript stdlib catalog |
+| `P6-C1` | `2026-07-28-06-ambient-external-resolution-and-diagnostics` | `P1-C1` | 4815 | Resolve declaration entrypoints into immutable candidates |
+| `P6-C2` | `2026-07-28-06-ambient-external-resolution-and-diagnostics` | `P1-C2` | 4860 | Authorize and materialize referenced external Symbols |
+| `P6-C3` | `2026-07-28-06-ambient-external-resolution-and-diagnostics` | `P1-C3` | 4905 | Finalize exhaustive resolution outcomes |
+| `P6-D` | `2026-07-28-06-ambient-external-resolution-and-diagnostics` | `P1-D` | 4950 | Project resolver outcomes into graph-health diagnostics |
+| `P7-A` | `2026-07-28-07-cross-surface-acceptance-and-target-validation` | `P1-A` | 5044 | Run determinism, closure, version, and failure-atomicity gates |
+| `P7-B` | `2026-07-28-07-cross-surface-acceptance-and-target-validation` | `P1-B` | 5099 | Run bounded `cheapapp.org` in-place acceptance |
+| `P7-C` | `2026-07-28-07-cross-surface-acceptance-and-target-validation` | `P1-C` | 5154 | Run full runtime/projection/performance acceptance |
+
+- `E1-P1A-MAP2`: Crosswalk validation yields 7 source phases, 7 unique child owners, 98 source IDs, 98 unique local destinations, and zero duplicates. Legacy `P8-A/P8-B/P8-C` map by role to every child's `Pn-A/Pn-B/Pn-C`; they are not implementation rows and do not create child 08. The legacy plan remains active until the candidate campaign passes P3-B Supervisor review.
+
+### P1-B - Roadmap authoring
+
+Status: not started. The following IDs remain reserved until the roadmap exists.
+
 - `E1-P1B-ROADMAP1`: future roadmap path/hash and required-section evidence.
 - `E1-P1B-INVENTORY1`: future seven-child/28-file inventory contract evidence.
 - `E1-P1B-LINK1`: future roadmap link and slug validation evidence.

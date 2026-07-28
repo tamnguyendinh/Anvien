@@ -69,11 +69,11 @@ Benchmark sections must follow the plan phases:
 
 | Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
-| P1-A | Frozen source snapshots | snapshots | 0 | 0 | — | 1 | 0 | `E1-P1A-SNAPSHOT1` |
-| P1-A | Source phase ownership rows | rows | 0 | 0 | — | 7 | 0 | `E1-P1A-MAP1` |
-| P1-A | Source slice crosswalk rows | rows | 0 | 0 | — | 98 | 0 | `E1-P1A-MAP1` |
-| P1-A | Unmapped source slices | slices | 98 | 98 | — | 0 | 0 | `E1-P1A-MAP1` |
-| P1-A | Duplicate source mappings | mappings | 0 | 0 | — | 0 | 0 | `E1-P1A-MAP2` |
+| P1-A | Frozen source snapshots | snapshots | 0 | 1 | 1 | 1 | +1 | `E1-P1A-SNAPSHOT1` |
+| P1-A | Source phase ownership rows | rows | 0 | 7 | 7 | 7 | +7 | `E1-P1A-MAP1` |
+| P1-A | Source slice crosswalk rows | rows | 0 | 98 | 98 | 98 | +98 | `E1-P1A-MAP1` |
+| P1-A | Unmapped source slices | slices | 98 | 0 | 0 | 0 | -98 | `E1-P1A-MAP1` |
+| P1-A | Duplicate source mappings | mappings | 0 | 0 | 0 | 0 | 0 | `E1-P1A-MAP2` |
 | P1-B | Campaign roadmaps | files | 0 | 0 | — | 1 | 0 | `E1-P1B-ROADMAP1` |
 | P1-B | Roadmap child records | rows | 0 | 0 | — | 7 | 0 | `E1-P1B-INVENTORY1` |
 | P1-B | Roadmap planned standard child files | files | 0 | 0 | — | 28 | 0 | `E1-P1B-INVENTORY1` |
