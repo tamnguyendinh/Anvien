@@ -247,6 +247,31 @@ Each guard slice records the exact matrix row IDs it executed. A parent command,
 - `E2-P2G-PLAY1`: built Docker/Web supported, mismatch, and legacy-ambiguity evidence; an old client consumes zero v2 records.
 - `E2-P2G-ROLLBACK1`: active-v2 rollback restores the prior queryable generation/registry/group vector without mixed cache or embedding state.
 
+### E2 semantic correction binding
+
+The copied E2 block above remains historical provenance. P2-A execution extends its row conjunctively with `E2-P2A-MANIFEST1`, `E2-P2A-HANDSHAKE1`, and `E2-P2A-METADATA1`; all three remain pending and no P2-A acceptance may close from the copied row alone.
+
+| Plan job | Additive evidence IDs outside the copied E2 block | Required proof | Status |
+|---|---|---|---|
+| P2-A | `E2-P2A-MANIFEST1`, `E2-P2A-HANDSHAKE1`, `E2-P2A-METADATA1` | complete persisted-manifest and reader-handshake contract | pending |
+| P2-E2 | `E2-P2E2-IMPACT1`, `E2-P2E2-SRC1` | pre-edit impact and exact validation-harness source inspection before the copied build/baseline evidence row | pending |
+| P2-F6 | `E2-P2F6-IMPACT1`, `E2-P2F6-SRC1` | pre-edit impact and exact failure-matrix harness source inspection before the copied build/fault/recovery evidence row | pending |
+
 ## Closure Evidence
 
-Reserved for final Supervisor, commit, successor-status, and handoff evidence when this child reaches closure.
+Closure is pending; these are mandatory declarations, not proof. The full evidence row for every implementation slice remains conjunctive with its plan Acceptance.
+
+| Evidence ID | Source slice | Local slice | Required proof | Commit | Owner decision | Successor opening condition | Freshness evidence | Status |
+|-------------|--------------|-------------|---------------|--------|---------------|----------------------------|--------------------|--------|
+| `E2-PNC-OVERLAY1` | P8-C | Pn-C | semantic overlay precedence and local-child-versus-campaign closure decision | pending | pending | local checkpoint only | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-OWNERSHIP1` | P8-C | Pn-C | complete 42-job File / unique responsibility / allowed links / prohibited contents table; 41 implementation/validation jobs have exact production/test/generated/fixture paths and documentation-only P2-A1 has one exact matrix owner plus reasoned N/A cells | pending | pending | all 42 jobs have non-contradictory rows and no wildcard/TBD | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-LEDGER1` | P8-C | Pn-C | every slice Acceptance bound to complete IMPACT/SRC/BUILD/TEST-oracle/REVIEW/DETECT/COMMIT row | pending | pending | no review-only closure | `E2-PNC-REFRESH1` | pending |
+| `E2-P2A-MANIFEST1` | P2-A | P2-A | persisted manifest round-trip contains all required metadata fields with stable types and canonical serialization | pending | pending | P2 readers remain unopened until contract passes | `E2-PNC-REFRESH1` | pending |
+| `E2-P2A-HANDSHAKE1` | P2-A | P2-A | request/response negotiation validates supported schema/analyzer/encoding sets and fails closed before body open | pending | pending | all reader surfaces use one envelope | `E2-PNC-REFRESH1` | pending |
+| `E2-P2A-METADATA1` | P2-A | P2-A | nine semantic-correction fields plus the complete 15-field persisted-manifest / 10-field request inventory, with presence/type/spelling/fingerprint checks | pending | pending | no omitted required field | `E2-PNC-REFRESH1` | pending |
+| `E2-P2A-OWNERSHIP1` | P2-A..P2-G | P2 | complete 42-job ownership manifest before implementation, including the explicit documentation-only P2-A1 exception | pending | pending | 42/42 exact non-contradictory rows; no wildcard/TBD | `E2-PNC-REFRESH1` | pending |
+| `E2-P2A-ADAPTERS1` | P2-A2..P2-G | P2 | every reader/consumer binds complete evidence row, not parent matrix or review-only proof | pending | pending | each assigned S0-S11 row | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-REFRESH1` | P8-C | Pn-C | current HEAD/graph/file-detail snapshot and successor-status refresh-log/next-action/work-step update | pending | pending | Child 03 actual-status fresh | `anvien analyze E:\Anvien --force --json`; `git rev-parse HEAD` | pending |
+| `E2-PNC-FD1` | P0 | P0 | fresh roadmap/Child 02 plan file-detail evidence (`roadmap outbound=28`; Child 02 plan related-file count=1) | n/a | recorded | documentation graph current at HEAD | `anvien file-detail` output at graph timestamp | recorded |
+| `E2-PNC-NEXTSTATUS1` | P8-C | Pn-C | successor Child 03 actual-status refreshed from latest accepted evidence; refresh-log, next-action, and work-step rows updated | pending | pending | Child 03 may open only after exact qualified handoff | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-HANDOFF1` | P8-C | Pn-C | qualified Child 02 local evidence, commit, predecessor gate, owner decision, and Child 03 opening condition | pending | pending | `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-NEXTSTATUS1` accepted after refreshing Child 03 | `E2-PNC-REFRESH1` | pending |

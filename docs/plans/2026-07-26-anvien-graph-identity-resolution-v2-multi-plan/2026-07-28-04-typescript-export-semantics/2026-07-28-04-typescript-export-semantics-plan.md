@@ -278,6 +278,114 @@ Every implementation slice follows this order:
 - Every touched/new source and test file passes the one-file/one-responsibility review; `0` new catch-all files and `0` unrelated responsibility additions.
 - Every slice has a separate commit after full build, boundary validation, ledger update, Supervisor PASS, and detect-changes.
 
+## Semantic Remediation Overlay (mandatory)
+
+The copied P4 phase block above is historical provenance and remains unchanged. This overlay is the stronger execution contract; it controls whenever a copied gate is weaker or contradictory.
+
+All copied manifest/handshake field lists in this child are inspect-only historical context; the qualified Child 02 manifest contract (`2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-MANIFEST1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-HANDSHAKE1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-METADATA1`) is authoritative and is consumed without reinterpretation.
+
+- Local closure is a checkpoint, not campaign completion. Pending P7 rows do not block Child 04 local closure; campaign/release closure remains a Child 07 responsibility.
+- Before `P4-A` opens, the exact qualified predecessor gate is `2026-07-28-03-typescript-binding-pattern-extraction::E2-PNC-HANDOFF1`; the accepted binding/identity baseline is consumed inspect-only and a generic “Child 03 handoff” phrase is non-accepting.
+- Every implementation slice Acceptance is conjunctive with the complete matching evidence-ledger row (`IMPACT`, `SRC`, `BUILD`, behavior `TEST`/oracle, `REVIEW`, `DETECT`, and `COMMIT`). A `REVIEW1` record alone cannot close a slice.
+- Before each job opens, record an exact ownership table with `File`, one unique responsibility, allowed links, and prohibited contents for every production, test, generated, and fixture file. Wildcards, `TBD`, catch-all owners, or mixed responsibilities fail the implementation gate.
+- `Pn-C` must create qualified `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1`; refresh Child 05 actual-status/refresh-log/next-action/work-step rows from the accepted Child 04 evidence before handoff, and bind the handoff to this child’s own `NEXTSTATUS1`, never Child 05’s future record.
+- The qualified names are `2026-07-28-04-typescript-export-semantics::E2-PNC-NEXTSTATUS1` and `2026-07-28-04-typescript-export-semantics::E2-PNC-HANDOFF1`; Child 05 must consume these namespaced records.
+- **Export ownership correction:** P4 produces `ModuleRequestFact`, `ImportBindingFact`, and syntactic `ExportFact` exactly once. P4 owns direct syntax and `directExportedDefinitionCount` only. `reachableThroughBarrel`, `resolvedExportEntryCount`, and `publicApiSymbolCount` are derived P5 state and are not populated or claimed by P4. Access visibility remains separate.
+
+| Fact / metric | Producer job | Exact owner responsibility | Allowed links | Prohibited contents |
+|---|---|---|---|---|
+| `ModuleRequestFact` | P4-A | syntax fact contract and one-per-specifier producer | source site, importer, request text, config fingerprint | path resolution, export traversal |
+| `ImportBindingFact` | P4-B | one-per-local-import binding producer | local declaration, ModuleRequestFact, meaning lane | duplicate DefinitionFact, terminal target |
+| `ExportFact` | P4-B1 | syntactic export fact producer | declaration, module request, meaning lane | barrel reachability, resolved terminal, package public API |
+| `directExportedDefinitionCount` | P4-C | direct syntax-derived count projection | immutable syntactic ExportFacts | barrel reachability, resolved terminal, package public API |
+| P5-derived export state | P5 only | resolved entries and package public-API projection | immutable P4 facts, ModuleRef, proof hops | mutation of P4 syntax facts |
+
+Exact owner candidates for the P4 pre-flight table are `internal/scopeir/module_request_fact.go` (ModuleRequestFact contract), `internal/providers/tsjs/module_requests.go` (one-per-specifier syntax producer), `internal/scopeir/import_binding_fact.go` (ImportBindingFact contract), `internal/providers/tsjs/import_bindings.go` (one-per-local-import producer), `internal/scopeir/export_fact.go` (ExportFact contract), and `internal/providers/tsjs/exports.go` (syntax producer). Each file has one responsibility; tests use one behavior matrix per owner file. P5 may link to these files but may not mutate their syntax facts.
+
+### P4/P5 handoff and slice-evidence binding (mandatory)
+
+Child 04 closure must publish the exact qualified record `2026-07-28-04-typescript-export-semantics::E2-PNC-HANDOFF1`. P5-A may open only after that record is present, accepted, and committed; a phrase such as “Child 04 qualified handoff” is not a valid dependency. The handoff must identify the immutable P4 fact manifest, the direct-count manifest, and the P4-owned files below.
+
+The correction ledger is deliberately decomposed: `E2-PNC-EXPORT1A` proves ModuleRequestFact production, `E2-PNC-EXPORT1B` proves ImportBindingFact production, `E2-PNC-EXPORT1C` proves syntactic ExportFact/direct-count production, and `E2-PNC-EXPORT1D` proves the P4/P5 derived-state boundary. `E4-P4-FACT1` is the child-level index of those four rows, not a substitute for them.
+
+| Job | File | Unique responsibility | Allowed links | Prohibited contents |
+|---|---|---|---|---|
+| P4-A | `internal/scopeir/module_request_fact.go` (NEW) | ModuleRequestFact schema and identity | source site, importer, request text | filesystem/path resolution |
+| P4-A | `internal/scopeir/module_request_fact_test.go` (NEW) | ModuleRequestFact contract matrix | fact schema | resolver or graph adapters |
+| P4-A | `internal/providers/tsjs/module_requests.go` (NEW) | one syntax fact per module specifier | Tree-sitter import/export nodes | terminal declaration lookup |
+| P4-A | `internal/providers/tsjs/module_requests_test.go` (NEW) | module-request syntax production matrix | syntax producer | path resolution |
+| P4-A | `internal/providers/tsjs/testdata/exports/module-requests.ts` (NEW fixture) | module-request syntax cases | syntax tests | target source |
+| P4-A | `internal/testdata/generated/p4-a-module-requests.json` (NEW generated evidence) | observed ModuleRequestFact records | contract and syntax owners | fixture source text |
+| P4-B | `internal/scopeir/import_binding_fact.go` (NEW) | ImportBindingFact schema and meaning lane | ModuleRequestFact, local declaration | duplicate DefinitionFact or terminal target |
+| P4-B | `internal/scopeir/import_binding_fact_test.go` (NEW) | import-binding contract matrix | fact schema | barrel traversal |
+| P4-B | `internal/providers/tsjs/import_bindings.go` (NEW) | one binding fact per local import | syntax nodes, P4-A facts | path resolution or package loading |
+| P4-B | `internal/providers/tsjs/import_bindings_test.go` (NEW) | local-import binding syntax matrix | syntax producer | terminal resolution |
+| P4-B | `internal/providers/tsjs/testdata/exports/import-bindings.ts` (NEW fixture) | independently authored import-binding cases | syntax tests | target source |
+| P4-B | `internal/testdata/generated/p4-b-import-bindings.json` (NEW generated evidence) | observed ImportBindingFact records | contract and syntax owners | fixture source text |
+| P4-B1 | `internal/scopeir/export_fact.go` (NEW) | syntactic ExportFact schema/visibility lane | declaration, module request | re-export traversal/public API |
+| P4-B1 | `internal/providers/tsjs/exports.go` | syntax export producer | Tree-sitter, ExportFact | terminal resolution or package public API |
+| P4-B1 | `internal/providers/tsjs/export_facts_test.go` (NEW) | export syntax matrix | export producer | downstream projections |
+| P4-B1 | `internal/providers/tsjs/testdata/exports/export-facts.ts` (NEW fixture) | direct/default/alias/type-only/star/namespace syntax cases | export tests | target source |
+| P4-B1 | `internal/testdata/generated/p4-b1-export-facts.json` (NEW generated evidence) | observed syntactic ExportFact records | fact and syntax owners | P5-derived state |
+| P4-C | `internal/providers/tsjs/direct_export_counts.go` (NEW) | directExportedDefinitionCount only | syntactic ExportFacts | reachable/resolved/public counts |
+| P4-C | `internal/providers/tsjs/direct_export_counts_test.go` (NEW) | direct-count and no-derived-leak oracle | count owner | P5 traversal |
+| P4-C | `internal/providers/tsjs/testdata/exports/direct-counts.json` (NEW fixture) | expected direct-export count cases | count tests | resolved/public counts |
+| P4-C | `internal/testdata/generated/p4-c-direct-counts.json` (NEW generated evidence) | observed direct count and zero-derived-leak record | count owner and tests | traversal output |
+| P4-C1 | `internal/lbugload/export_projection.go` (NEW) | canonical JSON/Ladybug export fields only | P4 facts/direct count | CLI/MCP/Web adapters or P5 traversal |
+| P4-C1 | `internal/lbugload/export_projection_test.go` (NEW) | persistence projection behavior matrix | projection owner | fact production |
+| P4-C1 | `internal/testdata/p4/c1-persistence.json` (NEW fixture) | canonical persistence projection expectations | persistence tests | adapter-specific output |
+| P4-C1 | `internal/testdata/generated/p4-c1-persistence.json` (NEW generated evidence) | observed JSON/Ladybug export projection | persistence owner and tests | downstream adapter behavior |
+| P4-C1A | `internal/cli/export_projection.go` (NEW) | CLI export projection adapter only | canonical P4 fields | fact production or re-export traversal |
+| P4-C1A | `internal/cli/export_projection_test.go` (NEW) | CLI export projection behavior | CLI adapter | MCP/HTTP behavior |
+| P4-C1A | `internal/testdata/p4/c1a-cli.json` (NEW fixture) | CLI expected export records | CLI tests | target source |
+| P4-C1A | `internal/testdata/generated/p4-c1a-cli.json` (NEW generated evidence) | observed CLI export records | CLI adapter and tests | other adapters |
+| P4-C1B | `internal/mcp/export_projection.go` (NEW) | MCP export projection adapter only | canonical P4 fields | fact production or P5 traversal |
+| P4-C1B | `internal/mcp/export_projection_test.go` (NEW) | MCP export projection behavior | MCP adapter | CLI/HTTP behavior |
+| P4-C1B | `internal/testdata/p4/c1b-mcp.json` (NEW fixture) | MCP expected export records | MCP tests | target source |
+| P4-C1B | `internal/testdata/generated/p4-c1b-mcp.json` (NEW generated evidence) | observed MCP export records | MCP adapter and tests | other adapters |
+| P4-C1C | `internal/filecontext/export_projection.go` (NEW) | file-context export record adapter only | canonical P4 fields | fact production or cache policy |
+| P4-C1C | `internal/filecontext/export_projection_test.go` (NEW) | file-context export projection behavior | file-context adapter | cache policy |
+| P4-C1C | `internal/testdata/p4/c1c-context.json` (NEW fixture) | file-context expected export records | file-context tests | target source |
+| P4-C1C | `internal/testdata/generated/p4-c1c-context.json` (NEW generated evidence) | observed file-context export records | file-context adapter and tests | cache output |
+| P4-C1D | `internal/httpapi/export_projection.go` (NEW) | HTTP export projection adapter only | canonical P4 fields | fact production or resolver policy |
+| P4-C1D | `internal/httpapi/export_projection_test.go` (NEW) | HTTP export projection behavior | HTTP adapter | Web rendering |
+| P4-C1D | `internal/testdata/p4/c1d-http.json` (NEW fixture) | HTTP expected export records | HTTP tests | target source |
+| P4-C1D | `internal/testdata/generated/p4-c1d-http.json` (NEW generated evidence) | observed HTTP export records | HTTP adapter and tests | Web output |
+| P4-C1E | `internal/mcp/resource_export_projection.go` (NEW) | export cache record adapter only | canonical P4 fields, generation | fact production or traversal |
+| P4-C1E | `internal/mcp/resource_export_projection_test.go` (NEW) | resource-cache export projection behavior | cache adapter | resolver decisions |
+| P4-C1E | `internal/testdata/p4/c1e-cache.json` (NEW fixture) | cache expected export records | cache tests | target source |
+| P4-C1E | `internal/testdata/generated/p4-c1e-cache.json` (NEW generated evidence) | observed resource-cache export records | cache adapter and tests | other cache families |
+| P4-C1F | `internal/httpapi/web_export_projection.go` (NEW) | Web export stream adapter only | canonical P4 fields | fact production or traversal |
+| P4-C1F | `internal/httpapi/web_export_projection_test.go` (NEW) | Web stream export projection behavior | Web adapter | source extraction |
+| P4-C1F | `internal/testdata/p4/c1f-web.json` (NEW fixture) | Web expected export records | Web tests | target source |
+| P4-C1F | `internal/testdata/generated/p4-c1f-web.json` (NEW generated evidence) | observed Web export records | Web adapter and tests | server-side facts |
+| P4-C1G | `internal/embeddings/export_projection.go` (NEW) | embedding export metadata adapter only | canonical P4 fields | fact production or resolver |
+| P4-C1G | `internal/embeddings/export_reference_test.go` (NEW) | embedding export-reference behavior | embedding adapter | graph construction |
+| P4-C1G | `internal/testdata/p4/c1g-embedding.json` (NEW fixture) | embedding expected export references | embedding tests | target source |
+| P4-C1G | `internal/testdata/generated/p4-c1g-embedding.json` (NEW generated evidence) | observed embedding export references | embedding adapter and tests | embedding vectors |
+| P4-C1H | `internal/group/export_projection.go` (NEW) | registry/group export adapter only | canonical P4 fields | fact production or traversal |
+| P4-C1H | `internal/group/export_reference_test.go` (NEW) | registry/group export-reference behavior | group adapter | process projection |
+| P4-C1H | `internal/testdata/p4/c1h-group.json` (NEW fixture) | group expected export references | group tests | target source |
+| P4-C1H | `internal/testdata/generated/p4-c1h-group.json` (NEW generated evidence) | observed group export references | group adapter and tests | registry mutation |
+| P4-C1I | `internal/processes/export_projection.go` (NEW) | process/community export adapter only | canonical P4 fields | fact production or traversal |
+| P4-C1I | `internal/processes/export_reference_test.go` (NEW) | process/community export-reference behavior | process adapter | group projection |
+| P4-C1I | `internal/testdata/p4/c1i-process.json` (NEW fixture) | process/community expected export references | process tests | target source |
+| P4-C1I | `internal/testdata/generated/p4-c1i-process.json` (NEW generated evidence) | observed process/community export references | process adapter and tests | process discovery |
+| P4-C2 | `internal/validation/export_target_oracle.go` (NEW) | 21-site direct-export target oracle | P4 fact/count manifest | target source copies or P5-derived fields |
+| P4-C2 | `internal/validation/export_target_oracle_test.go` (NEW) | target oracle behavior matrix | target oracle owner | production implementation |
+| P4-C2 | `internal/validation/testdata/target/export-sites.json` (NEW fixture) | independent 21-site expected direct exports | target oracle tests | cheapapp source |
+| P4-C2 | `internal/testdata/generated/p4-c2-target-exports.json` (NEW generated evidence) | observed target export oracle results | target oracle and tests | target source or graph mutation |
+
+For every P4-C1 adapter, the copied Acceptance `REVIEW1` line is superseded by a conjunctive binding to that slice's exact `IMPACT1`, `SRC1`, `BUILD1`, behavior `TEST1`/`PLAY1`, `REVIEW1`, `DETECT1`, and `COMMIT1` IDs in the ledger. A review-only ID cannot close an adapter.
+
+P4-C2's explicitly named reusable validation owner files are an overlay extension to its editable Anvien oracle scope, not export implementation or resolver repair. Its complete evidence row therefore requires exact impact, source inspection, full build, oracle/target/boundary, Supervisor, detect-changes, and commit evidence before target validation can close.
+
+For every P4 job, the evidence-ledger row whose first column equals that exact job ID is normatively incorporated as the job's `Acceptance / Evidence IDs` extension. All listed IDs are conjunctive; any plan/ledger mismatch or missing detect/commit row fails acceptance.
+
+#### P4 fact/visibility acceptance override
+
+The copied P4-A/P4-B/P4-B1/P4-C acceptance blocks are superseded by the fact boundary above: P4 closes only when each syntax site emits exactly one `ModuleRequestFact`, each local import emits exactly one `ImportBindingFact`, each export specifier emits exactly one syntactic `ExportFact`, and `directExportedDefinitionCount` is reported independently. `reachableThroughBarrel`, `resolvedExportEntryCount`, and `publicApiSymbolCount` must be absent from P4-produced facts and are accepted only through the qualified P5 handoff. Every P4-C1A–P4-C1I adapter additionally requires its complete ledger row; a review-only record cannot close it.
+
 ## Checklist
 
 - [x] P0-A: Complete actual status before implementation work.
@@ -1037,6 +1145,7 @@ Every implementation slice follows this order:
   - Acceptance: final `git diff/status` contains no dead plan-created artifacts, supervisor passes the cleanup, and evidence records what was removed or preserved.
 - [ ] Pn-C: Close the plan.
   - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
+   - Overlay Gate: apply the mandatory Semantic Remediation Overlay; this is local-child closure, not campaign/release completion.
   - Work Steps:
     1. Run the required final validation for the accepted scope, including full build before final runtime validation. For app/runtime scopes, full build must include Docker image/container build.
     2. Start the real built Docker/container runtime for app/runtime validation. If Docker cannot be built or started, record the blocker and do not substitute a host dev server.
@@ -1045,8 +1154,10 @@ Every implementation slice follows this order:
     5. Run Anvien detect-changes before commit when implementation work was performed.
     6. Record final validation, detect-changes, benchmark, and commit evidence.
     7. Commit the completed scope and verify the worktree state.
-  - Implementation Gate: Pn-A and Pn-B must pass or record blockers.
-  - Acceptance: final evidence is recorded, required commits exist, and the worktree state is known.
+     8. Refresh Child 05 actual-status from the latest accepted Child 04 evidence, append its refresh-log row, and update its next action/work steps before handoff.
+     9. Record qualified `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1`; bind every required evidence-ledger row and the exact per-job ownership table.
+   - Implementation Gate: Pn-A/Pn-B, all local implementation gates including fact producers and derived-export ownership, full evidence rows, ownership tables, and the successor refresh must pass; pending P7 is not a local-child blocker.
+   - Acceptance: local closure evidence, commit, `E2-PNC-NEXTSTATUS1`, and `E2-PNC-HANDOFF1` are recorded and the worktree is known; campaign/release closure remains separate.
 
 ## Risk Notes
 

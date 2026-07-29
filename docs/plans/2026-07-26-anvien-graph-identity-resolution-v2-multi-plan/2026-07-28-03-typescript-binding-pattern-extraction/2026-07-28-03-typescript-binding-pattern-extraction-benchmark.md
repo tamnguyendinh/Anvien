@@ -86,8 +86,20 @@ For performance release gates, capture at least five comparable runs before v2 c
 | P3 | binding registry/group parity | differing records/fields; orphan refs | no v2 `S10` projection | pending | pending | 0 / 0 | pending | `E3-P3C1H-TEST1` |
 | P3 | binding process/community parity | differing memberships/order; orphan refs | no v2 `S11` projection | pending | pending | 0 / 0 | pending | `E3-P3C1I-TEST1` |
 
+## B3 Semantic Correction Metrics
+
+| Metric | Unit | Baseline | Latest | Final | Target | Evidence |
+|--------|------|----------|--------|-------|--------|----------|
+| unsupported-pattern extraction diagnostic coverage | diagnosed/unsupported fixtures | 0/0 | pending | pending | 100% with structured code and count | `E2-PNC-BINDING1A` |
+| declaration emission independent of type inference | emitted/eligible bindings | 0/0 | pending | pending | 100% | `E2-PNC-BINDING1B` |
+| named `.map()` sites with ResolutionGap | sites / gaps | 6 / unknown | pending | pending | 6 / 0 | `E2-PNC-BINDING1C` |
+| nested shadowing SymbolID correctness | correct/expected | 0/0 | pending | pending | 100% | `E2-PNC-BINDING1D` |
+| import double-count delta | count delta | unknown | pending | pending | 0 | `E2-PNC-BINDING1E` |
+| P3-B2A predecessor gate | accepted/required | 0/1 | pending | pending | 1/1 accepted and committed before P3-C/P3-C2 | `E3-P3C-B2A-GATE1` |
+| P3 job ownership rows | accepted exact rows / 17 implementation jobs | 0/17 | pending | pending | 17/17 exact production/test/generated/fixture rows before job open | `E3-P3-OWNERSHIP1` |
+
 ## Non-Benchmarkable Notes
 
 - P1-A contract ratification and P8 Supervisor/cleanup/closure are evidence gates, not benchmarkable product/runtime work.
 - Build/test/e2e pass/fail belongs in the evidence ledger; only measured duration, count, size, throughput, latency, memory, parity, and accuracy ratios are recorded here.
-- A final plan cannot close while any required P7 performance row remains pending. A budget exception must contain measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.
+- Local child closure is allowed after this child's local benchmark/evidence gates and qualified handoff pass. Pending P7 performance rows block only campaign/release closure owned by Child 07. Any budget exception still requires measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.

@@ -209,11 +209,11 @@ The following names are implementation suggestions, not architecture authority. 
 | module export table construction | `internal/resolution/module_export_table.go` | ScopeIR export facts | call/type resolution |
 | barrel/re-export traversal | `internal/resolution/reexport_resolution.go` | module export tables | package declaration loading |
 | structured resolution outcome | `internal/resolution/outcome.go` | finalized target/proof/status | graph-health classification or external materialization |
-| resolution status matrix | `internal/resolution/outcome_status.go` | stage/target/severity policy | entrypoint lookup, materialization, or graph-health inference |
+| resolution status matrix | `internal/resolution/outcome_status.go` (NEW) | stage/target/severity policy | entrypoint lookup, materialization, or graph-health inference |
 | declaration-universe interface | `internal/resolution/declaration_universe.go` | project profile | concrete catalog storage |
 | declaration entrypoint lookup | `internal/resolution/declaration_entrypoint.go` | `ModuleRef`, declaration universe | module specifier/condition resolution |
 | external Symbol materialization | `internal/resolution/external_symbol.go` | ExternalSymbolRef/catalog | repository declaration extraction |
-| declaration path security/budgets | `internal/resolution/declaration_security.go` | canonical roots and limits | network/package execution |
+| declaration path security/budgets | `internal/resolution/declaration_security.go` (NEW) | canonical roots and limits | network/package execution |
 | embedded TS stdlib catalog | `internal/resolution/typescript_stdlib_catalog.go` | generated immutable data | network/package execution |
 | catalog manifest/provenance | `internal/resolution/typescript_catalog_manifest.go` | version/hash/license/NOTICE | resolution traversal |
 | outcome-to-health projection | `internal/graphhealth/resolution_outcome_projection.go` | structured outcomes | name-based inference |
@@ -261,6 +261,172 @@ Every implementation slice follows this order:
 - No source, fixture, report, probe, or temporary investigation artifact is written into or copied from `E:\cheapapp.org`; operational graph/index output remains under `E:\cheapapp.org\.anvien`.
 - Every touched/new source and test file passes the one-file/one-responsibility review; `0` new catch-all files and `0` unrelated responsibility additions.
 - Every slice has a separate commit after full build, boundary validation, ledger update, Supervisor PASS, and detect-changes.
+
+## Semantic Remediation Overlay (mandatory)
+
+The copied P6 phase block above is historical provenance and remains unchanged. This overlay is the stronger execution contract; it controls whenever a copied gate is weaker or contradictory.
+
+All copied manifest/handshake field lists in this child are inspect-only historical context; the qualified Child 02 manifest contract (`2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-MANIFEST1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-HANDSHAKE1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-METADATA1`) is authoritative and is consumed without reinterpretation.
+
+- Local closure is a checkpoint, not campaign completion. Pending P7 rows do not block Child 06 local closure; campaign/release closure remains a Child 07 responsibility.
+- Before `P6-A` opens, the exact qualified predecessor gate is `2026-07-28-05-module-export-and-reexport-resolution::E2-PNC-HANDOFF1`; P6 consumes the immutable P5 module/export result inspect-only and must not redo package-export traversal.
+- Every implementation slice Acceptance is conjunctive with the complete matching evidence-ledger row (`IMPACT`, `SRC`, `BUILD`, behavior `TEST`/oracle, `REVIEW`, `DETECT`, and `COMMIT`). A `REVIEW1` record alone cannot close a slice.
+- Before each job opens, record an exact ownership table with `File`, one unique responsibility, allowed links, and prohibited contents for every production, test, generated, and fixture file. Wildcards, `TBD`, catch-all owners, or mixed responsibilities fail the implementation gate.
+- `Pn-C` must create qualified `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1`; refresh Child 07 actual-status/refresh-log/next-action/work-step rows from the accepted Child 06 evidence before handoff, and bind the handoff to this child’s own `NEXTSTATUS1`, never Child 07’s future record.
+- The qualified names are `2026-07-28-06-ambient-external-resolution-and-diagnostics::E2-PNC-NEXTSTATUS1` and `2026-07-28-06-ambient-external-resolution-and-diagnostics::E2-PNC-HANDOFF1`; Child 07 must consume these namespaced records.
+- **Declaration-universe correction:** every outcome carries `capabilityMode: exact|structural|degraded`, `confidence`, and `completeness`. `exact` is version-bound to the requested compiler/config/catalog manifest and complete authorized source set; `structural` means repository plus project-owned/local declarations are usable while external coverage is limited; `degraded` means the external declaration universe is unavailable and must carry an explicit mismatch/unavailable outcome. The loader/parser/merge acceptance covers repository declarations, project-owned `.d.ts`, installed package declarations, stdlib, intrinsics, ambient modules, and global augmentations. Missing or parse-failed sources produce explicit capability/completeness outcomes, never silent local gaps.
+- External symbols are excluded by default from context, impact, rename, process, and group traversal. Each surface has an explicit `include_external` opt-in; default and opt-in counts are separately measured.
+- Promise/Math remain catalog-backed external/ambient declarations; only `resolved_external` or an explicit external-capability failure is valid, never `resolved_intrinsic`.
+- External-policy ownership is split: `internal/resolution/external_projection_policy.go` owns the default/opt-in policy; thin adapters remain in context, impact, rename, process, and group owners, and each transport has its own exact behavior matrix (`internal/mcp/external_traversal_options_transport_test.go`, `internal/cli/external_traversal_options_transport_test.go`, `internal/httpapi/external_traversal_options_transport_test.go`, `internal/processes/external_traversal_options_transport_test.go`, and `internal/group/external_traversal_options_transport_test.go`). No catch-all surface file may own all five traversals. The P6 evidence gate names the exact files selected at pre-flight and rejects wildcard/TBD ownership.
+
+### P6-A/P6-B phase-ownership correction (mandatory)
+
+The copied P6-A/P6-B scope and acceptance paragraphs are historical provenance. They are superseded here because they predate the declaration-universe split: **P6-A owns only the closed capability/outcome metadata schema** (`capabilityMode`, `confidence`, `completeness`, source/missing fields, parser version, and merge decision); it does not load declaration sources. **P6-B owns the complete seven-category declaration universe, source authorization, parser/merge coordinator, and all valid/malformed/duplicate/overload/augmentation/conflict/missing cases.** The copied P6-B non-goal that excludes package declarations and the copied P6-A wording that claims source loading cannot close a slice. P6-C1/C2/C3 consume the P6-B universe; P6-D owns only projection policy and transport/adapters. P6-A/B checklist gates and Acceptance are read through this reassignment and their exact semantic evidence IDs below are conjunctive.
+
+`ExternalTraversalOptions` is a versioned typed DTO owned by `internal/resolution/external_traversal_options.go`. Its schema authority is the immutable `ExternalTraversalOptionsSchemaVersion = "1"` contract constant in that owner; the negotiated reader uses that constant for the traversal option contract, and adapters must reject an unknown version rather than silently reinterpret fields. This DTO schema field is separate from the graph manifest's 15-field/reader request's 10-field inventory above.
+
+```text
+type ExternalTraversalOptions struct {
+    SchemaVersion string `json:"external_traversal_options_schema_version"`
+    IncludeExternal bool `json:"include_external"`
+    // omitted include_external wire key means false; null, non-boolean, unknown, or duplicate keys fail closed
+}
+```
+
+The wire spelling is fixed: MCP and HTTP/resource JSON use `external_traversal_options_schema_version` plus the exact snake-case key `include_external`; the CLI exposes the exact kebab-case flag `--include-external` and binds the owner constant once to `SchemaVersion`; internal/process/group forwarding carries both typed fields without renaming. No camelCase alias (`includeExternal` or `schemaVersion`) or truthy-string coercion is accepted. The schema version is required and must equal `"1"`; omitted `include_external` key/flag is `false`; `null`, non-boolean values, duplicate keys, unknown fields, an omitted/unknown schema version, and invalid CLI encodings return the typed `INVALID_EXTERNAL_TRAVERSAL_OPTIONS` error before traversal. The DTO is serialized/forwarded without reinterpretation through the exact MCP schema/dispatch (`internal/mcp/external_traversal_options.go`, with registration links in `internal/mcp/tools.go` and `internal/mcp/server.go`), CLI forwarding (`internal/cli/external_traversal_options.go`, with command links in `internal/cli/tool_command.go` and `internal/cli/group_command.go`), HTTP/resource forwarding (`internal/httpapi/external_traversal_options.go`), process (`internal/processes/external_traversal_options.go`), and group (`internal/group/external_traversal_options.go`) adapters. These transport files only parse/forward the DTO; policy remains in `external_projection_policy.go`, and every surface receives the same immutable option. The five-surface `include_external` matrix is non-accepting unless propagation is `5/5` with schema version `1` and default `false` proven.
+
+### Declaration capability and downstream isolation contract (mandatory)
+
+The three capability fields are closed enums, not free-form prose:
+
+| Field | Allowed values | Required meaning |
+|---|---|---|
+| `capabilityMode` | `exact`, `structural`, `degraded` | `exact` means the requested compiler/config/catalog versions match the authoritative manifest and every required source for the request is authorized, parsed, and merged; `structural` means repository and project-owned/local declarations are available while external coverage is limited, so only structural/local semantics are complete; `degraded` means the external declaration universe is unavailable (including missing, mismatched, security-rejected, budget-exceeded, or parse-failed sources) and the outcome is explicitly incomplete |
+| `confidence` | `high`, `medium`, `low` | deterministic confidence derived from source provenance and parser/merge status; never omitted |
+| `completeness` | `complete`, `partial`, `unavailable` | whether the requested declaration universe is complete, partially available, or unavailable for this source site |
+
+The same closed contract must be persisted once per `graphGeneration` as immutable semantic graph metadata `DeclarationCapabilityDescriptor {capabilityMode, confidence, completeness, compilerVersion, configFingerprint, catalogHash, sourceCoverage, missingSources}`. It is generation-level semantic metadata, not a sixteenth top-level field in Child 02's 15-field compatibility manifest: the descriptor is generation-bound by `graphGeneration`, `configFingerprint`, and `catalogHash`, and its integrity participates in the published body hash. Every outcome must be consistent with this descriptor; an outcome may be less complete for a specific site but may never claim a stronger mode/completeness than the generation descriptor. JSON, Ladybug, CLI, MCP, HTTP/Web, cache, group, process, and embedding projections must expose the same descriptor or an exact generation-bound reference to it.
+
+Every immutable `ResolutionOutcome` must also carry `declarationSources[]`, `missingSources[]`, `parserVersion`, and a merge decision (`none`, `merged`, `conflict`, or `parse_failed`). The seven source categories are separate rows, not one aggregate: repository declarations, project-owned `.d.ts`, installed package declarations, stdlib, intrinsics, ambient modules, and global augmentations. The parser/merge matrix must include valid syntax, malformed syntax, duplicate declarations, overload merge, global/module augmentation merge, conflicting declarations, and missing-source outcomes.
+
+The evidence IDs are correspondingly split: `E2-PNC-AMBIENT1A` (field enum/schema), `E2-PNC-AMBIENT1B` (repository declarations), `E2-PNC-AMBIENT1C` (project-owned `.d.ts`), `E2-PNC-AMBIENT1D` (installed package declarations), `E2-PNC-AMBIENT1E` (stdlib declarations), `E2-PNC-AMBIENT1F` (ambient modules), `E2-PNC-AMBIENT1G` (global augmentations), `E2-PNC-AMBIENT1H` (parser/merge matrix), `E2-PNC-AMBIENT1I` (context isolation), `E2-PNC-AMBIENT1J` (Promise site), `E2-PNC-AMBIENT1K` (intrinsic declaration source), `E2-PNC-AMBIENT1L` (impact isolation), `E2-PNC-AMBIENT1M` (rename isolation), `E2-PNC-AMBIENT1N` (process isolation), `E2-PNC-AMBIENT1O` (groups isolation), `E2-PNC-AMBIENT1P` (typed-option propagation), `E2-PNC-AMBIENT1Q` (Math.max site), `E2-PNC-AMBIENT1R` (Math.min site), and `E2-PNC-AMBIENT1S` (generation-level graph metadata descriptor and outcome-consistency proof). `E2-PNC-AMBIENT1` is only the index; every listed subrow is required and no aggregate surface row substitutes for another.
+
+`include_external` is a typed request option, defaulting to `false`, carried with schema version `1` through the same immutable traversal context to every surface. It is not a diagnostic string or hidden environment switch. The default and opt-in result for each of context, impact, rename, process, and groups must be independently recorded.
+
+Declaration coverage uses two explicit dimensions so categories cannot be accidentally double-counted. The disjoint origin buckets are `repository_source` (eligible non-`.d.ts` repository declarations), `project_dts` (`.d.ts` under configured project/workspace roots), `package` (validated installed-package roots), `stdlib` (the pinned catalog closure), and `intrinsic` (language-owned primitives). `ambient_module` and `global_augmentation` are orthogonal declaration-form lanes that may occur inside a project/package/stdlib origin; they prove parser/merge behavior and do not become a second physical-source count. Every declaration record carries exactly one origin plus one form, and the coverage ledger reports both dimensions separately. If origin metadata conflicts, the loader emits a conflict merge decision and the status matrix below rather than choosing by filename or lookup order.
+
+| Job | File | Unique responsibility | Allowed links | Prohibited contents |
+|---|---|---|---|---|
+| P6-A | `internal/resolution/declaration_capability.go` (NEW) | capability/confidence/completeness contract for outcomes and the generation-level DeclarationCapabilityDescriptor | declaration-universe contracts, graph-generation metadata | parsing or traversal adapters |
+| P6-A | `internal/resolution/declaration_capability_test.go` (NEW) | field/schema, descriptor/outcome consistency, and serialization matrix | capability owner | source loading |
+| P6-A | `internal/resolution/testdata/ambient/capability-modes.json` (NEW fixture) | matching-version exact, repo+local structural, unavailable/mismatched degraded, and generation-descriptor expected outcomes | capability tests | target graph/index |
+| P6-A | `internal/testdata/generated/p6-a-capability.json` (NEW generated evidence) | serialized outcome records plus one generation-bound capability descriptor | capability owner and tests | declaration source fixtures |
+| P6-B | `internal/resolution/declaration_universe.go` (NEW) | source inventory, authorization boundary, and merge coordinator | project profile, P5 declaration entrypoint | downstream traversal |
+| P6-B | `internal/resolution/declaration_universe_test.go` (NEW) | seven-source parser/merge matrix | universe owner | graph-health projection |
+| P6-B | `internal/resolution/testdata/ambient/repo-declarations.ts` (NEW fixture) | repository-source origin case (non-`.d.ts`) | universe tests | project/package/stdlib declarations |
+| P6-B | `internal/resolution/testdata/ambient/project-owned.d.ts` (NEW fixture) | project-owned `.d.ts` origin case, disjoint from repository-source row | universe tests | installed-package declarations |
+| P6-B | `internal/resolution/testdata/ambient/package-declarations.d.ts` (NEW fixture) | installed-package declaration source case | universe tests | project-owned or stdlib declarations |
+| P6-B | `internal/resolution/testdata/ambient/stdlib-declarations.d.ts` (NEW fixture) | standard-library declaration source case | universe tests | copied compiler library files |
+| P6-B | `internal/resolution/testdata/ambient/language-intrinsics.json` (NEW fixture) | language-intrinsic source case | universe tests | Promise/Math hardcoding |
+| P6-B | `internal/resolution/testdata/ambient/ambient-module.d.ts` (NEW fixture) | ambient-module parse/merge case | universe tests | global augmentation cases |
+| P6-B | `internal/resolution/testdata/ambient/global-augmentation.d.ts` (NEW fixture) | global-augmentation parse/merge case | universe tests | ambient-module ownership |
+| P6-B | `internal/testdata/generated/p6-b-universe.json` (NEW generated evidence) | seven-source parser/merge outcome matrix | universe owner and tests | fixture source text |
+| P6-B | `internal/resolution/typescript_stdlib_catalog_generator.go` (NEW) | deterministic generation from the pinned TypeScript lib closure and source fingerprint | pinned catalog inputs, manifest owner | runtime network, package scripts, or resolver traversal |
+| P6-B | `internal/resolution/typescript_stdlib_catalog.go` (NEW) | immutable embedded catalog data/loader and read-only lookup | catalog asset and manifest | source scanning, package execution, or outcome projection |
+| P6-B | `internal/resolution/typescript_catalog_manifest.go` (NEW) | catalog version/hash/license/NOTICE/provenance manifest validation | generator and immutable asset | declaration traversal or external-symbol materialization |
+| P6-B | `internal/resolution/catalogdata/typescript-stdlib.catalog` (NEW generated asset) | one pinned immutable catalog asset published with the runtime | generator and manifest | hand-edited declarations or runtime writes |
+| P6-B | `internal/resolution/catalogdata/typescript-stdlib.manifest.json` (NEW generated asset) | one pinned immutable catalog manifest published with the runtime | generator, manifest validator, loader | hand-edited metadata or runtime writes |
+| P6-B | `internal/resolution/catalogdata/typescript-stdlib.NOTICE.txt` (NEW provenance artifact) | pinned license/NOTICE text for the catalog asset | generator and manifest tests | declaration traversal or runtime writes |
+| P6-B | `internal/resolution/typescript_stdlib_catalog_test.go` (NEW) | catalog closure/member/integrity/load behavior matrix | loader and manifest | package declarations or target graph output |
+| P6-B | `internal/resolution/typescript_catalog_manifest_test.go` (NEW) | source-fingerprint/version/license/NOTICE and corruption matrix | manifest owner | loader traversal or target mutation |
+| P6-B | `internal/resolution/testdata/ambient/typescript-lib-closure.json` (NEW fixture) | independently pinned lib/target closure and expected catalog inputs | generator tests | copied compiler files or target source |
+| P6-B | `internal/testdata/generated/p6-b-catalog.json` (NEW generated evidence) | catalog asset hash/version/size/load/provenance observations | catalog generator, loader, manifest tests | fixture source text |
+| P6-C1 | `internal/resolution/declaration_entrypoint.go` (NEW) | declaration-entrypoint selection from immutable P5 `ModuleRef` | P5 handoff, declaration universe | package export-condition re-resolution |
+| P6-C1 | `internal/resolution/declaration_entrypoint_test.go` (NEW) | declaration-entrypoint behavior matrix | entrypoint owner | external materialization |
+| P6-C1 | `internal/resolution/testdata/ambient/entrypoint-matrix.json` (NEW fixture) | types/typesVersions/catalog expected entrypoints | entrypoint tests | target source |
+| P6-C1 | `internal/testdata/generated/p6-c1-entrypoints.json` (NEW generated evidence) | selected entrypoints and proof records | entrypoint owner and tests | P5 fact mutation |
+| P6-C2 | `internal/resolution/external_symbol.go` (NEW) | authorized lazy external materialization for stdlib, intrinsic, installed-package, ambient-module, and global-augmentation candidates | external refs, catalog/package descriptors, accepted P6-B source records | repository File creation |
+| P6-C2 | `internal/resolution/external_symbol_test.go` (NEW) | authorization, budget, and per-origin materialization matrix for package/stdlib/intrinsic/ambient/global candidates | external-symbol owner and accepted P6-B source records | diagnostic projection |
+| P6-C2 | `internal/resolution/declaration_security_test.go` (NEW) | allowed-root, symlink, byte/file/depth/cache budget, and fail-closed security behavior matrix | declaration_security.go and external-symbol owner | declaration loading or diagnostic projection |
+| P6-C2 | `internal/resolution/testdata/ambient/external-materialization.json` (NEW fixture) | independently authored authorized/blocked package, stdlib, intrinsic, ambient-module, and global-augmentation candidates | materialization tests | target graph output |
+| P6-C2 | `internal/testdata/generated/p6-c2-external-symbols.json` (NEW generated evidence) | materialized external-symbol record set | external-symbol owner and tests | repository File nodes |
+| P6-C3 | `internal/resolution/outcome.go` (NEW) | immutable top-level ResolutionOutcome assembly | candidate/materialization/status matrix | diagnostic projection or source mutation |
+| P6-C3 | `internal/resolution/outcome_test.go` (NEW) | status/capability/Promise/Math matrix | outcome owner | downstream surface traversal |
+| P6-C3 | `internal/resolution/testdata/ambient/outcome-matrix.json` (NEW fixture) | per-status and Promise/Math allowed outcomes | outcome tests | resolver implementation output |
+| P6-C3 | `internal/testdata/generated/p6-c3-outcomes.json` (NEW generated evidence) | immutable outcome and negative-intrinsic records | outcome owner and tests | downstream adapter rendering |
+| P6-D | `internal/resolution/external_projection_policy.go` (NEW) | default exclusion and typed `include_external` policy | immutable external refs, traversal option | context/impact/rename/process/group implementation |
+| P6-D | `internal/resolution/external_projection_policy_test.go` (NEW) | five-surface default/opt-in policy matrix | policy owner | adapter-specific rendering |
+| P6-D | `internal/resolution/external_traversal_options.go` (NEW) | `ExternalTraversalOptions` schema-version-1 DTO and default/invalid-field validation | immutable traversal context | surface policy or rendering |
+| P6-D | `internal/resolution/external_traversal_options_test.go` (NEW) | DTO serialization/default/propagation contract | option DTO | policy decisions |
+| P6-D | `internal/resolution/testdata/ambient/external-traversal-options.json` (NEW fixture) | typed default/opt-in/invalid-option cases | option tests | runtime output |
+| P6-D | `internal/testdata/generated/p6-d-external-traversal-options.json` (NEW generated evidence) | observed option propagation records | option DTO and tests | policy implementation |
+| P6-D | `internal/mcp/external_traversal_options.go` (NEW) | MCP schema/dispatch parsing and forwarding only | shared DTO | policy definition |
+| P6-D | `internal/mcp/tools.go` | MCP tool registration link for the typed traversal option | external_traversal_options.go | policy definition or outcome rendering |
+| P6-D | `internal/mcp/server.go` | MCP dispatch forwarding link for the typed traversal option | external_traversal_options.go | policy definition or resolver |
+| P6-D | `internal/mcp/group_tools.go` | MCP group-handler forwarding link for the typed traversal option | external_traversal_options.go | group policy definition |
+| P6-D | `internal/cli/external_traversal_options.go` (NEW) | CLI option parsing/forwarding only | shared DTO | policy definition |
+| P6-D | `internal/cli/tool_command.go` | CLI command forwarding link for the typed traversal option | external_traversal_options.go | policy definition or resolver |
+| P6-D | `internal/cli/group_command.go` | CLI group-query/contracts forwarding link for the typed traversal option | external_traversal_options.go | policy definition or resolver |
+| P6-D | `internal/httpapi/external_traversal_options.go` (NEW) | HTTP/resource option parsing/forwarding only | shared DTO | policy definition |
+| P6-D | `internal/httpapi/server.go` | HTTP route registration link for the typed traversal option | external_traversal_options.go | policy definition or resolver |
+| P6-D | `internal/httpapi/panels.go` | HTTP/process panel option forwarding link for the typed traversal option | external_traversal_options.go | policy definition or resolver |
+| P6-D | `internal/mcp/resources.go` | MCP resource forwarding link for the typed traversal option | external_traversal_options.go | policy definition or resolver |
+| P6-D | `internal/processes/external_traversal_options.go` (NEW) | process option forwarding only | shared DTO | policy definition |
+| P6-D | `internal/group/external_traversal_options.go` (NEW) | group option forwarding only | shared DTO | policy definition |
+| P6-D | `internal/mcp/context.go` | context adapter only | policy, canonical graph | policy definition or resolver |
+| P6-D | `internal/mcp/impact.go` | impact adapter only | policy, canonical graph | policy definition or resolver |
+| P6-D | `internal/mcp/rename.go` | rename adapter only | policy, canonical graph | policy definition or resolver |
+| P6-D | `internal/processes/processes.go` | process adapter only | policy, canonical graph | policy definition or resolver |
+| P6-D | `internal/group/query.go` | group adapter only | policy, canonical graph | policy definition or resolver |
+| P6-D | `internal/mcp/external_traversal_options_transport_test.go` (NEW) | MCP DTO parse/forward/default/invalid behavior matrix across MCP server, tools, resources, and group handlers | shared DTO and listed MCP adapters | policy decisions or resolver implementation |
+| P6-D | `internal/cli/external_traversal_options_transport_test.go` (NEW) | CLI flag parse/forward/default/invalid behavior matrix across tool and group commands | shared DTO and listed CLI adapters | policy decisions or resolver implementation |
+| P6-D | `internal/httpapi/external_traversal_options_transport_test.go` (NEW) | HTTP/resource parse/forward/default/invalid behavior matrix across server, panels, and resources | shared DTO and listed HTTP adapters | policy decisions or resolver implementation |
+| P6-D | `internal/processes/external_traversal_options_transport_test.go` (NEW) | process option forwarding/default/invalid behavior matrix | shared DTO and process adapter | policy decisions or graph traversal |
+| P6-D | `internal/group/external_traversal_options_transport_test.go` (NEW) | group option forwarding/default/invalid behavior matrix | shared DTO and group adapter | policy decisions or graph traversal |
+| P6-D | `internal/mcp/context_external_traversal_test.go` (NEW) | context default exclusion/explicit opt-in semantic matrix | context.go and projection policy | transport parsing or resolver classification |
+| P6-D | `internal/mcp/impact_external_traversal_test.go` (NEW) | impact default exclusion/explicit opt-in semantic matrix | impact.go and projection policy | transport parsing or resolver classification |
+| P6-D | `internal/mcp/rename_external_traversal_test.go` (NEW) | rename default exclusion/explicit opt-in candidate matrix and no-edit guard | rename.go and projection policy | transport parsing or resolver classification |
+| P6-D | `internal/processes/processes_external_traversal_test.go` (NEW) | process default exclusion/explicit opt-in semantic matrix | processes.go and projection policy | transport parsing or resolver classification |
+| P6-D | `internal/group/query_external_traversal_test.go` (NEW) | group default exclusion/explicit opt-in semantic matrix | query.go and projection policy | transport parsing or resolver classification |
+| P6-D | `internal/resolution/testdata/ambient/external-transport-matrix.json` (NEW fixture) | independently authored five-transport propagation cases | transport matrix tests | generated runtime output |
+| P6-D | `internal/testdata/generated/p6-d-transport-matrices.json` (NEW generated evidence) | per-transport default/opt-in/invalid propagation observations | transport matrix tests | policy implementation |
+| P6-C1 | `internal/resolution/resolve.go` | sole write-owner for resolver-stage orchestration/delegation registration | immutable candidates and DTOs | fallback policy or outcome mutation |
+| P6-C2 | `internal/resolution/resolve.go` | preserve-only link to the P6-C1 resolver-stage coordinator | immutable candidates and DTOs | edits, fallback policy, or outcome mutation |
+| P6-D | `internal/resolution/emit.go` | resolution-output serialization coordinator link only | immutable ResolutionOutcome | classification policy or option parsing |
+| P6-C3 | `internal/resolution/outcome_status.go` (NEW) | status-matrix registration adapter | immutable outcome status contract | surface traversal or heuristic classification |
+| P6-C2 | `internal/resolution/declaration_security.go` (NEW) | security/budget registration adapter | external-symbol descriptors and profile | declaration source loading or repository File creation |
+| P6-D | `internal/graphhealth/diagnostics.go` | structured-outcome diagnostic projection adapter | immutable ResolutionOutcome | target-text name guessing |
+| P6-B | `internal/providers/tsjs/definitions.go` | preserve-only TS definition registration adapter | ScopeIR facts | declaration-universe source loading |
+| P6-B | `internal/providers/tsjs/imports.go` | preserve-only module-fact registration adapter | P4 facts | declaration-universe source loading |
+| P6-C1 | `internal/resolution/import_resolution.go` | preserve-only module-path registration adapter | immutable P5 ModuleRef | declaration-universe ownership |
+| P6-D | `internal/resolution/testdata/ambient/external-isolation-input.json` (NEW fixture) | independent five-surface default/opt-in expected sets | policy and adapter tests | generated runtime output |
+| P6-D | `internal/testdata/generated/p6-d-external-isolation.json` (NEW generated evidence) | observed five-surface default/opt-in records | policy and adapter owners | fixture source text |
+
+Repeated existing coordinator paths in this table retain one responsibility and one write-owner: P6-C1 is the sole write-owner for `internal/resolution/resolve.go`; P6-C2 consumes that coordinator preserve-only and registers behavior through its dedicated owner interface. `internal/resolution/emit.go` only serializes immutable resolution output; `internal/providers/tsjs/imports.go` and `internal/resolution/import_resolution.go` are preserve-only links to their already-owned syntax/path coordination. Multiple module links do not authorize a second business responsibility, a second write-owner, or new semantic logic in those coordinators.
+
+Each row receives its own file-detail/impact, source, build, behavior, review, detect, and commit evidence. No row may be collapsed into a catch-all “external adapters” owner. `E6-P6-ADAPTERTEST1` is the exact behavior-test-owner manifest for the five semantic surfaces (context, impact, rename, process, and group); `E6-P6D-TRANSPORT1` remains the separate five-transport DTO propagation manifest.
+
+For every P6-C1/C2/C3/D adapter or projection slice, the copied Acceptance `REVIEW1` line is superseded by a conjunctive binding to its exact `IMPACT1`, `SRC1`, `BUILD1`, behavior `TEST1`/`TARGET1`/`ORACLE1`, `REVIEW1`, `DETECT1`, and `COMMIT1` IDs. The seven source rows, five isolation rows, five transport behavior matrices, catalog rows, and Promise/Math row must each be present in the ledger before P6-D or Child 07 can consume the handoff.
+
+For every P6 job, the evidence-ledger row whose first column equals that exact job ID is normatively incorporated as the job's `Acceptance / Evidence IDs` extension. All listed IDs are conjunctive; any plan/ledger mismatch or missing detect/commit row fails acceptance.
+
+#### P6-A/B direct acceptance override
+
+The copied P6-A Implementation Gate/Acceptance is replaced for execution by: capability schema, immutable outcome metadata, and one generation-bound `DeclarationCapabilityDescriptor`, with `E2-PNC-AMBIENT1A`, `E2-PNC-AMBIENT1S`, `E6-P6A-IMPACT1`, `E6-P6A-SRC1`, `E6-P6A-BUILD1`, `E6-P6A-TEST1`, `E6-P6A-REVIEW1`, `E6-P6A-DETECT1`, and `E6-P6A-COMMIT1` all accepted. It may not claim any declaration-source load or parser/merge result.
+
+The copied P6-B stdlib-only Implementation Gate/Acceptance is replaced for execution by: all seven declaration-source categories and the full parser/merge matrix, including project-owned `.d.ts`, installed package declarations, ambient modules, and global augmentations, plus the exact catalog generator/asset/manifest/loader owner rows and version-bound capability classification, with `E2-PNC-AMBIENT1B..1H`, `E2-PNC-AMBIENT1K`, `E6-P6-SOURCES1`, `E6-P6B-IMPACT1`, `E6-P6B-SRC1`, `E6-P6B-BUILD1`, `E6-P6B-TEST1`, `E6-P6B-BENCH1`, `E6-P6B-CATALOG1`, `E6-P6B-REVIEW1`, `E6-P6B-DETECT1`, and `E6-P6B-COMMIT1` all accepted. The copied package-declarations non-goal is historical and cannot be used to narrow this gate.
+
+The copied P6-C2 gate is also superseded by a per-origin materialization condition: `E2-PNC-AMBIENT1C`, `E2-PNC-AMBIENT1D`, `E2-PNC-AMBIENT1E`, `E2-PNC-AMBIENT1F`, `E2-PNC-AMBIENT1G`, and `E2-PNC-AMBIENT1K` must be accepted/consumed as applicable, and the external-symbol matrix must prove package, stdlib, intrinsic, ambient-module, and global-augmentation candidates without repository File creation. The copied P6-D adapter gate is also conjunctive with `E6-P6-ADAPTERTEST1` and `E2-PNC-AMBIENT1S`: each of the five semantic surface test owners must independently prove default exclusion, explicit opt-in inclusion, and no unauthorized rename edit, while every persisted/read projection exposes the same generation-bound capability descriptor, before P6-D can close.
+
+#### P6 outcome/conflict acceptance override
+
+The copied P6-C3/P6-D acceptance wording that permits an intrinsic Promise/Math result is historical and is superseded here. `P6-C3` closes only when `E2-PNC-AMBIENT1J`, `E2-PNC-AMBIENT1Q`, and `E2-PNC-AMBIENT1R` prove `resolved_external` for the three real target sites or an explicitly named external-capability failure in a negative fixture; `resolved_intrinsic` is forbidden. A parser/merge `conflict` decision must map to the dedicated `declaration_conflict` status row below and cannot be silently downgraded to `declaration_parse_failed` or a local gap.
+
+The following row is a mandatory extension to the copied P6 status matrix. It is intentionally declared in this overlay so the legacy P6 block remains byte-for-byte unchanged:
+
+| Code | Stage | Allowed target | Severity | Actionability | Retry policy | Graph-health projection |
+|------|-------|----------------|----------|---------------|--------------|-------------------------|
+| `declaration_conflict` | declaration/merge | `GapRef` plus conflicting candidates/provenance | error | declaration owner/input | retry only after an explicit source/merge-policy change | external_gap/conflict |
 
 ## Checklist
 
@@ -633,6 +799,7 @@ The top-level code is immutable for a source site; nested module/export/meaning/
   - Acceptance: final `git diff/status` contains no dead plan-created artifacts, supervisor passes the cleanup, and evidence records what was removed or preserved.
 - [ ] Pn-C: Close the plan.
   - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
+   - Overlay Gate: apply the mandatory Semantic Remediation Overlay; this is local-child closure, not campaign/release completion.
   - Work Steps:
     1. Run the required final validation for the accepted scope, including full build before final runtime validation. For app/runtime scopes, full build must include Docker image/container build.
     2. Start the real built Docker/container runtime for app/runtime validation. If Docker cannot be built or started, record the blocker and do not substitute a host dev server.
@@ -641,8 +808,10 @@ The top-level code is immutable for a source site; nested module/export/meaning/
     5. Run Anvien detect-changes before commit when implementation work was performed.
     6. Record final validation, detect-changes, benchmark, and commit evidence.
     7. Commit the completed scope and verify the worktree state.
-  - Implementation Gate: Pn-A and Pn-B must pass or record blockers.
-  - Acceptance: final evidence is recorded, required commits exist, and the worktree state is known.
+     8. Refresh Child 07 actual-status from the latest accepted Child 06 evidence, append its refresh-log row, and update its next action/work steps before handoff.
+     9. Record qualified `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1`; bind every required evidence-ledger row and the exact per-job ownership table.
+   - Implementation Gate: Pn-A/Pn-B, all local implementation gates including capability/completeness and external-isolation metrics, full evidence rows, ownership tables, and the successor refresh must pass; pending P7 is not a local-child blocker.
+   - Acceptance: local closure evidence, commit, `E2-PNC-NEXTSTATUS1`, and `E2-PNC-HANDOFF1` are recorded and the worktree is known; campaign/release closure remains separate.
 
 ## Risk Notes
 

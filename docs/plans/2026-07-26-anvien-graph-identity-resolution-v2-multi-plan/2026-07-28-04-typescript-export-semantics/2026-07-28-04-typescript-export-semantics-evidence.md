@@ -173,6 +173,37 @@ P4 projection evidence must prove `21/21` bounded direct exports against the exa
 
 `E4-P4C2-DETECT1` records the Anvien-side change/boundary check before the validation-artifact commit; `E4-P4C2-COMMIT1` records that isolated commit and confirms no target artifact was committed.
 
+### P4 semantic correction binding
+
+The execution rows below are conjunctive extensions to the base P4 evidence rows. Every listed fact/boundary ID remains pending until independently proved.
+
+| Plan job | Required correction evidence IDs | Status |
+|---|---|---|
+| P4-A | `E2-PNC-EXPORT1A` | pending |
+| P4-B | `E2-PNC-EXPORT1B` | pending |
+| P4-B1 | `E2-PNC-EXPORT1C` | pending |
+| P4-C | `E2-PNC-EXPORT1C`, `E2-PNC-EXPORT1D` | pending |
+| P4-C2 | `E4-P4C2-IMPACT1`, `E4-P4C2-SRC1`, `E4-P4C2-BUILD1`, `E2-PNC-EXPORT1A`, `E2-PNC-EXPORT1B`, `E2-PNC-EXPORT1C`, `E2-PNC-EXPORT1D`, `E4-P4-FACT1` | pending |
+
 ## Closure Evidence
 
-Reserved for final Supervisor, commit, successor-status, and handoff evidence when this child reaches closure.
+Closure is pending; these are mandatory declarations, not proof. The full evidence row for every implementation slice remains conjunctive with its plan Acceptance.
+
+| Evidence ID | Source slice | Local slice | Required proof | Commit | Owner decision | Successor opening condition | Freshness evidence | Status |
+|-------------|--------------|-------------|---------------|--------|---------------|----------------------------|--------------------|--------|
+| `E2-PNC-OVERLAY1` | P8-C | Pn-C | semantic overlay precedence and local-child-versus-campaign closure decision | pending | pending | local checkpoint only | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-OWNERSHIP1` | P8-C | Pn-C | complete 15-job ownership table with exact production/test/generated/fixture paths and no wildcard/TBD | pending | pending | all 15 jobs have rows | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-LEDGER1` | P8-C | Pn-C | every slice Acceptance bound to complete IMPACT/SRC/BUILD/TEST-oracle/REVIEW/DETECT/COMMIT row | pending | pending | no review-only closure | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-EXPORT1` | P4-A..P4-C2 | Pn-C | export correction index | pending | pending | all four subrows accepted | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-EXPORT1A` | P4-A | P4-A | one ModuleRequestFact per module-specifier site with producer/source-site manifest | pending | pending | immutable P4 fact | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-EXPORT1B` | P4-B | P4-B | one ImportBindingFact per local import, meaning lane, no duplicate DefinitionFact | pending | pending | immutable P4 fact | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-EXPORT1C` | P4-B1/P4-C | P4-C | syntactic ExportFact and exact directExportedDefinitionCount; access visibility separate | pending | pending | P4 direct state only | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-EXPORT1D` | P4-C | P4-C | immutable P4-to-P5 boundary; no barrel/reachability/public-API fields populated by P4 | pending | pending | exact Child 04 handoff | `E2-PNC-REFRESH1` | pending |
+| `E4-P4-FACT1` | P4-A..P4-C | P4 | child-level index linking four fact rows to exact job rows | pending | pending | all P4 fact producers accepted | `E2-PNC-REFRESH1` | pending |
+| `E4-P4-ADAPTERS1` | P4-C1A..P4-C1I | P4-C1* | complete adapter evidence binding; no review-only closure | pending | pending | 9/9 adapters | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-REFRESH1` | P8-C | Pn-C | current HEAD/graph/file-detail snapshot and successor-status refresh-log/next-action/work-step update | pending | pending | Child 05 actual-status fresh | `anvien analyze E:\Anvien --force --json`; `git rev-parse HEAD` | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-MANIFEST1` | Child 02 P2-A | P0 | inspect-only authoritative manifest proof | n/a | pending | Child 04 consumes without reinterpretation | Child 02 qualified handoff | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-HANDSHAKE1` | Child 02 P2-A | P0 | inspect-only authoritative handshake proof | n/a | pending | Child 04 consumes without reinterpretation | Child 02 qualified handoff | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-METADATA1` | Child 02 P2-A | P0 | inspect-only authoritative metadata inventory | n/a | pending | Child 04 consumes without reinterpretation | Child 02 qualified handoff | pending |
+| `E2-PNC-NEXTSTATUS1` | P8-C | Pn-C | successor Child 05 actual-status refreshed from latest accepted evidence; refresh-log, next-action, and work-step rows updated | pending | pending | Child 05 may open only after exact qualified handoff | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-HANDOFF1` | P8-C | Pn-C | qualified Child 04 local evidence, commit, predecessor gate, owner decision, and Child 05 opening condition | pending | pending | `2026-07-28-04-typescript-export-semantics::E2-PNC-NEXTSTATUS1` accepted after refreshing Child 05 | `E2-PNC-REFRESH1` | pending |

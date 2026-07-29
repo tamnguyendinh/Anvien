@@ -101,3 +101,38 @@ For performance release gates, capture at least five comparable runs before v2 c
 - P1-A contract ratification and P8 Supervisor/cleanup/closure are evidence gates, not benchmarkable product/runtime work.
 - Build/test/e2e pass/fail belongs in the evidence ledger; only measured duration, count, size, throughput, latency, memory, parity, and accuracy ratios are recorded here.
 - A final plan cannot close while any required P7 performance row remains pending. A budget exception must contain measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.
+
+## B7 Semantic Correction Metrics
+
+| Metric | Unit | Baseline | Latest | Final | Target | Evidence |
+|--------|------|----------|--------|-------|--------|----------|
+| default external isolation across context/impact/rename/process/groups | leaked records | unknown | pending | pending | 0 | `E2-PNC-FINALORACLE1A`, `E2-PNC-FINALORACLE1B`, `E2-PNC-FINALORACLE1C`, `E2-PNC-FINALORACLE1D`, `E2-PNC-FINALORACLE1E` |
+| explicit `include_external` opt-in result | included/expected | 0/0 | pending | pending | exact opt-in set | `E2-PNC-FINALORACLE1A`, `E2-PNC-FINALORACLE1B`, `E2-PNC-FINALORACLE1C`, `E2-PNC-FINALORACLE1D`, `E2-PNC-FINALORACLE1E`, `E2-PNC-FINALORACLE1F` |
+| zero-physical-declaration barrel surface | exposed/expected entries | 0/0 | pending | pending | exact syntax-derived surface | `E2-PNC-FINALORACLE1G` |
+| physical path-resolution and `IMPORTS` count delta | count delta | 0 | pending | pending | 0 | `E2-PNC-FINALORACLE1H` |
+| Promise/Math invalid intrinsic outcomes | count | unknown | pending | pending | 0 | `E2-PNC-FINALORACLE1I` |
+| context default external leakage | records | unknown | pending | pending | 0 | `E2-PNC-FINALORACLE1A` |
+| context explicit opt-in set | included/expected | 0/0 | pending | pending | exact | `E2-PNC-FINALORACLE1A` |
+| impact default external leakage | records | unknown | pending | pending | 0 | `E2-PNC-FINALORACLE1B` |
+| impact explicit opt-in set | included/expected | 0/0 | pending | pending | exact | `E2-PNC-FINALORACLE1B` |
+| rename default external candidates/edits | candidates/edits | unknown | pending | pending | 0 edits and no candidates by default | `E2-PNC-FINALORACLE1C` |
+| rename explicit opt-in candidates | included/expected | 0/0 | pending | pending | exact, non-editable unless separately authorized | `E2-PNC-FINALORACLE1C` |
+| process default external members | members | unknown | pending | pending | 0 | `E2-PNC-FINALORACLE1D` |
+| process explicit opt-in members | included/expected | 0/0 | pending | pending | exact | `E2-PNC-FINALORACLE1D` |
+| groups default external members/contracts | members/contracts | unknown | pending | pending | 0 | `E2-PNC-FINALORACLE1E` |
+| groups explicit opt-in members/contracts | included/expected | 0/0 | pending | pending | exact | `E2-PNC-FINALORACLE1E` |
+| option propagation consistency | surfaces with same typed option / 5 | 0/5 | pending | pending | 5/5 | `E2-PNC-FINALORACLE1F` |
+| graph-generation capability descriptors | descriptors / graph generations | 0/1 | pending | pending | exactly 1/1 with accepted mode/confidence/completeness and generation/config/catalog binding | `E2-PNC-FINALORACLE1K` |
+| capability descriptor/outcome consistency | non-stronger consistent outcomes / outcomes | 0/0 | pending | pending | 100% | `E2-PNC-FINALORACLE1K` |
+| capability descriptor S0-S11 differences | differing descriptors / applicable surfaces | unknown | pending | pending | 0 and no mixed-generation references | `E2-PNC-FINALORACLE1K` |
+| zero-barrel physical declarations | count | unknown | pending | pending | 0 | `E2-PNC-FINALORACLE1G` |
+| zero-barrel resolved export entries | count | 0 | pending | pending | >0 and exact expected set | `E2-PNC-FINALORACLE1G` |
+| physical path-resolution count before/after | before,after | unknown/unknown | pending | pending | equal absolute values | `E2-PNC-FINALORACLE1H` |
+| syntactic IMPORTS count before/after | before,after | unknown/unknown | pending | pending | equal absolute values | `E2-PNC-FINALORACLE1H` |
+| Promise target outcome | allowed/observed target sites | 0/1 | pending | pending | `resolved_external` (target denominator 1/1) | `E2-PNC-FINALORACLE1I` |
+| Math.max target outcome | allowed/observed target sites | 0/1 | pending | pending | `resolved_external` (target denominator 1/1) | `E2-PNC-FINALORACLE1I` |
+| Math.min target outcome | allowed/observed target sites | 0/1 | pending | pending | `resolved_external` (target denominator 1/1) | `E2-PNC-FINALORACLE1I` |
+| negative external-capability fixture outcomes | allowed/observed negative sites | 0/0 | pending | pending | explicit external-capability failure only; never part of target 3/3 | `E2-PNC-FINALORACLE1J` |
+| P7 job ownership rows | exact rows / P7 jobs | 0/3 | pending | pending | 100% exact production/test/generated/fixture/evidence rows | `E7-P7-OWNERSHIP1` |
+
+Child 07 is the campaign/release closure owner. Its P7 performance rows are mandatory for terminal closure; no earlier child is held open by these rows.

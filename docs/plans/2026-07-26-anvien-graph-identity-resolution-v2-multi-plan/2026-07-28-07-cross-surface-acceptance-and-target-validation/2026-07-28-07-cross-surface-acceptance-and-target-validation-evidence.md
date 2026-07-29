@@ -190,6 +190,52 @@ P7 parity evidence uses one row per exact surface, not a six-surface aggregate:
 
 Each row must report `differing_records == 0` and `orphan_refs == 0`; native and fallback Cypher are never merged into one result.
 
+### E7 semantic correction binding
+
+The copied E7 block above remains historical provenance. The following declarations and full job rows are conjunctive execution extensions and remain pending until proved.
+
+| Reserved correction evidence | Required proof | Status |
+|---|---|---|
+| `E7-P7A-IMPACT1` | P7-A validation-owner file/scope blast-radius evidence | pending |
+| `E7-P7A-SRC1` | P7-A validation-source inspection evidence | pending |
+| `E7-P7B-IMPACT1` | P7-B validation-owner file/scope blast-radius evidence | pending |
+| `E7-P7B-SRC1` | P7-B validation-source inspection evidence | pending |
+| `E7-P7B-BUILD1` | full build before target validation | pending |
+| `E7-P7C-IMPACT1` | P7-C validation-owner file/scope blast-radius evidence | pending |
+| `E7-P7C-SRC1` | P7-C validation-source inspection evidence | pending |
+
+| Plan job | Complete required evidence IDs | Status |
+|---|---|---|
+| P7-A | `E7-P7A-IMPACT1`, `E7-P7A-SRC1`, `E7-P7A-BUILD1`, `E7-P7A-DETERMINISM1`, `E7-P7A-VERSION1`, `E7-P7A-FAULT1`, `E7-P7A-REVIEW1`, `E7-P7A-DETECT1`, `E7-P7A-COMMIT1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-MANIFEST1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-HANDSHAKE1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-METADATA1` | pending |
+| P7-B | `E7-P7B-IMPACT1`, `E7-P7B-SRC1`, `E7-P7B-BUILD1`, `E7-P7B-TARGET1`, `E7-P7B-ORACLE1`, `E7-P7B-BOUNDARY1`, `E7-P7B-REVIEW1`, `E7-P7B-DETECT1`, `E7-P7B-COMMIT1`, `E2-PNC-FINALORACLE1G`, `E2-PNC-FINALORACLE1H`, `E2-PNC-FINALORACLE1I`, `E2-PNC-FINALORACLE1J` | pending |
+| P7-C | `E7-P7C-IMPACT1`, `E7-P7C-SRC1`, `E7-P7C-BUILD1`, `E7-P7C-RUNTIME1`, `E7-P7C-PLAY1`, `E7-P7C-BENCH1`, `E7-P7C-NATIVEBENCH1`, `E7-P7C-FALLBACKBENCH1`, `E7-P7C-S0-PARITY1`, `E7-P7C-S1-PARITY1`, `E7-P7C-S2-PARITY1`, `E7-P7C-S3-PARITY1`, `E7-P7C-S4-PARITY1`, `E7-P7C-S5-PARITY1`, `E7-P7C-S6-PARITY1`, `E7-P7C-S7-PARITY1`, `E7-P7C-S8-PARITY1`, `E7-P7C-S9-PARITY1`, `E7-P7C-S10-PARITY1`, `E7-P7C-S11-PARITY1`, `E7-P7C-REVIEW1`, `E7-P7C-DETECT1`, `E7-P7C-COMMIT1`, `E2-PNC-FINALORACLE1A`, `E2-PNC-FINALORACLE1B`, `E2-PNC-FINALORACLE1C`, `E2-PNC-FINALORACLE1D`, `E2-PNC-FINALORACLE1E`, `E2-PNC-FINALORACLE1F`, `E2-PNC-FINALORACLE1K` | pending |
+
 ## Closure Evidence
 
-Reserved for final Supervisor, commit, successor-status, and handoff evidence when this child reaches closure.
+Closure is pending; these are mandatory declarations, not proof. The full evidence row for every validation slice remains conjunctive with its plan Acceptance.
+
+| Evidence ID | Source slice | Local slice | Required proof | Commit | Owner decision | Successor opening condition | Freshness evidence | Status |
+|-------------|--------------|-------------|---------------|--------|---------------|----------------------------|--------------------|--------|
+| `E2-PNC-OVERLAY1` | P8-C | Pn-C | semantic overlay precedence and local-checkpoint-versus-campaign-release distinction | pending | pending | terminal only | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-OWNERSHIP1` | P8-C | Pn-C | complete three-job ownership table with exact production/test/generated/fixture/evidence paths and no wildcard/TBD | pending | pending | all three jobs have rows | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-LEDGER1` | P8-C | Pn-C | every slice Acceptance bound to complete IMPACT/SRC/BUILD/TEST-oracle/REVIEW/DETECT/COMMIT row | pending | pending | no review-only closure | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-FINALORACLE1` | P7-A..P7-C | Pn-C | final semantic-oracle index | pending | pending | all eleven subrows accepted | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-FINALORACLE1A` | P7-C | P7-C | context default exclusion and explicit opt-in expected set | pending | pending | exact adapter row | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-FINALORACLE1B` | P7-C | P7-C | impact default exclusion and explicit opt-in expected set | pending | pending | exact adapter row | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-FINALORACLE1C` | P7-C | P7-C | rename default exclusion/non-editability and explicit opt-in candidate set | pending | pending | exact adapter row | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-FINALORACLE1D` | P7-C | P7-C | process default exclusion and explicit opt-in expected set | pending | pending | exact adapter row | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-FINALORACLE1E` | P7-C | P7-C | groups default exclusion and explicit opt-in expected set | pending | pending | exact adapter row | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-FINALORACLE1F` | P7-C | P7-C | option propagation and cross-surface consistency without aggregate-only substitution | pending | pending | five surfaces agree | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-FINALORACLE1G` | P7-B/P7-C | P7-B | zero-physical barrel absolute counts and terminal proof | pending | pending | physical=0, resolved>0 | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-FINALORACLE1H` | P7-B/P7-C | P7-B | before/after physical path and syntactic IMPORTS counts | pending | pending | equal absolute values | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-FINALORACLE1I` | P7-B | P7-B | real-target Promise/Math per-site `resolved_external` `3/3` matrix and negative intrinsic assertion | pending | pending | target denominator is exactly three | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-FINALORACLE1J` | P7-B | P7-B | explicitly named negative-fixture external-capability outcomes; no intrinsic | pending | pending | fixture failures never enter target denominator | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-FINALORACLE1K` | P7-C | P7-C | independent generation-level DeclarationCapabilityDescriptor semantic oracle plus S0-S11 parity and outcome-consistency matrix | pending | pending | exactly one descriptor per generation; zero stronger outcome claims and zero projection differences | `E2-PNC-REFRESH1` | pending |
+| `E7-P7-OWNERSHIP1` | P7-A..P7-C | P7 | exact P7-A/P7-B/P7-C production/test/generated/fixture/evidence ownership manifest | pending | pending | all named jobs have rows | `E2-PNC-REFRESH1` | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-MANIFEST1` | Child 02 P2-A | P7-A | inspect-only persisted manifest metadata proof | n/a | pending | P7 cannot accept incomplete manifest | Child 02 qualified handoff | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-HANDSHAKE1` | Child 02 P2-A | P7-A | inspect-only handshake/mismatch proof | n/a | pending | P7 cannot accept incomplete handshake | Child 02 qualified handoff | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-METADATA1` | Child 02 P2-A | P7-A | inspect-only required metadata inventory | n/a | pending | P7 cannot accept omitted fields | Child 02 qualified handoff | pending |
+| `E2-PNC-REFRESH1` | P8-C | Pn-C | current HEAD/graph/file-detail snapshot and terminal roadmap refresh-log/next-action/work-step update with explicit no successor | pending | pending | roadmap current | `anvien analyze E:\Anvien --force --json`; `git rev-parse HEAD` | pending |
+| `E2-PNC-FD1` | P0 | P0 | fresh roadmap/Child 07 plan file-detail evidence (`roadmap outbound=28`; Child 07 plan related-file count=1) | n/a | recorded | documentation graph current at HEAD | `anvien file-detail` output at graph timestamp | recorded |
+| `E2-PNC-NEXTSTATUS1` | P8-C | Pn-C | terminal roadmap/campaign refresh with explicit no-successor row | pending | pending | campaign release decision | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-HANDOFF1` | P8-C | Pn-C | terminal campaign checkpoint, final evidence, owner decision, and release opening/closure decision | pending | pending | all six qualified predecessor handoffs | `E2-PNC-REFRESH1` | pending |

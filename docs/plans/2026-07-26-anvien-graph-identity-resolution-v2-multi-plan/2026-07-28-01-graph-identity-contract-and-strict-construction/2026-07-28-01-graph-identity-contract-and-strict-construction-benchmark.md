@@ -83,8 +83,15 @@ For performance release gates, capture at least five comparable runs before v2 c
 | P1 | graph JSON size | bytes | capture pre-change in P1-E | pending | pending | record and approve before cutover | pending | `E1-P1E-BENCH1` |
 | P1 | peak analyze RSS | bytes | five-run pre-cutover baseline required | pending | pending | final <= baseline +15% | pending | `E1-P1E-BENCH1` |
 
+## B1 Semantic Correction Metrics
+
+| Metric | Unit | Baseline | Latest | Final | Target | Evidence |
+|--------|------|----------|--------|-------|--------|----------|
+| P1 job ownership rows | accepted exact rows / 11 jobs | 0/11 | pending | pending | 10/10 implementation rows with production/test/generated/fixture paths plus 1/1 contract-only authority-document row with reasoned N/A fields | `E1-P1-OWNERSHIP1` |
+| P1 slice complete-evidence bindings | complete rows / source slices | 0/11 | pending | pending | 11/11 with impact/source/build/behavior/review/detect/commit | `E1-P1-LEDGER1` |
+
 ## Non-Benchmarkable Notes
 
 - P1-A contract ratification and P8 Supervisor/cleanup/closure are evidence gates, not benchmarkable product/runtime work.
 - Build/test/e2e pass/fail belongs in the evidence ledger; only measured duration, count, size, throughput, latency, memory, parity, and accuracy ratios are recorded here.
-- A final plan cannot close while any required P7 performance row remains pending. A budget exception must contain measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.
+- Local child closure is allowed after this child's local benchmark/evidence gates and qualified handoff pass. Pending P7 performance rows block only campaign/release closure owned by Child 07. Any budget exception still requires measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.

@@ -164,6 +164,61 @@ P6 status/security proofs:
 
 P6 evidence must include catalog provenance/integrity/version, project profile selection, language isolation, local package present/absent cases, P6-C1 immutable candidates, P6-C2 authorization/materialization results, the exact P6-C3 status matrix, lazy ExternalSymbol materialization, and exact target Promise/Math `resolved_external` outcomes (`3/3`).
 
+### E6 semantic correction binding
+
+The copied E6 rows above remain historical provenance. The execution rows below are conjunctive extensions; every listed capability/source/isolation/ownership ID remains pending until proved.
+
+- `E6-P6B-CATALOG1`: exact catalog generator, immutable asset, manifest, loader, and their dedicated test/fixture/generated-evidence ownership rows, including version/fingerprint mismatch cases.
+- `E6-P6D-TRANSPORT1`: five exact MCP/CLI/HTTP/process/group transport behavior matrices proving the shared DTO's default, opt-in, and fail-closed invalid propagation.
+- `E6-P6-ADAPTERTEST1`: five exact semantic-surface behavior-test owners for context, impact, rename, process, and group traversal; each proves default exclusion, explicit opt-in inclusion, and the rename no-edit guard independently.
+
+| Plan job | Required correction evidence IDs | Status |
+|---|---|---|
+| P6-A | `E2-PNC-AMBIENT1A`, `E2-PNC-AMBIENT1S` | pending |
+| P6-B | `E2-PNC-AMBIENT1A`, `E2-PNC-AMBIENT1B`, `E2-PNC-AMBIENT1C`, `E2-PNC-AMBIENT1D`, `E2-PNC-AMBIENT1E`, `E2-PNC-AMBIENT1F`, `E2-PNC-AMBIENT1G`, `E2-PNC-AMBIENT1H`, `E2-PNC-AMBIENT1K`, `E6-P6-SOURCES1`, `E6-P6B-CATALOG1` | pending |
+| P6-C1 | `E2-PNC-AMBIENT1D`, `E2-PNC-AMBIENT1E`, `E2-PNC-AMBIENT1F` | pending |
+| P6-C2 | `E2-PNC-AMBIENT1C`, `E2-PNC-AMBIENT1D`, `E2-PNC-AMBIENT1E`, `E2-PNC-AMBIENT1F`, `E2-PNC-AMBIENT1G`, `E2-PNC-AMBIENT1K` | pending |
+| P6-C3 | `E2-PNC-AMBIENT1A`, `E2-PNC-AMBIENT1H`, `E2-PNC-AMBIENT1J`, `E2-PNC-AMBIENT1Q`, `E2-PNC-AMBIENT1R`, `E2-PNC-AMBIENT1S` | pending |
+| P6-D | `E2-PNC-AMBIENT1I`, `E2-PNC-AMBIENT1L`, `E2-PNC-AMBIENT1M`, `E2-PNC-AMBIENT1N`, `E2-PNC-AMBIENT1O`, `E2-PNC-AMBIENT1P`, `E2-PNC-AMBIENT1J`, `E2-PNC-AMBIENT1Q`, `E2-PNC-AMBIENT1R`, `E2-PNC-AMBIENT1S`, `E6-P6-SOURCES1`, `E6-P6D-TRANSPORT1`, `E6-P6-ADAPTERTEST1` | pending |
+
+`E6-P6-SOURCES1` is a manifest binding, not a summary waiver. Its normative path/responsibility rows are the complete ownership table in the companion plan (`P6-A=4`, `P6-B=22`, `P6-C1=6`, `P6-C2=7`, `P6-C3=5`, `P6-D=40`, `84` rows total). At pre-flight the owner records a canonical row serialization/hash and verifies that every production, test, generated, and fixture path appears exactly in that table. P6-C1 is the sole write-owner for shared `resolve.go`; P6-C2 consumes it preserve-only. Other existing coordinators remain single-write-owner links and are forbidden from adding semantic logic in preserve-only rows; a second write-owner fails the evidence gate. Declaration records must have one disjoint origin bucket and one orthogonal declaration-form lane, so `ambient_module`/`global_augmentation` coverage cannot inflate the physical-source denominator.
+
 ## Closure Evidence
 
-Reserved for final Supervisor, commit, successor-status, and handoff evidence when this child reaches closure.
+Closure is pending; these are mandatory declarations, not proof. The full evidence row for every implementation slice remains conjunctive with its plan Acceptance.
+
+| Evidence ID | Source slice | Local slice | Required proof | Commit | Owner decision | Successor opening condition | Freshness evidence | Status |
+|-------------|--------------|-------------|---------------|--------|---------------|----------------------------|--------------------|--------|
+| `E2-PNC-OVERLAY1` | P8-C | Pn-C | semantic overlay precedence and local-child-versus-campaign closure decision | pending | pending | local checkpoint only | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-OWNERSHIP1` | P8-C | Pn-C | complete six-job ownership table with exact production/test/generated/fixture paths and no wildcard/TBD | pending | pending | all six jobs have rows | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-LEDGER1` | P8-C | Pn-C | every slice Acceptance bound to complete IMPACT/SRC/BUILD/TEST-oracle/REVIEW/DETECT/COMMIT row | pending | pending | no review-only closure | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1` | P6-A..P6-D | Pn-C | ambient correction index | pending | pending | all nineteen subrows accepted | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1A` | P6-A | P6-A | field-level capability/confidence/completeness enum, immutable outcome schema, and version-bound exact/structural/degraded classification matrix | pending | pending | schema and three classification cases accepted before loader | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1B` | P6-B | P6-B | repository declaration source load/parse/merge evidence | pending | pending | source row complete | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1C` | P6-B | P6-B | project-owned .d.ts source load/parse/merge evidence | pending | pending | source row complete | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1D` | P6-B | P6-B | installed package declaration source load/parse/merge evidence | pending | pending | source row complete | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1E` | P6-B/P6-C1/P6-C2 | P6-C2 | standard-library catalog source evidence | pending | pending | source row complete | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1F` | P6-B | P6-B | ambient-module source evidence | pending | pending | source row complete | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1G` | P6-B | P6-B | global-augmentation source evidence | pending | pending | source row complete | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1H` | P6-B/P6-C2/P6-C3 | P6-C3 | valid/malformed/duplicate/overload/augmentation/conflict parser-merge matrix, including `declaration_conflict` status mapping | pending | pending | all matrix cases and explicit conflict status | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1I` | P6-D | P6-D | context default/include_external row | pending | pending | context surface complete | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1J` | P6-C3/P6-D | P6-D | Promise per-site allowed-outcome row; zero intrinsic | pending | pending | terminal oracle consumes exact row | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1K` | P6-B/P6-C2 | P6-C2 | language-intrinsic declaration source evidence, independent of stdlib | pending | pending | source row complete | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1L` | P6-D | P6-D | impact default/include_external row | pending | pending | impact surface complete | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1M` | P6-D | P6-D | rename default/include_external row and non-editability | pending | pending | rename surface complete | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1N` | P6-D | P6-D | process default/include_external row | pending | pending | process surface complete | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1O` | P6-D | P6-D | groups default/include_external row | pending | pending | groups surface complete | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1P` | P6-D | P6-D | typed ExternalTraversalOptions schema-version/propagation/default/invalid-option row | pending | pending | five surfaces receive schema version 1 and the same DTO | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1Q` | P6-C3/P6-D | P6-D | Math.max per-site allowed-outcome row; zero intrinsic | pending | pending | terminal oracle consumes exact row | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1R` | P6-C3/P6-D | P6-D | Math.min per-site allowed-outcome row; zero intrinsic | pending | pending | terminal oracle consumes exact row | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-AMBIENT1S` | P6-A/P6-C3/P6-D | P6-D | one immutable DeclarationCapabilityDescriptor per graphGeneration plus outcome-consistency and S0-S11 projection parity | pending | pending | descriptor mode/confidence/completeness and generation/config/catalog binding are exact | `E2-PNC-REFRESH1` | pending |
+| `E6-P6-SOURCES1` | P6-A..P6-D | P6 | child-level source-origin/form and owner manifest with exact production/test/generated/fixture rows; the detailed rows are the normative table in the companion plan and are checked by job/path count and responsibility hash | pending | pending | all named jobs have rows; origins are disjoint and forms are orthogonal | `E2-PNC-REFRESH1` | pending |
+| `E6-P6B-CATALOG1` | P6-B | P6-B | exact catalog generator/asset/manifest/loader and dedicated behavior-test ownership with version/fingerprint mismatch proof | pending | pending | catalog rows complete | `E2-PNC-REFRESH1` | pending |
+| `E6-P6D-TRANSPORT1` | P6-D | P6-D | five exact transport behavior matrices and shared DTO default/opt-in/invalid propagation proof | pending | pending | transport rows complete | `E2-PNC-REFRESH1` | pending |
+| `E6-P6-ADAPTERTEST1` | P6-D | P6-D | five exact semantic-surface behavior-test owner rows for context, impact, rename, process, and group traversal, each bound to schema-version 1 | pending | pending | 5/5 surface owners, each with default/opt-in/no-edit assertions | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-REFRESH1` | P8-C | Pn-C | current HEAD/graph/file-detail snapshot and successor-status refresh-log/next-action/work-step update | pending | pending | Child 07 actual-status fresh | `anvien analyze E:\Anvien --force --json`; `git rev-parse HEAD` | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-MANIFEST1` | Child 02 P2-A | P0 | inspect-only authoritative manifest proof | n/a | pending | Child 06 consumes without reinterpretation | Child 02 qualified handoff | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-HANDSHAKE1` | Child 02 P2-A | P0 | inspect-only authoritative handshake proof | n/a | pending | Child 06 consumes without reinterpretation | Child 02 qualified handoff | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-METADATA1` | Child 02 P2-A | P0 | inspect-only authoritative metadata inventory | n/a | pending | Child 06 consumes without reinterpretation | Child 02 qualified handoff | pending |
+| `E2-PNC-NEXTSTATUS1` | P8-C | Pn-C | successor Child 07 actual-status refreshed from latest accepted evidence; refresh-log, next-action, and work-step rows updated | pending | pending | Child 07 may open only after exact qualified handoff | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-HANDOFF1` | P8-C | Pn-C | qualified Child 06 local evidence, commit, predecessor gate, owner decision, and Child 07 opening condition | pending | pending | `2026-07-28-06-ambient-external-resolution-and-diagnostics::E2-PNC-NEXTSTATUS1` accepted after refreshing Child 07 | `E2-PNC-REFRESH1` | pending |

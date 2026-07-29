@@ -81,8 +81,28 @@ For performance release gates, capture at least five comparable runs before v2 c
 | P5 | bounded barrel calls | resolved/expected | 0/2 | pending | pending | 2/2 | pending | `E5-P5D-TARGET1` |
 | P5 | corresponding false barrel gaps | count | 4 bounded gap rows | pending | pending | 0 | pending | `E5-P5D-PARITY1` |
 
+## B5 Semantic Correction Metrics
+
+| Metric | Unit | Baseline | Latest | Final | Target | Evidence |
+|--------|------|----------|--------|-------|--------|----------|
+| zero-physical-declaration barrel export surface | exposed/expected entries | 0/0 | pending | pending | exact non-empty syntax-derived surface | `E2-PNC-MODULE1D` |
+| physical path-resolution count delta after export traversal | count delta | 0 | pending | pending | 0 | `E2-PNC-MODULE1E` |
+| syntactic `IMPORTS` count delta after export traversal | count delta | 0 | pending | pending | 0 | `E2-PNC-MODULE1E` |
+| directExportedDefinitionCount / resolvedExportEntryCount / publicApiSymbolCount ownership | separate metrics | conflated | pending | pending | three separately reported owners | `E2-PNC-MODULE1A`, `E2-PNC-MODULE1B`, `E2-PNC-MODULE1C` |
+| directExportedDefinitionCount consumed from P4 | count | 0 | pending | pending | exact unchanged P4 count | `E2-PNC-MODULE1A` |
+| resolvedExportEntryCount | count | 0 | pending | pending | exact terminal entries, P5-C owner | `E2-PNC-MODULE1B` |
+| reachableThroughBarrel | reachable entries / expected | 0/0 | pending | pending | exact proof-backed reachability, P5-C owner | `E2-PNC-MODULE1B` |
+| publicApiSymbolCount | count | 0 | pending | pending | exact terminal set, P5-D owner | `E2-PNC-MODULE1C` |
+| zero-physical barrel physical declaration count | count | unknown | pending | pending | exactly 0 with `resolvedExportEntryCount > 0` | `E2-PNC-MODULE1D` |
+| zero-physical barrel terminal proof hops | complete/expected | 0/0 | pending | pending | 100% complete proof for every exposed entry | `E2-PNC-MODULE1D` |
+| physical path-resolution count before export traversal | count | unknown | pending | pending | record absolute baseline | `E2-PNC-MODULE1E` |
+| physical path-resolution count after export traversal | count | unknown | pending | pending | equal to before count | `E2-PNC-MODULE1E` |
+| syntactic `IMPORTS` count before export traversal | count | unknown | pending | pending | record absolute baseline | `E2-PNC-MODULE1E` |
+| syntactic `IMPORTS` count after export traversal | count | unknown | pending | pending | equal to before count | `E2-PNC-MODULE1E` |
+| P5 job ownership rows | exact rows / P5 jobs | 0/4 | pending | pending | 100% exact production/test/generated/fixture rows, with one write-owner for each shared coordinator | `E5-P5-DERIVED1` |
+
 ## Non-Benchmarkable Notes
 
 - P1-A contract ratification and P8 Supervisor/cleanup/closure are evidence gates, not benchmarkable product/runtime work.
 - Build/test/e2e pass/fail belongs in the evidence ledger; only measured duration, count, size, throughput, latency, memory, parity, and accuracy ratios are recorded here.
-- A final plan cannot close while any required P7 performance row remains pending. A budget exception must contain measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.
+- Local child closure is allowed after this child's local benchmark/evidence gates and qualified handoff pass. Pending P7 performance rows block only campaign/release closure owned by Child 07. Any budget exception still requires measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.

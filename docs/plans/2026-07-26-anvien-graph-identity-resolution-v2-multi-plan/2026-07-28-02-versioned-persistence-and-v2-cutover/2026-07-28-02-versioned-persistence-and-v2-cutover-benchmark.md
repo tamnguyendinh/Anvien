@@ -112,8 +112,19 @@ For performance release gates, capture at least five comparable runs before v2 c
 | P2 | fault-injected registry/group/cache publication boundaries | passed/total | inventory in P2-F6 | pending | pending | 100% retain prior epoch | pending | `E2-P2F6-FAULT1`, `E2-P2F6-RECOVERY1` |
 | P2 | concurrent two-repo group CAS conflicts | passed/total interleavings | no group-vector protocol | pending | pending | 100% conflict fail-closed / prior snapshot queryable | pending | `E2-P2F4-TEST1`, `E2-P2F6-FAULT1` |
 
+## B2 Semantic Correction Metrics
+
+| Metric | Unit | Baseline | Latest | Final | Target | Evidence |
+|--------|------|----------|--------|-------|--------|----------|
+| manifest/handshake required metadata coverage | fields present / required | 6/6 legacy fields | pending | pending | 15/15 manifest fields and 10/10 request fields, including all nine semantic-correction fields, exact spelling, and fingerprints | `E2-P2A-MANIFEST1`, `E2-P2A-HANDSHAKE1`, `E2-P2A-METADATA1` |
+| missing-fingerprint fail-closed cases | passed/total | 0/0 | pending | pending | 100% before body open | `E2-P2A-HANDSHAKE1`, `E2-P2A-METADATA1` |
+| persisted manifest metadata fields | present/required | 6/15 | pending | pending | 15/15, with typed non-empty values | `E2-P2A-MANIFEST1`, `E2-P2A-METADATA1` |
+| handshake request metadata fields | present/required | 3/10 | pending | pending | 10/10, including analyzer, column/position encoding support, and both fingerprints | `E2-P2A-HANDSHAKE1`, `E2-P2A-METADATA1` |
+| invalid/absent metadata body-open attempts | blocked/attempts | 0/0 | pending | pending | 100% blocked before every S0-S11 body/stream/cache open | `E2-P2A-HANDSHAKE1` |
+| P2 job ownership rows | accepted exact rows / 42 jobs | 0/42 | pending | pending | 41/41 implementation/validation rows with exact production/test/generated/fixture paths plus 1/1 documentation-only P2-A1 matrix-owner row with reasoned N/A fields | `E2-P2A-OWNERSHIP1` |
+
 ## Non-Benchmarkable Notes
 
 - P1-A contract ratification and P8 Supervisor/cleanup/closure are evidence gates, not benchmarkable product/runtime work.
 - Build/test/e2e pass/fail belongs in the evidence ledger; only measured duration, count, size, throughput, latency, memory, parity, and accuracy ratios are recorded here.
-- A final plan cannot close while any required P7 performance row remains pending. A budget exception must contain measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.
+- Local child closure is allowed after this child's local benchmark/evidence gates and qualified handoff pass. Pending P7 performance rows block only campaign/release closure owned by Child 07. Any budget exception still requires measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.

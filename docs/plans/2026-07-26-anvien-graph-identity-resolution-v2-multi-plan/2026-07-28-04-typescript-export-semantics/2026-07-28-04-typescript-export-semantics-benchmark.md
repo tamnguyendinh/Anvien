@@ -86,8 +86,25 @@ For performance release gates, capture at least five comparable runs before v2 c
 | P4 | export registry/group parity | differing records/fields; orphan refs | no v2 `S10` projection | pending | pending | 0 / 0 | pending | `E4-P4C1H-TEST1` |
 | P4 | export process/community parity | differing memberships/order; orphan refs | no v2 `S11` projection | pending | pending | 0 / 0 | pending | `E4-P4C1I-TEST1` |
 
+## B4 Semantic Correction Metrics
+
+| Metric | Unit | Baseline | Latest | Final | Target | Evidence |
+|--------|------|----------|--------|-------|--------|----------|
+| ModuleRequestFact producer coverage | emitted/eligible syntax sites | 0/0 | pending | pending | 100% exactly once | `E2-PNC-EXPORT1A` |
+| ImportBindingFact producer coverage | emitted/eligible bindings | 0/0 | pending | pending | 100% exactly once | `E2-PNC-EXPORT1B` |
+| directExportedDefinitionCount | count | 0 | pending | pending | exact P4 direct count | `E2-PNC-EXPORT1C` |
+| P4-derived-state leakage | forbidden fields populated in P4 | unknown | pending | pending | 0 | `E2-PNC-EXPORT1D` |
+| ModuleRequestFact production | emitted/eligible syntax sites | 0/0 | pending | pending | 100% exactly once | `E2-PNC-EXPORT1A` |
+| ImportBindingFact production | emitted/eligible local bindings | 0/0 | pending | pending | 100% exactly once | `E2-PNC-EXPORT1B` |
+| syntactic ExportFact production | emitted/eligible export sites | 0/0 | pending | pending | 100% exactly once | `E2-PNC-EXPORT1C` |
+| directExportedDefinitionCount | count | 0 | pending | pending | exact P4 direct count, independently reported | `E2-PNC-EXPORT1C` |
+| resolvedExportEntryCount (P5-owned, inspect-only) | count | 0 | pending | pending | not written by P4 | `E2-PNC-EXPORT1D` |
+| publicApiSymbolCount (P5-owned, inspect-only) | count | 0 | pending | pending | not written by P4 | `E2-PNC-EXPORT1D` |
+| P4 adapter complete-evidence bindings | complete rows / C1A-C1I jobs | 0/9 | pending | pending | 9/9 full evidence rows, not review-only | `E4-P4-ADAPTERS1` |
+| P4 job ownership rows | accepted exact rows / 15 implementation jobs | 0/15 | pending | pending | 15/15 exact production/test/generated/fixture rows before job open | `E2-PNC-OWNERSHIP1` |
+
 ## Non-Benchmarkable Notes
 
 - P1-A contract ratification and P8 Supervisor/cleanup/closure are evidence gates, not benchmarkable product/runtime work.
 - Build/test/e2e pass/fail belongs in the evidence ledger; only measured duration, count, size, throughput, latency, memory, parity, and accuracy ratios are recorded here.
-- A final plan cannot close while any required P7 performance row remains pending. A budget exception must contain measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.
+- Local child closure is allowed after this child's local benchmark/evidence gates and qualified handoff pass. Pending P7 performance rows block only campaign/release closure owned by Child 07. Any budget exception still requires measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.

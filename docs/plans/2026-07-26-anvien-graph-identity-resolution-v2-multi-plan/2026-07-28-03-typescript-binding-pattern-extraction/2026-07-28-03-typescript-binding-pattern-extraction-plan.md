@@ -277,6 +277,60 @@ Every implementation slice follows this order:
 - Every touched/new source and test file passes the one-file/one-responsibility review; `0` new catch-all files and `0` unrelated responsibility additions.
 - Every slice has a separate commit after full build, boundary validation, ledger update, Supervisor PASS, and detect-changes.
 
+## Semantic Remediation Overlay (mandatory)
+
+The copied P3 phase block above is historical provenance and remains unchanged. This overlay is the stronger execution contract; it controls whenever a copied gate is weaker or contradictory.
+
+All copied manifest/handshake field lists in this child are inspect-only historical context; the qualified Child 02 manifest contract (`2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-MANIFEST1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-HANDSHAKE1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-METADATA1`) is authoritative and is consumed without reinterpretation.
+
+- Local closure is a checkpoint, not campaign completion. Pending P7 rows do not block Child 03 local closure; campaign/release closure remains a Child 07 responsibility.
+- Before `P3-A` opens, the exact qualified predecessor gate is `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-HANDOFF1`; the S0–S11/reader-matrix baseline is consumed inspect-only and a generic “Child 02 handoff” phrase is non-accepting.
+- Every implementation slice Acceptance is conjunctive with the complete matching evidence-ledger row (`IMPACT`, `SRC`, `BUILD`, behavior `TEST`/oracle, `REVIEW`, `DETECT`, and `COMMIT`). A `REVIEW1` record alone cannot close a slice.
+- Before each job opens, record an exact ownership table with `File`, one unique responsibility, allowed links, and prohibited contents for every production, test, generated, and fixture file. Wildcards, `TBD`, catch-all owners, or mixed responsibilities fail the implementation gate.
+- `Pn-C` must create qualified `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1`; refresh Child 04 actual-status/refresh-log/next-action/work-step rows from the accepted Child 03 evidence before handoff, and bind the handoff to this child’s own `NEXTSTATUS1`, never Child 04’s future record.
+- The qualified names are `2026-07-28-03-typescript-binding-pattern-extraction::E2-PNC-NEXTSTATUS1` and `2026-07-28-03-typescript-binding-pattern-extraction::E2-PNC-HANDOFF1`; Child 04 must consume these namespaced records.
+- **Binding correction gates:** P3-C additionally requires `P3-B2A` PASS and commit; no graph projection may open while `for-of`/`for-in` contexts are pending. P3-A/B must emit a structured unsupported-pattern extraction diagnostic and countable metric. P3-B must prove binding emission even when type inference fails. P3-C/P3-C2 must prove six named `.map()` sites at `6/6` with `ResolutionGap=0`, nested same-name shadowing resolves to the correct `SymbolID`, and imports are counted exactly once.
+
+### Binding correction evidence and ownership contract (mandatory)
+
+`P3-B2A` is a hard predecessor of both `P3-C` and `P3-C2`, not merely an ordered work step. The `P3-C` implementation gate must record `E3-P3C-B2A-GATE1` containing the accepted `P3-B2A` commit, the for-of/for-in row union, and a zero-pending-context assertion. A missing or pending `P3-B2A` record blocks projection even when the copied P3-C gate appears satisfied.
+
+The binding oracle is split into exact evidence rows: `E2-PNC-BINDING1A` (structured unsupported-pattern diagnostic code/schema and metric), `E2-PNC-BINDING1B` (type-inference-failure emission), `E2-PNC-BINDING1C` (six named `.map()` sites with `ResolutionGap=0`), `E2-PNC-BINDING1D` (nested shadowing `SymbolID` oracle), and `E2-PNC-BINDING1E` (single import-count delta). The aggregate `E2-PNC-BINDING1` is only a pointer to these five rows and cannot close the child by itself.
+
+The complete manifest below is the sole P3 ownership authority; no preliminary or overlapping owner table may redefine one of its rows. For every P3-C1A–P3-C1I adapter, the copied `REVIEW1`-only Acceptance text is superseded by a conjunctive binding to that slice's exact `IMPACT1`, `SRC1`, `BUILD1`, behavior `TEST1`/`PLAY1`, `REVIEW1`, `DETECT1`, and `COMMIT1` IDs. P3-C2's explicitly named reusable validation owner files are an overlay extension to its editable Anvien validation scope, not product repair; its row therefore also requires exact `IMPACT1`, `SRC1`, `BUILD1`, oracle/target/boundary, `REVIEW1`, `DETECT1`, and `COMMIT1` evidence. A target count alone cannot close the slice.
+
+### Complete P3 job ownership manifest
+
+| Job | Production owner file | Test owner file | Generated evidence file | Fixture file | Unique responsibility | Allowed links | Prohibited contents |
+|---|---|---|---|---|---|---|---|
+| P3-A | `internal/providers/tsjs/binding_patterns.go` (NEW) | `internal/providers/tsjs/binding_patterns_test.go` (NEW) | `internal/testdata/generated/p3-a-bindings.json` | `internal/providers/tsjs/testdata/bindings/patterns.ts` (NEW) | recursive syntax walker | AST and fact contracts | type inference/resolver |
+| P3-B | `internal/providers/tsjs/variable_bindings.go` (NEW) | `internal/providers/tsjs/variable_bindings_test.go` (NEW) | `internal/testdata/generated/p3-b-variable.json` | `internal/providers/tsjs/testdata/bindings/variables.ts` (NEW) | variable declaration contexts | walker/fact contract | parameter/catch/loop contexts |
+| P3-B1 | `internal/providers/tsjs/parameter_bindings.go` (NEW) | `internal/providers/tsjs/parameter_bindings_test.go` (NEW) | `internal/testdata/generated/p3-b1-parameter.json` | `internal/providers/tsjs/testdata/bindings/parameters.ts` (NEW) | parameter contexts | walker/fact contract | variable/catch/loop contexts |
+| P3-B2 | `internal/providers/tsjs/catch_bindings.go` (NEW) | `internal/providers/tsjs/catch_bindings_test.go` (NEW) | `internal/testdata/generated/p3-b2-catch.json` | `internal/providers/tsjs/testdata/bindings/catch.ts` (NEW) | catch contexts | walker/fact contract | loop contexts |
+| P3-B2A | `internal/providers/tsjs/loop_bindings.go` (NEW) | `internal/providers/tsjs/loop_bindings_test.go` (NEW) | `internal/testdata/generated/p3-b2a-loop.json` | `internal/providers/tsjs/testdata/bindings/loops.ts` (NEW) | for-of/for-in contexts | walker/fact contract | graph projection |
+| P3-C | `internal/graph/binding_projection.go` (NEW) | `internal/graph/binding_projection_test.go` (NEW) | `internal/testdata/generated/p3-c-graph.json` | `internal/testdata/p3/c-projection.json` (NEW) | graph binding projection | accepted binding facts/identity | syntax traversal |
+| P3-C1 | `internal/lbugload/binding_projection.go` (NEW) | `internal/lbugload/binding_projection_test.go` (NEW) | `internal/testdata/generated/p3-c1-persistence.json` | `internal/testdata/p3/c1-persistence.json` (NEW) | JSON/Ladybug binding fields | canonical graph records | other adapters |
+| P3-C1A | `internal/cli/binding_projection.go` (NEW) | `internal/cli/binding_projection_test.go` (NEW) | `internal/testdata/generated/p3-c1a-cli.json` | `internal/testdata/p3/c1a-cli.json` (NEW) | CLI binding adapter | canonical binding fields | fact production |
+| P3-C1B | `internal/mcp/binding_projection.go` (NEW) | `internal/mcp/binding_projection_test.go` (NEW) | `internal/testdata/generated/p3-c1b-mcp.json` | `internal/testdata/p3/c1b-mcp.json` (NEW) | MCP binding adapter | canonical binding fields | fact production |
+| P3-C1C | `internal/filecontext/binding_projection.go` (NEW) | `internal/filecontext/binding_projection_test.go` (NEW) | `internal/testdata/generated/p3-c1c-context.json` | `internal/testdata/p3/c1c-context.json` (NEW) | file-context binding adapter | canonical binding fields | cache policy |
+| P3-C1D | `internal/httpapi/binding_projection.go` (NEW) | `internal/httpapi/binding_projection_test.go` (NEW) | `internal/testdata/generated/p3-c1d-http.json` | `internal/testdata/p3/c1d-http.json` (NEW) | HTTP binding adapter | canonical binding fields | route policy |
+| P3-C1E | `internal/mcp/resource_binding_projection.go` (NEW) | `internal/mcp/resource_binding_projection_test.go` (NEW) | `internal/testdata/generated/p3-c1e-cache.json` | `internal/testdata/p3/c1e-cache.json` (NEW) | resource-cache binding adapter | canonical binding fields/generation | resolver |
+| P3-C1F | `internal/httpapi/web_binding_projection.go` (NEW) | `internal/httpapi/web_binding_projection_test.go` (NEW) | `internal/testdata/generated/p3-c1f-web.json` | `internal/testdata/p3/c1f-web.json` (NEW) | Web binding adapter | canonical binding fields | server-side extraction |
+| P3-C1G | `internal/embeddings/binding_reference.go` (NEW) | `internal/embeddings/binding_reference_test.go` (NEW) | `internal/testdata/generated/p3-c1g-embedding.json` | `internal/testdata/p3/c1g-embedding.json` (NEW) | embedding binding reference | canonical IDs/generation | graph construction |
+| P3-C1H | `internal/group/binding_reference.go` (NEW) | `internal/group/binding_reference_test.go` (NEW) | `internal/testdata/generated/p3-c1h-group.json` | `internal/testdata/p3/c1h-group.json` (NEW) | registry/group binding reference | canonical IDs/generation | group policy |
+| P3-C1I | `internal/processes/binding_reference.go` (NEW) | `internal/processes/binding_reference_test.go` (NEW) | `internal/testdata/generated/p3-c1i-process.json` | `internal/testdata/p3/c1i-process.json` (NEW) | process/community binding reference | canonical IDs/generation | process discovery |
+| P3-C2 | `internal/validation/binding_target_oracle.go` (NEW) | `internal/validation/binding_target_oracle_test.go` (NEW) | `internal/testdata/generated/p3-c2-target.json` | `internal/testdata/p3/c2-target-manifest.json` (NEW) | target binding oracle | target graph output only | target source copy or mutation |
+
+For every P3 job, the evidence-ledger row whose first column equals that exact job ID is normatively incorporated as the job's `Acceptance / Evidence IDs` extension. All listed IDs are conjunctive; any plan/ledger mismatch or missing detect/commit row fails acceptance.
+
+#### P3-C direct dependency override
+
+The copied P3-C Implementation Gate/Acceptance is superseded by this explicit condition: `E3-P3C-B2A-GATE1` must prove an accepted and committed P3-B2A row union for every for-of/for-in context, with `pending_loop_contexts=0`, before P3-C graph projection can open. P3-C also consumes the already accepted upstream `E2-PNC-BINDING1A` and `E2-PNC-BINDING1B` rows; it must not wait on downstream adapter or target-validation evidence. P3-C2 may open only after P3-C/P3-C1* are accepted and requires `E2-PNC-BINDING1C..1E` plus the same hard predecessor record. A six-field count without zero-gap, shadowing, single-import-count, type-independent-emission, and unsupported-diagnostic proof is non-accepting at child closure.
+
+#### P3 binding acceptance override
+
+The copied P3-C/P3-C2 acceptance blocks are read through this stronger gate: P3-C cannot close until `E2-PNC-BINDING1A`, `E2-PNC-BINDING1B`, and `E3-P3C-B2A-GATE1` are accepted; P3-C2 cannot close until `E2-PNC-BINDING1C`, `E2-PNC-BINDING1D`, `E2-PNC-BINDING1E`, and `E3-P3C-B2A-GATE1` are accepted. The terminal binding oracle must report six named `.map()` sites with `bindings=6/6` and `ResolutionGap=0`, a type-inference-failure emission row, the expected nested-shadowing `SymbolID` for every same-name leaf, and an import-count delta of zero. Any row-count-only or aggregate parity result is insufficient.
+
 ## Checklist
 
 - [x] P0-A: Complete actual status before implementation work.
@@ -1118,6 +1172,7 @@ Every implementation slice follows this order:
   - Acceptance: final `git diff/status` contains no dead plan-created artifacts, supervisor passes the cleanup, and evidence records what was removed or preserved.
 - [ ] Pn-C: Close the plan.
   - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
+   - Overlay Gate: apply the mandatory Semantic Remediation Overlay; this is local-child closure, not campaign/release completion.
   - Work Steps:
     1. Run the required final validation for the accepted scope, including full build before final runtime validation. For app/runtime scopes, full build must include Docker image/container build.
     2. Start the real built Docker/container runtime for app/runtime validation. If Docker cannot be built or started, record the blocker and do not substitute a host dev server.
@@ -1126,8 +1181,10 @@ Every implementation slice follows this order:
     5. Run Anvien detect-changes before commit when implementation work was performed.
     6. Record final validation, detect-changes, benchmark, and commit evidence.
     7. Commit the completed scope and verify the worktree state.
-  - Implementation Gate: Pn-A and Pn-B must pass or record blockers.
-  - Acceptance: final evidence is recorded, required commits exist, and the worktree state is known.
+     8. Refresh Child 04 actual-status from the latest accepted Child 03 evidence, append its refresh-log row, and update its next action/work steps before handoff.
+     9. Record qualified `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1`; bind every required evidence-ledger row and the exact per-job ownership table.
+   - Implementation Gate: Pn-A/Pn-B, all local implementation gates including P3-B2A and the binding correction metrics, full evidence rows, ownership tables, and the successor refresh must pass; pending P7 is not a local-child blocker.
+   - Acceptance: local closure evidence, commit, `E2-PNC-NEXTSTATUS1`, and `E2-PNC-HANDOFF1` are recorded and the worktree is known; campaign/release closure remains separate.
 
 ## Risk Notes
 

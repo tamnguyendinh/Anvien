@@ -175,6 +175,39 @@ P3 target evidence must name all six bounded bindings and preserve exact declara
 
 `E3-P3C2-DETECT1` records the Anvien-side change/boundary check before the validation-artifact commit; `E3-P3C2-COMMIT1` records that isolated commit and confirms no target artifact was committed.
 
+### P3 semantic correction binding
+
+The execution rows below are conjunctive extensions to the base P3 evidence rows. Every listed correction/dependency ID remains pending until independently proved.
+
+| Plan job | Required correction evidence IDs | Status |
+|---|---|---|
+| P3-A | `E2-PNC-BINDING1A` | pending |
+| P3-B | `E2-PNC-BINDING1B` | pending |
+| P3-B2A | `E3-P3C-B2A-GATE1` | pending |
+| P3-C | `E2-PNC-BINDING1A`, `E2-PNC-BINDING1B`, `E3-P3C-B2A-GATE1` | pending |
+| P3-C1 | `E2-PNC-BINDING1E` | pending |
+| P3-C2 | `E3-P3C2-IMPACT1`, `E3-P3C2-SRC1`, `E3-P3C2-BUILD1`, `E2-PNC-BINDING1C`, `E2-PNC-BINDING1D`, `E2-PNC-BINDING1E`, `E3-P3C-B2A-GATE1` | pending |
+
 ## Closure Evidence
 
-Reserved for final Supervisor, commit, successor-status, and handoff evidence when this child reaches closure.
+Closure is pending; these are mandatory declarations, not proof. The full evidence row for every implementation slice remains conjunctive with its plan Acceptance.
+
+| Evidence ID | Source slice | Local slice | Required proof | Commit | Owner decision | Successor opening condition | Freshness evidence | Status |
+|-------------|--------------|-------------|---------------|--------|---------------|----------------------------|--------------------|--------|
+| `E2-PNC-OVERLAY1` | P8-C | Pn-C | semantic overlay precedence and local-child-versus-campaign closure decision | pending | pending | local checkpoint only | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-OWNERSHIP1` | P8-C | Pn-C | complete 17-job ownership table with exact production/test/generated/fixture paths and no wildcard/TBD | pending | pending | all 17 jobs have rows | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-LEDGER1` | P8-C | Pn-C | every slice Acceptance bound to complete IMPACT/SRC/BUILD/TEST-oracle/REVIEW/DETECT/COMMIT row | pending | pending | no review-only closure | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-BINDING1` | P3-A..P3-C2 | Pn-C | binding correction index | pending | pending | all five subrows accepted | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-BINDING1A` | P3-A | P3-A | structured unsupported-pattern diagnostic schema and countable metric | pending | pending | diagnostic emitted independently of type inference | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-BINDING1B` | P3-B | P3-B | declaration emission remains present when type inference fails | pending | pending | no inference-dependent drop | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-BINDING1C` | P3-C/P3-C2 | P3-C2 | six named `.map()` sites at `6/6` with `ResolutionGap=0` | pending | pending | all six target rows | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-BINDING1D` | P3-C/P3-C2 | P3-C2 | nested same-name shadowing selects the expected SymbolID | pending | pending | source/symbol oracle agrees | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-BINDING1E` | P3-C1* | P3-C1 | imports counted exactly once with zero delta | pending | pending | all applicable S0-S11 rows | `E2-PNC-REFRESH1` | pending |
+| `E3-P3C-B2A-GATE1` | P3-B2A | P3-C | accepted/committed P3-B2A for-of/for-in row union and zero pending loop contexts before P3-C/P3-C2 | pending | pending | hard predecessor satisfied | `E2-PNC-REFRESH1` | pending |
+| `E3-P3-OWNERSHIP1` | P3-A..P3-C2 | P3 | exact P3 job production/test/generated/fixture ownership manifest | pending | pending | all named jobs have rows | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-REFRESH1` | P8-C | Pn-C | current HEAD/graph/file-detail snapshot and successor-status refresh-log/next-action/work-step update | pending | pending | Child 04 actual-status fresh | `anvien analyze E:\Anvien --force --json`; `git rev-parse HEAD` | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-MANIFEST1` | Child 02 P2-A | P0 | inspect-only authoritative manifest proof | n/a | pending | Child 03 consumes without reinterpretation | Child 02 qualified handoff | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-HANDSHAKE1` | Child 02 P2-A | P0 | inspect-only authoritative handshake proof | n/a | pending | Child 03 consumes without reinterpretation | Child 02 qualified handoff | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-METADATA1` | Child 02 P2-A | P0 | inspect-only authoritative metadata inventory | n/a | pending | Child 03 consumes without reinterpretation | Child 02 qualified handoff | pending |
+| `E2-PNC-NEXTSTATUS1` | P8-C | Pn-C | successor Child 04 actual-status refreshed from latest accepted evidence; refresh-log, next-action, and work-step rows updated | pending | pending | Child 04 may open only after exact qualified handoff | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-HANDOFF1` | P8-C | Pn-C | qualified Child 03 local evidence, commit, predecessor gate, owner decision, and Child 04 opening condition | pending | pending | `2026-07-28-03-typescript-binding-pattern-extraction::E2-PNC-NEXTSTATUS1` accepted after refreshing Child 04 | `E2-PNC-REFRESH1` | pending |

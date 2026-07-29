@@ -85,8 +85,49 @@ For performance release gates, capture at least five comparable runs before v2 c
 | P6 | bounded ambient sites | correct/expected | 0/3 | pending | pending | 3/3 | pending | `E6-P6D-TARGET1` |
 | P6 | source sites both resolved and unresolved | count | inventory in P6-C1 | pending | pending | 0 | pending | `E6-P6D-TARGET1` |
 
+## B6 Semantic Correction Metrics
+
+| Metric | Unit | Baseline | Latest | Final | Target | Evidence |
+|--------|------|----------|--------|-------|--------|----------|
+| declaration capability modes | exact/structural/degraded counts by compiler/config/catalog classification | absent | pending | pending | exact only on matching compiler/config/catalog tuple; structural for repo+local with limited external coverage; degraded for unavailable/mismatched external universe | `E2-PNC-AMBIENT1A` |
+| outcome confidence/completeness coverage | outcomes with fields / outcomes | 0/0 | pending | pending | 100% | `E2-PNC-AMBIENT1A` |
+| declaration-source/origin-form coverage | origin/form lanes with parse/merge proof / 7 | 0/7 | pending | pending | 7/7 (repository_source, project_dts, package, stdlib, intrinsic origins plus ambient_module and global_augmentation form lanes) | `E2-PNC-AMBIENT1B`, `E2-PNC-AMBIENT1C`, `E2-PNC-AMBIENT1D`, `E2-PNC-AMBIENT1E`, `E2-PNC-AMBIENT1F`, `E2-PNC-AMBIENT1G`, `E2-PNC-AMBIENT1H`, `E2-PNC-AMBIENT1K` |
+| external isolation default leakage | external records in default context/impact/rename/process/groups | unknown | pending | pending | 0 | `E2-PNC-AMBIENT1I`, `E2-PNC-AMBIENT1L`, `E2-PNC-AMBIENT1M`, `E2-PNC-AMBIENT1N`, `E2-PNC-AMBIENT1O` |
+| external opt-in visibility | included records with `include_external` / expected | 0/0 | pending | pending | exact opt-in result | `E2-PNC-AMBIENT1I`, `E2-PNC-AMBIENT1L`, `E2-PNC-AMBIENT1M`, `E2-PNC-AMBIENT1N`, `E2-PNC-AMBIENT1O` |
+| capabilityMode field coverage | outcomes with valid enum and correct version-bound classification / outcomes | 0/0 | pending | pending | 100% (`exact|structural|degraded`) with matching/local-only/mismatch cases | `E2-PNC-AMBIENT1A` |
+| capability classification matrix | passed classification cases / expected cases | 0/3 | pending | pending | 3/3: matching exact, repo+local structural, external unavailable/mismatch degraded | `E2-PNC-AMBIENT1A` |
+| confidence field coverage | outcomes with valid enum / outcomes | 0/0 | pending | pending | 100% (`high|medium|low`) | `E2-PNC-AMBIENT1A` |
+| completeness field coverage | outcomes with valid enum / outcomes | 0/0 | pending | pending | 100% (`complete|partial|unavailable`) | `E2-PNC-AMBIENT1A` |
+| graph-generation capability descriptor | descriptors / graph generations | 0/1 | pending | pending | exactly 1/1 with mode, confidence, completeness, compiler/config/catalog binding, sourceCoverage, and missingSources | `E2-PNC-AMBIENT1S` |
+| descriptor/outcome consistency | non-stronger consistent outcomes / outcomes | 0/0 | pending | pending | 100%; no outcome claims stronger capability or completeness than its graphGeneration descriptor | `E2-PNC-AMBIENT1S` |
+| capability descriptor projection parity | differing S0-S11 descriptors / applicable surfaces | unknown | pending | pending | 0 differences and 0 mixed-generation references | `E2-PNC-AMBIENT1S` |
+| repository declaration source | parsed/expected | 0/1 | pending | pending | 1/1 | `E2-PNC-AMBIENT1B` |
+| project-owned `.d.ts` source | parsed/expected | 0/1 | pending | pending | 1/1 | `E2-PNC-AMBIENT1C` |
+| installed package declaration source | parsed/expected | 0/1 | pending | pending | 1/1 | `E2-PNC-AMBIENT1D` |
+| stdlib source | parsed/expected | 0/1 | pending | pending | 1/1 | `E2-PNC-AMBIENT1E` |
+| intrinsic source | parsed/expected | 0/1 | pending | pending | 1/1 | `E2-PNC-AMBIENT1K` |
+| ambient-module source | parsed/expected | 0/1 | pending | pending | 1/1 | `E2-PNC-AMBIENT1F` |
+| global-augmentation source | parsed/expected | 0/1 | pending | pending | 1/1 | `E2-PNC-AMBIENT1G` |
+| parser/merge matrix cases | passed/expected | 0/0 | pending | pending | 100%, including malformed/duplicate/overload/augmentation/conflict with `declaration_conflict` mapping | `E2-PNC-AMBIENT1H` |
+| context default external leakage | records | unknown | pending | pending | 0 | `E2-PNC-AMBIENT1I` |
+| context explicit opt-in set | included/expected | 0/0 | pending | pending | exact expected external set | `E2-PNC-AMBIENT1I` |
+| impact default external leakage | records | unknown | pending | pending | 0 | `E2-PNC-AMBIENT1L` |
+| impact explicit opt-in set | included/expected | 0/0 | pending | pending | exact expected external set | `E2-PNC-AMBIENT1L` |
+| rename default external leakage | candidates/edits | unknown | pending | pending | 0 edits/candidates by default | `E2-PNC-AMBIENT1M` |
+| rename explicit opt-in candidates | included/expected | 0/0 | pending | pending | exact expected set and no edit without separate authorization | `E2-PNC-AMBIENT1M` |
+| process default external leakage | members | unknown | pending | pending | 0 | `E2-PNC-AMBIENT1N` |
+| process explicit opt-in members | included/expected | 0/0 | pending | pending | exact expected external members | `E2-PNC-AMBIENT1N` |
+| groups default external leakage | members/contracts | unknown | pending | pending | 0 | `E2-PNC-AMBIENT1O` |
+| groups explicit opt-in members/contracts | included/expected | 0/0 | pending | pending | exact expected external members/contracts | `E2-PNC-AMBIENT1O` |
+| typed `include_external` propagation | surfaces with same schema-version-1 DTO / 5 | 0/5 | pending | pending | 5/5, schema version 1, default false, and invalid option fail-closed | `E2-PNC-AMBIENT1P` |
+| Promise target outcome | allowed/observed target sites | 0/1 | pending | pending | `resolved_external` (target denominator 1/1) | `E2-PNC-AMBIENT1J` |
+| Math.max target outcome | allowed/observed target sites | 0/1 | pending | pending | `resolved_external` (target denominator 1/1) | `E2-PNC-AMBIENT1Q` |
+| Math.min target outcome | allowed/observed target sites | 0/1 | pending | pending | `resolved_external` (target denominator 1/1) | `E2-PNC-AMBIENT1R` |
+| negative external-capability fixture outcomes | allowed/observed negative sites | 0/0 | pending | pending | explicit external-capability failure only; never part of target 3/3 | `E2-PNC-AMBIENT1J`, `E2-PNC-AMBIENT1Q`, `E2-PNC-AMBIENT1R` |
+| P6 job ownership rows | exact rows / P6 jobs | 0/6 | pending | pending | 100% exact production/test/generated/fixture rows, disjoint origin labels plus orthogonal form lanes, and one write-owner per shared coordinator | `E6-P6-SOURCES1` |
+
 ## Non-Benchmarkable Notes
 
 - P1-A contract ratification and P8 Supervisor/cleanup/closure are evidence gates, not benchmarkable product/runtime work.
 - Build/test/e2e pass/fail belongs in the evidence ledger; only measured duration, count, size, throughput, latency, memory, parity, and accuracy ratios are recorded here.
-- A final plan cannot close while any required P7 performance row remains pending. A budget exception must contain measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.
+- Local child closure is allowed after this child's local benchmark/evidence gates and qualified handoff pass. Pending P7 performance rows block only campaign/release closure owned by Child 07. Any budget exception still requires measured baseline/final values and explicit owner acceptance; it cannot be replaced by an unmeasured waiver.

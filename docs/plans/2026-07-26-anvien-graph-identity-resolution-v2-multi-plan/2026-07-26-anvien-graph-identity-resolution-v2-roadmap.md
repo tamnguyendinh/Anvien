@@ -1,7 +1,7 @@
 # Anvien Graph Identity and TypeScript Resolution Correctness v2 Roadmap
 
 Date: 2026-07-28
-Status: candidate / P3-A seven-child authoring closure PASS / all seven child plan sets authored and committed / child 07 committed `4f1c94e5` / P3-B authority cutover not authorized / legacy plan remains active / production implementation not authorized
+Status: candidate / semantic-remediation overlay authored after Supervisor REJECT / all seven child plan sets present and their base revisions previously committed / corrected candidate acceptance and P3-B authority cutover not authorized / legacy plan remains active / production implementation not authorized
 Source plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-26-anvien-graph-identity-resolution-v2-plan.md`
 Plan-set authoring plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 Multi-plan root: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/`
@@ -35,7 +35,7 @@ Coordinate the graph-identity and TypeScript-resolution remediation as seven com
 - Every child plan carries its own successor-freshness rule. Before a non-terminal child may close or hand off, it must refresh the next child plan's `actual-status.md` from the latest accepted repo/runtime/evidence state, append the refresh-log row, update affected next actions/work steps, and record qualified `E2-PNC-NEXTSTATUS1` proof. Missing or stale successor status blocks closure. Child 07 records that no successor exists and refreshes roadmap/campaign closure status instead.
 - Before a child implementation plan opens, refresh its P0 from current repo reality and the accepted previous-child handoff.
 - A later validation child cannot repair implementation. A failed acceptance gate reopens the responsible upstream child/slice.
-- Every file owns one primary planning or implementation responsibility. A file may link to multiple modules/files only when all links serve that responsibility.
+- Every file owns one primary planning or implementation responsibility. A file may link to multiple modules/files only when all links serve that responsibility. A preserve-only/link row may appear in more than one ordered job only when it names the same coordinator responsibility, carries no new semantic logic, and has one explicitly named write-owner; the link rows are not additional business owners and may not be edited concurrently. Any new responsibility requires a dedicated owner file and a changed ownership row before editing.
 - The legacy plan root, split-authoring plan root, and this multi-plan root are independent siblings directly under `docs/plans/`; no authoring plan or child plan may be nested inside the legacy root.
 
 ## Frozen Source Snapshot
@@ -188,6 +188,37 @@ Status history:
 
 Historical-status note: the earlier history rows describing the rejected/remapped Child 01 and pre-reset Child 02 candidate are preserved as audit history. Current Child 01 authority begins at `E2-P2A-REBUILD1`/`E2-P2A-SUP2`/`E2-P2A-COMMIT2`; those historical candidate hashes must not be read as current artifact hashes.
 
+## Semantic Remediation Overlay (mandatory)
+
+The seven source phase blocks and all 98 source slices remain byte-for-byte historical provenance. This overlay is a stronger execution contract added after `reports/Supervisor/rp_supervisor_260728_222405_by_gpt-5-codex_multiplan_semantic_adequacy.md`. If a copied gate is weaker, incomplete, or contradictory, this overlay controls; the copied source text is not rewritten.
+
+- A child closure is a local checkpoint. Child 01-06 may close after its own local implementation, validation, Supervisor, ledger, detect-changes, and commit gates plus the qualified successor refresh. Pending Child 07/P7 performance rows block campaign/release closure only; they do not deadlock an earlier local child. Child 07 owns the campaign/release gate.
+- Every non-terminal `Pn-C` must create both qualified evidence IDs `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1`. `NEXTSTATUS1` proves the successor `actual-status.md` was refreshed from the latest accepted evidence, a refresh-log row was appended, and affected next-action/work-step rows were updated. `HANDOFF1` proves the predecessor evidence set, local commit, owner decision, and successor opening conditions; its opening condition consumes this child’s own qualified `NEXTSTATUS1` after the successor refresh, never a future `NEXTSTATUS1` owned by the successor. Child 07 uses the same IDs for the terminal roadmap/campaign refresh and terminal handoff record; it must state `no successor` explicitly.
+- Every implementation slice Acceptance is conjunctive with its complete evidence-ledger row. A narrow `REVIEW1` line cannot close a slice while any required `IMPACT`, `SRC`, `BUILD`, behavior `TEST`/oracle, `DETECT`, or `COMMIT` item is pending. Any `TBD`, wildcard, or unqualified owner/evidence reference fails the gate.
+- Before editing, every implementation job must publish a machine-readable ownership row: `File` (exact path), `unique responsibility`, `allowed links`, and `prohibited contents`. The row covers production, test, generated, and fixture files; one file may link to many modules only in service of its one responsibility. Wildcard paths, `TBD`, catch-all owners, or mixed responsibilities fail the job gate.
+- The roadmap-level manifest/handshake is authoritative: the nine semantic-correction fields `graphSchemaVersion`, `identitySchemaVersion`, `scopeIRSchemaVersion`, `graphGeneration`, `analyzerVersion`, `columnEncoding`/`positionEncoding`, `sourceFingerprint`, and `configFingerprint` are required in the persisted manifest and are represented in the reader handshake. The complete wire inventory is 15 persisted manifest fields (those nine plus six protocol/provenance fields) and 10 request fields. The request key `supportedScopeIrVersions[]` is the fixed wire spelling whose values are compared to the case-sensitive manifest field `scopeIRSchemaVersion`; no alternate spelling or omitted field is accepted. A missing field is a contract failure, not an optional compatibility omission.
+- P4 owns syntactic `ExportFact`, `ModuleRequestFact`, and `ImportBindingFact` production and direct-export counts only. P5 owns module/export-table traversal and derived `resolvedExportEntryCount`/`publicApiSymbolCount`; P4 must not claim barrel reachability or package public API. The three counts have separate owners and ledger metrics.
+- P6 declaration-universe capability is explicit: `exact|structural|degraded`, with `confidence` and `completeness` on every outcome and one immutable `DeclarationCapabilityDescriptor` in semantic graph metadata per `graphGeneration`. The descriptor is generation/config/catalog-bound and is separate from Child 02's fixed 15-field compatibility manifest. The universe covers repository declarations, project-owned `.d.ts`, installed package declarations, stdlib, intrinsics, ambient modules, and global augmentations, with parser/merge acceptance. External symbols are excluded by default from context, impact, rename, process, and group traversal; only an explicit `include_external` option opts in.
+- P7 is a semantic oracle, not only parity: it must assert external isolation on context/impact/rename/process/groups, preserve syntactic `IMPORTS` path-resolution counts while resolving exports, accept a barrel with zero physical declarations only when its export surface is proven, and require `Promise`/`Math` outcomes to be `resolved_external` or an explicit external-capability failure—never `resolved_intrinsic`.
+
+### Semantic Remediation Evidence Matrix (mandatory)
+
+The overlay is executable only when each owning child binds the invariant to a named gate, a separate benchmark row, and a separate pending evidence declaration. Aggregate rows are not sufficient proof and may not be used to close a child or the campaign.
+
+| Invariant | Owning child | Required gate/evidence binding | Minimum measurable result |
+|---|---|---|---|
+| for-of/for-in binding dependency | Child 03 | `P3-C` overlay gate + `E2-PNC-BINDING1` + `E3-P3C-B2A-GATE1` | `P3-B2A` accepted/committed before projection; 6 named `.map()` sites and `ResolutionGap=0` |
+| manifest/handshake completeness | Child 02 (later children inspect-only) | `E2-P2A-MANIFEST1`, `E2-P2A-HANDSHAKE1`, `E2-P2A-METADATA1` | every persisted manifest and handshake carries all nine required metadata fields; zero body-open on mismatch |
+| P4 fact production and direct count | Child 04 | `E2-PNC-EXPORT1A..1D`, `E4-P4-FACT1` | one `ModuleRequestFact`/`ImportBindingFact` per syntax site, one syntactic `ExportFact`, exact direct count, no derived P5 fields |
+| P5 derived export state | Child 05 | `E2-PNC-MODULE1A..1E`, `E5-P5-DERIVED1` | separate `resolvedExportEntryCount` and `publicApiSymbolCount` owners and metrics; no P4 mutation |
+| declaration capability/source coverage | Child 06 | `E2-PNC-AMBIENT1A..1H`, `E2-PNC-AMBIENT1K`, `E6-P6-SOURCES1` | explicit capability/confidence/completeness for all seven source categories, parser/merge matrix complete |
+| generation-level declaration capability metadata | Child 06 + Child 07 oracle | `E2-PNC-AMBIENT1S`, `E2-PNC-FINALORACLE1K` | exactly one descriptor per graphGeneration; no outcome is stronger than the descriptor; S0-S11 differences and mixed-generation refs are zero |
+| external downstream isolation | Child 06 + Child 07 oracle | `E2-PNC-AMBIENT1I`, `E2-PNC-AMBIENT1L..1P`, `E2-PNC-FINALORACLE1A..1F` | five surfaces each prove default exclusion, typed-option propagation, and explicit `include_external` opt-in |
+| zero-physical barrel/path accounting | Child 05 + Child 07 oracle | `E2-PNC-MODULE1B..1E`, `E2-PNC-FINALORACLE1G..1H` | `physicalDeclarationCount=0`, `resolvedExportEntryCount>0`, and pre/post path plus `IMPORTS` counts unchanged |
+| Promise/Math outcomes | Child 06 + Child 07 oracle | `E2-PNC-AMBIENT1J`, `E2-PNC-AMBIENT1Q..1R`, `E2-PNC-FINALORACLE1I`, `E2-PNC-FINALORACLE1J` | each real target site is `resolved_external` 3/3; only named negative fixtures may use explicit external-capability failure; zero `resolved_intrinsic` |
+
+Every correction evidence declaration remains `pending` until implementation and validation actually produce it. This matrix closes a contract/traceability gap; it does not claim any implementation slice is complete.
+
 ## Candidate Acceptance Gate
 
 This roadmap may become active only when:
@@ -197,6 +228,9 @@ This roadmap may become active only when:
 - deterministic validation proves 98 source slices, 98 unique destinations, zero missing, zero duplicate, zero extra, and preserved order/required fields;
 - all companion and cross-plan links resolve;
 - every mutable artifact has one owner and `index-reader-matrix.md` belongs only to child 02;
+- every child contains the mandatory semantic-remediation overlay, qualified `E2-PNC-NEXTSTATUS1`/`E2-PNC-HANDOFF1` declarations, local-versus-campaign closure rule, full evidence-row binding, and job-granular ownership-table gate;
+- P3-C is gated by P3-B2A; binding, manifest, fact ownership, module, ambient, capability, external-isolation, and Promise/Math semantic gates are measurable in the owning child ledgers;
+- every semantic-correction row above has a child-local evidence declaration, a benchmark row with explicit numerator/denominator or before/after values, and a qualified closure binding; a single aggregate `REVIEW1`, parity result, or Supervisor note cannot substitute for those rows;
 - no placeholder, stale authority statement, unqualified cross-child evidence ID, dead draft, or repository-root artifact remains;
 - Git scope contains only approved planning/report artifacts;
 - production source, tests, runtime output, generated graph output, and `E:\cheapapp.org` remain unchanged;

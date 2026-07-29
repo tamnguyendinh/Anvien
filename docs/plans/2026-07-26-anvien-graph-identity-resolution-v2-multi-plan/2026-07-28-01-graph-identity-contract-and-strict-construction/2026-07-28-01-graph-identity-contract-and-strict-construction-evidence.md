@@ -227,6 +227,34 @@ Matching plan item(s): `P1-A`, `P1-B`, `P1-C`, `P1-D`, `P1-E`
 | `E1-P1D3-DETECT1` | Anvien detect-changes before commit | pending |
 | `E1-P1D3-COMMIT1` | isolated slice commit | pending |
 
+### P1 conjunctive acceptance binding
+
+| Plan job | Required evidence IDs | Status |
+|---|---|---|
+| P1-A | `E1-P1A-CONTRACT1`, `E1-P1A-REVIEW1`, `E1-P1A-COMMIT1` | pending |
+| P1-B | `E1-P1B-IMPACT1`, `E1-P1B-SRC1`, `E1-P1B-BUILD1`, `E1-P1B-TEST1`, `E1-P1B-REVIEW1`, `E1-P1B-DETECT1`, `E1-P1B-COMMIT1` | pending |
+| P1-C0 | `E1-P1C0-IMPACT1`, `E1-P1C0-SRC1`, `E1-P1C0-BUILD1`, `E1-P1C0-TEST1`, `E1-P1C0-REVIEW1`, `E1-P1C0-DETECT1`, `E1-P1C0-COMMIT1` | pending |
+| P1-C0A | `E1-P1C0A-IMPACT1`, `E1-P1C0A-SRC1`, `E1-P1C0A-BUILD1`, `E1-P1C0A-TEST1`, `E1-P1C0A-REVIEW1`, `E1-P1C0A-DETECT1`, `E1-P1C0A-COMMIT1` | pending |
+| P1-C0B | `E1-P1C0B-IMPACT1`, `E1-P1C0B-SRC1`, `E1-P1C0B-BUILD1`, `E1-P1C0B-TEST1`, `E1-P1C0B-REVIEW1`, `E1-P1C0B-DETECT1`, `E1-P1C0B-COMMIT1` | pending |
+| P1-C | `E1-P1C-IMPACT1`, `E1-P1C-SRC1`, `E1-P1C-BUILD1`, `E1-P1C-TEST1`, `E1-P1C-REVIEW1`, `E1-P1C-DETECT1`, `E1-P1C-COMMIT1` | pending |
+| P1-D | `E1-P1D-IMPACT1`, `E1-P1D-MAP1`, `E1-P1D-SRC1`, `E1-P1D-BUILD1`, `E1-P1D-TEST1`, `E1-P1D-REVIEW1`, `E1-P1D-DETECT1`, `E1-P1D-COMMIT1` | pending |
+| P1-D1 | `E1-P1D1-IMPACT1`, `E1-P1D1-SRC1`, `E1-P1D1-BUILD1`, `E1-P1D1-TEST1`, `E1-P1D1-REVIEW1`, `E1-P1D1-DETECT1`, `E1-P1D1-COMMIT1` | pending |
+| P1-D2 | `E1-P1D2-IMPACT1`, `E1-P1D2-SRC1`, `E1-P1D2-BUILD1`, `E1-P1D2-TEST1`, `E1-P1D2-REVIEW1`, `E1-P1D2-DETECT1`, `E1-P1D2-COMMIT1` | pending |
+| P1-D3 | `E1-P1D3-IMPACT1`, `E1-P1D3-SRC1`, `E1-P1D3-BUILD1`, `E1-P1D3-TEST1`, `E1-P1D3-REVIEW1`, `E1-P1D3-DETECT1`, `E1-P1D3-COMMIT1` | pending |
+| P1-E | `E1-P1E-IMPACT1`, `E1-P1E-SRC1`, `E1-P1E-SHADOW1`, `E1-P1E-BUILD1`, `E1-P1E-BENCH1`, `E1-P1E-TARGET1`, `E1-P1E-ORACLE1`, `E1-P1E-BOUNDARY1`, `E1-P1E-REVIEW1`, `E1-P1E-DETECT1`, `E1-P1E-COMMIT1` | pending |
+
 ## Closure Evidence
 
-Reserved for final Supervisor, detect-changes, commit, and handoff evidence when this child reaches closure.
+Closure is pending; these are mandatory declarations, not proof. The full evidence row for every implementation slice remains conjunctive with its plan Acceptance.
+
+| Evidence ID | Source slice | Local slice | Required proof | Commit | Owner decision | Successor opening condition | Freshness evidence | Status |
+|-------------|--------------|-------------|---------------|--------|---------------|----------------------------|--------------------|--------|
+| `E2-PNC-OVERLAY1` | P8-C | Pn-C | semantic overlay precedence and local-child-versus-campaign closure decision | pending | pending | local checkpoint only | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-OWNERSHIP1` | P8-C | Pn-C | complete 11-job ownership table with exact production/test/generated/fixture paths and no wildcard/TBD | pending | pending | all 11 jobs have rows | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-LEDGER1` | P8-C | Pn-C | every slice Acceptance bound to complete IMPACT/SRC/BUILD/TEST-oracle/REVIEW/DETECT/COMMIT row | pending | pending | no review-only closure | `E2-PNC-REFRESH1` | pending |
+| `E1-P1-OWNERSHIP1` | P1-A..P1-E/P1-C0* | P1 | exact per-job ownership manifest and one-file responsibility clearance; P1-A owns one authority document with reasoned N/A fields, while the ten implementation jobs own exact production/test/generated/fixture paths | pending | pending | all 11 source slices without a documentation/code scope contradiction | `E2-PNC-REFRESH1` | pending |
+| `E1-P1-LEDGER1` | P1-A..P1-E/P1-C0* | P1 | every P1 source slice binds complete impact/source/build/behavior/review/detect/commit evidence | pending | pending | all 11 source slices | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-REFRESH1` | P8-C | Pn-C | current HEAD/graph/file-detail snapshot and successor-status refresh-log/next-action/work-step update | pending | pending | Child 02 actual-status fresh | `anvien analyze E:\Anvien --force --json`; `git rev-parse HEAD` | pending |
+| `E2-PNC-FD1` | P0 | P0 | fresh roadmap/Child 01 plan file-detail evidence (`roadmap outbound=28`; Child 01 plan related-file count=1) | n/a | recorded | documentation graph current at HEAD | `anvien file-detail` output at graph timestamp | recorded |
+| `E2-PNC-NEXTSTATUS1` | P8-C | Pn-C | successor Child 02 actual-status refreshed from latest accepted evidence; refresh-log, next-action, and work-step rows updated | pending | pending | Child 02 may open only after exact qualified handoff | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-HANDOFF1` | P8-C | Pn-C | qualified Child 01 local evidence, commit, predecessor gate, owner decision, and Child 02 opening condition | pending | pending | `2026-07-28-01-graph-identity-contract-and-strict-construction::E2-PNC-NEXTSTATUS1` accepted after refreshing Child 02 | `E2-PNC-REFRESH1` | pending |

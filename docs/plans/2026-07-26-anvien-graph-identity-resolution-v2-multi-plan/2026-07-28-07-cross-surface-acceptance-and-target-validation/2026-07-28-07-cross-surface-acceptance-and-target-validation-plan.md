@@ -308,6 +308,69 @@ Every implementation slice follows this order:
 - Every touched/new source and test file passes the one-file/one-responsibility review; `0` new catch-all files and `0` unrelated responsibility additions.
 - Every slice has a separate commit after full build, boundary validation, ledger update, Supervisor PASS, and detect-changes.
 
+## Semantic Remediation Overlay (mandatory)
+
+The copied P7 phase block above is historical provenance and remains unchanged. This overlay is the stronger execution contract; it controls whenever a copied gate is weaker or contradictory.
+
+All copied manifest/handshake field lists in this child are inspect-only historical context; the qualified Child 02 manifest contract (`2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-MANIFEST1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-HANDSHAKE1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-METADATA1`) is authoritative and is consumed without reinterpretation.
+
+- Child 07 is the only campaign/release closure owner. Earlier children close local checkpoints after their own gates and qualified handoffs; P7 pending rows never deadlock those local closures.
+- Before `P7-A` opens, all six exact qualified predecessor gates are mandatory and must be accepted/committed: `2026-07-28-01-graph-identity-contract-and-strict-construction::E2-PNC-HANDOFF1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-HANDOFF1`, `2026-07-28-03-typescript-binding-pattern-extraction::E2-PNC-HANDOFF1`, `2026-07-28-04-typescript-export-semantics::E2-PNC-HANDOFF1`, `2026-07-28-05-module-export-and-reexport-resolution::E2-PNC-HANDOFF1`, and `2026-07-28-06-ambient-external-resolution-and-diagnostics::E2-PNC-HANDOFF1`. A generic “P1–P6 complete” statement cannot open P7.
+- Every implementation/validation slice Acceptance is conjunctive with the complete matching evidence-ledger row (`IMPACT`, `SRC`, `BUILD`, behavior `TEST`/oracle, `REVIEW`, `DETECT`, and `COMMIT`). A `REVIEW1` record alone cannot close a slice.
+- Before each job opens, record an exact ownership table with `File`, one unique responsibility, allowed links, and prohibited contents for every production, test, generated, and fixture file. Wildcards, `TBD`, catch-all owners, or mixed responsibilities fail the gate.
+- `Pn-C` must create qualified `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1`; for this terminal child, `NEXTSTATUS1` is the roadmap/campaign refresh with an explicit `no successor` row, and `HANDOFF1` is the final campaign checkpoint bound to that terminal `NEXTSTATUS1`. Missing external-isolation or semantic-oracle evidence blocks release.
+- The terminal qualified names are `2026-07-28-07-cross-surface-acceptance-and-target-validation::E2-PNC-NEXTSTATUS1` and `2026-07-28-07-cross-surface-acceptance-and-target-validation::E2-PNC-HANDOFF1`; no successor may consume a future record.
+- **Final semantic oracle:** context, impact, rename, process, and groups must exclude external symbols by default and include them only with explicit `include_external`; P7 records independent default/opt-in results. P7 also asserts the zero-physical-declaration barrel export surface, unchanged physical path-resolution/`IMPORTS` count, generation-level `DeclarationCapabilityDescriptor` semantics/parity, and Promise/Math outcomes. The real target's three named sites (`Promise`, `Math.max`, `Math.min`) must be `resolved_external` `3/3`; only explicitly named negative fixtures may use `external_declaration_unavailable` or another external-capability failure, and neither target nor fixture may be `resolved_intrinsic`.
+
+### Terminal semantic-oracle matrix and ownership contract (mandatory)
+
+`include_external` is the typed option defined by Child 06's `ExternalTraversalOptions` contract; P7 may consume it but may not redefine it. The final oracle must record one row per surface and both modes:
+
+| Surface | Default (`include_external=false`) | Opt-in (`include_external=true`) | Exact adapter owner |
+|---|---|---|---|
+| context | `external_records=0`, in-repo records preserved | exact expected external set only | `internal/mcp/context.go` |
+| impact | no external nodes in traversal/impact set | exact expected external set only | `internal/mcp/impact.go` |
+| rename | no external rename candidates or edits | external candidates visible but never editable unless separately authorized | `internal/mcp/rename.go` |
+| process | no external members in process traversal | exact expected external members only | `internal/processes/processes.go` |
+| groups | no external members/contracts by default | exact expected external members only | `internal/group/query.go` |
+
+The final oracle evidence is split into `E2-PNC-FINALORACLE1A` (context), `E2-PNC-FINALORACLE1B` (impact), `E2-PNC-FINALORACLE1C` (rename), `E2-PNC-FINALORACLE1D` (process), `E2-PNC-FINALORACLE1E` (groups), `E2-PNC-FINALORACLE1F` (cross-surface option propagation), `E2-PNC-FINALORACLE1G` (zero-physical barrel), `E2-PNC-FINALORACLE1H` (path/IMPORTS accounting), `E2-PNC-FINALORACLE1I` (real-target Promise/Math), `E2-PNC-FINALORACLE1J` (negative external-capability fixtures), and `E2-PNC-FINALORACLE1K` (generation-level capability metadata semantics and S0-S11 parity). The aggregate `E2-PNC-FINALORACLE1` cannot close release without all eleven rows.
+
+The barrel/path oracle must report absolute values, not only deltas: `physicalDeclarationCount == 0`, `resolvedExportEntryCount > 0`, exact terminal proof hops, `publicApiSymbolCount` equal to the expected syntax-derived set, and `physicalPathResolutionCount_before == physicalPathResolutionCount_after` plus `syntacticImportsCount_before == syntacticImportsCount_after`. Promise/Math is a per-site matrix with separate target and negative-fixture rows: the real target sites must be `resolved_external` `3/3`; a capability failure is accepted only in the named negative fixture row; `resolved_intrinsic` is a hard failure everywhere.
+
+| Job | File | Unique responsibility | Allowed links | Prohibited contents |
+|---|---|---|---|---|
+| P7-A | `internal/validation/determinism_oracle.go` (NEW) | read-only aggregation of accepted determinism/version/fault evidence into one terminal verdict | accepted Child 01/02 generation, reader, and fault oracles | semantic recomputation or repair |
+| P7-A | `internal/validation/determinism_oracle_test.go` (NEW) | terminal determinism/version/fault aggregation contract | determinism-oracle inputs and verdict | implementation behavior tests or target mutation |
+| P7-A | `internal/validation/testdata/determinism/fault-matrix.json` (NEW fixture) | independent generation/version/fault expectations | determinism tests | observed runtime output |
+| P7-A | `internal/testdata/generated/p7-a-determinism.json` (NEW generated evidence) | five-run canonical hashes and fault results | determinism owner and tests | fixture expectations |
+| P7-B | `internal/validation/target_semantic_oracle.go` (NEW) | read-only orchestration of accepted binding/export/module/ambient target oracles and boundary verdict | qualified Child 03–06 oracle records and target `.anvien` runtime output | semantic reimplementation, target source edits, or copies |
+| P7-B | `internal/validation/target_semantic_oracle_test.go` (NEW) | target-oracle orchestration and boundary contract | child-owned oracle fixtures and aggregate verdict | production implementation or duplicate domain algorithms |
+| P7-B | `internal/validation/testdata/target/semantic-fixtures.json` (NEW fixture) | immutable manifest linking exact child-owned oracle inputs and named target sites | target-oracle orchestrator | copied target source or duplicate expected-result algorithms |
+| P7-B | `internal/testdata/generated/p7-b-target-oracle.json` (NEW generated evidence) | observed target semantic and boundary result set | target oracle owner and tests | target source or fixtures |
+| P7-C | `playwright/graph-resolution/p7-c-cross-surface.spec.ts` (NEW reusable script) | reusable built-runtime/Playwright cross-surface sweep that emits the named Reports JSON/MD | P7-C oracle and built runtime | one-off temp scripts, target files, or Markdown narrative |
+| P7-C | `internal/validation/cross_surface_oracle.go` (NEW) | read-only aggregation of accepted S0-S11 parity, capability-descriptor parity, and five-surface isolation evidence | canonical source manifest, Child 02 matrix, Child 06 capability/option/oracle records | parity algorithms, policy reimplementation, or repair |
+| P7-C | `internal/validation/cross_surface_oracle_test.go` (NEW) | cross-surface evidence-aggregation and capability-metadata consistency contract | child-owned parity/isolation/capability records | product behavior tests or target mutation |
+| P7-C | `internal/validation/testdata/cross-surface/external-isolation.json` (NEW fixture) | independent five-surface default/opt-in expected sets only | Child 06 isolation contract and aggregation tests | S0-S11 parity expectations or observed runtime output |
+| P7-C | `Reports/qa/playwright/graph-resolution/p7-c-cross-surface.json` (NEW generated evidence) | machine-readable built-runtime cross-surface/UI observations | reusable `playwright/` scripts and P7-C oracle | Markdown narrative or debug traces |
+| P7-C | `Reports/qa/playwright/graph-resolution/p7-c-cross-surface.md` (NEW generated evidence) | human-readable interpretation of the matching JSON evidence | exact JSON evidence and inspected screenshots/traces | duplicate runtime data or target artifacts |
+
+The exact P7 validation owners above are overlay extensions to the copied editable validation/QA scope. They may implement reusable oracle and QA harnesses only; they may not change analyzer, resolver, graph, reader, or product behavior. A failed semantic oracle reopens the responsible Child 01–06 slice rather than permitting repair in P7.
+
+P7-A/P7-B/P7-C acceptance rows are conjunctive with their complete evidence-ledger rows. A parity result, target count, or Supervisor review without the named semantic-oracle row is insufficient for terminal closure.
+
+For every P7 job, the evidence-ledger row whose first column equals that exact job ID is normatively incorporated as the job's `Acceptance / Evidence IDs` extension. All listed IDs are conjunctive; any plan/ledger mismatch or missing detect/commit row fails acceptance.
+
+#### P7 validation evidence binding override
+
+The copied P7-A/P7-B/P7-C acceptance blocks retain their historical evidence lists. For execution, the complete conjunctive bindings are extended by the child ledger: P7-A additionally requires `E7-P7A-IMPACT1`, `E7-P7A-SRC1`, and the exact Child 02 `E2-P2A-MANIFEST1`, `E2-P2A-HANDSHAKE1`, and `E2-P2A-METADATA1` records; P7-B additionally requires `E7-P7B-IMPACT1`, `E7-P7B-SRC1`, and `E7-P7B-BUILD1`; P7-C additionally requires `E7-P7C-IMPACT1`, `E7-P7C-SRC1`, and every independent `E7-P7C-S0-PARITY1` through `E7-P7C-S11-PARITY1` row. These additions are overlay-only and do not rewrite the copied source phase block.
+
+#### Terminal Promise/Math and barrel/path acceptance override
+
+The copied P7 acceptance phrase permitting an “external/intrinsic” outcome is historical and is superseded here. Terminal acceptance requires `E2-PNC-FINALORACLE1G`, `E2-PNC-FINALORACLE1H`, `E2-PNC-FINALORACLE1I`, `E2-PNC-FINALORACLE1J`, and `E2-PNC-FINALORACLE1K`: `physicalDeclarationCount=0` with a proof-backed non-empty export surface, unchanged absolute path/`IMPORTS` counts, the real target's `Promise`, `Math.max`, and `Math.min` all equal to `resolved_external` (`3/3`), and exactly one generation-bound capability descriptor whose mode/confidence/completeness agrees with Child 06 outcomes across S0-S11. `FINALORACLE1J` is limited to explicitly named negative fixtures where an external-capability failure is allowed. Any `resolved_intrinsic` result or stronger-than-generation capability claim fails Child 07 even if parity is otherwise zero-diff.
+
+P7-A also consumes Child 02's exact `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-MANIFEST1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-HANDSHAKE1`, and `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-METADATA1` records inspect-only; parity cannot pass when any required manifest/handshake field is absent or unvalidated.
+
 ## Checklist
 
 - [x] P0-A: Complete actual status before implementation work.
@@ -515,6 +578,7 @@ Every implementation slice follows this order:
   - Acceptance: final `git diff/status` contains no dead plan-created artifacts, supervisor passes the cleanup, and evidence records what was removed or preserved.
 - [ ] Pn-C: Close the plan.
   - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
+   - Overlay Gate: apply the mandatory Semantic Remediation Overlay; this is the terminal campaign/release closure, not a new implementation phase.
   - Work Steps:
     1. Run the required final validation for the accepted scope, including full build before final runtime validation. For app/runtime scopes, full build must include Docker image/container build.
     2. Start the real built Docker/container runtime for app/runtime validation. If Docker cannot be built or started, record the blocker and do not substitute a host dev server.
@@ -523,8 +587,10 @@ Every implementation slice follows this order:
     5. Run Anvien detect-changes before commit when implementation work was performed.
     6. Record final validation, detect-changes, benchmark, and commit evidence.
     7. Commit the completed scope and verify the worktree state.
-  - Implementation Gate: Pn-A and Pn-B must pass or record blockers.
-  - Acceptance: final evidence is recorded, required commits exist, and the worktree state is known.
+     8. Refresh the roadmap/campaign status with the final accepted evidence and append an explicit `no successor` refresh-log row.
+     9. Record qualified `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1` as the terminal campaign checkpoint; bind every required evidence-ledger row and the exact per-job ownership table.
+   - Implementation Gate: Pn-A/Pn-B, all six predecessor handoffs, semantic external-isolation/oracle gates, full evidence rows, ownership tables, and the terminal roadmap refresh must pass.
+   - Acceptance: final campaign evidence, commit, terminal `E2-PNC-NEXTSTATUS1`, terminal `E2-PNC-HANDOFF1`, and the worktree are known; no child remains pending except explicitly recorded owner blockers.
 
 ## Risk Notes
 

@@ -248,6 +248,103 @@ Every implementation slice follows this order:
 - Every touched/new source and test file passes the one-file/one-responsibility review; `0` new catch-all files and `0` unrelated responsibility additions.
 - Every slice has a separate commit after full build, boundary validation, ledger update, Supervisor PASS, and detect-changes.
 
+## Semantic Remediation Overlay (mandatory)
+
+The copied P2 phase block above is historical provenance and remains unchanged. This overlay is the stronger execution contract; it controls whenever a copied gate is weaker or contradictory.
+
+- Local closure is a checkpoint, not campaign completion. Pending P7 rows do not block Child 02 local closure; campaign/release closure remains a Child 07 responsibility.
+- Before `P2-A` opens, the exact qualified predecessor gate is `2026-07-28-01-graph-identity-contract-and-strict-construction::E2-PNC-HANDOFF1`; a generic “Child 01 handoff” phrase is non-accepting. `P2-A` must consume that record inspect-only and then publish its own qualified successor records.
+- Every implementation slice Acceptance is conjunctive with the complete matching evidence-ledger row (`IMPACT`, `SRC`, `BUILD`, behavior `TEST`/oracle, `REVIEW`, `DETECT`, and `COMMIT`). A `REVIEW1` record alone cannot close a slice.
+- Before each job opens, record an exact ownership table with `File`, one unique responsibility, allowed links, and prohibited contents for every production, test, generated, and fixture file. Wildcards, `TBD`, catch-all owners, or mixed responsibilities fail the implementation gate.
+- `Pn-C` must create qualified `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1`; refresh the next child actual-status, refresh log, next action, and work steps from the latest accepted handoff before Child 03 can open, then bind the handoff to this child’s own `NEXTSTATUS1`, never Child 03’s future record.
+- The qualified names are `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-NEXTSTATUS1` and `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-HANDOFF1`; Child 03 must consume these namespaced records.
+- The manifest/handshake is not complete without `graphSchemaVersion`, `identitySchemaVersion`, `scopeIRSchemaVersion`, `graphGeneration`, `analyzerVersion`, `columnEncoding`/`positionEncoding`, `sourceFingerprint`, and `configFingerprint` in both persisted manifest and request/response validation. Missing metadata fails closed before any body opens.
+- Corrected wire shape: request `{readerProtocolVersion, readerBuild, supportedGraphSchemaVersions[], supportedIdentitySchemaVersions[], supportedScopeIrVersions[], supportedAnalyzerVersions[], supportedColumnEncodings[], supportedPositionEncodings[], sourceFingerprint, configFingerprint}`; manifest `{protocolVersion, minReaderProtocol, minReaderBuild, graphSchemaVersion, identitySchemaVersion, scopeIRSchemaVersion, generation, graphGeneration, analyzerVersion, columnEncoding, positionEncoding, sourceFingerprint, configFingerprint, configHash, catalogHash}`; mismatch envelope `{code:"INDEX_VERSION_MISMATCH", expected:{...}, actual:{...}, retryable:false}`. Readers validate this before opening any body, cache, stream, registry, group, or embedding.
+- Child 02 is the sole owner of the reader matrix and generation manifest; later children consume its qualified handoff inspect-only. The local closure gate must not wait for P7 performance rows.
+
+### Manifest/handshake correction contract (mandatory)
+
+The copied P2-A field lists and wire-shape paragraphs above are historical provenance. The following contract supersedes them wherever they disagree and is the only contract that may be implemented or accepted.
+
+| Contract field | Required type/meaning | Persisted manifest | Reader request/response check |
+|---|---|---|---|
+| `graphSchemaVersion` | non-empty opaque schema version | required | supported-version intersection |
+| `identitySchemaVersion` | non-empty identity tuple version | required | supported-version intersection |
+| `scopeIRSchemaVersion` | exact ScopeIR schema version (spelling is case-sensitive) | required | supported-version intersection |
+| `graphGeneration` | immutable generation identifier for the graph body | required and equal to the opened body generation | equality before body open |
+| `analyzerVersion` | analyzer build/version plus reproducible build identifier | required | supported analyzer set and exact expected build policy |
+| `columnEncoding` | enum for persisted tabular columns | required | supported column-encoding set |
+| `positionEncoding` | enum for source ranges/selection ranges | required | supported position-encoding set |
+| `sourceFingerprint` | SHA-256 of canonical eligible-source manifest | required | exact equality; mismatch is fail-closed |
+| `configFingerprint` | SHA-256 of canonical analyzer/config/profile inputs | required | exact equality; mismatch is fail-closed |
+
+`generation` and `graphGeneration` are both retained: the former identifies the publication epoch, the latter binds graph records to that epoch. `configHash` and `catalogHash` remain supplementary provenance and cannot replace either fingerprint. The validator must reject absent, empty, type-invalid, or mismatched fields before opening JSON, Ladybug, Cypher, cache, registry, group, stream, or embedding bodies.
+
+Required correction evidence is split, not aggregate: `E2-P2A-MANIFEST1` (persisted manifest round-trip), `E2-P2A-HANDSHAKE1` (request/response and mismatch matrix), and `E2-P2A-METADATA1` (the nine semantic-correction fields plus the complete 15-field manifest/10-field request inventory, including presence, type, spelling, and fingerprint checks). “Nine-field” names the semantic subset; it is not a reduced wire contract. These IDs stay pending until their owning slice produces the evidence.
+
+The complete 42-job manifest below is the pre-implementation closed set. Any evidence-backed owner-path change must update the exact affected row and `E2-PNC-OWNERSHIP1` before editing; a wildcard, `TBD`, or post-hoc file choice fails the job gate.
+
+For every P2-A2–P2-A15 reader adapter and every P2-B–P2-G consumer slice, the copied Acceptance text is conjunctive with the complete matching ledger row: exact `IMPACT1`, `SRC1`, `BUILD1`, behavior `TEST1`/`PLAY1`, `REVIEW1`, `DETECT1`, and `COMMIT1` (or the slice-specific equivalent explicitly listed in the ledger). A parent matrix row or review-only record cannot close an individual reader guard.
+
+### Complete P2 job ownership manifest (mandatory, closed before implementation)
+
+The following is the complete 42-job manifest, not a future placeholder. Each implementation/validation row has one semantic owner, one behavior-test owner, one generated evidence file, and one independent fixture file. P2-A1 is the sole documentation-only exception: it owns only the exact reader-matrix document and records reasoned `N/A` cells for code/test/generated/fixture ownership, matching its preserve-only source boundary and documentation-only commit. P2-E2 and P2-F6 own reusable validation harnesses only; those exact listed validation files are overlay extensions to their editable validation scope and may not contain implementation repair. A path absent at the current HEAD is a planned new path and must be created only by the named job; a path present at HEAD remains subject to its current one-responsibility owner and impact gate. For P2-A2–P2-A15, the exact existing adapter files remain enumerated by P2-A1 reader-matrix row IDs and are incorporated into the owning row without a wildcard; the listed production file owns only the shared guard. Any newly discovered adapter must first receive an exact reader-matrix row and an exact ownership row before editing.
+
+| Job | Production owner file | Test owner file | Generated evidence file | Fixture file | Unique responsibility | Allowed links | Prohibited contents |
+|---|---|---|---|---|---|---|---|
+| P2-A | `internal/repo/index_version.go` | `internal/repo/index_version_test.go` | `internal/testdata/generated/p2-a-manifest.json` | `internal/testdata/p2/a-mismatch.json` | manifest/handshake contract | repo metadata types | reader adapters and staging |
+| P2-A1 | `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/index-reader-matrix.md` | `N/A` — documentation/source audit only | `N/A` — results are recorded in the child evidence ledger | `N/A` — source anchors are inspected in place | sole reader inventory and ownership map | exact source reader anchors and later guard-owner rows | production/test code or runtime guard implementation |
+| P2-A2 | `internal/repo/graph_loader_guard.go` | `internal/repo/graph_loader_guard_test.go` | `internal/testdata/generated/p2-a2-s0.json` | `internal/testdata/p2/a2-mismatch.json` | S0 graph/metadata guard | index_version contract | other reader surfaces |
+| P2-A3 | `internal/lbugload/reader_guard.go` | `internal/lbugload/reader_guard_test.go` | `internal/testdata/generated/p2-a3-s1.json` | `internal/testdata/p2/a3-mismatch.json` | S1 native Ladybug guard | index_version contract | Graph JSON or Cypher adapters |
+| P2-A4 | `internal/lbugruntime/query_guard.go` | `internal/lbugruntime/query_guard_test.go` | `internal/testdata/generated/p2-a4-s2.json` | `internal/testdata/p2/a4-mismatch.json` | S2 fallback Cypher guard | index_version contract | CLI/MCP routing |
+| P2-A5 | `internal/cli/index_guard.go` | `internal/cli/index_guard_test.go` | `internal/testdata/generated/p2-a5-s3.json` | `internal/testdata/p2/a5-mismatch.json` | S3 CLI guard | index_version contract | MCP/HTTP adapters |
+| P2-A6 | `internal/mcp/index_guard.go` | `internal/mcp/index_guard_test.go` | `internal/testdata/generated/p2-a6-s4.json` | `internal/testdata/p2/a6-mismatch.json` | S4 MCP guard | index_version contract | HTTP/Web adapters |
+| P2-A7 | `internal/httpapi/index_guard.go` | `internal/httpapi/index_guard_test.go` | `internal/testdata/generated/p2-a7-s5.json` | `internal/testdata/p2/a7-mismatch.json` | S5 HTTP/stream guard | index_version contract | Web client rendering |
+| P2-A8 | `anvien-web/src/index-guard.ts` | `anvien-web/src/index-guard.test.ts` | `anvien-web/testdata/generated/p2-a8-s6.json` | `anvien-web/testdata/p2/a8-mismatch.json` | S6 Web lifecycle guard | HTTP mismatch envelope | server-side readers |
+| P2-A9 | `internal/filecontext/index_guard.go` | `internal/filecontext/index_guard_test.go` | `internal/testdata/generated/p2-a9-s7.json` | `internal/testdata/p2/a9-mismatch.json` | S7 file-context cache guard | index_version contract | resource-cache policy |
+| P2-A10 | `internal/mcp/resource_cache_guard.go` | `internal/mcp/resource_cache_guard_test.go` | `internal/testdata/generated/p2-a10-s8.json` | `internal/testdata/p2/a10-mismatch.json` | S8 resource-cache guard | index_version contract | file-context implementation |
+| P2-A11 | `internal/embeddings/index_guard.go` | `internal/embeddings/index_guard_test.go` | `internal/testdata/generated/p2-a11-s9.json` | `internal/testdata/p2/a11-mismatch.json` | S9 embedding reader guard | index_version contract | graph generation writer |
+| P2-A12 | `internal/repo/registry_guard.go` | `internal/repo/registry_guard_test.go` | `internal/testdata/generated/p2-a12-s10-repo.json` | `internal/testdata/p2/a12-mismatch.json` | S10 repository registry guard | index_version contract | group contract publication |
+| P2-A13 | `internal/group/registry_guard.go` | `internal/group/registry_guard_test.go` | `internal/testdata/generated/p2-a13-s10-group.json` | `internal/testdata/p2/a13-mismatch.json` | S10 group registry guard | index_version contract | global registry implementation |
+| P2-A14 | `internal/processes/index_guard.go` | `internal/processes/index_guard_test.go` | `internal/testdata/generated/p2-a14-s11-process.json` | `internal/testdata/p2/a14-mismatch.json` | S11 process projection guard | index_version contract | community projection |
+| P2-A15 | `internal/communities/index_guard.go` | `internal/communities/index_guard_test.go` | `internal/testdata/generated/p2-a15-s11-community.json` | `internal/testdata/p2/a15-mismatch.json` | S11 community projection guard | index_version contract | process projection |
+| P2-B | `internal/repo/graph_v2_codec.go` | `internal/repo/graph_v2_codec_test.go` | `internal/testdata/generated/p2-b-graph.json` | `internal/testdata/p2/b-invalid.json` | Graph JSON v2 codec | canonical graph contract | reader negotiation |
+| P2-B1 | `internal/lbugload/csv_v2.go` | `internal/lbugload/csv_v2_test.go` | `internal/testdata/generated/p2-b1-csv.json` | `internal/testdata/p2/b1-csv-fixture.json` | Ladybug v2 schema/CSV export | canonical graph fields | transactional load |
+| P2-B2 | `internal/lbugload/transactional_v2.go` | `internal/lbugload/transactional_v2_test.go` | `internal/testdata/generated/p2-b2-load.json` | `internal/testdata/p2/b2-fault.json` | transactional Ladybug load | manifest and CSV contract | query projection |
+| P2-B3 | `internal/lbugnative/query_v2.go` | `internal/lbugnative/query_v2_test.go` | `internal/testdata/generated/p2-b3-native.json` | `internal/testdata/p2/b3-query.json` | native Ladybug canonical projection | v2 loaded graph | fallback query |
+| P2-B4 | `internal/lbugruntime/fallback_v2.go` | `internal/lbugruntime/fallback_v2_test.go` | `internal/testdata/generated/p2-b4-fallback.json` | `internal/testdata/p2/b4-query.json` | fallback Cypher canonical projection | v2 loaded graph | native driver |
+| P2-C | `internal/cli/opaque_id_reader.go` | `internal/cli/opaque_id_reader_test.go` | `internal/testdata/generated/p2-c-cli.json` | `internal/testdata/p2/c-opaque.json` | CLI opaque-ID migration | canonical fields | ID parsing fallback |
+| P2-C1 | `internal/mcp/opaque_id_reader.go` | `internal/mcp/opaque_id_reader_test.go` | `internal/testdata/generated/p2-c1-mcp.json` | `internal/testdata/p2/c1-opaque.json` | MCP opaque-ID migration | canonical fields | CLI implementation |
+| P2-C2 | `internal/filecontext/canonical_projection.go` | `internal/filecontext/canonical_projection_test.go` | `internal/testdata/generated/p2-c2-context.json` | `internal/testdata/p2/c2-canonical.json` | file-context canonical projection | canonical graph fields | cache persistence |
+| P2-C3 | `internal/filecontext/cache_generation.go` | `internal/filecontext/cache_generation_test.go` | `internal/testdata/generated/p2-c3-cache.json` | `internal/testdata/p2/c3-stale.json` | generation/config/catalog cache binding | manifest fingerprints | graph writer |
+| P2-C4 | `internal/mcp/rename_anchor.go` | `internal/mcp/rename_anchor_test.go` | `internal/testdata/generated/p2-c4-rename.json` | `internal/testdata/p2/c4-anchor.json` | source-anchor rename | canonical source anchors | ID parsing or graph mutation |
+| P2-C5 | `internal/mcp/resource_cache_record.go` | `internal/mcp/resource_cache_record_test.go` | `internal/testdata/generated/p2-c5-resource-cache.json` | `internal/testdata/p2/c5-stale.json` | generation-qualified resource cache | manifest/generation | resolver semantics |
+| P2-C6 | `internal/embeddings/opaque_reference.go` | `internal/embeddings/opaque_reference_test.go` | `internal/testdata/generated/p2-c6-embedding.json` | `internal/testdata/p2/c6-opaque.json` | opaque embedding references | canonical IDs/generation | graph construction |
+| P2-D | `internal/group/contract_generation.go` | `internal/group/contract_generation_test.go` | `internal/testdata/generated/p2-d-group.json` | `internal/testdata/p2/d-contract.json` | generation-qualified group contracts | registry generation | process projection |
+| P2-D1 | `internal/processes/source_anchor.go` | `internal/processes/source_anchor_test.go` | `internal/testdata/generated/p2-d1-process.json` | `internal/testdata/p2/d1-anchor.json` | source-anchored process projection | canonical source anchors | group registry |
+| P2-D2 | `internal/communities/source_anchor.go` | `internal/communities/source_anchor_test.go` | `internal/testdata/generated/p2-d2-community.json` | `internal/testdata/p2/d2-anchor.json` | source-anchored community projection | canonical source anchors | process projection |
+| P2-E | `internal/httpapi/canonical_fields.go` | `internal/httpapi/canonical_fields_test.go` | `internal/testdata/generated/p2-e-http.json` | `internal/testdata/p2/e-http.json` | HTTP canonical/version fields | manifest and graph records | Web rendering |
+| P2-E1 | `anvien-web/src/generation-negotiation.ts` | `anvien-web/src/generation-negotiation.test.ts` | `anvien-web/testdata/generated/p2-e1-web.json` | `anvien-web/testdata/p2/e1-mismatch.json` | Web generation negotiation | HTTP contract | server-side manifest |
+| P2-E2 | `internal/validation/s0_s11_baseline.go` | `internal/validation/s0_s11_baseline_test.go` | `internal/testdata/generated/p2-e2-s0-s11.json` | `internal/testdata/p2/e2-baseline.json` | pre-cutover S0-S11 baseline | reader matrix | v2 cutover |
+| P2-F | `internal/analyze/generation_stage.go` | `internal/analyze/generation_stage_test.go` | `internal/testdata/generated/p2-f-stage.json` | `internal/testdata/p2/f-stage-fault.json` | immutable generation staging | validated graph artifacts | active pointer |
+| P2-F1 | `internal/analyze/generation_publish.go` | `internal/analyze/generation_publish_test.go` | `internal/testdata/generated/p2-f1-publish.json` | `internal/testdata/p2/f1-cas.json` | repo-local active-generation CAS | staged generation manifest | graph construction |
+| P2-F2 | `internal/analyze/generation_cache_publish.go` | `internal/analyze/generation_cache_publish_test.go` | `internal/testdata/generated/p2-f2-cache.json` | `internal/testdata/p2/f2-cache-fault.json` | cache/embedding generation namespaces | generation manifest | reader adapters |
+| P2-F3 | `internal/repo/registry_publish.go` | `internal/repo/registry_publish_test.go` | `internal/testdata/generated/p2-f3-registry.json` | `internal/testdata/p2/f3-registry-fault.json` | global registry CAS publication | generation manifest | group snapshots |
+| P2-F4 | `internal/group/snapshot_publish.go` | `internal/group/snapshot_publish_test.go` | `internal/testdata/generated/p2-f4-group.json` | `internal/testdata/p2/f4-group-fault.json` | group snapshot/member vector CAS | generation manifest | global registry |
+| P2-F5 | `internal/analyze/generation_lease.go` | `internal/analyze/generation_lease_test.go` | `internal/testdata/generated/p2-f5-lease.json` | `internal/testdata/p2/f5-lease-fault.json` | reader leases and GC safety | active generation pointer | publication logic |
+| P2-F6 | `internal/analyze/publication_fault_matrix.go` | `internal/analyze/publication_fault_matrix_test.go` | `internal/testdata/generated/p2-f6-fault-matrix.json` | `internal/testdata/p2/f6-faults.json` | publication failure-atomicity matrix | all P2-F owners | target runtime |
+| P2-G | `internal/analyze/v2_cutover.go` | `internal/analyze/v2_cutover_test.go` | `internal/testdata/generated/p2-g-cutover.json` | `internal/testdata/p2/g-rollback.json` | identity-v2 cutover/legacy ambiguity | accepted P2-A..P2-F evidence | new semantic algorithms |
+
+The `E2 - P2 Evidence` table row whose first column equals the job ID is normatively incorporated as that job's `Acceptance / Evidence IDs` extension. Its comma-separated exact IDs are conjunctive. This is an exact row binding, not a broad `E2` reference: if the plan job and evidence row differ, either omits `DETECT1`/`COMMIT1`, or contains an undeclared ID, the job fails acceptance.
+
+#### P2-A direct acceptance override
+
+For `P2-A`, the copied Implementation Gate/Acceptance is superseded by this explicit binding: the gate requires `E2-P2A-IMPACT1`, `E2-P2A-SRC1`, `E2-P2A-BUILD1`, `E2-P2A-TEST1`, `E2-P2A-MANIFEST1`, `E2-P2A-HANDSHAKE1`, `E2-P2A-METADATA1`, `E2-P2A-REVIEW1`, `E2-P2A-DETECT1`, and `E2-P2A-COMMIT1`; the behavior test must cover absent, empty, type-invalid, stale, fingerprint-mismatch, and supported metadata rows for every required field. No P2-A acceptance may be recorded from `E2-P2A-REVIEW1` alone.
+
+The copied phrase “P1-A authority fixes the manifest fields” is narrowed here: Child 01 supplies the accepted identity/schema version values only; Child 02/P2-A solely owns the persisted manifest shape, handshake shape, field validation, and reader failure contract. P1-A cannot add, omit, or rename P2 metadata fields.
+
+The same direct binding is required for every later P2 slice: its Acceptance must name the exact ledger IDs for impact, source, full build, behavior oracle, Supervisor, detect-changes, and commit. The child evidence ledger is the authoritative enumeration; a missing ID in either the plan overlay or ledger is a failed traceability gate.
+
 ## Checklist
 
 - [x] P0-A: Complete actual status before implementation work.
@@ -2269,6 +2366,7 @@ Every implementation slice follows this order:
   - Acceptance: final `git diff/status` contains no dead plan-created artifacts, supervisor passes the cleanup, and evidence records what was removed or preserved.
 - [ ] Pn-C: Close the plan.
   - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
+   - Overlay Gate: apply the mandatory Semantic Remediation Overlay; this is local-child closure, not campaign/release completion.
   - Work Steps:
     1. Run the required final validation for the accepted scope, including full build before final runtime validation. For app/runtime scopes, full build must include Docker image/container build.
     2. Start the real built Docker/container runtime for app/runtime validation. If Docker cannot be built or started, record the blocker and do not substitute a host dev server.
@@ -2277,8 +2375,10 @@ Every implementation slice follows this order:
     5. Run Anvien detect-changes before commit when implementation work was performed.
     6. Record final validation, detect-changes, benchmark, and commit evidence.
     7. Commit the completed scope and verify the worktree state.
-  - Implementation Gate: Pn-A and Pn-B must pass or record blockers.
-  - Acceptance: final evidence is recorded, required commits exist, and the worktree state is known.
+     8. Refresh Child 03 actual-status from the latest accepted Child 02 evidence, append its refresh-log row, and update its next action/work steps before handoff.
+     9. Record qualified `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1`; bind every required evidence-ledger row and the exact per-job ownership table.
+   - Implementation Gate: Pn-A/Pn-B, all local implementation gates, full evidence rows, ownership tables, and the successor refresh must pass; pending P7 is not a local-child blocker.
+   - Acceptance: local closure evidence, commit, `E2-PNC-NEXTSTATUS1`, and `E2-PNC-HANDOFF1` are recorded and the worktree is known; campaign/release closure remains separate.
 
 ## Risk Notes
 

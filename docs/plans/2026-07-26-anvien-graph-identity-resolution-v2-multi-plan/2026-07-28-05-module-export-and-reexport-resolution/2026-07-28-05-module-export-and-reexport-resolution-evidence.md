@@ -165,6 +165,39 @@ P5 vector/benchmark proofs:
 
 P5 target evidence must prove two syntactic consumer-to-barrel dependencies, two terminal call bindings, complete hop proofs, and zero corresponding false gaps.
 
+### E5 semantic correction binding
+
+The copied E5 rows above remain historical provenance. The execution rows below are conjunctive extensions; every listed semantic/handoff/ownership ID remains pending until proved.
+
+| Plan job | Required correction evidence IDs | Status |
+|---|---|---|
+| P5-A | `E2-PNC-MODULE1A`, `E2-PNC-MODULE1E`, `E5-P5-HANDOFF1`, `2026-07-28-04-typescript-export-semantics::E2-PNC-HANDOFF1` | pending |
+| P5-B | `E2-PNC-MODULE1D` | pending |
+| P5-C | `E2-PNC-MODULE1B`, `E2-PNC-MODULE1D` | pending |
+| P5-D | `E2-PNC-MODULE1C`, `E2-PNC-MODULE1D`, `E2-PNC-MODULE1E`, `E5-P5-DERIVED1` | pending |
+
+`E5-P5-DERIVED1` is the exact ownership manifest in the companion plan, not a summary owner. It records four primary owner sets plus the named preserve-only links: P5-A owns `typescript_project.go`/`module_reference.go` and the TS syntax coordinator write; P5-B owns `module_export_table.go` and `indexes.go`; P5-C owns `reexport_resolution.go`; P5-D owns `public_api_projection.go` and serialization. P5-A is the sole write-owner for `internal/providers/tsjs/imports.go`, P5-B is the sole write-owner for `internal/resolution/indexes.go`, and P5-C consumes that coordinator link preserve-only. The canonical row serialization/hash and exact production/test/generated/fixture path set are required before any P5 job opens.
+
 ## Closure Evidence
 
-Reserved for final Supervisor, commit, successor-status, and handoff evidence when this child reaches closure.
+Closure is pending; these are mandatory declarations, not proof. The full evidence row for every implementation slice remains conjunctive with its plan Acceptance.
+
+| Evidence ID | Source slice | Local slice | Required proof | Commit | Owner decision | Successor opening condition | Freshness evidence | Status |
+|-------------|--------------|-------------|---------------|--------|---------------|----------------------------|--------------------|--------|
+| `E2-PNC-OVERLAY1` | P8-C | Pn-C | semantic overlay precedence and local-child-versus-campaign closure decision | pending | pending | local checkpoint only | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-OWNERSHIP1` | P8-C | Pn-C | complete four-job ownership table with exact production/test/generated/fixture paths and no wildcard/TBD | pending | pending | all four jobs have rows | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-LEDGER1` | P8-C | Pn-C | every slice Acceptance bound to complete IMPACT/SRC/BUILD/TEST-oracle/REVIEW/DETECT/COMMIT row | pending | pending | no review-only closure | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-MODULE1` | P5-A..P5-D | Pn-C | module correction index | pending | pending | all five subrows accepted | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-MODULE1A` | P4 handoff/P5-A | P5-A | directExportedDefinitionCount consumed unchanged from qualified P4 handoff | pending | pending | exact Child 04 handoff | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-MODULE1B` | P5-C | P5-C | P5-C-owned resolvedExportEntryCount and reachableThroughBarrel with terminal proof hops | pending | pending | proof-backed traversal | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-MODULE1C` | P5-D | P5-D | P5-D-owned publicApiSymbolCount computed from terminal P5 entry set | pending | pending | serialization only | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-MODULE1D` | P5-B/P5-C | P5-D | zero-physical-declaration barrel: physicalDeclarationCount=0, non-empty resolved surface, exact terminal proof | pending | pending | exact fixture result | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-MODULE1E` | P5-A/P5-D | P5-D | absolute before/after physical path-resolution and syntactic IMPORTS counts with zero deltas | pending | pending | both absolute counts recorded | `E2-PNC-REFRESH1` | pending |
+| `E5-P5-DERIVED1` | P5-A..P5-D | P5 | exact P5-A/B/C/D ownership manifest, including test/generated/fixture files | pending | pending | all named jobs have rows | `E2-PNC-REFRESH1` | pending |
+| `E5-P5-HANDOFF1` | `2026-07-28-04-typescript-export-semantics::E2-PNC-HANDOFF1` | P5-A | exact qualified Child 04 dependency accepted before P5-A opens | pending | pending | exact slug-qualified record | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-REFRESH1` | P8-C | Pn-C | current HEAD/graph/file-detail snapshot and successor-status refresh-log/next-action/work-step update | pending | pending | Child 06 actual-status fresh | `anvien analyze E:\Anvien --force --json`; `git rev-parse HEAD` | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-MANIFEST1` | Child 02 P2-A | P0 | inspect-only authoritative manifest proof | n/a | pending | Child 05 consumes without reinterpretation | Child 02 qualified handoff | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-HANDSHAKE1` | Child 02 P2-A | P0 | inspect-only authoritative handshake proof | n/a | pending | Child 05 consumes without reinterpretation | Child 02 qualified handoff | pending |
+| `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-P2A-METADATA1` | Child 02 P2-A | P0 | inspect-only authoritative metadata inventory | n/a | pending | Child 05 consumes without reinterpretation | Child 02 qualified handoff | pending |
+| `E2-PNC-NEXTSTATUS1` | P8-C | Pn-C | successor Child 06 actual-status refreshed from latest accepted evidence; refresh-log, next-action, and work-step rows updated | pending | pending | Child 06 may open only after exact qualified handoff | `E2-PNC-REFRESH1` | pending |
+| `E2-PNC-HANDOFF1` | P8-C | Pn-C | qualified Child 05 local evidence, commit, predecessor gate, owner decision, and Child 06 opening condition | pending | pending | `2026-07-28-05-module-export-and-reexport-resolution::E2-PNC-NEXTSTATUS1` accepted after refreshing Child 06 | `E2-PNC-REFRESH1` | pending |

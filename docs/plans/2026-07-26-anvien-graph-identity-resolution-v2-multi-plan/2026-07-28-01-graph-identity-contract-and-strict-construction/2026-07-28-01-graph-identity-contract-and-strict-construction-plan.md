@@ -244,6 +244,41 @@ Every implementation slice follows this order:
 - Every touched/new source and test file passes the one-file/one-responsibility review; `0` new catch-all files and `0` unrelated responsibility additions.
 - Every slice has a separate commit after full build, boundary validation, ledger update, Supervisor PASS, and detect-changes.
 
+## Semantic Remediation Overlay (mandatory)
+
+The copied P1 phase block above is historical provenance and remains unchanged. This overlay is the stronger execution contract; it controls whenever a copied gate is weaker or contradictory.
+
+- Local closure is a checkpoint, not campaign completion. Pending P7 rows do not block Child 01 local closure; campaign/release closure remains a Child 07 responsibility.
+- Every implementation slice Acceptance is conjunctive with the complete matching evidence-ledger row (`IMPACT`, `SRC`, `BUILD`, behavior `TEST`/oracle, `REVIEW`, `DETECT`, and `COMMIT`). A `REVIEW1` record alone cannot close a slice.
+- Before each job opens, record an exact ownership table with `File`, one unique responsibility, allowed links, and prohibited contents for every production, test, generated, and fixture file. Wildcards, `TBD`, catch-all owners, or mixed responsibilities fail the implementation gate.
+- `Pn-C` must create qualified `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1`. The former proves the next child actual-status/refresh-log/next-action/work-step refresh; the latter proves the local evidence, commit, predecessor gate, and successor opening condition using this child’s own `NEXTSTATUS1` after that refresh, never a future successor-owned record. Missing or stale records block closure.
+- The qualified names are `2026-07-28-01-graph-identity-contract-and-strict-construction::E2-PNC-NEXTSTATUS1` and `2026-07-28-01-graph-identity-contract-and-strict-construction::E2-PNC-HANDOFF1`; downstream plans must consume these namespaced records.
+- Identity contract acceptance must prove the Declaration/Symbol/range/scope tuple, collision and merge behavior, and opaque downstream references without silently changing the active v1 path. Child 02 owns the expanded manifest/handshake metadata correction; Child 01 supplies the identity fields it consumes.
+
+### Identity job ownership/evidence binding (mandatory)
+
+Before each P1-A–P1-E/P1-C0* job opens, its closed file set must be recorded in `E2-PNC-OWNERSHIP1`. Implementation jobs require exact production, test, generated, and fixture paths. Contract-only P1-A instead requires one exact authority-document path and explicit reasoned `N/A` entries for production code, test code, generated runtime evidence, and fixtures. Each source file owns one identity responsibility only; graph adapters may link to many consumers but may not construct a second identity scheme. Every copied Acceptance line is conjunctive with its exact `IMPACT1`, `SRC1`, `BUILD1`, behavior `TEST1`/`ORACLE1`, `REVIEW1`, `DETECT1`, and `COMMIT1` ledger IDs. A review-only or parity-only record cannot close an identity slice.
+
+The binding is literal and follows each job type. The contract-only P1-A requires `E1-P1A-CONTRACT1`, `E1-P1A-REVIEW1`, and `E1-P1A-COMMIT1`. Implementation jobs such as P1-B and P1-C0 require their exact `IMPACT1`, `SRC1`, `BUILD1`, behavior `TEST1`, `REVIEW1`, `DETECT1`, and `COMMIT1` ledger IDs. Every remaining P1 implementation slice must bind the complete exact row declared for that slice; no nonexistent generic ID is invented and no review-only record closes implementation.
+
+| Job | Primary owner file | Test owner file | Generated evidence file | Fixture file | Unique responsibility | Allowed links | Prohibited contents |
+|---|---|---|---|---|---|---|---|
+| P1-A | `docs/contracts/graph-identity-generation-and-migration-contract.md` (NEW) | `N/A` — documentation-only authority review | `N/A` — evidence is recorded in the child ledger and Supervisor report | `N/A` — accepted problem/decision records are inspect-only inputs | accepted identity/ownership authority only | accepted problem report, decision table, identity fields | production/test code, graph mutation, or reader policy |
+| P1-B | `internal/graphidentity/declaration_id.go` (NEW) | `internal/graphidentity/declaration_id_test.go` (NEW) | `internal/testdata/generated/p1-b-identity.json` | `internal/testdata/p1/b-ranges.json` | range/DeclarationID/SymbolID/SymbolRef types | canonical position/owner inputs | merge or graph mutation |
+| P1-C0 | `internal/graph/declaration_occurrences.go` (NEW) | `internal/graph/declaration_occurrences_test.go` (NEW) | `internal/testdata/generated/p1-c0-occurrences.json` | `internal/testdata/p1/c0-collisions.json` | lossless declaration occurrence index | declaration facts | relationship identity |
+| P1-C0A | `internal/graph/relationship_identity.go` (NEW) | `internal/graph/relationship_identity_test.go` (NEW) | `internal/testdata/generated/p1-c0a-relationships.json` | `internal/testdata/p1/c0a-source-sites.json` | RelationshipID/source-site aggregation | immutable occurrence refs | node identity |
+| P1-C0B | `internal/graph/validation.go` (NEW) | `internal/graph/validation_test.go` (NEW) | `internal/testdata/generated/p1-c0b-closure.json` | `internal/testdata/p1/c0b-invalid.json` | decode/closure validation | immutable graph view | mutation or repair |
+| P1-C | `internal/graphidentity/symbol_mapping.go` (NEW) | `internal/graphidentity/symbol_mapping_test.go` (NEW) | `internal/testdata/generated/p1-c-symbols.json` | `internal/testdata/p1/c-shadowing.json` | declaration-to-symbol mapping | declaration facts, owner scopes | graph mutation |
+| P1-D | `internal/graph/mutation.go` (NEW) | `internal/graph/mutation_test.go` (NEW) | `internal/testdata/generated/p1-d-mutation.json` | `internal/testdata/p1/d-duplicates.json` | strict graph mutation API | graph types/validation | producer semantics |
+| P1-D1 | `internal/graph/core_producer_adapter.go` (NEW) | `internal/graph/core_producer_adapter_test.go` (NEW) | `internal/testdata/generated/p1-d1-core.json` | `internal/testdata/p1/d1-core.json` | core producer migration adapter | strict mutation API | resolver/document producers |
+| P1-D2 | `internal/resolution/graph_producer_adapter.go` (NEW) | `internal/resolution/graph_producer_adapter_test.go` (NEW) | `internal/testdata/generated/p1-d2-resolution.json` | `internal/testdata/p1/d2-resolution.json` | resolution/projection producer migration | strict mutation API | ancillary/document producers |
+| P1-D3 | `internal/graph/ancillary_producer_adapter.go` (NEW) | `internal/graph/ancillary_producer_adapter_test.go` (NEW) | `internal/testdata/generated/p1-d3-ancillary.json` | `internal/testdata/p1/d3-ancillary.json` | thin explicit-operation orchestration for the inventory-defined ancillary producer set | strict mutation API plus document/COBOL/semantic/diagnostic producer links | domain logic, identity policy, or core/resolution producer ownership |
+| P1-E | `internal/analyze/shadow_identity_v2.go` (NEW) | `internal/analyze/shadow_identity_v2_test.go` (NEW) | `internal/testdata/generated/p1-e-shadow.json` | `internal/testdata/p1/e-shadow.json` | shadow-v2 emission/comparison | accepted identity/mutation contracts | active-v1 cutover |
+
+This 11-job table is the closed Child-01 ownership set. Any path change must be made in the affected row before editing and cannot merge responsibilities.
+
+For every P1 job, the evidence-ledger row whose first column equals that exact job ID is normatively incorporated as the job's `Acceptance / Evidence IDs` extension. All listed IDs are conjunctive; any plan/ledger mismatch or missing detect/commit row fails acceptance.
+
 ## Checklist
 
 - [x] P0-A: Complete actual status before implementation work.
@@ -859,6 +894,7 @@ Every implementation slice follows this order:
   - Acceptance: final `git diff/status` contains no dead plan-created artifacts, supervisor passes the cleanup, and evidence records what was removed or preserved.
 - [ ] Pn-C: Close the plan.
   - Goal: finish validation, evidence, benchmark, detect-changes, commit, and final status.
+   - Overlay Gate: apply the mandatory Semantic Remediation Overlay; this is local-child closure, not campaign/release completion.
   - Work Steps:
     1. Run the required final validation for the accepted scope, including full build before final runtime validation. For app/runtime scopes, full build must include Docker image/container build.
     2. Start the real built Docker/container runtime for app/runtime validation. If Docker cannot be built or started, record the blocker and do not substitute a host dev server.
@@ -867,8 +903,10 @@ Every implementation slice follows this order:
     5. Run Anvien detect-changes before commit when implementation work was performed.
     6. Record final validation, detect-changes, benchmark, and commit evidence.
     7. Commit the completed scope and verify the worktree state.
-  - Implementation Gate: Pn-A and Pn-B must pass or record blockers.
-  - Acceptance: final evidence is recorded, required commits exist, and the worktree state is known.
+     8. Refresh Child 02 actual-status from the latest accepted Child 01 evidence, append its refresh-log row, and update its next action/work steps before handoff.
+     9. Record qualified `E2-PNC-NEXTSTATUS1` and `E2-PNC-HANDOFF1`; bind every required evidence-ledger row and the exact per-job ownership table.
+   - Implementation Gate: Pn-A/Pn-B, all local implementation gates, full evidence rows, ownership tables, and the successor refresh must pass; pending P7 is not a local-child blocker.
+   - Acceptance: local closure evidence, commit, `E2-PNC-NEXTSTATUS1`, and `E2-PNC-HANDOFF1` are recorded and the worktree is known; campaign/release closure remains separate.
 
 ## Risk Notes
 
