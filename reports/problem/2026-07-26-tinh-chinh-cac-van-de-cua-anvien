@@ -1,0 +1,573 @@
+Đề xuất tốt nhất không phải vá lần lượt năm chỗ, mà chốt một contract v2 với bốn thực thể độc lập:
+
+```text
+File ──DECLARES──> Declaration ──DECLARES_SYMBOL──> Symbol
+Module ──EXPORTS / REEXPORTS──────────────────────> Symbol
+SourceSite ──ResolutionOutcome────────────────────> Symbol | ExternalSymbol | Gap
+```
+
+Hiện repo chưa có `SPEC-MAP.md` hoặc SPEC `APPROVED` cho các contract này. Vì vậy nội dung dưới đây nên được xem là kiến trúc DRAFT để Owner duyệt trước khi viết plan hoặc code.
+
+## 1. Graph Identity v2: tách Declaration khỏi Symbol
+
+### Contract nên chốt
+
+Một UID không thể đồng thời:
+
+- duy nhất cho mọi declaration;
+- ổn định tuyệt đối qua mọi lần sửa source;
+- hỗ trợ overload/declaration merging;
+- chứa source range chính xác.
+
+Nên dùng hai tầng:
+
+| Thực thể | Ý nghĩa | Identity |
+|---|---|---|
+| `Declaration` | Một lần khai báo cụ thể trong source | Unique trong một graph snapshot |
+| `Symbol` | Thực thể ngữ nghĩa mà declaration thuộc về | Ổn định hơn qua các lần analyze |
+
+Ví dụ hai biến `time` ở hai scope:
+
+```text
+Declaration(time@207) ──> Symbol(parseTime.scope.time)
+Declaration(time@214) ──> Symbol(latestIso.callback.scope.time)
+```
+
+Chúng khác cả Declaration lẫn Symbol.
+
+Với overload:
+
+```text
+Declaration(signature 1) ┐
+Declaration(signature 2) ├──> Symbol(read)
+Declaration(implementation)┘
+```
+
+### Trường identity đề xuất
+
+`SymbolID` nên được tạo từ canonical tuple:
+
+```text
+identityVersion
+language
+repo-relative module/file identity
+symbol space: value | type | namespace
+lexical owner/scope identity
+semantic name
+provider merge key
+```
+
+`DeclarationID` bổ sung:
+
+```text
+SymbolID
+declaration role
+binding path
+selection anchor
+declaration discriminator
+```
+
+Không dùng absolute repo path trong UID. Cross-repo reference phải là:
+
+```text
+(repoKey, identityVersion, graphGeneration, SymbolID)
+```
+
+### Range contract
+
+Mỗi declaration cần hai range:
+
+- `range`: toàn bộ declaration.
+- `selectionRange`: chính xác token identifier.
+
+Nội bộ nên giữ byte offsets dạng half-open:
+
+```text
+[startByte, endByte)
+```
+
+Line/column phải công bố rõ encoding. Tree-sitter đang dùng byte column, trong khi editor/LSP thường dùng UTF-16; không được ngầm coi hai loại này giống nhau.
+
+### Không được silent overwrite
+
+`Graph.AddNode` hiện coi ID trùng là replacement tại [types.go](E:/Anvien/internal/graph/types.go:96). Đây là semantics phù hợp cho một số enrichment pass, nhưng không phù hợp cho canonical source nodes.
+
+Nên tách API:
+
+- `AddCanonicalNode`: ID trùng, payload khác → lỗi `IdentityCollision`.
+- `AddIdempotentNode`: chỉ chấp nhận cùng identity và cùng provenance.
+- `MergeNodeProperties`: explicit enrichment.
+- `ReplaceNode`: explicit replacement.
+
+Canonical collision phải làm generation mới fail-closed; graph cũ vẫn còn hoạt động. Không publish graph đã mất declaration.
+
+### Versioning và migration
+
+Thêm vào graph metadata và `.anvien/meta.json`:
+
+```text
+graphSchemaVersion
+identitySchemaVersion
+scopeIRSchemaVersion
+graphGeneration
+analyzerVersion
+columnEncoding
+source/config fingerprint
+```
+
+Hiện metadata repo chưa có version contract này, xem [repo/types.go](E:/Anvien/internal/repo/types.go:12).
+
+Cutover phải:
+
+1. Tính ID v1 và v2 song song ở shadow mode.
+2. Chứng minh v2 không collision.
+3. Build generation mới ở staging.
+4. Validate toàn bộ node/edge.
+5. Atomic publish.
+6. Force full re-analyze; không sửa graph v1 tại chỗ.
+
+Legacy ID ánh xạ 1–1 có thể redirect kèm warning. Legacy ID từng collision như `Variable:...:time` phải trả `ambiguous` cùng toàn bộ candidates, không tự chọn một node.
+
+### Acceptance bắt buộc
+
+- Cùng source/config/analyzer version sinh cùng ID set bất kể worker count, scan order hoặc IR order.
+- Xáo trộn thứ tự DefinitionFacts không thay đổi graph.
+- Bốn declaration `time`/`now` tồn tại riêng biệt.
+- Duplicate conflicting payload làm analyze thất bại và giữ nguyên graph trước đó.
+- CRLF/LF, Unicode, emoji, combining character và tab không làm sai range.
+- JSON graph và LadybugDB giữ cùng ID/range/count.
+
+---
+
+## 2. Binding-pattern extraction: mỗi leaf identifier là một binding thật
+
+### Contract nên chốt
+
+Mỗi identifier thực sự được khai báo trong binding pattern phải có đúng:
+
+- một `DefinitionFact`;
+- một `BindingFact`;
+- một `Declaration`;
+- một lexical `Symbol`;
+- một `selectionRange`.
+
+ScopeIR nên giữ thêm provenance của pattern:
+
+```text
+pattern kind
+pattern ID
+binding path
+property key
+local name
+isRest
+hasDefault
+declaration kind
+scope ID
+```
+
+Ví dụ:
+
+```ts
+const { source: local, nested: [first, ...rest] } = value;
+```
+
+Kết quả đúng:
+
+```text
+local → binding path .source
+first → binding path .nested[0]
+rest  → binding path .nested[1...]
+```
+
+`source` và `nested` là property keys, không phải local declarations.
+
+### Phải phân biệt declaration với assignment
+
+```ts
+const { a } = value;  // tạo declaration
+({ a } = value);      // write vào binding đã tồn tại
+```
+
+Dạng thứ hai không được tạo Definition mới.
+
+### Gợi ý triển khai
+
+TS provider cần một recursive pattern walker, bao phủ:
+
+- identifier;
+- array pattern;
+- object pattern;
+- rest;
+- assignment/default;
+- nested pattern;
+- array holes;
+- parameter destructuring;
+- catch binding;
+- `for-of` binding;
+- object shorthand và alias;
+- computed keys.
+
+Definition emission phải độc lập với type inference. Không được bỏ declaration chỉ vì chưa suy ra được type của từng leaf.
+
+Nếu gặp pattern chưa hỗ trợ, phải phát structured extraction diagnostic/metric. Không được `return` im lặng như hiện tại.
+
+### Acceptance bắt buộc
+
+- Sáu biến trong cheapapp sinh đủ sáu Definition và Binding facts.
+- Sáu `.map()` không còn ResolutionGap.
+- Nested array/object/rest/default đều đúng binding path.
+- Assignment destructuring chỉ sinh write/reference.
+- Shadowing trong nested scope trỏ về đúng Symbol.
+- Không double-count import binding nếu sau này dùng chung binding engine.
+
+Fixture kiểm thử phải là fixture tổng quát dưới package `testdata/`; không copy `cheapapp.org` vào Anvien và không tạo fixture ở root.
+
+---
+
+## 3. Export contract: không dùng `Visibility="exported"`
+
+Module export và access visibility là hai khái niệm khác nhau:
+
+```text
+AccessVisibility:
+public | protected | private | internal | package | unspecified
+
+ModuleExport:
+local | default | alias | reexport | star | namespace
+```
+
+Không nên chỉ điền `DefinitionFact.Visibility = "exported"`. Cách đó có thể làm `exportedSymbolCount` đẹp lên nhưng vẫn không mô hình hóa đúng module surface.
+
+### Fact model đề xuất
+
+Tách ba loại fact:
+
+```text
+ModuleRequestFact
+- source module
+- module specifier
+- request kind
+- source range
+
+ImportBindingFact
+- local name
+- imported name
+- requested meaning
+- type-only flag
+
+ExportBindingFact
+- export kind
+- exported name
+- local name/local definition
+- target module
+- target exported name
+- meaning mask
+- type-only flag
+- source range
+```
+
+`MeaningMask` tối thiểu:
+
+```text
+value
+type
+namespace
+```
+
+Điều này quan trọng vì:
+
+- interface/type alias chỉ tồn tại trong type space;
+- function/variable tồn tại trong value space;
+- class và enum có thể tồn tại ở cả type và value space;
+- `import type` không được dùng để call hoặc `new`.
+
+TypeScript chính thức phân biệt type-only import/export và type/value position; module resolution còn phụ thuộc `moduleResolution`, `paths`, package `exports`, `typesVersions` và điều kiện package. [TypeScript Modules Reference](https://www.typescriptlang.org/docs/handbook/modules/reference)
+
+### Ba nghĩa khác nhau của “exported”
+
+Không nên giữ một số `exportedSymbolCount` mơ hồ. Nên tách:
+
+- `directExportedDefinitionCount`: khai báo export trực tiếp trong file.
+- `resolvedExportEntryCount`: export surface sau khi resolve re-export.
+- `publicApiSymbolCount`: symbol reachable từ package entrypoint/public exports.
+
+Một symbol được barrel re-export không đồng nghĩa nó là public package API.
+
+### Graph emission
+
+Canonical graph nên có:
+
+```text
+Module/File ──EXPORTS──> Symbol
+Module/File ──REEXPORTS──> Symbol
+```
+
+Nếu vẫn cần `exported=true` hoặc `visibility=exported` để tương thích, field đó phải được derive từ cùng `ExportBindingFact`, không trở thành source of truth thứ hai.
+
+---
+
+## 4. Module/export resolver: xây export table, không vá đệ quy cục bộ
+
+### Tách hai giai đoạn
+
+```text
+Module resolution:
+specifier → target module/file
+
+Export resolution:
+(target module, export name, meaning) → terminal Symbol
+```
+
+Hiện Anvien mới làm tốt phần đầu cho barrel case nhưng đồng nhất “tìm thấy file” với “tìm thấy symbol”.
+
+### Export table
+
+Khóa canonical:
+
+```text
+(moduleID, exportedName, requestedMeaning)
+```
+
+Giá trị là structured outcome:
+
+```text
+resolved terminal symbol
+ambiguous candidates
+cycle without terminal
+export missing
+meaning mismatch
+unsupported/truncated
+```
+
+Thuật toán nên dùng memoized DFS hoặc SCC/fixed-point:
+
+- explicit local/default/named export;
+- named re-export;
+- namespace re-export;
+- `export *`;
+- alias chain;
+- multi-hop barrel;
+- cycle detection;
+- ambiguity detection.
+
+Các quy tắc quan trọng:
+
+- `export *` không truyền default.
+- Explicit export thắng star export.
+- Nhiều đường dẫn về cùng terminal Symbol được deduplicate.
+- Nhiều terminal Symbol khác nhau → `ambiguous_export`.
+- Cycle có một nhánh ra terminal vẫn phải resolve được.
+- Cycle thuần không terminal → `cycle_no_terminal`.
+- Giới hạn tài nguyên phải trả `budget_exceeded`, không silent truncation.
+
+Đây là cùng mô hình với thuật toán `ResolveExport` của ECMAScript, không phải “tìm definition đầu tiên trong barrel”. [ECMAScript module ResolveExport](https://tc39.es/ecma262/2023/multipage/ecmascript-language-scripts-and-modules.html)
+
+### Provenance không được mất
+
+Kết quả phải giữ toàn bộ chuỗi:
+
+```text
+consumer import
+→ barrel export name
+→ alias/re-export hops
+→ terminal module
+→ terminal Symbol
+```
+
+Graph giữ:
+
+- `IMPORTS`: dependency module trực tiếp đúng theo source.
+- `USES`/`CALLS`: terminal Symbol.
+- Resolution proof: toàn bộ barrel hops.
+
+Không tạo consumer → implementation module `IMPORTS` giả.
+
+### Không được dùng global fallback để cứu import lỗi
+
+Nếu source có explicit import nhưng export binding không resolve được, resolver phải trả lỗi cụ thể. Không được fallback sang một global symbol cùng tên, vì như vậy biến false negative thành false positive nguy hiểm hơn.
+
+### Acceptance bắt buộc
+
+- Import trực tiếp và import qua barrel resolve cùng terminal Symbol; chỉ provenance khác nhau.
+- Hai cheapapp calls có `CALLS` đến đúng function.
+- Named/default/alias/type-only/star/namespace cases đầy đủ.
+- Star ambiguity không chọn candidate đầu tiên.
+- Cycle luôn terminate.
+- Barrel có zero physical declarations vẫn có export surface.
+- Path resolution count không bị thay đổi bởi export resolution.
+
+---
+
+## 5. Ambient/external: DeclarationUniverse riêng, không hardcode `Promise`
+
+### Contract đề xuất
+
+Resolver workspace cần một declaration universe có nhiều nguồn:
+
+```text
+Repo declarations
+Project-owned .d.ts
+Installed package declarations
+TypeScript standard-library declarations
+Language intrinsics
+Ambient modules/global augmentations
+```
+
+Kết quả lookup phải là `ResolutionOutcome`, không chỉ `(target, bool)`:
+
+```text
+resolved_internal
+resolved_external
+resolved_intrinsic
+module_not_found
+export_not_found
+meaning_mismatch
+ambiguous_export
+cycle_no_terminal
+external_declaration_unavailable
+catalog_version_mismatch
+unsupported_syntax
+budget_exceeded
+security_path_rejected
+```
+
+Mỗi outcome giữ:
+
+- stage lỗi;
+- source site;
+- requested meaning;
+- candidates;
+- authority/provider;
+- config/catalog hash;
+- provenance;
+- confidence/completeness mode.
+
+### Giữ kiến trúc Go/local-first
+
+Theo [ARCHITECTURE.md](E:/Anvien/ARCHITECTURE.md), backend/analyzer phải tiếp tục do Go sở hữu. Khuyến nghị:
+
+1. Dùng project-owned `.d.ts` khi tồn tại, đọc lazy theo import; không scan toàn bộ `node_modules`.
+2. Sinh một compact TypeScript standard-library catalog tại build time và embed trong Go runtime.
+3. Catalog được version hóa theo TypeScript version và giữ hash nguồn.
+4. Chọn lib profile theo `target`, `lib`, `noLib` và project config.
+5. Chỉ materialize external Symbol thực sự được source tham chiếu.
+
+TypeScript xác định các builtin như `Math`, `Promise` và DOM APIs qua `lib.*.d.ts`; tập lib thay đổi theo `target` và `lib`. Vì vậy một whitelist cố định không thể là authority. [TypeScript Type Declarations](https://www.typescriptlang.org/docs/handbook/2/type-declarations.html)
+
+Official TypeScript compiler nên dùng làm differential oracle trong test. Không nên buộc runtime production gọi Node/`tsc` hoặc nhúng trực tiếp compiler internals vào ScopeIR. Compiler API chính thức cũng không cam kết ổn định, nên nếu sau này có adapter thì phải cách ly sau một DTO versioned. [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API)
+
+### Capability modes
+
+Graph metadata phải công bố rõ:
+
+```text
+exact      // đúng compiler/config/catalog version
+structural // repo + local declarations, external coverage có giới hạn
+degraded   // external declaration universe không khả dụng
+```
+
+Nếu exact declarations không có:
+
+- không download mạng;
+- không chạy package scripts;
+- không mượn TypeScript từ repo khác;
+- không tự nhận `Promise` là in-repo gap;
+- trả `external_declaration_unavailable` hoặc `catalog_version_mismatch`.
+
+### Graph-health không được đoán lại từ target text
+
+Resolver phải là nơi quyết định origin và failure reason. Graph-health chỉ project structured outcome thành classification/actionability.
+
+Ví dụ:
+
+```text
+Promise → resolved_external / typescript_lib
+Math.max → resolved_external / typescript_lib
+```
+
+Nếu catalog không khả dụng:
+
+```text
+Promise → external_declaration_unavailable
+```
+
+Tuyệt đối không thành:
+
+```text
+in_repo_unresolved / analyzer_gap
+```
+
+External symbols mặc định không tham gia in-repo rename và có thể bị loại khỏi impact/process traversal trừ khi user yêu cầu `include_external`.
+
+---
+
+## 6. Bộ gate nghiệm thu chung
+
+| Gate | Điều phải chứng minh |
+|---|---|
+| Identity | Không có hai declaration khác nhau dùng chung ID |
+| Determinism | Input/order/concurrency khác nhau vẫn sinh cùng canonical graph |
+| Binding | Mỗi bound identifier có đúng một Definition + Binding |
+| Exports | Direct/default/alias/type-only/re-export/star đúng export table |
+| Barrel | Direct import và barrel import về cùng terminal Symbol |
+| Ambient | Compiler-bound builtin không trở thành in-repo gap |
+| Diagnostics | Mọi unresolved có structured reason; không có `Target=nil` chung chung |
+| Integrity | Mọi relationship endpoint tồn tại |
+| Persistence | JSON và LadybugDB parity về IDs, ranges, exports và outcomes |
+| Downstream | `context`, `impact`, `rename`, file-detail và groups không chọn nhầm symbol |
+| Migration | Reader nhận biết identity/generation version; legacy collision trả ambiguity |
+| Capacity | Benchmark graph size, DB size, analyze time/memory, barrel depth và star fan-out |
+
+Các target-specific gates hiện tại:
+
+- `time` ×2 và `now` ×2 phải thành bốn Symbol/Declaration riêng.
+- Sáu destructured names phải có sáu Definition/Binding.
+- 21 exports phải có 21 direct export entries đúng type/value meaning.
+- Hai barrel calls phải có hai `CALLS` đến terminal function.
+- `Promise`, `Math.max`, `Math.min` phải resolved external hoặc trả external-capability status; không được là in-repo gap.
+
+## 7. Những shortcut nên cấm
+
+- Chỉ thêm line/range vào ID hiện tại rồi coi identity đã hoàn tất.
+- Dùng random UUID; sẽ phá determinism.
+- Hash một canonical tuple sai rồi cho rằng collision đã được giải quyết.
+- Tiếp tục `last writer wins` cho canonical nodes.
+- Điền `Visibility="exported"` làm source of truth.
+- Cho resolver đệ quy trực tiếp qua `ImportFact` mà không có export table.
+- Bind wildcard bằng mọi definition vật lý trong file.
+- Sort candidates rồi lấy phần tử đầu.
+- Dùng global-name fallback để cứu explicit import miss.
+- Hardcode `Promise`, `Math` hoặc DOM names.
+- Scan toàn bộ `node_modules` vào graph.
+- Chỉ đổi graph-health label mà không sửa resolution.
+- Silent cap cho barrel depth/star fan-out.
+- Copy `cheapapp.org` vào Anvien hoặc tạo target fixture ở root.
+
+## Khuyến nghị chốt cuối cùng
+
+Trước khi viết plan/code, nên tạo và Owner duyệt bốn architecture authority:
+
+1. **Graph Identity, Generation and Migration Contract**
+2. **ScopeIR Declaration, Binding and Export Contract**
+3. **Module Export Surface and Resolution Contract**
+4. **External Declaration Universe and Resolution Outcome Contract**
+
+Đích kiến trúc tôi khuyến nghị là: **Symbol/Declaration hai tầng, ExportFact first-class, export-table resolver, external declaration universe versioned, structured failure outcomes và graph generation fail-closed**. Đây là giải pháp production-grade; các bản vá nhỏ hơn chỉ làm biến mất triệu chứng hiện tại nhưng vẫn để lại cùng lớp lỗi cho overload, destructuring khác, barrel phức tạp và ambient symbols khác.
+
+5. Khi trien khai plan xu lý cac van dè trên thi càn ghi vào plan 1 qui tác sau: Mỗi file chỉ sở hữu một nghiệp vụ hoặc một trách nhiệm ngữ nghĩa duy nhất. Một file được phép import, gọi hoặc liên kết tới nhiều module và nhiều file khác, miễn tất cả liên kết đó cùng phục vụ trách nhiệm duy nhất của file.
+
+Cách áp dụng:
+“Một nghiệp vụ” không có nghĩa “một function” hoặc “một dependency”.
+Một file có thể chứa nhiều function/type hỗ trợ cùng một trách nhiệm.
+Một file orchestration có thể gọi nhiều module, nhưng chỉ điều phối; không kiêm thêm business logic.
+Không tạo các file gom tạp như utils, common, helpers, misc chứa nhiều trách nhiệm không liên quan.
+Nếu một file có nhiều lý do độc lập để thay đổi, plan phải tách thành các file riêng.
+Với file cũ đang trộn trách nhiệm, plan phải:ưu tiên đặt logic mới vào file chuyên trách; hoặc
+tạo slice refactor riêng nếu bắt buộc phải tách file cũ.
+
+Không được nhân tiện refactor phần legacy ngoài phạm vi plan.
+Test file cũng phải kiểm tra một contract/nghiệp vụ; được phép có nhiều test case cho cùng contract.
+Mỗi job trong plan sẽ có bảng:
+File	Trách nhiệm duy nhất	Được phép liên kết	Không được chứa
+
+Supervisor phải từ chối slice nếu một file mới hoặc file được mở rộng chứa nhiều nghiệp vụ độc lập. Quy tắc này sẽ áp dụng cùng các contract identity, binding, export, module-resolution và ambient đã đề xuất.
