@@ -348,7 +348,7 @@ Status: P2-A through P2-G are complete; Child 07 committed as `4f1c94e5`; P3-A b
 
 Matching plan item(s): `P3-A`, `P3-B`
 
-Status: `P3-A complete for the seven-child authoring closure`; `P3-B blocked / not authorized`. The legacy plan remains the active authority. No authority cutover, implementation, or target validation is claimed.
+Status: `P3-A complete`; `P3-B complete / PASS`. The roadmap is active and the legacy plan is reference-only. Production correctness remains pending implementation evidence.
 
 - `E3-P3A-STRUCT1`: Fresh disk audit found exactly 1 roadmap, 7 child folders, and 28 standard child files (29 campaign files total). Every child has exactly its plan/evidence/benchmark/actual-status set, one P0, its preserved source phase, and one Pn-A/Pn-B/Pn-C set. There are no extra child folders, Child 08, non-Markdown files, sentinel files, or generator artifacts. The frozen campaign manifest SHA-256 is `05D9DC4F6BED47470983817182B59534172181EBE028F05B99D8D3C5C75ED66E`.
 - `E3-P3A-LINK1`: Read-only Markdown-link audit checked 35 local links under the multi-plan root and found 0 broken destinations.
@@ -358,17 +358,17 @@ Status: `P3-A complete for the seven-child authoring closure`; `P3-B blocked / n
 - `E3-P3A-GRAPH1`: Fresh `anvien analyze --force --json` at indexed/current commit `bf3d76198b102db400c68f71b33f046d4ea0e9db` reports 1,555 scanned files, 676 parsed code files, 755 documents, 0 failed files, 85,112 graph nodes, and 123,980 relationships. Roadmap `file-detail` remains parsed/low-risk with 28 outbound `IMPORTS` and 0 unresolved references; all four authoring files are parsed/low-risk with 0 unresolved references.
 - `E3-P3A-DIFF1`: The pre-commit closure worktree contained only the five approved roadmap/authoring-ledger edits, the approved Supervisor report, and the preserved unrelated user problem artifact. No production/test/runtime file, graph output, repository-root artifact, or `E:\cheapapp.org` path was in scope; the unrelated artifact was excluded from staging. `git diff --check` passed for the approved closure files.
 - `E3-P3A-SUPERVISOR1`: The independent Supervisor review for the bounded claim “seven-child multi-plan authoring closure” is recorded in `reports/Supervisor/rp_supervisor_260728_212033_by_gpt-5-6-sol_seven_child_multiplan_authoring_closure.md`. It reviews the current disk audit, source preservation, ownership, links, hashes, graph freshness, Git boundary, and target do-not-touch rule. It does not authorize P3-B authority cutover.
-- `E3-P3B-SUPERVISOR1`: Reserved. No P3-B authority-cutover review has been executed.
-- `E3-P3B-CUTOVER1`: Reserved. No roadmap activation or legacy metadata/pointer edit has been executed.
-- `E3-P3B-DIFF1`: Reserved. No P3-B cutover diff exists.
-- `E3-P3B-DETECT1`: Reserved. No implementation/cutover detect-changes run is claimed for this docs-only, not-authorized boundary.
+- `E3-P3B-SUPERVISOR1`: `reports/Supervisor/rp_supervisor_260809_212310_by_gpt-5-codex_multiplan_authority_cutover.md` records unconditional PASS after fresh graph, disk, link, hash, and production-diff checks.
+- `E3-P3B-CUTOVER1`: On 2026-08-09 the roadmap status/authority block became active and the legacy plan metadata became `superseded / reference-only` with a direct roadmap pointer; exactly one active campaign authority remains.
+- `E3-P3B-DIFF1`: The cutover diff changes documentation authority/tracking artifacts only. Production source, tests, runtime configuration, graph artifacts, and `E:\cheapapp.org` are unchanged.
+- `E3-P3B-DETECT1`: Fresh `anvien detect-changes --repo Anvien --scope all` after the authorized docs cutover reports 9 changed files, 8 affected files, docs/documentation only, low risk, 0 affected processes, and 0 ResolutionGap delta.
 - `E3-P3A-COMMIT1`: Commit `49e63eb4` (`docs(plan): close seven-child multi-plan authoring`) contains exactly the roadmap, four authoring ledgers, and the bounded Supervisor report. Staged `git diff --check` passed; the unrelated problem artifact was not staged. This docs-only commit does not activate the roadmap, alter legacy metadata, access the target, or claim implementation.
 
 ## Closure Evidence
 
 Use this section for final detect-changes, commit hash, and closure evidence when the plan reaches completion.
 
-Status: bounded seven-child authoring closure complete; authority cutover and implementation remain not authorized. No build, Docker run, browser session, Playwright run, or target-repository action is claimed.
+Status: seven-child authoring and authority cutover complete. Production build, runtime, target, and acceptance evidence remain owned by the implementation children.
 
 Required closure evidence during authorized execution or a later P3-B resumption:
 
@@ -384,4 +384,4 @@ Current bounded closure record:
 
 - P3-A structural/link/crosswalk/field/ownership/graph checks are PASS under `E3-P3A-STRUCT1`, `E3-P3A-LINK1`, `E3-P3A-MAP1`, `E3-P3A-FIELDS1`, `E3-P3A-OWNER1`, and `E3-P3A-GRAPH1`.
 - The seven child authoring commits are `ce82a341`, `a1c66865`, `35a0611c`, `2de220bb`, `b19256e6`, `e0582469`, and `4f1c94e5`; the bounded closure/report commit is `49e63eb4`.
-- P3-B remains `blocked / not authorized`; preserve the legacy plan as active and do not edit its authority metadata or pointer until a separate owner instruction opens that slice.
+- P3-B is PASS under `E3-P3B-SUPERVISOR1` and `E3-P3B-CUTOVER1`; preserve the roadmap as sole active authority and the legacy plan as reference-only.

@@ -148,8 +148,8 @@ Matching plan item(s): `P1-A`, `P1-B`, `P1-C`, `P1-D`, `P1-E`
 
 | Reserved evidence | Required proof | Status |
 |-------------------|----------------|--------|
-| `E1-P1A-CONTRACT1` | owner-accepted identity/ownership decision record | pending |
-| `E1-P1A-REVIEW1` | independent architecture/Supervisor verdict | pending |
+| `E1-P1A-CONTRACT1` | `docs/contracts/graph-identity-generation-and-migration-contract.md`; accepted by the explicit 2026-08-09 Owner implementation instruction | recorded / PASS |
+| `E1-P1A-REVIEW1` | `reports/Supervisor/rp_supervisor_260809_212310_by_gpt-5-codex_multiplan_authority_cutover.md`; authority/candidate/ownership boundary reviewed | recorded / PASS |
 | `E1-P1A-COMMIT1` | isolated contract-only commit and worktree state | pending |
 | `E1-P1B-IMPACT1` | fresh file-detail/impact for identity/range owners | pending |
 | `E1-P1B-SRC1` | production type/ownership diff | pending |
@@ -231,7 +231,7 @@ Matching plan item(s): `P1-A`, `P1-B`, `P1-C`, `P1-D`, `P1-E`
 
 | Plan job | Required evidence IDs | Status |
 |---|---|---|
-| P1-A | `E1-P1A-CONTRACT1`, `E1-P1A-REVIEW1`, `E1-P1A-COMMIT1` | pending |
+| P1-A | `E1-P1A-CONTRACT1`, `E1-P1A-REVIEW1`, `E1-P1A-COMMIT1` | contract/review recorded; commit pending |
 | P1-B | `E1-P1B-IMPACT1`, `E1-P1B-SRC1`, `E1-P1B-BUILD1`, `E1-P1B-TEST1`, `E1-P1B-REVIEW1`, `E1-P1B-DETECT1`, `E1-P1B-COMMIT1` | pending |
 | P1-C0 | `E1-P1C0-IMPACT1`, `E1-P1C0-SRC1`, `E1-P1C0-BUILD1`, `E1-P1C0-TEST1`, `E1-P1C0-REVIEW1`, `E1-P1C0-DETECT1`, `E1-P1C0-COMMIT1` | pending |
 | P1-C0A | `E1-P1C0A-IMPACT1`, `E1-P1C0A-SRC1`, `E1-P1C0A-BUILD1`, `E1-P1C0A-TEST1`, `E1-P1C0A-REVIEW1`, `E1-P1C0A-DETECT1`, `E1-P1C0A-COMMIT1` | pending |

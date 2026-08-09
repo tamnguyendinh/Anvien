@@ -157,8 +157,8 @@ Benchmark sections must follow the plan phases:
 | P3-A | Anvien graph nodes | nodes | 84,548 | 85,112 | 85,112 | informational | +564 | `E3-P3A-GRAPH1` |
 | P3-A | Anvien graph relationships | relationships | 123,388 | 123,980 | 123,980 | informational | +592 | `E3-P3A-GRAPH1` |
 | P3-A | Candidate campaign manifest | SHA-256 | — | `05D9DC4F6BED47470983817182B59534172181EBE028F05B99D8D3C5C75ED66E` | same | unchanged after closure commit | — | `E3-P3A-STRUCT1` |
-| P3-B | Unconditional Supervisor PASS verdicts | verdicts | 0 | not run | — | 1 only after explicit cutover authorization | not authorized | `E3-P3B-SUPERVISOR1` |
-| P3-B | Active campaign authorities | authorities | 1 | 1 legacy | — | 1 roadmap only after cutover | not authorized | `E3-P3B-CUTOVER1` |
+| P3-B | Unconditional Supervisor PASS verdicts | verdicts | 0 | 1 | 1 | 1 | +1 | `E3-P3B-SUPERVISOR1` |
+| P3-B | Active campaign authorities | authorities | 1 legacy | 1 roadmap | 1 roadmap | 1 roadmap | authority transferred | `E3-P3B-CUTOVER1` |
 | P3-B | Deleted legacy plan artifacts | files | 0 | 0 | — | 0 | 0 | `E3-P3B-CUTOVER1` |
 | P3-B | Production/test/runtime files changed | files | 0 | 0 | — | 0 | 0 | `E3-P3B-DIFF1` |
 | P3-B | Target-repository files changed | files | 0 | 0 | — | 0 | 0 | `E3-P3B-DIFF1` |

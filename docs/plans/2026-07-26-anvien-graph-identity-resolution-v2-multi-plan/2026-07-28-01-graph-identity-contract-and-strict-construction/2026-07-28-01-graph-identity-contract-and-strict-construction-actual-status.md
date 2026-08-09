@@ -2,7 +2,7 @@
 
 Title: Anvien Graph Identity Contract and Strict Graph Construction
 Date: 2026-07-28
-Status: P0 Complete / implementation blocked pending owner contract acceptance
+Status: P0 Complete / Owner authority recorded / P1-A accepted pending checkpoint commit
 Companion plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
@@ -105,7 +105,7 @@ Record how many files the target is related to before deciding touch mode. A fil
 
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|--------------------|----------|--------------------|
-| Architecture authority | no relevant approved SPEC/ADR; accepted reports diagnose but do not authorize remediation | owner-accepted identity/export/external/generation contract | blocked | N/A | `E0-P0A-SPEC1`, `E0-P0A-REPORT2` | open P1-A only; no production code |
+| Architecture authority | no `Docs/SPEC` cluster exists; the 2026-08-09 Owner instruction accepts the dedicated identity contract and activates the roadmap | owner-accepted identity/generation contract | correct | N/A | `E0-P0A-SPEC1`, `E1-P1A-CONTRACT1`, `E1-P1A-REVIEW1` | commit P1-A, then open P1-B |
 | Plan slice template structure | first frozen snapshot had compact Scope Boundary/Acceptance blocks; B1 remediation expanded all eligible slices into auditable fields without changing semantics | every eligible slice has machine-readable ownership and seven-part acceptance gates | correct | 99 eligible slices | `E0-P0A-TEMPLATE4` | request Supervisor re-review; keep implementation blocked until owner authority |
 | One-file responsibility | several current owner files mix multiple fact/index/orchestration concerns | each touched/new file owns one semantic responsibility; mixed owners are split before additions | partial | 15-238 per file | `E0-P0A-FD1..E0-P0A-FD16`, `E0-P0A-USER2` | enforce ownership map in every slice |
 | Declaration/Symbol identity | one graph ID derived from file/name/arity; scope/range omitted; duplicate nodes overwrite | separate DeclarationID/SymbolID, exact ranges, deterministic collision-safe mapping | wrong | 46/225/238 | `E0-P0A-SRC1`, `E0-P0A-SRC2`, `E0-P0A-IMPACT1..E0-P0A-IMPACT3` | P1 then P2 |
@@ -132,6 +132,7 @@ Historical provenance note: R0-R7 preserve the legacy baseline and its original 
 | R10 | 2026-07-29 | HEAD `c637152fc211992105e4067daedf87a377da8723`; fresh `anvien analyze E:\Anvien --force --json` at 2026-07-29 02:01:49 +07:00 after final semantic correction edits | final ownership/evidence/handoff freshness | 1,557 scanned / 676 parsed / 757 documents / 85,187 nodes / 124,055 relationships / 0 failed; all 98 implementation slices remain pending; target untouched; `.anvien/meta.json` reports `indexedAt=2026-07-28T19:01:49Z` | `E2-PNC-REFRESH1` (pending), `E2-PNC-HANDOFF1` (pending), `E1-P1-OWNERSHIP1` (pending), `E1-P1-LEDGER1` (pending) | keep P1-A blocked; no production implementation before owner authority and qualified handoff |
 | R11 | 2026-07-29 | HEAD `c637152fc211992105e4067daedf87a377da8723`; fresh `anvien analyze E:\Anvien --force --json` at 2026-07-29 02:16:40 +07:00 after P6 capability-classification and exact catalog/transport ownership overlay | final cross-child graph/document freshness | 1,557 scanned / 676 parsed / 757 documents / 85,189 nodes / 124,057 relationships / 0 failed; all 98 implementation slices remain pending; target untouched; `.anvien/meta.json` reports `indexedAt=2026-07-28T19:16:40Z` | `E2-PNC-REFRESH1` (pending), `E2-PNC-HANDOFF1` (pending) | keep P1-A blocked; no production implementation before owner authority and qualified handoff |
 | R13 | 2026-07-29 | HEAD `c637152fc211992105e4067daedf87a377da8723`; fresh `anvien analyze E:\Anvien --force --json` after the semantic-remediation overlay hardening | current graph/document freshness and local-child closure rule | 1,557 scanned / 676 parsed / 757 documents / 85,193 nodes / 124,061 relationships / 0 failed; all 11 P1 jobs remain pending; production and target remain untouched | `E2-PNC-REFRESH1` (pending), `E2-PNC-OVERLAY1` (pending), `E2-PNC-OWNERSHIP1` (pending) | retain P1-A block until owner authority, exact ownership/evidence rows, and qualified successor refresh are accepted; graph refresh is not implementation proof |
+| R14 | 2026-08-09 | HEAD `883c15d6`; fresh Anvien graph; Owner implementation instruction; P3-B Supervisor PASS | roadmap authority and P1-A contract | authority `blocked -> correct`; roadmap `candidate -> active`; P1-A contract/review accepted with commit pending | `E1-P1A-CONTRACT1`, `E1-P1A-REVIEW1`, `E0-P0A-GRAPH1` | commit the docs checkpoint, then open P1-B only |
 
 ## Phase Touch Map
 
@@ -247,7 +248,7 @@ Copying target, creating a root fixture, writing reports/probes there, or silent
 - [x] Phase Touch Map defines touch mode for every plan-relevant relationship unit that may be affected.
 - [x] Correct parts are marked preserve-only.
 - [x] Partial, missing, wrong, unbound, and fake-or-stub parts have exact next actions.
-- [x] Blockers are recorded: owner acceptance of the proposed architecture contract is required before production code.
+- [x] Prior authority blocker is resolved; the remaining gate is the P1-A checkpoint commit.
 - [x] Next phase status assumptions, next action, and work steps have been updated from this status file.
 - [x] Status Refresh Log has an R0 baseline row.
 - [x] Implementation has not started; post-slice refresh conditions are not yet applicable.
@@ -259,13 +260,13 @@ Choose one:
 
 - [ ] P0 actual-status incomplete. Implementation is blocked.
 - [ ] P0 complete. Next phase can proceed unchanged.
-- [ ] P0 complete. Next phase status, next action, or work steps must be updated before implementation.
+- [x] P0 complete. Next phase status, next action, or work steps must be updated before implementation.
 - [ ] P0 complete. Target scope is preserve-only.
-- [x] P0 complete. Implementation is blocked by missing authority or evidence.
+- [ ] P0 complete. Implementation is blocked by missing authority or evidence.
 
 Decision note:
 
-P0 is complete for planning, but no production slice is authorized. The current permitted slice is P1-A only after owner authority and the semantic-remediation overlay are accepted; the exact ownership/evidence contract must be satisfied before any production edit. Scanner remediation remains excluded. The Current Multi-Plan Execution Override below is operative.
+P0 is complete and Owner authority is recorded. P1-A contract/review evidence is accepted; production work remains closed only until the contract-only checkpoint commit is recorded. After that commit, P1-B is the only permitted production slice. Scanner remediation remains excluded.
 
 ## Current Multi-Plan Execution Override (2026-07-28)
 
@@ -273,6 +274,6 @@ This current row supersedes copied historical R0-R7 wording about â€œonly P1-Aâ€
 
 | Current slice | Status | Predecessor / authority gate | Next action and work-step update |
 |---|---|---|---|
-| P1-A | blocked | owner authority plus semantic-remediation overlay review | correct the identity contract and exact per-job ownership/evidence binding first; no production edit is authorized; after local closure refresh `2026-07-28-02-versioned-persistence-and-v2-cutover::actual-status.md` with qualified `2026-07-28-01-graph-identity-contract-and-strict-construction::E2-PNC-NEXTSTATUS1` |
+| P1-A | accepted / commit pending | Owner authority, ratified identity contract, and P3-B Supervisor PASS | commit the contract-only checkpoint; then open P1-B and preserve downstream handoff rules |
 
-The 98 implementation slices remain pending. The correction overlay is documentation-only; no product defect is claimed fixed and the target remains untouched. `E1-P1-OWNERSHIP1`, `E1-P1-LEDGER1`, `E2-PNC-OVERLAY1`, and `E2-PNC-OWNERSHIP1` are required fresh evidence for the next refresh.
+The 98 implementation slices remain pending. No product defect is claimed fixed and the target remains untouched. `E1-P1-OWNERSHIP1`, `E1-P1-LEDGER1`, `E2-PNC-OVERLAY1`, and `E2-PNC-OWNERSHIP1` remain required before Child 01 closure.

@@ -1,7 +1,7 @@
 # Anvien Graph Identity and TypeScript Resolution Correctness v2 Roadmap
 
 Date: 2026-07-28
-Status: candidate / semantic-remediation overlay authored after Supervisor REJECT / all seven child plan sets present and their base revisions previously committed / corrected candidate acceptance and P3-B authority cutover not authorized / legacy plan remains active / production implementation not authorized
+Status: active / Owner-authorized 2026-08-09 / P3-B authority cutover PASS / seven-child sequential implementation in progress / Child 01 open
 Source plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2/2026-07-26-anvien-graph-identity-resolution-v2-plan.md`
 Plan-set authoring plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 Multi-plan root: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/`
@@ -13,14 +13,14 @@ Coordinate the graph-identity and TypeScript-resolution remediation as seven com
 
 ## Authority State
 
-- Active authority now: the legacy source plan at SHA-256 `365E17A7F7CD539426568A2874A1AD1231D120C5391BFE3D8B875D5F760A45FB`.
-- Candidate authority: this roadmap plus seven numbered child plan sets after all are authored and verified.
-- Partial child output is draft-only and does not authorize production implementation.
-- Authority cutover occurs only after the authoring plan's P3-A deterministic checks and P3-B unconditional Supervisor PASS.
-- Current authoring closure: P3-A deterministic checks and the bounded seven-child Supervisor review pass, but this does not activate the roadmap. P3-B authority cutover is not authorized in the current scope; preserve the legacy plan as active.
-- During cutover, preserve the legacy technical body and companion ledgers. Change only its status/pointer to `superseded / reference-only`.
-- After cutover, this roadmap is the sole campaign-order/status index and each child plan is the sole execution authority for its mapped legacy phase.
-- Multi-plan authoring does not authorize production implementation. Opening an implementation child still requires explicit owner direction under that child's gate.
+- Active authority now: this roadmap plus the seven numbered child plan sets. The Owner authorized execution on 2026-08-09 and P3-B Supervisor review passed in `reports/Supervisor/rp_supervisor_260809_212310_by_gpt-5-codex_multiplan_authority_cutover.md`.
+- Legacy authority: the source plan at SHA-256 `365E17A7F7CD539426568A2874A1AD1231D120C5391BFE3D8B875D5F760A45FB` is preserved as `superseded / reference-only`.
+- Partial child implementation remains non-authoritative; only accepted and committed slice evidence may advance the campaign.
+- Authority cutover completed after the authoring plan's P3-A deterministic checks and P3-B unconditional Supervisor PASS.
+- Current execution: Child 01 is the only open implementation child. Children 02-07 remain blocked by their exact predecessor handoffs.
+- The cutover preserved the legacy technical body and companion ledgers and changed only its status/pointer to `superseded / reference-only`.
+- This roadmap is the sole campaign-order/status index and each child plan is the sole execution authority for its mapped legacy phase.
+- The 2026-08-09 Owner instruction authorizes production implementation under each child's existing gate; it does not bypass slice dependencies, evidence, review, or commit boundaries.
 
 ## Campaign Invariants
 
@@ -57,13 +57,13 @@ Legacy P8 contains three closure roles. It is excluded from the 98-row implement
 
 | No. | Plan folder | Primary responsibility | Source | Slices | Status | Depends on / handoff |
 |-----|-------------|------------------------|--------|-------:|--------|----------------------|
-| 01 | [2026-07-28-01-graph-identity-contract-and-strict-construction](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | Identity contract, lossless declaration/source-site identity, strict graph construction, shadow-v2 proof | P1 | 11 | candidate / mechanical copy conversion committed `ce82a341` / P0 complete / implementation not authorized | No predecessor; closure must update the planned child-02 actual-status from latest evidence before handoff |
-| 02 | [2026-07-28-02-versioned-persistence-and-v2-cutover](2026-07-28-02-versioned-persistence-and-v2-cutover/2026-07-28-02-versioned-persistence-and-v2-cutover-plan.md) | Compatibility manifest, opaque readers, S0-S11 parity, atomic generations, v2 cutover | P2 | 42 | exact-copy candidate / committed `a1c66865` / implementation not authorized | Requires child-01 implementation handoff before implementation; source P2 IDs/content preserved; sole future reader-matrix mutation owner |
-| 03 | [2026-07-28-03-typescript-binding-pattern-extraction](2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md) | Recursive binding facts, declaration contexts, graph and adapter projection | P3 | 17 | exact-copy candidate / committed `35a0611c` / implementation not authorized | Requires `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-HANDOFF1` (source `P8-C`, local `Pn-C`), including identity-v2 plus S0-S11/reader-matrix inspect-only baseline |
-| 04 | [2026-07-28-04-typescript-export-semantics](2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md) | ExportFact semantics, export syntax extraction, graph and adapter projection | P4 | 15 | exact-copy candidate / committed `2de220bb` / implementation not authorized | Requires `2026-07-28-03-typescript-binding-pattern-extraction::E2-PNC-HANDOFF1` (source `P8-C`, local `Pn-C`); consumes `2026-07-28-01-graph-identity-contract-and-strict-construction::E1-P1A-CONTRACT1` (source/local `P1-A`) and `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-HANDOFF1` inspect-only |
-| 05 | [2026-07-28-05-module-export-and-reexport-resolution](2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md) | Module export tables, aliases, cycles, ambiguity, terminal barrel resolution | P5 | 4 | exact-copy candidate / committed `b19256e6` / implementation not authorized | Requires `2026-07-28-04-typescript-export-semantics::E2-PNC-HANDOFF1` (source `P8-C`, local `Pn-C`) |
-| 06 | [2026-07-28-06-ambient-external-resolution-and-diagnostics](2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-plan.md) | Declaration universe, external authorization/materialization, immutable outcomes, diagnostics | P6 | 6 | exact-copy candidate / committed `e0582469` / implementation not authorized | Requires `2026-07-28-05-module-export-and-reexport-resolution::E2-PNC-HANDOFF1` (source `P8-C`, local `Pn-C`); consumes `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-HANDOFF1` inspect-only |
-| 07 | [2026-07-28-07-cross-surface-acceptance-and-target-validation](2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-plan.md) | Full determinism/parity/target/performance acceptance; no implementation repair | P7 | 3 | exact-copy candidate / committed `4f1c94e5` / implementation not authorized | Requires `2026-07-28-01-graph-identity-contract-and-strict-construction::E2-PNC-HANDOFF1`, `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-HANDOFF1`, `2026-07-28-03-typescript-binding-pattern-extraction::E2-PNC-HANDOFF1`, `2026-07-28-04-typescript-export-semantics::E2-PNC-HANDOFF1`, `2026-07-28-05-module-export-and-reexport-resolution::E2-PNC-HANDOFF1`, and `2026-07-28-06-ambient-external-resolution-and-diagnostics::E2-PNC-HANDOFF1` (each source `P8-C`, local `Pn-C`) |
+| 01 | [2026-07-28-01-graph-identity-contract-and-strict-construction](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | Identity contract, lossless declaration/source-site identity, strict graph construction, shadow-v2 proof | P1 | 11 | active / P0 refreshed / P1-A accepted pending checkpoint commit | No predecessor; closure must update Child 02 actual-status from latest evidence before handoff |
+| 02 | [2026-07-28-02-versioned-persistence-and-v2-cutover](2026-07-28-02-versioned-persistence-and-v2-cutover/2026-07-28-02-versioned-persistence-and-v2-cutover-plan.md) | Compatibility manifest, opaque readers, S0-S11 parity, atomic generations, v2 cutover | P2 | 42 | ready / dependency-blocked | Requires Child 01 qualified implementation handoff; sole reader-matrix mutation owner |
+| 03 | [2026-07-28-03-typescript-binding-pattern-extraction](2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md) | Recursive binding facts, declaration contexts, graph and adapter projection | P3 | 17 | ready / dependency-blocked | Requires `2026-07-28-02-versioned-persistence-and-v2-cutover::E2-PNC-HANDOFF1` |
+| 04 | [2026-07-28-04-typescript-export-semantics](2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md) | ExportFact semantics, export syntax extraction, graph and adapter projection | P4 | 15 | ready / dependency-blocked | Requires Child 03 handoff; consumes the Child 01 contract and Child 02 denominator inspect-only |
+| 05 | [2026-07-28-05-module-export-and-reexport-resolution](2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md) | Module export tables, aliases, cycles, ambiguity, terminal barrel resolution | P5 | 4 | ready / dependency-blocked | Requires Child 04 qualified handoff |
+| 06 | [2026-07-28-06-ambient-external-resolution-and-diagnostics](2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-plan.md) | Declaration universe, external authorization/materialization, immutable outcomes, diagnostics | P6 | 6 | ready / dependency-blocked | Requires Child 05 qualified handoff; consumes Child 02 denominator inspect-only |
+| 07 | [2026-07-28-07-cross-surface-acceptance-and-target-validation](2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-plan.md) | Full determinism/parity/target/performance acceptance; no implementation repair | P7 | 3 | ready / six-handoff dependency-blocked | Requires all six qualified predecessor handoffs |
 
 ## Standard File Inventory
 
@@ -145,7 +145,7 @@ Use these states:
 
 - `not authored`: child standard files do not exist.
 - `candidate / P0 complete`: child set exists and is structurally complete but campaign authority has not cut over.
-- `ready / implementation not authorized`: campaign cutover passed; child is executable only after explicit owner direction and dependency/P0 refresh.
+- `ready / dependency-blocked`: Owner authorization exists, but the child still requires its exact predecessor handoff and P0 refresh.
 - `active`: the child is the currently authorized implementation plan.
 - `complete / committed <hash>`: child acceptance and closure passed with a known commit.
 - `blocked <evidence>`: exact blocker and qualified evidence are recorded.
@@ -185,6 +185,7 @@ Status history:
 | 2026-07-28 | Child 07 exact-copy candidate passed independent checks and Supervisor review | legacy remains active; Child 07 commit is pending; production implementation remains unauthorized | `2026-07-28-00-multi-plan-authoring::E2-P2G-SUP1` |
 | 2026-07-28 | Child 07 exact-copy authoring set committed as `4f1c94e5`; terminal child refreshed roadmap/campaign status | legacy remains active; all seven child sets are durable; full-campaign closure audit opens; production implementation remains unauthorized | `2026-07-28-00-multi-plan-authoring::E2-P2G-COMMIT1` |
 | 2026-07-28 | P3-A full seven-child closure audit passed: 7 folders, 28 standard files, 98/98 source IDs, 35/0 links, exact P/E/B blocks, lifecycle/ownership checks, and current graph evidence | legacy remains active; bounded authoring closure is accepted; P3-B authority cutover and production implementation remain not authorized | `2026-07-28-00-multi-plan-authoring::E3-P3A-STRUCT1`, `2026-07-28-00-multi-plan-authoring::E3-P3A-LINK1`, `2026-07-28-00-multi-plan-authoring::E3-P3A-OWNER1`, `2026-07-28-00-multi-plan-authoring::E3-P3A-MAP1`, `2026-07-28-00-multi-plan-authoring::E3-P3A-FIELDS1`, `2026-07-28-00-multi-plan-authoring::E3-P3A-GRAPH1`, `2026-07-28-00-multi-plan-authoring::E3-P3A-SUPERVISOR1` |
+| 2026-08-09 | Owner authorized execution and P3-B Supervisor PASS activated the roadmap | roadmap is sole active authority; legacy reference-only; Child 01 open | `2026-07-28-00-multi-plan-authoring::E3-P3B-SUPERVISOR1`, `2026-07-28-00-multi-plan-authoring::E3-P3B-CUTOVER1` |
 
 Historical-status note: the earlier history rows describing the rejected/remapped Child 01 and pre-reset Child 02 candidate are preserved as audit history. Current Child 01 authority begins at `E2-P2A-REBUILD1`/`E2-P2A-SUP2`/`E2-P2A-COMMIT2`; those historical candidate hashes must not be read as current artifact hashes.
 

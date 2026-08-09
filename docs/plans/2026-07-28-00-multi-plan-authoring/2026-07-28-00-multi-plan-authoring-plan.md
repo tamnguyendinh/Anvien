@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P2-A through P2-G complete / P3-A closure audit complete / closure commit 49e63eb4 / P3-B authority cutover not authorized / legacy authority preserved / implementation unauthorized`
+- Status: `complete / P2-A through P2-G complete / P3-A closure audit complete / P3-B authority cutover PASS / roadmap active / legacy reference-only`
 - Plan: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-plan.md`
 - Evidence: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-evidence.md`
 - Benchmark: `docs/plans/2026-07-28-00-multi-plan-authoring/2026-07-28-00-multi-plan-authoring-benchmark.md`
@@ -727,7 +727,7 @@ In scope:
   - Out of scope: implementation of any child, rewriting legacy history, target access, production/test/runtime changes, and technical re-audit.
   - Dependencies: P2-A through P2-G accepted with 28 standard child files present.
 - Phase Implementation Rule: do not implement `P3` directly. Complete P3-A and record a frozen candidate hash/inventory; then P3-B may request Supervisor review and perform the conditional authority cutover.
-- Current execution status: `P3-A complete`; `P3-B blocked / not authorized`. The user-authorized scope covered mechanical authoring of all seven children and its closure audit. No instruction authorizes roadmap activation or legacy metadata/pointer edits, so the legacy plan remains active.
+- Current execution status: `P3-A complete`; `P3-B complete / PASS`. The Owner authorized roadmap activation and production implementation on 2026-08-09; the legacy plan is reference-only and Child 01 is the only open implementation child.
 - Ordered Slice List:
   - P3-A: Prove cross-plan completeness, traceability, and ownership.
   - P3-B: Obtain Supervisor PASS and switch authority atomically.
@@ -781,8 +781,8 @@ In scope:
   - Actual-status Update: mark campaign candidate `partial -> correct` only when every acceptance check is green; otherwise record exact failed child/slice and block cutover.
    - Commit Boundary: closure validation/roadmap readiness commit `49e63eb4` contains only the approved docs/report scope; do not change legacy authority in this commit.
 
-- [ ] P3-B: Obtain Supervisor PASS and switch authority atomically.
-   - Execution status: `blocked / not authorized`. This slice is reserved for a later explicit owner instruction; do not edit the roadmap authority block or legacy plan metadata/pointer in the current scope.
+- [x] P3-B: Obtain Supervisor PASS and switch authority atomically.
+   - Execution status: `complete / PASS / cutover authorized 2026-08-09`. The roadmap is active and the legacy metadata points to it as reference-only.
   - Goal: make the verified roadmap and child plans authoritative without a period of missing or dual active authority.
   - Scope Boundary:
     - Editable: roadmap authority/status block, legacy plan metadata/pointer block, and authoring ledgers.
