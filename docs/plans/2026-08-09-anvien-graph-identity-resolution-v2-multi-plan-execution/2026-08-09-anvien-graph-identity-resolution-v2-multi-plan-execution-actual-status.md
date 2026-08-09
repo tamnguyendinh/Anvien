@@ -2,7 +2,7 @@
 
 Title: Anvien Graph Identity Resolution v2 Multi-Plan Execution
 Date: 2026-08-09
-Status: P0 Complete / Child 01 authorized
+Status: P0 Complete / authority committed 2fec691a / Child 01 P1-B open
 Companion plan: `docs/plans/2026-08-09-anvien-graph-identity-resolution-v2-multi-plan-execution/2026-08-09-anvien-graph-identity-resolution-v2-multi-plan-execution-plan.md`
 Companion evidence: `docs/plans/2026-08-09-anvien-graph-identity-resolution-v2-multi-plan-execution/2026-08-09-anvien-graph-identity-resolution-v2-multi-plan-execution-evidence.md`
 Companion benchmark: `docs/plans/2026-08-09-anvien-graph-identity-resolution-v2-multi-plan-execution/2026-08-09-anvien-graph-identity-resolution-v2-multi-plan-execution-benchmark.md`
@@ -93,13 +93,13 @@ Forbidden next action: editing Child 02+ production surfaces before qualified ha
 - [x] Baseline evidence IDs are recorded.
 - [x] Fresh graph snapshot is recorded.
 - [x] No `Docs/SPEC` cluster exists; limitation is explicit.
-- [ ] Authority pointer checkpoint committed.
-- [ ] Child 01 P1-A contract document accepted.
+- [x] Authority pointer checkpoint committed.
+- [x] Child 01 P1-A contract document accepted.
 
 ## Final P0 Decision
 
-- [x] P0 complete. Next phase status, next action, or work steps must be updated before implementation.
+- [ ] P0 complete. Next phase status, next action, or work steps must be updated before implementation.
 - [ ] P0 actual-status incomplete. Implementation is blocked.
-- [ ] P0 complete. Next phase can proceed unchanged.
+- [x] P0 complete. Next phase can proceed unchanged.
 
-Decision note: the current user instruction authorizes execution, but the authority pointer and P1-A contract evidence must be committed before production code opens.
+Decision note: authority and P1-A are committed at `2fec691a`; Child 01 P1-B is the only open production slice.

@@ -23,6 +23,7 @@ Matching plan item(s): `P0-A`
 - `E0-P0A-AUTH1`: user instruction in this task authorizes roadmap activation and production implementation; legacy authority pointer is updated only in the P0 documentation checkpoint.
 - `E0-P0A-GRAPH2`: post-authority-doc refresh reports 1,564 scanned files, 676 parsed code files, 764 documents, 0 failed, 85,282 nodes, and 124,150 relationships.
 - `E0-P0A-DETECT1`: docs-only `detect-changes` reports 9 changed files, 8 affected files, low risk, no affected process, and no ResolutionGap change.
+- `E0-P0A-COMMIT1`: commit `2fec691a6aad936e00aa31af9f851ec097a321cb` activates the roadmap, records P1-A contract/review evidence, creates the execution plan, and leaves the post-commit worktree clean.
 
 ## E1 - P1 Evidence
 

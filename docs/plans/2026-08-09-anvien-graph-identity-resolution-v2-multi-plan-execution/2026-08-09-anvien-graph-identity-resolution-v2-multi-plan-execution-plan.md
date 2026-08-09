@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-09`
-- Status: `active / owner-authorized / P0 in progress`
+- Status: `active / P0 complete at 2fec691a / Child 01 P1-B open`
 - Plan: `docs/plans/2026-08-09-anvien-graph-identity-resolution-v2-multi-plan-execution/2026-08-09-anvien-graph-identity-resolution-v2-multi-plan-execution-plan.md`
 - Evidence: `docs/plans/2026-08-09-anvien-graph-identity-resolution-v2-multi-plan-execution/2026-08-09-anvien-graph-identity-resolution-v2-multi-plan-execution-evidence.md`
 - Benchmark: `docs/plans/2026-08-09-anvien-graph-identity-resolution-v2-multi-plan-execution/2026-08-09-anvien-graph-identity-resolution-v2-multi-plan-execution-benchmark.md`
@@ -72,7 +72,7 @@ In scope:
 
 ## Checklist
 
-- [ ] P0-A: Refresh execution baseline and activate authority.
+- [x] P0-A: Refresh execution baseline and activate authority.
   - Goal: classify the current repo and explicitly bind the Owner authorization to the roadmap before production edits.
   - Work Steps: refresh Anvien; inspect the roadmap, legacy metadata, Child 01 status, current source inventory, and open Supervisor reports; record file-detail counts and impact warnings; update the execution actual-status and authority pointers; commit the documentation checkpoint.
   - Implementation Gate: P0 actual-status contains current evidence IDs, the authorization is recorded, the legacy pointer is unambiguous, and no production file has been edited.

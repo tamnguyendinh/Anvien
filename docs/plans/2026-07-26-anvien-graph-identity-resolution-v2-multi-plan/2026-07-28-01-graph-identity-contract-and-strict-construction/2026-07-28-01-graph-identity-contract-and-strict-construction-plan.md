@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / Owner-authorized / P1-A contract accepted pending checkpoint commit`
+- Status: `active / P1-A complete and committed 2fec691a / P1-B open`
 - Plan: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-identity-resolution-v2-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
@@ -308,7 +308,7 @@ For every P1 job, the evidence-ledger row whose first column equals that exact j
   - P1-D3: Migrate ancillary/document/semantic producers to explicit operations.
   - P1-E: Emit and validate shadow identity v2.
 
-- [ ] P1-A: Ratify graph identity and ownership contract.
+- [x] P1-A: Ratify graph identity and ownership contract.
   - Goal: convert the proposed decisions in this plan into explicit owner-approved authority before production code.
   - Scope Boundary:
     - Editable: plan/ADR or approved contract documentation under `E:\Anvien` only.
