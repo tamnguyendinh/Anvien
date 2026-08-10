@@ -68,10 +68,10 @@ Matching plan items: `P1-A`, `P1-B`, `P1-C`, `P1-D`, `P1-E`
 
 | Slice | Exact evidence ID | Required proof | Status |
 |-------|-------------------|----------------|--------|
-| P1-A | `E1-P1A-SOURCE1` | source/report-to-contract trace with DRAFT recommendations excluded | pending |
-| P1-A | `E1-P1A-CONTRACT1` | accepted graph-accuracy identity contract and ownership boundary | pending |
-| P1-A | `E1-P1A-REVIEW1` | unconditional Supervisor PASS for the contract slice | pending |
-| P1-A | `E1-P1A-COMMIT1` | isolated documentation commit and known worktree | pending |
+| P1-A | `E1-P1A-SOURCE1` | recorded: P0 source trace binds the contract to `DefinitionFact`/`ScopeFact` inputs, the production `defsByFile` occurrence denominator, `graphIDForDef`, `emitDefinitionNodes`, and `Graph.AddNode`; the problem report's DRAFT topology/hash/file-layout proposal remains excluded | recorded |
+| P1-A | `E1-P1A-CONTRACT1` | recorded: `docs/contracts/graph-accuracy-contract.md` now marks the campaign active after the accepted correction/P0 gates and ratifies only the source-backed occurrence denominator, identity inputs, collision owner, endpoint traceability, and separate relationship boundary; it prescribes no new node topology, hash algorithm, field name, or file layout. Fresh file-detail is `stale=false/changedSinceAnalyze=false`, `0` related files; file impact is `LOW`, `0` impacted symbols/files/processes. The document audit reports 75 declared Child evidence IDs, 0 missing references, 0 missing required paths, 5 ordered P1 slices, and a documentation-only five-file diff. | recorded |
+| P1-A | `E1-P1A-REVIEW1` | recorded: `reports/Supervisor/rp_supervisor_260810_100646_by_gpt-5-codex_child01_p1a_contract.md` independently verifies the source trace, five-file documentation diff, contract blast radius, ledger consistency, ownership boundary, and absence of a newly prescribed architecture; verdict `PASS` | recorded |
+| P1-A | `E1-P1A-COMMIT1` | recorded: the accepted P1-A contract/ledger/report work is committed immediately after this evidence row with message `docs(plan): ratify child 01 identity contract`; the final commit hash is reported from Git because a commit cannot contain its own final hash | recorded |
 | P1-B | `E1-P1B-IMPACT1` | fresh file-detail and upstream impact for exact range/input owners | pending |
 | P1-B | `E1-P1B-SOURCE1` | production range/selection/owner/meaning input change | pending |
 | P1-B | `E1-P1B-BUILD1` | full build after production code and focused tests | pending |

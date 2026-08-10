@@ -1,6 +1,6 @@
 # Anvien Graph Accuracy Contract
 
-Status: Draft campaign authority; implementation blocked until the plan-correction Supervisor gate passes
+Status: Active campaign authority; Child 01 P0 accepted; implementation proceeds only through the roadmap's ordered slice gates
 
 Authority: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-26-anvien-graph-accuracy-roadmap.md`
 
@@ -32,12 +32,15 @@ The campaign must preserve these semantic distinctions regardless of the concret
 
 Child 01 must determine the concrete graph and ScopeIR representation from current source evidence before implementation. This contract does not require a particular node topology, hash function, or new file layout.
 
+For Child 01 occurrence-conservation measurements, the source denominator is the provider/ScopeIR definition occurrences carried by the normal production `defsByFile` path. A map keyed by provider ID, the `DefinitionsIndexed` metric, the standalone legacy `BuildDefinitionIndex`, or the final graph-node count is an index or output measurement, not a substitute for that occurrence denominator.
+
 ## Identity and range rules
 
 - Identity inputs must be sufficient to distinguish the measured `time` and `now` declarations and other declarations with the same name in different lexical owners.
 - Canonical inputs may include normalized repository-relative location, language, semantic name, meaning, lexical owner, declaration role, binding path, and source anchor when source evidence proves they are required.
 - Absolute repository paths, traversal order, worker order, and random values must not make an otherwise identical analyze nondeterministic.
 - Range and selection-range encoding, coordinate base, and interval semantics must be established from provider/source behavior and then preserved consistently.
+- Current source-backed inputs include the provider occurrence ID, full declaration range, label/role, owner ID, and lexical membership retained by scopes and bindings. A slice may consume or extend these inputs only after its own source/impact gate; this contract does not prescribe new field names or topology.
 - Declaration merging or overload sharing is allowed only when the provider supplies evidence that the declarations represent one semantic symbol.
 - A range-only patch is insufficient if lexical owner or meaning is still lost.
 
@@ -47,7 +50,9 @@ Child 01 must determine the concrete graph and ScopeIR representation from curre
 - Conflicting canonical facts must not be silently replaced, skipped, or collapsed.
 - Any intentional merge or enrichment must have an explicit, source-backed rule and must conserve the contributing occurrences and provenance required by downstream acceptance.
 - Every emitted relationship must reference existing endpoints.
+- Endpoint existence alone does not prove conservation when a colliding node ID can retain the wrong payload; the source occurrence and accepted graph fact must remain traceable.
 - Graph validation reports identity collision, occurrence loss, invalid range, and missing endpoint failures clearly.
+- P0 identifies `Graph.AddNode` duplicate-ID replacement as the current canonical node collision boundary. The standalone `BuildDefinitionIndex` has no production caller and remains preserve-only; `emitRelationship`/`AddRelationship` is a separate relationship-merge pipeline and is not changed as a proxy for node occurrence loss.
 - Child 01 changes only the owners proven by its P1-C/P1-D impact evidence. Relationship identity or a broad producer rewrite is not required unless that evidence demonstrates the need and the Child 01 plan is updated first.
 
 ## Persistence and reader rules

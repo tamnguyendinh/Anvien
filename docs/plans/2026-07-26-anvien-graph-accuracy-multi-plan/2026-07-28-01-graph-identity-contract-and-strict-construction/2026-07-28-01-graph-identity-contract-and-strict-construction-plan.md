@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0 accepted / P1-A open / production implementation remains slice-gated`
+- Status: `active / P0 and P1-A accepted / P1-B open / production implementation remains slice-gated`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
@@ -131,7 +131,7 @@ Sibling boundary: `emitRelationship`/`AddRelationship` is a separate relationshi
   - P1-D: Remove silent collision or overwrite at the proven owner.
   - P1-E: Integrate and validate identity accuracy.
 
-- [ ] P1-A: Ratify the source-backed identity contract.
+- [x] P1-A: Ratify the source-backed identity contract.
   - Goal: accept only the identity invariants supported by the report, current source, and P0 evidence.
   - Scope Boundary:
     - Editable: `docs/contracts/graph-accuracy-contract.md` and this Child's four ledgers.

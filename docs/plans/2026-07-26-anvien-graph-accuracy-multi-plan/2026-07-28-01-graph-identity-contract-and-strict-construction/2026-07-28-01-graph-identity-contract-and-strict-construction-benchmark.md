@@ -45,5 +45,5 @@
 
 ## Non-Benchmarkable Notes
 
-- P1-A contract review, full-build pass/fail, behavior-test pass/fail, detect-changes, commits, and Supervisor verdicts are evidence gates.
+- P1-A is documentation-only and produced no new product/runtime benchmark. Its contract trace, document checks, Supervisor verdict, and commit are evidence gates.
 - Child 02 owns persistence/reader counts and field-parity measurements.

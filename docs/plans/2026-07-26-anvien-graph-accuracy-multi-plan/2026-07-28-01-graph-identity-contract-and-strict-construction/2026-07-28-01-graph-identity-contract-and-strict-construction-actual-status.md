@@ -2,7 +2,7 @@
 
 Title: Anvien Graph Identity Contract and Strict Construction
 Date: 2026-08-10
-Status: P0 Complete / P1-A Open
+Status: P1-A Complete / P1-B Open
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
@@ -77,6 +77,7 @@ Exact symbol impacts (`--direction upstream --include-tests`) are recorded in `E
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|--------------------|----------|--------------------|
 | problem/acceptance authority | bounded reports prove four ScopeIR occurrences become two graph nodes; report repair design remains DRAFT | use only measured `2/4 -> 4/4` finding and source-backed invariants | correct | N/A | `E0-P0A-REPORT1`, `E0-P0A-VERIFY1` | preserve; ratify mechanics only in P1-A |
+| graph-accuracy contract authority | active contract records the production occurrence denominator, current identity inputs/collision owner, endpoint traceability, and separate relationship boundary without prescribing a repair topology | source-backed Child 01 invariants are authoritative while implementation shape remains slice-evidence-driven | correct | 0 related files | `E1-P1A-SOURCE1`, `E1-P1A-CONTRACT1`, `E1-P1A-REVIEW1`, `E1-P1A-COMMIT1` | preserve contract wording; P1-B may open only with its own source/impact gate |
 | Anvien graph baseline | current self-graph is fresh at `7042dda8`; post-ledger refresh is `1,557/676/0`, `85,114` nodes, `123,982` relationships; pre-ledger baseline was `85,110/123,978` | all graph commands use this fresh index; the `+4/+4` document delta is not production behavior | correct | N/A | `E0-P0A-GRAPH1` | preserve and refresh after implementation |
 | declaration contract (`DefinitionFact`) | full range, label, owner ID, and optional visibility exist; selection range, lexical-scope field, and explicit meaning lane do not | source-backed full/selection position plus identity inputs without inventing a topology | partial | 231 | `E0-P0A-SOURCE6`, `E0-P0A-FD6`, `E0-P0A-IMPACT1` | P1-B contract and exact provider/IR owner only |
 | range semantics | four coordinates are present; TSJS uses one-based lines/byte-like columns while position lookup includes the end coordinate; encoding/interval contract is undocumented | explicit coordinate/encoding/interval semantics and a provider-supported selection range | partial | 227 | `E0-P0A-SOURCE2`, `E0-P0A-FD2`, `E0-P0A-FD10`, `E0-P0A-IMPACT1` | P1-B; no guessed conversion |
@@ -96,6 +97,8 @@ Exact symbol impacts (`--direction upstream --include-tests`) are recorded in `E
 | R0 | 2026-08-10 | correction-closed HEAD `7042dda8`; prior bounded reports | Child 01 identity/range candidates | broad retained candidates pending refresh | `E0-P0A-REPORT1`, `E0-P0A-VERIFY1` | refresh all candidate owners before implementation |
 | R1 | 2026-08-10 | fresh Anvien analyze + source/impact/target audits at `7042dda8` | Child 01 P0 source boundary | `BuildDefinitionIndex` causal candidate -> preserve-only; graph identity/collision -> confirmed wrong; range/IR inputs -> partial; orchestration -> preserve-only | `E0-P0A-GRAPH1`, `E0-P0A-SOURCE1..E0-P0A-SOURCE9`, `E0-P0A-FD1..E0-P0A-FD15`, `E0-P0A-IMPACT1..E0-P0A-IMPACT2`, `E0-P0A-BOUNDARY2` | P1-A remains gated by Supervisor; P1-B/P1-C/P1-D work steps narrowed to exact owners |
 | R2 | 2026-08-10 | independent Supervisor report at `7042dda8` | P0-A acceptance and next-slice opening | P0 source/impact/status boundary -> accepted; P1-A documentation contract slice -> open; production implementation remains closed until P1-A and later implementation gates | `E0-P0A-REVIEW1` | P1-A may reconcile the source-backed contract; P1-B/P1-C/P1-D/P1-E remain ordered and closed |
+| R3 | 2026-08-10 | P1-A contract reconciliation at `5dc9855b` with fresh contract file-detail/impact | graph-accuracy contract authority and P1-B assumptions | contract `partial -> correct`; occurrence denominator/collision/relationship boundaries ratified; implementation topology remains unprescribed | `E1-P1A-SOURCE1`, `E1-P1A-CONTRACT1` | P1-A awaits Supervisor/commit; P1-B remains closed and must use its own exact owner/impact gate |
+| R4 | 2026-08-10 | P1-A Supervisor PASS and isolated documentation commit boundary | contract authority and P1-B opening | P1-A `review pending -> accepted`; production remains unchanged; P1-B becomes the only open implementation slice | `E1-P1A-REVIEW1`, `E1-P1A-COMMIT1` | open P1-B pre-flight only; P1-C/P1-D/P1-E remain closed |
 
 ## Phase Touch Map
 
@@ -220,8 +223,8 @@ Forbidden next action: copy target source into Anvien, manually edit target grap
 
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
-| P1-A | measured invariant is accepted; source owners are now explicit; DRAFT architecture remains non-authoritative | open the documentation-only contract reconciliation; ratify source-backed rules and ownership, not a predetermined topology |
-| P1-B | range/selection inputs are partial and shared `Range` has CRITICAL blast radius | narrow to `DefinitionFact`/range/provider position owners; define encoding and interval semantics before any shared edit; preserve binding-pattern behavior for Child 03 |
+| P1-A | source-backed contract reconciliation is Supervisor-accepted and committed; DRAFT architecture remains non-authoritative | complete; preserve accepted contract wording |
+| P1-B | range/selection inputs are partial and shared `Range` has CRITICAL blast radius | open pre-flight; narrow to `DefinitionFact`/range/provider position owners, define encoding/interval semantics before any shared edit, and preserve binding-pattern behavior for Child 03 |
 | P1-C | graph identity is wrong; `defsByFile` is the production occurrence denominator; `BuildDefinitionIndex` is not causal | edit only `graphIDForDef`/`buildWorkspace` and any projection owner proven necessary; do not edit the standalone index or broad providers without a plan refresh |
 | P1-D | `Graph.AddNode` is the proven silent replacement owner with 11 production caller families | classify canonical insertion, enrichment, and reinsertion operations; change only the conflict owner and required plumbing |
 | P1-E | target boundary is captured but target analyze is intentionally not run in P0 | retain the exact 13-entry pre-state and hashes; validate `time`/`now` `4/4` only after implementation slices are accepted |
@@ -250,4 +253,4 @@ Forbidden next action: copy target source into Anvien, manually edit target grap
 
 Decision note:
 
-The source, fresh graph, file-detail, impact, source-flow, and target-boundary evidence closes the P0 classification. Supervisor report `rp_supervisor_260810_095511_by_gpt-5-codex_child01_p0a.md` is PASS. P1-A is now the only open next slice; it is documentation-only and must ratify source-backed contract rules before P1-B production work opens. No production or test edit is authorized outside the ordered slice gates.
+The source, fresh graph, file-detail, impact, source-flow, and target-boundary evidence closes the P0 classification. Supervisor reports `rp_supervisor_260810_095511_by_gpt-5-codex_child01_p0a.md` and `rp_supervisor_260810_100646_by_gpt-5-codex_child01_p1a_contract.md` are PASS. P1-A ratifies the source-backed contract without choosing a new architecture. P1-B is now the only open next slice and must complete its own exact owner/file-detail/impact gate before production edits; P1-C through P1-E remain closed.
