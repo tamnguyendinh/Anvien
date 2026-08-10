@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `draft / P0 incomplete / implementation blocked`
+- Status: `active / P0 accepted / P1-A open / production implementation remains slice-gated`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
@@ -91,17 +91,30 @@ In scope:
 - No later-Child semantic behavior is implemented in this Child.
 - Every implementation slice passes full build, nearest real boundary, ledger refresh, Supervisor, detect-changes, and isolated commit gates.
 
+## Invariant Family Map
+
+| Invariant family | Source truth / current owner | First affected boundary | Owning slice | Sibling surfaces to preserve | Forbidden fallback |
+|------------------|-----------------------------|-------------------------|--------------|-----------------------------|--------------------|
+| Identity injectivity | `DefinitionFact.ID`, `ScopeFact` ownership, `graphIDForDef` | `internal/resolution/indexes.go:814-823` | P1-C | provider occurrence IDs and language meaning lanes | name-only, range-only, random, absolute-path, or traversal-order identity |
+| Range and selection | `Range`, TSJS `nodeRange`, construct/name AST nodes | provider/IR contract and graph node projection | P1-B, then P1-E | `PositionIndex` and reference ranges until semantics are ratified | guessed UTF-16/byte conversion or unannounced inclusive/exclusive change |
+| Lexical owner and meaning | `ScopeFact.Parent/OwnedDefIDs`, `scopeByDef`, `OwnerID`, `Label` | graph identity omits scope/meaning inputs | P1-B/P1-C | member ownership, type/value distinctions, later language semantics | global-name fallback or treating name equality as a merge rule |
+| Occurrence conservation | provider/ScopeIR definitions and production `defsByFile` | graph emission attempts collide after `graphIDForDef` | P1-C | standalone `BuildDefinitionIndex` legacy tests; later persistence denominator | using `len(defsByID)` or graph node counts as the input denominator |
+| Collision and mutation | `Graph.AddNode`, `Graph.init`, `emitter.emitNode` | duplicate ID performs silent last-writer replacement | P1-D | legitimate enrichment/reinsertion callers and separate relationship merge | blanket `AddNode` policy change, warning-only loss, or silent skip |
+| Projection and endpoints | `emitDefinitionNodes`, `DEFINES`, owner edges | node properties omit columns/scope/provider ID; colliding endpoints survive | P1-C/P1-E | `emitRelationship` semantic edge merge, persistence/readers in Child 02 | endpoint existence alone as conservation proof or persistence redesign here |
+
+Sibling boundary: `emitRelationship`/`AddRelationship` is a separate relationship pipeline; persistence, readers, bindings, exports, module resolution, ambient outcomes, and scanner behavior remain owned by later Children. The P0 source audit proves no orchestration change is required at this stage.
+
 ## Checklist
 
-- [ ] P0-A: Complete actual status before implementation work.
+- [x] P0-A: Complete actual status before implementation work.
   - Goal: establish current identity/range/occurrence owners and the exact implementation boundary.
   - Work Steps:
     1. Read the problem-origin report and bounded verification reports; separate measured identity facts from DRAFT design.
-    2. Refresh the Anvien graph; inspect current source; run file-detail and impact for every candidate identity/range/collision owner.
-    3. Record actual file counts, current behavior classifications, touch modes, and the exact consequence for P1-A through P1-E.
+    2. Refresh the Anvien graph; inspect the normal provider/ScopeIR/workspace/emission path; run file-detail and impact for every candidate identity/range/collision owner and supporting shared contract.
+    3. Distinguish the production occurrence denominator from standalone legacy indexes, record actual file counts, blast radius, current behavior classifications, touch modes, and the exact consequence for P1-A through P1-E.
     4. Obtain Supervisor review of the P0 classification before implementation opens.
   - Implementation Gate: no production edit until every target unit has current evidence and the actual-status Final P0 Decision is complete.
-  - Acceptance: `E0-P0A-REPORT1`, `E0-P0A-VERIFY1`, `E0-P0A-GRAPH1`, `E0-P0A-SOURCE1`, `E0-P0A-SOURCE2`, `E0-P0A-SOURCE3`, `E0-P0A-SOURCE4`, `E0-P0A-SOURCE5`, `E0-P0A-FD1`, `E0-P0A-FD2`, `E0-P0A-FD3`, `E0-P0A-FD4`, `E0-P0A-FD5`, `E0-P0A-IMPACT1`, `E0-P0A-BOUNDARY1`, `E0-P0A-STATUS1`, and `E0-P0A-REVIEW1` are recorded and non-contradictory.
+  - Acceptance: `E0-P0A-REPORT1`, `E0-P0A-VERIFY1`, `E0-P0A-GRAPH1`, `E0-P0A-SOURCE1..E0-P0A-SOURCE9`, `E0-P0A-FD1..E0-P0A-FD15`, `E0-P0A-IMPACT1`, `E0-P0A-IMPACT2`, `E0-P0A-BOUNDARY1`, `E0-P0A-BOUNDARY2`, `E0-P0A-STATUS1`, `E0-P0A-STATUS2`, and `E0-P0A-REVIEW1` are recorded, current, and non-contradictory.
 
 ### P1: Graph identity and strict construction
 
@@ -168,9 +181,9 @@ In scope:
 - [ ] P1-B: Establish range, selection range, and identity inputs.
   - Goal: make the source-proven position and owner/meaning inputs available without yet changing graph collision behavior.
   - Scope Boundary:
-    - Editable: only exact provider/ScopeIR/shared-contract owners selected by fresh evidence.
-    - Inspect-only: identity construction, graph mutation, persistence, and readers.
-    - Preserve-only: unrelated language/provider semantics and target source.
+    - Editable: only the exact position/identity-input symbols selected after the P1-A contract gate, currently candidates in `internal/scopeir/facts.go`, `internal/scopeir/range.go`, `internal/providers/tsjs/nodes.go`, and the relevant `addDefinition` path in `internal/providers/tsjs/definitions.go`.
+    - Inspect-only: `internal/providers/tsjs/scopes.go`, normalization/sort owners, identity construction, graph mutation, projection, persistence, and readers.
+    - Preserve-only: the TSJS non-identifier binding-pattern branch owned by Child 03, unrelated language/provider semantics, and target source.
     - Out of scope: collision handling, broad producer rewrite, and persistence.
   - Non-Goals: no range-only identity shortcut or guessed encoding conversion.
   - Pre-flight Questions:
@@ -182,12 +195,12 @@ In scope:
     - UI behavior flow: N/A — non-UI analyzer contract.
     - Docker runtime: N/A — validate through full build and analyzer boundary.
     - Playwright target: N/A — no browser surface.
-    - Behavior test: range, selection range, owner, meaning, line-ending, Unicode, tab, and nested-scope cases supported by the provider.
+    - Behavior test: provider-supported range/selection range, coordinate encoding, interval boundary, line-ending, Unicode, tab, and nested-scope cases; owner/meaning inputs are checked but not redesigned here.
     - Cleanup/quarantine: package-local independently authored fixtures only.
     - External side effects: none.
     - N/A notes: persistence and UI are later boundaries.
   - Work Steps:
-    1. Refresh graph, record exact file-detail/impact, and select the smallest source owner set.
+    1. Refresh graph, record exact file-detail/impact for the shared contract and provider position symbols, and select the smallest source owner set without opening Child 03 binding work.
        - UI flow check: N/A — non-UI.
        - DB/data flow check: trace provider input to the identity-input record.
        - Render location check: evidence ledger.
@@ -201,7 +214,7 @@ In scope:
        - Evidence target: `E1-P1B-BUILD1`, `E1-P1B-TEST1`, `E1-P1B-RUNTIME1`.
   - Implementation Gate: P1-A accepted; exact owners and HIGH/CRITICAL blast radius recorded.
   - Acceptance:
-    - Source: range/selection/owner/meaning inputs exist in their single-responsibility owners.
+    - Source: source-backed full/selection position and owner/meaning inputs exist in their single-responsibility owners with explicit coordinate/interval semantics; no field name or topology is prescribed without proof.
     - Runtime/UI: built analyzer exposes the expected inputs; no UI change.
     - DB/data: no persisted-format claim is made.
     - Behavior test: position/owner/meaning matrix passes.
@@ -215,13 +228,13 @@ In scope:
 - [ ] P1-C: Implement declaration/symbol identity and occurrence conservation.
   - Goal: map every relevant source declaration to a deterministic occurrence identity and the correct lexical symbol without losing duplicate-name occurrences.
   - Scope Boundary:
-    - Editable: only source-proven identity and occurrence owners selected by P1-C pre-flight.
-    - Inspect-only: graph mutation/collision owner, persistence, readers, and later semantics.
-    - Preserve-only: unrelated providers and graph facts.
+    - Editable: only `graphIDForDef`/`buildWorkspace` and an exact projection/input owner proven by P1-C impact; the current candidate is `internal/resolution/indexes.go`.
+    - Inspect-only: `emitDefinitionNodes`/`emitter.emitNode`, graph mutation/collision, persistence, readers, and later semantics unless the fresh impact proves a required plumbing edit.
+    - Preserve-only: `BuildDefinitionIndex`, the TSJS binding-pattern branch, unrelated providers, relationship identity/merge, and unrelated graph facts.
     - Out of scope: collision API redesign beyond what this identity mapping needs.
   - Non-Goals: no heuristic merge by name and no relationship redesign without new impact evidence.
   - Pre-flight Questions:
-    - Data source: accepted P1-B inputs and every current occurrence entering identity construction.
+    - Data source: accepted P1-B inputs and every current occurrence in `defsByFile`; `defsByID` is an index, not the conservation denominator.
     - Display permission: N/A — no UI permission behavior.
     - DB read flow: in-memory provider/ScopeIR-to-graph identity flow.
     - DB write flow: normal graph construction only; persistence method is not changed here.
@@ -229,14 +242,14 @@ In scope:
     - UI behavior flow: N/A — non-UI analyzer behavior.
     - Docker runtime: N/A — full build plus built analyzer boundary.
     - Playwright target: N/A — no browser surface.
-    - Behavior test: same-name nested scopes, meaning lanes, reorder, merge-evidence, and occurrence conservation.
+    - Behavior test: same-name nested scopes, provider-supported meaning lanes, reorder/determinism, merge-evidence, occurrence conservation, and endpoint existence.
     - Cleanup/quarantine: package-local fixtures and repository-local evidence.
     - External side effects: none beyond normal analyze output.
     - N/A notes: reader parity belongs to Child 02.
   - Work Steps:
-    1. Refresh graph; record impact for exact identity/occurrence symbols; update the plan first if a new producer family is proven necessary.
+    1. Refresh graph; record impact for `graphIDForDef`/`buildWorkspace` and exact projection symbols; update the plan before touching any new producer family or the standalone definition index.
        - UI flow check: N/A — non-UI.
-       - DB/data flow check: enumerate input/output occurrences and lexical-owner links.
+       - DB/data flow check: enumerate the `defsByFile` input denominator, `DefinitionFact.ID` set, lexical-owner links, accepted graph-ID set, and affected endpoints.
        - Render location check: evidence ledger.
        - Mini QA: nearest identity-construction boundary.
        - Evidence target: `E1-P1C-IMPACT1`, `E1-P1C-SOURCE1`.
@@ -248,9 +261,9 @@ In scope:
        - Evidence target: `E1-P1C-BUILD1`, `E1-P1C-TEST1`, `E1-P1C-ORACLE1`.
   - Implementation Gate: P1-B accepted; exact identity/occurrence owners and input denominator recorded.
   - Acceptance:
-    - Source: deterministic declaration/symbol mapping uses lexical owner and meaning as proven.
+    - Source: deterministic declaration/symbol mapping uses source-proven lexical owner and meaning inputs; no name-only or range-only identity shortcut is accepted.
     - Runtime/UI: normal built analyze represents the expected identities; no UI change.
-    - DB/data: occurrence conservation is 100% at this boundary.
+    - DB/data: occurrence conservation is 100% against the recorded `defsByFile`/source denominator at this boundary.
     - Behavior test: same-name, ordering, and merge-evidence matrix passes.
     - Cleanup/quarantine: no target-derived fixture or unused compatibility code.
     - Evidence IDs: `E1-P1C-IMPACT1`, `E1-P1C-SOURCE1`, `E1-P1C-BUILD1`, `E1-P1C-TEST1`, `E1-P1C-ORACLE1`, `E1-P1C-REVIEW1`, `E1-P1C-DETECT1`, `E1-P1C-COMMIT1`.
@@ -262,13 +275,13 @@ In scope:
 - [ ] P1-D: Remove silent collision or overwrite at the proven owner.
   - Goal: ensure a conflicting canonical fact cannot silently replace, skip, or collapse a distinct occurrence.
   - Scope Boundary:
-    - Editable: only collision/mutation/index owner(s) proven by current impact.
-    - Inspect-only: all callers and persistence paths needed to understand legitimate enrichment.
-    - Preserve-only: callers not shown to participate in the defect.
+    - Editable: only the canonical node conflict owner, currently `Graph.AddNode` and the minimum `emitter.emitNode` plumbing proven by P1-D impact.
+    - Inspect-only: `Graph.init`, all 11 production caller families, and persistence paths needed to classify legitimate enrichment/reinsertion.
+    - Preserve-only: `AddRelationship`/`emitRelationship`, callers not shown to participate in canonical identity loss, and later persistence/readers.
     - Out of scope: mandatory rewriting of all producers or new relationship identity.
   - Non-Goals: no bulk API rewrite, warning-only behavior, or broad refactor.
   - Pre-flight Questions:
-    - Data source: P1-C canonical identity output and current collision/mutation call graph.
+    - Data source: P1-C canonical identity output and the current `Graph.AddNode` caller/operation inventory.
     - Display permission: N/A — no UI permission behavior.
     - DB read flow: in-memory graph/index construction and decode paths proven affected.
     - DB write flow: normal graph construction only; no storage algorithm change.
@@ -276,12 +289,12 @@ In scope:
     - UI behavior flow: N/A — non-UI analyzer behavior.
     - Docker runtime: N/A — full build plus built CLI boundary.
     - Playwright target: N/A — no browser surface.
-    - Behavior test: conflicting identity, identical reinsertion if supported, legitimate enrichment, duplicate occurrence, and missing endpoint.
+    - Behavior test: conflicting canonical identity, idempotent reinsertion if supported, legitimate enrichment, duplicate occurrence, missing endpoint, and all affected caller classes.
     - Cleanup/quarantine: package-local fault fixtures.
     - External side effects: none beyond isolated/normal analyze output.
     - N/A notes: implementation shape follows impact evidence.
   - Work Steps:
-    1. Refresh graph; inventory the exact collision path and legitimate same-ID operations; update plan before any additional caller family is edited.
+    1. Refresh graph; inventory the exact collision path and legitimate same-ID operations across the 11 caller families; update the plan before any additional caller family is edited.
        - UI flow check: N/A — non-UI.
        - DB/data flow check: distinguish conflict from evidence-backed enrichment.
        - Render location check: evidence ledger.
@@ -295,9 +308,9 @@ In scope:
        - Evidence target: `E1-P1D-BUILD1`, `E1-P1D-TEST1`, `E1-P1D-COLLISION1`.
   - Implementation Gate: P1-C accepted; every editable owner and caller has fresh impact evidence.
   - Acceptance:
-    - Source: silent collision/loss is removed only at proven owners.
+    - Source: silent collision/loss is removed only at the proven canonical node owner; separate relationship replacement/merge remains unchanged.
     - Runtime/UI: conflicting input fails clearly or is handled by an explicit proven rule; no UI change.
-    - DB/data: distinct occurrences remain conserved and affected endpoints exist.
+    - DB/data: distinct occurrences remain conserved, conflict outcomes are explicit, and affected endpoints exist.
     - Behavior test: collision/enrichment/integrity matrix passes.
     - Cleanup/quarantine: obsolete defect-specific behavior and debug data removed.
     - Evidence IDs: `E1-P1D-IMPACT1`, `E1-P1D-SOURCE1`, `E1-P1D-BUILD1`, `E1-P1D-TEST1`, `E1-P1D-COLLISION1`, `E1-P1D-REVIEW1`, `E1-P1D-DETECT1`, `E1-P1D-COMMIT1`.
@@ -311,7 +324,7 @@ In scope:
   - Scope Boundary:
     - Editable: validation fixtures/harnesses and only an exact earlier owner reopened by a failed gate after plan refresh.
     - Inspect-only: normal analyze flow, graph output, target boundary, and Child 02 handoff fields.
-    - Preserve-only: target source, persistence implementation, readers, and later semantic owners.
+    - Preserve-only: the captured target source/worktree state, target graph baseline until the authorized in-place run, persistence implementation, readers, and later semantic owners.
     - Out of scope: production repair inside the validation slice without returning to P1-B/P1-C/P1-D.
   - Non-Goals: no persistence/reader change or target fixture copy.
   - Pre-flight Questions:
@@ -334,7 +347,7 @@ In scope:
        - Render location check: benchmark/evidence ledgers.
        - Mini QA: normal built CLI analyze/query boundary.
        - Evidence target: `E1-P1E-BUILD1`, `E1-P1E-DETERMINISM1`, `E1-P1E-INTEGRITY1`.
-    2. Run the bounded target oracle in place, verify target preservation, obtain Supervisor PASS, detect changes, and commit the accepted slice.
+    2. Run the bounded target oracle in place only after the captured pre-state is compared, verify target preservation, obtain Supervisor PASS, detect changes, and commit the accepted slice.
        - UI flow check: N/A — non-UI.
        - DB/data flow check: `time`/`now` `4/4`, no affected occurrence loss.
        - Render location check: target oracle and Supervisor evidence.
@@ -344,7 +357,7 @@ In scope:
   - Acceptance:
     - Source: no new production semantic change is introduced by validation.
     - Runtime/UI: normal built commands pass all identity acceptance rows; no UI change.
-    - DB/data: `4/4`, 100% occurrence conservation, zero proven collisions, zero affected missing endpoints.
+    - DB/data: `4/4`, 100% occurrence conservation, zero proven collisions, zero affected missing endpoints, and no target pre-state loss.
     - Behavior test: deterministic matched-run and conflict matrices pass.
     - Cleanup/quarantine: target source/worktree preserved and debug artifacts removed.
     - Evidence IDs: `E1-P1E-BUILD1`, `E1-P1E-DETERMINISM1`, `E1-P1E-INTEGRITY1`, `E1-P1E-TARGET1`, `E1-P1E-BOUNDARY1`, `E1-P1E-REVIEW1`, `E1-P1E-DETECT1`, `E1-P1E-COMMIT1`.
@@ -380,8 +393,10 @@ In scope:
 ## Risk Notes
 
 - Identity construction has HIGH/CRITICAL blast radius; exact impact controls scope but does not forbid the needed edit.
+- Fresh P0 source-flow evidence shows `BuildDefinitionIndex` is test-only and must not be edited as a proxy for the production occurrence loss.
 - Adding a line or range to the old identity can hide the bounded collision while leaving lexical-owner or meaning collisions intact.
 - Tightening a generic mutation method without classifying legitimate enrichment can break unrelated producers.
+- `Graph.AddNode` has 11 production caller families and CRITICAL upstream impact; the P1-D conflict policy must be scoped to canonical source nodes.
 - Prescribing all producers or relationship identities before impact evidence would expand the defect beyond its proven boundary.
 - Range encoding can drift across providers and editor-facing adapters; P1-B must state what current source actually supplies.
 - Determinism claims require matched inputs and explicit canonical comparisons, not graph counts alone.

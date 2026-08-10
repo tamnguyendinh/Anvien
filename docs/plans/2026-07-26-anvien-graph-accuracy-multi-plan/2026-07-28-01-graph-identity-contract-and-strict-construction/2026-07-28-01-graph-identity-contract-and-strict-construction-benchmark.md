@@ -24,6 +24,10 @@
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
 | P0 | bounded same-name declarations represented distinctly | represented/source declarations | `2/4` | `2/4` bounded finding | pending | `4/4` | pending | `E0-P0A-REPORT1`, `E0-P0A-VERIFY1` |
 | P0 | bounded identity collision groups | groups | 2 (`time`, `now`) | 2 | pending | 0 | pending | `E0-P0A-REPORT1`, `E0-P0A-VERIFY1` |
+| P0 | Anvien analyze inventory | scanned / parsed-code / failed files | `1,557 / 676 / 0` | `1,557 / 676 / 0` | pending implementation | preserve baseline before code | `0` | `E0-P0A-GRAPH1` |
+| P0 | Anvien graph inventory | nodes / relationships | `85,110 / 123,978` (pre-ledger) | `85,114 / 123,982` (post-ledger) | pending implementation | record documentation-only delta; no production delta | `+4 / +4` | `E0-P0A-GRAPH1` |
+| P0 | source candidate surfaces with fresh file-detail | files | 5 retained candidates | `15/15` audited | `15/15` P0 | every editable candidate has a current count | `+10` | `E0-P0A-FD1..E0-P0A-FD15` |
+| P0 | production callers of `BuildDefinitionIndex` | callers | `0` | `0` | preserve | `0` | `0` | `E0-P0A-SOURCE3`, `E0-P0A-IMPACT2` |
 | P0 | Child 01 implementation slices | slices | 5 planned | 5 planned | pending | 5 accepted | pending | plan checklist |
 
 ## B1 - P1 Benchmarks
