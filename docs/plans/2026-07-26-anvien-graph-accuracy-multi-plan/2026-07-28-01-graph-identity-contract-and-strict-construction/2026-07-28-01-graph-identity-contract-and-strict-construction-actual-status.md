@@ -2,14 +2,14 @@
 
 Title: Anvien Graph Identity Contract and Strict Construction
 Date: 2026-08-10
-Status: P1-A Complete / P1-B Open
+Status: P1-A Complete / P1-B Accepted at Isolated Commit Boundary / P1-C Not Yet Opened
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
 
 ## Purpose
 
-This file records the current source-backed identity/range/occurrence/collision boundary before Child 01 production implementation. It separates the measured target finding from the DRAFT architecture proposal; P1-A is documentation-only, while production implementation remains closed until the ordered slice gates pass.
+This file records the current source-backed identity/range/occurrence/collision boundary for Child 01. It separates the measured target finding from the DRAFT architecture proposal; P1-B now has verified production/runtime/QA evidence, Supervisor PASS, and a clean final detect-changes result at its isolated commit boundary. P1-C and every later implementation slice remain unopened until the P1-B Git boundary exists.
 
 ## Freshness / Refresh Rules
 
@@ -78,10 +78,10 @@ Exact symbol impacts (`--direction upstream --include-tests`) are recorded in `E
 |------|---------------|----------------|--------|--------------------|----------|--------------------|
 | problem/acceptance authority | bounded reports prove four ScopeIR occurrences become two graph nodes; report repair design remains DRAFT | use only measured `2/4 -> 4/4` finding and source-backed invariants | correct | N/A | `E0-P0A-REPORT1`, `E0-P0A-VERIFY1` | preserve; ratify mechanics only in P1-A |
 | graph-accuracy contract authority | active contract records the production occurrence denominator, current identity inputs/collision owner, endpoint traceability, and separate relationship boundary without prescribing a repair topology | source-backed Child 01 invariants are authoritative while implementation shape remains slice-evidence-driven | correct | 0 related files | `E1-P1A-SOURCE1`, `E1-P1A-CONTRACT1`, `E1-P1A-REVIEW1`, `E1-P1A-COMMIT1` | preserve contract wording; P1-B may open only with its own source/impact gate |
-| Anvien graph baseline | current self-graph is fresh at `7042dda8`; post-ledger refresh is `1,557/676/0`, `85,114` nodes, `123,982` relationships; pre-ledger baseline was `85,110/123,978` | all graph commands use this fresh index; the `+4/+4` document delta is not production behavior | correct | N/A | `E0-P0A-GRAPH1` | preserve and refresh after implementation |
-| declaration contract (`DefinitionFact`) | full range, label, owner ID, and optional visibility exist; selection range, lexical-scope field, and explicit meaning lane do not | source-backed full/selection position plus identity inputs without inventing a topology | partial | 231 | `E0-P0A-SOURCE6`, `E0-P0A-FD6`, `E0-P0A-IMPACT1` | P1-B contract and exact provider/IR owner only |
-| range semantics | four coordinates are present; TSJS uses one-based lines/byte-like columns while position lookup includes the end coordinate; encoding/interval contract is undocumented | explicit coordinate/encoding/interval semantics and a provider-supported selection range | partial | 227 | `E0-P0A-SOURCE2`, `E0-P0A-FD2`, `E0-P0A-FD10`, `E0-P0A-IMPACT1` | P1-B; no guessed conversion |
-| lexical owner / meaning | ScopeIR scopes and bindings retain lexical membership; graph identity/projection does not consume scope and only `Label` acts as a meaning-like lane | distinct lexical owners and provider-distinguished meanings remain distinguishable | partial | 46 identity / 17 TS scope | `E0-P0A-SOURCE1`, `E0-P0A-SOURCE7`, `E0-P0A-FD1`, `E0-P0A-FD11` | P1-B/P1-C; no name-only or range-only shortcut |
+| Anvien graph baseline/current candidate | P0 baseline at `7042dda8` was `1,557/676/0`, `85,114` nodes, `123,982` relationships after its ledger refresh; the final P1-B pre-commit refresh is `1,564/677/0`, `85,247` nodes, `124,149` relationships | graph commands use a fresh index and inventory deltas are not treated as behavior proof | correct | N/A | `E0-P0A-GRAPH1`, `E1-P1B-DETECT1` | preserve baseline and refresh again before P1-C graph work |
+| declaration contract (`DefinitionFact`) | full construct range plus optional declaring-token selection range, label, owner ID, and visibility inputs exist; TSJS supplies selection range from `nameNode`, while unrelated providers omit the optional field | source-backed full/selection position plus identity inputs without inventing a topology | correct | 231 | `E1-P1B-IMPACT1`, `E1-P1B-SOURCE1`, `E1-P1B-TEST1`, `E1-P1B-RUNTIME1` | preserve the P1-B fact shape; graph consumption remains P1-C/P1-E |
+| range semantics | TSJS explicitly retains tree-sitter's one-based lines, zero-based UTF-8 byte columns, and exclusive end point; construct/selection ranges survive LF/CRLF, Unicode, tab, normalization, and JSON round-trip; shared `Range`/legacy `PositionIndex` semantics are unchanged | explicit source-backed provider coordinate/encoding/interval semantics and a provider-supported selection range | correct | 227 | `E1-P1B-IMPACT1`, `E1-P1B-SOURCE1`, `E1-P1B-TEST1`, `E1-P1B-RUNTIME1` | preserve TSJS contract; no guessed cross-provider conversion |
+| lexical owner / meaning | ScopeIR scopes/bindings retain exact lexical membership; `Label` preserves same-lexeme interface/value lanes and `OwnerID` preserves member ownership through JSON; graph identity/projection does not yet consume these inputs | distinct lexical owners and provider-distinguished meanings remain distinguishable through the graph identity boundary | partial | 46 identity / 17 TS scope | `E0-P0A-SOURCE1`, `E0-P0A-SOURCE7`, `E1-P1B-SOURCE1`, `E1-P1B-TEST1` | P1-B input boundary correct; P1-C must consume it without adding a new fallback |
 | graph identity | `graphIDForDef` omits provider occurrence ID, range, scope, and meaning; `time`/`now` pairs map to one ID each | injective deterministic identity for distinct source occurrences and supported semantic lanes | wrong | 46 | `E0-P0A-SOURCE1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1` | P1-C exact symbol owner |
 | production occurrence path | provider/ScopeIR facts are appended and `defsByFile` retains each occurrence; `defsByID` is a separate provider-ID map and `DefinitionsIndexed` is not an occurrence denominator | every required input occurrence reaches a distinct accepted graph fact | wrong | 46 / 42 | `E0-P0A-SOURCE3`, `E0-P0A-SOURCE5`, `E0-P0A-SOURCE8` | P1-C uses `defsByFile`/source denominator; preserve `BuildDefinitionIndex` |
 | graph collision/mutation | duplicate `Graph.AddNode` IDs replace payloads; `Graph.init` does not reject pre-existing duplicate IDs | conflicting canonical facts fail clearly or follow an explicit proven enrichment rule | wrong | 238 | `E0-P0A-SOURCE4`, `E0-P0A-FD4`, `E0-P0A-IMPACT2` | P1-D classify all legitimate callers before editing |
@@ -99,6 +99,9 @@ Exact symbol impacts (`--direction upstream --include-tests`) are recorded in `E
 | R2 | 2026-08-10 | independent Supervisor report at `7042dda8` | P0-A acceptance and next-slice opening | P0 source/impact/status boundary -> accepted; P1-A documentation contract slice -> open; production implementation remains closed until P1-A and later implementation gates | `E0-P0A-REVIEW1` | P1-A may reconcile the source-backed contract; P1-B/P1-C/P1-D/P1-E remain ordered and closed |
 | R3 | 2026-08-10 | P1-A contract reconciliation at `5dc9855b` with fresh contract file-detail/impact | graph-accuracy contract authority and P1-B assumptions | contract `partial -> correct`; occurrence denominator/collision/relationship boundaries ratified; implementation topology remains unprescribed | `E1-P1A-SOURCE1`, `E1-P1A-CONTRACT1` | P1-A awaits Supervisor/commit; P1-B remains closed and must use its own exact owner/impact gate |
 | R4 | 2026-08-10 | P1-A Supervisor PASS and isolated documentation commit boundary | contract authority and P1-B opening | P1-A `review pending -> accepted`; production remains unchanged; P1-B becomes the only open implementation slice | `E1-P1A-REVIEW1`, `E1-P1A-COMMIT1` | open P1-B pre-flight only; P1-C/P1-D/P1-E remain closed |
+| R5 | 2026-08-10 | P1-B production diff at `8cbf6006` plus full-build, compiled provider boundary, focused matrix, and 61-package product regression | range/selection and identity-input boundary | `DefinitionFact` selection input `partial -> correct`; TSJS coordinate/interval contract `partial -> correct`; lexical/meaning inputs verified correct at ScopeIR while graph consumption remains `partial` | `E1-P1B-IMPACT1`, `E1-P1B-SOURCE1`, `E1-P1B-BUILD1`, `E1-P1B-TEST1`, `E1-P1B-RUNTIME1` | P1-B awaits Supervisor, detect-changes, and isolated commit; P1-C/P1-D/P1-E stay closed |
+| R6 | 2026-08-10 | first P1-B Supervisor REJECT, ledger-only correction, and history-closure resubmission PASS | actual-status consistency and review gate | stale Detailed Findings reconciled with matrix/R5; P1-B `review pending -> Supervisor accepted`; production/test behavior unchanged | `E1-P1B-REVIEW1` | run fresh detect-changes and isolated P1-B commit only; P1-C/P1-D/P1-E stay closed |
+| R7 | 2026-08-10 | final P1-B candidate after fresh `1,564/677/0` graph refresh and detect-changes | P1-B acceptance and Git boundary | detect-changes PASSes at overall risk `low` with `50` changed symbols / `7` changed files / `0` affected symbols / no affected process; P1-B `Supervisor accepted -> accepted at isolated commit boundary` | `E1-P1B-DETECT1`, `E1-P1B-COMMIT1` | create the isolated P1-B commit; P1-C opens only after that Git boundary and its own pre-flight refresh |
 
 ## Phase Touch Map
 
@@ -107,9 +110,9 @@ Related files are not automatically editable. P0 touch mode is inspect-only or p
 | Unit / File / Surface | Plan-Relevant Relationship File | Relationship to Target | Plan Item | Touch Mode | Evidence | Constraint |
 |-----------------------|---------------------------------|------------------------|-----------|------------|----------|------------|
 | graph-accuracy contract | Child 01 plan and ledgers | authority | P1-A | edit documentation | `E0-P0A-REPORT1`, `E0-P0A-VERIFY1` | exclude DRAFT implementation mechanics |
-| `DefinitionFact`/`ScopeFact` | `internal/scopeir/facts.go` | shared IR contract | P1-B/P1-C | inspect-only until contract gate | `E0-P0A-FD6`, `E0-P0A-IMPACT1` | no mandatory field/topology name before source proof |
-| range shape/semantics | `internal/scopeir/range.go`, `internal/providers/tsjs/nodes.go` | shared/provider position input | P1-B | inspect-only | `E0-P0A-FD2`, `E0-P0A-FD10`, `E0-P0A-SOURCE2` | no guessed encoding or inclusive/exclusive conversion |
-| TS definition constructor | `internal/providers/tsjs/definitions.go` | construct range/scope/visibility input | P1-B/P1-C | inspect-only; edit only exact function after impact refresh | `E0-P0A-FD9`, `E0-P0A-SOURCE6` | preserve binding-pattern branch for Child 03 |
+| `DefinitionFact`/`ScopeFact` | `internal/scopeir/facts.go` | shared IR contract | P1-B/P1-C | P1-B edited only optional `SelectionRange`; `ScopeFact` preserved | `E1-P1B-IMPACT1`, `E1-P1B-SOURCE1` | no redundant lexical/meaning topology; later consumption belongs to P1-C |
+| range shape/semantics | `internal/scopeir/range.go`, `internal/providers/tsjs/nodes.go` | shared/provider position input | P1-B | `nodes.go` documents existing TSJS contract; `range.go` preserved | `E1-P1B-IMPACT1`, `E1-P1B-SOURCE1` | no guessed conversion or shared interval rewrite |
+| TS definition constructor | `internal/providers/tsjs/definitions.go` | construct range/scope/visibility input | P1-B/P1-C | P1-B edited exact `addDefinition` path to retain `nameNode` range | `E1-P1B-IMPACT1`, `E1-P1B-SOURCE1` | binding-pattern branch remains unchanged for Child 03 |
 | TS scope builder | `internal/providers/tsjs/scopes.go` | lexical owner source | P1-B/P1-C | inspect-only | `E0-P0A-FD11`, `E0-P0A-SOURCE7` | preserve containment semantics unless P1 proves gap |
 | normalization/sort | `internal/scopeir/ir.go`, `internal/scopeir/sort_keys.go` | deterministic occurrence ordering | P1-C/P1-E | inspect-only | `E0-P0A-FD7`, `E0-P0A-FD8` | no deduplication by name or ID without contract |
 | graph identity/index | `internal/resolution/indexes.go` | `DefinitionFact` -> `defRef.GraphID` | P1-C | inspect-only; exact `graphIDForDef`/`buildWorkspace` candidate | `E0-P0A-FD1`, `E0-P0A-IMPACT1` | CRITICAL warning; no broad resolver rewrite |
@@ -125,7 +128,7 @@ Related files are not automatically editable. P0 touch mode is inspect-only or p
 
 Current state:
 
-The source-backed ScopeIR path retains distinct `DefinitionFact.ID` values and lexical scope bindings for the four bounded declarations, but `graphIDForDef` recomputes a name/file-oriented ID without scope, range, provider occurrence ID, or an explicit meaning lane. The graph therefore maps both `time` facts to one ID and both `now` facts to one ID.
+The source-backed ScopeIR path retains distinct `DefinitionFact.ID` values, exact lexical scope ownership/bindings, provider `Label`, and member `OwnerID`. P1-B now also retains the optional declaring-token `SelectionRange` and proves these existing owner/meaning inputs survive normalization and JSON round-trip. `graphIDForDef` still recomputes a name/file-oriented ID without consuming scope, range, provider occurrence ID, or the provider label, so the graph-level `time`/`now` collapse remains owned by P1-C.
 
 Required state:
 
@@ -135,11 +138,11 @@ source occurrence + lexical owner + provider-supported meaning
 -> no name-only/range-only collapse
 ```
 
-Evidence: `E0-P0A-SOURCE1`, `E0-P0A-SOURCE6`, `E0-P0A-SOURCE7`, `E0-P0A-BOUNDARY2`.
+Evidence: `E0-P0A-SOURCE1`, `E0-P0A-SOURCE7`, `E0-P0A-BOUNDARY2`, `E1-P1B-SOURCE1`, `E1-P1B-TEST1`, `E1-P1B-RUNTIME1`.
 
-Classification: `wrong` at graph identity; `partial` at the shared IR input boundary.
+Classification: `correct` at the P1-B provider/ScopeIR input boundary; `wrong` at the P1-C graph identity boundary.
 
-Allowed next action: P1-A ratifies only source-backed invariants, then P1-B/P1-C select exact owners after their own impact gates.
+Allowed next action: create the isolated P1-B Git boundary from the accepted, detect-clean candidate; only after that boundary may P1-C begin its own fresh pre-flight and prove the exact graph-identity owner.
 
 Forbidden next action: import the problem report's DRAFT two-tier topology, add only line/range to the old ID, use random/absolute-path identity, or fall back to a global name.
 
@@ -147,7 +150,7 @@ Forbidden next action: import the problem report's DRAFT two-tier topology, add 
 
 Current state:
 
-`Range` has four coordinates, but the provider coordinate conversion and position-index boundary behavior are not declared as one contract, and `DefinitionFact` has no selection-range field. Definition graph nodes drop columns entirely.
+`DefinitionFact` now carries the existing construct `Range` plus an optional declaring-token `SelectionRange`, and TSJS `addDefinition` supplies both from the construct and `nameNode`. TSJS `nodeRange` explicitly records its source-backed one-based lines, zero-based UTF-8 byte columns, and exclusive end point. Shared `Range`, legacy `PositionIndex`, and TSJS scope containment remain unchanged; definition graph nodes still drop columns/selection data at the later P1-E projection boundary.
 
 Required state:
 
@@ -157,11 +160,11 @@ provider position facts -> explicit coordinate/interval semantics
                        -> stable identity/projection inputs
 ```
 
-Evidence: `E0-P0A-SOURCE2`, `E0-P0A-SOURCE6`, `E0-P0A-FD2`, `E0-P0A-FD10`.
+Evidence: `E0-P0A-SOURCE2`, `E0-P0A-FD2`, `E0-P0A-FD10`, `E1-P1B-SOURCE1`, `E1-P1B-TEST1`, `E1-P1B-RUNTIME1`.
 
-Classification: `partial`.
+Classification: `correct` at the TSJS provider/ScopeIR P1-B boundary; `partial` only at the later graph projection boundary.
 
-Allowed next action: P1-B must establish the actual provider encoding and nearest owner before editing a shared contract.
+Allowed next action: create the isolated P1-B Git boundary while preserving the shared range/position siblings; graph identity/projection work remains closed until the separately opened P1-C/P1-E slices.
 
 Forbidden next action: silently convert byte columns to UTF-16, assume half-open/inclusive semantics, or make range alone the identity key.
 
@@ -224,7 +227,7 @@ Forbidden next action: copy target source into Anvien, manually edit target grap
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
 | P1-A | source-backed contract reconciliation is Supervisor-accepted and committed; DRAFT architecture remains non-authoritative | complete; preserve accepted contract wording |
-| P1-B | range/selection inputs are partial and shared `Range` has CRITICAL blast radius | open pre-flight; narrow to `DefinitionFact`/range/provider position owners, define encoding/interval semantics before any shared edit, and preserve binding-pattern behavior for Child 03 |
+| P1-B | range/selection and owner/meaning input behavior is implemented, verified, Supervisor-accepted, and detect-clean at the provider/ScopeIR boundary; shared `Range` remains unchanged despite CRITICAL blast radius | complete at the isolated P1-B commit boundary; P1-C may open only after Git confirms that boundary |
 | P1-C | graph identity is wrong; `defsByFile` is the production occurrence denominator; `BuildDefinitionIndex` is not causal | edit only `graphIDForDef`/`buildWorkspace` and any projection owner proven necessary; do not edit the standalone index or broad providers without a plan refresh |
 | P1-D | `Graph.AddNode` is the proven silent replacement owner with 11 production caller families | classify canonical insertion, enrichment, and reinsertion operations; change only the conflict owner and required plumbing |
 | P1-E | target boundary is captured but target analyze is intentionally not run in P0 | retain the exact 13-entry pre-state and hashes; validate `time`/`now` `4/4` only after implementation slices are accepted |
@@ -253,4 +256,4 @@ Forbidden next action: copy target source into Anvien, manually edit target grap
 
 Decision note:
 
-The source, fresh graph, file-detail, impact, source-flow, and target-boundary evidence closes the P0 classification. Supervisor reports `rp_supervisor_260810_095511_by_gpt-5-codex_child01_p0a.md` and `rp_supervisor_260810_100646_by_gpt-5-codex_child01_p1a_contract.md` are PASS. P1-A ratifies the source-backed contract without choosing a new architecture. P1-B is now the only open next slice and must complete its own exact owner/file-detail/impact gate before production edits; P1-C through P1-E remain closed.
+The source, fresh graph, file-detail, impact, source-flow, and target-boundary evidence closes the P0 classification. Supervisor reports `rp_supervisor_260810_095511_by_gpt-5-codex_child01_p0a.md` and `rp_supervisor_260810_100646_by_gpt-5-codex_child01_p1a_contract.md` are PASS. P1-A ratifies the source-backed contract without choosing a new architecture. P1-B production/runtime/QA evidence, history-closure Supervisor PASS, and final detect-changes PASS are recorded at its isolated commit boundary. P1-C through P1-E remain closed until Git confirms that boundary; no later-slice behavior is implied.

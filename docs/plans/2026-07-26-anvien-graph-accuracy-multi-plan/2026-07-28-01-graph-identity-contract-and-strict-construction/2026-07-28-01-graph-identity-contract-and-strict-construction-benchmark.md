@@ -46,4 +46,5 @@
 ## Non-Benchmarkable Notes
 
 - P1-A is documentation-only and produced no new product/runtime benchmark. Its contract trace, document checks, Supervisor verdict, and commit are evidence gates.
+- P1-B adds an optional in-memory ScopeIR selection range and records the existing TSJS coordinate contract; it does not change a benchmark-owned performance, capacity, package-size, graph-throughput, or target-accuracy metric. Build/test timings and the self-analyze inventory are validation evidence under `E1-P1B-BUILD1`, not benchmark results.
 - Child 02 owns persistence/reader counts and field-parity measurements.

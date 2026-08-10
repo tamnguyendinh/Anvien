@@ -15,6 +15,8 @@ var builtinTypeNames = map[string]struct{}{
 	"null": {}, "true": {}, "false": {},
 }
 
+// nodeRange preserves tree-sitter's UTF-8 point contract for TSJS facts:
+// lines are one-based, columns are zero-based byte offsets, and the end point is exclusive.
 func nodeRange(node *sitter.Node) scopeir.Range {
 	start := node.StartPosition()
 	end := node.EndPosition()

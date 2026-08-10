@@ -1,30 +1,32 @@
 package scopeir
 
 type DefinitionFact struct {
-	ID                     string    `json:"id"`
-	FilePath               string    `json:"filePath"`
-	FileHash               string    `json:"fileHash,omitempty"`
-	Name                   string    `json:"name"`
-	Label                  NodeLabel `json:"label"`
-	Range                  Range     `json:"range"`
-	QualifiedName          string    `json:"qualifiedName,omitempty"`
-	ParameterCount         *int      `json:"parameterCount,omitempty"`
-	RequiredParameterCount *int      `json:"requiredParameterCount,omitempty"`
-	ParameterTypes         []string  `json:"parameterTypes,omitempty"`
-	ReturnType             string    `json:"returnType,omitempty"`
-	DeclaredType           string    `json:"declaredType,omitempty"`
-	OwnerID                string    `json:"ownerId,omitempty"`
-	Visibility             string    `json:"visibility,omitempty"`
-	Static                 *bool     `json:"isStatic,omitempty"`
-	Readonly               *bool     `json:"isReadonly,omitempty"`
-	Abstract               *bool     `json:"isAbstract,omitempty"`
-	Final                  *bool     `json:"isFinal,omitempty"`
-	Virtual                *bool     `json:"isVirtual,omitempty"`
-	Override               *bool     `json:"isOverride,omitempty"`
-	Async                  *bool     `json:"isAsync,omitempty"`
-	Partial                *bool     `json:"isPartial,omitempty"`
-	Annotations            []string  `json:"annotations,omitempty"`
-	Description            string    `json:"description,omitempty"`
+	ID       string    `json:"id"`
+	FilePath string    `json:"filePath"`
+	FileHash string    `json:"fileHash,omitempty"`
+	Name     string    `json:"name"`
+	Label    NodeLabel `json:"label"`
+	Range    Range     `json:"range"`
+	// SelectionRange identifies the declaring token when the provider can supply one.
+	SelectionRange         *Range   `json:"selectionRange,omitempty"`
+	QualifiedName          string   `json:"qualifiedName,omitempty"`
+	ParameterCount         *int     `json:"parameterCount,omitempty"`
+	RequiredParameterCount *int     `json:"requiredParameterCount,omitempty"`
+	ParameterTypes         []string `json:"parameterTypes,omitempty"`
+	ReturnType             string   `json:"returnType,omitempty"`
+	DeclaredType           string   `json:"declaredType,omitempty"`
+	OwnerID                string   `json:"ownerId,omitempty"`
+	Visibility             string   `json:"visibility,omitempty"`
+	Static                 *bool    `json:"isStatic,omitempty"`
+	Readonly               *bool    `json:"isReadonly,omitempty"`
+	Abstract               *bool    `json:"isAbstract,omitempty"`
+	Final                  *bool    `json:"isFinal,omitempty"`
+	Virtual                *bool    `json:"isVirtual,omitempty"`
+	Override               *bool    `json:"isOverride,omitempty"`
+	Async                  *bool    `json:"isAsync,omitempty"`
+	Partial                *bool    `json:"isPartial,omitempty"`
+	Annotations            []string `json:"annotations,omitempty"`
+	Description            string   `json:"description,omitempty"`
 }
 
 type BindingFact struct {

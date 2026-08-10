@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0 and P1-A accepted / P1-B open / production implementation remains slice-gated`
+- Status: `active / P0, P1-A, and P1-B accepted / P1-B isolated commit boundary / P1-C not yet opened / later slices closed`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
@@ -178,7 +178,7 @@ Sibling boundary: `emitRelationship`/`AddRelationship` is a separate relationshi
   - Actual-status Update: contract `partial -> correct` or record the exact blocker.
   - Commit Boundary: documentation-only commit after acceptance.
 
-- [ ] P1-B: Establish range, selection range, and identity inputs.
+- [x] P1-B: Establish range, selection range, and identity inputs.
   - Goal: make the source-proven position and owner/meaning inputs available without yet changing graph collision behavior.
   - Scope Boundary:
     - Editable: only the exact position/identity-input symbols selected after the P1-A contract gate, currently candidates in `internal/scopeir/facts.go`, `internal/scopeir/range.go`, `internal/providers/tsjs/nodes.go`, and the relevant `addDefinition` path in `internal/providers/tsjs/definitions.go`.

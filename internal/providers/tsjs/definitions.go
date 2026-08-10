@@ -93,21 +93,23 @@ func (c *collector) addDefinition(
 		return
 	}
 	rng := nodeRange(node)
+	selectionRange := nodeRange(nameNode)
 	id := defID(c.filePath, rng, label, name)
 	if qualifiedName == "" {
 		qualifiedName = name
 	}
 	fact := scopeir.DefinitionFact{
-		ID:            id,
-		FilePath:      c.filePath,
-		FileHash:      c.fileHash,
-		Name:          name,
-		Label:         label,
-		Range:         rng,
-		QualifiedName: qualifiedName,
-		ReturnType:    returnType,
-		DeclaredType:  declaredType,
-		OwnerID:       ownerID,
+		ID:             id,
+		FilePath:       c.filePath,
+		FileHash:       c.fileHash,
+		Name:           name,
+		Label:          label,
+		Range:          rng,
+		SelectionRange: &selectionRange,
+		QualifiedName:  qualifiedName,
+		ReturnType:     returnType,
+		DeclaredType:   declaredType,
+		OwnerID:        ownerID,
 	}
 	c.definitions = append(c.definitions, fact)
 
