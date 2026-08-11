@@ -17,6 +17,7 @@
 - Build/test pass-fail and Supervisor verdicts belong in the evidence ledger.
 - Record graph size, analyze duration, and peak RSS only if Child 01 implementation changes those measurements or the owning slice establishes a matched baseline.
 - Do not copy binding, export, barrel, ambient, reader, or campaign-wide metrics into this Child.
+- Pn-B is non-benchmarkable: its retained/absent/cache/delete counts are artifact-lifecycle evidence under `E2-PNB-CLEANUP1`, not product/runtime performance, capacity, package-size, throughput, or graph-accuracy benchmarks.
 
 ## B0 - P0 Benchmarks
 
@@ -49,6 +50,12 @@
 | P1-E | independently repeated target analyze peak RSS | bytes | no matched pre-change RSS | `1,263,955,968` | `1,263,955,968` | measured and reviewed | pre-change delta N/A | `E1-P1E-TARGET1` |
 | P1-D | candidate graph file inventory | scanned / parsed-code / failed files | `1,570 / 679 / 0` pre-flight | `1,574 / 680 / 0` before detect | `1,574 / 680 / 0` | record final with `0` failed | `+4 / +1 / 0` | `E1-P1D-IMPACT1`, `E1-P1D-GRAPH2`, `E1-P1D-REVIEW1`, `E1-P1D-DETECT1` |
 | P1-D | candidate graph inventory | nodes / relationships | `95,577 / 134,444` pre-flight | `95,739 / 134,670` before detect | `95,739 / 134,670` | record final with explained delta | `+162 / +226` | `E1-P1D-IMPACT1`, `E1-P1D-GRAPH2`, `E1-P1D-REVIEW1`, `E1-P1D-DETECT1` |
+
+## B2 - Closure Slice Classification
+
+| Slice | Benchmark Classification | Basis | Evidence |
+|-------|--------------------------|-------|----------|
+| Pn-B | non-benchmarkable | report/docs-only artifact-lifecycle cleanup no-op; `9` retained captures, `11` absent prior dead paths, one `129`-byte foreign cache, and `0` deleted paths / `0` deleted bytes are closure evidence rather than product measurements | `E2-PNB-CLEANUP1` |
 
 ## Non-Benchmarkable Notes
 
