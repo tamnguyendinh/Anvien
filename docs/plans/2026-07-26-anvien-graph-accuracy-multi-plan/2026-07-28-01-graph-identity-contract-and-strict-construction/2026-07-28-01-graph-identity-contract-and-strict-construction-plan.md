@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0, P1-A, P1-B, P1-C, and P1-D accepted at isolated commit boundaries / P1-E and later slices closed until the P1-D Git boundary is confirmed`
+- Status: `active / P0 and P1-A through P1-E accepted at isolated commit boundaries / P1-E accepted by explicit Owner decision with no fabricated Supervisor verdict / Pn-A is the only open slice / Pn-B, Pn-C, and Child 02 closed`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
@@ -319,7 +319,7 @@ Sibling boundary: `emitRelationship`/`AddRelationship` is a separate relationshi
   - Actual-status Update: silent collision behavior `wrong -> correct`.
   - Commit Boundary: isolated implementation-slice commit.
 
-- [ ] P1-E: Integrate and validate identity accuracy.
+- [x] P1-E: Integrate and validate identity accuracy.
   - Goal: prove the accepted identity correction through the normal built runtime and bounded target without adding new production semantics.
   - Scope Boundary:
     - Editable: validation fixtures/harnesses and only an exact earlier owner reopened by a failed gate after plan refresh.
@@ -360,7 +360,7 @@ Sibling boundary: `emitRelationship`/`AddRelationship` is a separate relationshi
     - DB/data: `4/4`, 100% occurrence conservation, zero proven collisions, zero affected missing endpoints, and no target pre-state loss.
     - Behavior test: deterministic matched-run and conflict matrices pass.
     - Cleanup/quarantine: target source/worktree preserved and debug artifacts removed.
-    - Evidence IDs: `E1-P1E-BUILD1`, `E1-P1E-DETERMINISM1`, `E1-P1E-INTEGRITY1`, `E1-P1E-TARGET1`, `E1-P1E-BOUNDARY1`, `E1-P1E-REVIEW1`, `E1-P1E-DETECT1`, `E1-P1E-COMMIT1`.
+    - Evidence IDs: `E1-P1E-BUILD1`, `E1-P1E-DETERMINISM1`, `E1-P1E-INTEGRITY1`, `E1-P1E-TARGET1`, `E1-P1E-BOUNDARY1`, `E1-P1E-REPORT1`, `E1-P1E-REVIEW1`, `E1-P1E-DETECT1`, `E1-P1E-COMMIT1`.
     - Actual-status rows refreshed: all Child 01 rows and Child 02 handoff facts.
   - Evidence Targets: build, deterministic/integrity/oracle/target boundary, Supervisor, detect, commit.
   - Actual-status Update: Child 01 identity scope `partial/wrong -> correct`; refresh Child 02 from accepted fields only.
@@ -373,6 +373,7 @@ Sibling boundary: `emitRelationship`/`AddRelationship` is a separate relationshi
     2. Return each rejection only to its owning slice and repeat review after correction.
   - Implementation Gate: P1-A through P1-E are complete or explicitly blocked.
   - Acceptance: unconditional PASS recorded as `E2-PNA-SUPERVISOR1`, or an exact blocker prevents closure.
+  - Current State: open only after Git confirms the isolated P1-E commit; this is a new visible Supervisor task and is not a continuation of the terminated hidden P1-E lane.
 
 - [ ] Pn-B: Remove dead work created during this plan.
   - Goal: leave only accepted source, tests, fixtures, and evidence.

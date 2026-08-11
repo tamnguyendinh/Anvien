@@ -1,0 +1,72 @@
+{
+  "schema": "anvien.qa.non_ui.v1",
+  "report": "reports/QA/rp_qa_260811_140003_by_gpt-5-codex_child01_p1e_identity_validation.md",
+  "generatedAt": "2026-08-11T14:00:03+07:00",
+  "scope": "Child 01 P1-E identity integration and bounded target validation",
+  "runtime": {
+    "type": "packaged-cli",
+    "version": "1.2.8",
+    "binarySha256": "9AFD60607CD96352EFD34DB9A0E6F687F2D861AB123A45A1D292E3B7DC49362D",
+    "ui": false,
+    "playwright": "not-applicable"
+  },
+  "verdict": "PASS",
+  "coverage": {
+    "declaredScopePercent": 100,
+    "failedActions": 0,
+    "blockedActions": 0
+  },
+  "localDeterminism": {
+    "passedRuns": 5,
+    "totalRuns": 5,
+    "nodes": 20,
+    "relationships": 19,
+    "definitionTargets": 10,
+    "definesEdges": 10,
+    "missingEndpoints": 0,
+    "canonicalSha256": "09DA4C6741D8D35DEA7B8680121F1B449C90E145D03B287E7917F67DB6ADA6FA",
+    "graphSha256": "C6C942B666931CE1AD505E3FE44B52C3887A6C16FBE0B2DAF94C25FE0AF8C1E9",
+    "graphBytes": 44199,
+    "medianSeconds": 3.220,
+    "maxRssBytes": 456040448
+  },
+  "target": {
+    "repo": "E:\\cheapapp.org",
+    "head": "a869876ab6262dacde6cd5d432d099a91852a646",
+    "branch": "master",
+    "scanned": 1359,
+    "parsedCode": 887,
+    "failed": 0,
+    "nodes": 86164,
+    "relationships": 115888,
+    "analyzeSeconds": 41.350,
+    "peakRssBytes": 1263955968,
+    "oraclePassed": 4,
+    "oracleTotal": 4,
+    "uniqueVariableIds": 4,
+    "definesEdges": 4,
+    "uniqueFileEndpoints": 1,
+    "graphSha256": "CAEAE4DB27B94B78204DB9EF8660DE1B8D275B637A7B16E4F349E33BC8954F09",
+    "graphBytes": 415998487,
+    "statusEntries": 13,
+    "statusSha256": "D39E4DF20380C0F45F8200CEECD6F862C15FAABDE86ED1B0E5EB386422899351",
+    "allEntryHashesUnchanged": true,
+    "oracleSourceSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+    "settingsSha256": "6C831C0AC49625D09EE54E76042612B92F47ABC47E4A90D1310F0EA45E824B3C"
+  },
+  "oracle": [
+    {"name": "time", "line": 207, "occurrenceColumn": 8, "scope": "202:0-210:1", "defines": 1},
+    {"name": "time", "line": 214, "occurrenceColumn": 10, "scope": "213:46-221:3", "defines": 1},
+    {"name": "now", "line": 262, "occurrenceColumn": 8, "scope": "254:7-417:1", "defines": 1},
+    {"name": "now", "line": 501, "occurrenceColumn": 8, "scope": "497:7-634:1", "defines": 1}
+  ],
+  "regression": {
+    "tsjsFocused": {"passed": 3, "total": 3},
+    "resolutionFocusedTopLevel": {"passed": 9, "total": 9, "subcasesPassed": 3},
+    "resolutionGraphPackages": {"passed": 2, "total": 2},
+    "callerFamilies": {"passed": 11, "total": 11},
+    "productPackages": {"passed": 61, "total": 61, "testPackages": 56, "noTestPackages": 5, "failed": 0}
+  },
+  "productionFilesChanged": 0,
+  "testFilesChanged": 0
+}
