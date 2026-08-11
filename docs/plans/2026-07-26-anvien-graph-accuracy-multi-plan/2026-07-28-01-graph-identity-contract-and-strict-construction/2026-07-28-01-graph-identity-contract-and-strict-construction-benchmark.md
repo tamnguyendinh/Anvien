@@ -42,10 +42,13 @@
 | P1 | graph size, if identity implementation changes it | bytes | pending matched baseline | pending | pending | measured with explained delta | pending | `E1-P1E-DETERMINISM1` |
 | P1 | analyze duration median, if benchmarkable | seconds | pending matched baseline | pending | pending | measured and reviewed | pending | `E1-P1E-DETERMINISM1` |
 | P1 | peak analyze RSS, if benchmarkable | bytes | pending matched baseline | pending | pending | measured and reviewed | pending | `E1-P1E-DETERMINISM1` |
+| P1-D | candidate graph file inventory | scanned / parsed-code / failed files | `1,570 / 679 / 0` pre-flight | `1,574 / 680 / 0` before detect | `1,574 / 680 / 0` | record final with `0` failed | `+4 / +1 / 0` | `E1-P1D-IMPACT1`, `E1-P1D-GRAPH2`, `E1-P1D-REVIEW1`, `E1-P1D-DETECT1` |
+| P1-D | candidate graph inventory | nodes / relationships | `95,577 / 134,444` pre-flight | `95,739 / 134,670` before detect | `95,739 / 134,670` | record final with explained delta | `+162 / +226` | `E1-P1D-IMPACT1`, `E1-P1D-GRAPH2`, `E1-P1D-REVIEW1`, `E1-P1D-DETECT1` |
 
 ## Non-Benchmarkable Notes
 
 - P1-A is documentation-only and produced no new product/runtime benchmark. Its contract trace, document checks, Supervisor verdict, and commit are evidence gates.
 - P1-B adds an optional in-memory ScopeIR selection range and records the existing TSJS coordinate contract; it does not change a benchmark-owned performance, capacity, package-size, graph-throughput, or target-accuracy metric. Build/test timings and the self-analyze inventory are validation evidence under `E1-P1B-BUILD1`, not benchmark results.
 - P1-C package QA and the built CLI fixture measure occurrence conservation at the owned identity boundary. They do not establish the P1-E target/integration final value; build/test timings remain validation evidence.
+- P1-D graph inventory changes include the production/test/ledger worktree and are not collision-correctness proof. Full-build timing and pass/fail remain validation evidence; the inventory is recorded only as a measured graph count.
 - Child 02 owns persistence/reader counts and field-parity measurements.

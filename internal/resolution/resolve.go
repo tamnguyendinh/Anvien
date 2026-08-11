@@ -63,7 +63,11 @@ func ResolveBoundInto(baseGraph *graph.Graph, binding BindingResult, options Opt
 	}()
 	e := newEmitter(g, &metrics)
 
-	emitDefinitionNodes(w, e)
+	if err := emitDefinitionNodes(w, e); err != nil {
+		metrics.GraphNodesEmitted = len(g.Nodes)
+		metrics.GraphRelationshipsEmitted = len(g.Relationships)
+		return Result{Metrics: metrics}, err
+	}
 	emitUnresolvedHeritageDiagnostics(w, e)
 	emitImportEdges(w, e)
 

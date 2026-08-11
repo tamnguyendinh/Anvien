@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0, P1-A, P1-B, and P1-C accepted at isolated commit boundaries / P1-D not yet opened / later slices closed`
+- Status: `active / P0, P1-A, P1-B, P1-C, and P1-D accepted at isolated commit boundaries / P1-E and later slices closed until the P1-D Git boundary is confirmed`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
@@ -272,13 +272,13 @@ Sibling boundary: `emitRelationship`/`AddRelationship` is a separate relationshi
   - Actual-status Update: identity and occurrence loss `wrong -> correct` or record exact residual owner.
   - Commit Boundary: isolated implementation-slice commit.
 
-- [ ] P1-D: Remove silent collision or overwrite at the proven owner.
+- [x] P1-D: Remove silent collision or overwrite at the proven owner.
   - Goal: ensure a conflicting canonical fact cannot silently replace, skip, or collapse a distinct occurrence.
   - Scope Boundary:
-    - Editable: only the canonical node conflict owner, currently `Graph.AddNode` and the minimum `emitter.emitNode` plumbing proven by P1-D impact.
-    - Inspect-only: `Graph.init`, all 11 production caller families, and persistence paths needed to classify legitimate enrichment/reinsertion.
-    - Preserve-only: `AddRelationship`/`emitRelationship`, callers not shown to participate in canonical identity loss, and later persistence/readers.
-    - Out of scope: mandatory rewriting of all producers or new relationship identity.
+    - Editable: only the canonical Definition emission conflict boundary in `internal/resolution/emit.go` and the minimum fail-clear propagation in `internal/resolution/resolve.go`, as proven by the P1-D caller inventory and exact impact.
+    - Inspect-only: generic `Graph.AddNode`, `Graph.init`, all 11 production caller families, and their tests needed to distinguish legitimate enrichment/reinsertion from canonical Definition conflict.
+    - Preserve-only: generic same-ID enrichment/update behavior, `AddRelationship`/`emitRelationship`, the ten non-resolution caller families, persistence/readers, and later semantics.
+    - Out of scope: changing the global `AddNode` contract, rewriting producer families, fixing non-resolution producer identity, or adding relationship identity.
   - Non-Goals: no bulk API rewrite, warning-only behavior, or broad refactor.
   - Pre-flight Questions:
     - Data source: P1-C canonical identity output and the current `Graph.AddNode` caller/operation inventory.
@@ -289,26 +289,26 @@ Sibling boundary: `emitRelationship`/`AddRelationship` is a separate relationshi
     - UI behavior flow: N/A — non-UI analyzer behavior.
     - Docker runtime: N/A — full build plus built CLI boundary.
     - Playwright target: N/A — no browser surface.
-    - Behavior test: conflicting canonical identity, idempotent reinsertion if supported, legitimate enrichment, duplicate occurrence, missing endpoint, and all affected caller classes.
+    - Behavior test: conflicting canonical identity, idempotent reinsertion if supported, legitimate enrichment, duplicate occurrence, missing endpoint, and all affected caller classes. The positive path runs through the built CLI; the negative collision path uses a compiled `ResolveBoundInto` malformed-ScopeIR probe because normal providers generate occurrence IDs from source position and cannot express that fault without an out-of-scope provider hack.
     - Cleanup/quarantine: package-local fault fixtures.
     - External side effects: none beyond isolated/normal analyze output.
     - N/A notes: implementation shape follows impact evidence.
   - Work Steps:
-    1. Refresh graph; inventory the exact collision path and legitimate same-ID operations across the 11 caller families; update the plan before any additional caller family is edited.
+    1. Refresh graph; inventory the exact collision path and legitimate same-ID operations across all 11 production caller families; keep global mutation and unrelated producers preserve-only when source proves mixed insert/enrichment behavior.
        - UI flow check: N/A — non-UI.
        - DB/data flow check: distinguish conflict from evidence-backed enrichment.
        - Render location check: evidence ledger.
        - Mini QA: graph-construction fault boundary.
        - Evidence target: `E1-P1D-IMPACT1`, `E1-P1D-SOURCE1`.
-    2. Implement the smallest fail-clear correction, then tests; run full build and normal-command collision/integrity probes.
+    2. Implement the smallest fail-clear correction at canonical Definition emission with exact-idempotent reinsertion and non-exact conflict rejection, then tests; run full build, a built-CLI positive fixture, and a compiled `ResolveBoundInto` collision/integrity fault probe.
        - UI flow check: N/A — non-UI.
        - DB/data flow check: zero silent replacements/skips and zero missing affected endpoints.
        - Render location check: command failure/result evidence.
-       - Mini QA: built CLI analyze on positive and conflicting fixtures.
+       - Mini QA: built CLI analyze on the positive identity fixture plus a compiled real resolution-package test binary for the malformed duplicate-ScopeIR conflict boundary; do not invent a provider/source collision fixture.
        - Evidence target: `E1-P1D-BUILD1`, `E1-P1D-TEST1`, `E1-P1D-COLLISION1`.
   - Implementation Gate: P1-C accepted; every editable owner and caller has fresh impact evidence.
   - Acceptance:
-    - Source: silent collision/loss is removed only at the proven canonical node owner; separate relationship replacement/merge remains unchanged.
+    - Source: silent collision/loss is removed only at canonical Definition emission; global `AddNode` enrichment/update and separate relationship replacement/merge remain unchanged.
     - Runtime/UI: conflicting input fails clearly or is handled by an explicit proven rule; no UI change.
     - DB/data: distinct occurrences remain conserved, conflict outcomes are explicit, and affected endpoints exist.
     - Behavior test: collision/enrichment/integrity matrix passes.

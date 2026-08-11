@@ -1,7 +1,9 @@
 package resolution
 
 import (
+	"fmt"
 	"path"
+	"reflect"
 	"sort"
 
 	"github.com/tamnguyendinh/anvien/internal/frameworks"
@@ -11,26 +13,75 @@ import (
 )
 
 type emitter struct {
-	graph          *graph.Graph
-	referenceIndex ReferenceIndex
-	edgeKeys       map[string]graph.Relationship
-	metrics        *Metrics
-	sourceLabel    string
+	graph               *graph.Graph
+	referenceIndex      ReferenceIndex
+	edgeKeys            map[string]graph.Relationship
+	definitionNodesSeen map[string]graph.Node
+	metrics             *Metrics
+	sourceLabel         string
 }
 
 func newEmitter(g *graph.Graph, metrics *Metrics) *emitter {
 	return &emitter{
-		graph:          g,
-		referenceIndex: newReferenceIndex(),
-		edgeKeys:       make(map[string]graph.Relationship),
-		metrics:        metrics,
-		sourceLabel:    "scope-resolution",
+		graph:               g,
+		referenceIndex:      newReferenceIndex(),
+		edgeKeys:            make(map[string]graph.Relationship),
+		definitionNodesSeen: make(map[string]graph.Node),
+		metrics:             metrics,
+		sourceLabel:         "scope-resolution",
 	}
 }
 
 func (e *emitter) emitNode(node graph.Node) {
 	e.graph.AddNode(node)
 	e.metrics.GraphNodesEmitted = len(e.graph.Nodes)
+}
+
+func (e *emitter) emitDefinitionNode(node graph.Node) error {
+	if emitted, ok := e.definitionNodesSeen[node.ID]; ok {
+		if definitionNodesEqual(emitted, node) {
+			e.metrics.GraphNodesEmitted = len(e.graph.Nodes)
+			return nil
+		}
+		return definitionNodeCollisionError(emitted, node)
+	}
+	existing, ok := e.graph.GetNode(node.ID)
+	if !ok {
+		e.emitNode(node)
+	} else if !definitionNodeCompatible(existing, node) {
+		return definitionNodeCollisionError(existing, node)
+	}
+	e.definitionNodesSeen[node.ID] = node
+	e.metrics.GraphNodesEmitted = len(e.graph.Nodes)
+	return nil
+}
+
+func definitionNodesEqual(existing graph.Node, incoming graph.Node) bool {
+	return existing.ID == incoming.ID &&
+		existing.Label == incoming.Label &&
+		reflect.DeepEqual(existing.Properties, incoming.Properties)
+}
+
+func definitionNodeCollisionError(existing graph.Node, incoming graph.Node) error {
+	return fmt.Errorf(
+		"definition identity collision for graph node %q: existing %q payload conflicts with incoming %q payload",
+		incoming.ID,
+		existing.Label,
+		incoming.Label,
+	)
+}
+
+func definitionNodeCompatible(existing graph.Node, incoming graph.Node) bool {
+	if existing.ID != incoming.ID || existing.Label != incoming.Label {
+		return false
+	}
+	for key, incomingValue := range incoming.Properties {
+		existingValue, ok := existing.Properties[key]
+		if !ok || !reflect.DeepEqual(existingValue, incomingValue) {
+			return false
+		}
+	}
+	return true
 }
 
 func (e *emitter) emitRelationship(relationship graph.Relationship) {
@@ -133,7 +184,7 @@ func (e *emitter) emitUnresolvedReference(source defRef, factFamily string, targ
 	e.metrics.UnattributedUnresolvedReferences++
 }
 
-func emitDefinitionNodes(w *workspace, e *emitter) {
+func emitDefinitionNodes(w *workspace, e *emitter) error {
 	for _, ir := range w.files {
 		frameworkFacts := frameworkFactsByDefID(ir.Frameworks)
 		fileID := graph.GenerateID("File", ir.FilePath)
@@ -177,7 +228,9 @@ func emitDefinitionNodes(w *workspace, e *emitter) {
 			if len(def.Fact.ParameterTypes) > 0 {
 				props["parameterTypes"] = append([]string(nil), def.Fact.ParameterTypes...)
 			}
-			e.emitNode(graph.Node{ID: def.GraphID, Label: def.Fact.Label, Properties: props})
+			if err := e.emitDefinitionNode(graph.Node{ID: def.GraphID, Label: def.Fact.Label, Properties: props}); err != nil {
+				return err
+			}
 			e.emitRelationship(graph.Relationship{
 				ID:         graph.GenerateID(string(graph.RelDefines), fileID+"->"+def.GraphID),
 				SourceID:   fileID,
@@ -206,6 +259,7 @@ func emitDefinitionNodes(w *workspace, e *emitter) {
 			}
 		}
 	}
+	return nil
 }
 
 func frameworkFactsByDefID(facts []scopeir.FrameworkFact) map[string]scopeir.FrameworkFact {

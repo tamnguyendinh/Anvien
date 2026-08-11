@@ -2,7 +2,7 @@
 
 Date: 2026-07-26
 Last revised: 2026-08-11
-Status: active campaign; Child 01 P0/P1-A/P1-B accepted and committed; P1-C accepted at its isolated commit boundary; P1-D not yet opened; later slices remain closed
+Status: active campaign; Child 01 P0/P1-A/P1-B/P1-C accepted and committed; P1-D accepted at its isolated commit boundary; P1-E and later slices remain closed until Git confirms that boundary
 
 Multi-plan root: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/`
 
@@ -50,7 +50,7 @@ The report at `reports/problem/2026-07-26-tinh-chinh-cac-van-de-cua-anvien` is t
 
 | Child | Plan | Scope | Status |
 |-------|------|-------|--------|
-| 01 | [graph identity contract and strict construction](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | identity, range, lexical owner, occurrence conservation, proven collision owner | P0/P1-A/P1-B accepted and committed; P1-C accepted at isolated commit boundary; P1-D not yet opened |
+| 01 | [graph identity contract and strict construction](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | identity, range, lexical owner, occurrence conservation, proven collision owner | P0/P1-A/P1-B/P1-C accepted and committed; P1-D accepted at its isolated commit boundary; P1-E remains closed until Git confirms it |
 | 02 | [current graph persistence and reader consistency](2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md) | persistence parity, affected readers, repeated normal analyze | dependency-blocked |
 | 03 | [TypeScript binding-pattern extraction](2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md) | binding-pattern defect only | dependency-blocked |
 | 04 | [TypeScript export semantics](2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md) | export-fact defect only | dependency-blocked |
