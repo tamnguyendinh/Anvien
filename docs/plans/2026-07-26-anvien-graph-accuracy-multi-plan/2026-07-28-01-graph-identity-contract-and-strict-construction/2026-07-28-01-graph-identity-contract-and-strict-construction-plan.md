@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0 and P1-A through P1-E accepted at isolated commit boundaries / P1-E accepted by explicit Owner decision with no fabricated Supervisor verdict / Pn-A is the only open slice / Pn-B, Pn-C, and Child 02 closed`
+- Status: `active / P0, P1-A through P1-E, and Pn-A accepted at isolated commit boundaries / P1-E remains explicit Owner acceptance, not a fabricated Supervisor PASS / Pn-A independent Child-level Supervisor PASS / Pn-B is the only open slice / Pn-C and Child 02 closed`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
@@ -366,14 +366,14 @@ Sibling boundary: `emitRelationship`/`AddRelationship` is a separate relationshi
   - Actual-status Update: Child 01 identity scope `partial/wrong -> correct`; refresh Child 02 from accepted fields only.
   - Commit Boundary: isolated validation-slice commit.
 
-- [ ] Pn-A: Call Supervisor for the implemented-plan acceptance loop.
+- [x] Pn-A: Call Supervisor for the implemented-plan acceptance loop.
   - Goal: independently verify source, diff, runtime, reports, evidence, benchmark, and target boundary.
   - Work Steps:
     1. Run the Supervisor skill against the complete Child 01 result.
     2. Return each rejection only to its owning slice and repeat review after correction.
   - Implementation Gate: P1-A through P1-E are complete or explicitly blocked.
-  - Acceptance: unconditional PASS recorded as `E2-PNA-SUPERVISOR1`, or an exact blocker prevents closure.
-  - Current State: open only after Git confirms the isolated P1-E commit; this is a new visible Supervisor task and is not a continuation of the terminated hidden P1-E lane.
+  - Acceptance: unconditional PASS recorded as `E2-PNA-SUPERVISOR1`, followed by report-only change detection and the isolated Pn-A report/ledger commit recorded as `E2-PNA-DETECT1` and `E2-PNA-COMMIT1`; or an exact blocker prevents closure.
+  - Current State: accepted by the independent visible-task report `reports/Supervisor/rp_supervisor_260811_184507_by_gpt-5-codex_child01_pna.md`; the report returns one `PASS`, residual same-invariant surfaces `none`, and hands control back to the orchestration/main session. `E2-PNA-DETECT1` and `E2-PNA-COMMIT1` close the report-only boundary before Pn-B opens.
 
 - [ ] Pn-B: Remove dead work created during this plan.
   - Goal: leave only accepted source, tests, fixtures, and evidence.
@@ -382,6 +382,7 @@ Sibling boundary: `emitRelationship`/`AddRelationship` is a separate relationshi
     2. Remove only those artifacts and obtain Supervisor cleanup review.
   - Implementation Gate: Pn-A has reviewed the implementation result.
   - Acceptance: cleanup proof and Supervisor result recorded as `E2-PNB-CLEANUP1`.
+  - Current State: open only after Git confirms the isolated Pn-A report/ledger commit; inspect and classify Child 01 artifacts without deleting historical or unrelated work.
 
 - [ ] Pn-C: Close the plan and hand off accepted fields.
   - Goal: finish final validation, ledgers, detect-changes, commits, and the Child 02 status refresh.

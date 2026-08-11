@@ -56,4 +56,5 @@
 - P1-B adds an optional in-memory ScopeIR selection range and records the existing TSJS coordinate contract; it does not change a benchmark-owned performance, capacity, package-size, graph-throughput, or target-accuracy metric. Build/test timings and the self-analyze inventory are validation evidence under `E1-P1B-BUILD1`, not benchmark results.
 - P1-C package QA and the built CLI fixture measure occurrence conservation at the owned identity boundary. They do not establish the P1-E target/integration final value; build/test timings remain validation evidence.
 - P1-D graph inventory changes include the production/test/ledger worktree and are not collision-correctness proof. Full-build timing and pass/fail remain validation evidence; the inventory is recorded only as a measured graph count.
+- Pn-A is an acceptance review and changes no benchmark-owned product behavior. Its fresh `217.1s` full-build duration, target/runtime checks, graph freshness counts, and report-only graph inventory delta are validation evidence under `E2-PNA-SUPERVISOR1`, not new performance benchmarks.
 - Child 02 owns persistence/reader counts and field-parity measurements.
