@@ -84,9 +84,13 @@ func TestLegacyP7CallProcessorParityCoversConstructorReturnAndAccumulatorBinding
 	if err != nil {
 		t.Fatalf("ResolveBoundInto() error = %v", err)
 	}
-	requireRelationship(t, result.Graph, graph.RelCalls, "Function:src/app.ts:run", "Function:src/models.ts:makeUser")
-	requireRelationship(t, result.Graph, graph.RelCalls, "Function:src/app.ts:run", "Class:src/models.ts:User")
-	saveRel := requireRelationship(t, result.Graph, graph.RelCalls, "Function:src/app.ts:run", "Method:src/models.ts:User.save")
+	runID := requireDefinitionNodeID(t, result.Graph, runDef)
+	makeUserID := requireDefinitionNodeID(t, result.Graph, makeUserDef)
+	userID := requireDefinitionNodeID(t, result.Graph, userDef)
+	saveID := requireDefinitionNodeID(t, result.Graph, saveDef)
+	requireRelationship(t, result.Graph, graph.RelCalls, runID, makeUserID)
+	requireRelationship(t, result.Graph, graph.RelCalls, runID, userID)
+	saveRel := requireRelationship(t, result.Graph, graph.RelCalls, runID, saveID)
 	if saveRel.Confidence != 1 {
 		t.Fatalf("member call confidence = %v, want 1", saveRel.Confidence)
 	}

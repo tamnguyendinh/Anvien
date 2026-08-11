@@ -68,9 +68,14 @@ func TestLegacyHeritageProcessorConversionEmitsCompatibilityEdges(t *testing.T) 
 		t.Fatalf("Resolve() error = %v", err)
 	}
 
-	requireRelationship(t, result.Graph, graph.RelExtends, "Class:src/service.ts:Service", "Class:src/base.ts:BaseService")
-	requireRelationship(t, result.Graph, graph.RelImplements, "Class:src/service.ts:Service", "Interface:src/named.ts:Named")
-	requireRelationship(t, result.Graph, graph.RelImplements, "Struct:src/point.rs:Point", "Trait:src/display.rs:Display")
+	serviceID := requireDefinitionNodeID(t, result.Graph, files[0].Definitions[0])
+	baseServiceID := requireDefinitionNodeID(t, result.Graph, files[1].Definitions[0])
+	namedID := requireDefinitionNodeID(t, result.Graph, files[2].Definitions[0])
+	pointID := requireDefinitionNodeID(t, result.Graph, files[3].Definitions[0])
+	displayID := requireDefinitionNodeID(t, result.Graph, files[4].Definitions[0])
+	requireRelationship(t, result.Graph, graph.RelExtends, serviceID, baseServiceID)
+	requireRelationship(t, result.Graph, graph.RelImplements, serviceID, namedID)
+	requireRelationship(t, result.Graph, graph.RelImplements, pointID, displayID)
 	if result.Metrics.ResolvedInheritance != 3 {
 		t.Fatalf("ResolvedInheritance = %d, want 3; metrics=%#v", result.Metrics.ResolvedInheritance, result.Metrics)
 	}

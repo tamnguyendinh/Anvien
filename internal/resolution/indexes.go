@@ -140,7 +140,7 @@ func buildWorkspace(files []scopeir.ScopeIR) (*workspace, error) {
 	for _, ir := range w.files {
 		for _, def := range ir.Definitions {
 			def.FilePath = cleanPath(def.FilePath)
-			ref := defRef{Fact: def, GraphID: graphIDForDef(def)}
+			ref := defRef{Fact: def, GraphID: graphIDForDef(def, w.scopeByDef[def.ID])}
 			w.defsByID[def.ID] = ref
 			w.defsByFile[def.FilePath] = append(w.defsByFile[def.FilePath], ref)
 			lookupNames := definitionLookupNameSetFor(def)
@@ -811,16 +811,26 @@ func (w *workspace) sort() {
 	}
 }
 
-func graphIDForDef(def scopeir.DefinitionFact) string {
+func graphIDForDef(def scopeir.DefinitionFact, lexicalScopeID string) string {
 	name := def.QualifiedName
 	if name == "" {
 		name = def.Name
 	}
 	arity := ""
 	if def.ParameterCount != nil {
-		arity = "#" + intString(*def.ParameterCount)
+		arity = intString(*def.ParameterCount)
 	}
-	return graph.GenerateID(string(def.Label), cleanPath(def.FilePath)+":"+name+arity)
+	identity := "file" + graphIdentityPart(cleanPath(def.FilePath)) +
+		"name" + graphIdentityPart(name) +
+		"arity" + graphIdentityPart(arity) +
+		"occurrence" + graphIdentityPart(def.ID) +
+		"scope" + graphIdentityPart(lexicalScopeID) +
+		"owner" + graphIdentityPart(def.OwnerID)
+	return graph.GenerateID(string(def.Label), identity)
+}
+
+func graphIdentityPart(value string) string {
+	return intString(len(value)) + ":" + value
 }
 
 func definitionLookupNames(def scopeir.DefinitionFact) []string {

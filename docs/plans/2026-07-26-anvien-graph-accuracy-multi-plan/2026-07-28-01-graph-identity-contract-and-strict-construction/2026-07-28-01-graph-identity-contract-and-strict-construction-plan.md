@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0, P1-A, and P1-B accepted / P1-B isolated commit boundary / P1-C not yet opened / later slices closed`
+- Status: `active / P0, P1-A, P1-B, and P1-C accepted at isolated commit boundaries / P1-D not yet opened / later slices closed`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
@@ -225,7 +225,7 @@ Sibling boundary: `emitRelationship`/`AddRelationship` is a separate relationshi
   - Actual-status Update: range/identity inputs `partial -> correct`.
   - Commit Boundary: isolated implementation-slice commit.
 
-- [ ] P1-C: Implement declaration/symbol identity and occurrence conservation.
+- [x] P1-C: Implement declaration/symbol identity and occurrence conservation.
   - Goal: map every relevant source declaration to a deterministic occurrence identity and the correct lexical symbol without losing duplicate-name occurrences.
   - Scope Boundary:
     - Editable: only `graphIDForDef`/`buildWorkspace` and an exact projection/input owner proven by P1-C impact; the current candidate is `internal/resolution/indexes.go`.

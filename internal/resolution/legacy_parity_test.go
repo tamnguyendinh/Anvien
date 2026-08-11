@@ -120,9 +120,13 @@ func TestLegacyModelResolutionParityCoversTierPrecedenceAndRegistryRouting(t *te
 		t.Fatalf("Resolve() error = %v", err)
 	}
 
-	requireRelationship(t, result.Graph, graph.RelCalls, "Function:src/a.ts:start", "Function:src/a.ts:U")
-	requireRelationship(t, result.Graph, graph.RelUses, "Function:src/a.ts:start", "Class:src/b.ts:models.User")
-	requireNoRelationship(t, result.Graph, graph.RelUses, "Function:src/a.ts:start", "Class:src/b.ts:models.U")
+	startID := requireDefinitionNodeID(t, result.Graph, start)
+	localUID := requireDefinitionNodeID(t, result.Graph, localU)
+	importedUserID := requireDefinitionNodeID(t, result.Graph, importedUser)
+	decoyUID := requireDefinitionNodeID(t, result.Graph, decoyU)
+	requireRelationship(t, result.Graph, graph.RelCalls, startID, localUID)
+	requireRelationship(t, result.Graph, graph.RelUses, startID, importedUserID)
+	requireNoRelationship(t, result.Graph, graph.RelUses, startID, decoyUID)
 	if result.Metrics.ResolvedCalls != 1 || result.Metrics.ResolvedTypeReferences != 1 || result.Metrics.ImportUsesEmitted != 1 {
 		t.Fatalf("unexpected metrics: %#v", result.Metrics)
 	}
@@ -225,9 +229,12 @@ func TestLegacyEmitReferencesParityCoversMemberCallsAccessesAndUnresolved(t *tes
 		t.Fatalf("Resolve() error = %v", err)
 	}
 
-	requireRelationship(t, result.Graph, graph.RelCalls, "Function:src/app.ts:start", "Method:src/app.ts:User.save")
-	read := requireRelationshipWithStep(t, result.Graph, graph.RelAccesses, "Function:src/app.ts:start", "Property:src/app.ts:User.name", 1)
-	write := requireRelationshipWithStep(t, result.Graph, graph.RelAccesses, "Function:src/app.ts:start", "Property:src/app.ts:User.name", 2)
+	startID := requireDefinitionNodeID(t, result.Graph, start)
+	saveID := requireDefinitionNodeID(t, result.Graph, saveMethod)
+	nameID := requireDefinitionNodeID(t, result.Graph, nameProperty)
+	requireRelationship(t, result.Graph, graph.RelCalls, startID, saveID)
+	read := requireRelationshipWithStep(t, result.Graph, graph.RelAccesses, startID, nameID, 1)
+	write := requireRelationshipWithStep(t, result.Graph, graph.RelAccesses, startID, nameID, 2)
 	if read.Reason != string(ReferenceRead) || write.Reason != string(ReferenceWrite) {
 		t.Fatalf("access reasons = %q/%q, want read/write", read.Reason, write.Reason)
 	}
@@ -322,12 +329,16 @@ func TestLegacyImportFinalizeParityCoversDefaultNamespaceAliasUnresolvedAndGoPac
 		t.Fatalf("Resolve() error = %v", err)
 	}
 
+	startID := requireDefinitionNodeID(t, result.Graph, start)
+	accountID := requireDefinitionNodeID(t, result.Graph, accountClass)
+	formatID := requireDefinitionNodeID(t, result.Graph, formatFn)
+	repoID := requireDefinitionNodeID(t, result.Graph, repoClass)
 	requireRelationship(t, result.Graph, graph.RelImports, "File:src/service.ts", "File:src/account.ts")
 	requireRelationship(t, result.Graph, graph.RelImports, "File:src/service.ts", "File:src/utils.ts")
 	requireRelationship(t, result.Graph, graph.RelImports, "File:src/service.ts", "File:src/repo.ts")
-	requireRelationship(t, result.Graph, graph.RelUses, "File:src/service.ts", "Class:src/account.ts:Account")
-	requireRelationship(t, result.Graph, graph.RelUses, "Function:src/service.ts:start", "Class:src/repo.ts:Repo")
-	requireRelationship(t, result.Graph, graph.RelCalls, "Function:src/service.ts:start", "Function:src/utils.ts:format")
+	requireRelationship(t, result.Graph, graph.RelUses, "File:src/service.ts", accountID)
+	requireRelationship(t, result.Graph, graph.RelUses, startID, repoID)
+	requireRelationship(t, result.Graph, graph.RelCalls, startID, formatID)
 	requireRelationship(t, result.Graph, graph.RelImports, "File:cmd/app/main.go", "File:internal/pkg/a.go")
 	requireRelationship(t, result.Graph, graph.RelImports, "File:cmd/app/main.go", "File:internal/pkg/b.go")
 	requireNoRelationship(t, result.Graph, graph.RelImports, "File:cmd/app/main.go", "File:internal/pkg/a_test.go")
@@ -370,12 +381,18 @@ func TestLegacyMethodDispatchParityCoversOverridesAndImplements(t *testing.T) {
 		t.Fatalf("Resolve() error = %v", err)
 	}
 
-	requireRelationship(t, result.Graph, graph.RelExtends, "Class:src/service.ts:Service", "Class:src/service.ts:BaseService")
-	requireRelationship(t, result.Graph, graph.RelImplements, "Class:src/service.ts:Service", "Interface:src/service.ts:Named")
-	requireRelationship(t, result.Graph, graph.RelInherits, "Class:src/service.ts:Service", "Class:src/service.ts:BaseService")
-	requireRelationship(t, result.Graph, graph.RelInherits, "Class:src/service.ts:Service", "Interface:src/service.ts:Named")
-	requireRelationship(t, result.Graph, graph.RelMethodOverrides, "Class:src/service.ts:Service", "Method:src/service.ts:BaseService.save")
-	requireRelationship(t, result.Graph, graph.RelMethodImplements, "Method:src/service.ts:Service.save", "Method:src/service.ts:Named.save")
+	serviceID := requireDefinitionNodeID(t, result.Graph, serviceClass)
+	baseID := requireDefinitionNodeID(t, result.Graph, baseClass)
+	namedID := requireDefinitionNodeID(t, result.Graph, namedInterface)
+	baseSaveID := requireDefinitionNodeID(t, result.Graph, baseSave)
+	namedSaveID := requireDefinitionNodeID(t, result.Graph, namedSave)
+	serviceSaveID := requireDefinitionNodeID(t, result.Graph, serviceSave)
+	requireRelationship(t, result.Graph, graph.RelExtends, serviceID, baseID)
+	requireRelationship(t, result.Graph, graph.RelImplements, serviceID, namedID)
+	requireRelationship(t, result.Graph, graph.RelInherits, serviceID, baseID)
+	requireRelationship(t, result.Graph, graph.RelInherits, serviceID, namedID)
+	requireRelationship(t, result.Graph, graph.RelMethodOverrides, serviceID, baseSaveID)
+	requireRelationship(t, result.Graph, graph.RelMethodImplements, serviceSaveID, namedSaveID)
 	if result.Metrics.ResolvedInheritance != 2 || result.Metrics.MethodOverridesEmitted != 1 || result.Metrics.MethodImplementsEmitted != 1 {
 		t.Fatalf("unexpected metrics: %#v", result.Metrics)
 	}

@@ -717,8 +717,8 @@ func TestProviderHeritageGraphResolutionParityCoversRepresentativeLanguages(t *t
 				t.Fatalf("resolve failed: %v", err)
 			}
 			for _, want := range tt.want {
-				sourceID := graph.GenerateID(want.sourceLabel, tt.path+":"+want.sourceName)
-				targetID := graph.GenerateID(want.targetLabel, tt.path+":"+want.targetName)
+				sourceID := requireGraphNode(t, result.Graph, nodeExpectation{label: scopeir.NodeLabel(want.sourceLabel), name: want.sourceName}).ID
+				targetID := requireGraphNode(t, result.Graph, nodeExpectation{label: scopeir.NodeLabel(want.targetLabel), name: want.targetName}).ID
 				requireResolvedRelationship(t, result.Graph, want.relType, sourceID, targetID)
 				requireResolvedRelationship(t, result.Graph, graph.RelInherits, sourceID, targetID)
 			}

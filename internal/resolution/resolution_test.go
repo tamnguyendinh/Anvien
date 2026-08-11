@@ -762,11 +762,14 @@ func TestResolveGoSamePackageDirectCallAcrossFilesBeforeGlobalAmbiguity(t *testi
 	if err != nil {
 		t.Fatalf("resolve failed: %v", err)
 	}
-	relationship := requireRelationship(t, result.Graph, graph.RelCalls, "Function:internal/pkg/app.go:Run", "Function:internal/pkg/helper.go:helper#0")
+	runID := requireDefinitionNodeID(t, result.Graph, runDef)
+	samePackageHelperID := requireDefinitionNodeID(t, result.Graph, samePackageHelper)
+	otherPackageHelperID := requireDefinitionNodeID(t, result.Graph, otherPackageHelper)
+	relationship := requireRelationship(t, result.Graph, graph.RelCalls, runID, samePackageHelperID)
 	if relationship.Confidence != 0.95 {
 		t.Fatalf("same-package fallback confidence = %v, want 0.95", relationship.Confidence)
 	}
-	requireNoRelationship(t, result.Graph, graph.RelCalls, "Function:internal/pkg/app.go:Run", "Function:internal/other/helper.go:helper")
+	requireNoRelationship(t, result.Graph, graph.RelCalls, runID, otherPackageHelperID)
 	if result.Metrics.ResolvedCalls != 1 || result.Metrics.UnresolvedReferences != 0 {
 		t.Fatalf("unexpected metrics: %#v", result.Metrics)
 	}
@@ -827,7 +830,9 @@ func TestResolveImportedPackageMemberCall(t *testing.T) {
 	if err != nil {
 		t.Fatalf("resolve failed: %v", err)
 	}
-	relationship := requireRelationship(t, result.Graph, graph.RelCalls, "Function:cmd/app/main.go:main", "Function:internal/pkg/helper.go:Helper")
+	mainID := requireDefinitionNodeID(t, result.Graph, mainDef)
+	helperID := requireDefinitionNodeID(t, result.Graph, helperDef)
+	relationship := requireRelationship(t, result.Graph, graph.RelCalls, mainID, helperID)
 	if relationship.Confidence != 0.9 {
 		t.Fatalf("imported package member confidence = %v, want 0.9", relationship.Confidence)
 	}
@@ -922,8 +927,11 @@ func TestResolveMemberCallThroughImportedCallReturnBinding(t *testing.T) {
 	if err != nil {
 		t.Fatalf("resolve failed: %v", err)
 	}
-	requireRelationship(t, result.Graph, graph.RelCalls, "Function:cmd/app/main.go:main#0", "Function:internal/graph/types.go:New#0")
-	requireRelationship(t, result.Graph, graph.RelCalls, "Function:cmd/app/main.go:main#0", "Method:internal/graph/types.go:Graph.AddNode#1")
+	mainID := requireDefinitionNodeID(t, result.Graph, mainDef)
+	newID := requireDefinitionNodeID(t, result.Graph, newDef)
+	addNodeID := requireDefinitionNodeID(t, result.Graph, addNodeDef)
+	requireRelationship(t, result.Graph, graph.RelCalls, mainID, newID)
+	requireRelationship(t, result.Graph, graph.RelCalls, mainID, addNodeID)
 	if result.Metrics.ResolvedCalls != 2 || result.Metrics.UnresolvedReferences != 0 {
 		t.Fatalf("unexpected metrics: %#v", result.Metrics)
 	}
@@ -1166,12 +1174,33 @@ type graphSignature struct {
 
 func buildGraphSignature(g *graph.Graph) graphSignature {
 	signature := graphSignature{}
+	// Graph IDs are occurrence identities. This golden keeps asserting semantic
+	// topology; identity injectivity is covered by identity_occurrence_test.go.
+	semanticIDs := make(map[string]string, len(g.Nodes))
 	for _, node := range g.Nodes {
-		signature.Nodes = append(signature.Nodes, string(node.Label)+":"+node.ID)
+		semanticID := node.ID
+		filePath, _ := node.Properties["filePath"].(string)
+		qualifiedName, _ := node.Properties["qualifiedName"].(string)
+		if qualifiedName == "" {
+			qualifiedName, _ = node.Properties["name"].(string)
+		}
+		if node.Label != scopeir.NodeFile && filePath != "" && qualifiedName != "" {
+			semanticID = graph.GenerateID(string(node.Label), cleanPath(filePath)+":"+qualifiedName)
+		}
+		semanticIDs[node.ID] = semanticID
+		signature.Nodes = append(signature.Nodes, string(node.Label)+":"+semanticID)
 	}
 	for _, relationship := range g.SortedRelationships() {
+		sourceID := semanticIDs[relationship.SourceID]
+		if sourceID == "" {
+			sourceID = relationship.SourceID
+		}
+		targetID := semanticIDs[relationship.TargetID]
+		if targetID == "" {
+			targetID = relationship.TargetID
+		}
 		signature.Relationships = append(signature.Relationships,
-			string(relationship.Type)+":"+relationship.SourceID+"->"+relationship.TargetID+":"+relationship.Reason,
+			string(relationship.Type)+":"+sourceID+"->"+targetID+":"+relationship.Reason,
 		)
 	}
 	sort.Strings(signature.Nodes)
@@ -1294,6 +1323,15 @@ func requireNode(t *testing.T, g *graph.Graph, label string, filePath string, qu
 	}
 	t.Fatalf("missing node %s %s %s", label, filePath, qualifiedName)
 	return graph.Node{}
+}
+
+func requireDefinitionNodeID(t *testing.T, g *graph.Graph, definition scopeir.DefinitionFact) string {
+	t.Helper()
+	qualifiedName := definition.QualifiedName
+	if qualifiedName == "" {
+		qualifiedName = definition.Name
+	}
+	return requireNode(t, g, string(definition.Label), cleanPath(definition.FilePath), qualifiedName).ID
 }
 
 func requireRelationship(t *testing.T, g *graph.Graph, relType graph.RelationshipType, sourceID string, targetID string) graph.Relationship {

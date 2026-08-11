@@ -174,11 +174,14 @@ func TestLegacyCrossFileBindingConversionResolvesCallsAcrossLanguageImports(t *t
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			result, err := Resolve(legacyImportConversionCrossFileIR(test.language, test.source, test.target, test.raw, test.local, test.imported, test.receiver, test.form), Options{})
+			files := legacyImportConversionCrossFileIR(test.language, test.source, test.target, test.raw, test.local, test.imported, test.receiver, test.form)
+			result, err := Resolve(files, Options{})
 			if err != nil {
 				t.Fatalf("Resolve() error = %v", err)
 			}
-			requireRelationship(t, result.Graph, graph.RelCalls, "Function:"+test.source+":Run", "Function:"+test.target+":Helper")
+			sourceID := requireDefinitionNodeID(t, result.Graph, files[0].Definitions[0])
+			targetID := requireDefinitionNodeID(t, result.Graph, files[1].Definitions[0])
+			requireRelationship(t, result.Graph, graph.RelCalls, sourceID, targetID)
 			if result.Metrics.ResolvedCalls != 1 || result.Metrics.UnresolvedReferences != 0 {
 				t.Fatalf("unexpected metrics: %#v", result.Metrics)
 			}

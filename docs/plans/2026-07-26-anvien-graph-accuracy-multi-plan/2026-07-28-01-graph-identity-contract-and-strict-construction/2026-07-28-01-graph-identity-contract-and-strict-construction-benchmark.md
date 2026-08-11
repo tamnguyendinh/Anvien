@@ -36,7 +36,7 @@
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
 | P1 | bounded same-name declarations represented distinctly | represented/source declarations | `2/4` | pending implementation | pending | `4/4` | pending | `E1-P1E-TARGET1` |
 | P1 | identity collision groups for the bounded oracle | groups | 2 | pending implementation | pending | 0 | pending | `E1-P1D-COLLISION1`, `E1-P1E-INTEGRITY1` |
-| P1 | declaration occurrence conservation | output/input occurrences | pending P1-C denominator | pending | pending | `100%`, zero unexplained drops | pending | `E1-P1C-ORACLE1`, `E1-P1E-INTEGRITY1` |
+| P1 | declaration occurrence conservation | output/input occurrences | not measured before P1-C; denominator is ScopeIR definitions carried by production `defsByFile` | package fixture `100%`; built runtime `10/10` definitions with unique IDs and `10/10` `DEFINES` endpoints | pending target/integration final | `100%`, zero unexplained drops | P1-C owned boundary `100%`; P1-E pending | `E1-P1C-TEST1`, `E1-P1C-ORACLE1`, pending `E1-P1E-INTEGRITY1` |
 | P1 | affected relationships with missing endpoints | relationships | pending P1-E baseline | pending | pending | 0 | pending | `E1-P1E-INTEGRITY1` |
 | P1 | matched deterministic analyze results | equal runs/total runs | pending matched baseline | pending | pending | `5/5` | pending | `E1-P1E-DETERMINISM1` |
 | P1 | graph size, if identity implementation changes it | bytes | pending matched baseline | pending | pending | measured with explained delta | pending | `E1-P1E-DETERMINISM1` |
@@ -47,4 +47,5 @@
 
 - P1-A is documentation-only and produced no new product/runtime benchmark. Its contract trace, document checks, Supervisor verdict, and commit are evidence gates.
 - P1-B adds an optional in-memory ScopeIR selection range and records the existing TSJS coordinate contract; it does not change a benchmark-owned performance, capacity, package-size, graph-throughput, or target-accuracy metric. Build/test timings and the self-analyze inventory are validation evidence under `E1-P1B-BUILD1`, not benchmark results.
+- P1-C package QA and the built CLI fixture measure occurrence conservation at the owned identity boundary. They do not establish the P1-E target/integration final value; build/test timings remain validation evidence.
 - Child 02 owns persistence/reader counts and field-parity measurements.

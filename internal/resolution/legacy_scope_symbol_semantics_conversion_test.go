@@ -233,10 +233,15 @@ func TestLegacyScopeSymbolConversionResolvesTypeReferencesThroughGraph(t *testin
 		t.Fatalf("Resolve() error = %v", err)
 	}
 
-	requireRelationship(t, result.Graph, graph.RelUses, "Function:src/app.ts:save", "Class:src/models.ts:models.User")
-	requireRelationship(t, result.Graph, graph.RelUses, "Function:src/app.ts:save", "Class:src/models.ts:models.Repo")
-	requireNoRelationship(t, result.Graph, graph.RelUses, "Function:src/app.ts:save", "Class:src/models.ts:models.Duplicate")
-	requireNoRelationship(t, result.Graph, graph.RelUses, "Function:src/app.ts:save", "Class:src/other.ts:models.Duplicate")
+	saveID := requireDefinitionNodeID(t, result.Graph, saveDef)
+	userID := requireDefinitionNodeID(t, result.Graph, userDef)
+	repoID := requireDefinitionNodeID(t, result.Graph, repoDef)
+	ambiguousAID := requireDefinitionNodeID(t, result.Graph, ambiguousA)
+	ambiguousBID := requireDefinitionNodeID(t, result.Graph, ambiguousB)
+	requireRelationship(t, result.Graph, graph.RelUses, saveID, userID)
+	requireRelationship(t, result.Graph, graph.RelUses, saveID, repoID)
+	requireNoRelationship(t, result.Graph, graph.RelUses, saveID, ambiguousAID)
+	requireNoRelationship(t, result.Graph, graph.RelUses, saveID, ambiguousBID)
 	if result.Metrics.ResolvedTypeReferences != 2 || result.Metrics.UnresolvedReferences != 1 {
 		t.Fatalf("type-reference metrics = %#v, want 2 resolved and 1 unresolved", result.Metrics)
 	}
