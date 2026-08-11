@@ -4,7 +4,7 @@ Title: Anvien Current Graph Persistence and Reader Consistency
 
 Date: 2026-07-28
 
-Status: Draft / P0 Incomplete / Dependency Blocked
+Status: Draft / P0 Incomplete / Child 01 Handoff Recorded / Dependency Blocked
 
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md`
 
@@ -73,7 +73,7 @@ The rows below are candidate boundaries from the latest production-source audit,
 
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|-------------------:|----------|--------------------|
-| Child 01 handoff | accepted corrected identity/range field set is not yet recorded | exact accepted fields and source evidence | blocked | predecessor boundary | `E0-P0A-HANDOFF1` pending | no P2 production edit |
+| Child 01 handoff | accepted corrected identity/range/occurrence/collision/endpoint field set is recorded by orchestration/main from Child 01's accepted evidence and commit chain | exact accepted fields, source evidence, explicit non-claims, and predecessor HEAD/commit chain | correct | predecessor boundary | `E0-P0A-HANDOFF1`, `E2-PNC-HANDOFF1`, `E2-PNA-SUPERVISOR1`, `E2-PNB-COMMIT1` | keep P0 incomplete; refresh current Child 02 source/graph/file-detail/impact before any P2 production edit |
 | Graph JSON preservation | baseline graph serialization exists; corrected Child 01 field round-trip is not yet measured | all accepted corrected records/fields preserved without drop | partial/blocked | P2-A source inventory pending | `E0-P0A-SOURCE1` pending | inventory in P2-A; implement only if P2-B proves gap |
 | Ladybug preservation | bounded investigation observed representation changes and current source has a known projection boundary; effect on corrected fields is not yet classified | lossless corrected facts and explicit representation mapping | partial | 19 candidate related files | `E0-P0A-VERIFY1`, `E0-P0A-FD1`; current field impact pending | P2-A then P2-B |
 | affected reader inventory | no accepted source-proven affected-reader denominator | exact rows with symbol/path, field, impact, touch mode, evidence | missing | unknown until P2-A | `E2-P2A-INVENTORY1` pending | P2-A only |
@@ -87,12 +87,13 @@ The rows below are candidate boundaries from the latest production-source audit,
 | Refresh | Date | Repo Basis | Changed Scope | Status Changes | Evidence | Next Phase Update |
 |---------|------|------------|---------------|----------------|----------|-------------------|
 | R0 | 2026-08-10 | documentation correction worktree; retained production-source candidate counts | Child 02 only | campaign-wide reader assumptions removed; affected inventory missing; predecessor and fresh P0 gates pending | `E0-P0A-REPORT1`, `E0-P0A-VERIFY1`, `E0-P0A-FD1..E0-P0A-FD4`, `E0-P0A-STATUS1` | keep P2-A through P2-E blocked until accepted Child 01 handoff and current P0 evidence |
+| R1 | 2026-08-11 | Child 01 accepted HEAD chain through Pn-B `da49506a71e006b9ab48137b780e185bf14582fb`; fresh Anvien graph `1,580/680/0`, `95,819/134,750` | Child 01 handoff authority and P0 predecessor row | `Child 01 handoff missing/blocked -> recorded/correct`; P0 remains incomplete because current Child 02 source/file-detail/impact and Supervisor evidence are still pending | `E0-P0A-HANDOFF1`, `E2-PNC-HANDOFF1`, `E2-PNA-SUPERVISOR1`, `E2-PNB-COMMIT1` | run Child 02 P0-A source inventory and current graph/file-detail/impact; do not open P2-B/P2-C/P2-D/P2-E or edit production from the handoff alone |
 
 ## Phase Touch Map
 
 | Unit / File / Surface | Plan-Relevant Relationship File | Relationship to Target | Plan Item | Touch Mode | Evidence | Constraint |
 |-----------------------|---------------------------------|------------------------|-----------|------------|----------|------------|
-| Child 01 accepted fields | Graph JSON/Ladybug source owners | predecessor contract | P0/P2-A | inspect-only | `E0-P0A-HANDOFF1` pending | no schema assumption before handoff |
+| Child 01 accepted fields | Graph JSON/Ladybug source owners | predecessor contract | P0/P2-A | inspect-only | `E0-P0A-HANDOFF1`, `E2-PNC-HANDOFF1` | accepted facts are inputs to P2-A inventory; no persistence schema or affected-reader assumption |
 | candidate Graph JSON/analyze flow | current source discovered in P0 | persistence/orchestration | P2-A/P2-B/P2-D | inspect-only until exact impact | `E0-P0A-SOURCE1`, `E0-P0A-SOURCE2` pending | output behavior remains inspect-only until exact impact |
 | `internal/lbugload/csv.go` | current graph records | Ladybug projection candidate | P2-A/P2-B | inspect-only until affected-field proof | `E0-P0A-FD1` | zero silent corrected-record drops |
 | `internal/httpapi/graph.go` | Graph JSON/Ladybug query output | public reader candidate | P2-A/P2-C | inspect-only; edit only if affected | `E0-P0A-FD3` | no category-wide reader work |
@@ -100,6 +101,42 @@ The rows below are candidate boundaries from the latest production-source audit,
 | `E:\cheapapp.org` | normal target output | external validation boundary | P2-E if required | preserve source; validate only | `E0-P0A-BOUNDARY1` | no target fixture/report/debug artifacts |
 
 ## Detailed Findings
+
+### Accepted Child 01 handoff
+
+Current state:
+
+The predecessor handoff is now durable and source-backed. Child 01 accepted the identity tuple, construct/selection position facts, production `defsByFile` occurrence denominator, canonical Definition conflict behavior, and endpoint integrity described in `E0-P0A-HANDOFF1`. The predecessor commit chain is independently accepted through Pn-B at `da49506a71e006b9ab48137b780e185bf14582fb`; main has independently checked the handoff against the existing Pn-A/Pn-B Supervisor reports, while Pn-C final detect/commit remain pending.
+
+Required state:
+
+```text
+accepted Child 01 facts
+-> current Child 02 source inventory
+-> exact Graph JSON/Ladybug/reader parity decision
+```
+
+Evidence:
+
+- `E0-P0A-HANDOFF1`: exact accepted facts, source evidence, non-claims, and predecessor chain.
+- `E2-PNC-HANDOFF1`: parent Pn-C handoff record.
+
+Relationship and impact:
+
+- Related file count: predecessor boundary; Child 02 candidates remain the existing P0 rows until P0-A refresh.
+- Impact note: handoff is authority for facts only; it does not authorize production edits or change candidate touch modes.
+
+Classification:
+
+`correct` for the predecessor contract; Child 02 P0 remains `incomplete/dependency-blocked`.
+
+Allowed next action:
+
+Complete Child 02 P0-A current graph/source/file-detail/impact inventory and its independent Supervisor decision, then open only the exact P2-A slice if P0-A passes.
+
+Forbidden next action:
+
+Do not infer Graph JSON/Ladybug parity, affected-reader membership, repeated-analyze reader behavior, or column/SelectionRange projection from the Child 01 handoff; do not edit production before P2-A proves an owner.
 
 ### Persistence and representation
 
@@ -121,7 +158,7 @@ Each arrow must conserve the corrected semantic fact, and any representation map
 Evidence:
 
 - `E0-P0A-VERIFY1`: bounded representation observation, not a universal reader defect.
-- `E0-P0A-HANDOFF1`: pending accepted corrected-field set.
+- `E0-P0A-HANDOFF1`: recorded accepted corrected-field set; Graph JSON/Ladybug/reader parity remains unmeasured and is still owned by P2-A/P2-B/P2-C.
 - `E2-P2A-INVENTORY1`: pending exact field-flow inventory.
 
 Relationship and impact:
@@ -166,7 +203,7 @@ Classification: `partial/unknown`; measure before changing code.
 
 ## Implementation Gate
 
-- [ ] Accepted Child 01 handoff is recorded.
+- [x] Accepted Child 01 handoff is recorded.
 - [ ] Target scope is current in the status matrix.
 - [ ] Every target unit has current evidence and status.
 - [ ] Candidate file counts are refreshed at the implementation HEAD.
@@ -188,4 +225,4 @@ Classification: `partial/unknown`; measure before changing code.
 
 Decision note:
 
-Child 01 handoff, current source/file-detail/impact refresh, exact affected-reader inventory, and P0 Supervisor acceptance are pending. No production slice is open.
+The accepted Child 01 handoff is now recorded in `E0-P0A-HANDOFF1`, but current Child 02 source/file-detail/impact refresh, exact affected-reader inventory, and P0 Supervisor acceptance remain pending. No production slice is open; P2-A through P2-E remain blocked until P0-A closes.

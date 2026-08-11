@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `draft / P0 incomplete / dependency-blocked`
+- Status: `draft / P0 incomplete / Child 01 handoff recorded / dependency-blocked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-benchmark.md`
@@ -99,7 +99,8 @@ In scope:
     3. Record file counts, current classifications, touch modes, and the pending P2-A discovery boundary.
     4. Obtain Supervisor review of the P0 scope/dependency decision.
   - Implementation Gate: no production edit until the accepted Child 01 handoff exists and this actual-status ledger has a complete, current P0 decision.
-  - Acceptance: `E0-P0A-REPORT1`, `E0-P0A-VERIFY1`, `E0-P0A-HANDOFF1`, `E0-P0A-GRAPH1`, `E0-P0A-SOURCE1`, `E0-P0A-SOURCE2`, `E0-P0A-FD1`, `E0-P0A-FD2`, `E0-P0A-FD3`, `E0-P0A-FD4`, `E0-P0A-IMPACT1`, `E0-P0A-BOUNDARY1`, `E0-P0A-STATUS1`, and `E0-P0A-REVIEW1` are exact and non-contradictory.
+    - Acceptance: `E0-P0A-REPORT1`, `E0-P0A-VERIFY1`, `E0-P0A-HANDOFF1`, `E0-P0A-GRAPH1`, `E0-P0A-SOURCE1`, `E0-P0A-SOURCE2`, `E0-P0A-FD1`, `E0-P0A-FD2`, `E0-P0A-FD3`, `E0-P0A-FD4`, `E0-P0A-IMPACT1`, `E0-P0A-BOUNDARY1`, `E0-P0A-STATUS1`, and `E0-P0A-REVIEW1` are exact and non-contradictory.
+    - Current State: `E0-P0A-HANDOFF1` is now recorded from the accepted Child 01 evidence/commit chain. P0-A remains incomplete until Child 02 refreshes current source/file-detail/impact evidence and obtains its own Supervisor PASS; no P2 production slice opens from this handoff alone.
 
 ### P2: Current graph persistence and reader consistency
 

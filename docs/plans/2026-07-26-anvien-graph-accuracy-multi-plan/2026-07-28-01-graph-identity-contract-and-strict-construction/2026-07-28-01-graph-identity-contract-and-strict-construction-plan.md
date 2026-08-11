@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0, P1-A through P1-E, Pn-A, and Pn-B accepted at isolated commit boundaries / P1-E remains explicit Owner acceptance, not a fabricated Supervisor PASS / Pn-A independent Child-level Supervisor PASS / Pn-B independent cleanup Supervisor PASS / Pn-C is the only open slice / Child 02 closed`
+- Status: `active / P0, P1-A through P1-E, Pn-A, Pn-B, and Pn-C accepted at isolated commit boundaries / P1-E remains explicit Owner acceptance, not a fabricated Supervisor PASS / Pn-A independent Child-level Supervisor PASS / Pn-B independent cleanup Supervisor PASS / Child 02 handoff recorded, P0 incomplete`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md`
@@ -385,14 +385,14 @@ Sibling boundary: `emitRelationship`/`AddRelationship` is a separate relationshi
   - Acceptance: cleanup proof and independent Supervisor PASS are recorded as `E2-PNB-CLEANUP1`; report/docs change detection and the isolated Pn-B commit are recorded as `E2-PNB-DETECT1` and `E2-PNB-COMMIT1`.
   - Current State: accepted at the immediate isolated report/docs commit boundary after independent cleanup Supervisor PASS and orchestration/main verification. Coder report `reports/coder/rp_coder_260811_195506_by_gpt-5-codex_child01_pnb_cleanup.md` is `15,771` bytes / `174` lines at SHA-256 `169CAC50EEB07C3ED6533B025E95936E42547A5AC03493A1CB6ABB4B9EAC98D7`; independent Supervisor report `reports/Supervisor/rp_supervisor_260811_201451_by_gpt-5-codex_child01_pnb_cleanup.md` is `13,334` bytes / `127` lines at SHA-256 `980287509C0626B4E0CDDEA4FEA42B8B5D420FF399A0A527553C5D62BC7D95DF` and contains exactly one `PASS` / zero `REJECT`. Main re-verifies `9/9` retained JSON parses, `9,884,026` retained bytes, nine unique hashes, `11/11` prior dead paths absent, the exact `129`-byte Ladybug cache at SHA-256 `259C78F5B93F0A44BEE4E776ACACCD4E8689FB6F7718E7AF24E1D0F6D49720A2`, an empty deletion allowlist, and `0` deleted paths / `0` deleted bytes. Mandatory fresh analyze reports `1,580/680/0`, graph `95,819/134,750`; all-scope detect on the exact eight-path boundary exits `0` at overall/file risk `low`, with `55` changed symbols, `8` changed/affected files, `0` affected symbols/processes, zero gap/health degradation, and complete semantic fields/sources. `E2-PNB-CLEANUP1`, `E2-PNB-DETECT1`, and `E2-PNB-COMMIT1` record the closure; Git reports the final commit hash externally.
 
-- [ ] Pn-C: Close the plan and hand off accepted fields.
+- [x] Pn-C: Close the plan and hand off accepted fields.
   - Goal: finish final validation, ledgers, detect-changes, commits, and the Child 02 status refresh.
   - Work Steps:
     1. Run final required validation and record the accepted benchmark/evidence values.
     2. Run detect-changes, record final commit/worktree state, and refresh Child 02 actual status using exact accepted Child 01 facts.
   - Implementation Gate: Pn-A and Pn-B pass; every slice evidence row is complete.
-  - Acceptance: `E2-PNC-DETECT1`, `E2-PNC-HANDOFF1`, and `E2-PNC-COMMIT1` are recorded; Child 02 opens only from that evidence.
-  - Current State: becomes the only open slice after Git confirms the immediate isolated Pn-B report/docs commit; no Pn-C work is included in that commit and Child 02 remains closed.
+  - Acceptance: `E2-PNC-DETECT1`, `E2-PNC-HANDOFF1`, and the isolated `E2-PNC-COMMIT1` boundary are recorded; Child 02 opens only from that evidence.
+  - Current State: Pn-B is confirmed at its isolated report/docs commit. Main has prepared and independently verified the exact accepted-field handoff using the already-closed Pn-A/Pn-B Supervisor evidence; final staged detect and the exact isolated Pn-C closure boundary are recorded for commit, after which Child 02 P0-A may open while its P0 remains incomplete.
 
 ## Risk Notes
 
