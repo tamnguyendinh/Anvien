@@ -18,6 +18,27 @@
 
 ## B0 - P0 Benchmarks
 
+Correction temporal note: the authorized manifest-repair analyze capture is `1,631/688/0`, `97,369` nodes, `136,643` relationships. The original accepted P0-A graph benchmark rows below remain unchanged and refer to the original graph capture used for `E0-P0A-GRAPH1`; the correction pass did not rerun or replace accepted file-detail/impact gates.
+
+| Phase | Inventory metric | Unit | Current | Evidence |
+|-------|------------------|------|--------:|----------|
+| P0-A | current graph scanned files | files | 1,629 | `E0-P0A-GRAPH1` |
+| P0-A | current graph parsed code files | files | 688 | `E0-P0A-GRAPH1` |
+| P0-A | current graph failed files | files | 0 | `E0-P0A-GRAPH1` |
+| P0-A | current graph nodes | nodes | 97,340 | `E0-P0A-GRAPH1` |
+| P0-A | current graph relationships | relationships | 136,614 | `E0-P0A-GRAPH1` |
+| P0-A | full-read / owner / excluded inventory | paths | 62 / 27 / 35 | `E0-P0A-SRC1` |
+| P0-A | frozen owner assignment | assigned / expected | 27 / 27 | `E0-P0A-SRC1` |
+| P0-A | file-detail coverage | owners / expected | 27 / 27 | `E0-P0A-FD1` |
+| P0-A | production file-impact coverage | files / expected | 15 / 15 | `E0-P0A-IMPACT1` |
+| P0-A | canonical symbol-impact coverage | symbols / expected | 39 / 39 | `E0-P0A-IMPACT1` |
+
+| P0-A | correction graph refresh | scanned / parsed / failed files | 1,629 / 688 / 0 | 1,633 / 688 / 0 | 1,633 / 688 / 0 | informational | +4 / 0 / 0 | `E0-P0A-GRAPH1`, `E0-P0A-DETECT1` |
+| P0-A | correction graph inventory | nodes / relationships | 97,340 / 136,614 | 97,388 / 136,662 | 97,388 / 136,662 | informational | +48 / +48 | `E0-P0A-GRAPH1`, `E0-P0A-DETECT1` |
+| P0-A | documentation change impact | changed / affected files; changed sections | 0 / 0; 0 | 8 / 8; 62 | 8 / 8; 62 | docs-only | +8 / +8; +62 | `E0-P0A-DETECT1` |
+
+These are graph/inventory counts at HEAD `181b8cb8`, not product runtime-performance measurements. P0-A ran no build, tests, runtime, or target gate, so none is fabricated here.
+
 | Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
 | P0 | bounded legal array bindings represented | bindings / expected | 0/6 | 0/6 accepted baseline | pending | 6/6 | pending | `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2` |

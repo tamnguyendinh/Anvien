@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `draft / predecessor handoff recorded pending Child 02 Pn-C commit / P0 incomplete / P3-A closed`
+- Status: `active / Child 02 closed at 181b8cb8 / P0-A accepted with isolated documentation-evidence commit boundary prepared / P3-A closed until Git confirms the commit`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md`
@@ -87,7 +87,7 @@ Out of scope:
 
 ## Checklist
 
-- [ ] P0-A: Complete current actual status before implementation.
+- [x] P0-A: Complete current actual status before implementation.
   - Goal: replace historical assumptions with current source, graph, and impact evidence for the binding pipeline.
   - Work Steps:
     1. Refresh the Anvien graph and record current HEAD/source basis.
@@ -95,8 +95,9 @@ Out of scope:
     3. Run `file-detail` and upstream `impact` for every candidate owner and record exact related-file counts and blast radius.
     4. Classify correct, partial, wrong, missing, and blocked rows in actual status; update P3-A work steps if exact ownership differs from this plan.
   - Implementation Gate: the accepted Child 02 handoff is recorded as `E0-P0A-HANDOFF1` and its Pn-C commit is confirmed; no production edit until the actual-status Final P0 Decision permits P3-A.
-  - Acceptance: `E0-P0A-HANDOFF1`, `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2`, `E0-P0A-SCOPE1`, `E0-P0A-GRAPH1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1`, and `E0-P0A-STATUS1` are recorded with no unresolved owner boundary.
-  - Current State: `E0-P0A-HANDOFF1` records accepted Definition persistence, endpoint conservation, explicit embedding label, eight affected-reader guarantees, repeated-analyze behavior, and exact non-claims from Child 02. P0 remains incomplete; current binding owners and impacts are still pending. P0-A becomes eligible only after Git confirms the Child 02 Pn-C commit.
+  - Acceptance: `E0-P0A-HANDOFF1`, `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2`, `E0-P0A-SCOPE1`, `E0-P0A-GRAPH1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1`, `E0-P0A-STATUS1`, and independent `E0-P0A-REVIEW1` are recorded with no unresolved owner boundary; `E0-P0A-DETECT1` and `E0-P0A-COMMIT1` close the isolated documentation/evidence boundary.
+  - Current State: Child 02 is closed at entry HEAD `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`. The exact Set A/B/C manifest and partition checks are durable in the QA report. Independent Supervisor reports `E0-P0A-REVIEW1` and `E0-P0A-REVIEW2` returned `PASS`, including the byte-clean artifact actually staged for commit. Final staged detect is LOW for exactly eight docs/report paths and zero process/flow/gap/degradation. The exact isolated P0-A documentation/evidence boundary commits immediately after this row; Git reports the final hash because a commit cannot contain its own hash. P3-A remains closed until Git confirms success.
+  - Commit Boundary: four Child 03 ledgers, one QA report, immutable prior REJECT provenance, and two independent PASS reports; no production/test/fixture/target/runtime path.
 
 ### P3: TypeScript binding-pattern extraction
 
@@ -117,10 +118,10 @@ Out of scope:
 - [ ] P3-A: Implement the binding-pattern contract and recursive leaf walker.
   - Goal: enumerate legal binding leaves, paths, ranges, modifiers, and unsupported syntax without graph emission.
   - Scope Boundary:
-    - Editable: exact fact and TS walker owners selected by P0.
-    - Inspect-only: existing collector, type inference, graph projection, and import extraction.
-    - Preserve-only: identifier-only declaration behavior and all export behavior.
-    - Out of scope: declaration-context wiring and graph emission.
+    - Editable: add one focused `internal/providers/tsjs/binding_patterns.go` owner for recursive pattern traversal; extend only the exact ScopeIR binding-pattern contract owners in `internal/scopeir/facts.go`, `internal/scopeir/ir.go`, and `internal/scopeir/sort_keys.go` when the accepted contract requires it.
+    - Inspect-only: current collector entry/traversal and declaration/type/scoping/reference owners (`extract.go`, `nodes.go`, `definitions.go`, `scopes.go`, `references.go`, `types.go`) plus downstream projection/resolution and graph-accuracy audit readers.
+    - Preserve-only: identifier-only declaration behavior, the separate import pipeline in `imports.go`, and all export behavior.
+    - Out of scope: variable/parameter/catch/loop declaration-context wiring, assignment destructuring, graph emission/resolution edits, export/module/ambient/scanner work, target validation, and unrelated readers.
   - Non-Goals: do not make assignment destructuring create declarations and do not add resolver behavior.
   - Pre-flight Questions:
     - Data source: current Tree-sitter binding-pattern nodes and current ScopeIR contracts.
@@ -136,19 +137,19 @@ Out of scope:
     - External side effects: none.
     - N/A notes: UI, DB, Docker, and Playwright do not participate in this in-memory provider slice.
   - Work Steps:
-    1. Refresh graph evidence, run exact file-detail/impact, confirm one-file responsibility, and implement the production fact/walker plus structured unsupported diagnostic.
+    1. After independent P0-A acceptance/commit, refresh graph evidence and re-run exact file-detail/impact for the accepted owners; define deterministic path/rest/default/computed-key/hole/provenance and structured unsupported-diagnostic semantics in the ScopeIR contract, then implement the one-responsibility recursive walker in `internal/providers/tsjs/binding_patterns.go` without declaration-context or graph wiring.
        - UI flow check: N/A; no visible flow exists.
        - DB/data flow check: verify deterministic one-leaf-to-one-fact production in memory.
        - Render location check: N/A; inspect ScopeIR output.
        - Mini QA: after the full build in step 2, exercise the real ScopeIR extraction boundary; browser controls are N/A.
        - Evidence target: `E3-P3A-IMPACT1`, `E3-P3A-SRC1`.
-    2. After production behavior is correct, add focused fixtures/tests, run the full build, validate ScopeIR output and diagnostic counts, refresh ledgers, obtain Supervisor PASS, run detect-changes, and commit.
+    2. After production behavior is correct, add focused tests and fixture artifacts owned by the exact P3-A test file, run the required clean-holder gate before the full build, validate ScopeIR output and diagnostic counts, preserve identifier/import behavior, refresh ledgers, obtain Supervisor PASS, run detect-changes, and commit.
        - UI flow check: N/A; no visible flow exists.
        - DB/data flow check: verify exact paths/ranges/modifiers and no duplicate facts.
        - Render location check: evidence ledger and focused test output.
        - Mini QA: exercise the built non-UI provider boundary and record the command and observed result.
        - Evidence target: `E3-P3A-BUILD1`, `E3-P3A-TEST1`, `E3-P3A-BOUNDARY1`, `E3-P3A-REVIEW1`, `E3-P3A-DETECT1`, `E3-P3A-COMMIT1`.
-  - Implementation Gate: P0 is complete; accepted identity/range fields needed by binding facts are available; exact owners have fresh impact evidence.
+  - Implementation Gate: independent Supervisor accepts the P0-A candidate, P0-A is isolated in a commit, and the exact fact/walker owners have refreshed impact evidence. P0-A completion alone does not open P3-A.
   - Acceptance:
     - Source: every supported leaf has exactly one fact, correct path/range/modifiers, and unsupported syntax is diagnosed.
     - Runtime/UI: N/A; nearest real boundary is ScopeIR extraction after the full build.
@@ -260,7 +261,7 @@ Out of scope:
   - Scope Boundary:
     - Editable: exact catch-context owner and focused test owner.
     - Inspect-only: walker and lexical scope construction.
-    - Preserve-only: variables, parameters, loops, and assignment writes.
+    - Preserve-only: established variable/parameter/loop behavior and the assignment-form non-declaration invariant; assignment write/reference behavior remains partial/missing and is deferred to P3-B2A/P3-C.
     - Out of scope: graph projection.
   - Non-Goals: no changes to exception-flow modeling.
   - Pre-flight Questions:
