@@ -93,7 +93,7 @@ Product matrix là công cụ hỗ trợ Supervisor kiểm tra phạm vi và inv
 •	Nếu matrix phát hiện lỗi production, Supervisor phải reject và bàn giao.
 •	Không chạy matrix lặp lại chỉ để trì hoãn verdict khi evidence hiện tại đã đủ.
 •	Gate đã hoàn tất không được chạy lại nếu repo state và evidence không đổi.
-7. Quy tắc sau auto-compact
+## 7. Quy tắc sau auto-compact
 Sau auto-compact hoặc mất context, session phải:
 1.	Đọc lại AGENTS.md.
 2.	Đọc lại “Quy tắc mở session task riêng cho subagent”
