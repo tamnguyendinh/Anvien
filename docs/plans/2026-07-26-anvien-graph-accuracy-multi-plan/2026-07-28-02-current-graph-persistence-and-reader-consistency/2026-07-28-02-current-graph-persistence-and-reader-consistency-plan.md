@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0-A accepted / P2-A open`
+- Status: `active / P0-A and P2-A accepted / P2-B ready`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-benchmark.md`
@@ -118,7 +118,7 @@ In scope:
   - P2-D: Verify repeated normal analyze and clear failure behavior.
   - P2-E: Close persistence/reader parity and handoff.
 
-- [ ] P2-A: Inventory affected persistence and reader paths.
+- [x] P2-A: Inventory affected persistence and reader paths.
   - Goal: establish the exact field-flow denominator before production edits.
   - Scope Boundary:
     - Editable: this Child's four ledgers only.
@@ -158,14 +158,14 @@ In scope:
        - Mini QA: zero duplicate/unassigned affected rows and zero broken anchors.
        - Evidence target: `E2-P2A-MATRIX1`, `E2-P2A-REVIEW1`, `E2-P2A-COMMIT1`.
   - Implementation Gate: P0 and Child 01 handoff accepted; graph/source evidence current.
-  - Current State: open. P0-A and the Child 01 handoff are accepted; exact denominator work has not started. Candidate direct consumers from the earlier review are recorded in `E2-P2A-INPUT1` and must be verified or excluded row-by-row rather than treated as accepted conclusions.
+  - Current State: accepted by bounded zero-trust re-review report `reports/Supervisor/rp_supervisor_260813_131254_by_gpt-5-codex_child02_p2a_inventory_rereview.md` at SHA-256 `988C137D5C864192C38180A47812BAB53FE315204DA4907F6FFCC15EEE659369`. The accepted matrix contains `8` persistence rows (`5` future edit, `3` validate-only), `8` affected Child 02 reader rows (`4` future edit, `4` validate-only), `2` P2-D boundaries with `analyze` shared with persistence, `2` out-of-campaign audit/probe exclusions, and `19` total unique classified rows with zero duplicate, unassigned, or unclassified mandatory leads. The review independently closes A02's exact Definition CSV branches, the linked A12 embedding-label persistence/semantic-search reader split, `DEFINES` endpoint CSV/schema ownership, and the refrozen arithmetic. No production/test/runtime behavior is accepted by this docs-only slice. The exact five-doc/three-report boundary is committed immediately after this row as `E2-P2A-COMMIT1`; Git reports the final hash because a commit cannot contain its own hash. P2-B may open only after that isolated commit succeeds.
   - Acceptance:
     - Source: every affected persistence/read path has exact symbol/path and field evidence.
     - Runtime/UI: N/A — no runtime/UI behavior changed.
     - DB/data: affected denominator is exact; unaffected paths are excluded and preserve-only.
     - Behavior test: source-anchor/ownership audit passes with zero unassigned affected readers.
     - Cleanup/quarantine: unsupported reader assumptions absent from active scope.
-    - Evidence IDs: `E2-P2A-IMPACT1`, `E2-P2A-SOURCE1`, `E2-P2A-INVENTORY1`, `E2-P2A-MATRIX1`, `E2-P2A-REVIEW1`, `E2-P2A-COMMIT1`.
+    - Evidence IDs: `E2-P2A-IMPACT1`, `E2-P2A-SOURCE1`, `E2-P2A-INVENTORY1`, `E2-P2A-MATRIX1`, `E2-P2A-REJECT1`, `E2-P2A-SOURCE2`, `E2-P2A-INVENTORY2`, `E2-P2A-MATRIX2`, `E2-P2A-REVIEW1`, `E2-P2A-COMMIT1`.
     - Actual-status rows refreshed: persistence candidates, affected readers, touch map, P2-B/P2-C steps.
   - Evidence Targets: source trace, affected inventory, review, documentation commit.
   - Actual-status Update: affected-path inventory `missing -> correct`; implementation rows remain partial/wrong as measured.

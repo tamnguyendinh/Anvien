@@ -24,15 +24,18 @@
 | Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
 | P0 | selected bounded raw/projection facts retaining one-to-one cardinality | facts with one-to-one cardinality / selected facts | `7/7` | `7/7` bounded observation | pending Child 02 comparison | preserve corrected records; field parity measured separately | pending | `E0-P0A-VERIFY1` |
-| P0 | source-proven affected readers | readers | unknown | not a P0 acceptance metric | pending P2-A | exact discovered count, zero unassigned | N/A at P0 | `E0-P0A-QA1`, `E2-P2A-INVENTORY1`, `E2-P2A-MATRIX1` |
+| P0 | source-proven affected readers | readers | unknown | not a P0 acceptance metric; accepted P2-A denominator is `8` | `8` accepted for later P2-C validation | exact discovered count, zero unassigned | N/A at P0 | `E2-P2A-INVENTORY2`, `E2-P2A-MATRIX2`, `E2-P2A-REVIEW1` |
 | P0 | Child 02 implementation slices | slices | 5 planned | 5 planned | pending | 5 accepted | pending | plan checklist |
 
 ## B2 - P2 Benchmarks
 
 | Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
-| P2 | affected persistence paths | paths | unknown before P2-A source inventory | P0 candidates recorded; exact count pending | pending | exact count, zero unassigned | pending | `E2-P2A-INVENTORY1` |
-| P2 | affected readers | readers | unknown before P2-A source inventory | P0 candidates recorded; exact denominator pending | pending | exact count, zero unassigned | pending | `E2-P2A-MATRIX1` |
+| P2 | affected persistence paths | unique owners | unknown before P2-A source inventory | `8` accepted (`5` future edit, `3` validate-only) | `8` accepted | exact count, zero unassigned | `+8` from unknown | `E2-P2A-INVENTORY2`, `E2-P2A-MATRIX2`, `E2-P2A-REVIEW1` |
+| P2 | affected readers | unique readers | unknown before P2-A source inventory | `8` accepted (`4` future edit, `4` validate-only) | `8` accepted | exact count, zero unassigned | `+8` from unknown | `E2-P2A-INVENTORY2`, `E2-P2A-MATRIX2`, `E2-P2A-REVIEW1` |
+| P2 | repeated-analyze/failure boundaries | unique boundaries | unknown before P2-A source inventory | `2` accepted (`analyze` shared with persistence, plus `Server.runCypherRead`) | `2` accepted | exact owned boundaries | `+2` from unknown | `E2-P2A-INVENTORY2`, `E2-P2A-MATRIX2`, `E2-P2A-REVIEW1` |
+| P2 | unique classified frozen owner rows | rows | unknown before P2-A source inventory | `19` accepted, including `2` explicit out-of-campaign audit/probe exclusions | `19` accepted | every frozen row classified exactly once | `+19` from unknown | `E2-P2A-MATRIX2`, `E2-P2A-REVIEW1` |
+| P2 | duplicate / unassigned / unclassified affected rows | rows | unknown before P2-A source inventory | `0 / 0 / 0` accepted | `0 / 0 / 0` accepted | `0 / 0 / 0` | zero | `E2-P2A-MATRIX2`, `E2-P2A-REVIEW1` |
 | P2 | Graph JSON/Ladybug corrected records with field differences | records | pending accepted Child 01 fields | pending | pending | 0 | pending | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
 | P2 | Graph JSON/Ladybug differing corrected fields | fields | pending accepted Child 01 fields | pending | pending | 0 | pending | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
 | P2 | corrected records silently dropped | records | pending P2-A denominator | pending | pending | 0 | pending | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
