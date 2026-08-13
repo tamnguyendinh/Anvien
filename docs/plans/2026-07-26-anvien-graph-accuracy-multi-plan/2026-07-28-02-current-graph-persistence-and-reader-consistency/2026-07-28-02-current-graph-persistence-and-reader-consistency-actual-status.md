@@ -4,7 +4,7 @@ Title: Anvien Current Graph Persistence and Reader Consistency
 
 Date: 2026-07-28
 
-Status: Draft / P0 Incomplete / Child 01 Handoff Recorded / Dependency Blocked
+Status: Active / P0-A Accepted / P2-A Source Inventory Open
 
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md`
 
@@ -14,15 +14,15 @@ Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/202
 
 ## Purpose
 
-This file records what is actually known about corrected-field persistence and reader behavior before Child 02 implementation. It deliberately leaves the affected-reader denominator open until P2-A proves it from current source.
+This file records what is actually known about corrected-field persistence and reader behavior before Child 02 implementation. P0-A established the current-codebase baseline, accepted Child 01 dependency, candidate owners, blast radii, preserve-only boundaries, and next-slice decision. It did not establish the exact affected-reader denominator.
 
-Implementation cannot start until Child 01 supplies accepted corrected fields and P0 refreshes every candidate persistence/reader owner at the implementation HEAD.
+Production implementation cannot start until P2-A independently verifies the exact affected persistence/reader inventory and routes every finding to its owning later slice.
 
 ## Freshness / Refresh Rules
 
 - Refresh the graph before graph-based status work.
 - Refresh candidate file counts and exact impacts before changing touch mode from inspect-only to edit.
-- After P2-A, replace broad candidate rows with exact affected-field/reader rows.
+- Carry P0-A rows into P2-A as candidate leads only; refresh evidence invalidated by repo drift and independently verify or exclude every row before it becomes an accepted denominator.
 - After each accepted slice, update only affected classifications and append a refresh-log row.
 - Remove obsolete historical matrices rather than keeping them as active status.
 - Keep proof in evidence and measurements in benchmark.
@@ -48,14 +48,19 @@ Out of scope:
 
 ## Relationship / Impact Evidence
 
-The rows below are candidate boundaries from the latest production-source audit, not an affected-reader list. P2-A must re-run source/file-detail/impact and may remove every candidate not connected to an accepted corrected field.
+The rows below are the P0-A current-source/impact baseline at HEAD `22b8ed4cb0d7393cc5c982586b2e9a5c4c049760`. Every P2 touch mode remains a candidate until P2-A verifies ownership and the owning implementation slice opens.
 
 | Unit / File / Surface | File Detail Evidence | Related File Count | Relationship Summary | Impact Note |
 |-----------------------|----------------------|-------------------:|----------------------|-------------|
-| `internal/lbugload/csv.go` | `E0-P0A-FD1` | 19 files | graph-to-Ladybug record projection/load preparation | HIGH candidate persistence boundary |
-| `internal/analyze/analyze.go` | `E0-P0A-FD2` | 182 files | normal analyze orchestration and artifact calls | CRITICAL candidate; inspect first, preserve if acceptance already holds |
-| `internal/httpapi/graph.go` | `E0-P0A-FD3` | 22 files | graph response candidate | HIGH candidate reader; affected status unproven |
-| `anvien-web/src/services/backend-client.ts` | `E0-P0A-FD4` | 24 files | Web graph response candidate | HIGH candidate reader; affected status unproven |
+| `internal/lbugload/csv.go` | `E0-P0A-FD1` | 19 files | Ladybug symbol projection candidate | CRITICAL; verify in P2-A before any P2-B ownership |
+| `internal/analyze/analyze.go` | `E0-P0A-FD2` | 182 files | generic Graph JSON writer and persistence orchestration | CRITICAL; validate-only |
+| `internal/httpapi/graph.go` | `E0-P0A-FD3` | 22 files | transparent graph record transport | MEDIUM; preserve-only |
+| `anvien-web/src/services/backend-client.ts` | `E0-P0A-FD4` | 24 files | transparent Web graph record transport | CRITICAL; preserve-only |
+| `useAppState.local-runtime.tsx::resolveNodeIds` | `E0-P0A-FD5` | 30 files | opaque-ID interpretation lead | exact symbol LOW; verify/classify in P2-A |
+| `internal/resolution/emit.go::emitDefinitionNodes` | `E0-P0A-FD6` | 42 files | corrected-field projection candidate | CRITICAL; verify in P2-A before any P2-B ownership |
+| `internal/lbugschema/schema.go::NodeSchema` | `E0-P0A-FD7` | 18 files | Ladybug symbol schema candidate | LOW; verify in P2-A before any P2-B ownership |
+| `internal/mcp/tools.go::runCypherRead` | `E0-P0A-FD8` | 55 files | Ladybug-to-Graph-JSON fallback boundary | LOW; future P2-D validate-only |
+| `internal/filecontext/context.go::nodeRange` | `E0-P0A-FD9` | 44 files | corrected-range reader lead | CRITICAL; verify/classify in P2-A |
 
 ## Status Rules
 
@@ -73,13 +78,13 @@ The rows below are candidate boundaries from the latest production-source audit,
 
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|-------------------:|----------|--------------------|
-| Child 01 handoff | accepted corrected identity/range/occurrence/collision/endpoint field set is recorded by orchestration/main from Child 01's accepted evidence and commit chain | exact accepted fields, source evidence, explicit non-claims, and predecessor HEAD/commit chain | correct | predecessor boundary | `E0-P0A-HANDOFF1`, `E2-PNC-HANDOFF1`, `E2-PNA-SUPERVISOR1`, `E2-PNB-COMMIT1` | keep P0 incomplete; refresh current Child 02 source/graph/file-detail/impact before any P2 production edit |
-| Graph JSON preservation | baseline graph serialization exists; corrected Child 01 field round-trip is not yet measured | all accepted corrected records/fields preserved without drop | partial/blocked | P2-A source inventory pending | `E0-P0A-SOURCE1` pending | inventory in P2-A; implement only if P2-B proves gap |
-| Ladybug preservation | bounded investigation observed representation changes and current source has a known projection boundary; effect on corrected fields is not yet classified | lossless corrected facts and explicit representation mapping | partial | 19 candidate related files | `E0-P0A-VERIFY1`, `E0-P0A-FD1`; current field impact pending | P2-A then P2-B |
-| affected reader inventory | no accepted source-proven affected-reader denominator | exact rows with symbol/path, field, impact, touch mode, evidence | missing | unknown until P2-A | `E2-P2A-INVENTORY1` pending | P2-A only |
-| HTTP graph reader candidate | current candidate exists; dependency on corrected fields unproven | edit only if P2-A demonstrates a corrected-field dependency | blocked pending inventory | 22 candidate related files | `E0-P0A-FD3` | inspect in P2-A |
-| Web graph reader candidate | current candidate exists; dependency on corrected fields unproven | edit only if P2-A demonstrates a corrected-field dependency | blocked pending inventory | 24 candidate related files | `E0-P0A-FD4` | inspect in P2-A |
-| repeated normal analyze | command is repeatedly usable in the product, but Child 02 matched-run/current-fact/failure acceptance is not measured | all declared runs expose matching corrected facts; failures are clear | partial/unknown | 182 candidate related files | `E0-P0A-FD2`, `E0-P0A-SOURCE2` pending | first measure in P2-D; preserve correct mechanics |
+| Child 01 handoff | accepted corrected identity/range/occurrence/collision/endpoint field set is recorded by orchestration/main from Child 01's accepted evidence and commit chain | exact accepted fields, source evidence, explicit non-claims, and predecessor HEAD/commit chain | correct | predecessor boundary | `E0-P0A-HANDOFF1`, `E2-PNC-HANDOFF1`, `E2-PNA-SUPERVISOR1`, `E2-PNB-COMMIT1` | accepted input to P2-A; no production edit follows from the handoff alone |
+| Graph JSON preservation | generic writer and projection candidates are recorded, but corrected-field round-trip is not yet measured | all accepted corrected records/fields preserved without drop | partial | candidate emission/persistence flow recorded | `E0-P0A-QA1`, `E0-P0A-SOURCE1`, `E0-P0A-FD6` | P2-A verifies ownership; P2-B owns any proven correction |
+| Ladybug preservation | projection/schema candidates are recorded; exact corrected-field lossless mapping is not yet accepted | lossless corrected facts and explicit representation mapping | partial | candidate projection/schema owners recorded | `E0-P0A-QA1`, `E0-P0A-SOURCE1`, `E0-P0A-FD1`, `E0-P0A-FD7` | P2-A verifies ownership; P2-B owns any proven correction |
+| affected reader inventory | P0-A recorded candidate reader leads; review identified additional direct-consumer leads outside the P0-A acceptance boundary | exact rows with symbol/path, field, impact, touch mode, evidence and zero unassigned consumers | missing / P2-A-owned | unknown until P2-A | `E0-P0A-QA1`, `E2-P2A-INPUT1` | P2-A verifies or excludes every lead and establishes the denominator; this did not block P0-A |
+| HTTP graph transport | current source transports graph records without interpreting corrected fields | preserve existing transparent transport | correct | 22 related files | `E0-P0A-QA1`, `E0-P0A-FD3`, `E0-P0A-IMPACT3` | preserve-only |
+| Web graph transport | backend client transports graph records without interpreting corrected fields | preserve existing transparent transport | correct | 24 related files | `E0-P0A-QA1`, `E0-P0A-FD4`, `E0-P0A-IMPACT4` | preserve-only |
+| repeated normal analyze | command is repeatedly usable in the product, but Child 02 matched-run/current-fact/failure acceptance is not measured | all declared runs expose matching corrected facts; failures are clear | partial/unknown | 182 related files | `E0-P0A-FD2`; P2-D evidence pending | first measure in P2-D; preserve correct mechanics |
 | target boundary | target source/worktree remains validation-only | normal target output only; no source contamination | correct | external repository boundary | `E0-P0A-BOUNDARY1` | preserve through validation |
 
 ## Status Refresh Log
@@ -88,16 +93,22 @@ The rows below are candidate boundaries from the latest production-source audit,
 |---------|------|------------|---------------|----------------|----------|-------------------|
 | R0 | 2026-08-10 | documentation correction worktree; retained production-source candidate counts | Child 02 only | campaign-wide reader assumptions removed; affected inventory missing; predecessor and fresh P0 gates pending | `E0-P0A-REPORT1`, `E0-P0A-VERIFY1`, `E0-P0A-FD1..E0-P0A-FD4`, `E0-P0A-STATUS1` | keep P2-A through P2-E blocked until accepted Child 01 handoff and current P0 evidence |
 | R1 | 2026-08-11 | Child 01 accepted HEAD chain through Pn-B `da49506a71e006b9ab48137b780e185bf14582fb`; fresh Anvien graph `1,580/680/0`, `95,819/134,750` | Child 01 handoff authority and P0 predecessor row | `Child 01 handoff missing/blocked -> recorded/correct`; P0 remains incomplete because current Child 02 source/file-detail/impact and Supervisor evidence are still pending | `E0-P0A-HANDOFF1`, `E2-PNC-HANDOFF1`, `E2-PNA-SUPERVISOR1`, `E2-PNB-COMMIT1` | run Child 02 P0-A source inventory and current graph/file-detail/impact; do not open P2-B/P2-C/P2-D/P2-E or edit production from the handoff alone |
+| R2 | 2026-08-11 | Child 01 Pn-C isolated closure commit `22b8ed4cb0d7393cc5c982586b2e9a5c4c049760`; main opened the next slice from the accepted handoff | Child 02 P0-A execution boundary | P0-A `blocked-before-open -> open`; predecessor facts remain correct; no production touch mode changes before source/file-detail/impact inventory | `E0-P0A-HANDOFF1`, `E2-PNC-COMMIT1` | run only P0-A source inventory; record exact affected/unaffected rows and obtain P0-A Supervisor decision before opening P2-A |
+| R3 | 2026-08-13 | same accepted HEAD; fresh graph `1,581/680/0`, `95,830/134,761`; QA no-fix report imported into main workspace | bounded persistence/reader inventory | inventory `missing -> recorded/pending acceptance`; affected readers `unknown -> 2`, editable subset `1`; HTTP/Web transports `candidate -> preserve-only`; exact P2-B/P2-C/P2-D owners recorded | `E0-P0A-QA1`, `E0-P0A-GRAPH1`, `E0-P0A-SOURCE1`, `E0-P0A-SOURCE2`, `E0-P0A-FD1..E0-P0A-FD9`, `E0-P0A-IMPACT1..E0-P0A-IMPACT9` | open only the P0-A Supervisor gate; P0/P2 remain closed until `E0-P0A-REVIEW1` PASS |
+| R4 | 2026-08-13 | P0-A QA and zero-trust review completed at the same production HEAD; fresh review graph `1,583/680/0`, `95,860/134,791`; long impact batch completed in `162s` | P0 scope/dependency decision and out-of-slice finding routing | P0-A current-state/dependency/source/impact/no-code-diff gates accepted; the review's direct-consumer completeness finding is transferred without loss to `E2-P2A-INPUT1` because denominator closure belongs to P2-A | `E0-P0A-REVIEW1`, `E2-P2A-INPUT1` | close P0-A, open only P2-A, do not rerun P0 QA/review |
 
 ## Phase Touch Map
 
 | Unit / File / Surface | Plan-Relevant Relationship File | Relationship to Target | Plan Item | Touch Mode | Evidence | Constraint |
 |-----------------------|---------------------------------|------------------------|-----------|------------|----------|------------|
 | Child 01 accepted fields | Graph JSON/Ladybug source owners | predecessor contract | P0/P2-A | inspect-only | `E0-P0A-HANDOFF1`, `E2-PNC-HANDOFF1` | accepted facts are inputs to P2-A inventory; no persistence schema or affected-reader assumption |
-| candidate Graph JSON/analyze flow | current source discovered in P0 | persistence/orchestration | P2-A/P2-B/P2-D | inspect-only until exact impact | `E0-P0A-SOURCE1`, `E0-P0A-SOURCE2` pending | output behavior remains inspect-only until exact impact |
-| `internal/lbugload/csv.go` | current graph records | Ladybug projection candidate | P2-A/P2-B | inspect-only until affected-field proof | `E0-P0A-FD1` | zero silent corrected-record drops |
-| `internal/httpapi/graph.go` | Graph JSON/Ladybug query output | public reader candidate | P2-A/P2-C | inspect-only; edit only if affected | `E0-P0A-FD3` | no category-wide reader work |
-| `anvien-web/src/services/backend-client.ts` | HTTP graph response | UI reader candidate | P2-A/P2-C | inspect-only; edit only if affected | `E0-P0A-FD4` | real built UI QA only if opened |
+| `internal/resolution/emit.go::emitDefinitionNodes` | accepted Definition facts | graph property projection | P2-A/P2-B | P2-A candidate; production locked | `E0-P0A-FD6`, `E0-P0A-IMPACT6` | verify ownership in P2-A; if affected, route only accepted range/selection projection to P2-B |
+| `internal/lbugload/csv.go` and `internal/lbugschema/schema.go::NodeSchema` | current graph records | Ladybug symbol projection/schema | P2-A/P2-B | P2-A candidates; production locked | `E0-P0A-FD1`, `E0-P0A-FD7` | verify ownership in P2-A; if affected, route zero-loss correction to P2-B |
+| `internal/analyze/analyze.go` | graph records | generic Graph JSON writer/orchestration | P2-A/P2-B/P2-D | validate-only | `E0-P0A-FD2`, `E0-P0A-IMPACT2` | preserve generic writer mechanics |
+| `internal/httpapi/graph.go` and `backend-client.ts` | Graph JSON records | transparent transport | P2-A/P2-C | preserve-only | `E0-P0A-FD3`, `E0-P0A-FD4` | excluded from affected-reader denominator |
+| `useAppState.local-runtime.tsx::resolveNodeIds` | opaque node ID | semantic-reader lead | P2-A/P2-C | P2-A candidate; production locked | `E0-P0A-FD5`, `E0-P0A-IMPACT5`, `E2-P2A-INPUT1` | verify together with sibling Web grounding; route any proven reader correction to P2-C |
+| `internal/filecontext/context.go::nodeRange` | construct range fields | semantic-reader lead | P2-A/P2-C | P2-A candidate; production locked | `E0-P0A-FD9`, `E2-P2A-INPUT1` | verify together with other direct filecontext consumers; route any proven reader correction to P2-C |
+| `internal/mcp/tools.go::runCypherRead` | Ladybug/Graph JSON query boundary | repeated-read fallback | P2-A/P2-D | validate-only | `E0-P0A-FD8`, `E0-P0A-IMPACT8` | excluded from P2-C denominator |
 | `E:\cheapapp.org` | normal target output | external validation boundary | P2-E if required | preserve source; validate only | `E0-P0A-BOUNDARY1` | no target fixture/report/debug artifacts |
 
 ## Detailed Findings
@@ -106,7 +117,7 @@ The rows below are candidate boundaries from the latest production-source audit,
 
 Current state:
 
-The predecessor handoff is now durable and source-backed. Child 01 accepted the identity tuple, construct/selection position facts, production `defsByFile` occurrence denominator, canonical Definition conflict behavior, and endpoint integrity described in `E0-P0A-HANDOFF1`. The predecessor commit chain is independently accepted through Pn-B at `da49506a71e006b9ab48137b780e185bf14582fb`; main has independently checked the handoff against the existing Pn-A/Pn-B Supervisor reports, while Pn-C final detect/commit remain pending.
+The predecessor handoff is durable and source-backed. Child 01 accepted the identity tuple, construct/selection position facts, production `defsByFile` occurrence denominator, canonical Definition conflict behavior, and endpoint integrity described in `E0-P0A-HANDOFF1`. The full predecessor chain through Pn-C is accepted at `22b8ed4cb0d7393cc5c982586b2e9a5c4c049760`.
 
 Required state:
 
@@ -123,16 +134,16 @@ Evidence:
 
 Relationship and impact:
 
-- Related file count: predecessor boundary; Child 02 candidates remain the existing P0 rows until P0-A refresh.
-- Impact note: handoff is authority for facts only; it does not authorize production edits or change candidate touch modes.
+- Related file count: predecessor boundary; Child 02's exact current rows are recorded in `E0-P0A-QA1`.
+- Impact note: the handoff and QA inventory are evidence inputs only; neither authorizes production edits before the owning P2 slice.
 
 Classification:
 
-`correct` for the predecessor contract; Child 02 P0 remains `incomplete/dependency-blocked`.
+`correct` for the predecessor contract; Child 02 P0-A is accepted.
 
 Allowed next action:
 
-Complete Child 02 P0-A current graph/source/file-detail/impact inventory and its independent Supervisor decision, then open only the exact P2-A slice if P0-A passes.
+Execute only the exact P2-A documentation/source-audit slice. Treat P0 candidate rows and review findings as leads that must be verified or excluded; do not edit production.
 
 Forbidden next action:
 
@@ -159,16 +170,16 @@ Evidence:
 
 - `E0-P0A-VERIFY1`: bounded representation observation, not a universal reader defect.
 - `E0-P0A-HANDOFF1`: recorded accepted corrected-field set; Graph JSON/Ladybug/reader parity remains unmeasured and is still owned by P2-A/P2-B/P2-C.
-- `E2-P2A-INVENTORY1`: pending exact field-flow inventory.
+- `E0-P0A-QA1`: current-codebase field-flow/candidate inventory recorded and accepted for the bounded P0-A purpose; later P2-A evidence mapping remains independent.
 
 Relationship and impact:
 
-- Related file counts: 19 Ladybug candidate files; 22 HTTP candidate files; 24 Web candidate files; 182 analyze candidate files.
-- Impact note: candidates remain inspect-only; HIGH/CRITICAL does not authorize broad edits.
+- Exact related-file counts and impacts are recorded in `E0-P0A-FD1..E0-P0A-FD9` and `E0-P0A-IMPACT1..E0-P0A-IMPACT9`.
+- Impact note: HIGH/CRITICAL warnings keep future edits bounded and do not authorize broad changes.
 
-Classification: persistence `partial/blocked`; affected-reader inventory `missing`.
+Classification: P0 baseline `recorded/accepted`; persistence and reader rows remain unverified P2-A candidates, with final denominator unresolved.
 
-Allowed next action: complete predecessor/P0 gates, then execute P2-A source inventory.
+Allowed next action: execute P2-A only. Verify every candidate and additional direct-consumer lead, establish the exact denominator, and route any discovered gap to P2-B/P2-C/P2-D without implementing it in P2-A.
 
 Forbidden next action: reuse a historical reader denominator or introduce storage behavior before proving a corrected-field gap.
 
@@ -195,34 +206,35 @@ Classification: `partial/unknown`; measure before changing code.
 
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
-| P2-A | affected denominator missing; predecessor fields pending | remain blocked, then perform source-only inventory first |
-| P2-B | persistence gap not yet measured | edit only exact affected owners after P2-A |
-| P2-C | reader candidates are not accepted affected readers | exclude every unproven candidate; edit exact P2-A rows only |
+| P2-A | P0 baseline accepted; candidate denominator and direct-consumer leads are unverified | open source-only inventory; verify/exclude every lead and establish exact affected rows |
+| P2-B | candidate persistence owners recorded | remain closed; edit only owners proven and assigned by accepted P2-A plus fresh pre-edit impact |
+| P2-C | candidate reader leads recorded; final denominator/editable subset unresolved | remain closed; consume only accepted P2-A reader rows after P2-B and slice gates |
 | P2-D | repeated behavior unmeasured | test existing built behavior before implementation change |
 | P2-E | no accepted parity denominator | validation-only after P2-A through P2-D pass |
 
 ## Implementation Gate
 
 - [x] Accepted Child 01 handoff is recorded.
-- [ ] Target scope is current in the status matrix.
-- [ ] Every target unit has current evidence and status.
-- [ ] Candidate file counts are refreshed at the implementation HEAD.
-- [ ] Exact persistence/reader symbols have current impact evidence.
-- [ ] P2-A affected-field/reader inventory is complete before P2-B/P2-C.
-- [x] Candidate readers remain inspect-only rather than assumed affected.
+- [x] Target scope is current in the status matrix.
+- [x] Every P0 target unit has current baseline evidence and status; P2-A owns completeness.
+- [x] Candidate file counts are refreshed at the implementation HEAD.
+- [x] Exact persistence/reader symbols have current impact evidence.
+- [ ] P2-A affected-field/reader inventory is complete before P2-B/P2-C (P2-A acceptance gate, not P0-A).
+- [x] Future edit candidates remain locked rather than authorized.
 - [x] Target boundary is preserve-only.
-- [ ] Next-slice assumptions and work steps are refreshed from current evidence.
+- [x] Next-slice assumptions and work steps are refreshed from current evidence.
 - [x] Status Refresh Log has an R0 correction row.
-- [ ] P0 Supervisor review passes.
+- [x] P0 QA and zero-trust review gates completed; Owner corrected the out-of-slice denominator interpretation.
+- [x] P0 scope/dependency disposition passes without rerunning accepted gates.
 
 ## Final P0 Decision
 
-- [x] P0 actual-status incomplete. Implementation is blocked.
+- [ ] P0 actual-status incomplete. Implementation is blocked.
 - [ ] P0 complete. Next phase can proceed unchanged.
-- [ ] P0 complete. Next phase status, next action, or work steps must be updated before implementation.
+- [x] P0 complete. Next phase status, next action, or work steps must be updated before implementation.
 - [ ] P0 complete. Target scope is preserve-only.
 - [ ] P0 complete. Implementation is blocked by missing authority or evidence.
 
 Decision note:
 
-The accepted Child 01 handoff is now recorded in `E0-P0A-HANDOFF1`, but current Child 02 source/file-detail/impact refresh, exact affected-reader inventory, and P0 Supervisor acceptance remain pending. No production slice is open; P2-A through P2-E remain blocked until P0-A closes.
+The accepted Child 01 handoff, current codebase baseline, candidate files/owners, impact warnings, preserve-only boundaries, and no-production-diff gate are recorded. P0-A QA and zero-trust review completed. Owner corrected the review's phase-boundary error: exact direct-consumer completeness belongs to P2-A, so it is preserved as `E2-P2A-INPUT1` rather than treated as a P0-A rejection. P0-A is complete; P2-A is the only open slice, and all production slices remain closed.

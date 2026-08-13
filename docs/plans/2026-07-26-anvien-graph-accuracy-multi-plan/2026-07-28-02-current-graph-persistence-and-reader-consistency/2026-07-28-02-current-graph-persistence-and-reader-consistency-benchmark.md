@@ -24,15 +24,15 @@
 | Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
 | P0 | selected bounded raw/projection facts retaining one-to-one cardinality | facts with one-to-one cardinality / selected facts | `7/7` | `7/7` bounded observation | pending Child 02 comparison | preserve corrected records; field parity measured separately | pending | `E0-P0A-VERIFY1` |
-| P0 | source-proven affected readers | readers | unknown before P2-A | unknown | pending | exact discovered count, zero unassigned | pending | `E2-P2A-INVENTORY1`, `E2-P2A-MATRIX1` |
+| P0 | source-proven affected readers | readers | unknown | not a P0 acceptance metric | pending P2-A | exact discovered count, zero unassigned | N/A at P0 | `E0-P0A-QA1`, `E2-P2A-INVENTORY1`, `E2-P2A-MATRIX1` |
 | P0 | Child 02 implementation slices | slices | 5 planned | 5 planned | pending | 5 accepted | pending | plan checklist |
 
 ## B2 - P2 Benchmarks
 
 | Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
-| P2 | affected persistence paths | paths | unknown before source inventory | pending | pending | exact count, zero unassigned | pending | `E2-P2A-INVENTORY1` |
-| P2 | affected readers | readers | unknown before source inventory | pending | pending | exact count, zero unassigned | pending | `E2-P2A-MATRIX1` |
+| P2 | affected persistence paths | paths | unknown before P2-A source inventory | P0 candidates recorded; exact count pending | pending | exact count, zero unassigned | pending | `E2-P2A-INVENTORY1` |
+| P2 | affected readers | readers | unknown before P2-A source inventory | P0 candidates recorded; exact denominator pending | pending | exact count, zero unassigned | pending | `E2-P2A-MATRIX1` |
 | P2 | Graph JSON/Ladybug corrected records with field differences | records | pending accepted Child 01 fields | pending | pending | 0 | pending | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
 | P2 | Graph JSON/Ladybug differing corrected fields | fields | pending accepted Child 01 fields | pending | pending | 0 | pending | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
 | P2 | corrected records silently dropped | records | pending P2-A denominator | pending | pending | 0 | pending | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |

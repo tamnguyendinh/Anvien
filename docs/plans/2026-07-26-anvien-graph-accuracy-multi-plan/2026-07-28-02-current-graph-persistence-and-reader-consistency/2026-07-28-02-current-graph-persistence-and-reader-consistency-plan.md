@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `draft / P0 incomplete / Child 01 handoff recorded / dependency-blocked`
+- Status: `active / P0-A accepted / P2-A open`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-benchmark.md`
@@ -35,6 +35,7 @@ Preserve the corrected graph facts through Graph JSON and Ladybug, make only sou
 - Every implementation slice requires Supervisor PASS, detect-changes, and an isolated commit before its successor opens.
 - Validation-only P2-E does not repair production code; failures return to P2-B, P2-C, or P2-D.
 - Target source and pre-existing worktree are preserve-only. Scanner repair remains outside the campaign.
+- A finding does not widen the slice that discovered it. Record its exact evidence and route it to the owning slice; only an invariant inside the current slice's stated goal and boundary can PASS or REJECT that slice.
 
 ## Problem
 
@@ -91,7 +92,7 @@ In scope:
 
 ## Checklist
 
-- [ ] P0-A: Complete actual status and predecessor dependency before implementation work.
+- [x] P0-A: Complete actual status and predecessor dependency before implementation work.
   - Goal: classify current persistence/read behavior and prevent any reader or writer from entering scope by assumption.
   - Work Steps:
     1. Consume the accepted Child 01 handoff and list its corrected fields without adding new schema requirements.
@@ -99,8 +100,8 @@ In scope:
     3. Record file counts, current classifications, touch modes, and the pending P2-A discovery boundary.
     4. Obtain Supervisor review of the P0 scope/dependency decision.
   - Implementation Gate: no production edit until the accepted Child 01 handoff exists and this actual-status ledger has a complete, current P0 decision.
-    - Acceptance: `E0-P0A-REPORT1`, `E0-P0A-VERIFY1`, `E0-P0A-HANDOFF1`, `E0-P0A-GRAPH1`, `E0-P0A-SOURCE1`, `E0-P0A-SOURCE2`, `E0-P0A-FD1`, `E0-P0A-FD2`, `E0-P0A-FD3`, `E0-P0A-FD4`, `E0-P0A-IMPACT1`, `E0-P0A-BOUNDARY1`, `E0-P0A-STATUS1`, and `E0-P0A-REVIEW1` are exact and non-contradictory.
-    - Current State: `E0-P0A-HANDOFF1` is now recorded from the accepted Child 01 evidence/commit chain. P0-A remains incomplete until Child 02 refreshes current source/file-detail/impact evidence and obtains its own Supervisor PASS; no P2 production slice opens from this handoff alone.
+    - Acceptance: `E0-P0A-REPORT1`, `E0-P0A-VERIFY1`, `E0-P0A-HANDOFF1`, `E0-P0A-QA1`, `E0-P0A-GRAPH1`, `E0-P0A-SOURCE1`, `E0-P0A-SOURCE2`, `E0-P0A-FD1`, `E0-P0A-FD2`, `E0-P0A-FD3`, `E0-P0A-FD4`, `E0-P0A-IMPACT1`, `E0-P0A-BOUNDARY1`, `E0-P0A-STATUS1`, and the scope-corrected review disposition `E0-P0A-REVIEW1` are exact and non-contradictory.
+    - Current State: accepted at HEAD `22b8ed4cb0d7393cc5c982586b2e9a5c4c049760`. P0-A recorded the current-codebase baseline, accepted Child 01 dependency, candidate owner counts/impacts, preserve-only boundaries, and the next-slice decision. The review's additional direct-consumer findings are retained as `E2-P2A-INPUT1`; exact denominator and zero-unassigned proof were not P0-A acceptance criteria and remain P2-A-owned. No P0-A QA or review gate is rerun.
 
 ### P2: Current graph persistence and reader consistency
 
@@ -125,6 +126,11 @@ In scope:
     - Preserve-only: all production source, tests, runtime, and target source.
     - Out of scope: reader/writer implementation.
   - Non-Goals: no reused denominator, broad transport row, or guessed owner path.
+  - Finding Routing:
+    - persistence/projection gaps -> record for P2-B;
+    - source-proven semantic reader gaps -> record for P2-C;
+    - repeated-analyze or failure-boundary gaps -> record for P2-D;
+    - later-Child or unrelated findings -> record the exact deferred owner and keep them out of P2-A acceptance.
   - Pre-flight Questions:
     - Data source: accepted Child 01 fields and current persistence/reader source.
     - Display permission: N/A — source inventory only.
@@ -139,7 +145,7 @@ In scope:
     - External side effects: none.
     - N/A notes: implementation/runtime gates begin in P2-B.
   - Work Steps:
-    1. Refresh graph and trace each accepted corrected field through Graph JSON, Ladybug, and every reader reached by real source flow.
+    1. Consume `E2-P2A-INPUT1` as candidate leads only, refresh graph, and trace each accepted corrected field through Graph JSON, Ladybug, and every reader reached by real source flow; use P0 evidence only as current-codebase baseline, not as a completed denominator.
        - UI flow check: record an affected UI reader only if source proves the field dependency.
        - DB/data flow check: record exact write/read field and backend.
        - Render location check: evidence ledger inventory.
@@ -152,6 +158,7 @@ In scope:
        - Mini QA: zero duplicate/unassigned affected rows and zero broken anchors.
        - Evidence target: `E2-P2A-MATRIX1`, `E2-P2A-REVIEW1`, `E2-P2A-COMMIT1`.
   - Implementation Gate: P0 and Child 01 handoff accepted; graph/source evidence current.
+  - Current State: open. P0-A and the Child 01 handoff are accepted; exact denominator work has not started. Candidate direct consumers from the earlier review are recorded in `E2-P2A-INPUT1` and must be verified or excluded row-by-row rather than treated as accepted conclusions.
   - Acceptance:
     - Source: every affected persistence/read path has exact symbol/path and field evidence.
     - Runtime/UI: N/A — no runtime/UI behavior changed.
