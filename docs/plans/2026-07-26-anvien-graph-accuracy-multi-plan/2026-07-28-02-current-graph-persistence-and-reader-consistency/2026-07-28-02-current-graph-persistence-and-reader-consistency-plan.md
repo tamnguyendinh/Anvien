@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0-A, P2-A, P2-B, P2-C, P2-D, P2-E, and Pn-A accepted at isolated commit boundaries / Pn-B cleanup independently accepted pending isolated commit / Pn-C closed`
+- Status: `closure / P0-A, P2-A, P2-B, P2-C, P2-D, P2-E, Pn-A, and Pn-B accepted at isolated commit boundaries / Pn-C handoff recorded pending isolated commit`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-benchmark.md`
@@ -383,14 +383,17 @@ In scope:
   - Current State: cleanup executor report `reports/coder/rp_coder_260814_011727_by_gpt-5_child02_pnb_cleanup.md` (SHA-256 `C77A7C3F59EE26CB1841FBFB650CF3C3081B2748CC254025EF22859A14956B18`) inventoried the exact lifecycle boundary and deleted only a nested P2-E execution skeleton: one `120`-byte owner marker plus four exact empty directories under `.tmp/.tmp/qa-child02-p2e`. Independent report `reports/Supervisor/rp_supervisor_260814_015043_by_gpt-5_child02_pnb_cleanup.md` (SHA-256 `04475021762338800B6D8100AB5ABC31388930EB09E4082C2D221FF0818ED357`) returned unconditional `PASS` / `ACCEPT_CHILD02_PNB_CLEANUP_AND_HAND_BACK`, findings `0/0`, and no residual same-invariant surface. It independently reconciled `77` current-chain paths and `92` lifecycle entries; retained `49/49` accepted artifacts, `5/5` created product tests, all rejected-attempt/history provenance, and all three shared roots; verified JSON `8/8`, PNG `12/12`, five protected hashes, exact five-path absence, the retained empty generic parent, branch/HEAD, and staged `0`. No build/test/runtime/QA/graph gate was rerun because Pn-B changed no tracked product surface. The exact five-document/two-report boundary commits immediately after this row; Pn-C and Child 03 remain closed until Git confirms success.
   - Acceptance: cleanup proof recorded as `E3-PNB-CLEANUP1`.
   - Commit Boundary: isolated documentation/report cleanup commit; Git reports the final hash because a commit cannot contain its own hash.
+  - Commit Result: exact five-document/two-report boundary committed as `9b65f3ef3f3f377d0dcb4a9e0cd5eca444cf51c6` with message `docs(plan): close child 02 pnb cleanup`; post-commit worktree and index are clean.
 
-- [ ] Pn-C: Close the plan and hand off accepted persistence facts.
+- [x] Pn-C: Close the plan and hand off accepted persistence facts.
   - Goal: finalize ledgers, detect-changes, commits, and Child 03 actual-status refresh.
   - Work Steps:
     1. Record final measured values and validation state.
     2. Run final detect-changes, record commit/worktree, and refresh Child 03 from exact Child 02 evidence.
   - Implementation Gate: Pn-A/Pn-B pass and every P2 evidence row is complete.
   - Acceptance: `E3-PNC-DETECT1`, `E3-PNC-HANDOFF1`, and `E3-PNC-COMMIT1` recorded.
+  - Current State: Pn-B is committed as `9b65f3ef3f3f377d0dcb4a9e0cd5eca444cf51c6`. Orchestration/main recorded the exact accepted persistence/reader/repeated-analyze facts and explicit non-claims in `reports/Investigation/rp_main_260814_020654_child02_pnc_closure_handoff.md`, refreshed Child 03 `E0-P0A-HANDOFF1`, and kept Child 03 P0 incomplete with P3-A closed. Fresh pre-candidate graph is `1,628/688/0`, `97,329/136,603`; final-candidate refresh is `1,629/688/0`, `97,340/136,614`, with a documentation/report-only inventory delta. All/staged detect is LOW for exactly `8` changed/affected files and `38` docs/report sections, with `0` affected processes/gaps/degraded nodes. A final staged confirmation follows the ledger update, then the immediate isolated commit; no additional Supervisor round is opened for this docs-only Pn-C closure. Child 03 P0-A becomes eligible only after Git confirms the commit.
+  - Commit Boundary: roadmap; Child 02 plan/evidence/actual-status; Child 03 plan/evidence/actual-status; and one main handoff report. Final commit hash is external because this ledger is inside the commit.
 
 ## Risk Notes
 

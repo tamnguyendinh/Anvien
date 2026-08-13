@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `draft / P0 incomplete`
+- Status: `draft / predecessor handoff recorded pending Child 02 Pn-C commit / P0 incomplete / P3-A closed`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md`
@@ -94,8 +94,9 @@ Out of scope:
     2. Read the current TS binding extraction, fact/index, graph projection, and relevant tests in full; inventory every binding context and silent-exit path.
     3. Run `file-detail` and upstream `impact` for every candidate owner and record exact related-file counts and blast radius.
     4. Classify correct, partial, wrong, missing, and blocked rows in actual status; update P3-A work steps if exact ownership differs from this plan.
-  - Implementation Gate: no production edit until the actual-status Final P0 Decision permits P3-A.
-  - Acceptance: `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2`, `E0-P0A-SCOPE1`, `E0-P0A-GRAPH1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1`, and `E0-P0A-STATUS1` are recorded with no unresolved owner boundary.
+  - Implementation Gate: the accepted Child 02 handoff is recorded as `E0-P0A-HANDOFF1` and its Pn-C commit is confirmed; no production edit until the actual-status Final P0 Decision permits P3-A.
+  - Acceptance: `E0-P0A-HANDOFF1`, `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2`, `E0-P0A-SCOPE1`, `E0-P0A-GRAPH1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1`, and `E0-P0A-STATUS1` are recorded with no unresolved owner boundary.
+  - Current State: `E0-P0A-HANDOFF1` records accepted Definition persistence, endpoint conservation, explicit embedding label, eight affected-reader guarantees, repeated-analyze behavior, and exact non-claims from Child 02. P0 remains incomplete; current binding owners and impacts are still pending. P0-A becomes eligible only after Git confirms the Child 02 Pn-C commit.
 
 ### P3: TypeScript binding-pattern extraction
 

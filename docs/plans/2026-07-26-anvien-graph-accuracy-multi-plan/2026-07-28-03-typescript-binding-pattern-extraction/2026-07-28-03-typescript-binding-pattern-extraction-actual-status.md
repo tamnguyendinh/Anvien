@@ -2,7 +2,7 @@
 
 Title: Anvien TypeScript Binding-Pattern Extraction
 Date: 2026-07-28
-Status: Draft / P0 incomplete
+Status: Draft / Predecessor Handoff Recorded Pending Child 02 Pn-C Commit / P0 Incomplete / P3-A Closed
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md`
@@ -12,7 +12,7 @@ Successor child: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07
 
 ## Purpose
 
-This file classifies the current binding-pattern scope before implementation. Historical investigation proves a bounded defect but does not substitute for fresh current-source, graph, file-detail, and impact evidence.
+This file classifies the current binding-pattern scope before implementation. Child 02 now hands off accepted persistence/reader guarantees and explicit non-claims, but the dependency is complete only after its Pn-C commit. Historical investigation proves a bounded defect; neither the investigation nor predecessor handoff substitutes for fresh current-source, graph, file-detail, and impact evidence.
 
 Detailed proof belongs in the evidence ledger. This file stores classifications, touch modes, plan consequences, and status transitions.
 
@@ -68,6 +68,7 @@ The bounded investigation identifies candidate source locations, but current rel
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|-------------------:|----------|--------------------|
 | Problem authority | Original report is DRAFT; causal synthesis and Supervisor PASS verify only the bounded defect | problem findings retained; proposed architecture treated as non-authoritative | `correct` | N/A | `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2` | preserve this evidence hierarchy |
+| Child 02 predecessor handoff | exact Definition persistence, endpoints, reader guarantees, repeated analyze, accepted commits, and binding-specific non-claims are recorded by orchestration/main | predecessor contract recorded without pre-accepting Child 03 behavior or owners | `correct / pending predecessor closure commit` | predecessor boundary | `E0-P0A-HANDOFF1` | after Child 02 Pn-C commit, open P0-A only; keep P3-A closed |
 | Current production owner inventory | Candidate source mechanism is known, but current HEAD owners and impacts are not yet fully revalidated | exact editable/inspect-only/preserve-only owners with current counts | `blocked` | pending | `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1` pending | complete P0 before P3-A |
 | Identifier-only declarators | Accepted investigation observed existing plain-identifier emission | preserve current correct identifier behavior | `partial` | pending | `E0-P0A-VERIFY1` | revalidate and mark preserve-only in P0 |
 | Bounded array-declaration bindings | Six legal names existed in AST and produced no definition/local binding at the accepted baseline | six independent declarations and bindings | `wrong` | pending | `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2` | P3-A then P3-B |
@@ -83,6 +84,7 @@ The bounded investigation identifies candidate source locations, but current rel
 | Refresh | Date | Repo Basis | Changed Scope | Status Changes | Evidence | Next Phase Update |
 |---------|------|------------|---------------|----------------|----------|-------------------|
 | R0 | 2026-08-10 | documentation correction against full problem-origin and bounded-verification reports | Child 03 plan authority and scope | removed unrelated campaign assumptions; P0 reset to incomplete because current owner/impact proof is pending | `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2` | run fresh P0; do not open P3-A yet |
+| R1 | 2026-08-14 | accepted Child 02 chain through Pn-B `9b65f3ef3f3f377d0dcb4a9e0cd5eca444cf51c6`; main Pn-C handoff candidate; Child 02 pre-candidate graph `1,628/688/0`, `97,329/136,603` | predecessor dependency and Child 03 P0 entry boundary | predecessor `missing/dependency-blocked -> recorded/pending closure commit`; accepted persistence/read guarantees and explicit binding non-claims added; all current binding owner/impact rows remain blocked pending P0 | `E0-P0A-HANDOFF1` | after Child 02 Pn-C commit, open only P0-A; P3-A and all implementation remain closed |
 
 ## Phase Touch Map
 
@@ -150,6 +152,8 @@ Forbidden next action: copy a proposed architecture into production requirements
 
 ## Implementation Gate
 
+- [x] Accepted Child 02 persistence/reader handoff and explicit non-claims are recorded.
+- [ ] Child 02 Pn-C isolated closure commit is confirmed.
 - [ ] Current graph and HEAD basis are recorded.
 - [ ] Current production source and existing tests for every binding context are read in full.
 - [ ] Every candidate editable file has fresh `file-detail` related-file count evidence.
@@ -170,4 +174,4 @@ Forbidden next action: copy a proposed architecture into production requirements
 
 Decision note:
 
-The bounded defect and target acceptance numbers are verified. Current-source ownership, relationship counts, impact, and general-context support are not yet refreshed, so P3-A cannot open.
+The bounded defect and target acceptance numbers are verified. The Child 02 persistence/reader handoff is recorded but awaits the predecessor Pn-C commit. After that commit, only P0-A may open. Current-source ownership, relationship counts, impact, and general-context support are not yet refreshed, so P3-A cannot open.

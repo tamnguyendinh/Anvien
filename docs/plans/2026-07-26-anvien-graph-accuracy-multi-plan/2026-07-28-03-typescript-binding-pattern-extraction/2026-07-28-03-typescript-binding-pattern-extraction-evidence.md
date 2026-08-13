@@ -29,6 +29,7 @@ Matching plan item: `P0-A`
 
 ### Completed documentation-authority evidence
 
+- `E0-P0A-HANDOFF1`: recorded by orchestration/main in `reports/Investigation/rp_main_260814_020654_child02_pnc_closure_handoff.md`. Accepted Child 02 evidence guarantees exact Graph JSON/Ladybug Definition field and record preservation, optional SelectionRange all-or-none/NULL semantics, real numeric zero preservation, exact `DEFINES` endpoint conservation, explicit `CodeEmbedding.label` persistence/consumption, exact affected readers C09-C16 `8/8`, and repeated analyze/failure/recovery `7/7`. Source commits are P2-B `4d456446fcc49aed0c6d489aa9c63e00d030b53c`, P2-C `927a676653963e8001d7789291010d5b819bac83`, P2-D `35939e7e6a621593d3d3065b9493a97c2c9a4f25`, P2-E `593e77a3f36c78447864a906a75c05e0d89530cc`, Pn-A `e47acfad927425621c3f9048d0a23eed513444a5`, and Pn-B `9b65f3ef3f3f377d0dcb4a9e0cd5eca444cf51c6`. Explicit non-claims: Child 02 does not prove current binding-leaf extraction, binding paths, variable/parameter/catch/loop contexts, unsupported diagnostics, binding graph/reference outcomes, affected Child 03 owners, or the target `6/6`. P0-A must refresh all current graph/source/file-detail/impact facts before production work.
 - `E0-P0A-RULE1`: on 2026-08-10, `E:\Anvien\AGENTS.md` was read in full before editing. It requires planner use for plan work, current graph refresh before graph evidence, file-detail and impact before relevant code edits, code before tests, full build before validation, Supervisor acceptance, detect-changes, and per-slice commits.
 - `E0-P0A-SKILL1`: the planner skill and all four standard templates were read in full before rewriting this plan set. The rewritten files retain plan, evidence, benchmark, and actual-status roles with exact checklist/evidence mapping.
 - `E0-P0A-ORIGIN1`: `reports/problem/2026-07-26-tinh-chinh-cac-van-de-cua-anvien` was read in full. It identifies six missing destructured bindings and proposes recursive pattern semantics, but explicitly states that its architecture is DRAFT. This ledger uses its defect description and acceptance target, not its unapproved architecture.
@@ -47,7 +48,7 @@ Matching plan item: `P0-A`
 | `E0-P0A-IMPACT1` | exact upstream impacts and blast-radius report for every candidate function/method/exported symbol | pending |
 | `E0-P0A-STATUS1` | completed current status matrix, touch map, R1 refresh, and Final P0 Decision | pending |
 
-P0 remains incomplete until all five current-state rows are recorded. The completed report-reading rows do not substitute for them.
+The predecessor dependency is recorded but becomes complete only when Git confirms the Child 02 Pn-C commit. P0 remains incomplete until all five current-state rows are recorded. The completed handoff/report-reading rows do not substitute for current source evidence.
 
 ## E3 - P3 Evidence
 
