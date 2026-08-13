@@ -1,8 +1,8 @@
 # Anvien Graph Accuracy Roadmap
 
 Date: 2026-07-26
-Last revised: 2026-08-13
-Status: active campaign; Child 01 P0/P1-A/P1-B/P1-C/P1-D/P1-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries; Child 02 P0-A/P2-A/P2-B/P2-C accepted at isolated boundaries; P2-D has unconditional Supervisor PASS; final detect and isolated commit immediately follow before P2-E opens
+Last revised: 2026-08-14
+Status: active campaign; Child 01 P0/P1-A/P1-B/P1-C/P1-D/P1-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries; Child 02 P0-A/P2-A/P2-B/P2-C/P2-D accepted at isolated commit boundaries; P2-E validation-only has unconditional Supervisor PASS and final all/staged detect PASS; isolated commit immediately follows
 
 Multi-plan root: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/`
 
@@ -51,7 +51,7 @@ The report at `reports/problem/2026-07-26-tinh-chinh-cac-van-de-cua-anvien` is t
 | Child | Plan | Scope | Status |
 |-------|------|-------|--------|
 | 01 | [graph identity contract and strict construction](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | identity, range, lexical owner, occurrence conservation, proven collision owner | P0/P1-A/P1-B/P1-C/P1-D/P1-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries |
-| 02 | [current graph persistence and reader consistency](2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md) | persistence parity, affected readers, repeated normal analyze | P0-A/P2-A/P2-B/P2-C accepted at isolated boundaries; P2-D has unconditional PASS for the `7/7` repeat/change/failure/read/recovery matrix, including an explicit non-blocking decision for the production-unreachable `ErrUnavailable` capability sentinel; final detect and isolated P2-D commit immediately follow before P2-E may open |
+| 02 | [current graph persistence and reader consistency](2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md) | persistence parity, affected readers, repeated normal analyze | P0-A/P2-A/P2-B/P2-C/P2-D accepted at isolated commit boundaries; P2-D commit `35939e7e6a621593d3d3065b9493a97c2c9a4f25`; P2-E has unconditional `PASS` / `ACCEPT_P2E_AND_HAND_BACK`, LOW all-scope detect, and MEDIUM/HIGH staged harness scope with zero active gaps/degradation; isolated commit follows before Pn-A may open |
 | 03 | [TypeScript binding-pattern extraction](2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md) | binding-pattern defect only | dependency-blocked |
 | 04 | [TypeScript export semantics](2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md) | export-fact defect only | dependency-blocked |
 | 05 | [module export and re-export resolution](2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md) | module/export resolution defect only | dependency-blocked |

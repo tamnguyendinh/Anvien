@@ -1,0 +1,438 @@
+{
+  "schema": "child02-p2e-consolidated-validation-matrix-v1",
+  "generatedUtc": "2026-08-13T16:29:13.3378937Z",
+  "scope": "Child 02 P2-E validation-only",
+  "repository": {
+    "root": "E:\\Anvien",
+    "branch": "master",
+    "head": "35939e7e6a621593d3d3065b9493a97c2c9a4f25",
+    "productionEdits": 0,
+    "acceptanceVerdictIssued": false
+  },
+  "evidenceGroups": [
+    {
+      "id": "E2-P2E-BUILD1",
+      "validationVerdict": "PASS",
+      "command": "npm run full-build",
+      "exitCode": 0,
+      "startUtc": "2026-08-13T15:51:36.6717111Z",
+      "endUtc": "2026-08-13T15:53:33.3910896Z",
+      "durationSeconds": 116.702,
+      "cleanHolderGate": {
+        "artifacts": [
+          "E:\\Anvien\\anvien\\bin\\anvien.exe",
+          "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+          "E:\\Anvien\\anvien-launcher\\AnvienLauncher.exe",
+          "E:\\Anvien\\anvien-launcher\\server-bundle\\anvien-server.exe",
+          "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\anvien.exe",
+          "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\lbug_shared.dll"
+        ],
+        "verifiedHolderPids": [15412, 18544, 24380],
+        "verifiedHolderClassification": "global anvien.exe mcp holders",
+        "verifiedRelatedLauncherPids": [13688],
+        "verifiedRelatedLauncherClassification": "cmd.exe launching the global anvien.cmd mcp process; exited after its child holders were stopped",
+        "killedPids": [15412, 18544, 24380],
+        "unrelatedProcessesKilled": 0,
+        "restartManagerZeroForAllArtifacts": true,
+        "exclusiveOpenSucceededForAllArtifacts": true,
+        "attemptCount": 1,
+        "retryCount": 0
+      },
+      "builtCli": {
+        "path": "E:\\Anvien\\anvien\\bin\\anvien.exe",
+        "sha256": "14DEB1820B58E4BBE68E5C8B542D09231CFAB49FA73521BC0163DA754588606B",
+        "bytes": 67040768,
+        "version": "1.2.8"
+      },
+      "fullOutputEvidence": {
+        "json": "reports/QA/child02-p2e-build/qa_child02_p2e_build_260813_225335.json",
+        "jsonSha256": "FE907F5EB2E36DBD46D50561872A932E3588F553462FE5211AE6075D638E9B8B",
+        "markdown": "reports/QA/child02-p2e-build/qa_child02_p2e_build_260813_225335.md",
+        "markdownSha256": "08801E0A6CB2BD8359714C82EBDA50E5134EC709F8A707FA8BE114AE9FD60D6F"
+      }
+    },
+    {
+      "id": "E2-P2E-PARITY1",
+      "validationVerdict": "PASS",
+      "commandBoundary": "repository-local tagged native parity harness over current .anvien/graph.json and .anvien/lbug",
+      "startUtc": "2026-08-13T15:57:01.328347Z",
+      "endUtc": "2026-08-13T15:57:13.1056451Z",
+      "durationSeconds": 11.7772981,
+      "comparedFields": [
+        "id",
+        "label",
+        "name",
+        "filePath",
+        "qualifiedName",
+        "startLine",
+        "startCol",
+        "endLine",
+        "endCol",
+        "selectionStartLine",
+        "selectionStartCol",
+        "selectionEndLine",
+        "selectionEndCol"
+      ],
+      "fieldParity": {
+        "graphJsonDefinitionRecords": 36611,
+        "ladybugDefinitionRecords": 36611,
+        "missing": 0,
+        "extra": 0,
+        "fieldMismatch": 0,
+        "drop": 0,
+        "selectionRangePresent": 4941,
+        "selectionRangeAbsentNull": 31670,
+        "selectionRangePartial": 0,
+        "realZeroStartCol": 5650,
+        "missingConstructCoordinate": 0
+      },
+      "endpointParity": {
+        "graphJsonDefinesPairs": 36611,
+        "ladybugDefinesPairs": 36611,
+        "missingPairs": 0,
+        "extraPairs": 0,
+        "pairCountMismatch": 0,
+        "definitionsWithoutSingleDefines": 0,
+        "missingGraphEndpoints": 0,
+        "missingDefinesEndpoints": 0
+      },
+      "embeddingBoundary": {
+        "normalArtifactRows": 0,
+        "normalArtifactMissingLabel": 0,
+        "classification": "No normal-artifact embedding record existed to compare; explicit label persistence/readback/hydration is dynamically proven at C05/C06/C16 by the fresh repository-local tagged native reader evidence."
+      },
+      "fullOutputEvidence": {
+        "json": "reports/QA/child02-p2e-parity/qa_child02_p2e_parity_260813_225713.json",
+        "jsonSha256": "CD712668A0D851D28AA93AFD18C7B257CCA45856AB291A2D9942421BC7452A91",
+        "markdown": "reports/QA/child02-p2e-parity/qa_child02_p2e_parity_260813_225713.md",
+        "markdownSha256": "82625D6FCEA82A6129CF6E23629B5A4A20B6D5F97002B759643EB03701C6FF0F"
+      }
+    },
+    {
+      "id": "E2-P2E-READERS1",
+      "validationVerdict": "PASS",
+      "denominator": {
+        "passed": 8,
+        "total": 8,
+        "browserVisible": ["C09", "C10", "C11"],
+        "nearestPackageOrRuntime": ["C12", "C13", "C14", "C15"],
+        "repositoryLocalNative": ["C16"]
+      },
+      "commandExits": [
+        {
+          "command": "vitest run test/unit/useAppState.local-runtime.test.tsx test/unit/ChatPanel.grounding-links.test.tsx test/unit/CodeReferencesPanel.graph-health.test.tsx",
+          "exitCode": 0,
+          "startUtc": "2026-08-13T15:58:07.1116714Z",
+          "endUtc": "2026-08-13T15:58:15.2777684Z",
+          "observed": "3 files and 11 tests passed"
+        },
+        {
+          "command": "go test ./internal/filecontext -count=1 -v",
+          "exitCode": 0,
+          "startUtc": "2026-08-13T15:58:15.29518Z",
+          "endUtc": "2026-08-13T15:58:16.939445Z"
+        },
+        {
+          "command": "go test ./internal/mcp -count=1 -v",
+          "exitCode": 0,
+          "startUtc": "2026-08-13T15:58:16.939445Z",
+          "endUtc": "2026-08-13T15:58:23.7540432Z"
+        },
+        {
+          "command": "go test ./internal/embeddings ./internal/httpapi -count=1 -v",
+          "exitCode": 0,
+          "startUtc": "2026-08-13T15:58:23.7540432Z",
+          "endUtc": "2026-08-13T15:58:35.5880102Z"
+        },
+        {
+          "command": "go test -tags ladybugdb ./internal/embeddings -run ^TestNativeLadybugSemanticSearchHydratesPersistedExplicitLabels$ -count=1 -v",
+          "exitCode": 0,
+          "startUtc": "2026-08-13T15:58:35.5890083Z",
+          "endUtc": "2026-08-13T15:58:45.0302622Z"
+        },
+        {
+          "command": "go test -tags ladybugdb ./internal/lbugnative -run ^TestNativeLadybugPersistenceReadbackAndStream$ -count=1 -v",
+          "exitCode": 0,
+          "startUtc": "2026-08-13T15:58:45.0312578Z",
+          "endUtc": "2026-08-13T15:59:09.7934031Z"
+        },
+        {
+          "command": "node playwright/child02-p2e-affected-readers.mjs",
+          "exitCode": 0,
+          "generatedAt": "2026-08-13T16:16:47.111Z",
+          "observed": "Headed Chromium on health-proven built runtime; C09-C11 3/3; product console/page/network failures 0/0/0."
+        }
+      ],
+      "remoteVectorAttempts": 0,
+      "browserToolClassification": "The visible in-app Browser proved the built UI mounted and began loading the approximately 315 MB current graph. Two Browser MCP JavaScript waits timed out/reset during the large graph load. Per Owner direction this is a browser-tool/large-load limitation, not a product failure; no third equivalent wait was attempted. Headed Playwright then exercised the bounded production reader components on the already health-proven built runtime.",
+      "swiftShaderClassification": "One exact Chromium SwiftShader 'GPU stall due to ReadPixels' screenshot/WebGL diagnostic is retained under nonBlockingConsoleDiagnostics and excluded only from the product console-error gate; it is not hidden and is not a product behavior failure.",
+      "fullOutputEvidence": {
+        "commandsJson": "reports/QA/child02-p2e-readers/qa_child02_p2e_readers_260813_225909.json",
+        "commandsJsonSha256": "4F4DFA62CF080D806074A6BF6D233C699FA5F24060E83A5C8F7B4823AA592288",
+        "commandsMarkdown": "reports/QA/child02-p2e-readers/qa_child02_p2e_readers_260813_225909.md",
+        "commandsMarkdownSha256": "7F86AE5BF18230F4D5DC8DB039F32AC0AD4B906239541C9EFBA60ACAAB8948B5",
+        "playwrightJson": "reports/QA/playwright/child02-p2e-affected-readers/child02-p2e-affected-readers-affected-readers.json",
+        "playwrightJsonSha256": "4F5AB1B618D5A056D95F808DBCFFF0F0A855CB7C7AC20BE61850CC1659E927D6",
+        "playwrightMarkdown": "reports/QA/playwright/child02-p2e-affected-readers/child02-p2e-affected-readers-affected-readers.md",
+        "playwrightMarkdownSha256": "CFCADC359EEF9AB3CEC2B264B812BFD68807848E79F2502C0EE8BD1D074DB102"
+      }
+    },
+    {
+      "id": "E2-P2E-REPEAT1",
+      "validationVerdict": "PASS",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/qa-child02-p2e-validation.ps1 -Mode Repeat",
+      "exitCode": 0,
+      "startUtc": "2026-08-13T16:20:42.9496435Z",
+      "endUtc": "2026-08-13T16:21:26.0723053Z",
+      "durationSeconds": 43.103,
+      "matrixPassed": 7,
+      "matrixTotal": 7,
+      "scenarios": [
+        "two unchanged normal built analyze runs",
+        "changed source then current artifact/read",
+        "clear analyze-command failure",
+        "C17 native current read while Graph JSON is absent",
+        "C17 no-readable-backend JSON-RPC non-success with no stale result",
+        "subsequent successful analyze/read recovery",
+        "exact accepted IDs, construct/selection ranges, 10/10 DEFINES and zero missing endpoints"
+      ],
+      "semanticDeterminism": {
+        "unchangedInputStable": true,
+        "unchangedFactsStable": true,
+        "changedOldSecondIdentityExcluded": true,
+        "wholeLadybugByteIdentityClaimed": false
+      },
+      "errUnavailableClassification": {
+        "dynamic": "The fresh tagged production binary dynamically proved native success, a non-sentinel native open failure with both readable backends absent, JSON-RPC non-success/no stale result, and recovery.",
+        "source": "C17 is Ladybug-primary; only errors.Is(openErr, ErrUnavailable) authorizes same-repository graph.json fallback. The exact sentinel represents compile-time capability absence and cannot be truthfully induced by deleting/corrupting a native artifact in the normal tagged binary.",
+        "manufacturedDevOrUntaggedBinary": false
+      },
+      "lifecycle": {
+        "faultArtifactsRestored": true,
+        "heldPathsRemaining": 0,
+        "laneOwnedRuntimeProcessesExpected": 0
+      },
+      "fullOutputEvidence": {
+        "json": "reports/QA/child02-p2e-repeated-analyze/qa_child02_p2d_repeated_analyze_260813_232124.json",
+        "jsonSha256": "95CBF8314585BE6C0AF754F346F73733AE84CE7CAD7AD4AA78A6B8E12E87856F",
+        "markdown": "reports/QA/child02-p2e-repeated-analyze/qa_child02_p2d_repeated_analyze_260813_232124.md",
+        "markdownSha256": "E202F5E712912B0CF228C745B058542FF8871D24C5B4A4C76E80DC3C6B2BA7EE"
+      }
+    }
+  ],
+  "rows": [
+    {
+      "id": "C01",
+      "scenario": "Graph JSON Definition property projection",
+      "commandBoundary": "E2-P2E-PARITY1 field-by-field normal artifact comparison",
+      "expected": "Identity, meaning, occurrence, construct coordinates and optional all-or-none SelectionRange are retained; zero is data and absence is NULL.",
+      "observed": "36611/36611 records; missing/extra/mismatch/drop 0/0/0/0; selection present/absent/partial 4941/31670/0; real zero startCol 5650.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C02",
+      "scenario": "Ladybug Definition node CSV projection across accepted table branches",
+      "commandBoundary": "E2-P2E-PARITY1 opaque-ID keyed field comparison",
+      "expected": "Every accepted Definition branch matches Graph JSON values and NULL/zero semantics.",
+      "observed": "36611 Ladybug records matched 36611 Graph JSON records across the 13 compared fields with zero missing, extra or mismatch.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C03",
+      "scenario": "Ladybug Definition schema parity",
+      "commandBoundary": "E2-P2E-PARITY1 native readback through current schema",
+      "expected": "Schema exposes the complete corrected Definition values without partial selection or coordinate loss.",
+      "observed": "Native field readback matched every compared record; missing construct coordinates 0 and partial SelectionRange 0.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C04",
+      "scenario": "Graph JSON normal analyze persistence, failure and recovery",
+      "commandBoundary": "E2-P2E-PARITY1 plus E2-P2E-REPEAT1 M1/M2/M3/M6/M7",
+      "expected": "Normal artifacts are current and semantically deterministic; clear failure is non-success without a false current artifact; later recovery restores readable facts.",
+      "observed": "Parity was exact; unchanged facts stable; changed facts current; owned failure nonzero/no expected graph; recovery restored baseline signature and readable rows.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C05",
+      "scenario": "Explicit CodeEmbedding label persistence",
+      "commandBoundary": "fresh tagged repository-local native persistence/readback and semantic hydration tests",
+      "expected": "Embedding rows persist the explicit graph label without reconstructing it from NodeID.",
+      "observed": "Normal artifact had 0 embedding rows; fresh tagged native tests persisted/read back an explicit label and hydrated it successfully. Remote VECTOR attempts: 0.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C06",
+      "scenario": "CodeEmbedding schema exposes explicit label",
+      "commandBoundary": "tagged internal/lbugnative persistence/readback plus internal/embeddings hydration",
+      "expected": "Native schema and row projection retain explicit CodeEmbedding.label.",
+      "observed": "Both tagged tests exited 0; explicit-label native readback and hydration completed without a remote extension substitute.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C07",
+      "scenario": "DEFINES relationship CSV endpoint projection",
+      "commandBoundary": "E2-P2E-PARITY1 exact sourceId+targetId pair comparison",
+      "expected": "No exact DEFINES pair or endpoint is dropped.",
+      "observed": "36611/36611 pairs; missing/extra/pair-count mismatch 0/0/0; missing endpoints 0.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C08",
+      "scenario": "DEFINES relationship schema endpoints",
+      "commandBoundary": "E2-P2E-PARITY1 native relationship readback",
+      "expected": "Relation schema preserves exact FROM/TO endpoints for every accepted Definition.",
+      "observed": "Definitions without exactly one DEFINES pair: 0; missing graph/DEFINES endpoints: 0/0.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C09",
+      "scenario": "Exact opaque-ID resolution",
+      "commandBoundary": "focused Vitest plus headed Playwright on mounted built runtime",
+      "expected": "Only the complete opaque ID resolves; suffix and near-match inputs remain inactive.",
+      "observed": "Only opaque-exact-alpha was cyan-active; suffix/near-match nodes were dim and no red node appeared.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C10",
+      "scenario": "Unique grounding fails closed",
+      "commandBoundary": "focused Vitest plus headed mounted Playwright",
+      "expected": "Ambiguous label/name produces no citation; a unique persisted identity produces exactly one correct citation.",
+      "observed": "Ambiguous citation/panel counts 0/0; unique result showed one FUNCTION citation for src/unique.ts, L10-11.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C11",
+      "scenario": "One-based lines, zero-based UTF-8 byte columns and exclusive ends",
+      "commandBoundary": "focused Vitest plus headed mounted CodeReferencesPanel and /api/file interception",
+      "expected": "Graph range 10:0-12:0 converts once; line 10 is targeted; lines 10-11 highlighted; line 12 excluded.",
+      "observed": "/api/file requested startLine=0/endLine=60; scroll targeted one-based line 10; lines 10-11 had cyan background and line 12 was transparent.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C12",
+      "scenario": "nodeRange",
+      "commandBoundary": "go test ./internal/filecontext -count=1 -v",
+      "expected": "Nearest file-context reader consumes corrected identity/path/range facts.",
+      "observed": "Package regression exited 0.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C13",
+      "scenario": "Definition MCP context",
+      "commandBoundary": "go test ./internal/mcp -count=1 -v",
+      "expected": "Definition context consumes persisted identity/path/line payload without reconstruction.",
+      "observed": "MCP package regression exited 0.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C14",
+      "scenario": "detectChangedSymbols range membership",
+      "commandBoundary": "go test ./internal/mcp -count=1 -v",
+      "expected": "Changed-symbol membership consumes corrected path/range facts.",
+      "observed": "MCP package regression exited 0.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C15",
+      "scenario": "collectRenameChanges location",
+      "commandBoundary": "go test ./internal/mcp -count=1 -v",
+      "expected": "Rename locations consume corrected persisted identity/path/ranges.",
+      "observed": "MCP package regression exited 0.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C16",
+      "scenario": "Persisted explicit embedding label and semantic-search hydration",
+      "commandBoundary": "internal/embeddings + internal/httpapi plus repository-local tagged Ladybug tests",
+      "expected": "Reader hydrates the persisted explicit label and does not parse an opaque NodeID for type; no remote VECTOR substitute.",
+      "observed": "All untagged sibling and two tagged native commands exited 0; remote VECTOR attempts 0.",
+      "validationVerdict": "PASS"
+    },
+    {
+      "id": "C17",
+      "scenario": "Server.runCypherRead current-read/failure boundary",
+      "commandBoundary": "E2-P2E-REPEAT1 M4/M5/M6 plus production source classification",
+      "expected": "Current tagged runtime reads Ladybug; non-sentinel native failures fail closed; exact compile-time ErrUnavailable fallback is source-classified without manufacturing an untagged binary.",
+      "observed": "Ladybug succeeded while Graph JSON was absent; with neither backend readable MCP returned JSON-RPC non-success/no stale result; recovery passed; manufactured sentinel attempt false.",
+      "validationVerdict": "PASS"
+    }
+  ],
+  "visualInspections": [
+    {
+      "screenshot": "reports/QA/playwright/child02-p2e-affected-readers/screenshots/01-mounted-production-fixture.png",
+      "sha256": "931EB2E373A2BC07A45F2D376D32B367369E655FB2BB7AD94CEBB829F79E5228",
+      "result": "Mounted built UI is READY with 5 nodes, 4 edges, one src/unique.ts file and no visible layout/font/asset defect."
+    },
+    {
+      "screenshot": "reports/QA/playwright/child02-p2e-affected-readers/screenshots/02-before-c09-tool-result.png",
+      "sha256": "2D666AC3F2BA23A4DFEB9807D359876E348333FD0E64C9DB4184541864402EA9",
+      "result": "My AI panel, suggestions and composer mount without clipping, overlap or missing controls."
+    },
+    {
+      "screenshot": "reports/QA/playwright/child02-p2e-affected-readers/screenshots/03-c09-exact-id-only.png",
+      "sha256": "18E3DFE8582B09873A5ED7E054B0DF7C069E314F4BA34274475957DAC351BA6D",
+      "result": "Only uniqueTarget exact opaque ID is cyan-active; other candidates are dim and no red node is visible."
+    },
+    {
+      "screenshot": "reports/QA/playwright/child02-p2e-affected-readers/screenshots/04-c10-ambiguous-fails-closed.png",
+      "sha256": "9AFC2268128F9EE43A056782D9AC6B2C04C1025E897AFDC917B818E06267B64B",
+      "result": "Ambiguous Function:sharedName response produces no AI citation or Code Inspector panel; mounted graph/chat remain visually intact."
+    },
+    {
+      "screenshot": "reports/QA/playwright/child02-p2e-affected-readers/screenshots/05-c10-unique-persisted-reference.png",
+      "sha256": "949B933547AD4C288C29EA5C616FF621AD7F52A42180526AD4FCC63D6149DA7B",
+      "result": "Exactly one FUNCTION citation is visible for uniqueTarget at src/unique.ts, L10-11; no clipping or overlap."
+    },
+    {
+      "screenshot": "reports/QA/playwright/child02-p2e-affected-readers/screenshots/06-c11-lines-10-11-highlighted-line-12-excluded.png",
+      "sha256": "3EB4B78ACE93DF63BBA6FC1E16783C09C33E1A5EF9E1C1FACB9E16F3B1274569",
+      "result": "Selected viewer visibly highlights lines 10-11, excludes line 12 and renders the surrounding source without clipping, overlap or asset/font defects."
+    }
+  ],
+  "containment": {
+    "protectedPlanDocumentHashesUnchanged": true,
+    "protectedPlanDocumentSha256": [
+      "972A581FAD301922659CC8DE2A92469BBC2142EEE037033B556E3839568347DC",
+      "B142DF0153CF631C1EC077486A0D2AF3A3F48FCA6C1EBDD1B4A9300D768886D3",
+      "1D822F6F6AD691C59387C5B06F7D49DD1E172F941F4713FAD03018FA4BC2BB99",
+      "4899F326D16C36A7E13982275011982341D593936CBB05F5DB6E60BD8BBC3A89",
+      "49BF9DB9AA528A8BA25710263F950476557C61C0190644B2A0FC932C6526916F"
+    ],
+    "runtimePorts4848And5228ListenerCount": 0,
+    "laneTempRemoved": true,
+    "sharedTempRootsPreserved": [
+      "E:\\Anvien\\.tmp\\ladybug-home",
+      "E:\\Anvien\\.tmp\\ladybug-native",
+      "E:\\Anvien\\.tmp\\runtime-p2c"
+    ],
+    "faultArtifactsRestored": true,
+    "targetSourceOrScannerEdits": 0,
+    "remoteVectorAttempts": 0
+  },
+  "harnesses": [
+    {
+      "path": "scripts/qa-child02-p2e-validation.ps1",
+      "sha256": "72390FE4043AA5E7560436BE0E3ADD7C7A226A025415791043FECEF55ADA128A"
+    },
+    {
+      "path": "scripts/qa-child02-p2e-parity.go",
+      "sha256": "4476AB18FA31F69127C5F93216AB5633B472CC7E6A6A3F1ABBAB1C16B2601989"
+    },
+    {
+      "path": "playwright/child02-p2e-affected-readers.mjs",
+      "sha256": "4DD174E53A2305F4F105394820967D66E80A536462E2665E6EFFE02940225488"
+    }
+  ],
+  "summary": {
+    "persistenceRowsPassed": 8,
+    "persistenceRowsTotal": 8,
+    "readerRowsPassed": 8,
+    "readerRowsTotal": 8,
+    "repeatBoundariesAccounted": ["C04", "C17"],
+    "rowsAccounted": 17,
+    "rowsTotal": 17,
+    "acceptanceVerdictIssued": false,
+    "handoffState": "READY_FOR_SUPERVISOR"
+  }
+}

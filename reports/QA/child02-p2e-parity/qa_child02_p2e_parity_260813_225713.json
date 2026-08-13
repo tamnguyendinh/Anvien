@@ -1,0 +1,129 @@
+{
+  "artifacts": {
+    "graphJson": {
+      "bytes": 391303083,
+      "path": "E:\\Anvien\\.anvien\\graph.json",
+      "sha256": "004BBA5E516BCD4CA02F9EE882B8CFCB82E684AA519159DCC87A48563CEDE3D8"
+    },
+    "ladybug": {
+      "bytes": 145162240,
+      "path": "E:\\Anvien\\.anvien\\lbug",
+      "sha256": "299F639BCA84D5BAC817245FF7CC9A83E9EDE9FF6DA5F4276C29791E56EA9213"
+    }
+  },
+  "contract": {
+    "comparedFields": [
+      "id",
+      "label",
+      "name",
+      "filePath",
+      "qualifiedName",
+      "startLine",
+      "startCol",
+      "endLine",
+      "endCol",
+      "selectionStartLine",
+      "selectionStartCol",
+      "selectionEndLine",
+      "selectionEndCol"
+    ],
+    "definesKey": "exact sourceId+targetId pair",
+    "definitionLabels": [
+      "Function",
+      "Class",
+      "Interface",
+      "CodeElement",
+      "Method",
+      "Package",
+      "Struct",
+      "Enum",
+      "Macro",
+      "Typedef",
+      "Union",
+      "Namespace",
+      "Trait",
+      "Impl",
+      "TypeAlias",
+      "Const",
+      "Static",
+      "Variable",
+      "Property",
+      "Record",
+      "Delegate",
+      "Annotation",
+      "Constructor",
+      "Template",
+      "Module"
+    ],
+    "embeddingLabel": "explicit persisted CodeEmbedding.label; current normal artifact may contain zero embedding rows",
+    "recordKey": "opaque Definition id",
+    "selectionRange": "all four present or all four absent/NULL",
+    "zeroCoordinate": "retained as data"
+  },
+  "definesParity": {
+    "extraLadybugPairs": 0,
+    "missingLadybugPairs": 0,
+    "pairCountMismatch": 0,
+    "samples": []
+  },
+  "durationSeconds": 11.7772981,
+  "fieldParity": {
+    "extraLadybugRecords": 0,
+    "fieldMismatchCount": 0,
+    "mismatchByField": {},
+    "missingLadybugRecords": 0,
+    "samples": []
+  },
+  "generatedUtc": "2026-08-13T15:57:13.1056451Z",
+  "graphJson": {
+    "nodeCount": 97207,
+    "relationshipCount": 136470,
+    "definitionCount": 36611,
+    "definitionCountsByLabel": {
+      "Class": 88,
+      "Const": 554,
+      "Constructor": 9,
+      "Function": 4699,
+      "Interface": 109,
+      "Method": 1476,
+      "Package": 478,
+      "Property": 5345,
+      "Struct": 655,
+      "TypeAlias": 128,
+      "Variable": 23070
+    },
+    "missingConstructCoordinateCount": 0,
+    "selectionPresentCount": 4941,
+    "selectionAbsentCount": 31670,
+    "selectionPartialCount": 0,
+    "realZeroStartColCount": 5650,
+    "realZeroSelectionStartColCount": 0,
+    "definesPairCount": 36611,
+    "definitionWithoutSingleDefines": 0,
+    "missingEndpointCount": 0,
+    "missingDefinesEndpointCount": 0
+  },
+  "ladybug": {
+    "definitionCount": 36611,
+    "definitionCountsByLabel": {
+      "Class": 88,
+      "Const": 554,
+      "Constructor": 9,
+      "Function": 4699,
+      "Interface": 109,
+      "Method": 1476,
+      "Package": 478,
+      "Property": 5345,
+      "Struct": 655,
+      "TypeAlias": 128,
+      "Variable": 23070
+    },
+    "definesPairCount": 36611,
+    "embeddingRows": 0,
+    "embeddingMissingLabel": 0,
+    "embeddingSamples": null
+  },
+  "overall": "PASS",
+  "schema": "child02-p2e-field-parity-v1",
+  "startedUtc": "2026-08-13T15:57:01.328347Z"
+}
