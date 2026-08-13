@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0-A, P2-A, P2-B, P2-C, and P2-D accepted at isolated commit boundaries / P2-E unconditional Supervisor PASS and final all/staged detect PASS / isolated commit immediately follows`
+- Status: `active / P0-A, P2-A, P2-B, P2-C, P2-D, and P2-E accepted at isolated commit boundaries / Pn-A unconditional Supervisor PASS pending isolated docs/report commit`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-benchmark.md`
@@ -362,13 +362,15 @@ In scope:
   - Evidence Targets: full build, parity/readers/repeat, Supervisor, detect, commit.
   - Actual-status Update: Child 02 scope `partial/missing -> correct`; refresh successor.
   - Commit Boundary: isolated validation/ledger commit.
+  - Commit Result: exact 28-file boundary committed as `593e77a3f36c78447864a906a75c05e0d89530cc` with message `test(graph): close child 02 persistence parity`; post-commit worktree and index are clean.
 
-- [ ] Pn-A: Call Supervisor for the implemented-plan acceptance loop.
+- [x] Pn-A: Call Supervisor for the implemented-plan acceptance loop.
   - Goal: independently verify source, diff, persistence, readers, runtime, reports, and ledgers.
   - Work Steps:
     1. Run the Supervisor skill on complete Child 02 work.
     2. Return each rejection only to P2-B, P2-C, P2-D, or evidence ownership and repeat review.
   - Implementation Gate: P2-A through P2-E complete or explicitly blocked.
+  - Current State: independent report `reports/Supervisor/rp_supervisor_260814_005128_by_gpt-5_child02_pna_full_plan.md` (SHA-256 `60314C3BAFDAB09E4A60539391C6E7A847B5FA411E08129E1CE12555BFECC9E0`) returned unconditional `PASS` / `ACCEPT_CHILD02_PNA_AND_HAND_BACK` at HEAD `593e77a3f36c78447864a906a75c05e0d89530cc`. It independently verified source, all six slice commits, Graph JSON/Ladybug parity, eight readers, repeat/failure/recovery, raw evidence/harnesses/screenshots, full-plan ledger consistency, and zero residual same-invariant surface. Earlier P2-A/P2-C REJECT artifacts are retained immutable provenance whose findings are closed, not live blockers. The exact five-document/one-report boundary commits immediately after this row; Pn-B/Pn-C and Child 03 remain closed until Git confirms success.
   - Acceptance: unconditional PASS recorded as `E3-PNA-SUPERVISOR1`, or exact blocker prevents closure.
 
 - [ ] Pn-B: Remove dead work created during this plan.

@@ -52,4 +52,6 @@
 ## Non-Benchmarkable Notes
 
 - P2-A source inventory, full-build pass/fail, affected-reader QA pass/fail, detect-changes, commits, and Supervisor verdicts are evidence gates.
+- P2-E's final measurements are accepted at isolated commit `593e77a3f36c78447864a906a75c05e0d89530cc`; the commit itself and the subsequent Pn-A review are evidence gates, not benchmark values.
+- Pn-A full-plan Supervisor PASS is recorded as `E3-PNA-SUPERVISOR1`; it changes no product/runtime measurement.
 - Child 07 owns campaign-wide performance acceptance across all semantic corrections.
