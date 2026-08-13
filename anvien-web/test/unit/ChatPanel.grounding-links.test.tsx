@@ -141,8 +141,8 @@ describe('ChatPanel grounding links', () => {
     expect(appState!.codeReferences[0]).toEqual(
       expect.objectContaining({
         filePath: 'src/foo.ts',
-        startLine: 3,
-        endLine: 5,
+        startLine: 4,
+        endLine: 6,
         label: 'File',
         source: 'ai',
         nodeId: 'File:src/foo.ts',
@@ -185,8 +185,8 @@ describe('ChatPanel grounding links', () => {
     expect(appState!.codeReferences[0]).toEqual(
       expect.objectContaining({
         filePath: 'src/foo.ts',
-        startLine: 9,
-        endLine: 19,
+        startLine: 10,
+        endLine: 20,
         label: 'Function',
         name: 'loadFoo',
         source: 'ai',

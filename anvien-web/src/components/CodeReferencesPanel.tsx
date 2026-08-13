@@ -413,13 +413,23 @@ export const CodeReferencesPanel = ({
     // Determine read range: full file for File nodes, buffered for symbols
     const startLine = selectedNode?.properties?.startLine as number | undefined;
     const endLine = selectedNode?.properties?.endLine as number | undefined;
+    const endColumn = selectedNode?.properties?.endCol as number | undefined;
     const isWholeFile = selectedIsFile || startLine === undefined;
+
+    const lastLine =
+      startLine === undefined
+        ? undefined
+        : endLine === undefined
+          ? startLine
+          : endColumn && endColumn > 0
+            ? Math.max(startLine, endLine)
+            : Math.max(startLine, endLine - 1);
 
     const options = isWholeFile
       ? { repo: projectName }
       : {
-          startLine: Math.max(0, startLine - CONTEXT_LINES),
-          endLine: (endLine ?? startLine) + CONTEXT_LINES,
+          startLine: Math.max(0, startLine - 1 - CONTEXT_LINES),
+          endLine: Math.max(0, (lastLine ?? startLine) - 1 + CONTEXT_LINES),
           repo: projectName,
         };
 
@@ -444,6 +454,7 @@ export const CodeReferencesPanel = ({
     selectedFilePath,
     selectedNode?.properties?.startLine,
     selectedNode?.properties?.endLine,
+    selectedNode?.properties?.endCol,
     selectedIsFile,
     projectName,
   ]);
@@ -462,9 +473,11 @@ export const CodeReferencesPanel = ({
         if (!container) return;
         const lineEl =
           (container.querySelector(
-            `[data-line-number="${startLine + 1}"]`,
+            `[data-line-number="${startLine}"]`,
           ) as HTMLElement) ??
-          (container.querySelectorAll(".linenumber")[startLine] as HTMLElement);
+          (container.querySelectorAll(".linenumber")[
+            Math.max(0, startLine - 1 - fileStartLine)
+          ] as HTMLElement);
         if (lineEl) {
           lineEl.scrollIntoView({ behavior: "smooth", block: "center" });
         } else {
@@ -472,7 +485,8 @@ export const CodeReferencesPanel = ({
           const lineHeight = 20.8; // 13px font * 1.6 line-height
           container.scrollTop = Math.max(
             0,
-            startLine * lineHeight - container.clientHeight / 3,
+            (startLine - 1 - fileStartLine) * lineHeight -
+              container.clientHeight / 3,
           );
         }
       });
@@ -483,7 +497,11 @@ export const CodeReferencesPanel = ({
       cancelled = true;
       rafIds.forEach((id) => cancelAnimationFrame(id));
     };
-  }, [selectedFileContent, selectedNode?.properties?.startLine]);
+  }, [
+    fileStartLine,
+    selectedFileContent,
+    selectedNode?.properties?.startLine,
+  ]);
 
   if (isCollapsed) {
     return (
@@ -809,13 +827,21 @@ export const CodeReferencesPanel = ({
                     userSelect: "none",
                   }}
                   lineProps={(lineNumber) => {
-                    const symStart = selectedNode?.properties?.startLine;
-                    const symEnd =
-                      selectedNode?.properties?.endLine ?? symStart;
+                    const symStart = selectedNode
+                      ? numberProperty(selectedNode, "startLine")
+                      : undefined;
+                    const symEnd = selectedNode
+                      ? numberProperty(selectedNode, "endLine") ?? symStart
+                      : symStart;
+                    const symEndColumn = selectedNode
+                      ? numberProperty(selectedNode, "endCol") ?? 0
+                      : 0;
                     const isHighlighted =
                       typeof symStart === "number" &&
-                      lineNumber >= symStart + 1 &&
-                      lineNumber <= (symEnd ?? symStart) + 1;
+                      lineNumber >= symStart &&
+                      (lineNumber < (symEnd ?? symStart) ||
+                        (lineNumber === (symEnd ?? symStart) &&
+                          symEndColumn > 0));
                     return {
                       style: {
                         display: "block",
@@ -883,11 +909,21 @@ export const CodeReferencesPanel = ({
                     : "#6b7280";
                   const hasRange = typeof ref.startLine === "number";
                   const startDisplay = hasRange
-                    ? (ref.startLine ?? 0) + 1
+                    ? ref.startLine
                     : undefined;
-                  const endDisplay = hasRange
-                    ? (ref.endLine ?? ref.startLine ?? 0) + 1
-                    : undefined;
+                  const endDisplay = !hasRange
+                    ? undefined
+                    : typeof ref.endCol === "number"
+                      ? ref.endCol > 0
+                        ? Math.max(
+                            ref.startLine!,
+                            ref.endLine ?? ref.startLine!,
+                          )
+                        : Math.max(
+                            ref.startLine!,
+                            (ref.endLine ?? ref.startLine! + 1) - 1,
+                          )
+                      : (ref.endLine ?? ref.startLine);
                   const language = getSyntaxLanguage(ref.filePath);
 
                   const isGlowing = glowRefId === ref.id;

@@ -37,6 +37,8 @@ const createFunctionNode = (
   filePath: string,
   startLine: number,
   endLine: number,
+  startCol: number = 0,
+  endCol: number = 0,
 ): GraphNode => ({
   id,
   label: 'Function',
@@ -44,7 +46,9 @@ const createFunctionNode = (
     name,
     filePath,
     startLine,
+    startCol,
     endLine,
+    endCol,
   },
 });
 
@@ -106,15 +110,17 @@ describe('useAppState.local-runtime', () => {
       expect.arrayContaining([
         expect.objectContaining({
           filePath: 'src/foo.ts',
-          startLine: 3,
-          endLine: 5,
+          startLine: 4,
+          endLine: 6,
           label: 'File',
           source: 'ai',
         }),
         expect.objectContaining({
           filePath: 'src/foo.ts',
-          startLine: 9,
-          endLine: 19,
+          startLine: 10,
+          startCol: 0,
+          endLine: 20,
+          endCol: 0,
           label: 'Function',
           name: 'loadFoo',
           source: 'ai',
@@ -151,6 +157,59 @@ describe('useAppState.local-runtime', () => {
 
     expect(Array.from(appState!.aiToolHighlightedNodeIds)).toEqual(['Function:src/foo.ts:loadFoo']);
     expect(Array.from(appState!.blastRadiusNodeIds)).toEqual(['Function:src/foo.ts:saveFoo']);
+  });
+
+  it('ignores suffix fragments instead of guessing opaque graph IDs', async () => {
+    renderHarness();
+    await waitFor(() => expect(appState).not.toBeNull());
+
+    const graph = createKnowledgeGraph();
+    graph.addNode(createFileNode('File:src/foo.ts', 'src/foo.ts'));
+    graph.addNode(
+      createFunctionNode('opaque-definition-1', 'loadFoo', 'src/foo.ts', 10, 20),
+    );
+    graph.addNode(
+      createFunctionNode('opaque-definition-2', 'saveFoo', 'src/foo.ts', 30, 40),
+    );
+
+    await act(async () => {
+      appState!.setGraph(graph);
+    });
+    await act(async () => {
+      appState!.chatRuntimeBridge.handleToolResult(
+        '[HIGHLIGHT_NODES:definition-1,opaque-definition-2] [IMPACT:2]',
+      );
+    });
+
+    expect(Array.from(appState!.aiToolHighlightedNodeIds)).toEqual([
+      'opaque-definition-2',
+    ]);
+    expect(Array.from(appState!.blastRadiusNodeIds)).toEqual([]);
+  });
+
+  it('fails closed when a node grounding name is ambiguous', async () => {
+    renderHarness();
+    await waitFor(() => expect(appState).not.toBeNull());
+
+    const graph = createKnowledgeGraph();
+    graph.addNode(createFileNode('File:src/first.ts', 'src/first.ts'));
+    graph.addNode(createFileNode('File:src/second.ts', 'src/second.ts'));
+    graph.addNode(
+      createFunctionNode('opaque-first', 'sharedName', 'src/first.ts', 2, 4, 1, 0),
+    );
+    graph.addNode(
+      createFunctionNode('opaque-second', 'sharedName', 'src/second.ts', 8, 10, 2, 3),
+    );
+
+    await act(async () => {
+      appState!.setGraph(graph);
+    });
+    await act(async () => {
+      appState!.chatRuntimeBridge.handleContentGrounding('Inspect [[Function:sharedName]]');
+    });
+
+    expect(appState!.codeReferences).toEqual([]);
+    expect(appState!.isCodePanelOpen).toBe(false);
   });
 
   it('defaults graph links to visible and persists toggle state', async () => {

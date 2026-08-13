@@ -1,6 +1,7 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import type { HTMLAttributes } from 'react';
 import type { GraphNode, GraphRelationship } from '@/generated/anvien-contracts';
 import { createKnowledgeGraph } from '../../src/core/graph/graph';
 import { AppStateProvider, useAppState } from '../../src/hooks/useAppState.local-runtime';
@@ -18,7 +19,33 @@ vi.mock('../../src/services/backend-client', async (importOriginal) => ({
 }));
 
 vi.mock('react-syntax-highlighter', () => ({
-  Prism: ({ children }: { children: string }) => <pre>{children}</pre>,
+  Prism: ({
+    children,
+    lineProps,
+    showLineNumbers,
+    startingLineNumber = 1,
+  }: {
+    children: string;
+    lineProps?: (lineNumber: number) => HTMLAttributes<HTMLSpanElement>;
+    showLineNumbers?: boolean;
+    startingLineNumber?: number;
+  }) => (
+    <pre>
+      {children.split('\n').map((line, index) => {
+        const lineNumber = startingLineNumber + index;
+        return (
+          <span
+            key={lineNumber}
+            data-testid={`syntax-line-${lineNumber}`}
+            {...lineProps?.(lineNumber)}
+          >
+            {showLineNumbers && <span className="linenumber">{lineNumber}</span>}
+            {line}
+          </span>
+        );
+      })}
+    </pre>
+  ),
 }));
 
 vi.mock('react-syntax-highlighter/dist/esm/styles/prism', () => ({
@@ -88,6 +115,87 @@ const makeGapRelationship = (sourceId: string, targetId: string): GraphRelations
 });
 
 describe('CodeReferencesPanel Graph Health detail', () => {
+  it('converts one-based exclusive graph ranges once for read, display, and highlight', async () => {
+    readFileMock.mockResolvedValueOnce({
+      content: ['line 9', 'line 10', 'line 11', 'line 12'].join('\n'),
+      startLine: 8,
+      endLine: 11,
+      totalLines: 20,
+    });
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    });
+    vi.stubGlobal(
+      'requestAnimationFrame',
+      ((callback: FrameRequestCallback) =>
+        window.setTimeout(() => callback(performance.now()), 0)) as typeof requestAnimationFrame,
+    );
+    vi.stubGlobal(
+      'cancelAnimationFrame',
+      ((id: number) => window.clearTimeout(id)) as typeof cancelAnimationFrame,
+    );
+
+    const selected: GraphNode = {
+      id: 'opaque-selected',
+      label: 'Function',
+      properties: {
+        name: 'sharedName',
+        filePath: 'src/load.ts',
+        startLine: 10,
+        startCol: 0,
+        endLine: 12,
+        endCol: 0,
+      },
+    };
+    const graph = createKnowledgeGraph();
+    graph.addNode(selected);
+
+    render(
+      <AppStateProvider>
+        <StateCapture />
+        <CodeReferencesPanel onFocusNode={vi.fn()} />
+      </AppStateProvider>,
+    );
+
+    act(() => {
+      appState!.setGraph(graph);
+      appState!.setSelectedNode(selected);
+      appState!.addCodeReference({
+        filePath: 'src/load.ts',
+        startLine: 10,
+        startCol: 0,
+        endLine: 12,
+        endCol: 0,
+        nodeId: selected.id,
+        label: selected.label,
+        name: selected.properties.name,
+        source: 'ai',
+      });
+    });
+
+    await screen.findByText('AI Citations');
+    expect(document.body).toHaveTextContent('L10–11');
+    expect(readFileMock).toHaveBeenLastCalledWith(
+      'src/load.ts',
+      expect.objectContaining({ startLine: 0, endLine: 60 }),
+    );
+    expect(screen.getByTestId('syntax-line-10')).toHaveStyle({
+      backgroundColor: 'rgba(6, 182, 212, 0.14)',
+    });
+    expect(screen.getByTestId('syntax-line-11')).toHaveStyle({
+      backgroundColor: 'rgba(6, 182, 212, 0.14)',
+    });
+    expect(screen.getByTestId('syntax-line-12').style.backgroundColor).not.toBe(
+      'rgba(6, 182, 212, 0.14)',
+    );
+    expect(screen.getByTestId('syntax-line-12').style.borderLeft).toContain(
+      'transparent',
+    );
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalled());
+  });
+
   it('explains selected node health and focuses detached components', async () => {
     const selected = makeNode('comp-a', {
       topologyStatus: 'detached_component',

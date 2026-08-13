@@ -39,7 +39,7 @@
 | P2 | Graph JSON/Ladybug corrected records with field differences | records | pending accepted Child 01 fields | `0` across `36,330` matched Definition records | pending P2-E final | 0 | target met at P2-B | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
 | P2 | Graph JSON/Ladybug differing corrected fields | fields | pending accepted Child 01 fields | `0` for label, qualified name, construct and optional selection coordinates | pending P2-E final | 0 | target met at P2-B | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
 | P2 | corrected records silently dropped | records | pending P2-A denominator | `0` (`36,330/36,330` matched) | pending P2-E final | 0 | target met at P2-B | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
-| P2 | affected reader acceptance | passed/total affected readers | pending P2-A denominator | pending | pending | all/all | pending | `E2-P2C-RUNTIME1`, `E2-P2E-READERS1` |
+| P2 | affected reader acceptance | passed/total affected readers | pending P2-A denominator | `8/8` Supervisor-accepted at P2-C | pending P2-E final | all/all | `+8` accepted readers from pending | `E2-P2C-RUNTIME1`, `E2-P2C-REVIEW1`, `E2-P2E-READERS1` |
 | P2 | repeated normal analyze acceptance | passed/declared matched runs | pending P2-D protocol | pending | pending | all/all | pending | `E2-P2D-REPEAT1`, `E2-P2E-REPEAT1` |
 | P2 | failed owned-boundary attempts returning a successful result from another artifact | attempts | pending fault denominator | pending | pending | 0 | pending | `E2-P2D-REPEAT1`, `E2-P2E-REPEAT1` |
 | P2 | analyze duration, if persistence changes or measures it | seconds | pending matched baseline | pending | pending | measured and reviewed | pending | `E2-P2D-REPEAT1` |

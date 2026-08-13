@@ -2,6 +2,7 @@ package embeddings
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -14,15 +15,15 @@ import (
 func TestSemanticSearchQueriesVectorIndexDedupsChunksAndHydratesMetadata(t *testing.T) {
 	runner := &searchRunner{
 		vectorRows: []lbugruntime.Row{
-			{"nodeId": "Function:alpha", "chunkIndex": 0, "startLine": 1, "endLine": 4, "distance": 0.31},
-			{"nodeId": "Function:alpha", "chunkIndex": 1, "startLine": 5, "endLine": 8, "distance": 0.20},
-			{"nodeId": "Method:beta", "chunkIndex": 0, "startLine": 10, "endLine": 12, "distance": 0.25},
-			{"nodeId": "Class:gamma", "chunkIndex": 0, "startLine": 20, "endLine": 30, "distance": 0.40},
+			{"nodeId": "opaque-alpha", "label": "Function", "chunkIndex": 0, "startLine": 1, "endLine": 4, "distance": 0.31},
+			{"nodeId": "opaque-alpha", "label": "Function", "chunkIndex": 1, "startLine": 5, "endLine": 8, "distance": 0.20},
+			{"nodeId": "opaque-beta", "label": "Method", "chunkIndex": 0, "startLine": 10, "endLine": 12, "distance": 0.25},
+			{"nodeId": "opaque-gamma", "label": "Class", "chunkIndex": 0, "startLine": 20, "endLine": 30, "distance": 0.40},
 		},
 		metadataRows: map[string][]lbugruntime.Row{
-			"Function": {{"id": "Function:alpha", "name": "alpha", "filePath": "src/a.ts"}},
-			"Method":   {{"id": "Method:beta", "name": "beta", "filePath": "src/b.ts"}},
-			"Class":    {{"id": "Class:gamma", "name": "gamma", "filePath": "src/c.ts"}},
+			"Function": {{"id": "opaque-alpha", "name": "sharedName", "filePath": "src/a.ts"}},
+			"Method":   {{"id": "opaque-beta", "name": "sharedName", "filePath": "src/b.ts"}},
+			"Class":    {{"id": "opaque-gamma", "name": "gamma", "filePath": "src/c.ts"}},
 		},
 	}
 	results, err := SemanticSearch(context.Background(), runner, &recordingEmbedder{dimensions: 3}, "alpha query", SearchOptions{
@@ -36,14 +37,49 @@ func TestSemanticSearchQueriesVectorIndexDedupsChunksAndHydratesMetadata(t *test
 	if len(results) != 2 {
 		t.Fatalf("len(results) = %d, want 2: %#v", len(results), results)
 	}
-	if results[0].NodeID != "Function:alpha" || results[0].Distance != 0.20 || results[0].StartLine != 5 || results[1].NodeID != "Method:beta" {
+	if results[0].NodeID != "opaque-alpha" || results[0].Label != "Function" || results[0].Name != "sharedName" || results[0].Distance != 0.20 || results[0].StartLine != 5 || results[1].NodeID != "opaque-beta" || results[1].Label != "Method" || results[1].Name != "sharedName" {
 		t.Fatalf("results = %#v", results)
 	}
 	if !containsQuery(runner.queries, "CALL QUERY_VECTOR_INDEX('CodeEmbedding', 'code_embedding_idx'") || !containsQuery(runner.queries, "CAST([1,2,3] AS FLOAT[3])") {
 		t.Fatalf("vector query missing expected shape: %#v", runner.queries)
 	}
+	if !containsQuery(runner.queries, "emb.label AS label") {
+		t.Fatalf("vector query missing explicit persisted label: %#v", runner.queries)
+	}
 	if !containsQuery(runner.queries, "MATCH (n:Function)") || !containsQuery(runner.queries, "MATCH (n:Method)") {
 		t.Fatalf("metadata queries missing: %#v", runner.queries)
+	}
+}
+
+func TestSemanticSearchRejectsRowsWithoutPersistedLabel(t *testing.T) {
+	runner := &searchRunner{
+		vectorRows: []lbugruntime.Row{{
+			"nodeId": "Function:parseable-but-label-missing", "chunkIndex": 0,
+			"startLine": 1, "endLine": 2, "distance": 0.10,
+		}},
+	}
+	_, err := SemanticSearch(context.Background(), runner, &recordingEmbedder{dimensions: 3}, "query", SearchOptions{Limit: 1, Dimensions: 3})
+	if err == nil || !strings.Contains(err.Error(), "has no persisted label") {
+		t.Fatalf("SemanticSearch() error = %v, want missing persisted label", err)
+	}
+	for _, query := range runner.queries {
+		if strings.Contains(query, "MATCH (n:") {
+			t.Fatalf("unexpected metadata query derived from node ID: %s", query)
+		}
+	}
+}
+
+func TestSemanticSearchReturnsMetadataQueryFailure(t *testing.T) {
+	runner := &searchRunner{
+		vectorRows: []lbugruntime.Row{{
+			"nodeId": "opaque-alpha", "label": "Function", "chunkIndex": 0,
+			"startLine": 1, "endLine": 2, "distance": 0.10,
+		}},
+		metadataErr: errors.New("metadata unavailable"),
+	}
+	_, err := SemanticSearch(context.Background(), runner, &recordingEmbedder{dimensions: 3}, "query", SearchOptions{Limit: 1, Dimensions: 3})
+	if err == nil || !strings.Contains(err.Error(), "hydrate semantic search label \"Function\": metadata unavailable") {
+		t.Fatalf("SemanticSearch() error = %v, want metadata failure", err)
 	}
 }
 
@@ -57,11 +93,11 @@ func TestSemanticSearchRejectsQueryDimensionMismatch(t *testing.T) {
 
 func TestDedupBestChunksKeepsNearestChunkPerNode(t *testing.T) {
 	matches := DedupBestChunks([]ChunkSearchRow{
-		{NodeID: "Function:a", ChunkIndex: 0, Distance: 0.7},
-		{NodeID: "Function:a", ChunkIndex: 1, Distance: 0.2},
-		{NodeID: "Function:b", ChunkIndex: 0, Distance: 0.3},
+		{NodeID: "opaque-a", Label: "Function", ChunkIndex: 0, Distance: 0.7},
+		{NodeID: "opaque-a", Label: "Function", ChunkIndex: 1, Distance: 0.2},
+		{NodeID: "opaque-b", Label: "Function", ChunkIndex: 0, Distance: 0.3},
 	}, 1)
-	if len(matches) != 1 || matches[0].NodeID != "Function:a" || matches[0].ChunkIndex != 1 {
+	if len(matches) != 1 || matches[0].NodeID != "opaque-a" || matches[0].Label != "Function" || matches[0].ChunkIndex != 1 {
 		t.Fatalf("matches = %#v", matches)
 	}
 }
@@ -170,6 +206,7 @@ func TestCollectBestChunksLargeLimitContinuesPastDefaultFetchWindow(t *testing.T
 type searchRunner struct {
 	vectorRows   []lbugruntime.Row
 	metadataRows map[string][]lbugruntime.Row
+	metadataErr  error
 	queries      []string
 }
 
@@ -177,6 +214,9 @@ func (r *searchRunner) QueryRows(query string) ([]lbugruntime.Row, error) {
 	r.queries = append(r.queries, query)
 	if strings.Contains(query, "QUERY_VECTOR_INDEX") {
 		return r.vectorRows, nil
+	}
+	if r.metadataErr != nil {
+		return nil, r.metadataErr
 	}
 	for label, rows := range r.metadataRows {
 		if strings.Contains(query, "MATCH (n:"+label+")") {
@@ -202,6 +242,7 @@ func (r *windowedSearchRunner) QueryRows(query string) ([]lbugruntime.Row, error
 	for _, row := range rows {
 		result = append(result, lbugruntime.Row{
 			"nodeId":     row.NodeID,
+			"label":      row.Label,
 			"chunkIndex": row.ChunkIndex,
 			"startLine":  row.StartLine,
 			"endLine":    row.EndLine,

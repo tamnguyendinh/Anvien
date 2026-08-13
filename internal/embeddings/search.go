@@ -45,6 +45,7 @@ type SearchResult struct {
 
 type ChunkSearchRow struct {
 	NodeID     string
+	Label      string
 	ChunkIndex int
 	StartLine  int
 	EndLine    int
@@ -53,6 +54,7 @@ type ChunkSearchRow struct {
 
 type BestChunkMatch struct {
 	NodeID     string
+	Label      string
 	ChunkIndex int
 	StartLine  int
 	EndLine    int
@@ -90,7 +92,7 @@ func SemanticSearch(ctx context.Context, runner RowQueryRunner, embedder Embedde
 	if err != nil {
 		return nil, err
 	}
-	return hydrateSearchResults(runner, matches, options.Limit), nil
+	return hydrateSearchResults(runner, matches, options.Limit)
 }
 
 func DedupBestChunks(rows []ChunkSearchRow, limit int) []BestChunkMatch {
@@ -106,6 +108,7 @@ func DedupBestChunks(rows []ChunkSearchRow, limit int) []BestChunkMatch {
 		if !ok || row.Distance < existing.Distance {
 			best[row.NodeID] = BestChunkMatch{
 				NodeID:     row.NodeID,
+				Label:      row.Label,
 				ChunkIndex: row.ChunkIndex,
 				StartLine:  row.StartLine,
 				EndLine:    row.EndLine,
@@ -155,15 +158,15 @@ func collectBestChunks(ctx context.Context, runner RowQueryRunner, queryVector [
 	return nil, nil
 }
 
-func hydrateSearchResults(runner RowQueryRunner, matches []BestChunkMatch, limit int) []SearchResult {
+func hydrateSearchResults(runner RowQueryRunner, matches []BestChunkMatch, limit int) ([]SearchResult, error) {
 	if len(matches) == 0 {
-		return nil
+		return nil, nil
 	}
 	byLabel := map[string][]BestChunkMatch{}
 	for _, match := range matches {
-		label := labelFromNodeID(match.NodeID)
+		label := strings.TrimSpace(match.Label)
 		if label == "" {
-			continue
+			return nil, fmt.Errorf("semantic search match %q has no persisted label", match.NodeID)
 		}
 		byLabel[label] = append(byLabel[label], match)
 	}
@@ -172,7 +175,7 @@ func hydrateSearchResults(runner RowQueryRunner, matches []BestChunkMatch, limit
 	for label, labelMatches := range byLabel {
 		rows, err := runner.QueryRows(metadataQuery(label, labelMatches))
 		if err != nil {
-			continue
+			return nil, fmt.Errorf("hydrate semantic search label %q: %w", label, err)
 		}
 		metadata := map[string]lbugruntime.Row{}
 		for _, row := range rows {
@@ -206,12 +209,12 @@ func hydrateSearchResults(runner RowQueryRunner, matches []BestChunkMatch, limit
 	if len(results) > limit {
 		results = results[:limit]
 	}
-	return results
+	return results, nil
 }
 
 func vectorSearchQuery(queryVector []float32, options SearchOptions, fetchLimit int) string {
 	return fmt.Sprintf(
-		"CALL QUERY_VECTOR_INDEX('%s', '%s', CAST(%s AS FLOAT[%d]), %d) YIELD node AS emb, distance WITH emb, distance WHERE distance < %s RETURN emb.nodeId AS nodeId, emb.chunkIndex AS chunkIndex, emb.startLine AS startLine, emb.endLine AS endLine, distance ORDER BY distance",
+		"CALL QUERY_VECTOR_INDEX('%s', '%s', CAST(%s AS FLOAT[%d]), %d) YIELD node AS emb, distance WITH emb, distance WHERE distance < %s RETURN emb.nodeId AS nodeId, emb.label AS label, emb.chunkIndex AS chunkIndex, emb.startLine AS startLine, emb.endLine AS endLine, distance ORDER BY distance",
 		lbugschema.EmbeddingTableName,
 		lbugschema.EmbeddingIndexName,
 		vectorLiteral(queryVector),
@@ -238,6 +241,7 @@ func chunkRows(rows []lbugruntime.Row) []ChunkSearchRow {
 	for _, row := range rows {
 		chunks = append(chunks, ChunkSearchRow{
 			NodeID:     rowStringValue(row["nodeId"]),
+			Label:      rowStringValue(row["label"]),
 			ChunkIndex: intValue(row["chunkIndex"]),
 			StartLine:  intValue(row["startLine"]),
 			EndLine:    intValue(row["endLine"]),
@@ -267,14 +271,6 @@ func normalizeSearchOptions(options SearchOptions) SearchOptions {
 		options.Dimensions = defaultSearchDimensions
 	}
 	return options
-}
-
-func labelFromNodeID(nodeID string) string {
-	index := strings.Index(nodeID, ":")
-	if index <= 0 {
-		return ""
-	}
-	return nodeID[:index]
 }
 
 func intValue(value any) int {

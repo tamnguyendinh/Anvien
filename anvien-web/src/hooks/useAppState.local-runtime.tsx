@@ -63,7 +63,9 @@ export interface CodeReference {
   id: string;
   filePath: string;
   startLine?: number;
+  startCol?: number;
   endLine?: number;
+  endCol?: number;
   nodeId?: string; // Associated graph node ID
   label?: string; // File, Function, Class, etc.
   name?: string; // Display name
@@ -560,12 +562,8 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
 
       addCodeReference({
         filePath: resolvedPath,
-        startLine: startLine1 ? Math.max(0, startLine1 - 1) : undefined,
-        endLine: endLine1
-          ? Math.max(0, endLine1 - 1)
-          : startLine1
-            ? Math.max(0, startLine1 - 1)
-            : undefined,
+        startLine: startLine1,
+        endLine: endLine1 ?? startLine1,
         nodeId,
         label: 'File',
         name: resolvedPath.split('/').pop() ?? resolvedPath,
@@ -591,19 +589,32 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
       const [, nodeType, nodeName] = match;
       const trimmedName = nodeName.trim();
 
-      const node = graphData.nodes.find(
+      const matchingNodes = graphData.nodes.filter(
         (n) => n.label === nodeType && n.properties.name === trimmedName,
       );
+      if (matchingNodes.length !== 1) return;
+      const [node] = matchingNodes;
 
       if (!node?.properties.filePath) return;
 
       const resolvedPath = resolveFilePathForChat(node.properties.filePath);
       if (!resolvedPath) return;
 
+      const startLine =
+        typeof node.properties.startLine === 'number' ? node.properties.startLine : undefined;
+      const startCol =
+        typeof node.properties.startCol === 'number' ? node.properties.startCol : undefined;
+      const endLine =
+        typeof node.properties.endLine === 'number' ? node.properties.endLine : undefined;
+      const endCol =
+        typeof node.properties.endCol === 'number' ? node.properties.endCol : undefined;
+
       addCodeReference({
         filePath: resolvedPath,
-        startLine: node.properties.startLine ? node.properties.startLine - 1 : undefined,
-        endLine: node.properties.endLine ? node.properties.endLine - 1 : undefined,
+        startLine,
+        startCol,
+        endLine,
+        endCol,
         nodeId: node.id,
         label: node.label,
         name: node.properties.name,
@@ -654,19 +665,12 @@ const AppStateProviderInner = ({ children }: { children: ReactNode }) => {
     const graphNodeIdSet = graphData ? new Set(graphData.nodes.map((n) => n.id)) : null;
 
     const resolveNodeIds = (rawIds: string[]) => {
-      if (!graphData || !graphNodeIdSet) return new Set(rawIds);
+      if (!graphData || !graphNodeIdSet) return new Set<string>();
 
       const matchedIds = new Set<string>();
       for (const rawId of rawIds) {
         if (graphNodeIdSet.has(rawId)) {
           matchedIds.add(rawId);
-        } else {
-          const found = graphData.nodes.find(
-            (n) => n.id.endsWith(rawId) || n.id.endsWith(':' + rawId),
-          )?.id;
-          if (found) {
-            matchedIds.add(found);
-          }
         }
       }
       return matchedIds;

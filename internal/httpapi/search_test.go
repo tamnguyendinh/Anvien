@@ -323,8 +323,8 @@ func TestSearchServiceHybridMergesBM25AndSemanticAndFallsBack(t *testing.T) {
 			},
 		},
 		vectorRows: []lbugruntime.Row{
-			{"nodeId": "Function:shared", "chunkIndex": 0, "startLine": 3, "endLine": 9, "distance": 0.10},
-			{"nodeId": "Function:semantic-only", "chunkIndex": 0, "startLine": 11, "endLine": 15, "distance": 0.20},
+			{"nodeId": "Function:shared", "label": "Function", "chunkIndex": 0, "startLine": 3, "endLine": 9, "distance": 0.10},
+			{"nodeId": "Function:semantic-only", "label": "Function", "chunkIndex": 0, "startLine": 11, "endLine": 15, "distance": 0.20},
 		},
 		metadataRows: map[string][]lbugruntime.Row{
 			"Function": {
@@ -443,6 +443,7 @@ func (r *semanticSearchRunner) QueryRows(query string) ([]lbugruntime.Row, error
 		}
 		return []lbugruntime.Row{{
 			"nodeId":     "Function:alpha",
+			"label":      "Function",
 			"chunkIndex": 0,
 			"startLine":  3,
 			"endLine":    9,

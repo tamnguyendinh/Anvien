@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0-A, P2-A, and P2-B accepted at isolated boundaries / P2-C next`
+- Status: `active / P0-A, P2-A, and P2-B accepted at isolated boundaries / P2-C unconditional Supervisor and detect PASS / isolated commit immediately follows`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-benchmark.md`
@@ -219,7 +219,7 @@ In scope:
   - Actual-status Update: affected persistence `partial/wrong -> correct`.
   - Commit Boundary: isolated implementation-slice commit.
 
-- [ ] P2-C: Correct source-proven affected readers.
+- [x] P2-C: Correct source-proven affected readers.
   - Goal: make only P2-A affected readers consume the corrected persisted fields consistently.
   - Scope Boundary:
     - Editable: exact reader/query adapter rows marked edit by P2-A.
@@ -254,6 +254,7 @@ In scope:
        - Mini QA: commands/runtime listed by the inventory.
        - Evidence target: `E2-P2C-BUILD1`, `E2-P2C-TEST1`, `E2-P2C-RUNTIME1`.
   - Implementation Gate: P2-B accepted; P2-A affected rows and exact edit owners current.
+  - Current State: C09-C16 received unconditional `8/8 PASS` from independent re-review `reports/Supervisor/rp_supervisor_260813_203838_by_gpt-5_child02_p2c_affected_readers_rereview.md` (SHA-256 `F54C4225520FFC57A6438CE3F4C3B0816FE8095B31AFB55FD004E91A89808698`). C09 now resolves only exact opaque IDs; C10 fails closed unless grounding has exactly one persisted identity; C11 preserves one-based lines, zero-based UTF-8 byte columns, and exclusive ends through display/highlight/API conversion; C16 consumes persisted `CodeEmbedding.label` through vector rows, dedup, and metadata hydration without NodeID label reconstruction. C12-C15 remain unchanged and pass their nearest regressions. A clean-holder full build passed in `121.4s`, focused frontend passed `11/11`, HTTP/embeddings/filecontext/MCP regressions passed, tagged local-native label persistence/readback/hydration passed, and mounted Playwright evidence passed C09-C11 with six visually accepted screenshots. The first review correctly rejected stale HTTP semantic/hybrid vector fixtures that lacked the explicit label; the bounded follow-up added only three `Function` labels and the re-review cleared the exact blocker. The official VECTOR extension outage is an external, non-blocking evidence limitation rather than a P2-C production defect. Final detect passed with HIGH file-layer scope, `13` tracked changed files, `12` affected files, `154` changed graph entries, no affected processes/flows, and zero degraded/active resolution gaps. The exact implementation/test/plan/report/QA boundary is committed immediately after this row as `E2-P2C-COMMIT1`; Git reports the final hash because a commit cannot contain its own hash. P2-D stays closed until Git confirms success.
   - Acceptance:
     - Source: only affected readers changed; unaffected readers remain preserve-only.
     - Runtime/UI: every affected normal boundary exposes the corrected fact; affected UI, if any, passes real-runtime visual QA.
