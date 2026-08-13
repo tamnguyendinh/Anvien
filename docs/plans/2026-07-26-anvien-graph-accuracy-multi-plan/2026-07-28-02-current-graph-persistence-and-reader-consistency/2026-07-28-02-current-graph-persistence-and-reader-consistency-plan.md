@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0-A, P2-A, and P2-B accepted at isolated boundaries / P2-C unconditional Supervisor and detect PASS / isolated commit immediately follows`
+- Status: `active / P0-A, P2-A, P2-B, and P2-C accepted at isolated boundaries / P2-D unconditional Supervisor PASS / final detect and isolated commit immediately follow`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-benchmark.md`
@@ -254,7 +254,7 @@ In scope:
        - Mini QA: commands/runtime listed by the inventory.
        - Evidence target: `E2-P2C-BUILD1`, `E2-P2C-TEST1`, `E2-P2C-RUNTIME1`.
   - Implementation Gate: P2-B accepted; P2-A affected rows and exact edit owners current.
-  - Current State: C09-C16 received unconditional `8/8 PASS` from independent re-review `reports/Supervisor/rp_supervisor_260813_203838_by_gpt-5_child02_p2c_affected_readers_rereview.md` (SHA-256 `F54C4225520FFC57A6438CE3F4C3B0816FE8095B31AFB55FD004E91A89808698`). C09 now resolves only exact opaque IDs; C10 fails closed unless grounding has exactly one persisted identity; C11 preserves one-based lines, zero-based UTF-8 byte columns, and exclusive ends through display/highlight/API conversion; C16 consumes persisted `CodeEmbedding.label` through vector rows, dedup, and metadata hydration without NodeID label reconstruction. C12-C15 remain unchanged and pass their nearest regressions. A clean-holder full build passed in `121.4s`, focused frontend passed `11/11`, HTTP/embeddings/filecontext/MCP regressions passed, tagged local-native label persistence/readback/hydration passed, and mounted Playwright evidence passed C09-C11 with six visually accepted screenshots. The first review correctly rejected stale HTTP semantic/hybrid vector fixtures that lacked the explicit label; the bounded follow-up added only three `Function` labels and the re-review cleared the exact blocker. The official VECTOR extension outage is an external, non-blocking evidence limitation rather than a P2-C production defect. Final detect passed with HIGH file-layer scope, `13` tracked changed files, `12` affected files, `154` changed graph entries, no affected processes/flows, and zero degraded/active resolution gaps. The exact implementation/test/plan/report/QA boundary is committed immediately after this row as `E2-P2C-COMMIT1`; Git reports the final hash because a commit cannot contain its own hash. P2-D stays closed until Git confirms success.
+  - Current State: C09-C16 received unconditional `8/8 PASS` from independent re-review `reports/Supervisor/rp_supervisor_260813_203838_by_gpt-5_child02_p2c_affected_readers_rereview.md` (SHA-256 `F54C4225520FFC57A6438CE3F4C3B0816FE8095B31AFB55FD004E91A89808698`). C09 now resolves only exact opaque IDs; C10 fails closed unless grounding has exactly one persisted identity; C11 preserves one-based lines, zero-based UTF-8 byte columns, and exclusive ends through display/highlight/API conversion; C16 consumes persisted `CodeEmbedding.label` through vector rows, dedup, and metadata hydration without NodeID label reconstruction. C12-C15 remain unchanged and pass their nearest regressions. A clean-holder full build passed in `121.4s`, focused frontend passed `11/11`, HTTP/embeddings/filecontext/MCP regressions passed, tagged local-native label persistence/readback/hydration passed, and mounted Playwright evidence passed C09-C11 with six visually accepted screenshots. The first review correctly rejected stale HTTP semantic/hybrid vector fixtures that lacked the explicit label; the bounded follow-up added only three `Function` labels and the re-review cleared the exact blocker. The official VECTOR extension outage is an external, non-blocking evidence limitation rather than a P2-C production defect. Final detect passed with HIGH file-layer scope, `13` tracked changed files, `12` affected files, `154` changed graph entries, no affected processes/flows, and zero degraded/active resolution gaps. The exact implementation/test/plan/report/QA boundary was committed as `927a676653963e8001d7789291010d5b819bac83`, opening P2-D.
   - Acceptance:
     - Source: only affected readers changed; unaffected readers remain preserve-only.
     - Runtime/UI: every affected normal boundary exposes the corrected fact; affected UI, if any, passes real-runtime visual QA.
@@ -267,7 +267,7 @@ In scope:
   - Actual-status Update: affected reader rows `partial/wrong/unbound -> correct`.
   - Commit Boundary: isolated implementation-slice commit.
 
-- [ ] P2-D: Verify repeated normal analyze and clear failure behavior.
+- [x] P2-D: Verify repeated normal analyze and clear failure behavior.
   - Goal: prove that repeatedly invoking the normal built analyze command on the same repository path yields current, readable corrected facts or a clear failure.
   - Scope Boundary:
     - Editable: only exact analyze/read owner proven wrong by P2-D pre-flight; validation harnesses and ledgers.
@@ -302,6 +302,7 @@ In scope:
        - Mini QA: built normal command and affected reader boundary.
        - Evidence target: `E2-P2D-BUILD1`, `E2-P2D-TEST1`, `E2-P2D-REPEAT1`.
   - Implementation Gate: P2-C accepted; current repeated behavior measured before any production edit.
+  - Current State: existing production mechanics required no correction. Independent Supervisor report `reports/Supervisor/rp_supervisor_260813_220611_by_gpt-5_child02_p2d_repeated_analyze.md` (SHA-256 `C5582385945607FDB730B918EAA758AB2C7A3D37D3772B884D667B0E6133204D`) returned unconditional `PASS` / `ACCEPT_P2D_AND_HAND_BACK`. The reusable normal-built matrix passed `7/7`: two unchanged analyzes retained identical accepted Definition facts and exact `DEFINES` pairs; changed input exposed `later` and removed the stale second-`now` identity; owned analyze storage failure returned exit `1`; Ladybug remained readable with Graph JSON absent; both backends absent returned JSON-RPC non-success with no rows; and recovery restored the baseline facts. The clean-holder full build passed in `130.822s`. Whole Ladybug file hashes are informational rather than the determinism contract; exact identities, construct/selection ranges, and endpoints are stable. Exact `ErrUnavailable -> same-repository graph.json` was source-classified but not fabricated because the normal packaged `ladybugdb` binary cannot truthfully emit that compile-time capability sentinel; Supervisor explicitly accepted this as non-blocking after all production-reachable success/failure outcomes passed. The exact five-document/four-QA-artifact/one-Supervisor-report boundary is committed immediately after `E2-P2D-DETECT1`; P2-E remains closed until Git confirms success.
   - Acceptance:
     - Source: existing correct mechanics preserved; only a source-proven failing owner changed.
     - Runtime/UI: all declared normal invocations behave truthfully; clear non-success on owned failure.
@@ -311,7 +312,7 @@ In scope:
     - Evidence IDs: `E2-P2D-IMPACT1`, `E2-P2D-SOURCE1`, `E2-P2D-BUILD1`, `E2-P2D-TEST1`, `E2-P2D-REPEAT1`, `E2-P2D-REVIEW1`, `E2-P2D-DETECT1`, `E2-P2D-COMMIT1`.
     - Actual-status rows refreshed: repeated analyze, failure, and affected read results.
   - Evidence Targets: current source/impact, build, repeat/fault runtime, Supervisor, detect, commit.
-  - Actual-status Update: repeated normal analyze `partial/unknown -> correct` or retain exact blocker.
+  - Actual-status Update: repeated normal analyze `partial/unknown -> correct`.
   - Commit Boundary: isolated implementation/validation-slice commit.
 
 - [ ] P2-E: Close persistence/reader parity and handoff.
