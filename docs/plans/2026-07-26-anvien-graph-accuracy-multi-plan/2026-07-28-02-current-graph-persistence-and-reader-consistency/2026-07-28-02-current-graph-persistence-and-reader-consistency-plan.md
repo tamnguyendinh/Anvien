@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0-A and P2-A accepted / P2-B ready`
+- Status: `active / P0-A, P2-A, and P2-B accepted at isolated boundaries / P2-C next`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-benchmark.md`
@@ -171,7 +171,7 @@ In scope:
   - Actual-status Update: affected-path inventory `missing -> correct`; implementation rows remain partial/wrong as measured.
   - Commit Boundary: documentation/source-audit commit only.
 
-- [ ] P2-B: Preserve corrected facts through Graph JSON and Ladybug.
+- [x] P2-B: Preserve corrected facts through Graph JSON and Ladybug.
   - Goal: make the exact P2-A persistence owners preserve accepted corrected records and fields without loss.
   - Scope Boundary:
     - Editable: only Graph JSON/Ladybug encode, load, or query owners proven affected by P2-A.
@@ -206,6 +206,7 @@ In scope:
        - Mini QA: built runtime store/query probe.
        - Evidence target: `E2-P2B-BUILD1`, `E2-P2B-TEST1`, `E2-P2B-PARITY1`.
   - Implementation Gate: P2-A accepted; every editable persistence owner and field is named by an inventory row with fresh impact.
+  - Current State: production correction is complete in C01/C02/C03/C05/C06 and C04/C07/C08 remain validate-only. Independent current-HEAD review `reports/Supervisor/rp_supervisor_260813_173541_by_gpt-5_child02_p2b_persistence.md` (SHA-256 `24F403FC7A058AD36943A4664B0EFF8ABE2784644BA08BBC79D94B16C8CC750E`) returned unconditional `PASS` / `ACCEPT_P2B_AND_HAND_BACK`. Fresh root full build, affected-package and CLI/HTTP sibling regressions, native Ladybug readback, and normal Graph JSON/Ladybug record parity all passed. The real artifact contains `36,330/36,330` matching Definition records, zero corrected-field mismatch/drop, `36,330/36,330` exact `DEFINES` pairs, and zero missing endpoints. `E2-P2B-DETECT1` passes with HIGH scoped impact and no degraded nodes; the exact source/test/ledger/report boundary is committed immediately after this row as `E2-P2B-COMMIT1`, with Git reporting the final hash because a commit cannot contain its own hash. P2-C opens only after that commit succeeds.
   - Acceptance:
     - Source: only proven persistence owners changed.
     - Runtime/UI: built persistence/query boundary passes; no UI change.

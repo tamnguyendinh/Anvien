@@ -364,9 +364,9 @@ func NodeSchema(table string) string {
 	case "Folder":
 		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}})
 	case "Function", "Class", "Interface", "CodeElement":
-		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"isExported", "BOOLEAN"}, {"content", "STRING"}, {"description", "STRING"}})
+		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"qualifiedName", "STRING"}, {"startLine", "INT64"}, {"startCol", "INT64"}, {"endLine", "INT64"}, {"endCol", "INT64"}, {"selectionStartLine", "INT64"}, {"selectionStartCol", "INT64"}, {"selectionEndLine", "INT64"}, {"selectionEndCol", "INT64"}, {"isExported", "BOOLEAN"}, {"content", "STRING"}, {"description", "STRING"}})
 	case "Method":
-		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"isExported", "BOOLEAN"}, {"content", "STRING"}, {"description", "STRING"}, {"parameterCount", "INT32"}, {"returnType", "STRING"}})
+		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"qualifiedName", "STRING"}, {"startLine", "INT64"}, {"startCol", "INT64"}, {"endLine", "INT64"}, {"endCol", "INT64"}, {"selectionStartLine", "INT64"}, {"selectionStartCol", "INT64"}, {"selectionEndLine", "INT64"}, {"selectionEndCol", "INT64"}, {"isExported", "BOOLEAN"}, {"content", "STRING"}, {"description", "STRING"}, {"parameterCount", "INT32"}, {"returnType", "STRING"}})
 	case "Community":
 		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"label", "STRING"}, {"heuristicLabel", "STRING"}, {"keywords", "STRING[]"}, {"description", "STRING"}, {"enrichedBy", "STRING"}, {"cohesion", "DOUBLE"}, {"symbolCount", "INT32"}})
 	case "Process":
@@ -406,7 +406,7 @@ func NodeSchema(table string) string {
 			{"note", "STRING"},
 		})
 	default:
-		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"content", "STRING"}, {"description", "STRING"}})
+		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"qualifiedName", "STRING"}, {"startLine", "INT64"}, {"startCol", "INT64"}, {"endLine", "INT64"}, {"endCol", "INT64"}, {"selectionStartLine", "INT64"}, {"selectionStartCol", "INT64"}, {"selectionEndLine", "INT64"}, {"selectionEndCol", "INT64"}, {"content", "STRING"}, {"description", "STRING"}})
 	}
 }
 
@@ -445,7 +445,7 @@ func EmbeddingSchema(dims int) (string, error) {
 	if dims <= 0 {
 		return "", fmt.Errorf("embedding dimensions must be positive, got %d", dims)
 	}
-	return nodeTable(EmbeddingTableName, []column{{"id", "STRING"}, {"nodeId", "STRING"}, {"chunkIndex", "INT32"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"embedding", fmt.Sprintf("FLOAT[%d]", dims)}, {"contentHash", "STRING"}}), nil
+	return nodeTable(EmbeddingTableName, []column{{"id", "STRING"}, {"nodeId", "STRING"}, {"label", "STRING"}, {"chunkIndex", "INT32"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"embedding", fmt.Sprintf("FLOAT[%d]", dims)}, {"contentHash", "STRING"}}), nil
 }
 
 func SchemaQueries(dims int) ([]string, error) {

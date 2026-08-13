@@ -160,7 +160,9 @@ func p1dDefinitionNode(definition scopeir.DefinitionFact) graph.Node {
 			"filePath":      definition.FilePath,
 			"qualifiedName": definition.QualifiedName,
 			"startLine":     definition.Range.StartLine,
+			"startCol":      definition.Range.StartCol,
 			"endLine":       definition.Range.EndLine,
+			"endCol":        definition.Range.EndCol,
 			"language":      string(scanner.TypeScript),
 		},
 	}

@@ -212,8 +212,16 @@ func emitDefinitionNodes(w *workspace, e *emitter) error {
 				"filePath":      def.Fact.FilePath,
 				"qualifiedName": def.Fact.QualifiedName,
 				"startLine":     def.Fact.Range.StartLine,
+				"startCol":      def.Fact.Range.StartCol,
 				"endLine":       def.Fact.Range.EndLine,
+				"endCol":        def.Fact.Range.EndCol,
 				"language":      string(ir.Language),
+			}
+			if selection := def.Fact.SelectionRange; selection != nil {
+				props["selectionStartLine"] = selection.StartLine
+				props["selectionStartCol"] = selection.StartCol
+				props["selectionEndLine"] = selection.EndLine
+				props["selectionEndCol"] = selection.EndCol
 			}
 			applyFrameworkHint(props, def.Fact.FilePath)
 			if fact, ok := frameworkFacts[def.Fact.ID]; ok {

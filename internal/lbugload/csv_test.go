@@ -20,7 +20,7 @@ func TestExportGraphCSVsWritesNodeRelationshipAndSplitContracts(t *testing.T) {
 		"name": "app.ts", "filePath": "src/app.ts", "content": "export const quoted = \"value\"",
 	}})
 	g.AddNode(graph.Node{ID: "Function:doWork", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
-		"name": "doWork", "filePath": "src/app.ts", "startLine": 7, "endLine": 12, "isExported": true, "content": "function doWork() {}", "description": "main worker",
+		"name": "doWork", "filePath": "src/app.ts", "qualifiedName": "api.doWork", "startLine": 7, "startCol": 0, "endLine": 12, "endCol": 1, "selectionStartLine": 7, "selectionStartCol": 9, "selectionEndLine": 7, "selectionEndCol": 15, "isExported": true, "content": "function doWork() {}", "description": "main worker",
 	}})
 	g.AddNode(graph.Node{ID: "comm_api", Label: scopeir.NodeCommunity, Properties: graph.NodeProperties{
 		"name": "API", "heuristicLabel": "api", "keywords": []string{"route", "worker's"}, "symbolCount": 2,
@@ -77,12 +77,12 @@ func TestExportGraphCSVsWritesNodeRelationshipAndSplitContracts(t *testing.T) {
 	}
 
 	functionRows := readCSV(t, filepath.Join(export.CSVDir, "function.csv"))
-	wantFunctionHeader := []string{"id", "name", "filePath", "startLine", "endLine", "isExported", "content", "description", "appLayer", "functionalArea"}
+	wantFunctionHeader := []string{"id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "isExported", "content", "description", "appLayer", "functionalArea"}
 	if !reflect.DeepEqual(functionRows[0], wantFunctionHeader) {
 		t.Fatalf("function.csv header = %#v, want %#v", functionRows[0], wantFunctionHeader)
 	}
-	if functionRows[1][5] != "true" {
-		t.Fatalf("function isExported = %q, want true", functionRows[1][5])
+	if functionRows[1][12] != "true" {
+		t.Fatalf("function isExported = %q, want true", functionRows[1][12])
 	}
 
 	relationshipRows := readCSV(t, export.RelationshipCSVPath)

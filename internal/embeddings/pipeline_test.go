@@ -154,15 +154,45 @@ func TestRunReturnsErrorWhenStaleDeleteFails(t *testing.T) {
 func TestCreateEmbeddingQueryEscapesStringsAndFormatsVector(t *testing.T) {
 	query := CreateEmbeddingQuery(EmbeddingUpdate{
 		NodeID:      "Function:it's\\ok",
+		Label:       scopeir.NodeLabel("Struct'\\Label\n"),
 		ChunkIndex:  2,
 		StartLine:   7,
 		EndLine:     9,
 		Embedding:   []float32{0.1, 2},
 		ContentHash: "hash\nvalue",
 	})
-	for _, want := range []string{"Function:it''s\\\\ok:2", "embedding: [0.1,2]", "contentHash: 'hash\\nvalue'"} {
+	for _, want := range []string{"Function:it''s\\\\ok:2", "label: 'Struct''\\\\Label\\n'", "embedding: [0.1,2]", "contentHash: 'hash\\nvalue'"} {
 		if !strings.Contains(query, want) {
 			t.Fatalf("query missing %q:\n%s", want, query)
+		}
+	}
+}
+
+func TestPrepareBatchCarriesExplicitLabelToEveryEmbeddingChunk(t *testing.T) {
+	node := EmbeddableNode{
+		ID:        "opaque-struct-id",
+		Name:      "Box",
+		Label:     scopeir.NodeStruct,
+		FilePath:  "src/box.go",
+		Content:   strings.Repeat("field value\n", 12),
+		StartLine: 10,
+		EndLine:   21,
+	}
+	texts, updates := prepareBatch(
+		[]EmbeddableNode{node},
+		map[string]string{node.ID: "content-hash"},
+		Config{ChunkSize: 24, Overlap: 4},
+	)
+	if len(updates) < 2 || len(texts) != len(updates) {
+		t.Fatalf("prepareBatch chunks = texts %d updates %d, want multiple aligned chunks", len(texts), len(updates))
+	}
+	for index, update := range updates {
+		if update.NodeID != node.ID || update.Label != scopeir.NodeStruct || update.ChunkIndex != index || update.ContentHash != "content-hash" {
+			t.Fatalf("update %d lost explicit label or chunk identity: %#v", index, update)
+		}
+		query := CreateEmbeddingQuery(update)
+		if !strings.Contains(query, "nodeId: 'opaque-struct-id'") || !strings.Contains(query, "label: 'Struct'") {
+			t.Fatalf("embedding query %d lost explicit nodeId/label:\n%s", index, query)
 		}
 	}
 }

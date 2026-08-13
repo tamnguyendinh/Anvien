@@ -36,15 +36,15 @@
 | P2 | repeated-analyze/failure boundaries | unique boundaries | unknown before P2-A source inventory | `2` accepted (`analyze` shared with persistence, plus `Server.runCypherRead`) | `2` accepted | exact owned boundaries | `+2` from unknown | `E2-P2A-INVENTORY2`, `E2-P2A-MATRIX2`, `E2-P2A-REVIEW1` |
 | P2 | unique classified frozen owner rows | rows | unknown before P2-A source inventory | `19` accepted, including `2` explicit out-of-campaign audit/probe exclusions | `19` accepted | every frozen row classified exactly once | `+19` from unknown | `E2-P2A-MATRIX2`, `E2-P2A-REVIEW1` |
 | P2 | duplicate / unassigned / unclassified affected rows | rows | unknown before P2-A source inventory | `0 / 0 / 0` accepted | `0 / 0 / 0` accepted | `0 / 0 / 0` | zero | `E2-P2A-MATRIX2`, `E2-P2A-REVIEW1` |
-| P2 | Graph JSON/Ladybug corrected records with field differences | records | pending accepted Child 01 fields | pending | pending | 0 | pending | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
-| P2 | Graph JSON/Ladybug differing corrected fields | fields | pending accepted Child 01 fields | pending | pending | 0 | pending | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
-| P2 | corrected records silently dropped | records | pending P2-A denominator | pending | pending | 0 | pending | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
+| P2 | Graph JSON/Ladybug corrected records with field differences | records | pending accepted Child 01 fields | `0` across `36,330` matched Definition records | pending P2-E final | 0 | target met at P2-B | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
+| P2 | Graph JSON/Ladybug differing corrected fields | fields | pending accepted Child 01 fields | `0` for label, qualified name, construct and optional selection coordinates | pending P2-E final | 0 | target met at P2-B | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
+| P2 | corrected records silently dropped | records | pending P2-A denominator | `0` (`36,330/36,330` matched) | pending P2-E final | 0 | target met at P2-B | `E2-P2B-PARITY1`, `E2-P2E-PARITY1` |
 | P2 | affected reader acceptance | passed/total affected readers | pending P2-A denominator | pending | pending | all/all | pending | `E2-P2C-RUNTIME1`, `E2-P2E-READERS1` |
 | P2 | repeated normal analyze acceptance | passed/declared matched runs | pending P2-D protocol | pending | pending | all/all | pending | `E2-P2D-REPEAT1`, `E2-P2E-REPEAT1` |
 | P2 | failed owned-boundary attempts returning a successful result from another artifact | attempts | pending fault denominator | pending | pending | 0 | pending | `E2-P2D-REPEAT1`, `E2-P2E-REPEAT1` |
 | P2 | analyze duration, if persistence changes or measures it | seconds | pending matched baseline | pending | pending | measured and reviewed | pending | `E2-P2D-REPEAT1` |
-| P2 | Ladybug load/query duration, if benchmarkable | seconds or milliseconds | pending matched baseline | pending | pending | measured and reviewed | pending | `E2-P2B-PARITY1`, `E2-P2D-REPEAT1` |
-| P2 | graph artifact size, if persistence changes it | bytes | pending matched baseline | pending | pending | measured with explained delta | pending | `E2-P2B-PARITY1` |
+| P2 | Ladybug load/query duration, if benchmarkable | seconds or milliseconds | pending matched baseline | not benchmarked in P2-B; native test timing remains validation evidence only | pending matched P2-D/final | measured and reviewed when the boundary is benchmarked | no benchmark delta claimed | `E2-P2B-PARITY1`, `E2-P2D-REPEAT1` |
+| P2 | graph artifact size, if persistence changes it | bytes | pending matched baseline | Graph JSON `387,314,832`; Ladybug `144,289,792` | pending P2-E final | measured with explained delta | current artifacts recorded; no matched baseline delta claimed | `E2-P2B-PARITY1` |
 
 ## Non-Benchmarkable Notes
 

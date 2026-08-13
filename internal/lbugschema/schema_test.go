@@ -188,7 +188,7 @@ func TestEmbeddingAndIndexQueries(t *testing.T) {
 	if err != nil {
 		t.Fatalf("EmbeddingSchema(768) error = %v", err)
 	}
-	for _, want := range []string{"CREATE NODE TABLE CodeEmbedding", "embedding FLOAT[768]", "contentHash STRING"} {
+	for _, want := range []string{"CREATE NODE TABLE CodeEmbedding", "label STRING", "embedding FLOAT[768]", "contentHash STRING"} {
 		if !strings.Contains(schema, want) {
 			t.Fatalf("embedding schema missing %q:\n%s", want, schema)
 		}

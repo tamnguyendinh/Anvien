@@ -22,15 +22,15 @@ var relationshipColumns = []string{"from", "to", "type", "confidence", "reason",
 var (
 	fileNodeColumns      = semanticNodeColumns("id", "name", "filePath", "content")
 	folderNodeColumns    = semanticNodeColumns("id", "name", "filePath")
-	symbolNodeColumns    = semanticNodeColumns("id", "name", "filePath", "startLine", "endLine", "isExported", "content", "description")
-	methodNodeColumns    = semanticNodeColumns("id", "name", "filePath", "startLine", "endLine", "isExported", "content", "description", "parameterCount", "returnType")
+	symbolNodeColumns    = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "isExported", "content", "description")
+	methodNodeColumns    = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "isExported", "content", "description", "parameterCount", "returnType")
 	communityNodeColumns = semanticNodeColumns("id", "label", "heuristicLabel", "keywords", "description", "enrichedBy", "cohesion", "symbolCount")
 	processNodeColumns   = semanticNodeColumns("id", "label", "heuristicLabel", "processType", "stepCount", "communities", "entryPointId", "terminalId")
 	sectionNodeColumns   = semanticNodeColumns("id", "name", "filePath", "startLine", "endLine", "level", "content", "description")
 	routeNodeColumns     = semanticNodeColumns("id", "name", "filePath", "responseKeys", "errorKeys", "middleware")
 	toolNodeColumns      = semanticNodeColumns("id", "name", "filePath", "description")
 	resolutionGapColumns = semanticNodeColumns("id", "name", "gapKind", "sourceSiteId", "sourceNodeId", "sourceNodeLabel", "sourceAppLayer", "sourceFunctionalArea", "factFamily", "targetText", "targetRole", "sourceSiteStatus", "proofKind", "classification", "actionability", "resolutionSource", "source", "filePath", "fileHash", "startLine", "startCol", "endLine", "endCol", "count", "note")
-	defaultNodeColumns   = semanticNodeColumns("id", "name", "filePath", "startLine", "endLine", "content", "description")
+	defaultNodeColumns   = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "content", "description")
 	nodeColumnLookup     = map[string][]string{
 		"File":          fileNodeColumns,
 		"Folder":        folderNodeColumns,
@@ -119,6 +119,10 @@ func ExportGraphCSVs(g *graph.Graph, csvDir string) (*CSVExport, error) {
 		}
 		writer, err := writerForTable(nodeWriters, csvDir, table, columns)
 		if err != nil {
+			closeWriters(nodeWriters)
+			return nil, err
+		}
+		if err := validateSelectionRangeProperties(node, columns); err != nil {
 			closeWriters(nodeWriters)
 			return nil, err
 		}
@@ -310,9 +314,9 @@ func nodeCSVRow(node graph.Node, table string) []string {
 	case "Folder":
 		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""))
 	case "Function", "Class", "Interface", "CodeElement":
-		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), intProp(props, "startLine", -1), intProp(props, "endLine", -1), boolProp(props, "isExported"), stringProp(props, "content", ""), stringProp(props, "description", ""))
+		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "qualifiedName", ""), intProp(props, "startLine", -1), intProp(props, "startCol", -1), intProp(props, "endLine", -1), intProp(props, "endCol", -1), optionalIntProp(props, "selectionStartLine"), optionalIntProp(props, "selectionStartCol"), optionalIntProp(props, "selectionEndLine"), optionalIntProp(props, "selectionEndCol"), boolProp(props, "isExported"), stringProp(props, "content", ""), stringProp(props, "description", ""))
 	case "Method":
-		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), intProp(props, "startLine", -1), intProp(props, "endLine", -1), boolProp(props, "isExported"), stringProp(props, "content", ""), stringProp(props, "description", ""), intProp(props, "parameterCount", 0), stringProp(props, "returnType", ""))
+		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "qualifiedName", ""), intProp(props, "startLine", -1), intProp(props, "startCol", -1), intProp(props, "endLine", -1), intProp(props, "endCol", -1), optionalIntProp(props, "selectionStartLine"), optionalIntProp(props, "selectionStartCol"), optionalIntProp(props, "selectionEndLine"), optionalIntProp(props, "selectionEndCol"), boolProp(props, "isExported"), stringProp(props, "content", ""), stringProp(props, "description", ""), intProp(props, "parameterCount", 0), stringProp(props, "returnType", ""))
 	case "Community":
 		return semanticValues(node.ID, firstStringProp(props, []string{"label", "name"}, ""), stringProp(props, "heuristicLabel", ""), arrayLiteral(props["keywords"]), stringProp(props, "description", ""), stringProp(props, "enrichedBy", "heuristic"), floatProp(props, "cohesion", 0), intProp(props, "symbolCount", 0))
 	case "Process":
@@ -352,7 +356,7 @@ func nodeCSVRow(node graph.Node, table string) []string {
 			stringProp(props, "note", ""),
 		)
 	default:
-		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), intProp(props, "startLine", -1), intProp(props, "endLine", -1), stringProp(props, "content", ""), stringProp(props, "description", ""))
+		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "qualifiedName", ""), intProp(props, "startLine", -1), intProp(props, "startCol", -1), intProp(props, "endLine", -1), intProp(props, "endCol", -1), optionalIntProp(props, "selectionStartLine"), optionalIntProp(props, "selectionStartCol"), optionalIntProp(props, "selectionEndLine"), optionalIntProp(props, "selectionEndCol"), stringProp(props, "content", ""), stringProp(props, "description", ""))
 	}
 }
 
@@ -487,6 +491,39 @@ func intProp(props graph.NodeProperties, key string, fallback int) string {
 		}
 	}
 	return strconv.Itoa(fallback)
+}
+
+func optionalIntProp(props graph.NodeProperties, key string) string {
+	if props == nil || props[key] == nil {
+		return ""
+	}
+	return intProp(props, key, 0)
+}
+
+func validateSelectionRangeProperties(node graph.Node, columns []string) error {
+	if !containsColumn(columns, "selectionStartLine") {
+		return nil
+	}
+	keys := [...]string{"selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol"}
+	present := 0
+	for _, key := range keys {
+		if node.Properties != nil && node.Properties[key] != nil {
+			present++
+		}
+	}
+	if present != 0 && present != len(keys) {
+		return fmt.Errorf("node %q has incomplete selection range: %d of %d coordinates present", node.ID, present, len(keys))
+	}
+	return nil
+}
+
+func containsColumn(columns []string, want string) bool {
+	for _, column := range columns {
+		if column == want {
+			return true
+		}
+	}
+	return false
 }
 
 func floatProp(props graph.NodeProperties, key string, fallback float64) string {

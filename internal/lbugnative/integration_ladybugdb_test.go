@@ -3,9 +3,12 @@
 package lbugnative
 
 import (
+	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/tamnguyendinh/anvien/internal/embeddings"
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/lbugload"
 	"github.com/tamnguyendinh/anvien/internal/lbugruntime"
@@ -47,10 +50,23 @@ func TestNativeLadybugPersistenceReadbackAndStream(t *testing.T) {
 		db.Close()
 		t.Fatalf("LoadCSVExport() error = %v", err)
 	}
-	if loadResult.NodeCopyCount != 2 || loadResult.RelationshipCopyCount != 1 || loadResult.FallbackInsertCount != 0 {
+	if loadResult.NodeCopyCount != len(nativeDefinitionTables())+1 || loadResult.RelationshipCopyCount != len(nativeDefinitionTables()) || loadResult.FallbackInsertCount != 0 || loadResult.FallbackInsertFailures != 0 || loadResult.SkippedRelationships != 0 {
 		conn.Close()
 		db.Close()
 		t.Fatalf("unexpected load result: %#v", loadResult)
+	}
+	if err := writeRunner.Query(embeddings.CreateEmbeddingQuery(embeddings.EmbeddingUpdate{
+		NodeID:      "opaque-definition-00",
+		Label:       scopeir.NodeFunction,
+		ChunkIndex:  0,
+		StartLine:   1,
+		EndLine:     1,
+		Embedding:   []float32{1, 2, 3},
+		ContentHash: "native-content-hash",
+	})); err != nil {
+		conn.Close()
+		db.Close()
+		t.Fatalf("create embedding row: %v", err)
 	}
 	conn.Close()
 	db.Close()
@@ -74,12 +90,50 @@ func TestNativeLadybugPersistenceReadbackAndStream(t *testing.T) {
 	if len(rows) != 1 || rows[0]["id"] != "File:src/app.ts" || rows[0]["name"] != "app.ts" {
 		t.Fatalf("unexpected file rows: %#v", rows)
 	}
-	functionRows, err := readRunner.Query("MATCH (n:Function) RETURN n.id AS id")
-	if err != nil {
-		t.Fatalf("read function rows: %v", err)
+	for index, table := range nativeDefinitionTables() {
+		query := "MATCH (n:" + lbugschema.FormatIdent(table) + ") RETURN " +
+			"n.id AS id, n.qualifiedName AS qualifiedName, " +
+			"n.startLine AS startLine, n.startCol AS startCol, n.endLine AS endLine, n.endCol AS endCol, " +
+			"n.selectionStartLine AS selectionStartLine, n.selectionStartCol AS selectionStartCol, " +
+			"n.selectionEndLine AS selectionEndLine, n.selectionEndCol AS selectionEndCol, " +
+			"n.selectionStartLine IS NULL AS selectionStartLineMissing, " +
+			"n.selectionStartCol IS NULL AS selectionStartColMissing, " +
+			"n.selectionEndLine IS NULL AS selectionEndLineMissing, " +
+			"n.selectionEndCol IS NULL AS selectionEndColMissing"
+		definitionRows, err := readRunner.Query(query)
+		if err != nil {
+			t.Fatalf("read %s definition row: %v", table, err)
+		}
+		wantID := fmt.Sprintf("opaque-definition-%02d", index)
+		if len(definitionRows) != 1 {
+			t.Fatalf("%s definition rows = %#v, want one", table, definitionRows)
+		}
+		row := definitionRows[0]
+		if row["id"] != wantID || row["qualifiedName"] != "scope."+strings.ToLower(table) || row["startLine"] != fmt.Sprint(index+1) || row["startCol"] != "0" || row["endLine"] != fmt.Sprint(index+2) || row["endCol"] != fmt.Sprint(index+3) {
+			t.Fatalf("%s corrected definition fields drifted: %#v", table, row)
+		}
+		selectionColumns := []string{"selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol"}
+		if index%2 == 0 {
+			wantSelection := []string{fmt.Sprint(index + 1), "0", fmt.Sprint(index + 1), fmt.Sprint(index + 1)}
+			for selectionIndex, column := range selectionColumns {
+				if row[column] != wantSelection[selectionIndex] || nativeBoolTrue(row[column+"Missing"]) {
+					t.Fatalf("%s.%s = %#v (missing=%#v), want %q and present", table, column, row[column], row[column+"Missing"], wantSelection[selectionIndex])
+				}
+			}
+		} else {
+			for _, column := range selectionColumns {
+				if !nativeBoolTrue(row[column+"Missing"]) {
+					t.Fatalf("%s.%s persisted a half/default range: %#v", table, column, row)
+				}
+			}
+		}
 	}
-	if len(functionRows) != 1 || functionRows[0]["id"] != "Function:doWork" {
-		t.Fatalf("unexpected function rows: %#v", functionRows)
+	embeddingRows, err := readRunner.Query("MATCH (e:CodeEmbedding) RETURN e.nodeId AS nodeId, e.label AS label, e.chunkIndex AS chunkIndex, e.contentHash AS contentHash")
+	if err != nil {
+		t.Fatalf("read embedding rows: %v", err)
+	}
+	if len(embeddingRows) != 1 || embeddingRows[0]["nodeId"] != "opaque-definition-00" || embeddingRows[0]["label"] != "Function" || embeddingRows[0]["chunkIndex"] != "0" || embeddingRows[0]["contentHash"] != "native-content-hash" {
+		t.Fatalf("unexpected embedding rows: %#v", embeddingRows)
 	}
 	missingRows, err := readRunner.Query("MATCH (n:Function) WHERE n.id = '__nonexistent_id__' RETURN n.id AS id")
 	if err != nil {
@@ -106,8 +160,18 @@ func TestNativeLadybugPersistenceReadbackAndStream(t *testing.T) {
 	if err != nil {
 		t.Fatalf("stream relationship rows: %v", err)
 	}
-	if count != 1 || streamed[0]["fromId"] != "File:src/app.ts" || streamed[0]["toId"] != "Function:doWork" || streamed[0]["type"] != "DEFINES" || streamed[0]["fileHash"] != "hash-native" {
+	if count != 1 || streamed[0]["fromId"] != "File:src/app.ts" || streamed[0]["toId"] != "opaque-definition-00" || streamed[0]["type"] != "DEFINES" || streamed[0]["fileHash"] != "hash-native-function" {
 		t.Fatalf("unexpected streamed rows: count=%d rows=%#v", count, streamed)
+	}
+	for index, table := range nativeDefinitionTables() {
+		rows, err := readRunner.Query("MATCH (a:File)-[r:CodeRelation]->(b:" + lbugschema.FormatIdent(table) + ") RETURN a.id AS fromId, b.id AS toId, r.type AS type")
+		if err != nil {
+			t.Fatalf("read %s DEFINES closure: %v", table, err)
+		}
+		wantID := fmt.Sprintf("opaque-definition-%02d", index)
+		if len(rows) != 1 || rows[0]["fromId"] != "File:src/app.ts" || rows[0]["toId"] != wantID || rows[0]["type"] != "DEFINES" {
+			t.Fatalf("unexpected %s DEFINES rows: %#v", table, rows)
+		}
 	}
 }
 
@@ -173,7 +237,7 @@ func (r nativeReadRunner) Stream(query string, onRow func(lbugruntime.Row) error
 
 func schemaQueries(t *testing.T) []string {
 	t.Helper()
-	queries, err := lbugschema.SchemaQueries(lbugschema.DefaultEmbeddingDims)
+	queries, err := lbugschema.SchemaQueries(3)
 	if err != nil {
 		t.Fatalf("SchemaQueries() error = %v", err)
 	}
@@ -181,24 +245,52 @@ func schemaQueries(t *testing.T) []string {
 }
 
 func nativeFixtureGraph() *graph.Graph {
-	step := 1
 	g := graph.New()
 	g.AddNode(graph.Node{ID: "File:src/app.ts", Label: scopeir.NodeFile, Properties: graph.NodeProperties{
 		"name": "app.ts", "filePath": "src/app.ts", "content": "export function doWork() {}",
 	}})
-	g.AddNode(graph.Node{ID: "Function:doWork", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
-		"name": "doWork", "filePath": "src/app.ts", "startLine": 1, "endLine": 1, "isExported": true, "content": "function doWork() {}",
-	}})
-	g.AddRelationship(graph.Relationship{
-		ID:               "rel:file-function",
-		SourceID:         "File:src/app.ts",
-		TargetID:         "Function:doWork",
-		Type:             graph.RelDefines,
-		Confidence:       1,
-		Reason:           "native persistence fixture",
-		Step:             &step,
-		ResolutionSource: "native-test",
-		FileHash:         "hash-native",
-	})
+	for index, table := range nativeDefinitionTables() {
+		id := fmt.Sprintf("opaque-definition-%02d", index)
+		properties := graph.NodeProperties{
+			"name":          strings.ToLower(table),
+			"filePath":      "src/app.ts",
+			"qualifiedName": "scope." + strings.ToLower(table),
+			"startLine":     index + 1,
+			"startCol":      0,
+			"endLine":       index + 2,
+			"endCol":        index + 3,
+		}
+		if index%2 == 0 {
+			properties["selectionStartLine"] = index + 1
+			properties["selectionStartCol"] = 0
+			properties["selectionEndLine"] = index + 1
+			properties["selectionEndCol"] = index + 1
+		}
+		g.AddNode(graph.Node{ID: id, Label: scopeir.NodeLabel(table), Properties: properties})
+		g.AddRelationship(graph.Relationship{
+			ID:               "rel:file-" + strings.ToLower(table),
+			SourceID:         "File:src/app.ts",
+			TargetID:         id,
+			Type:             graph.RelDefines,
+			Confidence:       1,
+			Reason:           "native persistence fixture",
+			ResolutionSource: "native-test",
+			FileHash:         "hash-native-" + strings.ToLower(table),
+		})
+	}
 	return g
+}
+
+func nativeDefinitionTables() []string {
+	return []string{
+		"Function", "Class", "Interface", "CodeElement", "Method",
+		"Package", "Struct", "Enum", "Macro", "Typedef", "Union", "Namespace", "Trait", "Impl",
+		"TypeAlias", "Const", "Static", "Variable", "Property", "Record", "Delegate", "Annotation",
+		"Constructor", "Template", "Module",
+	}
+}
+
+func nativeBoolTrue(value any) bool {
+	text := strings.ToLower(fmt.Sprint(value))
+	return text == "true" || text == "1"
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/lbugruntime"
 	"github.com/tamnguyendinh/anvien/internal/lbugschema"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 const embedSubBatchSize = 8
@@ -60,6 +61,7 @@ type RunResult struct {
 
 type EmbeddingUpdate struct {
 	NodeID      string
+	Label       scopeir.NodeLabel
 	ChunkIndex  int
 	StartLine   int
 	EndLine     int
@@ -182,6 +184,7 @@ func prepareBatch(nodes []EmbeddableNode, hashes map[string]string, config Confi
 			texts = append(texts, GenerateText(node, chunk.Text, config))
 			updates = append(updates, EmbeddingUpdate{
 				NodeID:      node.ID,
+				Label:       node.Label,
 				ChunkIndex:  chunk.ChunkIndex,
 				StartLine:   chunk.StartLine,
 				EndLine:     chunk.EndLine,
@@ -207,10 +210,11 @@ func DeleteEmbeddingRowsQuery(nodeID string) string {
 
 func CreateEmbeddingQuery(update EmbeddingUpdate) string {
 	return fmt.Sprintf(
-		"CREATE (e:%s {id: %s, nodeId: %s, chunkIndex: %d, startLine: %d, endLine: %d, embedding: %s, contentHash: %s})",
+		"CREATE (e:%s {id: %s, nodeId: %s, label: %s, chunkIndex: %d, startLine: %d, endLine: %d, embedding: %s, contentHash: %s})",
 		lbugschema.EmbeddingTableName,
 		cypherString(fmt.Sprintf("%s:%d", update.NodeID, update.ChunkIndex)),
 		cypherString(update.NodeID),
+		cypherString(string(update.Label)),
 		update.ChunkIndex,
 		update.StartLine,
 		update.EndLine,
