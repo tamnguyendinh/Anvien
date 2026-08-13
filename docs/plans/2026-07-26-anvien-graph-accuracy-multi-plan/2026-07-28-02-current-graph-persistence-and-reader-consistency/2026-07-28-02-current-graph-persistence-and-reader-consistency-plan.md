@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / P0-A, P2-A, P2-B, P2-C, P2-D, and P2-E accepted at isolated commit boundaries / Pn-A unconditional Supervisor PASS pending isolated docs/report commit`
+- Status: `active / P0-A, P2-A, P2-B, P2-C, P2-D, P2-E, and Pn-A accepted at isolated commit boundaries / Pn-B cleanup independently accepted pending isolated commit / Pn-C closed`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-benchmark.md`
@@ -371,15 +371,18 @@ In scope:
     2. Return each rejection only to P2-B, P2-C, P2-D, or evidence ownership and repeat review.
   - Implementation Gate: P2-A through P2-E complete or explicitly blocked.
   - Current State: independent report `reports/Supervisor/rp_supervisor_260814_005128_by_gpt-5_child02_pna_full_plan.md` (SHA-256 `60314C3BAFDAB09E4A60539391C6E7A847B5FA411E08129E1CE12555BFECC9E0`) returned unconditional `PASS` / `ACCEPT_CHILD02_PNA_AND_HAND_BACK` at HEAD `593e77a3f36c78447864a906a75c05e0d89530cc`. It independently verified source, all six slice commits, Graph JSON/Ladybug parity, eight readers, repeat/failure/recovery, raw evidence/harnesses/screenshots, full-plan ledger consistency, and zero residual same-invariant surface. Earlier P2-A/P2-C REJECT artifacts are retained immutable provenance whose findings are closed, not live blockers. The exact five-document/one-report boundary commits immediately after this row; Pn-B/Pn-C and Child 03 remain closed until Git confirms success.
+  - Commit Result: exact five-document/one-report boundary committed as `e47acfad927425621c3f9048d0a23eed513444a5` with message `docs(plan): accept child 02 full-plan review`; post-commit worktree and index are clean.
   - Acceptance: unconditional PASS recorded as `E3-PNA-SUPERVISOR1`, or exact blocker prevents closure.
 
-- [ ] Pn-B: Remove dead work created during this plan.
+- [x] Pn-B: Remove dead work created during this plan.
   - Goal: remove superseded inventories, failed fixtures, duplicate reports, and rejected artifacts.
   - Work Steps:
     1. Identify only Child 02 dead work.
     2. Remove it and obtain Supervisor cleanup review.
   - Implementation Gate: Pn-A reviewed the result.
+  - Current State: cleanup executor report `reports/coder/rp_coder_260814_011727_by_gpt-5_child02_pnb_cleanup.md` (SHA-256 `C77A7C3F59EE26CB1841FBFB650CF3C3081B2748CC254025EF22859A14956B18`) inventoried the exact lifecycle boundary and deleted only a nested P2-E execution skeleton: one `120`-byte owner marker plus four exact empty directories under `.tmp/.tmp/qa-child02-p2e`. Independent report `reports/Supervisor/rp_supervisor_260814_015043_by_gpt-5_child02_pnb_cleanup.md` (SHA-256 `04475021762338800B6D8100AB5ABC31388930EB09E4082C2D221FF0818ED357`) returned unconditional `PASS` / `ACCEPT_CHILD02_PNB_CLEANUP_AND_HAND_BACK`, findings `0/0`, and no residual same-invariant surface. It independently reconciled `77` current-chain paths and `92` lifecycle entries; retained `49/49` accepted artifacts, `5/5` created product tests, all rejected-attempt/history provenance, and all three shared roots; verified JSON `8/8`, PNG `12/12`, five protected hashes, exact five-path absence, the retained empty generic parent, branch/HEAD, and staged `0`. No build/test/runtime/QA/graph gate was rerun because Pn-B changed no tracked product surface. The exact five-document/two-report boundary commits immediately after this row; Pn-C and Child 03 remain closed until Git confirms success.
   - Acceptance: cleanup proof recorded as `E3-PNB-CLEANUP1`.
+  - Commit Boundary: isolated documentation/report cleanup commit; Git reports the final hash because a commit cannot contain its own hash.
 
 - [ ] Pn-C: Close the plan and hand off accepted persistence facts.
   - Goal: finalize ledgers, detect-changes, commits, and Child 03 actual-status refresh.
