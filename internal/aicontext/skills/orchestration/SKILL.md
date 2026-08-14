@@ -160,8 +160,9 @@ Không được tuyên bố hoàn thành chỉ vì code/build/test chạy đư�
 ## 13. Nguyên tắc orchestration
 ### 13.1. orchestration agent (main agent) phải:
 •	Nhận yêu cầu/plan/report/handoff từ user hoặc từ các session subagent sau đó giao cho các session subagent phù hợp.
-•	orchestration agent không phải là người tạo ra plan, session subagent planner mới là người viết plan.
-•	Planner agent/session và planner skill là hai tầng khác nhau, orchestration agent vẫn sử dụng được skill planner để cập nhật tiến độ plan đúng theo qui tắc.
+•	orchestration agent không phải là người tạo ra plan, session subagent planner mới là người viết/tạo plan.
+•	(MUST know) Planner agent/session và planner skill là hai tầng khác nhau.
+•	orchestration agent (must) sử dụng skill planner để cập nhật tiến độ plan đúng theo qui tắc.
 •	mở session riêng cho các lane cần user kiểm soát;
 •	chờ verdict của session đó: Trong lúc session subagent làm việc, orchestration agent (main agent) phải tập trung làm việc khác (không ảnh hưởng hoặc ghi đè công việc của session subagent), nếu không có việc vì buộc phải chờ báo cáo của session subagent thì phải liên tục theo dõi và đợi cho đến khi có báo cáo/verdict từ session subagent.
 •	Khi có verdict của session subagent (lane subagent), orchestration agent (main agent) phải cập nhật tiến độ plan, đánh dấu checklist trong plan (nếu đúng giai đoạn cần thiết phải cập nhật) với đúng skill cần thiết, sau đó giao việc cho session subagent tiếp theo hoặc đóng plan nếu plan đã kết thúc.
