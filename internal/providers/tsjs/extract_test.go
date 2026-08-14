@@ -901,21 +901,33 @@ func TestExtractParameterBindingPatternsPreserveShadowingAndSiblingContexts(t *t
 
 	parameterLeaves := 0
 	variableLeaves := 0
+	catchLeaves := 0
 	for _, leaf := range ir.BindingLeaves {
 		switch leaf.Provenance.Context {
 		case scopeir.BindingContextParameter:
 			parameterLeaves++
 		case scopeir.BindingContextVariable:
 			variableLeaves++
-		case scopeir.BindingContextCatch, scopeir.BindingContextForIn, scopeir.BindingContextForOf:
+		case scopeir.BindingContextCatch:
+			catchLeaves++
+		case scopeir.BindingContextForIn, scopeir.BindingContextForOf:
 			t.Fatalf("locked sibling context unexpectedly emitted leaf %#v", leaf)
 		}
 	}
-	if parameterLeaves != 2 || variableLeaves != 1 {
-		t.Fatalf("parameter/variable leaf counts = %d/%d, want 2/1: %#v", parameterLeaves, variableLeaves, ir.BindingLeaves)
+	if parameterLeaves != 2 || variableLeaves != 1 || catchLeaves != 1 {
+		t.Fatalf("parameter/variable/catch leaf counts = %d/%d/%d, want 2/1/1: %#v", parameterLeaves, variableLeaves, catchLeaves, ir.BindingLeaves)
 	}
-	if len(p3bDefinitionsNamed(ir, "caught", scopeir.NodeVariable)) != 0 || len(p3bDefinitionsNamed(ir, "written", scopeir.NodeVariable)) != 0 {
-		t.Fatalf("catch/assignment sibling emitted a false declaration: %#v", ir.Definitions)
+	caughtDefinitions := p3bDefinitionsNamed(ir, "caught", scopeir.NodeVariable)
+	if len(caughtDefinitions) != 1 {
+		t.Fatalf("catch sibling definitions = %d, want 1: %#v", len(caughtDefinitions), caughtDefinitions)
+	}
+	catchScope := p3b2CatchScope(t, ir, source, "catch (caught) { consume(caught); }")
+	caughtOwned, caughtBindings := p3b2ScopeFactCounts(ir, catchScope.ID, caughtDefinitions[0].ID, "caught")
+	if caughtOwned != 1 || caughtBindings != 1 {
+		t.Fatalf("catch sibling scope facts = owned:%d bindings:%d, want 1/1", caughtOwned, caughtBindings)
+	}
+	if len(p3bDefinitionsNamed(ir, "written", scopeir.NodeVariable)) != 0 {
+		t.Fatalf("assignment sibling emitted a false declaration: %#v", ir.Definitions)
 	}
 	requireImport(t, ir, scopeir.ImportNamed, "consume", "consume", "./dep")
 	if got := countCalls(ir, "consume", scopeir.CallFree); got != 3 {
@@ -932,6 +944,363 @@ func TestExtractParameterBindingPatternsPreserveShadowingAndSiblingContexts(t *t
 	}
 	if patternTypeBindings != 2 {
 		t.Fatalf("separate parameter type-binding path count = %d, want 2", patternTypeBindings)
+	}
+}
+
+func TestExtractCatchBindingPatternsEmitScopeIRFacts(t *testing.T) {
+	source := []byte(`function run(input: any, fallback: any) { try { throw input; } catch (caught) { consume(caught); } try { throw input; } catch ([first,,{source: alias = fallback}, ...tail]) { consume(first, alias, tail); } try { throw input; } catch ({outer: {deep}, optional = fallback, ...rest}) { consume(deep, optional, rest); } }`)
+	ir := parseAndExtract(t, "src/catch-patterns.ts", "hash-catch-patterns", scanner.TypeScript, source)
+
+	if len(ir.ExtractionDiagnostics) != 0 {
+		t.Fatalf("catch binding diagnostics = %#v, want none", ir.ExtractionDiagnostics)
+	}
+
+	type expectedCatchLeaf struct {
+		path          string
+		rangeText     string
+		patternText   string
+		patternKind   string
+		constructText string
+		rest          bool
+		defaults      bool
+	}
+	want := map[string]expectedCatchLeaf{
+		"caught": {
+			rangeText:     "caught",
+			patternText:   "caught",
+			patternKind:   "identifier",
+			constructText: "catch (caught) { consume(caught); }",
+		},
+		"first": {
+			path:          "array:0",
+			rangeText:     "first",
+			patternText:   "[first,,{source: alias = fallback}, ...tail]",
+			patternKind:   "array_pattern",
+			constructText: "catch ([first,,{source: alias = fallback}, ...tail]) { consume(first, alias, tail); }",
+		},
+		"alias": {
+			path:          "array:2/property:source",
+			rangeText:     "source: alias = fallback",
+			patternText:   "[first,,{source: alias = fallback}, ...tail]",
+			patternKind:   "array_pattern",
+			constructText: "catch ([first,,{source: alias = fallback}, ...tail]) { consume(first, alias, tail); }",
+			defaults:      true,
+		},
+		"tail": {
+			path:          "array:3",
+			rangeText:     "...tail",
+			patternText:   "[first,,{source: alias = fallback}, ...tail]",
+			patternKind:   "array_pattern",
+			constructText: "catch ([first,,{source: alias = fallback}, ...tail]) { consume(first, alias, tail); }",
+			rest:          true,
+		},
+		"deep": {
+			path:          "property:outer/property:deep",
+			rangeText:     "outer: {deep}",
+			patternText:   "{outer: {deep}, optional = fallback, ...rest}",
+			patternKind:   "object_pattern",
+			constructText: "catch ({outer: {deep}, optional = fallback, ...rest}) { consume(deep, optional, rest); }",
+		},
+		"optional": {
+			path:          "property:optional",
+			rangeText:     "optional = fallback",
+			patternText:   "{outer: {deep}, optional = fallback, ...rest}",
+			patternKind:   "object_pattern",
+			constructText: "catch ({outer: {deep}, optional = fallback, ...rest}) { consume(deep, optional, rest); }",
+			defaults:      true,
+		},
+		"rest": {
+			rangeText:     "...rest",
+			patternText:   "{outer: {deep}, optional = fallback, ...rest}",
+			patternKind:   "object_pattern",
+			constructText: "catch ({outer: {deep}, optional = fallback, ...rest}) { consume(deep, optional, rest); }",
+			rest:          true,
+		},
+	}
+
+	catchLeaves := make([]scopeir.BindingLeafFact, 0, len(want))
+	for _, leaf := range ir.BindingLeaves {
+		if leaf.Provenance.Context == scopeir.BindingContextCatch {
+			catchLeaves = append(catchLeaves, leaf)
+		}
+	}
+	if len(catchLeaves) != len(want) {
+		t.Fatalf("catch binding leaves = %d, want %d: %#v", len(catchLeaves), len(want), catchLeaves)
+	}
+
+	functionScopeID := p3b1FunctionScopeID(t, ir, source, "function run(")
+	catchScopes := make(map[string]scopeir.ScopeFact, 3)
+	for _, expected := range want {
+		if _, ok := catchScopes[expected.constructText]; ok {
+			continue
+		}
+		scope := p3b2CatchScope(t, ir, source, expected.constructText)
+		if scope.Parent == nil || *scope.Parent != functionScopeID {
+			t.Fatalf("catch scope %q parent = %#v, want %q", expected.constructText, scope.Parent, functionScopeID)
+		}
+		catchScopes[expected.constructText] = scope
+	}
+
+	seen := map[string]int{}
+	for _, leaf := range catchLeaves {
+		expected, ok := want[leaf.Name]
+		if !ok {
+			t.Fatalf("unexpected catch binding leaf %#v", leaf)
+		}
+		seen[leaf.Name]++
+		if got := bindingPathText(leaf.Path); got != expected.path {
+			t.Fatalf("catch leaf %s path = %q, want %q", leaf.Name, got, expected.path)
+		}
+		if got := sourceTextForRange(source, leaf.Range); got != expected.rangeText {
+			t.Fatalf("catch leaf %s range text = %q, want %q", leaf.Name, got, expected.rangeText)
+		}
+		if leaf.SelectionRange == nil || sourceTextForRange(source, *leaf.SelectionRange) != leaf.Name {
+			t.Fatalf("catch leaf %s selection range = %#v", leaf.Name, leaf.SelectionRange)
+		}
+		if leaf.Rest != expected.rest || leaf.Default != expected.defaults {
+			t.Fatalf("catch leaf %s modifiers = rest:%t default:%t, want rest:%t default:%t", leaf.Name, leaf.Rest, leaf.Default, expected.rest, expected.defaults)
+		}
+		if leaf.Provenance.PatternKind != expected.patternKind ||
+			sourceTextForRange(source, leaf.Provenance.PatternRange) != expected.patternText ||
+			sourceTextForRange(source, leaf.Provenance.ConstructRange) != expected.constructText {
+			t.Fatalf("catch leaf %s provenance mismatch: %#v", leaf.Name, leaf.Provenance)
+		}
+
+		definitions := p3bDefinitionsNamed(ir, leaf.Name, scopeir.NodeVariable)
+		if len(definitions) != 1 {
+			t.Fatalf("catch leaf %s definitions = %d, want 1: %#v", leaf.Name, len(definitions), definitions)
+		}
+		definition := definitions[0]
+		if definition.Range != leaf.Range || definition.SelectionRange == nil || *definition.SelectionRange != *leaf.SelectionRange {
+			t.Fatalf("catch leaf %s definition ranges mismatch: leaf=%#v definition=%#v", leaf.Name, leaf, definition)
+		}
+		if definition.DeclaredType != "" || definition.ReturnType != "" {
+			t.Fatalf("catch leaf %s invented type data: %#v", leaf.Name, definition)
+		}
+
+		scope := catchScopes[expected.constructText]
+		owned, bindings := p3b2ScopeFactCounts(ir, scope.ID, definition.ID, leaf.Name)
+		globalOwned, globalBindings := p3b2GlobalScopeFactCounts(ir, definition.ID, leaf.Name)
+		if owned != 1 || bindings != 1 || globalOwned != 1 || globalBindings != 1 {
+			t.Fatalf("catch leaf %s scope facts = catch:%d/%d global:%d/%d, want 1/1 and 1/1 in %q", leaf.Name, owned, bindings, globalOwned, globalBindings, scope.ID)
+		}
+	}
+	for name := range want {
+		if seen[name] != 1 {
+			t.Fatalf("catch leaf %s emitted %d times, want 1", name, seen[name])
+		}
+	}
+
+	consumeCallsByScope := map[string]int{}
+	for _, call := range ir.Calls {
+		if call.Name == "consume" && call.CallForm == scopeir.CallFree {
+			consumeCallsByScope[call.InScope]++
+		}
+	}
+	for _, scope := range catchScopes {
+		if consumeCallsByScope[scope.ID] != 1 {
+			t.Fatalf("consume calls in catch scope %q = %d, want 1: %#v", scope.ID, consumeCallsByScope[scope.ID], ir.Calls)
+		}
+	}
+
+	for name := range want {
+		for _, scope := range ir.Scopes {
+			for _, binding := range scope.TypeBindings {
+				if binding.Name == name {
+					t.Fatalf("catch leaf %s unexpectedly has a type binding: %#v", name, binding)
+				}
+			}
+		}
+		for _, annotation := range ir.TypeAnnotations {
+			if annotation.Name == name {
+				t.Fatalf("catch leaf %s unexpectedly has a type annotation: %#v", name, annotation)
+			}
+		}
+	}
+}
+
+func TestExtractCatchBindingPatternsOptionalAndJavaScriptControls(t *testing.T) {
+	optionalSource := []byte(`try { work(); } catch { consume(); }`)
+	optionalIR := parseAndExtract(t, "src/optional-catch.ts", "hash-optional-catch", scanner.TypeScript, optionalSource)
+	if len(optionalIR.BindingLeaves) != 0 || len(optionalIR.ExtractionDiagnostics) != 0 || len(optionalIR.Definitions) != 0 {
+		t.Fatalf("optional catch facts = leaves:%#v diagnostics:%#v definitions:%#v, want all zero", optionalIR.BindingLeaves, optionalIR.ExtractionDiagnostics, optionalIR.Definitions)
+	}
+	optionalScope := p3b2CatchScope(t, optionalIR, optionalSource, "catch { consume(); }")
+	if optionalScope.Parent == nil || *optionalScope.Parent != optionalIR.ModuleScope {
+		t.Fatalf("optional catch scope parent = %#v, want module %q", optionalScope.Parent, optionalIR.ModuleScope)
+	}
+	if len(optionalScope.OwnedDefIDs) != 0 || len(optionalScope.Bindings) != 0 {
+		t.Fatalf("optional catch scope owns binding facts: %#v", optionalScope)
+	}
+	optionalConsumeCalls := 0
+	for _, call := range optionalIR.Calls {
+		if call.Name == "consume" && call.InScope == optionalScope.ID {
+			optionalConsumeCalls++
+		}
+	}
+	if optionalConsumeCalls != 1 {
+		t.Fatalf("optional catch consume calls in %q = %d, want 1: %#v", optionalScope.ID, optionalConsumeCalls, optionalIR.Calls)
+	}
+
+	javascriptSource := []byte(`try {} catch (error) { consume(error); } try {} catch ({message: local = fallback, ...rest}) { consume(local, rest); }`)
+	javascriptIR := parseAndExtract(t, "src/catch-controls.js", "hash-catch-controls-js", scanner.JavaScript, javascriptSource)
+	if len(javascriptIR.ExtractionDiagnostics) != 0 {
+		t.Fatalf("JavaScript catch diagnostics = %#v, want none", javascriptIR.ExtractionDiagnostics)
+	}
+	want := map[string]struct {
+		path          string
+		rangeText     string
+		patternText   string
+		patternKind   string
+		constructText string
+		rest          bool
+		defaults      bool
+	}{
+		"error": {
+			rangeText:     "error",
+			patternText:   "error",
+			patternKind:   "identifier",
+			constructText: "catch (error) { consume(error); }",
+		},
+		"local": {
+			path:          "property:message",
+			rangeText:     "message: local = fallback",
+			patternText:   "{message: local = fallback, ...rest}",
+			patternKind:   "object_pattern",
+			constructText: "catch ({message: local = fallback, ...rest}) { consume(local, rest); }",
+			defaults:      true,
+		},
+		"rest": {
+			rangeText:     "...rest",
+			patternText:   "{message: local = fallback, ...rest}",
+			patternKind:   "object_pattern",
+			constructText: "catch ({message: local = fallback, ...rest}) { consume(local, rest); }",
+			rest:          true,
+		},
+	}
+	seen := map[string]int{}
+	for _, leaf := range javascriptIR.BindingLeaves {
+		if leaf.Provenance.Context != scopeir.BindingContextCatch {
+			t.Fatalf("JavaScript control emitted a non-catch leaf: %#v", leaf)
+		}
+		expected, ok := want[leaf.Name]
+		if !ok {
+			t.Fatalf("unexpected JavaScript catch leaf: %#v", leaf)
+		}
+		seen[leaf.Name]++
+		if bindingPathText(leaf.Path) != expected.path || sourceTextForRange(javascriptSource, leaf.Range) != expected.rangeText || leaf.Rest != expected.rest || leaf.Default != expected.defaults {
+			t.Fatalf("JavaScript catch leaf %s mismatch: %#v", leaf.Name, leaf)
+		}
+		if leaf.SelectionRange == nil || sourceTextForRange(javascriptSource, *leaf.SelectionRange) != leaf.Name {
+			t.Fatalf("JavaScript catch leaf %s selection range = %#v", leaf.Name, leaf.SelectionRange)
+		}
+		if leaf.Provenance.PatternKind != expected.patternKind ||
+			sourceTextForRange(javascriptSource, leaf.Provenance.PatternRange) != expected.patternText ||
+			sourceTextForRange(javascriptSource, leaf.Provenance.ConstructRange) != expected.constructText {
+			t.Fatalf("JavaScript catch leaf %s provenance mismatch: %#v", leaf.Name, leaf.Provenance)
+		}
+		definitions := p3bDefinitionsNamed(javascriptIR, leaf.Name, scopeir.NodeVariable)
+		if len(definitions) != 1 {
+			t.Fatalf("JavaScript catch leaf %s definitions = %d, want 1: %#v", leaf.Name, len(definitions), definitions)
+		}
+		definition := definitions[0]
+		if definition.Range != leaf.Range || definition.SelectionRange == nil || *definition.SelectionRange != *leaf.SelectionRange {
+			t.Fatalf("JavaScript catch leaf %s definition ranges mismatch: leaf=%#v definition=%#v", leaf.Name, leaf, definition)
+		}
+		if definition.DeclaredType != "" || definition.ReturnType != "" {
+			t.Fatalf("JavaScript catch leaf %s invented type data: %#v", leaf.Name, definition)
+		}
+		scope := p3b2CatchScope(t, javascriptIR, javascriptSource, expected.constructText)
+		if scope.Parent == nil || *scope.Parent != javascriptIR.ModuleScope {
+			t.Fatalf("JavaScript catch leaf %s scope parent = %#v, want module %q", leaf.Name, scope.Parent, javascriptIR.ModuleScope)
+		}
+		owned, bindings := p3b2ScopeFactCounts(javascriptIR, scope.ID, definition.ID, leaf.Name)
+		globalOwned, globalBindings := p3b2GlobalScopeFactCounts(javascriptIR, definition.ID, leaf.Name)
+		if owned != 1 || bindings != 1 || globalOwned != 1 || globalBindings != 1 {
+			t.Fatalf("JavaScript catch leaf %s scope facts = catch:%d/%d global:%d/%d, want 1/1 and 1/1", leaf.Name, owned, bindings, globalOwned, globalBindings)
+		}
+	}
+	if len(seen) != len(want) {
+		t.Fatalf("JavaScript catch leaves = %#v, want names %#v", seen, want)
+	}
+	for name := range want {
+		if seen[name] != 1 {
+			t.Fatalf("JavaScript catch leaf %s emitted %d times, want 1", name, seen[name])
+		}
+	}
+}
+
+func TestExtractCatchBindingPatternsPreserveShadowingAndSiblingContexts(t *testing.T) {
+	source := []byte(`import { consume } from './dep'; function shadow(input: any) { const caught = input; try {} catch (caught) { consume(caught); } consume(caught); ({written} = input); }`)
+	ir := parseAndExtract(t, "src/catch-shadowing.ts", "hash-catch-shadowing", scanner.TypeScript, source)
+
+	requireImport(t, ir, scopeir.ImportNamed, "consume", "consume", "./dep")
+	if len(ir.ExtractionDiagnostics) != 0 {
+		t.Fatalf("catch shadowing diagnostics = %#v, want none", ir.ExtractionDiagnostics)
+	}
+
+	functionScopeID := p3b1FunctionScopeID(t, ir, source, "function shadow(")
+	catchScope := p3b2CatchScope(t, ir, source, "catch (caught) { consume(caught); }")
+	if catchScope.Parent == nil || *catchScope.Parent != functionScopeID {
+		t.Fatalf("shadowing catch scope parent = %#v, want %q", catchScope.Parent, functionScopeID)
+	}
+
+	caughtDefinitions := p3bDefinitionsNamed(ir, "caught", scopeir.NodeVariable)
+	if len(caughtDefinitions) != 2 {
+		t.Fatalf("shadowed caught definitions = %d, want 2: %#v", len(caughtDefinitions), caughtDefinitions)
+	}
+	var outerDefinition scopeir.DefinitionFact
+	var catchDefinition scopeir.DefinitionFact
+	for _, definition := range caughtDefinitions {
+		globalOwned, globalBindings := p3b2GlobalScopeFactCounts(ir, definition.ID, "caught")
+		if globalOwned != 1 || globalBindings != 1 {
+			t.Fatalf("shadowed definition %q global scope facts = %d/%d, want 1/1", definition.ID, globalOwned, globalBindings)
+		}
+		catchOwned, catchBindings := p3b2ScopeFactCounts(ir, catchScope.ID, definition.ID, "caught")
+		outerOwned, outerBindings := p3b2ScopeFactCounts(ir, functionScopeID, definition.ID, "caught")
+		switch {
+		case catchOwned == 1 && catchBindings == 1 && outerOwned == 0 && outerBindings == 0:
+			catchDefinition = definition
+		case outerOwned == 1 && outerBindings == 1 && catchOwned == 0 && catchBindings == 0:
+			outerDefinition = definition
+		default:
+			t.Fatalf("shadowed definition %q leaked scope facts: catch=%d/%d outer=%d/%d", definition.ID, catchOwned, catchBindings, outerOwned, outerBindings)
+		}
+	}
+	if outerDefinition.ID == "" || catchDefinition.ID == "" || outerDefinition.ID == catchDefinition.ID {
+		t.Fatalf("shadowed definitions are not distinct: outer=%#v catch=%#v", outerDefinition, catchDefinition)
+	}
+	if got := sourceTextForRange(source, outerDefinition.Range); got != "caught = input" {
+		t.Fatalf("outer caught range = %q, want %q", got, "caught = input")
+	}
+	if got := sourceTextForRange(source, catchDefinition.Range); got != "caught" {
+		t.Fatalf("catch caught range = %q, want %q", got, "caught")
+	}
+
+	catchLeaves := 0
+	for _, leaf := range ir.BindingLeaves {
+		if leaf.Name == "caught" && leaf.Provenance.Context == scopeir.BindingContextCatch {
+			catchLeaves++
+		}
+		if leaf.Name == "written" {
+			t.Fatalf("assignment sibling emitted a binding leaf: %#v", leaf)
+		}
+	}
+	if catchLeaves != 1 {
+		t.Fatalf("shadowed caught catch leaves = %d, want 1: %#v", catchLeaves, ir.BindingLeaves)
+	}
+	if len(p3bDefinitionsNamed(ir, "written", scopeir.NodeVariable)) != 0 {
+		t.Fatalf("assignment sibling emitted a false declaration: %#v", ir.Definitions)
+	}
+
+	consumeCallsByScope := map[string]int{}
+	for _, call := range ir.Calls {
+		if call.Name == "consume" && call.CallForm == scopeir.CallFree {
+			consumeCallsByScope[call.InScope]++
+		}
+	}
+	if consumeCallsByScope[catchScope.ID] != 1 || consumeCallsByScope[functionScopeID] != 1 || len(consumeCallsByScope) != 2 {
+		t.Fatalf("shadowed consume call scopes = %#v, want catch/function 1/1", consumeCallsByScope)
 	}
 }
 
@@ -1422,6 +1791,64 @@ func p3b1ScopeOwnsAndBinds(ir scopeir.ScopeIR, scopeID string, defID string, nam
 		}
 	}
 	return false
+}
+
+func p3b2CatchScope(t *testing.T, ir scopeir.ScopeIR, source []byte, constructText string) scopeir.ScopeFact {
+	t.Helper()
+	var found *scopeir.ScopeFact
+	for index := range ir.Scopes {
+		scope := &ir.Scopes[index]
+		if scope.Kind != scopeir.ScopeBlock || sourceTextForRange(source, scope.Range) != constructText {
+			continue
+		}
+		if found != nil {
+			t.Fatalf("multiple catch scopes match %q: %#v", constructText, ir.Scopes)
+		}
+		found = scope
+	}
+	if found == nil {
+		t.Fatalf("missing catch scope %q: %#v", constructText, ir.Scopes)
+	}
+	return *found
+}
+
+func p3b2ScopeFactCounts(ir scopeir.ScopeIR, scopeID string, defID string, name string) (int, int) {
+	owned := 0
+	bindings := 0
+	for _, scope := range ir.Scopes {
+		if scope.ID != scopeID {
+			continue
+		}
+		for _, candidate := range scope.OwnedDefIDs {
+			if candidate == defID {
+				owned++
+			}
+		}
+		for _, binding := range scope.Bindings {
+			if binding.Name == name && binding.DefID == defID && binding.Origin == scopeir.BindingLocal {
+				bindings++
+			}
+		}
+	}
+	return owned, bindings
+}
+
+func p3b2GlobalScopeFactCounts(ir scopeir.ScopeIR, defID string, name string) (int, int) {
+	owned := 0
+	bindings := 0
+	for _, scope := range ir.Scopes {
+		for _, candidate := range scope.OwnedDefIDs {
+			if candidate == defID {
+				owned++
+			}
+		}
+		for _, binding := range scope.Bindings {
+			if binding.Name == name && binding.DefID == defID && binding.Origin == scopeir.BindingLocal {
+				bindings++
+			}
+		}
+	}
+	return owned, bindings
 }
 
 func requireSameImports(t *testing.T, left scopeir.ScopeIR, right scopeir.ScopeIR) {

@@ -34,6 +34,8 @@ func (c *collector) collectScopeCandidateForKind(node *sitter.Node, kind string)
 	switch kind {
 	case "class_declaration", "abstract_class_declaration", "interface_declaration":
 		c.addScopeCandidate(scopeir.ScopeClass, node)
+	case "catch_clause":
+		c.addScopeCandidate(scopeir.ScopeBlock, node)
 	default:
 		if isFunctionScopeKind(kind) {
 			c.addScopeCandidate(scopeir.ScopeFunction, node)

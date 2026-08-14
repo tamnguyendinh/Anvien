@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / Child 02 closed at 181b8cb8 / P0-A accepted and committed at 17bd4584 / P3-A accepted and committed at b4dbe5c / P3-B accepted and committed at 17254549 / P3-B1 REVIEW2 PASS / DETECT1 309/17/13 / commit-push closure / later slices locked`
+- Status: `active / Child 02 closed at 181b8cb8 / P0-A accepted and committed at 17bd4584 / P3-A accepted and committed at b4dbe5c / P3-B accepted and committed at 17254549 / P3-B1 committed-pushed at 01f160e6 / P3-B2 Supervisor and detect PASS / commit-push closure in progress / later slices locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md`
@@ -96,7 +96,7 @@ Out of scope:
     4. Classify correct, partial, wrong, missing, and blocked rows in actual status; update P3-A work steps if exact ownership differs from this plan.
   - Implementation Gate: the accepted Child 02 handoff is recorded as `E0-P0A-HANDOFF1` and its Pn-C commit is confirmed; no production edit until the actual-status Final P0 Decision permits P3-A.
   - Acceptance: `E0-P0A-HANDOFF1`, `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2`, `E0-P0A-SCOPE1`, `E0-P0A-GRAPH1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1`, `E0-P0A-STATUS1`, and independent `E0-P0A-REVIEW1` are recorded with no unresolved owner boundary; `E0-P0A-DETECT1` and `E0-P0A-COMMIT1` close the isolated documentation/evidence boundary.
-  - Current State: Child 02 is closed at entry HEAD `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`. The exact Set A/B/C manifest and partition checks are durable in the QA report. Independent Supervisor reports `E0-P0A-REVIEW1` and `E0-P0A-REVIEW2` returned `PASS`, including the byte-clean artifact committed as `17bd45845a218dccfa7cb09bde8195a14693bf50`. P3-A opened afterward; `E3-P3A-REVIEW1` and `E3-P3A-REVIEW2` preserve the two REJECT histories, `E3-P3A-REVIEW3` accepts the repaired helper/contract boundary, and the isolated slice is committed at `b4dbe5ccc2d0a77d0986b647c8054427ecca73c4`. P3-B source/test/build invariants were locked by `E3-P3B-REVIEW1`, its sole ledger-currentness rejection was repaired, focused `E3-P3B-REVIEW2` returned `PASS`, final staged `E3-P3B-DETECT1` is `222/13/13` with graph health `0/0/0`, and the slice is committed at `17254549a13ad81a560c18fbcc6ab8fe3ce5f111`. P3-B1 retains `E3-P3B1-REVIEW1` as `REJECT`, closes `P3B1-PARAMETER-CONTEXT-DISAMBIGUATION-1` with focused `E3-P3B1-REVIEW2` `PASS`, and records final `E3-P3B1-DETECT1` as `309/17/13` with graph health `0/0/0`; only isolated commit/push closure remains, and P3-B2 plus every later slice remain locked.
+  - Current State: Child 02 is closed at entry HEAD `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`. The exact Set A/B/C manifest and partition checks are durable in the QA report. Independent Supervisor reports `E0-P0A-REVIEW1` and `E0-P0A-REVIEW2` returned `PASS`, including the byte-clean artifact committed as `17bd45845a218dccfa7cb09bde8195a14693bf50`. P3-A opened afterward; `E3-P3A-REVIEW1` and `E3-P3A-REVIEW2` preserve the two REJECT histories, `E3-P3A-REVIEW3` accepts the repaired helper/contract boundary, and the isolated slice is committed at `b4dbe5ccc2d0a77d0986b647c8054427ecca73c4`. P3-B source/test/build invariants were locked by `E3-P3B-REVIEW1`, its sole ledger-currentness rejection was repaired, focused `E3-P3B-REVIEW2` returned `PASS`, final staged `E3-P3B-DETECT1` is `222/13/13` with graph health `0/0/0`, and the slice is committed at `17254549a13ad81a560c18fbcc6ab8fe3ce5f111`. P3-B1 retains `E3-P3B1-REVIEW1` as `REJECT`, closes `P3B1-PARAMETER-CONTEXT-DISAMBIGUATION-1` with focused `E3-P3B1-REVIEW2` `PASS`, records final `E3-P3B1-DETECT1` as `309/17/13` with graph health `0/0/0`, and is committed/pushed at `01f160e6e28ad74c1f379ce5ea47e643a5a14652`. P3-B2 has independent `E3-P3B2-REVIEW1` `PASS` and final staged `E3-P3B2-DETECT1` `242/11/11` with health `0/0/0`; only commit/push closure remains, while P3-B2A and every later slice stay locked.
   - Commit Boundary: four Child 03 ledgers, one QA report, immutable prior REJECT provenance, and two independent PASS reports; no production/test/fixture/target/runtime path.
 
 ### P3: TypeScript binding-pattern extraction
@@ -287,15 +287,16 @@ Out of scope:
     - [x] Record focused independent PASS as `E3-P3B1-REVIEW2`.
     - [x] Refresh roadmap, checklist, evidence, benchmark, and actual status without changing locked source/test/report bytes.
     - [x] Run and record final orchestration-owned staged detect as `E3-P3B1-DETECT1` (`309` changed symbols / `17` changed files / `13` affected files; `0` affected processes/flows; current graph health `0/0/0`).
-    - [ ] Create and immediately push the isolated P3-B1 commit as `E3-P3B1-COMMIT1`; Git/handoff records the exact hash.
+    - [x] Create and immediately push the isolated P3-B1 commit as `E3-P3B1-COMMIT1`; commit `01f160e6e28ad74c1f379ce5ea47e643a5a14652` was pushed to `origin/master`.
+  - Commit and Successor Opening (2026-08-15): `E3-P3B1-COMMIT1` is `01f160e6e28ad74c1f379ce5ea47e643a5a14652`, parent `06229bea5735e75c8d8a476c738f627bf93def8d`; the exact `17`-path slice was pushed once to `origin/master`, and local/remote `master` match. P3-B2 is now the sole open coder slice. Its production/test owners remain unselected until fresh catch-context file-detail and exact file/symbol impact evidence are recorded; P3-B2A and every later slice remain locked.
 
-- [ ] P3-B2: Integrate catch contexts.
+- [x] P3-B2: Integrate catch contexts.
   - Goal: apply accepted leaf semantics to catch-clause declarations with correct catch scope.
   - Scope Boundary:
-    - Editable: exact catch-context owner and focused test owner.
-    - Inspect-only: walker and lexical scope construction.
-    - Preserve-only: established variable/parameter/loop behavior and the assignment-form non-declaration invariant; assignment write/reference behavior remains partial/missing and is deferred to P3-B2A/P3-C.
-    - Out of scope: graph projection.
+    - Editable: `internal/providers/tsjs/definitions.go` only for `collector.emitDefinitionKind` catch dispatch plus private catch-only leaf/Definition/OwnedDefID/local-Binding helpers; `internal/providers/tsjs/scopes.go` only for `collector.collectScopeCandidateForKind` to add `catch_clause -> ScopeBlock` over the catch-clause range; `internal/providers/tsjs/extract_test.go` only for focused real-`Extract` catch tests and the exact `caught` expectation transition inside `TestExtractParameterBindingPatternsPreserveShadowingAndSiblingContexts`.
+    - Inspect-only: accepted walker/ScopeIR contract, collector traversal/result plumbing, pinned TS/JS catch grammar, references, type inference, imports, and existing scope construction outside the one authorized catch case.
+    - Preserve-only: every existing module/class/function scope rule and scope sorting/parent/ID/containment helper; accepted variable/parameter behavior; loop behavior and the assignment-form non-declaration invariant; assignment write/reference behavior remains partial/missing and is deferred to P3-B2A/P3-C.
+    - Out of scope: exception-flow modeling, general block-scope modeling, graph projection/resolution, persistence, target validation, and all later contexts.
   - Non-Goals: no changes to exception-flow modeling.
   - Pre-flight Questions:
     - Data source: current catch-clause AST nodes.
@@ -311,30 +312,37 @@ Out of scope:
     - External side effects: none.
     - N/A notes: UI, DB, Docker, and Playwright are not applicable to this provider slice.
   - Work Steps:
-    1. Record fresh catch-owner impact and implement production catch wiring.
+    1. Preserve the accepted `E3-P3B2-IMPACT1` three-file/three-existing-symbol boundary, add only the catch-clause `ScopeBlock` candidate in `scopes.go`, and implement catch dispatch/emission in `definitions.go` using the accepted walker exactly once; `catch {}` returns with zero facts/diagnostics, and no type-inference path is called.
        - UI flow check: N/A; no visible flow exists.
        - DB/data flow check: verify one binding fact per supported catch leaf in the correct scope.
        - Render location check: N/A; inspect catch ScopeIR.
        - Mini QA: after the full build in step 2, exercise the catch-fact boundary.
        - Evidence target: `E3-P3B2-IMPACT1`, `E3-P3B2-SRC1`.
-    2. Add focused tests after code, run the full build and ScopeIR validation, refresh ledgers, obtain Supervisor PASS, detect changes, and commit.
+    2. After production behavior is correct, add focused TypeScript/JavaScript identifier/pattern/optional-catch/scope/shadowing/zero-duplicate tests and update only the stale `caught` assertion named above; run the holder-clean full build, ScopeIR/preservation/product validation, refresh ledgers, obtain Supervisor PASS, detect changes, and commit.
        - UI flow check: N/A; no visible flow exists.
        - DB/data flow check: verify catch scope/shadowing and zero duplicate declarations.
        - Render location check: evidence ledger and focused test output.
        - Mini QA: exercise the built catch-fact boundary and record the result.
        - Evidence target: `E3-P3B2-BUILD1`, `E3-P3B2-TEST1`, `E3-P3B2-BOUNDARY1`, `E3-P3B2-REVIEW1`, `E3-P3B2-DETECT1`, `E3-P3B2-COMMIT1`.
-  - Implementation Gate: P3-B1 accepted and committed.
+  - Implementation Gate: P3-B1 is accepted, committed, and pushed at `01f160e6e28ad74c1f379ce5ea47e643a5a14652`; fresh `E3-P3B2-IMPACT1` and Orchestration's planner update authorize exactly the three files and three existing symbols above. No other production/test owner may open without a new stop-and-plan-update checkpoint.
   - Acceptance:
-    - Source: supported catch leaves emit once in the correct catch scope.
+    - Source: supported catch leaves emit once in the exact catch `ScopeBlock`; optional `catch {}` emits zero leaves/diagnostics/definitions; no type or exception-flow behavior is invented.
     - Runtime/UI: N/A; ScopeIR catch facts are the real boundary.
     - Data: sibling contexts and assignment behavior remain unchanged.
-    - Behavior test: catch and shadowing matrices pass.
+    - Behavior test: TypeScript and JavaScript catch, identifier/pattern/default/rest, optional catch, scope parent/range, shadowing, zero-duplicate, and P3-A/P3-B/P3-B1 preservation matrices pass.
     - Cleanup: no unapproved artifact remains.
     - Evidence IDs: `E3-P3B2-IMPACT1`, `E3-P3B2-SRC1`, `E3-P3B2-BUILD1`, `E3-P3B2-TEST1`, `E3-P3B2-BOUNDARY1`, `E3-P3B2-REVIEW1`, `E3-P3B2-DETECT1`, `E3-P3B2-COMMIT1`.
     - Actual-status rows refreshed: catch extraction.
   - Evidence Targets: catch oracle, scope results, build, Supervisor, detect-changes, commit.
   - Actual-status Update: transition the catch row to `correct`.
   - Commit Boundary: one P3-B2 commit.
+  - Opening Checkpoint (2026-08-15): predecessor `E3-P3B1-COMMIT1` is satisfied and pushed at `01f160e6e28ad74c1f379ce5ea47e643a5a14652`. This opens P3-B2 only. The coder must begin from fresh current graph/source/file-detail/impact evidence, select the smallest exact catch production/test boundary, and update this plan before code if evidence changes the generic owner wording. No P3-B2 evidence ID is accepted yet; P3-B2A/P3-C and later slices remain locked.
+  - Impact Boundary Checkpoint (2026-08-15): the visible coder task stopped before code because source proves scope collection/build precedes definition emission and the prior inspect-only lexical-scope wording could not produce correct catch ownership. Durable `E3-P3B2-IMPACT1` in `reports/coder/rp_coder_260815_002037_by_gpt-5_child03_p3b2_catch_contexts.md` (`11,579` bytes; SHA-256 `77E2EC40404015338B75573EEB7D0303BC0EE90279B4AFBF77676E47161022D1`) selects the exact three-file boundary above. File risks are definitions HIGH/MEDIUM, scopes HIGH/MEDIUM, and test LOW; exact `emitDefinitionKind`, `collectScopeCandidateForKind`, and stale-test-function impacts are LOW `0/0/0`, with no affected process/flow. This planner update authorizes resume in the same visible coder task only; no implementation/build/test/review/detect/commit evidence is accepted yet.
+  - Supervisor Acceptance Checkpoint (2026-08-15): independent `E3-P3B2-REVIEW1` returned `PASS` in `reports/Supervisor/rp_supervisor_260815_012555_by_gpt-5_child03_p3b2_catch_contexts.md` (`14,774` bytes; SHA-256 `E80DA8AEB480678708F4ED02FDBED455D21206D3F0C79221E296286A605116D4`). Source review cleared the exact catch dispatch/emission and one-symbol catch-scope changes. Independent holder-clean full build, focused catch `4/4`, P3-A/P3-B/P3-B1 preservation `14/14`, TSJS scope/parity `6/6`, ScopeIR tree/normalization, four-package, and repo-native command/internal gates all passed. Optional catch emits zero binding facts, every accepted catch leaf has one exact catch-scope Definition/OwnedDefID/BindingLocal, shadowing stays distinct, assignment `written` remains zero declarations, and no type/fallback/exception/loop/graph behavior was added. Acceptance is P3-B2 only for planner refresh, final detect, isolated commit, and immediate push; P3-B2A and later slices remain locked.
+    - [x] Record independent PASS as `E3-P3B2-REVIEW1`.
+    - [x] Refresh roadmap, checklist, evidence, benchmark, and actual status without changing accepted source/test/report bytes.
+    - [x] Run and record final orchestration-owned staged detect as `E3-P3B2-DETECT1` (`242` changed symbols / `11` changed files / `11` affected files; `0` affected processes/flows; current graph health `0/0/0`).
+    - [ ] Create and immediately push the isolated P3-B2 commit as `E3-P3B2-COMMIT1`; Git/handoff records the exact hash.
 
 - [ ] P3-B2A: Integrate `for-of`/`for-in` declaration contexts.
   - Goal: apply accepted leaf semantics to loop declarations while keeping assignment-form loops as writes.

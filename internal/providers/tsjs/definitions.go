@@ -31,6 +31,8 @@ func (c *collector) emitDefinitionKind(node *sitter.Node, kind string) {
 				c.emitParameterBindingPattern(parameter, parameter, node)
 			}
 		}
+	case "catch_clause":
+		c.emitCatchBindingPattern(node, child(node, "parameter"))
 	case "method_definition", "abstract_method_signature", "method_signature":
 		nameNode := child(node, "name")
 		label := scopeir.NodeMethod
@@ -191,6 +193,69 @@ func (c *collector) parameterCallableScopeID(callable *sitter.Node) string {
 }
 
 func (c *collector) addParameterBindingLeafDefinition(leaf scopeir.BindingLeafFact, scopeID string) {
+	selectionRange := leaf.SelectionRange
+	if selectionRange != nil {
+		cloned := *selectionRange
+		selectionRange = &cloned
+	}
+	id := defID(c.filePath, leaf.Range, scopeir.NodeVariable, leaf.Name)
+	c.definitions = append(c.definitions, scopeir.DefinitionFact{
+		ID:             id,
+		FilePath:       c.filePath,
+		FileHash:       c.fileHash,
+		Name:           leaf.Name,
+		Label:          scopeir.NodeVariable,
+		Range:          leaf.Range,
+		SelectionRange: selectionRange,
+		QualifiedName:  leaf.Name,
+	})
+
+	if scope := c.scopeByID(scopeID); scope != nil {
+		scope.OwnedDefIDs = append(scope.OwnedDefIDs, id)
+		scope.Bindings = append(scope.Bindings, scopeir.BindingFact{
+			Name:   leaf.Name,
+			DefID:  id,
+			Origin: scopeir.BindingLocal,
+		})
+	}
+}
+
+func (c *collector) emitCatchBindingPattern(node *sitter.Node, pattern *sitter.Node) {
+	if pattern == nil {
+		return
+	}
+	scopeID := c.catchClauseScopeID(node)
+	if scopeID == "" {
+		return
+	}
+
+	result := extractBindingPattern(bindingPatternRequest{
+		FilePath:  c.filePath,
+		FileHash:  c.fileHash,
+		Source:    c.source,
+		Context:   scopeir.BindingContextCatch,
+		Construct: node,
+		Pattern:   pattern,
+	})
+	c.bindingLeaves = append(c.bindingLeaves, result.Leaves...)
+	c.diagnostics = append(c.diagnostics, result.Diagnostics...)
+	for _, leaf := range result.Leaves {
+		c.addCatchBindingLeafDefinition(leaf, scopeID)
+	}
+}
+
+func (c *collector) catchClauseScopeID(node *sitter.Node) string {
+	if node == nil || node.Kind() != "catch_clause" {
+		return ""
+	}
+	id := scopeID(c.filePath, nodeRange(node), scopeir.ScopeBlock)
+	if c.scopeByID(id) != nil {
+		return id
+	}
+	return ""
+}
+
+func (c *collector) addCatchBindingLeafDefinition(leaf scopeir.BindingLeafFact, scopeID string) {
 	selectionRange := leaf.SelectionRange
 	if selectionRange != nil {
 		cloned := *selectionRange
