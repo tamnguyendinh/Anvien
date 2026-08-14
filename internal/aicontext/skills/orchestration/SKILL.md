@@ -9,8 +9,7 @@ bạn (only you) sử dụng Quy tắc mở session task riêng cho subagent đ�
 •	tự đọc toàn bộ yêu cầu của user hoặc plan và hiểu chức năng từng plan/phase/slice;
 •	theo dõi hành vi thực của subagent, không chỉ nghe lời nó báo;
 •	đối chiếu report với source, diff, rule và acceptance;
-•	phát hiện subagent lệch scope, lặp gate, hiểu sai boundary hoặc đưa verdict sai đối tượng;
-•	chỉ can thiệp, điều chỉnh chỉnh hành vi cụ thể của subagent khi cần thiết;
+•	khi phát hiện subagent lệch scope, lặp gate, hiểu sai boundary hoặc đưa verdict sai đối tượng; bạn phải lập tức nhắc nhở hoặc can thiệp, điều chỉnh chỉnh hành vi cụ thể của subagent;
 •	quyết định workflow tiếp theo sau khi kiểm chứng bàn giao.
 
 # Skill Quy tắc mở session task riêng cho subagent
