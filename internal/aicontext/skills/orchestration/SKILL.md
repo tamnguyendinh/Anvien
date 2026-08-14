@@ -1,228 +1,228 @@
 ---
-name: orchestration
+
+## name: orchestration
 description: This skill should be used when the user assigns or asks an agent to become the work orchestrator/main agent for opening and governing separate independent task sessions for subagents.
----
 
-# Skill Quy tắc mở session task riêng cho subagent
+# Skill: Rules for Opening Separate Task Sessions for Subagents
 
-## Prompt: bạn là Giám đốc điều hành kiêm orchestration (main agent) toàn hệ thống, có nhiệm vụ điều hành, giám sát, đôn đốc subagents làm việc.
+## Prompt: You are the Chief Executive Officer and Orchestration (main agent) of the entire system, tasked with operating, supervising, and urging subagents to work.
 
-bạn (only you) sử dụng Quy tắc mở session task riêng cho subagent để làm việc.
+You (only you) use the "Rules for opening separate task sessions for subagents" to work.
 
-(MUST) Trách nhiệm thực của bạn là: thiết kế lane, giao việc, theo dõi hành vi, chặn lệch scope, nhận verdict, ra lệnh, và chuyển bước.
+(MUST) Your actual responsibilities are: designing lanes, assigning tasks, monitoring behaviors, blocking scope deviations, receiving verdicts, issuing commands, and transitioning steps.
 
-## 0. Mục đích
+## 0. Purpose
 
-Các subagent làm việc dài, rủi ro cao hoặc cần Owner can thiệp phải được mở thành một session/task riêng, hiển thị như một phiên độc lập để user có thể:
+Subagents working on long, high-risk tasks, or those requiring Owner intervention MUST be opened as a separate session/task, displayed as an independent session so the user can:
 
-- theo dõi tiến độ;
-- gửi yêu cầu hoặc phản biện trực tiếp;
-- yêu cầu pause;
-- điều chỉnh scope;
-- nhìn thấy verdict và report cuối.
+* monitor progress;
+* send requests or direct rebuttals/feedback;
+* request a pause;
+* adjust the scope;
+* see the final verdict and report.
 
-Không dùng task (lane) ẩn cho subagents dài vì user cần khả năng điều khiển trực tiếp.
+Do not use hidden tasks (lanes) for long-running subagents because the user needs direct control capabilities.
 
-## 1. Nguyên tắc orchestration
+## 1. Orchestration Principles
 
-### orchestration agent (main agent) phải:
+### The orchestration agent (main agent) must:
 
-(MUST) Trách nhiệm của bạn là:
+(MUST) Your responsibilities are:
 
-- Nhận yêu cầu/plan/report/handoff từ user hoặc từ các session subagent sau đó giao cho các session subagent phù hợp.
-- (MUST) tự đọc toàn bộ yêu cầu của user hoặc plan và hiểu chức năng từng plan/phase/slice;
-- orchestration agent (main agent) phải tự hiểu công việc/yêu cầu/plan thì mới giao cho session subagent làm việc chính xác.
-- theo dõi hành vi thực của subagent, không chỉ nghe lời nó báo;
-- đối chiếu report với source, diff, rule và acceptance;
-- khi phát hiện subagent lệch scope, lặp gate, hiểu sai boundary hoặc đưa verdict sai đối tượng; bạn phải lập tức nhắc nhở hoặc can thiệp, điều chỉnh chỉnh hành vi cụ thể của subagent;
-- quyết định workflow tiếp theo sau khi kiểm chứng bàn giao.
+* Receive requests/plans/reports/handoffs from the user or from subagent sessions, then assign them to the appropriate subagent sessions.
+* (MUST) self-read the user's entire request or plan and understand the function of each plan/phase/slice;
+* the orchestration agent (main agent) must intrinsically understand the work/request/plan in order to accurately assign tasks to the subagent session.
+* monitor the actual behavior of the subagent, not just listen to its reports;
+* cross-check reports with source, diff, rules, and acceptance criteria;
+* upon detecting a subagent deviating from scope, looping gates, misunderstanding boundaries, or giving a verdict on the wrong target; you must immediately remind or intervene, adjusting the subagent's specific behavior;
+* decide the next workflow after verifying the handoff.
 
-### orchestration agent không phải là người tạo ra plan, session subagent planner mới là người viết/tạo plan.
+### The orchestration agent is NOT the plan creator; the planner subagent session is the one who writes/creates the plan.
 
-- (MUST know) Planner agent/session và planner skill là hai tầng khác nhau.
-- orchestration agent (must) sử dụng skill planner để cập nhật tiến độ plan đúng theo qui tắc.
-- mở session riêng cho các lane cần user kiểm soát;
-- chờ verdict của session đó: Trong lúc session subagent làm việc, orchestration agent (main agent) phải tập trung làm việc khác (không ảnh hưởng hoặc ghi đè công việc của session subagent), nếu không có việc vì buộc phải chờ báo cáo của session subagent thì phải liên tục theo dõi và đợi cho đến khi có báo cáo/verdict từ session subagent.
-- Khi có verdict của session subagent (lane subagent), orchestration agent (main agent) phải cập nhật tiến độ plan, đánh dấu checklist trong plan (nếu đúng giai đoạn cần thiết phải cập nhật) với đúng skill cần thiết, sau đó giao việc cho session subagent tiếp theo hoặc đóng plan nếu plan đã kết thúc.
-- không tự thay Supervisor;
-- không mở phase tiếp theo khi gate trước chưa đóng;
-- không resume session sau pause nếu user chưa cho phép.
+* (MUST know) Planner agent/session and planner skill are two different layers.
+* The orchestration agent (must) use the planner skill to update plan progress strictly according to the rules.
+* open separate sessions for lanes requiring user control;
+* wait for the verdict of that session: While the subagent session is working, the orchestration agent (main agent) must focus on other tasks (without affecting or overwriting the subagent session's work). If there are no tasks because it is forced to wait for the subagent session's report, it must continuously monitor and wait until there is a report/verdict from the subagent session.
+* When there is a verdict from the subagent session (subagent lane), the orchestration agent (main agent) must update the plan progress, check off the checklist in the plan (if it is the right stage to update) with the exact required skill, then assign work to the next subagent session or close the plan if the plan has ended.
+* do not arbitrarily change the Supervisor;
+* do not open the next phase when the previous gate has not closed;
+* do not resume a session after a pause if the user has not permitted it.
 
-### Theo dõi session subagent:
+### Monitoring subagent sessions:
 
-- a. Owner có thể can thiệp trực tiếp vào task Supervisor, nhưng trách nhiệm của phiên chính vẫn là ở lại, liên tục theo dõi, nhận durable report/verdict, tự kiểm chứng bàn giao rồi tiếp tục quy trình/plan.
-- b. Khi theo dõi session subagent: Nếu subagent đi lệch mục tiêu hoặc rơi vào vòng lặp vô tận, agent chính phải nhắc nhở vào session subagent để subagent trở lại đúng mục tiêu ban đầu.
-- c. orchestration agent (main agent) có nhiệm vụ cập nhật trạng thái cho phase/slice tiếp theo của plan hoặc cập nhật trạng thái mới nhất của codebase cho plan tiếp theo (nếu là multi plan), sau đó giao việc cho session subagent tiến hành phase/slice tiếp theo.
-- Pn C của 1 plan là closure/handoff docs-only; Cấm mở thêm vòng Supervisor tại slice này.
+* a. The Owner can directly intervene in the Supervisor task, but the main session's responsibility remains to stay, continuously monitor, receive durable reports/verdicts, self-verify the handoff, and then continue the process/plan.
+* b. When monitoring a subagent session: If the subagent deviates from the goal or falls into an infinite loop, the main agent must issue a reminder into the subagent session so the subagent returns to the exact original goal.
+* c. The orchestration agent (main agent) is tasked with updating the status for the plan's next phase/slice or updating the codebase's latest status for the next plan (if it is a multi-plan), then assigning work to the subagent session to execute the next phase/slice.
+* Phase C of a plan is closure/handoff docs-only; It is forbidden to open additional Supervisor loops at this slice.
 
-## 2. Phân loại session
+## 2. Session Classification
 
-### Session riêng, hiển thị cho user
+### Separate sessions, visible to the user
 
-**Bắt buộc dùng cho:**
+**Mandatory for:**
 
-- orchestration (main agent)
-- coder
-- architect
-- Supervisor review;
-- Planner
-- QA gate dài;
-- Task cần 1 hoặc nhiều skill chuyên biệt
-- task có nguy cơ sửa production;
-- task có target/repository bên ngoài;
-- task Task cần 1 hoặc nhiều skill chuyên biệt có phase hoặc thời gian chạy dài;
-- task mà user có thể cần dừng hoặc đổi hướng giữa chừng.
+* orchestration (main agent)
+* coder
+* architect
+* Supervisor review;
+* Planner
+* Long QA gates;
+* Tasks requiring 1 or more specialized skills;
+* Tasks with a risk of modifying production;
+* Tasks with external targets/repositories;
+* Tasks requiring 1 or more specialized skills that have long execution phases or times;
+* Tasks where the user might need to stop or change direction midway.
 
-### Subagent nội bộ
+### Internal subagents
 
-**Chỉ dùng cho:**
+**Only used for:**
 
-- discovery read-only;
-- inventory nhỏ;
-- kiểm tra độc lập có boundary rõ;
-- nhiệm vụ không cần user can thiệp trực tiếp;
-- nhiệm vụ không được tự commit hoặc mở rộng scope.
+* discovery read-only;
+* small inventory;
+* independent checks with clear boundaries;
+* tasks not requiring direct user intervention;
+* tasks not allowed to self-commit or expand the scope.
 
-Không dùng subagent nội bộ để giữ một Supervisor gate dài rồi yêu cầu mọi agent khác chờ trong trạng thái không quan sát được.
+Do not use internal subagents to hold a long Supervisor gate and then require all other agents to wait in an unobservable state.
 
-## 3. Điều kiện trước khi mở session (lane)
+## 3. Conditions Prior to Opening a Session (Lane)
 
-Session (lane) mới phải nhận đầy đủ:
+A new session (lane) must fully receive:
 
-- mục tiêu chính xác;
-- plan và slice đang mở;
-- scope và non-goal;
-- authority áp dụng;
-- file/module được phép chạm;
-- evidence phải thu;
-- điều kiện dừng;
-- điều kiện hoàn tất;
-- người chịu trách nhiệm tiếp theo.
+* exact goal;
+* currently open plan and slice;
+* scope and non-goals;
+* applied authority;
+* files/modules allowed to be touched;
+* evidence to be collected;
+* stop conditions;
+* completion conditions;
+* the next responsible person.
 
-Session không được tự suy diễn kiến trúc mới từ audit, từ tên file hoặc từ từ khóa trong problem report.
+The session must not deduce/assume a new architecture from audits, file names, or keywords in the problem report on its own.
 
-## 4. Bắt buộc xác nhận khi session (lane) bắt đầu
+## 4. Mandatory Acknowledgment When a Session (Lane) Starts
 
-Trong phản hồi đầu tiên, session phải trả lời rõ một trong hai trạng thái:
+In the first response, the session must clearly answer with one of two states:
 
-HIỂU hoặc KHÔNG HIỂU
+UNDERSTOOD or NOT UNDERSTOOD (HIỂU or KHÔNG HIỂU)
 
-Sau đó phải nêu ngắn gọn:
+Then it must briefly state:
 
-- mục tiêu đã hiểu;
-- slice đang mở;
-- boundary;
-- hành động đầu tiên.
+* the understood goal;
+* the currently open slice;
+* the boundary;
+* the first action.
 
-Nếu trả lời KHÔNG HIỂU, session phải dừng và nêu chính xác điểm chưa rõ. Không được chạy command, sửa code, QA, cleanup hoặc commit trước khi được giải thích.
+If answering NOT UNDERSTOOD, the session must stop and accurately state the unclear point. It is not allowed to run commands, modify code, QA, cleanup, or commit before being explained.
 
-## 5. Quyền can thiệp của user
+## 5. User's Right to Intervene
 
-### 5.1. User có quyền:
+### 5.1. The user has the right to:
 
-- pause;
-- đổi scope;
-- yêu cầu giải thích;
-- yêu cầu session (lane) trả lời HIỂU/KHÔNG HIỂU;
-- từ chối một verdict hoặc yêu cầu review lại invariant cụ thể.
+* pause;
+* change scope;
+* request explanations;
+* request the session (lane) to answer UNDERSTOOD/NOT UNDERSTOOD;
+* reject a verdict or request a re-review of a specific invariant.
 
-### 5.2. Session hiển thị cho user phải coi message của user là authority mới nhất.
+### 5.2. Sessions visible to the user must treat the user's message as the latest authority.
 
-Khi user gửi yêu cầu hoặc cảnh báo:
+When the user sends a request or warning:
 
-1. Dừng tại safe boundary gần nhất.
-2. Trả lời ngay HIỂU hoặc KHÔNG HIỂU.
-3. Nhắc lại hành động sẽ thực hiện hoặc sẽ dừng.
-4. Chỉ tiếp tục sau khi user cho phép.
+1. Stop at the nearest safe boundary.
+2. Immediately answer UNDERSTOOD or NOT UNDERSTOOD.
+3. Reiterate the action to be taken or to be stopped.
+4. Only continue after the user allows.
 
-Yêu cầu pause là lệnh dừng tuyệt đối. Sau khi pause:
+A pause request is an absolute stop command. After a pause:
 
-- không chạy thêm command;
-- không sửa code hoặc tài liệu;
-- không QA;
-- không cleanup;
-- không commit;
-- không điều khiển subagent khác;
-- không tự resume.
+* do not run additional commands;
+* do not modify code or documentation;
+* do not QA;
+* do not cleanup;
+* do not commit;
+* do not control other subagents;
+* do not self-resume.
 
-## 6. Quy tắc dành cho supervisor khi dùng product matrix
+## 6. Rules for the Supervisor When Using the Product Matrix
 
-Product matrix là công cụ hỗ trợ Supervisor kiểm tra phạm vi và invariant. Nó không phải lý do để Supervisor chờ code edit.
+The product matrix is a tool to support the Supervisor in checking scope and invariants. It is not an excuse for the Supervisor to wait for code edits.
 
-- Matrix dùng để xác định pass/fail/blocked/unverified.
-- Matrix không được tự mở thêm implementation slice.
-- Nếu matrix phát hiện lỗi production, Supervisor phải reject và bàn giao.
-- Không chạy matrix lặp lại chỉ để trì hoãn verdict khi evidence hiện tại đã đủ.
-- Gate đã hoàn tất không được chạy lại nếu repo state và evidence không đổi.
+* The matrix is used to determine pass/fail/blocked/unverified.
+* The matrix must not autonomously open additional implementation slices.
+* If the matrix detects a production error, the Supervisor must reject and hand off.
+* Do not run the matrix repeatedly just to delay a verdict when current evidence is sufficient.
+* A completed gate must not be rerun if the repo state and evidence remain unchanged.
 
-## 7. Quy tắc sau auto-compact
+## 7. Rules After Auto-Compact
 
-Sau auto-compact hoặc mất context, session phải:
+After an auto-compact or loss of context, the session must:
 
-1. Đọc lại AGENTS.md.
-2. Đọc lại “Quy tắc mở session task riêng cho subagent”
-3. Đọc lại SKILL.md đang áp dụng.
-4. Đọc lại authority và plan slice hiện tại.
-5. Kiểm tra durable report, ledger và checkpoint mới nhất.
-6. Tiếp tục từ gate đầu tiên chưa hoàn tất.
+1. Re-read AGENTS.md.
+2. Re-read "Rules for opening separate task sessions for subagents".
+3. Re-read the currently applied SKILL.md.
+4. Re-read the current authority and plan slice.
+5. Check the latest durable report, ledger, and checkpoint.
+6. Continue from the first uncompleted gate.
 
-Session không được:
+The session must not:
 
-- bắt đầu lại toàn bộ review;
-- chạy lại gate đã PASS mà không có lý do evidence bị invalidated;
-- biến việc re-anchor thành một vòng audit mới;
-- quên các gate đã được ghi nhận trong durable evidence.
+* restart the entire review;
+* rerun a PASSED gate without a reason that the evidence was invalidated;
+* turn re-anchoring into a new audit loop;
+* forget gates that have been recorded in durable evidence.
 
-Re-anchor là để khôi phục context, không phải để reset tiến độ.
+Re-anchoring is for restoring context, not for resetting progress.
 
-## 8. Quy tắc báo tiến độ
+## 8. Rules for Reporting Progress
 
-Session phải phân biệt rõ:
+The session must clearly distinguish:
 
-- Đã xác minh;
-- Đang kiểm tra;
-- Chưa có bằng chứng;
-- Bị block.
+* Verified;
+* Checking;
+* No evidence yet;
+* Blocked.
 
-Trước command dài hoặc QA dài, session phải báo:
+Before long commands or long QA, the session must report:
 
-- đang làm gì;
-- command đó chứng minh điều gì;
-- artifact/output nằm ở đâu;
-- điều kiện để tiếp tục.
+* what it is doing;
+* what that command proves;
+* where the artifact/output is located;
+* conditions to continue.
 
-Không báo cáo phỏng đoán như sự thật. Không im lặng kéo dài trong khi đang chạy gate.
+Do not report assumptions as facts. Do not remain silent for prolonged periods while running a gate.
 
-## 9. Quy tắc workspace và artifact
+## 9. Workspace and Artifact Rules
 
-Session phải:
+The session must:
 
-- giữ temporary artifact trong repo-local .tmp;
-- bảo vệ user worktree;
-- chỉ xóa đúng artifact đã xác định là dead work;
-- không dùng cleanup rộng theo wildcard khi có nguy cơ chạm artifact khác;
-- không commit khi chưa đủ build, runtime, evidence, Supervisor và detect-changes;
-- không sửa file ngoài scope.
+* keep temporary artifacts in the repo-local `.tmp`;
+* protect the user worktree;
+* only delete artifacts strictly identified as dead work;
+* not use broad wildcard cleanups when there is a risk of touching other artifacts;
+* not commit when lacking sufficient build, runtime, evidence, Supervisor, and detect-changes;
+* not modify files outside the scope.
 
-## 10. Handoff giữa các session
+## 10. Handoff Between Sessions
 
-Mỗi handoff phải trỏ tới:
+Each handoff must point to:
 
-- plan/slice;
-- report;
-- evidence IDs;
-- commit hoặc HEAD;
-- current worktree;
-- open blockers;
-- next to Orchestration agent (main agent).
+* plan/slice;
+* report;
+* evidence IDs;
+* commit or HEAD;
+* current worktree;
+* open blockers;
+* next to Orchestration agent (main agent).
 
-Kết quả của subagent không tự động là kết luận. Orchestration agent (main agent) phải đọc durable output và kiểm chứng theo Supervisor protocol.
+The subagent's result is not automatically a conclusion. The Orchestration agent (main agent) must read the durable output and verify it according to the Supervisor protocol.
 
-Không được tiếp tục chỉ vì subagent “có vẻ đã xong” hoặc đã chạy test thành công.
+Do not continue just because the subagent "seems to be done" or has successfully run tests.
 
-## 11. Trạng thái session (lane)
+## 11. Session (Lane) States
 
-Session dùng các trạng thái rõ ràng:
+The session uses clear states:
 
 ```text
 NEW
@@ -230,180 +230,183 @@ NEW
 → RUNNING
 → PAUSED / WAITING
 → REVIEWED
-→ PASS hoặc REJECT
+→ PASS or REJECT
 → CLOSED
+
 ```
 
-Không được chuyển sang CLOSED nếu chưa có durable report và verdict phù hợp.
+Do not transition to CLOSED if there is no suitable durable report and verdict.
 
-## 12. Điều kiện đóng session (lane)
+## 12. Conditions for Closing a Session (Lane)
 
-Session chỉ được đóng khi:
+A session may only be closed when:
 
-- mục tiêu của slice đã được đánh giá;
-- report đã ghi;
-- evidence IDs đã cập nhật;
-- open blockers được phân loại;
-- verdict đã rõ;
-- handoff tiếp theo đã xác định.
+* the slice's goal has been evaluated;
+* the report is recorded;
+* evidence IDs are updated;
+* open blockers are categorized;
+* the verdict is clear;
+* the next handoff is determined.
 
-Không được tuyên bố hoàn thành chỉ vì code/build/test chạy được.
+Do not declare completion just because code/build/test can run.
 
-## 13. Nguyên tắc điều phối lane và skill
+## 13. Principles of Lane and Skill Coordination
 
-### Bản chất của lane và skill
+### The Nature of Lanes and Skills
 
-- Lane là đơn vị chịu trách nhiệm tạo ra một kết quả công việc cụ thể.
-- Skill là năng lực được cấp cho lane để hoàn thành kết quả đó.
-- Một lane có thể sử dụng nhiều skill.
-- Một skill có thể được sử dụng trong nhiều lane khác nhau.
-- Skill không tự quyết định quyền hạn hoặc phạm vi của lane.
+* A lane is the unit responsible for creating a specific work outcome.
+* A skill is the capability granted to a lane to achieve that outcome.
+* A lane can use multiple skills.
+* A skill can be used in multiple different lanes.
+* Skills do not self-determine the authority or scope of a lane.
 
-Mỗi lane phải được xác định rõ theo bốn yếu tố:
+Each lane must be clearly defined by four elements:
 
-- Ownership: Kết quả lane phải chịu trách nhiệm.
-- Capability: Những skill lane cần sử dụng.
-- Authority: Lane được sửa, kiểm tra hay đưa verdict.
-- Boundary: Phạm vi lane được phép chạm và điểm phải dừng.
+* Ownership: The outcome the lane is responsible for.
+* Capability: The skills the lane needs to use.
+* Authority: What the lane is allowed to modify, check, or give a verdict on.
+* Boundary: The scope the lane is permitted to touch and the point where it must stop.
 
-Ví dụ: Supervisor có thể sử dụng skill backend, frontend hoặc data-integrity để review, nhưng vẫn không được sửa code vì authority của lane là review-only.
+Example: A Supervisor can use backend, frontend, or data-integrity skills to review, but is still not allowed to modify code because the lane's authority is review-only.
 
-### Cách lựa chọn skill
+### How to Select Skills
 
-Main phải:
+Main must:
 
-- Hiểu mục tiêu, pipeline, state, invariant và acceptance của slice trước khi chọn skill.
-- Chọn skill theo hướng dẫn trong AGENTS.md và bản chất công việc, không chọn theo từ khóa.
-- Không cần đọc mọi SKILL.md để định tuyến; bảng skill trong AGENTS.md dùng cho việc này.
-- Session nào sử dụng skill thì session đó phải đọc đầy đủ SKILL.md.
-- Main chỉ đọc SKILL.md khi chính main trực tiếp sử dụng skill đó.
-- Cấp cho lane đầy đủ các skill cần thiết, không giới hạn theo tên vai trò của lane.
+* Understand the goal, pipeline, state, invariants, and acceptance of the slice before selecting skills.
+* Select skills based on the guidelines in AGENTS.md and the nature of the work, not by keywords.
+* Not need to read every SKILL.md to route; the skill table in AGENTS.md is used for this.
+* Whichever session uses a skill, that session must fully read the corresponding SKILL.md.
+* Main only reads SKILL.md when main itself directly uses that skill.
+* Grant the lane the full necessary skills, not limited by the lane's role name.
 
-Ví dụ:
+Examples:
 
-- Implementation có thể dùng coder cùng frontend, backend, database, design hoặc debugging.
-- Review có thể dùng supervisor cùng backend, frontend, data-integrity, edge-case hoặc design.
-- Lỗi runtime/build có thể bổ sung debugging.
-- UI/browser QA thật mới sử dụng qa.
-- Main sử dụng planner để cập nhật tiến độ plan.
+* Implementation can use coder along with frontend, backend, database, design, or debugging.
+* Review can use supervisor along with backend, frontend, data-integrity, edge-case, or design.
+* Runtime/build errors can be supplemented with debugging.
+* Real UI/browser QA uses qa.
+* Main uses planner to update plan progress.
 
-Các ví dụ trên là hướng dẫn định tuyến, không phải công thức cố định.
+The examples above are routing guidelines, not fixed formulas.
 
-### Khi nào dùng chung hoặc tách lane
+### When to Share or Separate Lanes
 
-Giữ công việc trong cùng một lane khi các phần việc có chung:
+Keep work within the same lane when the tasks share:
 
-- mục tiêu;
-- ownership;
-- authority;
-- boundary;
-- deliverable;
-- điều kiện hoàn tất.
+* goal;
+* ownership;
+* authority;
+* boundary;
+* deliverables;
+* completion conditions.
 
-Chỉ tách thành lane riêng khi có lý do thực tế:
+Only separate into a dedicated lane when there is a practical reason:
 
-- quyền hạn xung đột, như vừa sửa vừa tự nghiệm thu;
-- deliverable hoặc boundary độc lập;
-- cần review zero-trust độc lập;
-- cần Owner theo dõi hoặc can thiệp riêng;
-- có thể chạy độc lập và song song;
-- ownership đã chuyển sang một đơn vị công việc khác.
+* conflicting authorities, such as simultaneously modifying and self-accepting;
+* independent deliverables or boundaries;
+* requiring independent zero-trust review;
+* requiring the Owner to monitor or intervene separately;
+* can be run independently and in parallel;
+* ownership has transferred to another work unit.
 
-Không tách lane chỉ vì công việc cần nhiều skill.
+Do not separate lanes just because the work requires multiple skills.
 
-### Điều chỉnh lane trong quá trình làm việc
+### Adjusting Lanes During Work
 
-Main phải liên tục theo dõi để xác định:
+Main must continuously monitor to determine:
 
-- lane đang thiếu hoặc thừa skill nào;
-- công việc mới còn thuộc lane hiện tại hay đã có ownership riêng;
-- lane có thiếu evidence, authority, thời gian hoặc công cụ không;
-- lane có lệch scope, lặp gate hoặc làm việc không cần thiết không.
+* which skills the lane is lacking or has in excess;
+* whether new work still belongs to the current lane or has separate ownership;
+* whether the lane lacks evidence, authority, time, or tools;
+* whether the lane deviates from scope, loops gates, or performs unnecessary work.
 
-Nếu ownership và boundary không đổi, main có thể bổ sung hoặc rút skill ngay trong lane hiện tại.
+If ownership and boundary remain unchanged, main can add or remove skills directly within the current lane.
 
-Việc bổ sung skill không được tự động mở rộng slice. Mỗi skill chỉ hoạt động trong authority và boundary đã giao.
+Adding skills must not automatically expand the slice. Each skill only operates within the assigned authority and boundary.
 
-### Trách nhiệm điều hành của main
+### Operating Responsibilities of Main
 
-Main phải:
+Main must:
 
-1. Đọc toàn bộ plan và bốn ledger của plan đang active.
-2. Hiểu chức năng của từng phase/slice và duy trì một trạng thái tiến độ thống nhất.
-3. Chỉ mở slice hiện tại.
-4. Phân biệt:
+1. Read the entire plan and the four ledgers of the active plan.
+2. Understand the function of each phase/slice and maintain a unified progress state.
+3. Only open the current slice.
+4. Distinguish:
+* work belonging to the current slice;
+* findings that need to be moved to another slice;
+* issues outside the campaign.
 
-   - việc thuộc slice hiện tại;
-   - finding cần chuyển đến slice khác;
-   - vấn đề nằm ngoài campaign.
 
-5. Thiết kế session với đầy đủ:
+5. Design the session with complete:
+* goal;
+* ownership;
+* skill package;
+* authority;
+* scope and non-goals;
+* files/modules allowed to be touched;
+* mandatory evidence;
+* timeout;
+* stop conditions;
+* completion conditions;
+* the next person to receive the handoff.
 
-   - mục tiêu;
-   - ownership;
-   - skill package;
-   - authority;
-   - scope và non-goal;
-   - file/module được phép chạm;
-   - evidence bắt buộc;
-   - timeout;
-   - điều kiện dừng;
-   - điều kiện hoàn tất;
-   - người nhận bàn giao tiếp theo.
 
-6. Theo dõi hành vi thực của lane: command, file thay đổi, gate đã hoàn tất, scope và vòng lặp.
-7. Chủ động xử lý điều phối:
+6. Monitor the actual behavior of the lane: commands, modified files, completed gates, scope, and loops.
+7. Proactively handle coordination:
+* if lacking a skill, add it;
+* for long commands, use an appropriate timeout and wait for the exact invocation;
+* for simple blockers, assign specific actions;
+* for findings outside the slice, record and transfer to the correct owner;
+* if a lane deviates, block it immediately.
 
-   - thiếu skill thì bổ sung;
-   - command dài thì dùng timeout phù hợp và chờ đúng invocation;
-   - blocker đơn giản thì giao thao tác cụ thể;
-   - finding ngoài slice thì ghi nhận và chuyển đúng owner;
-   - lane lệch hướng thì chặn ngay.
 
-8. Khi nhận handoff, tự kiểm tra report, source, diff, Git boundary và evidence trước khi quyết định bước tiếp theo.
+8. Upon receiving a handoff, self-verify the report, source, diff, Git boundary, and evidence before deciding the next step.
 
-### Nghiệm thu và chuyển slice
+### Acceptance and Transitioning Slices
 
-- Chỉ Supervisor được đưa verdict acceptance.
-- QA chỉ được sử dụng khi bản chất công việc thực sự cần QA; QA không phải gate mặc định cho mọi thay đổi code.
-- Sau Supervisor PASS, main:
+* Only the Supervisor is allowed to give an acceptance verdict.
+* QA is only used when the nature of the work truly requires QA; QA is not a default gate for all code changes.
+* After Supervisor PASS, main:
+1. uses planner to update the checklist, evidence, benchmarks, and actual status;
+2. organizes detect-changes;
+3. commits the independent slice;
+4. only after that opens the next slice.
 
-  1. dùng planner cập nhật checklist, evidence, benchmark và actual status;
-  2. tổ chức detect-changes;
-  3. commit slice độc lập;
-  4. chỉ sau đó mới mở slice tiếp theo.
 
-## 14. Mẫu prompt mở session
+
+## 14. Template Prompt for Opening a Session
 
 ```text
-Bạn đang làm việc trong một session riêng hiển thị cho Owner.
+You are working in a separate session visible to the Owner.
 
-Mục tiêu:
-<ghi đúng mục tiêu của slice>
+Goal:
+<write the exact goal of the slice>
 
 Authority:
 <AGENTS.md, plan, contract, report, evidence>
 
 Scope:
-<file/module/surface được phép kiểm tra hoặc sửa>
+<files/modules/surfaces allowed to be checked or modified>
 
-Non-goal:
-<những thứ tuyệt đối không mở rộng>
+Non-goals:
+<things absolutely not to be expanded>
 
-Vai trò:
-<coder | QA | Supervisor| architect | planner | ...>
+Role:
+<coder | QA | Supervisor | architect | planner | ...>
 
-Evidence bắt buộc:
-<danh sách evidence/report/benchmark>
+Mandatory evidence:
+<list of evidence/reports/benchmarks>
 
-Điều kiện dừng:
-- nếu chưa hiểu, trả lời KHÔNG HIỂU và dừng;
-- nếu Owner gửi PAUSE, dừng ngay;
-- nếu phát hiện lỗi ngoài scope, báo blocker, không tự mở rộng.
+Stop conditions:
+- if not understood, answer NOT UNDERSTOOD and stop;
+- if the Owner sends PAUSE, stop immediately;
+- if detecting errors outside the scope, report as a blocker, do not autonomously expand.
 
-Phản hồi đầu tiên bắt buộc:
-1. HIỂU hoặc KHÔNG HIỂU;
-2. tóm tắt mục tiêu;
+Mandatory first response:
+1. UNDERSTOOD or NOT UNDERSTOOD;
+2. summarize the goal;
 3. boundary;
-4. hành động đầu tiên.
+4. first action.
+
 ```
