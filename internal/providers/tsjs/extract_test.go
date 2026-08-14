@@ -281,6 +281,182 @@ export function start() {
 	requireCall(t, ir, "run", scopeir.CallMember)
 }
 
+func TestExtractVariableBindingPatternsEmitScopeIRFacts(t *testing.T) {
+	source := []byte(`function bind(input: any, fallback: any) { const [first,,{source: alias = fallback, nested: [deep]}, ...tail] = input; const {direct, outer: {inner}, defaulted = fallback} = input; }`)
+	ir := parseAndExtract(t, "src/variables.ts", "hash-variables", scanner.TypeScript, source)
+
+	if len(ir.ExtractionDiagnostics) != 0 {
+		t.Fatalf("variable binding diagnostics = %#v, want none", ir.ExtractionDiagnostics)
+	}
+	if len(ir.BindingLeaves) != 7 {
+		t.Fatalf("variable binding leaves = %d, want 7: %#v", len(ir.BindingLeaves), ir.BindingLeaves)
+	}
+
+	functionScopeID := ""
+	for _, scope := range ir.Scopes {
+		if scope.Kind == scopeir.ScopeFunction {
+			if functionScopeID != "" {
+				t.Fatalf("multiple function scopes in focused fixture: %#v", ir.Scopes)
+			}
+			functionScopeID = scope.ID
+		}
+	}
+	if functionScopeID == "" {
+		t.Fatalf("missing function scope in %#v", ir.Scopes)
+	}
+
+	want := map[string]struct {
+		path      string
+		rangeText string
+		rest      bool
+		defaults  bool
+	}{
+		"first":     {path: "array:0", rangeText: "first"},
+		"alias":     {path: "array:2/property:source", rangeText: "source: alias = fallback", defaults: true},
+		"deep":      {path: "array:2/property:nested/array:0", rangeText: "nested: [deep]"},
+		"tail":      {path: "array:3", rangeText: "...tail", rest: true},
+		"direct":    {path: "property:direct", rangeText: "direct"},
+		"inner":     {path: "property:outer/property:inner", rangeText: "outer: {inner}"},
+		"defaulted": {path: "property:defaulted", rangeText: "defaulted = fallback", defaults: true},
+	}
+	seen := map[string]int{}
+	for _, leaf := range ir.BindingLeaves {
+		expected, ok := want[leaf.Name]
+		if !ok {
+			t.Fatalf("unexpected production binding leaf %#v", leaf)
+		}
+		seen[leaf.Name]++
+		if got := bindingPathText(leaf.Path); got != expected.path {
+			t.Fatalf("leaf %s path = %q, want %q", leaf.Name, got, expected.path)
+		}
+		if got := sourceTextForRange(source, leaf.Range); got != expected.rangeText {
+			t.Fatalf("leaf %s range text = %q, want %q", leaf.Name, got, expected.rangeText)
+		}
+		if leaf.SelectionRange == nil || sourceTextForRange(source, *leaf.SelectionRange) != leaf.Name {
+			t.Fatalf("leaf %s selection range = %#v", leaf.Name, leaf.SelectionRange)
+		}
+		if leaf.Rest != expected.rest || leaf.Default != expected.defaults {
+			t.Fatalf("leaf %s modifiers = rest:%t default:%t, want rest:%t default:%t", leaf.Name, leaf.Rest, leaf.Default, expected.rest, expected.defaults)
+		}
+		if leaf.Provenance.Context != scopeir.BindingContextVariable {
+			t.Fatalf("leaf %s context = %q, want variable", leaf.Name, leaf.Provenance.Context)
+		}
+
+		definitions := p3bDefinitionsNamed(ir, leaf.Name, scopeir.NodeVariable)
+		if len(definitions) != 1 {
+			t.Fatalf("leaf %s definitions = %d, want 1: %#v", leaf.Name, len(definitions), definitions)
+		}
+		definition := definitions[0]
+		if definition.Range != leaf.Range || definition.SelectionRange == nil || *definition.SelectionRange != *leaf.SelectionRange {
+			t.Fatalf("leaf %s definition ranges mismatch: leaf=%#v definition=%#v", leaf.Name, leaf, definition)
+		}
+		if definition.DeclaredType != "" || definition.ReturnType != "" {
+			t.Fatalf("leaf %s invented type data: %#v", leaf.Name, definition)
+		}
+
+		bindingCount := 0
+		ownedCount := 0
+		bindingScopeID := ""
+		for _, scope := range ir.Scopes {
+			for _, binding := range scope.Bindings {
+				if binding.Name == leaf.Name && binding.DefID == definition.ID && binding.Origin == scopeir.BindingLocal {
+					bindingCount++
+					bindingScopeID = scope.ID
+				}
+			}
+			for _, defID := range scope.OwnedDefIDs {
+				if defID == definition.ID {
+					ownedCount++
+				}
+			}
+		}
+		if bindingCount != 1 || ownedCount != 1 || bindingScopeID != functionScopeID {
+			t.Fatalf("leaf %s scope facts = bindings:%d owned:%d scope:%q, want 1/1/%q", leaf.Name, bindingCount, ownedCount, bindingScopeID, functionScopeID)
+		}
+	}
+	for name := range want {
+		if seen[name] != 1 {
+			t.Fatalf("leaf %s emitted %d times, want 1", name, seen[name])
+		}
+	}
+}
+
+func TestExtractVariableBindingPatternSurvivesTypeInferenceMiss(t *testing.T) {
+	source := []byte(`function bind(source: unknown) { const {untyped: local} = source; }`)
+	ir := parseAndExtract(t, "src/inference-miss.ts", "hash-inference-miss", scanner.TypeScript, source)
+
+	definitions := p3bDefinitionsNamed(ir, "local", scopeir.NodeVariable)
+	if len(definitions) != 1 {
+		t.Fatalf("local definitions = %d, want 1: %#v", len(definitions), definitions)
+	}
+	if len(ir.BindingLeaves) != 1 || ir.BindingLeaves[0].Name != "local" || bindingPathText(ir.BindingLeaves[0].Path) != "property:untyped" {
+		t.Fatalf("inference-miss binding leaves = %#v", ir.BindingLeaves)
+	}
+	if definitions[0].DeclaredType != "" || definitions[0].ReturnType != "" {
+		t.Fatalf("inference-miss leaf has invented type: %#v", definitions[0])
+	}
+	for _, scope := range ir.Scopes {
+		for _, binding := range scope.TypeBindings {
+			if binding.Name == "local" {
+				t.Fatalf("inference-miss leaf unexpectedly has type binding: %#v", binding)
+			}
+		}
+	}
+	for _, annotation := range ir.TypeAnnotations {
+		if annotation.Name == "local" {
+			t.Fatalf("inference-miss leaf unexpectedly has type annotation: %#v", annotation)
+		}
+	}
+}
+
+func TestExtractVariableBindingPatternsPreserveSiblingBoundaries(t *testing.T) {
+	baselineSource := []byte("import base, { named as alias } from './dep';\nconst existing = 1;\n")
+	patternSource := append(append([]byte(nil), baselineSource...), []byte("const {bound} = source;\n")...)
+	assignmentSource := append(append([]byte(nil), baselineSource...), []byte("({assigned} = source);\n[written] = source;\n")...)
+
+	baseline := parseAndExtract(t, "src/siblings.ts", "hash-siblings", scanner.TypeScript, baselineSource)
+	withPattern := parseAndExtract(t, "src/siblings.ts", "hash-siblings", scanner.TypeScript, patternSource)
+	withAssignments := parseAndExtract(t, "src/siblings.ts", "hash-siblings", scanner.TypeScript, assignmentSource)
+
+	requireSameImports(t, baseline, withPattern)
+	requireSameImports(t, baseline, withAssignments)
+	if len(baseline.BindingLeaves) != 0 || len(withAssignments.BindingLeaves) != 0 || len(withPattern.BindingLeaves) != 1 {
+		t.Fatalf("binding leaf deltas baseline/pattern/assignment = %d/%d/%d", len(baseline.BindingLeaves), len(withPattern.BindingLeaves), len(withAssignments.BindingLeaves))
+	}
+	if len(withAssignments.Definitions) != len(baseline.Definitions) {
+		t.Fatalf("assignment destructuring declaration delta = %d, want 0", len(withAssignments.Definitions)-len(baseline.Definitions))
+	}
+	if len(p3bDefinitionsNamed(withAssignments, "assigned", scopeir.NodeVariable)) != 0 || len(p3bDefinitionsNamed(withAssignments, "written", scopeir.NodeVariable)) != 0 {
+		t.Fatalf("assignment destructuring emitted declarations: %#v", withAssignments.Definitions)
+	}
+	if len(p3bDefinitionsNamed(withPattern, "bound", scopeir.NodeVariable)) != 1 {
+		t.Fatalf("pattern declaration missing or duplicated: %#v", withPattern.Definitions)
+	}
+
+	baselineIdentifier := requireDefinition(t, baseline, "existing", scopeir.NodeVariable)
+	patternIdentifier := requireDefinition(t, withPattern, "existing", scopeir.NodeVariable)
+	assignmentIdentifier := requireDefinition(t, withAssignments, "existing", scopeir.NodeVariable)
+	if baselineIdentifier.ID != patternIdentifier.ID || baselineIdentifier.ID != assignmentIdentifier.ID ||
+		baselineIdentifier.Range != patternIdentifier.Range || baselineIdentifier.Range != assignmentIdentifier.Range ||
+		baselineIdentifier.SelectionRange == nil || patternIdentifier.SelectionRange == nil || assignmentIdentifier.SelectionRange == nil ||
+		*baselineIdentifier.SelectionRange != *patternIdentifier.SelectionRange || *baselineIdentifier.SelectionRange != *assignmentIdentifier.SelectionRange {
+		t.Fatalf("identifier regression baseline=%#v pattern=%#v assignment=%#v", baselineIdentifier, patternIdentifier, assignmentIdentifier)
+	}
+}
+
+func TestExtractVariableBindingPatternSurfacesStructuredDiagnostic(t *testing.T) {
+	ir := parseAndExtract(t, "src/invalid-variable.ts", "hash-invalid-variable", scanner.TypeScript, []byte(`const [...target.member] = input;`))
+	if len(ir.BindingLeaves) != 0 || len(ir.ExtractionDiagnostics) != 1 {
+		t.Fatalf("invalid variable pattern result = leaves:%#v diagnostics:%#v", ir.BindingLeaves, ir.ExtractionDiagnostics)
+	}
+	if ir.ExtractionDiagnostics[0].Code != scopeir.DiagnosticInvalidRestBinding || ir.ExtractionDiagnostics[0].Provenance.Context != scopeir.BindingContextVariable {
+		t.Fatalf("invalid variable diagnostic = %#v", ir.ExtractionDiagnostics[0])
+	}
+	if len(p3bDefinitionsNamed(ir, "target", scopeir.NodeVariable)) != 0 || len(p3bDefinitionsNamed(ir, "member", scopeir.NodeVariable)) != 0 {
+		t.Fatalf("invalid variable pattern emitted declarations: %#v", ir.Definitions)
+	}
+}
+
 func TestExtractBindingPatternEnumeratesTypedLeaves(t *testing.T) {
 	source := []byte(`const [first,,{source: alias = fallback, short = fallback2, [dynamicKey]: computed}, ...tail] = input;`)
 	result := extractPatternFromVariableDeclarator(t, source)
@@ -716,6 +892,31 @@ func requireDefinition(t *testing.T, ir scopeir.ScopeIR, name string, label scop
 	}
 	t.Fatalf("missing definition %s/%s in %#v", name, label, ir.Definitions)
 	return scopeir.DefinitionFact{}
+}
+
+func p3bDefinitionsNamed(ir scopeir.ScopeIR, name string, label scopeir.NodeLabel) []scopeir.DefinitionFact {
+	var matches []scopeir.DefinitionFact
+	for _, definition := range ir.Definitions {
+		if definition.Name == name && definition.Label == label {
+			matches = append(matches, definition)
+		}
+	}
+	return matches
+}
+
+func requireSameImports(t *testing.T, left scopeir.ScopeIR, right scopeir.ScopeIR) {
+	t.Helper()
+	leftRaw, err := json.Marshal(left.Imports)
+	if err != nil {
+		t.Fatalf("marshal left imports: %v", err)
+	}
+	rightRaw, err := json.Marshal(right.Imports)
+	if err != nil {
+		t.Fatalf("marshal right imports: %v", err)
+	}
+	if !bytes.Equal(leftRaw, rightRaw) {
+		t.Fatalf("import-binding delta: left=%s right=%s", leftRaw, rightRaw)
+	}
 }
 
 func requireExtractQualifiedDefinition(t *testing.T, ir scopeir.ScopeIR, qualifiedName string, label scopeir.NodeLabel) scopeir.DefinitionFact {

@@ -163,15 +163,44 @@ const Shared = 3;
 }
 
 func TestP1BPreservesBindingPatternBoundary(t *testing.T) {
+	source := []byte("const { left } = source;\n")
 	ir := parseAndExtract(
 		t,
 		"src/binding-pattern.ts",
 		"hash-binding-pattern",
 		scanner.TypeScript,
-		[]byte("const { left } = source;\n"),
+		source,
 	)
-	if definitions := definitionsNamed(ir, "left", scopeir.NodeVariable); len(definitions) != 0 {
-		t.Fatalf("P1-B must preserve Child 03 binding-pattern ownership; got %#v", definitions)
+	definitions := definitionsNamed(ir, "left", scopeir.NodeVariable)
+	if len(definitions) != 1 {
+		t.Fatalf("variable binding-pattern definitions = %d, want exactly 1: %#v", len(definitions), definitions)
+	}
+	definition := definitions[0]
+	wantTokenRange := scopeir.Range{StartLine: 1, StartCol: 8, EndLine: 1, EndCol: 12}
+	requireDefinitionRanges(t, definition, wantTokenRange, wantTokenRange)
+	if definition.FilePath != "src/binding-pattern.ts" {
+		t.Fatalf("left definition file path = %q, want src/binding-pattern.ts", definition.FilePath)
+	}
+	if got := textAtSingleLineRange(t, source, *definition.SelectionRange); got != "left" {
+		t.Fatalf("left selection text = %q, want left", got)
+	}
+
+	owner := requireSingleOwningScope(t, ir, definition.ID)
+	if owner.Kind != scopeir.ScopeModule || owner.FilePath != definition.FilePath {
+		t.Fatalf("left lexical owner = %#v, want module scope in %q", owner, definition.FilePath)
+	}
+	localBindings := 0
+	bindingScopeID := ""
+	for _, scope := range ir.Scopes {
+		for _, binding := range scope.Bindings {
+			if binding.Name == "left" && binding.DefID == definition.ID && binding.Origin == scopeir.BindingLocal {
+				localBindings++
+				bindingScopeID = scope.ID
+			}
+		}
+	}
+	if localBindings != 1 || bindingScopeID != owner.ID {
+		t.Fatalf("left local bindings = %d in scope %q, want exactly 1 in owner %q", localBindings, bindingScopeID, owner.ID)
 	}
 }
 

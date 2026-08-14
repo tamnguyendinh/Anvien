@@ -52,6 +52,8 @@ type collector struct {
 	importedLocalNames        map[string]struct{}
 
 	definitions     []scopeir.DefinitionFact
+	bindingLeaves   []scopeir.BindingLeafFact
+	diagnostics     []scopeir.ExtractionDiagnosticFact
 	imports         []scopeir.ImportFact
 	calls           []scopeir.CallSiteFact
 	accesses        []scopeir.AccessFact
@@ -81,18 +83,20 @@ func (c *collector) result() scopeir.ScopeIR {
 		}
 	}
 	return scopeir.ScopeIR{
-		FilePath:        c.filePath,
-		FileHash:        c.fileHash,
-		Language:        c.language,
-		ModuleScope:     moduleScope,
-		Scopes:          c.scopes,
-		Definitions:     c.definitions,
-		Imports:         c.imports,
-		Calls:           c.calls,
-		Accesses:        c.accesses,
-		Heritage:        c.heritage,
-		TypeAnnotations: c.typeAnnotations,
-		ReturnTypes:     c.returnTypes,
+		FilePath:              c.filePath,
+		FileHash:              c.fileHash,
+		Language:              c.language,
+		ModuleScope:           moduleScope,
+		Scopes:                c.scopes,
+		Definitions:           c.definitions,
+		BindingLeaves:         c.bindingLeaves,
+		ExtractionDiagnostics: c.diagnostics,
+		Imports:               c.imports,
+		Calls:                 c.calls,
+		Accesses:              c.accesses,
+		Heritage:              c.heritage,
+		TypeAnnotations:       c.typeAnnotations,
+		ReturnTypes:           c.returnTypes,
 	}.NormalizeOwned()
 }
 

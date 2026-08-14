@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / Child 02 closed at 181b8cb8 / P0-A accepted and committed at 17bd4584 / P3-A accepted at this isolated commit boundary / P3-B locked pending Owner transfer`
+- Status: `active / Child 02 closed at 181b8cb8 / P0-A accepted and committed at 17bd4584 / P3-A accepted and committed at b4dbe5c / P3-B Supervisor PASS / final staged detect 222/13/13 / closes at this isolated commit boundary / P3-B1 locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md`
@@ -96,7 +96,7 @@ Out of scope:
     4. Classify correct, partial, wrong, missing, and blocked rows in actual status; update P3-A work steps if exact ownership differs from this plan.
   - Implementation Gate: the accepted Child 02 handoff is recorded as `E0-P0A-HANDOFF1` and its Pn-C commit is confirmed; no production edit until the actual-status Final P0 Decision permits P3-A.
   - Acceptance: `E0-P0A-HANDOFF1`, `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2`, `E0-P0A-SCOPE1`, `E0-P0A-GRAPH1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1`, `E0-P0A-STATUS1`, and independent `E0-P0A-REVIEW1` are recorded with no unresolved owner boundary; `E0-P0A-DETECT1` and `E0-P0A-COMMIT1` close the isolated documentation/evidence boundary.
-  - Current State: Child 02 is closed at entry HEAD `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`. The exact Set A/B/C manifest and partition checks are durable in the QA report. Independent Supervisor reports `E0-P0A-REVIEW1` and `E0-P0A-REVIEW2` returned `PASS`, including the byte-clean artifact committed as `17bd45845a218dccfa7cb09bde8195a14693bf50`. P3-A opened afterward; `E3-P3A-REVIEW1` and `E3-P3A-REVIEW2` preserve the two REJECT histories, while `E3-P3A-REVIEW3` accepts the repaired helper/contract boundary. The isolated P3-A commit remains pending and P3-B remains locked.
+  - Current State: Child 02 is closed at entry HEAD `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`. The exact Set A/B/C manifest and partition checks are durable in the QA report. Independent Supervisor reports `E0-P0A-REVIEW1` and `E0-P0A-REVIEW2` returned `PASS`, including the byte-clean artifact committed as `17bd45845a218dccfa7cb09bde8195a14693bf50`. P3-A opened afterward; `E3-P3A-REVIEW1` and `E3-P3A-REVIEW2` preserve the two REJECT histories, `E3-P3A-REVIEW3` accepts the repaired helper/contract boundary, and the isolated slice is committed at `b4dbe5ccc2d0a77d0986b647c8054427ecca73c4`. P3-B source/test/build invariants were locked by `E3-P3B-REVIEW1`, its sole ledger-currentness rejection was repaired, focused `E3-P3B-REVIEW2` returned `PASS`, and final staged `E3-P3B-DETECT1` is `222/13/13` with graph health `0/0/0`. P3-B closes in this isolated commit boundary; every later slice remains locked.
   - Commit Boundary: four Child 03 ledgers, one QA report, immutable prior REJECT provenance, and two independent PASS reports; no production/test/fixture/target/runtime path.
 
 ### P3: TypeScript binding-pattern extraction
@@ -172,11 +172,11 @@ Out of scope:
     - [x] Run and record the final orchestration-owned pre-commit detect as `E3-P3A-DETECT3` (`296` changed symbols / `10` changed files / `10` affected files).
     - [x] Create the isolated P3-A commit boundary as `E3-P3A-COMMIT1`; Git/handoff records the exact final hash.
 
-- [ ] P3-B: Integrate variable-declaration contexts.
+- [x] P3-B: Integrate variable-declaration contexts.
   - Goal: emit binding leaves for variable declarations even when per-leaf type inference is unavailable.
   - Scope Boundary:
-    - Editable: variable-declaration adapter selected by impact evidence.
-    - Inspect-only: walker, type inference, assignment/reference extraction, imports.
+    - Editable: `internal/providers/tsjs/definitions.go` only for the `variable_declarator` adapter and leaf-to-Definition/local-Binding emission; `internal/providers/tsjs/extract.go` only for the minimal collector fields plus `result()` plumbing required to return variable `BindingLeaves` and `ExtractionDiagnostics`; `internal/providers/tsjs/extract_test.go` as the focused real-`Extract` test owner; `internal/providers/tsjs/definition_position_inputs_test.go` only for the stale-oracle transition in `TestP1BPreservesBindingPatternBoundary` from zero destructured definitions to exactly one correctly ranged/scoped `left` Definition/local Binding.
+    - Inspect-only: accepted walker/ScopeIR contract owners, type inference, assignment/reference extraction, imports, collector traversal, scopes, nodes, and sibling provider adapters.
     - Preserve-only: identifier declarators and non-variable contexts.
     - Out of scope: parameters, catch, loops, and graph projection.
   - Non-Goals: do not invent types or change assignment semantics.
@@ -194,30 +194,40 @@ Out of scope:
     - External side effects: none.
     - N/A notes: UI, DB, Docker, and Playwright do not participate in this provider slice.
   - Work Steps:
-    1. Reconfirm exact impact/ownership and implement production variable-context wiring independently of type inference.
+    1. Reconfirm exact impact/ownership, record why `definitions.go` cannot return accepted leaf/diagnostic collections without collector storage/result plumbing, update this boundary before code, then implement production variable-context wiring independently of type inference. Keep `extract.go` changes limited to fields and `result()`; do not change `Extract`, `walkKind`, traversal, or context dispatch.
        - UI flow check: N/A; no visible flow exists.
        - DB/data flow check: verify each legal variable leaf reaches one in-memory declaration/binding fact.
        - Render location check: N/A; inspect ScopeIR output.
        - Mini QA: after the full build in step 2, exercise the variable ScopeIR boundary; browser controls are N/A.
        - Evidence target: `E3-P3B-IMPACT1`, `E3-P3B-SRC1`.
-    2. Add focused tests after production code, run the full build, validate identifiers/type-failure/assignment/import controls, refresh ledgers, obtain Supervisor PASS, detect changes, and commit.
+    2. Add focused tests after production code; update only the impact-proven stale oracle `TestP1BPreservesBindingPatternBoundary`; rerun the holder/lock gate and full build after the final test bytes; validate identifiers/type-failure/assignment/import controls, refresh ledgers, obtain Supervisor PASS, detect changes, and commit.
        - UI flow check: N/A; no visible flow exists.
        - DB/data flow check: assert correct ranges/scopes and zero false declaration/import deltas.
        - Render location check: evidence ledger and focused test output.
        - Mini QA: exercise the built variable-fact boundary and record the observed result.
-       - Evidence target: `E3-P3B-BUILD1`, `E3-P3B-TEST1`, `E3-P3B-BOUNDARY1`, `E3-P3B-REVIEW1`, `E3-P3B-DETECT1`, `E3-P3B-COMMIT1`.
-  - Implementation Gate: P3-A accepted and committed.
+       - Evidence target: `E3-P3B-BUILD1`, `E3-P3B-TEST1`, `E3-P3B-BOUNDARY1`, `E3-P3B-REVIEW1`, `E3-P3B-REVIEW2`, `E3-P3B-DETECT1`, `E3-P3B-COMMIT1`.
+  - Implementation Gate: P3-A accepted and committed at `b4dbe5ccc2d0a77d0986b647c8054427ecca73c4`; Owner explicitly transferred P3-B; fresh `E3-P3B-IMPACT1` proves the exact four-file editable boundary, with the fourth owner limited to one stale test function and no helper/sibling-test edit.
   - Acceptance:
     - Source: variable-pattern leaves emit once with correct scope/ranges and survive type-inference failure.
     - Runtime/UI: N/A; ScopeIR output is the real boundary.
     - Data: assignment destructuring adds `0` declarations and import-binding delta is `0`.
     - Behavior test: variable and identifier regression matrices pass.
     - Cleanup: fixture/debug state is confined to approved repo paths.
-    - Evidence IDs: `E3-P3B-IMPACT1`, `E3-P3B-SRC1`, `E3-P3B-BUILD1`, `E3-P3B-TEST1`, `E3-P3B-BOUNDARY1`, `E3-P3B-REVIEW1`, `E3-P3B-DETECT1`, `E3-P3B-COMMIT1`.
+    - Evidence IDs: `E3-P3B-IMPACT1`, `E3-P3B-SRC1`, `E3-P3B-BUILD1`, `E3-P3B-TEST1`, `E3-P3B-BOUNDARY1`, `E3-P3B-REVIEW1`, `E3-P3B-REVIEW2`, `E3-P3B-DETECT1`, `E3-P3B-COMMIT1`.
     - Actual-status rows refreshed: variable declaration extraction.
   - Evidence Targets: variable fact oracle, type-inference-failure row, assignment/import deltas, build, Supervisor, detect-changes, commit.
   - Actual-status Update: transition the variable-declaration row to `correct`; leave other contexts pending.
   - Commit Boundary: one P3-B commit.
+  - Coder Candidate Opening (2026-08-14): Owner transferred P3-B as the sole open Child 03 implementation lane. Fresh graph/source/file-detail/exact-UID impact proves `definitions.go` owns the variable decision/emission adapter, while `extract.go` is unavoidably required only for collector storage and `ScopeIR` result plumbing. `extract_test.go` is the focused real-boundary test owner. The checklist remains open; independent `REVIEW1`, orchestration `DETECT1`, and `COMMIT1` remain reserved.
+  - Historical Coder Candidate Blocker (2026-08-14, superseded): the focused P3-B ScopeIR matrix passed `4/4`, but required targeted regression failed only `TestP1BPreservesBindingPatternBoundary` because its historical P1-B guard required destructured `left` to emit zero variable definitions. That failed command remains non-PASS evidence; work stopped before touching the then-unauthorized fourth owner.
+  - Coder Candidate Resume (2026-08-14): Orchestration authorized the stale-oracle transition in that exact test function. Fresh graph `98,521/138,234`, file-detail, file impact, and exact-UID upstream impact classify the test owner/function LOW with zero affected files, symbols, modules, processes, or flows. The editable boundary is now exactly four files; no helper or sibling test is opened. P3-B remains unchecked, and independent `REVIEW1`, orchestration `DETECT1`, and `COMMIT1` remain reserved.
+  - Coder Candidate Readiness (2026-08-14): final test bytes passed the holder-clean full build, the exact stale oracle, focused `4/4`, targeted `8/8`, and repo-native product regression `61/61` packages. The ScopeIR boundary records exact ranges/scopes/paths plus `100%` inference-miss emission, assignment false declarations `0`, and import-binding delta `0`. Cleanup and diff checks are clean. Candidate state is `READY_FOR_SUPERVISOR`; the P3-B checkbox and `REVIEW1`/`DETECT1`/`COMMIT1` remain open.
+  - Supervisor Closure Checkpoint (2026-08-14): `E3-P3B-REVIEW1` retains the first independent `REJECT`, whose only blocker was `P3B-LEDGER-CURRENTNESS-1`; every source, test, build, impact, plan, evidence, and benchmark invariant cleared by that review stayed hash-locked. The focused ledger-only repair appended R14, and `E3-P3B-REVIEW2` returned `PASS` with no residual same-invariant surface. Orchestration owns only the planner refresh, final `E3-P3B-DETECT1`, and isolated `E3-P3B-COMMIT1`; P3-B1 and every later slice remain locked until that commit exists.
+    - [x] Preserve the first independent REJECT as `E3-P3B-REVIEW1`.
+    - [x] Record the focused independent PASS as `E3-P3B-REVIEW2`.
+    - [x] Refresh roadmap, checklist, evidence, benchmark, and actual status without changing locked source/test evidence.
+    - [x] Run and record the final orchestration-owned staged pre-commit detect as `E3-P3B-DETECT1` (`222` changed symbols / `13` changed files / `13` affected files; `0` affected processes/flows; current graph health `0/0/0`).
+    - [x] Create this isolated P3-B commit boundary as `E3-P3B-COMMIT1`; Git/handoff records the exact final hash.
 
 - [ ] P3-B1: Integrate parameter contexts.
   - Goal: apply accepted leaf semantics to function, method, constructor, and arrow-function parameters.

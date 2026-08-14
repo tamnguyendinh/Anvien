@@ -60,9 +60,9 @@ These are graph/inventory counts at HEAD `181b8cb8`, not product runtime-perform
 | P3-A | supported general pattern cases | passed / inventoried cases | pending P0 | all existing cases + 4/4 legal `undefined` cases + nested array-rest control PASS | 100% at the P3-A helper boundary | 100% | accepted final measurement | `E3-P3A-TEST1`, `E3-P3A-REVIEW3` |
 | P3-A | unsupported-pattern diagnostic coverage | diagnosed / unsupported fixtures | 0/1 bounded case | invalid-rest + missing-pattern + 4/4 malformed/context-invalid fixtures diagnosed exactly once | 6/6 exact invalid controls | 100% | +6 diagnosed controls; zero silent rejection | `E3-P3A-BOUNDARY1`, `E3-P3A-REVIEW3` |
 | P3-A | emitted binding facts per legal leaf | facts / leaves | pending P0 | one fact per legal leaf; zero facts for four invalid controls and legal empty/hole-only patterns | 1.0 exactly at the helper boundary | 1.0 exactly | accepted one-to-one leaf fact measurement | `E3-P3A-TEST1`, `E3-P3A-REVIEW3` |
-| P3-B | variable leaves emitted when type inference fails | emitted / eligible leaves | pending P0 | pending | pending | 100% | pending | `E3-P3B-TEST1` |
-| P3-B | false declarations from assignment destructuring | declarations | pending P0 | pending | pending | 0 | pending | `E3-P3B-TEST1` |
-| P3-B | import-binding count delta | bindings | pending P0 | pending | pending | 0 | pending | `E3-P3B-TEST1` |
+| P3-B | variable leaves emitted when type inference fails | emitted / eligible leaves | pending P0 | 1/1 (100%) final-byte candidate | 1/1 (100%) accepted final | 100% | target met | `E3-P3B-TEST1`, `E3-P3B-BOUNDARY1`, `E3-P3B-REVIEW2` |
+| P3-B | false declarations from assignment destructuring | declarations | pending P0 | 0 final-byte candidate | 0 accepted final | 0 | target met | `E3-P3B-TEST1`, `E3-P3B-BOUNDARY1`, `E3-P3B-REVIEW2` |
+| P3-B | import-binding count delta | bindings | pending P0 | 0 final-byte candidate | 0 accepted final | 0 | target met | `E3-P3B-TEST1`, `E3-P3B-BOUNDARY1`, `E3-P3B-REVIEW2` |
 | P3-B1 | parameter binding cases | passed / inventoried cases | pending P0 | pending | pending | 100% | pending | `E3-P3B1-TEST1` |
 | P3-B2 | catch binding cases | passed / inventoried cases | pending P0 | pending | pending | 100% | pending | `E3-P3B2-TEST1` |
 | P3-B2A | loop declaration binding cases | passed / inventoried cases | pending P0 | pending | pending | 100% | pending | `E3-P3B2A-TEST1` |

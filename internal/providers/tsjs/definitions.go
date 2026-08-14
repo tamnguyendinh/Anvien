@@ -63,7 +63,11 @@ func (c *collector) emitDefinitionKind(node *sitter.Node, kind string) {
 		)
 	case "variable_declarator":
 		nameNode := child(node, "name")
-		if nameNode == nil || nameNode.Kind() != "identifier" {
+		if nameNode == nil {
+			return
+		}
+		if nameNode.Kind() != "identifier" {
+			c.emitVariableBindingPattern(node, nameNode)
 			return
 		}
 		label := scopeir.NodeVariable
@@ -73,6 +77,81 @@ func (c *collector) emitDefinitionKind(node *sitter.Node, kind string) {
 			returnType = returnTypeNameForCallable(c, child(node, "value"))
 		}
 		c.addDefinition(node, label, nameNode, "", returnType, declaredTypeNameForNode(c, node), "")
+	}
+}
+
+func (c *collector) emitVariableBindingPattern(node *sitter.Node, pattern *sitter.Node) {
+	result := extractBindingPattern(bindingPatternRequest{
+		FilePath:  c.filePath,
+		FileHash:  c.fileHash,
+		Source:    c.source,
+		Context:   scopeir.BindingContextVariable,
+		Construct: node,
+		Pattern:   pattern,
+	})
+	c.bindingLeaves = append(c.bindingLeaves, result.Leaves...)
+	c.diagnostics = append(c.diagnostics, result.Diagnostics...)
+	for _, leaf := range result.Leaves {
+		c.addVariableBindingLeafDefinition(leaf)
+	}
+}
+
+func (c *collector) addVariableBindingLeafDefinition(leaf scopeir.BindingLeafFact) {
+	selectionRange := leaf.SelectionRange
+	if selectionRange != nil {
+		cloned := *selectionRange
+		selectionRange = &cloned
+	}
+	id := defID(c.filePath, leaf.Range, scopeir.NodeVariable, leaf.Name)
+	c.definitions = append(c.definitions, scopeir.DefinitionFact{
+		ID:             id,
+		FilePath:       c.filePath,
+		FileHash:       c.fileHash,
+		Name:           leaf.Name,
+		Label:          scopeir.NodeVariable,
+		Range:          leaf.Range,
+		SelectionRange: selectionRange,
+		QualifiedName:  leaf.Name,
+	})
+
+	scopeID := c.variableBindingScopeID(leaf.Range)
+	if scope := c.scopeByID(scopeID); scope != nil {
+		scope.OwnedDefIDs = append(scope.OwnedDefIDs, id)
+		scope.Bindings = append(scope.Bindings, scopeir.BindingFact{
+			Name:   leaf.Name,
+			DefID:  id,
+			Origin: scopeir.BindingLocal,
+		})
+	}
+}
+
+func (c *collector) variableBindingScopeID(rng scopeir.Range) string {
+	bestID := ""
+	bestSpan := int(^uint(0) >> 1)
+	bestRank := -1
+	for _, scope := range c.scopes {
+		if scope.FilePath != c.filePath || !rangeContains(scope.Range, rng) {
+			continue
+		}
+		span := rangeSpan(scope.Range)
+		rank := variableBindingScopeRank(scope.Kind)
+		if span < bestSpan || (span == bestSpan && rank > bestRank) {
+			bestID = scope.ID
+			bestSpan = span
+			bestRank = rank
+		}
+	}
+	return bestID
+}
+
+func variableBindingScopeRank(kind scopeir.ScopeKind) int {
+	switch kind {
+	case scopeir.ScopeFunction:
+		return 2
+	case scopeir.ScopeClass:
+		return 1
+	default:
+		return 0
 	}
 }
 
