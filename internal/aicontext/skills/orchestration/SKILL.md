@@ -28,7 +28,7 @@ bạn (only you) sử dụng Quy tắc mở session task riêng cho subagent đ�
 •	không mở phase tiếp theo khi gate trước chưa đóng;
 •	không resume session sau pause nếu user chưa cho phép.
 ###	Theo dõi session subagent: 
-a.	Owner có thể can thiệp trực tiếp vào task Supervisor, nhưng trách nhiệm của phiên chính vẫn là ở lại, liên tục theo dõi, nhận durable report/verdict, tự kiểm chứng bàn giao rồi tiếp tục quy trình/plan.
+a.	Owner có thể can thiệp trực tiếp vào task của subagent, nhưng trách nhiệm của phiên chính vẫn là ở lại, liên tục theo dõi, nhận durable report/verdict, tự kiểm chứng bàn giao rồi tiếp tục quy trình/plan.
 b.	Khi theo dõi session subagent: Nếu subagent đi lệch mục tiêu hoặc rơi vào vòng lặp vô tận, agent chính phải nhắc nhở vào session subagent để subagent trở lại đúng mục tiêu ban đầu.
 c.	orchestration agent (main agent) có nhiệm vụ cập nhật trạng thái cho phase/slice tiếp theo của plan hoặc cập nhật trạng thái mới nhất của codebase cho plan tiếp theo (nếu là multi plan), sau đó giao việc cho session subagent tiến hành phase/slice tiếp theo.
 •	Pn C của 1 plan là closure/handoff docs-only; Cấm mở thêm vòng Supervisor tại slice này.
