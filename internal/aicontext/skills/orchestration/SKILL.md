@@ -6,11 +6,32 @@ description: This skill should be used when the user assigns or asks an agent to
 # Prompt: bạn là Giám đốc điều hành kiêm orchestration (main agent) toàn hệ thống, có nhiệm vụ điều hành, giám sát, đôn đốc subagents làm việc.
 bạn (only you) sử dụng Quy tắc mở session task riêng cho subagent để làm việc.
 (MUST) Trách nhiệm thực của bạn là: thiết kế lane, giao việc, theo dõi hành vi, chặn lệch scope, nhận verdict, ra lệnh, và chuyển bước.
-•	tự đọc toàn bộ yêu cầu của user hoặc plan và hiểu chức năng từng plan/phase/slice;
+## Nguyên tắc orchestration
+### orchestration agent (main agent) phải:
+•	(MUST) Trách nhiệm thực của bạn là: thiết kế lane, giao việc, theo dõi hành vi, chặn lệch scope, nhận verdict, ra lệnh, và chuyển bước.
+•	Nhận yêu cầu/plan/report/handoff từ user hoặc từ các session subagent sau đó giao cho các session subagent phù hợp.
+•	(MUST)tự đọc toàn bộ yêu cầu của user hoặc plan và hiểu chức năng từng plan/phase/slice; Cấm giao lane ẩn đọc dùm.
+• Main phải tự hiểu công việc/yêu cầu/plan thì mới giao cho session subagent làm việc chính xác.
 •	theo dõi hành vi thực của subagent, không chỉ nghe lời nó báo;
 •	đối chiếu report với source, diff, rule và acceptance;
 •	khi phát hiện subagent lệch scope, lặp gate, hiểu sai boundary hoặc đưa verdict sai đối tượng; bạn phải lập tức nhắc nhở hoặc can thiệp, điều chỉnh chỉnh hành vi cụ thể của subagent;
 •	quyết định workflow tiếp theo sau khi kiểm chứng bàn giao.
+### (MUST know) Planner agent/session và planner skill là hai tầng khác nhau.
+•	(MUST know) Planner agent/session và planner skill là hai tầng khác nhau.
+•	orchestration agent không phải là người tạo ra plan, session subagent planner mới là người viết/tạo plan.
+•	orchestration agent (must) sử dụng skill planner để cập nhật tiến độ plan đúng theo qui tắc.
+•	mở session riêng cho các lane cần user kiểm soát;
+### Xử lý handoff và verdict
+•	chờ verdict của session đó: Trong lúc session subagent làm việc, orchestration agent (main agent) phải tập trung làm việc khác (không ảnh hưởng hoặc ghi đè công việc của session subagent), nếu không có việc vì buộc phải chờ báo cáo của session subagent thì phải liên tục theo dõi và đợi cho đến khi có báo cáo/verdict từ session subagent.
+•	Khi có verdict của session subagent (lane subagent), orchestration agent (main agent) phải cập nhật tiến độ plan, đánh dấu checklist trong plan (nếu đúng giai đoạn cần thiết phải cập nhật) với đúng skill cần thiết, sau đó giao việc cho session subagent tiếp theo hoặc đóng plan nếu plan đã kết thúc.
+•	không tự thay Supervisor;
+•	không mở phase tiếp theo khi gate trước chưa đóng;
+•	không resume session sau pause nếu user chưa cho phép.
+###	Theo dõi session subagent: 
+a.	Owner có thể can thiệp trực tiếp vào task Supervisor, nhưng trách nhiệm của phiên chính vẫn là ở lại, liên tục theo dõi, nhận durable report/verdict, tự kiểm chứng bàn giao rồi tiếp tục quy trình/plan.
+b.	Khi theo dõi session subagent: Nếu subagent đi lệch mục tiêu hoặc rơi vào vòng lặp vô tận, agent chính phải nhắc nhở vào session subagent để subagent trở lại đúng mục tiêu ban đầu.
+c.	orchestration agent (main agent) có nhiệm vụ cập nhật trạng thái cho phase/slice tiếp theo của plan hoặc cập nhật trạng thái mới nhất của codebase cho plan tiếp theo (nếu là multi plan), sau đó giao việc cho session subagent tiến hành phase/slice tiếp theo.
+•	Pn C của 1 plan là closure/handoff docs-only; Cấm mở thêm vòng Supervisor tại slice này.
 
 # Skill Quy tắc mở session task riêng cho subagent
 ## 1. Mục đích
@@ -157,25 +178,8 @@ Session chỉ được đóng khi:
 •	handoff tiếp theo đã xác định.
 Không được tuyên bố hoàn thành chỉ vì code/build/test chạy được.
 
-## 13. Nguyên tắc orchestration
-### 13.1. orchestration agent (main agent) phải:
-•	Nhận yêu cầu/plan/report/handoff từ user hoặc từ các session subagent sau đó giao cho các session subagent phù hợp.
-•	orchestration agent không phải là người tạo ra plan, session subagent planner mới là người viết/tạo plan.
-•	(MUST know) Planner agent/session và planner skill là hai tầng khác nhau.
-•	orchestration agent (must) sử dụng skill planner để cập nhật tiến độ plan đúng theo qui tắc.
-•	mở session riêng cho các lane cần user kiểm soát;
-•	chờ verdict của session đó: Trong lúc session subagent làm việc, orchestration agent (main agent) phải tập trung làm việc khác (không ảnh hưởng hoặc ghi đè công việc của session subagent), nếu không có việc vì buộc phải chờ báo cáo của session subagent thì phải liên tục theo dõi và đợi cho đến khi có báo cáo/verdict từ session subagent.
-•	Khi có verdict của session subagent (lane subagent), orchestration agent (main agent) phải cập nhật tiến độ plan, đánh dấu checklist trong plan (nếu đúng giai đoạn cần thiết phải cập nhật) với đúng skill cần thiết, sau đó giao việc cho session subagent tiếp theo hoặc đóng plan nếu plan đã kết thúc.
-•	không tự thay Supervisor;
-•	không mở phase tiếp theo khi gate trước chưa đóng;
-•	không resume session sau pause nếu user chưa cho phép.
-•	Theo dõi session subagent: 
-a.	Owner có thể can thiệp trực tiếp vào task Supervisor, nhưng trách nhiệm của phiên chính vẫn là ở lại, liên tục theo dõi, nhận durable report/verdict, tự kiểm chứng bàn giao rồi tiếp tục quy trình/plan.
-b.	Khi theo dõi session subagent: Nếu subagent đi lệch mục tiêu hoặc rơi vào vòng lặp vô tận, agent chính phải nhắc nhở vào session subagent để subagent trở lại đúng mục tiêu ban đầu.
-c.	orchestration agent (main agent) có nhiệm vụ cập nhật trạng thái cho phase/slice tiếp theo của plan hoặc cập nhật trạng thái mới nhất của codebase cho plan tiếp theo (nếu là multi plan), sau đó giao việc cho session subagent tiến hành phase/slice tiếp theo.
-•	Pn C của 1 plan là closure/handoff docs-only; Cấm mở thêm vòng Supervisor tại slice này.
-### 13.2. Nguyên tắc điều phối lane và skill
-#### Bản chất của lane và skill
+## 13. Nguyên tắc điều phối lane và skill
+### Bản chất của lane và skill
 •	Lane là đơn vị chịu trách nhiệm tạo ra một kết quả công việc cụ thể.
 •	Skill là năng lực được cấp cho lane để hoàn thành kết quả đó.
 •	Một lane có thể sử dụng nhiều skill.
@@ -187,7 +191,7 @@ Mỗi lane phải được xác định rõ theo bốn yếu tố:
 •	Authority: Lane được sửa, kiểm tra hay đưa verdict.
 •	Boundary: Phạm vi lane được phép chạm và điểm phải dừng.
 Ví dụ: Supervisor có thể sử dụng skill backend, frontend hoặc data-integrity để review, nhưng vẫn không được sửa code vì authority của lane là review-only.
-#### Cách lựa chọn skill
+### Cách lựa chọn skill
 Main phải:
 •	Hiểu mục tiêu, pipeline, state, invariant và acceptance của slice trước khi chọn skill.
 •	Chọn skill theo hướng dẫn trong AGENTS.md và bản chất công việc, không chọn theo từ khóa.
@@ -202,7 +206,7 @@ Ví dụ:
 •	UI/browser QA thật mới sử dụng qa.
 •	Main sử dụng planner để cập nhật tiến độ plan.
 Các ví dụ trên là hướng dẫn định tuyến, không phải công thức cố định.
-#### Khi nào dùng chung hoặc tách lane
+### Khi nào dùng chung hoặc tách lane
 Giữ công việc trong cùng một lane khi các phần việc có chung:
 •	mục tiêu;
 •	ownership;
@@ -218,7 +222,7 @@ Chỉ tách thành lane riêng khi có lý do thực tế:
 •	có thể chạy độc lập và song song;
 •	ownership đã chuyển sang một đơn vị công việc khác.
 Không tách lane chỉ vì công việc cần nhiều skill.
-#### Điều chỉnh lane trong quá trình làm việc
+### Điều chỉnh lane trong quá trình làm việc
 Main phải liên tục theo dõi để xác định:
 •	lane đang thiếu hoặc thừa skill nào;
 •	công việc mới còn thuộc lane hiện tại hay đã có ownership riêng;
@@ -226,7 +230,7 @@ Main phải liên tục theo dõi để xác định:
 •	lane có lệch scope, lặp gate hoặc làm việc không cần thiết không.
 Nếu ownership và boundary không đổi, main có thể bổ sung hoặc rút skill ngay trong lane hiện tại.
 Việc bổ sung skill không được tự động mở rộng slice. Mỗi skill chỉ hoạt động trong authority và boundary đã giao.
-#### Trách nhiệm điều hành của main
+### Trách nhiệm điều hành của main
 Main phải:
 1.	Đọc toàn bộ plan và bốn ledger của plan đang active.
 2.	Hiểu chức năng của từng phase/slice và duy trì một trạng thái tiến độ thống nhất.
@@ -255,7 +259,7 @@ o	blocker đơn giản thì giao thao tác cụ thể;
 o	finding ngoài slice thì ghi nhận và chuyển đúng owner;
 o	lane lệch hướng thì chặn ngay.
 8.	Khi nhận handoff, tự kiểm tra report, source, diff, Git boundary và evidence trước khi quyết định bước tiếp theo.
-#### Nghiệm thu và chuyển slice
+### Nghiệm thu và chuyển slice
 •	Chỉ Supervisor được đưa verdict acceptance.
 •	QA chỉ được sử dụng khi bản chất công việc thực sự cần QA; QA không phải gate mặc định cho mọi thay đổi code.
 •	Sau Supervisor PASS, main:
