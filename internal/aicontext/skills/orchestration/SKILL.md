@@ -21,7 +21,7 @@ Subagents working on long, high-risk tasks, or those requiring Owner interventio
 * adjust the scope;
 * see the final verdict and report.
 
-Do not use hidden tasks (lanes) for long-running subagents because the user needs direct control capabilities.
+Do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, security, or lanes with long-running task subagents because the user needs direct control capabilities.
 
 ## 1. Orchestration Principles
 
