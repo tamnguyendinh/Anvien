@@ -20,6 +20,8 @@
 
 Correction temporal note: the authorized manifest-repair analyze capture is `1,631/688/0`, `97,369` nodes, `136,643` relationships. The original accepted P0-A graph benchmark rows below remain unchanged and refer to the original graph capture used for `E0-P0A-GRAPH1`; the correction pass did not rerun or replace accepted file-detail/impact gates.
 
+### Inventory snapshot
+
 | Phase | Inventory metric | Unit | Current | Evidence |
 |-------|------------------|------|--------:|----------|
 | P0-A | current graph scanned files | files | 1,629 | `E0-P0A-GRAPH1` |
@@ -33,11 +35,17 @@ Correction temporal note: the authorized manifest-repair analyze capture is `1,6
 | P0-A | production file-impact coverage | files / expected | 15 / 15 | `E0-P0A-IMPACT1` |
 | P0-A | canonical symbol-impact coverage | symbols / expected | 39 / 39 | `E0-P0A-IMPACT1` |
 
+### Temporal comparison
+
+| Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
+|-------|--------|------|----------|--------|-------|--------|-------|----------|
 | P0-A | correction graph refresh | scanned / parsed / failed files | 1,629 / 688 / 0 | 1,633 / 688 / 0 | 1,633 / 688 / 0 | informational | +4 / 0 / 0 | `E0-P0A-GRAPH1`, `E0-P0A-DETECT1` |
 | P0-A | correction graph inventory | nodes / relationships | 97,340 / 136,614 | 97,388 / 136,662 | 97,388 / 136,662 | informational | +48 / +48 | `E0-P0A-GRAPH1`, `E0-P0A-DETECT1` |
 | P0-A | documentation change impact | changed / affected files; changed sections | 0 / 0; 0 | 8 / 8; 62 | 8 / 8; 62 | docs-only | +8 / +8; +62 | `E0-P0A-DETECT1` |
 
 These are graph/inventory counts at HEAD `181b8cb8`, not product runtime-performance measurements. P0-A ran no build, tests, runtime, or target gate, so none is fabricated here.
+
+### Bounded defect baseline
 
 | Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
@@ -49,9 +57,9 @@ These are graph/inventory counts at HEAD `181b8cb8`, not product runtime-perform
 
 | Plan Item | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-----------|--------|------|----------|--------|-------|--------|-------|----------|
-| P3-A | supported general pattern cases | passed / inventoried cases | pending P0 | pending | pending | 100% | pending | `E3-P3A-TEST1` |
-| P3-A | unsupported-pattern diagnostic coverage | diagnosed / unsupported fixtures | 0/1 bounded case | pending | pending | 100% | pending | `E3-P3A-BOUNDARY1` |
-| P3-A | emitted binding facts per legal leaf | facts / leaves | pending P0 | pending | pending | 1.0 exactly | pending | `E3-P3A-TEST1` |
+| P3-A | supported general pattern cases | passed / inventoried cases | pending P0 | all existing cases + 4/4 legal `undefined` cases + nested array-rest control PASS | 100% at the P3-A helper boundary | 100% | accepted final measurement | `E3-P3A-TEST1`, `E3-P3A-REVIEW3` |
+| P3-A | unsupported-pattern diagnostic coverage | diagnosed / unsupported fixtures | 0/1 bounded case | invalid-rest + missing-pattern + 4/4 malformed/context-invalid fixtures diagnosed exactly once | 6/6 exact invalid controls | 100% | +6 diagnosed controls; zero silent rejection | `E3-P3A-BOUNDARY1`, `E3-P3A-REVIEW3` |
+| P3-A | emitted binding facts per legal leaf | facts / leaves | pending P0 | one fact per legal leaf; zero facts for four invalid controls and legal empty/hole-only patterns | 1.0 exactly at the helper boundary | 1.0 exactly | accepted one-to-one leaf fact measurement | `E3-P3A-TEST1`, `E3-P3A-REVIEW3` |
 | P3-B | variable leaves emitted when type inference fails | emitted / eligible leaves | pending P0 | pending | pending | 100% | pending | `E3-P3B-TEST1` |
 | P3-B | false declarations from assignment destructuring | declarations | pending P0 | pending | pending | 0 | pending | `E3-P3B-TEST1` |
 | P3-B | import-binding count delta | bindings | pending P0 | pending | pending | 0 | pending | `E3-P3B-TEST1` |

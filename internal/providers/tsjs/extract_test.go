@@ -8,8 +8,11 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
+
+	sitter "github.com/tree-sitter/go-tree-sitter"
 
 	"github.com/tamnguyendinh/anvien/internal/parser"
 	"github.com/tamnguyendinh/anvien/internal/scanner"
@@ -276,6 +279,261 @@ export function start() {
 	requireImport(t, ir, scopeir.ImportNamed, "createService", "createService", "./factory")
 	requireCall(t, ir, "createService", scopeir.CallFree)
 	requireCall(t, ir, "run", scopeir.CallMember)
+}
+
+func TestExtractBindingPatternEnumeratesTypedLeaves(t *testing.T) {
+	source := []byte(`const [first,,{source: alias = fallback, short = fallback2, [dynamicKey]: computed}, ...tail] = input;`)
+	result := extractPatternFromVariableDeclarator(t, source)
+
+	if len(result.Diagnostics) != 0 {
+		t.Fatalf("binding diagnostics = %#v, want none", result.Diagnostics)
+	}
+	if len(result.Leaves) != 5 {
+		t.Fatalf("binding leaves = %d, want 5: %#v", len(result.Leaves), result.Leaves)
+	}
+
+	want := map[string]struct {
+		path      string
+		rangeText string
+		rest      bool
+		defaults  bool
+	}{
+		"first":    {path: "array:0", rangeText: "first"},
+		"alias":    {path: "array:2/property:source", rangeText: "source: alias = fallback", defaults: true},
+		"short":    {path: "array:2/property:short", rangeText: "short = fallback2", defaults: true},
+		"computed": {path: "array:2/computed:dynamicKey", rangeText: "[dynamicKey]: computed"},
+		"tail":     {path: "array:3", rangeText: "...tail", rest: true},
+	}
+	for _, leaf := range result.Leaves {
+		expected, ok := want[leaf.Name]
+		if !ok {
+			t.Fatalf("unexpected binding leaf %#v", leaf)
+		}
+		if got := bindingPathText(leaf.Path); got != expected.path {
+			t.Fatalf("leaf %s path = %q, want %q", leaf.Name, got, expected.path)
+		}
+		if got := sourceTextForRange(source, leaf.Range); got != expected.rangeText {
+			t.Fatalf("leaf %s range text = %q, want %q", leaf.Name, got, expected.rangeText)
+		}
+		if leaf.SelectionRange == nil {
+			t.Fatalf("leaf %s has nil selection range", leaf.Name)
+		}
+		if got := sourceTextForRange(source, *leaf.SelectionRange); got != leaf.Name {
+			t.Fatalf("leaf %s selection text = %q", leaf.Name, got)
+		}
+		if leaf.Rest != expected.rest || leaf.Default != expected.defaults {
+			t.Fatalf("leaf %s modifiers = rest:%t default:%t, want rest:%t default:%t", leaf.Name, leaf.Rest, leaf.Default, expected.rest, expected.defaults)
+		}
+		if leaf.Provenance.Context != scopeir.BindingContextVariable ||
+			leaf.Provenance.PatternKind != "array_pattern" ||
+			sourceTextForRange(source, leaf.Provenance.PatternRange) != `[first,,{source: alias = fallback, short = fallback2, [dynamicKey]: computed}, ...tail]` ||
+			sourceTextForRange(source, leaf.Provenance.ConstructRange) != string(source[len("const "):len(source)-1]) {
+			t.Fatalf("leaf %s provenance mismatch: %#v", leaf.Name, leaf.Provenance)
+		}
+	}
+}
+
+func TestExtractBindingPatternNestedAndLegalEmptyPatterns(t *testing.T) {
+	nestedSource := []byte(`const {outer: [nested,,{deep: leaf}]} = input;`)
+	nested := extractPatternFromVariableDeclarator(t, nestedSource)
+	if len(nested.Diagnostics) != 0 || len(nested.Leaves) != 2 {
+		t.Fatalf("nested result = %#v", nested)
+	}
+	paths := map[string]string{}
+	for _, leaf := range nested.Leaves {
+		paths[leaf.Name] = bindingPathText(leaf.Path)
+	}
+	if paths["nested"] != "property:outer/array:0" || paths["leaf"] != "property:outer/array:2/property:deep" {
+		t.Fatalf("nested paths = %#v", paths)
+	}
+
+	for _, source := range [][]byte{[]byte(`const [] = input;`), []byte(`const {} = input;`), []byte(`const [,,] = input;`)} {
+		result := extractPatternFromVariableDeclarator(t, source)
+		if len(result.Leaves) != 0 || len(result.Diagnostics) != 0 {
+			t.Fatalf("legal empty pattern %q produced %#v", source, result)
+		}
+	}
+}
+
+func TestExtractBindingPatternReportsStructuredDiagnostics(t *testing.T) {
+	source := []byte(`const [...target.member] = input;`)
+	result := extractPatternFromVariableDeclarator(t, source)
+	if len(result.Leaves) != 0 || len(result.Diagnostics) != 1 {
+		t.Fatalf("invalid rest result = %#v", result)
+	}
+	diagnostic := result.Diagnostics[0]
+	if diagnostic.Code != scopeir.DiagnosticInvalidRestBinding ||
+		diagnostic.FilePath != "src/pattern.ts" ||
+		diagnostic.NodeKind != "member_expression" ||
+		diagnostic.Reason == "" ||
+		bindingPathText(diagnostic.Path) != "array:0" ||
+		diagnostic.Provenance.Context != scopeir.BindingContextVariable ||
+		diagnostic.Provenance.PatternKind != "array_pattern" ||
+		sourceTextForRange(source, diagnostic.Range) != "target.member" {
+		t.Fatalf("invalid rest diagnostic = %#v", diagnostic)
+	}
+
+	constructSource := []byte(`const value = input;`)
+	missing := extractMissingPatternFromVariableDeclarator(t, constructSource)
+	if len(missing.Diagnostics) != 1 || missing.Diagnostics[0].Code != scopeir.DiagnosticMalformedBindingNode {
+		t.Fatalf("missing-pattern diagnostic = %#v", missing.Diagnostics)
+	}
+}
+
+func TestExtractBindingPatternHandlesUndefinedAndContextAwareRest(t *testing.T) {
+	valid := []struct {
+		source string
+		name   string
+		path   string
+		rest   bool
+	}{
+		{source: `const [undefined] = [1];`, name: "undefined", path: "array:0"},
+		{source: `const {x: undefined} = {x: 1};`, name: "undefined", path: "property:x"},
+		{source: `const [...undefined] = [1];`, name: "undefined", path: "array:0", rest: true},
+		{source: `const {...undefined} = {x: 1};`, name: "undefined", path: "", rest: true},
+	}
+	for _, test := range valid {
+		result := extractPatternFromVariableDeclarator(t, []byte(test.source))
+		if len(result.Diagnostics) != 0 || len(result.Leaves) != 1 {
+			t.Fatalf("valid undefined pattern %q produced %#v", test.source, result)
+		}
+		leaf := result.Leaves[0]
+		if leaf.Name != test.name || bindingPathText(leaf.Path) != test.path || leaf.Rest != test.rest {
+			t.Fatalf("valid undefined leaf for %q = %#v", test.source, leaf)
+		}
+	}
+
+	nested := extractPatternFromVariableDeclarator(t, []byte(`const [...[a,b]] = [1,2];`))
+	if len(nested.Diagnostics) != 0 || len(nested.Leaves) != 2 {
+		t.Fatalf("nested array rest produced %#v", nested)
+	}
+	for _, leaf := range nested.Leaves {
+		if !leaf.Rest || (leaf.Name != "a" && leaf.Name != "b") {
+			t.Fatalf("nested array rest leaf = %#v", leaf)
+		}
+	}
+}
+
+func TestExtractBindingPatternRejectsMalformedContextInvalidForms(t *testing.T) {
+	invalid := []struct {
+		source string
+		path   string
+	}{
+		{source: `const {#x: y} = obj;`, path: ""},
+		{source: `const {...{a}} = obj;`, path: ""},
+		{source: `const {{a}=foo} = obj;`, path: ""},
+		{source: `const {a: ...b} = obj;`, path: "property:a"},
+	}
+	for _, source := range invalid {
+		result := extractPatternFromVariableDeclarator(t, []byte(source.source))
+		if len(result.Leaves) != 0 || len(result.Diagnostics) != 1 {
+			t.Fatalf("invalid pattern %q produced %#v", source.source, result)
+		}
+		diagnostic := result.Diagnostics[0]
+		if diagnostic.Code != scopeir.DiagnosticUnsupportedBindingNode ||
+			diagnostic.FilePath == "" || diagnostic.NodeKind == "" || diagnostic.Reason == "" ||
+			diagnostic.Provenance.Context != scopeir.BindingContextVariable ||
+			bindingPathText(diagnostic.Path) != source.path ||
+			diagnostic.Provenance.PatternRange.EndCol <= diagnostic.Provenance.PatternRange.StartCol ||
+			diagnostic.Provenance.ConstructRange.EndCol <= diagnostic.Provenance.ConstructRange.StartCol {
+			t.Fatalf("invalid pattern diagnostic for %q = %#v", source.source, diagnostic)
+		}
+	}
+}
+
+func extractPatternFromVariableDeclarator(t *testing.T, source []byte) bindingPatternResult {
+	t.Helper()
+	pool := parser.NewPool(nil, parser.PoolOptions{ParseTimeout: time.Second})
+	defer pool.Close()
+	parsed, err := pool.Parse(context.Background(), parser.Request{
+		FilePath: "src/pattern.ts",
+		Language: scanner.TypeScript,
+		Source:   source,
+	})
+	if err != nil {
+		t.Fatalf("parse binding pattern: %v", err)
+	}
+	defer parsed.Close()
+	declarator := firstNodeOfKind(parsed.Tree.RootNode(), "variable_declarator")
+	if declarator == nil {
+		t.Fatalf("missing variable_declarator for %q", source)
+	}
+	pattern := child(declarator, "name")
+	if pattern == nil {
+		t.Fatalf("missing binding pattern for %q", source)
+	}
+	return extractBindingPattern(bindingPatternRequest{
+		FilePath:  "src/pattern.ts",
+		FileHash:  "hash-pattern",
+		Source:    source,
+		Context:   scopeir.BindingContextVariable,
+		Construct: declarator,
+		Pattern:   pattern,
+	})
+}
+
+func extractMissingPatternFromVariableDeclarator(t *testing.T, source []byte) bindingPatternResult {
+	t.Helper()
+	pool := parser.NewPool(nil, parser.PoolOptions{ParseTimeout: time.Second})
+	defer pool.Close()
+	parsed, err := pool.Parse(context.Background(), parser.Request{
+		FilePath: "src/pattern.ts",
+		Language: scanner.TypeScript,
+		Source:   source,
+	})
+	if err != nil {
+		t.Fatalf("parse node: %v", err)
+	}
+	defer parsed.Close()
+	construct := firstNodeOfKind(parsed.Tree.RootNode(), "variable_declarator")
+	if construct == nil {
+		t.Fatalf("missing variable_declarator for %q", source)
+	}
+	return extractBindingPattern(bindingPatternRequest{
+		FilePath:  "src/pattern.ts",
+		FileHash:  "hash-pattern",
+		Source:    source,
+		Context:   scopeir.BindingContextVariable,
+		Construct: construct,
+	})
+}
+
+func firstNodeOfKind(root *sitter.Node, kind string) *sitter.Node {
+	var found *sitter.Node
+	walk(root, func(node *sitter.Node) {
+		if found == nil && node.Kind() == kind {
+			found = node
+		}
+	})
+	return found
+}
+
+func bindingPathText(path []scopeir.BindingPathSegment) string {
+	parts := make([]string, 0, len(path))
+	for _, segment := range path {
+		switch segment.Kind {
+		case scopeir.BindingPathArrayIndex:
+			if segment.ArrayIndex == nil {
+				parts = append(parts, "array:nil")
+			} else {
+				parts = append(parts, "array:"+strconv.Itoa(*segment.ArrayIndex))
+			}
+		case scopeir.BindingPathStaticProperty:
+			parts = append(parts, "property:"+segment.PropertyName)
+		case scopeir.BindingPathComputedProperty:
+			parts = append(parts, "computed:"+segment.ComputedExpression)
+		default:
+			parts = append(parts, "unknown:"+string(segment.Kind))
+		}
+	}
+	return strings.Join(parts, "/")
+}
+
+func sourceTextForRange(source []byte, rng scopeir.Range) string {
+	if rng.StartLine != 1 || rng.EndLine != 1 {
+		return ""
+	}
+	return string(source[rng.StartCol:rng.EndCol])
 }
 
 func TestExtractTypeAliasObjectPropertiesHaveNestedOwners(t *testing.T) {

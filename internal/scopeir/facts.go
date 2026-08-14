@@ -37,6 +37,80 @@ type BindingFact struct {
 	ViaKind ImportKind    `json:"viaKind,omitempty"`
 }
 
+type BindingContext string
+
+const (
+	BindingContextVariable  BindingContext = "variable"
+	BindingContextParameter BindingContext = "parameter"
+	BindingContextCatch     BindingContext = "catch"
+	BindingContextForIn     BindingContext = "for-in"
+	BindingContextForOf     BindingContext = "for-of"
+)
+
+type BindingPathSegmentKind string
+
+const (
+	BindingPathArrayIndex       BindingPathSegmentKind = "array-index"
+	BindingPathStaticProperty   BindingPathSegmentKind = "static-property"
+	BindingPathComputedProperty BindingPathSegmentKind = "computed-property"
+)
+
+// BindingPathSegment records one typed source step from a binding-pattern root
+// to a declaring leaf. Exactly one kind-specific value is populated.
+type BindingPathSegment struct {
+	Kind               BindingPathSegmentKind `json:"kind"`
+	ArrayIndex         *int                   `json:"arrayIndex,omitempty"`
+	PropertyName       string                 `json:"propertyName,omitempty"`
+	ComputedExpression string                 `json:"computedExpression,omitempty"`
+	SourceRange        Range                  `json:"sourceRange"`
+}
+
+// BindingPatternProvenance keeps the declaration-context construct distinct
+// from the binding-pattern root. Context adapters populate this contract in
+// their owning slices; the P3-A walker itself does not emit declarations.
+type BindingPatternProvenance struct {
+	Context        BindingContext `json:"context,omitempty"`
+	ConstructRange Range          `json:"constructRange"`
+	PatternRange   Range          `json:"patternRange"`
+	PatternKind    string         `json:"patternKind"`
+}
+
+// BindingLeafFact is one legal declaring identifier enumerated from a binding
+// pattern. Range covers the leaf's declared binding construct, while
+// SelectionRange identifies the declaring token.
+type BindingLeafFact struct {
+	FilePath       string                   `json:"filePath"`
+	FileHash       string                   `json:"fileHash,omitempty"`
+	Name           string                   `json:"name"`
+	Range          Range                    `json:"range"`
+	SelectionRange *Range                   `json:"selectionRange,omitempty"`
+	Path           []BindingPathSegment     `json:"path,omitempty"`
+	Rest           bool                     `json:"rest,omitempty"`
+	Default        bool                     `json:"default,omitempty"`
+	Provenance     BindingPatternProvenance `json:"provenance"`
+}
+
+type ExtractionDiagnosticCode string
+
+const (
+	DiagnosticUnsupportedBindingNode ExtractionDiagnosticCode = "tsjs.binding-pattern.unsupported-node"
+	DiagnosticMalformedBindingNode   ExtractionDiagnosticCode = "tsjs.binding-pattern.malformed-node"
+	DiagnosticInvalidRestBinding     ExtractionDiagnosticCode = "tsjs.binding-pattern.invalid-rest-target"
+)
+
+// ExtractionDiagnosticFact makes an unsupported binding-pattern source site
+// deterministic and countable instead of allowing the node to disappear.
+type ExtractionDiagnosticFact struct {
+	Code       ExtractionDiagnosticCode `json:"code"`
+	FilePath   string                   `json:"filePath"`
+	FileHash   string                   `json:"fileHash,omitempty"`
+	Range      Range                    `json:"range"`
+	NodeKind   string                   `json:"nodeKind"`
+	Reason     string                   `json:"reason"`
+	Path       []BindingPathSegment     `json:"path,omitempty"`
+	Provenance BindingPatternProvenance `json:"provenance"`
+}
+
 type TypeRef struct {
 	RawName         string        `json:"rawName"`
 	DeclaredAtScope string        `json:"declaredAtScope"`

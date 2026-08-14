@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / Child 02 closed at 181b8cb8 / P0-A accepted with isolated documentation-evidence commit boundary prepared / P3-A closed until Git confirms the commit`
+- Status: `active / Child 02 closed at 181b8cb8 / P0-A accepted and committed at 17bd4584 / P3-A accepted at this isolated commit boundary / P3-B locked pending Owner transfer`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md`
@@ -96,7 +96,7 @@ Out of scope:
     4. Classify correct, partial, wrong, missing, and blocked rows in actual status; update P3-A work steps if exact ownership differs from this plan.
   - Implementation Gate: the accepted Child 02 handoff is recorded as `E0-P0A-HANDOFF1` and its Pn-C commit is confirmed; no production edit until the actual-status Final P0 Decision permits P3-A.
   - Acceptance: `E0-P0A-HANDOFF1`, `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2`, `E0-P0A-SCOPE1`, `E0-P0A-GRAPH1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1`, `E0-P0A-STATUS1`, and independent `E0-P0A-REVIEW1` are recorded with no unresolved owner boundary; `E0-P0A-DETECT1` and `E0-P0A-COMMIT1` close the isolated documentation/evidence boundary.
-  - Current State: Child 02 is closed at entry HEAD `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`. The exact Set A/B/C manifest and partition checks are durable in the QA report. Independent Supervisor reports `E0-P0A-REVIEW1` and `E0-P0A-REVIEW2` returned `PASS`, including the byte-clean artifact actually staged for commit. Final staged detect is LOW for exactly eight docs/report paths and zero process/flow/gap/degradation. The exact isolated P0-A documentation/evidence boundary commits immediately after this row; Git reports the final hash because a commit cannot contain its own hash. P3-A remains closed until Git confirms success.
+  - Current State: Child 02 is closed at entry HEAD `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`. The exact Set A/B/C manifest and partition checks are durable in the QA report. Independent Supervisor reports `E0-P0A-REVIEW1` and `E0-P0A-REVIEW2` returned `PASS`, including the byte-clean artifact committed as `17bd45845a218dccfa7cb09bde8195a14693bf50`. P3-A opened afterward; `E3-P3A-REVIEW1` and `E3-P3A-REVIEW2` preserve the two REJECT histories, while `E3-P3A-REVIEW3` accepts the repaired helper/contract boundary. The isolated P3-A commit remains pending and P3-B remains locked.
   - Commit Boundary: four Child 03 ledgers, one QA report, immutable prior REJECT provenance, and two independent PASS reports; no production/test/fixture/target/runtime path.
 
 ### P3: TypeScript binding-pattern extraction
@@ -115,7 +115,7 @@ Out of scope:
   - P3-C: Project and resolve binding occurrences in the current graph.
   - P3-C2: Validate the complete binding contract against the real target.
 
-- [ ] P3-A: Implement the binding-pattern contract and recursive leaf walker.
+- [x] P3-A: Implement the binding-pattern contract and recursive leaf walker.
   - Goal: enumerate legal binding leaves, paths, ranges, modifiers, and unsupported syntax without graph emission.
   - Scope Boundary:
     - Editable: add one focused `internal/providers/tsjs/binding_patterns.go` owner for recursive pattern traversal; extend only the exact ScopeIR binding-pattern contract owners in `internal/scopeir/facts.go`, `internal/scopeir/ir.go`, and `internal/scopeir/sort_keys.go` when the accepted contract requires it.
@@ -148,7 +148,7 @@ Out of scope:
        - DB/data flow check: verify exact paths/ranges/modifiers and no duplicate facts.
        - Render location check: evidence ledger and focused test output.
        - Mini QA: exercise the built non-UI provider boundary and record the command and observed result.
-       - Evidence target: `E3-P3A-BUILD1`, `E3-P3A-TEST1`, `E3-P3A-BOUNDARY1`, `E3-P3A-REVIEW1`, `E3-P3A-DETECT1`, `E3-P3A-COMMIT1`.
+       - Evidence target: `E3-P3A-BUILD1`, `E3-P3A-TEST1`, `E3-P3A-BOUNDARY1`, `E3-P3A-REVIEW1`, `E3-P3A-REVIEW2`, `E3-P3A-REVIEW3`, `E3-P3A-PLAN1`, `E3-P3A-DETECT1`, `E3-P3A-DETECT2`, `E3-P3A-DETECT3`, `E3-P3A-COMMIT1`.
   - Implementation Gate: independent Supervisor accepts the P0-A candidate, P0-A is isolated in a commit, and the exact fact/walker owners have refreshed impact evidence. P0-A completion alone does not open P3-A.
   - Acceptance:
     - Source: every supported leaf has exactly one fact, correct path/range/modifiers, and unsupported syntax is diagnosed.
@@ -156,11 +156,21 @@ Out of scope:
     - Data: no graph or persistent-store mutation in this slice.
     - Behavior test: general pattern matrix passes deterministically.
     - Cleanup: no debug or target artifact remains.
-    - Evidence IDs: `E3-P3A-IMPACT1`, `E3-P3A-SRC1`, `E3-P3A-BUILD1`, `E3-P3A-TEST1`, `E3-P3A-BOUNDARY1`, `E3-P3A-REVIEW1`, `E3-P3A-DETECT1`, `E3-P3A-COMMIT1`.
+    - Evidence IDs: `E3-P3A-IMPACT1`, `E3-P3A-SRC1`, `E3-P3A-BUILD1`, `E3-P3A-TEST1`, `E3-P3A-BOUNDARY1`, `E3-P3A-REVIEW1`, `E3-P3A-REVIEW2`, `E3-P3A-REVIEW3`, `E3-P3A-PLAN1`, `E3-P3A-DETECT1`, `E3-P3A-DETECT2`, `E3-P3A-DETECT3`, `E3-P3A-COMMIT1`.
     - Actual-status rows refreshed: binding contract/walker.
   - Evidence Targets: source diff, pattern matrix, diagnostic count, build, boundary output, Supervisor, detect-changes, commit.
   - Actual-status Update: transition the binding walker row from its P0 classification to `correct`; leave declaration contexts unchanged.
   - Commit Boundary: one P3-A commit after all acceptance evidence passes.
+  - Coder Candidate (2026-08-14): the first candidate was rejected by `E3-P3A-REVIEW1` (`reports/Supervisor/rp_supervisor_260814_085244_by_gpt-5_child03_p3a.md`) for valid-`undefined`, malformed/context-invalid, clone-oracle, stale detect, ledger-currentness, and cleanup invariants. Repair remains in this exact P3-A boundary. Fresh repair evidence must replace the superseded first-candidate BUILD/TEST/BOUNDARY/DETECT claims before re-review; this checkbox and `E3-P3A-COMMIT1` remain open, and P3-B is not opened.
+  - Repair Checkpoint (2026-08-14): the source/test repair is complete within the same boundary; fresh analyze, file-detail/impact, clean-gated build, focused tests, raw/structured detect artifacts, and cleanup evidence are being recorded under the repair coder report. `E3-P3A-REVIEW1` remains the prior REJECT until a new independent review; `E3-P3A-COMMIT1` remains pending and P3-B stays locked. Roadmap reconciliation is owned by orchestration/docs-owner.
+  - Acceptance Checkpoint (2026-08-14): `E3-P3A-REVIEW2` retained the second REJECT because the `292/9` detect pair predated roadmap reconciliation. `E3-P3A-DETECT2` then supplied a fresh durable `294/10` raw/JSON package plus an exact untracked-walker manifest, `E3-P3A-REVIEW3` returned `PASS`, and final `E3-P3A-DETECT3` records `296/10/10` after the planner refresh. `E3-P3A-COMMIT1` is the isolated commit containing this checklist; Git/handoff records its exact hash. P3-B remains locked pending Owner transfer.
+    - [x] Preserve the first independent REJECT as `E3-P3A-REVIEW1`.
+    - [x] Preserve the second independent REJECT as `E3-P3A-REVIEW2`.
+    - [x] Record the fresh durable `294/10` package and untracked-walker manifest as `E3-P3A-DETECT2` without reusing `DETECT1`.
+    - [x] Record the final independent PASS as `E3-P3A-REVIEW3`.
+    - [x] Refresh checklist/evidence/benchmark/actual-status with the planner gate recorded as `E3-P3A-PLAN1`.
+    - [x] Run and record the final orchestration-owned pre-commit detect as `E3-P3A-DETECT3` (`296` changed symbols / `10` changed files / `10` affected files).
+    - [x] Create the isolated P3-A commit boundary as `E3-P3A-COMMIT1`; Git/handoff records the exact final hash.
 
 - [ ] P3-B: Integrate variable-declaration contexts.
   - Goal: emit binding leaves for variable declarations even when per-leaf type inference is unavailable.

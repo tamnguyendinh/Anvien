@@ -84,6 +84,167 @@ func TestNormalizeOwnedMatchesNormalized(t *testing.T) {
 	}
 }
 
+func TestBindingCollectionsAreDeepCopiedByNormalization(t *testing.T) {
+	index := 2
+	selection := Range{StartLine: 3, StartCol: 10, EndLine: 3, EndCol: 14}
+	ir := ScopeIR{
+		BindingLeaves: []BindingLeafFact{{
+			FilePath:       "src/pattern.ts",
+			Name:           "leaf",
+			Range:          Range{StartLine: 3, StartCol: 2, EndLine: 3, EndCol: 14},
+			SelectionRange: &selection,
+			Path: []BindingPathSegment{{
+				Kind:        BindingPathArrayIndex,
+				ArrayIndex:  &index,
+				SourceRange: Range{StartLine: 3, StartCol: 2, EndLine: 3, EndCol: 14},
+			}},
+		}},
+		ExtractionDiagnostics: []ExtractionDiagnosticFact{{
+			Code:     DiagnosticUnsupportedBindingNode,
+			FilePath: "src/pattern.ts",
+			Range:    Range{StartLine: 4, StartCol: 2, EndLine: 4, EndCol: 9},
+			NodeKind: "member_expression",
+			Reason:   "unsupported",
+			Path: []BindingPathSegment{{
+				Kind:        BindingPathArrayIndex,
+				ArrayIndex:  &index,
+				SourceRange: Range{StartLine: 4, StartCol: 2, EndLine: 4, EndCol: 9},
+			}},
+		}},
+	}
+
+	for name, normalized := range map[string]ScopeIR{
+		"Normalized":     ir.Normalized(),
+		"NormalizeOwned": ir.NormalizeOwned(),
+	} {
+		normalized.BindingLeaves[0].SelectionRange.StartCol = 99
+		*normalized.BindingLeaves[0].Path[0].ArrayIndex = 99
+		*normalized.ExtractionDiagnostics[0].Path[0].ArrayIndex = 100
+		if ir.BindingLeaves[0].SelectionRange.StartCol != 10 ||
+			*ir.BindingLeaves[0].Path[0].ArrayIndex != 2 ||
+			*ir.ExtractionDiagnostics[0].Path[0].ArrayIndex != 2 {
+			t.Fatalf("%s retained nested aliases: source=%#v normalized=%#v", name, ir, normalized)
+		}
+	}
+}
+
+func TestBindingCollectionsMarshalDeterministically(t *testing.T) {
+	index0 := 0
+	index2 := 2
+	selectionA := Range{StartLine: 2, StartCol: 1, EndLine: 2, EndCol: 2}
+	selectionB := Range{StartLine: 2, StartCol: 5, EndLine: 2, EndCol: 6}
+	leaves := []BindingLeafFact{
+		{
+			FilePath:       "src/pattern.ts",
+			FileHash:       "hash-b",
+			Name:           "b",
+			Range:          Range{StartLine: 2, StartCol: 5, EndLine: 2, EndCol: 10},
+			SelectionRange: &selectionB,
+			Path:           []BindingPathSegment{{Kind: BindingPathArrayIndex, ArrayIndex: &index2}},
+			Default:        true,
+			Provenance: BindingPatternProvenance{
+				Context:        BindingContextVariable,
+				ConstructRange: Range{StartLine: 2, EndLine: 2, EndCol: 20},
+				PatternRange:   Range{StartLine: 2, StartCol: 1, EndLine: 2, EndCol: 11},
+				PatternKind:    "array_pattern",
+			},
+		},
+		{
+			FilePath:       "src/pattern.ts",
+			FileHash:       "hash-a",
+			Name:           "a",
+			Range:          selectionA,
+			SelectionRange: &selectionA,
+			Path:           []BindingPathSegment{{Kind: BindingPathArrayIndex, ArrayIndex: &index0}},
+			Provenance: BindingPatternProvenance{
+				Context:        BindingContextVariable,
+				ConstructRange: Range{StartLine: 2, EndLine: 2, EndCol: 20},
+				PatternRange:   Range{StartLine: 2, StartCol: 1, EndLine: 2, EndCol: 11},
+				PatternKind:    "array_pattern",
+			},
+		},
+	}
+	diagnostics := []ExtractionDiagnosticFact{
+		{Code: DiagnosticUnsupportedBindingNode, FilePath: "src/pattern.ts", Range: Range{StartLine: 4}, NodeKind: "z", Reason: "z"},
+		{Code: DiagnosticMalformedBindingNode, FilePath: "src/pattern.ts", Range: Range{StartLine: 3}, NodeKind: "a", Reason: "a"},
+	}
+	left := ScopeIR{
+		FilePath:              "src/pattern.ts",
+		BindingLeaves:         cloneBindingLeavesForTest(leaves),
+		ExtractionDiagnostics: cloneExtractionDiagnosticsForTest(diagnostics),
+	}
+	right := ScopeIR{
+		FilePath:              "src/pattern.ts",
+		BindingLeaves:         cloneBindingLeavesForTest([]BindingLeafFact{leaves[1], leaves[0]}),
+		ExtractionDiagnostics: cloneExtractionDiagnosticsForTest([]ExtractionDiagnosticFact{diagnostics[1], diagnostics[0]}),
+	}
+	leftBefore := cloneBindingLeavesForTest(left.BindingLeaves)
+	leftDiagnosticsBefore := cloneExtractionDiagnosticsForTest(left.ExtractionDiagnostics)
+
+	leftRaw, err := left.MarshalDeterministic()
+	if err != nil {
+		t.Fatalf("marshal left: %v", err)
+	}
+	rightRaw, err := right.MarshalDeterministic()
+	if err != nil {
+		t.Fatalf("marshal right: %v", err)
+	}
+	if string(leftRaw) != string(rightRaw) {
+		t.Fatalf("deterministic binding marshal mismatch\nleft:\n%s\nright:\n%s", leftRaw, rightRaw)
+	}
+	if left.BindingLeaves[0].Name != "b" || right.BindingLeaves[0].Name != "a" ||
+		left.ExtractionDiagnostics[0].Code != DiagnosticUnsupportedBindingNode ||
+		right.ExtractionDiagnostics[0].Code != DiagnosticMalformedBindingNode {
+		t.Fatalf("MarshalDeterministic reordered source slices: left=%#v right=%#v", left, right)
+	}
+	if !reflect.DeepEqual(left.BindingLeaves, leftBefore) ||
+		!reflect.DeepEqual(left.ExtractionDiagnostics, leftDiagnosticsBefore) {
+		t.Fatalf("MarshalDeterministic mutated source slices: left=%#v", left)
+	}
+	left.BindingLeaves[0].SelectionRange.StartCol = 99
+	*left.BindingLeaves[0].Path[0].ArrayIndex = 99
+	if leaves[0].SelectionRange.StartCol != 5 || *leaves[0].Path[0].ArrayIndex != 2 ||
+		right.BindingLeaves[0].SelectionRange.StartCol != 1 || *right.BindingLeaves[0].Path[0].ArrayIndex != 0 {
+		t.Fatalf("comparison inputs retained aliases: source=%#v right=%#v", leaves, right)
+	}
+}
+
+func cloneBindingLeavesForTest(input []BindingLeafFact) []BindingLeafFact {
+	output := make([]BindingLeafFact, len(input))
+	copy(output, input)
+	for index := range output {
+		if input[index].SelectionRange != nil {
+			selection := *input[index].SelectionRange
+			output[index].SelectionRange = &selection
+		}
+		output[index].Path = append([]BindingPathSegment(nil), input[index].Path...)
+		for pathIndex := range output[index].Path {
+			if input[index].Path[pathIndex].ArrayIndex == nil {
+				continue
+			}
+			arrayIndex := *input[index].Path[pathIndex].ArrayIndex
+			output[index].Path[pathIndex].ArrayIndex = &arrayIndex
+		}
+	}
+	return output
+}
+
+func cloneExtractionDiagnosticsForTest(input []ExtractionDiagnosticFact) []ExtractionDiagnosticFact {
+	output := make([]ExtractionDiagnosticFact, len(input))
+	copy(output, input)
+	for index := range output {
+		output[index].Path = append([]BindingPathSegment(nil), input[index].Path...)
+		for pathIndex := range output[index].Path {
+			if input[index].Path[pathIndex].ArrayIndex == nil {
+				continue
+			}
+			arrayIndex := *input[index].Path[pathIndex].ArrayIndex
+			output[index].Path[pathIndex].ArrayIndex = &arrayIndex
+		}
+	}
+	return output
+}
+
 func BenchmarkScopeIRSerialization(b *testing.B) {
 	ir := sampleScopeIR()
 	b.ReportAllocs()

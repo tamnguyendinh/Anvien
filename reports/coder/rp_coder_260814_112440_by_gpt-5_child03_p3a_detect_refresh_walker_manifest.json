@@ -1,0 +1,212 @@
+{
+  "state": "READY_FOR_SUPERVISOR_REVIEW",
+  "role": "evidence-owner/coder follow-up",
+  "supervisor_verdict_authority": false,
+  "repository": "E:\\Anvien",
+  "slice": "Child 03 P3-A detect-evidence refresh only",
+  "scope_locks": {
+    "p3_b": "locked",
+    "later_slices": "locked",
+    "production_code_changed_by_this_capture": false,
+    "tests_changed_by_this_capture": false,
+    "plans_or_ledgers_changed_by_this_capture": false,
+    "stage_or_commit_performed": false
+  },
+  "git_boundary": {
+    "branch": "master",
+    "head": "e61c0f844e07863c348dcc9f8c5e643ff2445436",
+    "dispatch_basis": "ba9826e51b67898add9e08ecf6dfb9d4eaba1812",
+    "dispatch_basis_matches_final_head": false,
+    "dispatch_basis_matched_initial_precheck": true,
+    "concurrent_owner_commit": {
+      "commit": "e61c0f844e07863c348dcc9f8c5e643ff2445436",
+      "parent": "ba9826e51b67898add9e08ecf6dfb9d4eaba1812",
+      "classification": "Owner-only skill wording commit; excluded from P3-A semantic boundary, verdict, and commit",
+      "path": "internal/aicontext/skills/orchestration/SKILL.md",
+      "p3_a_semantic_effect": false
+    },
+    "staged_path_count": 0,
+    "dirty_path_count": 25,
+    "preserved_preexisting_dirty_path_count": 21,
+    "authorized_scaffold_path_count": 4,
+    "preserved_manifest_contract": {
+      "record_format": "<git status> TAB <path> TAB <bytes> TAB <SHA-256>",
+      "encoding": "UTF-8",
+      "line_endings": "LF",
+      "canonical_bytes": 3322,
+      "sha256": "9279FE16508096B836261496C5767104C7705F0F5258D13FAFF4F26783692945"
+    }
+  },
+  "graph_basis": {
+    "command": "anvien analyze --force",
+    "exit_code": 0,
+    "indexed_at_utc": "2026-08-14T06:14:46Z",
+    "indexed_at_asia_bangkok": "2026-08-14T13:14:46+07:00",
+    "last_commit": "e61c0f844e07863c348dcc9f8c5e643ff2445436",
+    "scanned_files": 1644,
+    "parsed_code_files": 689,
+    "failed_files": 0,
+    "indexed_documents": 818,
+    "indexed_metadata": 125,
+    "indexed_scripts": 8,
+    "indexed_static": 3,
+    "unsupported_language_gaps": 0,
+    "unknown_gaps": 1,
+    "nodes": 97956,
+    "relationships": 137565,
+    "process_inventory": 664,
+    "graph_path": "E:\\Anvien\\.anvien\\graph.json"
+  },
+  "detector_contract": {
+    "command": "anvien detect-changes --repo E:\\Anvien --scope all",
+    "exit_code": 0,
+    "stderr_empty": true,
+    "started_utc": "2026-08-14T06:15:21.5651401Z",
+    "finished_utc": "2026-08-14T06:15:36.2147458Z",
+    "started_asia_bangkok": "2026-08-14T13:15:21.5651401+07:00",
+    "finished_asia_bangkok": "2026-08-14T13:15:36.2147458+07:00",
+    "limitation": "anvien detect-changes enumerates tracked graph files from Git changes. The untracked walker has no detector-enumerated path or symbol record in this capture and is represented only by direct Git status plus source byte/hash evidence below."
+  },
+  "walker": {
+    "path": "internal/providers/tsjs/binding_patterns.go",
+    "git_status": "??",
+    "tracked_by_git": false,
+    "enumerated_as_changed_path_by_detector": false,
+    "enumerated_as_changed_symbol_by_detector": false,
+    "trace_basis": "direct source bytes and SHA-256 from the current shared worktree",
+    "bytes": 11423,
+    "sha256": "2A9CA2BCA90182CEA69676C1906FFCE9F16A888205BE2F77C44A2C2CB40CBDB0",
+    "last_write_utc": "2026-08-14T02:05:14.3585442Z",
+    "hash_unchanged_before_analyze_and_after_detect": true
+  },
+  "artifacts": {
+    "raw": {
+      "path": "reports/coder/rp_coder_260814_112440_by_gpt-5_child03_p3a_detect_refresh_raw.txt",
+      "bytes": 536736,
+      "sha256": "55B113DEC90CE96E62E3D62628E23D21A5A32083FE2B30E21EE1FB62C748195B",
+      "stdout_captured_as_raw_bytes": true,
+      "footer_bytes": 157,
+      "footer_exact": true,
+      "delimiter_occurrences": 1
+    },
+    "json_prefix": {
+      "path": "reports/coder/rp_coder_260814_112440_by_gpt-5_child03_p3a_detect_refresh.json",
+      "bytes": 536579,
+      "sha256": "7400B8D5DEF55A5B1EEF2B8C52A91B829134D7E2A11FF0B04756A11B534CA7BA",
+      "parser_boundary_byte_offset": 536579,
+      "byte_identical_to_raw_prefix": true,
+      "parse_success": true,
+      "parser": "PowerShell ConvertFrom-Json"
+    },
+    "report": {
+      "path": "reports/coder/rp_coder_260814_112440_by_gpt-5_child03_p3a_detect_refresh.md",
+      "self_hash_embedded": false,
+      "final_bytes_and_sha256_are_supplied_in_the_orchestration_handoff": true
+    }
+  },
+  "detect_result": {
+    "summary_risk": "medium",
+    "file_layer_risk": "high",
+    "changed_symbol_count": 294,
+    "changed_file_count": 10,
+    "affected_file_count": 10,
+    "changed_app_layers": {
+      "backend": 173,
+      "backend_test": 94,
+      "docs": 27
+    },
+    "changed_functional_areas": {
+      "documentation": 27,
+      "providers": 267
+    },
+    "changed_paths": [
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-26-anvien-graph-accuracy-roadmap.md",
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-actual-status.md",
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md",
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-evidence.md",
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md",
+      "internal/providers/tsjs/extract_test.go",
+      "internal/scopeir/facts.go",
+      "internal/scopeir/ir.go",
+      "internal/scopeir/scopeir_test.go",
+      "internal/scopeir/sort_keys.go"
+    ],
+    "affected_paths_equal_changed_paths": true,
+    "affected_process_entries": 2,
+    "affected_changed_steps": 2,
+    "affected_processes": [
+      {
+        "id": "proc_241_normalizeinplace",
+        "name": "NormalizeInPlace -> CompareInt",
+        "process_type": "cross_community",
+        "step_count": 4,
+        "changed_step_count": 1,
+        "changed_symbol": "NormalizeInPlace",
+        "changed_path": "internal/scopeir/ir.go"
+      },
+      {
+        "id": "proc_560_normalizeinplace",
+        "name": "NormalizeInPlace -> CompareString",
+        "process_type": "intra_community",
+        "step_count": 3,
+        "changed_step_count": 1,
+        "changed_symbol": "NormalizeInPlace",
+        "changed_path": "internal/scopeir/ir.go"
+      }
+    ],
+    "resolution_gap_delta": {
+      "changed_entities": 67,
+      "changed_occurrences": 69,
+      "changed_source_nodes_with_gaps": 0,
+      "analyzer_gap": 2,
+      "non_actionable": 65,
+      "builtin": 63,
+      "in_repo_unresolved": 2,
+      "standard_library": 2,
+      "current_total_gaps": 0,
+      "current_nodes_with_gaps": 0,
+      "current_degraded_nodes": 0
+    }
+  },
+  "replacement_history": {
+    "superseded_capture": {
+      "head": "ba9826e51b67898add9e08ecf6dfb9d4eaba1812",
+      "reason": "HEAD advanced by the classified Owner-only commit before final handoff",
+      "used_as_final_graph_or_detect_basis": false,
+      "retained_in_current_raw_or_json_artifact": false
+    },
+    "lock_rejected_attempt": {
+      "started_analyze": false,
+      "exit_code": 1,
+      "reason": "a concurrent live analyze process held E:\\Anvien\\.anvien\\analyze.lock",
+      "used_as_graph_basis": false
+    },
+    "final_replacement_cycle": {
+      "head": "e61c0f844e07863c348dcc9f8c5e643ff2445436",
+      "analyze_exit_code": 0,
+      "detect_exit_code": 0,
+      "used_as_final_basis": true
+    }
+  },
+  "historical_comparison": [
+    {
+      "basis": "retained stale coder artifact",
+      "changed_symbols": 292,
+      "changed_files": 9,
+      "usable_as_current_evidence": false
+    },
+    {
+      "basis": "prior Supervisor console observation",
+      "changed_symbols": 294,
+      "changed_files": 10,
+      "usable_as_durable_artifact": false
+    },
+    {
+      "basis": "this fresh durable capture",
+      "changed_symbols": 294,
+      "changed_files": 10,
+      "usable_as_current_evidence": true
+    }
+  ],
+  "task_owned_temp_paths": []
+}

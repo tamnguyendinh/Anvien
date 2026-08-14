@@ -11,21 +11,23 @@ import (
 const Version = "scopeir.v1"
 
 type ScopeIR struct {
-	Version         string               `json:"version"`
-	FilePath        string               `json:"filePath"`
-	FileHash        string               `json:"fileHash,omitempty"`
-	Language        scanner.Language     `json:"language,omitempty"`
-	ModuleScope     string               `json:"moduleScope"`
-	Scopes          []ScopeFact          `json:"scopes"`
-	Definitions     []DefinitionFact     `json:"definitions"`
-	Imports         []ImportFact         `json:"imports,omitempty"`
-	Calls           []CallSiteFact       `json:"calls,omitempty"`
-	Accesses        []AccessFact         `json:"accesses,omitempty"`
-	Heritage        []HeritageFact       `json:"heritage,omitempty"`
-	TypeAnnotations []TypeAnnotationFact `json:"typeAnnotations,omitempty"`
-	ReturnTypes     []ReturnTypeFact     `json:"returnTypes,omitempty"`
-	Frameworks      []FrameworkFact      `json:"frameworks,omitempty"`
-	Domains         []DomainFact         `json:"domains,omitempty"`
+	Version               string                     `json:"version"`
+	FilePath              string                     `json:"filePath"`
+	FileHash              string                     `json:"fileHash,omitempty"`
+	Language              scanner.Language           `json:"language,omitempty"`
+	ModuleScope           string                     `json:"moduleScope"`
+	Scopes                []ScopeFact                `json:"scopes"`
+	Definitions           []DefinitionFact           `json:"definitions"`
+	BindingLeaves         []BindingLeafFact          `json:"bindingLeaves,omitempty"`
+	ExtractionDiagnostics []ExtractionDiagnosticFact `json:"extractionDiagnostics,omitempty"`
+	Imports               []ImportFact               `json:"imports,omitempty"`
+	Calls                 []CallSiteFact             `json:"calls,omitempty"`
+	Accesses              []AccessFact               `json:"accesses,omitempty"`
+	Heritage              []HeritageFact             `json:"heritage,omitempty"`
+	TypeAnnotations       []TypeAnnotationFact       `json:"typeAnnotations,omitempty"`
+	ReturnTypes           []ReturnTypeFact           `json:"returnTypes,omitempty"`
+	Frameworks            []FrameworkFact            `json:"frameworks,omitempty"`
+	Domains               []DomainFact               `json:"domains,omitempty"`
 }
 
 func (ir ScopeIR) Normalized() ScopeIR {
@@ -35,6 +37,8 @@ func (ir ScopeIR) Normalized() ScopeIR {
 	}
 	out.Scopes = append([]ScopeFact(nil), ir.Scopes...)
 	out.Definitions = append([]DefinitionFact(nil), ir.Definitions...)
+	out.BindingLeaves = append([]BindingLeafFact(nil), ir.BindingLeaves...)
+	out.ExtractionDiagnostics = append([]ExtractionDiagnosticFact(nil), ir.ExtractionDiagnostics...)
 	out.Imports = append([]ImportFact(nil), ir.Imports...)
 	out.Calls = append([]CallSiteFact(nil), ir.Calls...)
 	out.Accesses = append([]AccessFact(nil), ir.Accesses...)
@@ -56,6 +60,7 @@ func (ir ScopeIR) Normalized() ScopeIR {
 		out.Definitions[index].ParameterTypes = append([]string(nil), out.Definitions[index].ParameterTypes...)
 		out.Definitions[index].Annotations = append([]string(nil), out.Definitions[index].Annotations...)
 	}
+	cloneBindingCollections(&out)
 	for index := range out.Imports {
 		out.Imports[index].TransitiveVia = append([]string(nil), out.Imports[index].TransitiveVia...)
 	}
@@ -91,6 +96,12 @@ func (ir ScopeIR) NormalizeInPlace() ScopeIR {
 	sort.Slice(ir.Definitions, func(i, j int) bool {
 		return compareDefinition(ir.Definitions[i], ir.Definitions[j]) < 0
 	})
+	sort.Slice(ir.BindingLeaves, func(i, j int) bool {
+		return compareBindingLeaf(ir.BindingLeaves[i], ir.BindingLeaves[j]) < 0
+	})
+	sort.Slice(ir.ExtractionDiagnostics, func(i, j int) bool {
+		return compareExtractionDiagnostic(ir.ExtractionDiagnostics[i], ir.ExtractionDiagnostics[j]) < 0
+	})
 	sort.Slice(ir.Imports, func(i, j int) bool { return compareImport(ir.Imports[i], ir.Imports[j]) < 0 })
 	sort.Slice(ir.Calls, func(i, j int) bool { return compareCall(ir.Calls[i], ir.Calls[j]) < 0 })
 	sort.Slice(ir.Accesses, func(i, j int) bool { return compareAccess(ir.Accesses[i], ir.Accesses[j]) < 0 })
@@ -115,6 +126,8 @@ func (ir ScopeIR) NormalizeOwned() ScopeIR {
 	}
 	ir.Scopes = append([]ScopeFact(nil), ir.Scopes...)
 	ir.Definitions = append([]DefinitionFact(nil), ir.Definitions...)
+	ir.BindingLeaves = append([]BindingLeafFact(nil), ir.BindingLeaves...)
+	ir.ExtractionDiagnostics = append([]ExtractionDiagnosticFact(nil), ir.ExtractionDiagnostics...)
 	ir.Imports = append([]ImportFact(nil), ir.Imports...)
 	ir.Calls = append([]CallSiteFact(nil), ir.Calls...)
 	ir.Accesses = append([]AccessFact(nil), ir.Accesses...)
@@ -124,7 +137,39 @@ func (ir ScopeIR) NormalizeOwned() ScopeIR {
 	ir.Frameworks = append([]FrameworkFact(nil), ir.Frameworks...)
 	ir.Domains = append([]DomainFact(nil), ir.Domains...)
 
+	cloneBindingCollections(&ir)
+
 	return ir.NormalizeInPlace()
+}
+
+func cloneBindingCollections(ir *ScopeIR) {
+	for index := range ir.BindingLeaves {
+		ir.BindingLeaves[index].SelectionRange = cloneRange(ir.BindingLeaves[index].SelectionRange)
+		ir.BindingLeaves[index].Path = cloneBindingPath(ir.BindingLeaves[index].Path)
+	}
+	for index := range ir.ExtractionDiagnostics {
+		ir.ExtractionDiagnostics[index].Path = cloneBindingPath(ir.ExtractionDiagnostics[index].Path)
+	}
+}
+
+func cloneRange(value *Range) *Range {
+	if value == nil {
+		return nil
+	}
+	cloned := *value
+	return &cloned
+}
+
+func cloneBindingPath(path []BindingPathSegment) []BindingPathSegment {
+	cloned := append([]BindingPathSegment(nil), path...)
+	for index := range cloned {
+		if cloned[index].ArrayIndex == nil {
+			continue
+		}
+		value := *cloned[index].ArrayIndex
+		cloned[index].ArrayIndex = &value
+	}
+	return cloned
 }
 
 func (ir ScopeIR) MarshalDeterministic() ([]byte, error) {
