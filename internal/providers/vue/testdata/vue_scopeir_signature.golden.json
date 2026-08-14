@@ -18,7 +18,10 @@
     "Property:Named.id::string:def:src/Service.vue#7:0:Interface:Named",
     "Property:Service.id::string:def:src/Service.vue#13:0:Class:Service",
     "Property:Service.repo::Repository:def:src/Service.vue#13:0:Class:Service",
-    "Variable:formatted:::"
+    "Variable:formatted:::",
+    "Variable:repo:::",
+    "Variable:user:::",
+    "Variable:value:::"
   ],
   "imports": [
     "named:format:format::./format"

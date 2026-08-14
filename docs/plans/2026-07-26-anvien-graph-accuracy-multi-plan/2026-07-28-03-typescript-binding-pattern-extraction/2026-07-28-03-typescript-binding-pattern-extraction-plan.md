@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / Child 02 closed at 181b8cb8 / P0-A accepted and committed at 17bd4584 / P3-A accepted and committed at b4dbe5c / P3-B Supervisor PASS / final staged detect 222/13/13 / closes at this isolated commit boundary / P3-B1 locked`
+- Status: `active / Child 02 closed at 181b8cb8 / P0-A accepted and committed at 17bd4584 / P3-A accepted and committed at b4dbe5c / P3-B accepted and committed at 17254549 / P3-B1 REVIEW2 PASS / DETECT1 309/17/13 / commit-push closure / later slices locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md`
@@ -96,7 +96,7 @@ Out of scope:
     4. Classify correct, partial, wrong, missing, and blocked rows in actual status; update P3-A work steps if exact ownership differs from this plan.
   - Implementation Gate: the accepted Child 02 handoff is recorded as `E0-P0A-HANDOFF1` and its Pn-C commit is confirmed; no production edit until the actual-status Final P0 Decision permits P3-A.
   - Acceptance: `E0-P0A-HANDOFF1`, `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2`, `E0-P0A-SCOPE1`, `E0-P0A-GRAPH1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1`, `E0-P0A-STATUS1`, and independent `E0-P0A-REVIEW1` are recorded with no unresolved owner boundary; `E0-P0A-DETECT1` and `E0-P0A-COMMIT1` close the isolated documentation/evidence boundary.
-  - Current State: Child 02 is closed at entry HEAD `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`. The exact Set A/B/C manifest and partition checks are durable in the QA report. Independent Supervisor reports `E0-P0A-REVIEW1` and `E0-P0A-REVIEW2` returned `PASS`, including the byte-clean artifact committed as `17bd45845a218dccfa7cb09bde8195a14693bf50`. P3-A opened afterward; `E3-P3A-REVIEW1` and `E3-P3A-REVIEW2` preserve the two REJECT histories, `E3-P3A-REVIEW3` accepts the repaired helper/contract boundary, and the isolated slice is committed at `b4dbe5ccc2d0a77d0986b647c8054427ecca73c4`. P3-B source/test/build invariants were locked by `E3-P3B-REVIEW1`, its sole ledger-currentness rejection was repaired, focused `E3-P3B-REVIEW2` returned `PASS`, and final staged `E3-P3B-DETECT1` is `222/13/13` with graph health `0/0/0`. P3-B closes in this isolated commit boundary; every later slice remains locked.
+  - Current State: Child 02 is closed at entry HEAD `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`. The exact Set A/B/C manifest and partition checks are durable in the QA report. Independent Supervisor reports `E0-P0A-REVIEW1` and `E0-P0A-REVIEW2` returned `PASS`, including the byte-clean artifact committed as `17bd45845a218dccfa7cb09bde8195a14693bf50`. P3-A opened afterward; `E3-P3A-REVIEW1` and `E3-P3A-REVIEW2` preserve the two REJECT histories, `E3-P3A-REVIEW3` accepts the repaired helper/contract boundary, and the isolated slice is committed at `b4dbe5ccc2d0a77d0986b647c8054427ecca73c4`. P3-B source/test/build invariants were locked by `E3-P3B-REVIEW1`, its sole ledger-currentness rejection was repaired, focused `E3-P3B-REVIEW2` returned `PASS`, final staged `E3-P3B-DETECT1` is `222/13/13` with graph health `0/0/0`, and the slice is committed at `17254549a13ad81a560c18fbcc6ab8fe3ce5f111`. P3-B1 retains `E3-P3B1-REVIEW1` as `REJECT`, closes `P3B1-PARAMETER-CONTEXT-DISAMBIGUATION-1` with focused `E3-P3B1-REVIEW2` `PASS`, and records final `E3-P3B1-DETECT1` as `309/17/13` with graph health `0/0/0`; only isolated commit/push closure remains, and P3-B2 plus every later slice remain locked.
   - Commit Boundary: four Child 03 ledgers, one QA report, immutable prior REJECT provenance, and two independent PASS reports; no production/test/fixture/target/runtime path.
 
 ### P3: TypeScript binding-pattern extraction
@@ -228,14 +228,16 @@ Out of scope:
     - [x] Refresh roadmap, checklist, evidence, benchmark, and actual status without changing locked source/test evidence.
     - [x] Run and record the final orchestration-owned staged pre-commit detect as `E3-P3B-DETECT1` (`222` changed symbols / `13` changed files / `13` affected files; `0` affected processes/flows; current graph health `0/0/0`).
     - [x] Create this isolated P3-B commit boundary as `E3-P3B-COMMIT1`; Git/handoff records the exact final hash.
+  - Commit and Successor Opening (2026-08-14): `E3-P3B-COMMIT1` is `17254549a13ad81a560c18fbcc6ab8fe3ce5f111`. The current Owner instruction transfers P3-B1 as the sole open implementation slice. P3-B2 and every later slice remain locked; fresh parameter-owner impact must select the exact editable production/test boundary before code.
 
-- [ ] P3-B1: Integrate parameter contexts.
+- [x] P3-B1: Integrate parameter contexts.
   - Goal: apply accepted leaf semantics to function, method, constructor, and arrow-function parameters.
   - Scope Boundary:
-    - Editable: exact parameter-context owner and its focused test owner.
-    - Inspect-only: walker and scope construction.
-    - Preserve-only: variables, catch, loops, calls, and type inference.
-    - Out of scope: graph projection.
+    - Accepted repair boundary: `internal/providers/tsjs/definitions.go` for parameter syntax-role dispatch/emission and tightly related private helpers; `internal/providers/tsjs/extract_test.go` for the focused real-`Extract` former-failure oracle. Both are hash-locked by `E3-P3B1-REVIEW2` pending isolated commit.
+    - Accepted dependent boundary: `internal/providers/tsjs/testdata/typescript_scopeir_signature.golden.json`, `internal/providers/vue/extract_test.go`, `internal/providers/vue/testdata/vue_scopeir_signature.golden.json`, `internal/resolution/graph_parity_test.go`, `internal/resolution/testdata/typescript_graph_baseline_counts.golden.json`, and `internal/resolution/testdata/typescript_graph_signature.golden.json` remain byte-locked by `E3-P3B1-REVIEW2`.
+    - Inspect-only: accepted walker and scope construction; `internal/providers/vue/extract.go`; `internal/resolution/resolution_test.go` and current resolution production owners that consume generic Definition facts.
+    - Preserve-only: variables, catch, loops, calls, references, type inference, imports, every sibling Vue/resolution test function, and all graph projection/resolution source.
+    - Out of scope: any production Vue/resolution edit, new graph projection/resolution behavior, P3-C acceptance, and later declaration contexts.
   - Non-Goals: no broad collector rewrite.
   - Pre-flight Questions:
     - Data source: current parameter AST nodes and accepted P3-A contract.
@@ -257,24 +259,35 @@ Out of scope:
        - Render location check: N/A; inspect parameter ScopeIR.
        - Mini QA: after the full build in step 2, exercise the parameter-fact boundary.
        - Evidence target: `E3-P3B1-IMPACT1`, `E3-P3B1-SRC1`.
-    2. Add focused tests after code, run the full build and ScopeIR validation, refresh ledgers, obtain Supervisor PASS, detect changes, and commit.
+    2. Add focused tests after code and run the full build plus ScopeIR validation. If repo-native product regression proves that generic consumers now expose the new parameter Definitions, stop for fresh file/symbol impact and a plan boundary update; then repair only the exact stale Vue/resolution expected-output artifacts listed above, rerun a holder-clean full build on final bytes, rerun focused/sibling/product validation, refresh ledgers, obtain Supervisor PASS, detect changes, and commit.
        - UI flow check: N/A; no visible flow exists.
        - DB/data flow check: verify parameter paths/scopes and sibling preservation.
        - Render location check: evidence ledger and focused test output.
        - Mini QA: exercise the built parameter-fact boundary and record the result.
        - Evidence target: `E3-P3B1-BUILD1`, `E3-P3B1-TEST1`, `E3-P3B1-BOUNDARY1`, `E3-P3B1-REVIEW1`, `E3-P3B1-DETECT1`, `E3-P3B1-COMMIT1`.
-  - Implementation Gate: P3-B accepted and committed.
+    3. After `E3-P3B1-REVIEW1` rejected only `P3B1-PARAMETER-CONTEXT-DISAMBIGUATION-1`, prove each `required_parameter`/`optional_parameter` belongs to its owning callable's own formal-parameter surface, preserve unparenthesized TypeScript arrows and explicit `this`, and add the tuple/function-type former-failure test. On final repair bytes, rerun one holder-clean full build plus the new test, focused `4/4`, former failures `4/4`, P3-A/P3-B preservation `10/10`, four-package, and repo-native product gates; rerun the direct JSON audit only if an oracle byte changes or output drift appears; then request `E3-P3B1-REVIEW2`. Do not run detect or open P3-B2/P3-C before `REVIEW2` PASS.
+       - Evidence target: repaired `E3-P3B1-SRC1`, refreshed `E3-P3B1-BUILD1`, `E3-P3B1-TEST1`, `E3-P3B1-BOUNDARY1`, and pending `E3-P3B1-REVIEW2`.
+  - Implementation Gate: P3-B is accepted and committed. Fresh `E3-P3B1-IMPACT1` must prove the exact TSJS production/test boundary and every dependent-oracle owner/artifact before it is edited; no production Vue/resolution owner may open.
   - Acceptance:
     - Source: every legal parameter leaf emits once in the correct lexical scope.
     - Runtime/UI: N/A; ScopeIR parameter facts are validated after the full build.
-    - Data: variable/catch/loop outputs are unchanged.
-    - Behavior test: parameter and shadowing matrices pass.
+    - Data: variable/catch/loop outputs are unchanged; Vue and resolution deltas contain only the parameter Definition/node/`DEFINES` facts produced by the existing generic pipeline, with no projection-source edit and no P3-C acceptance claim.
+    - Behavior test: parameter, shadowing, parity, P3-A/P3-B preservation, TSJS/ScopeIR package, and repo-native product matrices pass on final bytes.
     - Cleanup: no unapproved artifact remains.
-    - Evidence IDs: `E3-P3B1-IMPACT1`, `E3-P3B1-SRC1`, `E3-P3B1-BUILD1`, `E3-P3B1-TEST1`, `E3-P3B1-BOUNDARY1`, `E3-P3B1-REVIEW1`, `E3-P3B1-DETECT1`, `E3-P3B1-COMMIT1`.
-    - Actual-status rows refreshed: parameter extraction.
-  - Evidence Targets: parameter oracle, scope/shadowing results, build, Supervisor, detect-changes, commit.
+    - Evidence IDs: `E3-P3B1-IMPACT1`, `E3-P3B1-SRC1`, `E3-P3B1-BUILD1`, `E3-P3B1-TEST1`, `E3-P3B1-BOUNDARY1`, `E3-P3B1-REVIEW1`, `E3-P3B1-REVIEW2`, `E3-P3B1-DETECT1`, `E3-P3B1-COMMIT1`.
+    - Actual-status rows refreshed: parameter extraction and exact dependent-oracle boundary.
+  - Evidence Targets: parameter oracle, scope/shadowing results, exact Vue/resolution expected-output delta, build, Supervisor, detect-changes, commit.
   - Actual-status Update: transition the parameter row to `correct`.
   - Commit Boundary: one P3-B1 commit.
+  - Opening Checkpoint (2026-08-14): P3-B is accepted and committed at `17254549a13ad81a560c18fbcc6ab8fe3ce5f111`; the current Owner transfer opens this slice only. All P3-B1 evidence IDs remain pending, and no production/test owner is editable until fresh file-detail and exact file/symbol impact prove ownership.
+  - Boundary Adjustment Checkpoint (2026-08-14): the first exact three-file candidate passed focused/parity, P3-A/P3-B preservation, TSJS/ScopeIR, and a holder-clean full build, but repo-native product regression exposed four deterministic stale-oracle failures: Vue parity gains parameter Definitions `repo`, `user`, and `value` plus `DEFINES 10 -> 13`; the Go resolution fixture gains six parameter Variable nodes and six `DEFINES` edges. Fresh file-detail, upstream file impact, exact test-function impact, and exact `graphCountBaseline` contract impact are LOW with `0` affected files/modules/processes/flows; all three golden artifacts are LOW/`0`. The historical TypeScript resolution-only baseline remains immutable at `24` nodes / `54` relationships / `18` `DEFINES`; the allowed graph-parity repair must record the current Go node count and classified `+6` parameter-node delta separately, update only the Go-side `DEFINES` delta, and preserve the generated TypeScript values/source. This checkpoint opens only the exact test/oracle edits named in the Scope Boundary. The failed regression remains non-PASS evidence, prior builds are superseded after any final-byte change, and P3-C remains locked.
+  - Supervisor Repair Checkpoint (2026-08-14, satisfied by REVIEW2): `E3-P3B1-REVIEW1` is the immutable `REJECT` in `reports/Supervisor/rp_supervisor_260814_222415_by_gpt-5_child03_p3b1_parameter_contexts.md` (`19,388` bytes; SHA-256 `93A9427D84405ADD763140EEC7241FB1A795E796B41DDCCD4F786523F2E40184`). Its sole rejected invariant was `P3B1-PARAMETER-CONTEXT-DISAMBIGUATION-1`: TypeScript labeled tuple members and nested type-signature parameters share `required_parameter`/`optional_parameter` kinds and must not become runtime parameter facts merely because a callable is an ancestor. At that checkpoint, repair was restricted to the exact two files above, all six dependent files and every cleared invariant were locked, final-byte build/behavior gates required refresh, and detect/commit/push plus every later slice were forbidden before PASS.
+  - Supervisor Acceptance Checkpoint (2026-08-14): focused `E3-P3B1-REVIEW2` returned `PASS` in `reports/Supervisor/rp_supervisor_260814_233151_by_gpt-5_child03_p3b1_parameter_contexts_review2.md` (`15,253` bytes; SHA-256 `0A0240FB56235EF9BE24F1C02E379DD83C4E7D2B8434F157B1203374B9774299`). Direct `formal_parameters` ownership, runtime-callable classification, and exact callable `parameters` field node-ID identity close the sole blocker; independent final-byte full build, former-failure `1/1`, parameter/parity `5/5`, dependent `4/4`, preservation `10/10`, four-package, and repo-native gates all passed. Final staged `E3-P3B1-DETECT1` then passed at `309` changed symbols / `17` changed files / `13` affected files, zero affected processes/flows, and graph health `0/0/0`. Orchestration owns only isolated `E3-P3B1-COMMIT1` and immediate push. P3-B2 and every later slice remain locked until commit and push succeed.
+    - [x] Preserve the first independent REJECT as `E3-P3B1-REVIEW1`.
+    - [x] Record focused independent PASS as `E3-P3B1-REVIEW2`.
+    - [x] Refresh roadmap, checklist, evidence, benchmark, and actual status without changing locked source/test/report bytes.
+    - [x] Run and record final orchestration-owned staged detect as `E3-P3B1-DETECT1` (`309` changed symbols / `17` changed files / `13` affected files; `0` affected processes/flows; current graph health `0/0/0`).
+    - [ ] Create and immediately push the isolated P3-B1 commit as `E3-P3B1-COMMIT1`; Git/handoff records the exact hash.
 
 - [ ] P3-B2: Integrate catch contexts.
   - Goal: apply accepted leaf semantics to catch-clause declarations with correct catch scope.

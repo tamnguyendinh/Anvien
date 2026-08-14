@@ -288,8 +288,14 @@ func TestExtractVariableBindingPatternsEmitScopeIRFacts(t *testing.T) {
 	if len(ir.ExtractionDiagnostics) != 0 {
 		t.Fatalf("variable binding diagnostics = %#v, want none", ir.ExtractionDiagnostics)
 	}
-	if len(ir.BindingLeaves) != 7 {
-		t.Fatalf("variable binding leaves = %d, want 7: %#v", len(ir.BindingLeaves), ir.BindingLeaves)
+	variableLeaves := make([]scopeir.BindingLeafFact, 0, 7)
+	for _, leaf := range ir.BindingLeaves {
+		if leaf.Provenance.Context == scopeir.BindingContextVariable {
+			variableLeaves = append(variableLeaves, leaf)
+		}
+	}
+	if len(variableLeaves) != 7 {
+		t.Fatalf("variable binding leaves = %d, want 7: %#v", len(variableLeaves), variableLeaves)
 	}
 
 	functionScopeID := ""
@@ -320,7 +326,7 @@ func TestExtractVariableBindingPatternsEmitScopeIRFacts(t *testing.T) {
 		"defaulted": {path: "property:defaulted", rangeText: "defaulted = fallback", defaults: true},
 	}
 	seen := map[string]int{}
-	for _, leaf := range ir.BindingLeaves {
+	for _, leaf := range variableLeaves {
 		expected, ok := want[leaf.Name]
 		if !ok {
 			t.Fatalf("unexpected production binding leaf %#v", leaf)
@@ -389,8 +395,14 @@ func TestExtractVariableBindingPatternSurvivesTypeInferenceMiss(t *testing.T) {
 	if len(definitions) != 1 {
 		t.Fatalf("local definitions = %d, want 1: %#v", len(definitions), definitions)
 	}
-	if len(ir.BindingLeaves) != 1 || ir.BindingLeaves[0].Name != "local" || bindingPathText(ir.BindingLeaves[0].Path) != "property:untyped" {
-		t.Fatalf("inference-miss binding leaves = %#v", ir.BindingLeaves)
+	variableLeaves := make([]scopeir.BindingLeafFact, 0, 1)
+	for _, leaf := range ir.BindingLeaves {
+		if leaf.Provenance.Context == scopeir.BindingContextVariable {
+			variableLeaves = append(variableLeaves, leaf)
+		}
+	}
+	if len(variableLeaves) != 1 || variableLeaves[0].Name != "local" || bindingPathText(variableLeaves[0].Path) != "property:untyped" {
+		t.Fatalf("inference-miss variable binding leaves = %#v", variableLeaves)
 	}
 	if definitions[0].DeclaredType != "" || definitions[0].ReturnType != "" {
 		t.Fatalf("inference-miss leaf has invented type: %#v", definitions[0])
@@ -454,6 +466,472 @@ func TestExtractVariableBindingPatternSurfacesStructuredDiagnostic(t *testing.T)
 	}
 	if len(p3bDefinitionsNamed(ir, "target", scopeir.NodeVariable)) != 0 || len(p3bDefinitionsNamed(ir, "member", scopeir.NodeVariable)) != 0 {
 		t.Fatalf("invalid variable pattern emitted declarations: %#v", ir.Definitions)
+	}
+}
+
+func TestExtractParameterBindingPatternsEmitScopeIRFacts(t *testing.T) {
+	source := []byte(`function bind(fallback: any, [first,,{source: alias = fallback}, ...tail]: any[], {outer: {deep}, optional = fallback} = fallback, ...rest: any[]) {} class Service { constructor({repo: ctorRepo}: any) {} method([methodValue]: any) {} } const parenthesized = ({item: arrowItem}: any) => arrowItem; const single = singleValue => singleValue;`)
+	ir := parseAndExtract(t, "src/parameters.ts", "hash-parameters", scanner.TypeScript, source)
+
+	if len(ir.ExtractionDiagnostics) != 0 {
+		t.Fatalf("parameter binding diagnostics = %#v, want none", ir.ExtractionDiagnostics)
+	}
+
+	type expectedParameterLeaf struct {
+		path          string
+		rangeText     string
+		patternText   string
+		constructText string
+		scopeMarker   string
+		rest          bool
+		defaults      bool
+	}
+	want := map[string]expectedParameterLeaf{
+		"fallback": {
+			rangeText:     "fallback: any",
+			patternText:   "fallback",
+			constructText: "fallback: any",
+			scopeMarker:   "function bind(",
+		},
+		"first": {
+			path:          "array:0",
+			rangeText:     "first",
+			patternText:   "[first,,{source: alias = fallback}, ...tail]",
+			constructText: "[first,,{source: alias = fallback}, ...tail]: any[]",
+			scopeMarker:   "function bind(",
+		},
+		"alias": {
+			path:          "array:2/property:source",
+			rangeText:     "source: alias = fallback",
+			patternText:   "[first,,{source: alias = fallback}, ...tail]",
+			constructText: "[first,,{source: alias = fallback}, ...tail]: any[]",
+			scopeMarker:   "function bind(",
+			defaults:      true,
+		},
+		"tail": {
+			path:          "array:3",
+			rangeText:     "...tail",
+			patternText:   "[first,,{source: alias = fallback}, ...tail]",
+			constructText: "[first,,{source: alias = fallback}, ...tail]: any[]",
+			scopeMarker:   "function bind(",
+			rest:          true,
+		},
+		"deep": {
+			path:          "property:outer/property:deep",
+			rangeText:     "{outer: {deep}, optional = fallback} = fallback",
+			patternText:   "{outer: {deep}, optional = fallback}",
+			constructText: "{outer: {deep}, optional = fallback} = fallback",
+			scopeMarker:   "function bind(",
+			defaults:      true,
+		},
+		"optional": {
+			path:          "property:optional",
+			rangeText:     "{outer: {deep}, optional = fallback} = fallback",
+			patternText:   "{outer: {deep}, optional = fallback}",
+			constructText: "{outer: {deep}, optional = fallback} = fallback",
+			scopeMarker:   "function bind(",
+			defaults:      true,
+		},
+		"rest": {
+			rangeText:     "...rest",
+			patternText:   "...rest",
+			constructText: "...rest: any[]",
+			scopeMarker:   "function bind(",
+			rest:          true,
+		},
+		"ctorRepo": {
+			path:          "property:repo",
+			rangeText:     "repo: ctorRepo",
+			patternText:   "{repo: ctorRepo}",
+			constructText: "{repo: ctorRepo}: any",
+			scopeMarker:   "constructor(",
+		},
+		"methodValue": {
+			path:          "array:0",
+			rangeText:     "methodValue",
+			patternText:   "[methodValue]",
+			constructText: "[methodValue]: any",
+			scopeMarker:   "method(",
+		},
+		"arrowItem": {
+			path:          "property:item",
+			rangeText:     "item: arrowItem",
+			patternText:   "{item: arrowItem}",
+			constructText: "{item: arrowItem}: any",
+			scopeMarker:   "({item: arrowItem}: any) => arrowItem",
+		},
+		"singleValue": {
+			rangeText:     "singleValue",
+			patternText:   "singleValue",
+			constructText: "singleValue",
+			scopeMarker:   "singleValue => singleValue",
+		},
+	}
+
+	parameterLeaves := make([]scopeir.BindingLeafFact, 0, len(want))
+	for _, leaf := range ir.BindingLeaves {
+		if leaf.Provenance.Context == scopeir.BindingContextParameter {
+			parameterLeaves = append(parameterLeaves, leaf)
+		}
+	}
+	if len(parameterLeaves) != len(want) {
+		t.Fatalf("parameter binding leaves = %d, want %d: %#v", len(parameterLeaves), len(want), parameterLeaves)
+	}
+
+	scopeIDs := map[string]string{}
+	for _, expected := range want {
+		if _, ok := scopeIDs[expected.scopeMarker]; !ok {
+			scopeIDs[expected.scopeMarker] = p3b1FunctionScopeID(t, ir, source, expected.scopeMarker)
+		}
+	}
+
+	seen := map[string]int{}
+	for _, leaf := range parameterLeaves {
+		expected, ok := want[leaf.Name]
+		if !ok {
+			t.Fatalf("unexpected parameter binding leaf %#v", leaf)
+		}
+		seen[leaf.Name]++
+		if got := bindingPathText(leaf.Path); got != expected.path {
+			t.Fatalf("parameter leaf %s path = %q, want %q", leaf.Name, got, expected.path)
+		}
+		if got := sourceTextForRange(source, leaf.Range); got != expected.rangeText {
+			t.Fatalf("parameter leaf %s range text = %q, want %q", leaf.Name, got, expected.rangeText)
+		}
+		if leaf.SelectionRange == nil || sourceTextForRange(source, *leaf.SelectionRange) != leaf.Name {
+			t.Fatalf("parameter leaf %s selection range = %#v", leaf.Name, leaf.SelectionRange)
+		}
+		if leaf.Rest != expected.rest || leaf.Default != expected.defaults {
+			t.Fatalf("parameter leaf %s modifiers = rest:%t default:%t, want rest:%t default:%t", leaf.Name, leaf.Rest, leaf.Default, expected.rest, expected.defaults)
+		}
+		if got := sourceTextForRange(source, leaf.Provenance.PatternRange); got != expected.patternText {
+			t.Fatalf("parameter leaf %s pattern range = %q, want %q", leaf.Name, got, expected.patternText)
+		}
+		if got := sourceTextForRange(source, leaf.Provenance.ConstructRange); got != expected.constructText {
+			t.Fatalf("parameter leaf %s construct range = %q, want %q", leaf.Name, got, expected.constructText)
+		}
+
+		definitions := p3bDefinitionsNamed(ir, leaf.Name, scopeir.NodeVariable)
+		if len(definitions) != 1 {
+			t.Fatalf("parameter leaf %s definitions = %d, want 1: %#v", leaf.Name, len(definitions), definitions)
+		}
+		definition := definitions[0]
+		if definition.Range != leaf.Range || definition.SelectionRange == nil || *definition.SelectionRange != *leaf.SelectionRange {
+			t.Fatalf("parameter leaf %s definition ranges mismatch: leaf=%#v definition=%#v", leaf.Name, leaf, definition)
+		}
+		if definition.DeclaredType != "" || definition.ReturnType != "" {
+			t.Fatalf("parameter leaf %s invented type data: %#v", leaf.Name, definition)
+		}
+
+		bindingCount := 0
+		ownedCount := 0
+		bindingScopeID := ""
+		for _, scope := range ir.Scopes {
+			for _, binding := range scope.Bindings {
+				if binding.Name == leaf.Name && binding.DefID == definition.ID && binding.Origin == scopeir.BindingLocal {
+					bindingCount++
+					bindingScopeID = scope.ID
+				}
+			}
+			for _, defID := range scope.OwnedDefIDs {
+				if defID == definition.ID {
+					ownedCount++
+				}
+			}
+		}
+		wantScopeID := scopeIDs[expected.scopeMarker]
+		if bindingCount != 1 || ownedCount != 1 || bindingScopeID != wantScopeID {
+			t.Fatalf("parameter leaf %s scope facts = bindings:%d owned:%d scope:%q, want 1/1/%q", leaf.Name, bindingCount, ownedCount, bindingScopeID, wantScopeID)
+		}
+	}
+	for name := range want {
+		if seen[name] != 1 {
+			t.Fatalf("parameter leaf %s emitted %d times, want 1", name, seen[name])
+		}
+	}
+	requireTypeBinding(t, ir, "fallback", "any")
+}
+
+func TestExtractParameterBindingPatternsExcludeTypeOnlyParameterSyntax(t *testing.T) {
+	source := []byte(`function runtime(arg: {
+		annotation: [annotationRequired: string, annotationOptional?: number, ...annotationRest: boolean[]];
+		nestedFunction: (nestedRequired: string, nestedOptional?: number, ...nestedRest: boolean[]) => void;
+		nestedConstructor: new (constructorRequired: string, constructorOptional?: number, ...constructorRest: boolean[]) => object;
+	}): [returnRequired: string, returnOptional?: number, ...returnRest: boolean[]] {
+		const bodyLocal: [bodyRequired: string, bodyOptional?: number, ...bodyRest: boolean[]] = ["", 1, true];
+		return ["", 1, true];
+	}`)
+	ir := parseAndExtract(t, "src/parameter-type-syntax.ts", "hash-parameter-type-syntax", scanner.TypeScript, source)
+
+	if len(ir.ExtractionDiagnostics) != 0 {
+		t.Fatalf("type-only parameter syntax diagnostics = %#v, want none", ir.ExtractionDiagnostics)
+	}
+
+	var argLeaves []scopeir.BindingLeafFact
+	for _, leaf := range ir.BindingLeaves {
+		if leaf.Name == "arg" && leaf.Provenance.Context == scopeir.BindingContextParameter {
+			argLeaves = append(argLeaves, leaf)
+		}
+	}
+	if len(argLeaves) != 1 {
+		t.Fatalf("runtime arg parameter leaves = %d, want 1: %#v", len(argLeaves), argLeaves)
+	}
+
+	argDefinitions := p3bDefinitionsNamed(ir, "arg", scopeir.NodeVariable)
+	if len(argDefinitions) != 1 {
+		t.Fatalf("runtime arg variable definitions = %d, want 1: %#v", len(argDefinitions), argDefinitions)
+	}
+	argDefinition := argDefinitions[0]
+	if argDefinition.Range != argLeaves[0].Range || argDefinition.SelectionRange == nil || argLeaves[0].SelectionRange == nil || *argDefinition.SelectionRange != *argLeaves[0].SelectionRange {
+		t.Fatalf("runtime arg definition ranges mismatch: leaf=%#v definition=%#v", argLeaves[0], argDefinition)
+	}
+	runtimeScopeID := ""
+	for _, scope := range ir.Scopes {
+		if scope.Kind != scopeir.ScopeFunction {
+			continue
+		}
+		if runtimeScopeID != "" {
+			t.Fatalf("type-only callable syntax emitted an extra runtime function scope: %#v", ir.Scopes)
+		}
+		runtimeScopeID = scope.ID
+	}
+	if runtimeScopeID == "" {
+		t.Fatalf("runtime function scope missing: %#v", ir.Scopes)
+	}
+
+	argOwned := 0
+	argBindings := 0
+	for _, scope := range ir.Scopes {
+		for _, defID := range scope.OwnedDefIDs {
+			if defID == argDefinition.ID {
+				argOwned++
+				if scope.ID != runtimeScopeID {
+					t.Fatalf("runtime arg definition owned by %q, want %q", scope.ID, runtimeScopeID)
+				}
+			}
+		}
+		for _, binding := range scope.Bindings {
+			if binding.Name == "arg" && binding.DefID == argDefinition.ID && binding.Origin == scopeir.BindingLocal {
+				argBindings++
+				if scope.ID != runtimeScopeID {
+					t.Fatalf("runtime arg local binding emitted in %q, want %q", scope.ID, runtimeScopeID)
+				}
+			}
+		}
+	}
+	if argOwned != 1 || argBindings != 1 {
+		t.Fatalf("runtime arg scope facts = owned:%d bindings:%d, want 1/1", argOwned, argBindings)
+	}
+
+	typeOnlyNames := []string{
+		"annotationRequired", "annotationOptional", "annotationRest",
+		"nestedRequired", "nestedOptional", "nestedRest",
+		"constructorRequired", "constructorOptional", "constructorRest",
+		"returnRequired", "returnOptional", "returnRest",
+		"bodyRequired", "bodyOptional", "bodyRest",
+	}
+	definitionByID := make(map[string]scopeir.DefinitionFact, len(ir.Definitions))
+	for _, definition := range ir.Definitions {
+		definitionByID[definition.ID] = definition
+	}
+	for _, name := range typeOnlyNames {
+		leaves := 0
+		for _, leaf := range ir.BindingLeaves {
+			if leaf.Name == name {
+				leaves++
+			}
+		}
+		definitions := p3bDefinitionsNamed(ir, name, scopeir.NodeVariable)
+		owned := 0
+		bindings := 0
+		for _, scope := range ir.Scopes {
+			for _, defID := range scope.OwnedDefIDs {
+				if definition, ok := definitionByID[defID]; ok && definition.Name == name {
+					owned++
+				}
+			}
+			for _, binding := range scope.Bindings {
+				if binding.Name == name && binding.Origin == scopeir.BindingLocal {
+					bindings++
+				}
+			}
+		}
+		if leaves != 0 || len(definitions) != 0 || owned != 0 || bindings != 0 {
+			t.Fatalf("type-only label %q emitted facts = leaves:%d variable-definitions:%d owned:%d local-bindings:%d", name, leaves, len(definitions), owned, bindings)
+		}
+	}
+
+	bodyDefinitions := p3bDefinitionsNamed(ir, "bodyLocal", scopeir.NodeVariable)
+	if len(bodyDefinitions) != 1 {
+		t.Fatalf("body-local variable traversal not preserved: definitions=%#v", bodyDefinitions)
+	}
+}
+
+func TestExtractParameterBindingPatternsOptionalThisAndJavaScriptControls(t *testing.T) {
+	typescriptSource := []byte(`function controlled(this: { marker: string }, name?: string) { return name; }`)
+	typescriptIR := parseAndExtract(t, "src/parameter-controls.ts", "hash-parameter-controls", scanner.TypeScript, typescriptSource)
+	if len(typescriptIR.ExtractionDiagnostics) != 0 {
+		t.Fatalf("parameter control diagnostics = %#v, want none", typescriptIR.ExtractionDiagnostics)
+	}
+
+	controlledScopeID := p3b1FunctionScopeID(t, typescriptIR, typescriptSource, "function controlled(")
+	var optionalLeaves []scopeir.BindingLeafFact
+	for _, leaf := range typescriptIR.BindingLeaves {
+		if leaf.Provenance.Context != scopeir.BindingContextParameter {
+			continue
+		}
+		switch leaf.Name {
+		case "name":
+			optionalLeaves = append(optionalLeaves, leaf)
+		case "this":
+			t.Fatalf("explicit this pseudo-parameter emitted a binding leaf: %#v", leaf)
+		default:
+			t.Fatalf("unexpected parameter control leaf: %#v", leaf)
+		}
+	}
+	if len(optionalLeaves) != 1 {
+		t.Fatalf("optional name parameter leaves = %d, want 1: %#v", len(optionalLeaves), optionalLeaves)
+	}
+	optionalLeaf := optionalLeaves[0]
+	if got := sourceTextForRange(typescriptSource, optionalLeaf.Range); got != "name?: string" {
+		t.Fatalf("optional name range = %q, want %q", got, "name?: string")
+	}
+	if got := sourceTextForRange(typescriptSource, optionalLeaf.Provenance.PatternRange); got != "name" {
+		t.Fatalf("optional name pattern = %q, want %q", got, "name")
+	}
+	if got := sourceTextForRange(typescriptSource, optionalLeaf.Provenance.ConstructRange); got != "name?: string" {
+		t.Fatalf("optional name construct = %q, want %q", got, "name?: string")
+	}
+
+	optionalDefinitions := p3bDefinitionsNamed(typescriptIR, "name", scopeir.NodeVariable)
+	if len(optionalDefinitions) != 1 {
+		t.Fatalf("optional name definitions = %d, want 1: %#v", len(optionalDefinitions), optionalDefinitions)
+	}
+	optionalDefinition := optionalDefinitions[0]
+	optionalBindings := 0
+	optionalOwned := 0
+	for _, scope := range typescriptIR.Scopes {
+		for _, binding := range scope.Bindings {
+			if binding.Name == "this" && binding.Origin == scopeir.BindingLocal {
+				t.Fatalf("explicit this pseudo-parameter emitted a local binding in %q: %#v", scope.ID, binding)
+			}
+			if scope.ID == controlledScopeID && binding.Name == "name" && binding.DefID == optionalDefinition.ID && binding.Origin == scopeir.BindingLocal {
+				optionalBindings++
+			}
+		}
+		for _, defID := range scope.OwnedDefIDs {
+			if scope.ID == controlledScopeID && defID == optionalDefinition.ID {
+				optionalOwned++
+			}
+		}
+	}
+	if optionalBindings != 1 || optionalOwned != 1 {
+		t.Fatalf("optional name scope facts = bindings:%d owned:%d, want 1/1", optionalBindings, optionalOwned)
+	}
+	if definitions := p3bDefinitionsNamed(typescriptIR, "this", scopeir.NodeVariable); len(definitions) != 0 {
+		t.Fatalf("explicit this pseudo-parameter definitions = %d, want 0: %#v", len(definitions), definitions)
+	}
+
+	javascriptSource := []byte(`const unchanged = plain => plain;`)
+	javascriptIR := parseAndExtract(t, "src/parameter-controls.js", "hash-parameter-controls-js", scanner.JavaScript, javascriptSource)
+	for _, leaf := range javascriptIR.BindingLeaves {
+		if leaf.Provenance.Context == scopeir.BindingContextParameter {
+			t.Fatalf("plain JavaScript arrow emitted a parameter binding leaf: %#v", leaf)
+		}
+	}
+	if definitions := p3bDefinitionsNamed(javascriptIR, "plain", scopeir.NodeVariable); len(definitions) != 0 {
+		t.Fatalf("plain JavaScript arrow parameter definitions = %d, want 0: %#v", len(definitions), definitions)
+	}
+	for _, scope := range javascriptIR.Scopes {
+		for _, binding := range scope.Bindings {
+			if binding.Name == "plain" && binding.Origin == scopeir.BindingLocal {
+				t.Fatalf("plain JavaScript arrow parameter emitted a local binding in %q: %#v", scope.ID, binding)
+			}
+		}
+	}
+}
+
+func TestExtractParameterBindingPatternsPreserveShadowingAndSiblingContexts(t *testing.T) {
+	source := []byte(`import { consume } from './dep'; function outer({value}: any) { const {source: localValue} = input; function inner({value}: any) { const existing = value; consume(value, localValue, existing); } } try {} catch (caught) { consume(caught); } for (const loopValue of values) { consume(loopValue); } ({written} = input);`)
+	ir := parseAndExtract(t, "src/parameter-shadowing.ts", "hash-parameter-shadowing", scanner.TypeScript, source)
+
+	outerScopeID := p3b1FunctionScopeID(t, ir, source, "function outer(")
+	innerScopeID := p3b1FunctionScopeID(t, ir, source, "function inner(")
+	if outerScopeID == innerScopeID {
+		t.Fatalf("outer/inner parameter scopes both = %q", outerScopeID)
+	}
+
+	valueDefinitions := p3bDefinitionsNamed(ir, "value", scopeir.NodeVariable)
+	if len(valueDefinitions) != 2 {
+		t.Fatalf("shadowed parameter definitions = %d, want 2: %#v", len(valueDefinitions), valueDefinitions)
+	}
+	valueBindingsByScope := map[string]int{}
+	valueOwnedByScope := map[string]int{}
+	for _, definition := range valueDefinitions {
+		for _, scope := range ir.Scopes {
+			for _, binding := range scope.Bindings {
+				if binding.Name == "value" && binding.DefID == definition.ID && binding.Origin == scopeir.BindingLocal {
+					valueBindingsByScope[scope.ID]++
+				}
+			}
+			for _, defID := range scope.OwnedDefIDs {
+				if defID == definition.ID {
+					valueOwnedByScope[scope.ID]++
+				}
+			}
+		}
+	}
+	for _, scopeID := range []string{outerScopeID, innerScopeID} {
+		if valueBindingsByScope[scopeID] != 1 || valueOwnedByScope[scopeID] != 1 {
+			t.Fatalf("shadowed value facts in %q = bindings:%d owned:%d, want 1/1", scopeID, valueBindingsByScope[scopeID], valueOwnedByScope[scopeID])
+		}
+	}
+	if len(valueBindingsByScope) != 2 || len(valueOwnedByScope) != 2 {
+		t.Fatalf("shadowed value leaked across scopes: bindings=%#v owned=%#v", valueBindingsByScope, valueOwnedByScope)
+	}
+
+	localValue := p3bDefinitionsNamed(ir, "localValue", scopeir.NodeVariable)
+	if len(localValue) != 1 || !p3b1ScopeOwnsAndBinds(ir, outerScopeID, localValue[0].ID, "localValue") {
+		t.Fatalf("variable sibling localValue not preserved in outer scope: definitions=%#v scopes=%#v", localValue, ir.Scopes)
+	}
+	existing := p3bDefinitionsNamed(ir, "existing", scopeir.NodeVariable)
+	if len(existing) != 1 || !p3b1ScopeOwnsAndBinds(ir, innerScopeID, existing[0].ID, "existing") {
+		t.Fatalf("identifier variable sibling existing not preserved in inner scope: definitions=%#v scopes=%#v", existing, ir.Scopes)
+	}
+
+	parameterLeaves := 0
+	variableLeaves := 0
+	for _, leaf := range ir.BindingLeaves {
+		switch leaf.Provenance.Context {
+		case scopeir.BindingContextParameter:
+			parameterLeaves++
+		case scopeir.BindingContextVariable:
+			variableLeaves++
+		case scopeir.BindingContextCatch, scopeir.BindingContextForIn, scopeir.BindingContextForOf:
+			t.Fatalf("locked sibling context unexpectedly emitted leaf %#v", leaf)
+		}
+	}
+	if parameterLeaves != 2 || variableLeaves != 1 {
+		t.Fatalf("parameter/variable leaf counts = %d/%d, want 2/1: %#v", parameterLeaves, variableLeaves, ir.BindingLeaves)
+	}
+	if len(p3bDefinitionsNamed(ir, "caught", scopeir.NodeVariable)) != 0 || len(p3bDefinitionsNamed(ir, "written", scopeir.NodeVariable)) != 0 {
+		t.Fatalf("catch/assignment sibling emitted a false declaration: %#v", ir.Definitions)
+	}
+	requireImport(t, ir, scopeir.ImportNamed, "consume", "consume", "./dep")
+	if got := countCalls(ir, "consume", scopeir.CallFree); got != 3 {
+		t.Fatalf("consume calls = %d, want 3", got)
+	}
+
+	patternTypeBindings := 0
+	for _, scope := range ir.Scopes {
+		for _, binding := range scope.TypeBindings {
+			if binding.Name == "{value}" && binding.Type.RawName == "any" && binding.Type.Source == scopeir.TypeSourceParameter {
+				patternTypeBindings++
+			}
+		}
+	}
+	if patternTypeBindings != 2 {
+		t.Fatalf("separate parameter type-binding path count = %d, want 2", patternTypeBindings)
 	}
 }
 
@@ -902,6 +1380,48 @@ func p3bDefinitionsNamed(ir scopeir.ScopeIR, name string, label scopeir.NodeLabe
 		}
 	}
 	return matches
+}
+
+func p3b1FunctionScopeID(t *testing.T, ir scopeir.ScopeIR, source []byte, marker string) string {
+	t.Helper()
+	found := ""
+	for _, scope := range ir.Scopes {
+		if scope.Kind != scopeir.ScopeFunction || !strings.HasPrefix(sourceTextForRange(source, scope.Range), marker) {
+			continue
+		}
+		if found != "" {
+			t.Fatalf("multiple function scopes contain %q: %#v", marker, ir.Scopes)
+		}
+		found = scope.ID
+	}
+	if found == "" {
+		t.Fatalf("missing function scope containing %q: %#v", marker, ir.Scopes)
+	}
+	return found
+}
+
+func p3b1ScopeOwnsAndBinds(ir scopeir.ScopeIR, scopeID string, defID string, name string) bool {
+	for _, scope := range ir.Scopes {
+		if scope.ID != scopeID {
+			continue
+		}
+		owned := false
+		for _, candidate := range scope.OwnedDefIDs {
+			if candidate == defID {
+				owned = true
+				break
+			}
+		}
+		if !owned {
+			return false
+		}
+		for _, binding := range scope.Bindings {
+			if binding.Name == name && binding.DefID == defID && binding.Origin == scopeir.BindingLocal {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func requireSameImports(t *testing.T, left scopeir.ScopeIR, right scopeir.ScopeIR) {

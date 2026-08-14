@@ -38,6 +38,12 @@
       "USES": 7
     }
   },
+  "nodeReconciliation": {
+    "go": 30,
+    "typescriptResolutionOnly": 24,
+    "delta": 6,
+    "classification": "Go ScopeIR emits six callable parameter Variable nodes absent from the historical TypeScript resolution-only baseline"
+  },
   "mustMatchResolutionOnly": [
     "ACCESSES",
     "CALLS",
@@ -60,10 +66,10 @@
     },
     {
       "type": "DEFINES",
-      "go": 19,
+      "go": 25,
       "typescriptResolutionOnly": 18,
       "typescriptFullGraph": 18,
-      "classification": "Go ScopeIR defines interface property signatures explicitly"
+      "classification": "Go ScopeIR defines interface property signatures and six callable parameter Variables explicitly"
     },
     {
       "type": "HAS_PROPERTY",

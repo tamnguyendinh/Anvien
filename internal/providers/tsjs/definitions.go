@@ -3,6 +3,7 @@ package tsjs
 import (
 	sitter "github.com/tree-sitter/go-tree-sitter"
 
+	"github.com/tamnguyendinh/anvien/internal/scanner"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
@@ -22,6 +23,14 @@ func (c *collector) emitDefinitionKind(node *sitter.Node, kind string) {
 		c.addDefinition(node, scopeir.NodeEnum, child(node, "name"), "", "", "", "")
 	case "function_declaration", "function_signature":
 		c.addDefinition(node, scopeir.NodeFunction, child(node, "name"), "", returnTypeNameForCallable(c, node), "", "")
+	case "required_parameter", "optional_parameter":
+		c.emitParameterBindingPattern(node, parameterPattern(node), formalParameterCallable(node))
+	case "arrow_function":
+		if c.language == scanner.TypeScript {
+			if parameter := child(node, "parameter"); parameter != nil {
+				c.emitParameterBindingPattern(parameter, parameter, node)
+			}
+		}
 	case "method_definition", "abstract_method_signature", "method_signature":
 		nameNode := child(node, "name")
 		label := scopeir.NodeMethod
@@ -77,6 +86,135 @@ func (c *collector) emitDefinitionKind(node *sitter.Node, kind string) {
 			returnType = returnTypeNameForCallable(c, child(node, "value"))
 		}
 		c.addDefinition(node, label, nameNode, "", returnType, declaredTypeNameForNode(c, node), "")
+	}
+}
+
+func parameterPattern(node *sitter.Node) *sitter.Node {
+	pattern := child(node, "pattern")
+	if pattern == nil {
+		pattern = child(node, "name")
+	}
+	return pattern
+}
+
+func formalParameterCallable(node *sitter.Node) *sitter.Node {
+	parameters := node.Parent()
+	if parameters == nil || parameters.Kind() != "formal_parameters" {
+		return nil
+	}
+	callable := parameters.Parent()
+	if !isFunctionScopeNode(callable) {
+		return nil
+	}
+	ownedParameters := child(callable, "parameters")
+	if ownedParameters == nil || ownedParameters.Id() != parameters.Id() {
+		return nil
+	}
+	return callable
+}
+
+func (c *collector) emitParameterBindingPattern(node *sitter.Node, pattern *sitter.Node, callable *sitter.Node) {
+	if pattern != nil && pattern.Kind() == "this" {
+		return
+	}
+	scopeID := c.parameterCallableScopeID(callable)
+	if scopeID == "" {
+		return
+	}
+
+	result := c.extractParameterBindingPattern(node, pattern)
+	c.bindingLeaves = append(c.bindingLeaves, result.Leaves...)
+	c.diagnostics = append(c.diagnostics, result.Diagnostics...)
+	for _, leaf := range result.Leaves {
+		c.addParameterBindingLeafDefinition(leaf, scopeID)
+	}
+}
+
+func (c *collector) extractParameterBindingPattern(
+	construct *sitter.Node,
+	pattern *sitter.Node,
+) bindingPatternResult {
+	request := bindingPatternRequest{
+		FilePath:  c.filePath,
+		FileHash:  c.fileHash,
+		Source:    c.source,
+		Context:   scopeir.BindingContextParameter,
+		Construct: construct,
+		Pattern:   pattern,
+	}
+
+	rootPattern := pattern
+	isRest := rootPattern != nil && rootPattern.Kind() == "rest_pattern"
+	if isRest {
+		request.Pattern = firstNamedNonCommentChild(rootPattern)
+	}
+	result := extractBindingPattern(request)
+	if rootPattern == nil {
+		return result
+	}
+
+	provenance := scopeir.BindingPatternProvenance{
+		Context:        scopeir.BindingContextParameter,
+		ConstructRange: nodeRange(construct),
+		PatternRange:   nodeRange(rootPattern),
+		PatternKind:    rootPattern.Kind(),
+	}
+	hasDefault := child(construct, "value") != nil
+	for index := range result.Leaves {
+		result.Leaves[index].Provenance = provenance
+		if isRest {
+			result.Leaves[index].Rest = true
+			result.Leaves[index].Range = nodeRange(rootPattern)
+		}
+		if hasDefault {
+			result.Leaves[index].Default = true
+			result.Leaves[index].Range = nodeRange(construct)
+		} else if rootPattern.Kind() == "identifier" || rootPattern.Kind() == "undefined" {
+			result.Leaves[index].Range = nodeRange(construct)
+		}
+	}
+	for index := range result.Diagnostics {
+		result.Diagnostics[index].Provenance = provenance
+	}
+	return result
+}
+
+func (c *collector) parameterCallableScopeID(callable *sitter.Node) string {
+	if !isFunctionScopeNode(callable) {
+		return ""
+	}
+	id := scopeID(c.filePath, nodeRange(callable), scopeir.ScopeFunction)
+	if c.scopeByID(id) != nil {
+		return id
+	}
+	return ""
+}
+
+func (c *collector) addParameterBindingLeafDefinition(leaf scopeir.BindingLeafFact, scopeID string) {
+	selectionRange := leaf.SelectionRange
+	if selectionRange != nil {
+		cloned := *selectionRange
+		selectionRange = &cloned
+	}
+	id := defID(c.filePath, leaf.Range, scopeir.NodeVariable, leaf.Name)
+	c.definitions = append(c.definitions, scopeir.DefinitionFact{
+		ID:             id,
+		FilePath:       c.filePath,
+		FileHash:       c.fileHash,
+		Name:           leaf.Name,
+		Label:          scopeir.NodeVariable,
+		Range:          leaf.Range,
+		SelectionRange: selectionRange,
+		QualifiedName:  leaf.Name,
+	})
+
+	if scope := c.scopeByID(scopeID); scope != nil {
+		scope.OwnedDefIDs = append(scope.OwnedDefIDs, id)
+		scope.Bindings = append(scope.Bindings, scopeir.BindingFact{
+			Name:   leaf.Name,
+			DefID:  id,
+			Origin: scopeir.BindingLocal,
+		})
 	}
 }
 

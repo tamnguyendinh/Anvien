@@ -63,7 +63,7 @@ These are graph/inventory counts at HEAD `181b8cb8`, not product runtime-perform
 | P3-B | variable leaves emitted when type inference fails | emitted / eligible leaves | pending P0 | 1/1 (100%) final-byte candidate | 1/1 (100%) accepted final | 100% | target met | `E3-P3B-TEST1`, `E3-P3B-BOUNDARY1`, `E3-P3B-REVIEW2` |
 | P3-B | false declarations from assignment destructuring | declarations | pending P0 | 0 final-byte candidate | 0 accepted final | 0 | target met | `E3-P3B-TEST1`, `E3-P3B-BOUNDARY1`, `E3-P3B-REVIEW2` |
 | P3-B | import-binding count delta | bindings | pending P0 | 0 final-byte candidate | 0 accepted final | 0 | target met | `E3-P3B-TEST1`, `E3-P3B-BOUNDARY1`, `E3-P3B-REVIEW2` |
-| P3-B1 | parameter binding cases | passed / inventoried cases | pending P0 | pending | pending | 100% | pending | `E3-P3B1-TEST1` |
+| P3-B1 | parameter binding cases | passed / inventoried cases | pending P0 | former-failure `1/1`, parameter/parity `5/5`, dependent `4/4`, preservation `10/10` | 100% accepted at the parameter ScopeIR boundary | 100% | target met; 15 type-only labels emit zero false facts/diagnostics while actual parameter emits `1/1/1/1` | `E3-P3B1-TEST1`, `E3-P3B1-BOUNDARY1`, `E3-P3B1-REVIEW2` |
 | P3-B2 | catch binding cases | passed / inventoried cases | pending P0 | pending | pending | 100% | pending | `E3-P3B2-TEST1` |
 | P3-B2A | loop declaration binding cases | passed / inventoried cases | pending P0 | pending | pending | 100% | pending | `E3-P3B2A-TEST1` |
 | P3-B2A | false declarations from assignment-form loops | declarations | pending P0 | pending | pending | 0 | pending | `E3-P3B2A-BOUNDARY1` |

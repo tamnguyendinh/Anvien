@@ -18,7 +18,9 @@
     "TypeAlias:UserLike:::",
     "Variable:formatted:::",
     "Variable:made:::",
-    "Variable:model:::"
+    "Variable:model:::",
+    "Variable:repo:::",
+    "Variable:user:::"
   ],
   "imports": [
     "alias:fmt:format:fmt:./user",

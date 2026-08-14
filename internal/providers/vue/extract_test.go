@@ -139,7 +139,7 @@ func TestResolveVueGraphParityCounts(t *testing.T) {
 	expected := map[string]int{
 		"ACCESSES":     3,
 		"CALLS":        1,
-		"DEFINES":      10,
+		"DEFINES":      13,
 		"HAS_METHOD":   3,
 		"HAS_PROPERTY": 3,
 		"IMPLEMENTS":   1,

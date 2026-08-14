@@ -11,6 +11,7 @@ import (
 type graphCountBaseline struct {
 	ResolutionOnly          graphCountSnapshot `json:"resolutionOnly"`
 	FullGraph               graphCountSnapshot `json:"fullGraph"`
+	NodeReconciliation      graphNodeDelta     `json:"nodeReconciliation"`
 	MustMatchResolutionOnly []string           `json:"mustMatchResolutionOnly"`
 	MustMatchFullGraph      []string           `json:"mustMatchFullGraph"`
 	ReconciledDeltas        []graphCountDelta  `json:"reconciledDeltas"`
@@ -20,6 +21,13 @@ type graphCountSnapshot struct {
 	Nodes         int            `json:"nodes"`
 	Relationships int            `json:"relationships"`
 	Counts        map[string]int `json:"counts"`
+}
+
+type graphNodeDelta struct {
+	Go                       int    `json:"go"`
+	TypeScriptResolutionOnly int    `json:"typescriptResolutionOnly"`
+	Delta                    int    `json:"delta"`
+	Classification           string `json:"classification"`
 }
 
 type graphCountDelta struct {
@@ -37,8 +45,18 @@ func TestResolveTypeScriptGraphBaselineCountsAreReconciled(t *testing.T) {
 		t.Fatalf("resolve failed: %v", err)
 	}
 
-	if len(result.Graph.Nodes) != baseline.ResolutionOnly.Nodes {
-		t.Fatalf("Go node count = %d, TypeScript resolution-only node count = %d", len(result.Graph.Nodes), baseline.ResolutionOnly.Nodes)
+	nodeDelta := baseline.NodeReconciliation
+	if nodeDelta.Classification == "" {
+		t.Fatal("node reconciliation is missing classification")
+	}
+	if len(result.Graph.Nodes) != nodeDelta.Go {
+		t.Fatalf("Go node count = %d, want reconciled count %d (%s)", len(result.Graph.Nodes), nodeDelta.Go, nodeDelta.Classification)
+	}
+	if baseline.ResolutionOnly.Nodes != nodeDelta.TypeScriptResolutionOnly {
+		t.Fatalf("TypeScript resolution-only node count drifted: got %d, fixture says %d", baseline.ResolutionOnly.Nodes, nodeDelta.TypeScriptResolutionOnly)
+	}
+	if got := nodeDelta.Go - nodeDelta.TypeScriptResolutionOnly; got != nodeDelta.Delta {
+		t.Fatalf("node reconciliation delta = %d, fixture says %d (%s)", got, nodeDelta.Delta, nodeDelta.Classification)
 	}
 
 	goCounts := stringRelationshipCounts(result.Graph.RelationshipCountsByType())
