@@ -10,7 +10,8 @@ bạn (only you) sử dụng Quy tắc mở session task riêng cho subagent đ�
 ### orchestration agent (main agent) phải:
 •	(MUST) Trách nhiệm thực của bạn là: thiết kế lane, giao việc, theo dõi hành vi, chặn lệch scope, nhận verdict, ra lệnh, và chuyển bước.
 •	Nhận yêu cầu/plan/report/handoff từ user hoặc từ các session subagent sau đó giao cho các session subagent phù hợp.
-•	(MUST)tự đọc toàn bộ yêu cầu của user hoặc plan và hiểu chức năng từng plan/phase/slice; Cấm giao lane ẩn đọc dùm.
+•	(MUST) Phải tự đọc và nắm đầy đủ authority, plan/phase/slice, ledger, tài liệu và source liên quan trước khi thiết kế lane hoặc giao task cho session/subagent. Cần hiểu rõ từ gốc mục tiêu, pipeline, invariant, boundary và acceptance criteria. Sau đó mới được phân lane và giao task độc lập cho session subagent. Trong suốt quá trình, phải theo dõi hành vi thực tế, kiểm chứng kết quả và tự xác nhận mọi handoff, không chỉ dựa trên mô tả hay giả định.
+Cấm giao subagents ẩn đọc dùm.
 • Main phải tự hiểu công việc/yêu cầu/plan thì mới giao cho session subagent làm việc chính xác.
 •	theo dõi hành vi thực của subagent, không chỉ nghe lời nó báo;
 •	đối chiếu report với source, diff, rule và acceptance;
@@ -223,15 +224,15 @@ Chỉ tách thành lane riêng khi có lý do thực tế:
 •	ownership đã chuyển sang một đơn vị công việc khác.
 Không tách lane chỉ vì công việc cần nhiều skill.
 ### Điều chỉnh lane trong quá trình làm việc
-Main phải liên tục theo dõi để xác định:
+Orchestration (main) phải liên tục theo dõi để xác định:
 •	lane đang thiếu hoặc thừa skill nào;
 •	công việc mới còn thuộc lane hiện tại hay đã có ownership riêng;
 •	lane có thiếu evidence, authority, thời gian hoặc công cụ không;
 •	lane có lệch scope, lặp gate hoặc làm việc không cần thiết không.
-Nếu ownership và boundary không đổi, main có thể bổ sung hoặc rút skill ngay trong lane hiện tại.
+Nếu ownership và boundary không đổi, orchestration (main) có thể bổ sung hoặc rút skill ngay trong lane hiện tại.
 Việc bổ sung skill không được tự động mở rộng slice. Mỗi skill chỉ hoạt động trong authority và boundary đã giao.
-### Trách nhiệm điều hành của main
-Main phải:
+### Trách nhiệm điều hành của orchestration (main)
+Orchestration (main) phải:
 1.	Đọc toàn bộ plan và bốn ledger của plan đang active.
 2.	Hiểu chức năng của từng phase/slice và duy trì một trạng thái tiến độ thống nhất.
 3.	Chỉ mở slice hiện tại.
@@ -262,7 +263,7 @@ o	lane lệch hướng thì chặn ngay.
 ### Nghiệm thu và chuyển slice
 •	Chỉ Supervisor được đưa verdict acceptance.
 •	QA chỉ được sử dụng khi bản chất công việc thực sự cần QA; QA không phải gate mặc định cho mọi thay đổi code.
-•	Sau Supervisor PASS, main:
+•	Sau Supervisor PASS, orchestration (main):
 1.	dùng planner cập nhật checklist, evidence, benchmark và actual status;
 2.	tổ chức detect-changes;
 3.	commit slice độc lập;
