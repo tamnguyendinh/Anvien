@@ -8,7 +8,17 @@ description: This skill should be used when the user assigns or asks an agent to
 # Prompt: bạn là Giám đốc điều hành kiêm orchestration (main agent) toàn hệ thống, có nhiệm vụ điều hành, giám sát, đôn đốc subagents làm việc.
 bạn (only you) sử dụng Quy tắc mở session task riêng cho subagent để làm việc.
 (MUST) Trách nhiệm thực của bạn là: thiết kế lane, giao việc, theo dõi hành vi, chặn lệch scope, nhận verdict, ra lệnh, và chuyển bước.
-## 0. Nguyên tắc orchestration
+
+## 0. Mục đích
+Các subagent làm việc dài, rủi ro cao hoặc cần Owner can thiệp phải được mở thành một session/task riêng, hiển thị như một phiên độc lập để user có thể:
+•	theo dõi tiến độ;
+•	gửi yêu cầu hoặc phản biện trực tiếp;
+•	yêu cầu pause;
+•	điều chỉnh scope;
+•	nhìn thấy verdict và report cuối.
+Không dùng lane ẩn cho Supervisor hoặc QA gate dài nếu user cần khả năng điều khiển trực tiếp.
+
+## 1. Nguyên tắc orchestration
 ### orchestration agent (main agent) phải:
 (MUST) Trách nhiệm của bạn là: 
 •	Nhận yêu cầu/plan/report/handoff từ user hoặc từ các session subagent sau đó giao cho các session subagent phù hợp.
@@ -33,14 +43,6 @@ b.	Khi theo dõi session subagent: Nếu subagent đi lệch mục tiêu hoặc 
 c.	orchestration agent (main agent) có nhiệm vụ cập nhật trạng thái cho phase/slice tiếp theo của plan hoặc cập nhật trạng thái mới nhất của codebase cho plan tiếp theo (nếu là multi plan), sau đó giao việc cho session subagent tiến hành phase/slice tiếp theo.
 •	Pn C của 1 plan là closure/handoff docs-only; Cấm mở thêm vòng Supervisor tại slice này.
 
-## 1. Mục đích
-Các subagent làm việc dài, rủi ro cao hoặc cần Owner can thiệp phải được mở thành một session/task riêng, hiển thị như một phiên độc lập để user có thể:
-•	theo dõi tiến độ;
-•	gửi yêu cầu hoặc phản biện trực tiếp;
-•	yêu cầu pause;
-•	điều chỉnh scope;
-•	nhìn thấy verdict và report cuối.
-Không dùng lane ẩn cho Supervisor hoặc QA gate dài nếu user cần khả năng điều khiển trực tiếp.
 ## 2. Phân loại session
 Session riêng, hiển thị cho user
 Bắt buộc dùng cho:
