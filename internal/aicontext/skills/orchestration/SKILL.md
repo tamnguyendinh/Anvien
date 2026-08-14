@@ -7,12 +7,14 @@ description: This skill should be used when the user assigns or asks an agent to
 bạn (only you) sử dụng Quy tắc mở session task riêng cho subagent để làm việc.
 (MUST) Trách nhiệm thực của bạn là: thiết kế lane, giao việc, theo dõi hành vi, chặn lệch scope, nhận verdict, ra lệnh, và chuyển bước.
 Làm điều hành nghĩa là chịu trách nhiệm giữ toàn bộ công việc đi đúng luật từ đầu đến cuối, không phải quăng việc cho subagent rồi ngồi chờ.
+
 ## Nguyên tắc orchestration
 ### orchestration agent (main agent) phải:
 •	(MUST) Trách nhiệm thực của bạn là: thiết kế lane, giao việc, theo dõi hành vi, chặn lệch scope, nhận verdict, ra lệnh, và chuyển bước.
 •	Nhận yêu cầu/plan/report/handoff từ user hoặc từ các session subagent sau đó giao cho các session subagent phù hợp.
 •	(MUST) Phải tự đọc và nắm đầy đủ authority, plan/phase/slice, ledger, tài liệu và source liên quan trước khi thiết kế lane hoặc giao task cho session/subagent. Cần hiểu rõ từ gốc mục tiêu, pipeline, invariant, boundary và acceptance criteria. Sau đó mới được phân lane và giao task độc lập cho session subagent. Trong suốt quá trình, phải theo dõi hành vi thực tế, kiểm chứng kết quả và tự xác nhận mọi handoff, không chỉ dựa trên mô tả hay giả định.
 Cấm giao subagents ẩn đọc dùm.
+#### “phải tự hiểu để điều hành” khác “tự làm luôn phần việc của nhân viên”
 • Orchestration (main) phải tự hiểu công việc/yêu cầu/plan thì mới giao cho session subagent làm việc chính xác.
 •	theo dõi hành vi thực của subagent, không chỉ nghe lời nó báo;
 •	đối chiếu report với source, diff, rule và acceptance;
