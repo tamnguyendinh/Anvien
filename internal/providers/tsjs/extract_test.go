@@ -902,6 +902,7 @@ func TestExtractParameterBindingPatternsPreserveShadowingAndSiblingContexts(t *t
 	parameterLeaves := 0
 	variableLeaves := 0
 	catchLeaves := 0
+	loopLeaves := 0
 	for _, leaf := range ir.BindingLeaves {
 		switch leaf.Provenance.Context {
 		case scopeir.BindingContextParameter:
@@ -911,11 +912,11 @@ func TestExtractParameterBindingPatternsPreserveShadowingAndSiblingContexts(t *t
 		case scopeir.BindingContextCatch:
 			catchLeaves++
 		case scopeir.BindingContextForIn, scopeir.BindingContextForOf:
-			t.Fatalf("locked sibling context unexpectedly emitted leaf %#v", leaf)
+			loopLeaves++
 		}
 	}
-	if parameterLeaves != 2 || variableLeaves != 1 || catchLeaves != 1 {
-		t.Fatalf("parameter/variable/catch leaf counts = %d/%d/%d, want 2/1/1: %#v", parameterLeaves, variableLeaves, catchLeaves, ir.BindingLeaves)
+	if parameterLeaves != 2 || variableLeaves != 1 || catchLeaves != 1 || loopLeaves != 1 {
+		t.Fatalf("parameter/variable/catch/loop leaf counts = %d/%d/%d/%d, want 2/1/1/1: %#v", parameterLeaves, variableLeaves, catchLeaves, loopLeaves, ir.BindingLeaves)
 	}
 	caughtDefinitions := p3bDefinitionsNamed(ir, "caught", scopeir.NodeVariable)
 	if len(caughtDefinitions) != 1 {
@@ -944,6 +945,430 @@ func TestExtractParameterBindingPatternsPreserveShadowingAndSiblingContexts(t *t
 	}
 	if patternTypeBindings != 2 {
 		t.Fatalf("separate parameter type-binding path count = %d, want 2", patternTypeBindings)
+	}
+}
+
+func TestExtractLoopDeclarationBindingPatternsEmitScopeIRFacts(t *testing.T) {
+	source := []byte(`for (const [first,, {key: local = fallback}, ...tail] of rows) { consume(first, local, tail); } for (let {entry: alias = fallback} in records) { consume(alias); } for (var item in records) { consume(item); } for (let direct of rows) { consume(direct); } for (const fixed of rows) { consume(fixed); }`)
+	ir := parseAndExtract(t, "src/loop-declarations.ts", "hash-loop-declarations", scanner.TypeScript, source)
+
+	if len(ir.ExtractionDiagnostics) != 0 {
+		t.Fatalf("loop declaration diagnostics = %#v, want none", ir.ExtractionDiagnostics)
+	}
+
+	moduleScopeID := ""
+	blockScopes := 0
+	for _, scope := range ir.Scopes {
+		switch scope.Kind {
+		case scopeir.ScopeModule:
+			if moduleScopeID != "" {
+				t.Fatalf("multiple module scopes in focused loop fixture: %#v", ir.Scopes)
+			}
+			moduleScopeID = scope.ID
+		case scopeir.ScopeBlock:
+			blockScopes++
+		}
+	}
+	if moduleScopeID == "" || blockScopes != 4 {
+		t.Fatalf("loop declaration scopes = module:%q blocks:%d, want one module and four lexical loops: %#v", moduleScopeID, blockScopes, ir.Scopes)
+	}
+
+	type expectedLoopLeaf struct {
+		context       scopeir.BindingContext
+		path          string
+		rangeText     string
+		patternText   string
+		constructText string
+		scopeText     string
+		rest          bool
+		defaults      bool
+	}
+	want := map[string]expectedLoopLeaf{
+		"first": {
+			context:       scopeir.BindingContextForOf,
+			path:          "array:0",
+			rangeText:     "first",
+			patternText:   "[first,, {key: local = fallback}, ...tail]",
+			constructText: "for (const [first,, {key: local = fallback}, ...tail] of rows) { consume(first, local, tail); }",
+			scopeText:     "for (const [first,, {key: local = fallback}, ...tail] of rows) { consume(first, local, tail); }",
+		},
+		"local": {
+			context:       scopeir.BindingContextForOf,
+			path:          "array:2/property:key",
+			rangeText:     "key: local = fallback",
+			patternText:   "[first,, {key: local = fallback}, ...tail]",
+			constructText: "for (const [first,, {key: local = fallback}, ...tail] of rows) { consume(first, local, tail); }",
+			scopeText:     "for (const [first,, {key: local = fallback}, ...tail] of rows) { consume(first, local, tail); }",
+			defaults:      true,
+		},
+		"tail": {
+			context:       scopeir.BindingContextForOf,
+			path:          "array:3",
+			rangeText:     "...tail",
+			patternText:   "[first,, {key: local = fallback}, ...tail]",
+			constructText: "for (const [first,, {key: local = fallback}, ...tail] of rows) { consume(first, local, tail); }",
+			scopeText:     "for (const [first,, {key: local = fallback}, ...tail] of rows) { consume(first, local, tail); }",
+			rest:          true,
+		},
+		"alias": {
+			context:       scopeir.BindingContextForIn,
+			path:          "property:entry",
+			rangeText:     "entry: alias = fallback",
+			patternText:   "{entry: alias = fallback}",
+			constructText: "for (let {entry: alias = fallback} in records) { consume(alias); }",
+			scopeText:     "for (let {entry: alias = fallback} in records) { consume(alias); }",
+			defaults:      true,
+		},
+		"item": {
+			context:       scopeir.BindingContextForIn,
+			rangeText:     "item",
+			patternText:   "item",
+			constructText: "for (var item in records) { consume(item); }",
+		},
+		"direct": {
+			context:       scopeir.BindingContextForOf,
+			rangeText:     "direct",
+			patternText:   "direct",
+			constructText: "for (let direct of rows) { consume(direct); }",
+			scopeText:     "for (let direct of rows) { consume(direct); }",
+		},
+		"fixed": {
+			context:       scopeir.BindingContextForOf,
+			rangeText:     "fixed",
+			patternText:   "fixed",
+			constructText: "for (const fixed of rows) { consume(fixed); }",
+			scopeText:     "for (const fixed of rows) { consume(fixed); }",
+		},
+	}
+
+	seen := map[string]int{}
+	for _, leaf := range ir.BindingLeaves {
+		if leaf.Provenance.Context != scopeir.BindingContextForIn && leaf.Provenance.Context != scopeir.BindingContextForOf {
+			continue
+		}
+		expected, ok := want[leaf.Name]
+		if !ok {
+			t.Fatalf("unexpected loop declaration leaf %#v", leaf)
+		}
+		seen[leaf.Name]++
+		if leaf.Provenance.Context != expected.context || bindingPathText(leaf.Path) != expected.path {
+			t.Fatalf("loop leaf %s context/path = %q/%q, want %q/%q", leaf.Name, leaf.Provenance.Context, bindingPathText(leaf.Path), expected.context, expected.path)
+		}
+		if sourceTextForRange(source, leaf.Range) != expected.rangeText || leaf.SelectionRange == nil || sourceTextForRange(source, *leaf.SelectionRange) != leaf.Name {
+			t.Fatalf("loop leaf %s ranges = range:%q selection:%#v, want %q/%q", leaf.Name, sourceTextForRange(source, leaf.Range), leaf.SelectionRange, expected.rangeText, leaf.Name)
+		}
+		if sourceTextForRange(source, leaf.Provenance.PatternRange) != expected.patternText || sourceTextForRange(source, leaf.Provenance.ConstructRange) != expected.constructText {
+			t.Fatalf("loop leaf %s provenance = pattern:%q construct:%q", leaf.Name, sourceTextForRange(source, leaf.Provenance.PatternRange), sourceTextForRange(source, leaf.Provenance.ConstructRange))
+		}
+		if leaf.Rest != expected.rest || leaf.Default != expected.defaults {
+			t.Fatalf("loop leaf %s modifiers = rest:%t default:%t, want %t/%t", leaf.Name, leaf.Rest, leaf.Default, expected.rest, expected.defaults)
+		}
+
+		definitions := p3bDefinitionsNamed(ir, leaf.Name, scopeir.NodeVariable)
+		if len(definitions) != 1 {
+			t.Fatalf("loop leaf %s definitions = %d, want 1: %#v", leaf.Name, len(definitions), definitions)
+		}
+		definition := definitions[0]
+		if definition.Range != leaf.Range || definition.SelectionRange == nil || *definition.SelectionRange != *leaf.SelectionRange || definition.DeclaredType != "" || definition.ReturnType != "" {
+			t.Fatalf("loop leaf %s definition mismatch or invented type: leaf=%#v definition=%#v", leaf.Name, leaf, definition)
+		}
+
+		ownerScopeID := moduleScopeID
+		if expected.scopeText != "" {
+			loopScope := p3b2aScopeForSource(t, ir, source, scopeir.ScopeBlock, expected.scopeText)
+			ownerScopeID = loopScope.ID
+			if loopScope.Parent == nil || *loopScope.Parent != moduleScopeID {
+				t.Fatalf("loop scope %q parent = %#v, want module %q", expected.scopeText, loopScope.Parent, moduleScopeID)
+			}
+		}
+		owned, bindings := p3b2ScopeFactCounts(ir, ownerScopeID, definition.ID, leaf.Name)
+		globalOwned, globalBindings := p3b2GlobalScopeFactCounts(ir, definition.ID, leaf.Name)
+		if owned != 1 || bindings != 1 || globalOwned != 1 || globalBindings != 1 {
+			t.Fatalf("loop leaf %s scope facts = owner:%d/%d global:%d/%d, want 1/1/1/1", leaf.Name, owned, bindings, globalOwned, globalBindings)
+		}
+	}
+	if len(seen) != len(want) {
+		t.Fatalf("loop declaration leaf names = %#v, want %#v", seen, want)
+	}
+	for name := range want {
+		if seen[name] != 1 {
+			t.Fatalf("loop declaration leaf %s emitted %d times, want 1", name, seen[name])
+		}
+	}
+}
+
+func TestExtractLoopAssignmentFormsEmitTruthfulWrites(t *testing.T) {
+	source := []byte(`function run() { for (plain of rows) {} for ([first,, ...tail] of rows) {} for ({x, key: alias = source.fallback, ...rest} in records) {} for (target.nested.value of rows) {} }`)
+	ir := parseAndExtract(t, "src/loop-assignments.ts", "hash-loop-assignments", scanner.TypeScript, source)
+
+	if len(ir.BindingLeaves) != 0 || len(ir.ExtractionDiagnostics) != 0 {
+		t.Fatalf("assignment-form loop binding output = leaves:%#v diagnostics:%#v, want none", ir.BindingLeaves, ir.ExtractionDiagnostics)
+	}
+	for _, name := range []string{"plain", "first", "tail", "x", "alias", "rest", "value"} {
+		if definitions := p3bDefinitionsNamed(ir, name, scopeir.NodeVariable); len(definitions) != 0 {
+			t.Fatalf("assignment-form loop target %s emitted declarations: %#v", name, definitions)
+		}
+	}
+	for _, scope := range ir.Scopes {
+		if scope.Kind == scopeir.ScopeBlock {
+			t.Fatalf("assignment-form loop created declaration scope: %#v", scope)
+		}
+	}
+
+	type expectedAccess struct {
+		kind      scopeir.AccessKind
+		rangeText string
+		receiver  string
+	}
+	want := map[string]expectedAccess{
+		"plain":    {kind: scopeir.AccessWrite, rangeText: "plain"},
+		"first":    {kind: scopeir.AccessWrite, rangeText: "first"},
+		"tail":     {kind: scopeir.AccessWrite, rangeText: "tail"},
+		"x":        {kind: scopeir.AccessWrite, rangeText: "x"},
+		"alias":    {kind: scopeir.AccessWrite, rangeText: "alias"},
+		"rest":     {kind: scopeir.AccessWrite, rangeText: "rest"},
+		"fallback": {kind: scopeir.AccessRead, rangeText: "source.fallback", receiver: "source"},
+		"value":    {kind: scopeir.AccessWrite, rangeText: "target.nested.value", receiver: "target.nested"},
+		"nested":   {kind: scopeir.AccessRead, rangeText: "target.nested", receiver: "target"},
+	}
+	seen := map[string]int{}
+	for _, access := range ir.Accesses {
+		expected, ok := want[access.Name]
+		if !ok {
+			t.Fatalf("unexpected assignment-loop access %#v", access)
+		}
+		seen[access.Name]++
+		if access.Kind != expected.kind || sourceTextForRange(source, access.Range) != expected.rangeText || access.ExplicitReceiver != expected.receiver {
+			t.Fatalf("assignment-loop access %s = kind:%q range:%q receiver:%q, want %q/%q/%q", access.Name, access.Kind, sourceTextForRange(source, access.Range), access.ExplicitReceiver, expected.kind, expected.rangeText, expected.receiver)
+		}
+	}
+	if len(ir.Accesses) != len(want) || len(seen) != len(want) {
+		t.Fatalf("assignment-loop accesses = %#v, want one each %#v", ir.Accesses, want)
+	}
+	for name := range want {
+		if seen[name] != 1 {
+			t.Fatalf("assignment-loop access %s emitted %d times, want 1", name, seen[name])
+		}
+	}
+}
+
+func TestExtractLoopAssignmentTargetWrappersAndBracketControl(t *testing.T) {
+	type expectedAccess struct {
+		name      string
+		kind      scopeir.AccessKind
+		rangeText string
+		receiver  string
+	}
+	type wrapperCase struct {
+		name     string
+		language scanner.Language
+		source   string
+		accesses []expectedAccess
+	}
+	cases := []wrapperCase{
+		{
+			name:     "typescript-parenthesized-identifier",
+			language: scanner.TypeScript,
+			source:   "for ((plain) of rows) {}",
+			accesses: []expectedAccess{{name: "plain", kind: scopeir.AccessWrite, rangeText: "plain"}},
+		},
+		{
+			name:     "javascript-parenthesized-identifier",
+			language: scanner.JavaScript,
+			source:   "for ((plain) of rows) {}",
+			accesses: []expectedAccess{{name: "plain", kind: scopeir.AccessWrite, rangeText: "plain"}},
+		},
+		{
+			name:     "typescript-parenthesized-member",
+			language: scanner.TypeScript,
+			source:   "for ((target.value) of rows) {}",
+			accesses: []expectedAccess{{name: "value", kind: scopeir.AccessWrite, rangeText: "target.value", receiver: "target"}},
+		},
+		{
+			name:     "javascript-parenthesized-member",
+			language: scanner.JavaScript,
+			source:   "for ((target.value) of rows) {}",
+			accesses: []expectedAccess{{name: "value", kind: scopeir.AccessWrite, rangeText: "target.value", receiver: "target"}},
+		},
+		{
+			name:     "typescript-non-null-identifier",
+			language: scanner.TypeScript,
+			source:   "for (target! of rows) {}",
+			accesses: []expectedAccess{{name: "target", kind: scopeir.AccessWrite, rangeText: "target"}},
+		},
+		{
+			name:     "typescript-non-null-member",
+			language: scanner.TypeScript,
+			source:   "for (target.value! of rows) {}",
+			accesses: []expectedAccess{{name: "value", kind: scopeir.AccessWrite, rangeText: "target.value", receiver: "target"}},
+		},
+		{
+			name:     "typescript-nested-receiver-read",
+			language: scanner.TypeScript,
+			source:   "for ((target.nested.value) of rows) {}",
+			accesses: []expectedAccess{
+				{name: "nested", kind: scopeir.AccessRead, rangeText: "target.nested", receiver: "target"},
+				{name: "value", kind: scopeir.AccessWrite, rangeText: "target.nested.value", receiver: "target.nested"},
+			},
+		},
+		{
+			name:     "typescript-bracket-out-of-contract",
+			language: scanner.TypeScript,
+			source:   "for (target[index] of rows) {}",
+		},
+		{
+			name:     "javascript-bracket-out-of-contract",
+			language: scanner.JavaScript,
+			source:   "for (target[index] of rows) {}",
+		},
+	}
+
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			source := []byte(test.source)
+			ir := parseAndExtract(t, "src/loop-wrapper-controls.ts", "hash-loop-wrapper-controls", test.language, source)
+
+			if len(ir.BindingLeaves) != 0 || len(ir.Definitions) != 0 || len(ir.ExtractionDiagnostics) != 0 {
+				t.Fatalf("wrapper assignment declarations/leaves/diagnostics = %d/%d/%#v, want 0/0/0", len(ir.BindingLeaves), len(ir.Definitions), ir.ExtractionDiagnostics)
+			}
+			for _, scope := range ir.Scopes {
+				if scope.Kind == scopeir.ScopeBlock {
+					t.Fatalf("wrapper assignment created a loop ScopeBlock: %#v", scope)
+				}
+			}
+			if len(ir.Accesses) != len(test.accesses) {
+				t.Fatalf("wrapper assignment accesses = %#v, want %d facts", ir.Accesses, len(test.accesses))
+			}
+
+			seen := map[string]int{}
+			for _, access := range ir.Accesses {
+				key := access.Name + ":" + string(access.Kind)
+				seen[key]++
+				matched := false
+				for _, expected := range test.accesses {
+					if access.Name == expected.name && access.Kind == expected.kind && sourceTextForRange(source, access.Range) == expected.rangeText && access.ExplicitReceiver == expected.receiver {
+						matched = true
+						break
+					}
+				}
+				if !matched {
+					t.Fatalf("unexpected wrapper assignment access = name:%q kind:%q range:%q receiver:%q", access.Name, access.Kind, sourceTextForRange(source, access.Range), access.ExplicitReceiver)
+				}
+			}
+			for _, expected := range test.accesses {
+				key := expected.name + ":" + string(expected.kind)
+				if seen[key] != 1 {
+					t.Fatalf("wrapper assignment access %s emitted %d times, want exactly one", key, seen[key])
+				}
+			}
+			if seen["value:"+string(scopeir.AccessRead)] != 0 {
+				t.Fatalf("wrapper member retained a false value/read: %#v", ir.Accesses)
+			}
+		})
+	}
+}
+
+func TestExtractLoopBindingScopesPreserveVarAndShadowing(t *testing.T) {
+	source := []byte(`for (var shared of moduleRows) { consume(shared); } for (let shared of moduleRows) { consume(shared); } function run() { for (var shared in functionRows) { consume(shared); } for (const shared of functionRows) { consume(shared); } }`)
+	ir := parseAndExtract(t, "src/loop-shadowing.ts", "hash-loop-shadowing", scanner.TypeScript, source)
+
+	moduleScope := p3b2aOnlyScopeOfKind(t, ir, scopeir.ScopeModule)
+	functionScopeID := p3b1FunctionScopeID(t, ir, source, "function run()")
+	functionScope := scopeir.ScopeFact{}
+	for _, scope := range ir.Scopes {
+		if scope.ID == functionScopeID {
+			functionScope = scope
+			break
+		}
+	}
+	if functionScope.ID == "" {
+		t.Fatalf("missing function scope %q in %#v", functionScopeID, ir.Scopes)
+	}
+	moduleLoopScope := p3b2aScopeForSource(t, ir, source, scopeir.ScopeBlock, "for (let shared of moduleRows) { consume(shared); }")
+	functionLoopScope := p3b2aScopeForSource(t, ir, source, scopeir.ScopeBlock, "for (const shared of functionRows) { consume(shared); }")
+	if moduleLoopScope.Parent == nil || *moduleLoopScope.Parent != moduleScope.ID || functionLoopScope.Parent == nil || *functionLoopScope.Parent != functionScope.ID {
+		t.Fatalf("lexical loop parents = module:%#v function:%#v, want %q/%q", moduleLoopScope.Parent, functionLoopScope.Parent, moduleScope.ID, functionScope.ID)
+	}
+
+	definitions := p3bDefinitionsNamed(ir, "shared", scopeir.NodeVariable)
+	if len(definitions) != 4 {
+		t.Fatalf("shadowed loop definitions = %d, want 4: %#v", len(definitions), definitions)
+	}
+	owners := map[string]string{}
+	for _, definition := range definitions {
+		switch {
+		case rangeContains(moduleLoopScope.Range, definition.Range):
+			owners[definition.ID] = moduleLoopScope.ID
+		case rangeContains(functionLoopScope.Range, definition.Range):
+			owners[definition.ID] = functionLoopScope.ID
+		case rangeContains(functionScope.Range, definition.Range):
+			owners[definition.ID] = functionScope.ID
+		default:
+			owners[definition.ID] = moduleScope.ID
+		}
+	}
+	if len(owners) != 4 {
+		t.Fatalf("shadowed loop definition IDs collapsed: definitions=%#v owners=%#v", definitions, owners)
+	}
+	for _, definition := range definitions {
+		ownerScopeID := owners[definition.ID]
+		owned, bindings := p3b2ScopeFactCounts(ir, ownerScopeID, definition.ID, "shared")
+		globalOwned, globalBindings := p3b2GlobalScopeFactCounts(ir, definition.ID, "shared")
+		if owned != 1 || bindings != 1 || globalOwned != 1 || globalBindings != 1 {
+			t.Fatalf("shadowed loop definition %s scope facts = owner:%d/%d global:%d/%d in %q", definition.ID, owned, bindings, globalOwned, globalBindings, ownerScopeID)
+		}
+	}
+
+	callScopes := map[string]int{}
+	for _, call := range ir.Calls {
+		if call.Name == "consume" && call.CallForm == scopeir.CallFree {
+			callScopes[call.InScope]++
+		}
+	}
+	for _, scopeID := range []string{moduleScope.ID, moduleLoopScope.ID, functionScope.ID, functionLoopScope.ID} {
+		if callScopes[scopeID] != 1 {
+			t.Fatalf("consume calls in scope %q = %d, want 1: %#v", scopeID, callScopes[scopeID], ir.Calls)
+		}
+	}
+}
+
+func TestExtractLoopContextsTypeScriptJavaScriptParity(t *testing.T) {
+	source := []byte(`for (const [a, ...rest] of rows) {}
+for (let {key: local = fallback} in records) {}
+for (var item in records) {}
+for ([written] of rows) {}
+for ({assigned} in records) {}
+for (plain of rows) {}
+for (target.value of rows) {}`)
+	typescriptIR := parseAndExtract(t, "src/loop-parity.js", "hash-loop-parity", scanner.TypeScript, source)
+	javascriptIR := parseAndExtract(t, "src/loop-parity.js", "hash-loop-parity", scanner.JavaScript, source)
+
+	if len(typescriptIR.BindingLeaves) != 4 || len(typescriptIR.Definitions) != 4 || len(typescriptIR.Scopes) != 3 || len(typescriptIR.Accesses) != 4 || len(typescriptIR.ExtractionDiagnostics) != 0 {
+		t.Fatalf("TypeScript loop parity boundary = leaves:%d definitions:%d scopes:%d accesses:%d diagnostics:%#v, want 4/4/3/4/0", len(typescriptIR.BindingLeaves), len(typescriptIR.Definitions), len(typescriptIR.Scopes), len(typescriptIR.Accesses), typescriptIR.ExtractionDiagnostics)
+	}
+	for _, access := range typescriptIR.Accesses {
+		if access.Kind != scopeir.AccessWrite {
+			t.Fatalf("TypeScript loop parity retained false read: %#v", access)
+		}
+	}
+	typescriptJSON, err := json.Marshal(typescriptIR)
+	if err != nil {
+		t.Fatalf("marshal TypeScript loop parity ScopeIR: %v", err)
+	}
+	javascriptJSON, err := json.Marshal(javascriptIR)
+	if err != nil {
+		t.Fatalf("marshal JavaScript loop parity ScopeIR: %v", err)
+	}
+	if typescriptIR.Language != scanner.TypeScript || javascriptIR.Language != scanner.JavaScript {
+		t.Fatalf("loop parity language identities = %q/%q, want TypeScript/JavaScript", typescriptIR.Language, javascriptIR.Language)
+	}
+	javascriptIR.Language = typescriptIR.Language
+	javascriptJSON, err = json.Marshal(javascriptIR)
+	if err != nil {
+		t.Fatalf("marshal normalized JavaScript loop parity ScopeIR: %v", err)
+	}
+	if !bytes.Equal(typescriptJSON, javascriptJSON) {
+		t.Fatalf("TypeScript/JavaScript loop ScopeIR mismatch:\nTS=%s\nJS=%s", typescriptJSON, javascriptJSON)
 	}
 }
 
@@ -1849,6 +2274,44 @@ func p3b2GlobalScopeFactCounts(ir scopeir.ScopeIR, defID string, name string) (i
 		}
 	}
 	return owned, bindings
+}
+
+func p3b2aOnlyScopeOfKind(t *testing.T, ir scopeir.ScopeIR, kind scopeir.ScopeKind) scopeir.ScopeFact {
+	t.Helper()
+	var found *scopeir.ScopeFact
+	for index := range ir.Scopes {
+		scope := &ir.Scopes[index]
+		if scope.Kind != kind {
+			continue
+		}
+		if found != nil {
+			t.Fatalf("multiple %q scopes in focused fixture: %#v", kind, ir.Scopes)
+		}
+		found = scope
+	}
+	if found == nil {
+		t.Fatalf("missing %q scope in focused fixture: %#v", kind, ir.Scopes)
+	}
+	return *found
+}
+
+func p3b2aScopeForSource(t *testing.T, ir scopeir.ScopeIR, source []byte, kind scopeir.ScopeKind, text string) scopeir.ScopeFact {
+	t.Helper()
+	var found *scopeir.ScopeFact
+	for index := range ir.Scopes {
+		scope := &ir.Scopes[index]
+		if scope.Kind != kind || sourceTextForRange(source, scope.Range) != text {
+			continue
+		}
+		if found != nil {
+			t.Fatalf("multiple %q scopes match %q: %#v", kind, text, ir.Scopes)
+		}
+		found = scope
+	}
+	if found == nil {
+		t.Fatalf("missing %q scope matching %q: %#v", kind, text, ir.Scopes)
+	}
+	return *found
 }
 
 func requireSameImports(t *testing.T, left scopeir.ScopeIR, right scopeir.ScopeIR) {

@@ -33,6 +33,8 @@ func (c *collector) emitDefinitionKind(node *sitter.Node, kind string) {
 		}
 	case "catch_clause":
 		c.emitCatchBindingPattern(node, child(node, "parameter"))
+	case "for_in_statement":
+		c.emitLoopBindingPattern(node)
 	case "method_definition", "abstract_method_signature", "method_signature":
 		nameNode := child(node, "name")
 		label := scopeir.NodeMethod
@@ -88,6 +90,121 @@ func (c *collector) emitDefinitionKind(node *sitter.Node, kind string) {
 			returnType = returnTypeNameForCallable(c, child(node, "value"))
 		}
 		c.addDefinition(node, label, nameNode, "", returnType, declaredTypeNameForNode(c, node), "")
+	}
+}
+
+func (c *collector) emitLoopBindingPattern(node *sitter.Node) {
+	declarationKindNode := child(node, "kind")
+	if declarationKindNode == nil {
+		return
+	}
+	declarationKind := c.text(declarationKindNode)
+	switch declarationKind {
+	case "var", "let", "const":
+	default:
+		return
+	}
+
+	context, ok := c.loopBindingContext(node)
+	if !ok {
+		return
+	}
+	pattern := child(node, "left")
+	if pattern == nil {
+		return
+	}
+
+	result := extractBindingPattern(bindingPatternRequest{
+		FilePath:  c.filePath,
+		FileHash:  c.fileHash,
+		Source:    c.source,
+		Context:   context,
+		Construct: node,
+		Pattern:   pattern,
+	})
+	c.bindingLeaves = append(c.bindingLeaves, result.Leaves...)
+	c.diagnostics = append(c.diagnostics, result.Diagnostics...)
+	for _, leaf := range result.Leaves {
+		c.addLoopBindingLeafDefinition(leaf, c.loopBindingScopeID(node, declarationKind, leaf.Range))
+	}
+}
+
+func (c *collector) loopBindingContext(node *sitter.Node) (scopeir.BindingContext, bool) {
+	operator := child(node, "operator")
+	switch c.text(operator) {
+	case "in":
+		return scopeir.BindingContextForIn, true
+	case "of":
+		return scopeir.BindingContextForOf, true
+	default:
+		return "", false
+	}
+}
+
+func (c *collector) loopBindingScopeID(
+	node *sitter.Node,
+	declarationKind string,
+	rng scopeir.Range,
+) string {
+	if declarationKind == "let" || declarationKind == "const" {
+		id := scopeID(c.filePath, nodeRange(node), scopeir.ScopeBlock)
+		if c.scopeByID(id) != nil {
+			return id
+		}
+		return ""
+	}
+
+	bestID := ""
+	bestSpan := int(^uint(0) >> 1)
+	bestRank := -1
+	for _, scope := range c.scopes {
+		if scope.FilePath != c.filePath || !rangeContains(scope.Range, rng) {
+			continue
+		}
+		rank := -1
+		switch scope.Kind {
+		case scopeir.ScopeFunction:
+			rank = 1
+		case scopeir.ScopeModule:
+			rank = 0
+		default:
+			continue
+		}
+		span := rangeSpan(scope.Range)
+		if span < bestSpan || (span == bestSpan && rank > bestRank) {
+			bestID = scope.ID
+			bestSpan = span
+			bestRank = rank
+		}
+	}
+	return bestID
+}
+
+func (c *collector) addLoopBindingLeafDefinition(leaf scopeir.BindingLeafFact, scopeID string) {
+	selectionRange := leaf.SelectionRange
+	if selectionRange != nil {
+		cloned := *selectionRange
+		selectionRange = &cloned
+	}
+	id := defID(c.filePath, leaf.Range, scopeir.NodeVariable, leaf.Name)
+	c.definitions = append(c.definitions, scopeir.DefinitionFact{
+		ID:             id,
+		FilePath:       c.filePath,
+		FileHash:       c.fileHash,
+		Name:           leaf.Name,
+		Label:          scopeir.NodeVariable,
+		Range:          leaf.Range,
+		SelectionRange: selectionRange,
+		QualifiedName:  leaf.Name,
+	})
+
+	if scope := c.scopeByID(scopeID); scope != nil {
+		scope.OwnedDefIDs = append(scope.OwnedDefIDs, id)
+		scope.Bindings = append(scope.Bindings, scopeir.BindingFact{
+			Name:   leaf.Name,
+			DefID:  id,
+			Origin: scopeir.BindingLocal,
+		})
 	}
 }
 

@@ -36,6 +36,14 @@ func (c *collector) collectScopeCandidateForKind(node *sitter.Node, kind string)
 		c.addScopeCandidate(scopeir.ScopeClass, node)
 	case "catch_clause":
 		c.addScopeCandidate(scopeir.ScopeBlock, node)
+	case "for_in_statement":
+		declarationKind := child(node, "kind")
+		if declarationKind != nil {
+			switch c.text(declarationKind) {
+			case "let", "const":
+				c.addScopeCandidate(scopeir.ScopeBlock, node)
+			}
+		}
 	default:
 		if isFunctionScopeKind(kind) {
 			c.addScopeCandidate(scopeir.ScopeFunction, node)
