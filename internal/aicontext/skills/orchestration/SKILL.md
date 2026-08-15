@@ -21,8 +21,7 @@ Subagents working on long, high-risk tasks, or those requiring Owner interventio
 * adjust the scope;
 * see the final verdict and report.
 
-1. If working in a Codex app or a similar application, do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, security, or lanes with long-running task subagents because the user needs direct control capabilities.
-2. If working in a CLI environment, all long lanes (coder, QA, supervisor, architect, planner, security, or lanes with long-running task subagents) requiring user intervention must be opened as a visible tab in the Owner’s existing Windows Terminal window.
+Do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, security, or lanes with long-running task subagents because the user needs direct control capabilities.
 
 ## 1. Orchestration Principles
 
