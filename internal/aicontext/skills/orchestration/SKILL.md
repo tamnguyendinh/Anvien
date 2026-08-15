@@ -22,7 +22,7 @@ Subagents working on long, high-risk tasks, or those requiring Owner interventio
 * see the final verdict and report.
 
 1. Do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, security, or lanes with long-running task subagents because the user needs direct control capabilities.
-2. If working in a CLI environment, all long lanes (coder, QA, supervisor, architect, planner, security, or lanes with long-running task subagents) requiring user intervention must be opened as a visible PowerShell terminal window.
+2. If working in a CLI environment, all long lanes (coder, QA, supervisor, architect, planner, security, or lanes with long-running task subagents) requiring user intervention must be opened as a visible terminal window.
 
 ## 1. Orchestration Principles
 
