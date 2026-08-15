@@ -68,7 +68,7 @@ Here is the English translation of your orchestration documentation principles, 
 
 3. Documentation updates must belong to the currently open slice and be executed by the correct orchestrator (Main) using the planner when updating the plan/ledger; do not open additional lanes or jobs for "documentation audits."
 4. Do not create durable reports, Supervisor loops, or evidence gates solely to prove that a few lines of documentation have been updated.
-5. Once a slice has achieved a Supervisor PASS, is committed, and pushed, the next slice in the plan opens automatically. Do not re-audit to check if it "is allowed to be opened yet."
+5. Once a slice has achieved a Supervisor PASS, is committed, the next slice in the plan opens automatically. Do not re-audit to check if it "is allowed to be opened yet."
 6. Evidence is a step within a Phase/slice; it must not be turned into an intermediate gate.
 7. Do not halt implementation to wait for "planner authorization" after an impact if the scope remains within the opened slice. Only pause when evidence proves there is an actual change to the boundary/contract.
 8. Do not re-run a PASSed gate when the associated source, evidence, and boundary have not been invalidated. Re-anchoring after compaction is strictly for context recovery, not for restarting an audit on work that has already passed.
