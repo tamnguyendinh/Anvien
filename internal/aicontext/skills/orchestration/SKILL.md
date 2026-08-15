@@ -359,7 +359,6 @@ Main must:
 * findings that need to be moved to another slice;
 * issues outside the campaign.
 
-
 5. Design the session with complete:
 * goal;
 * ownership;
@@ -373,7 +372,6 @@ Main must:
 * completion conditions;
 * the next person to receive the handoff.
 
-
 6. Monitor the actual behavior of the lane: commands, modified files, completed gates, scope, and loops.
 7. Proactively handle coordination:
 * if lacking a skill, add it;
@@ -381,7 +379,6 @@ Main must:
 * for simple blockers, assign specific actions;
 * for findings outside the slice, record and transfer to the correct owner;
 * if a lane deviates, block it immediately.
-
 
 8. Upon receiving a handoff, self-verify the report, source, diff, Git boundary, and evidence before deciding the next step.
 
@@ -395,40 +392,8 @@ Main must:
 3. commits the independent slice;
 4. only after that opens the next slice.
 
+## 14. Template Prompt for Opening a Session: 
 
-
-## 14. Template Prompt for Opening a Session
-
-```text
-You are working in a separate session visible to the Owner.
-
-Goal:
-<write the exact goal of the slice>
-
-Authority:
-<AGENTS.md, plan, contract, report, evidence>
-
-Scope:
-<files/modules/surfaces allowed to be checked or modified>
-
-Non-goals:
-<things absolutely not to be expanded>
-
-Role:
-<coder | QA | Supervisor | architect | planner | ...>
-
-Mandatory evidence:
-<list of evidence/reports/benchmarks>
-
-Stop conditions:
-- if not understood, answer NOT UNDERSTOOD and stop;
-- if the Owner sends PAUSE, stop immediately;
-- if detecting errors outside the scope, report as a blocker, do not autonomously expand.
-
-Mandatory first response:
-1. UNDERSTOOD or NOT UNDERSTOOD;
-2. summarize the goal;
-3. boundary;
-4. first action.
-
-```
+- for codex: .agents/skills/orchestration/references/Template-Prompt-for-Opening-a-Session.md
+- for Claude code: .claude/skills/orchestration/references/Template-Prompt-for-Opening-a-Session-claude.md
+- for other models: .agents/skills/orchestration/references/Template-Prompt-for-Opening-a-Session.md
