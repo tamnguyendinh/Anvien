@@ -22,7 +22,7 @@ Subagents working on long, high-risk tasks, or those requiring Owner interventio
 * see the final verdict and report.
 
 1. Do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, security, or lanes with long-running task subagents because the user needs direct control capabilities.
-2. If working in a CLI environment, all long lanes (coder, QA, supervisor, architect, planner, security, or lanes with long-running task subagents) requiring user intervention must be opened as a visible Windows Terminal.
+2. If working in a CLI environment, all long lanes (coder, QA, supervisor, architect, planner, security, or lanes with long-running task subagents) requiring user intervention must be opened as a visible tab in the Owner’s existing Windows Terminal window.
 
 ## 1. Orchestration Principles
 
@@ -33,7 +33,7 @@ Subagents working on long, high-risk tasks, or those requiring Owner interventio
 * Receive requests/plans/reports/handoffs from the user or from subagent sessions, then assign them to the appropriate subagent sessions.
 * (MUST) self-read the user's entire request or plan and understand the function of each plan/phase/slice;
 * the orchestration agent (main agent) must intrinsically understand the work/request/plan in order to accurately assign tasks to the subagent session.
-* monitor the actual behavior of the subagent, not just listen to its reports;
+* Do not perform the same task in parallel like a subagent (orchestration is not a worker).
 * cross-check reports with source, diff, rules, and acceptance criteria;
 * upon detecting a subagent deviating from scope, looping gates, misunderstanding boundaries, or giving a verdict on the wrong target; you must immediately remind or intervene, adjusting the subagent's specific behavior;
 * decide the next workflow after verifying the handoff.
@@ -51,10 +51,31 @@ Subagents working on long, high-risk tasks, or those requiring Owner interventio
 
 ### Monitoring subagent sessions:
 
-* a. The Owner can directly intervene in the Supervisor task, but the main session's responsibility remains to stay, continuously monitor, receive durable reports/verdicts, self-verify the handoff, and then continue the process/plan.
+* orchestration agent (main agent) must monitor the actual behavior of subagents until a conclusion or verdict is reached, not just listen to its reports;
+* a. The Owner can directly intervene in the Subagents task, but the main session's responsibility remains to stay, continuously monitor, receive durable reports/verdicts, self-verify the handoff, and then continue the process/plan.
 * b. When monitoring a subagent session: If the subagent deviates from the goal or falls into an infinite loop, the main agent must issue a reminder into the subagent session so the subagent returns to the exact original goal.
 * c. The orchestration agent (main agent) is tasked with updating the status for the plan's next phase/slice or updating the codebase's latest status for the next plan (if it is a multi-plan), then assigning work to the subagent session to execute the next phase/slice.
 * Phase C of a plan is closure/handoff docs-only; It is forbidden to open additional Supervisor loops at this slice.
+
+Here is the English translation of your orchestration documentation principles, keeping the technical terminology and professional tone intact:
+
+### Documentation Principles for Orchestration:
+
+1. Documentation is merely a ledger reflecting actual progress; it is not a standalone phase, slice, gate, or work product.
+2. When documentation is missing or its state is out of sync, correct it in the exact place once and proceed with the work. Prohibited loop: read → audit → fix → re-verify → write report → re-audit just to prove the documentation is correct.
+
+ > **Keep it simple:** Update the documentation/plan as quickly as possible so that the work progress always moves forward.
+
+3. Documentation updates must belong to the currently open slice and be executed by the correct orchestrator (Main) using the planner when updating the plan/ledger; do not open additional lanes or jobs for "documentation audits."
+4. Do not create durable reports, Supervisor loops, or evidence gates solely to prove that a few lines of documentation have been updated.
+5. Once a slice has achieved a Supervisor PASS, is committed, and pushed, the next slice in the plan opens automatically. Do not re-audit to check if it "is allowed to be opened yet."
+6. Evidence is a step within a Phase/slice; it must not be turned into an intermediate gate.
+7. Do not halt implementation to wait for "planner authorization" after an impact if the scope remains within the opened slice. Only pause when evidence proves there is an actual change to the boundary/contract.
+8. Do not re-run a PASSed gate when the associated source, evidence, and boundary have not been invalidated. Re-anchoring after compaction is strictly for context recovery, not for restarting an audit on work that has already passed.
+9. Do not continuously cross-check hashes, HEAD, and wording just because the ledger was recently updated. Only check the Git boundary when it genuinely serves handoff, Supervisor, or commit operations.
+10. The responsibility of Main is to understand the plan, delegate tasks, monitor commands/diffs/scopes, prevent deviations, and drive user or plan requirements toward results—do not turn yourself or the workers into documentation auditors (except for phases/slices dedicated specifically to documentation auditing).
+
+> **In short:** Documentation must follow actual progress; progress must not get stuck chasing documentation.
 
 ## 2. Session Classification
 
