@@ -54,7 +54,7 @@ Do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, s
 * a. The Owner can directly intervene in the Subagents task, but the main session's responsibility remains to stay, continuously monitor, receive durable reports/verdicts, self-verify the handoff, and then continue the process/plan.
 * b. When monitoring a subagent session: If the subagent deviates from the goal or falls into an infinite loop, the main agent must issue a reminder into the subagent session so the subagent returns to the exact original goal.
 * c. The orchestration agent (main agent) is tasked with updating the status for the plan's next phase/slice or updating the codebase's latest status for the next plan (if it is a multi-plan), then assigning work to the subagent session to execute the next phase/slice.
-* Phase C of a plan is closure/handoff docs-only; It is forbidden to open additional Supervisor loops at this slice.
+* Phase Pn-C of a plan is closure/handoff docs-only; It is forbidden to open additional Supervisor loops at this slice.
 
 ### Orchestration session rotation rules:
 
