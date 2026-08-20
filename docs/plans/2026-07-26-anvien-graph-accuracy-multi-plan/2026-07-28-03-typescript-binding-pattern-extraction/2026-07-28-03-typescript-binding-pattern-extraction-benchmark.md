@@ -70,8 +70,8 @@ These are graph/inventory counts at HEAD `181b8cb8`, not product runtime-perform
 | P3-C | graph binding occurrence conservation | graph occurrences / accepted leaves | pending P0 | 7/7 on exact final bytes | 7/7 accepted | 1.0 exactly | target met; one distinct Variable node and one `DEFINES` per accepted leaf | `E3-P3C-TEST1`, `E3-P3C-BOUNDARY1`, `E3-P3C-REVIEW2` |
 | P3-C | nested shadowing target correctness | correct / expected targets | pending P0 | outer/inner `value` 2/2 exact lexical endpoints | 2/2 accepted | 100% | target met; nearest-scope identities remain distinct | `E3-P3C-TEST1`, `E3-P3C-BOUNDARY1`, `E3-P3C-REVIEW2` |
 | P3-C | affected persistence field differences | differing fields | pending affected-surface inventory | 0 across Graph JSON/Ladybug relationship parity | 0 accepted | 0 | target met; zero skipped/fallback/warning outcomes | `E3-P3C-BOUNDARY1`, `E3-P3C-REVIEW2` |
-| P3-C2 | bounded target bindings | correct / expected | 0/6 | pending | pending | 6/6 | pending | `E3-P3C2-TARGET1` |
-| P3-C2 | bounded target sites without binding-caused gap | correct / expected | 0/6 | pending | pending | 6/6 | pending | `E3-P3C2-TARGET1` |
+| P3-C2 | bounded target bindings | correct / expected | 0/6 | 6/6 | 6/6 accepted | 6/6 | +6 corrected bindings | `E3-P3C2-ORACLE1`, `E3-P3C2-TARGET1`, `E3-P3C2-REVIEW1` |
+| P3-C2 | bounded target sites without binding-caused gap | correct / expected | 0/6 | 6/6 with 0 binding-caused gaps | 6/6 accepted | 6/6 | +6 corrected sites; gaps 0 | `E3-P3C2-TARGET1`, `E3-P3C2-BOUNDARY1`, `E3-P3C2-REVIEW1` |
 
 ## Non-Benchmarkable Notes
 
