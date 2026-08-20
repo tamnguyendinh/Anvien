@@ -172,20 +172,20 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below. Th
 | `E4-P4B-TEST1` | direct/default/anonymous/alias/type-only/multi-specifier matrix and negative controls | recorded — focused TS/JS and diagnostics matrices PASS |
 | `E4-P4B-BOUNDARY1` | real provider/ScopeIR direct export facts and exact counts | recorded — nearest `tsjs`, `scopeir`, and `providers` boundary PASS |
 | `E4-P4B-REVIEW1` | independent Supervisor PASS | recorded — REVIEW1 REJECT sole cleanup finding closed; resubmission PASS report `rp_supervisor_260821_001554_by_gpt-5_child04_p4b_export_facts_resubmission.md` |
-| `E4-P4B-DETECT1` | pre-commit Anvien detect-changes result | pending |
-| `E4-P4B-COMMIT1` | isolated accepted slice commit | pending |
+| `E4-P4B-DETECT1` | pre-commit Anvien detect-changes result | recorded — final detect passed before isolated commit `11a37aa8ec0320dd93258c058b088d1070aa778d`; `537` changed semantic units, `8` changed/affected files, `3` affected processes, MEDIUM risk, zero resolution-health degradation |
+| `E4-P4B-COMMIT1` | isolated accepted slice commit | recorded — `11a37aa8ec0320dd93258c058b088d1070aa778d`, exact 14-file P4-B boundary, no push |
 
 ### P4-B1 — star/namespace/re-export syntax
 
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
-| `E4-P4B1-IMPACT1` | exact re-export syntax owner impact | pending |
-| `E4-P4B1-SRC1` | production named/default/star/namespace/type-only re-export syntax extraction | pending |
-| `E4-P4B1-BUILD1` | full build | pending |
-| `E4-P4B1-TEST1` | syntax matrix with one fact per specifier and no terminal resolution state | pending |
-| `E4-P4B1-BOUNDARY1` | real provider/ScopeIR re-export syntax output | pending |
-| `E4-P4B1-REVIEW1` | independent Supervisor PASS | pending |
-| `E4-P4B1-DETECT1` | pre-commit Anvien detect-changes result | pending |
+| `E4-P4B1-IMPACT1` | exact re-export syntax owner impact | recorded — fresh excluded graph/file-detail/impact; imports.go HIGH `18/18`, extract_test.go CRITICAL `63/60`, exact recovery/test symbols LOW/0 |
+| `E4-P4B1-SRC1` | production named/default/star/namespace/type-only re-export syntax extraction | recorded — exact two-file candidate; token-ordered comment/trivia recovery, one immutable fact per eligible site, single compatibility derivation, no later-slice state |
+| `E4-P4B1-BUILD1` | full build | recorded — fresh canonical `npm run full-build` exit `0`, runtime `1.2.8`, Web `2,943` modules, Vite `21.84s` |
+| `E4-P4B1-TEST1` | syntax matrix with one fact per specifier and no terminal resolution state | recorded — focused `6/6`, full tsjs PASS, nearest `3/3`, resolution/analyze `2/2`; TS/JS comment and sibling matrices pass |
+| `E4-P4B1-BOUNDARY1` | real provider/ScopeIR re-export syntax output | recorded — independent parser → Extract → ScopeIR probes pass comment-after-comma, comment-before-comma, no-comment, and newline at `2/1/2`, exact fields, no Broken, zero terminal state |
+| `E4-P4B1-REVIEW1` | independent Supervisor PASS | recorded — `reports/Supervisor/rp_supervisor_260821_031004_by_gpt-5_child04_p4b1_comment_recovery_review3.md`, `11,830` bytes / `136` LF / SHA-256 `07DD5BB92F169C5923C0DBCB597F914A28E594496ACDADB55D41F13DE364421C` |
+| `E4-P4B1-DETECT1` | pre-commit Anvien detect-changes result | recorded — final exit `0`; `305` changed semantic units, `7` changed/affected files, `1` affected process, MEDIUM risk; changed layers backend `219`, backend_test `61`, docs `25`; `totalResolutionGapCount=0`, `nodesWithGaps=0`, `degradedNodes=0`, complete semantic fields; final graph `1,146/626/0`, `82,079/121,780` |
 | `E4-P4B1-COMMIT1` | isolated accepted slice commit | pending |
 
 ### P4-C — graph and affected persistence projection
@@ -223,7 +223,7 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below. Th
 | `E4-PNC-COMMIT1` | final known commit/worktree state | pending |
 | `E4-PNC-HANDOFF1` | Child 05 actual-status refreshed from accepted immutable syntax/direct-export results and exact opening condition recorded | pending |
 
-P4-B source/build/boundary/cleanup/Supervisor acceptance is recorded; Main-owned detect and isolated commit remain pending.
+P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance is recorded; Main-owned detect and isolated commit remain pending.
 
 ### `E4-P4B-SOURCE1` — source and cleanup clearance
 
@@ -237,4 +237,18 @@ P4-B source/build/boundary/cleanup/Supervisor acceptance is recorded; Main-owned
 
 - Prior report `reports/Supervisor/rp_supervisor_260821_001125_by_gpt-5_child04_p4b_export_facts.md` recorded the sole cleanup blocker.
 - Resubmission report `reports/Supervisor/rp_supervisor_260821_001554_by_gpt-5_child04_p4b_export_facts_resubmission.md` is `PASS`; residual same-invariant surfaces are none.
-- Main-owned `E4-P4B-DETECT1` and `E4-P4B-COMMIT1` remain pending until fresh staged detection and the isolated commit.
+- `E4-P4B-DETECT1` and `E4-P4B-COMMIT1` are closed at `11a37aa8ec0320dd93258c058b088d1070aa778d`; P4-B was not reopened.
+
+### `E4-P4B1-SRC1` — source, boundary, and Supervisor clearance
+
+- Fresh excluded graph after the REVIEW3 report was present: `1,144/626/0` scanned/parsed/failed and `82,059/121,760` nodes/relationships; exact exclusions were `internal/aicontext/skills/**` and `.claude/skills/**`.
+- Candidate production/test paths are only `internal/providers/tsjs/imports.go` and `internal/providers/tsjs/extract_test.go`; current identities, diff, index, formatting, forbidden-field, visibility, and `.tmp` gates are recorded in the Coder and Supervisor reports.
+- `recoveredReexportSiblingAfterMalformedAlias` accepts one valid name, anonymous `as`, comma-only error, and valid alias in source order while allowing only comment/parser-extra trivia between semantic tokens; malformed names/errors fail closed. `addSourceExportFact` remains the sole compatibility derivation path.
+- Independent Supervisor REVIEW3 is `PASS`; residual same-invariant surfaces are none within P4-B1. P4-C/P4-C2/Child 05 and target access remain locked.
+
+### `E4-P4B1-DETECT1` — Main-owned change detection
+
+- Command: `anvien detect-changes --repo E:\\Anvien --scope all` after the planner refresh and fresh excluded graph.
+- Result: final exit `0`; `305` changed semantic units; `7` changed files and `7` affected files; one affected provider process; overall risk `MEDIUM`; changed app layers `backend=219`, `backend_test=61`, `docs=25`; changed functional areas `providers=280`, `documentation=25`.
+- Resolution inventory reports changed gap entities but persisted resolution health remains clean: `totalResolutionGapCount=0`, `nodesWithGaps=0`, `degradedNodes=0`; semantic app/functional fields are complete.
+- Final excluded graph basis is `1,146/626/0` scanned/parsed/failed with `82,079/121,780` nodes/relationships. Changed path set is the exact two production/test candidate files plus the five Child 04 living plan documents. Untracked reports/provenance remain outside the semantic changed-file set and are staged only in the explicit report/provenance boundary.

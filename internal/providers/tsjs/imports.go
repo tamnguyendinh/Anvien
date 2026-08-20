@@ -78,38 +78,338 @@ func (c *collector) emitExportStatement(node *sitter.Node) {
 	sourceNode := child(node, "source")
 	if sourceNode == nil {
 		if hasSourceClauseSyntax(node) {
+			c.addExportDiagnostic(
+				scopeir.ExportDiagnosticMalformedSyntax,
+				node,
+				node,
+				"source-bearing export is missing its module source",
+			)
 			return
 		}
 		c.exportStatements = append(c.exportStatements, node)
 		return
 	}
 	targetRaw := stripQuotes(c.text(sourceNode))
-	// Preserve the existing compatibility wildcard for both plain star
-	// re-exports and namespace-star syntax (`export * as ns from ...`).
-	// The latter is represented by a namespace_export descendant rather than
-	// an anonymous `*` child by the TypeScript grammar.
-	if hasAnonymousChild(node, "*") || containsNodeKind(node, "namespace_export") {
-		c.addImport(scopeir.ImportWildcard, "", "", "", targetRaw)
+	c.emitSourceExportFacts(node, sourceNode, targetRaw)
+}
+
+func (c *collector) emitSourceExportFacts(
+	statement *sitter.Node,
+	sourceNode *sitter.Node,
+	targetRaw string,
+) {
+	if parent := statement.Parent(); parent == nil || parent.Kind() != "program" {
+		c.addExportDiagnostic(
+			scopeir.ExportDiagnosticUnsupportedSyntax,
+			statement,
+			statement,
+			"module re-export extraction requires a top-level export statement",
+		)
 		return
 	}
-	for _, specifier := range descendantsOfType(node, "export_specifier") {
-		names := namedIdentifierChildren(specifier)
-		imported := c.text(child(specifier, "name"))
-		if imported == "" && len(names) > 0 {
-			imported = c.text(names[0])
-		}
-		if imported == "" {
+	if sourceNode == nil || nodeHasMalformedSyntax(sourceNode) {
+		c.addExportDiagnostic(
+			scopeir.ExportDiagnosticMalformedSyntax,
+			statement,
+			statement,
+			"module re-export has a malformed source clause",
+		)
+		return
+	}
+
+	statementTypeOnly := c.sourceExportStatementTypeOnly(statement)
+	if namespaceNode := firstNamedChildOfType(statement, "namespace_export"); namespaceNode != nil {
+		c.emitNamespaceExportFact(statement, namespaceNode, targetRaw, statementTypeOnly)
+		return
+	}
+	if starNode := directChildOfKind(statement, "*"); starNode != nil {
+		c.emitStarExportFact(statement, starNode, targetRaw, statementTypeOnly)
+		return
+	}
+	if clause := firstNamedChildOfType(statement, "export_clause"); clause != nil {
+		c.emitReexportClauseFacts(statement, clause, targetRaw, statementTypeOnly)
+		return
+	}
+
+	code := scopeir.ExportDiagnosticUnsupportedSyntax
+	reason := "unsupported source-bearing export syntax"
+	if c.sourceExportHasUnexpectedMalformedSyntax(statement, statementTypeOnly) {
+		code = scopeir.ExportDiagnosticMalformedSyntax
+		reason = "malformed source-bearing export syntax"
+	}
+	c.addExportDiagnostic(code, statement, statement, reason)
+}
+
+func (c *collector) emitReexportClauseFacts(
+	statement *sitter.Node,
+	clause *sitter.Node,
+	targetRaw string,
+	statementTypeOnly bool,
+) {
+	diagnosticCount := 0
+	for index := uint(0); index < clause.NamedChildCount(); index++ {
+		specifier := clause.NamedChild(index)
+		if specifier == nil || specifier.Kind() == "comment" {
 			continue
 		}
+		if specifier.Kind() != "export_specifier" {
+			code := scopeir.ExportDiagnosticUnsupportedSyntax
+			reason := "unsupported re-export clause node kind " + specifier.Kind()
+			if nodeHasMalformedSyntax(specifier) {
+				code = scopeir.ExportDiagnosticMalformedSyntax
+				reason = "malformed re-export specifier site"
+			}
+			c.addExportDiagnostic(code, specifier, statement, reason)
+			diagnosticCount++
+			continue
+		}
+		factRangeNode := specifier
+		var targetNameNode *sitter.Node
+		var exportedNameNode *sitter.Node
+		if nodeHasMalformedSyntax(specifier) {
+			recoveredNameNode, malformedSite, recovered := c.recoveredReexportSiblingAfterMalformedAlias(specifier)
+			if !recovered {
+				c.addExportDiagnostic(
+					scopeir.ExportDiagnosticMalformedSyntax,
+					specifier,
+					statement,
+					"malformed re-export specifier",
+				)
+				diagnosticCount++
+				continue
+			}
+			c.addExportDiagnostic(
+				scopeir.ExportDiagnosticMalformedSyntax,
+				malformedSite,
+				statement,
+				"malformed re-export alias before recovered sibling",
+			)
+			diagnosticCount++
+			factRangeNode = recoveredNameNode
+			targetNameNode = recoveredNameNode
+			exportedNameNode = recoveredNameNode
+		}
+		if targetNameNode == nil {
+			if c.exportSpecifierHasTrailingAliasError(clause, specifier, index) {
+				continue
+			}
+			targetNameNode = child(specifier, "name")
+			exportedNameNode = targetNameNode
+			if aliasNode := child(specifier, "alias"); aliasNode != nil {
+				exportedNameNode = aliasNode
+			}
+		}
+
+		if !isModuleExportNameNode(targetNameNode) {
+			c.addExportDiagnostic(
+				scopeir.ExportDiagnosticUnsupportedSyntax,
+				specifier,
+				statement,
+				"re-export specifier has no supported source-side name",
+			)
+			diagnosticCount++
+			continue
+		}
+		if !isModuleExportNameNode(exportedNameNode) {
+			c.addExportDiagnostic(
+				scopeir.ExportDiagnosticUnsupportedSyntax,
+				exportedNameNode,
+				statement,
+				"re-export specifier has an unsupported exported name",
+			)
+			diagnosticCount++
+			continue
+		}
+
+		typeOnly := statementTypeOnly || exportSpecifierTypeOnly(specifier)
+		meanings := []scopeir.ExportMeaning{scopeir.ExportMeaningValue}
+		if typeOnly {
+			meanings = []scopeir.ExportMeaning{scopeir.ExportMeaningType}
+		}
+		target := targetRaw
+		c.addSourceExportFact(scopeir.ExportFact{
+			FilePath:           c.filePath,
+			FileHash:           c.fileHash,
+			Kind:               scopeir.ExportReexport,
+			ExportedName:       c.moduleExportName(exportedNameNode),
+			TargetRaw:          &target,
+			TargetExportedName: c.moduleExportName(targetNameNode),
+			Meanings:           meanings,
+			TypeOnly:           typeOnly,
+			Range:              nodeRange(factRangeNode),
+			SelectionRange:     rangePointer(nodeRange(exportedNameNode)),
+			Provenance: scopeir.ExportProvenance{
+				StatementRange: nodeRange(statement),
+				SiteKind:       "export_specifier",
+			},
+		})
+	}
+	if nodeHasMalformedSyntax(clause) && diagnosticCount == 0 {
+		c.addExportDiagnostic(
+			scopeir.ExportDiagnosticMalformedSyntax,
+			clause,
+			statement,
+			"malformed re-export clause",
+		)
+	}
+}
+
+func (c *collector) recoveredReexportSiblingAfterMalformedAlias(
+	specifier *sitter.Node,
+) (*sitter.Node, *sitter.Node, bool) {
+	if specifier == nil || specifier.Kind() != "export_specifier" {
+		return nil, nil, false
+	}
+
+	var nameNode *sitter.Node
+	var aliasKeyword *sitter.Node
+	var commaError *sitter.Node
+	var recoveredNameNode *sitter.Node
+	for index := uint(0); index < specifier.ChildCount(); index++ {
+		child := specifier.Child(index)
+		if child == nil || child.IsMissing() {
+			return nil, nil, false
+		}
+		field := specifier.FieldNameForChild(uint32(index))
+		switch {
+		case field == "name":
+			if nameNode != nil || !isModuleExportNameNode(child) || nodeHasMalformedSyntax(child) {
+				return nil, nil, false
+			}
+			nameNode = child
+		case field == "alias":
+			if recoveredNameNode != nil || !isModuleExportNameNode(child) || nodeHasMalformedSyntax(child) {
+				return nil, nil, false
+			}
+			recoveredNameNode = child
+		case child.Kind() == "as" && strings.TrimSpace(c.text(child)) == "as":
+			if aliasKeyword != nil {
+				return nil, nil, false
+			}
+			aliasKeyword = child
+		case child.IsError():
+			if commaError != nil || strings.TrimSpace(c.text(child)) != "," {
+				return nil, nil, false
+			}
+			commaError = child
+		case child.Kind() == "comment" || child.IsExtra():
+			continue
+		default:
+			return nil, nil, false
+		}
+	}
+	if nameNode == nil || aliasKeyword == nil || commaError == nil || recoveredNameNode == nil ||
+		nameNode.EndByte() > aliasKeyword.StartByte() ||
+		aliasKeyword.EndByte() > commaError.StartByte() ||
+		commaError.EndByte() > recoveredNameNode.StartByte() {
+		return nil, nil, false
+	}
+	return recoveredNameNode, aliasKeyword, true
+}
+
+func (c *collector) emitStarExportFact(
+	statement *sitter.Node,
+	starNode *sitter.Node,
+	targetRaw string,
+	typeOnly bool,
+) {
+	if c.sourceExportHasUnexpectedMalformedSyntax(statement, typeOnly) {
+		c.addExportDiagnostic(
+			scopeir.ExportDiagnosticMalformedSyntax,
+			statement,
+			statement,
+			"malformed star re-export syntax",
+		)
+		return
+	}
+	meanings := []scopeir.ExportMeaning{scopeir.ExportMeaningValue}
+	if typeOnly {
+		meanings = []scopeir.ExportMeaning{scopeir.ExportMeaningType}
+	}
+	target := targetRaw
+	c.addSourceExportFact(scopeir.ExportFact{
+		FilePath:       c.filePath,
+		FileHash:       c.fileHash,
+		Kind:           scopeir.ExportStar,
+		TargetRaw:      &target,
+		Meanings:       meanings,
+		TypeOnly:       typeOnly,
+		Range:          nodeRange(starNode),
+		SelectionRange: rangePointer(nodeRange(starNode)),
+		Provenance: scopeir.ExportProvenance{
+			StatementRange: nodeRange(statement),
+			SiteKind:       "export_star",
+		},
+	})
+}
+
+func (c *collector) emitNamespaceExportFact(
+	statement *sitter.Node,
+	namespaceNode *sitter.Node,
+	targetRaw string,
+	typeOnly bool,
+) {
+	if c.sourceExportHasUnexpectedMalformedSyntax(statement, typeOnly) {
+		c.addExportDiagnostic(
+			scopeir.ExportDiagnosticMalformedSyntax,
+			namespaceNode,
+			statement,
+			"malformed namespace re-export syntax",
+		)
+		return
+	}
+	exportedNameNode := lastModuleExportNameChild(namespaceNode)
+	if !isModuleExportNameNode(exportedNameNode) {
+		c.addExportDiagnostic(
+			scopeir.ExportDiagnosticMalformedSyntax,
+			namespaceNode,
+			statement,
+			"namespace re-export is missing its exported name",
+		)
+		return
+	}
+	meanings := []scopeir.ExportMeaning{scopeir.ExportMeaningNamespace}
+	if typeOnly {
+		meanings = []scopeir.ExportMeaning{scopeir.ExportMeaningType}
+	}
+	target := targetRaw
+	c.addSourceExportFact(scopeir.ExportFact{
+		FilePath:       c.filePath,
+		FileHash:       c.fileHash,
+		Kind:           scopeir.ExportNamespace,
+		ExportedName:   c.moduleExportName(exportedNameNode),
+		TargetRaw:      &target,
+		Meanings:       meanings,
+		TypeOnly:       typeOnly,
+		Range:          nodeRange(namespaceNode),
+		SelectionRange: rangePointer(nodeRange(exportedNameNode)),
+		Provenance: scopeir.ExportProvenance{
+			StatementRange: nodeRange(statement),
+			SiteKind:       "export_namespace",
+		},
+	})
+}
+
+func (c *collector) addSourceExportFact(fact scopeir.ExportFact) {
+	c.addExportFact(fact)
+	if fact.TargetRaw == nil {
+		return
+	}
+	switch fact.Kind {
+	case scopeir.ExportReexport:
 		alias := ""
-		if len(names) > 1 {
-			alias = c.text(names[len(names)-1])
+		if fact.ExportedName != fact.TargetExportedName {
+			alias = fact.ExportedName
 		}
-		localName := imported
-		if alias != "" {
-			localName = alias
-		}
-		c.addImport(scopeir.ImportReexport, localName, imported, alias, targetRaw)
+		c.addImport(
+			scopeir.ImportReexport,
+			fact.ExportedName,
+			fact.TargetExportedName,
+			alias,
+			*fact.TargetRaw,
+		)
+	case scopeir.ExportStar, scopeir.ExportNamespace:
+		c.addImport(scopeir.ImportWildcard, "", "", "", *fact.TargetRaw)
 	}
 }
 
@@ -559,19 +859,22 @@ func (c *collector) exportSpecifierHasTrailingAliasError(
 }
 
 func (c *collector) emitRecoveredExportDiagnostic(node *sitter.Node) {
-	if node == nil || hasSourceClauseSyntax(node) ||
-		!hasExportKeywordPrefix(c.text(node)) || !nodeHasMalformedSyntax(node) {
+	if node == nil || !hasExportKeywordPrefix(c.text(node)) || !nodeHasMalformedSyntax(node) {
 		return
 	}
 	parent := node.Parent()
 	if parent == nil || parent.Kind() != "program" {
 		return
 	}
+	reason := "malformed direct or local export syntax"
+	if hasSourceClauseSyntax(node) {
+		reason = "malformed source-bearing export syntax"
+	}
 	c.addExportDiagnostic(
 		scopeir.ExportDiagnosticMalformedSyntax,
 		node,
 		node,
-		"malformed direct or local export syntax",
+		reason,
 	)
 }
 
@@ -856,6 +1159,121 @@ func hasSourceClauseSyntax(node *sitter.Node) bool {
 		}
 	}
 	return false
+}
+
+func (c *collector) sourceExportStatementTypeOnly(statement *sitter.Node) bool {
+	if statement == nil {
+		return false
+	}
+	if hasAnonymousChild(statement, "type") {
+		return true
+	}
+	for index := uint(0); index < statement.ChildCount(); index++ {
+		candidate := statement.Child(index)
+		if candidate != nil && candidate.IsError() && strings.TrimSpace(c.text(candidate)) == "type" {
+			return true
+		}
+	}
+	text := strings.TrimSpace(c.text(statement))
+	if !strings.HasPrefix(text, "export") {
+		return false
+	}
+	rest := strings.TrimSpace(strings.TrimPrefix(text, "export"))
+	if !strings.HasPrefix(rest, "type") {
+		return false
+	}
+	if len(rest) == len("type") {
+		return true
+	}
+	switch rest[len("type")] {
+	case ' ', '\t', '\r', '\n', '{', '*':
+		return true
+	default:
+		return false
+	}
+}
+
+func (c *collector) sourceExportHasUnexpectedMalformedSyntax(
+	statement *sitter.Node,
+	statementTypeOnly bool,
+) bool {
+	var visit func(*sitter.Node) bool
+	visit = func(node *sitter.Node) bool {
+		if node == nil || node.IsMissing() {
+			return true
+		}
+		if node.IsError() {
+			parent := node.Parent()
+			if statementTypeOnly && parent != nil && parent.Id() == statement.Id() &&
+				strings.TrimSpace(c.text(node)) == "type" {
+				return false
+			}
+			return true
+		}
+		for index := uint(0); index < node.ChildCount(); index++ {
+			if visit(node.Child(index)) {
+				return true
+			}
+		}
+		return false
+	}
+	return visit(statement)
+}
+
+func exportSpecifierTypeOnly(specifier *sitter.Node) bool {
+	return hasAnonymousChild(specifier, "type") || hasAnonymousChild(specifier, "typeof")
+}
+
+func directChildOfKind(node *sitter.Node, kind string) *sitter.Node {
+	if node == nil {
+		return nil
+	}
+	for index := uint(0); index < node.ChildCount(); index++ {
+		candidate := node.Child(index)
+		if candidate != nil && candidate.Kind() == kind {
+			return candidate
+		}
+	}
+	return nil
+}
+
+func lastModuleExportNameChild(node *sitter.Node) *sitter.Node {
+	if node == nil {
+		return nil
+	}
+	for index := node.ChildCount(); index > 0; index-- {
+		candidate := node.Child(index - 1)
+		if isModuleExportNameNode(candidate) {
+			return candidate
+		}
+	}
+	return nil
+}
+
+func isModuleExportNameNode(node *sitter.Node) bool {
+	if node == nil {
+		return false
+	}
+	if isIdentifierLike(node) {
+		return true
+	}
+	switch node.Kind() {
+	case "default", "string":
+		return true
+	default:
+		return false
+	}
+}
+
+func (c *collector) moduleExportName(node *sitter.Node) string {
+	if node == nil {
+		return ""
+	}
+	name := c.text(node)
+	if node.Kind() == "string" {
+		return stripQuotes(name)
+	}
+	return name
 }
 
 func containsNodeKind(node *sitter.Node, kind string) bool {

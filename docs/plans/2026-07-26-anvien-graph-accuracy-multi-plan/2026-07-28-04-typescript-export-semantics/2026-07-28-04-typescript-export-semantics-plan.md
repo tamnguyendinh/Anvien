@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P4-A committed at 479e8ac229a17f2f6f94be9a4d04e07d74ac4d43 / P4-B source-build-boundary-cleanup-Supervisor PASS / P4-B detect and isolated commit pending / P4-B1 locked`
+- Status: `P4-A committed at 479e8ac229a17f2f6f94be9a4d04e07d74ac4d43 / P4-B committed at 11a37aa8ec0320dd93258c058b088d1070aa778d / P4-B1 source-build-boundary-Supervisor PASS / Main detect and isolated commit pending / P4-C and later slices locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md`
@@ -209,7 +209,7 @@ Out of scope:
     - Actual-status rows refreshed: direct export extraction and negative controls.
   - Evidence Targets: syntax oracle, fact counts/fields, visibility preservation, build, Supervisor, detect-changes, commit.
   - Actual-status Update: transition direct-export extraction and cleanup to `correct`; leave re-export syntax and all graph/persistence projection pending.
-  - Current State (2026-08-21): `E4-P4B-IMPACT1`, `E4-P4B-SRC1`, `E4-P4B-BUILD1`, `E4-P4B-TEST1`, `E4-P4B-BOUNDARY1`, and `E4-P4B-REVIEW1` are PASS on the exact three-file candidate. The sole REVIEW1 cleanup finding `.tmp/p4b_ast_probe/` is closed by the resubmission report; `E4-P4B-DETECT1` and `E4-P4B-COMMIT1` remain Main-owned pending gates.
+  - Current State (2026-08-21): `E4-P4B-IMPACT1`, `E4-P4B-SRC1`, `E4-P4B-BUILD1`, `E4-P4B-TEST1`, `E4-P4B-BOUNDARY1`, `E4-P4B-REVIEW1`, `E4-P4B-DETECT1`, and `E4-P4B-COMMIT1` are closed at isolated commit `11a37aa8ec0320dd93258c058b088d1070aa778d`; the documentation lag is reconciled and P4-B is not reopened.
   - Commit Boundary: one P4-B commit.
 
 - [ ] P4-B1: Extract star/namespace/re-export syntax facts.
@@ -246,7 +246,7 @@ Out of scope:
        - Render location check: evidence ledger and focused test output.
        - Mini QA: exercise the built provider/ScopeIR boundary and record the result.
        - Evidence target: `E4-P4B1-BUILD1`, `E4-P4B1-TEST1`, `E4-P4B1-BOUNDARY1`, `E4-P4B1-REVIEW1`, `E4-P4B1-DETECT1`, `E4-P4B1-COMMIT1`.
-  - Implementation Gate: P4-B accepted and committed; the Child 04/05 ownership boundary is explicit.
+  - Implementation Gate: P4-B is accepted and committed at `11a37aa8ec0320dd93258c058b088d1070aa778d`; the Child 04/05 ownership boundary is explicit.
   - Acceptance:
     - Source: each supported re-export specifier emits one immutable syntax fact with exact fields.
     - Runtime/UI: N/A; provider/ScopeIR syntax output is the real boundary.
@@ -257,6 +257,7 @@ Out of scope:
     - Actual-status rows refreshed: re-export syntax and Child 05 input boundary.
   - Evidence Targets: re-export syntax oracle, zero-derived-state assertion, build, Supervisor, detect-changes, commit.
   - Actual-status Update: transition re-export syntax to `correct`; keep terminal resolution out of scope.
+  - Current State (2026-08-21): `E4-P4B1-IMPACT1`, `E4-P4B1-SRC1`, `E4-P4B1-BUILD1`, `E4-P4B1-TEST1`, `E4-P4B1-BOUNDARY1`, and independent `E4-P4B1-REVIEW1` are PASS on the exact two-file candidate. Main-owned `E4-P4B1-DETECT1` and `E4-P4B1-COMMIT1` remain pending; P4-C/P4-C2/Child 05 stay locked.
   - Commit Boundary: one P4-B1 commit.
 
 - [ ] P4-C: Project export facts through the current graph and affected persistence owners.

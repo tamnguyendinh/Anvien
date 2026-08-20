@@ -49,8 +49,13 @@
 | P4-B | nearest provider/ScopeIR boundary packages | passed packages / selected packages | 0/0 | 3/3 | 3/3 | 3/3 | +3/3 | `E4-P4B-BOUNDARY1` |
 | P4-B | excluded graph inventory at review basis | scanned / parsed / failed | 1,130 / 626 / 0 | 1,136 / 626 / 0 | 1,136 / 626 / 0 | current closure basis | +6 / 0 / 0 | `E4-P4B-IMPACT1` |
 | P4-B | excluded graph inventory at review basis | nodes / relationships | 81,132 / 120,514 | 81,772 / 121,285 | 81,772 / 121,285 | current closure basis | +640 / +771 | `E4-P4B-IMPACT1` |
-| P4-B1 | named/star/namespace/type-only re-export syntax cases | first-class fact paths / inventoried classes | 0/4; two import-compatibility paths exist | pending | pending | 4/4 | pending | `E0-P0A-SRC1`, `E4-P4B1-TEST1` |
-| P4-B1 | terminal-resolution fields populated by Child 04 | fields | 0 current Child 04 fields | pending | pending | 0 | pending | `E0-P0A-SRC1`, `E4-P4B1-BOUNDARY1` |
+| P4-B1 | named/star/namespace/type-only re-export syntax cases | first-class fact paths / inventoried classes | 0/4; two import-compatibility paths exist | 4/4 | 4/4 | 4/4 | +4/4 | `E4-P4B1-TEST1`, `E4-P4B1-BOUNDARY1` |
+| P4-B1 | comment-bearing recovered valid siblings | valid facts / expected facts | 1/2 per legal comment placement | 2/2 per placement | 2/2 per placement | 2/2 | +1 per placement | `E4-P4B1-BOUNDARY1`, `E4-P4B1-REVIEW1` |
+| P4-B1 | malformed recovered alias diagnostics | diagnostics / malformed sites | 0/2 exact comment cases | 1/1 per case | 1/1 per case | 1/1 | +1 per case | `E4-P4B1-TEST1`, `E4-P4B1-BOUNDARY1` |
+| P4-B1 | derived compatibility imports | imports / valid facts | 1/2 per legal comment placement | 2/2 per placement | 2/2 per placement | 2/2 | +1 per placement | `E4-P4B1-BOUNDARY1` |
+| P4-B1 | terminal-resolution fields populated by Child 04 | fields | 0 current Child 04 fields | 0/7 | 0/7 | 0 | 0 | `E4-P4B1-BOUNDARY1`, `E4-P4B1-REVIEW1` |
+| P4-B1 | excluded graph inventory at final closure basis | scanned / parsed / failed | 1,136 / 626 / 0 | 1,146 / 626 / 0 | 1,146 / 626 / 0 | current closure basis | +10 / 0 / 0 | `E4-P4B1-DETECT1` |
+| P4-B1 | excluded graph inventory at final closure basis | nodes / relationships | 81,772 / 121,285 | 82,079 / 121,780 | 82,079 / 121,780 | current closure basis | +307 / +495 | `E4-P4B1-DETECT1` |
 | P4-C | graph direct-export fact conservation | graph records / accepted facts | 0/0; no source export collection | pending | pending | 1.0 exactly | pending | `E0-P0A-SRC1`, `E4-P4C-TEST1` |
 | P4-C | compatibility-field drift from source export fact | differing records | no source fact; current dialects are `visibility` and `isExported` | pending | pending | 0 | pending | `E0-P0A-SRC1`, `E4-P4C-TEST1` |
 | P4-C | affected persistence field differences | differing fields | at least one known dialect mismatch; Ladybug drops `visibility` | pending | pending | 0 | pending | `E0-P0A-SRC1`, `E4-P4C-BOUNDARY1` |
