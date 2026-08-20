@@ -109,7 +109,7 @@ Exact symbol impacts further constrain the slices: `DefinitionFact` CRITICAL `19
 
 ## E4 - P4 Evidence
 
-P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below. The isolated commit remains pending; every later slice remains reserved and locked.
+P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, with isolated commit `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43`; every later slice remains reserved and locked.
 
 ### P4-A — export fact, meaning, and visibility boundary
 
@@ -186,7 +186,7 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below. Th
 | `E4-P4B1-BOUNDARY1` | real provider/ScopeIR re-export syntax output | recorded — independent parser → Extract → ScopeIR probes pass comment-after-comma, comment-before-comma, no-comment, and newline at `2/1/2`, exact fields, no Broken, zero terminal state |
 | `E4-P4B1-REVIEW1` | independent Supervisor PASS | recorded — `reports/Supervisor/rp_supervisor_260821_031004_by_gpt-5_child04_p4b1_comment_recovery_review3.md`, `11,830` bytes / `136` LF / SHA-256 `07DD5BB92F169C5923C0DBCB597F914A28E594496ACDADB55D41F13DE364421C` |
 | `E4-P4B1-DETECT1` | pre-commit Anvien detect-changes result | recorded — final exit `0`; `305` changed semantic units, `7` changed/affected files, `1` affected process, MEDIUM risk; changed layers backend `219`, backend_test `61`, docs `25`; `totalResolutionGapCount=0`, `nodesWithGaps=0`, `degradedNodes=0`, complete semantic fields; final graph `1,146/626/0`, `82,079/121,780` |
-| `E4-P4B1-COMMIT1` | isolated accepted slice commit | pending |
+| `E4-P4B1-COMMIT1` | isolated accepted slice commit | recorded — `42d167aaf28446ac0b3de479a8afefabb8d06736`; final handoff HEAD `a12e0ccb77bda7da8aad2ec29b8050b55f81bc08`; worktree/index clean; no push |
 
 ### P4-C — graph and affected persistence projection
 
@@ -223,7 +223,7 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below. Th
 | `E4-PNC-COMMIT1` | final known commit/worktree state | pending |
 | `E4-PNC-HANDOFF1` | Child 05 actual-status refreshed from accepted immutable syntax/direct-export results and exact opening condition recorded | pending |
 
-P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance is recorded; Main-owned detect and isolated commit remain pending.
+P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed; P4-C/P4-C2/Child 05 remain locked.
 
 ### `E4-P4B-SOURCE1` — source and cleanup clearance
 
@@ -252,3 +252,8 @@ P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa7
 - Result: final exit `0`; `305` changed semantic units; `7` changed files and `7` affected files; one affected provider process; overall risk `MEDIUM`; changed app layers `backend=219`, `backend_test=61`, `docs=25`; changed functional areas `providers=280`, `documentation=25`.
 - Resolution inventory reports changed gap entities but persisted resolution health remains clean: `totalResolutionGapCount=0`, `nodesWithGaps=0`, `degradedNodes=0`; semantic app/functional fields are complete.
 - Final excluded graph basis is `1,146/626/0` scanned/parsed/failed with `82,079/121,780` nodes/relationships. Changed path set is the exact two production/test candidate files plus the five Child 04 living plan documents. Untracked reports/provenance remain outside the semantic changed-file set and are staged only in the explicit report/provenance boundary.
+
+### `E4-P4B1-COMMIT1` — isolated slice closure
+
+- Isolated implementation commit: `42d167aaf28446ac0b3de479a8afefabb8d06736` (`feat(tsjs): recover comment-bearing re-export siblings`), with exact P4-B1 production/test boundary and the accepted ledger/report updates.
+- Final handoff documentation commit: `a12e0ccb77bda7da8aad2ec29b8050b55f81bc08`; `git status --short --branch` is clean (branch is ahead of origin; no push), and P4-C/P4-C2/Child 05/target access remain locked.

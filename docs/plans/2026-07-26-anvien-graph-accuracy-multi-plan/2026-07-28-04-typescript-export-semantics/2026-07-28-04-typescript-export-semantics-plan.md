@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P4-A committed at 479e8ac229a17f2f6f94be9a4d04e07d74ac4d43 / P4-B committed at 11a37aa8ec0320dd93258c058b088d1070aa778d / P4-B1 source-build-boundary-Supervisor PASS / Main detect and isolated commit pending / P4-C and later slices locked`
+- Status: `P4-A committed at 479e8ac229a17f2f6f94be9a4d04e07d74ac4d43 / P4-B committed at 11a37aa8ec0320dd93258c058b088d1070aa778d / P4-B1 committed at 42d167aaf28446ac0b3de479a8afefabb8d06736 with source-build-boundary-Supervisor-detect PASS / P4-C and later slices locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md`
@@ -212,7 +212,7 @@ Out of scope:
   - Current State (2026-08-21): `E4-P4B-IMPACT1`, `E4-P4B-SRC1`, `E4-P4B-BUILD1`, `E4-P4B-TEST1`, `E4-P4B-BOUNDARY1`, `E4-P4B-REVIEW1`, `E4-P4B-DETECT1`, and `E4-P4B-COMMIT1` are closed at isolated commit `11a37aa8ec0320dd93258c058b088d1070aa778d`; the documentation lag is reconciled and P4-B is not reopened.
   - Commit Boundary: one P4-B commit.
 
-- [ ] P4-B1: Extract star/namespace/re-export syntax facts.
+- [x] P4-B1: Extract star/namespace/re-export syntax facts.
   - Goal: record re-export syntax completely without choosing terminal declarations.
   - Scope Boundary:
     - Editable: exact re-export syntax owner and focused test owner.
@@ -257,7 +257,7 @@ Out of scope:
     - Actual-status rows refreshed: re-export syntax and Child 05 input boundary.
   - Evidence Targets: re-export syntax oracle, zero-derived-state assertion, build, Supervisor, detect-changes, commit.
   - Actual-status Update: transition re-export syntax to `correct`; keep terminal resolution out of scope.
-  - Current State (2026-08-21): `E4-P4B1-IMPACT1`, `E4-P4B1-SRC1`, `E4-P4B1-BUILD1`, `E4-P4B1-TEST1`, `E4-P4B1-BOUNDARY1`, and independent `E4-P4B1-REVIEW1` are PASS on the exact two-file candidate. Main-owned `E4-P4B1-DETECT1` and `E4-P4B1-COMMIT1` remain pending; P4-C/P4-C2/Child 05 stay locked.
+  - Current State (2026-08-21): `E4-P4B1-IMPACT1`, `E4-P4B1-SRC1`, `E4-P4B1-BUILD1`, `E4-P4B1-TEST1`, `E4-P4B1-BOUNDARY1`, independent `E4-P4B1-REVIEW1`, Main-owned `E4-P4B1-DETECT1`, and `E4-P4B1-COMMIT1` are PASS/closed on the exact two-file candidate at isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736`. Final handoff HEAD is `a12e0ccb77bda7da8aad2ec29b8050b55f81bc08`, worktree/index are clean, and no push occurred; P4-C/P4-C2/Child 05 stay locked.
   - Commit Boundary: one P4-B1 commit.
 
 - [ ] P4-C: Project export facts through the current graph and affected persistence owners.
