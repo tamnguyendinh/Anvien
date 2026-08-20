@@ -78,7 +78,7 @@ All five P0-A current-state IDs were independently Supervisor-accepted with no u
 
 ## E3 - P3 Evidence
 
-Rows below preserve the complete review and commit history. P3-A through P3-B2A retain their accepted isolated boundaries. P3-C preserves `E3-P3C-REVIEW1` as the exact-owner-scope `REJECT`, closes that blocker with focused `E3-P3C-REVIEW2` `PASS`, records final staged `E3-P3C-DETECT1` `378/14/14` with graph health `0/0/0`, and is committed at `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`. P3-C2 is the sole open slice and records `E3-P3C2-ORACLE1`, `E3-P3C2-TARGET1`, `E3-P3C2-BOUNDARY1`, and independent `E3-P3C2-REVIEW1` as `PASS`; only final detect and isolated commit remain. `Pn-A` and later slices stay locked until `E3-P3C2-COMMIT1` succeeds.
+Rows below preserve the complete review and commit history. P3-A through P3-B2A retain their accepted isolated boundaries; P3-C is committed at `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`; P3-C2 is committed at `8784c6c21da842b188f136b95ec97ab8df9f20e8`. Aggregate `E3-PNA-REVIEW1` independently accepts all seven slices and closes the complete current Child 03 binding-pattern invariant. Removed historical artifacts are not present and not relied upon under latest Owner authority; their absence is not an evidence-integrity gate. `Pn-B` is the sole open lane.
 
 ### P3-A — binding contract and recursive walker
 
@@ -269,11 +269,11 @@ Opening basis (2026-08-15): predecessor gate `E3-P3B2-COMMIT1` is satisfied by p
 
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
-| `E3-PNA-REVIEW1` | final Supervisor review across all seven slices and retained evidence | pending |
+| `E3-PNA-REVIEW1` | final Supervisor review across all seven slices and current source/evidence reality | `PASS`; aggregate invariant closed with no residual same-invariant surface |
 | `E3-PNB-CLEAN1` | dead child-created artifacts removed; valid evidence retained | pending |
 | `E3-PNB-REVIEW1` | Supervisor PASS for cleanup | pending |
 | `E3-PNC-DETECT1` | final detect-changes result for implementation scope | pending |
 | `E3-PNC-COMMIT1` | final known commit/worktree state | pending |
 | `E3-PNC-HANDOFF1` | Child 04 actual-status refreshed from accepted Child 03 results and exact opening condition recorded | pending |
 
-P3-A through P3-B2A retain their accepted review/detect/commit histories. P3-C preserves immutable `E3-P3C-REVIEW1` `REJECT`, closes it with focused `E3-P3C-REVIEW2` `PASS`, records final staged `E3-P3C-DETECT1` `378/14/14` with current health `0/0/0`, and is committed at `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`. P3-C2 records `ORACLE1/TARGET1/BOUNDARY1/REVIEW1` `PASS`, final staged `DETECT1` `648/17/17` with current health `0/0/0`, and closes at this exact isolated `COMMIT1` boundary. `Pn-A` opens automatically only after Git reports commit success.
+`E3-PNA-REVIEW1`: independent Supervisor returned `PASS` in `reports/Supervisor/rp_supervisor_260820_175806_by_gpt-5_e3_pna_review1.md` (`31,921` bytes / `366` LF lines / SHA-256 `7B8F0D1292C0CA754862AC59C229C6E224C8CD88CBDDAA9BDEE961D193C2847D`). Main independently re-read the complete report, recomputed its identity, verified all seven commits are ancestors with exact manifests `14/13/17/11/14/14/17`, confirmed current `HEAD/parent` `8784c6c21da842b188f136b95ec97ab8df9f20e8` / `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`, and rechecked the frozen QA/recovery/Main-verification/probe hashes. The review source-clears the full recursive leaf/context/projection/persistence/reference invariant, preserves every substantive REJECT-to-PASS closure, and finds no residual same-invariant surface. Historical artifacts removed by Owner cleanup are recorded only as not present/not relied upon; they are not a blocker or a reconstruction requirement. This closes Pn-A and opens only Pn-B; Pn-C and Child 04 remain locked.

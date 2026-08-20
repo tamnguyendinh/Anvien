@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / Child 02 closed at 181b8cb8 / P0-A through P3-B2A committed / P3-C committed at 656a0445 / P3-C2 ORACLE1-TARGET1-BOUNDARY1-REVIEW1 PASS / final staged detect 648-17-17 / isolated commit boundary is this commit / Pn-A opens automatically after commit success`
+- Status: `active / all seven P3 slices committed / P3-C2 committed at 8784c6c2 / E3-PNA-REVIEW1 PASS / Pn-B sole open lane / Pn-C and Child 04 locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md`
@@ -96,7 +96,7 @@ Out of scope:
     4. Classify correct, partial, wrong, missing, and blocked rows in actual status; update P3-A work steps if exact ownership differs from this plan.
   - Implementation Gate: the accepted Child 02 handoff is recorded as `E0-P0A-HANDOFF1` and its Pn-C commit is confirmed; no production edit until the actual-status Final P0 Decision permits P3-A.
   - Acceptance: `E0-P0A-HANDOFF1`, `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2`, `E0-P0A-SCOPE1`, `E0-P0A-GRAPH1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1`, `E0-P0A-STATUS1`, and independent `E0-P0A-REVIEW1` are recorded with no unresolved owner boundary; `E0-P0A-DETECT1` and `E0-P0A-COMMIT1` close the isolated documentation/evidence boundary.
-  - Current State: Child 02 is closed at `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`; P0-A through P3-B2A retain their accepted isolated commit boundaries. P3-C retains immutable `E3-P3C-REVIEW1` `REJECT`, closes it with focused `E3-P3C-REVIEW2` `PASS`, records final `E3-P3C-DETECT1` `378/14/14` with health `0/0/0`, and is committed at `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`. P3-C2 is the sole open slice and records `E3-P3C2-ORACLE1`, `E3-P3C2-TARGET1`, and `E3-P3C2-BOUNDARY1` `PASS` plus independent `E3-P3C2-REVIEW1` `PASS`. Only final `E3-P3C2-DETECT1` and isolated `E3-P3C2-COMMIT1` remain; `Pn-A` and later slices stay locked until that commit succeeds.
+  - Current State: Child 02 is closed at `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`; all seven P3 slices retain accepted isolated commit boundaries through P3-C2 `8784c6c21da842b188f136b95ec97ab8df9f20e8`. Aggregate `E3-PNA-REVIEW1` is `PASS`; current source, manifests, accepted final-byte gates, benchmark rows, retained target provenance, and Git isolation close the complete Child 03 binding-pattern invariant. Historical artifacts absent after Owner cleanup are not relied upon and are not acceptance gates. `Pn-B` is the sole open lane; `Pn-C`, Child 04, and every later lane remain locked.
   - Commit Boundary: four Child 03 ledgers, one QA report, immutable prior REJECT provenance, and two independent PASS reports; no production/test/fixture/target/runtime path.
 
 ### P3: TypeScript binding-pattern extraction
@@ -521,11 +521,12 @@ Out of scope:
     - [x] Create only the isolated `E3-P3C2-COMMIT1`; this checklist is part of that exact commit boundary, whose hash is reported by Git/handoff; do not push; `Pn-A` opens automatically only after Git reports commit success.
   - Detect and Commit Closure (2026-08-20): the exact staged P3-C2 manifest is `17/17` with unstaged/untracked `0/0`. Excluded graph `1,120/626/0`, `80,799/120,058`, five-document file-detail/impact, and full/JSON staged detect all pass. Final `E3-P3C2-DETECT1` is `648` changed symbols / `17` changed files / `17` affected files, summary `CRITICAL`, file-layer `HIGH`, `16` affected processes confined to the reviewed probe command, gap delta `244/249`, and current health `0/0/0`. This checklist and `E3-P3C2-COMMIT1` are satisfied by the isolated commit containing these exact final bytes; `Pn-A` opens automatically only after Git reports commit success.
 
-- [ ] Pn-A: Run the Supervisor acceptance loop.
+- [x] Pn-A: Run the Supervisor acceptance loop.
   - Goal: independently verify all seven slices, source diff, build, real-boundary results, benchmark, target boundary, and evidence integrity.
   - Work Steps: invoke the Supervisor skill; return only rejected invariants to the owning slice; repeat until PASS or a documented blocker.
   - Implementation Gate: every P3 slice is accepted and its isolated commit exists; specifically, `E3-P3C2-COMMIT1` must succeed before this lane opens.
   - Acceptance: `E3-PNA-REVIEW1` records Supervisor PASS or a precise blocker; no self-acceptance is used.
+  - Acceptance Checkpoint (2026-08-20): independent `E3-PNA-REVIEW1` returned `PASS` in `reports/Supervisor/rp_supervisor_260820_175806_by_gpt-5_e3_pna_review1.md` (`31,921` bytes / `366` LF lines / SHA-256 `7B8F0D1292C0CA754862AC59C229C6E224C8CD88CBDDAA9BDEE961D193C2847D`). All seven commit manifests/ancestry, current source, retained build/test/real-boundary evidence, benchmark rows, P3-C2 raw-rollout provenance, frozen hashes, and Git isolation are independently cleared with no residual same-invariant surface. Latest Owner authority makes removed historical artifacts non-gating; the review does not rely on or reconstruct them. `Pn-B` opens as the sole next lane; no code/test/target repair, commit, or push is authorized here.
 - [ ] Pn-B: Remove dead work created by this child.
   - Goal: leave no superseded fixture, debug output, failed evidence, duplicate report, or rejected approach.
   - Work Steps: inventory child-created artifacts, remove only dead child work, and obtain Supervisor review of cleanup.

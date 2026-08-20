@@ -75,6 +75,7 @@ These are graph/inventory counts at HEAD `181b8cb8`, not product runtime-perform
 
 ## Non-Benchmarkable Notes
 
+- `E3-PNA-REVIEW1` is an aggregate acceptance gate, not a benchmark. It preserves the accepted P3 measurements above unchanged and introduces no new runtime-performance, capacity, package-size, or graph-inventory claim.
 - Report/authority classification, file ownership, Supervisor verdicts, full-build results, detect-changes, and commits are evidence gates rather than benchmark metrics.
 - P3-C's excluded self-index graph inventory and build/test timings are verification context, not product performance benchmarks; the canonical unexcluded graph is not evidence.
 - No global TypeScript accuracy percentage is claimed by this child.
