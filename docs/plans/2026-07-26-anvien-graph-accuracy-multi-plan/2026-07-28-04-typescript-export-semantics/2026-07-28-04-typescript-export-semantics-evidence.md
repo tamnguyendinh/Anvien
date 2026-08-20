@@ -41,13 +41,71 @@ Matching plan item: `P0-A`
 
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
-| `E0-P0A-GRAPH1` | fresh analyze and current HEAD/source basis after plan correction | pending |
-| `E0-P0A-SRC1` | full current-source inventory of export facts, direct/re-export syntax, compatibility fields, graph projection, persistence, actual consumers, and relevant tests | pending |
-| `E0-P0A-FD1` | exact `file-detail` outputs and related-file counts for every candidate editable file | pending |
-| `E0-P0A-IMPACT1` | exact upstream impacts and blast-radius report for every candidate function/method/exported symbol | pending |
-| `E0-P0A-STATUS1` | completed current status matrix, touch map, R1 refresh, and Final P0 Decision | pending |
+| `E0-P0A-GRAPH1` | fresh analyze and current HEAD/source basis after plan correction | recorded — excluded graph current at `3e25f9ca75c9cb7d59bf228e6cc9aa0b81d738b4`; `1,126/626/0`, `80,908/120,167` |
+| `E0-P0A-SRC1` | full current-source inventory of export facts, direct/re-export syntax, compatibility fields, graph projection, persistence, actual consumers, and relevant tests | recorded — owner/syntax/consumer/persistence matrix below |
+| `E0-P0A-FD1` | exact `file-detail` outputs and related-file counts for every candidate editable file | recorded — current/non-stale counts below |
+| `E0-P0A-IMPACT1` | exact upstream impacts and blast-radius report for every candidate function/method/exported symbol | recorded — default upstream file and symbol impacts below |
+| `E0-P0A-STATUS1` | completed current status matrix, touch map, R1 refresh, and Final P0 Decision | recorded — P0 complete; P4-A work steps narrowed to the four deterministic-contract owners |
 
-P0 remains incomplete until all five current-state rows are recorded. The completed report-reading rows do not substitute for them.
+### P0-A current graph and Git basis
+
+- `E0-P0A-GRAPH1`: at clean HEAD `3e25f9ca75c9cb7d59bf228e6cc9aa0b81d738b4`, `anvien analyze . --force --exclude "internal/aicontext/skills/**" --exclude ".claude/skills/**"` exited `0`: scanned `1,126`, parsed code `626`, failed `0`, graph `80,908` nodes / `120,167` relationships. `anvien status` reports indexed/current commit `3e25f9c` and up-to-date.
+- Roadmap and all four Child 04 ledgers are LOW, non-stale, with related-file counts `28/1/1/1/1`; upstream file impact is LOW with `0` impacted files/flows for every document.
+- Graph-backed API discovery returned no extracted route/tool definitions even though source registers graph/file-context handlers. This is recorded as a route/tool extraction limitation; HTTP/MCP classification below comes from full source reads, not a false no-surface conclusion.
+
+### P0-A current source and syntax inventory
+
+- `E0-P0A-SRC1`: `internal/scopeir/facts.go` contains `DefinitionFact.Visibility`, `ImportFact`, and binding-oriented `ExtractionDiagnosticFact`, but no `ExportFact`, export kind/meaning enum, export provenance contract, or export diagnostic code. `internal/scopeir/ir.go` has no export collection; `internal/scopeir/sort_keys.go` has no export comparator.
+- The sole current TypeScript export syntax method is `internal/providers/tsjs/imports.go::collector.emitExportStatement`. A source-less `export_statement` returns immediately, so direct declarations, local export lists, default exports, and type-only direct/local forms emit no export fact or diagnostic. A source-bearing named re-export becomes `ImportReexport`; `export *` becomes `ImportWildcard`; namespace aliases and type-only markers are lost. `internal/providers/tsjs/definitions.go` still emits named declarations under export wrappers but never populates `DefinitionFact.Visibility`; anonymous default expressions have no definition owner.
+- Current relevant tests prove only import compatibility: `internal/providers/tsjs/extract_test.go` and `internal/providers/provider_parity_test.go` assert named re-export as `ImportFact`, while the direct JavaScript export fixture asserts only the definition. `internal/scopeir/scopeir_test.go` and `internal/scopeir/testdata/scopeir.golden.json` have no export collection/fact.
+- `internal/resolution/emit.go::emitDefinitionNodes` maps only `DefinitionFact.Visibility` to graph property `visibility`. No TSJS writer populates that field, and no emitter writes `isExported` for these facts. Current Cypher confirms property `visibility` is absent; `isExported` exists on `5,714` nodes but is `true` on `0` and `false` on all `5,714`.
+- Graph JSON serialization is generic and preserves arbitrary node properties. Ladybug is field-specific: `internal/lbugload/csv.go::nodeCSVRow` and `internal/lbugschema/schema.go::NodeSchema` persist `isExported` only for Function/Class/Interface/CodeElement/Method; `visibility` is dropped, and other definition labels use schemas without an export column.
+- Proven semantic consumers are `internal/filecontext/context.go::exportedSymbol` (`exported` or `visibility=public|exported`), `internal/graphhealth/compute.go` (`isExported` topology/reason), `internal/processes/processes.go::findEntryPoints` (`isExported` score), `internal/embeddings/text.go::NodesFromGraph` (`isExported` text/hash), and Ladybug CSV/schema. CLI/MCP/HTTP file-context surfaces consume the derived file-context result; `/api/graph` transports raw properties. Web files and generated contracts are carriers/non-consumers for this behavior.
+- Child 05 remains preserve-only: `ImportFact.TargetFile`, `TargetExportedName`, `TargetModuleScope`, `TargetDefID`, `TransitiveVia`, `LinkStatus`, barrel traversal, ambiguity, cycles, and terminal/public-API outcomes are not Child 04 facts.
+
+### P0-A file-detail evidence
+
+`E0-P0A-FD1` uses `anvien file-detail <path> --repo E:\Anvien --json` against the fresh excluded graph. Related count excludes the target file.
+
+| File | Symbols | Related | In / Out / Local | Unresolved | Flows / Tests | Risk |
+|------|--------:|--------:|------------------:|-----------:|--------------:|------|
+| `internal/scopeir/facts.go` | 164 | 245 | 1096 / 22 / 148 | 5 | 0 / 98 | MEDIUM |
+| `internal/scopeir/kinds.go` | 87 | 239 | 613 / 0 / 8 | 0 | 0 / 97 | LOW |
+| `internal/scopeir/ir.go` | 47 | 243 | 1094 / 34 / 75 | 138 | 3 / 96 | HIGH |
+| `internal/scopeir/sort_keys.go` | 96 | 239 | 250 / 102 / 41 | 109 | 2 / 95 | HIGH |
+| `internal/providers/tsjs/definitions.go` | 129 | 24 | 8 / 107 / 14 | 308 | 2 / 4 | HIGH |
+| `internal/providers/tsjs/imports.go` | 29 | 17 | 7 / 26 / 1 | 52 | 1 / 4 | HIGH |
+| `internal/providers/tsjs/extract.go` | 36 | 25 | 24 / 32 / 29 | 68 | 3 / 6 | HIGH |
+| `internal/resolution/emit.go` | 108 | 43 | 43 / 166 / 63 | 310 | 12 / 17 | HIGH |
+| `internal/lbugload/csv.go` | 192 | 21 | 55 / 53 / 92 | 200 | 2 / 8 | HIGH |
+| `internal/lbugschema/schema.go` | 41 | 21 | 52 / 8 / 29 | 50 | 1 / 6 | HIGH |
+| `internal/filecontext/context.go` | 552 | 44 | 337 / 88 / 565 | 542 | 51 / 8 | HIGH |
+| `internal/mcp/context.go` | 165 | 28 | 48 / 111 / 50 | 261 | 24 / 2 | HIGH |
+
+### P0-A impact and ownership decision
+
+`E0-P0A-IMPACT1` uses default upstream impact without `--include-tests`; linked-test counts remain in `E0-P0A-FD1`.
+
+| File | Risk | Impacted / Direct / Files / Flows |
+|------|------|-----------------------------------:|
+| `internal/scopeir/facts.go` | CRITICAL | 340 / 107 / 76 / 1 |
+| `internal/scopeir/kinds.go` | CRITICAL | 1354 / 143 / 182 / 1 |
+| `internal/scopeir/ir.go` | CRITICAL | 123 / 54 / 30 / 1 |
+| `internal/scopeir/sort_keys.go` | HIGH | 23 / 20 / 3 / 1 |
+| `internal/providers/tsjs/definitions.go` | MEDIUM | 10 / 10 / 2 / 1 |
+| `internal/providers/tsjs/imports.go` | LOW | 1 / 1 / 1 / 0 |
+| `internal/providers/tsjs/extract.go` | CRITICAL | 24 / 11 / 11 / 1 |
+| `internal/resolution/emit.go` | CRITICAL | 26 / 20 / 5 / 1 |
+| `internal/lbugload/csv.go` | CRITICAL | 45 / 28 / 16 / 1 |
+| `internal/lbugschema/schema.go` | CRITICAL | 55 / 26 / 27 / 1 |
+| `internal/filecontext/context.go` | CRITICAL | 252 / 134 / 32 / 1 |
+| `internal/mcp/context.go` | CRITICAL | 48 / 39 / 12 / 1 |
+
+Exact symbol impacts further constrain the slices: `DefinitionFact` CRITICAL `194/42/24/83` impacted/direct/modules/processes; `ScopeIR` CRITICAL `122/53/26/90`; `ExtractionDiagnosticFact` CRITICAL `138/4/24/84`; `Extract` CRITICAL `11/3/8/35`; `emitDefinitionNodes` CRITICAL `6/1/4/33`; `exportedSymbol` CRITICAL `9/3/3/24`; `nodeCSVRow` CRITICAL `3/1/1/12`; `contextMethodMetadata` CRITICAL `2/1/1/7`; `NodeSchema` LOW `3/1/2/0`. `collector.emitDefinitionKind`, `collector.emitImportKind`, `collector.emitExportStatement`, and `collector.result` are LOW with zero symbol-level downstream impact.
+
+`E0-P0A-STATUS1`: CRITICAL/HIGH results are blast-radius warnings, not edit bans. P4-A is narrowed to the four deterministic contract owners (`facts.go`, `kinds.go`, `ir.go`, `sort_keys.go`) plus `scopeir_test.go`/golden after production code. TSJS extraction stays inspect-only until P4-B/B1; projection/persistence/compatibility consumers stay inspect-only until P4-C and receive fresh slice-local impact before edits. Current ownership is resolved, P4-A work steps are updated, and no target or production byte was changed by P0-A.
+
+`E0-P0A-DETECT1`: fresh excluded staged graph is `1,126/626/0` with `80,913/120,172` nodes/relationships. Full and JSON staged detection are `PASS`: `29` changed documentation sections, `5` changed files, `5` affected files, LOW risk, affected processes/flows `0/0`, gap delta `0/0`, health `0/0/0`, and complete semantic fields. Changed and affected path sets equal the exact roadmap-plus-four-ledger manifest.
 
 ## E4 - P4 Evidence
 

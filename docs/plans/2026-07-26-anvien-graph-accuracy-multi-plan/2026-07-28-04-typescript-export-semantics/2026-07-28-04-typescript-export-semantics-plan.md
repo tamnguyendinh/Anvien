@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `draft / P0 incomplete`
+- Status: `P0-A current-state complete by isolated documentation boundary / P4-A opens after Git commit success`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md`
@@ -89,7 +89,7 @@ Out of scope:
 
 ## Checklist
 
-- [ ] P0-A: Complete current actual status before implementation.
+- [x] P0-A: Complete current actual status before implementation.
   - Goal: replace historical assumptions with current source, graph, impact, and affected-surface evidence for export semantics.
   - Work Steps:
     1. Refresh the Anvien graph and record current HEAD/source basis.
@@ -98,6 +98,8 @@ Out of scope:
     4. Run `file-detail` and upstream `impact` for every candidate owner; classify exact edit/inspect/preserve modes and update P4-A if ownership differs.
   - Implementation Gate: no production edit until the actual-status Final P0 Decision permits P4-A.
   - Acceptance: `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2`, `E0-P0A-SCOPE1`, `E0-P0A-GRAPH1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1`, and `E0-P0A-STATUS1` are recorded with no unresolved export-owner boundary.
+  - Current State (2026-08-20): fresh excluded graph evidence is current at HEAD `3e25f9ca75c9cb7d59bf228e6cc9aa0b81d738b4`; current source, syntax gaps, compatibility consumers, persistence drift, file-detail counts, and upstream impacts are recorded. The P0 decision requires a P4-A work-step update because the deterministic contract spans four existing owners rather than one file.
+  - Commit Boundary: roadmap plus the four Child 04 living ledgers only; documentation-only, no production/test/fixture/generated/target path, no push. P4-A opens only after Git commits this exact boundary.
 
 ### P4: First-class TypeScript export semantics
 
@@ -116,8 +118,9 @@ Out of scope:
 - [ ] P4-A: Establish the export fact, meaning, and visibility boundary.
   - Goal: implement the smallest production contract that can represent module-export syntax independently from access visibility.
   - Scope Boundary:
-    - Editable: exact export fact/meaning owners selected by P0.
-    - Inspect-only: current definitions/import syntax, graph projection, persistence, and Child 05 resolver inputs.
+    - Editable: `internal/scopeir/facts.go` for fact/diagnostic shapes, `internal/scopeir/kinds.go` for export kind/meaning enums, `internal/scopeir/ir.go` for the `ScopeIR` export collection and clone/normalize/JSON path, and `internal/scopeir/sort_keys.go` for deterministic export ordering.
+    - Test-after-code: `internal/scopeir/scopeir_test.go` and `internal/scopeir/testdata/scopeir.golden.json` only.
+    - Inspect-only: `internal/providers/tsjs/{definitions.go,imports.go,extract.go}`, current graph projection/persistence consumers, and Child 05 resolver inputs.
     - Preserve-only: access visibility and existing non-export fact contracts.
     - Out of scope: AST extraction and terminal resolution.
   - Non-Goals: do not make a compatibility boolean the source of truth and do not precompute barrel/public-API state.
@@ -135,7 +138,7 @@ Out of scope:
     - External side effects: none.
     - N/A notes: UI, DB, Docker, and Playwright do not participate in this in-memory contract slice.
   - Work Steps:
-    1. Refresh graph evidence, run exact file-detail/impact, confirm one-file responsibility, and implement the production export fact/meaning contract plus structured unsupported diagnostic.
+    1. Refresh graph evidence and exact impacts, then implement the four-owner deterministic contract: fact/diagnostic shapes in `facts.go`, kind/meaning enums in `kinds.go`, `ScopeIR` collection/copy/normalize/JSON wiring in `ir.go`, and ordering in `sort_keys.go`. Do not add AST extraction, graph projection, compatibility-field writes, or terminal resolution in P4-A.
        - UI flow check: N/A; no visible flow exists.
        - DB/data flow check: verify deterministic one-site-to-one-fact serialization and access separation.
        - Render location check: N/A; inspect fact round trips.
@@ -147,7 +150,7 @@ Out of scope:
        - Render location check: evidence ledger and focused test output.
        - Mini QA: exercise the built non-UI fact boundary and record command plus result.
        - Evidence target: `E4-P4A-BUILD1`, `E4-P4A-TEST1`, `E4-P4A-BOUNDARY1`, `E4-P4A-REVIEW1`, `E4-P4A-DETECT1`, `E4-P4A-COMMIT1`.
-  - Implementation Gate: P0 complete; Child 03 handoff accepted; exact owners and the direct-versus-resolved boundary are recorded.
+  - Implementation Gate: P0 complete and committed; Child 03 handoff commit `3e25f9ca75c9cb7d59bf228e6cc9aa0b81d738b4` accepted; exact owners and the direct-versus-resolved boundary are recorded. `CRITICAL/HIGH` shared-contract impacts are scope warnings requiring the exact four-file boundary, not edit prohibitions.
   - Acceptance:
     - Source: export kind/names/ranges/meaning/type-only/provenance are representable without changing access visibility.
     - Runtime/UI: N/A; nearest real boundary is production fact serialization after the full build.
