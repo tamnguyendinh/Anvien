@@ -56,7 +56,11 @@ Do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, s
 * c. The orchestration agent (main agent) is tasked with updating the status for the plan's next phase/slice or updating the codebase's latest status for the next plan (if it is a multi-plan), then assigning work to the subagent session to execute the next phase/slice.
 * Phase C of a plan is closure/handoff docs-only; It is forbidden to open additional Supervisor loops at this slice.
 
-Here is the English translation of your orchestration documentation principles, keeping the technical terminology and professional tone intact:
+### Orchestration session rotation rules:
+
+* After exactly 60 minutes of operation, the current orchestration session must create a handoff report to transfer authority to a new orchestration session.
+* The new session continues to strictly adhere to this 60-minute handoff cycle.
+* As soon as the new session becomes active, the old session must immediately terminate.
 
 ### Documentation Principles for Orchestration:
 
