@@ -59,9 +59,9 @@ Do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, s
 ### Orchestration session rotation rules:
 
 * (MUST) After exactly 60 minutes of operation, the current orchestration session must create a handoff report to transfer authority to a new visible orchestration session.
-* The new session continues to strictly adhere to this 60-minute handoff cycle.
-* As soon as the new session becomes active, the old session must immediately terminate.
-* Upon handoff, the outgoing orchestration session must clearly document the following information for the new session: the current state of work, overall progress, and any active subagent lanes.
+* (MUST) The new session continues to strictly adhere to this 60-minute handoff cycle.
+* (MUST) As soon as the new session becomes active, the old session must immediately terminate.
+* (MUST) Upon handoff, the outgoing orchestration session must clearly document the following information for the new session: the current state of work, overall progress, and any active subagent lanes.
 
 ### Documentation Principles for Orchestration:
 
