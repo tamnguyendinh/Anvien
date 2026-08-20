@@ -94,3 +94,13 @@ These are graph/inventory counts at HEAD `181b8cb8`, not product runtime-perform
 - P3-C's excluded self-index graph inventory and build/test timings are verification context, not product performance benchmarks; the canonical unexcluded graph is not evidence.
 - Pn-B lifecycle/cleanup counts above are artifact-lifecycle measurements, not product/runtime performance or semantic-accuracy benchmarks; no build, test, QA, target, or graph-performance claim is made.
 - No global TypeScript accuracy percentage is claimed by this child.
+
+## Bn-C - Pn-C Governance Measurements
+
+| Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
+|-------|--------|------|----------|--------|-------|--------|-------|----------|
+| Pn-C | excluded graph scan | scanned / parsed / failed files | `1,124 / 626 / 0` | `1,126 / 626 / 0` | `1,126 / 626 / 0` | governance basis only | `+2 / 0 / 0` | `E3-PNC-HANDOFF1`, `E3-PNC-DETECT1` |
+| Pn-C | excluded graph inventory | nodes / relationships | `80,883 / 120,142` | `80,908 / 120,167` | `80,908 / 120,167` | governance basis only | `+25 / +25` | `E3-PNC-HANDOFF1`, `E3-PNC-DETECT1` |
+| Pn-C | staged closure boundary | changed docs / changed files / affected files | `0 / 0 / 0` | `50 / 8 / 8` | `50 / 8 / 8` | exact eight-path docs/handoff boundary | `+50 / +8 / +8` | `E3-PNC-DETECT1` |
+
+- These are excluded self-index and documentation-boundary inventory measurements only. The canonical unexcluded graph, production performance, build timing, target runtime, and semantic-accuracy claims are not introduced by Pn-C.

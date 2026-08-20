@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / all seven P3 slices committed / P3-C2 committed at 8784c6c2 / E3-PNA-REVIEW1 PASS / E3-PNB-REVIEW1 PASS / Pn-B isolated commit pending / Pn-C and Child 04 locked`
+- Status: `closed by isolated Pn-C boundary / all seven P3 slices committed / E3-PNA-REVIEW1 PASS / E3-PNB-REVIEW1 PASS / E3-PNB-COMMIT1 0231d7f9 / E3-PNC-DETECT1 50/8/8 LOW / E3-PNC-HANDOFF1 recorded / final Pn-C commit hash external`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md`
@@ -96,7 +96,7 @@ Out of scope:
     4. Classify correct, partial, wrong, missing, and blocked rows in actual status; update P3-A work steps if exact ownership differs from this plan.
   - Implementation Gate: the accepted Child 02 handoff is recorded as `E0-P0A-HANDOFF1` and its Pn-C commit is confirmed; no production edit until the actual-status Final P0 Decision permits P3-A.
   - Acceptance: `E0-P0A-HANDOFF1`, `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2`, `E0-P0A-SCOPE1`, `E0-P0A-GRAPH1`, `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1`, `E0-P0A-STATUS1`, and independent `E0-P0A-REVIEW1` are recorded with no unresolved owner boundary; `E0-P0A-DETECT1` and `E0-P0A-COMMIT1` close the isolated documentation/evidence boundary.
-  - Current State: Child 02 is closed at `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`; all seven P3 slices retain accepted isolated commit boundaries through P3-C2 `8784c6c21da842b188f136b95ec97ab8df9f20e8`. Aggregate `E3-PNA-REVIEW1` is `PASS`; current source, manifests, accepted final-byte gates, benchmark rows, retained target provenance, and Git isolation close the complete Child 03 binding-pattern invariant. Historical artifacts absent after Owner cleanup are not relied upon and are not acceptance gates. `Pn-B` is the sole open lane; `Pn-C`, Child 04, and every later lane remain locked.
+  - Current State: Child 02 is closed at `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`; all seven P3 slices retain accepted isolated commit boundaries through P3-C2 `8784c6c21da842b188f136b95ec97ab8df9f20e8`. Aggregate `E3-PNA-REVIEW1` is `PASS`; current source, manifests, accepted final-byte gates, benchmark rows, retained target provenance, and Git isolation close the complete Child 03 binding-pattern invariant. Historical artifacts absent after Owner cleanup are not relied upon and are not acceptance gates. `E3-PNB-REVIEW1` is `PASS`, and `E3-PNB-COMMIT1` closes at `0231d7f9cc7cfd05d8d5da4787161a8ec2cd1550`; Pn-C is the sole current docs-only closure and Child 04 remains locked until its handoff commit.
   - Commit Boundary: four Child 03 ledgers, one QA report, immutable prior REJECT provenance, and two independent PASS reports; no production/test/fixture/target/runtime path.
 
 ### P3: TypeScript binding-pattern extraction
@@ -534,10 +534,10 @@ Out of scope:
   - Acceptance: `E3-PNB-CLEAN1` and `E3-PNB-REVIEW1` prove the retained artifact set is current.
   - Supervisor Acceptance Checkpoint (2026-08-20): independent `E3-PNB-REVIEW1` returned `PASS` in `reports/Supervisor/rp_supervisor_260820_185106_by_gpt-5_e3_pnb_review1.md` (`34,757` bytes / `455` LF lines / SHA-256 `533A957569BB929FFFD8C269BACAB781C14CB0568B4F465DE67E5D8C81A6943D`). It independently closes the exact `107`-entry denominator (`50 + 22 + 11 + 24`), `11/11` dead-path absence, `.tmp=738`/Child 03 match `0`, shared/protected hash freeze, retained `72/72`, and no-missed-current-artifact sweep. The `24` already-absent rows remain informational only. No build/test/QA/target/graph/detect/commit/push was run by the review-only lane.
   - Planner Refresh Checkpoint (2026-08-20): `anvien analyze . --force --exclude "internal/aicontext/skills/**" --exclude ".claude/skills/**"` exited `0` with `1,124/626/0` scanned/parsed/failed and `80,879/120,138` graph nodes/relationships. Current file-detail is LOW/non-stale/unchanged with roadmap `28` outbound links and each Child 03 ledger one inbound link; upstream file impact is LOW with `0` affected files/processes/flows/tests for all five documents. This is `E3-PNB-PLAN1` governance evidence only.
-  - Current State: `E3-PNB-CLEAN1` and `E3-PNB-REVIEW1` are accepted; the exact isolated Pn-B commit remains Main-owned and pending. The authorized concurrent Main rotation handoff is provenance outside the cleanup denominator and is included only as a separate accepted Main-owned path in the closure boundary.
+  - Current State: `E3-PNB-CLEAN1` and `E3-PNB-REVIEW1` are accepted; `E3-PNB-COMMIT1` is verified at `0231d7f9cc7cfd05d8d5da4787161a8ec2cd1550` with parent `0dd710bb4b0f37072854071058af58bcf9b9e73d`, exact `8/8` manifest, clean worktree/index, and no push. The authorized concurrent Main rotation handoff remains provenance outside the cleanup denominator and is retained only as a separate Main-owned path for Pn-C.
   - Detect Closure Checkpoint (2026-08-20): staged `E3-PNB-DETECT1` passed with `75` changed documentation/reporting sections, `8` changed files, `8` affected files, LOW risk, `0` affected processes/flows, gap delta `0/0`, current health `0/0/0`, and complete semantic fields. The changed/affected path sets equal the exact eight-path boundary.
-  - Commit Boundary: exactly eight paths—roadmap, the four Child 03 living ledgers, the cleanup Coder report, `E3-PNB-REVIEW1`, and `reports/Investigation/rp_main_260820_184023_orchestration_rotation_handoff.md`; no production/test/probe/target/forbidden-tree path, no push. `E3-PNB-DETECT1` is accepted; `E3-PNB-COMMIT1` is the sole remaining Pn-B gate.
-- [ ] Pn-C: Close Child 03 and hand off Child 04.
+  - Commit Boundary: exactly eight paths—roadmap, the four Child 03 living ledgers, the cleanup Coder report, `E3-PNB-REVIEW1`, and `reports/Investigation/rp_main_260820_184023_orchestration_rotation_handoff.md`; no production/test/probe/target/forbidden-tree path, no push. `E3-PNB-DETECT1` and `E3-PNB-COMMIT1` are accepted; Pn-C is now the sole open slice.
+- [x] Pn-C: Close Child 03 and hand off Child 04.
   - Goal: record final validation, commit state, and the exact successor opening condition.
   - Work Steps:
     1. Confirm all slice commits, final build/boundary evidence, benchmark rows, and target boundary.
@@ -545,6 +545,9 @@ Out of scope:
     3. Refresh Child 04 actual status from accepted Child 03 evidence and record the handoff.
   - Implementation Gate: Pn-A and Pn-B PASS and the isolated Pn-B commit exists.
   - Acceptance: `E3-PNC-DETECT1`, `E3-PNC-COMMIT1`, and `E3-PNC-HANDOFF1` are recorded; worktree state is known.
+  - Current State: `E3-PNB-COMMIT1` is verified; the excluded graph basis is `1,126/626/0` with `80,908/120,167` nodes/relationships; roadmap, all four Child 03 ledgers, Child 04 actual-status, rotation provenance, and the dedicated Pn-C handoff are LOW/non-stale with zero upstream affected files/processes/flows/tests. No production/test/QA/probe/target/forbidden-tree path is editable or reopened.
+  - Closure Rule: this is documentation-only; do not run a redundant Supervisor loop, do not access `E:\cheapapp.org`, and open Child 04 only after the isolated Pn-C commit succeeds.
+  - Detect and Commit Closure (2026-08-20): exact eight-path staging has unstaged `0` and `git diff --cached --check` PASS. Full/JSON staged `E3-PNC-DETECT1` is LOW `50/8/8`, docs `50`, documentation/reporting `30/20`, process/flow `0/0`, gap delta `0/0`, health `0/0/0`, and complete semantic fields; changed/affected path sets equal the manifest. `E3-PNC-COMMIT1` is this exact isolated docs/handoff boundary, with final hash reported externally after Git success; no push. Child 04 P0-A opens automatically only then.
 
 ## Risk Notes
 

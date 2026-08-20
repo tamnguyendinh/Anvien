@@ -2,7 +2,7 @@
 
 Title: Anvien First-Class TypeScript Export Semantics
 Date: 2026-07-28
-Status: Draft / P0 incomplete
+Status: Draft / P0 incomplete / Child 03 predecessor handoff recorded / opens only after Pn-C commit / implementation remains blocked
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md`
@@ -12,7 +12,7 @@ Successor child: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07
 
 ## Purpose
 
-This file classifies the current TypeScript export-syntax and direct-projection scope before implementation. Historical investigation proves a bounded 21-export defect but does not substitute for fresh current-source, graph, file-detail, impact, and affected-consumer evidence.
+This file classifies the current TypeScript export-syntax and direct-projection scope before implementation. Historical investigation proves a bounded 21-export defect but does not substitute for fresh current-source, graph, file-detail, impact, and affected-consumer evidence. `E3-PNC-HANDOFF1` now records the accepted Child 03 predecessor closure; it supplies no export implementation evidence and does not waive Child 04 P0.
 
 Detailed proof belongs in the evidence ledger. This file stores classifications, touch modes, plan consequences, and status transitions.
 
@@ -70,6 +70,7 @@ The bounded investigation identifies candidate source locations, but current rel
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|-------------------:|----------|--------------------|
 | Problem authority | Original report is DRAFT; causal synthesis and Supervisor PASS verify only the bounded defect | findings retained; proposed architecture treated as non-authoritative | `correct` | N/A | `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2` | preserve evidence hierarchy |
+| Child 03 predecessor handoff | Child 03 binding-pattern invariant is accepted and closed at its isolated Pn-C boundary; non-claims explicitly exclude export semantics | consume only accepted predecessor facts and keep Child 04 P0 current-source gates open | `correct` | `1` inbound handoff/roadmap relationship | `E3-PNC-HANDOFF1`, `E3-PNB-COMMIT1`, `E3-PNA-REVIEW1` | open only Child 04 P0-A; do not infer export owners or implementation details |
 | Current production owner inventory | Candidate provider/emitter mechanism is known, but current owners and impacts are not yet fully revalidated | exact editable/inspect-only/preserve-only owners with current counts | `blocked` | pending | `E0-P0A-SRC1`, `E0-P0A-FD1`, `E0-P0A-IMPACT1` pending | complete P0 before P4-A |
 | Bounded direct-export definitions | 21 selected definitions were present at the accepted baseline | preserve the definitions and attach truthful direct export facts | `partial` | pending | `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2` | preserve definition extraction; repair export facts |
 | Bounded export metadata | 0 of 21 selected definitions carried export/visibility metadata at the accepted baseline | 21 of 21 correct direct export facts and projections | `wrong` | pending | `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2` | P4-A, P4-B, P4-C |
@@ -86,6 +87,7 @@ The bounded investigation identifies candidate source locations, but current rel
 | Refresh | Date | Repo Basis | Changed Scope | Status Changes | Evidence | Next Phase Update |
 |---------|------|------------|---------------|----------------|----------|-------------------|
 | R0 | 2026-08-10 | documentation correction against full problem-origin and bounded-verification reports | Child 04 plan authority and scope | removed unrelated campaign assumptions; separated syntax/direct projection from Child 05 resolution; P0 reset to incomplete pending current owner/impact proof | `E0-P0A-RULE1`, `E0-P0A-SKILL1`, `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2` | run fresh P0; do not open P4-A yet |
+| R1 | 2026-08-20 | Child 03 Pn-B commit `0231d7f9cc7cfd05d8d5da4787161a8ec2cd1550`; excluded graph `1,126/626/0`, `80,908/120,167`; roadmap/Child 03/Child 04 actual/handoff governance rows LOW/non-stale with zero upstream affected files/processes/flows/tests | predecessor handoff and successor opening condition | Child 03 predecessor `dependency-blocked -> accepted handoff`; Child 04 P0 remains incomplete, current owner/file-detail/impact/syntax/consumer evidence remains pending | `E3-PNC-HANDOFF1`, `E3-PNB-COMMIT1` | after Pn-C docs-only commit, open only Child 04 P0-A; no P4 implementation or redundant Supervisor loop |
 
 ## Phase Touch Map
 
@@ -143,6 +145,7 @@ Forbidden next action: recurse through barrels, select candidates, or claim publ
 
 | Plan Item | Actual Status Finding | Required Next-Action Update |
 |-----------|-----------------------|-----------------------------|
+| Predecessor handoff | Child 03 final evidence/benchmark/target boundary is accepted; no export claim is transferred | `correct`; consume only as dependency input and keep Child 04 P0 gates pending |
 | P4-A | bounded omission verified; current fact/meaning owner and compatibility consumers pending | keep blocked until P0 current source/file-detail/impact complete |
 | P4-B | 21 direct definitions exist but metadata is wrong | preserve definition extraction; implement exact missing syntax facts after P4-A |
 | P4-B1 | current re-export syntax coverage unmeasured | inventory in P0; emit syntax only, no terminal state |
@@ -161,6 +164,7 @@ Forbidden next action: recurse through barrels, select candidates, or claim publ
 - [ ] Exact production, test, fixture, generated-output, and validation ownership is recorded for P4-A.
 - [ ] P4-A work steps match the discovered current owners.
 - [ ] Status Refresh Log contains the completed P0 refresh.
+- [x] Child 03 predecessor handoff `E3-PNC-HANDOFF1` is recorded without selecting a Child 04 implementation owner.
 
 ## Final P0 Decision
 
@@ -172,4 +176,4 @@ Forbidden next action: recurse through barrels, select candidates, or claim publ
 
 Decision note:
 
-The bounded 21-export defect and target acceptance number are verified. Current-source ownership, relationship counts, impact, syntax coverage, and actual affected persistence consumers are not yet refreshed, so P4-A cannot open.
+The bounded 21-export defect and target acceptance number are verified. Child 03 is closed and its accepted non-export handoff is recorded, but current-source ownership, relationship counts, impact, syntax coverage, and actual affected persistence consumers are not yet refreshed, so Child 04 P0 remains incomplete and P4-A cannot open.
