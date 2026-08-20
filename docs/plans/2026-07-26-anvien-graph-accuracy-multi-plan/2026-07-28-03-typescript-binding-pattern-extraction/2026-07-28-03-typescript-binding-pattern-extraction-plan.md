@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `active / all seven P3 slices committed / P3-C2 committed at 8784c6c2 / E3-PNA-REVIEW1 PASS / Pn-B sole open lane / Pn-C and Child 04 locked`
+- Status: `active / all seven P3 slices committed / P3-C2 committed at 8784c6c2 / E3-PNA-REVIEW1 PASS / E3-PNB-REVIEW1 PASS / Pn-B isolated commit pending / Pn-C and Child 04 locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md`
@@ -527,18 +527,23 @@ Out of scope:
   - Implementation Gate: every P3 slice is accepted and its isolated commit exists; specifically, `E3-P3C2-COMMIT1` must succeed before this lane opens.
   - Acceptance: `E3-PNA-REVIEW1` records Supervisor PASS or a precise blocker; no self-acceptance is used.
   - Acceptance Checkpoint (2026-08-20): independent `E3-PNA-REVIEW1` returned `PASS` in `reports/Supervisor/rp_supervisor_260820_175806_by_gpt-5_e3_pna_review1.md` (`31,921` bytes / `366` LF lines / SHA-256 `7B8F0D1292C0CA754862AC59C229C6E224C8CD88CBDDAA9BDEE961D193C2847D`). All seven commit manifests/ancestry, current source, retained build/test/real-boundary evidence, benchmark rows, P3-C2 raw-rollout provenance, frozen hashes, and Git isolation are independently cleared with no residual same-invariant surface. Latest Owner authority makes removed historical artifacts non-gating; the review does not rely on or reconstruct them. `Pn-B` opens as the sole next lane; no code/test/target repair, commit, or push is authorized here.
-- [ ] Pn-B: Remove dead work created by this child.
+- [x] Pn-B: Remove dead work created by this child.
   - Goal: leave no superseded fixture, debug output, failed evidence, duplicate report, or rejected approach.
   - Work Steps: inventory child-created artifacts, remove only dead child work, and obtain Supervisor review of cleanup.
   - Implementation Gate: Pn-A has completed its first review.
   - Acceptance: `E3-PNB-CLEAN1` and `E3-PNB-REVIEW1` prove the retained artifact set is current.
+  - Supervisor Acceptance Checkpoint (2026-08-20): independent `E3-PNB-REVIEW1` returned `PASS` in `reports/Supervisor/rp_supervisor_260820_185106_by_gpt-5_e3_pnb_review1.md` (`34,757` bytes / `455` LF lines / SHA-256 `533A957569BB929FFFD8C269BACAB781C14CB0568B4F465DE67E5D8C81A6943D`). It independently closes the exact `107`-entry denominator (`50 + 22 + 11 + 24`), `11/11` dead-path absence, `.tmp=738`/Child 03 match `0`, shared/protected hash freeze, retained `72/72`, and no-missed-current-artifact sweep. The `24` already-absent rows remain informational only. No build/test/QA/target/graph/detect/commit/push was run by the review-only lane.
+  - Planner Refresh Checkpoint (2026-08-20): `anvien analyze . --force --exclude "internal/aicontext/skills/**" --exclude ".claude/skills/**"` exited `0` with `1,124/626/0` scanned/parsed/failed and `80,879/120,138` graph nodes/relationships. Current file-detail is LOW/non-stale/unchanged with roadmap `28` outbound links and each Child 03 ledger one inbound link; upstream file impact is LOW with `0` affected files/processes/flows/tests for all five documents. This is `E3-PNB-PLAN1` governance evidence only.
+  - Current State: `E3-PNB-CLEAN1` and `E3-PNB-REVIEW1` are accepted; the exact isolated Pn-B commit remains Main-owned and pending. The authorized concurrent Main rotation handoff is provenance outside the cleanup denominator and is included only as a separate accepted Main-owned path in the closure boundary.
+  - Detect Closure Checkpoint (2026-08-20): staged `E3-PNB-DETECT1` passed with `75` changed documentation/reporting sections, `8` changed files, `8` affected files, LOW risk, `0` affected processes/flows, gap delta `0/0`, current health `0/0/0`, and complete semantic fields. The changed/affected path sets equal the exact eight-path boundary.
+  - Commit Boundary: exactly eight paths—roadmap, the four Child 03 living ledgers, the cleanup Coder report, `E3-PNB-REVIEW1`, and `reports/Investigation/rp_main_260820_184023_orchestration_rotation_handoff.md`; no production/test/probe/target/forbidden-tree path, no push. `E3-PNB-DETECT1` is accepted; `E3-PNB-COMMIT1` is the sole remaining Pn-B gate.
 - [ ] Pn-C: Close Child 03 and hand off Child 04.
   - Goal: record final validation, commit state, and the exact successor opening condition.
   - Work Steps:
     1. Confirm all slice commits, final build/boundary evidence, benchmark rows, and target boundary.
     2. Run final detect-changes when implementation work is present.
     3. Refresh Child 04 actual status from accepted Child 03 evidence and record the handoff.
-  - Implementation Gate: Pn-A and Pn-B PASS.
+  - Implementation Gate: Pn-A and Pn-B PASS and the isolated Pn-B commit exists.
   - Acceptance: `E3-PNC-DETECT1`, `E3-PNC-COMMIT1`, and `E3-PNC-HANDOFF1` are recorded; worktree state is known.
 
 ## Risk Notes

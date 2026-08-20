@@ -73,9 +73,24 @@ These are graph/inventory counts at HEAD `181b8cb8`, not product runtime-perform
 | P3-C2 | bounded target bindings | correct / expected | 0/6 | 6/6 | 6/6 accepted | 6/6 | +6 corrected bindings | `E3-P3C2-ORACLE1`, `E3-P3C2-TARGET1`, `E3-P3C2-REVIEW1` |
 | P3-C2 | bounded target sites without binding-caused gap | correct / expected | 0/6 | 6/6 with 0 binding-caused gaps | 6/6 accepted | 6/6 | +6 corrected sites; gaps 0 | `E3-P3C2-TARGET1`, `E3-P3C2-BOUNDARY1`, `E3-P3C2-REVIEW1` |
 
+## Bn-B - Pn-B Cleanup Measurements
+
+| Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
+|-------|--------|------|----------|--------|-------|--------|-------|----------|
+| Pn-B | lifecycle commit range | commits | `40` | `40` | `40` | exact reconciled range | `0` | `E3-PNB-REVIEW1` |
+| Pn-B | Child 03 lifecycle partition | Child 03 / excluded commits | `10 / 30` | `10 / 30` | `10 / 30` | exact partition | `0 / 0` | `E3-PNB-REVIEW1` |
+| Pn-B | tracked lifecycle union | paths | `71` | `71` | `71` | `71` current paths | `0` | `E3-PNB-CLEAN1`, `E3-PNB-REVIEW1` |
+| Pn-B | introduced/shared union split | introduced / shared paths | `49 / 22` | `49 / 22` | `49 / 22` | exact split | `0 / 0` | `E3-PNB-REVIEW1` |
+| Pn-B | cleanup denominator | classified paths | `107` | `107` | `107` | `107` disjoint entries | `0` | `E3-PNB-REVIEW1` |
+| Pn-B | retained/dead/already-absent classification | paths | `72 / 11 / 24` | `72 / 11 / 24` | `72 / 11 / 24` | exact current retention and informational absence | `0 / 0 / 0` | `E3-PNB-REVIEW1` |
+| Pn-B | dead bytes removed | bytes | `37,756` | `37,756` | `37,756` | exact recorded deletion | `0` | `E3-PNB-CLEAN1`, `E3-PNB-REVIEW1` |
+| Pn-B | repo-local `.tmp` census | files | `749` | `738` | `738` | Child 03 name-match `0` | `-11` | `E3-PNB-REVIEW1` |
+| Pn-B | protected/current hash freeze | exact paths | `34/34` | `34/34` | `34/34` | `34/34` | `0` mismatches | `E3-PNB-REVIEW1` |
+
 ## Non-Benchmarkable Notes
 
 - `E3-PNA-REVIEW1` is an aggregate acceptance gate, not a benchmark. It preserves the accepted P3 measurements above unchanged and introduces no new runtime-performance, capacity, package-size, or graph-inventory claim.
 - Report/authority classification, file ownership, Supervisor verdicts, full-build results, detect-changes, and commits are evidence gates rather than benchmark metrics.
 - P3-C's excluded self-index graph inventory and build/test timings are verification context, not product performance benchmarks; the canonical unexcluded graph is not evidence.
+- Pn-B lifecycle/cleanup counts above are artifact-lifecycle measurements, not product/runtime performance or semantic-accuracy benchmarks; no build, test, QA, target, or graph-performance claim is made.
 - No global TypeScript accuracy percentage is claimed by this child.

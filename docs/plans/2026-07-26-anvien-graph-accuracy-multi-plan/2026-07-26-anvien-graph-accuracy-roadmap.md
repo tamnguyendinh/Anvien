@@ -2,7 +2,7 @@
 
 Date: 2026-07-26
 Last revised: 2026-08-20
-Status: active campaign; Child 01 P0/P1-A/P1-B/P1-C/P1-D/P1-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries; Child 02 P0-A/P2-A/P2-B/P2-C/P2-D/P2-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries and closed at `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`; Child 03 P0-A through P3-B2A retain their accepted isolated boundaries; P3-C closes at `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`; P3-C2 closes at `8784c6c21da842b188f136b95ec97ab8df9f20e8` with final staged `E3-P3C2-DETECT1` `648/17/17`, `16` affected processes, and current health `0/0/0`; aggregate `E3-PNA-REVIEW1` is `PASS` on all seven P3 slices and the current binding-pattern invariant; historical artifacts absent after Owner cleanup are not relied upon and are not blockers; `Pn-B` is the sole open lane, while `Pn-C`, Child 04, and every later lane remain locked
+Status: active campaign; Child 01 P0/P1-A/P1-B/P1-C/P1-D/P1-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries; Child 02 P0-A/P2-A/P2-B/P2-C/P2-D/P2-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries and closed at `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`; Child 03 P0-A through P3-B2A retain their accepted isolated boundaries; P3-C closes at `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`; P3-C2 closes at `8784c6c21da842b188f136b95ec97ab8df9f20e8` with final staged `E3-P3C2-DETECT1` `648/17/17`, `16` affected processes, and current health `0/0/0`; aggregate `E3-PNA-REVIEW1` is `PASS` on all seven P3 slices and the current binding-pattern invariant; historical artifacts absent after Owner cleanup are not relied upon and are not blockers; `E3-PNB-REVIEW1` is `PASS` for the exact Pn-B cleanup invariant and its isolated commit is pending; `Pn-C`, Child 04, and every later lane remain locked
 
 Multi-plan root: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/`
 
@@ -52,7 +52,7 @@ The report at `reports/problem/2026-07-26-tinh-chinh-cac-van-de-cua-anvien` is t
 |-------|------|-------|--------|
 | 01 | [graph identity contract and strict construction](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | identity, range, lexical owner, occurrence conservation, proven collision owner | P0/P1-A/P1-B/P1-C/P1-D/P1-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries |
 | 02 | [current graph persistence and reader consistency](2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md) | persistence parity, affected readers, repeated normal analyze | P0-A/P2-A/P2-B/P2-C/P2-D/P2-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries; Pn-B commit `9b65f3ef3f3f377d0dcb4a9e0cd5eca444cf51c6`; Pn-C closure commit `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0` |
-| 03 | [TypeScript binding-pattern extraction](2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md) | binding-pattern defect only | P3-C closes at `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`; P3-C2 closes at `8784c6c21da842b188f136b95ec97ab8df9f20e8`; `E3-PNA-REVIEW1` independently accepts all seven slices and the aggregate invariant; `Pn-B` is the sole open cleanup lane |
+| 03 | [TypeScript binding-pattern extraction](2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md) | binding-pattern defect only | P3-C closes at `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`; P3-C2 closes at `8784c6c21da842b188f136b95ec97ab8df9f20e8`; `E3-PNA-REVIEW1` independently accepts all seven slices and the aggregate invariant; `E3-PNB-REVIEW1` is `PASS` and the isolated cleanup commit is pending |
 | 04 | [TypeScript export semantics](2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md) | export-fact defect only | dependency-blocked |
 | 05 | [module export and re-export resolution](2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md) | module/export resolution defect only | dependency-blocked |
 | 06 | [ambient/external resolution and diagnostics](2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-plan.md) | ambient/external defect only | dependency-blocked |
@@ -125,6 +125,14 @@ Each non-terminal Child closes only after its ledgers identify the accepted outp
 - no document treats the initial analyze implementation as fixed or invents unproven write/reader behavior;
 - no active document treats the DRAFT architecture recommendations as approved source authority;
 - link, forbidden-concept, slice, evidence, diff, fresh-analyze, and Supervisor gates all pass before production implementation opens.
+
+## Child 03 Pn-B Closure Checkpoint
+
+- `E3-PNB-CLEAN1` is the cleanup executor's current candidate: `28,632` bytes / `412` LF lines / SHA-256 `D63362A7B382F8382875E71718DDC580B34A21DEBCA71BC327509E56DAC1E8D4`.
+- Independent `E3-PNB-REVIEW1` is `PASS`: `34,757` bytes / `455` LF lines / SHA-256 `533A957569BB929FFFD8C269BACAB781C14CB0568B4F465DE67E5D8C81A6943D`; the exact eleven-path absence, `107` denominator, `.tmp=738` census, shared/protected hashes, and no-missed-artifact sweep are closed.
+- Planner refresh basis is the excluded graph `1,124/626/0` with `80,879/120,138` nodes/relationships; the roadmap is LOW with `28` outbound links, each Child 03 ledger is LOW with one inbound link, and all five upstream impacts are `0` affected files/processes/flows/tests.
+- The Main-owned isolated Pn-B boundary is the five living documents, the cleanup Coder report, the Supervisor report, and the explicitly authorized concurrent Main handoff provenance. No production/test/probe/target/forbidden-tree path is in scope; `Pn-C` opens only after the commit.
+- Staged `E3-PNB-DETECT1` is `PASS`: `75` changed documentation/reporting sections, `8` changed files, `8` affected files, LOW risk, `0` affected processes/flows, gap delta `0/0`, and current health `0/0/0`. The exact eight-path manifest remains isolated; `E3-PNB-COMMIT1` is the sole remaining Pn-B gate.
 
 ## Campaign completion definition
 

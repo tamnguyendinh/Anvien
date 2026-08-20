@@ -2,7 +2,7 @@
 
 Title: Anvien TypeScript Binding-Pattern Extraction
 Date: 2026-08-14
-Status: Active / All Seven P3 Slices Committed / P3-C2 Committed at 8784c6c2 / E3-PNA-REVIEW1 PASS / Pn-B Sole Open Lane / Pn-C and Child 04 Locked
+Status: Active / All Seven P3 Slices Committed / P3-C2 Committed at 8784c6c2 / E3-PNA-REVIEW1 PASS / E3-PNB-REVIEW1 PASS / Pn-B Isolated Commit Pending / Pn-C and Child 04 Locked
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-benchmark.md`
@@ -86,6 +86,7 @@ R2 froze `15` production owners and `12` exact test owners before file-detail/im
 | Projection and lexical resolution | accepted P3-C final bytes project `7/7` occurrences/`DEFINES`, preserve five reads plus one write, shadowing, imports, exact Graph JSON/Ladybug parity, and zero normal gaps; coordinated wrong-file owner/local-Binding drift returns before graph selection or mutation and preserves sentinel bytes/counts | preserve unique owner file agreement, lexical containment of declaration full and selection ranges, exact local Binding ownership, and validated-set lexical resolution without name rescue | `correct / committed at 656a0445` | `resolve.go`: 113 symbols, 88 inbound, 168 outbound, 21 flows, 31 tests; 22/22 canonical impacts (`21` CRITICAL / `1` LOW); final detect `378/14/14`, health `0/0/0` | `E3-P3C-IMPACT1`, `E3-P3C-SRC1`, `E3-P3C-BUILD1`, `E3-P3C-TEST1`, `E3-P3C-BOUNDARY1`, `E3-P3C-REVIEW1`, `E3-P3C-REVIEW2`, `E3-P3C-PLAN1`, `E3-P3C-DETECT1`, `E3-P3C-COMMIT1` | preserve exact committed bytes during P3-C2 closure |
 | Unsupported-pattern diagnostics | P3-A helper diagnostics are preserved; accepted P3-B plumbing returns variable-context invalid-rest diagnostics through ScopeIR and emits zero fake declarations | structured countable extraction diagnostic at the helper and variable boundaries | `correct` | 6/6 helper invalid fixtures plus 1/1 variable invalid-rest control | `E3-P3A-SRC1`, `E3-P3A-BOUNDARY1`, `E3-P3A-REVIEW3`, `E3-P3B-TEST1`, `E3-P3B-BOUNDARY1`, `E3-P3B-REVIEW2` | preserve semantics |
 | Target boundary and bounded binding contract | exact six-site oracle; direct BindingLeaf/Definition/owner/local-Binding chains `6/6`; persisted Variables/`DEFINES`/lexical `ACCESSES` `6/6/6`; gaps `0`; target HEAD/status/diff/untracked pre/post equality exact; no contamination | preserve target source/worktree and accept only normal target-local `.anvien` operational output | `correct / REVIEW1 PASS / committed by this boundary` | target `6/6`; status `13` entries (`7` tracked + `6` untracked); final detect `648/17/17`, processes `16`, health `0/0/0` | `E3-P3C2-ORACLE1`, `E3-P3C2-TARGET1`, `E3-P3C2-BOUNDARY1`, `E3-P3C2-REVIEW1`, `E3-P3C2-DETECT1`, `E3-P3C2-COMMIT1` | preserve all frozen bytes; create only isolated commit; no target rerun or push |
+| Pn-B cleanup artifact lifecycle | exact Child 03 lifecycle union, dead-work deletion, retained evidence, shared/protected byte freeze, and no-missed-artifact review | cleanup invariant closed with no current dead artifact | `correct / E3-PNB-REVIEW1 PASS / E3-PNB-DETECT1 PASS / commit pending` | exact eight-path docs/report boundary; staged detect LOW `75/8/8`, `0` affected processes/flows, gap/health `0/0/0` | `E3-PNB-CLEAN1`, `E3-PNB-REVIEW1`, `E3-PNB-PLAN1`, `E3-PNB-DETECT1` | create only the isolated Main-owned commit; do not alter accepted product/target/forbidden state |
 
 ## Status Refresh Log
 
@@ -139,6 +140,8 @@ R2 froze `15` production owners and `12` exact test owners before file-detail/im
 | R40 | 2026-08-20 | exact staged manifest `17/17`, unstaged/untracked `0/0`; excluded graph `1,120/626/0`, `80,799/120,058`; full/JSON staged detect exit `0` | complete accepted P3-C2 pre-commit boundary | `648` changed symbols / `17` changed files / `17` affected files; CRITICAL summary and HIGH file-layer blast-radius warnings concentrated in the accepted probe command; `16` affected process records all use changed probe steps; gap delta `244/249`; current health `0/0/0`; no forbidden-tree or target path | `E3-P3C2-DETECT1` | create only isolated `E3-P3C2-COMMIT1`; do not push; `Pn-A` remains locked until commit success |
 | R41 | 2026-08-20 | exact `17`-path boundary staged; accepted source/test/probe/QA/recovery/Supervisor hashes locked; unstaged/untracked `0/0`; no forbidden-tree or target path | P3-C2 commit closure and automatic Pn-A transition | P3-C2 `accepted-pending -> committed by this boundary`; exact hash is reported by Git/handoff after success; no Pn-A work enters this commit | `E3-P3C2-COMMIT1` | after commit success, open exactly one visible Pn-A Supervisor acceptance lane; do not push |
 | R42 | 2026-08-20 | P3-C2 commit/parent `8784c6c21da842b188f136b95ec97ab8df9f20e8` / `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`; aggregate report `31,921` bytes / `366` LF lines / SHA-256 `7B8F0D1292C0CA754862AC59C229C6E224C8CD88CBDDAA9BDEE961D193C2847D`; seven commits are ancestors with exact manifests `14/13/17/11/14/14/17` | Pn-A aggregate Child 03 acceptance | `E3-PNA-REVIEW1 = PASS`; all seven slices, current source, retained final-byte gates, benchmark rows, P3-C2 provenance, and Git isolation clear; historical artifacts removed by Owner are not relied upon and are not blockers; no residual same-invariant surface | `E3-PNA-REVIEW1` | open only Pn-B artifact cleanup; keep Pn-C and Child 04 locked |
+| R43 | 2026-08-20 | Pn-B candidate `28,632` bytes / `412` LF / `D63362A7...`; independent `E3-PNB-REVIEW1` `34,757` bytes / `455` LF / `533A9575...`; excluded graph `1,124/626/0`, `80,879/120,138`; five document file-detail/impact rows LOW, `0` affected files/processes/flows/tests; Git tracked/staged/unstaged `0/0/0` before planner edits | Pn-B cleanup acceptance and planner-owned closure boundary | Pn-B `open/cleanup -> correct/accepted pending isolated commit`; exact `107` denominator, `11/11` absence, retained `72/72`, `.tmp=738`, shared/protected hashes, and no-missed-artifact sweep clear | `E3-PNB-CLEAN1`, `E3-PNB-REVIEW1`, `E3-PNB-PLAN1` | stage eight exact paths, run `E3-PNB-DETECT1`, commit once without push; keep Pn-C locked until Git success |
+| R44 | 2026-08-20 | exact eight-path staging; full/JSON staged detect exit `0`; changed and affected manifests equal the isolated boundary; unstaged/untracked `0/0` | complete accepted Pn-B pre-commit boundary | `75` changed documentation/reporting sections / `8` changed files / `8` affected files; LOW risk; processes/flows `0/0`; gap delta and current health `0/0`; semantic fields complete | `E3-PNB-DETECT1` | create only isolated `E3-PNB-COMMIT1`, do not push; Pn-C stays locked until Git success |
 
 ## Phase Touch Map
 
@@ -167,6 +170,9 @@ R2 froze `15` production owners and `12` exact test owners before file-detail/im
 | generic graphhealth/persistence/ResolutionGap/readers, SFC wrappers, fixture data | transparent bridge or generic consumption only | Child 02 / deferred | excluded/deferred | `E0-P0A-SRC1` | reopen only with direct changed-field proof |
 | target source/worktree | real integration input | P3-C2 | accepted validation input / preserve-only | `E3-P3C2-ORACLE1`, `E3-P3C2-TARGET1`, `E3-P3C2-BOUNDARY1`, `E3-P3C2-REVIEW1` | no copied source or target-side report; no further target access during governance closure |
 | `cmd/binding-contract-probe/main.go`, `main_test.go` | metadata-only direct ScopeIR observability asset | P3-C2 | accepted/hash-locked pending isolated commit | `E3-P3C2-TARGET1`, `E3-P3C2-REVIEW1` | preserve exact hashes; metadata/stdout only, no `-out`, target hardcode, or source body |
+| five Child 03 living ledgers and roadmap | Pn-B planner refresh source-of-truth | Pn-B | edit once / stage in isolated closure | `E3-PNB-PLAN1`, `E3-PNB-REVIEW1` | update cleanup status only; no production/test/probe/target/forbidden-tree path |
+| cleanup Coder and Supervisor reports | Pn-B acceptance evidence | Pn-B | retain/stage in isolated closure | `E3-PNB-CLEAN1`, `E3-PNB-REVIEW1` | reports are durable evidence; no self-acceptance or repair |
+| `reports/Investigation/rp_main_260820_184023_orchestration_rotation_handoff.md` | concurrent Main rotation provenance | Pn-B closure | Main-owned retain/stage | `E3-PNB-REVIEW1` | explicitly authorized and outside cleanup denominator/candidate evidence; no target or forbidden-tree use |
 
 ## Detailed Findings
 
@@ -207,6 +213,47 @@ Allowed next action: use findings and target counts as the baseline; let current
 
 Forbidden next action: copy a proposed architecture into production requirements merely because it appears beside a confirmed defect.
 
+### Pn-B cleanup
+
+Current state:
+
+- The cleanup candidate and independent review agree on `40=10+30` lifecycle commits, `71=49+22` tracked union, `107` disjoint denominator entries, retained `72/72`, dead absence `11/11`, `.tmp=738`, Child 03 temp-name match `0`, and protected/current `34/34` hash equality.
+- The independent review is `PASS` at `34,757` bytes / `455` LF lines / SHA-256 `533A957569BB929FFFD8C269BACAB781C14CB0568B4F465DE67E5D8C81A6943D`; the `24` already-absent rows are informational only.
+
+Required state:
+
+```text
+current Child 03 artifact set
+  -> exact dead work removed
+  -> accepted/current/shared evidence retained
+  -> no residual current dead artifact
+  -> isolated Main-owned commit boundary
+```
+
+Evidence:
+
+- `E3-PNB-CLEAN1`: cleanup candidate `28,632` bytes / `412` LF lines / SHA-256 `D63362A7B382F8382875E71718DDC580B34A21DEBCA71BC327509E56DAC1E8D4`.
+- `E3-PNB-REVIEW1`: independent `PASS`, no residual same-invariant surface.
+- `E3-PNB-PLAN1`: excluded graph/file-detail/upstream-impact governance basis, all five documents LOW with zero affected files/processes/flows/tests.
+- `E3-PNB-DETECT1`: exact staged boundary `PASS` at `75` changed sections / `8` changed files / `8` affected files, LOW risk, zero affected processes/flows, zero gap delta, and health `0/0/0`.
+
+Relationship and impact:
+
+- Related file count: roadmap `28` outbound; each Child 03 ledger `1` inbound; all five document file-detail rows are non-stale and unchanged at the refresh basis.
+- Impact note: upstream file impact is LOW with `0` affected files/processes/flows/tests for every planner-owned document. This is a docs-only governance warning boundary, not a production blast radius.
+
+Classification:
+
+`correct / accepted pending isolated commit`.
+
+Allowed next action:
+
+Commit the exact eight-path Pn-B boundary once, do not push, and then open Pn-C docs-only closure.
+
+Forbidden next action:
+
+Do not modify accepted source/test/probe/golden/contract files, reconstruct the 24 absent artifacts, access the target, read/use/stage either forbidden skill tree as Child 03 evidence, or open a redundant Supervisor loop for Pn-C.
+
 ## Next Phase Status Decisions
 
 | Plan Item | Actual Status Finding | Required Next-Action Update |
@@ -219,7 +266,8 @@ Forbidden next action: copy a proposed architecture into production requirements
 | P3-C | focused `E3-P3C-REVIEW2` closes the sole exact-owner-scope blocker; final staged detect is `378/14/14`; commit is `656a0445ff3e25b6225b994cdaf7cf1b35eb665c` | committed/preserve-only during P3-C2 closure |
 | P3-C2 | `ORACLE1/TARGET1/BOUNDARY1/REVIEW1` are `PASS`; final detect is `648/17/17`; target chains/endpoints are `6/6`, gaps `0`, and boundary exact | committed by this exact boundary; preserve all P3-C2 bytes after Git success |
 | Pn-A | `E3-PNA-REVIEW1` independently accepts all seven slices and the aggregate binding-pattern invariant | complete; preserve exact PASS report and current source/evidence boundary |
-| Pn-B | Pn-A is `PASS`; current working boundary contains only the new Pn-A report plus this living-ledger transition | open one focused Child 03 dead-work inventory/cleanup lane; remove only proven dead Child 03-created artifacts and obtain `E3-PNB-REVIEW1` |
+| Pn-B | `E3-PNB-CLEAN1`, independent `E3-PNB-REVIEW1`, and staged `E3-PNB-DETECT1` are `PASS`; exact denominator `107`, retained `72`, dead absence `11/11`, `.tmp=738`, protected `34/34`, and isolated detect `75/8/8` are closed | create only the isolated eight-path Main commit; do not push; then open Pn-C |
+| Pn-C | remains locked while the Pn-B commit is pending | open only after the isolated Pn-B commit succeeds; no redundant Supervisor loop for docs-only closure |
 
 ## Implementation Gate
 
@@ -238,18 +286,23 @@ Forbidden next action: copy a proposed architecture into production requirements
 - [x] Independent Supervisor PASS and fresh docs-only detect evidence are recorded (`E0-P0A-REVIEW1`, `E0-P0A-REVIEW2`, `E0-P0A-DETECT1`).
 - [x] Independent Supervisor PASS for the P0-A candidate is recorded (`E0-P0A-REVIEW1`).
 - [x] Isolated P0-A commit boundary is recorded (`E0-P0A-COMMIT1`; final hash reported externally by Git).
+- [x] Pn-A aggregate Supervisor PASS is recorded as `E3-PNA-REVIEW1`.
+- [x] Pn-B cleanup candidate and independent Supervisor PASS are recorded as `E3-PNB-CLEAN1` and `E3-PNB-REVIEW1`; no current dead artifact remains.
+- [x] Pn-B planner refresh and five-document file-detail/upstream-impact gate are recorded as `E3-PNB-PLAN1`.
+- [x] Pn-B staged detect is recorded as `E3-PNB-DETECT1` (`75/8/8`, LOW, zero process/flow/gap/health impact).
+- [ ] Pn-B isolated commit remains the sole Main-owned pending gate (`E3-PNB-COMMIT1`).
 
 ## Final P0 Decision
 
 - [ ] P0 actual-status incomplete (superseded historical state; not the current decision).
 - [ ] P0 complete. Next phase can proceed unchanged.
-- [x] P0 complete. All seven P3 slices are accepted and committed through P3-C2 `8784c6c21da842b188f136b95ec97ab8df9f20e8`; aggregate `E3-PNA-REVIEW1` is `PASS`; Pn-B is the sole open lane.
+- [x] P0 complete. All seven P3 slices are accepted and committed through P3-C2 `8784c6c21da842b188f136b95ec97ab8df9f20e8`; aggregate `E3-PNA-REVIEW1` is `PASS`; `E3-PNB-REVIEW1` is `PASS` and the isolated Pn-B commit is pending; Pn-C remains locked.
 - [ ] P0 complete. Target scope is preserve-only.
 - [ ] P0 complete. Implementation is blocked by missing authority or evidence.
 
 Current transition note:
 
-`E3-P3C2-COMMIT1` is `8784c6c21da842b188f136b95ec97ab8df9f20e8`. Independent `E3-PNA-REVIEW1` is `PASS` at SHA-256 `7B8F0D1292C0CA754862AC59C229C6E224C8CD88CBDDAA9BDEE961D193C2847D` and closes the aggregate current binding-pattern invariant. Historical artifacts absent after Owner cleanup are not relied upon. Pn-A is complete; only Pn-B opens, with Pn-C and Child 04 locked.
+`E3-P3C2-COMMIT1` is `8784c6c21da842b188f136b95ec97ab8df9f20e8`. Independent `E3-PNA-REVIEW1` is `PASS` at SHA-256 `7B8F0D1292C0CA754862AC59C229C6E224C8CD88CBDDAA9BDEE961D193C2847D` and closes the aggregate current binding-pattern invariant. `E3-PNB-REVIEW1` is `PASS` at SHA-256 `533A957569BB929FFFD8C269BACAB781C14CB0568B4F465DE67E5D8C81A6943D`; Pn-B is accepted pending the isolated eight-path Main commit, and Pn-C/Child 04 remain locked. Historical artifacts absent after Owner cleanup are not relied upon.
 
 Historical decision note through `E3-P3C-REVIEW1`:
 
