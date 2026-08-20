@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P4-A source/build/boundary/Supervisor/detect PASS / isolated commit pending / P4-B locked until commit success`
+- Status: `P4-A committed at 479e8ac229a17f2f6f94be9a4d04e07d74ac4d43 / P4-B source-build-boundary-cleanup-Supervisor PASS / P4-B detect and isolated commit pending / P4-B1 locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md`
@@ -115,7 +115,7 @@ Out of scope:
   - P4-C: Project export facts through the current graph and affected persistence owners.
   - P4-C2: Validate the complete export contract against the real target.
 
-- [ ] P4-A: Establish the export fact, meaning, and visibility boundary.
+- [x] P4-A: Establish the export fact, meaning, and visibility boundary.
   - Goal: implement the smallest production contract that can represent module-export syntax independently from access visibility.
   - Scope Boundary:
     - Editable: `internal/scopeir/facts.go` for fact/diagnostic shapes, `internal/scopeir/kinds.go` for export kind/meaning enums, `internal/scopeir/ir.go` for the `ScopeIR` export collection and clone/normalize/JSON path, and `internal/scopeir/sort_keys.go` for deterministic export ordering.
@@ -161,10 +161,10 @@ Out of scope:
     - Actual-status rows refreshed: export contract and access/export separation.
   - Evidence Targets: source diff, serialization matrix, unsupported diagnostic, build, boundary output, Supervisor, detect-changes, commit.
   - Actual-status Update: transition the export-contract row from its P0 classification to `correct`.
-  - Current State (2026-08-20): `E4-P4A-IMPACT1`, `E4-P4A-SRC1`, `E4-P4A-BUILD1`, `E4-P4A-TEST1`, `E4-P4A-BOUNDARY1`, independent `E4-P4A-REVIEW1`, and `E4-P4A-DETECT1` are recorded and PASS on the exact candidate. `E4-P4A-COMMIT1` remains pending, so this checklist item remains open and P4-B remains locked.
+  - Current State (2026-08-21): `E4-P4A-IMPACT1`, `E4-P4A-SRC1`, `E4-P4A-BUILD1`, `E4-P4A-TEST1`, `E4-P4A-BOUNDARY1`, independent `E4-P4A-REVIEW1`, and `E4-P4A-DETECT1` are recorded and PASS; `E4-P4A-COMMIT1` is closed at isolated commit `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43`. P4-B is the sole open slice.
   - Commit Boundary: one P4-A commit.
 
-- [ ] P4-B: Extract direct/default/alias/type-only export facts.
+- [x] P4-B: Extract direct/default/alias/type-only export facts.
   - Goal: emit truthful facts for direct declarations and local/default/alias/type-only export syntax.
   - Scope Boundary:
     - Editable: exact direct export extraction owner and thin dispatch proven by impact.
@@ -198,7 +198,7 @@ Out of scope:
        - Render location check: evidence ledger and focused test output.
        - Mini QA: exercise the built provider/ScopeIR boundary and record the result.
        - Evidence target: `E4-P4B-BUILD1`, `E4-P4B-TEST1`, `E4-P4B-BOUNDARY1`, `E4-P4B-REVIEW1`, `E4-P4B-DETECT1`, `E4-P4B-COMMIT1`.
-  - Implementation Gate: P4-A accepted and committed.
+  - Implementation Gate: P4-A accepted and committed at `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43`; exact P4-B candidate has independent Supervisor `PASS`.
   - Acceptance:
     - Source: every supported direct/local export binding/specifier emits exactly one fact with correct fields.
     - Runtime/UI: N/A; provider/ScopeIR facts are the real boundary.
@@ -208,7 +208,8 @@ Out of scope:
     - Evidence IDs: `E4-P4B-IMPACT1`, `E4-P4B-SRC1`, `E4-P4B-BUILD1`, `E4-P4B-TEST1`, `E4-P4B-BOUNDARY1`, `E4-P4B-REVIEW1`, `E4-P4B-DETECT1`, `E4-P4B-COMMIT1`.
     - Actual-status rows refreshed: direct export extraction and negative controls.
   - Evidence Targets: syntax oracle, fact counts/fields, visibility preservation, build, Supervisor, detect-changes, commit.
-  - Actual-status Update: transition direct-export extraction to `correct`; leave re-export syntax pending.
+  - Actual-status Update: transition direct-export extraction and cleanup to `correct`; leave re-export syntax and all graph/persistence projection pending.
+  - Current State (2026-08-21): `E4-P4B-IMPACT1`, `E4-P4B-SRC1`, `E4-P4B-BUILD1`, `E4-P4B-TEST1`, `E4-P4B-BOUNDARY1`, and `E4-P4B-REVIEW1` are PASS on the exact three-file candidate. The sole REVIEW1 cleanup finding `.tmp/p4b_ast_probe/` is closed by the resubmission report; `E4-P4B-DETECT1` and `E4-P4B-COMMIT1` remain Main-owned pending gates.
   - Commit Boundary: one P4-B commit.
 
 - [ ] P4-B1: Extract star/namespace/re-export syntax facts.

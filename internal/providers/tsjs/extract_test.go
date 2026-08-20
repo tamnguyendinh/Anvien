@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -279,6 +280,291 @@ export function start() {
 	requireImport(t, ir, scopeir.ImportNamed, "createService", "createService", "./factory")
 	requireCall(t, ir, "createService", scopeir.CallFree)
 	requireCall(t, ir, "run", scopeir.CallMember)
+}
+
+func TestExtractTypeScriptDirectAndDefaultExportFacts(t *testing.T) {
+	source := []byte(`export const alpha = 1, beta = 2;
+export let {left, source: alias} = input;
+export function run() {}
+export function* generate() { yield 1; }
+export class Service {}
+export enum Mode { A }
+export interface Shape {}
+export type Identifier = string;
+export namespace Space {}
+export declare class DeclaredService {}
+export declare function declaredRun(): void;
+export declare const declaredValue: string;
+export default function namedDefaultFunction() {}
+export default function () {}
+export default class NamedDefaultClass {}
+export default class {}
+export default interface DefaultShape {}
+export default alpha + beta;
+const hidden = 1;
+`)
+	ir := parseAndExtract(t, "src/direct-exports.ts", "hash-direct-exports", scanner.TypeScript, source)
+
+	if len(ir.Exports) != 20 || len(ir.ExportDiagnostics) != 0 {
+		t.Fatalf("direct/default export facts/diagnostics = %d/%#v, want 20/0", len(ir.Exports), ir.ExportDiagnostics)
+	}
+	type expectedExport struct {
+		kind          scopeir.ExportKind
+		exported      string
+		local         string
+		rangeText     string
+		selectionText string
+		statementText string
+		meanings      []scopeir.ExportMeaning
+		typeOnly      bool
+		localDef      bool
+	}
+	want := []expectedExport{
+		{scopeir.ExportDirect, "alpha", "alpha", "alpha = 1", "alpha", "export const alpha = 1, beta = 2;", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false, true},
+		{scopeir.ExportDirect, "beta", "beta", "beta = 2", "beta", "export const alpha = 1, beta = 2;", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false, true},
+		{scopeir.ExportDirect, "left", "left", "left", "left", "export let {left, source: alias} = input;", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false, true},
+		{scopeir.ExportDirect, "alias", "alias", "source: alias", "alias", "export let {left, source: alias} = input;", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false, true},
+		{scopeir.ExportDirect, "run", "run", "function run() {}", "run", "export function run() {}", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false, true},
+		{scopeir.ExportDirect, "generate", "generate", "function* generate() { yield 1; }", "generate", "export function* generate() { yield 1; }", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false, false},
+		{scopeir.ExportDirect, "Service", "Service", "class Service {}", "Service", "export class Service {}", []scopeir.ExportMeaning{scopeir.ExportMeaningType, scopeir.ExportMeaningValue}, false, true},
+		{scopeir.ExportDirect, "Mode", "Mode", "enum Mode { A }", "Mode", "export enum Mode { A }", []scopeir.ExportMeaning{scopeir.ExportMeaningType, scopeir.ExportMeaningValue}, false, true},
+		{scopeir.ExportDirect, "Shape", "Shape", "interface Shape {}", "Shape", "export interface Shape {}", []scopeir.ExportMeaning{scopeir.ExportMeaningType}, true, true},
+		{scopeir.ExportDirect, "Identifier", "Identifier", "type Identifier = string;", "Identifier", "export type Identifier = string;", []scopeir.ExportMeaning{scopeir.ExportMeaningType}, true, true},
+		{scopeir.ExportDirect, "Space", "Space", "namespace Space {}", "Space", "export namespace Space {}", []scopeir.ExportMeaning{scopeir.ExportMeaningNamespace, scopeir.ExportMeaningValue}, false, false},
+		{scopeir.ExportDirect, "DeclaredService", "DeclaredService", "class DeclaredService {}", "DeclaredService", "export declare class DeclaredService {}", []scopeir.ExportMeaning{scopeir.ExportMeaningType, scopeir.ExportMeaningValue}, false, true},
+		{scopeir.ExportDirect, "declaredRun", "declaredRun", "function declaredRun(): void;", "declaredRun", "export declare function declaredRun(): void;", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false, true},
+		{scopeir.ExportDirect, "declaredValue", "declaredValue", "declaredValue: string", "declaredValue", "export declare const declaredValue: string;", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false, true},
+		{scopeir.ExportDefault, "default", "namedDefaultFunction", "function namedDefaultFunction() {}", "namedDefaultFunction", "export default function namedDefaultFunction() {}", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false, true},
+		{scopeir.ExportDefault, "default", "", "function () {}", "", "export default function () {}", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false, false},
+		{scopeir.ExportDefault, "default", "NamedDefaultClass", "class NamedDefaultClass {}", "NamedDefaultClass", "export default class NamedDefaultClass {}", []scopeir.ExportMeaning{scopeir.ExportMeaningType, scopeir.ExportMeaningValue}, false, true},
+		{scopeir.ExportDefault, "default", "", "class {}", "", "export default class {}", []scopeir.ExportMeaning{scopeir.ExportMeaningType, scopeir.ExportMeaningValue}, false, false},
+		{scopeir.ExportDefault, "default", "DefaultShape", "interface DefaultShape {}", "DefaultShape", "export default interface DefaultShape {}", []scopeir.ExportMeaning{scopeir.ExportMeaningType}, true, true},
+		{scopeir.ExportDefault, "default", "", "alpha + beta", "", "export default alpha + beta;", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false, false},
+	}
+	for _, expected := range want {
+		fact := requireExportFactForRange(t, ir, source, expected.kind, expected.exported, expected.local, expected.rangeText)
+		assertExportFactFields(t, fact, source, "src/direct-exports.ts", "hash-direct-exports", expected.selectionText, expected.statementText, expected.meanings, expected.typeOnly)
+		if expected.localDef != (fact.LocalDefID != "") {
+			t.Fatalf("export %s/%s LocalDefID = %q, want present=%t", expected.exported, expected.rangeText, fact.LocalDefID, expected.localDef)
+		}
+		if fact.LocalDefID != "" {
+			assertDefinitionMatchesExport(t, ir, fact)
+		}
+	}
+	assertNoExportNamed(t, ir, "hidden")
+	assertDefinitionVisibilityUnchanged(t, ir)
+
+	mergedSource := []byte("interface Merged { left: string }\ninterface Merged { right: number }\nexport { Merged };\n")
+	merged := parseAndExtract(t, "src/merged-export.ts", "hash-merged-export", scanner.TypeScript, mergedSource)
+	if len(merged.Exports) != 1 || len(merged.ExportDiagnostics) != 0 {
+		t.Fatalf("merged local export facts/diagnostics = %d/%#v, want 1/0", len(merged.Exports), merged.ExportDiagnostics)
+	}
+	mergedFact := requireExportFactForRange(t, merged, mergedSource, scopeir.ExportNamed, "Merged", "Merged", "Merged")
+	assertExportFactFields(t, mergedFact, mergedSource, "src/merged-export.ts", "hash-merged-export", "Merged", "export { Merged };", []scopeir.ExportMeaning{scopeir.ExportMeaningType}, true)
+	if mergedFact.LocalDefID != "" {
+		t.Fatalf("merged local export LocalDefID = %q, want empty ambiguous occurrence identity", mergedFact.LocalDefID)
+	}
+}
+
+func TestExtractTypeScriptLocalAliasAndTypeOnlyExportFacts(t *testing.T) {
+	source := []byte(`const localValue = 1;
+class LocalClass {}
+interface LocalInterface {}
+type LocalType = string;
+export { localValue, LocalClass as PublicClass, LocalInterface as PublicInterface, localValue as default };
+export type { LocalInterface, LocalType as PublicType };
+export { type LocalInterface as InlineInterface, type LocalType };
+export { forward };
+const forward = 1;
+const hidden = 2;
+export {};
+export type {};
+`)
+	ir := parseAndExtract(t, "src/local-exports.ts", "hash-local-exports", scanner.TypeScript, source)
+
+	if len(ir.Exports) != 9 || len(ir.ExportDiagnostics) != 0 {
+		t.Fatalf("local export facts/diagnostics = %d/%#v, want 9/0", len(ir.Exports), ir.ExportDiagnostics)
+	}
+	type expectedExport struct {
+		kind          scopeir.ExportKind
+		exported      string
+		local         string
+		rangeText     string
+		selectionText string
+		statementText string
+		meanings      []scopeir.ExportMeaning
+		typeOnly      bool
+	}
+	want := []expectedExport{
+		{scopeir.ExportNamed, "localValue", "localValue", "localValue", "localValue", "export { localValue, LocalClass as PublicClass, LocalInterface as PublicInterface, localValue as default };", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false},
+		{scopeir.ExportAlias, "PublicClass", "LocalClass", "LocalClass as PublicClass", "PublicClass", "export { localValue, LocalClass as PublicClass, LocalInterface as PublicInterface, localValue as default };", []scopeir.ExportMeaning{scopeir.ExportMeaningType, scopeir.ExportMeaningValue}, false},
+		{scopeir.ExportAlias, "PublicInterface", "LocalInterface", "LocalInterface as PublicInterface", "PublicInterface", "export { localValue, LocalClass as PublicClass, LocalInterface as PublicInterface, localValue as default };", []scopeir.ExportMeaning{scopeir.ExportMeaningType}, true},
+		{scopeir.ExportAlias, "default", "localValue", "localValue as default", "default", "export { localValue, LocalClass as PublicClass, LocalInterface as PublicInterface, localValue as default };", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false},
+		{scopeir.ExportNamed, "LocalInterface", "LocalInterface", "LocalInterface", "LocalInterface", "export type { LocalInterface, LocalType as PublicType };", []scopeir.ExportMeaning{scopeir.ExportMeaningType}, true},
+		{scopeir.ExportAlias, "PublicType", "LocalType", "LocalType as PublicType", "PublicType", "export type { LocalInterface, LocalType as PublicType };", []scopeir.ExportMeaning{scopeir.ExportMeaningType}, true},
+		{scopeir.ExportAlias, "InlineInterface", "LocalInterface", "type LocalInterface as InlineInterface", "InlineInterface", "export { type LocalInterface as InlineInterface, type LocalType };", []scopeir.ExportMeaning{scopeir.ExportMeaningType}, true},
+		{scopeir.ExportNamed, "LocalType", "LocalType", "type LocalType", "LocalType", "export { type LocalInterface as InlineInterface, type LocalType };", []scopeir.ExportMeaning{scopeir.ExportMeaningType}, true},
+		{scopeir.ExportNamed, "forward", "forward", "forward", "forward", "export { forward };", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}, false},
+	}
+	for _, expected := range want {
+		fact := requireExportFactForRange(t, ir, source, expected.kind, expected.exported, expected.local, expected.rangeText)
+		assertExportFactFields(t, fact, source, "src/local-exports.ts", "hash-local-exports", expected.selectionText, expected.statementText, expected.meanings, expected.typeOnly)
+		if fact.LocalDefID == "" {
+			t.Fatalf("local export %s/%s has no LocalDefID", expected.exported, expected.rangeText)
+		}
+		assertDefinitionMatchesExport(t, ir, fact)
+	}
+	assertNoExportNamed(t, ir, "hidden")
+	assertDefinitionVisibilityUnchanged(t, ir)
+
+	nestedSource := []byte("if (condition) { const blockValue = 1; class BlockClass {} }\nexport { blockValue, BlockClass };\n")
+	nested := parseAndExtract(t, "src/nested-local-export.ts", "hash-nested-local-export", scanner.TypeScript, nestedSource)
+	if len(nested.Exports) != 2 || len(nested.ExportDiagnostics) != 0 {
+		t.Fatalf("nested local export facts/diagnostics = %d/%#v, want 2/0", len(nested.Exports), nested.ExportDiagnostics)
+	}
+	for _, name := range []string{"blockValue", "BlockClass"} {
+		fact := requireExportFactForRange(t, nested, nestedSource, scopeir.ExportNamed, name, name, name)
+		if fact.LocalDefID != "" || len(fact.Meanings) != 0 || fact.TypeOnly {
+			t.Fatalf("nested declaration was treated as module-local evidence: %#v", fact)
+		}
+	}
+}
+
+func TestExtractJavaScriptDirectDefaultAndLocalExportFacts(t *testing.T) {
+	source := []byte(`export const first = 1, second = 2;
+export function start() {}
+export default function namedDefaultFunction() {}
+export default function () {}
+export default class NamedDefaultClass {}
+export default class {}
+export default first + second;
+export { first, second as renamed, first as default };
+const hidden = 3;
+`)
+	ir := parseAndExtract(t, "src/javascript-exports.js", "hash-javascript-exports", scanner.JavaScript, source)
+
+	if len(ir.Exports) != 11 || len(ir.ExportDiagnostics) != 0 {
+		t.Fatalf("JavaScript export facts/diagnostics = %d/%#v, want 11/0", len(ir.Exports), ir.ExportDiagnostics)
+	}
+	checks := []struct {
+		kind          scopeir.ExportKind
+		exported      string
+		local         string
+		rangeText     string
+		selectionText string
+		meanings      []scopeir.ExportMeaning
+	}{
+		{scopeir.ExportDirect, "first", "first", "first = 1", "first", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}},
+		{scopeir.ExportDirect, "second", "second", "second = 2", "second", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}},
+		{scopeir.ExportDirect, "start", "start", "function start() {}", "start", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}},
+		{scopeir.ExportDefault, "default", "namedDefaultFunction", "function namedDefaultFunction() {}", "namedDefaultFunction", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}},
+		{scopeir.ExportDefault, "default", "", "function () {}", "", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}},
+		{scopeir.ExportDefault, "default", "NamedDefaultClass", "class NamedDefaultClass {}", "NamedDefaultClass", []scopeir.ExportMeaning{scopeir.ExportMeaningType, scopeir.ExportMeaningValue}},
+		{scopeir.ExportDefault, "default", "", "class {}", "", []scopeir.ExportMeaning{scopeir.ExportMeaningType, scopeir.ExportMeaningValue}},
+		{scopeir.ExportDefault, "default", "", "first + second", "", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}},
+		{scopeir.ExportNamed, "first", "first", "first", "first", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}},
+		{scopeir.ExportAlias, "renamed", "second", "second as renamed", "renamed", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}},
+		{scopeir.ExportAlias, "default", "first", "first as default", "default", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}},
+	}
+	for _, check := range checks {
+		fact := requireExportFactForRange(t, ir, source, check.kind, check.exported, check.local, check.rangeText)
+		if fact.FilePath != "src/javascript-exports.js" || fact.FileHash != "hash-javascript-exports" ||
+			!reflect.DeepEqual(fact.Meanings, check.meanings) || fact.TypeOnly || fact.TargetRaw != nil ||
+			fact.TargetExportedName != "" {
+			t.Fatalf("JavaScript export fact fields = %#v, want meanings=%#v and no later-slice state", fact, check.meanings)
+		}
+		if check.selectionText == "" {
+			if fact.SelectionRange != nil {
+				t.Fatalf("anonymous default selection = %#v, want nil", fact.SelectionRange)
+			}
+		} else if fact.SelectionRange == nil || sourceTextForAnyRange(source, *fact.SelectionRange) != check.selectionText {
+			t.Fatalf("JavaScript export %s selection = %#v, want %q", check.rangeText, fact.SelectionRange, check.selectionText)
+		}
+	}
+	assertNoExportNamed(t, ir, "hidden")
+	assertDefinitionVisibilityUnchanged(t, ir)
+}
+
+func TestExtractExportDiagnosticsAndLaterSliceBoundaries(t *testing.T) {
+	tests := []struct {
+		name      string
+		source    string
+		code      scopeir.ExportDiagnosticCode
+		rangeText string
+	}{
+		{"unsupported-export-assignment", "const Service = 1;\nexport = Service;\n", scopeir.ExportDiagnosticUnsupportedSyntax, "export = Service;"},
+		{"unsupported-global-namespace-export", "export as namespace Library;\n", scopeir.ExportDiagnosticUnsupportedSyntax, "export as namespace Library;"},
+		{"unsupported-string-local-name", "const alpha = 1;\nexport { \"not-local\" };\n", scopeir.ExportDiagnosticUnsupportedSyntax, "\"not-local\""},
+		{"unsupported-nested-namespace-member", "namespace Box { export const nested = 1; }\n", scopeir.ExportDiagnosticUnsupportedSyntax, "export const nested = 1;"},
+		{"malformed-local-alias", "const alpha = 1;\nexport { alpha as };\n", scopeir.ExportDiagnosticMalformedSyntax, "as"},
+		{"malformed-default", "export default;\n", scopeir.ExportDiagnosticMalformedSyntax, "export default;"},
+		{"malformed-direct-declaration", "export const ;\n", scopeir.ExportDiagnosticMalformedSyntax, "export const ;"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			source := []byte(test.source)
+			ir := parseAndExtract(t, "src/export-diagnostic.ts", "hash-export-diagnostic", scanner.TypeScript, source)
+			if len(ir.Exports) != 0 || len(ir.ExportDiagnostics) != 1 {
+				t.Fatalf("diagnostic export facts/diagnostics = %d/%#v, want 0/1", len(ir.Exports), ir.ExportDiagnostics)
+			}
+			diagnostic := ir.ExportDiagnostics[0]
+			if diagnostic.Code != test.code || diagnostic.FilePath != "src/export-diagnostic.ts" ||
+				diagnostic.FileHash != "hash-export-diagnostic" || diagnostic.NodeKind == "" ||
+				diagnostic.Reason == "" || diagnostic.Provenance.SiteKind == "" ||
+				sourceTextForAnyRange(source, diagnostic.Range) != test.rangeText {
+				t.Fatalf("export diagnostic = %#v, want code=%q range=%q", diagnostic, test.code, test.rangeText)
+			}
+		})
+	}
+
+	empty := parseAndExtract(t, "src/empty-exports.ts", "hash-empty-exports", scanner.TypeScript, []byte("export {};\nexport type {};\nconst hidden = 1;\n"))
+	if len(empty.Exports) != 0 || len(empty.ExportDiagnostics) != 0 {
+		t.Fatalf("empty local export clauses = exports:%#v diagnostics:%#v, want none", empty.Exports, empty.ExportDiagnostics)
+	}
+
+	mixedSource := []byte("const good = 1;\nconst broken = 2;\nexport { good, broken as };\nexport const valid = 1, ;\n")
+	mixed := parseAndExtract(t, "src/mixed-malformed-exports.ts", "hash-mixed-malformed-exports", scanner.TypeScript, mixedSource)
+	if len(mixed.Exports) != 2 || len(mixed.ExportDiagnostics) != 2 {
+		t.Fatalf("mixed malformed export facts/diagnostics = %d/%#v, want 2/2", len(mixed.Exports), mixed.ExportDiagnostics)
+	}
+	good := requireExportFactForRange(t, mixed, mixedSource, scopeir.ExportNamed, "good", "good", "good")
+	valid := requireExportFactForRange(t, mixed, mixedSource, scopeir.ExportDirect, "valid", "valid", "valid = 1")
+	if good.LocalDefID == "" || valid.LocalDefID == "" {
+		t.Fatalf("mixed malformed statement lost valid sibling definition evidence: good=%#v valid=%#v", good, valid)
+	}
+	assertNoExportNamed(t, mixed, "broken")
+	for _, diagnostic := range mixed.ExportDiagnostics {
+		if diagnostic.Code != scopeir.ExportDiagnosticMalformedSyntax {
+			t.Fatalf("mixed malformed diagnostic = %#v, want malformed code", diagnostic)
+		}
+	}
+
+	patternSource := []byte("export const {kept, ...{bad}} = input;\n")
+	pattern := parseAndExtract(t, "src/unsupported-export-pattern.ts", "hash-unsupported-export-pattern", scanner.TypeScript, patternSource)
+	if len(pattern.Exports) != 1 || len(pattern.ExportDiagnostics) != 1 {
+		t.Fatalf("unsupported export pattern facts/diagnostics = %d/%#v, want 1/1", len(pattern.Exports), pattern.ExportDiagnostics)
+	}
+	requireExportFactForRange(t, pattern, patternSource, scopeir.ExportDirect, "kept", "kept", "kept")
+	if pattern.ExportDiagnostics[0].Code != scopeir.ExportDiagnosticUnsupportedSyntax ||
+		sourceTextForAnyRange(patternSource, pattern.ExportDiagnostics[0].Range) != "{bad}" {
+		t.Fatalf("unsupported export pattern diagnostic = %#v, want unsupported {bad} site", pattern.ExportDiagnostics[0])
+	}
+
+	laterSource := []byte("export { Source as Alias } from './named';\nexport * from './star';\nexport * as ns from './namespace';\nexport { Source } from ;\nexport * from ;\nexport * as ns from ;\n")
+	later := parseAndExtract(t, "src/later-slice.ts", "hash-later-slice", scanner.TypeScript, laterSource)
+	if len(later.Exports) != 0 || len(later.ExportDiagnostics) != 0 {
+		t.Fatalf("P4-B emitted P4-B1 state: exports=%#v diagnostics=%#v", later.Exports, later.ExportDiagnostics)
+	}
+	requireImport(t, later, scopeir.ImportReexport, "Alias", "Source", "./named")
+	wildcards := 0
+	for _, item := range later.Imports {
+		if item.Kind == scopeir.ImportWildcard {
+			wildcards++
+		}
+	}
+	if wildcards != 2 {
+		t.Fatalf("source-bearing compatibility wildcard count = %d, want 2: %#v", wildcards, later.Imports)
+	}
 }
 
 func TestExtractVariableBindingPatternsEmitScopeIRFacts(t *testing.T) {
@@ -2153,6 +2439,118 @@ func parseAndExtract(t *testing.T, filePath string, fileHash string, language sc
 		t.Fatalf("extract failed: %v", err)
 	}
 	return ir
+}
+
+func requireExportFactForRange(
+	t *testing.T,
+	ir scopeir.ScopeIR,
+	source []byte,
+	kind scopeir.ExportKind,
+	exportedName string,
+	localName string,
+	rangeText string,
+) scopeir.ExportFact {
+	t.Helper()
+	matches := make([]scopeir.ExportFact, 0, 1)
+	for _, fact := range ir.Exports {
+		if fact.Kind == kind && fact.ExportedName == exportedName && fact.LocalName == localName &&
+			sourceTextForAnyRange(source, fact.Range) == rangeText {
+			matches = append(matches, fact)
+		}
+	}
+	if len(matches) != 1 {
+		t.Fatalf("export fact %s/%s/%s range %q matches = %d, want 1: %#v", kind, exportedName, localName, rangeText, len(matches), ir.Exports)
+	}
+	return matches[0]
+}
+
+func assertExportFactFields(
+	t *testing.T,
+	fact scopeir.ExportFact,
+	source []byte,
+	filePath string,
+	fileHash string,
+	selectionText string,
+	statementText string,
+	meanings []scopeir.ExportMeaning,
+	typeOnly bool,
+) {
+	t.Helper()
+	if fact.FilePath != filePath || fact.FileHash != fileHash || fact.TargetRaw != nil ||
+		fact.TargetExportedName != "" || !reflect.DeepEqual(fact.Meanings, meanings) ||
+		fact.TypeOnly != typeOnly || fact.Provenance.SiteKind == "" ||
+		sourceTextForAnyRange(source, fact.Provenance.StatementRange) != statementText {
+		t.Fatalf("export fact fields = %#v, want file/hash=%q/%q meanings=%#v typeOnly=%t statement=%q and no later-slice state", fact, filePath, fileHash, meanings, typeOnly, statementText)
+	}
+	if selectionText == "" {
+		if fact.SelectionRange != nil {
+			t.Fatalf("export fact selection = %#v, want nil: %#v", fact.SelectionRange, fact)
+		}
+		return
+	}
+	if fact.SelectionRange == nil || sourceTextForAnyRange(source, *fact.SelectionRange) != selectionText {
+		t.Fatalf("export fact selection = %#v, want %q: %#v", fact.SelectionRange, selectionText, fact)
+	}
+}
+
+func assertDefinitionMatchesExport(t *testing.T, ir scopeir.ScopeIR, fact scopeir.ExportFact) {
+	t.Helper()
+	for _, definition := range ir.Definitions {
+		if definition.ID != fact.LocalDefID {
+			continue
+		}
+		if definition.Name != fact.LocalName {
+			t.Fatalf("export LocalDefID points to %q, want local %q: fact=%#v definition=%#v", definition.Name, fact.LocalName, fact, definition)
+		}
+		return
+	}
+	t.Fatalf("export LocalDefID %q has no definition: %#v", fact.LocalDefID, fact)
+}
+
+func assertNoExportNamed(t *testing.T, ir scopeir.ScopeIR, name string) {
+	t.Helper()
+	for _, fact := range ir.Exports {
+		if fact.ExportedName == name || fact.LocalName == name {
+			t.Fatalf("negative control %q emitted export fact %#v", name, fact)
+		}
+	}
+}
+
+func assertDefinitionVisibilityUnchanged(t *testing.T, ir scopeir.ScopeIR) {
+	t.Helper()
+	for _, definition := range ir.Definitions {
+		if definition.Visibility != "" {
+			t.Fatalf("export extraction changed definition visibility: %#v", definition)
+		}
+	}
+}
+
+func sourceTextForAnyRange(source []byte, rng scopeir.Range) string {
+	start, ok := sourceOffsetForPosition(source, rng.StartLine, rng.StartCol)
+	if !ok {
+		return ""
+	}
+	end, ok := sourceOffsetForPosition(source, rng.EndLine, rng.EndCol)
+	if !ok || end < start {
+		return ""
+	}
+	return string(source[start:end])
+}
+
+func sourceOffsetForPosition(source []byte, line int, column int) (int, bool) {
+	if line < 1 || column < 0 {
+		return 0, false
+	}
+	offset := 0
+	for currentLine := 1; currentLine < line; currentLine++ {
+		newline := bytes.IndexByte(source[offset:], '\n')
+		if newline < 0 {
+			return 0, false
+		}
+		offset += newline + 1
+	}
+	offset += column
+	return offset, offset <= len(source)
 }
 
 func requireDefinition(t *testing.T, ir scopeir.ScopeIR, name string, label scopeir.NodeLabel) scopeir.DefinitionFact {

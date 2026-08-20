@@ -51,15 +51,18 @@ type collector struct {
 	returnTypesByCallableName map[string]string
 	importedLocalNames        map[string]struct{}
 
-	definitions     []scopeir.DefinitionFact
-	bindingLeaves   []scopeir.BindingLeafFact
-	diagnostics     []scopeir.ExtractionDiagnosticFact
-	imports         []scopeir.ImportFact
-	calls           []scopeir.CallSiteFact
-	accesses        []scopeir.AccessFact
-	heritage        []scopeir.HeritageFact
-	typeAnnotations []scopeir.TypeAnnotationFact
-	returnTypes     []scopeir.ReturnTypeFact
+	definitions       []scopeir.DefinitionFact
+	bindingLeaves     []scopeir.BindingLeafFact
+	diagnostics       []scopeir.ExtractionDiagnosticFact
+	exportStatements  []*sitter.Node
+	exports           []scopeir.ExportFact
+	exportDiagnostics []scopeir.ExportDiagnosticFact
+	imports           []scopeir.ImportFact
+	calls             []scopeir.CallSiteFact
+	accesses          []scopeir.AccessFact
+	heritage          []scopeir.HeritageFact
+	typeAnnotations   []scopeir.TypeAnnotationFact
+	returnTypes       []scopeir.ReturnTypeFact
 }
 
 func newCollector(request Request) *collector {
@@ -75,6 +78,7 @@ func newCollector(request Request) *collector {
 }
 
 func (c *collector) result() scopeir.ScopeIR {
+	c.emitPendingExportFacts()
 	moduleScope := ""
 	for _, scope := range c.scopes {
 		if scope.Kind == scopeir.ScopeModule {
@@ -91,6 +95,8 @@ func (c *collector) result() scopeir.ScopeIR {
 		Definitions:           c.definitions,
 		BindingLeaves:         c.bindingLeaves,
 		ExtractionDiagnostics: c.diagnostics,
+		Exports:               c.exports,
+		ExportDiagnostics:     c.exportDiagnostics,
 		Imports:               c.imports,
 		Calls:                 c.calls,
 		Accesses:              c.accesses,

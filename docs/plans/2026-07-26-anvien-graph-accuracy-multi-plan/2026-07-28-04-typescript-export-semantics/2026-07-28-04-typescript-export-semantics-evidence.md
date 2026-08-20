@@ -122,7 +122,7 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below. Th
 | `E4-P4A-BOUNDARY1` | real production fact round trip and unsupported diagnostic count | recorded — nearest six-package product boundary PASS; exact contract counts below |
 | `E4-P4A-REVIEW1` | independent Supervisor PASS | recorded — PASS report `1B8DEB2F...175573B2` |
 | `E4-P4A-DETECT1` | pre-commit Anvien detect-changes result | recorded — exit `0`, MEDIUM closure risk, exact tracked path set, complete semantics, zero persisted health regression |
-| `E4-P4A-COMMIT1` | isolated accepted slice commit | pending |
+| `E4-P4A-COMMIT1` | isolated accepted slice commit | recorded — `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43` |
 
 #### `E4-P4A-IMPACT1` — fresh graph, file-detail, and blast radius
 
@@ -166,12 +166,12 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below. Th
 
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
-| `E4-P4B-IMPACT1` | exact direct-export extraction file/symbol impact | pending |
-| `E4-P4B-SRC1` | production direct/default/alias/type-only extraction | pending |
-| `E4-P4B-BUILD1` | full build | pending |
-| `E4-P4B-TEST1` | direct/default/anonymous/alias/type-only/multi-specifier matrix and negative controls | pending |
-| `E4-P4B-BOUNDARY1` | real provider/ScopeIR direct export facts and exact counts | pending |
-| `E4-P4B-REVIEW1` | independent Supervisor PASS | pending |
+| `E4-P4B-IMPACT1` | exact direct-export extraction file/symbol impact | recorded — fresh excluded graph/file-detail/impact; HIGH file warnings and LOW exact-symbol impacts |
+| `E4-P4B-SRC1` | production direct/default/alias/type-only extraction | recorded — exact three-file candidate; one fact per eligible site; structured diagnostics; visibility and re-export compatibility preserved |
+| `E4-P4B-BUILD1` | full build | recorded — canonical `npm run full-build` exit `0` |
+| `E4-P4B-TEST1` | direct/default/anonymous/alias/type-only/multi-specifier matrix and negative controls | recorded — focused TS/JS and diagnostics matrices PASS |
+| `E4-P4B-BOUNDARY1` | real provider/ScopeIR direct export facts and exact counts | recorded — nearest `tsjs`, `scopeir`, and `providers` boundary PASS |
+| `E4-P4B-REVIEW1` | independent Supervisor PASS | recorded — REVIEW1 REJECT sole cleanup finding closed; resubmission PASS report `rp_supervisor_260821_001554_by_gpt-5_child04_p4b_export_facts_resubmission.md` |
 | `E4-P4B-DETECT1` | pre-commit Anvien detect-changes result | pending |
 | `E4-P4B-COMMIT1` | isolated accepted slice commit | pending |
 
@@ -223,4 +223,18 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below. Th
 | `E4-PNC-COMMIT1` | final known commit/worktree state | pending |
 | `E4-PNC-HANDOFF1` | Child 05 actual-status refreshed from accepted immutable syntax/direct-export results and exact opening condition recorded | pending |
 
-No implementation or closure claim is made in this ledger yet.
+P4-B source/build/boundary/cleanup/Supervisor acceptance is recorded; Main-owned detect and isolated commit remain pending.
+
+### `E4-P4B-SOURCE1` — source and cleanup clearance
+
+- Fresh excluded graph refresh before Main-owned change detection: `anvien analyze . --force --exclude 'internal/aicontext/skills/**' --exclude '.claude/skills/**'` exit `0`; scanned/parsed/failed `1,136/626/0`; graph `81,772/121,285` nodes/relationships; forbidden skill trees excluded.
+- Exact candidate remains `internal/providers/tsjs/imports.go`, `internal/providers/tsjs/extract.go`, and `internal/providers/tsjs/extract_test.go`; current diff is `1,186` insertions / `10` deletions and no other production/test path.
+- `DefinitionFact.Visibility` is unchanged; source-bearing `ImportReexport`/`ImportWildcard` compatibility remains intact; no P4-B1/P4-C/P4-C2/Child 05 state was added.
+- Structured unsupported/malformed diagnostics, direct/default/local alias/type-only facts, cardinality, meaning lanes, negative controls, and forward local-definition evidence are covered by the focused matrix and nearest boundary.
+- Cleanup resubmission proves `.tmp/p4b_ast_probe/` and all matching probe directories are absent; the prior Supervisor `REJECT` is retained as historical evidence and the resubmission `PASS` closes the artifact lifecycle invariant.
+
+### `E4-P4B-REVIEW1` — independent Supervisor acceptance
+
+- Prior report `reports/Supervisor/rp_supervisor_260821_001125_by_gpt-5_child04_p4b_export_facts.md` recorded the sole cleanup blocker.
+- Resubmission report `reports/Supervisor/rp_supervisor_260821_001554_by_gpt-5_child04_p4b_export_facts_resubmission.md` is `PASS`; residual same-invariant surfaces are none.
+- Main-owned `E4-P4B-DETECT1` and `E4-P4B-COMMIT1` remain pending until fresh staged detection and the isolated commit.

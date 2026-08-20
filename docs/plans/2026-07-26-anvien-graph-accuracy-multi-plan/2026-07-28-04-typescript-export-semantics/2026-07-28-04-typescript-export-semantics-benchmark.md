@@ -43,8 +43,12 @@
 | P4-A | forbidden later-slice JSON fields present | fields / checked names | 0/7 | 0/7 | 0/7 | 0/7 | 0 | `E4-P4A-SRC1`, `E4-P4A-BOUNDARY1` |
 | P4-A | closure excluded analyze inventory | scanned / parsed code / failed | 1,126 / 626 / 0 at P0 | 1,130 / 626 / 0 | 1,130 / 626 / 0 | current accepted closure basis | +4 / 0 / 0 | `E4-P4A-DETECT1` |
 | P4-A | closure excluded graph inventory | nodes / relationships | 80,908 / 120,167 at P0 | 81,132 / 120,514 | 81,132 / 120,514 | current accepted closure basis | +224 / +347 | `E4-P4A-DETECT1` |
-| P4-B | direct/default/alias/type-only syntax cases | first-class fact paths / inventoried classes | 0/4 | pending | pending | 4/4 | pending | `E0-P0A-SRC1`, `E4-P4B-TEST1` |
-| P4-B | false-positive direct exports in negative controls | definitions | not fixture-measured; P4-B oracle required | pending | pending | 0 | pending | `E4-P4B-TEST1` |
+| P4-B | direct/default/alias/type-only syntax cases | first-class fact paths / inventoried classes | 0/4 | 4/4 | 4/4 | 4/4 | +4/4 | `E4-P4B-TEST1`, `E4-P4B-BOUNDARY1` |
+| P4-B | false-positive direct exports in negative controls | definitions | not fixture-measured; P4-B oracle required | 0 | 0 | 0 | 0 | `E4-P4B-TEST1` |
+| P4-B | focused direct/export diagnostic matrix | passed tests / selected tests | 0/0 | 4/4 | 4/4 | 4/4 | +4/4 | `E4-P4B-TEST1` |
+| P4-B | nearest provider/ScopeIR boundary packages | passed packages / selected packages | 0/0 | 3/3 | 3/3 | 3/3 | +3/3 | `E4-P4B-BOUNDARY1` |
+| P4-B | excluded graph inventory at review basis | scanned / parsed / failed | 1,130 / 626 / 0 | 1,136 / 626 / 0 | 1,136 / 626 / 0 | current closure basis | +6 / 0 / 0 | `E4-P4B-IMPACT1` |
+| P4-B | excluded graph inventory at review basis | nodes / relationships | 81,132 / 120,514 | 81,772 / 121,285 | 81,772 / 121,285 | current closure basis | +640 / +771 | `E4-P4B-IMPACT1` |
 | P4-B1 | named/star/namespace/type-only re-export syntax cases | first-class fact paths / inventoried classes | 0/4; two import-compatibility paths exist | pending | pending | 4/4 | pending | `E0-P0A-SRC1`, `E4-P4B1-TEST1` |
 | P4-B1 | terminal-resolution fields populated by Child 04 | fields | 0 current Child 04 fields | pending | pending | 0 | pending | `E0-P0A-SRC1`, `E4-P4B1-BOUNDARY1` |
 | P4-C | graph direct-export fact conservation | graph records / accepted facts | 0/0; no source export collection | pending | pending | 1.0 exactly | pending | `E0-P0A-SRC1`, `E4-P4C-TEST1` |
