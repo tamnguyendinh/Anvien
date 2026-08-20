@@ -75,6 +75,40 @@ const (
 	ImportDynamicUnresolved ImportKind = "dynamic-unresolved"
 )
 
+// ExportKind records the source-level form of one exported binding or
+// specifier. It does not describe terminal resolution or public-API
+// reachability.
+type ExportKind string
+
+const (
+	// ExportDirect is a declaration carrying its own export modifier.
+	ExportDirect ExportKind = "direct"
+	// ExportNamed is a local named export specifier without an alias.
+	ExportNamed ExportKind = "named"
+	// ExportDefault is a default declaration or anonymous default expression.
+	ExportDefault ExportKind = "default"
+	// ExportAlias is a local export specifier whose exported name differs from
+	// its local name.
+	ExportAlias ExportKind = "alias"
+	// ExportReexport is a named/default specifier with a source module clause.
+	ExportReexport ExportKind = "reexport"
+	// ExportStar is an `export * from` source clause.
+	ExportStar ExportKind = "star"
+	// ExportNamespace is an `export * as ns from` source clause.
+	ExportNamespace ExportKind = "namespace"
+)
+
+// ExportMeaning identifies one semantic lane supplied by an export site.
+// ExportFact stores these lanes as a canonical set because declarations such
+// as classes and enums can contribute both value and type meanings.
+type ExportMeaning string
+
+const (
+	ExportMeaningValue     ExportMeaning = "value"
+	ExportMeaningType      ExportMeaning = "type"
+	ExportMeaningNamespace ExportMeaning = "namespace"
+)
+
 type TypeRefSource string
 
 const (

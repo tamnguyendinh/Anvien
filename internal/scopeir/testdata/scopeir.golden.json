@@ -98,6 +98,93 @@
       "isAsync": true
     }
   ],
+  "exports": [
+    {
+      "filePath": "src/app.ts",
+      "fileHash": "hash-app",
+      "kind": "direct",
+      "exportedName": "User",
+      "localName": "User",
+      "localDefId": "def:src/app.ts#2:0:Class:User",
+      "meanings": [
+        "type",
+        "value"
+      ],
+      "typeOnly": false,
+      "range": {
+        "startLine": 2,
+        "startCol": 0,
+        "endLine": 2,
+        "endCol": 18
+      },
+      "selectionRange": {
+        "startLine": 2,
+        "startCol": 7,
+        "endLine": 2,
+        "endCol": 11
+      },
+      "provenance": {
+        "statementRange": {
+          "startLine": 2,
+          "startCol": 0,
+          "endLine": 2,
+          "endCol": 18
+        },
+        "siteKind": "export_declaration"
+      }
+    },
+    {
+      "filePath": "src/app.ts",
+      "fileHash": "hash-app",
+      "kind": "reexport",
+      "exportedName": "User",
+      "targetRaw": "./user",
+      "targetExportedName": "User",
+      "meanings": [
+        "value"
+      ],
+      "typeOnly": false,
+      "range": {
+        "startLine": 7,
+        "startCol": 0,
+        "endLine": 7,
+        "endCol": 24
+      },
+      "provenance": {
+        "statementRange": {
+          "startLine": 7,
+          "startCol": 0,
+          "endLine": 7,
+          "endCol": 24
+        },
+        "siteKind": "export_specifier"
+      }
+    }
+  ],
+  "exportDiagnostics": [
+    {
+      "code": "tsjs.export.unsupported-syntax",
+      "filePath": "src/app.ts",
+      "fileHash": "hash-app",
+      "range": {
+        "startLine": 9,
+        "startCol": 0,
+        "endLine": 9,
+        "endCol": 14
+      },
+      "nodeKind": "export_statement",
+      "reason": "unsupported export form",
+      "provenance": {
+        "statementRange": {
+          "startLine": 9,
+          "startCol": 0,
+          "endLine": 9,
+          "endCol": 14
+        },
+        "siteKind": "export_statement"
+      }
+    }
+  ],
   "imports": [
     {
       "filePath": "src/app.ts",

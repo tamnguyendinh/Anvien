@@ -33,10 +33,16 @@
 
 | Plan Item | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-----------|--------|------|----------|--------|-------|--------|-------|----------|
-| P4-A | export fact serialization cases | passed / inventoried cases | 0 first-class cases | pending | pending | 100% | pending | `E0-P0A-SRC1`, `E4-P4A-TEST1` |
-| P4-A | export facts per eligible binding/specifier | facts / eligible sites | 0.0; no first-class fact contract | pending | pending | 1.0 exactly | pending | `E0-P0A-SRC1`, `E4-P4A-TEST1` |
-| P4-A | unsupported-export diagnostic coverage | diagnosed / unsupported fixtures | 0 export-specific diagnostic codes | pending | pending | 100% | pending | `E0-P0A-SRC1`, `E4-P4A-BOUNDARY1` |
-| P4-A | access fields changed by export fact creation | fields | 0; no export fact writer exists | pending | pending | 0 | pending | `E0-P0A-SRC1`, `E4-P4A-TEST1` |
+| P4-A | source-form export fact serialization cases | passed / inventoried cases | 0 first-class cases | 7/7 | 7/7 | 100% | +7 cases | `E4-P4A-TEST1`, `E4-P4A-BOUNDARY1` |
+| P4-A | export facts per supplied eligible binding/specifier site at the contract boundary | facts / supplied sites | 0.0; no first-class fact contract | 7/7 = 1.0 | 7/7 = 1.0 | 1.0 exactly | +1.0 | `E4-P4A-TEST1`, `E4-P4A-BOUNDARY1` |
+| P4-A | structured export diagnostic classes represented | represented / contract classes | 0/2 | 2/2 | 2/2 | 100% | +2 classes | `E4-P4A-TEST1`, `E4-P4A-BOUNDARY1` |
+| P4-A | access fields changed by export fact creation | fields | 0; no export fact writer exists | 0 | 0 | 0 | 0 | `E4-P4A-SRC1`, `E4-P4A-TEST1` |
+| P4-A | source-form kinds represented | kinds / required kinds | 0/7 | 7/7 | 7/7 | 7/7 | +7 kinds | `E4-P4A-TEST1`, `E4-P4A-BOUNDARY1` |
+| P4-A | meaning lanes represented | lanes / required lanes | 0/3 | 3/3 | 3/3 | 3/3 | +3 lanes | `E4-P4A-TEST1`, `E4-P4A-BOUNDARY1` |
+| P4-A | nested mutable export members deep-copied | members / mutable members | 0/3 | 3/3 | 3/3 | 3/3 | +3 members | `E4-P4A-TEST1`, `E4-P4A-BOUNDARY1` |
+| P4-A | forbidden later-slice JSON fields present | fields / checked names | 0/7 | 0/7 | 0/7 | 0/7 | 0 | `E4-P4A-SRC1`, `E4-P4A-BOUNDARY1` |
+| P4-A | closure excluded analyze inventory | scanned / parsed code / failed | 1,126 / 626 / 0 at P0 | 1,130 / 626 / 0 | 1,130 / 626 / 0 | current accepted closure basis | +4 / 0 / 0 | `E4-P4A-DETECT1` |
+| P4-A | closure excluded graph inventory | nodes / relationships | 80,908 / 120,167 at P0 | 81,132 / 120,514 | 81,132 / 120,514 | current accepted closure basis | +224 / +347 | `E4-P4A-DETECT1` |
 | P4-B | direct/default/alias/type-only syntax cases | first-class fact paths / inventoried classes | 0/4 | pending | pending | 4/4 | pending | `E0-P0A-SRC1`, `E4-P4B-TEST1` |
 | P4-B | false-positive direct exports in negative controls | definitions | not fixture-measured; P4-B oracle required | pending | pending | 0 | pending | `E4-P4B-TEST1` |
 | P4-B1 | named/star/namespace/type-only re-export syntax cases | first-class fact paths / inventoried classes | 0/4; two import-compatibility paths exist | pending | pending | 4/4 | pending | `E0-P0A-SRC1`, `E4-P4B1-TEST1` |

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/tamnguyendinh/anvien/internal/scanner"
@@ -209,6 +210,225 @@ func TestBindingCollectionsMarshalDeterministically(t *testing.T) {
 	}
 }
 
+func TestExportCollectionsAreDeepCopiedByNormalization(t *testing.T) {
+	targetRaw := "./source"
+	selection := Range{StartLine: 3, StartCol: 7, EndLine: 3, EndCol: 12}
+	ir := ScopeIR{
+		Definitions: []DefinitionFact{{
+			ID:         "def:src/export.ts#3:0:Class:Thing",
+			FilePath:   "src/export.ts",
+			Name:       "Thing",
+			Label:      NodeClass,
+			Range:      Range{StartLine: 3, EndLine: 3, EndCol: 17},
+			Visibility: "private",
+		}},
+		Exports: []ExportFact{{
+			FilePath:       "src/export.ts",
+			FileHash:       "hash-export",
+			Kind:           ExportDirect,
+			ExportedName:   "Thing",
+			LocalName:      "Thing",
+			LocalDefID:     "def:src/export.ts#3:0:Class:Thing",
+			Meanings:       []ExportMeaning{ExportMeaningValue, ExportMeaningType, ExportMeaningValue},
+			Range:          Range{StartLine: 3, EndLine: 3, EndCol: 17},
+			SelectionRange: &selection,
+			Provenance: ExportProvenance{
+				StatementRange: Range{StartLine: 3, EndLine: 3, EndCol: 17},
+				SiteKind:       "export_declaration",
+			},
+		}, {
+			FilePath:           "src/export.ts",
+			FileHash:           "hash-export",
+			Kind:               ExportReexport,
+			ExportedName:       "SourceThing",
+			TargetRaw:          &targetRaw,
+			TargetExportedName: "Thing",
+			Meanings:           []ExportMeaning{ExportMeaningValue},
+			Range:              Range{StartLine: 4, EndLine: 4, EndCol: 31},
+			Provenance: ExportProvenance{
+				StatementRange: Range{StartLine: 4, EndLine: 4, EndCol: 31},
+				SiteKind:       "export_specifier",
+			},
+		}},
+		ExportDiagnostics: []ExportDiagnosticFact{{
+			Code:     ExportDiagnosticUnsupportedSyntax,
+			FilePath: "src/export.ts",
+			Range:    Range{StartLine: 8, StartCol: 0, EndLine: 8, EndCol: 12},
+			NodeKind: "export_statement",
+			Reason:   "unsupported export form",
+			Provenance: ExportProvenance{
+				StatementRange: Range{StartLine: 8, EndLine: 8, EndCol: 12},
+				SiteKind:       "export_statement",
+			},
+		}},
+	}
+
+	for name, normalized := range map[string]ScopeIR{
+		"Normalized":     ir.Normalized(),
+		"NormalizeOwned": ir.NormalizeOwned(),
+	} {
+		wantMeanings := []ExportMeaning{ExportMeaningType, ExportMeaningValue}
+		if !reflect.DeepEqual(normalized.Exports[0].Meanings, wantMeanings) {
+			t.Fatalf("%s meanings = %#v, want canonical set %#v", name, normalized.Exports[0].Meanings, wantMeanings)
+		}
+		normalized.Exports[0].Meanings[0] = ExportMeaningNamespace
+		normalized.Exports[0].SelectionRange.StartCol = 99
+		*normalized.Exports[1].TargetRaw = "./mutated"
+		if ir.Exports[0].Meanings[0] != ExportMeaningValue ||
+			ir.Exports[0].SelectionRange.StartCol != 7 ||
+			*ir.Exports[1].TargetRaw != "./source" {
+			t.Fatalf("%s retained nested export aliases: source=%#v normalized=%#v", name, ir.Exports[0], normalized.Exports[0])
+		}
+		if normalized.Definitions[0].Visibility != "private" {
+			t.Fatalf("%s changed access visibility while normalizing exports: %q", name, normalized.Definitions[0].Visibility)
+		}
+		if len(normalized.ExportDiagnostics) != 1 || normalized.ExportDiagnostics[0].Code != ExportDiagnosticUnsupportedSyntax {
+			t.Fatalf("%s lost structured export diagnostic: %#v", name, normalized.ExportDiagnostics)
+		}
+	}
+}
+
+func TestExportCollectionsMarshalDeterministically(t *testing.T) {
+	emptyTarget := ""
+	exportWithTarget := func(target *string) ExportFact {
+		return ExportFact{
+			FilePath:           "src/export.ts",
+			Kind:               ExportReexport,
+			ExportedName:       "value",
+			TargetRaw:          target,
+			TargetExportedName: "value",
+			Meanings:           []ExportMeaning{ExportMeaningValue, ExportMeaningValue},
+			Range:              Range{StartLine: 2, EndLine: 2, EndCol: 25},
+			Provenance: ExportProvenance{
+				StatementRange: Range{StartLine: 2, EndLine: 2, EndCol: 25},
+				SiteKind:       "export_specifier",
+			},
+		}
+	}
+	diagnostics := []ExportDiagnosticFact{
+		{
+			Code:       ExportDiagnosticMalformedSyntax,
+			FilePath:   "src/export.ts",
+			Range:      Range{StartLine: 6},
+			NodeKind:   "export_statement",
+			Reason:     "malformed",
+			Provenance: ExportProvenance{StatementRange: Range{StartLine: 6}, SiteKind: "export_statement"},
+		},
+		{
+			Code:       ExportDiagnosticUnsupportedSyntax,
+			FilePath:   "src/export.ts",
+			Range:      Range{StartLine: 5},
+			NodeKind:   "export_statement",
+			Reason:     "unsupported",
+			Provenance: ExportProvenance{StatementRange: Range{StartLine: 5}, SiteKind: "export_statement"},
+		},
+	}
+	left := ScopeIR{
+		FilePath: "src/export.ts",
+		Exports: []ExportFact{
+			exportWithTarget(&emptyTarget),
+			exportWithTarget(nil),
+			{FilePath: "src/export.ts", Kind: ExportNamespace, ExportedName: "ns", Meanings: []ExportMeaning{ExportMeaningNamespace}, Range: Range{StartLine: 1}, Provenance: ExportProvenance{StatementRange: Range{StartLine: 1}, SiteKind: "export_namespace"}},
+		},
+		ExportDiagnostics: []ExportDiagnosticFact{diagnostics[0], diagnostics[1]},
+	}
+	right := ScopeIR{
+		FilePath:          "src/export.ts",
+		Exports:           []ExportFact{left.Exports[2], left.Exports[1], left.Exports[0]},
+		ExportDiagnostics: []ExportDiagnosticFact{diagnostics[1], diagnostics[0]},
+	}
+
+	leftBefore := append([]ExportFact(nil), left.Exports...)
+	leftDiagnosticsBefore := append([]ExportDiagnosticFact(nil), left.ExportDiagnostics...)
+	leftRaw, err := left.MarshalDeterministic()
+	if err != nil {
+		t.Fatalf("marshal left: %v", err)
+	}
+	rightRaw, err := right.MarshalDeterministic()
+	if err != nil {
+		t.Fatalf("marshal right: %v", err)
+	}
+	if string(leftRaw) != string(rightRaw) {
+		t.Fatalf("deterministic export marshal mismatch\nleft:\n%s\nright:\n%s", leftRaw, rightRaw)
+	}
+	if !reflect.DeepEqual(left.Exports, leftBefore) || !reflect.DeepEqual(left.ExportDiagnostics, leftDiagnosticsBefore) {
+		t.Fatalf("MarshalDeterministic mutated source export slices: %#v %#v", left.Exports, left.ExportDiagnostics)
+	}
+	if !strings.Contains(string(leftRaw), `"targetRaw": ""`) {
+		t.Fatalf("nil-versus-empty target provenance was not preserved: %s", leftRaw)
+	}
+	for _, forbidden := range []string{`"targetDefId"`, `"targetFile"`, `"targetModuleScope"`, `"linkStatus"`, `"transitiveVia"`, `"reachableThroughBarrel"`, `"publicApi"`} {
+		if strings.Contains(string(leftRaw), forbidden) {
+			t.Fatalf("export JSON introduced terminal/resolution state %q: %s", forbidden, leftRaw)
+		}
+	}
+	decoded, err := Unmarshal(leftRaw)
+	if err != nil {
+		t.Fatalf("unmarshal exports: %v", err)
+	}
+	if len(decoded.Exports) != 3 || len(decoded.ExportDiagnostics) != 2 {
+		t.Fatalf("round trip counts = exports %d diagnostics %d, want 3/2", len(decoded.Exports), len(decoded.ExportDiagnostics))
+	}
+	if !reflect.DeepEqual(decoded.Exports[0].Meanings, []ExportMeaning{ExportMeaningNamespace}) {
+		t.Fatalf("round trip changed namespace meaning: %#v", decoded.Exports[0].Meanings)
+	}
+	if decoded.ExportDiagnostics[0].Code != ExportDiagnosticUnsupportedSyntax {
+		t.Fatalf("diagnostics were not sorted by source range: %#v", decoded.ExportDiagnostics)
+	}
+}
+
+func TestExportKindsAndMeaningsRepresentSourceForms(t *testing.T) {
+	kinds := []ExportKind{ExportDirect, ExportNamed, ExportDefault, ExportAlias, ExportReexport, ExportStar, ExportNamespace}
+	meanings := []ExportMeaning{ExportMeaningValue, ExportMeaningType, ExportMeaningNamespace}
+	exports := make([]ExportFact, 0, len(kinds))
+	for index, kind := range kinds {
+		fact := ExportFact{
+			FilePath:     "src/forms.ts",
+			Kind:         kind,
+			ExportedName: fmt.Sprintf("name%d", index),
+			Meanings:     []ExportMeaning{meanings[index%len(meanings)]},
+			TypeOnly:     index == 4,
+			Range:        Range{StartLine: index + 1},
+			Provenance:   ExportProvenance{StatementRange: Range{StartLine: index + 1}, SiteKind: "export_statement"},
+		}
+		if index == 0 {
+			fact.Meanings = []ExportMeaning{ExportMeaningValue, ExportMeaningType}
+		}
+		exports = append(exports, fact)
+	}
+	decoded, err := Unmarshal(mustMarshalScopeIRForTest(t, ScopeIR{FilePath: "src/forms.ts", Exports: exports}))
+	if err != nil {
+		t.Fatalf("unmarshal source-form matrix: %v", err)
+	}
+	if len(decoded.Exports) != len(kinds) {
+		t.Fatalf("source-form fact count = %d, want %d", len(decoded.Exports), len(kinds))
+	}
+	seen := make(map[ExportKind]ExportFact, len(decoded.Exports))
+	for _, fact := range decoded.Exports {
+		seen[fact.Kind] = fact
+	}
+	for _, kind := range kinds {
+		if _, ok := seen[kind]; !ok {
+			t.Fatalf("source-form kind %q was not representable", kind)
+		}
+	}
+	if !reflect.DeepEqual(seen[ExportDirect].Meanings, []ExportMeaning{ExportMeaningType, ExportMeaningValue}) {
+		t.Fatalf("dual value/type meaning was not preserved: %#v", seen[ExportDirect].Meanings)
+	}
+	if !seen[ExportReexport].TypeOnly {
+		t.Fatalf("type-only re-export state was not preserved")
+	}
+}
+
+func mustMarshalScopeIRForTest(t *testing.T, ir ScopeIR) []byte {
+	t.Helper()
+	raw, err := ir.MarshalDeterministic()
+	if err != nil {
+		t.Fatalf("marshal ScopeIR fixture: %v", err)
+	}
+	return raw
+}
+
 func cloneBindingLeavesForTest(input []BindingLeafFact) []BindingLeafFact {
 	output := make([]BindingLeafFact, len(input))
 	copy(output, input)
@@ -276,6 +496,8 @@ func sampleScopeIR() ScopeIR {
 	userDef := "def:src/app.ts#2:0:Class:User"
 	runDef := "def:src/app.ts#3:0:Function:run"
 	targetRaw := "./user"
+	exportTargetRaw := "./user"
+	exportSelection := Range{StartLine: 2, StartCol: 7, EndLine: 2, EndCol: 11}
 	arity := 1
 	parameterCount := 1
 	requiredParameterCount := 1
@@ -340,6 +562,42 @@ func sampleScopeIR() ScopeIR {
 				Label:         NodeClass,
 				Range:         Range{StartLine: 2, StartCol: 0, EndLine: 2, EndCol: 18},
 				QualifiedName: "User",
+			},
+		},
+		Exports: []ExportFact{
+			{
+				FilePath:       "src/app.ts",
+				FileHash:       "hash-app",
+				Kind:           ExportDirect,
+				ExportedName:   "User",
+				LocalName:      "User",
+				LocalDefID:     userDef,
+				Meanings:       []ExportMeaning{ExportMeaningValue, ExportMeaningType, ExportMeaningValue},
+				Range:          Range{StartLine: 2, StartCol: 0, EndLine: 2, EndCol: 18},
+				SelectionRange: &exportSelection,
+				Provenance:     ExportProvenance{StatementRange: Range{StartLine: 2, EndLine: 2, EndCol: 18}, SiteKind: "export_declaration"},
+			},
+			{
+				FilePath:           "src/app.ts",
+				FileHash:           "hash-app",
+				Kind:               ExportReexport,
+				ExportedName:       "User",
+				TargetRaw:          &exportTargetRaw,
+				TargetExportedName: "User",
+				Meanings:           []ExportMeaning{ExportMeaningValue},
+				Range:              Range{StartLine: 7, StartCol: 0, EndLine: 7, EndCol: 24},
+				Provenance:         ExportProvenance{StatementRange: Range{StartLine: 7, EndLine: 7, EndCol: 24}, SiteKind: "export_specifier"},
+			},
+		},
+		ExportDiagnostics: []ExportDiagnosticFact{
+			{
+				Code:       ExportDiagnosticUnsupportedSyntax,
+				FilePath:   "src/app.ts",
+				FileHash:   "hash-app",
+				Range:      Range{StartLine: 9, StartCol: 0, EndLine: 9, EndCol: 14},
+				NodeKind:   "export_statement",
+				Reason:     "unsupported export form",
+				Provenance: ExportProvenance{StatementRange: Range{StartLine: 9, EndLine: 9, EndCol: 14}, SiteKind: "export_statement"},
 			},
 		},
 		Imports: []ImportFact{

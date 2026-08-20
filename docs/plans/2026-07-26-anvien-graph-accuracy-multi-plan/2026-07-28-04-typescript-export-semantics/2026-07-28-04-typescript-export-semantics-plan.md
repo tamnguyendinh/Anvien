@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0-A current-state complete by isolated documentation boundary / P4-A opens after Git commit success`
+- Status: `P4-A source/build/boundary/Supervisor/detect PASS / isolated commit pending / P4-B locked until commit success`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md`
@@ -161,6 +161,7 @@ Out of scope:
     - Actual-status rows refreshed: export contract and access/export separation.
   - Evidence Targets: source diff, serialization matrix, unsupported diagnostic, build, boundary output, Supervisor, detect-changes, commit.
   - Actual-status Update: transition the export-contract row from its P0 classification to `correct`.
+  - Current State (2026-08-20): `E4-P4A-IMPACT1`, `E4-P4A-SRC1`, `E4-P4A-BUILD1`, `E4-P4A-TEST1`, `E4-P4A-BOUNDARY1`, independent `E4-P4A-REVIEW1`, and `E4-P4A-DETECT1` are recorded and PASS on the exact candidate. `E4-P4A-COMMIT1` remains pending, so this checklist item remains open and P4-B remains locked.
   - Commit Boundary: one P4-A commit.
 
 - [ ] P4-B: Extract direct/default/alias/type-only export facts.

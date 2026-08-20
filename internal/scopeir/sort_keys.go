@@ -55,6 +55,101 @@ func compareImport(left ImportFact, right ImportFact) int {
 	return compareString(left.ID, right.ID)
 }
 
+func compareExport(left ExportFact, right ExportFact) int {
+	if value := compareString(left.FilePath, right.FilePath); value != 0 {
+		return value
+	}
+	if value := compareRange(left.Range, right.Range); value != 0 {
+		return value
+	}
+	if value := compareOptionalRange(left.SelectionRange, right.SelectionRange); value != 0 {
+		return value
+	}
+	if value := compareString(string(left.Kind), string(right.Kind)); value != 0 {
+		return value
+	}
+	if value := compareString(left.ExportedName, right.ExportedName); value != 0 {
+		return value
+	}
+	if value := compareString(left.LocalName, right.LocalName); value != 0 {
+		return value
+	}
+	if value := compareString(left.LocalDefID, right.LocalDefID); value != 0 {
+		return value
+	}
+	switch {
+	case left.TargetRaw == nil && right.TargetRaw != nil:
+		return -1
+	case left.TargetRaw != nil && right.TargetRaw == nil:
+		return 1
+	case left.TargetRaw != nil && right.TargetRaw != nil:
+		if value := compareString(*left.TargetRaw, *right.TargetRaw); value != 0 {
+			return value
+		}
+	}
+	if value := compareString(left.TargetExportedName, right.TargetExportedName); value != 0 {
+		return value
+	}
+	if value := compareBool(left.TypeOnly, right.TypeOnly); value != 0 {
+		return value
+	}
+	if value := compareExportMeanings(left.Meanings, right.Meanings); value != 0 {
+		return value
+	}
+	if value := compareExportProvenance(left.Provenance, right.Provenance); value != 0 {
+		return value
+	}
+	return compareString(left.FileHash, right.FileHash)
+}
+
+func compareExportDiagnostic(left ExportDiagnosticFact, right ExportDiagnosticFact) int {
+	if value := compareString(left.FilePath, right.FilePath); value != 0 {
+		return value
+	}
+	if value := compareRange(left.Range, right.Range); value != 0 {
+		return value
+	}
+	if value := compareString(string(left.Code), string(right.Code)); value != 0 {
+		return value
+	}
+	if value := compareString(left.NodeKind, right.NodeKind); value != 0 {
+		return value
+	}
+	if value := compareExportProvenance(left.Provenance, right.Provenance); value != 0 {
+		return value
+	}
+	if value := compareString(left.Reason, right.Reason); value != 0 {
+		return value
+	}
+	return compareString(left.FileHash, right.FileHash)
+}
+
+func compareExportMeanings(left []ExportMeaning, right []ExportMeaning) int {
+	switch {
+	case left == nil && right != nil:
+		return -1
+	case left != nil && right == nil:
+		return 1
+	}
+	limit := len(left)
+	if len(right) < limit {
+		limit = len(right)
+	}
+	for index := 0; index < limit; index++ {
+		if value := compareString(string(left[index]), string(right[index])); value != 0 {
+			return value
+		}
+	}
+	return compareInt(len(left), len(right))
+}
+
+func compareExportProvenance(left ExportProvenance, right ExportProvenance) int {
+	if value := compareRange(left.StatementRange, right.StatementRange); value != 0 {
+		return value
+	}
+	return compareString(left.SiteKind, right.SiteKind)
+}
+
 func compareCall(left CallSiteFact, right CallSiteFact) int {
 	if value := compareString(left.FilePath, right.FilePath); value != 0 {
 		return value

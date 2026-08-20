@@ -111,6 +111,57 @@ type ExtractionDiagnosticFact struct {
 	Provenance BindingPatternProvenance `json:"provenance"`
 }
 
+// ExportProvenance distinguishes the containing export statement from the
+// individual binding or specifier represented by ExportFact.Range.
+type ExportProvenance struct {
+	StatementRange Range  `json:"statementRange"`
+	SiteKind       string `json:"siteKind"`
+}
+
+// ExportFact records exactly one source-level exported binding or specifier.
+// ExportedName and LocalName are names written by the source export clause;
+// they do not describe a resolved module target. LocalDefID may identify an
+// already-extracted definition in this module, but it is never a terminal
+// re-export target.
+type ExportFact struct {
+	FilePath     string     `json:"filePath"`
+	FileHash     string     `json:"fileHash,omitempty"`
+	Kind         ExportKind `json:"kind"`
+	ExportedName string     `json:"exportedName"`
+	LocalName    string     `json:"localName,omitempty"`
+	LocalDefID   string     `json:"localDefId,omitempty"`
+	// TargetRaw is the module text written in a re-export clause. It is
+	// syntactic provenance only and is never a resolved target.
+	TargetRaw *string `json:"targetRaw,omitempty"`
+	// TargetExportedName is the source-side name selected by a re-export
+	// specifier, not the name of a terminal definition selected by resolution.
+	TargetExportedName string           `json:"targetExportedName,omitempty"`
+	Meanings           []ExportMeaning  `json:"meanings"`
+	TypeOnly           bool             `json:"typeOnly"`
+	Range              Range            `json:"range"`
+	SelectionRange     *Range           `json:"selectionRange,omitempty"`
+	Provenance         ExportProvenance `json:"provenance"`
+}
+
+type ExportDiagnosticCode string
+
+const (
+	ExportDiagnosticUnsupportedSyntax ExportDiagnosticCode = "tsjs.export.unsupported-syntax"
+	ExportDiagnosticMalformedSyntax   ExportDiagnosticCode = "tsjs.export.malformed-syntax"
+)
+
+// ExportDiagnosticFact makes an unsupported or malformed export source site
+// deterministic and countable without fabricating an ExportFact.
+type ExportDiagnosticFact struct {
+	Code       ExportDiagnosticCode `json:"code"`
+	FilePath   string               `json:"filePath"`
+	FileHash   string               `json:"fileHash,omitempty"`
+	Range      Range                `json:"range"`
+	NodeKind   string               `json:"nodeKind"`
+	Reason     string               `json:"reason"`
+	Provenance ExportProvenance     `json:"provenance"`
+}
+
 type TypeRef struct {
 	RawName         string        `json:"rawName"`
 	DeclaredAtScope string        `json:"declaredAtScope"`

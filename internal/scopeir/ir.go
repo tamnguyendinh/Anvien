@@ -20,6 +20,8 @@ type ScopeIR struct {
 	Definitions           []DefinitionFact           `json:"definitions"`
 	BindingLeaves         []BindingLeafFact          `json:"bindingLeaves,omitempty"`
 	ExtractionDiagnostics []ExtractionDiagnosticFact `json:"extractionDiagnostics,omitempty"`
+	Exports               []ExportFact               `json:"exports,omitempty"`
+	ExportDiagnostics     []ExportDiagnosticFact     `json:"exportDiagnostics,omitempty"`
 	Imports               []ImportFact               `json:"imports,omitempty"`
 	Calls                 []CallSiteFact             `json:"calls,omitempty"`
 	Accesses              []AccessFact               `json:"accesses,omitempty"`
@@ -39,6 +41,8 @@ func (ir ScopeIR) Normalized() ScopeIR {
 	out.Definitions = append([]DefinitionFact(nil), ir.Definitions...)
 	out.BindingLeaves = append([]BindingLeafFact(nil), ir.BindingLeaves...)
 	out.ExtractionDiagnostics = append([]ExtractionDiagnosticFact(nil), ir.ExtractionDiagnostics...)
+	out.Exports = append([]ExportFact(nil), ir.Exports...)
+	out.ExportDiagnostics = append([]ExportDiagnosticFact(nil), ir.ExportDiagnostics...)
 	out.Imports = append([]ImportFact(nil), ir.Imports...)
 	out.Calls = append([]CallSiteFact(nil), ir.Calls...)
 	out.Accesses = append([]AccessFact(nil), ir.Accesses...)
@@ -61,6 +65,7 @@ func (ir ScopeIR) Normalized() ScopeIR {
 		out.Definitions[index].Annotations = append([]string(nil), out.Definitions[index].Annotations...)
 	}
 	cloneBindingCollections(&out)
+	cloneExportCollections(&out)
 	for index := range out.Imports {
 		out.Imports[index].TransitiveVia = append([]string(nil), out.Imports[index].TransitiveVia...)
 	}
@@ -91,6 +96,21 @@ func (ir ScopeIR) NormalizeInPlace() ScopeIR {
 	for index := range ir.Imports {
 		sort.Strings(ir.Imports[index].TransitiveVia)
 	}
+	for index := range ir.Exports {
+		meanings := ir.Exports[index].Meanings
+		sort.Slice(meanings, func(i, j int) bool {
+			return meanings[i] < meanings[j]
+		})
+		writeIndex := 0
+		for _, meaning := range meanings {
+			if writeIndex > 0 && meanings[writeIndex-1] == meaning {
+				continue
+			}
+			meanings[writeIndex] = meaning
+			writeIndex++
+		}
+		ir.Exports[index].Meanings = meanings[:writeIndex]
+	}
 
 	sort.Slice(ir.Scopes, func(i, j int) bool { return compareScope(ir.Scopes[i], ir.Scopes[j]) < 0 })
 	sort.Slice(ir.Definitions, func(i, j int) bool {
@@ -101,6 +121,12 @@ func (ir ScopeIR) NormalizeInPlace() ScopeIR {
 	})
 	sort.Slice(ir.ExtractionDiagnostics, func(i, j int) bool {
 		return compareExtractionDiagnostic(ir.ExtractionDiagnostics[i], ir.ExtractionDiagnostics[j]) < 0
+	})
+	sort.Slice(ir.Exports, func(i, j int) bool {
+		return compareExport(ir.Exports[i], ir.Exports[j]) < 0
+	})
+	sort.Slice(ir.ExportDiagnostics, func(i, j int) bool {
+		return compareExportDiagnostic(ir.ExportDiagnostics[i], ir.ExportDiagnostics[j]) < 0
 	})
 	sort.Slice(ir.Imports, func(i, j int) bool { return compareImport(ir.Imports[i], ir.Imports[j]) < 0 })
 	sort.Slice(ir.Calls, func(i, j int) bool { return compareCall(ir.Calls[i], ir.Calls[j]) < 0 })
@@ -128,6 +154,8 @@ func (ir ScopeIR) NormalizeOwned() ScopeIR {
 	ir.Definitions = append([]DefinitionFact(nil), ir.Definitions...)
 	ir.BindingLeaves = append([]BindingLeafFact(nil), ir.BindingLeaves...)
 	ir.ExtractionDiagnostics = append([]ExtractionDiagnosticFact(nil), ir.ExtractionDiagnostics...)
+	ir.Exports = append([]ExportFact(nil), ir.Exports...)
+	ir.ExportDiagnostics = append([]ExportDiagnosticFact(nil), ir.ExportDiagnostics...)
 	ir.Imports = append([]ImportFact(nil), ir.Imports...)
 	ir.Calls = append([]CallSiteFact(nil), ir.Calls...)
 	ir.Accesses = append([]AccessFact(nil), ir.Accesses...)
@@ -138,8 +166,17 @@ func (ir ScopeIR) NormalizeOwned() ScopeIR {
 	ir.Domains = append([]DomainFact(nil), ir.Domains...)
 
 	cloneBindingCollections(&ir)
+	cloneExportCollections(&ir)
 
 	return ir.NormalizeInPlace()
+}
+
+func cloneExportCollections(ir *ScopeIR) {
+	for index := range ir.Exports {
+		ir.Exports[index].Meanings = append([]ExportMeaning(nil), ir.Exports[index].Meanings...)
+		ir.Exports[index].SelectionRange = cloneRange(ir.Exports[index].SelectionRange)
+		ir.Exports[index].TargetRaw = cloneStringPointer(ir.Exports[index].TargetRaw)
+	}
 }
 
 func cloneBindingCollections(ir *ScopeIR) {
@@ -153,6 +190,14 @@ func cloneBindingCollections(ir *ScopeIR) {
 }
 
 func cloneRange(value *Range) *Range {
+	if value == nil {
+		return nil
+	}
+	cloned := *value
+	return &cloned
+}
+
+func cloneStringPointer(value *string) *string {
 	if value == nil {
 		return nil
 	}

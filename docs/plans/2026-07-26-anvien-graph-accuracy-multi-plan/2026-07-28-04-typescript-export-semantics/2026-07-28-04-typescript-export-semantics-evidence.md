@@ -109,20 +109,58 @@ Exact symbol impacts further constrain the slices: `DefinitionFact` CRITICAL `19
 
 ## E4 - P4 Evidence
 
-All rows below are reserved implementation evidence targets. Status remains pending until the exact command, file/artifact, observed result, Supervisor verdict, and commit are recorded.
+P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below. The isolated commit remains pending; every later slice remains reserved and locked.
 
 ### P4-A — export fact, meaning, and visibility boundary
 
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
-| `E4-P4A-IMPACT1` | fresh file-detail/impact and one-responsibility ownership for exact editable owners | pending |
-| `E4-P4A-SRC1` | smallest production export fact/meaning contract and structured unsupported diagnostic | pending |
-| `E4-P4A-BUILD1` | full build after production and focused tests | pending |
-| `E4-P4A-TEST1` | deterministic serialization, one-fact-per-specifier, meaning, access separation, and zero-derived-state matrices | pending |
-| `E4-P4A-BOUNDARY1` | real production fact round trip and unsupported diagnostic count | pending |
-| `E4-P4A-REVIEW1` | independent Supervisor PASS | pending |
-| `E4-P4A-DETECT1` | pre-commit Anvien detect-changes result | pending |
+| `E4-P4A-IMPACT1` | fresh file-detail/impact and one-responsibility ownership for exact editable owners | recorded — exact four production owners; CRITICAL/CRITICAL/CRITICAL/HIGH blast-radius warnings; no scope expansion |
+| `E4-P4A-SRC1` | smallest production export fact/meaning contract and structured unsupported diagnostic | recorded — exact six-file candidate, `570/0`, one-site fact/diagnostic contract, deterministic deep-copy JSON, zero later-slice state |
+| `E4-P4A-BUILD1` | full build after production and focused tests | recorded — canonical `npm run full-build` exit `0` on accepted bytes |
+| `E4-P4A-TEST1` | deterministic serialization, one-fact-per-specifier, meaning, access separation, and zero-derived-state matrices | recorded — focused `7/7` and ScopeIR package PASS |
+| `E4-P4A-BOUNDARY1` | real production fact round trip and unsupported diagnostic count | recorded — nearest six-package product boundary PASS; exact contract counts below |
+| `E4-P4A-REVIEW1` | independent Supervisor PASS | recorded — PASS report `1B8DEB2F...175573B2` |
+| `E4-P4A-DETECT1` | pre-commit Anvien detect-changes result | recorded — exit `0`, MEDIUM closure risk, exact tracked path set, complete semantics, zero persisted health regression |
 | `E4-P4A-COMMIT1` | isolated accepted slice commit | pending |
+
+#### `E4-P4A-IMPACT1` — fresh graph, file-detail, and blast radius
+
+- Fresh excluded Supervisor graph on the accepted source/report boundary: `anvien analyze . --force --exclude "internal/aicontext/skills/**" --exclude ".claude/skills/**"` exit `0`; scanned/parsed/failed `1,128/626/0`; `81,103/120,485` nodes/relationships.
+- Final-byte file-detail summaries: `facts.go` `192` symbols / `1,127` inbound / `27` outbound / `174` local / `98` linked tests; `kinds.go` `99/619/0/10/98`; `ir.go` `57/1,106/38/89/96`; `sort_keys.go` `122/252/128/54/95`; stale `false`, changedSinceAnalyze `false`.
+- Upstream file impacts are `facts.go` CRITICAL `347/110/76/1`, `kinds.go` CRITICAL `1,358/143/182/1`, `ir.go` CRITICAL `124/55/30/1`, and `sort_keys.go` HIGH `27/24/3/1` impacted/direct/files/flows. The accepted edit boundary remains exactly these four production owners.
+
+#### `E4-P4A-SRC1` — accepted source and artifact boundary
+
+- Exact production contract: `ExportFact`, `ExportProvenance`, `ExportDiagnosticFact`, seven `ExportKind` values, three `ExportMeaning` lanes, `ScopeIR.Exports`, `ScopeIR.ExportDiagnostics`, nested owning clones, meaning sort/dedup, and total deterministic comparators over every serialized field.
+- Exact candidate: four production files plus `internal/scopeir/scopeir_test.go` and `internal/scopeir/testdata/scopeir.golden.json`; `570` insertions / `0` deletions; `git diff --check -- internal/scopeir` exit `0`; staged diff remained empty before planner closure.
+- Candidate SHA-256 values are `7F2B51D8...BFCA6A`, `2D80ECAB...E5D2878`, `732EE7F8...E46E728C`, `5C155B4C...A52DB5`, `ADC375EB...E6D04`, and `C9268221...4B306`; all match the Coder and Supervisor reports.
+- Preserve-only TSJS extraction, resolution/projection, and Ladybug persistence owners have zero diff. New export contract types occur only in the four ScopeIR owners and `scopeir_test.go`. `DefinitionFact.Visibility` is unchanged; no compatibility writer or Child 05-derived state exists.
+
+#### `E4-P4A-BUILD1`, `E4-P4A-TEST1`, and `E4-P4A-BOUNDARY1`
+
+- Pre-build lock/holder gate was free with build-related holder count `0`. Canonical `npm run full-build` exited `0`; packaged CLI `1.2.8`; Web production build transformed `2,943` modules. Non-failing npm/import/chunk warnings were retained.
+- Exact focused command over seven named ScopeIR tests exited `0` with `7/7` PASS. `go test ./internal/scopeir -count=1` exited `0`.
+- Nearest real non-UI boundary `go test ./internal/scopeir ./internal/providers ./internal/providers/tsjs ./internal/resolution ./internal/analyze ./cmd/binding-contract-probe -count=1` exited `0` for all six packages.
+- Contract measurements: source forms `7/7`; meaning lanes `3/3`; dual value/type `1/1`; explicit type-only state `1/1`; one input fact per supplied site `7/7` (`1.0`); diagnostic classes `2/2`; nested mutable members deep-copied `3/3`; access fields changed `0`; forbidden terminal/resolution/barrel/public-API JSON names `0/7`.
+- `go test ./... -count=1` exited `1` from five compile/setup-negative fixture packages plus the recorded out-of-slice C#/Dart parity baseline. It is retained as failed evidence and is not used to support PASS.
+
+#### `E4-P4A-REVIEW1` — independent acceptance
+
+- Verdict: `PASS`.
+- Report: `reports/Supervisor/rp_supervisor_260820_221058_by_gpt-5_child04_p4a_export_fact_boundary.md`.
+- Identity: `16,898` bytes / `156` LF / SHA-256 `1B8DEB2F8D5F49F285BE5AA4DF817304F8A9D8DE61E112BD2FCFEECC175573B2`.
+- Main independently re-read the authority, exact source/diff, reports, candidate hashes/blobs, preserve-only siblings, usage boundary, Git provenance, and evidence. No same-slice defect or unknown drift remained. Detect/stage/commit were deliberately not supplied by Supervisor.
+
+#### `E4-P4A-DETECT1` — fresh closure graph and change detection
+
+- Fresh excluded graph command: `anvien analyze . --force --exclude "internal/aicontext/skills/**" --exclude ".claude/skills/**"`; exit `0`; scanned/parsed/failed `1,130/626/0`; graph `81,132/120,514` nodes/relationships.
+- `anvien detect-changes --repo E:\Anvien --scope all` and its JSON form both exited `0` on the refreshed closure boundary.
+- Summary: `196` changed semantic units, `11` tracked changed files, `10` affected files, `3` affected processes, overall risk `medium`; changed app layers `backend=132`, `backend_test=41`, `docs=23`; changed functional areas `providers=173`, `documentation=23`.
+- Changed path set is exactly the six accepted ScopeIR/test/golden paths plus the roadmap and four Child 04 living ledgers. The three affected processes are `NormalizeInPlace -> CompareInt`, `NormalizeInPlace -> CompareString`, and `ProbeFile -> CloneRange`; each changed step belongs to the accepted `ir.go` normalization/clone boundary.
+- Resolution source-site inventory reports `52` changed gap entities / `55` occurrences: `47` builtin, `3` standard-library, and `2` in-repo-unresolved; `50` are non-actionable and `2` analyzer-gap. This is changed-site inventory, not persisted health regression: `totalResolutionGapCount=0`, `nodesWithGaps=0`, and `degradedNodes=0`.
+- Semantic status is complete for both required fields: `appLayer` and `functionalArea` each cover `81,132/81,132` nodes with `0` missing values and `0` missing source nodes.
+- Untracked report provenance is outside the unstaged graph changed-file set; its four exact identities are independently verified and must appear only in the final exact staged manifest. A final staged detect/path check remains a commit-operation guard and does not reopen implementation acceptance.
 
 ### P4-B — direct/default/alias/type-only extraction
 
