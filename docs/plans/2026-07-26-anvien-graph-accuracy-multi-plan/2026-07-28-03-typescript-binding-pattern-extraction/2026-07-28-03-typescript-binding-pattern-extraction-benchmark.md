@@ -67,13 +67,14 @@ These are graph/inventory counts at HEAD `181b8cb8`, not product runtime-perform
 | P3-B2 | catch binding cases | passed / inventoried cases | pending P0 | focused tests `4/4`; TypeScript leaves `7/7`; JavaScript control leaves `3/3`; optional-catch zero-fact control `1/1` | 100% accepted at the catch ScopeIR boundary | 100% | target met; exact scope/owner/binding conservation and zero assignment/type deltas | `E3-P3B2-TEST1`, `E3-P3B2-BOUNDARY1`, `E3-P3B2-REVIEW1` |
 | P3-B2A | loop declaration binding cases | passed / inventoried cases | pending P0 | focused loop `5/5`; declaration leaves `7/7`; wrapper/bracket controls `9/9` | 100% accepted at the loop ScopeIR boundary | 100% | target met; one fact per declaration leaf and one truthful write per representable assignment target | `E3-P3B2A-TEST1`, `E3-P3B2A-BOUNDARY1`, `E3-P3B2A-REVIEW2` |
 | P3-B2A | false declarations from assignment-form loops | declarations | pending P0 | 0 on direct and wrapper controls | 0 accepted final | 0 | target met | `E3-P3B2A-BOUNDARY1`, `E3-P3B2A-REVIEW2` |
-| P3-C | graph binding occurrence conservation | graph occurrences / accepted leaves | pending P0 | pending | pending | 1.0 exactly | pending | `E3-P3C-TEST1` |
-| P3-C | nested shadowing target correctness | correct / expected targets | pending P0 | pending | pending | 100% | pending | `E3-P3C-TEST1` |
-| P3-C | affected persistence field differences | differing fields | pending affected-surface inventory | pending | pending | 0 | pending | `E3-P3C-BOUNDARY1` |
+| P3-C | graph binding occurrence conservation | graph occurrences / accepted leaves | pending P0 | 7/7 on exact final bytes | 7/7 accepted | 1.0 exactly | target met; one distinct Variable node and one `DEFINES` per accepted leaf | `E3-P3C-TEST1`, `E3-P3C-BOUNDARY1`, `E3-P3C-REVIEW2` |
+| P3-C | nested shadowing target correctness | correct / expected targets | pending P0 | outer/inner `value` 2/2 exact lexical endpoints | 2/2 accepted | 100% | target met; nearest-scope identities remain distinct | `E3-P3C-TEST1`, `E3-P3C-BOUNDARY1`, `E3-P3C-REVIEW2` |
+| P3-C | affected persistence field differences | differing fields | pending affected-surface inventory | 0 across Graph JSON/Ladybug relationship parity | 0 accepted | 0 | target met; zero skipped/fallback/warning outcomes | `E3-P3C-BOUNDARY1`, `E3-P3C-REVIEW2` |
 | P3-C2 | bounded target bindings | correct / expected | 0/6 | pending | pending | 6/6 | pending | `E3-P3C2-TARGET1` |
 | P3-C2 | bounded target sites without binding-caused gap | correct / expected | 0/6 | pending | pending | 6/6 | pending | `E3-P3C2-TARGET1` |
 
 ## Non-Benchmarkable Notes
 
 - Report/authority classification, file ownership, Supervisor verdicts, full-build results, detect-changes, and commits are evidence gates rather than benchmark metrics.
+- P3-C's excluded self-index graph inventory and build/test timings are verification context, not product performance benchmarks; the canonical unexcluded graph is not evidence.
 - No global TypeScript accuracy percentage is claimed by this child.
