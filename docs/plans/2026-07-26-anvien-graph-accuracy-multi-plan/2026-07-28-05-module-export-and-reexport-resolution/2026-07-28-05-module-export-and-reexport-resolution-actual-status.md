@@ -2,7 +2,7 @@
 
 Title: Anvien Module Export And Re-Export Resolution
 Date: 2026-07-28
-Status: P0 Complete / P5-A committed and accepted / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D Supervisor PASS and detect recorded; isolated commit pending
+Status: P0 Complete / P5-A committed and accepted / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D committed at bb4cf465 / Pn-A open
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -131,6 +131,7 @@ The 2026-08-10 P0 tuples remain historical. The P5-A graph was freshly rebuilt a
 | R14 | 2026-08-21 | HEAD `fd6cb52f6258be2cbdaa622ee53c2d31d173566d`; fresh graph `115,947 / 159,626`, SHA-256 `014DC029...`; immutable P5-D inventory SHA-256 `AECE504D...`; Main independently replayed identities, graph/source, 16 file-detail rows, 19 impacts, and reader transport | terminal endpoint/proof retention, call/access Evidence projection, coalescing conservation, and affected-reader denominator | endpoint stays `correct`; proof retention/projection `unbound -> exact four-owner production authorization`; reader denominator `unknown -> 4 validate-only`; schema/UI/Child 02 readers remain preserve-only; target still locked | `E5-P5D-IMPACT1` | after this exact five-path docs commit, resume only the existing E-only Coder for Work Step 1; target opens only after local Coder-ready handoff/build/four-reader parity is verified by Main |
 | R15 | 2026-08-22 | HEAD `26cb03eed3a72f1052f1af5de6a4de2f8326e794` plus exact eight-path candidate; Work Step 1 `97235D73...`, target report `2740EDB7...`, Supervisor PASS `2A9EC861...`; target graph `93,562 / 127,516` | final source/proof/persistence/readers, real-target oracle, count and boundary acceptance | proof projection `unbound -> correct`; reader parity `pending -> 4/4`; target `0/2 -> 2/2`, gaps `2 -> 0`, chains `0/2 -> 2/2`; fixed and target count deltas `0 / 0 / 0`; Supervisor `pending -> PASS` | `E5-P5D-SRC1`, `E5-P5D-BUILD1`, `E5-P5D-TEST1`, `E5-P5D-PARITY1`, `E5-P5D-TARGET1`, `E5-P5D-ORACLE1`, `E5-P5D-BOUNDARY1`, `E5-P5D-COUNT1`, `E5-P5D-REVIEW1` | run one fresh E analyze/detect and isolated P5-D commit; do not open Pn-A before commit |
 | R16 | 2026-08-22 | same final candidate/ledgers/reports; one fresh E analyze `116,388 / 160,512`; detect exit `0` | mandatory pre-commit changed-symbol/file/process/gap/schema classification | detect `pending -> recorded`; risk `high`, `109` changed / `10` affected symbols across `9` changed / `9` affected files; `18` analyzer-gap changes but persisted gap/degraded totals `0`; semantic schema complete | `E5-P5D-DETECT1` | stage only the isolated P5-D manifest, verify cached diff and protected handoffs, then commit; Pn-A remains locked |
+| R17 | 2026-08-22 | isolated P5-D commit `bb4cf46509716259c3bf24a1ca041a6e763d5419`, parent `26cb03eed3a72f1052f1af5de6a4de2f8326e794`; exact 15-path manifest | P5-D commit closure and Child 05 Pn-A opening | P5-D `open -> committed`; Pn-A `locked -> open`; index empty and thirteen protected Main handoffs remain untracked | `E5-P5D-COMMIT1` | open only Pn-A child-wide Supervisor acceptance; Pn-B/Pn-C/Child 06 remain locked |
 
 ## Phase Touch Map
 
@@ -257,7 +258,7 @@ Forbidden next action: change `graph.Evidence`, relationship columns, P5-C trave
 | P5-A | exact four-owner production candidate plus two focused tests passed build/boundary/regression; Supervisor PASS and isolated commits `2560f914` + `40ea0095` are present | committed/accepted; preserve the three `0` deltas and do not reopen P5-A |
 | P5-B | dedicated table owner plus minimal wiring and focused tests pass exact absolute E build, fixed-corpus counts, and Supervisor resubmission review | detect `E5-P5B-DETECT1` and isolated commit `E5-P5B-COMMIT1` are recorded; P5-B is closed and P5-C is the sole open slice |
 | P5-C | final four-file implementation has Supervisor PASS, fresh detect, and isolated commit `76899d45a21fce55f6328b4cb30a6a5cb8719a81` | committed/accepted; preserve the P5-C source and proof invariants |
-| P5-D | exact eight-path candidate, Work Step 1/2 evidence, four-reader parity, target oracle, boundaries, and Supervisor review all pass | run one fresh E analyze/detect, then create the isolated P5-D commit; keep Pn-A locked until commit |
+| P5-D | exact eight-path candidate, Work Step 1/2 evidence, four-reader parity, target oracle, boundaries, Supervisor review, detect, and isolated commit all pass | committed at `bb4cf465`; preserve and open only Pn-A child-wide acceptance |
 
 ## Implementation Gate
 

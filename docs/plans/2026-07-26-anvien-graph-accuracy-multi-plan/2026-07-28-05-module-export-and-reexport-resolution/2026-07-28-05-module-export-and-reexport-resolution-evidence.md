@@ -160,6 +160,7 @@ Pre-implementation inventory artifact: `reports/coder/rp_coder_260821_232052_by_
 - `E5-P5D-COUNT1` — recorded: fixed `736` corpus remains `5,072 / 5,072 / 5,088`, delta `0 / 0 / 0`; target remains `2,346 / 2,346 / 2,625`, delta `0 / 0 / 0`, with only consumer-to-barrel IMPORTS and zero consumer-to-implementation IMPORTS.
 - `E5-P5D-REVIEW1` — recorded: Supervisor report `reports/Supervisor/rp_supervisor_260822_013836_by_gpt-5_child05_p5d_full_acceptance.md`, `16,643` bytes / `198` LF / strict UTF-8 without BOM / SHA-256 `2A9EC861D443539749C8478D307416EDC257C9178C29049BC5C76309C420471A`, verdict PASS; residual same-invariant surfaces are none.
 - `E5-P5D-DETECT1` — recorded after exactly one fresh E graph refresh. `anvien analyze --force` exited `0` with `1,979 / 743 / 0` scanned/parsed-code/failed and graph `116,388 / 160,512`. `anvien detect-changes --repo E:\Anvien --scope all` exited `0`; summary is `109` changed symbols / `9` changed files, `10` affected symbols / `9` affected files, risk `high`, changed layers `backend=56, backend_test=40, docs=13`, changed areas `analyzer=22, documentation=13, resolution=74`, affected layer `backend=10`, affected areas `resolution=9, mixed=1`. Resolution-gap changes are `18` analyzer-gap entities/occurrences across `16` call and `2` access facts, but persisted `totalResolutionGapCount=0`, degraded nodes `0`, and source nodes with gaps `0`. Semantic fields are complete on `116,388/116,388` nodes with `staleIncompleteSchemaEvidence=false`. HIGH is the accepted blast-radius warning and does not widen the exact manifest.
+- `E5-P5D-COMMIT1` — recorded: isolated commit `bb4cf46509716259c3bf24a1ca041a6e763d5419` on `master`, parent `26cb03eed3a72f1052f1af5de6a4de2f8326e794`, contains exactly the eight authorized source/test paths, four living ledgers, two immutable Coder reports, and the resealed Supervisor PASS report. Commit output reports `15 files changed`, `1,915 insertions`, `62 deletions`; cached diff-check passed, `0` protected Main handoffs were staged, and post-commit index is empty with exactly the thirteen protected handoffs remaining untracked.
 
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
@@ -174,7 +175,7 @@ Pre-implementation inventory artifact: `reports/coder/rp_coder_260821_232052_by_
 | `E5-P5D-COUNT1` | absolute before/after physical path-resolution and syntactic `IMPORTS` counts; both deltas `0` | recorded — fixed corpus and target both `0 / 0 / 0` |
 | `E5-P5D-REVIEW1` | Supervisor PASS for P5-D | recorded — immutable full-acceptance report `2A9EC861...420471A` |
 | `E5-P5D-DETECT1` | detect-changes result before commit | recorded — one fresh graph `116,388 / 160,512`; detect exit `0`, exact summary/gap/schema evidence above |
-| `E5-P5D-COMMIT1` | isolated P5-D commit hash | pending |
+| `E5-P5D-COMMIT1` | isolated P5-D commit hash | recorded — `bb4cf46509716259c3bf24a1ca041a6e763d5419`, exact 15-path manifest |
 
 ## Closure Evidence
 

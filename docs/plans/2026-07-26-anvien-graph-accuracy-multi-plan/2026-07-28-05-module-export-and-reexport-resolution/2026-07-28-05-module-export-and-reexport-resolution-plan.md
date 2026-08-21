@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / P5-A committed at 2560f914 / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D Supervisor PASS and detect recorded; isolated commit pending`
+- Status: `P0 complete / P5-A committed at 2560f914 / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D committed at bb4cf465 / Pn-A open`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -289,8 +289,8 @@ Out of scope:
   - Commit Boundary: commit P5-C alone after acceptance.
   - Completion Record: Supervisor PASS is recorded as `E5-P5C-REVIEW1`; exactly one fresh analyze and full detect result are recorded as `E5-P5C-DETECT1`; exact 12-path manifest was staged and committed as `76899d45a21fce55f6328b4cb30a6a5cb8719a81`, recorded as `E5-P5C-COMMIT1`.
 
-- [ ] P5-D: Emit terminal bindings and prove the target calls.
-  - State: `SUPERVISOR PASS / DETECT RECORDED / ISOLATED COMMIT PENDING`. Work Step 1 report `reports/coder/rp_coder_260822_003300_by_gpt-5_child05_p5d_proof_projection_ready_for_supervisor.md` is `18,358` bytes / `285` LF / SHA-256 `97235D73735497328DD7DE41DB0B5023FC6A7ACC05CC46F362A965D0BDB0FB18`; target report `reports/coder/rp_coder_260822_011119_by_gpt-5_child05_p5d_target_validation_target_ready.md` is `22,185` bytes / `453` LF / SHA-256 `2740EDB71ADFFE1242E192DAEC86C70805F6B656568B49C95C089B981EFECDF2`; Supervisor PASS report `reports/Supervisor/rp_supervisor_260822_013836_by_gpt-5_child05_p5d_full_acceptance.md` is `16,643` bytes / `198` LF / SHA-256 `2A9EC861D443539749C8478D307416EDC257C9178C29049BC5C76309C420471A`. Fresh E graph/detect is recorded as `E5-P5D-DETECT1`; P5-D remains unchecked until the isolated commit completes.
+- [x] P5-D: Emit terminal bindings and prove the target calls.
+  - State: `SUPERVISOR PASS / DETECT RECORDED / COMMITTED` at isolated commit `bb4cf46509716259c3bf24a1ca041a6e763d5419`. Work Step 1 report `reports/coder/rp_coder_260822_003300_by_gpt-5_child05_p5d_proof_projection_ready_for_supervisor.md` is `18,358` bytes / `285` LF / SHA-256 `97235D73735497328DD7DE41DB0B5023FC6A7ACC05CC46F362A965D0BDB0FB18`; target report `reports/coder/rp_coder_260822_011119_by_gpt-5_child05_p5d_target_validation_target_ready.md` is `22,185` bytes / `453` LF / SHA-256 `2740EDB71ADFFE1242E192DAEC86C70805F6B656568B49C95C089B981EFECDF2`; Supervisor PASS report `reports/Supervisor/rp_supervisor_260822_013836_by_gpt-5_child05_p5d_full_acceptance.md` is `16,643` bytes / `198` LF / SHA-256 `2A9EC861D443539749C8478D307416EDC257C9178C29049BC5C76309C420471A`.
   - Goal: bind source calls/uses to P5-C terminal Symbols while preserving source-written module dependencies and proof.
   - Scope Boundary:
     - Editable: new `internal/resolution/export_binding_proof.go` as the sole P5-D proof-to-`graph.Evidence` adapter; `internal/resolution/indexes.go` only for owned retention of the already-computed semantic export result and a proof-returning namespace/member seam; `internal/resolution/resolve.go` only at `resolveCall`/`resolveAccess` for proof attachment; `internal/resolution/emit.go` only at `mergeRelationship` for deterministic Evidence union/dedupe.
@@ -336,6 +336,7 @@ Out of scope:
   - Evidence Targets: impact, source/build/tests, affected parity, target oracle/boundary/counts, Supervisor, detect, commit.
   - Actual-status Update: terminal binding `wrong -> correct`; bounded target `0/2 -> 2/2`.
   - Commit Boundary: commit P5-D alone after acceptance.
+  - Completion Record: Supervisor PASS `E5-P5D-REVIEW1`; fresh detect `E5-P5D-DETECT1`; exact 15-path isolated commit `bb4cf46509716259c3bf24a1ca041a6e763d5419` recorded as `E5-P5D-COMMIT1`. Pn-A is now the sole open item.
 
 - [ ] Pn-A: Call Supervisor for Child 05 acceptance.
   - Goal: independently verify all four slices, source diff, runtime evidence, target boundary, ledgers, and commits.
