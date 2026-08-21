@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / P5-A planner-refreshed and implementation-authorized / P5-B+ locked`
+- Status: `P0 complete / P5-A committed at 2560f914 / P5-B open / P5-C+ locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -136,7 +136,7 @@ Out of scope:
   - P5-C: Resolve aliases, re-exports, stars, cycles, ambiguity, and meanings.
   - P5-D: Emit terminal bindings and prove the target calls.
 
-- [ ] P5-A: Establish current module-request and path inputs.
+- [x] P5-A: Establish current module-request and path inputs.
   - Goal: identify and, only where evidence requires, correct the inputs that connect a source import to a resolved repository module before export lookup.
   - Scope Boundary:
     - Editable: `internal/scopeir/facts.go` for the requested-meaning contract; `internal/providers/tsjs/imports.go` for source-written TS/JS import population; `internal/scopeir/ir.go` and `internal/scopeir/sort_keys.go` for owning clone, canonicalization, and deterministic ordering of that contract.
@@ -188,8 +188,10 @@ Out of scope:
   - Evidence Targets: input manifest, counts, source diff, behavior tests, build, boundary, Supervisor, detect, commit.
   - Actual-status Update: requested name/meaning/type-only `partial|missing -> correct` only after evidence; preserve current module/file results and path strategies.
   - Commit Boundary: commit P5-A alone after acceptance.
+  - Completion Record: Supervisor PASS `E5-P5A-REVIEW1`; detect-changes PASS `E5-P5A-DETECT1`; isolated commit `2560f914334e65961f755febdda6585840a4260e`.
 
 - [ ] P5-B: Build export tables from accepted export facts.
+  - State: OPEN after P5-A commit `2560f914334e65961f755febdda6585840a4260e`; P5-C/P5-D and target remain locked.
   - Goal: represent each repository module's syntax-derived export surface without treating physical definitions as implicit exports.
   - Scope Boundary:
     - Editable: exact export-table owner selected by P5-B pre-flight.
