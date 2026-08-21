@@ -2,7 +2,7 @@
 
 Title: Anvien First-Class TypeScript Export Semantics
 Date: 2026-07-28
-Status: P4-A/P4-B/P4-B1/P4-C/P4-C2 are committed at their recorded isolated boundaries; aggregate `E4-PNA-REVIEW1` and cleanup `E4-PNB-REVIEW1` are `PASS`; Pn-B detect/isolated commit is the sole open boundary; Pn-C and Child 05 remain locked
+Status: CLOSED by the current exact five-document Pn-C commit boundary; all P4 slices, aggregate review, cleanup review, and Pn-B commit remain accepted; final Pn-C hash external
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md`
@@ -82,7 +82,7 @@ P0-A resolves the current owners, related-file counts, and blast radii. CRITICAL
 | Persistence field parity | Graph JSON and Ladybug now preserve the same accepted Export fields; nullable/boolean/list representation is normalized without semantic loss | same affected export facts in every proven persistence owner | `correct` | `2` persistence owners plus generic Graph JSON | `E4-P4C-BOUNDARY1`, `E4-P4C-REVIEW1`, `E4-P4C-COMMIT1` | preserve committed parity; Child 05 remains locked |
 | Terminal module/re-export resolution | Separate bounded barrel defect exists | Child 05 resolves syntax facts to terminal outcomes | `wrong` but out of scope | pending | `E0-P0A-VERIFY1` | preserve boundary; no Child 05 logic here |
 | Target boundary | immutable oracle was born durable before analyzer observation; retry pre/post evidence preserves target source/worktree/config, and only normal analyzer-owned `.anvien` output changed | source-only authorship before analyzer observation; durable evidence under `reports/QA/child04-p4c2/...`; normal operational output target-local during QA | `correct` | `19` retry-manifest files; `4` preserved config identities | `E4-P4C2-ORACLE1`, `E4-P4C2-BOUNDARY1` | preserve exact target/Anvien boundaries through Supervisor and repair-or-closure handoff |
-| Child 04 artifact lifecycle | independent cleanup review proves exactly one empty review-induced directory removed and all current/historical evidence plus unrelated state retained | no dead Child 04 work remains; accepted and historical provenance remains exact | `correct` | `136` tracked Child 04 paths; `129` report-sweep denominator; `.tmp` `738` files / `20` directories | `E4-PNB-CLEAN1`, `E4-PNB-REVIEW1` | create the Main-owned Pn-B detect/isolated commit; keep Pn-C and Child 05 locked until commit success |
+| Child 04 artifact lifecycle | independent cleanup review proves exactly one empty review-induced directory removed and all current/historical evidence plus unrelated state retained; final detect and isolated commit are complete | no dead Child 04 work remains; accepted and historical provenance remains exact | `correct` | `136` tracked Child 04 paths; `129` report-sweep denominator; `.tmp` `738` files / `20` directories | `E4-PNB-CLEAN1`, `E4-PNB-REVIEW1`, `E4-PNB-DETECT1`, `E4-PNB-COMMIT1` | preserve commit `d1d8eb9002ce9c449c3713de0837ac8216d17a8d`; Pn-C is docs/handoff only |
 
 ## Status Refresh Log
 
@@ -107,6 +107,8 @@ P0-A resolves the current owners, related-file counts, and blast radii. CRITICAL
 | R16 | 2026-08-21 | isolated P4-C2 commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; parent `310502a88849fe75f86a45a987ba21490d19dbe2`; exact 89 paths; post-commit index/tracked worktree clean | P4-C2 closure and aggregate governance opening | `E4-P4C2-COMMIT1 pending -> recorded/closed`; P4-C2 `open -> committed`; aggregate Pn-A `locked -> open`; Pn-B/Pn-C/Child 05 remain locked | `E4-P4C2-COMMIT1` | open exactly one visible aggregate Supervisor lane for Pn-A; do not reopen slice gates or enter cleanup/Child 05 |
 | R17 | 2026-08-21 | HEAD `a2e0c4ab7654f42c6a3c69402cf4c6b63bbb0bdd`; independent aggregate report canonical SHA `7EBFD508...DC5A8`; fresh review graph `1,939/736/0`, `114,630/157,445` | complete Child 04 aggregate acceptance | `E4-PNA-REVIEW1 pending -> PASS`; all slice/source/artifact/target invariants closed; residual same-invariant surfaces none; Pn-B `locked -> open` | `E4-PNA-REVIEW1` | open one visible cleanup executor for Pn-B; preserve all accepted artifacts and keep Pn-C/Child 05 locked |
 | R18 | 2026-08-21 | HEAD `c7997886a0faeb32b7cfe05b4f7d08e38fc57228`; cleanup report canonical SHA `5BD0338A...B260`; independent cleanup review canonical SHA `EDFCF6CA...1E1F`; fresh planner graph `1,943/736/0`, `114,721/157,536` | Child 04 artifact lifecycle cleanup and independent acceptance | cleanup candidate `pending -> READY_FOR_SUPERVISOR`; `E4-PNB-REVIEW1 pending -> PASS`; exactly one empty directory removed; retained artifact set remains exact | `E4-PNB-CLEAN1`, `E4-PNB-REVIEW1` | keep Pn-B open only for Main-owned detect/isolated commit; Pn-C and Child 05 remain locked |
+| R19 | 2026-08-21 | `E4-PNB-DETECT1` `19/5/5` LOW/LOW; isolated commit `d1d8eb9002ce9c449c3713de0837ac8216d17a8d`, parent `c7997886a0faeb32b7cfe05b4f7d08e38fc57228`; exact eight paths; clean tracked/index post-state | Pn-B final boundary and Pn-C opening | `E4-PNB-DETECT1 pending -> PASS`; `E4-PNB-COMMIT1 pending -> accepted/committed`; Pn-C `locked -> open/docs-only`; accepted source/evidence/target bytes remain preserve-only | `E4-PNB-DETECT1`, `E4-PNB-COMMIT1` | complete one Main-owned successor refresh and exact docs/handoff commit; no Supervisor loop |
+| R20 | 2026-08-21 | Pn-B commit `d1d8eb9002ce9c449c3713de0837ac8216d17a8d`; all five P4 slices and aggregate/cleanup gates accepted | Pn-C Child 04 plan closure | plan `active -> CLOSED`; no Child 04 gate remains open; no successor work enters this boundary | `E4-PNC-CLOSE1`, `E4-PNC-COMMIT1` | commit exact roadmap-plus-four-ledger boundary, then continue campaign with the Child 05 handoff |
 
 ## Phase Touch Map
 
@@ -171,7 +173,8 @@ Forbidden next action: recurse through barrels, select candidates, or claim publ
 | P4-C | graph projection, Ladybug persistence, and semantic consumer dialects are accepted and committed | `correct`; preserve P4-C at `c99c4070b66e7a96be8c9fa2721a0335a1f94877` |
 | P4-C2 | durable oracle remains sealed; exact repair, fresh `21/21 + 11/11` target QA, independent REVIEW2, Main-owned detect and isolated commit are closed | `correct`; preserve commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; open only aggregate Pn-A |
 | Pn-A | aggregate Supervisor independently clears all five Child 04 slices, current production blobs, evidence lifecycle, target boundary and rejection history | `correct`; preserve report `7EBFD508...DC5A8`; open only Pn-B cleanup |
-| Pn-B | cleanup executor and distinct Supervisor prove the retained artifact set is current; `E4-PNB-REVIEW1` is `PASS` | perform Main-owned proportionate detect/boundary checks and create the isolated Pn-B commit; do not open Pn-C before commit success |
+| Pn-B | cleanup executor, distinct Supervisor, final detect, and isolated commit are closed | `correct`; preserve `d1d8eb9002ce9c449c3713de0837ac8216d17a8d` and do not reopen |
+| Pn-C | all accepted Child 04 gates are recorded and no gate remains open | `CLOSED` by the exact five-document commit boundary; final hash external |
 
 ## Implementation Gate
 
@@ -195,15 +198,18 @@ Forbidden next action: recurse through barrels, select candidates, or claim publ
 - [x] Existing QA resumed only after seal and recorded `E4-P4C2-TARGET1` plus `E4-P4C2-BOUNDARY1` against the same source basis; the evidence-complete result contains a bounded semantic finding and is not acceptance.
 - [x] Main-owned `E4-P4C2-DETECT1` is recorded from one fresh self graph with exact seven-path semantics, HIGH changed-file scope warning, LOW overall risk, zero affected flows, and zero persisted health regression.
 - [x] `E4-P4C2-COMMIT1` is recorded at isolated commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; exact 89-path boundary and clean post-commit tracked/index state are verified.
+- [x] `E4-PNB-DETECT1` is `PASS` (`19/5/5`, LOW/LOW, zero process/flow/gap/health impact) and `E4-PNB-COMMIT1` is `d1d8eb9002ce9c449c3713de0837ac8216d17a8d`.
+- [x] `E4-PNC-CLOSE1` declares the Child 04 plan closed with no remaining open gate.
+- [x] `E4-PNC-COMMIT1` is the exact five-document closure boundary; Git reports its final hash externally.
 
 ## Final P0 Decision
 
 - [ ] P0 actual-status incomplete. Implementation is blocked.
 - [ ] P0 complete. Next phase can proceed unchanged.
-- [x] P0 complete. Next phase status, next action, or work steps must be updated before implementation.
+- [x] P0 complete. All five P4 slices, aggregate review, cleanup, Pn-B commit, and Pn-C plan closure are complete; Child 04 is `CLOSED` by this exact boundary with final hash reported externally.
 - [ ] P0 complete. Target scope is preserve-only.
 - [ ] P0 complete. Implementation is blocked by missing authority or evidence.
 
 Decision note:
 
-The bounded `0/21` baseline remains historical authority. P4-A/P4-B/P4-B1/P4-C/P4-C2 retain their accepted commits; aggregate `E4-PNA-REVIEW1` and cleanup `E4-PNB-REVIEW1` are `PASS`. The first uncompleted gate is the Main-owned Pn-B detect/isolated commit. Pn-C, Child 05 and later slices remain locked until that commit succeeds.
+The bounded `0/21` baseline remains historical authority. P4-A/P4-B/P4-B1/P4-C/P4-C2 retain their accepted commits; aggregate `E4-PNA-REVIEW1` and cleanup `E4-PNB-REVIEW1` are `PASS`; `E4-PNB-DETECT1` and commit `d1d8eb9002ce9c449c3713de0837ac8216d17a8d` are closed. `E4-PNC-CLOSE1` declares Child 04 `CLOSED`; `E4-PNC-COMMIT1` is the current exact five-document boundary with final hash external.

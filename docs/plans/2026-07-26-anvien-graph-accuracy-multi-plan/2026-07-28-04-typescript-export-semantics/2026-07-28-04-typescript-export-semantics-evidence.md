@@ -111,7 +111,7 @@ Exact symbol impacts further constrain the slices: `DefinitionFact` CRITICAL `19
 
 ## E4 - P4 Evidence
 
-P4-A/P4-B/P4-B1/P4-C/P4-C2 retain their accepted isolated boundaries. Aggregate `E4-PNA-REVIEW1` and cleanup `E4-PNB-REVIEW1` are independently `PASS`; Pn-B remains open only for Main-owned detect/isolated commit. Pn-C, Child 05 and later slices remain locked.
+P4-A/P4-B/P4-B1/P4-C/P4-C2 retain their accepted isolated boundaries. Aggregate `E4-PNA-REVIEW1` and cleanup `E4-PNB-REVIEW1` are independently `PASS`; `E4-PNB-DETECT1` and `E4-PNB-COMMIT1` are closed at `d1d8eb9002ce9c449c3713de0837ac8216d17a8d`. Pn-C closes the Child 04 plan by the current exact five-document commit boundary.
 
 ### P4-A — export fact, meaning, and visibility boundary
 
@@ -290,13 +290,12 @@ P4-A/P4-B/P4-B1/P4-C/P4-C2 retain their accepted isolated boundaries. Aggregate 
 | `E4-PNA-REVIEW1` | final Supervisor review across all five slices and retained evidence | recorded — independent `PASS`; report `23,563` bytes / `178` LF / canonical SHA-256 `7EBFD508...DC5A8`; residual same-invariant surfaces none |
 | `E4-PNB-CLEAN1` | dead child-created artifacts removed; valid evidence retained | recorded — exactly `.tmp/p4c-tests` removed (`0` files / `0` bytes); executor report canonical SHA-256 `5BD0338A...B260` |
 | `E4-PNB-REVIEW1` | Supervisor PASS for cleanup | recorded — independent `PASS`; report canonical SHA-256 `EDFCF6CA...1E1F`; residual same-invariant surfaces none |
-| `E4-PNB-DETECT1` | proportionate Main-owned change detection for the cleanup/report/ledger boundary | pending |
-| `E4-PNB-COMMIT1` | isolated Pn-B cleanup/report/ledger commit | pending |
-| `E4-PNC-DETECT1` | final detect-changes result for implementation scope | pending |
-| `E4-PNC-COMMIT1` | final known commit/worktree state | pending |
-| `E4-PNC-HANDOFF1` | Child 05 actual-status refreshed from accepted immutable syntax/direct-export results and exact opening condition recorded | pending |
+| `E4-PNB-DETECT1` | proportionate Main-owned change detection for the cleanup/report/ledger boundary | `PASS`: `19/5/5`, LOW/LOW, zero processes/flows/gap/health impact |
+| `E4-PNB-COMMIT1` | isolated Pn-B cleanup/report/ledger commit | accepted at `d1d8eb9002ce9c449c3713de0837ac8216d17a8d`, exact eight-path manifest, clean tracked/index post-state |
+| `E4-PNC-CLOSE1` | Child 04 plan closure declaration | recorded — all P4, aggregate, cleanup, and Pn-B gates closed; no Child 04 gate remains open |
+| `E4-PNC-COMMIT1` | final known commit/worktree state | exact isolated five-document plan-closure boundary; final hash and clean post-state reported externally after Git success |
 
-P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed. P4-C closes at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; P4-C2 closes at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; aggregate Pn-A and cleanup review are closed, while Pn-B detect/commit remains open and Child 05 remains locked.
+P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed. P4-C closes at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; P4-C2 closes at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; aggregate Pn-A and cleanup review are closed; Pn-B detect/commit closes at `d1d8eb9002ce9c449c3713de0837ac8216d17a8d`. Pn-C closes the plan by the exact five-document boundary.
 
 ### `E4-PNA-REVIEW1` — independent aggregate acceptance
 
@@ -311,7 +310,18 @@ P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa7
 - Exact cleanup: remove only the review-induced empty `.tmp/p4c-tests` parent (`0` files / `0` bytes). Current source plus four provenance locations prove ownership and deadness; the path was never tracked or committed and supplied no acceptance evidence.
 - Retention proof: all `136` tracked Child 04 paths remain; P4-C2 is `89/89` with its 84 non-living paths unchanged; Oracle and three QA generations have exact file sets, zero byte/LF/SHA mismatches and exact digests; the no-missed report sweep is `129` paths with `0/108` known paths missed.
 - Independent verdict: `E4-PNB-REVIEW1 PASS` at `reports/Supervisor/rp_supervisor_260821_150355_by_gpt-5_child04_pnb_cleanup_review1.md`; `14,130` bytes / `160` LF / raw SHA-256 `F114AF17513B56952B81B71110BA1C4D838AD40CE3D4E6049D4AD7C2D0ABD18F` / canonical SHA-256 `EDFCF6CACA23DE0F8F38BA4376A25009B33B525BDAF70D267D062155AEC91E1F`. Residual same-invariant surfaces: none.
-- No build, QA, target, or closed acceptance gate was rerun because cleanup changed no tracked/code/evidence bytes. Main now owns proportionate `E4-PNB-DETECT1` and isolated `E4-PNB-COMMIT1`; Pn-C and Child 05 remain locked until commit success.
+- No build, QA, target, or closed acceptance gate was rerun because cleanup changed no tracked/code/evidence bytes.
+
+### `E4-PNB-DETECT1` and `E4-PNB-COMMIT1` — isolated cleanup closure
+
+- Fresh final candidate graph was `1,943/736/0`, `114,723/157,538`. `anvien detect-changes --repo E:\Anvien --scope all` exited `0`: `19` changed documentation sections, exactly `5` changed files and `5` affected files, LOW changed-file and overall risk, `0` affected processes/flows, ResolutionGap delta `0/0`, persisted health `0/0/0`, and complete semantic fields over all `114,723` nodes.
+- Commit `d1d8eb9002ce9c449c3713de0837ac8216d17a8d` (`docs(plan): close Child 04 cleanup`) has parent `c7997886a0faeb32b7cfe05b4f7d08e38fc57228` and exactly eight paths: five Child 04 living documents, cleanup Coder report, cleanup Supervisor report, and `reports/Investigation/rp_main_260821_1436_orchestration_rotation_handoff.md`.
+- Post-commit verification found an empty index, zero tracked unstaged paths, `git diff --check` PASS, and only the protected `0631`/`0721` handoffs untracked before the current rotation handoff was created. No push/reset/checkout occurred. Pn-C opened only after this boundary succeeded.
+
+### `E4-PNC-CLOSE1` — Child 04 plan closure
+
+- All five P4 slices retain accepted isolated commits; aggregate and cleanup reviews are `PASS`; Pn-B is committed at `d1d8eb9002ce9c449c3713de0837ac8216d17a8d`; no Child 04 gate remains open.
+- Pn-C changes only the roadmap and four Child 04 ledgers. `E4-PNC-COMMIT1` is this exact five-document plan-closure commit, with final hash and clean post-state reported externally after Git success.
 
 ### `E4-P4B-SOURCE1` — source and cleanup clearance
 

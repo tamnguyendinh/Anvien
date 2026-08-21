@@ -81,5 +81,7 @@
 - `E4-P4C2-COMMIT1` closes at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; it changes no benchmark row because Git identity and path count are closure evidence, not product/runtime performance.
 - Aggregate `E4-PNA-REVIEW1` is `PASS`; it introduces no benchmark row because acceptance/report identity are evidence gates and it deliberately reruns no benchmarkable product command absent invalidation.
 - `E4-PNB-CLEAN1` and `E4-PNB-REVIEW1` remove one empty directory (`0` files / `0` bytes) and verify artifact inventory/identity only. These are lifecycle evidence gates, not product/runtime benchmarks; no benchmark row changes.
+- `E4-PNB-DETECT1` and `E4-PNB-COMMIT1` close at `19/5/5` LOW and commit `d1d8eb9002ce9c449c3713de0837ac8216d17a8d`. They are documentation/Git closure evidence and do not change a product benchmark row.
+- `E4-PNC-CLOSE1` and `E4-PNC-COMMIT1` only close the Child 04 plan. They do not change or rerun any product/runtime benchmark row.
 - Oracle row count, provenance completeness, seal identity, durable-path compliance, and `.tmp` absence are evidence-integrity gates rather than product benchmarks; they close only through `E4-P4C2-ORACLE1` and later Supervisor review.
 - No complete module-resolution, public-API, or global TypeScript accuracy percentage is claimed by this child.
