@@ -1,5 +1,5 @@
 ---
-## name: orchestration
+name: orchestration
 description: This skill should be used when the user assigns or asks an agent to become the work orchestrator/main agent for opening and governing separate independent task sessions for subagents.
 ---
 
