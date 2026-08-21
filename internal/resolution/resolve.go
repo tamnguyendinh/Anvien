@@ -392,7 +392,11 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 	case scopeir.CallConstructor:
 		target, ok = w.resolveScopedName(call.Name, call.InScope, dispatchOwnerLabels())
 		if ok {
-			proofKind = proofKindScopeBinding
+			if claimed, allowed := w.explicitImportCallState(call.Name, call.InScope, dispatchOwnerLabels(), &target); claimed && !allowed {
+				ok = false
+			} else {
+				proofKind = proofKindScopeBinding
+			}
 		}
 		if !ok {
 			target, ok = w.resolveSameFileName(call.FilePath, call.Name, dispatchOwnerLabels())
@@ -402,6 +406,10 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 			}
 		}
 		if !ok {
+			claimed, _ := w.explicitImportCallState(call.Name, call.InScope, dispatchOwnerLabels(), nil)
+			if claimed {
+				break
+			}
 			target, ok = w.resolveGlobalCallName(call.Name, dispatchOwnerLabels(), call.Arity)
 			if ok {
 				confidence = 0.5
@@ -421,6 +429,10 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 			}
 		}
 		if !ok && call.ExplicitReceiver == "" {
+			claimed, _ := w.explicitImportCallState(call.Name, call.InScope, callableLabels(), nil)
+			if claimed {
+				break
+			}
 			target, ok = w.resolveGlobalCallName(call.Name, callableLabels(), call.Arity)
 			if ok {
 				confidence = 0.5
@@ -430,7 +442,11 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 	default:
 		target, ok = w.resolveScopedName(call.Name, call.InScope, callableLabels())
 		if ok {
-			proofKind = proofKindScopeBinding
+			if claimed, allowed := w.explicitImportCallState(call.Name, call.InScope, callableLabels(), &target); claimed && !allowed {
+				ok = false
+			} else {
+				proofKind = proofKindScopeBinding
+			}
 		}
 		if !ok {
 			target, ok = w.resolveSameFileName(call.FilePath, call.Name, callableLabels())
@@ -447,6 +463,10 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 			}
 		}
 		if !ok {
+			claimed, _ := w.explicitImportCallState(call.Name, call.InScope, callableLabels(), nil)
+			if claimed {
+				break
+			}
 			target, ok = w.resolveGlobalCallName(call.Name, callableLabels(), call.Arity)
 			if ok {
 				confidence = 0.5

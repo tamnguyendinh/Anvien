@@ -172,7 +172,6 @@ func buildWorkspace(files []scopeir.ScopeIR) (*workspace, error) {
 	}
 
 	w.resolveImports()
-	w.buildExportTables()
 	w.resolveHeritage()
 	w.enrichCallReturnTypeBindings()
 	w.sort()
@@ -280,6 +279,9 @@ func (w *workspace) resolveCallTargetForTypeBinding(call scopeir.CallSiteFact) (
 }
 
 func (w *workspace) resolveImports() {
+	// Phase one resolves every module/file candidate exactly once. P5-B table
+	// construction depends on the complete TargetFiles set, so no exported-name
+	// lookup or binding is attempted in this phase.
 	for _, ir := range w.files {
 		sourceScope := w.moduleScopeByFile[ir.FilePath]
 		for _, item := range ir.Imports {
@@ -290,9 +292,6 @@ func (w *workspace) resolveImports() {
 					resolved.TargetFiles = targetFiles
 					resolved.TargetFile = targetFiles[0]
 					resolved.LinkStatus = ""
-					if targetDef, ok := w.resolveImportedDef(resolved.TargetFile, item); ok {
-						resolved.TargetDef = &targetDef
-					}
 				}
 			}
 			w.imports = append(w.imports, resolved)
@@ -301,17 +300,33 @@ func (w *workspace) resolveImports() {
 				key := importReceiverKey{filePath: item.FilePath, localName: item.LocalName}
 				w.importsByReceiver[key] = append(w.importsByReceiver[key], importIndex)
 			}
-			if sourceScope == "" || item.LocalName == "" || resolved.TargetDef == nil {
-				continue
-			}
-			if _, ok := w.scopeBindings[sourceScope]; !ok {
-				w.scopeBindings[sourceScope] = make(map[string][]bindingRef)
-			}
-			w.scopeBindings[sourceScope][item.LocalName] = append(
-				w.scopeBindings[sourceScope][item.LocalName],
-				bindingRef{Def: *resolved.TargetDef, Origin: importBindingOrigin(item.Kind), Via: &w.imports[importIndex]},
-			)
 		}
+	}
+
+	// Phase two builds the accepted P5-B tables once, after every re-export
+	// compatibility fact has its complete module/file candidates.
+	w.buildExportTables()
+
+	// Phase three performs semantic export lookup and creates import bindings.
+	// It never repeats module/path resolution.
+	for importIndex := range w.imports {
+		resolved := &w.imports[importIndex]
+		item := resolved.Fact
+		if resolved.LinkStatus != "unresolved" {
+			if targetDef, ok := w.resolveImportedDef(resolved.TargetFiles, item); ok {
+				resolved.TargetDef = &targetDef
+			}
+		}
+		if resolved.SourceScope == "" || item.LocalName == "" || resolved.TargetDef == nil {
+			continue
+		}
+		if _, ok := w.scopeBindings[resolved.SourceScope]; !ok {
+			w.scopeBindings[resolved.SourceScope] = make(map[string][]bindingRef)
+		}
+		w.scopeBindings[resolved.SourceScope][item.LocalName] = append(
+			w.scopeBindings[resolved.SourceScope][item.LocalName],
+			bindingRef{Def: *resolved.TargetDef, Origin: importBindingOrigin(item.Kind), Via: resolved},
+		)
 	}
 	w.synthesizeWildcardImportBindings()
 }
@@ -459,7 +474,14 @@ func (w *workspace) goFilesInDir(dir string) []string {
 	return files
 }
 
-func (w *workspace) resolveImportedDef(targetFile string, item scopeir.ImportFact) (defRef, bool) {
+func (w *workspace) resolveImportedDef(targetFiles []string, item scopeir.ImportFact) (defRef, bool) {
+	if isSemanticExportImport(item) {
+		return w.resolveImportExport(item, targetFiles, nil).definition()
+	}
+	if len(targetFiles) == 0 {
+		return defRef{}, false
+	}
+	targetFile := targetFiles[0]
 	names := []string{item.ImportedName, item.LocalName}
 	if item.ImportedName == "default" {
 		names = []string{item.LocalName}
@@ -613,6 +635,13 @@ func (w *workspace) resolveImportedMember(receiver string, name string, startSco
 	sourceFile := w.scopeFilePath(startScope)
 	if sourceFile == "" {
 		return defRef{}, false
+	}
+	if result, handled := w.resolveSemanticImportedMember(receiver, name, startScope, labels); handled {
+		target, ok := result.definition()
+		if !ok || !isAnyLabel(target.Fact.Label, labels) {
+			return defRef{}, false
+		}
+		return target, true
 	}
 	var candidates uniqueDefAccumulator
 	key := importReceiverKey{filePath: sourceFile, localName: receiver}
