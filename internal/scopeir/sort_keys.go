@@ -49,6 +49,12 @@ func compareImport(left ImportFact, right ImportFact) int {
 	if value := compareString(left.ImportedName, right.ImportedName); value != 0 {
 		return value
 	}
+	if value := compareExportMeanings(left.RequestedMeanings, right.RequestedMeanings); value != 0 {
+		return value
+	}
+	if value := compareBool(left.TypeOnly, right.TypeOnly); value != 0 {
+		return value
+	}
 	if value := compareString(deref(left.TargetRaw), deref(right.TargetRaw)); value != 0 {
 		return value
 	}

@@ -89,6 +89,86 @@ func TestExtractTypeScriptScopeIR(t *testing.T) {
 	requireReturnType(t, ir, save.ID, "Promise<void>")
 }
 
+func TestExtractImportRequestedMeaningsAndTypeOnly(t *testing.T) {
+	source := []byte(`import DefaultValue from "./default";
+import { NamedValue, RemoteValue as LocalValue } from "./named";
+import * as PlainNamespace from "./namespace";
+import type DefaultType from "./type-default";
+import type { StatementType, RemoteType as LocalType } from "./type-statement";
+import { type InlineType, type RemoteInline as LocalInline } from "./type-inline";
+import type * as TypeNamespace from "./type-namespace";
+import "./side-effect";
+export { Reexported } from "./reexport";
+export * from "./star";
+export * as NamespaceExport from "./namespace-export";
+`)
+	ir := parseAndExtract(t, "src/imports.ts", "hash-imports", scanner.TypeScript, source)
+
+	type expectedImport struct {
+		kind      scopeir.ImportKind
+		imported  string
+		meanings  []scopeir.ExportMeaning
+		typeOnly  bool
+		targetRaw string
+	}
+	normalMeanings := []scopeir.ExportMeaning{
+		scopeir.ExportMeaningNamespace,
+		scopeir.ExportMeaningType,
+		scopeir.ExportMeaningValue,
+	}
+	typeMeaning := []scopeir.ExportMeaning{scopeir.ExportMeaningType}
+	want := map[string]expectedImport{
+		"DefaultValue":   {scopeir.ImportNamed, "default", normalMeanings, false, "./default"},
+		"NamedValue":     {scopeir.ImportNamed, "NamedValue", normalMeanings, false, "./named"},
+		"LocalValue":     {scopeir.ImportAlias, "RemoteValue", normalMeanings, false, "./named"},
+		"PlainNamespace": {scopeir.ImportNamespace, "", []scopeir.ExportMeaning{scopeir.ExportMeaningNamespace}, false, "./namespace"},
+		"DefaultType":    {scopeir.ImportNamed, "default", typeMeaning, true, "./type-default"},
+		"StatementType":  {scopeir.ImportNamed, "StatementType", typeMeaning, true, "./type-statement"},
+		"LocalType":      {scopeir.ImportAlias, "RemoteType", typeMeaning, true, "./type-statement"},
+		"InlineType":     {scopeir.ImportNamed, "InlineType", typeMeaning, true, "./type-inline"},
+		"LocalInline":    {scopeir.ImportAlias, "RemoteInline", typeMeaning, true, "./type-inline"},
+		"TypeNamespace":  {scopeir.ImportNamespace, "", typeMeaning, true, "./type-namespace"},
+	}
+
+	seen := make(map[string]scopeir.ImportFact, len(want))
+	compatibilityFacts := 0
+	for _, fact := range ir.Imports {
+		if fact.TargetRaw != nil && *fact.TargetRaw == "./side-effect" {
+			t.Fatalf("side-effect-only import unexpectedly emitted a fact: %#v", fact)
+		}
+		switch fact.Kind {
+		case scopeir.ImportReexport, scopeir.ImportWildcard:
+			compatibilityFacts++
+			if len(fact.RequestedMeanings) != 0 || fact.TypeOnly {
+				t.Fatalf("compatibility re-export import gained semantic authority: %#v", fact)
+			}
+			continue
+		}
+		if _, exists := seen[fact.LocalName]; exists {
+			t.Fatalf("duplicate source-written import for %q: %#v", fact.LocalName, ir.Imports)
+		}
+		seen[fact.LocalName] = fact
+	}
+	if compatibilityFacts != 3 {
+		t.Fatalf("compatibility re-export facts = %d, want 3: %#v", compatibilityFacts, ir.Imports)
+	}
+	if len(seen) != len(want) {
+		t.Fatalf("source-written imports = %d, want %d: %#v", len(seen), len(want), ir.Imports)
+	}
+	for localName, expected := range want {
+		fact, ok := seen[localName]
+		if !ok {
+			t.Fatalf("missing source-written import %q in %#v", localName, ir.Imports)
+		}
+		if fact.Kind != expected.kind || fact.ImportedName != expected.imported ||
+			fact.TypeOnly != expected.typeOnly || fact.TargetRaw == nil ||
+			*fact.TargetRaw != expected.targetRaw ||
+			!reflect.DeepEqual(fact.RequestedMeanings, expected.meanings) {
+			t.Fatalf("import %q = %#v, want %#v", localName, fact, expected)
+		}
+	}
+}
+
 func TestExtractTypeScriptInterfaceHeritage(t *testing.T) {
 	source := []byte(`interface Area { id: string; }
 interface CountedArea extends Area { count: number; }

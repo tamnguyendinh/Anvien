@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / dependency-blocked`
+- Status: `P0 complete / P5-A planner-refreshed and implementation-authorized / P5-B+ locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -139,13 +139,13 @@ Out of scope:
 - [ ] P5-A: Establish current module-request and path inputs.
   - Goal: identify and, only where evidence requires, correct the inputs that connect a source import to a resolved repository module before export lookup.
   - Scope Boundary:
-    - Editable: only current module-request/path owners selected by fresh file-detail and impact evidence after the Child 04 handoff.
-    - Inspect-only: `internal/scopeir/facts.go`, `internal/providers/tsjs/imports.go`, `internal/resolution/indexes.go`, and `internal/resolution/import_resolution.go` until pre-flight selects exact owners.
-    - Preserve-only: non-TypeScript import strategies whose regressions are not implicated.
+    - Editable: `internal/scopeir/facts.go` for the requested-meaning contract; `internal/providers/tsjs/imports.go` for source-written TS/JS import population; `internal/scopeir/ir.go` and `internal/scopeir/sort_keys.go` for owning clone, canonicalization, and deterministic ordering of that contract.
+    - Inspect-only: focused contract/provider tests selected after production code and the current resolver consumers needed to prove the new fields reach `buildWorkspace` unchanged.
+    - Preserve-only: `internal/resolution/indexes.go` module/file candidate selection and `resolvedImport` separation; `internal/resolution/import_resolution.go` and every unaffected language strategy; accepted Child 04 `ExportFact` semantics; compatibility re-export `ImportFact` records as path compatibility only.
     - Out of scope: export traversal, declaration authority, and package-resolution expansion not proven necessary.
-  - Non-Goals: no assumed project-profile layer and no module-system rewrite.
+  - Non-Goals: no assumed project-profile layer, module-system rewrite, side-effect-only import fact expansion, dormant `ImportFact.Target*` activation/removal, or re-export semantic duplication.
   - Pre-flight Questions:
-    - Data source: accepted Child 04 module/import/export facts plus current source/config inputs.
+    - Data source: source-written TS/JS `ImportFact` records for module requests plus immutable accepted Child 04 `ExportFact` records for re-export semantics.
     - Display permission: N/A — resolver data has no display permission decision.
     - DB read flow: N/A — this slice inspects in-memory facts and repository files; persisted validation is later.
     - DB write flow: N/A unless fresh impact proves a persisted input is required.
@@ -153,34 +153,40 @@ Out of scope:
     - UI behavior flow: N/A — no browser-visible behavior is owned.
     - Docker runtime: N/A — validate the built CLI/resolver boundary.
     - Playwright target: N/A — no UI surface is owned.
-    - Behavior test: relative/index imports, existing language regressions, exact requested names/meanings, and physical path counts.
+    - Behavior test: default/named/alias/namespace imports, statement-level and inline type-only imports, canonical requested-meaning sets, relative/index paths, unaffected-language regressions, and all three absolute count denominators.
     - Cleanup/quarantine: reusable fixtures only under package `testdata`.
     - External side effects: read-only repository/config inspection.
-    - N/A notes: module export traversal starts in P5-B/P5-C.
+    - N/A notes: side-effect-only imports have no exported-name request and remain unchanged in P5-A; module export-table construction/traversal starts in P5-B/P5-C.
   - Work Steps:
-    1. Capture current input fields, path candidates, physical path counts, syntactic `IMPORTS` counts, and fresh owner impact; update the plan before code if the necessary owner/scope differs.
+    1. Use the accepted fresh inventory at HEAD `0aa49c87628c9e8b2041754515d6ebf0a930d55b`: preserve current module/file candidates and `resolvedImport`, retain accepted `ExportFact` as the sole re-export semantic source, and use the recorded six-file/fourteen-symbol impact plus the `5,072 / 5,072 / 5,088` count baseline.
        - UI flow check: N/A — non-UI resolver boundary.
-       - DB/data flow check: record the exact source fact through resolved module/file result.
+       - DB/data flow check: preserve the exact source fact through resolved module/file result and keep the optional physical-definition result separate.
        - Render location check: evidence and benchmark ledgers.
-       - Mini QA: run the nearest built resolver/CLI boundary and record the observed result.
+       - Mini QA: inventory gate is complete; do not repeat graph analysis unless source changes invalidate it.
        - Evidence target: `E5-P5A-IMPACT1`, `E5-P5A-INPUT1`, `E5-P5A-COUNT1`.
-    2. Implement only proven missing production behavior, then add focused tests, run the full build, validate existing import strategies, obtain Supervisor review, detect changes, and commit.
+    2. Add `RequestedMeanings []ExportMeaning` and `TypeOnly bool` to `ImportFact`. Treat `RequestedMeanings` as a canonical allowed-set, not a claim that the target supplies every lane: plain default/named/alias imports request `{value,type,namespace}`; statement-level or inline type-only forms request `{type}` and set `TypeOnly=true`; plain namespace imports request `{namespace}` with no exported-name request; type-only namespace imports request `{type}` and set `TypeOnly=true`. Leave both fields empty on non-TS/JS facts and compatibility re-export imports so unaffected providers and the accepted `ExportFact` authority remain unchanged.
        - UI flow check: N/A — non-UI resolver boundary.
-       - DB/data flow check: module lookup is deterministic and distinct from export lookup.
+       - DB/data flow check: source-written import syntax gains only requested semantic inputs; dormant output-looking `Target*` fields remain unused.
+       - Render location check: `ImportFact` JSON plus focused ScopeIR/provider tests.
+       - Mini QA: verify normal versus type-only import facts from the production extractor before changing tests.
+       - Evidence target: `E5-P5A-SRC1`, `E5-P5A-TEST1`.
+    3. Deep-clone, sort, deduplicate, and compare `RequestedMeanings` deterministically in `ScopeIR` normalization; include `TypeOnly` in import ordering. Add focused tests only after production code, run the full build and the nearest real non-UI resolver/CLI boundary, validate unaffected import strategies, prove zero delta for physical target-file resolutions (`5,072`), resolver-emitted `IMPORTS` (`5,072`), and final persisted graph-wide `IMPORTS` (`5,088`), then obtain Supervisor review, detect changes, and commit.
+       - UI flow check: N/A — non-UI resolver boundary.
+       - DB/data flow check: requested meanings are canonical and owned; module lookup remains deterministic and distinct from export lookup.
        - Render location check: resolver trace and test evidence.
        - Mini QA: exercise direct and barrel module lookup on the built runtime.
        - Evidence target: `E5-P5A-SRC1`, `E5-P5A-BUILD1`, `E5-P5A-TEST1`, `E5-P5A-REVIEW1`, `E5-P5A-DETECT1`, `E5-P5A-COMMIT1`.
-  - Implementation Gate: Child 04 closure is accepted; fresh evidence identifies exact editable owners; the absolute pre-change path/`IMPORTS` counts are recorded.
+  - Implementation Gate: satisfied for production implementation only after this planner refresh: Child 04 closure is accepted; exact editable/preserve-only owners are named; the requested-meaning/type-only representation and side-effect-import disposition are authorized; physical target-file resolutions (`5,072`), resolver-emitted `IMPORTS` (`5,072`), and final persisted graph-wide `IMPORTS` (`5,088`) are recorded.
   - Acceptance:
-    - Source: current module-request/path inputs are explicit and only proven gaps are changed.
+    - Source: current module-request/path inputs are explicit; TS/JS requested meanings/type-only state are represented exactly as authorized; compatibility re-export imports do not become a second semantic source; only the four proved production owners change.
     - Runtime/UI: built resolver/CLI lookup is correct; UI is N/A.
     - DB/data: module result is preserved separately from exported-name resolution.
-    - Behavior test: current import-path regressions and target module lookup pass.
+    - Behavior test: default/named/alias/namespace, statement-level/inline type-only, canonicalization/round-trip, current import-path, target module lookup, and unaffected-language regressions pass.
     - Cleanup/quarantine: no copied target source or obsolete fixture remains.
     - Evidence IDs: `E5-P5A-IMPACT1`, `E5-P5A-INPUT1`, `E5-P5A-COUNT1`, `E5-P5A-SRC1`, `E5-P5A-BUILD1`, `E5-P5A-TEST1`, `E5-P5A-REVIEW1`, `E5-P5A-DETECT1`, `E5-P5A-COMMIT1`.
     - Actual-status rows refreshed: module-request/path input rows.
   - Evidence Targets: input manifest, counts, source diff, behavior tests, build, boundary, Supervisor, detect, commit.
-  - Actual-status Update: `partial -> correct` only for proven module-input gaps; preserve correct path strategies.
+  - Actual-status Update: requested name/meaning/type-only `partial|missing -> correct` only after evidence; preserve current module/file results and path strategies.
   - Commit Boundary: commit P5-A alone after acceptance.
 
 - [ ] P5-B: Build export tables from accepted export facts.

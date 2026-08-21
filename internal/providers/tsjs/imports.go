@@ -33,12 +33,25 @@ func (c *collector) emitImportStatement(node *sitter.Node) {
 	if importClause == nil {
 		return
 	}
+	statementTypeOnly := importStatementTypeOnly(node)
 
 	namespaceImport := firstDescendantOfType(importClause, "namespace_import")
 	if namespaceImport != nil {
 		localName := c.text(firstDescendantOfType(namespaceImport, "identifier"))
 		if localName != "" {
-			c.addImport(scopeir.ImportNamespace, localName, moduleNameFromTarget(targetRaw), "", targetRaw)
+			meanings := []scopeir.ExportMeaning{scopeir.ExportMeaningNamespace}
+			if statementTypeOnly {
+				meanings = []scopeir.ExportMeaning{scopeir.ExportMeaningType}
+			}
+			c.addImport(
+				scopeir.ImportNamespace,
+				localName,
+				"",
+				"",
+				targetRaw,
+				meanings,
+				statementTypeOnly,
+			)
 			c.importedLocalNames[localName] = struct{}{}
 		}
 		return
@@ -46,7 +59,16 @@ func (c *collector) emitImportStatement(node *sitter.Node) {
 
 	defaultName := c.text(firstNamedChildOfType(importClause, "identifier"))
 	if defaultName != "" {
-		c.addImport(scopeir.ImportNamed, defaultName, "default", "", targetRaw)
+		meanings := importRequestedMeanings(statementTypeOnly)
+		c.addImport(
+			scopeir.ImportNamed,
+			defaultName,
+			"default",
+			"",
+			targetRaw,
+			meanings,
+			statementTypeOnly,
+		)
 		c.importedLocalNames[defaultName] = struct{}{}
 	}
 
@@ -69,7 +91,16 @@ func (c *collector) emitImportStatement(node *sitter.Node) {
 			localName = alias
 			kind = scopeir.ImportAlias
 		}
-		c.addImport(kind, localName, imported, alias, targetRaw)
+		typeOnly := statementTypeOnly || importSpecifierTypeOnly(specifier)
+		c.addImport(
+			kind,
+			localName,
+			imported,
+			alias,
+			targetRaw,
+			importRequestedMeanings(typeOnly),
+			typeOnly,
+		)
 		c.importedLocalNames[localName] = struct{}{}
 	}
 }
@@ -407,9 +438,11 @@ func (c *collector) addSourceExportFact(fact scopeir.ExportFact) {
 			fact.TargetExportedName,
 			alias,
 			*fact.TargetRaw,
+			nil,
+			false,
 		)
 	case scopeir.ExportStar, scopeir.ExportNamespace:
-		c.addImport(scopeir.ImportWildcard, "", "", "", *fact.TargetRaw)
+		c.addImport(scopeir.ImportWildcard, "", "", "", *fact.TargetRaw, nil, false)
 	}
 }
 
@@ -1291,17 +1324,46 @@ func containsNodeKind(node *sitter.Node, kind string) bool {
 	return false
 }
 
-func (c *collector) addImport(kind scopeir.ImportKind, localName, importedName, alias, targetRaw string) {
+func (c *collector) addImport(
+	kind scopeir.ImportKind,
+	localName string,
+	importedName string,
+	alias string,
+	targetRaw string,
+	requestedMeanings []scopeir.ExportMeaning,
+	typeOnly bool,
+) {
 	target := targetRaw
 	c.imports = append(c.imports, scopeir.ImportFact{
-		FilePath:     c.filePath,
-		FileHash:     c.fileHash,
-		Kind:         kind,
-		LocalName:    localName,
-		ImportedName: importedName,
-		Alias:        alias,
-		TargetRaw:    &target,
+		FilePath:          c.filePath,
+		FileHash:          c.fileHash,
+		Kind:              kind,
+		LocalName:         localName,
+		ImportedName:      importedName,
+		Alias:             alias,
+		RequestedMeanings: requestedMeanings,
+		TypeOnly:          typeOnly,
+		TargetRaw:         &target,
 	})
+}
+
+func importRequestedMeanings(typeOnly bool) []scopeir.ExportMeaning {
+	if typeOnly {
+		return []scopeir.ExportMeaning{scopeir.ExportMeaningType}
+	}
+	return []scopeir.ExportMeaning{
+		scopeir.ExportMeaningValue,
+		scopeir.ExportMeaningType,
+		scopeir.ExportMeaningNamespace,
+	}
+}
+
+func importStatementTypeOnly(statement *sitter.Node) bool {
+	return hasAnonymousChild(statement, "type") || hasAnonymousChild(statement, "typeof")
+}
+
+func importSpecifierTypeOnly(specifier *sitter.Node) bool {
+	return hasAnonymousChild(specifier, "type") || hasAnonymousChild(specifier, "typeof")
 }
 
 func hasAnonymousChild(node *sitter.Node, text string) bool {

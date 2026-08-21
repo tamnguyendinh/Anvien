@@ -33,8 +33,10 @@
 
 | Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
-| P5-A | physical module-path resolutions | absolute count | pending P5-A capture | pending | pending | record and preserve for the same input | pending | `E5-P5A-COUNT1`, `E5-P5D-COUNT1` |
-| P5-A | syntactic `IMPORTS` | absolute count | pending P5-A capture | pending | pending | record and preserve for the same input | pending | `E5-P5A-COUNT1`, `E5-P5D-COUNT1` |
+| P5-A | parsed-code corpus | files | 736 | 736 post-change | pending Supervisor | preserve the same source corpus | 0 | `E5-P5A-COUNT1` |
+| P5-A | physical target-file resolutions (`resolution.ImportsResolved`) | absolute count | 5,072 | 5,072 post-change | pending Supervisor | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5D-COUNT1` |
+| P5-A | resolver-emitted syntactic `IMPORTS` (`resolution.FinalizedImportsEmitted`) | absolute count | 5,072 | 5,072 post-change | pending Supervisor | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5D-COUNT1` |
+| P5-A | final persisted graph-wide `IMPORTS` | absolute count | 5,088 | 5,088 post-change | pending Supervisor | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5D-COUNT1` |
 | P5-B | zero-physical barrel declarations | count | fixture not yet created | pending | pending | exactly 0 | pending | `E5-P5B-ZEROBARREL1` |
 | P5-B | zero-physical barrel export entries | count | no export table | pending | pending | exact non-zero fixture expectation | pending | `E5-P5B-ZEROBARREL1` |
 | P5-C | named traversal vectors | passed/total | no accepted implementation | pending | pending | 100% of accepted alias/star/namespace/meaning/cycle/ambiguity vectors | pending | `E5-P5C-PROOF1`, `E5-P5C-TEST1` |
@@ -43,8 +45,9 @@
 | P5-D | bounded barrel terminal calls | resolved/expected | 0/2 | 0/2 | pending | 2/2 | pending | `E5-P5D-TARGET1` |
 | P5-D | matching false-gap sites | count | 2 bounded sites | 2 | pending | 0 | pending | `E5-P5D-TARGET1` |
 | P5-D | complete barrel proof chains | complete/expected | 0/2 | 0/2 | pending | 2/2 | pending | `E5-P5D-TARGET1` |
-| P5-D | physical path-resolution delta | count | N/A until absolute P5-A count | pending | pending | 0 | pending | `E5-P5D-COUNT1` |
-| P5-D | syntactic `IMPORTS` delta | count | N/A until absolute P5-A count | pending | pending | 0 | pending | `E5-P5D-COUNT1` |
+| P5-D | physical target-file resolution delta | count | 5,072 P5-A baseline | pending | pending | 0 | pending | `E5-P5D-COUNT1` |
+| P5-D | resolver-emitted syntactic `IMPORTS` delta | count | 5,072 P5-A baseline | pending | pending | 0 | pending | `E5-P5D-COUNT1` |
+| P5-D | final persisted graph-wide `IMPORTS` delta | count | 5,088 P5-A baseline | pending | pending | 0 | pending | `E5-P5D-COUNT1` |
 | P5-D | affected persistence/reader field differences | count | pending affected-surface inventory | pending | pending | 0 across every affected row | pending | `E5-P5D-PARITY1` |
 
 ## Conditional Product Measurements

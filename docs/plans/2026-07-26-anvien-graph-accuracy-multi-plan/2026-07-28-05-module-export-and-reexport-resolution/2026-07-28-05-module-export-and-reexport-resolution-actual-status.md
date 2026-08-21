@@ -2,7 +2,7 @@
 
 Title: Anvien Module Export And Re-Export Resolution
 Date: 2026-07-28
-Status: P0 Complete / Dependency Blocked
+Status: P0 Complete / P5-A Coder candidate READY_FOR_SUPERVISOR / P5-B+ locked
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -14,7 +14,7 @@ Successor: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06
 
 This file records the current module-request, path lookup, export-surface, re-export traversal, terminal call-binding, and target-boundary state before Child 05 production work.
 
-Implementation does not start until every editable owner has fresh evidence and the Child 04 export-fact handoff is accepted. Detailed proof belongs in the evidence ledger.
+The Child 04 predecessor is accepted at closure commit `0aa49c87628c9e8b2041754515d6ebf0a930d55b`. P5-A fresh inventory is recorded at the same HEAD and this R2 refresh authorizes only the exact requested-meaning/type-only implementation defined below. Detailed proof belongs in the evidence ledger.
 
 ## Freshness / Refresh Rules
 
@@ -47,21 +47,33 @@ Out of scope:
 
 ## Relationship / Impact Evidence
 
-The graph used for this P0 inspection reported current commit parity and `stale=false` on every listed file-detail result.
+The 2026-08-10 P0 tuples remain historical. The P5-A graph was freshly rebuilt at HEAD `0aa49c87628c9e8b2041754515d6ebf0a930d55b`; every listed file-detail result reported `stale=false` and `changedSinceAnalyze=false`.
 
 | Unit / File / Surface | File Detail Evidence | Related File Count | Relationship Summary | Impact Note |
 |-----------------------|----------------------|-------------------:|----------------------|-------------|
-| `internal/resolution/indexes.go` | `E0-P0A-FD1` | 46 | workspace definitions, module lookup, import binding, physical-definition lookup | high file risk; three Child 05 symbols are CRITICAL |
-| `internal/providers/tsjs/imports.go` | `E0-P0A-FD2` | 15 | current TS import/re-export syntax to `ImportFact` | high file risk; inspect until Child 04 handoff |
-| `internal/resolution/import_resolution.go` | `E0-P0A-FD3` | 33 | existing language/path strategies and wildcard synthesis | high file risk; preserve unaffected languages |
-| `internal/resolution/resolve.go` | `E0-P0A-FD4` | 50 | call/access/type resolution and global-name branch | high file risk; `resolveCall` CRITICAL |
+| `internal/scopeir/facts.go` | `E5-P5A-IMPACT1` | 247 | shared `ImportFact` contract | medium file risk; file impact CRITICAL |
+| `internal/providers/tsjs/imports.go` | `E5-P5A-IMPACT1` | 17 | source-written TS/JS imports plus compatibility re-export path facts | high file risk; exact provider methods LOW |
+| `internal/scopeir/ir.go` | `E5-P5A-IMPACT1` | 245 | owning clone and canonical normalization | high file risk; file impact CRITICAL |
+| `internal/scopeir/sort_keys.go` | `E5-P5A-IMPACT1` | 242 | deterministic `ImportFact` ordering | high file risk; file impact CRITICAL |
+| `internal/resolution/indexes.go` | `E5-P5A-IMPACT1` | 51 | live module/file result, optional physical-definition result, import binding | high file risk; preserve in P5-A |
+| `internal/resolution/import_resolution.go` | `E5-P5A-IMPACT1` | 34 | existing multi-language path strategies | high file risk; preserve in P5-A |
 
 | Symbol | Impact Evidence | Risk | Impacted Symbols | Affected Files | Modules | Processes | Linked Flows / Tests |
 |--------|-----------------|------|-----------------:|---------------:|--------:|----------:|----------------------:|
-| `resolveImportedDef` | `E0-P0A-IMPACT1` | CRITICAL | 4 | 3 | 1 | 16 | 29 / 23 from containing file |
-| `resolveImports` | `E0-P0A-IMPACT2` | CRITICAL | 6 | 5 | 3 | 18 | 29 / 23 from containing file |
-| `buildWorkspace` | `E0-P0A-IMPACT3` | CRITICAL | 8 | 6 | 5 | 28 | 29 / 23 from containing file |
-| `resolveCall` | `E0-P0A-IMPACT4` | CRITICAL | 6 | 4 | 4 | 35 | 21 / 26 from containing file |
+| `scopeir.ImportFact` | `E5-P5A-IMPACT1` | CRITICAL | 624 | 73 | 25 | 67 | 0 / 100 from containing file |
+| `collector.emitImportStatement` | `E5-P5A-IMPACT1` | LOW | 0 | 0 | 0 | 0 | 1 / 4 from containing file |
+| `collector.addImport` | `E5-P5A-IMPACT1` | LOW | 0 | 0 | 0 | 0 | 1 / 4 from containing file |
+| `collector.addSourceExportFact` | `E5-P5A-IMPACT1` | LOW | 0 | 0 | 0 | 0 | 1 / 4 from containing file |
+| `ScopeIR.Normalized` | `E5-P5A-IMPACT1` | CRITICAL | 21 | 6 | 4 | 15 | 3 / 98 from containing file |
+| `ScopeIR.NormalizeInPlace` | `E5-P5A-IMPACT1` | LOW | 5 | 2 | 1 | 0 | 3 / 98 from containing file |
+| `ScopeIR.NormalizeOwned` | `E5-P5A-IMPACT1` | LOW | 3 | 1 | 1 | 0 | 3 / 98 from containing file |
+| `compareImport` | `E5-P5A-IMPACT1` | LOW | 6 | 2 | 1 | 2 | 2 / 97 from containing file |
+| `resolvedImport` | `E5-P5A-IMPACT1` | CRITICAL | 95 | 16 | 2 | 43 | 13 / 28 from containing file |
+| `buildWorkspace` | `E5-P5A-IMPACT1` | CRITICAL | 48 | 21 | 7 | 25 | 13 / 28 from containing file |
+| `workspace.resolveImports` | `E5-P5A-IMPACT1` | CRITICAL | 27 | 15 | 3 | 19 | 13 / 28 from containing file |
+| `workspace.resolveImportFiles` | `E5-P5A-IMPACT1` | CRITICAL | 18 | 11 | 1 | 5 | 13 / 28 from containing file |
+| `workspace.resolveImportFile` | `E5-P5A-IMPACT1` | LOW | 3 | 1 | 1 | 1 | 13 / 28 from containing file |
+| `workspace.resolveImportedDef` | `E5-P5A-IMPACT1` | CRITICAL | 18 | 11 | 1 | 5 | 13 / 28 from containing file |
 
 ## Status Rules
 
@@ -79,10 +91,13 @@ The graph used for this P0 inspection reported current commit parity and `stale=
 | Unit | Current State | Required State | Status | Relationship Count | Evidence | Next Plan Decision |
 |------|---------------|----------------|--------|-------------------:|----------|--------------------|
 | Problem authority | Originating report records the barrel symptom; causal and Supervisor reports verify the bounded C6 cause without prescribing a fix | findings and target acceptance separated from proposed design | correct | N/A | `E0-P0A-ORIGIN1`, `E0-P0A-VERIFY1`, `E0-P0A-VERIFY2` | preserve this evidence hierarchy |
-| Child 04 fact handoff | current TS provider emits import/re-export-shaped `ImportFact`, but Child 04 has not yet implemented and accepted its export-fact handoff | immutable accepted module/import/export facts with name and meaning needed by P5 | blocked | 15 related files at current syntax owner | `E0-P0A-SRC1`, `E0-P0A-FD2` | P5-A waits for Child 04 closure |
-| Bounded target module path | accepted investigation resolves the two source imports to the barrel file | preserve the source-written module/file result and its accounting | correct | 33 related files at path owner | `E0-P0A-VERIFY1`, `E0-P0A-SRC2`, `E0-P0A-FD3` | P5-A records and preserves the working path result |
-| General module-request/path input contract | current logic has relative/index candidates and multiple language strategies, but no Child 05 manifest separates the exact inputs needed before export lookup | explicit current input/result contract; only proved gaps changed | partial | 33 related files | `E0-P0A-SRC1`, `E0-P0A-SRC2`, `E0-P0A-FD3` | P5-A inventory before code; no assumed rewrite |
-| Module export surface | current workspace indexes definitions by file/name and has no first-class export table | deterministic table derived only from Child 04 facts | missing | 46 related files at workspace owner | `E0-P0A-SRC3`, `E0-P0A-FD1` | P5-B after P5-A |
+| Child 04 fact handoff | accepted predecessor provides one immutable `ScopeIR.ExportFact` source of truth with seven source-form kinds, three meaning lanes, type-only/name/range/provenance/diagnostic state, `414/414` graph conservation, `11,592/0` persistence parity, and no terminal traversal/ambiguity/cycle/resolved/public-API state | consume accepted syntax/direct-export facts without regenerating them; compatibility `ImportFact` records remain path-only | correct | accepted `414/414` Export/File→Export boundary | `E4-PNC-CLOSE1`, `E4-PNC-COMMIT1`, `E4-P4C2-REVIEW2`, `E5-P5A-INPUT1` | preserve as the sole re-export semantic authority |
+| Module request and file result | TS/JS facts retain source file, raw module text, local/imported names, deterministic relative/index candidates, and a live `resolvedImport` module/file result distinct from optional `TargetDef`; other-language strategies are separate | preserve exact module/file lookup and separation from export lookup | correct | `51` workspace / `34` path-owner related files | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1`, `E5-P5A-COUNT1` | preserve `indexes.go` and `import_resolution.go` in P5-A |
+| Requested exported name | default/named/alias names remain exact; namespace imports now retain only `LocalName`, kind, and raw module with an empty `ImportedName` | exact default/named/alias name; namespace has no exported-name request and is represented by kind + raw module | correct | `17` provider related files | `E5-P5A-INPUT1`, `E5-P5A-SRC1`, `E5-P5A-TEST1` | preserve candidate; await Supervisor |
+| Requested meaning / type-only | source-written TS/JS imports now carry canonical requested meanings and explicit type-only state; compatibility re-export and non-TS/JS facts remain empty | `RequestedMeanings` canonical allowed-set plus explicit `TypeOnly`; normal default/named/alias `{value,type,namespace}`, type-only `{type}`, namespace `{namespace}` or `{type}` when type-only | correct | `247` contract / `17` provider / `245` normalization / `242` sort-key related files | `E5-P5A-INPUT1`, `E5-P5A-SRC1`, `E5-P5A-TEST1` | preserve candidate; await Supervisor |
+| Dormant `ImportFact.Target*` versus live result | no production writer assigns `TargetFile`, `TargetExportedName`, `TargetModuleScope`, `TargetDefID`, or `LinkStatus`; live resolution is the separate in-memory `resolvedImport` | do not activate/remove dormant fields in P5-A; preserve live result separation | correct | `247` contract / `51` workspace related files | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | preserve; later cleanup requires its own accepted evidence |
+| P5-A count authority | post-change built-CLI graph on the same `736` parsed-code corpus records `5,072` physical target-file resolutions, `5,072` resolver-emitted syntactic `IMPORTS`, and `5,088` final persisted graph-wide `IMPORTS` | retain all three denominators and prove delta `0` for each | correct | candidate graph at HEAD `0aa49c8` plus uncommitted P5-A diff | `E5-P5A-COUNT1` | preserve `0 / 0 / 0`; await Supervisor |
+| Module export surface | current workspace indexes definitions by file/name and has no first-class export table | deterministic table derived only from Child 04 facts | missing | 51 related files at workspace owner | `E0-P0A-SRC3`, `E5-P5A-IMPACT1` | P5-B after accepted P5-A |
 | Re-export traversal | `resolveImportedDef` searches physical definitions in the resolved file and does not follow the barrel binding | terminal traversal with alias/star/cycle/ambiguity/meaning proof | wrong | 3 affected files for the exact symbol | `E0-P0A-VERIFY1`, `E0-P0A-SRC3`, `E0-P0A-IMPACT1` | P5-C after table acceptance |
 | Explicit-import global-name-rescue boundary | missing scoped/import binding can reach current global-name call lookup; low-confidence matches become gaps, but the explicit import failure is not represented at its own export boundary | no repository-global same-name rescue; explicit export failure retained | wrong | 4 affected files for `resolveCall` | `E0-P0A-SRC4`, `E0-P0A-IMPACT4` | P5-C owns the no-global-rescue proof |
 | Terminal call/proof emission | the two accepted target calls lack terminal `CALLS` relationships | both sites bind to the expected terminal Symbols with complete proof | unbound | resolver/emission impact must be refreshed in P5-D | `E0-P0A-VERIFY1` | P5-D after P5-C |
@@ -94,16 +109,23 @@ The graph used for this P0 inspection reported current commit parity and `stale=
 | Refresh | Date | Repo Basis | Changed Scope | Status Changes | Evidence | Next Phase Update |
 |---------|------|------------|---------------|----------------|----------|-------------------|
 | R0 | 2026-08-10 | HEAD `238aec06d28286acc0fca0f4e6a69f9eb4ff6a49`; graph file-detail `stale=false`, analyzed `2026-08-09T19:19:54Z` | Child 05 source/report/ledger reset | removed campaign-wide assumptions; path behavior classified separately from export lookup; P5-A blocked only by Child 04 handoff | `E0-P0A-GRAPH1`, `E0-P0A-SRC1..E0-P0A-SRC4`, `E0-P0A-FD1..E0-P0A-FD4`, `E0-P0A-IMPACT1..E0-P0A-IMPACT4` | open P5-A only after predecessor refresh; inventory before code |
+| R1 | 2026-08-21 | Child 04 closure commit `0aa49c87628c9e8b2041754515d6ebf0a930d55b`; Pn-B commit `d1d8eb9002ce9c449c3713de0837ac8216d17a8d` | accepted Child 04 syntax/direct-export predecessor and P5-A opening | predecessor `blocked -> accepted`; P0 remains complete; 2026-08-10 owner/file-detail/impact tuples remain historical and cannot authorize production edits | `E4-PNC-CLOSE1`, `E4-PNC-COMMIT1` | open only P5-A for fresh source/file-detail/impact/input/count inventory; update status/next action/work steps before implementation; keep P5-B+ and target locked |
+| R2 | 2026-08-21 | HEAD `0aa49c87628c9e8b2041754515d6ebf0a930d55b`; fresh graph `114,738` nodes / `157,553` relationships; Coder inventory report SHA-256 `82D9F651A0BF6CF13CD66F0EEF6DC310F9DAA69A4782E3769383A3294F8672DE` | P5-A input contract, exact owners, count denominators, and implementation work steps | module/path result stays `correct`; requested names split to `correct/partial`; requested meaning/type-only `missing`; inventory block resolved by one planner refresh | `E5-P5A-IMPACT1`, `E5-P5A-INPUT1`, `E5-P5A-COUNT1` | authorize only P5-A requested-meaning/type-only implementation; P5-B+ and target remain locked |
+| R3 | 2026-08-21 | HEAD `0aa49c87628c9e8b2041754515d6ebf0a930d55b` plus uncommitted P5-A candidate; canonical CLI `1.2.8`; authoritative `E:\Anvien` full-build/analyze completed; graph `114,842 / 157,744` | requested name/meaning/type-only contract, canonical ownership, build/boundary/regression, and three-count preservation | requested namespace name `partial -> correct`; requested meaning/type-only `missing -> correct`; module/path result and all three count denominators remain `correct` pending Supervisor recheck on the canonical E graph | `E5-P5A-SRC1`, `E5-P5A-BUILD1`, `E5-P5A-TEST1`, `E5-P5A-COUNT1` | hand P5-A candidate to Supervisor; keep P5-B+, target, detect, and commit locked/pending |
+| R4 | 2026-08-21 | HEAD `0aa49c87628c9e8b2041754515d6ebf0a930d55b` plus uncommitted P5-A candidate; canonical CLI `1.2.8`; authoritative `E:\Anvien` full-build/analyze completed; graph `114,842 / 157,744` | Supervisor acceptance of P5-A source, build, boundary, regressions, and three-count preservation | P5-A Supervisor gate `pending -> PASS`; source invariant remains correct; detect/commit remain pending | `E5-P5A-BUILD1`, `E5-P5A-COUNT1`, `E5-P5A-REVIEW1` | run fresh analyze refresh, then `detect-changes`; stage/commit only isolated P5-A manifest; keep P5-B+, target, and later gates locked |
 
 ## Phase Touch Map
 
 | Unit / File / Surface | Plan-Relevant Relationship File | Relationship to Target | Plan Item | Touch Mode | Evidence | Constraint |
 |-----------------------|---------------------------------|------------------------|-----------|------------|----------|------------|
-| current import/export syntax | `internal/providers/tsjs/imports.go` | producer of current `ImportFact`; Child 04 owner | P5-A/P5-B | inspect-only | `E0-P0A-FD2`, `E0-P0A-SRC1` | consume accepted Child 04 output; no syntax reimplementation |
-| current workspace/import binding | `internal/resolution/indexes.go` | physical-definition lookup and import binding | P5-A/P5-B/P5-C | inspect-only until slice impact; then minimum edit | `E0-P0A-FD1`, `E0-P0A-IMPACT1..E0-P0A-IMPACT3` | CRITICAL; new semantics need one dedicated responsibility |
-| current path strategies | `internal/resolution/import_resolution.go` | module/file resolution and other-language strategies | P5-A | inspect first; preserve unaffected branches | `E0-P0A-FD3`, `E0-P0A-SRC2` | no broad package/path rewrite without evidence |
+| source-written import contract | `internal/scopeir/facts.go` | owns `ImportFact` requested semantic inputs | P5-A | edit | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | add only `RequestedMeanings` and `TypeOnly`; dormant `Target*` fields unchanged |
+| TS/JS import syntax | `internal/providers/tsjs/imports.go` | populates default/named/alias/namespace and type-only requests; also emits compatibility re-export path facts | P5-A | edit source-written import path only | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | accepted `ExportFact` remains sole re-export semantic source; compatibility facts keep requested fields empty |
+| canonical clone/normalization | `internal/scopeir/ir.go` | owns nested requested-meaning collection and canonical set | P5-A | edit | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | deep clone, sort, and deduplicate without changing export normalization |
+| deterministic import ordering | `internal/scopeir/sort_keys.go` | compares import semantic inputs | P5-A | edit | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | include requested meanings and `TypeOnly`; preserve existing ordering inputs |
+| current workspace/import binding | `internal/resolution/indexes.go` | live module/file result and optional physical-definition lookup | P5-A/P5-B/P5-C | preserve-only in P5-A | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | module/file behavior is correct; export lookup remains deferred |
+| current path strategies | `internal/resolution/import_resolution.go` | module/file resolution and other-language strategies | P5-A | preserve-only | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | no broad package/path rewrite; unaffected languages must regress unchanged |
 | terminal call resolution | `internal/resolution/resolve.go` | consumes scope/import bindings and contains global lookup | P5-C/P5-D | inspect-only until fresh impact | `E0-P0A-FD4`, `E0-P0A-IMPACT4` | explicit import failure cannot use global rescue |
-| Child 04 facts | predecessor four-file set | required immutable input | P5-A/P5-B | dependency / inspect-only | `E0-P0A-DEPEND1` | no implementation before accepted handoff |
+| Child 04 facts | predecessor four-file set at closure commit `0aa49c87628c9e8b2041754515d6ebf0a930d55b` | accepted immutable syntax/direct-export input | P5-A/P5-B | accepted dependency / inspect-only | `E4-PNC-CLOSE1`, `E4-PNC-COMMIT1` | consume accepted facts; do not regenerate syntax; refresh current source owner before any edit |
 | Child 02 affected readers | current reader-impact inventory | preservation consumer | P5-D | inspect; edit only named affected rows | `E0-P0A-SCOPE1` | edit only named affected rows |
 | `E:\cheapapp.org` source | target `.anvien` output | real integration subject | P5-D | source preserve; normal analyze/read only | `E0-P0A-BOUNDARY1` | no copy, fixture, report, or source edit in target |
 
@@ -130,6 +152,33 @@ Allowed next action: P5-A inventories the real input boundary and preserves the 
 
 Forbidden next action: treating every physical definition as exported or rebuilding all path/package handling before evidence requires it.
 
+### Requested meaning and type-only contract
+
+Current state:
+
+- Default/named/alias imported names and raw module text remain exact.
+- Namespace imports retain no exported-name request and use kind plus raw module text.
+- Source-written TS/JS imports carry canonical `RequestedMeanings` and `TypeOnly`; compatibility re-export and non-TS/JS imports retain empty requested fields while accepted `ExportFact` remains the re-export semantic SSOT.
+
+Required state:
+
+```text
+source-written TS/JS ImportFact
+  -> RequestedMeanings is a canonical allowed-set
+  -> plain default/named/alias: {value,type,namespace}
+  -> statement-level or inline type-only: {type}, TypeOnly=true
+  -> plain namespace: no exported name, {namespace}
+  -> type-only namespace: no exported name, {type}, TypeOnly=true
+compatibility re-export ImportFact
+  -> requested fields empty; accepted ExportFact owns name/meaning/type-only/provenance
+```
+
+Classification: requested name and requested meaning/type-only are `correct` in the P5-A Coder candidate; Supervisor acceptance remains pending.
+
+Allowed next action: preserve the exact candidate and hand it to Supervisor; do not open P5-B until P5-A is accepted and committed by Main.
+
+Forbidden next action: infer re-export semantics from compatibility imports, add side-effect-only facts, activate dormant `Target*` fields, change path candidates, or open P5-B+.
+
 ### Terminal binding and global-name rescue
 
 Current state:
@@ -155,7 +204,7 @@ Forbidden next action: adding a target-name special case or accepting `2/2` with
 
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
-| P5-A | bounded module path works; exact fact/meaning contract depends on Child 04 | wait for predecessor, then inventory/preserve before any edit |
+| P5-A | exact four-owner production candidate plus two focused tests pass build/boundary/regression; all three count denominators preserve `0` delta | `READY_FOR_SUPERVISOR`; keep detect/commit pending and do not open P5-B |
 | P5-B | no export table exists | select exact owner from fresh impact and build only from accepted facts |
 | P5-C | physical-definition lookup and explicit-import global-name rescue are wrong | add traversal/proof and no-global-rescue behavior after table acceptance |
 | P5-D | terminal graph/persistence/readers are not yet bound | refresh impact and edit only actual affected consumers; prove exact two sites |
@@ -170,19 +219,19 @@ Forbidden next action: adding a target-name special case or accepting `2/2` with
 - [x] Missing/wrong/unbound behaviors have one owning slice.
 - [x] Target and scanner boundaries are explicit.
 - [x] R0 records the current repo/graph basis.
-- [ ] Child 04 export-fact handoff is accepted and reflected in a new refresh row.
-- [ ] P5-A editable owners and absolute path/`IMPORTS` counts are refreshed immediately before implementation.
+- [x] Child 04 export-fact handoff is accepted at `0aa49c87628c9e8b2041754515d6ebf0a930d55b` and reflected in refresh row R1.
+- [x] P5-A editable owners, requested-meaning/type-only representation, side-effect disposition, and all three absolute count denominators are refreshed before implementation.
 
 ## Final P0 Decision
 
 Choose one:
 
 - [ ] P0 actual-status incomplete. Implementation is blocked.
-- [ ] P0 complete. Next phase can proceed unchanged.
+- [x] P0 complete. Next phase can proceed unchanged.
 - [ ] P0 complete. Next phase status, next action, or work steps must be updated before implementation.
 - [ ] P0 complete. Target scope is preserve-only.
-- [x] P0 complete. Implementation is blocked by missing predecessor evidence.
+- [ ] P0 complete. Implementation is blocked by missing predecessor evidence.
 
 Decision note:
 
-P0 establishes the current Child 05 boundary with source, file-detail, and impact evidence. P5-A opens only after the accepted Child 04 fact handoff is recorded and this file is refreshed. Package/path changes require their own source and impact evidence.
+Child 04 is closed at `0aa49c87628c9e8b2041754515d6ebf0a930d55b`. One R2 planner refresh authorized the exact four-owner P5-A implementation, and refresh R3 records the resulting Coder candidate with build, boundary, regression, and `0 / 0 / 0` count deltas. P5-A remains the sole open slice at `READY_FOR_SUPERVISOR`; P5-B/P5-C/P5-D, target access, detect/commit, and later gates remain locked.

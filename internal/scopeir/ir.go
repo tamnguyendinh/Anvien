@@ -67,6 +67,10 @@ func (ir ScopeIR) Normalized() ScopeIR {
 	cloneBindingCollections(&out)
 	cloneExportCollections(&out)
 	for index := range out.Imports {
+		out.Imports[index].RequestedMeanings = append(
+			[]ExportMeaning(nil),
+			out.Imports[index].RequestedMeanings...,
+		)
 		out.Imports[index].TransitiveVia = append([]string(nil), out.Imports[index].TransitiveVia...)
 	}
 	for index := range out.Calls {
@@ -94,6 +98,19 @@ func (ir ScopeIR) NormalizeInPlace() ScopeIR {
 		sort.Strings(ir.Definitions[index].Annotations)
 	}
 	for index := range ir.Imports {
+		meanings := ir.Imports[index].RequestedMeanings
+		sort.Slice(meanings, func(i, j int) bool {
+			return meanings[i] < meanings[j]
+		})
+		writeIndex := 0
+		for _, meaning := range meanings {
+			if writeIndex > 0 && meanings[writeIndex-1] == meaning {
+				continue
+			}
+			meanings[writeIndex] = meaning
+			writeIndex++
+		}
+		ir.Imports[index].RequestedMeanings = meanings[:writeIndex]
 		sort.Strings(ir.Imports[index].TransitiveVia)
 	}
 	for index := range ir.Exports {
@@ -167,6 +184,12 @@ func (ir ScopeIR) NormalizeOwned() ScopeIR {
 
 	cloneBindingCollections(&ir)
 	cloneExportCollections(&ir)
+	for index := range ir.Imports {
+		ir.Imports[index].RequestedMeanings = append(
+			[]ExportMeaning(nil),
+			ir.Imports[index].RequestedMeanings...,
+		)
+	}
 
 	return ir.NormalizeInPlace()
 }

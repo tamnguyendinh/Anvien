@@ -187,20 +187,22 @@ type ScopeFact struct {
 }
 
 type ImportFact struct {
-	ID                 string     `json:"id,omitempty"`
-	FilePath           string     `json:"filePath"`
-	FileHash           string     `json:"fileHash,omitempty"`
-	Kind               ImportKind `json:"kind"`
-	LocalName          string     `json:"localName,omitempty"`
-	ImportedName       string     `json:"importedName,omitempty"`
-	Alias              string     `json:"alias,omitempty"`
-	TargetRaw          *string    `json:"targetRaw"`
-	TargetFile         *string    `json:"targetFile,omitempty"`
-	TargetExportedName string     `json:"targetExportedName,omitempty"`
-	TargetModuleScope  string     `json:"targetModuleScope,omitempty"`
-	TargetDefID        string     `json:"targetDefId,omitempty"`
-	TransitiveVia      []string   `json:"transitiveVia,omitempty"`
-	LinkStatus         string     `json:"linkStatus,omitempty"`
+	ID                 string          `json:"id,omitempty"`
+	FilePath           string          `json:"filePath"`
+	FileHash           string          `json:"fileHash,omitempty"`
+	Kind               ImportKind      `json:"kind"`
+	LocalName          string          `json:"localName,omitempty"`
+	ImportedName       string          `json:"importedName,omitempty"`
+	Alias              string          `json:"alias,omitempty"`
+	RequestedMeanings  []ExportMeaning `json:"requestedMeanings,omitempty"`
+	TypeOnly           bool            `json:"typeOnly,omitempty"`
+	TargetRaw          *string         `json:"targetRaw"`
+	TargetFile         *string         `json:"targetFile,omitempty"`
+	TargetExportedName string          `json:"targetExportedName,omitempty"`
+	TargetModuleScope  string          `json:"targetModuleScope,omitempty"`
+	TargetDefID        string          `json:"targetDefId,omitempty"`
+	TransitiveVia      []string        `json:"transitiveVia,omitempty"`
+	LinkStatus         string          `json:"linkStatus,omitempty"`
 }
 
 type CallSiteFact struct {

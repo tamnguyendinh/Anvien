@@ -85,6 +85,80 @@ func TestNormalizeOwnedMatchesNormalized(t *testing.T) {
 	}
 }
 
+func TestImportRequestedMeaningsCanonicalizeCloneAndOrder(t *testing.T) {
+	targetRaw := "./dep"
+	source := ScopeIR{Imports: []ImportFact{{
+		ID:                "canonical",
+		FilePath:          "src/app.ts",
+		Kind:              ImportNamed,
+		LocalName:         "value",
+		ImportedName:      "value",
+		RequestedMeanings: []ExportMeaning{ExportMeaningValue, ExportMeaningType, ExportMeaningNamespace, ExportMeaningValue},
+		TargetRaw:         &targetRaw,
+	}}}
+	wantMeanings := []ExportMeaning{ExportMeaningNamespace, ExportMeaningType, ExportMeaningValue}
+	for name, normalized := range map[string]ScopeIR{
+		"Normalized":     source.Normalized(),
+		"NormalizeOwned": source.NormalizeOwned(),
+	} {
+		if !reflect.DeepEqual(normalized.Imports[0].RequestedMeanings, wantMeanings) {
+			t.Fatalf("%s meanings = %#v, want canonical set %#v", name, normalized.Imports[0].RequestedMeanings, wantMeanings)
+		}
+		normalized.Imports[0].RequestedMeanings[0] = ExportMeaning("mutated")
+		if source.Imports[0].RequestedMeanings[0] != ExportMeaningValue ||
+			source.Imports[0].RequestedMeanings[1] != ExportMeaningType {
+			t.Fatalf("%s retained requested-meaning alias: source=%#v normalized=%#v", name, source.Imports[0], normalized.Imports[0])
+		}
+	}
+
+	importFact := func(id string, meanings []ExportMeaning, typeOnly bool) ImportFact {
+		return ImportFact{
+			ID:                id,
+			FilePath:          "src/order.ts",
+			Kind:              ImportNamed,
+			LocalName:         "same",
+			ImportedName:      "same",
+			RequestedMeanings: meanings,
+			TypeOnly:          typeOnly,
+			TargetRaw:         &targetRaw,
+		}
+	}
+	imports := []ImportFact{
+		importFact("a-value", []ExportMeaning{ExportMeaningValue}, false),
+		importFact("a-type-only", []ExportMeaning{ExportMeaningType}, true),
+		importFact("z-type", []ExportMeaning{ExportMeaningType}, false),
+		importFact("z-namespace", []ExportMeaning{ExportMeaningNamespace}, false),
+	}
+	left := ScopeIR{Imports: append([]ImportFact(nil), imports...)}
+	right := ScopeIR{Imports: []ImportFact{imports[2], imports[0], imports[3], imports[1]}}
+	leftRaw, err := left.MarshalDeterministic()
+	if err != nil {
+		t.Fatalf("marshal left imports: %v", err)
+	}
+	rightRaw, err := right.MarshalDeterministic()
+	if err != nil {
+		t.Fatalf("marshal right imports: %v", err)
+	}
+	if string(leftRaw) != string(rightRaw) {
+		t.Fatalf("deterministic import marshal mismatch\nleft:\n%s\nright:\n%s", leftRaw, rightRaw)
+	}
+
+	normalized := left.Normalized()
+	wantOrder := []string{"z-namespace", "z-type", "a-type-only", "a-value"}
+	for index, wantID := range wantOrder {
+		if normalized.Imports[index].ID != wantID {
+			t.Fatalf("normalized import order[%d] = %q, want %q: %#v", index, normalized.Imports[index].ID, wantID, normalized.Imports)
+		}
+	}
+	roundTrip, err := Unmarshal(leftRaw)
+	if err != nil {
+		t.Fatalf("unmarshal requested meanings: %v", err)
+	}
+	if !reflect.DeepEqual(roundTrip.Imports, normalized.Imports) {
+		t.Fatalf("requested-meaning round trip changed imports: got=%#v want=%#v", roundTrip.Imports, normalized.Imports)
+	}
+}
+
 func TestBindingCollectionsAreDeepCopiedByNormalization(t *testing.T) {
 	index := 2
 	selection := Range{StartLine: 3, StartCol: 10, EndLine: 3, EndCol: 14}
