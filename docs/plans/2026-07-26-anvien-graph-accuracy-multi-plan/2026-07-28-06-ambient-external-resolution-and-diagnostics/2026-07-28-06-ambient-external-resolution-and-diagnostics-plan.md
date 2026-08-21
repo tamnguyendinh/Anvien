@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / dependency-blocked`
+- Status: `P0 complete / P6-A Supervisor PASS / exact decision commit pending / P6-B locked until commit`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-benchmark.md`
@@ -159,7 +159,8 @@ Out of scope:
   - P6-C3: Produce structured resolution outcomes.
   - P6-D: Project outcomes and prove the target sites.
 
-- [ ] P6-A: Establish the declaration-universe behavior and design from evidence.
+- [x] P6-A: Establish the declaration-universe behavior and design from evidence.
+  - State: `SUPERVISOR PASS / DECISION CLOSED / EXACT COMMIT AND P6-B HANDOFF IMMEDIATE`. Child 05 is closed at exact handoff commit `ec765debff335540c77d409ebb2c9f45e4a0a77d`. Initial review rejected only the out-of-boundary contract diff; reject-only repair restored that file to HEAD, and final review accepted the unchanged four-ledger/report candidate. P6-B production remains locked until the exact decision commit exists.
   - Goal: decide the minimum production declaration authority, supported config behavior, failure contract, owner boundary, and later-slice scope from current evidence.
   - Scope Boundary:
     - Editable: Child 06 plan/contract/ledger decisions only; production source remains inspect-only in this slice.
@@ -174,48 +175,60 @@ Out of scope:
     - DB write flow: N/A — no production data write.
     - Render location: plan, evidence, actual-status, and decision record.
     - UI behavior flow: N/A — no UI change.
-    - Docker runtime: N/A — use full baseline build and current resolver boundary.
+    - Docker runtime: N/A — no runtime change; use the fresh real CLI boundary. A baseline full build is not run in P6-A because the current hard boundary forbids package install/package-script execution.
     - Playwright target: N/A — no UI behavior.
-    - Behavior test: differential fixtures for standard-library, unavailable authority, config variation, and language isolation.
+    - Behavior test: exact local TypeScript `5.9.3` differential vectors for default/ES2022/ES5/ES2015/ES5+Promise/noLib/invalid-lib plus type-value meaning separation; production fixtures remain P6-B work after code.
     - Cleanup/quarantine: keep only reusable independently authored oracle fixtures/evidence.
     - External side effects: none; all mechanism side effects are evaluated, not performed.
     - N/A notes: P6-A is the mandatory evidence/decision slice before production implementation.
   - Work Steps:
-    1. Inventory current inputs/stages/consumers and run fresh file-detail/impact plus the bounded/general TypeScript differential; record supported and unknown declaration cases.
+    1. **Complete:** inventory current inputs/stages/consumers and run fresh file-detail/impact plus the bounded/general TypeScript differential; record supported and unknown declaration cases.
        - UI flow check: N/A — non-UI decision slice.
        - DB/data flow check: trace each target site from source fact to current gap/health output.
        - Render location check: evidence and actual-status ledgers.
        - Mini QA: exercise the built current resolver/graph-health boundary and record actual output.
        - Evidence target: `E6-P6A-IMPACT1`, `E6-P6A-SRC1`, `E6-P6A-ORACLE1`, `E6-P6A-CONSUMER1`.
-    2. Compare feasible authority mechanisms; record the accepted behavior, chosen mechanism, owner map, conditional P6-C1/P6-C2 scope, measurements, and updated later-slice steps; run baseline full build and Supervisor review, then commit the decision slice.
+    2. **Complete through Supervisor PASS; exact commit follows immediately:** compare feasible authority mechanisms; record the selected behavior, mechanism, owner map, P6-C1/P6-C2 scope, measurements, and updated later-slice steps. Record the full-build N/A boundary, close the sole contract-boundary rejection without changing the candidate, obtain reject-only Supervisor PASS, then commit the exact decision manifest before opening P6-B.
        - UI flow check: N/A — no UI change.
        - DB/data flow check: required facts/outcomes and affected persistence fields are explicit.
        - Render location check: contract/plan/evidence ledgers.
        - Mini QA: confirm the decision matches observed current/runtime constraints.
        - Evidence target: `E6-P6A-DECISION1`, `E6-P6A-BUILD1`, `E6-P6A-REVIEW1`, `E6-P6A-COMMIT1`.
-  - Implementation Gate: exact Child 05 handoff is accepted; graph/source/runtime evidence is fresh; no production edit occurs in P6-A.
+  - Implementation Gate: satisfied for decision closure. Exact Child 05 handoff is accepted; graph/source/runtime evidence is fresh; no production edit occurred; final reject-only Supervisor PASS is recorded. P6-B remains locked until the immediate exact decision commit.
   - Acceptance:
     - Source: current declaration inputs, stages, consumers, and missing authority are fully traced.
-    - Runtime/UI: baseline built resolver/oracle behavior is recorded; UI is N/A.
+    - Runtime/UI: the fresh real `anvien analyze --force` boundary and independent TypeScript compiler oracle are recorded; the baseline full build is explicitly N/A/not-run under the P6-A package-script boundary; UI is N/A.
     - DB/data: necessary graph/persistence outcome fields and affected consumers are identified.
     - Behavior test: standard-library/unavailable/config/language-isolation oracle cases are specified.
     - Cleanup/quarantine: no rejected mechanism artifact or copied target fixture remains.
     - Evidence IDs: `E6-P6A-IMPACT1`, `E6-P6A-SRC1`, `E6-P6A-ORACLE1`, `E6-P6A-CONSUMER1`, `E6-P6A-DECISION1`, `E6-P6A-BUILD1`, `E6-P6A-REVIEW1`, `E6-P6A-COMMIT1`.
     - Actual-status rows refreshed: authority mechanism, supported config, P6-C1 scope, P6-C2 representation, and affected-reader rows.
   - Evidence Targets: source/impact/oracle/consumer inventory, decision comparison, updated plan, build, Supervisor, commit.
-  - Actual-status Update: declaration-authority design `blocked -> correct`; implementation rows remain pending.
-  - Commit Boundary: commit P6-A decision/ledger scope alone after acceptance.
+  - Actual-status Update: declaration-authority design `blocked -> decision-recorded -> Supervisor PASS`; implementation rows remain pending and commit-gated.
+  - Commit Boundary: commit exactly the four living Child 06 ledgers, immutable Architect report, initial Supervisor REJECT, and final reject-only Supervisor PASS. The resulting hash is the P6-B handoff anchor and is supplied directly when that lane opens; contract, production, tests, target, and protected Main handoffs remain outside the commit.
+  - Completion Record: `E6-P6A-REVIEW1` records initial report `5679FB24894F5C51E7AF4EB46FC2D8B534F93A9EB838C68CB5F3CF5FCFD66290`, exact contract-boundary repair, and final PASS `39CE249E9D13F1C77FE6F61DD6E9B1D2E4000B004CE3EBBF461C762F3FA28384`; `E6-P6A-COMMIT1` is the immediate exact seven-path decision commit.
+
+#### P6-A selected decision
+
+- Authority: offline TypeScript `5.9.3` compiler-API generation from official `lib*.d.ts` -> checked-in versioned compact catalog -> `go:embed` immutable runtime lookup. Runtime Node/`tsc`, network, package install, package-script execution, raw declaration parsing, and target-name maps are forbidden.
+- Config: TypeScript only; zero or one root JSONC `tsconfig.json`; support only `compilerOptions.target`, `lib`, and `noLib`. Absent config uses the generated compiler-default profile. Invalid/unreadable values or topology (`extends`, `references`, nested/multiple configs, `files/include/exclude`, `jsconfig.json`, ambiguous ownership) yield `capability_unavailable` and do not change scanner input.
+- Precedence: immutable repository/P5 result first; explicit-import failure is terminal; only eligible TypeScript global/type/member misses reach the catalog; external member lookup requires a resolved external receiver; no synthetic `IMPORTS`.
+- Outcomes: `resolved_internal`, `resolved_external`, `unresolved`, or `capability_unavailable`, with stage/name/meaning/language/target-or-reason/proof and authority/catalog/config hashes; one final outcome per source site.
+- P6-C1: `PRESERVE_ONLY`; no project/package `.d.ts`, ambient-module, augmentation, or `node_modules` lookup is proved in this campaign.
+- P6-C2: `ACTIVE`; referenced-only deterministic `ExternalSymbol` nodes with TypeScript/catalog/library/range/meaning provenance are required for graph/Ladybug/reader truth.
+- Exact architecture/owner/reader/benchmark contract: `reports/system-architect/rp_system-architect_260822_033607_by_gpt-5_p6a_declaration_universe_decision.md`.
 
 - [ ] P6-B: Implement the accepted TypeScript standard-library authority.
+  - State: `ACCEPTED DESIGN / LOCKED UNTIL THE IMMEDIATE P6-A DECISION COMMIT; OPEN DIRECTLY AFTER THAT COMMIT`.
   - Goal: provide deterministic standard-library declaration lookup through the mechanism and config behavior accepted in P6-A.
   - Scope Boundary:
-    - Editable: exact authority/config/lookup owners selected by P6-A and refreshed impact.
+    - Editable after fresh impact: new isolated `internal/tsstdlib` catalog/profile owners, offline generator under `anvien-web/scripts`, minimum analyze/resolution wiring in `internal/analyze/analyze.go`, `internal/resolution/types.go`, `internal/resolution/indexes.go`, and bounded hooks in `internal/resolution/resolve.go`; package manifest/lock only when exact generator pinning requires it.
     - Inspect-only: resolver finalization, external representation, graph-health, and persistence.
     - Preserve-only: other languages and Child 05 module/export resolution.
     - Out of scope: project/package declarations unless P6-A explicitly assigns them here.
   - Non-Goals: no `Promise`/`Math` special case and no design substitution after P6-A without a plan update.
   - Pre-flight Questions:
-    - Data source: P6-A accepted authority inputs and supported TypeScript config.
+    - Data source: official TypeScript `5.9.3` `lib*.d.ts` through the exact locked compiler API, generated provenance manifest, and the supported root profile only.
     - Display permission: N/A — resolver data.
     - DB read flow: read only declaration/config inputs authorized by P6-A.
     - DB write flow: write only authority indexes/cache/artifacts required by the accepted design.
@@ -225,16 +238,16 @@ Out of scope:
     - Playwright target: N/A unless P6-A identifies an affected UI surface.
     - Behavior test: general standard-library types/namespaces/members, `Promise`, `Math.max`, `Math.min`, config variations, unavailable/mismatch, determinism, and language isolation.
     - Cleanup/quarantine: accepted reusable fixtures/assets only; remove rejected output.
-    - External side effects: exactly those accepted in P6-A and recorded before implementation.
+    - External side effects: offline deterministic catalog generation only; runtime has no Node/`tsc`, `node_modules` discovery, network, package installation, or package-script execution.
     - N/A notes: project/package lookup and final outcomes are later slices unless P6-A explicitly reassigns them.
   - Work Steps:
-    1. Refresh exact owner impact; implement the P6-A authority and lookup production behavior without target-name branches.
+    1. Refresh exact owner impact; generate and verify the versioned catalog, embed it, parse the supported declaration profile data-only, and implement lookup after immutable repository results without target-name branches.
        - UI flow check: N/A unless affected UI was proved.
        - DB/data flow check: declaration provenance/config and lookup meaning are retained as required by P6-A.
        - Render location check: resolver trace/evidence.
        - Mini QA: exercise the real built authority lookup boundary.
        - Evidence target: `E6-P6B-IMPACT1`, `E6-P6B-SRC1`, `E6-P6B-PROVENANCE1`.
-    2. Add behavior tests after code; run full build, packaging/runtime checks required by the design, determinism/performance measurements, regressions, review, detect, and commit.
+    2. Add behavior tests after code; run exact build-lock/process preflight, full build, runtime-without-Node packaging checks, two-run catalog equality, catalog/load/lookup/binary-size measurements, affected regressions, review, detect, and commit.
        - UI flow check: conditional on P6-A affected surfaces.
        - DB/data flow check: exact general fixture targets and explicit unavailable behavior.
        - Render location check: evidence/benchmark ledgers.
@@ -254,9 +267,10 @@ Out of scope:
   - Commit Boundary: commit P6-B alone after acceptance.
 
 - [ ] P6-C1: Implement evidenced project/package declaration lookup.
-  - Goal: implement only the project/package declaration behavior that P6-A marks required, or close preserve-only with proof that this campaign does not require it.
+  - State: `PRESERVE_ONLY BY P6-A DECISION / LOCKED UNTIL P6-B ACCEPTANCE`.
+  - Goal: close preserve-only with proof that this campaign does not require project/package declaration lookup; activation requires a new planner decision before code.
   - Scope Boundary:
-    - Editable: exact declaration-lookup owners selected by P6-A when the slice is active.
+    - Editable: Child 06 plan/evidence/benchmark/actual-status closure only; no production or test owner is authorized.
     - Inspect-only: P6-B authority, Child 05 module result, repository config, and actual package/project declaration inputs.
     - Preserve-only: package/module selection already owned by Child 05.
     - Out of scope: broad dependency scanning, package execution, and unapproved declaration sources.
@@ -270,26 +284,26 @@ Out of scope:
     - UI behavior flow: N/A — no UI behavior.
     - Docker runtime: conditional on selected packaging behavior.
     - Playwright target: N/A unless an affected UI was proved.
-    - Behavior test: exact required present/missing/config/security cases or preserve-only proof.
+    - Behavior test: prove project/package `.d.ts`, ambient modules/augmentations, and `node_modules` lookup remain unavailable and do not duplicate Child 05 resolution; no production fixture is added.
     - Cleanup/quarantine: independent fixtures; no copied dependency tree.
-    - External side effects: only P6-A-approved local reads/actions.
-    - N/A notes: close without production edit when P6-A proves this behavior is not required.
+    - External side effects: none; no dependency-tree scan, install, network, or package execution.
+    - N/A notes: P6-A proved this behavior is not required for the campaign, so P6-C1 closes without production/test diff.
   - Work Steps:
-    1. Reconfirm the P6-A decision and fresh impact; record the exact required source/lookup boundary or the evidence-backed preserve-only result.
+    1. Reconfirm the P6-A decision and current boundary; record the evidence-backed preserve-only result and no-production-owner proof.
        - UI flow check: N/A — non-UI lookup.
        - DB/data flow check: module result and declaration lookup remain separate.
        - Render location check: evidence/actual-status.
        - Mini QA: exercise the real current lookup boundary for required cases.
        - Evidence target: `E6-P6C1-IMPACT1`, `E6-P6C1-SCOPE1`.
-    2. When active, implement production lookup then tests, full build, real boundary, measurements, review, detect, and commit; otherwise validate preserve-only behavior and commit the ledger decision.
+    2. Validate the preserved unavailable behavior after P6-B, obtain Supervisor review, record detect-changes as N/A for implementation with exact doc-only diff, and commit the P6-C1 ledger closure.
        - UI flow check: conditional on affected UI evidence.
        - DB/data flow check: exact declaration target or explicit external-capability outcome.
        - Render location check: resolver trace/evidence.
        - Mini QA: inspect built required-case results.
        - Evidence target: `E6-P6C1-SRC1`, `E6-P6C1-BUILD1`, `E6-P6C1-TEST1`, `E6-P6C1-REVIEW1`, `E6-P6C1-DETECT1`, `E6-P6C1-COMMIT1`.
-  - Implementation Gate: P6-A marks the slice active or preserve-only; exact owners/sources/side effects are recorded.
+  - Implementation Gate: P6-A is accepted and P6-B is accepted; preserve-only status and zero production/test owners are reconfirmed.
   - Acceptance:
-    - Source: only P6-A-required behavior is implemented; otherwise no production diff.
+    - Source: no project/package declaration behavior and no production/test diff.
     - Runtime/UI: required real lookup cases pass; UI is conditional.
     - DB/data: project/package result remains distinct from module/export selection and retains required proof.
     - Behavior test: accepted present/missing/config/security cases or preserve-only proof passes.
@@ -297,13 +311,14 @@ Out of scope:
     - Evidence IDs: `E6-P6C1-IMPACT1`, `E6-P6C1-SCOPE1`, `E6-P6C1-SRC1`, `E6-P6C1-BUILD1`, `E6-P6C1-TEST1`, `E6-P6C1-REVIEW1`, `E6-P6C1-DETECT1`, `E6-P6C1-COMMIT1`.
     - Actual-status rows refreshed: project/package declaration scope and implementation state.
   - Evidence Targets: scope decision, impact, source/preserve proof, tests/build/runtime, Supervisor, detect, commit.
-  - Actual-status Update: conditional lookup `blocked -> correct` or `blocked -> preserve-only`.
+  - Actual-status Update: conditional lookup `blocked -> preserve-only`.
   - Commit Boundary: commit P6-C1 alone after acceptance.
 
 - [ ] P6-C2: Add the necessary external target representation.
-  - Goal: represent resolved external declarations and explicit external-capability gaps in the minimum truthful form required by actual consumers.
+  - State: `ACTIVE BY P6-A DECISION / LOCKED UNTIL P6-B AND P6-C1 CLOSURE`.
+  - Goal: materialize referenced resolved declarations as deterministic `ExternalSymbol` facts and preserve explicit external-capability gaps without repository ownership pollution.
   - Scope Boundary:
-    - Editable: exact representation/materialization and affected persistence owners selected by P6-A/current impact.
+    - Editable after fresh impact: `internal/scopeir/kinds.go`, an isolated external-symbol materializer in `internal/resolution`, `internal/resolution/emit.go`, `internal/lbugload/csv.go`, `internal/lbugschema/schema.go`, `internal/processes/processes.go`, `internal/mcp/context.go`, `internal/mcp/impact.go`, and `internal/mcp/rename.go`.
     - Inspect-only: P6-B/P6-C1 lookup results, graph types, Child 02 affected readers, and final outcome owner.
     - Preserve-only: repository File/Definition identity and unrelated graph consumers.
     - Out of scope: graph-health policy and broad traversal API changes.
@@ -334,7 +349,7 @@ Out of scope:
        - Render location check: graph and affected readers only.
        - Mini QA: exercise real built graph-bound consumer(s).
        - Evidence target: `E6-P6C2-SRC1`, `E6-P6C2-BUILD1`, `E6-P6C2-TEST1`, `E6-P6C2-PARITY1`, `E6-P6C2-REVIEW1`, `E6-P6C2-DETECT1`, `E6-P6C2-COMMIT1`.
-  - Implementation Gate: P6-B and active P6-C1 behavior accepted; exact consumer/representation need and affected readers are proved.
+  - Implementation Gate: P6-B and the P6-C1 preserve-only closure are accepted; every exact owner has fresh file-detail/impact and the referenced-only representation/reader contract is reconfirmed.
   - Acceptance:
     - Source: minimum accepted representation distinguishes internal, external, intrinsic when applicable, and explicit external-capability gaps.
     - Runtime/UI: affected built consumers show the same truthful result; UI is conditional.
@@ -348,6 +363,7 @@ Out of scope:
   - Commit Boundary: commit P6-C2 alone after acceptance.
 
 - [ ] P6-C3: Produce structured resolution outcomes.
+  - State: `ACTIVE BY P6-A DECISION / LOCKED UNTIL P6-C2 ACCEPTANCE`.
   - Goal: finalize exactly one immutable resolver outcome per affected source site from repository, external, intrinsic, or explicit external-capability results.
   - Scope Boundary:
     - Editable: exact outcome/status owner and minimum finalization adapters selected by impact.
@@ -473,5 +489,5 @@ Out of scope:
 - Hardcoding the three names can pass target checks while leaving the defect class intact; general fixtures and source inspection must reject that shortcut.
 - Loading too broad a declaration set can inflate graph/index size or blur repository ownership. Representation and materialization remain conditional on actual consumers.
 - A graph-health-only change can hide a resolver gap. P6-D cannot close unless the underlying P6-C3 outcome is present and persisted.
-- Project/package declaration lookup may be necessary, partially necessary, or outside the accepted campaign. P6-C1 must follow P6-A evidence rather than assume coverage.
+- Project/package declaration lookup is preserve-only under the P6-A evidence. Any activation requires a planner refresh, new current evidence, and review before code.
 - Any newly discovered affected consumer expands only the owning slice after plan/actual-status refresh; it does not authorize unrelated command/API changes.
