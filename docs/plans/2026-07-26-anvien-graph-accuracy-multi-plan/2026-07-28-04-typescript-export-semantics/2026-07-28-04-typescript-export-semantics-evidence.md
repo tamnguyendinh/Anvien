@@ -200,7 +200,7 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, wi
 | `E4-P4C-BOUNDARY1` | real graph/affected persistence output with field differences and orphan counts | recorded — Graph JSON/Ladybug `414/414`, `11,592` normalized field comparisons, differences `0`, IDs missing both ways `0`, orphan references `0` |
 | `E4-P4C-REVIEW1` | independent Supervisor PASS | recorded — `PASS`; report `reports/Supervisor/rp_supervisor_260821_083556_by_gpt-5_child04_p4c_graph_persistence_review1.md`, `15,261` bytes / `101` LF / SHA-256 `AA94C417A02BE371168D8ADCD5B3F4FECF1941F382518EFF9214EC0FABB93CFF` |
 | `E4-P4C-DETECT1` | pre-commit Anvien detect-changes result | recorded — exit `0`; `180` changed semantic units, `16` changed files, `14` affected files, HIGH risk; resolution health `0/0/0`, semantic fields complete |
-| `E4-P4C-COMMIT1` | isolated accepted slice commit | pending |
+| `E4-P4C-COMMIT1` | isolated accepted slice commit | recorded — `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; post-commit HEAD matches and `git diff --check` passes |
 
 #### `E4-P4C-REVIEW1` — independent Supervisor acceptance
 
@@ -216,6 +216,12 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, wi
 - `anvien detect-changes --repo E:\\Anvien --scope all --json` exit `0`; parsed summary: `180` changed semantic units, `16` changed files, `14` affected files, `HIGH` changed-file/overall risk, and `10` affected process entries. Changed app layers are backend `143`, backend-test `13`, docs `24`; changed functional areas are resolution `130`, storage `21`, documentation `24`, unknown `5`.
 - Resolution-gap inventory reports `86` changed gap entities/occurrences but persisted health remains clean: `totalResolutionGapCount=0`, `nodesWithGaps=0`, `degradedNodes=0`, and changed source nodes with gaps `0`. `appLayer` and `functionalArea` semantic fields are complete for all `113,523` nodes.
 - The exact semantic changed-path set contains the five Child 04 living ledgers plus the tracked P4-C production/test/golden paths. The four new focused tests and untracked Coder/Supervisor/Main provenance reports are outside the semantic changed-file set and are retained only in the explicit staging manifest; no unrelated path is authorized.
+
+#### `E4-P4C-COMMIT1` — isolated slice closure
+
+- Commit: `c99c4070b66e7a96be8c9fa2721a0335a1f94877` (`feat(graph): project TypeScript export facts`). The staged 23-path manifest contained the five refreshed Child 04 living ledgers, four production owners, four focused tests, seven owner test/golden updates, Coder/Supervisor reports, and the current `0819` Main handoff.
+- Post-commit verification: `git rev-parse HEAD` matches the commit; `git diff --check` passes; no push, reset, checkout, target access, or Child 05 action occurred. Only the two preserved older Main handoffs (`0631`, `0721`) remain untracked because their historical blank EOF lines were intentionally not rewritten.
+- P4-C is complete. P4-C2 may now open with its independent 21-entry oracle and target pre-state gate; Child 05 and later slices remain locked.
 
 ### P4-C2 — real-target acceptance
 
@@ -239,7 +245,7 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, wi
 | `E4-PNC-COMMIT1` | final known commit/worktree state | pending |
 | `E4-PNC-HANDOFF1` | Child 05 actual-status refreshed from accepted immutable syntax/direct-export results and exact opening condition recorded | pending |
 
-P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed. `E4-P4C-AUTH1` opens only P4-C; P4-C2/Child 05 remain locked.
+P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed. P4-C source/build/boundary/Supervisor/detect/commit are closed at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; P4-C2 is the sole open slice, while Child 05 remains locked.
 
 ### `E4-P4B-SOURCE1` — source and cleanup clearance
 

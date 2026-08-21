@@ -56,14 +56,14 @@
 | P4-B1 | terminal-resolution fields populated by Child 04 | fields | 0 current Child 04 fields | 0/7 | 0/7 | 0 | 0 | `E4-P4B1-BOUNDARY1`, `E4-P4B1-REVIEW1` |
 | P4-B1 | excluded graph inventory at final closure basis | scanned / parsed / failed | 1,136 / 626 / 0 | 1,146 / 626 / 0 | 1,146 / 626 / 0 | current closure basis | +10 / 0 / 0 | `E4-P4B1-DETECT1` |
 | P4-B1 | excluded graph inventory at final closure basis | nodes / relationships | 81,772 / 121,285 | 82,079 / 121,780 | 82,079 / 121,780 | current closure basis | +307 / +495 | `E4-P4B1-DETECT1` |
-| P4-C | graph direct-export fact conservation | graph records / accepted facts | 0/0; no source export collection | 414/414 = 1.0 | 414/414 = 1.0 (pre-commit) | 1.0 exactly | +1.0 | `E4-P4C-TEST1`, `E4-P4C-BOUNDARY1`, `E4-P4C-REVIEW1` |
-| P4-C | compatibility-field drift from source export fact | differing records | no source fact; current dialects are `visibility` and `isExported` | 0 | 0 (pre-commit) | 0 | 0 | `E4-P4C-TEST1`, `E4-P4C-REVIEW1` |
-| P4-C | affected persistence field differences | differing fields | at least one known dialect mismatch; Ladybug drops `visibility` | 0 across 11,592 normalized comparisons | 0 (pre-commit) | 0 | 0 | `E4-P4C-BOUNDARY1`, `E4-P4C-REVIEW1` |
-| P4-C | affected persistence orphan references | references | N/A before first-class export facts | 0 | 0 (pre-commit) | 0 | 0 | `E4-P4C-TEST1`, `E4-P4C-BOUNDARY1`, `E4-P4C-REVIEW1` |
-| P4-C | Graph Export inventory | nodes / File→Export relations | 0/0 | 414 / 414 | 414 / 414 (pre-commit) | 414 / 414 | +414 / +414 | `E4-P4C-TEST1`, `E4-P4C-BOUNDARY1` |
-| P4-C | normalized Graph JSON↔Ladybug field comparison | fields compared / differing fields | N/A before projection | 11,592 / 0 | 11,592 / 0 (pre-commit) | 11,592 / 0 | +11,592 / 0 | `E4-P4C-REVIEW1` |
-| P4-C | fresh closure analyze inventory | scanned / parsed code / failed | 1,147 / 626 / 0 at successor basis | 1,857 / 735 / 0 | 1,857 / 735 / 0 (pre-commit) | current clean basis | +710 / +109 / 0 | `E4-P4C-DETECT1` |
-| P4-C | fresh closure graph inventory | nodes / relationships | 82,087 / 121,788 at successor basis | 113,523 / 156,030 | 113,523 / 156,030 (pre-commit) | current clean basis | +31,436 / +34,242 | `E4-P4C-DETECT1` |
+| P4-C | graph direct-export fact conservation | graph records / accepted facts | 0/0; no source export collection | 414/414 = 1.0 | 414/414 = 1.0 | 1.0 exactly | +1.0 | `E4-P4C-TEST1`, `E4-P4C-BOUNDARY1`, `E4-P4C-REVIEW1`, `E4-P4C-COMMIT1` |
+| P4-C | compatibility-field drift from source export fact | differing records | no source fact; current dialects are `visibility` and `isExported` | 0 | 0 | 0 | 0 | `E4-P4C-TEST1`, `E4-P4C-REVIEW1`, `E4-P4C-COMMIT1` |
+| P4-C | affected persistence field differences | differing fields | at least one known dialect mismatch; Ladybug drops `visibility` | 0 across 11,592 normalized comparisons | 0 | 0 | 0 | `E4-P4C-BOUNDARY1`, `E4-P4C-REVIEW1`, `E4-P4C-COMMIT1` |
+| P4-C | affected persistence orphan references | references | N/A before first-class export facts | 0 | 0 | 0 | 0 | `E4-P4C-TEST1`, `E4-P4C-BOUNDARY1`, `E4-P4C-REVIEW1`, `E4-P4C-COMMIT1` |
+| P4-C | Graph Export inventory | nodes / File→Export relations | 0/0 | 414 / 414 | 414 / 414 | 414 / 414 | +414 / +414 | `E4-P4C-TEST1`, `E4-P4C-BOUNDARY1`, `E4-P4C-COMMIT1` |
+| P4-C | normalized Graph JSON↔Ladybug field comparison | fields compared / differing fields | N/A before projection | 11,592 / 0 | 11,592 / 0 | 11,592 / 0 | +11,592 / 0 | `E4-P4C-REVIEW1`, `E4-P4C-COMMIT1` |
+| P4-C | fresh closure analyze inventory | scanned / parsed code / failed | 1,147 / 626 / 0 at successor basis | 1,857 / 735 / 0 | 1,857 / 735 / 0 | current clean basis | +710 / +109 / 0 | `E4-P4C-DETECT1`, `E4-P4C-COMMIT1` |
+| P4-C | fresh closure graph inventory | nodes / relationships | 82,087 / 121,788 at successor basis | 113,523 / 156,030 | 113,523 / 156,030 | current clean basis | +31,436 / +34,242 | `E4-P4C-DETECT1`, `E4-P4C-COMMIT1` |
 | P4-C2 | bounded target direct exports | correct / expected | 0/21 | pending | pending | 21/21 | pending | `E4-P4C2-TARGET1` |
 | P4-C2 | false-positive target negative controls | definitions | pending oracle | pending | pending | 0 | pending | `E4-P4C2-TARGET1` |
 | P4-C2 | target access/export conflations | records | pending oracle | pending | pending | 0 | pending | `E4-P4C2-TARGET1` |

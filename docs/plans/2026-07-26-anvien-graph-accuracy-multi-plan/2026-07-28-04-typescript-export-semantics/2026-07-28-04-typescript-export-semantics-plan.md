@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P4-A committed at 479e8ac229a17f2f6f94be9a4d04e07d74ac4d43 / P4-B committed at 11a37aa8ec0320dd93258c058b088d1070aa778d / P4-B1 committed at 42d167aaf28446ac0b3de479a8afefabb8d06736 with source-build-boundary-Supervisor-detect PASS / P4-C Supervisor REVIEW1 PASS under E4-P4C-REVIEW1; planner refresh/detect/commit pending / P4-C2 and later slices locked`
+- Status: `P4-A committed at 479e8ac229a17f2f6f94be9a4d04e07d74ac4d43 / P4-B committed at 11a37aa8ec0320dd93258c058b088d1070aa778d / P4-B1 committed at 42d167aaf28446ac0b3de479a8afefabb8d06736 with source-build-boundary-Supervisor-detect PASS / P4-C committed at c99c4070b66e7a96be8c9fa2721a0335a1f94877 after Supervisor REVIEW1 and E4-P4C-DETECT1 PASS / P4-C2 is the sole open slice; Child 05 and later slices locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md`
@@ -260,7 +260,7 @@ Out of scope:
   - Current State (2026-08-21): `E4-P4B1-IMPACT1`, `E4-P4B1-SRC1`, `E4-P4B1-BUILD1`, `E4-P4B1-TEST1`, `E4-P4B1-BOUNDARY1`, independent `E4-P4B1-REVIEW1`, Main-owned `E4-P4B1-DETECT1`, and `E4-P4B1-COMMIT1` are PASS/closed on the exact two-file candidate at isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736`. Successor verification at clean HEAD `871189b8c6a4e4bb9ff538407232c913b8cf4db6` found the accepted source/test bytes unchanged and preserved both external docs-only commits; explicit continuation authority opens only P4-C under `E4-P4C-AUTH1`. P4-C2/Child 05 stay locked and no push occurred.
   - Commit Boundary: one P4-B1 commit.
 
-- [ ] P4-C: Project export facts through the current graph and affected persistence owners.
+- [x] P4-C: Project export facts through the current graph and affected persistence owners.
   - Goal: expose corrected direct export facts and syntax provenance consistently without altering access visibility or implementing resolution.
   - Scope Boundary:
     - Editable: only graph and persistence/read owners proven to consume changed export fields.
@@ -305,8 +305,8 @@ Out of scope:
     - Actual-status rows refreshed: graph projection, compatibility derivation, and affected persistence rows.
   - Evidence Targets: exact blast radius, graph/persistence field oracle, direct counts, access separation, build, Supervisor, detect-changes, commit.
   - Actual-status Update: transition only proven affected projection/persistence rows to `correct`.
-  - Current State (2026-08-21): Supervisor REVIEW1 is `PASS` at `reports/Supervisor/rp_supervisor_260821_083556_by_gpt-5_child04_p4c_graph_persistence_review1.md` (15,261 bytes / 101 LF / `AA94C417A02BE371168D8ADCD5B3F4FECF1941F382518EFF9214EC0FABB93CFF`). Fresh evidence closes the graph/persistence invariant at `414/414` records, `11,592` normalized field comparisons, `0` differences, `0` orphan references, and `0` compatibility drift. Main-owned `E4-P4C-DETECT1` also passes on fresh graph `1,857/735/0`, `113,523/156,030`, with `180` changed units, `16` changed files, `14` affected files and HIGH risk. The slice is not complete until Main stages the exact boundary and commits; P4-C2/Child 05/target remain locked.
-  - Commit Boundary: one P4-C commit.
+  - Current State (2026-08-21): Supervisor REVIEW1 and Main-owned `E4-P4C-DETECT1` are `PASS`; the exact isolated P4-C boundary is committed at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`. Post-commit HEAD matches, `git diff --check` passes, and only two preserved older Main handoff reports remain untracked because their historical blank EOF lines were not rewritten. P4-C2 is now the sole open slice; Child 05 remains locked and target access is authorized only inside the P4-C2 validation lane.
+  - Commit Boundary: isolated commit `c99c4070b66e7a96be8c9fa2721a0335a1f94877` contains the accepted P4-C production/test/golden boundary, five living ledgers, Coder report, Supervisor report, and current rotation handoff.
 
 - [ ] P4-C2: Validate the complete export contract against the real target.
   - Goal: prove the 21 bounded direct exports and negative controls on the real target without modifying target source or entering Child 05 scope.
@@ -342,7 +342,7 @@ Out of scope:
        - Render location check: final evidence ledger and boundary manifest under Anvien.
        - Mini QA: visually inspect the retained result and confirm no target-side report/fixture exists.
        - Evidence target: `E4-P4C2-BOUNDARY1`, `E4-P4C2-REVIEW1`, `E4-P4C2-DETECT1`, `E4-P4C2-COMMIT1`.
-  - Implementation Gate: P4-C accepted and committed; independent oracle has 21 entries and negative controls without copied target source; target pre-state recorded.
+  - Implementation Gate: P4-C is accepted and committed at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; an independent oracle with 21 entries and negative controls must be prepared before any target read; target pre-state must be recorded. Child 05 remains locked.
   - Acceptance:
     - Source: `21/21` target definitions have correct direct export facts and access visibility remains independent.
     - Runtime/UI: the real target graph/affected persistence boundary exposes the same corrected values.
