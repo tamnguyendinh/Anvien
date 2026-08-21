@@ -2,7 +2,7 @@
 
 Title: Anvien Module Export And Re-Export Resolution
 Date: 2026-07-28
-Status: P0 Complete / P5-A Coder candidate READY_FOR_SUPERVISOR / P5-B+ locked
+Status: P0 Complete / P5-A committed and accepted / P5-B PRE_IMPLEMENTATION_READY / P5-C+ locked
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -55,8 +55,9 @@ The 2026-08-10 P0 tuples remain historical. The P5-A graph was freshly rebuilt a
 | `internal/providers/tsjs/imports.go` | `E5-P5A-IMPACT1` | 17 | source-written TS/JS imports plus compatibility re-export path facts | high file risk; exact provider methods LOW |
 | `internal/scopeir/ir.go` | `E5-P5A-IMPACT1` | 245 | owning clone and canonical normalization | high file risk; file impact CRITICAL |
 | `internal/scopeir/sort_keys.go` | `E5-P5A-IMPACT1` | 242 | deterministic `ImportFact` ordering | high file risk; file impact CRITICAL |
-| `internal/resolution/indexes.go` | `E5-P5A-IMPACT1` | 51 | live module/file result, optional physical-definition result, import binding | high file risk; preserve in P5-A |
+| `internal/resolution/indexes.go` | `E5-P5A-IMPACT1`, `E5-P5B-IMPACT1` | 51 | live module/file result, optional physical-definition result, P5-B storage/wiring owner | high file risk; preserve path behavior; minimal P5-B wiring only |
 | `internal/resolution/import_resolution.go` | `E5-P5A-IMPACT1` | 34 | existing multi-language path strategies | high file risk; preserve in P5-A |
+| `internal/resolution/export_tables.go` | `E5-P5B-IMPACT1` | new file; no pre-edit graph node | dedicated syntax-derived export-table owner selected by fresh source/graph inventory | implementation owner; create only after Main authorization |
 
 | Symbol | Impact Evidence | Risk | Impacted Symbols | Affected Files | Modules | Processes | Linked Flows / Tests |
 |--------|-----------------|------|-----------------:|---------------:|--------:|----------:|----------------------:|
@@ -97,7 +98,7 @@ The 2026-08-10 P0 tuples remain historical. The P5-A graph was freshly rebuilt a
 | Requested meaning / type-only | source-written TS/JS imports now carry canonical requested meanings and explicit type-only state; compatibility re-export and non-TS/JS facts remain empty | `RequestedMeanings` canonical allowed-set plus explicit `TypeOnly`; normal default/named/alias `{value,type,namespace}`, type-only `{type}`, namespace `{namespace}` or `{type}` when type-only | correct | `247` contract / `17` provider / `245` normalization / `242` sort-key related files | `E5-P5A-INPUT1`, `E5-P5A-SRC1`, `E5-P5A-TEST1` | preserve candidate; await Supervisor |
 | Dormant `ImportFact.Target*` versus live result | no production writer assigns `TargetFile`, `TargetExportedName`, `TargetModuleScope`, `TargetDefID`, or `LinkStatus`; live resolution is the separate in-memory `resolvedImport` | do not activate/remove dormant fields in P5-A; preserve live result separation | correct | `247` contract / `51` workspace related files | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | preserve; later cleanup requires its own accepted evidence |
 | P5-A count authority | post-change built-CLI graph on the same `736` parsed-code corpus records `5,072` physical target-file resolutions, `5,072` resolver-emitted syntactic `IMPORTS`, and `5,088` final persisted graph-wide `IMPORTS` | retain all three denominators and prove delta `0` for each | correct | candidate graph at HEAD `0aa49c8` plus uncommitted P5-A diff | `E5-P5A-COUNT1` | preserve `0 / 0 / 0`; await Supervisor |
-| Module export surface | current workspace indexes definitions by file/name and has no first-class export table | deterministic table derived only from Child 04 facts | missing | 51 related files at workspace owner | `E0-P0A-SRC3`, `E5-P5A-IMPACT1` | P5-B after accepted P5-A |
+| Module export surface | current workspace indexes definitions by file/name and has no first-class export table | deterministic table derived only from Child 04 facts in dedicated `internal/resolution/export_tables.go`, with minimal `workspace/buildWorkspace` wiring | missing | 51 related files at workspace owner; new table owner has no pre-edit node | `E0-P0A-SRC3`, `E5-P5A-IMPACT1`, `E5-P5B-IMPACT1` | authorize the bounded P5-B owner set; preserve path and terminal traversal behavior |
 | Re-export traversal | `resolveImportedDef` searches physical definitions in the resolved file and does not follow the barrel binding | terminal traversal with alias/star/cycle/ambiguity/meaning proof | wrong | 3 affected files for the exact symbol | `E0-P0A-VERIFY1`, `E0-P0A-SRC3`, `E0-P0A-IMPACT1` | P5-C after table acceptance |
 | Explicit-import global-name-rescue boundary | missing scoped/import binding can reach current global-name call lookup; low-confidence matches become gaps, but the explicit import failure is not represented at its own export boundary | no repository-global same-name rescue; explicit export failure retained | wrong | 4 affected files for `resolveCall` | `E0-P0A-SRC4`, `E0-P0A-IMPACT4` | P5-C owns the no-global-rescue proof |
 | Terminal call/proof emission | the two accepted target calls lack terminal `CALLS` relationships | both sites bind to the expected terminal Symbols with complete proof | unbound | resolver/emission impact must be refreshed in P5-D | `E0-P0A-VERIFY1` | P5-D after P5-C |
@@ -113,6 +114,7 @@ The 2026-08-10 P0 tuples remain historical. The P5-A graph was freshly rebuilt a
 | R2 | 2026-08-21 | HEAD `0aa49c87628c9e8b2041754515d6ebf0a930d55b`; fresh graph `114,738` nodes / `157,553` relationships; Coder inventory report SHA-256 `82D9F651A0BF6CF13CD66F0EEF6DC310F9DAA69A4782E3769383A3294F8672DE` | P5-A input contract, exact owners, count denominators, and implementation work steps | module/path result stays `correct`; requested names split to `correct/partial`; requested meaning/type-only `missing`; inventory block resolved by one planner refresh | `E5-P5A-IMPACT1`, `E5-P5A-INPUT1`, `E5-P5A-COUNT1` | authorize only P5-A requested-meaning/type-only implementation; P5-B+ and target remain locked |
 | R3 | 2026-08-21 | HEAD `0aa49c87628c9e8b2041754515d6ebf0a930d55b` plus uncommitted P5-A candidate; canonical CLI `1.2.8`; authoritative `E:\Anvien` full-build/analyze completed; graph `114,842 / 157,744` | requested name/meaning/type-only contract, canonical ownership, build/boundary/regression, and three-count preservation | requested namespace name `partial -> correct`; requested meaning/type-only `missing -> correct`; module/path result and all three count denominators remain `correct` pending Supervisor recheck on the canonical E graph | `E5-P5A-SRC1`, `E5-P5A-BUILD1`, `E5-P5A-TEST1`, `E5-P5A-COUNT1` | hand P5-A candidate to Supervisor; keep P5-B+, target, detect, and commit locked/pending |
 | R4 | 2026-08-21 | HEAD `0aa49c87628c9e8b2041754515d6ebf0a930d55b` plus uncommitted P5-A candidate; canonical CLI `1.2.8`; authoritative `E:\Anvien` full-build/analyze completed; graph `114,842 / 157,744` | Supervisor acceptance of P5-A source, build, boundary, regressions, and three-count preservation | P5-A Supervisor gate `pending -> PASS`; source invariant remains correct; detect/commit remain pending | `E5-P5A-BUILD1`, `E5-P5A-COUNT1`, `E5-P5A-REVIEW1` | run fresh analyze refresh, then `detect-changes`; stage/commit only isolated P5-A manifest; keep P5-B+, target, and later gates locked |
+| R5 | 2026-08-21 | HEAD `40ea0095a79084a3c6805cf5d5f46108926d1dca`; fresh E graph `114,852 / 157,754`; P5-B inventory report SHA-256 `CF01A36C2AAAF7B85574EFB8F69BE931939AE4F4704AE5D5E0CB2F30835A4056` | P5-A acceptance/commit is now the predecessor; P5-B exact owner and CRITICAL blast radius are established | P5-B export surface remains `missing`; owner selected as dedicated `export_tables.go` with minimal `workspace/buildWorkspace` wiring; no source edit yet | `E5-P5B-IMPACT1` | authorize only the bounded P5-B production tranche; keep P5-C/P5-D/target locked |
 
 ## Phase Touch Map
 
@@ -122,7 +124,8 @@ The 2026-08-10 P0 tuples remain historical. The P5-A graph was freshly rebuilt a
 | TS/JS import syntax | `internal/providers/tsjs/imports.go` | populates default/named/alias/namespace and type-only requests; also emits compatibility re-export path facts | P5-A | edit source-written import path only | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | accepted `ExportFact` remains sole re-export semantic source; compatibility facts keep requested fields empty |
 | canonical clone/normalization | `internal/scopeir/ir.go` | owns nested requested-meaning collection and canonical set | P5-A | edit | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | deep clone, sort, and deduplicate without changing export normalization |
 | deterministic import ordering | `internal/scopeir/sort_keys.go` | compares import semantic inputs | P5-A | edit | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | include requested meanings and `TypeOnly`; preserve existing ordering inputs |
-| current workspace/import binding | `internal/resolution/indexes.go` | live module/file result and optional physical-definition lookup | P5-A/P5-B/P5-C | preserve-only in P5-A | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | module/file behavior is correct; export lookup remains deferred |
+| current workspace/import binding | `internal/resolution/indexes.go` | live module/file result, optional physical-definition lookup, and minimal P5-B table storage/wiring | P5-A/P5-B/P5-C | preserve-only in P5-A; minimal edit in P5-B | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1`, `E5-P5B-IMPACT1` | preserve path/result behavior; add only field and `buildWorkspace` wiring |
+| dedicated export-table owner | `internal/resolution/export_tables.go` | owns deterministic syntax-derived explicit entries and star adjacency | P5-B | edit | `E5-P5B-IMPACT1` | derive only from accepted `ExportFact`; no physical-definition inference or terminal traversal |
 | current path strategies | `internal/resolution/import_resolution.go` | module/file resolution and other-language strategies | P5-A | preserve-only | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | no broad package/path rewrite; unaffected languages must regress unchanged |
 | terminal call resolution | `internal/resolution/resolve.go` | consumes scope/import bindings and contains global lookup | P5-C/P5-D | inspect-only until fresh impact | `E0-P0A-FD4`, `E0-P0A-IMPACT4` | explicit import failure cannot use global rescue |
 | Child 04 facts | predecessor four-file set at closure commit `0aa49c87628c9e8b2041754515d6ebf0a930d55b` | accepted immutable syntax/direct-export input | P5-A/P5-B | accepted dependency / inspect-only | `E4-PNC-CLOSE1`, `E4-PNC-COMMIT1` | consume accepted facts; do not regenerate syntax; refresh current source owner before any edit |
@@ -148,7 +151,7 @@ source import -> module/file result -> export-table lookup -> terminal Symbol or
 
 Classification: path result is correct for the bounded case; export lookup is missing/wrong.
 
-Allowed next action: P5-A inventories the real input boundary and preserves the path behavior; P5-B/P5-C add the export boundary at evidence-selected owners.
+Allowed next action: P5-B adds the export boundary at the evidence-selected dedicated owner and minimal workspace wiring; P5-C later performs terminal traversal.
 
 Forbidden next action: treating every physical definition as exported or rebuilding all path/package handling before evidence requires it.
 
@@ -204,8 +207,8 @@ Forbidden next action: adding a target-name special case or accepting `2/2` with
 
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
-| P5-A | exact four-owner production candidate plus two focused tests pass build/boundary/regression; all three count denominators preserve `0` delta | `READY_FOR_SUPERVISOR`; keep detect/commit pending and do not open P5-B |
-| P5-B | no export table exists | select exact owner from fresh impact and build only from accepted facts |
+| P5-A | exact four-owner production candidate plus two focused tests passed build/boundary/regression; Supervisor PASS and isolated commits `2560f914` + `40ea0095` are present | committed/accepted; preserve the three `0` deltas and do not reopen P5-A |
+| P5-B | fresh inventory selects dedicated `internal/resolution/export_tables.go` plus minimal `workspace/buildWorkspace` wiring; CRITICAL blast radius recorded; no source edit yet | `PRE_IMPLEMENTATION_READY`; Main authorizes only this bounded implementation tranche |
 | P5-C | physical-definition lookup and explicit-import global-name rescue are wrong | add traversal/proof and no-global-rescue behavior after table acceptance |
 | P5-D | terminal graph/persistence/readers are not yet bound | refresh impact and edit only actual affected consumers; prove exact two sites |
 
@@ -221,6 +224,7 @@ Forbidden next action: adding a target-name special case or accepting `2/2` with
 - [x] R0 records the current repo/graph basis.
 - [x] Child 04 export-fact handoff is accepted at `0aa49c87628c9e8b2041754515d6ebf0a930d55b` and reflected in refresh row R1.
 - [x] P5-A editable owners, requested-meaning/type-only representation, side-effect disposition, and all three absolute count denominators are refreshed before implementation.
+- [x] P5-B exact owner, preserve-only surfaces, CRITICAL blast radius, and E-only boundary are recorded in `E5-P5B-IMPACT1` before implementation.
 
 ## Final P0 Decision
 
@@ -234,4 +238,4 @@ Choose one:
 
 Decision note:
 
-Child 04 is closed at `0aa49c87628c9e8b2041754515d6ebf0a930d55b`. One R2 planner refresh authorized the exact four-owner P5-A implementation, and refresh R3 records the resulting Coder candidate with build, boundary, regression, and `0 / 0 / 0` count deltas. P5-A remains the sole open slice at `READY_FOR_SUPERVISOR`; P5-B/P5-C/P5-D, target access, detect/commit, and later gates remain locked.
+Child 04 is closed at `0aa49c87628c9e8b2041754515d6ebf0a930d55b`. P5-A is accepted and committed at `2560f914334e65961f755febdda6585840a4260e`, with plan opening at `40ea0095a79084a3c6805cf5d5f46108926d1dca`. Fresh P5-B inventory now authorizes only the dedicated export-table owner plus minimal workspace/buildWorkspace wiring; P5-C/P5-D, target access, detect/commit for P5-B, and later gates remain locked until this slice completes.

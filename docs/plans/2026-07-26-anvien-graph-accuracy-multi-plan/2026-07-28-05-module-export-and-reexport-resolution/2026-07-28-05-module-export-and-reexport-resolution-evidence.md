@@ -78,9 +78,13 @@ Coder candidate report: `reports/coder/rp_coder_260821_170956_by_gpt-5_child05_p
 
 ### P5-B - Export tables
 
+Pre-implementation inventory artifact: `reports/coder/rp_coder_260821_185542_by_gpt-5_child05_p5b_pre_implementation_ready.md`, `8,145` bytes, UTF-8 without BOM, SHA-256 `CF01A36C2AAAF7B85574EFB8F69BE931939AE4F4704AE5D5E0CB2F30835A4056`. The report is `PRE_IMPLEMENTATION_READY / READY_FOR_MAIN_AUTHORIZATION`; it records no source edit, build, test, detect-changes, or commit.
+
+- `E5-P5B-IMPACT1` — recorded from one fresh graph refresh at authoritative `E:\Anvien`: `1,951` scanned, `736` parsed-code, `0` failed, `114,852` nodes / `157,754` relationships, current HEAD `40ea0095a79084a3c6805cf5d5f46108926d1dca`. Exact owner is new dedicated `internal/resolution/export_tables.go`; minimal integration touches are the `workspace` storage field and one `buildWorkspace` wiring call in `internal/resolution/indexes.go`. `workspace` impact is CRITICAL (`70` symbols / `9` files / `4` modules / `49` processes); `buildWorkspace` impact is CRITICAL (`8` / `6` / `5` / `25`). `resolveImports`, `resolveImportedDef`, physical path lookup, syntactic `IMPORTS`, Child 04 facts, P5-C/P5-D, target, and all non-E boundaries are preserve-only or locked. No pre-edit graph node exists for the new file; it will be created only after Main authorization.
+
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
-| `E5-P5B-IMPACT1` | fresh impact for table owner and affected consumers | pending |
+| `E5-P5B-IMPACT1` | fresh impact for table owner and affected consumers | recorded — durable E-only inventory above; exact owner and complete CRITICAL blast radius |
 | `E5-P5B-SRC1` | production table derived only from accepted Child 04 facts | pending |
 | `E5-P5B-ZEROBARREL1` | zero physical declarations and a non-empty syntax-derived export surface | pending |
 | `E5-P5B-BUILD1` | full repository build | pending |

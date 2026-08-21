@@ -37,6 +37,7 @@
 | P5-A | physical target-file resolutions (`resolution.ImportsResolved`) | absolute count | 5,072 | 5,072 post-change | pending Supervisor | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5D-COUNT1` |
 | P5-A | resolver-emitted syntactic `IMPORTS` (`resolution.FinalizedImportsEmitted`) | absolute count | 5,072 | 5,072 post-change | pending Supervisor | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5D-COUNT1` |
 | P5-A | final persisted graph-wide `IMPORTS` | absolute count | 5,088 | 5,088 post-change | pending Supervisor | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5D-COUNT1` |
+| P5-B | pre-implementation graph inventory | nodes / relationships | 114,852 / 157,754 | 114,852 / 157,754 | pending implementation | preserve graph refresh baseline for the same `736` parsed-code corpus until source changes | 0 / 0 | `E5-P5B-IMPACT1` |
 | P5-B | zero-physical barrel declarations | count | fixture not yet created | pending | pending | exactly 0 | pending | `E5-P5B-ZEROBARREL1` |
 | P5-B | zero-physical barrel export entries | count | no export table | pending | pending | exact non-zero fixture expectation | pending | `E5-P5B-ZEROBARREL1` |
 | P5-C | named traversal vectors | passed/total | no accepted implementation | pending | pending | 100% of accepted alias/star/namespace/meaning/cycle/ambiguity vectors | pending | `E5-P5C-PROOF1`, `E5-P5C-TEST1` |

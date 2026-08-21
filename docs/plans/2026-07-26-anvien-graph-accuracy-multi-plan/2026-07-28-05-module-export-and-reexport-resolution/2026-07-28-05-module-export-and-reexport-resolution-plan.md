@@ -191,12 +191,12 @@ Out of scope:
   - Completion Record: Supervisor PASS `E5-P5A-REVIEW1`; detect-changes PASS `E5-P5A-DETECT1`; isolated commit `2560f914334e65961f755febdda6585840a4260e`.
 
 - [ ] P5-B: Build export tables from accepted export facts.
-  - State: OPEN after P5-A commit `2560f914334e65961f755febdda6585840a4260e`; P5-C/P5-D and target remain locked.
+  - State: `PRE_IMPLEMENTATION_READY / READY_FOR_MAIN_AUTHORIZATION` after P5-A commit `2560f914334e65961f755febdda6585840a4260e`; P5-C/P5-D and target remain locked.
   - Goal: represent each repository module's syntax-derived export surface without treating physical definitions as implicit exports.
   - Scope Boundary:
-    - Editable: exact export-table owner selected by P5-B pre-flight.
+    - Editable: new dedicated semantic owner `internal/resolution/export_tables.go`, plus minimal storage and wiring in `internal/resolution/indexes.go` (`workspace` and `buildWorkspace`) selected by fresh graph/source evidence.
     - Inspect-only: accepted Child 04 fact owners and P5-A module results.
-    - Preserve-only: physical path lookup and syntactic `IMPORTS` emission.
+    - Preserve-only: physical path lookup, `resolvedImport` module/file results, `resolveImports`, `resolveImportedDef`, and syntactic `IMPORTS` emission; terminal traversal remains P5-C.
     - Out of scope: terminal traversal and ambient declarations.
   - Non-Goals: no consumer call binding and no public-package API metric unrelated to the bounded defect.
   - Pre-flight Questions:
@@ -213,7 +213,7 @@ Out of scope:
     - External side effects: none.
     - N/A notes: terminal resolution is P5-C.
   - Work Steps:
-    1. Record fresh owner impact and implement production export-table construction from accepted facts, including explicit entries and star adjacency.
+    1. Use the durable P5-B inventory `E5-P5B-IMPACT1` to implement production export-table construction in `internal/resolution/export_tables.go` from accepted facts, including explicit entries and star adjacency; add only the required `workspace` storage and `buildWorkspace` wiring in `internal/resolution/indexes.go`.
        - UI flow check: N/A — non-UI structure.
        - DB/data flow check: physical definitions do not become implicit entries.
        - Render location check: resolver trace/evidence.
@@ -225,7 +225,7 @@ Out of scope:
        - Render location check: evidence/benchmark ledgers.
        - Mini QA: inspect actual table output from the built resolver path.
        - Evidence target: `E5-P5B-BUILD1`, `E5-P5B-TEST1`, `E5-P5B-COUNT1`, `E5-P5B-REVIEW1`, `E5-P5B-DETECT1`, `E5-P5B-COMMIT1`.
-  - Implementation Gate: P5-A and Child 04 facts are accepted; exact table owner and affected consumers are recorded.
+  - Implementation Gate: P5-A and Child 04 facts are accepted; the durable inventory report `E:\Anvien\reports\coder\rp_coder_260821_185542_by_gpt-5_child05_p5b_pre_implementation_ready.md` records the exact owner, CRITICAL blast radius, and E-only boundary; no production edit starts until Main authorizes this bounded owner set.
   - Acceptance:
     - Source: export tables are deterministic and derived only from accepted syntax facts.
     - Runtime/UI: built resolver table boundary passes; UI is N/A.
