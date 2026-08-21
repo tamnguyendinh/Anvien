@@ -111,7 +111,7 @@ Exact symbol impacts further constrain the slices: `DefinitionFact` CRITICAL `19
 
 ## E4 - P4 Evidence
 
-P4-A/P4-B/P4-B1/P4-C/P4-C2 retain their accepted isolated boundaries. Aggregate `E4-PNA-REVIEW1` is independently `PASS`; Pn-B cleanup is the sole open gate. Pn-C, Child 05 and later slices remain locked.
+P4-A/P4-B/P4-B1/P4-C/P4-C2 retain their accepted isolated boundaries. Aggregate `E4-PNA-REVIEW1` and cleanup `E4-PNB-REVIEW1` are independently `PASS`; Pn-B remains open only for Main-owned detect/isolated commit. Pn-C, Child 05 and later slices remain locked.
 
 ### P4-A — export fact, meaning, and visibility boundary
 
@@ -288,13 +288,15 @@ P4-A/P4-B/P4-B1/P4-C/P4-C2 retain their accepted isolated boundaries. Aggregate 
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
 | `E4-PNA-REVIEW1` | final Supervisor review across all five slices and retained evidence | recorded — independent `PASS`; report `23,563` bytes / `178` LF / canonical SHA-256 `7EBFD508...DC5A8`; residual same-invariant surfaces none |
-| `E4-PNB-CLEAN1` | dead child-created artifacts removed; valid evidence retained | pending |
-| `E4-PNB-REVIEW1` | Supervisor PASS for cleanup | pending |
+| `E4-PNB-CLEAN1` | dead child-created artifacts removed; valid evidence retained | recorded — exactly `.tmp/p4c-tests` removed (`0` files / `0` bytes); executor report canonical SHA-256 `5BD0338A...B260` |
+| `E4-PNB-REVIEW1` | Supervisor PASS for cleanup | recorded — independent `PASS`; report canonical SHA-256 `EDFCF6CA...1E1F`; residual same-invariant surfaces none |
+| `E4-PNB-DETECT1` | proportionate Main-owned change detection for the cleanup/report/ledger boundary | pending |
+| `E4-PNB-COMMIT1` | isolated Pn-B cleanup/report/ledger commit | pending |
 | `E4-PNC-DETECT1` | final detect-changes result for implementation scope | pending |
 | `E4-PNC-COMMIT1` | final known commit/worktree state | pending |
 | `E4-PNC-HANDOFF1` | Child 05 actual-status refreshed from accepted immutable syntax/direct-export results and exact opening condition recorded | pending |
 
-P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed. P4-C closes at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; P4-C2 closes at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; aggregate Pn-A is open and Child 05 remains locked.
+P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed. P4-C closes at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; P4-C2 closes at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; aggregate Pn-A and cleanup review are closed, while Pn-B detect/commit remains open and Child 05 remains locked.
 
 ### `E4-PNA-REVIEW1` — independent aggregate acceptance
 
@@ -302,6 +304,14 @@ P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa7
 - Fresh review self graph is `1,939/736/0`, `114,630/157,445`. Current production blobs match accepted slice boundaries; P4-C2 is the exact intentional successor delta. All required commits are ancestors of current HEAD.
 - Oracle and QA manifests/digests recompute exactly; aggregate target results are `21/21`, `11/11`, TypeAliases `15/15`, parity `588/0`, and zero duplicate/orphan/diagnostic/Child 05 state with target source/worktree/config preserved.
 - No closed build/QA/target/review gate was rerun because source and artifact identities show no invalidation. Residual unverified same-invariant surfaces are none. Pn-B is the next ordered gate; Pn-C and Child 05 remain locked.
+
+### `E4-PNB-CLEAN1` and `E4-PNB-REVIEW1` — cleanup acceptance
+
+- Executor candidate: `reports/coder/rp_coder_260821_144325_by_gpt-5_child04_pnb_cleanup_ready_for_supervisor.md`; `24,399` bytes / `472` LF / raw SHA-256 `0209C39BE833312100DFA3948B9676A8AC091A40286F94F9E2E1220B3278839C` / canonical SHA-256 `5BD0338A8949B58933988FAA6DF448EFBF5B4F4D506C91D6DD7B5B44B8F7B260`.
+- Exact cleanup: remove only the review-induced empty `.tmp/p4c-tests` parent (`0` files / `0` bytes). Current source plus four provenance locations prove ownership and deadness; the path was never tracked or committed and supplied no acceptance evidence.
+- Retention proof: all `136` tracked Child 04 paths remain; P4-C2 is `89/89` with its 84 non-living paths unchanged; Oracle and three QA generations have exact file sets, zero byte/LF/SHA mismatches and exact digests; the no-missed report sweep is `129` paths with `0/108` known paths missed.
+- Independent verdict: `E4-PNB-REVIEW1 PASS` at `reports/Supervisor/rp_supervisor_260821_150355_by_gpt-5_child04_pnb_cleanup_review1.md`; `14,130` bytes / `160` LF / raw SHA-256 `F114AF17513B56952B81B71110BA1C4D838AD40CE3D4E6049D4AD7C2D0ABD18F` / canonical SHA-256 `EDFCF6CACA23DE0F8F38BA4376A25009B33B525BDAF70D267D062155AEC91E1F`. Residual same-invariant surfaces: none.
+- No build, QA, target, or closed acceptance gate was rerun because cleanup changed no tracked/code/evidence bytes. Main now owns proportionate `E4-PNB-DETECT1` and isolated `E4-PNB-COMMIT1`; Pn-C and Child 05 remain locked until commit success.
 
 ### `E4-P4B-SOURCE1` — source and cleanup clearance
 
