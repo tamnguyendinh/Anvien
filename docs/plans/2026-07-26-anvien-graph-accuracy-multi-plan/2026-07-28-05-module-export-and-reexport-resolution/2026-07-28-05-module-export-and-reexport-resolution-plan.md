@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / P5-A committed at 2560f914 / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D open`
+- Status: `P0 complete / P5-A committed at 2560f914 / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D inventory accepted and production authorization recorded`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -290,46 +290,46 @@ Out of scope:
   - Completion Record: Supervisor PASS is recorded as `E5-P5C-REVIEW1`; exactly one fresh analyze and full detect result are recorded as `E5-P5C-DETECT1`; exact 12-path manifest was staged and committed as `76899d45a21fce55f6328b4cb30a6a5cb8719a81`, recorded as `E5-P5C-COMMIT1`.
 
 - [ ] P5-D: Emit terminal bindings and prove the target calls.
-  - State: `OPEN AFTER P5-C COMMIT 76899d45a21fce55f6328b4cb30a6a5cb8719a81`; no fresh P5-D graph/impact inventory or target baseline exists yet.
+  - State: `PRE_IMPLEMENTATION INVENTORY ACCEPTED / PRODUCTION AUTHORIZATION EFFECTIVE ONLY AFTER THIS DOCS COMMIT`. Inventory report `reports/coder/rp_coder_260821_232052_by_gpt-5_child05_p5d_pre_implementation_inventory.md` is `32,125` bytes / `393` LF / `0` CR / strict UTF-8 without BOM / SHA-256 `AECE504D0C447BE567C81D2651E47CC5FA2B6A012FE03809AD04F055E2C46269`. No P5-D production/test/build/target/Supervisor/detect/commit work exists yet.
   - Goal: bind source calls/uses to P5-C terminal Symbols while preserving source-written module dependencies and proof.
   - Scope Boundary:
-    - Editable: only call/use emission and affected projection owners identified by fresh impact and Child 02 inventory.
-    - Inspect-only: P5-C resolver, target source, graph JSON, Ladybug, and affected readers.
-    - Preserve-only: syntactic `IMPORTS`, target source/worktree, and unrelated graph relationships.
-    - Out of scope: ambient/external outcomes and unrelated reader changes.
+    - Editable: new `internal/resolution/export_binding_proof.go` as the sole P5-D proof-to-`graph.Evidence` adapter; `internal/resolution/indexes.go` only for owned retention of the already-computed semantic export result and a proof-returning namespace/member seam; `internal/resolution/resolve.go` only at `resolveCall`/`resolveAccess` for proof attachment; `internal/resolution/emit.go` only at `mergeRelationship` for deterministic Evidence union/dedupe.
+    - Inspect/test/validate-only: accepted P5-C result/proof types; `internal/graph/types.go`; Graph JSON; Ladybug CSV/schema/COPY/fallback; MCP context and impact; HTTP graph transport only if selected as the nearest public boundary.
+    - Preserve-only: accepted P5-B/P5-C source and tests, `emitter.emitReference`, `graph.Evidence` field shape, Graph JSON/Ladybug/MCP/HTTP/Web production transport, file-detail/UI, Child 02 C09-C16, syntactic `IMPORTS`, path resolution, target source/worktree, and unrelated relationships.
+    - Out of scope: typed Evidence fields, relationship schema/column changes, decoded UI models, ambient/external outcomes, unrelated reader changes, and P5-C semantic traversal changes.
   - Non-Goals: no synthetic dependency from consumer to implementation module.
   - Pre-flight Questions:
-    - Data source: accepted P5-C results/proofs and the two bounded target source sites.
-    - Display permission: preserve current command visibility; UI is included only if fresh impact identifies it.
-    - DB read flow: read fresh graph/Ladybug and only affected readers after analyze.
-    - DB write flow: normal analyze writes the current graph outputs; this slice observes that existing boundary.
-    - Render location: graph records and affected CLI/MCP/HTTP/Web surfaces identified by evidence.
-    - UI behavior flow: conditional on actual affected-reader impact.
-    - Docker runtime: conditional on an affected app/UI surface; otherwise full build plus CLI/resolver validation.
-    - Playwright target: conditional on an affected browser surface.
-    - Behavior test: `2/2` terminal calls, zero matching false gaps, complete proofs, unchanged path/`IMPORTS` counts, and direct/barrel terminal equality.
+    - Data source: the exact `exportResolutionResult`, candidates, failures, ordered proofs, and hops already produced once by accepted P5-C, plus the call/access source-site ID.
+    - Display permission: existing machine-readable graph/CLI/MCP visibility only; no UI consumer interprets `Relationship.Evidence`, so UI/Playwright is N/A.
+    - DB read flow: Graph JSON, Ladybug relationship evidence, MCP context, and MCP impact are the exact four affected-reader denominator.
+    - DB write flow: normal analyze writes Graph JSON and Ladybug through the existing generic Evidence channel; no schema migration.
+    - Render location: CALLS/ACCESSES `Relationship.Evidence` plus those four readers.
+    - UI behavior flow: N/A because fresh file-detail/impact and source inspection found no semantic UI proof consumer.
+    - Docker runtime: N/A; this is the non-UI canonical full-build/analyze/CLI/MCP/Ladybug boundary.
+    - Playwright target: N/A.
+    - Behavior test: direct/barrel terminal equality, aliases/stars/namespace/member branches, cycle/ambiguity/failure provenance, coalesced source-site conservation, `2/2` target terminal calls, zero matching false gaps, complete proofs, and unchanged path/`IMPORTS` counts.
     - Cleanup/quarantine: reports stay in Anvien; no target-source artifact.
     - External side effects: target `.anvien` may be regenerated by normal analyze; source remains unchanged.
-    - N/A notes: UI controls are N/A unless impact proves an affected UI consumer.
+    - N/A notes: Child 02 C09-C16 are Definition identity/selection/embedding readers, not P5-D export-proof readers; preserve their accepted behavior.
   - Work Steps:
-    1. Record fresh emission/projection impact; implement the minimum production binding/proof projection; add tests after code; run full build and affected-reader regression.
-       - UI flow check: conditional on affected UI evidence.
-       - DB/data flow check: terminal endpoint and proof survive graph and affected persistence.
-       - Render location check: graph plus affected readers only.
-       - Mini QA: exercise the nearest real built graph-bound command; use the real app only if affected.
+    1. After this docs authorization commit, resume the existing E-only Coder and implement production first in exactly the four owners above. Retain one owned P5-C semantic result per resolved import without a second traversal/path pass; expose the same result from namespace/member resolution while preserving the existing wrapper for unaffected consumers. Convert proof data to the existing `graph.Evidence{Kind,Weight,Note}` shape only: keep the generic call/access evidence entry first; append `export-terminal-v1`, `export-hop-v1`, and `export-failure-v1` records with `Weight=1`; marshal `Note` from concrete versioned structs, never maps. Every Note includes `sourceSiteId`; terminal Notes include outcome/terminal kind/requested name/canonical meanings/canonical target files/terminal definition and graph identity/file/namespace file; hop Notes include deterministic proof and hop ordinals plus the complete accepted `ExportFact`, target file, owner/member, and terminal IDs; failure Notes include deterministic proof ordinal, outcome, failure file/name, namespace file, and canonical meanings. Dedupe by exact `(Kind, Weight, Note)`. At coalescing, preserve the existing generic first item so `relationshipCallName()` and semantic edge keys stay unchanged, then stable-union remaining generic records and sort only the P5-D records by kind rank, proof ordinal, hop ordinal, and canonical Note.
+       - UI flow check: N/A — no semantic UI consumer.
+       - DB/data flow check: P5-C terminal/proof is retained once, attached to CALLS/ACCESSES, and survives coalescing without changing endpoints, `ProofKind`, source-site IDs, or the Evidence schema.
+       - Render location check: `Relationship.Evidence`; Graph JSON/Ladybug/MCP are validate-only downstream readers.
+       - Mini QA: after production code, add only the authorized focused tests, run focused/full resolution, then the canonical full build before Graph JSON/Ladybug/MCP parity. HTTP is validate-only only if needed as the nearest public boundary.
        - Evidence target: `E5-P5D-IMPACT1`, `E5-P5D-SRC1`, `E5-P5D-BUILD1`, `E5-P5D-TEST1`, `E5-P5D-PARITY1`.
-    2. Capture target pre-state; analyze `E:\cheapapp.org` with the built current runtime; prove direct/barrel equality, `2/2` calls, zero false gaps, complete proofs, unchanged counts, and unchanged target source/worktree; then review/detect/commit.
-       - UI flow check: conditional on affected UI evidence.
+    2. Only after Main verifies the local Coder-ready handoff, final source/test bytes, canonical full build, and four-reader parity may Main explicitly open the target work step. Then capture target pre-state; invoke the freshly built canonical `E:\Anvien` runtime once from `E:\cheapapp.org`; prove direct/barrel equality, `2/2` terminal calls, zero matching false gaps, complete ordered proofs, `0 / 0 / 0` path/emitted-`IMPORTS`/persisted-`IMPORTS` delta, and unchanged target source/worktree; then hand the durable candidate to the existing Supervisor before detect/commit.
+       - UI flow check: N/A unless a new invalidating impact proves a semantic UI consumer and the plan is refreshed first.
        - DB/data flow check: fresh target graph is the sole acceptance source for the two sites.
        - Render location check: official evidence under Anvien.
-       - Mini QA: run real target query/file-detail/graph inspection and visually inspect any affected UI result.
+       - Mini QA: inspect the two source-site relationships through Graph JSON, Ladybug, MCP context, and MCP impact; no manufactured UI scope.
        - Evidence target: `E5-P5D-TARGET1`, `E5-P5D-ORACLE1`, `E5-P5D-BOUNDARY1`, `E5-P5D-COUNT1`, `E5-P5D-REVIEW1`, `E5-P5D-DETECT1`, `E5-P5D-COMMIT1`.
-  - Implementation Gate: P5-A/B/C are accepted and P5-C is committed at `76899d45a21fce55f6328b4cb30a6a5cb8719a81`; before production edits, refresh graph/file-detail/upstream impact and identify affected persistence/readers rather than assuming them; capture the target baseline only at the authorized P5-D target work step.
+  - Implementation Gate: satisfied for production only after this exact five-path docs authorization commit (four living ledgers plus the immutable inventory report). `E5-P5D-IMPACT1` records the fresh graph `115,947 / 159,626`, all sixteen file-detail rows, all nineteen HIGH/CRITICAL/LOW impact tuples, the four-reader denominator, the existing-shape encoding, and the exact production/test manifest. Any typed-field/schema/UI expansion invalidates this authorization and requires a new planner/impact gate. Target remains locked until Work Step 1 passes and Main explicitly opens Work Step 2.
   - Acceptance:
-    - Source: call/use emission consumes P5-C terminal results and preserves syntactic dependencies.
-    - Runtime/UI: target calls resolve `2/2`; affected runtime surfaces show the same terminal result; UI is conditional.
-    - DB/data: graph and affected persistence/readers retain terminal Symbol/proof with zero field loss; path/`IMPORTS` deltas are `0`.
-    - Behavior test: direct/barrel equality, two target calls, zero matching gaps, and regression cases pass.
+    - Source: call/use emission consumes the retained P5-C terminal result/proofs exactly once; generic evidence and semantic edge identity remain first/unchanged; coalescing retains every distinct source-site proof.
+    - Runtime/UI: target calls resolve `2/2`; the four affected machine readers show the same terminal/proof; UI/Playwright is N/A unless new invalidating impact forces a plan refresh.
+    - DB/data: Graph JSON, Ladybug, MCP context, and MCP impact retain identical terminal/proof records with zero field loss; graph schema/reader production bytes remain unchanged; path/`IMPORTS` deltas are `0 / 0 / 0`.
+    - Behavior test: direct/barrel equality, exact encoding/order/dedupe, namespace/member and failure branches, coalesced source sites, two target calls, zero matching gaps, unchanged P5-C matrix, and unaffected-language regression pass.
     - Cleanup/quarantine: target source/worktree unchanged; obsolete debug evidence removed.
     - Evidence IDs: `E5-P5D-IMPACT1`, `E5-P5D-SRC1`, `E5-P5D-BUILD1`, `E5-P5D-TEST1`, `E5-P5D-PARITY1`, `E5-P5D-TARGET1`, `E5-P5D-ORACLE1`, `E5-P5D-BOUNDARY1`, `E5-P5D-COUNT1`, `E5-P5D-REVIEW1`, `E5-P5D-DETECT1`, `E5-P5D-COMMIT1`.
     - Actual-status rows refreshed: terminal binding, target acceptance, and affected readers.
