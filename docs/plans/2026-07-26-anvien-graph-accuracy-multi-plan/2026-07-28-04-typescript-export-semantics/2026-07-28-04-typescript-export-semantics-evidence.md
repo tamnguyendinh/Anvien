@@ -111,7 +111,7 @@ Exact symbol impacts further constrain the slices: `DefinitionFact` CRITICAL `19
 
 ## E4 - P4 Evidence
 
-P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, with isolated commit `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43`. P4-B and P4-B1 are also closed below. P4-C source/build/test/boundary/Supervisor/detect/commit are closed at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`. P4-C2 is the sole open slice: `E4-P4C2-ORACLE1` remains `SEALED`; exact repair, fresh post-repair `E4-P4C2-TARGET1`/`BOUNDARY1`, independent `E4-P4C2-REVIEW2`, and Main-owned `E4-P4C2-DETECT1` are PASS; commit remains pending; Child 05 and later slices remain locked.
+P4-A/P4-B/P4-B1/P4-C retain their accepted isolated boundaries. P4-C2 closes at isolated commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27` after sealed Oracle, exact repair, fresh post-repair `E4-P4C2-TARGET1`/`BOUNDARY1`, independent `E4-P4C2-REVIEW2`, Main-owned `E4-P4C2-DETECT1`, and exact staging. Aggregate Pn-A is the sole open gate; Pn-B/Pn-C, Child 05 and later slices remain locked.
 
 ### P4-A — export fact, meaning, and visibility boundary
 
@@ -235,7 +235,7 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, wi
 | `E4-P4C2-REVIEW1` | independent later Supervisor PASS over source basis, lane independence, seal chronology/identity, row comparison, and target boundary | recorded — `REJECT`; exact 15-TypeAlias compatibility/reader invariant confirmed; report `8E37F4B1...81F7`; repair and re-review required |
 | `E4-P4C2-REVIEW2` | independent resubmission review proves the rejected invariant and same-invariant siblings close on post-repair bytes | recorded — `PASS`; report `5B99A74B...8DC0B`; residual same-invariant surfaces none |
 | `E4-P4C2-DETECT1` | Anvien-side change/boundary check after Supervisor PASS and before evidence commit; exact durable evidence + five-ledger manifest only | recorded — exit `0`; fresh graph `1,939/736/0`, `114,628/157,443`; `50` changed units; exact `7/7` changed/affected tracked files; changed-file HIGH/overall LOW; zero affected processes/flows and persisted health `0/0/0` |
-| `E4-P4C2-COMMIT1` | isolated Anvien-side durable oracle/QA evidence and ledger commit; no target or `.tmp` artifact committed or required for reproducibility | pending |
+| `E4-P4C2-COMMIT1` | isolated Anvien-side durable oracle/QA evidence and ledger commit; no target or `.tmp` artifact committed or required for reproducibility | recorded — `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; parent `310502a88849fe75f86a45a987ba21490d19dbe2`; exact 89 paths; post-commit index/tracked worktree clean; no push |
 
 #### P4-C2 durable oracle lifecycle correction
 
@@ -277,6 +277,12 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, wi
 - HIGH is a blast-radius warning for the accepted `emit.go` boundary, not an edit or commit prohibition. Exact report/evidence provenance remains outside the semantic changed-file set and is admitted only by the explicit staging manifest.
 - Exact staging is `89/89`: seven tracked repair/living-document paths plus 82 P4-C2 lifecycle/evidence paths; tracked unstaged count is `0`. The only remaining untracked paths are preserved P4-C handoffs `0631` and `0721`. Default staged diff-check over source/test/living documents exits `0`; accepted hash-sealed QA TSV/build-log artifacts retain intentional trailing whitespace, so the precedent-aligned full-manifest command `git -c core.whitespace=-trailing-space diff --cached --check` exits `0` without rewriting evidence bytes or changing Git config.
 
+#### `E4-P4C2-COMMIT1` — isolated slice closure
+
+- Commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27` (`fix(graph): preserve type-only export compatibility`) has parent `310502a88849fe75f86a45a987ba21490d19dbe2` and exactly `89` paths: the accepted two-file repair, five living documents, 82 durable P4-C2 evidence/lifecycle/provenance paths.
+- Post-commit verification proves HEAD match, empty index, zero tracked unstaged paths, worktree/index diff-check exit `0`, unchanged repair identities, and exactly two protected untracked P4-C handoffs (`0631`, `0721`). Neither excluded path is in the commit; no push/reset/checkout occurred.
+- P4-C2 is complete. Aggregate Child 04 Pn-A opens automatically; Pn-B/Pn-C and Child 05 remain locked.
+
 ## Closure Evidence
 
 | Evidence ID | Required proof | Status |
@@ -288,7 +294,7 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, wi
 | `E4-PNC-COMMIT1` | final known commit/worktree state | pending |
 | `E4-PNC-HANDOFF1` | Child 05 actual-status refreshed from accepted immutable syntax/direct-export results and exact opening condition recorded | pending |
 
-P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed. P4-C source/build/boundary/Supervisor/detect/commit are closed at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; P4-C2 repair/QA/REVIEW2/detect are accepted, commit remains open, and Child 05 remains locked.
+P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed. P4-C closes at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; P4-C2 closes at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; aggregate Pn-A is open and Child 05 remains locked.
 
 ### `E4-P4B-SOURCE1` — source and cleanup clearance
 

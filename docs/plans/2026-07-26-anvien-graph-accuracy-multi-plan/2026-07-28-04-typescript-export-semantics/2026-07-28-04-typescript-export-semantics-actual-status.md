@@ -2,7 +2,7 @@
 
 Title: Anvien First-Class TypeScript Export Semantics
 Date: 2026-07-28
-Status: P4-A/P4-B/P4-B1/P4-C are committed at their recorded isolated boundaries; P4-C2 is the sole open slice; `E4-P4C2-ORACLE1` remains `SEALED`; exact repair, fresh post-repair `E4-P4C2-TARGET1`/`BOUNDARY1`, independent `E4-P4C2-REVIEW2` and Main-owned `E4-P4C2-DETECT1` are PASS; `E4-P4C2-COMMIT1` remains pending; Child 05 remains locked
+Status: P4-A/P4-B/P4-B1/P4-C/P4-C2 are committed at their recorded isolated boundaries; P4-C2 closes at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; aggregate Pn-A is the sole open gate; Pn-B/Pn-C and Child 05 remain locked
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md`
@@ -103,6 +103,7 @@ P0-A resolves the current owners, related-file counts, and blast radii. CRITICAL
 | R13 | 2026-08-21 | Supervisor report `8E37F4B1...81F7`; current HEAD `6b93e80601b0549f1b3e56bd6b68b07b9bc9680a`; unrelated concurrent orchestration-skill commit/edit does not touch P4-C2 | independent P4-C2 acceptance and rejection routing | `E4-P4C2-REVIEW1 pending -> REJECT`; accepted oracle/fact-presence/negatives/parity/boundary remain closed; 15-TypeAlias compatibility/reader state remains `wrong` | `E4-P4C2-REVIEW1` | authorize one Coder lane for only the rejected `emit.go` compatibility invariant after fresh impact; preserve Child 05 lock |
 | R14 | 2026-08-21 | HEAD `310502a88849fe75f86a45a987ba21490d19dbe2`; exact two-file repair; fresh QA run digest `5CA04508...33E`; REVIEW2 canonical SHA `5B99A74B...8DC0B` | P4-C2 rejection repair, fresh target validation and independent re-review | 15-TypeAlias compatibility/reader `wrong -> correct`; `E4-P4C2-REVIEW2 -> PASS`; Oracle/Functions/negatives/parity/boundary remain closed | `E4-P4C2-TARGET1`, `E4-P4C2-BOUNDARY1`, `E4-P4C2-REVIEW2` | keep P4-C2 open only for fresh self graph, detect-changes and isolated commit; Child 05 locked |
 | R15 | 2026-08-21 | HEAD `310502a88849fe75f86a45a987ba21490d19dbe2`; fresh self graph `1,939/736/0`, `114,628/157,443`; detect exit `0` | Main-owned P4-C2 pre-commit change detection | `E4-P4C2-DETECT1 pending -> recorded/PASS`; exact seven tracked changed/affected paths; persisted health remains `0/0/0` | `E4-P4C2-DETECT1` | stage only the exact accepted P4-C2 manifest and create `E4-P4C2-COMMIT1`; Child 05 remains locked |
+| R16 | 2026-08-21 | isolated P4-C2 commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; parent `310502a88849fe75f86a45a987ba21490d19dbe2`; exact 89 paths; post-commit index/tracked worktree clean | P4-C2 closure and aggregate governance opening | `E4-P4C2-COMMIT1 pending -> recorded/closed`; P4-C2 `open -> committed`; aggregate Pn-A `locked -> open`; Pn-B/Pn-C/Child 05 remain locked | `E4-P4C2-COMMIT1` | open exactly one visible aggregate Supervisor lane for Pn-A; do not reopen slice gates or enter cleanup/Child 05 |
 
 ## Phase Touch Map
 
@@ -165,7 +166,7 @@ Forbidden next action: recurse through barrels, select candidates, or claim publ
 | P4-B | direct/default/local alias/type-only facts, diagnostics, visibility separation, cleanup, detect, and isolated commit are closed at `11a37aa8ec0320dd93258c058b088d1070aa778d` | `correct`; preserve and do not reopen |
 | P4-B1 | named/star/namespace/type-only facts and comment-bearing recovered sibling behavior pass independent Supervisor REVIEW3; terminal state remains absent | preserve the closed commit `42d167aaf28446ac0b3de479a8afefabb8d06736`; successor verification found no invalidation |
 | P4-C | graph projection, Ladybug persistence, and semantic consumer dialects are accepted and committed | `correct`; preserve P4-C at `c99c4070b66e7a96be8c9fa2721a0335a1f94877` |
-| P4-C2 | durable oracle remains sealed; exact repair, fresh `21/21 + 11/11` target QA, independent REVIEW2 and Main-owned detect pass | keep P4-C2 open only for exact staging and isolated commit; Child 05 remains locked |
+| P4-C2 | durable oracle remains sealed; exact repair, fresh `21/21 + 11/11` target QA, independent REVIEW2, Main-owned detect and isolated commit are closed | `correct`; preserve commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; open only aggregate Pn-A |
 
 ## Implementation Gate
 
@@ -188,6 +189,7 @@ Forbidden next action: recurse through barrels, select candidates, or claim publ
 - [x] `E4-P4C2-ORACLE1` records the durable-from-creation sealed source-only 21+11 bundle with no forbidden input, target write, or evidence-bearing `.tmp` artifact.
 - [x] Existing QA resumed only after seal and recorded `E4-P4C2-TARGET1` plus `E4-P4C2-BOUNDARY1` against the same source basis; the evidence-complete result contains a bounded semantic finding and is not acceptance.
 - [x] Main-owned `E4-P4C2-DETECT1` is recorded from one fresh self graph with exact seven-path semantics, HIGH changed-file scope warning, LOW overall risk, zero affected flows, and zero persisted health regression.
+- [x] `E4-P4C2-COMMIT1` is recorded at isolated commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; exact 89-path boundary and clean post-commit tracked/index state are verified.
 
 ## Final P0 Decision
 
@@ -199,4 +201,4 @@ Forbidden next action: recurse through barrels, select candidates, or claim publ
 
 Decision note:
 
-The bounded `0/21` baseline remains historical authority and P4-A/P4-B/P4-B1/P4-C retain their accepted commits. P4-C2 remains the sole open slice: the Oracle is `SEALED`; exact production repair, fresh target QA, independent REVIEW2, fresh self graph and `E4-P4C2-DETECT1` are PASS on current bytes. The first uncompleted gates are exact staging and `E4-P4C2-COMMIT1`. Child 05 and later slices remain locked.
+The bounded `0/21` baseline remains historical authority. P4-A/P4-B/P4-B1/P4-C/P4-C2 retain their accepted commits, with P4-C2 closed at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`. The first uncompleted gate is aggregate `E4-PNA-REVIEW1`; open exactly one visible Supervisor lane. Pn-B/Pn-C, Child 05 and later slices remain locked.

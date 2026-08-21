@@ -78,5 +78,6 @@
 ## Non-Benchmarkable Notes
 
 - Report/authority classification, file ownership, Supervisor verdicts, full-build results, detect-changes, and commits are evidence gates rather than benchmark metrics.
+- `E4-P4C2-COMMIT1` closes at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; it changes no benchmark row because Git identity and path count are closure evidence, not product/runtime performance.
 - Oracle row count, provenance completeness, seal identity, durable-path compliance, and `.tmp` absence are evidence-integrity gates rather than product benchmarks; they close only through `E4-P4C2-ORACLE1` and later Supervisor review.
 - No complete module-resolution, public-API, or global TypeScript accuracy percentage is claimed by this child.

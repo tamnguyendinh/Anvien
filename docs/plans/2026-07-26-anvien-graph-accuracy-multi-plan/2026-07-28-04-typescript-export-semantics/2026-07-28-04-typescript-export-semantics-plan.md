@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P4-A/P4-B/P4-B1/P4-C committed at their recorded isolated boundaries / P4-C2 is the sole open slice; E4-P4C2-ORACLE1 remains SEALED; exact rejection repair, fresh E4-P4C2-TARGET1/BOUNDARY1, independent E4-P4C2-REVIEW2 and Main-owned E4-P4C2-DETECT1 are PASS; E4-P4C2-COMMIT1 remains pending; Child 05 and later slices remain locked`
+- Status: `P4-A/P4-B/P4-B1/P4-C/P4-C2 committed at their recorded isolated boundaries; P4-C2 closes at 03f09b43f652b9a14b3e49774dc805c0dfd24a27; aggregate Pn-A is the sole open gate; Pn-B/Pn-C, Child 05 and later slices remain locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md`
@@ -310,9 +310,9 @@ Out of scope:
   - Current State (2026-08-21): Supervisor REVIEW1 and Main-owned `E4-P4C-DETECT1` are `PASS`; the exact isolated P4-C boundary is committed at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`. Post-commit HEAD matches, `git diff --check` passes, and only two preserved older Main handoff reports remain untracked because their historical blank EOF lines were not rewritten. P4-C2 is now the sole open slice; Child 05 remains locked and target access is authorized only inside the P4-C2 validation lane.
   - Commit Boundary: isolated commit `c99c4070b66e7a96be8c9fa2721a0335a1f94877` contains the accepted P4-C production/test/golden boundary, five living ledgers, Coder report, Supervisor report, and current rotation handoff.
 
-- [ ] P4-C2: Validate the complete export contract against the real target.
+- [x] P4-C2: Validate the complete export contract against the real target.
   - Goal: prove the 21 bounded direct exports and negative controls on the real target without modifying target source or entering Child 05 scope.
-  - Current State (2026-08-21): `E4-P4C2-ORACLE1` remains `SEALED`; the bounded repair and fresh post-repair QA pass `21/21` positives, `11/11` negatives, FileContext `17/3/1`, persistence parity `588/0`, integrity/Child 05 zeros and target/config preservation. Independent `E4-P4C2-REVIEW2` and Main-owned `E4-P4C2-DETECT1` are `PASS`; P4-C2 stays unchecked/open only for exact staging and `E4-P4C2-COMMIT1`. Child 05 remains locked.
+  - Current State (2026-08-21): `E4-P4C2-ORACLE1` remains `SEALED`; the bounded repair and fresh post-repair QA pass `21/21` positives, `11/11` negatives, FileContext `17/3/1`, persistence parity `588/0`, integrity/Child 05 zeros and target/config preservation. Independent `E4-P4C2-REVIEW2`, Main-owned `E4-P4C2-DETECT1`, and isolated `E4-P4C2-COMMIT1` are closed; commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27` contains the exact 89-path boundary. Aggregate Pn-A is now open; Pn-B/Pn-C and Child 05 remain locked.
   - Scope Boundary:
     - Oracle Authoring inspect-only: exactly the three accepted hash-pinned target source files plus read-only target HEAD/branch/tracked-status metadata; no target `.anvien` observation.
     - QA inspect-only after seal: target source hashes, target-local analyzer output, and only affected persisted records.
@@ -358,7 +358,7 @@ Out of scope:
     1. Refresh the self graph, run exact `file-detail` and upstream file/symbol impact for `internal/resolution/emit.go` and the rejected compatibility functions before editing; report HIGH/CRITICAL blast radius and keep the candidate narrow.
     2. Correct production behavior so direct source-export membership drives definition compatibility independently from runtime-value eligibility, while `typeOnly`, meaning lanes, access separation, negatives, and Child 05 exclusions remain unchanged.
     3. Only after production behavior is correct, update the rejected focused expectation and any source-proven affected owner test; run canonical full build, nearest owner/reader boundary, fresh real-target comparison on the sealed basis through the authorized QA workflow, independent Supervisor re-review, detect-changes, and isolated commit.
-  - Implementation Gate: P4-C remains accepted; REVIEW1 is retained as historical rejection and REVIEW2 accepts the repaired invariant. Fresh self graph and `E4-P4C2-DETECT1` are complete; Main must now verify exact staging and create isolated `E4-P4C2-COMMIT1`. Child 05 and later slices remain locked until the commit closes.
+  - Implementation Gate: closed at isolated commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; no P4-C2 gate may be reopened absent evidence invalidation.
   - Stop Conditions: Oracle Authoring stops before seal on source/hash/count/schema/provenance drift, forbidden input/context, target write, copied source, or any evidence-bearing `.tmp`/unapproved-path artifact. QA stops before comparison/acceptance on seal/source mismatch, failed/non-normal build or analyze, old/substituted output, target contamination, or any attempt to edit expected values.
   - Acceptance:
     - Source: `21/21` target definitions have correct direct export facts and access visibility remains independent.
@@ -370,13 +370,14 @@ Out of scope:
     - Actual-status rows refreshed: all Child 04 rows and Child 05 predecessor state.
   - Evidence Targets: durable source-only authoring bundle, seal identity/chronology, 21-entry target fact/projection comparison, 11 negative controls, durable QA run/boundary manifest, later Supervisor, change check, evidence commit.
   - Actual-status Update: transition the bounded target row to `correct` and append the successor handoff refresh.
-  - Commit Boundary: after later Supervisor `PASS`, commit only valid Anvien-side durable oracle/QA evidence and the authorized five-living-document refresh; never commit or depend on target artifacts or `.tmp` material.
+  - Commit Boundary: isolated commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27` contains the accepted two-file repair, five living documents, durable Oracle/QA lifecycle, Coder/Supervisor evidence and required P4-C2 provenance; no target or `.tmp` artifact is committed or required.
 
 - [ ] Pn-A: Run the Supervisor acceptance loop.
   - Goal: independently verify all five slices, source diff, build, real-boundary results, benchmark, target boundary, and evidence integrity.
   - Work Steps: invoke the Supervisor skill; return only rejected invariants to the owning slice; repeat until PASS or a documented blocker.
   - Implementation Gate: every P4 slice is complete or explicitly blocked.
   - Acceptance: `E4-PNA-REVIEW1` records Supervisor PASS or a precise blocker; no self-acceptance is used.
+  - Current State (2026-08-21): open after P4-C2 commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; exactly one visible aggregate Supervisor lane owns the next verdict. Pn-B/Pn-C and Child 05 remain locked.
 - [ ] Pn-B: Remove dead work created by this child.
   - Goal: leave no superseded fixture, debug output, failed evidence, duplicate report, or rejected approach.
   - Work Steps: inventory child-created artifacts, remove only dead child work, and obtain Supervisor review of cleanup.
