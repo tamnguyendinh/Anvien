@@ -33,13 +33,13 @@
 
 | Phase | Metric | Unit | Baseline | Latest | Final | Target | Delta | Evidence |
 |-------|--------|------|----------|--------|-------|--------|-------|----------|
-| P5-A | parsed-code corpus | files | 736 | 736 post-change | pending Supervisor | preserve the same source corpus | 0 | `E5-P5A-COUNT1` |
-| P5-A | physical target-file resolutions (`resolution.ImportsResolved`) | absolute count | 5,072 | 5,072 post-change | pending Supervisor | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5D-COUNT1` |
-| P5-A | resolver-emitted syntactic `IMPORTS` (`resolution.FinalizedImportsEmitted`) | absolute count | 5,072 | 5,072 post-change | pending Supervisor | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5D-COUNT1` |
-| P5-A | final persisted graph-wide `IMPORTS` | absolute count | 5,088 | 5,088 post-change | pending Supervisor | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5D-COUNT1` |
-| P5-B | pre-implementation graph inventory | nodes / relationships | 114,852 / 157,754 | 114,852 / 157,754 | pending implementation | preserve graph refresh baseline for the same `736` parsed-code corpus until source changes | 0 / 0 | `E5-P5B-IMPACT1` |
-| P5-B | zero-physical barrel declarations | count | fixture not yet created | pending | pending | exactly 0 | pending | `E5-P5B-ZEROBARREL1` |
-| P5-B | zero-physical barrel export entries | count | no export table | pending | pending | exact non-zero fixture expectation | pending | `E5-P5B-ZEROBARREL1` |
+| P5-A | parsed-code corpus | files | 736 | 736 post-change | 736 accepted | preserve the same source corpus for fixed-corpus comparisons | 0 | `E5-P5A-COUNT1`, `E5-P5B-COUNT1` |
+| P5-A | physical target-file resolutions (`resolution.ImportsResolved`) | absolute count | 5,072 | 5,072 post-change | 5,072 accepted | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5B-COUNT1`, `E5-P5D-COUNT1` |
+| P5-A | resolver-emitted syntactic `IMPORTS` (`resolution.FinalizedImportsEmitted`) | absolute count | 5,072 | 5,072 post-change | 5,072 accepted | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5B-COUNT1`, `E5-P5D-COUNT1` |
+| P5-A | final persisted graph-wide `IMPORTS` | absolute count | 5,088 | 5,088 post-change | 5,088 accepted | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5B-COUNT1`, `E5-P5D-COUNT1` |
+| P5-B | full graph inventory | nodes / relationships | 114,852 / 157,754 pre-implementation | 115,099 / 158,118 post-build | 115,099 / 158,118 Supervisor-accepted | no unexplained loss; new source/test/report corpus is retained | +247 / +364 | `E5-P5B-IMPACT1`, `E5-P5B-BUILD1`, `E5-P5B-REVIEW1`, `E5-P5B-DETECT1` |
+| P5-B | zero-physical barrel declarations | count | fixture not yet created | 0 | 0 | exactly 0 | 0 | `E5-P5B-ZEROBARREL1` |
+| P5-B | zero-physical barrel export surface | explicit keys / star adjacency | no export table | 2 / 1 | 2 / 1 | exact non-zero fixture expectation without implicit default | +2 / +1 | `E5-P5B-ZEROBARREL1` |
 | P5-C | named traversal vectors | passed/total | no accepted implementation | pending | pending | 100% of accepted alias/star/namespace/meaning/cycle/ambiguity vectors | pending | `E5-P5C-PROOF1`, `E5-P5C-TEST1` |
 | P5-C | explicit-import global-name rescues | count | current branch exists; exact fixture count pending | pending | pending | 0 | pending | `E5-P5C-NOGLOBAL1` |
 | P5-D | direct/barrel terminal equality | equal/expected pairs | 0/2 | 0/2 | pending | 2/2 | pending | `E5-P5D-TARGET1`, `E5-P5D-ORACLE1` |
@@ -64,4 +64,5 @@ Capture these only if the accepted P5 implementation changes the measured system
 ## Non-Benchmarkable Notes
 
 - P0 authority classification, file ownership, Supervisor review, cleanup, detect-changes, and commits are evidence gates rather than benchmark measurements.
+- `E5-P5B-DETECT1` is recorded as an evidence-only gate: the fresh graph had `115,134` nodes / `158,153` relationships; detect-changes reported `18` changed symbols across `5` changed files and `1` affected process, with `risk_level=medium` and `fileLayer.changedFileRisk=high`. These figures are not substituted for the fixed-corpus or full-build measurements above.
 - Declaration-universe and unrelated command/reader metrics belong to their owning children, not Child 05.

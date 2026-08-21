@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / P5-A committed at 2560f914 / P5-B open / P5-C+ locked`
+- Status: `P0 complete / P5-A committed at 2560f914 / P5-B Supervisor PASS, detect recorded, commit pending / P5-C+ locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -191,7 +191,7 @@ Out of scope:
   - Completion Record: Supervisor PASS `E5-P5A-REVIEW1`; detect-changes PASS `E5-P5A-DETECT1`; isolated commit `2560f914334e65961f755febdda6585840a4260e`.
 
 - [ ] P5-B: Build export tables from accepted export facts.
-  - State: `PRE_IMPLEMENTATION_READY / READY_FOR_MAIN_AUTHORIZATION` after P5-A commit `2560f914334e65961f755febdda6585840a4260e`; P5-C/P5-D and target remain locked.
+  - State: `SUPERVISOR PASS / DETECT RECORDED / COMMIT PENDING` after P5-A commit `2560f914334e65961f755febdda6585840a4260e`; P5-C/P5-D and target remain locked.
   - Goal: represent each repository module's syntax-derived export surface without treating physical definitions as implicit exports.
   - Scope Boundary:
     - Editable: new dedicated semantic owner `internal/resolution/export_tables.go`, plus minimal storage and wiring in `internal/resolution/indexes.go` (`workspace` and `buildWorkspace`) selected by fresh graph/source evidence.
@@ -225,7 +225,7 @@ Out of scope:
        - Render location check: evidence/benchmark ledgers.
        - Mini QA: inspect actual table output from the built resolver path.
        - Evidence target: `E5-P5B-BUILD1`, `E5-P5B-TEST1`, `E5-P5B-COUNT1`, `E5-P5B-REVIEW1`, `E5-P5B-DETECT1`, `E5-P5B-COMMIT1`.
-  - Implementation Gate: P5-A and Child 04 facts are accepted; the durable inventory report `E:\Anvien\reports\coder\rp_coder_260821_185542_by_gpt-5_child05_p5b_pre_implementation_ready.md` records the exact owner, CRITICAL blast radius, and E-only boundary; no production edit starts until Main authorizes this bounded owner set.
+  - Implementation Gate: satisfied. P5-A and Child 04 facts are accepted; the durable inventory report `E:\Anvien\reports\coder\rp_coder_260821_185542_by_gpt-5_child05_p5b_pre_implementation_ready.md` recorded the exact owner, CRITICAL blast radius, and E-only boundary before code; the authorized implementation has Supervisor PASS, while detect/commit remain Main-owned pending gates.
   - Acceptance:
     - Source: export tables are deterministic and derived only from accepted syntax facts.
     - Runtime/UI: built resolver table boundary passes; UI is N/A.
@@ -237,6 +237,7 @@ Out of scope:
   - Evidence Targets: source/table trace, fixture result, counts, tests, build, Supervisor, detect, commit.
   - Actual-status Update: export surface `missing -> correct`.
   - Commit Boundary: commit P5-B alone after acceptance.
+  - Completion Record: Supervisor PASS `E5-P5B-REVIEW1`; `anvien detect-changes --repo E:\Anvien --scope all` exit `0` recorded as `E5-P5B-DETECT1`; exact manifest staging and isolated P5-B commit remain pending.
 
 - [ ] P5-C: Resolve aliases, re-exports, stars, cycles, ambiguity, and meanings.
   - Goal: resolve one requested export to a terminal repository Symbol or an explicit unresolved result with complete proof and no global-name rescue.

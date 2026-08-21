@@ -61,6 +61,7 @@ type workspace struct {
 	ownerMembers            map[string]map[string][]defRef
 	imports                 []resolvedImport
 	importsByReceiver       map[importReceiverKey][]int
+	exportTables            exportTables
 	heritage                []heritageResolution
 	heritageFacts           int
 	unresolvedHeritage      int
@@ -171,6 +172,7 @@ func buildWorkspace(files []scopeir.ScopeIR) (*workspace, error) {
 	}
 
 	w.resolveImports()
+	w.buildExportTables()
 	w.resolveHeritage()
 	w.enrichCallReturnTypeBindings()
 	w.sort()
