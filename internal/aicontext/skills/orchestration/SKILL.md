@@ -85,7 +85,7 @@ Do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, s
 
 ## 2. Session Classification
 
-### Separate sessions, visible to the user
+### Separate sessions subagents, visible to the user
 
 **Mandatory for:**
 
