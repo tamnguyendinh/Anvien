@@ -47,6 +47,8 @@ Do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, s
 * do not arbitrarily change the Supervisor;
 * do not open the next phase when the previous gate has not closed;
 * do not resume a session after a pause if the user has not permitted it.
+* Main may load every skill needed to understand and coordinate the campaign. Skill is capability/knowledge; it does not change Main's role, ownership, authority, or boundary and does not make Main the worker for that skill. Decide actions from lane ownership and authority, not from the skill name.
+* Main is not a worker. Main must understand unified campaign reality, design/govern visible lanes, monitor actual commands/files/scope, block deviations immediately, receive durable handoffs, perform only Main-owned identity/boundary transition checks, and advance the plan. Main does not author/repair oracle, QA, code, plan outcomes, or acceptance verdicts.
 
 ### Monitoring subagent sessions:
 
