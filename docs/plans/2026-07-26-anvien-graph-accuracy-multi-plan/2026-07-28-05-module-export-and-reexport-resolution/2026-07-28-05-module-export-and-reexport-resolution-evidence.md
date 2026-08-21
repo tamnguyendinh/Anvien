@@ -185,6 +185,12 @@ Pre-implementation inventory artifact: `reports/coder/rp_coder_260821_232052_by_
 - `E5-PNA-LEDGER1` — recorded candidate: planner-owned correction is limited to the four living ledgers. It records the missing P5-A commit manifest, reconciles P5-D current-state text with R15-R17, closes the two benchmark cells from `E5-PNA-MEASURE1`, and records the initial Pn-A REJECT while leaving Pn-A unchecked. Exact four-file hashes and diff are supplied to the existing Supervisor lane for reject-only re-review.
 - `E5-PNA-REVIEW2` — recorded: existing E-only Supervisor reject-only report `reports/Supervisor/rp_supervisor_260822_023256_by_gpt-5_child05_pna_ledger_closure_resubmission_pass.md`, `8,542` bytes / `137` LF / `0` CR / strict UTF-8 without BOM / SHA-256 `1A11CCF1AA5279E03F0FF06B0E057EB2BFB4267F661496788828CB6BF46E3C68`, verdict `PASS`. It independently reproduces the P5-A commit manifest and final CALLS/ACCESSES measurement, verifies all current-state ledger surfaces and locks, and reports no residual same-invariant surface.
 
+### Pn-B - Exact Child 05 dead-work cleanup
+
+- `E5-PNB-CLEAN1` — recorded: Coder handoff `reports/coder/rp_coder_260822_024606_by_gpt-5_child05_pnb_cleanup_ready_for_supervisor.md`, `14,783` bytes / `225` LF / `0` CR / strict UTF-8 without BOM / SHA-256 `15DA59857DE9C401C67D5CD9C65726C13554F33C40EF13BD3C2BDAD6C4DEBCB1`, inventories all accepted Child 05 production/test/ledger/report history plus the complete top-level P5 `.tmp` set. It deleted only `.tmp/p5c-impact-resolveImportedDef-20260821.json`, a `206`-byte failed `workspace.resolveImportedDef` capture with SHA-256 `89AA3C1800A5762466D5C13EB09C0E8B98BC8C22730D002553CBA855E9D83DB7`, `impactedCount=0`, and `risk=UNKNOWN`; the accepted replacement impact is HIGH `19/12/1/3` in `E5-P5C-IMPACT1`.
+- `E5-PNB-CLEAN1` — retention/boundary proof: the remaining seven top-level P5 temp artifacts retain exact hashes `293458E2...E0BD`, `7687C519...961A`, `7E159E2B...0C6F`, `6E76B5CA...1927`, `C3015F6D...3F39`, `0D17D70E...FC63`, and `3AE1C293...13C5`; current and historical tracked searches find no basename/hash/error reference for the deleted capture; index and tracked diff are empty; exactly fifteen protected Main handoffs remain untracked and untouched. No source, test, fixture, ledger, accepted report, build output, graph, config, or target surface changed.
+- `E5-PNB-CLEAN1` — Supervisor PASS: `reports/Supervisor/rp_supervisor_260822_025711_by_gpt-5_child05_pnb_cleanup_acceptance_pass.md`, `10,145` bytes / `130` LF / `0` CR / strict UTF-8 without BOM / SHA-256 `E98B199011AAF2795F2C115296B7318230C52D1E7D67E6451CE01FB6B2889B6D`, independently verifies the exact deletion, replacement/reference provenance, seven retained artifact identities, accepted source/test/fixture/ledger/report history, clean Git boundary, and downstream locks. Verdict `PASS`; residual same-invariant surfaces none. Build/test/analyze/detect/target gates were intentionally not rerun because behavior bytes did not change.
+
 ## Closure Evidence
 
 | Evidence ID | Required proof | Status |
@@ -193,7 +199,7 @@ Pre-implementation inventory artifact: `reports/coder/rp_coder_260821_232052_by_
 | `E5-PNA-MEASURE1` | bounded final generic-Evidence conservation measurement on the existing E graph artifact | recorded — CALLS `11,553 / 11,553`; ACCESSES `6,067 / 6,067`; generic-first violations `0` |
 | `E5-PNA-LEDGER1` | exact four-ledger correction for the `E5-PNA-REVIEW1` blocker | recorded and accepted by `E5-PNA-REVIEW2` |
 | `E5-PNA-REVIEW2` | reject-only Supervisor verdict on the corrected living-ledger/evidence-closure invariant | recorded — `PASS`; Pn-A closed, Pn-B open |
-| `E5-PNB-CLEAN1` | dead-work inventory, removal result, final diff, and Supervisor confirmation | pending |
-| `E5-PNC-DETECT1` | final detect-changes evidence after accepted cleanup | pending |
-| `E5-PNC-COMMITS1` | ordered P5-A/P5-B/P5-C/P5-D commit hashes and worktree ownership | pending |
+| `E5-PNB-CLEAN1` | dead-work inventory, exact removal, retained artifacts, final boundary, and Supervisor confirmation | recorded — one failed/unreferenced debug capture removed; seven P5 temp artifacts retained; Supervisor `PASS`; residual none |
+| `E5-PNC-CLOSE1` | living Child 05 plan declared CLOSED | pending |
+| `E5-PNC-COMMIT1` | exact living-plan closure commit | pending |
 | `E5-PNC-HANDOFF1` | exact accepted facts/results supplied to Child 06 and its refreshed opening status | pending |
