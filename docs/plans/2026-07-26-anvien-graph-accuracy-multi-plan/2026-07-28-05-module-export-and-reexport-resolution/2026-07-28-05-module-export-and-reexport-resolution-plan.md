@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / P5-A committed at 2560f914 / P5-B committed at c1559df9 / P5-C Supervisor PASS and detect recorded, commit pending / P5-D+ locked`
+- Status: `P0 complete / P5-A committed at 2560f914 / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D open`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -239,8 +239,8 @@ Out of scope:
   - Commit Boundary: commit P5-B alone after acceptance.
   - Completion Record: Supervisor PASS `E5-P5B-REVIEW1`; `anvien detect-changes --repo E:\Anvien --scope all` exit `0` recorded as `E5-P5B-DETECT1`; exact 11-path manifest was staged and committed as `c1559df953a277b099009f8489576d00ed25aa58`, recorded as `E5-P5B-COMMIT1`.
 
-- [ ] P5-C: Resolve aliases, re-exports, stars, cycles, ambiguity, and meanings.
-  - State: `SUPERVISOR PASS / DETECT RECORDED / COMMIT PENDING` after one source-backed REJECT and exact reject-only repair; P5-B predecessor is `c1559df953a277b099009f8489576d00ed25aa58`; P5-D and target remain locked.
+- [x] P5-C: Resolve aliases, re-exports, stars, cycles, ambiguity, and meanings.
+  - State: `SUPERVISOR PASS / DETECT RECORDED / COMMITTED` at isolated commit `76899d45a21fce55f6328b4cb30a6a5cb8719a81` after one source-backed REJECT and exact reject-only repair; P5-D is now the sole open slice, while target action remains gated by P5-D inventory and work-step authority.
   - Goal: resolve one requested export to a terminal repository Symbol or an explicit unresolved result with complete proof and no global-name rescue.
   - Scope Boundary:
     - Editable: new dedicated semantic owner `internal/resolution/export_resolution.go` for deterministic proof-bearing export lookup; `internal/resolution/indexes.go` only at `resolveImports`, `resolveImportedDef`, and `resolveImportedMember` plus removal of the now-redundant standalone `buildExportTables` call; `internal/resolution/resolve.go` only at `resolveCall` for an explicit-import-failure guard. Focused test owners are selected after production code and may include new `internal/resolution/export_resolution_test.go` plus bounded additions to existing resolver tests.
@@ -287,9 +287,10 @@ Out of scope:
   - Evidence Targets: impact, source diff, proof vectors, behavior tests, build, regression, Supervisor, detect, commit.
   - Actual-status Update: re-export lookup `wrong -> correct`; terminal graph binding remains pending.
   - Commit Boundary: commit P5-C alone after acceptance.
-  - Completion Record: Supervisor PASS is recorded as `E5-P5C-REVIEW1`; exactly one fresh analyze and full detect result are recorded as `E5-P5C-DETECT1`; only `E5-P5C-COMMIT1` remains pending, so this checklist item intentionally remains unchecked and P5-D is not open.
+  - Completion Record: Supervisor PASS is recorded as `E5-P5C-REVIEW1`; exactly one fresh analyze and full detect result are recorded as `E5-P5C-DETECT1`; exact 12-path manifest was staged and committed as `76899d45a21fce55f6328b4cb30a6a5cb8719a81`, recorded as `E5-P5C-COMMIT1`.
 
 - [ ] P5-D: Emit terminal bindings and prove the target calls.
+  - State: `OPEN AFTER P5-C COMMIT 76899d45a21fce55f6328b4cb30a6a5cb8719a81`; no fresh P5-D graph/impact inventory or target baseline exists yet.
   - Goal: bind source calls/uses to P5-C terminal Symbols while preserving source-written module dependencies and proof.
   - Scope Boundary:
     - Editable: only call/use emission and affected projection owners identified by fresh impact and Child 02 inventory.
@@ -323,7 +324,7 @@ Out of scope:
        - Render location check: official evidence under Anvien.
        - Mini QA: run real target query/file-detail/graph inspection and visually inspect any affected UI result.
        - Evidence target: `E5-P5D-TARGET1`, `E5-P5D-ORACLE1`, `E5-P5D-BOUNDARY1`, `E5-P5D-COUNT1`, `E5-P5D-REVIEW1`, `E5-P5D-DETECT1`, `E5-P5D-COMMIT1`.
-  - Implementation Gate: P5-A/B/C accepted; full build passes; affected persistence/readers are identified rather than assumed; target baseline is captured.
+  - Implementation Gate: P5-A/B/C are accepted and P5-C is committed at `76899d45a21fce55f6328b4cb30a6a5cb8719a81`; before production edits, refresh graph/file-detail/upstream impact and identify affected persistence/readers rather than assuming them; capture the target baseline only at the authorized P5-D target work step.
   - Acceptance:
     - Source: call/use emission consumes P5-C terminal results and preserves syntactic dependencies.
     - Runtime/UI: target calls resolve `2/2`; affected runtime surfaces show the same terminal result; UI is conditional.
