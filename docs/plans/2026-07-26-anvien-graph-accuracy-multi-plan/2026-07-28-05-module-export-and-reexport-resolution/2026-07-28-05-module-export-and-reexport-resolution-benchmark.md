@@ -81,4 +81,5 @@ Capture these only if the accepted P5 implementation changes the measured system
 - `E5-P5D-COMMIT1` is an evidence-only closure gate for isolated commit `bb4cf46509716259c3bf24a1ca041a6e763d5419`; it adds no separate product performance or capacity measurement.
 - `E5-PNA-REVIEW1`, `E5-PNA-LEDGER1`, and `E5-PNA-REVIEW2` are evidence-only reject/repair/PASS gates. `E5-PNA-MEASURE1` supplies the final graph inventory counts already recorded in B5; the review verdict itself adds no product performance measurement.
 - `E5-PNB-CLEAN1` is an evidence-only artifact-hygiene gate: one failed `206`-byte debug capture was removed and seven traceability-bearing P5 temp artifacts were retained. It changes no product/runtime performance, capacity, package size, or graph inventory metric.
+- `E5-PNC-CLOSE1`, `E5-PNC-COMMIT1`, and `E5-PNC-HANDOFF1` are docs-only closure/commit/handoff evidence. They add no product/runtime measurement and intentionally trigger no graph, build, test, QA, or target measurement.
 - Declaration-universe and unrelated command/reader metrics belong to their owning children, not Child 05.

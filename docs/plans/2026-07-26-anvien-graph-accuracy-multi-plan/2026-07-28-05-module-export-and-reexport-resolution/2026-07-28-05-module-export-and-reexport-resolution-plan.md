@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / P5-A committed at 2560f914 / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D committed at bb4cf465 / Pn-A Supervisor PASS / Pn-B Supervisor PASS / Pn-C open`
+- Status: `CLOSED / P5-A 2560f914 / P5-B c1559df9 / P5-C 76899d45 / P5-D bb4cf465 / Pn-A Supervisor PASS / Pn-B committed at fcc44334 / Pn-C CLOSED`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -339,7 +339,7 @@ Out of scope:
   - Completion Record: Supervisor PASS `E5-P5D-REVIEW1`; fresh detect `E5-P5D-DETECT1`; exact 15-path isolated commit `bb4cf46509716259c3bf24a1ca041a6e763d5419` recorded as `E5-P5D-COMMIT1`. Pn-A is now the sole open item.
 
 - [x] Pn-A: Call Supervisor for Child 05 acceptance.
-  - State: `INITIAL SUPERVISOR REJECT / LEDGER-ONLY REPAIR / REJECT-ONLY SUPERVISOR PASS`. Pn-A is closed; Pn-B has since passed; Pn-C is the sole open docs-only closure item. Child 06 and target action remain locked.
+  - State: `INITIAL SUPERVISOR REJECT / LEDGER-ONLY REPAIR / REJECT-ONLY SUPERVISOR PASS`. Pn-A is closed; Pn-B and Pn-C have since closed. No Child 05 item remains open.
   - Goal: independently verify all four slices, source diff, runtime evidence, target boundary, ledgers, and commits.
   - Work Steps:
     1. Run the Supervisor review over the complete Child 05 scope.
@@ -351,25 +351,26 @@ Out of scope:
   - Completion Record: `E5-PNA-REVIEW2` records reject-only Supervisor PASS at `reports/Supervisor/rp_supervisor_260822_023256_by_gpt-5_child05_pna_ledger_closure_resubmission_pass.md`, `8,542` bytes / `137` LF / SHA-256 `1A11CCF1AA5279E03F0FF06B0E057EB2BFB4267F661496788828CB6BF46E3C68`; residual same-invariant surfaces are none.
 
 - [x] Pn-B: Remove dead work created by Child 05.
-  - State: `SUPERVISOR PASS`. Cleanup removed exactly one failed, unreferenced Child 05 debug capture; all accepted and traceability-bearing artifacts were preserved. Pn-C is now open; Child 06 and target action remain locked.
+  - State: `SUPERVISOR PASS / COMMITTED`. Cleanup removed exactly one failed, unreferenced Child 05 debug capture; all accepted and traceability-bearing artifacts were preserved. The exact six-path cleanup/docs/report slice is committed at `fcc44334c0f75b3b19046dc8f9f4de40eb459fa9`.
   - Goal: retain only accepted production, test, fixture, evidence, and ledger artifacts.
   - Work Steps:
     1. Identify failed, duplicate, superseded, or unused Child 05 artifacts.
     2. Remove only those artifacts, verify the final diff, and obtain Supervisor confirmation.
   - Implementation Gate: do not remove pre-existing user work or artifacts owned by another child.
   - Acceptance: `E5-PNB-CLEAN1` records the complete inventory, exact deletion, seven retained P5 temp artifacts, clean tracked/index boundary, and independent Supervisor PASS.
-  - Completion Record: Coder handoff `reports/coder/rp_coder_260822_024606_by_gpt-5_child05_pnb_cleanup_ready_for_supervisor.md`, SHA-256 `15DA59857DE9C401C67D5CD9C65726C13554F33C40EF13BD3C2BDAD6C4DEBCB1`; Supervisor PASS `reports/Supervisor/rp_supervisor_260822_025711_by_gpt-5_child05_pnb_cleanup_acceptance_pass.md`, SHA-256 `E98B199011AAF2795F2C115296B7318230C52D1E7D67E6451CE01FB6B2889B6D`; residual same-invariant surfaces none.
+  - Completion Record: Coder handoff `reports/coder/rp_coder_260822_024606_by_gpt-5_child05_pnb_cleanup_ready_for_supervisor.md`, SHA-256 `15DA59857DE9C401C67D5CD9C65726C13554F33C40EF13BD3C2BDAD6C4DEBCB1`; Supervisor PASS `reports/Supervisor/rp_supervisor_260822_025711_by_gpt-5_child05_pnb_cleanup_acceptance_pass.md`, SHA-256 `E98B199011AAF2795F2C115296B7318230C52D1E7D67E6451CE01FB6B2889B6D`; residual same-invariant surfaces none; exact six-path commit `fcc44334c0f75b3b19046dc8f9f4de40eb459fa9`.
 
-- [ ] Pn-C: Close and hand off Child 05.
-  - State: `OPEN / DOCS-ONLY CLOSURE`. This slice has exactly the three ordered actions below and must not create another gate.
+- [x] Pn-C: Close and hand off Child 05.
+  - State: `CLOSED / DOCS-ONLY CLOSURE`. The Child 05 plan is declared closed by this exact living-plan state; the closure commit and direct Child 06 handoff follow immediately without another gate.
   - Goal: close the current Child plan, commit that exact living-plan closure, and hand off the accepted boundary to Child 06.
   - Work Steps:
     1. Declare the current Child 05 plan `CLOSED` in the living plan set.
     2. Commit the exact living-plan closure immediately.
     3. Hand off the accepted Child 05 facts/results and opening boundary to Child 06.
-  - Implementation Gate: Pn-A and Pn-B have Supervisor PASS and the Pn-B cleanup/docs/report slice is committed.
-  - Acceptance: `E5-PNC-CLOSE1`, `E5-PNC-COMMIT1`, and `E5-PNC-HANDOFF1` record the exact closure, commit, and Child 06 handoff.
+  - Implementation Gate: satisfied — Pn-A and Pn-B have Supervisor PASS and the Pn-B cleanup/docs/report slice is committed at `fcc44334c0f75b3b19046dc8f9f4de40eb459fa9`.
+  - Acceptance: `E5-PNC-CLOSE1` is this exact closed four-ledger state; `E5-PNC-COMMIT1` is the immediate exact living-plan closure commit; `E5-PNC-HANDOFF1` is the immediate post-commit Child 06 transfer recorded by the successor opening.
   - Hard Boundary: no audit/build/test/analyze/detect/file-detail/impact/QA/target action, dedicated closure report, worker/Supervisor loop, or successor-plan work may be mixed into Pn-C.
+  - Completion Record: Child 05 is `CLOSED`; accepted implementation commits are `2560f914`, `c1559df9`, `76899d45`, and `bb4cf465`; Pn-A closure is `b68e738d`; Pn-B closure is `fcc44334`. The resulting exact four-ledger closure commit is the sole handoff anchor for Child 06.
 
 ## Risk Notes
 

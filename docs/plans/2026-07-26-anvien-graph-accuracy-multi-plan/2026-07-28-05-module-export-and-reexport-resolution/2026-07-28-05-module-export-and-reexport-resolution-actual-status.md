@@ -2,7 +2,7 @@
 
 Title: Anvien Module Export And Re-Export Resolution
 Date: 2026-07-28
-Status: P0 Complete / P5-A committed and accepted / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D committed at bb4cf465 / Pn-A Supervisor PASS / Pn-B Supervisor PASS / Pn-C open
+Status: CLOSED / P5-A 2560f914 / P5-B c1559df9 / P5-C 76899d45 / P5-D bb4cf465 / Pn-A b68e738d / Pn-B fcc44334 / Pn-C CLOSED
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -110,7 +110,8 @@ The 2026-08-10 P0 tuples remain historical. The P5-A graph was freshly rebuilt a
 | Affected persistence/readers | Graph JSON, Ladybug, MCP context, and MCP impact expose exact proof parity; no reader/schema/UI production edit was required | preserve exact four-reader parity | correct / Supervisor PASS | `4` affected readers; `0` field differences | `E5-P5D-PARITY1`, `E5-P5D-REVIEW1` | preserve reader production bytes |
 | Target boundary | target source/config/Git boundary stayed exact after the sole process-scoped analyze retry; both calls resolve to one terminal with complete proofs | preserve source/worktree and accepted `.anvien` evidence | correct / target accepted | `2/2` CALLS; `0` gaps; `2/2` chains; graph `93,562 / 127,516` | `E5-P5D-TARGET1`, `E5-P5D-ORACLE1`, `E5-P5D-BOUNDARY1`, `E5-P5D-COUNT1` | preserve sealed target evidence; no further target access or analyze |
 | Child 05 Pn-A acceptance | initial child-wide REJECT was limited to living-ledger closure; the exact four-ledger correction and bounded measurement now have reject-only Supervisor PASS | one coherent four-ledger state and reject-only Supervisor PASS | correct / Supervisor PASS | CALLS generic Evidence `11,553/11,553`; ACCESSES `6,067/6,067`; final Pn-A verdict `PASS` | `E5-PNA-REVIEW1`, `E5-PNA-MEASURE1`, `E5-PNA-LEDGER1`, `E5-PNA-REVIEW2` | Pn-A remains closed; do not reopen accepted gates |
-| Child 05 Pn-B cleanup | complete Child 05 artifact inventory removes one failed/unreferenced impact capture and preserves all accepted/history artifacts | exact dead-work deletion with accepted and traceability-bearing artifacts retained | correct / Supervisor PASS | `1` exact deletion; `7` retained top-level P5 temp artifacts; `0` tracked/index changes | `E5-PNB-CLEAN1` | Pn-B closed; open only docs-only Pn-C and keep Child 06/target locked until closure commit |
+| Child 05 Pn-B cleanup | complete Child 05 artifact inventory removes one failed/unreferenced impact capture and preserves all accepted/history artifacts | exact dead-work deletion with accepted and traceability-bearing artifacts retained | correct / Supervisor PASS / committed | `1` exact deletion; `7` retained top-level P5 temp artifacts; exact `6`-path commit | `E5-PNB-CLEAN1` | Pn-B closed at `fcc44334`; do not reopen |
+| Child 05 Pn-C closure | exact four-ledger state declares the Child closed after every prior item passed and committed | CLOSED plan with immediate exact closure commit and direct Child 06 handoff | correct / CLOSED | `4` living ledgers; `0` new behavior gates | `E5-PNC-CLOSE1`, `E5-PNC-COMMIT1`, `E5-PNC-HANDOFF1` | commit this exact closure state, then hand off Child 06 without another Child 05 edit |
 
 ## Status Refresh Log
 
@@ -137,6 +138,7 @@ The 2026-08-10 P0 tuples remain historical. The P5-A graph was freshly rebuilt a
 | R18 | 2026-08-22 | HEAD `831f4d73e27405835c01980859cae5ebd3c9e62b`; initial Pn-A REJECT report SHA-256 `E3E28E79...D0CB28`; existing post-detect graph SHA-256 `BBC0D53A...315B0` | reject-only living-ledger/evidence-closure repair; no production/test/runtime/target action | Pn-A `open -> REJECT ledger-only -> corrected candidate`; P5-A commit evidence recorded; P5-D current state reconciled; final CALLS/ACCESSES generic-Evidence values closed; Pn-A remains unchecked | `E5-PNA-REVIEW1`, `E5-PNA-MEASURE1`, `E5-PNA-LEDGER1` | resume only existing Supervisor for `E5-PNA-REVIEW2`; keep Pn-B/Pn-C/Child 06 and target action locked |
 | R19 | 2026-08-22 | same exact four-ledger candidate; reject-only Supervisor report SHA-256 `1A11CCF1...6E3C68` | Pn-A reject-only acceptance and Pn-B opening transition | Pn-A `REJECT repair candidate -> Supervisor PASS -> closed`; Pn-B `locked -> open`; Pn-C/Child 06/target stay locked | `E5-PNA-REVIEW2` | commit the exact docs/review slice, then resume only the existing E-only Coder for Pn-B cleanup inventory |
 | R20 | 2026-08-22 | HEAD `b68e738d64eebea65a045afbf0b12d94dd43cbf4`; Coder cleanup report SHA-256 `15DA5985...BCB1`; Supervisor PASS SHA-256 `E98B1990...9B6D` | exact Child 05 dead-work cleanup and independent acceptance | Pn-B `open -> one exact deletion -> Supervisor PASS -> closed`; seven P5 temp artifacts retained; tracked/index diff stays empty; Pn-C `locked -> open` | `E5-PNB-CLEAN1` | commit the exact Pn-B ledgers/reports slice, then execute only the three-action docs-only Pn-C invariant; Child 06/target stay locked until closure commit |
+| R21 | 2026-08-22 | Pn-B exact six-path commit `fcc44334c0f75b3b19046dc8f9f4de40eb459fa9`, parent `b68e738d64eebea65a045afbf0b12d94dd43cbf4`; index/tracked diff empty afterward | mandatory Pn-C three-action docs-only closure | Pn-B `Supervisor PASS -> committed`; Pn-C `open -> CLOSED`; no behavior/graph/target gate or report loop opened | `E5-PNB-CLEAN1`, `E5-PNC-CLOSE1`, `E5-PNC-COMMIT1`, `E5-PNC-HANDOFF1` | commit this exact four-ledger closure immediately, then transfer the accepted boundary directly to Child 06 |
 
 ## Phase Touch Map
 
@@ -178,7 +180,7 @@ source import -> module/file result -> export-table lookup -> retained terminal/
 
 Classification: path result, export table, terminal traversal, and proof retention/projection are `correct`, Supervisor-accepted, and committed.
 
-Allowed next action: execute only docs-only Pn-C closure after the exact Pn-B cleanup/docs/report commit; P5-D source/runtime/target work stays closed.
+Allowed next action: after the exact Pn-C closure commit, hand off the accepted boundary directly to Child 06; P5-D source/runtime/target work stays closed.
 
 Forbidden next action: change accepted path/table/traversal behavior, treat physical definitions as exports, or add schema/UI scope.
 
@@ -252,7 +254,7 @@ one accepted P5-C result
 
 Classification: terminal endpoint, proof retention/projection, coalescing conservation, and all four affected readers are `correct`, Supervisor-accepted, and committed.
 
-Allowed next action: preserve the accepted bytes and execute only docs-only Pn-C closure after the Pn-B commit; P5-D code, build, graph, target, and reader work remain closed.
+Allowed next action: preserve the accepted bytes and hand off Child 06 after the exact closure commit; P5-D code, build, graph, target, and reader work remain closed.
 
 Forbidden next action: change `graph.Evidence`, relationship columns, P5-C traversal, generic semantic-edge identity, reader/UI production, or target state under this authorization.
 
@@ -265,7 +267,8 @@ Forbidden next action: change `graph.Evidence`, relationship columns, P5-C trave
 | P5-C | final four-file implementation has Supervisor PASS, fresh detect, and isolated commit `76899d45a21fce55f6328b4cb30a6a5cb8719a81` | committed/accepted; preserve the P5-C source and proof invariants |
 | P5-D | exact eight-path candidate, Work Step 1/2 evidence, four-reader parity, target oracle, boundaries, Supervisor review, detect, and isolated commit all pass | committed at `bb4cf465`; preserve throughout closure |
 | Pn-A | initial child-wide Supervisor review rejected only ledger closure; the exact correction and measurement now have reject-only Supervisor PASS | closed by `E5-PNA-REVIEW2`; do not reopen |
-| Pn-B | one failed/unreferenced `206`-byte impact capture was deleted; seven traceability-bearing P5 temp artifacts and all accepted history remain exact; Supervisor PASS has residual none | closed by `E5-PNB-CLEAN1`; commit exact ledgers/reports and open only docs-only Pn-C |
+| Pn-B | one failed/unreferenced `206`-byte impact capture was deleted; seven traceability-bearing P5 temp artifacts and all accepted history remain exact; Supervisor PASS has residual none | closed and committed at `fcc44334`; do not reopen |
+| Pn-C | exact four-ledger living state declares Child 05 closed with no behavior gate or additional report loop | CLOSED; commit this exact state immediately, then hand off Child 06 |
 
 ## Implementation Gate
 
@@ -295,6 +298,8 @@ Forbidden next action: change `graph.Evidence`, relationship columns, P5-C trave
 - [x] Planner-owned reject-only correction records `E5-P5A-COMMIT1`, reconciles P5-D current truth, and closes the final generic-Evidence benchmark values as `E5-PNA-LEDGER1` and `E5-PNA-MEASURE1` without rerunning accepted gates.
 - [x] Reject-only Supervisor report `E5-PNA-REVIEW2` accepts the corrected ledger invariant with no residual same-invariant surface; Pn-A is closed and only Pn-B opens.
 - [x] `E5-PNB-CLEAN1` records the exact failed-debug deletion, seven retained P5 temp artifacts, clean tracked/index boundary, and independent Supervisor PASS; Pn-B is closed and only docs-only Pn-C opens.
+- [x] Pn-B exact six-path cleanup/docs/report slice is committed at `fcc44334c0f75b3b19046dc8f9f4de40eb459fa9`.
+- [x] `E5-PNC-CLOSE1` declares Child 05 `CLOSED`; `E5-PNC-COMMIT1` and `E5-PNC-HANDOFF1` are executed immediately as the closure commit and successor transfer, without another Child 05 gate.
 
 ## Final P0 Decision
 
@@ -308,4 +313,4 @@ Choose one:
 
 Decision note:
 
-Child 04 is closed at `0aa49c87628c9e8b2041754515d6ebf0a930d55b`. P5-A, P5-B, P5-C, and P5-D are Supervisor-accepted and committed at `2560f914334e65961f755febdda6585840a4260e`, `c1559df953a277b099009f8489576d00ed25aa58`, `76899d45a21fce55f6328b4cb30a6a5cb8719a81`, and `bb4cf46509716259c3bf24a1ca041a6e763d5419`. Pn-A is closed by `E5-PNA-REVIEW2`. Pn-B is closed by `E5-PNB-CLEAN1` after one exact failed-debug deletion and independent Supervisor PASS. Only the three-action docs-only Pn-C closure is open; Child 06 and target action remain locked until the exact living-plan closure commit.
+Child 04 is closed at `0aa49c87628c9e8b2041754515d6ebf0a930d55b`. P5-A, P5-B, P5-C, and P5-D are Supervisor-accepted and committed at `2560f914334e65961f755febdda6585840a4260e`, `c1559df953a277b099009f8489576d00ed25aa58`, `76899d45a21fce55f6328b4cb30a6a5cb8719a81`, and `bb4cf46509716259c3bf24a1ca041a6e763d5419`. Pn-A is closed at `b68e738d`; Pn-B is closed and committed at `fcc44334`. Child 05 is now declared `CLOSED`; the only next action is the immediate exact four-ledger closure commit followed by direct Child 06 handoff. Child 05 and target evidence must not be reopened without actual invalidation.
