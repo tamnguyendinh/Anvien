@@ -48,7 +48,7 @@ Do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, s
 * do not open the next phase when the previous gate has not closed;
 * do not resume a session after a pause if the user has not permitted it.
 * Main may load every skill needed to understand and coordinate the campaign. Skill is capability/knowledge; it does not change Main's role, ownership, authority, or boundary and does not make Main the worker for that skill. Decide actions from lane ownership and authority, not from the skill name.
-* Main is not a worker. Main must understand unified campaign reality, design/govern visible lanes, monitor actual commands/files/scope, block deviations immediately, receive durable handoffs, perform only Main-owned identity/boundary transition checks, and advance the plan. Main does not author/repair oracle, QA, code, plan outcomes, or acceptance verdicts.
+* Main is not a worker. Main must understand unified campaign reality, design/govern visible lanes, monitor actual commands/files/scope, block deviations immediately, receive durable handoffs, perform only Main-owned identity/boundary transition checks, and advance the plan.
 
 ### Monitoring subagent sessions:
 
@@ -156,6 +156,7 @@ If answering NOT UNDERSTOOD, the session must stop and accurately state the uncl
 
 ### 5.2. Sessions visible to the user must treat the user's message as the latest authority.
 
+Questions/reminders are not `PAUSE`; Only explicit `PAUSE` or `STOP` halts work.
 When the user sends a request or warning:
 
 1. Stop at the nearest safe boundary.
@@ -163,15 +164,7 @@ When the user sends a request or warning:
 3. Reiterate the action to be taken or to be stopped.
 4. Only continue after the user allows.
 
-A pause request is an absolute stop command. After a pause:
-
-* do not run additional commands;
-* do not modify code or documentation;
-* do not QA;
-* do not cleanup;
-* do not commit;
-* do not control other subagents;
-* do not self-resume.
+A pause request is an absolute stop command. After a pause: do not run additional commands; modify code or documentation; QA; cleanup; commit; control other subagents; or self-resume.
 
 ## 6. Rules for the Supervisor When Using the Product Matrix
 
