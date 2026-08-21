@@ -1,0 +1,12 @@
+{
+  "command": "anvien analyze E:\\cheapapp.org --force",
+  "invocationCount": 1,
+  "workingDirectory": "E:\\Anvien",
+  "startedAt": "2026-08-21T11:42:35.3433673+07:00",
+  "endedAt": "2026-08-21T11:42:35.5130641+07:00",
+  "durationSeconds": 0.17,
+  "exitCode": 1,
+  "runtimeVersion": "1.2.8",
+  "resolvedCommand": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.ps1",
+  "runtimeSha256": "23D647FC27BDDE841EC3F94316A6BFA7ADA2F24E87BF15D236FB86743BD6E8C6"
+}

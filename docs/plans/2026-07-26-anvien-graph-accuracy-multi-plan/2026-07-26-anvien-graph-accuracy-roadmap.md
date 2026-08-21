@@ -2,7 +2,7 @@
 
 Date: 2026-07-26
 Last revised: 2026-08-21
-Status: active campaign; Child 01 P0/P1-A/P1-B/P1-C/P1-D/P1-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries; Child 02 P0-A/P2-A/P2-B/P2-C/P2-D/P2-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries and closed at `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`; Child 03 P0-A through P3-B2A retain their accepted isolated boundaries; P3-C closes at `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`; P3-C2 closes at `8784c6c21da842b188f136b95ec97ab8df9f20e8`; aggregate `E3-PNA-REVIEW1` and cleanup `E3-PNB-REVIEW1` are `PASS`; `E3-PNB-COMMIT1` is `0231d7f9cc7cfd05d8d5da4787161a8ec2cd1550`; Child 03 Pn-C closes at `3e25f9ca75c9cb7d59bf228e6cc9aa0b81d738b4`; Child 04 P0-A closes at `ff2467bb92f94a9c53c4de030685686700051a98`; P4-A closes at isolated commit `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43`; P4-B closes at isolated commit `11a37aa8ec0320dd93258c058b088d1070aa778d`; P4-B1 closes at isolated implementation commit `42d167aaf28446ac0b3de479a8afefabb8d06736` with `E4-P4B1-DETECT1` and `E4-P4B1-COMMIT1` recorded; P4-C closes at isolated commit `c99c4070b66e7a96be8c9fa2721a0335a1f94877` after Supervisor REVIEW1 and `E4-P4C-DETECT1` PASS; P4-C2 is now the sole open slice; Child 05 and later slices remain locked
+Status: active campaign; Child 01 P0/P1-A/P1-B/P1-C/P1-D/P1-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries; Child 02 P0-A/P2-A/P2-B/P2-C/P2-D/P2-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries and closed at `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`; Child 03 P0-A through P3-B2A retain their accepted isolated boundaries; P3-C closes at `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`; P3-C2 closes at `8784c6c21da842b188f136b95ec97ab8df9f20e8`; aggregate `E3-PNA-REVIEW1` and cleanup `E3-PNB-REVIEW1` are `PASS`; `E3-PNB-COMMIT1` is `0231d7f9cc7cfd05d8d5da4787161a8ec2cd1550`; Child 03 Pn-C closes at `3e25f9ca75c9cb7d59bf228e6cc9aa0b81d738b4`; Child 04 P0-A closes at `ff2467bb92f94a9c53c4de030685686700051a98`; P4-A closes at isolated commit `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43`; P4-B closes at isolated commit `11a37aa8ec0320dd93258c058b088d1070aa778d`; P4-B1 closes at isolated implementation commit `42d167aaf28446ac0b3de479a8afefabb8d06736` with `E4-P4B1-DETECT1` and `E4-P4B1-COMMIT1` recorded; P4-C closes at isolated commit `c99c4070b66e7a96be8c9fa2721a0335a1f94877` after Supervisor REVIEW1 and `E4-P4C-DETECT1` PASS; P4-C2 is the sole open slice; `E4-P4C2-ORACLE1` remains `SEALED`; fresh post-repair QA passes `21/21` positives, `11/11` negatives and `588/0` parity; `E4-P4C2-REVIEW2` and `E4-P4C2-DETECT1` are `PASS`; isolated commit remains open; Child 05 and later slices remain locked
 
 Multi-plan root: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/`
 
@@ -53,7 +53,7 @@ The report at `reports/problem/2026-07-26-tinh-chinh-cac-van-de-cua-anvien` is t
 | 01 | [graph identity contract and strict construction](2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md) | identity, range, lexical owner, occurrence conservation, proven collision owner | P0/P1-A/P1-B/P1-C/P1-D/P1-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries |
 | 02 | [current graph persistence and reader consistency](2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md) | persistence parity, affected readers, repeated normal analyze | P0-A/P2-A/P2-B/P2-C/P2-D/P2-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries; Pn-B commit `9b65f3ef3f3f377d0dcb4a9e0cd5eca444cf51c6`; Pn-C closure commit `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0` |
 | 03 | [TypeScript binding-pattern extraction](2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md) | binding-pattern defect only | all seven slices, aggregate review, cleanup, Pn-B commit, and Pn-C handoff/detect are closed at isolated Pn-C commit `3e25f9ca75c9cb7d59bf228e6cc9aa0b81d738b4` |
-| 04 | [TypeScript export semantics](2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md) | export-fact defect only | P0-A committed at `ff2467bb92f94a9c53c4de030685686700051a98`; P4-A committed at `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43`; P4-B committed at `11a37aa8ec0320dd93258c058b088d1070aa778d`; P4-B1 closes at `42d167aaf28446ac0b3de479a8afefabb8d06736` with Supervisor REVIEW3, detect, and commit evidence recorded; P4-C closes at `c99c4070b66e7a96be8c9fa2721a0335a1f94877` after REVIEW1/detect PASS; P4-C2 is open and Child 05 remains dependency-blocked |
+| 04 | [TypeScript export semantics](2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md) | export-fact defect only | P0-A committed at `ff2467bb92f94a9c53c4de030685686700051a98`; P4-A committed at `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43`; P4-B committed at `11a37aa8ec0320dd93258c058b088d1070aa778d`; P4-B1 closes at `42d167aaf28446ac0b3de479a8afefabb8d06736`; P4-C closes at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; P4-C2 repair, fresh target QA, independent REVIEW2 and Main-owned detect are `PASS`; isolated commit remains open; Child 05 remains dependency-blocked |
 | 05 | [module export and re-export resolution](2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md) | module/export resolution defect only | dependency-blocked |
 | 06 | [ambient/external resolution and diagnostics](2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-plan.md) | ambient/external defect only | dependency-blocked |
 | 07 | [cross-surface acceptance and target validation](2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-plan.md) | acceptance only; no production repair | dependency-blocked |
@@ -91,6 +91,7 @@ Each non-terminal Child closes only after its ledgers identify the accepted outp
 | `docs/contracts/graph-accuracy-contract.md` | Child 01 P1-A | all Children use the accepted invariants |
 | original problem report and target oracle | immutable evidence source | findings and target counts only; DRAFT design remains non-authoritative |
 | current-graph reader impact inventory | Child 02 P2-A | contains only source-proven affected readers and exact evidence |
+| `reports/QA/child04-p4c2/oracle/<oracle_id>/` source-only oracle bundle | clean-context P4-C2 Oracle Authoring lane; Main routes seal identities | born durable; exactly 21 positive + 11 negative rows; QA consumes read-only after seal verification; analyzer/QA output cannot author expected values |
 | module export table/result contract | Child 05 | Child 06 inspects; Child 07 validates |
 | structured external-resolution outcome | Child 06 | Child 07 validates |
 | campaign order and closure state | this roadmap | each Child updates only its own status/handoff row |
@@ -98,9 +99,10 @@ Each non-terminal Child closes only after its ledgers identify the accepted outp
 ## Target and repository boundary
 
 - Production and plan work occur in `E:\Anvien`.
-- `E:\cheapapp.org` is analyzed in place only by the validation slices that name it.
+- `E:\cheapapp.org` is source-inspected read-only by the clean P4-C2 Oracle Authoring lane, then analyzed in place only by the validation slices that name it after the durable oracle seal verifies.
 - Normal operational output for the target remains under its own `.anvien` directory.
 - Plan, report, fixture, QA, and Supervisor artifacts remain in `E:\Anvien`.
+- Every evidence-bearing P4-C2 artifact must originate directly under `reports/QA/child04-p4c2/...`; `.tmp` is disposable debug-only and no artifact born there may close an evidence ID or be restored/promoted/copied/renamed as evidence.
 - The target's pre-existing worktree is preserved.
 - The scanner defect involving eight omitted paths is not part of this campaign; the campaign must introduce no additional omission.
 
@@ -124,6 +126,7 @@ Each non-terminal Child closes only after its ledgers identify the accepted outp
 - each Child contains only its assigned semantic responsibility;
 - no document treats the initial analyze implementation as fixed or invents unproven write/reader behavior;
 - no active document treats the DRAFT architecture recommendations as approved source authority;
+- no active document treats `.tmp` as an oracle/evidence path, recovery source, promotion route, or reproducibility dependency;
 - link, forbidden-concept, slice, evidence, diff, fresh-analyze, and Supervisor gates all pass before production implementation opens.
 
 ## Child 03 Pn-B/Pn-C Closure Checkpoint
@@ -188,4 +191,28 @@ The campaign is complete only when all 35 implementation slices have their requi
 
 - `E4-P4C-COMMIT1` closes at isolated commit `c99c4070b66e7a96be8c9fa2721a0335a1f94877` (`feat(graph): project TypeScript export facts`), with the accepted 23-path boundary, post-commit HEAD match, `git diff --check` PASS, no push/reset/checkout, and no target access.
 - The commit contains the five refreshed Child 04 living ledgers, four production owners, four focused tests, seven owner test/golden updates, Coder/Supervisor reports, and the current `0819` Main handoff. Older `0631`/`0721` handoffs remain preserved untracked because their historical blank EOF lines would violate staged `git diff --check`; their bytes were not rewritten.
-- P4-C2 is now the sole open slice. Its independent 21-entry oracle and target pre-state gate must be established before target access; Child 05 and all later slices remain locked.
+- At the P4-C commit checkpoint, P4-C2 became the sole open slice and source-only Oracle Authoring was authorized for the three hash-pinned files before analyzer observation. The later Oracle/QA checkpoint below records that lifecycle as completed; Child 05 and all later slices remain locked.
+
+## Child 04 P4-C2 Oracle Lifecycle Checkpoint
+
+- P4-C2 remains the sole open slice. Source-only Oracle Authoring is authorized to inspect the three hash-pinned target source files while the target worktree remains preserve-only; this is ground-truth derivation, not analyzer validation.
+- The clean-context Oracle Authoring lane must not observe target `.anvien`, current Anvien implementation/tests/goldens, analyzer or QA output/reports, Child 05 state, or historical `.tmp` oracle material. It seals exactly 21 positive rows plus 11 owner-qualified negative controls before existing QA resumes.
+- Every oracle, raw capture, command stream, manifest, provenance record, expected-value input/output, benchmark, and reproducibility artifact is created directly under `reports/QA/child04-p4c2/...`. `.tmp` is debug-only and can never close an evidence ID or be promoted/restored as evidence.
+- Historical `.tmp\cheapapp-graph-root-cause-restart\p1b-identity-oracle-output.json` is an invalid-lifecycle debug capture, not an accepted or lost oracle. The QA oracle-gate and Recovery reports remain historical; their `.tmp` acceptance/recovery route is non-authoritative.
+- `E4-P4C2-ORACLE1` is `SEALED`: oracle ID `p4c2-oracle-v1-a869876ab626-260821_110849+0700`, bundle digest `7749AB14E02FBF61CF7F81B3A7638888F8AD414064F9F969CFED06EB11355439`, exactly `21+11` rows, and zero target writes/forbidden observations/evidence-bearing `.tmp` artifacts. The gate remains closed.
+
+## Child 04 P4-C2 QA Retry Checkpoint
+
+- Historical first QA run remains durably `BLOCKED` only on normal-process Git trust; its canonical full build PASS (`1.2.8`, `180.018s`) and preservation evidence remain closed and were not rerun.
+- Process-local trust retry preflight and exactly one `anvien analyze E:\cheapapp.org --force` PASS: exit `0`, `77.37s`, `1,359/887/0`, graph `94,422/125,299`; Graph JSON/Ladybug sizes are `432,028,037` / `150,351,872` bytes.
+- QA report `reports/QA/child04-p4c2/runs/p4c2-target-validation-retry-260821_115050+0700/p4c2-qa-retry-validation-report.md` is `11,342` bytes / `200` LF / SHA-256 `C831004F049A563A2387B599BE01C943F5B9416C72B1C45E50A8C1F9D2CEFDB4`; manifest run digest is `9F414A2C54C42F4E39AD8ED03DC042CCC3E1FB5993DA842B22F64851D16AABC4`.
+- QA is `READY_FOR_SUPERVISOR`, not an acceptance verdict: all `21/21` Export facts exist; `6/21` positive rows pass overall; `P001`–`P014` and `P018` fail only because exported TypeAlias definitions have `isExported=false` and FileContext `exported=false`; six Function rows and `11/11` negative controls pass.
+- Graph JSON↔Ladybug parity passes at `588/588` field comparisons with `0` differences, while semantic correctness fails for the same 15 compatibility values. Duplicate IDs, orphan endpoints/local definitions, export diagnostics, and forbidden Child 05 state are all `0`.
+- Target HEAD/source/status and four Git-config identities are preserved; only normal analyzer-owned `.anvien` output changed. Independent `E4-P4C2-REVIEW1` is `REJECT`: `reports/Supervisor/rp_supervisor_260821_123030_by_gpt-5_child04_p4c2_durable_retry_review1.md`, `15,671` bytes / `126` LF / canonical SHA-256 `8E37F4B126ABB38A5DCE071C35937F59D9152EFA135B9245408CA138BEC781F7`.
+- The rejected invariant is limited to definition-level direct-export compatibility and the downstream FileContext result for `P001`–`P014`,`P018`. Repair must derive direct source-export membership independently from runtime-value eligibility, preserve `typeOnly`/meaning/access separation, and keep negatives/parity/Child 05 exclusions intact. Child 05 remains locked.
+
+## Child 04 P4-C2 Rejection Repair and REVIEW2 Checkpoint
+
+- The exact two-file production-first repair passes canonical full build, focused rejection regression, resolution→FileContext→Ladybug boundary and all four affected packages. Fresh target QA runs exactly one normal analyze (`1,359/887/0`, graph `94,422/125,299`) and passes `21/21` positives, `11/11` negatives, FileContext `17/3/1`, Graph JSON↔Ladybug `588/0`, all integrity/Child 05 zeros and target/config preservation.
+- Independent `E4-P4C2-REVIEW2` is `PASS`: `reports/Supervisor/rp_supervisor_260821_133927_by_gpt-5_child04_p4c2_typealias_compatibility_review2.md`, `13,650` bytes / `120` LF / canonical SHA-256 `5B99A74B1A8D91D48F5E62F0BA1FFCB26317BF818AC6AE044E6CD650B208DC0B`. P4-C2 remains open only for Main-owned fresh graph, detect-changes and isolated commit; Child 05 stays locked.
+- `E4-P4C2-DETECT1` is `PASS` on fresh self graph `1,939/736/0`, `114,628/157,443`: `50` changed semantic units, exact `7/7` changed/affected tracked files, changed-file risk `HIGH`, overall risk `LOW`, `0` affected processes/flows, persisted resolution health `0/0/0`, and complete semantic fields. Only exact staging and `E4-P4C2-COMMIT1` remain open; Child 05 stays locked.

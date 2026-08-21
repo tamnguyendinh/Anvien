@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "p4c2.source-basis.v1",
+  "oracleId": "p4c2-oracle-v1-a869876ab626-260821_110849+0700",
+  "evidenceId": "E4-P4C2-ORACLE1",
+  "repository": {
+    "path": "E:\\cheapapp.org",
+    "head": "a869876ab6262dacde6cd5d432d099a91852a646",
+    "head12": "a869876ab626",
+    "branch": "master",
+    "trackedStatus": {
+      "format": "git status --porcelain=v1 --untracked-files=no",
+      "untrackedFilesIncluded": false,
+      "lineCount": 7,
+      "canonicalization": "UTF-8 lines joined by LF with a final LF",
+      "canonicalSha256": "FCB5AD9155C029FFA6B3D80B8AADD1EE40EDC3B408EA401992E8FEA048E4C5E1",
+      "lines": [
+        " M .dockerignore",
+        " M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png",
+        " M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png",
+        " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png",
+        " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png",
+        " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png",
+        " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png"
+      ]
+    }
+  },
+  "coordinateConvention": {
+    "base": 1,
+    "end": "exclusive",
+    "columnUnit": "source character",
+    "positiveRangeRule": "complete exported declaration",
+    "negativeRangeRule": "independently identified declaration occurrence",
+    "selectionRangeRule": "declaring identifier token"
+  },
+  "files": [
+    {
+      "path": "modules/email/server/operations/email-operations-observability.ts",
+      "byteCount": 19328,
+      "lineCount": 634,
+      "requiredSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+      "observedSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+      "hashMatched": true,
+      "positiveStartLineAnchors": [35, 48, 55, 61, 68, 76, 82, 91, 99, 101, 109, 118, 150, 158, 254, 438, 497],
+      "negativeStartLineAnchors": [190, 207, 214, 262, 501, 504, 505, 506, 507, 508, 509]
+    },
+    {
+      "path": "modules/release-distribution/server/release-distribution-publication-state.ts",
+      "byteCount": 405,
+      "lineCount": 17,
+      "requiredSha256": "B53F966F82AEDAC58EC15A892B9B71BA0A5716638703105BB35B126CB398D474",
+      "observedSha256": "B53F966F82AEDAC58EC15A892B9B71BA0A5716638703105BB35B126CB398D474",
+      "hashMatched": true,
+      "positiveStartLineAnchors": [1, 7, 13],
+      "negativeStartLineAnchors": []
+    },
+    {
+      "path": "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts",
+      "byteCount": 828,
+      "lineCount": 23,
+      "requiredSha256": "44467B1D6F1778AE4728B4941136321F7831D8FD67EBE2C93A430A3D132F90AC",
+      "observedSha256": "44467B1D6F1778AE4728B4941136321F7831D8FD67EBE2C93A430A3D132F90AC",
+      "hashMatched": true,
+      "positiveStartLineAnchors": [10],
+      "negativeStartLineAnchors": []
+    }
+  ],
+  "anchors": {
+    "positiveCount": 21,
+    "positive": [
+      { "rowId": "P001", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 35, "localName": "EmailOperationsMessageSignal" },
+      { "rowId": "P002", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 48, "localName": "EmailOperationsAttemptSignal" },
+      { "rowId": "P003", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 55, "localName": "EmailOperationsEventSignal" },
+      { "rowId": "P004", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 61, "localName": "EmailOperationsProviderEventSignal" },
+      { "rowId": "P005", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 68, "localName": "EmailOperationsReadinessSignal" },
+      { "rowId": "P006", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 76, "localName": "EmailOperationsSuppressionSignal" },
+      { "rowId": "P007", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 82, "localName": "EmailOperationsSnapshot" },
+      { "rowId": "P008", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 91, "localName": "EmailOperationsAlertCode" },
+      { "rowId": "P009", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 99, "localName": "EmailOperationsAlertSeverity" },
+      { "rowId": "P010", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 101, "localName": "EmailOperationsAlert" },
+      { "rowId": "P011", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 109, "localName": "EmailOperationsAlertThresholds" },
+      { "rowId": "P012", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 118, "localName": "EmailOperationsReport" },
+      { "rowId": "P013", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 150, "localName": "EmailOperationsReadOptions" },
+      { "rowId": "P014", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 158, "localName": "EmailOperationsLogOptions" },
+      { "rowId": "P015", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 254, "localName": "buildEmailOperationsReport" },
+      { "rowId": "P016", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 438, "localName": "emitEmailOperationsStructuredLogs" },
+      { "rowId": "P017", "path": "modules/email/server/operations/email-operations-observability.ts", "startLine": 497, "localName": "readEmailOperationsReport" },
+      { "rowId": "P018", "path": "modules/release-distribution/server/release-distribution-publication-state.ts", "startLine": 1, "localName": "ReleaseDistributionPublicationStatus" },
+      { "rowId": "P019", "path": "modules/release-distribution/server/release-distribution-publication-state.ts", "startLine": 7, "localName": "canPublishRelease" },
+      { "rowId": "P020", "path": "modules/release-distribution/server/release-distribution-publication-state.ts", "startLine": 13, "localName": "canRollbackRelease" },
+      { "rowId": "P021", "path": "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts", "startLine": 10, "localName": "readAdminCommercialConfig" }
+    ],
+    "negativeCount": 11,
+    "negative": [
+      { "rowId": "N001", "startLine": 190, "localName": "boundedReadLimit", "lexicalOwner": "<module>" },
+      { "rowId": "N002", "startLine": 207, "localName": "time", "lexicalOwner": "parseTime" },
+      { "rowId": "N003", "startLine": 214, "localName": "time", "lexicalOwner": "latestIso::values.reduce::<anonymous-callback@213:47>" },
+      { "rowId": "N004", "startLine": 262, "localName": "now", "lexicalOwner": "buildEmailOperationsReport" },
+      { "rowId": "N005", "startLine": 501, "localName": "now", "lexicalOwner": "readEmailOperationsReport" },
+      { "rowId": "N006", "startLine": 504, "localName": "messageRows", "lexicalOwner": "readEmailOperationsReport" },
+      { "rowId": "N007", "startLine": 505, "localName": "attemptRows", "lexicalOwner": "readEmailOperationsReport" },
+      { "rowId": "N008", "startLine": 506, "localName": "eventRows", "lexicalOwner": "readEmailOperationsReport" },
+      { "rowId": "N009", "startLine": 507, "localName": "providerEventRows", "lexicalOwner": "readEmailOperationsReport" },
+      { "rowId": "N010", "startLine": 508, "localName": "readinessRows", "lexicalOwner": "readEmailOperationsReport" },
+      { "rowId": "N011", "startLine": 509, "localName": "suppressionRows", "lexicalOwner": "readEmailOperationsReport" }
+    ]
+  },
+  "hashChecks": [
+    {
+      "phase": "before_source_read",
+      "head": "a869876ab6262dacde6cd5d432d099a91852a646",
+      "trackedStatusCanonicalSha256": "FCB5AD9155C029FFA6B3D80B8AADD1EE40EDC3B408EA401992E8FEA048E4C5E1",
+      "allRequiredSourceHashesMatched": true
+    },
+    {
+      "phase": "after_expected_value_authoring",
+      "checkedAt": "2026-08-21T11:15:14.541+07:00",
+      "head": "a869876ab6262dacde6cd5d432d099a91852a646",
+      "trackedStatusCanonicalSha256": "FCB5AD9155C029FFA6B3D80B8AADD1EE40EDC3B408EA401992E8FEA048E4C5E1",
+      "allRequiredSourceHashesMatched": true,
+      "headBranchStatusAndHashesMatchInitial": true
+    }
+  ]
+}

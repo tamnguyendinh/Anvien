@@ -1,0 +1,13 @@
+{
+  "cleanedAt": "2026-08-21T13:25:35.9058891+07:00",
+  "literalPath": "E:\\Anvien\\reports\\QA\\child04-p4c2\\runs\\p4c2-post-repair-validation-260821_131750+0700\\.go-tmp",
+  "resolvedPath": "E:\\Anvien\\reports\\QA\\child04-p4c2\\runs\\p4c2-post-repair-validation-260821_131750+0700\\.go-tmp",
+  "boundaryRoot": "E:\\Anvien\\reports\\QA\\child04-p4c2\\runs\\p4c2-post-repair-validation-260821_131750+0700",
+  "createdByThisLane": true,
+  "classification": "dead empty Go compiler temporary directory",
+  "childCountBeforeDelete": 0,
+  "recursive": false,
+  "wildcard": false,
+  "evidenceArtifactsRemoved": 0,
+  "removed": true
+}

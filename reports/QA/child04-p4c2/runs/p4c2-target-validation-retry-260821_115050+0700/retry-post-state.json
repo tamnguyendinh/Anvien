@@ -1,0 +1,62 @@
+{
+  "capturedAt": "2026-08-21T11:52:12.4022064+07:00",
+  "head": "a869876ab6262dacde6cd5d432d099a91852a646",
+  "branch": "master",
+  "trackedStatusLines": [
+    " M .dockerignore",
+    " M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png",
+    " M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png",
+    " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png",
+    " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png",
+    " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png",
+    " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png"
+  ],
+  "trackedStatusCanonicalSha256": "FCB5AD9155C029FFA6B3D80B8AADD1EE40EDC3B408EA401992E8FEA048E4C5E1",
+  "sourceFiles": [
+    {
+      "path": "modules/email/server/operations/email-operations-observability.ts",
+      "byteCount": 19328,
+      "sha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+      "preserved": true
+    },
+    {
+      "path": "modules/release-distribution/server/release-distribution-publication-state.ts",
+      "byteCount": 405,
+      "sha256": "B53F966F82AEDAC58EC15A892B9B71BA0A5716638703105BB35B126CB398D474",
+      "preserved": true
+    },
+    {
+      "path": "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts",
+      "byteCount": 828,
+      "sha256": "44467B1D6F1778AE4728B4941136321F7831D8FD67EBE2C93A430A3D132F90AC",
+      "preserved": true
+    }
+  ],
+  "anvienFiles": [
+    {
+      "path": ".anvien/graph.json",
+      "byteCount": 432028037,
+      "lastWriteTimeUtc": "2026-08-21T04:51:34.5934111Z",
+      "sha256": "BAF4A44E9212BA17D4A07290D7CC6EBF6817B9EEBCC96644D21347BA535F141F"
+    },
+    {
+      "path": ".anvien/lbug",
+      "byteCount": 150351872,
+      "lastWriteTimeUtc": "2026-08-21T04:51:27.6486072Z",
+      "sha256": "B388FCB33B22C1C4307D8BADB542041C53483CB702121B381572AAE7F4CE844D"
+    },
+    {
+      "path": ".anvien/meta.json",
+      "byteCount": 259,
+      "lastWriteTimeUtc": "2026-08-21T04:51:34.6851228Z",
+      "sha256": "D0AC8C46DB03363E7908198B2336B67B04C72822BEB1A827D6DBDA70DBFFC951"
+    },
+    {
+      "path": ".anvien/settings.json",
+      "byteCount": 31,
+      "lastWriteTimeUtc": "2026-07-14T03:57:29.5766494Z",
+      "sha256": "6C831C0AC49625D09EE54E76042612B92F47ABC47E4A90D1310F0EA45E824B3C"
+    }
+  ],
+  "sourceAndGitBoundaryPreserved": true
+}

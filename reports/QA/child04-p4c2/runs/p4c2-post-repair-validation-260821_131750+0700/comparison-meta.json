@@ -1,0 +1,20 @@
+{
+  "command": "go run -tags ladybugdb <read-only reusable validator>",
+  "startedAt": "2026-08-21T13:24:03.3450389+07:00",
+  "endedAt": "2026-08-21T13:24:12.0444951+07:00",
+  "durationSeconds": 8.699,
+  "exitCode": 0,
+  "validatorSha256": "387B0B8C9DBC87BEEFAA32E659B427AC938709E4C12F6BD7FF4F55A6386E0C00",
+  "graph": "E:\\cheapapp.org\\.anvien\\graph.json",
+  "ladybug": "E:\\cheapapp.org\\.anvien\\lbug",
+  "ladybugOpenMode": "read-only",
+  "historicalComparisonUsed": false,
+  "anvienAnalyzerOrQueryCommands": 0,
+  "compilerDependencyPath": "E:\\Anvien\\.tmp\\ladybug-native\\v0.19.1\\windows-x86_64",
+  "compilerDependencyIsEvidence": false,
+  "evidenceInputs": [
+    "E:\\Anvien\\reports\\QA\\child04-p4c2\\oracle\\p4c2-oracle-v1-a869876ab626-260821_110849+0700\\expected-values.json",
+    "E:\\cheapapp.org\\.anvien\\graph.json",
+    "E:\\cheapapp.org\\.anvien\\lbug"
+  ]
+}

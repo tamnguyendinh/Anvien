@@ -64,11 +64,19 @@
 | P4-C | normalized Graph JSON↔Ladybug field comparison | fields compared / differing fields | N/A before projection | 11,592 / 0 | 11,592 / 0 | 11,592 / 0 | +11,592 / 0 | `E4-P4C-REVIEW1`, `E4-P4C-COMMIT1` |
 | P4-C | fresh closure analyze inventory | scanned / parsed code / failed | 1,147 / 626 / 0 at successor basis | 1,857 / 735 / 0 | 1,857 / 735 / 0 | current clean basis | +710 / +109 / 0 | `E4-P4C-DETECT1`, `E4-P4C-COMMIT1` |
 | P4-C | fresh closure graph inventory | nodes / relationships | 82,087 / 121,788 at successor basis | 113,523 / 156,030 | 113,523 / 156,030 | current clean basis | +31,436 / +34,242 | `E4-P4C-DETECT1`, `E4-P4C-COMMIT1` |
-| P4-C2 | bounded target direct exports | correct / expected | 0/21 | pending | pending | 21/21 | pending | `E4-P4C2-TARGET1` |
-| P4-C2 | false-positive target negative controls | definitions | pending oracle | pending | pending | 0 | pending | `E4-P4C2-TARGET1` |
-| P4-C2 | target access/export conflations | records | pending oracle | pending | pending | 0 | pending | `E4-P4C2-TARGET1` |
+| P4-C2 | bounded target direct exports against sealed source-only oracle | correct / expected | 0/21 accepted baseline | 21/21 | 21/21 REVIEW2 PASS | 21/21 | +21 overall rows | `E4-P4C2-ORACLE1`, `E4-P4C2-TARGET1`, `E4-P4C2-REVIEW2` |
+| P4-C2 | owner-qualified target negative controls remaining non-exported | correct / expected; false positives | pending source-only oracle | 11/11; false positives 0 | 11/11; false positives 0 | 11/11; false positives 0 | N/A | `E4-P4C2-ORACLE1`, `E4-P4C2-TARGET1`, `E4-P4C2-REVIEW2` |
+| P4-C2 | target access/export conflations and Child 05-derived claims | records | pending source-only oracle | 0 / 0 | 0 / 0 REVIEW2 PASS | 0 / 0 | N/A | `E4-P4C2-TARGET1`, `E4-P4C2-BOUNDARY1`, `E4-P4C2-REVIEW2` |
+| P4-C2 | exported TypeAlias compatibility/affected-reader mismatches | definitions / expected TypeAlias rows | N/A at bounded baseline | 0/15 mismatched | 0/15 mismatched REVIEW2 PASS | 0/15 mismatched | -15 mismatches from REVIEW1 | `E4-P4C2-TARGET1`, `E4-P4C2-REVIEW2` |
+| P4-C2 | target retry analyze inventory | scanned / parsed / failed | N/A | 1,359 / 887 / 0 | 1,359 / 887 / 0 | one valid retry basis | N/A | `E4-P4C2-TARGET1` |
+| P4-C2 | target retry graph inventory | nodes / relationships | N/A | 94,422 / 125,299 | 94,422 / 125,299 | current retry basis | N/A | `E4-P4C2-TARGET1` |
+| P4-C2 | target persistence field parity | compared / differing fields | N/A | 588 / 0 | 588 / 0 REVIEW2 PASS | 588 / 0 | N/A | `E4-P4C2-TARGET1`, `E4-P4C2-BOUNDARY1`, `E4-P4C2-REVIEW2` |
+| P4-C2 | fresh target Graph JSON / Ladybug size | bytes / bytes | N/A | 432,026,884 / 150,355,968 | 432,026,884 / 150,355,968 | recorded capacity | N/A | `E4-P4C2-TARGET1` |
+| P4-C2 | fresh pre-commit self analyze inventory | scanned / parsed / failed | 1,917 / 736 / 0 at accepted repair build | 1,939 / 736 / 0 | 1,939 / 736 / 0 | current closure basis | +22 / 0 / 0 | `E4-P4C2-DETECT1` |
+| P4-C2 | fresh pre-commit self graph inventory | nodes / relationships | 114,546 / 157,361 at accepted repair build | 114,628 / 157,443 | 114,628 / 157,443 | current closure basis | +82 / +82 | `E4-P4C2-DETECT1` |
 
 ## Non-Benchmarkable Notes
 
 - Report/authority classification, file ownership, Supervisor verdicts, full-build results, detect-changes, and commits are evidence gates rather than benchmark metrics.
+- Oracle row count, provenance completeness, seal identity, durable-path compliance, and `.tmp` absence are evidence-integrity gates rather than product benchmarks; they close only through `E4-P4C2-ORACLE1` and later Supervisor review.
 - No complete module-resolution, public-API, or global TypeScript accuracy percentage is claimed by this child.

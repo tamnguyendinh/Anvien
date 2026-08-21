@@ -1,0 +1,11 @@
+{
+  "command": "go run -tags ladybugdb <retry-run>/validate_p4c2.go",
+  "startedAt": "2026-08-21T12:04:33.0971852+07:00",
+  "endedAt": "2026-08-21T12:04:43.1901042+07:00",
+  "durationSeconds": 10.093,
+  "exitCode": 1,
+  "graph": "E:\\cheapapp.org\\.anvien\\graph.json",
+  "ladybug": "E:\\cheapapp.org\\.anvien\\lbug",
+  "ladybugOpenMode": "read-only",
+  "anvienAnalyzerOrQueryCommands": 0
+}

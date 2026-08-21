@@ -1,0 +1,65 @@
+{
+  "capturedAt": "2026-08-21T11:52:12.4156107+07:00",
+  "pre": [
+    {
+      "path": "C:\\Program Files\\Git\\etc\\gitconfig",
+      "exists": true,
+      "byteCount": 401,
+      "lastWriteTimeUtc": "2026-05-14T11:37:03.8269292Z",
+      "sha256": "A2B169C777319A0611651F9BB21EE358CA8D63AACC965D068C0DDF205901C37A"
+    },
+    {
+      "path": "C:\\Users\\TAM NGUYEN\\.config\\git\\config",
+      "exists": false,
+      "byteCount": null,
+      "lastWriteTimeUtc": null,
+      "sha256": null
+    },
+    {
+      "path": "C:\\Users\\TAM NGUYEN\\.gitconfig",
+      "exists": true,
+      "byteCount": 281,
+      "lastWriteTimeUtc": "2026-08-15T10:07:12.0373250Z",
+      "sha256": "4D63B9AF3884B1F581131B53A1BC6D80986E5132E406C5D277B13052AD62BDDA"
+    },
+    {
+      "path": "E:\\cheapapp.org\\.git\\config",
+      "exists": true,
+      "byteCount": 173,
+      "lastWriteTimeUtc": "2026-05-14T14:14:35.3902386Z",
+      "sha256": "C4C9549C60B307CA8A7389A07A3963743F1D95FE9B0AA5FAD635D71026C5819C"
+    }
+  ],
+  "post": [
+    {
+      "path": "C:\\Program Files\\Git\\etc\\gitconfig",
+      "exists": true,
+      "byteCount": 401,
+      "lastWriteTimeUtc": "2026-05-14T11:37:03.8269292Z",
+      "sha256": "A2B169C777319A0611651F9BB21EE358CA8D63AACC965D068C0DDF205901C37A"
+    },
+    {
+      "path": "C:\\Users\\TAM NGUYEN\\.config\\git\\config",
+      "exists": false,
+      "byteCount": null,
+      "lastWriteTimeUtc": null,
+      "sha256": null
+    },
+    {
+      "path": "C:\\Users\\TAM NGUYEN\\.gitconfig",
+      "exists": true,
+      "byteCount": 281,
+      "lastWriteTimeUtc": "2026-08-15T10:07:12.0373250Z",
+      "sha256": "4D63B9AF3884B1F581131B53A1BC6D80986E5132E406C5D277B13052AD62BDDA"
+    },
+    {
+      "path": "E:\\cheapapp.org\\.git\\config",
+      "exists": true,
+      "byteCount": 173,
+      "lastWriteTimeUtc": "2026-05-14T14:14:35.3902386Z",
+      "sha256": "C4C9549C60B307CA8A7389A07A3963743F1D95FE9B0AA5FAD635D71026C5819C"
+    }
+  ],
+  "differenceCount": 0,
+  "configFilesUnchanged": true
+}

@@ -1,0 +1,20 @@
+{
+  "repoPath": "E:\\Anvien",
+  "storagePath": "E:\\Anvien\\.anvien",
+  "lockPath": "E:\\Anvien\\.anvien\\analyze.lock",
+  "status": "free",
+  "diagnosis": {
+    "info": {
+      "path": "E:\\Anvien\\.anvien\\analyze.lock",
+      "acquiredAt": "0001-01-01T00:00:00Z",
+      "modTime": "0001-01-01T00:00:00Z"
+    },
+    "exists": false,
+    "alive": false,
+    "stale": false,
+    "recoverable": false,
+    "foreignHost": false,
+    "age": 0,
+    "reason": "lock file does not exist"
+  }
+}

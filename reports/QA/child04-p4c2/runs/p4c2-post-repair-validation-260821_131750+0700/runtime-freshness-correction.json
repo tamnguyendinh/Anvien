@@ -1,0 +1,24 @@
+{
+  "capturedAt": "2026-08-21T13:20:11.2722504+07:00",
+  "originalFalseCause": "PowerShell [datetime] cast of ISO Z string converted to local wall-clock representation; DateTime comparison used mismatched wall-clock ticks",
+  "comparisonMethod": "DateTimeOffset constructed from filesystem LastWriteTimeUtc with explicit zero offset; compare UtcTicks",
+  "newestCandidate": {
+    "path": "internal/resolution/p4c_export_projection_test.go",
+    "lastWriteTimeUtc": "2026-08-21T05:55:06.0893001Z",
+    "utcTicks": 639228885060893001
+  },
+  "localRuntime": {
+    "path": "E:\\Anvien\\anvien\\bin\\anvien.exe",
+    "lastWriteTimeUtc": "2026-08-21T06:08:44.0155362Z",
+    "utcTicks": 639228893240155362,
+    "secondsAfterCandidate": 817.926
+  },
+  "globalRuntime": {
+    "path": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\anvien.exe",
+    "lastWriteTimeUtc": "2026-08-21T06:08:44.0155362Z",
+    "utcTicks": 639228893240155362,
+    "secondsAfterCandidate": 817.926
+  },
+  "builtAfterCandidate": true,
+  "combinedPreTargetGatePass": true
+}

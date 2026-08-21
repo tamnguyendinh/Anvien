@@ -1,0 +1,22 @@
+rowId	pass	definitionLabel	exportCount	graphRelations	ladybugRelations	compatExpected	compatActual	readerActual	failedFields
+P001	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P002	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P003	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P004	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P005	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P006	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P007	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P008	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P009	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P010	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P011	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P012	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P013	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P014	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P015	True	Function	1	1	1	True	True	True	
+P016	True	Function	1	1	1	True	True	True	
+P017	True	Function	1	1	1	True	True	True	
+P018	False	TypeAlias	1	1	1	True	False	False	compatibility.isExported,reader.exported
+P019	True	Function	1	1	1	True	True	True	
+P020	True	Function	1	1	1	True	True	True	
+P021	True	Function	1	1	1	True	True	True	

@@ -1,0 +1,163 @@
+{
+  "capturedAt": "2026-08-21T13:21:25.0064752+07:00",
+  "target": "E:\\cheapapp.org",
+  "head": "a869876ab6262dacde6cd5d432d099a91852a646",
+  "branch": "master",
+  "trackedStatusLines": [
+    " M .dockerignore",
+    " M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png",
+    " M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png",
+    " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png",
+    " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png",
+    " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png",
+    " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png"
+  ],
+  "trackedStatusCanonicalSha256": "FCB5AD9155C029FFA6B3D80B8AADD1EE40EDC3B408EA401992E8FEA048E4C5E1",
+  "porcelainV2All": [
+    "# branch.oid a869876ab6262dacde6cd5d432d099a91852a646",
+    "# branch.head master",
+    "1 .M N... 100644 100644 100644 39823deb19bfd8feea98ed8b9de2c0e8718aa368 39823deb19bfd8feea98ed8b9de2c0e8718aa368 .dockerignore",
+    "1 .M N... 100644 100644 100644 8c9171221716b3d6b933005af172512cb6380f1a 8c9171221716b3d6b933005af172512cb6380f1a reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png",
+    "1 .M N... 100644 100644 100644 b9c2d11b08b766a96af2d209d9e84358fc27b402 b9c2d11b08b766a96af2d209d9e84358fc27b402 reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png",
+    "1 .M N... 100644 100644 100644 fc00c5c45bef149bed36a1b5dfdb19a06cf6acdb fc00c5c45bef149bed36a1b5dfdb19a06cf6acdb reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png",
+    "1 .M N... 100644 100644 100644 8c50fab5da3346d22d20cc007742419681ca8b34 8c50fab5da3346d22d20cc007742419681ca8b34 reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png",
+    "1 .M N... 100644 100644 100644 29498fc4c0a48183b16f623f9f53d5487f33d8b8 29498fc4c0a48183b16f623f9f53d5487f33d8b8 reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png",
+    "1 .M N... 100644 100644 100644 1515c3b7b418fdf8d2108426959cd8c6596298ff 1515c3b7b418fdf8d2108426959cd8c6596298ff reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png",
+    "? reports/QA/rp_qa_260619_145255_by_gpt5_user_admin_lifecycle.md",
+    "? reports/QA/rp_qa_260619_152926_by_gpt5_release_catalog_mutation.md",
+    "? reports/problem/images/login-idea-2.jpg",
+    "? reports/problem/images/login-idea-3.jpg",
+    "? reports/problem/images/login-idea.jpg",
+    "? reports/problem/images/wallet-idea.jpg"
+  ],
+  "porcelainV2AllCanonicalSha256": "55D00ED9E40DBAFE8BA8CF3FD15A8595494FD871E204816B70C4FD210C8B035F",
+  "indexChangedPaths": [],
+  "sourceFiles": [
+    {
+      "path": "modules/email/server/operations/email-operations-observability.ts",
+      "byteCount": 19328,
+      "sha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+      "matched": true
+    },
+    {
+      "path": "modules/release-distribution/server/release-distribution-publication-state.ts",
+      "byteCount": 405,
+      "sha256": "B53F966F82AEDAC58EC15A892B9B71BA0A5716638703105BB35B126CB398D474",
+      "matched": true
+    },
+    {
+      "path": "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts",
+      "byteCount": 828,
+      "sha256": "44467B1D6F1778AE4728B4941136321F7831D8FD67EBE2C93A430A3D132F90AC",
+      "matched": true
+    }
+  ],
+  "modifiedTrackedFiles": [
+    {
+      "status": " M",
+      "path": ".dockerignore",
+      "exists": true,
+      "byteCount": 591,
+      "sha256": "AB4ED6104123C14D27A7EDD97812DC92A694735BA59882461D0A56FAE90396A3"
+    },
+    {
+      "status": " M",
+      "path": "reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png",
+      "exists": true,
+      "byteCount": 1833149,
+      "sha256": "C5B9EABA3E803E19B8A447D24F4402C1C01B20622741654294185CF3A376E374"
+    },
+    {
+      "status": " M",
+      "path": "reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png",
+      "exists": true,
+      "byteCount": 2089638,
+      "sha256": "4260C4885C7E99AF12F048E95D42E4D351A7A0D7B7CCAB991973C32B1ADC74C6"
+    },
+    {
+      "status": " M",
+      "path": "reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png",
+      "exists": true,
+      "byteCount": 372508,
+      "sha256": "7C0822D07E0DD9DB4FD64A76196BE0192B40CEFC1E4853DEDE4EF52AE119A167"
+    },
+    {
+      "status": " M",
+      "path": "reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png",
+      "exists": true,
+      "byteCount": 304794,
+      "sha256": "E18D43A0BB531C2CD6F9960900F78A594D58DE87F4B83A48CC00357740A48C7D"
+    },
+    {
+      "status": " M",
+      "path": "reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png",
+      "exists": true,
+      "byteCount": 642205,
+      "sha256": "73387BF9ECA81B281F827D625E2A69E287140B19C4FA27E4E3FA8FADBA4E80EB"
+    },
+    {
+      "status": " M",
+      "path": "reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png",
+      "exists": true,
+      "byteCount": 1313857,
+      "sha256": "9C89D32CFEE3F864EF51B9733DA5E62901B6BF84C112D8E9C2E091AAE71CAC77"
+    }
+  ],
+  "gitConfigFiles": [
+    {
+      "path": "C:\\Program Files\\Git\\etc\\gitconfig",
+      "exists": true,
+      "byteCount": 401,
+      "lastWriteTimeUtc": "2026-05-14T11:37:03.8269292Z",
+      "sha256": "A2B169C777319A0611651F9BB21EE358CA8D63AACC965D068C0DDF205901C37A"
+    },
+    {
+      "path": "C:\\Users\\TAM NGUYEN\\.config\\git\\config",
+      "exists": false,
+      "byteCount": null,
+      "lastWriteTimeUtc": null,
+      "sha256": null
+    },
+    {
+      "path": "C:\\Users\\TAM NGUYEN\\.gitconfig",
+      "exists": true,
+      "byteCount": 281,
+      "lastWriteTimeUtc": "2026-08-15T10:07:12.0373250Z",
+      "sha256": "4D63B9AF3884B1F581131B53A1BC6D80986E5132E406C5D277B13052AD62BDDA"
+    },
+    {
+      "path": "E:\\cheapapp.org\\.git\\config",
+      "exists": true,
+      "byteCount": 173,
+      "lastWriteTimeUtc": "2026-05-14T14:14:35.3902386Z",
+      "sha256": "C4C9549C60B307CA8A7389A07A3963743F1D95FE9B0AA5FAD635D71026C5819C"
+    }
+  ],
+  "anvienArtifacts": [
+    {
+      "path": ".anvien/graph.json",
+      "byteCount": 432028037,
+      "lastWriteTimeUtc": "2026-08-21T04:51:34.5934111Z",
+      "sha256": "BAF4A44E9212BA17D4A07290D7CC6EBF6817B9EEBCC96644D21347BA535F141F"
+    },
+    {
+      "path": ".anvien/lbug",
+      "byteCount": 150351872,
+      "lastWriteTimeUtc": "2026-08-21T04:51:27.6486072Z",
+      "sha256": "B388FCB33B22C1C4307D8BADB542041C53483CB702121B381572AAE7F4CE844D"
+    },
+    {
+      "path": ".anvien/meta.json",
+      "byteCount": 259,
+      "lastWriteTimeUtc": "2026-08-21T04:51:34.6851228Z",
+      "sha256": "D0AC8C46DB03363E7908198B2336B67B04C72822BEB1A827D6DBDA70DBFFC951"
+    },
+    {
+      "path": ".anvien/settings.json",
+      "byteCount": 31,
+      "lastWriteTimeUtc": "2026-07-14T03:57:29.5766494Z",
+      "sha256": "6C831C0AC49625D09EE54E76042612B92F47ABC47E4A90D1310F0EA45E824B3C"
+    }
+  ],
+  "preflightPass": true
+}

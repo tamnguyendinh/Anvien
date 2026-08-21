@@ -1,0 +1,8 @@
+{
+  "command": "npm run full-build",
+  "workingDirectory": "E:\\Anvien",
+  "startedAt": "2026-08-21T11:38:57.2390856+07:00",
+  "endedAt": "2026-08-21T11:41:57.2571701+07:00",
+  "durationSeconds": 180.018,
+  "exitCode": 0
+}

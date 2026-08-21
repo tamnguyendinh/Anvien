@@ -17,7 +17,9 @@
 - A pending evidence ID is a reserved target, not proof.
 - Each implementation slice requires the complete evidence set named in the plan: impact, source change, full build, behavior test, real boundary, Supervisor, detect-changes, and commit.
 - Long counts and before/after metrics belong in the benchmark ledger.
-- No target source or target-side report may be used as a plan artifact.
+- Target source remains inspect-only and must never be copied into an Anvien plan/report artifact. P4-C2 source-only Oracle Authoring may derive expected facts from the authorized target source before analyzer observation; no target-side report may be used as a plan artifact.
+- Every evidence-bearing artifact must be created directly in its durable repo-approved `reports/QA/child04-p4c2/...` path. `.tmp` is disposable debug-only; an oracle, raw capture, command stream, manifest, provenance record, expected-values input/output, benchmark, or reproducibility artifact created there is invalid and cannot be promoted/restored/copied/renamed or close an evidence ID.
+- Expected-value authorship and analyzer/QA validation are separate lanes. The source-only author may not run/read analyzer output or use current implementation/tests/goldens/QA output to fill expected fields. QA receives a durable, hash-sealed, committed bundle and may compare actual output without revising it.
 
 ### Evidence ID Naming
 
@@ -109,7 +111,7 @@ Exact symbol impacts further constrain the slices: `DefinitionFact` CRITICAL `19
 
 ## E4 - P4 Evidence
 
-P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, with isolated commit `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43`. P4-B and P4-B1 are also closed below. P4-C source/build/test/boundary and independent Supervisor REVIEW1 are now recorded and `PASS`; Main-owned detect/commit remain pending, while P4-C2 and later slices remain reserved and locked.
+P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, with isolated commit `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43`. P4-B and P4-B1 are also closed below. P4-C source/build/test/boundary/Supervisor/detect/commit are closed at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`. P4-C2 is the sole open slice: `E4-P4C2-ORACLE1` remains `SEALED`; exact repair, fresh post-repair `E4-P4C2-TARGET1`/`BOUNDARY1`, independent `E4-P4C2-REVIEW2`, and Main-owned `E4-P4C2-DETECT1` are PASS; commit remains pending; Child 05 and later slices remain locked.
 
 ### P4-A — export fact, meaning, and visibility boundary
 
@@ -227,12 +229,53 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, wi
 
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
-| `E4-P4C2-ORACLE1` | independent 21-entry direct-export oracle plus negative controls; no copied target source | pending |
-| `E4-P4C2-TARGET1` | real target analyze result: direct exports `21/21`, exact fields, access separation, negative controls, and zero Child 05-derived claims | pending |
-| `E4-P4C2-BOUNDARY1` | target pre/post source boundary, operational-output record, and contamination check | pending |
-| `E4-P4C2-REVIEW1` | independent Supervisor PASS | pending |
-| `E4-P4C2-DETECT1` | Anvien-side change/boundary check before evidence commit | pending |
-| `E4-P4C2-COMMIT1` | isolated Anvien-side evidence/ledger commit; no target artifact committed | pending |
+| `E4-P4C2-ORACLE1` | clean-context source-only bundle created directly at `reports/QA/child04-p4c2/oracle/<oracle_id>/`: accepted source basis, exactly 21 positive + 11 negative rows, complete schema/provenance, valid bundle digest/seal, zero target writes, zero forbidden observations, zero `.tmp` evidence lifecycle violations | recorded — `SEALED`; oracle ID `p4c2-oracle-v1-a869876ab626-260821_110849+0700`; bundle digest `7749AB14E02FBF61CF7F81B3A7638888F8AD414064F9F969CFED06EB11355439`; `21+11`; zero forbidden lifecycle events |
+| `E4-P4C2-TARGET1` | existing QA continuation verifies oracle seal/source basis, reuses the valid identical-byte build, runs one fresh normal built analyzer, and records row-level `21/21`, negative `11/11`, exact fields, access/compatibility separation, zero diagnostics/orphans/Child 05-derived claims in a durable run bundle | recorded — post-repair QA `READY_FOR_SUPERVISOR`; positives `21/21`; negatives `11/11`; FileContext `17/3/1`; parity `588/0`; zero diagnostics/orphans/Child 05 state |
+| `E4-P4C2-BOUNDARY1` | durable target pre/post manifests prove unchanged HEAD, source hashes, and pre-existing non-`.anvien` worktree state; only normal analyzer-owned `.anvien` output changes; no target report/fixture/probe/debug artifact | recorded — post-repair target HEAD/branch/seven tracked modifications/three source hashes and four Git-config identities preserved; only normal `.anvien` output changed; process-local trust cleared |
+| `E4-P4C2-REVIEW1` | independent later Supervisor PASS over source basis, lane independence, seal chronology/identity, row comparison, and target boundary | recorded — `REJECT`; exact 15-TypeAlias compatibility/reader invariant confirmed; report `8E37F4B1...81F7`; repair and re-review required |
+| `E4-P4C2-REVIEW2` | independent resubmission review proves the rejected invariant and same-invariant siblings close on post-repair bytes | recorded — `PASS`; report `5B99A74B...8DC0B`; residual same-invariant surfaces none |
+| `E4-P4C2-DETECT1` | Anvien-side change/boundary check after Supervisor PASS and before evidence commit; exact durable evidence + five-ledger manifest only | recorded — exit `0`; fresh graph `1,939/736/0`, `114,628/157,443`; `50` changed units; exact `7/7` changed/affected tracked files; changed-file HIGH/overall LOW; zero affected processes/flows and persisted health `0/0/0` |
+| `E4-P4C2-COMMIT1` | isolated Anvien-side durable oracle/QA evidence and ledger commit; no target or `.tmp` artifact committed or required for reproducibility | pending |
+
+#### P4-C2 durable oracle lifecycle correction
+
+- Broken invariant: AGENTS says `.tmp` is debug-only and working-rules says temporary scripts/output are not official evidence. Owner authority further makes this apply from artifact creation time to every oracle, raw capture, manifest, provenance record, benchmark, expected-value input/output, and reproducibility artifact.
+- Exact contradiction retained as historical record: `reports/QA/rp_qa_260821_091213_by_gpt-5_child04_p4c2_oracle_gate.md:19,110,182` calls the deleted `.tmp` capture an accepted raw oracle and accepts restore/supply as the unblock route; `reports/Investigation/rp_investigation_260821_0932_by_gpt-5_p4c2_oracle_recovery.md:172-176,204` makes a provenance-bound backup/recovery of that capture a minimum input and continuation condition. Those methods conflict with `AGENTS.md:20` and `.agents/skills/working-rules/SKILL.md:124-126`.
+- Correct classification: `.tmp\cheapapp-graph-root-cause-restart\p1b-identity-oracle-output.json` was an `invalid-lifecycle debug capture`, never an accepted oracle. Its absence is not a recovery blocker, and restore/promote/copy/rename cannot make its bytes authoritative. Both durable blocker reports remain unchanged as historical records only.
+- Correct pipeline: the already-authorized source-only Oracle Author writes and seals exactly `21+11` expected rows directly under `reports/QA/child04-p4c2/oracle/<oracle_id>/`; existing QA then consumes that bundle read-only for full-build/analyze/compare and writes its run bundle under `reports/QA/child04-p4c2/runs/<run_id>/`; existing Supervisor/detect/commit closure follows. Analyzer/QA output cannot author or amend expected values.
+- Exact schema, paths, digest, and lane boundary are fixed by Architect candidate `reports/Architect/rp_architect_260821_103812_by_gpt-5_p4c2_evidence_lifecycle.md`, verified at `42,936` bytes / `553` LF / SHA-256 `1E7EEB6DD83F05384BF43ED9216C042C535DAC5E776B56032A17E3D4288BDEEA`; this is `READY_FOR_PLANNER`, not Supervisor acceptance.
+- Planner handoff is `reports/Planner/rp_planner_260821_104059_by_gpt-5_p4c2_durable_oracle_gate_correction.md`; next owner is source-only Oracle Authoring with `working-rules` and `Data-Integrity`.
+- The correction itself did not access/stat/hash/read/write `E:\cheapapp.org`; subsequent clean-context Oracle Authoring closed `E4-P4C2-ORACLE1` as `SEALED` without changing that historical correction record.
+
+#### `E4-P4C2-ORACLE1`, `E4-P4C2-TARGET1`, and `E4-P4C2-BOUNDARY1` — durable target validation handoff
+
+- Sealed oracle bundle: `reports/QA/child04-p4c2/oracle/p4c2-oracle-v1-a869876ab626-260821_110849+0700/`; digest `7749AB14E02FBF61CF7F81B3A7638888F8AD414064F9F969CFED06EB11355439`; exactly `21` positive and `11` negative rows; target basis HEAD `a869876ab6262dacde6cd5d432d099a91852a646`; zero target writes, forbidden observations, or evidence-bearing `.tmp` artifacts.
+- Historical first QA run remains a durable Git-trust `BLOCKED` run. Its canonical full build PASS and target preservation evidence were referenced, not repeated. The retry used process-local `safe.directory` only, changed no Git config file, and executed exactly one target analyze: exit `0`, `77.37s`, `1,359/887/0`, graph `94,422/125,299`.
+- Durable QA report: `reports/QA/child04-p4c2/runs/p4c2-target-validation-retry-260821_115050+0700/p4c2-qa-retry-validation-report.md`; `11,342` bytes / `200` LF / SHA-256 `C831004F049A563A2387B599BE01C943F5B9416C72B1C45E50A8C1F9D2CEFDB4`. Comparison SHA-256 is `2C78AB3BDF67D857E5C2A1B75B0F1FDFBFEBE2B70D92E7EBC8EB45A0AC5A3F27`; 19-file run digest is `9F414A2C54C42F4E39AD8ED03DC042CCC3E1FB5993DA842B22F64851D16AABC4`.
+- QA finding: all `21/21` direct Export facts are present with exact semantic fields and separated access, but `P001`–`P014` and `P018` TypeAlias definitions retain `isExported=false` and FileContext `exported=false`; only six Function rows pass overall. Negative controls pass `11/11`; Graph JSON↔Ladybug compares `588` fields with `0` differences; duplicate IDs, relationship/local-definition orphans, diagnostics, and forbidden Child 05 state are `0`.
+- `E4-P4C2-TARGET1` and `E4-P4C2-BOUNDARY1` are evidence-complete with a semantic finding, not accepted. Target source/worktree/config are preserved. Exactly one independent Supervisor lane now owns `E4-P4C2-REVIEW1`; P4-C2 and Child 05 remain open/locked respectively until its verdict and the correct repair-or-closure handoff.
+
+#### `E4-P4C2-REVIEW1` — independent rejection
+
+- Verdict: `REJECT`. Report: `reports/Supervisor/rp_supervisor_260821_123030_by_gpt-5_child04_p4c2_durable_retry_review1.md`; `15,671` bytes / `126` LF / self-reference-safe canonical SHA-256 `8E37F4B126ABB38A5DCE071C35937F59D9152EFA135B9245408CA138BEC781F7`.
+- Supervisor independently recomputed the oracle and 19-file run digests, aggregated the exact failed row set, inspected validator/source logic, and confirmed the 15 target occurrences are direct exported TypeAlias declarations. No closed gate was rerun.
+- Exact source cause: `internal/resolution/emit.go` uses runtime eligibility to populate `directExportDefIDs`; `exportFactIsRuntime` excludes TypeOnly/type-meaning facts, so definition `isExported` becomes false and `internal/filecontext/context.go` deterministically propagates false. `internal/resolution/p4c_export_projection_test.go` codifies the rejected expectation.
+- Accepted evidence remains closed: oracle seal; all 21 Export facts/relations and semantic fields; six Function positives; `11/11` negatives; `588/588` parity; zero duplicate/orphan/diagnostic/Child 05 state; target/config preservation. Only the definition compatibility and affected-reader invariant is rejected.
+- Next owner is one bounded Coder repair lane. It must change production first, preserve type-only/meaning/access semantics and negatives, then return through build, fresh target QA, re-review, detect, and commit. P4-C2 stays open; Child 05 stays locked.
+
+#### Post-repair Coder, QA, and `E4-P4C2-REVIEW2`
+
+- Exact repair candidate is `internal/resolution/emit.go` (`+1/-15`, SHA-256 `B1B8F22A...B2867`) plus test-after-code `internal/resolution/p4c_export_projection_test.go` (`+23/-6`, SHA-256 `F575F16D...E0162`). Canonical full build, focused rejection test, nearest resolution→FileContext→Ladybug boundary and all four affected packages pass. Coder report: `reports/Coder/rp_coder_260821_131129_by_gpt-5_child04_p4c2_typealias_compatibility_repair_ready_for_qa.md`, canonical SHA-256 `2B3A9B04...997F6`.
+- Fresh durable QA run: `reports/QA/child04-p4c2/runs/p4c2-post-repair-validation-260821_131750+0700/`; exactly one target analyze passes `1,359/887/0`, graph `94,422/125,299`; comparison passes `21/21`, `11/11`, FileContext `17/3/1`, parity `588/0`, integrity/Child 05 zeros and preservation. QA report SHA-256 `607A5EC0...248F`; comparison SHA-256 `7FA58C69...CFD5`; 18-file run digest `5CA04508...33E`.
+- Independent `E4-P4C2-REVIEW2` verdict is `PASS`: `reports/Supervisor/rp_supervisor_260821_133927_by_gpt-5_child04_p4c2_typealias_compatibility_review2.md`, `13,650` bytes / `120` LF / canonical SHA-256 `5B99A74B1A8D91D48F5E62F0BA1FFCB26317BF818AC6AE044E6CD650B208DC0B`. REVIEW1 remains historical rejection; only detect/commit remain open.
+
+#### `E4-P4C2-DETECT1` — Main-owned fresh graph and change detection
+
+- Preflight found the repo analyze lock free and only editor-owned MCP processes; no process was terminated. `anvien analyze --force --json` then exited `0` exactly once with `1,939/736/0` scanned/parsed/failed and `114,628/157,443` nodes/relationships.
+- `anvien detect-changes --repo E:\Anvien --scope all` exited `0`: `50` changed semantic units, exactly `7` changed files and `7` affected files, changed-file risk `HIGH`, overall risk `LOW`, and no affected process entries. Changed layers are `backend=3`, `backend_test=13`, `docs=34`; changed functional areas are `resolution=16`, `documentation=34`.
+- The semantic changed/affected path set is exactly the five living documents plus `internal/resolution/emit.go` and `internal/resolution/p4c_export_projection_test.go`. The two production source-site gap changes are `fact.LocalDefID` and `struct{}`; persisted resolution health remains `totalResolutionGapCount=0`, `nodesWithGaps=0`, `degradedNodes=0`, and both required semantic fields cover `114,628/114,628` nodes.
+- HIGH is a blast-radius warning for the accepted `emit.go` boundary, not an edit or commit prohibition. Exact report/evidence provenance remains outside the semantic changed-file set and is admitted only by the explicit staging manifest.
+- Exact staging is `89/89`: seven tracked repair/living-document paths plus 82 P4-C2 lifecycle/evidence paths; tracked unstaged count is `0`. The only remaining untracked paths are preserved P4-C handoffs `0631` and `0721`. Default staged diff-check over source/test/living documents exits `0`; accepted hash-sealed QA TSV/build-log artifacts retain intentional trailing whitespace, so the precedent-aligned full-manifest command `git -c core.whitespace=-trailing-space diff --cached --check` exits `0` without rewriting evidence bytes or changing Git config.
 
 ## Closure Evidence
 
@@ -245,7 +288,7 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, wi
 | `E4-PNC-COMMIT1` | final known commit/worktree state | pending |
 | `E4-PNC-HANDOFF1` | Child 05 actual-status refreshed from accepted immutable syntax/direct-export results and exact opening condition recorded | pending |
 
-P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed. P4-C source/build/boundary/Supervisor/detect/commit are closed at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; P4-C2 is the sole open slice, while Child 05 remains locked.
+P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed. P4-C source/build/boundary/Supervisor/detect/commit are closed at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; P4-C2 repair/QA/REVIEW2/detect are accepted, commit remains open, and Child 05 remains locked.
 
 ### `E4-P4B-SOURCE1` — source and cleanup clearance
 

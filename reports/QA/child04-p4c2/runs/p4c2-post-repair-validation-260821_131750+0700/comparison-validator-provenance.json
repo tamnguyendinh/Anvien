@@ -1,0 +1,13 @@
+{
+  "capturedAt": "2026-08-21T13:24:02.6229816+07:00",
+  "classification": "read-only reusable non-production QA validation asset",
+  "sourcePath": "E:\\Anvien\\reports\\QA\\child04-p4c2\\runs\\p4c2-target-validation-retry-260821_115050+0700\\validate_p4c2.go",
+  "byteCount": 32142,
+  "lfCount": 836,
+  "sha256": "387B0B8C9DBC87BEEFAA32E659B427AC938709E4C12F6BD7FF4F55A6386E0C00",
+  "historicalComparisonReadOrReused": false,
+  "newOutputPath": "E:\\Anvien\\reports\\QA\\child04-p4c2\\runs\\p4c2-post-repair-validation-260821_131750+0700\\comparison-result.json",
+  "oraclePath": "E:\\Anvien\\reports\\QA\\child04-p4c2\\oracle\\p4c2-oracle-v1-a869876ab626-260821_110849+0700\\expected-values.json",
+  "graphPath": "E:\\cheapapp.org\\.anvien\\graph.json",
+  "ladybugPath": "E:\\cheapapp.org\\.anvien\\lbug"
+}

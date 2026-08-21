@@ -1,0 +1,11 @@
+{
+  "cleanedAt": "2026-08-21T12:07:28.6025264+07:00",
+  "literalPath": "E:\\Anvien\\reports\\QA\\child04-p4c2\\runs\\p4c2-target-validation-retry-260821_115050+0700\\.go-tmp",
+  "resolvedPath": "E:\\Anvien\\reports\\QA\\child04-p4c2\\runs\\p4c2-target-validation-retry-260821_115050+0700\\.go-tmp",
+  "boundaryRoot": "E:\\Anvien\\reports\\QA\\child04-p4c2\\runs\\p4c2-target-validation-retry-260821_115050+0700",
+  "createdByThisLane": true,
+  "classification": "dead empty Go compiler temporary directory",
+  "recursive": false,
+  "wildcard": false,
+  "removed": true
+}

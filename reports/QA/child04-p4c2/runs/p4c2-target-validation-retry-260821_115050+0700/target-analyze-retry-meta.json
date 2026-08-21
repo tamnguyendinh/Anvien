@@ -1,0 +1,11 @@
+{
+  "command": "anvien analyze E:\\cheapapp.org --force",
+  "invocationCount": 1,
+  "processId": 8344,
+  "processLocalGitTrust": true,
+  "startedAt": "2026-08-21T11:50:51.2324244+07:00",
+  "endedAt": "2026-08-21T11:52:08.6026686+07:00",
+  "durationSeconds": 77.37,
+  "exitCode": 0,
+  "priorRuntimeReference": "E:\\Anvien\\reports\\QA\\child04-p4c2\\runs\\p4c2-target-validation-260821_113405+0700\\built-runtime-identity.json"
+}

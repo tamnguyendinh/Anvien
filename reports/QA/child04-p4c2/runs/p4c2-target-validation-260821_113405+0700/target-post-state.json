@@ -1,0 +1,74 @@
+{
+  "capturedAt": "2026-08-21T11:43:41.5122661+07:00",
+  "resolvedPath": "E:\\cheapapp.org",
+  "git": {
+    "head": "a869876ab6262dacde6cd5d432d099a91852a646",
+    "branch": "master",
+    "trackedStatusLines": [
+      " M .dockerignore",
+      " M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png",
+      " M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png",
+      " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png",
+      " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png",
+      " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png",
+      " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png"
+    ],
+    "trackedStatusCanonicalSha256": "FCB5AD9155C029FFA6B3D80B8AADD1EE40EDC3B408EA401992E8FEA048E4C5E1",
+    "porcelainV2": [
+      "# branch.oid a869876ab6262dacde6cd5d432d099a91852a646",
+      "# branch.head master",
+      "1 .M N... 100644 100644 100644 39823deb19bfd8feea98ed8b9de2c0e8718aa368 39823deb19bfd8feea98ed8b9de2c0e8718aa368 .dockerignore",
+      "1 .M N... 100644 100644 100644 8c9171221716b3d6b933005af172512cb6380f1a 8c9171221716b3d6b933005af172512cb6380f1a reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png",
+      "1 .M N... 100644 100644 100644 b9c2d11b08b766a96af2d209d9e84358fc27b402 b9c2d11b08b766a96af2d209d9e84358fc27b402 reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png",
+      "1 .M N... 100644 100644 100644 fc00c5c45bef149bed36a1b5dfdb19a06cf6acdb fc00c5c45bef149bed36a1b5dfdb19a06cf6acdb reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png",
+      "1 .M N... 100644 100644 100644 8c50fab5da3346d22d20cc007742419681ca8b34 8c50fab5da3346d22d20cc007742419681ca8b34 reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png",
+      "1 .M N... 100644 100644 100644 29498fc4c0a48183b16f623f9f53d5487f33d8b8 29498fc4c0a48183b16f623f9f53d5487f33d8b8 reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png",
+      "1 .M N... 100644 100644 100644 1515c3b7b418fdf8d2108426959cd8c6596298ff 1515c3b7b418fdf8d2108426959cd8c6596298ff reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png",
+      "? reports/QA/rp_qa_260619_145255_by_gpt5_user_admin_lifecycle.md",
+      "? reports/QA/rp_qa_260619_152926_by_gpt5_release_catalog_mutation.md",
+      "? reports/problem/images/login-idea-2.jpg",
+      "? reports/problem/images/login-idea-3.jpg",
+      "? reports/problem/images/login-idea.jpg",
+      "? reports/problem/images/wallet-idea.jpg"
+    ],
+    "indexChangedPaths": []
+  },
+  "sourceFiles": [
+    {
+      "path": "modules/email/server/operations/email-operations-observability.ts",
+      "byteCount": 19328,
+      "sha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+      "preByteCount": 19328,
+      "preSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+      "preserved": true
+    },
+    {
+      "path": "modules/release-distribution/server/release-distribution-publication-state.ts",
+      "byteCount": 405,
+      "sha256": "B53F966F82AEDAC58EC15A892B9B71BA0A5716638703105BB35B126CB398D474",
+      "preByteCount": 405,
+      "preSha256": "B53F966F82AEDAC58EC15A892B9B71BA0A5716638703105BB35B126CB398D474",
+      "preserved": true
+    },
+    {
+      "path": "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts",
+      "byteCount": 828,
+      "sha256": "44467B1D6F1778AE4728B4941136321F7831D8FD67EBE2C93A430A3D132F90AC",
+      "preByteCount": 828,
+      "preSha256": "44467B1D6F1778AE4728B4941136321F7831D8FD67EBE2C93A430A3D132F90AC",
+      "preserved": true
+    }
+  ],
+  "nonAnvienWorktreeManifest": {
+    "path": "target-post-worktree-manifest.tsv",
+    "entryCount": 2377,
+    "sha256": "CAF9F5798C53F5FAD491E31DFD2295B9C49FA32B25705EE45D1136609A8DF702"
+  },
+  "anvienPostState": {
+    "exists": true,
+    "directoryCount": 0,
+    "fileCount": 4,
+    "manifestPath": "target-post-anvien-manifest.tsv",
+    "manifestSha256": "90B264B6C927D4E32BAD276C0E984CD1F0EB4714FFF772B6273E931E381998AF"
+  }
+}

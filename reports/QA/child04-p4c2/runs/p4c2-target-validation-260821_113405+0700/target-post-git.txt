@@ -1,0 +1,31 @@
+git -c safe.directory=E:/cheapapp.org -C E:/cheapapp.org rev-parse HEAD
+a869876ab6262dacde6cd5d432d099a91852a646
+
+git ... branch --show-current
+master
+
+git ... status --porcelain=v1 --untracked-files=no
+ M .dockerignore
+ M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png
+ M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png
+ M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png
+ M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png
+ M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png
+ M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png
+
+git ... status --porcelain=v2 --branch --untracked-files=all
+# branch.oid a869876ab6262dacde6cd5d432d099a91852a646
+# branch.head master
+1 .M N... 100644 100644 100644 39823deb19bfd8feea98ed8b9de2c0e8718aa368 39823deb19bfd8feea98ed8b9de2c0e8718aa368 .dockerignore
+1 .M N... 100644 100644 100644 8c9171221716b3d6b933005af172512cb6380f1a 8c9171221716b3d6b933005af172512cb6380f1a reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png
+1 .M N... 100644 100644 100644 b9c2d11b08b766a96af2d209d9e84358fc27b402 b9c2d11b08b766a96af2d209d9e84358fc27b402 reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png
+1 .M N... 100644 100644 100644 fc00c5c45bef149bed36a1b5dfdb19a06cf6acdb fc00c5c45bef149bed36a1b5dfdb19a06cf6acdb reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png
+1 .M N... 100644 100644 100644 8c50fab5da3346d22d20cc007742419681ca8b34 8c50fab5da3346d22d20cc007742419681ca8b34 reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png
+1 .M N... 100644 100644 100644 29498fc4c0a48183b16f623f9f53d5487f33d8b8 29498fc4c0a48183b16f623f9f53d5487f33d8b8 reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png
+1 .M N... 100644 100644 100644 1515c3b7b418fdf8d2108426959cd8c6596298ff 1515c3b7b418fdf8d2108426959cd8c6596298ff reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png
+? reports/QA/rp_qa_260619_145255_by_gpt5_user_admin_lifecycle.md
+? reports/QA/rp_qa_260619_152926_by_gpt5_release_catalog_mutation.md
+? reports/problem/images/login-idea-2.jpg
+? reports/problem/images/login-idea-3.jpg
+? reports/problem/images/login-idea.jpg
+? reports/problem/images/wallet-idea.jpg

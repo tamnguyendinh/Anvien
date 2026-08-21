@@ -1,0 +1,1 @@
+not a git repository: E:\cheapapp.org; pass --skip-git to index any folder without a .git directory

@@ -1,0 +1,11 @@
+analyzed E:\cheapapp.org
+files: scanned=1359 parsed_code=887 failed=0
+indexed: documents=314 metadata=63 analyzers=0 scripts=27 static=52
+gaps: unsupported_language=0 unknown=16
+graph: nodes=94422 relationships=125299 path=E:\cheapapp.org\.anvien\graph.json
+fileProjection: status=built files=1359 dependencyEdges=11152 unresolved=735 hotspots=5 derivedEdges="File relationship groups are projections derived from symbol and source-site graph facts; canonical graph relationships remain symbol/source-site facts."
+fileProjection.hotspot path="tests/e2e/admin-ui-remediation.contract.spec.ts" group=none role=unknown unresolved=975 fanIn=0 fanOut=2 risk=high
+fileProjection.hotspot path="lib/i18n/messages.dashboard.localized.ts" group=none role=unknown unresolved=836 fanIn=2 fanOut=4 risk=high
+fileProjection.hotspot path="scripts/qa/strict-dom-control-harness.mjs" group=none role=unknown unresolved=717 fanIn=0 fanOut=0 risk=high
+fileProjection.hotspot path="modules/admin-operations/server/investigation/admin-investigation-read-model.ts" group=none role=unknown unresolved=644 fanIn=102 fanOut=52 risk=high
+fileProjection.hotspot path="app/(admin)/admin/page.tsx" group=none role=unknown unresolved=563 fanIn=1 fanOut=56 risk=high

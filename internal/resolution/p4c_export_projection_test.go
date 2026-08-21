@@ -19,7 +19,7 @@ func TestP4CProjectsExportFactsAndRuntimeCompatibility(t *testing.T) {
 		FilePath:      filePath,
 		Name:          "runtimeValue",
 		QualifiedName: "runtimeValue",
-		Label:         scopeir.NodeVariable,
+		Label:         scopeir.NodeFunction,
 		Range:         scopeir.Range{StartLine: 1, StartCol: 0, EndLine: 1, EndCol: 21},
 		Visibility:    "private",
 	}
@@ -28,7 +28,7 @@ func TestP4CProjectsExportFactsAndRuntimeCompatibility(t *testing.T) {
 		FilePath:      filePath,
 		Name:          "TypeOnly",
 		QualifiedName: "TypeOnly",
-		Label:         scopeir.NodeInterface,
+		Label:         scopeir.NodeTypeAlias,
 		Range:         scopeir.Range{StartLine: 2, StartCol: 0, EndLine: 2, EndCol: 20},
 		Visibility:    "public",
 	}
@@ -134,17 +134,34 @@ func TestP4CProjectsExportFactsAndRuntimeCompatibility(t *testing.T) {
 			}
 		}
 	}
+	typeOnlyExportFound := false
+	for _, node := range exportNodes {
+		if node.Properties["localDefId"] != typeDef.ID {
+			continue
+		}
+		typeOnlyExportFound = true
+		if got, ok := node.Properties["typeOnly"].(bool); !ok || !got {
+			t.Fatalf("type-only export fact typeOnly = %#v, want true", node.Properties["typeOnly"])
+		}
+		meanings, ok := node.Properties["meanings"].([]string)
+		if !ok || len(meanings) != 1 || meanings[0] != string(scopeir.ExportMeaningType) {
+			t.Fatalf("type-only export fact meanings = %#v, want [type]", node.Properties["meanings"])
+		}
+	}
+	if !typeOnlyExportFound {
+		t.Fatalf("type-only export fact for %q not found", typeDef.ID)
+	}
 
-	runtimeNode := requireNode(t, result.Graph, "Variable", filePath, runtimeDef.Name)
+	runtimeNode := requireNode(t, result.Graph, "Function", filePath, runtimeDef.Name)
 	if got, ok := runtimeNode.Properties["isExported"].(bool); !ok || !got {
 		t.Fatalf("runtime definition isExported = %#v, want true", runtimeNode.Properties["isExported"])
 	}
 	if runtimeNode.Properties["visibility"] != "private" {
 		t.Fatalf("runtime access visibility changed: %#v", runtimeNode.Properties["visibility"])
 	}
-	typeNode := requireNode(t, result.Graph, "Interface", filePath, typeDef.Name)
-	if got, ok := typeNode.Properties["isExported"].(bool); !ok || got {
-		t.Fatalf("type-only definition isExported = %#v, want false", typeNode.Properties["isExported"])
+	typeNode := requireNode(t, result.Graph, "TypeAlias", filePath, typeDef.Name)
+	if got, ok := typeNode.Properties["isExported"].(bool); !ok || !got {
+		t.Fatalf("type-only direct definition isExported = %#v, want true", typeNode.Properties["isExported"])
 	}
 	if typeNode.Properties["visibility"] != "public" {
 		t.Fatalf("type-only access visibility changed: %#v", typeNode.Properties["visibility"])

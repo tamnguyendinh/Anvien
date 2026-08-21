@@ -1,0 +1,98 @@
+{
+  "status": "PASS",
+  "comparisonComplete": true,
+  "contractPass": true,
+  "oracleId": "p4c2-oracle-v1-a869876ab626-260821_110849+0700",
+  "positivePassCount": 21,
+  "positiveCount": 21,
+  "negativePassCount": 11,
+  "negativeCount": 11,
+  "graph": {
+    "duplicateNodeIdCount": 0,
+    "exportDiagnosticCount": 0,
+    "forbiddenChild05StateCount": 0,
+    "forbiddenChild05StateSamples": null,
+    "globalExportCount": 3539,
+    "nodeCount": 94422,
+    "orphanLocalDefinitionReferenceCount": 0,
+    "orphanRelationshipEndpointCount": 0,
+    "relationshipCount": 125299,
+    "targetDirectExportCount": 21,
+    "targetExportCount": 21
+  },
+  "ladybug": {
+    "exportRowCount": 21,
+    "exportFieldComparisons": 588,
+    "exportFieldDifferences": 0,
+    "exportIdsMissingInLadybug": null,
+    "exportIdsMissingInGraphJson": null,
+    "definitionCompatibilityComparisons": 32,
+    "definitionCompatibilityDifferences": 0,
+    "relationshipRowCount": 21,
+    "relationshipDifferences": 0,
+    "perExportDifferenceCount": {},
+    "perDefinitionDifferenceCount": {},
+    "ladybugRelationCountByExportId": {
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:0kind6:directname28:EmailOperationsMessageSignalrange9:35:7:46:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:1kind6:directname28:EmailOperationsAttemptSignalrange9:48:7:53:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:2kind6:directname26:EmailOperationsEventSignalrange9:55:7:59:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:3kind6:directname34:EmailOperationsProviderEventSignalrange9:61:7:66:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:4kind6:directname30:EmailOperationsReadinessSignalrange9:68:7:74:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:5kind6:directname32:EmailOperationsSuppressionSignalrange9:76:7:80:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:6kind6:directname23:EmailOperationsSnapshotrange9:82:7:89:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:7kind6:directname24:EmailOperationsAlertCoderange10:91:7:97:22": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:8kind6:directname28:EmailOperationsAlertSeverityrange10:99:7:99:66": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:9kind6:directname20:EmailOperationsAlertrange11:101:7:107:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:10kind6:directname30:EmailOperationsAlertThresholdsrange11:109:7:116:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:11kind6:directname21:EmailOperationsReportrange11:118:7:148:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:12kind6:directname26:EmailOperationsReadOptionsrange11:150:7:156:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:13kind6:directname25:EmailOperationsLogOptionsrange11:158:7:162:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:14kind6:directname26:buildEmailOperationsReportrange11:254:7:417:1": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:15kind6:directname33:emitEmailOperationsStructuredLogsrange11:438:7:491:1": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:16kind6:directname25:readEmailOperationsReportrange11:497:7:634:1": 1,
+      "Export:file77:modules/release-distribution/server/release-distribution-publication-state.tsordinal1:0kind6:directname36:ReleaseDistributionPublicationStatusrange8:1:7:5:18": 1,
+      "Export:file77:modules/release-distribution/server/release-distribution-publication-state.tsordinal1:1kind6:directname17:canPublishReleaserange8:7:7:11:1": 1,
+      "Export:file77:modules/release-distribution/server/release-distribution-publication-state.tsordinal1:2kind6:directname18:canRollbackReleaserange9:13:7:17:1": 1,
+      "Export:file88:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.tsordinal1:0kind6:directname25:readAdminCommercialConfigrange9:10:7:23:1": 1
+    },
+    "graphRelationCountByExportId": {
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:0kind6:directname28:EmailOperationsMessageSignalrange9:35:7:46:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:1kind6:directname28:EmailOperationsAttemptSignalrange9:48:7:53:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:2kind6:directname26:EmailOperationsEventSignalrange9:55:7:59:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:3kind6:directname34:EmailOperationsProviderEventSignalrange9:61:7:66:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:4kind6:directname30:EmailOperationsReadinessSignalrange9:68:7:74:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:5kind6:directname32:EmailOperationsSuppressionSignalrange9:76:7:80:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:6kind6:directname23:EmailOperationsSnapshotrange9:82:7:89:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:7kind6:directname24:EmailOperationsAlertCoderange10:91:7:97:22": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:8kind6:directname28:EmailOperationsAlertSeverityrange10:99:7:99:66": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal1:9kind6:directname20:EmailOperationsAlertrange11:101:7:107:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:10kind6:directname30:EmailOperationsAlertThresholdsrange11:109:7:116:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:11kind6:directname21:EmailOperationsReportrange11:118:7:148:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:12kind6:directname26:EmailOperationsReadOptionsrange11:150:7:156:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:13kind6:directname25:EmailOperationsLogOptionsrange11:158:7:162:2": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:14kind6:directname26:buildEmailOperationsReportrange11:254:7:417:1": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:15kind6:directname33:emitEmailOperationsStructuredLogsrange11:438:7:491:1": 1,
+      "Export:file65:modules/email/server/operations/email-operations-observability.tsordinal2:16kind6:directname25:readEmailOperationsReportrange11:497:7:634:1": 1,
+      "Export:file77:modules/release-distribution/server/release-distribution-publication-state.tsordinal1:0kind6:directname36:ReleaseDistributionPublicationStatusrange8:1:7:5:18": 1,
+      "Export:file77:modules/release-distribution/server/release-distribution-publication-state.tsordinal1:1kind6:directname17:canPublishReleaserange8:7:7:11:1": 1,
+      "Export:file77:modules/release-distribution/server/release-distribution-publication-state.tsordinal1:2kind6:directname18:canRollbackReleaserange9:13:7:17:1": 1,
+      "Export:file88:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.tsordinal1:0kind6:directname25:readAdminCommercialConfigrange9:10:7:23:1": 1
+    },
+    "readerOpenedReadOnly": true
+  },
+  "affectedReader": {
+    "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts": {
+      "found": true,
+      "exportedSymbolCount": 1
+    },
+    "modules/release-distribution/server/release-distribution-publication-state.ts": {
+      "found": true,
+      "exportedSymbolCount": 3
+    },
+    "modules/email/server/operations/email-operations-observability.ts": {
+      "found": true,
+      "exportedSymbolCount": 17
+    }
+  },
+  "findings": []
+}

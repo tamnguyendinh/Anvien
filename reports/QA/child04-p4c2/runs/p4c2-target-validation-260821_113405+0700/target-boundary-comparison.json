@@ -1,0 +1,20 @@
+{
+  "comparedAt": "2026-08-21T11:43:41.5275738+07:00",
+  "headPreserved": true,
+  "branchPreserved": true,
+  "trackedStatusPreserved": true,
+  "trackedModificationCount": 7,
+  "indexPreservedEmpty": true,
+  "sourceFilesPreserved": true,
+  "nonAnvienEntryCountPre": 2377,
+  "nonAnvienEntryCountPost": 2377,
+  "nonAnvienManifestSha256Pre": "CAF9F5798C53F5FAD491E31DFD2295B9C49FA32B25705EE45D1136609A8DF702",
+  "nonAnvienManifestSha256Post": "CAF9F5798C53F5FAD491E31DFD2295B9C49FA32B25705EE45D1136609A8DF702",
+  "nonAnvienDiffCount": 0,
+  "nonAnvienDiff": [],
+  "anvienManifestSha256Pre": "90B264B6C927D4E32BAD276C0E984CD1F0EB4714FFF772B6273E931E381998AF",
+  "anvienManifestSha256Post": "90B264B6C927D4E32BAD276C0E984CD1F0EB4714FFF772B6273E931E381998AF",
+  "anvienDiffCount": 0,
+  "anvienDiff": [],
+  "preservationPass": true
+}

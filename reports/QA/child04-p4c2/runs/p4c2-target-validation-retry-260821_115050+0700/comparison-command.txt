@@ -1,0 +1,6 @@
+comparison_status=FAIL_COMPLETE
+positive=6/21
+negative=11/11
+complete=true
+contract_pass=false
+exit status 2

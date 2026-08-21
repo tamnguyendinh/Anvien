@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "p4c2.qa-run-manifest.v1",
+  "runId": "p4c2-target-validation-260821_113405+0700",
+  "generatedAt": "2026-08-21T11:46:53.6249685+07:00",
+  "status": "BLOCKED",
+  "fileCount": 21,
+  "selfExcluded": "artifact-manifest.json",
+  "digestConstruction": "SHA-256 of UTF-8 prefix p4c2-qa-run-v1 LF plus ordinal relative_path NUL byte_count NUL SHA256_UPPER_HEX LF",
+  "runDigest": "CF72F173C660690C7596C165DC003EC1D4FB49D43DD9BC2F87914D524BAE3D3A",
+  "files": [
+    {
+      "path": "anvien-handoff-state.json",
+      "byteCount": 6720,
+      "lfCount": 70,
+      "sha256": "CE2B324D5C3887915FF34509EF76A35D3A78D8C3C6C9C1C58D0884E2735F1155"
+    },
+    {
+      "path": "build-holder-cleanup.txt",
+      "byteCount": 237,
+      "lfCount": 4,
+      "sha256": "879D23A93F0274B65FC6BDC4A2E7E6723819989744E6A901999742E7D647202F"
+    },
+    {
+      "path": "build-post-cleanup-locks.json",
+      "byteCount": 488,
+      "lfCount": 20,
+      "sha256": "E9D290EC046F27D5E5D92A8AF36CB546568055CC5E5515F6AD0EC427A3C57BFE"
+    },
+    {
+      "path": "build-post-cleanup-processes.json",
+      "byteCount": 10476,
+      "lfCount": 234,
+      "sha256": "6EC78942DD43A7EFD144FBFE3CE6692BBC8515BF8D174185DF45803A47460C8D"
+    },
+    {
+      "path": "build-pre-locks.json",
+      "byteCount": 488,
+      "lfCount": 20,
+      "sha256": "E9D290EC046F27D5E5D92A8AF36CB546568055CC5E5515F6AD0EC427A3C57BFE"
+    },
+    {
+      "path": "build-pre-processes.json",
+      "byteCount": 12343,
+      "lfCount": 245,
+      "sha256": "21A4691A1C2C1549A823CFFB675FE496D5CC3E207F999E69D5A749B7C87C1FA7"
+    },
+    {
+      "path": "built-runtime-identity.json",
+      "byteCount": 818,
+      "lfCount": 16,
+      "sha256": "55F92CBDF1CADCADBE5A3F8D03A10816419048AC26DA949049C86743EDF06187"
+    },
+    {
+      "path": "canonical-full-build-meta.json",
+      "byteCount": 230,
+      "lfCount": 8,
+      "sha256": "645B18490928CC946DCFBF9ADFC31AECC2DC1B0A9FEB1EF3619AE2015A00402E"
+    },
+    {
+      "path": "canonical-full-build.txt",
+      "byteCount": 10117,
+      "lfCount": 127,
+      "sha256": "9BD8C64E4069DD0764EFB84E39631A502ABE4A757A8718625479CEF9AD05C0B2"
+    },
+    {
+      "path": "p4c2-qa-validation-report.md",
+      "byteCount": 10182,
+      "lfCount": 150,
+      "sha256": "D84C5F980B4EF2B006DAD002C95EC3FC9058923DDFEC363A14368FDE58126C03"
+    },
+    {
+      "path": "target-analyze-meta.json",
+      "byteCount": 473,
+      "lfCount": 12,
+      "sha256": "B461C74A3B3C7263158CB2EF51FF901CBE6C778B60343F46881AF92B6B4C6E56"
+    },
+    {
+      "path": "target-analyze.txt",
+      "byteCount": 101,
+      "lfCount": 1,
+      "sha256": "781024AC3A9769CD53E3BF700082D522D807E37152B4CD0C7F317E77DA82F98E"
+    },
+    {
+      "path": "target-boundary-comparison.json",
+      "byteCount": 844,
+      "lfCount": 20,
+      "sha256": "1AD516F96C21F3428BBEF85148BFC1A3439364F56926CB8E136E0DBD395D05B1"
+    },
+    {
+      "path": "target-post-anvien-manifest.tsv",
+      "byteCount": 367,
+      "lfCount": 4,
+      "sha256": "90B264B6C927D4E32BAD276C0E984CD1F0EB4714FFF772B6273E931E381998AF"
+    },
+    {
+      "path": "target-post-git.txt",
+      "byteCount": 2789,
+      "lfCount": 31,
+      "sha256": "98106EA9B91FB422D35F83DAF3B8481F1A75EFCABDC935F37F8B0F304A76B4ED"
+    },
+    {
+      "path": "target-post-state.json",
+      "byteCount": 4695,
+      "lfCount": 74,
+      "sha256": "713218011337A69BBECC53AB526164C8185EDE8428D4BB97D6F79CC2B9E9632E"
+    },
+    {
+      "path": "target-post-worktree-manifest.tsv",
+      "byteCount": 376506,
+      "lfCount": 2377,
+      "sha256": "CAF9F5798C53F5FAD491E31DFD2295B9C49FA32B25705EE45D1136609A8DF702"
+    },
+    {
+      "path": "target-pre-anvien-manifest.tsv",
+      "byteCount": 367,
+      "lfCount": 4,
+      "sha256": "90B264B6C927D4E32BAD276C0E984CD1F0EB4714FFF772B6273E931E381998AF"
+    },
+    {
+      "path": "target-pre-git.txt",
+      "byteCount": 2840,
+      "lfCount": 34,
+      "sha256": "2E0AD6964930774FBF61E20C6CCDF641F181C636E10FC4E799CA9A39DC9C9748"
+    },
+    {
+      "path": "target-pre-state.json",
+      "byteCount": 6840,
+      "lfCount": 127,
+      "sha256": "CDF5258455404D951A1AF5A8AEC896CEC4E1D2ABCE707127EB2C4E8E37C16EC2"
+    },
+    {
+      "path": "target-pre-worktree-manifest.tsv",
+      "byteCount": 376506,
+      "lfCount": 2377,
+      "sha256": "CAF9F5798C53F5FAD491E31DFD2295B9C49FA32B25705EE45D1136609A8DF702"
+    }
+  ]
+}

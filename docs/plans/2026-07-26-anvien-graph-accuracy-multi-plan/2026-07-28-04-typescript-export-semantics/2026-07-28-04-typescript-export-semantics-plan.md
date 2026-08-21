@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P4-A committed at 479e8ac229a17f2f6f94be9a4d04e07d74ac4d43 / P4-B committed at 11a37aa8ec0320dd93258c058b088d1070aa778d / P4-B1 committed at 42d167aaf28446ac0b3de479a8afefabb8d06736 with source-build-boundary-Supervisor-detect PASS / P4-C committed at c99c4070b66e7a96be8c9fa2721a0335a1f94877 after Supervisor REVIEW1 and E4-P4C-DETECT1 PASS / P4-C2 is the sole open slice; Child 05 and later slices locked`
+- Status: `P4-A/P4-B/P4-B1/P4-C committed at their recorded isolated boundaries / P4-C2 is the sole open slice; E4-P4C2-ORACLE1 remains SEALED; exact rejection repair, fresh E4-P4C2-TARGET1/BOUNDARY1, independent E4-P4C2-REVIEW2 and Main-owned E4-P4C2-DETECT1 are PASS; E4-P4C2-COMMIT1 remains pending; Child 05 and later slices remain locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md`
@@ -29,6 +29,8 @@ Represent TypeScript module-export syntax accurately and consistently, separate 
 - Each production and test file owns one primary semantic responsibility. Do not introduce catch-all helpers or refactor unrelated legacy responsibilities.
 - Synthetic fixtures belong under the owning package's `testdata/`; they must be independently authored and must not copy target source.
 - Analyze `E:\cheapapp.org` in place only for P4-C2. Its source is preserve-only; normal operational output under its own `.anvien` is the only allowed write there.
+- Evidence-bearing artifacts are born durable: oracle rows, raw captures, command streams, manifests, provenance, expected-values inputs/outputs, benchmark material, and reproducibility files must be written directly under an approved `reports/QA/child04-p4c2/...` path. `.tmp` is debug-only; anything evidence-bearing created there is invalid and cannot be promoted, restored, copied, renamed, or used to close an evidence ID.
+- P4-C2 separates roles and observation order. The source-only Oracle Author may inspect the authorized target source and target Git/source identity, but may not run or read Anvien analyzer output, target `.anvien`, current implementation behavior, tests, goldens, or QA output as expected-value inputs. QA may observe analyzer output only after Oracle Authoring seals the durable source oracle bundle.
 - Scanner remediation and scanner-quality acceptance are outside this child.
 - Child 04 owns export syntax and direct export projection. Child 05 owns terminal module/re-export resolution, ambiguity, cycles, and package public-API reachability.
 - After each implementation slice: refresh ledgers, remove superseded slice artifacts, obtain Supervisor PASS, run `anvien detect-changes --repo E:\Anvien --scope all`, and commit that slice before opening the next one.
@@ -310,50 +312,65 @@ Out of scope:
 
 - [ ] P4-C2: Validate the complete export contract against the real target.
   - Goal: prove the 21 bounded direct exports and negative controls on the real target without modifying target source or entering Child 05 scope.
+  - Current State (2026-08-21): `E4-P4C2-ORACLE1` remains `SEALED`; the bounded repair and fresh post-repair QA pass `21/21` positives, `11/11` negatives, FileContext `17/3/1`, persistence parity `588/0`, integrity/Child 05 zeros and target/config preservation. Independent `E4-P4C2-REVIEW2` and Main-owned `E4-P4C2-DETECT1` are `PASS`; P4-C2 stays unchecked/open only for exact staging and `E4-P4C2-COMMIT1`. Child 05 remains locked.
   - Scope Boundary:
-    - Editable: this child’s Anvien-side ledgers and reusable validation assets only if an existing owner is proven necessary.
-    - Inspect-only: target source and current target graph output.
-    - Preserve-only: target source/worktree.
-    - Out of scope: production repair, target fixtures, terminal resolution, and all other child defects.
-  - Non-Goals: do not copy target source or claim global module correctness.
+    - Oracle Authoring inspect-only: exactly the three accepted hash-pinned target source files plus read-only target HEAD/branch/tracked-status metadata; no target `.anvien` observation.
+    - QA inspect-only after seal: target source hashes, target-local analyzer output, and only affected persisted records.
+    - Preserve-only: all target source and the complete pre-existing target worktree.
+    - Anvien-side writable evidence: new durable oracle and QA bundles under `reports/QA/child04-p4c2/...`, plus this child’s ledgers after valid evidence.
+    - Rejection-repair editable boundary after `E4-P4C2-REVIEW1`: `internal/resolution/emit.go` only, subject to fresh graph, file-detail, and upstream file/symbol impact before edit.
+    - Rejection-repair test-after-code boundary: `internal/resolution/p4c_export_projection_test.go` and only additional existing P4-C owner tests/goldens proven necessary by fresh impact; production behavior must change first.
+    - Rejection-repair inspect/preserve boundary: `internal/filecontext/context.go`, Ladybug CSV/schema/loader, accepted Export facts, QA/oracle artifacts, and unaffected P4-C tests. Edit an inspect/preserve owner only if new evidence changes the plan first.
+    - Out of scope: any other production/test/golden repair, target fixtures/reports/probes, copied target source, terminal resolution, other Child defects, and every `.tmp` evidence path.
+  - Non-Goals: do not recover/promote `.tmp` captures, do not let analyzer/QA output author or revise expected values, and do not claim global module correctness.
+  - Artifact Rule: Oracle Authoring writes the 21 positive rows, 11 negative controls, schema, source basis, provenance, human report, and seal directly under `reports/QA/child04-p4c2/oracle/<oracle_id>/`; QA writes its later raw/normalized run bundle directly under `reports/QA/child04-p4c2/runs/<run_id>/`. Exact schema, file list, and non-circular digest are fixed by `reports/Architect/rp_architect_260821_103812_by_gpt-5_p4c2_evidence_lifecycle.md`; `.tmp` is never an input, staging path, or recovery route.
   - Pre-flight Questions:
-    - Data source: independent 21-entry direct-export oracle, negative controls, and target normal analyze output.
+    - Expected-value source: direct TypeScript semantics read from the exact hash-pinned target source by a clean-context Oracle Authoring lane; current implementation/analyzer/tests/goldens/QA output are forbidden inputs.
+    - Actual-value source: one fresh normal built-analyzer run on the same sealed source basis, performed only by the existing QA continuation after seal verification.
     - Display permission: preserve existing command access; no permission behavior changes.
-    - DB read flow: read target source, target-local graph output, and only affected persisted records.
-    - DB write flow: normal target-local `.anvien` operational output only.
-    - Render location: Anvien-side evidence ledger and human-readable command output; target-side reports are forbidden.
+    - DB read flow: Oracle Authoring reads no target graph/persistence; QA may read target-local graph output and only affected persisted records after seal.
+    - DB write flow: Oracle Authoring writes only the durable Anvien-side bundle; QA may write normal target-local `.anvien` operational output only after seal.
+    - Render location: durable Anvien-side oracle bundle, later QA report, and evidence ledger; target-side reports are forbidden.
     - UI behavior flow: N/A unless an already approved public surface was affected in P4-C.
     - Docker runtime: N/A for the planned non-UI target boundary; use built Docker only if an approved UI scope exists.
     - Playwright target: N/A for source/graph validation; required only for an approved UI scope.
     - Behavior test: `21/21`, exact kind/name/meaning/type-only/access fields, compatibility parity, negative controls, zero terminal-resolution claims, and target boundary.
-    - Cleanup/quarantine: all reports remain in Anvien; remove debug artifacts and never write target fixtures/probes.
+    - Cleanup/quarantine: all evidence-bearing artifacts originate and remain in durable Anvien paths; `.tmp` may contain only disposable non-evidence debug trash and never participates in a gate; never write target fixtures/probes.
     - External side effects: normal analyzer-owned target-local graph output only.
     - N/A notes: validation is non-UI unless P4-C recorded an approved public-surface impact.
   - Work Steps:
-    1. Capture target HEAD/status and pre-run boundary, then run the normal built analyzer and compare the independent oracle, provider facts, graph records, and affected persistence fields.
+    1. Main opens a clean/no-history Oracle Authoring lane and keeps QA paused. The lane verifies target HEAD/status plus the three accepted source hashes, reads only those source files, authors exactly 21 positive and 11 negative rows directly in `reports/QA/child04-p4c2/oracle/<oracle_id>/`, writes complete provenance, and writes `seal.json` last. Any source mismatch, forbidden input observation, target write, `.tmp` evidence creation, incomplete row, or seal mismatch stops before analyzer validation.
+       - UI flow check: N/A; no visible flow exists.
+       - DB/data flow check: source-only; target `.anvien` and analyzer/persistence output are forbidden.
+       - Render location check: durable oracle JSON/Markdown bundle only.
+       - Mini QA: N/A; Oracle Authoring is not QA.
+       - Evidence target: `E4-P4C2-ORACLE1` is recorded as `SEALED`; the immutable bundle and identities returned to Main before QA observation.
+    2. Main routes the sealed path/digest to the existing QA continuation. QA verifies the seal/source basis, captures target pre-state, performs the canonical full build and one normal built `anvien analyze E:\cheapapp.org --force`, compares all `21+11` rows without editing expected values, records the target post-state, then proceeds through the existing Supervisor/detect/commit closure gates.
        - UI flow check: N/A unless an approved public surface exists.
-       - DB/data flow check: read only the target's current analyzer output and compare all 21 exact entries plus controls.
-       - Render location check: Anvien-side command captures and ledger evidence.
+       - DB/data flow check: actual output only; expected rows remain immutable; verify field parity, access separation, compatibility, zero diagnostics/orphans/Child 05 state, and unchanged non-`.anvien` target state.
+       - Render location check: durable QA run bundle, Child 04 evidence ledger, and later Supervisor report.
        - Mini QA: exercise the real built target analyze/query boundary and inspect human-readable output.
-       - Evidence target: `E4-P4C2-ORACLE1`, `E4-P4C2-TARGET1`.
-    2. Record access/export separation, zero derived-resolution state, and target-contamination results; refresh ledgers, obtain Supervisor PASS, run the boundary/change check, and commit valid Anvien-side evidence only.
-       - UI flow check: N/A unless an approved public surface exists.
-       - DB/data flow check: verify target source preservation, `21/21`, and negative controls.
-       - Render location check: final evidence ledger and boundary manifest under Anvien.
-       - Mini QA: visually inspect the retained result and confirm no target-side report/fixture exists.
-       - Evidence target: `E4-P4C2-BOUNDARY1`, `E4-P4C2-REVIEW1`, `E4-P4C2-DETECT1`, `E4-P4C2-COMMIT1`.
-  - Implementation Gate: P4-C is accepted and committed at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; an independent oracle with 21 entries and negative controls must be prepared before any target read; target pre-state must be recorded. Child 05 remains locked.
+       - Evidence target: `E4-P4C2-TARGET1`, `E4-P4C2-BOUNDARY1`, `E4-P4C2-REVIEW1`, `E4-P4C2-DETECT1`, `E4-P4C2-COMMIT1`.
+  - QA Handoff: report `reports/QA/child04-p4c2/runs/p4c2-target-validation-retry-260821_115050+0700/p4c2-qa-retry-validation-report.md`, `11,342` bytes / `200` LF / SHA-256 `C831004F049A563A2387B599BE01C943F5B9416C72B1C45E50A8C1F9D2CEFDB4`; comparison SHA-256 `2C78AB3BDF67D857E5C2A1B75B0F1FDFBFEBE2B70D92E7EBC8EB45A0AC5A3F27`; run digest `9F414A2C54C42F4E39AD8ED03DC042CCC3E1FB5993DA842B22F64851D16AABC4`.
+  - Supervisor Handoff: `E4-P4C2-REVIEW1` is `REJECT`; report `reports/Supervisor/rp_supervisor_260821_123030_by_gpt-5_child04_p4c2_durable_retry_review1.md`, `15,671` bytes / `126` LF / canonical SHA-256 `8E37F4B126ABB38A5DCE071C35937F59D9152EFA135B9245408CA138BEC781F7`.
+  - Supervisor Re-review: `E4-P4C2-REVIEW2` is `PASS`; report `reports/Supervisor/rp_supervisor_260821_133927_by_gpt-5_child04_p4c2_typealias_compatibility_review2.md`, `13,650` bytes / `120` LF / canonical SHA-256 `5B99A74B1A8D91D48F5E62F0BA1FFCB26317BF818AC6AE044E6CD650B208DC0B`.
+  - Rejection Repair Work Steps:
+    1. Refresh the self graph, run exact `file-detail` and upstream file/symbol impact for `internal/resolution/emit.go` and the rejected compatibility functions before editing; report HIGH/CRITICAL blast radius and keep the candidate narrow.
+    2. Correct production behavior so direct source-export membership drives definition compatibility independently from runtime-value eligibility, while `typeOnly`, meaning lanes, access separation, negatives, and Child 05 exclusions remain unchanged.
+    3. Only after production behavior is correct, update the rejected focused expectation and any source-proven affected owner test; run canonical full build, nearest owner/reader boundary, fresh real-target comparison on the sealed basis through the authorized QA workflow, independent Supervisor re-review, detect-changes, and isolated commit.
+  - Implementation Gate: P4-C remains accepted; REVIEW1 is retained as historical rejection and REVIEW2 accepts the repaired invariant. Fresh self graph and `E4-P4C2-DETECT1` are complete; Main must now verify exact staging and create isolated `E4-P4C2-COMMIT1`. Child 05 and later slices remain locked until the commit closes.
+  - Stop Conditions: Oracle Authoring stops before seal on source/hash/count/schema/provenance drift, forbidden input/context, target write, copied source, or any evidence-bearing `.tmp`/unapproved-path artifact. QA stops before comparison/acceptance on seal/source mismatch, failed/non-normal build or analyze, old/substituted output, target contamination, or any attempt to edit expected values.
   - Acceptance:
     - Source: `21/21` target definitions have correct direct export facts and access visibility remains independent.
     - Runtime/UI: the real target graph/affected persistence boundary exposes the same corrected values.
-    - Data: negative controls stay unexported, Child 05-derived fields remain absent, and the target boundary is preserved.
+    - Data: the sealed oracle has 21 complete unique positive rows and 11 exact negative controls; actual negative controls stay unexported, Child 05-derived fields remain absent, and the target boundary is preserved.
     - Behavior test: syntax-kind, meaning, type-only, compatibility, and unsupported controls pass.
-    - Cleanup: no target report, fixture, probe, or debug artifact remains.
-    - Evidence IDs: `E4-P4C2-ORACLE1`, `E4-P4C2-TARGET1`, `E4-P4C2-BOUNDARY1`, `E4-P4C2-REVIEW1`, `E4-P4C2-DETECT1`, `E4-P4C2-COMMIT1`.
+    - Cleanup: no evidence-bearing `.tmp` artifact and no target report, fixture, or probe exists; debug trash is irrelevant to every gate and may be deleted without loss.
+    - Evidence IDs: `E4-P4C2-ORACLE1`, `E4-P4C2-TARGET1`, `E4-P4C2-BOUNDARY1`, `E4-P4C2-REVIEW1`, `E4-P4C2-REVIEW2`, `E4-P4C2-DETECT1`, `E4-P4C2-COMMIT1`.
     - Actual-status rows refreshed: all Child 04 rows and Child 05 predecessor state.
-  - Evidence Targets: 21-entry oracle, target fact/projection results, negative controls, boundary manifest, Supervisor, change check, evidence commit.
+  - Evidence Targets: durable source-only authoring bundle, seal identity/chronology, 21-entry target fact/projection comparison, 11 negative controls, durable QA run/boundary manifest, later Supervisor, change check, evidence commit.
   - Actual-status Update: transition the bounded target row to `correct` and append the successor handoff refresh.
-  - Commit Boundary: commit only Anvien-side validation/ledger evidence after acceptance.
+  - Commit Boundary: after later Supervisor `PASS`, commit only valid Anvien-side durable oracle/QA evidence and the authorized five-living-document refresh; never commit or depend on target artifacts or `.tmp` material.
 
 - [ ] Pn-A: Run the Supervisor acceptance loop.
   - Goal: independently verify all five slices, source diff, build, real-boundary results, benchmark, target boundary, and evidence integrity.

@@ -1,0 +1,234 @@
+[
+  {
+    "pid": 2792,
+    "parentPid": 12456,
+    "name": "cmd.exe",
+    "executablePath": "C:\\Windows\\system32\\cmd.exe",
+    "commandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "parentName": "codex.exe",
+    "parentCommandLine": "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.818.2872.0_x64__2p2nqsd0c76g0\\app\\resources\\codex.exe\" -c features.code_mode_host=true app-server --analytics-default-enabled",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it",
+      "parent process looks like an editor or AI agent integration"
+    ]
+  },
+  {
+    "pid": 15116,
+    "parentPid": 2792,
+    "name": "anvien.exe",
+    "executablePath": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\anvien.exe",
+    "commandLine": "\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\\\node_modules\\anvien\\bin\\anvien.exe\"    mcp",
+    "parentName": "cmd.exe",
+    "parentCommandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it"
+    ]
+  },
+  {
+    "pid": 11368,
+    "parentPid": 12456,
+    "name": "cmd.exe",
+    "executablePath": "C:\\Windows\\system32\\cmd.exe",
+    "commandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "parentName": "codex.exe",
+    "parentCommandLine": "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.818.2872.0_x64__2p2nqsd0c76g0\\app\\resources\\codex.exe\" -c features.code_mode_host=true app-server --analytics-default-enabled",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it",
+      "parent process looks like an editor or AI agent integration"
+    ]
+  },
+  {
+    "pid": 4588,
+    "parentPid": 11368,
+    "name": "anvien.exe",
+    "executablePath": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\anvien.exe",
+    "commandLine": "\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\\\node_modules\\anvien\\bin\\anvien.exe\"    mcp",
+    "parentName": "cmd.exe",
+    "parentCommandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it"
+    ]
+  },
+  {
+    "pid": 10720,
+    "parentPid": 12456,
+    "name": "cmd.exe",
+    "executablePath": "C:\\Windows\\system32\\cmd.exe",
+    "commandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "parentName": "codex.exe",
+    "parentCommandLine": "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.818.2872.0_x64__2p2nqsd0c76g0\\app\\resources\\codex.exe\" -c features.code_mode_host=true app-server --analytics-default-enabled",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it",
+      "parent process looks like an editor or AI agent integration"
+    ]
+  },
+  {
+    "pid": 16328,
+    "parentPid": 10720,
+    "name": "anvien.exe",
+    "executablePath": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\anvien.exe",
+    "commandLine": "\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\\\node_modules\\anvien\\bin\\anvien.exe\"    mcp",
+    "parentName": "cmd.exe",
+    "parentCommandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it"
+    ]
+  },
+  {
+    "pid": 14580,
+    "parentPid": 12456,
+    "name": "cmd.exe",
+    "executablePath": "C:\\Windows\\system32\\cmd.exe",
+    "commandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "parentName": "codex.exe",
+    "parentCommandLine": "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.818.2872.0_x64__2p2nqsd0c76g0\\app\\resources\\codex.exe\" -c features.code_mode_host=true app-server --analytics-default-enabled",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it",
+      "parent process looks like an editor or AI agent integration"
+    ]
+  },
+  {
+    "pid": 19636,
+    "parentPid": 14580,
+    "name": "anvien.exe",
+    "executablePath": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\anvien.exe",
+    "commandLine": "\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\\\node_modules\\anvien\\bin\\anvien.exe\"    mcp",
+    "parentName": "cmd.exe",
+    "parentCommandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it"
+    ]
+  },
+  {
+    "pid": 4544,
+    "parentPid": 12456,
+    "name": "cmd.exe",
+    "executablePath": "C:\\Windows\\system32\\cmd.exe",
+    "commandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "parentName": "codex.exe",
+    "parentCommandLine": "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.818.2872.0_x64__2p2nqsd0c76g0\\app\\resources\\codex.exe\" -c features.code_mode_host=true app-server --analytics-default-enabled",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it",
+      "parent process looks like an editor or AI agent integration"
+    ]
+  },
+  {
+    "pid": 21224,
+    "parentPid": 4544,
+    "name": "anvien.exe",
+    "executablePath": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\anvien.exe",
+    "commandLine": "\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\\\node_modules\\anvien\\bin\\anvien.exe\"    mcp",
+    "parentName": "cmd.exe",
+    "parentCommandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it"
+    ]
+  },
+  {
+    "pid": 2172,
+    "parentPid": 12456,
+    "name": "cmd.exe",
+    "executablePath": "C:\\Windows\\system32\\cmd.exe",
+    "commandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "parentName": "codex.exe",
+    "parentCommandLine": "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.818.2872.0_x64__2p2nqsd0c76g0\\app\\resources\\codex.exe\" -c features.code_mode_host=true app-server --analytics-default-enabled",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it",
+      "parent process looks like an editor or AI agent integration"
+    ]
+  },
+  {
+    "pid": 18228,
+    "parentPid": 2172,
+    "name": "anvien.exe",
+    "executablePath": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\anvien.exe",
+    "commandLine": "\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\\\node_modules\\anvien\\bin\\anvien.exe\"    mcp",
+    "parentName": "cmd.exe",
+    "parentCommandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it"
+    ]
+  },
+  {
+    "pid": 21168,
+    "parentPid": 12456,
+    "name": "cmd.exe",
+    "executablePath": "C:\\Windows\\system32\\cmd.exe",
+    "commandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "parentName": "codex.exe",
+    "parentCommandLine": "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.818.2872.0_x64__2p2nqsd0c76g0\\app\\resources\\codex.exe\" -c features.code_mode_host=true app-server --analytics-default-enabled",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it",
+      "parent process looks like an editor or AI agent integration"
+    ]
+  },
+  {
+    "pid": 15196,
+    "parentPid": 21168,
+    "name": "anvien.exe",
+    "executablePath": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\anvien.exe",
+    "commandLine": "\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\\\node_modules\\anvien\\bin\\anvien.exe\"    mcp",
+    "parentName": "cmd.exe",
+    "parentCommandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it"
+    ]
+  },
+  {
+    "pid": 11472,
+    "parentPid": 12456,
+    "name": "cmd.exe",
+    "executablePath": "C:\\Windows\\system32\\cmd.exe",
+    "commandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "parentName": "codex.exe",
+    "parentCommandLine": "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.818.2872.0_x64__2p2nqsd0c76g0\\app\\resources\\codex.exe\" -c features.code_mode_host=true app-server --analytics-default-enabled",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it",
+      "parent process looks like an editor or AI agent integration"
+    ]
+  },
+  {
+    "pid": 11440,
+    "parentPid": 11472,
+    "name": "anvien.exe",
+    "executablePath": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\anvien.exe",
+    "commandLine": "\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\\\node_modules\\anvien\\bin\\anvien.exe\"    mcp",
+    "parentName": "cmd.exe",
+    "parentCommandLine": "cmd.exe /e:ON /v:OFF /d /c \"\"C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.cmd\" mcp\"",
+    "role": "mcp",
+    "ownership": "editor-owned",
+    "notes": [
+      "expected to stay running while the editor or agent session owns it"
+    ]
+  }
+]

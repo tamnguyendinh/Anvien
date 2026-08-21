@@ -1,0 +1,11 @@
+{
+  "processId": 8344,
+  "scope": "current PowerShell process and child processes only",
+  "GIT_CONFIG_COUNT": "1",
+  "GIT_CONFIG_KEY_0": "safe.directory",
+  "GIT_CONFIG_VALUE_0": "E:/cheapapp.org",
+  "setAt": "2026-08-21T11:50:50.9505860+07:00",
+  "globalSystemOrRepositoryConfigWrite": "none",
+  "clearedAt": "2026-08-21T11:52:12.4177459+07:00",
+  "clearedBeforeProcessExit": true
+}

@@ -1,0 +1,22 @@
+rowId	pass	definitionLabel	exportCount	graphRelations	ladybugRelations	compatExpected	compatActual	readerActual	failedFields
+P001	True	TypeAlias	1	1	1	True	True	True	
+P002	True	TypeAlias	1	1	1	True	True	True	
+P003	True	TypeAlias	1	1	1	True	True	True	
+P004	True	TypeAlias	1	1	1	True	True	True	
+P005	True	TypeAlias	1	1	1	True	True	True	
+P006	True	TypeAlias	1	1	1	True	True	True	
+P007	True	TypeAlias	1	1	1	True	True	True	
+P008	True	TypeAlias	1	1	1	True	True	True	
+P009	True	TypeAlias	1	1	1	True	True	True	
+P010	True	TypeAlias	1	1	1	True	True	True	
+P011	True	TypeAlias	1	1	1	True	True	True	
+P012	True	TypeAlias	1	1	1	True	True	True	
+P013	True	TypeAlias	1	1	1	True	True	True	
+P014	True	TypeAlias	1	1	1	True	True	True	
+P015	True	Function	1	1	1	True	True	True	
+P016	True	Function	1	1	1	True	True	True	
+P017	True	Function	1	1	1	True	True	True	
+P018	True	TypeAlias	1	1	1	True	True	True	
+P019	True	Function	1	1	1	True	True	True	
+P020	True	Function	1	1	1	True	True	True	
+P021	True	Function	1	1	1	True	True	True	

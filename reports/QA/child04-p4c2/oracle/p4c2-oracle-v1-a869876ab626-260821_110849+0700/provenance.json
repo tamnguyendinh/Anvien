@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "p4c2.provenance.v1",
+  "oracleId": "p4c2-oracle-v1-a869876ab626-260821_110849+0700",
+  "evidenceId": "E4-P4C2-ORACLE1",
+  "authoringWindow": {
+    "startedAt": "2026-08-21T11:08:49.622+07:00",
+    "expectedValuesCompletedBefore": "2026-08-21T11:15:14.541+07:00",
+    "timezoneOffset": "+07:00"
+  },
+  "author": {
+    "task": "Independent Child 04 P4-C2 source oracle authoring",
+    "role": "Clean-context source-only Oracle Authoring / Data-Integrity lane",
+    "sourceThreadId": "01a02251-f1f6-78a3-8d34-72b16df5c6da",
+    "skills": ["working-rules", "Data-Integrity"]
+  },
+  "authorityIdentities": [
+    { "path": "E:\\Anvien\\AGENTS.md", "byteCount": 22917, "sha256": "D472CBC8BA1ED227324130081C76DF400286F158388A2776CCD0D5B8A9FF4671" },
+    { "path": "E:\\Anvien\\.agents\\skills\\working-rules\\SKILL.md", "byteCount": 12242, "sha256": "03DCBDF3F7D2853D19B84B6F4D56EA589A795F73562CF4DD7EADDA0C296C4058" },
+    { "path": "E:\\Anvien\\.agents\\skills\\Data-Integrity\\SKILL.md", "byteCount": 39302, "sha256": "96ABA1EEEFE792A3309E754E87BAA47FC1D82CF5F1AADA4156AA8CB1FF296A8B" },
+    { "path": "E:\\Anvien\\docs\\plans\\2026-07-26-anvien-graph-accuracy-multi-plan\\2026-07-26-anvien-graph-accuracy-roadmap.md", "byteCount": 29692, "sha256": "2987648A389D7B4F5D1346B89CA220237B84CF6505CE3CF406EEE244BF741D06" },
+    { "path": "E:\\Anvien\\docs\\plans\\2026-07-26-anvien-graph-accuracy-multi-plan\\2026-07-28-04-typescript-export-semantics\\2026-07-28-04-typescript-export-semantics-plan.md", "byteCount": 43261, "sha256": "41D3D54C4DED12B4FF5BEAAFF2D2FBFB956EBD4DBA57CF53DED37681A7F99BD7" },
+    { "path": "E:\\Anvien\\docs\\plans\\2026-07-26-anvien-graph-accuracy-multi-plan\\2026-07-28-04-typescript-export-semantics\\2026-07-28-04-typescript-export-semantics-evidence.md", "byteCount": 42368, "sha256": "FD782C80AB3AF2C50C3A789CF523196EF435B71865F62063ABB101B47620C9CC" },
+    { "path": "E:\\Anvien\\docs\\plans\\2026-07-26-anvien-graph-accuracy-multi-plan\\2026-07-28-04-typescript-export-semantics\\2026-07-28-04-typescript-export-semantics-benchmark.md", "byteCount": 10165, "sha256": "2AD9E03E798D401B6F760E146850FE18F906A9330C02F784E93FD83D372D4A6D" },
+    { "path": "E:\\Anvien\\docs\\plans\\2026-07-26-anvien-graph-accuracy-multi-plan\\2026-07-28-04-typescript-export-semantics\\2026-07-28-04-typescript-export-semantics-actual-status.md", "byteCount": 28656, "sha256": "6ABA3998092DBDDC62BEA43AF2E0D306A071E7B77D504CF8048B5D9EAE50045A" },
+    { "path": "E:\\Anvien\\docs\\contracts\\graph-accuracy-contract.md", "byteCount": 9104, "sha256": "68CB65EF964E6D3D7BB8697BD786AE1451DADB1B36D10CC38B5F9CA3839F2592" },
+    { "kind": "delegation_prompt", "sourceThreadId": "01a02251-f1f6-78a3-8d34-72b16df5c6da", "scope": "Exact oracle schema, source allowlist, hashes, anchors, lifecycle, and stop conditions" },
+    { "kind": "main_speed_scope_correction", "sourceThreadId": "01a02251-f1f6-78a3-8d34-72b16df5c6da", "scope": "Proceed by the shortest source-only authoring path; no additional historical audit" }
+  ],
+  "semanticInputAllowlist": [
+    "E:\\cheapapp.org\\modules\\email\\server\\operations\\email-operations-observability.ts",
+    "E:\\cheapapp.org\\modules\\release-distribution\\server\\release-distribution-publication-state.ts",
+    "E:\\cheapapp.org\\modules\\commercial-config\\server\\admin-commercial-config\\read-admin-commercial-config.ts"
+  ],
+  "allowedTargetMetadata": [
+    "HEAD",
+    "branch",
+    "tracked status in porcelain v1 with untracked files excluded",
+    "byte counts and SHA-256 identities for the three allowlisted files"
+  ],
+  "forbiddenInputs": [
+    "E:\\cheapapp.org\\.anvien and all target analyzer output",
+    "Any Anvien build, analyze, query, graph, self-graph, accuracy, or benchmark output",
+    "Current Anvien production implementation, tests, goldens, or fixtures",
+    "Historical QA, Recovery, Architect, Planner, Coder, or Supervisor report contents",
+    "Historical .tmp oracle material",
+    "Child 05 output or terminal-resolution/public-API state",
+    "Source bytes from target files outside the three-file semantic allowlist"
+  ],
+  "commandLog": [
+    {
+      "sequence": 1,
+      "command": "Get-Content -LiteralPath 'E:\\Anvien\\AGENTS.md' -Raw",
+      "purpose": "Read the repository rules before target or bundle actions.",
+      "result": "completed"
+    },
+    {
+      "sequence": 2,
+      "command": "Get-Content -LiteralPath 'E:\\Anvien\\.agents\\skills\\working-rules\\SKILL.md' -Raw",
+      "purpose": "Read the mandatory working-rules skill completely.",
+      "result": "completed"
+    },
+    {
+      "sequence": 3,
+      "command": "Get-Content -LiteralPath 'E:\\Anvien\\.agents\\skills\\Data-Integrity\\SKILL.md' -Raw",
+      "purpose": "Read the assigned Data-Integrity skill completely.",
+      "result": "completed"
+    },
+    {
+      "sequence": 4,
+      "command": "$env:GIT_OPTIONAL_LOCKS='0'; git -C 'E:\\cheapapp.org' --no-optional-locks rev-parse HEAD",
+      "purpose": "Attempt read-only target HEAD capture without optional index locks.",
+      "result": "failed closed on Git dubious-ownership check before source read; no target write"
+    },
+    {
+      "sequence": 5,
+      "command": "$env:GIT_OPTIONAL_LOCKS='0'; git -c safe.directory=E:/cheapapp.org -C 'E:\\cheapapp.org' --no-optional-locks rev-parse HEAD",
+      "purpose": "Capture target HEAD with an invocation-local safe-directory override and no configuration write.",
+      "result": "a869876ab6262dacde6cd5d432d099a91852a646"
+    },
+    {
+      "sequence": 6,
+      "command": "$env:GIT_OPTIONAL_LOCKS='0'; git -c safe.directory=E:/cheapapp.org -C 'E:\\cheapapp.org' --no-optional-locks rev-parse --abbrev-ref HEAD",
+      "purpose": "Capture target branch read-only.",
+      "result": "master"
+    },
+    {
+      "sequence": 7,
+      "command": "$env:GIT_OPTIONAL_LOCKS='0'; git -c safe.directory=E:/cheapapp.org -C 'E:\\cheapapp.org' --no-optional-locks status --porcelain=v1 --untracked-files=no",
+      "purpose": "Capture tracked target status without enumerating untracked files or taking optional index locks.",
+      "result": "7 pre-existing tracked modifications; canonical SHA-256 FCB5AD9155C029FFA6B3D80B8AADD1EE40EDC3B408EA401992E8FEA048E4C5E1"
+    },
+    {
+      "sequence": 8,
+      "command": "Get-Item -LiteralPath 'E:\\cheapapp.org\\modules\\email\\server\\operations\\email-operations-observability.ts'; Get-FileHash -LiteralPath 'E:\\cheapapp.org\\modules\\email\\server\\operations\\email-operations-observability.ts' -Algorithm SHA256",
+      "purpose": "Record byte count and verify the required source identity before reading.",
+      "result": "19328 bytes; A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C"
+    },
+    {
+      "sequence": 9,
+      "command": "Get-Item -LiteralPath 'E:\\cheapapp.org\\modules\\release-distribution\\server\\release-distribution-publication-state.ts'; Get-FileHash -LiteralPath 'E:\\cheapapp.org\\modules\\release-distribution\\server\\release-distribution-publication-state.ts' -Algorithm SHA256",
+      "purpose": "Record byte count and verify the required source identity before reading.",
+      "result": "405 bytes; B53F966F82AEDAC58EC15A892B9B71BA0A5716638703105BB35B126CB398D474"
+    },
+    {
+      "sequence": 10,
+      "command": "Get-Item -LiteralPath 'E:\\cheapapp.org\\modules\\commercial-config\\server\\admin-commercial-config\\read-admin-commercial-config.ts'; Get-FileHash -LiteralPath 'E:\\cheapapp.org\\modules\\commercial-config\\server\\admin-commercial-config\\read-admin-commercial-config.ts' -Algorithm SHA256",
+      "purpose": "Record byte count and verify the required source identity before reading.",
+      "result": "828 bytes; 44467B1D6F1778AE4728B4941136321F7831D8FD67EBE2C93A430A3D132F90AC"
+    },
+    {
+      "sequence": 11,
+      "command": "[System.IO.File]::ReadAllLines('E:\\cheapapp.org\\modules\\email\\server\\operations\\email-operations-observability.ts')",
+      "purpose": "Read the complete allowlisted email source and derive the supplied positive and negative occurrences.",
+      "result": "634 lines read; no target write"
+    },
+    {
+      "sequence": 12,
+      "command": "[System.IO.File]::ReadAllLines('E:\\cheapapp.org\\modules\\release-distribution\\server\\release-distribution-publication-state.ts')",
+      "purpose": "Read the complete allowlisted release-distribution source and derive the supplied positive occurrences.",
+      "result": "17 lines read; no target write"
+    },
+    {
+      "sequence": 13,
+      "command": "[System.IO.File]::ReadAllLines('E:\\cheapapp.org\\modules\\commercial-config\\server\\admin-commercial-config\\read-admin-commercial-config.ts')",
+      "purpose": "Read the complete allowlisted commercial-config source and derive the supplied positive occurrence.",
+      "result": "23 lines read; no target write"
+    },
+    {
+      "sequence": 14,
+      "command": "Get-Content -LiteralPath 'E:\\Anvien\\reports\\QA\\child04-p4c2\\oracle\\p4c2-oracle-v1-a869876ab626-260821_110849+0700\\expected-values.json' -Raw | ConvertFrom-Json -Depth 100",
+      "purpose": "Parse the directly authored expected-values artifact and verify declared versus actual row counts before provenance completion.",
+      "result": "parsed; positive 21/21; negative 11/11"
+    },
+    {
+      "sequence": 15,
+      "command": "Get-FileHash -Algorithm SHA256 and Get-Item over exactly the three semantic-input files, plus the invocation-local read-only Git HEAD/branch/tracked-status commands",
+      "purpose": "Recompute source and target identity after expected-value authoring and before bundle sealing.",
+      "result": "2026-08-21T11:15:14.541+07:00; all three hashes, HEAD, branch, and tracked-status identity match the initial basis"
+    }
+  ],
+  "attestations": {
+    "forbiddenInputsObserved": [],
+    "analyzerOrQaOutputObservedBeforeSeal": false,
+    "targetWrites": [],
+    "evidenceArtifactsCreatedInTmp": [],
+    "sourceExcerptArtifactsCreated": [],
+    "unapprovedEvidencePathsCreated": [],
+    "anvienCommandsRun": [],
+    "targetSourceFilesRead": [
+      "modules/email/server/operations/email-operations-observability.ts",
+      "modules/release-distribution/server/release-distribution-publication-state.ts",
+      "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts"
+    ]
+  }
+}

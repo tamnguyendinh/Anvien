@@ -1,0 +1,789 @@
+{
+  "schemaVersion": "p4c2.oracle.v1",
+  "oracleId": "p4c2-oracle-v1-a869876ab626-260821_110849+0700",
+  "evidenceId": "E4-P4C2-ORACLE1",
+  "targetBasisRef": "source-basis.json",
+  "positiveCount": 21,
+  "negativeCount": 11,
+  "positiveRows": [
+    {
+      "rowId": "P001",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 35, "column": 1 }, "end": { "line": 46, "column": 3 } },
+        "selectionRange": { "start": { "line": 35, "column": 13 }, "end": { "line": 35, "column": 41 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsMessageSignal",
+      "expected": {
+        "exportedName": "EmailOperationsMessageSignal",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P002",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 48, "column": 1 }, "end": { "line": 53, "column": 3 } },
+        "selectionRange": { "start": { "line": 48, "column": 13 }, "end": { "line": 48, "column": 41 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsAttemptSignal",
+      "expected": {
+        "exportedName": "EmailOperationsAttemptSignal",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P003",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 55, "column": 1 }, "end": { "line": 59, "column": 3 } },
+        "selectionRange": { "start": { "line": 55, "column": 13 }, "end": { "line": 55, "column": 39 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsEventSignal",
+      "expected": {
+        "exportedName": "EmailOperationsEventSignal",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P004",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 61, "column": 1 }, "end": { "line": 66, "column": 3 } },
+        "selectionRange": { "start": { "line": 61, "column": 13 }, "end": { "line": 61, "column": 47 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsProviderEventSignal",
+      "expected": {
+        "exportedName": "EmailOperationsProviderEventSignal",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P005",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 68, "column": 1 }, "end": { "line": 74, "column": 3 } },
+        "selectionRange": { "start": { "line": 68, "column": 13 }, "end": { "line": 68, "column": 43 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsReadinessSignal",
+      "expected": {
+        "exportedName": "EmailOperationsReadinessSignal",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P006",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 76, "column": 1 }, "end": { "line": 80, "column": 3 } },
+        "selectionRange": { "start": { "line": 76, "column": 13 }, "end": { "line": 76, "column": 45 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsSuppressionSignal",
+      "expected": {
+        "exportedName": "EmailOperationsSuppressionSignal",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P007",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 82, "column": 1 }, "end": { "line": 89, "column": 3 } },
+        "selectionRange": { "start": { "line": 82, "column": 13 }, "end": { "line": 82, "column": 36 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsSnapshot",
+      "expected": {
+        "exportedName": "EmailOperationsSnapshot",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P008",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 91, "column": 1 }, "end": { "line": 97, "column": 23 } },
+        "selectionRange": { "start": { "line": 91, "column": 13 }, "end": { "line": 91, "column": 37 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsAlertCode",
+      "expected": {
+        "exportedName": "EmailOperationsAlertCode",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P009",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 99, "column": 1 }, "end": { "line": 99, "column": 67 } },
+        "selectionRange": { "start": { "line": 99, "column": 13 }, "end": { "line": 99, "column": 41 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsAlertSeverity",
+      "expected": {
+        "exportedName": "EmailOperationsAlertSeverity",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P010",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 101, "column": 1 }, "end": { "line": 107, "column": 3 } },
+        "selectionRange": { "start": { "line": 101, "column": 13 }, "end": { "line": 101, "column": 33 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsAlert",
+      "expected": {
+        "exportedName": "EmailOperationsAlert",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P011",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 109, "column": 1 }, "end": { "line": 116, "column": 3 } },
+        "selectionRange": { "start": { "line": 109, "column": 13 }, "end": { "line": 109, "column": 43 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsAlertThresholds",
+      "expected": {
+        "exportedName": "EmailOperationsAlertThresholds",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P012",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 118, "column": 1 }, "end": { "line": 148, "column": 3 } },
+        "selectionRange": { "start": { "line": 118, "column": 13 }, "end": { "line": 118, "column": 34 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsReport",
+      "expected": {
+        "exportedName": "EmailOperationsReport",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P013",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 150, "column": 1 }, "end": { "line": 156, "column": 3 } },
+        "selectionRange": { "start": { "line": 150, "column": 13 }, "end": { "line": 150, "column": 39 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsReadOptions",
+      "expected": {
+        "exportedName": "EmailOperationsReadOptions",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P014",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 158, "column": 1 }, "end": { "line": 162, "column": 3 } },
+        "selectionRange": { "start": { "line": 158, "column": 13 }, "end": { "line": 158, "column": 38 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "EmailOperationsLogOptions",
+      "expected": {
+        "exportedName": "EmailOperationsLogOptions",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P015",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 254, "column": 1 }, "end": { "line": 417, "column": 2 } },
+        "selectionRange": { "start": { "line": 254, "column": 17 }, "end": { "line": 254, "column": 43 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "function",
+      "localName": "buildEmailOperationsReport",
+      "expected": {
+        "exportedName": "buildEmailOperationsReport",
+        "exportKind": "direct_declaration",
+        "meanings": ["value"],
+        "typeOnly": false,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported function declaration creates one named value export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P016",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 438, "column": 1 }, "end": { "line": 491, "column": 2 } },
+        "selectionRange": { "start": { "line": 438, "column": 23 }, "end": { "line": 438, "column": 56 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "function",
+      "localName": "emitEmailOperationsStructuredLogs",
+      "expected": {
+        "exportedName": "emitEmailOperationsStructuredLogs",
+        "exportKind": "direct_declaration",
+        "meanings": ["value"],
+        "typeOnly": false,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported async function declaration creates one named value export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P017",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 497, "column": 1 }, "end": { "line": 634, "column": 2 } },
+        "selectionRange": { "start": { "line": 497, "column": 23 }, "end": { "line": 497, "column": 48 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "function",
+      "localName": "readEmailOperationsReport",
+      "expected": {
+        "exportedName": "readEmailOperationsReport",
+        "exportKind": "direct_declaration",
+        "meanings": ["value"],
+        "typeOnly": false,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported async function declaration creates one named value export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P018",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/release-distribution/server/release-distribution-publication-state.ts",
+        "fileSha256": "B53F966F82AEDAC58EC15A892B9B71BA0A5716638703105BB35B126CB398D474",
+        "range": { "start": { "line": 1, "column": 1 }, "end": { "line": 5, "column": 19 } },
+        "selectionRange": { "start": { "line": 1, "column": 13 }, "end": { "line": 1, "column": 49 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "type_alias",
+      "localName": "ReleaseDistributionPublicationStatus",
+      "expected": {
+        "exportedName": "ReleaseDistributionPublicationStatus",
+        "exportKind": "direct_declaration",
+        "meanings": ["type"],
+        "typeOnly": true,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported type alias creates one named, type-only direct export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P019",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/release-distribution/server/release-distribution-publication-state.ts",
+        "fileSha256": "B53F966F82AEDAC58EC15A892B9B71BA0A5716638703105BB35B126CB398D474",
+        "range": { "start": { "line": 7, "column": 1 }, "end": { "line": 11, "column": 2 } },
+        "selectionRange": { "start": { "line": 7, "column": 17 }, "end": { "line": 7, "column": 34 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "function",
+      "localName": "canPublishRelease",
+      "expected": {
+        "exportedName": "canPublishRelease",
+        "exportKind": "direct_declaration",
+        "meanings": ["value"],
+        "typeOnly": false,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported function declaration creates one named value export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P020",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/release-distribution/server/release-distribution-publication-state.ts",
+        "fileSha256": "B53F966F82AEDAC58EC15A892B9B71BA0A5716638703105BB35B126CB398D474",
+        "range": { "start": { "line": 13, "column": 1 }, "end": { "line": 17, "column": 2 } },
+        "selectionRange": { "start": { "line": 13, "column": 17 }, "end": { "line": 13, "column": 35 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "function",
+      "localName": "canRollbackRelease",
+      "expected": {
+        "exportedName": "canRollbackRelease",
+        "exportKind": "direct_declaration",
+        "meanings": ["value"],
+        "typeOnly": false,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported function declaration creates one named value export whose local and exported names coincide."
+    },
+    {
+      "rowId": "P021",
+      "polarity": "positive_direct_export",
+      "source": {
+        "path": "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts",
+        "fileSha256": "44467B1D6F1778AE4728B4941136321F7831D8FD67EBE2C93A430A3D132F90AC",
+        "range": { "start": { "line": 10, "column": 1 }, "end": { "line": 23, "column": 2 } },
+        "selectionRange": { "start": { "line": 10, "column": 23 }, "end": { "line": 10, "column": 48 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "function",
+      "localName": "readAdminCommercialConfig",
+      "expected": {
+        "exportedName": "readAdminCommercialConfig",
+        "exportKind": "direct_declaration",
+        "meanings": ["value"],
+        "typeOnly": false,
+        "exportFactCount": 1,
+        "fileToExportRelationCount": 1,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": true },
+        "exportDiagnosticCount": 0,
+        "child05DerivedState": "empty"
+      },
+      "derivation": "A top-level exported async function declaration creates one named value export whose local and exported names coincide."
+    }
+  ],
+  "negativeControls": [
+    {
+      "rowId": "N001",
+      "polarity": "negative_not_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 190, "column": 1 }, "end": { "line": 192, "column": 2 } },
+        "selectionRange": { "start": { "line": 190, "column": 10 }, "end": { "line": 190, "column": 26 } },
+        "lexicalOwner": "<module>"
+      },
+      "declarationKind": "function",
+      "localName": "boundedReadLimit",
+      "expected": {
+        "exportFactCount": 0,
+        "fileToExportRelationCount": 0,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": false },
+        "child05DerivedState": "empty"
+      },
+      "derivation": "The top-level function declaration has no export modifier, so it contributes no direct export fact."
+    },
+    {
+      "rowId": "N002",
+      "polarity": "negative_not_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 207, "column": 9 }, "end": { "line": 207, "column": 41 } },
+        "selectionRange": { "start": { "line": 207, "column": 9 }, "end": { "line": 207, "column": 13 } },
+        "lexicalOwner": "parseTime"
+      },
+      "declarationKind": "const_binding",
+      "localName": "time",
+      "expected": {
+        "exportFactCount": 0,
+        "fileToExportRelationCount": 0,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": false },
+        "child05DerivedState": "empty"
+      },
+      "derivation": "This constant binding is local to parseTime and has no direct module-export syntax."
+    },
+    {
+      "rowId": "N003",
+      "polarity": "negative_not_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 214, "column": 11 }, "end": { "line": 214, "column": 34 } },
+        "selectionRange": { "start": { "line": 214, "column": 11 }, "end": { "line": 214, "column": 15 } },
+        "lexicalOwner": "latestIso::values.reduce::<anonymous-callback@213:47>"
+      },
+      "declarationKind": "const_binding",
+      "localName": "time",
+      "expected": {
+        "exportFactCount": 0,
+        "fileToExportRelationCount": 0,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": false },
+        "child05DerivedState": "empty"
+      },
+      "derivation": "This same-name constant belongs to the reducer callback nested in latestIso and has no direct module-export syntax."
+    },
+    {
+      "rowId": "N004",
+      "polarity": "negative_not_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 262, "column": 9 }, "end": { "line": 262, "column": 40 } },
+        "selectionRange": { "start": { "line": 262, "column": 9 }, "end": { "line": 262, "column": 12 } },
+        "lexicalOwner": "buildEmailOperationsReport"
+      },
+      "declarationKind": "const_binding",
+      "localName": "now",
+      "expected": {
+        "exportFactCount": 0,
+        "fileToExportRelationCount": 0,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": false },
+        "child05DerivedState": "empty"
+      },
+      "derivation": "This constant binding is local to buildEmailOperationsReport and has no direct module-export syntax."
+    },
+    {
+      "rowId": "N005",
+      "polarity": "negative_not_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 501, "column": 9 }, "end": { "line": 501, "column": 40 } },
+        "selectionRange": { "start": { "line": 501, "column": 9 }, "end": { "line": 501, "column": 12 } },
+        "lexicalOwner": "readEmailOperationsReport"
+      },
+      "declarationKind": "const_binding",
+      "localName": "now",
+      "expected": {
+        "exportFactCount": 0,
+        "fileToExportRelationCount": 0,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": false },
+        "child05DerivedState": "empty"
+      },
+      "derivation": "This same-name constant is local to readEmailOperationsReport and has no direct module-export syntax."
+    },
+    {
+      "rowId": "N006",
+      "polarity": "negative_not_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 504, "column": 5 }, "end": { "line": 504, "column": 16 } },
+        "selectionRange": { "start": { "line": 504, "column": 5 }, "end": { "line": 504, "column": 16 } },
+        "lexicalOwner": "readEmailOperationsReport"
+      },
+      "declarationKind": "const_binding",
+      "localName": "messageRows",
+      "expected": {
+        "exportFactCount": 0,
+        "fileToExportRelationCount": 0,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": false },
+        "child05DerivedState": "empty"
+      },
+      "derivation": "This array-binding leaf is local to readEmailOperationsReport and has no direct module-export syntax."
+    },
+    {
+      "rowId": "N007",
+      "polarity": "negative_not_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 505, "column": 5 }, "end": { "line": 505, "column": 16 } },
+        "selectionRange": { "start": { "line": 505, "column": 5 }, "end": { "line": 505, "column": 16 } },
+        "lexicalOwner": "readEmailOperationsReport"
+      },
+      "declarationKind": "const_binding",
+      "localName": "attemptRows",
+      "expected": {
+        "exportFactCount": 0,
+        "fileToExportRelationCount": 0,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": false },
+        "child05DerivedState": "empty"
+      },
+      "derivation": "This array-binding leaf is local to readEmailOperationsReport and has no direct module-export syntax."
+    },
+    {
+      "rowId": "N008",
+      "polarity": "negative_not_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 506, "column": 5 }, "end": { "line": 506, "column": 14 } },
+        "selectionRange": { "start": { "line": 506, "column": 5 }, "end": { "line": 506, "column": 14 } },
+        "lexicalOwner": "readEmailOperationsReport"
+      },
+      "declarationKind": "const_binding",
+      "localName": "eventRows",
+      "expected": {
+        "exportFactCount": 0,
+        "fileToExportRelationCount": 0,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": false },
+        "child05DerivedState": "empty"
+      },
+      "derivation": "This array-binding leaf is local to readEmailOperationsReport and has no direct module-export syntax."
+    },
+    {
+      "rowId": "N009",
+      "polarity": "negative_not_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 507, "column": 5 }, "end": { "line": 507, "column": 22 } },
+        "selectionRange": { "start": { "line": 507, "column": 5 }, "end": { "line": 507, "column": 22 } },
+        "lexicalOwner": "readEmailOperationsReport"
+      },
+      "declarationKind": "const_binding",
+      "localName": "providerEventRows",
+      "expected": {
+        "exportFactCount": 0,
+        "fileToExportRelationCount": 0,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": false },
+        "child05DerivedState": "empty"
+      },
+      "derivation": "This array-binding leaf is local to readEmailOperationsReport and has no direct module-export syntax."
+    },
+    {
+      "rowId": "N010",
+      "polarity": "negative_not_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 508, "column": 5 }, "end": { "line": 508, "column": 18 } },
+        "selectionRange": { "start": { "line": 508, "column": 5 }, "end": { "line": 508, "column": 18 } },
+        "lexicalOwner": "readEmailOperationsReport"
+      },
+      "declarationKind": "const_binding",
+      "localName": "readinessRows",
+      "expected": {
+        "exportFactCount": 0,
+        "fileToExportRelationCount": 0,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": false },
+        "child05DerivedState": "empty"
+      },
+      "derivation": "This array-binding leaf is local to readEmailOperationsReport and has no direct module-export syntax."
+    },
+    {
+      "rowId": "N011",
+      "polarity": "negative_not_direct_export",
+      "source": {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "fileSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+        "range": { "start": { "line": 509, "column": 5 }, "end": { "line": 509, "column": 20 } },
+        "selectionRange": { "start": { "line": 509, "column": 5 }, "end": { "line": 509, "column": 20 } },
+        "lexicalOwner": "readEmailOperationsReport"
+      },
+      "declarationKind": "const_binding",
+      "localName": "suppressionRows",
+      "expected": {
+        "exportFactCount": 0,
+        "fileToExportRelationCount": 0,
+        "access": { "state": "absent", "value": null },
+        "compatibility": { "isExported": false },
+        "child05DerivedState": "empty"
+      },
+      "derivation": "This array-binding leaf is local to readEmailOperationsReport and has no direct module-export syntax."
+    }
+  ]
+}

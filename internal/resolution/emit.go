@@ -371,9 +371,7 @@ func exportProjectionNodes(w *workspace, ir scopeir.ScopeIR) (map[string]struct{
 				)
 			}
 			localDefinitionNodeID = localDefinition.GraphID
-			if exportFactIsRuntime(fact) {
-				directExportDefIDs[fact.LocalDefID] = struct{}{}
-			}
+			directExportDefIDs[fact.LocalDefID] = struct{}{}
 		}
 
 		exportNodes = append(exportNodes, exportGraphNode(fact, index, localDefinitionNodeID))
@@ -450,18 +448,6 @@ func exportMeaningValues(meanings []scopeir.ExportMeaning) []string {
 		values[index] = string(meaning)
 	}
 	return values
-}
-
-func exportFactIsRuntime(fact scopeir.ExportFact) bool {
-	if fact.TypeOnly {
-		return false
-	}
-	for _, meaning := range fact.Meanings {
-		if meaning == scopeir.ExportMeaningValue || meaning == scopeir.ExportMeaningNamespace {
-			return true
-		}
-	}
-	return false
 }
 
 func emitExportNode(e *emitter, emitted map[string]graph.Node, node graph.Node) error {

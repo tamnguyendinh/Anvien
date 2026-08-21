@@ -1,0 +1,12 @@
+{
+  "command": "anvien analyze E:\\cheapapp.org --force",
+  "invocationCount": 1,
+  "processId": 7196,
+  "processLocalGitTrust": true,
+  "startedAt": "2026-08-21T13:21:25.0447234+07:00",
+  "endedAt": "2026-08-21T13:22:54.1676270+07:00",
+  "durationSeconds": 89.123,
+  "exitCode": 0,
+  "runtimeVersion": "1.2.8",
+  "runtimeSha256": "C9BE636BA375F77B77168666FE904914D91BB0BC57A723C4557B5277B3C146E4"
+}

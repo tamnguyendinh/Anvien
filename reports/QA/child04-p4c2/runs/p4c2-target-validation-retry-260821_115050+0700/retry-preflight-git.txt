@@ -1,0 +1,14 @@
+git -C E:\cheapapp.org rev-parse HEAD
+a869876ab6262dacde6cd5d432d099a91852a646
+
+git -C E:\cheapapp.org branch --show-current
+master
+
+git -C E:\cheapapp.org status --porcelain=v1 --untracked-files=no
+ M .dockerignore
+ M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png
+ M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png
+ M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png
+ M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png
+ M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png
+ M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png

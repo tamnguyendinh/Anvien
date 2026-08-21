@@ -1,0 +1,16 @@
+{
+  "capturedAt": "2026-08-21T11:42:34.3554792+07:00",
+  "commandName": "anvien.ps1",
+  "commandType": "ExternalScript",
+  "resolvedSource": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\anvien.ps1",
+  "wrapperByteCount": 482,
+  "wrapperSha256": "29ACAEB5A69B36A9FD34D3F782C6852C50777C394DF30B3EF3326C7C9C841560",
+  "version": "1.2.8",
+  "versionExitCode": 0,
+  "localBuiltExe": "E:\\Anvien\\anvien\\bin\\anvien.exe",
+  "localBuiltExeByteCount": 71371776,
+  "localBuiltExeSha256": "23D647FC27BDDE841EC3F94316A6BFA7ADA2F24E87BF15D236FB86743BD6E8C6",
+  "globalInstalledExe": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\anvien.exe",
+  "globalInstalledExeByteCount": 71371776,
+  "globalInstalledExeSha256": "23D647FC27BDDE841EC3F94316A6BFA7ADA2F24E87BF15D236FB86743BD6E8C6"
+}

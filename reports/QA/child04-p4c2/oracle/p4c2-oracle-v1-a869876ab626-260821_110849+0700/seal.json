@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "p4c2.seal.v1",
+  "oracleId": "p4c2-oracle-v1-a869876ab626-260821_110849+0700",
+  "evidenceId": "E4-P4C2-ORACLE1",
+  "sourceBasis": {
+    "filename": "source-basis.json",
+    "byteCount": 8769,
+    "sha256": "1DD90BBFB664EEC3EDE43A1A7949DF59166DB7C7CA23732ABEA5C973D05213A8",
+    "targetHead": "a869876ab6262dacde6cd5d432d099a91852a646",
+    "targetBranch": "master",
+    "trackedStatusCanonicalSha256": "FCB5AD9155C029FFA6B3D80B8AADD1EE40EDC3B408EA401992E8FEA048E4C5E1",
+    "sourceVerifiedAt": "2026-08-21T11:21:54.109+07:00",
+    "sourceFiles": [
+      {
+        "path": "modules/email/server/operations/email-operations-observability.ts",
+        "byteCount": 19328,
+        "sha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C"
+      },
+      {
+        "path": "modules/release-distribution/server/release-distribution-publication-state.ts",
+        "byteCount": 405,
+        "sha256": "B53F966F82AEDAC58EC15A892B9B71BA0A5716638703105BB35B126CB398D474"
+      },
+      {
+        "path": "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts",
+        "byteCount": 828,
+        "sha256": "44467B1D6F1778AE4728B4941136321F7831D8FD67EBE2C93A430A3D132F90AC"
+      }
+    ]
+  },
+  "positiveCount": 21,
+  "negativeCount": 11,
+  "sealConstruction": {
+    "excludedFiles": ["seal.json"],
+    "fileOrder": "ordinal filename order",
+    "identityLineEncoding": "UTF-8 filename NUL byte_count_decimal NUL SHA256_UPPER_HEX LF",
+    "digestPrefix": "p4c2-oracle-v1\n",
+    "algorithm": "SHA-256"
+  },
+  "files": [
+    {
+      "filename": "authoring-report.md",
+      "byteCount": 3293,
+      "sha256": "DAFD82D01A6E5C70D269CEE21CCD42BDE8D1363F3E3C474F60AE5D9E258F38EA"
+    },
+    {
+      "filename": "expected-values.json",
+      "byteCount": 35934,
+      "sha256": "1DC54F773455A031C9FBC844F5ACEB7D107EF24848649FC2F1188EA05819A66B"
+    },
+    {
+      "filename": "oracle.schema.json",
+      "byteCount": 8233,
+      "sha256": "388E7E187DB876E48FC85E0AF71A8BBE989B38AE7D96CE6DB4B7D7DC8CD5E96A"
+    },
+    {
+      "filename": "provenance.json",
+      "byteCount": 10366,
+      "sha256": "2D3BFE247667B2FE47AF674E5BF49266CECA5696CAA27C1A458FAA10462B7639"
+    },
+    {
+      "filename": "source-basis.json",
+      "byteCount": 8769,
+      "sha256": "1DD90BBFB664EEC3EDE43A1A7949DF59166DB7C7CA23732ABEA5C973D05213A8"
+    }
+  ],
+  "bundleDigest": "7749AB14E02FBF61CF7F81B3A7638888F8AD414064F9F969CFED06EB11355439",
+  "sealedAt": "2026-08-21T11:21:54.109+07:00",
+  "status": "SEALED"
+}

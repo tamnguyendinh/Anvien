@@ -1,0 +1,127 @@
+npm notice run full-build
+npm notice run powershell -ExecutionPolicy Bypass -File .\scripts\full-build.ps1
+[full-build] npm install
+npm notice run anvien@1.2.8 postinstall
+npm notice run go run ../cmd/anvien package build-runtime || go run ./go-src/cmd/anvien package build-runtime || cmd /c .\bin\anvien.exe package ensure-runtime || ./bin/anvien.exe package ensure-runtime
+[package-runtime] building Go runtime for windows/amd64
+[package-runtime] Go source root: E:\Anvien
+[package-runtime] LadybugDB native runtime: E:\Anvien\.tmp\ladybug-native\v0.19.1\windows-x86_64
+[package-runtime] wrote E:\Anvien\anvien\bin\anvien.exe
+npm notice run anvien@1.2.8 prepare
+npm notice run npm run build
+npm notice run anvien@1.2.8 build
+npm notice run go run ../cmd/anvien package build-runtime
+[package-runtime] building Go runtime for windows/amd64
+[package-runtime] Go source root: E:\Anvien
+[package-runtime] LadybugDB native runtime: E:\Anvien\.tmp\ladybug-native\v0.19.1\windows-x86_64
+[package-runtime] wrote E:\Anvien\anvien\bin\anvien.exe
+
+up to date, audited 1 package in 56s
+
+found 0 vulnerabilities
+[full-build] npm run build
+npm notice run anvien@1.2.8 build
+npm notice run go run ../cmd/anvien package build-runtime
+[package-runtime] building Go runtime for windows/amd64
+[package-runtime] Go source root: E:\Anvien
+[package-runtime] LadybugDB native runtime: E:\Anvien\.tmp\ladybug-native\v0.19.1\windows-x86_64
+[package-runtime] wrote E:\Anvien\anvien\bin\anvien.exe
+[full-build] npm install -g .
+
+up to date in 2s
+npm warn install-scripts 1 package had install scripts blocked because they are not covered by allowScripts:
+npm warn install-scripts   anvien@1.2.8 (postinstall: go run ../cmd/anvien package build-runtime || go run ./go-src/cmd/anvien package build-runtime || cmd /c .\bin\anvien.exe package ensure-runtime || ./bin/anvien.exe package ensure-runtime; prepare: npm run build)
+npm warn install-scripts
+npm warn install-scripts Run `npm install -g --allow-scripts=anvien` to allow these scripts once, or `npm config set allow-scripts=anvien --location=user` to allow them for all global installs.
+[full-build] Get-Command anvien
+
+CommandType     Name                                               Version    Source                                   
+-----------     ----                                               -------    ------                                   
+ExternalScript  anvien.ps1                                                    C:\Users\TAM NGUYEN\AppData\Roaming\np...
+
+
+[full-build] anvien version
+1.2.8
+[full-build] anvien-launcher build
+[build] using Go: go version go1.26.3 windows/amd64
+[build] using LadybugDB native runtime: E:\Anvien\.tmp\ladybug-native\v0.19.1\windows-x86_64
+npm notice run anvien-web@0.0.0 build
+npm notice run tsc -b && vite build
+vite v5.4.21 building for production...
+transforming...
+✓ 2943 modules transformed.
+rendering chunks...
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) E:/Anvien/anvien-web/src/components/ProcessFlowModal.tsx is dynamically imported by E:/Anvien/anvien-web/src/components/MermaidDiagram.tsx but also statically imported by E:/Anvien/anvien-web/src/components/ProcessesPanel.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                           0.71 kB │ gzip:   0.39 kB
+dist/assets/index-C5hwy74q.css                           56.15 kB │ gzip:  10.59 kB
+dist/assets/chunk-TU3PZOEN-DgCKLwFe.js                    0.19 kB │ gzip:   0.16 kB
+dist/assets/chunk-TBF5ZNIQ-B5AGE3qc.js                    0.22 kB │ gzip:   0.20 kB
+dist/assets/chunk-AEOMTBSW-i0ATf8ig.js                    0.29 kB │ gzip:   0.20 kB
+dist/assets/chunk-KSICW3F5-ebnRiSVC.js                    0.36 kB │ gzip:   0.27 kB
+dist/assets/stateDiagram-v2-B5LQ5ZB2-BiHsr6cL.js          0.36 kB │ gzip:   0.27 kB
+dist/assets/classDiagram-PPOCWD7C-oaSYMsjR.js             0.43 kB │ gzip:   0.30 kB
+dist/assets/classDiagram-v2-23LJLIIU-oaSYMsjR.js          0.43 kB │ gzip:   0.30 kB
+dist/assets/chunk-RWUO3TPN-B4f4iepf.js                    0.52 kB │ gzip:   0.37 kB
+dist/assets/infoDiagram-MN7RKWGX-CelR9Vlq.js              0.59 kB │ gzip:   0.42 kB
+dist/assets/chunk-O5ABG6QK-CUALsECL.js                    1.88 kB │ gzip:   0.83 kB
+dist/assets/diagram-LXUTUG65-DjU_SrcR.js                  2.74 kB │ gzip:   1.37 kB
+dist/assets/pieDiagram-3IATQBI2-D1UqK9IX.js               4.06 kB │ gzip:   1.88 kB
+dist/assets/diagram-JC5VWROH-DY31PMMD.js                  4.23 kB │ gzip:   1.87 kB
+dist/assets/diagram-H7BISOXX-CjtmhY4P.js                  5.93 kB │ gzip:   2.52 kB
+dist/assets/chunk-HN6EAY2L-TkwW_wIo.js                    6.04 kB │ gzip:   1.94 kB
+dist/assets/stateDiagram-MLPALWAM-CUvGR4Q-.js            10.27 kB │ gzip:   3.59 kB
+dist/assets/diagram-WEHSV5V5-lgydMcGj.js                 10.96 kB │ gzip:   3.84 kB
+dist/assets/dagre-E77IOHMT-DDdYuJEX.js                   11.15 kB │ gzip:   4.17 kB
+dist/assets/ishikawaDiagram-YMYX4NHK-Dvuj_TXO.js         17.47 kB │ gzip:   6.64 kB
+dist/assets/kanban-definition-LJHFXRCJ-CX4xX3d1.js       20.60 kB │ gzip:   7.25 kB
+dist/assets/sankeyDiagram-L3NBLAOT-CLvUAnii.js           23.04 kB │ gzip:   8.42 kB
+dist/assets/journeyDiagram-SO5T7YLQ-DF_qhA5Q.js          23.39 kB │ gzip:   8.28 kB
+dist/assets/mindmap-definition-2EUWGEK5-U5XBxHV0.js      23.78 kB │ gzip:   8.07 kB
+dist/assets/wardleyDiagram-XU3VSMPF-qjY00ieh.js          24.62 kB │ gzip:   6.70 kB
+dist/assets/chunk-H3VCZNTA-BdGVFtnG.js                   25.03 kB │ gzip:   9.99 kB
+dist/assets/erDiagram-GCSMX5X6-lzMbXzvj.js               26.85 kB │ gzip:   9.32 kB
+dist/assets/chunk-3YCYZ6SJ-CVfrA5Po.js                   28.57 kB │ gzip:  10.25 kB
+dist/assets/gitGraphDiagram-3HKGZ4G3-Cv3dVRDs.js         29.69 kB │ gzip:   8.84 kB
+dist/assets/timeline-definition-5SPVSISX-Bz2VMDOY.js     31.10 kB │ gzip:  10.35 kB
+dist/assets/requirementDiagram-M5DCFWZL-BpyBd9Wz.js      31.14 kB │ gzip:   9.77 kB
+dist/assets/quadrantDiagram-E256RVCF-B35pAE88.js         34.18 kB │ gzip:  10.02 kB
+dist/assets/chunk-3GS5O3IE-l2WBsNMG.js                   37.34 kB │ gzip:  12.13 kB
+dist/assets/xychartDiagram-ZHJ5623Y-2ouuagM1.js          38.86 kB │ gzip:  10.92 kB
+dist/assets/vennDiagram-IE5QUKF5-CNPIcEaH.js             42.68 kB │ gzip:  16.06 kB
+dist/assets/chunk-PK6DOVAG-DwmviWl5.js                   47.22 kB │ gzip:  15.12 kB
+dist/assets/ganttDiagram-MUNLMDZQ-CD0PTSq2.js            49.83 kB │ gzip:  16.80 kB
+dist/assets/flowDiagram-OTCZ4VVT-D5-Qe6eu.js             61.00 kB │ gzip:  19.46 kB
+dist/assets/c4Diagram-DFAF54RM-3G883Vae.js               69.86 kB │ gzip:  19.63 kB
+dist/assets/blockDiagram-IGV67L2C-DtymJjNI.js            71.78 kB │ gzip:  20.46 kB
+dist/assets/cose-bilkent-PNC4W37J-Df33I8NL.js            83.50 kB │ gzip:  23.03 kB
+dist/assets/sequenceDiagram-ZOUHS735-CdtZrAML.js        116.59 kB │ gzip:  31.02 kB
+dist/assets/architectureDiagram-EMZXCZ2Q-DwTh4RuB.js    151.99 kB │ gzip:  43.27 kB
+dist/assets/katex-GD7MH7QM-R9dusKKI.js                  267.38 kB │ gzip:  79.22 kB
+dist/assets/chunk-7RZVMHOQ-eas7dfR8.js                  468.57 kB │ gzip: 149.81 kB
+dist/assets/wardley-RL74JXVD-BCRCBASE-DI2Pi_tB.js       531.60 kB │ gzip: 123.90 kB
+dist/assets/index-DbE_lfLM.js                         2,084.86 kB │ gzip: 618.23 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 38.13s
+[build] up to date: E:\Anvien\anvien\bin\lbug_shared.dll
+[full-build] anvien version
+1.2.8
+[full-build] anvien analyze . --force
+analyzed E:\Anvien
+files: scanned=1881 parsed_code=735 failed=0
+indexed: documents=996 metadata=138 analyzers=0 scripts=8 static=3
+gaps: unsupported_language=0 unknown=1
+graph: nodes=113684 relationships=156191 path=E:\Anvien\.anvien\graph.json
+fileProjection: status=built files=1881 dependencyEdges=18299 unresolved=466 hotspots=5 derivedEdges="File relationship groups are projections derived from symbol and source-site graph facts; canonical graph relationships remain symbol/source-site facts."
+fileProjection.group key="backend_support_model_helper" label="Backend support/model/helper files" files=46 unresolved=2621 roles="adapter:4,analyzer_helper:5,config:6,contract_model:1,fallback_adapter:1,helper:6,model:3,parser_model:15,runtime_model:2,storage_helper:2,test_helper:1" appLayers="backend:46" functionalAreas="analyzer:5,cli:1,embeddings:1,providers:16,query:3,resolution:2,session:2,storage:11,unknown:5" samples="internal/aicontext/skills/document-skills/docx/scripts/utilities.py,internal/aicontext/skills/payment-integration/scripts/checkout-helper.js,internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.py,internal/aicontext/skills/ui-styling/scripts/tests/test_tailwind_config_gen.py,internal/cli/exit_error.go,internal/cobol/cobol.go,internal/cobol/copy_expander.go,internal/cobol/jcl.go,internal/embeddings/config.go,internal/frameworks/ast.go"
+fileProjection.hotspot path="internal/aicontext/skills/ui-ux-pro-max/scripts/design_system.py" group=none role=unknown unresolved=1012 fanIn=13 fanOut=1 risk=high
+fileProjection.hotspot path="internal/aicontext/skills/document-skills/pptx/scripts/html2pptx.js" group=none role=unknown unresolved=730 fanIn=1 fanOut=0 risk=high
+fileProjection.hotspot path="internal/mcp/tools.go" group=none role=unknown unresolved=705 fanIn=45 fanOut=137 risk=high
+fileProjection.hotspot path="internal/aicontext/skills/ui-ux-pro-max/scripts/validate_data.py" group=none role=unknown unresolved=683 fanIn=8 fanOut=0 risk=high
+fileProjection.hotspot path="internal/contracts/web_ui.go" group=none role=unknown unresolved=636 fanIn=41 fanOut=59 risk=high

@@ -1,0 +1,257 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:anvien:p4c2:oracle:v1",
+  "title": "P4-C2 source oracle expected-values schema",
+  "$comment": "All positions are one-based. End positions are exclusive. Positive ranges cover the complete exported declaration; selection ranges cover the declaring identifier. Negative ranges cover the independently identified declaration occurrence; selection ranges cover its identifier.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "oracleId",
+    "evidenceId",
+    "targetBasisRef",
+    "positiveCount",
+    "negativeCount",
+    "positiveRows",
+    "negativeControls"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "p4c2.oracle.v1" },
+    "oracleId": {
+      "type": "string",
+      "pattern": "^p4c2-oracle-v1-[0-9a-f]{12}-[0-9]{6}_[0-9]{6}\\+0700$"
+    },
+    "evidenceId": { "const": "E4-P4C2-ORACLE1" },
+    "targetBasisRef": { "const": "source-basis.json" },
+    "positiveCount": { "const": 21 },
+    "negativeCount": { "const": 11 },
+    "positiveRows": {
+      "type": "array",
+      "minItems": 21,
+      "maxItems": 21,
+      "items": { "$ref": "#/$defs/positiveRow" }
+    },
+    "negativeControls": {
+      "type": "array",
+      "minItems": 11,
+      "maxItems": 11,
+      "items": { "$ref": "#/$defs/negativeRow" }
+    }
+  },
+  "$defs": {
+    "position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["line", "column"],
+      "properties": {
+        "line": { "type": "integer", "minimum": 1 },
+        "column": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {
+        "start": { "$ref": "#/$defs/position" },
+        "end": { "$ref": "#/$defs/position" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "fileSha256", "range", "selectionRange", "lexicalOwner"],
+      "properties": {
+        "path": {
+          "enum": [
+            "modules/email/server/operations/email-operations-observability.ts",
+            "modules/release-distribution/server/release-distribution-publication-state.ts",
+            "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts"
+          ]
+        },
+        "fileSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "range": { "$ref": "#/$defs/range" },
+        "selectionRange": { "$ref": "#/$defs/range" },
+        "lexicalOwner": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "path": { "const": "modules/email/server/operations/email-operations-observability.ts" }
+            },
+            "required": ["path"]
+          },
+          "then": {
+            "properties": {
+              "fileSha256": { "const": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "path": { "const": "modules/release-distribution/server/release-distribution-publication-state.ts" }
+            },
+            "required": ["path"]
+          },
+          "then": {
+            "properties": {
+              "fileSha256": { "const": "B53F966F82AEDAC58EC15A892B9B71BA0A5716638703105BB35B126CB398D474" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "path": { "const": "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts" }
+            },
+            "required": ["path"]
+          },
+          "then": {
+            "properties": {
+              "fileSha256": { "const": "44467B1D6F1778AE4728B4941136321F7831D8FD67EBE2C93A430A3D132F90AC" }
+            }
+          }
+        }
+      ]
+    },
+    "access": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "value"],
+      "properties": {
+        "state": { "enum": ["absent", "present"] },
+        "value": { "type": ["string", "null"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "state": { "const": "absent" } }, "required": ["state"] },
+          "then": { "properties": { "value": { "const": null } } }
+        },
+        {
+          "if": { "properties": { "state": { "const": "present" } }, "required": ["state"] },
+          "then": { "properties": { "value": { "type": "string", "minLength": 1 } } }
+        }
+      ]
+    },
+    "positiveExpected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exportedName",
+        "exportKind",
+        "meanings",
+        "typeOnly",
+        "exportFactCount",
+        "fileToExportRelationCount",
+        "access",
+        "compatibility",
+        "exportDiagnosticCount",
+        "child05DerivedState"
+      ],
+      "properties": {
+        "exportedName": { "type": "string", "minLength": 1 },
+        "exportKind": { "const": "direct_declaration" },
+        "meanings": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": { "enum": ["value", "type", "namespace"] }
+        },
+        "typeOnly": { "type": "boolean" },
+        "exportFactCount": { "const": 1 },
+        "fileToExportRelationCount": { "const": 1 },
+        "access": { "$ref": "#/$defs/access" },
+        "compatibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["isExported"],
+          "properties": { "isExported": { "const": true } }
+        },
+        "exportDiagnosticCount": { "const": 0 },
+        "child05DerivedState": { "const": "empty" }
+      }
+    },
+    "negativeExpected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exportFactCount",
+        "fileToExportRelationCount",
+        "access",
+        "compatibility",
+        "child05DerivedState"
+      ],
+      "properties": {
+        "exportFactCount": { "const": 0 },
+        "fileToExportRelationCount": { "const": 0 },
+        "access": { "$ref": "#/$defs/access" },
+        "compatibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["isExported"],
+          "properties": { "isExported": { "const": false } }
+        },
+        "child05DerivedState": { "const": "empty" }
+      }
+    },
+    "positiveRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rowId",
+        "polarity",
+        "source",
+        "declarationKind",
+        "localName",
+        "expected",
+        "derivation"
+      ],
+      "properties": {
+        "rowId": { "type": "string", "pattern": "^P(00[1-9]|01[0-9]|02[01])$" },
+        "polarity": { "const": "positive_direct_export" },
+        "source": { "$ref": "#/$defs/source" },
+        "declarationKind": { "enum": ["type_alias", "function"] },
+        "localName": { "type": ["string", "null"] },
+        "expected": { "$ref": "#/$defs/positiveExpected" },
+        "derivation": { "type": "string", "minLength": 1 }
+      }
+    },
+    "negativeRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rowId",
+        "polarity",
+        "source",
+        "declarationKind",
+        "localName",
+        "expected",
+        "derivation"
+      ],
+      "properties": {
+        "rowId": { "type": "string", "pattern": "^N(00[1-9]|01[01])$" },
+        "polarity": { "const": "negative_not_direct_export" },
+        "source": {
+          "allOf": [
+            { "$ref": "#/$defs/source" },
+            {
+              "properties": {
+                "path": { "const": "modules/email/server/operations/email-operations-observability.ts" }
+              }
+            }
+          ]
+        },
+        "declarationKind": { "enum": ["function", "const_binding"] },
+        "localName": { "type": ["string", "null"] },
+        "expected": { "$ref": "#/$defs/negativeExpected" },
+        "derivation": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

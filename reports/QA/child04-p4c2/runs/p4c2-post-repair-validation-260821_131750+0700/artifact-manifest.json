@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "p4c2.post-repair.qa-run-manifest.v1",
+  "runId": "p4c2-post-repair-validation-260821_131750+0700",
+  "generatedAt": "2026-08-21T13:27:42.3396768+07:00",
+  "status": "READY_FOR_SUPERVISOR",
+  "comparisonStatus": "PASS",
+  "fileCount": 18,
+  "selfExcluded": "artifact-manifest.json",
+  "digestConstruction": "SHA-256 of UTF-8 prefix p4c2-post-repair-qa-run-v1 LF plus ordinal relative_path NUL byte_count NUL SHA256_UPPER_HEX LF",
+  "runDigest": "5CA045080FFBF73C83CCA45869BFFE313DB944F16161905E548AF29193E3633E",
+  "files": [
+    {
+      "path": "anvien-handoff-state.json",
+      "byteCount": 12027,
+      "lfCount": 123,
+      "sha256": "B754A08D6E893604803ACCD270A76F0D4B093BB08F1CA374A04825BE4AF15E5A"
+    },
+    {
+      "path": "comparison-command.txt",
+      "byteCount": 91,
+      "lfCount": 5,
+      "sha256": "E488DA290100107DE01D75C748C435BBC003DFCBE8D430AE109F43CFE935F7C6"
+    },
+    {
+      "path": "comparison-meta.json",
+      "byteCount": 900,
+      "lfCount": 20,
+      "sha256": "0676B7C6427EA3F0919B152E2638214F85B90E7C95F4CFE3F693B61F716107FA"
+    },
+    {
+      "path": "comparison-result.json",
+      "byteCount": 244619,
+      "lfCount": 4852,
+      "sha256": "7FA58C69D83B875CEA4768CDF221CB39D48A20451D1EECAD0C83AAB6609ACFD5"
+    },
+    {
+      "path": "comparison-summary.json",
+      "byteCount": 8817,
+      "lfCount": 98,
+      "sha256": "4B00CCD62AB7E9F7CA30C6167C1A6D0EDD1E8B067A39B5A3B50E1058A6690665"
+    },
+    {
+      "path": "comparison-validator-provenance.json",
+      "byteCount": 821,
+      "lfCount": 13,
+      "sha256": "DEFE54C7813F1187D98B32E026128573D204621A3FBF1EF9AE03A44D3125F3C7"
+    },
+    {
+      "path": "final-target-post-state.json",
+      "byteCount": 8266,
+      "lfCount": 178,
+      "sha256": "1976A1309CA74E5D418E5A8E7CAFC0741F4236BCFB6DAD63AA642B92665A697B"
+    },
+    {
+      "path": "negative-row-summary.tsv",
+      "byteCount": 452,
+      "lfCount": 12,
+      "sha256": "67806DDE098FA0B3968093716CAA80F94AEADFFAA4CCE0BED0D16F49926E36F4"
+    },
+    {
+      "path": "p4c2-post-repair-qa-report.md",
+      "byteCount": 10510,
+      "lfCount": 207,
+      "sha256": "607A5EC0452D00E28873D6F658DB91E9C212B6532A546FE4E8A3D0811F39248F"
+    },
+    {
+      "path": "positive-row-summary.tsv",
+      "byteCount": 1001,
+      "lfCount": 22,
+      "sha256": "63EA31846E29B353FAECF663C84405E08DD23DF27BC77BC3C3F157E29ED63CA8"
+    },
+    {
+      "path": "pre-target-authority-runtime-gate.json",
+      "byteCount": 7533,
+      "lfCount": 140,
+      "sha256": "3BB01A11064D50A8E402099836F9E2C31BA7EED6CF732F63E89BAF265094B665"
+    },
+    {
+      "path": "process-local-git-trust.json",
+      "byteCount": 374,
+      "lfCount": 11,
+      "sha256": "CF1A7ECCF49A9B154061EC0D2BA0A1005931F9F23BC481E275EF1BEFFCB4B53A"
+    },
+    {
+      "path": "qa-temp-cleanup.json",
+      "byteCount": 644,
+      "lfCount": 13,
+      "sha256": "EB4D8048C5AA3D113A7EA5C773802ADDF2502C7C7EF2BF00EE8EEEAFFFF71433"
+    },
+    {
+      "path": "runtime-freshness-correction.json",
+      "byteCount": 1088,
+      "lfCount": 24,
+      "sha256": "240BB178AB9B9F411AC6265EBF4DFB7AE9BAC8D5025CF1BF804CF9F3061639D0"
+    },
+    {
+      "path": "target-analyze-meta.json",
+      "byteCount": 411,
+      "lfCount": 12,
+      "sha256": "87451F87D51481191908AE9E01DC2DCEDAADC652DBF075F0C2AE9DF74E5672A8"
+    },
+    {
+      "path": "target-analyze.txt",
+      "byteCount": 1247,
+      "lfCount": 11,
+      "sha256": "386C60AB0C5DE9427510982CF23C3FC634449859291EFDF8D3607A6C13C0265B"
+    },
+    {
+      "path": "target-post-analyze-state.json",
+      "byteCount": 7953,
+      "lfCount": 164,
+      "sha256": "C14A36C65664CE836193B381FF8192B9B68C9FC2876248B223D2790E6F3DE2FF"
+    },
+    {
+      "path": "target-pre-state.json",
+      "byteCount": 7890,
+      "lfCount": 163,
+      "sha256": "E4FE4F8E9D756B843DB5B7AAB35FCA1B927B0545B2F3088EBAF1590EF765B3BA"
+    }
+  ]
+}

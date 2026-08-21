@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "p4c2.qa-retry-run-manifest.v1",
+  "runId": "p4c2-target-validation-retry-260821_115050+0700",
+  "generatedAt": "2026-08-21T12:17:15.8308758+07:00",
+  "status": "READY_FOR_SUPERVISOR",
+  "comparisonStatus": "FAIL_COMPLETE",
+  "fileCount": 19,
+  "selfExcluded": "artifact-manifest.json",
+  "digestConstruction": "SHA-256 of UTF-8 prefix p4c2-qa-retry-run-v1 LF plus ordinal relative_path NUL byte_count NUL SHA256_UPPER_HEX LF",
+  "runDigest": "9F414A2C54C42F4E39AD8ED03DC042CCC3E1FB5993DA842B22F64851D16AABC4",
+  "files": [
+    {
+      "path": "anvien-handoff-state.json",
+      "byteCount": 9240,
+      "lfCount": 97,
+      "sha256": "7556352FA5ACF0B0C0AC4A7155109C6DD7BA40259890BCB2D72256CB722F0576"
+    },
+    {
+      "path": "comparison-command.txt",
+      "byteCount": 115,
+      "lfCount": 6,
+      "sha256": "90152E000E4D80E2C141AA5C1406B4ADD5C3D6B2CD680383EB58277D2CA9FBC4"
+    },
+    {
+      "path": "comparison-meta.json",
+      "byteCount": 401,
+      "lfCount": 11,
+      "sha256": "B0E2C948DFE9941651AD0E618D7F512E259A2C45345D16C5C2372F2B38FEC9F3"
+    },
+    {
+      "path": "comparison-result.json",
+      "byteCount": 245764,
+      "lfCount": 4899,
+      "sha256": "2C78AB3BDF67D857E5C2A1B75B0F1FDFBFEBE2B70D92E7EBC8EB45A0AC5A3F27"
+    },
+    {
+      "path": "comparison-summary.json",
+      "byteCount": 8790,
+      "lfCount": 99,
+      "sha256": "0CDDC8FDF6475666EC5112C1FCBAB0D462A25686E1F106AACE2534B136ACBA5A"
+    },
+    {
+      "path": "final-target-post-state.json",
+      "byteCount": 3925,
+      "lfCount": 101,
+      "sha256": "F7BB3CD09E95EE172CC22D4FC951395A34AA6D878A9440D5585DAEF4BAA40710"
+    },
+    {
+      "path": "git-config-pre.json",
+      "byteCount": 906,
+      "lfCount": 30,
+      "sha256": "4AD3D051E497356B2B7CE6E5B030A6E6B23107FCD48E23C259343CF9FD84F670"
+    },
+    {
+      "path": "git-config-preservation.json",
+      "byteCount": 2067,
+      "lfCount": 65,
+      "sha256": "DF9BF7C33591715D9E3914A84A41BBD79C57FB479F7EF21EE71FB7E0FFED1E05"
+    },
+    {
+      "path": "negative-row-summary.tsv",
+      "byteCount": 452,
+      "lfCount": 12,
+      "sha256": "67806DDE098FA0B3968093716CAA80F94AEADFFAA4CCE0BED0D16F49926E36F4"
+    },
+    {
+      "path": "p4c2-qa-retry-validation-report.md",
+      "byteCount": 11342,
+      "lfCount": 200,
+      "sha256": "C831004F049A563A2387B599BE01C943F5B9416C72B1C45E50A8C1F9D2CEFDB4"
+    },
+    {
+      "path": "positive-row-summary.tsv",
+      "byteCount": 1646,
+      "lfCount": 22,
+      "sha256": "636EF53EC7F46B60655B6B786FDAED4D7B43FA624B6753704298847131A816B0"
+    },
+    {
+      "path": "process-local-git-trust.json",
+      "byteCount": 395,
+      "lfCount": 11,
+      "sha256": "D40D55AFF5C6D880B0C0EBC3FB49D181B1BB20BA99EECD27DF48303D25D3737C"
+    },
+    {
+      "path": "qa-temp-cleanup.json",
+      "byteCount": 581,
+      "lfCount": 11,
+      "sha256": "039B3B7C6679B2EAD62380CC253910D00AE71C7B9CD9A191EDDA8A788580A648"
+    },
+    {
+      "path": "retry-post-state.json",
+      "byteCount": 2735,
+      "lfCount": 62,
+      "sha256": "226ED4590D348C86FE9D493758CCFA9D870B5DE9716AB2F88F109DCCE1F7B702"
+    },
+    {
+      "path": "retry-preflight-git.txt",
+      "byteCount": 889,
+      "lfCount": 14,
+      "sha256": "2704BD4C474432BEFB152FB4A99FF0DDDEAC598A9D390CF27D109F26B098706B"
+    },
+    {
+      "path": "retry-preflight.json",
+      "byteCount": 1851,
+      "lfCount": 37,
+      "sha256": "B0BE838EE593E16E3633FE5A2AA9E884D545F5CC8700D6A43FDF9FC7023F014D"
+    },
+    {
+      "path": "target-analyze-retry-meta.json",
+      "byteCount": 439,
+      "lfCount": 11,
+      "sha256": "ECEB666BBDB3103F446BD48587328B9587AC804B968198FECDC0F64A4DF91277"
+    },
+    {
+      "path": "target-analyze-retry.txt",
+      "byteCount": 1247,
+      "lfCount": 11,
+      "sha256": "386C60AB0C5DE9427510982CF23C3FC634449859291EFDF8D3607A6C13C0265B"
+    },
+    {
+      "path": "validate_p4c2.go",
+      "byteCount": 32142,
+      "lfCount": 836,
+      "sha256": "387B0B8C9DBC87BEEFAA32E659B427AC938709E4C12F6BD7FF4F55A6386E0C00"
+    }
+  ]
+}

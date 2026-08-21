@@ -1,0 +1,140 @@
+{
+  "capturedAt": "2026-08-21T13:19:13.5413707+07:00",
+  "sealedBundle": {
+    "path": "E:\\Anvien\\reports\\QA\\child04-p4c2\\oracle\\p4c2-oracle-v1-a869876ab626-260821_110849+0700",
+    "inventory": [
+      {
+        "name": "authoring-report.md",
+        "byteCount": 3293,
+        "sha256": "DAFD82D01A6E5C70D269CEE21CCD42BDE8D1363F3E3C474F60AE5D9E258F38EA"
+      },
+      {
+        "name": "expected-values.json",
+        "byteCount": 35934,
+        "sha256": "1DC54F773455A031C9FBC844F5ACEB7D107EF24848649FC2F1188EA05819A66B"
+      },
+      {
+        "name": "oracle.schema.json",
+        "byteCount": 8233,
+        "sha256": "388E7E187DB876E48FC85E0AF71A8BBE989B38AE7D96CE6DB4B7D7DC8CD5E96A"
+      },
+      {
+        "name": "provenance.json",
+        "byteCount": 10366,
+        "sha256": "2D3BFE247667B2FE47AF674E5BF49266CECA5696CAA27C1A458FAA10462B7639"
+      },
+      {
+        "name": "seal.json",
+        "byteCount": 2550,
+        "sha256": "00FFA78CAB1B584FB9290EEF8578CBF07B52A86351E9327DA60C1BE39956FE4F"
+      },
+      {
+        "name": "source-basis.json",
+        "byteCount": 8769,
+        "sha256": "1DD90BBFB664EEC3EDE43A1A7949DF59166DB7C7CA23732ABEA5C973D05213A8"
+      }
+    ],
+    "computedBundleDigest": "7749AB14E02FBF61CF7F81B3A7638888F8AD414064F9F969CFED06EB11355439",
+    "declaredBundleDigest": "7749AB14E02FBF61CF7F81B3A7638888F8AD414064F9F969CFED06EB11355439",
+    "status": "SEALED",
+    "oracleId": "p4c2-oracle-v1-a869876ab626-260821_110849+0700",
+    "positiveCount": 21,
+    "negativeCount": 11,
+    "sourceBasisSha256": "1DD90BBFB664EEC3EDE43A1A7949DF59166DB7C7CA23732ABEA5C973D05213A8",
+    "sourceBasisRepository": {
+      "path": "E:\\cheapapp.org",
+      "head": "a869876ab6262dacde6cd5d432d099a91852a646",
+      "head12": "a869876ab626",
+      "branch": "master",
+      "trackedStatus": {
+        "format": "git status --porcelain=v1 --untracked-files=no",
+        "untrackedFilesIncluded": false,
+        "lineCount": 7,
+        "canonicalization": "UTF-8 lines joined by LF with a final LF",
+        "canonicalSha256": "FCB5AD9155C029FFA6B3D80B8AADD1EE40EDC3B408EA401992E8FEA048E4C5E1",
+        "lines": [
+          " M .dockerignore",
+          " M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png",
+          " M reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png",
+          " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png",
+          " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png",
+          " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png",
+          " M reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png"
+        ]
+      }
+    }
+  },
+  "coderReport": {
+    "path": "reports/Coder/rp_coder_260821_131129_by_gpt-5_child04_p4c2_typealias_compatibility_repair_ready_for_qa.md",
+    "byteCount": 14218,
+    "lfCount": 215,
+    "rawSha256": "34E3B872403621D644CC6C1B1F3756D2365B7BCCCFFDF917F957288C3E355A57",
+    "canonicalSha256": "2B3A9B04801DE8F76D79017172EA8E251B4A2975F1772E0A7BD1E278DE1997F6"
+  },
+  "candidate": [
+    {
+      "path": "internal/resolution/emit.go",
+      "byteCount": 26772,
+      "lfCount": 815,
+      "sha256": "B1B8F22AEFE94F72483CD284B7E267FE3897412C04D581AFAB7F9FE30F0B2867",
+      "lastWriteTimeUtc": "2026-08-21T05:52:24.9557585Z",
+      "matched": true
+    },
+    {
+      "path": "internal/resolution/p4c_export_projection_test.go",
+      "byteCount": 9247,
+      "lfCount": 203,
+      "sha256": "F575F16D20D8F95C347E142BCBBEE96E18DA84D23E1433E00B6C2545132E0162",
+      "lastWriteTimeUtc": "2026-08-21T05:55:06.0893001Z",
+      "matched": true
+    }
+  ],
+  "git": {
+    "head": "310502a88849fe75f86a45a987ba21490d19dbe2",
+    "branch": "master",
+    "trackedStatusLines": [
+      " M docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-26-anvien-graph-accuracy-roadmap.md",
+      " M docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-actual-status.md",
+      " M docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md",
+      " M docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md",
+      " M docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md",
+      " M internal/resolution/emit.go",
+      " M internal/resolution/p4c_export_projection_test.go"
+    ],
+    "trackedPaths": [
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-26-anvien-graph-accuracy-roadmap.md",
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-actual-status.md",
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md",
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md",
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md",
+      "internal/resolution/emit.go",
+      "internal/resolution/p4c_export_projection_test.go"
+    ],
+    "expectedTrackedPaths": [
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-26-anvien-graph-accuracy-roadmap.md",
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-actual-status.md",
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md",
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md",
+      "docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md",
+      "internal/resolution/emit.go",
+      "internal/resolution/p4c_export_projection_test.go"
+    ],
+    "pathDifference": [],
+    "indexChangedPaths": []
+  },
+  "runtime": {
+    "version": "1.2.8",
+    "versionExitCode": 0,
+    "localPath": "E:\\Anvien\\anvien\\bin\\anvien.exe",
+    "localByteCount": 71372288,
+    "localSha256": "C9BE636BA375F77B77168666FE904914D91BB0BC57A723C4557B5277B3C146E4",
+    "localLastWriteTimeUtc": "2026-08-21T06:08:44.0155362Z",
+    "globalPath": "C:\\Users\\TAM NGUYEN\\AppData\\Roaming\\npm\\node_modules\\anvien\\bin\\anvien.exe",
+    "globalByteCount": 71372288,
+    "globalSha256": "C9BE636BA375F77B77168666FE904914D91BB0BC57A723C4557B5277B3C146E4",
+    "globalLastWriteTimeUtc": "2026-08-21T06:08:44.0155362Z",
+    "localGlobalExact": true,
+    "builtAfterCandidate": false
+  },
+  "gatePass": false
+}
