@@ -37,7 +37,7 @@
 | P5-A | physical target-file resolutions (`resolution.ImportsResolved`) | absolute count | 5,072 | 5,072 post-change | 5,072 accepted | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5B-COUNT1`, `E5-P5D-COUNT1` |
 | P5-A | resolver-emitted syntactic `IMPORTS` (`resolution.FinalizedImportsEmitted`) | absolute count | 5,072 | 5,072 post-change | 5,072 accepted | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5B-COUNT1`, `E5-P5D-COUNT1` |
 | P5-A | final persisted graph-wide `IMPORTS` | absolute count | 5,088 | 5,088 post-change | 5,088 accepted | preserve for the same input | 0 | `E5-P5A-COUNT1`, `E5-P5B-COUNT1`, `E5-P5D-COUNT1` |
-| P5-B | full graph inventory | nodes / relationships | 114,852 / 157,754 pre-implementation | 115,099 / 158,118 post-build | 115,099 / 158,118 Supervisor-accepted | no unexplained loss; new source/test/report corpus is retained | +247 / +364 | `E5-P5B-IMPACT1`, `E5-P5B-BUILD1`, `E5-P5B-REVIEW1`, `E5-P5B-DETECT1` |
+| P5-B | full graph inventory | nodes / relationships | 114,852 / 157,754 pre-implementation | 115,099 / 158,118 post-build | 115,099 / 158,118 Supervisor-accepted | no unexplained loss; new source/test/report corpus is retained | +247 / +364 | `E5-P5B-IMPACT1`, `E5-P5B-BUILD1`, `E5-P5B-REVIEW1`, `E5-P5B-DETECT1`, `E5-P5B-COMMIT1` |
 | P5-B | zero-physical barrel declarations | count | fixture not yet created | 0 | 0 | exactly 0 | 0 | `E5-P5B-ZEROBARREL1` |
 | P5-B | zero-physical barrel export surface | explicit keys / star adjacency | no export table | 2 / 1 | 2 / 1 | exact non-zero fixture expectation without implicit default | +2 / +1 | `E5-P5B-ZEROBARREL1` |
 | P5-C | named traversal vectors | passed/total | no accepted implementation | pending | pending | 100% of accepted alias/star/namespace/meaning/cycle/ambiguity vectors | pending | `E5-P5C-PROOF1`, `E5-P5C-TEST1` |
@@ -65,4 +65,5 @@ Capture these only if the accepted P5 implementation changes the measured system
 
 - P0 authority classification, file ownership, Supervisor review, cleanup, detect-changes, and commits are evidence gates rather than benchmark measurements.
 - `E5-P5B-DETECT1` is recorded as an evidence-only gate: the fresh graph had `115,134` nodes / `158,153` relationships; detect-changes reported `18` changed symbols across `5` changed files and `1` affected process, with `risk_level=medium` and `fileLayer.changedFileRisk=high`. These figures are not substituted for the fixed-corpus or full-build measurements above.
+- `E5-P5B-COMMIT1` is an evidence-only closure gate for the isolated commit `c1559df953a277b099009f8489576d00ed25aa58`; it does not add a performance or capacity measurement.
 - Declaration-universe and unrelated command/reader metrics belong to their owning children, not Child 05.

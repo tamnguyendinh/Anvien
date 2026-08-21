@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / P5-A committed at 2560f914 / P5-B Supervisor PASS, detect recorded, commit pending / P5-C+ locked`
+- Status: `P0 complete / P5-A committed at 2560f914 / P5-B committed at c1559df9 / P5-C open / P5-D+ locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -190,8 +190,8 @@ Out of scope:
   - Commit Boundary: commit P5-A alone after acceptance.
   - Completion Record: Supervisor PASS `E5-P5A-REVIEW1`; detect-changes PASS `E5-P5A-DETECT1`; isolated commit `2560f914334e65961f755febdda6585840a4260e`.
 
-- [ ] P5-B: Build export tables from accepted export facts.
-  - State: `SUPERVISOR PASS / DETECT RECORDED / COMMIT PENDING` after P5-A commit `2560f914334e65961f755febdda6585840a4260e`; P5-C/P5-D and target remain locked.
+- [x] P5-B: Build export tables from accepted export facts.
+  - State: `SUPERVISOR PASS / DETECT RECORDED / COMMITTED` at isolated commit `c1559df953a277b099009f8489576d00ed25aa58`; P5-C is now the sole open slice; P5-D and target remain locked.
   - Goal: represent each repository module's syntax-derived export surface without treating physical definitions as implicit exports.
   - Scope Boundary:
     - Editable: new dedicated semantic owner `internal/resolution/export_tables.go`, plus minimal storage and wiring in `internal/resolution/indexes.go` (`workspace` and `buildWorkspace`) selected by fresh graph/source evidence.
@@ -237,9 +237,10 @@ Out of scope:
   - Evidence Targets: source/table trace, fixture result, counts, tests, build, Supervisor, detect, commit.
   - Actual-status Update: export surface `missing -> correct`.
   - Commit Boundary: commit P5-B alone after acceptance.
-  - Completion Record: Supervisor PASS `E5-P5B-REVIEW1`; `anvien detect-changes --repo E:\Anvien --scope all` exit `0` recorded as `E5-P5B-DETECT1`; exact manifest staging and isolated P5-B commit remain pending.
+  - Completion Record: Supervisor PASS `E5-P5B-REVIEW1`; `anvien detect-changes --repo E:\Anvien --scope all` exit `0` recorded as `E5-P5B-DETECT1`; exact 11-path manifest was staged and committed as `c1559df953a277b099009f8489576d00ed25aa58`, recorded as `E5-P5B-COMMIT1`.
 
 - [ ] P5-C: Resolve aliases, re-exports, stars, cycles, ambiguity, and meanings.
+  - State: `OPEN AFTER P5-B COMMIT c1559df953a277b099009f8489576d00ed25aa58`; P5-D and target remain locked.
   - Goal: resolve one requested export to a terminal repository Symbol or an explicit unresolved result with complete proof and no global-name rescue.
   - Scope Boundary:
     - Editable: exact re-export traversal owner and minimum orchestration adapter selected by fresh impact.
@@ -273,7 +274,7 @@ Out of scope:
        - Render location check: evidence/benchmark ledgers.
        - Mini QA: inspect actual result/proof from the built runtime.
        - Evidence target: `E5-P5C-BUILD1`, `E5-P5C-TEST1`, `E5-P5C-NOGLOBAL1`, `E5-P5C-REVIEW1`, `E5-P5C-DETECT1`, `E5-P5C-COMMIT1`.
-  - Implementation Gate: P5-B accepted; requested meaning is available; fresh impact identifies the minimum adapter set.
+  - Implementation Gate: P5-B is Supervisor-accepted and committed at `c1559df953a277b099009f8489576d00ed25aa58`; requested meaning is available; fresh graph refresh plus file-detail/impact must identify the minimum adapter set before any P5-C production edit.
   - Acceptance:
     - Source: traversal follows export facts, terminates cycles, retains ambiguity, and never uses global-name rescue for explicit imports.
     - Runtime/UI: built resolver cases pass; UI is N/A.
