@@ -23,6 +23,7 @@ var NodeTables = []string{
 	"Interface",
 	"Method",
 	"CodeElement",
+	"Export",
 	"Community",
 	"Process",
 	"Package",
@@ -90,6 +91,7 @@ var RelationPairs = appendResolutionGapPairs([]RelationPair{
 	{From: "File", To: "Interface"},
 	{From: "File", To: "Method"},
 	{From: "File", To: "CodeElement"},
+	{From: "File", To: "Export"},
 	{From: "File", To: "Package"},
 	{From: "File", To: "Struct"},
 	{From: "File", To: "Enum"},
@@ -367,6 +369,8 @@ func NodeSchema(table string) string {
 		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"qualifiedName", "STRING"}, {"startLine", "INT64"}, {"startCol", "INT64"}, {"endLine", "INT64"}, {"endCol", "INT64"}, {"selectionStartLine", "INT64"}, {"selectionStartCol", "INT64"}, {"selectionEndLine", "INT64"}, {"selectionEndCol", "INT64"}, {"isExported", "BOOLEAN"}, {"content", "STRING"}, {"description", "STRING"}})
 	case "Method":
 		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"qualifiedName", "STRING"}, {"startLine", "INT64"}, {"startCol", "INT64"}, {"endLine", "INT64"}, {"endCol", "INT64"}, {"selectionStartLine", "INT64"}, {"selectionStartCol", "INT64"}, {"selectionEndLine", "INT64"}, {"selectionEndCol", "INT64"}, {"isExported", "BOOLEAN"}, {"content", "STRING"}, {"description", "STRING"}, {"parameterCount", "INT32"}, {"returnType", "STRING"}})
+	case "Export":
+		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"fileHash", "STRING"}, {"kind", "STRING"}, {"exportedName", "STRING"}, {"localName", "STRING"}, {"localDefId", "STRING"}, {"localDefinitionNodeId", "STRING"}, {"targetRaw", "STRING"}, {"targetExportedName", "STRING"}, {"meanings", "STRING[]"}, {"typeOnly", "BOOLEAN"}, {"startLine", "INT64"}, {"startCol", "INT64"}, {"endLine", "INT64"}, {"endCol", "INT64"}, {"selectionStartLine", "INT64"}, {"selectionStartCol", "INT64"}, {"selectionEndLine", "INT64"}, {"selectionEndCol", "INT64"}, {"statementStartLine", "INT64"}, {"statementStartCol", "INT64"}, {"statementEndLine", "INT64"}, {"statementEndCol", "INT64"}, {"siteKind", "STRING"}})
 	case "Community":
 		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"label", "STRING"}, {"heuristicLabel", "STRING"}, {"keywords", "STRING[]"}, {"description", "STRING"}, {"enrichedBy", "STRING"}, {"cohesion", "DOUBLE"}, {"symbolCount", "INT32"}})
 	case "Process":
@@ -406,7 +410,7 @@ func NodeSchema(table string) string {
 			{"note", "STRING"},
 		})
 	default:
-		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"qualifiedName", "STRING"}, {"startLine", "INT64"}, {"startCol", "INT64"}, {"endLine", "INT64"}, {"endCol", "INT64"}, {"selectionStartLine", "INT64"}, {"selectionStartCol", "INT64"}, {"selectionEndLine", "INT64"}, {"selectionEndCol", "INT64"}, {"content", "STRING"}, {"description", "STRING"}})
+		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"qualifiedName", "STRING"}, {"startLine", "INT64"}, {"startCol", "INT64"}, {"endLine", "INT64"}, {"endCol", "INT64"}, {"selectionStartLine", "INT64"}, {"selectionStartCol", "INT64"}, {"selectionEndLine", "INT64"}, {"selectionEndCol", "INT64"}, {"isExported", "BOOLEAN"}, {"content", "STRING"}, {"description", "STRING"}})
 	}
 }
 

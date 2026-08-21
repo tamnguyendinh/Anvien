@@ -39,10 +39,10 @@
     }
   },
   "nodeReconciliation": {
-    "go": 30,
+    "go": 36,
     "typescriptResolutionOnly": 24,
-    "delta": 6,
-    "classification": "Go ScopeIR emits six callable parameter Variable nodes absent from the historical TypeScript resolution-only baseline"
+    "delta": 12,
+    "classification": "Go ScopeIR emits six callable parameter Variable nodes and six first-class export records absent from the historical TypeScript resolution-only baseline"
   },
   "mustMatchResolutionOnly": [
     "ACCESSES",
@@ -59,10 +59,10 @@
   "reconciledDeltas": [
     {
       "type": "CONTAINS",
-      "go": 0,
+      "go": 6,
       "typescriptResolutionOnly": 5,
       "typescriptFullGraph": 5,
-      "classification": "structure-phase edge; not emitted by Go resolution-only surface"
+      "classification": "six source export containment edges plus the historical structure-phase edge; not emitted by Go resolution-only surface"
     },
     {
       "type": "DEFINES",

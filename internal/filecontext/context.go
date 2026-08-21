@@ -1332,6 +1332,12 @@ func boolProperty(node graph.Node, key string) bool {
 }
 
 func exportedSymbol(node graph.Node) bool {
+	if node.Properties != nil {
+		if value, exists := node.Properties["isExported"]; exists {
+			exported, valid := value.(bool)
+			return valid && exported
+		}
+	}
 	if boolProperty(node, "exported") {
 		return true
 	}

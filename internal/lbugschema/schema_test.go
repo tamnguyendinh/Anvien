@@ -37,8 +37,8 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 	if len(queries) != len(NodeTables)+2 {
 		t.Fatalf("SchemaQueries() len = %d, want %d", len(queries), len(NodeTables)+2)
 	}
-	if len(RelationPairs) != 286 {
-		t.Fatalf("RelationPairs len = %d, want 286", len(RelationPairs))
+	if len(RelationPairs) != 288 {
+		t.Fatalf("RelationPairs len = %d, want 288", len(RelationPairs))
 	}
 
 	fileSchema := NodeSchema("File")
@@ -109,7 +109,7 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 
 func TestSchemaSurfaceCoversLegacyCoreAndModernNodeTypes(t *testing.T) {
 	for _, table := range []string{
-		"File", "Folder", "Function", "Class", "Interface", "Method", "CodeElement", "Community", "Process",
+		"File", "Folder", "Function", "Class", "Interface", "Method", "CodeElement", "Export", "Community", "Process",
 		"Package", "Section", "Struct", "Enum", "Macro", "Typedef", "Union", "Namespace", "Trait", "Impl",
 		"TypeAlias", "Const", "Static", "Variable", "Property", "Record", "Delegate", "Annotation", "Constructor",
 		"Template", "Module", "Route", "Tool",
@@ -119,8 +119,8 @@ func TestSchemaSurfaceCoversLegacyCoreAndModernNodeTypes(t *testing.T) {
 			t.Fatalf("NodeTables missing %q", table)
 		}
 	}
-	if len(NodeTables) != 33 {
-		t.Fatalf("NodeTables length = %d, want 33", len(NodeTables))
+	if len(NodeTables) != 34 {
+		t.Fatalf("NodeTables length = %d, want 34", len(NodeTables))
 	}
 
 	for _, relationType := range []string{
@@ -152,6 +152,7 @@ func TestSchemaSurfaceCoversLegacyCoreAndModernNodeTypes(t *testing.T) {
 
 	relationSchema := RelationSchema()
 	for _, want := range []string{
+		"FROM File TO Export",
 		"FROM Class TO Method",
 		"FROM Class TO `Constructor`",
 		"FROM `Struct` TO Method",
@@ -227,7 +228,7 @@ func expectedFrozenNodeTables() []string {
 		"Class",
 		"Interface",
 		"Method",
-		"CodeElement",
+		"CodeElement", "Export",
 		"Community",
 		"Process",
 		"Package",

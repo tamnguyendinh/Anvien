@@ -24,13 +24,14 @@ var (
 	folderNodeColumns    = semanticNodeColumns("id", "name", "filePath")
 	symbolNodeColumns    = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "isExported", "content", "description")
 	methodNodeColumns    = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "isExported", "content", "description", "parameterCount", "returnType")
+	exportNodeColumns    = semanticNodeColumns("id", "name", "filePath", "fileHash", "kind", "exportedName", "localName", "localDefId", "localDefinitionNodeId", "targetRaw", "targetExportedName", "meanings", "typeOnly", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "statementStartLine", "statementStartCol", "statementEndLine", "statementEndCol", "siteKind")
 	communityNodeColumns = semanticNodeColumns("id", "label", "heuristicLabel", "keywords", "description", "enrichedBy", "cohesion", "symbolCount")
 	processNodeColumns   = semanticNodeColumns("id", "label", "heuristicLabel", "processType", "stepCount", "communities", "entryPointId", "terminalId")
 	sectionNodeColumns   = semanticNodeColumns("id", "name", "filePath", "startLine", "endLine", "level", "content", "description")
 	routeNodeColumns     = semanticNodeColumns("id", "name", "filePath", "responseKeys", "errorKeys", "middleware")
 	toolNodeColumns      = semanticNodeColumns("id", "name", "filePath", "description")
 	resolutionGapColumns = semanticNodeColumns("id", "name", "gapKind", "sourceSiteId", "sourceNodeId", "sourceNodeLabel", "sourceAppLayer", "sourceFunctionalArea", "factFamily", "targetText", "targetRole", "sourceSiteStatus", "proofKind", "classification", "actionability", "resolutionSource", "source", "filePath", "fileHash", "startLine", "startCol", "endLine", "endCol", "count", "note")
-	defaultNodeColumns   = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "content", "description")
+	defaultNodeColumns   = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "isExported", "content", "description")
 	nodeColumnLookup     = map[string][]string{
 		"File":          fileNodeColumns,
 		"Folder":        folderNodeColumns,
@@ -39,6 +40,7 @@ var (
 		"Interface":     symbolNodeColumns,
 		"CodeElement":   symbolNodeColumns,
 		"Method":        methodNodeColumns,
+		"Export":        exportNodeColumns,
 		"Community":     communityNodeColumns,
 		"Process":       processNodeColumns,
 		"Section":       sectionNodeColumns,
@@ -317,6 +319,8 @@ func nodeCSVRow(node graph.Node, table string) []string {
 		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "qualifiedName", ""), intProp(props, "startLine", -1), intProp(props, "startCol", -1), intProp(props, "endLine", -1), intProp(props, "endCol", -1), optionalIntProp(props, "selectionStartLine"), optionalIntProp(props, "selectionStartCol"), optionalIntProp(props, "selectionEndLine"), optionalIntProp(props, "selectionEndCol"), boolProp(props, "isExported"), stringProp(props, "content", ""), stringProp(props, "description", ""))
 	case "Method":
 		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "qualifiedName", ""), intProp(props, "startLine", -1), intProp(props, "startCol", -1), intProp(props, "endLine", -1), intProp(props, "endCol", -1), optionalIntProp(props, "selectionStartLine"), optionalIntProp(props, "selectionStartCol"), optionalIntProp(props, "selectionEndLine"), optionalIntProp(props, "selectionEndCol"), boolProp(props, "isExported"), stringProp(props, "content", ""), stringProp(props, "description", ""), intProp(props, "parameterCount", 0), stringProp(props, "returnType", ""))
+	case "Export":
+		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "fileHash", ""), stringProp(props, "kind", ""), stringProp(props, "exportedName", ""), stringProp(props, "localName", ""), stringProp(props, "localDefId", ""), stringProp(props, "localDefinitionNodeId", ""), stringProp(props, "targetRaw", ""), stringProp(props, "targetExportedName", ""), arrayLiteral(props["meanings"]), boolProp(props, "typeOnly"), intProp(props, "startLine", -1), intProp(props, "startCol", -1), intProp(props, "endLine", -1), intProp(props, "endCol", -1), optionalIntProp(props, "selectionStartLine"), optionalIntProp(props, "selectionStartCol"), optionalIntProp(props, "selectionEndLine"), optionalIntProp(props, "selectionEndCol"), intProp(props, "statementStartLine", -1), intProp(props, "statementStartCol", -1), intProp(props, "statementEndLine", -1), intProp(props, "statementEndCol", -1), stringProp(props, "siteKind", ""))
 	case "Community":
 		return semanticValues(node.ID, firstStringProp(props, []string{"label", "name"}, ""), stringProp(props, "heuristicLabel", ""), arrayLiteral(props["keywords"]), stringProp(props, "description", ""), stringProp(props, "enrichedBy", "heuristic"), floatProp(props, "cohesion", 0), intProp(props, "symbolCount", 0))
 	case "Process":
@@ -356,7 +360,7 @@ func nodeCSVRow(node graph.Node, table string) []string {
 			stringProp(props, "note", ""),
 		)
 	default:
-		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "qualifiedName", ""), intProp(props, "startLine", -1), intProp(props, "startCol", -1), intProp(props, "endLine", -1), intProp(props, "endCol", -1), optionalIntProp(props, "selectionStartLine"), optionalIntProp(props, "selectionStartCol"), optionalIntProp(props, "selectionEndLine"), optionalIntProp(props, "selectionEndCol"), stringProp(props, "content", ""), stringProp(props, "description", ""))
+		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "qualifiedName", ""), intProp(props, "startLine", -1), intProp(props, "startCol", -1), intProp(props, "endLine", -1), intProp(props, "endCol", -1), optionalIntProp(props, "selectionStartLine"), optionalIntProp(props, "selectionStartCol"), optionalIntProp(props, "selectionEndLine"), optionalIntProp(props, "selectionEndCol"), boolProp(props, "isExported"), stringProp(props, "content", ""), stringProp(props, "description", ""))
 	}
 }
 

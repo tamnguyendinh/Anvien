@@ -86,9 +86,15 @@ func TestP1DDefinitionExactReinsertionIsIdempotentAndPreservesEnrichment(t *test
 	if err != nil {
 		t.Fatalf("ResolveInto() compatible reinsertion error = %v", err)
 	}
+	want := enriched
+	want.Properties = graph.NodeProperties{}
+	for key, value := range enriched.Properties {
+		want.Properties[key] = value
+	}
+	want.Properties["isExported"] = false
 	got, ok := result.Graph.GetNode(enriched.ID)
-	if !ok || !reflect.DeepEqual(got, enriched) {
-		t.Fatalf("compatible reinsertion changed enriched node: got %#v, want %#v", got, enriched)
+	if !ok || !reflect.DeepEqual(got, want) {
+		t.Fatalf("compatible reinsertion changed enriched node: got %#v, want %#v", got, want)
 	}
 	matchingNodes := 0
 	for _, node := range result.Graph.Nodes {

@@ -234,7 +234,7 @@ func p2bDefinitionColumns(table string) []string {
 	case "Method":
 		base = append(base, "isExported", "content", "description", "parameterCount", "returnType")
 	default:
-		base = append(base, "content", "description")
+		base = append(base, "isExported", "content", "description")
 	}
 	return append(base, "appLayer", "functionalArea")
 }

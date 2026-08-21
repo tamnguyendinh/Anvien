@@ -84,7 +84,7 @@ func p2bDefinitionSchemaColumns(table string) []string {
 	case "Method":
 		columns = append(columns, "isExported BOOLEAN", "content STRING", "description STRING", "parameterCount INT32", "returnType STRING")
 	default:
-		columns = append(columns, "content STRING", "description STRING")
+		columns = append(columns, "isExported BOOLEAN", "content STRING", "description STRING")
 	}
 	return append(columns, "appLayer STRING", "functionalArea STRING")
 }

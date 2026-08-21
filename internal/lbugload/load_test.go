@@ -52,8 +52,8 @@ func TestLoadCSVExportUsesCopyForSupportedNodeAndRelationshipPairs(t *testing.T)
 		`COPY File(id, name, filePath, content, appLayer, functionalArea)`,
 		`COPY Function(id, name, filePath, qualifiedName, startLine, startCol, endLine, endCol, selectionStartLine, selectionStartCol, selectionEndLine, selectionEndCol, isExported, content, description, appLayer, functionalArea)`,
 		`COPY Method(id, name, filePath, qualifiedName, startLine, startCol, endLine, endCol, selectionStartLine, selectionStartCol, selectionEndLine, selectionEndCol, isExported, content, description, parameterCount, returnType, appLayer, functionalArea)`,
-		`COPY ` + "`TypeAlias`" + `(id, name, filePath, qualifiedName, startLine, startCol, endLine, endCol, selectionStartLine, selectionStartCol, selectionEndLine, selectionEndCol, content, description, appLayer, functionalArea)`,
-		`COPY ` + "`Variable`" + `(id, name, filePath, qualifiedName, startLine, startCol, endLine, endCol, selectionStartLine, selectionStartCol, selectionEndLine, selectionEndCol, content, description, appLayer, functionalArea)`,
+		`COPY ` + "`TypeAlias`" + `(id, name, filePath, qualifiedName, startLine, startCol, endLine, endCol, selectionStartLine, selectionStartCol, selectionEndLine, selectionEndCol, isExported, content, description, appLayer, functionalArea)`,
+		`COPY ` + "`Variable`" + `(id, name, filePath, qualifiedName, startLine, startCol, endLine, endCol, selectionStartLine, selectionStartCol, selectionEndLine, selectionEndCol, isExported, content, description, appLayer, functionalArea)`,
 		`from="TypeAlias", to="Method"`,
 		`COPY CodeRelation FROM`,
 	} {

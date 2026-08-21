@@ -109,7 +109,7 @@ Exact symbol impacts further constrain the slices: `DefinitionFact` CRITICAL `19
 
 ## E4 - P4 Evidence
 
-P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, with isolated commit `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43`; every later slice remains reserved and locked.
+P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, with isolated commit `479e8ac229a17f2f6f94be9a4d04e07d74ac4d43`. P4-B and P4-B1 are also closed below. P4-C source/build/test/boundary and independent Supervisor REVIEW1 are now recorded and `PASS`; Main-owned detect/commit remain pending, while P4-C2 and later slices remain reserved and locked.
 
 ### P4-A — export fact, meaning, and visibility boundary
 
@@ -192,14 +192,30 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, wi
 
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
-| `E4-P4C-IMPACT1` | exact fact-to-graph/persistence blast radius and actual affected-consumer inventory | pending |
-| `E4-P4C-SRC1` | smallest production projection/compatibility change with no blanket adapter expansion | pending |
-| `E4-P4C-BUILD1` | full build | pending |
-| `E4-P4C-TEST1` | graph fact conservation, direct count, access separation, compatibility derivation, negative controls, and zero terminal state | pending |
-| `E4-P4C-BOUNDARY1` | real graph/affected persistence output with field differences and orphan counts | pending |
-| `E4-P4C-REVIEW1` | independent Supervisor PASS | pending |
-| `E4-P4C-DETECT1` | pre-commit Anvien detect-changes result | pending |
+| `E4-P4C-AUTH1` | accepted predecessor closure, clean successor Git boundary, current plan-document graph evidence, and explicit authority to open only P4-C | recorded — clean HEAD `871189b8c6a4e4bb9ff538407232c913b8cf4db6`; P4-B1 source/test unchanged; fresh excluded graph `1,147/626/0`, `82,087/121,788`; P4-C sole open; P4-C2/Child 05/target locked |
+| `E4-P4C-IMPACT1` | exact fact-to-graph/persistence blast radius and actual affected-consumer inventory | recorded — four editable owners; HIGH/CRITICAL warnings and exact tuples independently confirmed |
+| `E4-P4C-SRC1` | smallest production projection/compatibility change with no blanket adapter expansion | recorded — four production owners plus focused/owner tests and goldens; no extraction/terminal/target paths |
+| `E4-P4C-BUILD1` | full build | recorded — canonical `npm run full-build` exit `0`; `1,855/735/0`, graph `113,496/156,003` |
+| `E4-P4C-TEST1` | graph fact conservation, direct count, access separation, compatibility derivation, negative controls, and zero terminal state | recorded — `414` Export nodes, `240` direct runtime records, `239` runtime local records, compatibility drift `0`, negative controls `0`, forbidden state `0` |
+| `E4-P4C-BOUNDARY1` | real graph/affected persistence output with field differences and orphan counts | recorded — Graph JSON/Ladybug `414/414`, `11,592` normalized field comparisons, differences `0`, IDs missing both ways `0`, orphan references `0` |
+| `E4-P4C-REVIEW1` | independent Supervisor PASS | recorded — `PASS`; report `reports/Supervisor/rp_supervisor_260821_083556_by_gpt-5_child04_p4c_graph_persistence_review1.md`, `15,261` bytes / `101` LF / SHA-256 `AA94C417A02BE371168D8ADCD5B3F4FECF1941F382518EFF9214EC0FABB93CFF` |
+| `E4-P4C-DETECT1` | pre-commit Anvien detect-changes result | recorded — exit `0`; `180` changed semantic units, `16` changed files, `14` affected files, HIGH risk; resolution health `0/0/0`, semantic fields complete |
 | `E4-P4C-COMMIT1` | isolated accepted slice commit | pending |
+
+#### `E4-P4C-REVIEW1` — independent Supervisor acceptance
+
+- Verdict: `PASS`.
+- Report: `reports/Supervisor/rp_supervisor_260821_083556_by_gpt-5_child04_p4c_graph_persistence_review1.md`.
+- Identity: `15,261` bytes / `101` LF / SHA-256 `AA94C417A02BE371168D8ADCD5B3F4FECF1941F382518EFF9214EC0FABB93CFF`; the self-reference-safe canonical hash was independently recomputed and matched.
+- Fresh review evidence closes the invariant at `414` Graph Export nodes, `414` File→Export relations, `0` duplicate IDs, `0` orphan local-definition references, `0` compatibility drift, and `11,592` normalized Graph JSON↔Ladybug field comparisons with `0` differences and `0` missing IDs in either direction. Direct runtime records are `240`, runtime local records `239`, and forbidden terminal/resolved-target/public-API keys are `0`.
+- Source-level clearance covers `emit.go`, `csv.go`, `schema.go`, and `context.go`; focused owner tests and the canonical full build are PASS. High/critical impacts remain warnings only. Review-induced empty `.tmp\\p4c-tests` and the prior read-only `/root/authority_scan` deviation are recorded as provenance; neither changed repository state or invalidated independence. No target access occurred.
+
+#### `E4-P4C-DETECT1` — Main-owned fresh change detection
+
+- Fresh graph basis after planner refresh: `anvien analyze --force` exit `0`; scanned/parsed/failed `1,857/735/0`; graph `113,523/156,030` nodes/relationships.
+- `anvien detect-changes --repo E:\\Anvien --scope all --json` exit `0`; parsed summary: `180` changed semantic units, `16` changed files, `14` affected files, `HIGH` changed-file/overall risk, and `10` affected process entries. Changed app layers are backend `143`, backend-test `13`, docs `24`; changed functional areas are resolution `130`, storage `21`, documentation `24`, unknown `5`.
+- Resolution-gap inventory reports `86` changed gap entities/occurrences but persisted health remains clean: `totalResolutionGapCount=0`, `nodesWithGaps=0`, `degradedNodes=0`, and changed source nodes with gaps `0`. `appLayer` and `functionalArea` semantic fields are complete for all `113,523` nodes.
+- The exact semantic changed-path set contains the five Child 04 living ledgers plus the tracked P4-C production/test/golden paths. The four new focused tests and untracked Coder/Supervisor/Main provenance reports are outside the semantic changed-file set and are retained only in the explicit staging manifest; no unrelated path is authorized.
 
 ### P4-C2 — real-target acceptance
 
@@ -223,7 +239,7 @@ P4-A source/build/test/boundary/Supervisor/detect evidence is recorded below, wi
 | `E4-PNC-COMMIT1` | final known commit/worktree state | pending |
 | `E4-PNC-HANDOFF1` | Child 05 actual-status refreshed from accepted immutable syntax/direct-export results and exact opening condition recorded | pending |
 
-P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed; P4-C/P4-C2/Child 05 remain locked.
+P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed. `E4-P4C-AUTH1` opens only P4-C; P4-C2/Child 05 remain locked.
 
 ### `E4-P4B-SOURCE1` — source and cleanup clearance
 
@@ -244,7 +260,7 @@ P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa7
 - Fresh excluded graph after the REVIEW3 report was present: `1,144/626/0` scanned/parsed/failed and `82,059/121,760` nodes/relationships; exact exclusions were `internal/aicontext/skills/**` and `.claude/skills/**`.
 - Candidate production/test paths are only `internal/providers/tsjs/imports.go` and `internal/providers/tsjs/extract_test.go`; current identities, diff, index, formatting, forbidden-field, visibility, and `.tmp` gates are recorded in the Coder and Supervisor reports.
 - `recoveredReexportSiblingAfterMalformedAlias` accepts one valid name, anonymous `as`, comma-only error, and valid alias in source order while allowing only comment/parser-extra trivia between semantic tokens; malformed names/errors fail closed. `addSourceExportFact` remains the sole compatibility derivation path.
-- Independent Supervisor REVIEW3 is `PASS`; residual same-invariant surfaces are none within P4-B1. P4-C/P4-C2/Child 05 and target access remain locked.
+- Independent Supervisor REVIEW3 is `PASS`; residual same-invariant surfaces are none within P4-B1. Successor verification found no invalidation; `E4-P4C-AUTH1` opens only P4-C, while P4-C2/Child 05 and target access remain locked.
 
 ### `E4-P4B1-DETECT1` — Main-owned change detection
 
@@ -256,4 +272,13 @@ P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa7
 ### `E4-P4B1-COMMIT1` — isolated slice closure
 
 - Isolated implementation commit: `42d167aaf28446ac0b3de479a8afefabb8d06736` (`feat(tsjs): recover comment-bearing re-export siblings`), with exact P4-B1 production/test boundary and the accepted ledger/report updates.
-- Final handoff documentation commit: `a12e0ccb77bda7da8aad2ec29b8050b55f81bc08`; `git status --short --branch` is clean (branch is ahead of origin; no push), and P4-C/P4-C2/Child 05/target access remain locked.
+- Final P4-B1 documentation closure commit: `871189b8c6a4e4bb9ff538407232c913b8cf4db6`; successor verification found a clean worktree/index, branch ahead of origin with no push, both external docs-only commits preserved, and exact accepted source/test hashes unchanged. `E4-P4C-AUTH1` opens only P4-C; P4-C2/Child 05/target access remain locked.
+
+### `E4-P4C-AUTH1` — successor opening authority
+
+- The explicit successor delegation requires campaign continuation after verifying P4-B1; questions/reminders are not pauses, and only an explicit pause/stop halts work.
+- Current Git basis is clean HEAD `871189b8c6a4e4bb9ff538407232c913b8cf4db6`. P4-B1 implementation commit `42d167aaf28446ac0b3de479a8afefabb8d06736` and external docs-only commits `84a354940aea8240c99bf4868e721209e7248830` / `ce0e200c55bd96c4374cc6e84bd99a3c82bef641` are ancestors; no reset, checkout, push, or target access occurred.
+- `imports.go`, `extract_test.go`, and Supervisor REVIEW3 retain the accepted SHA-256 identities `52AFBA2FC9A7ACEA314D5B39043A054F2671B2EF987161D8F1C3D641B2382749`, `07CF7D49715CA0398DA9485086A37E395FCB8E2E695AF2B649B6BC05074C604D`, and `07DD5BB92F169C5923C0DBCB597F914A28E594496ACDADB55D41F13DE364421C`; `git diff --quiet 42d167aaf28446ac0b3de479a8afefabb8d06736 HEAD` over the two source/test paths exits `0`.
+- Rotation handoff `reports/Investigation/rp_main_260821_0333_orchestration_rotation_handoff.md` retains `4,991` bytes / `49` LF / SHA-256 `C02DE5EB447AAADE9F39CC381F7CAA13C1A8B659435EE68F3B6EA7ABAF061226`.
+- Fresh excluded self-graph at the successor basis exits `0`: scanned/parsed/failed `1,147/626/0`, graph `82,087/121,788`. Roadmap is LOW with `28` outbound plan links; each changed Child 04 ledger is LOW with one inbound roadmap link; upstream affected files/flows are `0/0`.
+- Only P4-C is open. Its first executable gate is `E4-P4C-IMPACT1`: refresh exact production file-detail and upstream symbol/file impact before any code edit. P4-C2, Child 05, target access, terminal resolution, barrels, cycles, ambiguity, and public-API work remain locked.
