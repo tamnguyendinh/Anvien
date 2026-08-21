@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P4-A/P4-B/P4-B1/P4-C/P4-C2 committed at their recorded isolated boundaries; P4-C2 closes at 03f09b43f652b9a14b3e49774dc805c0dfd24a27; aggregate Pn-A is the sole open gate; Pn-B/Pn-C, Child 05 and later slices remain locked`
+- Status: `P4-A/P4-B/P4-B1/P4-C/P4-C2 committed at their recorded isolated boundaries; aggregate E4-PNA-REVIEW1 is PASS; Pn-B cleanup is the sole open gate; Pn-C, Child 05 and later slices remain locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md`
@@ -372,17 +372,18 @@ Out of scope:
   - Actual-status Update: transition the bounded target row to `correct` and append the successor handoff refresh.
   - Commit Boundary: isolated commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27` contains the accepted two-file repair, five living documents, durable Oracle/QA lifecycle, Coder/Supervisor evidence and required P4-C2 provenance; no target or `.tmp` artifact is committed or required.
 
-- [ ] Pn-A: Run the Supervisor acceptance loop.
+- [x] Pn-A: Run the Supervisor acceptance loop.
   - Goal: independently verify all five slices, source diff, build, real-boundary results, benchmark, target boundary, and evidence integrity.
   - Work Steps: invoke the Supervisor skill; return only rejected invariants to the owning slice; repeat until PASS or a documented blocker.
   - Implementation Gate: every P4 slice is complete or explicitly blocked.
   - Acceptance: `E4-PNA-REVIEW1` records Supervisor PASS or a precise blocker; no self-acceptance is used.
-  - Current State (2026-08-21): open after P4-C2 commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; exactly one visible aggregate Supervisor lane owns the next verdict. Pn-B/Pn-C and Child 05 remain locked.
+  - Current State (2026-08-21): independent aggregate `E4-PNA-REVIEW1` is `PASS`; report `reports/Supervisor/rp_supervisor_260821_142429_by_gpt-5_child04_pna_aggregate_review1.md`, `23,563` bytes / `178` LF / canonical SHA-256 `7EBFD5087F8593660A94E70B0816A7FC98944FDE7B9D1F1BC9388CEB9F6DC5A8`; residual same-invariant surfaces none. Pn-B opens; Pn-C and Child 05 remain locked.
 - [ ] Pn-B: Remove dead work created by this child.
   - Goal: leave no superseded fixture, debug output, failed evidence, duplicate report, or rejected approach.
   - Work Steps: inventory child-created artifacts, remove only dead child work, and obtain Supervisor review of cleanup.
   - Implementation Gate: Pn-A has completed its first review.
   - Acceptance: `E4-PNB-CLEAN1` and `E4-PNB-REVIEW1` prove the retained artifact set is current.
+  - Current State (2026-08-21): open after aggregate Pn-A PASS. One visible cleanup executor must inventory only Child 04-created artifacts, preserve every current hash-sealed Oracle/QA/report artifact and unrelated user work, remove only source-proven dead work, then hand off to a distinct cleanup Supervisor. Pn-C and Child 05 remain locked.
 - [ ] Pn-C: Close Child 04 and hand off Child 05.
   - Goal: record final validation, commit state, immutable syntax-fact boundary, and the exact successor opening condition.
   - Work Steps:

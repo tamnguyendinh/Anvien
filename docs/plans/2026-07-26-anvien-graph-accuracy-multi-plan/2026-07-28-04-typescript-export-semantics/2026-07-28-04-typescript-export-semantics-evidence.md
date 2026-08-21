@@ -111,7 +111,7 @@ Exact symbol impacts further constrain the slices: `DefinitionFact` CRITICAL `19
 
 ## E4 - P4 Evidence
 
-P4-A/P4-B/P4-B1/P4-C retain their accepted isolated boundaries. P4-C2 closes at isolated commit `03f09b43f652b9a14b3e49774dc805c0dfd24a27` after sealed Oracle, exact repair, fresh post-repair `E4-P4C2-TARGET1`/`BOUNDARY1`, independent `E4-P4C2-REVIEW2`, Main-owned `E4-P4C2-DETECT1`, and exact staging. Aggregate Pn-A is the sole open gate; Pn-B/Pn-C, Child 05 and later slices remain locked.
+P4-A/P4-B/P4-B1/P4-C/P4-C2 retain their accepted isolated boundaries. Aggregate `E4-PNA-REVIEW1` is independently `PASS`; Pn-B cleanup is the sole open gate. Pn-C, Child 05 and later slices remain locked.
 
 ### P4-A — export fact, meaning, and visibility boundary
 
@@ -287,7 +287,7 @@ P4-A/P4-B/P4-B1/P4-C retain their accepted isolated boundaries. P4-C2 closes at 
 
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
-| `E4-PNA-REVIEW1` | final Supervisor review across all five slices and retained evidence | pending |
+| `E4-PNA-REVIEW1` | final Supervisor review across all five slices and retained evidence | recorded — independent `PASS`; report `23,563` bytes / `178` LF / canonical SHA-256 `7EBFD508...DC5A8`; residual same-invariant surfaces none |
 | `E4-PNB-CLEAN1` | dead child-created artifacts removed; valid evidence retained | pending |
 | `E4-PNB-REVIEW1` | Supervisor PASS for cleanup | pending |
 | `E4-PNC-DETECT1` | final detect-changes result for implementation scope | pending |
@@ -295,6 +295,13 @@ P4-A/P4-B/P4-B1/P4-C retain their accepted isolated boundaries. P4-C2 closes at 
 | `E4-PNC-HANDOFF1` | Child 05 actual-status refreshed from accepted immutable syntax/direct-export results and exact opening condition recorded | pending |
 
 P4-B detect/commit closure is recorded at `11a37aa8ec0320dd93258c058b088d1070aa778d`. P4-B1 source/build/boundary/Supervisor acceptance, Main-owned detect, and isolated commit `42d167aaf28446ac0b3de479a8afefabb8d06736` are recorded and closed. P4-C closes at `c99c4070b66e7a96be8c9fa2721a0335a1f94877`; P4-C2 closes at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; aggregate Pn-A is open and Child 05 remains locked.
+
+### `E4-PNA-REVIEW1` — independent aggregate acceptance
+
+- Verdict: `PASS`. Report: `reports/Supervisor/rp_supervisor_260821_142429_by_gpt-5_child04_pna_aggregate_review1.md`; identity `23,563` bytes / `178` LF / raw SHA-256 `634555CB9B6917A37EA2826302BC4C8949920B754307EF661C1D4DA3EBC277BC` / canonical SHA-256 `7EBFD5087F8593660A94E70B0816A7FC98944FDE7B9D1F1BC9388CEB9F6DC5A8`.
+- Fresh review self graph is `1,939/736/0`, `114,630/157,445`. Current production blobs match accepted slice boundaries; P4-C2 is the exact intentional successor delta. All required commits are ancestors of current HEAD.
+- Oracle and QA manifests/digests recompute exactly; aggregate target results are `21/21`, `11/11`, TypeAliases `15/15`, parity `588/0`, and zero duplicate/orphan/diagnostic/Child 05 state with target source/worktree/config preserved.
+- No closed build/QA/target/review gate was rerun because source and artifact identities show no invalidation. Residual unverified same-invariant surfaces are none. Pn-B is the next ordered gate; Pn-C and Child 05 remain locked.
 
 ### `E4-P4B-SOURCE1` — source and cleanup clearance
 
