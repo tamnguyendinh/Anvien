@@ -40,6 +40,7 @@
 | P5-B | full graph inventory | nodes / relationships | 114,852 / 157,754 pre-implementation | 115,099 / 158,118 post-build | 115,099 / 158,118 Supervisor-accepted | no unexplained loss; new source/test/report corpus is retained | +247 / +364 | `E5-P5B-IMPACT1`, `E5-P5B-BUILD1`, `E5-P5B-REVIEW1`, `E5-P5B-DETECT1`, `E5-P5B-COMMIT1` |
 | P5-B | zero-physical barrel declarations | count | fixture not yet created | 0 | 0 | exactly 0 | 0 | `E5-P5B-ZEROBARREL1` |
 | P5-B | zero-physical barrel export surface | explicit keys / star adjacency | no export table | 2 / 1 | 2 / 1 | exact non-zero fixture expectation without implicit default | +2 / +1 | `E5-P5B-ZEROBARREL1` |
+| P5-C | pre-implementation graph inventory | nodes / relationships | P5-B accepted graph 115,099 / 158,118 | 115,134 / 158,153 at HEAD `cd35b48f` | pending after implementation | retain source/report growth without unexplained loss | +35 / +35 versus P5-B accepted graph | `E5-P5C-IMPACT1` |
 | P5-C | named traversal vectors | passed/total | no accepted implementation | pending | pending | 100% of accepted alias/star/namespace/meaning/cycle/ambiguity vectors | pending | `E5-P5C-PROOF1`, `E5-P5C-TEST1` |
 | P5-C | explicit-import global-name rescues | count | current branch exists; exact fixture count pending | pending | pending | 0 | pending | `E5-P5C-NOGLOBAL1` |
 | P5-D | direct/barrel terminal equality | equal/expected pairs | 0/2 | 0/2 | pending | 2/2 | pending | `E5-P5D-TARGET1`, `E5-P5D-ORACLE1` |

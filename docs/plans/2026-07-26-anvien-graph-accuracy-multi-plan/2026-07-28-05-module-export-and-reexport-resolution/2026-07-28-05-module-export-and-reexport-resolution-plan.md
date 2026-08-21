@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / P5-A committed at 2560f914 / P5-B committed at c1559df9 / P5-C open / P5-D+ locked`
+- Status: `P0 complete / P5-A committed at 2560f914 / P5-B committed at c1559df9 / P5-C inventory accepted and implementation authorized / P5-D+ locked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -240,12 +240,12 @@ Out of scope:
   - Completion Record: Supervisor PASS `E5-P5B-REVIEW1`; `anvien detect-changes --repo E:\Anvien --scope all` exit `0` recorded as `E5-P5B-DETECT1`; exact 11-path manifest was staged and committed as `c1559df953a277b099009f8489576d00ed25aa58`, recorded as `E5-P5B-COMMIT1`.
 
 - [ ] P5-C: Resolve aliases, re-exports, stars, cycles, ambiguity, and meanings.
-  - State: `OPEN AFTER P5-B COMMIT c1559df953a277b099009f8489576d00ed25aa58`; P5-D and target remain locked.
+  - State: `INVENTORY ACCEPTED / IMPLEMENTATION AUTHORIZED AFTER THIS DOCS COMMIT`; P5-B predecessor is `c1559df953a277b099009f8489576d00ed25aa58`; P5-D and target remain locked.
   - Goal: resolve one requested export to a terminal repository Symbol or an explicit unresolved result with complete proof and no global-name rescue.
   - Scope Boundary:
-    - Editable: exact re-export traversal owner and minimum orchestration adapter selected by fresh impact.
-    - Inspect-only: P5-A module results, P5-B tables, and call emission.
-    - Preserve-only: Child 04 facts and syntactic dependency edges.
+    - Editable: new dedicated semantic owner `internal/resolution/export_resolution.go` for deterministic proof-bearing export lookup; `internal/resolution/indexes.go` only at `resolveImports`, `resolveImportedDef`, and `resolveImportedMember` plus removal of the now-redundant standalone `buildExportTables` call; `internal/resolution/resolve.go` only at `resolveCall` for an explicit-import-failure guard. Focused test owners are selected after production code and may include new `internal/resolution/export_resolution_test.go` plus bounded additions to existing resolver tests.
+    - Inspect-only: accepted P5-A requested meanings, P5-B tables/tests, `bindingRef`/`resolvedImport`, current call emission, and affected tests named by `E5-P5C-IMPACT1`.
+    - Preserve-only: Child 04 facts; P5-B `export_tables.go` data shape/construction; `resolveImportFiles`, `resolveImportFile`, `import_resolution.go`, `resolvedImport.TargetFiles`; generic `resolveName`, `resolveGlobalName`, and `resolveGlobalCallName`; `emitImportEdges`; graph/persistence/readers; syntactic dependency edges and all three accepted count denominators.
     - Out of scope: ambient/external declaration lookup and health projection.
   - Non-Goals: no first-candidate selection and no arbitrary topology ceiling without measured evidence.
   - Pre-flight Questions:
@@ -262,19 +262,19 @@ Out of scope:
     - External side effects: none.
     - N/A notes: terminal graph binding is P5-D.
   - Work Steps:
-    1. Record traversal/adapter impact; implement production export resolution and proof retention with explicit cycle/ambiguity/meaning outcomes.
+    1. Use the accepted inventory `E5-P5C-IMPACT1`. Implement immutable/deterministic terminal, ambiguity, cycle, missing, and meaning-mismatch outcomes plus proof hops in dedicated `export_resolution.go`, consuming only P5-B tables and current repository definitions. Refactor `resolveImports` into two phases: first resolve and retain all module/file candidates, then build the accepted P5-B tables once, then resolve export terminals and create import bindings. Remove the separate post-`resolveImports` table call from `buildWorkspace`; do not add a corrective second pass or duplicate path resolution. Make `resolveImportedMember` consume the same export lookup for namespace/member requests.
        - UI flow check: N/A — non-UI resolver.
        - DB/data flow check: terminal identity and every hop are retained; distinct candidates remain distinct.
        - Render location check: resolver trace.
        - Mini QA: exercise the built resolver against every named topology fixture.
        - Evidence target: `E5-P5C-IMPACT1`, `E5-P5C-SRC1`, `E5-P5C-PROOF1`.
-    2. Add tests after production code, run full build and regressions, prove an explicit import cannot bind through a global-name rescue, then review/detect/commit.
+    2. At `resolveCall`, gate only the repository-global fallback when current import state proves the called identifier is an explicit import whose export lookup failed; keep generic global helpers unchanged for non-import calls. Add tests only after production behavior: alias/re-export chains, explicit-over-star precedence, star default exclusion, namespace/member traversal, same-terminal dedupe, distinct-terminal ambiguity, terminal and pure cycles, meaning mismatch, explicit-import no-global rescue, direct/path/`IMPORTS` preservation, and unaffected-language regression. Then run the full build and nearest real resolver/CLI boundary before Supervisor/detect/commit.
        - UI flow check: N/A — non-UI resolver.
        - DB/data flow check: one exact terminal, explicit ambiguity, or explicit unresolved result per lookup.
        - Render location check: evidence/benchmark ledgers.
        - Mini QA: inspect actual result/proof from the built runtime.
        - Evidence target: `E5-P5C-BUILD1`, `E5-P5C-TEST1`, `E5-P5C-NOGLOBAL1`, `E5-P5C-REVIEW1`, `E5-P5C-DETECT1`, `E5-P5C-COMMIT1`.
-  - Implementation Gate: P5-B is Supervisor-accepted and committed at `c1559df953a277b099009f8489576d00ed25aa58`; requested meaning is available; fresh graph refresh plus file-detail/impact must identify the minimum adapter set before any P5-C production edit.
+  - Implementation Gate: satisfied after this planner refresh is committed. P5-B is Supervisor-accepted and committed at `c1559df953a277b099009f8489576d00ed25aa58`; requested meaning is available; fresh graph/file-detail/upstream impact and exact owner selection are recorded in `E5-P5C-IMPACT1`. Production edits remain limited to the three owners above; P5-D/target stay locked.
   - Acceptance:
     - Source: traversal follows export facts, terminates cycles, retains ambiguity, and never uses global-name rescue for explicit imports.
     - Runtime/UI: built resolver cases pass; UI is N/A.
