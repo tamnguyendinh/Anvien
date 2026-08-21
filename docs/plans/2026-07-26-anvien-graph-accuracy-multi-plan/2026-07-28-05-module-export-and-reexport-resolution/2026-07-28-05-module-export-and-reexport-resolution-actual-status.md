@@ -2,7 +2,7 @@
 
 Title: Anvien Module Export And Re-Export Resolution
 Date: 2026-07-28
-Status: P0 Complete / P5-A committed and accepted / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D committed at bb4cf465 / Pn-A open
+Status: P0 Complete / P5-A committed and accepted / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D committed at bb4cf465 / Pn-A Supervisor PASS / Pn-B open
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 Companion benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -103,12 +103,13 @@ The 2026-08-10 P0 tuples remain historical. The P5-A graph was freshly rebuilt a
 | Requested meaning / type-only | source-written TS/JS imports now carry canonical requested meanings and explicit type-only state; compatibility re-export and non-TS/JS facts remain empty | `RequestedMeanings` canonical allowed-set plus explicit `TypeOnly`; normal default/named/alias `{value,type,namespace}`, type-only `{type}`, namespace `{namespace}` or `{type}` when type-only | correct | `247` contract / `17` provider / `245` normalization / `242` sort-key related files | `E5-P5A-INPUT1`, `E5-P5A-SRC1`, `E5-P5A-TEST1`, `E5-P5A-REVIEW1`, `E5-P5A-COMMIT1` | preserve accepted P5-A commit `2560f914` |
 | Dormant `ImportFact.Target*` versus live result | no production writer assigns `TargetFile`, `TargetExportedName`, `TargetModuleScope`, `TargetDefID`, or `LinkStatus`; live resolution is the separate in-memory `resolvedImport` | do not activate/remove dormant fields in P5-A; preserve live result separation | correct | `247` contract / `51` workspace related files | `E5-P5A-INPUT1`, `E5-P5A-IMPACT1` | preserve; later cleanup requires its own accepted evidence |
 | P5-A count authority | fixed-corpus validation on the same `736` parsed-code corpus records `5,072` physical target-file resolutions, `5,072` resolver-emitted syntactic `IMPORTS`, and `5,088` final persisted graph-wide `IMPORTS` | retain all three denominators and prove delta `0` for each | correct | accepted P5-A commit plus P5-B fixed-corpus preservation run | `E5-P5A-COUNT1`, `E5-P5B-COUNT1` | preserve `0 / 0 / 0` |
-| Module export surface | dedicated `internal/resolution/export_tables.go` now builds deterministic explicit entries and star adjacency from accepted facts, with only minimal `workspace/buildWorkspace` wiring | deterministic table derived only from Child 04 facts; no physical-definition inference or terminal traversal | correct | post-build new owner: 30 related files / 62 symbols / HIGH risk; workspace/buildWorkspace CRITICAL; detect graph saw `indexes.go` high risk and one expected pre-commit analyzer gap for `w.buildExportTables`; isolated commit is now present | `E5-P5B-IMPACT1`, `E5-P5B-SRC1`, `E5-P5B-ZEROBARREL1`, `E5-P5B-REVIEW1`, `E5-P5B-DETECT1`, `E5-P5B-COMMIT1` | P5-B closed; refresh P5-C traversal impact before code; keep P5-D/target locked |
-| Re-export traversal | committed P5-C implementation uses dedicated proof-bearing traversal and one file-candidates -> tables-once -> terminal-bind sequence; after the source-backed REJECT it composes ambiguous owners independently, retains an owned missing-member branch, preserves aggregate ambiguity, and selects no sole surviving member | terminal traversal with alias/star/cycle/ambiguity/meaning proof, including complete per-owner member provenance | correct | accepted impact remains `resolveImportedDef` HIGH `19/12/1/3`; `resolveImports` CRITICAL `28/16/3/17`; `resolveImportedMember` CRITICAL `18/8/3/34`; `buildWorkspace` CRITICAL `49/22/8/23`; fresh detect recorded high changed-file risk with no affected process | `E5-P5C-IMPACT1`, `E5-P5C-SRC1`, `E5-P5C-PROOF1`, `E5-P5C-REPAIR1`, `E5-P5C-TEST1`, `E5-P5C-REVIEW1`, `E5-P5C-DETECT1`, `E5-P5C-COMMIT1` | P5-C closed; preserve commit `76899d45...` and refresh only P5-D emission/projection impact before further code |
-| Explicit-import global-name-rescue boundary | committed P5-C implementation gates repository-global fallback only at `resolveCall`; generic global helpers remain unchanged; focused replay and final Supervisor review record zero false global calls | no repository-global same-name rescue; explicit export failure retained | correct | `resolveCall` CRITICAL `27/11/7/32`; `resolveGlobalCallName` CRITICAL `6/4/2/23` and preserve-only; fresh detect recorded no affected process | `E5-P5C-IMPACT1`, `E5-P5C-NOGLOBAL1`, `E5-P5C-REVIEW1`, `E5-P5C-DETECT1`, `E5-P5C-COMMIT1` | preserve accepted commit `76899d45...`; P5-D may inspect but must not rewrite the P5-C guard without new authority |
-| Terminal call/proof emission | one retained P5-C result now projects deterministic terminal/hop/failure records through existing Evidence; generic-first, exact-tuple dedupe, source-site conservation, and endpoint/key stability are Supervisor-cleared | retain accepted implementation unchanged | correct / Supervisor PASS | `313` proof-bearing E relationships; `479` terminal / `536` hop / `0` current-corpus failure | `E5-P5D-SRC1`, `E5-P5D-TEST1`, `E5-P5D-REVIEW1` | run fresh detect and isolated P5-D commit only |
+| Module export surface | dedicated `internal/resolution/export_tables.go` now builds deterministic explicit entries and star adjacency from accepted facts, with only minimal `workspace/buildWorkspace` wiring | deterministic table derived only from Child 04 facts; no physical-definition inference or terminal traversal | correct | post-build new owner: 30 related files / 62 symbols / HIGH risk; workspace/buildWorkspace CRITICAL; detect graph saw `indexes.go` high risk and one expected pre-commit analyzer gap for `w.buildExportTables`; isolated commit is now present | `E5-P5B-IMPACT1`, `E5-P5B-SRC1`, `E5-P5B-ZEROBARREL1`, `E5-P5B-REVIEW1`, `E5-P5B-DETECT1`, `E5-P5B-COMMIT1` | preserve accepted P5-B commit `c1559df9`; do not reopen table construction |
+| Re-export traversal | committed P5-C implementation uses dedicated proof-bearing traversal and one file-candidates -> tables-once -> terminal-bind sequence; after the source-backed REJECT it composes ambiguous owners independently, retains an owned missing-member branch, preserves aggregate ambiguity, and selects no sole surviving member | terminal traversal with alias/star/cycle/ambiguity/meaning proof, including complete per-owner member provenance | correct | accepted impact remains `resolveImportedDef` HIGH `19/12/1/3`; `resolveImports` CRITICAL `28/16/3/17`; `resolveImportedMember` CRITICAL `18/8/3/34`; `buildWorkspace` CRITICAL `49/22/8/23`; fresh detect recorded high changed-file risk with no affected process | `E5-P5C-IMPACT1`, `E5-P5C-SRC1`, `E5-P5C-PROOF1`, `E5-P5C-REPAIR1`, `E5-P5C-TEST1`, `E5-P5C-REVIEW1`, `E5-P5C-DETECT1`, `E5-P5C-COMMIT1` | preserve accepted P5-C commit `76899d45...`; do not reopen traversal or impact inventory |
+| Explicit-import global-name-rescue boundary | committed P5-C implementation gates repository-global fallback only at `resolveCall`; generic global helpers remain unchanged; focused replay and final Supervisor review record zero false global calls | no repository-global same-name rescue; explicit export failure retained | correct | `resolveCall` CRITICAL `27/11/7/32`; `resolveGlobalCallName` CRITICAL `6/4/2/23` and preserve-only; fresh detect recorded no affected process | `E5-P5C-IMPACT1`, `E5-P5C-NOGLOBAL1`, `E5-P5C-REVIEW1`, `E5-P5C-DETECT1`, `E5-P5C-COMMIT1` | preserve accepted no-global guard; no source change is authorized by Pn-A ledger repair |
+| Terminal call/proof emission | one retained P5-C result now projects deterministic terminal/hop/failure records through existing Evidence; generic-first, exact-tuple dedupe, source-site conservation, and endpoint/key stability are Supervisor-cleared | retain accepted implementation unchanged | correct / Supervisor PASS | `313` proof-bearing E relationships; `479` terminal / `536` hop / `0` current-corpus failure | `E5-P5D-SRC1`, `E5-P5D-TEST1`, `E5-P5D-REVIEW1` | preserve committed P5-D source; only reject-only Pn-A ledger review is open |
 | Affected persistence/readers | Graph JSON, Ladybug, MCP context, and MCP impact expose exact proof parity; no reader/schema/UI production edit was required | preserve exact four-reader parity | correct / Supervisor PASS | `4` affected readers; `0` field differences | `E5-P5D-PARITY1`, `E5-P5D-REVIEW1` | preserve reader production bytes |
-| Target boundary | target source/config/Git boundary stayed exact after the sole process-scoped analyze retry; both calls resolve to one terminal with complete proofs | preserve source/worktree and accepted `.anvien` evidence | correct / target accepted | `2/2` CALLS; `0` gaps; `2/2` chains; graph `93,562 / 127,516` | `E5-P5D-TARGET1`, `E5-P5D-ORACLE1`, `E5-P5D-BOUNDARY1`, `E5-P5D-COUNT1` | no further target analyze; commit only E manifest |
+| Target boundary | target source/config/Git boundary stayed exact after the sole process-scoped analyze retry; both calls resolve to one terminal with complete proofs | preserve source/worktree and accepted `.anvien` evidence | correct / target accepted | `2/2` CALLS; `0` gaps; `2/2` chains; graph `93,562 / 127,516` | `E5-P5D-TARGET1`, `E5-P5D-ORACLE1`, `E5-P5D-BOUNDARY1`, `E5-P5D-COUNT1` | preserve sealed target evidence; no further target access or analyze |
+| Child 05 Pn-A acceptance | initial child-wide REJECT was limited to living-ledger closure; the exact four-ledger correction and bounded measurement now have reject-only Supervisor PASS | one coherent four-ledger state and reject-only Supervisor PASS | correct / Supervisor PASS | CALLS generic Evidence `11,553/11,553`; ACCESSES `6,067/6,067`; final Pn-A verdict `PASS` | `E5-PNA-REVIEW1`, `E5-PNA-MEASURE1`, `E5-PNA-LEDGER1`, `E5-PNA-REVIEW2` | Pn-A closed; open only Pn-B cleanup and keep Pn-C/Child 06/target locked |
 
 ## Status Refresh Log
 
@@ -132,6 +133,8 @@ The 2026-08-10 P0 tuples remain historical. The P5-A graph was freshly rebuilt a
 | R15 | 2026-08-22 | HEAD `26cb03eed3a72f1052f1af5de6a4de2f8326e794` plus exact eight-path candidate; Work Step 1 `97235D73...`, target report `2740EDB7...`, Supervisor PASS `2A9EC861...`; target graph `93,562 / 127,516` | final source/proof/persistence/readers, real-target oracle, count and boundary acceptance | proof projection `unbound -> correct`; reader parity `pending -> 4/4`; target `0/2 -> 2/2`, gaps `2 -> 0`, chains `0/2 -> 2/2`; fixed and target count deltas `0 / 0 / 0`; Supervisor `pending -> PASS` | `E5-P5D-SRC1`, `E5-P5D-BUILD1`, `E5-P5D-TEST1`, `E5-P5D-PARITY1`, `E5-P5D-TARGET1`, `E5-P5D-ORACLE1`, `E5-P5D-BOUNDARY1`, `E5-P5D-COUNT1`, `E5-P5D-REVIEW1` | run one fresh E analyze/detect and isolated P5-D commit; do not open Pn-A before commit |
 | R16 | 2026-08-22 | same final candidate/ledgers/reports; one fresh E analyze `116,388 / 160,512`; detect exit `0` | mandatory pre-commit changed-symbol/file/process/gap/schema classification | detect `pending -> recorded`; risk `high`, `109` changed / `10` affected symbols across `9` changed / `9` affected files; `18` analyzer-gap changes but persisted gap/degraded totals `0`; semantic schema complete | `E5-P5D-DETECT1` | stage only the isolated P5-D manifest, verify cached diff and protected handoffs, then commit; Pn-A remains locked |
 | R17 | 2026-08-22 | isolated P5-D commit `bb4cf46509716259c3bf24a1ca041a6e763d5419`, parent `26cb03eed3a72f1052f1af5de6a4de2f8326e794`; exact 15-path manifest | P5-D commit closure and Child 05 Pn-A opening | P5-D `open -> committed`; Pn-A `locked -> open`; index empty and thirteen protected Main handoffs remain untracked | `E5-P5D-COMMIT1` | open only Pn-A child-wide Supervisor acceptance; Pn-B/Pn-C/Child 06 remain locked |
+| R18 | 2026-08-22 | HEAD `831f4d73e27405835c01980859cae5ebd3c9e62b`; initial Pn-A REJECT report SHA-256 `E3E28E79...D0CB28`; existing post-detect graph SHA-256 `BBC0D53A...315B0` | reject-only living-ledger/evidence-closure repair; no production/test/runtime/target action | Pn-A `open -> REJECT ledger-only -> corrected candidate`; P5-A commit evidence recorded; P5-D current state reconciled; final CALLS/ACCESSES generic-Evidence values closed; Pn-A remains unchecked | `E5-PNA-REVIEW1`, `E5-PNA-MEASURE1`, `E5-PNA-LEDGER1` | resume only existing Supervisor for `E5-PNA-REVIEW2`; keep Pn-B/Pn-C/Child 06 and target action locked |
+| R19 | 2026-08-22 | same exact four-ledger candidate; reject-only Supervisor report SHA-256 `1A11CCF1...6E3C68` | Pn-A reject-only acceptance and Pn-B opening transition | Pn-A `REJECT repair candidate -> Supervisor PASS -> closed`; Pn-B `locked -> open`; Pn-C/Child 06/target stay locked | `E5-PNA-REVIEW2` | commit the exact docs/review slice, then resume only the existing E-only Coder for Pn-B cleanup inventory |
 
 ## Phase Touch Map
 
@@ -163,7 +166,7 @@ Current state:
 
 - Accepted P5-A keeps module/file candidates separate from terminal definition lookup.
 - Accepted P5-B constructs syntax-derived export tables, and accepted P5-C traverses them to deterministic terminal/ambiguity/cycle/missing/meaning outcomes.
-- The remaining P5-D gap is after lookup: `definition()` reduces the result to `defRef`, so the terminal endpoint can bind but the proof is not retained.
+- Accepted P5-D retains the once-computed semantic result and projects terminal, hop, and failure proof through the existing generic-first Evidence channel without another lookup or traversal.
 
 Required state:
 
@@ -171,9 +174,9 @@ Required state:
 source import -> module/file result -> export-table lookup -> retained terminal/proof result -> CALLS/ACCESSES Evidence
 ```
 
-Classification: path result, export table, and terminal traversal are `correct`; proof retention/projection is `partial/unbound`.
+Classification: path result, export table, terminal traversal, and proof retention/projection are `correct`, Supervisor-accepted, and committed.
 
-Allowed next action: P5-D exact four-owner proof retention/projection after the docs authorization commit.
+Allowed next action: reject-only Pn-A review of the corrected living-ledger/evidence-closure invariant; P5-D source/runtime/target work stays closed.
 
 Forbidden next action: change accepted path/table/traversal behavior, treat physical definitions as exports, or add schema/UI scope.
 
@@ -200,7 +203,7 @@ compatibility re-export ImportFact
 
 Classification: requested name and requested meaning/type-only are `correct`, Supervisor-accepted, and committed in P5-A.
 
-Allowed next action: preserve the accepted contract unchanged through P5-D.
+Allowed next action: preserve the accepted contract unchanged through the remaining Child 05 closure steps.
 
 Forbidden next action: infer re-export semantics from compatibility imports, add side-effect-only facts, activate dormant `Target*` fields, or change path candidates.
 
@@ -209,8 +212,8 @@ Forbidden next action: infer re-export semantics from compatibility imports, add
 Current state:
 
 - Accepted P5-C resolves semantic imports through export tables, commits the explicit-import no-global-rescue guard, and proves direct/barrel endpoint equality in its synthetic fixture.
-- Target `2/2` remains unmeasured because target execution is still locked.
-- The current residual defect is proof loss between the accepted P5-C result and CALLS/ACCESSES Evidence, not terminal selection or global rescue.
+- Accepted P5-D target evidence records terminal CALLS `2/2`, zero matching gaps, complete proof chains `2/2`, and direct/barrel terminal identity equality.
+- No source/runtime residual defect remains in this chain; the initial Pn-A rejection is limited to living-ledger/evidence truth.
 
 Required state:
 
@@ -219,22 +222,22 @@ explicit import -> exact exported-name/meaning result -> terminal call proof
 explicit export failure -> explicit unresolved result, never a global same-name target
 ```
 
-Classification: re-export traversal and the global-name-rescue boundary are `correct`; terminal endpoint is `correct` in accepted fixture evidence; proof projection is `partial/unbound`; target verdict remains pending.
+Classification: re-export traversal, the global-name-rescue boundary, terminal endpoint, proof projection, and bounded target verdict are `correct` and accepted.
 
-Allowed next action: P5-D retains and projects only the accepted proof through the existing Evidence channel, then validates the target at the separately authorized work step.
+Allowed next action: preserve the accepted implementation/evidence and complete only the Pn-A ledger reject-only re-review; do not access the target again.
 
 Forbidden next action: adding a target-name special case or accepting `2/2` without direct/barrel identity and proof equality.
 
-### P5-D proof projection gap
+### P5-D proof projection status
 
 Current state:
 
-- P5-C already selects the terminal definition and its accepted fixture emits direct/barrel CALLS to the same endpoint.
-- `exportResolutionResult.definition()` reduces the owned result to `defRef`; `resolvedImport`, `resolveImportedDef`, and `resolveImportedMember` do not retain candidates, failures, proofs, or Hops.
-- `resolveCall`/`resolveAccess` emit one generic Evidence item. `emitReference` transports it unchanged, while `mergeRelationship` replaces Evidence on coalescing.
-- Graph JSON, Ladybug, MCP context, and MCP impact already preserve/expose the generic Evidence channel. No semantic UI proof consumer exists.
+- Accepted P5-C selects the terminal definition; accepted P5-D retains that same semantic result once on `resolvedImport` and exposes proof-returning definition/member seams without a second traversal.
+- `resolveCall`/`resolveAccess` keep generic Evidence first and append exact terminal/hop/failure proof only for the selected endpoint.
+- `mergeRelationship` stable-unions and exact-tuple-dedupes Evidence while preserving edge identity and distinct source sites.
+- Graph JSON, Ladybug, MCP context, and MCP impact expose exact proof parity; no semantic UI proof consumer or reader/schema production change was required.
 
-Required state:
+Accepted state:
 
 ```text
 one accepted P5-C result
@@ -245,9 +248,9 @@ one accepted P5-C result
   -> identical Graph JSON / Ladybug / MCP context / MCP impact proof
 ```
 
-Classification: terminal endpoint is `correct`; proof retention/projection is `partial/unbound`; existing persistence/readers are `correct transport / validate-only`.
+Classification: terminal endpoint, proof retention/projection, coalescing conservation, and all four affected readers are `correct`, Supervisor-accepted, and committed.
 
-Allowed next action: after the docs authorization commit, resume only the existing Coder for the exact four production owners and authorized focused tests, code first. Target remains locked until local build/parity handoff is verified.
+Allowed next action: resume only the existing Supervisor for reject-only Pn-A ledger review; P5-D code, build, graph, target, and reader work remain closed.
 
 Forbidden next action: change `graph.Evidence`, relationship columns, P5-C traversal, generic semantic-edge identity, reader/UI production, or target state under this authorization.
 
@@ -256,9 +259,10 @@ Forbidden next action: change `graph.Evidence`, relationship columns, P5-C trave
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
 | P5-A | exact four-owner production candidate plus two focused tests passed build/boundary/regression; Supervisor PASS and isolated commits `2560f914` + `40ea0095` are present | committed/accepted; preserve the three `0` deltas and do not reopen P5-A |
-| P5-B | dedicated table owner plus minimal wiring and focused tests pass exact absolute E build, fixed-corpus counts, and Supervisor resubmission review | detect `E5-P5B-DETECT1` and isolated commit `E5-P5B-COMMIT1` are recorded; P5-B is closed and P5-C is the sole open slice |
+| P5-B | dedicated table owner plus minimal wiring and focused tests pass exact absolute E build, fixed-corpus counts, and Supervisor resubmission review | committed/accepted; preserve commit `c1559df9` and do not reopen P5-B |
 | P5-C | final four-file implementation has Supervisor PASS, fresh detect, and isolated commit `76899d45a21fce55f6328b4cb30a6a5cb8719a81` | committed/accepted; preserve the P5-C source and proof invariants |
 | P5-D | exact eight-path candidate, Work Step 1/2 evidence, four-reader parity, target oracle, boundaries, Supervisor review, detect, and isolated commit all pass | committed at `bb4cf465`; preserve and open only Pn-A child-wide acceptance |
+| Pn-A | initial child-wide Supervisor review rejected only ledger closure; the exact correction and measurement now have reject-only Supervisor PASS | closed by `E5-PNA-REVIEW2`; open only Pn-B cleanup and keep Pn-C/Child 06 locked |
 
 ## Implementation Gate
 
@@ -276,14 +280,17 @@ Forbidden next action: change `graph.Evidence`, relationship columns, P5-C trave
 - [x] P5-B source/build/test/count evidence and the exact evidence-blocker resubmission are accepted by Supervisor in `E5-P5B-REVIEW1`.
 - [x] P5-B fresh graph refresh and full detect-changes result are recorded in `E5-P5B-DETECT1`; the expected pre-commit analyzer gap is classified and does not widen scope.
 - [x] P5-B exact 11-path isolated commit is recorded in `E5-P5B-COMMIT1` at `c1559df953a277b099009f8489576d00ed25aa58`.
-- [x] P5-C is opened only after the P5-B implementation and docs transition commits; P5-D and target remain locked.
+- [x] P5-C was opened only after the P5-B implementation and docs transition commits; P5-D and target remained locked during that transition.
 - [x] P5-C fresh graph/file-detail/upstream impact, exact owners, and two-phase sequencing are recorded in `E5-P5C-IMPACT1` before production edits.
-- [x] P5-C REJECT, exact reject-only repair, final source/test/build identities, and Supervisor PASS are recorded as `E5-P5C-REPAIR1` and `E5-P5C-REVIEW1`; the slice remains unchecked until detect and isolated commit.
+- [x] P5-C REJECT, exact reject-only repair, final source/test/build identities, Supervisor PASS, detect, and isolated commit are recorded as `E5-P5C-REPAIR1`, `E5-P5C-REVIEW1`, `E5-P5C-DETECT1`, and `E5-P5C-COMMIT1`.
 - [x] P5-C one fresh graph refresh and full detect result are recorded as `E5-P5C-DETECT1`; no accepted inventory/file-detail/impact gate was rerun.
 - [x] P5-C exact 12-path isolated commit is recorded in `E5-P5C-COMMIT1` at `76899d45a21fce55f6328b4cb30a6a5cb8719a81`.
-- [x] P5-D is opened only after the P5-C implementation commit; no P5-D graph, code, target, QA, or Supervisor action is mixed into this docs transition.
+- [x] P5-D was opened only after the P5-C implementation commit; no P5-D graph, code, target, QA, or Supervisor action was mixed into that docs transition.
 - [x] P5-D one fresh graph, complete 16-file detail matrix, 19 exact impact tuples, source/graph gap, and four-reader denominator are recorded as `E5-P5D-IMPACT1`; Main independently replayed them without rerunning analyze.
-- [x] P5-D existing-shape encoding, exact four production owners, focused test manifest, local validation sequence, and separately gated target sequence are recorded before code; typed schema/UI expansion remains blocked.
+- [x] P5-D existing-shape encoding, exact four production owners, focused test manifest, local validation sequence, separately gated target sequence, Supervisor PASS, detect, and isolated commit are recorded; typed schema/UI expansion stayed blocked.
+- [x] Initial Pn-A Supervisor report `E5-PNA-REVIEW1` clears all production slices and records only the living-ledger/evidence-closure blocker.
+- [x] Planner-owned reject-only correction records `E5-P5A-COMMIT1`, reconciles P5-D current truth, and closes the final generic-Evidence benchmark values as `E5-PNA-LEDGER1` and `E5-PNA-MEASURE1` without rerunning accepted gates.
+- [x] Reject-only Supervisor report `E5-PNA-REVIEW2` accepts the corrected ledger invariant with no residual same-invariant surface; Pn-A is closed and only Pn-B opens.
 
 ## Final P0 Decision
 
@@ -297,4 +304,4 @@ Choose one:
 
 Decision note:
 
-Child 04 is closed at `0aa49c87628c9e8b2041754515d6ebf0a930d55b`. P5-A is accepted and committed at `2560f914334e65961f755febdda6585840a4260e`; P5-B is committed at `c1559df953a277b099009f8489576d00ed25aa58`. P5-C now has source-backed REJECT/repair/PASS history, fresh detect, and isolated commit `76899d45a21fce55f6328b4cb30a6a5cb8719a81`; it is closed. P5-D is the sole open slice for fresh emission/projection/affected-reader inventory. No P5-D graph evidence or target access exists yet.
+Child 04 is closed at `0aa49c87628c9e8b2041754515d6ebf0a930d55b`. P5-A, P5-B, P5-C, and P5-D are Supervisor-accepted and committed at `2560f914334e65961f755febdda6585840a4260e`, `c1559df953a277b099009f8489576d00ed25aa58`, `76899d45a21fce55f6328b4cb30a6a5cb8719a81`, and `bb4cf46509716259c3bf24a1ca041a6e763d5419`. Initial Pn-A review `E5-PNA-REVIEW1` rejected only living-ledger closure; `E5-PNA-LEDGER1` and `E5-PNA-MEASURE1` close that blocker, and reject-only `E5-PNA-REVIEW2` gives Supervisor PASS with no residual surface. Pn-A is closed and only Pn-B cleanup is open; Pn-C, Child 06, and target action remain locked.

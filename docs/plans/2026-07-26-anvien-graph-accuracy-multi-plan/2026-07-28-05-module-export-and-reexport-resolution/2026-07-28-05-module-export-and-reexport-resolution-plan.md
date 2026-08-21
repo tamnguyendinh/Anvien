@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / P5-A committed at 2560f914 / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D committed at bb4cf465 / Pn-A open`
+- Status: `P0 complete / P5-A committed at 2560f914 / P5-B committed at c1559df9 / P5-C committed at 76899d45 / P5-D committed at bb4cf465 / Pn-A Supervisor PASS / Pn-B open`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md`
@@ -338,15 +338,20 @@ Out of scope:
   - Commit Boundary: commit P5-D alone after acceptance.
   - Completion Record: Supervisor PASS `E5-P5D-REVIEW1`; fresh detect `E5-P5D-DETECT1`; exact 15-path isolated commit `bb4cf46509716259c3bf24a1ca041a6e763d5419` recorded as `E5-P5D-COMMIT1`. Pn-A is now the sole open item.
 
-- [ ] Pn-A: Call Supervisor for Child 05 acceptance.
+- [x] Pn-A: Call Supervisor for Child 05 acceptance.
+  - State: `INITIAL SUPERVISOR REJECT / LEDGER-ONLY REPAIR / REJECT-ONLY SUPERVISOR PASS`. Pn-A is closed; only Pn-B is open. Pn-C, Child 06, and target action remain locked.
   - Goal: independently verify all four slices, source diff, runtime evidence, target boundary, ledgers, and commits.
   - Work Steps:
     1. Run the Supervisor review over the complete Child 05 scope.
     2. Return only rejected invariants to the owning slice; repeat validation and review until PASS or a recorded blocker.
   - Implementation Gate: P5-A through P5-D are accepted locally or explicitly blocked with evidence.
-  - Acceptance: `E5-PNA-REVIEW1` records Supervisor PASS or a precise blocker.
+  - Acceptance: `E5-PNA-REVIEW1` records the precise ledger-closure blocker; `E5-PNA-REVIEW2` must record reject-only Supervisor PASS before Pn-A can be checked.
+  - Review Record: initial child-wide report `reports/Supervisor/rp_supervisor_260822_021218_by_gpt-5_child05_pna_child_wide_acceptance_reject.md`, `11,899` bytes / `121` LF / SHA-256 `E3E28E79D5BC929E7F8FAA29F67D6C26E881A4E1AEEACA8CC95FF61207D0CB28`, verdict `REJECT`; production, tests, commits, and sealed target evidence are cleared, while only living-ledger/evidence closure is rejected.
+  - Reject-Only Resubmission Gate: `E5-PNA-LEDGER1` reconciles the four living ledgers and `E5-PNA-MEASURE1` closes the two pending generic-Evidence benchmark cells without build/analyze/target reruns; resume only the existing Supervisor lane for `E5-PNA-REVIEW2`.
+  - Completion Record: `E5-PNA-REVIEW2` records reject-only Supervisor PASS at `reports/Supervisor/rp_supervisor_260822_023256_by_gpt-5_child05_pna_ledger_closure_resubmission_pass.md`, `8,542` bytes / `137` LF / SHA-256 `1A11CCF1AA5279E03F0FF06B0E057EB2BFB4267F661496788828CB6BF46E3C68`; residual same-invariant surfaces are none.
 
 - [ ] Pn-B: Remove dead work created by Child 05.
+  - State: `OPEN`. Cleanup is limited to Child 05 dead work; Pn-C, Child 06, and target action remain locked.
   - Goal: retain only accepted production, test, fixture, evidence, and ledger artifacts.
   - Work Steps:
     1. Identify failed, duplicate, superseded, or unused Child 05 artifacts.
