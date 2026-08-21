@@ -370,6 +370,8 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 	var target defRef
 	confidence := 1.0
 	proofKind := ""
+	var semanticResult exportResolutionResult
+	hasSemanticResult := false
 	lowConfidenceFallback := false
 	bindingReceiverResolved := false
 	if call.CallForm == scopeir.CallMember {
@@ -422,8 +424,9 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 			proofKind = proofKindReceiverMember
 		}
 		if !ok {
-			target, ok = w.resolveImportedMember(call.ExplicitReceiver, call.Name, call.InScope, callableLabels())
+			target, semanticResult, ok = w.resolveImportedMemberWithProof(call.ExplicitReceiver, call.Name, call.InScope, callableLabels())
 			if ok {
+				hasSemanticResult = semanticResult.Outcome != ""
 				confidence = 0.9
 				proofKind = proofKindImportMember
 			}
@@ -485,6 +488,27 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 		e.emitUnresolvedReference(source, "call", callTargetText(call), call.FilePath, call.FileHash, call.Range, "call target matched low-confidence global fallback only", true)
 		return
 	}
+	siteID := sourceSiteID("call", call.FilePath, callTargetText(call), call.Range)
+	evidence := []graph.Evidence{{
+		Kind:   callEvidenceKind(call.CallForm),
+		Weight: 1,
+		Note:   call.Name,
+	}}
+	if !hasSemanticResult && proofKind == proofKindScopeBinding {
+		bindingLabels := callableLabels()
+		if call.CallForm == scopeir.CallConstructor {
+			bindingLabels = dispatchOwnerLabels()
+		}
+		semanticResult, hasSemanticResult = w.retainedExportResolutionForScopedBinding(
+			call.Name,
+			call.InScope,
+			bindingLabels,
+			target,
+		)
+	}
+	if hasSemanticResult {
+		evidence = appendExportBindingEvidence(evidence, semanticResult, siteID)
+	}
 	e.emitReference(source, target, Reference{
 		FromScope:        call.InScope,
 		ToDefID:          target.Fact.ID,
@@ -493,16 +517,12 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 		Range:            call.Range,
 		Kind:             ReferenceCall,
 		Confidence:       confidence,
-		SourceSiteID:     sourceSiteID("call", call.FilePath, callTargetText(call), call.Range),
+		SourceSiteID:     siteID,
 		SourceSiteStatus: sourceSiteStatusResolved,
 		ProofKind:        proofKind,
 		TargetRole:       targetRoleCallable,
 		TargetText:       callTargetText(call),
-		Evidence: []graph.Evidence{{
-			Kind:   callEvidenceKind(call.CallForm),
-			Weight: 1,
-			Note:   call.Name,
-		}},
+		Evidence:         evidence,
 	})
 	e.metrics.ResolvedReferences++
 	e.metrics.ResolvedCalls++
@@ -542,6 +562,8 @@ func resolveAccess(w *workspace, e *emitter, bindingOccurrences bindingOccurrenc
 	evidenceKind := "type-binding"
 	proofKind := proofKindReceiverMember
 	targetRole := targetRoleMember
+	var semanticResult exportResolutionResult
+	hasSemanticResult := false
 	if access.ExplicitReceiver == "" {
 		target, ok = bindingOccurrences.resolve(w, access.Name, access.InScope)
 		if ok {
@@ -552,8 +574,9 @@ func resolveAccess(w *workspace, e *emitter, bindingOccurrences bindingOccurrenc
 	} else {
 		target, ok = w.resolveMember(access.Name, access.ExplicitReceiver, access.InScope, propertyLabels())
 		if !ok {
-			target, ok = w.resolveImportedMember(access.ExplicitReceiver, access.Name, access.InScope, propertyLabels())
+			target, semanticResult, ok = w.resolveImportedMemberWithProof(access.ExplicitReceiver, access.Name, access.InScope, propertyLabels())
 			if ok {
+				hasSemanticResult = semanticResult.Outcome != ""
 				confidence = 0.9
 				evidenceKind = "import-binding"
 				proofKind = proofKindImportMember
@@ -569,6 +592,23 @@ func resolveAccess(w *workspace, e *emitter, bindingOccurrences bindingOccurrenc
 		kind = ReferenceWrite
 	}
 	source = bindingOccurrenceReferenceSource(source, target, access.FilePath)
+	siteID := sourceSiteID("access", access.FilePath, accessTargetText(access), access.Range)
+	evidence := []graph.Evidence{{
+		Kind:   evidenceKind,
+		Weight: 1,
+		Note:   access.ExplicitReceiver + "." + access.Name,
+	}}
+	if !hasSemanticResult && proofKind == proofKindScopeBinding {
+		semanticResult, hasSemanticResult = w.retainedExportResolutionForScopedBinding(
+			access.Name,
+			access.InScope,
+			propertyLabels(),
+			target,
+		)
+	}
+	if hasSemanticResult {
+		evidence = appendExportBindingEvidence(evidence, semanticResult, siteID)
+	}
 	e.emitReference(source, target, Reference{
 		FromScope:        access.InScope,
 		ToDefID:          target.Fact.ID,
@@ -577,16 +617,12 @@ func resolveAccess(w *workspace, e *emitter, bindingOccurrences bindingOccurrenc
 		Range:            access.Range,
 		Kind:             kind,
 		Confidence:       confidence,
-		SourceSiteID:     sourceSiteID("access", access.FilePath, accessTargetText(access), access.Range),
+		SourceSiteID:     siteID,
 		SourceSiteStatus: sourceSiteStatusResolved,
 		ProofKind:        proofKind,
 		TargetRole:       targetRole,
 		TargetText:       accessTargetText(access),
-		Evidence: []graph.Evidence{{
-			Kind:   evidenceKind,
-			Weight: 1,
-			Note:   access.ExplicitReceiver + "." + access.Name,
-		}},
+		Evidence:         evidence,
 	})
 	e.metrics.ResolvedReferences++
 	e.metrics.ResolvedAccesses++

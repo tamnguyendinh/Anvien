@@ -714,9 +714,7 @@ func mergeRelationship(existing graph.Relationship, incoming graph.Relationship)
 		merged.EndLine = incoming.EndLine
 		merged.EndCol = incoming.EndCol
 	}
-	if len(incoming.Evidence) > 0 {
-		merged.Evidence = append([]graph.Evidence(nil), incoming.Evidence...)
-	}
+	merged.Evidence = mergeExportBindingEvidence(existing.Evidence, incoming.Evidence)
 	return merged
 }
 

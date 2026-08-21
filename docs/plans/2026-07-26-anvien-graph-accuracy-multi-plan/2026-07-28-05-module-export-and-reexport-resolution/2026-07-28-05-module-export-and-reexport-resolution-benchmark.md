@@ -46,18 +46,18 @@
 | P5-C | fixed-corpus physical target-file resolutions | absolute count | 5,072 on 736 parsed-code files | 5,072 after subtracting exact 89-edge P5-B/P5-C corpus growth from 5,161 | 5,072 Supervisor-accepted | preserve 5,072 | 0 | `E5-P5C-PROOF1`, `E5-P5C-BUILD1`, `E5-P5C-REVIEW1` |
 | P5-C | fixed-corpus resolver-emitted syntactic `IMPORTS` | absolute count | 5,072 on 736 parsed-code files | 5,072 after the same exact corpus decomposition | 5,072 Supervisor-accepted | preserve 5,072 | 0 | `E5-P5C-PROOF1`, `E5-P5C-BUILD1`, `E5-P5C-REVIEW1` |
 | P5-C | fixed-corpus persisted graph-wide `IMPORTS` | absolute count | 5,088 on 736 parsed-code files | 5,177 current minus 89 exact new-file edges = 5,088 | 5,088 Supervisor-accepted | preserve 5,088 | 0 | `E5-P5C-PROOF1`, `E5-P5C-BUILD1`, `E5-P5C-REVIEW1` |
-| P5-D | fresh pre-implementation graph inventory | nodes / relationships | 115,947 / 159,626 at P5-D opening | 115,947 / 159,626 inventory accepted | pending final | retain expected source/test/report growth without unexplained loss | 0 at inventory | `E5-P5D-IMPACT1` |
+| P5-D | full E graph inventory | nodes / relationships | 115,947 / 159,626 at P5-D opening | 116,323 / 160,447 final canonical build | 116,323 / 160,447 Supervisor-accepted | retain exact source/test/report growth without unexplained loss | +376 / +821 | `E5-P5D-IMPACT1`, `E5-P5D-BUILD1`, `E5-P5D-REVIEW1` |
 | P5-D | CALLS with generic Evidence | present / total | 11,467 / 11,467 | 11,467 / 11,467 | pending final | preserve full transport while adding P5-D proof only to affected semantic edges | 0 missing at inventory | `E5-P5D-IMPACT1`, `E5-P5D-PARITY1` |
 | P5-D | ACCESSES with generic Evidence | present / total | 5,974 / 5,974 | 5,974 / 5,974 | pending final | preserve full transport while adding P5-D proof only to affected semantic edges | 0 missing at inventory | `E5-P5D-IMPACT1`, `E5-P5D-PARITY1` |
-| P5-D | affected proof-reader denominator | readers | unknown before inventory | 4: Graph JSON / Ladybug / MCP context / MCP impact | pending final | zero proof-field differences across all 4 | inventory resolved to 4 | `E5-P5D-IMPACT1`, `E5-P5D-PARITY1` |
-| P5-D | direct/barrel terminal equality | equal/expected pairs | 0/2 | 0/2 | pending | 2/2 | pending | `E5-P5D-TARGET1`, `E5-P5D-ORACLE1` |
-| P5-D | bounded barrel terminal calls | resolved/expected | 0/2 | 0/2 | pending | 2/2 | pending | `E5-P5D-TARGET1` |
-| P5-D | matching false-gap sites | count | 2 bounded sites | 2 | pending | 0 | pending | `E5-P5D-TARGET1` |
-| P5-D | complete barrel proof chains | complete/expected | 0/2 | 0/2 | pending | 2/2 | pending | `E5-P5D-TARGET1` |
-| P5-D | physical target-file resolution delta | count | 5,072 P5-A baseline | pending | pending | 0 | pending | `E5-P5D-COUNT1` |
-| P5-D | resolver-emitted syntactic `IMPORTS` delta | count | 5,072 P5-A baseline | pending | pending | 0 | pending | `E5-P5D-COUNT1` |
-| P5-D | final persisted graph-wide `IMPORTS` delta | count | 5,088 P5-A baseline | pending | pending | 0 | pending | `E5-P5D-COUNT1` |
-| P5-D | affected persistence/reader field differences | count | 4 affected readers identified | pending implementation parity | pending | 0 across Graph JSON, Ladybug, MCP context, and MCP impact | pending | `E5-P5D-IMPACT1`, `E5-P5D-PARITY1` |
+| P5-D | affected proof-reader denominator | readers | unknown before inventory | 4: Graph JSON / Ladybug / MCP context / MCP impact | 4 Supervisor-accepted | zero proof-field differences across all 4 | 0 differences | `E5-P5D-IMPACT1`, `E5-P5D-PARITY1`, `E5-P5D-REVIEW1` |
+| P5-D | direct/barrel terminal equality | equal/expected pairs | 0/2 | 2/2 target | 2/2 | 2/2 | +2 | `E5-P5D-TARGET1`, `E5-P5D-ORACLE1` |
+| P5-D | bounded barrel terminal calls | resolved/expected | 0/2 | 2/2 target | 2/2 | 2/2 | +2 | `E5-P5D-TARGET1` |
+| P5-D | matching false-gap sites | count | 2 bounded sites | 0 | 0 | 0 | -2 | `E5-P5D-TARGET1` |
+| P5-D | complete barrel proof chains | complete/expected | 0/2 | 2/2 | 2/2 | 2/2 | +2 | `E5-P5D-TARGET1` |
+| P5-D | physical target-file resolution delta | count | 5,072 P5-A baseline | 5,072 fixed corpus | 0 delta | 0 | 0 | `E5-P5D-COUNT1` |
+| P5-D | resolver-emitted syntactic `IMPORTS` delta | count | 5,072 P5-A baseline | 5,072 fixed corpus | 0 delta | 0 | 0 | `E5-P5D-COUNT1` |
+| P5-D | final persisted graph-wide `IMPORTS` delta | count | 5,088 P5-A baseline | 5,088 fixed corpus | 0 delta | 0 | 0 | `E5-P5D-COUNT1` |
+| P5-D | affected persistence/reader field differences | count | 4 affected readers identified | exact parity | 0 | 0 across Graph JSON, Ladybug, MCP context, and MCP impact | 0 | `E5-P5D-IMPACT1`, `E5-P5D-PARITY1` |
 
 ## Conditional Product Measurements
 
@@ -77,4 +77,5 @@ Capture these only if the accepted P5 implementation changes the measured system
 - `E5-P5C-REPAIR1` and `E5-P5C-REVIEW1` are evidence-only repair/acceptance gates. The final graph and fixed-corpus counts above are benchmark measurements; REJECT/PASS status and report identities remain in the evidence ledger.
 - `E5-P5C-DETECT1` is an evidence-only pre-commit gate. Its single fresh graph contained `115,947` nodes / `159,626` relationships, and detect reported `55` changed symbols across `6` changed files with `0` affected processes; these current-worktree inventory figures do not replace the fixed-corpus or Supervisor-accepted full-build measurements above.
 - `E5-P5C-COMMIT1` is an evidence-only closure gate for isolated commit `76899d45a21fce55f6328b4cb30a6a5cb8719a81`; it adds no separate product performance or capacity measurement.
+- `E5-P5D-DETECT1` is an evidence-only pre-commit gate. Its single fresh graph contained `116,388` nodes / `160,512` relationships; detect reported `109` changed symbols across `9` changed files and `10` affected symbols across `9` files with risk `high`. These figures do not replace the fixed-corpus, target, or Supervisor-accepted measurements above.
 - Declaration-universe and unrelated command/reader metrics belong to their owning children, not Child 05.

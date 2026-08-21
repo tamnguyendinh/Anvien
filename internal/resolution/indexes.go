@@ -23,12 +23,14 @@ type bindingRef struct {
 }
 
 type resolvedImport struct {
-	Fact        scopeir.ImportFact
-	SourceScope string
-	TargetFile  string
-	TargetFiles []string
-	TargetDef   *defRef
-	LinkStatus  string
+	Fact              scopeir.ImportFact
+	SourceScope       string
+	TargetFile        string
+	TargetFiles       []string
+	TargetDef         *defRef
+	SemanticResult    exportResolutionResult
+	HasSemanticResult bool
+	LinkStatus        string
 }
 
 type importReceiverKey struct {
@@ -313,7 +315,12 @@ func (w *workspace) resolveImports() {
 		resolved := &w.imports[importIndex]
 		item := resolved.Fact
 		if resolved.LinkStatus != "unresolved" {
-			if targetDef, ok := w.resolveImportedDef(resolved.TargetFiles, item); ok {
+			targetDef, semanticResult, ok := w.resolveImportedDefWithProof(resolved.TargetFiles, item)
+			if isSemanticExportImport(item) {
+				resolved.SemanticResult = semanticResult
+				resolved.HasSemanticResult = true
+			}
+			if ok {
 				resolved.TargetDef = &targetDef
 			}
 		}
@@ -475,11 +482,18 @@ func (w *workspace) goFilesInDir(dir string) []string {
 }
 
 func (w *workspace) resolveImportedDef(targetFiles []string, item scopeir.ImportFact) (defRef, bool) {
+	target, _, ok := w.resolveImportedDefWithProof(targetFiles, item)
+	return target, ok
+}
+
+func (w *workspace) resolveImportedDefWithProof(targetFiles []string, item scopeir.ImportFact) (defRef, exportResolutionResult, bool) {
 	if isSemanticExportImport(item) {
-		return w.resolveImportExport(item, targetFiles, nil).definition()
+		result := w.resolveImportExport(item, targetFiles, nil)
+		target, ok := result.definition()
+		return target, result, ok
 	}
 	if len(targetFiles) == 0 {
-		return defRef{}, false
+		return defRef{}, exportResolutionResult{}, false
 	}
 	targetFile := targetFiles[0]
 	names := []string{item.ImportedName, item.LocalName}
@@ -493,18 +507,18 @@ func (w *workspace) resolveImportedDef(targetFiles []string, item scopeir.Import
 		}
 		for _, def := range defs {
 			if def.Fact.Name == name || def.Fact.QualifiedName == name || simpleName(def.Fact.QualifiedName) == name {
-				return def, true
+				return def, exportResolutionResult{}, true
 			}
 		}
 	}
 	if item.ImportedName == "default" {
 		for _, def := range defs {
 			if isAnyLabel(def.Fact.Label, []scopeir.NodeLabel{scopeir.NodeClass, scopeir.NodeFunction, scopeir.NodeInterface}) {
-				return def, true
+				return def, exportResolutionResult{}, true
 			}
 		}
 	}
-	return defRef{}, false
+	return defRef{}, exportResolutionResult{}, false
 }
 
 func (w *workspace) resolveName(name string, startScope string, labels []scopeir.NodeLabel) (defRef, bool) {
@@ -627,21 +641,26 @@ func (w *workspace) resolveMember(name string, receiver string, startScope strin
 }
 
 func (w *workspace) resolveImportedMember(receiver string, name string, startScope string, labels []scopeir.NodeLabel) (defRef, bool) {
+	target, _, ok := w.resolveImportedMemberWithProof(receiver, name, startScope, labels)
+	return target, ok
+}
+
+func (w *workspace) resolveImportedMemberWithProof(receiver string, name string, startScope string, labels []scopeir.NodeLabel) (defRef, exportResolutionResult, bool) {
 	receiver = strings.TrimSpace(receiver)
 	name = strings.TrimSpace(name)
 	if receiver == "" || name == "" {
-		return defRef{}, false
+		return defRef{}, exportResolutionResult{}, false
 	}
 	sourceFile := w.scopeFilePath(startScope)
 	if sourceFile == "" {
-		return defRef{}, false
+		return defRef{}, exportResolutionResult{}, false
 	}
 	if result, handled := w.resolveSemanticImportedMember(receiver, name, startScope, labels); handled {
 		target, ok := result.definition()
 		if !ok || !isAnyLabel(target.Fact.Label, labels) {
-			return defRef{}, false
+			return defRef{}, result, false
 		}
-		return target, true
+		return target, result, true
 	}
 	var candidates uniqueDefAccumulator
 	key := importReceiverKey{filePath: sourceFile, localName: receiver}
@@ -657,13 +676,14 @@ func (w *workspace) resolveImportedMember(receiver string, name string, startSco
 				}
 				if definitionLookupNameMatches(def.Fact, name) {
 					if !candidates.add(def) {
-						return defRef{}, false
+						return defRef{}, exportResolutionResult{}, false
 					}
 				}
 			}
 		}
 	}
-	return candidates.result()
+	target, ok := candidates.result()
+	return target, exportResolutionResult{}, ok
 }
 
 func (w *workspace) resolveReceiverType(receiver string, startScope string) (string, bool) {

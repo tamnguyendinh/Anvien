@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -19,6 +20,102 @@ import (
 	"github.com/tamnguyendinh/anvien/internal/scanner"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
+
+func TestP5DGraphSnapshotPreservesTerminalExportProof(t *testing.T) {
+	tempRoot, err := filepath.Abs(filepath.Join("..", "..", ".tmp", "p5d-analyze-tests"))
+	if err != nil {
+		t.Fatalf("resolve repo-local P5-D temp root: %v", err)
+	}
+	if err := os.MkdirAll(tempRoot, 0o755); err != nil {
+		t.Fatalf("create repo-local P5-D temp root: %v", err)
+	}
+	workspace, err := os.MkdirTemp(tempRoot, "workspace-")
+	if err != nil {
+		t.Fatalf("create repo-local P5-D workspace: %v", err)
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(workspace) })
+
+	writeFile(t, workspace, "src/app.ts", `
+import { barrelRun } from './barrel';
+export function caller(): void {
+  barrelRun();
+}
+`)
+	writeFile(t, workspace, "src/barrel.ts", `
+export { run as barrelRun } from './impl';
+`)
+	writeFile(t, workspace, "src/impl.ts", `
+export function run(): void {}
+`)
+
+	result, err := Run(context.Background(), workspace, Options{
+		Parser:             parser.PoolOptions{ParseTimeout: time.Second},
+		Force:              true,
+		WriteGraphSnapshot: true,
+	})
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	before := p5dAnalyzeProofRelationship(t, result.Graph)
+	if len(before.Evidence) == 0 ||
+		before.Evidence[0].Kind != "scope-chain" ||
+		before.Evidence[0].Note != "barrelRun" {
+		t.Fatalf("generic CALLS evidence is not first: %#v", before)
+	}
+
+	raw, err := os.ReadFile(result.GraphPath)
+	if err != nil {
+		t.Fatalf("read Graph JSON %q: %v", result.GraphPath, err)
+	}
+	var snapshot graph.Graph
+	if err := json.Unmarshal(raw, &snapshot); err != nil {
+		t.Fatalf("decode Graph JSON: %v", err)
+	}
+	after := p5dAnalyzeRelationshipByID(t, &snapshot, before.ID)
+	if before.SourceID != after.SourceID ||
+		before.TargetID != after.TargetID ||
+		before.SourceSiteID != after.SourceSiteID ||
+		before.ProofKind != after.ProofKind ||
+		!reflect.DeepEqual(before.SourceSiteIDs, after.SourceSiteIDs) ||
+		!reflect.DeepEqual(before.Evidence, after.Evidence) {
+		t.Fatalf("Graph JSON terminal/proof parity drifted:\nbefore=%#v\nafter=%#v", before, after)
+	}
+}
+
+func p5dAnalyzeProofRelationship(t *testing.T, g *graph.Graph) graph.Relationship {
+	t.Helper()
+	var matches []graph.Relationship
+	for _, relationship := range g.Relationships {
+		hasTerminal := false
+		hasHop := false
+		for _, evidence := range relationship.Evidence {
+			switch evidence.Kind {
+			case "export-terminal-v1":
+				hasTerminal = true
+			case "export-hop-v1":
+				hasHop = true
+			}
+		}
+		if relationship.Type == graph.RelCalls && hasTerminal && hasHop {
+			matches = append(matches, relationship)
+		}
+	}
+	if len(matches) != 1 {
+		t.Fatalf("Graph JSON P5-D relationships = %d, want exactly 1: %#v", len(matches), matches)
+	}
+	return matches[0]
+}
+
+func p5dAnalyzeRelationshipByID(t *testing.T, g *graph.Graph, relationshipID string) graph.Relationship {
+	t.Helper()
+	for _, relationship := range g.Relationships {
+		if relationship.ID == relationshipID {
+			return relationship
+		}
+	}
+	t.Fatalf("Graph JSON relationship %q missing", relationshipID)
+	return graph.Relationship{}
+}
 
 func TestRunOrchestratesScanParseResolutionWithMetricsProgressAndBenchmark(t *testing.T) {
 	dir := t.TempDir()

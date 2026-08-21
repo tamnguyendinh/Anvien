@@ -1353,3 +1353,73 @@ func requireNoRelationship(t *testing.T, g *graph.Graph, relType graph.Relations
 		}
 	}
 }
+
+func TestP5DResolveEmitsCallAccessProofAndConservesCoalescedSites(t *testing.T) {
+	run := p5cDefinition("src/impl.ts", "run", scopeir.NodeFunction)
+	value := p5cDefinition("src/impl.ts", "value", scopeir.NodeProperty)
+	impl := p5cModule("src/impl.ts", []scopeir.DefinitionFact{run, value}, []scopeir.ExportFact{
+		p5cLocalExport(run, scopeir.ExportDirect, "run", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}),
+		p5cLocalExport(value, scopeir.ExportDirect, "value", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}),
+	})
+	barrel := p5cModule("src/barrel.ts", nil, []scopeir.ExportFact{
+		p5cNamespace("src/barrel.ts", "api", "./impl", []scopeir.ExportMeaning{scopeir.ExportMeaningNamespace}, false),
+	})
+	consumer := p5cConsumer("src/app.ts", scanner.TypeScript, []scopeir.ImportFact{
+		p5cImport(scopeir.ImportNamed, "api", "api", "./barrel", p5cAllMeanings, false),
+	}, []scopeir.CallSiteFact{
+		{Name: "run", ExplicitReceiver: "api", CallForm: scopeir.CallMember},
+		{Name: "run", ExplicitReceiver: "api", CallForm: scopeir.CallMember},
+	})
+	consumer.Accesses = []scopeir.AccessFact{{
+		FilePath:         "src/app.ts",
+		FileHash:         "hash-src/app.ts",
+		Name:             "value",
+		Kind:             scopeir.AccessRead,
+		Range:            scopeir.Range{StartLine: 6, EndLine: 6},
+		InScope:          p5cFunctionScope("src/app.ts"),
+		ExplicitReceiver: "api",
+	}}
+
+	result, err := Resolve([]scopeir.ScopeIR{consumer, barrel, impl}, Options{})
+	if err != nil {
+		t.Fatalf("Resolve() error = %v", err)
+	}
+	caller := requireNode(t, result.Graph, "Function", "src/app.ts", "caller")
+	runNode := requireNode(t, result.Graph, "Function", "src/impl.ts", "run")
+	valueNode := requireNode(t, result.Graph, "Property", "src/impl.ts", "value")
+
+	call := requireRelationship(t, result.Graph, graph.RelCalls, caller.ID, runNode.ID)
+	if call.ProofKind != proofKindImportMember ||
+		call.SourceSiteCount != 2 ||
+		len(call.SourceSiteIDs) != 2 ||
+		len(call.Evidence) == 0 ||
+		call.Evidence[0].Kind != "type-binding" ||
+		call.Evidence[0].Note != "run" ||
+		relationshipCallName(call) != "run" {
+		t.Fatalf("coalesced CALLS contract = %#v", call)
+	}
+	if terminals := p5dEvidenceOfKind(call.Evidence, exportBindingTerminalEvidenceKind); len(terminals) != 2 {
+		t.Fatalf("coalesced terminal proofs = %d, want 2 source sites: %#v", len(terminals), call.Evidence)
+	}
+	if hops := p5dEvidenceOfKind(call.Evidence, exportBindingHopEvidenceKind); len(hops) != 4 {
+		t.Fatalf("coalesced hop proofs = %d, want 2 paths x 2 hops: %#v", len(hops), call.Evidence)
+	}
+	if failures := p5dEvidenceOfKind(call.Evidence, exportBindingFailureEvidenceKind); len(failures) != 0 {
+		t.Fatalf("resolved namespace call gained failures: %#v", failures)
+	}
+
+	access := requireRelationship(t, result.Graph, graph.RelAccesses, caller.ID, valueNode.ID)
+	if access.ProofKind != proofKindImportMember ||
+		access.SourceSiteCount != 1 ||
+		len(access.Evidence) == 0 ||
+		access.Evidence[0].Kind != "import-binding" ||
+		access.Evidence[0].Note != "api.value" {
+		t.Fatalf("ACCESSES contract = %#v", access)
+	}
+	if terminals := p5dEvidenceOfKind(access.Evidence, exportBindingTerminalEvidenceKind); len(terminals) != 1 {
+		t.Fatalf("access terminal proofs = %d, want 1: %#v", len(terminals), access.Evidence)
+	}
+	if hops := p5dEvidenceOfKind(access.Evidence, exportBindingHopEvidenceKind); len(hops) != 2 {
+		t.Fatalf("access hop proofs = %d, want namespace + direct: %#v", len(hops), access.Evidence)
+	}
+}
