@@ -97,7 +97,7 @@ P6-A report seal: `reports/system-architect/rp_system-architect_260822_033607_by
 | `E6-P6B-BENCH1` | measurements required by the selected mechanism; no invented metric | independently accepted: changed binary artifact and final graph inventory remeasured; catalog/load/lookup benchmark owners unchanged, so accepted three-run measurements retained without rerun |
 | `E6-P6B-REVIEW1` | Supervisor PASS for P6-B | recorded — final independent PASS `F66E6B8337EC462AE6A7CF03C0C7D5A57176FAF22F7F430E52BF745749FF4C6E`; residual same-invariant surfaces none |
 | `E6-P6B-DETECT1` | detect-changes result before commit | recorded current post-ledger PASS at indexed/current HEAD `fa351c60617212635ef57a43b85d7449ef1eea1c`; CRITICAL `35/8/328/8`, ResolutionGap delta `198/201`, health total `0` |
-| `E6-P6B-COMMIT1` | isolated P6-B commit hash | pending Main-owned exact staging and isolated commit after current detect |
+| `E6-P6B-COMMIT1` | isolated P6-B commit hash | recorded exact commit `5c1584fef7153a7a331c8fedd1ce64176ddc873d`, parent `fa351c60617212635ef57a43b85d7449ef1eea1c`, exact 35-path manifest |
 
 `E6-P6B-IMPACT1` exact pre-code evidence:
 
@@ -274,20 +274,62 @@ P6-A report seal: `reports/system-architect/rp_system-architect_260822_033607_by
 - Post-ledger fresh explicit-path analyze exited `0` and produced `2,030` scanned / `752` parsed code / `0` failed / `116,218` nodes / `161,390` relationships / `19,426` dependency edges. `anvien status` then reported indexed/current commit `fa351c6` and up-to-date status.
 - Required explicit-path `anvien detect-changes --repo E:\Anvien --scope all --json` exited `0`, risk CRITICAL: `35` affected symbols / `8` files and `328` changed symbols / `8` files. Affected layers are `backend=31`, `mixed=4`; affected areas are `analyzer=8`, `mixed=9`, `resolution=18`. Changed layers are `backend=309`, `docs=19`; changed areas are `analyzer=28`, `documentation=19`, `resolution=281`.
 - Current ResolutionGap delta is `198` entities / `201` occurrences: `analyzer_gap=137`, `non_actionable=61`; `builtin=32`, `in_repo_unresolved=137`, `standard_library=29`; `access=106`, `call=80`, `type-reference=12`; functional areas `analyzer=14`, `resolution=184`. Semantic app-layer/functional-area fields are complete for all `116,218` nodes and current Resolution Health total is `0`. Counts and CRITICAL warning are preserved without normalization.
-- These final ledger lines record the completed graph/detect results; orchestration documentation rules prohibit a self-referential refresh/detect loop solely because the ledger now names its evidence. Exact accepted-manifest staging and the isolated P6-B commit remain. P6-C1/C2/C3/D and target access remain locked until that commit exists.
+- These final ledger lines record the completed graph/detect results; orchestration documentation rules prohibit a self-referential refresh/detect loop solely because the ledger now names its evidence. Main then staged only the exact accepted manifest and created the isolated P6-B commit; P6-C1 opens preserve-only while P6-C2/C3/D and target access remain locked.
+
+`E6-P6B-COMMIT1` isolated commit closure:
+
+- Main staged exact set equality: `35` expected / `35` staged / `0` missing / `0` extra. Cached diff-check exited `0`. The unstaged protected set was exactly `31`: `26` Main handoffs, three prior Supervisor reports, and two older coder reports; unexpected unstaged paths were `0`.
+- Commit `5c1584fef7153a7a331c8fedd1ce64176ddc873d`, message `feat(resolution): add TypeScript standard library authority`, was created at `2026-08-22 13:26:59 +07:00` on branch `master` with parent `fa351c60617212635ef57a43b85d7449ef1eea1c`.
+- Post-commit verification reports exact `35` commit paths / `0` missing / `0` extra, `4,877` insertions / `57` deletions, index empty, worktree status exactly the same `31` protected untracked paths, unexpected remaining paths `0`, and `git diff --check` exit `0`.
+- Current `resolve.go`, matrix test, catalog, and packaged binary identities remain exactly the independent PASS identities after commit. External orchestration history/path, Main handoffs, root graph/index artifacts, prior review history, and target repository are absent from the commit.
+- P6-B is closed without a second acceptance gate. P6-C1 preserve-only opens automatically; P6-C2/C3/D remain ordered and locked.
 
 ### P6-C1 - Conditional project/package declarations
 
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
-| `E6-P6C1-IMPACT1` | fresh exact lookup-owner impact, or evidence that no production owner is required | pending |
-| `E6-P6C1-SCOPE1` | P6-A decision marking exact cases active or preserve-only | P6-A records preserve-only; P6-C1 closure/review pending |
-| `E6-P6C1-SRC1` | scoped production diff, or explicit no-production-diff proof | pending |
-| `E6-P6C1-BUILD1` | full build for the accepted state | pending |
-| `E6-P6C1-TEST1` | required present/missing/config/security behavior or preserve-only validation | pending |
-| `E6-P6C1-REVIEW1` | Supervisor PASS for active/preserve-only decision | pending |
-| `E6-P6C1-DETECT1` | detect-changes before implementation commit when production changed; N/A reason otherwise | pending |
+| `E6-P6C1-IMPACT1` | fresh exact lookup-owner impact, or evidence that no production owner is required | recorded — no production owner required; four editable ledgers are LOW with zero symbols and one inbound relationship each |
+| `E6-P6C1-SCOPE1` | P6-A decision marking exact cases active or preserve-only | recorded — accepted P6-A authority marks P6-C1 `PRESERVE_ONLY`; current evidence does not invalidate it |
+| `E6-P6C1-SRC1` | scoped production diff, or explicit no-production-diff proof | recorded — zero production/test/package diff and zero project/package declaration owner in accepted runtime/test surfaces |
+| `E6-P6C1-BUILD1` | full build for the accepted state | N/A/not run — zero production/test behavior changed and accepted P6-B build/runtime evidence remains uninvalidated |
+| `E6-P6C1-TEST1` | required present/missing/config/security behavior or preserve-only validation | worker PASS — fresh real analyze plus exact graph/source/config/package inventory proves preserved unavailability and no lookup activation |
+| `E6-P6C1-REVIEW1` | Supervisor PASS for active/preserve-only decision | recorded — independent PASS `C1C5D0DEDC2F910D29FB32C9666E192A6221041DB578306F107B504FAF357E9B`; residual same-invariant surfaces none |
+| `E6-P6C1-DETECT1` | detect-changes before implementation commit when production changed; N/A reason otherwise | N/A — no implementation diff or implementation commit; exact doc-only boundary is verified by Git |
 | `E6-P6C1-COMMIT1` | isolated P6-C1 commit hash | pending |
+
+`E6-P6C1-IMPACT1` fresh graph and editable-boundary evidence:
+
+- Required one-time fresh `anvien analyze E:\Anvien --force --json` exited `0`: `2,030` scanned / `752` parsed code / `0` failed, graph `116,218` nodes / `161,390` relationships, file projection `19,426` dependency edges / `467` unresolved. File-detail reports indexed/current commit `5c1584fef7153a7a331c8fedd1ce64176ddc873d`, `stale=false`.
+- Anvien owner discovery returned broad candidate files, including HIGH resolver/UI/provider surfaces, but exact source/config/commit inspection found no P6-C1 production owner. No production symbol therefore has an authorized P6-C1 edit or applicable edit impact.
+- Fresh file-detail for each editable ledger reports LOW risk, zero symbols, zero unresolved, one related/inbound documentation relationship, and no linked flow/test. There is no HIGH/CRITICAL blast radius inside the editable boundary; HIGH query candidates remain inspect-only.
+
+`E6-P6C1-SCOPE1` accepted preserve-only authority:
+
+- Immutable P6-A report `reports/system-architect/rp_system-architect_260822_033607_by_gpt-5_p6a_declaration_universe_decision.md` explicitly assigns P6-C1 `PRESERVE_ONLY`, no production owner, and no project/package `.d.ts`, ambient-module, augmentation, or `node_modules` lookup. Its seal is `25,326` bytes / `289` LF / `0` CR / strict UTF-8 without BOM / SHA-256 `77D5E9AC8D76D98C76D1816C8D6E69265D4AFB30367E3DA50DF3EAA3445D7BA2`.
+- Initial P6-A review cleared this technical decision and rejected only an out-of-boundary contract mutation; reject-only report `reports/Supervisor/rp_supervisor_260822_041635_by_gpt-5_p6a_reject_only_resubmission.md` then returned `PASS` with the P6-C1 clearance inherited unchanged. Main committed the exact decision manifest at `b98131e44932a7bcac17b487ecb2914535927d01`.
+- P6-B independent PASS and isolated commit `5c1584fef7153a7a331c8fedd1ce64176ddc873d` do not activate project/package lookup. Any future activation still requires new evidence, planner refresh, owner/impact inventory, and review before code.
+
+`E6-P6C1-SRC1` current source/config/package/commit proof:
+
+- P6-B commit is exactly `35` paths with parent `fa351c60617212635ef57a43b85d7449ef1eea1c`; none of its `31` non-ledger paths is named or owned for project/package declarations. Current production/test/package diff from HEAD is exactly `0`.
+- Accepted runtime source search across `internal/tsstdlib`, `internal/resolution`, and `internal/analyze` returns `0` implementation files for `node_modules`, ambient modules, module augmentation, or project/package declaration lookup. Exact P6 test-owner search for those cases also returns `0`.
+- Runtime wiring is only `analyze.Run -> tsstdlib.NewAuthority -> LookupGlobal/LookupMember` against the embedded `typescript_standard_library` catalog. `buildWorkspace` still accepts repository ScopeIR; no package tree, declaration file, or package manifest is added as an authority input.
+- `internal/ignore/constants.go` hard-excludes the `node_modules` directory and every `.d.ts` path. The authoritative checkout has exactly two tracked `.d.ts` files—`anvien-web/src/vite-env.d.ts` and `anvien-web/src/vendor/leiden/index.d.ts`—both frontend/tooling inputs and neither an Anvien graph file. Root `E:\Anvien\tsconfig.json` is absent; thirteen tracked `tsconfig`/`jsconfig` paths are nested test/tooling/config files.
+- `internal/tsstdlib/profile.go` considers only zero/one scanned `tsconfig.json`, accepts exactly one root `tsconfig.json`, supports only `target`/`lib`/`noLib`, and fail-closes nested/multiple configs or `jsconfig.json`. The developer-only generator has the only three `node_modules` references, all pinned to the offline TypeScript `5.9.3` compiler/lock input; packaged `anvien/package.json` ships only `bin` and `go-src`.
+
+`E6-P6C1-BUILD1` proportionate build disposition:
+
+- N/A/not run. This preserve-only slice changes no production, test, fixture, generated artifact, package, runtime, or target byte. A full build cannot prove absence of an unimplemented authority and the accepted P6-B production/package/runtime builds remain valid because no owner changed. No partial command is labeled a full build and no build-related holder/lock termination was required.
+
+`E6-P6C1-TEST1` nearest real boundary and preserve validation:
+
+- The fresh packaged self-analyze above is the current real non-UI boundary. Exact Cypher queries return `0` graph nodes whose `filePath` ends in `.d.ts` and `0` whose `filePath` contains `node_modules/`.
+- Direct file-detail for both tracked declaration paths exits `1` with `file ... not found in repo Anvien`, matching the scanner exclusion rather than showing a parsed declaration owner. Current source tests `TestShouldIgnorePathMatchesBaselineHardcodedRules` and `TestWalkRepositoryPathsDiscoversSourceAndSkipsIgnored` encode the same `.d.ts`/`node_modules` exclusion; they were inspected, not rerun, because no source/test byte changed.
+- No production fixture or new test is authorized for a zero-case preserve-only slice. P6-B standard-library/config gates were not rerun ceremonially. Result: active P6-C1 cases `0`, production owners `0`, exact P6-C1 test owners `0`, indexed `.d.ts` nodes `0`, indexed `node_modules` nodes `0`; no project/package result can duplicate Child 05 module/export traversal.
+
+Worker disposition was `READY_FOR_INDEPENDENT_SUPERVISOR`, not acceptance. Independent report `reports/Supervisor/rp_supervisor_260822_142120_by_gpt-5_p6c1_project_package_preserve_only.md` now returns PASS. It remeasured the worker report, independently verified the accepted P6-A preserve-only authority, exact five-path pre-report candidate, zero production/test/package/generated drift, scanner/config/runtime/Child 05 ownership, and exact graph exclusions. Its one fresh graph is `2,032` scanned / `752` parsed / `0` failed / `116,251` nodes / `161,423` relationships / `19,426` dependency edges; `.d.ts` and `node_modules` file-path nodes remain `0/0`. Residual unverified same-invariant surfaces are none.
+
+`E6-P6C1-REVIEW1` seal: `15,401` bytes / `179` LF / `0` CR / strict UTF-8 without BOM / SHA-256 `C1C5D0DEDC2F910D29FB32C9666E192A6221041DB578306F107B504FAF357E9B`; createdAt/lastWrite `2026-08-22T14:23:40.8224653+07:00`. P6-C1 is accepted and planner-finalized; `E6-P6C1-COMMIT1` remains pending only for Main's exact six-path isolated doc/report commit. No second acceptance, build, test, analyze, or detect loop is created.
 
 ### P6-C2 - External target representation
 
