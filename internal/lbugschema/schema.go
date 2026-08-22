@@ -49,6 +49,7 @@ var NodeTables = []string{
 	"Module",
 	"Route",
 	"Tool",
+	"ExternalSymbol",
 	"ResolutionGap",
 }
 
@@ -83,7 +84,7 @@ type RelationPair struct {
 	To   string
 }
 
-var RelationPairs = appendResolutionGapPairs([]RelationPair{
+var RelationPairs = appendResolutionGapPairs(appendExternalSymbolPairs([]RelationPair{
 	{From: "File", To: "File"},
 	{From: "File", To: "Folder"},
 	{From: "File", To: "Function"},
@@ -339,11 +340,21 @@ var RelationPairs = appendResolutionGapPairs([]RelationPair{
 	{From: "CodeElement", To: "Process"},
 	{From: "Route", To: "Process"},
 	{From: "Tool", To: "Process"},
-})
+}))
+
+func appendExternalSymbolPairs(pairs []RelationPair) []RelationPair {
+	for _, table := range NodeTables {
+		if table == "ExternalSymbol" || table == "ResolutionGap" {
+			continue
+		}
+		pairs = append(pairs, RelationPair{From: table, To: "ExternalSymbol"})
+	}
+	return pairs
+}
 
 func appendResolutionGapPairs(pairs []RelationPair) []RelationPair {
 	for _, table := range NodeTables {
-		if table == "ResolutionGap" {
+		if table == "ResolutionGap" || table == "ExternalSymbol" {
 			continue
 		}
 		pairs = append(pairs, RelationPair{From: table, To: "ResolutionGap"})
@@ -379,6 +390,34 @@ func NodeSchema(table string) string {
 		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"responseKeys", "STRING[]"}, {"errorKeys", "STRING[]"}, {"middleware", "STRING[]"}})
 	case "Tool":
 		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"description", "STRING"}})
+	case "ExternalSymbol":
+		return nodeTableWithSemanticFields(table, []column{
+			{"id", "STRING"},
+			{"name", "STRING"},
+			{"qualifiedName", "STRING"},
+			{"requestedNames", "STRING[]"},
+			{"requestedTargetTexts", "STRING[]"},
+			{"meaning", "STRING"},
+			{"meanings", "STRING[]"},
+			{"semanticSymbolId", "STRING"},
+			{"semanticOwnerId", "STRING"},
+			{"authorityKind", "STRING"},
+			{"typeScriptVersion", "STRING"},
+			{"catalogProofState", "STRING"},
+			{"authorityHash", "STRING"},
+			{"catalogHash", "STRING"},
+			{"catalogArtifactHash", "STRING"},
+			{"profileHashes", "STRING[]"},
+			{"configHashes", "STRING[]"},
+			{"declarationLibraries", "STRING[]"},
+			{"declarationRanges", "STRING"},
+			{"sourceSiteIds", "STRING[]"},
+			{"sourceSiteCount", "INT32"},
+			{"origin", "STRING"},
+			{"external", "BOOLEAN"},
+			{"editable", "BOOLEAN"},
+			{"repositoryOwned", "BOOLEAN"},
+		})
 	case "Section":
 		return nodeTableWithSemanticFields(table, []column{{"id", "STRING"}, {"name", "STRING"}, {"filePath", "STRING"}, {"startLine", "INT64"}, {"endLine", "INT64"}, {"level", "INT64"}, {"content", "STRING"}, {"description", "STRING"}})
 	case "ResolutionGap":

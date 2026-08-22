@@ -2,15 +2,18 @@ package analyze
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/graphhealth"
 	"github.com/tamnguyendinh/anvien/internal/resolution"
 	"github.com/tamnguyendinh/anvien/internal/scanner"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 	"github.com/tamnguyendinh/anvien/internal/tsstdlib"
 )
 
@@ -55,6 +58,61 @@ func TestP6BRunInjectsEmbeddedTypeScriptStandardLibrary(t *testing.T) {
 	for key, found := range want {
 		if !found {
 			t.Fatalf("built analyze result is missing %s: %#v", key, result.TypeScriptAuthorityResults)
+		}
+	}
+	wantSymbols := make(map[string]struct{})
+	wantSites := make(map[string]struct{})
+	for _, record := range result.TypeScriptAuthorityResults {
+		if record.Status != tsstdlib.LookupResolved {
+			continue
+		}
+		wantSymbols[record.ResolvedSymbolID] = struct{}{}
+		wantSites[record.SourceSiteID] = struct{}{}
+	}
+	externalNodes := make(map[string]struct{})
+	for _, node := range result.Graph.Nodes {
+		if node.Label != scopeir.NodeExternalSymbol {
+			continue
+		}
+		semanticID, _ := node.Properties["semanticSymbolId"].(string)
+		if _, expected := wantSymbols[semanticID]; !expected ||
+			node.ID != graph.GenerateID(string(scopeir.NodeExternalSymbol), semanticID) ||
+			node.Properties["external"] != true ||
+			node.Properties["editable"] != false ||
+			node.Properties["repositoryOwned"] != false {
+			t.Fatalf("built analyze emitted invalid external node: %#v", node)
+		}
+		if _, repositoryFile := node.Properties["filePath"]; repositoryFile {
+			t.Fatalf("built external node claimed repository file ownership: %#v", node)
+		}
+		externalNodes[node.ID] = struct{}{}
+	}
+	if len(externalNodes) != len(wantSymbols) {
+		t.Fatalf("built external node count = %d, want %d", len(externalNodes), len(wantSymbols))
+	}
+	proofSites := make(map[string]int)
+	for _, relationship := range result.Graph.Relationships {
+		if _, external := externalNodes[relationship.TargetID]; !external {
+			continue
+		}
+		if relationship.Type == graph.RelDefines || relationship.Type == graph.RelImports ||
+			relationship.ResolutionSource != resolution.TypeScriptStandardLibraryStage {
+			t.Fatalf("built external edge disguised repository ownership: %#v", relationship)
+		}
+		for _, evidence := range relationship.Evidence {
+			if evidence.Kind != "typescript-authority-result-v1" {
+				continue
+			}
+			var proof resolution.TypeScriptAuthorityResult
+			if err := json.Unmarshal([]byte(evidence.Note), &proof); err != nil {
+				t.Fatalf("decode built external authority proof: %v", err)
+			}
+			proofSites[proof.SourceSiteID]++
+		}
+	}
+	for sourceSiteID := range wantSites {
+		if proofSites[sourceSiteID] != 1 {
+			t.Fatalf("built external source site %q proof count = %d, want 1", sourceSiteID, proofSites[sourceSiteID])
 		}
 	}
 	for _, node := range result.Graph.Nodes {

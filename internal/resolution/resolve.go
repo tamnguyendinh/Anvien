@@ -104,6 +104,9 @@ func ResolveBoundInto(baseGraph *graph.Graph, binding BindingResult, options Opt
 	if err != nil {
 		return Result{Graph: g, ReferenceIndex: e.referenceIndex, Metrics: metrics}, err
 	}
+	if err := emitTypeScriptExternalSymbols(e, authorityResults); err != nil {
+		return Result{Graph: g, ReferenceIndex: e.referenceIndex, Metrics: metrics}, err
+	}
 
 	metrics.GraphNodesEmitted = len(g.Nodes)
 	metrics.GraphRelationshipsEmitted = len(g.Relationships)
@@ -510,11 +513,14 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 			lookup = w.lookupTypeScriptGlobal(call.FilePath, call.Name, tsstdlib.MeaningValue)
 		}
 		if recordTypeScriptLookup(w, e, typeScriptSourceSite{
-			kind:       "call",
-			filePath:   call.FilePath,
-			fileHash:   call.FileHash,
-			rangeValue: call.Range,
-			targetText: callTargetText(call),
+			kind:          "call",
+			filePath:      call.FilePath,
+			fileHash:      call.FileHash,
+			rangeValue:    call.Range,
+			targetText:    callTargetText(call),
+			sourceGraphID: source.GraphID,
+			fromScope:     call.InScope,
+			referenceKind: ReferenceCall,
 		}, lookup) {
 			return
 		}
@@ -607,6 +613,10 @@ func resolveAccess(w *workspace, e *emitter, bindingOccurrences bindingOccurrenc
 	var semanticResult exportResolutionResult
 	hasSemanticResult := false
 	externalBlocked := false
+	referenceKind := ReferenceRead
+	if access.Kind == scopeir.AccessWrite {
+		referenceKind = ReferenceWrite
+	}
 	if access.ExplicitReceiver == "" {
 		target, ok = bindingOccurrences.resolve(w, access.Name, access.InScope)
 		if ok {
@@ -644,11 +654,14 @@ func resolveAccess(w *workspace, e *emitter, bindingOccurrences bindingOccurrenc
 				lookup = w.lookupTypeScriptMember(access.FilePath, access.ExplicitReceiver, access.InScope, access.Name, tsstdlib.MeaningValue)
 			}
 			if recordTypeScriptLookup(w, e, typeScriptSourceSite{
-				kind:       "access",
-				filePath:   access.FilePath,
-				fileHash:   access.FileHash,
-				rangeValue: access.Range,
-				targetText: accessTargetText(access),
+				kind:          "access",
+				filePath:      access.FilePath,
+				fileHash:      access.FileHash,
+				rangeValue:    access.Range,
+				targetText:    accessTargetText(access),
+				sourceGraphID: source.GraphID,
+				fromScope:     access.InScope,
+				referenceKind: referenceKind,
 			}, lookup) {
 				return
 			}
@@ -656,10 +669,7 @@ func resolveAccess(w *workspace, e *emitter, bindingOccurrences bindingOccurrenc
 		e.emitUnresolvedReference(source, "access", accessTargetText(access), access.FilePath, access.FileHash, access.Range, "access target not resolved", true)
 		return
 	}
-	kind := ReferenceRead
-	if access.Kind == scopeir.AccessWrite {
-		kind = ReferenceWrite
-	}
+	kind := referenceKind
 	source = bindingOccurrenceReferenceSource(source, target, access.FilePath)
 	siteID := sourceSiteID("access", access.FilePath, accessTargetText(access), access.Range)
 	evidence := []graph.Evidence{{
@@ -719,11 +729,14 @@ func resolveTypeAnnotation(w *workspace, e *emitter, annotation scopeir.TypeAnno
 		if !w.typeScriptAnnotationImportClaimed(annotation, targetName) {
 			lookup := w.lookupTypeScriptAnnotation(annotation, targetName)
 			if recordTypeScriptLookup(w, e, typeScriptSourceSite{
-				kind:       "type-reference",
-				filePath:   annotation.FilePath,
-				fileHash:   annotation.FileHash,
-				rangeValue: annotation.Range,
-				targetText: annotation.Type.RawName,
+				kind:          "type-reference",
+				filePath:      annotation.FilePath,
+				fileHash:      annotation.FileHash,
+				rangeValue:    annotation.Range,
+				targetText:    annotation.Type.RawName,
+				sourceGraphID: source.GraphID,
+				fromScope:     annotation.InScope,
+				referenceKind: ReferenceTypeReference,
 			}, lookup) {
 				return
 			}
@@ -865,11 +878,14 @@ func (w *workspace) hasTypeBinding(name string, startScope string) bool {
 }
 
 type typeScriptSourceSite struct {
-	kind       string
-	filePath   string
-	fileHash   string
-	rangeValue scopeir.Range
-	targetText string
+	kind          string
+	filePath      string
+	fileHash      string
+	rangeValue    scopeir.Range
+	targetText    string
+	sourceGraphID string
+	fromScope     string
+	referenceKind ReferenceKind
 }
 
 func recordTypeScriptLookup(w *workspace, e *emitter, site typeScriptSourceSite, result tsstdlib.LookupResult) bool {
@@ -885,8 +901,9 @@ func recordTypeScriptLookup(w *workspace, e *emitter, site typeScriptSourceSite,
 	default:
 		return false
 	}
+	siteID := sourceSiteID(site.kind, site.filePath, site.targetText, site.rangeValue)
 	w.typeScriptAuthorityResults = append(w.typeScriptAuthorityResults, TypeScriptAuthorityResult{
-		SourceSiteID:        sourceSiteID(site.kind, site.filePath, site.targetText, site.rangeValue),
+		SourceSiteID:        siteID,
 		Stage:               TypeScriptStandardLibraryStage,
 		FilePath:            cleanPath(site.filePath),
 		FileHash:            site.fileHash,
@@ -907,6 +924,14 @@ func recordTypeScriptLookup(w *workspace, e *emitter, site typeScriptSourceSite,
 		CatalogArtifactHash: result.CatalogArtifactHash,
 		ProfileHash:         result.ProfileHash,
 		ConfigHash:          result.ConfigHash,
+	})
+	e.typeScriptExternalSites = append(e.typeScriptExternalSites, typeScriptExternalSite{
+		SourceSiteID:  siteID,
+		SourceGraphID: site.sourceGraphID,
+		FromScope:     site.fromScope,
+		ReferenceKind: site.referenceKind,
+		TargetRole:    targetRoleForFactFamily(site.kind),
+		TargetText:    site.targetText,
 	})
 	return true
 }

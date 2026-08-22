@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / P6-A committed at b98131e44932a7bcac17b487ecb2914535927d01 / P6-B committed at 5c1584fef7153a7a331c8fedd1ce64176ddc873d / P6-C1 independent Supervisor PASS / planner finalized / isolated doc-report commit pending`
+- Status: `P0 complete / P6-A committed at b98131e44932a7bcac17b487ecb2914535927d01 / P6-B committed at 5c1584fef7153a7a331c8fedd1ce64176ddc873d / P6-C1 committed at 8055f0a6860721e26462572e34469e0d708d4a52 / P6-C2 independent Supervisor PASS and planner-finalized / isolated commit pending`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-benchmark.md`
@@ -286,7 +286,7 @@ Out of scope:
   - Commit Record: Main staged the exact accepted `35`-path manifest with `0` missing and `0` extra, while `31` protected paths remained unstaged (`26` Main handoffs, `3` prior Supervisor reports, `2` older coder reports). Cached diff-check passed. Isolated commit `5c1584fef7153a7a331c8fedd1ce64176ddc873d` (`feat(resolution): add TypeScript standard library authority`) has parent `fa351c60617212635ef57a43b85d7449ef1eea1c`, exactly `35` paths, `4,877` insertions / `57` deletions, and post-commit index empty. P6-B is closed; no second review/detect gate is created by this ledger record.
 
 - [x] P6-C1: Implement evidenced project/package declaration lookup.
-  - State: `PRESERVE_ONLY BY P6-A DECISION / INDEPENDENT SUPERVISOR PASS / PLANNER FINALIZED / ISOLATED DOC-REPORT COMMIT PENDING`; P6-C2 remains locked until the exact P6-C1 commit exists.
+  - State: `PRESERVE_ONLY BY P6-A DECISION / INDEPENDENT SUPERVISOR PASS / ISOLATED COMMIT 8055f0a6860721e26462572e34469e0d708d4a52 / CLOSED`; P6-C2 is now open.
   - Goal: close preserve-only with proof that this campaign does not require project/package declaration lookup; activation requires a new planner decision before code.
   - Scope Boundary:
     - Editable: Child 06 plan/evidence/benchmark/actual-status closure only; no production or test owner is authorized.
@@ -330,16 +330,17 @@ Out of scope:
     - Evidence IDs: `E6-P6C1-IMPACT1`, `E6-P6C1-SCOPE1`, `E6-P6C1-SRC1`, `E6-P6C1-BUILD1`, `E6-P6C1-TEST1`, `E6-P6C1-REVIEW1`, `E6-P6C1-DETECT1`, `E6-P6C1-COMMIT1`.
     - Actual-status rows refreshed: project/package declaration scope and implementation state.
   - Evidence Targets: scope decision, impact, source/preserve proof, tests/build/runtime, Supervisor, detect, commit.
-  - Actual-status Update: conditional lookup `blocked -> preserve-only -> worker-validated -> independent Supervisor PASS`; isolated commit remains pending.
+  - Actual-status Update: conditional lookup `blocked -> preserve-only -> worker-validated -> independent Supervisor PASS -> isolated commit 8055f0a6860721e26462572e34469e0d708d4a52`; P6-C2 opens automatically.
   - Commit Boundary: commit exactly the four Child 06 ledgers, worker report `rp_coder_260822_135011_by_gpt-5_p6c1_project_package_preserve_only.md`, and PASS report `rp_supervisor_260822_142120_by_gpt-5_p6c1_project_package_preserve_only.md`; exclude every protected Main/prior report and all production/test/package/generated paths.
   - Worker Validation Record: one fresh explicit-path self-analyze PASS records `2,030/752/0`, `116,218` nodes / `161,390` relationships / `19,426` dependency edges. Accepted runtime/test owner searches are `0/0`; current production/test/package diff is `0`; the two tracked frontend/tooling `.d.ts` paths and all `node_modules` paths are scanner-excluded and fresh graph counts are `0/0`. Root `tsconfig.json` is absent and nested/multiple topology remains fail-closed. Full build and implementation detect are N/A because no production/test/fixture/package/runtime artifact changed. Evidence: `E6-P6C1-IMPACT1`, `E6-P6C1-SCOPE1`, `E6-P6C1-SRC1`, `E6-P6C1-BUILD1`, `E6-P6C1-TEST1`. Report: `reports/coder/rp_coder_260822_135011_by_gpt-5_p6c1_project_package_preserve_only.md`.
   - Independent Review Record: `E6-P6C1-REVIEW1` is PASS in `reports/Supervisor/rp_supervisor_260822_142120_by_gpt-5_p6c1_project_package_preserve_only.md` (`15,401` bytes / `179` LF / `0` CR / strict UTF-8 without BOM / SHA-256 `C1C5D0DEDC2F910D29FB32C9666E192A6221041DB578306F107B504FAF357E9B`, createdAt/lastWrite `2026-08-22T14:23:40.8224653+07:00`). Its fresh graph is `2,032/752/0`, `116,251` nodes / `161,423` relationships / `19,426` dependency edges; exact `.d.ts` and `node_modules` node counts remain `0/0`. It accepts the exact five-path pre-report candidate, reports no residual same-invariant surface, and authorizes only Main's planner/stage/commit closure.
+  - Commit Record: Main staged exact set `6/6` with zero missing/extra and cached diff-check PASS. Isolated commit `8055f0a6860721e26462572e34469e0d708d4a52` (`docs(resolution): close P6-C1 preserve-only`) has parent `5c1584fef7153a7a331c8fedd1ce64176ddc873d`, exactly the four Child 06 ledgers plus worker/PASS reports, `454` insertions / `31` deletions, post-commit index empty, and exactly `32` protected untracked history paths. P6-C1 is closed without a second acceptance/detect gate.
 
-- [ ] P6-C2: Add the necessary external target representation.
-  - State: `ACTIVE BY P6-A DECISION / LOCKED UNTIL P6-B AND P6-C1 CLOSURE`.
+- [x] P6-C2: Add the necessary external target representation.
+  - State: `INDEPENDENT SUPERVISOR PASS / PLANNER FINALIZED / CURRENT MAIN ANALYZE-DETECT AND ISOLATED COMMIT PENDING / UNSTAGED`; two procedural REJECT reports remain immutable history and no coder repair exists.
   - Goal: materialize referenced resolved declarations as deterministic `ExternalSymbol` facts and preserve explicit external-capability gaps without repository ownership pollution.
   - Scope Boundary:
-    - Editable after fresh impact: `internal/scopeir/kinds.go`, an isolated external-symbol materializer in `internal/resolution`, `internal/resolution/emit.go`, `internal/lbugload/csv.go`, `internal/lbugschema/schema.go`, `internal/processes/processes.go`, `internal/mcp/context.go`, `internal/mcp/impact.go`, and `internal/mcp/rename.go`.
+    - Edited after fresh impact: `internal/scopeir/kinds.go`, isolated materializer `internal/resolution/external_symbol.go`, the minimum resolver/emitter hook, `internal/lbugload/csv.go`, `internal/lbugschema/schema.go`, `internal/processes/processes.go`, `internal/mcp/context.go`, and `internal/mcp/rename.go`. `internal/mcp/impact.go` was validated but not edited because it already consumes the shared context projection.
     - Inspect-only: P6-B/P6-C1 lookup results, graph types, Child 02 affected readers, and final outcome owner.
     - Preserve-only: repository File/Definition identity and unrelated graph consumers.
     - Out of scope: graph-health policy and broad traversal API changes.
@@ -358,19 +359,19 @@ Out of scope:
     - External side effects: none beyond accepted P6-A design.
     - N/A notes: public traversal controls are not part of this slice without separate evidence.
   - Work Steps:
-    1. Record graph/reader impact and select the minimum representation; update the plan before code if consumer requirements differ from P6-A.
+    1. **Worker complete:** record graph/reader impact and select the minimum representation; current consumers match P6-A and require no planner expansion.
        - UI flow check: conditional on affected UI.
        - DB/data flow check: representation preserves external origin and explicit unresolved capability.
        - Render location check: graph/affected-reader evidence.
        - Mini QA: inspect real graph and nearest affected reader.
        - Evidence target: `E6-P6C2-IMPACT1`, `E6-P6C2-DESIGN1`.
-    2. Implement production representation/materialization, then tests, full build, affected parity, regression, review, detect, and commit.
+    2. **Complete through independent Supervisor PASS; current Main analyze/detect and commit remain ordered closure gates:** implement production representation/materialization, then tests, build, affected parity, regression, review, detect, and commit.
        - UI flow check: conditional on affected UI.
        - DB/data flow check: exact target/provenance and no repository File/Definition misclassification.
        - Render location check: graph and affected readers only.
        - Mini QA: exercise real built graph-bound consumer(s).
        - Evidence target: `E6-P6C2-SRC1`, `E6-P6C2-BUILD1`, `E6-P6C2-TEST1`, `E6-P6C2-PARITY1`, `E6-P6C2-REVIEW1`, `E6-P6C2-DETECT1`, `E6-P6C2-COMMIT1`.
-  - Implementation Gate: P6-B and the P6-C1 preserve-only closure are accepted; every exact owner has fresh file-detail/impact and the referenced-only representation/reader contract is reconfirmed.
+  - Implementation Gate: satisfied for acceptance. P6-B and P6-C1 are committed; every edited existing owner has fresh file-detail/file+symbol impact; two independent technical reviews establish no residual code/test/ledger/runtime invariant; the final commandless procedural-only review closes the sole no-C execution-boundary blocker. P6-C3/D remain locked until the isolated P6-C2 commit.
   - Acceptance:
     - Source: minimum accepted representation distinguishes internal, external, intrinsic when applicable, and explicit external-capability gaps.
     - Runtime/UI: affected built consumers show the same truthful result; UI is conditional.
@@ -380,11 +381,13 @@ Out of scope:
     - Evidence IDs: `E6-P6C2-IMPACT1`, `E6-P6C2-DESIGN1`, `E6-P6C2-SRC1`, `E6-P6C2-BUILD1`, `E6-P6C2-TEST1`, `E6-P6C2-PARITY1`, `E6-P6C2-REVIEW1`, `E6-P6C2-DETECT1`, `E6-P6C2-COMMIT1`.
     - Actual-status rows refreshed: external target representation and affected readers.
   - Evidence Targets: impact/design/source, tests/build/parity/runtime, Supervisor, detect, commit.
-  - Actual-status Update: external representation `blocked/missing -> correct`.
-  - Commit Boundary: commit P6-C2 alone after acceptance.
+  - Actual-status Update: external representation `missing -> correct / worker-validated -> two procedural REJECTs with no technical blocker -> independent Supervisor PASS / planner-finalized`; affected P6-C2 readers are independently parity-cleared while graph-health remains locked to P6-D.
+  - Commit Boundary: after one current explicit-path analyze/detect, commit exactly `23` accepted paths: `9` production + `8` tests + `4` Child 06 ledgers + coder report `rp_coder_260822_162635_by_gpt-5_p6c2_external_target_representation.md` + final PASS report `rp_supervisor_260822_175500_by_gpt-5_p6c2_external_target_representation_procedural_only.md`. Exclude both procedural REJECT reports and every other protected history path.
+  - Worker Validation Record: final P6-B rows drive deterministic `ExternalSymbol` materialization only for `resolved` sites; unavailable/excluded/mismatch rows create no fake target. The packaged two-file fixture emits `3` unique external nodes, `4` coalesced external edges, and `6` immutable per-site authority proof rows with `0` repository ownership edges. Focused and full affected packages pass; native Ladybug COPY/readback passes with zero fallback/skips. Broad `go build ./...` remains false because repository fixtures are intentionally non-buildable; broad `go test ./internal/...` preserves seven repo-local-temp Git-environment failures plus the existing C#/Dart ACCESS parity failures. Production `cmd/anvien`, local packaged destination build, packaged runtime/context/impact/rename, and two-run graph byte equality pass. Final packaged root analyze is `2,039/756/0`, `116,657` nodes / `162,181` relationships / `19,658` dependency edges; explicit detect exits `0` at CRITICAL `44` affected symbols / `17` files and `202` changed symbols / `17` files, with Resolution Health `0`. Evidence: `E6-P6C2-IMPACT1`, `E6-P6C2-DESIGN1`, `E6-P6C2-SRC1`, `E6-P6C2-BUILD1`, `E6-P6C2-TEST1`, `E6-P6C2-PARITY1`, `E6-P6C2-DETECT1`.
+  - Independent Review Record: first report `reports/Supervisor/rp_supervisor_260822_171803_by_gpt-5_p6c2_external_target_representation.md` (`18,318` bytes / `229` LF / SHA-256 `C1F7C1959C3BB36CA1F91817FC5FDCF8DCFD193388760394BEB59325D597FA88`) and clean E-rooted report `reports/Supervisor/rp_supervisor_260822_174938_by_gpt-5_p6c2_external_target_representation_clean_rereview.md` (`17,759` bytes / `224` LF / SHA-256 `537F59AA8A350349E0ADC1858C74A4DDA3B7B3102292D9A1E69AFF942F682B2C`) each return procedural-only `REJECT`, explicitly retain all technical clearances, establish no residual code invariant, and request no coder repair. Final commandless report `reports/Supervisor/rp_supervisor_260822_175500_by_gpt-5_p6c2_external_target_representation_procedural_only.md` returns `PASS` (`5,583` bytes / `75` LF / `0` CR / strict UTF-8 without BOM / SHA-256 `D55D2F33BD311E4266D537E17F6A5EAC369FAFACA2650BD41C40140BC1F9EA0C`, createdAt/lastWrite `2026-08-22T17:56:10.5347129+07:00`). It consumes the externally rehashed unchanged `22/22` candidate, preserves both REJECT reports as immutable history, closes only their tool-substrate no-C blocker, and reports residual same-invariant surfaces `none`.
 
 - [ ] P6-C3: Produce structured resolution outcomes.
-  - State: `ACTIVE BY P6-A DECISION / LOCKED UNTIL P6-C2 ACCEPTANCE`.
+  - State: `ACTIVE BY P6-A DECISION / LOCKED UNTIL P6-C2 ISOLATED COMMIT`.
   - Goal: finalize exactly one immutable resolver outcome per affected source site from repository, external, intrinsic, or explicit external-capability results.
   - Scope Boundary:
     - Editable: exact outcome/status owner and minimum finalization adapters selected by impact.

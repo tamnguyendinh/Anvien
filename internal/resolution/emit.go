@@ -16,12 +16,13 @@ import (
 const exportNodeLabel scopeir.NodeLabel = "Export"
 
 type emitter struct {
-	graph               *graph.Graph
-	referenceIndex      ReferenceIndex
-	edgeKeys            map[string]graph.Relationship
-	definitionNodesSeen map[string]graph.Node
-	metrics             *Metrics
-	sourceLabel         string
+	graph                   *graph.Graph
+	referenceIndex          ReferenceIndex
+	edgeKeys                map[string]graph.Relationship
+	definitionNodesSeen     map[string]graph.Node
+	typeScriptExternalSites []typeScriptExternalSite
+	metrics                 *Metrics
+	sourceLabel             string
 }
 
 func newEmitter(g *graph.Graph, metrics *Metrics) *emitter {

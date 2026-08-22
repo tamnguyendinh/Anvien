@@ -1,6 +1,7 @@
 package processes
 
 import (
+	"reflect"
 	"strconv"
 	"testing"
 
@@ -257,6 +258,29 @@ func TestApplyLinksRouteAndToolEntryResourcesToProcesses(t *testing.T) {
 	}
 	requireProcessRelationship(t, g, graph.RelEntryPointOf, "Route:/api/users", "proc_0_handlerequest", 0)
 	requireProcessRelationship(t, g, graph.RelEntryPointOf, "Tool:user_search", "proc_0_handlerequest", 0)
+}
+
+func TestP6C2BuildCallsGraphExcludesExternalEndpoints(t *testing.T) {
+	g := graph.New()
+	g.AddNode(processSymbol("Function:run", "run", "src/app.ts"))
+	g.AddNode(processSymbol("Function:helper", "helper", "src/app.ts"))
+	g.AddNode(graph.Node{ID: "ExternalSymbol:tsstdlib:max", Label: scopeir.NodeExternalSymbol, Properties: graph.NodeProperties{
+		"name": "Math.max", "external": true, "editable": false, "repositoryOwned": false,
+	}})
+	g.AddRelationship(callRelationship("rel:CALLS:run->external", "Function:run", "ExternalSymbol:tsstdlib:max", 1))
+	g.AddRelationship(callRelationship("rel:CALLS:external->helper", "ExternalSymbol:tsstdlib:max", "Function:helper", 1))
+	g.AddRelationship(callRelationship("rel:CALLS:run->helper", "Function:run", "Function:helper", 1))
+
+	calls := buildCallsGraph(g)
+	if !reflect.DeepEqual(calls, adjacency{"Function:run": {"Function:helper"}}) {
+		t.Fatalf("process call graph retained external ownership: %#v", calls)
+	}
+	result := Apply(g, Config{})
+	for _, step := range result.Steps {
+		if step.NodeID == "ExternalSymbol:tsstdlib:max" {
+			t.Fatalf("external endpoint became repository process member: %#v", result)
+		}
+	}
 }
 
 func processSymbol(id string, name string, filePath string) graph.Node {

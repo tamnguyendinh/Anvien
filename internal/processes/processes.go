@@ -259,6 +259,12 @@ func buildCallsGraph(g *graph.Graph) adjacency {
 		if rel.Type != graph.RelCalls {
 			continue
 		}
+		if source, ok := g.GetNode(rel.SourceID); ok && source.Label == scopeir.NodeExternalSymbol {
+			continue
+		}
+		if target, ok := g.GetNode(rel.TargetID); ok && target.Label == scopeir.NodeExternalSymbol {
+			continue
+		}
 		if rel.Confidence > 0 && rel.Confidence < 0.5 {
 			continue
 		}

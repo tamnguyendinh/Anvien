@@ -20,33 +20,35 @@ const RelationshipCSVHeader = "from,to,type,confidence,reason,step,resolutionSou
 var relationshipColumns = []string{"from", "to", "type", "confidence", "reason", "step", "resolutionSource", "evidence", "fileHash", "sourceSiteId", "sourceSiteIds", "sourceSiteCount", "sourceSiteStatus", "proofKind", "targetRole", "targetText", "filePath", "startLine", "startCol", "endLine", "endCol"}
 
 var (
-	fileNodeColumns      = semanticNodeColumns("id", "name", "filePath", "content")
-	folderNodeColumns    = semanticNodeColumns("id", "name", "filePath")
-	symbolNodeColumns    = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "isExported", "content", "description")
-	methodNodeColumns    = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "isExported", "content", "description", "parameterCount", "returnType")
-	exportNodeColumns    = semanticNodeColumns("id", "name", "filePath", "fileHash", "kind", "exportedName", "localName", "localDefId", "localDefinitionNodeId", "targetRaw", "targetExportedName", "meanings", "typeOnly", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "statementStartLine", "statementStartCol", "statementEndLine", "statementEndCol", "siteKind")
-	communityNodeColumns = semanticNodeColumns("id", "label", "heuristicLabel", "keywords", "description", "enrichedBy", "cohesion", "symbolCount")
-	processNodeColumns   = semanticNodeColumns("id", "label", "heuristicLabel", "processType", "stepCount", "communities", "entryPointId", "terminalId")
-	sectionNodeColumns   = semanticNodeColumns("id", "name", "filePath", "startLine", "endLine", "level", "content", "description")
-	routeNodeColumns     = semanticNodeColumns("id", "name", "filePath", "responseKeys", "errorKeys", "middleware")
-	toolNodeColumns      = semanticNodeColumns("id", "name", "filePath", "description")
-	resolutionGapColumns = semanticNodeColumns("id", "name", "gapKind", "sourceSiteId", "sourceNodeId", "sourceNodeLabel", "sourceAppLayer", "sourceFunctionalArea", "factFamily", "targetText", "targetRole", "sourceSiteStatus", "proofKind", "classification", "actionability", "resolutionSource", "source", "filePath", "fileHash", "startLine", "startCol", "endLine", "endCol", "count", "note")
-	defaultNodeColumns   = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "isExported", "content", "description")
-	nodeColumnLookup     = map[string][]string{
-		"File":          fileNodeColumns,
-		"Folder":        folderNodeColumns,
-		"Function":      symbolNodeColumns,
-		"Class":         symbolNodeColumns,
-		"Interface":     symbolNodeColumns,
-		"CodeElement":   symbolNodeColumns,
-		"Method":        methodNodeColumns,
-		"Export":        exportNodeColumns,
-		"Community":     communityNodeColumns,
-		"Process":       processNodeColumns,
-		"Section":       sectionNodeColumns,
-		"Route":         routeNodeColumns,
-		"Tool":          toolNodeColumns,
-		"ResolutionGap": resolutionGapColumns,
+	fileNodeColumns           = semanticNodeColumns("id", "name", "filePath", "content")
+	folderNodeColumns         = semanticNodeColumns("id", "name", "filePath")
+	symbolNodeColumns         = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "isExported", "content", "description")
+	methodNodeColumns         = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "isExported", "content", "description", "parameterCount", "returnType")
+	exportNodeColumns         = semanticNodeColumns("id", "name", "filePath", "fileHash", "kind", "exportedName", "localName", "localDefId", "localDefinitionNodeId", "targetRaw", "targetExportedName", "meanings", "typeOnly", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "statementStartLine", "statementStartCol", "statementEndLine", "statementEndCol", "siteKind")
+	communityNodeColumns      = semanticNodeColumns("id", "label", "heuristicLabel", "keywords", "description", "enrichedBy", "cohesion", "symbolCount")
+	processNodeColumns        = semanticNodeColumns("id", "label", "heuristicLabel", "processType", "stepCount", "communities", "entryPointId", "terminalId")
+	sectionNodeColumns        = semanticNodeColumns("id", "name", "filePath", "startLine", "endLine", "level", "content", "description")
+	routeNodeColumns          = semanticNodeColumns("id", "name", "filePath", "responseKeys", "errorKeys", "middleware")
+	toolNodeColumns           = semanticNodeColumns("id", "name", "filePath", "description")
+	externalSymbolNodeColumns = semanticNodeColumns("id", "name", "qualifiedName", "requestedNames", "requestedTargetTexts", "meaning", "meanings", "semanticSymbolId", "semanticOwnerId", "authorityKind", "typeScriptVersion", "catalogProofState", "authorityHash", "catalogHash", "catalogArtifactHash", "profileHashes", "configHashes", "declarationLibraries", "declarationRanges", "sourceSiteIds", "sourceSiteCount", "origin", "external", "editable", "repositoryOwned")
+	resolutionGapColumns      = semanticNodeColumns("id", "name", "gapKind", "sourceSiteId", "sourceNodeId", "sourceNodeLabel", "sourceAppLayer", "sourceFunctionalArea", "factFamily", "targetText", "targetRole", "sourceSiteStatus", "proofKind", "classification", "actionability", "resolutionSource", "source", "filePath", "fileHash", "startLine", "startCol", "endLine", "endCol", "count", "note")
+	defaultNodeColumns        = semanticNodeColumns("id", "name", "filePath", "qualifiedName", "startLine", "startCol", "endLine", "endCol", "selectionStartLine", "selectionStartCol", "selectionEndLine", "selectionEndCol", "isExported", "content", "description")
+	nodeColumnLookup          = map[string][]string{
+		"File":           fileNodeColumns,
+		"Folder":         folderNodeColumns,
+		"Function":       symbolNodeColumns,
+		"Class":          symbolNodeColumns,
+		"Interface":      symbolNodeColumns,
+		"CodeElement":    symbolNodeColumns,
+		"Method":         methodNodeColumns,
+		"Export":         exportNodeColumns,
+		"Community":      communityNodeColumns,
+		"Process":        processNodeColumns,
+		"Section":        sectionNodeColumns,
+		"Route":          routeNodeColumns,
+		"Tool":           toolNodeColumns,
+		"ExternalSymbol": externalSymbolNodeColumns,
+		"ResolutionGap":  resolutionGapColumns,
 	}
 	validNodeTableLookup = makeValidNodeTableLookup()
 	relationPairLookup   = makeRelationPairLookup()
@@ -331,6 +333,34 @@ func nodeCSVRow(node graph.Node, table string) []string {
 		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), arrayLiteral(props["responseKeys"]), arrayLiteral(props["errorKeys"]), arrayLiteral(props["middleware"]))
 	case "Tool":
 		return semanticValues(node.ID, stringProp(props, "name", ""), stringProp(props, "filePath", ""), stringProp(props, "description", ""))
+	case "ExternalSymbol":
+		return semanticValues(
+			node.ID,
+			stringProp(props, "name", ""),
+			stringProp(props, "qualifiedName", ""),
+			arrayLiteral(props["requestedNames"]),
+			arrayLiteral(props["requestedTargetTexts"]),
+			stringProp(props, "meaning", ""),
+			arrayLiteral(props["meanings"]),
+			stringProp(props, "semanticSymbolId", ""),
+			stringProp(props, "semanticOwnerId", ""),
+			stringProp(props, "authorityKind", ""),
+			stringProp(props, "typeScriptVersion", ""),
+			stringProp(props, "catalogProofState", ""),
+			stringProp(props, "authorityHash", ""),
+			stringProp(props, "catalogHash", ""),
+			stringProp(props, "catalogArtifactHash", ""),
+			arrayLiteral(props["profileHashes"]),
+			arrayLiteral(props["configHashes"]),
+			arrayLiteral(props["declarationLibraries"]),
+			jsonLiteral(props["declarationRanges"]),
+			arrayLiteral(props["sourceSiteIds"]),
+			intProp(props, "sourceSiteCount", 0),
+			stringProp(props, "origin", ""),
+			boolProp(props, "external"),
+			boolProp(props, "editable"),
+			boolProp(props, "repositoryOwned"),
+		)
 	case "ResolutionGap":
 		return semanticValues(
 			node.ID,
@@ -416,6 +446,17 @@ func stringArrayJSON(values []string) string {
 		return ""
 	}
 	raw, err := json.Marshal(values)
+	if err != nil {
+		return ""
+	}
+	return string(raw)
+}
+
+func jsonLiteral(value any) string {
+	if value == nil {
+		return ""
+	}
+	raw, err := json.Marshal(value)
 	if err != nil {
 		return ""
 	}

@@ -37,8 +37,8 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 	if len(queries) != len(NodeTables)+2 {
 		t.Fatalf("SchemaQueries() len = %d, want %d", len(queries), len(NodeTables)+2)
 	}
-	if len(RelationPairs) != 288 {
-		t.Fatalf("RelationPairs len = %d, want 288", len(RelationPairs))
+	if len(RelationPairs) != 321 {
+		t.Fatalf("RelationPairs len = %d, want 321", len(RelationPairs))
 	}
 
 	fileSchema := NodeSchema("File")
@@ -60,6 +60,23 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 	for _, want := range []string{"CREATE NODE TABLE ResolutionGap", "sourceSiteId STRING", "sourceNodeId STRING", "gapKind STRING", "classification STRING", "actionability STRING", "count INT32", "appLayer STRING", "functionalArea STRING"} {
 		if !strings.Contains(resolutionGapSchema, want) {
 			t.Fatalf("ResolutionGap schema missing %q:\n%s", want, resolutionGapSchema)
+		}
+	}
+	externalSchema := NodeSchema("ExternalSymbol")
+	for _, want := range []string{
+		"CREATE NODE TABLE ExternalSymbol",
+		"semanticSymbolId STRING",
+		"semanticOwnerId STRING",
+		"authorityKind STRING",
+		"typeScriptVersion STRING",
+		"catalogProofState STRING",
+		"declarationRanges STRING",
+		"external BOOLEAN",
+		"editable BOOLEAN",
+		"repositoryOwned BOOLEAN",
+	} {
+		if !strings.Contains(externalSchema, want) {
+			t.Fatalf("ExternalSymbol schema missing %q:\n%s", want, externalSchema)
 		}
 	}
 
@@ -95,6 +112,9 @@ func TestSchemaQueriesPreserveDDLShape(t *testing.T) {
 		"FROM `TypeAlias` TO `Property`",
 		"FROM Function TO ResolutionGap",
 		"FROM Method TO ResolutionGap",
+		"FROM File TO ExternalSymbol",
+		"FROM Function TO ExternalSymbol",
+		"FROM Method TO ExternalSymbol",
 		"type STRING",
 		"confidence DOUBLE",
 		"resolutionSource STRING",
@@ -113,14 +133,14 @@ func TestSchemaSurfaceCoversLegacyCoreAndModernNodeTypes(t *testing.T) {
 		"Package", "Section", "Struct", "Enum", "Macro", "Typedef", "Union", "Namespace", "Trait", "Impl",
 		"TypeAlias", "Const", "Static", "Variable", "Property", "Record", "Delegate", "Annotation", "Constructor",
 		"Template", "Module", "Route", "Tool",
-		"ResolutionGap",
+		"ExternalSymbol", "ResolutionGap",
 	} {
 		if !containsString(NodeTables, table) {
 			t.Fatalf("NodeTables missing %q", table)
 		}
 	}
-	if len(NodeTables) != 34 {
-		t.Fatalf("NodeTables length = %d, want 34", len(NodeTables))
+	if len(NodeTables) != 35 {
+		t.Fatalf("NodeTables length = %d, want 35", len(NodeTables))
 	}
 
 	for _, relationType := range []string{
@@ -254,6 +274,7 @@ func expectedFrozenNodeTables() []string {
 		"Module",
 		"Route",
 		"Tool",
+		"ExternalSymbol",
 		"ResolutionGap",
 	}
 }

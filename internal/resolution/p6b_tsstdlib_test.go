@@ -1,11 +1,13 @@
 package resolution
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
 
+	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/scanner"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
 	"github.com/tamnguyendinh/anvien/internal/tsstdlib"
@@ -94,9 +96,59 @@ func TestP6BResolverUsesCatalogForEligibleTypeScriptMisses(t *testing.T) {
 			t.Fatalf("source-site inventory %s remaining=%d; records=%#v", key, remaining, result.TypeScriptAuthorityResults)
 		}
 	}
+	wantSymbols := make(map[string]struct{})
+	wantSourceSites := make(map[string]struct{})
+	for _, record := range result.TypeScriptAuthorityResults {
+		wantSymbols[record.ResolvedSymbolID] = struct{}{}
+		wantSourceSites[record.SourceSiteID] = struct{}{}
+	}
+	externalNodes := make(map[string]graph.Node)
 	for _, node := range result.Graph.Nodes {
-		if node.Label == "ExternalSymbol" {
-			t.Fatalf("P6-B must not materialize P6-C2 external nodes: %#v", node)
+		if node.Label != scopeir.NodeExternalSymbol {
+			continue
+		}
+		semanticID, _ := node.Properties["semanticSymbolId"].(string)
+		if _, ok := wantSymbols[semanticID]; !ok || node.ID != externalSymbolGraphID(semanticID) {
+			t.Fatalf("external node has unexpected semantic identity: %#v", node)
+		}
+		if _, repositoryFile := node.Properties["filePath"]; repositoryFile ||
+			node.Properties["external"] != true ||
+			node.Properties["editable"] != false ||
+			node.Properties["repositoryOwned"] != false {
+			t.Fatalf("external node polluted repository ownership: %#v", node)
+		}
+		externalNodes[node.ID] = node
+	}
+	if len(externalNodes) != len(wantSymbols) {
+		t.Fatalf("external node count = %d, want %d semantic symbols", len(externalNodes), len(wantSymbols))
+	}
+	proofSites := make(map[string]int)
+	for _, relationship := range result.Graph.Relationships {
+		if _, externalTarget := externalNodes[relationship.TargetID]; !externalTarget {
+			continue
+		}
+		if relationship.Type == graph.RelDefines || relationship.Type == graph.RelImports ||
+			relationship.ResolutionSource != TypeScriptStandardLibraryStage ||
+			relationship.ProofKind != typeScriptExternalProofKind {
+			t.Fatalf("invalid external relationship ownership/proof: %#v", relationship)
+		}
+		for _, evidence := range relationship.Evidence {
+			if evidence.Kind != typeScriptAuthorityEvidenceKind {
+				continue
+			}
+			var proof TypeScriptAuthorityResult
+			if err := json.Unmarshal([]byte(evidence.Note), &proof); err != nil {
+				t.Fatalf("decode external site proof: %v", err)
+			}
+			if _, expected := wantSourceSites[proof.SourceSiteID]; !expected {
+				t.Fatalf("external edge invented authority site: %#v", proof)
+			}
+			proofSites[proof.SourceSiteID]++
+		}
+	}
+	for sourceSiteID := range wantSourceSites {
+		if proofSites[sourceSiteID] != 1 {
+			t.Fatalf("authority site %q proof count = %d, want 1", sourceSiteID, proofSites[sourceSiteID])
 		}
 	}
 }

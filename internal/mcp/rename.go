@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
 
 type renameEdit struct {
@@ -61,6 +62,14 @@ func (s Server) renameTool(args map[string]any) (map[string]any, error) {
 	}
 
 	target := candidates[0].Node
+	if target.Label == scopeir.NodeExternalSymbol {
+		return map[string]any{
+			"status":     "rejected",
+			"reason":     "external_symbol_non_editable",
+			"message":    "External symbols are non-editable authority facts.",
+			"symbol_uid": target.ID,
+		}, nil
+	}
 	oldName := firstResourceNodeString(target, "name", "label", "heuristicLabel")
 	if oldName == newName {
 		return map[string]any{"error": "New name is the same as the current name."}, nil

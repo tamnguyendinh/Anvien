@@ -524,6 +524,40 @@ func addContextNodeSemanticFields(payload map[string]any, node graph.Node) {
 		payload["resolutionGapCount"] = value
 	}
 	copyContextRawNodeField(payload, node, "resolutionHealthBuckets")
+	if node.Label == scopeir.NodeExternalSymbol {
+		payload["externalSymbol"] = true
+		for _, key := range []string{
+			"origin",
+			"qualifiedName",
+			"meaning",
+			"semanticSymbolId",
+			"semanticOwnerId",
+			"authorityKind",
+			"typeScriptVersion",
+			"catalogProofState",
+			"authorityHash",
+			"catalogHash",
+			"catalogArtifactHash",
+		} {
+			copyContextStringNodeField(payload, node, key)
+		}
+		for _, key := range []string{
+			"requestedNames",
+			"requestedTargetTexts",
+			"meanings",
+			"profileHashes",
+			"configHashes",
+			"declarationLibraries",
+			"declarationRanges",
+			"sourceSiteIds",
+			"sourceSiteCount",
+			"external",
+			"editable",
+			"repositoryOwned",
+		} {
+			copyContextRawNodeField(payload, node, key)
+		}
+	}
 }
 
 func addContextResolutionGapEntityFields(payload map[string]any, node graph.Node) {

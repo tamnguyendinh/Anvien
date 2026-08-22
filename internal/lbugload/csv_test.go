@@ -11,6 +11,7 @@ import (
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/graphhealth"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/tsstdlib"
 )
 
 func TestExportGraphCSVsWritesNodeRelationshipAndSplitContracts(t *testing.T) {
@@ -298,6 +299,79 @@ func TestExportGraphCSVsWritesResolutionGapNodesAndPairs(t *testing.T) {
 	pairRows := readCSV(t, filepath.Join(export.CSVDir, "rel_Function_ResolutionGap.csv"))
 	if len(pairRows) != 2 || pairRows[1][2] != string(graph.RelHasResolutionGap) {
 		t.Fatalf("ResolutionGap relationship pair rows = %#v", pairRows)
+	}
+}
+
+func TestP6C2ExportGraphCSVsPreservesExternalSymbolAndSourceSiteProof(t *testing.T) {
+	externalID := "ExternalSymbol:tsstdlib:math-max"
+	sourceSiteID := "SourceSite:src/app.ts#call#Math.max#7#2#7#10"
+	g := graph.New()
+	g.AddNode(graph.Node{ID: "Function:run", Label: scopeir.NodeFunction, Properties: graph.NodeProperties{
+		"name": "run", "filePath": "src/app.ts",
+	}})
+	g.AddNode(graph.Node{ID: externalID, Label: scopeir.NodeExternalSymbol, Properties: graph.NodeProperties{
+		"name":                 "Math.max",
+		"qualifiedName":        "Math.max",
+		"requestedNames":       []string{"Math.max"},
+		"requestedTargetTexts": []string{"Math.max"},
+		"meaning":              "value",
+		"meanings":             []string{"value"},
+		"semanticSymbolId":     "tsstdlib:math-max",
+		"semanticOwnerId":      "tsstdlib:math",
+		"authorityKind":        "typescript_standard_library",
+		"typeScriptVersion":    "5.9.3",
+		"catalogProofState":    "ready",
+		"authorityHash":        "authority-hash",
+		"catalogHash":          "catalog-hash",
+		"catalogArtifactHash":  "artifact-hash",
+		"profileHashes":        []string{"profile-hash"},
+		"configHashes":         []string{"config-hash"},
+		"declarationLibraries": []string{"lib.es2015.core.d.ts"},
+		"declarationRanges": []tsstdlib.Declaration{{
+			Library: "lib.es2015.core.d.ts", StartLine: 120, StartCol: 5, EndLine: 120, EndCol: 48,
+		}},
+		"sourceSiteIds":   []string{sourceSiteID},
+		"sourceSiteCount": 1,
+		"origin":          "typescript_standard_library",
+		"external":        true,
+		"editable":        false,
+		"repositoryOwned": false,
+	}})
+	g.AddRelationship(graph.Relationship{
+		ID: "rel:CALLS:run->Math.max", SourceID: "Function:run", TargetID: externalID,
+		Type: graph.RelCalls, Confidence: 1, ResolutionSource: "typescript_standard_library",
+		SourceSiteID: sourceSiteID, SourceSiteIDs: []string{sourceSiteID}, SourceSiteCount: 1,
+		SourceSiteStatus: "resolved", ProofKind: "typescript-standard-library-authority",
+		TargetRole: "callable", TargetText: "Math.max", FilePath: "src/app.ts",
+		StartLine: 7, StartCol: 2, EndLine: 7, EndCol: 10,
+		Evidence: []graph.Evidence{{Kind: "typescript-authority-result-v1", Weight: 1, Note: `{"sourceSiteId":"` + sourceSiteID + `"}`}},
+	})
+
+	export, err := ExportGraphCSVs(g, filepath.Join(t.TempDir(), "csv"))
+	if err != nil {
+		t.Fatalf("ExportGraphCSVs external symbol: %v", err)
+	}
+	if export.Metrics.SkippedNodes != 0 || export.Metrics.SkippedRelationships != 0 ||
+		export.Metrics.RowsByTable["ExternalSymbol"] != 1 {
+		t.Fatalf("external persistence skipped graph facts: %#v", export.Metrics)
+	}
+	rows := readCSV(t, filepath.Join(export.CSVDir, "externalsymbol.csv"))
+	wantHeader := []string{"id", "name", "qualifiedName", "requestedNames", "requestedTargetTexts", "meaning", "meanings", "semanticSymbolId", "semanticOwnerId", "authorityKind", "typeScriptVersion", "catalogProofState", "authorityHash", "catalogHash", "catalogArtifactHash", "profileHashes", "configHashes", "declarationLibraries", "declarationRanges", "sourceSiteIds", "sourceSiteCount", "origin", "external", "editable", "repositoryOwned", "appLayer", "functionalArea"}
+	if !reflect.DeepEqual(rows[0], wantHeader) {
+		t.Fatalf("externalsymbol.csv header = %#v, want %#v", rows[0], wantHeader)
+	}
+	if rows[1][7] != "tsstdlib:math-max" || rows[1][8] != "tsstdlib:math" ||
+		rows[1][9] != "typescript_standard_library" || rows[1][10] != "5.9.3" ||
+		rows[1][11] != "ready" || !strings.Contains(rows[1][18], `"library":"lib.es2015.core.d.ts"`) ||
+		rows[1][20] != "1" || rows[1][21] != "typescript_standard_library" ||
+		rows[1][22] != "true" || rows[1][23] != "false" || rows[1][24] != "false" {
+		t.Fatalf("external symbol row lost provenance/non-editable fields: %#v", rows[1])
+	}
+	pairRows := readCSV(t, filepath.Join(export.CSVDir, "rel_Function_ExternalSymbol.csv"))
+	if len(pairRows) != 2 || pairRows[1][0] != "Function:run" || pairRows[1][1] != externalID ||
+		pairRows[1][6] != "typescript_standard_library" || pairRows[1][9] != sourceSiteID ||
+		!strings.Contains(pairRows[1][7], "typescript-authority-result-v1") {
+		t.Fatalf("external relationship pair lost source-site proof: %#v", pairRows)
 	}
 }
 
