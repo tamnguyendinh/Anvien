@@ -291,7 +291,7 @@ func TestP6BResolverCarriesCatalogValidationFailuresPerSourceSite(t *testing.T) 
 			}
 			requireP6BSiteCounterEquality(t, result)
 			if len(result.TypeScriptAuthorityResults) != 3 || result.Metrics.ExternalCapabilityUnavailable != 3 ||
-				result.Metrics.UnresolvedReferences != 0 || result.Metrics.UnresolvedReferenceDiagnostics != 0 {
+				result.Metrics.UnresolvedReferences != 0 || result.Metrics.UnresolvedReferenceDiagnostics != 3 {
 				t.Fatalf("catalog failure did not canonicalize to one handled record per unique site: records=%#v metrics=%#v", result.TypeScriptAuthorityResults, result.Metrics)
 			}
 			want := map[string]int{"parseInt": 1, "Math.max": 1, "Promise": 1}

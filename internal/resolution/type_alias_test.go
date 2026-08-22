@@ -1,3 +1,5 @@
+//go:build resolution_parser_integration
+
 package resolution
 
 import (

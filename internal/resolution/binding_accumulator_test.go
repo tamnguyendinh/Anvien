@@ -1,7 +1,6 @@
 package resolution
 
 import (
-	"reflect"
 	"strings"
 	"testing"
 
@@ -47,36 +46,5 @@ func TestBindingAccumulatorLifecycle(t *testing.T) {
 	accumulator.dispose()
 	if err := accumulator.appendFile("src/disposed.ts", []bindingEntry{{Name: "disposed", Type: userType}}); err == nil || !strings.Contains(err.Error(), "after dispose") {
 		t.Fatalf("append after dispose error = %v, want after dispose", err)
-	}
-}
-
-func TestResolveSkipCompatibilityCrossFileReportsDiagnosticWithoutChangingGraph(t *testing.T) {
-	irs := parseFixtureWorkspace(t)
-	defaultResult, err := Resolve(irs, Options{})
-	if err != nil {
-		t.Fatalf("default resolve failed: %v", err)
-	}
-	skipResult, err := Resolve(irs, Options{SkipCompatibilityCrossFile: true})
-	if err != nil {
-		t.Fatalf("skip resolve failed: %v", err)
-	}
-
-	if !reflect.DeepEqual(buildGraphSignature(defaultResult.Graph), buildGraphSignature(skipResult.Graph)) {
-		t.Fatalf("skipCompatibilityCrossFile changed graph signature")
-	}
-	if !defaultResult.Metrics.CrossFileSkipped || defaultResult.Metrics.CrossFileFilesReprocessed != 0 {
-		t.Fatalf("unexpected default cross-file metrics: %#v", defaultResult.Metrics)
-	}
-	if defaultResult.Metrics.CrossFileSkipReason != "covered-by-scopeir-single-pass-resolution" {
-		t.Fatalf("default skip reason = %q", defaultResult.Metrics.CrossFileSkipReason)
-	}
-	if !skipResult.Metrics.CrossFileSkipped || skipResult.Metrics.CrossFileFilesReprocessed != 0 {
-		t.Fatalf("unexpected skip cross-file metrics: %#v", skipResult.Metrics)
-	}
-	if skipResult.Metrics.CrossFileSkipReason != "disabled-by-pipeline-option" {
-		t.Fatalf("skip reason = %q", skipResult.Metrics.CrossFileSkipReason)
-	}
-	if !skipResult.Metrics.BindingAccumulatorFinalized || !skipResult.Metrics.BindingAccumulatorDisposed {
-		t.Fatalf("accumulator lifecycle metrics not closed: %#v", skipResult.Metrics)
 	}
 }

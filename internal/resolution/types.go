@@ -78,6 +78,7 @@ type Result struct {
 	Graph                      *graph.Graph
 	ReferenceIndex             ReferenceIndex
 	TypeScriptAuthorityResults []TypeScriptAuthorityResult
+	ResolutionOutcomes         []ResolutionOutcome
 	Metrics                    Metrics
 }
 

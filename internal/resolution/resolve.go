@@ -72,7 +72,7 @@ func ResolveBoundInto(baseGraph *graph.Graph, binding BindingResult, options Opt
 		w.bindingAccumulator.dispose()
 		result.Metrics.BindingAccumulatorDisposed = w.bindingAccumulator.disposed
 	}()
-	e := newEmitter(g, &metrics)
+	e := newEmitter(g, &metrics, w.fileLanguages)
 
 	if err := emitDefinitionNodes(w, e); err != nil {
 		metrics.GraphNodesEmitted = len(g.Nodes)
@@ -107,6 +107,13 @@ func ResolveBoundInto(baseGraph *graph.Graph, binding BindingResult, options Opt
 	if err := emitTypeScriptExternalSymbols(e, authorityResults); err != nil {
 		return Result{Graph: g, ReferenceIndex: e.referenceIndex, Metrics: metrics}, err
 	}
+	outcomes, err := e.outcomes.finalize()
+	if err != nil {
+		return Result{Graph: g, ReferenceIndex: e.referenceIndex, Metrics: metrics}, err
+	}
+	if err := projectResolutionOutcomes(g, &e.referenceIndex, outcomes); err != nil {
+		return Result{Graph: g, ReferenceIndex: e.referenceIndex, ResolutionOutcomes: outcomes, Metrics: metrics}, err
+	}
 
 	metrics.GraphNodesEmitted = len(g.Nodes)
 	metrics.GraphRelationshipsEmitted = len(g.Relationships)
@@ -115,6 +122,7 @@ func ResolveBoundInto(baseGraph *graph.Graph, binding BindingResult, options Opt
 		Graph:                      g,
 		ReferenceIndex:             e.referenceIndex,
 		TypeScriptAuthorityResults: authorityResults,
+		ResolutionOutcomes:         outcomes,
 		Metrics:                    metrics,
 	}, nil
 }
@@ -526,10 +534,30 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 		}
 	}
 	if !ok {
+		siteID := sourceSiteID("call", call.FilePath, callTargetText(call), call.Range)
+		var outcomeEvidence []graph.Evidence
+		if semanticResult.Outcome != "" {
+			outcomeEvidence = appendExportBindingEvidence(nil, semanticResult, siteID)
+		}
 		if bindingReceiverResolved && w.typeScriptStandardLibrary == nil {
+			outcomeEvidence = append(outcomeEvidence, graph.Evidence{
+				Kind:   proofKindScopeBinding,
+				Weight: 1,
+				Note:   call.ExplicitReceiver,
+			})
+			e.recordRepositoryUnresolvedOutcome(
+				"call",
+				callTargetText(call),
+				call.FilePath,
+				call.FileHash,
+				call.Range,
+				"repository receiver resolved but call member not found",
+				proofKindReceiverMember,
+				outcomeEvidence,
+			)
 			return
 		}
-		e.emitUnresolvedReference(source, "call", callTargetText(call), call.FilePath, call.FileHash, call.Range, "call target not resolved", true)
+		e.emitUnresolvedReference(source, "call", callTargetText(call), call.FilePath, call.FileHash, call.Range, "call target not resolved", true, outcomeEvidence...)
 		return
 	}
 	if lowConfidenceFallback {
@@ -646,6 +674,11 @@ func resolveAccess(w *workspace, e *emitter, bindingOccurrences bindingOccurrenc
 		}
 	}
 	if !ok {
+		siteID := sourceSiteID("access", access.FilePath, accessTargetText(access), access.Range)
+		var outcomeEvidence []graph.Evidence
+		if semanticResult.Outcome != "" {
+			outcomeEvidence = appendExportBindingEvidence(nil, semanticResult, siteID)
+		}
 		if !externalBlocked {
 			lookup := tsstdlib.LookupResult{Status: tsstdlib.LookupNotFound}
 			if access.ExplicitReceiver == "" {
@@ -666,7 +699,7 @@ func resolveAccess(w *workspace, e *emitter, bindingOccurrences bindingOccurrenc
 				return
 			}
 		}
-		e.emitUnresolvedReference(source, "access", accessTargetText(access), access.FilePath, access.FileHash, access.Range, "access target not resolved", true)
+		e.emitUnresolvedReference(source, "access", accessTargetText(access), access.FilePath, access.FileHash, access.Range, "access target not resolved", true, outcomeEvidence...)
 		return
 	}
 	kind := referenceKind
@@ -716,7 +749,7 @@ func accessTargetText(access scopeir.AccessFact) string {
 
 func resolveTypeAnnotation(w *workspace, e *emitter, annotation scopeir.TypeAnnotationFact) {
 	targetName := baseTypeName(annotation.Type.RawName)
-	if targetName == "" || isBuiltinType(targetName) {
+	if targetName == "" {
 		return
 	}
 	source, ok := sourceForScopeOrFile(w, annotation.InScope, annotation.FilePath)
@@ -725,21 +758,27 @@ func resolveTypeAnnotation(w *workspace, e *emitter, annotation scopeir.TypeAnno
 		return
 	}
 	target, ok := w.resolveName(targetName, annotation.InScope, typeLabels())
+	if !ok && w.typeScriptAnnotationImportClaimed(annotation, targetName) {
+		e.emitUnresolvedReference(source, "type-reference", annotation.Type.RawName, annotation.FilePath, annotation.FileHash, annotation.Range, "type target not resolved", true)
+		return
+	}
+	if !ok && isBuiltinType(targetName) {
+		e.recordIntrinsicTypeOutcome(annotation, targetName)
+		return
+	}
 	if !ok {
-		if !w.typeScriptAnnotationImportClaimed(annotation, targetName) {
-			lookup := w.lookupTypeScriptAnnotation(annotation, targetName)
-			if recordTypeScriptLookup(w, e, typeScriptSourceSite{
-				kind:          "type-reference",
-				filePath:      annotation.FilePath,
-				fileHash:      annotation.FileHash,
-				rangeValue:    annotation.Range,
-				targetText:    annotation.Type.RawName,
-				sourceGraphID: source.GraphID,
-				fromScope:     annotation.InScope,
-				referenceKind: ReferenceTypeReference,
-			}, lookup) {
-				return
-			}
+		lookup := w.lookupTypeScriptAnnotation(annotation, targetName)
+		if recordTypeScriptLookup(w, e, typeScriptSourceSite{
+			kind:          "type-reference",
+			filePath:      annotation.FilePath,
+			fileHash:      annotation.FileHash,
+			rangeValue:    annotation.Range,
+			targetText:    annotation.Type.RawName,
+			sourceGraphID: source.GraphID,
+			fromScope:     annotation.InScope,
+			referenceKind: ReferenceTypeReference,
+		}, lookup) {
+			return
 		}
 		e.emitUnresolvedReference(source, "type-reference", annotation.Type.RawName, annotation.FilePath, annotation.FileHash, annotation.Range, "type target not resolved", true)
 		return
@@ -902,7 +941,7 @@ func recordTypeScriptLookup(w *workspace, e *emitter, site typeScriptSourceSite,
 		return false
 	}
 	siteID := sourceSiteID(site.kind, site.filePath, site.targetText, site.rangeValue)
-	w.typeScriptAuthorityResults = append(w.typeScriptAuthorityResults, TypeScriptAuthorityResult{
+	record := TypeScriptAuthorityResult{
 		SourceSiteID:        siteID,
 		Stage:               TypeScriptStandardLibraryStage,
 		FilePath:            cleanPath(site.filePath),
@@ -924,7 +963,8 @@ func recordTypeScriptLookup(w *workspace, e *emitter, site typeScriptSourceSite,
 		CatalogArtifactHash: result.CatalogArtifactHash,
 		ProfileHash:         result.ProfileHash,
 		ConfigHash:          result.ConfigHash,
-	})
+	}
+	w.typeScriptAuthorityResults = append(w.typeScriptAuthorityResults, record)
 	e.typeScriptExternalSites = append(e.typeScriptExternalSites, typeScriptExternalSite{
 		SourceSiteID:  siteID,
 		SourceGraphID: site.sourceGraphID,
@@ -933,6 +973,10 @@ func recordTypeScriptLookup(w *workspace, e *emitter, site typeScriptSourceSite,
 		TargetRole:    targetRoleForFactFamily(site.kind),
 		TargetText:    site.targetText,
 	})
+	outcome, encoded, added := e.recordTypeScriptOutcome(site, record)
+	if added && outcome.Status != ResolutionResolvedExternal {
+		e.emitTypeScriptOutcomeDiagnostic(site, outcome, encoded)
+	}
 	return true
 }
 

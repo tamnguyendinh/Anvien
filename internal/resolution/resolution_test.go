@@ -1,166 +1,14 @@
 package resolution
 
 import (
-	"bytes"
-	"context"
-	"encoding/json"
-	"os"
 	"sort"
 	"testing"
-	"time"
 
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/graphhealth"
-	"github.com/tamnguyendinh/anvien/internal/parser"
-	"github.com/tamnguyendinh/anvien/internal/providers/tsjs"
 	"github.com/tamnguyendinh/anvien/internal/scanner"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
-
-func TestResolveTypeScriptGraphFixture(t *testing.T) {
-	irs := parseFixtureWorkspace(t)
-	result, err := Resolve(irs, Options{})
-	if err != nil {
-		t.Fatalf("resolve failed: %v", err)
-	}
-
-	serviceSave := requireNode(t, result.Graph, "Method", "src/service.ts", "Service.save")
-	format := requireNode(t, result.Graph, "Function", "src/user.ts", "format")
-	repoWrite := requireNode(t, result.Graph, "Method", "src/repo.ts", "Repo.write")
-	repoClass := requireNode(t, result.Graph, "Class", "src/repo.ts", "Repo")
-	modelClass := requireNode(t, result.Graph, "Class", "src/model.ts", "Model")
-	userID := requireNode(t, result.Graph, "Property", "src/user.ts", "User.id")
-	serviceRepo := requireNode(t, result.Graph, "Property", "src/service.ts", "Service.repo")
-	named := requireNode(t, result.Graph, "Interface", "src/contracts.ts", "Named")
-	baseService := requireNode(t, result.Graph, "Class", "src/contracts.ts", "BaseService")
-
-	requireRelationship(t, result.Graph, graph.RelCalls, serviceSave.ID, format.ID)
-	requireRelationship(t, result.Graph, graph.RelCalls, serviceSave.ID, repoWrite.ID)
-	requireRelationship(t, result.Graph, graph.RelCalls, serviceSave.ID, modelClass.ID)
-	requireRelationship(t, result.Graph, graph.RelCalls, requireNode(t, result.Graph, "Function", "src/service.ts", "makeRepo").ID, repoClass.ID)
-	requireRelationship(t, result.Graph, graph.RelAccesses, serviceSave.ID, userID.ID)
-	requireRelationship(t, result.Graph, graph.RelAccesses, serviceSave.ID, serviceRepo.ID)
-	requireRelationship(t, result.Graph, graph.RelExtends, requireNode(t, result.Graph, "Class", "src/service.ts", "Service").ID, baseService.ID)
-	requireRelationship(t, result.Graph, graph.RelImplements, requireNode(t, result.Graph, "Class", "src/service.ts", "Service").ID, named.ID)
-	requireRelationship(t, result.Graph, graph.RelMethodOverrides, requireNode(t, result.Graph, "Class", "src/service.ts", "Service").ID, requireNode(t, result.Graph, "Method", "src/contracts.ts", "BaseService.save").ID)
-	requireRelationship(t, result.Graph, graph.RelMethodImplements, serviceSave.ID, requireNode(t, result.Graph, "Method", "src/contracts.ts", "Named.save").ID)
-
-	counts := result.Graph.RelationshipCountsByType()
-	for _, relType := range []graph.RelationshipType{
-		graph.RelCalls,
-		graph.RelImports,
-		graph.RelAccesses,
-		graph.RelExtends,
-		graph.RelImplements,
-		graph.RelInherits,
-		graph.RelUses,
-		graph.RelHasMethod,
-		graph.RelHasProperty,
-		graph.RelMethodOverrides,
-		graph.RelMethodImplements,
-	} {
-		if counts[relType] == 0 {
-			t.Fatalf("expected %s relationships in graph, counts=%v", relType, counts)
-		}
-	}
-	if result.Metrics.ResolvedCalls < 5 || result.Metrics.ResolvedAccesses < 2 || result.Metrics.ResolvedInheritance != 2 {
-		t.Fatalf("unexpected metrics: %#v", result.Metrics)
-	}
-	if len(result.ReferenceIndex.BySourceScope) == 0 || len(result.ReferenceIndex.ByTargetDef) == 0 {
-		t.Fatalf("expected reference index to be populated: %#v", result.ReferenceIndex)
-	}
-}
-
-func TestResolveTypeScriptInterfaceHeritageFromSource(t *testing.T) {
-	source := []byte(`export interface Area { id: string; }
-export interface AreaWithTableCount extends Area { count: number; }
-export interface Shift { id: string; }
-export interface ShiftWithCounts extends Shift { assignmentCount: number; }
-export interface ExternalBacked extends React.ComponentProps<"button"> { label: string; }
-`)
-	ir := parseTypeScriptSource(t, "src/types.ts", source)
-	result, err := Resolve([]scopeir.ScopeIR{ir}, Options{})
-	if err != nil {
-		t.Fatalf("resolve failed: %v", err)
-	}
-
-	area := requireNode(t, result.Graph, "Interface", "src/types.ts", "Area")
-	areaWithCount := requireNode(t, result.Graph, "Interface", "src/types.ts", "AreaWithTableCount")
-	shift := requireNode(t, result.Graph, "Interface", "src/types.ts", "Shift")
-	shiftWithCounts := requireNode(t, result.Graph, "Interface", "src/types.ts", "ShiftWithCounts")
-
-	requireRelationship(t, result.Graph, graph.RelExtends, areaWithCount.ID, area.ID)
-	requireRelationship(t, result.Graph, graph.RelExtends, shiftWithCounts.ID, shift.ID)
-	requireRelationship(t, result.Graph, graph.RelInherits, areaWithCount.ID, area.ID)
-	requireRelationship(t, result.Graph, graph.RelInherits, shiftWithCounts.ID, shift.ID)
-	if result.Metrics.HeritageFactsIndexed != 3 ||
-		result.Metrics.ResolvedInheritance != 2 ||
-		result.Metrics.UnresolvedInheritance != 1 {
-		t.Fatalf("unexpected heritage metrics: %#v", result.Metrics)
-	}
-}
-
-func TestResolveTypeScriptHeritagePrefersSameFileTargetWhenGlobalNameAmbiguous(t *testing.T) {
-	local := parseTypeScriptSource(t, "src/types/area.ts", []byte(`export interface Area { id: string; }
-export interface AreaWithTableCount extends Area { tableCount: number; }
-`))
-	other := parseTypeScriptSource(t, "src/features/tables/types.ts", []byte(`export interface Area { id: string; }
-`))
-
-	result, err := Resolve([]scopeir.ScopeIR{local, other}, Options{})
-	if err != nil {
-		t.Fatalf("resolve failed: %v", err)
-	}
-
-	localArea := requireNode(t, result.Graph, "Interface", "src/types/area.ts", "Area")
-	otherArea := requireNode(t, result.Graph, "Interface", "src/features/tables/types.ts", "Area")
-	areaWithCount := requireNode(t, result.Graph, "Interface", "src/types/area.ts", "AreaWithTableCount")
-
-	requireRelationship(t, result.Graph, graph.RelExtends, areaWithCount.ID, localArea.ID)
-	requireRelationship(t, result.Graph, graph.RelInherits, areaWithCount.ID, localArea.ID)
-	requireNoRelationship(t, result.Graph, graph.RelExtends, areaWithCount.ID, otherArea.ID)
-	if result.Metrics.HeritageFactsIndexed != 1 ||
-		result.Metrics.ResolvedInheritance != 1 ||
-		result.Metrics.UnresolvedInheritance != 0 {
-		t.Fatalf("unexpected heritage metrics: %#v", result.Metrics)
-	}
-}
-
-func TestResolveAwaitedPromiseReturnMemberAccess(t *testing.T) {
-	source := []byte(`type Invoice = {
-  invoiceId: string;
-};
-
-type InvoiceModel = {
-  invoices: Invoice[];
-};
-
-type ReadResult = {
-  model: InvoiceModel;
-};
-
-async function readResult(): Promise<ReadResult> {
-  throw new Error("not implemented");
-}
-
-async function run() {
-  const result = await readResult();
-  result.model.invoices;
-}
-`)
-	ir := parseTypeScriptSource(t, "src/awaited-result.ts", source)
-	result, err := Resolve([]scopeir.ScopeIR{ir}, Options{})
-	if err != nil {
-		t.Fatalf("resolve failed: %v", err)
-	}
-
-	run := requireNode(t, result.Graph, "Function", "src/awaited-result.ts", "run")
-	model := requireNode(t, result.Graph, "Property", "src/awaited-result.ts", "ReadResult.model")
-	invoices := requireNode(t, result.Graph, "Property", "src/awaited-result.ts", "InvoiceModel.invoices")
-
-	requireRelationship(t, result.Graph, graph.RelAccesses, run.ID, model.ID)
-	requireRelationship(t, result.Graph, graph.RelAccesses, run.ID, invoices.ID)
-}
 
 func TestResolveMemberAccessRejectsCrossLanguageGlobalOwner(t *testing.T) {
 	moduleScope := "scope:src/app.ts:module"
@@ -180,7 +28,7 @@ func TestResolveMemberAccessRejectsCrossLanguageGlobalOwner(t *testing.T) {
 			{ID: "def:start", FilePath: "src/app.ts", FileHash: "hash-ts", Name: "start", Label: scopeir.NodeFunction, Range: scopeir.Range{StartLine: 1, EndLine: 3}},
 		},
 		Accesses: []scopeir.AccessFact{
-			{FilePath: "src/app.ts", FileHash: "hash-ts", Name: "ID", Kind: scopeir.AccessRead, ExplicitReceiver: "node", InScope: functionScope, Range: scopeir.Range{StartLine: 2}},
+			{FilePath: "src/app.ts", FileHash: "hash-ts", Name: "ID", Kind: scopeir.AccessRead, ExplicitReceiver: "node", InScope: functionScope, Range: scopeir.Range{StartLine: 2, EndLine: 2}},
 		},
 	}
 	goIR := scopeir.ScopeIR{
@@ -226,7 +74,7 @@ func TestResolveImportedConstSelectorDoesNotEmitAccess(t *testing.T) {
 			{ID: "def:main", FilePath: "cmd/app/main.go", FileHash: "hash-main", Name: "main", QualifiedName: "main", Label: scopeir.NodeFunction, Range: scopeir.Range{StartLine: 3, EndLine: 5}},
 		},
 		Accesses: []scopeir.AccessFact{
-			{FilePath: "cmd/app/main.go", FileHash: "hash-main", Name: "Mode", Kind: scopeir.AccessRead, ExplicitReceiver: "pkg", InScope: functionScope, Range: scopeir.Range{StartLine: 4}},
+			{FilePath: "cmd/app/main.go", FileHash: "hash-main", Name: "Mode", Kind: scopeir.AccessRead, ExplicitReceiver: "pkg", InScope: functionScope, Range: scopeir.Range{StartLine: 4, EndLine: 4}},
 		},
 	}
 	target := scopeir.ScopeIR{
@@ -386,30 +234,6 @@ func TestResolveAppliesScopeIRFrameworkFacts(t *testing.T) {
 	}
 }
 
-func TestBuildCrossFileBindingFeedsResolveBoundInto(t *testing.T) {
-	binding, err := BuildCrossFileBinding(parseFixtureWorkspace(t), Options{})
-	if err != nil {
-		t.Fatalf("BuildCrossFileBinding() error = %v", err)
-	}
-	if binding.Metrics.DefinitionsIndexed == 0 || binding.Metrics.ImportsResolved == 0 {
-		t.Fatalf("binding metrics missing index/import data: %#v", binding.Metrics)
-	}
-	if !binding.Metrics.BindingAccumulatorFinalized {
-		t.Fatalf("binding accumulator metrics not finalized: %#v", binding.Metrics)
-	}
-
-	result, err := ResolveBoundInto(nil, binding, Options{})
-	if err != nil {
-		t.Fatalf("ResolveBoundInto() error = %v", err)
-	}
-	if !result.Metrics.BindingAccumulatorDisposed {
-		t.Fatalf("binding accumulator was not disposed: %#v", result.Metrics)
-	}
-	if result.Metrics.ResolvedCalls == 0 || result.Metrics.GraphRelationshipsEmitted == 0 {
-		t.Fatalf("resolution metrics missing semantic output: %#v", result.Metrics)
-	}
-}
-
 func TestResolveExpandsGoPackageImportsToPackageFiles(t *testing.T) {
 	targetRaw := "github.com/tamnguyendinh/anvien/internal/pkg"
 	source := scopeir.ScopeIR{
@@ -437,28 +261,6 @@ func TestResolveExpandsGoPackageImportsToPackageFiles(t *testing.T) {
 	requireNoRelationship(t, result.Graph, graph.RelImports, "File:cmd/app/main.go", "File:internal/pkg/a_test.go")
 	if result.Metrics.FinalizedImportsEmitted != 2 || result.Metrics.ImportsResolved != 2 {
 		t.Fatalf("import metrics = %#v, want two package-file imports", result.Metrics)
-	}
-}
-
-func TestResolveTypeScriptGraphSignatureFixture(t *testing.T) {
-	result, err := Resolve(parseFixtureWorkspace(t), Options{})
-	if err != nil {
-		t.Fatalf("resolve failed: %v", err)
-	}
-	signature := buildGraphSignature(result.Graph)
-	var buffer bytes.Buffer
-	encoder := json.NewEncoder(&buffer)
-	encoder.SetEscapeHTML(false)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(signature); err != nil {
-		t.Fatalf("marshal signature: %v", err)
-	}
-	golden, err := os.ReadFile("testdata/typescript_graph_signature.golden.json")
-	if err != nil {
-		t.Fatalf("read golden: %v", err)
-	}
-	if string(buffer.Bytes()) != string(golden) {
-		t.Fatalf("graph signature mismatch\nwant:\n%s\ngot:\n%s", golden, buffer.Bytes())
 	}
 }
 
@@ -492,10 +294,10 @@ func TestResolveMergesDuplicateSemanticEdgesAndCountsUnresolved(t *testing.T) {
 		},
 		Definitions: []scopeir.DefinitionFact{functionDef, targetDef},
 		Calls: []scopeir.CallSiteFact{
-			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "target", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 2, StartCol: 2}},
-			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "target", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 3, StartCol: 2}},
-			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "aliasTarget", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 3, StartCol: 6}},
-			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "missing", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 3, StartCol: 10}},
+			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "target", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 2, StartCol: 2, EndLine: 2}},
+			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "target", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 3, StartCol: 2, EndLine: 3}},
+			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "aliasTarget", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 3, StartCol: 6, EndLine: 3}},
+			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "missing", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 3, StartCol: 10, EndLine: 3}},
 		},
 	}
 	result, err := Resolve([]scopeir.ScopeIR{ir}, Options{})
@@ -552,7 +354,7 @@ func TestResolveAttachesSourceBackedUnresolvedDiagnostics(t *testing.T) {
 		},
 		Definitions: []scopeir.DefinitionFact{functionDef},
 		Calls: []scopeir.CallSiteFact{
-			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "missing", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 3, StartCol: 2}},
+			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "missing", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 3, StartCol: 2, EndLine: 3}},
 		},
 	}
 
@@ -574,7 +376,7 @@ func TestResolveAttachesSourceBackedUnresolvedDiagnostics(t *testing.T) {
 		diagnostic.FilePath != "src/app.ts" ||
 		diagnostic.StartLine != 3 ||
 		diagnostic.StartCol != 2 ||
-		diagnostic.SourceSiteID != "SourceSite:src/app.ts#call#missing#3#2#0#0" ||
+		diagnostic.SourceSiteID != "SourceSite:src/app.ts#call#missing#3#2#3#0" ||
 		diagnostic.SourceSiteStatus != sourceSiteStatusUnresolvedLocalBinding ||
 		diagnostic.ProofKind != proofKindNone ||
 		diagnostic.TargetRole != targetRoleCallable ||
@@ -663,7 +465,7 @@ func TestResolveDoesNotEmitResolvedCallFromFileCaller(t *testing.T) {
 		},
 		Definitions: []scopeir.DefinitionFact{targetDef},
 		Calls: []scopeir.CallSiteFact{
-			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "target", InScope: moduleScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 2, StartCol: 2}},
+			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "target", InScope: moduleScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 2, StartCol: 2, EndLine: 2}},
 		},
 	}
 	otherIR := scopeir.ScopeIR{
@@ -692,7 +494,7 @@ func TestResolveDoesNotEmitResolvedCallFromFileCaller(t *testing.T) {
 	diagnostic := diagnostics[0]
 	if diagnostic.TargetText != "target" ||
 		diagnostic.SourceSiteStatus != sourceSiteStatusUnsupportedSyntax ||
-		diagnostic.Note != unresolvedNoteCallSourceFileLevel {
+		p6c3DiagnosticReason(t, diagnostic) != unresolvedNoteCallSourceFileLevel {
 		t.Fatalf("unexpected file-source call diagnostic: %#v", diagnostic)
 	}
 	if result.Metrics.ResolvedCalls != 0 || result.Metrics.UnresolvedReferences != 1 {
@@ -740,7 +542,7 @@ func TestResolveGoSamePackageDirectCallAcrossFilesBeforeGlobalAmbiguity(t *testi
 		},
 		Definitions: []scopeir.DefinitionFact{runDef},
 		Calls: []scopeir.CallSiteFact{
-			{FilePath: "internal/pkg/app.go", FileHash: "hash-app", Name: "helper", InScope: functionScope, CallForm: scopeir.CallFree, Arity: intPtr(2), Range: scopeir.Range{StartLine: 4, StartCol: 2}},
+			{FilePath: "internal/pkg/app.go", FileHash: "hash-app", Name: "helper", InScope: functionScope, CallForm: scopeir.CallFree, Arity: intPtr(2), Range: scopeir.Range{StartLine: 4, StartCol: 2, EndLine: 4}},
 		},
 	}
 	samePackage := scopeir.ScopeIR{
@@ -813,7 +615,7 @@ func TestResolveImportedPackageMemberCall(t *testing.T) {
 			TargetRaw:    &targetRaw,
 		}},
 		Calls: []scopeir.CallSiteFact{
-			{FilePath: "cmd/app/main.go", FileHash: "hash-main", Name: "Helper", ExplicitReceiver: "pkg", InScope: functionScope, CallForm: scopeir.CallMember, Range: scopeir.Range{StartLine: 4, StartCol: 2}},
+			{FilePath: "cmd/app/main.go", FileHash: "hash-main", Name: "Helper", ExplicitReceiver: "pkg", InScope: functionScope, CallForm: scopeir.CallMember, Range: scopeir.Range{StartLine: 4, StartCol: 2, EndLine: 4}},
 		},
 	}
 	target := scopeir.ScopeIR{
@@ -979,7 +781,7 @@ func TestResolveGlobalCallFallbackDoesNotEmitResolvedEdge(t *testing.T) {
 		},
 		Definitions: []scopeir.DefinitionFact{callerDef},
 		Calls: []scopeir.CallSiteFact{
-			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "target", InScope: functionScope, CallForm: scopeir.CallFree, Arity: &oneParam, Range: scopeir.Range{StartLine: 2, StartCol: 2}},
+			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "target", InScope: functionScope, CallForm: scopeir.CallFree, Arity: &oneParam, Range: scopeir.Range{StartLine: 2, StartCol: 2, EndLine: 2}},
 		},
 	}
 	oneIR := scopeir.ScopeIR{FilePath: "src/one.ts", Language: scanner.TypeScript, Definitions: []scopeir.DefinitionFact{targetOne}}
@@ -1001,7 +803,7 @@ func TestResolveGlobalCallFallbackDoesNotEmitResolvedEdge(t *testing.T) {
 		diagnostic.FactFamily != "call" ||
 		diagnostic.SourceNodeID != source.ID ||
 		diagnostic.TargetText != "target" ||
-		diagnostic.Note != "call target matched low-confidence global fallback only" ||
+		p6c3DiagnosticReason(t, diagnostic) != "call target matched low-confidence global fallback only" ||
 		diagnostic.Count != 1 {
 		t.Fatalf("unexpected diagnostic: %#v", diagnostic)
 	}
@@ -1032,7 +834,7 @@ func TestResolveBareGoCallDoesNotFallbackToCrossLanguageMethod(t *testing.T) {
 		},
 		Definitions: []scopeir.DefinitionFact{mainDef},
 		Calls: []scopeir.CallSiteFact{
-			{FilePath: "backend/cmd/rms-backend/main.go", FileHash: "hash-main", Name: "stop", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 6, StartCol: 2}},
+			{FilePath: "backend/cmd/rms-backend/main.go", FileHash: "hash-main", Name: "stop", InScope: functionScope, CallForm: scopeir.CallFree, Range: scopeir.Range{StartLine: 6, StartCol: 2, EndLine: 6}},
 		},
 	}
 	listenerClass := scopeir.DefinitionFact{
@@ -1076,7 +878,7 @@ func TestResolveBareGoCallDoesNotFallbackToCrossLanguageMethod(t *testing.T) {
 	diagnostic := diagnostics[0]
 	if diagnostic.FactFamily != "call" ||
 		diagnostic.TargetText != "stop" ||
-		diagnostic.Note != "call target matched low-confidence global fallback only" ||
+		p6c3DiagnosticReason(t, diagnostic) != "call target matched low-confidence global fallback only" ||
 		diagnostic.SourceNodeID != mainNode.ID ||
 		diagnostic.Count != 1 {
 		t.Fatalf("unexpected diagnostic: %#v", diagnostic)
@@ -1153,20 +955,6 @@ func BenchmarkResolveImportedMemberManyImports(b *testing.B) {
 	}
 }
 
-func BenchmarkResolveTypeScriptGraphFixture(b *testing.B) {
-	irs := parseFixtureWorkspaceForBenchmark(b)
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		result, err := Resolve(irs, Options{})
-		if err != nil {
-			b.Fatalf("resolve failed: %v", err)
-		}
-		if len(result.Graph.Relationships) == 0 {
-			b.Fatalf("empty graph")
-		}
-	}
-}
-
 type graphSignature struct {
 	Nodes         []string `json:"nodes"`
 	Relationships []string `json:"relationships"`
@@ -1208,107 +996,8 @@ func buildGraphSignature(g *graph.Graph) graphSignature {
 	return signature
 }
 
-func parseFixtureWorkspace(t *testing.T) []scopeir.ScopeIR {
-	t.Helper()
-	pool := parser.NewPool(nil, parser.PoolOptions{ParseTimeout: time.Second})
-	defer pool.Close()
-	return parseFixtureWorkspaceWithPool(t, pool)
-}
-
-func parseFixtureWorkspaceForBenchmark(b *testing.B) []scopeir.ScopeIR {
-	b.Helper()
-	pool := parser.NewPool(nil, parser.PoolOptions{ParseTimeout: time.Second})
-	defer pool.Close()
-	return parseFixtureWorkspaceWithPool(b, pool)
-}
-
-func parseTypeScriptSource(t *testing.T, filePath string, source []byte) scopeir.ScopeIR {
-	t.Helper()
-	pool := parser.NewPool(nil, parser.PoolOptions{ParseTimeout: time.Second})
-	defer pool.Close()
-	parsed, err := pool.Parse(context.Background(), parser.Request{
-		FilePath: filePath,
-		Language: scanner.TypeScript,
-		Source:   source,
-	})
-	if err != nil {
-		t.Fatalf("parse %s failed: %v", filePath, err)
-	}
-	defer parsed.Close()
-	ir, err := tsjs.Extract(tsjs.Request{
-		FilePath: filePath,
-		FileHash: "hash-" + filePath,
-		Language: scanner.TypeScript,
-		Source:   source,
-		Root:     parsed.Tree.RootNode(),
-	})
-	if err != nil {
-		t.Fatalf("extract %s failed: %v", filePath, err)
-	}
-	return ir
-}
-
-type testingFataler interface {
-	Helper()
-	Fatalf(string, ...any)
-}
-
 func intPtr(value int) *int {
 	return &value
-}
-
-func parseFixtureWorkspaceWithPool(t testingFataler, pool *parser.Pool) []scopeir.ScopeIR {
-	t.Helper()
-	sources := map[string]string{
-		"src/user.ts":      `export default class User { id: string; } export function format(id: string): string { return id; }`,
-		"src/repo.ts":      `export class Repo { write(value: string): void {} }`,
-		"src/model.ts":     `export class Model {}`,
-		"src/contracts.ts": `import User from './user'; export interface Named { id: string; save(user: User): Promise<void>; } export class BaseService { save(user: User): Promise<void> {} }`,
-		"src/service.ts": `import User, { format as fmt } from './user';
-import { Repo } from './repo';
-import { Model } from './model';
-import { BaseService, Named } from './contracts';
-
-function makeRepo(): Repo { return new Repo(); }
-
-class Service extends BaseService implements Named {
-  public repo: Repo;
-  constructor(repo: Repo) { this.repo = repo; }
-  save(user: User): Promise<void> {
-    const model = new Model();
-    const made = makeRepo();
-    const formatted = fmt(user.id);
-    this.repo.write(formatted);
-  }
-}
-`,
-	}
-	paths := []string{"src/user.ts", "src/repo.ts", "src/model.ts", "src/contracts.ts", "src/service.ts"}
-	irs := make([]scopeir.ScopeIR, 0, len(paths))
-	for _, filePath := range paths {
-		source := []byte(sources[filePath])
-		parsed, err := pool.Parse(context.Background(), parser.Request{
-			FilePath: filePath,
-			Language: scanner.TypeScript,
-			Source:   source,
-		})
-		if err != nil {
-			t.Fatalf("parse %s failed: %v", filePath, err)
-		}
-		ir, err := tsjs.Extract(tsjs.Request{
-			FilePath: filePath,
-			FileHash: "hash-" + filePath,
-			Language: scanner.TypeScript,
-			Source:   source,
-			Root:     parsed.Tree.RootNode(),
-		})
-		parsed.Close()
-		if err != nil {
-			t.Fatalf("extract %s failed: %v", filePath, err)
-		}
-		irs = append(irs, ir)
-	}
-	return irs
 }
 
 func requireNode(t *testing.T, g *graph.Graph, label string, filePath string, qualifiedName string) graph.Node {

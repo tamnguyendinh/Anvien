@@ -379,7 +379,7 @@ func TestP5CExplicitImportMissBlocksGlobalRescueAndPreservesImports(t *testing.T
 	if !ok || len(diagnostics) != 1 {
 		t.Fatalf("caller diagnostics = %#v, want one explicit-import miss", caller.Properties[graphhealth.DiagnosticPropertyKey])
 	}
-	if diagnostics[0].Note != "call target not resolved" || diagnostics[0].TargetText != "run" {
+	if p6c3DiagnosticReason(t, diagnostics[0]) != "call target not resolved" || diagnostics[0].TargetText != "run" {
 		t.Fatalf("explicit import reached global fallback: %#v", diagnostics[0])
 	}
 	if result.Metrics.ImportsResolved != 1 || result.Metrics.ResolvedCalls != 0 || result.Metrics.UnresolvedReferences != 1 {

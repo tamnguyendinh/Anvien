@@ -208,9 +208,9 @@ func TestLegacyScopeSymbolConversionResolvesTypeReferencesThroughGraph(t *testin
 		Definitions: []scopeir.DefinitionFact{saveDef},
 		Imports:     []scopeir.ImportFact{{FilePath: "src/app.ts", Kind: scopeir.ImportAlias, LocalName: "Account", ImportedName: "User", Alias: "Account", TargetRaw: &modelsRaw}},
 		TypeAnnotations: []scopeir.TypeAnnotationFact{
-			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "account", InScope: functionScope, Type: scopeir.TypeRef{RawName: "Account", DeclaredAtScope: functionScope, Source: scopeir.TypeSourceParameter}},
-			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "repo", InScope: functionScope, Type: scopeir.TypeRef{RawName: "models.Repo", DeclaredAtScope: functionScope, Source: scopeir.TypeSourceAnnotation}},
-			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "duplicate", InScope: functionScope, Type: scopeir.TypeRef{RawName: "models.Duplicate", DeclaredAtScope: functionScope, Source: scopeir.TypeSourceAnnotation}},
+			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "account", InScope: functionScope, Range: scopeir.Range{StartLine: 4, EndLine: 4}, Type: scopeir.TypeRef{RawName: "Account", DeclaredAtScope: functionScope, Source: scopeir.TypeSourceParameter}},
+			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "repo", InScope: functionScope, Range: scopeir.Range{StartLine: 5, EndLine: 5}, Type: scopeir.TypeRef{RawName: "models.Repo", DeclaredAtScope: functionScope, Source: scopeir.TypeSourceAnnotation}},
+			{FilePath: "src/app.ts", FileHash: "hash-app", Name: "duplicate", InScope: functionScope, Range: scopeir.Range{StartLine: 6, EndLine: 6}, Type: scopeir.TypeRef{RawName: "models.Duplicate", DeclaredAtScope: functionScope, Source: scopeir.TypeSourceAnnotation}},
 		},
 	}
 	models := scopeir.ScopeIR{

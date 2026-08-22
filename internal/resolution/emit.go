@@ -21,16 +21,20 @@ type emitter struct {
 	edgeKeys                map[string]graph.Relationship
 	definitionNodesSeen     map[string]graph.Node
 	typeScriptExternalSites []typeScriptExternalSite
+	outcomes                resolutionOutcomeCollector
+	fileLanguages           map[string]scanner.Language
 	metrics                 *Metrics
 	sourceLabel             string
 }
 
-func newEmitter(g *graph.Graph, metrics *Metrics) *emitter {
+func newEmitter(g *graph.Graph, metrics *Metrics, fileLanguages map[string]scanner.Language) *emitter {
 	return &emitter{
 		graph:               g,
 		referenceIndex:      newReferenceIndex(),
 		edgeKeys:            make(map[string]graph.Relationship),
 		definitionNodesSeen: make(map[string]graph.Node),
+		outcomes:            newResolutionOutcomeCollector(),
+		fileLanguages:       fileLanguages,
 		metrics:             metrics,
 		sourceLabel:         "scope-resolution",
 	}
@@ -129,6 +133,10 @@ func (e *emitter) emitRelationship(relationship graph.Relationship) {
 }
 
 func (e *emitter) emitReference(source defRef, target defRef, reference Reference) {
+	if reference.SourceSiteID == "" {
+		reference.SourceSiteID = sourceSiteID(siteKindForReference(reference.Kind), reference.FilePath, reference.TargetText, reference.Range)
+	}
+	e.recordRepositoryResolvedOutcome(target, reference)
 	e.referenceIndex.add(reference)
 	relType := relationshipTypeForReference(reference.Kind)
 	reason := string(reference.Kind)
@@ -156,9 +164,6 @@ func (e *emitter) emitReference(source defRef, target defRef, reference Referenc
 		EndCol:           reference.Range.EndCol,
 		Evidence:         reference.Evidence,
 	}
-	if relationship.SourceSiteID == "" {
-		relationship.SourceSiteID = sourceSiteID(string(reference.Kind), reference.FilePath, reference.TargetText, reference.Range)
-	}
 	relationship.SourceSiteIDs = []string{relationship.SourceSiteID}
 	relationship.SourceSiteCount = 1
 	if reference.Kind == ReferenceRead {
@@ -172,7 +177,7 @@ func (e *emitter) emitReference(source defRef, target defRef, reference Referenc
 	e.emitRelationship(relationship)
 }
 
-func (e *emitter) emitUnresolvedReference(source defRef, factFamily string, targetText string, filePath string, fileHash string, factRange scopeir.Range, note string, incrementMetric bool) {
+func (e *emitter) emitUnresolvedReference(source defRef, factFamily string, targetText string, filePath string, fileHash string, factRange scopeir.Range, note string, incrementMetric bool, evidence ...graph.Evidence) {
 	if incrementMetric {
 		e.metrics.UnresolvedReferences++
 	}
@@ -186,6 +191,10 @@ func (e *emitter) emitUnresolvedReference(source defRef, factFamily string, targ
 	proofKind := proofKindNone
 	if note == "call target matched low-confidence global fallback only" {
 		proofKind = proofKindGlobalFallbackLowConfidence
+	}
+	encoded, added := e.recordRepositoryUnresolvedOutcome(factFamily, targetText, filePath, fileHash, factRange, note, proofKind, evidence)
+	if !added {
+		return
 	}
 	diagnostic := graphhealth.Diagnostic{
 		Kind:             graphhealth.DiagnosticUnresolvedReference,
@@ -203,7 +212,7 @@ func (e *emitter) emitUnresolvedReference(source defRef, factFamily string, targ
 		SourceSiteStatus: status,
 		ProofKind:        proofKind,
 		TargetRole:       targetRoleForFactFamily(factFamily),
-		Note:             note,
+		Note:             encoded,
 		Source:           e.sourceLabel,
 	}
 	if graphhealth.AppendDiagnosticToNode(e.graph, source.GraphID, diagnostic) {
@@ -570,10 +579,7 @@ func emitHeritageCompatibilityEdges(e *emitter, item heritageResolution, emitInh
 		Reason:     string(item.Fact.Kind),
 		FileHash:   item.Fact.FileHash,
 	})
-	if !emitInherits {
-		return
-	}
-	e.emitReference(item.Owner, item.Target, Reference{
+	reference := Reference{
 		FromScope:        item.Fact.InScope,
 		ToDefID:          item.Target.Fact.ID,
 		FilePath:         item.Fact.FilePath,
@@ -591,7 +597,12 @@ func emitHeritageCompatibilityEdges(e *emitter, item heritageResolution, emitInh
 			Weight: 1,
 			Note:   string(item.Fact.Kind) + " " + item.Fact.Name,
 		}},
-	})
+	}
+	if !emitInherits {
+		e.recordRepositoryResolvedOutcome(item.Target, reference)
+		return
+	}
+	e.emitReference(item.Owner, item.Target, reference)
 }
 
 func emitMethodDispatchEdges(w *workspace, e *emitter) {

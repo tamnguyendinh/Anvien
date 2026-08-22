@@ -1,124 +1,11 @@
 package resolution
 
 import (
-	"os"
-	"reflect"
-	"slices"
 	"testing"
 
-	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/scanner"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
 )
-
-func TestP1CIdentityConservesSameNameOccurrencesAndEndpoints(t *testing.T) {
-	ir := p1cIdentityFixtureIR(t)
-	workspace, err := buildWorkspace([]scopeir.ScopeIR{ir})
-	if err != nil {
-		t.Fatalf("buildWorkspace() error = %v", err)
-	}
-
-	filePath := cleanPath(ir.FilePath)
-	definitions := workspace.defsByFile[filePath]
-	if len(definitions) != len(ir.Definitions) {
-		t.Fatalf("defsByFile occurrence denominator = %d, want %d", len(definitions), len(ir.Definitions))
-	}
-	graphIDs := make(map[string]struct{}, len(definitions))
-	for _, definition := range definitions {
-		graphIDs[definition.GraphID] = struct{}{}
-	}
-	if len(graphIDs) != len(definitions) {
-		t.Fatalf("unique graph identities = %d, want %d occurrences", len(graphIDs), len(definitions))
-	}
-
-	for _, name := range []string{"time", "now"} {
-		refs := exactNamedDefinitions(workspace.defsByName[name], name)
-		if len(refs) != 2 {
-			t.Fatalf("%s occurrences = %d, want 2: %#v", name, len(refs), refs)
-		}
-		occurrences := map[string]struct{}{}
-		scopes := map[string]struct{}{}
-		ids := map[string]struct{}{}
-		for _, ref := range refs {
-			occurrences[ref.Fact.ID] = struct{}{}
-			scopes[workspace.scopeByDef[ref.Fact.ID]] = struct{}{}
-			ids[ref.GraphID] = struct{}{}
-		}
-		if len(occurrences) != 2 || len(scopes) != 2 || len(ids) != 2 {
-			t.Fatalf("%s identity inputs collapsed: occurrences=%v scopes=%v graphIDs=%v", name, occurrences, scopes, ids)
-		}
-	}
-
-	shared := exactNamedDefinitions(workspace.defsByName["Shared"], "Shared")
-	if len(shared) != 2 {
-		t.Fatalf("Shared meaning-lane occurrences = %d, want 2: %#v", len(shared), shared)
-	}
-	labels := map[scopeir.NodeLabel]struct{}{}
-	sharedIDs := map[string]struct{}{}
-	for _, ref := range shared {
-		labels[ref.Fact.Label] = struct{}{}
-		sharedIDs[ref.GraphID] = struct{}{}
-	}
-	if _, ok := labels[scopeir.NodeInterface]; !ok {
-		t.Fatalf("Shared labels = %v, missing Interface", labels)
-	}
-	if _, ok := labels[scopeir.NodeFunction]; !ok {
-		t.Fatalf("Shared labels = %v, missing Function", labels)
-	}
-	if len(sharedIDs) != 2 {
-		t.Fatalf("Shared meaning lanes share graph identity: %v", sharedIDs)
-	}
-
-	result, err := Resolve([]scopeir.ScopeIR{ir}, Options{})
-	if err != nil {
-		t.Fatalf("Resolve() error = %v", err)
-	}
-	definedTargets := map[string]struct{}{}
-	for _, relationship := range result.Graph.Relationships {
-		if _, ok := result.Graph.GetNode(relationship.SourceID); !ok {
-			t.Fatalf("relationship %s missing source endpoint %s", relationship.ID, relationship.SourceID)
-		}
-		if _, ok := result.Graph.GetNode(relationship.TargetID); !ok {
-			t.Fatalf("relationship %s missing target endpoint %s", relationship.ID, relationship.TargetID)
-		}
-		if relationship.Type == graph.RelDefines {
-			definedTargets[relationship.TargetID] = struct{}{}
-		}
-	}
-	for _, definition := range definitions {
-		if _, ok := result.Graph.GetNode(definition.GraphID); !ok {
-			t.Fatalf("definition occurrence %s missing graph node %s", definition.Fact.ID, definition.GraphID)
-		}
-		if _, ok := definedTargets[definition.GraphID]; !ok {
-			t.Fatalf("definition occurrence %s missing DEFINES endpoint %s", definition.Fact.ID, definition.GraphID)
-		}
-	}
-}
-
-func TestP1CIdentityIsDeterministicAcrossDefinitionOrder(t *testing.T) {
-	first := p1cIdentityFixtureIR(t)
-	second := p1cIdentityFixtureIR(t)
-	slices.Reverse(second.Definitions)
-	slices.Reverse(second.Scopes)
-	for index := range second.Scopes {
-		slices.Reverse(second.Scopes[index].OwnedDefIDs)
-		slices.Reverse(second.Scopes[index].Bindings)
-	}
-
-	firstWorkspace, err := buildWorkspace([]scopeir.ScopeIR{first})
-	if err != nil {
-		t.Fatalf("first buildWorkspace() error = %v", err)
-	}
-	secondWorkspace, err := buildWorkspace([]scopeir.ScopeIR{second})
-	if err != nil {
-		t.Fatalf("second buildWorkspace() error = %v", err)
-	}
-	firstIDs := graphIDsByOccurrence(firstWorkspace)
-	secondIDs := graphIDsByOccurrence(secondWorkspace)
-	if !reflect.DeepEqual(firstIDs, secondIDs) {
-		t.Fatalf("reordered identity set changed\nfirst=%v\nsecond=%v", firstIDs, secondIDs)
-	}
-}
 
 func TestP1CIdentityUsesLexicalMeaningOwnerAndArityInputs(t *testing.T) {
 	base := scopeir.DefinitionFact{
@@ -207,15 +94,6 @@ func TestP1CIdentityDoesNotMergeSameNameWithoutProviderEvidence(t *testing.T) {
 	if refs[0].GraphID == refs[1].GraphID {
 		t.Fatalf("same-name occurrences merged without provider evidence: %s", refs[0].GraphID)
 	}
-}
-
-func p1cIdentityFixtureIR(t *testing.T) scopeir.ScopeIR {
-	t.Helper()
-	source, err := os.ReadFile("testdata/p1c_identity_repo/src/identity.ts")
-	if err != nil {
-		t.Fatalf("read P1-C identity fixture: %v", err)
-	}
-	return parseTypeScriptSource(t, "src/identity.ts", source)
 }
 
 func exactNamedDefinitions(definitions []defRef, name string) []defRef {

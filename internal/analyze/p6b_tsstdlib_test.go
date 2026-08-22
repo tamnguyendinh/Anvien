@@ -185,7 +185,7 @@ func TestP6BRunCarriesCatalogValidationFailuresPerSourceSite(t *testing.T) {
 			if len(result.TypeScriptAuthorityResults) != len(wantSiteIDs) ||
 				result.Metrics.Resolution.ExternalCapabilityUnavailable != len(wantSiteIDs) ||
 				result.Metrics.Resolution.UnresolvedReferences != 0 ||
-				result.Metrics.Resolution.UnresolvedReferenceDiagnostics != 0 {
+				result.Metrics.Resolution.UnresolvedReferenceDiagnostics != len(wantSiteIDs) {
 				t.Fatalf("built catalog-failure carriage records=%#v metrics=%#v want unique sites=%d", result.TypeScriptAuthorityResults, result.Metrics.Resolution, len(wantSiteIDs))
 			}
 			seen := make(map[string]struct{}, len(result.TypeScriptAuthorityResults))

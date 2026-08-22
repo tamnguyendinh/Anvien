@@ -120,6 +120,7 @@ type Result struct {
 	Graph                      *graph.Graph                           `json:"graph,omitempty"`
 	ScopeIRs                   []scopeir.ScopeIR                      `json:"-"`
 	TypeScriptAuthorityResults []resolution.TypeScriptAuthorityResult `json:"typescriptStandardLibraryResults,omitempty"`
+	ResolutionOutcomes         []resolution.ResolutionOutcome         `json:"resolutionOutcomes,omitempty"`
 	Metrics                    Metrics                                `json:"metrics"`
 }
 
@@ -354,6 +355,7 @@ func Run(ctx context.Context, repoPath string, options Options) (result Result, 
 	}
 	result.Graph = resolutionResult.Graph
 	result.TypeScriptAuthorityResults = resolutionResult.TypeScriptAuthorityResults
+	result.ResolutionOutcomes = resolutionResult.ResolutionOutcomes
 	result.Metrics.Resolution = resolutionResult.Metrics
 	result.Metrics.Memory.MaxObservedSys = maxUint64(result.Metrics.Memory.MaxObservedSys, currentSys())
 	if options.ReleaseScopeIRsAfterResolution {
