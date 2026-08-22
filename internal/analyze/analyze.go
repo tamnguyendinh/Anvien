@@ -50,6 +50,7 @@ import (
 	"github.com/tamnguyendinh/anvien/internal/semantic"
 	"github.com/tamnguyendinh/anvien/internal/structure"
 	"github.com/tamnguyendinh/anvien/internal/tools"
+	"github.com/tamnguyendinh/anvien/internal/tsstdlib"
 )
 
 type DBRunnerFactory func(repo.StoragePaths) (lbugload.QueryRunner, func() error, error)
@@ -114,11 +115,12 @@ type Event struct {
 }
 
 type Result struct {
-	RepoPath  string            `json:"repoPath"`
-	GraphPath string            `json:"graphPath,omitempty"`
-	Graph     *graph.Graph      `json:"graph,omitempty"`
-	ScopeIRs  []scopeir.ScopeIR `json:"-"`
-	Metrics   Metrics           `json:"metrics"`
+	RepoPath                   string                                 `json:"repoPath"`
+	GraphPath                  string                                 `json:"graphPath,omitempty"`
+	Graph                      *graph.Graph                           `json:"graph,omitempty"`
+	ScopeIRs                   []scopeir.ScopeIR                      `json:"-"`
+	TypeScriptAuthorityResults []resolution.TypeScriptAuthorityResult `json:"typescriptStandardLibraryResults,omitempty"`
+	Metrics                    Metrics                                `json:"metrics"`
 }
 
 type Metrics struct {
@@ -291,6 +293,11 @@ func Run(ctx context.Context, repoPath string, options Options) (result Result, 
 		Failed:              parsedFiles.Metrics.FailedPaths,
 		UnsupportedLanguage: parsedFiles.Metrics.UnsupportedLanguagePaths,
 	})
+	if options.Resolution.TypeScriptStandardLibrary == nil {
+		if inventory, ok := typeScriptDeclarationInventory(scan.Files); ok {
+			options.Resolution.TypeScriptStandardLibrary = tsstdlib.NewAuthority(resolvedPath, inventory)
+		}
+	}
 
 	routesResult, err := runPhase(ctx, &result.Metrics, options.OnEvent, PhaseRoutes, func() (routes.Result, error) {
 		if err := ctx.Err(); err != nil {
@@ -346,6 +353,7 @@ func Run(ctx context.Context, repoPath string, options Options) (result Result, 
 		return result, err
 	}
 	result.Graph = resolutionResult.Graph
+	result.TypeScriptAuthorityResults = resolutionResult.TypeScriptAuthorityResults
 	result.Metrics.Resolution = resolutionResult.Metrics
 	result.Metrics.Memory.MaxObservedSys = maxUint64(result.Metrics.Memory.MaxObservedSys, currentSys())
 	if options.ReleaseScopeIRsAfterResolution {
@@ -457,6 +465,18 @@ func Run(ctx context.Context, repoPath string, options Options) (result Result, 
 		}
 	}
 	return result, nil
+}
+
+func typeScriptDeclarationInventory(files []scanner.File) ([]string, bool) {
+	inventory := make([]string, 0, len(files))
+	hasTypeScript := false
+	for _, file := range files {
+		inventory = append(inventory, file.Path)
+		if file.Language == scanner.TypeScript {
+			hasTypeScript = true
+		}
+	}
+	return inventory, hasTypeScript
 }
 
 func resolveProcessConfig(repoPath string, config processes.Config) processes.Config {

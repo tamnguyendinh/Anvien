@@ -3,11 +3,13 @@ package resolution
 import (
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/tsstdlib"
 )
 
 type Options struct {
 	DisableScopeInheritsCompatibility bool
 	SkipCompatibilityCrossFile        bool
+	TypeScriptStandardLibrary         *tsstdlib.Authority
 }
 
 type Metrics struct {
@@ -21,6 +23,10 @@ type Metrics struct {
 	ResolvedCalls                    int
 	ResolvedAccesses                 int
 	ResolvedTypeReferences           int
+	ResolvedExternalDeclarations     int
+	ExternalCapabilityUnavailable    int
+	ExternalProfileExcluded          int
+	ExternalMeaningMismatches        int
 	HeritageFactsIndexed             int
 	ResolvedInheritance              int
 	UnresolvedInheritance            int
@@ -39,10 +45,40 @@ type Metrics struct {
 	GraphRelationshipsEmitted        int
 }
 
+const TypeScriptStandardLibraryStage = "typescript_standard_library"
+
+// TypeScriptAuthorityResult is the lossless P6-B authority result for one
+// handled TypeScript source site. It is intentionally separate from graph
+// materialization and the later cross-stage final outcome contract.
+type TypeScriptAuthorityResult struct {
+	SourceSiteID        string                     `json:"sourceSiteId"`
+	Stage               string                     `json:"stage"`
+	FilePath            string                     `json:"filePath"`
+	FileHash            string                     `json:"fileHash,omitempty"`
+	Range               scopeir.Range              `json:"range"`
+	SiteKind            string                     `json:"siteKind"`
+	RequestedName       string                     `json:"requestedName"`
+	RequestedMeaning    tsstdlib.Meaning           `json:"requestedMeaning"`
+	Status              tsstdlib.LookupStatus      `json:"status"`
+	Reason              tsstdlib.Reason            `json:"reason,omitempty"`
+	ResolvedSymbolID    string                     `json:"resolvedSymbolId,omitempty"`
+	ResolvedOwnerID     string                     `json:"resolvedOwnerId,omitempty"`
+	DeclarationRanges   []tsstdlib.Declaration     `json:"declarationRanges,omitempty"`
+	AuthorityKind       string                     `json:"authorityKind"`
+	CatalogProofState   tsstdlib.CatalogProofState `json:"catalogProofState"`
+	AuthorityHash       string                     `json:"authorityHash"`
+	TypeScriptVersion   string                     `json:"typescriptVersion"`
+	CatalogHash         string                     `json:"catalogHash"`
+	CatalogArtifactHash string                     `json:"catalogArtifactHash"`
+	ProfileHash         string                     `json:"profileHash"`
+	ConfigHash          string                     `json:"configHash"`
+}
+
 type Result struct {
-	Graph          *graph.Graph
-	ReferenceIndex ReferenceIndex
-	Metrics        Metrics
+	Graph                      *graph.Graph
+	ReferenceIndex             ReferenceIndex
+	TypeScriptAuthorityResults []TypeScriptAuthorityResult
+	Metrics                    Metrics
 }
 
 type BindingResult struct {

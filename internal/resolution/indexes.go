@@ -9,6 +9,7 @@ import (
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/scanner"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/tsstdlib"
 )
 
 type defRef struct {
@@ -70,6 +71,9 @@ type workspace struct {
 	unresolvedHeritageFacts []scopeir.HeritageFact
 
 	bindingAccumulator *bindingAccumulator
+
+	typeScriptStandardLibrary  *tsstdlib.Authority
+	typeScriptAuthorityResults []TypeScriptAuthorityResult
 }
 
 func buildWorkspace(files []scopeir.ScopeIR) (*workspace, error) {

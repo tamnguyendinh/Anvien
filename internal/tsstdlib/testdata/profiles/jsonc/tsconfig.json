@@ -1,0 +1,7 @@
+{
+  // JSONC comments and trailing commas are data, never executable config.
+  "compilerOptions": {
+    "lib": ["ES2015"],
+    "strict": true,
+  },
+}

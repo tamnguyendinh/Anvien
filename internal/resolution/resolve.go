@@ -3,11 +3,15 @@ package resolution
 import (
 	"errors"
 	"fmt"
+	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/graphhealth"
+	"github.com/tamnguyendinh/anvien/internal/scanner"
 	"github.com/tamnguyendinh/anvien/internal/scopeir"
+	"github.com/tamnguyendinh/anvien/internal/tsstdlib"
 )
 
 func Resolve(files []scopeir.ScopeIR, options Options) (result Result, err error) {
@@ -27,6 +31,7 @@ func BuildCrossFileBinding(files []scopeir.ScopeIR, options Options) (result Bin
 	if err != nil {
 		return BindingResult{}, err
 	}
+	w.typeScriptStandardLibrary = options.TypeScriptStandardLibrary
 	defer func() {
 		if err != nil {
 			w.bindingAccumulator.dispose()
@@ -95,11 +100,20 @@ func ResolveBoundInto(baseGraph *graph.Graph, binding BindingResult, options Opt
 		}
 	}
 	emitMethodDispatchEdges(w, e)
+	authorityResults, err := finalizeTypeScriptAuthorityResults(w.typeScriptAuthorityResults, &metrics)
+	if err != nil {
+		return Result{Graph: g, ReferenceIndex: e.referenceIndex, Metrics: metrics}, err
+	}
 
 	metrics.GraphNodesEmitted = len(g.Nodes)
 	metrics.GraphRelationshipsEmitted = len(g.Relationships)
 	graphhealth.SetResolutionMetadata(g, metrics.UnresolvedReferences, metrics.UnresolvedReferenceDiagnostics, metrics.UnattributedUnresolvedReferences)
-	return Result{Graph: g, ReferenceIndex: e.referenceIndex, Metrics: metrics}, nil
+	return Result{
+		Graph:                      g,
+		ReferenceIndex:             e.referenceIndex,
+		TypeScriptAuthorityResults: authorityResults,
+		Metrics:                    metrics,
+	}, nil
 }
 
 func applyCrossFileCompatibilityMetrics(options Options, metrics *Metrics) {
@@ -374,7 +388,11 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 	hasSemanticResult := false
 	lowConfidenceFallback := false
 	bindingReceiverResolved := false
+	externalBlocked := false
+	repositoryReceiverClaimed := false
 	if call.CallForm == scopeir.CallMember {
+		repositoryReceiverClaimed = w.repositoryReceiverClaimed(call.ExplicitReceiver, call.InScope)
+		externalBlocked = repositoryReceiverClaimed
 		if receiver, resolved := bindingOccurrences.resolve(w, call.ExplicitReceiver, call.InScope); resolved {
 			emitBindingOccurrenceReference(
 				e,
@@ -396,6 +414,7 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 		if ok {
 			if claimed, allowed := w.explicitImportCallState(call.Name, call.InScope, dispatchOwnerLabels(), &target); claimed && !allowed {
 				ok = false
+				externalBlocked = true
 			} else {
 				proofKind = proofKindScopeBinding
 			}
@@ -410,6 +429,7 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 		if !ok {
 			claimed, _ := w.explicitImportCallState(call.Name, call.InScope, dispatchOwnerLabels(), nil)
 			if claimed {
+				externalBlocked = true
 				break
 			}
 			target, ok = w.resolveGlobalCallName(call.Name, dispatchOwnerLabels(), call.Arity)
@@ -431,6 +451,9 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 				proofKind = proofKindImportMember
 			}
 		}
+		if !ok && (semanticResult.Outcome != "" || w.explicitImportNameClaimed(call.ExplicitReceiver, call.InScope)) {
+			externalBlocked = true
+		}
 		if !ok && call.ExplicitReceiver == "" {
 			claimed, _ := w.explicitImportCallState(call.Name, call.InScope, callableLabels(), nil)
 			if claimed {
@@ -447,6 +470,7 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 		if ok {
 			if claimed, allowed := w.explicitImportCallState(call.Name, call.InScope, callableLabels(), &target); claimed && !allowed {
 				ok = false
+				externalBlocked = true
 			} else {
 				proofKind = proofKindScopeBinding
 			}
@@ -468,6 +492,7 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 		if !ok {
 			claimed, _ := w.explicitImportCallState(call.Name, call.InScope, callableLabels(), nil)
 			if claimed {
+				externalBlocked = true
 				break
 			}
 			target, ok = w.resolveGlobalCallName(call.Name, callableLabels(), call.Arity)
@@ -477,8 +502,25 @@ func resolveCall(w *workspace, e *emitter, bindingOccurrences bindingOccurrenceI
 			}
 		}
 	}
+	if (!ok || lowConfidenceFallback) && !externalBlocked {
+		lookup := tsstdlib.LookupResult{Status: tsstdlib.LookupNotFound}
+		if call.CallForm == scopeir.CallMember && call.ExplicitReceiver != "" {
+			lookup = w.lookupTypeScriptMember(call.FilePath, call.ExplicitReceiver, call.InScope, call.Name, tsstdlib.MeaningValue)
+		} else {
+			lookup = w.lookupTypeScriptGlobal(call.FilePath, call.Name, tsstdlib.MeaningValue)
+		}
+		if recordTypeScriptLookup(w, e, typeScriptSourceSite{
+			kind:       "call",
+			filePath:   call.FilePath,
+			fileHash:   call.FileHash,
+			rangeValue: call.Range,
+			targetText: callTargetText(call),
+		}, lookup) {
+			return
+		}
+	}
 	if !ok {
-		if bindingReceiverResolved {
+		if bindingReceiverResolved && w.typeScriptStandardLibrary == nil {
 			return
 		}
 		e.emitUnresolvedReference(source, "call", callTargetText(call), call.FilePath, call.FileHash, call.Range, "call target not resolved", true)
@@ -564,6 +606,7 @@ func resolveAccess(w *workspace, e *emitter, bindingOccurrences bindingOccurrenc
 	targetRole := targetRoleMember
 	var semanticResult exportResolutionResult
 	hasSemanticResult := false
+	externalBlocked := false
 	if access.ExplicitReceiver == "" {
 		target, ok = bindingOccurrences.resolve(w, access.Name, access.InScope)
 		if ok {
@@ -571,7 +614,13 @@ func resolveAccess(w *workspace, e *emitter, bindingOccurrences bindingOccurrenc
 			proofKind = proofKindScopeBinding
 			targetRole = bindingOccurrenceTargetRole
 		}
+		if !ok && w.explicitImportNameClaimed(access.Name, access.InScope) {
+			externalBlocked = true
+		}
 	} else {
+		if w.repositoryReceiverClaimed(access.ExplicitReceiver, access.InScope) {
+			externalBlocked = true
+		}
 		target, ok = w.resolveMember(access.Name, access.ExplicitReceiver, access.InScope, propertyLabels())
 		if !ok {
 			target, semanticResult, ok = w.resolveImportedMemberWithProof(access.ExplicitReceiver, access.Name, access.InScope, propertyLabels())
@@ -582,8 +631,28 @@ func resolveAccess(w *workspace, e *emitter, bindingOccurrences bindingOccurrenc
 				proofKind = proofKindImportMember
 			}
 		}
+		if !ok && (semanticResult.Outcome != "" || (!w.hasTypeBinding(access.ExplicitReceiver, access.InScope) && w.explicitImportNameClaimed(access.ExplicitReceiver, access.InScope))) {
+			externalBlocked = true
+		}
 	}
 	if !ok {
+		if !externalBlocked {
+			lookup := tsstdlib.LookupResult{Status: tsstdlib.LookupNotFound}
+			if access.ExplicitReceiver == "" {
+				lookup = w.lookupTypeScriptGlobal(access.FilePath, access.Name, tsstdlib.MeaningValue)
+			} else {
+				lookup = w.lookupTypeScriptMember(access.FilePath, access.ExplicitReceiver, access.InScope, access.Name, tsstdlib.MeaningValue)
+			}
+			if recordTypeScriptLookup(w, e, typeScriptSourceSite{
+				kind:       "access",
+				filePath:   access.FilePath,
+				fileHash:   access.FileHash,
+				rangeValue: access.Range,
+				targetText: accessTargetText(access),
+			}, lookup) {
+				return
+			}
+		}
 		e.emitUnresolvedReference(source, "access", accessTargetText(access), access.FilePath, access.FileHash, access.Range, "access target not resolved", true)
 		return
 	}
@@ -647,6 +716,18 @@ func resolveTypeAnnotation(w *workspace, e *emitter, annotation scopeir.TypeAnno
 	}
 	target, ok := w.resolveName(targetName, annotation.InScope, typeLabels())
 	if !ok {
+		if !w.typeScriptAnnotationImportClaimed(annotation, targetName) {
+			lookup := w.lookupTypeScriptAnnotation(annotation, targetName)
+			if recordTypeScriptLookup(w, e, typeScriptSourceSite{
+				kind:       "type-reference",
+				filePath:   annotation.FilePath,
+				fileHash:   annotation.FileHash,
+				rangeValue: annotation.Range,
+				targetText: annotation.Type.RawName,
+			}, lookup) {
+				return
+			}
+		}
 		e.emitUnresolvedReference(source, "type-reference", annotation.Type.RawName, annotation.FilePath, annotation.FileHash, annotation.Range, "type target not resolved", true)
 		return
 	}
@@ -671,6 +752,327 @@ func resolveTypeAnnotation(w *workspace, e *emitter, annotation scopeir.TypeAnno
 	})
 	e.metrics.ResolvedReferences++
 	e.metrics.ResolvedTypeReferences++
+}
+
+func (w *workspace) lookupTypeScriptAnnotation(annotation scopeir.TypeAnnotationFact, targetName string) tsstdlib.LookupResult {
+	switch annotation.Type.Source {
+	case scopeir.TypeSourceMethodReturn, scopeir.TypeSourceFieldAccess:
+		owner, member, ok := splitQualifiedDeclarationName(annotation.Type.RawName)
+		if !ok {
+			return tsstdlib.LookupResult{Status: tsstdlib.LookupNotFound}
+		}
+		return w.lookupTypeScriptMember(annotation.FilePath, owner, annotation.InScope, member, tsstdlib.MeaningValue)
+	case scopeir.TypeSourceConstructor, scopeir.TypeSourceCallReturn:
+		return w.lookupTypeScriptGlobal(annotation.FilePath, targetName, tsstdlib.MeaningValue)
+	default:
+		return w.lookupTypeScriptGlobal(annotation.FilePath, targetName, tsstdlib.MeaningType)
+	}
+}
+
+func (w *workspace) typeScriptAnnotationImportClaimed(annotation scopeir.TypeAnnotationFact, targetName string) bool {
+	if w.explicitImportNameClaimed(targetName, annotation.InScope) {
+		return true
+	}
+	switch annotation.Type.Source {
+	case scopeir.TypeSourceMethodReturn, scopeir.TypeSourceFieldAccess:
+		owner, _, ok := splitQualifiedDeclarationName(annotation.Type.RawName)
+		return ok && w.explicitImportNameClaimed(owner, annotation.InScope)
+	default:
+		return false
+	}
+}
+
+func splitQualifiedDeclarationName(value string) (string, string, bool) {
+	value = strings.TrimSpace(value)
+	index := strings.LastIndex(value, ".")
+	if index <= 0 || index == len(value)-1 {
+		return "", "", false
+	}
+	owner := strings.TrimSpace(value[:index])
+	member := baseTypeName(value[index+1:])
+	if owner == "" || member == "" {
+		return "", "", false
+	}
+	return owner, member, true
+}
+
+func (w *workspace) lookupTypeScriptGlobal(filePath string, name string, meaning tsstdlib.Meaning) tsstdlib.LookupResult {
+	if w.typeScriptStandardLibrary == nil || w.fileLanguages[cleanPath(filePath)] != scanner.TypeScript {
+		return tsstdlib.LookupResult{Status: tsstdlib.LookupNotFound}
+	}
+	return w.typeScriptStandardLibrary.LookupGlobal(name, meaning)
+}
+
+func (w *workspace) lookupTypeScriptMember(filePath string, receiver string, startScope string, memberName string, memberMeaning tsstdlib.Meaning) tsstdlib.LookupResult {
+	if w.typeScriptStandardLibrary == nil || w.fileLanguages[cleanPath(filePath)] != scanner.TypeScript {
+		return tsstdlib.LookupResult{Status: tsstdlib.LookupNotFound}
+	}
+	if w.repositoryReceiverClaimed(receiver, startScope) {
+		return tsstdlib.LookupResult{Status: tsstdlib.LookupNotFound}
+	}
+	ownerName := strings.TrimSpace(receiver)
+	if ownerName == "" {
+		return tsstdlib.LookupResult{Status: tsstdlib.LookupNotFound}
+	}
+	return w.typeScriptStandardLibrary.LookupMember(ownerName, tsstdlib.MeaningValue, memberName, memberMeaning)
+}
+
+func (w *workspace) repositoryReceiverClaimed(receiver string, startScope string) bool {
+	receiver = strings.TrimSpace(receiver)
+	if receiver == "" {
+		return false
+	}
+	root := strings.TrimSpace(strings.Split(receiver, ".")[0])
+	if root == "" {
+		return false
+	}
+	if root == "this" || root == "self" || w.explicitImportNameClaimed(root, startScope) {
+		return true
+	}
+	for scopeID := startScope; scopeID != ""; scopeID = w.parentScope(scopeID) {
+		if len(w.scopeBindings[scopeID][root]) > 0 || len(w.typeBindings[scopeID][root]) > 0 {
+			return true
+		}
+	}
+	claimed := false
+	forEachGlobalLookupName(root, func(name string) bool {
+		if len(w.defsByName[name]) > 0 {
+			claimed = true
+			return false
+		}
+		return true
+	})
+	return claimed
+}
+
+func (w *workspace) explicitImportNameClaimed(name string, startScope string) bool {
+	name = strings.TrimSpace(name)
+	sourceFile := w.scopeFilePath(startScope)
+	if name == "" || sourceFile == "" {
+		return false
+	}
+	for _, item := range w.imports {
+		if cleanPath(item.Fact.FilePath) == sourceFile && item.Fact.LocalName == name {
+			return true
+		}
+	}
+	return false
+}
+
+func (w *workspace) hasTypeBinding(name string, startScope string) bool {
+	_, ok := w.lookupTypeBinding(strings.TrimSpace(name), startScope)
+	return ok
+}
+
+type typeScriptSourceSite struct {
+	kind       string
+	filePath   string
+	fileHash   string
+	rangeValue scopeir.Range
+	targetText string
+}
+
+func recordTypeScriptLookup(w *workspace, e *emitter, site typeScriptSourceSite, result tsstdlib.LookupResult) bool {
+	switch result.Status {
+	case tsstdlib.LookupResolved:
+		e.metrics.ResolvedExternalDeclarations++
+	case tsstdlib.LookupCapabilityUnavailable:
+		e.metrics.ExternalCapabilityUnavailable++
+	case tsstdlib.LookupProfileExcluded:
+		e.metrics.ExternalProfileExcluded++
+	case tsstdlib.LookupMeaningMismatch:
+		e.metrics.ExternalMeaningMismatches++
+	default:
+		return false
+	}
+	w.typeScriptAuthorityResults = append(w.typeScriptAuthorityResults, TypeScriptAuthorityResult{
+		SourceSiteID:        sourceSiteID(site.kind, site.filePath, site.targetText, site.rangeValue),
+		Stage:               TypeScriptStandardLibraryStage,
+		FilePath:            cleanPath(site.filePath),
+		FileHash:            site.fileHash,
+		Range:               site.rangeValue,
+		SiteKind:            site.kind,
+		RequestedName:       result.Name,
+		RequestedMeaning:    result.Meaning,
+		Status:              result.Status,
+		Reason:              result.Reason,
+		ResolvedSymbolID:    result.SymbolID,
+		ResolvedOwnerID:     result.OwnerID,
+		DeclarationRanges:   append([]tsstdlib.Declaration(nil), result.Declarations...),
+		AuthorityKind:       result.AuthorityKind,
+		CatalogProofState:   result.CatalogProofState,
+		AuthorityHash:       result.AuthorityHash,
+		TypeScriptVersion:   result.TypeScriptVersion,
+		CatalogHash:         result.CatalogHash,
+		CatalogArtifactHash: result.CatalogArtifactHash,
+		ProfileHash:         result.ProfileHash,
+		ConfigHash:          result.ConfigHash,
+	})
+	return true
+}
+
+func finalizeTypeScriptAuthorityResults(records []TypeScriptAuthorityResult, metrics *Metrics) ([]TypeScriptAuthorityResult, error) {
+	out := make([]TypeScriptAuthorityResult, len(records))
+	for index, record := range records {
+		out[index] = cloneTypeScriptAuthorityResult(record)
+	}
+	sort.Slice(out, func(left, right int) bool {
+		return out[left].SourceSiteID < out[right].SourceSiteID
+	})
+	seen := make(map[string]TypeScriptAuthorityResult, len(out))
+	unique := out[:0]
+	counts := map[tsstdlib.LookupStatus]int{}
+	for _, record := range out {
+		if err := validateTypeScriptAuthorityResult(record); err != nil {
+			return nil, err
+		}
+		if previous, duplicate := seen[record.SourceSiteID]; duplicate {
+			if !reflect.DeepEqual(previous, record) {
+				return nil, fmt.Errorf("conflicting TypeScript authority source site %q", record.SourceSiteID)
+			}
+			continue
+		}
+		seen[record.SourceSiteID] = record
+		unique = append(unique, record)
+		counts[record.Status]++
+	}
+	metrics.ResolvedExternalDeclarations = counts[tsstdlib.LookupResolved]
+	metrics.ExternalCapabilityUnavailable = counts[tsstdlib.LookupCapabilityUnavailable]
+	metrics.ExternalProfileExcluded = counts[tsstdlib.LookupProfileExcluded]
+	metrics.ExternalMeaningMismatches = counts[tsstdlib.LookupMeaningMismatch]
+	if len(unique) != metrics.ResolvedExternalDeclarations+
+		metrics.ExternalCapabilityUnavailable+
+		metrics.ExternalProfileExcluded+
+		metrics.ExternalMeaningMismatches {
+		return nil, fmt.Errorf(
+			"TypeScript authority site/counter drift: sites=%d resolved=%d unavailable=%d excluded=%d mismatch=%d metrics=%d/%d/%d/%d",
+			len(unique),
+			counts[tsstdlib.LookupResolved],
+			counts[tsstdlib.LookupCapabilityUnavailable],
+			counts[tsstdlib.LookupProfileExcluded],
+			counts[tsstdlib.LookupMeaningMismatch],
+			metrics.ResolvedExternalDeclarations,
+			metrics.ExternalCapabilityUnavailable,
+			metrics.ExternalProfileExcluded,
+			metrics.ExternalMeaningMismatches,
+		)
+	}
+	return unique, nil
+}
+
+func cloneTypeScriptAuthorityResult(record TypeScriptAuthorityResult) TypeScriptAuthorityResult {
+	record.DeclarationRanges = append([]tsstdlib.Declaration(nil), record.DeclarationRanges...)
+	return record
+}
+
+func validateTypeScriptAuthorityResult(record TypeScriptAuthorityResult) error {
+	if record.SourceSiteID == "" ||
+		record.Stage != TypeScriptStandardLibraryStage ||
+		record.FilePath == "" ||
+		record.Range.StartLine <= 0 ||
+		record.Range.EndLine <= 0 ||
+		record.SiteKind == "" ||
+		record.RequestedName == "" ||
+		record.AuthorityKind != tsstdlib.AuthorityKind ||
+		record.TypeScriptVersion != tsstdlib.TypeScriptVersion ||
+		record.ProfileHash == "" ||
+		record.ConfigHash == "" {
+		return fmt.Errorf("incomplete TypeScript authority result for source site %q", record.SourceSiteID)
+	}
+	if err := validateTypeScriptCatalogProof(record); err != nil {
+		return err
+	}
+	switch record.RequestedMeaning {
+	case tsstdlib.MeaningValue, tsstdlib.MeaningType, tsstdlib.MeaningNamespace:
+	default:
+		return fmt.Errorf("invalid TypeScript authority meaning for source site %q", record.SourceSiteID)
+	}
+	switch record.Status {
+	case tsstdlib.LookupResolved:
+		if record.Reason != "" || record.ResolvedSymbolID == "" || len(record.DeclarationRanges) == 0 {
+			return fmt.Errorf("incomplete resolved TypeScript authority result for source site %q", record.SourceSiteID)
+		}
+	case tsstdlib.LookupCapabilityUnavailable:
+		if record.ResolvedSymbolID != "" || len(record.DeclarationRanges) != 0 {
+			return fmt.Errorf("invalid unavailable TypeScript authority result for source site %q", record.SourceSiteID)
+		}
+	case tsstdlib.LookupProfileExcluded:
+		if record.Reason != tsstdlib.ReasonProfileExcludes || record.ResolvedSymbolID != "" || len(record.DeclarationRanges) != 0 {
+			return fmt.Errorf("invalid profile-excluded TypeScript authority result for source site %q", record.SourceSiteID)
+		}
+	case tsstdlib.LookupMeaningMismatch:
+		if record.Reason != tsstdlib.ReasonMeaningMismatch || record.ResolvedSymbolID != "" || len(record.DeclarationRanges) != 0 {
+			return fmt.Errorf("invalid meaning-mismatch TypeScript authority result for source site %q", record.SourceSiteID)
+		}
+	default:
+		return fmt.Errorf("unhandled TypeScript authority status %q for source site %q", record.Status, record.SourceSiteID)
+	}
+	return nil
+}
+
+func validateTypeScriptCatalogProof(record TypeScriptAuthorityResult) error {
+	switch record.CatalogProofState {
+	case tsstdlib.CatalogProofReady:
+		if record.AuthorityHash == "" || record.CatalogHash == "" || record.CatalogArtifactHash == "" {
+			return fmt.Errorf("incomplete ready TypeScript catalog proof for source site %q", record.SourceSiteID)
+		}
+		switch record.Status {
+		case tsstdlib.LookupResolved:
+			if record.Reason != "" {
+				return fmt.Errorf("invalid ready resolved TypeScript catalog proof for source site %q", record.SourceSiteID)
+			}
+		case tsstdlib.LookupProfileExcluded:
+			if record.Reason != tsstdlib.ReasonProfileExcludes {
+				return fmt.Errorf("invalid ready profile-excluded TypeScript catalog proof for source site %q", record.SourceSiteID)
+			}
+		case tsstdlib.LookupMeaningMismatch:
+			if record.Reason != tsstdlib.ReasonMeaningMismatch {
+				return fmt.Errorf("invalid ready meaning-mismatch TypeScript catalog proof for source site %q", record.SourceSiteID)
+			}
+		case tsstdlib.LookupCapabilityUnavailable:
+			switch record.Reason {
+			case tsstdlib.ReasonDisabledByNoLib,
+				tsstdlib.ReasonConfigInvalid,
+				tsstdlib.ReasonConfigTopology,
+				tsstdlib.ReasonConfigUnreadable:
+			default:
+				return fmt.Errorf("invalid ready unavailable TypeScript catalog proof for source site %q", record.SourceSiteID)
+			}
+		default:
+			return fmt.Errorf("invalid ready TypeScript catalog status %q for source site %q", record.Status, record.SourceSiteID)
+		}
+	case tsstdlib.CatalogProofMissing:
+		if record.Status != tsstdlib.LookupCapabilityUnavailable ||
+			record.Reason != tsstdlib.ReasonCatalogMissing ||
+			record.AuthorityHash != "" ||
+			record.CatalogHash != "" ||
+			record.CatalogArtifactHash != "" {
+			return fmt.Errorf("invalid missing TypeScript catalog proof for source site %q", record.SourceSiteID)
+		}
+	case tsstdlib.CatalogProofRejected:
+		if record.Status != tsstdlib.LookupCapabilityUnavailable ||
+			!isTypeScriptCatalogRejection(record.Reason) ||
+			record.AuthorityHash != "" ||
+			record.CatalogHash != "" ||
+			record.CatalogArtifactHash == "" {
+			return fmt.Errorf("invalid rejected TypeScript catalog proof for source site %q", record.SourceSiteID)
+		}
+	default:
+		return fmt.Errorf("unknown TypeScript catalog proof state %q for source site %q", record.CatalogProofState, record.SourceSiteID)
+	}
+	return nil
+}
+
+func isTypeScriptCatalogRejection(reason tsstdlib.Reason) bool {
+	switch reason {
+	case tsstdlib.ReasonCatalogSchema,
+		tsstdlib.ReasonCatalogVersion,
+		tsstdlib.ReasonCatalogHash,
+		tsstdlib.ReasonCatalogInputManifest:
+		return true
+	default:
+		return false
+	}
 }
 
 func countResolvedImports(imports []resolvedImport) int {
