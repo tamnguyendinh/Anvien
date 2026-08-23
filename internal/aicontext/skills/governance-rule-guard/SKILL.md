@@ -60,4 +60,5 @@ You are the independent visible lane "Main Rule Compliance Guard". Your task is 
 
 ### 5. Handoff to Successor governance-rule-guard lane
 
-* When reaching the auto-compact threshold, hand off to a new successor `governance-rule-guard` lane to continue monitoring the Main task with the full rule files and transcript. The successor lane must inherit the entire monitoring task and must not omit any rules.
+* When the session reaches 80% of its context window capacity (strictly before any auto-compaction occurs), immediately hand off to a new successor `governance-rule-guard` lane to continue monitoring the Main task with the full rule files and transcript. 
+* The successor lane must inherit the entire monitoring task and must not omit any rules.
