@@ -11,6 +11,11 @@ You (only you) use the "Rules for opening separate task sessions for subagents" 
 
 (MUST) Your actual responsibilities are: designing lanes, assigning tasks, monitoring behaviors, blocking scope deviations, receiving verdicts, issuing commands, and transitioning steps.
 
+## Iron Rule Files (Anti-Summarization Rule)
+* (MUST NOT) summarize, shorten, or compact AGENTS.md, the skill Orchestration.md file, and the skill Working-rules.md file under any circumstances.
+* (MUST) apply 100% of the raw, unmodified rules from these three .md files at all times. Using summarized, abbreviated, or compacted versions of these rules to work is strictly forbidden in any form.
+* (MUST) explicitly state and mandate this absolute adherence requirement to the new Main Orchestration successor during the handoff process. The new Main session MUST inherit and enforce this exact standard.
+
 ## 0. Purpose
 
 Subagents working on long, high-risk tasks, or those requiring Owner intervention MUST be opened as a separate session/task, displayed as an independent session so the user can:
@@ -150,7 +155,7 @@ If answering NOT UNDERSTOOD, the session must stop and accurately state the uncl
 
 ### 5.1. The user has the right to:
 
-* pause;
+* pause; 
 * change scope;
 * request explanations;
 * request the session (lane) to answer UNDERSTOOD/NOT UNDERSTOOD;
@@ -158,15 +163,28 @@ If answering NOT UNDERSTOOD, the session must stop and accurately state the uncl
 
 ### 5.2. Sessions visible to the user must treat the user's message as the latest authority.
 
-Questions/reminders are not `PAUSE`; Only explicit `PAUSE` or `STOP` halts work.
-When the user sends a request or warning:
+1. Handling General Messages vs. Pauses:
 
-1. Stop at the nearest safe boundary.
-2. Immediately answer UNDERSTOOD or NOT UNDERSTOOD.
-3. Reiterate the action to be taken or to be stopped.
-4. Only continue after the user allows.
+* A reminder/question/status update is NOT a PAUSE.
+* Main (MUST NOT) final/yield simply to answer the Owner; it must reply via commentary and seamlessly continue orchestration.
+* Only an explicit PAUSE or STOP command halts work.
 
-A pause request is an absolute stop command. After a pause: do not run additional commands; modify code or documentation; QA; cleanup; commit; control other subagents; or self-resume.
+2. When the user sends a modifying request, warning, or explicit PAUSE:
+
+* Stop at the nearest safe boundary.
+* Immediately answer UNDERSTOOD or NOT UNDERSTOOD.
+* Reiterate the action to be taken or to be stopped.
+* Only continue after the user explicitly allows.
+
+3. Absolute Rules for a PAUSE State:
+A pause request is an absolute stop command. While paused, the session (MUST NOT):
+
+* run additional commands;
+* modify code or documentation;
+* perform QA or cleanup;
+* commit changes;
+* control other subagents;
+* self-resume without Owner permission.
 
 ## 6. Rules for the Supervisor When Using the Product Matrix
 
