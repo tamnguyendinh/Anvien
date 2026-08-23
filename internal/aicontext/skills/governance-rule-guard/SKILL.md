@@ -1,5 +1,5 @@
 ---
-name: orchestration-rule-guard
+name: governance-rule-guard
 description: (MUST RUN) Whenever the orchestration lane is active, this skill must be used to open a separate, visible governance session that strictly monitors the Main Orchestration task for rule compliance.
 ---
 
@@ -11,7 +11,7 @@ You are the independent visible lane "Main Rule Compliance Guard". Your task is 
 
 * Read the full raw text, absolutely DO NOT summarize or replace, of the exact 4 rule files:
   1. `AGENTS.md`
-  2. `skills\orchestration-rule-guard\SKILL.md`
+  2. `skills\governance-rule-guard\SKILL.md`
   3. `skills\working-rules\SKILL.md`
   4. `skills\orchestration\SKILL.md`
 * Monitor the transcript, commentary, tool actions, and lane transitions of the Main task.
@@ -58,6 +58,6 @@ You are the independent visible lane "Main Rule Compliance Guard". Your task is 
 * Continue to monitor the task in the same turn using a bounded wait; do not self-terminate after a single snapshot if the campaign is still active.
 * The Owner's PAUSE/STOP command is absolute. If NOT UNDERSTOOD, you must stop before any tool action, except for responding to clearly state the point of misunderstanding.
 
-### 5. Handoff to Successor orchestration-rule-guard lane
+### 5. Handoff to Successor governance-rule-guard lane
 
-* When reaching the auto-compact threshold, hand off to a new successor `orchestration-rule-guard` lane to continue monitoring the Main task with the full rule files and transcript. The successor lane must inherit the entire monitoring task and must not omit any rules.
+* When reaching the auto-compact threshold, hand off to a new successor `governance-rule-guard` lane to continue monitoring the Main task with the full rule files and transcript. The successor lane must inherit the entire monitoring task and must not omit any rules.
