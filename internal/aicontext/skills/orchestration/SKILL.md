@@ -200,7 +200,7 @@ The product matrix is a tool to support the Supervisor in checking scope and inv
 
 After an auto-compact or loss of context, the session must:
 
-1. Re-read AGENTS.md.
+1. Re-read AGENTS.md, the skill Orchestration.md file, and the skill Working-rules.md.
 2. Re-read "Rules for opening separate task sessions for subagents".
 3. Re-read the currently applied SKILL.md.
 4. Re-read the current authority and plan slice.
