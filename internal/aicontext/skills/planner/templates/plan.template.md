@@ -36,7 +36,7 @@
   + Scope Boundary
   + Non-Goals when useful
   + Pre-flight Questions
-  + Work Steps
+  + Work Steps (must act as a "control plane" detailed enough for the Main/executor to track execution cursor, run identity, cost-center queue, and state invalidation)
   + Implementation Gate
   + Acceptance
   + Evidence Targets
