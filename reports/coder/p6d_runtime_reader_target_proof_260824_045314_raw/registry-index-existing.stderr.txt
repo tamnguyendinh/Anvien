@@ -1,0 +1,1 @@
+not a git repository: E:\Anvien; use --allow-non-git to register an existing .anvien index anyway
