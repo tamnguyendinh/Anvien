@@ -243,6 +243,7 @@ func renderMasterRulesBlock() string {
 11. For "doc commits" only, do not use Anvien. When write/edit "doc plan" must use Anvien.
 12. After each completed implementation slice, commit the work, then continue until the full plan is complete.
 13. Before building, if any process is holding a build-related process or lock, terminate all such processes completely; start the build only after they are gone.
+14. (MUST) As soon as the orchestration session begins operation, it must immediately open a visible governance-rule-guard lane using the governance-rule-guard.md skill.
 
 `
 }
