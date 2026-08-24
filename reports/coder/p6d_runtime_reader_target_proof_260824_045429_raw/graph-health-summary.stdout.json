@@ -1,0 +1,475 @@
+{
+  "inputs": {
+    "repo": "Anvien",
+    "repoPath": "E:\\Anvien",
+    "graph": "E:\\Anvien\\.anvien\\graph.json",
+    "indexedCommit": "741335f7efa5ad215ec28361d88c462f431565ab"
+  },
+  "totals": {
+    "nodes": 122531,
+    "relationships": 169182
+  },
+  "summary": {
+    "policyVersion": "graph-health-non-structural-v1",
+    "nodeCount": 122531,
+    "countedRelationshipCount": 35913,
+    "componentCount": 110464,
+    "detachedComponentCount": 196,
+    "rootNodeCount": 846,
+    "unresolvedReferenceCount": 98730,
+    "sourceBackedUnresolvedReferenceCount": 98730,
+    "unattributedUnresolvedReferenceCount": 0,
+    "topologyStatusCounts": {
+      "connected": 3748,
+      "detached_component": 1411,
+      "no_incoming": 2188,
+      "no_outgoing": 4924,
+      "true_isolated": 110260,
+      "unknown_connectivity": 0
+    },
+    "expectedIsolationReasonCounts": {
+      "documentation": 18538,
+      "exported_api": 325,
+      "framework_entry": 846,
+      "test": 19719
+    },
+    "confidenceCounts": {
+      "candidate": 78905,
+      "confirmed": 0,
+      "expected": 36068,
+      "unknown": 7558
+    },
+    "diagnosticCounts": {
+      "unresolved_reference": 98730
+    },
+    "diagnosticClassificationCounts": {
+      "builtin": 0,
+      "external_library": 0,
+      "in_repo_unresolved": 0,
+      "standard_library": 5253,
+      "test_framework": 0,
+      "unclassified": 93477
+    },
+    "diagnosticActionabilityCounts": {
+      "analyzer_gap": 0,
+      "non_actionable": 5253,
+      "review": 93477
+    },
+    "excludedEdgeCounts": {
+      "other": 53156,
+      "structural": 80113
+    },
+    "resolutionGapNodeCount": 53156,
+    "hasResolutionGapRelationshipCount": 53156,
+    "resolutionGapCount": 53156,
+    "resolvedReferenceCount": 43539,
+    "resolutionHealthBucketCounts": {
+      "external_unresolved": 0,
+      "in_repo_analyzer_gap": 0,
+      "resolved_references": 43539,
+      "unclassified_unknown": 50426,
+      "unresolved_access_target": 16512,
+      "unresolved_call_target": 28987,
+      "unresolved_heritage_target": 40,
+      "unresolved_non_actionable": 2730,
+      "unresolved_type_target": 7617
+    },
+    "resolutionConfidenceCounts": {
+      "clear": 2517,
+      "degraded": 5211,
+      "unknown": 114803
+    },
+    "resolutionGapFactFamilyCounts": {
+      "access": 16512,
+      "call": 28987,
+      "heritage": 40,
+      "type-reference": 7617
+    },
+    "resolutionGapTargetRoleCounts": {
+      "callable": 28987,
+      "member": 16512,
+      "type": 7657
+    },
+    "resolutionGapClassificationCounts": {
+      "standard_library": 2730,
+      "unclassified": 50426
+    },
+    "resolutionGapActionabilityCounts": {
+      "non_actionable": 2730,
+      "review": 50426
+    },
+    "resolutionGapAppLayerCounts": {
+      "api": 5228,
+      "api_contract": 636,
+      "backend": 37210,
+      "cli_launcher": 817,
+      "config": 90,
+      "docs": 382,
+      "frontend": 7034,
+      "frontend_api_client": 391,
+      "generated_contract": 22,
+      "unknown": 1346
+    },
+    "resolutionGapFunctionalAreaCounts": {
+      "analyzer": 2964,
+      "api": 2430,
+      "cli": 2903,
+      "configuration": 90,
+      "contracts": 658,
+      "embeddings": 752,
+      "graph_health": 2019,
+      "launcher": 472,
+      "layout": 465,
+      "mcp": 3060,
+      "providers": 7421,
+      "query": 1444,
+      "reporting": 382,
+      "resolution": 2443,
+      "runtime": 8,
+      "session": 751,
+      "storage": 1011,
+      "unknown": 20347,
+      "web_graph_ui": 3536
+    },
+    "resolutionGapTopologyStatusCounts": {
+      "connected": 25986,
+      "detached_component": 10309,
+      "no_incoming": 9717,
+      "no_outgoing": 3288,
+      "true_isolated": 3856,
+      "unknown_connectivity": 0
+    },
+    "topologyResolutionOverlayCounts": {
+      "connected": {
+        "nodesWithNoGaps": 1465,
+        "nodesWithGaps": 2283,
+        "nodesWithDegradedResolution": 2283
+      },
+      "detached_component": {
+        "nodesWithNoGaps": 626,
+        "nodesWithGaps": 785,
+        "nodesWithDegradedResolution": 785
+      },
+      "no_incoming": {
+        "nodesWithNoGaps": 1441,
+        "nodesWithGaps": 747,
+        "nodesWithDegradedResolution": 747
+      },
+      "no_outgoing": {
+        "nodesWithNoGaps": 4285,
+        "nodesWithGaps": 639,
+        "nodesWithDegradedResolution": 639
+      },
+      "true_isolated": {
+        "nodesWithNoGaps": 109503,
+        "nodesWithGaps": 757,
+        "nodesWithDegradedResolution": 757
+      },
+      "unknown_connectivity": {
+        "nodesWithNoGaps": 0,
+        "nodesWithGaps": 0,
+        "nodesWithDegradedResolution": 0
+      }
+    },
+    "largestDetachedComponents": [
+      {
+        "id": "component_003123",
+        "nodeCount": 64,
+        "countedEdgeCount": 64,
+        "detached": true,
+        "reachableFromRoot": false,
+        "sampleNodeIds": [
+          "Function:file47:anvien-web/e2e/graph-orientation-labels.spec.tsname12:uniqueSortedarity0:occurrence79:def:anvien-web/e2e/graph-orientation-labels.spec.ts#180:6:Function:uniqueSortedscope71:scope:anvien-web/e2e/graph-orientation-labels.spec.ts#1:0-1052:0:Moduleowner0:",
+          "Function:file47:anvien-web/e2e/graph-orientation-labels.spec.tsname22:createOrientationGrapharity0:occurrence88:def:anvien-web/e2e/graph-orientation-labels.spec.ts#25:6:Function:createOrientationGraphscope71:scope:anvien-web/e2e/graph-orientation-labels.spec.ts#1:0-1052:0:Moduleowner0:",
+          "Function:file47:anvien-web/e2e/graph-orientation-labels.spec.tsname22:getFixtureDisplayLabelarity0:occurrence89:def:anvien-web/e2e/graph-orientation-labels.spec.ts#182:6:Function:getFixtureDisplayLabelscope71:scope:anvien-web/e2e/graph-orientation-labels.spec.ts#1:0-1052:0:Moduleowner0:",
+          "Function:file47:anvien-web/e2e/graph-orientation-labels.spec.tsname23:createDenseSpacingGrapharity0:occurrence89:def:anvien-web/e2e/graph-orientation-labels.spec.ts#62:6:Function:createDenseSpacingGraphscope71:scope:anvien-web/e2e/graph-orientation-labels.spec.ts#1:0-1052:0:Moduleowner0:",
+          "Function:file47:anvien-web/e2e/graph-orientation-labels.spec.tsname23:getFixtureRingInventoryarity0:occurrence90:def:anvien-web/e2e/graph-orientation-labels.spec.ts#201:6:Function:getFixtureRingInventoryscope71:scope:anvien-web/e2e/graph-orientation-labels.spec.ts#1:0-1052:0:Moduleowner0:"
+        ]
+      },
+      {
+        "id": "component_001218",
+        "nodeCount": 50,
+        "countedEdgeCount": 59,
+        "detached": true,
+        "reachableFromRoot": false,
+        "sampleNodeIds": [
+          "File:anvien-web/e2e/onboarding.spec.ts",
+          "Function:file33:anvien-web/e2e/onboarding.spec.tsname18:enterExploringViewarity0:occurrence70:def:anvien-web/e2e/onboarding.spec.ts#32:0:Function:enterExploringViewscope58:scope:anvien-web/e2e/onboarding.spec.ts#32:0-41:1:Functionowner0:",
+          "Function:file33:anvien-web/e2e/onboarding.spec.tsname21:launchFromStartScreenarity0:occurrence73:def:anvien-web/e2e/onboarding.spec.ts#22:0:Function:launchFromStartScreenscope58:scope:anvien-web/e2e/onboarding.spec.ts#22:0-30:1:Functionowner0:",
+          "Function:file33:anvien-web/e2e/onboarding.spec.tsname22:openActiveRepoDropdownarity0:occurrence74:def:anvien-web/e2e/onboarding.spec.ts#43:0:Function:openActiveRepoDropdownscope58:scope:anvien-web/e2e/onboarding.spec.ts#43:0-48:1:Functionowner0:",
+          "Variable:file33:anvien-web/e2e/onboarding.spec.tsname15:repoCardVisiblearity0:occurrence69:def:anvien-web/e2e/onboarding.spec.ts#107:16:Variable:repoCardVisiblescope60:scope:anvien-web/e2e/onboarding.spec.ts#106:8-117:9:Functionowner0:"
+        ]
+      },
+      {
+        "id": "component_000015",
+        "nodeCount": 39,
+        "countedEdgeCount": 39,
+        "detached": true,
+        "reachableFromRoot": false,
+        "sampleNodeIds": [
+          "Class:file63:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.pyname17:NextJSInitializerarity0:occurrence96:def:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#17:0:Class:NextJSInitializerscope87:scope:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#17:0-505:23:Classowner0:",
+          "Function:file63:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.pyname4:mainarity1:0occurrence87:def:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#508:0:Function:mainscope91:scope:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#508:0-543:28:Functionowner0:",
+          "Method:file63:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.pyname28:NextJSInitializer.initializearity1:0occurrence91:def:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#479:4:Method:initializescope91:scope:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#479:4-505:23:Functionowner96:def:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#17:0:Class:NextJSInitializer",
+          "Method:file63:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.pyname29:NextJSInitializer._get_readmearity1:0occurrence92:def:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#416:4:Method:_get_readmescope90:scope:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#416:4-458:3:Functionowner96:def:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#17:0:Class:NextJSInitializer",
+          "Method:file63:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.pyname31:NextJSInitializer._get_tsconfigarity1:0occurrence94:def:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#282:4:Method:_get_tsconfigscope90:scope:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#282:4-304:9:Functionowner96:def:internal/aicontext/skills/web-frameworks/scripts/nextjs_init.py#17:0:Class:NextJSInitializer"
+        ]
+      },
+      {
+        "id": "component_000031",
+        "nodeCount": 39,
+        "countedEdgeCount": 57,
+        "detached": true,
+        "reachableFromRoot": false,
+        "sampleNodeIds": [
+          "Class:file67:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.pyname23:TailwindConfigGeneratorarity0:occurrence106:def:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.py#22:0:Class:TailwindConfigGeneratorscope91:scope:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.py#22:0-299:42:Classowner0:",
+          "Function:file67:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.pyname4:mainarity1:0occurrence91:def:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.py#302:0:Function:mainscope95:scope:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.py#302:0-469:33:Functionowner0:",
+          "Function:file78:internal/aicontext/skills/ui-styling/scripts/tests/test_tailwind_config_gen.pyname16:_strip_to_objectarity1:1occurrence114:def:internal/aicontext/skills/ui-styling/scripts/tests/test_tailwind_config_gen.py#341:0:Function:_strip_to_objectscope106:scope:internal/aicontext/skills/ui-styling/scripts/tests/test_tailwind_config_gen.py#341:0-353:27:Functionowner0:",
+          "Method:file67:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.pyname33:TailwindConfigGenerator.add_fontsarity1:1occurrence94:def:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.py#122:4:Method:add_fontsscope95:scope:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.py#122:4-133:66:Functionowner106:def:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.py#22:0:Class:TailwindConfigGenerator",
+          "Method:file67:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.pyname34:TailwindConfigGenerator.add_colorsarity1:1occurrence94:def:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.py#83:4:Method:add_colorsscope93:scope:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.py#83:4-94:63:Functionowner106:def:internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.py#22:0:Class:TailwindConfigGenerator"
+        ]
+      },
+      {
+        "id": "component_000011",
+        "nodeCount": 37,
+        "countedEdgeCount": 75,
+        "detached": true,
+        "reachableFromRoot": false,
+        "sampleNodeIds": [
+          "Class:file59:internal/aicontext/skills/devops/scripts/docker_optimize.pyname18:DockerfileAnalyzerarity0:occurrence93:def:internal/aicontext/skills/devops/scripts/docker_optimize.py#34:0:Class:DockerfileAnalyzerscope83:scope:internal/aicontext/skills/devops/scripts/docker_optimize.py#34:0-275:15:Classowner0:",
+          "Function:file59:internal/aicontext/skills/devops/scripts/docker_optimize.pyname4:mainarity1:0occurrence83:def:internal/aicontext/skills/devops/scripts/docker_optimize.py#278:0:Function:mainscope87:scope:internal/aicontext/skills/devops/scripts/docker_optimize.py#278:0-328:19:Functionowner0:",
+          "Function:file70:internal/aicontext/skills/devops/scripts/tests/test_docker_optimize.pyname16:write_dockerfilearity1:2occurrence105:def:internal/aicontext/skills/devops/scripts/tests/test_docker_optimize.py#25:0:Function:write_dockerfilescope96:scope:internal/aicontext/skills/devops/scripts/tests/test_docker_optimize.py#25:0-28:24:Functionowner0:",
+          "Method:file59:internal/aicontext/skills/devops/scripts/docker_optimize.pyname26:DockerfileAnalyzer.analyzearity1:0occurrence84:def:internal/aicontext/skills/devops/scripts/docker_optimize.py#211:4:Method:analyzescope86:scope:internal/aicontext/skills/devops/scripts/docker_optimize.py#211:4-238:9:Functionowner93:def:internal/aicontext/skills/devops/scripts/docker_optimize.py#34:0:Class:DockerfileAnalyzer",
+          "Method:file59:internal/aicontext/skills/devops/scripts/docker_optimize.pyname32:DockerfileAnalyzer.print_resultsarity1:1occurrence90:def:internal/aicontext/skills/devops/scripts/docker_optimize.py#240:4:Method:print_resultsscope87:scope:internal/aicontext/skills/devops/scripts/docker_optimize.py#240:4-275:15:Functionowner93:def:internal/aicontext/skills/devops/scripts/docker_optimize.py#34:0:Class:DockerfileAnalyzer"
+        ]
+      },
+      {
+        "id": "component_003126",
+        "nodeCount": 34,
+        "countedEdgeCount": 45,
+        "detached": true,
+        "reachableFromRoot": false,
+        "sampleNodeIds": [
+          "Function:file48:anvien-web/scripts/generate-tsstdlib-catalog.mjsname10:emptyLanesarity0:occurrence78:def:anvien-web/scripts/generate-tsstdlib-catalog.mjs#408:0:Function:emptyLanesscope75:scope:anvien-web/scripts/generate-tsstdlib-catalog.mjs#408:0-410:1:Functionowner0:",
+          "Function:file48:anvien-web/scripts/generate-tsstdlib-catalog.mjsname10:mergeLanesarity0:occurrence78:def:anvien-web/scripts/generate-tsstdlib-catalog.mjs#412:0:Function:mergeLanesscope75:scope:anvien-web/scripts/generate-tsstdlib-catalog.mjs#412:0-417:1:Functionowner0:",
+          "Function:file48:anvien-web/scripts/generate-tsstdlib-catalog.mjsname10:semanticIDarity0:occurrence78:def:anvien-web/scripts/generate-tsstdlib-catalog.mjs#468:0:Function:semanticIDscope75:scope:anvien-web/scripts/generate-tsstdlib-catalog.mjs#468:0-482:1:Functionowner0:",
+          "Function:file48:anvien-web/scripts/generate-tsstdlib-catalog.mjsname11:attachLanesarity0:occurrence79:def:anvien-web/scripts/generate-tsstdlib-catalog.mjs#419:0:Function:attachLanesscope75:scope:anvien-web/scripts/generate-tsstdlib-catalog.mjs#419:0-423:1:Functionowner0:",
+          "Function:file48:anvien-web/scripts/generate-tsstdlib-catalog.mjsname11:compareTextarity0:occurrence79:def:anvien-web/scripts/generate-tsstdlib-catalog.mjs#538:0:Function:compareTextscope75:scope:anvien-web/scripts/generate-tsstdlib-catalog.mjs#538:0-542:1:Functionowner0:"
+        ]
+      },
+      {
+        "id": "component_000040",
+        "nodeCount": 32,
+        "countedEdgeCount": 56,
+        "detached": true,
+        "reachableFromRoot": false,
+        "sampleNodeIds": [
+          "Class:file69:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.pyname17:TurborepoMigratorarity0:occurrence102:def:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#16:0:Class:TurborepoMigratorscope93:scope:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#16:0-356:23:Classowner0:",
+          "Function:file69:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.pyname4:mainarity1:0occurrence93:def:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#359:0:Function:mainscope97:scope:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#359:0-390:22:Functionowner0:",
+          "Method:file69:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.pyname25:TurborepoMigrator.migratearity1:0occurrence94:def:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#332:4:Method:migratescope97:scope:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#332:4-356:23:Functionowner102:def:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#16:0:Class:TurborepoMigrator",
+          "Method:file69:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.pyname29:TurborepoMigrator.write_filesarity1:2occurrence98:def:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#310:4:Method:write_filesscope97:scope:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#310:4-330:51:Functionowner102:def:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#16:0:Class:TurborepoMigrator",
+          "Method:file69:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.pyname31:TurborepoMigrator.validate_patharity1:0occurrence99:def:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#39:4:Method:validate_pathscope95:scope:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#39:4-51:13:Functionowner102:def:internal/aicontext/skills/web-frameworks/scripts/turborepo_migrate.py#16:0:Class:TurborepoMigrator"
+        ]
+      },
+      {
+        "id": "component_000038",
+        "nodeCount": 31,
+        "countedEdgeCount": 55,
+        "detached": true,
+        "reachableFromRoot": false,
+        "sampleNodeIds": [
+          "Class:file69:internal/aicontext/skills/payment-integration/scripts/test-scripts.jsname10:TestRunnerarity0:occurrence95:def:internal/aicontext/skills/payment-integration/scripts/test-scripts.js#11:0:Class:TestRunnerscope91:scope:internal/aicontext/skills/payment-integration/scripts/test-scripts.js#11:0-45:1:Classowner0:",
+          "Class:file77:internal/aicontext/skills/payment-integration/scripts/polar-webhook-verify.jsname20:PolarWebhookVerifierarity0:occurrence113:def:internal/aicontext/skills/payment-integration/scripts/polar-webhook-verify.js#17:0:Class:PolarWebhookVerifierscope100:scope:internal/aicontext/skills/payment-integration/scripts/polar-webhook-verify.js#17:0-142:1:Classowner0:",
+          "Class:file77:internal/aicontext/skills/payment-integration/scripts/sepay-webhook-verify.jsname20:SePayWebhookVerifierarity0:occurrence113:def:internal/aicontext/skills/payment-integration/scripts/sepay-webhook-verify.js#19:0:Class:SePayWebhookVerifierscope100:scope:internal/aicontext/skills/payment-integration/scripts/sepay-webhook-verify.js#19:0-143:1:Classowner0:",
+          "Constructor:file69:internal/aicontext/skills/payment-integration/scripts/test-scripts.jsname22:TestRunner.constructorarity0:occurrence102:def:internal/aicontext/skills/payment-integration/scripts/test-scripts.js#12:2:Constructor:constructorscope94:scope:internal/aicontext/skills/payment-integration/scripts/test-scripts.js#12:2-15:3:Functionowner95:def:internal/aicontext/skills/payment-integration/scripts/test-scripts.js#11:0:Class:TestRunner",
+          "Constructor:file77:internal/aicontext/skills/payment-integration/scripts/polar-webhook-verify.jsname32:PolarWebhookVerifier.constructorarity0:occurrence110:def:internal/aicontext/skills/payment-integration/scripts/polar-webhook-verify.js#18:2:Constructor:constructorscope102:scope:internal/aicontext/skills/payment-integration/scripts/polar-webhook-verify.js#18:2-24:3:Functionowner113:def:internal/aicontext/skills/payment-integration/scripts/polar-webhook-verify.js#17:0:Class:PolarWebhookVerifier"
+        ]
+      },
+      {
+        "id": "component_001333",
+        "nodeCount": 29,
+        "countedEdgeCount": 28,
+        "detached": true,
+        "reachableFromRoot": false,
+        "sampleNodeIds": [
+          "File:docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-26-anvien-graph-accuracy-roadmap.md",
+          "File:docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-actual-status.md",
+          "File:docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-benchmark.md",
+          "File:docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-evidence.md",
+          "File:docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-01-graph-identity-contract-and-strict-construction/2026-07-28-01-graph-identity-contract-and-strict-construction-plan.md"
+        ]
+      },
+      {
+        "id": "component_003359",
+        "nodeCount": 29,
+        "countedEdgeCount": 33,
+        "detached": true,
+        "reachableFromRoot": false,
+        "sampleNodeIds": [
+          "Function:file66:internal/aicontext/skills/document-skills/docx/scripts/document.pyname16:_generate_hex_idarity1:0occurrence102:def:internal/aicontext/skills/document-skills/docx/scripts/document.py#596:0:Function:_generate_hex_idscope94:scope:internal/aicontext/skills/document-skills/docx/scripts/document.py#596:0-604:49:Functionowner0:",
+          "Method:file66:internal/aicontext/skills/document-skills/docx/scripts/document.pyname20:Document.add_commentarity1:3occurrence95:def:internal/aicontext/skills/document-skills/docx/scripts/document.py#713:4:Method:add_commentscope94:scope:internal/aicontext/skills/document-skills/docx/scripts/document.py#713:4-763:25:Functionowner91:def:internal/aicontext/skills/document-skills/docx/scripts/document.py#612:0:Class:Document",
+          "Method:file66:internal/aicontext/skills/document-skills/docx/scripts/document.pyname23:DocxXMLEditor.append_toarity1:2occurrence93:def:internal/aicontext/skills/document-skills/docx/scripts/document.py#258:4:Method:append_toscope94:scope:internal/aicontext/skills/document-skills/docx/scripts/document.py#258:4-262:20:Functionowner95:def:internal/aicontext/skills/document-skills/docx/scripts/document.py#47:0:Class:DocxXMLEditor",
+          "Method:file66:internal/aicontext/skills/document-skills/docx/scripts/document.pyname25:Document.reply_to_commentarity1:2occurrence100:def:internal/aicontext/skills/document-skills/docx/scripts/document.py#765:4:Method:reply_to_commentscope94:scope:internal/aicontext/skills/document-skills/docx/scripts/document.py#765:4-831:25:Functionowner91:def:internal/aicontext/skills/document-skills/docx/scripts/document.py#612:0:Class:Document",
+          "Method:file66:internal/aicontext/skills/document-skills/docx/scripts/document.pyname26:DocxXMLEditor.insert_afterarity1:2occurrence96:def:internal/aicontext/skills/document-skills/docx/scripts/document.py#246:4:Method:insert_afterscope94:scope:internal/aicontext/skills/document-skills/docx/scripts/document.py#246:4-250:20:Functionowner95:def:internal/aicontext/skills/document-skills/docx/scripts/document.py#47:0:Class:DocxXMLEditor"
+        ]
+      }
+    ]
+  },
+  "fileLayer": {
+    "totalFiles": 2127,
+    "unresolved": 479,
+    "generatedFiles": 2,
+    "highFanInFiles": 139,
+    "highFanOutFiles": 295,
+    "hotspotSort": "unresolved",
+    "derivedEdgesNote": "File relationship groups are projections derived from symbol and source-site graph facts; canonical graph relationships remain symbol/source-site facts."
+  },
+  "fileGroups": [
+    {
+      "key": "backend_support_model_helper",
+      "label": "Backend support/model/helper files",
+      "files": 46,
+      "unresolved": 2629,
+      "roles": {
+        "adapter": 4,
+        "analyzer_helper": 5,
+        "config": 6,
+        "contract_model": 1,
+        "fallback_adapter": 1,
+        "helper": 6,
+        "model": 3,
+        "parser_model": 15,
+        "runtime_model": 2,
+        "storage_helper": 2,
+        "test_helper": 1
+      },
+      "appLayers": {
+        "backend": 46
+      },
+      "functionalAreas": {
+        "analyzer": 5,
+        "cli": 1,
+        "embeddings": 1,
+        "providers": 16,
+        "query": 3,
+        "resolution": 2,
+        "session": 2,
+        "storage": 11,
+        "unknown": 5
+      },
+      "sampleFiles": [
+        "internal/aicontext/skills/document-skills/docx/scripts/utilities.py",
+        "internal/aicontext/skills/payment-integration/scripts/checkout-helper.js",
+        "internal/aicontext/skills/ui-styling/scripts/tailwind_config_gen.py",
+        "internal/aicontext/skills/ui-styling/scripts/tests/test_tailwind_config_gen.py",
+        "internal/cli/exit_error.go",
+        "internal/cobol/cobol.go",
+        "internal/cobol/copy_expander.go",
+        "internal/cobol/jcl.go",
+        "internal/embeddings/config.go",
+        "internal/frameworks/ast.go"
+      ]
+    }
+  ],
+  "fileHotspots": [
+    {
+      "path": "internal/aicontext/skills/ui-ux-pro-max/scripts/design_system.py",
+      "language": "python",
+      "kind": "source",
+      "fileRole": "unknown",
+      "appLayer": "backend",
+      "functionalArea": "unknown",
+      "parseStatus": "parsed",
+      "symbolCount": 249,
+      "exportedSymbolCount": 0,
+      "inboundRefCount": 13,
+      "outboundRefCount": 1,
+      "localRelationshipCount": 49,
+      "unresolved": 1012,
+      "linkedFlowCount": 0,
+      "linkedTestCount": 0,
+      "risk": "high",
+      "stale": false,
+      "changedSinceAnalyze": false
+    },
+    {
+      "path": "internal/aicontext/skills/document-skills/pptx/scripts/html2pptx.js",
+      "language": "javascript",
+      "kind": "source",
+      "fileRole": "unknown",
+      "appLayer": "backend",
+      "functionalArea": "unknown",
+      "parseStatus": "parsed",
+      "symbolCount": 188,
+      "exportedSymbolCount": 0,
+      "inboundRefCount": 1,
+      "outboundRefCount": 0,
+      "localRelationshipCount": 18,
+      "unresolved": 731,
+      "linkedFlowCount": 0,
+      "linkedTestCount": 0,
+      "risk": "high",
+      "stale": false,
+      "changedSinceAnalyze": false
+    },
+    {
+      "path": "internal/mcp/tools.go",
+      "language": "go",
+      "kind": "source",
+      "fileRole": "unknown",
+      "appLayer": "api",
+      "functionalArea": "mcp",
+      "parseStatus": "parsed",
+      "symbolCount": 289,
+      "exportedSymbolCount": 0,
+      "inboundRefCount": 45,
+      "outboundRefCount": 137,
+      "localRelationshipCount": 106,
+      "unresolved": 705,
+      "linkedFlowCount": 26,
+      "linkedTestCount": 2,
+      "risk": "high",
+      "stale": false,
+      "changedSinceAnalyze": false
+    },
+    {
+      "path": "internal/aicontext/skills/ui-ux-pro-max/scripts/validate_data.py",
+      "language": "python",
+      "kind": "source",
+      "fileRole": "unknown",
+      "appLayer": "backend",
+      "functionalArea": "unknown",
+      "parseStatus": "parsed",
+      "symbolCount": 202,
+      "exportedSymbolCount": 0,
+      "inboundRefCount": 8,
+      "outboundRefCount": 0,
+      "localRelationshipCount": 49,
+      "unresolved": 683,
+      "linkedFlowCount": 7,
+      "linkedTestCount": 0,
+      "risk": "high",
+      "stale": false,
+      "changedSinceAnalyze": false
+    },
+    {
+      "path": "internal/contracts/web_ui.go",
+      "language": "go",
+      "kind": "source",
+      "fileRole": "unknown",
+      "appLayer": "api_contract",
+      "functionalArea": "contracts",
+      "parseStatus": "parsed",
+      "symbolCount": 193,
+      "exportedSymbolCount": 0,
+      "inboundRefCount": 41,
+      "outboundRefCount": 59,
+      "localRelationshipCount": 160,
+      "unresolved": 636,
+      "linkedFlowCount": 8,
+      "linkedTestCount": 2,
+      "risk": "high",
+      "stale": false,
+      "changedSinceAnalyze": false
+    }
+  ]
+}

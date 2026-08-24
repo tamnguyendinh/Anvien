@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,11 +15,32 @@ import (
 )
 
 type packageRuntimeMetadata struct {
-	Platform string   `json:"platform"`
-	Arch     string   `json:"arch"`
-	Binary   string   `json:"binary"`
-	Source   string   `json:"source"`
-	Tags     []string `json:"tags"`
+	Platform             string   `json:"platform"`
+	Arch                 string   `json:"arch"`
+	Binary               string   `json:"binary"`
+	Source               string   `json:"source"`
+	Tags                 []string `json:"tags"`
+	VendorManifestSHA256 string   `json:"vendorManifestSha256"`
+}
+
+const packageLadybugVersion = "v0.19.1"
+
+type packageBuildRoots struct {
+	LaneRoot    string
+	CacheRoot   string
+	RuntimeRoot string
+}
+
+type packageNativeFileIdentity struct {
+	Name   string
+	Bytes  int64
+	SHA256 string
+}
+
+var packageWindowsNativeFiles = []packageNativeFileIdentity{
+	{Name: "lbug.h", Bytes: 79108, SHA256: "3d5114d0863b3dab3b28bd2fec97a52e6cf669213739921a01814a5bbf5525eb"},
+	{Name: "lbug_shared.lib", Bytes: 32433956, SHA256: "b18aafc0b712dc1c4cb9dd25f76c3828282d7d460627980e3a4b16efcd98a955"},
+	{Name: "lbug_shared.dll", Bytes: 20230656, SHA256: "20cbd87840483a2053cff3fc2db23a86dd802b8915d86509d41a4b709624cdb7"},
 }
 
 func ensurePackagedRuntime(packageRoot string, output io.Writer) error {
@@ -43,10 +65,27 @@ func ensurePackagedRuntime(packageRoot string, output io.Writer) error {
 	if !platformMatches(metadata.Platform) || !archMatches(metadata.Arch) {
 		return fmt.Errorf("packaged Go runtime is %s/%s, current platform is %s/%s", metadata.Platform, metadata.Arch, runtime.GOOS, runtime.GOARCH)
 	}
+	if metadata.Binary != filepath.Base(outputPath) {
+		return fmt.Errorf("packaged Go runtime metadata names an unexpected binary: %q", metadata.Binary)
+	}
+	sourceRoot, err := resolvePackageSourceRoot(root)
+	if err != nil {
+		return err
+	}
+	if err := verifyPackageGoVendor(sourceRoot, output); err != nil {
+		return err
+	}
+	vendorManifestSHA256, err := packageGoVendorManifestSHA256(sourceRoot)
+	if err != nil {
+		return err
+	}
+	if metadata.VendorManifestSHA256 == "" || !strings.EqualFold(metadata.VendorManifestSHA256, vendorManifestSHA256) {
+		return fmt.Errorf("packaged Go runtime vendor manifest identity mismatch: metadata=%q source=%q", metadata.VendorManifestSHA256, vendorManifestSHA256)
+	}
 	if err := os.Chmod(outputPath, 0o755); err != nil {
 		return err
 	}
-	_, err = fmt.Fprintf(output, "[package-runtime] using packaged Go runtime %s/%s\n", metadata.Platform, metadata.Arch)
+	_, err = fmt.Fprintf(output, "[package-runtime] using packaged Go runtime %s/%s with vendor manifest %s\n", metadata.Platform, metadata.Arch, vendorManifestSHA256)
 	return err
 }
 
@@ -57,30 +96,58 @@ func buildGoRuntimePackage(packageRoot string, output io.Writer) error {
 	}
 	sourceRoot, err := resolvePackageSourceRoot(root)
 	if err != nil {
-		if ensureErr := ensurePackagedRuntime(root, output); ensureErr == nil {
-			return nil
-		}
+		return err
+	}
+	if err := verifyPackageGoVendor(sourceRoot, output); err != nil {
+		return err
+	}
+	vendorManifestSHA256, err := packageGoVendorManifestSHA256(sourceRoot)
+	if err != nil {
 		return err
 	}
 	if _, err := exec.LookPath("go"); err != nil {
-		if ensureErr := ensurePackagedRuntime(root, output); ensureErr == nil {
-			return nil
-		}
 		return fmt.Errorf("Go toolchain is required to build the packaged Anvien runtime: %w", err)
+	}
+	buildRoots, err := resolvePackageBuildRoots(sourceRoot)
+	if err != nil {
+		return err
 	}
 
 	outputDir := filepath.Join(root, "bin")
 	outputPath := filepath.Join(outputDir, "anvien.exe")
 	metadataPath := filepath.Join(outputDir, "anvien-runtime.json")
+	stageDir := filepath.Join(buildRoots.RuntimeRoot, "package-runtime")
+	if err := assertPackageChild(buildRoots.RuntimeRoot, stageDir); err != nil {
+		return err
+	}
+	stageOutputPath := filepath.Join(stageDir, "anvien.exe")
 	if err := os.MkdirAll(outputDir, 0o755); err != nil {
 		return err
 	}
+	if err := os.MkdirAll(stageDir, 0o755); err != nil {
+		return err
+	}
 
-	nativeDir, err := resolvePackageNativeDir(sourceRoot)
+	nativeDir, err := resolvePackageNativeDir(sourceRoot, buildRoots)
 	if err != nil {
 		return err
 	}
 	env := os.Environ()
+	env = setEnv(env, "GOCACHE", filepath.Join(buildRoots.CacheRoot, "go-build"))
+	env = setEnv(env, "GOMODCACHE", filepath.Join(buildRoots.CacheRoot, "go-mod"))
+	env = setEnv(env, "GOPATH", filepath.Join(buildRoots.CacheRoot, "go-path"))
+	env = setEnv(env, "GOTMPDIR", filepath.Join(buildRoots.CacheRoot, "go-tmp"))
+	env = setEnv(env, "GOENV", "off")
+	env = setEnv(env, "GOWORK", "off")
+	env = setEnv(env, "GOFLAGS", "")
+	env = setEnv(env, "GOPROXY", "off")
+	env = setEnv(env, "GOSUMDB", "off")
+	env = setEnv(env, "GOTOOLCHAIN", "local")
+	env = setEnv(env, "GOPRIVATE", "")
+	env = setEnv(env, "GONOPROXY", "none")
+	env = setEnv(env, "GONOSUMDB", "none")
+	env = setEnv(env, "GOINSECURE", "")
+	env = setEnv(env, "GOVCS", "*:off")
 	env = setEnv(env, "CGO_ENABLED", "1")
 	env = setEnv(env, "CGO_CFLAGS", "-I"+nativeDir)
 	env = setEnv(env, "PATH", nativeDir+string(os.PathListSeparator)+os.Getenv("PATH"))
@@ -97,11 +164,17 @@ func buildGoRuntimePackage(packageRoot string, output io.Writer) error {
 
 	fmt.Fprintf(output, "[package-runtime] building Go runtime for %s/%s\n", runtime.GOOS, runtime.GOARCH)
 	fmt.Fprintf(output, "[package-runtime] Go source root: %s\n", sourceRoot)
+	fmt.Fprintf(output, "[package-runtime] build lane root: %s\n", buildRoots.LaneRoot)
+	fmt.Fprintf(output, "[package-runtime] build cache root: %s\n", buildRoots.CacheRoot)
+	fmt.Fprintf(output, "[package-runtime] build runtime root: %s\n", buildRoots.RuntimeRoot)
 	fmt.Fprintf(output, "[package-runtime] LadybugDB native runtime: %s\n", nativeDir)
-	if err := runPackageCommand(output, sourceRoot, env, "go", "build", "-tags", "ladybugdb", "-trimpath", "-ldflags=-s -w", "-o", outputPath, "./cmd/anvien"); err != nil {
+	if err := runPackageCommand(output, sourceRoot, env, "go", "build", "-mod=vendor", "-tags", "ladybugdb", "-trimpath", "-ldflags=-s -w", "-o", stageOutputPath, "./cmd/anvien"); err != nil {
 		return err
 	}
-	if err := os.Chmod(outputPath, 0o755); err != nil {
+	if err := os.Chmod(stageOutputPath, 0o755); err != nil {
+		return err
+	}
+	if err := copyPackageFileIfExists(stageOutputPath, outputPath); err != nil {
 		return err
 	}
 	if err := copyPackageNativeRuntime(nativeDir, outputDir); err != nil {
@@ -112,11 +185,12 @@ func buildGoRuntimePackage(packageRoot string, output io.Writer) error {
 		relativeSource = sourceRoot
 	}
 	metadata := packageRuntimeMetadata{
-		Platform: runtime.GOOS,
-		Arch:     runtime.GOARCH,
-		Binary:   "anvien.exe",
-		Source:   filepath.ToSlash(relativeSource),
-		Tags:     []string{"ladybugdb"},
+		Platform:             runtime.GOOS,
+		Arch:                 runtime.GOARCH,
+		Binary:               "anvien.exe",
+		Source:               filepath.ToSlash(relativeSource),
+		Tags:                 []string{"ladybugdb"},
+		VendorManifestSHA256: vendorManifestSHA256,
 	}
 	raw, err := json.MarshalIndent(metadata, "", "  ")
 	if err != nil {
@@ -138,11 +212,13 @@ func prepareGoSourcePackage(packageRoot string, output io.Writer) error {
 	if err := assertPackageChild(root, outputRoot); err != nil {
 		return err
 	}
+	repoRoot := filepath.Dir(root)
+	if err := verifyPackageGoVendor(repoRoot, output); err != nil {
+		return err
+	}
 	if err := os.RemoveAll(outputRoot); err != nil {
 		return err
 	}
-
-	repoRoot := filepath.Dir(root)
 	copied := make([]string, 0, 256)
 	for _, rel := range []string{"go.mod", "go.sum"} {
 		if err := copyPackageFile(filepath.Join(repoRoot, rel), filepath.Join(outputRoot, rel), outputRoot, &copied); err != nil {
@@ -157,13 +233,28 @@ func prepareGoSourcePackage(packageRoot string, output io.Writer) error {
 	if err := copyPackageSubtree(repoRoot, "internal/aicontext/skills", outputRoot, &copied); err != nil {
 		return err
 	}
-	for _, rel := range []string{"scripts/ensure-ladybug-native.ps1", "scripts/ensure-ladybug-native.sh"} {
+	for _, rel := range []string{"scripts/ensure-ladybug-native.ps1", "scripts/ensure-ladybug-native.sh", "scripts/verify-go-vendor.ps1"} {
 		if err := copyPackageFile(filepath.Join(repoRoot, rel), filepath.Join(outputRoot, rel), outputRoot, &copied); err != nil {
 			return err
 		}
 	}
 	if err := os.Chmod(filepath.Join(outputRoot, "scripts", "ensure-ladybug-native.sh"), 0o755); err != nil {
 		return err
+	}
+	for _, rel := range []string{"vendor", "third_party/go-vendor"} {
+		if err := copyPackageSubtree(repoRoot, rel, outputRoot, &copied); err != nil {
+			return err
+		}
+	}
+	nativeDir, err := resolvePinnedWindowsNativeDir(repoRoot)
+	if err != nil {
+		return err
+	}
+	for _, identity := range packageWindowsNativeFiles {
+		rel := filepath.Join("third_party", "ladybugdb", packageLadybugVersion, "windows-x86_64", identity.Name)
+		if err := copyPackageFile(filepath.Join(nativeDir, identity.Name), filepath.Join(outputRoot, rel), outputRoot, &copied); err != nil {
+			return err
+		}
 	}
 	sort.Strings(copied)
 	manifest := map[string]any{
@@ -196,7 +287,15 @@ func resolvePackageSourceRoot(packageRoot string) (string, error) {
 }
 
 func hasPackageGoSource(root string) bool {
-	required := []string{"go.mod", "go.sum", "cmd/anvien/main.go", "internal/cli/command.go"}
+	required := []string{
+		"go.mod",
+		"go.sum",
+		"cmd/anvien/main.go",
+		"internal/cli/command.go",
+		"vendor/modules.txt",
+		"third_party/go-vendor/manifest.v1.json",
+		"scripts/verify-go-vendor.ps1",
+	}
 	for _, rel := range required {
 		if stat, err := os.Stat(filepath.Join(root, rel)); err != nil || stat.IsDir() {
 			return false
@@ -205,24 +304,207 @@ func hasPackageGoSource(root string) bool {
 	return true
 }
 
-func resolvePackageNativeDir(sourceRoot string) (string, error) {
+func verifyPackageGoVendor(sourceRoot string, output io.Writer) error {
+	verifierPath := filepath.Join(sourceRoot, "scripts", "verify-go-vendor.ps1")
+	stat, err := os.Stat(verifierPath)
+	if err != nil || stat.IsDir() {
+		return fmt.Errorf("Go vendor verifier is missing: %s", verifierPath)
+	}
+	powerShell := "pwsh"
+	if runtime.GOOS == "windows" {
+		powerShell = "powershell.exe"
+	}
+	cmd := exec.Command(powerShell, "-NoLogo", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", verifierPath, "-SourceRoot", sourceRoot, "-Json")
+	cmd.Dir = sourceRoot
+	cmd.Stdout = output
+	cmd.Stderr = output
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("Go vendor verification failed: %w", err)
+	}
+	return nil
+}
+
+func packageGoVendorManifestSHA256(sourceRoot string) (string, error) {
+	manifestPath := filepath.Join(sourceRoot, "third_party", "go-vendor", "manifest.v1.json")
+	file, err := os.Open(manifestPath)
+	if err != nil {
+		return "", fmt.Errorf("Go vendor manifest is missing: %w", err)
+	}
+	hash := sha256.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		_ = file.Close()
+		return "", err
+	}
+	if err := file.Close(); err != nil {
+		return "", err
+	}
+	return strings.ToUpper(fmt.Sprintf("%x", hash.Sum(nil))), nil
+}
+
+func resolvePackageNativeDir(sourceRoot string, buildRoots packageBuildRoots) (string, error) {
+	if runtime.GOOS == "windows" {
+		authorityRoot := strings.TrimSpace(os.Getenv("ANVIEN_BUILD_REPO_ROOT"))
+		if authorityRoot == "" {
+			authorityRoot = sourceRoot
+		}
+		return resolvePinnedWindowsNativeDir(authorityRoot)
+	}
 	version := os.Getenv("ANVIEN_LADYBUGDB_VERSION")
 	if strings.TrimSpace(version) == "" {
 		version = "auto"
 	}
-	outputRoot := filepath.Join(sourceRoot, ".tmp", "ladybug-native")
-	if runtime.GOOS == "windows" {
-		script, err := resolvePackageNativeScript(sourceRoot, "ensure-ladybug-native.ps1")
-		if err != nil {
-			return "", err
-		}
-		return commandPackageOutput(sourceRoot, "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script, "-Version", version, "-OutputRoot", outputRoot)
-	}
+	outputRoot := filepath.Join(buildRoots.CacheRoot, "ladybug-native")
 	script, err := resolvePackageNativeScript(sourceRoot, "ensure-ladybug-native.sh")
 	if err != nil {
 		return "", err
 	}
 	return commandPackageOutput(sourceRoot, "bash", script, version, outputRoot)
+}
+
+func resolvePackageBuildRoots(sourceRoot string) (packageBuildRoots, error) {
+	repoRoot := strings.TrimSpace(os.Getenv("ANVIEN_BUILD_REPO_ROOT"))
+	if repoRoot == "" {
+		repoRoot = sourceRoot
+	}
+	repoRoot, err := filepath.Abs(repoRoot)
+	if err != nil {
+		return packageBuildRoots{}, err
+	}
+	tempRoot := filepath.Join(repoRoot, ".tmp")
+	if err := os.MkdirAll(tempRoot, 0o755); err != nil {
+		return packageBuildRoots{}, err
+	}
+
+	laneRoot := strings.TrimSpace(os.Getenv("ANVIEN_BUILD_LANE_ROOT"))
+	if laneRoot == "" {
+		laneRoot, err = os.MkdirTemp(tempRoot, "package-runtime-")
+		if err != nil {
+			return packageBuildRoots{}, err
+		}
+	}
+	laneRoot, err = filepath.Abs(laneRoot)
+	if err != nil {
+		return packageBuildRoots{}, err
+	}
+	if err := assertPackageChild(tempRoot, laneRoot); err != nil {
+		return packageBuildRoots{}, fmt.Errorf("invalid package build lane root: %w", err)
+	}
+
+	cacheRoot := strings.TrimSpace(os.Getenv("ANVIEN_BUILD_CACHE_ROOT"))
+	if cacheRoot == "" {
+		cacheRoot = filepath.Join(laneRoot, "cache")
+	}
+	cacheRoot, err = filepath.Abs(cacheRoot)
+	if err != nil {
+		return packageBuildRoots{}, err
+	}
+	if err := assertPackageChild(laneRoot, cacheRoot); err != nil {
+		return packageBuildRoots{}, fmt.Errorf("invalid package build cache root: %w", err)
+	}
+
+	runtimeRoot := strings.TrimSpace(os.Getenv("ANVIEN_BUILD_RUNTIME_ROOT"))
+	if runtimeRoot == "" {
+		runtimeRoot = filepath.Join(laneRoot, "runtime")
+	}
+	runtimeRoot, err = filepath.Abs(runtimeRoot)
+	if err != nil {
+		return packageBuildRoots{}, err
+	}
+	if err := assertPackageChild(laneRoot, runtimeRoot); err != nil {
+		return packageBuildRoots{}, fmt.Errorf("invalid package build runtime root: %w", err)
+	}
+	if strings.EqualFold(cacheRoot, runtimeRoot) {
+		return packageBuildRoots{}, fmt.Errorf("package build cache and runtime roots must be distinct: %s", cacheRoot)
+	}
+
+	for _, path := range []string{
+		cacheRoot,
+		runtimeRoot,
+		filepath.Join(cacheRoot, "go-build"),
+		filepath.Join(cacheRoot, "go-mod"),
+		filepath.Join(cacheRoot, "go-path"),
+		filepath.Join(cacheRoot, "go-tmp"),
+	} {
+		if err := os.MkdirAll(path, 0o755); err != nil {
+			return packageBuildRoots{}, err
+		}
+	}
+	return packageBuildRoots{LaneRoot: laneRoot, CacheRoot: cacheRoot, RuntimeRoot: runtimeRoot}, nil
+}
+
+func resolvePinnedWindowsNativeDir(authorityRoot string) (string, error) {
+	version := strings.TrimSpace(os.Getenv("ANVIEN_LADYBUGDB_VERSION"))
+	if version == "" {
+		version = packageLadybugVersion
+	}
+	if !strings.HasPrefix(version, "v") {
+		version = "v" + version
+	}
+	if version != packageLadybugVersion {
+		return "", fmt.Errorf("LadybugDB native authority is pinned to %s; requested %s", packageLadybugVersion, version)
+	}
+	authorityRoot, err := filepath.Abs(authorityRoot)
+	if err != nil {
+		return "", err
+	}
+	expected := filepath.Join(authorityRoot, "third_party", "ladybugdb", packageLadybugVersion, "windows-x86_64")
+	configured := strings.TrimSpace(os.Getenv("ANVIEN_LADYBUGDB_NATIVE_DIR"))
+	if configured == "" {
+		configured = expected
+	}
+	configured, err = filepath.Abs(configured)
+	if err != nil {
+		return "", err
+	}
+	if !strings.EqualFold(filepath.Clean(configured), filepath.Clean(expected)) {
+		return "", fmt.Errorf("LadybugDB native authority must be %s; requested %s", expected, configured)
+	}
+	if err := validatePinnedWindowsNativeBundle(configured); err != nil {
+		return "", err
+	}
+	return configured, nil
+}
+
+func validatePinnedWindowsNativeBundle(nativeDir string) error {
+	entries, err := os.ReadDir(nativeDir)
+	if err != nil {
+		return fmt.Errorf("LadybugDB native bundle is missing: %s: %w", nativeDir, err)
+	}
+	if len(entries) != len(packageWindowsNativeFiles) {
+		return fmt.Errorf("LadybugDB native bundle must contain exactly %d files; found %d in %s", len(packageWindowsNativeFiles), len(entries), nativeDir)
+	}
+	expected := make(map[string]packageNativeFileIdentity, len(packageWindowsNativeFiles))
+	for _, identity := range packageWindowsNativeFiles {
+		expected[identity.Name] = identity
+	}
+	for _, entry := range entries {
+		identity, ok := expected[entry.Name()]
+		if !ok || !entry.Type().IsRegular() {
+			return fmt.Errorf("LadybugDB native bundle contains an unauthorized entry: %s", filepath.Join(nativeDir, entry.Name()))
+		}
+		path := filepath.Join(nativeDir, entry.Name())
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		hash := sha256.New()
+		bytesCopied, copyErr := io.Copy(hash, file)
+		closeErr := file.Close()
+		if copyErr != nil {
+			return copyErr
+		}
+		if closeErr != nil {
+			return closeErr
+		}
+		if bytesCopied != identity.Bytes || fmt.Sprintf("%x", hash.Sum(nil)) != identity.SHA256 {
+			return fmt.Errorf("LadybugDB native input identity mismatch: %s", path)
+		}
+		delete(expected, entry.Name())
+	}
+	if len(expected) != 0 {
+		return fmt.Errorf("LadybugDB native bundle is incomplete: %s", nativeDir)
+	}
+	return nil
 }
 
 func resolvePackageNativeScript(sourceRoot, scriptName string) (string, error) {

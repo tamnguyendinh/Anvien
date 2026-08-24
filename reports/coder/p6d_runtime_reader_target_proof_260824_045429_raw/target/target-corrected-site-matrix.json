@@ -1,0 +1,47 @@
+{
+  "schema": "p6d-target-corrected-site-matrix-v1",
+  "generatedUtc": "2026-08-23T22:27:59.6843992Z",
+  "sites": [
+    "SourceSite:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#type-reference#Promise#13#3#13#10",
+    "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71",
+    "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70"
+  ],
+  "relationQuery": "MATCH (a)-[r:CodeRelation]->(b:ExternalSymbol) WHERE r.sourceSiteId = 'SourceSite:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#type-reference#Promise#13#3#13#10' OR r.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71' OR r.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70' RETURN a.id AS sourceId, b.id AS targetId, b.name AS targetName, b.authorityKind AS authorityKind, b.catalogProofState AS catalogProofState, b.external AS external, b.editable AS editable, b.repositoryOwned AS repositoryOwned, r.type AS relationType, r.resolutionSource AS resolutionSource, r.sourceSiteId AS sourceSiteId, r.sourceSiteStatus AS sourceSiteStatus, r.proofKind AS proofKind ORDER BY r.sourceSiteId, r.type",
+  "gapQuery": "MATCH (g:ResolutionGap) WHERE g.sourceSiteId = 'SourceSite:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#type-reference#Promise#13#3#13#10' OR g.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71' OR g.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70' RETURN g.id AS id, g.sourceNodeId AS sourceNodeId, g.sourceSiteId AS sourceSiteId, g.sourceSiteStatus AS sourceSiteStatus, g.resolutionSource AS resolutionSource, g.classification AS classification, g.actionability AS actionability, g.proofKind AS proofKind, g.targetText AS targetText, g.startLine AS startLine, g.startCol AS startCol, g.endLine AS endLine, g.endCol AS endCol, g.note AS note ORDER BY g.sourceSiteId",
+  "rows": [
+    {
+      "name": "target-native-corrected-external-relations",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-native-corrected-external-relations.stdout.json",
+        "bytes": 226,
+        "sha256": "83DC922845253D56056B8A4B89077A3F42CB849BD6E30FB7669BC4BCF7C8BDC8"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-native-corrected-external-relations.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    },
+    {
+      "name": "target-native-corrected-resolution-gaps",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-native-corrected-resolution-gaps.stdout.json",
+        "bytes": 17231,
+        "sha256": "BD32E4218B0B660F433BF32FBE57BFF2C02E2FE7FA89E4C44E883CD24F7EE127"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-native-corrected-resolution-gaps.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    }
+  ]
+}

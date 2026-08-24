@@ -1,0 +1,19 @@
+{
+  "schema": "p6d-target-parity-invocation-v1",
+  "startedUtc": "2026-08-23T22:32:21.3448595Z",
+  "endedUtc": "2026-08-23T22:32:22.8986353Z",
+  "command": "C:\\Program Files\\nodejs\\node.exe -e <inline Graph JSON/native/built comparator>",
+  "exitCode": 1,
+  "stdout": {
+    "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-three-site-parity.json",
+    "bytes": 0,
+    "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "stderr": {
+    "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-three-site-parity.stderr.txt",
+    "bytes": 684,
+    "sha256": "DA382CBA4E2A06A6AF393C6652445AB29188DCCDE60ABCF76AC0FC2CB7E687D2"
+  },
+  "status": null,
+  "denominator": null
+}

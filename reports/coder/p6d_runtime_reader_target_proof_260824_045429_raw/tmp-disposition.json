@@ -1,0 +1,14 @@
+{
+  "schema": "p6d-tmp-disposition-v2",
+  "generatedUtc": "2026-08-23T22:31:00Z",
+  "root": "E:\\Anvien\\.tmp",
+  "action": "RETAINED_DISPOSABLE_EXCLUDED",
+  "authority": false,
+  "evidence": false,
+  "reviewInput": false,
+  "handoffDependency": false,
+  "acceptanceDependency": false,
+  "procedureVerdictInput": false,
+  "ownerMayDeleteWholesale": true,
+  "statement": ".tmp is disposable reproducible scratch only; all acceptance and handoff authority is durable outside .tmp."
+}

@@ -1,0 +1,14 @@
+diff --git a/bindings/go/binding.go b/bindings/go/binding.go
+index 680e508..5a456f3 100644
+--- a/bindings/go/binding.go
++++ b/bindings/go/binding.go
+@@ -2,9 +2,6 @@ package tree_sitter_go
+ 
+ // #cgo CFLAGS: -std=c11 -fPIC
+ // #include "../../src/parser.c"
+-// #if __has_include("../../src/scanner.c")
+-// #include "../../src/scanner.c"
+-// #endif
+ import "C"
+ 
+ import "unsafe"

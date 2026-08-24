@@ -1,0 +1,397 @@
+{
+  "inputs": {
+    "repo": "cheapapp.org",
+    "repoPath": "E:\\cheapapp.org",
+    "graph": "E:\\cheapapp.org\\.anvien\\graph.json",
+    "indexedCommit": "a869876ab6262dacde6cd5d432d099a91852a646"
+  },
+  "totals": {
+    "nodes": 95762,
+    "relationships": 129716
+  },
+  "kind": "node",
+  "nodeId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+  "componentId": "component_000001",
+  "node": {
+    "id": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+    "label": "Function",
+    "properties": {
+      "appLayer": "unknown",
+      "appLayerSource": "unmatched_path",
+      "componentId": "component_000001",
+      "componentReachableFromRoot": true,
+      "componentSize": 9242,
+      "confidence": "unknown",
+      "countedIncoming": 1,
+      "countedOutgoing": 0,
+      "diagnostics": [
+        {
+          "kind": "unresolved_reference",
+          "factFamily": "call",
+          "sourceNodeId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+          "targetText": "Math.max",
+          "resolutionSource": "typescript_standard_library",
+          "classification": "standard_library",
+          "actionability": "non_actionable",
+          "filePath": "modules/email/server/operations/email-operations-observability.ts",
+          "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+          "startLine": 191,
+          "startCol": 9,
+          "endLine": 191,
+          "endCol": 71,
+          "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71",
+          "sourceSiteStatus": "capability_unavailable",
+          "proofKind": "typescript-standard-library-authority",
+          "targetRole": "callable",
+          "count": 1,
+          "note": "{\"schemaVersion\":1,\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71\",\"status\":\"capability_unavailable\",\"stage\":\"typescript_standard_library\",\"siteKind\":\"call\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":9,\"endLine\":191,\"endCol\":71},\"requestedName\":\"Math.max\",\"requestedMeaning\":\"value\",\"language\":\"typescript\",\"reason\":\"config_topology_unsupported\",\"proof\":{\"kind\":\"typescript-standard-library-authority\"},\"authority\":{\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71\",\"stage\":\"typescript_standard_library\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":9,\"endLine\":191,\"endCol\":71},\"siteKind\":\"call\",\"requestedName\":\"Math.max\",\"requestedMeaning\":\"value\",\"status\":\"capability_unavailable\",\"reason\":\"config_topology_unsupported\",\"authorityKind\":\"typescript_standard_library\",\"catalogProofState\":\"ready\",\"authorityHash\":\"164cb0632e76b3801894c8a45fc77309cc878909ed9b92a3a89a2ace94335711\",\"typescriptVersion\":\"5.9.3\",\"catalogHash\":\"dca7af22ff26510cf9075fcb587ab76649bf169edcb0001e50c234d89c9dbb0b\",\"catalogArtifactHash\":\"f188d15a5d91925df3e724cbab97964813e3f6dfd9df7408fdc7b92ea4cea487\",\"profileHash\":\"45c0608da2b054fa1fdf07700efd96396701fce0b9107c6a3571575ac6639c07\",\"configHash\":\"2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02\"}}",
+          "source": "typescript_standard_library"
+        },
+        {
+          "kind": "unresolved_reference",
+          "factFamily": "call",
+          "sourceNodeId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+          "targetText": "Math.min",
+          "resolutionSource": "typescript_standard_library",
+          "classification": "standard_library",
+          "actionability": "non_actionable",
+          "filePath": "modules/email/server/operations/email-operations-observability.ts",
+          "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+          "startLine": 191,
+          "startCol": 21,
+          "endLine": 191,
+          "endCol": 70,
+          "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70",
+          "sourceSiteStatus": "capability_unavailable",
+          "proofKind": "typescript-standard-library-authority",
+          "targetRole": "callable",
+          "count": 1,
+          "note": "{\"schemaVersion\":1,\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70\",\"status\":\"capability_unavailable\",\"stage\":\"typescript_standard_library\",\"siteKind\":\"call\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":21,\"endLine\":191,\"endCol\":70},\"requestedName\":\"Math.min\",\"requestedMeaning\":\"value\",\"language\":\"typescript\",\"reason\":\"config_topology_unsupported\",\"proof\":{\"kind\":\"typescript-standard-library-authority\"},\"authority\":{\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70\",\"stage\":\"typescript_standard_library\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":21,\"endLine\":191,\"endCol\":70},\"siteKind\":\"call\",\"requestedName\":\"Math.min\",\"requestedMeaning\":\"value\",\"status\":\"capability_unavailable\",\"reason\":\"config_topology_unsupported\",\"authorityKind\":\"typescript_standard_library\",\"catalogProofState\":\"ready\",\"authorityHash\":\"164cb0632e76b3801894c8a45fc77309cc878909ed9b92a3a89a2ace94335711\",\"typescriptVersion\":\"5.9.3\",\"catalogHash\":\"dca7af22ff26510cf9075fcb587ab76649bf169edcb0001e50c234d89c9dbb0b\",\"catalogArtifactHash\":\"f188d15a5d91925df3e724cbab97964813e3f6dfd9df7408fdc7b92ea4cea487\",\"profileHash\":\"45c0608da2b054fa1fdf07700efd96396701fce0b9107c6a3571575ac6639c07\",\"configHash\":\"2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02\"}}",
+          "source": "typescript_standard_library"
+        }
+      ],
+      "endCol": 1,
+      "endLine": 192,
+      "excludedEdgeCounts": {
+        "other": 2,
+        "structural": 2
+      },
+      "expectedIsolationReasons": [],
+      "filePath": "modules/email/server/operations/email-operations-observability.ts",
+      "functionalArea": "unknown",
+      "functionalAreaSource": "unmatched_path",
+      "graphHealth": {
+        "topologyStatus": "no_outgoing",
+        "countedIncoming": 1,
+        "countedOutgoing": 0,
+        "excludedEdgeCounts": {
+          "other": 2,
+          "structural": 2
+        },
+        "componentId": "component_000001",
+        "componentSize": 9242,
+        "componentReachableFromRoot": true,
+        "diagnostics": [
+          {
+            "kind": "unresolved_reference",
+            "factFamily": "call",
+            "sourceNodeId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+            "targetText": "Math.max",
+            "resolutionSource": "typescript_standard_library",
+            "classification": "standard_library",
+            "actionability": "non_actionable",
+            "filePath": "modules/email/server/operations/email-operations-observability.ts",
+            "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+            "startLine": 191,
+            "startCol": 9,
+            "endLine": 191,
+            "endCol": 71,
+            "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71",
+            "sourceSiteStatus": "capability_unavailable",
+            "proofKind": "typescript-standard-library-authority",
+            "targetRole": "callable",
+            "count": 1,
+            "note": "{\"schemaVersion\":1,\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71\",\"status\":\"capability_unavailable\",\"stage\":\"typescript_standard_library\",\"siteKind\":\"call\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":9,\"endLine\":191,\"endCol\":71},\"requestedName\":\"Math.max\",\"requestedMeaning\":\"value\",\"language\":\"typescript\",\"reason\":\"config_topology_unsupported\",\"proof\":{\"kind\":\"typescript-standard-library-authority\"},\"authority\":{\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71\",\"stage\":\"typescript_standard_library\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":9,\"endLine\":191,\"endCol\":71},\"siteKind\":\"call\",\"requestedName\":\"Math.max\",\"requestedMeaning\":\"value\",\"status\":\"capability_unavailable\",\"reason\":\"config_topology_unsupported\",\"authorityKind\":\"typescript_standard_library\",\"catalogProofState\":\"ready\",\"authorityHash\":\"164cb0632e76b3801894c8a45fc77309cc878909ed9b92a3a89a2ace94335711\",\"typescriptVersion\":\"5.9.3\",\"catalogHash\":\"dca7af22ff26510cf9075fcb587ab76649bf169edcb0001e50c234d89c9dbb0b\",\"catalogArtifactHash\":\"f188d15a5d91925df3e724cbab97964813e3f6dfd9df7408fdc7b92ea4cea487\",\"profileHash\":\"45c0608da2b054fa1fdf07700efd96396701fce0b9107c6a3571575ac6639c07\",\"configHash\":\"2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02\"}}",
+            "source": "typescript_standard_library"
+          },
+          {
+            "kind": "unresolved_reference",
+            "factFamily": "call",
+            "sourceNodeId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+            "targetText": "Math.min",
+            "resolutionSource": "typescript_standard_library",
+            "classification": "standard_library",
+            "actionability": "non_actionable",
+            "filePath": "modules/email/server/operations/email-operations-observability.ts",
+            "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+            "startLine": 191,
+            "startCol": 21,
+            "endLine": 191,
+            "endCol": 70,
+            "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70",
+            "sourceSiteStatus": "capability_unavailable",
+            "proofKind": "typescript-standard-library-authority",
+            "targetRole": "callable",
+            "count": 1,
+            "note": "{\"schemaVersion\":1,\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70\",\"status\":\"capability_unavailable\",\"stage\":\"typescript_standard_library\",\"siteKind\":\"call\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":21,\"endLine\":191,\"endCol\":70},\"requestedName\":\"Math.min\",\"requestedMeaning\":\"value\",\"language\":\"typescript\",\"reason\":\"config_topology_unsupported\",\"proof\":{\"kind\":\"typescript-standard-library-authority\"},\"authority\":{\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70\",\"stage\":\"typescript_standard_library\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":21,\"endLine\":191,\"endCol\":70},\"siteKind\":\"call\",\"requestedName\":\"Math.min\",\"requestedMeaning\":\"value\",\"status\":\"capability_unavailable\",\"reason\":\"config_topology_unsupported\",\"authorityKind\":\"typescript_standard_library\",\"catalogProofState\":\"ready\",\"authorityHash\":\"164cb0632e76b3801894c8a45fc77309cc878909ed9b92a3a89a2ace94335711\",\"typescriptVersion\":\"5.9.3\",\"catalogHash\":\"dca7af22ff26510cf9075fcb587ab76649bf169edcb0001e50c234d89c9dbb0b\",\"catalogArtifactHash\":\"f188d15a5d91925df3e724cbab97964813e3f6dfd9df7408fdc7b92ea4cea487\",\"profileHash\":\"45c0608da2b054fa1fdf07700efd96396701fce0b9107c6a3571575ac6639c07\",\"configHash\":\"2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02\"}}",
+            "source": "typescript_standard_library"
+          }
+        ],
+        "confidence": "unknown",
+        "resolutionHealthBuckets": {
+          "unresolved_call_target": 2,
+          "unresolved_non_actionable": 2
+        },
+        "resolutionGapCount": 2,
+        "resolutionConfidence": "degraded"
+      },
+      "graphHealthDiagnostics": [
+        {
+          "actionability": "non_actionable",
+          "classification": "standard_library",
+          "count": 1,
+          "endCol": 71,
+          "endLine": 191,
+          "factFamily": "call",
+          "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+          "filePath": "modules/email/server/operations/email-operations-observability.ts",
+          "kind": "unresolved_reference",
+          "note": "{\"schemaVersion\":1,\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71\",\"status\":\"capability_unavailable\",\"stage\":\"typescript_standard_library\",\"siteKind\":\"call\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":9,\"endLine\":191,\"endCol\":71},\"requestedName\":\"Math.max\",\"requestedMeaning\":\"value\",\"language\":\"typescript\",\"reason\":\"config_topology_unsupported\",\"proof\":{\"kind\":\"typescript-standard-library-authority\"},\"authority\":{\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71\",\"stage\":\"typescript_standard_library\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":9,\"endLine\":191,\"endCol\":71},\"siteKind\":\"call\",\"requestedName\":\"Math.max\",\"requestedMeaning\":\"value\",\"status\":\"capability_unavailable\",\"reason\":\"config_topology_unsupported\",\"authorityKind\":\"typescript_standard_library\",\"catalogProofState\":\"ready\",\"authorityHash\":\"164cb0632e76b3801894c8a45fc77309cc878909ed9b92a3a89a2ace94335711\",\"typescriptVersion\":\"5.9.3\",\"catalogHash\":\"dca7af22ff26510cf9075fcb587ab76649bf169edcb0001e50c234d89c9dbb0b\",\"catalogArtifactHash\":\"f188d15a5d91925df3e724cbab97964813e3f6dfd9df7408fdc7b92ea4cea487\",\"profileHash\":\"45c0608da2b054fa1fdf07700efd96396701fce0b9107c6a3571575ac6639c07\",\"configHash\":\"2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02\"}}",
+          "proofKind": "typescript-standard-library-authority",
+          "resolutionSource": "typescript_standard_library",
+          "source": "typescript_standard_library",
+          "sourceNodeId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+          "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71",
+          "sourceSiteStatus": "capability_unavailable",
+          "startCol": 9,
+          "startLine": 191,
+          "targetRole": "callable",
+          "targetText": "Math.max"
+        },
+        {
+          "actionability": "non_actionable",
+          "classification": "standard_library",
+          "count": 1,
+          "endCol": 70,
+          "endLine": 191,
+          "factFamily": "call",
+          "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+          "filePath": "modules/email/server/operations/email-operations-observability.ts",
+          "kind": "unresolved_reference",
+          "note": "{\"schemaVersion\":1,\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70\",\"status\":\"capability_unavailable\",\"stage\":\"typescript_standard_library\",\"siteKind\":\"call\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":21,\"endLine\":191,\"endCol\":70},\"requestedName\":\"Math.min\",\"requestedMeaning\":\"value\",\"language\":\"typescript\",\"reason\":\"config_topology_unsupported\",\"proof\":{\"kind\":\"typescript-standard-library-authority\"},\"authority\":{\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70\",\"stage\":\"typescript_standard_library\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":21,\"endLine\":191,\"endCol\":70},\"siteKind\":\"call\",\"requestedName\":\"Math.min\",\"requestedMeaning\":\"value\",\"status\":\"capability_unavailable\",\"reason\":\"config_topology_unsupported\",\"authorityKind\":\"typescript_standard_library\",\"catalogProofState\":\"ready\",\"authorityHash\":\"164cb0632e76b3801894c8a45fc77309cc878909ed9b92a3a89a2ace94335711\",\"typescriptVersion\":\"5.9.3\",\"catalogHash\":\"dca7af22ff26510cf9075fcb587ab76649bf169edcb0001e50c234d89c9dbb0b\",\"catalogArtifactHash\":\"f188d15a5d91925df3e724cbab97964813e3f6dfd9df7408fdc7b92ea4cea487\",\"profileHash\":\"45c0608da2b054fa1fdf07700efd96396701fce0b9107c6a3571575ac6639c07\",\"configHash\":\"2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02\"}}",
+          "proofKind": "typescript-standard-library-authority",
+          "resolutionSource": "typescript_standard_library",
+          "source": "typescript_standard_library",
+          "sourceNodeId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+          "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70",
+          "sourceSiteStatus": "capability_unavailable",
+          "startCol": 21,
+          "startLine": 191,
+          "targetRole": "callable",
+          "targetText": "Math.min"
+        }
+      ],
+      "isExported": false,
+      "language": "typescript",
+      "name": "boundedReadLimit",
+      "qualifiedName": "boundedReadLimit",
+      "resolutionConfidence": "degraded",
+      "resolutionGapCount": 2,
+      "resolutionHealthBuckets": {
+        "unresolved_call_target": 2,
+        "unresolved_non_actionable": 2
+      },
+      "selectionEndCol": 25,
+      "selectionEndLine": 190,
+      "selectionStartCol": 9,
+      "selectionStartLine": 190,
+      "startCol": 0,
+      "startLine": 190,
+      "topologyStatus": "no_outgoing"
+    }
+  },
+  "health": {
+    "topologyStatus": "no_outgoing",
+    "countedIncoming": 1,
+    "countedOutgoing": 0,
+    "excludedEdgeCounts": {
+      "other": 2,
+      "structural": 2
+    },
+    "componentId": "component_000001",
+    "componentSize": 9242,
+    "componentReachableFromRoot": true,
+    "diagnostics": [
+      {
+        "kind": "unresolved_reference",
+        "factFamily": "call",
+        "sourceNodeId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+        "targetText": "Math.max",
+        "resolutionSource": "typescript_standard_library",
+        "classification": "standard_library",
+        "actionability": "non_actionable",
+        "filePath": "modules/email/server/operations/email-operations-observability.ts",
+        "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+        "startLine": 191,
+        "startCol": 9,
+        "endLine": 191,
+        "endCol": 71,
+        "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71",
+        "sourceSiteStatus": "capability_unavailable",
+        "proofKind": "typescript-standard-library-authority",
+        "targetRole": "callable",
+        "count": 1,
+        "note": "{\"schemaVersion\":1,\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71\",\"status\":\"capability_unavailable\",\"stage\":\"typescript_standard_library\",\"siteKind\":\"call\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":9,\"endLine\":191,\"endCol\":71},\"requestedName\":\"Math.max\",\"requestedMeaning\":\"value\",\"language\":\"typescript\",\"reason\":\"config_topology_unsupported\",\"proof\":{\"kind\":\"typescript-standard-library-authority\"},\"authority\":{\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71\",\"stage\":\"typescript_standard_library\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":9,\"endLine\":191,\"endCol\":71},\"siteKind\":\"call\",\"requestedName\":\"Math.max\",\"requestedMeaning\":\"value\",\"status\":\"capability_unavailable\",\"reason\":\"config_topology_unsupported\",\"authorityKind\":\"typescript_standard_library\",\"catalogProofState\":\"ready\",\"authorityHash\":\"164cb0632e76b3801894c8a45fc77309cc878909ed9b92a3a89a2ace94335711\",\"typescriptVersion\":\"5.9.3\",\"catalogHash\":\"dca7af22ff26510cf9075fcb587ab76649bf169edcb0001e50c234d89c9dbb0b\",\"catalogArtifactHash\":\"f188d15a5d91925df3e724cbab97964813e3f6dfd9df7408fdc7b92ea4cea487\",\"profileHash\":\"45c0608da2b054fa1fdf07700efd96396701fce0b9107c6a3571575ac6639c07\",\"configHash\":\"2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02\"}}",
+        "source": "typescript_standard_library"
+      },
+      {
+        "kind": "unresolved_reference",
+        "factFamily": "call",
+        "sourceNodeId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+        "targetText": "Math.min",
+        "resolutionSource": "typescript_standard_library",
+        "classification": "standard_library",
+        "actionability": "non_actionable",
+        "filePath": "modules/email/server/operations/email-operations-observability.ts",
+        "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+        "startLine": 191,
+        "startCol": 21,
+        "endLine": 191,
+        "endCol": 70,
+        "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70",
+        "sourceSiteStatus": "capability_unavailable",
+        "proofKind": "typescript-standard-library-authority",
+        "targetRole": "callable",
+        "count": 1,
+        "note": "{\"schemaVersion\":1,\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70\",\"status\":\"capability_unavailable\",\"stage\":\"typescript_standard_library\",\"siteKind\":\"call\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":21,\"endLine\":191,\"endCol\":70},\"requestedName\":\"Math.min\",\"requestedMeaning\":\"value\",\"language\":\"typescript\",\"reason\":\"config_topology_unsupported\",\"proof\":{\"kind\":\"typescript-standard-library-authority\"},\"authority\":{\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70\",\"stage\":\"typescript_standard_library\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":21,\"endLine\":191,\"endCol\":70},\"siteKind\":\"call\",\"requestedName\":\"Math.min\",\"requestedMeaning\":\"value\",\"status\":\"capability_unavailable\",\"reason\":\"config_topology_unsupported\",\"authorityKind\":\"typescript_standard_library\",\"catalogProofState\":\"ready\",\"authorityHash\":\"164cb0632e76b3801894c8a45fc77309cc878909ed9b92a3a89a2ace94335711\",\"typescriptVersion\":\"5.9.3\",\"catalogHash\":\"dca7af22ff26510cf9075fcb587ab76649bf169edcb0001e50c234d89c9dbb0b\",\"catalogArtifactHash\":\"f188d15a5d91925df3e724cbab97964813e3f6dfd9df7408fdc7b92ea4cea487\",\"profileHash\":\"45c0608da2b054fa1fdf07700efd96396701fce0b9107c6a3571575ac6639c07\",\"configHash\":\"2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02\"}}",
+        "source": "typescript_standard_library"
+      }
+    ],
+    "confidence": "unknown",
+    "resolutionHealthBuckets": {
+      "unresolved_call_target": 2,
+      "unresolved_non_actionable": 2
+    },
+    "resolutionGapCount": 2,
+    "resolutionConfidence": "degraded"
+  },
+  "countedIncomingRelationships": [
+    {
+      "id": "rel:CALLS:Function:file65:modules/email/server/operations/email-operations-observability.tsname25:readEmailOperationsReportarity0:occurrence110:def:modules/email/server/operations/email-operations-observability.ts#497:7:Function:readEmailOperationsReportscope92:scope:modules/email/server/operations/email-operations-observability.ts#497:7-634:1:Functionowner0:-\u003eFunction:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0::502:16",
+      "sourceId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname25:readEmailOperationsReportarity0:occurrence110:def:modules/email/server/operations/email-operations-observability.ts#497:7:Function:readEmailOperationsReportscope92:scope:modules/email/server/operations/email-operations-observability.ts#497:7-634:1:Functionowner0:",
+      "targetId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+      "type": "CALLS",
+      "confidence": 0.95,
+      "reason": "scope-resolution: call | confidence 0.950",
+      "resolutionSource": "scope-resolution",
+      "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+      "evidence": [
+        {
+          "kind": "scope-chain",
+          "weight": 1,
+          "note": "boundedReadLimit"
+        },
+        {
+          "kind": "resolution-outcome-v1",
+          "weight": 1,
+          "note": "{\"schemaVersion\":1,\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#boundedReadLimit#502#16#502#47\",\"status\":\"resolved_internal\",\"stage\":\"repository\",\"siteKind\":\"call\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":502,\"startCol\":16,\"endLine\":502,\"endCol\":47},\"requestedName\":\"boundedReadLimit\",\"requestedMeaning\":\"value\",\"language\":\"typescript\",\"target\":{\"id\":\"def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimit\",\"graphId\":\"Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:\",\"name\":\"boundedReadLimit\",\"kind\":\"Function\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\"},\"proof\":{\"kind\":\"same-file\",\"evidence\":[{\"kind\":\"scope-chain\",\"weight\":1,\"note\":\"boundedReadLimit\"}]}}"
+        }
+      ],
+      "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#boundedReadLimit#502#16#502#47",
+      "sourceSiteIds": [
+        "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#boundedReadLimit#502#16#502#47"
+      ],
+      "sourceSiteCount": 1,
+      "sourceSiteStatus": "resolved",
+      "proofKind": "same-file",
+      "targetRole": "callable",
+      "targetText": "boundedReadLimit",
+      "filePath": "modules/email/server/operations/email-operations-observability.ts",
+      "startLine": 502,
+      "startCol": 16,
+      "endLine": 502,
+      "endCol": 47
+    }
+  ],
+  "excludedRelationships": [
+    {
+      "id": "DEFINES:File:modules/email/server/operations/email-operations-observability.ts-\u003eFunction:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+      "sourceId": "File:modules/email/server/operations/email-operations-observability.ts",
+      "targetId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+      "type": "DEFINES",
+      "confidence": 1,
+      "reason": ""
+    },
+    {
+      "id": "rel:has-resolution-gap:Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:-\u003eResolutionGap:SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71",
+      "sourceId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+      "targetId": "ResolutionGap:SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71",
+      "type": "HAS_RESOLUTION_GAP",
+      "confidence": 1,
+      "reason": "source-backed unresolved reference",
+      "resolutionSource": "typescript_standard_library",
+      "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+      "evidence": [
+        {
+          "kind": "resolution_gap",
+          "weight": 1,
+          "note": "{\"schemaVersion\":1,\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71\",\"status\":\"capability_unavailable\",\"stage\":\"typescript_standard_library\",\"siteKind\":\"call\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":9,\"endLine\":191,\"endCol\":71},\"requestedName\":\"Math.max\",\"requestedMeaning\":\"value\",\"language\":\"typescript\",\"reason\":\"config_topology_unsupported\",\"proof\":{\"kind\":\"typescript-standard-library-authority\"},\"authority\":{\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71\",\"stage\":\"typescript_standard_library\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":9,\"endLine\":191,\"endCol\":71},\"siteKind\":\"call\",\"requestedName\":\"Math.max\",\"requestedMeaning\":\"value\",\"status\":\"capability_unavailable\",\"reason\":\"config_topology_unsupported\",\"authorityKind\":\"typescript_standard_library\",\"catalogProofState\":\"ready\",\"authorityHash\":\"164cb0632e76b3801894c8a45fc77309cc878909ed9b92a3a89a2ace94335711\",\"typescriptVersion\":\"5.9.3\",\"catalogHash\":\"dca7af22ff26510cf9075fcb587ab76649bf169edcb0001e50c234d89c9dbb0b\",\"catalogArtifactHash\":\"f188d15a5d91925df3e724cbab97964813e3f6dfd9df7408fdc7b92ea4cea487\",\"profileHash\":\"45c0608da2b054fa1fdf07700efd96396701fce0b9107c6a3571575ac6639c07\",\"configHash\":\"2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02\"}}"
+        }
+      ],
+      "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71",
+      "sourceSiteIds": [
+        "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71"
+      ],
+      "sourceSiteCount": 1,
+      "sourceSiteStatus": "capability_unavailable",
+      "proofKind": "typescript-standard-library-authority",
+      "targetRole": "callable",
+      "targetText": "Math.max",
+      "filePath": "modules/email/server/operations/email-operations-observability.ts",
+      "startLine": 191,
+      "startCol": 9,
+      "endLine": 191,
+      "endCol": 71
+    },
+    {
+      "id": "rel:has-resolution-gap:Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:-\u003eResolutionGap:SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70",
+      "sourceId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+      "targetId": "ResolutionGap:SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70",
+      "type": "HAS_RESOLUTION_GAP",
+      "confidence": 1,
+      "reason": "source-backed unresolved reference",
+      "resolutionSource": "typescript_standard_library",
+      "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+      "evidence": [
+        {
+          "kind": "resolution_gap",
+          "weight": 1,
+          "note": "{\"schemaVersion\":1,\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70\",\"status\":\"capability_unavailable\",\"stage\":\"typescript_standard_library\",\"siteKind\":\"call\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":21,\"endLine\":191,\"endCol\":70},\"requestedName\":\"Math.min\",\"requestedMeaning\":\"value\",\"language\":\"typescript\",\"reason\":\"config_topology_unsupported\",\"proof\":{\"kind\":\"typescript-standard-library-authority\"},\"authority\":{\"sourceSiteId\":\"SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70\",\"stage\":\"typescript_standard_library\",\"filePath\":\"modules/email/server/operations/email-operations-observability.ts\",\"fileHash\":\"a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c\",\"range\":{\"startLine\":191,\"startCol\":21,\"endLine\":191,\"endCol\":70},\"siteKind\":\"call\",\"requestedName\":\"Math.min\",\"requestedMeaning\":\"value\",\"status\":\"capability_unavailable\",\"reason\":\"config_topology_unsupported\",\"authorityKind\":\"typescript_standard_library\",\"catalogProofState\":\"ready\",\"authorityHash\":\"164cb0632e76b3801894c8a45fc77309cc878909ed9b92a3a89a2ace94335711\",\"typescriptVersion\":\"5.9.3\",\"catalogHash\":\"dca7af22ff26510cf9075fcb587ab76649bf169edcb0001e50c234d89c9dbb0b\",\"catalogArtifactHash\":\"f188d15a5d91925df3e724cbab97964813e3f6dfd9df7408fdc7b92ea4cea487\",\"profileHash\":\"45c0608da2b054fa1fdf07700efd96396701fce0b9107c6a3571575ac6639c07\",\"configHash\":\"2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02\"}}"
+        }
+      ],
+      "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70",
+      "sourceSiteIds": [
+        "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70"
+      ],
+      "sourceSiteCount": 1,
+      "sourceSiteStatus": "capability_unavailable",
+      "proofKind": "typescript-standard-library-authority",
+      "targetRole": "callable",
+      "targetText": "Math.min",
+      "filePath": "modules/email/server/operations/email-operations-observability.ts",
+      "startLine": 191,
+      "startCol": 21,
+      "endLine": 191,
+      "endCol": 70
+    },
+    {
+      "id": "MEMBER_OF:Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:-\u003ecomm_187",
+      "sourceId": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+      "targetId": "comm_187",
+      "type": "MEMBER_OF",
+      "confidence": 1,
+      "reason": "leiden-algorithm",
+      "resolutionSource": "community-detection"
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "schema": "p6d-target-three-site-reader-parity-v1",
+  "generatedUtc": "2026-08-23T22:34:23.2718652Z",
+  "status": "PASS",
+  "carriers": {
+    "graphJsonReader": "current runtime graph-health explain",
+    "nativeLadybug": "current runtime cypher with loaded canonical DLL",
+    "inventory": "current runtime resolution-inventory"
+  },
+  "artifacts": {
+    "graphJson": {
+      "path": "E:\\cheapapp.org\\.anvien\\graph.json",
+      "bytes": 840614023,
+      "sha256": "8763AA2D089328F3D782A5F01E06178D171922E3A5CE96A4EE6707510976C920",
+      "lastWriteUtc": "2026-08-23T22:22:55.6583965Z"
+    },
+    "ladybug": {
+      "path": "E:\\cheapapp.org\\.anvien\\lbug",
+      "bytes": 597946368,
+      "sha256": "74AD03D12D83B441E9FBC994C8F30086EF5384B916F17DB0488BCD2B75C68A92",
+      "lastWriteUtc": "2026-08-23T22:22:42.4066766Z"
+    }
+  },
+  "graphTotals": {
+    "nodes": 95762,
+    "relationships": 129716
+  },
+  "resolutionGapPolicy": {
+    "classificationCounts": {
+      "standard_library": 20501,
+      "unclassified": 37182
+    },
+    "actionabilityCounts": {
+      "non_actionable": 20501,
+      "review": 37182
+    }
+  },
+  "denominator": {
+    "expected": 3,
+    "nativeGapRows": 3,
+    "builtGraphReaderRows": 3,
+    "nativeGapEdges": 3,
+    "nativeExternalRows": 0,
+    "passed": 3
+  },
+  "overlap": {
+    "resolvedAndGap": 0,
+    "neither": 0
+  },
+  "inRepoAnalyzerGaps": 0,
+  "missing": 0,
+  "differences": [],
+  "sourceHashes": {
+    "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts": "44467b1d6f1778ae4728b4941136321f7831d8fd67ebe2c93a430a3d132f90ac",
+    "modules/email/server/operations/email-operations-observability.ts": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c"
+  },
+  "configHash": "2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02",
+  "sites": [
+    {
+      "sourceSiteId": "SourceSite:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#type-reference#Promise#13#3#13#10",
+      "requestedName": "Promise",
+      "requestedMeaning": "type",
+      "outcome": "capability_unavailable",
+      "reason": "config_topology_unsupported",
+      "classification": "standard_library",
+      "actionability": "non_actionable",
+      "proofKind": "typescript-standard-library-authority",
+      "authorityKind": "typescript_standard_library",
+      "catalogProofState": "ready",
+      "typeScriptVersion": "5.9.3",
+      "fileHash": "44467b1d6f1778ae4728b4941136321f7831d8fd67ebe2c93a430a3d132f90ac",
+      "configHash": "2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02",
+      "nativeGapRows": 1,
+      "builtGraphReaderRows": 1,
+      "nativeGapEdges": 1,
+      "nativeExternalRows": 0,
+      "noteByteExact": true,
+      "sourceHashMatches": true,
+      "configHashMatches": true,
+      "authorityPass": true,
+      "edgePass": true,
+      "policyPass": true,
+      "resolvedAndGapOverlap": false,
+      "inRepoAnalyzerGap": false,
+      "pass": true
+    },
+    {
+      "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71",
+      "requestedName": "Math.max",
+      "requestedMeaning": "value",
+      "outcome": "capability_unavailable",
+      "reason": "config_topology_unsupported",
+      "classification": "standard_library",
+      "actionability": "non_actionable",
+      "proofKind": "typescript-standard-library-authority",
+      "authorityKind": "typescript_standard_library",
+      "catalogProofState": "ready",
+      "typeScriptVersion": "5.9.3",
+      "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+      "configHash": "2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02",
+      "nativeGapRows": 1,
+      "builtGraphReaderRows": 1,
+      "nativeGapEdges": 1,
+      "nativeExternalRows": 0,
+      "noteByteExact": true,
+      "sourceHashMatches": true,
+      "configHashMatches": true,
+      "authorityPass": true,
+      "edgePass": true,
+      "policyPass": true,
+      "resolvedAndGapOverlap": false,
+      "inRepoAnalyzerGap": false,
+      "pass": true
+    },
+    {
+      "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70",
+      "requestedName": "Math.min",
+      "requestedMeaning": "value",
+      "outcome": "capability_unavailable",
+      "reason": "config_topology_unsupported",
+      "classification": "standard_library",
+      "actionability": "non_actionable",
+      "proofKind": "typescript-standard-library-authority",
+      "authorityKind": "typescript_standard_library",
+      "catalogProofState": "ready",
+      "typeScriptVersion": "5.9.3",
+      "fileHash": "a9247972d44d0a74c411fb7cf83d681feba371c7a85eeb83f8986afd6446e40c",
+      "configHash": "2733e2d2c574a6bbdd91e961aa8721a65e300d2e52497af1154c440ca586ce02",
+      "nativeGapRows": 1,
+      "builtGraphReaderRows": 1,
+      "nativeGapEdges": 1,
+      "nativeExternalRows": 0,
+      "noteByteExact": true,
+      "sourceHashMatches": true,
+      "configHashMatches": true,
+      "authorityPass": true,
+      "edgePass": true,
+      "policyPass": true,
+      "resolvedAndGapOverlap": false,
+      "inRepoAnalyzerGap": false,
+      "pass": true
+    }
+  ]
+}

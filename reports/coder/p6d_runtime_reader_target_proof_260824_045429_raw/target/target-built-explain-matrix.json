@@ -1,0 +1,42 @@
+{
+  "schema": "p6d-target-built-explain-matrix-v1",
+  "generatedUtc": "2026-08-23T22:29:48.7228720Z",
+  "rows": [
+    {
+      "name": "target-built-explain-promise",
+      "selector": "Function:file88:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.tsname25:readAdminCommercialConfigarity0:occurrence132:def:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#10:7:Function:readAdminCommercialConfigscope113:scope:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#10:7-23:1:Functionowner0:",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-built-explain-promise.stdout.json",
+        "bytes": 82291,
+        "sha256": "88ECEDC6DF4511E473398FCA58F17A15359B888598452AEE177D15C9D0CAEE6B"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-built-explain-promise.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    },
+    {
+      "name": "target-built-explain-math",
+      "selector": "Function:file65:modules/email/server/operations/email-operations-observability.tsname16:boundedReadLimitarity0:occurrence101:def:modules/email/server/operations/email-operations-observability.ts#190:0:Function:boundedReadLimitscope92:scope:modules/email/server/operations/email-operations-observability.ts#190:0-192:1:Functionowner0:",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-built-explain-math.stdout.json",
+        "bytes": 42117,
+        "sha256": "7FA9CE9455D925E79A9D4E66D41CD58475E6473F3A0A06D0A5E1666220448789"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-built-explain-math.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    }
+  ]
+}

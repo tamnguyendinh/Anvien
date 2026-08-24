@@ -1,0 +1,283 @@
+{
+  "schema": "p6d-independent-typescript-oracle-v1",
+  "generatedUtc": "2026-08-23T22:12:35.323Z",
+  "status": "PASS",
+  "analyzerOutputRead": false,
+  "hardcodedOutcomeBranches": false,
+  "compiler": {
+    "nodeVersion": "v24.15.0",
+    "typescriptVersion": "6.0.3",
+    "compilerPath": "E:\\cheapapp.org\\node_modules\\.pnpm\\typescript@6.0.3\\node_modules\\typescript\\lib\\typescript.js",
+    "compilerSha256": "569177652966BD528C319171C7DD22860DBF72BDE116CBC4F644F1D02BB12E39",
+    "configPath": "E:\\cheapapp.org\\tsconfig.json",
+    "configSha256": "2733E2D2C574A6BBDD91E961AA8721A65E300D2E52497AF1154C440CA586CE02",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noLib": false,
+    "lib": [
+      "lib.dom.d.ts",
+      "lib.dom.iterable.d.ts",
+      "lib.es2022.d.ts"
+    ],
+    "rootFileCount": 888,
+    "programSourceFileCount": 949
+  },
+  "denominator": {
+    "expected": 3,
+    "observed": 3,
+    "passed": 3
+  },
+  "sites": [
+    {
+      "id": "Promise",
+      "relativePath": "modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts",
+      "line": 13,
+      "kind": "type_reference",
+      "requestedName": "Promise",
+      "filePath": "E:\\cheapapp.org\\modules\\commercial-config\\server\\admin-commercial-config\\read-admin-commercial-config.ts",
+      "sourceSha256": "44467B1D6F1778AE4728B4941136321F7831D8FD67EBE2C93A430A3D132F90AC",
+      "matchCount": 1,
+      "expressionText": "Promise",
+      "range": {
+        "startLine": 13,
+        "startCol": 3,
+        "endLine": 13,
+        "endCol": 42
+      },
+      "symbolName": "Promise",
+      "symbolFlags": 33554497,
+      "declarations": [
+        {
+          "file": "E:\\cheapapp.org\\node_modules\\.pnpm\\typescript@6.0.3\\node_modules\\typescript\\lib\\lib.es2015.iterable.d.ts",
+          "fileName": "lib.es2015.iterable.d.ts",
+          "sha256": "EBD9F816D4002697CB2864BEA1F0B70A103124E18A8CD9645EECCC09BDF80AB4",
+          "isDeclarationFile": true,
+          "underCompilerLib": true
+        },
+        {
+          "file": "E:\\cheapapp.org\\node_modules\\.pnpm\\typescript@6.0.3\\node_modules\\typescript\\lib\\lib.es2015.promise.d.ts",
+          "fileName": "lib.es2015.promise.d.ts",
+          "sha256": "2C1AFAC30A01772CD2A9A298A7CE7706B5892E447BB46BDBEEF720F7B5DA77AD",
+          "isDeclarationFile": true,
+          "underCompilerLib": true
+        },
+        {
+          "file": "E:\\cheapapp.org\\node_modules\\.pnpm\\typescript@6.0.3\\node_modules\\typescript\\lib\\lib.es2015.symbol.wellknown.d.ts",
+          "fileName": "lib.es2015.symbol.wellknown.d.ts",
+          "sha256": "C5079C53F0F141A0698FAA903E76CB41CD664E3EFB01CC17A5C46EC2EB0BEF42",
+          "isDeclarationFile": true,
+          "underCompilerLib": true
+        },
+        {
+          "file": "E:\\cheapapp.org\\node_modules\\.pnpm\\typescript@6.0.3\\node_modules\\typescript\\lib\\lib.es2018.promise.d.ts",
+          "fileName": "lib.es2018.promise.d.ts",
+          "sha256": "E42E397F1A5A77994F0185FD1466520691456C772D06BF843E5084CEB879A0AD",
+          "isDeclarationFile": true,
+          "underCompilerLib": true
+        },
+        {
+          "file": "E:\\cheapapp.org\\node_modules\\.pnpm\\typescript@6.0.3\\node_modules\\typescript\\lib\\lib.es5.d.ts",
+          "fileName": "lib.es5.d.ts",
+          "sha256": "BCD24271A113971BA9EB71FF8CB01BC6B0F872A85C23FDBE5D93065B375933CD",
+          "isDeclarationFile": true,
+          "underCompilerLib": true
+        }
+      ],
+      "declarationAuthority": "typescript_compiler_lib",
+      "capabilityAvailable": true,
+      "external": true,
+      "sourceDiagnostics": [
+        {
+          "code": 2688,
+          "category": "Error",
+          "message": "Cannot find type definition file for 'node'.\n  The file is in the program because:\n    Entry point of type library 'node' specified in compilerOptions",
+          "line": null
+        },
+        {
+          "code": 2688,
+          "category": "Error",
+          "message": "Cannot find type definition file for 'vitest/globals'.\n  The file is in the program because:\n    Entry point of type library 'vitest/globals' specified in compilerOptions",
+          "line": null
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "Math.max",
+      "relativePath": "modules/email/server/operations/email-operations-observability.ts",
+      "line": 191,
+      "kind": "call",
+      "requestedName": "Math.max",
+      "filePath": "E:\\cheapapp.org\\modules\\email\\server\\operations\\email-operations-observability.ts",
+      "sourceSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+      "matchCount": 1,
+      "expressionText": "Math.max",
+      "range": {
+        "startLine": 191,
+        "startCol": 9,
+        "endLine": 191,
+        "endCol": 71
+      },
+      "symbolName": "max",
+      "symbolFlags": 8192,
+      "declarations": [
+        {
+          "file": "E:\\cheapapp.org\\node_modules\\.pnpm\\typescript@6.0.3\\node_modules\\typescript\\lib\\lib.es5.d.ts",
+          "fileName": "lib.es5.d.ts",
+          "sha256": "BCD24271A113971BA9EB71FF8CB01BC6B0F872A85C23FDBE5D93065B375933CD",
+          "isDeclarationFile": true,
+          "underCompilerLib": true
+        }
+      ],
+      "declarationAuthority": "typescript_compiler_lib",
+      "capabilityAvailable": true,
+      "external": true,
+      "sourceDiagnostics": [
+        {
+          "code": 2688,
+          "category": "Error",
+          "message": "Cannot find type definition file for 'node'.\n  The file is in the program because:\n    Entry point of type library 'node' specified in compilerOptions",
+          "line": null
+        },
+        {
+          "code": 2688,
+          "category": "Error",
+          "message": "Cannot find type definition file for 'vitest/globals'.\n  The file is in the program because:\n    Entry point of type library 'vitest/globals' specified in compilerOptions",
+          "line": null
+        },
+        {
+          "code": 2307,
+          "category": "Error",
+          "message": "Cannot find module 'drizzle-orm' or its corresponding type declarations.",
+          "line": 1
+        },
+        {
+          "code": 7006,
+          "category": "Error",
+          "message": "Parameter 'row' implicitly has an 'any' type.",
+          "line": 586
+        },
+        {
+          "code": 7006,
+          "category": "Error",
+          "message": "Parameter 'row' implicitly has an 'any' type.",
+          "line": 592
+        },
+        {
+          "code": 7006,
+          "category": "Error",
+          "message": "Parameter 'row' implicitly has an 'any' type.",
+          "line": 597
+        },
+        {
+          "code": 7006,
+          "category": "Error",
+          "message": "Parameter 'row' implicitly has an 'any' type.",
+          "line": 609
+        },
+        {
+          "code": 7006,
+          "category": "Error",
+          "message": "Parameter 'row' implicitly has an 'any' type.",
+          "line": 615
+        },
+        {
+          "code": 7006,
+          "category": "Error",
+          "message": "Parameter 'row' implicitly has an 'any' type.",
+          "line": 622
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "Math.min",
+      "relativePath": "modules/email/server/operations/email-operations-observability.ts",
+      "line": 191,
+      "kind": "call",
+      "requestedName": "Math.min",
+      "filePath": "E:\\cheapapp.org\\modules\\email\\server\\operations\\email-operations-observability.ts",
+      "sourceSha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+      "matchCount": 1,
+      "expressionText": "Math.min",
+      "range": {
+        "startLine": 191,
+        "startCol": 21,
+        "endLine": 191,
+        "endCol": 70
+      },
+      "symbolName": "min",
+      "symbolFlags": 8192,
+      "declarations": [
+        {
+          "file": "E:\\cheapapp.org\\node_modules\\.pnpm\\typescript@6.0.3\\node_modules\\typescript\\lib\\lib.es5.d.ts",
+          "fileName": "lib.es5.d.ts",
+          "sha256": "BCD24271A113971BA9EB71FF8CB01BC6B0F872A85C23FDBE5D93065B375933CD",
+          "isDeclarationFile": true,
+          "underCompilerLib": true
+        }
+      ],
+      "declarationAuthority": "typescript_compiler_lib",
+      "capabilityAvailable": true,
+      "external": true,
+      "sourceDiagnostics": [
+        {
+          "code": 2688,
+          "category": "Error",
+          "message": "Cannot find type definition file for 'node'.\n  The file is in the program because:\n    Entry point of type library 'node' specified in compilerOptions",
+          "line": null
+        },
+        {
+          "code": 2688,
+          "category": "Error",
+          "message": "Cannot find type definition file for 'vitest/globals'.\n  The file is in the program because:\n    Entry point of type library 'vitest/globals' specified in compilerOptions",
+          "line": null
+        },
+        {
+          "code": 2307,
+          "category": "Error",
+          "message": "Cannot find module 'drizzle-orm' or its corresponding type declarations.",
+          "line": 1
+        },
+        {
+          "code": 7006,
+          "category": "Error",
+          "message": "Parameter 'row' implicitly has an 'any' type.",
+          "line": 586
+        },
+        {
+          "code": 7006,
+          "category": "Error",
+          "message": "Parameter 'row' implicitly has an 'any' type.",
+          "line": 592
+        },
+        {
+          "code": 7006,
+          "category": "Error",
+          "message": "Parameter 'row' implicitly has an 'any' type.",
+          "line": 597
+        },
+        {
+          "code": 7006,
+          "category": "Error",
+          "message": "Parameter 'row' implicitly has an 'any' type.",
+          "line": 609
+        },
+        {
+          "code": 7006,
+          "category": "Error",
+          "message": "Parameter 'row' implicitly has an 'any' type.",
+          "line": 615
+        },
+        {
+          "code": 7006,
+          "category": "Error",
+          "message": "Parameter 'row' implicitly has an 'any' type.",
+          "line": 622
+        }
+      ],
+      "pass": true
+    }
+  ]
+}

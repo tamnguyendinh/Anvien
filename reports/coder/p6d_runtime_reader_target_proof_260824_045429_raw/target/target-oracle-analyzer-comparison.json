@@ -1,0 +1,65 @@
+{
+  "schema": "p6d-target-oracle-analyzer-comparison-v1",
+  "generatedUtc": "2026-08-23T22:35:46.1336555Z",
+  "status": "PASS",
+  "contract": "P6-A bounded config supports zero/one root tsconfig and rejects files/include/exclude/extends/references topology as capability_unavailable",
+  "targetConfig": {
+    "path": "E:\\cheapapp.org\\tsconfig.json",
+    "unsupportedTopologyKeys": [
+      "include",
+      "exclude"
+    ],
+    "target": "ES2022",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ]
+  },
+  "denominator": {
+    "expected": 3,
+    "oracle": 3,
+    "analyzer": 3,
+    "accepted": 3
+  },
+  "inRepoAnalyzerGaps": 0,
+  "differences": [],
+  "sites": [
+    {
+      "id": "Promise",
+      "sourceSiteId": "SourceSite:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#type-reference#Promise#13#3#13#10",
+      "oracleExternal": true,
+      "oracleCapabilityAvailable": true,
+      "analyzerOutcome": "capability_unavailable",
+      "analyzerReason": "config_topology_unsupported",
+      "classification": "standard_library",
+      "actionability": "non_actionable",
+      "inRepoAnalyzerGap": false,
+      "acceptedCapabilityOutcome": true
+    },
+    {
+      "id": "Math.max",
+      "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71",
+      "oracleExternal": true,
+      "oracleCapabilityAvailable": true,
+      "analyzerOutcome": "capability_unavailable",
+      "analyzerReason": "config_topology_unsupported",
+      "classification": "standard_library",
+      "actionability": "non_actionable",
+      "inRepoAnalyzerGap": false,
+      "acceptedCapabilityOutcome": true
+    },
+    {
+      "id": "Math.min",
+      "sourceSiteId": "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70",
+      "oracleExternal": true,
+      "oracleCapabilityAvailable": true,
+      "analyzerOutcome": "capability_unavailable",
+      "analyzerReason": "config_topology_unsupported",
+      "classification": "standard_library",
+      "actionability": "non_actionable",
+      "inRepoAnalyzerGap": false,
+      "acceptedCapabilityOutcome": true
+    }
+  ]
+}

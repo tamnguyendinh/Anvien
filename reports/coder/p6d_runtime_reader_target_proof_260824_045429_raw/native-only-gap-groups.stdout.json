@@ -1,0 +1,19 @@
+{
+  "markdown": "| actionability | classification | gap_count |\n| --- | --- | --- | \n| non_actionable | standard_library | 2730 |\n| review | unclassified | 50426 |",
+  "row_count": 2,
+  "rows": [
+    {
+      "actionability": "non_actionable",
+      "classification": "standard_library",
+      "gap_count": "2730"
+    },
+    {
+      "actionability": "review",
+      "classification": "unclassified",
+      "gap_count": "50426"
+    }
+  ]
+}
+
+---
+**Next:** To explore a result symbol, use context({name: "<name>", repo: "E:\Anvien\.tmp\p6d-r43-built-readers-nongit-260824_045429-70490f2cfaf44e2a850ff5b704f6cb17\native-only-reader-repo"}). For schema reference, READ anvien://repo/E:\Anvien\.tmp\p6d-r43-built-readers-nongit-260824_045429-70490f2cfaf44e2a850ff5b704f6cb17\native-only-reader-repo/schema.

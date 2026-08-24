@@ -1,0 +1,159 @@
+{
+  "schema": "p6d-built-reader-raw-v1",
+  "generatedUtc": "2026-08-23T21:56:01.5573693Z",
+  "status": "PASS",
+  "repo": "E:\\Anvien",
+  "laneRoot": "E:\\Anvien\\.tmp\\p6d-r43-built-readers-nongit-260824_045429-70490f2cfaf44e2a850ff5b704f6cb17",
+  "runtimeBefore": {
+    "bytes": 73749504,
+    "sha256": "64EECEBAF459F23EA11DA38B29C5E290F6F6B22D5EE4749E068BB927A8EEDEBB"
+  },
+  "runtimeAfter": {
+    "bytes": 73749504,
+    "sha256": "64EECEBAF459F23EA11DA38B29C5E290F6F6B22D5EE4749E068BB927A8EEDEBB"
+  },
+  "graphBefore": {
+    "bytes": 672905854,
+    "sha256": "40B059AD314AC41FB456635D175FA8FA83F3EF2FD5B106649DFFFF3F6032E4B4"
+  },
+  "graphAfter": {
+    "bytes": 672905854,
+    "sha256": "40B059AD314AC41FB456635D175FA8FA83F3EF2FD5B106649DFFFF3F6032E4B4"
+  },
+  "lbugBefore": {
+    "bytes": 388788224,
+    "sha256": "4A66D15961B5F496400AEA6667C4E57364167984D3DBA6A8220F65BADFE54668"
+  },
+  "lbugAfter": {
+    "bytes": 388788224,
+    "sha256": "4A66D15961B5F496400AEA6667C4E57364167984D3DBA6A8220F65BADFE54668"
+  },
+  "rows": [
+    {
+      "name": "registry-index-existing",
+      "command": "E:\\Anvien\\anvien\\bin\\anvien.exe index E:\\Anvien --allow-non-git",
+      "startedUtc": "2026-08-23T21:54:36.7548842Z",
+      "endedUtc": "2026-08-23T21:54:36.9104562Z",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\registry-index-existing.stdout.json",
+        "bytes": 96,
+        "sha256": "016B76E8F62FE63366EB3E001A3D8A853F5D84C4C3CC9F8E7C56E30483A0D57E"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\registry-index-existing.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    },
+    {
+      "name": "resolution-inventory",
+      "command": "E:\\Anvien\\anvien\\bin\\anvien.exe resolution-inventory --graph E:\\Anvien\\.anvien\\graph.json --json",
+      "startedUtc": "2026-08-23T21:54:37.0659553Z",
+      "endedUtc": "2026-08-23T21:54:55.3067565Z",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\resolution-inventory.stdout.json",
+        "bytes": 201580,
+        "sha256": "81B6C10B126C1E003B4F230115A032706AF8001597384D85ED6A7EA902FC6020"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\resolution-inventory.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    },
+    {
+      "name": "graph-health-summary",
+      "command": "E:\\Anvien\\anvien\\bin\\anvien.exe graph-health summary --repo E:\\Anvien --json",
+      "startedUtc": "2026-08-23T21:54:55.4681585Z",
+      "endedUtc": "2026-08-23T21:55:10.6241695Z",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\graph-health-summary.stdout.json",
+        "bytes": 28345,
+        "sha256": "6459E217DB5F83E37C12F0B73A0063D5A4EEB4DBDDA359E272AAB13A28D66CAB"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\graph-health-summary.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    },
+    {
+      "name": "graph-health-report",
+      "command": "E:\\Anvien\\anvien\\bin\\anvien.exe graph-health report --repo E:\\Anvien --json",
+      "startedUtc": "2026-08-23T21:55:10.7832774Z",
+      "endedUtc": "2026-08-23T21:55:26.5129755Z",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\graph-health-report.stdout.json",
+        "bytes": 3480892,
+        "sha256": "68F95A599E7A9CA1DAC47C613651FAE6FADA73245D6A3F5B5ED1FD010EE43435"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\graph-health-report.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    },
+    {
+      "name": "graph-health-components",
+      "command": "E:\\Anvien\\anvien\\bin\\anvien.exe graph-health components --repo E:\\Anvien --json",
+      "startedUtc": "2026-08-23T21:55:26.6611797Z",
+      "endedUtc": "2026-08-23T21:55:44.6341983Z",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\graph-health-components.stdout.json",
+        "bytes": 269992,
+        "sha256": "C13536B016E2B02F7C3B82238BD891D09900DDBF729D8D505B187C0EFAD2DCD9"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\graph-health-components.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    },
+    {
+      "name": "graph-health-files",
+      "command": "E:\\Anvien\\anvien\\bin\\anvien.exe graph-health files --repo E:\\Anvien --json",
+      "startedUtc": "2026-08-23T21:55:44.7778643Z",
+      "endedUtc": "2026-08-23T21:55:55.0013836Z",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\graph-health-files.stdout.json",
+        "bytes": 12981,
+        "sha256": "F421FAA952BF4F0AC966098B4979BC9D881A489ECECD15FF43BBCC4ECDA6F825"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\graph-health-files.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "schema": "p6d-target-boundary-comparison-v1",
+  "generatedUtc": "2026-08-23T22:38:00.1553945Z",
+  "status": "PASS",
+  "git": {
+    "headUnchanged": true,
+    "parentUnchanged": true,
+    "treeUnchanged": true,
+    "statusByteExact": true,
+    "cachedByteExact": true,
+    "worktreeDiffByteExact": true,
+    "indexBytesUnchanged": true,
+    "indexSha256Unchanged": true
+  },
+  "source": {
+    "denominator": 203,
+    "observed": 203,
+    "missing": 0,
+    "differences": []
+  },
+  "config": {
+    "denominator": 3,
+    "observed": 3,
+    "missing": 0,
+    "differences": []
+  },
+  "anvien": {
+    "beforeFiles": 4,
+    "afterFiles": 4,
+    "beforeReparse": 0,
+    "afterReparse": 0,
+    "added": [],
+    "removed": [],
+    "changed": [
+      {
+        "relativePath": "graph.json",
+        "beforeBytes": 440884239,
+        "afterBytes": 840614023,
+        "beforeSha256": "061B6263A9D05D9C4702E290DECA22E526C06FE7B2F303E03342984E6D75857C",
+        "afterSha256": "8763AA2D089328F3D782A5F01E06178D171922E3A5CE96A4EE6707510976C920"
+      },
+      {
+        "relativePath": "lbug",
+        "beforeBytes": 168755200,
+        "afterBytes": 597946368,
+        "beforeSha256": "893F91F1FB48364A4743BBFAC88733BC764FD5FF53E63ADAFA82DE4D848F68B2",
+        "afterSha256": "74AD03D12D83B441E9FBC994C8F30086EF5384B916F17DB0488BCD2B75C68A92"
+      },
+      {
+        "relativePath": "meta.json",
+        "beforeBytes": 259,
+        "afterBytes": 259,
+        "beforeSha256": "3F7D696A0C6FCBB6BC6BD868CA26D14C16D4941313F8488FB985E5640916657F",
+        "afterSha256": "B6C0312D06B40B25B000C5450FE70E48C857C0339D156C5062CEED88AF90AC2D"
+      }
+    ],
+    "deltaOutsideAllowedRoot": 0
+  },
+  "runtimeUnchanged": true
+}

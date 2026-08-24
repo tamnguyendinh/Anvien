@@ -1,0 +1,18 @@
+{
+  "schema": "p6d-target-native-gap-edges-v1",
+  "query": "MATCH (a)-[r:CodeRelation]->(g:ResolutionGap) WHERE g.sourceSiteId = 'SourceSite:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#type-reference#Promise#13#3#13#10' OR g.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71' OR g.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70' RETURN a.id AS sourceId, g.id AS gapId, g.sourceNodeId AS gapSourceNodeId, g.sourceSiteId AS sourceSiteId, r.type AS relationType, r.sourceSiteId AS relationSourceSiteId, r.sourceSiteStatus AS sourceSiteStatus, r.proofKind AS proofKind ORDER BY g.sourceSiteId",
+  "exitCode": 0,
+  "stdout": {
+    "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-native-gap-edges.stdout.json",
+    "bytes": 8059,
+    "sha256": "18B8670368E652F8CE2E5C118419200992BF09325C8A37176D8ED2514710CEF0"
+  },
+  "stderr": {
+    "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-native-gap-edges.stderr.txt",
+    "bytes": 0,
+    "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "loadedLbugObserved": true,
+  "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+  "moduleObservationErrors": 0
+}

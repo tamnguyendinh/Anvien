@@ -1,0 +1,91 @@
+{
+  "schema": "p6d-target-exact-reader-matrix-v1",
+  "generatedUtc": "2026-08-23T22:26:13.5360478Z",
+  "sites": [
+    "SourceSite:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#type-reference#Promise#13#3#13#42",
+    "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71",
+    "SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70"
+  ],
+  "relationQuery": "MATCH (a)-[r:CodeRelation]->(b:ExternalSymbol) WHERE r.sourceSiteId = 'SourceSite:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#type-reference#Promise#13#3#13#42' OR r.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71' OR r.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70' RETURN a.id AS sourceId, b.id AS targetId, b.name AS targetName, b.qualifiedName AS qualifiedName, b.meaning AS meaning, b.authorityKind AS authorityKind, b.typeScriptVersion AS typeScriptVersion, b.catalogProofState AS catalogProofState, b.authorityHash AS authorityHash, b.catalogHash AS catalogHash, b.catalogArtifactHash AS catalogArtifactHash, b.declarationLibraries AS declarationLibraries, b.declarationRanges AS declarationRanges, b.origin AS origin, b.external AS external, b.editable AS editable, b.repositoryOwned AS repositoryOwned, r.type AS relationType, r.resolutionSource AS resolutionSource, r.sourceSiteId AS sourceSiteId, r.sourceSiteStatus AS sourceSiteStatus, r.proofKind AS proofKind, r.targetRole AS targetRole, r.targetText AS targetText, r.filePath AS filePath, r.startLine AS startLine, r.startCol AS startCol, r.endLine AS endLine, r.endCol AS endCol ORDER BY r.sourceSiteId, r.type",
+  "gapQuery": "MATCH (g:ResolutionGap) WHERE g.sourceSiteId = 'SourceSite:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#type-reference#Promise#13#3#13#42' OR g.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71' OR g.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70' RETURN g.id AS id, g.sourceSiteId AS sourceSiteId, g.classification AS classification, g.actionability AS actionability, g.proofKind AS proofKind, g.note AS note ORDER BY g.sourceSiteId",
+  "rows": [
+    {
+      "name": "target-native-external-relations",
+      "arguments": [
+        "cypher",
+        "MATCH (a)-[r:CodeRelation]->(b:ExternalSymbol) WHERE r.sourceSiteId = 'SourceSite:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#type-reference#Promise#13#3#13#42' OR r.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71' OR r.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70' RETURN a.id AS sourceId, b.id AS targetId, b.name AS targetName, b.qualifiedName AS qualifiedName, b.meaning AS meaning, b.authorityKind AS authorityKind, b.typeScriptVersion AS typeScriptVersion, b.catalogProofState AS catalogProofState, b.authorityHash AS authorityHash, b.catalogHash AS catalogHash, b.catalogArtifactHash AS catalogArtifactHash, b.declarationLibraries AS declarationLibraries, b.declarationRanges AS declarationRanges, b.origin AS origin, b.external AS external, b.editable AS editable, b.repositoryOwned AS repositoryOwned, r.type AS relationType, r.resolutionSource AS resolutionSource, r.sourceSiteId AS sourceSiteId, r.sourceSiteStatus AS sourceSiteStatus, r.proofKind AS proofKind, r.targetRole AS targetRole, r.targetText AS targetText, r.filePath AS filePath, r.startLine AS startLine, r.startCol AS startCol, r.endLine AS endLine, r.endCol AS endCol ORDER BY r.sourceSiteId, r.type",
+        "--repo",
+        "E:\\cheapapp.org"
+      ],
+      "startedUtc": "2026-08-23T22:25:52.6420909Z",
+      "endedUtc": "2026-08-23T22:25:53.1170365Z",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-native-external-relations.stdout.json",
+        "bytes": 226,
+        "sha256": "83DC922845253D56056B8A4B89077A3F42CB849BD6E30FB7669BC4BCF7C8BDC8"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-native-external-relations.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    },
+    {
+      "name": "target-native-resolution-gaps",
+      "arguments": [
+        "cypher",
+        "MATCH (g:ResolutionGap) WHERE g.sourceSiteId = 'SourceSite:modules/commercial-config/server/admin-commercial-config/read-admin-commercial-config.ts#type-reference#Promise#13#3#13#42' OR g.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.max#191#9#191#71' OR g.sourceSiteId = 'SourceSite:modules/email/server/operations/email-operations-observability.ts#call#Math.min#191#21#191#70' RETURN g.id AS id, g.sourceSiteId AS sourceSiteId, g.classification AS classification, g.actionability AS actionability, g.proofKind AS proofKind, g.note AS note ORDER BY g.sourceSiteId",
+        "--repo",
+        "E:\\cheapapp.org"
+      ],
+      "startedUtc": "2026-08-23T22:25:53.3436812Z",
+      "endedUtc": "2026-08-23T22:25:54.0553842Z",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-native-resolution-gaps.stdout.json",
+        "bytes": 9114,
+        "sha256": "7FE32EB360E567958E4332939A30ED22FCE2CC175A1661D35012D1BC78FBA8AE"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-native-resolution-gaps.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    },
+    {
+      "name": "target-graph-resolution-inventory",
+      "arguments": [
+        "resolution-inventory",
+        "--graph",
+        "E:\\cheapapp.org\\.anvien\\graph.json",
+        "--json"
+      ],
+      "startedUtc": "2026-08-23T22:25:54.1903494Z",
+      "endedUtc": "2026-08-23T22:26:13.4126925Z",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-graph-resolution-inventory.stdout.json",
+        "bytes": 227024,
+        "sha256": "8793441E3984080C422B7AAA5FAFE0BFB37CEE759987AB9155D0D564E06A9F08"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-graph-resolution-inventory.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    }
+  ]
+}

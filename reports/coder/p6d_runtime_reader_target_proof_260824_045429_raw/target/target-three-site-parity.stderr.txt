@@ -1,0 +1,19 @@
+node:fs:441
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: Cannot create a string longer than 0x1fffffe8 characters
+    at Object.readFileSync (node:fs:441:20)
+    at [eval]:23:29
+    at [eval]:113:55
+    at runScriptInThisContext (node:internal/vm:219:10)
+    at node:internal/process/execution:451:12
+    at [eval]-wrapper:6:24
+    at runScriptInContext (node:internal/process/execution:449:60)
+    at evalFunction (node:internal/process/execution:283:30)
+    at evalTypeScript (node:internal/process/execution:295:3)
+    at node:internal/main/eval_string:71:3 {
+  code: 'ERR_STRING_TOO_LONG'
+}
+
+Node.js v24.15.0

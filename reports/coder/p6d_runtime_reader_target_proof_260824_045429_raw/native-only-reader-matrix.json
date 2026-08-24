@@ -1,0 +1,71 @@
+{
+  "schema": "p6d-native-only-reader-v1",
+  "generatedUtc": "2026-08-23T22:01:38.1836224Z",
+  "status": "PASS",
+  "nativeOnlyRepo": "E:\\Anvien\\.tmp\\p6d-r43-built-readers-nongit-260824_045429-70490f2cfaf44e2a850ff5b704f6cb17\\native-only-reader-repo",
+  "graphJsonPresent": false,
+  "sourceLbug": {
+    "bytes": 388788224,
+    "sha256": "4A66D15961B5F496400AEA6667C4E57364167984D3DBA6A8220F65BADFE54668"
+  },
+  "copiedLbug": {
+    "bytes": 388788224,
+    "sha256": "4A66D15961B5F496400AEA6667C4E57364167984D3DBA6A8220F65BADFE54668"
+  },
+  "registration": {
+    "stdout": {
+      "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\native-only-register.stdout.json",
+      "bytes": 162,
+      "sha256": "8602486C87DD82E5C6CB7E9B924FF8FB5317D974C19F8EA89F830AD51EC60B79"
+    },
+    "stderr": {
+      "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\native-only-register.stderr.txt",
+      "bytes": 0,
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    }
+  },
+  "rows": [
+    {
+      "name": "native-only-gap-count",
+      "command": "E:\\Anvien\\anvien\\bin\\anvien.exe cypher \"MATCH (g:ResolutionGap) RETURN count(g) AS gap_count\" --repo E:\\Anvien\\.tmp\\p6d-r43-built-readers-nongit-260824_045429-70490f2cfaf44e2a850ff5b704f6cb17\\native-only-reader-repo",
+      "startedUtc": "2026-08-23T22:01:36.8695359Z",
+      "endedUtc": "2026-08-23T22:01:37.3602354Z",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\native-only-gap-count.stdout.json",
+        "bytes": 491,
+        "sha256": "CEA1F858C4A1DE6EE69EB80DF99692307064573D7EF57C50FDA62413CBD5D990"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\native-only-gap-count.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    },
+    {
+      "name": "native-only-gap-groups",
+      "command": "E:\\Anvien\\anvien\\bin\\anvien.exe cypher \"MATCH (g:ResolutionGap) RETURN g.classification AS classification, g.actionability AS actionability, count(g) AS gap_count\" --repo E:\\Anvien\\.tmp\\p6d-r43-built-readers-nongit-260824_045429-70490f2cfaf44e2a850ff5b704f6cb17\\native-only-reader-repo",
+      "startedUtc": "2026-08-23T22:01:37.5257533Z",
+      "endedUtc": "2026-08-23T22:01:38.0315400Z",
+      "exitCode": 0,
+      "stdout": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\native-only-gap-groups.stdout.json",
+        "bytes": 803,
+        "sha256": "78D476158BDC607750F5FF0475C5F1B08DDCBF9BCF0752AD7AC7D4FB29DD6D04"
+      },
+      "stderr": {
+        "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\native-only-gap-groups.stderr.txt",
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "loadedLbugObserved": true,
+      "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+      "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+      "moduleObservationErrors": 0
+    }
+  ]
+}

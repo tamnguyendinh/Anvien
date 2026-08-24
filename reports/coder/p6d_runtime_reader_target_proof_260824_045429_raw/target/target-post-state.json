@@ -1,0 +1,1515 @@
+{
+  "schema": "p6d-target-post-state-v1",
+  "capturedUtc": "2026-08-23T22:37:59.2412337Z",
+  "target": "E:\\cheapapp.org",
+  "git": {
+    "head": "a869876ab6262dacde6cd5d432d099a91852a646",
+    "parent": "79ab9b101cc21ec8da79dab724d435e87a6ea6f6",
+    "tree": "dc024c1d92bdee6211f389a97d0431c267fe5324",
+    "statusPorcelainV2": "# branch.oid a869876ab6262dacde6cd5d432d099a91852a646\r\n# branch.head master\r\n1 .M N... 100644 100644 100644 39823deb19bfd8feea98ed8b9de2c0e8718aa368 39823deb19bfd8feea98ed8b9de2c0e8718aa368 .dockerignore\r\n1 .M N... 100644 100644 100644 8c9171221716b3d6b933005af172512cb6380f1a 8c9171221716b3d6b933005af172512cb6380f1a reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png\r\n1 .M N... 100644 100644 100644 b9c2d11b08b766a96af2d209d9e84358fc27b402 b9c2d11b08b766a96af2d209d9e84358fc27b402 reports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png\r\n1 .M N... 100644 100644 100644 fc00c5c45bef149bed36a1b5dfdb19a06cf6acdb fc00c5c45bef149bed36a1b5dfdb19a06cf6acdb reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png\r\n1 .M N... 100644 100644 100644 8c50fab5da3346d22d20cc007742419681ca8b34 8c50fab5da3346d22d20cc007742419681ca8b34 reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png\r\n1 .M N... 100644 100644 100644 29498fc4c0a48183b16f623f9f53d5487f33d8b8 29498fc4c0a48183b16f623f9f53d5487f33d8b8 reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png\r\n1 .M N... 100644 100644 100644 1515c3b7b418fdf8d2108426959cd8c6596298ff 1515c3b7b418fdf8d2108426959cd8c6596298ff reports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png\r\n? reports/QA/rp_qa_260619_145255_by_gpt5_user_admin_lifecycle.md\r\n? reports/QA/rp_qa_260619_152926_by_gpt5_release_catalog_mutation.md\r\n? reports/problem/images/login-idea-2.jpg\r\n? reports/problem/images/login-idea-3.jpg\r\n? reports/problem/images/login-idea.jpg\r\n? reports/problem/images/wallet-idea.jpg",
+    "cachedNameStatus": "",
+    "worktreeNameStatus": "M\t.dockerignore\r\nM\treports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-confirmation.png\r\nM\treports/QA/2026-06-15-admin-artifact-delete-confirmation/docker/real-chrome-desktop-admin-artifact-delete-disabled.png\r\nM\treports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-apps-empty.png\r\nM\treports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-download-empty.png\r\nM\treports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-desktop-landing-en-review.png\r\nM\treports/QA/2026-06-15-runtime-landing-header-footer-i18n/docker/real-chrome-mobile-landing-en-review.png",
+    "gitDir": "E:\\cheapapp.org\\.git",
+    "index": {
+      "path": "E:\\cheapapp.org\\.git\\index",
+      "bytes": 375683,
+      "sha256": "D2417BF08B7128F6069FF117546E78E527514F98354DCADA32CC6164F60B1C71",
+      "createdUtc": "2026-06-19T07:52:58.0870986Z",
+      "lastWriteUtc": "2026-06-19T07:52:58.1138959Z"
+    }
+  },
+  "candidateSourceFiles": [
+    {
+      "path": "E:\\cheapapp.org\\app\\(account)\\dashboard\\billing\\invoices\\[invoiceId]\\document\\route.ts",
+      "bytes": 4361,
+      "sha256": "FE9692562F46D1C52B0DE95DA39040D4F3F18556B86F0C3B847B4CEEA1040239",
+      "createdUtc": "2026-04-21T14:09:40.4632040Z",
+      "lastWriteUtc": "2026-04-21T14:09:40.4632040Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(account)\\dashboard\\billing\\page.tsx",
+      "bytes": 18424,
+      "sha256": "1223C813264FFF41F419878EFCF05116BB750CC9B7C74B105DAE97C48A4389D9",
+      "createdUtc": "2026-05-28T20:34:38.9935734Z",
+      "lastWriteUtc": "2026-06-05T22:28:08.8228143Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(account)\\dashboard\\my-apps\\page.tsx",
+      "bytes": 7113,
+      "sha256": "94C4FAB661C05EA9D650F2A6220B388AAE3860EB045E8301E24FE1D33DC8C1A8",
+      "createdUtc": "2026-05-28T20:33:34.3005056Z",
+      "lastWriteUtc": "2026-06-07T11:09:25.1210850Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(account)\\dashboard\\page.tsx",
+      "bytes": 13365,
+      "sha256": "14CCA4FBFE320D18817AA7576DB0FA227189D0F9424482E994146E156333E2AD",
+      "createdUtc": "2026-05-28T20:33:01.6674765Z",
+      "lastWriteUtc": "2026-06-07T11:09:25.1190856Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(account)\\dashboard\\settings\\page.tsx",
+      "bytes": 14630,
+      "sha256": "BC848C1DC6FC72BAECCAA34904C40BF798A1B52758FB33684AD1D55B0860B96D",
+      "createdUtc": "2026-05-28T20:39:58.3269632Z",
+      "lastWriteUtc": "2026-06-05T22:50:46.5764578Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(account)\\dashboard\\usage\\page.tsx",
+      "bytes": 692,
+      "sha256": "74CAF3608C2AB15545705548AB4541E1C44D428A6AFAF118BE32E550A5BB5CBD",
+      "createdUtc": "2026-06-01T14:06:28.5518588Z",
+      "lastWriteUtc": "2026-06-02T07:58:33.3738888Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(account)\\layout.tsx",
+      "bytes": 4518,
+      "sha256": "23B7D27FE4ABB52F08800869A718C633BE05F2F1F62A7B9F61706B4D7755E834",
+      "createdUtc": "2026-04-17T10:39:48.7808849Z",
+      "lastWriteUtc": "2026-06-14T10:02:59.7879129Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\admin\\commercial-config-fixture\\page.tsx",
+      "bytes": 788,
+      "sha256": "09D402FE4BE51CE3A5106D94A9380D7BBB43ECE0EF8D5668C0C9C61291511124",
+      "createdUtc": "2026-04-29T07:41:17.0745816Z",
+      "lastWriteUtc": "2026-06-06T13:28:48.1036092Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\admin\\configuration\\admin-configuration-actor.ts",
+      "bytes": 1582,
+      "sha256": "D3F857BC2B94FCCF1098944E41F2519B18865378A0F876BDC1FAFC7AA25F59EB",
+      "createdUtc": "2026-04-29T12:25:40.0798197Z",
+      "lastWriteUtc": "2026-05-01T02:04:10.4943986Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\admin\\configuration\\page.tsx",
+      "bytes": 40483,
+      "sha256": "4E353299924D426A54DCEE51D01042FC0039C33788B9F2753E4E8709FFA8AE32",
+      "createdUtc": "2026-05-29T23:45:29.3643782Z",
+      "lastWriteUtc": "2026-06-19T03:49:21.2027982Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\admin\\distribution\\fixture\\page.tsx",
+      "bytes": 732,
+      "sha256": "AB7BE53C5F2880D6A07674B9FE6055858D6668A1D2352986B1978EF8A62E5F99",
+      "createdUtc": "2026-06-01T16:15:16.6433086Z",
+      "lastWriteUtc": "2026-06-06T13:28:48.1056100Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\admin\\distribution\\page.tsx",
+      "bytes": 10037,
+      "sha256": "404AD6B46EC4ACB48480FE7B345AE9EF2DBD9191AB619759B0C79058F41960E1",
+      "createdUtc": "2026-04-29T04:00:43.7028525Z",
+      "lastWriteUtc": "2026-06-15T12:55:34.0244901Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\admin\\homepage-slogan-config-fixture\\page.tsx",
+      "bytes": 804,
+      "sha256": "8312847CD611CF4B00BCB0E6FA54460E350CE3002F234E1D1C3C0D35CDFEC76F",
+      "createdUtc": "2026-04-29T15:33:59.5538424Z",
+      "lastWriteUtc": "2026-06-06T13:28:48.1046125Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\admin\\lookup\\page.tsx",
+      "bytes": 17435,
+      "sha256": "9312B095F668CC9F443846E199EF3CFDB855727913C17838C94048493EC34FF6",
+      "createdUtc": "2026-05-29T21:48:07.8196387Z",
+      "lastWriteUtc": "2026-06-14T20:38:04.8416096Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\admin\\page.tsx",
+      "bytes": 39076,
+      "sha256": "B011CB402FD52C4FB049C353C337F0D46C9028931EBFC7FF214FE8AF715498DA",
+      "createdUtc": "2026-05-29T21:10:08.2937066Z",
+      "lastWriteUtc": "2026-06-18T13:59:30.6683180Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\admin\\public-content-config-fixture\\page.tsx",
+      "bytes": 801,
+      "sha256": "06B3A356F3955E65E1C0860E1199308B066155FACCEE841DA731434D800975EE",
+      "createdUtc": "2026-04-29T08:21:00.3481267Z",
+      "lastWriteUtc": "2026-06-06T13:28:48.1046125Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\admin\\registry\\app-catalog\\submit\\route.ts",
+      "bytes": 5039,
+      "sha256": "7DE2BD64B63F2D94EA34D7C0B2E4E43B016221DCB9B8F981D482FCFE3BE9D087",
+      "createdUtc": "2026-04-24T11:48:44.9859275Z",
+      "lastWriteUtc": "2026-06-02T16:04:25.1182351Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\admin\\registry\\page.tsx",
+      "bytes": 24349,
+      "sha256": "D2F8D2CF892FAC2A4C678AF095E50DD82277107A54F3A604952ECAF0A93CAA51",
+      "createdUtc": "2026-05-29T22:26:52.4242279Z",
+      "lastWriteUtc": "2026-06-14T18:45:33.4019204Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\admin\\registry\\submit\\route.ts",
+      "bytes": 4433,
+      "sha256": "569A95DD3F859FA50BBEEAD3566DE01C59F3989568E95B7037D92092D6281082",
+      "createdUtc": "2026-04-24T06:05:04.5265111Z",
+      "lastWriteUtc": "2026-06-14T15:53:00.4216852Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(admin)\\layout.tsx",
+      "bytes": 3953,
+      "sha256": "99F25F4CDED80A25C2DAD8FC1098D1F1A295E806CF4786A3ADB99403015385F1",
+      "createdUtc": "2026-04-17T10:39:48.8655983Z",
+      "lastWriteUtc": "2026-06-02T16:27:42.0082881Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(public)\\apps\\[appType]\\page.tsx",
+      "bytes": 1231,
+      "sha256": "5ACF5EEE81EBCEE218374181C522E1B4601FF9440D37BDA67F82C46A186C389F",
+      "createdUtc": "2026-04-17T10:39:48.5959983Z",
+      "lastWriteUtc": "2026-04-18T07:55:11.8679354Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(public)\\apps\\page.tsx",
+      "bytes": 1221,
+      "sha256": "431BD6E8A2C6F72FBE478A183FA80DADDE5272F20F7F66301F68540754BA8F1F",
+      "createdUtc": "2026-04-17T10:39:48.5959983Z",
+      "lastWriteUtc": "2026-06-01T09:36:12.2312830Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(public)\\auth\\login\\page.tsx",
+      "bytes": 2196,
+      "sha256": "9AFF6DA38C58173F14121FED96AA814EEEB4262D4C63EFA8E71250E788DC7B5E",
+      "createdUtc": "2026-04-17T10:39:48.6116307Z",
+      "lastWriteUtc": "2026-06-07T08:32:06.5428585Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(public)\\auth\\recovery\\page.tsx",
+      "bytes": 2782,
+      "sha256": "40D8E11181C59C86A17A293988174D821E82CC94C3EDE9349AFA4DCBF36B15FB",
+      "createdUtc": "2026-04-17T10:39:48.6116307Z",
+      "lastWriteUtc": "2026-06-07T08:32:06.5448584Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(public)\\auth\\signup\\page.tsx",
+      "bytes": 2239,
+      "sha256": "29AA7639B199AD5FAE0975E3FD8F20AC7C75506C16E434DB8319C1ECC9921F9E",
+      "createdUtc": "2026-04-17T10:39:48.6116307Z",
+      "lastWriteUtc": "2026-06-07T08:32:06.5438574Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(public)\\auth\\verify\\page.tsx",
+      "bytes": 2865,
+      "sha256": "78F8BF6FFD2D756403AFE73181118F64DCD5E13B1F7AC1738FC3E18A79DEF341",
+      "createdUtc": "2026-04-17T13:05:42.0691486Z",
+      "lastWriteUtc": "2026-06-07T08:32:06.5448584Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(public)\\download\\[appType]\\[releaseId]\\page.tsx",
+      "bytes": 1755,
+      "sha256": "18521FCB61FC02F81621759DE3AC8A8A3C6F5374141701CA58EE1A6FFAC35093",
+      "createdUtc": "2026-04-20T14:56:16.2680854Z",
+      "lastWriteUtc": "2026-04-20T14:56:16.2690860Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(public)\\download\\artifacts\\[artifactId]\\route.ts",
+      "bytes": 1371,
+      "sha256": "B3A1834ABF735FC689B0B832F793FAC1F1225B889B99F185627C7B9CA6299FFF",
+      "createdUtc": "2026-04-20T14:56:16.2690860Z",
+      "lastWriteUtc": "2026-06-08T01:24:27.1722613Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(public)\\download\\page.tsx",
+      "bytes": 1296,
+      "sha256": "F3D3E0A635E0E3A1A7ABD3F620F7580A66928B800C8E73F223E0AF904E7AF0E2",
+      "createdUtc": "2026-04-20T14:56:16.2680854Z",
+      "lastWriteUtc": "2026-04-20T14:56:16.2680854Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(public)\\layout.tsx",
+      "bytes": 3142,
+      "sha256": "EA46966B350050A713A8A648F8B3096DB859B8AC0C2DE6DBD200B0D4D0F8CE84",
+      "createdUtc": "2026-04-17T10:39:48.5959983Z",
+      "lastWriteUtc": "2026-06-15T07:18:57.9662682Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\(public)\\page.tsx",
+      "bytes": 1319,
+      "sha256": "131E9E4CB175CE181DE329F8D6C650AFDAE14585A89BB631F15BC41159732F54",
+      "createdUtc": "2026-04-18T03:31:41.8054447Z",
+      "lastWriteUtc": "2026-06-02T10:30:23.2972497Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\app\\layout.tsx",
+      "bytes": 2426,
+      "sha256": "258E20BA2B174074F108FF7880C5694DB108438D82BEEB5EF092A5858021C11D",
+      "createdUtc": "2026-04-17T10:39:48.5959983Z",
+      "lastWriteUtc": "2026-06-07T12:24:47.4734348Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\lib\\db\\repositories\\bootstrap-marker-repository.ts",
+      "bytes": 2819,
+      "sha256": "14C831488834D77FE982CEA14BA2B5CD2AB93B56225516196887C6C05EF9E9E8",
+      "createdUtc": "2026-04-17T12:39:16.7716777Z",
+      "lastWriteUtc": "2026-04-17T12:39:16.7716777Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\lib\\db\\transactions\\index.ts",
+      "bytes": 474,
+      "sha256": "D2555D60AAC2C3204EEAFD0C26EFD3939DB7E61E7581721811AD380D822E2631",
+      "createdUtc": "2026-04-17T12:39:16.7716777Z",
+      "lastWriteUtc": "2026-04-17T12:39:16.7716777Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\lib\\i18n\\request-context.ts",
+      "bytes": 1221,
+      "sha256": "29974E4B2CAF4A6C38902D211AD8281A15D6813CC1F4623B854452F33EF381F7",
+      "createdUtc": "2026-04-17T20:55:49.7079215Z",
+      "lastWriteUtc": "2026-04-18T00:49:11.6728412Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\lib\\logging\\structured-log-emitter.ts",
+      "bytes": 5200,
+      "sha256": "3484A1451B99EE2427E1E63F8FDDA7FC95990134ACBD99C81835427AC177A204",
+      "createdUtc": "2026-04-29T23:10:17.0680678Z",
+      "lastWriteUtc": "2026-04-30T09:13:19.5660797Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\lib\\request-context\\cookies.ts",
+      "bytes": 343,
+      "sha256": "9BBDDB99F0BF71D92E7DEEA8204346F052E677148886AA1FD5B550FD7A25D31A",
+      "createdUtc": "2026-04-21T10:16:06.1189071Z",
+      "lastWriteUtc": "2026-04-21T10:16:06.1189071Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\lib\\request-context\\path.ts",
+      "bytes": 411,
+      "sha256": "EA9894625CBE4FFCF6480187DE372E9CB36C8D0E4E2B98059499A01A0A720064",
+      "createdUtc": "2026-05-21T05:50:16.9925776Z",
+      "lastWriteUtc": "2026-05-21T05:50:16.9925776Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\lib\\request-context\\target.ts",
+      "bytes": 415,
+      "sha256": "66C4E2C5976CDBA6D02B2C247287EA20185F6EF167D29110D4E1A96C14C13CA5",
+      "createdUtc": "2026-06-02T07:06:03.2655680Z",
+      "lastWriteUtc": "2026-06-02T07:06:03.2655680Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\access-visibility\\access-visibility-read-model.ts",
+      "bytes": 8208,
+      "sha256": "1BA9E08CC2D2EBA1155654A82EF06E29BF96E7C04B5EC51045C8755750531CDA",
+      "createdUtc": "2026-04-21T16:29:53.3106720Z",
+      "lastWriteUtc": "2026-04-21T16:29:53.3106720Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\billing-history\\billing-history-read-model.ts",
+      "bytes": 16037,
+      "sha256": "52766CD017B94B20FE8037B7708CA725700C73E031077DB191B71ABC82F568B5",
+      "createdUtc": "2026-04-21T12:52:47.4789085Z",
+      "lastWriteUtc": "2026-04-21T12:54:20.8312844Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\closure\\account-closure-lifecycle.ts",
+      "bytes": 22381,
+      "sha256": "311867C598F06DB81ABD1CB74969E5C087C7693755E1791341C5BBBD2DE1B42B",
+      "createdUtc": "2026-05-05T03:51:34.2510617Z",
+      "lastWriteUtc": "2026-06-18T12:01:29.2903978Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\closure\\expired-account-closure-completion-job.ts",
+      "bytes": 1458,
+      "sha256": "333BE2E2C806196964DD42EED8D66129078304DB0602EFCE280FA5321A3F22CF",
+      "createdUtc": "2026-05-05T04:52:56.0263233Z",
+      "lastWriteUtc": "2026-05-05T04:52:56.0263233Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\closure\\read-account-closure-route-view.ts",
+      "bytes": 5922,
+      "sha256": "3215584AB7552E6161CDECD5965E610183890A96CD7F42FF1525630B32D2936D",
+      "createdUtc": "2026-04-22T20:55:34.5381710Z",
+      "lastWriteUtc": "2026-06-02T08:58:01.4425916Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\closure\\request-account-closure.ts",
+      "bytes": 17245,
+      "sha256": "794280B813C7E0F625164AFD55B5A787A7B3ADCCA9CB728998EDC318DCE1F82F",
+      "createdUtc": "2026-04-22T19:12:47.9298537Z",
+      "lastWriteUtc": "2026-06-16T09:16:33.8802203Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\closure\\resolve-account-closure-actor.ts",
+      "bytes": 2960,
+      "sha256": "3278FCA801714E1FDF90C0C15E0F598A9E07F8EBF4A0BC51E7105EFED7F4A7A6",
+      "createdUtc": "2026-04-22T19:12:47.9298537Z",
+      "lastWriteUtc": "2026-05-01T02:03:00.0496938Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\export\\read-account-export-route-view.ts",
+      "bytes": 4211,
+      "sha256": "23AEAA9AE0FE784341AB61BFF2B531F7D3D500BAF8300740313E64F43C967B69",
+      "createdUtc": "2026-04-22T20:55:34.5381710Z",
+      "lastWriteUtc": "2026-06-05T22:50:46.5774551Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\export\\request-account-export.ts",
+      "bytes": 6895,
+      "sha256": "8C2B83F835F5B2C903E7F16FDDA757C94997DAC8C52E774DED7E503247F28528",
+      "createdUtc": "2026-04-22T19:12:47.9142357Z",
+      "lastWriteUtc": "2026-05-01T04:36:56.5169125Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\export\\resolve-account-export-actor.ts",
+      "bytes": 5394,
+      "sha256": "DCB664046DE52E53B0BFEF50ED753E4449C9D24DF83C5A166971DF748717A8A2",
+      "createdUtc": "2026-04-22T19:12:47.9142357Z",
+      "lastWriteUtc": "2026-05-21T13:08:14.0407748Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\invoices\\invoice-read-model.ts",
+      "bytes": 6826,
+      "sha256": "A24914C1E414193B7C468186B7EF7E59335D30CAB7D04B0F4696B00C8871783F",
+      "createdUtc": "2026-04-21T12:52:47.4859074Z",
+      "lastWriteUtc": "2026-04-21T12:53:27.0567429Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\locale\\save-account-locale-preference.ts",
+      "bytes": 6245,
+      "sha256": "038E70F16FF83E698E8A159140420942260E90380AAEFDC600B2922D748805BD",
+      "createdUtc": "2026-04-21T22:03:07.4236787Z",
+      "lastWriteUtc": "2026-05-28T20:39:02.0127840Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\my-apps\\my-apps-read-model.ts",
+      "bytes": 11949,
+      "sha256": "059C3F1C6D7398122DC373C40FC82052CC3991D8C3167124E97F34BC1AB8F211",
+      "createdUtc": "2026-04-21T02:36:13.9939156Z",
+      "lastWriteUtc": "2026-05-01T02:03:00.0466901Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\notifications\\account-portal-email-delivery.ts",
+      "bytes": 11940,
+      "sha256": "AEB225A71348FA27798382D91DC287C55A6510AEEC89B8D0E69DEE569B9540A8",
+      "createdUtc": "2026-06-16T09:16:16.4887836Z",
+      "lastWriteUtc": "2026-06-16T09:16:16.4887836Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\overview\\overview-read-model.ts",
+      "bytes": 1673,
+      "sha256": "5ADADBD1F7B225E6A0B385B0B48B740EFCFDFB4C2807E4E7DB2D52F87ACF8BCE",
+      "createdUtc": "2026-04-21T02:37:16.3727502Z",
+      "lastWriteUtc": "2026-04-21T02:37:16.3732824Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\preferences\\read-account-preferences-route-view.ts",
+      "bytes": 6208,
+      "sha256": "90517B636C5F5EEB9BC3E5C748DD140DFC9EC3906A6F13EE7C9E7A6ABECF7173",
+      "createdUtc": "2026-06-02T08:56:30.5353154Z",
+      "lastWriteUtc": "2026-06-02T08:56:30.5363072Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\preferences\\save-account-preferences.ts",
+      "bytes": 9652,
+      "sha256": "B12C87EA2A637D3A05430184E445021A6B773DF0AF00B852F9E85B113EECE8DB",
+      "createdUtc": "2026-04-21T22:03:07.4346761Z",
+      "lastWriteUtc": "2026-05-28T20:39:02.0137842Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\profile\\account-settings-write-options.ts",
+      "bytes": 890,
+      "sha256": "2CE630AFC966D2192FF283AB82A29CA6578707240E74B9BBD10D1AFAAC6C89DE",
+      "createdUtc": "2026-04-21T22:03:07.4216744Z",
+      "lastWriteUtc": "2026-04-21T22:03:07.4216744Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\profile\\resolve-account-settings-actor.ts",
+      "bytes": 2473,
+      "sha256": "AFFB4C4D880630CE9F09F5ED5E84870EC8DD141DFBE194AA2A259C6A577E9C83",
+      "createdUtc": "2026-04-21T22:03:07.4216744Z",
+      "lastWriteUtc": "2026-05-28T20:39:02.0107824Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\profile\\save-account-profile.ts",
+      "bytes": 12153,
+      "sha256": "9ED38CF21A5DC1CBEEE4AD1BD7A78466549EC93B3FC26DD11A825DAD7F887CF3",
+      "createdUtc": "2026-04-21T22:03:07.4226775Z",
+      "lastWriteUtc": "2026-05-28T20:39:02.0147835Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\security\\read-account-security-route-view.ts",
+      "bytes": 2676,
+      "sha256": "E92EAA16CEFA5CB7EC9C33DC6FF7C44E485A678152B8680CEEF809F34FAD8C88",
+      "createdUtc": "2026-04-22T15:59:46.9179915Z",
+      "lastWriteUtc": "2026-06-18T04:42:35.0904673Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\security\\resolve-account-security-actor.ts",
+      "bytes": 1586,
+      "sha256": "878658149B5B9A468D8539CE3C9FB00429CC8E5C72C458AFA6726DC20FFE2C52",
+      "createdUtc": "2026-04-22T13:55:17.3974540Z",
+      "lastWriteUtc": "2026-05-01T02:03:00.0558388Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\security\\save-account-password.ts",
+      "bytes": 7259,
+      "sha256": "F36827923ACFB494027F5AE00FD443EAE90A2D528F79D39D8E107A09D8F7E706",
+      "createdUtc": "2026-04-22T13:55:17.3976934Z",
+      "lastWriteUtc": "2026-05-05T11:05:16.9688857Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\session-controls\\invalidate-account-portal-session-by-id.ts",
+      "bytes": 4672,
+      "sha256": "20101701FBC3CB8D13CCCBEDB2126885E02ACD2C2ECFA2F9B0EF497756F4DA4C",
+      "createdUtc": "2026-04-22T13:55:17.3997599Z",
+      "lastWriteUtc": "2026-05-05T11:05:43.2587600Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\session-controls\\invalidate-current-account-portal-session.ts",
+      "bytes": 2655,
+      "sha256": "A5AD39F298EBA6643EA564507A55A965DE7AA772A81D88701420ADCC4AEEE0B7",
+      "createdUtc": "2026-04-22T13:55:17.3997599Z",
+      "lastWriteUtc": "2026-05-05T11:05:35.1665328Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\session-controls\\read-account-session-controls-route-view.ts",
+      "bytes": 7598,
+      "sha256": "7712E5BA358C6957D09F883CCE62700B1A5B36535A4EA5D5ECAAFFC325B5A3A0",
+      "createdUtc": "2026-04-22T15:59:46.9336301Z",
+      "lastWriteUtc": "2026-06-02T08:57:29.3780442Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\session-controls\\renew-account-portal-session.ts",
+      "bytes": 2580,
+      "sha256": "6EDBE80A8F974E8C7F293FA0C1A460944119037802681E405F479FFADC120F89",
+      "createdUtc": "2026-04-22T13:55:17.3997599Z",
+      "lastWriteUtc": "2026-05-05T11:05:26.6167974Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\session-controls\\resolve-account-session-controls-actor.ts",
+      "bytes": 1848,
+      "sha256": "68D8C56C22DA4FD0346312915CFAA355AF11AB8208FC43576E957784E84BC97C",
+      "createdUtc": "2026-04-22T13:55:17.3997599Z",
+      "lastWriteUtc": "2026-05-01T01:53:56.6034725Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\settings\\ensure-verified-account-settings-source.ts",
+      "bytes": 8865,
+      "sha256": "586B2C2CFE5E97425EF572F47C2F50A8A24B16C680769523BA1E979419A6C35D",
+      "createdUtc": "2026-04-30T06:01:57.9049470Z",
+      "lastWriteUtc": "2026-05-01T02:03:00.0036899Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\settings\\read-account-settings-route-view.ts",
+      "bytes": 4214,
+      "sha256": "73057D6B86CA668AA0137642FFE45BDEC2ABBD56B310055A9A6163300B92A564",
+      "createdUtc": "2026-04-22T03:21:52.4387291Z",
+      "lastWriteUtc": "2026-05-29T20:43:34.0668300Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\account-portal\\server\\usage\\account-usage-read-model.ts",
+      "bytes": 18339,
+      "sha256": "FA0D8B224EC0E58A29D3F0CF11C21856F4A0DD0C66F3D876BC76D9344D12CCEB",
+      "createdUtc": "2026-04-21T16:29:53.3096730Z",
+      "lastWriteUtc": "2026-05-21T19:44:43.7436162Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\access-control\\admin-access-control-audit.ts",
+      "bytes": 5004,
+      "sha256": "963DBCED9AD5C00FBFC4FCC5CDE26DD783E4AC81E3A25346C0210D5EF6A529F9",
+      "createdUtc": "2026-05-28T17:58:52.7545189Z",
+      "lastWriteUtc": "2026-05-28T17:59:06.2148482Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\access-control\\admin-access-control-authorization.ts",
+      "bytes": 4922,
+      "sha256": "392EA2949CC93A6B487345472AF64A69FA9EB0B5338448DFFF1241793C814119",
+      "createdUtc": "2026-05-28T17:57:46.1582134Z",
+      "lastWriteUtc": "2026-05-28T17:57:46.1582134Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\access-control\\admin-access-control-store.ts",
+      "bytes": 21218,
+      "sha256": "EEFA51653BD4EB20582D511E21F97E154069B7EC662D15A18BEBB80C36472A8A",
+      "createdUtc": "2026-05-28T17:57:46.1582134Z",
+      "lastWriteUtc": "2026-05-28T22:14:34.3409940Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\access-control\\read-admin-access-control-route-view.ts",
+      "bytes": 5400,
+      "sha256": "0CE334CD2F4B786DE52CD5527C0F942B338E11A89ADC8BCD50F5DA4653E23D73",
+      "createdUtc": "2026-05-28T18:00:11.6724478Z",
+      "lastWriteUtc": "2026-06-06T00:24:11.6948020Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\access-control\\save-admin-access-control-mutation.ts",
+      "bytes": 8530,
+      "sha256": "CB63B199FC38850432A05D9EA386DF593E0E4C0A940C20EDF8D350A45021B027",
+      "createdUtc": "2026-05-28T18:01:22.2909987Z",
+      "lastWriteUtc": "2026-05-28T18:01:22.2909987Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\app-catalog\\admin-app-catalog-audit.ts",
+      "bytes": 912,
+      "sha256": "236583C3963A294340DD773DDA26E251DDE1EF470435EDEA9CA7E68DE1F69C86",
+      "createdUtc": "2026-04-24T10:08:06.6798528Z",
+      "lastWriteUtc": "2026-04-24T10:08:06.6803652Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\app-catalog\\admin-app-catalog-read-model.ts",
+      "bytes": 1379,
+      "sha256": "84511A8EBA1D28F1386D254A30E2DBFFACAF9902E95FA2C0BD9470F4C575B74E",
+      "createdUtc": "2026-04-24T10:08:06.6808865Z",
+      "lastWriteUtc": "2026-04-24T10:08:06.6808865Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\app-catalog\\read-admin-app-catalog-route-view.ts",
+      "bytes": 2065,
+      "sha256": "D00B7DD8FDDED1081859183AFDBB47DDB384ACDF19D72DE5C41449CC7007A2CF",
+      "createdUtc": "2026-04-24T11:48:09.8295362Z",
+      "lastWriteUtc": "2026-06-05T23:31:19.7611481Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\app-catalog\\save-admin-app-catalog-mutation.ts",
+      "bytes": 21122,
+      "sha256": "54F42A5DF60C8C0116ECE80484801F039CE6A1ECF0F60CD305AB78F7A0FF049B",
+      "createdUtc": "2026-04-24T10:08:06.6824108Z",
+      "lastWriteUtc": "2026-04-24T10:59:45.4892313Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\commercial-config\\read-admin-commercial-config-route-view.ts",
+      "bytes": 1811,
+      "sha256": "08FFD6F3D7031D35F8373CC478E3B93FB0B67EE33345DF6DDAB97DB452ECAC98",
+      "createdUtc": "2026-04-29T12:23:27.7762910Z",
+      "lastWriteUtc": "2026-06-06T00:16:32.3604574Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\commercial-config\\save-admin-commercial-config-mutation.ts",
+      "bytes": 7549,
+      "sha256": "C17330FF857F7723A9395D01E6C1D444565065BDFC85369D930EA335B5FE0788",
+      "createdUtc": "2026-04-29T09:17:21.2595996Z",
+      "lastWriteUtc": "2026-04-29T11:37:34.7682606Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\configuration-submit\\admin-configuration-submit-route.ts",
+      "bytes": 11399,
+      "sha256": "EA2F378DD8A3DA2DCF24CE948E448712778797715DBED4B8CAD669370DB7B949",
+      "createdUtc": "2026-04-29T22:32:45.6757089Z",
+      "lastWriteUtc": "2026-06-18T13:55:30.0293014Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\email-evidence\\admin-email-evidence-read-model.ts",
+      "bytes": 22355,
+      "sha256": "5D5982F667BD76613A5F0304000815BF4A650CBD6D7CE5754545B56FF0C245FC",
+      "createdUtc": "2026-06-16T09:44:18.6670712Z",
+      "lastWriteUtc": "2026-06-16T09:46:27.4893798Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\governance-roles\\admin-governance-roles-audit.ts",
+      "bytes": 2395,
+      "sha256": "CD80A2917D8912B22F2D3EBCC348A5387A1D87AE3C442ED5CA3344DF7414E978",
+      "createdUtc": "2026-04-29T20:09:30.8580259Z",
+      "lastWriteUtc": "2026-05-21T22:34:19.5762856Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\governance-roles\\admin-governance-roles-permission-store.ts",
+      "bytes": 2903,
+      "sha256": "D498118E2152A3E75FFC267224D0F3E1C5712DE0F566BD46FF12FD1A3D540CB7",
+      "createdUtc": "2026-04-29T20:09:30.8580259Z",
+      "lastWriteUtc": "2026-04-29T21:48:28.4015112Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\governance-roles\\read-admin-governance-roles-route-view.ts",
+      "bytes": 1545,
+      "sha256": "C62491FF847B299E06A1E5DC9C5CE68AF03FC9D27D1A94B36B7F66FD5B1163D3",
+      "createdUtc": "2026-04-29T22:31:21.8630274Z",
+      "lastWriteUtc": "2026-06-06T00:26:23.8198829Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\governance-roles\\save-admin-governance-role-assignment-mutation.ts",
+      "bytes": 20810,
+      "sha256": "34DCE5816EBE8D87EE204ECDAD06EB64D4411EF4BBCD5E7ADA2BEEDF7F434B5B",
+      "createdUtc": "2026-04-29T20:09:30.8640249Z",
+      "lastWriteUtc": "2026-05-21T22:34:28.2129624Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\homepage-slogan-config\\admin-homepage-slogan-config-audit.ts",
+      "bytes": 1023,
+      "sha256": "4DD0B6D1FA44E4C4B37E3ABA0A878C6E697D3E0715FBE2DEA193FBC42D0FC45C",
+      "createdUtc": "2026-04-29T16:23:05.7781207Z",
+      "lastWriteUtc": "2026-04-29T16:23:05.7781207Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\homepage-slogan-config\\admin-homepage-slogan-config-snapshots.ts",
+      "bytes": 989,
+      "sha256": "9D412FF346CE0235B1212AC11850F2ADBB29F442815440708BEA568484CAA627",
+      "createdUtc": "2026-04-29T16:23:05.7821223Z",
+      "lastWriteUtc": "2026-04-29T16:23:05.7831215Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\homepage-slogan-config\\read-admin-homepage-slogan-config-route-view.ts",
+      "bytes": 1902,
+      "sha256": "44C618A52E3B44480A42C05970225D42C16AD399E912B8FAD867775108EBC78E",
+      "createdUtc": "2026-04-29T17:07:41.0655422Z",
+      "lastWriteUtc": "2026-06-06T00:20:11.5267842Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\homepage-slogan-config\\save-admin-homepage-slogan-config-mutation.ts",
+      "bytes": 6672,
+      "sha256": "A3FCE1C320A520D4986E1C07A6FDEA31F5256B12355CCBF67CA1F6E564A8B041",
+      "createdUtc": "2026-04-29T16:23:05.7921215Z",
+      "lastWriteUtc": "2026-04-29T16:25:52.5933137Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\investigation\\admin-investigation-read-model.ts",
+      "bytes": 33464,
+      "sha256": "E6565F320B3D72E6BDCA63E514B6CC9048ABFE22BCFCC51BBCCB94BA83EBD9FA",
+      "createdUtc": "2026-04-23T22:38:53.5229936Z",
+      "lastWriteUtc": "2026-04-23T22:43:06.1699424Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\investigation\\read-admin-investigation-route-view.ts",
+      "bytes": 1179,
+      "sha256": "A73094AE2F320CB78503C56B70E55545149273C6E6136DFED210B205CDBEF80B",
+      "createdUtc": "2026-04-24T00:28:58.5471796Z",
+      "lastWriteUtc": "2026-04-24T00:28:58.5471796Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\investigation\\read-admin-investigation.ts",
+      "bytes": 6819,
+      "sha256": "34F3374E5783EB2DFCE72A5E8859849CF525E97DA76AE2E5E418B89640FEAB2C",
+      "createdUtc": "2026-04-23T22:38:53.5573957Z",
+      "lastWriteUtc": "2026-05-05T11:56:02.5465428Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\lookup\\admin-lookup-read-model.ts",
+      "bytes": 26054,
+      "sha256": "D64B922539F50A6DF24A9C1C29B6A9C506D20E647F5E092D7C3E4A53B29D0F74",
+      "createdUtc": "2026-04-23T17:22:18.6049813Z",
+      "lastWriteUtc": "2026-05-29T21:51:02.8442087Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\lookup\\read-admin-lookup-route-view.ts",
+      "bytes": 5062,
+      "sha256": "51B197A73B63B3D6E6139741BE7D12F07B8B71EB3B86081143589C531942E4B0",
+      "createdUtc": "2026-04-23T19:00:28.9905807Z",
+      "lastWriteUtc": "2026-05-29T21:46:45.8487350Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\lookup\\read-admin-lookup.ts",
+      "bytes": 6890,
+      "sha256": "AAF558FB5DE5C5DE123D7BD5BF33F24A150FA9B47C8112BA32CF9170411829AD",
+      "createdUtc": "2026-04-23T17:22:18.6206217Z",
+      "lastWriteUtc": "2026-05-05T11:58:58.9750714Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\monitoring\\admin-monitoring-read-model.ts",
+      "bytes": 11783,
+      "sha256": "0E1BC8B8FD101D5A946898F1A6A037D4265E212B782549E5422199961AF853E5",
+      "createdUtc": "2026-04-23T11:03:34.3857087Z",
+      "lastWriteUtc": "2026-04-23T16:28:11.2959595Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\monitoring\\read-admin-monitoring.ts",
+      "bytes": 2778,
+      "sha256": "9C4726585D01319C9575E48CAEA2F1AD9BB573912B0408917FA482B2081D9F08",
+      "createdUtc": "2026-04-23T11:03:34.3857087Z",
+      "lastWriteUtc": "2026-04-23T11:03:34.3857087Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\overview\\admin-overview-read-model.ts",
+      "bytes": 14465,
+      "sha256": "C9B632A9EDD0D0451825FAADC9B9EDB55110621AB5B7D4A03E4B1925AE4A1CCD",
+      "createdUtc": "2026-04-23T09:09:55.4580255Z",
+      "lastWriteUtc": "2026-05-21T22:33:30.4671989Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\overview\\read-admin-overview.ts",
+      "bytes": 2520,
+      "sha256": "BE1B83FD062D039D5891D6BA1F9E694805E6429ABFD36DDF1FCB1B41DC364CAD",
+      "createdUtc": "2026-04-23T09:09:55.4580255Z",
+      "lastWriteUtc": "2026-04-23T09:10:48.9498793Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\public-content-config\\admin-public-content-config-audit.ts",
+      "bytes": 1085,
+      "sha256": "030D984ECF208F81410A621C904203CA7CFBFD1650EC6304026FFD0A591A5985",
+      "createdUtc": "2026-04-29T09:17:21.2595996Z",
+      "lastWriteUtc": "2026-04-29T10:07:27.8961855Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\public-content-config\\admin-public-content-config-snapshots.ts",
+      "bytes": 2000,
+      "sha256": "58719C2A0CD5FA58795D5C3408C6022B757DBF174879BBB4417D546CC63F5324",
+      "createdUtc": "2026-04-29T10:07:27.8751836Z",
+      "lastWriteUtc": "2026-04-29T12:27:26.3498552Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\public-content-config\\read-admin-public-content-config-route-view.ts",
+      "bytes": 2423,
+      "sha256": "A3594B4258DD4FE898435950C986618320C35B14859DB479E916DFCF2A4E8417",
+      "createdUtc": "2026-04-29T12:25:07.6356388Z",
+      "lastWriteUtc": "2026-06-06T00:18:45.7218421Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\public-content-config\\save-admin-public-content-config-mutation.ts",
+      "bytes": 7945,
+      "sha256": "FDD8EEF62C314C7895A63279B206AE91AB7643384AFFAE25AE3428B444D6BCE5",
+      "createdUtc": "2026-04-29T10:07:27.8781843Z",
+      "lastWriteUtc": "2026-04-29T10:07:27.8781843Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\registry\\admin-registry-audit.ts",
+      "bytes": 817,
+      "sha256": "11F8661085B442083A5F2538CCC6E4EBF4239674F05B157124578388266870CB",
+      "createdUtc": "2026-04-24T03:35:10.9851744Z",
+      "lastWriteUtc": "2026-04-24T03:35:10.9851744Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\registry\\admin-registry-read-model.ts",
+      "bytes": 1435,
+      "sha256": "92C1A5B960F379C53573C5FBD15206A36495795A47F22B66C607AE1B0768672F",
+      "createdUtc": "2026-04-24T03:35:10.9851744Z",
+      "lastWriteUtc": "2026-04-24T04:34:12.9188283Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\registry\\read-admin-registry-route-view.ts",
+      "bytes": 1991,
+      "sha256": "C2771FD37EC921E07D6384788DF6059D05FBDA3603E350FEE88AFB82C1771DED",
+      "createdUtc": "2026-04-24T06:03:20.5915215Z",
+      "lastWriteUtc": "2026-06-05T23:31:19.7601497Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\registry\\save-admin-registry-mutation.ts",
+      "bytes": 12440,
+      "sha256": "8FF4D1C191D015CEF03C0E3F13E5D52BEC072B6C7A87E246292190C46514413D",
+      "createdUtc": "2026-04-24T03:35:10.9851744Z",
+      "lastWriteUtc": "2026-05-05T11:06:57.5375611Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\release-distribution\\admin-release-distribution-read-model.ts",
+      "bytes": 5047,
+      "sha256": "8A042DABFAF6ECEC72AAE44032C4EEA3BBDFCA3CE60B785EF030887D07017D22",
+      "createdUtc": "2026-04-29T01:20:28.9354278Z",
+      "lastWriteUtc": "2026-05-21T07:18:45.9483894Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\release-distribution\\admin-release-distribution-route-actor.ts",
+      "bytes": 5145,
+      "sha256": "78FE1EDE1543A4FEDBA84B087D30BB86940A7746BFF54D89E24939EDBB009F6D",
+      "createdUtc": "2026-05-21T05:50:56.0567856Z",
+      "lastWriteUtc": "2026-06-02T18:48:31.9713875Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\release-distribution\\delete-admin-release-artifact-mutation.ts",
+      "bytes": 15429,
+      "sha256": "A9179A54FCA10BC44D679B050382CB6BD3B584FAC2CFA1A9AB683D22EF1C5B13",
+      "createdUtc": "2026-06-15T12:55:04.2968910Z",
+      "lastWriteUtc": "2026-06-15T12:55:04.2968910Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\release-distribution\\playwright-admin-release-distribution-fixture-access.ts",
+      "bytes": 1797,
+      "sha256": "CE57D6DD467A557B247DA54695D21E5605803484BFB3870BA8ECBDCB1A29F488",
+      "createdUtc": "2026-04-29T03:15:06.7051214Z",
+      "lastWriteUtc": "2026-05-01T01:56:14.6052667Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\release-distribution\\read-admin-release-distribution-route-view.ts",
+      "bytes": 1951,
+      "sha256": "4D4E15BE30AE6EEEEEB47110B5E5E9D40B3FA8278921083AFE857B1D24F8F6B0",
+      "createdUtc": "2026-04-29T03:59:44.9264311Z",
+      "lastWriteUtc": "2026-06-05T23:48:43.4690598Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\release-distribution\\save-admin-release-distribution-mutation.ts",
+      "bytes": 14503,
+      "sha256": "CF089E30B567B929B69EB36F15B275005AB2ABE69C9AEF2FEC600D6941605910",
+      "createdUtc": "2026-04-29T01:20:29.6568680Z",
+      "lastWriteUtc": "2026-05-21T07:14:46.2426662Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\release-distribution\\save-admin-release-upload-mutation.ts",
+      "bytes": 19141,
+      "sha256": "38B34E72AD8D9C74E83B85118DBED123B16149C99E62473C78F39439B0715D79",
+      "createdUtc": "2026-06-02T15:48:03.7904352Z",
+      "lastWriteUtc": "2026-06-15T10:25:38.2324770Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\release-distribution\\submit-playwright-admin-release-distribution-fixture-mutation.ts",
+      "bytes": 2774,
+      "sha256": "9538A75F5F38C47906F18379433D5AFF76AD4888D05AC08F1BF911353347BBC6",
+      "createdUtc": "2026-04-29T03:15:06.7051214Z",
+      "lastWriteUtc": "2026-04-29T03:15:06.7051214Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\system-config\\admin-system-config-audit.ts",
+      "bytes": 4656,
+      "sha256": "466C9E2AA674A4F83EBA196BAB286C9037656EC6055346839F56F1B0DA4AA6A7",
+      "createdUtc": "2026-04-30T01:55:17.5980700Z",
+      "lastWriteUtc": "2026-05-01T04:48:41.5576147Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\system-config\\admin-system-config-authorization.ts",
+      "bytes": 4409,
+      "sha256": "D0DB1A41A183C5C1417D33EC76D2613CD5573FA5911AC70ECFD42D8C0BB85CBC",
+      "createdUtc": "2026-04-30T01:55:17.5970702Z",
+      "lastWriteUtc": "2026-04-30T03:47:01.1666760Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\system-config\\admin-system-config-store.ts",
+      "bytes": 1596,
+      "sha256": "491D70823F5720F44A8F0C5FC2E56DB7E57594CECB613DC898D1FD9380C91CF6",
+      "createdUtc": "2026-04-30T01:55:17.5980700Z",
+      "lastWriteUtc": "2026-05-01T04:45:26.4090785Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\system-config\\read-admin-system-config-route-view.ts",
+      "bytes": 934,
+      "sha256": "FEC2CDEE760ECA32A5100AE7564F3BB3AA84147F27A3250A74EA9C3F10B02616",
+      "createdUtc": "2026-04-30T02:21:28.2756388Z",
+      "lastWriteUtc": "2026-06-18T12:19:50.4840032Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\admin-operations\\server\\system-config\\save-admin-system-config-mutation.ts",
+      "bytes": 9140,
+      "sha256": "AB1FBE07DD6106328F81A4C2302E8C7D7966EE4CDE8E05720AE9CC884CCB1745",
+      "createdUtc": "2026-04-30T01:55:17.6090722Z",
+      "lastWriteUtc": "2026-05-01T04:46:13.0983978Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\auth\\server\\guards\\surface-session-access.ts",
+      "bytes": 2313,
+      "sha256": "6B4C0F571E132222916EB30F86D106503D3634BC487861FC7CBB8529340EE9A4",
+      "createdUtc": "2026-04-17T13:18:23.9334914Z",
+      "lastWriteUtc": "2026-06-02T18:42:58.9844304Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\auth\\server\\public-entry\\login-entry.ts",
+      "bytes": 3375,
+      "sha256": "57FA34D757F3466170D07A91984734508D25515A3B6D74B0CC57EB5A60865ABA",
+      "createdUtc": "2026-04-17T13:02:31.6152582Z",
+      "lastWriteUtc": "2026-05-01T02:02:59.9856901Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\auth\\server\\public-entry\\public-entry-rate-limit.ts",
+      "bytes": 1167,
+      "sha256": "1C9AD0ACCDD62A94B30E642CE40F34CCBA663FC9F545CB83D32869BA86DCABFB",
+      "createdUtc": "2026-04-17T13:02:31.5839945Z",
+      "lastWriteUtc": "2026-04-17T13:02:31.5839945Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\auth\\server\\public-entry\\public-entry-store.ts",
+      "bytes": 21104,
+      "sha256": "B281CB858C18B1438FD490B8CBA2DDD93320B34A61DB88569718D83853E32AEB",
+      "createdUtc": "2026-05-01T01:51:12.2897929Z",
+      "lastWriteUtc": "2026-05-05T02:01:25.5324393Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\auth\\server\\public-entry\\public-entry-verification-transaction.ts",
+      "bytes": 11637,
+      "sha256": "89B763F850A203EB2D3D067CC9F4DA286B0F818375EE194FCA398A305A6150C9",
+      "createdUtc": "2026-05-05T02:00:36.4443774Z",
+      "lastWriteUtc": "2026-05-05T02:00:36.4453775Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\auth\\server\\public-entry\\read-recovery-entry-view.ts",
+      "bytes": 1533,
+      "sha256": "2EB17735CE0349273BC2A6A2AEBFC2310F0528570D40DC029C48024E34C317AC",
+      "createdUtc": "2026-04-20T10:41:08.5441837Z",
+      "lastWriteUtc": "2026-05-01T01:51:53.7459941Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\auth\\server\\public-entry\\read-verification-entry-view.ts",
+      "bytes": 1462,
+      "sha256": "3D69781693DE844DD5F953D5F7696D32D80A8B3BEBABC034D87CEEE4D7F44BE8",
+      "createdUtc": "2026-04-20T10:41:08.5451839Z",
+      "lastWriteUtc": "2026-05-01T01:51:53.7459941Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\auth\\server\\public-entry\\recovery-entry.ts",
+      "bytes": 6846,
+      "sha256": "F2FDDAE35C65A30DA9AB50FBF009AF5E5A78D8036D9CFCDEEB0500EF81016F0A",
+      "createdUtc": "2026-04-17T13:02:31.6152582Z",
+      "lastWriteUtc": "2026-06-16T07:23:06.4022670Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\auth\\server\\public-entry\\signup-entry.ts",
+      "bytes": 3285,
+      "sha256": "1902224BD7BCF19E156F2A9B1508D4EB0467B19AB7F47825899032539AA36F7B",
+      "createdUtc": "2026-04-17T13:02:31.5839945Z",
+      "lastWriteUtc": "2026-06-16T07:22:44.3489060Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\auth\\server\\public-entry\\verification-entry.ts",
+      "bytes": 6219,
+      "sha256": "A3B55F3D996E4C273327642426F5D22EF684A31EC3404CA897C59611DC43567D",
+      "createdUtc": "2026-04-17T13:02:31.5996302Z",
+      "lastWriteUtc": "2026-06-16T07:22:56.4280882Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\auth\\server\\session\\portal-session.ts",
+      "bytes": 13879,
+      "sha256": "287AE659178D6DBC217D4964111DABC48DE500A8E2559B58C916CD70B0574803",
+      "createdUtc": "2026-05-01T01:53:29.8486625Z",
+      "lastWriteUtc": "2026-05-01T02:02:59.9696883Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\billing\\server\\checkout\\checkout-read-model.ts",
+      "bytes": 8445,
+      "sha256": "E0A457AFE48AB0FDD24FC404C9E116606FFF896AA205717C3D4A4875EBBC7DFD",
+      "createdUtc": "2026-04-20T16:49:38.2190795Z",
+      "lastWriteUtc": "2026-05-29T04:13:13.0562499Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\billing\\server\\checkout\\create-checkout-session.ts",
+      "bytes": 13973,
+      "sha256": "C447D1AE32C50A71D2029E1B7C14FB5B1F5D4F65334412A3F608AAD5A32947D4",
+      "createdUtc": "2026-04-20T16:50:43.7861682Z",
+      "lastWriteUtc": "2026-05-01T02:02:59.9956907Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\billing\\server\\invoice-state\\apply-paddle-provider-event.ts",
+      "bytes": 20142,
+      "sha256": "D7871D99EE67AB46EF8A8B954231748F59FF580ED8B7AA915906BDA6570F8799",
+      "createdUtc": "2026-04-20T17:12:26.8321887Z",
+      "lastWriteUtc": "2026-05-01T05:16:51.2062231Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\billing\\server\\provider-callbacks\\payment-receipt-email-delivery.ts",
+      "bytes": 7692,
+      "sha256": "AFBF0E773CC0830744C48EEFE8B4EEC13C4137E7F9B183D1FE34FBB5CC25C163",
+      "createdUtc": "2026-06-16T08:31:15.2075242Z",
+      "lastWriteUtc": "2026-06-16T08:31:30.0845502Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\billing\\server\\provider-callbacks\\process-paddle-provider-callback.ts",
+      "bytes": 17853,
+      "sha256": "30B45B9CDD8B9C517B71AF56E64B94A9FE1D771F047ADE6DCF0236B38E3BC019",
+      "createdUtc": "2026-04-20T17:14:10.2038860Z",
+      "lastWriteUtc": "2026-06-16T08:31:15.2099047Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\billing\\server\\provider-callbacks\\provider-callback-options.ts",
+      "bytes": 1359,
+      "sha256": "C9E81E810397F23ECC0EE51AB3A10F0C81E4DCAF106E817E0DC1162C1E65C22F",
+      "createdUtc": "2026-04-20T17:10:05.9484638Z",
+      "lastWriteUtc": "2026-06-16T08:31:15.2085718Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\billing\\server\\provider-entry\\provider-entry.ts",
+      "bytes": 7438,
+      "sha256": "6BD9AA95F1312ED77F0BD172FBC441495EB1CE26A9DF469EB0DB09B2D49845F3",
+      "createdUtc": "2026-04-20T16:48:42.9591392Z",
+      "lastWriteUtc": "2026-04-20T19:18:41.6277913Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\catalog\\server\\app-catalog\\app-catalog-records.ts",
+      "bytes": 6505,
+      "sha256": "22C8514982B3B9AAAA79EBB24F44894B31378BEB68B811CEF0634AAF9E0737CD",
+      "createdUtc": "2026-04-24T10:08:06.6781071Z",
+      "lastWriteUtc": "2026-04-24T10:59:45.4892313Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\catalog\\server\\app-detail\\app-detail-read-model.ts",
+      "bytes": 7638,
+      "sha256": "E068017D703FC5DDA758BFBDA2749CAAC9E4D21ADC94695073F7F6CD66C6CC67",
+      "createdUtc": "2026-06-15T03:35:35.0318863Z",
+      "lastWriteUtc": "2026-06-15T03:35:35.0328855Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\catalog\\server\\app-detail\\read-app-detail.ts",
+      "bytes": 1633,
+      "sha256": "3996FF544E6A3258F55487B804AD4E8E3FC8E036D249B2F046318AB159CAB69F",
+      "createdUtc": "2026-04-18T06:05:41.7729418Z",
+      "lastWriteUtc": "2026-05-29T15:44:39.1925599Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\catalog\\server\\app-directory\\app-directory-read-model.ts",
+      "bytes": 11935,
+      "sha256": "A96D814E091AD95BAB4CD48AAE92E527BD6D15F5FBD25D8F1A09757F938DCA6C",
+      "createdUtc": "2026-04-18T06:02:10.1930689Z",
+      "lastWriteUtc": "2026-06-01T10:00:21.5465354Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\catalog\\server\\app-directory\\read-app-directory.ts",
+      "bytes": 6386,
+      "sha256": "CA409EB71DCFE4FF9F2C15C5A965E25E3F33F6FCC96DEEDB9CB04009B13B7F8D",
+      "createdUtc": "2026-04-18T06:03:45.3137276Z",
+      "lastWriteUtc": "2026-06-01T09:56:22.4614292Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\catalog\\server\\app-registry\\app-registry-records.ts",
+      "bytes": 3971,
+      "sha256": "E4306AF1AF5CE9287303BF5F9CA689013A8489040DD8B3AAAA15C48DF021263C",
+      "createdUtc": "2026-04-24T04:33:36.0100214Z",
+      "lastWriteUtc": "2026-05-05T11:06:43.1178363Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\commercial-config\\server\\admin-commercial-config\\admin-commercial-config-audit.ts",
+      "bytes": 970,
+      "sha256": "FAF3724A65DF209131C59C75CF75941C248FD4585FFD8B8AF8175C8743C483BD",
+      "createdUtc": "2026-04-20T21:00:42.6764873Z",
+      "lastWriteUtc": "2026-04-20T21:00:42.6764873Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\commercial-config\\server\\admin-commercial-config\\admin-commercial-config-read-model.ts",
+      "bytes": 4830,
+      "sha256": "2B98084B8BD06EC0614D6F883B05349FBE11339B0A4D26D5692422C99CF52652",
+      "createdUtc": "2026-04-20T21:00:42.6764873Z",
+      "lastWriteUtc": "2026-05-29T23:41:10.9931390Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\commercial-config\\server\\admin-commercial-config\\read-admin-commercial-config.ts",
+      "bytes": 828,
+      "sha256": "44467B1D6F1778AE4728B4941136321F7831D8FD67EBE2C93A430A3D132F90AC",
+      "createdUtc": "2026-04-20T21:00:42.6764873Z",
+      "lastWriteUtc": "2026-04-20T21:00:42.6764873Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\commercial-config\\server\\admin-commercial-config\\save-admin-commercial-config.ts",
+      "bytes": 18163,
+      "sha256": "75F436D682BF26F2C73C1786194CF935B3B5D25C9A1BEAB76C7E835FF1C5AED8",
+      "createdUtc": "2026-04-20T21:00:42.6764873Z",
+      "lastWriteUtc": "2026-04-20T21:03:56.0329189Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\commercial-config\\server\\public-commercial-summary\\public-commercial-summary-read-model.ts",
+      "bytes": 1737,
+      "sha256": "02D48D75688C83BDCBF2BD56094C7983F8DB59E6453A7E108483C88FB58E496D",
+      "createdUtc": "2026-04-20T10:39:47.3627427Z",
+      "lastWriteUtc": "2026-05-29T04:13:13.0622510Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\commercial-config\\server\\public-commercial-summary\\resolve-active-public-commercial-summary-configuration.ts",
+      "bytes": 2461,
+      "sha256": "4569F9CA415D1D773231245005CED1F81A28E72E79387CCAF10A21325206F86F",
+      "createdUtc": "2026-04-20T21:38:22.2180946Z",
+      "lastWriteUtc": "2026-05-29T04:13:13.0652517Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\email\\server\\jobs\\email-delivery-jobs.ts",
+      "bytes": 13471,
+      "sha256": "E23BA68C261832CD81D5D1FBE452F3734E990D3374942C781E562723A8F32AE2",
+      "createdUtc": "2026-06-16T10:22:03.1769185Z",
+      "lastWriteUtc": "2026-06-16T10:27:25.1390472Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\email\\server\\logs\\email-evidence-store.ts",
+      "bytes": 44124,
+      "sha256": "2BB851B4117E71A0DD357EC2E51200E6B2FE3A3238F7C98ADA0B8BF886BAEE0C",
+      "createdUtc": "2026-06-16T04:47:01.8373783Z",
+      "lastWriteUtc": "2026-06-16T10:20:38.3069301Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\email\\server\\operations\\email-operations-observability.ts",
+      "bytes": 19328,
+      "sha256": "A9247972D44D0A74C411FB7CF83D681FEBA371C7A85EEB83F8986AFD6446E40C",
+      "createdUtc": "2026-06-16T11:01:06.9253084Z",
+      "lastWriteUtc": "2026-06-16T11:04:46.4912876Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\email\\server\\policy\\email-reconciliation-policy.ts",
+      "bytes": 3152,
+      "sha256": "BFB7C29C0FCE8E24E98BAEE5B49D0F9A78E411F3EA225258BC67BA45D2D3D9DA",
+      "createdUtc": "2026-06-16T07:01:06.2563631Z",
+      "lastWriteUtc": "2026-06-16T07:05:21.6760638Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\email\\server\\policy\\email-suppression-policy.ts",
+      "bytes": 3331,
+      "sha256": "43DB9079A8100353717D2F4B8C370FD1541D8E4141341E37DB2A21F99306FEBD",
+      "createdUtc": "2026-06-16T06:41:39.5492947Z",
+      "lastWriteUtc": "2026-06-16T06:41:39.5502967Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\email\\server\\provider\\brevo-provider.ts",
+      "bytes": 8512,
+      "sha256": "DB86967BB8FE1C1BE5FB973DAB4A86994972E34B02277DB594D1AE3E459822BF",
+      "createdUtc": "2026-06-16T05:42:52.4645897Z",
+      "lastWriteUtc": "2026-06-16T12:34:05.8550663Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\email\\server\\provider\\email-provider.ts",
+      "bytes": 1781,
+      "sha256": "D6D9D1649DE1763152E4939258EBDB67180FDFF59484A3BDCFDE348D03C8889B",
+      "createdUtc": "2026-06-16T05:03:30.0510373Z",
+      "lastWriteUtc": "2026-06-16T05:03:30.0510373Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\email\\server\\queue\\email-dispatch-queue.ts",
+      "bytes": 18318,
+      "sha256": "F364A110385981F49FE986453B20A206FB6B159E6D17320BF08CB55A05054761",
+      "createdUtc": "2026-06-16T05:30:23.3662520Z",
+      "lastWriteUtc": "2026-06-16T06:43:25.9708419Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\entitlements\\server\\access-state\\derive-website-access-state.ts",
+      "bytes": 5748,
+      "sha256": "52B2D09D45BC28965360AD04E8F696B57496D180BDE4BBD172E02448A3B57300",
+      "createdUtc": "2026-04-20T17:30:50.6609305Z",
+      "lastWriteUtc": "2026-04-20T20:23:32.7186421Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\entitlements\\server\\issuance\\sync-entitlement-from-billing-truth.ts",
+      "bytes": 23356,
+      "sha256": "1177CFF85EBA31E3D8184D4796EA902FAF360C99727B39DDFD3BE8F80D592C6C",
+      "createdUtc": "2026-04-20T20:23:07.3768119Z",
+      "lastWriteUtc": "2026-05-01T04:36:19.7819509Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\entitlements\\server\\notifications\\entitlement-lifecycle-email-delivery.ts",
+      "bytes": 12581,
+      "sha256": "E487E49BBB92BB4D50E82160ED08E6C4786D5006D6F06CD111F085CDD9E262FC",
+      "createdUtc": "2026-06-16T08:50:36.8640961Z",
+      "lastWriteUtc": "2026-06-16T08:53:45.3240939Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\identity\\server\\account-owner-link\\account-owner-link.ts",
+      "bytes": 7596,
+      "sha256": "BB3B2C761E68071290456D6D19E943E61B368F8EA3486E44D6DA5E5673C610B2",
+      "createdUtc": "2026-05-01T01:54:39.3285786Z",
+      "lastWriteUtc": "2026-05-01T02:03:00.0096922Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\identity\\server\\tuple-resolution\\tuple-resolution.ts",
+      "bytes": 1869,
+      "sha256": "F3F6DDF9B19B53A5219C050C823F95EF9759AC230675BB8AD90D7689C6201FF5",
+      "createdUtc": "2026-04-17T13:24:38.5318980Z",
+      "lastWriteUtc": "2026-05-01T02:03:00.0066896Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\permissions\\server\\admin-governance-role-permission-store.ts",
+      "bytes": 23815,
+      "sha256": "9D0984D9CB3216FC0E7236908FC5D73C4328546B759825FF87E300BA681F2C85",
+      "createdUtc": "2026-04-29T23:10:17.0680678Z",
+      "lastWriteUtc": "2026-06-02T02:36:34.7352414Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\public-content\\server\\landing-home\\read-landing-home-catalog-summary.ts",
+      "bytes": 8277,
+      "sha256": "C65F38D9A4A443096C844A0F0E337B7678BD459B7F619F1F28CFA7EABCEAD5BB",
+      "createdUtc": "2026-04-18T02:47:53.3389513Z",
+      "lastWriteUtc": "2026-06-07T11:52:06.3188516Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\public-content\\server\\landing-home\\read-landing-home-commercial-summary.ts",
+      "bytes": 1069,
+      "sha256": "548E749285EAA60D37A1CAB981C741EE8BE74020D72203D41923C1E4277A9110",
+      "createdUtc": "2026-04-18T02:47:53.3389513Z",
+      "lastWriteUtc": "2026-05-29T04:13:13.0572520Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\public-content\\server\\landing-home\\read-landing-home-release-summary.ts",
+      "bytes": 1308,
+      "sha256": "961A5DF0CE866D46141B8C5BA8F76B8949DDFCD28C7545B910B6A30900E8045A",
+      "createdUtc": "2026-04-18T02:47:53.3389513Z",
+      "lastWriteUtc": "2026-04-18T02:47:53.3389513Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\public-content\\server\\landing-home\\read-landing-home.ts",
+      "bytes": 778,
+      "sha256": "032542980D094F0B0A7F14D763445558FB5E77D65CE7008843A7C285DC9BADD5",
+      "createdUtc": "2026-05-14T07:08:54.2427664Z",
+      "lastWriteUtc": "2026-06-15T07:03:01.9116262Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\public-content\\server\\landing-navigation\\read-landing-navigation.ts",
+      "bytes": 1925,
+      "sha256": "0290F1813C132695781F80C238C988550E65741BA97807676CA357CB4990BB63",
+      "createdUtc": "2026-04-17T23:49:34.6148932Z",
+      "lastWriteUtc": "2026-04-18T00:09:32.0307182Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\public-content\\server\\public-content-baseline\\read-public-content-baseline.ts",
+      "bytes": 1007,
+      "sha256": "C97676547D61AB46F7B43CD2EEBBC96B4CC9C40598AD2708E08B7EA489C3ED87",
+      "createdUtc": "2026-04-17T19:42:38.6781128Z",
+      "lastWriteUtc": "2026-04-17T20:27:38.0057522Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\public-content\\server\\source\\list-faq-item-source-rows.ts",
+      "bytes": 1031,
+      "sha256": "FEE1D29DB65B0CE90B2CCE7BB0FB80BE9C61EB8C86F365EE46F6AF231AE52246",
+      "createdUtc": "2026-04-17T20:27:37.9836071Z",
+      "lastWriteUtc": "2026-04-17T20:27:37.9836071Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\public-content\\server\\source\\list-featured-content-slot-source-rows.ts",
+      "bytes": 1348,
+      "sha256": "961DC13108D37F21C96EE2916576206762A7FBEF5877B7DAC8FC10F523808F83",
+      "createdUtc": "2026-04-17T22:47:42.0012471Z",
+      "lastWriteUtc": "2026-04-17T22:47:42.0012471Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\public-content\\server\\source\\list-landing-section-source-rows.ts",
+      "bytes": 2109,
+      "sha256": "7B34201693FD81E1D1321E7FB21202EE03F69A08A2236FD4C7C0ECBB1789FEBF",
+      "createdUtc": "2026-04-17T20:27:37.9836071Z",
+      "lastWriteUtc": "2026-04-17T20:27:37.9836071Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\admin-registry\\admin-release-registry-read-model.ts",
+      "bytes": 6910,
+      "sha256": "D6BEC5358A93067AC29B97FDD2496691F0836EBC931F0DE732A5DBCCCE3F370B",
+      "createdUtc": "2026-04-20T12:22:47.2711731Z",
+      "lastWriteUtc": "2026-06-08T00:38:02.7731803Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\admin-registry\\read-admin-release-registry.ts",
+      "bytes": 1288,
+      "sha256": "6F428ED1FD8A2E54AC4CDB1BFDEBC1EE52E1BED23B612D77FB49B1B92E3AAC07",
+      "createdUtc": "2026-04-20T12:25:39.8580217Z",
+      "lastWriteUtc": "2026-04-20T12:25:39.8580217Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\admin-registry\\save-admin-release-draft.ts",
+      "bytes": 11403,
+      "sha256": "60B1B853E768EB3C31A535CD987AAA9110FD75CE1F27DBD90186CF675541C4DE",
+      "createdUtc": "2026-04-20T12:25:39.8590211Z",
+      "lastWriteUtc": "2026-05-21T05:58:46.9818836Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\artifact-storage\\local-release-artifact-storage.ts",
+      "bytes": 6833,
+      "sha256": "6E20046E6F8BD1D0CB060EE3EFE75418BA1D7B5AEB32601E9F4437D9EE70FF44",
+      "createdUtc": "2026-06-08T00:13:09.9408796Z",
+      "lastWriteUtc": "2026-06-08T01:24:37.3932051Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\download-center\\create-local-download-artifact-response.ts",
+      "bytes": 3379,
+      "sha256": "8068E36C8FDABF5FF16D6641B78B4561CCBCB10E9EFE373993C59F21D16BBCA4",
+      "createdUtc": "2026-06-08T01:24:02.8215896Z",
+      "lastWriteUtc": "2026-06-08T01:24:17.3897170Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\download-center\\download-center-read-model.ts",
+      "bytes": 7830,
+      "sha256": "D544357B94CF1F9D05CE88B5233646121DA26091047421F909158236D0B647D7",
+      "createdUtc": "2026-04-20T14:43:18.7666918Z",
+      "lastWriteUtc": "2026-06-08T00:38:02.7731803Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\download-center\\read-public-download-center.ts",
+      "bytes": 1755,
+      "sha256": "0FA03F9933C9C83AB4CD7809E8173FE5C19AF2E002E58893506E62AE4F05FDEF",
+      "createdUtc": "2026-04-20T14:46:38.7945907Z",
+      "lastWriteUtc": "2026-06-01T10:44:16.0848125Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\download-center\\read-public-download-release-detail.ts",
+      "bytes": 3169,
+      "sha256": "63ABD120601E7259B8267A4224E34B7C42333690EC66B477384369F23E65FD11",
+      "createdUtc": "2026-04-20T14:46:38.7955899Z",
+      "lastWriteUtc": "2026-04-20T14:46:38.7955899Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\download-center\\resolve-public-download-handoff.ts",
+      "bytes": 4457,
+      "sha256": "A018E349A2BDE71F4F89DF3758F382FA49030F3232BC5B5631C149AD57BBA13F",
+      "createdUtc": "2026-04-20T14:46:38.8175906Z",
+      "lastWriteUtc": "2026-06-08T01:23:38.3305693Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\publication-controls\\publication-controls-read-model.ts",
+      "bytes": 5725,
+      "sha256": "850F04C6E0C2E04532A22B46C7DC3967185FDE316B78DAD3A721BE1D2F704106",
+      "createdUtc": "2026-04-20T13:38:59.3071124Z",
+      "lastWriteUtc": "2026-06-08T00:38:02.7731803Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\publication-controls\\publish-admin-release.ts",
+      "bytes": 7280,
+      "sha256": "D8F058F2A3D4E4427F1A5DD0AD4380AB83EE7FFD74EF1E1C868E2EE019657B8F",
+      "createdUtc": "2026-04-20T13:38:59.3081121Z",
+      "lastWriteUtc": "2026-05-21T05:58:46.9808834Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\publication-controls\\rollback-admin-release.ts",
+      "bytes": 5348,
+      "sha256": "4773B9F4EA1E67F951CCCBFDE48A9B3398C7EE513087D0BC36A05BA74CE095CA",
+      "createdUtc": "2026-04-20T13:38:59.3101119Z",
+      "lastWriteUtc": "2026-05-21T05:58:46.9818836Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\release-distribution\\server\\release-distribution-audit.ts",
+      "bytes": 1179,
+      "sha256": "FEC52C18A373A5C02050D9CC5AEC7B97FAB744B565116489E6D74618B5AA0E32",
+      "createdUtc": "2026-04-20T13:38:59.3003864Z",
+      "lastWriteUtc": "2026-04-20T13:38:59.3003864Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\usage\\server\\aggregation\\aggregate-usage-window.ts",
+      "bytes": 10850,
+      "sha256": "EFA8073AF4D71E757432D0B9ED08F6EAB517764D7FD637B7CE31E3132A6275E3",
+      "createdUtc": "2026-04-20T18:29:27.4533145Z",
+      "lastWriteUtc": "2026-04-20T18:29:27.4533145Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\usage\\server\\charge-source\\resolve-charge-source-usage-authority.ts",
+      "bytes": 7927,
+      "sha256": "113D33459E60F304354EDC07392D49F61CEA557027FAFB2D3288BA05485A1199",
+      "createdUtc": "2026-04-20T17:58:08.7658609Z",
+      "lastWriteUtc": "2026-05-21T19:45:20.7409356Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\usage\\server\\charge-source\\sync-charge-source-from-billing-truth.ts",
+      "bytes": 8648,
+      "sha256": "9903D07D547B971FBC2AE57A3FD17F10E2748E4F656496339AA6E4CB43D29421",
+      "createdUtc": "2026-04-20T17:58:08.7648647Z",
+      "lastWriteUtc": "2026-05-05T03:48:46.4899712Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\usage\\server\\ingestion\\ingest-usage-record.ts",
+      "bytes": 7408,
+      "sha256": "8DA30ADE7AD159138E724371CEF86BA9B3E2E505DCB3F023A9702135E20F9B0E",
+      "createdUtc": "2026-04-20T18:14:04.7467126Z",
+      "lastWriteUtc": "2026-04-20T18:14:04.7467126Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\modules\\usage\\server\\reconciliation\\reconcile-usage-aggregate.ts",
+      "bytes": 8260,
+      "sha256": "3E3D3EBE37C86DC793CFD5C879F755C2CD0370BB7A587DE73B513DDFA845FC1B",
+      "createdUtc": "2026-04-20T18:29:27.4689525Z",
+      "lastWriteUtc": "2026-05-01T04:36:44.3968894Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\scripts\\operations\\run-email-live-smoke.ts",
+      "bytes": 9377,
+      "sha256": "D62441449E54FB5EAD89E3BD747937BA11B20103282E44601A46D4CADD2AB900",
+      "createdUtc": "2026-06-16T15:35:43.8927387Z",
+      "lastWriteUtc": "2026-06-16T15:38:15.1181149Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\tests\\e2e\\admin-distribution.contract.spec.ts",
+      "bytes": 25371,
+      "sha256": "4422020F02BA8DB7B2A11C04CA9AC74EFF2EC045D1AFB16E0E120B54948345A5",
+      "createdUtc": "2026-06-01T15:25:15.6079517Z",
+      "lastWriteUtc": "2026-06-15T12:59:22.5478093Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\tests\\e2e\\admin-ui-remediation.contract.spec.ts",
+      "bytes": 51740,
+      "sha256": "485BB8C0093452E82518C39E1705F008DCC51221B942E280FD62054F1067EEA8",
+      "createdUtc": "2026-06-06T08:32:19.3286880Z",
+      "lastWriteUtc": "2026-06-18T13:01:18.6774093Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\tests\\e2e\\real-runtime\\01-account-lifecycle.spec.ts",
+      "bytes": 14155,
+      "sha256": "3C8BD8D9162780300CDA961D55FC5285D835D99EAB1F0420141A91848BD857B3",
+      "createdUtc": "2026-06-02T17:15:50.7781313Z",
+      "lastWriteUtc": "2026-06-18T12:08:24.8778976Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\tests\\e2e\\real-runtime\\03-admin-artifact-delete.spec.ts",
+      "bytes": 7628,
+      "sha256": "18317B2D69816E5E02A2495626B99FE07DB1B85EB8D9793BDDFCC9F276290EA0",
+      "createdUtc": "2026-06-15T13:06:36.1757903Z",
+      "lastWriteUtc": "2026-06-18T02:35:10.3743660Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\tests\\e2e\\real-runtime\\support\\runtime-health.ts",
+      "bytes": 6787,
+      "sha256": "5B063705C2AF67DC88B0F8BB369ACAB69EE14FCB1B8945DA12D56E7E2F5D5B83",
+      "createdUtc": "2026-06-02T09:44:59.1799869Z",
+      "lastWriteUtc": "2026-06-18T06:51:00.2343623Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\tests\\email\\email-dispatch-queue.test.ts",
+      "bytes": 20688,
+      "sha256": "FF0EF7D28365695EB94C951500A661C223D774FCD87856F4B8946A0F83F63719",
+      "createdUtc": "2026-06-16T05:31:56.1098841Z",
+      "lastWriteUtc": "2026-06-16T06:44:36.1931009Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\tests\\integration\\admin-operations\\admin-registry-submit-route.test.ts",
+      "bytes": 6191,
+      "sha256": "D438E83015F9E08E4DFC33093D06CA2034DBD125946FC14503B70579EEB19818",
+      "createdUtc": "2026-06-14T15:53:49.2083552Z",
+      "lastWriteUtc": "2026-06-14T15:53:49.2083552Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\tests\\release-distribution\\admin-upload-local-storage-mutation.test.ts",
+      "bytes": 11223,
+      "sha256": "12E0738E830610C2E3F9D4E4AC0DDF6CACAEC099C4BE1C2D86DF32C5268D1F42",
+      "createdUtc": "2026-06-08T00:57:40.4895470Z",
+      "lastWriteUtc": "2026-06-15T10:26:57.1434484Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\tests\\release-distribution\\public-download-artifact-route.test.ts",
+      "bytes": 4016,
+      "sha256": "FD389B45E2C2532ADA0FBF07A01557E1FBD637ADD2F6CD512007EABB96462BFE",
+      "createdUtc": "2026-06-08T01:26:32.3588099Z",
+      "lastWriteUtc": "2026-06-08T01:26:58.6583889Z"
+    }
+  ],
+  "candidateSourceMissing": [],
+  "compilerConfigFiles": [
+    {
+      "path": "E:\\cheapapp.org\\package.json",
+      "bytes": 3041,
+      "sha256": "7F32A232E0B089F6A76EF08ED08118CB6B9C74EA3FC6C62249FBD22DD83BD3AD",
+      "createdUtc": "2026-05-14T14:03:17.6484941Z",
+      "lastWriteUtc": "2026-06-18T06:50:35.8128364Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\pnpm-lock.yaml",
+      "bytes": 294563,
+      "sha256": "A9C5303567F2B5BB962145A9E5AA0E84016ECE615DDD555FBA0BA698B8CD7EFE",
+      "createdUtc": "2026-05-14T14:03:17.5726597Z",
+      "lastWriteUtc": "2026-05-14T14:03:17.5739837Z"
+    },
+    {
+      "path": "E:\\cheapapp.org\\tsconfig.json",
+      "bytes": 781,
+      "sha256": "2733E2D2C574A6BBDD91E961AA8721A65E300D2E52497AF1154C440CA586CE02",
+      "createdUtc": "2026-04-17T10:41:14.9647261Z",
+      "lastWriteUtc": "2026-04-22T21:02:08.2952370Z"
+    }
+  ],
+  "compilerConfigMissing": [],
+  "anvien": {
+    "root": "E:\\cheapapp.org\\.anvien",
+    "fileCount": 4,
+    "reparsePoints": 0,
+    "files": [
+      {
+        "path": "E:\\cheapapp.org\\.anvien\\graph.json",
+        "bytes": 840614023,
+        "sha256": "8763AA2D089328F3D782A5F01E06178D171922E3A5CE96A4EE6707510976C920",
+        "createdUtc": "2026-08-23T22:22:42.6204359Z",
+        "lastWriteUtc": "2026-08-23T22:22:55.6583965Z",
+        "relativePath": "graph.json"
+      },
+      {
+        "path": "E:\\cheapapp.org\\.anvien\\lbug",
+        "bytes": 597946368,
+        "sha256": "74AD03D12D83B441E9FBC994C8F30086EF5384B916F17DB0488BCD2B75C68A92",
+        "createdUtc": "2026-08-23T22:21:56.7836964Z",
+        "lastWriteUtc": "2026-08-23T22:22:42.4066766Z",
+        "relativePath": "lbug"
+      },
+      {
+        "path": "E:\\cheapapp.org\\.anvien\\meta.json",
+        "bytes": 259,
+        "sha256": "B6C0312D06B40B25B000C5450FE70E48C857C0339D156C5062CEED88AF90AC2D",
+        "createdUtc": "2026-07-26T06:21:54.3870010Z",
+        "lastWriteUtc": "2026-08-23T22:22:56.1280541Z",
+        "relativePath": "meta.json"
+      },
+      {
+        "path": "E:\\cheapapp.org\\.anvien\\settings.json",
+        "bytes": 31,
+        "sha256": "6C831C0AC49625D09EE54E76042612B92F47ABC47E4A90D1310F0EA45E824B3C",
+        "createdUtc": "2026-07-14T03:57:29.5761108Z",
+        "lastWriteUtc": "2026-07-14T03:57:29.5766494Z",
+        "relativePath": "settings.json"
+      }
+    ]
+  },
+  "runtime": {
+    "path": "E:\\Anvien\\anvien\\bin\\anvien.exe",
+    "bytes": 73749504,
+    "sha256": "64EECEBAF459F23EA11DA38B29C5E290F6F6B22D5EE4749E068BB927A8EEDEBB",
+    "createdUtc": "2026-08-23T06:01:14.7751804Z",
+    "lastWriteUtc": "2026-08-23T20:05:51.0980214Z"
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "schema": "p6d-reader-gate-v1",
+  "generatedUtc": "2026-08-23T22:06:49.9569993Z",
+  "status": "READER_GATE_PASS",
+  "targetAccessAuthorized": true,
+  "runtime": {
+    "path": "E:\\Anvien\\anvien\\bin\\anvien.exe",
+    "version": "1.2.8",
+    "bytes": 73749504,
+    "sha256": "64EECEBAF459F23EA11DA38B29C5E290F6F6B22D5EE4749E068BB927A8EEDEBB",
+    "identityDrift": false,
+    "canonicalBuildStatus": "EXACT_CANONICAL_PS51_FULL_BUILD_PASS_1_OF_1"
+  },
+  "provenance": {
+    "status": "complete",
+    "bytes": 170548,
+    "sha256": "149000ABA76ED45F7D6323D46138522E824B9FF8DC9B2CB928D0931EF5336C69",
+    "sourceIdentitiesMatched": 10,
+    "sourceIdentityDenominator": 10,
+    "nativeFilesMatched": 3,
+    "nativeFileDenominator": 3,
+    "publicationIdentitiesMatched": 3,
+    "publicationIdentityDenominator": 3
+  },
+  "packageReader": {
+    "command": "E:\\Anvien\\anvien\\bin\\anvien.exe package ensure-runtime",
+    "outerShell": "Windows PowerShell 5.1.19041.6456 Desktop",
+    "psModulePathAction": "inherited_unmodified",
+    "psModulePathSha256": "7FCFB77D5B356E43406539C62F0C8F228B2E6C1AE53754175A25A77FD52690AE",
+    "psModuleAnalysisCachePath": "unset_default",
+    "getFileHashResolved": true,
+    "exitCode": 0,
+    "vendorModules": 45,
+    "vendorFiles": 1798,
+    "vendorBytes": 190350404,
+    "vendorTreeSha256": "7C6D6466D73874684F73C1C35D0D928FA0B729B8C8F59D5F9C71079639C6330E",
+    "missingExtraMismatchLicenseGap": [0, 0, 0, 0],
+    "loadedDll": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+    "loadedDllSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+    "moduleObservationErrors": 0
+  },
+  "carrierTests": [
+    {
+      "command": "go test ./internal/graphhealth -run ^TestP6D -count=1 -v",
+      "exitCode": 0,
+      "denominator": "3+2+26+1+1",
+      "fallbackFailureSkip": [0, 0, 0]
+    },
+    {
+      "command": "go test ./internal/lbugload -run ^TestP6C3ResolutionOutcomesPreserveGraphJSONAndLadybugParity$ -count=1 -v",
+      "exitCode": 0,
+      "denominator": "1/1",
+      "fallbackFailureSkip": [0, 0, 0]
+    },
+    {
+      "command": "go test -tags ladybugdb ./internal/lbugnative -run ^TestP6C3NativeLadybugResolutionOutcomeReadback$ -count=1 -v",
+      "exitCode": 0,
+      "denominator": "1/1",
+      "nodeRelationshipCopyFallbackFailureSkip": [2, 2, 0, 0, 0]
+    }
+  ],
+  "child02Reader": {
+    "scope": "C16 command indexes 3,4,5 only; UI rows C09-C11 excluded",
+    "exits": [0, 0, 0],
+    "denominator": "3/3",
+    "remoteVectorAttempts": 0
+  },
+  "artifacts": {
+    "graphJson": {
+      "path": "E:\\Anvien\\.anvien\\graph.json",
+      "bytes": 672905854,
+      "sha256": "40B059AD314AC41FB456635D175FA8FA83F3EF2FD5B106649DFFFF3F6032E4B4"
+    },
+    "ladybug": {
+      "path": "E:\\Anvien\\.anvien\\lbug",
+      "bytes": 388788224,
+      "sha256": "4A66D15961B5F496400AEA6667C4E57364167984D3DBA6A8220F65BADFE54668"
+    }
+  },
+  "builtReaders": {
+    "status": "PASS",
+    "commandDenominator": "5/5 reader commands plus isolated registry preparation",
+    "allExitZero": true,
+    "allStderrEmpty": true,
+    "allLoadedCanonicalDll": true,
+    "moduleObservationErrors": 0,
+    "runtimeGraphLadybugUnchanged": true,
+    "matrixPath": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\command-matrix.json",
+    "matrixBytes": 7426,
+    "matrixSha256": "405A751C9CFB84087F5EA9798A71632E8640BE468930319E99BB311250EBA275"
+  },
+  "nativeOnlyProof": {
+    "graphJsonPresent": false,
+    "ladybugBytes": 388788224,
+    "ladybugSha256": "4A66D15961B5F496400AEA6667C4E57364167984D3DBA6A8220F65BADFE54668",
+    "resolutionGapCountGraphJson": 53156,
+    "resolutionGapCountNative": 53156,
+    "nativeGroups": {
+      "standard_library_non_actionable": 2730,
+      "unclassified_review": 50426
+    },
+    "countDifference": 0,
+    "fallbackPossible": false,
+    "matrixSha256": "560DC0312176F5E2BD66051C76C43D7AC235576EDAED9B2CB647AF1C571E9D96"
+  },
+  "structuredParity": {
+    "status": "PASS",
+    "sourceSiteId": "SourceSite:anvien-web/src/App.tsx#call#(repoPath || \"\").replace#82#8#82#44",
+    "builtRows": 1,
+    "nativeRows": 1,
+    "noteByteExact": true,
+    "differences": 0,
+    "fields": {
+      "sourceSiteStatus": "capability_unavailable",
+      "proofKind": "typescript-standard-library-authority",
+      "classification": "standard_library",
+      "actionability": "non_actionable",
+      "resolutionSource": "typescript_standard_library",
+      "catalogProofState": "ready"
+    },
+    "proofPath": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\structured-reader-parity.json",
+    "proofBytes": 1919,
+    "proofSha256": "331D127F0503CB7883AE3318CA77590F67F91D9982D7C337090DCD3FD24EA823"
+  },
+  "child02Parity": {
+    "status": "PASS",
+    "definitionGraphJsonLadybug": [46593, 46593],
+    "definesPairsGraphJsonLadybug": [46593, 46593],
+    "missingExtraFieldPairEndpointPartialMismatch": [0, 0, 0, 0, 0, 0],
+    "jsonPath": "E:\\Anvien\\reports\\QA\\child02-p2e-parity\\p6d-r43-260824_050457\\qa_child02_p2e_parity_260824_050601.json",
+    "jsonBytes": 3169,
+    "jsonSha256": "B18E607FCD4AFBD8FFA02326FC7653134162A45C7387744472F0288C31193A91",
+    "markdownPath": "E:\\Anvien\\reports\\QA\\child02-p2e-parity\\p6d-r43-260824_050457\\qa_child02_p2e_parity_260824_050601.md",
+    "markdownBytes": 631,
+    "markdownSha256": "D56D328B83127357FB6862D62C012C5D733E145CB855658E981292BBFDE4E8AA"
+  },
+  "excludedHarnessIncidents": [
+    "wrong-shell package invocation inherited pwsh PSModulePath and failed before native load",
+    "one wrapper aborted before package start because $HOME was a constant variable",
+    "two isolated registry-preparation attempts failed before readers because registration was absent, then --allow-non-git was required",
+    "native-only capture helper had one missing whitespace syntax error after registration",
+    "one structured-sample capture helper collided with alias Get-History after the query completed",
+    "one comparator parse attempt did not initially strip the CLI Next suffix"
+  ],
+  "zeroFallback": true,
+  "zeroSkip": true,
+  "zeroDifference": true
+}

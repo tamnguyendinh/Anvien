@@ -1,0 +1,35 @@
+{
+  "schema": "p6d-target-analyze-v1",
+  "startedUtc": "2026-08-23T22:13:30.7344357Z",
+  "endedUtc": "2026-08-23T22:23:32.1442293Z",
+  "command": "E:\\Anvien\\anvien\\bin\\anvien.exe analyze E:\\cheapapp.org --force",
+  "workingDirectory": "E:\\Anvien",
+  "exitCode": 0,
+  "runtime": {
+    "bytes": 73749504,
+    "sha256": "64EECEBAF459F23EA11DA38B29C5E290F6F6B22D5EE4749E068BB927A8EEDEBB"
+  },
+  "readerMarkerStatus": "READER_GATE_PASS",
+  "environment": {
+    "laneRoot": "E:\\Anvien\\.tmp\\p6d-r43-target-proof-20260823T220954001Z-a133dfd7f87241b7afc5b1e5135036b9",
+    "gitSafeDirectory": "E:/cheapapp.org",
+    "network": "off",
+    "goProxy": "off",
+    "goSumDb": "off",
+    "npmOffline": null
+  },
+  "stdout": {
+    "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-analyze.stdout.txt",
+    "bytes": 1277,
+    "sha256": "BC7D7F8A86F4769768BDCCE43F2ABEB2F5C722C97AE508494367D660AEEBF714"
+  },
+  "stderr": {
+    "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-analyze.stderr.txt",
+    "bytes": 0,
+    "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "loadedLbugObserved": true,
+  "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+  "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+  "moduleObservationErrors": 0
+}

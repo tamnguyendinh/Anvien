@@ -1,0 +1,61 @@
+{
+  "schema": "p6d-structured-reader-parity-v1",
+  "generatedUtc": "2026-08-23T22:04:26.7482818Z",
+  "status": "PASS",
+  "sourceSiteId": "SourceSite:anvien-web/src/App.tsx#call#(repoPath || \"\").replace#82#8#82#44",
+  "denominator": {
+    "builtRows": 1,
+    "nativeRows": 1
+  },
+  "fieldsCompared": [
+    "sourceSiteStatus",
+    "proofKind",
+    "classification",
+    "actionability",
+    "resolutionSource",
+    "note"
+  ],
+  "authorityFieldsCompared": [
+    "sourceSiteId",
+    "stage",
+    "filePath",
+    "fileHash",
+    "siteKind",
+    "requestedName",
+    "requestedMeaning",
+    "status",
+    "reason",
+    "authorityKind",
+    "catalogProofState",
+    "authorityHash",
+    "typescriptVersion",
+    "catalogHash",
+    "catalogArtifactHash",
+    "profileHash",
+    "configHash"
+  ],
+  "noteByteExact": true,
+  "differences": [],
+  "built": {
+    "sourceSiteStatus": "capability_unavailable",
+    "proofKind": "typescript-standard-library-authority",
+    "classification": "standard_library",
+    "actionability": "non_actionable",
+    "resolutionSource": "typescript_standard_library"
+  },
+  "native": {
+    "sourceSiteStatus": "capability_unavailable",
+    "proofKind": "typescript-standard-library-authority",
+    "classification": "standard_library",
+    "actionability": "non_actionable",
+    "resolutionSource": "typescript_standard_library"
+  },
+  "authority": {
+    "catalogProofState": "ready",
+    "authorityHash": "164cb0632e76b3801894c8a45fc77309cc878909ed9b92a3a89a2ace94335711",
+    "catalogHash": "dca7af22ff26510cf9075fcb587ab76649bf169edcb0001e50c234d89c9dbb0b",
+    "catalogArtifactHash": "f188d15a5d91925df3e724cbab97964813e3f6dfd9df7408fdc7b92ea4cea487",
+    "profileHash": "40554553898859252d40e8e2927bdb78ca84e7e1722451202c3866a0cfd7c0e5",
+    "configHash": "fe981bb053344766d284e51229b096915fea93bc45e9a20c4c1d46930faa7797"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "p6d-typescript-oracle-invocation-v1",
+  "startedUtc": "2026-08-23T22:12:30.1271955Z",
+  "endedUtc": "2026-08-23T22:12:35.4599810Z",
+  "command": "C:\\Program Files\\nodejs\\node.exe -e <inline AST+TypeChecker oracle>",
+  "workingDirectory": "E:\\cheapapp.org",
+  "exitCode": 0,
+  "stdout": {
+    "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-typescript-oracle.json",
+    "bytes": 10177,
+    "sha256": "C7F7D4ED12DC4939FCF1BACACB1979951BFDEB954C36786222BC566D6E5AE7AA"
+  },
+  "stderr": {
+    "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\target\\target-typescript-oracle.stderr.txt",
+    "bytes": 0,
+    "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "status": "PASS",
+  "denominator": {
+    "expected": 3,
+    "observed": 3,
+    "passed": 3
+  }
+}

@@ -17,7 +17,7 @@ $ExecutionRepeatHarness = Join-Path $LaneRoot "qa-child02-p2e-repeated-analyze.p
 $BuildEvidenceRoot = Join-Path $RepoRoot "reports\QA\child02-p2e-build"
 $ReaderEvidenceRoot = Join-Path $RepoRoot "reports\QA\child02-p2e-readers"
 $ParityEvidenceRoot = Join-Path $RepoRoot "reports\QA\child02-p2e-parity"
-$LadybugRuntime = Join-Path $RepoRoot ".tmp\ladybug-native\v0.19.1\windows-x86_64"
+$LadybugRuntime = Join-Path $RepoRoot "third_party\ladybugdb\v0.19.1\windows-x86_64"
 $RuntimeManifestPath = Join-Path $LaneRoot "runtime.json"
 
 function Write-JsonFile([string]$Path, [object]$Value) {

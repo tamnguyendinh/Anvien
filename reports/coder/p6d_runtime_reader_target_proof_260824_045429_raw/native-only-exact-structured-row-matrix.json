@@ -1,0 +1,23 @@
+{
+  "schema": "p6d-native-exact-structured-row-v1",
+  "startedUtc": "2026-08-23T22:03:32.1870890Z",
+  "endedUtc": "2026-08-23T22:03:32.7673345Z",
+  "query": "MATCH (g:ResolutionGap) WHERE g.sourceSiteId = 'SourceSite:anvien-web/src/App.tsx#call#(repoPath || \"\").replace#82#8#82#44' RETURN g.sourceSiteId AS sourceSiteId, g.sourceSiteStatus AS sourceSiteStatus, g.proofKind AS proofKind, g.classification AS classification, g.actionability AS actionability, g.resolutionSource AS resolutionSource, g.note AS note",
+  "sourceSiteId": "SourceSite:anvien-web/src/App.tsx#call#(repoPath || \"\").replace#82#8#82#44",
+  "nativeOnlyGraphJsonPresent": false,
+  "exitCode": 0,
+  "stdout": {
+    "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\native-only-exact-structured-row.stdout.json",
+    "bytes": 4647,
+    "sha256": "C0E1AFFA6F2A39E238A8985836E95617EC4C9E8FD7546CE343FED06C8DCF2378"
+  },
+  "stderr": {
+    "path": "E:\\Anvien\\reports\\coder\\p6d_runtime_reader_target_proof_260824_045429_raw\\native-only-exact-structured-row.stderr.txt",
+    "bytes": 0,
+    "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "loadedLbugObserved": true,
+  "loadedLbugPath": "E:\\Anvien\\anvien\\bin\\lbug_shared.dll",
+  "loadedLbugSha256": "20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7",
+  "moduleObservationErrors": 0
+}

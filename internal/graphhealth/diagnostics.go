@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/tamnguyendinh/anvien/internal/graph"
+	"github.com/tamnguyendinh/anvien/internal/tsstdlib"
 )
 
 const (
@@ -221,6 +222,11 @@ func normalizeDiagnosticSlice(values []Diagnostic) []Diagnostic {
 }
 
 func normalizeDiagnosticMetadata(diagnostic Diagnostic) Diagnostic {
+	if classification, actionability, structured := structuredResolutionDiagnosticPolicy(diagnostic); structured {
+		diagnostic.Classification = classification
+		diagnostic.Actionability = actionability
+		return diagnostic
+	}
 	if diagnostic.Classification == "" {
 		diagnostic.Classification = classifyDiagnostic(diagnostic)
 	}
@@ -228,6 +234,325 @@ func normalizeDiagnosticMetadata(diagnostic Diagnostic) Diagnostic {
 		diagnostic.Actionability = actionabilityForDiagnosticClassification(diagnostic.Classification)
 	}
 	return diagnostic
+}
+
+const (
+	structuredResolutionOutcomeSchemaVersion = 1
+
+	structuredResolutionStageRepository            = "repository"
+	structuredResolutionStageTypeScriptStandardLib = "typescript_standard_library"
+
+	structuredResolutionStatusResolvedInternal      = "resolved_internal"
+	structuredResolutionStatusResolvedExternal      = "resolved_external"
+	structuredResolutionStatusUnresolved            = "unresolved"
+	structuredResolutionStatusCapabilityUnavailable = "capability_unavailable"
+)
+
+type structuredResolutionOutcome struct {
+	SchemaVersion    int             `json:"schemaVersion"`
+	SourceSiteID     string          `json:"sourceSiteId"`
+	Status           string          `json:"status"`
+	Stage            string          `json:"stage"`
+	SiteKind         string          `json:"siteKind"`
+	FilePath         string          `json:"filePath"`
+	FileHash         string          `json:"fileHash"`
+	Range            structuredRange `json:"range"`
+	RequestedName    string          `json:"requestedName"`
+	RequestedMeaning string          `json:"requestedMeaning"`
+	Language         string          `json:"language"`
+	Target           json.RawMessage `json:"target"`
+	Reason           string          `json:"reason"`
+	Proof            structuredProof `json:"proof"`
+	Authority        json.RawMessage `json:"authority"`
+}
+
+type structuredRange struct {
+	StartLine int `json:"startLine"`
+	StartCol  int `json:"startCol"`
+	EndLine   int `json:"endLine"`
+	EndCol    int `json:"endCol"`
+}
+
+type structuredProof struct {
+	Kind string `json:"kind"`
+}
+
+type structuredResolutionAuthority struct {
+	SourceSiteID        string                     `json:"sourceSiteId"`
+	Stage               string                     `json:"stage"`
+	FilePath            string                     `json:"filePath"`
+	FileHash            string                     `json:"fileHash"`
+	Range               structuredRange            `json:"range"`
+	SiteKind            string                     `json:"siteKind"`
+	RequestedName       string                     `json:"requestedName"`
+	RequestedMeaning    tsstdlib.Meaning           `json:"requestedMeaning"`
+	Status              tsstdlib.LookupStatus      `json:"status"`
+	Reason              tsstdlib.Reason            `json:"reason"`
+	ResolvedSymbolID    string                     `json:"resolvedSymbolId"`
+	DeclarationRanges   []tsstdlib.Declaration     `json:"declarationRanges"`
+	AuthorityKind       string                     `json:"authorityKind"`
+	CatalogProofState   tsstdlib.CatalogProofState `json:"catalogProofState"`
+	AuthorityHash       string                     `json:"authorityHash"`
+	TypeScriptVersion   string                     `json:"typescriptVersion"`
+	CatalogHash         string                     `json:"catalogHash"`
+	CatalogArtifactHash string                     `json:"catalogArtifactHash"`
+	ProfileHash         string                     `json:"profileHash"`
+	ConfigHash          string                     `json:"configHash"`
+}
+
+func structuredResolutionDiagnosticPolicy(diagnostic Diagnostic) (string, string, bool) {
+	outcome, structured, valid := decodeStructuredResolutionOutcome(diagnostic)
+	if !structured {
+		return "", "", false
+	}
+	if !valid {
+		return DiagnosticClassificationUnclassified, DiagnosticActionabilityReview, true
+	}
+	switch outcome.Status {
+	case structuredResolutionStatusUnresolved:
+		switch outcome.Stage {
+		case structuredResolutionStageRepository:
+			return DiagnosticClassificationInRepoUnresolved, DiagnosticActionabilityAnalyzerGap, true
+		case structuredResolutionStageTypeScriptStandardLib:
+			return DiagnosticClassificationStandardLibrary, DiagnosticActionabilityNonActionable, true
+		}
+	case structuredResolutionStatusCapabilityUnavailable:
+		if outcome.Stage == structuredResolutionStageTypeScriptStandardLib {
+			return DiagnosticClassificationStandardLibrary, DiagnosticActionabilityNonActionable, true
+		}
+	}
+	return DiagnosticClassificationUnclassified, DiagnosticActionabilityReview, true
+}
+
+func decodeStructuredResolutionOutcome(diagnostic Diagnostic) (structuredResolutionOutcome, bool, bool) {
+	statusMarker := isStructuredResolutionStatus(strings.TrimSpace(diagnostic.SourceSiteStatus))
+	note := strings.TrimSpace(diagnostic.Note)
+	if note == "" {
+		return structuredResolutionOutcome{}, statusMarker, false
+	}
+
+	var envelope map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(note), &envelope); err != nil {
+		return structuredResolutionOutcome{}, statusMarker, false
+	}
+	_, hasSchemaVersion := envelope["schemaVersion"]
+	_, hasStatus := envelope["status"]
+	structured := statusMarker || hasSchemaVersion || hasStatus
+	if !structured {
+		return structuredResolutionOutcome{}, false, false
+	}
+
+	var outcome structuredResolutionOutcome
+	if err := json.Unmarshal([]byte(note), &outcome); err != nil {
+		return structuredResolutionOutcome{}, true, false
+	}
+	return outcome, true, validStructuredResolutionDiagnostic(diagnostic, outcome)
+}
+
+func validStructuredResolutionDiagnostic(diagnostic Diagnostic, outcome structuredResolutionOutcome) bool {
+	if diagnostic.Kind != DiagnosticUnresolvedReference ||
+		outcome.SchemaVersion != structuredResolutionOutcomeSchemaVersion ||
+		strings.TrimSpace(outcome.SourceSiteID) == "" ||
+		strings.TrimSpace(outcome.SourceSiteID) != strings.TrimSpace(diagnostic.SourceSiteID) ||
+		strings.TrimSpace(outcome.Status) != strings.TrimSpace(diagnostic.SourceSiteStatus) ||
+		strings.TrimSpace(outcome.Stage) == "" ||
+		strings.TrimSpace(outcome.Stage) != strings.TrimSpace(diagnostic.ResolutionSource) ||
+		strings.TrimSpace(outcome.SiteKind) == "" ||
+		strings.TrimSpace(outcome.SiteKind) != strings.TrimSpace(diagnostic.FactFamily) ||
+		strings.TrimSpace(outcome.FilePath) == "" ||
+		strings.TrimSpace(outcome.FilePath) != strings.TrimSpace(diagnostic.FilePath) ||
+		strings.TrimSpace(outcome.FileHash) != strings.TrimSpace(diagnostic.FileHash) ||
+		outcome.Range.StartLine <= 0 ||
+		outcome.Range.EndLine <= 0 ||
+		outcome.Range.StartLine != diagnostic.StartLine ||
+		outcome.Range.StartCol != diagnostic.StartCol ||
+		outcome.Range.EndLine != diagnostic.EndLine ||
+		outcome.Range.EndCol != diagnostic.EndCol ||
+		strings.TrimSpace(outcome.RequestedName) == "" ||
+		strings.TrimSpace(outcome.RequestedName) != strings.TrimSpace(diagnostic.TargetText) ||
+		strings.TrimSpace(outcome.RequestedMeaning) == "" ||
+		strings.TrimSpace(outcome.Language) == "" ||
+		strings.TrimSpace(outcome.Proof.Kind) == "" ||
+		strings.TrimSpace(outcome.Proof.Kind) != strings.TrimSpace(diagnostic.ProofKind) ||
+		strings.TrimSpace(outcome.Stage) != strings.TrimSpace(diagnostic.Source) {
+		return false
+	}
+
+	hasTarget := rawJSONValuePresent(outcome.Target)
+	if hasTarget && !rawJSONObjectPresent(outcome.Target) {
+		return false
+	}
+	hasAuthority := rawJSONValuePresent(outcome.Authority)
+	if hasAuthority && !validStructuredResolutionAuthority(outcome) {
+		return false
+	}
+	switch outcome.Status {
+	case structuredResolutionStatusResolvedInternal:
+		return hasTarget && strings.TrimSpace(outcome.Reason) == "" && !hasAuthority &&
+			(outcome.Stage == structuredResolutionStageRepository || outcome.Stage == "intrinsic")
+	case structuredResolutionStatusResolvedExternal:
+		return hasTarget && strings.TrimSpace(outcome.Reason) == "" && hasAuthority &&
+			outcome.Stage == structuredResolutionStageTypeScriptStandardLib
+	case structuredResolutionStatusUnresolved:
+		if hasTarget || strings.TrimSpace(outcome.Reason) == "" {
+			return false
+		}
+		return outcome.Stage == structuredResolutionStageRepository && !hasAuthority ||
+			outcome.Stage == structuredResolutionStageTypeScriptStandardLib && hasAuthority
+	case structuredResolutionStatusCapabilityUnavailable:
+		return !hasTarget && strings.TrimSpace(outcome.Reason) != "" && hasAuthority &&
+			outcome.Stage == structuredResolutionStageTypeScriptStandardLib
+	default:
+		return false
+	}
+}
+
+func validStructuredResolutionAuthority(outcome structuredResolutionOutcome) bool {
+	if !rawJSONObjectPresent(outcome.Authority) {
+		return false
+	}
+	var authority structuredResolutionAuthority
+	if err := json.Unmarshal(outcome.Authority, &authority); err != nil ||
+		!validStructuredTypeScriptAuthorityResult(authority) ||
+		authority.SourceSiteID != outcome.SourceSiteID ||
+		authority.Stage != outcome.Stage ||
+		authority.FilePath != outcome.FilePath ||
+		authority.FileHash != outcome.FileHash ||
+		authority.Range.StartLine != outcome.Range.StartLine ||
+		authority.Range.StartCol != outcome.Range.StartCol ||
+		authority.Range.EndLine != outcome.Range.EndLine ||
+		authority.Range.EndCol != outcome.Range.EndCol ||
+		authority.SiteKind != outcome.SiteKind ||
+		authority.RequestedName != outcome.RequestedName ||
+		string(authority.RequestedMeaning) != outcome.RequestedMeaning {
+		return false
+	}
+	switch outcome.Status {
+	case structuredResolutionStatusResolvedExternal:
+		return authority.Status == tsstdlib.LookupResolved
+	case structuredResolutionStatusUnresolved:
+		return authority.Status == tsstdlib.LookupProfileExcluded ||
+			authority.Status == tsstdlib.LookupMeaningMismatch
+	case structuredResolutionStatusCapabilityUnavailable:
+		return authority.Status == tsstdlib.LookupCapabilityUnavailable
+	default:
+		return false
+	}
+}
+
+func validStructuredTypeScriptAuthorityResult(authority structuredResolutionAuthority) bool {
+	if authority.SourceSiteID == "" ||
+		authority.Stage != structuredResolutionStageTypeScriptStandardLib ||
+		authority.FilePath == "" ||
+		authority.Range.StartLine <= 0 ||
+		authority.Range.EndLine <= 0 ||
+		authority.SiteKind == "" ||
+		authority.RequestedName == "" ||
+		authority.AuthorityKind != tsstdlib.AuthorityKind ||
+		authority.TypeScriptVersion != tsstdlib.TypeScriptVersion ||
+		authority.ProfileHash == "" ||
+		authority.ConfigHash == "" ||
+		!validStructuredTypeScriptCatalogProof(authority) {
+		return false
+	}
+	switch authority.RequestedMeaning {
+	case tsstdlib.MeaningValue, tsstdlib.MeaningType, tsstdlib.MeaningNamespace:
+	default:
+		return false
+	}
+	switch authority.Status {
+	case tsstdlib.LookupResolved:
+		return authority.Reason == "" && authority.ResolvedSymbolID != "" && len(authority.DeclarationRanges) > 0
+	case tsstdlib.LookupCapabilityUnavailable:
+		return authority.ResolvedSymbolID == "" && len(authority.DeclarationRanges) == 0
+	case tsstdlib.LookupProfileExcluded:
+		return authority.Reason == tsstdlib.ReasonProfileExcludes && authority.ResolvedSymbolID == "" && len(authority.DeclarationRanges) == 0
+	case tsstdlib.LookupMeaningMismatch:
+		return authority.Reason == tsstdlib.ReasonMeaningMismatch && authority.ResolvedSymbolID == "" && len(authority.DeclarationRanges) == 0
+	default:
+		return false
+	}
+}
+
+func validStructuredTypeScriptCatalogProof(authority structuredResolutionAuthority) bool {
+	switch authority.CatalogProofState {
+	case tsstdlib.CatalogProofReady:
+		if authority.AuthorityHash == "" || authority.CatalogHash == "" || authority.CatalogArtifactHash == "" {
+			return false
+		}
+		switch authority.Status {
+		case tsstdlib.LookupResolved:
+			return authority.Reason == ""
+		case tsstdlib.LookupProfileExcluded:
+			return authority.Reason == tsstdlib.ReasonProfileExcludes
+		case tsstdlib.LookupMeaningMismatch:
+			return authority.Reason == tsstdlib.ReasonMeaningMismatch
+		case tsstdlib.LookupCapabilityUnavailable:
+			switch authority.Reason {
+			case tsstdlib.ReasonDisabledByNoLib,
+				tsstdlib.ReasonConfigInvalid,
+				tsstdlib.ReasonConfigTopology,
+				tsstdlib.ReasonConfigUnreadable:
+				return true
+			default:
+				return false
+			}
+		default:
+			return false
+		}
+	case tsstdlib.CatalogProofMissing:
+		return authority.Status == tsstdlib.LookupCapabilityUnavailable &&
+			authority.Reason == tsstdlib.ReasonCatalogMissing &&
+			authority.AuthorityHash == "" &&
+			authority.CatalogHash == "" &&
+			authority.CatalogArtifactHash == ""
+	case tsstdlib.CatalogProofRejected:
+		return authority.Status == tsstdlib.LookupCapabilityUnavailable &&
+			isStructuredTypeScriptCatalogRejection(authority.Reason) &&
+			authority.AuthorityHash == "" &&
+			authority.CatalogHash == "" &&
+			authority.CatalogArtifactHash != ""
+	default:
+		return false
+	}
+}
+
+func isStructuredTypeScriptCatalogRejection(reason tsstdlib.Reason) bool {
+	switch reason {
+	case tsstdlib.ReasonCatalogSchema,
+		tsstdlib.ReasonCatalogVersion,
+		tsstdlib.ReasonCatalogHash,
+		tsstdlib.ReasonCatalogInputManifest:
+		return true
+	default:
+		return false
+	}
+}
+
+func isStructuredResolutionStatus(status string) bool {
+	switch status {
+	case structuredResolutionStatusResolvedInternal,
+		structuredResolutionStatusResolvedExternal,
+		structuredResolutionStatusUnresolved,
+		structuredResolutionStatusCapabilityUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
+func rawJSONObjectPresent(value json.RawMessage) bool {
+	trimmed := strings.TrimSpace(string(value))
+	if trimmed == "" || trimmed == "null" {
+		return false
+	}
+	var object map[string]json.RawMessage
+	return json.Unmarshal(value, &object) == nil && object != nil
+}
+
+func rawJSONValuePresent(value json.RawMessage) bool {
+	trimmed := strings.TrimSpace(string(value))
+	return trimmed != "" && trimmed != "null"
 }
 
 func classifyDiagnostic(diagnostic Diagnostic) string {

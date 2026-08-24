@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -71,20 +72,30 @@ func TestPackageCleanGoSourceCommandUsesWorkingDirectoryPackageRoot(t *testing.T
 }
 
 func TestEnsurePackagedRuntimeAcceptsCurrentPlatformMetadata(t *testing.T) {
-	root := t.TempDir()
-	binDir := filepath.Join(root, "bin")
+	parent := shortPackageTestRoot(t)
+	packageRoot := filepath.Join(parent, "anvien")
+	sourceRoot := filepath.Join(packageRoot, "go-src")
+	binDir := filepath.Join(packageRoot, "bin")
+	stageRealGoVendorAuthorityForPackageTest(t, sourceRoot)
+	writePackageTestFile(t, sourceRoot, "cmd/anvien/main.go", "package main\n")
+	writePackageTestFile(t, sourceRoot, "internal/cli/command.go", "package cli\n")
 	if err := os.MkdirAll(binDir, 0o755); err != nil {
 		t.Fatalf("mkdir bin: %v", err)
 	}
 	if err := os.WriteFile(filepath.Join(binDir, "anvien.exe"), []byte("runtime"), 0o644); err != nil {
 		t.Fatalf("write runtime: %v", err)
 	}
+	vendorManifestSHA256, err := packageGoVendorManifestSHA256(sourceRoot)
+	if err != nil {
+		t.Fatalf("hash vendor manifest: %v", err)
+	}
 	metadata := packageRuntimeMetadata{
-		Platform: runtime.GOOS,
-		Arch:     runtime.GOARCH,
-		Binary:   "anvien.exe",
-		Source:   "..",
-		Tags:     []string{"ladybugdb"},
+		Platform:             runtime.GOOS,
+		Arch:                 runtime.GOARCH,
+		Binary:               "anvien.exe",
+		Source:               "..",
+		Tags:                 []string{"ladybugdb"},
+		VendorManifestSHA256: vendorManifestSHA256,
 	}
 	raw, err := json.Marshal(metadata)
 	if err != nil {
@@ -95,10 +106,10 @@ func TestEnsurePackagedRuntimeAcceptsCurrentPlatformMetadata(t *testing.T) {
 	}
 
 	var out bytes.Buffer
-	if err := ensurePackagedRuntime(root, &out); err != nil {
+	if err := ensurePackagedRuntime(packageRoot, &out); err != nil {
 		t.Fatalf("ensurePackagedRuntime returned error: %v", err)
 	}
-	if !strings.Contains(out.String(), "[package-runtime] using packaged Go runtime") {
+	if !strings.Contains(out.String(), "[package-runtime] using packaged Go runtime") || !strings.Contains(out.String(), vendorManifestSHA256) {
 		t.Fatalf("ensure output missing status: %q", out.String())
 	}
 }
@@ -131,7 +142,8 @@ func TestPackageRuntimePlatformAndArchAliases(t *testing.T) {
 }
 
 func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
-	parent := t.TempDir()
+	repoRoot := repositoryRootForPackageTest(t)
+	parent := shortPackageTestRoot(t)
 	packageRoot := filepath.Join(parent, "anvien")
 	if err := os.MkdirAll(packageRoot, 0o755); err != nil {
 		t.Fatalf("mkdir package root: %v", err)
@@ -139,8 +151,7 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(packageRoot, "package.json"), []byte(`{"name":"anvien"}`), 0o644); err != nil {
 		t.Fatalf("write package.json: %v", err)
 	}
-	writePackageTestFile(t, parent, "go.mod", "module example.com/anvien\n")
-	writePackageTestFile(t, parent, "go.sum", "")
+	stageRealGoVendorAuthorityForPackageTest(t, parent)
 	writePackageTestFile(t, parent, "cmd/anvien/main.go", "package main\n")
 	writePackageTestFile(t, parent, "cmd/anvien/main_test.go", "package main\n")
 	writePackageTestFile(t, parent, "internal/aicontext/aicontext.go", "package aicontext\n")
@@ -150,6 +161,7 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 	writePackageTestFile(t, parent, "internal/cli/command_test.go", "package cli\n")
 	writePackageTestFile(t, parent, "scripts/ensure-ladybug-native.ps1", "Write-Output native\n")
 	writePackageTestFile(t, parent, "scripts/ensure-ladybug-native.sh", "#!/usr/bin/env bash\nprintf native\\n\n")
+	copyPinnedNativeBundleForTest(t, parent)
 	if err := os.MkdirAll(filepath.Join(packageRoot, "go-src", "old"), 0o755); err != nil {
 		t.Fatalf("mkdir old go-src: %v", err)
 	}
@@ -168,6 +180,13 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 		"internal/cli/command.go",
 		"scripts/ensure-ladybug-native.ps1",
 		"scripts/ensure-ladybug-native.sh",
+		"scripts/verify-go-vendor.ps1",
+		"vendor/modules.txt",
+		"third_party/go-vendor/manifest.v1.json",
+		"third_party/go-vendor/patches/tree-sitter-go-v0.25.0-remove-absent-scanner.patch",
+		"third_party/ladybugdb/v0.19.1/windows-x86_64/lbug.h",
+		"third_party/ladybugdb/v0.19.1/windows-x86_64/lbug_shared.lib",
+		"third_party/ladybugdb/v0.19.1/windows-x86_64/lbug_shared.dll",
 		"anvien-go-source.json",
 	} {
 		if _, err := os.Stat(filepath.Join(packageRoot, "go-src", filepath.FromSlash(rel))); err != nil {
@@ -190,9 +209,7 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 	if err := json.Unmarshal(raw, &manifest); err != nil {
 		t.Fatalf("parse source manifest: %v", err)
 	}
-	if manifest.Files != 9 {
-		t.Fatalf("manifest files = %d, want 9", manifest.Files)
-	}
+	expectedCopiedFiles := assertPackageSourceManifestCoversTreeForTest(t, filepath.Join(packageRoot, "go-src"), manifest.Files, manifest.Paths)
 	for _, rel := range []string{
 		"internal/aicontext/skills/planner/SKILL.md",
 		"internal/aicontext/skills/planner/assets/config.json",
@@ -206,7 +223,14 @@ func TestPrepareGoSourcePackageCopiesMinimalGoSource(t *testing.T) {
 			t.Fatalf("manifest paths retained excluded path %s: %#v", rel, manifest.Paths)
 		}
 	}
-	if !strings.Contains(out.String(), "[prepare-go-source-package] copied 9 files") {
+	assertPackageTreeByteExactForTest(t, filepath.Join(repoRoot, "vendor"), filepath.Join(packageRoot, "go-src", "vendor"))
+	assertPackageTreeByteExactForTest(t, filepath.Join(repoRoot, "third_party", "go-vendor"), filepath.Join(packageRoot, "go-src", "third_party", "go-vendor"))
+	assertPackageFileByteExactForTest(t, filepath.Join(repoRoot, "scripts", "verify-go-vendor.ps1"), filepath.Join(packageRoot, "go-src", "scripts", "verify-go-vendor.ps1"))
+	var verifyOutput bytes.Buffer
+	if err := verifyPackageGoVendor(filepath.Join(packageRoot, "go-src"), &verifyOutput); err != nil {
+		t.Fatalf("verify packaged go-src vendor authority: %v; output=%q", err, verifyOutput.String())
+	}
+	if !strings.Contains(out.String(), fmt.Sprintf("[prepare-go-source-package] copied %d files", expectedCopiedFiles)) {
 		t.Fatalf("prepare output missing copied count: %q", out.String())
 	}
 }
