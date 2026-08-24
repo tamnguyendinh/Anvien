@@ -30,6 +30,16 @@ Do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, s
 
 ## 1. Orchestration Principles
 
+### Executive Authority & Chain of Command
+
+* **(MUST KNOW)** Operating authority resides with Main, acting strictly under the direct command of the User (Owner).
+* **(MUST)** Upon concluding a discussion with the Owner, Main must immediately translate decisions into actionable commands and execute the orchestration.
+* **(MUST)** Main is the sole commander: it issues commands, and strictly controls the scope, sequence, and accepts the results of all subagent lanes.
+* **(MUST NOT)** Subagent lanes only execute and report. Subagents MUST NOT command Main, force Main to select a workflow, or require Main to ask for permission.
+* **(MUST KNOW)** Only the latest, explicit direct command from the Owner regarding a specific issue can alter the current direction of the work.
+* **(MUST NOT)** Main MUST NOT push decision-making authority or the responsibility to advance the workflow back to the Owner.
+* **(MUST)** Main's core responsibility is to relentlessly drive the work progress forward to achieve the final outcome quickly and accurately.
+
 ### The orchestration agent (main agent) must:
 
 (MUST) Your responsibilities are:
@@ -186,17 +196,7 @@ A pause request is an absolute stop command. While paused, the session (MUST NOT
 * control other subagents;
 * self-resume without Owner permission.
 
-## 6. Rules for the Supervisor When Using the Product Matrix
-
-The product matrix is a tool to support the Supervisor in checking scope and invariants. It is not an excuse for the Supervisor to wait for code edits.
-
-* The matrix is used to determine pass/fail/blocked/unverified.
-* The matrix must not autonomously open additional implementation slices.
-* If the matrix detects a production error, the Supervisor must reject and hand off.
-* Do not run the matrix repeatedly just to delay a verdict when current evidence is sufficient.
-* A completed gate must not be rerun if the repo state and evidence remain unchanged.
-
-## 7. Rules After Auto-Compact
+## 6. Rules After Auto-Compact
 
 After an auto-compact or loss of context, the session must:
 
@@ -216,7 +216,7 @@ The session must not:
 
 Re-anchoring is for restoring context, not for resetting progress.
 
-## 8. Rules for Reporting Progress
+## 7. Rules for Reporting Progress
 
 The session must clearly distinguish:
 
@@ -234,7 +234,7 @@ Before long commands or long QA, the session must report:
 
 Do not report assumptions as facts. Do not remain silent for prolonged periods while running a gate.
 
-## 9. Workspace and Artifact Rules
+## 8. Workspace and Artifact Rules
 
 The session must:
 
@@ -245,7 +245,7 @@ The session must:
 * not commit when lacking sufficient build, runtime, evidence, Supervisor, and detect-changes;
 * not modify files outside the scope.
 
-## 10. Handoff Between Sessions
+## 9. Handoff Between Sessions
 
 Each handoff must point to:
 
@@ -261,7 +261,7 @@ The subagent's result is not automatically a conclusion. The Orchestration agent
 
 Do not continue just because the subagent "seems to be done" or has successfully run tests.
 
-## 11. Session (Lane) States
+## 10. Session (Lane) States
 
 The session uses clear states:
 
@@ -278,7 +278,7 @@ NEW
 
 Do not transition to CLOSED if there is no suitable durable report and verdict.
 
-## 12. Conditions for Closing a Session (Lane)
+## 11. Conditions for Closing a Session (Lane)
 
 A session may only be closed when:
 
@@ -291,7 +291,7 @@ A session may only be closed when:
 
 Do not declare completion just because code/build/test can run.
 
-## 13. Principles of Lane and Skill Coordination
+## 12. Principles of Lane and Skill Coordination
 
 ### The Nature of Lanes and Skills
 
@@ -411,7 +411,7 @@ Main must:
 3. commits the independent slice;
 4. only after that opens the next slice.
 
-## 14. Template Prompt for Opening a Session: 
+## 13. Template Prompt for Opening a Session: 
 
 - for codex: .agents/skills/orchestration/references/Template-Prompt-for-Opening-a-Session.md
 - for Claude code: .claude/skills/orchestration/references/Template-Prompt-for-Opening-a-Session-claude.md
