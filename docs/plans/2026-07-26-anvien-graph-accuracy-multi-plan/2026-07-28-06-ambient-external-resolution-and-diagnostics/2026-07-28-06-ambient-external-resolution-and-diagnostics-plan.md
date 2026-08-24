@@ -31,7 +31,7 @@ Make TypeScript standard-library and other evidenced external declarations resol
 - P6-C1 handles project/package declaration lookup only if P6-A evidence establishes that it belongs to this campaign's accepted contract.
 - P6-C2 adds external target representation or materialization only to the extent required by accepted resolver/persistence consumers.
 - P6-C3 owns structured resolver outcomes. P6-D only projects those outcomes into graph-health; it must not infer resolution from target text.
-- P6-D also owns the current-runtime recovery correction: make `third_party/ladybugdb/v0.19.1/windows-x86_64` the repository-owned LadybugDB native-input authority and update canonical `scripts/full-build.ps1` plus the affected helper/package/launcher call sites so `.tmp\ladybug-native` is no longer an input authority and every build uses explicit unique lane-owned cache/runtime roots.
+- P6-D historically closed the current-runtime recovery correction by making `third_party/ladybugdb/v0.19.1/windows-x86_64` the repository-owned LadybugDB native-input authority. Commit `81163e39718b94a509e41114cada224e8f269e36` and its per-run `.tmp` lane/cache/runtime/staging/provenance design remain provenance only; the Owner-approved future canonical build contract below supersedes that machinery without reopening P6-D.
 - Child 05 results are immutable predecessor inputs. Child 06 does not repeat module/export traversal.
 - Child 02 owns persistence/reader preservation. Child 06 changes only consumers identified by its current affected-surface inventory and fresh impact evidence.
 - Before graph-based work, run `anvien analyze --force`. Before editing a resolver, graph-health function, provider, shared contract, or projection, run file-detail and upstream impact and report the full blast radius.
@@ -65,7 +65,7 @@ In scope:
 - graph-health projection from the resolver's outcome;
 - exact target validation for `Promise`, `Math.max`, and `Math.min`;
 - affected persistence/readers identified by Child 02 inventory and fresh P6 impact.
-- repository-owned LadybugDB `v0.19.1` Windows x86_64 native inputs and the minimum canonical build/helper/package/launcher routing required to produce a current runtime from those durable inputs with unique lane-owned cache/runtime roots;
+- repository-owned LadybugDB `v0.19.1` Windows x86_64 native inputs and the historically accepted P6-D runtime recovery/build evidence, with the future build mechanism governed by the later Owner supersession below;
 - faster end-to-end `anviens analyze` runtime after P6-D closure while preserving accuracy, semantic completeness, graph correctness, deterministic output, freshness, failure/publication behavior, and persistence/reader parity.
 
 Out of scope:
@@ -122,7 +122,10 @@ Out of scope:
 ### Persistence and target validation
 
 - P6-D materializes exactly `{lbug.h, lbug_shared.lib, lbug_shared.dll}` under `third_party/ladybugdb/v0.19.1/windows-x86_64` as durable repository-owned native inputs with exact provenance/hash records; `.tmp\ladybug-native` and every shared/protected/quarantined cache remain forbidden as build inputs or recovery sources.
-- `scripts/full-build.ps1` owns one canonical invocation contract that forwards the durable native bundle and distinct cache/runtime roots under one unique repository-local lane root through `scripts/ensure-ladybug-native.ps1`, `internal/cli/package_runtime.go`, `anvien-launcher/build.ps1`, and only the same-invariant call sites proven by fresh impact. Missing inputs fail visibly; the canonical path has no silent download/shared-cache fallback.
+- Future canonical build flow is exactly `source -> E:\Anvien\anvien\bin\anvien.exe -> launcher -> analyze`; no per-run lane/cache/runtime/staging/provenance system is part of that contract.
+- `scripts/full-build.ps1` stops only the exact processes holding canonical output binaries, runs `go run -mod=vendor ..\cmd\anvien package build-runtime` from `E:\Anvien\anvien`, invokes the launcher build with `pwsh`, validates canonical version plus SHA-256/Git HEAD terminal trace, then runs `E:\Anvien\anvien\bin\anvien.exe analyze . --force`.
+- `internal/cli/package_runtime.go` builds directly to `E:\Anvien\anvien\bin\anvien.exe` with checked-in vendor, durable Ladybug native authority, offline guards, and the existing `E:\Anvien\anvien\bin\anvien-runtime.json` sidecar. `anvien-launcher/build.ps1` builds launcher/server/web directly into canonical outputs and must not compile the canonical CLI a second time.
+- Future builds reuse the existing default Go/TypeScript/Vite caches. They must not create per-run lane/cache/staging/provenance infrastructure, custom `HOME`/`TEMP`, or override `GOCACHE`, `GOMODCACHE`, `GOPATH`, `GOTMPDIR`, or `NPM_CONFIG_CACHE`. `anvien clean` is graph lifecycle only, never build-cache preparation; do not add new cache infrastructure.
 - Persist/project only fields proven necessary by affected graph/readers. JSON, Ladybug, and each affected reader must agree on the target/outcome facts with zero loss.
 - The three target sites pass only when each is either correctly resolved to an external declaration target or carries the explicitly accepted external-capability outcome for the real configured environment.
 - None of the three may remain `in_repo_unresolved` or `analyzer_gap`.
@@ -147,7 +150,7 @@ Out of scope:
 - `Promise`, `Math.max`, and `Math.min` reach correct external or accepted external-capability outcomes (`3/3`), with `0/3` remaining in-repository analyzer gaps.
 - No target-name allowlist or copied target fixture is present.
 - Only affected persistence/readers identified by Child 02 and fresh impact are changed; their outcomes match the graph source.
-- The repository-owned native bundle contains the exact three LadybugDB `v0.19.1` Windows x86_64 inputs, and the canonical full-build/helper/package/launcher path contains no `.tmp\ladybug-native` authority; one unique lane-owned cache/runtime root produces the current runtime used by native and built-reader proof.
+- Historical P6-D acceptance proves that the repository-owned native bundle contains the exact three LadybugDB `v0.19.1` Windows x86_64 inputs and that the accepted path contains no `.tmp\ladybug-native` authority. Its then-used unique lane-owned cache/runtime root is historical evidence, not a future build requirement.
 - Full build, nearest real resolver/graph-health boundary, target boundary, regression, Supervisor, detect-changes, and per-slice commit evidence pass.
 - P6-E proves faster end-to-end `anviens analyze` runtime against a comparable current-runtime baseline while preserving exact workload/output/reader equivalence, deterministic replay, freshness, failure/publication parity, and resource gates before Child 06 Pn-A opens.
 
@@ -468,6 +471,7 @@ Out of scope:
 
 - [x] P6-D: Project outcomes and prove the target sites.
   - State: `INDEPENDENT SUPERVISOR PASS / CANONICAL FULL BUILD AND CURRENT RUNTIME PASS / READER GATE PASS / TARGET CAPABILITY OUTCOMES 3/3 / IN-REPOSITORY ANALYZER GAPS 0/3 / TARGET BOUNDARY PASS / PROCEDURE CLEAN / MAIN FRESH CURRENT-BYTE DETECT PASS / ISOLATED COMMIT 81163e39718b94a509e41114cada224e8f269e36 / CLOSED / P6-E OPEN`.
+  - Owner-Superseded Future Build Record: P6-D stays closed and commit `81163e39718b94a509e41114cada224e8f269e36` stays accepted provenance. Every remaining P6-D reference to per-run `.tmp` lane/cache/runtime/staging/provenance, custom home/temp roots, or PowerShell 5.1 describes historical execution only and must not drive a future build. The binding future flow and command/cache constraints are the `Persistence and target validation` contract above.
   - Goal: preserve the cleared graph-health projection, materialize the selected exact repository-owned `vendor/` dependency authority alongside the durable LadybugDB inputs, recover the canonical current-runtime path with unique lane-owned derived caches/runtime roots, then validate the three bounded target sites on that built current runtime.
   - Scope Boundary:
     - Editable for the approved correction: `scripts/materialize-go-vendor.ps1`, `scripts/verify-go-vendor.ps1`, `scripts/test-go-vendor-contract.ps1`, `vendor/**`, `third_party/go-vendor/manifest.v1.json`, `third_party/go-vendor/licenses/**`, and exactly `third_party/go-vendor/patches/tree-sitter-go-v0.25.0-remove-absent-scanner.patch`; original P6-D scope also retains the durable Ladybug bundle, `scripts/full-build.ps1`, `scripts/ensure-ladybug-native.ps1`, `internal/cli/package_runtime.go`, `internal/cli/package_command_test.go`, `internal/cli/package_runtime_p6d_test.go`, `anvien-launcher/build.ps1`, and `scripts/qa-child02-p2e-validation.ps1`. Any further owner requires fresh impact and another four-ledger refresh. Existing graph-health production/test bytes remain preserve-only unless a fresh same-invariant rejection requires repair.
