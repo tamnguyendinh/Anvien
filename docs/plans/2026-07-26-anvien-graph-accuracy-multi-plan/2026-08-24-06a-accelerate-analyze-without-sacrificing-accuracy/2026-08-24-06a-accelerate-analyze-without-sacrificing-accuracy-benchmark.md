@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A001 KEEP / A002 ARCHITECT_PENDING / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED`; Cheapapp and Restaurant Manager before/after tables remain separate, `SUPERVISOR_A001_PASS` and Main `KEEP` are recorded, and each repo's optimized values are now that repo's accepted current baseline without averaging/combining
+- Current state: `A001 KEEP / A001_COMMIT_COMPLETE / A002 ARCHITECT_PENDING / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED`; Cheapapp and Restaurant Manager before/after tables remain separate, `SUPERVISOR_A001_PASS`, Main `KEEP`, and implementation commit `17a1f3af37dcb61f9d389345822b6470a8f772cc` are recorded, and each repo's optimized values remain that repo's accepted current baseline without averaging/combining
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -512,6 +512,7 @@ P3-A/P3-B/P3-C are final review, cleanup, detect, commit, and handoff operations
 - `E2-P2A-A001CONSISTENCY1` records the completed Owner-required consistency/Main transition and sole Coder pre-edit identity; it is not a benchmark observation and changes none of the 17 child values or their order.
 - `E2-P2A-A001BUILD1` records full-build validation only, and `E2-P2A-A001TEST1` records focused PASS plus a truthful pre-existing package golden FAIL. Neither is product-performance evidence, a package PASS, an A001 performance failure, or a disposition.
 - `E2-P2A-A001REVIEW1` records `SUPERVISOR_A001_PASS` as evidence acceptance; `E2-P2A-A001DECISION1` separately records Main's `KEEP` and repo-specific promotion. Neither is a new measurement, and no cross-repo average exists.
-- A001 implementation commit remains pending under `E3-P3C-COMMIT1`; no commit hash is recorded in this benchmark ledger.
+- `E2-P2A-A001COMMIT1` records `A001_COMMIT_COMPLETE` at `17a1f3af37dcb61f9d389345822b6470a8f772cc` with the verified 12-path manifest and staged set empty. This A001 fact does not satisfy final Child 06A `E3-P3C-COMMIT1` closure and changes no numeric row.
+- Coder completion/commit report pointer: `E:\Anvien\reports\coder\rp_coder_260825_175710_by_gpt-5_child06a_a001_import_claim_index.md`. It was created after implementation commit `17a1f3af37dcb61f9d389345822b6470a8f772cc` and is not part of that 12-path manifest; it is committed separately at `18b5063d236f9f2567fea90e48eca8f1501bd1eb` (`docs(report): record Child 06A A001 coder handoff`) with a one-file manifest exactly `reports/coder/rp_coder_260825_175710_by_gpt-5_child06a_a001_import_claim_index.md`, and contributes no benchmark value.
 - Historical/protected values are provenance only and never enter `Current accepted`, ranking, attempt count, or final speedup.
 - `SYSTEM_CHARACTERISTIC` records one child's terminal retained remaining cost after three complete unsuccessful attempts at one accepted baseline. It does not close the parent, omit smaller rows, or reduce the final requirement that total graph generation must be lower on the same workload.

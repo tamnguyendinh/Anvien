@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A001 KEEP / A002 ARCHITECT_PENDING`; `E2-P2A-A001REVIEW1` records `SUPERVISOR_A001_PASS`, `E2-P2A-A001DECISION1` records Main's separate `KEEP` and repo-specific baseline promotion, optimized bytes remain unchanged, and no A001 implementation commit or A002 architecture/Coder evidence exists
+- Current state: `A001 KEEP / A001_COMMIT_COMPLETE / A002 ARCHITECT_PENDING`; `E2-P2A-A001REVIEW1` records `SUPERVISOR_A001_PASS`, `E2-P2A-A001DECISION1` records Main's separate `KEEP` and repo-specific baseline promotion, and `E2-P2A-A001COMMIT1` records exact implementation commit `17a1f3af37dcb61f9d389345822b6470a8f772cc`; no A002 architecture/Coder evidence exists
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -241,6 +241,7 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-AnnnARCH1` | new Visible Architect identity/turn; exact parent row, complete child list, selected child elapsed-time owner/cause, current child/parent/total basis, attempt-local direction, allowed owners, expected gain, invariants, validation/resources, and rollback |
 | `E2-P2A-AnnnPLAN1` | Planner refreshed the living P2-A attempt and exact implementation/test/build/measure/review/rollback steps before Coder |
 | `E2-P2A-A001CONSISTENCY1` | A001-only direct-Owner sequence: Main four-ledger verification, independent Architect consistency result, Main acceptance/transition decision, revoked old Coder identity, sole active Coder identity/current pre-edit state, and explicit non-implementation/non-measurement/non-Supervisor/non-disposition/non-commit boundary |
+| `E2-P2A-A001COMMIT1` | A001-only exact implementation commit hash/message, verified 12-path manifest, clean staged set, separation from unrelated dirty work, and explicit non-P2-closure/non-A002-authorization boundary |
 | `E2-P2A-AnnnIMPACT1` | fresh required graph/file-detail/impact for exact owner immediately before edit, including full HIGH/CRITICAL scope |
 | `E2-P2A-AnnnSRC1` | exact production-first change and attempt-owned rollback boundary |
 | `E2-P2A-AnnnBUILD1` | build-holder/process preflight plus canonical full-build `PASS` after production and authorized test edits, before test execution |
@@ -255,7 +256,7 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-AnnnSYSTEM1` | only on third consecutive unsuccessful child attempt: exact parent/child rows, denominator, retained child/parent times, three attempts/reasons, terminal child `SYSTEM_CHARACTERISTIC`, and matching child checklist check |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001 source/build evidence remains complete and optimized bytes unchanged. `E2-P2A-A001REVIEW1` records `SUPERVISOR_A001_PASS`; Main's `E2-P2A-A001DECISION1` records A001 `KEEP`. P2-A, parent, and all children remain unchecked; D001 remains active and its no-KEEP streak is `0`; D002-D017 remain queued/unopened. Existing `E:\Anvien` numeric rows stay superseded. Cheapapp and Restaurant Manager independently retain complete before/after A001 data, and each repo's optimized values are now its own accepted current baseline without averaging/combining. Current cursor is `A002 / ARCHITECT_PENDING`; implementation commit, A002 Architect/Planner/Coder/measurement/Supervisor evidence, detect, and stage remain absent.
+Current attempt basis: A001 source/build evidence remains complete and optimized bytes unchanged. `E2-P2A-A001REVIEW1` records `SUPERVISOR_A001_PASS`; Main's `E2-P2A-A001DECISION1` records A001 `KEEP`; `E2-P2A-A001COMMIT1` records `A001_COMMIT_COMPLETE` at exact commit `17a1f3af37dcb61f9d389345822b6470a8f772cc`. P2-A, parent, and all children remain unchecked; D001 remains active and its no-KEEP streak is `0`; D002-D017 remain queued/unopened. Existing `E:\Anvien` numeric rows stay superseded. Cheapapp and Restaurant Manager independently retain complete before/after A001 data, and each repo's optimized values remain its own accepted current baseline without averaging/combining. Current cursor is `A002 / ARCHITECT_PENDING`; A002 Architect/Planner/Coder/measurement/Supervisor evidence, detect, and stage remain absent.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -374,7 +375,7 @@ overlap_count = 0
 
 - Exact helper-invocation counts, observed global-import visits, matching-bucket distribution, and allocation delta are not measured.
 - CPU samples are cumulative/overlapping and cannot predict elapsed savings.
-- Cheapapp and Restaurant Manager reports each remain measurement-only sources and do not themselves supply governance acceptance. Exact helper-invocation/deep-breakdown counters remain unmeasured. Independent Supervisor acceptance now exists under `E2-P2A-A001REVIEW1`, and Main `KEEP`/promotion exists separately under `E2-P2A-A001DECISION1`; no average/combined baseline, A001 implementation commit, A002 result, detect, or stage exists.
+- Cheapapp and Restaurant Manager reports each remain measurement-only sources and do not themselves supply governance acceptance. Exact helper-invocation/deep-breakdown counters remain unmeasured. Independent Supervisor acceptance exists under `E2-P2A-A001REVIEW1`, Main `KEEP`/promotion exists separately under `E2-P2A-A001DECISION1`, and the A001 implementation commit exists under `E2-P2A-A001COMMIT1`; no average/combined baseline, A002 result, detect, or stage exists.
 
 ### `E2-P2A-A001PLAN1` — Exact Planner Refresh
 
@@ -504,7 +505,21 @@ Status: `A001 KEEP / A002 ARCHITECT_PENDING`.
 - The pre-A001 values remain immutable comparison history in each target block; the optimized values above are now the accepted current baseline for that same target only.
 - Hierarchy/checklist effect: P2-A, unchecked parent `B1-P1A-OP001`, and unchecked active child `B2-P2A-A001-D001` remain open. D001's consecutive no-KEEP streak resets/remains `0`. D002-D017 remain queued, unchecked, and unopened. No parent or child is terminalized.
 - Next campaign cursor: `A002 / ARCHITECT_PENDING` on the same active D001. A001 architecture authority expired at disposition; Main must open a fresh visible A002 Architect before a new Planner refresh or Coder. Coder is not reopened by this decision.
-- A001 accepted production/test bytes remain unchanged. The single Child 06A implementation commit is still pending under `E3-P3C-COMMIT1`; no hash, detect, stage, or commit is fabricated.
+- At A001 disposition time the accepted production/test bytes remained unchanged and uncommitted. Their later exact implementation commit is appended separately under `E2-P2A-A001COMMIT1`; this does not fabricate or satisfy final Child 06A `E3-P3C-COMMIT1` closure.
+
+### `E2-P2A-A001COMMIT1` — A001 Implementation Commit Complete
+
+Status: `A001_COMMIT_COMPLETE`; fact sync only. This commit records accepted A001 and does not close P2-A/Child 06A, check any parent/child, authorize A002 Coder, or satisfy final `E3-P3C-COMMIT1` closure.
+
+- Exact commit: `17a1f3af37dcb61f9d389345822b6470a8f772cc`.
+- Exact subject: `perf(resolution): index import claims for call resolution`.
+- Parent: `72f7da1dc41d4d0b65e6a5477fa12640b51a7454`.
+- Verified manifest contains exactly `12` paths: the five A001 source/test files, the four Child 06A standard ledgers, the two target benchmark reports, and the one A001 Supervisor report.
+- Exact five source/test paths: `internal/resolution/indexes.go`, `internal/resolution/resolve.go`, `internal/resolution/export_resolution.go`, `internal/resolution/export_resolution_test.go`, and `internal/resolution/resolution_test.go`.
+- Exact report paths: `reports/Investigation/rp_child06a_a001_cheapapp_benchmark.md`, `reports/Investigation/rp_child06a_a001_restaurant_manager_benchmark.md`, and `reports/Supervisor/rp_supervisor_260825_172308_by_gpt-5_a001_measurement_equivalence_acceptance.md`.
+- Post-implementation Coder completion/commit evidence pointer: `E:\Anvien\reports\coder\rp_coder_260825_175710_by_gpt-5_child06a_a001_import_claim_index.md`. Full report verification confirms the five-file implementation, build-before-tests order, pre-existing golden failure, both separate target measurements, `SUPERVISOR_A001_PASS`, Main `KEEP`, detect-changes, and exact implementation commit. The report was created after `17a1f3af37dcb61f9d389345822b6470a8f772cc`, is not in its 12-path manifest, and is committed separately at `18b5063d236f9f2567fea90e48eca8f1501bd1eb` with subject `docs(report): record Child 06A A001 coder handoff`; that report commit contains exactly one path, `reports/coder/rp_coder_260825_175710_by_gpt-5_child06a_a001_import_claim_index.md`.
+- Staged set is empty after the commit. Unrelated pre-existing dirty/untracked files remain outside the manifest, unstaged, and untouched by this fact sync.
+- State effect: preserve A001 `KEEP`, separate accepted Cheapapp/Restaurant baselines, active unchecked D001, streak `0`, queued/unopened D002-D017, and exact current cursor `A002 / ARCHITECT_PENDING`. No A002 evidence or Coder authorization is created.
 
 ### Attempt State Machine
 
@@ -521,6 +536,7 @@ Status: `A001 KEEP / A002 ARCHITECT_PENDING`.
 | measurements/equivalence complete | `AnnnDIRECT1/PARENT1/E2E1/EQUIV1` | new Visible Supervisor |
 | Supervisor `PASS`, child/parent/end-to-end elapsed times lower | `AnnnREVIEW1`, `AnnnDECISION1` | `KEEP`; promote baseline, reset active-child streak to `0`, remeasure, and open another attempt on the same unchecked child |
 | A001 `KEEP` recorded | `E2-P2A-A001REVIEW1`, `E2-P2A-A001DECISION1`; two repo-specific accepted baselines remain separate | cursor `A002 / ARCHITECT_PENDING` on the same unchecked D001; Main opens a fresh visible Architect, never Coder directly |
+| A001 implementation commit recorded | `E2-P2A-A001COMMIT1`; exact commit/subject, 12-path manifest, staged set empty | `A001_COMMIT_COMPLETE`; cursor remains `A002 / ARCHITECT_PENDING`, with no A002 evidence or Coder authorization |
 | Supervisor `REJECT` or no retainable gain | `AnnnREVIEW1`, `AnnnDECISION1`, `AnnnRESTORE1` | increment unsuccessful streak; rejected candidate is not ranked |
 | unsuccessful child streak `1` or `2` | restored accepted state plus rejection/no-gain packet | new attempt records current parent/child basis before a new Visible Architect for the same child |
 | unsuccessful child streak `3` | three full attempt families plus `AnnnSYSTEM1` and accepted `AnnnRANK1` refresh | child `SYSTEM_CHARACTERISTIC`; remeasure accepted child/parent/E2E, refresh both ordered lists, check only that child, and select the largest remaining unchecked child of the same parent |
@@ -534,7 +550,7 @@ Append one row after every attempt result. Current rows: `1`.
 
 | Attempt | Parent row / selected child / accepted baseline | Complete child list / checklist | Architect evidence | Planner refresh | Coder / build | Child / parent / E2E rows | Supervisor result | Disposition | Child unsuccessful streak after | Promotion / restoration / checklist effect | Next owner / action |
 |---------|-------------------------------------------------|---------------------------------|--------------------|-----------------|---------------|---------------------------|-------------------|-------------|-----------------------------------|------------------------------------------|---------------------|
-| `A001` | `B1-P1A-OP001` / `B2-P2A-A001-D001`; pre-A001 baselines remain separate: Cheapapp D001/parent/process `209.823705100 / 733.384225100 / 890.314783200 s`; Restaurant D001/parent/process `501.638742800 / 1090.085959900 / 1178.391336900 s` | complete `17/17` rows per target; parent and all `17` child checklist items remain unchecked | `E2-P2A-A001ARCH1` | `E2-P2A-A001PLAN1`, `E2-P2A-A001CONSISTENCY1` | `E2-P2A-A001IMPACT1/SRC1/BUILD1/TEST1`; exact five-file `+174/-10` candidate, build PASS, focused PASS, pre-existing package golden FAIL recorded truthfully | separate accepted after values: Cheapapp D001/parent/process `25.045225300 / 184.481061700 / 279.105934600 s`; Restaurant `40.769294200 / 136.436879300 / 218.680628900 s`; denominators unchanged | `SUPERVISOR_A001_PASS`; `E2-P2A-A001REVIEW1` | `KEEP`; `E2-P2A-A001DECISION1` | `0` | promote each repo's optimized values as that repo's accepted current baseline; never average/combine; leave P2-A/parent/D001 unchecked and D002-D017 queued/unopened | Main Orchestration opens fresh visible Architect A002 on the same active D001; Coder remains closed and implementation commit remains pending |
+| `A001` | `B1-P1A-OP001` / `B2-P2A-A001-D001`; pre-A001 baselines remain separate: Cheapapp D001/parent/process `209.823705100 / 733.384225100 / 890.314783200 s`; Restaurant D001/parent/process `501.638742800 / 1090.085959900 / 1178.391336900 s` | complete `17/17` rows per target; parent and all `17` child checklist items remain unchecked | `E2-P2A-A001ARCH1` | `E2-P2A-A001PLAN1`, `E2-P2A-A001CONSISTENCY1` | `E2-P2A-A001IMPACT1/SRC1/BUILD1/TEST1/COMMIT1`; exact five-file `+174/-10` candidate, build PASS, focused PASS, pre-existing package golden FAIL recorded truthfully, implementation commit `17a1f3af37dcb61f9d389345822b6470a8f772cc` complete; Coder report `E:\Anvien\reports\coder\rp_coder_260825_175710_by_gpt-5_child06a_a001_import_claim_index.md` remains outside that implementation manifest and is committed separately at `18b5063d236f9f2567fea90e48eca8f1501bd1eb` with a one-file report manifest | separate accepted after values: Cheapapp D001/parent/process `25.045225300 / 184.481061700 / 279.105934600 s`; Restaurant `40.769294200 / 136.436879300 / 218.680628900 s`; denominators unchanged | `SUPERVISOR_A001_PASS`; `E2-P2A-A001REVIEW1` | `KEEP`; `E2-P2A-A001DECISION1` | `0` | promote each repo's optimized values as that repo's accepted current baseline; never average/combine; leave P2-A/parent/D001 unchecked and D002-D017 queued/unopened | `A001_COMMIT_COMPLETE`; Main Orchestration opens fresh visible Architect A002 on the same active D001; Coder remains closed |
 
 ### Final P2-A Evidence
 
