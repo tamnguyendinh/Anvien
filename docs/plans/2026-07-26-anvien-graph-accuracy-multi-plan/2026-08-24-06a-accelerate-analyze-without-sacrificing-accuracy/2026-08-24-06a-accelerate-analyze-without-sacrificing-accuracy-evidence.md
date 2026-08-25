@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A001 KEEP / A001_COMMIT_COMPLETE / A002 ARCHITECT_PENDING`; `E2-P2A-A001REVIEW1` records `SUPERVISOR_A001_PASS`, `E2-P2A-A001DECISION1` records Main's separate `KEEP` and repo-specific baseline promotion, and `E2-P2A-A001COMMIT1` records exact implementation commit `17a1f3af37dcb61f9d389345822b6470a8f772cc`; no A002 architecture/Coder evidence exists
+- Current state: `A001 KEEP / A001_COMMIT_COMPLETE / A002 PLAN_READY_FOR_MAIN_VERIFY / CODER_LOCKED`; `E2-P2A-A001REVIEW1/DECISION1/COMMIT1` preserve A001 acceptance and commits, while `E2-P2A-A002ARCH1/PLAN1` record the fresh A002 diagnostic-appender direction and exact four-ledger translation; no A002 implementation/build/test/measurement/Supervisor/disposition evidence exists
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -256,7 +256,7 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-AnnnSYSTEM1` | only on third consecutive unsuccessful child attempt: exact parent/child rows, denominator, retained child/parent times, three attempts/reasons, terminal child `SYSTEM_CHARACTERISTIC`, and matching child checklist check |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001 source/build evidence remains complete and optimized bytes unchanged. `E2-P2A-A001REVIEW1` records `SUPERVISOR_A001_PASS`; Main's `E2-P2A-A001DECISION1` records A001 `KEEP`; `E2-P2A-A001COMMIT1` records `A001_COMMIT_COMPLETE` at exact commit `17a1f3af37dcb61f9d389345822b6470a8f772cc`. P2-A, parent, and all children remain unchecked; D001 remains active and its no-KEEP streak is `0`; D002-D017 remain queued/unopened. Existing `E:\Anvien` numeric rows stay superseded. Cheapapp and Restaurant Manager independently retain complete before/after A001 data, and each repo's optimized values remain its own accepted current baseline without averaging/combining. Current cursor is `A002 / ARCHITECT_PENDING`; A002 Architect/Planner/Coder/measurement/Supervisor evidence, detect, and stage remain absent.
+Current attempt basis: A001 source/build/review/decision/commit evidence remains complete and optimized bytes unchanged. `E2-P2A-A001REVIEW1` records `SUPERVISOR_A001_PASS`; Main's `E2-P2A-A001DECISION1` records A001 `KEEP`; `E2-P2A-A001COMMIT1` records `A001_COMMIT_COMPLETE` at exact commit `17a1f3af37dcb61f9d389345822b6470a8f772cc`. P2-A, parent, and all children remain unchecked; D001 remains active and its no-KEEP streak is `0`; D002-D017 remain queued/unopened. Existing `E:\Anvien` numeric rows stay superseded. Cheapapp and Restaurant Manager independently retain complete before/after A001 data, and each repo's optimized values remain its own accepted current baseline without averaging/combining. `E2-P2A-A002ARCH1/PLAN1` now bind A002 at `PLAN_READY_FOR_MAIN_VERIFY`; Coder remains locked, and A002 impact/source/build/test/measurement/Supervisor/disposition/detect/stage/commit evidence remains absent.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -521,6 +521,76 @@ Status: `A001_COMMIT_COMPLETE`; fact sync only. This commit records accepted A00
 - Staged set is empty after the commit. Unrelated pre-existing dirty/untracked files remain outside the manifest, unstaged, and untouched by this fact sync.
 - State effect: preserve A001 `KEEP`, separate accepted Cheapapp/Restaurant baselines, active unchecked D001, streak `0`, queued/unopened D002-D017, and exact current cursor `A002 / ARCHITECT_PENDING`. No A002 evidence or Coder authorization is created.
 
+### `E2-P2A-A002ARCH1` — A002 Run-Scoped Diagnostic Appender Architecture
+
+Status: recorded from the fresh Architect report / `ARCHITECT_A002_READY_FOR_PLANNER`. This is attempt-local architecture input for Planner translation only; it is not Coder authorization, implementation/build/test evidence, an elapsed-speed claim, measurement result, Supervisor result, disposition, staging, or implementation commit.
+
+#### Identity and current selection
+
+- Report: `E:\Anvien\reports\system-architect\rp_system-architect_260825_184751_by_gpt-5_child06a_a002_run_scoped_diagnostic_appender.md`.
+- Report-only commit: `dafcf7a25e254ef8db09d28eca3575d5225c553e`; parent/current source-and-index authority `56090ac3c396b11b7a7aa0e9240ec5acbe562f01`; subject `docs(architecture): define Child 06A A002 diagnostic appender`; manifest exactly the one architecture report.
+- Verdict/handoff: `ARCHITECT_A002_READY_FOR_PLANNER`.
+- Architect-recorded fresh graph state: `2216` files scanned, `765` parsed, `0` failures. This report evidence does not replace the future Coder's fresh pre-edit Anvien gate.
+- Active parent remains unchecked `B1-P1A-OP001 resolution`; active child remains unchecked `B2-P2A-A001-D001 resolve_calls`; D001 no-KEEP streak remains `0`; D002-D017 remain queued, unchecked, and unopened.
+- Accepted A001 baselines remain separate: Cheapapp D001/parent/process/analyzer `25.045225300 / 184.481061700 / 279.105934600 / 274.474620900 s`, denominator `calls=27890; files=887`, diagnostics/outcomes `57683 / 86742`; Restaurant D001/parent/process/analyzer `40.769294200 / 136.436879300 / 218.680628900 / 215.972455200 s`, denominator `calls=86030; files=1234`, diagnostics/outcomes `129009 / 186251`.
+
+#### Residual cause and causal CPU evidence
+
+- `internal/graphhealth/diagnostics.go`: `AppendDiagnosticToNode` normalizes the incoming diagnostic; `appendDiagnosticsFromProperties` obtains all existing diagnostics and normalizes the incoming diagnostic again; stored `[]Diagnostic` enters `normalizeDiagnosticSlice`, which allocates a replacement slice and re-normalizes every prior entry; each structured normalization enters `decodeStructuredResolutionOutcome`, which unmarshals the same JSON `Note` into an envelope and then the outcome.
+- Production resolution has exactly two current `AppendDiagnosticToNode` call sites: `internal/resolution/emit.go:218` and `internal/resolution/outcome.go:392`, owned by `(*emitter).emitUnresolvedReference` and `(*emitter).emitTypeScriptOutcomeDiagnostic`.
+- Inference, not an operation counter: because each successful append writes `[]Diagnostic` back, repeated prior-entry normalization has the per-node triangular shape `0 + 1 + ... + (k-1)`. Profiles prove the stack is material but do not measure the exact repeated decode count.
+- Profiles were filtered to stacks containing `resolution.resolveCall`; values are cumulative CPU samples, overlap, are not additive, are not elapsed-speed claims, and are never averaged: Cheapapp `AppendDiagnosticToNode 20.30 s` / `normalizeDiagnosticMetadata 20.09 s`; Restaurant Manager `30.18 s / 29.56 s`.
+- Raw identities: Cheapapp benchmark/profile SHA-256 `BD598F4D5BCC52E7FB248988889431E7DF0CEC6788D583A4BF3637DE00CDC3BA` / `81606B16916225E5FCDAABEA7BE542F680626BF6093D1B026342608026289484`; Restaurant `72B9B441A84ABBA427F844C728B85DF1842C7A25187B785D5F7344CAFE9C1666` / `3A4C1BA5C535124DE3A5E898FA316C612AA7697523CF6B8819275DF468A1B961`. Roots remain `E:\Anvien\.tmp\child06a_a001_cheapapp_benchmark\owner-final-run\optimized` and `E:\Anvien\.tmp\child06a_a001_restaurant_manager_benchmark\fresh-supported-exclude-userapi-20260825\runs\optimized`.
+
+#### One selected direction and exact owners
+
+- Add one private, reversible, write-through diagnostic appender owned by the existing per-run `emitter`. During one sequential `ResolveBoundInto`, normalize each touched node's existing supported diagnostics once on first successful touch, normalize each incoming diagnostic once, merge normalized inputs, and keep writing the same `[]graphhealth.Diagnostic` representation through `Graph.AddNode` after every append.
+- Only `internal/graphhealth/diagnostics.go`: run-scoped appender plus one private normalized-input merge helper; cache only `map[nodeID][]Diagnostic` slice headers/state; first successful touch reads the current node and normalizes its existing supported representation once; every successful append re-reads the node, preserves all other properties, writes `DiagnosticPropertyKey` as `[]Diagnostic`, and calls `Graph.AddNode`. `AppendDiagnosticToNode` remains available for all other callers with current normalization/observable semantics; helper refactoring is allowed only to avoid duplicated rules.
+- Only `internal/resolution/emit.go`: add appender field to `emitter`, initialize it in `newEmitter` from the same graph, and route `emitUnresolvedReference` through it.
+- Only `internal/resolution/outcome.go`: route `emitTypeScriptOutcomeDiagnostic` through the same appender.
+- Only after production is correct, add focused test bytes in one new file: `internal/graphhealth/diagnostics_test.go`.
+- No second optimization: do not redesign diagnostic policy, remove the two unmarshals inside one structured decode, change bucket lookup/sorting, or open D002-D017.
+
+#### Blast radius and preserved invariants
+
+- Architect file risk: all three production files HIGH. `diagnostics.go`: `154` symbols, inbound/outbound `50/70`, flows/tests `1/19`; `emit.go`: `154`, `81/231`, `13/24`; `outcome.go`: `119`, `87/124`, `11/23`.
+- Architect symbol risk: `AppendDiagnosticToNode` CRITICAL (`7/2` impacted/direct, `1/24` modules/processes); `emitter` CRITICAL (`28/25`, `2/49`); `newEmitter` CRITICAL (`6/1`, `4/32`); `emitUnresolvedReference` CRITICAL (`7/4`, `2/36`); `emitTypeScriptOutcomeDiagnostic` LOW/0, which does not override HIGH file risk.
+- Preserve false-return behavior for nil graph, blank node ID, blank diagnostic kind, and absent source node; preserve `SourceNodeID` and `Count` defaults.
+- Preserve structured fail-closed and legacy classification/actionability policy; bucket identity; merged counts; empty-target fill; earliest source line; stable order; and write-through visibility after every call.
+- Preserve `[]Diagnostic` graph property, Graph JSON, persistence/readback, health projections, public output, and deterministic replay.
+- Preserve every resolution outcome, encoded `Note`, authority/proof/source-site field, metric, node, relationship, ID, label, property, branch, and order.
+- Normalize pre-existing supported diagnostic representations once on first touch exactly as the legacy function would. Cache validity is only under existing sequential `ResolveBoundInto`; do not cache whole nodes or silently overwrite an unproven concurrent/out-of-band writer.
+- Let `T` be source nodes touched by resolution diagnostics. Retained state is `O(T)` map entries/slice headers; cache and graph point to the same normalized slice and retain no second diagnostic-object copy. The first-touch replacement allocation may occur once, and the old property can then be collected.
+- Map lifecycle: created in `newEmitter`, no serialization/I/O/goroutine/lock/global cache, unreachable when `ResolveBoundInto` returns; diagnostic slices remain owned by the returned graph; every append is write-through, so no flush/finalizer.
+
+#### Required validation, measurement, rollback, and STOP
+
+1. Future Coder repeats fresh `anvien --help`, `anvien analyze --force`, file-detail for all three production owners, and exact symbol impacts; Architect evidence does not replace the gate.
+2. Edit the three production owners first. Only after production is correct add `internal/graphhealth/diagnostics_test.go`, comparing legacy and repeated appender writes for first-touch decoded input, multiple unique entries, duplicate-bucket merging, stable order, policy fields, per-append write-through, and absent-node failure.
+3. Perform build-holder/lock preflight, then require canonical full-build `PASS` before any test execution: `pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File E:\Anvien\scripts\full-build.ps1`.
+4. Post-build focused tests include the new appender-equivalence test, `TestP6DStructuredOutcomeProjectionPreservesGraphJSONAndHealthParity`, `TestResolveAttachesSourceBackedUnresolvedDiagnostics`, `TestP6C3FinalOutcomeStatusPrecedenceAndCarriageMatrix`, and `TestP6BResolverCarriesCatalogValidationFailuresPerSourceSite`; then `go test ./internal/graphhealth -count=1` and `go test ./internal/resolution -count=1`. The known preserve-only `TestProofBasedCallAccessGoldenCorpus` baseline failure needs exact unchanged-baseline proof, is not PASS, and any new failure blocks A002.
+5. Later use each accepted A001 artifact as its repo's own `before`; build one identifiable A002 candidate from accepted A001 plus only the authorized diff, preserving identical 17-child instrumentation and runtime/native/build contract. Cheapapp retains `E:\cheapapp.org --force --skip-git --json --progress`; Restaurant retains `E:\Restaurant_manager --force --json --progress` and exactly one `--exclude electron/renderer/src/api/userApi.ts`; only executable identity, benchmark path, and label may differ.
+6. Each target remains separate with graph under target-local `.anvien`; record target HEAD/status/workload plus process/executable/artifact hashes, D001, parent, analyzer total, process wall, calls/files, all 30 operation rows, all 17 child rows, scanned/parsed/failed, graph nodes/relationships, DB readback counts, resolution semantic metrics, diagnostics/outcomes, canonical Graph JSON, public stdout, `startAllocBytes`, `endAllocBytes`, `maxObservedSys`, and `O(T)` no-duplicate proof. Ladybug/meta byte equality alone is not the semantic gate; build/test/microbenchmark/profile duration cannot substitute.
+7. No numeric speed threshold is predicted. `KEEP` requires valid same-work D001 improvement plus corresponding net parent/process benefit on both repositories independently, all correctness/resource gates, and later per-attempt Supervisor `PASS`.
+8. Roll back only A002 appender/helper, `emitter` field/init, two route substitutions, and new focused test file if any build, correctness, equivalence, determinism, lifecycle, memory, D001, parent, or process gate fails. Preserve A001/P1/protected work.
+9. STOP and return to Main for fresh architecture if any additional production owner is required, including `internal/graph/types.go`, `internal/graphhealth/policy.go`/`Diagnostic`, `internal/resolution/resolve.go`, outcome/metric schemas, persistence/readers, public contracts, global/concurrent caching, or timing instrumentation. Any new residual belongs to a later attempt.
+
+#### Residual NO EVIDENCE
+
+- No A002 source/test edit, candidate binary, build, test, wall-time measurement, allocation result, graph/output equivalence result, Supervisor result, disposition, detect, stage, or implementation commit exists.
+- CPU samples do not predict elapsed savings; exact repeated-decode counts per node are not measured; no candidate `startAllocBytes`, `endAllocBytes`, or `maxObservedSys` exists yet.
+
+### `E2-P2A-A002PLAN1` — Exact A002 Planner Refresh
+
+Status: recorded / `A002 PLAN_READY_FOR_MAIN_VERIFY / CODER_LOCKED`.
+
+- `plan.md` binds the A002 selected direction, exact production/test owner boundary, preserved diagnostic/graph/output/lifecycle/resource invariants, production-first/full-build-before-tests order, exact focused/package validation, independent two-target measurement contract, scoped rollback, and mandatory STOP.
+- `evidence.md` records immutable `E2-P2A-A002ARCH1` and this materialization without fabricating implementation or validation proof.
+- `benchmark.md` preserves every A001 numeric row/order and both accepted repo-specific baselines, records the two residual CPU samples separately as causal/non-elapsed evidence, and adds only pending A002 candidate/resource fields with no invented value.
+- `actual-status.md` moves current state from `A002 ARCHITECT_PENDING` to `A002 PLAN_READY_FOR_MAIN_VERIFY`, keeps all P2-A/parent/child checkboxes unchecked, keeps D001 active/streak `0` and D002-D017 queued, points to `ARCH1/PLAN1`, and appends exactly one current refresh row.
+- Coder remains locked. This Planner refresh performs no source/test/report/plan-rules edit, graph/analyze/build/test/measurement, Supervisor/disposition, stage, or commit.
+- Next owner is Main Orchestration: independently verify the exact four ledger diffs/artifacts, then alone decide the next governance transition. No extra Architect consistency re-review is created by this translation.
+
 ### Attempt State Machine
 
 | From | Required evidence | To / next owner |
@@ -537,6 +607,7 @@ Status: `A001_COMMIT_COMPLETE`; fact sync only. This commit records accepted A00
 | Supervisor `PASS`, child/parent/end-to-end elapsed times lower | `AnnnREVIEW1`, `AnnnDECISION1` | `KEEP`; promote baseline, reset active-child streak to `0`, remeasure, and open another attempt on the same unchecked child |
 | A001 `KEEP` recorded | `E2-P2A-A001REVIEW1`, `E2-P2A-A001DECISION1`; two repo-specific accepted baselines remain separate | cursor `A002 / ARCHITECT_PENDING` on the same unchecked D001; Main opens a fresh visible Architect, never Coder directly |
 | A001 implementation commit recorded | `E2-P2A-A001COMMIT1`; exact commit/subject, 12-path manifest, staged set empty | `A001_COMMIT_COMPLETE`; cursor remains `A002 / ARCHITECT_PENDING`, with no A002 evidence or Coder authorization |
+| A002 architecture and Planner refresh recorded | `E2-P2A-A002ARCH1`, `E2-P2A-A002PLAN1`; exact report/commit, cause, three production owners, one post-production test owner, invariants, validation/resource/measurement/rollback/STOP boundary | `A002 PLAN_READY_FOR_MAIN_VERIFY`; Main verifies the four ledgers and alone decides the next governance transition; Coder remains locked |
 | Supervisor `REJECT` or no retainable gain | `AnnnREVIEW1`, `AnnnDECISION1`, `AnnnRESTORE1` | increment unsuccessful streak; rejected candidate is not ranked |
 | unsuccessful child streak `1` or `2` | restored accepted state plus rejection/no-gain packet | new attempt records current parent/child basis before a new Visible Architect for the same child |
 | unsuccessful child streak `3` | three full attempt families plus `AnnnSYSTEM1` and accepted `AnnnRANK1` refresh | child `SYSTEM_CHARACTERISTIC`; remeasure accepted child/parent/E2E, refresh both ordered lists, check only that child, and select the largest remaining unchecked child of the same parent |
