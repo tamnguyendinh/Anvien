@@ -903,12 +903,8 @@ func (w *workspace) explicitImportNameClaimed(name string, startScope string) bo
 	if name == "" || sourceFile == "" {
 		return false
 	}
-	for _, item := range w.imports {
-		if cleanPath(item.Fact.FilePath) == sourceFile && item.Fact.LocalName == name {
-			return true
-		}
-	}
-	return false
+	key := importReceiverKey{filePath: sourceFile, localName: name}
+	return len(w.importClaimsByReceiver[key]) > 0
 }
 
 func (w *workspace) hasTypeBinding(name string, startScope string) bool {

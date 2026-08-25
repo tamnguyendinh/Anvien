@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Status: `P0-A complete / P1-A complete / E1-P1A-INSTR1 CARRY_TO_FIRST_P2A_REFRESH / OP001 complete 17-row child queue and 17-item nested checklist / A001 ARCHITECT_CONSISTENCY_PASS / CODER_ACTIVE_PRE_EDIT_GATE / no production or test edit at transition snapshot / no Child 06A implementation commit`
+- Status: `P0-A complete / P1-A complete / A001 KEEP / A002 ARCHITECT_PENDING / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / repo-specific optimized baselines accepted separately / implementation commit pending`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -141,7 +141,7 @@ Preserve/validate boundary:
 
 This is the living execution checklist requested for the bottlenecks discovered by measurement. It mirrors exact benchmark row IDs and real operation names so an executor can see and mark what has been processed; it never copies elapsed-time values or replaces benchmark ordering.
 
-Current checklist entries: `30` top-level parent items plus `17` nested child items under active parent `B1-P1A-OP001`. The child items exactly match `B2-P2A-A001-D001..D017`, are ordered by descending same-run elapsed time, and remain unchecked. `B2-P2A-A001-D001` (`resolve_calls`) is selected for fresh Architect A001; the parent remains unchecked.
+Current checklist entries: `30` top-level parent items plus `17` nested child items under active parent `B1-P1A-OP001`. The child items exactly match `B2-P2A-A001-D001..D017`, remain unchecked, and preserve their complete recorded identities. Main recorded A001 `KEEP` after `SUPERVISOR_A001_PASS`; `B2-P2A-A001-D001` (`resolve_calls`) remains the active unchecked child with streak `0`, and the next campaign cursor is A002 at fresh Architect pending. The parent remains unchecked and D002-D017 remain queued/unopened.
 
 - [ ] `B1-P1A-OP001` — `resolution`
   - [ ] `B2-P2A-A001-D001` — `resolve_calls`
@@ -209,27 +209,31 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 
 | Field | Current value |
 |-------|---------------|
-| Attempt state | `ARCHITECT_CONSISTENCY_PASS / CODER_ACTIVE_PRE_EDIT_GATE`; Main authorized the sole Coder transition after the Owner-required consistency review passed |
-| Attempt ID | `A001` |
-| Attempt goal | reduce `B2-P2A-A001-D001 resolve_calls`, retained parent `B1-P1A-OP001 resolution`, and retained end-to-end elapsed time while preserving graph/output/lifecycle invariants |
+| Attempt state | `A001 KEEP / A002 ARCHITECT_PENDING`; `SUPERVISOR_A001_PASS` is recorded under `E2-P2A-A001REVIEW1`, Main's separate disposition/promotion is recorded under `E2-P2A-A001DECISION1`, and Coder remains closed for A002 |
+| Attempt ID | `A002`; A001 is closed as `KEEP` history |
+| Attempt goal | obtain a fresh A002 Architect decision for the same active unchecked `B2-P2A-A001-D001 resolve_calls`, then reduce that child, retained parent `B1-P1A-OP001 resolution`, and retained end-to-end elapsed time from each repo's own accepted A001 baseline while preserving graph/output/lifecycle invariants |
 | Active parent benchmark row / checklist item | `B1-P1A-OP001` / unchecked `resolution` parent item |
-| Complete parent child list | `17/17` measured rows `B2-P2A-A001-D001..D017` and exactly `17` nested unchecked checklist items; child sum `545.364656400 s`, residual `0.069525600 s`, `2309` exclusive intervals, `0` overlaps |
+| Complete parent child list | `17/17` rows `B2-P2A-A001-D001..D017` are recorded independently for both targets and exactly `17` nested checklist items remain unchecked; D002-D017 remain queued/unopened and target-specific numbers stay separate in benchmark |
 | Active child benchmark row / checklist item | `B2-P2A-A001-D001` / unchecked `resolve_calls` |
 | Remaining child queue | `B2-P2A-A001-D002..D017`, all unchecked and ordered by descending same-run elapsed time |
-| Current accepted baseline | selected child `243.794553800 s` (`calls=72976; files=765`); same-run parent `545.434182000 s`; same-run process/analyzer `653.475797100 / 630.160832200 s`; carried and immutable captures remain separate non-speed provenance |
-| Consecutive unsuccessful attempts at current child baseline | `0`; no production attempt result exists |
-| Selected child exact cause / owner / complete call path | owner `E:\Anvien\internal\resolution\resolve.go:resolveCall:92-94`; repeated import-claim scans and path normalization dominate the measured child; path `internal/analyze.Run -> internal/analyze.runPhase(PhaseResolution) -> resolution.ResolveBoundInto -> for each ir in w.files -> for each call in ir.Calls -> resolution.resolveCall` |
-| Fresh Architect decision | `E2-P2A-A001ARCH1`; visible Architect task `Child 06A A001 Architect — resolve_…`, thread `01a036f5-c602-7422-b484-ac8e58a34eb9`; report `reports/system-architect/rp_system-architect_260825_121706_by_gpt-5_child06a_active_child_measurement_and_a001_direction.md`; report-only commit `047f4d8ff5c850cf6fbe280627863537dd54552a`; status `DECIDED / READY_FOR_PLANNER_TRANSLATION` |
-| Planner refresh evidence | `E2-P2A-A001PLAN1` materializes the exact A001 contract across all four ledgers; Main zero-trust verification passed |
+| Current benchmark authority | A001 optimized values are the accepted current baselines separately for `E:\cheapapp.org` and `E:\Restaurant_manager` under `E2-P2A-A001DECISION1`; existing `E:\Anvien` rows stay superseded and the two repos are never averaged or combined |
+| Consecutive unsuccessful attempts at current child baseline | `0`; A001 `KEEP` reset/retained the D001 streak at `0` on the promoted repo-specific baselines |
+| Selected child exact cause / owner / complete call path | A001 historical owner/cause remains `E:\Anvien\internal\resolution\resolve.go:resolveCall:92-94`, where repeated import-claim scans/path normalization were removed by the accepted candidate; path remains `internal/analyze.Run -> internal/analyze.runPhase(PhaseResolution) -> resolution.ResolveBoundInto -> for each ir in w.files -> for each call in ir.Calls -> resolution.resolveCall`; A002 cause/direction must be freshly decided and is not inferred |
+| Fresh Architect decision | A002 `ARCH1` pending; A001 `E2-P2A-A001ARCH1` expired at A001 disposition and remains history only. Main Orchestration must open a fresh visible Architect for A002 before any new Coder |
+| Planner refresh evidence | A002 `PLAN1` pending until its fresh Architect decision; A001 `E2-P2A-A001PLAN1` remains completed history |
 | Owner-required consistency / transition evidence | `E2-P2A-A001CONSISTENCY1`; Architect thread `01a036f5-c602-7422-b484-ac8e58a34eb9`, turn `01a0377a-34a0-7523-b10c-820f84553fdb`, returned `ARCHITECT_CONSISTENCY_REVIEW_PASS_READY_FOR_MAIN`; Main accepted that planning/architecture evidence and authorized the Coder transition |
-| Blast radius | CRITICAL owner/file boundary: Architect evidence records `resolveCall`, `workspace`, `buildWorkspace`, and `resolveImports` as CRITICAL; helper-level `LOW/0` is not impact assurance because unresolved method-call edges remain; future Coder must run a fresh pre-edit graph/file-detail/impact gate |
-| Allowed production/test surfaces | future production only in exact `indexes.go`/`resolve.go`/`export_resolution.go` symbols listed below; future tests only in `export_resolution_test.go` and `resolution_test.go`, and only after production is complete; every other production/helper/contract is inspect-only or preserve-only |
-| Expected observable gain | remove the two repeated whole-`w.imports` claim scans and repeated `cleanPath(item.Fact.FilePath)` work through one `O(imports)` run-scoped index construction plus expected `O(1)` key lookup and `O(matching bucket size)` traversal; no elapsed threshold or saving is fabricated |
+| Fresh pre-edit impact | A002 pending; A001 `E2-P2A-A001IMPACT1` remains accepted history and does not authorize a new edit |
+| Allowed production/test surfaces | unbound for A002 until its fresh Architect decision and Planner refresh; A001's exact accepted five-file candidate remains preserve-only current baseline |
+| Expected observable gain | unbound for A002; no cause, direction, owner, elapsed threshold, or saving is fabricated before its fresh Architect decision |
 | Preserved invariants / validation/resource boundary | exact A001 resolution, order, graph/output, persistence/reader, determinism/freshness/failure/lifecycle, and private run-scoped boundaries are listed below; memory must stay `O(imports + unique keys)` and store indices, not duplicate import objects |
-| Rollback condition / exact owned bytes | rollback only the private index field/init/population hunks, the two claim-helper lookup/traversal hunks, and focused authorized test bytes on any invariant/resource/performance/owner-boundary failure; preserve carried P1 `+349/-53` instrumentation as non-A001 bytes |
-| Coder status | sole active visible Coder task `01a03786-cf51-7221-83fa-1c3fbf13cfa1`, turn `01a03786-d11b-7493-9894-17d2acc91651`; ACK `HIỂU`, raw startup complete, current `PRE_EDIT_GATE`; no production/test edit existed at this transition snapshot. Old task `01a03375-f616-7651-ba81-99bad6536746` was revoked before ACK/tool/write with `items=[]` |
-| Post-measurement Supervisor | none; no changed candidate exists |
-| Next action | sole Coder completes the fresh pre-edit Anvien gate, implements only authorized production hunks, edits authorized tests only after production is correct, performs build-holder preflight, obtains canonical full-build `PASS`, and only then executes focused and `internal/resolution` package tests. Measurement, disposition, Supervisor, and commit remain unauthorized at this state |
+| Rollback condition / exact owned bytes | A001 rollback is closed by Main `KEEP`; its exact accepted hunks remain current baseline. A002 rollback is unbound until fresh architecture and must never disturb A001 accepted bytes or carried P1 instrumentation |
+| Coder source/build/test evidence | A001 `E2-P2A-A001SRC1/BUILD1/TEST1` remains accepted input to `REVIEW1/DECISION1`: exact five-file uncommitted candidate `+174/-10`, canonical full build PASS before tests, focused PASS, and full package truthfully FAIL only on the proven pre-existing preserve-only golden |
+| Coder status | A001 complete/closed; A002 Coder not opened or authorized. A001 optimized bytes remain unchanged and its implementation commit is still pending with no fabricated hash |
+| Post-measurement Supervisor | `E2-P2A-A001REVIEW1`; report `E:\Anvien\reports\Supervisor\rp_supervisor_260825_172308_by_gpt-5_a001_measurement_equivalence_acceptance.md`; exact verdict `SUPERVISOR_A001_PASS`; acceptance evidence only, while Main separately owns and issued `KEEP` |
+| Target 1 / lane / report | `E:\cheapapp.org` / `01a033a5-4700-7272-a28d-de3a71f58135` / `E:\Anvien\reports\Investigation\rp_child06a_a001_cheapapp_benchmark.md`; optimized D001/parent/process values accepted as this repo's current baseline under `E2-P2A-A001DECISION1` |
+| Target 2 / lane / report | `E:\Restaurant_manager` / `01a033a5-4ec3-7e42-8946-0ab9172f6088` / `E:\Anvien\reports\Investigation\rp_child06a_a001_restaurant_manager_benchmark.md`; optimized D001/parent/process values accepted separately as this repo's current baseline under `E2-P2A-A001DECISION1`; identical exclusion `electron/renderer/src/api/userApi.ts` remains recorded |
+| Two-target measurement contract | each lane independently measures pre-A001 baseline versus current optimized A001 for D001 elapsed/denominator, parent `resolution`, end-to-end analyze, graph/output equivalence, and exact executable/command/target identity; the two reports remain separate and are never averaged or combined |
+| Next action | next owner Main Orchestration opens a fresh visible Architect for A002 on the same active unchecked D001 using both separate accepted A001 baselines; no Coder opens until A002 `ARCH1` and Planner refresh exist, and no implementation commit hash is claimed |
 
 ### A001 Measurement And Work-Count Contract
 
@@ -287,13 +291,13 @@ overlap_count = 0
 
 ### A001 Future Validation, Resource, And Rollback Sequence
 
-1. The sole active Coder completes fresh `anvien --help`, `anvien analyze --force`, `file-detail`, and exact symbol/file impact immediately before edit. The Architect graph run does not replace this gate; CRITICAL/HIGH is a scope warning that must be preserved and handled carefully.
-2. Implement only the exact production direction first.
-3. Only after production behavior is correct, edit only the two authorized test files; do not execute tests yet.
-4. Run build-lock/process preflight and terminate build-related holders as required, then run exactly `pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File E:\Anvien\scripts\full-build.ps1` and require `PASS`.
-5. Only after the canonical full build passes, execute focused correctness tests and the `internal/resolution` package tests, including the unchanged affected resolution/equivalence tests named by the Architect boundary.
-6. Later and separately, with identical instrumentation and comparable work, remeasure in order: D001 `resolve_calls` -> parent `resolution` -> end-to-end graph generation/analyzer. Record the exclusive breakdown, required work counters, allocation/resource evidence, and affected graph/outcome/persistence/reader equivalence without inventing absent values.
-7. A later visible per-attempt Supervisor reviews the exact candidate before disposition. `KEEP` requires lower D001 child elapsed, lower parent elapsed, lower end-to-end elapsed, and Supervisor `PASS`; full build, tests, microbenchmark, CPU/profile, or secondary counters cannot substitute.
+1. COMPLETE under `E2-P2A-A001IMPACT1`: fresh `anvien analyze --force`, file-detail, and exact impact ran immediately before edit; CRITICAL/HIGH scope remains recorded without treating helper `LOW/0` as assurance.
+2. COMPLETE under `E2-P2A-A001SRC1`: only the exact production direction was implemented first.
+3. COMPLETE under `E2-P2A-A001SRC1/TEST1`: only the two authorized test files were edited after production inspection.
+4. COMPLETE under `E2-P2A-A001BUILD1`: build-holder/process preflight found no holder to terminate; exact canonical full build returned `PASS` before test execution.
+5. RECORDED under `E2-P2A-A001TEST1`: focused tests PASS; the full package is truthfully `FAIL` only at a golden proven identical with all five A001 files overlaid from HEAD, so it is pre-existing preserve-only and neither package PASS nor A001 failure/proof.
+6. COMPLETE FOR MEASUREMENT RECORDING: Cheapapp and Restaurant Manager reports are each recorded independently with exact D001/parent/end-to-end/identity/equivalence plus all 30/17 rows; targets remain separate and are never averaged or combined.
+7. COMPLETE FOR A001 REVIEW/DISPOSITION: `E2-P2A-A001REVIEW1` records exact verdict `SUPERVISOR_A001_PASS`; Main then issued A001 `KEEP` under `E2-P2A-A001DECISION1` because D001, parent, and process E2E all improved on both targets with same-work canonical graph/output equivalence. Each repo's optimized values are now that repo's accepted current baseline; D001 remains unchecked/active, streak is `0`, and A002 is fresh Architect pending.
 8. Keep index memory `O(imports + unique keys)` and store original indices rather than duplicate import objects. Roll back exact A001-owned hunks if any build/test/outcome/order/graph/persistence/reader/determinism/failure/lifecycle invariant changes, memory becomes unstable or exceeds the linear model, valid same-work measurements do not improve D001 with corresponding parent/end-to-end net benefit, or the implementation crosses the exact owner boundary.
 9. Scoped rollback reverses only the private field/init/population, two claim-helper traversal hunks, and authorized focused-test bytes. It must not reset/checkout/stash broadly or disturb user/protected work or the carried P1 instrumentation in `internal/analyze/analyze.go`, `internal/cli/command.go`, and `internal/cli/command_test.go`.
 
@@ -304,7 +308,7 @@ This gate applies to A001 because it is the latest direct Owner sequencing requi
 1. Main independently verified the exact four refreshed ledgers.
 2. Architect thread `01a036f5-c602-7422-b484-ac8e58a34eb9`, turn `01a0377a-34a0-7523-b10c-820f84553fdb`, independently reviewed the refreshed artifacts and returned `ARCHITECT_CONSISTENCY_REVIEW_PASS_READY_FOR_MAIN` with zero file changes and read-only commands only.
 3. Main accepted the result as planning/architecture-gate evidence only and authorized the A001 Coder transition. `E2-P2A-A001CONSISTENCY1` records this completed sequence; it is not Supervisor `PASS`, implementation evidence, measurement, disposition, or commit authorization.
-4. No Architect re-review is required for this truthful state/order sync. Main retains governance authority; the sole Coder is authorized only for the current pre-edit/production/test/build-validation sequence, while measurement, disposition, Supervisor, and commit remain locked.
+4. No Architect re-review was required for that truthful state/order sync. Main retained governance authority; the sole Coder authorization was limited to A001 pre-edit/production/test/build validation. A001 later completed measurement, `SUPERVISOR_A001_PASS`, and Main `KEEP`; the implementation commit remains pending, and A002 starts again at fresh Architect rather than reopening Coder.
 
 ## Checklist
 
@@ -457,25 +461,28 @@ This gate applies to A001 because it is the latest direct Owner sequencing requi
        - Render location check: exact owner/files/symbols/change/tests/build/measure/equivalence/rollback replace the unbound attempt fields in this plan set.
        - Mini QA: `E2-P2A-A001PLAN1` is materialized; Main verification and the Owner-required Architect consistency review passed, and Main authorized the sole Coder transition under `E2-P2A-A001CONSISTENCY1`.
        - Evidence target: `E2-P2A-AnnnPLAN1`.
-       - Current A001 cursor: `ARCHITECT_CONSISTENCY_PASS / CODER_ACTIVE_PRE_EDIT_GATE`; sole Coder task `01a03786-cf51-7221-83fa-1c3fbf13cfa1`, turn `01a03786-d11b-7493-9894-17d2acc91651`.
+       - Current A001 cursor: consistency/Main authorization remains complete; Coder source/build/test work is now recorded under `E2-P2A-A001IMPACT1/SRC1/BUILD1/TEST1`.
     4. The sole Coder completes fresh required Anvien graph/file-detail/impact, implements only the refreshed production direction, edits authorized tests only after production is correct, performs the exact build-holder preflight, obtains canonical full-build `PASS`, and only then executes focused and `internal/resolution` package tests.
        - UI flow check: N/A unless activated by impact.
        - DB/data flow check: preserve exact affected data, ordering, failure, transaction/temp, publication, and reader semantics.
        - Render location check: cause/impact/source/build/test proof goes to evidence; product output remains observable boundary.
        - Mini QA: production is correct before tests change; test execution occurs only after full-build `PASS`; no owner beyond the exact A001 `indexes.go`, `resolve.go`, and `export_resolution.go` symbols is edited; needing another production helper forces STOP and fresh architecture.
        - Evidence target in execution order: `E2-P2A-AnnnIMPACT1`, `E2-P2A-AnnnSRC1`, `E2-P2A-AnnnBUILD1`, `E2-P2A-AnnnTEST1`; `TEST1` records both authorized post-production test edits and test execution only after full-build `PASS`.
-    5. Remeasure the selected child, its parent, and total graph-generation time on the same work, then open a new Visible Supervisor accuracy/equivalence check for this attempt.
+       - Current A001 cursor: COMPLETE; exact five-file candidate `+174/-10`, build PASS, focused PASS, and pre-existing preserve-only package golden failure recorded. P2-A/parent/children remain unchecked.
+    5. Record the two independent target measurements without combining them. Cheapapp lane `01a033a5-4700-7272-a28d-de3a71f58135` and Restaurant lane `01a033a5-4ec3-7e42-8946-0ab9172f6088` have each completed their assigned report; Planner records each repo-specific block separately and owns neither lane.
        - UI flow check: N/A unless activated by impact.
-       - DB/data flow check: compare same child/parent/workload denominators and exact affected outputs/readers/lifecycle; review real evidence and candidate only.
-       - Render location check: candidate numbers enter benchmark as unpromoted; Supervisor proof enters `E2-P2A-AnnnREVIEW1`.
-       - Mini QA: no disposition or baseline promotion occurs before the Supervisor verdict; Supervisor does not edit code or audit report wording/hashes; improved secondary metrics cannot substitute for lower child, parent, and total elapsed time.
+       - DB/data flow check: each target records its own D001 denominator, parent, end-to-end, graph/output equivalence, and exact executable/command/target identity; never average or combine targets.
+       - Render location check: lane `01a033a5-4700-7272-a28d-de3a71f58135` writes only `rp_child06a_a001_cheapapp_benchmark.md`; lane `01a033a5-4ec3-7e42-8946-0ab9172f6088` writes only `rp_child06a_a001_restaurant_manager_benchmark.md` at the exact report paths above.
+       - Mini QA: both target blocks remain complete and separate; old `E:\Anvien` rows are not the current control surface; A001 promotion follows only `REVIEW1/DECISION1`, never averaging, combination, or a fabricated number.
        - Evidence target: `E2-P2A-AnnnDIRECT1`, `E2-P2A-AnnnPARENT1`, `E2-P2A-AnnnE2E1`, `E2-P2A-AnnnEQUIV1`, `E2-P2A-AnnnREVIEW1`.
+       - Current A001 cursor: COMPLETE; both measurements fed `E2-P2A-A001REVIEW1`, which returned `SUPERVISOR_A001_PASS`; Main issued `KEEP` under `E2-P2A-A001DECISION1` and promoted each repo's optimized values separately.
     6. Record disposition, promote only an eligible child+parent+end-to-end `KEEP`, and keep the same child active until terminal.
        - UI flow check: N/A — ledger-controlled transition.
        - DB/data flow check: rejected bytes never become accepted state or ranking input.
        - Render location check: update child/parent/E2E benchmark rows, promotion/history/streak, evidence disposition, plan checklist, actual-status queues, and this attempt card immediately.
        - Mini QA: `KEEP` resets the active child's streak but leaves its checkbox unchecked and starts another attempt on that child; reject restores accepted state and returns through fresh Architect/Planner, never Coder; only the third consecutive no-KEEP records `SYSTEM_CHARACTERISTIC`, refreshes accepted child/parent/E2E timings and both ordered lists, and checks that child.
        - Evidence target: `E2-P2A-AnnnDECISION1`, conditional `E2-P2A-AnnnRESTORE1`, terminal `E2-P2A-AnnnSYSTEM1`, and `E2-P2A-AnnnRANK1`.
+       - Current cursor: A001 `KEEP` is recorded under `E2-P2A-A001REVIEW1/DECISION1`; `B1-P1A-OP001` and `B2-P2A-A001-D001` remain unchecked, D001 streak is `0`, D002-D017 remain queued, and A002 is `ARCHITECT_PENDING` on the same child. A001 implementation commit remains pending.
     7. After a child becomes terminal, select the largest remaining unchecked child of the same parent. After every child is checked, remeasure parent/full pipeline, check the parent, refresh the complete top-level list, and select the largest remaining unchecked parent.
        - UI flow check: N/A — ledger-controlled hierarchy.
        - DB/data flow check: parent completion requires every measured child terminal on retained correct state; a new measured child reopens the parent.

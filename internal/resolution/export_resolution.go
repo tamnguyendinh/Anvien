@@ -316,9 +316,10 @@ func (w *workspace) explicitImportCallState(name string, startScope string, labe
 	claimed := false
 	allowed := make(map[string]struct{})
 	importTargets := make(map[string]struct{})
-	for index := range w.imports {
+	key := importReceiverKey{filePath: sourceFile, localName: name}
+	for _, index := range w.importClaimsByReceiver[key] {
 		item := &w.imports[index]
-		if cleanPath(item.Fact.FilePath) != sourceFile || item.Fact.LocalName != name || !isSemanticExportImport(item.Fact) {
+		if !isSemanticExportImport(item.Fact) {
 			continue
 		}
 		claimed = true

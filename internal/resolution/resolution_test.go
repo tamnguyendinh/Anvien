@@ -888,6 +888,104 @@ func TestResolveBareGoCallDoesNotFallbackToCrossLanguageMethod(t *testing.T) {
 	}
 }
 
+func TestBuildWorkspaceIndexesAllImportClaimsByCanonicalSourceAndExactName(t *testing.T) {
+	const sourcePath = `src\feature\..\app.ts`
+	moduleScope := "scope:src/app.ts:module"
+	functionScope := "scope:src/app.ts:caller"
+	missingTarget := "./missing"
+	imports := []scopeir.ImportFact{
+		{
+			ID:                "claim-semantic-b",
+			FilePath:          sourcePath,
+			Kind:              scopeir.ImportNamed,
+			LocalName:         "Run",
+			ImportedName:      "run",
+			RequestedMeanings: []scopeir.ExportMeaning{scopeir.ExportMeaningValue},
+			TargetRaw:         &missingTarget,
+		},
+		{
+			ID:           "claim-nonsemantic",
+			FilePath:     sourcePath,
+			Kind:         scopeir.ImportNamed,
+			LocalName:    "Run",
+			ImportedName: "run",
+			TargetRaw:    &missingTarget,
+		},
+		{
+			ID:                "claim-semantic-a",
+			FilePath:          sourcePath,
+			Kind:              scopeir.ImportNamed,
+			LocalName:         "Run",
+			ImportedName:      "run",
+			RequestedMeanings: []scopeir.ExportMeaning{scopeir.ExportMeaningValue},
+			TargetRaw:         &missingTarget,
+		},
+		{
+			ID:                "claim-lowercase",
+			FilePath:          sourcePath,
+			Kind:              scopeir.ImportNamed,
+			LocalName:         "run",
+			ImportedName:      "run",
+			RequestedMeanings: []scopeir.ExportMeaning{scopeir.ExportMeaningValue},
+			TargetRaw:         &missingTarget,
+		},
+	}
+	source := scopeir.ScopeIR{
+		FilePath:    sourcePath,
+		Language:    scanner.TypeScript,
+		ModuleScope: moduleScope,
+		Scopes: []scopeir.ScopeFact{
+			{ID: moduleScope, Kind: scopeir.ScopeModule, FilePath: sourcePath},
+			{ID: functionScope, Parent: &moduleScope, Kind: scopeir.ScopeFunction, FilePath: sourcePath},
+		},
+		Imports: imports,
+	}
+
+	w, err := buildWorkspace([]scopeir.ScopeIR{source})
+	if err != nil {
+		t.Fatalf("buildWorkspace() error = %v", err)
+	}
+	t.Cleanup(func() { w.bindingAccumulator.dispose() })
+
+	canonicalSource := cleanPath(sourcePath)
+	claimKey := importReceiverKey{filePath: canonicalSource, localName: "Run"}
+	claimIndices := w.importClaimsByReceiver[claimKey]
+	if len(claimIndices) != 3 {
+		t.Fatalf("all-import claim bucket = %v, want three duplicate claims", claimIndices)
+	}
+	wantIDs := []string{"claim-nonsemantic", "claim-semantic-a", "claim-semantic-b"}
+	for position, importIndex := range claimIndices {
+		if position > 0 && importIndex <= claimIndices[position-1] {
+			t.Fatalf("all-import claim indices = %v, want original w.imports order", claimIndices)
+		}
+		item := w.imports[importIndex]
+		if item.Fact.ID != wantIDs[position] {
+			t.Fatalf("claim bucket item %d = %q, want %q in original order", position, item.Fact.ID, wantIDs[position])
+		}
+		if item.Fact.FilePath != canonicalSource || item.LinkStatus != "unresolved" {
+			t.Fatalf("claim bucket item %d = %#v, want canonical unresolved import", position, item)
+		}
+	}
+	if isSemanticExportImport(w.imports[claimIndices[0]].Fact) {
+		t.Fatalf("first duplicate claim unexpectedly semantic: %#v", w.imports[claimIndices[0]])
+	}
+	if len(w.importsByReceiver[claimKey]) != 0 {
+		t.Fatalf("resolved-only importsByReceiver contains unresolved claims: %v", w.importsByReceiver[claimKey])
+	}
+	if len(w.importClaimsByReceiver[importReceiverKey{filePath: sourcePath, localName: "Run"}]) != 0 {
+		t.Fatalf("claim index retained non-canonical source key %q", sourcePath)
+	}
+	if !w.explicitImportNameClaimed(" Run ", functionScope) {
+		t.Fatalf("trimmed exact-case import name was not claimed")
+	}
+	if !w.explicitImportNameClaimed("run", functionScope) {
+		t.Fatalf("lowercase import name was not claimed")
+	}
+	if w.explicitImportNameClaimed("RUN", functionScope) {
+		t.Fatalf("case-insensitive import name claim changed existing semantics")
+	}
+}
+
 func BenchmarkResolveImportedMemberManyImports(b *testing.B) {
 	const importCount = 1200
 	const sourceFile = "src/main.ts"

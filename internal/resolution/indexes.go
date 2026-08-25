@@ -63,6 +63,7 @@ type workspace struct {
 	typeBindings            map[string]map[string][]scopeir.TypeRef
 	ownerMembers            map[string]map[string][]defRef
 	imports                 []resolvedImport
+	importClaimsByReceiver  map[importReceiverKey][]int
 	importsByReceiver       map[importReceiverKey][]int
 	exportTables            exportTables
 	heritage                []heritageResolution
@@ -93,6 +94,7 @@ func buildWorkspace(files []scopeir.ScopeIR) (*workspace, error) {
 		typeBindings:            make(map[string]map[string][]scopeir.TypeRef, size.scopes),
 		ownerMembers:            make(map[string]map[string][]defRef, size.definitions),
 		imports:                 make([]resolvedImport, 0, size.imports),
+		importClaimsByReceiver:  make(map[importReceiverKey][]int, size.imports),
 		importsByReceiver:       make(map[importReceiverKey][]int, size.imports),
 		heritage:                make([]heritageResolution, 0, size.heritage),
 		unresolvedHeritageFacts: make([]scopeir.HeritageFact, 0, size.heritage),
@@ -302,9 +304,12 @@ func (w *workspace) resolveImports() {
 			}
 			w.imports = append(w.imports, resolved)
 			importIndex := len(w.imports) - 1
-			if item.FilePath != "" && item.LocalName != "" && resolved.LinkStatus != "unresolved" {
+			if item.FilePath != "" && item.LocalName != "" {
 				key := importReceiverKey{filePath: item.FilePath, localName: item.LocalName}
-				w.importsByReceiver[key] = append(w.importsByReceiver[key], importIndex)
+				w.importClaimsByReceiver[key] = append(w.importClaimsByReceiver[key], importIndex)
+				if resolved.LinkStatus != "unresolved" {
+					w.importsByReceiver[key] = append(w.importsByReceiver[key], importIndex)
+				}
 			}
 		}
 	}

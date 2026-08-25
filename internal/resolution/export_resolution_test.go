@@ -411,6 +411,70 @@ func TestP5CPreservesNonSemanticGoPackageMemberResolution(t *testing.T) {
 	}
 }
 
+func TestExplicitImportCallStatePreservesIndexedCandidateSemantics(t *testing.T) {
+	run := p5cDefinition("src/impl.ts", "run", scopeir.NodeFunction)
+	impl := p5cModule("src/impl.ts", []scopeir.DefinitionFact{run}, []scopeir.ExportFact{
+		p5cLocalExport(run, scopeir.ExportDirect, "run", []scopeir.ExportMeaning{scopeir.ExportMeaningValue}),
+	})
+	nonsemantic := p5cImport(scopeir.ImportNamed, "run", "run", "./impl", nil, false)
+	nonsemantic.ID = "run-nonsemantic"
+	semanticA := p5cImport(scopeir.ImportNamed, "run", "run", "./impl", p5cAllMeanings, false)
+	semanticA.ID = "run-semantic-a"
+	semanticB := p5cImport(scopeir.ImportNamed, "run", "run", "./impl", p5cAllMeanings, false)
+	semanticB.ID = "run-semantic-b"
+	legacyOnly := p5cImport(scopeir.ImportNamed, "legacyOnly", "run", "./impl", nil, false)
+	missing := p5cImport(scopeir.ImportNamed, "missing", "missing", "./absent", p5cAllMeanings, false)
+	consumer := p5cConsumer(
+		"src/app.ts",
+		scanner.TypeScript,
+		[]scopeir.ImportFact{semanticB, nonsemantic, missing, legacyOnly, semanticA},
+		nil,
+	)
+	w := p5cWorkspace(t, []scopeir.ScopeIR{consumer, impl})
+	functionScope := p5cFunctionScope("src/app.ts")
+
+	runKey := importReceiverKey{filePath: "src/app.ts", localName: "run"}
+	runClaims := w.importClaimsByReceiver[runKey]
+	if len(runClaims) != 3 || isSemanticExportImport(w.imports[runClaims[0]].Fact) {
+		t.Fatalf("run claim traversal = %v, want nonsemantic first then semantic duplicates", runClaims)
+	}
+	var importedTarget *defRef
+	for _, importIndex := range runClaims {
+		item := &w.imports[importIndex]
+		if isSemanticExportImport(item.Fact) && item.TargetDef != nil {
+			importedTarget = item.TargetDef
+			break
+		}
+	}
+	if importedTarget == nil {
+		t.Fatalf("semantic import target missing from %#v", w.imports)
+	}
+
+	if claimed, allowed := w.explicitImportCallState(" run ", functionScope, callableLabels(), importedTarget); !claimed || !allowed {
+		t.Fatalf("semantic imported target state = claimed %t allowed %t, want true/true", claimed, allowed)
+	}
+	if claimed, allowed := w.explicitImportCallState("run", functionScope, callableLabels(), nil); !claimed || allowed {
+		t.Fatalf("target-nil semantic import state = claimed %t allowed %t, want true/false", claimed, allowed)
+	}
+	if claimed, allowed := w.explicitImportCallState("run", functionScope, []scopeir.NodeLabel{scopeir.NodeClass}, importedTarget); !claimed || allowed {
+		t.Fatalf("import-target label mismatch state = claimed %t allowed %t, want true/false", claimed, allowed)
+	}
+	shadow := defRef{Fact: scopeir.DefinitionFact{Label: scopeir.NodeFunction}, GraphID: "Function:src/app.ts:run-shadow"}
+	if claimed, allowed := w.explicitImportCallState("run", functionScope, callableLabels(), &shadow); claimed || !allowed {
+		t.Fatalf("lexical shadow state = claimed %t allowed %t, want false/true", claimed, allowed)
+	}
+	if claimed, allowed := w.explicitImportCallState("legacyOnly", functionScope, callableLabels(), nil); claimed || !allowed {
+		t.Fatalf("nonsemantic import state = claimed %t allowed %t, want false/true", claimed, allowed)
+	}
+	missingKey := importReceiverKey{filePath: "src/app.ts", localName: "missing"}
+	if len(w.importClaimsByReceiver[missingKey]) != 1 || len(w.importsByReceiver[missingKey]) != 0 {
+		t.Fatalf("unresolved semantic claim indexes = all %v resolved-only %v, want one/zero", w.importClaimsByReceiver[missingKey], w.importsByReceiver[missingKey])
+	}
+	if claimed, allowed := w.explicitImportCallState("missing", functionScope, callableLabels(), nil); !claimed || allowed {
+		t.Fatalf("unresolved semantic import state = claimed %t allowed %t, want true/false", claimed, allowed)
+	}
+}
+
 func p5cWorkspace(t *testing.T, files []scopeir.ScopeIR) *workspace {
 	t.Helper()
 	w, err := buildWorkspace(files)
