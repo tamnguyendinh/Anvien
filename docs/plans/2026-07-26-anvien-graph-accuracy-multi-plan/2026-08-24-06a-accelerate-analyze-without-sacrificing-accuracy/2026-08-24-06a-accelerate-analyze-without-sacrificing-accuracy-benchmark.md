@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING / D001_STREAK_0`; checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`; all A003 measurements, disposition, queues, and checkboxes remain unchanged. The WAL force fix is correctness-only and creates no benchmark value
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_ACTIVE / OWNER_DISCUSSION_PENDING / D001_STREAK_0`; checkpoints `b6bf45bce95323aa6b53b182edfea8628bd8b463` and `0f3a572331dd23d17688886fcbfebeb7d37ee35d`; all A003 measurements, disposition, queues, and checkboxes remain unchanged. The WAL force fix is correctness-only and creates no benchmark value
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -604,7 +604,7 @@ Append only metrics needed to explain an active elapsed-time cost or validate it
 
 | Benchmark ID | Workload denominator | Initial total | Final accepted total | Absolute delta | Percent delta | Parent checklist checked / measured | Child checklist checked / measured | Unchecked blocked rows | Final disposition | Evidence ID |
 |--------------|----------------------|---------------|----------------------|----------------|---------------|-------------------------------------|------------------------------------|------------------------|-------------------|-------------|
-| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `0/30` | `0/17`; active child `B2-P2A-A001-D001` | none from WAL fix; it creates no benchmark value | A001/A002/A003 `KEEP`; A003 checkpoint complete; `A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING` | `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2/IMPACT1/SRC1/BUILD1/TEST1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1/OWNERKEEP1/COMMIT1`, `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1`; final evidence pending |
+| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `0/30` | `0/17`; active child `B2-P2A-A001-D001` | none from WAL fix; it creates no benchmark value | A001/A002/A003 `KEEP`; A003 and WAL checkpoints complete; `A004_ARCHITECT_ACTIVE / OWNER_DISCUSSION_PENDING` | `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2/IMPACT1/SRC1/BUILD1/TEST1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1/OWNERKEEP1/COMMIT1`, `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1`; final evidence pending |
 
 ## B3 - P3 Benchmarks
 
@@ -612,7 +612,7 @@ P3-A/P3-B/P3-C are final review, cleanup, detect, commit, and handoff operations
 
 ## Non-Benchmarkable Notes
 
-- `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1` records the confirmed `--force` stale-generation correctness bug, exact four-file fix, and `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`. It is not an optimization attempt, benchmark, profile, A003 rerun, streak change, or checklist transition. Current cursor: `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING / D001_STREAK_0`.
+- `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1` records the confirmed `--force` stale-generation correctness bug, exact four-file fix, `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`, and checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`. It is not an optimization attempt, benchmark, profile, A003 rerun, streak change, or checklist transition. Current cursor: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_ACTIVE / OWNER_DISCUSSION_PENDING / D001_STREAK_0`.
 
 - P6-D commit identity, Architect decisions, Planner refreshes, source/test/build results, Supervisor verdicts, cleanup, detect, commit, and handoff are evidence rather than measurements.
 - `E2-P2A-A001CONSISTENCY1` records the completed Owner-required consistency/Main transition and sole Coder pre-edit identity; it is not a benchmark observation and changes none of the 17 child values or their order.

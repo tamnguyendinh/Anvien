@@ -2,12 +2,12 @@
 
 Date: `2026-08-26`
 Lane: bounded Planner refresh
-Verdict: `PLANNER_CHILD06A_WAL_FORCE_FIX_CONSUMED / SUPERVISOR_PASS / CHECKPOINT_PENDING`
+Verdict: `PLANNER_CHILD06A_WAL_FORCE_FIX_CONSUMED / CHECKPOINT_COMPLETE / A004_RESUMED`
 Next owner: Main Orchestration
 
 ## Current Cursor
 
-`A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING / D001_STREAK_0`
+`A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_ACTIVE / OWNER_DISCUSSION_PENDING / D001_STREAK_0`
 
 A003 remains closed at implementation checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` and docs sync `2ea8c9486ad629f86f36fc5f4ce17574fdcb65c8`. No A003 gate, metric, disposition, checkbox, or queue is changed. Parent/D001 remain unchecked; D002-D017 remain queued. A004 task `01a03e09-77e0-7c03-b144-bed526838f37` is Owner-paused.
 
@@ -23,6 +23,6 @@ The pre-fix `prepareStorage` removed the main DB and Graph JSON but left Ladybug
 
 Completed in order: exact file-detail/impact -> production first -> tests -> gofmt/scoped diff-check -> holder preflight -> canonical full build -> focused tests -> exact five-sidecar rebuilt-runtime repro -> independent Supervisor.
 
-No target benchmark/profile/A003 rerun occurred. Exact four-file candidate `+81/-11`, canonical full build, focused tests, and both Coder/Supervisor repros passed. Supervisor verdict: `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`. Main now creates the scoped checkpoint and resumes A004.
+No target benchmark/profile/A003 rerun occurred. Exact four-file candidate `+81/-11`, canonical full build, focused tests, and both Coder/Supervisor repros passed. Supervisor verdict: `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`. Checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete; A004 resumed and must stop for Owner discussion before Planner/Coder.
 
 `PLANNER_CHILD06A_WAL_FORCE_FIX_CONSUMED`

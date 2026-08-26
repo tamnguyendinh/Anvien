@@ -2,7 +2,7 @@
 
 Title: Child 06A Accelerate Analyze Without Sacrificing Accuracy
 Date: 2026-08-24
-Status: P0-A Complete / P1-A Complete / A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING / D001_STREAK_0 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / Target-Separated Measurements Preserved
+Status: P0-A Complete / P1-A Complete / A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_ACTIVE / OWNER_DISCUSSION_PENDING / D001_STREAK_0 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / Target-Separated Measurements Preserved
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 Companion plan rules: [plan-rules.md](plan-rules.md)
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -19,7 +19,7 @@ This file records the current measured/control state of Child 06A without duplic
 
 Elapsed wall-clock time is the controlling metric. Benchmark ranks by current absolute elapsed time; CPU/RAM/allocation/GC/I/O/wait/call/byte evidence is secondary and cannot select a bottleneck or prove optimization.
 
-Current truth: A003 is closed at checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` with docs sync `2ea8c9486ad629f86f36fc5f4ce17574fdcb65c8`; no A003 gate is invalidated. A004 Architect task `01a03e09-77e0-7c03-b144-bed526838f37` remains paused only until the accepted WAL force-cleanup checkpoint exists. Coder and independent Supervisor are complete with exact verdict `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`; implementation checkpoint is pending. P2-A, parent, and all child checkboxes remain unchecked; D001 streak is `0`; D002-D017 stay queued/unopened.
+Current truth: A003 is closed at checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` with docs sync `2ea8c9486ad629f86f36fc5f4ce17574fdcb65c8`; no A003 gate is invalidated. The accepted WAL force-cleanup checkpoint is `0f3a572331dd23d17688886fcbfebeb7d37ee35d`. A004 Architect task `01a03e09-77e0-7c03-b144-bed526838f37` is active and must stop after its direction for direct Owner discussion. P2-A, parent, and all child checkboxes remain unchecked; D001 streak is `0`; D002-D017 stay queued/unopened.
 
 ## Freshness / Refresh Rules
 
@@ -138,7 +138,7 @@ Visible Planner task `01a03d1b-662d-7f90-9a60-38271a10c077` ran the one authoriz
 
 | As of | Phase state | Total row | Active parent | Active child | Remaining parent queue | Remaining child queue | Plan checklist | Accepted baseline | Active attempt | Child no-KEEP streak | Current owner | Last disposition | Next exact action | Evidence |
 |-------|-------------|-----------|---------------|--------------|------------------------|-----------------------|----------------|-------------------|----------------|----------------------|---------------|------------------|-------------------|----------|
-| 2026-08-26 | `P2-A A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING` | exact A003 target-separated metrics and final source/test hashes are checkpointed at `b6bf45bce95323aa6b53b182edfea8628bd8b463`; WAL fix creates no benchmark value | parent/D001 remain unchecked | unchecked/active | unchanged/unchecked | D002-D017 queued | all checkboxes unchanged | A003 accepted checkpoint | `WAL fix checkpoint` | `0` | Main Orchestration | `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS` | detect and commit the exact WAL fix, then resume A004 and stop after its direction for Owner discussion | `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1` |
+| 2026-08-26 | `P2-A A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_ACTIVE / OWNER_DISCUSSION_PENDING` | exact A003 target-separated metrics and final source/test hashes are checkpointed at `b6bf45bce95323aa6b53b182edfea8628bd8b463`; WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` creates no benchmark value | parent/D001 remain unchecked | unchecked/active | unchanged/unchecked | D002-D017 queued | all checkboxes unchanged | A003 accepted checkpoint | `A004 architecture discussion` | `0` | A004 System Architect | `WAL_FIX_CHECKPOINT_COMPLETE` | return A004 direction, then stop for Owner discussion; no Planner/Coder | `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1` |
 
 A001 is closed with `KEEP / A001_COMMIT_COMPLETE`. A002 is closed through `CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/COMMIT1`; its separate target baselines are promoted and accepted bytes are checkpointed at `ecf825d7`. A003 `CURRENT1/ATTRIB1/ARCH1/PLAN2` are complete; PLAN1 is superseded. No A003 Coder/source/build/test/measurement/Supervisor/disposition exists.
 
@@ -163,9 +163,9 @@ This section contains control pointers only; benchmark owns elapsed-time numbers
 | build-before-use | PASS: `pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File E:\Anvien\scripts\full-build.ps1`, exit `0`, HEAD `8df19258fbcb18e14841bf0dae036400aa9b22a3` | runtime `1.2.8`, SHA-256 `62920CBF15921EF8A6D2FAC671776BAA3C312EFEA1BEED53B721C4AFF5E1B6C5`; `700.1712706 s` is full-build validation elapsed only, not build elapsed and not benchmark data |
 | comparability / output equivalence | instrumented capture exit `0`; phase/stderr/persistence failure boundaries valid; exact workload/output mismatches versus immutable reference recorded | no same-HEAD uninstrumented pair, so arithmetic deltas are not overhead/speed evidence; future P2 comparisons retain the carried instrumentation state |
 | instrumentation disposition | terminal `CARRY_TO_FIRST_P2A_REFRESH` | exact `+349/-53` instrumentation ownership remains until a later accepted plan boundary changes it |
-| next exact action | `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING / D001_STREAK_0` | Main runs implementation detect, creates the scoped checkpoint commit, then resumes A004 |
+| next exact action | `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_ACTIVE / OWNER_DISCUSSION_PENDING / D001_STREAK_0` | monitor A004 to its direction, then stop for Owner discussion; Planner/Coder remain locked |
 
-P1-A and A001 acceptance remain recorded; the proven pre-existing package golden stays preserve-only. A002 `ARCH1/PLAN1/IMPACT1/SRC1/BUILD1/TEST1/SCRIPTBUILD1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/COMMIT1` is complete through independent Supervisor `PASS`, Main `KEEP`, and checkpoint `ecf825d7`; both target baselines remain separate. `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2` are complete and ready for Main handoff.
+P1-A and A001 acceptance remain recorded; the proven pre-existing package golden stays preserve-only. A002 and A003 checkpoints remain complete with target baselines separate. WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004 Architect alone owns the current direction and must stop for Owner discussion.
 
 ### Instrumentation Ready Checkpoint
 
@@ -192,8 +192,8 @@ This section contains references only; benchmark owns all numeric values.
 | complete active-parent child list / checklist | complete separate Cheapapp and Restaurant Manager `B2-P2A-A001-D001..D017` tables and exactly `17` nested unchecked plan items | correct / accepted A001 optimized columns recorded; all items unchecked | preserve exact cardinality and unchecked state; D002-D017 remain queued/unopened |
 | active child / remaining children | D001/D002-D017 pointers remain unchecked | D001 accepted A003 baselines: Cheapapp `3.447846300 s`; Restaurant `9.401585300 s`; D002-D017 queued | keep D001 active with streak `0`; A004 consumes the current accepted basis |
 | current benchmark authority | existing `E:\Anvien` values superseded | Cheapapp and Restaurant Manager are two independent accepted A003 baselines | keep targets separate; no averaging/combining |
-| current attempt | Child 06A WAL force cleanup checkpoint; A004 task paused | `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING / D001_STREAK_0` | Main creates the accepted checkpoint, then resumes A004 |
-| current attempt goal | checkpoint the accepted architecture-preserving five-sidecar database-generation reset after Coder and independent Supervisor PASS | exact four-file result bound by `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1` | no additional review, A004 source, or target performance work before commit |
+| current attempt | A004 architecture direction | `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_ACTIVE / OWNER_DISCUSSION_PENDING / D001_STREAK_0` | A004 returns direction and stops for Owner discussion |
+| current attempt goal | chốt the fresh A004 attempt-scoped architecture for the accepted D001 residual without opening implementation | current A003 basis plus WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`; WAL fix changes no metric | no Planner/Coder until Owner and Architect agree |
 | attempt-specific Architect decision | A004 task `01a03e09-77e0-7c03-b144-bed526838f37` | Owner-paused by WAL force bug | no resume until fix Supervisor PASS and accepted commit |
 | Planner refresh | `E2-P2A-A003PLAN2/OWNERKEEP1/COMMIT1`; report `rp_planner_260826_by_gpt-5_child06a_a003_owner_keep_restore.md`; PLAN1 superseded | restore and checkpoint complete at `b6bf45bce95323aa6b53b182edfea8628bd8b463` | A004 Architect; no A004 Planner before Owner agreement |
 | A003 residual profile | `E2-P2A-A003ATTRIB1`; accepted A002 Cheapapp/Restaurant CPU profiles under their raw roots | cause/owner/call path recorded; cumulative samples remain separate, overlapping, not additive/elapsed/averaged | consume as Architect input; do not rerun |
@@ -238,7 +238,7 @@ The transition continues to apply to selected child `B2-P2A-A001-D001 resolve_ca
 | top-level timing/list/checklist | both targets have separate complete product boundaries plus `30` operation rows each; optimized columns are accepted A001 baselines; exactly `30` plan parent items remain unchecked | one complete independent accepted table per target with unchanged checklist state | correct / A001 promotion recorded | each target has `21 analyzer_internal`, `1 analyzer_outer`, `8 cli_outer` | both reports; `E2-P2A-A001REVIEW1/DECISION1` | preserve separation; do not combine targets or check parents |
 | active parent child inventory/checklist | both target `OP001 resolution` blocks have `17` measured rows; optimized columns are accepted A001 baselines; exactly `17` nested plan items remain unchecked | complete independent child table per target plus preserved checklist | correct / A001 promotion recorded | `17` child rows per target | both reports; `E2-P2A-A001REVIEW1/DECISION1` | preserve cardinality/check state; keep OP001/D001 active and D002-D017 queued |
 | current child/owner | exact A003 final hashes checkpointed | preserve accepted A003 bytes | correct / `RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE` | A003 reviewed identity | `E2-P2A-A003OWNERKEEP1/COMMIT1`; `b6bf45bce95323aa6b53b182edfea8628bd8b463` | A004 Architect |
-| P2-A attempts | A001/A002/A003 `KEEP`; same D001 active; WAL fix Coder/Supervisor complete; A004 paused | accepted commit -> A004 resume | partial / `WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING` | metrics/streak/checklists unchanged | `E2-P2A-A003COMMIT1`, `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1` | Main detects and commits exact accepted scope |
+| P2-A attempts | A001/A002/A003 `KEEP`; same D001 active; WAL checkpoint complete; A004 active | A004 direction -> Owner discussion -> only then Planner if Owner agrees | partial / `A004_ARCHITECT_ACTIVE / OWNER_DISCUSSION_PENDING` | metrics/streak/checklists unchanged | `E2-P2A-A003COMMIT1`, `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1` | monitor Architect; do not open Planner/Coder |
 | unsuccessful-attempt terminal rule | selected D001; A001 `KEEP`; streak `0` | KEEP resets active child; third no-KEEP -> child-only `SYSTEM_CHARACTERISTIC`; parent waits for every child | correct / A001 exercised as KEEP | N/A | `E2-P2A-A001DECISION1` | A002 starts from streak `0`; D001 remains unchecked |
 | A001 Owner-required consistency review | `ARCHITECT_CONSISTENCY_REVIEW_PASS_READY_FOR_MAIN`; Main accepted and authorized Coder transition | Main-verified four-ledger artifacts independently reviewed by Architect thread, with result returned to Main | correct / complete | four ledgers; Architect changed zero files | `E2-P2A-A001CONSISTENCY1` | no re-review; preserve as planning/architecture evidence only |
 | A001 source/build/test/review/commit validation | production-first candidate and authorized tests exist; canonical full build PASS; focused PASS; package FAIL only on proven pre-existing preserve-only golden; Supervisor PASS/Main KEEP/implementation commit recorded | truthful accepted A001 boundary without fabricating package PASS or A002 implementation evidence | correct / `KEEP / A001_COMMIT_COMPLETE` / `PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED` | five candidate files; 12-path commit manifest; golden owner out of scope | `E2-P2A-A001IMPACT1/SRC1/BUILD1/TEST1/REVIEW1/DECISION1/COMMIT1` | preserve committed accepted bytes throughout A002 |
@@ -314,6 +314,7 @@ The transition continues to apply to selected child `B2-P2A-A001-D001 resolve_ca
 | R58 | 2026-08-26 | restore lane independently confirms current A003 final hashes | materialized restore synchronization | `OWNER_KEEP_DECIDED / CANDIDATE_RESTORE_PENDING / A004_NOT_OPENED -> OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_PENDING / A004 ARCHITECT_PENDING`; D001 streak remains `0`; parent/D001 unchecked; D002-D017 queued | `E2-P2A-A003OWNERKEEP1`; exact hashes `6DE54D...6D30` / `06677D...9371` | Main completes A003 checkpoint, then opens A004 Architect; no A003 gate reruns |
 | R59 | 2026-08-26 | full build PASS; fresh analyze `2237/766/0`, graph `123997/170823`; detect PASS; exact nine-path commit `b6bf45bce95323aa6b53b182edfea8628bd8b463` | A003 accepted checkpoint and A004 opening | `A003_CHECKPOINT_PENDING -> A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PENDING`; D001 streak `0`; parent/D001 unchecked; D002-D017 queued | `E2-P2A-A003COMMIT1` | open A004 Architect; stop after direction for Owner discussion; no Planner before Owner agreement |
 | R60 | 2026-08-26 | base HEAD `c5f364978ade62effe61c34a6d1a1605de755a06`; exact four-file diff `+81/-11`; Coder task `01a03e29-7983-7441-8f33-8e8edf4a2493`; Supervisor task `01a03e75-c596-7e80-8880-698e3bce145a`; final fresh plan graph `2241/766/0`, `124045/170911` | architecture-preserving Ladybug five-sidecar reset, final build/tests/repro, and independent acceptance | `WAL_FIX_READY_FOR_CODER -> WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING`; `lbugruntime` owns explicit five-sidecar/full-generation cleanup, `prepareStorage(force)` delegates, WAL recovery stays classifier-gated/sidecar-only, and generic state `1` remains non-WAL. Canonical full build, focused tests, Coder repro, and independent Supervisor repro PASS; exact verdict `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`. No metric, streak, checkbox, target, A003, or A004 source changed | `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1`; Coder and Supervisor reports | Main runs required detect, creates the scoped rollback checkpoint, then resumes A004; no extra review or benchmark gate |
+| R61 | 2026-08-26 | detect PASS on fresh graph `2241/766/0`, `124046/170912`; exact checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`; subject `fix(storage): reset Ladybug artifact family on force`; exact 11-path manifest; staged set empty; A004 task `01a03e09-77e0-7c03-b144-bed526838f37` resumed | WAL fix checkpoint and immediate A004 continuation | `WAL_FIX_CHECKPOINT_PENDING -> WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_ACTIVE / OWNER_DISCUSSION_PENDING`; detect records `9` tracked changed files / `79` entities / `affected_processes=[]` / summary risk `low`; checkpoint includes exact source/tests/ledgers/Planner/Coder/Supervisor files and excludes the paused A004 report. No metric, streak, checkbox, or queue changed | `E2-P2A-WALFORCECOMMIT1`; commit above | monitor A004 to its direction, then stop for Owner discussion; no Planner/Coder until agreement |
 
 ## Phase Touch Map
 
@@ -334,11 +335,11 @@ The transition continues to apply to selected child `B2-P2A-A001-D001 resolve_ca
 
 ## Detailed Findings
 
-### A001/A002/A003 accepted checkpoints are preserved; WAL fix awaits checkpoint
+### A001/A002/A003 and WAL checkpoints are preserved; A004 direction is active
 
 Current state:
 
-A001 remains complete/committed. A002 is complete at checkpoint `ecf825d7`. A003 is complete at checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`; its accepted target values stay separate and D001 streak is `0`. The intervening WAL force-cleanup bug now has completed Coder evidence and exact independent verdict `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`; only its scoped checkpoint remains before A004 resumes.
+A001 remains complete/committed. A002 is complete at checkpoint `ecf825d7`. A003 is complete at checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`; its accepted target values stay separate and D001 streak is `0`. WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004 Architect is active and must stop after its direction for direct Owner discussion.
 
 Required state:
 
@@ -352,13 +353,14 @@ A001 KEEP / commit
 -> canonical full build and focused tests PASS
 -> rebuilt-runtime five-sidecar repro PASS
 -> independent Supervisor PASS
--> WAL fix checkpoint pending
--> resume A004 for Owner/Architect discussion
+-> WAL fix checkpoint complete
+-> A004 Architect active
+-> stop for Owner/Architect discussion
 ```
 
 Classification: A001/A002/A003 `correct / KEEP / checkpoint complete`; target-separated measurements `preserved`; A004 `ARCHITECT_PAUSED_WAL_FORCE_BUG`; WAL fix `SUPERVISOR_PASS / CHECKPOINT_PENDING`; D001 streak `0`.
 
-Allowed next action: Main runs required implementation detect, creates the scoped WAL fix checkpoint, then resumes A004.
+Allowed next action: monitor A004 Architect to its direction, then stop for Owner discussion.
 
 Forbidden next action: resume A004; rerun A003 gates; change parent/D001 checkboxes or D002-D017 queue; broaden into native error plumbing/non-force behavior; or open P3/Child 07.
 
@@ -366,7 +368,7 @@ Forbidden next action: resume A004; rerun A003 gates; change parent/D001 checkbo
 
 Current state:
 
-A001/A002/A003 are complete accepted history. A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` remains valid. The WAL force cleanup bug is fixed and independently accepted; A004 remains paused only until its scoped checkpoint commit exists.
+A001/A002/A003 are complete accepted history. A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` and WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` remain valid. A004 Architect is active under the Owner discussion stop boundary.
 
 Required rejection loop:
 
@@ -416,7 +418,7 @@ Classification: rule `correct`; no current terminal record.
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
 | P1-A | instrumented capture, operation integrity/equivalence, terminal carry disposition, `OP001..OP030`, and exact `30`-item parent mirror are complete | keep P1-A checked; preserve the immutable reference and carried same-instrumentation P2 basis; do not rerun accepted work |
-| P2-A | all checkboxes/metrics remain unchanged; A003 checkpoint complete; WAL fix Supervisor PASS; A004 paused pending checkpoint; D001 streak `0` | Main creates the accepted WAL fix checkpoint, then resumes A004 |
+| P2-A | all checkboxes/metrics remain unchanged; A003 and WAL checkpoints complete; A004 Architect active; D001 streak `0` | A004 returns direction and stops for Owner discussion; no Planner/Coder until agreement |
 | P3-A | no stable complete accepted candidate | remain locked; final review supplements per-attempt reviews |
 | P3-B | no P3-A PASS | remain locked; no cleanup review |
 | P3-C | no accepted final state | remain locked; exactly one detect/commit/handoff |
@@ -460,7 +462,7 @@ Classification: rule `correct`; no current terminal record.
 - [x] `E2-P2A-A002DECISION1` records Main `A002 KEEP`, separate Cheapapp/Restaurant baseline promotion, D001 streak `0`, unchanged parent/child checkboxes, and the explicit no-per-attempt-detect/stage/commit boundary.
 - [x] `E2-P2A-A003CURRENT1..ROLLBACK1/OWNERKEEP1/COMMIT1` preserve the exact target-separated measurements, `SUPERVISOR_A003_PASS`, historical rollback, Owner `KEEP`, exact restored hashes, full-build/detect PASS, checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`, D001 streak `0`, unchanged checkboxes, `A003_CHECKPOINT_COMPLETE`, and `A004 ARCHITECT_PENDING`.
 - [x] `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1` record the exact four-file architecture-preserving fix, final build/tests/repro, critical blast radius, and `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`; no metric, streak, checkbox, target, A003, or A004 source changed.
-- [ ] WAL fix scoped checkpoint commit; after it exists, resume A004 without another review or benchmark gate.
+- [x] WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` exists; A004 resumed without another review or benchmark gate.
 
 ## Final P0 Decision
 
@@ -474,4 +476,4 @@ Choose one:
 
 Decision note:
 
-P0/P1-A and A003 checkpoint remain complete. P2-A, parent, and child checkboxes remain unchanged; D001 streak is `0`; D002-D017 remain queued. Current cursor is `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING`. Next owner is Main for detect/commit, then A004 Architect.
+P0/P1-A, A003 checkpoint, and WAL checkpoint remain complete. P2-A, parent, and child checkboxes remain unchanged; D001 streak is `0`; D002-D017 remain queued. Current cursor is `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_ACTIVE / OWNER_DISCUSSION_PENDING`. Next owner is A004 Architect, then Owner discussion.
